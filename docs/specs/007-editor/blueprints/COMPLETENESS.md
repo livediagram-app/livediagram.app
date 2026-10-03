@@ -64,6 +64,6 @@
 - [x] Accessibility
 - [x] Web Experience
 - [x] Observability
-- [x] Testing
+- [ ] Testing
 - [x] Constants and configuration
 - [x] Defaults ledger

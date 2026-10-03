@@ -227,12 +227,15 @@ same in Diagram mode and to every collaborator ([One look](../../007-editor/edit
 
 Gated on `drawMode` (the `editorMode` prop on `Canvas`, `useWhiteboard().whiteboard`):
 
-- `panelEls.palette`, `ToolbarPalette`, `QuickStylePanel`, the Theme & canvas brush,
+- `ToolbarPalette`, `QuickStylePanel`, the Theme & canvas brush,
   `ThemeModeBanner`, `EmptyCanvasBanner`, the tool panels (`eraser`, `format`): not
   rendered.
+- `panelEls.palette` (the Floating layout's Palette panel) stays, its body Draw's groups
+  (`drawTools`) in place of the catalogue ([whiteboard-dock](whiteboard-dock.md)).
 - The Explorer menu button leaves the strip for its corner on a phone (`menuInStrip` false).
 - The draw-mode banner does not show for a held pen (`isHeldPenIntent`).
-- The dock renders when `whiteboard && !readOnly && !chromeHidden`.
+- The dock renders when `toolbarActive && whiteboard && !readOnly && !chromeHidden` (the Toolbar
+  layout's only).
 
 ### Quick style panel on a whiteboard
 
@@ -873,10 +876,12 @@ validated saves (`validate.ts` bounds `penWidth`). Colours written by a pen come
 ## Presentation and UX
 
 - Dock: top centre (or bottom, by choice), three groups; placement, separators and copy in
-  [whiteboard-dock](whiteboard-dock.md). Buttons 44 × 44 px on the editor's panel surface tokens.
+  [whiteboard-dock](whiteboard-dock.md); in the Floating layout the groups fill the Palette panel
+  instead. Buttons 36 × 36 px (the strip's tiles) on the editor's panel surface tokens.
 - Pen buttons: a filled nib in the pen's colour (the main pen shows the ink colour), a thickness bar below
   scaled to its width.
-- Flyouts sit above their button, never move the dock; clamp to the viewport horizontally (12 px
+- Flyouts sit on the board side of their button (beside the Palette panel in the Floating
+  layout), never move the dock; clamp to the viewport horizontally (12 px
   margin, measured from layout width before paint, since the pop-in starts at `scale(0)`), placed
   with the `translate` property because the pop-in animation owns `transform`.
 - Dock buttons and flyout options carry the house `Tooltip` (their accessible name).
@@ -905,7 +910,7 @@ validated saves (`validate.ts` bounds `penWidth`). Colours written by a pen come
 ## Web Experience
 
 - Zero layout shift: the dock is `position: absolute` over the canvas, fixed button sizes, flyouts
-  absolutely positioned on its board side; nothing in the page flow changes when a tool or flyout toggles.
+  absolutely positioned on its board side (fixed beside the Palette panel); nothing in the page flow changes when a tool or flyout toggles.
 - INP: dock handlers set state only; erase work is per sample and bbox-filtered.
 - LCP: no new asset on first paint; the dock renders with the canvas.
 

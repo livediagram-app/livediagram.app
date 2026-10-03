@@ -42,7 +42,7 @@ activity, the template and Draw mode's dock (`useWhiteboard`, `WhiteboardDock`),
 | `EDITOR_MODE_CATALOGUE`    | Diagram, Draw (label + description)  | `editor-mode.ts`; spec "The mode switch"       |
 | `DEFAULT_EDITOR_MODE`      | `'diagram'`                          | Spec: `opensIn` absent = Diagram               |
 | Mode store key             | `livediagram:v2:editor-mode:<tabId>` | `editorModeKey`; one key per tab, device-local |
-| Switch slot width          | 48 px (`w-12`) at every width        | `EditorModeSwitch` `SLOT`; zero layout shift   |
+| Switch slot width          | 48 px (`w-12`); labelled 104 px      | `EditorModeSwitch` `SLOT_WIDTH`; zero shift    |
 | `PEN_INK`                  | `#1c1917` light, `#e2e8f0` dark      | `pen-colours.ts`; spec "Ink is one colour"     |
 | `WHITEBOARD_UNSET_PATTERN` | `'blank'`                            | Written on a migrated board with no pattern    |
 | `WHITEBOARD_INKED_SHAPES`  | square, circle, triangle, diamond    | The shapes a migrated board inks               |
@@ -120,20 +120,20 @@ backgroundPattern: 'graph' }`, used by the picker, `/new` and the MCP `buildTemp
 Every tool and rule that the tab kind once decided keys on the effective mode (`drawMode =
 editorMode.mode === 'draw'` in `useEditorState`, `editorMode` prop on `Canvas`):
 
-| Gate                                                  | Reads                                             |
-| ----------------------------------------------------- | ------------------------------------------------- |
-| Dock model, its keys, pen cursor, eraser mode         | `useWhiteboard({ drawMode })`                     |
-| Palette, strip, tool panels hidden; dock shown        | `Canvas.editorMode` → `CanvasChrome`              |
-| Still canvas: no pop-in, picking by the drawn outline | `CanvasStillProvider still`                       |
-| Type-to-edit only on notes and text                   | `useSelectionEditing({ drawMode })`               |
-| Draw style memory scope (`board:`)                    | `useStyleMemory({ board: drawMode })`             |
-| Quick style board rows                                | `useQuickStyle({ drawMode })`                     |
-| Drawn shapes unpainted, Ink; sticky opens for typing  | `useShapeDrawing({ drawMode })`                   |
-| Text box placement writes `sizing`                    | `buildDrawnBoxed(..., drawMode)`                  |
-| Paste and import-into-tab profile                     | `useBoardSceneInsert`, `useBoardSceneImport`      |
-| Command palette hides the format painter              | `useEditorCommands` (`ctx.editorMode`)            |
-| Empty-canvas and theme-mode banners hidden            | `EditorView`                                      |
-| The person's Draw pattern                             | `resolveViewBackdrop(tab, { mode, drawPattern })` |
+| Gate                                                  | Reads                                                         |
+| ----------------------------------------------------- | ------------------------------------------------------------- |
+| Dock model, its keys, pen cursor, eraser mode         | `useWhiteboard({ drawMode })`                                 |
+| Strip, tool panels hidden; dock or Palette Draw tools | `Canvas.editorMode` → `CanvasChrome`, `useCanvasChromePanels` |
+| Still canvas: no pop-in, picking by the drawn outline | `CanvasStillProvider still`                                   |
+| Type-to-edit only on notes and text                   | `useSelectionEditing({ drawMode })`                           |
+| Draw style memory scope (`board:`)                    | `useStyleMemory({ board: drawMode })`                         |
+| Quick style board rows                                | `useQuickStyle({ drawMode })`                                 |
+| Drawn shapes unpainted, Ink; sticky opens for typing  | `useShapeDrawing({ drawMode })`                               |
+| Text box placement writes `sizing`                    | `buildDrawnBoxed(..., drawMode)`                              |
+| Paste and import-into-tab profile                     | `useBoardSceneInsert`, `useBoardSceneImport`                  |
+| Command palette hides the format painter              | `useEditorCommands` (`ctx.editorMode`)                        |
+| Empty-canvas and theme-mode banners hidden            | `EditorView`                                                  |
+| The person's Draw pattern                             | `resolveViewBackdrop(tab, { mode, drawPattern })`             |
 
 Content rules never read the mode: text hugging keys on `sizing` (`hugsText(el)` in
 `apps/live/lib/text-hug.ts`), for the canvas render (`useTextHug`), label commit, style setters,
@@ -186,14 +186,16 @@ export function editorModeShortcut(
 ```
 
 - `EditorModeTab = Pick<Tab, 'id' | 'kind' | 'opensIn' | 'layers'>`.
-- `EditorModeSwitch({ className?, align?: 'left' | 'right' })` (default `left`): reads
-  `useEditorModeState()` and renders nothing outside a provider, when `!canEdit` or when
-  `!canSwitch`; else a fixed `w-12` slot (`data-editor-mode-switch`) around
-  `ModeMenuChip({ mode, onChange, align })`.
+- `EditorModeSwitch({ className?, align?: 'left' | 'right', labelled? })` (defaults `left`,
+  `false`): reads `useEditorModeState()` and renders nothing outside a provider, when `!canEdit`
+  or when `!canSwitch`; else a fixed slot (`data-editor-mode-switch`, `w-12`, or `w-[6.5rem]`
+  when `labelled`) around `ModeMenuChip({ mode, onChange, align, labelled })`.
 - Placement: inside `ToolbarExplorerButton`, after the menu button, in its corner card or inline
-  in the phone strip (`align` left); in the Floating layout's `Explorer` panel `headerActions`
-  before `ExplorerHeaderMenu` (`align="right"`), left out when the Explorer renders `asPopover`.
-  Not in `TabBar`, which no longer takes the mode.
+  in the phone strip (icon-only, `align` left); in the Floating layout, `CommandPalette` passes
+  `<EditorModeSwitch labelled align="right" />` as its `MovablePanel` `headerActions`, so it
+  sits in the Palette panel's title row beside help and minimise, in Diagram and in Draw (the
+  panel stays up in Draw mode, showing Draw's tools). Not in `TabBar` (which no longer takes the
+  mode) nor the `Explorer`.
 - `TabModeIcon({ tab, style? })`: the effective mode's `EDITOR_MODE_ICON`, 12 px, `aria-hidden`;
   `TabPill` passes `style={{ color: legibleTabAccent(tab, isDark) }}`.
 - `templateOpensIn(overrides: Pick<Tab, 'opensIn' | 'kind'>): EditorMode | undefined`.
@@ -206,14 +208,14 @@ export function editorModeShortcut(
 
 ## Data and persistence
 
-| Field / key                          | Class                  | Notes                                                               |
-| ------------------------------------ | ---------------------- | ------------------------------------------------------------------- |
-| `Tab.opensIn`                        | Document, synced       | Absent = Diagram; written by templates, imports, new tabs, Opens in |
-| Remembered mode                      | Device-local, per tab  | `localStorage`, never synced, never on the tab                      |
-| Opened mode                          | Memory, per page       | Lost on reload by design                                            |
-| `drawPattern`                        | Synced user preference | The person's Draw pattern, Grid until chosen                        |
-| `TextElement.sizing`                 | Document               | Replaces `autoWidth`                                                |
-| `penColour` / `penTextColour: 'ink'` | Document               | Ink by name                                                         |
+| Field / key                          | Class                  | Notes                                                                          |
+| ------------------------------------ | ---------------------- | ------------------------------------------------------------------------------ |
+| `Tab.opensIn`                        | Document, synced       | Absent = Diagram; written by templates, imports and Opens in (never a new tab) |
+| Remembered mode                      | Device-local, per tab  | `localStorage`, never synced, never on the tab                                 |
+| Opened mode                          | Memory, per page       | Lost on reload by design                                                       |
+| `drawPattern`                        | Synced user preference | The person's Draw pattern, Grid until chosen                                   |
+| `TextElement.sizing`                 | Document               | Replaces `autoWidth`                                                           |
+| `penColour` / `penTextColour: 'ink'` | Document               | Ink by name                                                                    |
 
 Migration on read, in every entry point (`migrateStoredTab` / `migrateIncomingTab`: api
 `rowToTab`, thumbnails, offline store, file import, realtime ops, api writes), never in
@@ -264,9 +266,11 @@ Migration on read, in every entry point (`migrateStoredTab` / `migrateIncomingTa
 
 ## Presentation and UX
 
-- The chip (`ModeMenuChip`): the mode's icon and a chevron, no label at any width, on
-  `TOOLBAR_TRIGGER_TONE`, `h-7`, filling the fixed `w-12` slot. No hover card (it would cover the
-  menu). The menu opens downward (`absolute top-full mt-1.5`, `left-0`, or `right-0` for
+- The chip (`ModeMenuChip`): the mode's icon and a chevron on `TOOLBAR_TRIGGER_TONE`, filling
+  its fixed slot. Icon-only (the Toolbar layout): `h-7`, centred, in the `w-12` slot.
+  `labelled` (the Floating layout's Palette header): `h-6`, left-aligned, the mode's label
+  (`text-xs font-medium`) between the icon and the chevron, in the `w-[6.5rem]` slot. No hover
+  card (it would cover the menu). The menu opens downward (`absolute top-full mt-1.5`, `left-0`, or `right-0` for
   `align="right"`), `min-w-36`, one compact row per catalogue entry: the 16 px icon, the name
   (`text-xs`), a check on the current row and the `⇧D` hint (`ModeKeyHint`) on the row
   `nextEditorMode(mode)` leads to; no descriptions. The same for everyone: power user mode does
@@ -291,7 +295,8 @@ Migration on read, in every entry point (`migrateStoredTab` / `migrateIncomingTa
 
 ## Web Experience
 
-- CLS: the switch's slot has one fixed width (`w-12`), so nothing beside it moves on a switch.
+- CLS: the switch's slot has one fixed width per form (`w-12`, or `w-[6.5rem]` labelled, wide
+  enough for "Diagram"), so nothing beside it moves on a switch.
   On a tab without a switch (an event-storming board) it renders nothing, so the menu card
   narrows on that tab change; a mode switch never moves anything.
 - INP: a switch is a `localStorage` write and one store notification; no fetch, no document
@@ -320,12 +325,12 @@ Migration on read, in every entry point (`migrateStoredTab` / `migrateIncomingTa
 | Per person, per tab; view role; ES             | `apps/live/lib/editor-mode-store.test.ts`, `hooks/editor/useEditorMode.test.tsx`                                                   |
 | Opening mode pinned; template releases         | `useEditorMode.test.tsx`                                                                                                           |
 | One `canEdit`; preview hides the switch        | `useViewPreview.test.tsx`, `components/chrome/editor-mode/EditorModeSwitch.test.tsx`                                               |
-| The switch: icon only, menu below, rows, keys  | `EditorModeSwitch.test.tsx`                                                                                                        |
+| The switch: icon only, menu below, rows, keys  | `EditorModeSwitch.test.tsx` (the `labelled` form and the Palette header placement have no test yet)                                |
 | The switch beside the menu button              | `components/chrome/ToolbarExplorerButton.test.tsx`, `apps/live/e2e/editor-modes.spec.ts`                                           |
 | The tab pill shows your mode on it             | `components/chrome/TabPill.test.tsx`                                                                                               |
 | A template decides the tab's mode              | `app/document/[id]/useTemplateFlow.test.ts`                                                                                        |
 | Opens in                                       | `hooks/editor/useTabOpensIn.test.tsx`, `components/chrome/OpensInMenuSection.test.tsx`                                             |
-| New tab opens in Diagram                       | `lib/new-tab-seed.test.ts`                                                                                                         |
+| New tab opens in Diagram                       | `lib/new-tab-seed.test.ts`, e2e `editor-modes.spec.ts` "a new tab opens in Diagram, even when made in Draw mode"                   |
 | Entering / leaving Draw                        | `hooks/canvas/useWhiteboard.test.tsx`, `useWhiteboard.board-tools.test.tsx`                                                        |
 | Hugging on `sizing` in both modes              | `lib/text-hug.test.ts`, `boxed-drag-resolve.resize.test.ts`, `useEditorDrag.shift-resize.test.tsx`, `useTextStyleSetters.test.ts`  |
 | Template, MCP, imports open in Draw            | `apps/live/lib/templates.test.ts`, `apps/mcp/src/tab-builders.test.ts`, `lib/board-scene/land.test.ts`, `lib/import-merge.test.ts` |

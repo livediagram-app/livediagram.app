@@ -172,6 +172,24 @@ describe('EditorModeSwitch slot', () => {
     expect(widths.size).toBe(1);
   });
 
+  // The Floating layout's Palette header: the mode's name beside its icon, one width for both.
+  it('names the mode when labelled, at one fixed width', () => {
+    const labelled = (mode: EditorMode) =>
+      render(
+        <EditorModeProvider value={{ mode, setMode: vi.fn(), canSwitch: true, canEdit: true }}>
+          <EditorModeSwitch labelled />
+        </EditorModeProvider>,
+      );
+    const diagram = labelled('diagram');
+    expect(chip().textContent).toBe('Diagram');
+    const width = slot(diagram.container)!.className;
+    cleanup();
+    const draw = labelled('draw');
+    expect(chip().textContent).toBe('Draw');
+    expect(slot(draw.container)!.className).toBe(width);
+    expect(chip().getAttribute('aria-label')).toBe('Editor mode: Draw');
+  });
+
   it('renders nothing outside an editor', () => {
     const { container } = render(<EditorModeSwitch />);
     expect(container.innerHTML).toBe('');

@@ -1,8 +1,8 @@
 import type { Page } from '@playwright/test';
 import { dismissQuickTour, expect, expectNoPageErrors, test } from './fixtures';
 
-// Editor modes end to end (docs/specs/007-editor/editor-modes.md), in dark mode: the chip beside
-// the Explorer switches a general tab between Diagram and Draw, a stroke drawn in Draw stays in
+// Editor modes end to end (docs/specs/007-editor/editor-modes.md), in dark mode: the chip in the
+// Palette header switches a general tab between Diagram and Draw, a stroke drawn in Draw stays in
 // Diagram, Shift+D toggles, the choice survives a reload, a new tab opens in Diagram,
 // and Opens in changes the tab's opening mode, switching only the chooser. Synthesised content only.
 
@@ -52,7 +52,7 @@ async function drawWave(page: Page, from: { x: number; y: number }) {
 }
 
 test.describe('editor modes', () => {
-  test('a general tab opens in Diagram, with the chip beside the Explorer', async ({
+  test('a general tab opens in Diagram, with the chip in the Palette header', async ({
     page,
     pageErrors,
   }) => {

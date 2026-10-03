@@ -3,7 +3,7 @@
 Derived from [Draw mode](../draw-mode.md) "What a whiteboard shows", "Where the dock sits" and
 "Shape slots". The dock's tools, pens, eraser and backgrounds are in
 [whiteboard-round-one](whiteboard-round-one.md); this file owns the dock's layout (three groups,
-top or bottom), the Shapes flyout with its search and the shape slots. Defaults applied where the spec is silent are ledgered in [DEFAULTS.md](DEFAULTS.md)
+top or bottom in the Toolbar layout, or the Floating layout's Palette panel), the Shapes flyout with its search and the shape slots. Defaults applied where the spec is silent are ledgered in [DEFAULTS.md](DEFAULTS.md)
 as `Dn`.
 
 Scope, by file (all under `apps/live/` unless stated):
@@ -11,6 +11,7 @@ Scope, by file (all under `apps/live/` unless stated):
 | File                                                 | Role                                                                   |
 | ---------------------------------------------------- | ---------------------------------------------------------------------- |
 | `components/canvas/whiteboard/WhiteboardDock.tsx`    | Orchestrates the groups, the one open flyout, the pins-full hint       |
+| `components/canvas/whiteboard/dock-variant.ts`       | `DockVariant`, `DockVariantContext`, `useDockVariant`                  |
 | `components/canvas/whiteboard/DockToolbar.tsx`       | `DockToolbar` (a group: pill, toolbar, roving tab stop), `DockButton`  |
 | `components/canvas/whiteboard/DrawingToolsGroup.tsx` | Select, Markers 1 to 3, Text, Sticky note, Path tool, Eraser           |
 | `components/canvas/whiteboard/ShapesGroup.tsx`       | The pinned shapes, a separator, Shapes                                 |
@@ -22,12 +23,14 @@ Scope, by file (all under `apps/live/` unless stated):
 | `components/canvas/whiteboard/ShapePreview.tsx`      | A catalogue shape's own preview                                        |
 | `components/canvas/whiteboard/useShapeSlotDrag.ts`   | Dragging a flyout shape onto the pinned side, or a pinned one off it   |
 | `components/canvas/whiteboard/SlotGhost.tsx`         | The dragged shape under the pointer                                    |
-| `components/canvas/whiteboard/WhiteboardFlyout.tsx`  | A flyout: placement, focus in, `restoreFocus` to the board on closing  |
+| `components/canvas/whiteboard/WhiteboardFlyout.tsx`  | A flyout: placement, `besidePanel`, focus in, `restoreFocus` on close  |
 | `lib/whiteboard-shape-catalogue.ts`                  | The whiteboard shape catalogue, derived from the palette's shape tiles |
 | `lib/whiteboard-shape-search.ts`                     | Ranked search (at most six) and grid movement (pure)                   |
 | `lib/whiteboard-shape-slots.ts`                      | Default pins, the six slots, pick record, drops, outcomes (pure)       |
 | `lib/whiteboard-dock-prefs.ts`                       | The dock's synced preferences: parse and write, the dock position      |
-| `components/canvas/CanvasChrome.tsx`                 | Passes the position; top corners and the top stack clear a top dock    |
+| `components/canvas/CanvasChrome.tsx`                 | The dock (Toolbar layout only); top corners and stack clear a top dock |
+| `components/canvas/useCanvasChromePanels.tsx`        | In Draw mode, the panel variant as `CommandPalette`'s `drawTools`      |
+| `components/palette/CommandPalette.tsx`              | Renders `drawTools` in place of `PaletteTabBar`, same panel and header |
 | `hooks/ui/useStripCrowdsCorners.ts`                  | Whether a top bar (the strip or a top dock) reaches a top corner       |
 | `components/chrome/TopCenter.tsx`                    | `TopCenterStack` `below`: under the strip or under a top dock          |
 | `components/dialogs/settings/settings-catalogue.ts`  | Editor › Draw sub-category: the Dock Position row                      |
@@ -40,18 +43,19 @@ Scope, by file (all under `apps/live/` unless stated):
 
 ## Domain and naming
 
-| Term            | Identifier                                           | Meaning                                                             |
-| --------------- | ---------------------------------------------------- | ------------------------------------------------------------------- |
-| Group           | `DockToolbar`, `data-dock-group`                     | One pill: `drawing`, `shapes`, `settings`                           |
-| Shape catalogue | `WHITEBOARD_SHAPE_CATALOGUE`                         | Every shape a whiteboard arms, keyed by `WhiteboardShapeKey`        |
-| Shape key       | `WhiteboardShapeKey`                                 | A dock shape id, a shape kind, or `kind:choice`                     |
-| Pinned shape    | `pinnedShapes`, `data-pinned-slot`                   | A kind on the bar's pinned side, before the separator (up to seven) |
-| Default pins    | `DEFAULT_PINNED_SHAPES`                              | Arrow, Rectangle, until the user changes them                       |
-| Slot            | `slotShapes` (`mostUsed`, `recent`)                  | One of the Shapes flyout's six: three Most used, three Recent       |
-| Pick counts     | `ShapePicks`                                         | Per kind: `[count, lastPickedAt]`                                   |
-| Slot outcome    | `SlotOutcome` (`pin` / `unpin` / `refused` / `none`) | What a drop or a slot menu choice does to the pins                  |
-| Armed shape     | `armedShape`                                         | The catalogue shape in hand, if a board shape is armed              |
-| Dock position   | `WhiteboardDockPosition` (`top` / `bottom`)          | Where the dock sits; `data-dock-position` on the wrapper            |
+| Term            | Identifier                                            | Meaning                                                              |
+| --------------- | ----------------------------------------------------- | -------------------------------------------------------------------- |
+| Group           | `DockToolbar`, `data-dock-group`                      | One pill: `drawing`, `shapes`, `settings`                            |
+| Shape catalogue | `WHITEBOARD_SHAPE_CATALOGUE`                          | Every shape a whiteboard arms, keyed by `WhiteboardShapeKey`         |
+| Shape key       | `WhiteboardShapeKey`                                  | A dock shape id, a shape kind, or `kind:choice`                      |
+| Pinned shape    | `pinnedShapes`, `data-pinned-slot`                    | A kind on the bar's pinned side, before the separator (up to seven)  |
+| Default pins    | `DEFAULT_PINNED_SHAPES`                               | Arrow, Rectangle, until the user changes them                        |
+| Slot            | `slotShapes` (`mostUsed`, `recent`)                   | One of the Shapes flyout's six: three Most used, three Recent        |
+| Pick counts     | `ShapePicks`                                          | Per kind: `[count, lastPickedAt]`                                    |
+| Slot outcome    | `SlotOutcome` (`pin` / `unpin` / `refused` / `none`)  | What a drop or a slot menu choice does to the pins                   |
+| Armed shape     | `armedShape`                                          | The catalogue shape in hand, if a board shape is armed               |
+| Dock position   | `WhiteboardDockPosition` (`top` / `bottom`)           | Where the dock sits; `data-dock-position` on the wrapper (dock only) |
+| Variant         | `DockVariant` (`dock` / `panel`), `data-dock-variant` | The Toolbar layout's floating dock, or the Palette panel's body      |
 
 Banned synonyms: "favourite" for a pinned shape (Favourites is the palette's), "frequent slot" (the
 slots are Most used and Recent), "More shapes" (merged into Shapes), "toolbar" for a group in prose
@@ -63,7 +67,15 @@ slots are Most used and Recent), "More shapes" (merged into Shapes), "toolbar" f
 
 - Order: Drawing tools, Shapes, Settings, always all three. The dock carries no Undo or Redo:
   the bottom-right cluster and the keyboard keep them in every mode, so `WhiteboardDock` takes
-  only `{ model, ink }`.
+  only `{ model, ink, variant? }` (`variant` defaults to `'dock'`).
+- **Where the groups live** (spec "What a whiteboard shows"): in the Toolbar layout,
+  `CanvasChrome` renders the `dock` variant when `toolbarActive && whiteboard && whiteboardDock &&
+!readOnly && !chromeHidden`. In the Floating layout, `useCanvasChromePanels` builds
+  `<WhiteboardDock variant="panel" />` while `editorMode === 'draw'` and passes it to
+  `CommandPalette` as `drawTools`, which renders it in place of `PaletteTabBar`; the panel keeps
+  its `MovablePanel` title row (the editor mode switch, help, minimise), drag, docking and
+  collapse. `WhiteboardDock` provides its variant through `DockVariantContext`; `DockToolbar` and
+  `DockDivider` read it with `useDockVariant()`.
 - **Drawing tools**: `select`, `main`, `second`, `third`, `text`, `path`, `eraser`, with dividers
   after Select, after the markers and before the eraser. The sticky note is a shape (below), not a
   drawing tool.
@@ -83,7 +95,8 @@ slots are Most used and Recent), "More shapes" (merged into Shapes), "toolbar" f
 
 - One at a time (`useDockFlyout`): `{ kind, hover, viaHover, left, openerKey, slot? }`, `left`
   measured once from the opener's centre against `[data-whiteboard-dock]` (and again by
-  `reanchor()` on scroll). `viaHover` is set by a hover or by S (`viaKey`). Kinds: a pen id, `eraser`, `settings`, `shapes`, `slot`.
+  `reanchor()` on scroll), divided by the wrapper's zoom (its rect width over its `offsetWidth`,
+  1 when unzoomed) so it is in the scaled dock's own px. `viaHover` is set by a hover or by S (`viaKey`). Kinds: a pen id, `eraser`, `settings`, `shapes`, `slot`.
 - Hover opens only the Shapes flyout (pen or mouse; never touch); the rest open on a press. `hover`
   drives the delayed close (`HOVER_CLOSE_MS`); a press on a hover flyout, or working in its field
   (`stick()`), clears it. `viaHover` stays set for the flyout's life.
@@ -95,6 +108,12 @@ slots are Most used and Recent), "More shapes" (merged into Shapes), "toolbar" f
   still inside it or nowhere. A press elsewhere, a pick or the hover close do the same.
 - The Shapes button prevents its mousedown's focus move while its flyout is open, so a press on a
   hover-opened flyout leaves the focus in the field.
+- **Beside the panel** (the `panel` variant): `WhiteboardFlyout` gets `besideOf={openerKey}`,
+  portals to the body (out of the panel's scroll clip), `position: fixed`, `data-side="beside"`,
+  and in a layout effect measures `besidePanel(wrapperRect, openerRect, flyoutNode, viewport)`:
+  the side of the panel with more room (left on a tie), `BESIDE_GAP_PX` from the panel's edge,
+  its top level with the opener's top, both clamped `VIEWPORT_MARGIN_PX` inside the viewport. It
+  stays `visibility: hidden` until measured. The panel never moves for a flyout.
 - Scrolling the groups (narrow screens) moves the openers: an open flyout follows its opener
   (`reanchor()` on scroll) rather than closing, so a scroll that brings a button into view never
   closes the flyout it just opened.
@@ -106,6 +125,7 @@ slots are Most used and Recent), "More shapes" (merged into Shapes), "toolbar" f
 - The dock model carries `position` (from the synced preferences); the Settings row writes it
   through the dialog's own preference round-trip, and the editor's `PREFERENCES_CHANGED_EVENT`
   listener re-renders the dock in place, still mounted.
+- The position applies to the `dock` variant only; the panel form has no `data-dock-position`.
 - `top`: flyouts and the hint take `top-full mt-2` (below); `bottom`: `bottom-full mb-2` (above).
 - `top`: `CanvasChrome` passes `below="dock"` to the top-centre stack, and measures the dock
   against the top corner stacks (`useStripCrowdsCorners` with `WHITEBOARD_DOCK_SELECTOR`); when
@@ -196,7 +216,8 @@ board: true }`. `armedWhiteboardShape(intent)` reads a board intent (or the plai
   flyout titled with the shape's name and one option, "Unpin" (`unpinShape`). The release that
   ends a long-press does not pick. Focus returns to the pinned shape.
 - **Refused**: nothing is written; the hint "Seven shapes are pinned. Drag one out to swap." shows
-  above the Shapes group for `HINT_MS` and in a `role="status"` region.
+  for `HINT_MS` and in a `role="status"` region: on the board side of the Shapes group in the
+  dock, or inline under the groups inside the panel (`data-side="inside"`).
 
 ## Interfaces and contracts
 
@@ -250,6 +271,24 @@ export function readWhiteboardDockPosition(prefs: UserPreferences): WhiteboardDo
 export function withWhiteboardDockPosition(prefs: UserPreferences, position: WhiteboardDockPosition): UserPreferences;
 
 // WhiteboardDock gains `position: WhiteboardDockPosition`; WhiteboardFlyout gains `below`.
+
+// components/canvas/whiteboard/dock-variant.ts
+export type DockVariant = 'dock' | 'panel';
+export const DockVariantContext: React.Context<DockVariant>; // default 'dock'
+export function useDockVariant(): DockVariant;
+
+// WhiteboardDock.tsx
+export type WhiteboardDockProps = { model: WhiteboardDockModel; ink: string; variant?: DockVariant };
+
+// WhiteboardFlyout.tsx: `besideOf?: string` (the opener's data-dock-item) opens it beside the panel.
+export function besidePanel(
+  panel: { left: number; right: number },
+  opener: { top: number },
+  flyout: { offsetWidth: number; offsetHeight: number },
+  viewport?: { width: number; height: number }, // default: the window's inner size
+): { left: number; top: number };
+
+// CommandPalette.types.ts: CommandPaletteProps gains `drawTools?: ReactNode`.
 // useStripCrowdsCorners takes the bar's selector (null: no bar, never crowded).
 // TopCenterStack's `belowToolbar` becomes `below?: 'toolbar' | 'dock'`.
 
@@ -288,7 +327,12 @@ are stored once changed, even empty. No migration: new optional keys; an older r
 - A pinned or counted kind the palette no longer offers: dropped on read; its slot refills.
 - Seven pinned and a drop beside them: refused with the hint; the dragged slot is where it was.
 - Every pin unpinned: the side stays empty (`[]` stored); the defaults never return on their own.
-- A drag that measures no separator: logged, no drag.
+- A drag that measures no separator: logged, no drag. In the panel the separator is a zero-width
+  marker (`data-pinned-separator` kept), so the drag still measures one.
+- Open gap, the panel's slot drag: `slotDropTarget` reads only `x` against the separator, so in
+  the panel, where the pinned shapes and Shapes sit on rows of their own (and seven pins may wrap),
+  a drop on the Shapes row left of the marker reads as the pinned side. Not yet handled.
+- A beside flyout before its first measure: hidden for that frame, never flashed at the corner.
 - A slot re-ranked away while focused: the group's tab stop falls back to its first button.
 - The blob's 4 KB cap: at most 20 picks (about 600 bytes) and 7 pins (about 110 bytes).
 - Two kinds picked at the same millisecond (another device): the catalogue order breaks the tie.
@@ -305,23 +349,41 @@ Keys come from a closed catalogue and are validated on read; telemetry carries f
 - The dock does no layout measurement at rest: flyout placement, the hint and a slot drag measure
   once, on opening or on the drag's start; re-anchoring measures one button per scroll event while a flyout is
   open.
-- Widest dock: 858 px (seven pins). Measured at 970 px in Chromium and WebKit (1600 px desktop)
-  while the dock had a History group; that group's pill and gap (100 + 12 px, from its classes)
-  are gone, and the narrower width has not been re-measured in a browser.
+- Widest dock: 858 px (seven pins) with 44 px buttons. Measured at 970 px in Chromium and WebKit
+  (1600 px desktop) while the dock had a History group; that group's pill and gap (100 + 12 px,
+  from its classes) are gone, and the buttons are 36 px since 2026-10-03, so the widest dock is
+  now narrower still; neither width has been re-measured in a browser. At the toolbar UI scale
+  it is that width times the scale.
+- Measured in a browser: a dock group is the strip card's height, 46 px at 1x and 54.78 px at
+  1.25x.
 
 ## Presentation and UX
 
+- The `dock` wrapper draws at the **toolbar UI scale**: `uiScaleStyle(useUiScale('toolbar'))`
+  (`zoom`, nothing at 1), with a top dock's `top` restated as `toSurfacePx(12, scale)` so it keeps
+  12 px from the edge ([UI scale blueprint](../../007-editor/blueprints/ui-scale.md)). The panel
+  form takes no zoom of its own: the Palette panel is scaled as a panel.
 - Wrapper at the **top** (the default): `top-3`; below `lg` `left-[7.5rem]` with
   `max-w-[calc(100%-8.25rem)]`, clear of the Explorer menu card (the button and the editor mode
   switch, 12 + 98 px, plus an 8 px gap); from `lg` centred with `max-w-[calc(100%-15rem)]`, the
   same clearance both sides (D33). Top corner stacks drop to
-  76 px when it reaches them (D34); the top-centre stack starts at `top-[4.75rem]`.
+  68 px when it reaches them (D34); the top-centre stack starts at `top-[4.25rem]`, as under the strip.
 - Wrapper at the **bottom**: bottom centre, `bottom-4` from 1760 px wide (D9), lifted above the
   bottom-right cluster below it.
 - Either way: groups `gap-3` (12 px) apart inside one horizontal scroller (`-m-3 p-3`, so shadows are
-  not clipped), each group the editor's panel surface, buttons 44 × 44 px.
+  not clipped), each group a pill on the editor's panel surface (`rounded-xl border p-1
+shadow-md shadow-slate-900/5`, the strip card's), buttons (`DockButton`) 36 × 36 px (`h-9
+w-9`, the strip's tile size) with `DOCK_ICON_PX` (18 px) glyphs, so the dock is the strip's
+  height (spec "What a whiteboard shows"). The drag's `SlotGhost` is the same 36 px.
+- **Panel form** (`variant="panel"`): the wrapper is `relative flex flex-col gap-3 px-2.5 pb-2.5
+pt-2`, the groups stacked; each `DockToolbar` is `flex flex-wrap gap-x-0.5 gap-y-1` with no
+  pill. `DockDivider` draws no separator there: a zero-width `h-6 w-0` marker (carrying the
+  divider's props, so `data-pinned-separator`) then a `basis-full` `[data-dock-row-break]`, so each
+  run the dock divides is its own row: Select; the three markers; Text and Path; the Eraser; the
+  pinned shapes; Shapes; the cog. Buttons are the same 36 px.
 - Flyouts sit on the board side of their opener in whichever group: below a top dock, above a
-  bottom one; so does the pins-full hint. The Shapes flyout is `8.5rem` wide with a
+  bottom one; so does the pins-full hint. In the panel they open beside it (see Flyouts) and the
+  hint is inline. The Shapes flyout is `8.5rem` wide with a
   fixed-height grid (two rows of three 40 px cells), so typing never resizes it.
 - Flyout previews: the tile icon (or the dock glyph for the six), 20 px box, in the board's ink.
   Pinned shapes: the same preview in the dock's own text colour; one with a shape key (A, R, O, D,
@@ -356,7 +418,11 @@ Keys come from a closed catalogue and are validated on read; telemetry carries f
 ## Web Experience
 
 - Zero layout shift: picking a tool or opening a flyout never moves a group (measured in Chromium
-  and WebKit); only a pin, the user's own act, changes the dock's width. Changing the position is
+  and WebKit); only a pin, the user's own act, changes the dock's width. In the panel a flyout is
+  fixed and portalled, so the panel never moves; the pins-full hint is inline in the panel and
+  grows it for `HINT_MS`, after the user's own drop.
+- Switching modes never changes the size of the bar at the top: the dock and the strip are the
+  same height at the same toolbar scale. Changing the position is
   the user's own act in Settings; the top corner stacks move once, when the dock reaches them.
 - INP: every dock handler sets state; search is synchronous and small.
 
@@ -380,6 +446,8 @@ to measure` (warn).
 | Preference parsing and writing, emptied pins kept         | `apps/live/lib/whiteboard-dock-prefs.test.ts`                              |
 | Picks counted, search pick, S request, pins, unpin count  | `apps/live/hooks/canvas/useWhiteboard.test.tsx`                            |
 | Groups, order, tab stops, arrows, scroll re-anchoring     | `apps/live/components/canvas/whiteboard/WhiteboardDock.test.tsx`           |
+| Panel form: groups, rows not separators, beside flyout    | `WhiteboardDock.test.tsx` "WhiteboardDock in the Palette panel"            |
+| Beside the panel: side with room, level, inside viewport  | `WhiteboardDock.test.tsx` "besidePanel"                                    |
 | Pinned bar, pressed state, Unpin menu, drags both ways    | `apps/live/components/canvas/whiteboard/ShapesGroup.test.tsx`              |
 | Shapes flyout: hover focus, slots, results, menu, closing | `apps/live/components/canvas/whiteboard/ShapesFlyout.test.tsx`             |
 | Dock position: parse, write, default top                  | `apps/live/lib/whiteboard-dock-prefs.test.ts`                              |
@@ -387,6 +455,7 @@ to measure` (warn).
 | A top bar (strip or dock) crowding the top corners        | `apps/live/hooks/ui/useStripCrowdsCorners.test.tsx`                        |
 | Settings row: Top / Bottom round trip, section, token     | `apps/live/components/dialogs/settings/settings-catalogue.test.ts`         |
 | Telemetry sentences                                       | `apps/telemetry/app/event-explanation.test.ts`                             |
+| Dock position and snap colours end to end (Toolbar)       | `whiteboard-dock-position.spec.ts`, `whiteboard-snap-colours.spec.ts`      |
 | End to end                                                | Playwright, Chromium and WebKit, dark and light, 1600 × 900 and 820 × 1180 |
 
 ## Constants and configuration
@@ -398,6 +467,10 @@ to measure` (warn).
 | `MOST_USED_SLOTS`, `RECENT_SLOTS`  | 3, 3    | spec                      | 3             |
 | `SHAPE_PICKS_PROTECTED`            | 5       | D16                       | 3 to 8        |
 | `SLOT_BAR_REACH_PX`                | 44      | D22                       | 24 to 64      |
+| `DockButton` size                  | 36 px   | spec (the strip's tile)   | 36            |
+| `DOCK_ICON_PX`                     | 18 px   | the strip's glyph size    | 18            |
+| `BESIDE_GAP_PX`                    | 22 px   | panel padding 10 + 12 gap | 16 to 28      |
+| `VIEWPORT_MARGIN_PX`               | 12 px   | the flyouts' clamp margin | 8 to 16       |
 | `SHAPE_SEARCH_LIMIT`               | 6       | spec                      | 6             |
 | `SHAPE_GRID_COLUMNS`               | 3       | six as two rows of three  | 3             |
 | `SHAPE_PICKS_KEPT`                 | 20      | spec (e.g. 20), D16       | 12 to 30      |
@@ -406,7 +479,7 @@ to measure` (warn).
 | Group gap                          | 12 px   | D18                       | 8 to 16       |
 | Dock drops beside the cluster      | 1760 px | D9 (widest dock 858 px)   | at least 1720 |
 | Top dock's side clearance          | 4.25rem | D33 (menu button 12 + 46) | at least 4rem |
-| `WHITEBOARD_DOCK_TOP_CLEARANCE_PX` | 76 px   | D34 (12 + 54 + 10)        | 72 to 84      |
+| `WHITEBOARD_DOCK_TOP_CLEARANCE_PX` | 68 px   | D34 (12 + 46 + 10)        | 64 to 76      |
 
 ## Defaults ledger
 

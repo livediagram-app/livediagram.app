@@ -42,7 +42,8 @@ const TONE_CLASS: Record<BannerTone, string> = {
 // events for itself.
 const STACK_TOP: Record<'toolbar' | 'dock' | 'none', string> = {
   toolbar: 'top-[4.25rem]',
-  dock: 'top-[4.75rem]',
+  // The Draw dock is the strip's height now (docs/specs/023-draw-mode/draw-mode.md), so the same.
+  dock: 'top-[4.25rem]',
   none: 'top-[4.75rem] sm:top-3',
 };
 

@@ -68,7 +68,10 @@ Each scaled surface reads its part's scale with `useUiScale(part)`, spreads
 `uiScaleStyle(scale)` into its ROOT's `style`, and converts every JS-computed
 screen-px length it writes on that root or a descendant with `toSurfacePx`.
 `panels`: `MovablePanel`, `QuickStylePanel`, `useDockPopovers`.
-`toolbar`: `ToolbarPalette`, `ToolbarExplorerButton`.
+`toolbar`: `ToolbarPalette`, `ToolbarExplorerButton`, and Draw mode's dock
+(`WhiteboardDock`, its `dock` variant; from
+[Draw mode](../../023-draw-mode/draw-mode.md#what-a-whiteboard-shows), which
+the spec's "Nothing else scales" list does not yet reflect).
 `cornerButtons`: the cluster in `CanvasChrome`, `usePanelDock`.
 
 - **`MovablePanel`** (both branches):
@@ -103,6 +106,11 @@ screen-px length it writes on that root or a descendant with `toSurfacePx`.
   `right` / `bottom` inline `toSurfacePx(16)` so it keeps its 16px corner gap.
 - **`ToolbarExplorerButton`**: zoom on the root; its corner inset is restored
   the same way. Inline in the phone strip it takes no zoom of its own.
+- **`WhiteboardDock`** (`variant="dock"`): zoom on the wrapper; a top dock's
+  `top` is restated as `toSurfacePx(12)`. `useDockFlyout` divides the
+  opener's measured offset by the wrapper's zoom (rect width over
+  `offsetWidth`), so a flyout's `left` is in surface px. The `panel` variant
+  takes no zoom: it sits inside the Palette's `MovablePanel` (`panels`).
 
 Popovers that MovablePanel anchors to a scaled button read the button's
 `getBoundingClientRect` (screen px), so they line up at any scale.
