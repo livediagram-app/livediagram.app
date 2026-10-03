@@ -29,12 +29,49 @@ describe('mainThreadTasks', () => {
       task(1, 10, 12.5),
       task(1, 11, 90),
       task(2, 20, 70),
-      task(1, 10, 61),
+      { ...task(1, 10, 61), ts: 50_000 },
     ];
     expect(mainThreadTasks(events)).toEqual([12.5, 61]);
   });
 
   it('finds no tasks without a renderer main thread', () => {
     expect(mainThreadTasks([task(1, 10, 5)])).toEqual([]);
+  });
+});
+
+// A still board on a slow runner read 40-49 ms of work: the probe's own commands (Playwright's
+// evaluations at the window's edges), which carry no script URL. Page scripts and loaded chunks do.
+describe("mainThreadTasks and the probe's own scripts", () => {
+  const child = (
+    name: string,
+    ts: number,
+    dur: number,
+    data: Record<string, unknown> = {},
+  ): TraceEvent =>
+    ({
+      name,
+      ph: 'X',
+      pid: 1,
+      tid: 10,
+      ts: ts * 1000,
+      dur: dur * 1000,
+      args: { data },
+    }) as TraceEvent;
+  const at = (ts: number, dur: number): TraceEvent => ({ ...task(1, 10, dur), ts: ts * 1000 });
+
+  it('leaves out a task that only evaluates a script with no URL', () => {
+    const events = [meta(1, 10, 'CrRendererMain'), at(0, 20), child('EvaluateScript', 0.1, 19.5)];
+    expect(mainThreadTasks(events)).toEqual([]);
+  });
+
+  it('keeps a script the page loaded, and a task with other work in it', () => {
+    const events = [
+      meta(1, 10, 'CrRendererMain'),
+      at(0, 30),
+      child('EvaluateScript', 0.1, 29, { url: 'http://localhost/live/_next/static/chunks/a.js' }),
+      at(100, 12),
+      child('FunctionCall', 100.5, 11),
+    ];
+    expect(mainThreadTasks(events)).toEqual([30, 12]);
   });
 });

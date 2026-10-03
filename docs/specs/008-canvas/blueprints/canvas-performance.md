@@ -215,7 +215,9 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
   makes the row: each metric the median of the runs. One more run is traced for attribution
   (`traces/<tab>-<zoom>-<gesture>.json.gz`) and not counted.
 - The idle row runs `REPEATS` traced 2 s windows; its work is the sum of the renderer main
-  thread's `RunTask` durations (`trace-tasks.ts`; compositor and raster threads are not counted),
+  thread's `RunTask` durations (`trace-tasks.ts`; compositor and raster threads are not counted, nor
+  a task whose only work is a script with no URL: the probe's own Playwright evaluations at the
+  window's edges, which read 20 ms each on a hosted runner),
   the median of the five. Measured values are shown rounded up; a longest task of 0 (no
   long-task entry: the browser reports none under 50 ms) is shown as `< 50 ms`.
 - Before anything else it calibrates (`calibrate.ts`): `benchmarkInPage` (a fixed DOM, layout, JS
