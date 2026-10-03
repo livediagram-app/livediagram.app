@@ -203,9 +203,9 @@ backstop.
 ### 3.6 Management — the Settings dialog's API Tokens category
 
 Tokens are created, viewed and revoked in the **Settings dialog**
-([User preferences](../007-editor/user-preferences.md)), in its own top-level
-category **API Tokens** (id `tokens`), which sits **between Account and
-Privacy**. It is account-scoped like its neighbours, and the dialog is reachable
+([User preferences](../007-editor/user-preferences.md)), in the **API Tokens**
+sub-category of **Account** (id `tokens`, `parent: 'account'`, shown as
+"Account › API Tokens"). It is account-scoped like its parent, and the dialog is reachable
 from both the Explorer and the editor, so the tokens are too. There is no
 Explorer page for them: the former `/explorer/tokens` route and its sidebar
 entry are gone, with no redirect (few people had used it).
