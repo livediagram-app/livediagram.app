@@ -38,7 +38,9 @@ describe('prePushPlan', () => {
   });
 
   it('adds the help guards when a file outside apps/ and packages/ changed', () => {
-    expect(labels(['docs/specs/x.md'])).toContain('help guards (repo-wide references)');
+    expect(labels(['docs/specs/003-system-architecture/testing.md'])).toContain(
+      'help guards (repo-wide references)',
+    );
     expect(labels(['README.md'])).toContain('help guards (repo-wide references)');
     expect(labels(['apps/live/a.ts', 'packages/ui/b.ts'])).not.toContain(
       'help guards (repo-wide references)',
