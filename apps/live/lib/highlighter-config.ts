@@ -1,11 +1,39 @@
-// The highlighter's recipe at creation (docs/specs/008-canvas/highlighter.md): what a stroke drawn
-// from the Draw category's Highlighter tile commits with, and what the live draw preview paints.
+// The highlighter's settings (docs/specs/008-canvas/highlighter.md "Settings"): the marker colours
+// and widths a stroke can take, shared by the Quick style panel's Highlighter rows, the commit
+// path and the live draw preview.
 //
-// Fixed rather than chosen: the tile is a one-shot arm like the pens, with no panel. A committed
-// stroke is recoloured from its context menu like any element. Marker yellow regardless of theme:
-// a highlighter that changed colour with the tab's palette would stop reading as a highlight.
-export const HIGHLIGHTER_COLOR = '#fde047';
+// Fixed hexes, not theme colours: a highlight that changed colour with the tab's palette would
+// stop reading as a highlight.
 
-// Marker width in canvas px. The renderers' `penWidth ?? 14` fallback, so a new stroke never
-// needs to write `penWidth`.
+export type HighlighterWidthId = 'thin' | 'medium' | 'bold';
+
+export const HIGHLIGHTER_COLORS: readonly { id: string; label: string }[] = [
+  { id: '#fde047', label: 'Yellow' },
+  { id: '#86efac', label: 'Green' },
+  { id: '#f9a8d4', label: 'Pink' },
+  { id: '#93c5fd', label: 'Blue' },
+  { id: '#fdba74', label: 'Orange' },
+];
+
+// Stroke widths, in canvas px.
+export const HIGHLIGHTER_WIDTHS: readonly { id: HighlighterWidthId; label: string; px: number }[] =
+  [
+    { id: 'thin', label: 'Thin', px: 8 },
+    { id: 'medium', label: 'Medium', px: 14 },
+    { id: 'bold', label: 'Bold', px: 22 },
+  ];
+
+// Marker yellow at Medium: where the highlighter starts on every fresh load.
+export const HIGHLIGHTER_COLOR = '#fde047';
+// The renderers' `penWidth ?? 14` fallback, so a Medium stroke never writes `penWidth`.
 export const HIGHLIGHTER_WIDTH = 14;
+
+/** The preset id for a width in px, or null when it sits off every preset. */
+export function highlighterWidthId(px: number): HighlighterWidthId | null {
+  return HIGHLIGHTER_WIDTHS.find((w) => w.px === px)?.id ?? null;
+}
+
+/** The px for a preset id. */
+export function highlighterWidthPx(id: HighlighterWidthId): number {
+  return HIGHLIGHTER_WIDTHS.find((w) => w.id === id)!.px;
+}

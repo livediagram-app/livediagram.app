@@ -2329,6 +2329,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     beginPolygon,
     commitFreehand,
     commitPolygon,
+    highlighter,
   } = useShapeDrawing({
     editsBlocked: createBlocked,
     selectedId,
@@ -2634,6 +2635,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
       update: whiteboardDock.updatePen,
       colours: whiteboardDock.colourMemory,
     },
+    highlighter,
     toolIntent: pendingDraw,
   });
 

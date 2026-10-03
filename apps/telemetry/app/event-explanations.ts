@@ -635,6 +635,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone toggled which style properties the format painter copies (fill, border, text, effects, or size), in the Format panel.',
   'UI|Changed|FormatMode':
     'Someone changed whether the format painter keeps applying after each use or turns off after one copy, in the Format panel.',
+  'UI|Changed|HighlighterColour':
+    "Someone changed the Highlighter's colour for their next stroke, in the Quick style panel.",
+  'UI|Changed|HighlighterWidth':
+    "Someone changed the Highlighter's width for their next stroke, in the Quick style panel.",
   'UI|Changed|LaserColour': "Someone changed the laser pointer's colour, in the Laser panel.",
   'UI|Changed|LaserEffect': "Someone changed the laser pointer's trail effect, in the Laser panel.",
   'UI|Changed|LaserTrail':

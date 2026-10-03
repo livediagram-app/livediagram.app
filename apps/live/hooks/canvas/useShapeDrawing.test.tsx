@@ -42,13 +42,36 @@ describe('useShapeDrawing highlighter', () => {
   it('arms the marker and clears the selection when the tile is picked', () => {
     const { result } = setup();
     act(() => result.current.drawing.beginHighlighter());
+    // Armed in the highlighter's current colour and width: Yellow / Medium on a fresh load.
     expect(result.current.drawing.pendingDraw).toEqual({
       type: 'freehand',
       variant: 'highlighter',
+      colour: '#fde047',
+      width: 14,
     });
     expect(result.current.selectedId).toBeNull();
     expect(result.current.multi.size).toBe(0);
     expect(result.current.editingId).toBeNull();
+  });
+
+  // docs/specs/008-canvas/highlighter.md "Settings": a choice made while armed reaches the armed
+  // stroke, and every later arm.
+  it('carries a colour or width chosen while armed into the arm and the next one', () => {
+    const { result } = setup();
+    act(() => result.current.drawing.beginHighlighter());
+    act(() => result.current.drawing.highlighter.setColour('#93c5fd'));
+    act(() => result.current.drawing.highlighter.setWidth(22));
+    expect(result.current.drawing.pendingDraw).toMatchObject({ colour: '#93c5fd', width: 22 });
+    act(() => result.current.drawing.beginPolygon());
+    act(() => result.current.drawing.beginHighlighter());
+    expect(result.current.drawing.pendingDraw).toMatchObject({ colour: '#93c5fd', width: 22 });
+  });
+
+  it('leaves another arm alone when a setting changes', () => {
+    const { result } = setup();
+    act(() => result.current.drawing.beginPolygon());
+    act(() => result.current.drawing.highlighter.setColour('#93c5fd'));
+    expect(result.current.drawing.pendingDraw).toEqual({ type: 'polygon' });
   });
 
   it('is replaced by the next tile picked, like any one-shot arm', () => {

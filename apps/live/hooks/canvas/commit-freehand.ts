@@ -22,7 +22,7 @@ import { NEW_ARROW_THEME_STROKE_FALLBACK } from '@/lib/draw-commit';
 import { deriveNewBoxedColours, getTheme } from '@/lib/themes';
 import { titleCaseType, track } from '@/lib/telemetry';
 import type { PendingDraw } from '@/lib/draw-mode';
-import { HIGHLIGHTER_COLOR } from '@/lib/highlighter-config';
+import { HIGHLIGHTER_COLOR, HIGHLIGHTER_WIDTH } from '@/lib/highlighter-config';
 import { simplifyPenStroke } from '@/lib/pen-smoothing';
 import { RECOGNITION_THRESHOLD, recogniseBoardStroke } from '@/lib/recognition-preview';
 
@@ -104,15 +104,17 @@ export function makeCommitFreehand({
 
     // Highlighter variant (docs/specs/008-canvas/highlighter.md): commit the marker recipe and
     // skip both recognition and close-to-fill — a highlight is an
-    // annotation gesture, not a sketch-a-shape one. Colour is fixed
-    // marker yellow at creation (recolourable per element after);
-    // width + translucency live in the renderers' pen recipe. One-shot,
-    // like the pencil: the stroke is selected and the tile puts itself down.
+    // annotation gesture, not a sketch-a-shape one. Colour and width are
+    // the ones the arm carries (the Quick style panel's Highlighter rows);
+    // translucency lives in the renderers' pen recipe. One-shot, like the
+    // pencil: the stroke is selected and the tile puts itself down.
     if (pendingDraw?.type === 'freehand' && pendingDraw.variant === 'highlighter') {
+      const width = pendingDraw.width ?? HIGHLIGHTER_WIDTH;
       const stroke = {
         ...createFreehand(simplified, false),
         pen: 'highlighter' as const,
-        strokeColor: HIGHLIGHTER_COLOR,
+        strokeColor: pendingDraw.colour ?? HIGHLIGHTER_COLOR,
+        ...(width !== HIGHLIGHTER_WIDTH ? { penWidth: width } : {}),
       };
       commit((els) => [...els, stroke]);
       setSelectedId(stroke.id);

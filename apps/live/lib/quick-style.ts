@@ -76,6 +76,9 @@ export type QuickStyleView = {
   };
   // A whiteboard's pen rows (lib/quick-style-pen): the selected strokes, or the pen in hand.
   pen?: QuickPenStyle;
+  // The Highlighter rows (lib/quick-style-highlighter): the selected highlights, or the armed
+  // Highlighter tile's next stroke (docs/specs/008-canvas/highlighter.md "Settings").
+  highlighter?: import('./quick-style-highlighter').QuickHighlighterStyle;
   // Names whose style this is when it is not a selection: a tool's next mark.
   caption?: string;
 };

@@ -100,9 +100,10 @@ export function CanvasDrawPreview({
               })
               .join(' ');
             // The highlighter variant previews with the committed
-            // marker recipe (wide translucent yellow, docs/specs/008-canvas/highlighter.md) so
-            // what you see while dragging is what lands.
-            const isHighlighter = pendingDraw.variant === 'highlighter';
+            // marker recipe (wide translucent, in the arm's colour and width,
+            // docs/specs/008-canvas/highlighter.md) so what you see while dragging is what lands.
+            const marker = pendingDraw.variant === 'highlighter' ? pendingDraw : null;
+            const isHighlighter = marker !== null;
             return (
               <svg
                 aria-hidden
@@ -111,8 +112,8 @@ export function CanvasDrawPreview({
                 <path
                   d={d}
                   fill="none"
-                  stroke={isHighlighter ? HIGHLIGHTER_COLOR : 'rgb(14, 165, 233)'}
-                  strokeWidth={isHighlighter ? HIGHLIGHTER_WIDTH : 2}
+                  stroke={marker ? (marker.colour ?? HIGHLIGHTER_COLOR) : 'rgb(14, 165, 233)'}
+                  strokeWidth={marker ? (marker.width ?? HIGHLIGHTER_WIDTH) : 2}
                   strokeOpacity={isHighlighter ? 0.45 : undefined}
                   style={isHighlighter ? { mixBlendMode: 'multiply' } : undefined}
                   strokeLinecap="round"

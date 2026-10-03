@@ -1675,7 +1675,7 @@ export const articles: Article[] = [
     title: 'Quick Style Panel',
     description: 'Restyle a selection in one click; the next shape of that kind remembers it.',
     keywords:
-      'quick style panel colour color stroke background fill width thickness dashed dotted flowing animated arrow align alignment icon remember memory next shape clear styles reset format custom swatch override picker hex brand',
+      'quick style panel colour color stroke background fill width thickness dashed dotted flowing animated arrow align alignment icon remember memory next shape clear styles reset format custom swatch override picker hex brand highlighter highlight marker',
     category: 'Canvas',
     categorySlug: 'canvas',
   },
@@ -1790,9 +1790,9 @@ export const articles: Article[] = [
   {
     slug: 'highlighter',
     title: 'Highlighter',
-    description: 'Lay one wide, translucent yellow marker stroke from the Draw category.',
+    description: 'Lay a wide, translucent marker stroke from the Draw category, in five colours.',
     keywords:
-      'highlighter highlight marker mark up markup annotate emphasise emphasize pen draw attention translucent transparent yellow review workshop underline circle',
+      'highlighter highlight marker mark up markup annotate emphasise emphasize pen draw attention translucent transparent yellow green pink blue orange colour color width thin medium bold strength quick style review workshop underline circle',
     category: 'Palette',
     categorySlug: 'palette/tools',
     parentSlug: 'tools',

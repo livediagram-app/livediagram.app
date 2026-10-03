@@ -229,6 +229,12 @@ describe('makeCommitFreehand highlighter', () => {
     expect(s.setPendingDraw).toHaveBeenCalledWith(null);
   });
 
+  it('lands in the colour and width the arm carries', () => {
+    const s = setup({ ...marker, colour: '#f9a8d4', width: 22 });
+    s.commit(loop, false);
+    expect(s.elements[0]).toMatchObject({ strokeColor: '#f9a8d4', penWidth: 22 });
+  });
+
   it('disarms on a gesture too short to be a stroke', () => {
     const s = setup(marker);
     s.commit([{ x: 0, y: 0 }], false);

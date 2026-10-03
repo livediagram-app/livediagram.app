@@ -96,7 +96,11 @@ export type PendingDraw =
   // mode banner, which made "will this stroke convert?" a hidden mode you had
   // to check before every stroke. It is now which pen you picked, so the
   // answer is the tile you clicked.
-  | { type: 'freehand'; variant?: 'highlighter' | 'shape-pen' }
+  | { type: 'freehand'; variant?: 'shape-pen' }
+  // The Highlighter tile's arm (docs/specs/008-canvas/highlighter.md): the colour and width the
+  // stroke lands in ride the intent, set from the Quick style panel's Highlighter rows, so the
+  // preview and the commit read them where they already read the arm. Absent: Yellow / Medium.
+  | { type: 'freehand'; variant: 'highlighter'; colour?: string; width?: number }
   // A whiteboard pen (docs/specs/023-draw-mode/draw-mode.md "Pens"): held in the hand,
   // carrying the pen's colour (null = the board's ink), width in px and whether
   // shape recognition is on.
