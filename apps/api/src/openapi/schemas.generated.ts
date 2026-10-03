@@ -6286,6 +6286,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "Email",
       "Error",
       "Timeline",
+      "Home",
       "Activity",
       "Page",
       "Cta",
