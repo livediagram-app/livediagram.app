@@ -184,6 +184,9 @@ element in the same colour.
   pen in hand on an empty tab and Select on a tab with content.
 - **Illustrate mode** is Diagram mode drawn as pages, with the palette
   narrowed (both below); every other rule, tool and shortcut is Diagram mode's.
+- **Each mode's mark**: Diagram a flowchart (two steps joined), Draw a marker,
+  Illustrate a page with a little chart above two lines of writing (its two
+  page kinds); the same glyph on the switch, Opens in and the tab pill.
 - **No further cue:** the dock (in place of the palette) and the switch's
   own label say which mode is on; no tint, accent or notice is added.
 - **Leaving a mode puts its tool down**, as leaving a whiteboard did: a pen,
