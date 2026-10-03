@@ -10,11 +10,17 @@ export function createStockColourProjector(): (
 ) => Element[] {
   let cacheSurface: CanvasSurface | null = null;
   let cache = new WeakMap<Element, Element>();
+  // The last board in and its projection: a render that changes no element (a pan, a zoom, a marquee
+  // frame) gets the same array back, so nothing derived from the board recomputes.
+  let lastIn: Element[] | null = null;
+  let lastOut: Element[] = [];
   return (elements, surface) => {
     if (surface !== cacheSurface) {
       cacheSurface = surface;
       cache = new WeakMap();
+      lastIn = null;
     }
+    if (elements === lastIn) return lastOut;
     let changed = false;
     const out = elements.map((el) => {
       let projected = cache.get(el);
@@ -25,6 +31,8 @@ export function createStockColourProjector(): (
       if (projected !== el) changed = true;
       return projected;
     });
-    return changed ? out : elements;
+    lastIn = elements;
+    lastOut = changed ? out : elements;
+    return lastOut;
   };
 }

@@ -18,6 +18,7 @@ Derived from [Canvas performance](../canvas-performance.md). The measurements it
 | `packages/document/src/arrow-behind.ts`                   | `routeBehindHoles` unchanged in contract; callers pass grid candidates              |
 | `packages/document/src/svg-render-arrows.ts`              | The export builds one grid per render and queries it                                |
 | `apps/live/hooks/canvas/useArrowLabelLayouts.ts`          | `draftLayout` identity-stable across passes                                         |
+| `apps/live/lib/stock-colour-projector.ts`                 | Same board in, same array out (`lastIn` / `lastOut`)                                |
 | `apps/live/hooks/canvas/useSettledElements.ts`            | What the Map draws: frozen during element gestures, throttled otherwise             |
 | `apps/live/components/canvas/Minimap.tsx`                 | Draws `useSettledElements(elements)`                                                |
 | `apps/live/hooks/canvas/useEdgeAwarePlacement.ts`         | Takes `suspended`; never measures while suspended                                   |
@@ -76,6 +77,14 @@ Derived from [Canvas performance](../canvas-performance.md). The measurements it
 | `useCanvasEraser` sweep                                                                   | `erase`          | On `beginErase`; ends on `pointerup` or `pointercancel` (both record the sweep) or unmount |
 
 - Discrete actions (a click, a key, a zoom button) open no gesture.
+
+### The board keeps its identity between renders
+
+- `createStockColourProjector` keeps the last board it was given (`lastIn`) and its projection
+  (`lastOut`): the same array on the same surface returns `lastOut` without walking it. A surface
+  change clears both, with the per-element cache.
+- `visibleLayerElements` is memoised over `elements` and `tabLayers` where the Map reads it
+  (`useCanvasChromePanels`).
 
 ### Element views render only for their own changes
 
