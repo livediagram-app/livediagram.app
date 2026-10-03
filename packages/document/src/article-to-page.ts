@@ -136,7 +136,7 @@ export function withArticlesAsPages<T extends ArticlesTab>(
     const { kind: _k, flow: _f, ...rest } = p;
     void _k;
     void _f;
-    return rest;
+    return { ...rest, kind: 'infographic' as const };
   });
   const elements = (tab.elements as Element[]).map((el) => {
     if (el.type !== 'annotation' || !el.articleNote) return el;

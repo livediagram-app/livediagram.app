@@ -19,6 +19,7 @@ import {
   withIllustratePages,
   type IllustratePage,
   type LaidOutPage,
+  type PageKind,
 } from './illustrate-page';
 import { elementIdsOnPage, withPageContentReplaced } from './illustrate-page-content';
 import type { Tab } from './index';
@@ -257,4 +258,34 @@ export function articleLeads(pages: readonly LaidOutPage[]): LaidOutPage[] {
     seen.add(p.flow);
     return true;
   });
+}
+
+/** Whether a page still offers the choice of its kind (docs/specs/007-editor/illustrate-pages.md
+ *  "Page kinds"): the tab's only page, never chosen, with nothing on it. */
+export function offersPageKindChoice(
+  pages: readonly IllustratePage[],
+  pageId: string,
+  contentCount: number,
+): boolean {
+  return pages.length === 1 && pages[0]!.id === pageId && !pages[0]!.kind && contentCount === 0;
+}
+
+/** The tab with its first page's kind chosen: an infographic page (kept, now chosen), or an article
+ *  (the page becomes its first page, its writing a new Title and paragraph). Null when the page no
+ *  longer offers the choice. */
+export function withPageKindChosen<T extends PagesTab>(
+  tab: T,
+  pageId: string,
+  kind: PageKind,
+  flow: string,
+): (T & { pages: IllustratePage[] }) | null {
+  const pages = illustratePagesOf(tab);
+  const page = pages.find((p) => p.id === pageId);
+  if (!page || pages.length !== 1 || page.kind) return null;
+  if (kind === 'infographic') return withIllustratePages(tab, [{ ...page, kind: 'infographic' }]);
+  return withArticleFlow(
+    withIllustratePages(tab, [{ ...page, kind: 'article', flow }]),
+    flow,
+    newArticleFlow(),
+  );
 }

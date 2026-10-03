@@ -47,7 +47,9 @@ describe('articles turned into Page elements', () => {
     expect(made[0]!.label).toBe('Hello world');
     expect(made[1]!.label).toContain('Goals');
     expect('articles' in out).toBe(false);
-    expect((out.pages as IllustratePage[]).every((p) => !p.kind && !p.flow)).toBe(true);
+    expect((out.pages as IllustratePage[]).every((p) => p.kind === 'infographic' && !p.flow)).toBe(
+      true,
+    );
   });
 
   it('leaves a tab without articles alone', () => {

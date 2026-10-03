@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
+  offersPageKindChoice,
   pageUnits,
+  withPageKindChosen,
   withArticleAdded,
   withArticleDuplicated,
   withArticlePageCount,
@@ -124,5 +126,25 @@ describe('articles in the row', () => {
       'z',
     ]);
     expect(withArticlePageCount(tab, 'f', 1)).toBe(tab);
+  });
+});
+
+describe("the first page's own choice of kind", () => {
+  const only = [{ id: 'p1', orientation: 'portrait' as const }];
+  it('is offered while the only page is unchosen and empty', () => {
+    expect(offersPageKindChoice(only, 'p1', 0)).toBe(true);
+    expect(offersPageKindChoice(only, 'p1', 2)).toBe(false);
+    expect(offersPageKindChoice([{ ...only[0]!, kind: 'infographic' }], 'p1', 0)).toBe(false);
+    expect(offersPageKindChoice([...only, { id: 'p2', orientation: 'portrait' }], 'p1', 0)).toBe(
+      false,
+    );
+  });
+  it('keeps an infographic page chosen, or makes the page an article', () => {
+    const tab = { elements: [], pages: only };
+    expect(withPageKindChosen(tab, 'p1', 'infographic', 'f')!.pages[0]!.kind).toBe('infographic');
+    const art = withPageKindChosen(tab, 'p1', 'article', 'f')!;
+    expect(art.pages[0]).toMatchObject({ kind: 'article', flow: 'f' });
+    expect(articlesOf(art).f!.blocks.length).toBeGreaterThan(0);
+    expect(withPageKindChosen(art, 'p1', 'article', 'g')).toBeNull();
   });
 });

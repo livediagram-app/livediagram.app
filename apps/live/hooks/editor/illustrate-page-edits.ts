@@ -13,6 +13,7 @@ import {
   nextIllustratePageId,
   pageUnits,
   withArticleAdded,
+  withPageKindChosen,
   withArticleDuplicated,
   withArticleRemoved,
   withUnitMoved,
@@ -50,6 +51,8 @@ export type IllustratePageEdits = {
   movePageTo: (pageId: string, unitIndex: number) => void;
   // Absent at the page limit.
   addPage?: (kind: PageKind) => void;
+  // The first page's kind chosen while it is the only page and empty (its own choice cards).
+  choosePageKind: (pageId: string, kind: PageKind) => void;
   duplicatePage?: (pageId: string) => void;
   // Absent while there is only one unit (one page, or one document).
   removePage?: (pageId: string) => void;
@@ -202,6 +205,13 @@ export function illustratePageEdits({
   // A new infographic page takes the last infographic page's size and orientation (else A4
   // portrait); a new document the last page's paper size and orientation when it is a paper size
   // (A4, US Letter, A3), else A4 portrait. Both on the plain paper.
+  const choosePageKind = (pageId: string, kind: PageKind) => {
+    track('Tab', 'Changed', kind === 'article' ? 'PageKindArticle' : 'PageKindInfographic');
+    const flow = nextArticleFlowId(new Set());
+    commitTab((t) => withPageKindChosen(t, pageId, kind, flow));
+    if (kind === 'article') onArticleCreated?.(flow);
+    debugLog('[illustrate-page] first page kind chosen', { tabId, pageId, kind });
+  };
   const addPage = (kind: PageKind) => {
     track('Tab', 'Changed', kind === 'article' ? 'ArticleAdded' : 'PageAdded');
     const id = nextIllustratePageId(current);
@@ -334,6 +344,7 @@ export function illustratePageEdits({
     movePageTo,
     canMove,
     addPage: room ? addPage : undefined,
+    choosePageKind,
     duplicatePage: room ? duplicatePage : undefined,
     removePage: units.length > 1 ? removePage : undefined,
     applyLayout,

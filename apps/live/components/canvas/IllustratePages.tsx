@@ -2,9 +2,11 @@
 
 import { useCallback, useRef, useState, type CSSProperties } from 'react';
 import { lucidePanelsTopLeft, lucideSettings } from '@livediagram/icons/lucide';
+import { FirstPageChoice } from './FirstPageChoice';
 import {
   articleBodyLinePx,
   articleMarginPx,
+  offersPageKindChoice,
   articleTopMarginPx,
   ILLUSTRATE_PAGE_GAP,
   pageIsDark,
@@ -146,15 +148,19 @@ export function IllustratePages({
         // an empty page's layout button sits beside it, with its words while there is room for
         // them and the label, as an icon while there is room for that, else not at all.
         const room = page.rect.width * zoom;
-        // Layouts are for infographic pages: a document page never invites one.
+        // Layouts are for infographic pages: an article page never invites one.
         const empty = !!edit && !page.flow && edit.contentCount(page.id) === 0;
-        const invite = !empty
-          ? null
-          : !mobile && room >= INVITE_WIDE + COG_ROOM + LABEL_MIN * 2
-            ? 'wide'
-            : room >= INVITE_ICON + COG_ROOM + LABEL_MIN
-              ? 'icon'
-              : null;
+        // The first page, unchosen and empty, offers its kind first (FirstPageChoice).
+        const choosing =
+          !!edit && !bare && offersPageKindChoice(pages, page.id, edit.contentCount(page.id));
+        const invite =
+          !empty || choosing
+            ? null
+            : !mobile && room >= INVITE_WIDE + COG_ROOM + LABEL_MIN * 2
+              ? 'wide'
+              : room >= INVITE_ICON + COG_ROOM + LABEL_MIN
+                ? 'icon'
+                : null;
         const labelRoom =
           room -
           (edit ? COG_ROOM : 0) -
@@ -227,6 +233,12 @@ export function IllustratePages({
                   }}
                 />
               </div>
+            ) : null}
+            {choosing && edit ? (
+              <FirstPageChoice
+                zoom={zoom}
+                onChoose={(kind) => edit.choosePageKind(page.id, kind)}
+              />
             ) : null}
             {pageNumberOf(page) ? (
               <span

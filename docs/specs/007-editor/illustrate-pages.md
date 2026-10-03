@@ -20,10 +20,11 @@ its page, clipping, centring) are in [Editor modes](editor-modes.md) "The pages"
 
 ## Page kinds
 
-A page is one of two kinds (`IllustratePage.kind`), chosen when it is made and never changed:
+A page is one of two kinds (`IllustratePage.kind`), chosen when it is made and never changed
+afterwards (the one exception: the first page's own choice, below):
 
-- **Infographic** (`kind` absent or `'infographic'`; every page from before kinds): a sheet to lay
-  out elements on, freely, starting from a layout. Everything in this spec applies to it.
+- **Infographic** (`kind: 'infographic'`, or absent: unchosen, and every page from before kinds):
+  a sheet to lay out elements on, freely, starting from a layout. Everything in this spec applies to it.
 - **Article** (`kind: 'article'`): a page to write on, its text flowing through the linked pages
   of one article ([Article pages](article-pages.md)). This spec applies to it except where a
   rule names infographic pages; [Article pages](article-pages.md) adds the rest.
@@ -39,7 +40,17 @@ infographic page takes the last infographic page's size and orientation (else A4
 article is as [Article pages](article-pages.md) "An article" says. The popover is the same on
 a phone (a bottom sheet). The **+** is named **Add page** and shows the popover open as pressed.
 
-A tab entering Illustrate mode with no pages stored starts with one infographic page, as before.
+A tab entering Illustrate mode with no pages stored starts with one page, its kind unchosen.
+
+**The first page's choice**: while a tab's only page is unchosen and empty, it offers the two kinds
+inside itself, for someone who may edit: a card centred on the page, held at one screen size,
+**What Is This Page For?** ("Choose now: a page keeps its kind once you start."), over the same two
+cards as the popover. **Infographic** keeps the page, now chosen (`kind: 'infographic'`), and the
+choice goes; **Article** makes it the first page of a new article, the caret in its title. One edit
+each. Anything put on the page first (a layout, an element) is choosing Infographic by doing: the
+offer goes while the page has content, and comes back if it is emptied while still unchosen. The
+empty page's layout invitation waits until the choice is made. Not offered in zen or isometric
+view, nor on a second page (a page added from the + is chosen in the popover).
 The **Article** template in /new starts a tab that opens in Illustrate mode with one article.
 
 ## The page panel

@@ -59,7 +59,7 @@ export type PageBackground = { fill?: PageFill; pattern?: PagePattern };
 export const PAGE_NAME_MAX = 60;
 
 // What a page is for, fixed when it is made (docs/specs/007-editor/illustrate-pages.md "Page
-// kinds"): an infographic page to lay out, or a document page to write on.
+// kinds"): an infographic page to lay out, or an article page to write on.
 export type PageKind = 'infographic' | 'article';
 
 export type IllustratePage = {
@@ -71,9 +71,10 @@ export type IllustratePage = {
   background?: PageBackground;
   // Absent shows the page's place ("Page 2").
   name?: string;
-  // Absent is an infographic page; stored only for a document page.
-  kind?: 'article';
-  // The document a document page belongs to (`Tab.articles[flow]`); present exactly on document pages.
+  // Absent is an infographic page nobody has chosen yet (the first page offers the choice while
+  // it is the only page and empty); 'infographic' once chosen; 'article' for an article page.
+  kind?: PageKind;
+  // The article an article page belongs to (`Tab.articles[flow]`); present exactly on article pages.
   flow?: string;
 };
 
@@ -126,7 +127,7 @@ function parsePage(v: unknown): IllustratePage | undefined {
     return undefined;
   const background = parseBackground(p.background);
   const name = typeof p.name === 'string' ? p.name.trim().slice(0, PAGE_NAME_MAX) : '';
-  // A document page without a readable flow is a document of its own.
+  // An article page without a readable flow is an article of its own.
   const document =
     p.kind === 'article'
       ? {
@@ -134,7 +135,9 @@ function parsePage(v: unknown): IllustratePage | undefined {
           flow:
             typeof p.flow === 'string' && p.flow.length > 0 && p.flow.length <= 64 ? p.flow : p.id,
         }
-      : {};
+      : p.kind === 'infographic'
+        ? { kind: 'infographic' as const }
+        : {};
   return {
     id: p.id,
     orientation: p.orientation,
@@ -145,7 +148,7 @@ function parsePage(v: unknown): IllustratePage | undefined {
   };
 }
 
-/** The page's kind: a document page, or else an infographic page. */
+/** The page's kind: an article page, or else an infographic page. */
 export function pageKindOf(page: Pick<IllustratePage, 'kind'>): PageKind {
   return page.kind === 'article' ? 'article' : 'infographic';
 }
