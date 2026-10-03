@@ -294,6 +294,52 @@ export const ILLUSTRATE_PAGE_BUILDING = chart(
   { types: ['PageLayout', 'PageDuplicated', 'PageMoved', 'PagesLaidOut'] },
 );
 
+// Writing on document pages (docs/specs/007-editor/document-pages.md "Telemetry").
+export const DOCUMENT_INSERTS = chart(
+  'Element',
+  'Added',
+  'Document Inserts',
+  'Something put into the writing of a document page: an image, table, chart or drawing at the caret, an object or drawing taken in from the palette, or a divider, page break, quote or code block.',
+  {
+    types: [
+      'DocImage',
+      'DocTable',
+      'DocChart',
+      'DocDrawing',
+      'DocObject',
+      'DocDivider',
+      'DocPageBreak',
+      'DocQuote',
+      'DocCode',
+    ],
+  },
+);
+
+export const DOCUMENT_FORMATTING = chart(
+  'Element',
+  'Changed',
+  'Document Formatting',
+  "The page toolbar used on a document's writing (a format, a text style or list, a link) and a zone in the writing wrapped, placed or deleted.",
+  { types: ['DocFormat', 'DocBlockStyle', 'DocLink', 'DocZoneWrap', 'DocZoneRemoved'] },
+);
+
+export const DOCUMENT_STYLES = chart(
+  'Tab',
+  'Changed',
+  'Document Looks',
+  "A document's look chosen in its Style tab, or one of its style fields changed.",
+  {
+    types: [
+      'DocumentLookClean',
+      'DocumentLookClassic',
+      'DocumentLookReport',
+      'DocumentLookNotebook',
+      'DocumentLookBold',
+      'DocumentStyle',
+    ],
+  },
+);
+
 export const WHITEBOARDS: MetricStack = {
   stack: true,
   title: 'Draw Mode',
@@ -307,6 +353,9 @@ export const WHITEBOARDS: MetricStack = {
     ILLUSTRATE_PAGES,
     ILLUSTRATE_PAGE_SETUP,
     ILLUSTRATE_PAGE_BUILDING,
+    DOCUMENT_INSERTS,
+    DOCUMENT_FORMATTING,
+    DOCUMENT_STYLES,
     WHITEBOARD_PENS,
     WHITEBOARD_SETTINGS,
     WHITEBOARD_RECOGNITION,

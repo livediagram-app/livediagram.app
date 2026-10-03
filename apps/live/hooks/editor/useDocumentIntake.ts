@@ -112,7 +112,7 @@ export function useDocumentIntake({
             ...landed.tab,
             elements: withElementsIntoZone(landed.tab.elements, new Set(ids), plan, landed.rect),
           };
-          track('Editor', 'Used', plan.zone === 'drawing' ? 'DocDrawing' : 'DocObject');
+          track('Element', 'Added', plan.zone === 'drawing' ? 'DocDrawing' : 'DocObject');
           debugLog('[doc] zone took elements in', {
             tabId,
             flow,

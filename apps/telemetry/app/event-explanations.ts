@@ -508,6 +508,33 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone set a tab to open in Draw mode for everyone, from the tab menu.',
   'Tab|Changed|PageAdded': 'Someone added an infographic page to an Illustrate tab.',
   'Tab|Changed|DocumentPageAdded': 'Someone added a new document to an Illustrate tab.',
+  'Tab|Changed|DocumentLookClean': 'Someone gave a document the Clean look.',
+  'Tab|Changed|DocumentLookClassic': 'Someone gave a document the Classic look.',
+  'Tab|Changed|DocumentLookReport': 'Someone gave a document the Report look.',
+  'Tab|Changed|DocumentLookNotebook': 'Someone gave a document the Notebook look, on ruled pages.',
+  'Tab|Changed|DocumentLookBold': 'Someone gave a document the Bold look.',
+  'Tab|Changed|DocumentStyle':
+    "Someone changed one part of a document's style: a font, the accent, spacing, rules, margins or page numbers.",
+  'Element|Added|DocImage': "Someone inserted an image at the caret in a document's writing.",
+  'Element|Added|DocTable': "Someone inserted a table at the caret in a document's writing.",
+  'Element|Added|DocChart': "Someone inserted a chart at the caret in a document's writing.",
+  'Element|Added|DocDrawing':
+    "Someone started a drawing in a document's writing: from Insert, or by putting shapes onto the page.",
+  'Element|Added|DocObject':
+    'Someone put an object (a chart, an image, a component) onto a document page, and the writing took it in.',
+  'Element|Added|DocDivider': "Someone inserted a divider into a document's writing.",
+  'Element|Added|DocPageBreak': "Someone inserted a page break into a document's writing.",
+  'Element|Added|DocQuote': "Someone inserted a quote into a document's writing.",
+  'Element|Added|DocCode': "Someone inserted a code block into a document's writing.",
+  'Element|Changed|DocFormat':
+    'Someone formatted text in a document from the page toolbar: bold, italic, underline, strikethrough, a colour or a highlight.',
+  'Element|Changed|DocBlockStyle':
+    "Someone changed a block of a document's writing to another style or a list, from the page toolbar.",
+  'Element|Changed|DocLink': 'Someone added a link to text in a document.',
+  'Element|Changed|DocZoneWrap':
+    "Someone changed how a picture or drawing sits in a document's writing: in line, or wrapped.",
+  'Element|Changed|DocZoneRemoved':
+    "Someone deleted a picture or drawing from a document's writing.",
   'Tab|Changed|PageRemoved': 'Someone deleted a page from an Illustrate tab.',
   'Tab|Changed|PagePortrait': 'Someone turned an Illustrate page to portrait.',
   'Tab|Changed|PageLandscape': 'Someone turned an Illustrate page to landscape.',
@@ -1052,6 +1079,7 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Element|Unlocked': "An element's lock was turned off (edits resume).",
   'Element|Searched': 'Someone searched for something to put in an element, such as a picture.',
   'Element|Used': 'Someone used an interactive element on the canvas, such as a Reaction Pad.',
+  'Element|Added': 'Someone added an element to a canvas, or put something into a document.',
   'Element|Voted': 'Someone cast a dot in a dot vote.',
   'Email|Sent':
     'An automatic email went out: a welcome message, an onboarding nudge, a team invite, or a notification about activity on a document. The type names which one; it never says who received it.',

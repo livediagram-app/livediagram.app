@@ -384,7 +384,11 @@ export const ICONS_ADDED = addedFrom('icons', 'Icons Added', 'Line-art and techn
 export const OTHER_ELEMENTS_ADDED: Metric = {
   category: 'Element',
   action: 'Added',
-  typeIn: (type) => !PALETTE_KINDS.has(canonicalElementType(type)) && !isTablePart(type),
+  // Document inserts (`Doc…`) are their own card (Document Inserts, features.ts).
+  typeIn: (type) =>
+    !PALETTE_KINDS.has(canonicalElementType(type)) &&
+    !isTablePart(type) &&
+    !/^Doc(?!ument)[A-Z]/.test(type ?? ''),
   title: 'Other Elements Added',
   blurb:
     'Kinds the palette catalogue does not list, such as pasted images. Table rows and columns are in Tables.',
@@ -416,6 +420,8 @@ export const ELEMENTS_CHANGED = chart(
   'Changed',
   'Elements Changed',
   'Restyled or edited: colour, text, arrow ends, size, presets, the format painter and more.',
+  // A document's writing formatted (`Doc…`) is its own card (Document Formatting, features.ts).
+  { typeIn: (t) => !/^Doc(?!ument)[A-Z]/.test(t ?? '') },
 );
 
 export const ELEMENTS_DELETED = chart(

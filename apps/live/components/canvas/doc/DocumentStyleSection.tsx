@@ -103,14 +103,14 @@ export function DocumentStyleSection({
           ))}
         </div>
         <Toggle
-          label="Headings in the accent"
+          label="Headings in the Accent"
           on={r.accentHeadings}
           onChange={(v) => onChange({ patch: { accentHeadings: v } })}
         />
       </PanelSection>
       <PanelSection title="Text">
         <Segmented
-          label="Text size"
+          label="Text Size"
           value={r.textSize}
           options={[
             ['small', 'Small'],
@@ -121,7 +121,7 @@ export function DocumentStyleSection({
           onHover={(v) => preview({ textSize: v })}
         />
         <Segmented
-          label="Line spacing"
+          label="Line Spacing"
           value={r.lineSpacing}
           options={[
             ['single', 'Single'],
@@ -132,7 +132,7 @@ export function DocumentStyleSection({
           onHover={(v) => preview({ lineSpacing: v })}
         />
         <Segmented
-          label="Paragraph spacing"
+          label="Paragraph Spacing"
           value={r.paragraphSpacing}
           options={[
             ['none', 'None'],
@@ -143,7 +143,7 @@ export function DocumentStyleSection({
           onHover={(v) => preview({ paragraphSpacing: v })}
         />
         <Segmented
-          label="Lines under text"
+          label="Lines Under Text"
           value={r.rules}
           options={[
             ['none', 'None'],
@@ -167,7 +167,7 @@ export function DocumentStyleSection({
           onHover={(v) => preview({ margins: v })}
         />
         <Toggle
-          label="Page numbers"
+          label="Page Numbers"
           on={r.pageNumbers}
           onChange={(v) => onChange({ patch: { pageNumbers: v } })}
         />
@@ -244,7 +244,7 @@ function LookCard({
         ))}
         <span className="mt-1 block text-[9px] font-medium text-slate-500">{look.label}</span>
         {selected ? (
-          <span className="absolute right-0.5 top-0.5 text-brand-600">
+          <span className="absolute right-0.5 top-0.5 text-brand-600 dark:text-brand-600">
             <CheckIcon className="h-3 w-3" />
           </span>
         ) : null}

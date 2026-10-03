@@ -121,6 +121,15 @@ const ALIGNS: { id: DocAlign; label: string; icon: ReactNode; keys: string }[] =
   { id: 'justify', label: 'Justify', icon: <Icons.justify />, keys: 'Mod-Shift-j' },
 ];
 
+// The page toolbar's telemetry (docs/specs/007-editor/document-pages.md "Telemetry").
+const FORMAT_EVENT = { format: 'DocFormat', block: 'DocBlockStyle', link: 'DocLink' } as const;
+const INSERT_EVENT = {
+  Divider: 'DocDivider',
+  'Page break': 'DocPageBreak',
+  Quote: 'DocQuote',
+  Code: 'DocCode',
+} as const;
+
 type Open = 'style' | 'align' | 'color' | 'highlight' | 'link' | 'insert' | null;
 
 export function PageToolbar({
@@ -178,9 +187,9 @@ export function PageToolbar({
 
   if (!active) return null;
   const { handle, selection } = active;
-  const run = (command: Parameters<typeof handle.run>[0], event?: string) => {
+  const run = (command: Parameters<typeof handle.run>[0], event?: keyof typeof FORMAT_EVENT) => {
     handle.run(command);
-    if (event) track('Element', 'Changed', event);
+    if (event) track('Element', 'Changed', FORMAT_EVENT[event]);
   };
   const toggleOpen = (id: Open) => setOpen((o) => (o === id ? null : id));
   const close = () => {
@@ -231,7 +240,7 @@ export function PageToolbar({
           label="Bold"
           keys="Mod-b"
           pressed={selection.marks.has('bold')}
-          onPress={() => run(toggleBold, 'DocFormat')}
+          onPress={() => run(toggleBold, 'format')}
         >
           <Icons.bold />
         </Button>
@@ -239,7 +248,7 @@ export function PageToolbar({
           label="Italic"
           keys="Mod-i"
           pressed={selection.marks.has('italic')}
-          onPress={() => run(toggleItalic, 'DocFormat')}
+          onPress={() => run(toggleItalic, 'format')}
         >
           <Icons.italic />
         </Button>
@@ -247,7 +256,7 @@ export function PageToolbar({
           label="Underline"
           keys="Mod-u"
           pressed={selection.marks.has('underline')}
-          onPress={() => run(toggleUnderline, 'DocFormat')}
+          onPress={() => run(toggleUnderline, 'format')}
         >
           <Icons.underline />
         </Button>
@@ -255,7 +264,7 @@ export function PageToolbar({
           label="Strikethrough"
           keys="Mod-Shift-x"
           pressed={selection.marks.has('strike')}
-          onPress={() => run(toggleStrike, 'DocFormat')}
+          onPress={() => run(toggleStrike, 'format')}
         >
           <Icons.strike />
         </Button>
@@ -311,7 +320,7 @@ export function PageToolbar({
           label="Bulleted list"
           keys="Mod-Shift-8"
           pressed={selection.list === 'bullet'}
-          onPress={() => run(toggleList('bullet'), 'DocBlockStyle')}
+          onPress={() => run(toggleList('bullet'), 'block')}
         >
           <Icons.bullet />
         </Button>
@@ -319,7 +328,7 @@ export function PageToolbar({
           label="Numbered list"
           keys="Mod-Shift-7"
           pressed={selection.list === 'numbered'}
-          onPress={() => run(toggleList('numbered'), 'DocBlockStyle')}
+          onPress={() => run(toggleList('numbered'), 'block')}
         >
           <Icons.numbered />
         </Button>
@@ -327,7 +336,7 @@ export function PageToolbar({
           label="To-do list"
           keys="Mod-Shift-9"
           pressed={selection.list === 'todo'}
-          onPress={() => run(toggleList('todo'), 'DocBlockStyle')}
+          onPress={() => run(toggleList('todo'), 'block')}
         >
           <Icons.todo />
         </Button>
@@ -386,7 +395,7 @@ export function PageToolbar({
                 label={s.label}
                 selected={selection.style === s.id}
                 onPick={() => {
-                  run(setBlockStyle(s.id), 'DocBlockStyle');
+                  run(setBlockStyle(s.id), 'block');
                   setOpen(null);
                 }}
               >
@@ -429,7 +438,7 @@ export function PageToolbar({
             accent={accent}
             current={open === 'color' ? selection.color : selection.highlight}
             onPick={(c) => {
-              run(open === 'color' ? setTextColor(c) : setHighlight(c), 'DocFormat');
+              run(open === 'color' ? setTextColor(c) : setHighlight(c), 'format');
               setOpen(null);
             }}
           />
@@ -440,7 +449,7 @@ export function PageToolbar({
           <LinkField
             initial={selection.link ?? ''}
             onApply={(href) => {
-              run(setLink(href), 'DocLink');
+              run(setLink(href), 'link');
               close();
             }}
             onRemove={
@@ -481,7 +490,7 @@ function InsertMenu({
   onDone: () => void;
 }) {
   const S = docSchema;
-  const blocks: { label: string; icon: ReactNode; make: () => void }[] = [
+  const blocks: { label: keyof typeof INSERT_EVENT; icon: ReactNode; make: () => void }[] = [
     {
       label: 'Divider',
       icon: <Icons.divider />,
@@ -523,7 +532,7 @@ function InsertMenu({
           label={b.label}
           onPick={() => {
             b.make();
-            track('Editor', 'Used', `Doc${b.label.replace(/\s/g, '')}`);
+            track('Element', 'Added', INSERT_EVENT[b.label]);
             onDone();
           }}
         >

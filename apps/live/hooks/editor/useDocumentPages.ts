@@ -18,7 +18,6 @@ import {
   type DocZoneWrap,
   type DocLookId,
   type DocStyle,
-  DOC_LOOKS,
   withDocStyleChanged,
   withDocumentPageCount,
   withZonesSettled,
@@ -56,6 +55,21 @@ export type DocumentPagesView = {
   stylePreview: { flow: string; style: DocStyle } | null;
   setStylePreview: (preview: { flow: string; style: DocStyle } | null) => void;
 };
+
+// Telemetry (docs/specs/007-editor/document-pages.md "Telemetry"): what was inserted, which look.
+const INSERT_EVENT = {
+  image: 'DocImage',
+  table: 'DocTable',
+  chart: 'DocChart',
+  drawing: 'DocDrawing',
+} as const;
+const LOOK_EVENT = {
+  clean: 'DocumentLookClean',
+  classic: 'DocumentLookClassic',
+  report: 'DocumentLookReport',
+  notebook: 'DocumentLookNotebook',
+  bold: 'DocumentLookBold',
+} as const;
 
 export type DocStyleChange = { look: DocLookId } | { patch: Partial<DocStyle> };
 
@@ -160,7 +174,7 @@ export function useDocumentPages(deps: {
       const d = latest.current;
       const handle = docHandleOf(flow);
       if (!handle || !d.canEdit || d.activeTab.locked === true) return;
-      track('Editor', 'Used', `Doc${what[0]!.toUpperCase()}${what.slice(1)}`);
+      track('Element', 'Added', INSERT_EVENT[what]);
       if (what === 'drawing') {
         const res = handle.insertZone(
           {
@@ -216,11 +230,7 @@ export function useDocumentPages(deps: {
     (flow: string, change: DocStyleChange) => {
       const d = latest.current;
       if (!d.canEdit || d.activeTab.locked === true) return;
-      track(
-        'Tab',
-        'Changed',
-        'look' in change ? `DocumentLook${DOC_LOOKS[change.look].label}` : 'DocumentStyle',
-      );
+      track('Tab', 'Changed', 'look' in change ? LOOK_EVENT[change.look] : 'DocumentStyle');
       setStylePreview(null);
       d.commitTabs((ts) =>
         ts.map((t) => (t.id === tabId ? withDocStyleChanged(t, flow, change) : t)),
