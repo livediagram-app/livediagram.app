@@ -25,7 +25,7 @@ import { ArrowGripsPortal } from './SelectionGripsLayer';
 import { ArrowFlowOverlays, useArrowFlow } from './arrow-flow';
 import { BRAND_600 } from './arrow-handle-style';
 import { useLongPress } from '@/hooks/ui/useLongPress';
-import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { useElementSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { pressLedger } from '@/lib/double-press';
 
 // The mask region + backdrop for route-behind (docs/specs/008-canvas/arrow-route-behind.md) and label
@@ -136,7 +136,7 @@ function ArrowViewImpl({
   fontFamily,
 }: ArrowViewProps) {
   // An arrow with no stroke of its own takes the canvas's ink (docs/specs/007-editor/live-app.md).
-  const surface = useCanvasSurface();
+  const surface = useElementSurface(arrow.id);
   const isLocked = arrow.locked === true || tabLocked;
   // Open the context menu beside the arrow rather than under the cursor /
   // finger, mirroring boxed elements: `elementMenuAnchor` owns the top-right

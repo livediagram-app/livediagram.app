@@ -23,6 +23,7 @@ import { useEffect, useRef, useState } from 'react';
 import { slideName, type Slide } from '@livediagram/document';
 
 import { ModePanel, type ModePanelProps } from '@/components/panels/ModePanel';
+import { PageSlidePicker } from '@/components/panels/PageSlidePicker';
 import { SlideRowMenu } from '@/components/panels/SlideRowMenu';
 import { SlideDeckSettingsPopover } from '@/components/panels/SlideDeckSettingsPopover';
 import { EyeOffIcon } from '@/components/panels/layers-panel-icons';
@@ -51,6 +52,7 @@ function SlideRow({
   slide,
   index,
   tabName,
+  pageName,
   isOpen,
   isDragging,
   renaming,
@@ -67,6 +69,8 @@ function SlideRow({
   index: number;
   /** Absent when the slide's tab has been deleted. */
   tabName: string | undefined;
+  // A page slide's page, named (when its tab is the one in Infographic mode); else "Page".
+  pageName?: string;
   isOpen: boolean;
   isDragging: boolean;
   renaming: boolean;
@@ -199,7 +203,11 @@ function SlideRow({
                 own does not say which tab they are on. A slide whose tab has
                 been deleted says so rather than showing a blank. */}
             {tabName ?? 'Tab deleted'} ·{' '}
-            {slide.elementIds.length === 1 ? '1 element' : `${slide.elementIds.length} elements`}
+            {slide.pageId
+              ? (pageName ?? 'Page')
+              : slide.elementIds.length === 1
+                ? '1 element'
+                : `${slide.elementIds.length} elements`}
             {slide.notes ? ' · notes' : ''}
             {slide.hidden ? ' · hidden' : ''}
           </span>
@@ -215,6 +223,7 @@ export function SlideDeckPanel({
   tabs,
   activeTabId,
   isReadOnly,
+  pages,
   ...placement
 }: {
   state: SlideDeckState;
@@ -223,6 +232,9 @@ export function SlideDeckPanel({
   tabs: { id: string; name: string }[];
   activeTabId: string;
   isReadOnly: boolean;
+  // The active tab's pages while it is shown in Infographic mode: slides are then added a page at
+  // a time (PageSlidePicker) rather than from a selection.
+  pages?: readonly { id: string; label: string }[];
 } & ModePanelProps) {
   const {
     deck,
@@ -233,6 +245,7 @@ export function SlideDeckPanel({
     runnable,
     thumbs,
     newSlideFromSelection,
+    newPageSlide,
     addSelectionToSlide,
     removeFromSlide,
     renameSlide,
@@ -381,6 +394,11 @@ export function SlideDeckPanel({
                   slide={slide}
                   index={i}
                   tabName={tabNames.get(slide.tabId)}
+                  pageName={
+                    slide.pageId && slide.tabId === activeTabId
+                      ? pages?.find((p) => p.id === slide.pageId)?.label
+                      : undefined
+                  }
                   isOpen={slide.id === openSlideId}
                   isDragging={draggingId === slide.id && moving}
                   renaming={renamingId === slide.id}
@@ -482,7 +500,9 @@ export function SlideDeckPanel({
           </label>
         ) : null}
 
-        {!isReadOnly ? (
+        {!isReadOnly && pages ? (
+          <PageSlidePicker pages={pages} onAdd={newPageSlide} />
+        ) : !isReadOnly ? (
           <button
             type="button"
             onClick={newSlideFromSelection}

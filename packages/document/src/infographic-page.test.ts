@@ -77,10 +77,13 @@ describe('infographic pages', () => {
     expect(infographicPageAt(pages, { x: 397 + INFOGRAPHIC_PAGE_GAP + 10, y: 0 })?.id).toBe('b');
   });
 
-  it('name a new page uniquely', () => {
-    expect(nextInfographicPageId([P('page-1')])).toBe('page-2');
-    expect(nextInfographicPageId([P('page-1'), P('page-3')])).toBe('page-4');
-    expect(nextInfographicPageId([P('page-2'), P('page-3')])).toBe('page-4');
+  it('name a new page uniquely, never reusing a page number', () => {
+    const pages = [P('page-1'), P('page-2')];
+    const id = nextInfographicPageId(pages);
+    expect(id).toMatch(/^page-[0-9a-f]{8}$/);
+    expect(pages.some((p) => p.id === id)).toBe(false);
+    // A deleted page-3's id never comes back for the next page (a page slide may still name it).
+    expect(nextInfographicPageId(pages)).not.toBe('page-3');
   });
 });
 

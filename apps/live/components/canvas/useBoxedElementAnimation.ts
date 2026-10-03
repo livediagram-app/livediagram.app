@@ -6,7 +6,7 @@ import {
   type BoxedElement,
 } from '@livediagram/document';
 import { isSvgRenderedShape } from '@/components/canvas/shape-svg-overlay';
-import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { useElementSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { useCanvasStill } from '@/components/canvas/CanvasStillContext';
 
 // The looping-animation slice (docs/specs/008-canvas/canvas-and-palette.md), lifted out of BoxedElementView:
@@ -18,7 +18,7 @@ import { useCanvasStill } from '@/components/canvas/CanvasStillContext';
 export function useBoxedElementAnimation(element: BoxedElement, textColor: string) {
   // The gradient animation blends the element's fill, which falls back to the
   // canvas's own ink when the element carries none (docs/specs/007-editor/live-app.md).
-  const surface = useCanvasSurface();
+  const surface = useElementSurface(element.id);
   // A still canvas (a whiteboard) shows a new element as drawn: no pop-in.
   const still = useCanvasStill();
   // A standalone text element has no fill or border, so the box-shadow / ring /

@@ -366,6 +366,8 @@ export { takesTypedLabel } from './element-types';
 export { DEFAULT_TAB_KIND, stampTabKind, tabKindOf, type TabKind } from './tab-kind';
 export * from './editor-mode';
 export * from './infographic-page';
+export * from './infographic-page-content';
+export * from './infographic-paginate';
 export { migrateWhiteboardKind } from './legacy-whiteboard-tab';
 export { downgradeLinks, upgradeLegacyLinks } from './legacy-links';
 

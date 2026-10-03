@@ -276,6 +276,24 @@ export const INFOGRAPHIC_PAGES = chart(
   { types: ['PageAdded', 'PageRemoved'] },
 );
 
+// An infographic page's own settings (docs/specs/007-editor/infographic-pages.md).
+export const INFOGRAPHIC_PAGE_SETUP = chart(
+  'Tab',
+  'Changed',
+  'Infographic Pages Set Up',
+  "An infographic page's size, name, background or pattern changed from its panel.",
+  { types: ['PageSize', 'PageRenamed', 'PageBackground', 'PagePattern'] },
+);
+
+// Building infographic pages: a layout placed, a page duplicated or moved.
+export const INFOGRAPHIC_PAGE_BUILDING = chart(
+  'Tab',
+  'Changed',
+  'Infographic Pages Built',
+  'A layout put onto an infographic page, a page duplicated or moved, or a tab laid out into pages.',
+  { types: ['PageLayout', 'PageDuplicated', 'PageMoved', 'PagesLaidOut'] },
+);
+
 export const WHITEBOARDS: MetricStack = {
   stack: true,
   title: 'Draw Mode',
@@ -287,6 +305,8 @@ export const WHITEBOARDS: MetricStack = {
     TAB_OPENS_IN,
     PAGE_ORIENTATION,
     INFOGRAPHIC_PAGES,
+    INFOGRAPHIC_PAGE_SETUP,
+    INFOGRAPHIC_PAGE_BUILDING,
     WHITEBOARD_PENS,
     WHITEBOARD_SETTINGS,
     WHITEBOARD_RECOGNITION,

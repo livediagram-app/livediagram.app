@@ -173,6 +173,7 @@ export const EXACT: Readonly<Record<string, string>> = {
     'A document was open with at least one other person live in the room, counted once per document per visit. The one event that counts collaboration happening rather than being offered.',
   'Element|Changed|Agenda':
     'Someone pressed a segment on an Agenda element, starting its timer and marking it as the current item.',
+  'Element|Changed|IconSwapped': 'Someone dropped an icon onto another icon, swapping its glyph.',
   'Element|Changed|Animation':
     'Someone gave a selected element a looping animation, or turned it off.',
   'Element|Changed|AnimationRepeat':
@@ -507,8 +508,17 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone set a tab to open in Draw mode for everyone, from the tab menu.',
   'Tab|Changed|PageAdded': 'Someone added a page to an infographic tab.',
   'Tab|Changed|PageRemoved': 'Someone deleted a page from an infographic tab.',
-  'Tab|Changed|PagePortrait': "Someone turned an infographic tab's A4 page to portrait.",
-  'Tab|Changed|PageLandscape': "Someone turned an infographic tab's A4 page to landscape.",
+  'Tab|Changed|PagePortrait': 'Someone turned an infographic page to portrait.',
+  'Tab|Changed|PageLandscape': 'Someone turned an infographic page to landscape.',
+  'Tab|Changed|PageSize': 'Someone changed an infographic page to another size.',
+  'Tab|Changed|PageBackground': "Someone changed an infographic page's background colour.",
+  'Tab|Changed|PagePattern': "Someone changed an infographic page's background pattern.",
+  'Tab|Changed|PageRenamed': 'Someone renamed an infographic page.',
+  'Tab|Changed|PageDuplicated': 'Someone duplicated an infographic page with its content.',
+  'Tab|Changed|PageMoved': 'Someone moved an infographic page left or right in its row.',
+  'Tab|Changed|PagesLaidOut':
+    "A tab's content was laid out into infographic pages as it entered Infographic mode.",
+  'Tab|Changed|PageLayout': 'Someone put a ready-made layout onto an infographic page.',
   'Tab|Changed|OpensInInfographic':
     'Someone set a tab to open in Infographic mode for everyone, from the tab menu.',
   'Tab|Changed|DefaultTextSize':
@@ -761,7 +771,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone clicked "Learn more" on the guest sign-in banner shown in the editor, opening the reasons-to-sign-in card.',
   'UI|Opened|SignInReasonsExplorer':
     'Someone clicked "Learn more" on the guest sign-in banner shown in the Explorer, opening the reasons-to-sign-in card.',
-  'UI|Opened|SlideDeck': 'Someone picked the Slide Deck tool, opening the deck-building panel.',
+  'UI|Opened|SlideDeck':
+    "Someone opened the deck-building panel: the Slide Deck tool, or an infographic's Slides button.",
   'UI|Opened|SlideElementDetail':
     'While presenting, someone clicked an element on the slide to read its detail, such as a note or comment, without leaving presentation mode.',
   'UI|Opened|TechGroup': "Someone opened a category inside the palette's Technology tab.",

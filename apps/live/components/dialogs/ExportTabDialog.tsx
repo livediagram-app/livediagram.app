@@ -5,7 +5,13 @@ import { FormatCard } from './FormatCard';
 import { FormatIcon } from './export-format-icons';
 import { TextExportPanel } from './TextExportPanel';
 import { ImageExportPanel } from './ImageExportPanel';
-import { isLayerVisible, tabLayers, mermaidFromTab, type Tab } from '@livediagram/document';
+import {
+  isLayerVisible,
+  tabLayers,
+  mermaidFromTab,
+  type LaidOutPage,
+  type Tab,
+} from '@livediagram/document';
 import {
   downloadBlob,
   exportTabAsPng,
@@ -15,7 +21,8 @@ import {
   tabToJsonText,
   tabToMarkdownText,
 } from '@/lib/export-tab';
-import { exportTabAsPdf } from '@/lib/export-tab-pdf';
+import { exportPagesAsPdf, exportTabAsPdf } from '@/lib/export-tab-pdf';
+import { ExportPagePicker } from './ExportPagePicker';
 import { tabToExcalidrawText } from '@/lib/excalidraw-export';
 import { ensureIconCatalogs } from '@/lib/icon-registry';
 import { track } from '@/lib/telemetry';
@@ -32,6 +39,13 @@ const EXPORT_LABEL: Record<Format, string> = {
   png: 'PNG',
   svg: 'SVG',
   pdf: 'PDF',
+};
+
+// An Infographic tab's pages exported (docs/specs/007-editor/infographic-pages.md "Telemetry").
+const INFOGRAPHIC_EXPORT_LABEL: Record<ImageFormat, string> = {
+  png: 'InfographicPNG',
+  svg: 'InfographicSVG',
+  pdf: 'InfographicPDF',
 };
 
 type ExportTabDialogProps = {
@@ -53,6 +67,9 @@ type ExportTabDialogProps = {
   // image options then leave out "Hidden layers", and hidden layers stay out
   // of the export as they stay off the canvas.
   offerHiddenLayers?: boolean;
+  // Infographic mode's pages (docs/specs/007-editor/infographic-pages.md "Export"): PDF exports
+  // every page, PNG and SVG one chosen page, each exactly its sheet. Absent elsewhere.
+  pages?: LaidOutPage[];
 };
 
 export type Format = 'markdown' | 'mermaid' | 'excalidraw' | 'pdf' | 'png' | 'svg' | 'file';
@@ -157,6 +174,7 @@ export function ExportTabDialog({
   scope = 'tab',
   imageContext,
   offerHiddenLayers = true,
+  pages,
 }: ExportTabDialogProps) {
   // null = the format grid; otherwise the picked format's sub-panel.
   const [active, setActive] = useState<Format | null>(null);
@@ -170,6 +188,9 @@ export function ExportTabDialog({
     Awaited<ReturnType<typeof loadTabImages>> | undefined
   >(undefined);
   const [previewReady, setPreviewReady] = useState(false);
+  // The page a PNG / SVG exports (and every preview shows), by its place in the row.
+  const [pageIndex, setPageIndex] = useState(0);
+  const page = pages?.[Math.min(pageIndex, pages.length - 1)];
 
   const isSelection = scope === 'selection';
   const suffix = isSelection ? ' - selection' : '';
@@ -211,8 +232,8 @@ export function ExportTabDialog({
   // three. Stable across renders so the panel can memoise on the toggles.
   const renderPreview = useCallback(
     (opts: { isometric: boolean; pattern: boolean; hiddenLayers: boolean }) =>
-      renderTabToSvg(tab, { ...opts, images: previewImages }),
-    [tab, previewImages],
+      renderTabToSvg(tab, { ...opts, images: previewImages, page }),
+    [tab, previewImages, page],
   );
 
   // Render + download an image format with the chosen options (docs/specs/010-palette/style-presets.md).
@@ -232,15 +253,21 @@ export function ExportTabDialog({
         : imageContext
           ? await loadTabImages(tab, imageContext)
           : undefined;
-      const renderOpts = { ...opts, images };
-      if (format === 'png') {
+      const renderOpts = { ...opts, images, page };
+      if (pages && format === 'pdf') {
+        downloadBlob(await exportPagesAsPdf(tab, pages, renderOpts), `${baseName}.pdf`);
+      } else if (format === 'png') {
         downloadBlob(await exportTabAsPng(tab, renderOpts), `${baseName}.png`);
       } else if (format === 'svg') {
         downloadBlob(await exportTabAsSvg(tab, renderOpts), `${baseName}.svg`);
       } else {
         downloadBlob(await exportTabAsPdf(tab, renderOpts), `${baseName}.pdf`);
       }
-      track('Document', 'Exported', EXPORT_LABEL[format]);
+      track(
+        'Document',
+        'Exported',
+        pages ? INFOGRAPHIC_EXPORT_LABEL[format] : EXPORT_LABEL[format],
+      );
       onClose();
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Export failed.');
@@ -285,21 +312,32 @@ export function ExportTabDialog({
             onBack={() => setActive(null)}
           />
         ) : active ? (
-          <ImageExportPanel
-            label={activeCard!.title}
-            busy={busy}
-            error={error}
-            hasHiddenLayers={
-              offerHiddenLayers && tabLayers(tab.layers).some((l) => !isLayerVisible(l))
-            }
-            renderPreview={renderPreview}
-            previewReady={previewReady}
-            onExport={(opts) => void runImageExport(active as ImageFormat, opts)}
-            onBack={() => {
-              setError(null);
-              setActive(null);
-            }}
-          />
+          <>
+            {pages && page ? (
+              <ExportPagePicker
+                pages={pages}
+                page={page}
+                allPages={active === 'pdf'}
+                onPick={setPageIndex}
+              />
+            ) : null}
+            <ImageExportPanel
+              label={activeCard!.title}
+              pageExport={!!pages}
+              busy={busy}
+              error={error}
+              hasHiddenLayers={
+                offerHiddenLayers && tabLayers(tab.layers).some((l) => !isLayerVisible(l))
+              }
+              renderPreview={renderPreview}
+              previewReady={previewReady}
+              onExport={(opts) => void runImageExport(active as ImageFormat, opts)}
+              onBack={() => {
+                setError(null);
+                setActive(null);
+              }}
+            />
+          </>
         ) : (
           <div className="grid grid-cols-3 gap-3">
             {CARDS.map((c) => (

@@ -20,6 +20,7 @@ export function ImageExportPanel({
   previewReady,
   onExport,
   onBack,
+  pageExport = false,
 }: {
   // The picked format's display name, e.g. 'PNG'.
   label: string;
@@ -38,6 +39,9 @@ export function ImageExportPanel({
   // rasteriser + telemetry; this panel just collects the options.
   onExport: (opts: { isometric: boolean; pattern: boolean; hiddenLayers: boolean }) => void;
   onBack: () => void;
+  // An Infographic page export (docs/specs/007-editor/infographic-pages.md "Export"): the page is
+  // its own background and is never tilted, so neither the isometric nor the pattern toggle shows.
+  pageExport?: boolean;
 }) {
   // Isometric export (docs/specs/008-canvas/isometric-view.md / 48): tilt the rendered image into the editor's
   // isometric projection. Off by default — the standard export is flat top-down.
@@ -87,53 +91,57 @@ export function ImageExportPanel({
           overlay button behind the content (the card stays one click target,
           as every settings row in the editor is) and the content sits above
           it, click-through except for the `?` itself. */}
-      <div className="relative flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white px-3 py-2.5 transition hover:border-brand-300 hover:bg-brand-50/40 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/10">
-        <button
-          type="button"
-          onClick={() => {
-            // Fire before the flip so an opt-out still reaches the wire.
-            track('UI', 'Toggled', 'IsometricExport');
-            setIsometric((v) => !v);
-          }}
-          aria-pressed={isometric}
-          // The label lives outside this button (so the `?` can sit in it),
-          // so the button names itself.
-          aria-label="Isometric view"
-          className="absolute inset-0 cursor-pointer rounded-lg"
-        />
-        <span className="pointer-events-none relative flex flex-col">
-          <span className="flex items-center gap-0.5 text-xs font-semibold text-slate-900 dark:text-slate-100">
-            Isometric view
-            <HelpArticleLink article="isometricMode" className="pointer-events-auto" />
-          </span>
-          <span className="mt-0.5 text-[11px] leading-snug text-slate-500 dark:text-slate-400">
-            Tilt the export into the isometric projection.
-          </span>
-        </span>
-        <span className="pointer-events-none relative">
-          <ToggleSwitch presentational checked={isometric} label="Export isometric view" />
-        </span>
-      </div>
-      {/* Background-pattern toggle. */}
-      <button
-        type="button"
-        onClick={() => {
-          track('UI', 'Toggled', 'PatternExport');
-          setPattern((v) => !v);
-        }}
-        aria-pressed={pattern}
-        className="mt-2 flex w-full cursor-pointer items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-left transition hover:border-brand-300 hover:bg-brand-50/40 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/10"
-      >
-        <span className="flex flex-col">
-          <span className="text-xs font-semibold text-slate-900 dark:text-slate-100">
-            Background pattern
-          </span>
-          <span className="mt-0.5 text-[11px] leading-snug text-slate-500 dark:text-slate-400">
-            Paint the tab's grid / dots / texture behind what's on the canvas.
-          </span>
-        </span>
-        <ToggleSwitch presentational checked={pattern} label="Export background pattern" />
-      </button>
+      {pageExport ? null : (
+        <>
+          <div className="relative flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white px-3 py-2.5 transition hover:border-brand-300 hover:bg-brand-50/40 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/10">
+            <button
+              type="button"
+              onClick={() => {
+                // Fire before the flip so an opt-out still reaches the wire.
+                track('UI', 'Toggled', 'IsometricExport');
+                setIsometric((v) => !v);
+              }}
+              aria-pressed={isometric}
+              // The label lives outside this button (so the `?` can sit in it),
+              // so the button names itself.
+              aria-label="Isometric view"
+              className="absolute inset-0 cursor-pointer rounded-lg"
+            />
+            <span className="pointer-events-none relative flex flex-col">
+              <span className="flex items-center gap-0.5 text-xs font-semibold text-slate-900 dark:text-slate-100">
+                Isometric view
+                <HelpArticleLink article="isometricMode" className="pointer-events-auto" />
+              </span>
+              <span className="mt-0.5 text-[11px] leading-snug text-slate-500 dark:text-slate-400">
+                Tilt the export into the isometric projection.
+              </span>
+            </span>
+            <span className="pointer-events-none relative">
+              <ToggleSwitch presentational checked={isometric} label="Export isometric view" />
+            </span>
+          </div>
+          {/* Background-pattern toggle. */}
+          <button
+            type="button"
+            onClick={() => {
+              track('UI', 'Toggled', 'PatternExport');
+              setPattern((v) => !v);
+            }}
+            aria-pressed={pattern}
+            className="mt-2 flex w-full cursor-pointer items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-left transition hover:border-brand-300 hover:bg-brand-50/40 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/10"
+          >
+            <span className="flex flex-col">
+              <span className="text-xs font-semibold text-slate-900 dark:text-slate-100">
+                Background pattern
+              </span>
+              <span className="mt-0.5 text-[11px] leading-snug text-slate-500 dark:text-slate-400">
+                Paint the tab's grid / dots / texture behind what's on the canvas.
+              </span>
+            </span>
+            <ToggleSwitch presentational checked={pattern} label="Export background pattern" />
+          </button>
+        </>
+      )}
       {/* Hidden-layers toggle (docs/specs/006-document/layers.md) — only offered when a layer is
           actually hidden, alongside the other image options. */}
       {hasHiddenLayers ? (

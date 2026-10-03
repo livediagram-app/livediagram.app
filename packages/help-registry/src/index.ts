@@ -197,7 +197,7 @@ export const categories: Category[] = [
     title: 'Canvas',
     description:
       'Master the infinite canvas where diagrams come together: placing, selecting, linking, annotating, noting, layering, rotating, animating, shadowing, locking, undoing, theming, and templating.',
-    articleCount: 24,
+    articleCount: 25,
     kind: 'feature',
   },
   {
@@ -1222,6 +1222,37 @@ export const articles: Article[] = [
       'draw mode drawing mode diagram mode editor mode switch modes mode switch toggle shift+d shift d opens in open in default mode per tab whiteboards whiteboard white board chalkboard blackboard sketch draw drawing freehand hand drawn ink pen pens marker stylus apple pencil surface pen touch finger palm rejection pinch zoom dock toolbar eraser rubber partial erase stroke erase sticky text shapes shape recognition recognise recognize snap clean up background plain dots dotted grid graph microsoft whiteboard dark mode chalk colour color width thickness path tool vector pen tool bezier curve curves anchor point points node nodes handle handles edit points corner smooth mirrored aligned illustrator figma undo redo settings cog more shapes shape search find a shape flowchart pin pinned unpin favourite shapes frequent most used simple mode dock mode colour picker color picker custom colour hex eyedropper eye dropper your colours remove colour contrast dock position top bottom move the dock tablet ipad snap colours snap to stock colours stock colors custom colors convert colours adaptive nearest colour',
     category: 'Canvas',
     categorySlug: 'canvas',
+  },
+  {
+    slug: 'infographics',
+    title: 'Infographics',
+    description:
+      'Work on a tab as pages: sizes for print and social, backgrounds, layouts, then export or present.',
+    keywords:
+      'infographic infographics infographic mode poster one pager one-pager flyer handout report page pages sheet sheets a4 a3 letter us letter square social post instagram linkedin story stories slide portrait landscape orientation size page size background backgrounds colour color gradient pattern dots grid lines theme dark page name rename duplicate move reorder drag delete add page snap margins margin fit resize scale lay out into pages diagram to infographic convert mind map editor mode switch modes opens in experimental',
+    category: 'Canvas',
+    categorySlug: 'canvas',
+  },
+  {
+    slug: 'infographic-layouts',
+    title: 'Infographic Layouts',
+    description:
+      'Twenty-one ready-made pages in four categories, previewed on your page as you hover.',
+    keywords:
+      'layout layouts template templates page template start from a layout ready made starter preview hover replace title page big number key stats statistics process steps timeline milestones comparison before after chart story top tips quote testimonial team people facts grid checklist event invitation poster',
+    category: 'Canvas',
+    categorySlug: 'canvas/infographics',
+    parentSlug: 'infographics',
+  },
+  {
+    slug: 'exporting-infographics',
+    title: 'Exporting and Presenting Infographics',
+    description: 'Every page as a print-ready PDF, one page as an image, and pages as slides.',
+    keywords:
+      'export download pdf png svg image print printable pages page infographic slides slide deck present presentation add as slide page slide deck from pages',
+    category: 'Canvas',
+    categorySlug: 'canvas/infographics',
+    parentSlug: 'infographics',
   },
   {
     slug: 'using-tabs',

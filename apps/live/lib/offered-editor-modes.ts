@@ -6,7 +6,7 @@
 import { useSyncExternalStore } from 'react';
 import { EDITOR_MODES, type EditorMode } from '@livediagram/document';
 
-// The modes that stay behind a Settings switch, off by default.
+// The modes behind a Settings switch (on by default; switching it off hides the mode).
 export const EXPERIMENTAL_EDITOR_MODES: readonly EditorMode[] = ['infographic'];
 
 export function offeredModesFor(infographicEnabled: boolean): readonly EditorMode[] {
@@ -15,7 +15,7 @@ export function offeredModesFor(infographicEnabled: boolean): readonly EditorMod
     : EDITOR_MODES.filter((m) => !EXPERIMENTAL_EDITOR_MODES.includes(m));
 }
 
-let offered = offeredModesFor(false);
+let offered = offeredModesFor(true);
 const listeners = new Set<() => void>();
 
 export function setInfographicModeEnabled(enabled: boolean): void {

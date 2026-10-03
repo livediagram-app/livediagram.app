@@ -729,7 +729,13 @@ export function Canvas(props: CanvasProps) {
         {canvasTool === 'isometric' ? <IsometricDepthLayer elements={elements} /> : null}
         {/* Infographic mode's A4 pages, under every element (InfographicPages). */}
         {props.infographicPages ? (
-          <InfographicPages view={props.infographicPages} zoom={viewportZoom} />
+          <InfographicPages
+            view={props.infographicPages}
+            zoom={viewportZoom}
+            // Zen, presenting and the isometric view show the sheets alone: no labels, cogs,
+            // layout invites or add button.
+            bare={props.zenMode === true || canvasTool === 'isometric'}
+          />
         ) : null}
         <CanvasStillProvider still={props.editorMode === 'draw'}>
           {/* The zoom reaches only the counter-scaled parts of each element

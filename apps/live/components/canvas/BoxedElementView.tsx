@@ -40,7 +40,7 @@ import { ReactionBurst } from '@/components/canvas/ReactionBurst';
 import { ChairView } from '@/components/canvas/collab/ChairView';
 import { isCssNativeBorderStyle } from '@/components/canvas/border-css';
 import { describeVariant, editingLook } from '@/components/canvas/element-variant';
-import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { useElementSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { BadgeStrip, RemoteSelectorsStrip } from '@/components/canvas/element-badges';
 import { AnnotationHoverNote } from '@/components/canvas/AnnotationMarker';
 import { useBoxedElementGestures } from '@/components/canvas/useBoxedElementGestures';
@@ -150,7 +150,7 @@ function BoxedElementViewImpl({
   // Which paper this element sits on, for every colour it doesn't carry
   // itself (docs/specs/007-editor/live-app.md): a Default tab stores no element colours at all, so on
   // a dark canvas this is where the greys come from.
-  const surface = useCanvasSurface();
+  const surface = useElementSurface(element.id);
   const isLocked = element.locked === true || tabLocked;
   // Concurrent-selection lock (docs/specs/007-editor/live-app.md): another participant has this
   // element selected (remoteSelectors already excludes our own

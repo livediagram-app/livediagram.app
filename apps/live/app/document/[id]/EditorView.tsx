@@ -227,6 +227,9 @@ export function EditorView() {
     !pendingDraw &&
     // Draw mode's dock is its own hint (docs/specs/023-draw-mode/draw-mode.md).
     !drawMode &&
+    // An empty infographic page invites a layout in its own title bar
+    // (docs/specs/007-editor/infographic-pages.md).
+    ctx.editorMode.mode !== 'infographic' &&
     activeTab.elements.length === 0;
   // The primary selection's flavour for the modifier hint's no-drag messages.
   const shiftSelected = selectedId ? activeTab.elements.find((el) => el.id === selectedId) : null;

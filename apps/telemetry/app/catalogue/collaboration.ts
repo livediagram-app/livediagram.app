@@ -724,9 +724,13 @@ export const PRESENTATIONS_CLOSED = chart(
   { types: ['Presentation'] },
 );
 
-export const SLIDES_ADDED = chart('UI', 'Added', 'Slides Added', 'A slide added to a deck.', {
-  types: ['Slide'],
-});
+export const SLIDES_ADDED = chart(
+  'UI',
+  'Added',
+  'Slides Added',
+  'A slide added to a deck: from a selection, or an infographic page as a slide.',
+  { types: ['Slide', 'PageSlide'] },
+);
 
 export const SLIDES_REMOVED = chart(
   'UI',

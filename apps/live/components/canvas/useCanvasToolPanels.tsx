@@ -1,5 +1,7 @@
 'use client';
 
+import { pageLabel } from '@livediagram/document';
+import type { DockAnchor } from '@/hooks/canvas/useDockPopovers';
 import type { ReactNode } from 'react';
 import type { useCornerDocking } from '@/hooks/ui/useCornerDocking';
 import { AvatarPanel } from '@/components/panels/AvatarPanel';
@@ -25,8 +27,11 @@ export function useCanvasToolPanels({
   chromeHidden,
   stackBelowY,
   panelWiringFor,
+  slidesPopover,
 }: {
   props: CanvasChromeProps;
+  // The Slide Deck as a popover over its cluster button (Infographic mode), while open.
+  slidesPopover?: { anchor: DockAnchor | undefined; onClose: () => void } | null;
   chromeHidden: boolean;
   // undefined once corner docking owns stacking; otherwise the measured
   // offset that keeps these panels clear of the palette above them.
@@ -197,17 +202,27 @@ export function useCanvasToolPanels({
   // whose tool does not itself change the canvas — picking it opens the
   // workbench, and Start is a deliberate second act.
   const slideDeckEl =
-    !chromeHidden && canvasTool === 'slide-deck' && slideDeck ? (
+    !chromeHidden && slideDeck && (canvasTool === 'slide-deck' || slidesPopover) ? (
       <SlideDeckPanel
         state={slideDeck}
         tabs={tabSummaries}
         activeTabId={activeTabId ?? ''}
         isReadOnly={readOnly}
+        pages={props.infographicPages?.pages.map((p) => ({
+          id: p.id,
+          label: pageLabel(p, p.index, Math.max(2, props.infographicPages!.pages.length)),
+        }))}
         position={slideDeckWiring.position}
         stackBelowY={stackBelowY}
         onMoveTo={(x, y) => onMoveSlideDeckPanel?.(x, y)}
         onReset={slideDeckWiring.onReset}
-        dock={slideDeckWiring.dock}
+        dock={slidesPopover ? undefined : slideDeckWiring.dock}
+        // Over the Slides cluster button (Infographic mode): a popover, closed by an outside press.
+        asPopover={!!slidesPopover}
+        popoverOpen={!!slidesPopover}
+        popoverAnchor={slidesPopover?.anchor}
+        dismissOnOutside={!!slidesPopover}
+        onPopoverClose={slidesPopover?.onClose}
       />
     ) : null;
 

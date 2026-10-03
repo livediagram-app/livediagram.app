@@ -4,7 +4,9 @@ import { useMemo } from 'react';
 import {
   r2,
   resolveSlide,
-  slideBounds,
+  slideFrame,
+  infographicPagesOf,
+  layOutInfographicPages,
   arrowLabelFontStack,
   arrowLabelPass,
   svgArrow,
@@ -14,6 +16,7 @@ import {
 } from '@livediagram/document';
 import { resolveIconArtLoaded, resolveStickerArtLoaded } from '@/lib/icon-registry';
 import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
+import { pageExportFrame } from '@/lib/export-page';
 
 // Per-slide preview markup for the Slide Deck panel's rows (docs/specs/012-collaboration/presentation-mode.md), from
 // the SAME headless renderer the Map, the exports and the Layers panel's own
@@ -48,11 +51,17 @@ export function useSlideThumbnails(deck: Deck, tabs: Tab[]): Map<string, SlideTh
       const tab = byId.get(slide.tabId);
       if (!tab) continue;
       const elements = resolveSlide(slide, tab);
-      const bounds = slideBounds(elements);
+      // A page slide is its page: framed to it, painted on its background.
+      const bounds = slideFrame(slide, tab);
       if (!bounds) continue;
       // Boxed first, then arrows, matching the canvas's own paint order so a
       // connector never disappears under the box it points at.
       const parts: string[] = [];
+      const page = slide.pageId
+        ? layOutInfographicPages(infographicPagesOf(tab)).find((p) => p.id === slide.pageId)
+        : undefined;
+      if (page)
+        parts.push(pageExportFrame(page, { idPrefix: `lvd-slide-${slide.id}` }).backgroundSvg);
       for (const el of elements) {
         if (el.type !== 'arrow') {
           parts.push(

@@ -19,6 +19,8 @@ import {
   exportFontIds,
   visibleLayerElements,
   type BoxedElement,
+  type Element,
+  type LaidOutPage,
   type Tab,
 } from '@livediagram/document';
 // Shared SVG render helpers (docs/specs/015-api/mcp-server.md §5): moved into the document package so the
@@ -53,6 +55,7 @@ import {
   ISO_TILT_DEG,
 } from './isometric';
 import { drawBoxed, drawBoxedExtrusion } from './export-tab-canvas-draw';
+import { EXPORT_PAPER, pageExportFrame } from './export-page';
 import type { ExportImageMap } from './export-tab-images';
 
 // Shared options for the image exports (PNG / SVG / PDF). `isometric` tilts
@@ -74,6 +77,10 @@ export type ImageExportOpts = {
   // Google stylesheet by @import, which only a browser opening the file
   // directly will honour.
   fontCss?: string;
+  // One Infographic page to export (docs/specs/007-editor/infographic-pages.md "Export"): the
+  // frame becomes exactly its sheet, painted with its background; isometric and the tab's own
+  // backdrop do not apply.
+  page?: LaidOutPage;
 };
 
 // Re-export so callers (the export dialog) get the loader from the same
@@ -143,28 +150,35 @@ export async function renderTabToCanvas(
   opts: { scale?: number } & ImageExportOpts = {},
 ): Promise<HTMLCanvasElement> {
   const scale = opts.scale ?? 2; // default 2× for crisp output
+  const frame = opts.page ? pageExportFrame(opts.page) : null;
+  const reaches = (el: Element) => !frame || frame.reaches(el, tab.elements);
   // Hidden layers drop out of the export (bounds included) unless the
   // dialog's include-hidden option is on (docs/specs/006-document/layers.md). `ordered` is the
   // paint order — layer bands bottom -> top, frames first per band —
   // with each element carrying its band's opacity factor.
-  const els = opts.hiddenLayers ? tab.elements : visibleLayerElements(tab.elements, tab.layers);
+  const els = (
+    opts.hiddenLayers ? tab.elements : visibleLayerElements(tab.elements, tab.layers)
+  ).filter(reaches);
   const ordered = layerBands(tab.elements, tab.layers, {
     includeHidden: opts.hiddenLayers,
-  }).flatMap((band) => band.elements.map((el) => ({ el, alpha: layerOpacityOf(band.layer) })));
+  }).flatMap((band) =>
+    band.elements.filter(reaches).map((el) => ({ el, alpha: layerOpacityOf(band.layer) })),
+  );
   // Every caption laid out once, as the canvas and the SVG export do
   // (docs/specs/008-canvas/arrow-labels.md); the bounds include the plates.
   const labels = arrowLabelPass(tab.elements, {
     fontFamilyOf: (a) => arrowLabelFontStack(a, tab.font),
   });
-  const bounds = contentBounds(els, labels);
+  const bounds = frame ? frame.bounds : contentBounds(els, labels);
+  const pad = frame ? 0 : EXPORT_PADDING;
   // Isometric export (docs/specs/008-canvas/isometric-view.md / 48): project the flat content through the iso
   // affine and size the canvas to the tilted footprint so nothing clips. The
   // matrix is applied to the drawing context after positioning, so every
   // element / arrow drawer stays in plain canvas coordinates.
-  const iso = opts.isometric ? isoCanvasMatrix() : null;
+  const iso = opts.isometric && !frame ? isoCanvasMatrix() : null;
   const draw = iso ? isoProjectBounds(bounds, iso) : bounds;
-  const w = (draw.w + EXPORT_PADDING * 2) * scale;
-  const h = (draw.h + EXPORT_PADDING * 2) * scale;
+  const w = (draw.w + pad * 2) * scale;
+  const h = (draw.h + pad * 2) * scale;
   const canvas = document.createElement('canvas');
   canvas.width = Math.max(1, Math.floor(w));
   canvas.height = Math.max(1, Math.floor(h));
@@ -178,10 +192,21 @@ export async function renderTabToCanvas(
   // Elements that carry no colours of their own are drawn in the ink of the
   // paper being exported onto (docs/specs/007-editor/live-app.md), so a dark canvas exports dark-canvas
   // elements rather than pale ones.
-  const surface = canvasSurface(bgColor);
-  ctx.fillStyle = bgColor;
+  const surface = frame ? frame.surface : canvasSurface(bgColor);
+  ctx.fillStyle = frame ? EXPORT_PAPER : bgColor;
   ctx.fillRect(0, 0, w / scale, h / scale);
-  const bg = backgroundPatternDefs(tab, opts);
+  const bg = frame ? null : backgroundPatternDefs(tab, opts);
+  if (frame) {
+    const { x, y, w: fw, h: fh } = frame.bounds;
+    const svg =
+      `<svg xmlns="http://www.w3.org/2000/svg" width="${Math.floor(w)}" height="${Math.floor(h)}" viewBox="${r2(x)} ${r2(y)} ${r2(fw)} ${r2(fh)}">` +
+      `${frame.backgroundSvg}</svg>`;
+    try {
+      ctx.drawImage(await svgToImage(svg), 0, 0, w / scale, h / scale);
+    } catch {
+      // The paper behind it is already down: a failed paint must never abort the export.
+    }
+  }
   if (bg) {
     const wu = w / scale;
     const hu = h / scale;
@@ -197,7 +222,7 @@ export async function renderTabToCanvas(
   }
   // Position the (projected) content min-corner at the padding offset, then
   // apply the iso projection so element coords map onto the tilted plane.
-  ctx.translate(EXPORT_PADDING - draw.x, EXPORT_PADDING - draw.y);
+  ctx.translate(pad - draw.x, pad - draw.y);
   if (iso) ctx.transform(iso.a, iso.b, iso.c, iso.d, 0, 0);
 
   // Isometric: paint every element's extrusion column first, so all the
@@ -267,10 +292,10 @@ export async function renderTabToCanvas(
   // consecutive arrows becomes one full-size layer. Endpoint resolution keeps
   // the FULL list, so an arrow pinned to a hidden element still lands where
   // the canvas draws it.
-  const ax = bounds.x - EXPORT_PADDING;
-  const ay = bounds.y - EXPORT_PADDING;
-  const aw = bounds.w + EXPORT_PADDING * 2;
-  const ah = bounds.h + EXPORT_PADDING * 2;
+  const ax = bounds.x - pad;
+  const ay = bounds.y - pad;
+  const aw = bounds.w + pad * 2;
+  const ah = bounds.h + pad * 2;
   let arrowRun: string[] = [];
   const flushArrows = async () => {
     if (arrowRun.length === 0) return;
@@ -374,8 +399,14 @@ function svgBoxedExtrusion(el: BoxedElement, surface: CanvasSurface): string {
 export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
   // Same hidden-layer + band-order + band-opacity rules as the canvas
   // renderer above; each band wraps in a <g opacity> when dimmed.
-  const els = opts.hiddenLayers ? tab.elements : visibleLayerElements(tab.elements, tab.layers);
-  const bands = layerBands(tab.elements, tab.layers, { includeHidden: opts.hiddenLayers });
+  const frame = opts.page ? pageExportFrame(opts.page) : null;
+  const reaches = (el: Element) => !frame || frame.reaches(el, tab.elements);
+  const els = (
+    opts.hiddenLayers ? tab.elements : visibleLayerElements(tab.elements, tab.layers)
+  ).filter(reaches);
+  const bands = layerBands(tab.elements, tab.layers, { includeHidden: opts.hiddenLayers }).map(
+    (band) => ({ ...band, elements: band.elements.filter(reaches) }),
+  );
   const labels = arrowLabelPass(tab.elements, {
     fontFamilyOf: (a) => arrowLabelFontStack(a, tab.font),
   });
@@ -383,25 +414,28 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
     layerOpacity < 1
       ? `<g opacity="${r2(layerOpacity)}">${inner.join('\n')}</g>`
       : inner.join('\n');
-  const bounds = contentBounds(els, labels);
+  const bounds = frame ? frame.bounds : contentBounds(els, labels);
+  const pad = frame ? 0 : EXPORT_PADDING;
   // Isometric export: the viewBox spans the projected (tilted) footprint and a
   // <g matrix> applies the iso projection to the content, while the background
   // rect stays in viewBox space so it fills the whole frame.
-  const iso = opts.isometric ? isoCanvasMatrix() : null;
+  const iso = opts.isometric && !frame ? isoCanvasMatrix() : null;
   const draw = iso ? isoProjectBounds(bounds, iso) : bounds;
-  const vbX = draw.x - EXPORT_PADDING;
-  const vbY = draw.y - EXPORT_PADDING;
-  const vbW = draw.w + EXPORT_PADDING * 2;
-  const vbH = draw.h + EXPORT_PADDING * 2;
+  const vbX = draw.x - pad;
+  const vbY = draw.y - pad;
+  const vbW = draw.w + pad * 2;
+  const vbH = draw.h + pad * 2;
   const bgColor = tab.backgroundColor ?? EXPORT_BG;
   // See the PNG path: unpainted elements take the exported paper's ink.
-  const surface = canvasSurface(bgColor);
+  const surface = frame ? frame.surface : canvasSurface(bgColor);
   const parts: string[] = [];
   parts.push(
     `<svg xmlns="http://www.w3.org/2000/svg" width="${r2(vbW)}" height="${r2(vbH)}" viewBox="${r2(vbX)} ${r2(vbY)} ${r2(vbW)} ${r2(vbH)}">`,
   );
   parts.push(
-    `<rect x="${r2(vbX)}" y="${r2(vbY)}" width="${r2(vbW)}" height="${r2(vbH)}" fill="${xmlEscape(bgColor)}"/>`,
+    frame
+      ? frame.backgroundSvg
+      : `<rect x="${r2(vbX)}" y="${r2(vbY)}" width="${r2(vbW)}" height="${r2(vbH)}" fill="${xmlEscape(bgColor)}"/>`,
   );
   // Typefaces (docs/specs/004-interface-design/fonts.md): the real bytes when the caller pre-fetched them
   // (a download, which must stand alone), else a declaration of the Google
@@ -415,7 +449,7 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
   if (shadowDefs) parts.push(shadowDefs);
   // Backdrop pattern (docs/specs/010-palette/style-presets.md) over the colour, flat (never tilted — the
   // editor's backdrop doesn't tilt in isometric either).
-  const bg = backgroundPatternDefs(tab, opts);
+  const bg = frame ? null : backgroundPatternDefs(tab, opts);
   if (bg) {
     parts.push(bg.defs);
     parts.push(

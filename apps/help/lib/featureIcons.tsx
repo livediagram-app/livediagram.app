@@ -340,6 +340,32 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M9 15.5 7.5 21M15 15.5l1.5 5.5" />
     </Glyph>
   ),
+  // A page with a title and a bar chart: the poster an infographic becomes.
+  infographics: (
+    <Glyph>
+      <rect x="5" y="2.5" width="14" height="19" rx="1.5" />
+      <path d="M8 6.5h8" />
+      <path d="M9 17.5v-4M12 17.5v-6.5M15 17.5v-2.5" />
+    </Glyph>
+  ),
+  // A page split into ready-made blocks: a layout to start from.
+  'infographic-layouts': (
+    <Glyph>
+      <rect x="5" y="2.5" width="14" height="19" rx="1.5" />
+      <rect x="7.5" y="5" width="9" height="4" rx="0.5" />
+      <rect x="7.5" y="11" width="4" height="4" rx="0.5" />
+      <rect x="12.5" y="11" width="4" height="4" rx="0.5" />
+      <path d="M7.5 18h9" />
+    </Glyph>
+  ),
+  // Two pages, the front one heading out: every page as its own sheet.
+  'exporting-infographics': (
+    <Glyph>
+      <path d="M8 5.5V3.5a1 1 0 011-1h9.5a1 1 0 011 1v13a1 1 0 01-1 1H16" />
+      <rect x="4.5" y="6" width="11.5" height="15.5" rx="1" />
+      <path d="M10.25 10.5v6.5M7.75 14.5l2.5 2.5 2.5-2.5" />
+    </Glyph>
+  ),
   'using-tabs': (
     <Glyph>
       <Prims prims={lucidePanelsTopLeft} />

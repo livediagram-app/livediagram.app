@@ -1,7 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { useCallback, useMemo, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, type ReactNode } from 'react';
 import { useStableCallbacks } from '@/hooks/ui/useStableCallbacks';
 import type { useCornerDocking } from '@/hooks/ui/useCornerDocking';
 import type { PanelId } from '@/lib/panel-layout';
@@ -79,6 +79,7 @@ export function useCanvasChromePanels({
   // rendered outside the corner layer (then its panelEl is null).
   toolbarClusterEls: ReactNode;
   collaborateEl: ReactNode;
+  slidesPopoverEl: ReactNode;
   // True when Layers opens as a popover over its cluster button
   // (Toolbar, and zen).
   clusterPopovers: boolean;
@@ -261,11 +262,20 @@ export function useCanvasChromePanels({
   // The six tool-config panels (avatar / laser / spotlight / eraser / format /
   // slide deck), see useCanvasToolPanels. They share one contract: on screen
   // only while their own tool is active.
+  // The Slides popover belongs to Infographic mode's button: leaving the mode (Shift+D, a tab
+  // switch) closes it rather than leaving it floating with no button under it.
+  const slidesOpen = activeDockPanel === 'slides' && !!props.infographicPages;
+  useEffect(() => {
+    if (activeDockPanel === 'slides' && !props.infographicPages) closeDockPanel();
+  }, [activeDockPanel, props.infographicPages, closeDockPanel]);
   const { avatarEl, laserEl, spotlightEl, eraserEl, formatEl, slideDeckEl } = useCanvasToolPanels({
     props,
     chromeHidden,
     stackBelowY,
     panelWiringFor,
+    slidesPopover: slidesOpen
+      ? { anchor: activeDockAnchor ?? undefined, onClose: closeDockPanel }
+      : null,
   });
 
   const explorerEl = zenMode ? null : (
@@ -447,9 +457,13 @@ export function useCanvasChromePanels({
     [elements, props.tabLayers],
   );
   const minimapEl =
-    !chromeHidden && !isMobile && mapEnabled && elements.length >= 4 ? (
+    !chromeHidden &&
+    !isMobile &&
+    mapEnabled &&
+    (elements.length >= 4 || (props.infographicPages?.pages.length ?? 0) > 0) ? (
       <Minimap
         elements={mapElements}
+        pages={props.infographicPages?.pages}
         tabFont={props.tabFont}
         viewportOffset={props.viewportOffset}
         viewportZoom={viewportZoom}
@@ -526,7 +540,8 @@ export function useCanvasChromePanels({
     laser: laserEl,
     spotlight: spotlightEl,
     eraser: eraserEl,
-    'slide-deck': slideDeckEl,
+    // Over its cluster button (Infographic mode) it renders beside the corner layer, like Collaborate.
+    'slide-deck': slidesOpen ? null : slideDeckEl,
     format: formatEl,
   };
   return {
@@ -535,6 +550,7 @@ export function useCanvasChromePanels({
     // Toolbar's cluster popovers, rendered beside the corner layer rather than
     // in it (see panelEls).
     collaborateEl,
+    slidesPopoverEl: slidesOpen ? slideDeckEl : null,
     toolbarClusterEls: toolbarActive ? layersEl : null,
     clusterPopovers,
     paletteTint,

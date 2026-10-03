@@ -259,45 +259,50 @@ Docs, Website), keeping Image and Avatar.
 
 ## The pages
 
-Infographic mode draws **A4 pages** on the canvas, in a row, like artboards in
-a design tool.
+Infographic mode draws **pages** on the canvas, in a row, like artboards in
+a design tool. What a page is and offers (sizes, backgrounds, layouts, page
+actions, snapping, export, laying content out into pages, page slides) is
+[Infographic pages](infographic-pages.md); this section is the basics.
 
 - **The pages** are sheets of paper (white in light chrome, slate-900 in dark)
   with a soft shadow, under every element. The first is centred on the canvas
   origin; each further page sits **96** px (`INFOGRAPHIC_PAGE_GAP`) to the right
   of the one before, every page centred on the row's horizontal axis.
-  - **A4** at 96 px per inch: **794 x 1123** in portrait, **1123 x 794** in
-    landscape (`A4_SHORT_SIDE`, `A4_LONG_SIDE`,
-    `packages/document/src/infographic-page.ts`).
-  - The pages are the tab's (`Tab.pages`: `{ id, orientation }[]`, in row
+  - A page is **A4** unless it has a size of its own: at 96 px per inch,
+    **794 x 1123** in portrait, **1123 x 794** in landscape (`A4_SHORT_SIDE`,
+    `A4_LONG_SIDE`, `packages/document/src/infographic-page.ts`); the other
+    sizes are in [Infographic pages](infographic-pages.md) "Sizes".
+  - The pages are the tab's (`Tab.pages`: `InfographicPage[]`, in row
     order), so everyone lays out on the same ones. A tab with no `pages` has one
     page, in its legacy `pageOrientation` (portrait when absent); the legacy
     field is dropped the first time the pages change. At most **20** pages
     (`MAX_INFOGRAPHIC_PAGES`).
 - **The surround** is the tab's own canvas: its colour and pattern, and every
   canvas setting, apply behind the pages exactly as in Diagram mode.
-- **Each page's name** sits above its top-left corner (**A4 · Portrait**, or
-  **Page 2 · A4 · Landscape** once there is more than one), and **its settings
-  cog** above its top-right, both held at one screen size at any zoom. The cog
-  (tooltip **Page settings**, or **Page 2 settings**) opens a menu under it with
-  an **Orientation** heading, **Portrait** / **Landscape** radio rows, and,
-  while there is more than one page, **Delete Page**. Escape or an outside
-  press closes it. A viewer who cannot edit (a view role, a locked tab) gets no
-  cog and no add button.
+- **Each page's label** sits above its top-left corner (**A4 · Portrait**, or
+  **Page 2 · A4 · Landscape** once there is more than one, or its name), and
+  **its settings cog** above its top-right, both held at one screen size at any
+  zoom. The cog (tooltip **Page settings**, or **Page 2 settings**) opens the
+  **page panel** ([Infographic pages](infographic-pages.md) "The page panel").
+  A viewer who cannot edit (a view role, a locked tab) gets no cog and no add
+  button.
 - **Adding a page:** a round **+** (tooltip **Add page**) sits in the gap's
   width to the right of the last page, on the row's axis. It adds a page after
-  the last, in the last page's orientation; it is gone at the limit.
-- **Content moves with its page.** Turning or deleting a page moves the pages
-  after it; every element whose centre lies on a page that moves (and an arrow's
-  free ends) moves with it, re-centred on the page's centre, so a turned page
-  keeps its content about its middle. Elements on a deleted page, or on no
-  page, stay where they are. Each change is one tab edit (one undo step, synced
-  to everyone) (`withInfographicPages`).
+  the last, in the last page's size and orientation; it is gone at the limit,
+  and the view then frames the new page.
+- **Content moves with its page.** Turning, resizing, moving or deleting a page
+  moves the pages after it; every element whose centre lies on a page that
+  moves (and an arrow's free ends) moves with it, re-centred on the page's
+  centre (`withInfographicPages`). A deleted page takes its content with it; a
+  turned or resized page re-fits its own content
+  ([Infographic pages](infographic-pages.md) "Sizes"). Elements on no page stay
+  where they are. Each change is one tab edit (one undo step, synced to
+  everyone).
 - **Turning, adding and deleting animate:** the sheets ease to their new places
   and shapes over 200 ms (none under reduced motion).
 - **Centred in the viewport:** entering Infographic mode or opening a tab in it
   fits a square of the long side around the first page
-  (`infographicPageFitBox`), so either orientation fits at the same zoom and
+  (`infographicPageFitBox(page)`), so either orientation fits at the same zoom and
   turning it never moves the view. Where the Toolbar layout's strip lies over
   the canvas's top edge, the page centres in the band below it
   (`computeFitBelow`).
@@ -311,17 +316,18 @@ a design tool.
   hanging off a page still shows all of them. Not in the isometric view, whose
   3D stack a clip would flatten.
 - **The sheets are a view, never elements.** They take no pointer events (a
-  press on one is a press on the empty canvas); exports and thumbnails see the
-  tab's own backdrop and the elements whole.
+  press on one is a press on the empty canvas). Thumbnails see the tab's own
+  backdrop and the elements whole; the Export dialog in Infographic mode exports
+  the pages ([Infographic pages](infographic-pages.md) "Export").
 - The sheets are `apps/live/components/canvas/InfographicPages.tsx`; the pages'
   edits and the centring are `apps/live/hooks/editor/useInfographicPage.ts`.
 
 ## Experimental modes
 
-Infographic mode is an experiment, offered only once **Settings ›
-Experimental › Infographic Mode** is on (off by default; the
-`infographicModeEnabled` preference). The **Experimental** category is listed
-after **AI Tools**.
+Infographic mode is still new, so it keeps a switch in **Settings ›
+Experimental › Infographic Mode**: **on by default** (the
+`infographicModeEnabled` preference; only an explicit `false` turns it off).
+The **Experimental** category is listed after **AI Tools**.
 
 - While it is off, Infographic is offered nowhere: not on the mode switch, not
   in Opens in, and Shift+D skips it (`apps/live/lib/offered-editor-modes.ts`).

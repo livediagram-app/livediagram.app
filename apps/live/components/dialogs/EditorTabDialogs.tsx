@@ -31,6 +31,7 @@ export function EditorTabDialogs() {
     userPreferences,
     exportOpen,
     exportScope,
+    infographicPages,
     activeTab,
     tabs,
     multiSelectedIds,
@@ -84,6 +85,9 @@ export function EditorTabDialogs() {
               : {}),
           })}
           scope={exportScope}
+          // In Infographic mode the whole tab exports as its pages
+          // (docs/specs/007-editor/infographic-pages.md "Export").
+          pages={exportScope === 'tab' ? infographicPages?.pages : undefined}
           documentName={documentName}
           imageContext={imageContext}
           offerHiddenLayers={panelEnabled(userPreferences, 'layersPanelEnabled')}

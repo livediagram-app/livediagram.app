@@ -90,9 +90,9 @@ export function useEditorPreferences(deps: EditorPreferencesDeps) {
   // prefers-reduced-motion media query is honoured by globals.css
   // regardless; this lets the user force it on independent of the OS.
   useReduceMotion(userPreferences.reduceMotion === true);
-  // Settings › Experimental: offer Infographic mode only once switched on (offered-editor-modes).
+  // Settings › Experimental: Infographic mode is offered unless switched off (offered-editor-modes).
   useEffect(() => {
-    setInfographicModeEnabled(userPreferences.infographicModeEnabled === true);
+    setInfographicModeEnabled(userPreferences.infographicModeEnabled !== false);
   }, [userPreferences.infographicModeEnabled]);
   // Apply the "Panel opacity" preference (docs/specs/007-editor/user-preferences.md) to the floating panels
   // via the --lvd-panel-opacity custom property.

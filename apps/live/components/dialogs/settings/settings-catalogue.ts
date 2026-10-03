@@ -904,8 +904,8 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         keywords: 'infographic page a4 poster editor mode experiment labs beta',
         label: 'Infographic Mode',
         description:
-          'Adds Infographic mode to the editor mode switch: an A4 page to lay out icons, stickers, charts, components and media on. An experiment, so it may change or go away. Off by default.',
-        read: (p) => p.infographicModeEnabled === true,
+          'Infographic mode in the editor mode switch: pages to lay out icons, charts, components and media on, export and present. Still new, so it may change. On by default.',
+        read: (p) => p.infographicModeEnabled !== false,
         write: (p, v) => ({ ...p, infographicModeEnabled: v }),
         event: { category: 'UI', on: 'InfographicModeOn', off: 'InfographicModeOff' },
       },

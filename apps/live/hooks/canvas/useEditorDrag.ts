@@ -385,6 +385,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
             dy,
             noSnap,
             guidesOn: depsRef.current.alignmentGuidesRef.current ?? true,
+            pageSnapBoxes: depsRef.current.pageSnapBoxes ?? undefined,
             // Free placement (Cmd/Ctrl) skips the lanes with everything else:
             // the modifier means "I know where I want this".
             timeline: notesEligible && !noSnap ? ES_LANES : null,
@@ -457,6 +458,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
             shiftHeld: e.shiftKey,
             dragAspectLocked: drag.aspectLocked,
             guidesOn: depsRef.current.alignmentGuidesRef.current ?? true,
+            pageSnapBoxes: depsRef.current.pageSnapBoxes ?? undefined,
           });
           if (!resize) return;
           if (resize.guides !== null) scheduleGuides(resize.guides);
@@ -719,13 +721,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
       if (drag?.kind === 'boxed' && drag.mode === 'move' && d.onIconElementDroppedOnShape) {
         const moved = Math.hypot(e.clientX - drag.startClientX, e.clientY - drag.startClientY) > 4;
         const dragged = d.activeTab.elements.find((el) => el.id === drag.primaryId);
-        if (
-          moved &&
-          dragged &&
-          dragged.type === 'shape' &&
-          dragged.shape === 'icon' &&
-          !isTechIconId(dragged.iconId)
-        ) {
+        if (moved && dragged && dragged.type === 'shape' && dragged.shape === 'icon') {
           for (const { id, host } of elementHostsAtPoint(e.clientX, e.clientY)) {
             if (id === drag.primaryId) continue;
             // First real element beneath the icon. Fold in only if it's a
@@ -733,10 +729,25 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
             // a frame); otherwise leave the icon as a plain move, so an icon
             // dropped on a frame lands inside it as a standalone element.
             const target = d.activeTab.elements.find((el) => el.id === id);
-            if (target && acceptsInlineIcon(target)) {
+            // The fold writes through the gesture (tick). A drag that moved nothing (the snap put
+            // the icon back where it started) committed no preview and so marked no checkpoint:
+            // mark it as the fold lands, so the fold is its own undo step rather than joining the
+            // last one.
+            const fold = (position: 'left' | 'right' | 'above' | 'below') => {
+              if (checkpointPendingRef.current) {
+                d.markCheckpoint();
+                checkpointPendingRef.current = false;
+              }
+              d.onIconElementDroppedOnShape?.(drag.primaryId, id, position);
+            };
+            // Onto another icon: the dragged icon replaces it, keeping its box, place and style
+            // (docs/specs/008-canvas/canvas-and-palette.md "Swapping an icon"); any icon, a tech mark too.
+            if (target?.type === 'shape' && target.shape === 'icon') {
+              fold('left');
+            } else if (target && acceptsInlineIcon(target) && !isTechIconId(dragged.iconId)) {
               const rect = host.getBoundingClientRect();
               const position = iconDropSide(e.clientX, e.clientY, rect);
-              d.onIconElementDroppedOnShape(drag.primaryId, id, position);
+              fold(position);
             }
             break;
           }

@@ -7,3 +7,4 @@ export { isUntitledDocumentName } from './legacy-untitled';
 export * from './template-layers';
 export { buildTemplate } from './build-template';
 export { templateFamilyOf } from './template-families';
+export * from './page-layouts';

@@ -3682,11 +3682,20 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "InfographicPage": {
     "additionalProperties": false,
     "properties": {
+      "background": {
+        "$ref": "#/components/schemas/PageBackground"
+      },
       "id": {
+        "type": "string"
+      },
+      "name": {
         "type": "string"
       },
       "orientation": {
         "$ref": "#/components/schemas/PageOrientation"
+      },
+      "size": {
+        "$ref": "#/components/schemas/PageSizeId"
       }
     },
     "required": [
@@ -3997,10 +4006,87 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
+  "PageBackground": {
+    "additionalProperties": false,
+    "properties": {
+      "fill": {
+        "$ref": "#/components/schemas/PageFill"
+      },
+      "pattern": {
+        "$ref": "#/components/schemas/PagePattern"
+      }
+    },
+    "type": "object"
+  },
+  "PageFill": {
+    "anyOf": [
+      {
+        "additionalProperties": false,
+        "properties": {
+          "color": {
+            "type": "string"
+          },
+          "kind": {
+            "const": "solid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "color"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "angle": {
+            "type": "number"
+          },
+          "from": {
+            "type": "string"
+          },
+          "kind": {
+            "const": "gradient",
+            "type": "string"
+          },
+          "to": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "from",
+          "to",
+          "angle"
+        ],
+        "type": "object"
+      }
+    ]
+  },
   "PageOrientation": {
     "enum": [
       "portrait",
       "landscape"
+    ],
+    "type": "string"
+  },
+  "PagePattern": {
+    "enum": [
+      "dots",
+      "grid",
+      "lines"
+    ],
+    "type": "string"
+  },
+  "PageSizeId": {
+    "enum": [
+      "a4",
+      "letter",
+      "a3",
+      "square",
+      "social",
+      "wide"
     ],
     "type": "string"
   },

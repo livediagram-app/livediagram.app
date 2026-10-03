@@ -213,7 +213,7 @@ type UserPreferences = {
   reduceMotion?: boolean;
 
   // Settings › Experimental › Infographic Mode (editor-modes.md
-  // "Experimental modes"): offers Infographic mode. Defaults to false.
+  // "Experimental modes"): offers Infographic mode. Defaults to true (only false hides it).
   infographicModeEnabled?: boolean;
 
   // Email notification preferences (docs/specs/014-identity/profile-and-email-notifications.md). Account-level email
@@ -702,7 +702,7 @@ and the dialog stays as the one complete, browsable index of them.
   Accessibility group holds `reduceMotion`, noting the OS setting is
   always respected and this only adds a user-forced override. The
   Experimental group, after AI Tools, holds `infographicModeEnabled`
-  ([Editor modes](editor-modes.md#experimental-modes)), off by default;
+  ([Editor modes](editor-modes.md#experimental-modes)), on by default;
   it emits `UI`/`Toggled`/`InfographicMode{On,Off}`.
 
 - **Per-tool surfaces**: none today. The pencil's ModeBanner used to

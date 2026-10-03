@@ -16,10 +16,11 @@ import {
   stampTabKind,
   isBoxed,
   resolveSlide,
-  slideBounds,
+  slideFrame,
   stampNewElementLayers,
   voteHidesCursors,
   elementActions,
+  infographicPageSnapBoxes,
   type BoxedElement,
   type CommentMention,
   type Element,
@@ -1273,13 +1274,15 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // because a sparse canvas blown up looks broken in a workspace; a slide is
   // the only thing on a projector, so a one-box slide SHOULD be a big box —
   // unless the presenter has picked "Actual size" from the cog.
-  const frameSlide = useEffectEvent((elements: NonNullable<typeof presentingElements>) => {
-    const bounds = slideBounds(elements);
+  // A page slide frames to its page; any other to what it shows (slideFrame).
+  const frameSlide = useEffectEvent(() => {
+    if (!presentingStep) return;
+    const bounds = slideFrame(presentingStep.slide, presentingStep.tab);
     if (bounds) fitToBounds(bounds, { maxZoom: slideMaxZoom(slideDeck.config) });
   });
   const slideZoom = slideDeck.config.zoom;
   useLayoutEffect(() => {
-    if (presentingElements) frameSlide(presentingElements);
+    if (presentingElements) frameSlide();
   }, [presentingSlideId, presentingElements, slideZoom]);
 
   // ...and fit again whenever the canvas CHANGES SIZE while presenting.
@@ -1297,7 +1300,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // an ordinary resize, and a phone rotating.
   const refitSlide = useEffectEvent(() => {
     if (!presentingStep) return;
-    const bounds = slideBounds(resolveSlide(presentingStep.slide, presentingStep.tab));
+    const bounds = slideFrame(presentingStep.slide, presentingStep.tab);
     if (bounds) fitToBounds(bounds, { maxZoom: slideMaxZoom(slideDeck.config) });
   });
   useEffect(() => {
@@ -1563,7 +1566,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     activeId,
     switchMode: editorMode.setMode,
   });
-  // Infographic mode's A4 page: its orientation toggle, and the view centred on it.
+  // Infographic mode's pages: their edits, and the view centred on them.
   const infographicPages = useInfographicPage({
     activeTab,
     mode: editorMode.mode,
@@ -1573,6 +1576,11 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     canvasMainRef,
     setViewportZoom,
     setViewportOffset,
+    clearSelection: () => {
+      setSelectedId(null);
+      setMultiSelectedIds(new Set());
+    },
+    toastInfo: toast.info,
   });
 
   // A locked tab refuses every element mutation. Commit /
@@ -2282,10 +2290,9 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   });
 
   // Inline-icon attach/detach mutators (a shape's single inline icon).
-  // Cohesive slice extracted to useInlineIconMutators — closes over only
-  // editsBlocked + commit.
+  // Cohesive slice extracted to useInlineIconMutators: editsBlocked, commit and the elements.
   const { dropIconOnElement, removeIconFromElement, dropIconElementOnShape } =
-    useInlineIconMutators({ editsBlocked, commit });
+    useInlineIconMutators({ editsBlocked, commit, tick, elements: activeTab.elements });
 
   // Per-cell table links (docs/specs/008-canvas/canvas-and-palette.md). Which cell's link picker is open +
   // the history-committed write into that cell's style. See
@@ -2780,6 +2787,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     autoRebindArrowsRef,
     styleNewElement: styleMemory.styleNewElement,
     alignmentGuidesRef,
+    pageSnapBoxes: infographicPages ? infographicPageSnapBoxes(infographicPages.pages) : null,
     isPinchingRef,
     // Insert between (docs/specs/021-event-storming/event-storming.md): dragging a note already on the board into a
     // gap, while Alt is held. Same gate the palette drag uses, so both entry
@@ -3218,6 +3226,9 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     // instead of the tab's elements while it is non-null, which is what makes
     // a slide a slide.
     presentingElements,
+    // The page a page slide is presenting (docs/specs/007-editor/infographic-pages.md "Slides"):
+    // the canvas then shows that sheet alone, as it shows the slide's elements alone.
+    presentingPageId: presentingStep?.slide.pageId ?? null,
     livePresence,
     // Live poll (docs/specs/012-collaboration/live-poll.md) — the whole ephemeral surface in one object
     // rather than a dozen flattened keys, since nothing else reads into it.

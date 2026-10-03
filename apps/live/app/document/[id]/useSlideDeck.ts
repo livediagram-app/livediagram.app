@@ -162,6 +162,19 @@ export function useSlideDeck({
     track('UI', 'Added', 'Slide');
   }, [activeTabId, commitDeck, isReadOnly, selectionIds]);
 
+  // An Infographic page as a slide (docs/specs/007-editor/infographic-pages.md "Slides"): the slide
+  // is the page, resolved live, so it follows the page's content wherever the page goes.
+  const newPageSlide = useCallback(
+    (pageId: string) => {
+      if (isReadOnly) return;
+      const slide: Slide = { id: crypto.randomUUID(), tabId: activeTabId, elementIds: [], pageId };
+      commitDeck((prev) => ({ slides: [...prev.slides, slide] }));
+      setOpenSlideId(slide.id);
+      track('UI', 'Added', 'PageSlide');
+    },
+    [activeTabId, commitDeck, isReadOnly],
+  );
+
   const addSelectionToSlide = useCallback(
     (slideId: string) => {
       if (isReadOnly || selectionIds.size === 0) return;
@@ -388,6 +401,7 @@ export function useSlideDeck({
     runnable,
     thumbs,
     newSlideFromSelection,
+    newPageSlide,
     addSelectionToSlide,
     removeFromSlide,
     renameSlide,
