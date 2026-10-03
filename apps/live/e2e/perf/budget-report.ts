@@ -5,7 +5,13 @@ export const BUDGET_ISSUE_TITLE = 'Canvas performance budget';
 
 export type BudgetIssueAction = 'open' | 'comment' | 'close' | 'none';
 
-export function budgetIssueAction(run: { misses: number; issueOpen: boolean }): BudgetIssueAction {
+// Only a run on main reports; a branch measured by hand writes its job summary and nothing else.
+export function budgetIssueAction(run: {
+  misses: number;
+  issueOpen: boolean;
+  onMain: boolean;
+}): BudgetIssueAction {
+  if (!run.onMain) return 'none';
   if (run.misses > 0) return run.issueOpen ? 'comment' : 'open';
   return run.issueOpen ? 'close' : 'none';
 }

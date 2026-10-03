@@ -272,6 +272,10 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
   (`budget-report.ts`): a miss opens it or comments on it, an all-pass run comments "Back within
   budget at <sha>" and closes it. `budgetIssueComment` carries the table,
   `git log --oneline <previous-sha>..<sha>` and the run's link.
+- `onMain` is `GITHUB_REF === 'refs/heads/main'`. A run started by hand on another branch
+  (`gh workflow run canvas-perf.yml --ref <branch>`) writes the same job summary and artefact, and
+  `budgetIssueAction` returns `none`, so the issue and its baseline stay `main`'s. The run logs
+  `[canvas-perf] <misses> of <rows> over budget on <ref>; issue: <action>`.
 
 ## Interfaces and contracts
 
@@ -349,7 +353,7 @@ export function budgetTable(rows: readonly BudgetRow[]): string;
 
 // apps/live/e2e/perf/budget-report.ts
 export const BUDGET_ISSUE_TITLE = 'Canvas performance budget';
-export function budgetIssueAction(run: { misses: number; issueOpen: boolean }): 'open' | 'comment' | 'close' | 'none';
+export function budgetIssueAction(run: { misses: number; issueOpen: boolean; onMain: boolean }): 'open' | 'comment' | 'close' | 'none';
 export function budgetIssueComment(report: BudgetIssueReport): string;
 ```
 

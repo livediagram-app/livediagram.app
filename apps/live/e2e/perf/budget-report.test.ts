@@ -6,13 +6,21 @@ import { BUDGET_ISSUE_TITLE, budgetIssueAction, budgetIssueComment } from './bud
 
 describe('budgetIssueAction', () => {
   it('opens the issue on a miss when none is open, and comments on it when one is', () => {
-    expect(budgetIssueAction({ misses: 2, issueOpen: false })).toBe('open');
-    expect(budgetIssueAction({ misses: 2, issueOpen: true })).toBe('comment');
+    expect(budgetIssueAction({ misses: 2, issueOpen: false, onMain: true })).toBe('open');
+    expect(budgetIssueAction({ misses: 2, issueOpen: true, onMain: true })).toBe('comment');
   });
 
   it('closes an open issue on an all-pass run, and does nothing otherwise', () => {
-    expect(budgetIssueAction({ misses: 0, issueOpen: true })).toBe('close');
-    expect(budgetIssueAction({ misses: 0, issueOpen: false })).toBe('none');
+    expect(budgetIssueAction({ misses: 0, issueOpen: true, onMain: true })).toBe('close');
+    expect(budgetIssueAction({ misses: 0, issueOpen: false, onMain: true })).toBe('none');
+  });
+});
+
+describe('budgetIssueAction on a branch', () => {
+  it('leaves the issue alone, whatever the run found', () => {
+    expect(budgetIssueAction({ misses: 2, issueOpen: false, onMain: false })).toBe('none');
+    expect(budgetIssueAction({ misses: 2, issueOpen: true, onMain: false })).toBe('none');
+    expect(budgetIssueAction({ misses: 0, issueOpen: true, onMain: false })).toBe('none');
   });
 });
 
