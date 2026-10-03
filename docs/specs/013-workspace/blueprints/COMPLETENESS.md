@@ -98,4 +98,9 @@
 - [x] Testing
 - [x] Constants and configuration
 - [x] Assets and external resources
+
+## explorer-home
+
+- [ ] Presentation and UX
+- [ ] Accessibility
 - [x] Defaults ledger

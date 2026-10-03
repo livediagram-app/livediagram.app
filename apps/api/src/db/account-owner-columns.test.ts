@@ -41,6 +41,8 @@ const OWNER_COLUMNS: OwnerColumn[] = [
   { table: 'custom_themes', column: 'owner_id', migrate: { kind: 'moves' } },
   // Shape libraries (docs/specs/013-workspace/shape-libraries.md): guests have them too.
   { table: 'shape_libraries', column: 'owner_id', migrate: { kind: 'moves' } },
+  // Explorer Home's opens (docs/specs/013-workspace/explorer-home.md): guests open documents too.
+  { table: 'document_opens', column: 'owner_id', migrate: { kind: 'moves' } },
   { table: 'images', column: 'owner_id', migrate: { kind: 'moves' } },
   { table: 'participants', column: 'id', migrate: { kind: 'moves' } },
   { table: 'timeline_events', column: 'actor_id', migrate: { kind: 'moves' } },
@@ -129,6 +131,17 @@ function seedGuestHoldable(sql: DatabaseSync, id: string, peerDocument: string) 
     role: 'view',
     last_seen: T0,
   });
+  for (const documentId of [`d-${id}`, peerDocument]) {
+    insert(sql, 'document_opens', {
+      owner_id: id,
+      document_id: documentId,
+      open_days: 1,
+      first_opened_at: T0,
+      last_opened_at: T0,
+      last_open_day: '2023-11-14',
+      frecency_key: T0,
+    });
+  }
   insert(sql, 'user_preferences', { owner_id: id, prefs: '{}', updated_at: T0 });
   insert(sql, 'placement_defaults', {
     owner_id: id,

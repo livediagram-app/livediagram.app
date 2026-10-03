@@ -44,6 +44,8 @@ import {
   payloadTooLarge,
 } from '../responses';
 import { recordCommentAdded, recordTabSave, recordVisitorOpened } from '../timeline';
+import { DOCUMENT_OPEN_HEADER, readDocumentOpen } from '@livediagram/api-schema';
+import { recordDocumentOpen } from '../home/record-open';
 import { handleDocumentShareRoutes } from './document-share-routes';
 import { handleQaBoardRoute } from './qa-board-routes';
 import { handleCommentPicturesRoute } from './comment-pictures-routes';
@@ -125,6 +127,13 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
             recordVisitorOpened(env, existing, owner, p?.name ?? null),
           ),
         );
+      }
+      // docs/specs/013-workspace/explorer-home.md "Opens": the reader's own open, for their Home.
+      // Only when the editor declares this read an open: a resync, a duplicate, Take Offline, the
+      // Drive mirror and an embed read the same tab and are not opens. The read gate above has
+      // already admitted the reader, and the open is theirs whoever they are.
+      if (readDocumentOpen(request.headers.get(DOCUMENT_OPEN_HEADER))) {
+        ctx.waitUntil?.(recordDocumentOpen(env, existing, owner, Date.now()));
       }
       return json({ tab: safe });
     }
@@ -374,8 +383,17 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
     // can't autosave, so this endpoint is their only way to persist a
     // comment — and without an emit here their comments would be the
     // one kind missing from the feed.
+    // A reply when the thread already held a comment (Explorer Home's "replied").
+    const reply =
+      ((target as { commentThread?: { comments?: unknown[] } }).commentThread?.comments?.length ??
+        0) > 0;
     ctx.waitUntil?.(
-      recordCommentAdded(env, existing, { id: comment.id, text, authorName, authorColor }, owner),
+      recordCommentAdded(
+        env,
+        existing,
+        { id: comment.id, text, authorName, authorColor, reply },
+        owner,
+      ),
     );
     // docs/specs/014-identity/transactional-email.md (#1): a view-role visitor's comment notifies the owner immediately.
     if (emailEnabled(env) && owner !== existing.ownerId) {

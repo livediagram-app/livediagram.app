@@ -34,6 +34,7 @@ import {
 } from '../db/timeline';
 import { getDocument, getMembership } from '../db';
 import { backfillUserScope } from '../timeline';
+import { isNewVisit } from '../timeline/seen';
 import { badRequest, forbidden, json, missingAuth, noContent, notFound } from '../responses';
 import { gateRead, type RouteContext } from './context';
 
@@ -43,18 +44,7 @@ import { gateRead, type RouteContext } from './context';
 // common path and they only touch two indexes.
 const REFRESH_THROTTLE_MS = 5_000;
 
-// How long one "visit" lasts for the unread watermark.
-//
-// Without this the watermark moves on EVERY read, so a second request
-// inside the same visit reports nothing new and the New markers vanish
-// before the reader has looked at them. That isn't a hypothetical: a
-// client can easily fetch twice on mount (React's development
-// double-effect does exactly that), and tabbing away and straight back
-// would wipe the markers too.
-//
-// A window makes the semantics what a person would expect — "since I
-// was last here", not "since my last HTTP request".
-const SEEN_WINDOW_MS = 60_000;
+// The visit window lives in ../timeline/seen.ts, shared with Explorer Home.
 
 export async function handleTimeline(ctx: RouteContext): Promise<Response> {
   const { request, env, url, segments, resolveOwner } = ctx;
@@ -102,7 +92,7 @@ export async function handleTimeline(ctx: RouteContext): Promise<Response> {
     // last here" is a question about one reader, and a shared team feed
     // has no single "here" to be last at.
     const isFirstPage = !url.searchParams.get('cursor');
-    const staleEnough = !state?.lastSeenAt || Date.now() - state.lastSeenAt > SEEN_WINDOW_MS;
+    const staleEnough = isNewVisit(state?.lastSeenAt, Date.now());
     if (scope.scopeType === 'user' && isFirstPage && staleEnough) {
       ctx.waitUntil?.(markScopeSeen(env, scope).catch(() => {}));
     }

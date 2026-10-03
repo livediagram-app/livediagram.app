@@ -636,3 +636,6 @@ export {
 // Default folders: the keys in force and the creation intent a create carries
 // (docs/specs/013-workspace/default-folders.md).
 export * from './placement-defaults';
+// Explorer Home: opens, Jump back in, the own Timeline and What happened
+// (docs/specs/013-workspace/explorer-home.md).
+export * from './home';

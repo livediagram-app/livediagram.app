@@ -81,7 +81,11 @@ export async function backfillUserScope(env: Env, ownerId: string): Promise<void
           title: 'Document Updated',
           description: row.name,
           occurredAt: row.saved_at,
-          snapshot: { documentId: row.id, documentName: row.name },
+          // A reconstruction: the last save may have been a teammate's, so Explorer Home, which
+          // counts only real edits, leaves it out; and it never overwrites a real edit already
+          // recorded for that day (docs/specs/013-workspace/timeline.md §5).
+          snapshot: { documentId: row.id, documentName: row.name, backfilled: true },
+          keepExisting: true,
         },
         scope,
       );

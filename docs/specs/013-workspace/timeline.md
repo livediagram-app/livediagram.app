@@ -624,6 +624,11 @@ because _you_ renamed something is noise — and caps at 99.
 Only the `user` scope carries a watermark. A shared team feed has no
 single "here" to have been last at.
 
+Viewing [Explorer Home](explorer-home.md#unread) moves the same mark, by
+the same rules (once per 60-second visit window, returning the value
+from before the read): Home shows the same other-people news, so having
+read it there is having read it.
+
 ### 2.6 Motion
 
 Cards fan in rather than appearing at once: each starts pulled to the
@@ -905,6 +910,7 @@ CREATE TABLE timeline_scope_state (
   scope_id         TEXT NOT NULL,
   backfilled_at    INTEGER,               -- NULL until the one-shot backfill has run
   last_refreshed_at INTEGER,
+  frecency_seeded_at INTEGER,             -- user scope only: Explorer Home seeded Jump back in (migration 0063)
   PRIMARY KEY (scope_type, scope_id)
 );
 ```
@@ -1127,6 +1133,13 @@ everything else even with stacking.
   mutation could invalidate. If favourites ever land (§3.4), this
   event's mutation needs revisiting.
 
+**A person's own opens are recorded here but are not part of this feed.** [Explorer Home](explorer-home.md#opens)
+keeps a coalesced `document_opened` row per person per document per UTC day, in that person's `user` scope only
+(opens are private), so its Timeline column reads one table for created, updated and opened. It is outside the
+feed's vocabulary: `readTimeline` and `countUnseen` leave it out the way they leave out legacy renames, and no
+renderer, tone or chip knows it. Deletion, retention, the document sweep and sign-up migration treat it like every
+other row.
+
 Offline documents ([Offline Mode](../006-document/offline-mode.md)) live only in IndexedDB and never reach the
 worker, so they emit nothing. Their absence from the Timeline is
 correct and matches the rest of the product's server-side surfaces.
@@ -1164,6 +1177,11 @@ email notification in [Transactional & lifecycle email (Resend)](../014-identity
 comment text — an email leaves the product's authorisation boundary
 and can sit in an inbox forever; the Timeline is behind the same auth
 as the document itself.)
+
+A `comment_added` snapshot carries `reply: true` when the comment is not the first of its thread, and an
+`action_assigned` snapshot carries the assignee's owner id as `assigneeId` (null for an invited member with no
+account yet). Both are what [Explorer Home](explorer-home.md)'s What happened needs to say "replied" and "assigned
+you an action"; rows written before them read as "commented" and "assigned an action".
 
 Assigned actions ([Assigned actions](../012-collaboration/assigned-actions.md)) are likewise element-JSON, diffed on save
 the same way. `apps/api/src/routes/team-action-routes.ts`'s
@@ -1303,7 +1321,14 @@ documents is a broken-looking feature. On the first read of a scope
 - For the caller's 200 most recently updated documents: a
   `document_created` event at `documents.created_at`, and a
   `document_edited` event at `updated_at` with the matching
-  `<actorId>:<date>` dedupe key.
+  `<actorId>:<date>` dedupe key. The worker cannot know who made that
+  last save, so the edit is a reconstruction: its snapshot carries
+  `backfilled: true`, and it never overwrites a real edit already
+  recorded for that day. A real edit landing on it later replaces the
+  snapshot and so the mark. [Explorer Home](explorer-home.md) counts
+  only real edits; rows backfilled before the mark existed were marked
+  once by migration 0063 (an edit stored more than a minute after the
+  time it claims to have happened).
 - For each team the caller has joined: a `team_member_joined` event at
   their `team_members.created_at`.
 - Nothing else. Comments and actions are inside tab JSON and

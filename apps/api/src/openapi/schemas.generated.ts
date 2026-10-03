@@ -3111,6 +3111,511 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "HomeAction": {
+    "additionalProperties": false,
+    "description": "One thing somebody did.",
+    "properties": {
+      "detail": {
+        "description": "The comment's words, the action's name, or the team's name; null for an edit.",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "id": {
+        "description": "The event's id.",
+        "type": "string"
+      },
+      "occurredAt": {
+        "type": "number"
+      },
+      "personId": {
+        "type": "string"
+      },
+      "verb": {
+        "$ref": "#/components/schemas/HomeVerb"
+      }
+    },
+    "required": [
+      "id",
+      "verb",
+      "personId",
+      "occurredAt",
+      "detail"
+    ],
+    "type": "object"
+  },
+  "HomeGroup": {
+    "additionalProperties": false,
+    "description": "One document's actions on one of the reader's days.",
+    "properties": {
+      "actions": {
+        "description": "Every action, newest first.",
+        "items": {
+          "$ref": "#/components/schemas/HomeAction"
+        },
+        "type": "array"
+      },
+      "day": {
+        "description": "YYYY-MM-DD in the reader's time zone.",
+        "type": "string"
+      },
+      "documentId": {
+        "type": "string"
+      },
+      "empty": {
+        "description": "Nothing drawn: ask for no thumbnail.",
+        "type": "boolean"
+      },
+      "folderId": {
+        "description": "Null for `shared`, and for a document in its space's Unsorted.",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "folderName": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "id": {
+        "description": "`<documentId>:<day>`.",
+        "type": "string"
+      },
+      "latestAt": {
+        "type": "number"
+      },
+      "name": {
+        "description": "The document's current name.",
+        "type": "string"
+      },
+      "ownerName": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "people": {
+        "description": "Distinct people, newest action first.",
+        "items": {
+          "$ref": "#/components/schemas/HomePerson"
+        },
+        "type": "array"
+      },
+      "savedAt": {
+        "description": "The thumbnail's version.",
+        "type": "number"
+      },
+      "shareCode": {
+        "description": "The live share code that opens it; set for `shared` only.",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "summary": {
+        "description": "More than one person acted: one entry with a summary sentence.",
+        "type": "boolean"
+      },
+      "tabId": {
+        "description": "The one tab a tab-scoped share opens; null = every tab.",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "teamId": {
+        "description": "Null for `shared`: the owner's filing is theirs.",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "teamName": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "total": {
+        "type": "number"
+      },
+      "verbs": {
+        "description": "Distinct verbs with their counts, in `HOME_VERBS` order.",
+        "items": {
+          "$ref": "#/components/schemas/HomeVerbCount"
+        },
+        "type": "array"
+      },
+      "via": {
+        "description": "How the person reaches it: their own, a joined team's, or shared with them by a link.",
+        "enum": [
+          "own",
+          "team",
+          "shared"
+        ],
+        "type": "string"
+      }
+    },
+    "required": [
+      "actions",
+      "day",
+      "documentId",
+      "empty",
+      "folderId",
+      "folderName",
+      "id",
+      "latestAt",
+      "name",
+      "ownerName",
+      "people",
+      "savedAt",
+      "shareCode",
+      "summary",
+      "tabId",
+      "teamId",
+      "teamName",
+      "total",
+      "verbs",
+      "via"
+    ],
+    "type": "object"
+  },
+  "HomeJumpBackInItem": {
+    "additionalProperties": false,
+    "description": "One document of Jump back in.",
+    "properties": {
+      "documentId": {
+        "type": "string"
+      },
+      "empty": {
+        "description": "Nothing drawn: ask for no thumbnail.",
+        "type": "boolean"
+      },
+      "folderId": {
+        "description": "Null for `shared`, and for a document in its space's Unsorted.",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "folderName": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "lastOpenedAt": {
+        "type": "number"
+      },
+      "name": {
+        "description": "The document's current name.",
+        "type": "string"
+      },
+      "openDays": {
+        "description": "UTC days on which the person opened it.",
+        "type": "number"
+      },
+      "ownerName": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "savedAt": {
+        "description": "The thumbnail's version.",
+        "type": "number"
+      },
+      "shareCode": {
+        "description": "The live share code that opens it; set for `shared` only.",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "tabId": {
+        "description": "The one tab a tab-scoped share opens; null = every tab.",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "teamId": {
+        "description": "Null for `shared`: the owner's filing is theirs.",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "teamName": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "via": {
+        "description": "How the person reaches it: their own, a joined team's, or shared with them by a link.",
+        "enum": [
+          "own",
+          "team",
+          "shared"
+        ],
+        "type": "string"
+      }
+    },
+    "required": [
+      "documentId",
+      "empty",
+      "folderId",
+      "folderName",
+      "lastOpenedAt",
+      "name",
+      "openDays",
+      "ownerName",
+      "savedAt",
+      "shareCode",
+      "tabId",
+      "teamId",
+      "teamName",
+      "via"
+    ],
+    "type": "object"
+  },
+  "HomePerson": {
+    "additionalProperties": false,
+    "description": "Somebody who acted.",
+    "properties": {
+      "color": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "id": {
+        "type": "string"
+      },
+      "name": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "pictureUrl": {
+        "type": [
+          "string",
+          "null"
+        ]
+      }
+    },
+    "required": [
+      "id",
+      "name",
+      "color",
+      "pictureUrl"
+    ],
+    "type": "object"
+  },
+  "HomeResponse": {
+    "additionalProperties": false,
+    "description": "`GET /api/home`.",
+    "properties": {
+      "jumpBackIn": {
+        "items": {
+          "$ref": "#/components/schemas/HomeJumpBackInItem"
+        },
+        "type": "array"
+      },
+      "lastSeenAt": {
+        "description": "The Timeline's unread mark as it stood before this read (the read moves it, once per visit); null when the person had never looked. What happened after it is new to them.",
+        "type": [
+          "number",
+          "null"
+        ]
+      },
+      "timeline": {
+        "$ref": "#/components/schemas/HomeTimelinePage"
+      },
+      "whatHappened": {
+        "items": {
+          "$ref": "#/components/schemas/HomeGroup"
+        },
+        "type": "array"
+      }
+    },
+    "required": [
+      "jumpBackIn",
+      "timeline",
+      "whatHappened",
+      "lastSeenAt"
+    ],
+    "type": "object"
+  },
+  "HomeTimelineEntry": {
+    "additionalProperties": false,
+    "description": "One of the person's own events. Raw: the one-per-day fold is the view's, where the local day is known across loaded pages.",
+    "properties": {
+      "documentId": {
+        "type": "string"
+      },
+      "empty": {
+        "description": "Nothing drawn: ask for no thumbnail.",
+        "type": "boolean"
+      },
+      "folderId": {
+        "description": "Null for `shared`, and for a document in its space's Unsorted.",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "folderName": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "id": {
+        "description": "The event's id; with `occurredAt`, the keyset position.",
+        "type": "string"
+      },
+      "kind": {
+        "$ref": "#/components/schemas/HomeTimelineKind"
+      },
+      "name": {
+        "description": "The document's current name.",
+        "type": "string"
+      },
+      "occurredAt": {
+        "type": "number"
+      },
+      "ownerName": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "savedAt": {
+        "description": "The thumbnail's version.",
+        "type": "number"
+      },
+      "shareCode": {
+        "description": "The live share code that opens it; set for `shared` only.",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "tabId": {
+        "description": "The one tab a tab-scoped share opens; null = every tab.",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "teamId": {
+        "description": "Null for `shared`: the owner's filing is theirs.",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "teamName": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "via": {
+        "description": "How the person reaches it: their own, a joined team's, or shared with them by a link.",
+        "enum": [
+          "own",
+          "team",
+          "shared"
+        ],
+        "type": "string"
+      }
+    },
+    "required": [
+      "documentId",
+      "empty",
+      "folderId",
+      "folderName",
+      "id",
+      "kind",
+      "name",
+      "occurredAt",
+      "ownerName",
+      "savedAt",
+      "shareCode",
+      "tabId",
+      "teamId",
+      "teamName",
+      "via"
+    ],
+    "type": "object"
+  },
+  "HomeTimelineKind": {
+    "enum": [
+      "created",
+      "updated",
+      "opened"
+    ],
+    "type": "string"
+  },
+  "HomeTimelinePage": {
+    "additionalProperties": false,
+    "properties": {
+      "items": {
+        "items": {
+          "$ref": "#/components/schemas/HomeTimelineEntry"
+        },
+        "type": "array"
+      },
+      "nextCursor": {
+        "description": "`<occurredAt>:<id>` of the last item when another page exists, else null.",
+        "type": [
+          "string",
+          "null"
+        ]
+      }
+    },
+    "required": [
+      "items",
+      "nextCursor"
+    ],
+    "type": "object"
+  },
+  "HomeVerb": {
+    "enum": [
+      "commented",
+      "replied",
+      "resolved",
+      "edited",
+      "assigned_you",
+      "assigned",
+      "completed",
+      "shared"
+    ],
+    "type": "string"
+  },
+  "HomeVerbCount": {
+    "additionalProperties": false,
+    "properties": {
+      "count": {
+        "type": "number"
+      },
+      "verb": {
+        "$ref": "#/components/schemas/HomeVerb"
+      }
+    },
+    "required": [
+      "verb",
+      "count"
+    ],
+    "type": "object"
+  },
   "HuedPenColourName": {
     "description": "The seven hued stock colours, each tuned per board.",
     "enum": [

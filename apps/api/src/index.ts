@@ -33,6 +33,7 @@ import { handleOauthExchange } from './routes/oauth';
 import { DocumentRoom } from './document-room';
 import { CORS_HEADERS, forbidden, json, notFound, payloadTooLarge, rateLimited } from './responses';
 import { insertTelemetryEvents } from './db/telemetry';
+import { deleteOldDocumentOpens } from './db/document-opens';
 import { clientIp } from './client-ip';
 import { MAX_BODY_BYTES, MAX_IMAGE_BYTES } from './limits';
 import { handleAccount } from './routes/account';
@@ -55,6 +56,7 @@ import { handleFavourites } from './routes/favourites';
 import { handlePlacementDefaults } from './routes/placement-defaults';
 import { handleTimeline } from './routes/timeline';
 import { handleActivity } from './routes/activity';
+import { handleHome } from './routes/home';
 import { handlePreferences } from './routes/preferences';
 import { handleShare } from './routes/share';
 import { handleTeams } from './routes/teams';
@@ -328,6 +330,8 @@ async function routeApiRequest(
         return await handleTimeline(ctx);
       case 'activity':
         return await handleActivity(ctx);
+      case 'home':
+        return await handleHome(ctx);
       case 'preferences':
         return await handlePreferences(ctx);
       case 'migrate':
@@ -414,6 +418,16 @@ const worker = {
         'events',
         now - TIMELINE_RETENTION_MS,
         deleteOldTimelineEvents,
+      );
+      // docs/specs/013-workspace/explorer-home.md "Opens": an open older than the Timeline's year
+      // is forgotten, the same retention as the events it sits beside.
+      scheduleSweep(
+        ctx,
+        env,
+        'home_opens',
+        'rows',
+        now - TIMELINE_RETENTION_MS,
+        deleteOldDocumentOpens,
       );
       // docs/specs/014-identity/transactional-email.md: send any due onboarding emails (welcome catch-up + week 1 / 2).
       // No-op when RESEND_API_KEY is unset.

@@ -4,6 +4,7 @@
 
 import { deleteTimelineForOwner, migrateTimelineOwner } from './timeline';
 import { deleteCollabIndexForOwner, recordOwnerAlias } from './collab-index';
+import { deleteDocumentOpensForOwner, migrateDocumentOpens } from './document-opens';
 import { thumbnailKey } from './documents';
 import { documentRemovalStatements } from './document-removal';
 import { detachUserFromTeams } from './teams';
@@ -131,6 +132,10 @@ export async function deleteAccount(
   // Activity (docs/specs/013-workspace/activity-page.md): the alias rows + the backfill stamp. The index
   // rows themselves went with the tabs documentRemovalStatements dropped above.
   await deleteCollabIndexForOwner(env, ownerId);
+  // Explorer Home (docs/specs/013-workspace/explorer-home.md "Opens"): this owner's opens. Other
+  // people's opens of this owner's documents went with the documents (foreign key cascade);
+  // the document_opened events went with deleteTimelineForOwner above.
+  await deleteDocumentOpensForOwner(env, ownerId);
   return {
     documents: documentsRes.meta.changes ?? 0,
     folders: foldersRes.meta.changes ?? 0,
@@ -259,6 +264,10 @@ export async function migrateOwnerId(
   // identity is recorded as an alias of the new one and the Activity
   // read matches both. Cheaper and safer than touching every tab.
   await recordOwnerAlias(env, toOwnerId, fromOwnerId);
+  // Explorer Home (docs/specs/013-workspace/explorer-home.md "Opens"): the guest's opens follow
+  // them, and a document opened under both identities keeps both histories.
+  const opens = await migrateDocumentOpens(env, fromOwnerId, toOwnerId, Date.now());
+  console.info(`home: opens-migrated moved=${opens.moved} merged=${opens.merged}`);
   // images (docs/specs/009-elements/images.md). UPDATE OR IGNORE walks the unique (owner_id,
   // sha256) collision case (same bytes on both identities) and
   // leaves those guest rows in place so the image id stays

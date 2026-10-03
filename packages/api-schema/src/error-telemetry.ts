@@ -124,6 +124,7 @@ export const API_ROUTE_RESOURCES: ReadonlySet<string> = new Set([
   'trash',
   'timeline',
   'activity',
+  'home',
   'preferences',
   'migrate',
   'guest-id',
@@ -164,6 +165,8 @@ const API_ROUTE_WORDS: ReadonlySet<string> = new Set([
   'refresh',
   'invites',
   'restore',
+  // Explorer Home's Timeline pages (docs/specs/013-workspace/explorer-home.md).
+  'timeline',
   // The Google Drive mirror's sub-routes (docs/specs/022-drive-mirror/drive-mirror.md).
   'state',
   'connect',
