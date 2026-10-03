@@ -3228,6 +3228,9 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     // instead of the tab's elements while it is non-null, which is what makes
     // a slide a slide.
     presentingElements,
+    // The page a page slide is presenting (docs/specs/007-editor/infographic-pages.md "Slides"):
+    // the canvas then shows that sheet alone, as it shows the slide's elements alone.
+    presentingPageId: presentingStep?.slide.pageId ?? null,
     livePresence,
     // Live poll (docs/specs/012-collaboration/live-poll.md) — the whole ephemeral surface in one object
     // rather than a dozen flattened keys, since nothing else reads into it.

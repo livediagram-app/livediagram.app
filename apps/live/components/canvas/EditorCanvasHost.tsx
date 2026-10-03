@@ -41,6 +41,7 @@ export function EditorCanvasHost() {
     activeTabLoadState,
     activeTabLocked,
     presentingElements,
+    presentingPageId,
     slideDeck,
     slideDeckPanelPosition,
     setSlideDeckPanelPosition,
@@ -537,7 +538,14 @@ export function EditorCanvasHost() {
         tabLayers={activeTab.layers}
         tabKind={activeTab.kind}
         editorMode={editorMode.mode}
-        infographicPages={infographicPages}
+        infographicPages={
+          infographicPages && presentingPageId
+            ? {
+                ...infographicPages,
+                pages: infographicPages.pages.filter((p) => p.id === presentingPageId),
+              }
+            : infographicPages
+        }
         whiteboardDock={whiteboardDock.whiteboard ? whiteboardDock : undefined}
         whiteboardInk={PEN_INK[surface]}
         previewDrawnArrow={(intent, startX, startY, endX, endY) =>
