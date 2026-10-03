@@ -1,5 +1,7 @@
 'use client';
 
+import type { PageKind } from '@livediagram/document';
+import { AddPageStripButton } from './AddPageStripButton';
 import {
   Fragment,
   useEffect,
@@ -62,6 +64,8 @@ type Props = Pick<
     // Explorer menu button and mode switch on a phone, which has no room for
     // them in a corner card above the strip.
     leading?: ReactNode;
+    // Illustrate mode: a + at the strip's end adds a page (AddPageStripButton).
+    onAddPage?: (kind: PageKind) => void;
   };
 // Clicks inside these don't count as "outside" the More popover: the icon
 // filter's portalled dropdown menus, and any dialog a category body opens
@@ -445,6 +449,12 @@ export function ToolbarPalette(props: Props) {
                         {moreButton}
                       </HoverCard>
                     )}
+                  </>
+                ) : null}
+                {props.onAddPage ? (
+                  <>
+                    <Divider />
+                    <AddPageStripButton onAdd={props.onAddPage} />
                   </>
                 ) : null}
               </div>

@@ -38,7 +38,9 @@ two cards, each a miniature of the kind and a line under its name:
 Arrow keys move between them, Enter or a press chooses, Escape or an outside press closes. A new
 infographic page takes the last infographic page's size and orientation (else A4 portrait); a new
 article is as [Article pages](article-pages.md) "An article" says. The popover is the same on
-a phone (a bottom sheet). The **+** is named **Add page** and shows the popover open as pressed.
+a phone (a bottom sheet). The **+** is named **Add page** and shows the popover open as pressed. In the
+Toolbar layout the strip ends, after a divider, with the same **+** (Add page), opening the same
+popover, while in Illustrate mode.
 
 A tab entering Illustrate mode with no pages stored starts with one page, its kind unchosen.
 

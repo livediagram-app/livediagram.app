@@ -514,6 +514,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
           esBoardControls={props.esBoardControls}
           themeTint={paletteTint}
           leading={menuInStrip ? explorerMenuButton : undefined}
+          onAddPage={props.illustratePages?.edit?.addPage}
         />
       ) : null}
 
