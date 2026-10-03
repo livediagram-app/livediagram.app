@@ -710,7 +710,7 @@ and the dialog stays as the one complete, browsable index of them.
   always respected and this only adds a user-forced override. The
   Experimental group, after AI Tools, holds `illustrateModeEnabled`
   ([Editor modes](editor-modes.md#experimental-modes)), on by default;
-  it emits `UI`/`Toggled`/`InfographicMode{On,Off}`.
+  it emits `UI`/`Toggled`/`IllustrateMode{On,Off}`.
 
 - **Per-tool surfaces**: none today. The pencil's ModeBanner used to
   carry a `recogniseShapes` toggle; [Two pens instead of a pen and a mode](../008-canvas/two-pens.md) replaced it with two

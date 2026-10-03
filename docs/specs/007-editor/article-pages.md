@@ -118,10 +118,10 @@ article's swatches), and a line break inside a block (Shift+Enter). Code blocks 
 - **Tab** / **Shift+Tab** in a list item move it a level in or out; Tab at the start of a
   paragraph makes it a bullet.
 - **Markdown as you type**, at the start of a block followed by Space: `#`, `##`, `###` headings;
-  `-`, `*` or `+` bullet; `1.` or `1)` numbered; `[]`, `[ ]` or `[x]` to-do; `>` quote; three
-  backticks then Enter a code block; `---` then Enter a divider. Inline: `**bold**`, `*italic*`
-  or `_italic_`, `~~struck~~`, `` `code` `` as the closing mark is typed. Undo right after a
-  conversion puts the characters back.
+  `-`, `*` or `+` bullet; `1.` or `1)` numbered; `[]`, `[ ]` or `[x]` to-do; `>` quote. Typed as
+  a block's whole text: three backticks a code block; `---`, `***` or `___` a divider, as the third
+  character lands. Inline: `**bold**`, `*italic*` or `_italic_`, `~~struck~~`, `` `code` `` as the
+  closing mark is typed. Backspace right after a conversion puts the characters back.
 - **Keyboard**: ⌘B, ⌘I, ⌘U, ⌘⇧X (strikethrough), ⌘E (inline code), ⌘K (link), ⌘⌥0 (body),
   ⌘⌥1 to ⌘⌥3 (headings), ⌘⇧7 (numbered), ⌘⇧8 (bullets), ⌘⇧9 (to-do), ⌘⇧L / E / R / J (align left,
   centre, right, justify), ⌘\ (clear formatting), ⌘Z / ⌘⇧Z (undo, redo), ⌘A (all the
@@ -170,15 +170,18 @@ article's swatches), and a line break inside a block (Shift+Enter). Code blocks 
   - **Style** (a menu, each entry drawn in its own type: Text, Title, Subtitle, Heading 1, Heading
     2, Heading 3, Quote, Code);
   - **Bold**, **Italic**, **Underline**;
-  - **Colour** (a menu: text colour and highlight, from the article's swatches: the accent, ink,
-    muted, and the seven colours of the theme; highlight's are their pale tints; **None** first);
+  - **Colour** (a menu: **Text** then **Highlight**, each led by its clearing choice, **Default
+    colour** / **No highlight**; text offers the article's **Accent** and nine fixed colours chosen
+    to read on paper (Gray, Red, Orange, Amber, Green, Teal, Blue, Purple, Pink); highlight nine
+    pale tints (Yellow, Orange, Red, Green, Teal, Blue, Purple, Pink, Gray));
   - **Link**;
   - **Lists** (a menu: bulleted, numbered, to-do; indent and outdent);
   - **Alignment** (a menu: left, centre, right, justify);
   - **More formatting** (a menu: strikethrough, inline code, superscript, subscript, clear
     formatting, Article style, which opens the page panel on Style);
-  - **Insert** (a menu: Image, Table, Chart, Divider, Page break, Quote, Code, Callout; a drawing
-    starts from a shape dropped on the page).
+  - **Insert** (a menu: Image, Table, Chart, then Divider, Page break, Quote, Code; a drawing
+    starts from a shape dropped on the page or the slash menu's **Drawing**, a callout from the
+    slash menu).
   - **Comment** (⌘⌥M) and **Assign Action**, with text selected (see "Comments and actions").
 - No undo or redo (the canvas controls have them) and no word count.
 - **Narrow**: when the toolbar is wider than the canvas, it scrolls sideways.
@@ -203,7 +206,7 @@ laid out with it, holding ordinary canvas elements that move with it.
   and the arrows between them, worked on with every Diagram tool. It is a size of its own (by
   default the text width x 240 px) with grips on its bottom edge (taller or shorter), its right
   edge (wider or narrower, up to the text width, a wrapped zone two thirds of it) and its
-  bottom-right corner (both); it grows to keep its elements inside it with 16 px to spare, and never
+  bottom-right corner (both); it grows to keep its elements inside it with 24 px to spare, and never
   shrinks past them.
 - **Wrap**: **In line** (default; on its own line between blocks, aligned left, centre (default)
   or right), **Wrap left** (at the left of the text, the text running down its right) or **Wrap
@@ -353,8 +356,8 @@ ink").
   now, the writing on it included.
 - **Present**: an article page presents like any page, its writing drawn, no toolbar, no caret.
 - **Export**: PDF, PNG and SVG draw an article page's writing exactly as on screen (text as real
-  text in SVG and PDF output; rasterised in PNG), with its zones' elements, its page number and
-  its ruled lines; nothing of the editing chrome.
+  text in SVG output; rasterised in PNG, and in PDF, whose pages are images), with its zones'
+  elements, its page number and its ruled lines; nothing of the editing chrome.
 - **The Map** shows each page's text as soft grey lines.
 - **Diagram and Draw modes** show the tab's elements as always; the writing belongs to the pages
   and shows only in Illustrate mode (its zones' elements stay on the canvas where they are).
@@ -380,7 +383,8 @@ ink").
 ## Telemetry
 
 - `Tab · Changed · ArticleAdded` (the add popover's Article); `ArticleLook<Name>` (Clean,
-  Classic, Report, Notebook, Bold); `ArticleStyle` (any other style field).
+  Classic, Report, Notebook, Bold); `ArticleStyle` (any other style field); `ArticlesToPages`
+  (**Turn Into Pages** on leaving Illustrate).
 - `Element · Added · Article<Insert>` for an insert from the toolbar's Insert, the slash menu or
   a palette drop: `ArticleImage`, `ArticleTable`, `ArticleChart`, `ArticleCallout`,
   `ArticleSticky`, `ArticleDrawing`, `ArticleObject`, `ArticleDivider`, `ArticlePageBreak`,

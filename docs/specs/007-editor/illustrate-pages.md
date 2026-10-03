@@ -243,7 +243,7 @@ A **layout** is placed onto one page from its panel's **Layouts** tab, by catego
 
 ## Page actions
 
-From the page panel's footer. On a **article page** each action acts on its **whole article**
+From the page panel's footer. On an **article page** each action acts on its **whole article**
 (every page of its flow, its writing, and the elements on its pages), and reads so: **Duplicate
 article**, **Move article left / right**, **Delete article**.
 
@@ -308,7 +308,7 @@ In Illustrate mode the Export dialog exports **pages**, not the tab's content bo
 
 `Tab · Changed ·` `PageAdded`, `PageRemoved`, `PagePortrait`, `PageLandscape`, `PageSize`,
 `PageBackground`, `PagePattern`, `PageRenamed`, `PageDuplicated`, `PageMoved`, `PageLayout`,
-`PagesLaidOut`; `Document · Exported · IllustratePNG / IllustrateSVG / IllustratePDF`;
+`PagesLaidOut`, `PageKindInfographic` / `PageKindArticle` (the first page's own choice); `Document · Exported · IllustratePNG / IllustrateSVG / IllustratePDF`;
 `UI · Added · PageSlide`; `UI · Opened · SlideDeck`. Never a colour, name or layout content.
 
 ## Into pages
@@ -318,8 +318,9 @@ In Illustrate mode the Export dialog exports **pages**, not the tab's content bo
   - **No pages stored**, and content that does **not fit inside the first page**: the whole tab is
     laid out afresh.
   - **Pages stored**: each cluster (below) less than half on the pages, by area, is **stray**.
-    Stray clusters go onto new pages after the last; or, when nothing else is on a page, the tab
-    is laid out afresh (the stored pages replaced). A cluster mostly on a page that bleeds off
+    Stray clusters go onto new pages after the last; or, when nothing else is on a page and no
+    page is an article page (its writing keeps it in use), the tab is laid out afresh (the stored
+    pages replaced). A cluster mostly on a page that bleeds off
     its edge is left as it is.
   - So content left in the surround is gathered onto pages the next time the tab enters the mode.
   - The content splits into **clusters**: elements joined by a pinned arrow, and elements within

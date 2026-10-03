@@ -62,7 +62,8 @@ where it is and changes only how the next mark is made.
     "Editor mode: Diagram", over a `menu` of `menuitemradio` rows; arrow keys
     open it and move within it, wrapping, Home and End jump.
   - The same for everyone, power user mode or not.
-- **Two options, one chosen:** Diagram and Draw. Exactly one is active.
+- **One mode chosen:** Diagram, Draw or Illustrate (while it is offered, "Experimental modes").
+  Exactly one is active.
 - **Switching is instant and lossless:** no dialog, no reload, no change to the
   document; the selection is kept, an in-progress gesture or text edit is
   finished first, and the canvas viewport does not move.
@@ -72,8 +73,7 @@ where it is and changes only how the next mark is made.
   notation, and shows no switch.
 - **Zero layout shift:** the switch has a fixed size, and nothing next to it
   moves when the mode changes.
-- **Shift+D** toggles between the two modes (with more modes, it moves to
-  the next), shown in the switch's menu, `aria-keyshortcuts` and Settings ›
+- **Shift+D** moves to the next offered mode, wrapping round, shown in the switch's menu, `aria-keyshortcuts` and Settings ›
   Keyboard; a switch by key is announced politely ("Draw mode"). It obeys
   the character-key shortcuts setting.
 - **Accessible:** reachable by keyboard, its state exposed to assistive
@@ -96,14 +96,14 @@ where it is and changes only how the next mark is made.
   everyone. Nobody else's current mode changes (each person's mode on the tab is pinned once it
   opens). A visitor's switch, a locked tab and an event-storming board leave it be.
 - **New documents and new tabs open in Diagram.** Whatever mode its creator
-  is in, a new article or a tab added from the tab bar (or Quick Start)
+  is in, a new document or a tab added from the tab bar (or Quick Start)
   opens in Diagram. Only the template chosen for it changes that: the
   **Whiteboard** opens in Draw (switching its maker there too), an
   **Event Storming** board is always Diagram, and every other template,
   Blank included, opens in Diagram. An import that sets its own opening
   mode wins.
 - **Opens in:** the tab menu holds an **Opens in** submenu for editors,
-  listing every editor mode (Diagram, Draw) as a radio choice with the
+  listing every offered editor mode (Diagram, Draw, Illustrate) as a radio choice with the
   current one checked. Choosing one sets `Tab.opensIn` for everyone and
   switches the chooser's own mode on that tab to it (remembered like any
   switch), so the choice visibly lands; nobody else's current mode changes.
@@ -294,13 +294,15 @@ actions, snapping, export, laying content out into pages, page slides) is
   A viewer who cannot edit (a view role, a locked tab) gets no cog and no add
   button.
 - **Adding a page:** a round **+** (tooltip **Add page**) sits in the gap's
-  width to the right of the last page, on the row's axis. It adds a page after
-  the last, in the last page's size and orientation; it is gone at the limit,
+  width to the right of the last page, on the row's axis. It opens **Add a
+  page**, choosing the new page's kind ([Illustrate pages](illustrate-pages.md)
+  "Page kinds"); the page goes after the last; the + is gone at the limit,
   and the view then frames the new page.
 - **Content moves with its page.** Turning, resizing, moving or deleting a page
   moves the pages after it; every element whose centre lies on a page that
   moves (and an arrow's free ends) moves with it, re-centred on the page's
-  centre (`withIllustratePages`). A deleted page takes its content with it; a
+  centre (`withIllustratePages`); on an article page it keeps its place from
+  the page's top-left corner, where the writing starts. A deleted page takes its content with it; a
   turned or resized page re-fits its own content
   ([Illustrate pages](illustrate-pages.md) "Sizes"). Elements on no page stay
   where they are. Each change is one tab edit (one undo step, synced to
