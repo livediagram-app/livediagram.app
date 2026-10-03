@@ -78,4 +78,15 @@ describe('withContentPaginated', () => {
     const laid = layOutInfographicPages(out.pages);
     expect([...elementIdsOnPage(out.elements, laid, 'page-2')]).toEqual(['stray']);
   });
+
+  it('counts a cluster mostly off the pages as stray, and keeps one mostly on', () => {
+    // Page 1 spans x -397..397: 'half' pokes 80% past its right edge, 'bleed' only 20%.
+    const tab = {
+      elements: [box('kept', -50, -30), box('half', 300, 300, 500, 100)],
+      pages: [{ id: 'page-1', orientation: 'portrait' as const }],
+    };
+    expect(withContentPaginated(tab)!.pages).toHaveLength(2);
+    const bleed = { ...tab, elements: [tab.elements[0]!, box('bleed', 0, 300, 500, 100)] };
+    expect(withContentPaginated(bleed)).toBeNull();
+  });
 });

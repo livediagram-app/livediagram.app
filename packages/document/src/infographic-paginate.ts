@@ -91,15 +91,27 @@ export function contentClusters(elements: Element[], gap = PAGINATE_CLUSTER_GAP)
   return rows.flatMap((row) => row.sort((a, b) => a.box.x - b.box.x).map((c) => c.ids));
 }
 
-const overlaps = (a: Box, r: { x: number; y: number; width: number; height: number }) =>
-  a.x < r.x + r.width && a.r > r.x && a.y < r.y + r.height && a.b > r.y;
+// Under this share of its area on the pages, a cluster counts as stray.
+const STRAY_SHARE = 0.5;
+
+const overlapArea = (a: Box, r: { x: number; y: number; width: number; height: number }) =>
+  Math.max(0, Math.min(a.r, r.x + r.width) - Math.max(a.x, r.x)) *
+  Math.max(0, Math.min(a.b, r.y + r.height) - Math.max(a.y, r.y));
+
+const unionBox = (boxes: Box[]): Box =>
+  boxes.reduce((a, b) => ({
+    x: Math.min(a.x, b.x),
+    y: Math.min(a.y, b.y),
+    r: Math.max(a.r, b.r),
+    b: Math.max(a.b, b.b),
+  }));
 
 /**
  * The tab laid out into pages, or null when there is nothing to do (docs/specs/007-editor/
  * infographic-pages.md "Into pages"):
  * - with no pages stored, content that does not fit inside the first page is laid out afresh;
- * - with pages stored, content on no page at all (not even partly) is: onto new pages after the
- *   last, or afresh when every page is empty.
+ * - with pages stored, each cluster less than half on the pages (by area) is stray: stray clusters
+ *   go onto new pages after the last, or the tab is laid out afresh when nothing else is on a page.
  * At most MAX_INFOGRAPHIC_PAGES pages: clusters past the last page share it.
  */
 export function withContentPaginated<T extends Pick<Tab, 'elements'>>(
@@ -120,12 +132,21 @@ export function withContentPaginated<T extends Pick<Tab, 'elements'>>(
     });
     return fits ? null : paginate(tab, tab.elements, []);
   }
-  const stray = tab.elements.filter((el) => !laid.some((p) => overlaps(boxOf(el), p.rect)));
-  if (stray.length === 0) return null;
-  const pagesEmpty = stray.length === tab.elements.length;
+  // A cluster less than half on the pages (by area) is stray: it gets a page of its own.
+  const byId = new Map(tab.elements.map((el) => [el.id, el]));
+  const strayIds = contentClusters(tab.elements).filter((ids) => {
+    const box = unionBox(ids.map((id) => boxOf(byId.get(id)!)));
+    const area = Math.max(1, (box.r - box.x) * (box.b - box.y));
+    const onPages = laid.reduce((sum, p) => sum + overlapArea(box, p.rect), 0);
+    return onPages / area < STRAY_SHARE;
+  });
+  if (strayIds.length === 0) return null;
+  const stray = new Set(strayIds.flat());
+  const content = tab.elements.filter((el) => stray.has(el.id));
+  const pagesEmpty = stray.size === tab.elements.length;
   return pagesEmpty
     ? paginate({ ...tab, pages: undefined }, tab.elements, [])
-    : paginate(tab, stray, stored);
+    : paginate(tab, content, stored);
 }
 
 // `content` laid onto new pages after `kept` (the tab's pages that stay).

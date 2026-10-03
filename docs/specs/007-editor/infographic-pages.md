@@ -211,8 +211,10 @@ Never a colour, name or layout content.
   loose content out into pages (a viewer or a locked tab is left alone):
   - **No pages stored**, and content that does **not fit inside the first page**: the whole tab is
     laid out afresh.
-  - **Pages stored**, and content on **no page at all** (not even partly): onto new pages after
-    the last; or afresh when every page is empty (the stored pages are replaced).
+  - **Pages stored**: each cluster (below) less than half on the pages, by area, is **stray**.
+    Stray clusters go onto new pages after the last; or, when nothing else is on a page, the tab
+    is laid out afresh (the stored pages replaced). A cluster mostly on a page that bleeds off
+    its edge is left as it is.
   - So content left in the surround is gathered onto pages the next time the tab enters the mode.
   - The content splits into **clusters**: elements joined by a pinned arrow, and elements within
     120 px of each other (edge to edge), belong together.
