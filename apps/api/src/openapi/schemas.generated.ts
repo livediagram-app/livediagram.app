@@ -3910,8 +3910,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "type": "string"
       },
       "kind": {
-        "const": "article",
-        "type": "string"
+        "$ref": "#/components/schemas/PageKind"
       },
       "name": {
         "type": "string"
@@ -4497,6 +4496,13 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "type": "object"
       }
     ]
+  },
+  "PageKind": {
+    "enum": [
+      "infographic",
+      "article"
+    ],
+    "type": "string"
   },
   "PageOrientation": {
     "enum": [

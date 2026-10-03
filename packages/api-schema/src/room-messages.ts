@@ -114,6 +114,10 @@ export const PRESENCE_OP_KINDS = [
   // The room relays it only from an editor (receivers check too): a viewer must never make others'
   // elements appear to move.
   'drag-preview',
+  // Where someone is writing in an article (docs/specs/007-editor/article-pages.md "Collaboration"):
+  // their caret, as a block id and a character offset, at cursor rates, writing nothing. From any
+  // session, like the cursor: a viewer's writing takes no caret, so a viewer never sends one.
+  'article-caret',
 ] as const;
 
 // Room op kinds that DO change the document: they get a monotonic `seq` within
@@ -427,6 +431,13 @@ export type RoomOp =
   // active tab id is included so we only render cursors of
   // participants who are looking at the same tab as us.
   | { kind: 'cursor'; tabId: string; x: number | null; y: number | null }
+  // The sender's caret in an article's writing (docs/specs/007-editor/article-pages.md
+  // "Collaboration"): the top-level block it is in, by id, and how many characters into that
+  // block's text it sits, so a receiver places it in their own copy of the writing whatever they
+  // typed elsewhere. `flow: null` means the sender's writing lost the caret, so peers drop it.
+  // Throttled like the cursor; parsed with parseArticleCaret.
+  | { kind: 'article-caret'; tabId: string; flow: string; blockId: string; offset: number }
+  | { kind: 'article-caret'; tabId: string; flow: null }
   // One sample of the sender's laser-pointer trail (canvas-coords).
   // Sent on every pointer move while the sender is in laser tool
   // mode, throttled like cursor. Receivers append to a per-

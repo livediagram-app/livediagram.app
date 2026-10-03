@@ -253,6 +253,7 @@ export function useArticles(deps: {
     (flow: string, zoneId: string, action: ZoneAction) => {
       const d = latest.current;
       if (!d.canEdit || d.activeTab.locked === true) return;
+      articleHandleOf(flow)?.claimLayout();
       if ('remove' in action) track('Element', 'Changed', 'ArticleZoneRemoved');
       else if ('float' in action) {
         track('Element', 'Changed', 'ArticleZoneFloat');
@@ -365,6 +366,7 @@ export function useArticles(deps: {
     (flow: string, change: ArticleStyleChange) => {
       const d = latest.current;
       if (!d.canEdit || d.activeTab.locked === true) return;
+      articleHandleOf(flow)?.claimLayout();
       track('Tab', 'Changed', 'look' in change ? LOOK_EVENT[change.look] : 'ArticleStyle');
       setStylePreview(null);
       d.commitTabs((ts) =>

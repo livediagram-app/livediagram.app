@@ -366,8 +366,14 @@ ink").
 - Everyone on the tab sees the writing change as each person's commits land. The writing syncs
   **block by block**: two people writing in different paragraphs never overwrite each other; two
   in the same paragraph at once is last commit wins for that paragraph.
-- **Where others are writing**: a collaborator's caret shows in their colour, with their name on
-  hover, and a thin bar in the margin beside the block they are in.
+- **Where others are writing**: a collaborator's caret shows in their colour, with their name for
+  a moment after it moves and on hover, and a thin bar in the margin beside the block they are
+  in. A caret travels as presence (`article-caret`: the block's id and how many characters into
+  its text, or null when their writing loses the caret), at the cursor's rate, never stored or
+  replayed, and it is placed again in your own copy of the writing, so it stays in its block
+  whatever either of you typed. Only carets on the tab you are on show; a caret leaves with its
+  writer, and none go out while a hide-cursors vote is open. Collaborators' carets never appear in
+  an export or thumbnail.
 - Only the writer of a change writes its consequences (zone moves, pages added or removed), so
   two people's views never fight over them.
 

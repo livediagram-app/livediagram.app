@@ -164,6 +164,7 @@ import { useEditorPersistence } from './editor-persistence';
 import { useEditorRealtime } from './editor-realtime';
 import { useAssignRef, useLatest } from '@/hooks/ui/useLatest';
 import { useDragPreviewBroadcast } from '@/hooks/collab/useDragPreviewBroadcast';
+import { useArticleCaretBroadcast } from '@/hooks/collab/useArticleCaretBroadcast';
 
 export function useEditorState(opts: { embed?: boolean } = {}) {
   // Read-only embed view (docs/specs/013-workspace/embeds.md). The flag forces view behaviour
@@ -1099,6 +1100,13 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     roomRef,
     live: hydrated && !!documentId && (documentShareable || !!documentTeamId),
     activeId,
+  });
+  // Where we are writing in an article, live for collaborators (docs/specs/007-editor/article-pages.md).
+  useArticleCaretBroadcast({
+    roomRef,
+    live: hydrated && !!documentId && (documentShareable || !!documentTeamId),
+    activeId,
+    hidden: voteCursorsHidden,
   });
   // Viewport state (pan offset, zoom, the canvas wrapper ref the
   // measurements read through, and a parallel zoomRef the drag hook

@@ -302,13 +302,20 @@
   float: none;
 }
 
-/* Another person's caret (DocumentPresence) */
+/* Another person's caret (docs/specs/007-editor/article-pages.md "Collaboration", article-peers.ts):
+   a bar in their colour, taking no room; a few px either side of it answer a hover with their
+   name. */
 .article-flow .article-peer-caret {
   position: relative;
   margin-left: -1px;
-  margin-right: -1px;
+  margin-right: -5px;
+  padding-right: 4px;
   border-left: 2px solid var(--article-peer);
-  pointer-events: none;
+}
+/* The block a collaborator is in: a thin bar in the margin beside it, in their colour, drawn as a
+   shadow so it moves nothing. */
+.article-flow > [data-peer] {
+  box-shadow: -6px 0 0 -3px var(--article-peer-bar);
 }
 .article-flow .article-peer-caret::after {
   content: attr(data-name);

@@ -59,7 +59,8 @@ export function snapshotWriting(
   const elements = root.querySelectorAll<HTMLElement>('*');
   // Backgrounds and borders first, under the words.
   for (const el of Array.from(elements)) {
-    if (el.closest('.article-page-break, .article-zone')) continue;
+    // Collaborators' carets are someone else's live presence, never part of the writing.
+    if (el.closest('.article-page-break, .article-zone, .article-peer-caret')) continue;
     const cs = getComputedStyle(el);
     const rects = Array.from(el.getClientRects());
     if (!transparent(cs.backgroundColor)) {

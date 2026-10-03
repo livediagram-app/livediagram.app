@@ -54,6 +54,9 @@ import { snapshotBars, snapshotWriting } from '@/lib/article/article-snapshot';
 import { removeSlashQuery, slashPlugin, type SlashBridge } from '@/lib/article/article-slash';
 import { filterSlashItems, type SlashItem } from '@/lib/article/article-slash-items';
 import { setBlockStyle, toggleList } from '@/lib/article/article-commands';
+import { caretOf } from '@/lib/article/article-caret';
+import { setLocalArticleCaret, useArticlePeers } from '@/lib/article/article-carets-store';
+import { articlePeersPlugin, onlyPeers, setArticlePeers } from '@/lib/article/article-peers';
 import { SlashMenu } from './SlashMenu';
 import type { ArticleInsert } from '@/hooks/editor/useArticles';
 import { debugLog } from '@/lib/debug-log';
@@ -238,6 +241,9 @@ export default function ArticleEditor(props: ArticleEditorProps) {
   const handleRef = useRef<ArticleEditorHandle | null>(null);
   const publish = (view: EditorView) => {
     if (!view.hasFocus() || !handleRef.current) return;
+    // Where we are writing, for collaborators (docs/specs/007-editor/article-pages.md
+    // "Collaboration"); a viewer's writing takes no caret.
+    if (latest.current.editable) setLocalArticleCaret(latest.current.flow, caretOf(view.state));
     setActiveArticle({
       handle: handleRef.current,
       pageId: caretPage(view),
@@ -302,6 +308,7 @@ export default function ArticleEditor(props: ArticleEditorProps) {
         blockIdsPlugin,
         decorationsPlugin(isEditable),
         todoTogglePlugin(isEditable),
+        articlePeersPlugin,
         gapCursor(),
       ],
     });
@@ -386,6 +393,8 @@ export default function ArticleEditor(props: ArticleEditorProps) {
         const v = viewRef.current;
         if (!v) return;
         v.updateState(v.state.apply(tr));
+        // Collaborators' carets arriving change nothing of ours: no commit, no toolbar update.
+        if (onlyPeers(tr)) return;
         if (tr.docChanged) {
           if (!tr.getMeta('article-remote')) {
             lastLocal.current = Date.now();
@@ -419,7 +428,9 @@ export default function ArticleEditor(props: ArticleEditorProps) {
           // The article stays active (its page keeps its toolbar) until a press lands off its
           // pages (PageToolbar); only the focus goes.
           window.setTimeout(() => {
-            if (!v.hasFocus()) blurActiveArticle(latest.current.flow);
+            if (v.hasFocus()) return;
+            blurActiveArticle(latest.current.flow);
+            setLocalArticleCaret(latest.current.flow, null);
           }, 0);
           return false;
         },
@@ -521,6 +532,9 @@ export default function ArticleEditor(props: ArticleEditorProps) {
       },
       focus: () => view.focus(),
       selection: () => selectionStateOf(view.state),
+      claimLayout: () => {
+        lastLocal.current = Date.now();
+      },
       caretRect: () => {
         try {
           const c = view.coordsAtPos(view.state.selection.head);
@@ -697,6 +711,7 @@ export default function ArticleEditor(props: ArticleEditorProps) {
       view.destroy();
       viewRef.current = null;
       clearActiveArticle(latest.current.flow);
+      setLocalArticleCaret(latest.current.flow, null);
     };
     // Created once per article: everything it reads is read through refs.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -741,6 +756,14 @@ export default function ArticleEditor(props: ArticleEditorProps) {
     props.interactive,
     props.styleOverride,
   ]);
+
+  // Collaborators' carets in this article: drawn by the peers plugin, brought in by a transaction
+  // that changes no text.
+  const peers = useArticlePeers(props.flow);
+  useLayoutEffect(() => {
+    const view = viewRef.current;
+    if (view) view.dispatch(setArticlePeers(view.state, peers));
+  }, [peers]);
 
   // A request to put the caret in this article (a new article: its title).
   const request = props.focusRequest;

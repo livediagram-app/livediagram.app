@@ -36,6 +36,7 @@ import { sameFill, withBackgroundPatch } from '@/lib/illustrate-page-paint';
 import { debugLog } from '@/lib/debug-log';
 import { clearLocalPreview, localPreview, setLocalPreview } from '@/lib/drag-preview';
 import { track } from '@/lib/telemetry';
+import { articleHandleOf } from '@/lib/article/article-editor-store';
 
 export type IllustratePageEdits = {
   setOrientation: (pageId: string, next: PageOrientation) => void;
@@ -122,6 +123,11 @@ export function illustratePageEdits({
   // was on it before stays on it, scaled down as one where it no longer fits
   // (withContentFittedToPage). A document's pages all change together; its writing reflows and
   // its zones follow, so nothing is fitted.
+  // An article's pages re-flowing is this person's layout to settle (its zones' elements).
+  const claimArticleLayout = (pageId: string) => {
+    const flow = page(pageId)?.flow;
+    if (flow) articleHandleOf(flow)?.claimLayout();
+  };
   const reshapePage = (pageId: string, patch: (p: IllustratePage) => IllustratePage) =>
     commitTab((t) => {
       const ps = illustratePagesOf(t);
@@ -136,12 +142,14 @@ export function illustratePageEdits({
   const setOrientation = (pageId: string, next: PageOrientation) => {
     if (page(pageId)?.orientation === next) return;
     track('Tab', 'Changed', next === 'landscape' ? 'PageLandscape' : 'PagePortrait');
+    claimArticleLayout(pageId);
     reshapePage(pageId, (p) => ({ ...p, orientation: next }));
     debugLog('[illustrate-page] orientation set', { tabId, pageId, orientation: next });
   };
   const setSize = (pageId: string, size: PageSizeId) => {
     if ((page(pageId)?.size ?? 'a4') === size) return;
     track('Tab', 'Changed', 'PageSize');
+    claimArticleLayout(pageId);
     reshapePage(pageId, (p) => {
       const { size: _drop, ...rest } = p;
       return size === 'a4' ? rest : { ...rest, size };

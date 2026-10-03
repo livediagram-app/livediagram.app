@@ -68,6 +68,9 @@ export type ArticleEditorHandle = {
     x: number;
     y: number;
   } | null;
+  // This person is about to change the writing's layout from outside it (a zone's bar, the style):
+  // the layout that follows is theirs to settle (zone elements moved, pages added or removed).
+  claimLayout: () => void;
   // What the selection is now (styles, marks, list), whether or not the writing has focus.
   selection: () => ArticleSelectionState;
   // The caret put at the writing nearest a screen point (a press on the page's blank paper).
