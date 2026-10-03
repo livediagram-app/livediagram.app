@@ -1,9 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import {
-  nextFrecencyKey,
-  type HomeResponse,
-  type HomeTimelinePage,
-} from '@livediagram/api-schema';
+import { nextFrecencyKey, type HomeResponse, type HomeTimelinePage } from '@livediagram/api-schema';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import { recordDocumentOpen } from '../home/record-open';
 import {

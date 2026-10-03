@@ -107,7 +107,9 @@ test('a teammate’s work on a team document reaches Home, named and placed', as
   const comment = recent.getByRole('link', { name: /^Bob commented on Payments architecture/ });
   await expect(comment).toContainText('“Split this out?”');
   await expect(comment).toContainText('Platform team');
-  await expect(recent.getByRole('link', { name: /^Bob edited Payments architecture/ })).toBeVisible();
+  await expect(
+    recent.getByRole('link', { name: /^Bob edited Payments architecture/ }),
+  ).toBeVisible();
 
   await expect(
     page
