@@ -88,10 +88,17 @@ where it is and changes only how the next mark is made.
   opens in Draw. A template or import that sets its own opening mode wins.
 - **Opens in:** the tab menu holds an **Opens in** submenu for editors,
   listing every editor mode (Diagram, Draw) as a radio choice with the
-  current one checked. Choosing one sets `Tab.opensIn` for everyone; it does
-  not switch anyone's current mode, including the chooser's. The submenu
-  lists modes from one catalogue, so a further mode joins it as one entry.
-  Not offered on event-storming boards.
+  current one checked. Choosing one sets `Tab.opensIn` for everyone and
+  switches the chooser's own mode on that tab to it (remembered like any
+  switch), so the choice visibly lands; nobody else's current mode changes.
+  Choosing the already-checked mode still switches the chooser to it. The
+  submenu lists modes from one catalogue, so a further mode joins it as one
+  entry. Not offered on event-storming boards; greyed out on a locked tab.
+- **The tab pill shows what it opens in.** Each tab pill leads with the
+  icon of its opening mode (the same glyph the mode switch and the Opens in
+  choices use), tinted with the tab's theme accent. Changing Opens in
+  changes the icon for everyone; a person's own switch does not. An
+  event-storming board opens in Diagram, so it shows the Diagram icon.
 
 ## One look
 

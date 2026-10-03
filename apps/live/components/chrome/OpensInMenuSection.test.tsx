@@ -40,10 +40,10 @@ describe('OpensInMenuSection', () => {
     expect(onChange).toHaveBeenCalledWith('diagram');
   });
 
-  it('does nothing for the mode already chosen', () => {
+  it('passes the mode already chosen through, so it can switch the chooser back to it', () => {
     const { onChange } = setup();
     fireEvent.click(screen.getByRole('menuitemradio', { name: /Draw/ }));
-    expect(onChange).not.toHaveBeenCalled();
+    expect(onChange).toHaveBeenCalledWith('draw');
   });
 
   it('greys every choice out on a locked tab', () => {
