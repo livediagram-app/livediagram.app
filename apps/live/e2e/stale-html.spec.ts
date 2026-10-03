@@ -66,8 +66,12 @@ test('back after a deploy brings the Explorer back, never a white screen', async
 
   expect((await page.request.post('/__e2e/assets-out-of-cache')).ok()).toBe(true);
   await page.goto('/explorer/unsorted');
-  const recent = page.getByRole('button', { name: /^Recent/ });
-  await expect(recent).toBeVisible({ timeout: 30_000 });
+  // The Explorer drawn: its sidebar's Home row.
+  const home = page
+    .getByRole('navigation', { name: 'Explorer' })
+    .first()
+    .getByRole('treeitem', { name: /^Home/ });
+  await expect(home).toBeVisible({ timeout: 30_000 });
   // The page's own colour, styles applied: an unstyled page would be transparent (white).
   const styled = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
   expect(styled).not.toBe('rgba(0, 0, 0, 0)');
@@ -89,7 +93,7 @@ test('back after a deploy brings the Explorer back, never a white screen', async
 
   await page.goBack();
   await expect(page).toHaveURL(/\/explorer\/unsorted$/);
-  await expect(recent).toBeVisible({ timeout: 20_000 });
+  await expect(home).toBeVisible({ timeout: 20_000 });
   // Its styles applied, as before the deploy: not an unstyled white page.
   await expect
     .poll(() => page.evaluate(() => getComputedStyle(document.body).backgroundColor))

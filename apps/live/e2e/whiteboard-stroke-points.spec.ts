@@ -227,7 +227,8 @@ test('a peer’s pen stroke reaches the owner live, packed', async ({ page, brow
     .poll(() => ownerPage.locator('[role="img"][aria-label$="(Online)"]').count())
     .toBeGreaterThanOrEqual(2);
 
-  await drawWave(peerPage, { x: 420, y: 420 });
+  // Open board, clear of the panels docked top-left (Explorer, and the quick style panel beside it).
+  await drawWave(peerPage, { x: 620, y: 620 });
   await expect(sketches(ownerPage)).toHaveCount(1);
   await expect
     .poll(async () => {
