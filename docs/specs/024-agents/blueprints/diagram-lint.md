@@ -33,7 +33,7 @@ Scope, by file:
 | `packages/api-schema/src/document-views.ts` (planned)                 | `VIEW_NAMES` gains `lint`                                                                                 |
 | `packages/document/src/svg-render-primitives.ts`                      | `LABEL_ESTIMATE_CHAR_EM`, `estimatedLabelMeasure`; `labelMeasure`'s fallback calls it                     |
 | `packages/document/src/svg-render-describe.ts`, `svg-render.ts`       | `drawsStandardLabel` (lifted from `svgBoxed`'s label condition) and `labelRoom`                           |
-| `packages/document/src/graph-input.ts` (planned)                      | The moved MCP graph input: `layoutGraph(input, { makeEdgeId })` passes the id option through              |
+| `packages/document/src/graph-input.ts`                                | The moved MCP graph input: `layoutGraph(input, { makeEdgeId })` passes the id option through              |
 | `packages/document/src/{element-refs,containment}.ts`                 | Shared homes, consumed here: `elementRefs`, `isContainer`, `containerMap`                                 |
 | `apps/api/src/routes/document-views-route.ts` (planned)               | `answerTabView` answers `view=lint` with `lintTab`                                                        |
 | `apps/api/src` changeset route (agent-changesets blueprint)           | Lints the result tab; `lintFooterPart` fills the footer's lint slot; `lint` on the response               |

@@ -446,7 +446,7 @@ model leaves colours to the theme (§4.6) holds for every themed element; a
 sticky is not themed at all (it keeps its amber across every theme), so its
 `fillColor` / `textColor` are content, and the notes say so.
 
-**The server makes these kinds safe to author** (`apps/mcp/src/element-normalise.ts`),
+**The server makes these kinds safe to author** (`packages/document/src/element-normalise.ts`),
 before validation, on every element path (create, add_tab, update in either
 mode), so a near-miss draws correctly instead of failing the call or drawing
 wrongly:

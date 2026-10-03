@@ -11,20 +11,18 @@
 //    clustered layout), tree or mindmap, in the requested direction.
 //  - The arrows get their routing (lines), defaulting per style.
 
+import { autoLayoutElements, type LayoutStyle } from './auto-layout';
+import { layoutClusteredGraph, sweepEdgelessNodes } from './auto-layout-clusters';
+import { withOrthogonalBends } from './arrow-orthogonal';
+import type { ArrowStyle } from './arrow-style';
 import {
-  autoLayoutElements,
   graphToElements,
-  layoutClusteredGraph,
-  parseMermaid,
-  sweepEdgelessNodes,
-  type ArrowStyle,
-  type Element,
   type GraphCluster,
   type GraphEdge,
   type GraphNode,
-  type LayoutStyle,
-  withOrthogonalBends,
-} from '@livediagram/document';
+} from './graph-authoring';
+import { parseMermaid } from './mermaid';
+import type { Element } from './index';
 
 export const GRAPH_LABEL_MAX = 40;
 

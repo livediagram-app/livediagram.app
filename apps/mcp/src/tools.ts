@@ -3,7 +3,6 @@
 // — no business logic the editor doesn't already own. The calling LLM produces
 // the elements; these tools validate, lay out, persist, and render. The
 // shared result / auth / tab-building plumbing lives in tool-helpers.ts.
-import { layoutGraph, resolveGraphInput } from './graph-input';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type {
   DocumentListResponse,
@@ -11,18 +10,30 @@ import type {
   ShareLinkResponse,
   TabResponse,
 } from '@livediagram/api-schema';
-import { coerceShapeKind, isValidTab, type Element, type Tab } from '@livediagram/document';
 import {
+  applyLayout,
+  buildGraphTab,
+  buildTab,
+  coerceShapeKind,
+  isValidTab,
+  landWorkshopArrivals,
   lanesToFront,
+  layoutGraph,
   mergeElementUpdate,
   normaliseElement,
   normaliseElements,
-} from './element-normalise';
+  resolveGraphInput,
+  type Element,
+  type Tab,
+} from '@livediagram/document';
 import {
   TEMPLATES,
   TEMPLATE_CATEGORIES,
+  buildTemplateTab,
+  resolveTemplate,
   templateFamilyOf,
   templateCategory,
+  validTemplateKinds,
   type TemplateKind,
 } from '@livediagram/templates';
 import {
@@ -45,15 +56,6 @@ import {
   type Extra,
 } from './tool-helpers';
 import { imageResult } from './image-result';
-import {
-  applyLayout,
-  buildTab,
-  buildGraphTab,
-  buildTemplateTab,
-  landMcpArrivals,
-  resolveTemplate,
-  validTemplateKinds,
-} from './tab-builders';
 import { registerTool } from './tool-annotations';
 import {
   addTabOutput,
@@ -433,7 +435,7 @@ export function registerTools(server: McpServer, env: Env): void {
           : fixed;
       // On an event-storming tab the workshop notes this call added or moved
       // land on lanes (docs/specs/021-event-storming/event-storming.md "Always on a lane").
-      const elements = landMcpArrivals(
+      const elements = landWorkshopArrivals(
         tab as Tab,
         laidOut,
         args.mode === 'replace' ? 'replace' : 'ops',

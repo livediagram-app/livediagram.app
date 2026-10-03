@@ -15,11 +15,11 @@ Scope, by file:
 
 | File                                                                                      | Role                                                                                                       |
 | ----------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| `packages/api-schema/src/changesets.ts` (planned)                                         | Constants, header names, id pattern, error codes, wire types (CS35)                                        |
+| `packages/api-schema/src/changesets.ts`                                                   | Constants, header names, id pattern, error codes, wire types (CS35)                                        |
 | `packages/api-schema/src/index.ts`                                                        | `TabRecord.rev`; re-exports `changesets.ts`                                                                |
 | `packages/api-schema/src/room-messages.ts`                                                | `RoomOp` `changeset`; `select` gains `elementIds`; `SYSTEM_OP_KINDS` gains `changeset`                     |
 | `packages/api-schema/src/telemetry-schema.ts`                                             | Category `Agent`; actions `Conflicted`, `Held` (`Applied`, `Reverted`, `Opened` exist)                     |
-| `packages/document/src/element-fingerprint.ts` (planned)                                  | `canonicalElementJson`, `elementFingerprint`                                                               |
+| `packages/document/src/element-fingerprint.ts`                                            | `canonicalElementJson`, `elementFingerprint`                                                               |
 | `packages/document/src/comments.ts`                                                       | Exports `LIVE_ELEMENT_FIELDS`; `opForTheWire` strips comment author ids from a `changeset` op              |
 | `packages/document/src/element-ops.ts`                                                    | `invertElementOps(before, ops)`, shared by the engine and the revert                                       |
 | `apps/api/migrations/0066_agent_changesets.sql` (planned)                                 | `tabs.rev`, the `tabs_rev_advances` trigger, `agent_changesets`, `agent_changeset_parts`                   |
@@ -629,7 +629,7 @@ type `frontDoorOf(request)`: `Mcp`, `Cli`, `Api` or, for the toast's Undo, `Edit
 | Id `cs_` + 10 base32, minted by the api                                  | `apps/api/src/changesets/changeset-id.test.ts` (planned)                                                             |
 | One tab per changeset; a new tab is a replace on a missing id            | `apps/api/src/routes/changesets.test.ts` (planned) "creates a tab", "refuses another document's tab"                 |
 | Agent = token; absent for a session                                      | `changesets.test.ts` "records the token", "records no token for a session"                                           |
-| Summary up to 80                                                         | `packages/api-schema/src/changesets.test.ts` (planned); `changesets.test.ts` "refuses a long summary"                |
+| Summary up to 80                                                         | `packages/api-schema/src/changesets.test.ts`; `changesets.test.ts` "refuses a long summary"                          |
 | Atomic; a rejection writes nothing and says why                          | `changesets.test.ts` "writes nothing on any refusal" (tab row, record, parts, relay all absent)                      |
 | Whole-tab PUT is the editor's; a token is refused 405                    | `apps/api/src/routes/tab-put-route.test.ts` (planned) "token PUT answers use_changesets"                             |
 | Tab rename route, relayed as `document-meta`                             | `apps/api/src/routes/tab-name-route.test.ts` (planned); `document-room.test.ts` "/mutation sequences document-meta"  |
@@ -665,7 +665,7 @@ type `frontDoorOf(request)`: `Mcp`, `Cli`, `Api` or, for the toast's Undo, `Edit
 | Token write limit                                                        | `index.test.ts` "a changeset counts against the token's writes"                                                      |
 | Logs                                                                     | each api test above asserts its fingerprint on a spied `console`                                                     |
 | Telemetry, `Editor` type, Show tracked                                   | `changesets.test.ts` telemetry rows; `useChangesetFeed.test.tsx`; `apps/telemetry` catalogue suite                   |
-| Fingerprint stability across api, CLI and MCP                            | `packages/document/src/element-fingerprint.test.ts` (planned) (golden values, key order, live fields)                |
+| Fingerprint stability across api, CLI and MCP                            | `packages/document/src/element-fingerprint.test.ts` (golden values, key order, live fields)                          |
 | Room op vocabulary                                                       | `room-op-vocabulary.test.ts` stays green with the `changeset` branch                                                 |
 | OpenAPI parity                                                           | `apps/api/src/openapi/*.test.ts`                                                                                     |
 | Owner columns                                                            | `account-owner-columns.test.ts` entry for `agent_changesets.author_id`                                               |
@@ -676,7 +676,7 @@ keeps it, and Undo reverts it.
 
 ## Constants and configuration
 
-In `packages/api-schema/src/changesets.ts` (planned) (CS35):
+In `packages/api-schema/src/changesets.ts` (CS35):
 
 | Constant                         | Value                  | Provenance                                           | Safe range        |
 | -------------------------------- | ---------------------- | ---------------------------------------------------- | ----------------- |

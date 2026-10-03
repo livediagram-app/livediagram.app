@@ -515,6 +515,12 @@ export * from './auto-layout';
 // Cluster-aware graph layout (docs/specs/020-import-export/mermaid.md): Mermaid subgraphs as frames.
 export * from './auto-layout-clusters';
 
+// Authoring input shared by the MCP, the api and the CLI (docs/specs/015-api/mcp-server.md §4.7,
+// §4.7a): raw elements made safe, graph input capped and laid out, and finished tabs built.
+export * from './element-normalise';
+export * from './graph-input';
+export * from './tab-builders';
+
 // Shared by the editor's text export + import and reusable by the api / MCP.
 
 // Headless SVG renderer (docs/specs/015-api/mcp-server.md §5): per-element drawers + renderElementsToSvg,

@@ -9,7 +9,6 @@
 // isValidTab in the document package stays the runtime guard, so
 // the structure still lives in one authoritative place (this string is guidance,
 // not a second validator).
-import { GRAPH_LABEL_MAX } from './graph-input';
 import { z } from 'zod';
 import {
   ANCHORS,
@@ -18,6 +17,7 @@ import {
   CODE_THEMES,
   ELEMENT_TYPES,
   ENTITY_MAX_FIELDS,
+  GRAPH_LABEL_MAX,
   NAME_MAX_LENGTH,
   SHAPE_KINDS,
   STICKY_PRESETS,

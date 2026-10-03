@@ -50,7 +50,7 @@ What works well and should carry over:
 
 - Id-addressed, ordered, atomic (one `PUT`, so all or nothing).
 - Positions preserved; only touched elements are normalised (`normaliseElement`).
-- `update` is a shallow merge (`mergeElementUpdate` in `apps/mcp/src/element-normalise.ts`), close
+- `update` is a shallow merge (`mergeElementUpdate` in `packages/document/src/element-normalise.ts`), close
   to JSON Merge Patch at the top level.
 - Off-vocabulary shape kinds are coerced; lanes are kept painting behind (`lanesToFront`);
   event-storming arrivals land on lanes (`landMcpArrivals`).
@@ -649,7 +649,7 @@ When this becomes a spec, the deltas are:
 - Penpot MCP: <https://github.com/penpot/penpot-mcp>
 - VS Code `WorkspaceEdit`: <https://code.visualstudio.com/api/references/vscode-api#WorkspaceEdit>
 - Kubernetes declarative management, three-way merge: <https://kubernetes.io/docs/tasks/manage-kubernetes-objects/declarative-config/>
-- livediagram: `apps/mcp/src/tools.ts`, `apps/mcp/src/element-normalise.ts`, `apps/mcp/src/schema.ts`,
+- livediagram: `apps/mcp/src/tools.ts`, `packages/document/src/element-normalise.ts`, `apps/mcp/src/schema.ts`,
   `packages/document/src/element-ops.ts`, `element-deltas.ts`, `collab-ledger.ts`, `validate.ts`,
   `mermaid-serialise.ts`, `arrow-rebind.ts`, `anchor-choice.ts`, `graph-authoring.ts`,
   `apps/api/src/routes/document-subresource-routes.ts`, `apps/api/src/db/tabs.ts`,

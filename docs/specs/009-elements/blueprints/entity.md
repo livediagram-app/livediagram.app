@@ -16,7 +16,7 @@ Scope, by file:
 | `packages/document/src/svg-render-data.ts`                   | `svgEntityRows`: rule and rows in the headless render |
 | `packages/document/src/label-font.ts`                        | `LABEL_FONT_PX`, `labelFontPx`: the title's px table  |
 | `packages/document/src/graph-authoring.ts`                   | `entityNode`: a graph node with fields is an entity   |
-| `apps/mcp/src/element-normalise.ts`                          | `normaliseEntity`: an authored box fits its rows      |
+| `packages/document/src/element-normalise.ts`                 | `normaliseEntity`: an authored box fits its rows      |
 | `apps/live/components/canvas/EntityView.tsx`                 | `EntityView`: the canvas rule and rows                |
 | `apps/live/components/canvas/label-style.ts`                 | `FIXED_FONT_PX` (re-export of `LABEL_FONT_PX`)        |
 | `apps/live/hooks/canvas/useDataShapeSetters.ts`              | `setEntityFieldsSelected`                             |
@@ -159,7 +159,7 @@ None in code today [GA1].
 | -------------------------------------------- | ------------------------------------------------------------- | -------------------------------------------------- |
 | Band follows text size, 30 floor             | entityHeaderHeight (two cases)                                | `packages/document/src/entity-geometry.test.ts`    |
 | Authored height shows every row              | entityHeight (two cases)                                      | `packages/document/src/entity-geometry.test.ts`    |
-| MCP write grows the box to its rows          | aligns an entity title top-left and grows the box to its rows | `apps/mcp/src/element-normalise.test.ts`           |
+| MCP write grows the box to its rows          | aligns an entity title top-left and grows the box to its rows | `packages/document/src/element-normalise.test.ts`  |
 | Export keeps the card box and draws a body   | still frames a record; every kind with a body                 | `packages/document/src/export-consistency.test.ts` |
 | Class template uses entities, fields as rows | class diagram drops four entity classes                       | `apps/live/lib/templates.test.ts`                  |
 | Bounds 40 / 80, `type` optional (I1)         | none [GA14]                                                   |                                                    |
