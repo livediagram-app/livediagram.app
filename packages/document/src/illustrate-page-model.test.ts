@@ -94,12 +94,19 @@ describe('a page', () => {
   });
 
   it('names itself by its name, or its place once there are several', () => {
-    expect(pageLabel({ orientation: 'portrait' }, 0, 1)).toBe('A4 · Portrait');
-    expect(pageLabel({ orientation: 'landscape' }, 1, 2)).toBe('Page 2 · A4 · Landscape');
-    expect(pageLabel({ orientation: 'portrait', size: 'square', name: 'Launch' }, 0, 3)).toBe(
-      'Launch · Square',
+    expect(pageLabel({ orientation: 'portrait' }, 0, 1)).toBe('A4 · Portrait · Infographic');
+    expect(pageLabel({ orientation: 'landscape' }, 1, 2)).toBe(
+      'Page 2 · A4 · Landscape · Infographic',
     );
-    expect(pageLabel({ orientation: 'landscape', size: 'wide' }, 0, 1)).toBe('Slide (16:9)');
+    expect(pageLabel({ orientation: 'portrait', size: 'square', name: 'Launch' }, 0, 3)).toBe(
+      'Launch · Square · Infographic',
+    );
+    expect(pageLabel({ orientation: 'landscape', size: 'wide' }, 0, 1)).toBe(
+      'Slide (16:9) · Infographic',
+    );
+    expect(pageLabel({ orientation: 'portrait', kind: 'article' }, 1, 2)).toBe(
+      'Page 2 · A4 · Portrait · Article',
+    );
   });
 
   it('lays mixed sizes out in a row, each centred on the axis', () => {

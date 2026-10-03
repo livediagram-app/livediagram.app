@@ -279,8 +279,8 @@ actions, snapping, export, laying content out into pages, page slides) is
     (`MAX_ILLUSTRATE_PAGES`).
 - **The surround** is the tab's own canvas: its colour and pattern, and every
   canvas setting, apply behind the pages exactly as in Diagram mode.
-- **Each page's label** sits above its top-left corner (**A4 · Portrait**, or
-  **Page 2 · A4 · Landscape** once there is more than one, or its name), and
+- **Each page's label** sits above its top-left corner (**A4 · Portrait · Infographic**, or
+  **Page 2 · A4 · Landscape · Article** once there is more than one, or its name), and
   **its settings cog** above its top-right, both held at one screen size at any
   zoom. The cog (tooltip **Page settings**, or **Page 2 settings**) opens the
   **page panel** ([Illustrate pages](illustrate-pages.md) "The page panel").

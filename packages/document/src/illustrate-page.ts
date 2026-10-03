@@ -247,10 +247,11 @@ export function pageSizeLabel(page: Pick<IllustratePage, 'orientation' | 'size'>
   return PAGE_SIZES[page.size ?? 'a4'][page.orientation];
 }
 
-/** The label above a page: its name, or "Page n" once there are several, then its size and, where
- *  it has one, its orientation ("Page 2 · A4 · Landscape", "Launch · Square"). */
+/** The label above a page: its name, or "Page n" once there are several, then its size, where it
+ *  has one its orientation, and its kind ("Page 2 · A4 · Landscape · Infographic",
+ *  "Launch · Square · Article"). */
 export function pageLabel(
-  page: Pick<IllustratePage, 'orientation' | 'size' | 'name'>,
+  page: Pick<IllustratePage, 'orientation' | 'size' | 'name' | 'kind'>,
   index: number,
   count: number,
 ): string {
@@ -264,6 +265,7 @@ export function pageLabel(
   if (pageHasOrientation(page) && (size === 'a4' || size === 'letter' || size === 'a3')) {
     parts.push(page.orientation === 'portrait' ? 'Portrait' : 'Landscape');
   }
+  parts.push(pageKindOf(page) === 'article' ? 'Article' : 'Infographic');
   return parts.join(' · ');
 }
 

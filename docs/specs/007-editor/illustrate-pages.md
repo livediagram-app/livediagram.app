@@ -111,9 +111,10 @@ a page slide of a deleted page stays empty rather than finding a new page under 
   one, about the page's centre, until it does: text elements' text scales with it (`textScale`)
   and arrows' bends with their lines; a shape's own label keeps its size. Nothing is cut off. The
   pages after it move along. One edit, one undo.
-- The page label reads `<name or Page n> · <size label> · <Portrait|Landscape>`. Only the paper
-  sizes (A4, US Letter, A3) add the orientation: a square has none, and the post, story and slide
-  labels already say which way they face. No `Page n` while there is one page and no name.
+- The page label reads `<name or Page n> · <size label> · <Portrait|Landscape> · <Infographic|Article>`.
+  Only the paper sizes (A4, US Letter, A3) add the orientation: a square has none, and the post,
+  story and slide labels already say which way they face. The kind always ends it. No `Page n`
+  while there is one page and no name.
 
 ## Backgrounds
 

@@ -153,6 +153,13 @@ export function ArticleFlows({
         {articles.editable ? (
           <PageToolbar
             accent={view.themeAccent}
+            topRoomOf={(pageId) => {
+              const flow = row.find((p) => p.id === pageId)?.flow;
+              const doc = flow ? articles.flows[flow] : undefined;
+              const preview = articles.stylePreview;
+              const style = preview && preview.flow === flow ? preview.style : doc?.style;
+              return articleMarginPx(style) * zoom;
+            }}
             onInsert={(what) => {
               if (active) articles.insertObject(active.handle.flow, what);
             }}
