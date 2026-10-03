@@ -89,15 +89,23 @@ page with no valid `id` or `orientation` is skipped (as today).
 
 A **layout** is placed onto one page from its panel's **Layouts** section, a grid of previews.
 
-- **Eight layouts**, each a complete, editable starting point in the tab's theme:
-  1. **Title page**: a large title, a subtitle, a wide image placeholder and a footer line.
-  2. **Big number**: one huge figure, its caption and a supporting paragraph.
-  3. **Key stats**: a title, two stat rows of three figures and a takeaway callout.
-  4. **Process**: a title, a process of four steps and a short note under each.
-  5. **Timeline**: a title and a timeline of five milestones with dates.
-  6. **Comparison**: a title and two columns, each a heading over three points.
-  7. **Chart story**: a title, a bar chart, a donut and three takeaways.
-  8. **Top tips**: a title and five numbered tips, each an icon beside a line.
+- **Eight layouts**, each a complete, editable starting point in the tab's theme. Most open with
+  a title and a lead line. A **tall** page (not wider than 1.15 times its height) stacks; a
+  **wide** one sets things side by side:
+  1. **Title page**: an eyebrow line, a large title, a subtitle, an image placeholder (below on a
+     tall page, to the right on a wide one) and a footer line.
+  2. **Big number**: one huge figure, its caption, a paragraph and a progress bar.
+  3. **Key stats**: two stat rows of three figures, a trend line where the page has room, and a
+     Takeaway callout.
+  4. **Process**: four steps. Tall: numbered discs down the page joined by arrows, a name and note
+     beside each. Wide: a process strip, a note under each step and a "Why it works" callout.
+  5. **Timeline**: five dated milestones. Tall: year discs down the page joined by arrows. Wide: a
+     timeline rail with a name and note under each point, and a stat row.
+  6. **Comparison**: two columns (Before / After), each a heading over three points with icons,
+     and a "The verdict" callout.
+  7. **Chart story**: a bar chart, a progress ring and three takeaways with icons.
+  8. **Top tips**: five tips, each an icon beside a line.
+- **Body type** is the page-sized medium and large text sizes, never the small one.
 - **Fitted to the page**: a layout is laid out in proportions of the page (margins of 7% of the
   short side), so it fits any size and orientation; its titles use the fit-to-box text size so they
   scale with their box.
@@ -105,7 +113,12 @@ A **layout** is placed onto one page from its panel's **Layouts** section, a gri
   asks first, inline: **Replace this page's content?** with **Replace** and **Cancel**. Replace
   removes every element whose centre is on the page (and arrows pinned to one), then places the
   layout. Either way it is one change: one undo step.
-- Placed elements are ordinary elements, selected afterwards so the next move is the user's.
+- Placed elements are ordinary elements. The selection is cleared (nothing replaced stays
+  selected) and the panel closes, so the finished page reads clean.
+- **An empty page invites a layout**: a "Start from a layout" button sits at its centre (held at
+  one screen size) and opens the panel on Layouts. The panel opens on Page from the cog.
+- **Previews are the real layout**: each tile draws the layout as built for this page's size and
+  orientation, as a wireframe (text as bars, images shaded, icons as dots).
 
 ## Page actions
 
