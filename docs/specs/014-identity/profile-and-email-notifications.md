@@ -12,7 +12,7 @@ notification email is ever sent.
 
 ## 1. Where it lives
 
-**In the Settings dialog** ([User preferences](../007-editor/user-preferences.md)), under **Account** and **Notifications**.
+**In the Settings dialog** ([User preferences](../007-editor/user-preferences.md)), under **Account** and its **Notifications** sub-category.
 
 It began as its own Explorer section at `/explorer/profile`, which made sense
 when Settings held a handful of editor toggles. Once every preference in the

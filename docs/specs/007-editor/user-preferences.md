@@ -524,18 +524,18 @@ and the dialog stays as the one complete, browsable index of them.
   collapsible groups), **Panels** (panel layout, panel opacity; with the
   sub-categories **Layers**, **Map**, **Collaborate** and
   **Quick Style**, one per panel),
-  **Notifications** (in-editor, plus the six email preferences),
   **Accessibility** (reduce motion, show welcome tour), **AI Tools** (assistant,
   suggested prompts, and a **Manage API Tokens** link row that opens the API
-  Tokens category), **Documents** (a **Where New Documents Go** section: one row per
+  Tokens sub-category), **Documents** (a **Where New Documents Go** section: one row per
   [default folder](../013-workspace/default-folders.md#settings) entry, with Change and Clear; not a
   preference, it reads and writes `/api/placement-defaults`), **Account** (identity, Trash, **Cloud Sync** (the cloud providers the
   deployment offers, [Google Drive mirror](../022-drive-mirror/drive-mirror.md)), delete account, see
-  [Account settings & email notifications](../014-identity/profile-and-email-notifications.md)), **API Tokens** (create, view and
+  [Account settings & email notifications](../014-identity/profile-and-email-notifications.md); with the
+  sub-categories **Notifications** (in-editor, plus the six email preferences) and **API Tokens** (create, view and
   revoke API tokens, see [Public API and tokens §3.6](../015-api/public-api-and-tokens.md#36-management--the-settings-dialogs-api-tokens-category);
-  only when sign-in is enabled on the deployment), **Privacy** (telemetry).
+  only when sign-in is enabled on the deployment)), **Privacy** (telemetry).
   Editor leads because it is what most
-  people came to change; Account, API Tokens and Privacy sit at the end, where the
+  people came to change; Account and Privacy sit at the end, where the
   account-shaped things belong.
 
   **A link row** (`kind: 'link'`) opens another category of the same dialog
@@ -559,7 +559,12 @@ and the dialog stays as the one complete, browsable index of them.
   arrows, middle-mouse pan and power user mode all act in both. There is no
   **Diagram** sub-category while no setting applies only to Diagram mode: a
   category with no rows is never shown, and one is added beside Draw the day
-  a Diagram-only setting lands.
+  a Diagram-only setting lands. **Account** holds **Notifications** and
+  **API Tokens**: both belong to the person rather than the editor. Their
+  category ids (`notifications`, `tokens`) predate the nesting and are
+  kept, so every `?settings=notifications` / `?settings=tokens` deep link
+  (email footers, the old `/explorer/profile` redirect) and every in-app
+  link to them still opens the same pane.
 
   Panels holds Layers, Map, Collaborate and Quick Style,
   one per panel, each its own pane. Each opens with that panel's **Enable
@@ -583,7 +588,7 @@ and the dialog stays as the one complete, browsable index of them.
   and that pane ends with its sub-categories as rows in the root list's
   grouped card, each pushing its own pane, the way iOS Settings nests a
   screen. Back from a sub-category returns to its parent's pane (the back
-  control reads "Panels", or "Editor"), and back from there to the root list. On the
+  control reads "Panels", "Editor" or "Account"), and back from there to the root list. On the
   phone's root list the sub-categories show beneath the parent only for a
   search hit. (A disclosure chevron on the phone was tried and dropped: its
   right-pointing arrow read as the row's own "go" arrow, so the
@@ -592,9 +597,11 @@ and the dialog stays as the one complete, browsable index of them.
   mark in the editor (Lucide layers for Layers, the Collaborate button's
   glyph; the Map and Quick Style, which have no
   toolbar button, take Lucide map and Lucide palette; Draw takes the
-  marker the editor mode switch shows for Draw mode). Search matches a
+  marker the editor mode switch shows for Draw mode; Notifications and
+  API Tokens keep the bell and key they carried as top-level tiles). Search matches a
   sub-category's rows on its parent's name too, and the canvas search names
-  it by path ("in Panels › Layers", "in Editor › Draw").
+  it by path ("in Panels › Layers", "in Editor › Draw", "in Account ›
+  API Tokens").
 
   Within a category, rows carry an optional **`section`** so a category
   holding several clusters (Editor's Power User rows) gets a sub-heading per

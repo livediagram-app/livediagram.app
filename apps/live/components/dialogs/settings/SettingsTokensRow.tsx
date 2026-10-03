@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
 import { useTokens } from '@/hooks/persistence/useTokens';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
-import { CATEGORY_GLYPHS } from './settings-icons';
+import { TokensGlyph } from './settings-icons';
 import { SettingsRowShell } from './SettingsRowShell';
 import { SettingsSignInLink } from './SettingsSignInLink';
 import { SettingsTokenCreate } from './SettingsTokenCreate';
@@ -40,7 +40,7 @@ export function SettingsTokensRow({ row }: { row: SettingsTokensRowSpec }) {
                 aria-hidden
                 className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-400 dark:bg-slate-700 dark:text-slate-400"
               >
-                {CATEGORY_GLYPHS.tokens}
+                {TokensGlyph}
               </span>
               <span className="min-w-0">
                 <span className="block text-sm font-semibold text-slate-800 dark:text-slate-100">

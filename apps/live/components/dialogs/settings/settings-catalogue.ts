@@ -253,7 +253,8 @@ export type SettingsCategorySpec = {
   id: SettingsCategoryId;
   label: string;
   // The top-level category this is a sub-category of (Panels holds one per
-  // panel, Editor one per mode with settings of its own). The list nests it, untiled and indented, beneath its
+  // panel, Editor one per mode with settings of its own, Account its
+  // Notifications and API Tokens). The list nests it, untiled and indented, beneath its
   // parent; it is still its own pane. A parent's sub-categories follow it
   // directly, like a section's rows.
   parent?: SettingsIconId;
@@ -694,127 +695,6 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
     ],
   },
   {
-    id: 'notifications',
-    label: 'Notifications',
-    rows: [
-      {
-        kind: 'toggle',
-        key: 'notificationsEnabled',
-        keywords: 'toast popup confirmation message alert',
-        section: 'In the editor',
-        label: 'In-Editor Notifications',
-        description:
-          "Shows a brief confirmation when you do something whose result isn't on screen, like moving a document to a folder or linking a tab. Errors are always shown so a failure is never hidden. Turn off for a quieter editor.",
-        read: (p) => p.notificationsEnabled !== false,
-        write: (p, v) => ({ ...p, notificationsEnabled: v }),
-        event: { category: 'UI', on: 'NotificationsOn', off: 'NotificationsOff' },
-      },
-      // The email rows below were reachable only from the Explorer's Profile
-      // pane, so the category named after notifications held one of seven.
-      // A guest gets the stand-in card instead of six switches that could
-      // never apply: the same shape the API tokens row uses, so "you need
-      // an account for this" looks the same wherever it appears.
-      {
-        kind: 'note',
-        key: 'emailSignIn',
-        keywords: 'email notifications sign in account',
-        section: 'Email',
-        label: 'Email Notifications',
-        note: 'Sign in to choose which emails you get.',
-        signIn: true,
-        description:
-          'We can email you when someone joins one of your documents, comments on it, assigns you an action, and for a few other moments. Which ones is an account setting.',
-        available: (ctx) => ctx.emailEnabled && !ctx.signedIn,
-      },
-      {
-        kind: 'toggle',
-        key: 'notifyDocumentJoin',
-        keywords: 'email join collaborator opened',
-        section: 'Email',
-        label: 'Someone Joins My Document',
-        description: 'When a new person opens one of your shared documents for the first time.',
-        available: (ctx) => ctx.emailEnabled && ctx.signedIn,
-        read: (p) => p.notifyDocumentJoin !== false,
-        write: (p, v) => ({ ...p, notifyDocumentJoin: v }),
-        event: { category: 'UI', on: 'NotifyDocumentJoinOn', off: 'NotifyDocumentJoinOff' },
-      },
-      {
-        kind: 'toggle',
-        key: 'notifyInviteResponse',
-        keywords: 'email invite team accepted declined',
-        section: 'Email',
-        label: 'Someone Responds to a Team Invite',
-        description: 'When someone you invited accepts or declines, for teams you’re an admin of.',
-        available: (ctx) => ctx.emailEnabled && ctx.signedIn,
-        read: (p) => p.notifyInviteResponse !== false,
-        write: (p, v) => ({ ...p, notifyInviteResponse: v }),
-        event: { category: 'UI', on: 'NotifyInviteResponseOn', off: 'NotifyInviteResponseOff' },
-      },
-      {
-        kind: 'toggle',
-        key: 'notifyComments',
-        keywords: 'email comment reply feedback',
-        section: 'Email',
-        label: 'Someone Comments on My Document',
-        description: 'When someone leaves a comment on a document you own.',
-        available: (ctx) => ctx.emailEnabled && ctx.signedIn,
-        read: (p) => p.notifyComments !== false,
-        write: (p, v) => ({ ...p, notifyComments: v }),
-        event: { category: 'UI', on: 'NotifyCommentsOn', off: 'NotifyCommentsOff' },
-      },
-      {
-        kind: 'toggle',
-        key: 'notifyActionAssigned',
-        keywords: 'email action assigned task todo',
-        section: 'Email',
-        label: 'Someone Assigns Me an Action',
-        description: 'When a teammate assigns you an action on an element.',
-        available: (ctx) => ctx.emailEnabled && ctx.signedIn,
-        read: (p) => p.notifyActionAssigned !== false,
-        write: (p, v) => ({ ...p, notifyActionAssigned: v }),
-        event: { category: 'UI', on: 'NotifyActionAssignedOn', off: 'NotifyActionAssignedOff' },
-      },
-      {
-        kind: 'toggle',
-        key: 'notifyMentions',
-        keywords: 'email mention tag at comment',
-        section: 'Email',
-        label: 'Someone Mentions Me in a Comment',
-        description: 'When a teammate @mentions you in a comment.',
-        available: (ctx) => ctx.emailEnabled && ctx.signedIn,
-        read: (p) => p.notifyMentions !== false,
-        write: (p, v) => ({ ...p, notifyMentions: v }),
-        event: { category: 'UI', on: 'NotifyMentionsOn', off: 'NotifyMentionsOff' },
-      },
-      {
-        kind: 'toggle',
-        key: 'notifyTips',
-        keywords: 'email tips onboarding nudge newsletter',
-        section: 'Email',
-        label: 'Tips and Check-Ins',
-        description:
-          'Occasional getting-started tips, and a friendly nudge if you’ve been away for a while.',
-        available: (ctx) => ctx.emailEnabled && ctx.signedIn,
-        read: (p) => p.notifyTips !== false,
-        write: (p, v) => ({ ...p, notifyTips: v }),
-        event: { category: 'UI', on: 'NotifyTipsOn', off: 'NotifyTipsOff' },
-      },
-      {
-        kind: 'toggle',
-        key: 'notifyMilestones',
-        keywords: 'email milestone achievement celebrate',
-        section: 'Email',
-        label: 'Milestones',
-        description:
-          'A note when you hit a milestone, like sharing your first document or reaching your tenth.',
-        available: (ctx) => ctx.emailEnabled && ctx.signedIn,
-        read: (p) => p.notifyMilestones !== false,
-        write: (p, v) => ({ ...p, notifyMilestones: v }),
-        event: { category: 'UI', on: 'NotifyMilestonesOn', off: 'NotifyMilestonesOff' },
-      },
-    ],
-  },
-  {
     id: 'accessibility',
     label: 'Accessibility',
     rows: [
@@ -990,8 +870,131 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
     ],
   },
   {
+    id: 'notifications',
+    label: 'Notifications',
+    parent: 'account',
+    rows: [
+      {
+        kind: 'toggle',
+        key: 'notificationsEnabled',
+        keywords: 'toast popup confirmation message alert',
+        section: 'In the editor',
+        label: 'In-Editor Notifications',
+        description:
+          "Shows a brief confirmation when you do something whose result isn't on screen, like moving a document to a folder or linking a tab. Errors are always shown so a failure is never hidden. Turn off for a quieter editor.",
+        read: (p) => p.notificationsEnabled !== false,
+        write: (p, v) => ({ ...p, notificationsEnabled: v }),
+        event: { category: 'UI', on: 'NotificationsOn', off: 'NotificationsOff' },
+      },
+      // The email rows below were reachable only from the Explorer's Profile
+      // pane, so the category named after notifications held one of seven.
+      // A guest gets the stand-in card instead of six switches that could
+      // never apply: the same shape the API tokens row uses, so "you need
+      // an account for this" looks the same wherever it appears.
+      {
+        kind: 'note',
+        key: 'emailSignIn',
+        keywords: 'email notifications sign in account',
+        section: 'Email',
+        label: 'Email Notifications',
+        note: 'Sign in to choose which emails you get.',
+        signIn: true,
+        description:
+          'We can email you when someone joins one of your documents, comments on it, assigns you an action, and for a few other moments. Which ones is an account setting.',
+        available: (ctx) => ctx.emailEnabled && !ctx.signedIn,
+      },
+      {
+        kind: 'toggle',
+        key: 'notifyDocumentJoin',
+        keywords: 'email join collaborator opened',
+        section: 'Email',
+        label: 'Someone Joins My Document',
+        description: 'When a new person opens one of your shared documents for the first time.',
+        available: (ctx) => ctx.emailEnabled && ctx.signedIn,
+        read: (p) => p.notifyDocumentJoin !== false,
+        write: (p, v) => ({ ...p, notifyDocumentJoin: v }),
+        event: { category: 'UI', on: 'NotifyDocumentJoinOn', off: 'NotifyDocumentJoinOff' },
+      },
+      {
+        kind: 'toggle',
+        key: 'notifyInviteResponse',
+        keywords: 'email invite team accepted declined',
+        section: 'Email',
+        label: 'Someone Responds to a Team Invite',
+        description: 'When someone you invited accepts or declines, for teams you’re an admin of.',
+        available: (ctx) => ctx.emailEnabled && ctx.signedIn,
+        read: (p) => p.notifyInviteResponse !== false,
+        write: (p, v) => ({ ...p, notifyInviteResponse: v }),
+        event: { category: 'UI', on: 'NotifyInviteResponseOn', off: 'NotifyInviteResponseOff' },
+      },
+      {
+        kind: 'toggle',
+        key: 'notifyComments',
+        keywords: 'email comment reply feedback',
+        section: 'Email',
+        label: 'Someone Comments on My Document',
+        description: 'When someone leaves a comment on a document you own.',
+        available: (ctx) => ctx.emailEnabled && ctx.signedIn,
+        read: (p) => p.notifyComments !== false,
+        write: (p, v) => ({ ...p, notifyComments: v }),
+        event: { category: 'UI', on: 'NotifyCommentsOn', off: 'NotifyCommentsOff' },
+      },
+      {
+        kind: 'toggle',
+        key: 'notifyActionAssigned',
+        keywords: 'email action assigned task todo',
+        section: 'Email',
+        label: 'Someone Assigns Me an Action',
+        description: 'When a teammate assigns you an action on an element.',
+        available: (ctx) => ctx.emailEnabled && ctx.signedIn,
+        read: (p) => p.notifyActionAssigned !== false,
+        write: (p, v) => ({ ...p, notifyActionAssigned: v }),
+        event: { category: 'UI', on: 'NotifyActionAssignedOn', off: 'NotifyActionAssignedOff' },
+      },
+      {
+        kind: 'toggle',
+        key: 'notifyMentions',
+        keywords: 'email mention tag at comment',
+        section: 'Email',
+        label: 'Someone Mentions Me in a Comment',
+        description: 'When a teammate @mentions you in a comment.',
+        available: (ctx) => ctx.emailEnabled && ctx.signedIn,
+        read: (p) => p.notifyMentions !== false,
+        write: (p, v) => ({ ...p, notifyMentions: v }),
+        event: { category: 'UI', on: 'NotifyMentionsOn', off: 'NotifyMentionsOff' },
+      },
+      {
+        kind: 'toggle',
+        key: 'notifyTips',
+        keywords: 'email tips onboarding nudge newsletter',
+        section: 'Email',
+        label: 'Tips and Check-Ins',
+        description:
+          'Occasional getting-started tips, and a friendly nudge if you’ve been away for a while.',
+        available: (ctx) => ctx.emailEnabled && ctx.signedIn,
+        read: (p) => p.notifyTips !== false,
+        write: (p, v) => ({ ...p, notifyTips: v }),
+        event: { category: 'UI', on: 'NotifyTipsOn', off: 'NotifyTipsOff' },
+      },
+      {
+        kind: 'toggle',
+        key: 'notifyMilestones',
+        keywords: 'email milestone achievement celebrate',
+        section: 'Email',
+        label: 'Milestones',
+        description:
+          'A note when you hit a milestone, like sharing your first document or reaching your tenth.',
+        available: (ctx) => ctx.emailEnabled && ctx.signedIn,
+        read: (p) => p.notifyMilestones !== false,
+        write: (p, v) => ({ ...p, notifyMilestones: v }),
+        event: { category: 'UI', on: 'NotifyMilestonesOn', off: 'NotifyMilestonesOff' },
+      },
+    ],
+  },
+  {
     id: 'tokens',
     label: 'API Tokens',
+    parent: 'account',
     rows: [
       {
         kind: 'tokens',
