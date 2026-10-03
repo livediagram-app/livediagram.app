@@ -8,6 +8,7 @@ import {
   type WhiteboardShapeKey,
 } from './whiteboard-shape-catalogue';
 import { WHITEBOARD_SHAPES } from './whiteboard-tool';
+import { withinReach } from '@livediagram/api-schema';
 
 // Per kind: how often it was picked, and when last (epoch ms), as a pair to keep the synced
 // preferences blob (4 KB for everything) small. The time orders the last-used slots.
@@ -29,9 +30,9 @@ export function splitPhonePins(pinned: readonly WhiteboardShapeKey[]): {
   return { onBar: pinned.slice(0, PHONE_BAR_PINS), inMenu: pinned.slice(PHONE_BAR_PINS) };
 }
 
-// The Shapes flyout's two rows of slots.
-export const MOST_USED_SLOTS = 3;
-export const RECENT_SLOTS = 3;
+// The Shapes flyout's two rows of slots, Most used and Recent: a Within reach set with N = 3
+// (docs/specs/004-interface-design/within-reach.md).
+export const SLOTS_PER_ROW = 3;
 
 // Kinds whose picks are kept: the last 20 kinds used (about 600 bytes), never evicting one of the
 // SHAPE_PICKS_PROTECTED most picked, so a favourite survives a spell of one-off picks.
@@ -56,30 +57,36 @@ function picksOf(picks: ShapePicks): Pick[] {
 }
 
 const byUse = (a: Pick, b: Pick) => b.n - a.n || b.t - a.t;
-const byRecency = (a: Pick, b: Pick) => b.t - a.t;
 
 export type ShapeSlots = { mostUsed: WhiteboardShapeKey[]; recent: WhiteboardShapeKey[] };
 
 /**
- * The Shapes flyout's slots: Most used (most picks first, ties to the most recent), then Recent
- * (newest first), none of them pinned and none twice; an empty slot takes the next fallback kind
- * not already showing.
+ * The Shapes flyout's slots: the Within reach set of the unpinned kinds picked (a use is a pick),
+ * none of them pinned and none twice; an empty slot takes the next fallback kind not already
+ * showing, Most used first.
  */
 export function shapeSlots(picks: ShapePicks, pinned: readonly WhiteboardShapeKey[]): ShapeSlots {
   const known = picksOf(picks).filter(
     (p) => isWhiteboardShapeKey(p.key) && !pinned.includes(p.key),
   );
-  const onBar = new Set<WhiteboardShapeKey>(pinned);
-  const next = (candidates: readonly WhiteboardShapeKey[]) => {
-    const key = [...candidates, ...FALLBACK].find((k) => !onBar.has(k))!;
-    onBar.add(key);
-    return key;
+  const set = withinReach(known, SLOTS_PER_ROW, (p) => ({ uses: p.n, lastUsedAt: p.t }));
+  const showing = new Set<WhiteboardShapeKey>([
+    ...pinned,
+    ...set.mostUsed.map((p) => p.key),
+    ...set.recent.map((p) => p.key),
+  ]);
+  const fill = (row: readonly Pick[]) => {
+    const keys = row.map((p) => p.key);
+    for (const key of FALLBACK) {
+      if (keys.length >= SLOTS_PER_ROW) break;
+      if (showing.has(key)) continue;
+      showing.add(key);
+      keys.push(key);
+    }
+    return keys;
   };
-  const used = [...known].sort(byUse).map((p) => p.key);
-  const mostUsed = Array.from({ length: MOST_USED_SLOTS }, (_, i) => next(used.slice(0, i + 1)));
-  const latest = [...known].sort(byRecency).map((p) => p.key);
-  const recent = Array.from({ length: RECENT_SLOTS }, () => next(latest));
-  return { mostUsed, recent };
+  const mostUsed = fill(set.mostUsed);
+  return { mostUsed, recent: fill(set.recent) };
 }
 
 /** Record one pick of `key` at `now`, keeping at most SHAPE_PICKS_KEPT kinds (never dropping `key`). */
