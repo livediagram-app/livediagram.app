@@ -15,7 +15,12 @@
 
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { ALL_CTA_SOURCES, pascalToken } from '@livediagram/api-schema';
+import {
+  ALL_CTA_SOURCES,
+  PLACEMENT_DEFAULT_KEYS,
+  pascalToken,
+  placementDefaultTelemetryType,
+} from '@livediagram/api-schema';
 import { CANVAS_CONTROLS } from './event-vocab';
 
 export type ComputedValues = {
@@ -84,6 +89,9 @@ const LENS_FACETS = tokensAfter(
 
 // The Trash a Trash action happened in: TrashGroup's `telemetryType`.
 const TRASH_TYPES = tokensAfter(read('live/lib/trash-groups.ts'), 'telemetryType:', ';');
+
+// One closed value per default folder key (placementDefaultTelemetryType).
+const DEFAULT_FOLDER_TYPES = PLACEMENT_DEFAULT_KEYS.map(placementDefaultTelemetryType);
 
 // The presenter settings: `Presentation-<field>` per PresentationConfig key.
 const PRESENTATION_FIELDS = (() => {
@@ -218,6 +226,13 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   'apps/live/hooks/persistence/useTrash.ts Trash·Cleared': { values: TRASH_TYPES },
   'apps/live/app/document/[id]/useDocumentTrashed.ts Trash·Restored': { values: TRASH_TYPES },
   'apps/live/app/explorer/sidebar/sidebar-telemetry.ts UI·Selected': { values: SIDEBAR_ROWS },
+  // Default folders (docs/specs/013-workspace/default-folders.md "Telemetry"): one value per key.
+  'apps/live/lib/placement-defaults/placement-defaults-store.ts Folder·Changed': {
+    values: DEFAULT_FOLDER_TYPES,
+  },
+  'apps/live/lib/placement-defaults/placement-defaults-store.ts Folder·Cleared': {
+    values: DEFAULT_FOLDER_TYPES,
+  },
   'apps/live/app/explorer/lens/lens-telemetry.ts Explorer·Selected': { values: LENS_FACETS },
   // The Google Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md, "Telemetry"):
   // the inbound change types and the Open with outcomes, read from their unions.

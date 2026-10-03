@@ -230,19 +230,19 @@ this spec does not restate it.
 
 ## Outbound: livediagram to Drive
 
-| In livediagram                   | In Drive                                                                                                                   |
-| -------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| Document created                 | File created in its folder                                                                                                 |
-| Document edited                  | File contents and thumbnail rewritten, at the [cadence](#cadence)                                                          |
-| Document renamed                 | File renamed                                                                                                               |
-| Document moved to another folder | File moved                                                                                                                 |
-| Document deleted (to Trash)      | File moved to Drive's bin                                                                                                  |
-| Document restored from Trash     | File restored from the bin (re-created if it is gone)                                                                      |
-| Document purged from Trash       | File permanently deleted, if still in the bin                                                                              |
-| Document moved into a team       | File moved to Drive's bin (the document left My documents)                                                                 |
-| Document moved out of a team     | File created (or restored), as a new document in My documents                                                              |
-| Folder created / renamed / moved | Folder created / renamed / moved                                                                                           |
-| Folder deleted                   | Its documents and subfolders move up ([Folders](../013-workspace/folders.md)), then the empty Drive folder goes to the bin |
+| In livediagram                   | In Drive                                                                                                                                                                                        |
+| -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Document created                 | File created in its folder                                                                                                                                                                      |
+| Document edited                  | File contents and thumbnail rewritten, at the [cadence](#cadence)                                                                                                                               |
+| Document renamed                 | File renamed                                                                                                                                                                                    |
+| Document moved to another folder | File moved                                                                                                                                                                                      |
+| Document deleted (to Trash)      | File moved to Drive's bin                                                                                                                                                                       |
+| Document restored from Trash     | File restored from the bin (re-created if it is gone)                                                                                                                                           |
+| Document purged from Trash       | File permanently deleted, if still in the bin                                                                                                                                                   |
+| Document moved into a team       | File moved to Drive's bin (the document left My documents)                                                                                                                                      |
+| Document moved out of a team     | File created (or restored), as a new document in My documents                                                                                                                                   |
+| Folder created / renamed / moved | Folder created / renamed / moved                                                                                                                                                                |
+| Folder deleted                   | Its documents and subfolders move to its parent folder (the root for a top-level folder, [Folders](../013-workspace/folders.md#deleting-a-folder)), then the empty Drive folder goes to the bin |
 
 ## Inbound: Drive to livediagram
 
@@ -278,6 +278,10 @@ folder id):
   sync" is judged against the item row: Drive's side against the stored Drive
   state, livediagram's side against `ld_name` and the stored parent. A change
   whose value livediagram already holds is recorded, not applied.
+- **A folder deleted in livediagram stays deleted.** Drive may still report the create livediagram
+  made for it, when the delete came before the next pass read that create back; a folder this
+  browser saw mirrored and then deleted is never brought back by such a change, and its Drive
+  folder goes to the bin. A folder restored from the bin in Drive later is still restored.
 - **Restoring from the bin places the document where its file sits** in Drive,
   so restoring a binned folder brings back its documents inside it.
 - **A permanent delete only purges from the Trash.** `removed` also means

@@ -1,6 +1,6 @@
 'use client';
 
-import { Fragment, useEffect, useRef, type ReactNode } from 'react';
+import { Fragment, useCallback, useEffect, useRef, type ReactNode } from 'react';
 import { SettingsPresetSummaryRow } from './SettingsPresetSummaryRow';
 import type { SettingsCategoryId } from './settings-icons';
 
@@ -15,6 +15,8 @@ import { SettingsLinkRow } from './SettingsLinkRow';
 import { SettingsTokensRow } from './SettingsTokensRow';
 import { SettingsTrashRow } from './SettingsTrashRow';
 import { SettingsCloudSyncRow } from './SettingsCloudSyncRow';
+import { SettingsPlacementDefaultRow } from './SettingsPlacementDefaultRow';
+import { usePlacementOptions } from '@/hooks/persistence/usePlacementOptions';
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { track } from '@/lib/telemetry';
@@ -42,6 +44,7 @@ export function SettingsCategoryPane({
   onOpenCategory,
   offeredRowKeys,
   focusSectionId = null,
+  owner = null,
 }: {
   category: SettingsCategorySpec;
   settings: UserPreferences;
@@ -56,8 +59,17 @@ export function SettingsCategoryPane({
   offeredRowKeys?: ReadonlySet<string>;
   // Section to scroll to and focus the heading of (settingsSectionId).
   focusSectionId?: string | null;
+  // Who is reading: the Documents rows list their folders (docs/specs/013-workspace/default-folders.md).
+  owner?: { ownerId: string; clerkUserId: string | null } | null;
 }) {
   const isMobile = useIsMobileViewport();
+  // The folders the Documents rows choose from and name, fetched only for a pane that shows them.
+  const showsDefaults = category.rows.some((r) => r.kind === 'placementDefault');
+  const placementLists = usePlacementOptions({
+    selfId: owner?.ownerId ?? 'pending',
+    clerkUserId: owner?.clerkUserId ?? null,
+    skip: useCallback(() => !showsDefaults, [showsDefaults]),
+  });
   // Group CONSECUTIVE rows by section, so a category holding several
   // clusters (Editor's Power User rows) gets a heading
   // per cluster instead of one undifferentiated list. Consecutive rather than
@@ -202,6 +214,8 @@ export function SettingsCategoryPane({
         return <SettingsTrashRow row={row} />;
       case 'cloudSync':
         return <SettingsCloudSyncRow row={row} />;
+      case 'placementDefault':
+        return <SettingsPlacementDefaultRow row={row} lists={placementLists} />;
       case 'presetSummary':
         return (
           <SettingsPresetSummaryRow

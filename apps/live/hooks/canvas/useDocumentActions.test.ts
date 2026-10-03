@@ -30,6 +30,7 @@ function actions() {
       confirm: vi.fn() as never,
       ownerId: 'me',
       hookDeleteFolder: vi.fn(),
+      folders: [],
       sharedDocuments: [],
       setSharedDocuments: vi.fn(),
       copying: false,

@@ -123,7 +123,11 @@ export async function handleFolders(ctx: RouteContext): Promise<Response> {
       // Read the name before the row goes; afterwards there is nothing
       // left to name it by.
       const doomed = await getFolder(env, id);
-      await deleteFolder(env, id);
+      const { parentId } = await deleteFolder(env, id);
+      // Where the contents went (docs/specs/013-workspace/folders.md "Deleting a folder").
+      console.info(
+        `folders: deleted scope=${existing.teamId ? 'team' : 'personal'} moved_up=${parentId ? 'parent' : 'root'}`,
+      );
       if (doomed) {
         // Cascade first, then the tombstone, exactly as a document delete
         // does (docs/specs/013-workspace/timeline.md §3.5): the folder's own earlier cards go, and

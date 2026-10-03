@@ -141,17 +141,82 @@ describe('TemplatePicker, placement seen or not', () => {
     expect(settingsOf(onPick)).not.toHaveProperty('teamId');
   });
 
-  it('sends the root chosen on purpose once the Location step showed it', () => {
+  it('sends no placement for the root it only showed', () => {
     const onPick = renderWelcome();
     fireEvent.click(screen.getByRole('button', { name: /^Next/ }));
     fireEvent.click(screen.getByRole('button', { name: 'Create' }));
+    expect(settingsOf(onPick)).not.toHaveProperty('folderId');
+  });
+
+  it('sends the root chosen on purpose', () => {
+    const onPick = renderWelcome();
+    fireEvent.click(screen.getByRole('button', { name: /^Next/ }));
+    fireEvent.click(screen.getByRole('radio', { name: /My documents/ }));
+    fireEvent.click(screen.getByRole('radio', { name: /My documents/ }));
+    fireEvent.click(screen.getByRole('button', { name: 'Create' }));
     expect(settingsOf(onPick)).toMatchObject({ teamId: null, folderId: null });
-    expect(settingsOf(onPick)).toHaveProperty('folderId', null);
   });
 
   it('sends a placement seeded from the /new URL, even on Skip', () => {
     const onPick = renderWelcome('folder:f1');
     fireEvent.click(screen.getByRole('button', { name: 'Skip' }));
     expect(settingsOf(onPick)).toMatchObject({ teamId: null, folderId: 'f1' });
+  });
+});
+
+// docs/specs/013-workspace/default-folders.md "The New Document wizard": the Location step
+// pre-selects the template's default folder, says why, and offers Always save elsewhere.
+describe('TemplatePicker, default folders', () => {
+  const defaults = {
+    resolve: () => ({
+      found: { key: 'mode:diagram' as const, value: 'folder:w', folderName: 'Workshops' },
+      skipped: [],
+    }),
+    alwaysSaveKey: () => 'mode:diagram' as const,
+    currentValue: () => 'folder:w',
+    change: vi.fn(async () => true),
+  };
+  const renderWithDefaults = () => {
+    const onPick = vi.fn();
+    render(
+      <TemplatePicker
+        mode="welcome"
+        participant={participant}
+        currentThemeId="brand"
+        onPick={onPick}
+        onSkip={vi.fn()}
+        onBackOut={vi.fn()}
+        defaults={defaults}
+        folders={[
+          { id: 'w', name: 'Workshops', parentId: null },
+          { id: 'x', name: 'Elsewhere', parentId: null },
+        ]}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /^Next/ }));
+    return onPick;
+  };
+
+  it('pre-selects the default, says why, and sends it explicitly', () => {
+    const onPick = renderWithDefaults();
+    expect(screen.getByRole('note').textContent).toBe(
+      'Diagrams go to Workshops by default. Change default',
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Create' }));
+    expect(onPick.mock.calls[0]![3]).toMatchObject({ teamId: null, folderId: 'w' });
+  });
+
+  it('offers Always save for another folder, and carries it when ticked', () => {
+    const onPick = renderWithDefaults();
+    fireEvent.click(screen.getByRole('radio', { name: /My documents/ }));
+    fireEvent.click(screen.getByRole('radio', { name: /Elsewhere/ }));
+    const box = screen.getByRole('checkbox', { name: 'Always save diagrams here' });
+    expect((box as HTMLInputElement).checked).toBe(false);
+    fireEvent.click(box);
+    fireEvent.click(screen.getByRole('button', { name: 'Create' }));
+    expect(onPick.mock.calls[0]![3]).toMatchObject({
+      folderId: 'x',
+      alwaysSave: { key: 'mode:diagram', folderId: 'x' },
+    });
   });
 });

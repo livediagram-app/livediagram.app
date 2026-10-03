@@ -79,19 +79,27 @@ export async function updateFolder(
   }
 }
 
-export async function deleteFolder(env: Env, id: string): Promise<void> {
-  // Promote direct children before deleting: subfolders become root,
-  // documents fall to the root. ON DELETE SET NULL on both FKs would
-  // do the same thing, but we run it explicitly so the behaviour is
-  // visible in code (and not dependent on SQLite enforcing the FK,
-  // which is opt-in via PRAGMA). One batch, so the folder and its Drive
-  // mirror row (docs/specs/022-drive-mirror/drive-mirror.md, "Data") go together.
+// Deleting a folder moves its direct subfolders and documents (trashed ones too) up to its parent,
+// the space's root for a top-level folder (docs/specs/013-workspace/folders.md "Deleting a folder",
+// blueprint folder-delete.md). One batch, one transaction: the parent is read by subquery INSIDE it,
+// while the row still exists, so a concurrent move cannot strand the contents, and the folder's
+// Drive mirror row (docs/specs/022-drive-mirror/drive-mirror.md, "Data") goes with it. The FKs'
+// ON DELETE SET NULL is only a backstop the explicit statements never reach. Answers the parent the
+// contents moved to, read beforehand for the caller's log.
+export async function deleteFolder(env: Env, id: string): Promise<{ parentId: string | null }> {
+  const parent = await env.DB.prepare('SELECT parent_id FROM folders WHERE id = ?')
+    .bind(id)
+    .first<{ parent_id: string | null }>();
+  const parentOf = '(SELECT parent_id FROM folders WHERE id = ?1)';
   await env.DB.batch([
-    env.DB.prepare('UPDATE folders SET parent_id = NULL WHERE parent_id = ?').bind(id),
-    env.DB.prepare('UPDATE documents SET folder_id = NULL WHERE folder_id = ?').bind(id),
+    env.DB.prepare(
+      `UPDATE folders SET parent_id = ${parentOf}, updated_at = ?2 WHERE parent_id = ?1`,
+    ).bind(id, Date.now()),
+    env.DB.prepare(`UPDATE documents SET folder_id = ${parentOf} WHERE folder_id = ?1`).bind(id),
     env.DB.prepare("DELETE FROM drive_items WHERE item_kind = 'folder' AND ld_id = ?").bind(id),
     env.DB.prepare('DELETE FROM folders WHERE id = ?').bind(id),
   ]);
+  return { parentId: parent?.parent_id ?? null };
 }
 
 // Cycle check for folder moves. Walks the proposed ancestor chain

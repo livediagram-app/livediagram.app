@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { Folder } from '@livediagram/api-schema';
 import { FolderRow, SkeletonRows } from '@/app/explorer/views';
 import { scopeDocuments, type LibraryLens } from '@/app/explorer/lens/pane-lens';
@@ -23,6 +23,12 @@ import { fetchSharedTabsNotice } from '@/lib/shared-tabs-notice';
 import { track } from '@/lib/telemetry';
 import { folderDescendants } from '@/lib/folder-tree';
 import { deleteConfirmation } from '@/lib/delete-confirmation';
+import { folderDeleteConfirmation } from '@/lib/folder-delete-confirmation';
+import { useDefaultFolderMenus } from '@/hooks/persistence/useDefaultFolderMenus';
+import { folderDefaultKeys } from '@/lib/placement-defaults/default-destination';
+import { placementDefaultsSnapshot } from '@/lib/placement-defaults/placement-defaults-store';
+
+const NO_FOLDERS: readonly Folder[] = [];
 
 // "Shared documents" on the team page (docs/specs/013-workspace/team-shared-documents.md): the team's folder
 // tree + documents, navigated with a small breadcrumb instead of a
@@ -65,6 +71,14 @@ export function TeamSharedDocuments({
   lens?: LibraryLens;
 }) {
   const lib = useTeamLibrary(ownerId, teamId);
+  // Default folders (docs/specs/013-workspace/default-folders.md): a joined member may send new
+  // documents to this team's folders.
+  const teamFolderLists = useMemo(() => ({ [teamId]: lib.folders }), [teamId, lib.folders]);
+  const defaultFolders = useDefaultFolderMenus(ownerId, {
+    personal: NO_FOLDERS,
+    team: teamFolderLists,
+    teams: useMemo(() => [{ id: teamId, name: teamName ?? 'Team' }], [teamId, teamName]),
+  });
   // Deep link: /explorer/team?id=<team>&folder=<id> opens with that
   // folder focused (the search panel's team-folder results navigate
   // here). Safe to read window in the initialiser: the explorer
@@ -129,6 +143,7 @@ export function TeamSharedDocuments({
   // menu passes it) but the move flow is a centred modal now and
   // ignores it.
   const folderActions = (f: Folder, _anchor: HTMLElement | null) => ({
+    defaults: defaultFolders.forFolder({ id: f.id, teamId }),
     rename: () => setRenamingFolderId(f.id),
     newSubfolder: () =>
       void lib.createFolder(f.id).then((created) => {
@@ -141,11 +156,14 @@ export function TeamSharedDocuments({
       setMoveTarget({ kind: 'folder', id: f.id });
     },
     delete: async () => {
-      const ok = await confirm({
-        title: 'Delete team folder?',
-        message: `"${f.name || 'This folder'}" will be deleted. Its subfolders move to the top level and its documents move to the team's top level.`,
-        confirmLabel: 'Delete folder',
-      });
+      const ok = await confirm(
+        folderDeleteConfirmation({
+          name: f.name,
+          parentName: lib.folders.find((p) => p.id === f.parentId)?.name ?? null,
+          scope: 'team',
+          defaultKeys: folderDefaultKeys(f.id, placementDefaultsSnapshot().defaults),
+        }),
+      );
       if (!ok) return;
       await lib.deleteFolder(f.id);
       if (spot.kind === 'folder' && spot.id === f.id) setSpot({ kind: 'root' });

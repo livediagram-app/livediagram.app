@@ -1,5 +1,6 @@
 'use client';
 
+import type { ReactNode } from 'react';
 import { NAME_MAX_LENGTH } from '@livediagram/document';
 import { TextInput, Glyph } from '@livediagram/ui';
 import { PlacementBrowser, type PickerFolder } from '@/components/placement/PlacementBrowser';
@@ -28,6 +29,7 @@ export function NewDocumentSettingsStep({
   onCreateTeam,
   saveLocation,
   onSaveLocation,
+  placementFooter,
 }: {
   documentName: string;
   onDocumentName: (v: string) => void;
@@ -53,6 +55,9 @@ export function NewDocumentSettingsStep({
   onCreateTeam?: (name: string) => Promise<{ id: string; name: string } | null>;
   saveLocation: SaveLocationId;
   onSaveLocation: (v: SaveLocationId) => void;
+  // Under the folder browser: the default-folder line (docs/specs/013-workspace/default-folders.md
+  // "The New Document wizard"), absent for Local Browser with the browser itself.
+  placementFooter?: ReactNode;
 }) {
   // Local Browser is Offline Mode (docs/specs/006-document/offline-mode.md): it drives the warning below and
   // removes the folder step (an offline document has no server folder / team).
@@ -115,19 +120,22 @@ export function NewDocumentSettingsStep({
           Browser: an offline document has no server placement, so there is
           nothing to choose. */}
       {offline ? null : (
-        <div className="flex flex-col gap-1.5" role="radiogroup" aria-label={folderHeading}>
-          <span className={fieldLabel}>{folderHeading}</span>
-          <PlacementBrowser
-            placement={placement}
-            onPlacement={onPlacement}
-            onCommitPlacement={onCommitPlacement}
-            folders={folders}
-            teams={teams}
-            teamFolders={teamFolders}
-            onCreateFolder={onCreateFolder}
-            onCreateTeam={onCreateTeam}
-            layout="list"
-          />
+        <div className="flex flex-col gap-1.5">
+          <div className="flex flex-col gap-1.5" role="radiogroup" aria-label={folderHeading}>
+            <span className={fieldLabel}>{folderHeading}</span>
+            <PlacementBrowser
+              placement={placement}
+              onPlacement={onPlacement}
+              onCommitPlacement={onCommitPlacement}
+              folders={folders}
+              teams={teams}
+              teamFolders={teamFolders}
+              onCreateFolder={onCreateFolder}
+              onCreateTeam={onCreateTeam}
+              layout="list"
+            />
+          </div>
+          {placementFooter}
         </div>
       )}
     </div>

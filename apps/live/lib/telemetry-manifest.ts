@@ -103,6 +103,8 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Facilitator·Changed',
   'Facilitator·Ended',
   'Facilitator·Started',
+  'Folder·Changed',
+  'Folder·Cleared',
   'Folder·Created',
   'Folder·Deleted',
   'Folder·Moved',

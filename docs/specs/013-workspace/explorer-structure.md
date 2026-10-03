@@ -56,7 +56,11 @@ sidebar row; their routes (`/explorer/recent`, `/explorer/favourites`, `/explore
   `/explorer/dynamic` open the My documents root, `/explorer/generated` opens Search results filtered by
   `made-by:ai`.
 - A folder row opens its folder, expands to its subfolders, and carries the folder menu (Rename, New subfolder,
-  Change folder, Delete). A team folder row opens the team page at that folder and carries no menu.
+  Change folder, Use as default for, Delete). A team folder row opens the team page at that folder and carries no menu.
+- **My documents** carries a menu of its own (its `⋯` button, a right-click, Shift+F10) holding only **Use as
+  default for** ([Default folders](default-folders.md#use-as-default-for)).
+- A folder that is one of the reader's default folders shows the **default marker** after its name
+  ([Default folders](default-folders.md#the-default-marker)), personal and team folder rows alike.
 - **Invites** shows only while the reader has a pending invite (or is on the Invites view). An invite also reaches the
   reader through Home and email.
 - **New team** is the group's last row, for signed-in readers only.
@@ -155,7 +159,8 @@ The sidebar follows the WAI-ARIA tree pattern, one tree per group:
 - **Home / End** move to the first / last visible row.
 - **Enter** and **Space** activate the row: open its view, toggle Library, or open the New team form.
 - **Typing a character** moves to the next row whose label starts with it.
-- **Shift+F10** or the **Menu** key opens a folder row's menu, the same menu as its `⋯` button and a right-click.
+- **Shift+F10** or the **Menu** key opens a folder row's (or My documents') menu, the same menu as its `⋯` button and a
+  right-click.
 - Keys typed into a folder's inline rename field are the field's, never the tree's.
 - Focus is shown with a visible ring on the row (WCAG 2.2 AA focus appearance); mouse clicks show none.
 
@@ -187,7 +192,7 @@ What differs is what a row does in an editor, where leaving the document is a bi
   smallest; expansion lasts as long as the editor is open.
 - **Filing.** One of the reader's own document rows drags onto a personal folder row, or onto My documents to file
   it at the root. A personal folder row carries the folder menu plus Show in Explorer; a team folder row carries the team folder verbs
-  the session may use.
+  the session may use; My documents carries its Use as default for menu.
 - Group titles and separators follow Minimal chrome exactly as in the sidebar.
 - The tree scrolls inside the panel when it is taller than the space it has.
 

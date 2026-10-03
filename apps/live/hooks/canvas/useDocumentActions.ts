@@ -21,6 +21,7 @@ import {
 import { track } from '@/lib/telemetry';
 import type { useConfirm } from '@/hooks/ui/useConfirm';
 import { useDocumentListActions } from '@/hooks/persistence/useDocumentListActions';
+import type { FolderNode } from '@/hooks/persistence/useDocumentListActions';
 import { useToast } from '@/hooks/ui/useToast';
 
 type DocumentActionsDeps = {
@@ -33,6 +34,8 @@ type DocumentActionsDeps = {
   // useFolders' delete, wrapped by the shared hook with a
   // document-side re-bucket.
   hookDeleteFolder: (id: string) => void;
+  // The personal folders, so a folder delete can say where its contents go.
+  folders: readonly FolderNode[];
   // Shared-with-you list, for the dismiss action surfaced in the
   // Explorer panel's Shared accordion.
   sharedDocuments: SharedWithItem[];
@@ -63,6 +66,7 @@ export function useDocumentActions(deps: DocumentActionsDeps) {
     confirm,
     ownerId,
     hookDeleteFolder,
+    folders,
     sharedDocuments,
     setSharedDocuments,
     copying,
@@ -89,6 +93,7 @@ export function useDocumentActions(deps: DocumentActionsDeps) {
     confirm,
     toast,
     deleteFolderFromHook: hookDeleteFolder,
+    folders,
     currentDocument: documentId ? { id: documentId, name: documentName } : null,
     // Open the freshly created copy. Navigation reloads the editor
     // onto the new id, so a separate list refresh is unnecessary.

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
-import { CloseIcon, useClickOutside, useEscape } from '@livediagram/ui';
+import { useClickOutside, useEscape } from '@livediagram/ui';
 import type { Participant } from '@/lib/identity';
 import { shufflePinned } from '@/lib/shuffle';
 import type { TemplateCategory, TemplateCollection, TemplateKind } from '@livediagram/templates';
@@ -14,14 +14,19 @@ import {
   TemplatePickerBrowse,
   type ShelfCategory,
 } from '@/components/palette/TemplatePickerBrowse';
-import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { useModalGuard } from '@/hooks/ui/useModalGuard';
 import { TemplatePickerFooter } from './TemplatePickerFooter';
-import { parsePlacement } from '@/components/placement/PlacementBrowser';
+import { useWizardPlacement, type AlwaysSave, type WizardDefaults } from './useWizardPlacement';
+import { WizardDefaultFolder } from './WizardDefaultFolder';
 import { NewDocumentSettingsStep } from './template-picker-settings';
-import { DEFAULT_SAVE_LOCATION, type SaveLocationId } from '@/lib/save-locations';
+import {
+  DEFAULT_SAVE_LOCATION,
+  isOfflineLocation,
+  type SaveLocationId,
+} from '@/lib/save-locations';
 import { TemplatePickerIdentityRow } from './TemplatePickerIdentityRow';
-import { WizardSteps, type WizardStep } from './template-picker-wizard';
+import { type WizardStep } from './template-picker-wizard';
+import { TemplatePickerHeader } from './TemplatePickerHeader';
 
 // Whether this render is past hydration, as a store with nothing to subscribe to: prerender and
 // hydration read the server snapshot, every later render the client one.
@@ -40,6 +45,9 @@ export type NewDocumentSettings = {
   // (docs/specs/013-workspace/default-folders.md "Precedence").
   folderId?: string | null;
   teamId?: string | null;
+  // "Always save <these> here" (docs/specs/013-workspace/default-folders.md): the default to write
+  // before the create, a folder or null (the My documents root).
+  alwaysSave?: AlwaysSave;
 };
 
 type TemplatePickerProps = {
@@ -85,6 +93,9 @@ type TemplatePickerProps = {
   teamFolders?: Record<string, { id: string; name: string; parentId: string | null }[]>;
   // Pre-selected placement (the /new URL's folder / team context).
   initialPlacement?: string;
+  // The reader's default folders (docs/specs/013-workspace/default-folders.md): the Location step
+  // pre-selects the template's default at the My documents root, and offers Always save.
+  defaults?: WizardDefaults;
   // The collection the template step opens on (the /new URL's `?browse=`),
   // or null for the category overview.
   initialShelf?: TemplateCollection | null;
@@ -143,6 +154,7 @@ export function TemplatePicker({
   teams = [],
   teamFolders = {},
   initialPlacement,
+  defaults,
   initialShelf = null,
   onCreateFolder,
   onCreateTeam,
@@ -224,19 +236,27 @@ export function TemplatePicker({
   useEffect(() => {
     if (!documentNameEdited.current) setDocumentNameInput(untitledNameForTemplate(templateKind));
   }, [templateKind]);
-  const [placement, setPlacement] = useState(initialPlacement ?? 'unsorted');
-  // Whether the placement is a choice: seeded from the /new URL, or shown on the Location step. An
-  // untouched picker nobody saw is no choice, so its root tile never overrides a default folder.
-  const [placementSeen, setPlacementSeen] = useState(initialPlacement !== undefined);
+  // Where it is filed (docs/specs/013-workspace/default-folders.md "The New Document wizard"):
+  // the reader's pick, the /new context, the template's default folder, else the root.
+  const where = useWizardPlacement({ context: initialPlacement, kind: templateKind, defaults });
+  const placement = where.selected;
   // The settings the wizard commits with. Document name defaults to the
   // template's default when the field is left blank. Parameterised on the
   // placement so a double-click commit can pass the just-picked value
-  // before the setPlacement state update has applied.
-  const settingsFor = (p: string): NewDocumentSettings => {
+  // before the pick has applied.
+  const settingsFor = (picked?: string): NewDocumentSettings => {
     const name = documentNameInput.trim() || templateDefaultName;
-    return { saveLocation, documentName: name, ...(placementSeen ? parsePlacement(p) : {}) };
+    // Always save belongs to the selection it was ticked for: a double-click elsewhere drops it.
+    const sameSelection = picked === undefined || picked === where.selected;
+    const alwaysSave = isOfflineLocation(saveLocation) || !sameSelection ? null : where.alwaysSave;
+    return {
+      saveLocation,
+      documentName: name,
+      ...(picked === undefined ? where.sent() : where.sent(picked, 'picked')),
+      ...(alwaysSave ? { alwaysSave } : {}),
+    };
   };
-  const settings = () => settingsFor(placement);
+  const settings = () => settingsFor();
   // Welcome mode is a two-step wizard: pick a template, then where the
   // document lives (docs/specs/007-editor/new-document-route.md). Other modes keep the single-page layout.
   const [step, setStep] = useState<WizardStep>('template');
@@ -250,7 +270,6 @@ export function TemplatePicker({
     // The Settings step only exists on the welcome flow (an existing
     // document has no name / placement / offline choice to make).
     if (next === 'settings' && !isWelcome) return;
-    if (next === 'settings') setPlacementSeen(true);
     setStepDir(STEP_ORDER.indexOf(next) >= STEP_ORDER.indexOf(step) ? 'forward' : 'backward');
     setStep(next);
   };
@@ -325,7 +344,9 @@ export function TemplatePicker({
   const skipToDefaults = () =>
     onPick('blank', effectiveName, 'brand', {
       saveLocation,
-      ...(placementSeen ? parsePlacement(placement) : {}),
+      // A pick or a /new context only: Skip never saw the Location step, so a default folder is
+      // the server's to apply.
+      ...(where.source === 'picked' || where.source === 'context' ? where.sent() : {}),
     });
   // Picking a template: the welcome wizard moves on to where the document
   // lives; Quick Start applies it straight away.
@@ -336,10 +357,10 @@ export function TemplatePicker({
   };
   // Double-clicking a destination card on the Settings step selects it AND
   // commits the wizard in one gesture (the template-card pattern). The value
-  // is passed explicitly because setPlacement hasn't applied in this tick.
+  // is passed explicitly because the pick has not applied in this tick.
   const commitWithPlacement = (p: string) => {
     if (busy) return;
-    setPlacement(p);
+    where.pick(p);
     onPick(templateKind, effectiveName, themeId, settingsFor(p));
   };
 
@@ -355,52 +376,17 @@ export function TemplatePicker({
         aria-label={isIdentity ? 'Confirm your name' : 'Start a new document'}
         className={`pointer-events-auto flex h-full w-full animate-fly-up-in flex-col bg-white dark:bg-slate-900 sm:h-auto sm:max-h-[90vh] ${isIdentity ? 'sm:w-[26rem]' : 'sm:w-[44rem]'} sm:max-w-[92%] sm:rounded-xl sm:border sm:border-slate-200 sm:shadow-2xl sm:shadow-slate-900/10 dark:sm:border-slate-800 dark:sm:shadow-black/40`}
       >
-        <div className="flex flex-col gap-4 border-b border-slate-100 px-6 pt-6 pb-5 dark:border-slate-800">
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <h2 className="text-xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">
-                {isWelcome
-                  ? 'New Document'
-                  : isIdentity
-                    ? documentName && documentName.trim()
-                      ? `Welcome to '${documentName.trim()}'`
-                      : 'Welcome to this document'
-                    : 'Quick Start'}
-              </h2>
-              <p className="mt-1 text-sm text-slate-500 dark:text-slate-300">
-                {!isIdentity
-                  ? step === 'template'
-                    ? 'Choose a template to start from.'
-                    : 'Name your document and choose where it lives.'
-                  : nameLocked
-                    ? 'This is the name from your account; others will see it on this document.'
-                    : 'Pick the name people will see while you collaborate on this document.'}
-              </p>
-            </div>
-            <div className="-mr-2 -mt-1 flex shrink-0 items-center gap-0.5">
-              {showTemplates ? (
-                <HelpArticleLink
-                  article="templates"
-                  className="!h-8 !w-8 !rounded-lg !border-0 !text-sm !text-slate-400 hover:!bg-slate-100 hover:!text-slate-700 dark:!text-slate-400 dark:hover:!bg-slate-800 dark:hover:!text-slate-200"
-                />
-              ) : null}
-              <button
-                type="button"
-                // The X backs out as Escape does, from any step, creating nothing
-                // (docs/specs/007-editor/new-document-route.md "Escape backs out").
-                onClick={onBackOut ?? onSkip}
-                aria-label="Close"
-                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
-              >
-                <CloseIcon />
-              </button>
-            </div>
-          </div>
-          {/* Step indicator: a two-segment progress rail so the welcome
-              wizard reads as 1 of 2 at a glance. Quick Start is one page and
-              shows none. */}
-          {isWizard ? <WizardSteps step={step} onStep={goToStep} /> : null}
-        </div>
+        <TemplatePickerHeader
+          isWelcome={isWelcome}
+          isIdentity={isIdentity}
+          isWizard={isWizard}
+          showTemplates={showTemplates}
+          documentName={documentName}
+          nameLocked={nameLocked}
+          step={step}
+          onStep={goToStep}
+          onClose={onBackOut ?? onSkip}
+        />
 
         <div className="flex-1 overflow-y-auto px-6 pt-5 pb-8">
           {/* Identity row — first-run welcome + join-existing-document
@@ -463,7 +449,7 @@ export function TemplatePicker({
                 }}
                 placeholder={templateDefaultName}
                 placement={placement}
-                onPlacement={setPlacement}
+                onPlacement={where.pick}
                 onCommitPlacement={commitWithPlacement}
                 folders={folders}
                 teams={teams}
@@ -472,6 +458,20 @@ export function TemplatePicker({
                 onCreateTeam={onCreateTeam}
                 saveLocation={saveLocation}
                 onSaveLocation={setSaveLocation}
+                placementFooter={
+                  <WizardDefaultFolder
+                    shown={where.shownDefault}
+                    offer={where.offer}
+                    alwaysSave={where.alwaysSave !== null}
+                    onAlwaysSave={where.setAlwaysSave}
+                    defaults={defaults}
+                    onDefaultChanged={where.clearPick}
+                    folders={folders}
+                    teams={teams}
+                    teamFolders={teamFolders}
+                    onCreateFolder={onCreateFolder}
+                  />
+                }
               />
             ) : null}
           </div>

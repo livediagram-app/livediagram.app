@@ -18,6 +18,7 @@ import { openExplorerPage } from './panel-tree-model';
 import { PanelDocumentItem } from './PanelDocumentItem';
 import { PanelFolderItem, type PanelFolder, type PanelFolderIndex } from './PanelFolderItem';
 import { usePanelTree } from './PanelTreeContext';
+import { useMyDocumentsMenu } from '@/app/explorer/sidebar/useMyDocumentsMenu';
 
 // The panel's Spaces (docs/specs/013-workspace/explorer-structure.md#the-floating-explorer-panel):
 // My documents and each team, opening in place to their root folders, then their root documents.
@@ -46,6 +47,7 @@ export function PanelSpacesGroup({
   const draggable = !!tree.onMoveDocumentToFolder;
   const drop = useDocumentDropTarget(null, tree.onMoveDocumentToFolder);
   const expandable = rootFolders.length + rootDocuments.length > 0;
+  const myDocumentsMenu = useMyDocumentsMenu(tree.defaultFolders?.forRoot, { reveal: true });
   return (
     <SidebarGroup id="spaces" divider={divider} first={first}>
       <SidebarRow
@@ -69,6 +71,8 @@ export function PanelSpacesGroup({
             : undefined
         }
         highlighted={drop.isDragOver}
+        onContextMenu={myDocumentsMenu.onContextMenu}
+        trailing={myDocumentsMenu.trailing}
       >
         {rootFolders.map((f) => (
           <PanelFolderItem key={f.id} folder={f} depth={1} index={ownIndex} />

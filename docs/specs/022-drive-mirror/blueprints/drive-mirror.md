@@ -7,65 +7,65 @@ Defaults applied where the spec is silent are ledgered in [DEFAULTS.md](DEFAULTS
 
 Scope, by file:
 
-| File                                                            | Role                                                                        |
-| --------------------------------------------------------------- | --------------------------------------------------------------------------- |
-| `packages/api-schema/src/drive.ts`                              | Wire types, `DriveMode`, `DRIVE_*` shared constants, `driveFileName`        |
-| `apps/api/migrations/0057_drive_mirror.sql`                     | `drive_connections`, `drive_items`                                          |
-| `apps/api/src/drive/config.ts`                                  | `driveMode(env)`, the Google OAuth origin                                   |
-| `apps/api/src/drive/crypto.ts`                                  | AES-GCM seal / open of the refresh token                                    |
-| `apps/api/src/drive/state.ts`                                   | Signed consent `state`                                                      |
-| `apps/api/src/drive/google-oauth.ts`                            | Code exchange, refresh, revoke                                              |
-| `apps/api/src/db/drive.ts`                                      | Every statement on the two tables                                           |
-| `apps/api/src/routes/drive.ts`                                  | `/api/drive/*`                                                              |
-| `apps/api/src/db/document-removal.ts`                           | Drops the doomed documents' `drive_items`                                   |
-| `apps/api/src/db/folders.ts`                                    | `deleteFolder` is one batch, dropping the folder's `drive_items`            |
-| `apps/api/src/db/account.ts`                                    | Account deletion revokes and drops the Drive rows                           |
-| `apps/api/src/routes/capabilities.ts`                           | `driveMode`                                                                 |
-| `apps/api/hosted-vars.json`, `apps/api/scripts/hosted-vars.mjs` | The hosted profile: the client id per environment, and its verifies         |
-| `apps/api/src/openapi/manifest.ts`                              | The Drive routes, tag `Drive`                                               |
-| `packages/fake-google/`                                         | The fake Google (Drive REST + OAuth) every test uses                        |
-| `apps/live/lib/export-document-text.ts`                         | The `livediagram.document` envelope                                         |
-| `apps/live/lib/api/drive.ts`                                    | Wire calls to `/api/drive/*`                                                |
-| `apps/live/lib/drive/config.ts`                                 | Client id, Picker key, `driveUiMode`                                        |
-| `apps/live/lib/drive/cadence.ts`                                | Every cadence constant                                                      |
-| `apps/live/lib/drive/log.ts`                                    | `driveLog`, the `[drive-mirror]` fingerprint                                |
-| `apps/live/lib/drive/drive-client.ts`                           | `DriveClient` interface, `DriveApiError`                                    |
-| `apps/live/lib/drive/drive-rest-client.ts`                      | `DriveClient` over Google's REST API                                        |
-| `apps/live/lib/drive/thumbnail.ts`                              | SVG snapshot to PNG `contentHints.thumbnail`                                |
-| `apps/live/lib/drive/livediagram-port.ts`                       | `LivediagramPort` interface + implementation over `lib/api`                 |
-| `apps/live/lib/drive/snapshot.ts`                               | `MirrorSnapshot` and its indexes                                            |
-| `apps/live/lib/drive/plan-outbound.ts`                          | Pure: snapshot + items to outbound ops                                      |
-| `apps/live/lib/drive/plan-inbound.ts`                           | Pure: a change + snapshot + items to an inbound decision                    |
-| `apps/live/lib/drive/tombstones.ts`                             | Per-browser memory of the rows last seen                                    |
-| `apps/live/lib/drive/backoff.ts`                                | The back-off state machine                                                  |
-| `apps/live/lib/drive/engine.ts`                                 | `DriveMirrorEngine`: passes, triggers, lease, token, status                 |
-| `apps/live/lib/drive/pass-context.ts`                           | One pass's snapshot, pending item rows and dependencies; the 409 retry      |
-| `apps/live/lib/drive/engine-inbound.ts`                         | Applies inbound decisions through the port                                  |
-| `apps/live/lib/drive/engine-outbound.ts`                        | Runs outbound ops against Drive, records what Google returns                |
-| `apps/live/lib/drive/browser-engine.ts`                         | The engine as a tab runs it: real fetch, timers, storage, telemetry mapping |
-| `apps/live/lib/api/core.ts`                                     | `registerTokenProvider`: the Bearer stays while any session mount remains   |
-| `apps/live/lib/drive/token-source.ts`                           | Broker and browser-only (GIS) token sources                                 |
-| `apps/live/lib/drive/consent.ts`                                | Google authorisation URL, pending-return memory                             |
-| `apps/live/lib/drive/google-scripts.ts`                         | Google Identity Services and Picker loaders, `FolderPicker`                 |
-| `apps/live/lib/drive/open-with.ts`                              | `/drive/open` state parsing and outcome decision                            |
-| `apps/live/lib/drive/tab-election.ts`                           | Web Locks election + BroadcastChannel relay                                 |
-| `apps/live/components/drive/DriveMirrorProvider.tsx`            | Mounts the engine in the elected tab, publishes status                      |
-| `apps/live/components/drive/drive-mirror-context.ts`            | `useDriveMirror`, `useDriveNotice`, the context value                       |
-| `apps/live/components/drive/DriveConnected.tsx`                 | `/drive/connected`: redeems the code once, returns to the page              |
-| `apps/live/components/drive/DriveOpen.tsx`                      | `/drive/open`: sign-in, Allow access, open, Import a copy, errors           |
-| `apps/live/components/chrome/LandingCard.tsx`                   | The centred landing card `/join` and the Drive routes share                 |
-| `apps/live/components/providers/E2EAuthBridge.tsx`              | Test builds only: a signed-in session from a test-minted JWT                |
-| `apps/live/e2e/drive-mirror.spec.ts`                            | The opt-in browser e2e against the fake Google                              |
-| `apps/live/e2e/drive-shots.spec.ts`                             | Every Drive state screenshotted, light and dark (`test:e2e:drive-shots`)    |
-| `apps/live/e2e/drive-support.ts`                                | Test JWKS, the fake Google over HTTP, routed Google traffic                 |
-| `scripts/e2e-stack.mjs`                                         | `E2E_DRIVE=1`: the api worker's test Drive and JWKS vars                    |
-| `apps/live/components/drive/GoogleDriveSyncRow.tsx`             | The Google Drive row of Settings > Account > Cloud Sync                     |
-| `apps/live/lib/drive/cloud-sync-copy.ts`                        | The row's plain-language copy, and the rhythm derived from the cadence      |
-| `apps/live/lib/cloud-sync/providers.ts`                         | The Cloud Sync provider catalogue                                           |
-| `apps/live/components/drive/DriveReconnectBanner.tsx`           | The quiet Needs reconnecting / Resume sync banner                           |
-| `apps/live/components/drive/DriveNoticeMarker.tsx`              | The unseen-folder mark on an Explorer row                                   |
-| `apps/live/app/drive/connected/page.tsx`                        | The OAuth redirect target                                                   |
-| `apps/live/app/drive/open/page.tsx`                             | The Drive UI integration's Open URL                                         |
+| File                                                            | Role                                                                                    |
+| --------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| `packages/api-schema/src/drive.ts`                              | Wire types, `DriveMode`, `DRIVE_*` shared constants, `driveFileName`                    |
+| `apps/api/migrations/0057_drive_mirror.sql`                     | `drive_connections`, `drive_items`                                                      |
+| `apps/api/src/drive/config.ts`                                  | `driveMode(env)`, the Google OAuth origin                                               |
+| `apps/api/src/drive/crypto.ts`                                  | AES-GCM seal / open of the refresh token                                                |
+| `apps/api/src/drive/state.ts`                                   | Signed consent `state`                                                                  |
+| `apps/api/src/drive/google-oauth.ts`                            | Code exchange, refresh, revoke                                                          |
+| `apps/api/src/db/drive.ts`                                      | Every statement on the two tables                                                       |
+| `apps/api/src/routes/drive.ts`                                  | `/api/drive/*`                                                                          |
+| `apps/api/src/db/document-removal.ts`                           | Drops the doomed documents' `drive_items`                                               |
+| `apps/api/src/db/folders.ts`                                    | `deleteFolder` is one batch: contents to the parent, the folder's `drive_items` dropped |
+| `apps/api/src/db/account.ts`                                    | Account deletion revokes and drops the Drive rows                                       |
+| `apps/api/src/routes/capabilities.ts`                           | `driveMode`                                                                             |
+| `apps/api/hosted-vars.json`, `apps/api/scripts/hosted-vars.mjs` | The hosted profile: the client id per environment, and its verifies                     |
+| `apps/api/src/openapi/manifest.ts`                              | The Drive routes, tag `Drive`                                                           |
+| `packages/fake-google/`                                         | The fake Google (Drive REST + OAuth) every test uses                                    |
+| `apps/live/lib/export-document-text.ts`                         | The `livediagram.document` envelope                                                     |
+| `apps/live/lib/api/drive.ts`                                    | Wire calls to `/api/drive/*`                                                            |
+| `apps/live/lib/drive/config.ts`                                 | Client id, Picker key, `driveUiMode`                                                    |
+| `apps/live/lib/drive/cadence.ts`                                | Every cadence constant                                                                  |
+| `apps/live/lib/drive/log.ts`                                    | `driveLog`, the `[drive-mirror]` fingerprint                                            |
+| `apps/live/lib/drive/drive-client.ts`                           | `DriveClient` interface, `DriveApiError`                                                |
+| `apps/live/lib/drive/drive-rest-client.ts`                      | `DriveClient` over Google's REST API                                                    |
+| `apps/live/lib/drive/thumbnail.ts`                              | SVG snapshot to PNG `contentHints.thumbnail`                                            |
+| `apps/live/lib/drive/livediagram-port.ts`                       | `LivediagramPort` interface + implementation over `lib/api`                             |
+| `apps/live/lib/drive/snapshot.ts`                               | `MirrorSnapshot` and its indexes                                                        |
+| `apps/live/lib/drive/plan-outbound.ts`                          | Pure: snapshot + items to outbound ops                                                  |
+| `apps/live/lib/drive/plan-inbound.ts`                           | Pure: a change + snapshot + items to an inbound decision                                |
+| `apps/live/lib/drive/tombstones.ts`                             | Per-browser memory of the rows last seen                                                |
+| `apps/live/lib/drive/backoff.ts`                                | The back-off state machine                                                              |
+| `apps/live/lib/drive/engine.ts`                                 | `DriveMirrorEngine`: passes, triggers, lease, token, status                             |
+| `apps/live/lib/drive/pass-context.ts`                           | One pass's snapshot, pending item rows and dependencies; the 409 retry                  |
+| `apps/live/lib/drive/engine-inbound.ts`                         | Applies inbound decisions through the port                                              |
+| `apps/live/lib/drive/engine-outbound.ts`                        | Runs outbound ops against Drive, records what Google returns                            |
+| `apps/live/lib/drive/browser-engine.ts`                         | The engine as a tab runs it: real fetch, timers, storage, telemetry mapping             |
+| `apps/live/lib/api/core.ts`                                     | `registerTokenProvider`: the Bearer stays while any session mount remains               |
+| `apps/live/lib/drive/token-source.ts`                           | Broker and browser-only (GIS) token sources                                             |
+| `apps/live/lib/drive/consent.ts`                                | Google authorisation URL, pending-return memory                                         |
+| `apps/live/lib/drive/google-scripts.ts`                         | Google Identity Services and Picker loaders, `FolderPicker`                             |
+| `apps/live/lib/drive/open-with.ts`                              | `/drive/open` state parsing and outcome decision                                        |
+| `apps/live/lib/drive/tab-election.ts`                           | Web Locks election + BroadcastChannel relay                                             |
+| `apps/live/components/drive/DriveMirrorProvider.tsx`            | Mounts the engine in the elected tab, publishes status                                  |
+| `apps/live/components/drive/drive-mirror-context.ts`            | `useDriveMirror`, `useDriveNotice`, the context value                                   |
+| `apps/live/components/drive/DriveConnected.tsx`                 | `/drive/connected`: redeems the code once, returns to the page                          |
+| `apps/live/components/drive/DriveOpen.tsx`                      | `/drive/open`: sign-in, Allow access, open, Import a copy, errors                       |
+| `apps/live/components/chrome/LandingCard.tsx`                   | The centred landing card `/join` and the Drive routes share                             |
+| `apps/live/components/providers/E2EAuthBridge.tsx`              | Test builds only: a signed-in session from a test-minted JWT                            |
+| `apps/live/e2e/drive-mirror.spec.ts`                            | The opt-in browser e2e against the fake Google                                          |
+| `apps/live/e2e/drive-shots.spec.ts`                             | Every Drive state screenshotted, light and dark (`test:e2e:drive-shots`)                |
+| `apps/live/e2e/drive-support.ts`                                | Test JWKS, the fake Google over HTTP, routed Google traffic                             |
+| `scripts/e2e-stack.mjs`                                         | `E2E_DRIVE=1`: the api worker's test Drive and JWKS vars                                |
+| `apps/live/components/drive/GoogleDriveSyncRow.tsx`             | The Google Drive row of Settings > Account > Cloud Sync                                 |
+| `apps/live/lib/drive/cloud-sync-copy.ts`                        | The row's plain-language copy, and the rhythm derived from the cadence                  |
+| `apps/live/lib/cloud-sync/providers.ts`                         | The Cloud Sync provider catalogue                                                       |
+| `apps/live/components/drive/DriveReconnectBanner.tsx`           | The quiet Needs reconnecting / Resume sync banner                                       |
+| `apps/live/components/drive/DriveNoticeMarker.tsx`              | The unseen-folder mark on an Explorer row                                               |
+| `apps/live/app/drive/connected/page.tsx`                        | The OAuth redirect target                                                               |
+| `apps/live/app/drive/open/page.tsx`                             | The Drive UI integration's Open URL                                                     |
 
 ## Domain and naming
 
@@ -199,7 +199,8 @@ stops the pass on a rate-limit error. `expectedParent(folderId)` is the folder's
 4. **Items of documents neither live nor trashed in My documents** (moved into a team) not trashed:
    `updateFile { trashed: true }`; the row stays, so a move back out restores it (step 2).
 5. **Tombstones:** for each: `getFile`; 404 or already gone: drop. Document: `trashed` then `deleteFile`, else
-   `updateFile { trashed: true }`. Folder: `updateFile { trashed: true }` (its contents moved up in steps 1 and 2).
+   `updateFile { trashed: true }`. Folder: `updateFile { trashed: true }` (its contents moved in steps 1 and 2: the api re-parented them to the
+   deleted folder's parent, so `expectedParent` names that folder's Drive folder, or the root).
 
 Every write asks Google for `DRIVE_FILE_FIELDS` and records the returned state with `PUT /api/drive/items`
 (`ldName` the livediagram name written; `mirroredSavedAt` the `savedAt` of the content uploaded). Writes are
@@ -215,6 +216,7 @@ returns one `InboundDecision`:
 | Situation                                                                              | Decision                                                                      |
 | -------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
 | No item for `fileId`, file lacks `ldOrigin === host`                                   | `ignore` (not ours, or the root)                                              |
+| No item, `ldFolderId` names a folder deleted here whose tombstone is pending           | `ignore` (`deleted-here`): the tombstone bins it                              |
 | No item, `ldFolderId` names no folder, file not trashed                                | `recreate-folder` (same id, parent by Drive parent)                           |
 | No item, `ldDocumentId` names a document whose item holds another file                 | `ignore` (`foreign-copy`, logged `inbound-foreign-copy`)                      |
 | No item, `ldFolderId` names a known folder                                             | `adopt` (record the item, then re-plan)                                       |
@@ -253,6 +255,8 @@ Every applied decision goes through the ordinary routes via `LivediagramPort` an
 pass saw as `[kind, ldId, driveFileId]`. At the start of outbound, a remembered row that is no longer an item and
 whose entity is neither a live personal document / folder nor in the personal Trash becomes a tombstone op. The
 memory is rewritten at the end of each pass and cleared on disconnect.
+
+A remembered folder row whose item and folder are both gone is a **deleted folder** (`MirrorSnapshot.deletedFolders`): the inbound planner ignores Drive changes for it (`deleted-here`), so the create it made before the delete is never read back as a folder to restore.
 
 ### Tab election
 

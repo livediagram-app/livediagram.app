@@ -106,6 +106,13 @@ change and on first appearance; a folder created in place only animates its
 own row. Reduced motion ([User preferences](../007-editor/user-preferences.md)) collapses both the duration and the
 per-row delay, so nothing waits on a beat it will never see.
 
+**What it pre-selects.** A `/new?folder=` or `?team=` context is pre-selected. Without one, the
+folder step pre-selects the reader's [default folder](../013-workspace/default-folders.md#the-new-document-wizard)
+for the template picked on the first step, says why above the browser ("**Whiteboards** go to
+**Workshops** by default", with **Change default**), and offers **Always save <these> here** beneath
+it. A place the reader picks themselves, the My documents root tile included, is always the one
+used.
+
 ## The contract for adding a location
 
 A save location is one entry in a small catalogue, `apps/live/lib/save-locations.ts`:

@@ -152,11 +152,14 @@ export function useFolders(
   const deleteFolder = useCallback(
     (id: string) => {
       if (!ownerId) return;
-      setFolders((prev) =>
-        prev
+      // Its subfolders move up to its parent, as the api moves them
+      // (docs/specs/013-workspace/folders.md "Deleting a folder").
+      setFolders((prev) => {
+        const parentId = prev.find((f) => f.id === id)?.parentId ?? null;
+        return prev
           .filter((f) => f.id !== id)
-          .map((f) => (f.parentId === id ? { ...f, parentId: null } : f)),
-      );
+          .map((f) => (f.parentId === id ? { ...f, parentId } : f));
+      });
       void apiDeleteFolder(ownerId, id)
         .then(() => track('Folder', 'Deleted'))
         .catch(() => {});

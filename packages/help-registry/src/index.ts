@@ -1453,6 +1453,16 @@ export const articles: Article[] = [
     categorySlug: 'explorer',
   },
   {
+    slug: 'default-folders',
+    title: 'Default Folders',
+    description: 'Choose the folder new diagrams, whiteboards and boards land in automatically.',
+    keywords:
+      'default folder where new documents go save location automatic always save here placement file whiteboards retrospectives kanban event storming diagrams use as default settings documents',
+    category: 'Explorer',
+    categorySlug: 'explorer/folders',
+    parentSlug: 'folders',
+  },
+  {
     slug: 'filters',
     title: 'Search and Filter Documents',
     description:

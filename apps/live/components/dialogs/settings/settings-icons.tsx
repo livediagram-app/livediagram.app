@@ -18,6 +18,7 @@ import { CollaborateGlyph } from '@/components/panels/collaborate/CollaborateGly
 // (one per panel, under Panels) draws none of its own.
 export type SettingsIconId =
   | 'account'
+  | 'documents'
   | 'editor'
   | 'appearance'
   | 'keyboard'
@@ -40,6 +41,7 @@ export type SettingsCategoryId = SettingsIconId | SettingsSubcategoryId;
 // glyphs differ too, the colour is a second channel, never the only one.
 const TILE: Record<SettingsIconId, string> = {
   account: 'bg-teal-600',
+  documents: 'bg-lime-700',
   editor: 'bg-blue-500',
   appearance: 'bg-sky-600',
   keyboard: 'bg-orange-500',
@@ -86,6 +88,13 @@ const KeyboardGlyph = (
   <Svg>
     <rect x="2" y="5" width="16" height="10.5" rx="2" />
     <path d="M5.5 8.5h.01M8.5 8.5h.01M11.5 8.5h.01M14.5 8.5h.01M7 12.2h6" />
+  </Svg>
+);
+
+// Documents: a folder, where new documents go (docs/specs/013-workspace/default-folders.md).
+const DocumentsGlyph = (
+  <Svg>
+    <path d="M3 6.5a1.5 1.5 0 0 1 1.5-1.5h3.2l1.6 1.8h6.2A1.5 1.5 0 0 1 17 8.3v6.2a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 3 14.5Z" />
   </Svg>
 );
 
@@ -159,6 +168,7 @@ const PrivacyGlyph = (
 
 export const CATEGORY_GLYPHS: Record<SettingsIconId, ReactNode> = {
   account: AccountGlyph,
+  documents: DocumentsGlyph,
   editor: EditorGlyph,
   appearance: AppearanceGlyph,
   keyboard: KeyboardGlyph,

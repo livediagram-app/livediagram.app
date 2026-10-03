@@ -1,6 +1,7 @@
 import type { Folder } from '@/lib/api-client';
 import type { FolderPreviewContents } from '@/app/explorer/folder-preview-tiles';
 import type { PaneDocument } from '@/app/explorer/views';
+import type { DefaultFolderMenu } from '@/hooks/persistence/useDefaultFolderMenus';
 
 // The props an Explorer pane view takes, shared by ListView and CardView.
 //
@@ -20,6 +21,8 @@ export type FolderActionBundle = {
   newSubfolder: () => void;
   move: () => void;
   delete: () => void;
+  // "Use as default for" (docs/specs/013-workspace/default-folders.md); absent until the defaults load.
+  defaults?: DefaultFolderMenu;
 };
 export type FolderActions = (f: Folder, anchor: HTMLElement | null) => FolderActionBundle;
 

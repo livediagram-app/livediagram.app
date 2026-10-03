@@ -49,6 +49,16 @@ export function usePlacementOptions({
   // Per-team folder lists for the placement browser's second level, fetched
   // alongside the team list (teams are few, so eager Promise.all is fine).
   const [teamFolders, setTeamFolders] = useState<Record<string, PickerFolder[]>>({});
+  // Whether the lists are complete for this owner (folders, and teams with their folders once
+  // signed in): a surface that tells "gone" from "not loaded yet" waits for it (Settings' default
+  // folders, docs/specs/013-workspace/default-folders.md).
+  // The owner whose lists could not all be read: "gone" cannot be told from "unreadable" then.
+  const [failedFor, setFailedFor] = useState<string | null>(null);
+  const [loadedFor, setLoadedFor] = useState<{
+    owner: string;
+    folders: boolean;
+    teams: boolean;
+  } | null>(null);
 
   // Load the placement options for the Settings step once identity resolves.
   // Personal folders only (a team's folders live under their own optgroup);
@@ -57,19 +67,28 @@ export function usePlacementOptions({
     if (selfId === 'pending' || skip?.()) return;
     let cancelled = false;
     void (async () => {
-      const list = await apiListFolders(selfId).catch(() => []);
+      const fetched = await apiListFolders(selfId).catch(() => null);
       if (!cancelled) {
+        if (!fetched) setFailedFor(selfId);
+        const list = fetched ?? [];
         setFolders(
           list
             .filter((f) => f.teamId == null)
             .map((f) => ({ id: f.id, name: f.name, parentId: f.parentId })),
         );
+        setLoadedFor((l) => ({
+          owner: selfId,
+          teams: l?.owner === selfId ? l.teams : false,
+          folders: fetched !== null,
+        }));
       }
     })();
     if (clerkUserId) {
       void (async () => {
-        const list = await apiListTeams(selfId).catch(() => []);
+        const fetchedTeams = await apiListTeams(selfId).catch(() => null);
         if (cancelled) return;
+        if (!fetchedTeams) setFailedFor(selfId);
+        const list = fetchedTeams ?? [];
         setTeams(list.map((t) => ({ id: t.id, name: t.name })));
         // Second level of the placement browser: each team's folders.
         const libs = await Promise.all(
@@ -82,10 +101,19 @@ export function usePlacementOptions({
                     lib.folders.map((f) => ({ id: f.id, name: f.name, parentId: f.parentId })),
                   ] as const,
               )
-              .catch(() => [t.id, []] as const),
+              .catch(() => {
+                setFailedFor(selfId);
+                return [t.id, []] as const;
+              }),
           ),
         );
-        if (!cancelled) setTeamFolders(Object.fromEntries(libs));
+        if (cancelled) return;
+        setTeamFolders(Object.fromEntries(libs));
+        setLoadedFor((l) => ({
+          owner: selfId,
+          folders: l?.owner === selfId ? l.folders : false,
+          teams: true,
+        }));
       })();
     }
     return () => {
@@ -137,5 +165,8 @@ export function usePlacementOptions({
     }
   };
 
-  return { folders, teams, teamFolders, createPickerFolder, createPickerTeam };
+  const ready =
+    loadedFor?.owner === selfId && loadedFor.folders && (loadedFor.teams || !clerkUserId);
+  const failed = failedFor === selfId;
+  return { folders, teams, teamFolders, createPickerFolder, createPickerTeam, ready, failed };
 }

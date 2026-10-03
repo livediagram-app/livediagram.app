@@ -14,6 +14,7 @@ import { SidebarGroup } from './SidebarGroup';
 import { SidebarRow } from './SidebarRow';
 import { SidebarSignInNudge } from './SidebarSignInNudge';
 import { TeamRows } from './TeamRows';
+import { useMyDocumentsMenu } from './useMyDocumentsMenu';
 
 // Spaces (docs/specs/013-workspace/explorer-structure.md): My documents and each team as
 // root folders, then Invites and New team, or the guest's sign-in nudge.
@@ -41,7 +42,9 @@ export function SpacesGroup({
     invites,
     setTeamModalOpen,
     setMobileNavOpen,
+    rootDefaults,
   } = useExplorer();
+  const myDocumentsMenu = useMyDocumentsMenu(rootDefaults);
   const has = (row: SidebarRowKind) => rows.includes(row);
   return (
     <SidebarGroup
@@ -63,6 +66,8 @@ export function SpacesGroup({
         expandable={rootFolders.length > 0}
         expanded={expanded.has(MY_DOCUMENTS_EXPAND_KEY)}
         onToggleExpand={() => toggleExpand(MY_DOCUMENTS_EXPAND_KEY)}
+        onContextMenu={myDocumentsMenu.onContextMenu}
+        trailing={myDocumentsMenu.trailing}
       >
         {rootFolders.map((f) => (
           <SidebarFolderSubtree

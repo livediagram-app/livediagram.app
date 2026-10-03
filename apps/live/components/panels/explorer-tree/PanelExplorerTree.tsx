@@ -1,6 +1,7 @@
 'use client';
 
-import { useRef } from 'react';
+import { useMemo, useRef } from 'react';
+import { useDefaultFolderMenus } from '@/hooks/persistence/useDefaultFolderMenus';
 import type { DocumentListItem, SharedWithItem } from '@/lib/api-client';
 import { useMinimalChrome } from '@/components/providers/minimal-chrome';
 import { sidebarDivider, sidebarGroups } from '@/app/explorer/sidebar/sidebar-structure';
@@ -35,6 +36,19 @@ export function PanelExplorerTree({
   foldersByTeam: Map<string, PanelFolder[]>;
   documentsByTeam: Map<string, DocumentListItem[]>;
 }) {
+  // The reader's default folders (docs/specs/013-workspace/default-folders.md): the panel's folder
+  // menus and My documents' menu check and set them; its rows show the marker.
+  const defaultFolders = useDefaultFolderMenus(
+    tree.ownerId,
+    useMemo(
+      () => ({
+        personal: [...ownIndex.foldersByParent.values()].flat(),
+        team: Object.fromEntries(foldersByTeam),
+        teams,
+      }),
+      [ownIndex, foldersByTeam, teams],
+    ),
+  );
   const navRef = useRef<HTMLElement>(null);
   const keyboard = useTreeNavigation(navRef);
   const divider = sidebarDivider(useMinimalChrome());
@@ -48,7 +62,7 @@ export function PanelExplorerTree({
     surface: 'panel',
   });
   return (
-    <PanelTreeProvider value={tree}>
+    <PanelTreeProvider value={{ ...tree, defaultFolders }}>
       <nav
         ref={navRef}
         aria-label="Explorer"
