@@ -171,7 +171,10 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
 - It is shown as one SVG `<image>` at that box in the map's world-space `viewBox`, from a
   `data:image/svg+xml;charset=utf-8,` URL (pure: no object URL to create or revoke). The window
   overlay, navigation and paper colour are unchanged.
-- The image cannot load web fonts (`svgFontDefs` is left out), so labels use system fonts.
+- No labels: the memo draws `elements.map(withoutLabel)` (each element without `label` / `richText`),
+  so the picture carries no `<text>` and the arrow label pass has nothing to lay out. Measured on the
+  reference board: the picture drops from 417 KB to 305 KB (550 texts, 642 lines gone), and Chrome's
+  parse-and-paint at 4x from about 210 ms to about 100 ms. `svgFontDefs` stays left out.
 - Tests: `Minimap.test.tsx` (one `<image>`, no board nodes in the page; a standalone picture).
 
 ### At rest

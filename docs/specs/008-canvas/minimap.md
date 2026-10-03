@@ -36,8 +36,11 @@ lets you jump the viewport anywhere with a tap or drag.
   every arrow with its true curved / elbow path — not a grey wireframe. That
   drawing is shown as **one image**, not as a copy of the board in the page: on
   a large board a live copy doubled the page's elements and slowed every
-  gesture ([Canvas performance](canvas-performance.md)). An image cannot use the
-  app's web fonts, so the Map's tiny labels are set in the system's fonts. The
+  gesture ([Canvas performance](canvas-performance.md)). **It draws no labels**:
+  element and arrow labels are left out of the picture. On a board of any size
+  they come out a pixel or two tall, too small to read, while laying them out
+  was half of the picture's cost (on a 1,000-element board, about 210 ms of the
+  browser's work at a slowed CPU, against 100 ms without). The
   area **outside the current view is dimmed**, leaving a lit window (outlined
   in the tab theme's accent, matching the on-canvas selection) that reads at
   a glance as where you are. The window is coloured exactly like the canvas
