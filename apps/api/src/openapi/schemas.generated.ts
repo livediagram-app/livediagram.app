@@ -6160,6 +6160,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "Returned",
       "Restored",
       "Applied",
+      "Conflicted",
+      "Held",
       "Sent",
       "Api",
       "Client",
@@ -6201,7 +6203,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "Draw",
       "Editor",
       "Drive",
-      "Explorer"
+      "Explorer",
+      "Agent"
     ],
     "type": "string"
   },

@@ -557,6 +557,7 @@ export * from './page-views';
 export * from './read-notes';
 export * from './poll';
 export * from './room-messages';
+export * from './changesets';
 export * from './telemetry-schema';
 export * from './server-emitted-events';
 export * from './error-telemetry';

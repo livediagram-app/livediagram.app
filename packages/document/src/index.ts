@@ -578,6 +578,7 @@ export * from './layer-operations';
 // Element-level realtime ops (docs/specs/012-collaboration/realtime-conflict-resolution.md): the ElementOp type + the pure
 // diff/apply functions the realtime room uses to merge concurrent edits.
 export * from './element-ops';
+export * from './element-fingerprint';
 
 // Per-element deltas for the fields many participants write at once
 // (docs/specs/012-collaboration/collab-race-hardening.md): answers, ideas, checklist ticks, comments.
