@@ -87,6 +87,7 @@ import { useCanvasSelectHandlers } from '@/hooks/canvas/useCanvasSelectHandlers'
 import { useArrowLabelLayouts } from '@/hooks/canvas/useArrowLabelLayouts';
 import { useFontsReady } from '@/components/canvas/useFontsReady';
 import { useLatest } from '@/hooks/ui/useLatest';
+import { InfographicPage } from '@/components/canvas/InfographicPage';
 
 export function Canvas(props: CanvasProps) {
   const {
@@ -721,6 +722,10 @@ export function Canvas(props: CanvasProps) {
             behind the real element layer, which caps each column at z=0.
             Only mounted while the tool is active. */}
         {canvasTool === 'isometric' ? <IsometricDepthLayer elements={elements} /> : null}
+        {/* Infographic mode's A4 page, under every element (InfographicPage). */}
+        {props.infographicPage ? (
+          <InfographicPage page={props.infographicPage} zoom={viewportZoom} />
+        ) : null}
         <CanvasStillProvider still={props.editorMode === 'draw'}>
           {/* The zoom reaches only the counter-scaled parts of each element
               (docs/specs/008-canvas/canvas-performance.md). */}

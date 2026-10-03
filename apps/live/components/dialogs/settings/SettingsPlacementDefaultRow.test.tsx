@@ -60,7 +60,7 @@ describe('SettingsPlacementDefaultRow', () => {
     expect(rows.map((r) => r.label)).toEqual([
       'Diagrams',
       'Whiteboards',
-      'Designs',
+      'Infographics',
       'Event Storming Boards',
       'Retrospectives',
       'Kanban Boards',

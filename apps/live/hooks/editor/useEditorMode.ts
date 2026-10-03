@@ -8,7 +8,7 @@
 //   this page (usePinTabOpening), else the tab's opening mode (`tab.opensIn`), else 'diagram'. Event-storming boards are always 'diagram'. A visitor who
 //   cannot edit (`canEdit: false`, the view role) always gets the opening mode.
 // - `canSwitch` is true only for an editor on a general tab; the mode switch shows only then.
-// - `setMode(next)` fires `Editor · Changed · ModeDiagram | ModeDraw | ModeDesign` and then applies: it
+// - `setMode(next)` fires `Editor · Changed · ModeDiagram | ModeDraw | ModeInfographic` and then applies: it
 //   remembers the choice in this browser for this tab (never on the tab itself, so nobody else
 //   is affected). A no-op when the switch is not offered or `next` is already the mode.
 // - Every caller on the page shares one store: the switch and the editor always agree.
@@ -24,6 +24,7 @@ import {
   type EditorModeTab,
 } from '@/lib/editor-mode-store';
 import { debugLog } from '@/lib/debug-log';
+import { useOfferedEditorModes } from '@/lib/offered-editor-modes';
 import { track } from '@/lib/telemetry';
 
 export type EditorModeState = {
@@ -38,7 +39,7 @@ const nothingStored = () => '|';
 const MODE_EVENT: Record<EditorMode, string> = {
   diagram: 'ModeDiagram',
   draw: 'ModeDraw',
-  design: 'ModeDesign',
+  infographic: 'ModeInfographic',
 };
 
 const modeOrNull = (v: string | undefined): EditorMode | null => (isEditorMode(v) ? v : null);
@@ -58,7 +59,8 @@ export function useEditorMode(
     EditorMode | null,
     EditorMode | null,
   ];
-  const { mode, canSwitch } = resolveEditorMode({ tab, remembered, opened, canEdit });
+  const offered = useOfferedEditorModes();
+  const { mode, canSwitch } = resolveEditorMode({ tab, remembered, opened, canEdit, offered });
   const setMode = useCallback(
     (next: EditorMode) => {
       if (!canSwitch || !tabId || next === mode) return;

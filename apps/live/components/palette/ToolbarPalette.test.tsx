@@ -100,7 +100,7 @@ describe('ToolbarPalette', () => {
   });
 
   it('swaps the tiles when the category changes', () => {
-    show({ mode: 'design' });
+    show({ mode: 'infographic' });
     pickCategory('devices');
     expect(screen.getByRole('button', { name: 'Palette category' }).textContent).toContain(
       'Devices',
@@ -115,23 +115,23 @@ describe('ToolbarPalette', () => {
     expect(screen.getByRole('button', { name: 'More Favourites' })).toBeTruthy();
     cleanup();
     // Devices fits in the strip whole.
-    show({ mode: 'design' });
+    show({ mode: 'infographic' });
     pickCategory('devices');
     expect(screen.queryByRole('button', { name: /^More/ })).toBeNull();
   });
 
   // The palette per mode (docs/specs/007-editor/editor-modes.md "The palette per mode").
-  it('offers the mock-up kit in Design mode only', () => {
+  it('offers the mock-up kit in Infographic mode only', () => {
     show();
     fireEvent.click(screen.getByRole('button', { name: 'Palette category' }));
     expect(document.querySelector('[data-option-id="devices"]')).toBeNull();
     expect(document.querySelector('[data-option-id="components"]')).toBeNull();
     expect(document.querySelector('[data-option-id="data"]')).not.toBeNull();
     cleanup();
-    show({ mode: 'design' });
+    show({ mode: 'infographic' });
     fireEvent.click(screen.getByRole('button', { name: 'Palette category' }));
     expect(document.querySelector('[data-option-id="devices"]')).not.toBeNull();
-    expect(document.querySelector('[data-option-id="data"]')).toBeNull();
+    expect(document.querySelector('[data-option-id="data"]')).not.toBeNull();
     expect(document.querySelector('[data-option-id="behaviour"]')).toBeNull();
     expect(document.querySelector('[data-option-id="technology"]')).toBeNull();
     expect(document.querySelector('[data-option-id="stickers"]')).not.toBeNull();
@@ -233,13 +233,13 @@ describe('ToolbarPalette', () => {
   });
 
   it('hides rather than unmounts, so the chosen category survives', () => {
-    const view = show({ mode: 'design' });
+    const view = show({ mode: 'infographic' });
     pickCategory('devices');
     const h = handlers();
     const rerender = (hidden: boolean) =>
       view.rerender(
         inMode(
-          'design',
+          'infographic',
           <ToolbarPalette
             canvasTool="select"
             onSetCanvasTool={vi.fn()}

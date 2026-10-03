@@ -17,7 +17,7 @@ import { track } from '@/lib/telemetry';
 const OPENS_IN_EVENT: Record<EditorMode, string> = {
   diagram: 'OpensInDiagram',
   draw: 'OpensInDraw',
-  design: 'OpensInDesign',
+  infographic: 'OpensInInfographic',
 };
 
 export function useTabOpensIn(deps: {

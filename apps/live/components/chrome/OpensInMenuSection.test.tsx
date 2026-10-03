@@ -2,8 +2,12 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { OpensInMenuSection } from './OpensInMenuSection';
+import { setInfographicModeEnabled } from '@/lib/offered-editor-modes';
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  setInfographicModeEnabled(false);
+});
 
 function setup(over: Partial<Parameters<typeof OpensInMenuSection>[0]['choice']> = {}) {
   const onChange = vi.fn();
@@ -22,7 +26,8 @@ function setup(over: Partial<Parameters<typeof OpensInMenuSection>[0]['choice']>
 
 // docs/specs/007-editor/editor-modes.md "Opens in": every editor mode as a radio choice.
 describe('OpensInMenuSection', () => {
-  it('lists every editor mode from the catalogue, the opening one checked', () => {
+  it('lists every offered editor mode from the catalogue, the opening one checked', () => {
+    setInfographicModeEnabled(true);
     setup();
     const group = screen.getByRole('group', { name: 'Opens in' });
     expect(group).toBeTruthy();
@@ -30,9 +35,17 @@ describe('OpensInMenuSection', () => {
     expect(items.map((i) => i.textContent)).toEqual([
       expect.stringContaining('Diagram'),
       expect.stringContaining('Draw'),
-      expect.stringContaining('Design'),
+      expect.stringContaining('Infographic'),
     ]);
     expect(items.map((i) => i.getAttribute('aria-checked'))).toEqual(['false', 'true', 'false']);
+  });
+
+  it('leaves out Infographic while it is switched off in Settings', () => {
+    setup();
+    expect(screen.getAllByRole('menuitemradio').map((i) => i.textContent)).toEqual([
+      expect.stringContaining('Diagram'),
+      expect.stringContaining('Draw'),
+    ]);
   });
 
   it('sets the opening mode on a choice', () => {

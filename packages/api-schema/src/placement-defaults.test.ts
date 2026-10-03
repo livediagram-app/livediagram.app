@@ -20,7 +20,7 @@ describe('PLACEMENT_DEFAULT_KEYS', () => {
     expect(PLACEMENT_DEFAULT_KEYS).toEqual([
       'mode:diagram',
       'mode:draw',
-      'mode:design',
+      'mode:infographic',
       'kind:event-storming',
       'template:retrospective',
       'template:kanban',
@@ -191,7 +191,7 @@ describe('placementDefaultTelemetryType', () => {
     expect(PLACEMENT_DEFAULT_KEYS.map(placementDefaultTelemetryType)).toEqual([
       'DefaultModeDiagram',
       'DefaultModeDraw',
-      'DefaultModeDesign',
+      'DefaultModeInfographic',
       'DefaultKindEventStorming',
       'DefaultTemplateRetrospective',
       'DefaultTemplateKanban',

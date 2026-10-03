@@ -245,8 +245,8 @@ export const EDITOR_MODE_SWITCHES = chart(
   'Editor',
   'Changed',
   'Editor Mode Switches',
-  'A tab switched to Diagram, Draw or Design mode by the person working on it.',
-  { types: ['ModeDiagram', 'ModeDraw', 'ModeDesign'] },
+  'A tab switched to Diagram, Draw or Infographic mode by the person working on it.',
+  { types: ['ModeDiagram', 'ModeDraw', 'ModeInfographic'] },
 );
 
 // The mode a tab opens in, set from the tab menu's Opens in (docs/specs/007-editor/editor-modes.md).
@@ -254,8 +254,17 @@ export const TAB_OPENS_IN = chart(
   'Tab',
   'Changed',
   'Opening Modes Set',
-  'A tab set to open in Diagram, Draw or Design mode for everyone, from the tab menu.',
-  { types: ['OpensInDiagram', 'OpensInDraw', 'OpensInDesign'] },
+  'A tab set to open in Diagram, Draw or Infographic mode for everyone, from the tab menu.',
+  { types: ['OpensInDiagram', 'OpensInDraw', 'OpensInInfographic'] },
+);
+
+// Infographic mode's A4 page turned portrait or landscape (docs/specs/007-editor/editor-modes.md "The page").
+export const PAGE_ORIENTATION = chart(
+  'Tab',
+  'Changed',
+  'Page Orientations Set',
+  "An infographic tab's A4 page turned to portrait or landscape, from the page's settings.",
+  { types: ['PagePortrait', 'PageLandscape'] },
 );
 
 export const WHITEBOARDS: MetricStack = {
@@ -267,6 +276,7 @@ export const WHITEBOARDS: MetricStack = {
     WHITEBOARDS_CREATED,
     EDITOR_MODE_SWITCHES,
     TAB_OPENS_IN,
+    PAGE_ORIENTATION,
     WHITEBOARD_PENS,
     WHITEBOARD_SETTINGS,
     WHITEBOARD_RECOGNITION,

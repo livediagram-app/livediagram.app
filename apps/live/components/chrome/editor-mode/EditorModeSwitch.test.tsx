@@ -16,16 +16,33 @@ import {
 import { useEditorMode, type EditorModeState } from '@/hooks/editor/useEditorMode';
 import { EditorModeProvider } from './editor-mode-context';
 import { EditorModeSwitch } from './EditorModeSwitch';
+import { setInfographicModeEnabled } from '@/lib/offered-editor-modes';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
 beforeEach(() => {
+  // Every mode offered, the experimental one included (Settings › Experimental).
+  setInfographicModeEnabled(true);
   localStorage.clear();
   vi.spyOn(console, 'info').mockImplementation(() => {});
 });
 afterEach(() => {
   cleanup();
   vi.restoreAllMocks();
+  setInfographicModeEnabled(false);
+});
+
+// Settings › Experimental (docs/specs/007-editor/editor-modes.md "Experimental modes").
+describe('EditorModeSwitch with Infographic mode switched off', () => {
+  it('offers only Diagram and Draw', () => {
+    setInfographicModeEnabled(false);
+    renderSwitch('diagram');
+    fireEvent.click(chip());
+    expect(screen.getAllByRole('menuitemradio').map((row) => row.textContent)).toEqual([
+      'Diagram',
+      'Draw⇧D',
+    ]);
+  });
 });
 
 function renderSwitch(mode: EditorMode, over: Partial<EditorModeState> = {}) {
@@ -68,7 +85,7 @@ describe('EditorModeSwitch chip', () => {
     expect(rows.map((row) => row.textContent)).toEqual([
       expect.stringMatching(/^Diagram/),
       expect.stringMatching(/^Draw/),
-      expect.stringMatching(/^Design/),
+      expect.stringMatching(/^Infographic/),
     ]);
     expect(rows.map((row) => row.getAttribute('aria-checked'))).toEqual(['false', 'true', 'false']);
     expect(document.activeElement).toBe(rows[1]);
@@ -81,7 +98,7 @@ describe('EditorModeSwitch chip', () => {
     expect(screen.getAllByRole('menuitemradio').map((row) => row.textContent)).toEqual([
       'Diagram',
       'Draw⇧D',
-      'Design',
+      'Infographic',
     ]);
   });
 
@@ -103,19 +120,19 @@ describe('EditorModeSwitch chip', () => {
     renderSwitch('diagram');
     fireEvent.click(chip());
     const menu = screen.getByRole('menu');
-    const [diagram, draw, design] = screen.getAllByRole('menuitemradio');
+    const [diagram, draw, infographic] = screen.getAllByRole('menuitemradio');
     fireEvent.keyDown(menu, { key: 'ArrowDown' });
     expect(document.activeElement).toBe(draw);
     fireEvent.keyDown(menu, { key: 'ArrowDown' });
-    expect(document.activeElement).toBe(design);
+    expect(document.activeElement).toBe(infographic);
     fireEvent.keyDown(menu, { key: 'ArrowDown' });
     expect(document.activeElement).toBe(diagram);
     fireEvent.keyDown(menu, { key: 'ArrowUp' });
-    expect(document.activeElement).toBe(design);
+    expect(document.activeElement).toBe(infographic);
     fireEvent.keyDown(menu, { key: 'Home' });
     expect(document.activeElement).toBe(diagram);
     fireEvent.keyDown(menu, { key: 'End' });
-    expect(document.activeElement).toBe(design);
+    expect(document.activeElement).toBe(infographic);
   });
 
   it.each([

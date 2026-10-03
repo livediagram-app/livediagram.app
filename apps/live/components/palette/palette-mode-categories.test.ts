@@ -3,7 +3,7 @@ import { PALETTE_CATEGORIES } from './palette-categories';
 import { paletteCategoryOffered } from './palette-mode-categories';
 
 // The palette per mode (docs/specs/007-editor/editor-modes.md "The palette per mode").
-const offered = (mode: 'diagram' | 'design') =>
+const offered = (mode: 'diagram' | 'infographic') =>
   PALETTE_CATEGORIES.map((c) => c.id).filter((id) => paletteCategoryOffered(mode, id));
 
 describe('paletteCategoryOffered', () => {
@@ -14,8 +14,8 @@ describe('paletteCategoryOffered', () => {
     expect(offered('diagram')).toContain('data');
   });
 
-  it('narrows Design mode to the categories a mock-up is made of, in band order', () => {
-    expect(offered('design')).toEqual([
+  it('narrows Infographic mode to the categories a visual page is made of, in band order', () => {
+    expect(offered('infographic')).toEqual([
       'favourites',
       'shapes',
       'my-shapes',
@@ -26,11 +26,12 @@ describe('paletteCategoryOffered', () => {
       'icons',
       'stickers',
       'media',
+      'data',
     ]);
   });
 
   it('keeps Favourites in every mode', () => {
     expect(paletteCategoryOffered('diagram', 'favourites')).toBe(true);
-    expect(paletteCategoryOffered('design', 'favourites')).toBe(true);
+    expect(paletteCategoryOffered('infographic', 'favourites')).toBe(true);
   });
 });

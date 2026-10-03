@@ -1,6 +1,9 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { EditorMode } from '@livediagram/document';
 import { editorModeShortcut } from './editor-mode-shortcut';
+import { setInfographicModeEnabled } from '@/lib/offered-editor-modes';
+
+afterEach(() => setInfographicModeEnabled(false));
 
 // Shift+D (docs/specs/007-editor/editor-modes.md "The mode switch"): next mode, announced politely.
 describe('editorModeShortcut', () => {
@@ -17,13 +20,20 @@ describe('editorModeShortcut', () => {
 
   it.each([
     ['diagram', 'draw', 'Draw mode'],
-    ['draw', 'design', 'Design mode'],
-    ['design', 'diagram', 'Diagram mode'],
+    ['draw', 'infographic', 'Infographic mode'],
+    ['infographic', 'diagram', 'Diagram mode'],
   ] as const)('from %s switches to %s and announces "%s"', (from, to, message) => {
+    setInfographicModeEnabled(true);
     const s = state(from);
     const announce = vi.fn();
     editorModeShortcut(s, announce)!();
     expect(s.setMode).toHaveBeenCalledWith(to);
     expect(announce).toHaveBeenCalledWith(message);
+  });
+
+  it('skips Infographic while it is switched off in Settings', () => {
+    const s = state('draw');
+    editorModeShortcut(s, vi.fn())!();
+    expect(s.setMode).toHaveBeenCalledWith('diagram');
   });
 });

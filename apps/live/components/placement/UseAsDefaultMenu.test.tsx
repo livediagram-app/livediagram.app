@@ -37,7 +37,7 @@ describe('UseAsDefaultMenu', () => {
     expect(items.map((i) => i.textContent)).toEqual([
       'Diagrams',
       'Whiteboards',
-      'Designs',
+      'Infographics',
       'Event Storming boards',
       'Retrospectives',
       'Kanban boards',
