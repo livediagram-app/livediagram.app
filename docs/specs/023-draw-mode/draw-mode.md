@@ -344,6 +344,9 @@ The shapes group learns and keeps the shapes a user reaches for.
   freehand renderer honours; choosing a border width from an element's menu
   afterwards replaces it. A pen stores its width as the preset's name, not its
   px, so retuning the px never reinterprets a stored choice.
+  - **Each width is pictured the same wherever it is chosen** (the marker's popover and the quick
+    style panel's Marker width row, `PenWidthIcon`): as the thin, medium and thick border-width
+    previews, not to scale. Drawn to scale, 1 and 1.5 px looked identical in the popover.
 - **Right-clicking a pen resets it** to how it started (its starting colour
   and Medium), without picking it up; a pen already as it started is left
   alone. The context-menu key and Shift+F10 on the focused button do the same.

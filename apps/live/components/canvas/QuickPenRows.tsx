@@ -6,20 +6,13 @@
 // only: Marker colour is the eight stock colours, Ink first; Custom colours, the tab's own, follow
 // only when the tab has any; then Marker width.
 
-import { BorderStrokeIcon } from '@/components/palette/palette-style-previews';
+import { PenWidthIcon } from './whiteboard/PenWidthIcon';
 import type { QuickStyleApi } from '@/hooks/canvas/useQuickStyle';
 import type { PenColourChoice, PenWidthId, QuickPenStyle } from '@/lib/quick-style-pen';
 import type { BoardColourSection } from '@/lib/quick-style';
 import { WHITEBOARD_PEN_WIDTHS } from '@/lib/whiteboard-prefs';
 import { QuickRadioRow, type QuickRowDensity } from './quick-style-rows';
 import { QUICK_ROW_TARGETS } from './quick-style-metrics';
-
-// The pens' widths drawn with the border-width previews, thinnest first.
-const WIDTH_PREVIEW: Record<PenWidthId, 'thin' | 'medium' | 'thick'> = {
-  fine: 'thin',
-  medium: 'medium',
-  bold: 'thick',
-};
 
 export function QuickPenRows({
   pen,
@@ -66,7 +59,7 @@ export function QuickPenRows({
         options={WHITEBOARD_PEN_WIDTHS.map((w) => ({
           value: w.id as PenWidthId,
           name: w.label,
-          content: <BorderStrokeIcon value={WIDTH_PREVIEW[w.id as PenWidthId]} />,
+          content: <PenWidthIcon width={w.id as PenWidthId} />,
         }))}
         value={pen.width.value}
         onChoose={quickStyle.setPenWidth}
