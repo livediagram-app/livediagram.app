@@ -7,27 +7,29 @@ who re-renders when it changes.
 
 ## Files
 
-| File                                                      | Role                                                                     |
-| --------------------------------------------------------- | ------------------------------------------------------------------------ |
-| `apps/live/lib/selection-store.ts` (planned)              | `createSelectionStore`, `Selection`, `SelectionStore`, `EMPTY_SELECTION` |
-| `apps/live/hooks/canvas/useSelectionStore.tsx` (planned)  | `SelectionStoreProvider`, `useSelectionStore`, `useSelectionOf`          |
-| `apps/live/hooks/ui/useStableEventProps.ts` (planned)     | `useStableEventProps`: every `on*` function prop identity-stable         |
-| `apps/live/app/document/[id]/editor-ui-state.ts`          | Creates the store; `selectedId` / setters come from it                   |
-| `apps/live/components/canvas/EditorCanvasHost.tsx`        | Provides the store; passes the canvas stable event props                 |
-| `apps/live/components/canvas/Canvas.tsx`                  | `memo`; no `selectedId` / `multiSelectedIds` props                       |
-| `apps/live/components/canvas/CanvasElementsLayer.tsx`     | No selection props; each view reads its own flags                        |
-| `apps/live/components/canvas/CanvasSelectionToolbars.tsx` | Subscribes; runs `deriveCanvasSelection` itself                          |
-| `apps/live/lib/canvas-selection.ts`                       | `deriveCanvasSelection` unchanged; `elementSelectionFlags` added         |
+| File                                                       | Role                                                                                |
+| ---------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| `apps/live/lib/selection-store.ts` (planned)               | `createSelectionStore`, `Selection`, `SelectionStore`, `EMPTY_SELECTION`            |
+| `apps/live/hooks/canvas/useSelectionStore.tsx` (planned)   | `SelectionStoreProvider`, `useSelectionStore`, `useSelectionOf`                     |
+| `apps/live/hooks/ui/useStableEventProps.ts`                | `useStableEventProps`: every `on*` function prop identity-stable                    |
+| `apps/live/hooks/ui/useStableObject.ts`                    | `useStableObject`: a rebuilt data-and-actions object, stable until its data changes |
+| `apps/live/components/primitives/withStableEventProps.tsx` | `withStableEventProps(Inner)`: `memo` plus stable `on…` props                       |
+| `apps/live/app/document/[id]/editor-ui-state.ts`           | Creates the store; `selectedId` / setters come from it                              |
+| `apps/live/components/canvas/EditorCanvasHost.tsx`         | Provides the store; passes the canvas stable event props                            |
+| `apps/live/components/canvas/Canvas.tsx`                   | `memo`; no `selectedId` / `multiSelectedIds` props                                  |
+| `apps/live/components/canvas/CanvasElementsLayer.tsx`      | No selection props; each view reads its own flags                                   |
+| `apps/live/components/canvas/CanvasSelectionToolbars.tsx`  | Subscribes; runs `deriveCanvasSelection` itself                                     |
+| `apps/live/lib/canvas-selection.ts`                        | `deriveCanvasSelection` unchanged; `elementSelectionFlags` added                    |
 
 ## Domain and naming
 
-| Term              | Identifier                   | Meaning                                                                 |
-| ----------------- | ---------------------------- | ----------------------------------------------------------------------- |
-| Selection         | `Selection`                  | `{ selectedId: string \| null; multiSelectedIds: ReadonlySet<string> }` |
-| Selection store   | `SelectionStore`             | One per editor; holds the `Selection`, notifies on a real change        |
-| Element flags     | `ElementSelectionFlags`      | `{ selected, multi, single }` for one element id                        |
-| Canvas boundary   | `memo(Canvas)`               | The point below which an editor render re-renders nothing by itself     |
-| Stable event prop | `useStableEventProps(props)` | `props` with each `on[A-Z]…` function replaced by a stable forwarder    |
+| Term              | Identifier                         | Meaning                                                                 |
+| ----------------- | ---------------------------------- | ----------------------------------------------------------------------- |
+| Selection         | `Selection`                        | `{ selectedId: string \| null; multiSelectedIds: ReadonlySet<string> }` |
+| Selection store   | `SelectionStore`                   | One per editor; holds the `Selection`, notifies on a real change        |
+| Element flags     | `ElementSelectionFlags`            | `{ selected, multi, single }` for one element id                        |
+| Canvas boundary   | `withStableEventProps(CanvasView)` | The point below which an editor render re-renders nothing by itself     |
+| Stable event prop | `useStableEventProps(props)`       | `props` with each `on[A-Z]…` function replaced by a stable forwarder    |
 
 "Selected" keeps its existing meaning: `selectedId` is the single selection, `multiSelectedIds` the
 marquee or Shift set, and an element is selected when it is either.
@@ -62,16 +64,21 @@ multiSelectedIds.size === 0`. Element views compare the three booleans.
 
 ### The canvas boundary
 
-- `Canvas` is exported as `memo(CanvasView)` with React's shallow comparison.
-- `EditorCanvasHost` passes the canvas `useStableEventProps(canvasProps)`: every own property whose
-  key matches `/^on[A-Z]/` and whose value is a function becomes one forwarder per key for the host's
+- `Canvas` is exported as `withStableEventProps(CanvasView)`: a boundary component that runs
+  `useStableEventProps(props)` and renders `memo(CanvasView)` with React's shallow comparison.
+- `useStableEventProps(props)`: every own property whose
+  key matches `/^on[A-Z]/` and whose value is a function becomes one forwarder per key for the boundary's
   lifetime, calling the newest value. An `undefined` handler stays `undefined` (children branch on
   presence). Every other prop, including functions not named `on…` (`chairSitters`,
   `previewDrawnArrow`, the viewport setters), passes through untouched: those are read in render.
 - No `on…` prop is called during render; the audit in the plan confirms it, and any found is renamed
   out of the convention rather than wrapped.
-- Object props built in the host per render (`esBoardControls`, `slideDeck`, `commentActions`,
-  `actionActions` and any the diagnostic finds) are memoised over their inputs.
+- Object props built in the host per render (`esBoardControls`, `slideDeck`) pass through
+  `useStableObject`: each function field becomes one forwarder per key calling the newest, and the
+  object keeps its identity until a data field changes or a field comes or goes. Their functions are
+  actions, never called in render.
+- `reshapingArrowId` changes value when a press lands on an arrow (a pending reshape); that is data,
+  and re-renders the canvas as it should.
 - The canvas no longer receives `selectedId` or `multiSelectedIds`. Inside it:
   - each element view reads `useSelectionOf((s) => elementSelectionFlags(s, id), sameFlags)`;
     `showHandles` / `showAnchors` are computed in the view from its flags and the layer's
@@ -112,6 +119,12 @@ export function useSelectionOf<T>(select: (s: Selection) => T, equal?: (a: T, b:
 
 // apps/live/hooks/ui/useStableEventProps.ts
 export function useStableEventProps<T extends object>(props: T): T;
+
+// apps/live/hooks/ui/useStableObject.ts
+export function useStableObject<T extends object>(value: T): T;
+
+// apps/live/components/primitives/withStableEventProps.tsx
+export function withStableEventProps<P extends object>(Inner: ComponentType<P>): ComponentType<P>;
 ```
 
 - `useSelectionStore()` outside a provider throws `SelectionStoreMissing`: a missing provider is a
@@ -150,17 +163,18 @@ export function useStableEventProps<T extends object>(props: T): T;
 
 ## Testing
 
-| Rule                                                  | Test                                                                                   |
-| ----------------------------------------------------- | -------------------------------------------------------------------------------------- |
-| No-op sets notify nobody; real changes notify once    | `selection-store.test.ts`                                                              |
-| `setState`-shaped setters, updaters see the latest    | `selection-store.test.ts`                                                              |
-| Subscribers re-render only when their slice changes   | `useSelectionStore.test.tsx`                                                           |
-| Missing provider throws                               | `useSelectionStore.test.tsx`                                                           |
-| Event props stable, newest called, presence respected | `useStableEventProps.test.ts`                                                          |
-| An editor render re-renders nothing in the canvas     | `Canvas.boundary.test.tsx`: same data, fresh handlers, `CanvasElementsLayer` renders 0 |
-| A selection change renders only the flipped views     | `CanvasElementsLayer.renders.test.tsx`: select one, then another; two views render     |
-| Selection behaviour unchanged                         | the existing selection unit tests and `e2e/select-clicks.spec.ts`, unchanged           |
-| The budget                                            | the probe on the branch, then nightly                                                  |
+| Rule                                                  | Test                                                                                |
+| ----------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| No-op sets notify nobody; real changes notify once    | `selection-store.test.ts`                                                           |
+| `setState`-shaped setters, updaters see the latest    | `selection-store.test.ts`                                                           |
+| Subscribers re-render only when their slice changes   | `useSelectionStore.test.tsx`                                                        |
+| Missing provider throws                               | `useSelectionStore.test.tsx`                                                        |
+| Event props stable, newest called, presence respected | `useStableEventProps.test.ts`                                                       |
+| An editor render re-renders nothing in the canvas     | `withStableEventProps.test.tsx`: same data, fresh handlers, inner view renders once |
+| Rebuilt objects stable until their data changes       | `useStableObject.test.ts`                                                           |
+| A selection change renders only the flipped views     | `CanvasElementsLayer.renders.test.tsx`: select one, then another; two views render  |
+| Selection behaviour unchanged                         | the existing selection unit tests and `e2e/select-clicks.spec.ts`, unchanged        |
+| The budget                                            | the probe on the branch, then nightly                                               |
 
 ## Constants and configuration
 

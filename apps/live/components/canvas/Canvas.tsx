@@ -43,6 +43,7 @@ import { CanvasElementsLayer } from '@/components/canvas/CanvasElementsLayer';
 import { CanvasZoomProvider } from '@/components/canvas/CanvasZoomContext';
 import { useCanvasLongTaskLog } from '@/hooks/canvas/useCanvasLongTaskLog';
 import { usePreviewedElements } from '@/hooks/canvas/usePreviewedElements';
+import { withStableEventProps } from '@/components/primitives/withStableEventProps';
 import { MindGrowProvider } from '@/components/canvas/MindGrowContext';
 import { CanvasStillProvider } from '@/components/canvas/CanvasStillContext';
 import { CanvasLiveRegion } from '@/components/canvas/CanvasLiveRegion';
@@ -90,7 +91,11 @@ import { useLatest } from '@/hooks/ui/useLatest';
 import { InfographicPages } from '@/components/canvas/InfographicPages';
 import { pressIsOffPage } from '@/hooks/canvas/infographic-page-guard';
 
-export function Canvas(props: CanvasProps) {
+// The canvas boundary (docs/specs/008-canvas/canvas-performance.md "The canvas re-renders only for what it
+// shows"): memoised, its `on…` props stable, so an editor render that changes nothing it shows stops here.
+export const Canvas = withStableEventProps(CanvasView);
+
+function CanvasView(props: CanvasProps) {
   const {
     tabLocked,
     readOnly,
