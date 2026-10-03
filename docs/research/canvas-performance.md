@@ -129,6 +129,13 @@ spec's "Later".
   waiting, most likely on software compositing in a container without a GPU, which the CPU
   calibration does not model. The same empty-task shape showed locally at fit before the Map became
   an image, so part of it is the board's own paint cost.
+- The drag row follows the calibrated throttle, not the commit: across five runs the runner's
+  benchmark ranged 18-32 ms, so the throttle ranged 1.7-3.0x, and drag read 543-570 ms at 1.68x and
+  626-698 ms at 1.9-2.2x. A 100 ms step in drag between two nights is the runner, until a run at a
+  similar throttle says otherwise; `calibration.json` in the run's artefact holds the rate.
+- Any branch can be measured on the runner by hand (`gh workflow run canvas-perf.yml --ref
+<branch>`); the run writes its job summary and leaves the budget issue alone. Runs queue one at a
+  time, about 40 minutes each.
 
 ## After the drag preview
 
@@ -170,7 +177,36 @@ time from 1,702 to 1,630 ms at fit and 2,042 to 1,800 ms at 100% (machine under 
 redraw counts, not the milliseconds). The zoom's longest task did not move: it is the browser
 redrawing the board, not script.
 
+## Zoom, marquee and stroke after the Map fixes
+
+Measured 2026-10-03, on the runner unless stated.
+
+- **Zoom** (68-110 ms) is the browser re-rasterising every element at the new scale; script in the
+  gesture is small once the board keeps its identity. Two compositor-only remedies, scoped to the
+  zoom gesture, each crashed the renderer mid-zoom on the 1,000-element board, every run, locally:
+  `will-change: transform` on the world (one layer the size of the board, the same failure as
+  lifting the arrows' canvas-sized SVGs) and `content-visibility: auto` on element wrappers. Neither
+  is safe to ship. What remains is the spec's Later list: level of detail at low zoom, and not
+  mounting off-screen elements when zoomed in.
+- **Marquee** at fit (61-70 ms): the drag itself costs nothing; the whole task is the release. In a
+  local unminified profile (4x): `Canvas`'s own body about 34 ms (two `...props` spreads into
+  `CanvasElementsLayer` and `CanvasChrome` about 10 ms of it, the rest the compiler's cache checks),
+  the selection toolbar's placement forcing the page's layout about 27 ms, the Quick Style panel's
+  one placement a few ms, and reconciling the memoised element views about 12 ms. Placing the
+  toolbar and the Quick Style panel in the next frame's `requestAnimationFrame` instead of the
+  layout effect moved the layout out of the task: marquee 70 / 61 ms and select 61-68 ms at 2.17x,
+  against 67 / 68 ms and 65-73 ms at 1.92x, about 10% once normalised. Not shipped: it does not
+  meet the budget, and an edge nudge would land a frame late. The lever left is a selection change
+  that does not re-render the editor root.
+- **Stroke** (114-130 ms): the release commits the stroke and re-renders the element layer; the Map's
+  rebuild follows in its own deferred render. Rendering the Map without `useDeferredValue` read
+  142-173 ms, so deferring it stays.
+- **Local measuring under memory pressure**: Chromium renderers abort with an `int3` trap in the
+  kernel log when an allocation fails. With swap exhausted by other work, a 1,000-element page
+  crashed at random points; a 200-element board serves for counts that do not depend on size
+  (how often something re-runs), and the runner for timings.
+
 ## Not tried
 
-- `contain` / `content-visibility` on element wrappers, level of detail at low zoom, a raster
-  snapshot of still elements during a gesture, and fewer SVG roots. Each is weighed in the spec.
+- `contain` on element wrappers, a raster snapshot of still elements during a gesture, and fewer
+  SVG roots. Each is weighed in the spec.
