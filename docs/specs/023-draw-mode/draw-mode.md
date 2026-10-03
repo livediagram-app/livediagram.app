@@ -229,7 +229,8 @@ the Palette panel, wherever the user put it.
 - **At the top:**
   - it keeps clear of the Explorer's menu button in the top-left corner: on
     a phone or a tablet it starts to the button's right, so a tablet in
-    portrait still shows the whole dock; from 1024 px wide it is centred with
+    portrait still shows the whole dock, and when it scrolls sideways its tools
+    stay clear of the menu card rather than sliding under it; from 1024 px wide it is centred with
     the same clearance on both sides;
   - its flyouts and the "Seven shapes are pinned" hint open **below** it;
   - the top-centre banners (follow-me, mode banners, timer, vote) sit

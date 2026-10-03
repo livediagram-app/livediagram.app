@@ -342,9 +342,13 @@ export function TabBar({
       <div
         data-editor-tabbar
         // Clear of the home indicator and a landscape notch (lib/safe-area): the 48px row sits
-        // above the bottom inset (`box-content`), its sides past the side insets.
-        style={{ paddingBottom: safeInset('bottom'), ...safeInlinePadding('0.75rem') }}
-        className="box-content flex h-12 shrink-0 items-center gap-2 border-t border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900"
+        // above the bottom inset (the height grows by it), its sides past the side insets.
+        style={{
+          height: `calc(3rem + ${safeInset('bottom')})`,
+          paddingBottom: safeInset('bottom'),
+          ...safeInlinePadding('0.75rem'),
+        }}
+        className="flex shrink-0 items-center gap-2 border-t border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900"
       >
         {roleIcon}
         {/* Minimal chrome drops the label; it was never announced (aria-hidden). */}

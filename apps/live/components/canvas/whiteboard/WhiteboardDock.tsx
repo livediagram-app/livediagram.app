@@ -49,11 +49,13 @@ const HINT_MS = 4000;
 
 // Where the wrapper sits. At the top it keeps clear of the Explorer menu card (top-left, 12 + 98
 // px with the editor mode switch beside the button, plus an 8px gap): beside it on a phone or a tablet, centred with the same clearance on both sides from lg
-// (D33), so a tablet in portrait still shows the whole dock. At the
+// (D33), so a tablet in portrait still shows the whole dock. Beside the card it starts 12px further
+// in again (8.25rem), because its scroller bleeds 12px left for the groups' shadows (DockBody's
+// `-m-3`): at 7.5rem that bleed reached under the card, and scrolled tools slid beneath it. At the
 // bottom it is lifted above the bottom-right cluster (history, layers, zoom) until the viewport is
 // wide enough for the two side by side (D9).
 const WRAPPER_PLACEMENT: Record<WhiteboardDockPosition, string> = {
-  top: 'top-3 left-[7.5rem] max-w-[calc(100%-8.25rem)] lg:left-1/2 lg:-translate-x-1/2 lg:max-w-[calc(100%-15rem)]',
+  top: 'top-3 left-[8.25rem] max-w-[calc(100%-9rem)] lg:left-1/2 lg:-translate-x-1/2 lg:max-w-[calc(100%-15rem)]',
   bottom:
     'bottom-[4.25rem] left-1/2 -translate-x-1/2 max-w-[calc(100%-1.5rem)] min-[1760px]:bottom-4',
 };

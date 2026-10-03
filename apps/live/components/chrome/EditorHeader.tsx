@@ -99,8 +99,12 @@ export function EditorHeader({
     // document order and the canvas wins.
     <header
       // Below the status bar / notch and past a landscape notch's sides (lib/safe-area).
-      style={{ paddingTop: safeInset('top'), ...safeInlinePadding('1rem') }}
-      className="relative z-[var(--z-modal)] box-content flex h-14 shrink-0 items-center justify-between gap-2 border-y border-slate-200 bg-white sm:gap-4 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
+      style={{
+        height: `calc(3.5rem + ${safeInset('top')})`,
+        paddingTop: safeInset('top'),
+        ...safeInlinePadding('1rem'),
+      }}
+      className="relative z-[var(--z-modal)] flex shrink-0 items-center justify-between gap-2 border-y border-slate-200 bg-white sm:gap-4 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
     >
       <div className="flex w-auto items-center gap-2.5">
         <Brand href="/" size="md" accentColor={brandAccent} wordmarkClassName="hidden sm:inline" />
