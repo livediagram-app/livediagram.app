@@ -82,6 +82,10 @@ page with no valid `id` or `orientation` is skipped (as today).
   stops) is dark by the canvas's own rule (`canvasSurface`). Every element whose centre lies on a
   dark page and that carries no colour of its own is drawn as on a dark canvas, on screen and in
   exports, so text and shapes stay readable on Midnight or Dusk.
+- **Colours of their own are re-inked** when a page's fill changes: a text element's text, an
+  arrow's line and an icon's glyph that sit straight on the page and fall under 3:1 contrast with
+  it are lightened (on a dark fill) or darkened (on a light one), keeping their hue, until they
+  reach 4.5:1. Anything on a fill of its own (a card, a shape) is left alone. Same edit, one undo.
 - The page background is a page's, never the tab's: the surround (the tab's own canvas) is
   untouched.
 
@@ -115,8 +119,10 @@ A **layout** is placed onto one page from its panel's **Layouts** section, a gri
   layout. Either way it is one change: one undo step.
 - Placed elements are ordinary elements. The selection is cleared (nothing replaced stays
   selected) and the panel closes, so the finished page reads clean.
-- **An empty page invites a layout**: a "Start from a layout" button sits at its centre (held at
-  one screen size) and opens the panel on Layouts. The panel opens on Page from the cog.
+- **An empty page invites a layout**: a "Start from a layout" button sits in the page's title bar
+  beside the cog, only while the page is empty, and opens the panel on Layouts (the cog opens it on
+  Page). It shows its words on a wide screen when the title bar has room, else just its icon (and
+  its tooltip); when the page is too small on screen even for that, it hides, as the label does.
 - **Previews are the real layout**: each tile draws the layout as built for this page's size and
   orientation, as a wireframe (text as bars, images shaded, icons as dots).
 

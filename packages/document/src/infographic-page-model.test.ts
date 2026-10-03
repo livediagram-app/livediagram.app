@@ -13,12 +13,15 @@ import {
 import {
   elementIdsOnPage,
   elementPageSurfaces,
+  legibleOn,
   pageFillTone,
   pageIsDark,
   pageSurface,
   withDuplicatedPage,
   withPageContentReplaced,
+  withPageInkFor,
 } from './infographic-page-content';
+import { contrastRatio } from './colors';
 import type { Element } from './index';
 
 // docs/specs/007-editor/infographic-pages.md: a page's size, background and name, and the edits
@@ -194,5 +197,28 @@ describe('page backgrounds', () => {
     const surfaces = elementPageSurfaces([onA, onB, off], pages);
     expect([...surfaces]).toEqual([['x', 'dark']]);
     expect(elementPageSurfaces([onA], layOutInfographicPages([pages[1]!])).size).toBe(0);
+  });
+});
+
+describe('page ink', () => {
+  it('lightens own-coloured text on a dark page, keeps what reads, leaves cards alone', () => {
+    const dark = { kind: 'solid', color: '#0f172a' } as const;
+    const tab = {
+      elements: [
+        { id: 't', type: 'text', x: -10, y: -10, width: 20, height: 20, textColor: '#1e3a8a' },
+        { id: 'ok', type: 'text', x: -10, y: -10, width: 20, height: 20, textColor: '#fde68a' },
+        { ...box('card', 0, 0), textColor: '#111827', fillColor: '#ffffff' },
+      ] as Element[],
+      pages: [{ id: 'p', orientation: 'portrait' as const }],
+    };
+    const out = withPageInkFor(tab, 'p', { fill: dark });
+    const t = out.elements.find((e) => e.id === 't') as Element & { textColor: string };
+    expect(contrastRatio(t.textColor, '#0f172a')).toBeGreaterThanOrEqual(4.5);
+    expect((out.elements[1] as { textColor: string }).textColor).toBe('#fde68a');
+    expect(out.elements[2]).toBe(tab.elements[2]);
+  });
+
+  it('darkens a pale colour back on a light page', () => {
+    expect(contrastRatio(legibleOn('#e0f2fe', '#ffffff'), '#ffffff')).toBeGreaterThanOrEqual(4.5);
   });
 });

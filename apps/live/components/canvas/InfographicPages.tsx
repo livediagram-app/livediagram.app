@@ -17,8 +17,11 @@ const CogIcon = lucideGlyph(lucideSettings, 16);
 const LayoutIcon = lucideGlyph(lucidePanelsTopLeft, 14);
 
 // Screen px: the cog's width plus a gap, and the narrowest a label is still worth showing.
-const COG_ROOM = 36;
+const COG_ROOM = 32;
 const LABEL_MIN = 40;
+// The empty page's layout button beside the cog: with its words, or just its icon.
+const INVITE_WIDE = 150;
+const INVITE_ICON = 30;
 
 // Held at one screen size whatever the zoom: counter-scaled about the given corner.
 const steady = (zoom: number, origin: string): CSSProperties => ({
@@ -67,7 +70,22 @@ export function InfographicPages({ view, zoom }: { view: InfographicPagesView; z
           preview?.pageId === page.id ? withBackgroundPatch(page, preview.patch) : page.background;
         const label = pageLabel(page, page.index, pages.length);
         // The label fits the page's on-screen width, less the cog's room; too narrow, it hides.
-        const labelRoom = page.rect.width * zoom - (edit ? COG_ROOM : 0);
+        // The title bar's room on screen: the page's width at this zoom. The cog takes its corner;
+        // an empty page's layout button sits beside it, with its words while there is room for
+        // them and the label, as an icon while there is room for that, else not at all.
+        const room = page.rect.width * zoom;
+        const empty = !!edit && edit.contentCount(page.id) === 0;
+        const invite = !empty
+          ? null
+          : room >= INVITE_WIDE + COG_ROOM + LABEL_MIN * 2
+            ? 'wide'
+            : room >= INVITE_ICON + COG_ROOM + LABEL_MIN
+              ? 'icon'
+              : null;
+        const labelRoom =
+          room -
+          (edit ? COG_ROOM : 0) -
+          (invite === 'wide' ? INVITE_WIDE : invite === 'icon' ? INVITE_ICON : 0);
         return (
           <div
             key={page.id}
@@ -110,9 +128,12 @@ export function InfographicPages({ view, zoom }: { view: InfographicPagesView; z
             </div>
             {edit ? (
               <div
-                className="absolute right-0"
+                className="absolute right-0 flex items-center gap-1"
                 style={{ bottom: '100%', marginBottom: 6 / zoom, ...steady(zoom, 'bottom right') }}
               >
+                {invite && openId !== page.id ? (
+                  <LayoutInvite wide={invite === 'wide'} onOpen={() => openLayouts(page.id)} />
+                ) : null}
                 <PageCog
                   name={`${page.name ?? (pages.length > 1 ? `Page ${page.index + 1}` : 'Page')} settings`}
                   open={openId === page.id}
@@ -123,9 +144,6 @@ export function InfographicPages({ view, zoom }: { view: InfographicPagesView; z
                   }}
                 />
               </div>
-            ) : null}
-            {edit && edit.contentCount(page.id) === 0 && openId !== page.id ? (
-              <EmptyPageInvite zoom={zoom} onOpen={() => openLayouts(page.id)} />
             ) : null}
           </div>
         );
@@ -215,23 +233,28 @@ function PageCog({
   );
 }
 
-// On an empty page, centred: an invitation to start from a layout, held at one screen size.
-function EmptyPageInvite({ zoom, onOpen }: { zoom: number; onOpen: () => void }) {
+// On an empty page, beside its cog: start it from a layout. Its words show on a wide screen with
+// room in the title bar; on a phone, or when the page is small on screen, just the icon.
+function LayoutInvite({ wide, onOpen }: { wide: boolean; onOpen: () => void }) {
   return (
     <div
-      className="pointer-events-auto absolute left-1/2 top-1/2"
-      style={{ transform: `translate(-50%, -50%) scale(${1 / zoom})` }}
+      className="pointer-events-auto"
       onPointerDown={(e) => e.stopPropagation()}
       onDoubleClick={(e) => e.stopPropagation()}
     >
-      <button
-        type="button"
-        onClick={onOpen}
-        className="flex items-center gap-1.5 rounded-full bg-white/90 px-3.5 py-2 text-xs font-semibold text-slate-700 shadow-sm ring-1 ring-slate-900/10 backdrop-blur transition hover:bg-white hover:text-slate-900 hover:shadow-md focus-visible:outline-2 focus-visible:outline-brand-600 dark:bg-slate-800/90 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-slate-800 dark:hover:text-white"
-      >
-        <LayoutIcon />
-        Start from a layout
-      </button>
+      <Tooltip label="Start from a layout">
+        <button
+          type="button"
+          aria-label="Start from a layout"
+          onClick={onOpen}
+          className="flex h-6 items-center gap-1.5 rounded-md px-1.5 text-xs font-medium text-slate-500 transition hover:bg-white hover:text-slate-800 focus-visible:outline-2 focus-visible:outline-brand-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+        >
+          <LayoutIcon />
+          {wide ? (
+            <span className="hidden whitespace-nowrap sm:inline">Start from a layout</span>
+          ) : null}
+        </button>
+      </Tooltip>
     </div>
   );
 }

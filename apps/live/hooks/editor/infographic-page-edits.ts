@@ -13,6 +13,7 @@ import {
   withDuplicatedPage,
   withInfographicPages,
   withPageContentReplaced,
+  withPageInkFor,
   type InfographicPage,
   type PageBackground,
   type PageOrientation,
@@ -102,12 +103,22 @@ export function infographicPageEdits({
     });
     debugLog('[infographic-page] renamed', { tabId, pageId, named: name !== '' });
   };
+  // A new fill also re-inks the page's own-coloured text, lines and icons so they still read on it
+  // (withPageInkFor), in the same edit.
   const setBackground = (pageId: string, patch: Partial<PageBackground>) => {
     track('Tab', 'Changed', 'fill' in patch ? 'PageBackground' : 'PagePattern');
-    patchPage(pageId, (p) => {
-      const { background: _drop, ...rest } = p;
-      const background = withBackgroundPatch(p, patch);
-      return background ? { ...rest, background } : rest;
+    commitTab((t) => {
+      const ps = infographicPagesOf(t);
+      const target = ps.find((p) => p.id === pageId);
+      if (!target) return null;
+      const background = withBackgroundPatch(target, patch);
+      const next = ps.map((p) => {
+        if (p.id !== pageId) return p;
+        const { background: _drop, ...rest } = p;
+        return background ? { ...rest, background } : rest;
+      });
+      const repaged = withInfographicPages(t, next);
+      return 'fill' in patch ? withPageInkFor(repaged, pageId, background) : repaged;
     });
     debugLog('[infographic-page] background set', { tabId, pageId, keys: Object.keys(patch) });
   };

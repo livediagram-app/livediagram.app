@@ -2,7 +2,14 @@
 // (docs/specs/007-editor/infographic-pages.md): duplicating a page with everything on it, and
 // replacing a page's content with a layout. Plus the page's own surface, so elements with no colour
 // of their own are inked for a dark page. Pure: tab in, tab out, one tab edit each.
-import { canvasSurface, isLightColor, type CanvasSurface } from './colors';
+import {
+  canvasSurface,
+  contrastRatio,
+  isLightColor,
+  shade,
+  tint,
+  type CanvasSurface,
+} from './colors';
 import { endpointPosition } from './geometry';
 import {
   infographicPageAt,
@@ -197,4 +204,64 @@ export function infographicPageSnapBoxes(pages: readonly LaidOutPage[]): ShapeEl
       box(`page-margin:${page.id}`, x + m, y + m, width - 2 * m, height - 2 * m),
     ];
   });
+}
+
+// The least contrast a re-inked colour reaches against its page (WCAG AA for text).
+const PAGE_INK_CONTRAST = 4.5;
+// Below this contrast a colour of its own is re-inked: a colour that still reads is kept as chosen.
+const PAGE_INK_FLOOR = 3;
+
+/** A colour that reads on `tone`: the same hue lightened on a dark tone or darkened on a light one,
+ *  stepwise until it reaches AA contrast; unchanged while it already clears the floor. */
+export function legibleOn(color: string, tone: string): string {
+  const ratio = contrastRatio(color, tone);
+  if (Number.isNaN(ratio) || ratio >= PAGE_INK_FLOOR) return color;
+  const lighten = !isLightColor(tone);
+  for (let amount = 0.2; amount <= 1.0001; amount += 0.1) {
+    const next = lighten ? tint(color, amount) : shade(color, amount);
+    if (contrastRatio(next, tone) >= PAGE_INK_CONTRAST) return next;
+  }
+  return lighten ? '#ffffff' : '#0f172a';
+}
+
+/**
+ * The tab with the colours of its own that sit straight on a page re-inked to read on the page's
+ * new background (docs/specs/007-editor/infographic-pages.md "A dark page has light ink"): a text
+ * element's text, an arrow's line, an icon's glyph. Anything on a fill of its own (a card, a
+ * shape) reads against that fill and is left alone, as is every element with no colour of its own
+ * (the page's surface inks those). `background` is the page's background after the change.
+ */
+export function withPageInkFor<T extends Pick<Tab, 'elements'>>(
+  tab: T & { pages?: unknown; pageOrientation?: unknown },
+  pageId: string,
+  background: InfographicPage['background'],
+): T {
+  const pages = layOutInfographicPages(infographicPagesOf(tab));
+  const on = elementIdsOnPage(tab.elements, pages, pageId);
+  const tone = background?.fill ? pageFillTone(background.fill) : '#ffffff';
+  let changed = false;
+  const elements = tab.elements.map((el) => {
+    if (!on.has(el.id)) return el;
+    if (el.type === 'arrow') {
+      if (!el.strokeColor) return el;
+      const next = legibleOn(el.strokeColor, tone);
+      if (next === el.strokeColor) return el;
+      changed = true;
+      return { ...el, strokeColor: next };
+    }
+    if (el.type === 'text' && el.textColor) {
+      const next = legibleOn(el.textColor, tone);
+      if (next === el.textColor) return el;
+      changed = true;
+      return { ...el, textColor: next };
+    }
+    if (el.type === 'shape' && el.shape === 'icon' && el.strokeColor) {
+      const next = legibleOn(el.strokeColor, tone);
+      if (next === el.strokeColor) return el;
+      changed = true;
+      return { ...el, strokeColor: next };
+    }
+    return el;
+  });
+  return changed ? { ...tab, elements } : tab;
 }
