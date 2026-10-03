@@ -516,7 +516,6 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Tab|Changed|PageRenamed': 'Someone renamed an infographic page.',
   'Tab|Changed|PageDuplicated': 'Someone duplicated an infographic page with its content.',
   'Tab|Changed|PageMoved': 'Someone moved an infographic page left or right in its row.',
-  'UI|Opened|SlideDeck': "Someone opened the Slide Deck from an infographic's Slides button.",
   'Tab|Changed|PagesLaidOut':
     "A tab's content was laid out into infographic pages as it entered Infographic mode.",
   'Tab|Changed|PageLayout': 'Someone put a ready-made layout onto an infographic page.',
@@ -772,7 +771,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone clicked "Learn more" on the guest sign-in banner shown in the editor, opening the reasons-to-sign-in card.',
   'UI|Opened|SignInReasonsExplorer':
     'Someone clicked "Learn more" on the guest sign-in banner shown in the Explorer, opening the reasons-to-sign-in card.',
-  'UI|Opened|SlideDeck': 'Someone picked the Slide Deck tool, opening the deck-building panel.',
+  'UI|Opened|SlideDeck':
+    "Someone opened the deck-building panel: the Slide Deck tool, or an infographic's Slides button.",
   'UI|Opened|SlideElementDetail':
     'While presenting, someone clicked an element on the slide to read its detail, such as a note or comment, without leaving presentation mode.',
   'UI|Opened|TechGroup': "Someone opened a category inside the palette's Technology tab.",

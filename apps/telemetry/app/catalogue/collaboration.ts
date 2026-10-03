@@ -708,14 +708,6 @@ export const SLIDES_REORDERED = chart(
   'Slides dragged into a new order in the deck.',
   { types: ['Slide'] },
 );
-export const SLIDE_DECK_OPENED = chart(
-  'UI',
-  'Opened',
-  'Slide Deck Opened',
-  "The Slide Deck opened from its button in an infographic's bottom-right cluster.",
-  { types: ['SlideDeck'] },
-);
-
 export const PRESENTATIONS_STARTED = chart(
   'UI',
   'Started',
