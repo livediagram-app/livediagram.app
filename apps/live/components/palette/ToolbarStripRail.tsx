@@ -162,12 +162,13 @@ export function ToolbarStripRail({
       // margin, so the strip doesn't move), not only `overflow-clip-margin`:
       // Safari ignores that, and clipped the first tile's pressed ring there.
       // A scrolling rail clips on every side, so it pads for the rings
-      // vertically too, and contains its swipe so it never pans the page.
+      // vertically too, and contains its swipe so it never pans the page. Its y axis is hidden,
+      // not auto: the tiles' 44px tap areas (touch-target-y) reach past it and made it scroll 1px.
       ref={railRef}
       data-strip-rail=""
       className={`relative -mx-[3px] flex items-center ${
         scrollable
-          ? 'min-w-0 -my-[3px] overflow-x-auto overscroll-x-contain py-[3px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'
+          ? 'min-w-0 -my-[3px] overflow-x-auto overflow-y-hidden overscroll-x-contain py-[3px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'
           : 'overflow-x-clip [overflow-clip-margin:3px]'
       }${animate ? ' transition-[width] duration-short ease-out' : ''}`}
       style={{ width: width ?? undefined }}

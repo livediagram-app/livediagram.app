@@ -2,6 +2,8 @@ import { PencilIcon, TrashIcon } from '@/components/primitives/explorer-icons';
 import { useEffect, useLayoutEffect, useRef, useState, useCallback } from 'react';
 import { useReposition } from '@/hooks/canvas/useReposition';
 import { Portal } from '@/components/primitives/Portal';
+import { BottomSheet } from '@/components/primitives/BottomSheet';
+import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
 import { clampToViewport } from '@/lib/clamp-to-viewport';
 import { FileExportIcon, FileImportIcon } from '@/components/palette/palette-icons';
@@ -130,6 +132,7 @@ export function PortalMenu({
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [deleteRow, setDeleteRow] = useState<HTMLDivElement | null>(null);
   const ref = useRef<HTMLDivElement>(null);
+  const phone = useIsMobileViewport();
   const [pos, setPos] = useState<{ left: number; top: number } | null>(null);
   const [adjust, setAdjust] = useState({ x: 0, y: 0 });
 
@@ -156,7 +159,9 @@ export function PortalMenu({
   // adjust state carried over from the actions view.
   useLayoutEffect(() => {
     const node = ref.current;
-    if (!node || !pos) return;
+    // A phone's sheet is docked, not placed: nothing to clamp, and the nudge it would never apply
+    // made this effect set state in a loop.
+    if (!node || !pos || phone) return;
     const clamp = () => {
       const next = clampToViewport(node.getBoundingClientRect(), adjust);
       if (next.x !== adjust.x || next.y !== adjust.y) setAdjust(next);
@@ -170,7 +175,7 @@ export function PortalMenu({
     const observer = new ResizeObserver(clamp);
     observer.observe(node);
     return () => observer.disconnect();
-  }, [pos, adjust]);
+  }, [pos, adjust, phone]);
 
   useEffect(() => {
     // Grace window after the menu opens during which outside mouse events are
@@ -263,6 +268,211 @@ export function PortalMenu({
     );
   }
 
+  // The menu's rows, the same in the anchored box and in a phone's bottom sheet.
+  const body = (
+    <>
+      {view === 'actions' ? (
+        <>
+          {/* Quick actions: the verbs reached for most often, as a compact
+            icon row so they're one glance away. The rest of the menu
+            groups the verbose / destructive actions into sections. */}
+          <MenuToolbar>
+            <MenuToolButton
+              icon={<PencilIcon />}
+              label="Rename"
+              description="Rename this tab."
+              onClick={onRename}
+            />
+            <MenuToolButton
+              icon={<DuplicateIcon />}
+              label="Duplicate"
+              description="Create a copy of this tab in this document."
+              onClick={onDuplicate}
+            />
+            {/* Paste in the tab ⋯ menu: one tab verb among several, so an
+              icon. Opened from an empty-canvas right-click (`point`) it
+              is a labelled row below instead (docs/specs/008-canvas/canvas-and-palette.md). Greyed, not
+              hidden, when the buffer is empty. */}
+            {canvas && !point ? (
+              <MenuToolButton
+                icon={<PasteMenuIcon />}
+                label="Paste"
+                description={
+                  canvas.canPaste ? 'Paste what you copied onto this tab.' : 'Nothing to paste yet.'
+                }
+                onClick={() => {
+                  canvas.onPaste();
+                  onClose();
+                }}
+                disabled={!canvas.canPaste}
+              />
+            ) : null}
+            {/* Lock and Delete sit together at the right edge, apart from
+              the everyday verbs: both change what the tab will let you
+              do next rather than doing something to it. The confirm
+              popover anchors to this wrapper. */}
+            <div ref={setDeleteRow} className="ml-auto flex items-center gap-0.5">
+              <MenuToolButton
+                icon={<TabLockIcon />}
+                label={locked ? 'Unlock tab' : 'Lock tab'}
+                description={locked ? 'Make this tab editable again.' : 'Make this tab read-only.'}
+                onClick={onToggleLock}
+                active={locked}
+              />
+              <MenuToolButton
+                icon={<TrashIcon />}
+                label="Delete"
+                description={
+                  locked
+                    ? 'This tab is locked. Unlock it before deleting.'
+                    : "Delete this tab. Its content can't be recovered."
+                }
+                onClick={() => setConfirmingDelete(true)}
+                danger
+                disabled={!canDelete || locked}
+              />
+            </div>
+          </MenuToolbar>
+          {/* Separator under the toolbar, isolating the quick verbs from
+            the verbose category bands below. */}
+          <MenuGroupSeparator />
+          {/* The empty-canvas right-click is usually "put what I copied
+            HERE", so there Paste leads the menu as a labelled row
+            (docs/specs/008-canvas/canvas-and-palette.md "Canvas menu: Paste"). */}
+          {canvas && point ? (
+            <>
+              <div data-testid="canvas-paste-row">
+                <MenuActionRow
+                  plain
+                  icon={<PasteMenuIcon />}
+                  label="Paste"
+                  disabled={!canvas.canPaste}
+                  onClick={() => {
+                    canvas.onPaste();
+                    onClose();
+                  }}
+                />
+              </div>
+              <MenuGroupSeparator />
+            </>
+          ) : null}
+          {/* Verbose actions live in collapsible categories (closed by
+            default, one open at a time), matching the element menu. */}
+          <MenuAccordionSection
+            title="Organise"
+            icon={<FolderMenuIcon />}
+            {...sectionProps('organise')}
+          >
+            <MenuTileGrid cols={2}>
+              <MenuTile
+                icon={<FolderMenuIcon />}
+                label="Add to Folder"
+                onClick={() => setView('folder')}
+              />
+              <MenuTile
+                icon={<MoveIcon />}
+                label="Add to Document"
+                onClick={() => setView('copyTo')}
+                disabled={otherDocuments.length === 0}
+              />
+            </MenuTileGrid>
+          </MenuAccordionSection>
+          <MenuAccordionSection
+            title="Content"
+            icon={<FileExportIcon />}
+            {...sectionProps('content')}
+          >
+            <MenuTileGrid cols={3}>
+              <MenuTile
+                icon={<FileImportIcon />}
+                label="Import"
+                onClick={onImport}
+                disabled={locked}
+              />
+              <MenuTile icon={<FileExportIcon />} label="Export" onClick={onExport} />
+              <MenuTile
+                icon={<ClearIcon />}
+                label="Clear"
+                danger
+                onClick={onClearContent}
+                disabled={!canClearContent}
+              />
+            </MenuTileGrid>
+          </MenuAccordionSection>
+          {opensIn ? <OpensInMenuSection choice={opensIn} {...sectionProps('opens-in')} /> : null}
+          {/* ── Look & Feel / Font / Cleanup band — see
+            TabCanvasMenuSections. Rendered whenever canvas actions are
+            available, which is both entry points (canvas right-click AND
+            the active tab's ellipsis menu) so the two are one unified
+            menu. */}
+          {canvas ? (
+            <TabCanvasMenuSections canvas={canvas} onClose={onClose} sectionProps={sectionProps} />
+          ) : null}
+          {/* ── Collaborate: the live session tools (docs/specs/012-collaboration/session-tools.md, docs/specs/012-collaboration/live-poll.md) in
+            ONE side-flyout panel, the Session Studio: a switcher for
+            Timer / Vote / Poll over a purpose-built pane per tool.
+            Timer and vote are per-tab state; the poll lives only in the
+            realtime room and leaves no trace on the document. ── */}
+          <MenuGroupSeparator />
+          <MenuFlyoutSection
+            title="Collaborate"
+            icon={<CollaborateMenuIcon />}
+            panel
+            {...flyoutProps('collaborate')}
+          >
+            <SessionStudio
+              {...session}
+              selfId={voteSelfId ?? selfId}
+              // Starting a poll puts the question on screen for everyone,
+              // including the facilitator, and this menu sits right on top
+              // of it. Close on start: the poll panel carries the results
+              // and the End control from here on.
+              onStartPoll={(draft) => {
+                session.onStartPoll(draft);
+                onClose();
+              }}
+            />
+          </MenuFlyoutSection>
+        </>
+      ) : null}
+    </>
+  );
+  // Delete's confirm, anchored to its row in either form.
+  const confirm =
+    confirmingDelete && deleteRow ? (
+      <ConfirmPopover
+        anchor={deleteRow}
+        message="Delete this tab? Its content can't be recovered."
+        confirmLabel="Delete"
+        onConfirm={() => {
+          setConfirmingDelete(false);
+          onDelete();
+          onClose();
+        }}
+        onCancel={() => setConfirmingDelete(false)}
+      />
+    ) : null;
+
+  // A phone gets the menu as a bottom sheet (docs/specs/007-editor/live-app.md "Menus are bottom
+  // sheets on a phone"), as the element menu does: the dismissers above reach it through `ref`.
+  if (phone) {
+    return (
+      <>
+        <BottomSheet
+          ref={ref}
+          role="menu"
+          data-tour-id="tab-menu"
+          onContextMenu={(e) => e.preventDefault()}
+          onClose={onClose}
+          zClassName="z-[var(--z-modal)]"
+        >
+          {body}
+        </BottomSheet>
+        {confirm ? <Portal>{confirm}</Portal> : null}
+      </>
+    );
+  }
+
   if (!pos) return null;
 
   return (
@@ -291,192 +501,9 @@ export function PortalMenu({
             : 'translate(-100%, calc(-100% - 4px))',
         }}
       >
-        {view === 'actions' ? (
-          <>
-            {/* Quick actions: the verbs reached for most often, as a compact
-                icon row so they're one glance away. The rest of the menu
-                groups the verbose / destructive actions into sections. */}
-            <MenuToolbar>
-              <MenuToolButton
-                icon={<PencilIcon />}
-                label="Rename"
-                description="Rename this tab."
-                onClick={onRename}
-              />
-              <MenuToolButton
-                icon={<DuplicateIcon />}
-                label="Duplicate"
-                description="Create a copy of this tab in this document."
-                onClick={onDuplicate}
-              />
-              {/* Paste in the tab ⋯ menu: one tab verb among several, so an
-                  icon. Opened from an empty-canvas right-click (`point`) it
-                  is a labelled row below instead (docs/specs/008-canvas/canvas-and-palette.md). Greyed, not
-                  hidden, when the buffer is empty. */}
-              {canvas && !point ? (
-                <MenuToolButton
-                  icon={<PasteMenuIcon />}
-                  label="Paste"
-                  description={
-                    canvas.canPaste
-                      ? 'Paste what you copied onto this tab.'
-                      : 'Nothing to paste yet.'
-                  }
-                  onClick={() => {
-                    canvas.onPaste();
-                    onClose();
-                  }}
-                  disabled={!canvas.canPaste}
-                />
-              ) : null}
-              {/* Lock and Delete sit together at the right edge, apart from
-                  the everyday verbs: both change what the tab will let you
-                  do next rather than doing something to it. The confirm
-                  popover anchors to this wrapper. */}
-              <div ref={setDeleteRow} className="ml-auto flex items-center gap-0.5">
-                <MenuToolButton
-                  icon={<TabLockIcon />}
-                  label={locked ? 'Unlock tab' : 'Lock tab'}
-                  description={
-                    locked ? 'Make this tab editable again.' : 'Make this tab read-only.'
-                  }
-                  onClick={onToggleLock}
-                  active={locked}
-                />
-                <MenuToolButton
-                  icon={<TrashIcon />}
-                  label="Delete"
-                  description={
-                    locked
-                      ? 'This tab is locked. Unlock it before deleting.'
-                      : "Delete this tab. Its content can't be recovered."
-                  }
-                  onClick={() => setConfirmingDelete(true)}
-                  danger
-                  disabled={!canDelete || locked}
-                />
-              </div>
-            </MenuToolbar>
-            {/* Separator under the toolbar, isolating the quick verbs from
-                the verbose category bands below. */}
-            <MenuGroupSeparator />
-            {/* The empty-canvas right-click is usually "put what I copied
-                HERE", so there Paste leads the menu as a labelled row
-                (docs/specs/008-canvas/canvas-and-palette.md "Canvas menu: Paste"). */}
-            {canvas && point ? (
-              <>
-                <div data-testid="canvas-paste-row">
-                  <MenuActionRow
-                    plain
-                    icon={<PasteMenuIcon />}
-                    label="Paste"
-                    disabled={!canvas.canPaste}
-                    onClick={() => {
-                      canvas.onPaste();
-                      onClose();
-                    }}
-                  />
-                </div>
-                <MenuGroupSeparator />
-              </>
-            ) : null}
-            {/* Verbose actions live in collapsible categories (closed by
-                default, one open at a time), matching the element menu. */}
-            <MenuAccordionSection
-              title="Organise"
-              icon={<FolderMenuIcon />}
-              {...sectionProps('organise')}
-            >
-              <MenuTileGrid cols={2}>
-                <MenuTile
-                  icon={<FolderMenuIcon />}
-                  label="Add to Folder"
-                  onClick={() => setView('folder')}
-                />
-                <MenuTile
-                  icon={<MoveIcon />}
-                  label="Add to Document"
-                  onClick={() => setView('copyTo')}
-                  disabled={otherDocuments.length === 0}
-                />
-              </MenuTileGrid>
-            </MenuAccordionSection>
-            <MenuAccordionSection
-              title="Content"
-              icon={<FileExportIcon />}
-              {...sectionProps('content')}
-            >
-              <MenuTileGrid cols={3}>
-                <MenuTile
-                  icon={<FileImportIcon />}
-                  label="Import"
-                  onClick={onImport}
-                  disabled={locked}
-                />
-                <MenuTile icon={<FileExportIcon />} label="Export" onClick={onExport} />
-                <MenuTile
-                  icon={<ClearIcon />}
-                  label="Clear"
-                  danger
-                  onClick={onClearContent}
-                  disabled={!canClearContent}
-                />
-              </MenuTileGrid>
-            </MenuAccordionSection>
-            {opensIn ? <OpensInMenuSection choice={opensIn} {...sectionProps('opens-in')} /> : null}
-            {/* ── Look & Feel / Font / Cleanup band — see
-                TabCanvasMenuSections. Rendered whenever canvas actions are
-                available, which is both entry points (canvas right-click AND
-                the active tab's ellipsis menu) so the two are one unified
-                menu. */}
-            {canvas ? (
-              <TabCanvasMenuSections
-                canvas={canvas}
-                onClose={onClose}
-                sectionProps={sectionProps}
-              />
-            ) : null}
-            {/* ── Collaborate: the live session tools (docs/specs/012-collaboration/session-tools.md, docs/specs/012-collaboration/live-poll.md) in
-                ONE side-flyout panel, the Session Studio: a switcher for
-                Timer / Vote / Poll over a purpose-built pane per tool.
-                Timer and vote are per-tab state; the poll lives only in the
-                realtime room and leaves no trace on the document. ── */}
-            <MenuGroupSeparator />
-            <MenuFlyoutSection
-              title="Collaborate"
-              icon={<CollaborateMenuIcon />}
-              panel
-              {...flyoutProps('collaborate')}
-            >
-              <SessionStudio
-                {...session}
-                selfId={voteSelfId ?? selfId}
-                // Starting a poll puts the question on screen for everyone,
-                // including the facilitator, and this menu sits right on top
-                // of it. Close on start: the poll panel carries the results
-                // and the End control from here on.
-                onStartPoll={(draft) => {
-                  session.onStartPoll(draft);
-                  onClose();
-                }}
-              />
-            </MenuFlyoutSection>
-          </>
-        ) : null}
+        {body}
       </div>
-      {confirmingDelete && deleteRow ? (
-        <ConfirmPopover
-          anchor={deleteRow}
-          message="Delete this tab? Its content can't be recovered."
-          confirmLabel="Delete"
-          onConfirm={() => {
-            setConfirmingDelete(false);
-            onDelete();
-            onClose();
-          }}
-          onCancel={() => setConfirmingDelete(false)}
-        />
-      ) : null}
+      {confirm}
     </Portal>
   );
 }

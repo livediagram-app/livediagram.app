@@ -22,6 +22,12 @@ floor at 24px; the editor aims past it, because a diagram editor is used with a 
   `⋯` triggers (`EllipsisTriggerButton`, the tab menu), the help `?` (`HelpArticleLink`), panel
   header buttons (`MovablePanelHeader`, `SettingsPopover`), search clear and dismiss buttons, and
   Add tab. Resize handles have their own 16px pad on a coarse pointer (canvas element parts).
+- **A scroller holding padded controls scrolls on its own axis only.** The pad is an absolutely
+  positioned box, so it counts toward its scroll container's overflow; a container that sets
+  `overflow-x: auto` gets `overflow-y: auto` too and scrolls (and draws a scrollbar) by the few
+  pixels a pad reaches past it. Such a scroller hides its other axis (`overflow-y-hidden` on the
+  tab bar's tab row and the strip's rail, `overflow-x-hidden` on the Explorer tree), which clips
+  the pads at that edge by a few pixels.
 - **Toolbars keep their drawn sizes on a phone:** 36px items, the bottom-right cluster's 44px.
   Fitting more tiles is the strip's swipe's job ([Toolbar layout](../007-editor/toolbar-layout.md)),
   not smaller targets.
