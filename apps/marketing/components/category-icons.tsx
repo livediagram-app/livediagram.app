@@ -64,6 +64,13 @@ export const CATEGORY_ICONS: Record<string, Icon> = {
       <path d="M8 10.5v3M5.5 13.5h5M6.75 5l2.75 1.5-2.75 1.5z" />
     </>,
   ),
+  // Infographics: a page with a title and a bar chart.
+  infographics: glyph(
+    <>
+      <rect x="3.5" y="1.5" width="9" height="13" rx="1" />
+      <path d="M5.5 4h5M6 12V9.5M8 12V8M10 12v-1.5" />
+    </>,
+  ),
   // Animation: a shape leaving motion lines behind it.
   motion: glyph(
     <>

@@ -61,15 +61,16 @@ export const LANDING_BEATS: LandingBeat[] = [
     id: 'present',
     title: 'Present straight from the canvas',
     description:
-      'Turn what you drew into slides, point with a laser, spotlight the one piece you mean, and let arrows show the flow. No export, no second tool.',
+      'Turn what you drew into slides or a page-perfect infographic, point with a laser, spotlight the one piece you mean, and let arrows show the flow. No export, no second tool.',
     sections: [
       { id: 'present', label: 'Presenting' },
+      { id: 'infographics', label: 'Infographics' },
       { id: 'motion', label: 'Animation' },
     ],
     cta: 'Explore the presentation tools',
     showcase: [
       ['present', 'Slides made from what you drew'],
-      ['present', 'Laser pointer for presenting'],
+      ['infographics', 'Start a page from a layout'],
       ['motion', 'Arrows that show the flow'],
     ],
   },

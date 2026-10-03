@@ -1,0 +1,82 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Infographics',
+  description:
+    'Lay a tab out as pages and build each one into a finished visual: sizes for print and social, backgrounds from your theme, ready-made layouts, then export or present the pages.',
+  path: '/help/canvas/infographics/',
+});
+
+<ArticleLayout
+  title="Infographics"
+  description="Work on a tab as pages: size them, paint them, start each from a layout, then export or present them."
+  categoryTitle="Canvas"
+  categorySlug="canvas"
+  subArticles={getSubArticles('infographics')}
+>
+
+**Infographic mode** is a way of working on a tab, made for building finished visuals: a poster, a one-pager, a set of social posts or a short deck. Instead of an endless canvas you work on **pages**, sheets laid out in a row, each one a picture you build up and then export or present. It is one of three modes, beside **Diagram** and **Draw**, and like them it never changes what is on the tab: the same elements are there in every mode.
+
+## Switching to Infographic Mode
+
+- **The switch** shows the current mode: press it and choose **Infographic**. It sits in the **Palette** panel's title row (or, with the Toolbar layout, beside the menu button at the top left). **Shift+D** cycles through the modes too.
+- **Opens in:** to have a tab open as an infographic for everyone, open the tab menu (the **…** on the tab), choose **Opens in**, then **Infographic**.
+- Infographic mode is on for everyone by default. It is still new, so it has a switch of its own: **Settings**, then **Experimental**, then **Infographic Mode**. Turned off, the mode is offered nowhere, and a tab set to open in it opens in Diagram mode instead.
+
+## Your Content, Laid Out Into Pages
+
+Switch a tab that already has a diagram, a mind map or a sketch on it into Infographic mode and its content is laid out onto pages for you. Things joined by arrows, or sitting close together, stay together; each group gets a page of its own, turned portrait or landscape to suit its shape, in reading order (top to bottom, then left to right). Anything too big for its page is scaled down to fit, text included.
+
+It is one step, and a message says so: **Undo** puts the tab back exactly as it was. Content you later leave off the pages (in the space around them) is gathered onto new pages the next time the tab enters the mode. Because every mode shows the same elements, Diagram mode sees the new arrangement too.
+
+## Pages
+
+- **Add a page** with the **+** after the last page. A new page takes the last page's size and orientation, on plain paper.
+- **Each page's label** sits above its top-left corner: its name, or "Page 2", then its size ("A4 · Portrait", "Square", "Story (9:16)"). **Press the label** to fit that page to the screen.
+- **Drag a label sideways to reorder the pages.** A blue bar in the gap shows where the page will land; let go and it moves there with everything on it. **Escape** cancels.
+- **Content belongs to its page.** Anything whose centre is on a page moves with it when the pages around it change, and whatever hangs off a page's edge is cut off at the edge, on screen and in exports, as if the pages were the only paper.
+- **Snapping:** move or resize an element and it snaps to its page's edges, centre lines and margins, with the same guides as lining up with other elements.
+- **An empty page** shows **Start from a layout** in its title bar, beside the cog. See [Infographic Layouts](/help/canvas/infographics/infographic-layouts/).
+- The Layers panel and its button are not offered in Infographic mode; in their place is the **Slides** button (see [Exporting and Presenting Infographics](/help/canvas/infographics/exporting-infographics/)).
+
+## The Page Panel
+
+Press the cog above a page's top-right corner to open its panel, which opens beside the page so the page stays in view. At the top is the page's **name** (leave it empty to go back to "Page 2"). Below are two tabs, **Page** and **Layouts**, and along the bottom, the page's actions.
+
+### Size and Orientation
+
+The **Page** tab starts with the **Size** tiles, each drawn to scale:
+
+| Size   | For                                                    |
+| ------ | ------------------------------------------------------ |
+| A4     | Print, the default                                     |
+| Letter | US Letter, for print in North America                  |
+| A3     | Posters                                                |
+| Square | Square social posts                                    |
+| Post   | Portrait posts for Instagram and LinkedIn (4:5)        |
+| Story  | Stories (9:16), or a widescreen slide (16:9) landscape |
+
+Below them, **Portrait** and **Landscape** turn the page (a square page has no orientation). Changing a page's size or orientation keeps everything on it: content that still fits stays as it is, and content that no longer fits is scaled down as one to fit inside the margins, its text with it. Nothing is cut off.
+
+### Backgrounds and Patterns
+
+- **From your theme**, in the first row: pale tints of the tab's theme colour, the theme's own fill, a deep shade, and a light and a dark gradient. Change the tab's theme and the row follows it.
+- **Solid colours**, from Paper (the plain page) through pale Cream, Mist, Sky, Mint, Lavender, Blush and Sunshine to dark Ink, Midnight, Forest and Plum, plus the rainbow swatch for a **custom colour** of your own.
+- **Gradients**: Sunrise, Ocean, Meadow, Peach, Dusk and Night.
+- **Pattern**, over any of them: **None**, **Dots**, **Grid** or **Lines**, drawn faintly so they never fight the content.
+
+**Hover a swatch to preview it** on the page; press it to keep it. A dark background keeps the page readable: elements without colours of their own are drawn in light ink on it, and text, arrows and icons you coloured yourself are lightened if they would no longer stand out (or darkened again on a light page).
+
+### Page Actions
+
+Along the bottom of the panel: **Duplicate page** (a copy right after it, with everything on it), **Move page left**, **Move page right** and **Delete page** (the page and everything on it; the pages after it close the gap). Each one is a single step that **Undo** reverses.
+
+## Good to Know
+
+- Everything else works as always: sharing, live collaboration, comments, undo and redo. Collaborators see your pages and their changes live.
+- Your mode is yours: someone else on the same tab can work in Diagram mode while you build pages.
+- People who can only view a tab see the pages but not their cogs, buttons or the **+**.
+
+</ArticleLayout>
