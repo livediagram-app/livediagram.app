@@ -102,7 +102,7 @@ page with no valid `id` or `orientation` is skipped (as today).
 
 A **layout** is placed onto one page from its panel's **Layouts** section, a grid of previews.
 
-- **Eight layouts**, each a complete, editable starting point in the tab's theme. Most open with
+- **Thirteen layouts**, each a complete, editable starting point in the tab's theme. Most open with
   a title and a lead line. A **tall** page (not wider than 1.15 times its height) stacks; a
   **wide** one sets things side by side:
   1. **Title page**: an eyebrow line, a large title, a subtitle, an image placeholder (below on a
@@ -118,6 +118,16 @@ A **layout** is placed onto one page from its panel's **Layouts** section, a gri
      and a "The verdict" callout.
   7. **Chart story**: a bar chart, a progress ring and three takeaways with icons.
   8. **Top tips**: five tips, each an icon beside a line.
+  9. **Quote**: a large quotation mark, the quote in large type and the attribution (a round
+     photo, a name and a role) under it.
+  10. **Team**: six people, each a round photo, a name and a role, three across (two on a page
+      clearly taller than wide).
+  11. **Facts grid**: six cards, each an icon, a figure and a caption, three across (two on a tall
+      page).
+  12. **Checklist**: six items, a ticked circle for each done one and an empty ring for the rest,
+      then "n of 6 done" and a progress bar.
+  13. **Event**: "You're invited", a title, an image, when and where (icon rows) and a "Save your
+      spot" banner.
 - **Body type** is the page-sized medium and large text sizes, never the small one.
 - **Fitted to the page**: a layout is laid out in proportions of the page (margins of 7% of the
   short side), so it fits any size and orientation; its titles use the fit-to-box text size so they

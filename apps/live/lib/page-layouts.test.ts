@@ -16,7 +16,7 @@ const boxes = (els: Element[]) =>
   );
 
 describe('page layouts', () => {
-  it('are the eight of the spec, each unique', () => {
+  it('are the thirteen of the spec, each unique', () => {
     expect(PAGE_LAYOUTS.map((l) => l.id)).toEqual([
       'title',
       'big-number',
@@ -26,6 +26,11 @@ describe('page layouts', () => {
       'comparison',
       'chart-story',
       'top-tips',
+      'quote',
+      'team',
+      'facts-grid',
+      'checklist',
+      'event',
     ]);
   });
 
