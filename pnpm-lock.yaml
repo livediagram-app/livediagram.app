@@ -630,6 +630,9 @@ importers:
 
   packages/explorer-lens:
     dependencies:
+      '@livediagram/api-schema':
+        specifier: workspace:*
+        version: link:../api-schema
       '@livediagram/document':
         specifier: workspace:*
         version: link:../document

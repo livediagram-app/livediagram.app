@@ -1,7 +1,13 @@
 // The lens's catalogue (docs/specs/013-workspace/explorer-filters.md "Dimensions"): every
 // dimension, its closed values, their British English labels and the closed telemetry types.
 
-import type { TabKind } from '@livediagram/document';
+import {
+  SPECIFIC_TAB_KINDS,
+  TEMPLATE_FAMILIES,
+  type SpecificTabKind,
+  type TemplateFamily,
+} from '@livediagram/api-schema';
+import { EDITOR_MODES, type EditorMode } from '@livediagram/document';
 
 /** The dimensions in canonical order: the order tokens are written in and chips are shown in. */
 export const LENS_DIMENSIONS = [
@@ -15,22 +21,17 @@ export const LENS_DIMENSIONS = [
 ] as const;
 export type LensDimension = (typeof LENS_DIMENSIONS)[number];
 
-/** The editor modes a document can be created to open in. Mirrors `EDITOR_MODES` of
- *  `@livediagram/document`, which replaces this list once it exists on main. */
-export const OPENS_IN_VALUES = ['diagram', 'draw'] as const;
-export type OpensInValue = (typeof OPENS_IN_VALUES)[number];
+/** The editor modes a document can be created to open in: the one list of modes. */
+export const OPENS_IN_VALUES = EDITOR_MODES;
+export type OpensInValue = EditorMode;
 
-/** The specific tab kinds: every creatable tab kind but the general diagram tab. Mirrors
- *  `SPECIFIC_TAB_KINDS` of `@livediagram/api-schema` (default folders), which replaces it once on
- *  main. */
-export const KIND_VALUES = ['event-storming'] as const satisfies readonly TabKind[];
-export type KindValue = (typeof KIND_VALUES)[number];
+/** The specific tab kinds: every creatable tab kind but the general diagram tab. */
+export const KIND_VALUES = SPECIFIC_TAB_KINDS;
+export type KindValue = SpecificTabKind;
 
-/** The template families: ordinary diagram tabs made from a family of templates. Mirrors
- *  `TEMPLATE_FAMILIES` of `@livediagram/api-schema` (default folders), which replaces it once on
- *  main. */
-export const TEMPLATE_VALUES = ['retrospective', 'kanban'] as const;
-export type TemplateValue = (typeof TEMPLATE_VALUES)[number];
+/** The template families: ordinary diagram tabs made from a family of templates. */
+export const TEMPLATE_VALUES = TEMPLATE_FAMILIES;
+export type TemplateValue = TemplateFamily;
 
 export const MADE_BY_VALUES = ['ai'] as const;
 export type MadeByValue = (typeof MADE_BY_VALUES)[number];
