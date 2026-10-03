@@ -13,7 +13,8 @@
 // new code should prefer the canonical names here.
 
 import type { DriveMode } from './drive';
-import type { BackgroundPattern, ShapeKind, Tab } from '@livediagram/document';
+import type { BackgroundPattern, EditorMode, ShapeKind, Tab } from '@livediagram/document';
+import type { CreationTabKind, TemplateFamily } from './placement-defaults';
 
 export type { AvatarClothing, AvatarConfig, AvatarGender, AvatarHair, AvatarSize } from './avatar';
 
@@ -70,6 +71,17 @@ export type LiveDoc = {
   // hiding the badge in that case.
   ownerName: string | null;
   ownerColor: string | null;
+} & RecordedIntent;
+
+// The creation intent recorded on a document when it was created, written once by the create and
+// never re-derived (docs/specs/013-workspace/default-folders.md "Recorded intent"). A null `opensIn`
+// is unknown (made before intents were recorded, or by a create without one), never Diagram, and
+// the other two are then unknown too; with a known `opensIn`, `tabKind` is known and a null
+// `templateFamily` means made from no family.
+export type RecordedIntent = {
+  opensIn: EditorMode | null;
+  tabKind: CreationTabKind | null;
+  templateFamily: TemplateFamily | null;
 };
 
 // Lightweight list projection — drops `tabs` so listing 100 documents
@@ -90,7 +102,7 @@ export type DocumentSummary = {
   // Nothing drawn: the first tab has no elements, or there is no tab
   // (docs/specs/006-document/document-snapshots.md). Its row shows the empty sketch and asks for no thumbnail.
   empty: boolean;
-};
+} & RecordedIntent;
 
 // A document's shared tabs: how many of its tabs are also linked into another
 // document, and how many other documents hold them. What the delete and Take
@@ -620,3 +632,7 @@ export {
   type DocumentPlacement,
   type PlacementRejection,
 } from './placement';
+
+// Default folders: the keys in force and the creation intent a create carries
+// (docs/specs/013-workspace/default-folders.md).
+export * from './placement-defaults';

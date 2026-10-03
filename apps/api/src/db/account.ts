@@ -122,6 +122,8 @@ export async function deleteAccount(
   // shared_with. Stars on this owner's documents cascade; the stars they put on
   // teammates' and other people's documents are theirs and go here.
   await env.DB.prepare('DELETE FROM favourites WHERE owner_id = ?').bind(ownerId).run();
+  // placement_defaults (docs/specs/013-workspace/default-folders.md): no foreign key reaches them.
+  await env.DB.prepare('DELETE FROM placement_defaults WHERE owner_id = ?').bind(ownerId).run();
   // timeline (docs/specs/013-workspace/timeline.md §3.5): the feed, the events this owner authored,
   // and the scope-state row. Hard, not soft — soft delete is a
   // user-facing affordance in this product, never a retention strategy.
@@ -221,6 +223,18 @@ export async function migrateOwnerId(
     .bind(toOwnerId, fromOwnerId)
     .run();
   await env.DB.prepare('DELETE FROM favourites WHERE owner_id = ?').bind(fromOwnerId).run();
+  // placement_defaults (docs/specs/013-workspace/default-folders.md): the primary key is
+  // (owner_id, default_key), so INSERT OR IGNORE then DELETE: where both identities set a default
+  // for one key, the account's stays. The guest's folders move above, so its defaults stay valid.
+  await env.DB.prepare(
+    `INSERT OR IGNORE INTO placement_defaults (owner_id, default_key, folder_id, updated_at)
+     SELECT ?, default_key, folder_id, updated_at
+     FROM placement_defaults
+     WHERE owner_id = ?`,
+  )
+    .bind(toOwnerId, fromOwnerId)
+    .run();
+  await env.DB.prepare('DELETE FROM placement_defaults WHERE owner_id = ?').bind(fromOwnerId).run();
   // participants: the guest's name and colour. The id IS the owner id, so an
   // account that already has a row keeps it (a signed-in name comes from Clerk
   // anyway); the guest row goes, since nothing reads a retired guest id.

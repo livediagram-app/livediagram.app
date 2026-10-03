@@ -1072,6 +1072,13 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "CreationTabKind": {
+    "enum": [
+      "diagram",
+      "event-storming"
+    ],
+    "type": "string"
+  },
   "CustomTheme": {
     "additionalProperties": false,
     "properties": {
@@ -2154,6 +2161,16 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "name": {
         "type": "string"
       },
+      "opensIn": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/EditorMode"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
       "ownerColor": {
         "type": [
           "string",
@@ -2197,6 +2214,16 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           }
         ]
       },
+      "tabKind": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/CreationTabKind"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
       "tabs": {
         "items": {
           "$ref": "#/components/schemas/TabSummary"
@@ -2208,23 +2235,36 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "string",
           "null"
         ]
+      },
+      "templateFamily": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/TemplateFamily"
+          },
+          {
+            "type": "null"
+          }
+        ]
       }
     },
     "required": [
-      "id",
-      "ownerId",
-      "name",
-      "tabs",
-      "shareable",
-      "shareCode",
+      "createdAt",
       "folderId",
-      "teamId",
-      "source",
+      "id",
+      "name",
+      "opensIn",
+      "ownerColor",
+      "ownerId",
+      "ownerName",
       "presentation",
       "savedAt",
-      "createdAt",
-      "ownerName",
-      "ownerColor"
+      "shareCode",
+      "shareable",
+      "source",
+      "tabKind",
+      "tabs",
+      "teamId",
+      "templateFamily"
     ],
     "type": "object"
   },
@@ -2256,6 +2296,16 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "name": {
         "type": "string"
       },
+      "opensIn": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/EditorMode"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
       "ownerId": {
         "type": "string"
       },
@@ -2281,25 +2331,48 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           }
         ]
       },
+      "tabKind": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/CreationTabKind"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
       "teamId": {
         "type": [
           "string",
           "null"
         ]
+      },
+      "templateFamily": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/TemplateFamily"
+          },
+          {
+            "type": "null"
+          }
+        ]
       }
     },
     "required": [
-      "id",
-      "ownerId",
-      "name",
-      "shareable",
-      "shareCode",
-      "folderId",
-      "teamId",
-      "source",
-      "savedAt",
       "createdAt",
-      "empty"
+      "empty",
+      "folderId",
+      "id",
+      "name",
+      "opensIn",
+      "ownerId",
+      "savedAt",
+      "shareCode",
+      "shareable",
+      "source",
+      "tabKind",
+      "teamId",
+      "templateFamily"
     ],
     "type": "object"
   },
@@ -5882,6 +5955,13 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "rows"
     ],
     "type": "object"
+  },
+  "TemplateFamily": {
+    "enum": [
+      "retrospective",
+      "kanban"
+    ],
+    "type": "string"
   },
   "TextAlignX": {
     "enum": [

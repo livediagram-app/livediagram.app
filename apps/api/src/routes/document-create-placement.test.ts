@@ -2,42 +2,21 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import { makeTestRouteContext } from './test-route-context';
 import { handleDocuments } from './documents';
+import {
+  asGuest,
+  asUser,
+  errorOf,
+  seedFolder,
+  seedTeam,
+  storedPlacement,
+} from './placement-test-support';
 
 // Placement on create against a real schema (docs/specs/013-workspace/folders.md "Placement on
 // create"): one write places the document, and an invalid placement is a named refusal that writes
 // nothing, never a document filed somewhere else.
 
-const NOW = 1_700_000_000_000;
 let db: SqliteD1;
 let logs: string[];
-
-function seedTeam(id: string, members: Array<{ userId: string; status: 'joined' | 'invited' }>) {
-  db.sql
-    .prepare('INSERT INTO teams (id, name, created_at, updated_at) VALUES (?, ?, ?, ?)')
-    .run(id, `Team ${id}`, NOW, NOW);
-  for (const m of members) {
-    db.sql
-      .prepare(
-        `INSERT INTO team_members (id, team_id, user_id, role, status, created_at, updated_at)
-         VALUES (?, ?, ?, 'member', ?, ?, ?)`,
-      )
-      .run(`${id}-${m.userId}`, id, m.userId, m.status, NOW, NOW);
-  }
-}
-
-function seedFolder(id: string, ownerId: string, teamId: string | null = null) {
-  db.sql
-    .prepare(
-      `INSERT INTO folders (id, owner_id, parent_id, team_id, name, created_at, updated_at)
-       VALUES (?, ?, NULL, ?, ?, ?, ?)`,
-    )
-    .run(id, ownerId, teamId, `Folder ${id}`, NOW, NOW);
-}
-
-// A signed-in caller: the hybrid owner and the verified id are the same Clerk id.
-const asUser = (userId: string) => ({ owner: userId, clerkUserId: userId });
-// A guest: only the X-Owner-Id identity, nothing verified.
-const asGuest = (guestId: string) => ({ owner: guestId, clerkUserId: null });
 
 function create(
   who: { owner: string; clerkUserId: string | null },
@@ -58,15 +37,7 @@ function create(
   );
 }
 
-function stored(id = 'd1') {
-  return db.sql
-    .prepare('SELECT owner_id, folder_id, team_id FROM documents WHERE id = ?')
-    .get(id) as { owner_id: string; folder_id: string | null; team_id: string | null } | undefined;
-}
-
-async function errorOf(res: Response) {
-  return ((await res.json()) as { error: string }).error;
-}
+const stored = (id = 'd1') => storedPlacement(db, id);
 
 beforeEach(() => {
   db = sqliteD1();
@@ -74,18 +45,18 @@ beforeEach(() => {
   const capture = (...args: unknown[]) => void logs.push(args.map(String).join(' '));
   vi.spyOn(console, 'info').mockImplementation(capture);
   vi.spyOn(console, 'warn').mockImplementation(capture);
-  seedTeam('t1', [
+  seedTeam(db, 't1', [
     { userId: 'user_alice', status: 'joined' },
     { userId: 'user_bob', status: 'invited' },
   ]);
-  seedTeam('t2', [{ userId: 'user_alice', status: 'joined' }]);
-  seedTeam('t3', [{ userId: 'user_carol', status: 'joined' }]);
-  seedFolder('alice-folder', 'user_alice');
-  seedFolder('carol-folder', 'user_carol');
-  seedFolder('guest-folder', 'guest-uuid');
-  seedFolder('t1-folder', 'user_alice', 't1');
-  seedFolder('t2-folder', 'user_alice', 't2');
-  seedFolder('t3-folder', 'user_carol', 't3');
+  seedTeam(db, 't2', [{ userId: 'user_alice', status: 'joined' }]);
+  seedTeam(db, 't3', [{ userId: 'user_carol', status: 'joined' }]);
+  seedFolder(db, 'alice-folder', 'user_alice');
+  seedFolder(db, 'carol-folder', 'user_carol');
+  seedFolder(db, 'guest-folder', 'guest-uuid');
+  seedFolder(db, 't1-folder', 'user_alice', 't1');
+  seedFolder(db, 't2-folder', 'user_alice', 't2');
+  seedFolder(db, 't3-folder', 'user_carol', 't3');
 });
 
 afterEach(() => {
@@ -134,7 +105,7 @@ describe('POST /documents placement', () => {
     expect(stored()).toEqual({ owner_id: 'user_alice', folder_id: null, team_id: 't1' });
     const body = (await res.json()) as { document: { teamId: string | null } };
     expect(body.document.teamId).toBe('t1');
-    expect(logs).toContain('placement: resolved scope=team folder=root via=root');
+    expect(logs).toContain('placement: resolved scope=team folder=root via=explicit');
   });
 
   it("files into a team's folder", async () => {

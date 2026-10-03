@@ -15,6 +15,7 @@ export * from './shared';
 export * from './change-log';
 export * from './folders';
 export * from './favourites';
+export * from './placement-defaults';
 export * from './custom-themes';
 export * from './shape-libraries';
 export * from './team-invites';

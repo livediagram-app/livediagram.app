@@ -35,7 +35,7 @@ Scope, by file:
 | Root        | `folderId: null`, log `folder=root`              | The space's Unsorted                                     |
 | Rejection   | `PlacementRejection`, the response `error` token | A named refusal of the whole create                      |
 | Folder step | `FolderStep`, `FOLDER_STEPS`                     | One rung of folder resolution; `null` passes to the next |
-| Via         | `via` in logs: `explicit` / `root`               | Which folder step decided                                |
+| Via         | `via` in logs: `explicit` / `default` / `root`   | Which folder step decided                                |
 | Re-commit   | `clash` in the route                             | A create naming an id the caller already owns            |
 
 Banned: "fallback" for anything the server does, "location" for placement (Save location is a different
@@ -50,7 +50,7 @@ concept: cloud or this browser).
    made); `joined === false` → `team_forbidden`; else space `team`.
 2. **Folder steps** (`FOLDER_STEPS`), first non-null wins: `explicitFolder` (null when
    `requested.folderId === null`; else `judgeFolder`). When none answers, `spaceRoot` does (`folderId: null`,
-   `via: 'root'`). A default-folder step is appended to `FOLDER_STEPS` after `explicitFolder`.
+   `via: 'root'`). `defaultFolder` follows `explicitFolder` ([default-folders.md](default-folders.md)).
 3. `judgeFolder(folder, space, caller, joinedFolderTeam)`:
    - `folder === null` → `folder_not_found`.
    - Same space (`folder.teamId === space.teamId`): team → in place; personal → in place when

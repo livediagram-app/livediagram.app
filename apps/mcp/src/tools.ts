@@ -18,8 +18,20 @@ import {
   normaliseElement,
   normaliseElements,
 } from './element-normalise';
-import { TEMPLATES, TEMPLATE_CATEGORIES, templateCategory } from '@livediagram/templates';
-import { TRASH_RETENTION_DAYS, type TrashedDocument } from '@livediagram/api-schema';
+import {
+  TEMPLATES,
+  TEMPLATE_CATEGORIES,
+  templateFamilyOf,
+  templateCategory,
+  type TemplateKind,
+} from '@livediagram/templates';
+import {
+  TRASH_RETENTION_DAYS,
+  creationIntentOf,
+  type LiveDoc,
+  type TrashedDocument,
+} from '@livediagram/api-schema';
+import { createdFolderLabel } from './created-folder';
 import { ApiError, apiFetch, apiJson, reportApiFailure } from './api';
 import type { Env } from './env';
 import { fetchTeamLibraries, matchDocuments } from './find-documents';
@@ -178,7 +190,8 @@ export function registerTools(server: McpServer, env: Env): void {
         'overview plus detail tabs). A tab may pass "template" (a kind from list_templates) ' +
         'instead of elements to start from a hand-tuned scaffold. The server validates, lays ' +
         'out each tab per the layout arg, tags it as AI-generated so it shows in your ' +
-        '"Generated" folder, and returns the link + an inline PNG of the first tab.',
+        '"Generated" folder (or files it in the user\'s default folder for what that document is made as, ' +
+        'when they have set one), and returns the link, the folder, and an inline PNG of the first tab.',
       inputSchema: createDocumentShape,
       outputSchema: createDocumentOutput,
     },
@@ -190,6 +203,8 @@ export function registerTools(server: McpServer, env: Env): void {
         return errorResult('Provide "tabs": an array of { name, elements } (or a single "tab").');
       }
       const tabs: Tab[] = [];
+      // The template the first tab is made from, for the creation intent.
+      let firstTemplate: TemplateKind | null = null;
       for (const t of inputTabs) {
         const tabId = crypto.randomUUID();
         // Template tab (docs/specs/015-api/mcp-server.md §4.5): materialise the curated scaffold
@@ -202,6 +217,7 @@ export function registerTools(server: McpServer, env: Env): void {
                 `${validTemplateKinds()}.`,
             );
           }
+          if (tabs.length === 0) firstTemplate = kind;
           tabs.push(buildTemplateTab(tabId, t.name, kind, args.theme));
           continue;
         }
@@ -232,17 +248,25 @@ export function registerTools(server: McpServer, env: Env): void {
       // Tag the document as MCP-generated (docs/specs/013-workspace/folders.md). The Explorer surfaces a
       // synthetic "Generated" folder over source != null, so there's no
       // real folder to create / place it in.
-      await apiJson(env, token, '/documents', {
-        method: 'POST',
-        body: JSON.stringify({ id, name: args.name, tabs, source: 'mcp' }),
-      });
+      // The creation intent (docs/specs/013-workspace/default-folders.md): with no folder named, the
+      // server files the document in the user's default folder for it, when they have one.
+      const intent = creationIntentOf(tabs[0], templateFamilyOf(firstTemplate));
+      const { document: created } = await apiJson<{ document?: LiveDoc }>(
+        env,
+        token,
+        '/documents',
+        {
+          method: 'POST',
+          body: JSON.stringify({ id, name: args.name, tabs, source: 'mcp', intent }),
+        },
+      );
       return imageResult(
         {
           id,
           name: args.name,
           tabCount: tabs.length,
           tabIds: tabs.map((t) => t.id),
-          folder: 'Generated',
+          folder: await createdFolderLabel(env, token, created),
           url: deepLink(id),
         },
         tabs[0]!,

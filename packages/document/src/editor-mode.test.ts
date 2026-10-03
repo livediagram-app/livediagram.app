@@ -26,6 +26,9 @@ describe('editor modes', () => {
     expect(isEditorMode('whiteboard')).toBe(false);
     expect(isEditorMode(undefined)).toBe(false);
     expect(isEditorMode(1)).toBe(false);
+    expect(isEditorMode('Diagram')).toBe(false);
+    expect(isEditorMode('')).toBe(false);
+    expect(isEditorMode(null)).toBe(false);
   });
 });
 

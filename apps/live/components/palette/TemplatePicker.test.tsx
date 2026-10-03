@@ -112,3 +112,46 @@ describe('TemplatePicker, Escape', () => {
     expect(onSkip).toHaveBeenCalledTimes(1);
   });
 });
+
+// docs/specs/013-workspace/default-folders.md "Precedence": the wizard sends the placement the person
+// saw or picked (the Location step's root tile included) and none when the picker never showed, so
+// only an unseen placement leaves room for a default folder.
+describe('TemplatePicker, placement seen or not', () => {
+  const renderWelcome = (initialPlacement?: string) => {
+    const onPick = vi.fn();
+    render(
+      <TemplatePicker
+        mode="welcome"
+        participant={participant}
+        currentThemeId="brand"
+        onPick={onPick}
+        onSkip={vi.fn()}
+        onBackOut={vi.fn()}
+        {...(initialPlacement ? { initialPlacement } : {})}
+      />,
+    );
+    return onPick;
+  };
+  const settingsOf = (onPick: ReturnType<typeof vi.fn>) => onPick.mock.calls[0]![3] as object;
+
+  it('sends no placement when Skip commits before the Location step showed', () => {
+    const onPick = renderWelcome();
+    fireEvent.click(screen.getByRole('button', { name: 'Skip' }));
+    expect(settingsOf(onPick)).not.toHaveProperty('folderId');
+    expect(settingsOf(onPick)).not.toHaveProperty('teamId');
+  });
+
+  it('sends the root chosen on purpose once the Location step showed it', () => {
+    const onPick = renderWelcome();
+    fireEvent.click(screen.getByRole('button', { name: /^Next/ }));
+    fireEvent.click(screen.getByRole('button', { name: 'Create' }));
+    expect(settingsOf(onPick)).toMatchObject({ teamId: null, folderId: null });
+    expect(settingsOf(onPick)).toHaveProperty('folderId', null);
+  });
+
+  it('sends a placement seeded from the /new URL, even on Skip', () => {
+    const onPick = renderWelcome('folder:f1');
+    fireEvent.click(screen.getByRole('button', { name: 'Skip' }));
+    expect(settingsOf(onPick)).toMatchObject({ teamId: null, folderId: 'f1' });
+  });
+});

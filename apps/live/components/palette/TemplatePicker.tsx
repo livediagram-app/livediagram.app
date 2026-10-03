@@ -35,7 +35,9 @@ export type NewDocumentSettings = {
   saveLocation: SaveLocationId;
   documentName?: string;
   // Placement (docs/specs/013-workspace/folders.md "Placement on create"): a team library, and a
-  // folder of the chosen space; both null = personal Unsorted.
+  // folder of the chosen space; a null folder is the space's root, chosen on purpose. Both absent
+  // when the person never saw the picker: no choice, where a default folder may answer
+  // (docs/specs/013-workspace/default-folders.md "Precedence").
   folderId?: string | null;
   teamId?: string | null;
 };
@@ -223,13 +225,16 @@ export function TemplatePicker({
     if (!documentNameEdited.current) setDocumentNameInput(untitledNameForTemplate(templateKind));
   }, [templateKind]);
   const [placement, setPlacement] = useState(initialPlacement ?? 'unsorted');
+  // Whether the placement is a choice: seeded from the /new URL, or shown on the Location step. An
+  // untouched picker nobody saw is no choice, so its root tile never overrides a default folder.
+  const [placementSeen, setPlacementSeen] = useState(initialPlacement !== undefined);
   // The settings the wizard commits with. Document name defaults to the
   // template's default when the field is left blank. Parameterised on the
   // placement so a double-click commit can pass the just-picked value
   // before the setPlacement state update has applied.
   const settingsFor = (p: string): NewDocumentSettings => {
     const name = documentNameInput.trim() || templateDefaultName;
-    return { saveLocation, documentName: name, ...parsePlacement(p) };
+    return { saveLocation, documentName: name, ...(placementSeen ? parsePlacement(p) : {}) };
   };
   const settings = () => settingsFor(placement);
   // Welcome mode is a two-step wizard: pick a template, then where the
@@ -245,6 +250,7 @@ export function TemplatePicker({
     // The Settings step only exists on the welcome flow (an existing
     // document has no name / placement / offline choice to make).
     if (next === 'settings' && !isWelcome) return;
+    if (next === 'settings') setPlacementSeen(true);
     setStepDir(STEP_ORDER.indexOf(next) >= STEP_ORDER.indexOf(step) ? 'forward' : 'backward');
     setStep(next);
   };
@@ -317,7 +323,10 @@ export function TemplatePicker({
   // the URL context (/new?folder=…, ?team=…) the picker was pre-seeded with,
   // so skipping doesn't silently drop the document into personal Unsorted.
   const skipToDefaults = () =>
-    onPick('blank', effectiveName, 'brand', { saveLocation, ...parsePlacement(placement) });
+    onPick('blank', effectiveName, 'brand', {
+      saveLocation,
+      ...(placementSeen ? parsePlacement(placement) : {}),
+    });
   // Picking a template: the welcome wizard moves on to where the document
   // lives; Quick Start applies it straight away.
   const onTemplateCommit = (kind: TemplateKind) => {
