@@ -1,7 +1,7 @@
 // A view is named by its sidebar row (docs/specs/013-workspace/explorer-structure.md#page-titles-follow-the-rows).
 
 import { describe, expect, it } from 'vitest';
-import { VIEW_TITLES } from './view-titles';
+import { leadsBackHome, VIEW_TITLES } from './view-titles';
 import { SIDEBAR_LABELS } from './sidebar/sidebar-structure';
 
 describe('VIEW_TITLES', () => {
@@ -33,5 +33,15 @@ describe('VIEW_TITLES', () => {
       VIEW_TITLES.search,
       VIEW_TITLES.timeline,
     ]).toEqual(['Recent', 'Favourites', 'Search results', 'All activity']);
+  });
+});
+
+describe('leadsBackHome', () => {
+  it('puts the views reached from Home under it in the breadcrumb', () => {
+    expect(leadsBackHome('timeline')).toBe(true);
+    expect(leadsBackHome('recent')).toBe(true);
+    expect(leadsBackHome('home')).toBe(false);
+    expect(leadsBackHome('favourites')).toBe(false);
+    expect(leadsBackHome('folder')).toBe(false);
   });
 });

@@ -46,7 +46,6 @@ export const ROOT_TYPES = [
   'ActivityAction',
   'ActivityThread',
   'HomeResponse',
-  'HomeTimelinePage',
   'ImageSummary',
   'SharedWithItem',
   'ParticipantRecord',

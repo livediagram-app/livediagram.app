@@ -418,18 +418,18 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone searched the help centre and found no matching article: a direct list of articles worth writing. The search words are never recorded.',
   'Help|Searched|Results':
     'Someone searched the help centre and got at least one matching article. Counted once per finished search; the search words are never recorded.',
-  'Home|Loaded|More': "More of Home's Timeline column loaded as someone scrolled towards its end.",
-  'Home|Loaded|Retry':
-    'Someone pressed "Try again" after Home, or a further page of it, failed to load.',
+  'Home|Loaded|Retry': 'Someone pressed "Try again" after Home failed to load.',
   'Home|Opened|Group':
     "Someone expanded a summary of several people's work on one document in Home's What happened, to see every action.",
   'Home|Opened|Landing':
     'Someone arrived at the Explorer with Home as the very section that loaded.',
   'Home|Opened|Nav': 'Someone went to Home from another section of the Explorer.',
-  'Home|Selected|JumpBackIn':
-    "Someone opened a document from Home's Jump back in, the strip of the documents they return to most.",
-  'Home|Selected|Timeline':
-    "Someone opened a document from Home's Timeline column, the documents they created, updated or opened.",
+  'Home|Selected|JumpBackIn.MostUsed':
+    "Someone opened a document from Home's Jump back in that was among the ones they used on the most days.",
+  'Home|Selected|JumpBackIn.Recent':
+    "Someone opened a document from Home's Jump back in that was among the ones they used most recently.",
+  'Home|Selected|JumpBackIn.SeeMore':
+    "Someone followed See more from Home's Jump back in to the Recent page.",
   'Home|Selected|WhatHappened':
     "Someone opened a document from Home's What happened, which lists what other people did to their documents.",
   'Layer|Added|': 'A new layer was added in the Layers panel.',

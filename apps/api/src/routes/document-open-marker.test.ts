@@ -36,7 +36,9 @@ async function readTab(owner: string, headers: Record<string, string> = {}) {
 }
 
 function opens() {
-  return db.sql.prepare('SELECT owner_id, open_days FROM document_opens ORDER BY owner_id').all();
+  return db.sql
+    .prepare('SELECT owner_id, last_open_day FROM document_opens ORDER BY owner_id')
+    .all();
 }
 
 beforeEach(() => {
@@ -54,7 +56,7 @@ describe('the tab read and opens', () => {
   it("records the owner's marked open", async () => {
     const res = await readTab('owner', { [DOCUMENT_OPEN_HEADER]: '1' });
     expect(res.status).toBe(200);
-    expect(opens()).toEqual([{ owner_id: 'owner', open_days: 1 }]);
+    expect(opens()).toEqual([{ owner_id: 'owner', last_open_day: expect.any(String) }]);
   });
 
   it('records nothing for an unmarked read: a resync, a duplicate, an embed', async () => {
@@ -68,7 +70,7 @@ describe('the tab read and opens', () => {
       'X-Share-Code': 'CODE',
     });
     expect(res.status).toBe(200);
-    expect(opens()).toEqual([{ owner_id: 'guest-visitor', open_days: 1 }]);
+    expect(opens()).toEqual([{ owner_id: 'guest-visitor', last_open_day: expect.any(String) }]);
   });
 
   it('records nothing when the read is refused', async () => {

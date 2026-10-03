@@ -3217,7 +3217,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   },
   "HomeJumpBackInItem": {
     "additionalProperties": false,
-    "description": "One document of Jump back in.",
+    "description": "One document of Jump back in, with the two measures Within reach places it by.",
     "properties": {
       "documentId": {
         "type": "string"
@@ -3239,20 +3239,13 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "null"
         ]
       },
-      "frecencyKey": {
-        "description": "The rank: the instant the decayed score falls to one (see ./frecency.ts). Sent so the view can place this browser's own local documents among these.",
-        "type": "number"
-      },
-      "lastOpenedAt": {
+      "lastUsedAt": {
+        "description": "The later of the person's last open and last real edit: recent.",
         "type": "number"
       },
       "name": {
         "description": "The document's current name.",
         "type": "string"
-      },
-      "openDays": {
-        "description": "UTC days on which the person opened it.",
-        "type": "number"
       },
       "ownerName": {
         "type": [
@@ -3291,6 +3284,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "null"
         ]
       },
+      "useDays": {
+        "description": "UTC days in the use window on which the person opened or edited it: most used.",
+        "type": "number"
+      },
       "via": {
         "description": "How the person reaches it: their own, a joined team's, or shared with them by a link.",
         "enum": [
@@ -3306,16 +3303,15 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "empty",
       "folderId",
       "folderName",
-      "frecencyKey",
-      "lastOpenedAt",
+      "lastUsedAt",
       "name",
-      "openDays",
       "ownerName",
       "savedAt",
       "shareCode",
       "tabId",
       "teamId",
       "teamName",
+      "useDays",
       "via"
     ],
     "type": "object"
@@ -3359,20 +3355,18 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "description": "`GET /api/home`.",
     "properties": {
       "jumpBackIn": {
+        "description": "The server's Within reach set: the most used, then the recent; at most twice the per-row N.",
         "items": {
           "$ref": "#/components/schemas/HomeJumpBackInItem"
         },
         "type": "array"
       },
       "lastSeenAt": {
-        "description": "The Timeline's unread mark as it stood before this read (the read moves it, once per visit); null when the person had never looked. What happened after it is new to them.",
+        "description": "The Timeline feed's unread mark as it stood before this read (the read moves it, once per visit); null when the person had never looked. What happened after it is new to them.",
         "type": [
           "number",
           "null"
         ]
-      },
-      "timeline": {
-        "$ref": "#/components/schemas/HomeTimelinePage"
       },
       "whatHappened": {
         "items": {
@@ -3383,144 +3377,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     },
     "required": [
       "jumpBackIn",
-      "timeline",
       "whatHappened",
       "lastSeenAt"
-    ],
-    "type": "object"
-  },
-  "HomeTimelineEntry": {
-    "additionalProperties": false,
-    "description": "One of the person's own events. Raw: the one-per-day fold is the view's, where the local day is known across loaded pages.",
-    "properties": {
-      "documentId": {
-        "type": "string"
-      },
-      "empty": {
-        "description": "Nothing drawn: ask for no thumbnail.",
-        "type": "boolean"
-      },
-      "folderId": {
-        "description": "Null for `shared`, and for a document at its space's root.",
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "folderName": {
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "id": {
-        "description": "The event's id; with `occurredAt`, the keyset position.",
-        "type": "string"
-      },
-      "kind": {
-        "$ref": "#/components/schemas/HomeTimelineKind"
-      },
-      "name": {
-        "description": "The document's current name.",
-        "type": "string"
-      },
-      "occurredAt": {
-        "type": "number"
-      },
-      "ownerName": {
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "savedAt": {
-        "description": "The thumbnail's version.",
-        "type": "number"
-      },
-      "shareCode": {
-        "description": "The live share code that opens it; set for `shared` only.",
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "tabId": {
-        "description": "The one tab a tab-scoped share opens; null = every tab.",
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "teamId": {
-        "description": "Null for `shared`: the owner's filing is theirs.",
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "teamName": {
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "via": {
-        "description": "How the person reaches it: their own, a joined team's, or shared with them by a link.",
-        "enum": [
-          "own",
-          "team",
-          "shared"
-        ],
-        "type": "string"
-      }
-    },
-    "required": [
-      "documentId",
-      "empty",
-      "folderId",
-      "folderName",
-      "id",
-      "kind",
-      "name",
-      "occurredAt",
-      "ownerName",
-      "savedAt",
-      "shareCode",
-      "tabId",
-      "teamId",
-      "teamName",
-      "via"
-    ],
-    "type": "object"
-  },
-  "HomeTimelineKind": {
-    "enum": [
-      "created",
-      "updated",
-      "opened"
-    ],
-    "type": "string"
-  },
-  "HomeTimelinePage": {
-    "additionalProperties": false,
-    "properties": {
-      "items": {
-        "items": {
-          "$ref": "#/components/schemas/HomeTimelineEntry"
-        },
-        "type": "array"
-      },
-      "nextCursor": {
-        "description": "`<occurredAt>:<id>` of the last item when another page exists, else null.",
-        "type": [
-          "string",
-          "null"
-        ]
-      }
-    },
-    "required": [
-      "items",
-      "nextCursor"
     ],
     "type": "object"
   },

@@ -135,11 +135,8 @@ function seedGuestHoldable(sql: DatabaseSync, id: string, peerDocument: string) 
     insert(sql, 'document_opens', {
       owner_id: id,
       document_id: documentId,
-      open_days: 1,
-      first_opened_at: T0,
       last_opened_at: T0,
       last_open_day: '2023-11-14',
-      frecency_key: T0,
     });
   }
   insert(sql, 'user_preferences', { owner_id: id, prefs: '{}', updated_at: T0 });

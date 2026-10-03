@@ -98,9 +98,10 @@ export const TELEMETRY_CATEGORIES = [
   'Timeline',
   // Explorer Home (docs/specs/013-workspace/explorer-home.md): the landing view. 'Opened' with
   // `type` 'Landing' | 'Nav' (the page the Explorer opened on, or a later visit) and 'Group' (a
-  // What happened summary expanded); 'Selected' with 'JumpBackIn' | 'Timeline' | 'WhatHappened'
-  // (which part of Home a document was opened from); 'Loaded' with 'More' (a further Timeline
-  // page) | 'Retry' (a failed read retried). Never a document name or a person.
+  // What happened summary expanded); 'Selected' with 'JumpBackIn.MostUsed' | 'JumpBackIn.Recent'
+  // (a document opened from Jump back in, by the half it belongs to), 'JumpBackIn.SeeMore' (See
+  // more followed to the Recent page) | 'WhatHappened'; 'Loaded' with 'Retry' (a failed read
+  // retried). Never a document name or a person.
   'Home',
   // Activity page (docs/specs/013-workspace/activity-page.md): the Explorer's cross-document inbox of open
   // actions + comment threads. 'Opened' once per visit; 'Selected' with

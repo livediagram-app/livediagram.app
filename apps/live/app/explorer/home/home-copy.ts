@@ -1,4 +1,4 @@
-// Every word Home says (docs/specs/013-workspace/explorer-home.md "What happened", "Timeline",
+// Every word Home says (docs/specs/013-workspace/explorer-home.md "Jump back in", "What happened",
 // "States"; blueprint docs/specs/013-workspace/blueprints/explorer-home-view.md). Pure, so the
 // sentences are tested once and every part of Home reads alike.
 
@@ -7,26 +7,20 @@ import type {
   HomeDocument,
   HomeGroup,
   HomePerson,
-  HomeTimelineEntry,
-  HomeTimelineKind,
   HomeVerb,
   HomeVerbCount,
 } from '@livediagram/api-schema';
 import { timeLabel } from '@livediagram/ui';
 
 export const HOME_COPY = {
-  recent: 'Recent',
-  timeline: 'Timeline',
   jumpBackIn: 'Jump back in',
   whatHappened: 'What happened',
+  seeMore: 'See more',
   seeAllActivity: 'See all activity',
-  jumpBackInEmpty: 'The documents you open most will gather here.',
+  jumpBackInEmpty: 'The documents you use most and last will gather here.',
   whatHappenedEmpty: 'Nothing from others in the last 14 days.',
-  timelineEmpty: 'Documents you create, update or open will appear here.',
   readFailed: 'Home could not load. Check your connection and try again.',
-  pageFailed: 'Could not load more.',
   tryAgain: 'Try again',
-  switchLabel: 'Home sections',
 } as const;
 
 /** The verb phrase of each action (spec table), as a summary lists them. */
@@ -65,12 +59,6 @@ const QUOTED: ReadonlySet<HomeVerb> = new Set([
   'assigned',
   'completed',
 ]);
-
-export const KIND_LABELS: Readonly<Record<HomeTimelineKind, string>> = {
-  created: 'Created',
-  updated: 'Updated',
-  opened: 'Opened',
-};
 
 /** A summary names at most this many people, then counts the rest. */
 const SUMMARY_NAMES_MAX = 3;
@@ -140,12 +128,4 @@ export function locationLabel(
 /** The person's clock time of an instant: "14:05". */
 export function clockTime(at: number): string {
   return timeLabel(at);
-}
-
-/** A Timeline entry's accessible name: the document, what happened and when. */
-export function timelineEntryLabel(
-  entry: Pick<HomeTimelineEntry, 'name' | 'kind' | 'occurredAt'>,
-  time: (at: number) => string = clockTime,
-): string {
-  return `${entry.name}, ${KIND_LABELS[entry.kind].toLowerCase()} at ${time(entry.occurredAt)}`;
 }

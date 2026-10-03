@@ -3,9 +3,9 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-// Home's layout (docs/specs/013-workspace/explorer-home.md "Layout"): two landmarks on a tablet or
-// wider; on a phone, a Recent / Timeline switch following the tabs pattern, Recent first. A failed
-// read says so and retries.
+// Home's layout (docs/specs/013-workspace/explorer-home.md "Layout"): one column at every width,
+// Jump back in then What happened, each a landmark opened by a heading with a rule and its quiet
+// link. No Timeline column and no switch. A failed read says so and retries.
 
 const { track, useHome, wide } = vi.hoisted(() => ({
   track: vi.fn(),
@@ -24,24 +24,21 @@ import { HomePane } from './HomePane';
 
 const data = (over = {}) => ({
   status: 'ready',
-  jumpBackIn: [],
+  jumpBackIn: { mostUsed: [], recent: [] },
   whatHappened: [],
-  timeline: [],
-  hasMore: false,
-  paging: 'idle',
   retry: vi.fn(),
-  loadMore: vi.fn(),
-  retryMore: vi.fn(),
   ...over,
 });
 
 function renderIt() {
-  render(
+  return render(
     <HomePane
       ownerId="me"
       onSeen={vi.fn()}
       allActivityHref="/explorer/timeline"
       onSeeAll={vi.fn()}
+      recentHref="/explorer/recent"
+      onSeeMore={vi.fn()}
     />,
   );
 }
@@ -49,49 +46,44 @@ function renderIt() {
 beforeEach(() => {
   track.mockReset();
   useHome.mockReturnValue(data());
-  vi.stubGlobal(
-    'IntersectionObserver',
-    class {
-      observe() {}
-      disconnect() {}
-    },
-  );
 });
 afterEach(() => vi.unstubAllGlobals());
 
 describe('HomePane', () => {
-  it('shows Recent beside the Timeline as two landmarks when wide', () => {
-    wide.value = true;
-    renderIt();
-    expect(screen.getByRole('region', { name: 'Recent' })).toBeTruthy();
-    expect(screen.getByRole('region', { name: 'Timeline' })).toBeTruthy();
+  it.each([true, false])('is one column of two sections, wide=%s, with no Timeline', (isWide) => {
+    wide.value = isWide;
+    const { container } = renderIt();
+    const sections = screen.getAllByRole('region');
+    expect(sections.map((s) => s.getAttribute('aria-labelledby'))).toEqual([
+      'home-jump-back-in',
+      'home-what-happened',
+    ]);
+    expect(screen.getByRole('region', { name: 'Jump back in' })).toBeTruthy();
+    expect(screen.getByRole('region', { name: 'What happened' })).toBeTruthy();
     expect(screen.queryByRole('tablist')).toBeNull();
+    expect(screen.queryByRole('heading', { name: 'Timeline' })).toBeNull();
+    expect(screen.queryByRole('heading', { name: 'Recent' })).toBeNull();
+    expect(
+      [...container.querySelectorAll('[data-home-section]')].map((s) =>
+        s.getAttribute('data-home-section'),
+      ),
+    ).toEqual(['jump-back-in', 'what-happened']);
     expect(track).toHaveBeenCalledWith('Home', 'Opened', expect.stringMatching(/^(Landing|Nav)$/));
   });
 
-  it('switches between Recent and Timeline on a phone, Recent first', () => {
-    wide.value = false;
+  it('opens each section with a heading with a rule, its link at the end of the row', () => {
+    wide.value = true;
     renderIt();
-    const [recent, timeline] = screen.getAllByRole('tab');
-    expect(recent!.getAttribute('aria-selected')).toBe('true');
-    expect(recent!.tabIndex).toBe(0);
-    expect(timeline!.tabIndex).toBe(-1);
-    const panel = screen.getByRole('tabpanel');
-    expect(panel.getAttribute('aria-labelledby')).toBe(recent!.id);
-    expect(screen.getByText('Jump back in')).toBeTruthy();
-
-    fireEvent.keyDown(recent!, { key: 'ArrowRight' });
-    expect(timeline!.getAttribute('aria-selected')).toBe('true');
-    expect(document.activeElement).toBe(timeline);
-    expect(panel.getAttribute('aria-labelledby')).toBe(timeline!.id);
-    expect(screen.queryByText('Jump back in')).toBeNull();
-
-    fireEvent.keyDown(timeline!, { key: 'ArrowRight' });
-    expect(recent!.getAttribute('aria-selected')).toBe('true');
-    fireEvent.keyDown(recent!, { key: 'End' });
-    expect(timeline!.getAttribute('aria-selected')).toBe('true');
-    fireEvent.keyDown(timeline!, { key: 'Home' });
-    expect(recent!.getAttribute('aria-selected')).toBe('true');
+    for (const [name, link] of [
+      ['Jump back in', 'See more'],
+      ['What happened', 'See all activity'],
+    ] as const) {
+      const heading = screen.getByRole('heading', { level: 2, name });
+      const row = heading.parentElement!;
+      expect(row.className).toContain('border-b');
+      expect(row.className).toContain('justify-between');
+      expect(row.lastElementChild!.textContent).toBe(link);
+    }
   });
 
   it('says the read failed and retries', () => {
@@ -110,9 +102,10 @@ describe('HomePane', () => {
     wide.value = true;
     useHome.mockReturnValue(data({ status: 'loading' }));
     renderIt();
-    expect(screen.getByRole('heading', { name: 'Recent' })).toBeTruthy();
     expect(screen.getByRole('heading', { name: 'Jump back in' })).toBeTruthy();
     expect(screen.getByRole('heading', { name: 'What happened' })).toBeTruthy();
-    expect(screen.getByRole('heading', { name: 'Timeline' })).toBeTruthy();
+    expect(screen.getByRole('region', { name: 'Jump back in' }).getAttribute('aria-busy')).toBe(
+      'true',
+    );
   });
 });

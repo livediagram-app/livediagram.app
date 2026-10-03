@@ -40,7 +40,8 @@ Top to bottom. "Opens" names the view a row selects; every view keeps its own ro
 | Shared with me | `/explorer/shared`                                       | Documents shared with the reader                          |
 
 Home is the Explorer's landing view. Recent, Favourites and All activity (the [Timeline](timeline.md) feed) have no
-sidebar row; their routes (`/explorer/recent`, `/explorer/favourites`, `/explorer/timeline`) keep working.
+sidebar row; their routes (`/explorer/recent`, `/explorer/favourites`, `/explorer/timeline`) keep working. Recent is
+reached from Home's Jump back in (**See more**) and All activity from its What happened (**See all activity**).
 
 ### Spaces
 
@@ -98,7 +99,8 @@ the breadcrumb and the help centre's copy. Routes stay as they are.
 
 Every other row's view already carries its row's label (Activity, a folder or team by its name, Invites, Themes,
 Trash). Views without a row keep their own names (Recent, Favourites, Search results, and All activity at
-`/explorer/timeline`, whose breadcrumb leads back to Home).
+`/explorer/timeline`). Recent and All activity are reached from Home, and their breadcrumbs lead back to it
+(**Home › Recent**, **Home › All activity**).
 
 ## Visibility at a glance
 
@@ -204,7 +206,7 @@ row and card of one, wherever it is listed (folders, This browser, Recent and Fa
 floating panel, the Trash), carries the **Local only** pill
 ([Offline Mode: Local only pill](../006-document/offline-mode.md#local-only-pill)).
 
-The editor header names such a document with the matching **Local only** badge. Home's "Jump back in" strip carries the
+The editor header names such a document with the matching **Local only** badge. Home's "Jump back in" carries the
 same pill (`LocalOnlyPill`) on the document's thumbnail ([Explorer Home](explorer-home.md)).
 
 ## Telemetry

@@ -1,12 +1,18 @@
 // The classes Home's parts share (docs/specs/013-workspace/blueprints/explorer-home-view.md
-// "Presentation and UX"), so the columns read as one page.
+// "Presentation and UX"), so the sections read as one page.
 
-/** A column's heading: Recent, Timeline. */
-export const SECTION_HEADING = 'text-sm font-semibold text-slate-900 dark:text-slate-100';
+/** A section's heading row: the title, its quiet link at the end, and the hairline rule under it
+ *  in the page's line colour (Headings with a rule). */
+export const SECTION_HEADER =
+  'flex items-baseline justify-between gap-4 border-b border-slate-200 pb-2 dark:border-slate-700';
 
-/** A section inside Recent: Jump back in, What happened. */
-export const SUB_HEADING =
-  'text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400';
+/** A section's title: Jump back in, What happened. */
+export const SECTION_HEADING = 'text-base font-semibold text-slate-900 dark:text-slate-100';
+
+/** The quiet link at the end of a heading row: See more, See all activity. Its line box is padded
+ *  to the 24 px target. */
+export const SECTION_LINK =
+  'inline-flex min-h-6 items-center rounded-sm text-sm font-medium text-brand-700 hover:underline dark:text-brand-300';
 
 /** Quiet words: places, times, counts. Slate-500 on the page meets 4.5:1; slate-400 in dark. */
 export const MUTED = 'text-slate-500 dark:text-slate-400';
@@ -24,14 +30,17 @@ export const PAGE_RING = 'ring-2 ring-slate-50 dark:ring-slate-900';
 /** A placeholder block. */
 export const SKELETON = 'rounded-md bg-slate-200/70 motion-safe:animate-pulse dark:bg-slate-800';
 
-// ---- The Timeline column's entry box, shared by the entries and their skeletons ----
+// ---- Jump back in's tiles, shared by the tiles and their skeletons ----
 
-/** One entry's box: the thumbnail and the name below it. Shared with the skeletons. */
-export const ENTRY_THUMB = 'h-20 w-32 md:h-16 md:w-24 lg:h-20 lg:w-32';
-export const ENTRY_NAME_WIDTH = 'w-32 md:w-24 lg:w-32';
-/** One entry's height: the thumbnail, 4 px, one 16 px line. The paging slot holds it. */
-export const ENTRY_HEIGHT = 'h-[6.25rem] md:h-[5.25rem] lg:h-[6.25rem]';
-/** Level with the thumbnail's middle: the marker (20 px) and the time (16 px line). */
-export const MARKER_OFFSET = 'mt-[30px] md:mt-[22px] lg:mt-[30px]';
-export const TIME_OFFSET = 'mt-[32px] md:mt-[24px] lg:mt-[32px]';
-export const ENTRY_GRID = 'grid grid-cols-[1fr_1.5rem_1fr] items-start gap-x-2';
+/** A grid tile's thumbnail: the section's share of the width, a fixed 80 px high. */
+export const GRID_THUMB = 'h-20 w-full';
+/** A strip tile: 128 px wide, the thumbnail 128 × 80. */
+export const STRIP_TILE = 'w-32 shrink-0';
+export const STRIP_THUMB = 'h-20 w-32';
+/** Two grid tile rows: 2 × 100 px + the 12 px gap. The grid, its skeleton and its empty line all
+ *  hold it, so fewer documents never shift what follows. */
+export const GRID_MIN_HEIGHT = 'min-h-[13.25rem]';
+/** The grid: 4 columns, filled from the top. */
+export const GRID = `grid ${GRID_MIN_HEIGHT} grid-cols-4 content-start gap-3`;
+/** The strip's height: a tile (100 px) plus the scroller's padding for focus rings. */
+export const STRIP_HEIGHT = 'h-28';

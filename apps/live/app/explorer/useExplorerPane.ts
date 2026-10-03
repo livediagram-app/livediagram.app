@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 import type { Lens, LensSubject } from '@livediagram/explorer-lens';
-import { VIEW_TITLES } from './view-titles';
+import { leadsBackHome, VIEW_TITLES } from './view-titles';
 import type { DocumentListItem, Folder, SharedWithItem } from '@/lib/api-client';
 import { groupDocumentsByFolder } from '@/lib/folder-tree';
 import { isLocalOnly } from '@/lib/document-space';
@@ -193,12 +193,12 @@ export function useExplorerPane({
   }, [selected, folderById, teams]);
 
   // Breadcrumb segments for the pane header, following the sidebar's rows. The leaf (the current
-  // view) is plain text. Folders sit under My documents, All activity under Home; every other view
-  // is its own single leaf.
+  // view) is plain text. Folders sit under My documents, All activity and Recent under Home; every
+  // other view is its own single leaf.
   type Crumb = { name: string; onClick?: () => void };
   const paneCrumbs = useMemo<Crumb[]>(() => {
-    // All activity is reached from Home, and leads back to it.
-    if (selected.kind === 'timeline')
+    // All activity and Recent are reached from Home, and lead back to it.
+    if (leadsBackHome(selected.kind))
       return [{ name: VIEW_TITLES.home, onClick: () => go({ kind: 'home' }) }, { name: paneTitle }];
     if (selected.kind !== 'folder') return [{ name: paneTitle }];
     const chain = breadcrumb(selected.id);

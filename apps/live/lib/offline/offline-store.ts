@@ -50,17 +50,18 @@ export type OfflineDocumentRecord = {
   trashedAt?: number;
   // This browser's opens of the document (docs/specs/013-workspace/explorer-home.md "Opens"),
   // for Home's Jump back in; see ./offline-opens.ts. Optional: a record never opened has none.
-  opens?: LocalOpens;
+  opens?: StoredLocalOpens;
 };
 
-// A local document's opens, counted like the server's (once per UTC day, the same frecency key).
-export type LocalOpens = {
-  openDays: number;
-  // `YYYY-MM-DD`, UTC: the day the last counted open fell on.
-  lastOpenDay: string;
-  lastOpenedAt: number;
-  frecencyKey: number;
-};
+// A local document's opens, counted like the server's (docs/specs/013-workspace/explorer-home.md
+// "Opens"): the UTC days (`YYYY-MM-DD`, newest first) with an open inside the 90-day use window,
+// and the last open.
+export type LocalOpens = { days: string[]; lastOpenedAt: number };
+
+// What a record may hold: the current shape, or the one records were written in before Within
+// reach. Read through `localOpensOf` (offline-opens.ts); the next open rewrites it.
+export type StoredLocalOpens =
+  LocalOpens | { openDays: number; lastOpenDay: string; lastOpenedAt: number; frecencyKey: number };
 
 // ---------------------------------------------------------------------------
 // Pure transforms (unit-tested — no IndexedDB involved)

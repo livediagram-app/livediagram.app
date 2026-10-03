@@ -1,20 +1,23 @@
-import type { Page } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
 import { expect, expectNoPageErrors, mintSignedGuest, test } from './fixtures';
 import {
   asGuest,
   box,
   editLink,
+  openDocument,
   person,
   seedBusyHome,
   seedHomeDocument,
+  seedLocalDocuments,
+  seedWithinReach,
   visitorSaves,
 } from './home-seed';
 
 // Explorer Home (docs/specs/013-workspace/explorer-home.md), end to end against the real build and
-// api worker, as a guest, in dark mode: the Explorer lands on Home; Jump back in, What happened and
-// the Timeline column draw what the api holds; a summary expands; See all activity reaches the
-// feed; a document stored only in this browser joins the strip with its pill; a phone switches
-// between Recent and Timeline; nothing shifts as Home lands.
+// api worker, as a guest, in dark mode: the Explorer lands on Home, one column of Jump back in then
+// What happened, each opened by a heading with a rule; Jump back in is a Within reach set (4 most
+// used on top, 4 recent below, none twice) as a 4 by 2 grid, or a phone strip that alternates,
+// holds eight and ends in See more; See more opens Recent, under Home; nothing shifts as Home lands.
 
 test.use({ colorScheme: 'dark' });
 
@@ -36,7 +39,11 @@ async function layoutShift(page: Page): Promise<number> {
   );
 }
 
-test('the Explorer lands on Home, with Recent beside the Timeline', async ({
+const jumpBackIn = (page: Page) => page.getByRole('list', { name: 'Jump back in' });
+const names = async (list: Locator) =>
+  list.getByRole('link').evaluateAll((links) => links.map((l) => l.getAttribute('aria-label')));
+
+test('the Explorer lands on Home: Jump back in, then What happened, no Timeline', async ({
   page,
   baseURL,
   pageErrors,
@@ -51,17 +58,24 @@ test('the Explorer lands on Home, with Recent beside the Timeline', async ({
   await expect(page.getByRole('heading', { level: 1, name: 'Home' })).toBeVisible();
   await expect(page).toHaveTitle('Home | livediagram');
 
-  const recent = page.getByRole('region', { name: 'Recent' });
-  const timeline = page.getByRole('region', { name: 'Timeline' });
-  const strip = recent.getByRole('list', { name: 'Jump back in' });
-  await expect(strip.getByRole('link')).toHaveCount(3);
-  await expect(strip.getByRole('link', { name: 'Payments architecture' })).toHaveAttribute(
-    'href',
-    `/document/${payments}`,
-  );
+  const jump = page.getByRole('region', { name: 'Jump back in' });
+  const happened = page.getByRole('region', { name: 'What happened' });
+  await expect(jumpBackIn(page).getByRole('link')).toHaveCount(3);
+  await expect(
+    jumpBackIn(page).getByRole('link', { name: 'Payments architecture' }),
+  ).toHaveAttribute('href', `/document/${payments}`);
+  // No Timeline column, no switch, no group titles.
+  await expect(page.getByRole('region', { name: 'Timeline' })).toHaveCount(0);
+  await expect(page.getByRole('tablist')).toHaveCount(0);
+  await expect(jump.getByText(/most used/i)).toHaveCount(0);
+
+  // One column: What happened sits under Jump back in, the same width.
+  const [a, b] = [await jump.boundingBox(), await happened.boundingBox()];
+  expect(b!.y).toBeGreaterThan(a!.y + a!.height);
+  expect(Math.round(b!.width)).toBe(Math.round(a!.width));
 
   // Two people on one document: one summary, collapsed, that expands to every action.
-  const summary = recent.getByRole('button', {
+  const summary = happened.getByRole('button', {
     name: /^(Sam and Priya|Priya and Sam) commented and edited in Payments architecture/,
   });
   await expect(summary).toHaveAttribute('aria-expanded', 'false');
@@ -72,20 +86,148 @@ test('the Explorer lands on Home, with Recent beside the Timeline', async ({
   await expect(actions.getByRole('link', { name: /^Priya commented/ })).toBeVisible();
   await expect(actions.getByRole('link', { name: /^Sam edited/ })).toBeVisible();
 
-  // The person's own documents, created today, on alternating sides of the line.
-  const entries = timeline.getByRole('list', { name: 'Timeline' }).getByRole('link');
-  await expect(entries).toHaveCount(3);
-  await expect(entries.first()).toHaveAttribute('aria-label', /, created at /);
-  await expect(timeline.getByText('Today', { exact: true })).toBeVisible();
-
   expect(await layoutShift(page)).toBe(0);
 
   // See all activity: the feed, titled All activity, leading back to Home.
-  await recent.getByRole('link', { name: 'See all activity' }).click();
+  await happened.getByRole('link', { name: 'See all activity' }).click();
   await expect(page).toHaveURL(/\/explorer\/timeline\/?$/);
   await expect(page.getByRole('heading', { level: 1, name: 'All activity' })).toBeVisible();
   await page.getByRole('button', { name: 'Home' }).first().click();
   await expect(page).toHaveURL(/\/explorer\/home\/?$/);
+  expectNoPageErrors(pageErrors);
+});
+
+test('each section opens with a heading with a rule, in dark and light', async ({
+  page,
+  baseURL,
+  pageErrors,
+}) => {
+  const origin = new URL(baseURL!).origin;
+  const { owner } = await seedBusyHome(page.request, origin);
+  await asGuest(page, owner);
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.goto('/explorer/home');
+  await expect(jumpBackIn(page).getByRole('link')).toHaveCount(3);
+
+  for (const scheme of ['dark', 'light'] as const) {
+    await page.emulateMedia({ colorScheme: scheme });
+    await page.evaluate(
+      (s) => document.documentElement.classList.toggle('dark', s === 'dark'),
+      scheme,
+    );
+    for (const [name, link] of [
+      ['Jump back in', 'See more'],
+      ['What happened', 'See all activity'],
+    ] as const) {
+      const heading = page.getByRole('heading', { level: 2, name });
+      const row = heading.locator('..');
+      const style = await row.evaluate((el) => {
+        const s = getComputedStyle(el);
+        return { width: s.borderBottomWidth, style: s.borderBottomStyle };
+      });
+      expect(style, `${scheme} ${name} rule`).toEqual({ width: '1px', style: 'solid' });
+      // The rule spans the section; the link sits at the row's right end.
+      const section = page.getByRole('region', { name });
+      expect(Math.round((await row.boundingBox())!.width)).toBe(
+        Math.round((await section.boundingBox())!.width),
+      );
+      const linkBox = await row.getByRole('link', { name: link }).boundingBox();
+      const rowBox = await row.boundingBox();
+      expect(Math.round(linkBox!.x + linkBox!.width)).toBe(Math.round(rowBox!.x + rowBox!.width));
+      expect(await heading.evaluate((el) => Number.parseFloat(getComputedStyle(el).fontSize))).toBe(
+        16,
+      );
+    }
+  }
+  expectNoPageErrors(pageErrors);
+});
+
+test('Jump back in is 4 most used on top and 4 recent below, none twice', async ({
+  page,
+  baseURL,
+  pageErrors,
+}) => {
+  const origin = new URL(baseURL!).origin;
+  const owner = await mintSignedGuest(page.request);
+  await asGuest(page, owner);
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await seedWithinReach(page, origin, owner);
+
+  const list = jumpBackIn(page);
+  await expect(list.getByRole('link')).toHaveCount(8);
+  expect(await names(list)).toEqual([
+    'Atlas, Local only',
+    'Beacon, Local only',
+    'Compass, Local only',
+    'Delta, Local only',
+    'Server two',
+    'Server one',
+    'Echo, Local only',
+    'Foxtrot, Local only',
+  ]);
+  // Atlas is both the most used and the newest: it shows once, under most used.
+  await expect(list.getByRole('link', { name: /^Atlas/ })).toHaveCount(1);
+
+  // Two rows of four; no sideways scrolling.
+  const tops = await list
+    .getByRole('listitem')
+    .evaluateAll((items) => items.map((i) => Math.round(i.getBoundingClientRect().top)));
+  expect(new Set(tops.slice(0, 4)).size).toBe(1);
+  expect(new Set(tops.slice(4)).size).toBe(1);
+  expect(tops[4]!).toBeGreaterThan(tops[0]!);
+  expect(await list.evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true);
+
+  // See more: the Recent page, under Home in the breadcrumb.
+  await page
+    .getByRole('region', { name: 'Jump back in' })
+    .getByRole('link', { name: 'See more' })
+    .click();
+  await expect(page).toHaveURL(/\/explorer\/recent\/?$/);
+  await expect(page.getByRole('heading', { level: 1, name: 'Recent' })).toBeVisible();
+  await page.getByRole('button', { name: 'Home' }).first().click();
+  await expect(page).toHaveURL(/\/explorer\/home\/?$/);
+  expectNoPageErrors(pageErrors);
+});
+
+test('on a phone the strip alternates, holds eight and ends in See more', async ({
+  page,
+  baseURL,
+  pageErrors,
+}) => {
+  const origin = new URL(baseURL!).origin;
+  const owner = await mintSignedGuest(page.request);
+  await asGuest(page, owner);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await seedWithinReach(page, origin, owner);
+
+  const list = jumpBackIn(page);
+  await expect(list.getByRole('link')).toHaveCount(8);
+  expect(await names(list)).toEqual([
+    'Atlas, Local only',
+    'Server two',
+    'Beacon, Local only',
+    'Server one',
+    'Compass, Local only',
+    'Echo, Local only',
+    'Delta, Local only',
+    'Foxtrot, Local only',
+  ]);
+  // One row, sideways.
+  const tops = await list
+    .getByRole('listitem')
+    .evaluateAll((items) => items.map((i) => Math.round(i.getBoundingClientRect().top)));
+  expect(new Set(tops).size).toBe(1);
+
+  // The strip ends in See more, the only one (no heading-row link on a phone).
+  const region = page.getByRole('region', { name: 'Jump back in' });
+  const seeMore = region.getByRole('link', { name: 'See more' });
+  await expect(seeMore).toHaveCount(1);
+  await seeMore.scrollIntoViewIfNeeded();
+  const tile = await seeMore.boundingBox();
+  const last = await list.getByRole('listitem').last().boundingBox();
+  expect(tile!.x).toBeGreaterThan(last!.x);
+  await seeMore.click();
+  await expect(page).toHaveURL(/\/explorer\/recent\/?$/);
   expectNoPageErrors(pageErrors);
 });
 
@@ -103,15 +245,31 @@ test('a document opened from Jump back in opens in the editor', async ({
   await page.goto(`/document/${doc.id}`);
   await page.locator('[data-canvas-a11y-root]').waitFor();
   await page.goto('/explorer/home');
-  const link = page
-    .getByRole('list', { name: 'Jump back in' })
-    .getByRole('link', { name: 'Service map' });
+  const link = jumpBackIn(page).getByRole('link', { name: 'Service map' });
   await expect(link).toBeVisible();
-  await expect(
-    page.getByRole('region', { name: 'Timeline' }).getByRole('link', { name: /^Service map, / }),
-  ).toHaveCount(1);
   await link.click();
   await expect(page).toHaveURL(new RegExp(`/document/${doc.id}`));
+  expectNoPageErrors(pageErrors);
+});
+
+test('with fewer than eight, only what exists shows, and nothing shifts', async ({
+  page,
+  baseURL,
+  pageErrors,
+}) => {
+  const origin = new URL(baseURL!).origin;
+  const owner = await mintSignedGuest(page.request);
+  const doc = await seedHomeDocument(page.request, owner, origin, 'Only one');
+  await openDocument(page.request, owner, doc);
+  await asGuest(page, owner);
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.goto('/explorer/home');
+
+  const list = jumpBackIn(page);
+  await expect(list.getByRole('listitem')).toHaveCount(1);
+  // The grid keeps its two rows' height: What happened never moves.
+  expect(Math.round((await list.boundingBox())!.height)).toBe(212);
+  expect(await layoutShift(page)).toBe(0);
   expectNoPageErrors(pageErrors);
 });
 
@@ -121,126 +279,17 @@ test('a document stored only in this browser joins Jump back in with its pill', 
 }) => {
   const owner = await mintSignedGuest(page.request);
   await asGuest(page, owner);
-  await page.goto('/explorer/home');
-  await expect(page.getByText('The documents you open most will gather here.')).toBeVisible();
-
-  // A local document, opened today, written as the editor writes it.
-  await page.evaluate(async () => {
-    const day = new Date().toISOString().slice(0, 10);
-    const now = Date.now();
-    await new Promise<void>((resolve, reject) => {
-      const open = indexedDB.open('livediagram-offline', 2);
-      open.onerror = () => reject(open.error);
-      open.onsuccess = () => {
-        const tx = open.result.transaction('documents', 'readwrite');
-        tx.objectStore('documents').put({
-          id: crypto.randomUUID(),
-          name: 'Kept on this laptop',
-          folderId: null,
-          createdAt: now,
-          savedAt: now,
-          tabs: [{ id: 't1', name: 'Tab 1', elements: [] }],
-          opens: { openDays: 1, lastOpenDay: day, lastOpenedAt: now, frecencyKey: now },
-        });
-        tx.oncomplete = () => resolve();
-        tx.onerror = () => reject(tx.error);
-      };
-    });
-  });
-  await page.reload();
-  const link = page
-    .getByRole('list', { name: 'Jump back in' })
-    .getByRole('link', { name: 'Kept on this laptop, Local only' });
-  await expect(link).toBeVisible();
-  await expect(link.getByText('Local only')).toBeVisible();
-  expectNoPageErrors(pageErrors);
-});
-
-test('a phone switches between Recent and Timeline, Recent first', async ({
-  page,
-  baseURL,
-  pageErrors,
-}) => {
-  const origin = new URL(baseURL!).origin;
-  const { owner } = await seedBusyHome(page.request, origin);
-  await asGuest(page, owner);
-  await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto('/explorer/home');
-
-  const tabs = page.getByRole('tablist', { name: 'Home sections' });
-  const recentTab = tabs.getByRole('tab', { name: 'Recent' });
-  const timelineTab = tabs.getByRole('tab', { name: 'Timeline' });
-  await expect(recentTab).toHaveAttribute('aria-selected', 'true');
-  await expect(page.getByRole('tabpanel').getByText('Jump back in')).toBeVisible();
-
-  await recentTab.focus();
-  await page.keyboard.press('ArrowRight');
-  await expect(timelineTab).toHaveAttribute('aria-selected', 'true');
-  await expect(timelineTab).toBeFocused();
-  await expect(page.getByRole('tabpanel').getByRole('list', { name: 'Timeline' })).toBeVisible();
-  await expect(page.getByRole('tabpanel').getByText('Jump back in')).toHaveCount(0);
-
-  // The selection reads at a glance: the selected segment's fill against its track is a state
-  // indicator, held to WCAG 2.2 SC 1.4.11 (3:1), in both appearances.
-  for (const scheme of ['dark', 'light'] as const) {
-    await page.emulateMedia({ colorScheme: scheme });
-    await page.evaluate(
-      (s) => document.documentElement.classList.toggle('dark', s === 'dark'),
-      scheme,
-    );
-    await page.waitForTimeout(300);
-    expect(
-      await segmentContrast(page),
-      `${scheme} selected segment against its track`,
-    ).toBeGreaterThanOrEqual(3);
-  }
-  expectNoPageErrors(pageErrors);
-});
-
-// The luminance contrast between the selected tab's fill and the tablist's track.
-async function segmentContrast(page: Page): Promise<number> {
-  return page.getByRole('tablist').evaluate((list) => {
-    const ctx = document.createElement('canvas').getContext('2d', { willReadFrequently: true })!;
-    const rgb = (c: string): [number, number, number] => {
-      ctx.clearRect(0, 0, 1, 1);
-      ctx.fillStyle = c;
-      ctx.fillRect(0, 0, 1, 1);
-      const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data;
-      return [r!, g!, b!];
-    };
-    const lum = ([r, g, b]: [number, number, number]) => {
-      const f = (v: number) => {
-        const x = v / 255;
-        return x <= 0.04045 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4;
-      };
-      return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b);
-    };
-    const selected = list.querySelector('[aria-selected="true"]')!;
-    const a = lum(rgb(getComputedStyle(selected).backgroundColor));
-    const b = lum(rgb(getComputedStyle(list).backgroundColor));
-    return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
-  });
-}
-
-test('more of the Timeline loads as the reader scrolls to its end', async ({
-  page,
-  baseURL,
-  pageErrors,
-}) => {
-  const origin = new URL(baseURL!).origin;
-  const owner = await mintSignedGuest(page.request);
-  for (let i = 0; i < 35; i += 1) {
-    await seedHomeDocument(page.request, owner, origin, `Sketch ${i + 1}`, []);
-  }
-  await asGuest(page, owner);
   await page.setViewportSize({ width: 1280, height: 800 });
   await page.goto('/explorer/home');
+  await expect(
+    page.getByText('The documents you use most and last will gather here.'),
+  ).toBeVisible();
 
-  const entries = page.getByRole('list', { name: 'Timeline' }).getByRole('link');
-  await expect(entries).toHaveCount(30);
-  await page.getByTestId('home-timeline-paging').scrollIntoViewIfNeeded();
-  await expect(entries).toHaveCount(35);
-  await expect(page.getByTestId('home-timeline-paging')).toHaveCount(0);
+  await seedLocalDocuments(page, [{ name: 'Kept on this laptop', daysAgo: [0], lastOpenedIn: 0 }]);
+  await page.reload();
+  const link = jumpBackIn(page).getByRole('link', { name: 'Kept on this laptop, Local only' });
+  await expect(link).toBeVisible();
+  await expect(link.getByText('Local only')).toBeVisible();
   expectNoPageErrors(pageErrors);
 });
 
@@ -255,7 +304,7 @@ test('a failed read says so, and Try again reads again', async ({ page, pageErro
   await page.unroute('**/api/home?*');
   await page.getByRole('button', { name: 'Try again' }).click();
   await expect(failed).toHaveCount(0);
-  await expect(page.getByRole('region', { name: 'Recent' })).toBeVisible();
+  await expect(page.getByRole('region', { name: 'Jump back in' })).toBeVisible();
   expectNoPageErrors(pageErrors);
 });
 

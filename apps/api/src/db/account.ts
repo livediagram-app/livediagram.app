@@ -266,7 +266,7 @@ export async function migrateOwnerId(
   await recordOwnerAlias(env, toOwnerId, fromOwnerId);
   // Explorer Home (docs/specs/013-workspace/explorer-home.md "Opens"): the guest's opens follow
   // them, and a document opened under both identities keeps both histories.
-  const opens = await migrateDocumentOpens(env, fromOwnerId, toOwnerId, Date.now());
+  const opens = await migrateDocumentOpens(env, fromOwnerId, toOwnerId);
   console.info(`home: opens-migrated moved=${opens.moved} merged=${opens.merged}`);
   // images (docs/specs/009-elements/images.md). UPDATE OR IGNORE walks the unique (owner_id,
   // sha256) collision case (same bytes on both identities) and

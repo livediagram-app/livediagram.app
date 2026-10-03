@@ -215,11 +215,12 @@ board: true }`. `armedWhiteboardShape(intent)` reads a board intent (or the plai
   entry's intent and records a pick: `recordShapePick(picks, key, Date.now())` counts it and stamps
   it, keeping at most `SHAPE_PICKS_KEPT` kinds by evicting the least recent kind that is not among
   the `SHAPE_PICKS_PROTECTED` most picked (never the kind just picked).
-- `shapeSlots(picks, pinned)`: **Most used** first, the unpinned kinds by picks (ties to the most
-  recent); then **Recent**, the unpinned kinds not in Most used, newest first, so a kind that is both
-  shows only in Most used (its icon stays put); three each, none twice across pins
-  and slots; an empty slot takes the next fallback kind not already showing (the Shapes flyout
-  order, rectangle to arrow, then the catalogue). With the default pins: Most used Ellipse,
+- `shapeSlots(picks, pinned)`: the [Within reach](../../004-interface-design/within-reach.md) set of the
+  unpinned kinds picked, by the shared `withinReach(known, SLOTS_PER_ROW, { uses: picks, lastUsedAt: last pick })`
+  (`@livediagram/api-schema`): **Most used** first, by picks (ties to the most recent); then **Recent**, the
+  unpinned kinds not in Most used, newest first, so a kind that is both shows only in Most used (its icon stays
+  put); three each, none twice across pins and slots; an empty slot takes the next fallback kind not already
+  showing, Most used filled first (the Shapes flyout order, rectangle to arrow, then the catalogue). With the default pins: Most used Ellipse,
   Diamond, Cylinder; Recent Line, Parallelogram, Hexagon.
 - Pressed state on the bar: a pinned shape when `armedShape` is its key; Shapes when a shape (the
   sticky note included) is armed that is not pinned. In the panel, a menu shape tile when
@@ -542,29 +543,29 @@ to measure` (warn).
 
 ## Constants and configuration
 
-| Constant                          | Value   | Provenance                | Safe range    |
-| --------------------------------- | ------- | ------------------------- | ------------- |
-| `PINNED_SHAPES_MAX`               | 7       | spec                      | 7             |
-| `DEFAULT_PINNED_SHAPES`           | 2 kinds | spec                      |               |
-| `MOST_USED_SLOTS`, `RECENT_SLOTS` | 3, 3    | spec                      | 3             |
-| `SHAPE_PICKS_PROTECTED`           | 5       | D16                       | 3 to 8        |
-| `SLOT_BAR_REACH_PX`               | 44      | D22                       | 24 to 64      |
-| `DockButton` size                 | 36 px   | spec (the strip's tile)   | 36            |
-| `DOCK_ICON_PX`                    | 18 px   | the strip's glyph size    | 18            |
-| `BESIDE_GAP_PX`                   | 22 px   | panel padding 10 + 12 gap | 16 to 28      |
-| `OFF_DOCK_GAP_PX`                 | 8 px    | D36                       | 4 to 12       |
-| `VIEWPORT_MARGIN_PX`              | 12 px   | the flyouts' clamp margin | 8 to 16       |
-| `TIP_INSET_PX`                    | 14 px   | D37 (card radius 12 + 2)  | 12 to 20      |
-| Tip size                          | 10 px   | D37                       | 8 to 12       |
-| `PANEL_COLUMNS`                   | 3       | spec (the palette's grid) | 3             |
-| `SHAPE_SEARCH_LIMIT`              | 6       | spec                      | 6             |
-| `SHAPE_GRID_COLUMNS`              | 3       | six as two rows of three  | 3             |
-| `SHAPE_PICKS_KEPT`                | 20      | spec (e.g. 20), D16       | 12 to 30      |
-| `SHAPE_SLOT_DRAG_PX`              | 6       | spec                      | 4 to 10       |
-| `HINT_MS`                         | 4000    | D17                       | 3000 to 6000  |
-| Group gap                         | 12 px   | D18                       | 8 to 16       |
-| Dock drops beside the cluster     | 1760 px | D9 (widest dock 858 px)   | at least 1720 |
-| Top dock's side clearance         | 4.25rem | D33 (menu button 12 + 46) | at least 4rem |
+| Constant                      | Value   | Provenance                | Safe range    |
+| ----------------------------- | ------- | ------------------------- | ------------- |
+| `PINNED_SHAPES_MAX`           | 7       | spec                      | 7             |
+| `DEFAULT_PINNED_SHAPES`       | 2 kinds | spec                      |               |
+| `SLOTS_PER_ROW`               | 3       | spec                      | 3             |
+| `SHAPE_PICKS_PROTECTED`       | 5       | D16                       | 3 to 8        |
+| `SLOT_BAR_REACH_PX`           | 44      | D22                       | 24 to 64      |
+| `DockButton` size             | 36 px   | spec (the strip's tile)   | 36            |
+| `DOCK_ICON_PX`                | 18 px   | the strip's glyph size    | 18            |
+| `BESIDE_GAP_PX`               | 22 px   | panel padding 10 + 12 gap | 16 to 28      |
+| `OFF_DOCK_GAP_PX`             | 8 px    | D36                       | 4 to 12       |
+| `VIEWPORT_MARGIN_PX`          | 12 px   | the flyouts' clamp margin | 8 to 16       |
+| `TIP_INSET_PX`                | 14 px   | D37 (card radius 12 + 2)  | 12 to 20      |
+| Tip size                      | 10 px   | D37                       | 8 to 12       |
+| `PANEL_COLUMNS`               | 3       | spec (the palette's grid) | 3             |
+| `SHAPE_SEARCH_LIMIT`          | 6       | spec                      | 6             |
+| `SHAPE_GRID_COLUMNS`          | 3       | six as two rows of three  | 3             |
+| `SHAPE_PICKS_KEPT`            | 20      | spec (e.g. 20), D16       | 12 to 30      |
+| `SHAPE_SLOT_DRAG_PX`          | 6       | spec                      | 4 to 10       |
+| `HINT_MS`                     | 4000    | D17                       | 3000 to 6000  |
+| Group gap                     | 12 px   | D18                       | 8 to 16       |
+| Dock drops beside the cluster | 1760 px | D9 (widest dock 858 px)   | at least 1720 |
+| Top dock's side clearance     | 4.25rem | D33 (menu button 12 + 46) | at least 4rem |
 
 ## Defaults ledger
 
