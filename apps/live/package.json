@@ -22,7 +22,7 @@
     "test:e2e:drive-shots": "NEXT_PUBLIC_E2E_AUTH=1 NEXT_PUBLIC_GOOGLE_CLIENT_ID=123456789012-e2e.apps.googleusercontent.com NEXT_PUBLIC_GOOGLE_API_KEY=e2e-picker-key next build && E2E_DRIVE=1 playwright test --project=drive-shots"
   },
   "dependencies": {
-    "@clerk/react": "^6.17.0",
+    "@clerk/react": "^6.17.3",
     "@huggingface/transformers": "^3.8.1",
     "@jsquash/webp": "1.5.0",
     "@livediagram/api-schema": "workspace:*",
@@ -40,7 +40,7 @@
     "@tensorflow/tfjs-backend-webgpu": "4.22.0",
     "@tensorflow/tfjs-core": "4.22.0",
     "@tensorflow/tfjs-layers": "4.22.0",
-    "next": "^16.3.6",
+    "next": "^16.3.7",
     "react": "^19.3.0",
     "react-dom": "^19.3.0"
   },
