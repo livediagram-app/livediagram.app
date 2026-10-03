@@ -4,8 +4,7 @@ import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 're
 import { Portal } from '@/components/primitives/Portal';
 import { clampToViewport } from '@/lib/clamp-to-viewport';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
-import { useSwipeDownDismiss } from '@/hooks/ui/useSwipeDownDismiss';
-import { safeInset } from '@/lib/safe-area';
+import { BottomSheet } from '@/components/primitives/BottomSheet';
 
 // Right-click context menu portal. Mirrors PortalMenu's portal +
 // outside-click-close behaviour but anchors at a screen-space (x, y)
@@ -45,7 +44,6 @@ export function ContextMenu({
   const ref = useRef<HTMLDivElement>(null);
   const [adjust, setAdjust] = useState({ x: 0, y: 0 });
   const sheet = useIsMobileViewport();
-  const swipe = useSwipeDownDismiss(onClose);
 
   useLayoutEffect(() => {
     const node = ref.current;
@@ -146,40 +144,20 @@ export function ContextMenu({
 
   if (sheet) {
     return (
-      <Portal>
-        <div
-          ref={ref}
-          role="menu"
-          data-tour-id="context-menu"
-          data-context-menu=""
-          data-context-menu-sheet=""
-          onPointerDown={(e) => e.stopPropagation()}
-          onContextMenu={(e) => e.preventDefault()}
-          style={{
-            paddingBottom: safeInset('bottom'),
-            transform: swipe.offset > 0 ? `translateY(${swipe.offset}px)` : undefined,
-            transition: swipe.dragging ? 'none' : 'transform var(--transition-duration-micro) ease',
-          }}
-          className="fixed inset-x-0 bottom-0 z-[var(--z-overlay)] mx-auto flex max-h-[60dvh] w-full max-w-lg animate-sheet-up flex-col overflow-hidden rounded-t-2xl border border-b-0 border-slate-200 bg-white text-sm shadow-[0_-8px_40px_-12px_rgb(0_0_0/0.25)] dark:border-slate-700 dark:bg-slate-900"
-        >
-          {/* The grab handle: the full width of the sheet, 24px tall, that drags it down. */}
-          <div
-            aria-hidden
-            data-sheet-handle=""
-            {...swipe.handleProps}
-            className="flex h-6 shrink-0 cursor-grab touch-none items-center justify-center"
-          >
-            <span className="h-1 w-10 rounded-full bg-slate-300 dark:bg-slate-600" />
-          </div>
-          <div
-            className={`lvd-menu-stagger flex min-h-0 flex-col overflow-y-auto overscroll-contain ${
-              flush ? '' : 'pb-1'
-            }`}
-          >
-            {children}
-          </div>
-        </div>
-      </Portal>
+      <BottomSheet
+        ref={ref}
+        role="menu"
+        data-tour-id="context-menu"
+        data-context-menu=""
+        data-context-menu-sheet=""
+        onPointerDown={(e) => e.stopPropagation()}
+        onContextMenu={(e) => e.preventDefault()}
+        onClose={onClose}
+        zClassName="z-[var(--z-overlay)]"
+        flush={flush}
+      >
+        {children}
+      </BottomSheet>
     );
   }
 

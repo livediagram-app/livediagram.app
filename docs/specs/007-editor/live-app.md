@@ -204,8 +204,9 @@ zoomed the whole page (Chromium, 1.5x) instead of the canvas, which breaks the e
 gesture. Readability on a phone comes from the UI scale ([UI scale](ui-scale.md)) and the canvas
 zoom instead.
 
-**Menus are bottom sheets on a phone.** Every context menu (an element's, the canvas's, a
-selection's: the shared `ContextMenu`) opens as a sheet docked to the bottom edge instead of a
+**Menus are bottom sheets on a phone.** Every context menu (an element's, a selection's: the
+shared `ContextMenu`; and the tab menu, from a tab's `⋯` or a long-press on the canvas:
+`TabPortalMenu`) opens as a sheet (`BottomSheet`) docked to the bottom edge instead of a
 card hung off the long-press point, which covered the element it was about and ran under the tab
 bar. Full width (up to 32rem), at most 60% of the screen tall with its own scroll, clear of the
 home indicator, rising in (`animate-sheet-up`). A grab handle across its top drags it down:
