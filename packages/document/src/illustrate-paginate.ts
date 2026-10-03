@@ -16,6 +16,8 @@ import { isBoxed, type Element, type Tab } from './index';
 
 // Two things this close (canvas px, edge to edge) belong together.
 export const PAGINATE_CLUSTER_GAP = 120;
+// The most pages laying content out makes (docs/specs/007-editor/illustrate-pages.md "Into pages").
+export const PAGINATE_MAX_PAGES = 20;
 // Wider than this many times its height, a cluster takes a landscape page.
 const LANDSCAPE_RATIO = 1.1;
 
@@ -114,7 +116,8 @@ const unionBox = (boxes: Box[]): Box =>
  * - with no pages stored, content that does not fit inside the first page is laid out afresh;
  * - with pages stored, each cluster less than half on the pages (by area) is stray: stray clusters
  *   go onto new pages after the last, or the tab is laid out afresh when nothing else is on a page.
- * At most MAX_ILLUSTRATE_PAGES pages: clusters past the last page share it.
+ * At most PAGINATE_MAX_PAGES new pages (and never past MAX_ILLUSTRATE_PAGES): clusters past the
+ * last page share it.
  */
 export function withContentPaginated<T extends Pick<Tab, 'elements'>>(
   tab: T & { pages?: unknown; pageOrientation?: unknown },
@@ -159,7 +162,7 @@ function paginate<T extends Pick<Tab, 'elements'>>(
   content: Element[],
   kept: IllustratePage[],
 ): T & { pages: IllustratePage[] } {
-  const room = MAX_ILLUSTRATE_PAGES - kept.length;
+  const room = Math.min(MAX_ILLUSTRATE_PAGES - kept.length, PAGINATE_MAX_PAGES);
   // No room for another page: the clusters share the last page, centred and fitted there.
   if (room <= 0) {
     const last = kept[kept.length - 1]!;

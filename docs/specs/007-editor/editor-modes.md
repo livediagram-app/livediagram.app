@@ -275,7 +275,7 @@ actions, snapping, export, laying content out into pages, page slides) is
   - The pages are the tab's (`Tab.pages`: `IllustratePage[]`, in row
     order), so everyone lays out on the same ones. A tab with no `pages` has one
     page, in its legacy `pageOrientation` (portrait when absent); the legacy
-    field is dropped the first time the pages change. At most **20** pages
+    field is dropped the first time the pages change. At most **100** pages
     (`MAX_ILLUSTRATE_PAGES`).
 - **The surround** is the tab's own canvas: its colour and pattern, and every
   canvas setting, apply behind the pages exactly as in Diagram mode.

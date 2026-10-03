@@ -136,3 +136,57 @@ describe('Illustrate page edits', () => {
     expect(title.textScale).toBeLessThan(2);
   });
 });
+
+describe('Illustrate page edits: documents', () => {
+  const withDocument = (): Tab =>
+    ({
+      id: 't',
+      name: 'T',
+      elements: [],
+      pages: [
+        { id: 'page-1', orientation: 'portrait', size: 'square' },
+        { id: 'd1', orientation: 'portrait', kind: 'document', flow: 'f' },
+        { id: 'd2', orientation: 'portrait', kind: 'document', flow: 'f' },
+      ],
+      docs: { f: { blocks: [{ id: 'b', type: 'paragraph', runs: [{ text: 'Hi' }] }] } },
+    }) as unknown as Tab;
+
+  it('adds an infographic page like the last infographic, and a document on paper', () => {
+    const h = harness(withDocument());
+    h.edits().addPage!('infographic');
+    expect(illustratePagesOf(h.tab()).at(-1)).toMatchObject({ size: 'square' });
+    h.edits().addPage!('document');
+    const added = illustratePagesOf(h.tab()).at(-1)!;
+    expect(added.kind).toBe('document');
+    expect(added.size).toBeUndefined();
+    expect(Object.keys(h.tab().docs!)).toHaveLength(2);
+  });
+
+  it('turns, sizes and paints every page of a document together', () => {
+    const h = harness(withDocument());
+    h.edits().setOrientation('d2', 'landscape');
+    h.edits().setSize('d1', 'letter');
+    h.edits().setBackground('d1', { pattern: 'lines' });
+    const [, a, b] = illustratePagesOf(h.tab());
+    for (const p of [a!, b!]) {
+      expect(p).toMatchObject({
+        orientation: 'landscape',
+        size: 'letter',
+        background: { pattern: 'lines' },
+      });
+    }
+  });
+
+  it('moves, duplicates and deletes the whole document', () => {
+    const h = harness(withDocument());
+    expect(h.edits().canMove('d2', 1)).toBe(false);
+    h.edits().movePage('d2', -1);
+    expect(illustratePagesOf(h.tab()).map((p) => p.id)).toEqual(['d1', 'd2', 'page-1']);
+    h.edits().duplicatePage!('d1');
+    expect(illustratePagesOf(h.tab())).toHaveLength(5);
+    expect(Object.keys(h.tab().docs!)).toHaveLength(2);
+    h.edits().removePage!('d2');
+    expect(illustratePagesOf(h.tab())).toHaveLength(3);
+    expect(Object.keys(h.tab().docs!)).toHaveLength(1);
+  });
+});

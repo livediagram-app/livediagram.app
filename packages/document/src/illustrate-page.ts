@@ -18,8 +18,9 @@ export const A4_LONG_SIDE = 1123;
 // The space between two pages in the row, in canvas px.
 export const ILLUSTRATE_PAGE_GAP = 96;
 
-// The most pages a tab holds: a row past this is a document, not an infographic.
-export const MAX_ILLUSTRATE_PAGES = 20;
+// The most pages a tab holds (docs/specs/007-editor/illustrate-pages.md "Page actions"): room
+// for a long document's pages beside a set of infographic ones.
+export const MAX_ILLUSTRATE_PAGES = 100;
 
 // A page's format (docs/specs/007-editor/illustrate-pages.md "Sizes"): its short and long side.
 export type PageSizeId = 'a4' | 'letter' | 'a3' | 'square' | 'social' | 'wide';
@@ -57,6 +58,10 @@ export type PageBackground = { fill?: PageFill; pattern?: PagePattern };
 // The longest page name kept: a label, not a caption.
 export const PAGE_NAME_MAX = 60;
 
+// What a page is for, fixed when it is made (docs/specs/007-editor/illustrate-pages.md "Page
+// kinds"): an infographic page to lay out, or a document page to write on.
+export type PageKind = 'infographic' | 'document';
+
 export type IllustratePage = {
   id: string;
   orientation: PageOrientation;
@@ -66,6 +71,10 @@ export type IllustratePage = {
   background?: PageBackground;
   // Absent shows the page's place ("Page 2").
   name?: string;
+  // Absent is an infographic page; stored only for a document page.
+  kind?: 'document';
+  // The document a document page belongs to (`Tab.docs[flow]`); present exactly on document pages.
+  flow?: string;
 };
 
 export type PageRect = { x: number; y: number; width: number; height: number };
@@ -117,13 +126,83 @@ function parsePage(v: unknown): IllustratePage | undefined {
     return undefined;
   const background = parseBackground(p.background);
   const name = typeof p.name === 'string' ? p.name.trim().slice(0, PAGE_NAME_MAX) : '';
+  // A document page without a readable flow is a document of its own.
+  const document =
+    p.kind === 'document'
+      ? {
+          kind: 'document' as const,
+          flow:
+            typeof p.flow === 'string' && p.flow.length > 0 && p.flow.length <= 64 ? p.flow : p.id,
+        }
+      : {};
   return {
     id: p.id,
     orientation: p.orientation,
     ...(isPageSizeId(p.size) && p.size !== 'a4' ? { size: p.size } : {}),
     ...(background ? { background } : {}),
     ...(name ? { name } : {}),
+    ...document,
   };
+}
+
+/** The page's kind: a document page, or else an infographic page. */
+export function pageKindOf(page: Pick<IllustratePage, 'kind'>): PageKind {
+  return page.kind === 'document' ? 'document' : 'infographic';
+}
+
+export function isDocumentPage(
+  page: Pick<IllustratePage, 'kind'>,
+): page is Pick<IllustratePage, 'kind'> & { kind: 'document'; flow: string } {
+  return page.kind === 'document';
+}
+
+/** Pages in an order where each document's pages sit together (docs/specs/007-editor/
+ *  illustrate-pages.md "A page"): a flow's pages join its first page's run, in their order, and
+ *  take its size, orientation and background. Same array back when nothing needed doing. */
+function withDocumentsTogether(pages: IllustratePage[]): IllustratePage[] {
+  const byFlow = new Map<string, IllustratePage[]>();
+  for (const p of pages) {
+    if (!p.flow) continue;
+    const run = byFlow.get(p.flow);
+    if (run) run.push(p);
+    else byFlow.set(p.flow, [p]);
+  }
+  if (byFlow.size === 0) return pages;
+  const out: IllustratePage[] = [];
+  let changed = false;
+  for (const p of pages) {
+    if (!p.flow) {
+      out.push(p);
+      continue;
+    }
+    const run = byFlow.get(p.flow);
+    if (!run) continue; // already placed with its first page
+    byFlow.delete(p.flow);
+    const [lead, ...rest] = run;
+    out.push(lead!);
+    for (const q of rest) {
+      const same =
+        q.orientation === lead!.orientation &&
+        q.size === lead!.size &&
+        JSON.stringify(q.background) === JSON.stringify(lead!.background);
+      if (!same) changed = true;
+      const { size: _s, background: _b, ...own } = q;
+      void _s;
+      void _b;
+      out.push(
+        same
+          ? q
+          : {
+              ...own,
+              orientation: lead!.orientation,
+              ...(lead!.size ? { size: lead!.size } : {}),
+              ...(lead!.background ? { background: lead!.background } : {}),
+            },
+      );
+    }
+  }
+  if (!changed && out.every((p, i) => p === pages[i])) return pages;
+  return out;
 }
 
 /** The tab's pages, in order: its stored ones, or one page in its legacy orientation (portrait
@@ -140,7 +219,7 @@ export function illustratePagesOf(
         return true;
       })
     : [];
-  if (stored.length > 0) return stored.slice(0, MAX_ILLUSTRATE_PAGES);
+  if (stored.length > 0) return withDocumentsTogether(stored.slice(0, MAX_ILLUSTRATE_PAGES));
   const orientation = isPageOrientation(tab?.pageOrientation) ? tab.pageOrientation : 'portrait';
   return [{ id: FIRST_PAGE_ID, orientation }];
 }
@@ -266,9 +345,17 @@ export function withIllustratePages<T extends Pick<Tab, 'elements'>>(
     const page = illustratePageAt(before, point);
     const moved = page && after.get(page.id);
     if (!page || !moved) return null;
-    // Re-centred on the page's centre, so a page that turned keeps its content about its middle.
-    const dx = moved.x + moved.width / 2 - (page.rect.x + page.rect.width / 2);
-    const dy = moved.y + moved.height / 2 - (page.rect.y + page.rect.height / 2);
+    // A document page's content keeps its place from the page's top-left corner, where its
+    // writing starts and its zones are measured from (docs/specs/007-editor/document-pages.md
+    // "Zones"); an infographic page's is re-centred on the page's centre, so a page that turned
+    // keeps its content about its middle.
+    const doc = page.kind === 'document';
+    const dx = doc
+      ? moved.x - page.rect.x
+      : moved.x + moved.width / 2 - (page.rect.x + page.rect.width / 2);
+    const dy = doc
+      ? moved.y - page.rect.y
+      : moved.y + moved.height / 2 - (page.rect.y + page.rect.height / 2);
     return dx === 0 && dy === 0 ? null : { dx, dy };
   };
   const elements = tab.elements.map((el): Element => {

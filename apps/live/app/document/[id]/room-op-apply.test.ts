@@ -186,3 +186,22 @@ describe('two people pressing one done check', () => {
     expect(marks(next)).toEqual(['a', 'b']);
   });
 });
+
+describe('applyRoomOpToTabs: documents', () => {
+  const P = (id: string, text = id) => ({ id, type: 'paragraph' as const, runs: [{ text }] });
+
+  it("applies a peer's block ops, merging with ours", () => {
+    const base = tab({ docs: { f: { blocks: [P('a'), P('b')] } } });
+    const mine = tab({ docs: { f: { blocks: [P('a', 'mine'), P('b')] } } });
+    const theirs = tab({ docs: { f: { blocks: [P('a'), P('b', 'theirs')] } } });
+    let tabs = [mine];
+    for (const op of tabBroadcastOps(base, theirs)) tabs = applyRoomOpToTabs(tabs, op);
+    expect(tabs[0]!.docs!.f!.blocks).toEqual([P('a', 'mine'), P('b', 'theirs')]);
+  });
+
+  it('removes a document, and drops the field with the last one', () => {
+    const tabs = [tab({ docs: { f: { blocks: [P('a')] } } })];
+    const op: RoomOp = { kind: 'doc', tabId: 't1', flow: 'f', removed: true };
+    expect(applyRoomOpToTabs(tabs, op)[0]!.docs).toBeUndefined();
+  });
+});

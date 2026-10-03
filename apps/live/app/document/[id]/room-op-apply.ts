@@ -1,5 +1,7 @@
 import {
+  applyDocOps,
   applyElementDelta,
+  docsOf,
   applyElementOp,
   applyVoteDelta,
   mergeIncomingElement,
@@ -70,6 +72,22 @@ export function applyRoomOpToTabs(tabs: Tab[], op: RoomOp): Tab[] {
           if (!META_SKIP.has(key)) delete (merged as Record<string, unknown>)[key];
         }
         return merged;
+      });
+    case 'doc':
+      // ONE document's writing, block by block (docs/specs/007-editor/document-pages.md
+      // "Collaboration"): two people writing different blocks merge.
+      return updateTab(tabs, op.tabId, (tab) => {
+        const docs = { ...docsOf(tab) };
+        if ('removed' in op) {
+          if (!(op.flow in docs)) return tab;
+          delete docs[op.flow];
+        } else {
+          docs[op.flow] = applyDocOps(docs[op.flow], op.ops);
+        }
+        if (Object.keys(docs).length > 0) return { ...tab, docs };
+        const { docs: _drop, ...rest } = tab;
+        void _drop;
+        return rest;
       });
     case 'document-meta': {
       // Rename / reorder / add / delete. Reorder to match; a new id lands as a

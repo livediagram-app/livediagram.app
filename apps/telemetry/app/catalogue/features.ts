@@ -272,8 +272,8 @@ export const ILLUSTRATE_PAGES = chart(
   'Tab',
   'Changed',
   'Illustrate Pages Added and Deleted',
-  'A page added to an Illustrate tab from the plus after its last page, or deleted from its settings.',
-  { types: ['PageAdded', 'PageRemoved'] },
+  'A page added to an Illustrate tab from the plus after its last page (an infographic page, or a new document), or deleted from its settings.',
+  { types: ['PageAdded', 'DocumentPageAdded', 'PageRemoved'] },
 );
 
 // An Illustrate page's own settings (docs/specs/007-editor/illustrate-pages.md).

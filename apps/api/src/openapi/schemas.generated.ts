@@ -2074,6 +2074,419 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
+  "DocAlign": {
+    "enum": [
+      "left",
+      "center",
+      "right",
+      "justify"
+    ],
+    "type": "string"
+  },
+  "DocBlock": {
+    "anyOf": [
+      {
+        "$ref": "#/components/schemas/DocParagraphBlock"
+      },
+      {
+        "$ref": "#/components/schemas/DocListBlock"
+      },
+      {
+        "$ref": "#/components/schemas/DocCodeBlock"
+      },
+      {
+        "$ref": "#/components/schemas/DocDividerBlock"
+      },
+      {
+        "$ref": "#/components/schemas/DocPageBreakBlock"
+      },
+      {
+        "$ref": "#/components/schemas/DocZoneBlock"
+      }
+    ]
+  },
+  "DocCodeBlock": {
+    "additionalProperties": false,
+    "properties": {
+      "id": {
+        "type": "string"
+      },
+      "text": {
+        "type": "string"
+      },
+      "type": {
+        "const": "code",
+        "type": "string"
+      }
+    },
+    "required": [
+      "id",
+      "type",
+      "text"
+    ],
+    "type": "object"
+  },
+  "DocDividerBlock": {
+    "additionalProperties": false,
+    "properties": {
+      "id": {
+        "type": "string"
+      },
+      "type": {
+        "const": "divider",
+        "type": "string"
+      }
+    },
+    "required": [
+      "id",
+      "type"
+    ],
+    "type": "object"
+  },
+  "DocFlow": {
+    "additionalProperties": false,
+    "properties": {
+      "blocks": {
+        "items": {
+          "$ref": "#/components/schemas/DocBlock"
+        },
+        "type": "array"
+      },
+      "style": {
+        "$ref": "#/components/schemas/DocStyle"
+      }
+    },
+    "required": [
+      "blocks"
+    ],
+    "type": "object"
+  },
+  "DocLineSpacing": {
+    "enum": [
+      "single",
+      "onehalf",
+      "double"
+    ],
+    "type": "string"
+  },
+  "DocListBlock": {
+    "additionalProperties": false,
+    "properties": {
+      "align": {
+        "$ref": "#/components/schemas/DocAlign"
+      },
+      "checked": {
+        "const": true,
+        "type": "boolean"
+      },
+      "id": {
+        "type": "string"
+      },
+      "level": {
+        "type": "number"
+      },
+      "list": {
+        "$ref": "#/components/schemas/DocListKind"
+      },
+      "runs": {
+        "items": {
+          "$ref": "#/components/schemas/DocRun"
+        },
+        "type": "array"
+      },
+      "type": {
+        "const": "list",
+        "type": "string"
+      }
+    },
+    "required": [
+      "id",
+      "type",
+      "list",
+      "runs"
+    ],
+    "type": "object"
+  },
+  "DocListKind": {
+    "enum": [
+      "bullet",
+      "numbered",
+      "todo"
+    ],
+    "type": "string"
+  },
+  "DocLookId": {
+    "enum": [
+      "clean",
+      "classic",
+      "report",
+      "notebook",
+      "bold"
+    ],
+    "type": "string"
+  },
+  "DocMargins": {
+    "enum": [
+      "narrow",
+      "normal",
+      "wide"
+    ],
+    "type": "string"
+  },
+  "DocPageBreakBlock": {
+    "additionalProperties": false,
+    "properties": {
+      "id": {
+        "type": "string"
+      },
+      "type": {
+        "const": "pageBreak",
+        "type": "string"
+      }
+    },
+    "required": [
+      "id",
+      "type"
+    ],
+    "type": "object"
+  },
+  "DocParagraphBlock": {
+    "additionalProperties": false,
+    "properties": {
+      "align": {
+        "$ref": "#/components/schemas/DocAlign"
+      },
+      "id": {
+        "type": "string"
+      },
+      "runs": {
+        "items": {
+          "$ref": "#/components/schemas/DocRun"
+        },
+        "type": "array"
+      },
+      "style": {
+        "$ref": "#/components/schemas/DocParagraphStyle"
+      },
+      "type": {
+        "const": "paragraph",
+        "type": "string"
+      }
+    },
+    "required": [
+      "id",
+      "type",
+      "runs"
+    ],
+    "type": "object"
+  },
+  "DocParagraphSpacing": {
+    "enum": [
+      "none",
+      "normal",
+      "wide"
+    ],
+    "type": "string"
+  },
+  "DocParagraphStyle": {
+    "enum": [
+      "body",
+      "title",
+      "subtitle",
+      "h1",
+      "h2",
+      "h3",
+      "quote"
+    ],
+    "type": "string"
+  },
+  "DocRules": {
+    "enum": [
+      "none",
+      "title",
+      "headings"
+    ],
+    "type": "string"
+  },
+  "DocRun": {
+    "additionalProperties": false,
+    "description": "A stretch of text with one formatting. `text` may hold '\\n', a line break inside the block.",
+    "properties": {
+      "b": {
+        "const": true,
+        "type": "boolean"
+      },
+      "code": {
+        "const": true,
+        "type": "boolean"
+      },
+      "color": {
+        "type": "string"
+      },
+      "hl": {
+        "type": "string"
+      },
+      "href": {
+        "type": "string"
+      },
+      "i": {
+        "const": true,
+        "type": "boolean"
+      },
+      "s": {
+        "const": true,
+        "type": "boolean"
+      },
+      "sub": {
+        "const": true,
+        "type": "boolean"
+      },
+      "sup": {
+        "const": true,
+        "type": "boolean"
+      },
+      "text": {
+        "type": "string"
+      },
+      "u": {
+        "const": true,
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "text"
+    ],
+    "type": "object"
+  },
+  "DocStyle": {
+    "additionalProperties": false,
+    "description": "A document's look (docs/specs/007-editor/document-pages.md \"Document style\"). Every field is optional, absent being its default (`resolveDocStyle`).",
+    "properties": {
+      "accent": {
+        "type": "string"
+      },
+      "accentHeadings": {
+        "type": "boolean"
+      },
+      "bodyFont": {
+        "type": "string"
+      },
+      "headingFont": {
+        "type": "string"
+      },
+      "lineSpacing": {
+        "$ref": "#/components/schemas/DocLineSpacing"
+      },
+      "look": {
+        "$ref": "#/components/schemas/DocLookId"
+      },
+      "margins": {
+        "$ref": "#/components/schemas/DocMargins"
+      },
+      "pageNumbers": {
+        "type": "boolean"
+      },
+      "paragraphSpacing": {
+        "$ref": "#/components/schemas/DocParagraphSpacing"
+      },
+      "rules": {
+        "$ref": "#/components/schemas/DocRules"
+      },
+      "textSize": {
+        "$ref": "#/components/schemas/DocTextSize"
+      }
+    },
+    "type": "object"
+  },
+  "DocTextSize": {
+    "enum": [
+      "small",
+      "normal",
+      "large"
+    ],
+    "type": "string"
+  },
+  "DocZoneAlign": {
+    "enum": [
+      "left",
+      "center",
+      "right"
+    ],
+    "type": "string"
+  },
+  "DocZoneAt": {
+    "additionalProperties": false,
+    "properties": {
+      "page": {
+        "type": "string"
+      },
+      "x": {
+        "type": "number"
+      },
+      "y": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "page",
+      "x",
+      "y"
+    ],
+    "type": "object"
+  },
+  "DocZoneBlock": {
+    "additionalProperties": false,
+    "properties": {
+      "align": {
+        "$ref": "#/components/schemas/DocZoneAlign"
+      },
+      "at": {
+        "$ref": "#/components/schemas/DocZoneAt"
+      },
+      "height": {
+        "type": "number"
+      },
+      "id": {
+        "type": "string"
+      },
+      "type": {
+        "const": "zone",
+        "type": "string"
+      },
+      "width": {
+        "type": "number"
+      },
+      "wrap": {
+        "$ref": "#/components/schemas/DocZoneWrap"
+      },
+      "zone": {
+        "$ref": "#/components/schemas/DocZoneKind"
+      }
+    },
+    "required": [
+      "id",
+      "type",
+      "zone",
+      "width",
+      "height"
+    ],
+    "type": "object"
+  },
+  "DocZoneKind": {
+    "enum": [
+      "object",
+      "drawing"
+    ],
+    "type": "string"
+  },
+  "DocZoneWrap": {
+    "enum": [
+      "inline",
+      "left",
+      "right"
+    ],
+    "type": "string"
+  },
   "Document": {
     "additionalProperties": false,
     "properties": {
@@ -3476,7 +3889,14 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "background": {
         "$ref": "#/components/schemas/PageBackground"
       },
+      "flow": {
+        "type": "string"
+      },
       "id": {
+        "type": "string"
+      },
+      "kind": {
+        "const": "document",
         "type": "string"
       },
       "name": {
@@ -5502,6 +5922,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "defaultTextSize": {
         "$ref": "#/components/schemas/TextSize"
+      },
+      "docs": {
+        "additionalProperties": {
+          "$ref": "#/components/schemas/DocFlow"
+        },
+        "type": "object"
       },
       "elements": {
         "items": {

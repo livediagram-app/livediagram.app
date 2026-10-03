@@ -14,6 +14,7 @@ import { isSelfDrawingShape } from './data-shapes';
 import type { TabKind } from './tab-kind';
 import type { EditorMode } from './editor-mode';
 import type { IllustratePage, PageOrientation } from './illustrate-page';
+import type { DocFlow } from './doc-flow';
 import type { TabTimer, TabVote } from './session';
 
 // Layer type used by the `Tab.layers` field below (docs/specs/006-document/layers.md). Type-only
@@ -288,6 +289,10 @@ export type Tab = {
   // in row order, each portrait or landscape, that everyone lays the tab out on. Absent = one page
   // (read via `illustratePagesOf`).
   pages?: IllustratePage[];
+  // The writing of the tab's document pages, by flow id (docs/specs/007-editor/document-pages.md):
+  // each document's blocks and style, shared by its pages (`IllustratePage.flow`). Read via
+  // `docsOf`; synced block by block (the `doc` room op), never in a `tab-meta` patch.
+  docs?: Record<string, DocFlow>;
   // Legacy: a single page's orientation, from before multiple pages. Read as one page when `pages`
   // is absent; dropped the first time the pages change (`withIllustratePages`).
   pageOrientation?: PageOrientation;
@@ -368,6 +373,9 @@ export * from './editor-mode';
 export * from './illustrate-page';
 export * from './illustrate-page-content';
 export * from './illustrate-paginate';
+export * from './doc-flow';
+export * from './doc-flow-ops';
+export * from './doc-pages';
 export { migrateWhiteboardKind } from './legacy-whiteboard-tab';
 export { downgradeLinks, upgradeLegacyLinks } from './legacy-links';
 

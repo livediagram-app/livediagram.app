@@ -183,3 +183,46 @@ describe('comment author ids stay off the wire (docs/specs/012-collaboration/col
     expect(wire(tabBroadcastOps(undefined, after))).not.toContain('owner-secret');
   });
 });
+
+describe('tabBroadcastOps: documents (docs/specs/007-editor/document-pages.md "Collaboration")', () => {
+  const P = (id: string, text = id) => ({ id, type: 'paragraph' as const, runs: [{ text }] });
+  const withDoc = (...blocks: ReturnType<typeof P>[]) => tab({ docs: { f: { blocks } } });
+
+  it('sends the writing as block ops, never in a tab-meta patch', () => {
+    const before = withDoc(P('a'), P('b'));
+    const after = withDoc(P('a', 'A!'), P('b'));
+    expect(tabBroadcastOps(before, after)).toEqual([
+      {
+        kind: 'doc',
+        tabId: 't1',
+        flow: 'f',
+        ops: [{ kind: 'put', block: P('a', 'A!'), after: null, before: 'b' }],
+      },
+    ]);
+  });
+
+  it('says a removed document by name', () => {
+    expect(tabBroadcastOps(withDoc(P('a')), tab())).toEqual([
+      { kind: 'doc', tabId: 't1', flow: 'f', removed: true },
+    ]);
+  });
+
+  it('keeps the writing out of a whole-tab op, sending it as block ops after', () => {
+    const after = withDoc(P('a'));
+    const ops = tabBroadcastOps(undefined, after);
+    expect(ops[0]).toEqual({ kind: 'tab', tabId: 't1', tab: tab() });
+    expect(ops[1]).toMatchObject({ kind: 'doc', flow: 'f', ops: [{ kind: 'put' }] });
+  });
+
+  it('splits a large change into frames the room will carry', () => {
+    const big = Array.from({ length: 30 }, (_, i) => P(`b${i}`, 'x'.repeat(19_000)));
+    const ops = tabBroadcastOps(tab(), withDoc(...big));
+    expect(ops.length).toBeGreaterThan(1);
+    for (const op of ops) expect(JSON.stringify(op).length).toBeLessThan(256 * 1024);
+  });
+
+  it("keeps the receiver's writing through a whole-tab merge", () => {
+    const local = withDoc(P('mine'));
+    expect(mergeRemoteTab(local, tab()).docs).toBe(local.docs);
+  });
+});

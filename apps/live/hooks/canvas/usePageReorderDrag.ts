@@ -3,22 +3,43 @@
 // threshold stays a click (the label frames its page); past it, the gesture is a reorder: the drop
 // slot follows the pointer (where the dragged page's centre would land among the others), drawn
 // as a marker in the gap, and the release moves the page there with its content. Escape cancels.
+// A document page drags its whole document: the row is moved in units (a page, or a document), so
+// no slot falls inside a document.
 import { useCallback, useEffect, useRef, useState, type PointerEvent } from 'react';
-import type { LaidOutPage } from '@livediagram/document';
+import { pageUnits, type LaidOutPage, type PageRect } from '@livediagram/document';
 
 // Screen px a press must travel before it is a drag rather than a click.
 const DRAG_THRESHOLD = 6;
 
-export type PageReorder = { pageId: string; slot: number };
+// The dragged page and its unit's pages (it, or its whole document), and the slot among the other
+// units it would land in.
+export type PageReorder = { pageId: string; pageIds: readonly string[]; slot: number };
 
-/** The slot (0 first) a page lands in when its centre is at `centreX`: after every other page
- *  whose centre lies left of it. */
+/** The row's units laid out: each a page or a whole document, with the rect its sheets span. */
+export function laidOutUnits(
+  pages: readonly LaidOutPage[],
+): { pageIds: string[]; rect: PageRect }[] {
+  const byId = new Map(pages.map((p) => [p.id, p.rect]));
+  return pageUnits(pages).map(({ pageIds }) => {
+    const rects = pageIds.map((id) => byId.get(id)!);
+    const x = Math.min(...rects.map((r) => r.x));
+    const y = Math.min(...rects.map((r) => r.y));
+    const right = Math.max(...rects.map((r) => r.x + r.width));
+    const bottom = Math.max(...rects.map((r) => r.y + r.height));
+    return { pageIds, rect: { x, y, width: right - x, height: bottom - y } };
+  });
+}
+
+/** The slot (0 first) a page's unit lands in when its centre is at `centreX`: after every other
+ *  unit whose centre lies left of it. */
 export function reorderSlot(
   pages: readonly LaidOutPage[],
   pageId: string,
   centreX: number,
 ): number {
-  return pages.filter((p) => p.id !== pageId && p.rect.x + p.rect.width / 2 < centreX).length;
+  return laidOutUnits(pages).filter(
+    (u) => !u.pageIds.includes(pageId) && u.rect.x + u.rect.width / 2 < centreX,
+  ).length;
 }
 
 export function usePageReorderDrag({
@@ -54,10 +75,11 @@ export function usePageReorderDrag({
     return () => window.removeEventListener('keydown', onKey, true);
   }, [reorder, cancel]);
 
+  const unitOf = (pageId: string) => laidOutUnits(pages).find((u) => u.pageIds.includes(pageId));
   const slotAt = (pageId: string, screenDx: number) => {
-    const page = pages.find((p) => p.id === pageId);
-    if (!page) return 0;
-    return reorderSlot(pages, pageId, page.rect.x + page.rect.width / 2 + screenDx / zoom);
+    const unit = unitOf(pageId);
+    if (!unit) return 0;
+    return reorderSlot(pages, pageId, unit.rect.x + unit.rect.width / 2 + screenDx / zoom);
   };
 
   const handlers = (pageId: string) => ({
@@ -71,11 +93,15 @@ export function usePageReorderDrag({
     },
     onPointerMove: (e: PointerEvent<HTMLElement>) => {
       const p = press.current;
-      if (!p || p.pageId !== pageId || !onMove || pages.length < 2) return;
+      if (!p || p.pageId !== pageId || !onMove || laidOutUnits(pages).length < 2) return;
       const dx = e.clientX - p.x;
       if (!p.dragging && Math.abs(dx) < DRAG_THRESHOLD) return;
       p.dragging = true;
-      setReorder({ pageId, slot: slotAt(pageId, dx) });
+      setReorder({
+        pageId,
+        pageIds: unitOf(pageId)?.pageIds ?? [pageId],
+        slot: slotAt(pageId, dx),
+      });
     },
     onPointerUp: (e: PointerEvent<HTMLElement>) => {
       const p = press.current;

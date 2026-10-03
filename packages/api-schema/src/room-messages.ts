@@ -1,4 +1,4 @@
-import type { ElementDelta, ElementOp, QaNote, Tab } from '@livediagram/document';
+import type { DocOp, ElementDelta, ElementOp, QaNote, Tab } from '@livediagram/document';
 import type { ParticipantPresence } from './index';
 import type { AvatarConfig } from './avatar';
 import type { LivePoll } from './poll';
@@ -135,6 +135,9 @@ export const MUTATION_OP_KINDS = [
   // (docs/specs/012-collaboration/collab-race-hardening.md). A mutation for the same reasons as a dot.
   'el-delta',
   'document-meta',
+  // One document's writing changing, block by block (docs/specs/007-editor/document-pages.md
+  // "Collaboration"): two people writing different paragraphs merge, as `el` does for elements.
+  'doc',
   'poll-start',
   'poll-end',
 ] as const;
@@ -385,6 +388,11 @@ export type RoomOp =
   // element fields: a whole-element `el` update replaced a peer's copy with the
   // sender's snapshot, so two people pressing the same done check lost a mark.
   | { kind: 'el-delta'; tabId: string; elementId: string; delta: ElementDelta }
+  // A document's writing on a tab changed (docs/specs/007-editor/document-pages.md
+  // "Collaboration"): its block ops, applied by block id, or the whole document gone (`removed`).
+  // `Tab.docs` never rides a `tab-meta` patch, which would replace every document wholesale.
+  | { kind: 'doc'; tabId: string; flow: string; ops: DocOp[] }
+  | { kind: 'doc'; tabId: string; flow: string; removed: true }
   | {
       kind: 'vote';
       tabId: string;

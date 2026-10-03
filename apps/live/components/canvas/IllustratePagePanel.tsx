@@ -39,7 +39,7 @@ const GAP = 6;
 const PAGE_EASE_MS = 200;
 
 export type PagePreview = { pageId: string; patch: Partial<PageBackground> } | null;
-export type PagePanelTab = 'page' | 'layouts';
+export type PagePanelTab = 'page' | 'layouts' | 'style';
 
 export function IllustratePagePanel({
   page,
@@ -51,8 +51,11 @@ export function IllustratePagePanel({
   onPreview,
   onLayoutPreview,
   onClose,
+  documentStyle = null,
 }: {
   page: LaidOutPage;
+  // A document page's Style tab (docs/specs/007-editor/document-pages.md "Document style").
+  documentStyle?: ReactNode;
   count: number;
   // The cog the panel hangs from, looked up when placed.
   getAnchor: () => HTMLElement | undefined;
@@ -66,7 +69,12 @@ export function IllustratePagePanel({
 }) {
   const panel = useRef<HTMLDivElement>(null);
   const mobile = useIsMobileViewport();
-  const [tab, setTab] = useState<PagePanelTab>(initialTab);
+  // A tab a page of this kind lacks (Layouts on a document page) opens as Page.
+  const [tab, setTab] = useState<PagePanelTab>(
+    (initialTab === 'layouts' && page.flow) || (initialTab === 'style' && !page.flow)
+      ? 'page'
+      : initialTab,
+  );
   const [pos, setPos] = useState<{ left: number; top: number } | null>(null);
 
   // The anchor lookup is a fresh closure each render: read through a ref so placing stays stable.
@@ -142,6 +150,7 @@ export function IllustratePagePanel({
       />
       <PanelTabs
         tab={tab}
+        document={!!page.flow}
         onTab={(next) => {
           // Leaving Layouts takes its preview (a pending Replace's too) off the page.
           if (next !== 'layouts') onLayoutPreview(null);
@@ -162,6 +171,8 @@ export function IllustratePagePanel({
             onPreview={preview}
           />
         </>
+      ) : tab === 'style' ? (
+        documentStyle
       ) : (
         <LayoutsSection
           page={page}
@@ -174,7 +185,7 @@ export function IllustratePagePanel({
           onPreview={onLayoutPreview}
         />
       )}
-      <PageActions page={page} count={count} edit={edit} onClose={() => onClose(false)} />
+      <PageActions page={page} edit={edit} onClose={() => onClose(false)} />
     </>
   );
   const label = `${title} settings`;
@@ -220,10 +231,19 @@ export function IllustratePagePanel({
 
 // Page (its size and paint) or Layouts (what to start it with): the shared segmented control,
 // its highlight sliding between the two.
-function PanelTabs({ tab, onTab }: { tab: PagePanelTab; onTab: (t: PagePanelTab) => void }) {
+function PanelTabs({
+  tab,
+  document,
+  onTab,
+}: {
+  tab: PagePanelTab;
+  // A document page's second tab is Style; an infographic page's is Layouts.
+  document: boolean;
+  onTab: (t: PagePanelTab) => void;
+}) {
   const tabs: [PagePanelTab, string][] = [
     ['page', 'Page'],
-    ['layouts', 'Layouts'],
+    document ? ['style', 'Style'] : ['layouts', 'Layouts'],
   ];
   return (
     <div className="px-3 pt-2">
@@ -334,41 +354,41 @@ function ActionButton({
 }
 
 // Duplicate, move left, move right, delete: one row of icon buttons, each disabled where it has
-// nothing to do (the row's ends, the page limit, the last page).
+// nothing to do (the row's ends, the page limit, the last page). On a document page each acts on
+// the whole document, and says so.
 function PageActions({
   page,
-  count,
   edit,
   onClose,
 }: {
   page: LaidOutPage;
-  count: number;
   edit: IllustratePageEdits;
   onClose: () => void;
 }) {
   const { duplicatePage, removePage } = edit;
+  const noun = page.flow ? 'document' : 'page';
   return (
     <div className="mt-1 flex gap-1 border-t border-slate-100 px-2 pt-1.5 dark:border-slate-800">
       <ActionButton
-        label="Duplicate page"
+        label={`Duplicate ${noun}`}
         onClick={duplicatePage ? () => duplicatePage(page.id) : undefined}
       >
         <DuplicateIcon className="h-4 w-4" />
       </ActionButton>
       <ActionButton
-        label="Move page left"
-        onClick={page.index > 0 ? () => edit.movePage(page.id, -1) : undefined}
+        label={`Move ${noun} left`}
+        onClick={edit.canMove(page.id, -1) ? () => edit.movePage(page.id, -1) : undefined}
       >
         <ChevronLeftIcon className="h-4 w-4" />
       </ActionButton>
       <ActionButton
-        label="Move page right"
-        onClick={page.index < count - 1 ? () => edit.movePage(page.id, 1) : undefined}
+        label={`Move ${noun} right`}
+        onClick={edit.canMove(page.id, 1) ? () => edit.movePage(page.id, 1) : undefined}
       >
         <ChevronRightIcon className="h-4 w-4" />
       </ActionButton>
       <ActionButton
-        label="Delete page"
+        label={`Delete ${noun}`}
         danger
         onClick={
           removePage

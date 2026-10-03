@@ -5,6 +5,8 @@ import {
   ILLUSTRATE_PAGE_GAP,
   MAX_ILLUSTRATE_PAGES,
   illustratePageAt,
+  isDocumentPage,
+  pageKindOf,
   illustratePageFitBox,
   illustratePagesOf,
   layOutIllustratePages,
@@ -145,5 +147,48 @@ describe('withIllustratePages', () => {
       y: 0,
     });
     expect(moved.to).toBe(arrow.type === 'arrow' ? arrow.to : null);
+  });
+});
+
+describe('page kinds', () => {
+  const D = (id: string, flow?: string, extra: Partial<IllustratePage> = {}): IllustratePage => ({
+    id,
+    orientation: 'portrait',
+    kind: 'document',
+    ...(flow ? { flow } : {}),
+    ...extra,
+  });
+
+  it('read a page with no kind as an infographic, and a document page with its flow', () => {
+    const [a, b, c] = illustratePagesOf({
+      pages: [P('a'), D('b', 'doc-1'), { ...P('c'), kind: 'poster', flow: 'doc-9' }],
+    });
+    expect(pageKindOf(a!)).toBe('infographic');
+    expect(b).toEqual(D('b', 'doc-1'));
+    expect(c).toEqual(P('c'));
+  });
+
+  it('read a document page with no flow as a document of its own', () => {
+    expect(illustratePagesOf({ pages: [D('b')] })).toEqual([D('b', 'b')]);
+  });
+
+  it("keep a document's pages together, each like its first", () => {
+    const pages = illustratePagesOf({
+      pages: [
+        D('d1', 'doc', { size: 'letter' }),
+        P('x'),
+        D('d2', 'doc', { orientation: 'landscape', background: { pattern: 'dots' } }),
+        P('y'),
+      ],
+    });
+    expect(pages.map((p) => p.id)).toEqual(['d1', 'd2', 'x', 'y']);
+    expect(pages[1]).toEqual(D('d2', 'doc', { size: 'letter' }));
+    expect(isDocumentPage(pages[1]!)).toBe(true);
+  });
+
+  it('give back the same pages when a document is already together', () => {
+    const stored = [P('x'), D('d1', 'doc'), D('d2', 'doc')];
+    const read = illustratePagesOf({ pages: stored });
+    expect(read).toEqual(stored);
   });
 });

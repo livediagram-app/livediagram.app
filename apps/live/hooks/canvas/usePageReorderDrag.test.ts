@@ -17,3 +17,27 @@ describe('reorderSlot', () => {
     expect(reorderSlot(pages, 'c', centre(0) - 1)).toBe(0);
   });
 });
+
+describe('reorderSlot with documents', () => {
+  const row = layOutIllustratePages([
+    { id: 'a', orientation: 'portrait' },
+    { id: 'd1', orientation: 'portrait', kind: 'document', flow: 'f' },
+    { id: 'd2', orientation: 'portrait', kind: 'document', flow: 'f' },
+    { id: 'c', orientation: 'portrait' },
+  ]);
+  const mid = (id: string) => {
+    const r = row.find((p) => p.id === id)!.rect;
+    return r.x + r.width / 2;
+  };
+
+  it('counts a document as one unit, so no slot falls inside it', () => {
+    // Past the first sheet of the document but short of its middle: still before it.
+    expect(reorderSlot(row, 'a', mid('d1') + 1)).toBe(0);
+    expect(reorderSlot(row, 'a', mid('d2') + 1)).toBe(1);
+    expect(reorderSlot(row, 'c', mid('a') - 1)).toBe(0);
+  });
+
+  it("moves a document by any of its pages' labels", () => {
+    expect(reorderSlot(row, 'd2', mid('c') + 1)).toBe(2);
+  });
+});

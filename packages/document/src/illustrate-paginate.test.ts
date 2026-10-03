@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { contentClusters, withContentPaginated } from './illustrate-paginate';
 import { elementIdsOnPage } from './illustrate-page-content';
-import { layOutIllustratePages } from './illustrate-page';
+import { layOutIllustratePages, MAX_ILLUSTRATE_PAGES } from './illustrate-page';
 import type { Element } from './index';
 
 // docs/specs/007-editor/illustrate-pages.md "Into pages".
@@ -110,7 +110,7 @@ describe('withContentPaginated', () => {
   });
 
   it('at the page limit, fits stray content onto the last page instead of adding one', () => {
-    const pages = Array.from({ length: 20 }, (_, i) => ({
+    const pages = Array.from({ length: MAX_ILLUSTRATE_PAGES }, (_, i) => ({
       id: `p${i}`,
       orientation: 'portrait' as const,
     }));
@@ -118,8 +118,22 @@ describe('withContentPaginated', () => {
       elements: [box('kept', -50, -30), box('stray', 0, 9000)],
       pages,
     })!;
-    expect(out.pages).toHaveLength(20);
+    expect(out.pages).toHaveLength(MAX_ILLUSTRATE_PAGES);
     const laid = layOutIllustratePages(out.pages);
-    expect(elementIdsOnPage(out.elements, laid, 'p19').has('stray')).toBe(true);
+    expect(elementIdsOnPage(out.elements, laid, `p${MAX_ILLUSTRATE_PAGES - 1}`).has('stray')).toBe(
+      true,
+    );
+  });
+});
+
+describe('withContentPaginated: how many pages', () => {
+  it('lays content out onto at most twenty new pages', () => {
+    const many = Array.from({ length: 30 }, (_, i) => box(`b${i}`, i * 2000, 9000));
+    const out = withContentPaginated({
+      elements: many,
+      pages: [{ id: 'p0', orientation: 'portrait' }],
+    })!;
+    // Nothing was on the one page, so the tab is laid out afresh: twenty pages, no more.
+    expect(out.pages).toHaveLength(20);
   });
 });

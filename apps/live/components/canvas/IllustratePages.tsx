@@ -2,14 +2,24 @@
 
 import { useCallback, useRef, useState, type CSSProperties } from 'react';
 import { lucidePanelsTopLeft, lucideSettings } from '@livediagram/icons/lucide';
-import { ILLUSTRATE_PAGE_GAP, pageLabel, type LaidOutPage } from '@livediagram/document';
+import {
+  ILLUSTRATE_PAGE_GAP,
+  pageLabel,
+  type LaidOutPage,
+  type PageKind,
+} from '@livediagram/document';
 import { HoverCard, lucideGlyph, PlusIcon, Tooltip } from '@livediagram/ui';
 import type { IllustratePagesView } from '@/hooks/editor/useIllustratePages';
 import { InfographicLayoutPreview } from './InfographicLayoutPreview';
-import { usePageReorderDrag, type PageReorder } from '@/hooks/canvas/usePageReorderDrag';
+import {
+  laidOutUnits,
+  usePageReorderDrag,
+  type PageReorder,
+} from '@/hooks/canvas/usePageReorderDrag';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { pageSheetStyle, withBackgroundPatch } from '@/lib/illustrate-page-paint';
 import { IllustratePagePanel, type PagePanelTab, type PagePreview } from './IllustratePagePanel';
+import { AddPagePopover } from './AddPagePopover';
 
 const CogIcon = lucideGlyph(lucideSettings, 16);
 const LayoutIcon = lucideGlyph(lucidePanelsTopLeft, 14);
@@ -99,7 +109,7 @@ export function IllustratePages({
             key={page.id}
             data-illustrate-page={page.orientation}
             className={`pointer-events-none absolute transition-[left,top,width,height,opacity] duration-200 ease-out motion-reduce:transition-none ${
-              drag.reorder?.pageId === page.id ? 'opacity-60' : ''
+              drag.reorder?.pageIds.includes(page.id) ? 'opacity-60' : ''
             } ${
               background?.fill
                 ? ''
@@ -203,7 +213,19 @@ export function IllustratePages({
   );
 }
 
-function AddPageButton({ x, zoom, onAdd }: { x: number; zoom: number; onAdd: () => void }) {
+// The + after the last page: opens "Add a page" (AddPagePopover) to choose the kind.
+function AddPageButton({
+  x,
+  zoom,
+  onAdd,
+}: {
+  x: number;
+  zoom: number;
+  onAdd: (kind: PageKind) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const button = useRef<HTMLButtonElement>(null);
+  const getAnchor = useCallback(() => button.current, []);
   return (
     <div
       className="pointer-events-auto absolute transition-[left] duration-200 ease-out motion-reduce:transition-none"
@@ -214,14 +236,32 @@ function AddPageButton({ x, zoom, onAdd }: { x: number; zoom: number; onAdd: () 
     >
       <Tooltip label="Add page">
         <button
+          ref={button}
           type="button"
           aria-label="Add page"
-          onClick={onAdd}
-          className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-slate-600 shadow-md ring-1 ring-slate-200 transition hover:bg-slate-50 hover:text-slate-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700 dark:hover:bg-slate-700 dark:hover:text-slate-100"
+          aria-haspopup="dialog"
+          aria-expanded={open}
+          data-add-page-trigger
+          onClick={() => setOpen((o) => !o)}
+          className={`flex h-9 w-9 items-center justify-center rounded-full shadow-md ring-1 transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 ${
+            open
+              ? 'bg-brand-600 text-white ring-brand-600 dark:bg-brand-600'
+              : 'bg-white text-slate-600 ring-slate-200 hover:bg-slate-50 hover:text-slate-900 dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700 dark:hover:bg-slate-700 dark:hover:text-slate-100'
+          }`}
         >
           <PlusIcon />
         </button>
       </Tooltip>
+      {open ? (
+        <AddPagePopover
+          getAnchor={getAnchor}
+          onAdd={onAdd}
+          onClose={(restoreFocus) => {
+            setOpen(false);
+            if (restoreFocus) button.current?.focus();
+          }}
+        />
+      ) : null}
     </div>
   );
 }
@@ -302,7 +342,7 @@ function ReorderMarker({
   reorder: PageReorder;
   zoom: number;
 }) {
-  const others = pages.filter((p) => p.id !== reorder.pageId);
+  const others = laidOutUnits(pages).filter((u) => !u.pageIds.includes(reorder.pageId));
   const before = others[reorder.slot - 1];
   const after = others[reorder.slot];
   const x = before
