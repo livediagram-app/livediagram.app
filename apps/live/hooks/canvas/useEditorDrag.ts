@@ -385,6 +385,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
             dy,
             noSnap,
             guidesOn: depsRef.current.alignmentGuidesRef.current ?? true,
+            pageSnapBoxes: depsRef.current.pageSnapBoxes ?? undefined,
             // Free placement (Cmd/Ctrl) skips the lanes with everything else:
             // the modifier means "I know where I want this".
             timeline: notesEligible && !noSnap ? ES_LANES : null,
@@ -457,6 +458,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
             shiftHeld: e.shiftKey,
             dragAspectLocked: drag.aspectLocked,
             guidesOn: depsRef.current.alignmentGuidesRef.current ?? true,
+            pageSnapBoxes: depsRef.current.pageSnapBoxes ?? undefined,
           });
           if (!resize) return;
           if (resize.guides !== null) scheduleGuides(resize.guides);

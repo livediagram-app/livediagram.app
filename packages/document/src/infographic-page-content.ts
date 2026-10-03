@@ -8,12 +8,13 @@ import {
   infographicPageAt,
   infographicPagesOf,
   layOutInfographicPages,
+  pageMargin,
   withInfographicPages,
   type InfographicPage,
   type LaidOutPage,
   type PageFill,
 } from './infographic-page';
-import { isBoxed, type Element, type Endpoint, type Tab } from './index';
+import { isBoxed, type Element, type Endpoint, type ShapeElement, type Tab } from './index';
 
 type Point = { x: number; y: number };
 
@@ -172,4 +173,28 @@ export function elementPageSurfaces(
     if (surface) out.set(el.id, surface);
   }
   return out;
+}
+
+/** What a move or resize in Infographic mode snaps to besides other elements: each page's edges
+ *  and centre lines, and its margins (docs/specs/007-editor/infographic-pages.md "Snapping to the
+ *  page"). Never drawn or stored: stand-in boxes the alignment snap measures, one for the sheet
+ *  and one for its margin box, with ids no element can take. */
+export function infographicPageSnapBoxes(pages: readonly LaidOutPage[]): ShapeElement[] {
+  return pages.flatMap((page) => {
+    const m = pageMargin(page);
+    const { x, y, width, height } = page.rect;
+    const box = (id: string, bx: number, by: number, w: number, h: number): ShapeElement => ({
+      id,
+      type: 'shape',
+      shape: 'square',
+      x: bx,
+      y: by,
+      width: w,
+      height: h,
+    });
+    return [
+      box(`page-snap:${page.id}`, x, y, width, height),
+      box(`page-margin:${page.id}`, x + m, y + m, width - 2 * m, height - 2 * m),
+    ];
+  });
 }

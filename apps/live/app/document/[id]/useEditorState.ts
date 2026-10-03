@@ -20,6 +20,7 @@ import {
   stampNewElementLayers,
   voteHidesCursors,
   elementActions,
+  infographicPageSnapBoxes,
   type BoxedElement,
   type CommentMention,
   type Element,
@@ -2784,6 +2785,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     autoRebindArrowsRef,
     styleNewElement: styleMemory.styleNewElement,
     alignmentGuidesRef,
+    pageSnapBoxes: infographicPages ? infographicPageSnapBoxes(infographicPages.pages) : null,
     isPinchingRef,
     // Insert between (docs/specs/021-event-storming/event-storming.md): dragging a note already on the board into a
     // gap, while Alt is held. Same gate the palette drag uses, so both entry
