@@ -10,47 +10,47 @@ cited as `PRn`.
 
 It builds on the sibling blueprints and calls what they provide by these names:
 
-| Provided by      | Name used here                                                                      | What it is                                                                       |
-| ---------------- | ----------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
-| share-roles      | `ShareRole`, `TokenRole`                                                            | The levels on grants, tickets, room sessions and tokens; no member is named here |
-| share-roles      | `gateParticipate`, `gateEdit` `(ctx, id, ownerId, teamId, tabId?)`                  | True when the caller's grant and its token (if any) pass that gate               |
-| share-roles      | The write choke point's route-gate matcher                                          | Lets a token's write reach a route only when the token passes that route's gate  |
-| agent-changesets | `ctx.token: { id, ownerId, role } \| null` on `RouteContext`                        | The presenting API token, null for a session or a guest                          |
-| agent-changesets | `roomStubFor` returns a stub for every server-stored document                       | Rooms for personal documents                                                     |
-| agent-changesets | `upsertTabAtRev(env, documentId, tab, orderIndex, rev)`, `tabs.rev`                 | The compare-and-swap tab write; every write increments `rev`                     |
-| agent-changesets | `agentFrontDoor(request): 'Mcp' \| 'Cli' \| 'Api'`                                  | The telemetry type of an agent request                                           |
-| agent-changesets | The changeset route's success step                                                  | Calls `refreshAgentPresence` here                                                |
-| document         | `tabRefs(tab)`, `resolveRef(tab, input)` in `packages/document/src/element-refs.ts` | Refs and ref resolution                                                          |
-| document-views   | `viewLabel(el)`, `readingOrder(elements)`                                           | The view label, reading order                                                    |
+| Provided by      | Name used here                                                                                | What it is                                                                       |
+| ---------------- | --------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| share-roles      | `ShareRole`, `TokenRole`                                                                      | The levels on grants, tickets, room sessions and tokens; no member is named here |
+| share-roles      | `gateParticipate`, `gateEdit` `(ctx, id, ownerId, teamId, tabId?)`                            | True when the caller's grant and its token (if any) pass that gate               |
+| share-roles      | The write choke point's route-gate matcher                                                    | Lets a token's write reach a route only when the token passes that route's gate  |
+| agent-changesets | `ctx.token: { id, ownerId, role } \| null` on `RouteContext`                                  | The presenting API token, null for a session or a guest                          |
+| agent-changesets | `roomStubFor` returns a stub for every server-stored document                                 | Rooms for personal documents                                                     |
+| agent-changesets | `upsertTabAtRev(env, documentId, tab, orderIndex, rev)`, `tabs.rev`                           | The compare-and-swap tab write; every write increments `rev`                     |
+| agent-changesets | `agentFrontDoor(request): 'Mcp' \| 'Cli' \| 'Api'`                                            | The telemetry type of an agent request                                           |
+| agent-changesets | The changeset route's success step                                                            | Calls `refreshAgentPresence` here                                                |
+| document         | `tabRefs(tab)`, `resolveRef(tab, input)` in `packages/document/src/element-refs.ts` (planned) | Refs and ref resolution                                                          |
+| document-views   | `viewLabel(el)`, `readingOrder(elements)`                                                     | The view label, reading order                                                    |
 
 Scope, by file:
 
 | File                                                                                                   | Role                                                                                             |
 | ------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------ |
-| `packages/api-schema/src/agent-presence.ts`                                                            | Constants, `AgentPresence` (wire), `AgentPresenceRequest`, `parseAgentPresenceRequest`, codes    |
-| `packages/api-schema/src/comment-threads.ts`                                                           | `COMMENT_LIST_STATUSES`, `CommentListStatus`, `DocumentCommentThread`, `COMMENT_TEXT_MAX`        |
+| `packages/api-schema/src/agent-presence.ts` (planned)                                                  | Constants, `AgentPresence` (wire), `AgentPresenceRequest`, `parseAgentPresenceRequest`, codes    |
+| `packages/api-schema/src/comment-threads.ts` (planned)                                                 | `COMMENT_LIST_STATUSES`, `CommentListStatus`, `DocumentCommentThread`, `COMMENT_TEXT_MAX`        |
 | `packages/api-schema/src/room-messages.ts`                                                             | The `presence` frame gains `agents: AgentPresence[]`                                             |
 | `packages/api-schema/src/index.ts`                                                                     | Re-exports the two new modules                                                                   |
 | `packages/api-schema/src/telemetry-schema.ts`, `server-emitted-events.ts`                              | Action `Present` (category `Agent`); `Agent·Present` is server-emitted                           |
 | `packages/document/src/comments.ts`                                                                    | `Comment.tokenId`; `withoutCommentAuthorId` strips it too                                        |
-| `apps/api/migrations/0068_ws_ticket_person_tag.sql`                                                    | `ws_tickets.person_tag` (PR1)                                                                    |
+| `apps/api/migrations/0068_ws_ticket_person_tag.sql` (planned)                                          | `ws_tickets.person_tag` (PR1)                                                                    |
 | `apps/api/src/db/ws-tickets.ts`                                                                        | `WsAdmission.personTag`; written at mint, returned at consume                                    |
 | `apps/api/src/db/tabs.ts`                                                                              | `tabIdsWithComments(env, documentId)`                                                            |
-| `apps/api/src/person-tag.ts`                                                                           | `personTagFor(documentId, ownerId)`                                                              |
+| `apps/api/src/person-tag.ts` (planned)                                                                 | `personTagFor(documentId, ownerId)`                                                              |
 | `apps/api/src/comments.ts`                                                                             | `tokenId` locked by `rewriteCommentAuthors`, blanked by `redactCommentAuthorIds`; `threadsOfTab` |
-| `apps/api/src/routes/comment-routes.ts`                                                                | `handleCommentRoutes`: add, delete-own (moved, PR28), reply, resolve, reopen, list               |
-| `apps/api/src/routes/agent-presence-routes.ts`                                                         | `handleAgentPresenceRoute`: `PUT` / `DELETE .../tabs/:tabId/presence`                            |
+| `apps/api/src/routes/comment-routes.ts` (planned)                                                      | `handleCommentRoutes`: add, delete-own (moved, PR28), reply, resolve, reopen, list               |
+| `apps/api/src/routes/agent-presence-routes.ts` (planned)                                               | `handleAgentPresenceRoute`: `PUT` / `DELETE .../tabs/:tabId/presence`                            |
 | `apps/api/src/routes/document-subresource-routes.ts`                                                   | Dispatches to the two handlers above; loses the inline add and delete-own                        |
 | `apps/api/src/routes/context.ts`                                                                       | `deniedOnTab` moves here from the subresource routes; `deniedParticipate`                        |
 | `apps/api/src/routes/document-room-routes.ts`                                                          | The mint stores the person tag; the upgrade sets `X-Verified-Person`                             |
 | `apps/api/src/room-client.ts`                                                                          | `putAgentPresence`, `deleteAgentPresence`, `refreshAgentPresence`; `relayElementDelta` logs      |
-| `apps/api/src/room-agent-presence.ts`                                                                  | `RoomAgentPresence` (storage, set, refresh, clear, sweep) and the pure `agentRosterFor`          |
+| `apps/api/src/room-agent-presence.ts` (planned)                                                        | `RoomAgentPresence` (storage, set, refresh, clear, sweep) and the pure `agentRosterFor`          |
 | `apps/api/src/document-room.ts`                                                                        | `PUT` / `DELETE /presence`, restore, `armAlarm`, `alarm`, roster, clears on trash and revoke     |
 | `apps/api/src/index.ts`                                                                                | The comment routes and presence among the participation-class routes of the choke point matcher  |
 | `apps/api/src/openapi/manifest.ts`, `schemas.generated.ts`, `apps/api/scripts/gen-openapi-schemas.mjs` | Six new routes, `tokenUsable` on the comment routes, the new schemas                             |
 | `apps/live/lib/api/room.ts`                                                                            | `onPresence(participants, agents)`                                                               |
 | `apps/live/lib/api/tabs.ts`                                                                            | `apiResolveThread`, `apiReopenThread`                                                            |
-| `apps/live/lib/agent-presence-rows.ts`                                                                 | `splitPresenceFrame`, `foldAgentPresence`, `buildAgentFocusByElement`                            |
+| `apps/live/lib/agent-presence-rows.ts` (planned)                                                       | `splitPresenceFrame`, `foldAgentPresence`, `buildAgentFocusByElement`                            |
 | `apps/live/lib/identity.ts`                                                                            | `Participant.statusLine`, `Participant.agent`                                                    |
 | `apps/live/lib/collaborator-roster.ts`                                                                 | `peopleCount` leaves agent rows out; `participantBadges` reads the agent's level                 |
 | `apps/live/app/document/[id]/usePresenceState.ts`, `useRoomConnection.ts`                              | `agentPresence` state, set from the frame                                                        |
@@ -58,7 +58,7 @@ Scope, by file:
 | `apps/live/hooks/collab/useEditorComments.ts`                                                          | A non-edit session resolves and reopens through the endpoints                                    |
 | `apps/live/components/primitives/ParticipantAvatar.tsx`                                                | The status line in the hover card and the accessible name                                        |
 | `apps/live/components/dialogs/CollaboratorsDialog.tsx`                                                 | The status line on a row; no Follow on an agent row                                              |
-| `apps/live/components/canvas/AgentFocusRings.tsx`, `CanvasElementsLayer.tsx`                           | Focus rings beside `LaserOverlay`                                                                |
+| `apps/live/components/canvas/AgentFocusRings.tsx` (planned), `CanvasElementsLayer.tsx`                 | Focus rings beside `LaserOverlay`                                                                |
 | `apps/telemetry/app/catalogue/`                                                                        | The `Present` series on the Agent stack the agent-changesets blueprint adds                      |
 
 ## Domain and naming
@@ -461,29 +461,29 @@ client's copy.
 
 ## Testing
 
-| Spec rule                                                        | Test                                                                                                                                                                |
-| ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Presence and comments carry the owner's name and colour          | `apps/api/src/routes/agent-presence-routes.test.ts`, `comment-routes.test.ts`                                                                                       |
-| The token id is recorded on every comment, never shown as a name | `comment-routes.test.ts`, `apps/api/src/comments.test.ts`, `packages/document/src/comments.test.ts`                                                                 |
-| Appears in the stack as its owner, with a status line            | `apps/live/lib/agent-presence-rows.test.ts` (also a personal document, two tokens of one owner, the owner's own agent)                                              |
-| Owner with the tab open: shown once, status beside them          | `agent-presence-rows.test.ts`, `apps/api/src/room-agent-presence.test.ts` (`agentRosterFor`)                                                                        |
-| Every changeset refreshes for `AGENT_PRESENCE_TTL_MS`            | `room-agent-presence.test.ts`; the changeset route test (agent-changesets)                                                                                          |
-| PUT `status` (80), `focus` (20), `ttl` (max); DELETE clears      | `packages/api-schema/src/agent-presence.test.ts`, `agent-presence-routes.test.ts`                                                                                   |
-| The agent holds no socket                                        | `apps/api/src/document-room-agents.test.ts` (entries with no socket, restored on wake)                                                                              |
-| The room expires entries on their ttl                            | `document-room-agents.test.ts` (alarm, sweep, shared with the facilitator grace)                                                                                    |
-| Never holds an element                                           | `document-room-agents.test.ts` (`/selections`), `agent-presence-rows.test.ts` (lock map)                                                                            |
-| Never in a head count, the Done check or a roll call             | `agent-presence-rows.test.ts` (`splitPresenceFrame`), `collaborator-roster.test.ts`, `document-room-agents.test.ts` (multiplayer)                                   |
-| An agent comments through the comment endpoints                  | `comment-routes.test.ts` (token caller)                                                                                                                             |
-| Reply, resolve, reopen, each relayed as an `el-delta`            | `comment-routes.test.ts` (fake room stub records the deltas)                                                                                                        |
-| Agents and people use the same endpoints                         | `comment-routes.test.ts` (session, guest Participant link, token); `apps/live/lib/api/tabs.test.ts`                                                                 |
-| The cross-tab list, status filter, ref and label                 | `comment-routes.test.ts`; `apps/api/src/db/tabs.test.ts` (`tabIdsWithComments`)                                                                                     |
-| Agents cannot be mentioned                                       | `packages/document/src/comment-mentions.test.ts` (closed mention shape)                                                                                             |
-| Levels: reading, participation (comments, presence), changesets  | `apps/api/src/index.test.ts` (choke point), `comment-routes.test.ts`, `agent-presence-routes.test.ts`                                                               |
-| The two constants                                                | `packages/api-schema/src/agent-presence.test.ts` pins values and order                                                                                              |
-| Logs and telemetry                                               | the route and room tests assert each fingerprint; `server-emitted-events.test.ts`                                                                                   |
-| Person tag through the ticket                                    | `apps/api/src/db/ws-tickets.test.ts`, `routes/document-room-routes.test.ts`                                                                                         |
-| OpenAPI parity                                                   | `apps/api/src/openapi/route-parity.test.ts`, `manifest.test.ts`                                                                                                     |
-| End to end, dark mode                                            | `apps/live/e2e/agent-presence.spec.ts`: a token sets presence, the avatar and status show, a ring draws, a short ttl expires it, a REST reply and resolve land live |
+| Spec rule                                                        | Test                                                                                                                                                                          |
+| ---------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Presence and comments carry the owner's name and colour          | `apps/api/src/routes/agent-presence-routes.test.ts` (planned), `comment-routes.test.ts`                                                                                       |
+| The token id is recorded on every comment, never shown as a name | `comment-routes.test.ts`, `apps/api/src/comments.test.ts`, `packages/document/src/comments.test.ts`                                                                           |
+| Appears in the stack as its owner, with a status line            | `apps/live/lib/agent-presence-rows.test.ts` (planned) (also a personal document, two tokens of one owner, the owner's own agent)                                              |
+| Owner with the tab open: shown once, status beside them          | `agent-presence-rows.test.ts`, `apps/api/src/room-agent-presence.test.ts` (planned) (`agentRosterFor`)                                                                        |
+| Every changeset refreshes for `AGENT_PRESENCE_TTL_MS`            | `room-agent-presence.test.ts`; the changeset route test (agent-changesets)                                                                                                    |
+| PUT `status` (80), `focus` (20), `ttl` (max); DELETE clears      | `packages/api-schema/src/agent-presence.test.ts` (planned), `agent-presence-routes.test.ts`                                                                                   |
+| The agent holds no socket                                        | `apps/api/src/document-room-agents.test.ts` (planned) (entries with no socket, restored on wake)                                                                              |
+| The room expires entries on their ttl                            | `document-room-agents.test.ts` (alarm, sweep, shared with the facilitator grace)                                                                                              |
+| Never holds an element                                           | `document-room-agents.test.ts` (`/selections`), `agent-presence-rows.test.ts` (lock map)                                                                                      |
+| Never in a head count, the Done check or a roll call             | `agent-presence-rows.test.ts` (`splitPresenceFrame`), `collaborator-roster.test.ts`, `document-room-agents.test.ts` (multiplayer)                                             |
+| An agent comments through the comment endpoints                  | `comment-routes.test.ts` (token caller)                                                                                                                                       |
+| Reply, resolve, reopen, each relayed as an `el-delta`            | `comment-routes.test.ts` (fake room stub records the deltas)                                                                                                                  |
+| Agents and people use the same endpoints                         | `comment-routes.test.ts` (session, guest Participant link, token); `apps/live/lib/api/tabs.test.ts`                                                                           |
+| The cross-tab list, status filter, ref and label                 | `comment-routes.test.ts`; `apps/api/src/db/tabs.test.ts` (`tabIdsWithComments`)                                                                                               |
+| Agents cannot be mentioned                                       | `packages/document/src/comment-mentions.test.ts` (closed mention shape)                                                                                                       |
+| Levels: reading, participation (comments, presence), changesets  | `apps/api/src/index.test.ts` (choke point), `comment-routes.test.ts`, `agent-presence-routes.test.ts`                                                                         |
+| The two constants                                                | `packages/api-schema/src/agent-presence.test.ts` (planned) pins values and order                                                                                              |
+| Logs and telemetry                                               | the route and room tests assert each fingerprint; `server-emitted-events.test.ts`                                                                                             |
+| Person tag through the ticket                                    | `apps/api/src/db/ws-tickets.test.ts`, `routes/document-room-routes.test.ts`                                                                                                   |
+| OpenAPI parity                                                   | `apps/api/src/openapi/route-parity.test.ts`, `manifest.test.ts`                                                                                                               |
+| End to end, dark mode                                            | `apps/live/e2e/agent-presence.spec.ts` (planned): a token sets presence, the avatar and status show, a ring draws, a short ttl expires it, a REST reply and resolve land live |
 
 Room and route tests run on the in-memory storage and SQLite fakes with a fixed clock; none waits on a real timer.
 

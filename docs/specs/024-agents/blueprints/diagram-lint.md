@@ -11,31 +11,31 @@ Scope, by file:
 | File                                                                  | Role                                                                                                      |
 | --------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
 | `packages/diagram-lint/{package.json,tsconfig.json,eslint.config.js}` | The package `@livediagram/diagram-lint`; depends on `@livediagram/document` and `@livediagram/api-schema` |
-| `packages/diagram-lint/vitest.config.ts`                              | `defineProject`, node environment, 100% coverage thresholds (as `explorer-lens`)                          |
-| `packages/diagram-lint/src/index.ts`                                  | The barrel: `lintTab`, `lintGraph`, `compareGraphLayouts`, the formatters, the constants                  |
-| `packages/diagram-lint/src/constants.ts`                              | Every `LINT_*` constant (see Constants)                                                                   |
-| `packages/diagram-lint/src/context.ts`                                | `prepareLintContext`: visible elements, index, refs, boxes, arrows, polylines, grid, labels, containers   |
-| `packages/diagram-lint/src/boxes.ts`                                  | `isLintBox`, `boxCorners`, `boxBounds`, `overlapDepth` (separating axes), `holdsWholly`                   |
-| `packages/diagram-lint/src/arrow-names.ts`                            | `arrowName` (`orders→bus`), `arrowSelector` (`orders->bus` or the arrow's ref)                            |
+| `packages/diagram-lint/vitest.config.ts` (planned)                    | `defineProject`, node environment, 100% coverage thresholds (as `explorer-lens`)                          |
+| `packages/diagram-lint/src/index.ts` (planned)                        | The barrel: `lintTab`, `lintGraph`, `compareGraphLayouts`, the formatters, the constants                  |
+| `packages/diagram-lint/src/constants.ts` (planned)                    | Every `LINT_*` constant (see Constants)                                                                   |
+| `packages/diagram-lint/src/context.ts` (planned)                      | `prepareLintContext`: visible elements, index, refs, boxes, arrows, polylines, grid, labels, containers   |
+| `packages/diagram-lint/src/boxes.ts` (planned)                        | `isLintBox`, `boxCorners`, `boxBounds`, `overlapDepth` (separating axes), `holdsWholly`                   |
+| `packages/diagram-lint/src/arrow-names.ts` (planned)                  | `arrowName` (`orders→bus`), `arrowSelector` (`orders->bus` or the arrow's ref)                            |
 | `packages/diagram-lint/src/checks/<code>.ts`                          | One file per finding code, each `(ctx: LintContext) => LintFinding[]`                                     |
-| `packages/diagram-lint/src/checks/index.ts`                           | `LINT_CHECKS`: the thirteen checks in code order                                                          |
-| `packages/diagram-lint/src/measures.ts`                               | `lintExtent`, `crossingPairs` (shared by the summary and `edge-crossings`)                                |
-| `packages/diagram-lint/src/flow.ts`                                   | `inferFlow`: the flow direction of a tab, or null                                                         |
-| `packages/diagram-lint/src/theme-colours.ts`                          | `themeColourSet`: every fill or stroke a built-in theme can paint                                         |
-| `packages/diagram-lint/src/fixes.ts`                                  | `fixFor(code, source, subject)`: the fix catalogue                                                        |
-| `packages/diagram-lint/src/order.ts`                                  | `sortFindings`                                                                                            |
-| `packages/diagram-lint/src/format.ts`                                 | `lintSummaryLine`, `lintVerdict`, `lintFooterPart`, `formatLintReport`, `quoteLabel`                      |
-| `packages/diagram-lint/src/lint.ts`                                   | `lintTab`, `lintGraph`                                                                                    |
-| `packages/diagram-lint/src/compare.ts`                                | `compareGraphLayouts`, `formatCompareTable`, `parseCompareDimensions`                                     |
-| `packages/diagram-lint/src/log.ts`                                    | `LintLogger`, `consoleLintLogger`, the `[lint]` fingerprints                                              |
+| `packages/diagram-lint/src/checks/index.ts` (planned)                 | `LINT_CHECKS`: the thirteen checks in code order                                                          |
+| `packages/diagram-lint/src/measures.ts` (planned)                     | `lintExtent`, `crossingPairs` (shared by the summary and `edge-crossings`)                                |
+| `packages/diagram-lint/src/flow.ts` (planned)                         | `inferFlow`: the flow direction of a tab, or null                                                         |
+| `packages/diagram-lint/src/theme-colours.ts` (planned)                | `themeColourSet`: every fill or stroke a built-in theme can paint                                         |
+| `packages/diagram-lint/src/fixes.ts` (planned)                        | `fixFor(code, source, subject)`: the fix catalogue                                                        |
+| `packages/diagram-lint/src/order.ts` (planned)                        | `sortFindings`                                                                                            |
+| `packages/diagram-lint/src/format.ts` (planned)                       | `lintSummaryLine`, `lintVerdict`, `lintFooterPart`, `formatLintReport`, `quoteLabel`                      |
+| `packages/diagram-lint/src/lint.ts` (planned)                         | `lintTab`, `lintGraph`                                                                                    |
+| `packages/diagram-lint/src/compare.ts` (planned)                      | `compareGraphLayouts`, `formatCompareTable`, `parseCompareDimensions`                                     |
+| `packages/diagram-lint/src/log.ts` (planned)                          | `LintLogger`, `consoleLintLogger`, the `[lint]` fingerprints                                              |
 | `packages/diagram-lint/src/fixtures/*.ts`                             | One fixture tab per code (finding and clean twin), the 15-node architecture graph                         |
-| `packages/api-schema/src/lint.ts`, `index.ts`                         | Wire types: `LINT_CODES`, `LINT_SEVERITY`, `LintFinding`, `LintReport`, `LintMeasures`                    |
-| `packages/api-schema/src/document-views.ts`                           | `VIEW_NAMES` gains `lint`                                                                                 |
+| `packages/api-schema/src/lint.ts` (planned), `index.ts`               | Wire types: `LINT_CODES`, `LINT_SEVERITY`, `LintFinding`, `LintReport`, `LintMeasures`                    |
+| `packages/api-schema/src/document-views.ts` (planned)                 | `VIEW_NAMES` gains `lint`                                                                                 |
 | `packages/document/src/svg-render-primitives.ts`                      | `LABEL_ESTIMATE_CHAR_EM`, `estimatedLabelMeasure`; `labelMeasure`'s fallback calls it                     |
 | `packages/document/src/svg-render-describe.ts`, `svg-render.ts`       | `drawsStandardLabel` (lifted from `svgBoxed`'s label condition) and `labelRoom`                           |
-| `packages/document/src/graph-input.ts`                                | The moved MCP graph input: `layoutGraph(input, { makeEdgeId })` passes the id option through              |
+| `packages/document/src/graph-input.ts` (planned)                      | The moved MCP graph input: `layoutGraph(input, { makeEdgeId })` passes the id option through              |
 | `packages/document/src/{element-refs,containment}.ts`                 | Shared homes, consumed here: `elementRefs`, `isContainer`, `containerMap`                                 |
-| `apps/api/src/routes/document-views-route.ts`                         | `answerTabView` answers `view=lint` with `lintTab`                                                        |
+| `apps/api/src/routes/document-views-route.ts` (planned)               | `answerTabView` answers `view=lint` with `lintTab`                                                        |
 | `apps/api/src` changeset route (agent-changesets blueprint)           | Lints the result tab; `lintFooterPart` fills the footer's lint slot; `lint` on the response               |
 | `apps/mcp/src/tools.ts`, `output-schema.ts`, `package.json`           | `create_document`, `add_tab`, `update_document` append the summary line                                   |
 | `apps/cli/src/commands/{tab,graph}.ts` (CLI blueprint)                | `tab lint` reads the view; `graph lint` lints locally; `--json`, `--compare`, exit codes                  |
@@ -175,7 +175,7 @@ not a graph source (LN37).
 
 ## Interfaces and contracts
 
-`packages/api-schema/src/lint.ts` (wire types live with every DTO the api emits, LN25):
+`packages/api-schema/src/lint.ts` (planned) (wire types live with every DTO the api emits, LN25):
 
 ```ts
 export const LINT_CODES = [
@@ -449,15 +449,15 @@ added: the front doors already count the verbs (`Cli·Used·TabLint`, `Cli·Used
 | Spec rule                                                              | Test                                                                                                       |
 | ---------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
 | Each code fires on its fixture and not on its clean twin (13 × 2)      | `packages/diagram-lint/src/checks/<code>.test.ts`                                                          |
-| A box wholly inside another is not an overlap                          | `checks/box-overlap.test.ts`                                                                               |
-| `node-isolated` judges shapes only; stickies, tables, images never     | `checks/node-isolated.test.ts`                                                                             |
-| Group codes judge frames, not lanes; centre containment                | `checks/group-escape.test.ts`, `checks/group-split-edges.test.ts`                                          |
-| A themed element: theme colours, presets and swatches are not reported | `checks/colour-on-themed.test.ts` (single-colour, multicolour, UML, Default, custom)                       |
-| Severity per code is the spec's                                        | `packages/api-schema/src/lint.test.ts`                                                                     |
+| A box wholly inside another is not an overlap                          | `checks/box-overlap.test.ts` (planned)                                                                     |
+| `node-isolated` judges shapes only; stickies, tables, images never     | `checks/node-isolated.test.ts` (planned)                                                                   |
+| Group codes judge frames, not lanes; centre containment                | `checks/group-escape.test.ts` (planned), `checks/group-split-edges.test.ts` (planned)                      |
+| A themed element: theme colours, presets and swatches are not reported | `checks/colour-on-themed.test.ts` (planned) (single-colour, multicolour, UML, Default, custom)             |
+| Severity per code is the spec's                                        | `packages/api-schema/src/lint.test.ts` (planned)                                                           |
 | Refs, message and fix of every code; every finding has a fix           | `checks/<code>.test.ts`; `fixes.test.ts`                                                                   |
 | Refs are the views' refs                                               | `lint.test.ts`: every ref is `elementRefs(tab.elements)`'s for its element                                 |
 | Deterministic: same tab, same report, same order                       | `lint.test.ts`: two runs deep-equal; `order.test.ts`: severity, code, position, refs                       |
-| One fixture pins each code                                             | `fixtures/index.test.ts`: every `LINT_CODES` entry has a fixture                                           |
+| One fixture pins each code                                             | `fixtures/index.test.ts` (planned): every `LINT_CODES` entry has a fixture                                 |
 | Bounded: above `LINT_MAX_ARROWS` only crossings skip, summary says so  | `lint.test.ts`: 301 arrows → `skipped.crossings`, `crossings skipped (301 arrows)`, other codes still fire |
 | Pair checks stay within budget                                         | `lint.perf.test.ts`: 300 boxes, 300 arrows under `LINT_BUDGET_CPU_MS` via `cpuMsOf`                        |
 | Logs `[lint] run` with counts, never content                           | `log.test.ts`: fields hold only numbers, booleans and the source; no id, ref or label                      |
@@ -465,13 +465,13 @@ added: the front doors already count the verbs (`Cli·Used·TabLint`, `Cli·Used
 | One finding a line, refs first, fix last, columns, elision             | `format.test.ts`, including the spec's example output byte for byte                                        |
 | `quoteLabel` strips controls and cuts                                  | `format.test.ts`                                                                                           |
 | `--compare` enumerates, measures, marks the best                       | `compare.test.ts`; `parseCompareDimensions` rejections                                                     |
-| Measured architecture: tier groups cross, no groups ranks best         | `compare.test.ts` over `fixtures/shop-architecture.ts` (the research's 15 nodes)                           |
-| Graph-authored boxes never overflow their labels                       | `checks/label-overflow.test.ts`: `labelBoxSize` boxes over a label corpus lint clean                       |
+| Measured architecture: tier groups cross, no groups ranks best         | `compare.test.ts` over `fixtures/shop-architecture.ts` (planned) (the research's 15 nodes)                 |
+| Graph-authored boxes never overflow their labels                       | `checks/label-overflow.test.ts` (planned): `labelBoxSize` boxes over a label corpus lint clean             |
 | Every tab fix parses as edit operations (placeholders filled)          | `fixes.test.ts` with the edit-operations parser                                                            |
 | Templates draw without errors                                          | `templates.test.ts`: every `@livediagram/templates` kind lints with 0 errors                               |
-| Headless renders and the lint measure alike                            | `packages/document/src/svg-render-primitives.test.ts`: fallback is `estimatedLabelMeasure`                 |
+| Headless renders and the lint measure alike                            | `packages/document/src/svg-render-primitives.test.ts` (planned): fallback is `estimatedLabelMeasure`       |
 | `drawsStandardLabel`, `labelRoom`, `makeEdgeId`                        | Their `packages/document` tests; the `svg-render` suites unchanged                                         |
-| The api serves the lint as a view, text and `json=1`, read gate        | `apps/api/src/routes/document-views-route.test.ts` (real SQLite)                                           |
+| The api serves the lint as a view, text and `json=1`, read gate        | `apps/api/src/routes/document-views-route.test.ts` (planned) (real SQLite)                                 |
 | A changeset's footer carries the verdict; whole tab; dry run; failure  | The changeset route tests (agent-changesets blueprint)                                                     |
 | MCP write results carry the summary line; other writes do not          | `apps/mcp/src/tools.test.ts`; `output-schema.test.ts`                                                      |
 | `tab lint`, `graph lint`, `--json`, `--compare`, exit 1 on errors      | `apps/cli/src/commands/{tab,graph}.test.ts` (CLI blueprint)                                                |

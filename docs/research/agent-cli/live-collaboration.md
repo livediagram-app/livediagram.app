@@ -388,8 +388,8 @@ Webber decided these four forks; specs should record them when this work is spec
   <https://liveblocks.io/docs/get-started/nextjs-ai-presence>.
 - tldraw agent starter kit (verified): <https://tldraw.dev/starter-kits/agent>.
 - Yjs (verified): <https://docs.yjs.dev/api/about-awareness>, <https://docs.yjs.dev/api/undo-manager>.
-- Hocuspocus (verified in source): `packages/server/src/Hocuspocus.ts` (`openDirectConnection`),
-  `packages/server/src/DirectConnection.ts` (`transact`, `disconnect`),
+- Hocuspocus (verified in source): Hocuspocus's packages/server/src/Hocuspocus.ts (`openDirectConnection`),
+  Hocuspocus's packages/server/src/DirectConnection.ts (`transact`, `disconnect`),
   <https://github.com/ueberdosis/hocuspocus>.
 - Recalled, not re-checked in this research: Figma multiplayer (Figma engineering blog, "How
   Figma's multiplayer technology works"), Figma AI, Google Docs Suggesting mode and Gemini,

@@ -512,8 +512,8 @@ These are product decisions, not research conclusions:
 
 ## Sources
 
-- tldraw agent starter kit: README, `templates/agent/shared/schema/AgentActionSchemas.ts`
-  (`place`, `review`), `shared/types/AgentCanvasLint.ts`, `client/agent/managers/AgentLintManager.ts`,
+- tldraw agent starter kit: README, tldraw's templates/agent/shared/schema/AgentActionSchemas.ts
+  (`place`, `review`), tldraw's shared/types/AgentCanvasLint.ts, tldraw's client/agent/managers/AgentLintManager.ts,
   <https://github.com/tldraw/tldraw/tree/main/templates/agent>
 - draw.io MCP: <https://github.com/jgraph/drawio-mcp> (tools, ELK and libavoid passes)
 - mermaid-to-excalidraw: <https://github.com/excalidraw/mermaid-to-excalidraw>

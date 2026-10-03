@@ -12,40 +12,40 @@ Scope, by file:
 
 | File                                                                    | Role                                                                                                                        |
 | ----------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| `packages/document/src/element-refs.ts`                                 | Refs, slug ids and kind words: `computeRefs`, `resolveRef`, `isSlugId`, `slugIdFor`, `kindWordOf`, `isKnownElement`         |
-| `packages/document/src/containment.ts`                                  | The centre rule and the content origin: `boxCentre`, `boxHoldsPoint`, `smallestHolder`, `deriveContainers`, `contentOrigin` |
+| `packages/document/src/element-refs.ts` (planned)                       | Refs, slug ids and kind words: `computeRefs`, `resolveRef`, `isSlugId`, `slugIdFor`, `kindWordOf`, `isKnownElement`         |
+| `packages/document/src/containment.ts` (planned)                        | The centre rule and the content origin: `boxCentre`, `boxHoldsPoint`, `smallestHolder`, `deriveContainers`, `contentOrigin` |
 | `packages/document/src/mermaid-serialise.ts`                            | `mermaidFromTab` calls `smallestHolder` over frames; its output is byte-identical                                           |
 | `packages/document/src/index.ts`                                        | Re-exports `./element-refs` and `./containment`                                                                             |
-| `packages/api-schema/src/document-views.ts`                             | `VIEW_NAMES`, `ViewName`, `VIEW_QUERY`, `ViewDoor`, every view's JSON wire type, `UNKNOWN_VIEW_ERROR`                       |
-| `packages/api-schema/src/ref-errors.ts`                                 | `TARGET_NOT_FOUND_ERROR`, `TARGET_AMBIGUOUS_ERROR`, `RefCandidate`, `RefErrorBody`                                          |
+| `packages/api-schema/src/document-views.ts` (planned)                   | `VIEW_NAMES`, `ViewName`, `VIEW_QUERY`, `ViewDoor`, every view's JSON wire type, `UNKNOWN_VIEW_ERROR`                       |
+| `packages/api-schema/src/ref-errors.ts` (planned)                       | `TARGET_NOT_FOUND_ERROR`, `TARGET_AMBIGUOUS_ERROR`, `RefCandidate`, `RefErrorBody`                                          |
 | `packages/api-schema/src/telemetry-schema.ts`                           | `TELEMETRY_ACTIONS` gains `Viewed`                                                                                          |
 | `packages/api-schema/src/index.ts`                                      | Re-exports both new files                                                                                                   |
 | `packages/document-views/{package.json,tsconfig.json,eslint.config.js}` | The new package `@livediagram/document-views` (depends on `document`, `api-schema`), shaped like `explorer-lens`            |
-| `packages/document-views/vitest.config.ts`                              | 100% line, branch, function and statement thresholds                                                                        |
-| `packages/document-views/src/index.ts`                                  | The public surface: `renderView`, every view function, the budget                                                           |
-| `packages/document-views/src/constants.ts`                              | The view constants in [Constants and configuration](#constants-and-configuration)                                           |
-| `packages/document-views/src/text.ts`                                   | `cutAtWord`, `jsonString`, `attrValue`, `cellText`                                                                          |
-| `packages/document-views/src/visibility.ts`                             | `partitionVisible`: printed elements, hidden-layer elements                                                                 |
-| `packages/document-views/src/tree.ts`                                   | `buildViewTree`: `deriveContainers`, then reading order per container                                                       |
-| `packages/document-views/src/reading-order.ts`                          | `readingOrder`, `rowsOf`                                                                                                    |
-| `packages/document-views/src/freehand-runs.ts`                          | `freehandRuns`: consecutive bare strokes folded into one line                                                               |
-| `packages/document-views/src/content-summary.ts`                        | `contentSummaryOf`: entity, table, code block, charts, checklist                                                            |
-| `packages/document-views/src/state-attribute.ts`                        | `stateAttributeOf`: the one state attribute of each content kind that has one                                               |
-| `packages/document-views/src/attributes.ts`                             | `attributesOf`: the ordered attribute list of one element                                                                   |
-| `packages/document-views/src/style-attributes.ts`                       | `styleAttributesOf` for `style`                                                                                             |
-| `packages/document-views/src/edges.ts`                                  | `edgesOf`: outgoing arrows per source, own-line arrows, end rendering                                                       |
-| `packages/document-views/src/header.ts`                                 | `countElements`, `viewHeader`, `headerLine`                                                                                 |
-| `packages/document-views/src/model.ts`                                  | `buildViewModel(tab, context)`: the one model every tab view reads                                                          |
+| `packages/document-views/vitest.config.ts` (planned)                    | 100% line, branch, function and statement thresholds                                                                        |
+| `packages/document-views/src/index.ts` (planned)                        | The public surface: `renderView`, every view function, the budget                                                           |
+| `packages/document-views/src/constants.ts` (planned)                    | The view constants in [Constants and configuration](#constants-and-configuration)                                           |
+| `packages/document-views/src/text.ts` (planned)                         | `cutAtWord`, `jsonString`, `attrValue`, `cellText`                                                                          |
+| `packages/document-views/src/visibility.ts` (planned)                   | `partitionVisible`: printed elements, hidden-layer elements                                                                 |
+| `packages/document-views/src/tree.ts` (planned)                         | `buildViewTree`: `deriveContainers`, then reading order per container                                                       |
+| `packages/document-views/src/reading-order.ts` (planned)                | `readingOrder`, `rowsOf`                                                                                                    |
+| `packages/document-views/src/freehand-runs.ts` (planned)                | `freehandRuns`: consecutive bare strokes folded into one line                                                               |
+| `packages/document-views/src/content-summary.ts` (planned)              | `contentSummaryOf`: entity, table, code block, charts, checklist                                                            |
+| `packages/document-views/src/state-attribute.ts` (planned)              | `stateAttributeOf`: the one state attribute of each content kind that has one                                               |
+| `packages/document-views/src/attributes.ts` (planned)                   | `attributesOf`: the ordered attribute list of one element                                                                   |
+| `packages/document-views/src/style-attributes.ts` (planned)             | `styleAttributesOf` for `style`                                                                                             |
+| `packages/document-views/src/edges.ts` (planned)                        | `edgesOf`: outgoing arrows per source, own-line arrows, end rendering                                                       |
+| `packages/document-views/src/header.ts` (planned)                       | `countElements`, `viewHeader`, `headerLine`                                                                                 |
+| `packages/document-views/src/model.ts` (planned)                        | `buildViewModel(tab, context)`: the one model every tab view reads                                                          |
 | `packages/document-views/src/{outline,graph,layout,comments}.ts`        | One view each                                                                                                               |
 | `packages/document-views/src/{show,find,diff,overview}.ts`              | One view each                                                                                                               |
-| `packages/document-views/src/budget.ts`                                 | `estimateTokens`, `fitOutline`, `fitLines`                                                                                  |
-| `packages/document-views/src/elision.ts`                                | `elisionLine`, in the reading door's own syntax                                                                             |
-| `packages/document-views/src/render-view.ts`                            | `renderView(request, tab, context)`: the dispatcher the api and the CLI call                                                |
+| `packages/document-views/src/budget.ts` (planned)                       | `estimateTokens`, `fitOutline`, `fitLines`                                                                                  |
+| `packages/document-views/src/elision.ts` (planned)                      | `elisionLine`, in the reading door's own syntax                                                                             |
+| `packages/document-views/src/render-view.ts` (planned)                  | `renderView(request, tab, context)`: the dispatcher the api and the CLI call                                                |
 | `packages/document-views/src/__fixtures__/*.ts`                         | The checkout tab, its "after" twin, the three-tab document, the agent-built tab, the 300-element tab, the edge cases        |
 | `packages/document-views/src/__fixtures__/golden/*`                     | One golden file per view (see [Testing](#testing))                                                                          |
 | `apps/api/package.json`                                                 | Depends on `@livediagram/document-views`                                                                                    |
 | `apps/api/src/responses.ts`                                             | `textPlain(body, init)`                                                                                                     |
-| `apps/api/src/routes/document-views-route.ts`                           | `parseViewQuery`, `answerTabView`, `answerOverview`, the `Agent·Viewed` event                                               |
+| `apps/api/src/routes/document-views-route.ts` (planned)                 | `parseViewQuery`, `answerTabView`, `answerOverview`, the `Agent·Viewed` event                                               |
 | `apps/api/src/routes/document-subresource-routes.ts`                    | The tab GET hands a `view` query to `answerTabView` after its gate and redaction                                            |
 | `apps/api/src/routes/documents.ts`                                      | The document GET hands `view=overview` to `answerOverview` after its gate and redaction                                     |
 | `apps/api/src/db/tabs.ts`                                               | `tabBodiesInOrder(env, documentId, offset, limit)`                                                                          |
@@ -487,7 +487,7 @@ written in the reading door's syntax (`VW54`):
 
 ### JSON forms
 
-The `json` option returns the same model as the text, as the wire types in `packages/api-schema/src/document-views.ts`
+The `json` option returns the same model as the text, as the wire types in `packages/api-schema/src/document-views.ts` (planned)
 (`VW49`). Strings are uncut (`VW46`); the budget applies, and `elision` says what was dropped.
 
 ```ts
@@ -600,7 +600,7 @@ type OverviewView = {
 
 ### Refs on the wire
 
-`packages/api-schema/src/ref-errors.ts`: `TARGET_NOT_FOUND_ERROR = 'target_not_found'`,
+`packages/api-schema/src/ref-errors.ts` (planned): `TARGET_NOT_FOUND_ERROR = 'target_not_found'`,
 `TARGET_AMBIGUOUS_ERROR = 'target_ambiguous'` (the codes [Edit operations](../edit-operations.md#rejections) names),
 `RefCandidate = { ref, kind, label }`, `RefErrorBody = { error, message, input, candidates: RefCandidate[],
 stale: boolean }`.
@@ -769,17 +769,17 @@ Every rule maps to a deterministic test; the spec's rules are numbered here.
 
 | Rule                                                                 | Test                                                                                                                            |
 | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| R1 A slug id is its own ref                                          | `packages/document/src/element-refs.test.ts`                                                                                    |
+| R1 A slug id is its own ref                                          | `packages/document/src/element-refs.test.ts` (planned)                                                                          |
 | R2 Otherwise the shortest unique prefix, at least 4; `id:"…"` unsafe | `element-refs.test.ts` (collisions at 4, 5, an id that prefixes another, short ids, unsafe ids)                                 |
 | R3 A ref, any unique prefix or a full id resolves                    | `element-refs.test.ts`                                                                                                          |
-| R4 An ambiguous prefix is refused with candidates, never guessed     | `element-refs.test.ts`, `apps/api/src/routes/document-views-route.test.ts`                                                      |
+| R4 An ambiguous prefix is refused with candidates, never guessed     | `element-refs.test.ts`, `apps/api/src/routes/document-views-route.test.ts` (planned)                                            |
 | R5 A prefix made ambiguous by an add says so                         | `element-refs.test.ts` (`stale`), `document-views-route.test.ts`                                                                |
 | R6 A label is never a ref                                            | `element-refs.test.ts` (an element labelled like another's id)                                                                  |
 | R7 Agent-added elements take label slugs, `-2` on a clash            | `element-refs.test.ts`; `slug-id-roundtrip.test.ts` (isValidTab, `applyElementDelta`); `apps/api/src/collab-index/rows.test.ts` |
-| R8 One line per element, indentation is containment                  | `packages/document-views/src/outline.test.ts`, golden `checkout.outline.txt`                                                    |
+| R8 One line per element, indentation is containment                  | `packages/document-views/src/outline.test.ts` (planned), golden `checkout.outline.txt`                                          |
 | R9 Kind words, notations, `es:actor`                                 | `element-refs.test.ts` (kind words)                                                                                             |
 | R10 JSON strings, cut 60 / 48 on a word boundary                     | `text.test.ts`                                                                                                                  |
-| R11 Smallest frame or lane holding the centre; mind parent wins      | `packages/document/src/containment.test.ts`; `mermaid.test.ts` unchanged; `tree.test.ts`                                        |
+| R11 Smallest frame or lane holding the centre; mind parent wins      | `packages/document/src/containment.test.ts` (planned); `mermaid.test.ts` unchanged; `tree.test.ts`                              |
 | R12 Arrows on the source line; free ends on their own                | `edges.test.ts`                                                                                                                 |
 | R13 Reading order                                                    | `reading-order.test.ts`                                                                                                         |
 | R14 Content summaries and state attributes                           | `content-summary.test.ts`, `state-attribute.test.ts` (every kind in the table)                                                  |

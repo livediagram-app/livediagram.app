@@ -29,7 +29,7 @@ users doing.
 ## It reuses the frame, deliberately
 
 `shape: 'lane'`, and one predicate change. `containerContents`
-(`packages/document/src/containment.ts`) answers "which elements travel with this
+(the shared containment helper in `@livediagram/document`) answers "which elements travel with this
 container" for frames and lanes alike, by the one membership rule: an element
 belongs to the smallest frame or lane holding its centre, so a box straddling
 the edge travels when its centre is inside, and an element overlapped by two
