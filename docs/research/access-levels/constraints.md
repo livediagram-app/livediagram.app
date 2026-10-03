@@ -3,8 +3,7 @@
 Research note for the access-levels design. It asks one question: whatever levels we choose, what must
 the model honour, given how livediagram is actually built? It then weighs four candidate models against
 those constraints. Read-only research; it decides nothing. Sources are the specs and code on `main` at
-`fc2d2d650`, plus the draft spec and blueprint on the `docs/agent-cli` worktree
-(`/home/webber/Repositories/livediagram-agent-cli`), cited as _worktree_.
+`fc2d2d650`, plus the draft spec and blueprint on the `docs/agent-cli` branch, cited as _worktree_.
 
 ## Summary
 

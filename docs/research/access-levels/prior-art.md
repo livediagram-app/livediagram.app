@@ -1,7 +1,7 @@
 # Access levels: how other products do it
 
-Research for the access-levels design ([draft spec](../../../../livediagram-agent-cli/docs/specs/013-workspace/share-roles.md),
-worktree `livediagram-agent-cli`). It surveys how collaborative, whiteboarding and facilitation products name and
+Research for the access-levels design ([draft spec](../../specs/013-workspace/share-roles.md), on the
+`docs/agent-cli` branch). It surveys how collaborative, whiteboarding and facilitation products name and
 bound their access levels, and what that means for livediagram's proposed four: **Viewer**, **Participant**,
 **Editor**, with **ownership** held apart.
 
