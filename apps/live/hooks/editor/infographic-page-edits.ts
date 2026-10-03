@@ -35,6 +35,8 @@ export type InfographicPageEdits = {
   setBackground: (pageId: string, patch: Partial<PageBackground>) => void;
   // -1 left, 1 right; a no-op at the row's end.
   movePage: (pageId: string, by: -1 | 1) => void;
+  // To a place in the row (0 first), its content with it: a page's label dragged.
+  movePageTo: (pageId: string, index: number) => void;
   // Absent at the page limit.
   addPage?: () => void;
   duplicatePage?: (pageId: string) => void;
@@ -133,17 +135,22 @@ export function infographicPageEdits({
     });
     debugLog('[infographic-page] background set', { tabId, pageId, keys: Object.keys(patch) });
   };
-  const movePage = (pageId: string, by: -1 | 1) => {
+  const movePageTo = (pageId: string, index: number) => {
+    const from = current.findIndex((p) => p.id === pageId);
+    if (from < 0 || from === index) return;
     track('Tab', 'Changed', 'PageMoved');
     commitPages((ps) => {
       const i = ps.findIndex((p) => p.id === pageId);
-      const j = i + by;
-      if (i < 0 || j < 0 || j >= ps.length) return null;
-      const next = [...ps];
-      [next[i], next[j]] = [next[j]!, next[i]!];
+      if (i < 0) return null;
+      const next = ps.filter((p) => p.id !== pageId);
+      next.splice(Math.max(0, Math.min(index, next.length)), 0, ps[i]!);
       return next;
     });
-    debugLog('[infographic-page] moved', { tabId, pageId, by });
+    debugLog('[infographic-page] moved', { tabId, pageId, from, to: index });
+  };
+  const movePage = (pageId: string, by: -1 | 1) => {
+    const i = current.findIndex((p) => p.id === pageId);
+    if (i + by >= 0 && i + by < current.length) movePageTo(pageId, i + by);
   };
   // A new page takes the last page's size and orientation, on the plain paper.
   const addPage = () => {
@@ -219,6 +226,7 @@ export function infographicPageEdits({
     rename,
     setBackground,
     movePage,
+    movePageTo,
     addPage: room ? addPage : undefined,
     duplicatePage: room ? duplicatePage : undefined,
     removePage: current.length > 1 ? removePage : undefined,

@@ -149,6 +149,12 @@ From the page panel's footer:
 
 - **A page's label zooms to it**: a press on the label fits that page in the view, as entering the
   mode fits the first.
+- **Drag a page's label to reorder**: once the press travels 6 screen px sideways it is a drag (an
+  editor with two or more pages; the label shows a grab cursor). A marker bar in the gap shows
+  where the page will land (after every other page whose centre is left of the dragged page's) and
+  the dragged sheet dims; release moves it there with its content, one edit. Escape cancels.
+- **The label fits its page**: it truncates to the page's width on screen less the title bar's
+  buttons, and hides when under 40 px.
 - **Snapping to the page**: while a move or a resize is in hand in Infographic mode, an element
   snaps to the edges, the centre lines and the margins (7% of the short side) of the page it is
   on, with the same guides as element-to-element alignment.

@@ -2,9 +2,10 @@
 
 import { useCallback, useRef, useState, type CSSProperties } from 'react';
 import { lucidePanelsTopLeft, lucideSettings } from '@livediagram/icons/lucide';
-import { INFOGRAPHIC_PAGE_GAP, pageLabel } from '@livediagram/document';
+import { INFOGRAPHIC_PAGE_GAP, pageLabel, type LaidOutPage } from '@livediagram/document';
 import { HoverCard, lucideGlyph, PlusIcon, Tooltip } from '@livediagram/ui';
 import type { InfographicPagesView } from '@/hooks/editor/useInfographicPage';
+import { usePageReorderDrag, type PageReorder } from '@/hooks/canvas/usePageReorderDrag';
 import { pageSheetStyle, withBackgroundPatch } from '@/lib/infographic-page-paint';
 import {
   InfographicPagePanel,
@@ -47,6 +48,8 @@ export function InfographicPages({ view, zoom }: { view: InfographicPagesView; z
   const cogs = useRef(new Map<string, HTMLButtonElement>());
   const [preview, setPreview] = useState<PagePreview>(null);
   const last = pages[pages.length - 1]!;
+  // A label dragged sideways reorders the pages (usePageReorderDrag).
+  const drag = usePageReorderDrag({ pages, zoom, onMove: edit?.movePageTo });
   const openId = opened?.id ?? null;
   const open = edit && opened ? pages.find((p) => p.id === opened.id) : undefined;
   const close = useCallback(
@@ -90,7 +93,9 @@ export function InfographicPages({ view, zoom }: { view: InfographicPagesView; z
           <div
             key={page.id}
             data-infographic-page={page.orientation}
-            className={`pointer-events-none absolute transition-[left,top,width,height] ease-out motion-reduce:transition-none ${
+            className={`pointer-events-none absolute transition-[left,top,width,height,opacity] ease-out motion-reduce:transition-none ${
+              drag.reorder?.pageId === page.id ? 'opacity-60' : ''
+            } ${
               background?.fill
                 ? ''
                 : 'bg-white text-slate-900/10 dark:bg-slate-900 dark:text-white/10'
@@ -114,13 +119,21 @@ export function InfographicPages({ view, zoom }: { view: InfographicPagesView; z
                 ...steady(zoom, 'bottom left'),
               }}
             >
-              <HoverCard title={label} description="Press to fit this page to the screen.">
+              <HoverCard
+                title={label}
+                description="Press to fit this page to the screen."
+                className="min-w-0 max-w-full"
+              >
                 <button
                   type="button"
-                  onClick={() => focusPage(page.id)}
-                  onPointerDown={(e) => e.stopPropagation()}
+                  {...drag.handlers(page.id)}
+                  onClick={() => {
+                    if (!drag.endsDrag()) focusPage(page.id);
+                  }}
                   onDoubleClick={(e) => e.stopPropagation()}
-                  className="pointer-events-auto block max-w-full truncate whitespace-nowrap rounded px-1 py-0.5 text-xs font-medium text-slate-500 transition hover:bg-white/80 hover:text-slate-900 focus-visible:outline-2 focus-visible:outline-brand-600 dark:text-slate-400 dark:hover:bg-slate-800/80 dark:hover:text-slate-100"
+                  className={`pointer-events-auto block max-w-full truncate whitespace-nowrap rounded px-1 py-0.5 text-xs font-medium text-slate-500 transition hover:bg-white/80 hover:text-slate-900 focus-visible:outline-2 focus-visible:outline-brand-600 dark:text-slate-400 dark:hover:bg-slate-800/80 dark:hover:text-slate-100 ${
+                    edit && pages.length > 1 ? 'cursor-grab active:cursor-grabbing' : ''
+                  }`}
                 >
                   {label}
                 </button>
@@ -148,6 +161,7 @@ export function InfographicPages({ view, zoom }: { view: InfographicPagesView; z
           </div>
         );
       })}
+      {drag.reorder ? <ReorderMarker pages={pages} reorder={drag.reorder} zoom={zoom} /> : null}
       {edit?.addPage ? (
         <AddPageButton
           // Centred in a gap's width to the right of the last page, on the row's axis.
@@ -256,5 +270,36 @@ function LayoutInvite({ wide, onOpen }: { wide: boolean; onOpen: () => void }) {
         </button>
       </Tooltip>
     </div>
+  );
+}
+
+// Where a dragged page will land: a bar in the gap at its slot, the pages' height, held at one
+// screen width.
+function ReorderMarker({
+  pages,
+  reorder,
+  zoom,
+}: {
+  pages: readonly LaidOutPage[];
+  reorder: PageReorder;
+  zoom: number;
+}) {
+  const others = pages.filter((p) => p.id !== reorder.pageId);
+  const before = others[reorder.slot - 1];
+  const after = others[reorder.slot];
+  const x = before
+    ? before.rect.x + before.rect.width + INFOGRAPHIC_PAGE_GAP / 2
+    : after
+      ? after.rect.x - INFOGRAPHIC_PAGE_GAP / 2
+      : 0;
+  const top = Math.min(...pages.map((p) => p.rect.y));
+  const bottom = Math.max(...pages.map((p) => p.rect.y + p.rect.height));
+  return (
+    <div
+      aria-hidden
+      data-page-reorder-marker
+      className="pointer-events-none absolute rounded-full bg-brand-500"
+      style={{ left: x - 2 / zoom, top, width: 4 / zoom, height: bottom - top }}
+    />
   );
 }
