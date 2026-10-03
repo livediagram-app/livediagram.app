@@ -8,11 +8,7 @@ import type { InfographicPagesView } from '@/hooks/editor/useInfographicPage';
 import { InfographicLayoutPreview } from './InfographicLayoutPreview';
 import { usePageReorderDrag, type PageReorder } from '@/hooks/canvas/usePageReorderDrag';
 import { pageSheetStyle, withBackgroundPatch } from '@/lib/infographic-page-paint';
-import {
-  InfographicPagePanel,
-  type PagePanelTab,
-  type PagePreview,
-} from './InfographicPagePanel';
+import { InfographicPagePanel, type PagePanelTab, type PagePreview } from './InfographicPagePanel';
 
 const CogIcon = lucideGlyph(lucideSettings, 16);
 const LayoutIcon = lucideGlyph(lucidePanelsTopLeft, 14);
