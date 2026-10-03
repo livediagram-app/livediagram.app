@@ -138,6 +138,27 @@ describe('EditorModeSwitch chip', () => {
     expect(document.activeElement).toBe(chip());
   });
 
+  // Safari does not focus a pressed button: pressing a row blurs the focused row to nowhere first.
+  it('keeps the menu open through a blur to nowhere, so the pressed row still switches', () => {
+    const { onChange } = renderSwitch('draw');
+    fireEvent.click(chip());
+    const [diagram, draw] = screen.getAllByRole('menuitemradio');
+    fireEvent.blur(draw!, { relatedTarget: null });
+    expect(screen.queryByRole('menu')).not.toBeNull();
+    fireEvent.click(diagram!);
+    expect(onChange).toHaveBeenCalledWith('diagram');
+  });
+
+  it('closes when focus moves outside (Tab away)', () => {
+    renderSwitch('diagram');
+    const outside = document.createElement('button');
+    document.body.append(outside);
+    fireEvent.click(chip());
+    fireEvent.blur(screen.getAllByRole('menuitemradio')[0]!, { relatedTarget: outside });
+    expect(screen.queryByRole('menu')).toBeNull();
+    outside.remove();
+  });
+
   it('closes on a press outside', () => {
     renderSwitch('diagram');
     fireEvent.click(chip());

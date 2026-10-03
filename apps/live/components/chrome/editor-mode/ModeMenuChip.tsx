@@ -73,7 +73,12 @@ export function ModeMenuChip({
       ref={root}
       className="relative w-full"
       onBlur={(event) => {
-        if (open && !event.currentTarget.contains(event.relatedTarget)) setOpen(false);
+        // Close only when focus MOVES to something outside (Tab away). A blur to nowhere
+        // (relatedTarget null) is a press: Safari does not focus a pressed button, so pressing a
+        // row blurs the focused row to the body, and closing here unmounted the row before its
+        // click landed, leaving the switch dead. Presses outside are useClickOutside's.
+        const next = event.relatedTarget;
+        if (open && next && !event.currentTarget.contains(next)) setOpen(false);
       }}
     >
       {/* No hover card: it would sit over the menu the chip opens. The menu itself names the
