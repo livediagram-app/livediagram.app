@@ -54,7 +54,7 @@ export function IllustratePagePanel({
   documentStyle = null,
 }: {
   page: LaidOutPage;
-  // A document page's Style tab (docs/specs/007-editor/document-pages.md "Document style").
+  // A document page's Style tab (docs/specs/007-editor/article-pages.md "Document style").
   documentStyle?: ReactNode;
   count: number;
   // The cog the panel hangs from, looked up when placed.
@@ -366,7 +366,7 @@ function PageActions({
   onClose: () => void;
 }) {
   const { duplicatePage, removePage } = edit;
-  const noun = page.flow ? 'document' : 'page';
+  const noun = page.flow ? 'article' : 'page';
   return (
     <div className="mt-1 flex gap-1 border-t border-slate-100 px-2 pt-1.5 dark:border-slate-800">
       <ActionButton

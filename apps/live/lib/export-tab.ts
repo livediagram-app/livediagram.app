@@ -89,8 +89,8 @@ export { loadTabImages } from './export-tab-images';
 
 // Webfont embedding for downloads (docs/specs/004-interface-design/fonts.md) — the bytes travel with the file.
 import { embeddedFontFaceCss } from './export-fonts';
-import { pageRulingOf, pageWriting, type PageWriting } from './doc/doc-export';
-import { docOpsToSvg, drawDocOps } from './doc/doc-draw';
+import { pageRulingOf, pageWriting, type PageWriting } from './article/article-export';
+import { articleOpsToSvg, drawArticleOps } from './article/article-draw';
 
 // The font ids an export declares, with a document page's writing's faces added.
 function withWritingFonts(ids: string[], writing: PageWriting | null): string[] {
@@ -160,7 +160,7 @@ export async function renderTabToCanvas(
   const frame = opts.page
     ? pageExportFrame(opts.page, { ruling: pageRulingOf(tab, opts.page) })
     : null;
-  // A document page's writing (docs/specs/007-editor/document-pages.md "Everywhere a page goes").
+  // A document page's writing (docs/specs/007-editor/article-pages.md "Everywhere a page goes").
   const writing = opts.page ? pageWriting(tab, opts.page) : null;
   const reaches = (el: Element) => !frame || frame.reaches(el, tab.elements);
   // Hidden layers drop out of the export (bounds included) unless the
@@ -238,7 +238,7 @@ export async function renderTabToCanvas(
   // The writing, over the page and under every element (its zones' elements sit over it).
   if (writing) {
     await document.fonts?.ready;
-    drawDocOps(ctx, writing.ops);
+    drawArticleOps(ctx, writing.ops);
   }
 
   // Isometric: paint every element's extrusion column first, so all the
@@ -464,7 +464,7 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
     : svgFontDefs(withWritingFonts(exportFontIds(els, tab.font), writing));
   if (fontDefs) parts.push(fontDefs);
   // The writing, over the page and under every element.
-  if (writing) parts.push(docOpsToSvg(writing.ops));
+  if (writing) parts.push(articleOpsToSvg(writing.ops));
   // Element-shadow filter defs (docs/specs/008-canvas/element-shadows.md); empty string when none.
   const shadowDefs = svgShadowDefs(els);
   if (shadowDefs) parts.push(shadowDefs);

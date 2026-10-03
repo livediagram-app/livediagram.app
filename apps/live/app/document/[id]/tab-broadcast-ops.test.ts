@@ -184,16 +184,16 @@ describe('comment author ids stay off the wire (docs/specs/012-collaboration/col
   });
 });
 
-describe('tabBroadcastOps: documents (docs/specs/007-editor/document-pages.md "Collaboration")', () => {
+describe('tabBroadcastOps: documents (docs/specs/007-editor/article-pages.md "Collaboration")', () => {
   const P = (id: string, text = id) => ({ id, type: 'paragraph' as const, runs: [{ text }] });
-  const withDoc = (...blocks: ReturnType<typeof P>[]) => tab({ docs: { f: { blocks } } });
+  const withDoc = (...blocks: ReturnType<typeof P>[]) => tab({ articles: { f: { blocks } } });
 
   it('sends the writing as block ops, never in a tab-meta patch', () => {
     const before = withDoc(P('a'), P('b'));
     const after = withDoc(P('a', 'A!'), P('b'));
     expect(tabBroadcastOps(before, after)).toEqual([
       {
-        kind: 'doc',
+        kind: 'article',
         tabId: 't1',
         flow: 'f',
         ops: [{ kind: 'put', block: P('a', 'A!'), after: null, before: 'b' }],
@@ -203,7 +203,7 @@ describe('tabBroadcastOps: documents (docs/specs/007-editor/document-pages.md "C
 
   it('says a removed document by name', () => {
     expect(tabBroadcastOps(withDoc(P('a')), tab())).toEqual([
-      { kind: 'doc', tabId: 't1', flow: 'f', removed: true },
+      { kind: 'article', tabId: 't1', flow: 'f', removed: true },
     ]);
   });
 
@@ -211,7 +211,7 @@ describe('tabBroadcastOps: documents (docs/specs/007-editor/document-pages.md "C
     const after = withDoc(P('a'));
     const ops = tabBroadcastOps(undefined, after);
     expect(ops[0]).toEqual({ kind: 'tab', tabId: 't1', tab: tab() });
-    expect(ops[1]).toMatchObject({ kind: 'doc', flow: 'f', ops: [{ kind: 'put' }] });
+    expect(ops[1]).toMatchObject({ kind: 'article', flow: 'f', ops: [{ kind: 'put' }] });
   });
 
   it('splits a large change into frames the room will carry', () => {
@@ -223,6 +223,6 @@ describe('tabBroadcastOps: documents (docs/specs/007-editor/document-pages.md "C
 
   it("keeps the receiver's writing through a whole-tab merge", () => {
     const local = withDoc(P('mine'));
-    expect(mergeRemoteTab(local, tab()).docs).toBe(local.docs);
+    expect(mergeRemoteTab(local, tab()).articles).toBe(local.articles);
   });
 });

@@ -21,8 +21,8 @@ describe('reorderSlot', () => {
 describe('reorderSlot with documents', () => {
   const row = layOutIllustratePages([
     { id: 'a', orientation: 'portrait' },
-    { id: 'd1', orientation: 'portrait', kind: 'document', flow: 'f' },
-    { id: 'd2', orientation: 'portrait', kind: 'document', flow: 'f' },
+    { id: 'd1', orientation: 'portrait', kind: 'article', flow: 'f' },
+    { id: 'd2', orientation: 'portrait', kind: 'article', flow: 'f' },
     { id: 'c', orientation: 'portrait' },
   ]);
   const mid = (id: string) => {

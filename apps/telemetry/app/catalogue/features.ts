@@ -272,8 +272,8 @@ export const ILLUSTRATE_PAGES = chart(
   'Tab',
   'Changed',
   'Illustrate Pages Added and Deleted',
-  'A page added to an Illustrate tab from the plus after its last page (an infographic page, or a new document), or deleted from its settings.',
-  { types: ['PageAdded', 'DocumentPageAdded', 'PageRemoved'] },
+  'A page added to an Illustrate tab from the plus after its last page (an infographic page, or a new article), or deleted from its settings.',
+  { types: ['PageAdded', 'ArticleAdded', 'PageRemoved'] },
 );
 
 // An Illustrate page's own settings (docs/specs/007-editor/illustrate-pages.md).
@@ -294,60 +294,60 @@ export const ILLUSTRATE_PAGE_BUILDING = chart(
   { types: ['PageLayout', 'PageDuplicated', 'PageMoved', 'PagesLaidOut'] },
 );
 
-// Writing on document pages (docs/specs/007-editor/document-pages.md "Telemetry").
-export const DOCUMENT_INSERTS = chart(
+// Writing articles (docs/specs/007-editor/article-pages.md "Telemetry").
+export const ARTICLE_INSERTS = chart(
   'Element',
   'Added',
-  'Document Inserts',
-  'Something put into the writing of a document page: an image, table, chart or drawing at the caret, an object or drawing taken in from the palette, or a divider, page break, quote or code block.',
+  'Article Inserts',
+  'Something put into the writing of an article: an image, table, chart or drawing at the caret, an object or drawing taken in from the palette, or a divider, page break, quote or code block.',
   {
     types: [
-      'DocImage',
-      'DocTable',
-      'DocChart',
-      'DocCallout',
-      'DocSticky',
-      'DocDrawing',
-      'DocObject',
-      'DocDivider',
-      'DocPageBreak',
-      'DocQuote',
-      'DocCode',
+      'ArticleImage',
+      'ArticleTable',
+      'ArticleChart',
+      'ArticleCallout',
+      'ArticleSticky',
+      'ArticleDrawing',
+      'ArticleObject',
+      'ArticleDivider',
+      'ArticlePageBreak',
+      'ArticleQuote',
+      'ArticleCode',
     ],
   },
 );
 
-export const DOCUMENT_FORMATTING = chart(
+export const ARTICLE_FORMATTING = chart(
   'Element',
   'Changed',
-  'Document Formatting',
-  "The page toolbar used on a document's writing (a format, a text style or list, a link) and a zone in the writing wrapped, placed or deleted.",
+  'Article Formatting',
+  "The page toolbar used on an article's writing (a format, a text style or list, a link) and a zone in the writing wrapped, placed or deleted.",
   {
     types: [
-      'DocFormat',
-      'DocBlockStyle',
-      'DocLink',
-      'DocPaste',
-      'DocZoneWrap',
-      'DocZoneResized',
-      'DocZoneRemoved',
+      'ArticleFormat',
+      'ArticleBlockStyle',
+      'ArticleLink',
+      'ArticlePaste',
+      'ArticleZoneWrap',
+      'ArticleZoneResized',
+      'ArticleZoneRemoved',
     ],
   },
 );
 
-export const DOCUMENT_STYLES = chart(
+export const ARTICLE_LOOKS = chart(
   'Tab',
   'Changed',
-  'Document Looks',
-  "A document's look chosen in its Style tab, or one of its style fields changed.",
+  'Article Looks',
+  "An article's look chosen in its Style tab, or one of its style fields changed.",
   {
     types: [
-      'DocumentLookClean',
-      'DocumentLookClassic',
-      'DocumentLookReport',
-      'DocumentLookNotebook',
-      'DocumentLookBold',
-      'DocumentStyle',
+      'ArticleLookClean',
+      'ArticleLookClassic',
+      'ArticleLookReport',
+      'ArticleLookNotebook',
+      'ArticleLookBold',
+      'ArticleStyle',
     ],
   },
 );
@@ -365,9 +365,9 @@ export const WHITEBOARDS: MetricStack = {
     ILLUSTRATE_PAGES,
     ILLUSTRATE_PAGE_SETUP,
     ILLUSTRATE_PAGE_BUILDING,
-    DOCUMENT_INSERTS,
-    DOCUMENT_FORMATTING,
-    DOCUMENT_STYLES,
+    ARTICLE_INSERTS,
+    ARTICLE_FORMATTING,
+    ARTICLE_LOOKS,
     WHITEBOARD_PENS,
     WHITEBOARD_SETTINGS,
     WHITEBOARD_RECOGNITION,

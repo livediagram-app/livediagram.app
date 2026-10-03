@@ -1,0 +1,336 @@
+/* The writing of an article page (docs/specs/007-editor/article-pages.md "Blocks", "Type",
+   "Article style"). One element per article, laid over its pages in columns, one column a page
+   (DocumentFlow): the browser breaks lines between pages and wraps text round floated zones. Every
+   value comes from the CSS variables DocumentFlow sets from the article's resolved style
+   (articleStyleVars), so a style change is a variable change. Sizes are canvas px: the writing zooms
+   with the canvas. */
+
+.article-flow {
+  position: absolute;
+  column-fill: auto;
+  font-family: var(--article-body-font);
+  font-size: var(--article-size);
+  line-height: var(--article-leading);
+  color: var(--article-ink);
+  caret-color: var(--article-accent);
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  font-variant-ligatures: none;
+  orphans: 2;
+  widows: 2;
+  outline: none;
+  cursor: text;
+  /* The space between columns is not the writing's: presses there reach the canvas. */
+  pointer-events: none;
+  --article-line: calc(var(--article-size) * var(--article-leading));
+}
+
+.article-flow > * {
+  pointer-events: auto;
+}
+
+.article-flow[data-readonly] {
+  cursor: default;
+}
+
+/* A drawing tool in hand: presses go through the writing to the canvas. */
+.article-flow[data-inert] > * {
+  pointer-events: none;
+}
+
+.article-flow ::selection {
+  background: color-mix(in srgb, var(--article-accent) 28%, transparent);
+}
+
+.article-flow .article-block {
+  margin: 0;
+  padding: 0;
+}
+
+/* Body text */
+.article-flow .article-body {
+  margin-bottom: calc(var(--article-para) * var(--article-line));
+}
+
+/* Title, subtitle, headings */
+.article-flow .article-title,
+.article-flow .article-h1,
+.article-flow .article-h2,
+.article-flow .article-h3 {
+  font-family: var(--article-heading-font);
+  color: var(--article-heading-color);
+  line-height: 1.25;
+  break-after: avoid;
+  break-inside: avoid;
+}
+.article-flow .article-title {
+  font-size: calc(var(--article-size) * 36 / 16);
+  font-weight: 700;
+  margin-bottom: calc(0.5 * var(--article-line));
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+.article-flow .article-subtitle {
+  font-size: calc(var(--article-size) * 20 / 16);
+  color: var(--article-muted);
+  margin-bottom: var(--article-line);
+}
+.article-flow .article-h1 {
+  font-size: calc(var(--article-size) * 28 / 16);
+  font-weight: 700;
+  margin-top: calc(1.2 * var(--article-line));
+  margin-bottom: calc(0.4 * var(--article-line));
+}
+.article-flow .article-h2 {
+  font-size: calc(var(--article-size) * 22 / 16);
+  font-weight: 650;
+  margin-top: var(--article-line);
+  margin-bottom: calc(0.3 * var(--article-line));
+}
+.article-flow .article-h3 {
+  font-size: calc(var(--article-size) * 18 / 16);
+  font-weight: 650;
+  margin-top: calc(0.8 * var(--article-line));
+  margin-bottom: calc(0.2 * var(--article-line));
+}
+.article-flow > .article-block:first-child {
+  margin-top: 0;
+}
+
+/* Lines under text */
+.article-flow[data-rules='title'] .article-title,
+.article-flow[data-rules='headings'] .article-title,
+.article-flow[data-rules='headings'] .article-h1,
+.article-flow[data-rules='headings'] .article-h2,
+.article-flow[data-rules='headings'] .article-h3 {
+  padding-bottom: 0.18em;
+  border-bottom: 1.5px solid var(--article-accent);
+}
+
+/* Quote */
+.article-flow .article-quote {
+  font-size: calc(var(--article-size) * 18 / 16);
+  font-style: italic;
+  margin: calc(0.5 * var(--article-line)) 0 calc(0.75 * var(--article-line));
+  padding-left: 16px;
+  border-left: 3px solid var(--article-accent);
+  color: var(--article-ink);
+}
+
+/* Alignment */
+.article-flow [data-align='center'] {
+  text-align: center;
+}
+.article-flow [data-align='right'] {
+  text-align: right;
+}
+.article-flow [data-align='justify'] {
+  text-align: justify;
+}
+
+/* Lists: a flat run of items, each indented by its level, its marker in the gutter before it. */
+.article-flow .article-list {
+  list-style: none;
+  position: relative;
+  padding-left: calc(28px * (var(--article-level) + 1));
+  margin-bottom: calc(0.25 * var(--article-line));
+}
+.article-flow .article-list::before {
+  position: absolute;
+  left: calc(28px * var(--article-level));
+  width: 22px;
+  text-align: right;
+  color: var(--article-accent);
+  font-variant-numeric: tabular-nums;
+  content: attr(data-marker);
+}
+.article-flow .article-list-todo::before {
+  content: '';
+  top: calc((var(--article-line) - 16px) / 2);
+  left: calc(28px * var(--article-level) + 4px);
+  width: 16px;
+  height: 16px;
+  box-sizing: border-box;
+  border: 1.5px solid var(--article-accent);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 120ms ease;
+}
+.article-flow .article-list-todo.article-done::before {
+  background: var(--article-accent);
+}
+.article-flow .article-list-todo.article-done::after {
+  content: '';
+  position: absolute;
+  top: calc((var(--article-line) - 16px) / 2 + 3px);
+  left: calc(28px * var(--article-level) + 9.5px);
+  width: 5px;
+  height: 8px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+  pointer-events: none;
+}
+.article-flow .article-done {
+  text-decoration: line-through;
+  color: var(--article-muted);
+}
+
+/* Code */
+.article-flow .article-code {
+  font-family: var(--article-mono-font);
+  font-size: calc(var(--article-size) * 14 / 16);
+  line-height: 1.55;
+  margin: calc(0.5 * var(--article-line)) 0 calc(0.75 * var(--article-line));
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: var(--article-code-bg);
+  white-space: pre-wrap;
+}
+.article-flow code.article-inline-code {
+  font-family: var(--article-mono-font);
+  font-size: 0.88em;
+  padding: 0.1em 0.32em;
+  border-radius: 4px;
+  background: var(--article-code-bg);
+}
+
+/* Divider and page break */
+.article-flow .article-divider {
+  padding: calc(0.6 * var(--article-line)) 0;
+}
+.article-flow .article-divider hr {
+  border: 0;
+  border-top: 1px solid var(--article-rule);
+  margin: 0;
+}
+.article-flow .article-page-break {
+  break-after: column;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: var(--article-line);
+  color: var(--article-muted);
+  font: 500 11px/1 var(--article-body-font);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  user-select: none;
+}
+.article-flow .article-page-break::before,
+.article-flow .article-page-break::after {
+  content: '';
+  flex: 1;
+  border-top: 1px dashed var(--article-rule);
+}
+.article-flow[data-readonly] .article-page-break span,
+.article-flow[data-readonly] .article-page-break::before,
+.article-flow[data-readonly] .article-page-break::after {
+  visibility: hidden;
+}
+
+/* Zones: a box the writing leaves room for; the elements in it are drawn by the canvas above. */
+.article-flow .article-zone {
+  display: block;
+  box-sizing: border-box;
+  break-inside: avoid;
+  margin-top: calc(0.4 * var(--article-line));
+  margin-bottom: calc(0.6 * var(--article-line));
+  border-radius: 6px;
+  outline: 1px dashed transparent;
+  outline-offset: 2px;
+  transition: outline-color 120ms ease;
+}
+.article-flow .article-zone-inline.article-zone-align-center {
+  margin-left: auto;
+  margin-right: auto;
+}
+.article-flow .article-zone-inline.article-zone-align-right {
+  margin-left: auto;
+}
+.article-flow .article-zone-left {
+  float: left;
+  margin-right: 14px;
+}
+.article-flow .article-zone-right {
+  float: right;
+  margin-left: 14px;
+}
+.article-flow:not([data-readonly]) .article-zone:hover {
+  outline-color: color-mix(in srgb, var(--article-accent) 45%, transparent);
+}
+.article-flow .article-zone.ProseMirror-selectednode {
+  outline: 2px solid var(--article-accent);
+}
+.article-flow .article-zone[data-zone='drawing'] {
+  background: color-mix(in srgb, var(--article-accent) 4%, transparent);
+}
+.article-flow[data-readonly] .article-zone[data-zone='drawing'] {
+  background: none;
+}
+
+/* Inline formats */
+.article-flow .article-link {
+  color: var(--article-accent);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+.article-flow .article-color {
+  color: var(--article-text-color);
+}
+.article-flow mark.article-highlight {
+  background: var(--article-highlight);
+  color: inherit;
+  border-radius: 2px;
+  padding: 0 1px;
+  box-decoration-break: clone;
+}
+
+/* Placeholders on empty blocks, for someone writing */
+.article-flow .article-empty::before {
+  content: attr(data-placeholder);
+  color: var(--article-muted);
+  opacity: 0.6;
+  pointer-events: none;
+  float: left;
+  height: 0;
+}
+.article-flow .article-list.article-empty::before {
+  float: none;
+}
+
+/* Another person's caret (DocumentPresence) */
+.article-flow .article-peer-caret {
+  position: relative;
+  margin-left: -1px;
+  margin-right: -1px;
+  border-left: 2px solid var(--article-peer);
+  pointer-events: none;
+}
+.article-flow .article-peer-caret::after {
+  content: attr(data-name);
+  position: absolute;
+  bottom: 100%;
+  left: -2px;
+  padding: 1px 4px;
+  border-radius: 3px 3px 3px 0;
+  background: var(--article-peer);
+  color: white;
+  font: 600 10px/1.3 var(--article-body-font);
+  font-style: normal;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 150ms ease;
+}
+.article-flow .article-peer-caret:hover::after,
+.article-flow .article-peer-caret[data-fresh]::after {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .article-flow .article-zone,
+  .article-flow .article-list-todo::before,
+  .article-flow .article-peer-caret::after {
+    transition: none;
+  }
+}

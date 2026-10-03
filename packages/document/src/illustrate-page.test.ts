@@ -5,7 +5,7 @@ import {
   ILLUSTRATE_PAGE_GAP,
   MAX_ILLUSTRATE_PAGES,
   illustratePageAt,
-  isDocumentPage,
+  isArticlePage,
   pageKindOf,
   illustratePageFitBox,
   illustratePagesOf,
@@ -154,17 +154,17 @@ describe('page kinds', () => {
   const D = (id: string, flow?: string, extra: Partial<IllustratePage> = {}): IllustratePage => ({
     id,
     orientation: 'portrait',
-    kind: 'document',
+    kind: 'article',
     ...(flow ? { flow } : {}),
     ...extra,
   });
 
   it('read a page with no kind as an infographic, and a document page with its flow', () => {
     const [a, b, c] = illustratePagesOf({
-      pages: [P('a'), D('b', 'doc-1'), { ...P('c'), kind: 'poster', flow: 'doc-9' }],
+      pages: [P('a'), D('b', 'art-1'), { ...P('c'), kind: 'poster', flow: 'art-9' }],
     });
     expect(pageKindOf(a!)).toBe('infographic');
-    expect(b).toEqual(D('b', 'doc-1'));
+    expect(b).toEqual(D('b', 'art-1'));
     expect(c).toEqual(P('c'));
   });
 
@@ -183,7 +183,7 @@ describe('page kinds', () => {
     });
     expect(pages.map((p) => p.id)).toEqual(['d1', 'd2', 'x', 'y']);
     expect(pages[1]).toEqual(D('d2', 'doc', { size: 'letter' }));
-    expect(isDocumentPage(pages[1]!)).toBe(true);
+    expect(isArticlePage(pages[1]!)).toBe(true);
   });
 
   it('give back the same pages when a document is already together', () => {

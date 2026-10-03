@@ -88,7 +88,7 @@ import { useArrowLabelLayouts } from '@/hooks/canvas/useArrowLabelLayouts';
 import { useFontsReady } from '@/components/canvas/useFontsReady';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { IllustratePages } from '@/components/canvas/IllustratePages';
-import { DocumentFlows } from '@/components/canvas/doc/DocumentFlows';
+import { ArticleFlows } from '@/components/canvas/article/ArticleFlows';
 import { pressIsOffPage } from '@/hooks/canvas/illustrate-page-guard';
 
 export function Canvas(props: CanvasProps) {
@@ -230,8 +230,8 @@ export function Canvas(props: CanvasProps) {
   // (docs/specs/008-canvas/arrow-labels.md). Laid out here, not in the element
   // layer, because the selection toolbars clear a label as part of its arrow.
   const fontsReady = useFontsReady();
-  // The selection as one set, for a document zone's bar (DocumentFlows).
-  const docSelectedIds = useMemo(
+  // The selection as one set, for a document zone's bar (ArticleFlows).
+  const articleSelectedIds = useMemo(
     () => new Set([...multiSelectedIds, ...(selectedId ? [selectedId] : [])]),
     [multiSelectedIds, selectedId],
   );
@@ -281,14 +281,14 @@ export function Canvas(props: CanvasProps) {
   } = canvasSelection;
 
   // An object in a document's writing (a chart, an image, a table) connects to nothing: no
-  // quick-connect pluses on it (docs/specs/007-editor/document-pages.md "Zones").
-  const docPages = props.illustratePages?.pages;
+  // quick-connect pluses on it (docs/specs/007-editor/article-pages.md "Zones").
+  const articlePages = props.illustratePages?.pages;
   const plusAllowed = useMemo(() => {
-    if (!showPlus || !selectedId || !docPages?.some((p) => p.flow)) return showPlus;
+    if (!showPlus || !selectedId || !articlePages?.some((p) => p.flow)) return showPlus;
     const el = elements.find((e) => e.id === selectedId);
     if (!el || isDrawingElement(el)) return true;
     const at = zoneAnchorOf(el, elements);
-    return !docPages.some(
+    return !articlePages.some(
       (p) =>
         p.flow &&
         at.x >= p.rect.x &&
@@ -296,7 +296,7 @@ export function Canvas(props: CanvasProps) {
         at.y >= p.rect.y &&
         at.y <= p.rect.y + p.rect.height,
     );
-  }, [showPlus, selectedId, docPages, elements]);
+  }, [showPlus, selectedId, articlePages, elements]);
 
   // Spotlight presenter tool (docs/specs/008-canvas/canvas-and-palette.md): screen-space light position +
   // radius. Local to Canvas so the click handlers, the pointer tracker, and
@@ -761,14 +761,14 @@ export function Canvas(props: CanvasProps) {
             bare={props.zenMode === true || canvasTool === 'isometric'}
           />
         ) : null}
-        {/* Document pages' writing (DocumentFlows), over the sheets and under the elements, so a
+        {/* Document pages' writing (ArticleFlows), over the sheets and under the elements, so a
             zone's elements sit in the room the writing leaves them. */}
-        {props.illustratePages?.documents && canvasTool !== 'isometric' ? (
-          <DocumentFlows
+        {props.illustratePages?.articles && canvasTool !== 'isometric' ? (
+          <ArticleFlows
             view={props.illustratePages}
             zoom={viewportZoom}
             interactive={!pendingDraw && canvasTool !== 'spotlight' && canvasTool !== 'avatar'}
-            selectedIds={docSelectedIds}
+            selectedIds={articleSelectedIds}
             elements={elements}
           />
         ) : null}

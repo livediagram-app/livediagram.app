@@ -507,40 +507,42 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Tab|Changed|OpensInDraw':
     'Someone set a tab to open in Draw mode for everyone, from the tab menu.',
   'Tab|Changed|PageAdded': 'Someone added an infographic page to an Illustrate tab.',
-  'Tab|Changed|DocumentPageAdded': 'Someone added a new document to an Illustrate tab.',
-  'Tab|Changed|DocumentLookClean': 'Someone gave a document the Clean look.',
-  'Tab|Changed|DocumentLookClassic': 'Someone gave a document the Classic look.',
-  'Tab|Changed|DocumentLookReport': 'Someone gave a document the Report look.',
-  'Tab|Changed|DocumentLookNotebook': 'Someone gave a document the Notebook look, on ruled pages.',
-  'Tab|Changed|DocumentLookBold': 'Someone gave a document the Bold look.',
-  'Tab|Changed|DocumentStyle':
-    "Someone changed one part of a document's style: a font, the accent, spacing, rules, margins or page numbers.",
-  'Element|Added|DocImage': "Someone inserted an image at the caret in a document's writing.",
-  'Element|Added|DocTable': "Someone inserted a table at the caret in a document's writing.",
-  'Element|Added|DocChart': "Someone inserted a chart at the caret in a document's writing.",
-  'Element|Added|DocCallout': "Someone inserted a callout at the caret in a document's writing.",
-  'Element|Added|DocSticky': "Someone inserted a sticky note at the caret in a document's writing.",
-  'Element|Added|DocDrawing':
-    "Someone started a drawing in a document's writing: from Insert, or by putting shapes onto the page.",
-  'Element|Added|DocObject':
-    'Someone put an object (a chart, an image, a component) onto a document page, and the writing took it in.',
-  'Element|Added|DocDivider': "Someone inserted a divider into a document's writing.",
-  'Element|Added|DocPageBreak': "Someone inserted a page break into a document's writing.",
-  'Element|Added|DocQuote': "Someone inserted a quote into a document's writing.",
-  'Element|Added|DocCode': "Someone inserted a code block into a document's writing.",
-  'Element|Changed|DocFormat':
-    'Someone formatted text in a document from the page toolbar: bold, italic, underline, strikethrough, a colour or a highlight.',
-  'Element|Changed|DocBlockStyle':
-    "Someone changed a block of a document's writing to another style or a list, from the page toolbar.",
-  'Element|Changed|DocLink': 'Someone added a link to text in a document.',
-  'Element|Changed|DocPaste':
-    'Someone pasted Markdown into a document, and it became headings, lists and formatting.',
-  'Element|Changed|DocZoneWrap':
-    "Someone changed how a picture or drawing sits in a document's writing: in line, or wrapped.",
-  'Element|Changed|DocZoneResized':
-    "Someone made a drawing in a document's writing taller or shorter.",
-  'Element|Changed|DocZoneRemoved':
-    "Someone deleted a picture or drawing from a document's writing.",
+  'Tab|Changed|ArticleAdded': 'Someone added a new article to an Illustrate tab.',
+  'Tab|Changed|ArticleLookClean': 'Someone gave an article the Clean look.',
+  'Tab|Changed|ArticleLookClassic': 'Someone gave an article the Classic look.',
+  'Tab|Changed|ArticleLookReport': 'Someone gave an article the Report look.',
+  'Tab|Changed|ArticleLookNotebook': 'Someone gave an article the Notebook look, on ruled pages.',
+  'Tab|Changed|ArticleLookBold': 'Someone gave an article the Bold look.',
+  'Tab|Changed|ArticleStyle':
+    "Someone changed one part of an article's style: a font, the accent, spacing, rules, margins or page numbers.",
+  'Element|Added|ArticleImage': "Someone inserted an image at the caret in an article's writing.",
+  'Element|Added|ArticleTable': "Someone inserted a table at the caret in an article's writing.",
+  'Element|Added|ArticleChart': "Someone inserted a chart at the caret in an article's writing.",
+  'Element|Added|ArticleCallout':
+    "Someone inserted a callout at the caret in an article's writing.",
+  'Element|Added|ArticleSticky':
+    "Someone inserted a sticky note at the caret in an article's writing.",
+  'Element|Added|ArticleDrawing':
+    "Someone started a drawing in an article's writing: from Insert, or by putting shapes onto the page.",
+  'Element|Added|ArticleObject':
+    'Someone put an object (a chart, an image, a component) onto an article page, and the writing took it in.',
+  'Element|Added|ArticleDivider': "Someone inserted a divider into an article's writing.",
+  'Element|Added|ArticlePageBreak': "Someone inserted a page break into an article's writing.",
+  'Element|Added|ArticleQuote': "Someone inserted a quote into an article's writing.",
+  'Element|Added|ArticleCode': "Someone inserted a code block into an article's writing.",
+  'Element|Changed|ArticleFormat':
+    'Someone formatted text in an article from the page toolbar: bold, italic, underline, strikethrough, a colour or a highlight.',
+  'Element|Changed|ArticleBlockStyle':
+    "Someone changed a block of an article's writing to another style or a list, from the page toolbar.",
+  'Element|Changed|ArticleLink': 'Someone added a link to text in an article.',
+  'Element|Changed|ArticlePaste':
+    'Someone pasted Markdown into an article, and it became headings, lists and formatting.',
+  'Element|Changed|ArticleZoneWrap':
+    "Someone changed how a picture or drawing sits in an article's writing: in line, or wrapped.",
+  'Element|Changed|ArticleZoneResized':
+    "Someone made a drawing in an article's writing taller or shorter.",
+  'Element|Changed|ArticleZoneRemoved':
+    "Someone deleted a picture or drawing from an article's writing.",
   'Tab|Changed|PageRemoved': 'Someone deleted a page from an Illustrate tab.',
   'Tab|Changed|PagePortrait': 'Someone turned an Illustrate page to portrait.',
   'Tab|Changed|PageLandscape': 'Someone turned an Illustrate page to landscape.',

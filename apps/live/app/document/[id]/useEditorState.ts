@@ -46,7 +46,7 @@ import { useSwatchOverrides } from '@/hooks/canvas/useSwatchOverrides';
 import { getTheme } from '@/lib/themes';
 import { DEFAULT_SCHEME_ID } from '@livediagram/document';
 import { useEditorMode, usePinTabOpening } from '@/hooks/editor/useEditorMode';
-import { useDocumentPages } from '@/hooks/editor/useDocumentPages';
+import { useArticles } from '@/hooks/editor/useArticles';
 import { useIllustratePages } from '@/hooks/editor/useIllustratePages';
 import { editorModeShortcut } from '@/hooks/editor/editor-mode-shortcut';
 import { announce } from '@/lib/announcer';
@@ -199,7 +199,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   } = useDocumentHistory(initialTabs);
 
   // Counts this person's own edits (never a remote op, an undo or a tick): what lets the documents
-  // take in what was just added to a page (useDocumentIntake) without taking a peer's.
+  // take in what was just added to a page (useArticleIntake) without taking a peer's.
   const localEditSeqRef = useRef(0);
   const commitTabs = (mapTabs: (ts: Tab[]) => Tab[]) => {
     localEditSeqRef.current += 1;
@@ -1573,7 +1573,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   });
   // Illustrate mode's pages: their edits, and the view centred on them.
   // Set once the documents' hook exists (below): a new document's title takes the caret.
-  const documentFocusRef = useRef<((flow: string) => void) | null>(null);
+  const articleFocusRef = useRef<((flow: string) => void) | null>(null);
   const illustratePages = useIllustratePages({
     activeTab,
     mode: editorMode.mode,
@@ -1588,7 +1588,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
       setMultiSelectedIds(new Set());
     },
     toastInfo: toast.info,
-    onDocumentCreated: (flow) => documentFocusRef.current?.(flow),
+    onArticleCreated: (flow) => articleFocusRef.current?.(flow),
   });
 
   // A locked tab refuses every element mutation. Commit /
@@ -1786,8 +1786,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     redoHistory,
     set: { setSelectedId, setEditingId, setFormatSourceId },
   });
-  // The writing of the active tab's document pages (docs/specs/007-editor/document-pages.md).
-  const documents = useDocumentPages({
+  // The writing of the active tab's document pages (docs/specs/007-editor/article-pages.md).
+  const articles = useArticles({
     activeTab,
     on: illustratePages !== null,
     pages: illustratePages?.pages ?? null,
@@ -1803,13 +1803,13 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
       setMultiSelectedIds(new Set());
     },
   });
-  useAssignRef(documentFocusRef, (flow: string) => documents?.requestFocus(flow, 'start'));
+  useAssignRef(articleFocusRef, (flow: string) => articles?.requestFocus(flow, 'start'));
   // Set once element creation exists (below): an Insert at the caret places through it.
   const placeIntentAtRef = useRef<
     ((intent: Parameters<typeof placeIntentAt>[0], x: number, y: number) => void) | null
   >(null);
   const illustrateView =
-    illustratePages && documents ? { ...illustratePages, documents } : illustratePages;
+    illustratePages && articles ? { ...illustratePages, articles } : illustratePages;
   // --- Placement helpers ---------------------------------------------------
 
   // When a boxed element is selected, new elements inherit its size so a

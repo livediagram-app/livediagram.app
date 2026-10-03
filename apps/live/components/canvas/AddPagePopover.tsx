@@ -22,8 +22,8 @@ const KINDS: { kind: PageKind; name: string; line: string }[] = [
     line: 'A page to lay out: layouts, icons, charts and media.',
   },
   {
-    kind: 'document',
-    name: 'Document',
+    kind: 'article',
+    name: 'Article',
     line: 'A page to write on, flowing onto new pages as it grows.',
   },
 ];
@@ -92,7 +92,7 @@ export function AddPagePopover({
             className="group flex flex-col items-stretch gap-2 rounded-lg border border-slate-200 bg-white p-2 text-left transition hover:border-brand-400 hover:bg-brand-50/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 dark:border-slate-700 dark:bg-slate-900 dark:hover:border-brand-400 dark:hover:bg-brand-500/10"
           >
             <span className="flex h-24 items-center justify-center rounded-md bg-slate-50 dark:bg-slate-800/70">
-              {kind === 'document' ? <DocumentMiniature /> : <InfographicMiniature />}
+              {kind === 'article' ? <ArticleMiniature /> : <InfographicMiniature />}
             </span>
             <span className="px-0.5">
               <span className="block text-sm font-semibold text-slate-900 dark:text-slate-100">
@@ -187,7 +187,7 @@ function InfographicMiniature() {
 }
 
 // A sheet of writing: a title, paragraphs, a list and a picture with text wrapping beside it.
-function DocumentMiniature() {
+function ArticleMiniature() {
   const line = 'fill-slate-300 dark:fill-slate-500';
   return (
     <svg width="58" height="78" viewBox="0 0 58 78" aria-hidden className="drop-shadow-sm">

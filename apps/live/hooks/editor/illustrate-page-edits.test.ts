@@ -145,21 +145,21 @@ describe('Illustrate page edits: documents', () => {
       elements: [],
       pages: [
         { id: 'page-1', orientation: 'portrait', size: 'square' },
-        { id: 'd1', orientation: 'portrait', kind: 'document', flow: 'f' },
-        { id: 'd2', orientation: 'portrait', kind: 'document', flow: 'f' },
+        { id: 'd1', orientation: 'portrait', kind: 'article', flow: 'f' },
+        { id: 'd2', orientation: 'portrait', kind: 'article', flow: 'f' },
       ],
-      docs: { f: { blocks: [{ id: 'b', type: 'paragraph', runs: [{ text: 'Hi' }] }] } },
+      articles: { f: { blocks: [{ id: 'b', type: 'paragraph', runs: [{ text: 'Hi' }] }] } },
     }) as unknown as Tab;
 
   it('adds an infographic page like the last infographic, and a document on paper', () => {
     const h = harness(withDocument());
     h.edits().addPage!('infographic');
     expect(illustratePagesOf(h.tab()).at(-1)).toMatchObject({ size: 'square' });
-    h.edits().addPage!('document');
+    h.edits().addPage!('article');
     const added = illustratePagesOf(h.tab()).at(-1)!;
-    expect(added.kind).toBe('document');
+    expect(added.kind).toBe('article');
     expect(added.size).toBeUndefined();
-    expect(Object.keys(h.tab().docs!)).toHaveLength(2);
+    expect(Object.keys(h.tab().articles!)).toHaveLength(2);
   });
 
   it('turns, sizes and paints every page of a document together', () => {
@@ -184,9 +184,9 @@ describe('Illustrate page edits: documents', () => {
     expect(illustratePagesOf(h.tab()).map((p) => p.id)).toEqual(['d1', 'd2', 'page-1']);
     h.edits().duplicatePage!('d1');
     expect(illustratePagesOf(h.tab())).toHaveLength(5);
-    expect(Object.keys(h.tab().docs!)).toHaveLength(2);
+    expect(Object.keys(h.tab().articles!)).toHaveLength(2);
     h.edits().removePage!('d2');
     expect(illustratePagesOf(h.tab())).toHaveLength(3);
-    expect(Object.keys(h.tab().docs!)).toHaveLength(1);
+    expect(Object.keys(h.tab().articles!)).toHaveLength(1);
   });
 });

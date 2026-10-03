@@ -1,7 +1,7 @@
 'use client';
 
-import { pageWritingBars } from '@/lib/doc/doc-export';
-import { docOpsToSvg } from '@/lib/doc/doc-draw';
+import { pageWritingBars } from '@/lib/article/article-export';
+import { articleOpsToSvg } from '@/lib/article/article-draw';
 import { useDeferredValue, useMemo, useRef } from 'react';
 import {
   boundsOfPoints,
@@ -180,7 +180,7 @@ export function Minimap({
       parts.push(
         pageExportFrame(page, { paper, idPrefix: 'lvd-minimap-page' }).backgroundSvg +
           // A document page's writing, as soft lines of text.
-          (page.flow ? docOpsToSvg(pageWritingBars(page, outline)) : '') +
+          (page.flow ? articleOpsToSvg(pageWritingBars(page, outline)) : '') +
           `<rect x="${x}" y="${y}" width="${width}" height="${height}" fill="none" stroke="${outline}" stroke-width="${Math.max(width, height) / 160}"/>`,
       );
       corners.push({ x, y }, { x: x + width, y: y + height });

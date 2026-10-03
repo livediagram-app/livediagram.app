@@ -21,7 +21,7 @@ export function presentedPages(
       pages: only(view.pages),
       rowPages: view.pages,
       // Presenting is reading: the writing takes no caret.
-      documents: view.documents ? { ...view.documents, editable: false } : view.documents,
+      articles: view.articles ? { ...view.articles, editable: false } : view.articles,
     };
   return {
     pages: only(layOutIllustratePages(illustratePagesOf(tab))),

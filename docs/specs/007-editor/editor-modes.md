@@ -8,14 +8,14 @@ where it is and changes only how the next mark is made.
 
 ## Domain language
 
-| Term                | Means                                                                                                                                  |
-| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| **tab kind**        | What a tab **is** ([Document](../006-document/document.md)). Reserved for specific uses.                                               |
-| **editor mode**     | How a general tab is **worked on** right now: `diagram`, `draw` or `illustrate` (`EditorMode`).                                        |
-| **Diagram mode**    | Structured drawing: the palette, shapes, arrows, icons, templates, snapping and guides.                                                |
-| **Draw mode**       | Freehand whiteboarding: the dock, preset pens, eraser, shape recognition ([Draw mode](../023-draw-mode/draw-mode.md)).                 |
-| **Illustrate mode** | Pages on the canvas, of two kinds: infographic pages to lay out and document pages to write ([Illustrate pages](illustrate-pages.md)). |
-| **mode switch**     | The control beside the page switcher that changes the editor mode.                                                                     |
+| Term                | Means                                                                                                                                 |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| **tab kind**        | What a tab **is** ([Document](../006-document/document.md)). Reserved for specific uses.                                              |
+| **editor mode**     | How a general tab is **worked on** right now: `diagram`, `draw` or `illustrate` (`EditorMode`).                                       |
+| **Diagram mode**    | Structured drawing: the palette, shapes, arrows, icons, templates, snapping and guides.                                               |
+| **Draw mode**       | Freehand whiteboarding: the dock, preset pens, eraser, shape recognition ([Draw mode](../023-draw-mode/draw-mode.md)).                |
+| **Illustrate mode** | Pages on the canvas, of two kinds: infographic pages to lay out and article pages to write ([Illustrate pages](illustrate-pages.md)). |
+| **mode switch**     | The control beside the page switcher that changes the editor mode.                                                                    |
 
 - "Whiteboard" names the activity and Draw mode's look, never a tab kind and
   never a type of document.
@@ -92,7 +92,7 @@ where it is and changes only how the next mark is made.
   wins over the tab's opening mode from then on.
 - **Switching never changes the opening mode.**
 - **New documents and new tabs open in Diagram.** Whatever mode its creator
-  is in, a new document or a tab added from the tab bar (or Quick Start)
+  is in, a new article or a tab added from the tab bar (or Quick Start)
   opens in Diagram. Only the template chosen for it changes that: the
   **Whiteboard** opens in Draw (switching its maker there too), an
   **Event Storming** board is always Diagram, and every other template,

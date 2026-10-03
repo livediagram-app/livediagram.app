@@ -316,7 +316,7 @@ export function useRoomConnection(opts: {
         op.kind === 'vote' ||
         op.kind === 'el-delta' ||
         op.kind === 'tab-meta' ||
-        op.kind === 'doc' ||
+        op.kind === 'article' ||
         op.kind === 'document-meta'
       ) {
         // A document change from a peer: a whole tab, one element (docs/specs/012-collaboration/realtime-conflict-resolution.md),

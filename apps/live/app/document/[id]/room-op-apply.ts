@@ -1,7 +1,7 @@
 import {
-  applyDocOps,
+  applyArticleOps,
   applyElementDelta,
-  docsOf,
+  articlesOf,
   applyElementOp,
   applyVoteDelta,
   mergeIncomingElement,
@@ -73,19 +73,19 @@ export function applyRoomOpToTabs(tabs: Tab[], op: RoomOp): Tab[] {
         }
         return merged;
       });
-    case 'doc':
-      // ONE document's writing, block by block (docs/specs/007-editor/document-pages.md
+    case 'article':
+      // ONE document's writing, block by block (docs/specs/007-editor/article-pages.md
       // "Collaboration"): two people writing different blocks merge.
       return updateTab(tabs, op.tabId, (tab) => {
-        const docs = { ...docsOf(tab) };
+        const articles = { ...articlesOf(tab) };
         if ('removed' in op) {
-          if (!(op.flow in docs)) return tab;
-          delete docs[op.flow];
+          if (!(op.flow in articles)) return tab;
+          delete articles[op.flow];
         } else {
-          docs[op.flow] = applyDocOps(docs[op.flow], op.ops);
+          articles[op.flow] = applyArticleOps(articles[op.flow], op.ops);
         }
-        if (Object.keys(docs).length > 0) return { ...tab, docs };
-        const { docs: _drop, ...rest } = tab;
+        if (Object.keys(articles).length > 0) return { ...tab, articles };
+        const { articles: _drop, ...rest } = tab;
         void _drop;
         return rest;
       });

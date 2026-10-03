@@ -388,7 +388,7 @@ export const OTHER_ELEMENTS_ADDED: Metric = {
   typeIn: (type) =>
     !PALETTE_KINDS.has(canonicalElementType(type)) &&
     !isTablePart(type) &&
-    !/^Doc(?!ument)[A-Z]/.test(type ?? ''),
+    !/^Article[A-Z]/.test(type ?? ''),
   title: 'Other Elements Added',
   blurb:
     'Kinds the palette catalogue does not list, such as pasted images. Table rows and columns are in Tables.',
@@ -421,7 +421,7 @@ export const ELEMENTS_CHANGED = chart(
   'Elements Changed',
   'Restyled or edited: colour, text, arrow ends, size, presets, the format painter and more.',
   // A document's writing formatted (`Doc…`) is its own card (Document Formatting, features.ts).
-  { typeIn: (t) => !/^Doc(?!ument)[A-Z]/.test(t ?? '') },
+  { typeIn: (t) => !/^Article[A-Z]/.test(t ?? '') },
 );
 
 export const ELEMENTS_DELETED = chart(

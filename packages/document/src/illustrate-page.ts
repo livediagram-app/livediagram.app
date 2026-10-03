@@ -60,7 +60,7 @@ export const PAGE_NAME_MAX = 60;
 
 // What a page is for, fixed when it is made (docs/specs/007-editor/illustrate-pages.md "Page
 // kinds"): an infographic page to lay out, or a document page to write on.
-export type PageKind = 'infographic' | 'document';
+export type PageKind = 'infographic' | 'article';
 
 export type IllustratePage = {
   id: string;
@@ -72,8 +72,8 @@ export type IllustratePage = {
   // Absent shows the page's place ("Page 2").
   name?: string;
   // Absent is an infographic page; stored only for a document page.
-  kind?: 'document';
-  // The document a document page belongs to (`Tab.docs[flow]`); present exactly on document pages.
+  kind?: 'article';
+  // The document a document page belongs to (`Tab.articles[flow]`); present exactly on document pages.
   flow?: string;
 };
 
@@ -128,9 +128,9 @@ function parsePage(v: unknown): IllustratePage | undefined {
   const name = typeof p.name === 'string' ? p.name.trim().slice(0, PAGE_NAME_MAX) : '';
   // A document page without a readable flow is a document of its own.
   const document =
-    p.kind === 'document'
+    p.kind === 'article'
       ? {
-          kind: 'document' as const,
+          kind: 'article' as const,
           flow:
             typeof p.flow === 'string' && p.flow.length > 0 && p.flow.length <= 64 ? p.flow : p.id,
         }
@@ -147,13 +147,13 @@ function parsePage(v: unknown): IllustratePage | undefined {
 
 /** The page's kind: a document page, or else an infographic page. */
 export function pageKindOf(page: Pick<IllustratePage, 'kind'>): PageKind {
-  return page.kind === 'document' ? 'document' : 'infographic';
+  return page.kind === 'article' ? 'article' : 'infographic';
 }
 
-export function isDocumentPage(
+export function isArticlePage(
   page: Pick<IllustratePage, 'kind'>,
-): page is Pick<IllustratePage, 'kind'> & { kind: 'document'; flow: string } {
-  return page.kind === 'document';
+): page is Pick<IllustratePage, 'kind'> & { kind: 'article'; flow: string } {
+  return page.kind === 'article';
 }
 
 /** Pages in an order where each document's pages sit together (docs/specs/007-editor/
@@ -346,10 +346,10 @@ export function withIllustratePages<T extends Pick<Tab, 'elements'>>(
     const moved = page && after.get(page.id);
     if (!page || !moved) return null;
     // A document page's content keeps its place from the page's top-left corner, where its
-    // writing starts and its zones are measured from (docs/specs/007-editor/document-pages.md
+    // writing starts and its zones are measured from (docs/specs/007-editor/article-pages.md
     // "Zones"); an infographic page's is re-centred on the page's centre, so a page that turned
     // keeps its content about its middle.
-    const doc = page.kind === 'document';
+    const doc = page.kind === 'article';
     const dx = doc
       ? moved.x - page.rect.x
       : moved.x + moved.width / 2 - (page.rect.x + page.rect.width / 2);

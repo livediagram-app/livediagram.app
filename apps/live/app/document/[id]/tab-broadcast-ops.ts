@@ -1,12 +1,12 @@
 import {
-  diffDocFlow,
+  diffArticleFlow,
   diffToElementOps,
-  docsOf,
+  articlesOf,
   elementChangeIsDeltaOnly,
   mergeIncomingElement,
   mergeIncomingVote,
   preferNewerQa,
-  type DocOp,
+  type ArticleOp,
   type Tab,
 } from '@livediagram/document';
 import type { RoomOp } from '@livediagram/api-schema';
@@ -26,54 +26,54 @@ import type { RoomOp } from '@livediagram/api-schema';
 export const EL_OP_BROADCAST_LIMIT = 20;
 
 // Tab keys that never ride a `tab-meta` patch: `id` is immutable, `elements`
-// travels as `el` ops, `docs` as `doc` ops (docs/specs/007-editor/document-pages.md
+// travels as `el` ops, `articles` as `doc` ops (docs/specs/007-editor/article-pages.md
 // "Collaboration"), and `folder` is owned by the document-meta op (docs/specs/006-document/tab-folders.md)
 // so a content/meta edit can't clobber a concurrent folder move.
-export const META_SKIP: ReadonlySet<string> = new Set(['id', 'elements', 'docs', 'folder']);
+export const META_SKIP: ReadonlySet<string> = new Set(['id', 'elements', 'articles', 'folder']);
 
 // A whole tab as one op, without its documents' writing: that always travels as `doc` ops, so a
 // long document never makes a whole-tab op too big for the room to carry, and a receiver keeps its
 // own writing through the merge (mergeRemoteTab).
 function wholeTabOp(tab: Tab): RoomOp {
-  const { docs: _docs, ...rest } = tab;
+  const { articles: _docs, ...rest } = tab;
   void _docs;
   return { kind: 'tab', tabId: tab.id, tab: rest };
 }
 
 // The `doc` ops for a tab's documents' writing: per document, its block ops, or that it is gone.
-// The stored docs are compared by identity first, so an untouched document costs nothing.
-export function tabDocOps(before: Tab, after: Tab): RoomOp[] {
-  if (before.docs === after.docs) return [];
-  const was = docsOf(before);
-  const now = docsOf(after);
+// The stored articles are compared by identity first, so an untouched document costs nothing.
+export function tabArticleOps(before: Tab, after: Tab): RoomOp[] {
+  if (before.articles === after.articles) return [];
+  const was = articlesOf(before);
+  const now = articlesOf(after);
   const ops: RoomOp[] = [];
   for (const flow of Object.keys(was)) {
-    if (!(flow in now)) ops.push({ kind: 'doc', tabId: after.id, flow, removed: true });
+    if (!(flow in now)) ops.push({ kind: 'article', tabId: after.id, flow, removed: true });
   }
   for (const [flow, doc] of Object.entries(now)) {
     if (was[flow] === doc) continue;
     // In frames the room will carry (it drops one over 256K characters): ops in order, a frame
-    // closing before it would pass DOC_FRAME_CHARS. Applied in order, the frames compose.
-    let frame: DocOp[] = [];
+    // closing before it would pass ARTICLE_FRAME_CHARS. Applied in order, the frames compose.
+    let frame: ArticleOp[] = [];
     let chars = 0;
-    for (const op of diffDocFlow(was[flow], doc)) {
+    for (const op of diffArticleFlow(was[flow], doc)) {
       const size = JSON.stringify(op).length;
-      if (frame.length > 0 && chars + size > DOC_FRAME_CHARS) {
-        ops.push({ kind: 'doc', tabId: after.id, flow, ops: frame });
+      if (frame.length > 0 && chars + size > ARTICLE_FRAME_CHARS) {
+        ops.push({ kind: 'article', tabId: after.id, flow, ops: frame });
         frame = [];
         chars = 0;
       }
       frame.push(op);
       chars += size;
     }
-    if (frame.length > 0) ops.push({ kind: 'doc', tabId: after.id, flow, ops: frame });
+    if (frame.length > 0) ops.push({ kind: 'article', tabId: after.id, flow, ops: frame });
   }
   return ops;
 }
 
 // The most characters of block ops one `doc` frame carries: well inside the room's 256K cap on a
 // message (apps/api/src/document-room.ts MAX_MESSAGE_CHARS), with room for the envelope.
-export const DOC_FRAME_CHARS = 200_000;
+export const ARTICLE_FRAME_CHARS = 200_000;
 
 // Is this `vote` change nothing but dots moving?
 //
@@ -127,7 +127,8 @@ function tabMetaPatch(before: Tab, after: Tab): Partial<Omit<Tab, 'elements'>> {
 //   - otherwise → a `tab-meta` patch (only if meta changed) followed by one
 //     `el` op per changed element, in the diff's order.
 export function tabBroadcastOps(before: Tab | undefined, after: Tab): RoomOp[] {
-  if (!before) return [wholeTabOp(after), ...tabDocOps({ ...after, docs: undefined }, after)];
+  if (!before)
+    return [wholeTabOp(after), ...tabArticleOps({ ...after, articles: undefined }, after)];
 
   // An element whose only change rode a delta (an answer, an idea, a tick, a
   // comment: docs/specs/012-collaboration/collab-race-hardening.md) has already been said; a whole-element update on top
@@ -139,7 +140,7 @@ export function tabBroadcastOps(before: Tab | undefined, after: Tab): RoomOp[] {
     return !prev || !elementChangeIsDeltaOnly(prev, op.element);
   });
   if (elOps.length > EL_OP_BROADCAST_LIMIT) {
-    return [wholeTabOp(after), ...tabDocOps(before, after)];
+    return [wholeTabOp(after), ...tabArticleOps(before, after)];
   }
 
   const ops: RoomOp[] = [];
@@ -160,7 +161,7 @@ export function tabBroadcastOps(before: Tab | undefined, after: Tab): RoomOp[] {
     });
   }
   for (const op of elOps) ops.push({ kind: 'el', tabId: after.id, op });
-  ops.push(...tabDocOps(before, after));
+  ops.push(...tabArticleOps(before, after));
   return ops;
 }
 
@@ -206,6 +207,6 @@ export function mergeRemoteTab(local: Tab, incoming: Tab): Tab {
     folder: local.folder,
     ...(vote !== undefined ? { vote } : {}),
     // The writing is the `doc` ops' alone (wholeTabOp): ours stays through a whole-tab merge.
-    ...(local.docs !== undefined ? { docs: local.docs } : {}),
+    ...(local.articles !== undefined ? { articles: local.articles } : {}),
   };
 }

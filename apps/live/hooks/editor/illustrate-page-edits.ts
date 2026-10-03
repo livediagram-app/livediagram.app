@@ -1,6 +1,6 @@
 // The edits to an Illustrate tab's pages (docs/specs/007-editor/illustrate-pages.md): turn,
 // resize, rename and paint a page; add, duplicate, move and delete one. On a document page
-// (docs/specs/007-editor/document-pages.md) each acts on the whole document: its pages share their
+// (docs/specs/007-editor/article-pages.md) each acts on the whole document: its pages share their
 // size, orientation and background, and move, copy and go as one. Each is one tab edit (one undo
 // step, synced to everyone) that moves the content of every page it shifts along with it
 // (withIllustratePages), re-reading the tab at commit time so two quick edits compose.
@@ -9,12 +9,12 @@ import {
   illustratePagesOf,
   layOutIllustratePages,
   MAX_ILLUSTRATE_PAGES,
-  nextDocFlowId,
+  nextArticleFlowId,
   nextIllustratePageId,
   pageUnits,
-  withDocumentAdded,
-  withDocumentDuplicated,
-  withDocumentRemoved,
+  withArticleAdded,
+  withArticleDuplicated,
+  withArticleRemoved,
   withUnitMoved,
   PAGE_NAME_MAX,
   withDuplicatedPage,
@@ -73,7 +73,7 @@ export function illustratePageEdits({
   elements,
   commitTabs,
   onCreated,
-  onDocumentCreated,
+  onArticleCreated,
   onLayoutPlaced,
   mayEdit = () => true,
 }: {
@@ -90,7 +90,7 @@ export function illustratePageEdits({
   // A new page (added or duplicated) by its id, so the view can go to it.
   onCreated: (pageId: string) => void;
   // A new document by its flow id, so its writing can take the caret.
-  onDocumentCreated?: (flow: string) => void;
+  onArticleCreated?: (flow: string) => void;
 }): IllustratePageEdits {
   // A locked tab, or a person no longer editing, takes no page edit.
   const commitTab = (change: TabChange) => {
@@ -203,14 +203,14 @@ export function illustratePageEdits({
   // portrait); a new document the last page's paper size and orientation when it is a paper size
   // (A4, US Letter, A3), else A4 portrait. Both on the plain paper.
   const addPage = (kind: PageKind) => {
-    track('Tab', 'Changed', kind === 'document' ? 'DocumentPageAdded' : 'PageAdded');
+    track('Tab', 'Changed', kind === 'article' ? 'ArticleAdded' : 'PageAdded');
     const id = nextIllustratePageId(current);
-    if (kind === 'document') {
-      const flow = nextDocFlowId(new Set(current.flatMap((p) => (p.flow ? [p.flow] : []))));
+    if (kind === 'article') {
+      const flow = nextArticleFlowId(new Set(current.flatMap((p) => (p.flow ? [p.flow] : []))));
       const last = current[current.length - 1];
       const paper = last && ['a4', 'letter', 'a3'].includes(last.size ?? 'a4');
       commitTab((t) =>
-        withDocumentAdded(
+        withArticleAdded(
           t,
           {
             id,
@@ -221,7 +221,7 @@ export function illustratePageEdits({
         ),
       );
       onCreated(id);
-      onDocumentCreated?.(flow);
+      onArticleCreated?.(flow);
       debugLog('[illustrate-page] document added', { tabId, flow, count: current.length + 1 });
       return;
     }
@@ -245,10 +245,10 @@ export function illustratePageEdits({
     if (!target) return;
     track('Tab', 'Changed', 'PageDuplicated');
     if (target.flow) {
-      const flow = nextDocFlowId(new Set(current.flatMap((p) => (p.flow ? [p.flow] : []))));
+      const flow = nextArticleFlowId(new Set(current.flatMap((p) => (p.flow ? [p.flow] : []))));
       let created: string | undefined;
       commitTab((t) => {
-        const out = withDocumentDuplicated(t, target.flow!, flow);
+        const out = withArticleDuplicated(t, target.flow!, flow);
         created = out?.pages.find((p) => p.flow === flow)?.id;
         return out;
       });
@@ -272,7 +272,7 @@ export function illustratePageEdits({
     if (!target || units.length <= 1) return;
     track('Tab', 'Changed', 'PageRemoved');
     if (target.flow) {
-      commitTab((t) => withDocumentRemoved(t, target.flow!));
+      commitTab((t) => withArticleRemoved(t, target.flow!));
       debugLog('[illustrate-page] document removed', { tabId, flow: target.flow });
       return;
     }

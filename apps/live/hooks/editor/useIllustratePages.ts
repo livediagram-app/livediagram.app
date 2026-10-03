@@ -30,7 +30,7 @@ import {
   themeBackgroundPresets,
   type ThemeBackgroundPreset,
 } from '@/lib/illustrate-page-paint';
-import type { DocumentPagesView } from './useDocumentPages';
+import type { ArticlesView } from './useArticles';
 import { illustratePageEdits, type IllustratePageEdits } from './illustrate-page-edits';
 import type { PageLayoutId } from '@livediagram/templates';
 
@@ -47,8 +47,8 @@ export type IllustratePagesView = {
   themeBackgrounds: ThemeBackgroundPreset[];
   // The tab theme's accent: a document's accent unless it picked one of its own.
   themeAccent: string;
-  // The documents' writing on the pages (useDocumentPages), composed in by the editor.
-  documents?: DocumentPagesView | null;
+  // The documents' writing on the pages (useArticles), composed in by the editor.
+  articles?: ArticlesView | null;
   // The tab's default face, for what the pages draw themselves (a layout preview).
   tabFont?: string;
   // A layout previewed on a page while its tile is hovered: the page's own content is hidden
@@ -84,7 +84,7 @@ export function useIllustratePages(deps: {
   clearSelection: () => void;
   toastInfo: (message: string) => void;
   // A new document by its flow id, so its writing can take the caret.
-  onDocumentCreated?: (flow: string) => void;
+  onArticleCreated?: (flow: string) => void;
 }): IllustratePagesView | null {
   const { activeTab, mode, canEdit, tabLoaded, commitTabs } = deps;
   const on = hasPageLook(mode);
@@ -196,7 +196,7 @@ export function useIllustratePages(deps: {
       elements: activeTab.elements,
       commitTabs,
       onCreated: setGoTo,
-      onDocumentCreated: deps.onDocumentCreated,
+      onArticleCreated: deps.onArticleCreated,
       onLayoutPlaced: deps.clearSelection,
       mayEdit,
     }),

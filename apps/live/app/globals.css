@@ -5,7 +5,7 @@
 @import './qa-board.css';
 @import './canvas-motion.css';
 @import './thumbnail-loader.css';
-@import './document-pages.css';
+@import './article-pages.css';
 
 /* A phone: narrower than `sm`, or a touch screen under 500px tall (one held sideways). The JS twin
  * is PHONE_MEDIA_QUERY (lib/responsive.ts); the two state the same query. Phone-only layout uses

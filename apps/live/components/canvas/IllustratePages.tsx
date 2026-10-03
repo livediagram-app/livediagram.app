@@ -3,12 +3,12 @@
 import { useCallback, useRef, useState, type CSSProperties } from 'react';
 import { lucidePanelsTopLeft, lucideSettings } from '@livediagram/icons/lucide';
 import {
-  docBodyLinePx,
-  docMarginPx,
+  articleBodyLinePx,
+  articleMarginPx,
   ILLUSTRATE_PAGE_GAP,
   pageIsDark,
   pageLabel,
-  resolveDocStyle,
+  resolveArticleStyle,
   resolveFontStack,
   type LaidOutPage,
   type PageKind,
@@ -25,8 +25,8 @@ import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { pageSheetStyle } from '@/lib/illustrate-page-paint';
 import { IllustratePagePanel, type PagePanelTab } from './IllustratePagePanel';
 import { AddPagePopover } from './AddPagePopover';
-import { DocumentStyleSection } from './doc/DocumentStyleSection';
-import { useStylePanelRequest } from '@/lib/doc/doc-editor-store';
+import { ArticleStyleSection } from './article/ArticleStyleSection';
+import { useStylePanelRequest } from '@/lib/article/article-editor-store';
 import {
   previewedBackground,
   setPageBackgroundPreview,
@@ -67,28 +67,31 @@ export function IllustratePages({
   bare?: boolean;
 }) {
   const { pages, focusPage } = view;
-  const docs = view.documents ?? null;
+  const articles = view.articles ?? null;
   // A document page's style (a hover in its Style tab previews one).
-  const docStyleOf = (page: LaidOutPage) =>
+  const articleStyleOf = (page: LaidOutPage) =>
     page.flow
-      ? docs?.stylePreview?.flow === page.flow
-        ? docs.stylePreview.style
-        : docs?.docs[page.flow]?.style
+      ? articles?.stylePreview?.flow === page.flow
+        ? articles.stylePreview.style
+        : articles?.flows[page.flow]?.style
       : undefined;
   // A document page's Lines pattern ruled on its writing's baselines, inside its margins.
   const rulingOf = (page: LaidOutPage) =>
-    page.flow && docs?.docs[page.flow]
-      ? { pitch: docBodyLinePx(docStyleOf(page)), inset: docMarginPx(docStyleOf(page)) }
+    page.flow && articles?.flows[page.flow]
+      ? {
+          pitch: articleBodyLinePx(articleStyleOf(page)),
+          inset: articleMarginPx(articleStyleOf(page)),
+        }
       : undefined;
   // A document page's number, in its bottom margin, once its document has more than one page.
   const pageNumberOf = (page: LaidOutPage) => {
-    if (!page.flow || !docs?.docs[page.flow]) return null;
-    const style = resolveDocStyle(docStyleOf(page));
+    if (!page.flow || !articles?.flows[page.flow]) return null;
+    const style = resolveArticleStyle(articleStyleOf(page));
     const own = pages.filter((p) => p.flow === page.flow);
     if (!style.pageNumbers || own.length < 2) return null;
     return {
       n: own.findIndex((p) => p.id === page.id) + 1,
-      bottom: docMarginPx(docStyleOf(page)) / 2 - 8,
+      bottom: articleMarginPx(articleStyleOf(page)) / 2 - 8,
       font: resolveFontStack(style.bodyFont),
     };
   };
@@ -273,13 +276,13 @@ export function IllustratePages({
           }
           onClose={close}
           documentStyle={
-            open.flow && docs?.docs[open.flow] ? (
-              <DocumentStyleSection
-                style={docs.docs[open.flow]!.style}
+            open.flow && articles?.flows[open.flow] ? (
+              <ArticleStyleSection
+                style={articles.flows[open.flow]!.style}
                 themeAccent={view.themeAccent}
-                onChange={(change) => docs.setStyle(open.flow!, change)}
+                onChange={(change) => articles.setStyle(open.flow!, change)}
                 onPreview={(style) =>
-                  docs.setStylePreview(style ? { flow: open.flow!, style } : null)
+                  articles.setStylePreview(style ? { flow: open.flow!, style } : null)
                 }
               />
             ) : null

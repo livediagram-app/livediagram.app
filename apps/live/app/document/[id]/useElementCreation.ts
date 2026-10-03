@@ -429,7 +429,7 @@ export function useElementCreation(opts: {
   };
 
   // An element of its default size put at a canvas point at once, as a tap with its tile would:
-  // a document page's Insert (docs/specs/007-editor/document-pages.md "The page toolbar") places
+  // a document page's Insert (docs/specs/007-editor/article-pages.md "The page toolbar") places
   // a table, a chart or an image at the caret, and the writing takes it into a zone.
   const placeIntentAt = (
     intent: Extract<PendingDraw, { type: 'shape' | 'table' | 'image' | 'sticky' }>,

@@ -11,7 +11,7 @@ its page, clipping, centring) are in [Editor modes](editor-modes.md) "The pages"
 | Term                | Means                                                                                                     |
 | ------------------- | --------------------------------------------------------------------------------------------------------- |
 | **page**            | One sheet of a tab in Illustrate mode (`IllustratePage`), stored in `Tab.pages` in row order.             |
-| **page kind**       | What a page is for, fixed when it is made: an **infographic** page or a **document** page.                |
+| **page kind**       | What a page is for, fixed when it is made: an **infographic** page or an **article** page.                |
 | **page size**       | The sheet's format (`PageSizeId`): its short and long side in canvas px.                                  |
 | **orientation**     | Portrait (the long side upright) or landscape. A square page has none.                                    |
 | **page background** | What the sheet is painted with (`PageBackground`): a solid colour or a two-stop gradient, plus a pattern. |
@@ -24,23 +24,23 @@ A page is one of two kinds (`IllustratePage.kind`), chosen when it is made and n
 
 - **Infographic** (`kind` absent or `'infographic'`; every page from before kinds): a sheet to lay
   out elements on, freely, starting from a layout. Everything in this spec applies to it.
-- **Document** (`kind: 'document'`): a page to write on, its text flowing through the linked pages
-  of one document ([Document pages](document-pages.md)). This spec applies to it except where a
-  rule names infographic pages; [Document pages](document-pages.md) adds the rest.
+- **Article** (`kind: 'article'`): a page to write on, its text flowing through the linked pages
+  of one article ([Article pages](article-pages.md)). This spec applies to it except where a
+  rule names infographic pages; [Article pages](article-pages.md) adds the rest.
 
 **Adding a page**: the **+** after the last page opens a small popover, **Add a page**, offering
 two cards, each a miniature of the kind and a line under its name:
 
 - **Infographic**: "A page to lay out: layouts, icons, charts and media."
-- **Document**: "A page to write on, flowing onto new pages as it grows."
+- **Article**: "A page to write on, flowing onto new pages as it grows."
 
 Arrow keys move between them, Enter or a press chooses, Escape or an outside press closes. A new
 infographic page takes the last infographic page's size and orientation (else A4 portrait); a new
-document is as [Document pages](document-pages.md) "A document" says. The popover is the same on
+article is as [Article pages](article-pages.md) "An article" says. The popover is the same on
 a phone (a bottom sheet). The **+** is named **Add page** and shows the popover open as pressed.
 
 A tab entering Illustrate mode with no pages stored starts with one infographic page, as before.
-The **Document** template in /new starts a tab that opens in Illustrate mode with one document.
+The **Article** template in /new starts a tab that opens in Illustrate mode with one article.
 
 ## The page panel
 
@@ -49,8 +49,8 @@ The **Document** template in /new starts a tab that opens in Illustrate mode wit
   than the window.
 - Top to bottom: the **name** field (placeholder `Page n`, or `Untitled page` while there is one
   page; renamed on Enter, on leaving the field, or on closing the panel), then two tabs, **Page**
-  and **Layouts** (a document page: **Page** and **Style**, [Document pages](document-pages.md)
-  "Document style"), then the action row (Duplicate, Move left, Move right, Delete) as icon buttons
+  and **Layouts** (an article page: **Page** and **Style**, [Article pages](article-pages.md)
+  "Article style"), then the action row (Duplicate, Move left, Move right, Delete) as icon buttons
   with tooltips. **Page** holds the **Size** tiles (each drawn to scale), **Orientation**
   (Portrait / Landscape, absent for a page with no orientation), the **Background** swatches and
   the **Pattern** tiles; **Layouts** holds the layouts by category. The cog opens it on Page; the
@@ -78,10 +78,10 @@ The **Document** template in /new starts a tab that opens in Illustrate mode wit
 - `size` absent is **A4**.
 - `background` absent is the **paper**: white in light chrome, slate-900 in dark, as before.
 - `name` absent shows the page's place ("Page 2"); a name replaces it in the label.
-- `kind` absent is **infographic**; `flow` is present exactly on a document page (its document's
-  id). A stored document page without a flow is read as a document of its own (its id as the
+- `kind` absent is **infographic**; `flow` is present exactly on an article page (its article's
+  id). A stored article page without a flow is read as an article of its own (its id as the
   flow); a stored infographic page with a flow drops it.
-- **A document's pages sit together.** Read pages are put in order so that the pages of one flow
+- **An article's pages sit together.** Read pages are put in order so that the pages of one flow
   form one run, in their stored order, where the flow's first page stands (pages of a flow found
   after another page joined the run as two collaborators' edits crossed). Every page of a flow
   takes the size, orientation and background of its first.
@@ -229,21 +229,21 @@ A **layout** is placed onto one page from its panel's **Layouts** tab, by catego
 
 ## Page actions
 
-From the page panel's footer. On a **document page** each action acts on its **whole document**
+From the page panel's footer. On a **article page** each action acts on its **whole article**
 (every page of its flow, its writing, and the elements on its pages), and reads so: **Duplicate
-document**, **Move document left / right**, **Delete document**.
+article**, **Move article left / right**, **Delete article**.
 
 - **Duplicate**: a copy of the page (size, orientation, background, a name with "copy") right
   after it, with a copy of every element on it (new ids; arrows pinned between copied elements stay
-  pinned between the copies). Pages after it move along, their content with them. A document's
-  copy is a new flow with a copy of its writing (new block ids) right after the document.
-- **Move left** / **Move right**: swaps the page with its neighbour (a whole document counts as one
+  pinned between the copies). Pages after it move along, their content with them. An article's
+  copy is a new flow with a copy of its writing (new block ids) right after the article.
+- **Move left** / **Move right**: swaps the page with its neighbour (a whole article counts as one
   neighbour); both sides' content moves with them. Disabled at the row's ends.
 - **Delete page**: removes the page **and everything on it** (arrows pinned to it too); the pages
   after it close the gap. Offered while there is more than one page.
 - **Rename**: the panel's name field; empty clears the name.
 - Each is one tab edit (one undo step, synced to everyone). At the page limit (**100** pages,
-  `MAX_ILLUSTRATE_PAGES`) Duplicate is disabled (also when a document's copy would pass it), like
+  `MAX_ILLUSTRATE_PAGES`) Duplicate is disabled (also when an article's copy would pass it), like
   Add page is absent; Move left / right are disabled at the row's ends.
 - **A new page comes into view**: after Add page or Duplicate the view frames the new page.
 
@@ -257,9 +257,9 @@ document**, **Move document left / right**, **Delete document**.
 - **Drag a page's label to reorder**: once the press travels 6 screen px sideways it is a drag (an
   editor with two or more pages; the label shows a grab cursor). A marker bar in the gap shows
   where the page will land (after every other page whose centre is left of the dragged page's) and
-  the dragged sheet dims; release moves it there with its content, one edit. Escape cancels. A
-  document page's label drags its whole document, every sheet dimming; no slot falls inside a
-  document.
+  the dragged sheet dims; release moves it there with its content, one edit. Escape cancels. An
+  article page's label drags its whole article, every sheet dimming; no slot falls inside an
+  article.
 - **The label fits its page**: it truncates to the page's width on screen less the title bar's
   buttons, and hides when under 40 px.
 - **Snapping to the pages**: while a move or a resize is in hand in Illustrate mode, an element

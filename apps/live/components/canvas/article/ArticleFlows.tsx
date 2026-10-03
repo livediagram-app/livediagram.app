@@ -1,0 +1,235 @@
+'use client';
+
+// The writing of every article on the tab (docs/specs/007-editor/article-pages.md), in canvas
+// space above the sheets and under the elements, so a zone's elements sit over the room the
+// writing leaves for them. Each article's editor is its own (ArticleEditor), loaded only
+// once the tab has an article: the editor's code (ProseMirror) is not part of the canvas until a
+// article asks for it.
+import { lazy, Suspense, useMemo } from 'react';
+import {
+  articleMarginPx,
+  pageFillTone,
+  pageIsDark,
+  zoneAnchorOf,
+  zoneCanvasRect,
+  type ArticleZoneBlock,
+  type Element,
+  type LaidOutPage,
+  type PageRect,
+} from '@livediagram/document';
+import type { IllustratePagesView } from '@/hooks/editor/useIllustratePages';
+import { pagesClipPath } from '@/components/canvas/IllustratePageClip';
+import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
+import type { ArticleInk } from '@/lib/article/article-style-vars';
+import {
+  articleHandleOf,
+  requestArticleLink,
+  useActiveArticle,
+} from '@/lib/article/article-editor-store';
+import { PageToolbar } from './PageToolbar';
+import { previewedBackground, usePageBackgroundPreview } from '@/lib/page-background-preview';
+import { ZoneBar, ZoneResizeGrip } from './ZoneBar';
+
+const ArticleEditor = lazy(() => import('./ArticleEditor'));
+
+export function ArticleFlows({
+  view,
+  zoom,
+  interactive,
+  selectedIds,
+  elements,
+}: {
+  view: IllustratePagesView;
+  zoom: number;
+  // Whether presses on the writing are the writing's (no drawing tool in hand, not zen).
+  interactive: boolean;
+  // The canvas's selection and elements: a selection all in one zone shows its zone bar.
+  selectedIds: ReadonlySet<string>;
+  elements: readonly Element[];
+}) {
+  const articles = view.articles;
+  const surface = useCanvasSurface();
+  // A background hovered in a page's panel inks the writing as it would on the press.
+  const preview = usePageBackgroundPreview();
+  // Each article's pages, in order, kept by identity while the pages are.
+  const row = view.rowPages ?? view.pages;
+  const byFlow = useMemo(() => {
+    const out = new Map<string, LaidOutPage[]>();
+    for (const p of row) {
+      if (!p.flow) continue;
+      const run = out.get(p.flow);
+      if (run) run.push(p);
+      else out.set(p.flow, [p]);
+    }
+    return out;
+  }, [row]);
+  const active = useActiveArticle();
+  const target = articles?.editable
+    ? zoneTarget(
+        byFlow,
+        articles.flows,
+        active?.selection.zoneId ?? null,
+        active?.handle.flow ?? null,
+        selectedIds,
+        elements,
+      )
+    : null;
+  if (!articles || byFlow.size === 0) return null;
+  return (
+    <>
+      {/* Cut off at the shown sheets' edges, as the elements are (IllustratePageClip): writing that
+          reaches past the last page waits there unseen for its page. */}
+      <div
+        data-page-clip=""
+        className="absolute inset-0"
+        style={{ clipPath: pagesClipPath(view.pages) }}
+      >
+        {/* A press on an article page's blank paper (its margins, below the writing) puts the
+            caret at the writing nearest it, as on a page of a word processor. */}
+        {articles.editable && interactive
+          ? [...byFlow].flatMap(([flow, pages]) =>
+              pages
+                .filter((p) => view.pages.some((shown) => shown.id === p.id))
+                .map((p) => (
+                  <div
+                    key={p.id}
+                    aria-hidden
+                    data-article-paper=""
+                    className="absolute cursor-text"
+                    style={{
+                      left: p.rect.x,
+                      top: p.rect.y,
+                      width: p.rect.width,
+                      height: p.rect.height,
+                    }}
+                    onPointerDown={(e) => {
+                      if (e.button !== 0) return;
+                      e.stopPropagation();
+                      e.preventDefault();
+                      articles.onWritingPress();
+                      articleHandleOf(flow)?.focusAt(e.clientX, e.clientY);
+                    }}
+                  />
+                )),
+            )
+          : null}
+        <Suspense fallback={null}>
+          {[...byFlow].map(([flow, pages]) => {
+            const doc = articles.flows[flow];
+            if (!doc) return null;
+            const lead = pages[0]!;
+            return (
+              <ArticleEditor
+                key={flow}
+                flow={flow}
+                pages={pages}
+                doc={doc}
+                editable={articles.editable}
+                interactive={interactive}
+                zoom={zoom}
+                ink={inkOf(
+                  { ...lead, background: previewedBackground(lead, pages, preview) },
+                  surface,
+                )}
+                themeAccent={view.themeAccent}
+                styleOverride={
+                  articles.stylePreview?.flow === flow ? articles.stylePreview.style : undefined
+                }
+                margin={articleMarginPx(
+                  articles.stylePreview?.flow === flow ? articles.stylePreview.style : doc.style,
+                )}
+                onCommit={articles.onCommit}
+                onLayout={articles.onLayout}
+                onUndo={articles.undo}
+                onRedo={articles.redo}
+                onLinkRequest={requestArticleLink}
+                onInsert={articles.insertObject}
+                onWritingPress={articles.onWritingPress}
+                focusRequest={articles.focusRequest}
+              />
+            );
+          })}
+        </Suspense>
+        {articles.editable ? (
+          <PageToolbar
+            accent={view.themeAccent}
+            onInsert={(what) => {
+              if (active) articles.insertObject(active.handle.flow, what);
+            }}
+          />
+        ) : null}
+      </div>
+      {target && target.zone.zone === 'drawing' ? (
+        <ZoneResizeGrip
+          zoneId={target.zone.id}
+          rect={target.rect}
+          zoom={zoom}
+          onResize={(height) => articles.zoneAction(target.flow, target.zone.id, { height })}
+        />
+      ) : null}
+      {target ? (
+        <ZoneBar
+          zone={target.zone}
+          rect={target.rect}
+          zoom={zoom}
+          onAction={(action) => articles.zoneAction(target.flow, target.zone.id, action)}
+        />
+      ) : null}
+    </>
+  );
+}
+
+// The zone a zone bar is for: the one selected whole in the writing, else the one every selected
+// element is in.
+function zoneTarget(
+  byFlow: ReadonlyMap<string, LaidOutPage[]>,
+  articles: Readonly<Record<string, import('@livediagram/document').ArticleFlow>>,
+  zoneId: string | null,
+  zoneFlow: string | null,
+  selectedIds: ReadonlySet<string>,
+  elements: readonly Element[],
+): { flow: string; zone: ArticleZoneBlock; rect: PageRect } | null {
+  const zonesOf = (flow: string) =>
+    (articles[flow]?.blocks ?? []).filter((b): b is ArticleZoneBlock => b.type === 'zone');
+  if (zoneId && zoneFlow) {
+    const zone = zonesOf(zoneFlow).find((z) => z.id === zoneId);
+    const rect = zone ? zoneCanvasRect(byFlow.get(zoneFlow) ?? [], zone) : null;
+    if (zone && rect) return { flow: zoneFlow, zone, rect };
+  }
+  if (selectedIds.size === 0) return null;
+  const selected = elements.filter((e) => selectedIds.has(e.id));
+  if (selected.length === 0) return null;
+  for (const [flow, pages] of byFlow) {
+    for (const zone of zonesOf(flow)) {
+      const rect = zoneCanvasRect(pages, zone);
+      if (!rect) continue;
+      const inside = selected.every((e) => {
+        const p = zoneAnchorOf(e, elements as Element[]);
+        return (
+          p.x >= rect.x &&
+          p.x <= rect.x + rect.width &&
+          p.y >= rect.y &&
+          p.y <= rect.y + rect.height
+        );
+      });
+      if (inside) return { flow, zone, rect };
+    }
+  }
+  return null;
+}
+
+// What the writing on a page is drawn against: its fill's tone, or the plain paper (white in light
+// chrome, slate-900 in dark, as the sheet itself).
+const inkCache = new Map<string, ArticleInk>();
+function inkOf(page: LaidOutPage, surface: 'light' | 'dark'): ArticleInk {
+  const fill = page.background?.fill;
+  const tone = fill ? pageFillTone(fill) : surface === 'dark' ? '#0f172a' : '#ffffff';
+  const dark = fill ? pageIsDark(page) : surface === 'dark';
+  const key = `${tone}:${dark}`;
+  let ink = inkCache.get(key);
+  if (!ink) {
+    ink = { tone, dark };
+    inkCache.set(key, ink);
+  }
+  return ink;
+}

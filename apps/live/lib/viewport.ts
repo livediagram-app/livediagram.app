@@ -109,7 +109,7 @@ export const READING_TOP_ROOM = 104;
 const READING_SIDE_ROOM = 32;
 
 /**
- * The view that reads a document page (docs/specs/007-editor/document-pages.md "Getting around"):
+ * The view that reads a document page (docs/specs/007-editor/article-pages.md "Getting around"):
  * its width filling the canvas (never past 100%), room above it for the page toolbar; a page that
  * fits sits in the middle of the room below, a taller one shows its top.
  */
