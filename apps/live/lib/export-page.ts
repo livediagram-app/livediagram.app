@@ -49,7 +49,12 @@ function patternTile(pattern: string, ink: string): string {
   return `<rect y="${p - 1}" width="${p}" height="1" ${fill}/>`;
 }
 
-export function pageExportFrame(page: LaidOutPage): PageExportFrame {
+export function pageExportFrame(
+  page: LaidOutPage,
+  // The plain paper's colour: white in an export; the canvas's own paper where a page is drawn
+  // as the canvas shows it (the Map).
+  paper: string = EXPORT_PAPER,
+): PageExportFrame {
   const r = page.rect;
   const { fill, pattern } = page.background ?? {};
   const id = `lvd-page-${page.id.replace(/[^a-zA-Z0-9-]/g, '')}`;
@@ -65,7 +70,7 @@ export function pageExportFrame(page: LaidOutPage): PageExportFrame {
       rect(`url(#${id}-fill)`),
     );
   } else {
-    parts.push(rect(xmlEscape(fill?.color ?? EXPORT_PAPER)));
+    parts.push(rect(xmlEscape(fill?.color ?? paper)));
   }
   if (pattern) {
     const p = PAGE_PATTERN_PITCH;

@@ -149,6 +149,9 @@ From the page panel's footer:
 
 - **A page's label zooms to it**: a press on the label fits that page in the view, as entering the
   mode fits the first.
+- **The Map shows the pages**: each page's sheet in its own background with a crisp outline,
+  under the content, counted in the Map's bounds (so a tab of empty pages still has a Map), and
+  each element inked for its page.
 - **Drag a page's label to reorder**: once the press travels 6 screen px sideways it is a drag (an
   editor with two or more pages; the label shows a grab cursor). A marker bar in the gap shows
   where the page will land (after every other page whose centre is left of the dragged page's) and

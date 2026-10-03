@@ -10,9 +10,12 @@ import {
   svgArrow,
   svgBoxed,
   svgShadowDefs,
+  elementPageSurfaces,
   type Element,
+  type LaidOutPage,
   type Point,
 } from '@livediagram/document';
+import { pageExportFrame } from '@/lib/export-page';
 import { framesFirst, ZOOM_MAX, ZOOM_MIN } from '@/lib/canvas';
 import { resolveIconArtLoaded, resolveStickerArtLoaded } from '@/lib/icon-registry';
 import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
@@ -49,6 +52,9 @@ const MAP_HEIGHT: Record<MapSize, string> = {
 
 type MinimapProps = {
   elements: Element[];
+  // Infographic mode's pages (docs/specs/007-editor/infographic-pages.md "Getting around the
+  // pages"): drawn under the content as their sheets, each outlined, and counted in the bounds.
+  pages?: readonly LaidOutPage[];
   // The tab default face (docs/specs/004-interface-design/fonts.md): the miniature paints what the canvas
   // paints, so a canvas set in the marker face looks that way in the map too.
   tabFont?: string;
@@ -116,6 +122,7 @@ const MAP_RATIO: Record<MapSize, number> = {
 
 export function Minimap({
   elements: liveElements,
+  pages,
   tabFont,
   viewportOffset,
   viewportZoom,
@@ -159,6 +166,20 @@ export function Minimap({
     const drawn = elements.map(withoutLabel);
     const corners: Point[] = [];
     const parts: string[] = [];
+    // The pages first, under everything: each sheet in its own paint with a crisp outline, so
+    // even an empty page shows where it is.
+    const paper = surface === 'dark' ? '#0f172a' : '#ffffff';
+    const outline = surface === 'dark' ? '#94a3b8' : '#64748b';
+    for (const page of pages ?? []) {
+      const { x, y, width, height } = page.rect;
+      parts.push(
+        pageExportFrame(page, paper).backgroundSvg +
+          `<rect x="${x}" y="${y}" width="${width}" height="${height}" fill="none" stroke="${outline}" stroke-width="${Math.max(width, height) / 160}"/>`,
+      );
+      corners.push({ x, y }, { x: x + width, y: y + height });
+    }
+    // Each element inked for the page it is on, as the canvas inks it.
+    const pageSurfaces = pages ? elementPageSurfaces(drawn, pages) : null;
     // The resolvers find nothing until the catalogue chunk lands, which
     // re-runs the build with the glyphs.
     const resolveIconArt = iconsLoaded ? resolveIconArtLoaded : NO_ART;
@@ -176,14 +197,23 @@ export function Minimap({
           resolveIconArt,
           resolveStickerArt,
           tabFont,
-          surface,
+          surface: pageSurfaces?.get(el.id) ?? surface,
         }),
       );
       corners.push({ x: el.x, y: el.y }, { x: el.x + el.width, y: el.y + el.height });
     }
     for (const el of drawn) {
       if (el.type !== 'arrow') continue;
-      parts.push(svgArrow(el, drawn, surface, tabFont, labels, 'lvd-minimap-ko-'));
+      parts.push(
+        svgArrow(
+          el,
+          drawn,
+          pageSurfaces?.get(el.id) ?? surface,
+          tabFont,
+          labels,
+          'lvd-minimap-ko-',
+        ),
+      );
       corners.push(endpointPosition(el.from, drawn), endpointPosition(el.to, drawn));
     }
     const content = boundsOfPoints(corners);
@@ -205,7 +235,7 @@ export function Minimap({
       picture: { ...box, href: `data:image/svg+xml;charset=utf-8,${encodeURIComponent(doc)}` },
       bounds: content,
     };
-  }, [elements, tabFont, iconsLoaded, surface]);
+  }, [elements, pages, tabFont, iconsLoaded, surface]);
 
   const recentreToClient = (clientX: number, clientY: number) => {
     const svg = svgRef.current;

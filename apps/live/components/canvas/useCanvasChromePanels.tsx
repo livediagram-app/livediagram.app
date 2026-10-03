@@ -447,9 +447,13 @@ export function useCanvasChromePanels({
     [elements, props.tabLayers],
   );
   const minimapEl =
-    !chromeHidden && !isMobile && mapEnabled && elements.length >= 4 ? (
+    !chromeHidden &&
+    !isMobile &&
+    mapEnabled &&
+    (elements.length >= 4 || (props.infographicPages?.pages.length ?? 0) > 0) ? (
       <Minimap
         elements={mapElements}
+        pages={props.infographicPages?.pages}
         tabFont={props.tabFont}
         viewportOffset={props.viewportOffset}
         viewportZoom={viewportZoom}
