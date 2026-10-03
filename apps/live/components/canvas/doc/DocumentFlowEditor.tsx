@@ -132,11 +132,11 @@ export default function DocumentFlowEditor(props: DocumentFlowEditorProps) {
     if (a.kind === 'style') setBlockStyle(a.style)(view.state, view.dispatch, view);
     else if (a.kind === 'list') toggleList(a.list)(view.state, view.dispatch, view);
     else if (a.kind === 'block')
-      handleRef.current?.insert(
+      insertBlocksAfterCaret(
         a.block === 'divider'
           ? [docSchema.nodes.divider!.create()]
           : [docSchema.nodes.page_break!.create(), docSchema.nodes.paragraph!.create()],
-      );
+      )(view.state, view.dispatch, view);
     else latest.current.onInsert(latest.current.flow, a.what);
     view.focus();
   };
