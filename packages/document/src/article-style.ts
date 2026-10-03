@@ -191,6 +191,9 @@ export function articleBodyLinePx(style: ArticleStyle | undefined): number {
   return ARTICLE_TEXT_SIZE_PX[r.textSize] * ARTICLE_LINE_HEIGHT[r.lineSpacing];
 }
 
+const sameFields = (was: ArticleStyle | undefined, patch: Partial<ArticleStyle>): boolean =>
+  (Object.keys(patch) as (keyof ArticleStyle)[]).every((k) => was?.[k] === patch[k]);
+
 /**
  * An article's style changed (docs/specs/007-editor/article-pages.md "Article style"): a look
  * sets every field it has (keeping the accent, margins and page numbers); one field changed is
@@ -203,6 +206,8 @@ export function withArticleStyleChanged<
   const doc = articlesOf(tab)[flow];
   if (!doc) return tab;
   const was = doc.style;
+  // Already so (the look in force chosen again, a field set to what it is): the same tab back.
+  if ('look' in change ? was?.look === change.look : sameFields(was, change.patch)) return tab;
   let style: ArticleStyle;
   if ('look' in change) style = withArticleLook(was, change.look);
   else {

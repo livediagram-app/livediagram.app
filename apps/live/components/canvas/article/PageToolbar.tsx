@@ -123,7 +123,7 @@ export function PageToolbar({
   onNote,
 }: {
   // A comment or an action on the selected text (a margin note): handled by the host.
-  onNote?: (kind: 'comment' | 'action') => void;
+  onNote?: (flow: string, kind: 'comment' | 'action') => void;
   // The article pages on the tab, each with its article: what a hover or a press is measured on.
   articlePages: readonly { id: string; flow: string }[];
   // The screen px of a page's top margin at the current zoom: the room the band sits in.
@@ -131,7 +131,7 @@ export function PageToolbar({
   // The article's accent (the theme's when it has none of its own).
   accent: string;
   // An insert the writing alone cannot make (an object or a drawing): handled by the host.
-  onInsert?: (what: ObjectInsert) => void;
+  onInsert?: (flow: string, what: ObjectInsert) => void;
 }) {
   const selected = useActiveArticle();
   const hovered = useHoveredArticlePage(articlePages);
@@ -179,7 +179,7 @@ export function PageToolbar({
     if (commentRequest === seenComment.current) return;
     seenComment.current = commentRequest;
     const { active: a, onNote: note } = noteNow.current;
-    if (a?.selection.hasText) note?.('comment');
+    if (a?.selection.hasText) note?.(a.handle.flow, 'comment');
   }, [commentRequest]);
   // A menu goes with the article.
   if (!active && open) setOpen(null);
@@ -418,14 +418,14 @@ export function PageToolbar({
           label="Comment"
           keys="Mod-Alt-m"
           disabled={!selection.hasText || !onNote}
-          onPress={() => onNote?.('comment')}
+          onPress={() => onNote?.(handle.flow, 'comment')}
         >
           <CommentIcon />
         </Button>
         <Button
           label="Assign Action"
           disabled={!selection.hasText || !onNote}
-          onPress={() => onNote?.('action')}
+          onPress={() => onNote?.(handle.flow, 'action')}
         >
           <ActionIcon />
         </Button>
@@ -488,7 +488,7 @@ export function PageToolbar({
       {open === 'insert' ? (
         <ToolbarPopover anchor="insert" onClose={close} label="Insert" width={200}>
           <InsertPanel
-            onObject={(what) => choose(() => onInsert?.(what))}
+            onObject={(what) => choose(() => onInsert?.(handle.flow, what))}
             onBlock={(what) => choose(() => insertBlock(what))}
           />
         </ToolbarPopover>

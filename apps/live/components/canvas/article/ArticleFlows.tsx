@@ -197,6 +197,7 @@ export function ArticleFlows({
                 onInsert={articles.insertObject}
                 onWritingPress={articles.onWritingPress}
                 focusRequest={articles.focusRequest}
+                onFocusTaken={articles.focusTaken}
               />
             );
           })}
@@ -212,12 +213,9 @@ export function ArticleFlows({
               const style = preview && preview.flow === flow ? preview.style : doc?.style;
               return articleTopMarginPx(style) * zoom;
             }}
-            onInsert={(what) => {
-              if (active) articles.insertObject(active.handle.flow, what);
-            }}
-            onNote={(kind) => {
-              if (active) articles.addNote(active.handle.flow, kind);
-            }}
+            // For the article the toolbar shows for: the one worked on, or the one hovered.
+            onInsert={articles.insertObject}
+            onNote={articles.addNote}
           />
         ) : null}
       </div>

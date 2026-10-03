@@ -51,7 +51,12 @@ import { articleSchema } from '@/lib/article/article-schema';
 import { columnAt, flowFrame, pagePlaceOf } from '@/lib/article/article-flow-geometry';
 import { articleStyleVars, type ArticleInk } from '@/lib/article/article-style-vars';
 import { snapshotBars, snapshotWriting } from '@/lib/article/article-snapshot';
-import { removeSlashQuery, slashPlugin, type SlashBridge } from '@/lib/article/article-slash';
+import {
+  removeSlashQuery,
+  slashKey,
+  slashPlugin,
+  type SlashBridge,
+} from '@/lib/article/article-slash';
 import { filterSlashItems, type SlashItem } from '@/lib/article/article-slash-items';
 import { setBlockStyle, toggleList } from '@/lib/article/article-commands';
 import { caretOf } from '@/lib/article/article-caret';
@@ -66,6 +71,8 @@ import { debugLog } from '@/lib/debug-log';
 export const ARTICLE_IDLE_COMMIT_MS = 600;
 // How long after a local change this person still counts as the writer of its consequences.
 const WRITER_WINDOW_MS = 3000;
+// How long an undo or redo from the writing waits for its writing to come back (UNDO_SETTLE_MS).
+const UNDO_SETTLE_MS = 400;
 
 export type FlowLayout = {
   flow: string;
@@ -97,7 +104,8 @@ export type ArticleEditorProps = {
   // A style shown in place of the article's own while a Style tab choice is hovered.
   styleOverride?: ArticleFlow['style'];
   // The writing's blocks, written to the tab (one undo step, one sync).
-  onCommit: (flow: string, blocks: ArticleBlock[]) => void;
+  // False when the host refuses the writing (the tab locked, no rights).
+  onCommit: (flow: string, blocks: ArticleBlock[]) => boolean;
   onLayout: (layout: FlowLayout) => void;
   onUndo: () => void;
   onRedo: () => void;
@@ -109,6 +117,8 @@ export type ArticleEditorProps = {
   // A press on the writing: the canvas's selection goes.
   onWritingPress: () => void;
   focusRequest: FocusRequest;
+  // The request was taken (it is spent).
+  onFocusTaken?: (seq: number) => void;
 };
 
 export default function ArticleEditor(props: ArticleEditorProps) {
@@ -125,7 +135,20 @@ export default function ArticleEditor(props: ArticleEditorProps) {
   const measureFrame = useRef<number | null>(null);
   // Set while an undo or redo from the writing is under way: the change it brings back takes the
   // caret.
+  // An undo or redo from the writing in hand: the writing it brings back takes the caret. Set as
+  // it is asked for and cleared once it settles, so an undo that touches no writing (a shape's,
+  // or nothing to undo) never leaves a later collaborator's edit taking the caret.
   const undoing = useRef(false);
+  const undoReset = useRef<number | null>(null);
+  const markUndoing = () => {
+    undoing.current = true;
+    if (undoReset.current !== null) window.clearTimeout(undoReset.current);
+    undoReset.current = window.setTimeout(() => {
+      undoReset.current = null;
+      undoing.current = false;
+    }, UNDO_SETTLE_MS);
+  };
+  const blurTimer = useRef<number | null>(null);
   // The slash menu: open with its query and where the `/` is, and the entry highlighted.
   const [slash, setSlash] = useState<{
     query: string;
@@ -169,8 +192,10 @@ export default function ArticleEditor(props: ArticleEditorProps) {
     if (!view) return;
     const blocks = docToBlocks(view.state.doc, committed.current.blocks);
     if (blocks === committed.current.blocks) return;
+    // Taken as written only once the host accepts it (a tab locked meanwhile refuses): refused,
+    // it stays local and goes with the next commit.
+    if (latest.current.onCommit(latest.current.flow, blocks) === false) return;
     committed.current = { ...committed.current, blocks };
-    latest.current.onCommit(latest.current.flow, blocks);
   };
   const scheduleCommit = () => {
     if (idle.current !== null) window.clearTimeout(idle.current);
@@ -289,12 +314,12 @@ export default function ArticleEditor(props: ArticleEditorProps) {
         ...articleKeymap({
           undo: () => {
             flush();
-            undoing.current = true;
+            markUndoing();
             latest.current.onUndo();
           },
           redo: () => {
             flush();
-            undoing.current = true;
+            markUndoing();
             latest.current.onRedo();
           },
           onLink: () => latest.current.onLinkRequest(),
@@ -386,7 +411,6 @@ export default function ArticleEditor(props: ArticleEditorProps) {
         const end = start + nodes.reduce((n, node) => n + node.nodeSize, 0);
         tr.setSelection(Selection.near(tr.doc.resolve(end), -1)).setMeta('uiEvent', 'paste');
         v.dispatch(tr.scrollIntoView());
-        if (markdown) track('Element', 'Changed', 'ArticlePaste');
         return true;
       },
       dispatchTransaction(tr: Transaction) {
@@ -425,9 +449,13 @@ export default function ArticleEditor(props: ArticleEditorProps) {
         },
         blur: (v) => {
           flush();
+          // A slash menu open as the writing loses the caret closes with it.
+          if (slashKey.getState(v.state)?.active) v.dispatch(v.state.tr.setMeta(slashKey, 'close'));
           // The article stays active (its page keeps its toolbar) until a press lands off its
           // pages (PageToolbar); only the focus goes.
-          window.setTimeout(() => {
+          if (blurTimer.current !== null) window.clearTimeout(blurTimer.current);
+          blurTimer.current = window.setTimeout(() => {
+            blurTimer.current = null;
             if (v.hasFocus()) return;
             blurActiveArticle(latest.current.flow);
             setLocalArticleCaret(latest.current.flow, null);
@@ -438,7 +466,7 @@ export default function ArticleEditor(props: ArticleEditorProps) {
     });
     viewRef.current = view;
     // A handle for driving the writing in development (browser checks); never in production.
-    if (process.env.NODE_ENV !== 'production') Reflect.set(window, '__docView', view);
+    if (process.env.NODE_ENV !== 'production') Reflect.set(window, '__articleView', view);
     // Canvas px per screen px of the writing, and the writing's frame on the canvas.
     const scaleAndFrame = () => {
       const p = latest.current;
@@ -520,13 +548,13 @@ export default function ArticleEditor(props: ArticleEditorProps) {
       flush,
       undo: () => {
         flush();
-        undoing.current = true;
+        markUndoing();
         latest.current.onUndo();
         view.focus();
       },
       redo: () => {
         flush();
-        undoing.current = true;
+        markUndoing();
         latest.current.onRedo();
         view.focus();
       },
@@ -708,6 +736,9 @@ export default function ArticleEditor(props: ArticleEditorProps) {
       if (measureFrame.current !== null) cancelAnimationFrame(measureFrame.current);
       measureFrame.current = null;
       flush();
+      if (blurTimer.current !== null) window.clearTimeout(blurTimer.current);
+      if (process.env.NODE_ENV !== 'production' && Reflect.get(window, '__articleView') === view)
+        Reflect.deleteProperty(window, '__articleView');
       view.destroy();
       viewRef.current = null;
       clearActiveArticle(latest.current.flow);
@@ -774,6 +805,7 @@ export default function ArticleEditor(props: ArticleEditorProps) {
       request.at === 'start' ? Selection.atStart(view.state.doc) : Selection.atEnd(view.state.doc);
     view.dispatch(view.state.tr.setSelection(sel));
     view.focus();
+    props.onFocusTaken?.(request.seq);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [request?.seq]);
 

@@ -51,12 +51,15 @@ export type ArticlesView = {
   flows: Readonly<Record<string, ArticleFlow>>;
   // Whether this person may write (an editor, the tab not locked).
   editable: boolean;
-  onCommit: (flow: string, blocks: ArticleBlock[]) => void;
+  // False when the writing is refused (no rights, the tab locked): the editor keeps it local.
+  onCommit: (flow: string, blocks: ArticleBlock[]) => boolean;
   onLayout: (layout: FlowLayout) => void;
   undo: () => void;
   redo: () => void;
   focusRequest: FocusRequest;
   requestFocus: (flow: string, at: 'start' | 'end') => void;
+  // The editor took the request: it is spent, so a remounted editor never takes it again.
+  focusTaken: (seq: number) => void;
   // A press on the writing: the canvas's selection goes.
   onWritingPress: () => void;
   // Insert at the caret (the page toolbar): an empty drawing, or an object the writing takes in.
@@ -154,6 +157,10 @@ export function useArticles(deps: {
   });
   const [focusRequest, setFocusRequest] = useState<FocusRequest>(null);
   const seq = useRef(0);
+  const focusTaken = useCallback(
+    (taken: number) => setFocusRequest((r) => (r && r.seq === taken ? null : r)),
+    [],
+  );
   const requestFocus = useCallback((flow: string, at: 'start' | 'end') => {
     seq.current += 1;
     setFocusRequest({ flow, at, seq: seq.current });
@@ -162,7 +169,7 @@ export function useArticles(deps: {
   const onCommit = useCallback(
     (flow: string, blocks: ArticleBlock[]) => {
       const d = latest.current;
-      if (!d.canEdit || d.activeTab.locked === true) return;
+      if (!d.canEdit || d.activeTab.locked === true) return false;
       d.commitTabs((ts) =>
         ts.map((t) => {
           if (t.id !== tabId || t.locked === true) return t;
@@ -173,6 +180,7 @@ export function useArticles(deps: {
         }),
       );
       debugLog('[article] writing committed', { tabId, flow, blocks: blocks.length });
+      return true;
     },
     [tabId],
   );
@@ -253,6 +261,14 @@ export function useArticles(deps: {
     (flow: string, zoneId: string, action: ZoneAction) => {
       const d = latest.current;
       if (!d.canEdit || d.activeTab.locked === true) return;
+      const apply = (t: Tab): Tab => {
+        if ('remove' in action) return withZoneRemoved(t, flow, zoneId);
+        if ('float' in action) return withZoneReleased(t, flow, zoneId);
+        if ('size' in action) return withZoneSize(t, flow, zoneId, action.size, textWidth(t, flow));
+        return withZoneWrap(t, flow, zoneId, action, textWidth(t, flow));
+      };
+      // A choice already in force (the pressed fit, the same size) is no edit: no undo step.
+      if (apply(d.activeTab) === d.activeTab) return;
       articleHandleOf(flow)?.claimLayout();
       if ('remove' in action) track('Element', 'Changed', 'ArticleZoneRemoved');
       else if ('float' in action) {
@@ -260,16 +276,7 @@ export function useArticles(deps: {
         markZoneReleased(zoneId);
       } else if ('size' in action) track('Element', 'Changed', 'ArticleZoneResized');
       else track('Element', 'Changed', 'ArticleZoneWrap');
-      d.commitTabs((ts) =>
-        ts.map((t) => {
-          if (t.id !== tabId) return t;
-          if ('remove' in action) return withZoneRemoved(t, flow, zoneId);
-          if ('float' in action) return withZoneReleased(t, flow, zoneId);
-          if ('size' in action)
-            return withZoneSize(t, flow, zoneId, action.size, textWidth(t, flow));
-          return withZoneWrap(t, flow, zoneId, action, textWidth(t, flow));
-        }),
-      );
+      d.commitTabs((ts) => ts.map((t) => (t.id === tabId ? apply(t) : t)));
       debugLog('[article] zone changed', { tabId, flow, zoneId, action });
     },
     [tabId],
@@ -366,9 +373,11 @@ export function useArticles(deps: {
     (flow: string, change: ArticleStyleChange) => {
       const d = latest.current;
       if (!d.canEdit || d.activeTab.locked === true) return;
+      setStylePreview(null);
+      // The look or value already chosen is no edit: no undo step.
+      if (withArticleStyleChanged(d.activeTab, flow, change) === d.activeTab) return;
       articleHandleOf(flow)?.claimLayout();
       track('Tab', 'Changed', 'look' in change ? LOOK_EVENT[change.look] : 'ArticleStyle');
-      setStylePreview(null);
       d.commitTabs((ts) =>
         ts.map((t) => (t.id === tabId ? withArticleStyleChanged(t, flow, change) : t)),
       );
@@ -391,6 +400,7 @@ export function useArticles(deps: {
     redo,
     focusRequest,
     requestFocus,
+    focusTaken,
     onWritingPress,
     insertObject,
     zoneAction,

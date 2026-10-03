@@ -372,6 +372,8 @@ export function withZoneWrap<T extends DocsTab>(
   if (!doc || !zone) return tab;
   const wrap = change.wrap ?? zone.wrap ?? 'inline';
   const align = change.align ?? zone.align ?? 'center';
+  // Already so: the same tab back (no edit, no undo step).
+  if (wrap === (zone.wrap ?? 'inline') && align === (zone.align ?? 'center')) return tab;
   const max = wrap === 'inline' ? textWidth : textWidth * ARTICLE_WRAP_MAX_SHARE;
   const scale = Math.min(1, max / zone.width);
   let elements = tab.elements as Element[];

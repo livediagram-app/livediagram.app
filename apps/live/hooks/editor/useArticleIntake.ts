@@ -153,7 +153,6 @@ export function useArticleIntake({
               el.id === r.elementId ? ({ ...el, x: rect.x, y: rect.y } as Element) : el,
             ),
           };
-          if (r.res) track('Element', 'Changed', 'ArticleZoneMoved');
           debugLog('[article] object dropped in the writing', {
             tabId,
             flow: r.flow,
@@ -187,7 +186,6 @@ export function useArticleIntake({
             ...landed.tab,
             elements: withElementsIntoZone(landed.tab.elements, new Set(ids), plan, landed.rect),
           };
-          track('Element', 'Added', plan.zone === 'drawing' ? 'ArticleDrawing' : 'ArticleObject');
           debugLog('[article] zone took elements in', {
             tabId,
             flow,
@@ -203,6 +201,10 @@ export function useArticleIntake({
       // Nothing to settle: the same tabs back, so the tick changes nothing.
       return out.every((t, i) => t === ts[i]) ? ts : out;
     });
+    // Counted once, outside the updater (which React may run twice).
+    for (const r of relocations) if (r.res) track('Element', 'Changed', 'ArticleZoneMoved');
+    for (const { plan } of intakes)
+      track('Element', 'Added', plan.zone === 'drawing' ? 'ArticleDrawing' : 'ArticleObject');
     // The writing's editors are told of the new blocks through the tab, like any change.
   }, [activeTab, tabId, on, editable, pages, localEditSeq, tickTabs, gesture]);
 }

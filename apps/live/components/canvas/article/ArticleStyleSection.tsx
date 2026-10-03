@@ -3,7 +3,7 @@
 // An article page's Style tab (docs/specs/007-editor/article-pages.md "Article style"): the looks
 // to start from, then each field on its own. Every choice is one edit to the article's style,
 // shared by all its pages; hovering a look or a choice previews it on the writing.
-import type { ReactNode } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 import {
   ARTICLE_LOOK_IDS,
   ARTICLE_LOOKS,
@@ -48,6 +48,12 @@ export function ArticleStyleSection({
   // A style to show on the writing while a choice is hovered; null puts it back.
   onPreview: (style: ArticleStyle | null) => void;
 }) {
+  // A choice hovered as the panel closes (Escape, a press elsewhere) is never left on the page.
+  const clearPreview = useRef(onPreview);
+  useEffect(() => {
+    clearPreview.current = onPreview;
+  });
+  useEffect(() => () => clearPreview.current(null), []);
   const r = resolveArticleStyle(style);
   const accent = r.accent ?? themeAccent;
   const preview = (patch: Partial<ArticleStyle>) => onPreview({ ...style, ...patch });
