@@ -32,7 +32,7 @@ Scope, by file:
 | `apps/api/src/openapi/manifest.ts`                        | The three routes; the create body's `folderId` semantics and `intent`                                          |
 | `apps/live/lib/api/placement-defaults.ts`                 | `apiListPlacementDefaults`, `apiSetPlacementDefault`, `apiClearPlacementDefault`                               |
 | `apps/live/lib/api/documents.ts`                          | `apiCreateDocument` sends `folderId` when not `undefined` (null included) and `intent`                         |
-| `apps/live/components/palette/TemplatePicker.tsx`         | The wizard's placement counts only once seen or picked                                                         |
+| `apps/live/components/palette/TemplatePicker.tsx`         | The wizard's placement: a pick, the context or the default, else none (`useWizardPlacement`)                   |
 | `apps/live/app/new/page.tsx`                              | The wizard and its bypasses send the first tab's intent and the template's family                              |
 | `apps/live/lib/duplicate-document.ts`                     | Duplicate: beside the source, the source's recorded intent, root on refusal                                    |
 | `apps/live/lib/board-scene-import.ts`                     | Every imported document sends its first tab's intent                                                           |
@@ -130,11 +130,12 @@ placement is the argument, else the source's own `{ teamId, folderId }`, always 
 documents (`{ folderId: null }`), logging `[duplicate] placement refused reason=<code>, filed at the
 root`.
 
-**Wizard** (`TemplatePicker`): `placementSeen` starts true when a `/new?folder=` / `?team=` context
-seeded the picker, and turns true when the Settings step opens or a destination is double-clicked.
-`settingsFor(p)` carries `parsePlacement(p)` only when seen; otherwise no `teamId` / `folderId`. The
-page passes them through, `undefined` staying absent. The bypass reads `?folder=` / `?team=` as
-`undefined` when missing.
+**Wizard** (`TemplatePicker`, `useWizardPlacement`): the placement is the reader's pick, else the
+`/new?folder=` / `?team=` context, else the default resolved for the template, each sent as
+`parsePlacement(...)`; the root shown because nothing resolved sends no `teamId` / `folderId`, and
+Skip sends only a pick or a context ([Surfaces (live)](#surfaces-live), "Wizard"). The page passes
+them through, `undefined` staying absent, and passes no `initialPlacement` without a context. The
+bypass reads `?folder=` / `?team=` as `undefined` when missing.
 
 ## Recorded intent
 
@@ -256,24 +257,24 @@ owner_id = ?` then `DELETE … WHERE owner_id = <guest>`: the account's row for 
 
 ## Testing
 
-| Rule                                                                         | Test                                                                                             |
-| ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| Editor modes are one list                                                    | `packages/document/src/editor-mode.test.ts`                                                      |
-| Keys, intent derivation and parsing, key order, telemetry values             | `packages/api-schema/src/placement-defaults.test.ts`                                             |
-| Template to template family map                                              | `apps/live/lib/template-families.test.ts`                                                        |
-| Chosen or not; explicit root; default step; kind before template before mode | `apps/api/src/placement/resolve-placement.test.ts`                                               |
-| Routes: every answer and rejection, encoded keys, logs (real SQLite)         | `apps/api/src/routes/placement-defaults.test.ts`                                                 |
-| Create lands in the default; explicit root wins; dangling; intent_invalid    | `apps/api/src/routes/document-create-default-folder.test.ts`                                     |
-| Placement on create, chosen roots logged as explicit                         | `apps/api/src/routes/document-create-placement.test.ts`                                          |
-| Recorded intent written once, read back, unknown for legacy rows, copied     | `apps/api/src/routes/document-create-intent.test.ts`, `apps/api/src/document-intent-row.test.ts` |
-| Store order, replace, clear; sign-up keeps the account's row                 | `apps/api/src/db/placement-defaults.test.ts`                                                     |
-| Deletion and migration of every owner-keyed column                           | `apps/api/src/db/account-owner-columns.test.ts`                                                  |
-| Dispatch, route labels, OpenAPI parity                                       | `apps/api/src/route-resources.test.ts`, `apps/api/src/openapi/*.test.ts`                         |
-| Client functions; the create body's absent versus null `folderId`            | `apps/live/lib/api/placement-defaults.test.ts`, `apps/live/lib/api-client.test.ts`               |
-| Wizard placement only once seen                                              | `apps/live/components/palette/TemplatePicker.test.tsx`                                           |
-| Duplicate beside its source, record-only, root on refusal                    | `apps/live/lib/duplicate-document.test.ts`                                                       |
-| Import and Drive copy send the intent                                        | `apps/live/lib/board-scene-import.test.ts`, `apps/live/lib/drive/livediagram-port.test.ts`       |
-| MCP create sends the intent and names the folder                             | `apps/mcp/src/create-document-placement.test.ts`                                                 |
+| Rule                                                                            | Test                                                                                             |
+| ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| Editor modes are one list                                                       | `packages/document/src/editor-mode.test.ts`                                                      |
+| Keys, intent derivation and parsing, key order, telemetry values                | `packages/api-schema/src/placement-defaults.test.ts`                                             |
+| Template to template family map                                                 | `apps/live/lib/template-families.test.ts`                                                        |
+| Chosen or not; explicit root; default step; kind before template before mode    | `apps/api/src/placement/resolve-placement.test.ts`                                               |
+| Routes: every answer and rejection, encoded keys, logs (real SQLite)            | `apps/api/src/routes/placement-defaults.test.ts`                                                 |
+| Create lands in the default; explicit root wins; dangling; intent_invalid       | `apps/api/src/routes/document-create-default-folder.test.ts`                                     |
+| Placement on create, chosen roots logged as explicit                            | `apps/api/src/routes/document-create-placement.test.ts`                                          |
+| Recorded intent written once, read back, unknown for legacy rows, copied        | `apps/api/src/routes/document-create-intent.test.ts`, `apps/api/src/document-intent-row.test.ts` |
+| Store order, replace, clear; sign-up keeps the account's row                    | `apps/api/src/db/placement-defaults.test.ts`                                                     |
+| Deletion and migration of every owner-keyed column                              | `apps/api/src/db/account-owner-columns.test.ts`                                                  |
+| Dispatch, route labels, OpenAPI parity                                          | `apps/api/src/route-resources.test.ts`, `apps/api/src/openapi/*.test.ts`                         |
+| Client functions; the create body's absent versus null `folderId`               | `apps/live/lib/api/placement-defaults.test.ts`, `apps/live/lib/api-client.test.ts`               |
+| Wizard placement: a pick, a context or the default; the shown root is no choice | `apps/live/components/palette/TemplatePicker.test.tsx`                                           |
+| Duplicate beside its source, record-only, root on refusal                       | `apps/live/lib/duplicate-document.test.ts`                                                       |
+| Import and Drive copy send the intent                                           | `apps/live/lib/board-scene-import.test.ts`, `apps/live/lib/drive/livediagram-port.test.ts`       |
+| MCP create sends the intent and names the folder                                | `apps/mcp/src/create-document-placement.test.ts`                                                 |
 
 ## Constants and configuration
 
@@ -293,9 +294,247 @@ No environment variable or binding is added.
 PascalCase (`DefaultModeDiagram`, `DefaultModeDraw`, `DefaultKindEventStorming`,
 `DefaultTemplateRetrospective`, `DefaultTemplateKanban`), so a new editor mode gains its value with its
 key. The surfaces that set and clear defaults fire `Folder·Changed·<value>` and
-`Folder·Cleared·<value>` before the write; no surface exists yet, so no emitter and no dashboard card
-are added here.
+`Folder·Cleared·<value>` before the write; the one emitter is the store
+(`placement-defaults-store.ts`), which every surface writes through. The dashboard charts them as Default
+Folders Set and Default Folders Cleared in its Organisation stack
+(`apps/telemetry/app/catalogue/features.ts`), their values read from `PLACEMENT_DEFAULT_KEYS`
+(`apps/telemetry/app/computed-emitters.ts`).
 
 ## Defaults ledger
 
-D17 to D25, D27 and D28 in [DEFAULTS.md](DEFAULTS.md).
+D17 to D25, D27, D28, D105 to D120, D123 and D124 in [DEFAULTS.md](DEFAULTS.md).
+
+## Surfaces (live)
+
+Derived from [Default folders → Surfaces](../default-folders.md#surfaces). Defaults applied where that
+section is silent are `D105` to `D120`, `D123` and `D124`.
+
+| File                                                                                                                                    | Role                                                                                                                                                      |
+| --------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `packages/icons/lucide-manifest.json`                                                                                                   | Vendors `square-kanban` and `folder-check` (`D110`, `D118`)                                                                                               |
+| `apps/live/lib/placement-defaults/default-key-entries.ts`                                                                               | `DEFAULT_KEY_ENTRIES`, `defaultKeyEntry`, `joinNouns`, `defaultFolderDescription`                                                                         |
+| `apps/live/lib/placement-defaults/placement-defaults-store.ts`                                                                          | The page's one copy: load, set, clear, optimistic with rollback, telemetry, logs                                                                          |
+| `apps/live/lib/placement-defaults/default-destination.ts`                                                                               | Pure: `DefaultFolderIndex`, `workingDefault`, `resolveDefaultFor`, `destinationOf`, keys                                                                  |
+| `apps/live/lib/placement-defaults/default-folder-names.ts`                                                                              | This browser's memory of default folders' names (`D113`)                                                                                                  |
+| `apps/live/lib/folder-delete-confirmation.ts`                                                                                           | `folderDeleteConfirmation`: where the contents go, the default-folder line                                                                                |
+| `apps/live/hooks/persistence/usePlacementDefaults.ts`                                                                                   | `usePlacementDefaults(ownerId)`, `useFolderDefaultKeys(folderId)`                                                                                         |
+| `apps/live/hooks/persistence/useDefaultFolderMenus.ts`                                                                                  | `useDefaultFolderIndex(lists)`, `useDefaultFolderMenus(ownerId, lists)`: the menu bundles for a folder and for My documents; notes default folders' names |
+| `apps/live/hooks/persistence/usePlacementOptions.ts`                                                                                    | Moved from `app/new`: folders, teams and team folders for a picker, inline create, and `ready` / `failed`                                                 |
+| `apps/live/components/placement/default-key-icons.tsx`                                                                                  | `DEFAULT_KEY_ICONS`, `DefaultKeyIcon`                                                                                                                     |
+| `apps/live/components/placement/DefaultFolderMarker.tsx`                                                                                | The marker; `useDefaultFolderDescription(folderId)` for a tree row's description                                                                          |
+| `apps/live/components/placement/UseAsDefaultMenu.tsx`                                                                                   | The submenu: a plain flyout of `MenuCheckRow`s                                                                                                            |
+| `apps/live/components/placement/DefaultFolderPickerDialog.tsx`                                                                          | The default folder picker                                                                                                                                 |
+| `apps/live/components/primitives/MenuCheckRow.tsx`                                                                                      | A `menuitemcheckbox` row                                                                                                                                  |
+| `apps/live/components/primitives/MenuFlyoutSection.tsx`, `MenuFlyoutPanel.tsx`                                                          | Gains `plain`: a trigger shaped like a plain `MenuActionRow`; the panel and trigger faces in their own file                                               |
+| `apps/live/app/explorer/folder-actions-menu.tsx`                                                                                        | `defaults?: DefaultFolderMenu` renders the submenu before Delete                                                                                          |
+| `apps/live/app/explorer/folder-row.tsx`, `explorer-folder-cards.tsx`                                                                    | Marker; `menuHandlers` passes `defaults`                                                                                                                  |
+| `apps/live/app/explorer/useExplorerState.ts`                                                                                            | `folderActions` bundles `defaults`; exposes `rootDefaults`                                                                                                |
+| `apps/live/app/explorer/sidebar/SpacesGroup.tsx`, `useMyDocumentsMenu.tsx`                                                              | My documents' `⋯` and right-click menu, shared with the panel                                                                                             |
+| `apps/live/app/explorer/sidebar/SidebarFolderSubtree.tsx`, `TeamFolderSubtree.tsx`                                                      | `FolderLabel` (name, then marker); the marker's words as the row's description                                                                            |
+| `apps/live/components/panels/explorer-tree/*`                                                                                           | `PanelTree.defaultFolders`; panel folder rows and My documents                                                                                            |
+| `apps/live/components/panels/TeamSharedDocuments.tsx`                                                                                   | Team library folder menus carry `defaults`                                                                                                                |
+| `apps/live/components/palette/useWizardPlacement.ts`                                                                                    | The wizard's placement: picked, context, default, what is sent                                                                                            |
+| `apps/live/components/palette/WizardDefaultFolder.tsx`                                                                                  | The slot under the browser: the reason line with Change default, or Always save                                                                           |
+| `apps/live/components/palette/template-picker-settings.tsx`, `TemplatePicker.tsx`, `TemplatePickerHeader.tsx`                           | `placementFooter` under the browser; the picker's placement from `useWizardPlacement`; its header in its own file                                         |
+| `apps/live/app/new/page.tsx`, `useWizardDefaults.ts`                                                                                    | No context = no `initialPlacement`; `useWizardDefaults` resolves per template; `applyAlwaysSave` before the create                                        |
+| `apps/live/components/dialogs/settings/SettingsPlacementDefaultRow.tsx`                                                                 | One Settings row                                                                                                                                          |
+| `apps/live/components/dialogs/settings/settings-catalogue.ts`, `settings-icons.tsx`                                                     | The `documents` category (its folder glyph on a lime tile), one `placementDefault` row per key                                                            |
+| `apps/live/components/dialogs/SettingsDialog.tsx`, `apps/live/components/dialogs/settings/SettingsCategoryPane.tsx`                     | `ownerId` loads the defaults; the pane fetches the folder lists only for a pane with Documents rows                                                       |
+| `apps/live/lib/drive/snapshot.ts`, `plan-inbound.ts`, `engine.ts`                                                                       | `deletedFolders`: a folder deleted here is never restored by its own stale create ([drive blueprint](../../022-drive-mirror/blueprints/drive-mirror.md))  |
+| `apps/live/app/explorer/useExplorerState.ts` (settings link)                                                                            | The `?settings=` deep link is read once hydrated                                                                                                          |
+| `apps/live/hooks/persistence/useDocumentListActions.ts`, `useFolders.ts`, `hooks/ui/useTeamFolderActions.ts`, `TeamSharedDocuments.tsx` | One confirmation; optimistic move-up                                                                                                                      |
+
+### Domain and naming (surfaces)
+
+| Term                    | Identifier                                                                                                                           |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| Entry                   | `DefaultKeyEntry { key, label, noun }`, `DEFAULT_KEY_ENTRIES` in `PLACEMENT_DEFAULT_KEYS` order                                      |
+| The page's defaults     | `PlacementDefaultsState { ownerId, status: 'idle'/'loading'/'ready'/'failed', defaults }`                                            |
+| Folder index            | `DefaultFolderIndex { personal: Map<id, folder>, team: Map<id, folder & { teamId }>, teams }`                                        |
+| Working default         | `workingDefault(key, defaults, index)`: the stored folder when the index holds it, else null                                         |
+| Destination             | `DefaultDestination`: `{ kind: 'root' }`, `{ kind: 'folder', folder, teamName }`, `{ kind: 'dangling', folderId, reason, fallback }` |
+| Default folder menu     | `DefaultFolderMenu { isChecked(key), isDisabled(key), toggle(key) }`                                                                 |
+| Surface                 | `DefaultSurface = 'menu' / 'wizard' / 'settings'`, for the log only                                                                  |
+| Wizard placement source | `'picked' / 'context' / 'default' / 'none'`                                                                                          |
+
+Banned: "home folder", "favourite folder", "preferred folder", "routing" in copy.
+
+### Behaviour and state (surfaces)
+
+**Store** (module scope, `useSyncExternalStore`): one state per page.
+
+- `loadPlacementDefaults(ownerId)`: no-op when this owner is `loading` or `ready`; a different owner
+  replaces the state (`status: 'loading'`, empty map). `GET` → `ready` with the map, logs `loaded
+count=<n>`; a failure → `failed`, logs `load failed status=<n>`. A response for an owner no longer
+  current is dropped.
+- `setPlacementDefault(key, folderId, surface)` and `clearPlacementDefault(key, surface)`: require
+  `ready`; fire `track('Folder', 'Changed' | 'Cleared', placementDefaultTelemetryType(key))`
+  **before** the write; apply the change optimistically; on success log `set key=<key>
+surface=<surface>` / `cleared key=<key> surface=<surface>`; on failure restore the previous value,
+  log `write failed key=<key> code=<code>, rolled back` (warn) and resolve `false`.
+- A set whose folder already holds the key, or a clear of a key with no default, writes nothing.
+
+**Destination** (pure, `default-destination.ts`):
+
+- `workingDefault(key, defaults, index)`: `defaults.get(key)` when it names a folder in
+  `index.personal`, or in `index.team` whose `teamId` is in `index.teams`; else null.
+- `resolveDefaultFor(intent, defaults, index)`: the first of `defaultKeysFor(intent)` with a working
+  default → `{ key, folderId, teamId, folderName }`; each stored but not working key before it is
+  listed in `skipped`.
+- `representativeIntent(key)`: `mode:<m>` → `{ mode: m, tabKind: 'diagram' }`; `kind:<k>` →
+  `{ mode: 'diagram', tabKind: k }`; `template:<f>` → `{ mode: 'diagram', tabKind: 'diagram',
+templateFamily: f }` (`D112`).
+- `destinationOf(key, defaults, index)`: no stored default → `root`; working → `folder`; else
+  `dangling` with `reason: 'deleted'` (a personal id, or a team folder of a listed team, not in the
+  index) or `'unavailable'` (remembered as a team folder whose team is not listed), and
+  `fallback = resolveDefaultFor(representativeIntent(key))` over the other keys (null = My documents).
+- `folderDefaultKeys(folderId, defaults)`: the keys stored for this folder, in list order.
+
+**Menus** (`useDefaultFolderMenus`):
+
+- `forFolder(folder)`: `isChecked(key)` = `defaults.get(key) === folder.id`; `toggle(key)` clears
+  when checked, else sets this folder; `isDisabled` never.
+- `forRoot`: `isChecked(key)` = `workingDefault(key) === null`; `isDisabled(key)` = `isChecked(key)`;
+  `toggle(key)` clears.
+- Both are `undefined` until the store is `ready`, so a menu opened before the load shows no
+  submenu rather than wrong checks.
+
+**Wizard** (`useWizardPlacement`):
+
+- Inputs: `context` (the `/new` URL's placement string, else `undefined`), `resolved` (the default
+  for the picked template's intent), the reader's `picked` placement.
+- `selected = picked ?? context ?? resolved?.value ?? 'unsorted'`; `source` follows the same order.
+- `sent()`: `picked`, `context`, `default` → `parsePlacement(selected)`; `none` → `{}` (`D115`).
+  `skipToDefaults` sends only `picked` or `context`.
+- `resolved` is re-read on every render, so a template change, a load, or a Change default
+  re-resolves; `picked` survives. A Change default clears `picked`.
+- Logs `pre-selected key=<key>` once per resolved key and `default-skipped key=<key>
+reason=folder_unknown` per skipped key.
+- **Always save:** `alwaysSaveKey = defaultKeysFor(intent)[0]`. Offered when the location is
+  livediagram, the selection is the My documents root or a folder (not a team root), and
+  `workingDefault(alwaysSaveKey)` differs from the selection's folder (null for the root). Reset to
+  unticked whenever the offer's selection or key changes. On Create, when ticked, the page awaits
+  `setPlacementDefault` (or `clearPlacementDefault` at the root) with surface `wizard` before
+  `apiCreateDocument`; its result never stops the create.
+
+**Folder delete (client):** the confirmation is `folderDeleteConfirmation({ name, parentName,
+scope, defaultKeys })`; the optimistic update moves the folder's subfolders and documents to its
+`parentId`, as the api does.
+
+### Interfaces and contracts (surfaces)
+
+- `FolderActionsMenu` gains `defaults?: DefaultFolderMenu`; `FolderActionBundle` gains
+  `defaults?: DefaultFolderMenu`; `menuHandlers` passes it through.
+- `MenuFlyoutSection` gains `plain?: boolean`: the trigger is a full-width 13px sentence-case row
+  with its icon in the 20px slot, as `MenuActionRow plain`, and a chevron-right in place of the
+  ellipsis.
+- `MenuCheckRow { label, icon, checked, disabled?, onToggle }`: `role="menuitemcheckbox"`,
+  `aria-checked`, `aria-disabled` when disabled; a check glyph in a fixed 16px slot whether checked
+  or not, then the entry's icon, then the label.
+- `NewDocumentSettings` gains `alwaysSave?: { key: PlacementDefaultKey; folderId: string | null }`.
+- `TemplatePicker` gains `defaults?: WizardDefaults` (`resolve(kind)`, `alwaysSaveKey(kind)`,
+  `currentValue(key)`, `change(key, folderId)`), built by `useWizardDefaults`; the picker's folder
+  lists are reused by the Change default dialog. `NewDocumentSettingsStep` gains `placementFooter`.
+- `SettingsDialog` gains `ownerId?: string | null`, handed to the Documents rows; the store's own
+  owner is used when absent.
+- `SettingsPlacementDefaultRowSpec = RowBase & { kind: 'placementDefault'; placementKey }`.
+- `DefaultFolderPickerDialog { entry, current: string | null, folders, teams, teamFolders,
+onCreateFolder?, onPick(folderId: string | null), onClose }`.
+
+### Presentation and UX (surfaces)
+
+- Menu row: **Use as default for** with the folder-check icon, after Change Folder, before the Delete
+  separator. Its flyout: a `MenuHeader` "New documents that open as", then the five `MenuCheckRow`s.
+- Marker: `inline-flex shrink-0 items-center gap-0.5` icons at 12px in `text-slate-500
+dark:text-slate-400`, then `+N` at 10px semibold; after the count badge; in a tree row inside the
+  label's flex box (the label truncates, the marker does not).
+- Wizard slot (`min-h-6`, under the browser): either a `role="note"` line in `text-xs` slate with
+  the label and folder in semibold and a text button **Change default** (brand, underlined on
+  hover), or the Always save checkbox, `text-sm`, native. They never show together (`D123`).
+- Settings row card: the label (title case, `D124`) over the destination text (wrapping), with
+  **Change** and, with a default, **Clear** as small bordered buttons on the right, as the Trash
+  row's link. Dangling destination in amber-700 /
+  amber-300 with the reason in words. While the store loads, the destination reads "Loading…"; a
+  failed load reads "Couldn't load your default folders" and offers no buttons (`D120`).
+- Folder delete confirmation: title `Delete "<name>"?`, message "Its documents and subfolders move to
+  <parent>." plus the default-folder line, confirm **Delete folder**.
+
+### Accessibility (surfaces)
+
+- The submenu trigger is a `button` with `aria-haspopup="menu"` and `aria-expanded`; its items are
+  `menuitemcheckbox` with `aria-checked`; a disabled root entry has `aria-disabled="true"` and keeps
+  focusability for discovery.
+- The marker's icons are `aria-hidden`; its words are a visually hidden span: in a tree row they are
+  the row's `aria-describedby` description; in a list row or card they follow the name.
+- The marker's icons on the row background meet 3:1 (slate-500 on white 4.8:1; slate-400 on
+  slate-800 5.4:1). Not colour alone: each key's icon differs in shape, and the words exist.
+- The wizard's checkbox is a native `input type="checkbox"` with its `label`; the note is
+  `role="note"`; Change default is a `button`.
+- Settings buttons name their entry: "Change default folder for whiteboards", "Clear default folder
+  for whiteboards".
+
+### Web experience (surfaces)
+
+- CLS: the marker renders inside space the row already has (after the truncating name), and the
+  wizard's note and checkbox share one slot under the browser, reserved (`min-h-6`) whenever the
+  folder step shows, so neither pushes content as it appears.
+- One `GET /api/placement-defaults` per page; no request on hover or render.
+- INP: a toggle updates the store synchronously (optimistic), the write runs after paint.
+
+### Errors and edge cases (surfaces)
+
+| Case                                                    | Handling                                                                             |
+| ------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| Store not ready when a menu opens                       | No submenu                                                                           |
+| Set or clear refused (`folder_not_found`, network, 429) | Rolled back, `write failed` warning, the check flips back                            |
+| The wizard's default folder not in its lists yet        | Skipped (`default-skipped reason=folder_unknown`), the root shown, no placement sent |
+| Always save write fails                                 | Logged; the create goes ahead with the explicit placement                            |
+| Reader owner changes (sign-in)                          | The store reloads for the new owner                                                  |
+| Dangling default, name unknown                          | "A deleted folder (deleted), using …"                                                |
+| Team root selected in the picker                        | "Choose a folder inside the team", button unavailable                                |
+
+### Observability (surfaces)
+
+| Fingerprint                                                         | Where             |
+| ------------------------------------------------------------------- | ----------------- |
+| `[default-folders] loaded count=<n>` / `load failed status=<n>`     | editor, info/warn |
+| `[default-folders] set key=<key> surface=<surface>`                 | editor, info      |
+| `[default-folders] cleared key=<key> surface=<surface>`             | editor, info      |
+| `[default-folders] write failed key=<key> code=<code>, rolled back` | editor, warn      |
+| `[default-folders] pre-selected key=<key>`                          | editor, info      |
+| `[default-folders] default-skipped key=<key> reason=folder_unknown` | editor, info      |
+
+### Testing (surfaces)
+
+| Rule                                                         | Test                                                                                             |
+| ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------ |
+| Entries, nouns joined, marker words                          | `apps/live/lib/placement-defaults/default-key-entries.test.ts`                                   |
+| Load, set, clear, telemetry before the write, rollback       | `apps/live/lib/placement-defaults/placement-defaults-store.test.ts`                              |
+| Working default, resolution, destinations, dangling fallback | `apps/live/lib/placement-defaults/default-destination.test.ts`                                   |
+| Name memory per owner                                        | `apps/live/lib/placement-defaults/default-folder-names.test.ts`                                  |
+| Folder delete wording                                        | `apps/live/lib/folder-delete-confirmation.test.ts`                                               |
+| Menu checks for a folder and for My documents                | `apps/live/hooks/persistence/useDefaultFolderMenus.test.tsx`                                     |
+| Submenu renders, toggles, ARIA                               | `apps/live/components/placement/UseAsDefaultMenu.test.tsx`                                       |
+| Marker icons, +N, words                                      | `apps/live/components/placement/DefaultFolderMarker.test.tsx`                                    |
+| Wizard selection, what is sent, Always save offer            | `apps/live/components/palette/useWizardPlacement.test.tsx`, `TemplatePicker.test.tsx`            |
+| Lists ready or failed                                        | `apps/live/hooks/persistence/usePlacementOptions.test.tsx`                                       |
+| A folder deleted here never restored by its stale create     | `apps/live/lib/drive/plan-inbound.test.ts`, `engine.outbound.test.ts`                            |
+| Settings row states                                          | `apps/live/components/dialogs/settings/SettingsPlacementDefaultRow.test.tsx`                     |
+| End to end, guest and signed in, desktop and phone           | `apps/live/e2e/default-folders.spec.ts`, `apps/live/e2e/clerk-stub/default-folders-team.spec.ts` |
+
+### Constants and configuration (surfaces)
+
+| Constant                      | Value                                  | Provenance  | Safe range |
+| ----------------------------- | -------------------------------------- | ----------- | ---------- |
+| `MARKER_MAX_ICONS`            | 2                                      | Spec marker | 1 to 3     |
+| `DEFAULT_FOLDER_NAMES_PREFIX` | `livediagram:v2:default-folder-names:` | `D113`      | Fixed      |
+
+### Assets (surfaces)
+
+| Icon                  | Source                        | Licence | Path                                                               |
+| --------------------- | ----------------------------- | ------- | ------------------------------------------------------------------ |
+| Diagrams, Whiteboards | `FlowchartIcon`, `MarkerIcon` | MIT     | `packages/ui/src/icons/drawing-kinds.tsx`                          |
+| Event Storming boards | Lucide `sticky-note`          | ISC     | `packages/icons/src/lucide.generated.ts`                           |
+| Retrospectives        | Lucide `history`              | ISC     | same                                                               |
+| Kanban boards         | Lucide `square-kanban`        | ISC     | same, vendored by `pnpm --filter @livediagram/icons vendor:lucide` |
+| Use as default for    | Lucide `folder-check`         | ISC     | same                                                               |

@@ -3,6 +3,8 @@
 import { FolderSolidIcon } from '@/components/primitives/explorer-icons';
 import { SidebarRow } from './SidebarRow';
 import { trackSidebar } from './sidebar-telemetry';
+import { useDefaultFolderDescription } from '@/components/placement/DefaultFolderMarker';
+import { FolderLabel } from './SidebarFolderSubtree';
 
 // A team folder row and its subfolders (docs/specs/013-workspace/team-shared-documents.md).
 // Navigation only: a click opens the team page at that folder (rename / move
@@ -27,11 +29,13 @@ export function TeamFolderSubtree({
 }) {
   const kids = childrenByParent.get(folder.id) ?? [];
   const isOpen = expanded.has(folder.id);
+  const markerWords = useDefaultFolderDescription(folder.id);
   return (
     <SidebarRow
       icon={<FolderSolidIcon open={isOpen} />}
-      label={folder.name}
+      label={<FolderLabel folderId={folder.id} name={folder.name} />}
       textLabel={folder.name}
+      description={markerWords || undefined}
       selected={false}
       onActivate={() => {
         trackSidebar('TeamFolder');

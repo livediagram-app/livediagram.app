@@ -13,7 +13,7 @@ import { LensIssues } from './LensStates';
 // multi-select listbox; Made by AI, a dimension of one value, is a toggle. Clear empties the lens.
 
 const CHIP =
-  'inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full px-3 text-xs font-medium ring-1 transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500';
+  'optical-edges inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full px-3 text-xs font-medium ring-1 transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500';
 const CHIP_UNSET =
   'bg-white text-slate-700 ring-slate-300 hover:bg-slate-50 dark:bg-slate-900 dark:text-slate-200 dark:ring-slate-600 dark:hover:bg-slate-800';
 const CHIP_SET =

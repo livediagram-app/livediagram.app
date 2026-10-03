@@ -12,6 +12,8 @@ import type { PaneDocument } from '@/app/explorer/views';
 import { useDocumentDropTarget } from '../useDocumentDropTarget';
 import { PanelDocumentItem } from './PanelDocumentItem';
 import { usePanelTree } from './PanelTreeContext';
+import { useDefaultFolderDescription } from '@/components/placement/DefaultFolderMarker';
+import { FolderLabel } from '@/app/explorer/sidebar/SidebarFolderSubtree';
 
 // A folder as the panel's tree needs it; `teamId` set on a team folder.
 export type PanelFolder = {
@@ -50,6 +52,7 @@ export function PanelFolderItem({
   const expanded = tree.expanded[folder.id] ?? false;
   const [editing, setEditing] = useState(false);
   const menu = useRowMenu({ disabled: editing });
+  const markerWords = useDefaultFolderDescription(folder.id);
   const personal = !team;
   const drop = useDocumentDropTarget(folder.id, personal ? tree.onMoveDocumentToFolder : undefined);
 
@@ -92,10 +95,11 @@ export function PanelFolderItem({
             className="rounded border border-brand-300 bg-white px-1 py-0 text-xs dark:border-brand-500/50 dark:bg-slate-900 dark:text-slate-100"
           />
         ) : (
-          folder.name
+          <FolderLabel folderId={folder.id} name={folder.name} />
         )
       }
       textLabel={folder.name}
+      description={markerWords || undefined}
       selected={false}
       onActivate={() => {
         trackSidebar(personal ? 'Folder' : 'TeamFolder', 'panel');
@@ -138,6 +142,10 @@ export function PanelFolderItem({
                 onRename={rename ? () => setEditing(true) : undefined}
                 onNewSubfolder={createChild}
                 onDelete={remove ? () => remove(folder.id) : undefined}
+                defaults={tree.defaultFolders?.forFolder({
+                  id: folder.id,
+                  teamId: team?.id ?? null,
+                })}
               />
             ) : null}
           </>

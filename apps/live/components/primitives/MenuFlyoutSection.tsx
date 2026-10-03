@@ -9,11 +9,17 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { CloseIcon, Glyph } from '@livediagram/ui';
+import { ChevronRightIcon } from '@livediagram/ui';
 import { Portal } from '@/components/primitives/Portal';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { useReposition } from '@/hooks/canvas/useReposition';
 import { VIEWPORT_EDGE_MARGIN } from '@/lib/clamp-to-viewport';
+import {
+  FlyoutPanel,
+  plainTriggerClass,
+  SectionTriggerFace,
+  sectionTriggerClass,
+} from './MenuFlyoutPanel';
 
 // A menu category that opens its contents in a **side flyout** instead of
 // expanding inline (docs/specs/008-canvas/canvas-and-palette.md). The trigger row looks exactly like a
@@ -73,7 +79,7 @@ function loneSection(children: ReactNode): ReactNode | null {
 export function MenuFlyoutSection(props: MenuFlyoutSectionProps) {
   // A panel is one purpose-built surface, not a list of sections, so there is
   // nothing to promote: its single child is the whole point of the flyout.
-  const lone = props.panel ? null : loneSection(props.children);
+  const lone = props.panel || props.plain ? null : loneSection(props.children);
   // Rendered instead of the flyout, not inside it — so the hooks below (the
   // portal, the position tracker, the outside-click) never run for a row that
   // has no panel to position.
@@ -93,6 +99,10 @@ type MenuFlyoutSectionProps = {
   // rather than a stack of accordion sections: never promoted inline, drawn
   // wider, and scrollable when it is taller than the screen.
   panel?: boolean;
+  // The trigger reads as a plain verb row (MenuActionRow `plain`: sentence case, 13px, its icon in
+  // the 20px slot) with a chevron, for a verb menu such as the folder menu's "Use as default for"
+  // (docs/specs/013-workspace/default-folders.md). Never promoted inline, as a panel is not.
+  plain?: boolean;
 };
 
 function Flyout({
@@ -112,6 +122,7 @@ function Flyout({
   open: controlledOpen,
   onToggle,
   panel: isPanel = false,
+  plain = false,
 }: MenuFlyoutSectionProps) {
   const triggerRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -331,77 +342,35 @@ function Flyout({
         }}
         aria-expanded={open}
         aria-haspopup="menu"
-        className={`flex w-full cursor-pointer items-center justify-between px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider transition ${
-          open
-            ? 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
-            : 'text-slate-400 hover:bg-slate-50 hover:text-slate-600 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-slate-300'
-        }`}
+        className={plain ? plainTriggerClass(open) : sectionTriggerClass(open)}
       >
-        <span className="flex items-center gap-2">
-          <span className="flex w-4 shrink-0 items-center justify-center">{icon}</span>
-          {title}
-        </span>
-        {/* Ellipsis — signals the row opens further sub-options (in a side
-            flyout), distinct from an accordion's chevron that expands inline. */}
-        <Glyph size={14} units={16} filled>
-          <circle cx="4" cy="8" r="1.15" />
-          <circle cx="8" cy="8" r="1.15" />
-          <circle cx="12" cy="8" r="1.15" />
-        </Glyph>
+        {plain ? (
+          <>
+            <span className="flex min-w-0 items-center gap-2.5">
+              <span className="flex w-5 shrink-0 items-center justify-center text-slate-400 [&_svg]:h-4 [&_svg]:w-4">
+                {icon}
+              </span>
+              {title}
+            </span>
+            <ChevronRightIcon className="shrink-0 text-slate-400" />
+          </>
+        ) : (
+          <SectionTriggerFace icon={icon} title={title} />
+        )}
       </button>
       {open ? (
         <Portal>
-          <div
-            ref={panelRef}
-            role="menu"
-            data-menu-flyout=""
-            onPointerDown={(e) => e.stopPropagation()}
-            onContextMenu={(e) => e.preventDefault()}
-            // z-popover, not z-overlay: this panel opens FROM a menu that is itself
-            // z-modal, so at z-overlay it lost the stacking contest with its own
-            // host. On a wide screen that never showed, because the panel fits
-            // beside the menu and never overlaps it. On a narrow one there is no
-            // room to the side, the clamp puts it directly over the menu, and it
-            // rendered behind — tapping Collaborate on a phone appeared to do
-            // nothing at all. Same reason the token exists for menus opened inside
-            // a dialog.
-            className={`fixed z-[var(--z-popover)] flex animate-fade-in flex-col rounded-md ${
-              isPanel
-                ? 'max-h-[calc(100dvh-1rem)] w-72 overflow-y-auto overscroll-contain'
-                : 'w-56 overflow-hidden'
-            } border border-slate-200 bg-white/95 text-sm shadow-lg backdrop-blur-sm dark:border-slate-700 dark:bg-slate-900/95 dark:shadow-slate-950/40`}
-            style={{
-              left: pos?.left ?? 0,
-              top: pos?.top ?? 0,
-              ...(pos?.width ? { width: pos.width } : null),
-              ...(pos?.minHeight ? { minHeight: pos.minHeight } : null),
-              visibility: pos ? 'visible' : 'hidden',
-            }}
+          <FlyoutPanel
+            panelRef={panelRef}
+            isPanel={isPanel}
+            isMobile={isMobile}
+            pos={pos}
+            icon={icon}
+            title={title}
+            onClose={() => setOpen(false)}
           >
-            {/* Mobile only. On desktop the flyout sits BESIDE its parent, so
-                the parent is still on screen and still shows which row is
-                open — the panel needs no title and no way back. Covering the
-                parent takes both of those away, so the header restores them:
-                it says which category you are in, and Close is the way back
-                to the menu underneath. */}
-            {isMobile ? (
-              <div className="flex items-center justify-between gap-2 border-b border-slate-200 px-3 py-2 dark:border-slate-700">
-                <span className="flex min-w-0 items-center gap-2 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                  <span className="flex w-4 shrink-0 items-center justify-center">{icon}</span>
-                  <span className="truncate">{title}</span>
-                </span>
-                <button
-                  type="button"
-                  aria-label={`Close ${title}`}
-                  onClick={() => setOpen(false)}
-                  className="-mr-1 flex h-7 w-7 shrink-0 items-center justify-center rounded text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200"
-                >
-                  <CloseIcon />
-                </button>
-              </div>
-            ) : null}
             {children}
-          </div>
+          </FlyoutPanel>
         </Portal>
       ) : null}
     </div>

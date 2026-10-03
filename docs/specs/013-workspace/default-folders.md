@@ -1,8 +1,8 @@
 # Default folders
 
-Status: the server side is shipped (storage, the API, resolution on create, the intent every create
-caller sends, the intent recorded on the document); the surfaces that set, show and clear a default
-come later.
+Status: shipped. The server side (storage, the API, resolution on create, the intent every create
+caller sends, the intent recorded on the document) and the surfaces that set, show and clear a
+default ([Surfaces](#surfaces)) are live.
 
 ## What
 
@@ -147,11 +147,11 @@ A create's place is decided in this order; the first that answers wins:
 - **An explicit root is a choice.** `folderId: null`, present in the body, is the root of the chosen
   space, chosen on purpose; with no team it is the explicit root of My documents, and it always wins
   over a default. ([Placement on create](folders.md#placement-on-create) names the wire shape.)
-- **The wizard** sends the placement the person saw or picked: the Settings step's picker (its
-  root tile, "Here", included) or a `/new?folder=` / `?team=` context is explicit. A create made
-  without the picker ever being shown (Quick Start, "Start blank" from the template step, a bypass
-  link without context) sends no placement. Once the wizard pre-selects the resolved default
-  client-side, it sends that as an explicit placement.
+- **The wizard** sends the place the person picked (its root tile included), a `/new?folder=` /
+  `?team=` context, or the default it pre-selected, each as an explicit placement. The root it shows
+  only because nothing else resolved is no choice, and neither is a create made without the picker
+  ever being shown (Quick Start, "Start blank" from the template step, a bypass link without
+  context): they send no placement ([The New Document wizard](#the-new-document-wizard)).
 - A re-commit of an id the person already owns keeps its stored place; defaults are not consulted.
 
 ## What a default may point at
@@ -212,6 +212,144 @@ A create's place is decided in this order; the first that answers wins:
 | `rate_limited`           | 429    | The per-owner write rate limit is spent                               |
 | `intent_invalid`         | 400    | (on `POST /api/documents`) `intent` is present but not a valid intent |
 
+## Surfaces
+
+Every surface reads one copy of the person's defaults, loaded once per page and updated in place by
+any surface that sets or clears one, so a change made in a menu shows at once in the markers, the
+wizard and Settings.
+
+### Entry names
+
+Each key has a label, the plural a sentence uses, and an icon, in list order:
+
+| Key                      | Label                 | In a sentence         | Icon                     |
+| ------------------------ | --------------------- | --------------------- | ------------------------ |
+| `mode:diagram`           | Diagrams              | diagrams              | The Diagram mode's icon  |
+| `mode:draw`              | Whiteboards           | whiteboards           | The Draw mode's icon     |
+| `kind:event-storming`    | Event Storming boards | Event Storming boards | A sticky note            |
+| `template:retrospective` | Retrospectives        | retrospectives        | A clock turning back     |
+| `template:kanban`        | Kanban boards         | Kanban boards         | A board of three columns |
+
+- A new editor mode, tab kind or template family is named once (label, plural and icon) and
+  needs nothing else; until it is named, it does not compile.
+- Lists of entries in a sentence join with commas and a final "and": "diagrams, whiteboards and
+  retrospectives".
+
+### Use as default for
+
+- **Every folder menu** (the one shared folder menu of the Explorer page's rows and cards, the
+  sidebar tree, the editor's Explorer panel and a team's library) carries **Use as default for**,
+  which opens a submenu titled **New documents that open as** listing the five entries, each a
+  checkable item, checked when this folder is that key's default.
+  - Choosing an unchecked entry makes this folder the key's default; a key points at one folder,
+    so the folder that held it loses it.
+  - Choosing a checked entry clears the key's default.
+  - The submenu stays open after a choice, so several entries can be set in one visit; Escape or a
+    click elsewhere closes it.
+- **Team folders** offer it only to a signed-in, joined member: the folder menus of a team's
+  library, and of the editor panel's team tree, are theirs alone. A guest never sees a team folder.
+- **My documents** carries the same submenu on its own menu (the sidebar's My documents row, and
+  the editor panel's): the root is where a document lands without a default, so there an entry is
+  checked when its key has **no working default** (none, or a dangling one). Choosing an unchecked
+  entry clears that key's default, sending those documents back to the root; a checked entry is
+  already the root's, and is shown checked and unavailable.
+- **A team's root** offers no submenu: it cannot be a default ([What a default may point
+  at](#what-a-default-may-point-at)).
+
+### The default marker
+
+- A folder that is one of the reader's defaults shows a **default marker** after its name (and
+  after its count badge, where it has one): in the sidebar tree, the editor panel's folder rows, and
+  the Explorer's and a team library's folder list rows and cards.
+- The marker shows the icons of the folder's keys in list order, at most two, then **+N** for the
+  rest, in the muted chrome colour.
+- Its tooltip says what it means: "Default folder for new whiteboards", "Default folder for new
+  diagrams, whiteboards and retrospectives". Assistive technology hears the same words: as the
+  row's description in a tree, after the name in a list row or card. It is never colour alone: the
+  icons differ in shape, and the words are always there.
+- It takes space the row already holds after the name, so its appearance once the defaults load
+  moves nothing on the row.
+- A dangling default marks nothing; the My documents row shows no marker.
+
+### The New Document wizard
+
+The Location step ([Save locations](../006-document/save-locations.md)) shows where the new
+document will go and why.
+
+- **It pre-selects the resolved default.** The wizard resolves the precedence itself, for the
+  intent of the template picked on the first step, over the reader's defaults and the folders it
+  has loaded; a default whose folder it cannot see (deleted, or in a team not listed) is skipped, as
+  the server skips it.
+- **At the My documents root the default wins; inside a real folder or team, that folder wins.**
+  A `/new?folder=` or `?team=` context is pre-selected as it always was; with no context, the
+  resolved default is.
+- **It says why.** While the pre-selected default is the selection, a line under the folder browser
+  reads "**Whiteboards** go to **Workshops** by default", the entry's label and the folder's name,
+  with a **Change default** button that opens the [default folder picker](#the-default-folder-picker)
+  for that key. A new default chosen there is pre-selected at once.
+  - The line and the Always save checkbox below never show together, so they share one slot
+    under the browser, kept whenever the folder step shows: neither moves the browser as it appears.
+- **Changing template re-resolves** the pre-selection, unless the reader has picked a place
+  themselves: their pick stands.
+- **What is sent:**
+  - a place the reader picked, the root tile ("My documents") included, is explicit, so choosing
+    the root on purpose sends `folderId: null`, the explicit root;
+  - a `/new` context is explicit;
+  - a pre-selected default is sent as that folder, explicitly;
+  - the root shown only because nothing else resolved is **no choice**: the create carries no
+    placement and the server's precedence decides, so a default the wizard could not yet see is
+    still honoured.
+- **Always save <these> here.** A checkbox under the folder browser, worded for the intent's most
+  specific key ("Always save whiteboards here", "Always save Event Storming boards here"), offers
+  to make the selection that key's default.
+  - It shows only when the selection could be a default (a personal folder, a team folder, or the
+    My documents root) and is not already where those documents go.
+  - It starts unticked each time it appears.
+  - Ticked, Create sets the key's default to the selected folder (or clears it, at the My documents
+    root) before creating. A failed write is logged and never stops the create.
+- None of this applies to **Local Browser**: an offline document has no folder step
+  ([Non-goals](#non-goals)).
+
+### Settings
+
+- Settings holds a **Documents** category whose section **Where New Documents Go** has one row per
+  entry, in list order, for guests and accounts alike.
+- A row names the entry, in the title case of every Settings label ("Whiteboards", "Kanban
+  Boards"), and beneath it where those documents go: the folder's name (a team folder adds its
+  team: "Workshops · Design team"), or **My documents** when there is no default. Until the
+  defaults and the folders have loaded it reads "Loading…"; if either cannot be read, "Couldn't
+  load your default folders", with no buttons, never a guess.
+- **Change** opens the [default folder picker](#the-default-folder-picker). **Clear** clears the
+  default; it is shown only while there is one.
+- **A dangling default** reads "<folder> (deleted), using <place>", or "<folder> (no longer
+  available), using <place>" for a team folder whose team is not among the reader's, where <place>
+  is where those documents go instead: the next working default of the
+  [precedence](#precedence) for that entry, else My documents. A Clear is offered.
+  - The folder's name comes from this browser's memory of the names of the reader's default
+    folders, kept while they were visible. When the browser never saw it, the row reads "A deleted
+    folder, using <place>".
+
+### The default folder picker
+
+A dialog around the shared placement browser ([Folders](folders.md)), titled "Default folder for
+new <these>", opened by Settings' Change and the wizard's Change default.
+
+- It opens with the key's current default selected, else the My documents root.
+- Choosing the **My documents root** clears the default. A team's root cannot be chosen: with it
+  selected, the dialog says "Choose a folder inside the team" and its button is unavailable.
+- Its button reads **Use this folder** (or **Use My documents** at the root), and is unavailable
+  until the selection differs from the current default.
+- It offers the inline New Folder tile, as the move picker does.
+
+### Deleting a default folder
+
+- The folder delete confirmation ([Folders](folders.md#deleting-a-folder)) adds a line when the
+  folder is one of the reader's defaults: "New whiteboards and retrospectives are saved here by
+  default. Choose another default folder in Settings."
+- Deleting it leaves the default dangling ([Dangling defaults](#dangling-defaults)); the confirm
+  does not clear it.
+- Only the reader's own defaults are known: a teammate's default on a team folder is theirs.
+
 ## Telemetry ([Telemetry](../017-telemetry/telemetry.md))
 
 - `Folder` · `Changed` · `DefaultModeDiagram` / `DefaultModeDraw` / `DefaultKindEventStorming` /
@@ -232,6 +370,10 @@ A create's place is decided in this order; the first that answers wins:
   routes.
 - `[duplicate] placement refused reason=<code>, filed at the root` when a Duplicate cannot sit
   beside its source.
+- In the browser, `[default-folders]` lines: `loaded count=<n>`, `load failed status=<n>`,
+  `set key=<key> surface=<menu|wizard|settings>`, `cleared key=<key> surface=<…>`,
+  `write failed key=<key> code=<code>, rolled back`, and the wizard's
+  `pre-selected key=<key>` and `default-skipped key=<key> reason=folder_unknown`.
 
 ## Non-goals
 

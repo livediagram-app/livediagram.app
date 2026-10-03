@@ -473,11 +473,28 @@ export const EXPLORER_FILTERS_PICKED = chart(
   { rising: 'good' },
 );
 
+// Default folders (docs/specs/013-workspace/default-folders.md "Telemetry"): one type per key.
+export const DEFAULT_FOLDERS_SET = chart(
+  'Folder',
+  'Changed',
+  'Default Folders Set',
+  'A folder chosen as where new documents of one kind land: from a folder menu, the New Document wizard or Settings.',
+  { rising: 'good' },
+);
+
+export const DEFAULT_FOLDERS_CLEARED = chart(
+  'Folder',
+  'Cleared',
+  'Default Folders Cleared',
+  'A default folder cleared, so new documents of that kind land in My documents again.',
+  { rising: 'neutral' },
+);
+
 export const ORGANISATION: MetricStack = {
   stack: true,
   title: 'Organisation',
   blurb:
-    'Folders made and nested, tab folders, tabs and documents filed, the Explorer sidebar and its filters.',
+    'Folders made and nested, tab folders, tabs and documents filed, default folders, the Explorer sidebar and its filters.',
   members: [
     FOLDERS_CREATED,
     FOLDERS_RE_PARENTED,
@@ -489,6 +506,8 @@ export const ORGANISATION: MetricStack = {
     TABS_UNFILED,
     EXPLORER_SIDEBAR_PICKS,
     EXPLORER_FILTERS_PICKED,
+    DEFAULT_FOLDERS_SET,
+    DEFAULT_FOLDERS_CLEARED,
   ],
 };
 

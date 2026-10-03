@@ -84,6 +84,7 @@ export const HELP_ARTICLES = {
   recentDocuments: 'explorer/recent',
   sharedWithYou: 'explorer/shared-with-you',
   folders: 'explorer/folders',
+  defaultFolders: 'explorer/folders/default-folders',
   explorerFilters: 'explorer/filters',
   dataElements: 'palette/tools/data-elements',
   palette: 'palette',
@@ -289,7 +290,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   timeline: {
     title: 'Learn about Home',
-    description: 'Everything that has happened across your documents, teams and account.',
+    description: 'Jump back in, what others did while you were away, and your own Timeline.',
   },
   activity: {
     title: 'Learn about Activity',
@@ -306,6 +307,10 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   folders: {
     title: 'Learn about folders',
     description: 'Tips for organising documents into a nestable tree of folders.',
+  },
+  defaultFolders: {
+    title: 'Learn about default folders',
+    description: 'Where new diagrams, whiteboards and boards land when you pick no place.',
   },
   explorerFilters: {
     title: 'Learn about search and filters',

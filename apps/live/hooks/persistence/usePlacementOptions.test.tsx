@@ -89,3 +89,23 @@ describe('usePlacementOptions', () => {
     expect(result.current.teamFolders.t1!.map((f) => f.name)).toEqual(['Team root']);
   });
 });
+
+// Settings' default folders tell "gone" from "not loaded" (docs/specs/013-workspace/default-folders.md).
+describe('usePlacementOptions, ready and failed', () => {
+  it('is ready once folders, and for an account its teams, have loaded', async () => {
+    const guest = renderHook(() => usePlacementOptions({ selfId: 'g2', clerkUserId: null }));
+    expect(guest.result.current.ready).toBe(false);
+    await waitFor(() => expect(guest.result.current.ready).toBe(true));
+    const user = renderHook(() => usePlacementOptions({ selfId: 'u2', clerkUserId: 'clerk_2' }));
+    await waitFor(() => expect(user.result.current.ready).toBe(true));
+    expect(user.result.current.teamFolders).toEqual({ t1: [] });
+    expect(user.result.current.failed).toBe(false);
+  });
+
+  it('says it failed, and is never ready, when a list cannot be read', async () => {
+    apiListFolders.mockRejectedValueOnce(new Error('503'));
+    const { result } = renderHook(() => usePlacementOptions({ selfId: 'g3', clerkUserId: null }));
+    await waitFor(() => expect(result.current.failed).toBe(true));
+    expect(result.current.ready).toBe(false);
+  });
+});

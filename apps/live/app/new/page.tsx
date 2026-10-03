@@ -21,7 +21,8 @@ import { CustomThemeProvider } from '@/components/primitives/CustomThemeProvider
 import { AnimatedLinesBackdrop } from '@/components/canvas/AnimatedLinesBackdrop';
 import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
 import { useCtaAttribution } from './useCtaAttribution';
-import { usePlacementOptions } from './usePlacementOptions';
+import { usePlacementOptions } from '@/hooks/persistence/usePlacementOptions';
+import { applyAlwaysSave, useWizardDefaults } from './useWizardDefaults';
 import { apiCreateDocument, apiLoadSelf, apiSaveSelf } from '@/lib/api-client';
 import { createFailureCopy, type CreateFailure } from './create-failure';
 import { offlineCreateDocument } from '@/lib/offline/offline-store';
@@ -151,14 +152,16 @@ export default function NewDocumentPage() {
   // what Create files into. The picker is the single source of truth from
   // here on; there is no separate commit-time fallback (it used to override
   // an explicit root choice silently).
-  const [initialPlacement] = useState(() => {
-    if (typeof window === 'undefined') return 'unsorted';
+  // No context is no placement: the Location step then pre-selects the reader's default folder
+  // (docs/specs/013-workspace/default-folders.md "The New Document wizard"), else the root.
+  const [initialPlacement] = useState<string | undefined>(() => {
+    if (typeof window === 'undefined') return undefined;
     const params = new URLSearchParams(window.location.search);
     const folderId = params.get('folder');
     const teamId = params.get('team');
     if (teamId) return folderId ? `team:${teamId}:folder:${folderId}` : `team:${teamId}`;
     if (folderId) return `folder:${folderId}`;
-    return 'unsorted';
+    return undefined;
   });
 
   // Wizard bypass (docs/specs/007-editor/new-document-route.md): /new?blank=1 ("Start Blank") and
@@ -187,6 +190,12 @@ export default function NewDocumentPage() {
       skip: isBypassUrl,
     },
   );
+  // The reader's default folders, per template, for the Location step.
+  const wizardDefaults = useWizardDefaults(self.id === 'pending' ? null : self.id, {
+    folders,
+    teams,
+    teamFolders,
+  });
   // The hero launch window's landing (?blank=1&welcome=1) holds the quiet blank canvas the hero
   // grew into rather than the opening screen, so nothing else paints between the two.
   const quietLanding = useSyncExternalStore(subscribeNever, welcomeFromUrl, noWelcome);
@@ -360,6 +369,8 @@ export default function NewDocumentPage() {
           Date.now(),
         );
       } else {
+        // "Always save <these> here" first (docs/specs/013-workspace/default-folders.md).
+        await applyAlwaysSave(settings.alwaysSave);
         // Placement rides the create (docs/specs/007-editor/new-document-route.md): the Settings
         // step's picker, pre-seeded from /new?folder= / ?team=, is filed by the same write, or the
         // create is refused by name and nothing is written.
@@ -545,6 +556,7 @@ export default function NewDocumentPage() {
               teams={teams}
               teamFolders={teamFolders}
               initialPlacement={initialPlacement}
+              defaults={wizardDefaults}
               initialShelf={browseShelf}
               onCreateFolder={createPickerFolder}
               // Teams are Clerk-only (docs/specs/013-workspace/teams.md): a guest gets no New Team tile.

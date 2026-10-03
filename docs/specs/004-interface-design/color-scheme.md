@@ -117,6 +117,12 @@ The wordmark's "diagram" half is the one vivid note: **sky-400 `#38bdf8`** in da
   badges) sits on `brand-600` in dark mode, and a control hovers to `brand-700`: white on `#3a6599` is 6.0:1. The
   pairing lives in two shared class constants in `@livediagram/ui`, `SOLID_BRAND_DARK` for a static fill and
   `SOLID_BRAND_DARK_CONTROL` for a control, never re-typed per component.
+- **The selected segment of a segmented control** (a two- or more-way switch, a tab strip drawn as segments) is
+  that solid fill, in both appearances: `ACTIVE_SEGMENT` in `@livediagram/ui`. A fill that only lifts off the
+  track (white on `slate-100`, `slate-900` on `slate-800`) is about 1.1:1 and does not mark a state; the
+  selection is held to 3:1 against its track (WCAG 2.2 SC 1.4.11), measured in the Home switch's end-to-end test. The
+  track is `SEGMENT_TRACK`, the deepest surface in dark mode (`slate-950`): `brand-600` reads 3.2:1 there, 2.7:1 on
+  `slate-800`.
 - **White text on an identity colour** (avatar initials, cursor and presence labels, a comment author's disc, a
   team's tile: a participant's or team's colour under white text) sits on a **deeper shade of the same hue** in dark
   mode (`identityDeep`): each participant colour's own Tailwind 700 step (5.0 to 7.9:1 under white), and for any

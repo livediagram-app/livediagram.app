@@ -60,8 +60,11 @@ export function sharedToPaneDocument(s: SharedWithItem): PaneDocument {
 // with no folder row behind them; `folder` is a real owned folder and
 // `team` a team the signed-in user belongs to (docs/specs/013-workspace/teams.md).
 export type SelectedNode =
-  // The landing view (docs/specs/013-workspace/timeline.md): a day-grouped feed of everything that
-  // happened, rather than a list of files.
+  // The landing view (docs/specs/013-workspace/explorer-home.md): Jump back in, What happened and
+  // the person's own Timeline.
+  | { kind: 'home' }
+  // All activity (docs/specs/013-workspace/timeline.md): the day-grouped feed of everything that
+  // happened, reached from Home's See all activity.
   | { kind: 'timeline' }
   // What is outstanding for the reader across every document (docs/specs/013-workspace/activity-page.md):
   // open actions assigned to / by them, unresolved threads they're in.

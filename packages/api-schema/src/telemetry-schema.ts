@@ -96,6 +96,12 @@ export const TELEMETRY_CATEGORIES = [
   // only signal we get for a feed nobody could load. Never a document
   // name, team name, or comment text.
   'Timeline',
+  // Explorer Home (docs/specs/013-workspace/explorer-home.md): the landing view. 'Opened' with
+  // `type` 'Landing' | 'Nav' (the page the Explorer opened on, or a later visit) and 'Group' (a
+  // What happened summary expanded); 'Selected' with 'JumpBackIn' | 'Timeline' | 'WhatHappened'
+  // (which part of Home a document was opened from); 'Loaded' with 'More' (a further Timeline
+  // page) | 'Retry' (a failed read retried). Never a document name or a person.
+  'Home',
   // Activity page (docs/specs/013-workspace/activity-page.md): the Explorer's cross-document inbox of open
   // actions + comment threads. 'Opened' once per visit; 'Selected' with
   // `type` 'Action' | 'Thread' on a row click (which kind of row sends

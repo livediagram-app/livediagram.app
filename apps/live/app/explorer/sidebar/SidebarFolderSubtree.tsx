@@ -10,6 +10,10 @@ import { folderMenuHandlers, type SelectedNode } from '../views';
 import { FolderActionsMenu } from '../folder-actions-menu';
 import { SidebarRow } from './SidebarRow';
 import { trackSidebar } from './sidebar-telemetry';
+import {
+  DefaultFolderMarker,
+  useDefaultFolderDescription,
+} from '@/components/placement/DefaultFolderMarker';
 
 // A personal folder row and its subfolders (docs/specs/013-workspace/folders.md). It carries
 // the folder menu: the ⋯ button, a right-click, or Shift+F10 / the Menu key on
@@ -45,6 +49,7 @@ export function SidebarFolderSubtree({
   const isSelected = selected.kind === 'folder' && selected.id === folder.id;
   const renaming = renamingFolderId === folder.id;
   const menu = useRowMenu({ disabled: renaming });
+  const markerWords = useDefaultFolderDescription(folder.id);
 
   return (
     <SidebarRow
@@ -58,10 +63,11 @@ export function SidebarFolderSubtree({
             className="rounded border border-brand-300 bg-white px-1 py-0 text-xs dark:border-brand-500/50 dark:bg-slate-900 dark:text-slate-100"
           />
         ) : (
-          folder.name
+          <FolderLabel folderId={folder.id} name={folder.name} />
         )
       }
       textLabel={folder.name}
+      description={markerWords || undefined}
       selected={isSelected}
       onActivate={() => {
         trackSidebar('Folder');
@@ -111,5 +117,17 @@ export function SidebarFolderSubtree({
         />
       ))}
     </SidebarRow>
+  );
+}
+
+// A folder row's label: its name, truncating, then its default marker
+// (docs/specs/013-workspace/default-folders.md "The default marker"), which never truncates. The
+// row announces the marker's words as its description, so the marker carries none of its own.
+export function FolderLabel({ folderId, name }: { folderId: string; name: string }) {
+  return (
+    <span className="flex min-w-0 items-center gap-1">
+      <span className="truncate">{name}</span>
+      <DefaultFolderMarker folderId={folderId} withWords={false} />
+    </span>
   );
 }

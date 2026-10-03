@@ -640,3 +640,4 @@ export * from './placement-defaults';
 // (docs/specs/013-workspace/explorer-home.md).
 export * from './home';
 export * from './drag-preview';
+export * from './frecency';

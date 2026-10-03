@@ -33,6 +33,7 @@ import { isPowerUserMode } from '@/lib/power-user-mode';
 import { useDriveMirror } from '@/components/drive/drive-mirror-context';
 import type { CloudSyncProviderId } from '@/lib/cloud-sync/providers';
 import { clerkEnabled } from '@/lib/clerk-config';
+import { usePlacementDefaults } from '@/hooks/persistence/usePlacementDefaults';
 
 type SettingsDialogProps = {
   settings: UserPreferences;
@@ -49,6 +50,9 @@ type SettingsDialogProps = {
   // Section of that category to scroll to and focus (settingsSectionId): the
   // Drive connect flow returns to Account > Cloud Sync.
   initialSectionId?: string | null;
+  // The reader's owner id, for the Documents rows (docs/specs/013-workspace/default-folders.md);
+  // the owner the page loaded its default folders for when absent.
+  ownerId?: string | null;
 };
 
 // The Settings dialog (docs/specs/007-editor/user-preferences.md), shaped like the iOS Settings app because it
@@ -70,6 +74,7 @@ export function SettingsDialog({
   focus,
   initialCategoryId,
   initialSectionId = null,
+  ownerId = null,
 }: SettingsDialogProps) {
   const isMobile = useIsMobileViewport();
   // Email rows need Resend configured AND a signed-in account: a guest has
@@ -77,6 +82,13 @@ export function SettingsDialog({
   const { emailEnabled } = useCapabilities();
   const { clerkUserId, isSignedIn } = useClerkApiBootstrap();
   const signedIn = Boolean(isSignedIn && clerkUserId);
+  // Loads the reader's default folders when the page has not (a no-op when it has).
+  const defaultsOwner = usePlacementDefaults(ownerId).ownerId;
+  const readerId = ownerId ?? defaultsOwner;
+  const owner = useMemo(
+    () => (readerId ? { ownerId: readerId, clerkUserId: clerkUserId ?? null } : null),
+    [readerId, clerkUserId],
+  );
   // Power-user-only rows appear the moment the mode's own row switches on
   // (docs/specs/007-editor/power-user-mode.md), so this reads the live settings, not a snapshot.
   const powerUserMode = isPowerUserMode(settings);
@@ -266,6 +278,7 @@ export function SettingsDialog({
           >
             <SettingsCategoryPane
               category={selected}
+              owner={owner}
               settings={settings}
               onChange={onChange}
               focusRowKey={goTo?.categoryId === selected.id ? goTo.rowKey : null}

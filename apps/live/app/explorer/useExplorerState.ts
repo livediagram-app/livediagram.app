@@ -44,6 +44,7 @@ import { MY_DOCUMENTS_EXPAND_KEY } from './sidebar/sidebar-structure';
 import type { SelectedNode } from './views';
 import { indexFolders, folderBreadcrumb, folderDescendants } from '@/lib/folder-tree';
 import { useOpenSettingsRequests } from '@/hooks/ui/useOpenSettingsRequests';
+import { useDefaultFolderMenus } from '@/hooks/persistence/useDefaultFolderMenus';
 
 // All Explorer state + handlers, lifted out of the old single-page
 // component when the sections became routes (docs/specs/013-workspace/folders.md): the layout's
@@ -191,8 +192,10 @@ export function useExplorerState() {
   // it means. Opened during render, once per link. The params stay while
   // Settings is open, so a page left for Google and reached again with Back
   // reopens it (docs/specs/007-editor/user-preferences.md), and go when it closes.
-  const settingsLink = searchParams?.get('settings') ?? null;
-  const sectionLink = searchParams?.get('section') ?? null;
+  // Read once hydrated: the page is prerendered without a query string, so opening Settings in the
+  // render that hydrates it would not match the HTML it hydrates.
+  const settingsLink = hydrated ? (searchParams?.get('settings') ?? null) : null;
+  const sectionLink = hydrated ? (searchParams?.get('section') ?? null) : null;
   const [settingsLinkSeen, setSettingsLinkSeen] = useState<string | null>(null);
   if (settingsLink !== settingsLinkSeen) {
     setSettingsLinkSeen(settingsLink);
@@ -375,6 +378,7 @@ export function useExplorerState() {
     confirm,
     toast,
     deleteFolderFromHook: deleteFolder,
+    folders,
     // Stay on the library after a duplicate; just refresh the list
     // so the copy's row appears.
     afterDuplicate: async () => {
@@ -508,9 +512,17 @@ export function useExplorerState() {
     [ownerId],
   );
 
+  // Default folders (docs/specs/013-workspace/default-folders.md): the menus' checks and verbs.
+  const defaultFolders = useDefaultFolderMenus(ownerId, {
+    personal: folders,
+    team: teamFolders,
+    teams,
+  });
+
   // Folder-row context-menu actions, shared between the tree and
   // the list view so both surfaces offer the same set.
   const folderActions = (f: Folder, anchor: HTMLElement | null) => ({
+    defaults: defaultFolders.forFolder(f),
     rename: () => setRenamingFolderId(f.id),
     newSubfolder: () => void createFolder(f.id),
     move: () => openMovePickerForFolder(f.id, anchor),
@@ -544,6 +556,8 @@ export function useExplorerState() {
     teams,
     teamFolders,
     teamDocuments,
+    // My documents' own menu: "Use as default for" only.
+    rootDefaults: defaultFolders.forRoot,
     invites,
     tokens,
     loading,

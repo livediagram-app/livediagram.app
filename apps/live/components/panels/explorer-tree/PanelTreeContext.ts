@@ -2,6 +2,7 @@
 
 import { createContext, useContext } from 'react';
 import type { TeamFolderHandlers } from '../Explorer.types';
+import type { DefaultFolderMenus } from '@/hooks/persistence/useDefaultFolderMenus';
 
 // What every row of the floating Explorer panel's tree can reach
 // (docs/specs/013-workspace/explorer-structure.md#the-floating-explorer-panel): the panel's
@@ -35,6 +36,8 @@ export type PanelTree = {
   onCreateChild: (parentId: string) => void;
   onTeamFolders?: TeamFolderHandlers;
   onCreateTeamChild: (teamId: string, parentId: string | null) => void;
+  // "Use as default for" (docs/specs/013-workspace/default-folders.md), set by PanelExplorerTree.
+  defaultFolders?: DefaultFolderMenus;
 };
 
 const PanelTreeContext = createContext<PanelTree | null>(null);

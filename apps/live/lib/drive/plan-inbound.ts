@@ -93,6 +93,8 @@ function planUnrecorded(change: DriveChange, snapshot: MirrorSnapshot): InboundD
       return { kind: 'adopt', item: blankItem('folder', folderId, file, ldName) };
     }
     if (file.trashed) return { kind: 'ignore', reason: 'binned-folder' };
+    // Deleted here before this browser read back the create: its tombstone bins it this pass.
+    if (snapshot.deletedFolders.has(folderId)) return { kind: 'ignore', reason: 'deleted-here' };
     const name = stripDriveName(file.name, LD_NAME_MAX) ?? 'Folder';
     const parentId = ldFolderForParent(snapshot, file.parents[0] ?? null) ?? null;
     return {

@@ -288,9 +288,11 @@ export class FakeLivediagram {
     this.documents.delete(id);
     this.items.delete(`document:${id}`);
   }
+  // As the api: the contents move up to the deleted folder's parent (docs/specs/013-workspace/folders.md).
   deleteFolder(id: string): void {
-    for (const f of this.folders.values()) if (f.parentId === id) f.parentId = null;
-    for (const d of this.documents.values()) if (d.folderId === id) d.folderId = null;
+    const parentId = this.folders.get(id)?.parentId ?? null;
+    for (const f of this.folders.values()) if (f.parentId === id) f.parentId = parentId;
+    for (const d of this.documents.values()) if (d.folderId === id) d.folderId = parentId;
     this.items.delete(`folder:${id}`);
     this.folders.delete(id);
   }

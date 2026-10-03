@@ -4,6 +4,7 @@ import {
   frecencyScore,
   mergeFrecencyKeys,
   nextFrecencyKey,
+  utcDay,
 } from './frecency';
 
 // Frecency (docs/specs/013-workspace/blueprints/explorer-home.md "Frecency"): each open day adds
@@ -79,5 +80,12 @@ describe('mergeFrecencyKeys', () => {
     expect(mergeFrecencyKeys(T0, T0 + DAY, T0 + 2 * DAY)).toBe(
       mergeFrecencyKeys(T0 + DAY, T0, T0 + 2 * DAY),
     );
+  });
+});
+
+describe('utcDay', () => {
+  it('is the UTC calendar day', () => {
+    // 2023-11-14 22:13:20 UTC.
+    expect(utcDay(1_700_000_000_000)).toBe('2023-11-14');
   });
 });

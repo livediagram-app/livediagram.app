@@ -3,7 +3,7 @@
 // The Collaborate panel's two controls (docs/specs/012-collaboration/assigned-actions.md §5): the Open / Resolved
 // segmented control on the shared sliding pill, and the kind chips under it.
 
-import { ActionIcon, CommentIcon, SOLID_BRAND_DARK } from '@livediagram/ui';
+import { ACTIVE_SEGMENT, SEGMENT_TRACK, ActionIcon, CommentIcon } from '@livediagram/ui';
 import { SegmentSlider } from '@/components/primitives/SegmentSlider';
 import type { CollaborateKind, CollaborateSide } from './collaborate-model';
 
@@ -25,12 +25,12 @@ export function SideTabs({
     <div
       role="tablist"
       aria-label="Show open or resolved"
-      className="relative grid grid-cols-2 rounded-lg bg-slate-100 p-0.5 dark:bg-slate-800"
+      className={`relative grid grid-cols-2 rounded-lg p-0.5 ${SEGMENT_TRACK}`}
     >
       <SegmentSlider
         count={SIDES.length}
         index={SIDES.findIndex((s) => s.id === value)}
-        className="bg-white shadow-sm dark:bg-slate-700"
+        className={ACTIVE_SEGMENT}
       />
       {SIDES.map((s) => {
         const active = s.id === value;
@@ -43,7 +43,7 @@ export function SideTabs({
             onClick={() => onChange(s.id)}
             className={`relative z-10 flex items-center justify-center gap-1.5 rounded-md px-2 py-2 text-[11px] font-semibold transition-colors ${
               active
-                ? 'text-slate-800 dark:text-slate-100'
+                ? 'text-white'
                 : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
             }`}
           >
@@ -51,7 +51,7 @@ export function SideTabs({
             <span
               className={`inline-flex h-4 min-w-[1rem] items-center justify-center rounded-full px-1 text-[10px] font-semibold transition-colors ${
                 active
-                  ? `bg-brand-500 text-white ${SOLID_BRAND_DARK}`
+                  ? 'bg-white/25 text-white'
                   : 'bg-slate-200 text-slate-500 dark:bg-slate-700 dark:text-slate-400'
               }`}
             >

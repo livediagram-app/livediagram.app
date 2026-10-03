@@ -183,7 +183,7 @@ test.describe('explorer filters', () => {
     const owner = crypto.randomUUID();
     await darkVisitor(page, owner);
     await seed(page, owner, new URL(baseURL!).origin);
-    await arrive(page, '/explorer/timeline');
+    await arrive(page, '/explorer/home');
     await field(page).click();
     await field(page).pressSequentially('payment');
     await expect(page).toHaveURL(/\/explorer\/search\?q=payment$/);
@@ -196,7 +196,7 @@ test.describe('explorer filters', () => {
     await nav.getByRole('treeitem', { name: /^Shared with me/ }).click();
     await expect(page).toHaveURL(/\/explorer\/shared\?q=payment$/);
     await nav.getByRole('treeitem', { name: /^Home/ }).click();
-    await expect(page).toHaveURL(/\/explorer\/timeline$/);
+    await expect(page).toHaveURL(/\/explorer\/home$/);
     await expect(field(page)).toHaveValue('');
     // Back restores the lens of the entry it lands on.
     await page.goBack();
@@ -205,18 +205,22 @@ test.describe('explorer filters', () => {
     expectNoPageErrors(pageErrors);
   });
 
-  test('the retired Unsorted and Generated addresses still answer', async ({
-    page,
-    pageErrors,
-    baseURL,
-  }) => {
+  // Each retired address is its own test: two full page loads and a seeded library share one
+  // test's time budget badly on a busy runner.
+  test('the retired Unsorted address opens the My documents root', async ({ page, pageErrors }) => {
+    await darkVisitor(page, crypto.randomUUID());
+    await page.goto('/explorer/unsorted');
+    await expect(page).toHaveURL(/\/explorer\/all$/);
+    await expect(page.getByRole('heading', { name: 'My documents', level: 1 })).toBeVisible();
+    expectNoPageErrors(pageErrors);
+  });
+
+  test('the retired Generated address opens Made by AI', async ({ page, pageErrors, baseURL }) => {
     const owner = crypto.randomUUID();
     await darkVisitor(page, owner);
     await seed(page, owner, new URL(baseURL!).origin);
-    await page.goto('/explorer/unsorted');
-    await expect(page).toHaveURL(/\/explorer\/all$/, { timeout: 30_000 });
     await page.goto('/explorer/generated');
-    await expect(page).toHaveURL(/\/explorer\/search\?q=made-by%3Aai$/, { timeout: 30_000 });
+    await expect(page).toHaveURL(/\/explorer\/search\?q=made-by%3Aai$/);
     await expect(page.getByRole('button', { name: 'Remove filter Made by AI' })).toBeVisible();
     await expect(docLink(page, 'AI payment flow')).toBeVisible({ timeout: 30_000 });
     await expect(docLink(page, 'Roadmap')).toHaveCount(0);

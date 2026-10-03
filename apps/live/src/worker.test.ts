@@ -25,6 +25,14 @@ describe('live worker editor route', () => {
     await worker.fetch(new Request('https://livediagram.app/explorer/recent'), e);
     expect(seen).toEqual(['/explorer/recent']);
   });
+
+  it('lands /explorer on Home', async () => {
+    for (const path of ['/explorer', '/explorer/']) {
+      const res = await worker.fetch(new Request(`https://livediagram.app${path}`), env().env);
+      expect(res.status).toBe(302);
+      expect(res.headers.get('Location')).toBe('https://livediagram.app/explorer/home');
+    }
+  });
 });
 
 describe('live worker security headers', () => {
