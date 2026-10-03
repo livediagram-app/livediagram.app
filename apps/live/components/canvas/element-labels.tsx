@@ -114,8 +114,9 @@ export function renderLabel(
     // Per-element placeholder colour: typed text inherits the element's
     // resolved textColor via currentColor (set on the parent view), so the
     // editor matches the committed label instead of snapping to a default.
+    // A note's placeholder is its own ink, faded.
     const textClass = isSticky
-      ? 'text-amber-950'
+      ? 'placeholder:opacity-50'
       : element.type === 'text'
         ? 'placeholder:text-slate-400'
         : 'placeholder:text-brand-300';
@@ -162,7 +163,6 @@ export function renderLabel(
         fontFamily={fontFamily}
         multiline={isSticky}
         uppercase={caps}
-        className={isSticky ? 'text-amber-950' : ''}
         animClass={labelAnimClass}
       />
     );
@@ -178,7 +178,6 @@ export function renderLabel(
         alignX={alignX}
         alignY={alignY}
         padding={padding}
-        className="text-amber-950"
         style={textStyle}
       />
     );
