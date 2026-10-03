@@ -53,6 +53,12 @@ op: ElementOp }` and `{ kind: 'tab-meta'; tabId; patch }` alongside the kept
   whole-`tab` op too, and Clear Timer / Clear Vote then replaced every element
   on every receiver ([Collaboration race hardening](collab-race-hardening.md)).
 
+### Live drags
+
+A drag writes nothing until it ends; while it lasts, the dragger's preview travels as presence (a
+`drag-preview` op: unordered, never logged or replayed) and collaborators draw it without writing
+it. The real change follows on release as ordinary element ops ([Drag preview](../008-canvas/drag-preview.md)).
+
 ### Ordered room + reconnect catch-up
 
 The room stamps every **mutation** op with a monotonic `seq` inside an `epoch`
