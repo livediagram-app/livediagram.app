@@ -36,3 +36,5 @@ One row per default applied where a spec is silent or qualitative.
 | D30 | infographic-pages | Where the layout preview stacks                                | `z-[1]` over the element layer, under the panel; the page's own content dropped from the clip meanwhile    |
 | D31 | infographic-pages | A stored gradient with no usable angle                         | 180 (top to bottom), normalised to 0..359                                                                  |
 | D32 | infographic-pages | What a slide row says for a page slide on another tab          | `<tab> · Page`: the page label is known only for the tab shown in Infographic mode                         |
+| D33 | infographic-pages | How an all-pages image export is packaged                      | One stored (uncompressed) .zip, entries `NN <label>.<ext>`, dated now; no extra dependency                 |
+| D34 | infographic-pages | Whether a format's page choice outlives switching format       | Each format keeps its own All / One choice while the dialog is open; the page pick is shared               |

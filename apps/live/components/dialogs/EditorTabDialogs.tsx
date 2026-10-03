@@ -99,6 +99,9 @@ export function EditorTabDialogs() {
           tabName={activeTab.name}
           onImportFile={importIntoActiveTab}
           onImportText={importTextIntoActiveTab}
+          // An infographic imports a livediagram tab only: the other formats are diagrams
+          // (docs/specs/007-editor/infographic-pages.md "Import").
+          formats={infographicPages ? ['json'] : undefined}
           onClose={() => setImportOpen(false)}
         />
       ) : null}

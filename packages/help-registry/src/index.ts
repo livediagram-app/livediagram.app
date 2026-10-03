@@ -1247,9 +1247,9 @@ export const articles: Article[] = [
   {
     slug: 'exporting-infographics',
     title: 'Exporting and Presenting Infographics',
-    description: 'Every page as a print-ready PDF, one page as an image, and pages as slides.',
+    description: 'Every page or one page as a PDF or images, and pages as slides.',
     keywords:
-      'export download pdf png svg image print printable pages page infographic slides slide deck present presentation add as slide page slide deck from pages',
+      'export download pdf png svg image zip all pages one page import json print printable pages page infographic slides slide deck present presentation add as slide page slide deck from pages',
     category: 'Canvas',
     categorySlug: 'canvas/infographics',
     parentSlug: 'infographics',
