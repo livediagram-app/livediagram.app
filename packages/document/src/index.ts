@@ -378,6 +378,7 @@ export * from './doc-flow-ops';
 export * from './doc-pages';
 export * from './doc-style';
 export * from './doc-zones';
+export * from './doc-intake';
 export { migrateWhiteboardKind } from './legacy-whiteboard-tab';
 export { downgradeLinks, upgradeLegacyLinks } from './legacy-links';
 

@@ -27,7 +27,37 @@ export type DocEditorHandle = {
   caretRect: () => DOMRect | null;
   // How many words the writing holds, and how many of them are selected.
   words: () => { total: number; selected: number };
+  // A zone put into the writing at the block boundary nearest a canvas point (or after the block
+  // the caret is in), the writing so far taken as written: its blocks, the zone's id, and where it
+  // landed (its page by index among the document's pages, and its spot from that page's corner).
+  insertZone: (
+    spec: { zone: 'object' | 'drawing'; width: number; height: number },
+    near: { x: number; y: number } | null,
+  ) => {
+    id: string;
+    blocks: import('@livediagram/document').DocBlock[];
+    index: number;
+    x: number;
+    y: number;
+  } | null;
+  // The caret's place on the canvas (for an insert there).
+  caretCanvasPoint: () => { x: number; y: number } | null;
 };
+
+// Every document's editor on the tab, by flow: what an insert into a document that is not being
+// written in reaches.
+const handles = new Map<string, DocEditorHandle>();
+
+export function registerDocHandle(handle: DocEditorHandle): () => void {
+  handles.set(handle.flow, handle);
+  return () => {
+    if (handles.get(handle.flow) === handle) handles.delete(handle.flow);
+  };
+}
+
+export function docHandleOf(flow: string): DocEditorHandle | undefined {
+  return handles.get(flow);
+}
 
 export type ActiveDoc = {
   handle: DocEditorHandle;

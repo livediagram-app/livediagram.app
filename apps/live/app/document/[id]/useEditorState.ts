@@ -198,7 +198,11 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     redo: redoHistory,
   } = useDocumentHistory(initialTabs);
 
+  // Counts this person's own edits (never a remote op, an undo or a tick): what lets the documents
+  // take in what was just added to a page (useDocumentIntake) without taking a peer's.
+  const localEditSeqRef = useRef(0);
   const commitTabs = (mapTabs: (ts: Tab[]) => Tab[]) => {
+    localEditSeqRef.current += 1;
     // Layer stamping (docs/specs/006-document/layers.md): elements APPEARING in this commit without
     // a valid layerId land on the active layer. One choke point, so no
     // individual creation path (draw, paste, AI, template, Mermaid
@@ -1786,6 +1790,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   const documents = useDocumentPages({
     activeTab,
     on: illustratePages !== null,
+    pages: illustratePages?.pages ?? null,
+    localEditSeq: localEditSeqRef,
     canEdit: !isReadOnly,
     commitTabs,
     tickTabs,

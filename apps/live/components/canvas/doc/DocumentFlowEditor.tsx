@@ -11,6 +11,7 @@
 import { useEffect, useLayoutEffect, useRef, type CSSProperties } from 'react';
 import {
   EditorState,
+  NodeSelection,
   Selection,
   TextSelection,
   type Command,
@@ -22,6 +23,7 @@ import { gapCursor } from 'prosemirror-gapcursor';
 import {
   applyDocOps,
   diffDocFlow,
+  nextDocBlockId,
   docWordCount,
   type DocBlock,
   type DocFlow,
@@ -31,7 +33,13 @@ import { blocksToDoc, docToBlocks } from '@/lib/doc/doc-convert';
 import { docKeymap, docInputRules } from '@/lib/doc/doc-keys';
 import { blockIdsPlugin, decorationsPlugin, todoTogglePlugin } from '@/lib/doc/doc-plugins';
 import { insertBlocksAfterCaret, selectionStateOf } from '@/lib/doc/doc-commands';
-import { clearActiveDoc, setActiveDoc, type DocEditorHandle } from '@/lib/doc/doc-editor-store';
+import {
+  clearActiveDoc,
+  registerDocHandle,
+  setActiveDoc,
+  type DocEditorHandle,
+} from '@/lib/doc/doc-editor-store';
+import { docSchema } from '@/lib/doc/doc-schema';
 import { columnAt, flowFrame, pagePlaceOf } from '@/lib/doc/doc-flow-geometry';
 import { docStyleVars, type DocInk } from '@/lib/doc/doc-style-vars';
 import { debugLog } from '@/lib/debug-log';
@@ -308,6 +316,88 @@ export default function DocumentFlowEditor(props: DocumentFlowEditorProps) {
           return null;
         }
       },
+      insertZone: (spec, near) => {
+        const p = latest.current;
+        const frame = flowFrame(p.pages, p.margin);
+        const root = view.dom.getBoundingClientRect();
+        const z = root.width / Math.max(1, view.dom.offsetWidth) || p.zoom;
+        const doc = view.state.doc;
+        const ids = new Set<string>();
+        doc.forEach((n) => ids.add(n.attrs.id as string));
+        const id = nextDocBlockId(ids);
+        const node = docSchema.nodes.zone!.create({ id, ...spec });
+        // The block boundary nearest the point: before the block it is in when it is in that
+        // block's upper half, else after it; with no point, after the caret's block.
+        let at = doc.content.size;
+        const blockAt = (at: number) => {
+          const $p = doc.resolve(Math.min(at, doc.content.size));
+          return $p.depth >= 1 ? { start: $p.before(1), end: $p.after(1) } : null;
+        };
+        if (near) {
+          // By the blocks' own boxes (an element dropped over the writing covers the point, so a
+          // hit test there finds the element): the block whose box (in the point's column) is
+          // nearest the point, before it when the point is in its upper half.
+          const left = root.left + (near.x - frame.x) * z;
+          const top = root.top + (near.y - frame.y) * z;
+          let best: { pos: number; size: number; before: boolean; d: number } | null = null;
+          let pos = 0;
+          doc.forEach((node) => {
+            const dom = view.nodeDOM(pos) as HTMLElement | null;
+            for (const r of dom ? Array.from(dom.getClientRects()) : []) {
+              if (left < r.left - 24 * z || left > r.right + 24 * z) continue;
+              const d = top < r.top ? r.top - top : top > r.bottom ? top - r.bottom : 0;
+              if (!best || d < best.d)
+                best = { pos, size: node.nodeSize, before: top < r.top + r.height / 2, d };
+            }
+            pos += node.nodeSize;
+          });
+          const found = best as { pos: number; size: number; before: boolean } | null;
+          if (found) at = found.before ? found.pos : found.pos + found.size;
+        } else {
+          const block = blockAt(view.state.selection.from);
+          if (block) at = block.end;
+        }
+        const tr = view.state.tr.insert(at, node);
+        // Always somewhere to write after it.
+        if (at + node.nodeSize >= tr.doc.content.size)
+          tr.insert(tr.doc.content.size, docSchema.nodes.paragraph!.create());
+        tr.setSelection(NodeSelection.create(tr.doc, at));
+        view.dispatch(tr);
+        const el = view.dom.querySelector<HTMLElement>(`[data-block-id="${CSS.escape(id)}"]`);
+        if (!el) return null;
+        const r = el.getBoundingClientRect();
+        const place = pagePlaceOf(frame, {
+          x: (r.left - root.left) / z,
+          y: (r.top - root.top) / z,
+        });
+        // Taken as written: the host writes these blocks, the zone placed, in one edit.
+        const blocks = docToBlocks(view.state.doc, committed.current.blocks);
+        committed.current = { ...committed.current, blocks };
+        if (idle.current !== null) {
+          window.clearTimeout(idle.current);
+          idle.current = null;
+        }
+        lastLocal.current = Date.now();
+        return {
+          id,
+          blocks,
+          index: place.index,
+          x: Math.round(place.x * 2) / 2,
+          y: Math.round(place.y * 2) / 2,
+        };
+      },
+      caretCanvasPoint: () => {
+        const p = latest.current;
+        try {
+          const c = view.coordsAtPos(view.state.selection.head);
+          const frame = flowFrame(p.pages, p.margin);
+          const root = view.dom.getBoundingClientRect();
+          const z = root.width / Math.max(1, view.dom.offsetWidth) || p.zoom;
+          return { x: frame.x + (c.left - root.left) / z, y: frame.y + (c.top - root.top) / z };
+        } catch {
+          return null;
+        }
+      },
       words: () => {
         const blocks = docToBlocks(view.state.doc, committed.current.blocks);
         const { from, to, empty } = view.state.selection;
@@ -317,6 +407,7 @@ export default function DocumentFlowEditor(props: DocumentFlowEditorProps) {
         return { total: docWordCount(blocks), selected };
       },
     };
+    const unregister = registerDocHandle(handleRef.current);
     scheduleMeasure();
     // Web fonts arriving change every line's length.
     const fonts = document.fonts;
@@ -325,6 +416,7 @@ export default function DocumentFlowEditor(props: DocumentFlowEditorProps) {
     debugLog('[doc] writing mounted', { flow: latest.current.flow });
     return () => {
       fonts?.removeEventListener?.('loadingdone', onFonts);
+      unregister();
       if (measureFrame.current !== null) cancelAnimationFrame(measureFrame.current);
       measureFrame.current = null;
       flush();

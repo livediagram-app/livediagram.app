@@ -4,7 +4,7 @@
 // removed as the writing grows or shrinks, zones' elements moved with their zones) are settled by
 // whoever made the change, folded into the step that caused them (tick), so the change and its
 // consequences undo as one.
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type RefObject } from 'react';
 import {
   docsOf,
   withDocFlow,
@@ -12,9 +12,11 @@ import {
   withZonesSettled,
   type DocBlock,
   type DocFlow,
+  type LaidOutPage,
   type Tab,
 } from '@livediagram/document';
 import { debugLog } from '@/lib/debug-log';
+import { useDocumentIntake } from './useDocumentIntake';
 import type { FlowLayout, FocusRequest } from '@/components/canvas/doc/DocumentFlowEditor';
 
 export type DocumentPagesView = {
@@ -34,6 +36,10 @@ export type DocumentPagesView = {
 export function useDocumentPages(deps: {
   activeTab: Tab;
   on: boolean;
+  // The pages laid out (null outside Illustrate mode).
+  pages: readonly LaidOutPage[] | null;
+  // This person's own edits, counted (useDocumentIntake settles after each).
+  localEditSeq: RefObject<number>;
   canEdit: boolean;
   commitTabs: (map: (ts: Tab[]) => Tab[]) => void;
   tickTabs: (map: (ts: Tab[]) => Tab[]) => void;
@@ -77,8 +83,8 @@ export function useDocumentPages(deps: {
     (layout: FlowLayout) => {
       const d = latest.current;
       if (!layout.local || !d.canEdit || d.activeTab.locked === true) return;
-      d.tickTabs((ts) =>
-        ts.map((t) => {
+      d.tickTabs((ts) => {
+        const out = ts.map((t) => {
           if (t.id !== tabId || t.locked === true || !docsOf(t)[layout.flow]) return t;
           const paged = withDocumentPageCount(t, layout.flow, layout.pagesNeeded);
           const settled = withZonesSettled(paged, layout.flow, layout.zones);
@@ -89,11 +95,21 @@ export function useDocumentPages(deps: {
               pages: layout.pagesNeeded,
             });
           return settled;
-        }),
-      );
+        });
+        return out.every((t, i) => t === ts[i]) ? ts : out;
+      });
     },
     [tabId],
   );
+
+  useDocumentIntake({
+    activeTab,
+    on,
+    editable,
+    pages: deps.pages,
+    localEditSeq: deps.localEditSeq,
+    tickTabs: deps.tickTabs,
+  });
 
   const undo = useCallback(() => latest.current.undo(), []);
   const redo = useCallback(() => latest.current.redo(), []);
