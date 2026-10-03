@@ -49,7 +49,7 @@ export function ToolbarPopover({
           // A press in the popover keeps the writing's caret (the link field excepted).
           if (!(e.target as HTMLElement).closest('input')) e.preventDefault();
         }}
-        className="fixed z-[var(--z-overlay)] animate-fade-in rounded-xl border border-slate-200 bg-white p-1.5 text-sm shadow-xl shadow-slate-900/15 dark:border-slate-700 dark:bg-slate-900"
+        className="fixed z-[var(--z-overlay)] animate-fade-in rounded-xl border border-slate-200 bg-white p-1.5 text-sm shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
         style={{ left: pos?.left ?? -9999, top: pos?.top ?? -9999, width }}
       >
         {children}

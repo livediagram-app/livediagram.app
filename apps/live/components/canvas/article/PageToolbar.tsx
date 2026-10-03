@@ -1,10 +1,10 @@
 'use client';
 
 // The page toolbar (docs/specs/007-editor/article-pages.md "The page toolbar"): formatting for the
-// article being written in, a band across the top of the page holding the caret, in the page's top
-// margin, at one screen size. Zoomed out so far the margin cannot hold it, the band sits on the
-// page's top edge instead; scrolled past the page's top, it pins under the canvas's top edge while
-// the page is in view. Its buttons never take focus: the caret stays in the writing.
+// article being written in, a card centred in the top margin of the page holding the caret, at one
+// screen size, dressed as the Toolbar layout's strip (toolbar-surface.ts). Zoomed out so far the
+// margin cannot hold it, the card sits on the page's top edge instead; scrolled past the page's top,
+// it pins under the canvas's top edge while the page is in view. Its buttons never take focus: the caret stays in the writing.
 // Kept short: the formats used all the time are buttons; lists, alignment, colours, inserts and
 // the less used formats are menus (page-toolbar-panels.tsx). It follows the page by measuring the
 // sheet each frame while it is shown (a pan or a zoom moves it with no render).
@@ -12,15 +12,22 @@ import { useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import {
   lucideBaseline,
   lucideBold,
-  lucideChevronDown,
   lucideEllipsis,
   lucideItalic,
   lucideLink,
   lucideList,
   lucidePlus,
+  lucideType,
   lucideUnderline,
 } from '@livediagram/icons/lucide';
-import { lucideGlyph, Tooltip } from '@livediagram/ui';
+import { ChevronDownIcon, lucideGlyph, Tooltip } from '@livediagram/ui';
+import { TOOLBAR_TRIGGER_TONE } from '@/components/palette/PaletteDropdown';
+import {
+  TOOLBAR_CARD,
+  TOOLBAR_CONTROL_PRESSED,
+  TOOLBAR_CONTROL_REST,
+  TOOLBAR_DIVIDER,
+} from '@/components/chrome/toolbar-surface';
 import { Portal } from '@/components/primitives/Portal';
 import {
   requestStylePanel,
@@ -73,9 +80,9 @@ const Colour = I(lucideBaseline);
 const ListIcon = I(lucideList);
 const Plus = I(lucidePlus);
 const More = I(lucideEllipsis);
-const Chevron = lucideGlyph(lucideChevronDown, 12);
+const TypeIcon = lucideGlyph(lucideType, 14);
 
-// Screen px: the band's breathing room above and below it when it sits in the page's margin.
+// Screen px: the card's breathing room above and below it when it sits in the page's margin.
 const MARGIN_PAD = 4;
 
 // The page toolbar's telemetry (docs/specs/007-editor/article-pages.md "Telemetry").
@@ -107,7 +114,6 @@ export function PageToolbar({
 }) {
   const active = useActiveArticle();
   const bar = useRef<HTMLDivElement>(null);
-  const row = useRef<HTMLDivElement>(null);
   // Read each frame: the margin changes with the zoom and the article's style, with no new effect.
   const topRoom = useRef(topRoomOf);
   useLayoutEffect(() => {
@@ -131,10 +137,9 @@ export function PageToolbar({
     const follow = () => {
       raf = requestAnimationFrame(follow);
       const el = bar.current;
-      const controls = row.current;
       const sheet = document.querySelector(`[data-illustrate-page-id="${CSS.escape(pageId)}"]`);
       const canvas = document.querySelector('[data-canvas-a11y-root]');
-      if (!el || !controls || !sheet || !canvas) return;
+      if (!el || !sheet || !canvas) return;
       const r = sheet.getBoundingClientRect();
       const c = canvas.getBoundingClientRect();
       const strip = document
@@ -145,9 +150,7 @@ export function PageToolbar({
         8 +
         (strip && strip.bottom > c.top && strip.top < c.top + 80 ? strip.bottom - c.top : 0);
       const h = el.offsetHeight;
-      // As wide as the page, or as its controls when the page is narrower on screen; never wider
-      // than the canvas.
-      const w = Math.min(Math.max(r.width, controls.offsetWidth + 2), c.width - 16);
+      const w = el.offsetWidth;
       const fits = topRoom.current(pageId) >= h + MARGIN_PAD * 2;
       const natural = fits ? r.top + Math.max(0, (topRoom.current(pageId) - h) / 2) : r.top - h;
       const pinned = natural < floor;
@@ -155,7 +158,6 @@ export function PageToolbar({
       const visible = r.bottom > floor + h && r.top < c.bottom;
       const left = Math.max(c.left + 8, Math.min(r.left + r.width / 2 - w / 2, c.right - w - 8));
       el.style.transform = `translate(${Math.round(left)}px, ${Math.round(top)}px)`;
-      el.style.width = `${Math.round(w)}px`;
       el.style.visibility = visible ? 'visible' : 'hidden';
       const place = pinned ? 'pinned' : fits ? 'margin' : 'edge';
       if (el.dataset.place !== place) el.dataset.place = place;
@@ -227,119 +229,120 @@ export function PageToolbar({
         data-article-keep-active=""
         onMouseDown={(e) => e.preventDefault()}
         onPointerDown={(e) => e.stopPropagation()}
-        className="group/bar fixed left-0 top-0 z-[var(--z-overlay)] flex justify-center overflow-x-auto border-y border-slate-900/[0.08] bg-white/90 py-1 backdrop-blur-sm [scrollbar-width:none] data-[place=edge]:rounded-t-lg data-[place=pinned]:rounded-lg data-[place=edge]:border-t-0 data-[place=pinned]:border data-[place=pinned]:border-slate-200 data-[place=pinned]:shadow-lg data-[place=pinned]:shadow-slate-900/10 dark:border-white/10 dark:bg-slate-900/90 dark:data-[place=pinned]:border-slate-700"
+        className={`fixed left-0 top-0 z-[var(--z-overlay)] max-w-[calc(100vw-16px)] overflow-x-auto [scrollbar-width:none] ${TOOLBAR_CARD}`}
         style={{ visibility: 'hidden' }}
       >
-        <div ref={row} className="flex w-max shrink-0 items-center gap-0.5 px-1">
-          <button
-            data-anchor="style"
-            type="button"
-            aria-label={`Style: ${styleLabel}`}
-            aria-haspopup="menu"
-            aria-expanded={open === 'style'}
-            onClick={() => toggleOpen('style')}
-            className="flex h-8 min-w-[112px] items-center justify-between gap-2 rounded-md px-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
-          >
-            {styleLabel}
-            <Chevron />
-          </button>
-          <Divider />
-          <Button
-            label="Bold"
-            keys="Mod-b"
-            pressed={selection.marks.has('bold')}
-            onPress={() => run(toggleBold, 'format')}
-          >
-            <Bold />
-          </Button>
-          <Button
-            label="Italic"
-            keys="Mod-i"
-            pressed={selection.marks.has('italic')}
-            onPress={() => run(toggleItalic, 'format')}
-          >
-            <Italic />
-          </Button>
-          <Button
-            label="Underline"
-            keys="Mod-u"
-            pressed={selection.marks.has('underline')}
-            onPress={() => run(toggleUnderline, 'format')}
-          >
-            <Underline />
-          </Button>
-          <Button
-            label="Colour"
-            anchor="colour"
-            menu
-            expanded={open === 'colour'}
-            onPress={() => toggleOpen('colour')}
-          >
-            <span className="relative flex flex-col items-center">
-              <Colour />
-              <span
-                className="absolute -bottom-1 h-[3px] w-4 rounded-full"
-                style={{ background: selection.highlight ?? selection.color ?? 'currentColor' }}
-              />
-            </span>
-          </Button>
-          <Button
-            label="Link"
-            keys="Mod-k"
-            anchor="link"
-            pressed={open === 'link' || selection.marks.has('link')}
-            onPress={() => toggleOpen('link')}
-          >
-            <LinkIcon />
-          </Button>
-          <Divider />
-          <Button
-            label="Lists"
-            anchor="list"
-            menu
-            expanded={open === 'list'}
-            pressed={selection.list !== null}
-            onPress={() => toggleOpen('list')}
-          >
-            {selection.list ? <ListGlyph list={selection.list} /> : <ListIcon />}
-          </Button>
-          <Button
-            label="Alignment"
-            anchor="align"
-            menu
-            expanded={open === 'align'}
-            onPress={() => toggleOpen('align')}
-          >
-            <AlignGlyph align={selection.align ?? 'left'} />
-          </Button>
-          <Divider />
-          <Button
-            label="Insert"
-            anchor="insert"
-            menu
-            expanded={open === 'insert'}
-            onPress={() => toggleOpen('insert')}
-          >
-            <Plus />
-          </Button>
-          <Button
-            label="More formatting"
-            anchor="more"
-            menu
-            expanded={open === 'more'}
-            onPress={() => toggleOpen('more')}
-          >
-            <More />
-          </Button>
-          <span
-            className="whitespace-nowrap px-2 text-[11px] tabular-nums text-slate-500 dark:text-slate-400"
-            aria-live="polite"
-          >
-            {words.selected > 0
-              ? `${words.selected.toLocaleString()} of ${words.total.toLocaleString()} words`
-              : `${words.total.toLocaleString()} ${words.total === 1 ? 'word' : 'words'}`}
+        <button
+          data-anchor="style"
+          type="button"
+          aria-label={`Style: ${styleLabel}`}
+          aria-haspopup="menu"
+          aria-expanded={open === 'style'}
+          onClick={() => toggleOpen('style')}
+          className={`flex h-9 min-w-[124px] shrink-0 items-center gap-1.5 rounded-md px-2 text-xs font-medium transition ${
+            open === 'style' ? TOOLBAR_CONTROL_PRESSED : TOOLBAR_TRIGGER_TONE
+          }`}
+        >
+          <TypeIcon />
+          <span className="flex-1 truncate text-left">{styleLabel}</span>
+          <ChevronDownIcon className="shrink-0" />
+        </button>
+        <Divider />
+        <Button
+          label="Bold"
+          keys="Mod-b"
+          pressed={selection.marks.has('bold')}
+          onPress={() => run(toggleBold, 'format')}
+        >
+          <Bold />
+        </Button>
+        <Button
+          label="Italic"
+          keys="Mod-i"
+          pressed={selection.marks.has('italic')}
+          onPress={() => run(toggleItalic, 'format')}
+        >
+          <Italic />
+        </Button>
+        <Button
+          label="Underline"
+          keys="Mod-u"
+          pressed={selection.marks.has('underline')}
+          onPress={() => run(toggleUnderline, 'format')}
+        >
+          <Underline />
+        </Button>
+        <Button
+          label="Colour"
+          anchor="colour"
+          menu
+          expanded={open === 'colour'}
+          onPress={() => toggleOpen('colour')}
+        >
+          <span className="relative flex flex-col items-center">
+            <Colour />
+            <span
+              className="absolute -bottom-1 h-[3px] w-4 rounded-full"
+              style={{ background: selection.highlight ?? selection.color ?? 'currentColor' }}
+            />
           </span>
-        </div>
+        </Button>
+        <Button
+          label="Link"
+          keys="Mod-k"
+          anchor="link"
+          pressed={open === 'link' || selection.marks.has('link')}
+          onPress={() => toggleOpen('link')}
+        >
+          <LinkIcon />
+        </Button>
+        <Divider />
+        <Button
+          label="Lists"
+          anchor="list"
+          menu
+          expanded={open === 'list'}
+          pressed={selection.list !== null}
+          onPress={() => toggleOpen('list')}
+        >
+          {selection.list ? <ListGlyph list={selection.list} /> : <ListIcon />}
+        </Button>
+        <Button
+          label="Alignment"
+          anchor="align"
+          menu
+          expanded={open === 'align'}
+          onPress={() => toggleOpen('align')}
+        >
+          <AlignGlyph align={selection.align ?? 'left'} />
+        </Button>
+        <Divider />
+        <Button
+          label="Insert"
+          anchor="insert"
+          menu
+          expanded={open === 'insert'}
+          onPress={() => toggleOpen('insert')}
+        >
+          <Plus />
+        </Button>
+        <Button
+          label="More formatting"
+          anchor="more"
+          menu
+          expanded={open === 'more'}
+          onPress={() => toggleOpen('more')}
+        >
+          <More />
+        </Button>
+        <span
+          className="whitespace-nowrap px-2 text-[11px] tabular-nums text-slate-500 dark:text-slate-400"
+          aria-live="polite"
+        >
+          {words.selected > 0
+            ? `${words.selected.toLocaleString()} of ${words.total.toLocaleString()} words`
+            : `${words.total.toLocaleString()} ${words.total === 1 ? 'word' : 'words'}`}
+        </span>
       </div>
       {open === 'style' ? (
         <ToolbarPopover anchor="style" onClose={close} label="Text style" width={210}>
@@ -414,7 +417,7 @@ export function PageToolbar({
 }
 
 function Divider() {
-  return <span aria-hidden className="mx-0.5 h-5 w-px shrink-0 bg-slate-200 dark:bg-slate-700" />;
+  return <span aria-hidden className={TOOLBAR_DIVIDER} />;
 }
 
 function Button({
@@ -449,20 +452,12 @@ function Button({
         aria-haspopup={menu ? 'menu' : undefined}
         aria-expanded={menu ? (expanded ?? false) : undefined}
         onClick={onPress}
-        className={`flex h-8 shrink-0 items-center justify-center gap-0.5 rounded-md transition focus-visible:outline-2 focus-visible:outline-brand-600 disabled:opacity-35 ${
-          menu ? 'pl-1.5 pr-1' : 'w-8'
-        } ${
-          pressed || expanded
-            ? 'bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-300'
-            : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100'
-        }`}
+        className={`flex h-9 shrink-0 items-center justify-center gap-1 rounded-md transition focus-visible:outline-2 focus-visible:outline-brand-600 disabled:opacity-35 ${
+          menu ? 'px-2' : 'w-9'
+        } ${pressed || expanded ? TOOLBAR_CONTROL_PRESSED : TOOLBAR_CONTROL_REST}`}
       >
         {children}
-        {menu ? (
-          <span className="text-slate-400 dark:text-slate-400">
-            <Chevron />
-          </span>
-        ) : null}
+        {menu ? <ChevronDownIcon className="shrink-0" /> : null}
       </button>
     </Tooltip>
   );

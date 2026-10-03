@@ -149,13 +149,15 @@ article's swatches), and a line break inside a block (Shift+Enter). Code blocks 
 
 ## The page toolbar
 
-- **Where**: a band across the top of the page holding the caret, inside the page's top margin
-  and as wide as the page, part of the page rather than floating over the canvas, while the writing
-  of an article has the caret or a selection, for someone who may edit. Held at one screen size at
-  any zoom. Zoomed out until the margin cannot hold it, the band sits on the page's top edge
-  instead. When the page's top is off the top of the canvas, the band pins under the canvas's top
-  edge (below the Toolbar layout's strip) while any of the page is in view. A page narrower on
-  screen than the controls widens the band to fit them. It never takes focus from the writing.
+- **Where**: a card centred in the top margin of the page holding the caret, part of the page
+  rather than floating over the canvas, while the writing of an article has the caret or a
+  selection, for someone who may edit. Held at one screen size at any zoom. Zoomed out until the
+  margin cannot hold it, the card sits on the page's top edge instead. When the page's top is off
+  the top of the canvas, the card pins under the canvas's top edge (below the Toolbar layout's
+  strip) while any of the page is in view. It never takes focus from the writing.
+- **Look**: the Toolbar layout's card exactly (`toolbar-surface.ts`): the same surface, 36 px
+  controls, hairline dividers, and the Style menu's trigger in the brand tint of the palette's
+  pickers, so it reads as the same product as the panels around it.
 - **Controls**, left to right, each a button with a tooltip naming it and its shortcut, pressed
   state shown (`aria-pressed`):
   - **Undo**, **Redo**;

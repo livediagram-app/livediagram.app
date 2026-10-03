@@ -13,6 +13,7 @@ import { ChevronDownIcon, EllipsisIcon, HoverCard } from '@livediagram/ui';
 import { track } from '@/lib/telemetry';
 import { SnapWidth } from '@/components/primitives/SnapWidth';
 import { PHONE_TOOLBAR_ITEMS } from '@/components/chrome/phone-toolbar-items';
+import { TOOLBAR_CARD } from '@/components/chrome/toolbar-surface';
 import { safeInlinePadding } from '@/lib/safe-area';
 import { PaletteTintProvider } from './palette-controls';
 import { PaletteGroupProvider } from './palette-group-state';
@@ -68,7 +69,7 @@ type Props = Pick<
 const INSIDE_SELECTOR = '[data-palette-dropdown-menu], [role="dialog"], [data-tour-popover]';
 
 // The strip's card, and the leading card beside it on a phone.
-const CARD_CLASS = `flex items-center gap-0.5 rounded-xl border border-slate-200 bg-white p-1 shadow-md shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40 ${PHONE_TOOLBAR_ITEMS}`;
+const CARD_CLASS = `${TOOLBAR_CARD} ${PHONE_TOOLBAR_ITEMS}`;
 
 // With a leading card (a phone), the menu card sits at the left gutter and the
 // strip beside it rather than centred (docs/specs/007-editor/toolbar-layout.md
