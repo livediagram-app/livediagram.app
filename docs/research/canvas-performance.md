@@ -130,6 +130,23 @@ spec's "Later".
   calibration does not model. The same empty-task shape showed locally at fit before the Map became
   an image, so part of it is the board's own paint cost.
 
+## After the drag preview
+
+Measured 2026-10-03 on the reference board, a focused drag probe splitting each run's longest task
+into "during the gesture" and "at release", at the reference speed.
+
+- The preview took the app's own per-frame work down to 25-50 ms of script, and the median frame to
+  17-33 ms. The longest task did not move: 140-250 ms during the gesture, 150-210 ms at release.
+- During the gesture the long tasks are `LayerTreeHost::WaitForCommitCompletion` (150-310 ms): the
+  main thread waiting on the compositor. The page has 5 compositor layers; the board is painted in
+  one. Without a GPU, headless Chromium composites in software, which rasterises changed tiles inside
+  the commit; moving one element dirties tiles dense with paths. Not established on real GPU devices.
+- Lifting the dragged boxes onto their own layers (`will-change: transform`) did not help, and a run
+  that also lifted the arrows' canvas-sized SVGs crashed the page. An emulated GPU (SwiftShader) was
+  no better: it does its GPU work on the CPU.
+- At release, ~105 ms is the Map's picture being parsed (`SVGImage::DataChanged`, an
+  `IsolatedSVGDocumentHost` for a 1,000-element document) and ~100 ms the commit's script.
+
 ## Not tried
 
 - `contain` / `content-visibility` on element wrappers, level of detail at low zoom, a raster

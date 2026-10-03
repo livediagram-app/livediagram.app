@@ -5,18 +5,17 @@ drags for collaborators.
 
 ## Files
 
-| File                                                            | Role                                                                           |
-| --------------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| `apps/live/lib/drag-preview.ts` (planned)                       | The preview store: local and peer overlays, `useDragPreview`, `applyOverlay`   |
-| `apps/live/hooks/canvas/useEditorDrag.ts`                       | Writes ticks to the preview; reads through the virtual tab; commits on release |
-| `apps/live/hooks/canvas/drag-preview-commit.ts` (planned)       | `commitDragPreview`: one checkpoint, one tick, one log entry, store cleared    |
-| `apps/live/components/canvas/CanvasElementsLayer.tsx`           | Draws each element through the overlay; re-derives only the affected arrows    |
-| `apps/live/components/canvas/drag-affected-arrows.ts` (planned) | `affectedArrows`: arrows pinned to, or crossing, a previewed box               |
-| `apps/live/components/canvas/Canvas.tsx`                        | Derives the selection from the previewed elements while a preview lasts        |
-| `apps/live/hooks/canvas/useArrowLabelLayouts.ts`                | `draftLayout(arrow, text, elements?)`: lays out a previewed arrow's label      |
-| `packages/api-schema/src/room-messages.ts`                      | `drag-preview` presence op, in `PRESENCE_OP_KINDS`                             |
-| `apps/live/hooks/collab/useDragPreviewBroadcast.ts` (planned)   | Sends the local preview at `DRAG_PREVIEW_SEND_MS`, and its end                 |
-| `apps/live/hooks/collab/usePeerDragPreviews.ts` (planned)       | Receives peers' previews: role check, expiry, cleared by real ops              |
+| File                                                          | Role                                                                           |
+| ------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| `apps/live/lib/drag-preview.ts`                               | The preview store: local and peer overlays, `useDragPreview`, `applyOverlay`   |
+| `apps/live/hooks/canvas/useEditorDrag.ts`                     | Writes ticks to the preview; reads through the virtual tab; commits on release |
+| `apps/live/components/canvas/CanvasElementsLayer.tsx`         | Draws each element through the overlay; re-derives only the affected arrows    |
+| `apps/live/components/canvas/drag-affected-arrows.ts`         | `affectedArrows`: arrows pinned to, or crossing, a previewed box               |
+| `apps/live/components/canvas/Canvas.tsx`                      | Derives the selection from the previewed elements while a preview lasts        |
+| `apps/live/hooks/canvas/useArrowLabelLayouts.ts`              | `draftLayout(arrow, text, elements?)`: lays out a previewed arrow's label      |
+| `packages/api-schema/src/room-messages.ts`                    | `drag-preview` presence op, in `PRESENCE_OP_KINDS`                             |
+| `apps/live/hooks/collab/useDragPreviewBroadcast.ts` (planned) | Sends the local preview at `DRAG_PREVIEW_SEND_MS`, and its end                 |
+| `apps/live/hooks/collab/usePeerDragPreviews.ts` (planned)     | Receives peers' previews: role check, expiry, cleared by real ops              |
 
 ## Domain and naming
 
@@ -34,7 +33,9 @@ drags for collaborators.
 
 - `drag-preview.ts` is a module store (the `canvas-gesture.ts` pattern): one local `DragOverlay | null`
   and a map of peer previews by presence id, a version number bumped on every change, listeners.
-- `setLocalPreview(tabId, next, doc)` derives the overlay by identity: an element of `next` not
+- `setLocalPreview(tabId, next, base)` derives the overlay (`overlayBetween`) by identity against
+  `base`, the board as the gesture found it (so a collaborator's change to another element mid-gesture
+  is never part of the overlay, and is never undone by it): an element of `next` not
   identical to the document's element of that id is `changed`; an id of `doc` missing from `next`
   is `removed`; an id of `next` missing from `doc` is `added`, `after` the id before it in `next`.
   One linear pass per tick.
@@ -44,20 +45,27 @@ drags for collaborators.
 
 ### The drag hook
 
-- The move effect's local `tick(mapper)` no longer calls `deps.tick`: it holds `virtual` (the
-  document's elements at the first tick), sets `virtual = mapper(virtual)` and calls
-  `setLocalPreview`. No checkpoint is taken while the gesture lasts.
+- The move effect's local `tick` is `previewTick` (a `useEffectEvent`): at the first tick it records
+  `{ tabId, base, virtual }` from the document, then sets `virtual = mapper(virtual)` and calls
+  `setLocalPreview(tabId, virtual, base)`. No checkpoint is taken while the gesture lasts. The
+  preview lives in a hook-level ref, so it survives the effect re-running within one gesture (a
+  quick-connect arrow turning to follow the pointer).
 - Every read of `depsRef.current.activeTab` inside the drag effect and the release path goes through
   `virtualTab()`, so snapping, lanes, insert-between and Shift-duplicate see the gesture's own
   result as they saw the written document before.
 - The Shift-duplicate swap at the gesture's start writes through the same `tick`.
-- On release, the release path runs as today (its `tick`s land in the preview), then
-  `commitDragPreview`: `markCheckpoint()` (when the gesture changed anything),
+- On release: a click-to-place arrow turning to follow, or follow mode riding through a release,
+  keeps the preview. Every other release reads `virtualTab()` into a snapshot, then
+  `commitPreview()` writes it before anything else does, and the release logic runs on the snapshot
+  (its `d.tick` / `d.commit` now chain on the committed state, inside the same undo step). The
+  placing click in follow mode commits first too. `commitPreview`: `markCheckpoint()` (when the gesture changed anything),
   `deps.tick(els => applyOverlay(els, overlay))`, `scheduleElementChangeLog('element-drag', ...)`,
-  `clearLocalPreview()`. Release-time `commit`s (collision avoidance) run after it, as today, on the
-  committed state.
-- Cancel (Escape, pointercancel, unmount): `clearLocalPreview()`; nothing was written, so nothing is
-  restored. `cancelToCheckpoint` remains only for a checkpoint already taken.
+  `clearLocalPreview()`.
+- The drag effect running with no drag while a preview remains (a route that neither committed nor
+  cancelled) commits it, matching the old behaviour where every tick was a write.
+- Cancel (Escape, a pinch or second touch, unmount): `cancelPreview()`; nothing was written, so
+  nothing is restored (a cancelled pinch used to leave a half-applied move). Escape no longer calls
+  `cancelToCheckpoint`.
 - A gesture that changed nothing (a click) commits nothing and logs nothing.
 
 ### Drawing
@@ -190,11 +198,12 @@ type DragPreviewOp =
 | A gesture draws from a preview, not the document      | `useEditorDrag.preview.test.tsx`: no `deps.tick` during a move; overlay set                             |
 | One change on release                                 | Same: one `markCheckpoint`, one `deps.tick`, one log schedule; result equals today's                    |
 | A cancel writes nothing                               | Same: Escape and pointercancel leave the document untouched, overlay cleared                            |
-| Drag logic reads the gesture's own result             | Existing `useEditorDrag.*` suites pass unchanged (lanes, insert-between, Shift)                         |
+| Drag logic reads the gesture's own result             | Existing `useEditorDrag.*` suites reading the board as drawn; the drag e2e specs                        |
+| In a real browser                                     | `e2e/drag-preview.spec.ts`: drawn mid-drag, nothing saved, saved on release; Escape; one undo           |
 | Overlay derivation and application                    | `drag-preview.test.ts`                                                                                  |
 | What is redrawn                                       | `CanvasElementsLayer.renders.test.tsx`: a preview re-renders the moved element and affected arrows only |
 | Affected arrows                                       | `drag-affected-arrows.test.ts`                                                                          |
-| Selection follows the preview                         | `Canvas` selection test                                                                                 |
+| Selection follows the preview                         | `usePreviewedElements.test.tsx`                                                                         |
 | Live movement, expiry, end, real-op clear, role check | `usePeerDragPreviews.test.tsx`, `useDragPreviewBroadcast.test.tsx`                                      |
 | Presence classification                               | `room-messages` test: `drag-preview` is presence                                                        |
 | Budget                                                | The probe's drag rows                                                                                   |
