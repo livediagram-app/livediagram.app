@@ -34,7 +34,7 @@ to the top centre of the canvas, the way Excalidraw's tool bar works:
 ## More: the rest of the category
 
 A strip has room for about a dozen tiles. Shapes fits; Icons (~180),
-Stickers, Technology and Behaviours do not. More opens the current
+Stickers, Technology and Collaborate do not. More opens the current
 category's full Palette body in a popover hanging from the More button's own
 right edge: search, group browser, Favourites Edit / Reorder, everything. It
 is the exact node the floating Palette renders, not a copy. The popover is
@@ -46,7 +46,7 @@ its catalogue a moment later focuses the field as soon as it appears); on a phon
 because focusing would raise the keyboard over the popover.
 
 More appears when the category has more than twelve tiles, and always for
-Favourites, Icons, Stickers, Technology and Behaviours, whose bodies carry
+Favourites, Icons, Stickers, Technology and Collaborate, whose bodies carry
 more than tiles (search, group browsing, Edit / Reorder). It sits outside the
 animated tile rail, so it rides the rail's width change.
 

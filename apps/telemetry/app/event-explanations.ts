@@ -719,11 +719,11 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Opened|Activity': 'Someone expanded the since-removed Activity panel.',
   'UI|Opened|Collaborate': 'Someone opened the Collaborate panel from its bottom-bar button.',
   'UI|Opened|BehaviourGroup':
-    "Someone opened a category inside the palette's Behaviours tab (session tools like polls, votes, and record-keeping elements).",
+    "Someone opened a category inside the palette's Collaborate tab (formerly Behaviours; session tools like polls, votes, and record-keeping elements).",
   'UI|Opened|CanvasStyle':
     "Someone opened the tab's look-and-feel dialog on its Canvas tab, to change the background.",
   'UI|Opened|CollabGroup':
-    "Someone opened a category inside the palette's old Collaborate tab (session tools like polls and votes). That tab was merged into Behaviours. No longer recorded.",
+    "Someone opened a category inside the palette's old Collaborate tab (session tools like polls and votes). That tab was merged into Behaviours (since renamed Collaborate). No longer recorded.",
   'UI|Opened|Collaborators':
     "Someone opened the Collaborators dialog, either from a tab's presence stack or from a command.",
   'UI|Opened|IconGroup': "Someone opened a category inside the palette's Icons tab.",
@@ -799,7 +799,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Removed|PaletteFavourite':
     'Someone removed a tile from their Favourites in the shape palette.',
   'UI|Removed|Slide': 'Someone deleted a slide from the Slide Deck.',
-  'UI|Searched|BehaviourSearch': "Someone searched within the palette's Behaviours tab.",
+  'UI|Searched|BehaviourSearch':
+    "Someone searched within the palette's Collaborate tab (formerly Behaviours).",
   'UI|Searched|IconSearch': "Someone searched within the palette's Icons tab.",
   'UI|Searched|PaletteSearch': 'Someone searched within their Favourites in the palette.',
   'UI|Selected|LiveImageTab':
@@ -1170,7 +1171,7 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
     "Someone opened a dialog, panel, popover, or menu somewhere in the editor. A lowercase, hyphenated type is a help-centre article's address: someone clicked a help link, or a Help result in search, to read it.",
   'UI|Removed': 'Someone removed something in the editor, such as a palette favourite or a slide.',
   'UI|Searched':
-    'Someone typed into a search box inside a palette tab (Behaviours, Icons, or Technology), narrowing it to matching tiles. Counted once per tab visit, on the first keystroke.',
+    'Someone typed into a search box inside a palette tab (Collaborate, Icons, or Technology), narrowing it to matching tiles. Counted once per tab visit, on the first keystroke.',
   'UI|Selected':
     'Someone picked an option from a dropdown, or clicked through on a banner, somewhere in the editor.',
   'UI|Started': 'Someone started a presentation or the welcome tour.',

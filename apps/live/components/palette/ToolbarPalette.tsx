@@ -457,7 +457,7 @@ export function ToolbarPalette(props: Props) {
           {moreOpen && category ? (
             // The category's full Palette body, the exact node the floating
             // Palette renders. Capped to the window so a long category
-            // (Components, Behaviours) scrolls rather than running off it.
+            // (Components, Collaborate) scrolls rather than running off it.
             <div
               ref={moreRef}
               data-toolbar-more=""

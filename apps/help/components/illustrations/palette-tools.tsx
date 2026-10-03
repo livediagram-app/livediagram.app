@@ -25,7 +25,7 @@ const CATEGORY_BANDS: [string, string[]][] = [
   ['COMMON', ['Shapes', 'Write', 'Draw']],
   ['STRUCTURE', ['Build', 'Components', 'Devices']],
   ['DECORATE', ['Icons', 'Stickers', 'Tech', 'Media']],
-  ['DYNAMIC', ['Data', 'Behaviour', 'Collaborate']],
+  ['DYNAMIC', ['Data', 'Collaborate']],
 ];
 
 /** One category chip: the picker's tile, reduced to its label. The real tile
