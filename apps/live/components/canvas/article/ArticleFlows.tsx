@@ -3,7 +3,7 @@
 // The writing of every article on the tab (docs/specs/007-editor/article-pages.md), in canvas
 // space above the sheets and under the elements, so a zone's elements sit over the room the
 // writing leaves for them. Each article's editor is its own (ArticleEditor), loaded only
-// once the tab has an article: the editor's code (ProseMirror) is not part of the canvas until a
+// once the tab has an article: the editor's code (ProseMirror) is not part of the canvas until an
 // article asks for it.
 import { lazy, Suspense, useEffect, useLayoutEffect, useMemo } from 'react';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
@@ -31,7 +31,6 @@ import {
   requestArticleLink,
   useActiveArticle,
 } from '@/lib/article/article-editor-store';
-import { PageToolbar } from './PageToolbar';
 import { previewedBackground, usePageBackgroundPreview } from '@/lib/page-background-preview';
 import { ZoneBar, ZoneResizeGrips } from './ZoneBar';
 import { useZoneDrag, type ZoneDragState } from './useZoneDrag';
@@ -40,6 +39,9 @@ import { publishZoneClips } from '@/lib/article/zone-clip-store';
 import { selectionMoving, useCanvasGesture } from '@/lib/canvas-gesture';
 
 const ArticleEditor = lazy(() => import('./ArticleEditor'));
+// The toolbar drives the writing's commands (ProseMirror), so it loads with the editor, not with
+// the canvas.
+const PageToolbar = lazy(() => import('./PageToolbar').then((m) => ({ default: m.PageToolbar })));
 
 export function ArticleFlows({
   view,
@@ -205,20 +207,22 @@ export function ArticleFlows({
           })}
         </Suspense>
         {articles.editable ? (
-          <PageToolbar
-            accent={view.themeAccent}
-            articlePages={articlePages}
-            topRoomOf={(pageId) => {
-              const flow = row.find((p) => p.id === pageId)?.flow;
-              const doc = flow ? articles.flows[flow] : undefined;
-              const preview = articles.stylePreview;
-              const style = preview && preview.flow === flow ? preview.style : doc?.style;
-              return articleTopMarginPx(style) * zoom;
-            }}
-            // For the article the toolbar shows for: the one worked on, or the one hovered.
-            onInsert={articles.insertObject}
-            onNote={articles.addNote}
-          />
+          <Suspense fallback={null}>
+            <PageToolbar
+              accent={view.themeAccent}
+              articlePages={articlePages}
+              topRoomOf={(pageId) => {
+                const flow = row.find((p) => p.id === pageId)?.flow;
+                const doc = flow ? articles.flows[flow] : undefined;
+                const preview = articles.stylePreview;
+                const style = preview && preview.flow === flow ? preview.style : doc?.style;
+                return articleTopMarginPx(style) * zoom;
+              }}
+              // For the article the toolbar shows for: the one worked on, or the one hovered.
+              onInsert={articles.insertObject}
+              onNote={articles.addNote}
+            />
+          </Suspense>
         ) : null}
       </div>
       {target && target.zone.zone === 'drawing' && !zoneDrag.drag ? (

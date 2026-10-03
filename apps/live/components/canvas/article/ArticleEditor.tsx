@@ -38,11 +38,17 @@ import { blocksToDoc, docToBlocks } from '@/lib/article/article-convert';
 import type { ArticleNotePlace } from '@livediagram/document';
 import { articleKeymap, articleInputRules } from '@/lib/article/article-keys';
 import { blockIdsPlugin, decorationsPlugin, todoTogglePlugin } from '@/lib/article/article-plugins';
-import { insertBlocksAfterCaret, selectionStateOf } from '@/lib/article/article-commands';
+import {
+  insertBlocksAfterCaret,
+  sameSelectionState,
+  selectionStateOf,
+  type ArticleSelectionState,
+} from '@/lib/article/article-commands';
 import {
   clearActiveArticle,
   registerArticleHandle,
   setActiveArticle,
+  getActiveArticle,
   requestArticleComment,
   blurActiveArticle,
   type ArticleEditorHandle,
@@ -264,17 +270,42 @@ export default function ArticleEditor(props: ArticleEditorProps) {
   };
 
   const handleRef = useRef<ArticleEditorHandle | null>(null);
+  // The caret's page, read in a frame after a change (reading it inside a transaction would force
+  // a layout of the whole article per keystroke), and what was last published, so the toolbar
+  // and its hosts re-render only when something they show changed.
+  const caretPageId = useRef<string | null>(null);
+  const caretFrame = useRef<number | null>(null);
+  const published = useRef<{ pageId: string | null; selection: ArticleSelectionState } | null>(
+    null,
+  );
   const publish = (view: EditorView) => {
     if (!view.hasFocus() || !handleRef.current) return;
     // Where we are writing, for collaborators (docs/specs/007-editor/article-pages.md
     // "Collaboration"); a viewer's writing takes no caret.
     if (latest.current.editable) setLocalArticleCaret(latest.current.flow, caretOf(view.state));
-    setActiveArticle({
-      handle: handleRef.current,
-      pageId: caretPage(view),
-      selection: selectionStateOf(view.state),
-      focused: true,
-    });
+    const selection = selectionStateOf(view.state);
+    const pageId = caretPageId.current ?? latest.current.pages[0]?.id ?? null;
+    const was = published.current;
+    if (
+      !was ||
+      was.pageId !== pageId ||
+      !sameSelectionState(was.selection, selection) ||
+      getActiveArticle()?.handle !== handleRef.current ||
+      !getActiveArticle()?.focused
+    ) {
+      published.current = { pageId, selection };
+      setActiveArticle({ handle: handleRef.current, pageId, selection, focused: true });
+    }
+    if (caretFrame.current === null)
+      caretFrame.current = requestAnimationFrame(() => {
+        caretFrame.current = null;
+        const v = viewRef.current;
+        if (!v) return;
+        const page = caretPage(v);
+        if (page === caretPageId.current) return;
+        caretPageId.current = page;
+        publish(v);
+      });
   };
 
   useLayoutEffect(() => {
@@ -735,6 +766,8 @@ export default function ArticleEditor(props: ArticleEditorProps) {
       unregister();
       if (measureFrame.current !== null) cancelAnimationFrame(measureFrame.current);
       measureFrame.current = null;
+      if (caretFrame.current !== null) cancelAnimationFrame(caretFrame.current);
+      caretFrame.current = null;
       flush();
       if (blurTimer.current !== null) window.clearTimeout(blurTimer.current);
       if (process.env.NODE_ENV !== 'production' && Reflect.get(window, '__articleView') === view)

@@ -449,6 +449,23 @@ export type ArticleSelectionState = {
   hasText: boolean;
 };
 
+/** Whether two selection states show the same toolbar. */
+export function sameSelectionState(a: ArticleSelectionState, b: ArticleSelectionState): boolean {
+  return (
+    a.style === b.style &&
+    a.list === b.list &&
+    a.align === b.align &&
+    a.link === b.link &&
+    a.color === b.color &&
+    a.highlight === b.highlight &&
+    a.inText === b.inText &&
+    a.zoneId === b.zoneId &&
+    a.hasText === b.hasText &&
+    a.marks.size === b.marks.size &&
+    [...a.marks].every((m) => b.marks.has(m))
+  );
+}
+
 export function selectionStateOf(state: EditorState): ArticleSelectionState {
   const blocks = selectedBlocks(state);
   const first = blocks[0]?.node;
