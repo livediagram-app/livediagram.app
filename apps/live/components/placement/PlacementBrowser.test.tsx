@@ -292,3 +292,95 @@ describe('the New Team tile', () => {
     expect(screen.getByRole('button', { name: /All spaces/ }).textContent).toContain('Design');
   });
 });
+
+describe('opening where its selection is', () => {
+  // A host that can also change the placement from outside, as the wizard does when a default
+  // resolves late or is changed through Change default.
+  function Opened({ initial, folders = FOLDERS }: { initial: string; folders?: PickerFolder[] }) {
+    const [placement, setPlacement] = useState(initial);
+    return (
+      <>
+        <button type="button" onClick={() => setPlacement('folder:b')}>
+          outside to Beta
+        </button>
+        <output data-testid="placement">{placement}</output>
+        <PlacementBrowser
+          placement={placement}
+          onPlacement={setPlacement}
+          folders={folders}
+          teams={[]}
+          teamFolders={{}}
+          layout="list"
+        />
+      </>
+    );
+  }
+  const checked = () =>
+    screen
+      .getAllByRole('radio')
+      .filter((r) => r.getAttribute('aria-checked') === 'true')
+      .map((r) => r.textContent ?? '');
+
+  it('opens at the level that lists a selected folder, its card checked', () => {
+    render(<Opened initial="folder:d" />);
+    // Inside My documents > Alpha > Gamma: Delta is listed and is the only checked radio.
+    expect(screen.queryByText('Choose a Space')).toBeNull();
+    expect(screen.getByRole('button', { name: /Alpha/ }).textContent).toContain('Gamma');
+    expect(checked()).toHaveLength(1);
+    expect(checked()[0]).toMatch(/^Delta/);
+  });
+
+  it('opens the space root for a top-level folder', () => {
+    render(<Opened initial="folder:e" />);
+    expect(screen.getByRole('button', { name: /All spaces/ }).textContent).toContain(
+      'My documents',
+    );
+    expect(checked()[0]).toMatch(/^Epsilon/);
+  });
+
+  it('still opens the overview for the root', () => {
+    render(<Opened initial="unsorted" />);
+    expect(screen.getByText('Choose a Space')).toBeTruthy();
+  });
+
+  it('backs out of the opened level to the space, then the overview', () => {
+    render(<Opened initial="folder:b" />);
+    fireEvent.click(screen.getByRole('button', { name: /My documents/ }));
+    // Back at the root of My documents, Alpha still holds the choice.
+    expect(checked()[0]).toMatch(/^Alpha/);
+    fireEvent.click(screen.getByRole('button', { name: /All spaces/ }));
+    expect(screen.getByText('Choose a Space')).toBeTruthy();
+  });
+
+  it('opens the level once the folders arrive', () => {
+    const { rerender } = render(<Opened initial="folder:b" folders={[]} />);
+    expect(screen.getByText('Choose a Space')).toBeTruthy();
+    rerender(<Opened initial="folder:b" folders={FOLDERS} />);
+    expect(checked()[0]).toMatch(/^Beta/);
+  });
+
+  it('follows a selection changed from outside', () => {
+    render(<Opened initial="folder:d" />);
+    fireEvent.click(screen.getByRole('button', { name: 'outside to Beta' }));
+    expect(screen.getByRole('button', { name: /My documents/ }).textContent).toContain('Alpha');
+    expect(checked()[0]).toMatch(/^Beta/);
+  });
+
+  it('stays where the reader takes it', () => {
+    render(<Opened initial="folder:b" />);
+    // Choosing the open folder itself does not jump to the level that lists it.
+    fireEvent.click(radio(/^Alpha/));
+    expect(screen.getByTestId('placement').textContent).toBe('folder:a');
+    expect(radio(/^Beta/)).toBeTruthy();
+    expect(checked()[0]).toMatch(/^Alpha/);
+  });
+
+  it('follows an outside change again after the reader has moved', () => {
+    render(<Opened initial="folder:d" />);
+    fireEvent.click(screen.getByRole('button', { name: /Alpha/ }));
+    fireEvent.click(screen.getByRole('button', { name: /My documents/ }));
+    fireEvent.click(radio(/^Epsilon/));
+    fireEvent.click(screen.getByRole('button', { name: 'outside to Beta' }));
+    expect(checked()[0]).toMatch(/^Beta/);
+  });
+});

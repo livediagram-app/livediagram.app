@@ -83,6 +83,13 @@ test('a team folder becomes a member’s default, and new boards land in it', as
     'Kanban boards go to Boards by default. Change default',
     { timeout: 20_000 },
   );
+  // The browser opens inside the team, the default's card checked.
+  const checked = page
+    .getByRole('radiogroup', { name: 'Choose livediagram Folder' })
+    .locator('[role="radio"][aria-checked="true"]');
+  await expect(checked).toHaveCount(1);
+  await expect(checked).toHaveAccessibleName(/^Boards/);
+  await expect(page.getByRole('button', { name: /^All spaces/ })).toContainText('Atlas');
   await page.getByRole('button', { name: 'Create', exact: true }).click();
   await expect(page).toHaveURL(/\/document\/[0-9a-f-]{36}$/, { timeout: 30_000 });
   const documentId = page.url().split('/').pop()!;

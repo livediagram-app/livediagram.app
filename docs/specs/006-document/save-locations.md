@@ -83,6 +83,19 @@ screen is where a "create a team" option belongs for someone who has no
 team yet. An earlier version dropped a lone My documents space straight into
 its folders, which left nowhere to put that option.
 
+**It opens where its selection is.** The overview is the first screen while
+the selection is a space's root. When the selection is a **folder** (a
+`/new?folder=` context, the wizard's pre-selected default folder, the folder a
+moved document lives in, a key's current default folder), the browser opens at
+the level that lists that folder, its card checked, so the screen shows the
+place the document will go; the bar's back button leads up to the space and
+the overview. Until the reader moves about in the browser it follows the
+selection, so a default that resolves after the step appears, or a new one
+chosen through **Change default**, is opened to as well. Once the reader
+selects, drills, goes back or creates in it, it stays where they take it. A
+folder the browser cannot see yet (its list still loading) opens the
+overview, and the level once the folder arrives.
+
 That option is the **New Team tile**, last on the overview after the
 team cards: the same dashed inline-name tile as New Folder (one
 `InlineCreateTile`, two skins), reading "New Team · Create a New Team". Type a

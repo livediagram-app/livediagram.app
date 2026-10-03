@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
@@ -204,6 +204,56 @@ describe('TemplatePicker, default folders', () => {
     );
     fireEvent.click(screen.getByRole('button', { name: 'Create' }));
     expect(onPick.mock.calls[0]![3]).toMatchObject({ teamId: null, folderId: 'w' });
+  });
+
+  // The browser opens where its selection is (docs/specs/006-document/save-locations.md): the
+  // checked radio names the folder the document goes to, never a space card that only holds it.
+  const checkedRadios = () =>
+    within(screen.getByRole('radiogroup', { name: 'Choose livediagram Folder' }))
+      .getAllByRole('radio')
+      .filter((r) => r.getAttribute('aria-checked') === 'true');
+  const nested = [
+    { id: 'p', name: 'Projects', parentId: null },
+    { id: 'w', name: 'Workshops', parentId: 'p' },
+  ];
+
+  it('shows the pre-selected default as the checked radio, at its parent level', () => {
+    render(
+      <TemplatePicker
+        mode="welcome"
+        participant={participant}
+        currentThemeId="brand"
+        onPick={vi.fn()}
+        onSkip={vi.fn()}
+        onBackOut={vi.fn()}
+        defaults={defaults}
+        folders={nested}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /^Next/ }));
+    const checked = checkedRadios();
+    expect(checked).toHaveLength(1);
+    expect(checked[0]!.textContent).toMatch(/^Workshops/);
+    expect(screen.getByRole('button', { name: /My documents/ }).textContent).toContain('Projects');
+  });
+
+  it('shows a /new?folder= context as the checked radio the same way', () => {
+    render(
+      <TemplatePicker
+        mode="welcome"
+        participant={participant}
+        currentThemeId="brand"
+        onPick={vi.fn()}
+        onSkip={vi.fn()}
+        onBackOut={vi.fn()}
+        initialPlacement="folder:w"
+        folders={nested}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /^Next/ }));
+    expect(checkedRadios().map((r) => r.textContent)).toEqual([
+      expect.stringMatching(/^Workshops/),
+    ]);
   });
 
   it('offers Always save for another folder, and carries it when ticked', () => {

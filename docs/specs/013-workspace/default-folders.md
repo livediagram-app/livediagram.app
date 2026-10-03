@@ -280,6 +280,10 @@ document will go and why.
   intent of the template picked on the first step, over the reader's defaults and the folders it
   has loaded; a default whose folder it cannot see (deleted, or in a team not listed) is skipped, as
   the server skips it.
+- **It shows the pre-selection.** The folder browser opens at the level that lists the selected
+  folder, that folder's card checked ("Workshops" inside "My documents › Projects"), never on a
+  space card that only holds it ([Save locations](../006-document/save-locations.md), "It opens
+  where its selection is"). A `/new?folder=` context opens the same way.
 - **At the My documents root the default wins; inside a real folder or team, that folder wins.**
   A `/new?folder=` or `?team=` context is pre-selected as it always was; with no context, the
   resolved default is.
