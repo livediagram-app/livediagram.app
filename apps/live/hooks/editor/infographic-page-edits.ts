@@ -6,7 +6,6 @@ import {
   elementIdsOnPage,
   infographicPagesOf,
   layOutInfographicPages,
-  pageMargin,
   MAX_INFOGRAPHIC_PAGES,
   nextInfographicPageId,
   PAGE_NAME_MAX,
@@ -21,7 +20,8 @@ import {
   type PageSizeId,
   type Tab,
 } from '@livediagram/document';
-import { pageLayoutById, type PageLayoutId } from '@livediagram/templates';
+import type { PageLayoutId } from '@livediagram/templates';
+import { buildPageLayout } from '@/lib/page-layout-build';
 import { withBackgroundPatch } from '@/lib/infographic-page-paint';
 import { debugLog } from '@/lib/debug-log';
 import { track } from '@/lib/telemetry';
@@ -203,14 +203,7 @@ export function infographicPageEdits({
     commitTab((t) => {
       const page = layOutInfographicPages(infographicPagesOf(t)).find((p) => p.id === pageId);
       if (!page) return null;
-      const m = pageMargin(page);
-      const { x, y, width, height } = page.rect;
-      const placed = pageLayoutById(layoutId).build({
-        x: x + m,
-        y: y + m,
-        width: width - 2 * m,
-        height: height - 2 * m,
-      });
+      const placed = buildPageLayout(layoutId, page);
       return withPageContentReplaced(t, pageId, placed);
     });
     onLayoutPlaced();

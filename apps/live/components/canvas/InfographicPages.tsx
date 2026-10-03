@@ -5,6 +5,8 @@ import { lucidePanelsTopLeft, lucideSettings } from '@livediagram/icons/lucide';
 import { INFOGRAPHIC_PAGE_GAP, pageLabel, type LaidOutPage } from '@livediagram/document';
 import { HoverCard, lucideGlyph, PlusIcon, Tooltip } from '@livediagram/ui';
 import type { InfographicPagesView } from '@/hooks/editor/useInfographicPage';
+import type { PageLayoutId } from '@livediagram/templates';
+import { InfographicLayoutPreview } from './InfographicLayoutPreview';
 import { usePageReorderDrag, type PageReorder } from '@/hooks/canvas/usePageReorderDrag';
 import { pageSheetStyle, withBackgroundPatch } from '@/lib/infographic-page-paint';
 import {
@@ -47,6 +49,7 @@ export function InfographicPages({ view, zoom }: { view: InfographicPagesView; z
   } | null>(null);
   const cogs = useRef(new Map<string, HTMLButtonElement>());
   const [preview, setPreview] = useState<PagePreview>(null);
+  const [layoutPreview, setLayoutPreview] = useState<PageLayoutId | null>(null);
   const last = pages[pages.length - 1]!;
   // A label dragged sideways reorders the pages (usePageReorderDrag).
   const drag = usePageReorderDrag({ pages, zoom, onMove: edit?.movePageTo });
@@ -170,6 +173,9 @@ export function InfographicPages({ view, zoom }: { view: InfographicPagesView; z
           onAdd={edit.addPage}
         />
       ) : null}
+      {open && layoutPreview ? (
+        <InfographicLayoutPreview page={open} layout={layoutPreview} tabFont={view.tabFont} />
+      ) : null}
       {open && opened && edit ? (
         <InfographicPagePanel
           page={open}
@@ -179,6 +185,7 @@ export function InfographicPages({ view, zoom }: { view: InfographicPagesView; z
           themeBackgrounds={view.themeBackgrounds}
           edit={edit}
           onPreview={setPreview}
+          onLayoutPreview={setLayoutPreview}
           onClose={close}
         />
       ) : null}

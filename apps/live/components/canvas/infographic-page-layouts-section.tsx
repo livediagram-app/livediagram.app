@@ -2,11 +2,12 @@
 
 // The page panel's Layouts (docs/specs/007-editor/infographic-pages.md "Layouts"): a grid of the
 // eight layouts, each previewed for this page. Onto an empty page a press places it at once; onto
-// a page with content the grid asks first, inline, naming how much would go.
+// a page with content the grid asks first, inline, naming how much would go. Hovering a tile
+// previews it on the page (InfographicLayoutPreview); the pending one stays previewed while asked.
 import { useState } from 'react';
 import type { LaidOutPage } from '@livediagram/document';
 import { PAGE_LAYOUTS, type PageLayoutId } from '@livediagram/templates';
-import { Button, HoverCard } from '@livediagram/ui';
+import { Button } from '@livediagram/ui';
 import { LayoutThumb } from './infographic-layout-thumb';
 import { PanelSection } from './infographic-page-panel-sections';
 
@@ -14,10 +15,13 @@ export function LayoutsSection({
   page,
   contentCount,
   onApply,
+  onPreview,
 }: {
   page: LaidOutPage;
   contentCount: number;
   onApply: (layout: PageLayoutId) => void;
+  // Shows a layout on the page while its tile is hovered or focused; null takes it away.
+  onPreview: (layout: PageLayoutId | null) => void;
 }) {
   const [pending, setPending] = useState<PageLayoutId | null>(null);
   const pick = (id: PageLayoutId) => {
@@ -41,7 +45,14 @@ export function LayoutsSection({
             for {pendingLabel}. Undo brings them back.
           </p>
           <div className="mt-2 flex justify-end gap-1.5">
-            <Button size="xs" variant="secondary" onClick={() => setPending(null)}>
+            <Button
+              size="xs"
+              variant="secondary"
+              onClick={() => {
+                setPending(null);
+                onPreview(null);
+              }}
+            >
               Cancel
             </Button>
             <Button
@@ -57,21 +68,26 @@ export function LayoutsSection({
           </div>
         </div>
       ) : null}
-      <div className="grid grid-cols-3 gap-1.5">
+      <div
+        className="grid grid-cols-3 gap-1.5"
+        onPointerLeave={() => onPreview(pending)}
+        onBlur={() => onPreview(pending)}
+      >
         {PAGE_LAYOUTS.map((l) => (
-          <HoverCard key={l.id} title={l.label} description={l.description}>
-            <button
-              type="button"
-              onClick={() => pick(l.id)}
-              aria-pressed={pending === l.id}
-              className={`flex flex-col items-center gap-1 rounded-lg p-1.5 text-[11px] font-medium text-slate-700 transition hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-brand-600 dark:text-slate-200 dark:hover:bg-slate-800 ${
-                pending === l.id ? 'bg-brand-50 ring-1 ring-brand-300 dark:bg-brand-500/15' : ''
-              }`}
-            >
-              <LayoutThumb layout={l.id} page={page} />
-              {l.label}
-            </button>
-          </HoverCard>
+          <button
+            key={l.id}
+            type="button"
+            onClick={() => pick(l.id)}
+            onPointerEnter={() => onPreview(l.id)}
+            onFocus={() => onPreview(l.id)}
+            aria-pressed={pending === l.id}
+            className={`flex flex-col items-center gap-1 rounded-lg p-1.5 text-[11px] font-medium text-slate-700 transition hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-brand-600 dark:text-slate-200 dark:hover:bg-slate-800 ${
+              pending === l.id ? 'bg-brand-50 ring-1 ring-brand-300 dark:bg-brand-500/15' : ''
+            }`}
+          >
+            <LayoutThumb layout={l.id} page={page} />
+            {l.label}
+          </button>
         ))}
       </div>
     </PanelSection>

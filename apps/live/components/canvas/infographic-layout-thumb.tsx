@@ -5,8 +5,9 @@
 // will land rather than a stock picture. Text is drawn as bars (a title thicker), images as a
 // shaded block, icons as dots, everything else as an outlined box.
 import { useMemo } from 'react';
-import { pageMargin, type Element, type LaidOutPage } from '@livediagram/document';
-import { pageLayoutById, type PageLayoutId } from '@livediagram/templates';
+import type { Element, LaidOutPage } from '@livediagram/document';
+import type { PageLayoutId } from '@livediagram/templates';
+import { buildPageLayout } from '@/lib/page-layout-build';
 
 const THUMB_W = 76;
 
@@ -53,17 +54,12 @@ function ElementGlyph({ el }: { el: Element }) {
 
 export function LayoutThumb({ layout, page }: { layout: PageLayoutId; page: LaidOutPage }) {
   const { rect } = page;
-  const els = useMemo(() => {
-    const m = pageMargin(page);
-    return pageLayoutById(layout).build({
-      x: rect.x + m,
-      y: rect.y + m,
-      width: rect.width - 2 * m,
-      height: rect.height - 2 * m,
-    });
+  const els = useMemo(
+    () => buildPageLayout(layout, page),
     // Rebuilt only when the page's shape changes (it mints fresh ids each time).
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [layout, rect.x, rect.y, rect.width, rect.height]);
+    [layout, rect.x, rect.y, rect.width, rect.height],
+  );
   const h = (THUMB_W * rect.height) / rect.width;
   return (
     <svg

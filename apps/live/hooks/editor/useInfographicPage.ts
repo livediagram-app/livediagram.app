@@ -25,6 +25,8 @@ export type InfographicPagesView = {
   focusPage: (pageId: string) => void;
   // Backgrounds drawn from the tab's theme, offered first in the page panel.
   themeBackgrounds: ThemeBackgroundPreset[];
+  // The tab's default face, for what the pages draw themselves (a layout preview).
+  tabFont?: string;
   // Absent where the viewer may not change the pages (a view role, a locked tab).
   edit?: InfographicPageEdits;
 };
@@ -103,11 +105,15 @@ export function useInfographicPage(deps: {
   const pages = layOutInfographicPages(current);
   const focusPage = (pageId: string) => frame(pages.find((p) => p.id === pageId));
   const themeBackgrounds = themeBackgroundPresets(getTheme(activeTab.theme));
-  if (!canEdit || activeTab.locked === true) return { pages, focusPage, themeBackgrounds };
+  const tabFont = activeTab.font;
+  if (!canEdit || activeTab.locked === true) {
+    return { pages, focusPage, themeBackgrounds, tabFont };
+  }
   return {
     pages,
     focusPage,
     themeBackgrounds,
+    tabFont,
     edit: infographicPageEdits({
       tabId,
       current,

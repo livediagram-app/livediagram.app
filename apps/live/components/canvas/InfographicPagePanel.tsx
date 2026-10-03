@@ -20,6 +20,7 @@ import { Portal } from '@/components/primitives/Portal';
 import { VIEWPORT_EDGE_MARGIN as EDGE } from '@/lib/clamp-to-viewport';
 import type { InfographicPageEdits } from '@/hooks/editor/useInfographicPage';
 import type { ThemeBackgroundPreset } from '@/lib/infographic-page-paint';
+import type { PageLayoutId } from '@livediagram/templates';
 import { LayoutsSection } from './infographic-page-layouts-section';
 import {
   BackgroundSection,
@@ -43,6 +44,7 @@ export function InfographicPagePanel({
   themeBackgrounds,
   edit,
   onPreview,
+  onLayoutPreview,
   onClose,
 }: {
   page: LaidOutPage;
@@ -52,6 +54,8 @@ export function InfographicPagePanel({
   themeBackgrounds: ThemeBackgroundPreset[];
   edit: InfographicPageEdits;
   onPreview: (preview: PagePreview) => void;
+  // A layout shown on the page while its tile is hovered (InfographicLayoutPreview); null clears.
+  onLayoutPreview: (layout: PageLayoutId | null) => void;
   onClose: (restoreFocus: boolean) => void;
 }) {
   const panel = useRef<HTMLDivElement>(null);
@@ -95,8 +99,9 @@ export function InfographicPagePanel({
     window.addEventListener('wheel', onWheel, { capture: true, passive: true });
     return () => window.removeEventListener('wheel', onWheel, { capture: true });
   }, [onClose]);
-  // The preview is the panel's: closing it puts the page back.
+  // The previews are the panel's: closing it puts the page back.
   useEffect(() => () => onPreview(null), [onPreview]);
+  useEffect(() => () => onLayoutPreview(null), [onLayoutPreview]);
 
   const preview = (patch: Partial<PageBackground> | null) =>
     onPreview(patch ? { pageId: page.id, patch } : null);
@@ -147,9 +152,11 @@ export function InfographicPagePanel({
             page={page}
             contentCount={edit.contentCount(page.id)}
             onApply={(layout) => {
+              onLayoutPreview(null);
               edit.applyLayout(page.id, layout);
               onClose(false);
             }}
+            onPreview={onLayoutPreview}
           />
         )}
         <PageActions page={page} count={count} edit={edit} onClose={() => onClose(false)} />
