@@ -131,7 +131,8 @@ export function HelpArticleLink({
   // larger than that button's 14px `×` because a question mark carries less
   // visual mass than an X at the same type size. `shrink-0` so an inline
   // placement beside a long control label never squashes it.
-  const box = size === 'md' ? 'h-7 w-7 text-[15px]' : 'h-5 w-5 text-[13px]';
+  // A 44px tap area on a touch screen either way (`touch-target`).
+  const box = `relative touch-target ${size === 'md' ? 'h-7 w-7 text-[15px]' : 'h-5 w-5 text-[13px]'}`;
   return (
     <HoverCard title={title} description={description}>
       <a

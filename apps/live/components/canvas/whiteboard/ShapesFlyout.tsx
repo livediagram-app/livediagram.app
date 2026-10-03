@@ -16,7 +16,7 @@ import type { WhiteboardShapeEntry, WhiteboardShapeKey } from '@/lib/whiteboard-
 import type { ShapeSlots, SlotSource } from '@/lib/whiteboard-shape-slots';
 import { ShapePreview, shapeShortcut } from './ShapePreview';
 import type { ShapeSlotDragApi } from './useShapeSlotDrag';
-import { useShapeSearch } from './useShapeSearch';
+import { SHAPE_GRID_COLUMNS, useShapeSearch } from './useShapeSearch';
 
 const isMenuKey = (e: React.KeyboardEvent) =>
   (e.shiftKey && e.key === 'F10') || e.key === 'ContextMenu';
@@ -24,6 +24,8 @@ const isMenuKey = (e: React.KeyboardEvent) =>
 export function ShapesFlyout({
   ink,
   slots,
+  menuPins = [],
+  canDrag = true,
   slotDrag,
   onPick,
   onPin,
@@ -31,6 +33,10 @@ export function ShapesFlyout({
 }: {
   ink: string;
   slots: ShapeSlots;
+  // A phone's pinned shapes past the bar's one, as a row above the slots (draw-mode.md "On a phone").
+  menuPins?: readonly WhiteboardShapeKey[];
+  // Entries drag onto the bar's pinned side (not on a phone, whose bar shows one pin).
+  canDrag?: boolean;
   slotDrag: ShapeSlotDragApi;
   // `searched`: picked from typed results rather than a slot.
   onPick: (key: WhiteboardShapeKey, searched: boolean) => void;
@@ -44,10 +50,15 @@ export function ShapesFlyout({
   const optionId = (key: string) => `${base}-${key}`;
   // Taken as the flyout opens: a pick made elsewhere never reshuffles them under the pointer.
   const [shownSlots] = useState(slots);
+  const [shownPins] = useState(menuPins);
   const { query, setQuery, searching, groups, flat, active, setActive, onKeyDown } = useShapeSearch(
     shownSlots,
     onPick,
+    shownPins,
   );
+  // Fixed at its idle rows (two, plus a phone's pinned rows), so typing never resizes it: results
+  // take two rows at most.
+  const idleRows = 2 + Math.ceil(shownPins.length / SHAPE_GRID_COLUMNS);
   const current = flat[active];
   const activeId = current ? optionId(current.key) : undefined;
   const [menuFor, setMenuFor] = useState<WhiteboardShapeKey | null>(null);
@@ -95,7 +106,8 @@ export function ShapesFlyout({
         id={listboxId}
         role="listbox"
         aria-label={searching ? 'Matching shapes' : 'Shapes'}
-        className="flex h-[5.25rem] flex-col gap-1"
+        className="flex flex-col gap-1"
+        style={{ height: `${idleRows * 2.5 + (idleRows - 1) * 0.25}rem` }}
       >
         {flat.length === 0 ? (
           <p className="px-1 py-6 text-center text-xs text-slate-500 dark:text-slate-400">
@@ -125,8 +137,10 @@ export function ShapesFlyout({
                       if (slotDrag.consumeClick()) return;
                       onPick(entry.key, searching);
                     }}
-                    onPointerDown={slotDrag.onSlotPointerDown}
+                    onPointerDown={canDrag ? slotDrag.onSlotPointerDown : () => {}}
+                    // Already pinned: nothing to pin from its menu.
                     onMenu={() => {
+                      if (group.id === 'pinned') return;
                       setActive(at);
                       setMenuFor(entry.key);
                     }}

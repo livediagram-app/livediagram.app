@@ -23,19 +23,24 @@ export const PINS_FULL_HINT = 'Seven shapes are pinned. Drag one out to swap.';
 
 export function ShapesGroup({
   model,
+  pinned,
+  canDrag,
   fly,
   slotDrag,
   refusing,
   pickAndClose,
 }: {
   model: WhiteboardDockModel;
+  // The pinned shapes the bar shows: all of them, or a phone's first (the rest are in the flyout).
+  pinned: readonly WhiteboardShapeKey[];
+  // Shapes drag on and off the bar (not on a phone, nor on the Palette panel).
+  canDrag: boolean;
   fly: DockFlyoutApi;
   slotDrag: ShapeSlotDragApi;
   // The drag in progress would be refused (seven pinned, not onto one).
   refusing: boolean;
   pickAndClose: (pick: () => void) => void;
 }) {
-  const pinned = model.pinnedShapes;
   const { drag } = slotDrag;
   const panel = useDockVariant() === 'panel';
   // The Shapes menu's items (its Recent and Most used slots), none pinned, none twice: shown on
@@ -79,7 +84,7 @@ export function ShapesGroup({
               pickAndClose(() => model.pickShape(key));
             }}
             // Pinning by drag is the dock's: the panel has no pinned side to drop on.
-            onPointerDown={panel ? () => {} : slotDrag.onSlotPointerDown}
+            onPointerDown={panel || !canDrag ? () => {} : slotDrag.onSlotPointerDown}
             onMenu={openPinMenu}
           />
         ))}

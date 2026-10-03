@@ -175,7 +175,7 @@ export const PALETTE_CATEGORIES: {
     icon: <DataTabIcon />,
   },
   {
-    // Behaviours (docs/specs/010-palette/palette-top-level-categories.md): everything whose content arrives at RUNTIME
+    // Collaborate, id `behaviour` (docs/specs/010-palette/palette-top-level-categories.md): everything whose content arrives at RUNTIME
     // rather than being drawn by the author — the elements that do something
     // when pressed (docs/specs/009-elements/mode-button.md to docs/specs/012-collaboration/picker.md, docs/specs/009-elements/reaction-pad.md) and the ones that collect
     // what the room thinks (docs/specs/012-collaboration/estimate-card.md to docs/specs/012-collaboration/roll-call.md, docs/specs/012-collaboration/comment-pin.md).
@@ -186,7 +186,7 @@ export const PALETTE_CATEGORIES: {
     // reach for both while facilitating, and nothing told a user hunting for
     // the Done check why it lived apart from the Estimate card.
     id: 'behaviour',
-    label: 'Behaviours',
+    label: 'Collaborate',
     group: 3,
     description:
       'Elements that come alive with the room: ask for an estimate or a temperature, run a quiz, leave a comment or an action on the canvas, collect ideas, rank the room’s questions, check who is done, run a timer or a stopwatch, vote or poll, keep an agenda or a decision, throw a reaction, switch a mode, jump through a portal, or bring everyone to look at one spot.',

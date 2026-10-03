@@ -96,7 +96,7 @@ export function SettingsPopover({
           aria-label={title}
           aria-expanded={open}
           aria-haspopup="dialog"
-          className={`flex h-5 w-5 items-center justify-center rounded transition ${
+          className={`relative flex h-5 w-5 touch-target items-center justify-center rounded transition ${
             open
               ? 'bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-200'
               : 'text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100'

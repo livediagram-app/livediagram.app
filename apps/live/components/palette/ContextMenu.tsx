@@ -3,6 +3,9 @@
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { Portal } from '@/components/primitives/Portal';
 import { clampToViewport } from '@/lib/clamp-to-viewport';
+import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
+import { useSwipeDownDismiss } from '@/hooks/ui/useSwipeDownDismiss';
+import { safeInset } from '@/lib/safe-area';
 
 // Right-click context menu portal. Mirrors PortalMenu's portal +
 // outside-click-close behaviour but anchors at a screen-space (x, y)
@@ -11,6 +14,13 @@ import { clampToViewport } from '@/lib/clamp-to-viewport';
 //
 // Auto-clamps to the viewport so a click in the bottom-right corner
 // still surfaces a usable menu instead of clipping off-screen.
+//
+// On a phone it is a BOTTOM SHEET instead (docs/specs/007-editor/live-app.md "Mobile chrome"): the
+// width of the screen, docked to the bottom edge, at most 60% of its height (scrolling inside),
+// clear of the home indicator, with a grab handle that swipes it closed. A card hung off a long-press
+// point covered the element it was about and ran under the tab bar; the sheet sits in thumb reach
+// and leaves the top of the canvas, where the element usually is, in view. Outside taps, Escape and
+// the long-press grace work the same either way.
 
 type ContextMenuProps = {
   position: { x: number; y: number };
@@ -34,10 +44,13 @@ export function ContextMenu({
 }: ContextMenuProps) {
   const ref = useRef<HTMLDivElement>(null);
   const [adjust, setAdjust] = useState({ x: 0, y: 0 });
+  const sheet = useIsMobileViewport();
+  const swipe = useSwipeDownDismiss(onClose);
 
   useLayoutEffect(() => {
     const node = ref.current;
-    if (!node) return;
+    // A sheet is docked, not placed: nothing to clamp.
+    if (!node || sheet) return;
     // Re-clamp on mount, on a new anchor, AND whenever the menu's size
     // changes — expanding a collapsible category grows it downward and would
     // otherwise spill past the viewport bottom (the clamp shifts it up to
@@ -54,7 +67,7 @@ export function ContextMenu({
     const ro = new ResizeObserver(recompute);
     ro.observe(node);
     return () => ro.disconnect();
-  }, [position.x, position.y]);
+  }, [position.x, position.y, sheet]);
 
   // Stamped on mount, not during render (performance.now() is impure, and a
   // re-render must not restamp it); see the grace window below.
@@ -130,6 +143,45 @@ export function ContextMenu({
       document.removeEventListener('keydown', onKey);
     };
   }, [onClose]);
+
+  if (sheet) {
+    return (
+      <Portal>
+        <div
+          ref={ref}
+          role="menu"
+          data-tour-id="context-menu"
+          data-context-menu=""
+          data-context-menu-sheet=""
+          onPointerDown={(e) => e.stopPropagation()}
+          onContextMenu={(e) => e.preventDefault()}
+          style={{
+            paddingBottom: safeInset('bottom'),
+            transform: swipe.offset > 0 ? `translateY(${swipe.offset}px)` : undefined,
+            transition: swipe.dragging ? 'none' : 'transform var(--transition-duration-micro) ease',
+          }}
+          className="fixed inset-x-0 bottom-0 z-[var(--z-overlay)] mx-auto flex max-h-[60dvh] w-full max-w-lg animate-sheet-up flex-col overflow-hidden rounded-t-2xl border border-b-0 border-slate-200 bg-white text-sm shadow-[0_-8px_40px_-12px_rgb(0_0_0/0.25)] dark:border-slate-700 dark:bg-slate-900"
+        >
+          {/* The grab handle: the full width of the sheet, 24px tall, that drags it down. */}
+          <div
+            aria-hidden
+            data-sheet-handle=""
+            {...swipe.handleProps}
+            className="flex h-6 shrink-0 cursor-grab touch-none items-center justify-center"
+          >
+            <span className="h-1 w-10 rounded-full bg-slate-300 dark:bg-slate-600" />
+          </div>
+          <div
+            className={`lvd-menu-stagger flex min-h-0 flex-col overflow-y-auto overscroll-contain ${
+              flush ? '' : 'pb-1'
+            }`}
+          >
+            {children}
+          </div>
+        </div>
+      </Portal>
+    );
+  }
 
   return (
     <Portal>

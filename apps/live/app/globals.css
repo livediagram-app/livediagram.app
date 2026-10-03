@@ -6,6 +6,15 @@
 @import './canvas-motion.css';
 @import './thumbnail-loader.css';
 
+/* A phone: narrower than `sm`, or a touch screen under 500px tall (one held sideways). The JS twin
+ * is PHONE_MEDIA_QUERY (lib/responsive.ts); the two state the same query. Phone-only layout uses
+ * `phone:` rather than `max-sm:`, so a phone in landscape gets it too. */
+@custom-variant phone {
+  @media (max-width: 639px), (pointer: coarse) and (max-height: 499px) {
+    @slot;
+  }
+}
+
 /* Scan the shared UI package so utility classes used only inside its
  * components (e.g. the <Brand> mark's hover-rotate) are generated here too.
  * Tailwind v4 skips node_modules, where the workspace package is symlinked. */

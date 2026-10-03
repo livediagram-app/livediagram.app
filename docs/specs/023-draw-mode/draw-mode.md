@@ -229,7 +229,8 @@ the Palette panel, wherever the user put it.
 - **At the top:**
   - it keeps clear of the Explorer's menu button in the top-left corner: on
     a phone or a tablet it starts to the button's right, so a tablet in
-    portrait still shows the whole dock; from 1024 px wide it is centred with
+    portrait still shows the whole dock, and when it scrolls sideways its tools
+    stay clear of the menu card rather than sliding under it; from 1024 px wide it is centred with
     the same clearance on both sides;
   - its flyouts and the "Seven shapes are pinned" hint open **below** it;
   - the top-centre banners (follow-me, mode banners, timer, vote) sit
@@ -300,6 +301,13 @@ The shapes group learns and keeps the shapes a user reaches for.
   kinds are dropped on read.
 - **Telemetry:** `Draw` · `Changed` · `ShapePinned` / `ShapeUnpinned`
   (never the kind).
+- **On a phone** (below `sm`, the dock only; `splitPhonePins`), the bar keeps **only the first
+  pinned shape** (Arrow, by default) and the rest move into the **Shapes** flyout as a **Pinned**
+  row above the six slots (Rectangle, by default), so the bar fits the width. They are still
+  pinned and still count as such: none shows twice, and their shape keys work as before. The
+  flyout grows by that row (it stays fixed while typing). Shapes do not drag on or off the bar
+  there; pinning and unpinning go through the slot's menu (long-press). A pinned shape in the
+  flyout has no menu: it is already pinned.
 
 ## Pens
 

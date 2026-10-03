@@ -161,16 +161,16 @@ export function PaletteBehaviourTab({ pendingDraw, actions }: TabProps) {
   // single row floating above six category tiles read as an oversight.
   return (
     <PaletteGroupBrowser
-      root="Behaviours"
+      root="Collaborate"
       tiles={tilesInToolGroup('behaviour')}
       groups={BEHAVIOUR_GROUPS}
       actions={actions}
       pendingDraw={pendingDraw}
       searchInput={{
-        placeholder: 'Search behaviours',
-        ariaLabel: 'Search behaviour elements',
-        clearAriaLabel: 'Clear behaviour search',
-        clearDescription: 'Clear the behaviour element search query.',
+        placeholder: 'Search collaboration',
+        ariaLabel: 'Search collaborate elements',
+        clearAriaLabel: 'Clear collaborate search',
+        clearDescription: 'Clear the collaborate element search query.',
       }}
       telemetry={{ openedType: 'BehaviourGroup', searchedType: 'BehaviourSearch' }}
       emptyMessage={(q) => `No behaviours match \u201c${q}\u201d.`}

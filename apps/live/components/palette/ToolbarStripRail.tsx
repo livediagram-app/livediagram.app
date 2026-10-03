@@ -46,7 +46,13 @@ export function ToolbarStripRail({
   railKey,
   items,
   leavingItems,
+  scrollable = false,
 }: {
+  // A phone's strip: the rail holds the whole category, shrinks to the room
+  // the row leaves it, and swipes sideways (docs/specs/007-editor/toolbar-layout.md
+  // "On a phone"). The scrollbar is hidden, as a swipe strip's is
+  // (docs/specs/004-interface-design/scrollbars.md); a tile cut at the edge shows there is more.
+  scrollable?: boolean;
   // Identity of what is showing (the category id). A change is what animates.
   railKey: string;
   items: ReactNode[];
@@ -55,6 +61,7 @@ export function ToolbarStripRail({
   leavingItems: ReactNode[] | null;
 }) {
   const contentRef = useRef<HTMLDivElement>(null);
+  const railRef = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState<number | null>(null);
   // Off for the first measured frame, so the strip doesn't animate itself
   // open on page load (the same gate PaletteTabBar uses for its height).
@@ -132,6 +139,8 @@ export function ToolbarStripRail({
   useLayoutEffect(() => flip(order, railKey), [order, railKey]);
 
   useLayoutEffect(() => {
+    // A new category starts at its first tile, not wherever the last was swiped to.
+    if (railRef.current) railRef.current.scrollLeft = 0;
     const el = contentRef.current;
     if (!el) return;
     const measure = () => setWidth(el.scrollWidth);
@@ -149,13 +158,21 @@ export function ToolbarStripRail({
     <div
       // Clipped sideways only, so a shrinking rail hides the outgoing tiles
       // past its edge while pressed rings and the pop's overshoot still show.
+      // The room for them is real padding (cancelled by a matching negative
+      // margin, so the strip doesn't move), not only `overflow-clip-margin`:
+      // Safari ignores that, and clipped the first tile's pressed ring there.
+      // A scrolling rail clips on every side, so it pads for the rings
+      // vertically too, and contains its swipe so it never pans the page.
+      ref={railRef}
       data-strip-rail=""
-      className={`relative flex items-center overflow-x-clip [overflow-clip-margin:3px]${
-        animate ? ' transition-[width] duration-short ease-out' : ''
-      }`}
+      className={`relative -mx-[3px] flex items-center ${
+        scrollable
+          ? 'min-w-0 -my-[3px] overflow-x-auto overscroll-x-contain py-[3px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'
+          : 'overflow-x-clip [overflow-clip-margin:3px]'
+      }${animate ? ' transition-[width] duration-short ease-out' : ''}`}
       style={{ width: width ?? undefined }}
     >
-      <div key={railKey} ref={contentRef} className="flex w-max items-center gap-0.5">
+      <div key={railKey} ref={contentRef} className="flex w-max items-center gap-0.5 px-[3px]">
         {items.map((item, i) => (
           <span
             // Keyed by the item, so a tile that moves within a category
@@ -196,7 +213,7 @@ export function ToolbarStripRail({
         <div
           aria-hidden
           inert
-          className="pointer-events-none absolute left-0 top-0 flex h-full w-max items-center gap-0.5"
+          className="pointer-events-none absolute left-0 top-0 flex h-full w-max items-center gap-0.5 px-[3px]"
         >
           {leavingItems.map((item, i) => (
             <span

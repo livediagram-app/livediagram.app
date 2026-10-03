@@ -36,6 +36,8 @@ const entriesOf = (keys: readonly WhiteboardShapeKey[]) =>
 export function useShapeSearch(
   slots: ShapeSlots,
   onPick: (key: WhiteboardShapeKey, searched: boolean) => void,
+  // Pinned shapes a phone's bar has no room for, as a row above the slots.
+  menuPins: readonly WhiteboardShapeKey[] = [],
 ) {
   const [query, setQueryState] = useState('');
   const [active, setActive] = useState(0);
@@ -44,12 +46,16 @@ export function useShapeSearch(
     () =>
       searching
         ? [{ id: 'results', label: 'Matching shapes', entries: searchWhiteboardShapes(query) }]
-        : // Recent on top, Most used below (a kind in both shows only below: Most used is steadier).
+        : // Recent on top, Most used below (a kind in both shows only below: Most used is steadier),
+          // under a phone's pins that the bar has no room for.
           [
+            ...(menuPins.length > 0
+              ? [{ id: 'pinned', label: 'Pinned shapes', entries: entriesOf(menuPins) }]
+              : []),
             { id: 'recent', label: 'Recent shapes', entries: entriesOf(slots.recent) },
             { id: 'most-used', label: 'Most used shapes', entries: entriesOf(slots.mostUsed) },
           ],
-    [searching, query, slots],
+    [searching, query, slots, menuPins],
   );
   const flat = useMemo(() => groups.flatMap((g) => g.entries), [groups]);
 

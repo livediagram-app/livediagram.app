@@ -18,6 +18,7 @@ import { whiteboardShapeEntry } from '@/lib/whiteboard-shape-catalogue';
 import {
   pinFromMenu,
   resolveSlotDrop,
+  splitPhonePins,
   unpinShape,
   type SlotOutcome,
   type SlotSource,
@@ -39,6 +40,7 @@ import { useShapeSlotDrag } from './useShapeSlotDrag';
 import { WhiteboardFlyout } from './WhiteboardFlyout';
 import { DockVariantContext, type DockVariant } from './dock-variant';
 import { debugLog } from '@/lib/debug-log';
+import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { useUiScale } from '@/components/providers/ui-scale';
 import { toSurfacePx, uiScaleStyle } from '@/lib/ui-scale';
 
@@ -47,11 +49,13 @@ const HINT_MS = 4000;
 
 // Where the wrapper sits. At the top it keeps clear of the Explorer menu card (top-left, 12 + 98
 // px with the editor mode switch beside the button, plus an 8px gap): beside it on a phone or a tablet, centred with the same clearance on both sides from lg
-// (D33), so a tablet in portrait still shows the whole dock. At the
+// (D33), so a tablet in portrait still shows the whole dock. Beside the card it starts 12px further
+// in again (8.25rem), because its scroller bleeds 12px left for the groups' shadows (DockBody's
+// `-m-3`): at 7.5rem that bleed reached under the card, and scrolled tools slid beneath it. At the
 // bottom it is lifted above the bottom-right cluster (history, layers, zoom) until the viewport is
 // wide enough for the two side by side (D9).
 const WRAPPER_PLACEMENT: Record<WhiteboardDockPosition, string> = {
-  top: 'top-3 left-[7.5rem] max-w-[calc(100%-8.25rem)] lg:left-1/2 lg:-translate-x-1/2 lg:max-w-[calc(100%-15rem)]',
+  top: 'top-3 left-[8.25rem] max-w-[calc(100%-9rem)] lg:left-1/2 lg:-translate-x-1/2 lg:max-w-[calc(100%-15rem)]',
   bottom:
     'bottom-[4.25rem] left-1/2 -translate-x-1/2 max-w-[calc(100%-1.5rem)] min-[1760px]:bottom-4',
 };
@@ -70,6 +74,13 @@ export function WhiteboardDock({ model, ink, variant = 'dock' }: WhiteboardDockP
   // (docs/specs/007-editor/ui-scale.md); the panel is scaled by its own host.
   const scale = useUiScale('toolbar');
   const panel = variant === 'panel';
+  // A phone's dock: one pinned shape on the bar, the rest in the Shapes flyout, and no dragging
+  // shapes on or off the bar (its drop targets would not match the pins it hides).
+  const isMobile = useIsMobileViewport();
+  const phone = !panel && isMobile;
+  const pins = phone
+    ? splitPhonePins(model.pinnedShapes)
+    : { onBar: model.pinnedShapes, inMenu: [] };
   // The canvas the stock colours are drawn for (docs/specs/007-editor/editor-modes.md "One look").
   const appearance = useCanvasSurface();
   const fly = useDockFlyout();
@@ -182,6 +193,8 @@ export function WhiteboardDock({ model, ink, variant = 'dock' }: WhiteboardDockP
             <ShapesFlyout
               ink={ink}
               slots={model.slotShapes}
+              menuPins={pins.inMenu}
+              canDrag={!phone}
               slotDrag={slotDrag}
               onPin={(key) => chooseFromMenu({ key, from: 'flyout' })}
               onEngage={fly.stick}
@@ -226,6 +239,8 @@ export function WhiteboardDock({ model, ink, variant = 'dock' }: WhiteboardDockP
       <DrawingToolsGroup model={model} ink={ink} fly={fly} pickAndClose={pickAndClose} />
       <ShapesGroup
         model={model}
+        pinned={pins.onBar}
+        canDrag={!phone}
         fly={fly}
         slotDrag={slotDrag}
         refusing={refusing}

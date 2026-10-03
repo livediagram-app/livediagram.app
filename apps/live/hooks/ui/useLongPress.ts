@@ -1,5 +1,6 @@
 'use client';
 
+import { haptic } from '@/lib/haptics';
 import { useEffect, useRef, useState } from 'react';
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import { useLatest } from '@/hooks/ui/useLatest';
@@ -75,6 +76,8 @@ export function useLongPress(onLongPress: (clientX: number, clientY: number) => 
     );
     timers.current.fire = setTimeout(() => {
       cleanup();
+      // The finger cannot see the menu open under it: a short buzz says it did (lib/haptics).
+      haptic('press');
       cbRef.current(startX, startY);
     }, LONG_PRESS_MS);
   };

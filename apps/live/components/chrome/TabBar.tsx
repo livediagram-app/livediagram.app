@@ -1,4 +1,5 @@
 import dynamic from 'next/dynamic';
+import { safeInlinePadding, safeInset } from '@/lib/safe-area';
 import { MenuErrorBoundary } from '@/components/primitives/MenuErrorBoundary';
 import { useState, type ReactNode } from 'react';
 import {
@@ -340,7 +341,14 @@ export function TabBar({
     <>
       <div
         data-editor-tabbar
-        className="flex h-12 shrink-0 items-center gap-2 border-t border-slate-200 bg-slate-50 px-3 dark:border-slate-800 dark:bg-slate-900"
+        // Clear of the home indicator and a landscape notch (lib/safe-area): the 48px row sits
+        // above the bottom inset (the height grows by it), its sides past the side insets.
+        style={{
+          height: `calc(3rem + ${safeInset('bottom')})`,
+          paddingBottom: safeInset('bottom'),
+          ...safeInlinePadding('0.75rem'),
+        }}
+        className="flex shrink-0 items-center gap-2 border-t border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900"
       >
         {roleIcon}
         {/* Minimal chrome drops the label; it was never announced (aria-hidden). */}
@@ -387,7 +395,7 @@ export function TabBar({
               onClick={onAdd}
               aria-label="Add tab"
               data-tour-id="add-tab"
-              className="ml-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-lg leading-none text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
+              className="relative ml-1 flex h-7 w-7 shrink-0 touch-target items-center justify-center rounded-md text-lg leading-none text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
             >
               +
             </button>

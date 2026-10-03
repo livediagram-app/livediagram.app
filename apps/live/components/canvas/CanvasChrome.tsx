@@ -39,6 +39,9 @@ import { PANEL_CORNERS, PANEL_IDS, cornerBottomInset, type PanelCorner } from '@
 import type { StampGhost } from '@/components/canvas/useStampGhost';
 import { HoverCard } from '@livediagram/ui';
 import { STRIP_SELECTOR, useStripCrowdsCorners } from '@/hooks/ui/useStripCrowdsCorners';
+import { PHONE_TOOLBAR_ITEMS } from '@/components/chrome/phone-toolbar-items';
+import { atLeastInset } from '@/lib/safe-area';
+import { useSnapHaptic } from '@/hooks/canvas/useSnapHaptic';
 import { WHITEBOARD_DOCK_SELECTOR } from '@/lib/whiteboard-dock-prefs';
 import { CollaborateClusterButton } from './CollaborateClusterButton';
 import { kindCounts } from '@/components/panels/collaborate/collaborate-model';
@@ -279,6 +282,8 @@ export function CanvasChrome(props: CanvasChromeProps) {
     // board itself, so there is nothing to gate beyond "is this that board".
     timeline: props.esBoard === true ? ES_LANES : null,
   });
+  // A tick as a move catches an alignment guide (Android; lib/haptics).
+  useSnapHaptic(snapGuides.length > 0);
   const { alignGuides, allSnapTargets } = computeDrawGuides({
     // A stamp is placed by the lanes, not sized against edges: no box guides.
     drawDrag: stamp ? null : drawDrag,
@@ -305,8 +310,9 @@ export function CanvasChrome(props: CanvasChromeProps) {
   const dockShown =
     toolbarActive && whiteboard && !!props.whiteboardDock && !readOnly && !chromeHidden;
   const dockOnTop = dockShown && props.whiteboardDock?.position === 'top';
-  // The Explorer menu button: top-left on desktop, the far left of the strip
-  // on a phone (no room for both across the top). A read-only visitor has no
+  // The Explorer menu button: top-left on desktop; on a phone, its own card at
+  // the left of the strip's row, the strip beside it (no room for a corner card
+  // above a strip that needs the whole top row). A read-only visitor has no
   // strip, and nor does a whiteboard, so it keeps the corner there.
   const menuInStrip = isMobile && !readOnly && !whiteboard;
   const explorerMenuButton = (
@@ -550,17 +556,17 @@ export function CanvasChrome(props: CanvasChromeProps) {
         // as its one way back out, and a deck has its own way out plus no
         // zoom to offer.
         data-zoom-cluster=""
-        // Drawn at the UI scale, still 16px from the corner.
+        // Drawn at the UI scale, still 16px from the corner, or clear of a landscape notch.
         style={
           cornerScale === 1
-            ? undefined
+            ? { right: atLeastInset('1rem', 'right') }
             : {
                 ...uiScaleStyle(cornerScale),
-                right: toSurfacePx(16, cornerScale),
+                right: atLeastInset(`${toSurfacePx(16, cornerScale)}px`, 'right'),
                 bottom: toSurfacePx(16, cornerScale),
               }
         }
-        className="pointer-events-none absolute bottom-4 right-4 z-[var(--z-panel)] flex items-center gap-2"
+        className={`pointer-events-none absolute bottom-4 right-4 z-[var(--z-panel)] flex items-center gap-2 ${PHONE_TOOLBAR_ITEMS}`}
       >
         {welcomeOpen ? null : (
           <>

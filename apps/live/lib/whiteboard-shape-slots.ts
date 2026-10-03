@@ -18,6 +18,17 @@ export const PINNED_SHAPES_MAX = 7;
 // The pinned side of a user who never changed it (docs/specs/023-draw-mode/draw-mode.md "Shape slots").
 export const DEFAULT_PINNED_SHAPES: readonly WhiteboardShapeKey[] = ['arrow', 'rectangle'];
 
+// A phone's dock keeps only the first pinned shape on the bar; the rest move to the top of the
+// Shapes flyout, so the bar fits the width (docs/specs/023-draw-mode/draw-mode.md "On a phone").
+export const PHONE_BAR_PINS = 1;
+
+export function splitPhonePins(pinned: readonly WhiteboardShapeKey[]): {
+  onBar: WhiteboardShapeKey[];
+  inMenu: WhiteboardShapeKey[];
+} {
+  return { onBar: pinned.slice(0, PHONE_BAR_PINS), inMenu: pinned.slice(PHONE_BAR_PINS) };
+}
+
 // The Shapes flyout's two rows of slots.
 export const MOST_USED_SLOTS = 3;
 export const RECENT_SLOTS = 3;
