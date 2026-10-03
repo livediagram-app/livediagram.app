@@ -3,6 +3,7 @@ import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { DEFAULT_WHITEBOARD_PREFS } from '@/lib/whiteboard-prefs';
 import { dockModel as model, renderDock } from './dock-test-utils';
+import { PenWidthIcon } from './PenWidthIcon';
 import { WhiteboardDock } from './WhiteboardDock';
 import { besidePanel, offDock } from './WhiteboardFlyout';
 
@@ -169,6 +170,19 @@ describe('WhiteboardDock drawing tools', () => {
     expect(m.updatePen).toHaveBeenCalledWith('second', { colour: 'violet' });
     fireEvent.click(screen.getByRole('button', { name: 'Fine' }));
     expect(m.updatePen).toHaveBeenCalledWith('second', { width: 1 });
+  });
+
+  // docs/specs/023-draw-mode/draw-mode.md "Pens": each width reads apart, drawn as the quick style
+  // panel draws it (PenWidthIcon), not to scale, where 1 and 1.5 px looked the same.
+  it('draws the three widths apart in the flyout, as the quick style panel does', () => {
+    renderDock();
+    fireEvent.click(screen.getByRole('button', { name: 'Marker 1, medium' }));
+    const pictures = ['Fine', 'Medium', 'Bold'].map(
+      (name) => screen.getByRole('button', { name }).querySelector('svg')!.outerHTML,
+    );
+    expect(new Set(pictures).size).toBe(3);
+    const { container } = render(<PenWidthIcon width="fine" />);
+    expect(container.querySelector('svg')!.outerHTML).toBe(pictures[0]);
   });
 
   it('closes a flyout on Escape and hands focus back to its opener', () => {
