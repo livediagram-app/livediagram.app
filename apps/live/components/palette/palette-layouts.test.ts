@@ -86,6 +86,14 @@ describe('palette layouts', () => {
     );
   });
 
+  it('leaves mind nodes out of Infographic', () => {
+    expect(tileIds('diagram', 'build')).toContain('tools:mind-node');
+    const everywhere = paletteCategoriesFor('infographic').flatMap((c) =>
+      (c.tiles ?? []).map((t) => t.id),
+    );
+    expect(everywhere).not.toContain('tools:mind-node');
+  });
+
   it('defaults a category to its own tiles', () => {
     expect(tileIds('diagram', 'shapes')).toEqual(tilesForCategory('shapes').map((t) => t.id));
   });

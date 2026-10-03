@@ -96,7 +96,8 @@ const INFOGRAPHIC: PaletteLayout = {
     { id: 'my-shapes' },
     // The page is the canvas here, so no Page element.
     { id: 'write', tiles: tilesExcept('write', 'tools:page') },
-    { id: 'build' },
+    // Mind maps are a diagram's, not a visual page's.
+    { id: 'build', tiles: tilesExcept('build', 'tools:mind-node') },
     { id: 'components' },
     { id: 'devices' },
     { id: 'icons' },

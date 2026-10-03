@@ -215,8 +215,9 @@ holds.
 - Draw mode shows its own tools in place of the palette, so it borrows
   Diagram's layout.
 
-Today the two layouts differ as below, and Infographic's **Write** leaves out
-**Page** (the page is the canvas there).
+Today the two layouts differ as below. Within the shared categories,
+Infographic's **Write** leaves out **Page** (the page is the canvas there) and
+its **Build** leaves out **Mind node** (mind maps are a diagram's).
 
 | Category       | Diagram | Infographic |
 | -------------- | ------- | ----------- |
