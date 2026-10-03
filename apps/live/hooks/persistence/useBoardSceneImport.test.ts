@@ -161,7 +161,7 @@ describe('importScenesAsNewDocuments', () => {
     expect(offlineCreateDocument).toHaveBeenCalledWith(
       expect.objectContaining({ name: 'Local' }),
       expect.any(Number),
-      { createdAt: Date.UTC(2020, 7, 14, 12), savedAt: undefined, folderId: null },
+      { createdAt: Date.UTC(2020, 7, 14, 12), savedAt: undefined, folderId: null, markUsed: true },
     );
     expect(track).toHaveBeenCalledWith('Document', 'Created', 'Offline');
   });

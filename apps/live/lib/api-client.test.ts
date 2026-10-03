@@ -529,6 +529,16 @@ describe('apiCreateDocument placement (docs/specs/013-workspace/folders.md "Plac
     expect(body).not.toHaveProperty('intent');
   });
 
+  it('sends markUsed: false for a making that is no use (docs/specs/015-api/api.md)', async () => {
+    const body = await sentBody({ id: 'd1', name: 'N', markUsed: false });
+    expect(body).toHaveProperty('markUsed', false);
+  });
+
+  it('leaves markUsed out for a making that counts, the server default', async () => {
+    expect(await sentBody({ id: 'd1', name: 'N', markUsed: true })).not.toHaveProperty('markUsed');
+    expect(await sentBody({ id: 'd1', name: 'N' })).not.toHaveProperty('markUsed');
+  });
+
   it('throws the refusal token for a refused placement', async () => {
     vi.stubGlobal(
       'fetch',

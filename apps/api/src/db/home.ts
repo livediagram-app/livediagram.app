@@ -69,6 +69,12 @@ function placeOf(row: PlaceRow): HomeDocument {
  *  teammate's save to the owner (docs/specs/013-workspace/timeline.md §5). On `e`. */
 export const REAL_EDIT = `json_extract(e.snapshot, '$.backfilled') IS NOT 1`;
 
+/** A making that counts as a use of the document for its maker: a creation or a copy whose event
+ *  says `markUsed` (docs/specs/013-workspace/explorer-home.md "Making a document"). Makings recorded
+ *  before the mark, and every bulk import, carry none. On `e`. */
+export const MARKED_MAKING = `(e.event_type IN ('document_created', 'document_duplicated')
+  AND json_extract(e.snapshot, '$.markUsed') IS 1)`;
+
 // ---------- Jump back in ----------------------------------------------
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -76,8 +82,8 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 type JumpBackInRow = PlaceRow & { use_days: number; last_used_at: number };
 
 /** The person's server-side Within reach set (blueprint "Jump back in"): use days are the UTC days
- *  in the window with an open or a real edit by them; the last use is the later of their last open
- *  and last real edit. SQL narrows to the n most used and the 2n most recent (which by the merge
+ *  in the window with an open, a real edit or a marked making by them; the last use is the latest of
+ *  those and their last open. SQL narrows to the n most used and the 2n most recent (which by the merge
  *  property hold the whole set); `withinReach` then allocates exactly, over rows in id order. */
 export async function readJumpBackIn(
   env: Env,
@@ -96,7 +102,8 @@ export async function readJumpBackIn(
           AND e.source_type = 'document'
           AND e.occurred_at >= ?3 AND e.occurred_at <= ?2
           AND (e.event_type = '${HOME_OPENED_EVENT_TYPE}'
-               OR (e.event_type = 'document_edited' AND ${REAL_EDIT}))
+               OR (e.event_type = 'document_edited' AND ${REAL_EDIT})
+               OR ${MARKED_MAKING})
         GROUP BY e.source_id
      ),
      candidates(document_id) AS (

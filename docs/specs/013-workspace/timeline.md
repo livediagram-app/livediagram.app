@@ -1314,7 +1314,9 @@ documents is a broken-looking feature. On the first read of a scope
 (`timeline_scope_state.backfilled_at IS NULL`), the worker seeds it:
 
 - For the caller's 200 most recently updated documents: a
-  `document_created` event at `documents.created_at`, and a
+  `document_created` event at `documents.created_at`, which never
+  overwrites a creation already recorded (whose snapshot may say the
+  making counts as a use, [Explorer Home](explorer-home.md#making-a-document)), and a
   `document_edited` event at `updated_at` with the matching
   `<actorId>:<date>` dedupe key. The worker cannot know who made that
   last save, so the edit is a reconstruction: its snapshot carries

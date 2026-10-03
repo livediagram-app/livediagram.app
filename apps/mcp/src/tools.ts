@@ -257,7 +257,15 @@ export function registerTools(server: McpServer, env: Env): void {
         '/documents',
         {
           method: 'POST',
-          body: JSON.stringify({ id, name: args.name, tabs, source: 'mcp', intent }),
+          // markUsed only when the model gave one: absent, the making counts (the api's default).
+          body: JSON.stringify({
+            id,
+            name: args.name,
+            tabs,
+            source: 'mcp',
+            intent,
+            ...(args.markUsed !== undefined ? { markUsed: args.markUsed } : {}),
+          }),
         },
       );
       return imageResult(

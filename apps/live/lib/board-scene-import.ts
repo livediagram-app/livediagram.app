@@ -24,6 +24,7 @@ import type { ImportOutcome } from '@/lib/import-tab';
 import {
   MAX_TAB_BYTES,
   creationIntentOf,
+  importMarksUse,
   tabDataBytes,
   type CreationIntent,
 } from '@livediagram/api-schema';
@@ -55,6 +56,9 @@ export type NewBoardDocument = {
   intent: CreationIntent;
   createdAt?: number;
   savedAt?: number;
+  // Whether making it is a use (docs/specs/013-workspace/explorer-home.md "Making a document"):
+  // false for every document of a bulk import, so it never pushes everything else out of reach.
+  markUsed: boolean;
 };
 
 // Adds b's counts into a.
@@ -138,6 +142,7 @@ function defaultCreateDocument(ownerId: string, offline: boolean) {
         createdAt: doc.createdAt,
         savedAt: doc.savedAt,
         folderId: doc.folderId ?? null,
+        markUsed: doc.markUsed,
       });
       return;
     }
@@ -180,6 +185,9 @@ export async function importDocuments(
   o: BoardDocumentsImport,
 ): Promise<ImportOutcome> {
   const createDocument = o.createDocument ?? defaultCreateDocument(o.ownerId, o.offline);
+  // One document is a use of it; more than one in one go is a bulk import, which marks none, however
+  // many land (docs/specs/013-workspace/explorer-home.md "Making a document").
+  const markUsed = importMarksUse(sources.length);
   const documents: { id: string; name: string }[] = [];
   const failures: { title: string; message: string }[] = [];
   let report: BoardSceneReport | undefined;
@@ -216,6 +224,7 @@ export async function importDocuments(
         name,
         tabs,
         intent: creationIntentOf(tabs[0]),
+        markUsed,
         ...(o.folderId ? { folderId: o.folderId } : {}),
         ...(dates.createdAt !== undefined ? { createdAt: dates.createdAt } : {}),
         ...(dates.savedAt !== undefined ? { savedAt: dates.savedAt } : {}),
@@ -255,6 +264,7 @@ export async function importDocuments(
     boards: sources.length,
     target: 'new-document',
     offline: o.offline,
+    markUsed,
     documents: documents.length,
     failures: failures.length,
   });
