@@ -37,22 +37,23 @@ where it is and changes only how the next mark is made.
 
 ## The mode switch
 
-- **Placement:** with the Explorer, the control for where you are, so it
-  sits apart from the tools it changes and stays put when they change.
+- **Placement:**
   - **Toolbar layout:** directly beside the menu (hamburger) button, in its
     card at the top left, or inline at the strip's left end where a phone
     puts the button ([Toolbar layout](toolbar-layout.md)).
-  - **Floating layout:** in the Explorer panel's header, before its ⋯ menu.
-    The Toolbar layout's Explorer popover leaves it out, since the switch
-    already sits beside the button that opened it.
-  - Both stay up in Draw mode, which hides the palette but keeps the
-    Explorer, so the switch is in the same place in either mode.
-  - Not in the tab bar or the palette.
-- **An icon-only dropdown** (`EditorModeSwitch`): a fixed-width chip showing
-  the current mode's icon and a chevron, no words, on the faint tint the
+  - **Floating layout:** in the **Palette** panel's title row, beside its help
+    and minimise buttons, **labelled** (the mode's name beside its icon,
+    the header has the room). In Draw mode it leads the dock (labelled, in
+    a pill of its own outside the groups' scroller), since the dock takes
+    the palette's place.
+  - The Toolbar layout's menu button stays up in Draw mode, so there the
+    switch never moves.
+  - Not in the tab bar or the Explorer.
+- **A dropdown chip** (`EditorModeSwitch`): a fixed-width chip showing the
+  current mode's icon and a chevron, with its name in the Floating layout, on the faint tint the
   editor's menu-like controls use. A press opens a menu **below** it, hanging
-  from the edge with room (left beside the menu button, right in the Explorer
-  header), with one compact row per mode at the palette dropdowns' size: its
+  from the edge with room (left beside the menu button and in the dock,
+  right in the Palette header), with one compact row per mode at the palette dropdowns' size: its
   icon and name, a check on the current mode and **Shift+D** on the row the
   key leads to. Choosing a row switches and closes the menu; Escape or a
   press outside closes it.

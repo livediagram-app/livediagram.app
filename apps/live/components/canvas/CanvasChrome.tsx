@@ -511,7 +511,13 @@ export function CanvasChrome(props: CanvasChromeProps) {
       {/* The whiteboard's dock (docs/specs/023-draw-mode/draw-mode.md): top or bottom centre, in place
           of the palette. */}
       {dockShown && props.whiteboardDock ? (
-        <WhiteboardDock model={props.whiteboardDock} ink={props.whiteboardInk ?? '#1c1917'} />
+        <WhiteboardDock
+          model={props.whiteboardDock}
+          ink={props.whiteboardInk ?? '#1c1917'}
+          // The Floating layout's mode switch moves here with the Palette's place; the Toolbar
+          // layout keeps it beside the menu button (docs/specs/007-editor/editor-modes.md).
+          modeSwitch={!toolbarActive}
+        />
       ) : null}
 
       {/* Floating panels (docs/specs/007-editor/panel-docking.md). In the desktop docking layout they

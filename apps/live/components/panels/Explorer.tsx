@@ -1,7 +1,6 @@
 'use client';
 
 import { memo, useCallback, useState } from 'react';
-import { EditorModeSwitch } from '@/components/chrome/editor-mode/EditorModeSwitch';
 import { DocumentRowShell } from './DocumentRowShell';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
@@ -181,18 +180,12 @@ function ExplorerImpl({
       // The ⋯ menu (docs/specs/013-workspace/folders.md): new / open, share / export, then search /
       // GitHub / settings. It replaced a "+ New" chip whose popover held
       // only the first two.
-      // The editor mode switch (docs/specs/007-editor/editor-modes.md "The mode switch") leads
-      // the header in the Floating layout. As the Toolbar layout's popover the switch already
-      // sits beside the menu button that opened it, so the header leaves it out.
       headerActions={
-        <>
-          {asPopover ? null : <EditorModeSwitch align="right" />}
-          <ExplorerHeaderMenu
-            onNewDocument={onNewDocument}
-            actions={menuActions}
-            helpArticle="explorerPanel"
-          />
-        </>
+        <ExplorerHeaderMenu
+          onNewDocument={onNewDocument}
+          actions={menuActions}
+          helpArticle="explorerPanel"
+        />
       }
       {...dock}
       popoverOpen={popoverOpen}

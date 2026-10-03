@@ -3,6 +3,7 @@ import { MovablePanel } from '@/components/primitives/MovablePanel';
 import { PaletteTabBar } from '@/components/palette/PaletteTabBar';
 import { PaletteGroupProvider } from '@/components/palette/palette-group-state';
 import { PaletteDropdown } from '@/components/palette/PaletteDropdown';
+import { EditorModeSwitch } from '@/components/chrome/editor-mode/EditorModeSwitch';
 
 import type { CanvasTool, CommandPaletteProps } from './CommandPalette.types';
 import { usePaletteCatalogue } from './usePaletteCatalogue';
@@ -37,6 +38,9 @@ export function CommandPalette(props: CommandPaletteProps) {
       // to the Settings dialog (docs/specs/007-editor/user-preferences.md).
       onReset={onReset}
       collapsible
+      // The editor mode switch, labelled, beside the panel title, where the header has the room
+      // (docs/specs/007-editor/editor-modes.md "The mode switch"); nothing on a board.
+      headerActions={<EditorModeSwitch labelled align="right" />}
     >
       {/* Header band: canvas-tool picker (Select / Hand / Laser) on the
           left, category picker on the right. The tool dropdown is a mode

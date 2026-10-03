@@ -35,6 +35,7 @@ import { SlotGhost } from './SlotGhost';
 import { useDockFlyout, type DockFlyout } from './useDockFlyout';
 import { useShapeSlotDrag } from './useShapeSlotDrag';
 import { WhiteboardFlyout } from './WhiteboardFlyout';
+import { DockModeSwitch } from './DockModeSwitch';
 import { debugLog } from '@/lib/debug-log';
 
 // How long the "seven pinned" hint stays up.
@@ -55,9 +56,12 @@ export type WhiteboardDockProps = {
   model: WhiteboardDockModel;
   // The board's ink for this appearance: what the main pen draws with.
   ink: string;
+  // Lead with the editor mode switch: the Floating layout, whose Palette carries it in Diagram
+  // mode (the Toolbar layout keeps it beside the menu button instead).
+  modeSwitch?: boolean;
 };
 
-export function WhiteboardDock({ model, ink }: WhiteboardDockProps) {
+export function WhiteboardDock({ model, ink, modeSwitch = false }: WhiteboardDockProps) {
   // The canvas the stock colours are drawn for (docs/specs/007-editor/editor-modes.md "One look").
   const appearance = useCanvasSurface();
   const fly = useDockFlyout();
@@ -253,25 +257,30 @@ export function WhiteboardDock({ model, ink }: WhiteboardDockProps) {
       <p role="status" className="sr-only">
         {hint ? PINS_FULL_HINT : ''}
       </p>
-      {/* The groups scroll together on a narrow screen; the padding keeps their shadows unclipped.
-          Scrolling moves the openers, so an open flyout follows its button. */}
-      <div
-        data-dock-scroller=""
-        onScroll={fly.reanchor}
-        className="-m-3 flex items-center gap-3 overflow-x-auto p-3 [scrollbar-width:none]"
-      >
-        <DrawingToolsGroup model={model} ink={ink} fly={fly} pickAndClose={pickAndClose} />
-        <ShapesGroup
-          model={model}
-          fly={fly}
-          slotDrag={slotDrag}
-          refusing={refusing}
-          pickAndClose={pickAndClose}
-        />
-        <SettingsGroup fly={fly} />
-        {drag ? (
-          <SlotGhost dragKey={drag.source.key} x={drag.x} y={drag.y} refusing={refusing} />
-        ) : null}
+      {/* The Floating layout's mode switch leads the dock, outside the scroller so its menu is
+          not clipped (DockModeSwitch). */}
+      <div className="flex items-center">
+        {modeSwitch ? <DockModeSwitch /> : null}
+        {/* The groups scroll together on a narrow screen; the padding keeps their shadows
+            unclipped. Scrolling moves the openers, so an open flyout follows its button. */}
+        <div
+          data-dock-scroller=""
+          onScroll={fly.reanchor}
+          className="-m-3 flex min-w-0 items-center gap-3 overflow-x-auto p-3 [scrollbar-width:none]"
+        >
+          <DrawingToolsGroup model={model} ink={ink} fly={fly} pickAndClose={pickAndClose} />
+          <ShapesGroup
+            model={model}
+            fly={fly}
+            slotDrag={slotDrag}
+            refusing={refusing}
+            pickAndClose={pickAndClose}
+          />
+          <SettingsGroup fly={fly} />
+          {drag ? (
+            <SlotGhost dragKey={drag.source.key} x={drag.x} y={drag.y} refusing={refusing} />
+          ) : null}
+        </div>
       </div>
     </div>
   );

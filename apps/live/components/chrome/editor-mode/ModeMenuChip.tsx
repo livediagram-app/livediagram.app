@@ -11,7 +11,7 @@ import {
 import { ModeKeyHint } from './ModeKeyHint';
 
 // The mode switch (docs/specs/007-editor/editor-modes.md "The mode switch"): a dropdown chip
-// showing the current mode's glyph and a chevron, no words, that opens a menu DOWNWARD (it sits in
+// showing the current mode's glyph and a chevron (and, `labelled`, its name), that opens a menu DOWNWARD (it sits in
 // the top chrome), one compact row per mode from the catalogue (glyph and name, at the
 // palette dropdowns' size; no hover card, which would cover the menu), a check on the
 // current mode, and Shift+D on the row the key leads to. The chip wears the Toolbar
@@ -26,7 +26,8 @@ export function ModeMenuChip({
   mode,
   onChange,
   align = 'left',
-}: EditorModeSwitchProps & { align?: 'left' | 'right' }) {
+  labelled = false,
+}: EditorModeSwitchProps & { align?: 'left' | 'right'; labelled?: boolean }) {
   const [open, setOpen] = useState(false);
   const root = useRef<HTMLDivElement>(null);
   const chip = useRef<HTMLButtonElement>(null);
@@ -90,9 +91,12 @@ export function ModeMenuChip({
           event.preventDefault();
           setOpen(true);
         }}
-        className={`flex h-7 w-full items-center justify-center gap-1 rounded-md px-1.5 transition-colors ${TOOLBAR_TRIGGER_TONE} ${MODE_SWITCH_FOCUS}`}
+        className={`flex w-full items-center gap-1 rounded-md px-1.5 transition-colors ${
+          labelled ? 'h-6 justify-start text-xs font-medium' : 'h-7 justify-center'
+        } ${TOOLBAR_TRIGGER_TONE} ${MODE_SWITCH_FOCUS}`}
       >
         <Icon aria-hidden />
+        {labelled ? <span className="text-optical-centre flex-1 text-left">{label}</span> : null}
         <ChevronDownIcon
           aria-hidden
           className={`transition-transform duration-micro motion-reduce:transition-none ${
