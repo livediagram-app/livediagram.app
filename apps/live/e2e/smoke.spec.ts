@@ -61,6 +61,9 @@ test('create a blank document, add a shape, and it survives a reload', async ({
   await startBlankDocument(page);
   // The wizard created a real document and routed to it.
   await expect(page).toHaveURL(/\/document\/[0-9a-f-]{36}/);
+  // The tour offer opens 800 ms after the editor is ready and its backdrop takes every click
+  // (TourHost): answer it first, or a slow runner's canvas click lands on the backdrop.
+  await dismissQuickTour(page);
 
   // The palette is open by default on desktop; its shape tiles are
   // aria-labelled ("Add square"). Arm the Square, then drop it on the
