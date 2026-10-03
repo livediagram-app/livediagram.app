@@ -8,14 +8,16 @@
 // Kept short: the formats used all the time are buttons; lists, alignment, colours, inserts and
 // the less used formats are menus (page-toolbar-panels.tsx). It follows the page by measuring the
 // sheet each frame while it is shown (a pan or a zoom moves it with no render).
-import { useLayoutEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import {
   lucideBaseline,
   lucideBold,
+  lucideCircleCheck,
   lucideEllipsis,
   lucideItalic,
   lucideLink,
   lucideList,
+  lucideMessageSquare,
   lucidePlus,
   lucideType,
   lucideUnderline,
@@ -35,6 +37,7 @@ import {
   requestStylePanel,
   useActiveArticle,
   useArticleLinkRequest,
+  useArticleCommentRequest,
   type ActiveArticle,
 } from '@/lib/article/article-editor-store';
 import {
@@ -83,6 +86,8 @@ const Colour = I(lucideBaseline);
 const ListIcon = I(lucideList);
 const Plus = I(lucidePlus);
 const More = I(lucideEllipsis);
+const CommentIcon = I(lucideMessageSquare);
+const ActionIcon = I(lucideCircleCheck);
 const TypeIcon = lucideGlyph(lucideType, 14);
 
 // Screen px: the card's breathing room above and below it when it sits in the page's margin.
@@ -108,7 +113,10 @@ export function PageToolbar({
   topRoomOf,
   articlePages,
   onInsert,
+  onNote,
 }: {
+  // A comment or an action on the selected text (a margin note): handled by the host.
+  onNote?: (kind: 'comment' | 'action') => void;
   // The article pages on the tab, each with its article: what a hover or a press is measured on.
   articlePages: readonly { id: string; flow: string }[];
   // The screen px of a page's top margin at the current zoom: the room the band sits in.
@@ -147,6 +155,19 @@ export function PageToolbar({
     setSeenLink(linkRequest);
     if (active) setOpen('link');
   }
+  // ⌘⌥M in the writing puts a comment on the selected text.
+  const commentRequest = useArticleCommentRequest();
+  const seenComment = useRef(commentRequest);
+  const noteNow = useRef({ active, onNote });
+  useLayoutEffect(() => {
+    noteNow.current = { active, onNote };
+  });
+  useEffect(() => {
+    if (commentRequest === seenComment.current) return;
+    seenComment.current = commentRequest;
+    const { active: a, onNote: note } = noteNow.current;
+    if (a?.selection.hasText) note?.('comment');
+  }, [commentRequest]);
   // A menu goes with the article.
   if (!active && open) setOpen(null);
 
@@ -357,6 +378,22 @@ export function PageToolbar({
         >
           <Plus />
         </Button>
+        <Divider />
+        <Button
+          label="Comment"
+          keys="Mod-Alt-m"
+          disabled={!selection.hasText || !onNote}
+          onPress={() => onNote?.('comment')}
+        >
+          <CommentIcon />
+        </Button>
+        <Button
+          label="Assign action"
+          disabled={!selection.hasText || !onNote}
+          onPress={() => onNote?.('action')}
+        >
+          <ActionIcon />
+        </Button>
       </div>
       {open === 'style' ? (
         <ToolbarPopover anchor="style" onClose={close} label="Text style" width={210}>
@@ -440,11 +477,13 @@ function Button({
   pressed,
   menu,
   expanded,
+  disabled,
   onPress,
   anchor,
   children,
 }: {
   label: string;
+  disabled?: boolean;
   keys?: string;
   pressed?: boolean;
   // Opens a menu (a small chevron says so), open while `expanded`.
@@ -465,6 +504,7 @@ function Button({
         aria-pressed={menu ? undefined : pressed}
         aria-haspopup={menu ? 'menu' : undefined}
         aria-expanded={menu ? (expanded ?? false) : undefined}
+        disabled={disabled}
         onClick={onPress}
         className={`flex h-9 shrink-0 items-center justify-center gap-1 rounded-md transition focus-visible:outline-2 focus-visible:outline-brand-600 disabled:opacity-35 ${
           menu ? 'px-2' : 'w-9'

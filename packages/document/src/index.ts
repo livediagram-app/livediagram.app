@@ -378,6 +378,7 @@ export * from './article-flow-ops';
 export * from './article-pages';
 export * from './article-style';
 export * from './article-zones';
+export * from './article-notes';
 export * from './article-intake';
 export { migrateWhiteboardKind } from './legacy-whiteboard-tab';
 export { downgradeLinks, upgradeLegacyLinks } from './legacy-links';

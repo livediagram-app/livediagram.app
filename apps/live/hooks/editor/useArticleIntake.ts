@@ -18,6 +18,7 @@ import {
   layOutIllustratePages,
   looseOnArticles,
   objectsDraggedOut,
+  withNoteMarksRemoved,
   zoneCanvasRect,
   type Element,
   withElementsIntoZone,
@@ -158,6 +159,18 @@ export function useArticleIntake({
             moved: !!r.res,
           });
         }
+        // Margin notes whose markers were deleted leave their text untinted.
+        const goneNotes = new Set(
+          was.elements
+            .filter(
+              (e) =>
+                e.type === 'annotation' &&
+                e.articleNote &&
+                !next.elements.some((n) => n.id === e.id),
+            )
+            .map((e) => e.id),
+        );
+        next = withNoteMarksRemoved(next, goneNotes);
         for (const [flow, gone] of goneZones) next = withZoneContentsRemoved(next, flow, gone);
         for (const { flow, ids, plan, res } of intakes) {
           const landed = withZoneLanded(next, flow, res);

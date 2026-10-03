@@ -38,6 +38,7 @@ function marksOf(run: ArticleRun): Mark[] {
   for (const [flag, name] of RUN_MARKS) if (run[flag]) marks.push(S.marks[name]!.create());
   if (run.color && isArticleHex(run.color)) marks.push(S.marks.color!.create({ color: run.color }));
   if (run.hl && isArticleHex(run.hl)) marks.push(S.marks.highlight!.create({ color: run.hl }));
+  if (run.note) marks.push(S.marks.note!.create({ id: run.note, kind: run.nk ?? 'comment' }));
   return marks;
 }
 
@@ -114,7 +115,10 @@ function runsOf(node: PMNode): ArticleRun[] {
       if (name === 'link') run.href = mark.attrs.href as string;
       else if (name === 'color') run.color = mark.attrs.color as string;
       else if (name === 'highlight') run.hl = mark.attrs.color as string;
-      else {
+      else if (name === 'note') {
+        run.note = mark.attrs.id as string;
+        if (mark.attrs.kind === 'action') run.nk = 'action';
+      } else {
         const flag = RUN_MARKS.find(([, n]) => n === name)?.[0];
         if (flag) (run as Record<string, unknown>)[flag] = true;
       }

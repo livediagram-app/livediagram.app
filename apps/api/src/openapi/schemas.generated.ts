@@ -356,6 +356,13 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "animationSpeed": {
         "$ref": "#/components/schemas/AnimationSpeed"
       },
+      "articleNote": {
+        "enum": [
+          "comment",
+          "action"
+        ],
+        "type": "string"
+      },
       "aspectLocked": {
         "type": "boolean"
       },
@@ -997,6 +1004,13 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "i": {
         "const": true,
         "type": "boolean"
+      },
+      "nk": {
+        "const": "action",
+        "type": "string"
+      },
+      "note": {
+        "type": "string"
       },
       "s": {
         "const": true,

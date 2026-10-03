@@ -54,6 +54,11 @@ export type ArticleRun = {
   // Hex colours from the article's swatches.
   color?: string;
   hl?: string;
+  // A margin note on this text (docs/specs/007-editor/article-pages.md "Comments and actions"):
+  // the id of the marker element in the page's margin that carries its comment thread or action,
+  // and which of the two it is (`nk`: 'action'; a comment when absent).
+  note?: string;
+  nk?: 'action';
 };
 
 export type ArticleParagraphBlock = {
@@ -170,6 +175,10 @@ function parseRun(v: unknown): ArticleRun | undefined {
   if (isSafeArticleHref(r.href)) run.href = r.href.trim();
   if (isArticleHex(r.color)) run.color = r.color;
   if (isArticleHex(r.hl)) run.hl = r.hl;
+  if (isId(r.note)) {
+    run.note = r.note;
+    if (r.nk === 'action') run.nk = 'action';
+  }
   return run;
 }
 
@@ -177,7 +186,9 @@ const sameFormat = (a: ArticleRun, b: ArticleRun): boolean =>
   RUN_FLAGS.every((f) => a[f] === b[f]) &&
   a.href === b.href &&
   a.color === b.color &&
-  a.hl === b.hl;
+  a.hl === b.hl &&
+  a.note === b.note &&
+  a.nk === b.nk;
 
 /** Runs read defensively, neighbours of one format merged, empty ones dropped, the text capped at
  *  MAX_DOC_BLOCK_TEXT characters over at most MAX_DOC_RUNS runs. */

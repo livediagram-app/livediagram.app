@@ -35,6 +35,7 @@ import {
   type LaidOutPage,
 } from '@livediagram/document';
 import { blocksToDoc, docToBlocks } from '@/lib/article/article-convert';
+import type { ArticleNotePlace } from '@livediagram/document';
 import { articleKeymap, articleInputRules } from '@/lib/article/article-keys';
 import { blockIdsPlugin, decorationsPlugin, todoTogglePlugin } from '@/lib/article/article-plugins';
 import { insertBlocksAfterCaret, selectionStateOf } from '@/lib/article/article-commands';
@@ -42,6 +43,7 @@ import {
   clearActiveArticle,
   registerArticleHandle,
   setActiveArticle,
+  requestArticleComment,
   blurActiveArticle,
   type ArticleEditorHandle,
 } from '@/lib/article/article-editor-store';
@@ -69,6 +71,8 @@ export type FlowLayout = {
   // Where each zone landed: its page (by index among the article's pages) and its top-left from
   // that page's corner, and its size, in canvas px.
   zones: { id: string; index: number; x: number; y: number; width: number; height: number }[];
+  // Where each margin note's text starts: its first line's page, top and height.
+  notes: ArticleNotePlace[];
   // Whether this person made the change that laid it out (only they settle its consequences).
   local: boolean;
 };
@@ -197,8 +201,18 @@ export default function ArticleEditor(props: ArticleEditorProps) {
         height: r.height / z,
       });
     });
+    const notes: ArticleNotePlace[] = [];
+    const seen = new Set<string>();
+    view.dom.querySelectorAll<HTMLElement>('[data-note-id]').forEach((el) => {
+      const id = el.dataset.noteId ?? '';
+      const r = el.getClientRects()[0];
+      if (!id || seen.has(id) || !r) return;
+      seen.add(id);
+      const place = pagePlaceOf(frame, { x: (r.left - root.left) / z, y: (r.top - root.top) / z });
+      notes.push({ id, index: place.index, y: place.y, height: r.height / z });
+    });
     const local = Date.now() - lastLocal.current < WRITER_WINDOW_MS || view.hasFocus();
-    p.onLayout({ flow: p.flow, pagesNeeded, zones, local });
+    p.onLayout({ flow: p.flow, pagesNeeded, zones, notes, local });
   };
   const scheduleMeasure = () => {
     if (measureFrame.current !== null) return;
@@ -276,6 +290,7 @@ export default function ArticleEditor(props: ArticleEditorProps) {
             latest.current.onRedo();
           },
           onLink: () => latest.current.onLinkRequest(),
+          onComment: () => requestArticleComment(),
           onEscape: () => {
             flush();
             (viewRef.current?.dom as HTMLElement | undefined)?.blur();
@@ -497,6 +512,29 @@ export default function ArticleEditor(props: ArticleEditorProps) {
         } catch {
           return null;
         }
+      },
+      markNote: (id, kind) => {
+        const { from, to, empty } = view.state.selection;
+        if (empty) return null;
+        const mark = articleSchema.marks.note!.create({ id, kind });
+        view.dispatch(view.state.tr.addMark(from, to, mark));
+        const { frame, root, z } = scaleAndFrame();
+        const el = view.dom.querySelector<HTMLElement>(`[data-note-id="${CSS.escape(id)}"]`);
+        const r = el?.getClientRects()[0];
+        if (!r) return null;
+        const place = pagePlaceOf(frame, {
+          x: (r.left - root.left) / z,
+          y: (r.top - root.top) / z,
+        });
+        // Taken as written: the host writes these blocks and the marker in one edit.
+        const blocks = docToBlocks(view.state.doc, committed.current.blocks);
+        committed.current = { ...committed.current, blocks };
+        if (idle.current !== null) {
+          window.clearTimeout(idle.current);
+          idle.current = null;
+        }
+        lastLocal.current = Date.now();
+        return { blocks, place: { id, index: place.index, y: place.y, height: r.height / z } };
       },
       boundaryNear: (near, skipId) => {
         const found = boundaryNear(near, skipId);

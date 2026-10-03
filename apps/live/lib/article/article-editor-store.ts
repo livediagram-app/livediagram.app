@@ -38,6 +38,15 @@ export type ArticleEditorHandle = {
     x: number;
     y: number;
   } | null;
+  // A margin note put on the selected text (a `note` mark naming marker `id`), the writing so far
+  // taken as written: its blocks, and where the text's first line is. Null with nothing selected.
+  markNote: (
+    id: string,
+    kind: 'comment' | 'action',
+  ) => {
+    blocks: import('@livediagram/document').ArticleBlock[];
+    place: import('@livediagram/document').ArticleNotePlace;
+  } | null;
   // The block boundary nearest a canvas point (never beside the block `skipId`): its position in
   // the writing, and the drop caret for it, a line across the column in canvas px.
   boundaryNear: (
@@ -137,6 +146,22 @@ export function useActiveArticle(): ActiveArticle | null {
 type Signal = { seq: number; pageId?: string };
 let linkSignal: Signal = { seq: 0 };
 let panelSignal: Signal = { seq: 0 };
+
+let commentSignal = 0;
+
+/** ⌘⌥M in the writing: the page toolbar puts a comment on the selected text. */
+export function requestArticleComment(): void {
+  commentSignal += 1;
+  emit();
+}
+
+export function useArticleCommentRequest(): number {
+  return useSyncExternalStore(
+    subscribe,
+    () => commentSignal,
+    () => 0,
+  );
+}
 
 export function requestArticleLink(): void {
   linkSignal = { seq: linkSignal.seq + 1 };

@@ -319,6 +319,21 @@ export const articleSchema = new Schema({
         0,
       ],
     },
+    // A margin note's text (docs/specs/007-editor/article-pages.md "Comments and actions"): tinted,
+    // tied by id to its marker in the page's margin. Never taken from a paste.
+    note: {
+      attrs: { id: {}, kind: { default: 'comment' } },
+      inclusive: false,
+      parseDOM: [],
+      toDOM: (mark: Mark): DOMOutputSpec => [
+        'span',
+        {
+          class: `article-note article-note-${mark.attrs.kind === 'action' ? 'action' : 'comment'}`,
+          'data-note-id': mark.attrs.id,
+        },
+        0,
+      ],
+    },
     highlight: {
       attrs: { color: {} },
       parseDOM: [],

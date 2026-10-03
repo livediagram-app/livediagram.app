@@ -362,6 +362,7 @@ export function ElementFaceRouter({
       ) : element.type === 'annotation' ? (
         <AnnotationGlyph
           stroke={remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element, surface)}
+          action={element.articleNote === 'action'}
         />
       ) : element.type === 'video' ? (
         <VideoView element={element} />

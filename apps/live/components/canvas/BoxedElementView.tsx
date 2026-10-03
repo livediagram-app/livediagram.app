@@ -193,6 +193,12 @@ function BoxedElementViewImpl({
   // floats its note above everything; clicking it (handled in the drag
   // engine's click-vs-drag test) opens the editable note popover.
   const isAnnotation = element.type === 'annotation';
+  // An article's margin note (docs/specs/007-editor/article-pages.md "Comments and actions"): a
+  // click opens what it carries, its comment thread or its action.
+  const articleNote = element.type === 'annotation' ? element.articleNote : undefined;
+  const openArticleNote = articleNote
+    ? () => (articleNote === 'action' ? onOpenAction(element.id) : onOpenComments(element.id))
+    : undefined;
   const [hovering, setHovering] = useState(false);
 
   // Right-click selects the element + asks the page to open a
@@ -395,6 +401,7 @@ function BoxedElementViewImpl({
       onDoubleClick={handleDoubleClick}
       onContextMenu={handleContextMenu}
       onPointerUp={handlePointerUp}
+      onClick={openArticleNote}
       onPointerEnter={isAnnotation ? () => setHovering(true) : undefined}
       onPointerLeave={isAnnotation ? () => setHovering(false) : undefined}
       onDragOver={acceptsIconDrop ? handleIconDragOver : undefined}

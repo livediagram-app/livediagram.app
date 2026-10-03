@@ -313,6 +313,8 @@ export const ARTICLE_INSERTS = chart(
       'ArticlePageBreak',
       'ArticleQuote',
       'ArticleCode',
+      'ArticleComment',
+      'ArticleAction',
     ],
   },
 );

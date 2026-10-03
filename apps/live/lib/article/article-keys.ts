@@ -125,6 +125,8 @@ export function articleKeymap(host: {
   undo: () => void;
   redo: () => void;
   onLink: () => void;
+  // ⌘⌥M: a comment on the selected text.
+  onComment: () => void;
   onEscape: () => void;
 }): Plugin[] {
   const run =
@@ -147,6 +149,7 @@ export function articleKeymap(host: {
       'Mod-Shift-x': toggleStrike,
       'Mod-e': toggleCode,
       'Mod-k': run(host.onLink),
+      'Mod-Alt-m': run(host.onComment),
       'Mod-Alt-0': setBlockStyle('body'),
       'Mod-Alt-1': setBlockStyle('h1'),
       'Mod-Alt-2': setBlockStyle('h2'),

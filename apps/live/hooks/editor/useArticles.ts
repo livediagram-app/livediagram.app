@@ -13,6 +13,10 @@ import {
   withArticleFlow,
   withZoneLanded,
   withZoneSize,
+  withNotesSettled,
+  articleNoteCorner,
+  newArticleNote,
+  type ArticleNoteKind,
   withElementsMoved,
   zoneCanvasRect,
   zoneMemberIds,
@@ -62,6 +66,8 @@ export type ArticlesView = {
   // Floating elements on an article page (none in a zone) put into the writing, in line or wrapped,
   // at the block boundary nearest them.
   embed: (flow: string, ids: readonly string[], wrap: ArticleZoneWrap) => void;
+  // A comment or an action put on the selected text: a marker in the margin beside it, opened.
+  addNote: (flow: string, kind: ArticleNoteKind) => void;
   // A zone dragged to the block boundary nearest a canvas point, its elements with it.
   moveZone: (flow: string, zoneId: string, near: { x: number; y: number }) => void;
   // An article's style changed (the Style tab): a look, or one field.
@@ -134,6 +140,8 @@ export function useArticles(deps: {
   undo: () => void;
   redo: () => void;
   clearSelection: () => void;
+  // A margin note's marker opened as made: its comment thread, or the Assign Action dialog.
+  openNote: (id: string, kind: ArticleNoteKind) => void;
 }): ArticlesView | null {
   const { activeTab, on, canEdit } = deps;
   const tabId = activeTab.id;
@@ -175,7 +183,11 @@ export function useArticles(deps: {
         const out = ts.map((t) => {
           if (t.id !== tabId || t.locked === true || !articlesOf(t)[layout.flow]) return t;
           const paged = withArticlePageCount(t, layout.flow, layout.pagesNeeded);
-          const settled = withZonesSettled(paged, layout.flow, layout.zones);
+          const settled = withNotesSettled(
+            withZonesSettled(paged, layout.flow, layout.zones),
+            layout.flow,
+            layout.notes,
+          );
           if (settled !== t)
             debugLog('[article] layout settled', {
               tabId,
@@ -293,6 +305,38 @@ export function useArticles(deps: {
     [tabId],
   );
 
+  const addNote = useCallback(
+    (flow: string, kind: ArticleNoteKind) => {
+      const d = latest.current;
+      const handle = articleHandleOf(flow);
+      if (!handle || !d.canEdit || d.activeTab.locked === true) return;
+      const id = crypto.randomUUID();
+      const res = handle.markNote(id, kind);
+      if (!res) return;
+      track('Element', 'Added', kind === 'action' ? 'ArticleAction' : 'ArticleComment');
+      d.commitTabs((ts) =>
+        ts.map((t) => {
+          if (t.id !== tabId) return t;
+          const doc = articlesOf(t)[flow];
+          const page = layOutIllustratePages(illustratePagesOf(t)).filter((p) => p.flow === flow)[
+            res.place.index
+          ];
+          if (!doc || !page) return t;
+          const corner = articleNoteCorner(page, articleMarginPx(doc.style), res.place);
+          const written = withArticleFlow(
+            t,
+            flow,
+            doc.style ? { blocks: res.blocks, style: doc.style } : { blocks: res.blocks },
+          );
+          return { ...written, elements: [...written.elements, newArticleNote(id, kind, corner)] };
+        }),
+      );
+      d.openNote(id, kind);
+      debugLog('[article] margin note added', { tabId, flow, kind });
+    },
+    [tabId],
+  );
+
   const moveZone = useCallback(
     (flow: string, zoneId: string, near: { x: number; y: number }) => {
       const d = latest.current;
@@ -342,6 +386,7 @@ export function useArticles(deps: {
     insertObject,
     zoneAction,
     embed,
+    addNote,
     moveZone,
     setStyle,
     stylePreview,

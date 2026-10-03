@@ -445,6 +445,8 @@ export type ArticleSelectionState = {
   inText: boolean;
   // The zone selected as a whole in the writing, if one is.
   zoneId: string | null;
+  // Text is selected (what a margin note goes on).
+  hasText: boolean;
 };
 
 export function selectionStateOf(state: EditorState): ArticleSelectionState {
@@ -489,6 +491,9 @@ export function selectionStateOf(state: EditorState): ArticleSelectionState {
           : first.type === PARAGRAPH
             ? (first.attrs.style as ArticleParagraphStyle)
             : null,
+    hasText:
+      !state.selection.empty &&
+      state.doc.textBetween(state.selection.from, state.selection.to).trim() !== '',
     list: first?.type === LIST ? (first.attrs.list as ArticleListKind) : null,
     align: first && isTextBlock(first) ? (first.attrs.align as ArticleAlign) : null,
     marks,

@@ -1804,6 +1804,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
       setSelectedId(null);
       setMultiSelectedIds(new Set());
     },
+    openNote: (id, kind) => (kind === 'action' ? openAssignActionDialog(id) : openComments(id)),
   });
   useAssignRef(articleFocusRef, (flow: string) => articles?.requestFocus(flow, 'start'));
   // Set once element creation exists (below): an Insert at the caret places through it.

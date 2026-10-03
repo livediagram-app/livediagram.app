@@ -530,6 +530,10 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Element|Added|ArticlePageBreak': "Someone inserted a page break into an article's writing.",
   'Element|Added|ArticleQuote': "Someone inserted a quote into an article's writing.",
   'Element|Added|ArticleCode': "Someone inserted a code block into an article's writing.",
+  'Element|Added|ArticleComment':
+    "Someone commented on a stretch of an article's writing, a marker in the margin beside it.",
+  'Element|Added|ArticleAction':
+    "Someone assigned an action on a stretch of an article's writing, a marker in the margin beside it.",
   'Element|Changed|ArticleFormat':
     'Someone formatted text in an article from the page toolbar: bold, italic, underline, strikethrough, a colour or a highlight.',
   'Element|Changed|ArticleBlockStyle':

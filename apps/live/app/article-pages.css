@@ -337,3 +337,15 @@
     transition: none;
   }
 }
+
+/* Margin notes (docs/specs/007-editor/article-pages.md "Comments and actions"): the text a comment
+   or an action is on, tinted, tied to its marker in the margin. */
+.article-flow .article-note {
+  border-bottom: 2px solid rgb(245 158 11 / 0.7);
+  /* Translucent, so it reads on a dark page as on paper. */
+  background: rgb(251 191 36 / 0.22);
+}
+.article-flow .article-note-action {
+  border-bottom-color: rgb(14 165 233 / 0.7);
+  background: rgb(56 189 248 / 0.2);
+}

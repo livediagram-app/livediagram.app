@@ -119,6 +119,10 @@ function svgZoneClipped(id: string, svg: string, clips: Map<string, PageRect>): 
   return `<clipPath id="${cid}"><rect x="${r2(r.x)}" y="${r2(r.y)}" width="${r2(r.width)}" height="${r2(r.height)}"/></clipPath><g clip-path="url(#${cid})">${svg}</g>`;
 }
 
+// An article's margin-note marker (docs/specs/007-editor/article-pages.md "Comments and actions"):
+// review furniture, like a comment badge, never part of what the page prints.
+const isArticleNoteMarker = (el: Element) => el.type === 'annotation' && !!el.articleNote;
+
 function withWritingFonts(ids: string[], writing: PageWriting | null): string[] {
   return writing ? [...new Set([...ids, ...writing.fonts])] : ids;
 }
@@ -189,7 +193,8 @@ export async function renderTabToCanvas(
   // A document page's writing (docs/specs/007-editor/article-pages.md "Everywhere a page goes").
   const writing = opts.page ? pageWriting(tab, opts.page) : null;
   const clips = exportZoneClips(tab, opts.page);
-  const reaches = (el: Element) => !frame || frame.reaches(el, tab.elements);
+  const reaches = (el: Element) =>
+    !isArticleNoteMarker(el) && (!frame || frame.reaches(el, tab.elements));
   // Hidden layers drop out of the export (bounds included) unless the
   // dialog's include-hidden option is on (docs/specs/006-document/layers.md). `ordered` is the
   // paint order — layer bands bottom -> top, frames first per band —
@@ -464,7 +469,8 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
     : null;
   const writing = opts.page ? pageWriting(tab, opts.page) : null;
   const clips = exportZoneClips(tab, opts.page);
-  const reaches = (el: Element) => !frame || frame.reaches(el, tab.elements);
+  const reaches = (el: Element) =>
+    !isArticleNoteMarker(el) && (!frame || frame.reaches(el, tab.elements));
   const els = (
     opts.hiddenLayers ? tab.elements : visibleLayerElements(tab.elements, tab.layers)
   ).filter(reaches);

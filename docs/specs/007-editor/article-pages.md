@@ -25,6 +25,7 @@ a text element): the text here is the page's own, one continuous piece of writin
 | **article style** | The article's look (`ArticleFlow.style`): fonts, accent, text size, spacing, heading rules, margins, page numbers.                              |
 | **look**          | A named article style to start from (Clean, Classic, Report, Notebook, Bold).                                                                   |
 | **page toolbar**  | The formatting bar at the top of the page being written on.                                                                                     |
+| **margin note**   | A comment thread or an action on a stretch of the writing: a marker in the page's right margin beside that text, which carries a `note` mark.   |
 | **writer**        | The person whose edit changed the writing's layout; only they write the layout's consequences (zone moves, pages added or removed).             |
 
 An **article** is named so to keep **document** for what it already means across the app: the
@@ -174,6 +175,7 @@ article's swatches), and a line break inside a block (Shift+Enter). Code blocks 
   - **More formatting** (a menu: strikethrough, inline code, superscript, subscript, clear
     formatting, Article style, which opens the page panel on Style);
   - **Insert** (a menu: Image, Table, Chart, Drawing, Divider, Page break, Quote, Code, Callout).
+  - **Comment** (⌘⌥M) and **Assign action**, with text selected (see "Comments and actions").
 - No undo or redo (the canvas controls have them) and no word count.
 - **Narrow**: when the toolbar is wider than the canvas, it scrolls sideways.
 - **On a phone** the toolbar is a bar along the bottom of the screen, above the keyboard, scrolling
@@ -237,6 +239,27 @@ laid out with it, holding ordinary canvas elements that move with it.
   - The new zone, and its element, are selected; the zone bar shows.
 - **Loose elements** (on an article page but in no zone) stay fixed to their page in front of the
   text, as on an infographic page; they never move with the writing.
+
+## Comments and actions
+
+A comment or an action can be put on any stretch of the writing, as on an element, and everything
+a comment or an action does on an element it does here (threads, mentions, resolving, assignees,
+due dates, Activity, email), because it lives on an element: a **margin note**.
+
+- **Putting one on**: with text selected, the page toolbar's **Comment** (⌘⌥M) or **Assign
+  action** button. The text is tinted (amber for a comment, sky blue for an action, translucent so
+  it reads on a dark page) and underlined; a marker (an annotation, `articleNote`, 32 px) appears
+  in the page's right margin, centred in the margin and level with the text's first line; the
+  comment thread opens on it, or the Assign Action dialog. One edit.
+- **The marker** shows a speech bubble for a comment, a tick in a circle for an action, with the
+  usual comment count and action badges. A click on it opens its thread or its action.
+- **It stays beside its text**: as the writing moves (typing above it, a new style, a page added),
+  the marker moves with the text's first line, onto another page too, settled by the writer as a
+  zone is.
+- **Deleting the marker** takes the tint off its text. Deleting the text leaves the marker, and its
+  thread, where it last stood.
+- **Never printed**: exports leave the markers out and the text untinted.
+- A tint is never taken from a paste.
 
 ## Article style
 
@@ -312,16 +335,21 @@ ink").
 
 ## Telemetry
 
-`Tab · Changed · DocumentPageAdded` (the add popover's Article), `DocumentLook<Name>`,
-`DocumentStyle` (any other style field); `Editor · Used · Doc<Block>` for an insert from the
-slash menu or Insert (`ArticleHeading1`, `ArticleImage`, `ArticleDrawing`, ...) and `ArticlePaste`, `ArticleMarkdown`;
-`Element · Changed · ArticleBlockStyle` (style menu, lists), `ArticleFormat` (a mark from the toolbar),
-`ArticleLink`, `ArticleZoneWrap`. Never text.
+- `Tab · Changed · ArticleAdded` (the add popover's Article); `ArticleLook<Name>` (Clean,
+  Classic, Report, Notebook, Bold); `ArticleStyle` (any other style field).
+- `Element · Added · Article<Insert>` for an insert from the toolbar's Insert, the slash menu or
+  a palette drop: `ArticleImage`, `ArticleTable`, `ArticleChart`, `ArticleCallout`,
+  `ArticleSticky`, `ArticleDrawing`, `ArticleObject`, `ArticleDivider`, `ArticlePageBreak`,
+  `ArticleQuote`, `ArticleCode`; and `ArticleComment`, `ArticleAction` for a margin note.
+- `Element · Changed · ArticleFormat` (a mark from the toolbar), `ArticleBlockStyle` (style menu,
+  lists), `ArticleLink`, `ArticlePaste` (Markdown pasted as blocks), `ArticleZoneWrap`,
+  `ArticleZoneFloat`, `ArticleZoneResized`, `ArticleZoneMoved`, `ArticleZoneRemoved`.
+- Never text.
 
 ## Non-goals
 
 - Tables as part of the text (a table is an object zone holding a table element).
-- Headers and footers beyond page numbers, footnotes, a table of contents, columns, comments on
-  ranges of text, suggestions and tracked changes, find and replace, Word / Google Docs import.
+- Headers and footers beyond page numbers, footnotes, a table of contents, columns, suggestions
+  and tracked changes, find and replace, Word / Google Docs import.
 - Character-level merging of two people typing in the same paragraph at the same moment.
 - The writing in Diagram or Draw mode, and the writing read or written by AI tools (MCP).

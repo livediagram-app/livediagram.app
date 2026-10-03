@@ -202,6 +202,9 @@ export function ArticleFlows({
             onInsert={(what) => {
               if (active) articles.insertObject(active.handle.flow, what);
             }}
+            onNote={(kind) => {
+              if (active) articles.addNote(active.handle.flow, kind);
+            }}
           />
         ) : null}
       </div>
