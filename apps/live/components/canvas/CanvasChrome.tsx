@@ -587,7 +587,8 @@ export function CanvasChrome(props: CanvasChromeProps) {
             ) : null}
             {/* Slides (docs/specs/007-editor/infographic-pages.md "Slides"): in Infographic mode, where
                 Layers would be, the deck one press away. */}
-            {!zenMode && props.infographicPages && props.slideDeck ? (
+            {/* Desktop only, as the Slide Deck itself is. */}
+            {!zenMode && !isMobile && props.infographicPages && props.slideDeck ? (
               <SlidesClusterButton
                 popoverOpen={activeDockPanel === 'slides'}
                 onTogglePopover={(button) => handleDockButtonClick('slides', button, true)}

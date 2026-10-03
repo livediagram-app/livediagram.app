@@ -17,6 +17,8 @@ import {
   useEscape,
 } from '@livediagram/ui';
 import { Portal } from '@/components/primitives/Portal';
+import { BottomSheet } from '@/components/primitives/BottomSheet';
+import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { VIEWPORT_EDGE_MARGIN as EDGE } from '@/lib/clamp-to-viewport';
 import type { InfographicPageEdits } from '@/hooks/editor/useInfographicPage';
 import type { ThemeBackgroundPreset } from '@/lib/infographic-page-paint';
@@ -59,6 +61,7 @@ export function InfographicPagePanel({
   onClose: (restoreFocus: boolean) => void;
 }) {
   const panel = useRef<HTMLDivElement>(null);
+  const mobile = useIsMobileViewport();
   const [tab, setTab] = useState<PagePanelTab>(initialTab);
   const [pos, setPos] = useState<{ left: number; top: number } | null>(null);
 
@@ -112,12 +115,67 @@ export function InfographicPagePanel({
     onPreview(patch ? { pageId: page.id, patch } : null);
   const placeLabel = `Page ${page.index + 1}`;
   const title = page.name ?? (count > 1 ? placeLabel : 'Page');
+  const body = (
+    <>
+      <NameField
+        key={page.id}
+        name={page.name ?? ''}
+        placeholder={count > 1 ? placeLabel : 'Untitled page'}
+        onRename={(name) => edit.rename(page.id, name)}
+      />
+      <PanelTabs tab={tab} onTab={setTab} />
+      {tab === 'page' ? (
+        <>
+          <SizeSection page={page} onSize={(size) => edit.setSize(page.id, size)} />
+          <OrientationSection page={page} onOrientation={(o) => edit.setOrientation(page.id, o)} />
+          <BackgroundSection
+            page={page}
+            themePresets={themeBackgrounds}
+            onBackground={(patch) => {
+              edit.setBackground(page.id, patch);
+              onPreview(null);
+            }}
+            onPreview={preview}
+          />
+        </>
+      ) : (
+        <LayoutsSection
+          page={page}
+          contentCount={edit.contentCount(page.id)}
+          onApply={(layout) => {
+            onLayoutPreview(null);
+            edit.applyLayout(page.id, layout);
+            onClose(false);
+          }}
+          onPreview={onLayoutPreview}
+        />
+      )}
+      <PageActions page={page} count={count} edit={edit} onClose={() => onClose(false)} />
+    </>
+  );
+  const label = `${title} settings`;
+  // On a phone the panel is a bottom sheet (swipe down to close), the page above it.
+  if (mobile) {
+    return (
+      <BottomSheet
+        ref={panel}
+        role="dialog"
+        aria-label={label}
+        data-page-panel
+        onClose={() => onClose(false)}
+        zClassName="z-[var(--z-overlay)]"
+        onPointerDown={(e) => e.stopPropagation()}
+      >
+        {body}
+      </BottomSheet>
+    );
+  }
   return (
     <Portal>
       <div
         ref={panel}
         role="dialog"
-        aria-label={`${title} settings`}
+        aria-label={label}
         data-page-panel
         onPointerDown={(e) => e.stopPropagation()}
         className="fixed z-[var(--z-overlay)] flex animate-fade-in flex-col overflow-y-auto rounded-xl border border-slate-200 bg-white pb-1 shadow-xl shadow-slate-900/15 dark:border-slate-700 dark:bg-slate-900"
@@ -128,43 +186,7 @@ export function InfographicPagePanel({
           maxHeight: `calc(100vh - ${2 * EDGE}px)`,
         }}
       >
-        <NameField
-          key={page.id}
-          name={page.name ?? ''}
-          placeholder={count > 1 ? placeLabel : 'Untitled page'}
-          onRename={(name) => edit.rename(page.id, name)}
-        />
-        <PanelTabs tab={tab} onTab={setTab} />
-        {tab === 'page' ? (
-          <>
-            <SizeSection page={page} onSize={(size) => edit.setSize(page.id, size)} />
-            <OrientationSection
-              page={page}
-              onOrientation={(o) => edit.setOrientation(page.id, o)}
-            />
-            <BackgroundSection
-              page={page}
-              themePresets={themeBackgrounds}
-              onBackground={(patch) => {
-                edit.setBackground(page.id, patch);
-                onPreview(null);
-              }}
-              onPreview={preview}
-            />
-          </>
-        ) : (
-          <LayoutsSection
-            page={page}
-            contentCount={edit.contentCount(page.id)}
-            onApply={(layout) => {
-              onLayoutPreview(null);
-              edit.applyLayout(page.id, layout);
-              onClose(false);
-            }}
-            onPreview={onLayoutPreview}
-          />
-        )}
-        <PageActions page={page} count={count} edit={edit} onClose={() => onClose(false)} />
+        {body}
       </div>
     </Portal>
   );

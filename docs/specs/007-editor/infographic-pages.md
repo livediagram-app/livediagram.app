@@ -28,6 +28,9 @@ its page, clipping, centring) are in [Editor modes](editor-modes.md) "The pages"
   then the action row (Duplicate, Move left, Move right, Delete) as icon buttons with tooltips.
 - **Hover previews**: hovering (or focusing) a background swatch or pattern paints it on the page
   at once; leaving the section puts the page back; a press commits.
+- **On a phone** (the mobile viewport) the panel is a **bottom sheet** (up to 60% of the screen,
+  swipe down or an outside press to close), the page above it; the layout invite in the title bar
+  shows its icon only.
 - Closes on an outside press, **Escape** (focus returns to the cog), or a wheel over the canvas (a
   pan or zoom would leave it stranded from its cog). After a move the panel follows its cog.
 
@@ -252,7 +255,8 @@ Never a colour, name or layout content.
 - **Slides button**: in the bottom-right cluster, where Layers sits in the other modes (left of
   the brush), a **Slides** button opens the Slide Deck panel as a popover hanging above it (an
   outside press closes it; the button shows pressed while open). An infographic is likely to be
-  presented, so its deck is one press away. Telemetry: `UI · Opened · SlideDeck`.
+  presented, so its deck is one press away. Desktop only, as the Slide Deck itself is.
+  Telemetry: `UI · Opened · SlideDeck`.
 - **No Layers**: the Layers button and panel are not offered (a page is arranged by its pages, not
   layers); the tab's layers are untouched and come back in the other modes.
 
