@@ -17,6 +17,7 @@ import {
   isBoxed,
   resolveSlide,
   slideBounds,
+  slideFrame,
   stampNewElementLayers,
   voteHidesCursors,
   elementActions,
@@ -1275,7 +1276,10 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // the only thing on a projector, so a one-box slide SHOULD be a big box —
   // unless the presenter has picked "Actual size" from the cog.
   const frameSlide = useEffectEvent((elements: NonNullable<typeof presentingElements>) => {
-    const bounds = slideBounds(elements);
+    // A page slide frames to its page (slideFrame); any other to what it shows.
+    const bounds = presentingStep
+      ? slideFrame(presentingStep.slide, presentingStep.tab)
+      : slideBounds(elements);
     if (bounds) fitToBounds(bounds, { maxZoom: slideMaxZoom(slideDeck.config) });
   });
   const slideZoom = slideDeck.config.zoom;
@@ -1298,7 +1302,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // an ordinary resize, and a phone rotating.
   const refitSlide = useEffectEvent(() => {
     if (!presentingStep) return;
-    const bounds = slideBounds(resolveSlide(presentingStep.slide, presentingStep.tab));
+    const bounds = slideFrame(presentingStep.slide, presentingStep.tab);
     if (bounds) fitToBounds(bounds, { maxZoom: slideMaxZoom(slideDeck.config) });
   });
   useEffect(() => {

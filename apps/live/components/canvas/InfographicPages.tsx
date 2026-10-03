@@ -38,8 +38,18 @@ const steady = (zoom: number, origin: string): CSSProperties => ({
 // pointer events: a press on one is a press on the canvas. Each page's label sits above its
 // top-left corner (a press frames the page) and its settings cog above its top-right; the
 // add-a-page button follows the last page; all held at one screen size.
-export function InfographicPages({ view, zoom }: { view: InfographicPagesView; zoom: number }) {
-  const { pages, edit, focusPage } = view;
+export function InfographicPages({
+  view,
+  zoom,
+  bare = false,
+}: {
+  view: InfographicPagesView;
+  zoom: number;
+  // The sheets alone, without their title bars or the add button (zen, presenting).
+  bare?: boolean;
+}) {
+  const { pages, focusPage } = view;
+  const edit = bare ? undefined : view.edit;
   // The open panel's page and the cog it hangs from.
   const [opened, setOpened] = useState<{
     id: string;
@@ -112,7 +122,7 @@ export function InfographicPages({ view, zoom }: { view: InfographicPagesView; z
             }}
           >
             <div
-              className={`absolute left-0 flex items-center ${labelRoom < LABEL_MIN ? 'hidden' : ''}`}
+              className={`absolute left-0 flex items-center ${labelRoom < LABEL_MIN || bare ? 'hidden' : ''}`}
               style={{
                 bottom: '100%',
                 marginBottom: 6 / zoom,

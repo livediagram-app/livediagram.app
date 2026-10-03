@@ -7,6 +7,7 @@ import {
   presentableSlides,
   remapPresentationTabs,
   resolveSlide,
+  slideFrame,
   slideBounds,
   slideName,
   storePresentation,
@@ -254,5 +255,24 @@ describe('parseStoredPresentation', () => {
   it('gives an empty deck when there are none', () => {
     expect(firstDeck(parseStoredPresentation('{"decks":[]}')).slides).toEqual([]);
     expect(firstDeck(null).slides).toEqual([]);
+  });
+});
+
+describe('page slides (docs/specs/007-editor/infographic-pages.md "Slides")', () => {
+  it('resolves a page slide to what is on the page, framed to the page', () => {
+    const tab = {
+      id: 't',
+      name: 'T',
+      elements: [
+        { id: 'on', type: 'shape', shape: 'square', x: -10, y: -10, width: 20, height: 20 },
+        { id: 'off', type: 'shape', shape: 'square', x: 5000, y: 0, width: 20, height: 20 },
+      ],
+      pages: [{ id: 'p1', orientation: 'portrait' }],
+    } as unknown as Tab;
+    const slide = { id: 's', tabId: 't', elementIds: [], pageId: 'p1' };
+    expect(resolveSlide(slide, tab).map((e) => e.id)).toEqual(['on']);
+    expect(slideFrame(slide, tab)).toEqual({ x: -397, y: -561.5, w: 794, h: 1123 });
+    // Its page gone: nothing on it, framed to nothing.
+    expect(slideFrame({ ...slide, pageId: 'gone' }, tab)).toBeNull();
   });
 });

@@ -205,6 +205,17 @@ In Infographic mode the Export dialog exports **pages**, not the tab's content b
 `PageMoved`, `PageLayout`; `Document · Exported · InfographicPNG / InfographicSVG / InfographicPDF`.
 Never a colour, name or layout content.
 
+## Slides
+
+- In Infographic mode the Slide Deck panel adds slides **a page at a time**: a page picker (each
+  page by its label) and **Add as slide**, in place of "Select elements to make a slide".
+- A **page slide** (`Slide.pageId`, docs/specs/012-collaboration/presentation-mode.md) is the page,
+  resolved live: it shows whatever is on the page now and is framed to exactly the page, so it
+  follows the page's edits, reorders and size changes. Its row reads `<tab> · <page label>`; its
+  thumbnail is the page on its background. A page deleted leaves its slide empty (shown, fixable),
+  as an element slide's deleted elements do.
+- Zen and presenting show the sheets alone: no labels, cogs, layout invites or add button.
+
 ## Chrome in Infographic mode
 
 - **No Layers**: the Layers button and panel are not offered (a page is arranged by its pages, not

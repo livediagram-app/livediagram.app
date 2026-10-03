@@ -1,5 +1,6 @@
 'use client';
 
+import { pageLabel } from '@livediagram/document';
 import type { ReactNode } from 'react';
 import type { useCornerDocking } from '@/hooks/ui/useCornerDocking';
 import { AvatarPanel } from '@/components/panels/AvatarPanel';
@@ -203,6 +204,10 @@ export function useCanvasToolPanels({
         tabs={tabSummaries}
         activeTabId={activeTabId ?? ''}
         isReadOnly={readOnly}
+        pages={props.infographicPages?.pages.map((p) => ({
+          id: p.id,
+          label: pageLabel(p, p.index, Math.max(2, props.infographicPages!.pages.length)),
+        }))}
         position={slideDeckWiring.position}
         stackBelowY={stackBelowY}
         onMoveTo={(x, y) => onMoveSlideDeckPanel?.(x, y)}
