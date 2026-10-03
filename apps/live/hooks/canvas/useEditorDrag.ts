@@ -168,10 +168,9 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
     const p = previewRef.current;
     previewRef.current = null;
     const overlay = localPreview();
-    clearLocalPreview();
-    if (!p || !overlay) return;
-    const count = overlay.changed.size + overlay.removed.size + overlay.added.length;
-    if (count === 0) return;
+    const count = overlay ? overlay.changed.size + overlay.removed.size + overlay.added.length : 0;
+    clearLocalPreview(count > 0 ? 'landed' : 'cancelled');
+    if (!p || !overlay || count === 0) return;
     if (checkpointPendingRef.current) {
       gestureTokenRef.current = depsRef.current.markCheckpoint();
       checkpointPendingRef.current = false;
@@ -188,7 +187,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
   const cancelPreview = useEffectEvent(() => {
     if (!previewRef.current) return;
     previewRef.current = null;
-    clearLocalPreview();
+    clearLocalPreview('cancelled');
     debugLog('[drag-preview] cancel');
   });
   // The canvas going away mid-gesture writes nothing.

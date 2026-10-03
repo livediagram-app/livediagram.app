@@ -15,15 +15,20 @@ export type DragOverlay = {
   added: readonly { el: Element; after: string | null }[];
 };
 
+// A collaborator's preview: the geometry patches they sent, resolved against the elements being drawn
+// at read time, so the rest of each element is ours as it is now.
+export type PeerPatch = { id: string } & Record<string, unknown>;
+
 let local: DragOverlay | null = null;
-const peers = new Map<string, DragOverlay>();
-let version = 0;
-const merged = new Map<string, { version: number; overlay: DragOverlay | null }>();
+const peers = new Map<string, { tabId: string; patches: readonly PeerPatch[] }>();
+// One merged preview per tab and per element list a reader draws (Canvas and the element layer read
+// different lists): a reader must get the same object back until something changes, or
+// useSyncExternalStore re-renders it forever.
+let merged = new Map<string, WeakMap<readonly Element[], DragOverlay | null>>();
 const listeners = new Set<() => void>();
 
 function changedNow(): void {
-  version += 1;
-  merged.clear();
+  merged = new Map();
   for (const fn of listeners) fn();
 }
 
@@ -56,18 +61,31 @@ export function setLocalPreview(
   changedNow();
 }
 
-export function clearLocalPreview(): void {
+// How our last preview ended: written to the document (`landed`) or dropped (`cancelled`), for the
+// end message collaborators get.
+let lastEnding: 'landed' | 'cancelled' = 'cancelled';
+
+export function clearLocalPreview(how: 'landed' | 'cancelled' = 'cancelled'): void {
   if (local === null) return;
   local = null;
+  lastEnding = how;
   changedNow();
+}
+
+export function localPreviewEnding(): 'landed' | 'cancelled' {
+  return lastEnding;
 }
 
 export function localPreview(): DragOverlay | null {
   return local;
 }
 
-export function setPeerPreview(presenceId: string, overlay: DragOverlay): void {
-  peers.set(presenceId, overlay);
+export function setPeerPreview(
+  presenceId: string,
+  tabId: string,
+  patches: readonly PeerPatch[],
+): void {
+  peers.set(presenceId, { tabId, patches });
   changedNow();
 }
 
@@ -105,25 +123,33 @@ export function applyOverlay(elements: readonly Element[], overlay: DragOverlay)
   return out;
 }
 
-// Every overlay for a tab, merged: peers in arrival order, then ours over them.
-function mergedFor(tabId: string): DragOverlay | null {
-  const hit = merged.get(tabId);
-  if (hit && hit.version === version) return hit.overlay;
-  const parts = [...peers.values(), ...(local ? [local] : [])].filter((o) => o.tabId === tabId);
-  let overlay: DragOverlay | null = null;
-  if (parts.length === 1) overlay = parts[0]!;
-  else if (parts.length > 1) {
-    const changed = new Map<string, Element>();
-    const removed = new Set<string>();
-    const added: { el: Element; after: string | null }[] = [];
-    for (const p of parts) {
-      for (const [id, el] of p.changed) changed.set(id, el);
-      for (const id of p.removed) removed.add(id);
-      added.push(...p.added);
-    }
-    overlay = { tabId, changed, removed, added };
+// Every preview for a tab, merged: collaborators' patches resolved against `elements` (ids it lacks are
+// skipped), then ours over them.
+function mergedFor(tabId: string, elements: readonly Element[]): DragOverlay | null {
+  let forTab = merged.get(tabId);
+  if (!forTab) {
+    forTab = new WeakMap();
+    merged.set(tabId, forTab);
   }
-  merged.set(tabId, { version, overlay });
+  if (forTab.has(elements)) return forTab.get(elements)!;
+  const theirs = [...peers.values()].filter((p) => p.tabId === tabId && p.patches.length > 0);
+  const ours = local && local.tabId === tabId ? local : null;
+  let overlay: DragOverlay | null = ours;
+  if (theirs.length > 0) {
+    const byId = new Map(elements.map((el) => [el.id, el] as const));
+    const changed = new Map<string, Element>();
+    for (const p of theirs)
+      for (const patch of p.patches) {
+        const base = byId.get(patch.id);
+        if (base) changed.set(patch.id, { ...base, ...patch } as Element);
+      }
+    if (ours) for (const [id, el] of ours.changed) changed.set(id, el);
+    overlay =
+      changed.size || ours
+        ? { tabId, changed, removed: ours?.removed ?? new Set(), added: ours?.added ?? [] }
+        : null;
+  }
+  forTab.set(elements, overlay);
   return overlay;
 }
 
@@ -135,10 +161,11 @@ export function subscribeDragPreview(cb: () => void): () => void {
   };
 }
 
-export function useDragPreview(tabId: string): DragOverlay | null {
+// The tab's merged preview, for drawing `elements`; null when nobody is dragging there.
+export function useDragPreview(tabId: string, elements: readonly Element[]): DragOverlay | null {
   return useSyncExternalStore(
     subscribeDragPreview,
-    () => mergedFor(tabId),
+    () => mergedFor(tabId, elements),
     () => null,
   );
 }

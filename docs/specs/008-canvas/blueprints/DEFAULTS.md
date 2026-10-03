@@ -76,3 +76,4 @@ One row per default applied where a spec is silent or qualitative.
 | D71 | drag-preview       | How large a live preview may be                                          | `DRAG_PREVIEW_MAX_ELEMENTS = 200` changed elements; past it collaborators see that gesture on release only          |
 | D72 | drag-preview       | What a previewed arrow's label avoids                                    | Laid out by `draftLayout` against the previewed elements; others keep the document's label pass                     |
 | D73 | drag-preview       | What a peer sees of elements a gesture adds or removes (Shift-duplicate) | Nothing until release: only changed elements travel                                                                 |
+| D74 | drag-preview       | Which real change ends a peer's preview                                  | Any element or tab op from that peer: the release sends its element ops right after the end message                 |

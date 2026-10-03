@@ -35,6 +35,11 @@ import { applyRoomOpToTabs } from './room-op-apply';
 import { migrateRoomOp } from './room-op-migrate';
 import { foldRemoteOpIntoBaseline, type SaveBaselineRefs } from './save-baseline';
 import { shareLinkOpEffect } from './share-link-ops';
+import {
+  endPeerDragPreview,
+  prunePeerDragPreviews,
+  receivePeerDragPreview,
+} from '@/hooks/collab/peer-drag-previews';
 import { joinRefusedBecauseTrashed } from './room-refusal';
 
 // Realtime room: one WebSocket per document, opened only while the
@@ -197,6 +202,8 @@ export function useRoomConnection(opts: {
   useEffect(() => {
     announceSelf();
   }, [picture]);
+  // Each peer's server-verified role by presence id, refreshed with every presence list.
+  const roleByPresenceRef = useRef<Map<string, string | undefined>>(new Map());
   // The facilitator token is read on demand by the room, always as it is now.
   const roomReadFacilitatorToken = useEffectEvent(() => readFacilitatorToken());
 
@@ -205,6 +212,9 @@ export function useRoomConnection(opts: {
   const roomPresence = useEffectEvent(
     (participants: Parameters<NonNullable<RoomHandlers['onPresence']>>[0]) => {
       const now = Date.now();
+      // Each peer's server-verified role, read when their drag preview arrives: only an editor's is
+      // drawn (docs/specs/008-canvas/drag-preview.md).
+      roleByPresenceRef.current = new Map(participants.map((p) => [p.id, p.role] as const));
       setLivePresence(
         participants.map((p) => ({
           id: p.id,
@@ -266,6 +276,7 @@ export function useRoomConnection(opts: {
       // longer connected. Stops stale presence indicators from
       // sticking after a tab close or network drop.
       const present = new Set(participants.map((p) => p.id));
+      prunePeerDragPreviews(present);
       // Drop tab-focus entries for people who left so their avatar
       // dot doesn't linger on a tab they no longer occupy, AND seed
       // from the presence list: the room echoes each peer's current
@@ -323,6 +334,8 @@ export function useRoomConnection(opts: {
         // change is known to be the peer's and is never saved or broadcast
         // back as if it were ours (docs/specs/012-collaboration/collab-race-hardening.md).
         if (op.kind === 'document-meta') setDocumentName(op.name);
+        // A dragger's real change has arrived: their live preview has done its job.
+        endPeerDragPreview(from);
         applyRemoteTabs((prev) => applyRoomOpToTabs(prev, op));
         foldRemoteOpIntoBaseline(saveBaseline, op);
         // In the same batch as the tabs update, so the render that shows the op also counts it.
@@ -354,6 +367,9 @@ export function useRoomConnection(opts: {
           // from a newer client costs that field and not the trail.
           config: op.look ? parseLaserConfig(op.look) : undefined,
         });
+      } else if (op.kind === 'drag-preview') {
+        // A collaborator mid-drag (docs/specs/008-canvas/drag-preview.md): drawn, never written.
+        receivePeerDragPreview(from, op, (id) => roleByPresenceRef.current.get(id));
       } else if (op.kind === 'avatar') {
         // Latest-wins per peer (no accumulation, unlike laser points): the
         // character has one position at a time.
@@ -486,6 +502,7 @@ export function useRoomConnection(opts: {
       // when we transition back to private (revoke share / leave team).
       setLivePresence([]);
       setRemoteSelections(new Map());
+      prunePeerDragPreviews(new Set());
       return;
     }
     // Batched cursor / laser / avatar presence, committed one Map update

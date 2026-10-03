@@ -2,6 +2,7 @@ import type { ElementDelta, ElementOp, QaNote, Tab } from '@livediagram/document
 import type { ChangeLogEntry, ParticipantPresence } from './index';
 import type { AvatarConfig } from './avatar';
 import type { LivePoll } from './poll';
+import type { DragPreviewPatch } from './drag-preview';
 
 // ---------------------------------------------------------------------
 // Realtime room messages
@@ -108,6 +109,11 @@ export const PRESENCE_OP_KINDS = [
   // is: a request to look somewhere is about a moment, and one replayed to a
   // late joiner is answering a sentence nobody is still saying.
   'focus-here',
+  // A dragger's preview (docs/specs/008-canvas/drag-preview.md): where the elements they are moving are
+  // right now, at cursor rates, writing nothing; the real change follows on release as element ops.
+  // The room relays it only from an editor (receivers check too): a viewer must never make others'
+  // elements appear to move.
+  'drag-preview',
 ] as const;
 
 // Room op kinds that DO change the document: they get a monotonic `seq` within
@@ -471,6 +477,10 @@ export type RoomOp =
   // over empty canvas. The reaction rides along so a peer plays the right one
   // even if the pad's field changed under them mid-flight.
   | { kind: 'reaction'; tabId: string; elementId: string; reaction: string }
+  // A dragger's live preview (docs/specs/008-canvas/drag-preview.md): one geometry patch per changed
+  // element; `end` says the preview is over, `landed` that it was written (the real change follows as
+  // element ops, after the autosave's wait), so receivers keep drawing it until then.
+  | { kind: 'drag-preview'; tabId: string; patches?: DragPreviewPatch[]; end?: true; landed?: true }
   // The sender's VIEWPORT (docs/specs/012-collaboration/follow-me-viewport.md): where they are looking, so anyone who
   // has chosen to follow them can mirror it. Ephemeral presence exactly like
   // cursor / laser / avatar: throttled, never logged, never ordered (no

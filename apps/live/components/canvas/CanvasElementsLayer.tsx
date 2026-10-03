@@ -381,7 +381,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
   // A drag in progress, ours or a collaborator's (docs/specs/008-canvas/drag-preview.md): the elements
   // it changes are drawn from it, and only the arrows depending on them are re-derived; the maps
   // above stay as built from the document.
-  const overlay = useDragPreview(props.activeTabId ?? '');
+  const overlay = useDragPreview(props.activeTabId ?? '', drawnElements);
   const arrowLinks = useMemo(
     () => (hasArrows ? buildArrowLinks(drawnElements) : null),
     [hasArrows, drawnElements],
