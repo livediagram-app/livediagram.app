@@ -22,10 +22,13 @@ its page, clipping, centring) are in [Editor modes](editor-modes.md) "The pages"
 - Opens beside the page, to the right of its cog, so the sheet stays in view; where the window has
   no room there, it opens under the cog. Screen-space, one size at any zoom; it scrolls when taller
   than the window.
-- Top to bottom: the **name** field (placeholder `Page n`; renamed on Enter, on leaving the field,
-  or on closing the panel), **Size** tiles (each drawn to scale), **Orientation** (Portrait /
-  Landscape, absent for a square page), **Background** swatches, **Pattern** tiles, **Layouts**,
-  then the action row (Duplicate, Move left, Move right, Delete) as icon buttons with tooltips.
+- Top to bottom: the **name** field (placeholder `Page n`, or `Untitled page` while there is one
+  page; renamed on Enter, on leaving the field, or on closing the panel), then two tabs, **Page**
+  and **Layouts**, then the action row (Duplicate, Move left, Move right, Delete) as icon buttons
+  with tooltips. **Page** holds the **Size** tiles (each drawn to scale), **Orientation**
+  (Portrait / Landscape, absent for a page with no orientation), the **Background** swatches and
+  the **Pattern** tiles; **Layouts** holds the layout tiles. The cog opens it on Page; the layout
+  invite opens it on Layouts.
 - **Hover previews**: hovering (or focusing) a background swatch or pattern paints it on the page
   at once; leaving the section puts the page back; a press commits.
 - **On a phone** (the mobile viewport) the panel is a **bottom sheet** (up to 60% of the screen,
@@ -68,8 +71,9 @@ page with no valid `id` or `orientation` is skipped (as today).
   nudged back inside the margins if it pokes out); content that no longer fits is scaled down as
   one, about the page's centre, until it does, its text scaling with it. Nothing is cut off. The
   pages after it move along. One edit, one undo.
-- The page label reads `<name or Page n> · <size label> · <Portrait|Landscape>` (no orientation for
-  a square page; no `Page n` while there is one page and no name).
+- The page label reads `<name or Page n> · <size label> · <Portrait|Landscape>`. Only the paper
+  sizes (A4, US Letter, A3) add the orientation: a square has none, and the post, story and slide
+  labels already say which way they face. No `Page n` while there is one page and no name.
 
 ## Backgrounds
 
@@ -108,9 +112,9 @@ A **layout** is placed onto one page from its panel's **Layouts** section, a gri
 - **Thirteen layouts**, each a complete, editable starting point in the tab's theme. Most open with
   a title and a lead line. A **tall** page (not wider than 1.15 times its height) stacks; a
   **wide** one sets things side by side:
-  1. **Title page**: an eyebrow line, a large title, a subtitle, an image placeholder (below on a
-     tall page, to the right on a wide one) and a footer line.
-  2. **Big number**: one huge figure, its caption, a paragraph and a progress bar.
+  1. **Title page**: an eyebrow line, a large title over a short accent rule, a subtitle, an image
+     placeholder (below on a tall page, to the right on a wide one) and a footer line.
+  2. **Big number**: one huge figure, its caption, a paragraph, a progress bar and a source line.
   3. **Key stats**: two stat rows of three figures, a trend line where the page has room, and a
      Takeaway callout.
   4. **Process**: four steps. Tall: numbered discs down the page joined by arrows, a name and note
@@ -119,7 +123,8 @@ A **layout** is placed onto one page from its panel's **Layouts** section, a gri
      timeline rail with a name and note under each point, and a stat row.
   6. **Comparison**: two columns (Before / After), each a heading over three points with icons,
      and a "The verdict" callout.
-  7. **Chart story**: a bar chart, a progress ring and three takeaways with icons.
+  7. **Chart story**: a captioned bar chart, a progress ring, three takeaways with icons and a
+     source line.
   8. **Top tips**: five tips, each an icon beside a line.
   9. **Quote**: a large quotation mark, the quote in large type and the attribution (a round
      photo, a name and a role) under it.
@@ -138,9 +143,8 @@ A **layout** is placed onto one page from its panel's **Layouts** section, a gri
   foot; Chart story's chart carries a caption naming what it shows.
 - **Nothing floats in empty space**: Quote centres its block down the page; Comparison's rows
   share their column down to the verdict.
-- **Fitted to the page**: a layout is laid out in proportions of the page (margins of 7% of the
-  short side), so it fits any size and orientation; its titles use the fit-to-box text size so they
-  scale with their box.
+- **Fitted to the page**: a layout is laid out in proportions of the page's content box (the page
+  less margins of 7% of its short side), so it fits any size and orientation.
 - **Onto an empty page** a layout is placed straight away. **Onto a page with content** the picker
   asks first, inline: **Replace this page's content?** with **Replace** and **Cancel**. Replace
   removes every element whose centre is on the page (and arrows pinned to one), then places the
@@ -153,8 +157,9 @@ A **layout** is placed onto one page from its panel's **Layouts** section, a gri
   its tooltip); when the page is too small on screen even for that, it hides, as the label does.
 - **Hover previews the layout on the page**: while a tile is hovered (or focused) the page shows
   that layout as it would land, drawn over the whole sheet in the page's background, and the
-  page's own content is hidden meanwhile (left out of the page clip), so the two never mix. It is a picture only: nothing is placed and nothing enters the history; leaving the
-  tiles (or closing the panel) takes it away. While Replace is being asked, that layout stays
+  page's own content is hidden meanwhile (left out of the page clip), so the two never mix. It is
+  a picture only: nothing is placed and nothing enters the history; leaving the tiles (or closing
+  the panel) takes it away. While Replace is being asked, that layout stays
   previewed.
 - **Tiles are the real layout**: each tile draws the layout as built for this page's size and
   orientation, as a wireframe (text as bars, images shaded, icons as dots).
@@ -167,7 +172,7 @@ From the page panel's footer:
   after it, with a copy of every element on it (new ids; arrows pinned between copied elements stay
   pinned between the copies). Pages after it move along, their content with them.
 - **Move left** / **Move right**: swaps the page with its neighbour; both pages' content moves with
-  them. Absent at the row's ends.
+  them. Disabled at the row's ends.
 - **Delete page**: removes the page **and everything on it** (arrows pinned to it too); the pages
   after it close the gap. Offered while there is more than one page.
 - **Rename**: the panel's name field; empty clears the name.
@@ -188,9 +193,10 @@ From the page panel's footer:
   the dragged sheet dims; release moves it there with its content, one edit. Escape cancels.
 - **The label fits its page**: it truncates to the page's width on screen less the title bar's
   buttons, and hides when under 40 px.
-- **Snapping to the page**: while a move or a resize is in hand in Infographic mode, an element
-  snaps to the edges, the centre lines and the margins (7% of the short side) of the page it is
-  on, with the same guides as element-to-element alignment.
+- **Snapping to the pages**: while a move or a resize is in hand in Infographic mode, an element
+  snaps to the edges, the centre lines and the margins (7% of the short side) of every page, with
+  the same guides as element-to-element alignment (not to the pages' spacing: equal-spacing snaps
+  stay element to element).
 
 ## Export
 
@@ -210,9 +216,10 @@ In Infographic mode the Export dialog exports **pages**, not the tab's content b
 
 ## Telemetry
 
-`Tab · Changed ·` `PageSize`, `PageBackground`, `PagePattern`, `PageRenamed`, `PageDuplicated`,
-`PageMoved`, `PageLayout`; `Document · Exported · InfographicPNG / InfographicSVG / InfographicPDF`.
-Never a colour, name or layout content.
+`Tab · Changed ·` `PageAdded`, `PageRemoved`, `PagePortrait`, `PageLandscape`, `PageSize`,
+`PageBackground`, `PagePattern`, `PageRenamed`, `PageDuplicated`, `PageMoved`, `PageLayout`,
+`PagesLaidOut`; `Document · Exported · InfographicPNG / InfographicSVG / InfographicPDF`;
+`UI · Added · PageSlide`; `UI · Opened · SlideDeck`. Never a colour, name or layout content.
 
 ## Into pages
 
