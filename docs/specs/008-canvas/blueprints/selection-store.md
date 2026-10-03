@@ -19,6 +19,10 @@ who re-renders when it changes.
 | `apps/live/components/canvas/Canvas.tsx`                   | `memo`; no `selectedId` / `multiSelectedIds` props                                  |
 | `apps/live/components/canvas/CanvasElementsLayer.tsx`      | No selection props; each view reads its own flags                                   |
 | `apps/live/components/canvas/CanvasSelectionToolbars.tsx`  | Subscribes; runs `deriveCanvasSelection` itself                                     |
+| `apps/live/components/canvas/selection-aware-views.tsx`    | `SelectableBoxedView`, `SelectableArrowView`, `FreeArrowFrame`                      |
+| `apps/live/components/canvas/LayerSelectionChrome.tsx`     | Next-note buttons, quick-connect pluses, union resize box                           |
+| `apps/live/hooks/canvas/useCanvasSelectionView.ts`         | `useCanvasSelectionView`, `CanvasSelectionInput`                                    |
+| `apps/live/components/panels/SlideDeckPanel.tsx`           | Reads the selection it slides from the store                                        |
 | `apps/live/lib/canvas-selection.ts`                        | `deriveCanvasSelection` unchanged; `elementSelectionFlags` added                    |
 
 ## Domain and naming
@@ -90,13 +94,26 @@ multiSelectedIds.size === 0`. Element views compare the three booleans.
 - `reshapingArrowId` changes value when a press lands on an arrow (a pending reshape); that is data,
   and re-renders the canvas as it should.
 - The canvas no longer receives `selectedId` or `multiSelectedIds`. Inside it:
-  - each element view reads `useSelectionOf((s) => elementSelectionFlags(s, id), sameFlags)`;
-    `showHandles` / `showAnchors` are computed in the view from its flags and the layer's
-    non-selection inputs (`editingId`, paint mode, tab lock, read-only, fixed size, table);
-  - `CanvasSelectionToolbars` and the selection chrome subscribe to the whole `Selection` and call
-    `deriveCanvasSelection` themselves;
-  - `useQuickRing`, `useCanvasSelectHandlers`, `useCanvasA11y`, the quick-connect start and the
-    slide deck panel read the store (subscribing where they render, `get()` where they act).
+  - the element layer renders each element through a memoised slot
+    (`components/canvas/selection-aware-views.tsx`): `SelectableBoxedView` and `SelectableArrowView`
+    read `elementSelectionFlags` for their element and hand the unchanged views `isSelected`,
+    `isMultiSelected`, `showHandles` and `showAnchors`; each slot is memoised as the view it wraps
+    (plain `memo`, `arrowViewPropsEqual`), so a layer render costs what it did;
+  - `showHandles` / `showAnchors` come from `elementGrips(element, single, ctx)` in
+    `lib/canvas-selection.ts`, which `deriveCanvasSelection` also uses, so the rule lives once;
+  - `FreeArrowFrame` reads `single` for its arrow and portals the free arrow's move frame;
+  - `LayerSelectionChrome` (the next-note buttons, quick-connect pluses and union resize box) and
+    `CanvasSelectionToolbars` take `selectionInput` (`CanvasSelectionInput`: the derivation's
+    inputs other than the selection, memoised in `Canvas`) and call `useCanvasSelectionView`;
+  - `Canvas` reads the store with `get()` in handlers (`currentSelection`, `readSelection` for
+    `useCanvasSelectHandlers`) and subscribes to one narrow slice, `soleSelectedPathId` (the one
+    selected element when it is a path) for the path tool, which flips only for paths;
+  - `useQuickRing(store)` closes an open ring on a change of the selected element through a store
+    subscription;
+  - `SlideDeckPanel` reads `selectionIds(selectedId, multiSelectedIds)` from the store (compared
+    with `sameMembers`); `useSlideDeck` no longer returns `selectionCount` / `currentSelectionIds`.
+- Above the boundary nothing changes: the editor, the host and its hooks read `selectedId` and
+  `multiSelectedIds` from `useEditorUiState` as before.
 
 ## Interfaces and contracts
 
@@ -118,6 +135,19 @@ export function createSelectionStore(): SelectionStore;
 export type ElementSelectionFlags = { selected: boolean; multi: boolean; single: boolean };
 export function elementSelectionFlags(s: Selection, id: string): ElementSelectionFlags;
 export function sameFlags(a: ElementSelectionFlags, b: ElementSelectionFlags): boolean;
+export function sameMembers(a: ReadonlySet<string>, b: ReadonlySet<string>): boolean;
+export function selectionIds(selectedId: string | null, multi: ReadonlySet<string>): Set<string>;
+
+// apps/live/lib/canvas-selection.ts
+export function elementGrips(
+  el: Element,
+  single: boolean,
+  ctx: GripContext,
+): { handles: boolean; anchors: boolean };
+
+// apps/live/hooks/canvas/useCanvasSelectionView.ts
+export type CanvasSelectionInput = Omit<DeriveInput, 'selectedId' | 'multiSelectedIds'>;
+export function useCanvasSelectionView(input: CanvasSelectionInput): CanvasSelection;
 
 // apps/live/hooks/canvas/useSelectionStore.tsx
 export function SelectionStoreProvider(props: {
