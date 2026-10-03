@@ -65,7 +65,7 @@ export function pageExportFrame(
     // page), so markup inlined beside other pages' (slide thumbnails, the Map) needs its own.
     idPrefix?: string;
     // A document page's Lines, on its writing's baselines inside its margins
-    // (docs/specs/007-editor/article-pages.md "Document style").
+    // (docs/specs/007-editor/article-pages.md "Article style").
     ruling?: { pitch: number; inset: number };
   } = {},
 ): PageExportFrame {

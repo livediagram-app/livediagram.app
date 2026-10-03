@@ -12,7 +12,12 @@
 import {
   arrowLabelFontStack,
   arrowLabelPass,
+  articlesOf,
+  drawingZoneClips,
+  illustratePagesOf,
   isBoxed,
+  isDrawingElement,
+  layOutIllustratePages,
   layerBands,
   layerOpacityOf,
   shade,
@@ -21,6 +26,7 @@ import {
   type BoxedElement,
   type Element,
   type LaidOutPage,
+  type PageRect,
   type Tab,
 } from '@livediagram/document';
 // Shared SVG render helpers (docs/specs/015-api/mcp-server.md §5): moved into the document package so the
@@ -93,6 +99,26 @@ import { pageRulingOf, pageWriting, type PageWriting } from './article/article-e
 import { articleOpsToSvg, drawArticleOps } from './article/article-draw';
 
 // The font ids an export declares, with a document page's writing's faces added.
+// A page export's drawing-zone clips (docs/specs/007-editor/article-pages.md "Zones"): what pokes
+// past a drawing zone's edge is cut off in an export as on the canvas.
+function exportZoneClips(tab: Tab, page: unknown): Map<string, PageRect> {
+  if (!page) return new Map();
+  return drawingZoneClips(
+    layOutIllustratePages(illustratePagesOf(tab)),
+    articlesOf(tab),
+    tab.elements,
+    isDrawingElement,
+  );
+}
+
+// An element's SVG markup cut off at its drawing zone, when it has one.
+function svgZoneClipped(id: string, svg: string, clips: Map<string, PageRect>): string {
+  const r = clips.get(id);
+  if (!r || !svg) return svg;
+  const cid = `lvd-zc-${id}`.replace(/[^a-zA-Z0-9-]/g, '');
+  return `<clipPath id="${cid}"><rect x="${r2(r.x)}" y="${r2(r.y)}" width="${r2(r.width)}" height="${r2(r.height)}"/></clipPath><g clip-path="url(#${cid})">${svg}</g>`;
+}
+
 function withWritingFonts(ids: string[], writing: PageWriting | null): string[] {
   return writing ? [...new Set([...ids, ...writing.fonts])] : ids;
 }
@@ -162,6 +188,7 @@ export async function renderTabToCanvas(
     : null;
   // A document page's writing (docs/specs/007-editor/article-pages.md "Everywhere a page goes").
   const writing = opts.page ? pageWriting(tab, opts.page) : null;
+  const clips = exportZoneClips(tab, opts.page);
   const reaches = (el: Element) => !frame || frame.reaches(el, tab.elements);
   // Hidden layers drop out of the export (bounds included) unless the
   // dialog's include-hidden option is on (docs/specs/006-document/layers.md). `ordered` is the
@@ -323,30 +350,47 @@ export async function renderTabToCanvas(
   };
   for (const { el, alpha } of ordered) {
     if (el.type === 'arrow') {
-      const svg = svgArrow(el, tab.elements, surface, tabFont, labels, undefined, els);
+      const svg = svgZoneClipped(
+        el.id,
+        svgArrow(el, tab.elements, surface, tabFont, labels, undefined, els),
+        clips,
+      );
       arrowRun.push(alpha < 1 ? `<g opacity="${r2(alpha)}">${svg}</g>` : svg);
       continue;
     }
     await flushArrows();
+    // Cut off at its drawing zone, as on the canvas.
+    const clip = clips.get(el.id);
+    if (clip) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(clip.x, clip.y, clip.width, clip.height);
+      ctx.clip();
+    }
+    drawOne(ctx, el, alpha);
+    if (clip) ctx.restore();
+  }
+  await flushArrows();
+  return canvas;
+
+  function drawOne(c: CanvasRenderingContext2D, el: BoxedElement, alpha: number) {
     const raster = rasterImages.get(el.id);
     if (raster) {
       // The raster bakes the ELEMENT's opacity into its markup; the
       // band's factor applies here.
-      ctx.globalAlpha = alpha;
-      ctx.drawImage(
+      c.globalAlpha = alpha;
+      c.drawImage(
         raster.image,
         el.x - raster.pad,
         el.y - raster.pad,
         el.width + raster.pad * 2,
         el.height + raster.pad * 2,
       );
-      ctx.globalAlpha = 1;
-      continue;
+      c.globalAlpha = 1;
+      return;
     }
-    drawBoxed(ctx, el, resolveImage, alpha, tabFont, surface);
+    drawBoxed(c, el, resolveImage, alpha, tabFont, surface);
   }
-  await flushArrows();
-  return canvas;
 }
 
 // --- Shared boxed-element export description --------------------------
@@ -419,6 +463,7 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
     ? pageExportFrame(opts.page, { ruling: pageRulingOf(tab, opts.page) })
     : null;
   const writing = opts.page ? pageWriting(tab, opts.page) : null;
+  const clips = exportZoneClips(tab, opts.page);
   const reaches = (el: Element) => !frame || frame.reaches(el, tab.elements);
   const els = (
     opts.hiddenLayers ? tab.elements : visibleLayerElements(tab.elements, tab.layers)
@@ -500,17 +545,24 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
     for (const el of band.elements) {
       if (el.type !== 'arrow')
         inner.push(
-          svgBoxed(el, {
-            resolveImageHref,
-            resolveIconArt: resolveIconArtLoaded,
-            resolveStickerArt: resolveStickerArtLoaded,
-            tabFont: tab.font,
-            surface,
-          }),
+          svgZoneClipped(
+            el.id,
+            svgBoxed(el, {
+              resolveImageHref,
+              resolveIconArt: resolveIconArtLoaded,
+              resolveStickerArt: resolveStickerArtLoaded,
+              tabFont: tab.font,
+              surface,
+            }),
+            clips,
+          ),
         );
     }
     for (const el of band.elements) {
-      if (el.type === 'arrow') inner.push(svgArrow(el, tab.elements, surface, tab.font, labels));
+      if (el.type === 'arrow')
+        inner.push(
+          svgZoneClipped(el.id, svgArrow(el, tab.elements, surface, tab.font, labels), clips),
+        );
     }
     parts.push(wrapBand(layerOpacityOf(band.layer), inner));
   }
