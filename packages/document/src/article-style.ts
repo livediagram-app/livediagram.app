@@ -149,7 +149,7 @@ export function resolveArticleStyle(style: ArticleStyle | undefined): ResolvedAr
     paragraphSpacing: style?.paragraphSpacing ?? base.paragraphSpacing,
     rules: style?.rules ?? base.rules,
     margins: style?.margins ?? 'normal',
-    pageNumbers: style?.pageNumbers ?? true,
+    pageNumbers: style?.pageNumbers ?? false,
   };
 }
 

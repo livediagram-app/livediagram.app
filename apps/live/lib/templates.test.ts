@@ -28,7 +28,7 @@ import { getTheme } from './themes';
 
 // The catalogue's shape (count + default/extra split + no kind
 // drift) is load-bearing across both the picker and the marketing
-// site. docs/specs/019-marketing/marketing-site.md pins "63 templates (11 default + 52 extra)" and
+// site. docs/specs/019-marketing/marketing-site.md pins "64 templates (11 default + 53 extra)" and
 // docs/specs/008-canvas/canvas-and-palette.md catalogues the picker UX. These tests pin the array so
 // either the spec or the catalogue can't silently drift away from
 // the other.
@@ -101,24 +101,25 @@ describe('TEMPLATES catalogue', () => {
     'objectives-planner',
     'floor-plan',
     'whiteboard',
+    'article',
   ];
 
   // Hidden templates are buildable but never listed, so every user-facing
-  // count (docs/specs/019-marketing/marketing-site.md's "63 templates", the picker grids, the MCP catalogue)
+  // count (docs/specs/019-marketing/marketing-site.md's "64 templates", the picker grids, the MCP catalogue)
   // is over the listed subset. The mechanism is generic; nothing ships
   // hidden today (the docs/specs/007-editor/guided-tour-sample.md guided-tour sample used it until the
   // interactive tour, docs/specs/007-editor/editor-tour.md, superseded it).
   const listed = TEMPLATES.filter((t) => !t.hidden);
 
-  it('lists exactly 63 templates (11 default + 52 extra, matches docs/specs/019-marketing/marketing-site.md and docs/specs/008-canvas/canvas-and-palette.md)', () => {
-    expect(listed).toHaveLength(63);
+  it('lists exactly 64 templates (11 default + 53 extra, matches docs/specs/019-marketing/marketing-site.md and docs/specs/008-canvas/canvas-and-palette.md)', () => {
+    expect(listed).toHaveLength(64);
   });
 
-  it('splits cleanly into 11 default + 52 extra (`extra` is catalogue metadata; the picker browses by category)', () => {
+  it('splits cleanly into 11 default + 53 extra (`extra` is catalogue metadata; the picker browses by category)', () => {
     const defaults = listed.filter((t) => !t.extra);
     const extras = listed.filter((t) => t.extra);
     expect(defaults).toHaveLength(11);
-    expect(extras).toHaveLength(52);
+    expect(extras).toHaveLength(53);
   });
 
   it('ships no hidden templates (the flag is generic; docs/specs/007-editor/guided-tour-sample.md was retired by docs/specs/007-editor/editor-tour.md)', () => {
@@ -151,7 +152,8 @@ describe('TEMPLATES catalogue', () => {
       // 'blank' and 'whiteboard' are intentionally empty (docs/specs/007-editor/new-document-route.md,
       // docs/specs/023-draw-mode/draw-mode.md); every other kind seeds content. Either way the
       // switch must handle the union member.
-      const empty = kind === 'blank' || kind === 'whiteboard';
+      // An article's writing is tab data, not elements (templateCanvasOverrides).
+      const empty = kind === 'blank' || kind === 'whiteboard' || kind === 'article';
       expect(tab.elements.length).toBeGreaterThan(empty ? -1 : 0);
     }
   });
@@ -166,6 +168,14 @@ describe('templateCanvasOverrides', () => {
       opensIn: 'draw',
       backgroundPattern: 'graph',
     });
+  });
+
+  it('makes an article that opens in Illustrate on one article page of writing', () => {
+    // docs/specs/007-editor/article-pages.md: the template's page and writing are tab data.
+    const o = templateCanvasOverrides('article');
+    expect(o.opensIn).toBe('illustrate');
+    expect(o.pages).toEqual([expect.objectContaining({ kind: 'article', flow: 'art-brief' })]);
+    expect(o.articles?.['art-brief']?.blocks.length).toBeGreaterThan(5);
   });
 
   it('makes an event-storming board already settled on its lanes', () => {

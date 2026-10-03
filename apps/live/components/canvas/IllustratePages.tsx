@@ -92,7 +92,7 @@ export function IllustratePages({
     if (!page.flow || !articles?.flows[page.flow]) return null;
     const style = resolveArticleStyle(articleStyleOf(page));
     const own = pages.filter((p) => p.flow === page.flow);
-    if (!style.pageNumbers || own.length < 2) return null;
+    if (!style.pageNumbers) return null;
     return {
       n: own.findIndex((p) => p.id === page.id) + 1,
       bottom: articleMarginPx(articleStyleOf(page)) / 2 - 8,
@@ -289,9 +289,10 @@ export function IllustratePages({
             view.setLayoutPreview(layout ? { pageId: open.id, layout } : null)
           }
           onClose={close}
-          documentStyle={
+          articleStyle={(part) =>
             open.flow && articles?.flows[open.flow] ? (
               <ArticleStyleSection
+                part={part}
                 style={articles.flows[open.flow]!.style}
                 themeAccent={view.themeAccent}
                 onChange={(change) => articles.setStyle(open.flow!, change)}

@@ -98,6 +98,7 @@ const ALL_KINDS = [
   'meeting-agenda',
   'objectives-planner',
   'whiteboard',
+  'article',
 ] as const satisfies readonly TemplateKind[];
 
 // Real exhaustiveness check: any TemplateKind missing from
@@ -164,7 +165,7 @@ describe('buildTemplate translation invariance', () => {
   // 'blank' is intentionally empty (no seeded element, docs/specs/007-editor/new-document-route.md), so it has no
   // coordinates to shift — excluded from this invariance check (it stays in
   // ALL_KINDS above for the exhaustiveness assertion).
-  it.each(ALL_KINDS.filter((k) => k !== 'blank' && k !== 'whiteboard'))(
+  it.each(ALL_KINDS.filter((k) => k !== 'blank' && k !== 'whiteboard' && k !== 'article'))(
     '%s: every coordinate shifts by (cx, cy)',
     (kind) => {
       const atOrigin = buildTemplate(kind, 0, 0);

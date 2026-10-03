@@ -68,7 +68,7 @@ livediagram file that holds tabs ([Document](../006-document/document.md)). The 
   that page, "This tab has reached 100 pages: the writing below this line is hidden", until
   pages are freed. Nothing is lost: the blocks are kept.
 - **Page numbers** sit centred in the bottom margin of each page of an article ("2"), in small
-  muted type, when the style has them (on by default) and the article has more than one page.
+  muted type, whenever the style has them (off by default), one page or many.
   They are a view, never elements; exports draw them.
 
 ## Blocks
@@ -289,8 +289,11 @@ A visitor, a locked tab, or a tab with no articles switches straight away.
 
 ## Article style
 
-Set from the page panel's **Style** tab (an article page's panel has **Page** and **Style**; it
-has no Layouts). Every change is one edit, previewed on the page while a choice is hovered.
+Set from the page panel's **Style** and **Text** tabs (an article page's panel has **Page**,
+**Style** and **Text**; it has no Layouts). **Style** holds Looks, Accent, Headings in accent,
+Margins and Page numbers; **Text** holds Fonts, then Text size, Line spacing, Paragraph spacing and
+Lines under text (under **Size and Spacing**). Every change is one edit, previewed on the page while
+a choice is hovered.
 
 - **Looks** (a row of cards, each drawn as a miniature page in that look):
   - **Clean**: Inter throughout; ink headings; no rules; normal spacing.
@@ -311,7 +314,7 @@ has no Layouts). Every change is one edit, previewed on the page while a choice 
   every heading), a hairline in the accent under the block's last line.
 - **Margins**: Narrow (48 px), Normal (96 px, default), Wide (144 px); the top margin is never
   less than 72 px, room for the page toolbar.
-- **Page numbers**: on (default) or off.
+- **Page numbers**: on or off (default).
 - **Ruled lines**: the page's **Lines** pattern on an article page is drawn on the text's own
   baselines, at the body line height, inside the margins: lined paper the writing sits on.
 

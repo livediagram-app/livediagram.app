@@ -3,6 +3,7 @@ import {
   type BackgroundPattern,
   type Tab,
 } from '@livediagram/document';
+import { articleTemplateOverrides } from './article-template';
 import { titleCase } from '@livediagram/api-schema';
 import { templateLayers } from './template-layers';
 
@@ -163,7 +164,10 @@ export type TemplateKind =
   // Whiteboard (docs/specs/023-draw-mode/draw-mode.md): a blank tab of the whiteboard KIND, drawn on
   // with a dock of pens rather than the palette. Shown beside Blank as a
   // quick-pick, never inside a category grid.
-  | 'whiteboard';
+  | 'whiteboard'
+  // Article (docs/specs/007-editor/article-pages.md): a tab that opens in Illustrate mode on one
+  // article page, written as a short project brief.
+  | 'article';
 
 export type TemplateDescriptor = {
   kind: TemplateKind;
@@ -593,6 +597,13 @@ export const TEMPLATES: TemplateDescriptor[] = [
     extra: true,
   },
   {
+    kind: 'article',
+    title: 'Article',
+    description:
+      'Write on pages, like a doc: a project brief with headings and lists, room for charts and drawings in the text.',
+    extra: true,
+  },
+  {
     kind: 'objectives-planner',
     title: 'Objectives planner',
     description:
@@ -709,6 +720,7 @@ const TEMPLATE_CATEGORY: Record<TemplateKind, TemplateCategory> = {
   'raci-matrix': 'project-management',
   'risk-matrix': 'project-management',
   'meeting-agenda': 'project-management',
+  article: 'project-management',
   'objectives-planner': 'project-management',
   // Strategy: business / product analysis, decision frameworks + set
   // relationships (Venn).
@@ -821,6 +833,7 @@ export const POPULAR_TEMPLATE_KINDS: readonly TemplateKind[] = [
   'sailboat',
   'flowchart',
   'orgchart',
+  'article',
 ];
 
 export function templateCategory(kind: TemplateKind): TemplateCategory {
@@ -953,6 +966,8 @@ const TEMPLATE_PATTERNS: Partial<Record<TemplateKind, BackgroundPattern>> = {
   'risk-matrix': 'graph',
   'user-persona': 'grid',
   'meeting-agenda': 'grid',
+  // An article's surround stays plain: the page is the paper.
+  article: 'blank',
   // A personal planning sheet, read closely like a page: even dots behind
   // its cards read as noise, so it gets a clean canvas.
   'objectives-planner': 'blank',
@@ -1009,6 +1024,8 @@ export function templateCanvasOverrides(kind: TemplateKind): Partial<Tab> {
   // The Whiteboard template is a general tab that OPENS in Draw mode
   // (docs/specs/007-editor/editor-modes.md "Where the mode lives"); whiteboarding is no kind.
   if (kind === 'whiteboard') overrides.opensIn = 'draw';
+  // The Article opens in Illustrate on its one article page (docs/specs/007-editor/article-pages.md).
+  if (kind === 'article') Object.assign(overrides, articleTemplateOverrides());
   if (kind === 'event-storming') {
     overrides.kind = 'event-storming';
     // The seed note is built on a lane, so the board is born settled and the

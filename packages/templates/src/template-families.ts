@@ -71,6 +71,7 @@ const TEMPLATE_FAMILY: Record<TemplateKind, TemplateFamily | null> = {
   'meeting-agenda': null,
   'objectives-planner': null,
   whiteboard: null,
+  article: null,
 };
 
 /** The family a document made from this template belongs to; null for no template or no family. */

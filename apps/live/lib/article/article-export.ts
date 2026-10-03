@@ -30,7 +30,7 @@ export function pageWriting(tab: Tab, page: LaidOutPage): PageWriting | null {
   const ops = snap.filter((op) => (op.k === 'line' ? on(op.x1, op.y1) : on(op.x, op.y)));
   const style = resolveArticleStyle(doc.style);
   const own = illustratePagesOf(tab).filter((p) => p.flow === page.flow);
-  if (style.pageNumbers && own.length > 1) {
+  if (style.pageNumbers) {
     const n = own.findIndex((p) => p.id === page.id) + 1;
     ops.push({
       k: 'text',

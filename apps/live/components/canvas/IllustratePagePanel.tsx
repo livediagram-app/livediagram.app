@@ -39,7 +39,7 @@ const GAP = 6;
 const PAGE_EASE_MS = 200;
 
 export type PagePreview = { pageId: string; patch: Partial<PageBackground> } | null;
-export type PagePanelTab = 'page' | 'layouts' | 'style';
+export type PagePanelTab = 'page' | 'layouts' | 'style' | 'text';
 
 export function IllustratePagePanel({
   page,
@@ -51,11 +51,11 @@ export function IllustratePagePanel({
   onPreview,
   onLayoutPreview,
   onClose,
-  documentStyle = null,
+  articleStyle,
 }: {
   page: LaidOutPage;
-  // A document page's Style tab (docs/specs/007-editor/article-pages.md "Document style").
-  documentStyle?: ReactNode;
+  // An article page's Style and Text tabs (docs/specs/007-editor/article-pages.md "Article style").
+  articleStyle?: (part: 'style' | 'text') => ReactNode;
   count: number;
   // The cog the panel hangs from, looked up when placed.
   getAnchor: () => HTMLElement | undefined;
@@ -71,7 +71,8 @@ export function IllustratePagePanel({
   const mobile = useIsMobileViewport();
   // A tab a page of this kind lacks (Layouts on a document page) opens as Page.
   const [tab, setTab] = useState<PagePanelTab>(
-    (initialTab === 'layouts' && page.flow) || (initialTab === 'style' && !page.flow)
+    (initialTab === 'layouts' && page.flow) ||
+      ((initialTab === 'style' || initialTab === 'text') && !page.flow)
       ? 'page'
       : initialTab,
   );
@@ -171,8 +172,8 @@ export function IllustratePagePanel({
             onPreview={preview}
           />
         </>
-      ) : tab === 'style' ? (
-        documentStyle
+      ) : tab === 'style' || tab === 'text' ? (
+        (articleStyle?.(tab) ?? null)
       ) : (
         <LayoutsSection
           page={page}
@@ -237,20 +238,26 @@ function PanelTabs({
   onTab,
 }: {
   tab: PagePanelTab;
-  // A document page's second tab is Style; an infographic page's is Layouts.
+  // An article page's tabs after Page are Style and Text; an infographic page's is Layouts.
   document: boolean;
   onTab: (t: PagePanelTab) => void;
 }) {
-  const tabs: [PagePanelTab, string][] = [
-    ['page', 'Page'],
-    document ? ['style', 'Style'] : ['layouts', 'Layouts'],
-  ];
+  const tabs: [PagePanelTab, string][] = document
+    ? [
+        ['page', 'Page'],
+        ['style', 'Style'],
+        ['text', 'Text'],
+      ]
+    : [
+        ['page', 'Page'],
+        ['layouts', 'Layouts'],
+      ];
   return (
     <div className="px-3 pt-2">
       <div
         role="group"
         aria-label="Page panel section"
-        className={`relative grid grid-cols-2 rounded-lg p-0.5 ${SEGMENT_TRACK}`}
+        className={`relative grid ${tabs.length === 3 ? 'grid-cols-3' : 'grid-cols-2'} rounded-lg p-0.5 ${SEGMENT_TRACK}`}
       >
         <SegmentSlider
           count={tabs.length}

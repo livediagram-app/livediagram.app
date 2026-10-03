@@ -33,11 +33,15 @@ export const ARTICLE_ACCENTS: readonly { label: string; value: string }[] = [
 export type ArticleStyleChange = { look: ArticleLookId } | { patch: Partial<ArticleStyle> };
 
 export function ArticleStyleSection({
+  part,
   style,
   themeAccent,
   onChange,
   onPreview,
 }: {
+  // Which of the panel's two article tabs: Style (looks, accent, the page), or Text (fonts, size,
+  // spacing, lines under the text).
+  part: 'style' | 'text';
   style: ArticleStyle | undefined;
   themeAccent: string;
   onChange: (change: ArticleStyleChange) => void;
@@ -49,129 +53,136 @@ export function ArticleStyleSection({
   const preview = (patch: Partial<ArticleStyle>) => onPreview({ ...style, ...patch });
   return (
     <div onPointerLeave={() => onPreview(null)}>
-      <PanelSection title="Looks">
-        <div role="radiogroup" aria-label="Article look" className="grid grid-cols-5 gap-1.5">
-          {ARTICLE_LOOK_IDS.map((id) => (
-            <LookCard
-              key={id}
-              id={id}
-              accent={accent}
-              selected={style?.look === id}
-              onPick={() => onChange({ look: id })}
-              onHover={() => onPreview({ ...style, look: id, ...lookFields(id) })}
+      {part === 'style' ? (
+        <>
+          <PanelSection title="Looks">
+            <div role="radiogroup" aria-label="Article look" className="grid grid-cols-5 gap-1.5">
+              {ARTICLE_LOOK_IDS.map((id) => (
+                <LookCard
+                  key={id}
+                  id={id}
+                  accent={accent}
+                  selected={style?.look === id}
+                  onPick={() => onChange({ look: id })}
+                  onHover={() => onPreview({ ...style, look: id, ...lookFields(id) })}
+                />
+              ))}
+            </div>
+          </PanelSection>
+          <PanelSection title="Accent">
+            <div
+              role="radiogroup"
+              aria-label="Accent colour"
+              className="flex flex-wrap items-center gap-1.5"
+            >
+              <Swatch
+                label="Theme"
+                color={themeAccent}
+                selected={!style?.accent}
+                onPick={() => onChange({ patch: { accent: undefined } })}
+                onHover={() => preview({ accent: undefined })}
+                ring
+              />
+              {ARTICLE_ACCENTS.map((a) => (
+                <Swatch
+                  key={a.value}
+                  label={a.label}
+                  color={a.value}
+                  selected={style?.accent?.toLowerCase() === a.value}
+                  onPick={() => onChange({ patch: { accent: a.value } })}
+                  onHover={() => preview({ accent: a.value })}
+                />
+              ))}
+            </div>
+            <Toggle
+              label="Headings in the Accent"
+              on={r.accentHeadings}
+              onChange={(v) => onChange({ patch: { accentHeadings: v } })}
             />
-          ))}
-        </div>
-      </PanelSection>
-      <PanelSection title="Fonts">
-        <div className="grid grid-cols-2 gap-2">
-          <FontSelect
-            label="Headings"
-            value={r.headingFont}
-            onChange={(f) => onChange({ patch: { headingFont: f } })}
-          />
-          <FontSelect
-            label="Body"
-            value={r.bodyFont}
-            onChange={(f) => onChange({ patch: { bodyFont: f } })}
-          />
-        </div>
-      </PanelSection>
-      <PanelSection title="Accent">
-        <div
-          role="radiogroup"
-          aria-label="Accent colour"
-          className="flex flex-wrap items-center gap-1.5"
-        >
-          <Swatch
-            label="Theme"
-            color={themeAccent}
-            selected={!style?.accent}
-            onPick={() => onChange({ patch: { accent: undefined } })}
-            onHover={() => preview({ accent: undefined })}
-            ring
-          />
-          {ARTICLE_ACCENTS.map((a) => (
-            <Swatch
-              key={a.value}
-              label={a.label}
-              color={a.value}
-              selected={style?.accent?.toLowerCase() === a.value}
-              onPick={() => onChange({ patch: { accent: a.value } })}
-              onHover={() => preview({ accent: a.value })}
+          </PanelSection>
+          <PanelSection title="Page">
+            <Segmented
+              label="Margins"
+              value={r.margins}
+              options={[
+                ['narrow', 'Narrow'],
+                ['normal', 'Normal'],
+                ['wide', 'Wide'],
+              ]}
+              onChange={(v) => onChange({ patch: { margins: v } })}
+              onHover={(v) => preview({ margins: v })}
             />
-          ))}
-        </div>
-        <Toggle
-          label="Headings in the Accent"
-          on={r.accentHeadings}
-          onChange={(v) => onChange({ patch: { accentHeadings: v } })}
-        />
-      </PanelSection>
-      <PanelSection title="Text">
-        <Segmented
-          label="Text Size"
-          value={r.textSize}
-          options={[
-            ['small', 'Small'],
-            ['normal', 'Normal'],
-            ['large', 'Large'],
-          ]}
-          onChange={(v) => onChange({ patch: { textSize: v } })}
-          onHover={(v) => preview({ textSize: v })}
-        />
-        <Segmented
-          label="Line Spacing"
-          value={r.lineSpacing}
-          options={[
-            ['single', 'Single'],
-            ['onehalf', '1.5'],
-            ['double', 'Double'],
-          ]}
-          onChange={(v) => onChange({ patch: { lineSpacing: v } })}
-          onHover={(v) => preview({ lineSpacing: v })}
-        />
-        <Segmented
-          label="Paragraph Spacing"
-          value={r.paragraphSpacing}
-          options={[
-            ['none', 'None'],
-            ['normal', 'Normal'],
-            ['wide', 'Wide'],
-          ]}
-          onChange={(v) => onChange({ patch: { paragraphSpacing: v } })}
-          onHover={(v) => preview({ paragraphSpacing: v })}
-        />
-        <Segmented
-          label="Lines Under Text"
-          value={r.rules}
-          options={[
-            ['none', 'None'],
-            ['title', 'Title'],
-            ['headings', 'Headings'],
-          ]}
-          onChange={(v) => onChange({ patch: { rules: v } })}
-          onHover={(v) => preview({ rules: v })}
-        />
-      </PanelSection>
-      <PanelSection title="Page">
-        <Segmented
-          label="Margins"
-          value={r.margins}
-          options={[
-            ['narrow', 'Narrow'],
-            ['normal', 'Normal'],
-            ['wide', 'Wide'],
-          ]}
-          onChange={(v) => onChange({ patch: { margins: v } })}
-          onHover={(v) => preview({ margins: v })}
-        />
-        <Toggle
-          label="Page Numbers"
-          on={r.pageNumbers}
-          onChange={(v) => onChange({ patch: { pageNumbers: v } })}
-        />
-      </PanelSection>
+            <Toggle
+              label="Page Numbers"
+              on={r.pageNumbers}
+              onChange={(v) => onChange({ patch: { pageNumbers: v } })}
+            />
+          </PanelSection>
+        </>
+      ) : (
+        <>
+          <PanelSection title="Fonts">
+            <div className="grid grid-cols-2 gap-2">
+              <FontSelect
+                label="Headings"
+                value={r.headingFont}
+                onChange={(f) => onChange({ patch: { headingFont: f } })}
+              />
+              <FontSelect
+                label="Body"
+                value={r.bodyFont}
+                onChange={(f) => onChange({ patch: { bodyFont: f } })}
+              />
+            </div>
+          </PanelSection>
+          <PanelSection title="Size and Spacing">
+            <Segmented
+              label="Text Size"
+              value={r.textSize}
+              options={[
+                ['small', 'Small'],
+                ['normal', 'Normal'],
+                ['large', 'Large'],
+              ]}
+              onChange={(v) => onChange({ patch: { textSize: v } })}
+              onHover={(v) => preview({ textSize: v })}
+            />
+            <Segmented
+              label="Line Spacing"
+              value={r.lineSpacing}
+              options={[
+                ['single', 'Single'],
+                ['onehalf', '1.5'],
+                ['double', 'Double'],
+              ]}
+              onChange={(v) => onChange({ patch: { lineSpacing: v } })}
+              onHover={(v) => preview({ lineSpacing: v })}
+            />
+            <Segmented
+              label="Paragraph Spacing"
+              value={r.paragraphSpacing}
+              options={[
+                ['none', 'None'],
+                ['normal', 'Normal'],
+                ['wide', 'Wide'],
+              ]}
+              onChange={(v) => onChange({ patch: { paragraphSpacing: v } })}
+              onHover={(v) => preview({ paragraphSpacing: v })}
+            />
+            <Segmented
+              label="Lines Under Text"
+              value={r.rules}
+              options={[
+                ['none', 'None'],
+                ['title', 'Title'],
+                ['headings', 'Headings'],
+              ]}
+              onChange={(v) => onChange({ patch: { rules: v } })}
+              onHover={(v) => preview({ rules: v })}
+            />
+          </PanelSection>
+        </>
+      )}
     </div>
   );
 }
