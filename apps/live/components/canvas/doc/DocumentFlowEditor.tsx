@@ -11,7 +11,6 @@
 import { useEffect, useLayoutEffect, useRef, type CSSProperties } from 'react';
 import {
   EditorState,
-  NodeSelection,
   Selection,
   TextSelection,
   type Command,
@@ -357,11 +356,25 @@ export default function DocumentFlowEditor(props: DocumentFlowEditorProps) {
           const block = blockAt(view.state.selection.from);
           if (block) at = block.end;
         }
-        const tr = view.state.tr.insert(at, node);
-        // Always somewhere to write after it.
+        // An empty paragraph beside the boundary, with the caret in it, gives its place up.
+        const caretBlock = blockAt(view.state.selection.from);
+        const emptyAt = (start: number) => {
+          const n = doc.nodeAt(start);
+          return n?.type === docSchema.nodes.paragraph && n.content.size === 0 ? n : null;
+        };
+        let replaceTo = at;
+        if (caretBlock && view.state.selection.empty) {
+          const n = emptyAt(caretBlock.start);
+          if (n && (caretBlock.end === at || caretBlock.start === at)) {
+            at = caretBlock.start;
+            replaceTo = caretBlock.end;
+          }
+        }
+        const tr = view.state.tr.replaceWith(at, replaceTo, node);
+        // Always somewhere to write after it; the caret goes there, so writing carries on below.
         if (at + node.nodeSize >= tr.doc.content.size)
           tr.insert(tr.doc.content.size, docSchema.nodes.paragraph!.create());
-        tr.setSelection(NodeSelection.create(tr.doc, at));
+        tr.setSelection(TextSelection.near(tr.doc.resolve(at + node.nodeSize + 1)));
         view.dispatch(tr);
         const el = view.dom.querySelector<HTMLElement>(`[data-block-id="${CSS.escape(id)}"]`);
         if (!el) return null;

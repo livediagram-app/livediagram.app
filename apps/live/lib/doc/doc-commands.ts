@@ -427,6 +427,8 @@ export type DocSelectionState = {
   color: string | null;
   highlight: string | null;
   inText: boolean;
+  // The zone selected as a whole in the writing, if one is.
+  zoneId: string | null;
 };
 
 export function selectionStateOf(state: EditorState): DocSelectionState {
@@ -478,6 +480,10 @@ export function selectionStateOf(state: EditorState): DocSelectionState {
     color,
     highlight,
     inText: !!first && (isTextBlock(first) || first.type === CODE),
+    zoneId:
+      state.selection instanceof NodeSelection && state.selection.node.type === S.nodes.zone
+        ? (state.selection.node.attrs.id as string)
+        : null,
   };
 }
 

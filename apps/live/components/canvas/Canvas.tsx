@@ -19,7 +19,7 @@ import { useQuickRing } from '@/hooks/canvas/useQuickRing';
 import { useZoomControls } from '@/hooks/canvas/useZoomControls';
 import { usePaletteDrop } from '@/hooks/canvas/usePaletteDrop';
 import { isDarkCanvas } from '@/lib/dark-canvas';
-import { isEventStormingTab } from '@livediagram/document';
+import { isDrawingElement, isEventStormingTab, zoneAnchorOf } from '@livediagram/document';
 import { getTheme } from '@/lib/themes';
 import { CanvasSelectionToolbars } from '@/components/canvas/CanvasSelectionToolbars';
 // Lazy-load TemplatePicker (1163 lines + its theme / share helpers)
@@ -230,6 +230,11 @@ export function Canvas(props: CanvasProps) {
   // (docs/specs/008-canvas/arrow-labels.md). Laid out here, not in the element
   // layer, because the selection toolbars clear a label as part of its arrow.
   const fontsReady = useFontsReady();
+  // The selection as one set, for a document zone's bar (DocumentFlows).
+  const docSelectedIds = useMemo(
+    () => new Set([...multiSelectedIds, ...(selectedId ? [selectedId] : [])]),
+    [multiSelectedIds, selectedId],
+  );
   const arrowLabels = useArrowLabelLayouts(elements, hasArrows, props.tabFont, fontsReady);
 
   // Selection-display derivation (primary element, bounds, and every
@@ -274,6 +279,24 @@ export function Canvas(props: CanvasProps) {
     unionResizePrimaryId,
     showUnionResize,
   } = canvasSelection;
+
+  // An object in a document's writing (a chart, an image, a table) connects to nothing: no
+  // quick-connect pluses on it (docs/specs/007-editor/document-pages.md "Zones").
+  const docPages = props.illustratePages?.pages;
+  const plusAllowed = useMemo(() => {
+    if (!showPlus || !selectedId || !docPages?.some((p) => p.flow)) return showPlus;
+    const el = elements.find((e) => e.id === selectedId);
+    if (!el || isDrawingElement(el)) return true;
+    const at = zoneAnchorOf(el, elements);
+    return !docPages.some(
+      (p) =>
+        p.flow &&
+        at.x >= p.rect.x &&
+        at.x <= p.rect.x + p.rect.width &&
+        at.y >= p.rect.y &&
+        at.y <= p.rect.y + p.rect.height,
+    );
+  }, [showPlus, selectedId, docPages, elements]);
 
   // Spotlight presenter tool (docs/specs/008-canvas/canvas-and-palette.md): screen-space light position +
   // radius. Local to Canvas so the click handlers, the pointer tracker, and
@@ -745,6 +768,8 @@ export function Canvas(props: CanvasProps) {
             view={props.illustratePages}
             zoom={viewportZoom}
             interactive={!pendingDraw && canvasTool !== 'spotlight' && canvasTool !== 'avatar'}
+            selectedIds={docSelectedIds}
+            elements={elements}
           />
         ) : null}
         <CanvasStillProvider still={props.editorMode === 'draw'}>
@@ -776,7 +801,7 @@ export function Canvas(props: CanvasProps) {
                 showAnchorsFor={showAnchorsFor}
                 badgeColor={badgeColor}
                 selectionBounds={selectionBounds}
-                showPlus={showPlus}
+                showPlus={plusAllowed}
                 showUnionResize={showUnionResize}
                 unionResizeBounds={unionResizeBounds}
                 unionResizePrimaryId={unionResizePrimaryId}

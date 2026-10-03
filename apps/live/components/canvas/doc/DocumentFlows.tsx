@@ -6,13 +6,24 @@
 // once the tab has a document: the editor's code (ProseMirror) is not part of the canvas until a
 // document asks for it.
 import { lazy, Suspense, useMemo } from 'react';
-import { docMarginPx, pageFillTone, pageIsDark, type LaidOutPage } from '@livediagram/document';
+import {
+  docMarginPx,
+  pageFillTone,
+  pageIsDark,
+  zoneAnchorOf,
+  zoneCanvasRect,
+  type DocZoneBlock,
+  type Element,
+  type LaidOutPage,
+  type PageRect,
+} from '@livediagram/document';
 import type { IllustratePagesView } from '@/hooks/editor/useIllustratePages';
 import { pagesClipPath } from '@/components/canvas/IllustratePageClip';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import type { DocInk } from '@/lib/doc/doc-style-vars';
-import { requestDocLink } from '@/lib/doc/doc-editor-store';
+import { requestDocLink, useActiveDoc } from '@/lib/doc/doc-editor-store';
 import { PageToolbar } from './PageToolbar';
+import { ZoneBar } from './ZoneBar';
 
 const DocumentFlowEditor = lazy(() => import('./DocumentFlowEditor'));
 
@@ -20,11 +31,16 @@ export function DocumentFlows({
   view,
   zoom,
   interactive,
+  selectedIds,
+  elements,
 }: {
   view: IllustratePagesView;
   zoom: number;
   // Whether presses on the writing are the writing's (no drawing tool in hand, not zen).
   interactive: boolean;
+  // The canvas's selection and elements: a selection all in one zone shows its zone bar.
+  selectedIds: ReadonlySet<string>;
+  elements: readonly Element[];
 }) {
   const docs = view.documents;
   const surface = useCanvasSurface();
@@ -40,46 +56,113 @@ export function DocumentFlows({
     }
     return out;
   }, [row]);
+  const active = useActiveDoc();
+  const target = docs?.editable
+    ? zoneTarget(
+        byFlow,
+        docs.docs,
+        active?.selection.zoneId ?? null,
+        active?.handle.flow ?? null,
+        selectedIds,
+        elements,
+      )
+    : null;
   if (!docs || byFlow.size === 0) return null;
   return (
-    // Cut off at the shown sheets' edges, as the elements are (IllustratePageClip): writing that
-    // reaches past the last page waits there unseen for its page.
-    <div
-      data-page-clip=""
-      className="absolute inset-0"
-      style={{ clipPath: pagesClipPath(view.pages) }}
-    >
-      <Suspense fallback={null}>
-        {[...byFlow].map(([flow, pages]) => {
-          const doc = docs.docs[flow];
-          if (!doc) return null;
-          const lead = pages[0]!;
-          return (
-            <DocumentFlowEditor
-              key={flow}
-              flow={flow}
-              pages={pages}
-              doc={doc}
-              editable={docs.editable}
-              interactive={interactive}
-              zoom={zoom}
-              ink={inkOf(lead, surface)}
-              themeAccent={view.themeAccent}
-              margin={docMarginPx(doc.style)}
-              onCommit={docs.onCommit}
-              onLayout={docs.onLayout}
-              onUndo={docs.undo}
-              onRedo={docs.redo}
-              onLinkRequest={requestDocLink}
-              onWritingPress={docs.onWritingPress}
-              focusRequest={docs.focusRequest}
-            />
-          );
-        })}
-      </Suspense>
-      {docs.editable ? <PageToolbar accent={view.themeAccent} /> : null}
-    </div>
+    <>
+      {/* Cut off at the shown sheets' edges, as the elements are (IllustratePageClip): writing that
+          reaches past the last page waits there unseen for its page. */}
+      <div
+        data-page-clip=""
+        className="absolute inset-0"
+        style={{ clipPath: pagesClipPath(view.pages) }}
+      >
+        <Suspense fallback={null}>
+          {[...byFlow].map(([flow, pages]) => {
+            const doc = docs.docs[flow];
+            if (!doc) return null;
+            const lead = pages[0]!;
+            return (
+              <DocumentFlowEditor
+                key={flow}
+                flow={flow}
+                pages={pages}
+                doc={doc}
+                editable={docs.editable}
+                interactive={interactive}
+                zoom={zoom}
+                ink={inkOf(lead, surface)}
+                themeAccent={view.themeAccent}
+                margin={docMarginPx(doc.style)}
+                onCommit={docs.onCommit}
+                onLayout={docs.onLayout}
+                onUndo={docs.undo}
+                onRedo={docs.redo}
+                onLinkRequest={requestDocLink}
+                onWritingPress={docs.onWritingPress}
+                focusRequest={docs.focusRequest}
+              />
+            );
+          })}
+        </Suspense>
+        {docs.editable ? (
+          <PageToolbar
+            accent={view.themeAccent}
+            onInsert={(what) => {
+              if (active) docs.insertObject(active.handle.flow, what);
+            }}
+          />
+        ) : null}
+      </div>
+      {target ? (
+        <ZoneBar
+          zone={target.zone}
+          rect={target.rect}
+          zoom={zoom}
+          onAction={(action) => docs.zoneAction(target.flow, target.zone.id, action)}
+        />
+      ) : null}
+    </>
   );
+}
+
+// The zone a zone bar is for: the one selected whole in the writing, else the one every selected
+// element is in.
+function zoneTarget(
+  byFlow: ReadonlyMap<string, LaidOutPage[]>,
+  docs: Readonly<Record<string, import('@livediagram/document').DocFlow>>,
+  zoneId: string | null,
+  zoneFlow: string | null,
+  selectedIds: ReadonlySet<string>,
+  elements: readonly Element[],
+): { flow: string; zone: DocZoneBlock; rect: PageRect } | null {
+  const zonesOf = (flow: string) =>
+    (docs[flow]?.blocks ?? []).filter((b): b is DocZoneBlock => b.type === 'zone');
+  if (zoneId && zoneFlow) {
+    const zone = zonesOf(zoneFlow).find((z) => z.id === zoneId);
+    const rect = zone ? zoneCanvasRect(byFlow.get(zoneFlow) ?? [], zone) : null;
+    if (zone && rect) return { flow: zoneFlow, zone, rect };
+  }
+  if (selectedIds.size === 0) return null;
+  const selected = elements.filter((e) => selectedIds.has(e.id));
+  if (selected.length === 0) return null;
+  for (const [flow, pages] of byFlow) {
+    for (const zone of zonesOf(flow)) {
+      const rect = zoneCanvasRect(pages, zone);
+      if (!rect) continue;
+      const inside = selected.every((e) => {
+        const p = zoneAnchorOf(e, elements as Element[]);
+        return (
+          p.x >= rect.x &&
+          p.x <= rect.x + rect.width &&
+          p.y >= rect.y &&
+          p.y <= rect.y + rect.height
+        );
+      });
+      if (inside) return { flow, zone, rect };
+    }
+  }
+  return null;
 }
 
 // What the writing on a page is drawn against: its fill's tone, or the plain paper (white in light

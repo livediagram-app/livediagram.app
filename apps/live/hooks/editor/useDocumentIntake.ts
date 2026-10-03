@@ -14,9 +14,8 @@ import {
   illustratePagesOf,
   layOutIllustratePages,
   looseOnDocuments,
-  withDocFlow,
-  withDocumentPageCount,
   withElementsIntoZone,
+  withZoneLanded,
   withZoneContentsRemoved,
   withZonesFitted,
   zonePlanFor,
@@ -107,26 +106,11 @@ export function useDocumentIntake({
         let next = t;
         for (const [flow, gone] of goneZones) next = withZoneContentsRemoved(next, flow, gone);
         for (const { flow, ids, plan, res } of intakes) {
-          const own = illustratePagesOf(next).filter((p) => p.flow === flow).length;
-          next = withDocumentPageCount(next, flow, Math.max(own, res.index + 1));
-          const page = layOutIllustratePages(illustratePagesOf(next)).filter(
-            (p) => p.flow === flow,
-          )[res.index];
-          const doc = docsOf(next)[flow];
-          if (!page || !doc) continue;
-          const blocks = res.blocks.map((b) =>
-            b.id === res.id ? { ...b, at: { page: page.id, x: res.x, y: res.y } } : b,
-          );
-          next = withDocFlow(next, flow, doc.style ? { blocks, style: doc.style } : { blocks });
-          const rect = {
-            x: page.rect.x + res.x,
-            y: page.rect.y + res.y,
-            width: plan.width,
-            height: plan.height,
-          };
+          const landed = withZoneLanded(next, flow, res);
+          if (!landed.rect) continue;
           next = {
-            ...next,
-            elements: withElementsIntoZone(next.elements, new Set(ids), plan, rect),
+            ...landed.tab,
+            elements: withElementsIntoZone(landed.tab.elements, new Set(ids), plan, landed.rect),
           };
           track('Editor', 'Used', plan.zone === 'drawing' ? 'DocDrawing' : 'DocObject');
           debugLog('[doc] zone took elements in', {

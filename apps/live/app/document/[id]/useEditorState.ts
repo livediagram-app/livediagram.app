@@ -1792,6 +1792,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     on: illustratePages !== null,
     pages: illustratePages?.pages ?? null,
     localEditSeq: localEditSeqRef,
+    placeAt: (intent, x, y) => placeIntentAtRef.current?.(intent, x, y),
     canEdit: !isReadOnly,
     commitTabs,
     tickTabs,
@@ -1803,6 +1804,10 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     },
   });
   useAssignRef(documentFocusRef, (flow: string) => documents?.requestFocus(flow, 'start'));
+  // Set once element creation exists (below): an Insert at the caret places through it.
+  const placeIntentAtRef = useRef<
+    ((intent: Parameters<typeof placeIntentAt>[0], x: number, y: number) => void) | null
+  >(null);
   const illustrateView =
     illustratePages && documents ? { ...illustratePages, documents } : illustratePages;
   // --- Placement helpers ---------------------------------------------------
@@ -2294,6 +2299,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     addProcess,
     addAvatar,
     dropPaletteItem,
+    placeIntentAt,
     addText,
     addSticky,
     addArrow,
@@ -2315,6 +2321,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     beginDraw,
     styleNewElement: styleMemory.styleNewElement,
   });
+  useAssignRef(placeIntentAtRef, placeIntentAt);
 
   // Inline-icon attach/detach mutators (a shape's single inline icon).
   // Cohesive slice extracted to useInlineIconMutators: editsBlocked, commit and the elements.

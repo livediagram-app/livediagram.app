@@ -6,8 +6,16 @@
 // consequences undo as one.
 import { useCallback, useEffect, useRef, useState, type RefObject } from 'react';
 import {
+  docMarginPx,
   docsOf,
+  illustratePagesOf,
+  layOutIllustratePages,
   withDocFlow,
+  withZoneLanded,
+  withZoneRemoved,
+  withZoneWrap,
+  type DocZoneAlign,
+  type DocZoneWrap,
   withDocumentPageCount,
   withZonesSettled,
   type DocBlock,
@@ -17,6 +25,9 @@ import {
 } from '@livediagram/document';
 import { debugLog } from '@/lib/debug-log';
 import { useDocumentIntake } from './useDocumentIntake';
+import { docHandleOf } from '@/lib/doc/doc-editor-store';
+import { flowFrame } from '@/lib/doc/doc-flow-geometry';
+import { track } from '@/lib/telemetry';
 import type { FlowLayout, FocusRequest } from '@/components/canvas/doc/DocumentFlowEditor';
 
 export type DocumentPagesView = {
@@ -31,7 +42,17 @@ export type DocumentPagesView = {
   requestFocus: (flow: string, at: 'start' | 'end') => void;
   // A press on the writing: the canvas's selection goes.
   onWritingPress: () => void;
+  // Insert at the caret (the page toolbar): an empty drawing, or an object the writing takes in.
+  insertObject: (flow: string, what: DocInsert) => void;
+  // A zone's wrap, place across the text, or removal (the zone bar).
+  zoneAction: (flow: string, zoneId: string, action: ZoneAction) => void;
 };
+
+export type DocInsert = 'image' | 'table' | 'chart' | 'drawing';
+export type ZoneAction = { wrap: DocZoneWrap } | { align: DocZoneAlign } | { remove: true };
+
+// A new drawing's height before anything is drawn in it.
+const NEW_DRAWING_HEIGHT = 240;
 
 export function useDocumentPages(deps: {
   activeTab: Tab;
@@ -40,6 +61,12 @@ export function useDocumentPages(deps: {
   pages: readonly LaidOutPage[] | null;
   // This person's own edits, counted (useDocumentIntake settles after each).
   localEditSeq: RefObject<number>;
+  // An element of its default size put at a canvas point (useElementCreation placeIntentAt).
+  placeAt: (
+    intent: { type: 'shape'; kind: 'bar-chart' } | { type: 'table' } | { type: 'image' },
+    x: number,
+    y: number,
+  ) => void;
   canEdit: boolean;
   commitTabs: (map: (ts: Tab[]) => Tab[]) => void;
   tickTabs: (map: (ts: Tab[]) => Tab[]) => void;
@@ -111,6 +138,68 @@ export function useDocumentPages(deps: {
     tickTabs: deps.tickTabs,
   });
 
+  const textWidth = (t: Tab, flow: string) => {
+    const doc = docsOf(t)[flow];
+    const own = layOutIllustratePages(illustratePagesOf(t)).filter((p) => p.flow === flow);
+    return doc && own.length ? flowFrame(own, docMarginPx(doc.style)).columnWidth : 600;
+  };
+
+  const insertObject = useCallback(
+    (flow: string, what: DocInsert) => {
+      const d = latest.current;
+      const handle = docHandleOf(flow);
+      if (!handle || !d.canEdit || d.activeTab.locked === true) return;
+      track('Editor', 'Used', `Doc${what[0]!.toUpperCase()}${what.slice(1)}`);
+      if (what === 'drawing') {
+        const res = handle.insertZone(
+          {
+            zone: 'drawing',
+            width: Math.round(textWidth(d.activeTab, flow)),
+            height: NEW_DRAWING_HEIGHT,
+          },
+          null,
+        );
+        if (!res) return;
+        d.commitTabs((ts) =>
+          ts.map((t) => (t.id === tabId ? withZoneLanded(t, flow, res).tab : t)),
+        );
+        return;
+      }
+      const at = handle.caretCanvasPoint();
+      if (!at) return;
+      // Just under the caret's line, so the object lands after the block being written in.
+      handle.flush();
+      d.placeAt(
+        what === 'chart'
+          ? { type: 'shape', kind: 'bar-chart' }
+          : what === 'table'
+            ? { type: 'table' }
+            : { type: 'image' },
+        at.x,
+        at.y + 30,
+      );
+    },
+    [tabId],
+  );
+
+  const zoneAction = useCallback(
+    (flow: string, zoneId: string, action: ZoneAction) => {
+      const d = latest.current;
+      if (!d.canEdit || d.activeTab.locked === true) return;
+      if ('remove' in action) track('Element', 'Changed', 'DocZoneRemoved');
+      else track('Element', 'Changed', 'DocZoneWrap');
+      d.commitTabs((ts) =>
+        ts.map((t) => {
+          if (t.id !== tabId) return t;
+          if ('remove' in action) return withZoneRemoved(t, flow, zoneId);
+          return withZoneWrap(t, flow, zoneId, action, textWidth(t, flow));
+        }),
+      );
+      debugLog('[doc] zone changed', { tabId, flow, zoneId, action });
+    },
+    [tabId],
+  );
+
   const undo = useCallback(() => latest.current.undo(), []);
   const redo = useCallback(() => latest.current.redo(), []);
   const onWritingPress = useCallback(() => latest.current.clearSelection(), []);
@@ -126,5 +215,7 @@ export function useDocumentPages(deps: {
     focusRequest,
     requestFocus,
     onWritingPress,
+    insertObject,
+    zoneAction,
   };
 }

@@ -7,9 +7,12 @@ import {
   docsOf,
   type DocBlock,
   type DocFlow,
+  type DocZoneAlign,
   type DocZoneBlock,
   type DocZoneKind,
+  type DocZoneWrap,
 } from './doc-flow';
+import { withDocFlow, withDocumentPageCount } from './doc-pages';
 import { zoneAnchorOf, zoneCanvasRect, zoneMemberIds } from './doc-zones';
 import { isBoxed, type BoxedElement, type Element, type Tab } from './index';
 import {
@@ -294,3 +297,103 @@ export function withZoneContentsRemoved<T extends DocsTab>(
 
 const insideRect = (r: PageRect, p: { x: number; y: number }) =>
   p.x >= r.x && p.x <= r.x + r.width && p.y >= r.y && p.y <= r.y + r.height;
+
+/** A zone the editor has just put into the writing, and where it measured it landing. */
+export type LandedZone = { id: string; blocks: DocBlock[]; index: number; x: number; y: number };
+
+/** The tab with the writing as the editor left it after putting a zone in: the zone placed where it
+ *  landed (`at`), the document grown to the page it landed on. With the zone's canvas rect, or
+ *  null when the document is gone. */
+export function withZoneLanded<T extends DocsTab>(
+  tab: T,
+  flow: string,
+  landed: LandedZone,
+): { tab: T; rect: PageRect | null } {
+  const own = illustratePagesOf(tab).filter((p) => p.flow === flow).length;
+  if (own === 0) return { tab, rect: null };
+  const grown = withDocumentPageCount(tab, flow, Math.max(own, landed.index + 1));
+  const page = layOutIllustratePages(illustratePagesOf(grown)).filter((p) => p.flow === flow)[
+    landed.index
+  ];
+  const doc = docsOf(grown)[flow];
+  if (!page || !doc) return { tab, rect: null };
+  const blocks = landed.blocks.map((b) =>
+    b.id === landed.id ? { ...b, at: { page: page.id, x: landed.x, y: landed.y } } : b,
+  );
+  const zone = blocks.find((b) => b.id === landed.id);
+  const next = withDocFlow(grown, flow, doc.style ? { blocks, style: doc.style } : { blocks });
+  const rect =
+    zone && zone.type === 'zone'
+      ? {
+          x: page.rect.x + landed.x,
+          y: page.rect.y + landed.y,
+          width: zone.width,
+          height: zone.height,
+        }
+      : null;
+  return { tab: next, rect };
+}
+
+// A wrapped zone is at most this share of the text width.
+export const DOC_WRAP_MAX_SHARE = 2 / 3;
+
+/**
+ * A zone's wrap or place across the text changed (docs/specs/007-editor/document-pages.md "Zones"):
+ * one wrapped to the side is scaled down (its elements with it, about its corner) to at most two
+ * thirds of the text width. The writing then lays it out anew and its elements follow.
+ */
+export function withZoneWrap<T extends DocsTab>(
+  tab: T,
+  flow: string,
+  zoneId: string,
+  change: { wrap?: DocZoneWrap; align?: DocZoneAlign },
+  textWidth: number,
+): T {
+  const doc = docsOf(tab)[flow];
+  const zone = doc?.blocks.find((b): b is DocZoneBlock => b.id === zoneId && b.type === 'zone');
+  if (!doc || !zone) return tab;
+  const wrap = change.wrap ?? zone.wrap ?? 'inline';
+  const align = change.align ?? zone.align ?? 'center';
+  const max = wrap === 'inline' ? textWidth : textWidth * DOC_WRAP_MAX_SHARE;
+  const scale = Math.min(1, max / zone.width);
+  let elements = tab.elements as Element[];
+  if (scale < 1) {
+    const pages = layOutIllustratePages(illustratePagesOf(tab)).filter((p) => p.flow === flow);
+    const rect = zoneCanvasRect(pages, zone);
+    if (rect) {
+      const ids = zoneMemberIds(elements, rect);
+      const plan: ZonePlan = { zone: zone.zone, width: 0, height: 0, bounds: rect, scale };
+      elements = withElementsIntoZone(elements, ids, plan, {
+        x: rect.x,
+        y: rect.y,
+        width: rect.width * scale,
+        height: rect.height * scale,
+      });
+    }
+  }
+  const { wrap: _w, align: _a, ...rest } = zone;
+  void _w;
+  void _a;
+  const next: DocZoneBlock = {
+    ...rest,
+    ...(wrap !== 'inline' ? { wrap } : {}),
+    ...(align !== 'center' ? { align } : {}),
+    width: Math.round(zone.width * scale),
+    height: Math.round(zone.height * scale),
+  };
+  const blocks = doc.blocks.map((b) => (b.id === zoneId ? next : b));
+  return {
+    ...withDocFlow(tab, flow, doc.style ? { blocks, style: doc.style } : { blocks }),
+    elements,
+  };
+}
+
+/** A zone taken out of the writing with its elements. */
+export function withZoneRemoved<T extends DocsTab>(tab: T, flow: string, zoneId: string): T {
+  const doc = docsOf(tab)[flow];
+  const zone = doc?.blocks.find((b): b is DocZoneBlock => b.id === zoneId && b.type === 'zone');
+  if (!doc || !zone) return tab;
+  const emptied = withZoneContentsRemoved(tab, flow, [zone]);
+  const blocks = doc.blocks.filter((b) => b.id !== zoneId);
+  return withDocFlow(emptied, flow, doc.style ? { blocks, style: doc.style } : { blocks });
+}
