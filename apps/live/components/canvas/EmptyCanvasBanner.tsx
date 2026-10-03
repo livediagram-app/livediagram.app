@@ -17,7 +17,9 @@ export function EmptyCanvasBanner({
   tabName,
   readOnly,
   onQuickStart,
-  placementClassName = 'bottom-0 z-[var(--z-overlay)] pb-16',
+  // On a phone it rides above the bottom-right cluster (16px inset + 44px buttons above the
+  // 48px tab bar) instead of over it.
+  placementClassName = 'bottom-0 z-[var(--z-overlay)] pb-16 max-sm:pb-[7.5rem]',
 }: {
   tabName: string;
   readOnly: boolean;
@@ -28,7 +30,9 @@ export function EmptyCanvasBanner({
     <div
       className={`pointer-events-none fixed inset-x-0 flex justify-center px-4 ${placementClassName}`}
     >
-      <div className="pointer-events-auto flex w-full max-w-xl animate-fly-up-in items-center gap-3 rounded-xl border border-slate-200 bg-white/95 px-4 py-2.5 shadow-lg shadow-slate-900/5 backdrop-blur dark:border-slate-700 dark:bg-slate-900/95">
+      {/* A phone gets a slim one-line chip: the name and Quick Start, no blurb or Help (the help
+          centre is a tap away in the Explorer), so it costs the canvas one short row. */}
+      <div className="pointer-events-auto flex w-full max-w-xl animate-fly-up-in items-center gap-3 rounded-xl border border-slate-200 bg-white/95 px-4 py-2.5 max-sm:w-auto max-sm:gap-2 max-sm:rounded-full max-sm:py-1 max-sm:pl-3.5 max-sm:pr-1 shadow-lg shadow-slate-900/5 backdrop-blur dark:border-slate-700 dark:bg-slate-900/95">
         <span className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-500 sm:flex dark:bg-brand-500/15 dark:text-brand-400">
           <Glyph size={18} units={24}>
             <rect x="3" y="6" width="10" height="10" rx="1.5" />
@@ -39,7 +43,7 @@ export function EmptyCanvasBanner({
           <p className="truncate text-sm font-medium text-slate-800 dark:text-slate-100">
             {tabName} is empty
           </p>
-          <p className="mt-0.5 truncate text-xs text-slate-500 dark:text-slate-400">
+          <p className="mt-0.5 truncate text-xs text-slate-500 max-sm:hidden dark:text-slate-400">
             {readOnly
               ? 'Nothing here yet — the owner can build it out, and your view updates live.'
               : 'Add an element from the Palette, or start from a template.'}
@@ -49,14 +53,16 @@ export function EmptyCanvasBanner({
           <div className="flex shrink-0 items-center gap-2">
             {/* Same button language as Quick Start beside it (icon + label),
                 not a bare ? — the pair reads as two peer actions. */}
-            <HelpArticleLink article="yourFirstDiagram" variant="button" />
+            <span className="contents max-sm:hidden">
+              <HelpArticleLink article="yourFirstDiagram" variant="button" />
+            </span>
             <button
               type="button"
               onClick={onQuickStart}
               // The Help button's exact styling beside it (HelpArticleLink, variant "button"): the
               // pair are peers. Its own brand hover had no dark text colour, so on a dark canvas
               // hovering turned the label dark brand on dark slate.
-              className="optical-edges inline-flex items-center rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 shadow-sm transition hover:bg-slate-50 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 dark:hover:text-white"
+              className="optical-edges inline-flex items-center rounded-lg border max-sm:rounded-full border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 shadow-sm transition hover:bg-slate-50 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 dark:hover:text-white"
             >
               <span className="text-optical-line">Quick Start</span>
             </button>

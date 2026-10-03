@@ -400,7 +400,9 @@ which read as a half-finished modal. It is **not dismissible** (it simply goes
 away once the canvas has content). It shares the bottom-banner slot with the
 sign-in / theme banners (yielding to the sign-in one) and hides while a draw
 tool is armed or Quick Start is open. Editors get a **Quick Start** button on
-it; viewers get a passive "nothing here yet" line.
+it; viewers get a passive "nothing here yet" line. **On a phone** (below `sm`) it is a slim
+one-line chip, "Tab 1 is empty" and Quick Start, with no blurb or Help button, riding above the
+bottom-right cluster rather than over it.
 
 A soft, decorative **animated backdrop** (`AnimatedLinesBackdrop`) sits behind
 the card: thick multi-colour curved lines that slowly flow along their paths via
