@@ -69,7 +69,7 @@ export function useSlideThumbnails(deck: Deck, tabs: Tab[]): Map<string, SlideTh
             ruling: pageRulingOf(tab, page),
           }).backgroundSvg,
         );
-        // A document page's writing, as lines of text.
+        // An article page's writing, as lines of text.
         const bars = pageWritingBars(page);
         if (bars.length) parts.push(articleOpsToSvg(bars));
       }

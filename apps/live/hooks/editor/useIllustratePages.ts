@@ -51,7 +51,7 @@ export type IllustratePagesView = {
   themeBackgrounds: ThemeBackgroundPreset[];
   // The tab theme's accent: a document's accent unless it picked one of its own.
   themeAccent: string;
-  // The documents' writing on the pages (useArticles), composed in by the editor.
+  // The articles' writing on the pages (useArticles), composed in by the editor.
   articles?: ArticlesView | null;
   // The tab's default face, for what the pages draw themselves (a layout preview).
   tabFont?: string;

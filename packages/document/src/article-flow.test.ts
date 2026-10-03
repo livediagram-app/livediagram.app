@@ -3,7 +3,7 @@ import {
   articleListMarkers,
   articlesOf,
   articleWordCount,
-  MAX_DOC_BLOCK_TEXT,
+  MAX_ARTICLE_BLOCK_TEXT,
   newArticleFlow,
   normaliseRuns,
   parseArticleBlock,
@@ -39,8 +39,8 @@ describe('article writing: reading it', () => {
   });
 
   it('caps the text of a block', () => {
-    const runs = normaliseRuns([{ text: 'x'.repeat(MAX_DOC_BLOCK_TEXT + 50) }]);
-    expect(runs[0]!.text).toHaveLength(MAX_DOC_BLOCK_TEXT);
+    const runs = normaliseRuns([{ text: 'x'.repeat(MAX_ARTICLE_BLOCK_TEXT + 50) }]);
+    expect(runs[0]!.text).toHaveLength(MAX_ARTICLE_BLOCK_TEXT);
   });
 
   it('reads each block type and drops defaults', () => {

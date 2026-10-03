@@ -198,7 +198,7 @@ export function looseOnArticles(
   return out;
 }
 
-type DocsTab = Pick<Tab, 'elements'> & { pages?: unknown; articles?: unknown };
+type ArticlesTab = Pick<Tab, 'elements'> & { pages?: unknown; articles?: unknown };
 
 /**
  * An article's zones fitted to their elements (docs/specs/007-editor/article-pages.md "Zones"):
@@ -207,7 +207,7 @@ type DocsTab = Pick<Tab, 'elements'> & { pages?: unknown; articles?: unknown };
  * the text width) to keep its elements inside with ARTICLE_DRAWING_PAD to spare, and never shrinks past
  * them. The same tab back when nothing changes.
  */
-export function withZonesFitted<T extends DocsTab>(tab: T, flow: string, textWidth: number): T {
+export function withZonesFitted<T extends ArticlesTab>(tab: T, flow: string, textWidth: number): T {
   const doc = articlesOf(tab)[flow];
   if (!doc) return tab;
   const pages = layOutIllustratePages(illustratePagesOf(tab)).filter((p) => p.flow === flow);
@@ -274,7 +274,7 @@ export function withZonesFitted<T extends DocsTab>(tab: T, flow: string, textWid
 
 /** The elements of zones that left the writing (each where it last stood) removed with them, and
  *  any arrow pinned to one, in turn. */
-export function withZoneContentsRemoved<T extends DocsTab>(
+export function withZoneContentsRemoved<T extends ArticlesTab>(
   tab: T,
   flow: string,
   gone: readonly ArticleZoneBlock[],
@@ -322,7 +322,7 @@ export type LandedZone = {
 /** The tab with the writing as the editor left it after putting a zone in: the zone placed where it
  *  landed (`at`), the article grown to the page it landed on. With the zone's canvas rect, or
  *  null when the article is gone. */
-export function withZoneLanded<T extends DocsTab>(
+export function withZoneLanded<T extends ArticlesTab>(
   tab: T,
   flow: string,
   landed: LandedZone,
@@ -360,7 +360,7 @@ export const ARTICLE_WRAP_MAX_SHARE = 2 / 3;
  * one wrapped to the side is scaled down (its elements with it, about its corner) to at most two
  * thirds of the text width. The writing then lays it out anew and its elements follow.
  */
-export function withZoneWrap<T extends DocsTab>(
+export function withZoneWrap<T extends ArticlesTab>(
   tab: T,
   flow: string,
   zoneId: string,
@@ -409,7 +409,7 @@ export function withZoneWrap<T extends DocsTab>(
 }
 
 /** A zone taken out of the writing with its elements. */
-export function withZoneRemoved<T extends DocsTab>(tab: T, flow: string, zoneId: string): T {
+export function withZoneRemoved<T extends ArticlesTab>(tab: T, flow: string, zoneId: string): T {
   const doc = articlesOf(tab)[flow];
   const zone = doc?.blocks.find((b): b is ArticleZoneBlock => b.id === zoneId && b.type === 'zone');
   if (!doc || !zone) return tab;
@@ -420,7 +420,7 @@ export function withZoneRemoved<T extends DocsTab>(tab: T, flow: string, zoneId:
 
 /** A zone let go of by the writing (Float): its block leaves the writing, its elements stay where
  *  they are, in front of the text, as loose elements of the page. */
-export function withZoneReleased<T extends DocsTab>(tab: T, flow: string, zoneId: string): T {
+export function withZoneReleased<T extends ArticlesTab>(tab: T, flow: string, zoneId: string): T {
   const doc = articlesOf(tab)[flow];
   if (!doc || !doc.blocks.some((b) => b.id === zoneId && b.type === 'zone')) return tab;
   const blocks = doc.blocks.filter((b) => b.id !== zoneId);
@@ -430,7 +430,7 @@ export function withZoneReleased<T extends DocsTab>(tab: T, flow: string, zoneId
 /** A drawing zone resized (its grips dragged): `height` tall, `width` wide, never smaller than its
  *  elements need (ARTICLE_DRAWING_PAD past the furthest) nor than ARTICLE_ZONE_MIN, never taller
  *  than ARTICLE_ZONE_MAX nor wider than the text (a wrapped zone: ARTICLE_WRAP_MAX_SHARE of it). */
-export function withZoneSize<T extends DocsTab>(
+export function withZoneSize<T extends ArticlesTab>(
   tab: T,
   flow: string,
   zoneId: string,
@@ -478,7 +478,7 @@ type Point = { x: number; y: number };
  * on the tab, now has its centre off the zone and on one of the article's pages. The writing then
  * moves the zone to where the object was dropped, rather than the object leaving it.
  */
-export function objectsDraggedOut(before: DocsTab, now: DocsTab): ObjectDraggedOut[] {
+export function objectsDraggedOut(before: ArticlesTab, now: ArticlesTab): ObjectDraggedOut[] {
   const out: ObjectDraggedOut[] = [];
   const docsBefore = articlesOf(before);
   const docsNow = articlesOf(now);

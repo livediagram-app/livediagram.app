@@ -384,7 +384,7 @@ export const ICONS_ADDED = addedFrom('icons', 'Icons Added', 'Line-art and techn
 export const OTHER_ELEMENTS_ADDED: Metric = {
   category: 'Element',
   action: 'Added',
-  // Document inserts (`Doc…`) are their own card (Document Inserts, features.ts).
+  // Article inserts (`Article…`) are their own card (Article Inserts, features.ts).
   typeIn: (type) =>
     !PALETTE_KINDS.has(canonicalElementType(type)) &&
     !isTablePart(type) &&
@@ -420,7 +420,7 @@ export const ELEMENTS_CHANGED = chart(
   'Changed',
   'Elements Changed',
   'Restyled or edited: colour, text, arrow ends, size, presets, the format painter and more.',
-  // A document's writing formatted (`Doc…`) is its own card (Document Formatting, features.ts).
+  // An article's writing formatted (`Article…`) is its own card (Article Formatting, features.ts).
   { typeIn: (t) => !/^Article[A-Z]/.test(t ?? '') },
 );
 

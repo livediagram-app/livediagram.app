@@ -239,8 +239,10 @@ laid out with it, holding ordinary canvas elements that move with it.
   it, as one edit; Escape, or a release where it already sits, leaves it be. Hovering a zone shows its outline faintly
   for someone who may edit.
 - **Selecting a zone**: a press on a drawing zone's empty area selects the zone (outlined); the
-  arrow keys then move the caret off it, Backspace / Delete remove it, ⌘C / ⌘X copy or cut it with
-  its elements. A press on an element in a zone selects the element as on any canvas.
+  arrow keys then move the caret off it, Backspace / Delete remove it (its elements with it), ⌘X
+  cuts it the same way. Copying a zone's elements is done on the canvas: select them and ⌘C, then
+  paste them into the writing (they come in as a zone of their own). A press on an element in a
+  zone selects the element as on any canvas.
 - **Into the writing** (palette, slash menu, Insert, paste):
   - A palette tile **pressed** puts its element at the caret (or, with no caret in the article,
     after the last block); a tile **dragged** onto a page puts it where it is dropped. On a drawing

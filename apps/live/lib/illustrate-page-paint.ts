@@ -110,7 +110,7 @@ function patternLayers(pattern: PagePattern): { image: string; size: string } {
  */
 export function pageSheetStyle(
   background: PageBackground | undefined,
-  // A document page's ruling (docs/specs/007-editor/article-pages.md "Document style"): its Lines
+  // An article page's ruling (docs/specs/007-editor/article-pages.md "Article style"): its Lines
   // drawn at its body line pitch inside its margins, on the writing's baselines.
   ruling?: { pitch: number; inset: number; top: number },
 ): CSSProperties {

@@ -289,7 +289,7 @@ export type Tab = {
   // in row order, each portrait or landscape, that everyone lays the tab out on. Absent = one page
   // (read via `illustratePagesOf`).
   pages?: IllustratePage[];
-  // The writing of the tab's document pages, by flow id (docs/specs/007-editor/article-pages.md):
+  // The writing of the tab's article pages, by flow id (docs/specs/007-editor/article-pages.md):
   // each document's blocks and style, shared by its pages (`IllustratePage.flow`). Read via
   // `articlesOf`; synced block by block (the `doc` room op), never in a `tab-meta` patch.
   articles?: Record<string, ArticleFlow>;

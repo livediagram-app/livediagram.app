@@ -1,5 +1,5 @@
 // The edits to an Illustrate tab's pages (docs/specs/007-editor/illustrate-pages.md): turn,
-// resize, rename and paint a page; add, duplicate, move and delete one. On a document page
+// resize, rename and paint a page; add, duplicate, move and delete one. On an article page
 // (docs/specs/007-editor/article-pages.md) each acts on the whole document: its pages share their
 // size, orientation and background, and move, copy and go as one. Each is one tab edit (one undo
 // step, synced to everyone) that moves the content of every page it shifts along with it
@@ -112,7 +112,7 @@ export function illustratePageEdits({
   const patchPage = (pageId: string, patch: (p: IllustratePage) => IllustratePage) =>
     commitPages((ps) => ps.map((p) => (p.id === pageId ? patch(p) : p)));
   const page = (pageId: string) => current.find((p) => p.id === pageId);
-  // The pages a page-wide change reaches: the page, or every page of its document.
+  // The pages a page-wide change reaches: the page, or every page of its article.
   const sharing = (ps: readonly IllustratePage[], pageId: string): Set<string> => {
     const target = ps.find((p) => p.id === pageId);
     if (!target) return new Set();
@@ -242,7 +242,7 @@ export function illustratePageEdits({
       );
       onCreated(id);
       onArticleCreated?.(flow);
-      debugLog('[illustrate-page] document added', { tabId, flow, count: current.length + 1 });
+      debugLog('[illustrate-page] article added', { tabId, flow, count: current.length + 1 });
       return;
     }
     commitPages((ps) => {
@@ -285,7 +285,7 @@ export function illustratePageEdits({
     onCreated(id);
     debugLog('[illustrate-page] duplicated', { tabId, pageId });
   };
-  // A deleted page takes its content with it; the pages after it close the gap. A document page
+  // A deleted page takes its content with it; the pages after it close the gap. An article page
   // deletes its whole document, writing and all.
   const removePage = (pageId: string) => {
     const target = page(pageId);
@@ -293,7 +293,7 @@ export function illustratePageEdits({
     track('Tab', 'Changed', 'PageRemoved');
     if (target.flow) {
       commitTab((t) => withArticleRemoved(t, target.flow!));
-      debugLog('[illustrate-page] document removed', { tabId, flow: target.flow });
+      debugLog('[illustrate-page] article removed', { tabId, flow: target.flow });
       return;
     }
     commitTab((t) => {

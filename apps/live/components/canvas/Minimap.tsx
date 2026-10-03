@@ -57,7 +57,7 @@ type MinimapProps = {
   // Illustrate mode's pages (docs/specs/007-editor/illustrate-pages.md "Getting around the
   // pages"): drawn under the content as their sheets, each outlined, and counted in the bounds.
   pages?: readonly LaidOutPage[];
-  // The documents' writing, by identity: the picture redraws a page's lines of text as it changes.
+  // The articles' writing, by identity: the picture redraws a page's lines of text as it changes.
   writing?: unknown;
   // The tab default face (docs/specs/004-interface-design/fonts.md): the miniature paints what the canvas
   // paints, so a canvas set in the marker face looks that way in the map too.
@@ -179,7 +179,7 @@ export function Minimap({
       const { x, y, width, height } = page.rect;
       parts.push(
         pageExportFrame(page, { paper, idPrefix: 'lvd-minimap-page' }).backgroundSvg +
-          // A document page's writing, as soft lines of text.
+          // An article page's writing, as soft lines of text.
           (page.flow ? articleOpsToSvg(pageWritingBars(page, outline)) : '') +
           `<rect x="${x}" y="${y}" width="${width}" height="${height}" fill="none" stroke="${outline}" stroke-width="${Math.max(width, height) / 160}"/>`,
       );

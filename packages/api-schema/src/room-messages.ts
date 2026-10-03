@@ -139,7 +139,7 @@ export const MUTATION_OP_KINDS = [
   // (docs/specs/012-collaboration/collab-race-hardening.md). A mutation for the same reasons as a dot.
   'el-delta',
   'document-meta',
-  // One document's writing changing, block by block (docs/specs/007-editor/article-pages.md
+  // One article's writing changing, block by block (docs/specs/007-editor/article-pages.md
   // "Collaboration"): two people writing different paragraphs merge, as `el` does for elements.
   'article',
   'poll-start',
@@ -392,7 +392,7 @@ export type RoomOp =
   // element fields: a whole-element `el` update replaced a peer's copy with the
   // sender's snapshot, so two people pressing the same done check lost a mark.
   | { kind: 'el-delta'; tabId: string; elementId: string; delta: ElementDelta }
-  // A document's writing on a tab changed (docs/specs/007-editor/article-pages.md
+  // An article's writing on a tab changed (docs/specs/007-editor/article-pages.md
   // "Collaboration"): its block ops, applied by block id, or the whole document gone (`removed`).
   // `Tab.articles` never rides a `tab-meta` patch, which would replace every document wholesale.
   // `created`: the article is new (its first frames): a receiver without it takes it, where puts

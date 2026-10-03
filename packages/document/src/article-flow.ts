@@ -6,10 +6,10 @@
 // Block and article limits (docs/specs/007-editor/article-pages.md "Blocks"). An article this
 // large is ~250 pages of text, far inside a tab's row (MAX_TAB_BYTES, 1.99 MB) only when the
 // text is too: the tab's own cap still has the last word on a save.
-export const MAX_DOC_BLOCKS = 5000;
-export const MAX_DOC_RUNS = 400;
-export const MAX_DOC_BLOCK_TEXT = 20_000;
-export const MAX_DOC_HREF = 2048;
+export const MAX_ARTICLE_BLOCKS = 5000;
+export const MAX_ARTICLE_RUNS = 400;
+export const MAX_ARTICLE_BLOCK_TEXT = 20_000;
+export const MAX_ARTICLE_HREF = 2048;
 // Zones: no wider or taller than the largest page (A3 landscape is 1587 wide), no smaller than a
 // grip can still be pressed on.
 export const ARTICLE_ZONE_MIN = 24;
@@ -154,9 +154,9 @@ const HEX = /^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i;
 export const isArticleHex = (v: unknown): v is string => typeof v === 'string' && HEX.test(v);
 
 const SAFE_HREF = /^(?:https?:\/\/|mailto:)/i;
-/** A link address an article keeps: http, https or mailto, no longer than MAX_DOC_HREF. */
+/** A link address an article keeps: http, https or mailto, no longer than MAX_ARTICLE_HREF. */
 export function isSafeArticleHref(v: unknown): v is string {
-  return typeof v === 'string' && v.length <= MAX_DOC_HREF && SAFE_HREF.test(v.trim());
+  return typeof v === 'string' && v.length <= MAX_ARTICLE_HREF && SAFE_HREF.test(v.trim());
 }
 
 /** An id an article stores or sends (a block's, a flow's, a margin note's): 1 to 64 characters. */
@@ -194,11 +194,11 @@ const sameFormat = (a: ArticleRun, b: ArticleRun): boolean =>
   a.nk === b.nk;
 
 /** Runs read defensively, neighbours of one format merged, empty ones dropped, the text capped at
- *  MAX_DOC_BLOCK_TEXT characters over at most MAX_DOC_RUNS runs. */
+ *  MAX_ARTICLE_BLOCK_TEXT characters over at most MAX_ARTICLE_RUNS runs. */
 export function normaliseRuns(v: unknown): ArticleRun[] {
   if (!Array.isArray(v)) return [];
   const out: ArticleRun[] = [];
-  let left = MAX_DOC_BLOCK_TEXT;
+  let left = MAX_ARTICLE_BLOCK_TEXT;
   for (const raw of v) {
     if (left <= 0) break;
     const run = parseRun(raw);
@@ -208,7 +208,7 @@ export function normaliseRuns(v: unknown): ArticleRun[] {
     left -= run.text.length + (run.href?.length ?? 0);
     const last = out[out.length - 1];
     if (last && sameFormat(last, run)) last.text += run.text;
-    else if (out.length < MAX_DOC_RUNS) out.push(run);
+    else if (out.length < MAX_ARTICLE_RUNS) out.push(run);
     else break;
   }
   return out;
@@ -254,7 +254,7 @@ export function parseArticleBlock(v: unknown): ArticleBlock | undefined {
       return {
         id,
         type: 'code',
-        text: typeof b.text === 'string' ? b.text.slice(0, MAX_DOC_BLOCK_TEXT) : '',
+        text: typeof b.text === 'string' ? b.text.slice(0, MAX_ARTICLE_BLOCK_TEXT) : '',
       };
     case 'divider':
       return { id, type: 'divider' };
@@ -313,7 +313,7 @@ export function parseArticleStyle(v: unknown): ArticleStyle | undefined {
 }
 
 /** A stored article's writing, read defensively: unreadable blocks dropped, repeated ids
- *  dropped after the first, at most MAX_DOC_BLOCKS. Never empty: an article with no block reads
+ *  dropped after the first, at most MAX_ARTICLE_BLOCKS. Never empty: an article with no block reads
  *  as one empty paragraph. */
 export function parseArticleFlow(v: unknown, fallbackId = 'b-empty'): ArticleFlow {
   const f = v as Record<string, unknown> | null;
@@ -321,7 +321,7 @@ export function parseArticleFlow(v: unknown, fallbackId = 'b-empty'): ArticleFlo
   const blocks: ArticleBlock[] = [];
   if (f && typeof f === 'object' && Array.isArray(f.blocks)) {
     for (const raw of f.blocks) {
-      if (blocks.length >= MAX_DOC_BLOCKS) break;
+      if (blocks.length >= MAX_ARTICLE_BLOCKS) break;
       const block = parseArticleBlock(raw);
       if (!block || seen.has(block.id)) continue;
       seen.add(block.id);
@@ -333,24 +333,24 @@ export function parseArticleFlow(v: unknown, fallbackId = 'b-empty'): ArticleFlo
   return style ? { blocks, style } : { blocks };
 }
 
-const parsedDocs = new WeakMap<object, Readonly<Record<string, ArticleFlow>>>();
+const parsedArticles = new WeakMap<object, Readonly<Record<string, ArticleFlow>>>();
 
 /** The tab's articles' writing by flow id, each read defensively (`parseArticleFlow`); the same
  *  object back for the same stored `articles`, so readers can memo on it. */
 export function articlesOf(tab: object | undefined): Readonly<Record<string, ArticleFlow>> {
   const articles = (tab as { articles?: unknown } | undefined)?.articles;
-  if (!articles || typeof articles !== 'object' || Array.isArray(articles)) return EMPTY_DOCS;
-  const cached = parsedDocs.get(articles);
+  if (!articles || typeof articles !== 'object' || Array.isArray(articles)) return EMPTY_ARTICLES;
+  const cached = parsedArticles.get(articles);
   if (cached) return cached;
   const out: Record<string, ArticleFlow> = {};
   for (const [flow, raw] of Object.entries(articles)) {
     if (isId(flow)) out[flow] = parseArticleFlow(raw, `${flow}-b0`);
   }
-  parsedDocs.set(articles, out);
+  parsedArticles.set(articles, out);
   return out;
 }
 
-const EMPTY_DOCS: Readonly<Record<string, ArticleFlow>> = Object.freeze({});
+const EMPTY_ARTICLES: Readonly<Record<string, ArticleFlow>> = Object.freeze({});
 
 /** Whether two blocks (or any plain JSON values) are the same, whatever order their keys are in:
  *  a block read from storage and one built in the editor list their fields differently. */

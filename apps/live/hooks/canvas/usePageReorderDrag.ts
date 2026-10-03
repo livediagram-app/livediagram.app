@@ -3,7 +3,7 @@
 // threshold stays a click (the label frames its page); past it, the gesture is a reorder: the drop
 // slot follows the pointer (where the dragged page's centre would land among the others), drawn
 // as a marker in the gap, and the release moves the page there with its content. Escape cancels.
-// A document page drags its whole document: the row is moved in units (a page, or a document), so
+// An article page drags its whole article: the row is moved in units (a page, or an article), so
 // no slot falls inside a document.
 import { useCallback, useEffect, useRef, useState, type PointerEvent } from 'react';
 import { pageUnits, type LaidOutPage, type PageRect } from '@livediagram/document';

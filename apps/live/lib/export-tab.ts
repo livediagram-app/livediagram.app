@@ -98,7 +98,7 @@ import { embeddedFontFaceCss } from './export-fonts';
 import { pageRulingOf, pageWriting, type PageWriting } from './article/article-export';
 import { articleOpsToSvg, drawArticleOps } from './article/article-draw';
 
-// The font ids an export declares, with a document page's writing's faces added.
+// The font ids an export declares, with an article page's writing's faces added.
 // A page export's drawing-zone clips (docs/specs/007-editor/article-pages.md "Zones"): what pokes
 // past a drawing zone's edge is cut off in an export as on the canvas.
 function exportZoneClips(tab: Tab, page: unknown): Map<string, PageRect> {
@@ -190,7 +190,7 @@ export async function renderTabToCanvas(
   const frame = opts.page
     ? pageExportFrame(opts.page, { ruling: pageRulingOf(tab, opts.page) })
     : null;
-  // A document page's writing (docs/specs/007-editor/article-pages.md "Everywhere a page goes").
+  // An article page's writing (docs/specs/007-editor/article-pages.md "Everywhere a page goes").
   const writing = opts.page ? pageWriting(tab, opts.page) : null;
   const clips = exportZoneClips(tab, opts.page);
   const reaches = (el: Element) =>

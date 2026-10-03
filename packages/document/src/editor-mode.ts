@@ -13,7 +13,7 @@ export const EDITOR_MODE_CATALOGUE = [
   {
     id: 'illustrate',
     label: 'Illustrate',
-    description: 'Pages: infographics to lay out, and documents to write.',
+    description: 'Pages: infographics to lay out, and articles to write.',
   },
 ] as const satisfies readonly { id: string; label: string; description: string }[];
 

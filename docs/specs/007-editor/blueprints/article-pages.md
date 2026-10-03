@@ -64,7 +64,7 @@ design decision. The page model, the row, page kinds and page actions are
 
 "Article" in code, specs and the interface for the kind of page and its run of pages; "document"
 stays the livediagram file. "Writing" is the article's text as laid out; "flow" is the id that ties
-an article's pages to its `ArticleFlow`. The size limits keep a `MAX_DOC_*` prefix from the earlier
+an article's pages to its `ArticleFlow`. The size limits keep a `MAX_ARTICLE_*` prefix from the earlier
 Document mode experiment; read it as "article". Headings keep with the next line and are never split
 (`break-after` / `break-inside: avoid`), a zone is never split (`break-inside: avoid`), a page break
 is `break-after: column` (`article-pages.css`).
@@ -73,10 +73,10 @@ is `break-after: column` (`article-pages.css`).
 
 | Constant                                | Value                                  | Where / provenance                                                       |
 | --------------------------------------- | -------------------------------------- | ------------------------------------------------------------------------ |
-| `MAX_DOC_BLOCKS`                        | 5000                                   | `article-flow.ts`; D34                                                   |
-| `MAX_DOC_RUNS`                          | 400 per block                          | `article-flow.ts`; D34                                                   |
-| `MAX_DOC_BLOCK_TEXT`                    | 20,000 characters per block            | `article-flow.ts`; D34                                                   |
-| `MAX_DOC_HREF`                          | 2048 characters                        | `article-flow.ts`; D34                                                   |
+| `MAX_ARTICLE_BLOCKS`                        | 5000                                   | `article-flow.ts`; D34                                                   |
+| `MAX_ARTICLE_RUNS`                          | 400 per block                          | `article-flow.ts`; D34                                                   |
+| `MAX_ARTICLE_BLOCK_TEXT`                    | 20,000 characters per block            | `article-flow.ts`; D34                                                   |
+| `MAX_ARTICLE_HREF`                          | 2048 characters                        | `article-flow.ts`; D34                                                   |
 | `ARTICLE_ZONE_MIN`, `ARTICLE_ZONE_MAX`  | 24, 2000 px                            | `article-flow.ts`; D35                                                   |
 | `ARTICLE_LIST_MAX_LEVEL`                | 4 (five levels, 0 to 4)                | `article-flow.ts`; spec "Blocks"                                         |
 | List indent                             | 28 px a level                          | `article-pages.css` (`--article-level`); spec "Blocks"                   |
@@ -136,19 +136,19 @@ style? }`. Saved with the tab (D1 row, `MAX_TAB_BYTES` has the last word), carri
   - `articles` not a plain object: none. A flow key that is not an id: dropped.
   - A block with no id, an unknown `type`, a list with an unknown `list`, a zone with an unknown
     `zone` or a non-finite `width` / `height`: dropped. A repeated id: dropped after the first.
-    At most `MAX_DOC_BLOCKS`. An article with no block reads as one empty paragraph
+    At most `MAX_ARTICLE_BLOCKS`. An article with no block reads as one empty paragraph
     (`<flow>-b0`), so it is never empty.
   - Runs: non-string or empty text dropped; flags kept only when `true`; `sup` and `sub` together
     keep `sup`; `href` kept only through `isSafeArticleHref`; `color` / `hl` only as hex; `note`
     only as an id (`isArticleId`), `nk` only `'action'`. Neighbours of one format merge; text and
-    link addresses together capped at `MAX_DOC_BLOCK_TEXT` over at most `MAX_DOC_RUNS` runs.
+    link addresses together capped at `MAX_ARTICLE_BLOCK_TEXT` over at most `MAX_ARTICLE_RUNS` runs.
   - `level` floored and capped to `ARTICLE_LIST_MAX_LEVEL`; `checked` only on a to-do; zone
     `width` / `height` rounded and clamped to `ARTICLE_ZONE_MIN..MAX`; `at` kept only with an id
     page and finite `x`, `y`; code text sliced to the cap.
   - Style: each field kept when valid (`look` a look id, fonts `^[a-z0-9-]{1,40}$`, `accent` hex,
     booleans, the five enums); an empty style is dropped.
 - **Pages read**: an article page with no readable flow reads as an article of its own (its id);
-  `withDocumentsTogether` puts a flow's pages in one run at its first page, each taking the
+  `withArticlesTogether` puts a flow's pages in one run at its first page, each taking the
   first's size, orientation and background ([Illustrate pages blueprint](illustrate-pages.md)).
 - **Sync** (`tabBroadcastOps`): `articles` is in `META_SKIP`, so never in a `tab-meta` patch; a
   whole-tab op is sent without it (`wholeTabOp`), followed by `tabArticleOps`. `tabArticleOps`
@@ -456,7 +456,7 @@ ops): ArticleFlow` (never empty). For any `a`, `b`: `applyArticleOps(a, diffArti
 | -------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
 | Malformed stored writing                           | Read defensively (Data and persistence); an empty article reads as one paragraph                        |
 | Article page with no flow                          | Its own article (flow = page id); writing created empty on first read                                   |
-| Flow's pages split by crossed edits                | `withDocumentsTogether` rejoins them at the first page, each taking its size and paint                  |
+| Flow's pages split by crossed edits                | `withArticlesTogether` rejoins them at the first page, each taking its size and paint                  |
 | Commit to an article deleted meanwhile             | `onCommit` skips the tab (no writing for a missing flow)                                                |
 | Commit refused (tab locked meanwhile)              | `onCommit` false: the writing stays local and goes with the next commit                                 |
 | Malformed `article` frame from a peer              | `parseArticleOps` drops it (or its bad ops); nothing applied                                            |
@@ -491,7 +491,7 @@ ops): ArticleFlow` (never empty). For any `a`, `b`: `applyArticleOps(a, diffArti
 - No server path is added: the writing is tab data, written by the existing save and room, read
   defensively by every client (`articlesOf`); the room enforces the edit role on `article` ops and
   the presence rules on `article-caret` (any session; never stored or replayed).
-- **Links**: only `http:`, `https:` and `mailto:` (`isSafeArticleHref`, at most `MAX_DOC_HREF`) are
+- **Links**: only `http:`, `https:` and `mailto:` (`isSafeArticleHref`, at most `MAX_ARTICLE_HREF`) are
   stored, pasted (`parseDOM` `getAttrs` returns false), parsed from Markdown or set
   (`setLink` refuses); rendered with `rel="noopener noreferrer nofollow"`. The link field
   normalises a bare domain to `https://` and an address to `mailto:` (D45).

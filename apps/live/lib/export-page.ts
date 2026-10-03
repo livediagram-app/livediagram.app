@@ -1,4 +1,4 @@
-// Exporting one Infographic page (docs/specs/007-editor/illustrate-pages.md "Export"): exactly its
+// Exporting one Illustrate page (docs/specs/007-editor/illustrate-pages.md "Export"): exactly its
 // sheet. The frame is the page's rect with no padding; the background is the page's own paint
 // (the paper exports white); the elements are those that reach onto the page, cut off at its edges
 // by the frame itself; and every element without colours of its own is inked for the page. The
@@ -64,7 +64,7 @@ export function pageExportFrame(
     // Prefixes the gradient and pattern ids: pages of different tabs share ids (every tab's first
     // page), so markup inlined beside other pages' (slide thumbnails, the Map) needs its own.
     idPrefix?: string;
-    // A document page's Lines, on its writing's baselines inside its margins
+    // An article page's Lines, on its writing's baselines inside its margins
     // (docs/specs/007-editor/article-pages.md "Article style").
     ruling?: { pitch: number; inset: number; top: number };
   } = {},

@@ -1,7 +1,7 @@
 /* The writing of an article page (docs/specs/007-editor/article-pages.md "Blocks", "Type",
    "Article style"). One element per article, laid over its pages in columns, one column a page
-   (DocumentFlow): the browser breaks lines between pages and wraps text round floated zones. Every
-   value comes from the CSS variables DocumentFlow sets from the article's resolved style
+   (ArticleFlows): the browser breaks lines between pages and wraps text round floated zones. Every
+   value comes from the CSS variables ArticleFlows sets from the article's resolved style
    (articleStyleVars), so a style change is a variable change. Sizes are canvas px: the writing zooms
    with the canvas. */
 

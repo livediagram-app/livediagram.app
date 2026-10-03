@@ -286,7 +286,7 @@ export function Canvas(props: CanvasProps) {
     showUnionResize,
   } = canvasSelection;
 
-  // An object in a document's writing (a chart, an image, a table) connects to nothing: no
+  // An object in an article's writing (a chart, an image, a table) connects to nothing: no
   // quick-connect pluses on it (docs/specs/007-editor/article-pages.md "Zones").
   const articlePages = props.illustratePages?.pages;
   const plusAllowed = useMemo(() => {
@@ -767,7 +767,7 @@ export function Canvas(props: CanvasProps) {
             bare={props.zenMode === true || canvasTool === 'isometric'}
           />
         ) : null}
-        {/* Document pages' writing (ArticleFlows), over the sheets and under the elements, so a
+        {/* Article pages' writing (ArticleFlows), over the sheets and under the elements, so a
             zone's elements sit in the room the writing leaves them. */}
         {props.illustratePages?.articles && canvasTool !== 'isometric' ? (
           <ArticleFlows

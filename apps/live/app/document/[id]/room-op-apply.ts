@@ -77,7 +77,7 @@ export function applyRoomOpToTabs(tabs: Tab[], op: RoomOp): Tab[] {
         return merged;
       });
     case 'article':
-      // ONE document's writing, block by block (docs/specs/007-editor/article-pages.md
+      // ONE article's writing, block by block (docs/specs/007-editor/article-pages.md
       // "Collaboration"): two people writing different blocks merge.
       return updateTab(tabs, op.tabId, (tab) => {
         if (!isArticleId(op.flow)) return tab;

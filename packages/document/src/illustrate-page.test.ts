@@ -159,7 +159,7 @@ describe('page kinds', () => {
     ...extra,
   });
 
-  it('read a page with no kind as an infographic, and a document page with its flow', () => {
+  it('read a page with no kind as an infographic, and an article page with its flow', () => {
     const [a, b, c] = illustratePagesOf({
       pages: [P('a'), D('b', 'art-1'), { ...P('c'), kind: 'poster', flow: 'art-9' }],
     });
@@ -168,7 +168,7 @@ describe('page kinds', () => {
     expect(c).toEqual(P('c'));
   });
 
-  it('read a document page with no flow as a document of its own', () => {
+  it('read an article page with no flow as an article of its own', () => {
     expect(illustratePagesOf({ pages: [D('b')] })).toEqual([D('b', 'b')]);
   });
 

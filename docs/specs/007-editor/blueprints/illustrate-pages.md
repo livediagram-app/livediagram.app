@@ -12,7 +12,7 @@ every design decision. The mode itself (the switch, the opening mode, the pages'
 | Page kind                   | `PageKind` (`'infographic' \| 'article'`); `pageKindOf(page)` (absent reads infographic), `isArticlePage(page)`                                                            |
 | The first page's choice     | `offersPageKindChoice(pages, pageId, contentCount)`, `withPageKindChosen(tab, pageId, kind, flow)`, `packages/document/src/article-pages.ts`                               |
 | Units of the row            | `PageUnit` (`{ pageIds, flow? }`), `pageUnits`, `unitOfPage`, `withUnitMoved` (`article-pages.ts`); `laidOutUnits` (`usePageReorderDrag.ts`)                               |
-| A flow's pages together     | `withDocumentsTogether(pages)`, private to `illustrate-page.ts`, run by `illustratePagesOf`                                                                                |
+| A flow's pages together     | `withArticlesTogether(pages)`, private to `illustrate-page.ts`, run by `illustratePagesOf`                                                                                |
 | A page laid out             | `LaidOutPage` (`IllustratePage & { index, rect: PageRect }`)                                                                                                               |
 | Page size                   | `PageSizeId` (`'a4' \| 'letter' \| 'a3' \| 'square' \| 'social' \| 'wide'`), `PAGE_SIZES`, `PAGE_SIZE_IDS`                                                                 |
 | Orientation                 | `PageOrientation`, `PAGE_ORIENTATIONS`; `pageHasOrientation(page)`                                                                                                         |
@@ -115,7 +115,7 @@ page; "template" stays the whole-tab starting point.
   - `kind: 'article'` kept with `flow` (a string of 1 to 64 characters, else the page's own id);
     `kind: 'infographic'` kept without a flow; anything else: no kind (unchosen);
   - a repeat of an id already read is skipped; at most `MAX_ILLUSTRATE_PAGES` are read;
-  - then `withDocumentsTogether`: each flow's pages join its first page's run, in stored order,
+  - then `withArticlesTogether`: each flow's pages join its first page's run, in stored order,
     each taking the first's `orientation`, `size` and `background`; the same array back when
     nothing moved.
 - Writes keep the same shape: `size: 'a4'`, an empty name and an empty background are deleted, not
@@ -341,7 +341,7 @@ only the renderer's own markup, whose labels are escaped.
 
 ## Performance and limits
 
-- At most 100 pages; per-render layout is O(pages); `withDocumentsTogether` is O(pages) and
+- At most 100 pages; per-render layout is O(pages); `withArticlesTogether` is O(pages) and
   returns the same array when nothing moves; `laidOutUnits` O(pages) per drag frame.
 - `elementPageSurfaces` and `illustratePageSnapBoxes` run per render: O(elements x pages) and
   O(pages); the provider's value is stable while the entries are, so element views do not

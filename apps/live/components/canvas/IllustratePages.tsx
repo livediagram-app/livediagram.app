@@ -72,14 +72,14 @@ export function IllustratePages({
 }) {
   const { pages, focusPage } = view;
   const articles = view.articles ?? null;
-  // A document page's style (a hover in its Style tab previews one).
+  // An article page's style (a hover in its Style tab previews one).
   const articleStyleOf = (page: LaidOutPage) =>
     page.flow
       ? articles?.stylePreview?.flow === page.flow
         ? articles.stylePreview.style
         : articles?.flows[page.flow]?.style
       : undefined;
-  // A document page's Lines pattern ruled on its writing's baselines, inside its margins.
+  // An article page's Lines pattern ruled on its writing's baselines, inside its margins.
   const rulingOf = (page: LaidOutPage) =>
     page.flow && articles?.flows[page.flow]
       ? {
@@ -88,7 +88,7 @@ export function IllustratePages({
           top: articleTopMarginPx(articleStyleOf(page)),
         }
       : undefined;
-  // A document page's number, in its bottom margin, once its document has more than one page.
+  // An article page's number, in its bottom margin, when its article has them.
   const pageNumberOf = (page: LaidOutPage) => {
     if (!page.flow || !articles?.flows[page.flow]) return null;
     const style = resolveArticleStyle(articleStyleOf(page));
@@ -133,7 +133,7 @@ export function IllustratePages({
     [opened],
   );
   const toggle = (id: string) => setOpened((o) => (o?.id === id ? null : { id, tab: 'page' }));
-  // The page toolbar's Document style button opens the page's panel on Style.
+  // The page toolbar's Article Style button opens the page's panel on Style.
   const styleRequest = useStylePanelRequest();
   const [seenStyleRequest, setSeenStyleRequest] = useState(styleRequest.seq);
   if (styleRequest.seq !== seenStyleRequest) {

@@ -26,12 +26,12 @@ import type { RoomOp } from '@livediagram/api-schema';
 export const EL_OP_BROADCAST_LIMIT = 20;
 
 // Tab keys that never ride a `tab-meta` patch: `id` is immutable, `elements`
-// travels as `el` ops, `articles` as `doc` ops (docs/specs/007-editor/article-pages.md
+// travels as `el` ops, `articles` as `article` ops (docs/specs/007-editor/article-pages.md
 // "Collaboration"), and `folder` is owned by the document-meta op (docs/specs/006-document/tab-folders.md)
 // so a content/meta edit can't clobber a concurrent folder move.
 export const META_SKIP: ReadonlySet<string> = new Set(['id', 'elements', 'articles', 'folder']);
 
-// A whole tab as one op, without its documents' writing: that always travels as `doc` ops, so a
+// A whole tab as one op, without its articles' writing: that always travels as `article` ops, so a
 // long document never makes a whole-tab op too big for the room to carry, and a receiver keeps its
 // own writing through the merge (mergeRemoteTab).
 function wholeTabOp(tab: Tab): RoomOp {
@@ -40,7 +40,7 @@ function wholeTabOp(tab: Tab): RoomOp {
   return { kind: 'tab', tabId: tab.id, tab: rest };
 }
 
-// The `doc` ops for a tab's documents' writing: per document, its block ops, or that it is gone.
+// The `article` ops for a tab's articles' writing: per article, its block ops, or that it is gone.
 // The stored articles are compared by identity first, so an untouched document costs nothing.
 export function tabArticleOps(before: Tab, after: Tab): RoomOp[] {
   if (before.articles === after.articles) return [];
@@ -73,7 +73,7 @@ export function tabArticleOps(before: Tab, after: Tab): RoomOp[] {
   return ops;
 }
 
-// The most characters of block ops one `doc` frame carries: well inside the room's 256K cap on a
+// The most characters of block ops one `article` frame carries: well inside the room's 256K cap on a
 // message (apps/api/src/document-room.ts MAX_MESSAGE_CHARS), with room for the envelope.
 export const ARTICLE_FRAME_CHARS = 200_000;
 
@@ -208,7 +208,7 @@ export function mergeRemoteTab(local: Tab, incoming: Tab): Tab {
     elements,
     folder: local.folder,
     ...(vote !== undefined ? { vote } : {}),
-    // The writing is the `doc` ops' alone (wholeTabOp): ours stays through a whole-tab merge.
+    // The writing is the `article` ops' alone (wholeTabOp): ours stays through a whole-tab merge.
     ...(local.articles !== undefined ? { articles: local.articles } : {}),
   };
 }

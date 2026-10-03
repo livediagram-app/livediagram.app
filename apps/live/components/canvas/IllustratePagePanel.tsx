@@ -69,7 +69,7 @@ export function IllustratePagePanel({
 }) {
   const panel = useRef<HTMLDivElement>(null);
   const mobile = useIsMobileViewport();
-  // A tab a page of this kind lacks (Layouts on a document page) opens as Page.
+  // A tab a page of this kind lacks (Layouts on an article page) opens as Page.
   const [tab, setTab] = useState<PagePanelTab>(
     (initialTab === 'layouts' && page.flow) ||
       ((initialTab === 'style' || initialTab === 'text') && !page.flow)
@@ -363,7 +363,7 @@ function ActionButton({
 }
 
 // Duplicate, move left, move right, delete: one row of icon buttons, each disabled where it has
-// nothing to do (the row's ends, the page limit, the last page). On a document page each acts on
+// nothing to do (the row's ends, the page limit, the last page). On an article page each acts on
 // the whole document, and says so.
 function PageActions({
   page,

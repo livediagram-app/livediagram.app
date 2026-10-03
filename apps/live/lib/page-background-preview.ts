@@ -2,8 +2,8 @@
 
 // A page background hovered in its panel (docs/specs/007-editor/illustrate-pages.md "The page
 // panel", Hover previews): shown on the sheet AND on what is drawn on it, so the ink the page would
-// take (a document's writing, the elements without colours of their own) is previewed with it, not
-// only after the press. On a document page the preview covers every page of its document, as the
+// take (an article's writing, the elements without colours of their own) is previewed with it, not
+// only after the press. On an article page the preview covers every page of its article, as the
 // press would.
 import { useSyncExternalStore } from 'react';
 import type { LaidOutPage, PageBackground } from '@livediagram/document';

@@ -128,7 +128,7 @@ function parsePage(v: unknown): IllustratePage | undefined {
   const background = parseBackground(p.background);
   const name = typeof p.name === 'string' ? p.name.trim().slice(0, PAGE_NAME_MAX) : '';
   // An article page without a readable flow is an article of its own.
-  const document =
+  const kindFields =
     p.kind === 'article'
       ? {
           kind: 'article' as const,
@@ -144,7 +144,7 @@ function parsePage(v: unknown): IllustratePage | undefined {
     ...(isPageSizeId(p.size) && p.size !== 'a4' ? { size: p.size } : {}),
     ...(background ? { background } : {}),
     ...(name ? { name } : {}),
-    ...document,
+    ...kindFields,
   };
 }
 
@@ -162,7 +162,7 @@ export function isArticlePage(
 /** Pages in an order where each document's pages sit together (docs/specs/007-editor/
  *  illustrate-pages.md "A page"): a flow's pages join its first page's run, in their order, and
  *  take its size, orientation and background. Same array back when nothing needed doing. */
-function withDocumentsTogether(pages: IllustratePage[]): IllustratePage[] {
+function withArticlesTogether(pages: IllustratePage[]): IllustratePage[] {
   const byFlow = new Map<string, IllustratePage[]>();
   for (const p of pages) {
     if (!p.flow) continue;
@@ -222,7 +222,7 @@ export function illustratePagesOf(
         return true;
       })
     : [];
-  if (stored.length > 0) return withDocumentsTogether(stored.slice(0, MAX_ILLUSTRATE_PAGES));
+  if (stored.length > 0) return withArticlesTogether(stored.slice(0, MAX_ILLUSTRATE_PAGES));
   const orientation = isPageOrientation(tab?.pageOrientation) ? tab.pageOrientation : 'portrait';
   return [{ id: FIRST_PAGE_ID, orientation }];
 }

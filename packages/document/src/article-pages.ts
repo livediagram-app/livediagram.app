@@ -60,7 +60,7 @@ export function articlePages<P extends IllustratePage>(pages: readonly P[], flow
   return pages.filter((p) => p.flow === flow);
 }
 
-const withDocs = <T extends object>(
+const withArticleMap = <T extends object>(
   tab: T,
   articles: Record<string, ArticleFlow>,
 ): T & { articles?: Record<string, ArticleFlow> } => {
@@ -105,7 +105,7 @@ export function withArticleRemoved<T extends PagesTab>(tab: T, flow: string): T 
   );
   const { [flow]: _drop, ...articles } = articlesOf(tab);
   void _drop;
-  return withDocs(repaged, articles);
+  return withArticleMap(repaged, articles);
 }
 
 /** The row with a page's unit moved to `toUnit` (its place among the units, 0 first), every
@@ -171,12 +171,12 @@ export function withArticleDuplicated<T extends PagesTab>(
   const after = layOutIllustratePages(next);
   // Every element on the article's pages, shifted from its page to that page's copy (all pages of
   // an article are one size, so one shift does for all of them).
-  const onDoc = new Set<string>();
+  const onArticle = new Set<string>();
   for (const p of source)
-    for (const id of elementIdsOnPage(tab.elements, before, p.id)) onDoc.add(id);
+    for (const id of elementIdsOnPage(tab.elements, before, p.id)) onArticle.add(id);
   const from = before.find((p) => p.id === source[0]!.id)!.rect;
   const to = after.find((p) => p.id === copies[0]!.id)!.rect;
-  const copied = new Set(onDoc);
+  const copied = new Set(onArticle);
   let dropped = true;
   while (dropped) {
     dropped = false;
@@ -184,7 +184,7 @@ export function withArticleDuplicated<T extends PagesTab>(
       if (!copied.has(el.id) || el.type !== 'arrow') continue;
       const tied = [el.from, el.to].some(
         (ep) =>
-          (ep.kind === 'pinned' && !onDoc.has(ep.elementId)) ||
+          (ep.kind === 'pinned' && !onArticle.has(ep.elementId)) ||
           (ep.kind === 'on-arrow' && !copied.has(ep.arrowId)),
       );
       if (tied) {
