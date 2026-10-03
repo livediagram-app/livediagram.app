@@ -158,6 +158,24 @@ describe('WebSocket upgrade — trust headers', () => {
     expect(seen).toHaveLength(0);
   });
 
+  it('refuses an account id in ?o= on a personal document', async () => {
+    // An account id is readable by teammates (team member lists), unlike a
+    // guest owner's server-minted UUID, so it is never a room credential:
+    // signed-in owners come in through the ticket, as on REST (§4.1).
+    db.getDocumentMeta.mockResolvedValue({ ownerId: 'user_2abcDEF', teamId: null });
+    db.getShareLink.mockResolvedValue(null);
+    const { env, seen } = roomEnv();
+    const res = await handleDocumentRoomRoutes(
+      makeTestRouteContext('GET', '/api/documents/d1/ws?o=user_2abcDEF', {
+        owner: null,
+        headers: { Upgrade: 'websocket' },
+        env,
+      }),
+    );
+    expect(res?.status).toBe(403);
+    expect(seen).toHaveLength(0);
+  });
+
   it('admits a ticket holder with the role the mint resolved', async () => {
     db.getDocumentMeta.mockResolvedValue({ ownerId: 'someone-else', teamId: 'team-1' });
     db.consumeWsTicket.mockResolvedValue({ role: 'edit', tabScope: null, shareCode: null });

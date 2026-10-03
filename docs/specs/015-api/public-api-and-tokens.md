@@ -158,7 +158,9 @@ the app has — **unless** it was minted **read-only** (the one scope that
 exists): a `read_only` column (migration 0039) that, when set, restricts the
 token to `GET`/`HEAD`; the api worker rejects every write it presents at a
 single dispatch choke point with `403 read_only_token`
-([MCP server §4.11](mcp-server.md)). Read-only tokens are minted through the MCP
+([MCP server §4.11](mcp-server.md)). The same choke point refuses it the one read that is a
+credential rather than content: `GET /api/documents/:id/share`, whose links and password would let it
+open an edit link. Read-only tokens are minted through the MCP
 consent screen (a "read-only access" checkbox), giving a cautious user a way to
 let an AI tool VIEW their documents without granting edit. There is still no
 finer-grained scope vocabulary (per-resource, per-verb); that remains deferred
@@ -427,6 +429,10 @@ segment, before the signature gate and independent of
 `401 account_id_not_a_guest_credential`). Nothing legitimate is grandfathered
 because nothing legitimate ever had this shape, so there is no window to bound
 and nothing for an operator to arm.
+
+The realtime room's upgrade refuses the same shape on its owner leg (`?o=`, `routes/document-room-routes.ts`):
+a signed-in owner of a personal document joins through the one-time room ticket, as a team owner does, and an
+account id presented as `?o=` admits nobody.
 
 This matters most for **personal** documents, whose ownership legitimately
 resolves through the hybrid header path — that path is safe precisely because a

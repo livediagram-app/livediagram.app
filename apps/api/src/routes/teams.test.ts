@@ -319,6 +319,19 @@ describe('shareable invite link (docs/specs/013-workspace/teams.md)', () => {
     const memberRes = await handleTeams(makeCtx('GET', '/api/teams/t1'));
     expect(await memberRes.json()).toMatchObject({ inviteLink: null });
   });
+
+  it("leaves inviteLink out for an API token, even an admin's", async () => {
+    // The token is a credential for joining the team and editing its library;
+    // team administration is session-only (§3.4), so a token never reads it.
+    db.listTeamMembers.mockResolvedValue([member()]);
+    db.getTeamInviteLink.mockResolvedValue({ token: 'tok-1', expiresAt: 999 });
+    db.getMembership.mockResolvedValue(member()); // admin
+    const res = await handleTeams(
+      makeCtx('GET', '/api/teams/t1', { clerkUserId: null, verifiedUserId: 'user-1' }),
+    );
+    expect(await res.json()).toMatchObject({ inviteLink: null });
+    expect(db.getTeamInviteLink).not.toHaveBeenCalled();
+  });
 });
 
 describe('invited rows grant no admin powers', () => {
