@@ -11,6 +11,10 @@ import {
   type ImportDrawioDocuments,
   type ImportDrawioLibraries,
 } from './useDrawioFileImport';
+// Loaded now, at collection: the hook imports these lazily, and a cold load of their graph
+// inside the first test spent its whole timeout on a busy CI runner.
+import '@/lib/drawio/files';
+import '@/lib/drawio/library-store';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 vi.spyOn(console, 'info').mockImplementation(() => {});

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { cpuMsOf } from '@livediagram/vitest-config/cpu-time';
 import { bytesToBase64 } from '@livediagram/api-schema';
 import type { Env } from '../types';
 import { driveMode, googleOAuthBase } from './config';
@@ -42,8 +43,11 @@ describe('googleOAuthBase', () => {
 
   it('trims trailing slashes in linear time, whatever the value holds', () => {
     const long = `http://h/${'/'.repeat(200_000)}x`;
-    const start = performance.now();
-    expect(googleOAuthBase(env({ GOOGLE_OAUTH_BASE_URL: long }))).toBe(long);
-    expect(performance.now() - start).toBeLessThan(50);
+    let base = '';
+    const spent = cpuMsOf(() => {
+      base = googleOAuthBase(env({ GOOGLE_OAUTH_BASE_URL: long }));
+    });
+    expect(base).toBe(long);
+    expect(spent).toBeLessThan(50);
   });
 });

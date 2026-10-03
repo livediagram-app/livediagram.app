@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { deflateRawSync } from 'node:zlib';
 import { describe, expect, it } from 'vitest';
+import { cpuMsOf } from '@livediagram/vitest-config/cpu-time';
 import { readDrawioSource, sniffDrawio } from './envelope';
 import { ByteBudget } from './inflate';
 
@@ -202,9 +203,12 @@ describe('sniffDrawio on hostile heads', () => {
     ['an unclosed declaration', '<?xml' + ' a'.repeat(30_000)],
     ['a tag name that never ends', '<' + 'a'.repeat(60_000)],
   ])('reads %s in linear time', (_, head) => {
-    const started = performance.now();
-    expect(sniffDrawio(t(head))).toBeNull();
-    expect(performance.now() - started).toBeLessThan(20);
+    let sniffed: ReturnType<typeof sniffDrawio> | undefined;
+    const spent = cpuMsOf(() => {
+      sniffed = sniffDrawio(t(head));
+    });
+    expect(sniffed).toBeNull();
+    expect(spent).toBeLessThan(20);
   });
 
   it('skips a doctype and closed comments before the root', () => {

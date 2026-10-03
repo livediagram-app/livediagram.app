@@ -2,6 +2,9 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { ShapeLibraryItem } from '@livediagram/api-schema';
 import { libraryItemThumbnail } from './shape-library-thumbnail';
+// Loaded now, at collection: the thumbnail imports the exporter lazily, and a cold load of its
+// graph inside the first test spent its whole timeout on a busy CI runner.
+import './export-tab';
 
 // docs/specs/013-workspace/shape-libraries.md "Using a library": a tile's thumbnail is the item drawn
 // by the editor's own SVG export, as an inert image, cached per item.

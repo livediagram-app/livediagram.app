@@ -7,6 +7,10 @@ import { boardFiles, inkGroup } from '@/lib/ms-whiteboard/ms-whiteboard-fixtures
 import type { PickedExport } from '@/lib/pick-folder';
 import type { ImportOutcome } from '@/lib/import-tab';
 import { READ_ERRORS, UNEXPECTED, useMsWhiteboardImport } from './useMsWhiteboardImport';
+// Loaded now, at collection: the hook imports these lazily, and a cold load of their graph
+// inside the first test spent its whole timeout on a busy CI runner.
+import '@/lib/ms-whiteboard/import';
+import '@/lib/ms-whiteboard/file-sets';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 import { track } from '@/lib/telemetry';

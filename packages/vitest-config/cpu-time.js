@@ -17,3 +17,18 @@ export function cpuMsOf(fn) {
   const spent = process.cpuUsage(before);
   return (spent.user + spent.system) / 1000;
 }
+
+/**
+ * `cpuMsOf` for async work: the CPU time this process spent while `fn`'s
+ * promise settled. The worker runs one test at a time, so nothing else is
+ * on its CPU meanwhile.
+ *
+ * @param {() => Promise<unknown>} fn
+ * @returns {Promise<number>}
+ */
+export async function cpuMsOfAsync(fn) {
+  const before = process.cpuUsage();
+  await fn();
+  const spent = process.cpuUsage(before);
+  return (spent.user + spent.system) / 1000;
+}

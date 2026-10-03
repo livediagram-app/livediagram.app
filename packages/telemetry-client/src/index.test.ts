@@ -1,4 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+// Loaded once at collection so the per-test fresh import below re-runs a transformed module
+// rather than paying the cold transform inside the first test.
+import './index';
 
 // The engine only touches window / document / navigator / fetch inside
 // its functions (all typeof-guarded), so plain node + stubbed globals

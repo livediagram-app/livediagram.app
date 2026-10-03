@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { bytesToBase64 } from '@livediagram/api-schema';
+import { base64ToBytes, bytesToBase64, bytesToBase64Url } from '@livediagram/api-schema';
 import { importDriveKey, openRefreshToken, sealRefreshToken } from './crypto';
 
 // The refresh token is sealed with AES-GCM under DRIVE_TOKEN_KEY before it
@@ -7,6 +7,19 @@ import { importDriveKey, openRefreshToken, sealRefreshToken } from './crypto';
 
 const KEY = bytesToBase64(new Uint8Array(32).map((_, i) => i + 1));
 const OTHER_KEY = bytesToBase64(new Uint8Array(32).map((_, i) => 200 - i));
+
+// Flips one bit of the decoded bytes of a sealed value's part (1 = IV,
+// 2 = ciphertext and tag). Editing the base64 text instead is not reliable:
+// the last character carries padding bits, so some edits decode to the same
+// bytes and the "tampered" value is the original.
+function flipBit(sealed: string, part: 1 | 2, byteIndex: number): string {
+  const parts = sealed.split('.');
+  const bytes = base64ToBytes(parts[part]!)!;
+  const index = byteIndex < 0 ? bytes.length + byteIndex : byteIndex;
+  bytes[index]! ^= 0x01;
+  parts[part] = bytesToBase64Url(bytes);
+  return parts.join('.');
+}
 
 describe('importDriveKey', () => {
   it('accepts base64 of exactly 32 bytes', async () => {
@@ -48,8 +61,10 @@ describe('sealRefreshToken / openRefreshToken', () => {
     const sealed = await sealRefreshToken(other, 'user_a', 'secret');
     expect(await openRefreshToken(key, 'user_a', sealed)).toBeNull();
     const mine = await sealRefreshToken(key, 'user_a', 'secret');
-    const tampered = mine.slice(0, -2) + (mine.endsWith('A') ? 'BB' : 'AA');
-    expect(await openRefreshToken(key, 'user_a', tampered)).toBeNull();
+    expect(await openRefreshToken(key, 'user_a', mine)).toBe('secret');
+    expect(await openRefreshToken(key, 'user_a', flipBit(mine, 1, 0))).toBeNull();
+    expect(await openRefreshToken(key, 'user_a', flipBit(mine, 2, 0))).toBeNull();
+    expect(await openRefreshToken(key, 'user_a', flipBit(mine, 2, -1))).toBeNull();
     expect(await openRefreshToken(key, 'user_a', 'garbage')).toBeNull();
   });
 });

@@ -113,13 +113,11 @@ function elementOnly(node: ts.Expression): boolean {
 export function checkOpticalAlignment({ root }: { root: string }): OpticalViolation[] {
   const violations: OpticalViolation[] = [];
   for (const path of sources(root)) {
-    const sf = ts.createSourceFile(
-      path,
-      readFileSync(path, 'utf8'),
-      ts.ScriptTarget.Latest,
-      true,
-      ts.ScriptKind.TSX,
-    );
+    const source = readFileSync(path, 'utf8');
+    // A violation needs ROUND in one of this file's class literals: a file without the token has
+    // none, and skipping its parse keeps the guard fast enough for a busy CI runner.
+    if (!source.includes('rounded-full')) continue;
+    const sf = ts.createSourceFile(path, source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
     const visit = (node: ts.Node): void => {
       if (ts.isJsxElement(node)) {
         const opening = node.openingElement;

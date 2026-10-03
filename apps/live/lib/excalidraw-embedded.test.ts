@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
+import { cpuMsOfAsync } from '@livediagram/vitest-config/cpu-time';
 import { extractExcalidrawScene } from './excalidraw-embedded';
 
 const SCENE = JSON.stringify({
@@ -213,10 +214,12 @@ describe('real Excalidraw exports', () => {
 describe('extractExcalidrawScene on hostile SVG', () => {
   it('reads a payload marker followed by a long run of spaces in linear time', async () => {
     const svg = `<svg><!-- payload-type:application/vnd.excalidraw+json --><!-- payload-start -->${' '.repeat(200_000)}x`;
-    const started = performance.now();
-    const read = await extractExcalidrawScene(svg);
-    expect(read.ok).toBe(false);
-    expect(performance.now() - started).toBeLessThan(50);
+    let read: Awaited<ReturnType<typeof extractExcalidrawScene>> | undefined;
+    const spent = await cpuMsOfAsync(async () => {
+      read = await extractExcalidrawScene(svg);
+    });
+    expect(read?.ok).toBe(false);
+    expect(spent).toBeLessThan(50);
   });
 
   it('treats an empty payload as no payload', async () => {

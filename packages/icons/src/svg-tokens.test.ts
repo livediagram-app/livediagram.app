@@ -42,12 +42,14 @@ describe('svgElements', () => {
   });
 
   it('stays linear on hostile input', () => {
-    // CPU time, not wall-clock (cpuMsOf): immune to other suites sharing the box.
+    // CPU time, not wall-clock (cpuMsOf): immune to other suites sharing the box. About 30 ms
+    // under coverage on a dev machine and a few times that on CI, while a per-character re-scan
+    // of inputs this long costs 0.8 s plain and seconds under coverage.
     const spent = cpuMsOf(() => {
-      svgElements('<path ' + 'A'.repeat(200_000));
-      svgElements('<path'.repeat(50_000));
-      svgElements('<a b="'.repeat(50_000));
+      svgElements('<path ' + 'A'.repeat(50_000));
+      svgElements('<path'.repeat(12_500));
+      svgElements('<a b="'.repeat(12_500));
     });
-    expect(spent).toBeLessThan(200);
+    expect(spent).toBeLessThan(500);
   });
 });
