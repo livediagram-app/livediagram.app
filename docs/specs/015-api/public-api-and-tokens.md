@@ -153,6 +153,10 @@ source changes.
 
 ### 3.4 Access — full read + write, with an optional read-only flag
 
+> **Specified, not built:** the read-only flag becomes a token level (view, participate or edit), one vocabulary with
+> share links ([Share roles](../013-workspace/share-roles.md#api-tokens)). Read-only tokens become view tokens; the
+> rest become edit tokens.
+
 A token grants its owner's **full** access — read AND write, the same surface
 the app has — **unless** it was minted **read-only** (the one scope that
 exists): a `read_only` column (migration 0039) that, when set, restricts the
@@ -282,6 +286,16 @@ one expire frees a slot.
 user's data, tokens included: `DELETE /api/account` ([`routes/account.ts`](../../../apps/api/src/routes/account.ts))
 must delete the owner's `api_tokens` rows in the same cascade as their documents
 / folders / themes, so no credential outlives the account.
+
+### 3.6a A token's view of itself
+
+A token may read and revoke **itself**, which escalates nothing, so the [CLI](cli.md) can show who it is and sign
+out cleanly:
+
+- `GET /api/tokens/current`: the account id and display name, the token's name, its role and `expiresAt`.
+- `DELETE /api/tokens/current`: revokes the presenting token (204).
+
+Every other `/api/tokens` route stays session-only.
 
 ### 3.7 Self-hosting
 
