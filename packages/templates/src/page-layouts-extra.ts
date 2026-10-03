@@ -13,15 +13,18 @@ export function quotePage(k: Kit): Element[] {
   const { width: W, height: H } = k.box;
   const { u } = k;
   const markH = u * 24;
-  const quoteH = H * (k.wide ? 0.4 : 0.42);
+  const quoteH = H * (k.wide ? 0.4 : 0.34);
   const d = u * 16;
-  const attrY = markH + quoteH + u * 8;
+  // The quote, its mark and its attribution, as one block centred down the page.
+  const blockH = markH + quoteH + u * 8 + d;
+  const top = Math.max(0, (H - blockH) / 2);
+  const attrY = top + markH + quoteH + u * 8;
   const textX = d + u * 5;
   return [
-    k.title(0, 0, u * 20, markH, '“'),
+    k.title(0, top, u * 20, markH, '“'),
     k.text(
       0,
-      markH,
+      top + markH,
       k.wide ? W * 0.85 : W,
       quoteH,
       'Put the one line people should remember here, in the words of someone who said it.',

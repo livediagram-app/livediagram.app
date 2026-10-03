@@ -37,9 +37,11 @@ function titlePage(k: Kit): Element[] {
   const head = [
     k.text(0, 0, W * 0.6, u * 5, 'ANNUAL REPORT 2026', { textBold: true }),
     k.title(0, u * 6, k.wide ? W * 0.5 : W, u * 16, 'Your big headline'),
+    // A short accent rule between the headline and the line under it.
+    k.shape('square', 0, u * 23, u * 14, u * 1.2, { label: '', borderRadius: 'full' }),
     k.text(
       0,
-      u * 25,
+      u * 27,
       k.wide ? W * 0.45 : W * 0.85,
       u * 12,
       'One line on what this page shows, and why it matters.',
@@ -66,6 +68,7 @@ function bigNumber(k: Kit): Element[] {
       }),
       k.text(W * 0.55, H * 0.22, W * 0.45, H * 0.42, body, { textSize: 'lg' }),
       k.shape('progress-bar', W * 0.55, H * 0.7, W * 0.45, u * 5, { progress: 73 }),
+      source(k),
     ];
   }
   return [
@@ -75,8 +78,14 @@ function bigNumber(k: Kit): Element[] {
       textBold: true,
     }),
     k.text(0, H * 0.53, W * 0.85, H * 0.18, body, { textSize: 'lg' }),
-    k.shape('progress-bar', 0, H * 0.8, W, u * 5, { progress: 73 }),
+    k.shape('progress-bar', 0, H * 0.78, W, u * 5, { progress: 73 }),
+    source(k),
   ];
+}
+
+// The line an infographic owes its numbers: where they came from, at the foot of the page.
+function source(k: Kit, label = 'Source: say where these numbers come from, and when.'): Element {
+  return k.text(0, k.box.height - k.u * 6, k.box.width, k.u * 6, label);
 }
 
 function keyStats(k: Kit): Element[] {
@@ -228,8 +237,10 @@ function comparison(k: Kit): Element[] {
   const colW = (W - gap) / 2;
   const verdictH = u * 18;
   const rowsTop = head.top + u * 18;
-  const rowH = Math.min(u * 22, (H - verdictH - u * 6 - rowsTop) / 3);
-  const icon = Math.min(u * 8, rowH * 0.6);
+  // The rows share the column down to the verdict, their type growing with the room.
+  const rowH = (H - verdictH - u * 6 - rowsTop) / 3;
+  const icon = Math.min(u * 10, rowH * 0.6);
+  const lineSize = rowH > u * 24 ? 'lg' : 'md';
   const column = (x: number, title: string, iconId: string, lines: string[]) => [
     k.shape('square', x, head.top, colW, u * 12, {
       label: title,
@@ -241,7 +252,9 @@ function comparison(k: Kit): Element[] {
       const y = rowsTop + i * rowH;
       return [
         k.shape('icon', x, y, icon, icon, { iconId }),
-        k.text(x + icon + u * 4, y, colW - icon - u * 4, rowH - u * 2, line),
+        k.text(x + icon + u * 4, y, colW - icon - u * 4, rowH - u * 2, line, {
+          textSize: lineSize,
+        }),
       ];
     }),
   ];
@@ -268,7 +281,7 @@ function comparison(k: Kit): Element[] {
 function chartStory(k: Kit): Element[] {
   const { width: W, height: H } = k.box;
   const { u } = k;
-  const head = heading(k, 'What the data says');
+  const head = heading(k, 'What the data says', 'Four quarters of steady growth.');
   const bars = (w: number, h: number, x: number, y: number) =>
     k.shape('bar-chart', x, y, w, h, {
       pieSlices: [
@@ -297,7 +310,12 @@ function chartStory(k: Kit): Element[] {
       ];
     });
   };
-  const avail = H - head.top;
+  // A caption names the chart; the source line sits at the foot.
+  const capH = u * 8;
+  const foot = u * 9;
+  const caption = (x: number, y: number, w: number) =>
+    k.text(x, y, w, capH, 'Revenue by quarter, £k', { textBold: true });
+  const avail = H - head.top - foot;
   if (k.wide) {
     const chartW = W * 0.58;
     const sideW = W - chartW - u * 6;
@@ -305,19 +323,23 @@ function chartStory(k: Kit): Element[] {
     const restY = head.top + side + u * 6;
     return [
       ...head.els,
-      bars(chartW, avail, 0, head.top),
+      caption(0, head.top, chartW),
+      bars(chartW, avail - capH, 0, head.top + capH),
       ring(side, chartW + u * 6, head.top),
-      ...rows(chartW + u * 6, restY, sideW, H - restY),
+      ...rows(chartW + u * 6, restY, sideW, head.top + avail - restY),
+      source(k),
     ];
   }
-  const chartH = avail * 0.5;
-  const side = Math.min(W * 0.38, avail - chartH - u * 6);
-  const lowerY = head.top + chartH + u * 6;
+  const chartH = (avail - capH) * 0.55;
+  const lowerY = head.top + capH + chartH + u * 6;
+  const side = Math.min(W * 0.38, head.top + avail - lowerY);
   return [
     ...head.els,
-    bars(W, chartH, 0, head.top),
+    caption(0, head.top, W),
+    bars(W, chartH, 0, head.top + capH),
     ring(side, 0, lowerY),
     ...rows(side + u * 6, lowerY, W - side - u * 6, side),
+    source(k),
   ];
 }
 

@@ -128,7 +128,13 @@ A **layout** is placed onto one page from its panel's **Layouts** section, a gri
       then "n of 6 done" and a progress bar.
   13. **Event**: "You're invited", a title, an image, when and where (icon rows) and a "Save your
       spot" banner.
-- **Body type** is the page-sized medium and large text sizes, never the small one.
+- **Body type** is the page-sized medium and large text sizes, never the small one. Headlines
+  are large text scaled to their box (`textScale`), so they read the same on the canvas and in
+  every export.
+- **Numbers cite a source**: Big number and Chart story end in a source line at the page's
+  foot; Chart story's chart carries a caption naming what it shows.
+- **Nothing floats in empty space**: Quote centres its block down the page; Comparison's rows
+  share their column down to the verdict.
 - **Fitted to the page**: a layout is laid out in proportions of the page (margins of 7% of the
   short side), so it fits any size and orientation; its titles use the fit-to-box text size so they
   scale with their box.
