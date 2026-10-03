@@ -1,5 +1,7 @@
 'use client';
 
+import { pageRulingOf, pageWritingBars } from '@/lib/doc/doc-export';
+import { docOpsToSvg } from '@/lib/doc/doc-draw';
 import { useMemo } from 'react';
 import {
   r2,
@@ -60,8 +62,17 @@ export function useSlideThumbnails(deck: Deck, tabs: Tab[]): Map<string, SlideTh
       const page = slide.pageId
         ? layOutIllustratePages(illustratePagesOf(tab)).find((p) => p.id === slide.pageId)
         : undefined;
-      if (page)
-        parts.push(pageExportFrame(page, { idPrefix: `lvd-slide-${slide.id}` }).backgroundSvg);
+      if (page) {
+        parts.push(
+          pageExportFrame(page, {
+            idPrefix: `lvd-slide-${slide.id}`,
+            ruling: pageRulingOf(tab, page),
+          }).backgroundSvg,
+        );
+        // A document page's writing, as lines of text.
+        const bars = pageWritingBars(page);
+        if (bars.length) parts.push(docOpsToSvg(bars));
+      }
       for (const el of elements) {
         if (el.type !== 'arrow') {
           parts.push(

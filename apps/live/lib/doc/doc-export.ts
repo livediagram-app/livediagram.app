@@ -47,6 +47,21 @@ export function pageWriting(tab: Tab, page: LaidOutPage): PageWriting | null {
   return { ops, fonts: [style.headingFont, style.bodyFont, 'roboto-mono'] };
 }
 
+/** A document page's writing as soft bars, one per line of text: a thumbnail's or the Map's. */
+export function pageWritingBars(page: LaidOutPage, ink = 'rgb(100 116 139 / 0.45)'): DocDrawOp[] {
+  if (!page.flow) return [];
+  const bars = docHandleOf(page.flow)?.bars(ink) ?? [];
+  const r = page.rect;
+  return bars.filter(
+    (op) =>
+      op.k === 'rect' &&
+      op.x >= r.x - 1 &&
+      op.x <= r.x + r.width &&
+      op.y >= r.y - 1 &&
+      op.y <= r.y + r.height,
+  );
+}
+
 /** A document page's Lines drawn on its writing's baselines inside its margins. */
 export function pageRulingOf(
   tab: Tab,

@@ -242,3 +242,39 @@ function markerOps(
     anchor: 'end',
   });
 }
+
+/**
+ * The writing as soft bars, one per line of text (docs/specs/007-editor/document-pages.md "The Map
+ * shows each page's text as soft grey lines"): what a thumbnail or the Map draws, far cheaper than
+ * the words (one rect read per text node, not per character).
+ */
+export function snapshotBars(
+  root: HTMLElement,
+  toCanvas: (x: number, y: number) => { x: number; y: number },
+  scale: number,
+  ink: string,
+): DocDrawOp[] {
+  const ops: DocDrawOp[] = [];
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  const range = document.createRange();
+  while (walker.nextNode()) {
+    const node = walker.currentNode as Text;
+    if (!node.textContent?.trim() || node.parentElement?.closest('.doc-page-break, .doc-zone'))
+      continue;
+    range.selectNodeContents(node);
+    for (const r of Array.from(range.getClientRects())) {
+      if (r.width < 1) continue;
+      const p = toCanvas(r.left, r.top + r.height * 0.25);
+      ops.push({
+        k: 'rect',
+        x: p.x,
+        y: p.y,
+        w: r.width / scale,
+        h: (r.height * 0.5) / scale,
+        fill: ink,
+        r: 2,
+      });
+    }
+  }
+  return ops;
+}

@@ -464,6 +464,7 @@ export function useCanvasChromePanels({
       <Minimap
         elements={mapElements}
         pages={props.illustratePages?.pages}
+        writing={props.illustratePages?.documents?.docs}
         tabFont={props.tabFont}
         viewportOffset={props.viewportOffset}
         viewportZoom={viewportZoom}

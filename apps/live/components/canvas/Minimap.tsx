@@ -1,5 +1,7 @@
 'use client';
 
+import { pageWritingBars } from '@/lib/doc/doc-export';
+import { docOpsToSvg } from '@/lib/doc/doc-draw';
 import { useDeferredValue, useMemo, useRef } from 'react';
 import {
   boundsOfPoints,
@@ -55,6 +57,8 @@ type MinimapProps = {
   // Illustrate mode's pages (docs/specs/007-editor/illustrate-pages.md "Getting around the
   // pages"): drawn under the content as their sheets, each outlined, and counted in the bounds.
   pages?: readonly LaidOutPage[];
+  // The documents' writing, by identity: the picture redraws a page's lines of text as it changes.
+  writing?: unknown;
   // The tab default face (docs/specs/004-interface-design/fonts.md): the miniature paints what the canvas
   // paints, so a canvas set in the marker face looks that way in the map too.
   tabFont?: string;
@@ -123,6 +127,7 @@ const MAP_RATIO: Record<MapSize, number> = {
 export function Minimap({
   elements: liveElements,
   pages,
+  writing,
   tabFont,
   viewportOffset,
   viewportZoom,
@@ -174,6 +179,8 @@ export function Minimap({
       const { x, y, width, height } = page.rect;
       parts.push(
         pageExportFrame(page, { paper, idPrefix: 'lvd-minimap-page' }).backgroundSvg +
+          // A document page's writing, as soft lines of text.
+          (page.flow ? docOpsToSvg(pageWritingBars(page, outline)) : '') +
           `<rect x="${x}" y="${y}" width="${width}" height="${height}" fill="none" stroke="${outline}" stroke-width="${Math.max(width, height) / 160}"/>`,
       );
       corners.push({ x, y }, { x: x + width, y: y + height });
@@ -235,7 +242,9 @@ export function Minimap({
       picture: { ...box, href: `data:image/svg+xml;charset=utf-8,${encodeURIComponent(doc)}` },
       bounds: content,
     };
-  }, [elements, pages, tabFont, iconsLoaded, surface]);
+    // `writing` changes with the documents' text, which the bars read off the editors.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [elements, pages, tabFont, iconsLoaded, surface, writing]);
 
   const recentreToClient = (clientX: number, clientY: number) => {
     const svg = svgRef.current;

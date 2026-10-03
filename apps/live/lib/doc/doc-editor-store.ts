@@ -44,6 +44,8 @@ export type DocEditorHandle = {
   caretCanvasPoint: () => { x: number; y: number } | null;
   // The writing as laid out now, as draw operations in canvas coordinates (an export).
   snapshot: () => import('./doc-snapshot').DocDrawOp[];
+  // The writing as soft bars, one per line (a thumbnail, the Map).
+  bars: (ink: string) => import('./doc-snapshot').DocDrawOp[];
 };
 
 // Every document's editor on the tab, by flow: what an insert into a document that is not being

@@ -41,7 +41,7 @@ import {
 import { docSchema } from '@/lib/doc/doc-schema';
 import { columnAt, flowFrame, pagePlaceOf } from '@/lib/doc/doc-flow-geometry';
 import { docStyleVars, type DocInk } from '@/lib/doc/doc-style-vars';
-import { snapshotWriting } from '@/lib/doc/doc-snapshot';
+import { snapshotBars, snapshotWriting } from '@/lib/doc/doc-snapshot';
 import { debugLog } from '@/lib/debug-log';
 
 // How long typing pauses before it is written to the tab (docs/specs/007-editor/document-pages.md
@@ -411,6 +411,18 @@ export default function DocumentFlowEditor(props: DocumentFlowEditorProps) {
           view.dom,
           (x, y) => ({ x: frame.x + (x - root.left) / z, y: frame.y + (y - root.top) / z }),
           z,
+        );
+      },
+      bars: (ink: string) => {
+        const p = latest.current;
+        const frame = flowFrame(p.pages, p.margin);
+        const root = view.dom.getBoundingClientRect();
+        const z = root.width / Math.max(1, view.dom.offsetWidth) || p.zoom;
+        return snapshotBars(
+          view.dom,
+          (x, y) => ({ x: frame.x + (x - root.left) / z, y: frame.y + (y - root.top) / z }),
+          z,
+          ink,
         );
       },
       caretCanvasPoint: () => {
