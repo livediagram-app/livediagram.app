@@ -62,9 +62,10 @@ A gesture's cost scales with what it changes and what is on screen, never with t
 - **Whole-board passes stay linear and run once.** What deliberately looks across the whole board
   (alignment and distribution snapping, the endpoint spread, the arrow label pass) makes one
   linear pass per frame at most, shared by everything that reads it.
-- **A move re-renders what moved.** Dragging a selection re-renders the moved elements, the arrows
-  attached to them, and the arrows whose path or holes the move changes; every other element view
-  keeps its last render.
+- **A move re-renders what moved.** A move, resize or reshape draws from a preview and writes the
+  document once, on release ([Drag preview](drag-preview.md)): the moved elements and the arrows
+  that depend on them re-render each frame, and nothing derived from the rest of the board is
+  recomputed.
 - **Derived layouts are computed once per change.** Arrow labels, ink projection and theme
   colours are laid out per element change and cached per element identity, as arrow labels are
   today.
