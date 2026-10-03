@@ -22,7 +22,7 @@ Specs live in numbered category folders: the reserved `001`–`005` first (visio
 - ./012-collaboration/README.md - when working on realtime, sessions, facilitation, comments, actions or room tools
 - ./013-workspace/README.md - when working on the Explorer, its filters, folders, default folders, teams, favourites, shape libraries, share links or the Trash
 - ./014-identity/README.md - when working on auth, guest access, profiles or account email
-- ./015-api/README.md - when working on the api worker, its OpenAPI document, tokens or the MCP server
+- ./015-api/README.md - when working on the api worker, its OpenAPI document, tokens, the MCP server or the CLI
 - ./016-platform/README.md - when working on routing, deployment or the staging environment, or the new version prompt and stale builds
 - ./017-telemetry/README.md - when adding or changing anonymous events or the telemetry dashboard
 - ./018-help/README.md - when working on the help centre or contextual help links
@@ -31,6 +31,7 @@ Specs live in numbered category folders: the reserved `001`–`005` first (visio
 - ./021-event-storming/README.md - when working on the event-storming board, its lanes or its photo import
 - ./022-drive-mirror/README.md - when working on the Google Drive mirror of My documents
 - ./023-draw-mode/README.md - when working on Draw mode: its pens, dock, snap colours, text boxes and path tool
+- ./024-agents/README.md - when an agent reads, writes or comments on documents: changesets, presence, views, edit operations, lint
 
 ## Workflow
 

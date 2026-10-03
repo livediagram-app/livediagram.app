@@ -143,10 +143,12 @@ by the room itself, one at a time ([Q&A board](qa-board.md)).
    offline durability read D1.
 3. **The selection lock stays advisory.** The [Live app](../007-editor/live-app.md) lock soft-locks a
    selected element for peers on the client. It makes same-element concurrent
-   editing rare, not impossible: the room does not enforce it, and a REST
-   writer (the MCP server, an API-token script) never sees it. Such collisions
-   stay last-writer-wins over the whole element, which is the cost accepted in
-   dropping the field-level CRDT below.
+   editing rare, not impossible: the room does not enforce it between people.
+   Such collisions stay last-writer-wins over the whole element, which is the
+   cost accepted in dropping the field-level CRDT below. An agent is the
+   exception: a changeset targeting an element a person holds is refused
+   ([Agent changesets](../024-agents/agent-changesets.md#held-elements)), so
+   people outrank agents.
 
 ## Considered and dropped: a full field-level CRDT
 

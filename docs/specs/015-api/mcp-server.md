@@ -149,6 +149,14 @@ no-auth self-host: the exchange endpoint rejects every caller and the consent
 page has no signed-in user, so the MCP can mint nothing. Operators who don't want
 the MCP simply don't deploy `apps/mcp`; nothing else references it.
 
+**The CLI signs in here too** ([CLI](cli.md#authentication)). This server is the
+one authorisation server for both front doors, so it also offers what a
+command-line client needs: a loopback redirect matched on scheme, host and path
+with any port (RFC 8252 §7.3), a pre-registered public client `livediagram-cli`
+whose name the consent screen can trust, and the device authorisation grant
+(RFC 8628) with a `/oauth/device` page in `apps/live` for machines without a
+browser. A token minted for the CLI is named "livediagram CLI".
+
 ## 4. Tools
 
 Eleven tools. The search/view capability is two tools (find, then read); create,
@@ -189,11 +197,12 @@ here** — kept lightweight so the model can scan many results cheaply, then
 
 Fetch one document's full content **and render it** — this is the "visualise"
 capability. Input: `documentId`, optional `tabId` (defaults to the first tab).
-Wraps `GET /api/documents/:id` + `GET /api/documents/:id/tabs/:tabId`. Returns the
-tab's `elements` as structured JSON (so the model can understand and, if asked,
-edit it) **plus an inline PNG** of the tab as MCP image content ([§5](#5-visualise--inline-image-render)),
-plus the deep-link `url`. So "show me my auth-flow diagram" → `find_documents` →
-`read_document` renders it inline.
+Wraps `GET /api/documents/:id` + `GET /api/documents/:id/tabs/:tabId?view=outline`. Returns the
+tab's [outline view](../024-agents/document-views.md), about a tenth of the element JSON, with
+the refs the edit tools take (`format: "json"` returns the elements instead), plus the deep-link
+`url`. With `image: true` it also attaches an inline **PNG** of the tab as MCP image content
+([§5](#5-visualise--inline-image-render)); without it a read costs no image tokens. So "show me my auth-flow diagram" → `find_documents` →
+`read_document` with `image: true` renders it inline.
 
 ### 4.3 `create_document`
 
@@ -235,7 +244,10 @@ canvas overrides; the model then personalises labels via `update_document`'s
    user's [default folder](../013-workspace/default-folders.md) for that intent,
    when they have one.
 4. **Persists** all tabs via `POST /api/documents` (which seeds a `tabs[]` array
-   and accepts `source`). Making a document is a use of it, so it joins the user's
+   and accepts `source`). A tab given as `graph`, `mermaid` or `template` travels
+   as such and is compiled by the api ([API app](api.md)), so the MCP and the
+   [CLI](cli.md) build documents alike.
+   Making a document is a use of it, so it joins the user's
    Jump back in at once ([Explorer Home](../013-workspace/explorer-home.md#making-a-document));
    `markUsed: false` is passed through to the create
    ([API](api.md#marking-a-document-used)) for a model making many documents in one go,
@@ -251,9 +263,8 @@ Add a **new tab** (its own canvas) to an existing document — the motivating ca
 "make a tab going into more detail on one part of this architecture." Input:
 `documentId`, `name`, `elements`, optional `layout` — or `template: TemplateKind`
 instead of `elements`, exactly like a `create_document` tab. Validates + lays out
-exactly like a `create_document` tab, then `PUT /api/documents/:id/tabs/:newTabId` — which
-is an upsert that also links the tab into the document and appends it, so a fresh
-tab id creates and orders the tab in one call. Returns the new `tabId`, `url`,
+exactly like a `create_document` tab, then submits a [changeset](../024-agents/agent-changesets.md)
+that creates the tab, so anyone with the document open sees it arrive. Returns the new `tabId`, `url`,
 and the rendered PNG. (Pair with `read_document`, which lists the document's
 existing tabs, to decide where a new one fits.)
 
@@ -263,19 +274,25 @@ Edit an existing tab. **Two modes** (the user asked for both):
 
 - **`replace`** — for building or reworking a whole tab. Input: full new
   `elements: Element[]` (and the same optional `layout` control as
-  `create_document`). Validated + laid out exactly like `create_document`, then
-  `PUT …/tabs/:tabId`. Use when the change is large enough that re-emitting the
+  `create_document`). Validated + laid out exactly like `create_document`, as a
+  `replace` changeset. Use when the change is large enough that re-emitting the
   tab is cleaner than patching.
 - **`ops`** — for small adjustments. Input: an ordered list of
   `{ op: 'add' | 'update' | 'remove', element? , elementId? }` targeting existing
-  element ids. The MCP reads the current tab, applies the ops, validates the
-  result, then `PUT`s it. **Auto-layout is NOT run by default** in `ops` mode —
+  element ids or refs, compiled by the api with the rest of the edit operations. **Auto-layout is NOT run by default** in `ops` mode —
   the point of a granular edit is to preserve the user's existing positions;
   re-laying out would move everything. (A future `relayout: true` opt-in could be
   added if wanted.)
 
-Both modes re-read → apply → validate → write, and return the rendered PNG of the
-result. The model picks the mode: rebuild → `replace`; tweak → `ops`.
+Both modes submit one [changeset](../024-agents/agent-changesets.md); the api
+applies, validates and lays out, relays it live to anyone with the tab open, and
+keeps it through their next save. `ops` mode sends its ops as
+[edit operations](../024-agents/edit-operations.md) based on the revision
+`read_document` returned, so nothing a person saved in between is overwritten: a
+touched element that changed is a conflict, an element a person has selected is
+refused as held. Both return the changeset's result lines, its lint summary and
+the rendered PNG of the result. The model picks the mode: rebuild → `replace`;
+tweak → `ops`.
 
 ### 4.5 `list_templates`
 
@@ -484,9 +501,8 @@ CRUD completeness — the verbs a user will reach for the moment they ask their
 assistant to "rename that" or "delete the old one":
 
 - **`rename_document`** — `{ documentId, name, tabId? }`. Renames the document
-  (`PUT /api/documents/<id>` `{ name }`), or one tab when `tabId` is given (no
-  tab-name-only route, so it reads the tab and writes it back with the new
-  name). Non-destructive.
+  (`PUT /api/documents/<id>` `{ name }`), or one tab when `tabId` is given
+  (`PUT /api/documents/<id>/tabs/<tabId>/name`, no whole-tab save). Non-destructive.
 - **`delete_document`** — `{ documentId, tabId? }`. Moves the document to the
   [Trash](../013-workspace/trash.md) (`DELETE /api/documents/<id>`), restorable
   for 30 days, and says so in its result (`trashed: true`, `restorableForDays`).
@@ -683,7 +699,7 @@ returns on success. A successful result carries that object twice: as
 prose, and serialised as the first text block, for clients that only read
 `content` (the backwards-compatible form MCP recommends). The four tools that
 render a preview (`read_document`, `create_document`, `add_tab`,
-`update_document`) add the inline PNG after it ([§5](#5-visualise--inline-image-render)).
+`update_document`) add the inline PNG after it (`read_document` only when asked with `image: true`) ([§5](#5-visualise--inline-image-render)).
 An error result (`isError: true`, a model-correctable message) carries text only
 and no `structuredContent`; MCP exempts errors from the output schema.
 
@@ -738,7 +754,7 @@ The output literals that named the container changed with it: `renamed`, `delete
 
 ## 5. Visualise — inline image render
 
-`read_document`, `create_document`, and `update_document` all return an **inline
+`create_document`, `add_tab` and `update_document` return, and `read_document` with `image: true` returns, an **inline
 PNG** so the diagram shows in the chat. This needs headless rendering inside a
 Worker (no DOM, no React).
 
