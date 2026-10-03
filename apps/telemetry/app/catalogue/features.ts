@@ -267,6 +267,15 @@ export const PAGE_ORIENTATION = chart(
   { types: ['PagePortrait', 'PageLandscape'] },
 );
 
+// Infographic pages added after the last one, or deleted (docs/specs/007-editor/editor-modes.md "The pages").
+export const INFOGRAPHIC_PAGES = chart(
+  'Tab',
+  'Changed',
+  'Infographic Pages Added and Deleted',
+  'A page added to an infographic tab from the plus after its last page, or deleted from its settings.',
+  { types: ['PageAdded', 'PageRemoved'] },
+);
+
 export const WHITEBOARDS: MetricStack = {
   stack: true,
   title: 'Draw Mode',
@@ -277,6 +286,7 @@ export const WHITEBOARDS: MetricStack = {
     EDITOR_MODE_SWITCHES,
     TAB_OPENS_IN,
     PAGE_ORIENTATION,
+    INFOGRAPHIC_PAGES,
     WHITEBOARD_PENS,
     WHITEBOARD_SETTINGS,
     WHITEBOARD_RECOGNITION,
@@ -552,17 +562,6 @@ export const EDITOR_SEARCH: MetricStack = {
 };
 
 // The palette beyond adding elements (Palette tab has the rankings).
-export const PALETTE_FAVOURITES = chart(
-  'UI',
-  'Added',
-  'Palette Favourites',
-  'Favourites added, removed, reordered, or the editor opened.',
-  {
-    actionIn: ['Removed', 'Changed', 'Toggled'],
-    typeIn: (type) => (type ?? '').startsWith('PaletteFavourite'),
-  },
-);
-
 export const PALETTE_SEARCHES = chart(
   'UI',
   'Searched',
@@ -592,9 +591,8 @@ export const TOOLBAR_CATEGORY = chart(
 export const PALETTE_USE: MetricStack = {
   stack: true,
   title: 'Palette Use',
-  blurb:
-    'How the palette gets used beyond adding elements: favourites, searches, groups, and the toolbar.',
-  members: [PALETTE_FAVOURITES, PALETTE_SEARCHES, PALETTE_GROUPS_OPENED, TOOLBAR_CATEGORY],
+  blurb: 'How the palette gets used beyond adding elements: searches, groups, and the toolbar.',
+  members: [PALETTE_SEARCHES, PALETTE_GROUPS_OPENED, TOOLBAR_CATEGORY],
   seeAlso: { view: 'palette', label: 'See Each Element on the Palette Tab' },
 };
 

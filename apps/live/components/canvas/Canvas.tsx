@@ -87,7 +87,7 @@ import { useCanvasSelectHandlers } from '@/hooks/canvas/useCanvasSelectHandlers'
 import { useArrowLabelLayouts } from '@/hooks/canvas/useArrowLabelLayouts';
 import { useFontsReady } from '@/components/canvas/useFontsReady';
 import { useLatest } from '@/hooks/ui/useLatest';
-import { InfographicPage } from '@/components/canvas/InfographicPage';
+import { InfographicPages } from '@/components/canvas/InfographicPages';
 import { pressIsOffPage } from '@/hooks/canvas/infographic-page-guard';
 
 export function Canvas(props: CanvasProps) {
@@ -530,7 +530,7 @@ export function Canvas(props: CanvasProps) {
   });
   // In Infographic mode a press off the page is claimed and dropped: nothing is made there.
   const offPage = (e: { clientX: number; clientY: number }) =>
-    pressIsOffPage(props.infographicPage, e, wrapperRef, viewportZoom);
+    pressIsOffPage(props.infographicPages, e, wrapperRef, viewportZoom);
   const beginPendingDrawOrPolygon = (e: React.PointerEvent): boolean =>
     offPage(e) || pathTool.beginPathPress(e) || beginPolygonPoint(e) || beginPendingDrawGesture(e);
 
@@ -727,9 +727,9 @@ export function Canvas(props: CanvasProps) {
             behind the real element layer, which caps each column at z=0.
             Only mounted while the tool is active. */}
         {canvasTool === 'isometric' ? <IsometricDepthLayer elements={elements} /> : null}
-        {/* Infographic mode's A4 page, under every element (InfographicPage). */}
-        {props.infographicPage ? (
-          <InfographicPage page={props.infographicPage} zoom={viewportZoom} />
+        {/* Infographic mode's A4 pages, under every element (InfographicPages). */}
+        {props.infographicPages ? (
+          <InfographicPages view={props.infographicPages} zoom={viewportZoom} />
         ) : null}
         <CanvasStillProvider still={props.editorMode === 'draw'}>
           {/* The zoom reaches only the counter-scaled parts of each element

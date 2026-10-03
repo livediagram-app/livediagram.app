@@ -13,7 +13,7 @@
 import { isSelfDrawingShape } from './data-shapes';
 import type { TabKind } from './tab-kind';
 import type { EditorMode } from './editor-mode';
-import type { PageOrientation } from './infographic-page';
+import type { InfographicPage, PageOrientation } from './infographic-page';
 import type { TabTimer, TabVote } from './session';
 
 // Layer type used by the `Tab.layers` field below (docs/specs/006-document/layers.md). Type-only
@@ -284,8 +284,12 @@ export type Tab = {
   // lives"): a person who has not switched on this tab sees it in this mode. Absent = 'diagram'
   // (read via `opensInOf`); switching never changes it.
   opensIn?: EditorMode;
-  // Infographic mode's page orientation (docs/specs/007-editor/editor-modes.md "The page"): the A4
-  // sheet everyone lays the tab out on. Absent = 'portrait' (read via `pageOrientationOf`).
+  // Infographic mode's pages (docs/specs/007-editor/editor-modes.md "The pages"): the A4 sheets,
+  // in row order, each portrait or landscape, that everyone lays the tab out on. Absent = one page
+  // (read via `infographicPagesOf`).
+  pages?: InfographicPage[];
+  // Legacy: a single page's orientation, from before multiple pages. Read as one page when `pages`
+  // is absent; dropped the first time the pages change (`withInfographicPages`).
   pageOrientation?: PageOrientation;
   // An event-storming board whose workshop notes have been settled onto the
   // lanes once (docs/specs/021-event-storming/event-storming.md "Always on a lane"). Set by that settle, by the

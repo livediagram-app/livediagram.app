@@ -124,11 +124,10 @@ export function ComponentsCatalogue() {
   );
 }
 
-/** The edit-favourites modal (docs/specs/010-palette/palette-favourites.md): search field, a tile grid with
- *  Control-Centre-style corner badges (red minus = favourited, green
- *  plus = available), and the Done affordance. Drawn without CatalogueGrid —
- *  it's a modal, not a palette tab. (Stylised: the real grid is 5-up.) */
-export function FavouritesCatalogue() {
+/** The Popular category (docs/specs/007-editor/editor-modes.md "The palette per mode"): the
+ *  palette's landing grid, a fixed pick of the tiles most reached for. Drawn without
+ *  CatalogueGrid, as the category has no search or sub-groups. (Stylised: a few of the twelve.) */
+export function PopularCatalogue() {
   const glyph = 'fill-none stroke-slate-500';
   const tiles: { label: string; child: ReactNode }[] = [
     {
@@ -199,95 +198,17 @@ export function FavouritesCatalogue() {
     },
   ];
   return (
-    <Scene w={400} h={252} bg="plain">
-      <Panel x={40} y={10} w={320} h={232} title="EDIT FAVOURITES">
-        {/* Category pills first (Shapes active), the search beneath them */}
-        {['Shapes', 'Tools', 'Data'].map((label, i) => {
-          const x = 56 + i * 64;
-          const active = i === 0;
-          return (
-            <g key={label}>
-              <rect
-                x={x}
-                y={44}
-                width={58}
-                height={17}
-                rx={4}
-                className={
-                  active ? 'fill-brand-50 stroke-brand-400' : 'fill-white stroke-slate-200'
-                }
-                strokeWidth={1.4}
-              />
-              <Label
-                x={x + 29}
-                y={53}
-                anchor="middle"
-                size={9}
-                weight={active ? 700 : 500}
-                tone={active ? 'accent' : 'muted'}
-              >
-                {label}
-              </Label>
-            </g>
-          );
-        })}
-        {/* Search field */}
-        <rect
-          x={56}
-          y={68}
-          width={288}
-          height={22}
-          rx={7}
-          className="fill-slate-50 stroke-slate-200"
-          strokeWidth={1.5}
-        />
-        <circle cx={69} cy={79} r={4.5} className="fill-none stroke-slate-400" strokeWidth={1.5} />
-        <path
-          d="M72.5 82.5 L76 86"
-          className="stroke-slate-400"
-          strokeWidth={1.5}
-          strokeLinecap="round"
-        />
-        <Label x={82} y={80} size={10} tone="muted">
-          Search controls
-        </Label>
-        {/* Toggle tiles: red minus = favourited, green plus =
-            available to add. */}
-        {tiles.slice(0, 8).map((t, i) => {
+    <Scene w={400} h={200} bg="plain">
+      <Panel x={70} y={10} w={260} h={180} title="POPULAR">
+        {tiles.map((t, i) => {
           const col = i % 4;
           const row = Math.floor(i / 4);
-          const x = 64 + col * 74;
-          const y = 100 + row * 46;
-          const favourited = i < 3;
           return (
-            <g key={t.label}>
-              <Tile x={x} y={y} size={26} label={t.label}>
-                {t.child}
-              </Tile>
-              <circle
-                cx={x - 1}
-                cy={y - 1}
-                r={5}
-                className={favourited ? 'fill-red-500' : 'fill-emerald-500'}
-              />
-              <path
-                d={
-                  favourited
-                    ? `M${x - 3.5} ${y - 1}h5`
-                    : `M${x - 3.5} ${y - 1}h5 M${x - 1} ${y - 3.5}v5`
-                }
-                className="stroke-white"
-                strokeWidth={1.6}
-                strokeLinecap="round"
-              />
-            </g>
+            <Tile key={t.label} x={104 + col * 64} y={58 + row * 52} size={26} label={t.label}>
+              {t.child}
+            </Tile>
           );
         })}
-        {/* Done affordance, bottom-right */}
-        <rect x={296} y={212} width={48} height={18} rx={5} className="fill-brand-500" />
-        <Label x={320} y={221} anchor="middle" size={9} weight={700} tone="onAccent">
-          ✓ Done
-        </Label>
       </Panel>
     </Scene>
   );

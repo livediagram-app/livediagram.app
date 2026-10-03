@@ -505,6 +505,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone set a tab to open in Diagram mode for everyone, from the tab menu.',
   'Tab|Changed|OpensInDraw':
     'Someone set a tab to open in Draw mode for everyone, from the tab menu.',
+  'Tab|Changed|PageAdded': 'Someone added a page to an infographic tab.',
+  'Tab|Changed|PageRemoved': 'Someone deleted a page from an infographic tab.',
   'Tab|Changed|PagePortrait': "Someone turned an infographic tab's A4 page to portrait.",
   'Tab|Changed|PageLandscape': "Someone turned an infographic tab's A4 page to landscape.",
   'Tab|Changed|OpensInInfographic':
@@ -623,7 +625,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Token|Created|Manual':
     'Someone created a new personal API token by hand, from the API Tokens category in Settings.',
   'Token|Removed|': 'Someone revoked an API token.',
-  'UI|Added|PaletteFavourite': 'Someone added a tile to their Favourites in the shape palette.',
+  'UI|Added|PaletteFavourite':
+    'Someone added a tile to their Favourites in the shape palette. No longer recorded: the palette opens on Popular, a fixed pick.',
   'UI|Added|Slide':
     'Someone added a slide to the Slide Deck: either a fresh slide built from the current selection, or a duplicate of an existing one.',
   'UI|Changed|AvatarClothing':
@@ -657,7 +660,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Changed|MapSizeShort': 'Someone set the minimap to its short size, in Settings > Editor.',
   'UI|Changed|MapSizeTall': 'Someone set the minimap to its tall size, in Settings > Editor.',
   'UI|Changed|PaletteFavourite':
-    'Someone reordered their palette Favourites by dragging, or reset the list back to its default tiles.',
+    'Someone reordered their palette Favourites by dragging, or reset the list back to its default tiles. No longer recorded: Favourites is gone.',
   'UI|Changed|PanelLayout':
     "Someone changed the editor's panel layout, in Settings > Editor. An earlier version of this event, before it recorded which layout was chosen. No longer recorded.",
   'UI|Changed|PanelLayoutFloating':
@@ -803,12 +806,13 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Opened|your-first-diagram':
     'Someone opened the help article about building their first diagram, from the empty-canvas banner or a search result.',
   'UI|Removed|PaletteFavourite':
-    'Someone removed a tile from their Favourites in the shape palette.',
+    'Someone removed a tile from their Favourites in the shape palette. No longer recorded: Favourites is gone.',
   'UI|Removed|Slide': 'Someone deleted a slide from the Slide Deck.',
   'UI|Searched|BehaviourSearch':
     "Someone searched within the palette's Collaborate tab (formerly Behaviours).",
   'UI|Searched|IconSearch': "Someone searched within the palette's Icons tab.",
-  'UI|Searched|PaletteSearch': 'Someone searched within their Favourites in the palette.',
+  'UI|Searched|PaletteSearch':
+    'Someone searched within their Favourites in the palette. No longer recorded: Favourites is gone.',
   'UI|Selected|LiveImageTab':
     "Someone picked a specific tab from the dropdown in the Share dialog's Live Image menu, pointing the live-updating image at that tab instead of the default.",
   'UI|Selected|SignInBanner':
@@ -903,7 +907,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Toggled|NotifyTipsOn':
     'Someone turned on the occasional tips-and-check-in emails, in Settings > Notifications.',
   'UI|Toggled|PaletteFavouritesEdit':
-    'Someone entered reordering or editing mode for their palette Favourites.',
+    'Someone entered reordering or editing mode for their palette Favourites. No longer recorded: Favourites is gone.',
   'UI|Toggled|PatternExport':
     "Someone turned on painting the tab's background pattern into an exported image.",
   'UI|Toggled|QuickAddHoverOff':
@@ -1167,7 +1171,7 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Token|Created':
     'A new API token was created, either by hand or for an AI tool connected over MCP.',
   'Token|Removed': 'Someone revoked an API token.',
-  'UI|Added': 'Someone added something in the editor, such as a palette favourite or a slide.',
+  'UI|Added': 'Someone added something in the editor, such as a slide.',
   'UI|Changed':
     "Someone changed a setting or a control's value somewhere in the editor: a tool panel's option (Avatar, Eraser, Laser, Spotlight, Format Painter), a Settings dialog row, or a palette/toolbar choice.",
   'UI|Closed':
@@ -1178,7 +1182,7 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'UI|Moved': "Someone dragged something to a new position in the editor's interface.",
   'UI|Opened':
     "Someone opened a dialog, panel, popover, or menu somewhere in the editor. A lowercase, hyphenated type is a help-centre article's address: someone clicked a help link, or a Help result in search, to read it.",
-  'UI|Removed': 'Someone removed something in the editor, such as a palette favourite or a slide.',
+  'UI|Removed': 'Someone removed something in the editor, such as a slide.',
   'UI|Searched':
     'Someone typed into a search box inside a palette tab (Collaborate, Icons, or Technology), narrowing it to matching tiles. Counted once per tab visit, on the first keystroke.',
   'UI|Selected':

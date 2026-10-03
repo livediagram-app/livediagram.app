@@ -39,6 +39,19 @@
   }
 }
 
+/* Infographic mode's page clip (components/canvas/InfographicPageClip.tsx): the layer covers the
+   canvas world without taking presses itself, so a press on the empty canvas still reaches the
+   canvas; the element views inside take them as anywhere else. Zero specificity, in the base layer,
+   so an element's own pointer-events utility still wins. */
+@layer base {
+  [data-page-clip] {
+    pointer-events: none;
+  }
+  :where([data-page-clip]) > * {
+    pointer-events: auto;
+  }
+}
+
 @layer base {
   button:not(:disabled),
   [role='button']:not([aria-disabled='true']) {

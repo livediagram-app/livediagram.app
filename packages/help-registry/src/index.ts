@@ -897,10 +897,10 @@ export const articles: Article[] = [
   },
   // ---- Palette landings: Elements ----
   {
-    slug: 'favourites',
-    title: 'Favourites',
-    description: 'Your go-to tiles from every category in one editable grid.',
-    keywords: 'favourites favorites pinned custom controls edit quick grid',
+    slug: 'popular',
+    title: 'Popular',
+    description: 'The tiles most reached for, in the grid the palette opens on.',
+    keywords: 'popular common default quick grid landing favourites favorites everyday',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Elements',

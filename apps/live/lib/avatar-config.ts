@@ -1,8 +1,7 @@
 // Avatar-mode character customisation (docs/specs/008-canvas/avatar-mode.md): the four choices the Avatar
 // Panel offers, their option catalogues, and the per-browser persistence.
 //
-// Device-local by design, like the panel layout (docs/specs/007-editor/panel-docking.md) and the palette
-// favourites (docs/specs/010-palette/palette-favourites.md): which character you walk around as is an ergonomic /
+// Device-local by design, like the panel layout (docs/specs/007-editor/panel-docking.md): which character you walk around as is an ergonomic /
 // personal choice, not document data, so it lives ONLY in localStorage and is
 // never sent to the api or folded into the synced preferences blob. It IS
 // published to peers as part of the ephemeral presence snapshot, so they draw

@@ -61,7 +61,7 @@ The editor is real:
 **No document content lives in `localStorage`.** A document is stored on the server, or in IndexedDB for an Offline Mode document, and `apps/live/lib/api-client.ts` is the single persistence boundary over both. `localStorage` holds only small per-browser state, under `livediagram:*` keys:
 
 - **Identity bootstrap**: the guest participant id, the name-confirmed flag and the collaboration key (`lib/local-identity.ts`); Clerk users key their data off their userId instead.
-- **Device-local preferences and UI state**: the preferences cache ([User preferences](../007-editor/user-preferences.md)), the UI mode, the panel layout, per-tool configs (format painter, eraser, laser, spotlight, avatar, presentation), palette favourites, recent toolbar tiles, style memory, the Explorer and Settings views, and the keyboard-shortcuts switch.
+- **Device-local preferences and UI state**: the preferences cache ([User preferences](../007-editor/user-preferences.md)), the UI mode, the panel layout, per-tool configs (format painter, eraser, laser, spotlight, avatar, presentation), recent toolbar tiles, style memory, the Explorer and Settings views, and the keyboard-shortcuts switch.
 - **One-off prompts and counters**: the pending tour, the sign-in prompt and banner dismissals, the power-user offer, the last active day.
 - **The share-password cache**: one entry per share code, so a returning visitor skips the gate ([Share password](../013-workspace/share-password.md#password-cache)).
 - **A contributor switch** arming the photo import's ground-truth export (`livediagram:truth`, [Event storming](../021-event-storming/event-storming.md)).

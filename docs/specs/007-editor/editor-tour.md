@@ -73,7 +73,7 @@ live in `apps/live/components/tour/tour-steps.ts`):
 2. **Selection modes**: opens the canvas-tool dropdown (Select / Hand /
    Eraser / ...) and explains mode switching. No "default" claim in the
    copy — desktop defaults to Select but mobile to Hand.
-3. **Shape categories**: opens the palette-category dropdown (Favourites /
+3. **Shape categories**: opens the palette-category dropdown (Popular /
    Shapes / Tools / Components / Devices / Icons / Technology). A
    dedicated "Tools category" step existed briefly and was cut — the
    category dropdown already tells that story.

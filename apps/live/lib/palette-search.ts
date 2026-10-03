@@ -88,7 +88,7 @@ export const SHAPE_KEYWORDS: Partial<Record<ShapeKind, string>> = {
 };
 
 // The shape-placing tiles, in palette order. Derived from the shared
-// catalogue (docs/specs/010-palette/palette-favourites.md) rather than restated, which is what keeps search from
+// catalogue (palette-tile-defs) rather than restated, which is what keeps search from
 // drifting behind the palette again. Icon / sticker / tech tiles are excluded
 // deliberately: those catalogues are enumerated in full below, so including
 // their single "open the picker" tile would add a duplicate result.

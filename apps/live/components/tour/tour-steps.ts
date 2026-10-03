@@ -123,7 +123,7 @@ export const TOUR_STEPS: TourStep[] = [
   {
     id: 'categories',
     title: 'Shape categories',
-    body: 'The palette is organised into categories: Favourites keeps your go-to tiles, then the other categories provide unique opportunities to personalise your diagram.',
+    body: 'The palette is organised into categories: Popular holds the tiles most reached for, then the other categories provide unique opportunities to personalise your diagram.',
     target: 'palette-category-menu',
     alsoHighlight: 'palette-category',
     boardSkip: true,

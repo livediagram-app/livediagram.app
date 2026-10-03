@@ -60,9 +60,9 @@ The current colour and width are **session-local editor state**, not a persisted
 
 A Mode Button saved while it was one still carries `mode: 'highlighter'`. The stored-element migration (`migrateLegacyModeButtons`, run by `migrateStoredElements` at every entry point) **drops the field**, so the button loads and reads as the default mode ([Selection Mode button](../009-elements/mode-button.md)) rather than failing validation and taking its tab with it.
 
-## Favourites
+## Popular
 
-The tile can be favourited like any other ([Palette Favourites](../010-palette/palette-favourites.md)). It is not in the default list: Table kept the slot it took when the tile was first retired.
+The tile is not in Diagram mode's Popular ([Editor modes](../007-editor/editor-modes.md#the-palette-per-mode)): Table kept the slot it took when the tile was first retired.
 
 ## Everything else is inherited
 

@@ -7,9 +7,8 @@ import { Glyph } from '@livediagram/ui';
 // itself does, so they sit above the notation with a rule under them rather
 // than pretending to be a ninth sticky.
 //
-// Only rendered on an event-storming board: the category still exists
-// elsewhere (a note kind can be favourited, docs/specs/010-palette/palette-favourites.md), and a board switch shown
-// on an ordinary diagram would be a switch for nothing.
+// Only rendered on an event-storming board: the category body can render
+// elsewhere, and a board switch shown on an ordinary diagram would be a switch for nothing.
 
 export type EsBoardControls = {
   // Photo import (docs/specs/021-event-storming/event-storming.md Phase 8). Absent when the deployment has no model

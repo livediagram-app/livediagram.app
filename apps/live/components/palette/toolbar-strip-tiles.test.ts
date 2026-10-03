@@ -3,7 +3,7 @@
 import { describe, expect, it } from 'vitest';
 import { PALETTE_CATEGORIES } from './palette-categories';
 import { tilesForCategory } from './palette-tile-defs';
-import { DEFAULT_PALETTE_FAVOURITES } from '@/lib/palette-favourites';
+import { paletteCategoriesFor } from './palette-layouts';
 import {
   STRIP_TILE_LIMIT,
   desktopStripTileLimit,
@@ -13,7 +13,9 @@ import {
   stripTilesFor,
 } from './toolbar-strip-tiles';
 
-const NONE = { favouriteIds: [], hasImage: true };
+const NONE = { hasImage: true };
+// Diagram mode's Popular, as its palette layout fills it.
+const diagramPopular = paletteCategoriesFor('diagram').find((c) => c.id === 'popular')!.tiles!;
 
 describe('stripTilesFor', () => {
   it('never shows more than the limit', () => {
@@ -31,9 +33,9 @@ describe('stripTilesFor', () => {
   });
 
   it('always offers More for the categories whose body is more than tiles', () => {
-    // Favourites (search + edit), the three searchable catalogues, and the
-    // Behaviours group browser can only be fully reached through More.
-    for (const id of ['favourites', 'icons', 'stickers', 'technology', 'behaviour']) {
+    // The three searchable catalogues and the Behaviours group browser can
+    // only be fully reached through More.
+    for (const id of ['icons', 'stickers', 'technology', 'behaviour']) {
       expect(stripTilesFor(id, NONE).hasMore, id).toBe(true);
     }
   });
@@ -46,10 +48,11 @@ describe('stripTilesFor', () => {
     expect(strip.hasMore).toBe(false);
   });
 
-  it('shows the saved favourites in their saved order', () => {
+  it("shows the tiles a mode's layout hands it, in the layout's order", () => {
     const [a, b] = tilesForCategory('shapes');
-    const strip = stripTilesFor('favourites', { favouriteIds: [b!.id, a!.id], hasImage: true });
+    const strip = stripTilesFor('popular', { hasImage: true, tiles: [b!, a!] });
     expect(strip.tiles.map((t) => t.id)).toEqual([b!.id, a!.id]);
+    expect(strip.hasMore).toBe(false);
   });
 
   // docs/specs/007-editor/toolbar-layout.md: using a tile never reorders the strip.
@@ -82,14 +85,14 @@ describe('stripTilesFor', () => {
   });
 
   it('spends part-tile slack on a divider rather than a whole tile', () => {
-    // Favourites' defaults divide after the diamond (the third tile). With room
+    // Diagram's Popular divides after the diamond (the third tile). With room
     // for 4.26 tiles, four tiles and that divider (4.2) fit.
-    const favourites = { ...NONE, favouriteIds: [...DEFAULT_PALETTE_FAVOURITES] };
-    const roomy = stripTilesFor('favourites', { ...favourites, limit: 4.26 });
+    const popular = { ...NONE, tiles: diagramPopular };
+    const roomy = stripTilesFor('popular', { ...popular, limit: 4.26 });
     expect(roomy.tiles).toHaveLength(4);
     expect([...roomy.dividersAfter]).toEqual(['shapes:diamond']);
     // Without the slack the divider costs the fourth tile, as before.
-    expect(stripTilesFor('favourites', { ...favourites, limit: 4 }).tiles).toHaveLength(3);
+    expect(stripTilesFor('popular', { ...popular, limit: 4 }).tiles).toHaveLength(3);
   });
 
   it('drops the dividers before any tile when only the tiles fit', () => {
@@ -110,7 +113,7 @@ describe('stripTilesFor', () => {
 
   it('drops image tiles when uploads are unavailable', () => {
     for (const c of PALETTE_CATEGORIES) {
-      const strip = stripTilesFor(c.id, { favouriteIds: [], hasImage: false });
+      const strip = stripTilesFor(c.id, { hasImage: false });
       expect(
         strip.tiles.some((t) => t.needsImage),
         c.id,

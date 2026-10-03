@@ -45,6 +45,7 @@ import { usePhotoDraftView } from '@/lib/photo-draft-preview';
 import { RemoteCursor } from '@/components/canvas/RemoteCursor';
 import { useInsertShift } from '@/hooks/canvas/useInsertShift';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
+import { InfographicPageClip } from '@/components/canvas/InfographicPageClip';
 
 type Bounds = { x: number; y: number; width: number; height: number };
 
@@ -455,208 +456,220 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             above all boxes inside a single SVG layer). Each arrow
             gets its own <svg> overlay; pointer events on the SVG are
             disabled in CSS, only the inner arrow line picks them up. */}
-      {shownOrder.map(({ element, layerOpacity }, isoDepth) => {
-        // Shift-duplicate ghost (docs/specs/008-canvas/shift-drag-duplicate.md): the dragged set renders
-        // translucent while its materialised copy holds the start
-        // position, multiplied over any per-layer opacity.
-        const ghostFactor = shiftDupGhostIds?.has(element.id) ? 0.45 : 1;
-        // Photo draft (docs/specs/021-event-storming/event-storming.md Phase 8): while one is open, everything that
-        // is NOT part of it recedes, so the notes the photo brought are the
-        // most visible thing on the board. A render-time style, local to the
-        // importing session — the board itself is untouched.
-        const isDraftNote = element.type === 'sticky' && element.esDraft === true;
-        const draftFade = draftView && !isDraftNote ? 0.5 : 1;
-        const effOpacity = ghostFactor * layerOpacity * draftFade;
-        if (element.type === 'arrow') {
-          // A selected free arrow wears a box's selection: ring + scale handles
-          // (docs/specs/008-canvas/arrow-bending.md). HTML, beside its <svg>, so it is the same chrome.
-          const framed =
-            element.id === selectedId &&
-            multiSelectedIds.size === 0 &&
-            element.from.kind === 'free' &&
-            element.to.kind === 'free' &&
-            element.locked !== true &&
-            element.id !== editingId &&
-            // Not while a handle reshapes it: the frame grew with every bend and read as a
-            // selection box being dragged out (arrow-bending.md "Moving and scaling a free arrow").
-            element.id !== props.reshapingArrowId &&
-            !readOnly &&
-            !tabLocked &&
-            !isPaintMode;
-          return (
-            <Fragment key={element.id}>
-              <svg
-                className="absolute inset-0 h-full w-full"
-                // Tagged so isometric mode can lift arrows just off the base
-                // plane (globals.css [data-iso] rule): an arrow's surface is
-                // coplanar with the boxes it crosses under preserve-3d, and
-                // coplanar layers z-fight — which is what made a FLOWING arrow
-                // shimmer in isometric while a static one looked fine (the
-                // animation repaints every frame, so the fight is visible
-                // continuously rather than only while the camera orbits).
-                data-arrow-svg=""
-                // An arrow travels whole or not at all in the preview (see
-                // insert-between.ts): one that straddles the insertion point
-                // stretches, which a transform cannot express, so it waits for
-                // the drop.
-                data-insert-shift={insertShift.animates ? '' : undefined}
-                style={{
-                  pointerEvents: 'none',
-                  overflow: 'visible',
-                  ...(effOpacity < 1 ? { opacity: effOpacity } : {}),
-                  ...(insertShift.xFor(element.id)
-                    ? { transform: `translateX(${insertShift.xFor(element.id)}px)` }
-                    : {}),
-                }}
-              >
-                <ArrowView
-                  arrow={element}
-                  frame={
-                    (preview?.geometry.get(element.id) ?? arrowGeometry.get(element.id)!).frame
-                  }
-                  holes={
-                    (preview?.geometry.get(element.id) ?? arrowGeometry.get(element.id)!).holes
-                  }
-                  labelRender={preview?.labels.get(element.id) ?? arrowLabels.renderOf(element.id)}
-                  draftLayout={arrowLabels.draftLayout}
-                  isSelected={element.id === selectedId || multiSelectedIds.has(element.id)}
-                  isPaintMode={isPaintMode}
-                  isEditing={element.id === editingId}
-                  editCursorAtEnd={element.id === editingId && editCursorAtEnd === true}
-                  tabLocked={tabLocked}
-                  readOnly={readOnly}
-                  onSelect={h.handleArrowSelect}
-                  onContextSelect={h.handleElementContextSelect}
-                  onBeginEndpointDrag={h.onBeginEndpointDrag}
-                  onBeginEdit={h.onBeginEdit}
-                  onCommitLabel={h.onCommitLabel}
-                  onCancelEdit={h.onCancelEdit}
-                  onBeginCurveDrag={h.onBeginArrowCurveDrag}
-                  onBeginCurvePointDrag={h.onBeginArrowCurvePointDrag}
-                  onBeginArrowBend={h.onBeginArrowBend}
-                  onDeleteCurvePoint={h.onDeleteCurvePoint}
-                  onBeginElbowDrag={h.onBeginArrowElbowDrag}
-                  onBeginLabelDrag={h.onBeginArrowLabelDrag}
-                  fontFamily={resolveFontStack(element.font) ?? tabFontStack}
-                />
-              </svg>
-              {framed ? (
-                <BoxGripsPortal>
-                  <FreeArrowSelection
-                    arrowId={element.id}
-                    points={arrowRoutePoints(element, elements)}
-                    zoom={viewportZoom}
-                    onBeginMove={(e) => h.onBeginArrowTranslate(element.id, e)}
-                    onBeginScale={(handle, e) => h.onBeginArrowScale(element.id, handle, e)}
-                  />
-                </BoxGripsPortal>
-              ) : null}
-            </Fragment>
-          );
+      {/* Infographic mode cuts elements off at the page edges (InfographicPageClip); not in the
+          isometric view, whose 3D stack a clip would flatten. */}
+      <InfographicPageClip
+        pages={
+          props.infographicPages && props.canvasTool !== 'isometric'
+            ? props.infographicPages.pages
+            : null
         }
-        if (!isBoxed(element)) return null;
-        return (
-          <BoxedElementView
-            key={element.id}
-            element={element}
-            // Paint index, used only by isometric mode to stagger each element
-            // onto its own z-plane (globals.css --iso-z): coplanar layers
-            // z-fight under preserve-3d, which is the flicker.
-            isoDepth={isoDepth}
-            insertShiftX={insertShift.xFor(element.id)}
-            insertShiftAnimates={insertShift.animates}
-            // Resolved once here, where both the vote and the tab's layers
-            // are in scope, rather than threading `layers` down to the
-            // gesture hook and the overlay separately (docs/specs/012-collaboration/vote-layer-scope.md).
-            votableInVote={isVotableInVote(element, tabVote, tabLayers)}
-            layerOpacity={effOpacity < 1 ? effOpacity : undefined}
-            // The draft treatment, and the "already here" badge on a note the
-            // photo matched (with what it read, when that differed).
-            photoDraft={isDraftNote}
-            photoMatched={draftView?.matchedIds.has(element.id) === true}
-            photoReadAs={draftView?.differences.get(element.id)}
-            isSelected={element.id === selectedId || multiSelectedIds.has(element.id)}
-            isMultiSelected={multiSelectedIds.has(element.id)}
-            onPlainClick={h.handleElementClick}
-            remoteSelectors={remoteSelectionsByElement.get(element.id) ?? EMPTY_REMOTE_SELECTORS}
-            isEditing={element.id === editingId}
-            editCursorAtEnd={element.id === editingId && editCursorAtEnd === true}
-            isPaintMode={isPaintMode}
-            showHandles={showHandles(element.id)}
-            showAnchors={showAnchorsFor(element.id)}
-            badgeColor={badgeColor}
-            tabLocked={tabLocked}
-            tabSummaries={tabSummaries}
-            readOnly={readOnly}
-            onBeginDrag={h.onBeginDrag}
-            onShiftSelect={h.onShiftSelect}
-            vote={tabVote}
-            selfId={participantKey(selfParticipant)}
-            voteMax={voteMax}
-            voteReviewActive={voteReview != null}
-            isVoteFocus={voteReview?.focusId === element.id}
-            onCastVote={h.onCastVote}
-            onRetractVote={h.onRetractVote}
-            onBeginEdit={h.onBeginEdit}
-            onCommitLabel={h.onCommitLabel}
-            onSetTextAlign={h.onSetTextAlign}
-            onCommitTable={h.onCommitTable}
-            onCommitHeaderSize={h.onCommitHeaderSize}
-            onSnapSeam={h.onSnapSeam}
-            onSetRailLabel={h.onSetRailLabel}
-            onToggleChecklistItem={h.onToggleChecklistItem}
-            onSetPageHeading={h.onSetPageHeading}
-            onSetWebRows={h.onSetWebRows}
-            onSetHeroCaptionLine={h.onSetHeroCaptionLine}
-            chartPalette={chartPalette}
-            onCancelEdit={h.onCancelEdit}
-            onFollowLink={h.onFollowLink}
-            onPressModeButton={h.onPressModeButton}
-            onPressFocusButton={h.onPressFocusButton}
-            onPressSessionButton={h.onPressSessionButton}
-            sessionStartBlocked={sessionStartBlocked}
-            timerState={timerState}
-            tabTimer={tabTimer ?? null}
-            onSetSessionConfig={h.onSetSessionConfig}
-            onOpenElementSettings={h.onOpenElementSettings}
-            commentSelfId={commentSelfId}
-            commentActions={commentActionsFor?.(element.id)}
-            actionSelfId={actionSelfId}
-            actionActions={actionActionsFor?.(element.id)}
-            timerControls={timerControls}
-            revealedForMe={revealedIds?.has(element.id)}
-            onToggleReveal={h.onToggleReveal}
-            onRollPicker={h.onRollPicker}
-            collab={collab}
-            chairSitters={chairSitters}
-            // Mode Buttons light up for the mode they hand out, and the
-            // canvas-tool union is WIDER than the mode vocabulary: Slide Deck
-            // (docs/specs/012-collaboration/presentation-mode.md) has no Mode Button, so it is not a SelectionMode.
-            // Narrow rather than widen — a "Switch to Slide Deck" button is
-            // exactly what docs/specs/012-collaboration/presentation-mode.md rules out.
-            activeMode={isSelectionMode(canvasTool) ? canvasTool : undefined}
-            onEnterPortal={h.onEnterPortal}
-            onFireReaction={h.onFireReaction}
-            reactionBurst={reactionBursts?.get(element.id)}
-            onReactionBurstDone={h.onReactionBurstDone}
-            onOpenComments={h.onOpenComments}
-            onOpenAction={h.onOpenAction}
-            onOpenNote={h.onOpenNote}
-            onEditLink={h.onEditLink}
-            onEditCode={h.onEditCode}
-            onDropIcon={h.onDropIcon}
-            onLinkCell={h.onLinkCell}
-            imageContext={imageContext}
-            onContextSelect={h.handleElementContextSelect}
-            // A workshop note writes in marker (docs/specs/021-event-storming/event-storming.md): the notation names
-            // the face, so it outranks the tab default — but not an explicit
-            // per-element font, which is a deliberate author choice.
-            fontFamily={
-              resolveFontStack(element.font ?? eventStormingNoteFont(element)) ?? tabFontStack
-            }
-          />
-        );
-      })}
+      >
+        {shownOrder.map(({ element, layerOpacity }, isoDepth) => {
+          // Shift-duplicate ghost (docs/specs/008-canvas/shift-drag-duplicate.md): the dragged set renders
+          // translucent while its materialised copy holds the start
+          // position, multiplied over any per-layer opacity.
+          const ghostFactor = shiftDupGhostIds?.has(element.id) ? 0.45 : 1;
+          // Photo draft (docs/specs/021-event-storming/event-storming.md Phase 8): while one is open, everything that
+          // is NOT part of it recedes, so the notes the photo brought are the
+          // most visible thing on the board. A render-time style, local to the
+          // importing session — the board itself is untouched.
+          const isDraftNote = element.type === 'sticky' && element.esDraft === true;
+          const draftFade = draftView && !isDraftNote ? 0.5 : 1;
+          const effOpacity = ghostFactor * layerOpacity * draftFade;
+          if (element.type === 'arrow') {
+            // A selected free arrow wears a box's selection: ring + scale handles
+            // (docs/specs/008-canvas/arrow-bending.md). HTML, beside its <svg>, so it is the same chrome.
+            const framed =
+              element.id === selectedId &&
+              multiSelectedIds.size === 0 &&
+              element.from.kind === 'free' &&
+              element.to.kind === 'free' &&
+              element.locked !== true &&
+              element.id !== editingId &&
+              // Not while a handle reshapes it: the frame grew with every bend and read as a
+              // selection box being dragged out (arrow-bending.md "Moving and scaling a free arrow").
+              element.id !== props.reshapingArrowId &&
+              !readOnly &&
+              !tabLocked &&
+              !isPaintMode;
+            return (
+              <Fragment key={element.id}>
+                <svg
+                  className="absolute inset-0 h-full w-full"
+                  // Tagged so isometric mode can lift arrows just off the base
+                  // plane (globals.css [data-iso] rule): an arrow's surface is
+                  // coplanar with the boxes it crosses under preserve-3d, and
+                  // coplanar layers z-fight — which is what made a FLOWING arrow
+                  // shimmer in isometric while a static one looked fine (the
+                  // animation repaints every frame, so the fight is visible
+                  // continuously rather than only while the camera orbits).
+                  data-arrow-svg=""
+                  // An arrow travels whole or not at all in the preview (see
+                  // insert-between.ts): one that straddles the insertion point
+                  // stretches, which a transform cannot express, so it waits for
+                  // the drop.
+                  data-insert-shift={insertShift.animates ? '' : undefined}
+                  style={{
+                    pointerEvents: 'none',
+                    overflow: 'visible',
+                    ...(effOpacity < 1 ? { opacity: effOpacity } : {}),
+                    ...(insertShift.xFor(element.id)
+                      ? { transform: `translateX(${insertShift.xFor(element.id)}px)` }
+                      : {}),
+                  }}
+                >
+                  <ArrowView
+                    arrow={element}
+                    frame={
+                      (preview?.geometry.get(element.id) ?? arrowGeometry.get(element.id)!).frame
+                    }
+                    holes={
+                      (preview?.geometry.get(element.id) ?? arrowGeometry.get(element.id)!).holes
+                    }
+                    labelRender={
+                      preview?.labels.get(element.id) ?? arrowLabels.renderOf(element.id)
+                    }
+                    draftLayout={arrowLabels.draftLayout}
+                    isSelected={element.id === selectedId || multiSelectedIds.has(element.id)}
+                    isPaintMode={isPaintMode}
+                    isEditing={element.id === editingId}
+                    editCursorAtEnd={element.id === editingId && editCursorAtEnd === true}
+                    tabLocked={tabLocked}
+                    readOnly={readOnly}
+                    onSelect={h.handleArrowSelect}
+                    onContextSelect={h.handleElementContextSelect}
+                    onBeginEndpointDrag={h.onBeginEndpointDrag}
+                    onBeginEdit={h.onBeginEdit}
+                    onCommitLabel={h.onCommitLabel}
+                    onCancelEdit={h.onCancelEdit}
+                    onBeginCurveDrag={h.onBeginArrowCurveDrag}
+                    onBeginCurvePointDrag={h.onBeginArrowCurvePointDrag}
+                    onBeginArrowBend={h.onBeginArrowBend}
+                    onDeleteCurvePoint={h.onDeleteCurvePoint}
+                    onBeginElbowDrag={h.onBeginArrowElbowDrag}
+                    onBeginLabelDrag={h.onBeginArrowLabelDrag}
+                    fontFamily={resolveFontStack(element.font) ?? tabFontStack}
+                  />
+                </svg>
+                {framed ? (
+                  <BoxGripsPortal>
+                    <FreeArrowSelection
+                      arrowId={element.id}
+                      points={arrowRoutePoints(element, elements)}
+                      zoom={viewportZoom}
+                      onBeginMove={(e) => h.onBeginArrowTranslate(element.id, e)}
+                      onBeginScale={(handle, e) => h.onBeginArrowScale(element.id, handle, e)}
+                    />
+                  </BoxGripsPortal>
+                ) : null}
+              </Fragment>
+            );
+          }
+          if (!isBoxed(element)) return null;
+          return (
+            <BoxedElementView
+              key={element.id}
+              element={element}
+              // Paint index, used only by isometric mode to stagger each element
+              // onto its own z-plane (globals.css --iso-z): coplanar layers
+              // z-fight under preserve-3d, which is the flicker.
+              isoDepth={isoDepth}
+              insertShiftX={insertShift.xFor(element.id)}
+              insertShiftAnimates={insertShift.animates}
+              // Resolved once here, where both the vote and the tab's layers
+              // are in scope, rather than threading `layers` down to the
+              // gesture hook and the overlay separately (docs/specs/012-collaboration/vote-layer-scope.md).
+              votableInVote={isVotableInVote(element, tabVote, tabLayers)}
+              layerOpacity={effOpacity < 1 ? effOpacity : undefined}
+              // The draft treatment, and the "already here" badge on a note the
+              // photo matched (with what it read, when that differed).
+              photoDraft={isDraftNote}
+              photoMatched={draftView?.matchedIds.has(element.id) === true}
+              photoReadAs={draftView?.differences.get(element.id)}
+              isSelected={element.id === selectedId || multiSelectedIds.has(element.id)}
+              isMultiSelected={multiSelectedIds.has(element.id)}
+              onPlainClick={h.handleElementClick}
+              remoteSelectors={remoteSelectionsByElement.get(element.id) ?? EMPTY_REMOTE_SELECTORS}
+              isEditing={element.id === editingId}
+              editCursorAtEnd={element.id === editingId && editCursorAtEnd === true}
+              isPaintMode={isPaintMode}
+              showHandles={showHandles(element.id)}
+              showAnchors={showAnchorsFor(element.id)}
+              badgeColor={badgeColor}
+              tabLocked={tabLocked}
+              tabSummaries={tabSummaries}
+              readOnly={readOnly}
+              onBeginDrag={h.onBeginDrag}
+              onShiftSelect={h.onShiftSelect}
+              vote={tabVote}
+              selfId={participantKey(selfParticipant)}
+              voteMax={voteMax}
+              voteReviewActive={voteReview != null}
+              isVoteFocus={voteReview?.focusId === element.id}
+              onCastVote={h.onCastVote}
+              onRetractVote={h.onRetractVote}
+              onBeginEdit={h.onBeginEdit}
+              onCommitLabel={h.onCommitLabel}
+              onSetTextAlign={h.onSetTextAlign}
+              onCommitTable={h.onCommitTable}
+              onCommitHeaderSize={h.onCommitHeaderSize}
+              onSnapSeam={h.onSnapSeam}
+              onSetRailLabel={h.onSetRailLabel}
+              onToggleChecklistItem={h.onToggleChecklistItem}
+              onSetPageHeading={h.onSetPageHeading}
+              onSetWebRows={h.onSetWebRows}
+              onSetHeroCaptionLine={h.onSetHeroCaptionLine}
+              chartPalette={chartPalette}
+              onCancelEdit={h.onCancelEdit}
+              onFollowLink={h.onFollowLink}
+              onPressModeButton={h.onPressModeButton}
+              onPressFocusButton={h.onPressFocusButton}
+              onPressSessionButton={h.onPressSessionButton}
+              sessionStartBlocked={sessionStartBlocked}
+              timerState={timerState}
+              tabTimer={tabTimer ?? null}
+              onSetSessionConfig={h.onSetSessionConfig}
+              onOpenElementSettings={h.onOpenElementSettings}
+              commentSelfId={commentSelfId}
+              commentActions={commentActionsFor?.(element.id)}
+              actionSelfId={actionSelfId}
+              actionActions={actionActionsFor?.(element.id)}
+              timerControls={timerControls}
+              revealedForMe={revealedIds?.has(element.id)}
+              onToggleReveal={h.onToggleReveal}
+              onRollPicker={h.onRollPicker}
+              collab={collab}
+              chairSitters={chairSitters}
+              // Mode Buttons light up for the mode they hand out, and the
+              // canvas-tool union is WIDER than the mode vocabulary: Slide Deck
+              // (docs/specs/012-collaboration/presentation-mode.md) has no Mode Button, so it is not a SelectionMode.
+              // Narrow rather than widen — a "Switch to Slide Deck" button is
+              // exactly what docs/specs/012-collaboration/presentation-mode.md rules out.
+              activeMode={isSelectionMode(canvasTool) ? canvasTool : undefined}
+              onEnterPortal={h.onEnterPortal}
+              onFireReaction={h.onFireReaction}
+              reactionBurst={reactionBursts?.get(element.id)}
+              onReactionBurstDone={h.onReactionBurstDone}
+              onOpenComments={h.onOpenComments}
+              onOpenAction={h.onOpenAction}
+              onOpenNote={h.onOpenNote}
+              onEditLink={h.onEditLink}
+              onEditCode={h.onEditCode}
+              onDropIcon={h.onDropIcon}
+              onLinkCell={h.onLinkCell}
+              imageContext={imageContext}
+              onContextSelect={h.handleElementContextSelect}
+              // A workshop note writes in marker (docs/specs/021-event-storming/event-storming.md): the notation names
+              // the face, so it outranks the tab default — but not an explicit
+              // per-element font, which is a deliberate author choice.
+              fontFamily={
+                resolveFontStack(element.font ?? eventStormingNoteFont(element)) ?? tabFontStack
+              }
+            />
+          );
+        })}
+      </InfographicPageClip>
 
       {/* The line or arrow being drawn (docs/specs/023-draw-mode/draw-mode.md "Shapes"): the
           element the release lands, after every element, where it will land. */}

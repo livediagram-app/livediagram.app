@@ -8,14 +8,14 @@ where it is and changes only how the next mark is made.
 
 ## Domain language
 
-| Term                 | Means                                                                                                                   |
-| -------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| **tab kind**         | What a tab **is** ([Document](../006-document/document.md)). Reserved for specific uses.                                |
-| **editor mode**      | How a general tab is **worked on** right now: `diagram`, `draw` or `infographic` (`EditorMode`).                        |
-| **Diagram mode**     | Structured drawing: the palette, shapes, arrows, icons, templates, snapping and guides.                                 |
-| **Draw mode**        | Freehand whiteboarding: the dock, preset pens, eraser, shape recognition ([Draw mode](../023-draw-mode/draw-mode.md)).  |
-| **Infographic mode** | Visual pages: an A4 page on the canvas, the palette narrowed to icons, stickers, charts, components, devices and media. |
-| **mode switch**      | The control beside the page switcher that changes the editor mode.                                                      |
+| Term                 | Means                                                                                                                  |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| **tab kind**         | What a tab **is** ([Document](../006-document/document.md)). Reserved for specific uses.                               |
+| **editor mode**      | How a general tab is **worked on** right now: `diagram`, `draw` or `infographic` (`EditorMode`).                       |
+| **Diagram mode**     | Structured drawing: the palette, shapes, arrows, icons, templates, snapping and guides.                                |
+| **Draw mode**        | Freehand whiteboarding: the dock, preset pens, eraser, shape recognition ([Draw mode](../023-draw-mode/draw-mode.md)). |
+| **Infographic mode** | Visual pages: A4 pages on the canvas, the palette narrowed to icons, stickers, charts, components, devices and media.  |
+| **mode switch**      | The control beside the page switcher that changes the editor mode.                                                     |
 
 - "Whiteboard" names the activity and Draw mode's look, never a tab kind and
   never a type of document.
@@ -178,7 +178,7 @@ element in the same colour.
     migrated whiteboard without it becomes `'wrap'`, as it hugged there.
 - **Entering Draw mode**, by opening a tab or by switching, puts the active
   pen in hand on an empty tab and Select on a tab with content.
-- **Infographic mode** is Diagram mode drawn as a page, with the palette
+- **Infographic mode** is Diagram mode drawn as pages, with the palette
   narrowed (both below); every other rule, tool and shortcut is Diagram mode's.
 - **No further cue:** the dock (in place of the palette) and the switch's
   own label say which mode is on; no tint, accent or notice is added.
@@ -187,13 +187,44 @@ element in the same colour.
 
 ## The palette per mode
 
-Each mode offers the palette categories it is for
-(`apps/live/components/palette/palette-mode-categories.ts`).
+Each mode has its own **palette layout**
+(`apps/live/components/palette/palette-layouts.ts`): the categories its
+palette offers, in order, what each is called there, and which tiles each
+holds.
+
+- **Identity is shared, arrangement is per mode.** A category's glyph and its
+  default label, blurb and band live in the category catalogue
+  (`PALETTE_CATEGORIES`); a tile's identity in the tile catalogue
+  (`PALETTE_TILES`). A layout only arranges them, so one tile can sit in
+  different categories in different modes, and a category can be renamed,
+  re-banded or re-filled for one mode without touching another.
+- **A layout entry** names a category and may override its `label`,
+  `description` and `band`, and list its `tiles` by id, in order. With no list
+  it holds the category's own tiles (`tilesForCategory`), so a layout spells
+  out only where a mode differs. `boardOnly` keeps a category to
+  event-storming boards.
+- **Catalogue categories** (My shapes, Icons, Stickers, Tech) are
+  bodies with their own content and take no tile list.
+- **A body decides presentation only** (a grid, rows with a blurb, the
+  Behaviours group browser, Media's and Components' collapsed groups); it
+  renders whatever tiles the layout hands it. A category with no body of its
+  own, such as Popular, is a tile grid.
+- **Every surface reads the layout:** the floating Palette, the Toolbar
+  layout's strip (the Toolbar layout's).
+- Draw mode shows its own tools in place of the palette, so it borrows
+  Diagram's layout.
+
+Today the two layouts differ as below. Within the shared categories,
+Infographic's **Write** leaves out **Page** (the page is the canvas there) and
+**Annotation**, its **Build** leaves out **Mind node**, **Lane** and **Frame**
+(they organise a diagram, not a visual page), and its **Components** leaves
+out **Entity**; Diagram's
+**Media** leaves out the **Embed** group (YouTube, Vimeo, Loom, Figma, Google
+Docs, Website), keeping Image and Avatar.
 
 | Category       | Diagram | Infographic |
 | -------------- | ------- | ----------- |
-| Favourites     | yes     | no          |
-| Popular        | no      | yes         |
+| Popular        | yes     | yes         |
 | Shapes         | yes     | yes         |
 | My shapes      | yes     | yes         |
 | Write          | yes     | yes         |
@@ -206,58 +237,84 @@ Each mode offers the palette categories it is for
 | Stickers       | yes     | yes         |
 | Tech           | yes     | no          |
 | Media          | yes     | yes         |
-| Data           | yes     | yes         |
+| Data           | no      | yes         |
 | Behaviours     | yes     | no          |
 
-- **The landing category** is Favourites in Diagram mode, **Popular** in
-  Infographic mode, and the notation on an event-storming board
-  (`paletteLandingCategory`). Switching mode re-lands the palette there, so it
+- **The landing category** is the mode's **Popular**, and the notation on an
+  event-storming board
+  (the layout's `landing`). Switching mode re-lands the palette there, so it
   never shows a category the new mode leaves out.
-- **Popular** is twelve tiles an infographic is most often built from, each
-  reachable from a category Infographic mode offers
-  (`apps/live/components/palette/popular-tiles.ts`): Text, Square, Circle,
-  Image, Speech bubble, Pie, Bar, Donut, Stat row, Process, Timeline, Callout.
-  It is not a category of Edit Favourites.
-- Draw mode shows its own tools in place of the categories.
+- **Popular** is every mode's landing category: twelve tiles that mode is most
+  often built from, listed in its layout entry, fixed (not edited or
+  reordered). It replaced the per-browser **Favourites**
+  ([Palette Favourites](../010-palette/palette-favourites.md), removed).
+  - **Diagram**: Square, Circle, Diamond, Text, Arrow, Frame, Sticky note,
+    Image, Shape pen, Table, Code block, Entity (what were the default
+    Favourites).
+  - **Infographic**: Text, Square, Circle, Image, Speech bubble, Pie, Bar,
+    Donut, Stat row, Process, Timeline, Callout, each also reachable from
+    another category the mode offers.
 - Elements already on the canvas are untouched: narrowing the palette only
   changes what is offered to add.
 
-## The page
+## The pages
 
-Infographic mode draws an **A4 page** on the canvas, like an artboard in a
-design tool.
+Infographic mode draws **A4 pages** on the canvas, in a row, like artboards in
+a design tool.
 
-- **The page** is a sheet of paper (white in light chrome, slate-900 in dark)
-  with a soft shadow, **centred on the canvas origin**, under every element.
+- **The pages** are sheets of paper (white in light chrome, slate-900 in dark)
+  with a soft shadow, under every element. The first is centred on the canvas
+  origin; each further page sits **96** px (`INFOGRAPHIC_PAGE_GAP`) to the right
+  of the one before, every page centred on the row's horizontal axis.
   - **A4** at 96 px per inch: **794 x 1123** in portrait, **1123 x 794** in
     landscape (`A4_SHORT_SIDE`, `A4_LONG_SIDE`,
     `packages/document/src/infographic-page.ts`).
-  - The orientation is the tab's (`Tab.pageOrientation`, `'portrait'` when
-    absent), so everyone lays out on the same page.
+  - The pages are the tab's (`Tab.pages`: `{ id, orientation }[]`, in row
+    order), so everyone lays out on the same ones. A tab with no `pages` has one
+    page, in its legacy `pageOrientation` (portrait when absent); the legacy
+    field is dropped the first time the pages change. At most **20** pages
+    (`MAX_INFOGRAPHIC_PAGES`).
 - **The surround** is the tab's own canvas: its colour and pattern, and every
-  canvas setting, apply behind the page exactly as in Diagram mode.
-- **Its name** (**A4 · Portrait** / **A4 · Landscape**) sits above the page's
-  top-left corner, and **the page settings cog** above its top-right, both held
-  at one screen size at any zoom. The cog (tooltip **Page settings**) opens a
-  menu under it with an **Orientation** heading and **Portrait** /
-  **Landscape** radio rows; Escape or an outside press closes it. Choosing is a
-  tab edit (one undo step, synced to everyone). A viewer who cannot edit (a
-  view role, a locked tab) gets no cog.
-- **Turning the page animates:** the sheet eases between the two shapes about
-  its centre over 200 ms (none under reduced motion).
+  canvas setting, apply behind the pages exactly as in Diagram mode.
+- **Each page's name** sits above its top-left corner (**A4 · Portrait**, or
+  **Page 2 · A4 · Landscape** once there is more than one), and **its settings
+  cog** above its top-right, both held at one screen size at any zoom. The cog
+  (tooltip **Page settings**, or **Page 2 settings**) opens a menu under it with
+  an **Orientation** heading, **Portrait** / **Landscape** radio rows, and,
+  while there is more than one page, **Delete Page**. Escape or an outside
+  press closes it. A viewer who cannot edit (a view role, a locked tab) gets no
+  cog and no add button.
+- **Adding a page:** a round **+** (tooltip **Add page**) sits in the gap's
+  width to the right of the last page, on the row's axis. It adds a page after
+  the last, in the last page's orientation; it is gone at the limit.
+- **Content moves with its page.** Turning or deleting a page moves the pages
+  after it; every element whose centre lies on a page that moves (and an arrow's
+  free ends) moves with it, re-centred on the page's centre, so a turned page
+  keeps its content about its middle. Elements on a deleted page, or on no
+  page, stay where they are. Each change is one tab edit (one undo step, synced
+  to everyone) (`withInfographicPages`).
+- **Turning, adding and deleting animate:** the sheets ease to their new places
+  and shapes over 200 ms (none under reduced motion).
 - **Centred in the viewport:** entering Infographic mode or opening a tab in it
-  fits a square of the page's long side (`infographicPageFitBox`), so either
-  orientation fits at the same zoom and turning the page never moves the view.
-  Where the Toolbar layout's strip lies over the canvas's top edge, the page
-  centres in the band below it (`computeFitBelow`).
-- **Only the page is drawn on.** A draw, tap-to-place or double-click-to-add
-  that starts off the page is ignored (`pressIsOffPage`); elements already on
-  the canvas still move freely, on or off the page.
-- **The sheet is a view, never an element.** It takes no pointer events (a
-  press on it is a press on the empty canvas); exports and thumbnails see the
-  tab's own backdrop.
-- The sheet is `apps/live/components/canvas/InfographicPage.tsx`; the
-  orientation and centring are `apps/live/hooks/editor/useInfographicPage.ts`.
+  fits a square of the long side around the first page
+  (`infographicPageFitBox`), so either orientation fits at the same zoom and
+  turning it never moves the view. Where the Toolbar layout's strip lies over
+  the canvas's top edge, the page centres in the band below it
+  (`computeFitBelow`).
+- **Only the pages are drawn on.** A draw, tap-to-place or double-click-to-add
+  that starts off every page is ignored (`pressIsOffPage`); elements already on
+  the canvas still move freely, on or off the pages.
+- **Elements are cut off at the page edges.** Whatever part of an element hangs
+  off a page is hidden and cannot be pressed, as if the pages were the only
+  paper (`InfographicPageClip`, a layer clipped to the pages that holds the
+  element views). The selection handles are drawn above it, so an element
+  hanging off a page still shows all of them. Not in the isometric view, whose
+  3D stack a clip would flatten.
+- **The sheets are a view, never elements.** They take no pointer events (a
+  press on one is a press on the empty canvas); exports and thumbnails see the
+  tab's own backdrop and the elements whole.
+- The sheets are `apps/live/components/canvas/InfographicPages.tsx`; the pages'
+  edits and the centring are `apps/live/hooks/editor/useInfographicPage.ts`.
 
 ## Experimental modes
 
@@ -287,8 +344,9 @@ after **AI Tools**.
   the switch before the mode applies.
 - `Tab` · `Changed` · `OpensInDiagram` / `OpensInDraw` / `OpensInInfographic`, fired
   by Opens in.
-- `Tab` · `Changed` · `PagePortrait` / `PageLandscape`, fired by the page
-  settings' orientation in Infographic mode.
+- `Tab` · `Changed` · `PagePortrait` / `PageLandscape`, fired by a page's
+  orientation in Infographic mode, and `PageAdded` / `PageRemoved` by its add
+  button and Delete Page.
 - Draw mode's own events are the **`Draw`** category (pens, shapes, eraser,
   recognition, background, snap colours,
   [Draw mode](../023-draw-mode/draw-mode.md#telemetry-telemetry--public-transparency-dashboard)).

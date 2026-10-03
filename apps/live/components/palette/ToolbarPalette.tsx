@@ -4,7 +4,6 @@ import {
   Fragment,
   useEffect,
   useEffectEvent,
-  useMemo,
   useRef,
   useState,
   type ReactNode,
@@ -12,7 +11,6 @@ import {
 } from 'react';
 import { ChevronDownIcon, EllipsisIcon, HoverCard } from '@livediagram/ui';
 import { track } from '@/lib/telemetry';
-import { loadPaletteFavourites } from '@/lib/palette-favourites';
 import { SnapWidth } from '@/components/primitives/SnapWidth';
 import { PHONE_TOOLBAR_ITEMS } from '@/components/chrome/phone-toolbar-items';
 import { safeInlinePadding } from '@/lib/safe-area';
@@ -22,7 +20,6 @@ import { PaletteDropdown, TOOLBAR_TRIGGER_TONE } from './PaletteDropdown';
 import { CATEGORY_BANDS } from './PaletteTabBar';
 import { EsPhotoStripButton } from './EsPhotoStripButton';
 import { PaletteTile } from './PaletteTileGrid';
-import { PALETTE_TILES } from './palette-tile-defs';
 import { desktopStripTileLimit, phoneStripTileLimit, stripTilesFor } from './toolbar-strip-tiles';
 import { useStripTileLimit } from './useStripTileLimit';
 import { useViewportWidth } from '@/hooks/ui/useViewportWidth';
@@ -31,7 +28,7 @@ import { useUiScale } from '@/components/providers/ui-scale';
 import { toSurfacePx, uiScaleStyle, uiUnscaleStyle } from '@/lib/ui-scale';
 import { RAIL_LEAVE_MS, ToolbarStripRail } from './ToolbarStripRail';
 import { usePaletteCatalogue } from './usePaletteCatalogue';
-import { paletteLandingCategory } from './palette-mode-categories';
+import { paletteLandingCategory } from './palette-layouts';
 import type { CommandPaletteProps } from './CommandPalette.types';
 import type { PaletteAddHandlers } from './palette-add-handlers';
 
@@ -66,8 +63,8 @@ type Props = Pick<
     leading?: ReactNode;
   };
 // Clicks inside these don't count as "outside" the More popover: the icon
-// filter's portalled dropdown menus, and the Edit Favourites dialog that the
-// Favourites body opens (closing the popover would unmount it mid-edit).
+// filter's portalled dropdown menus, and any dialog a category body opens
+// (closing the popover would unmount it mid-edit).
 const INSIDE_SELECTOR = '[data-palette-dropdown-menu], [role="dialog"], [data-tour-popover]';
 
 // The strip's card, and the leading card beside it on a phone.
@@ -120,25 +117,15 @@ function Divider() {
 
 export function ToolbarPalette(props: Props) {
   const { canvasTool, esBoard, themeTint, pendingDraw, hidden, leading } = props;
-  const [moreOpen, setMoreOpenState] = useState(false);
-  // Favourites are read from storage when the More popover opens or closes and when the category
-  // changes, not every render: the chrome re-renders on every drag frame, and the Favourites body
-  // writes its edits straight to storage, so closing the popover is exactly when the strip needs to
-  // catch up. Both transitions go through setMoreOpen, which re-reads.
-  const validIds = useMemo(() => new Set(PALETTE_TILES.map((t) => t.id)), []);
-  const [favouriteIds, setFavouriteIds] = useState(() => loadPaletteFavourites(validIds));
-  const setMoreOpen = (open: boolean) => {
-    setMoreOpenState(open);
-    setFavouriteIds(loadPaletteFavourites(validIds));
-  };
+  const [moreOpen, setMoreOpen] = useState(false);
   const { tabs, tileActions, canvasToolOptions, onCanvasToolChange, editorMode } =
     usePaletteCatalogue({
       ...props,
       // A tile used from the More popover closes it, so the canvas is clear to
       onTileUsed: () => setMoreOpen(false),
     });
-  // Same landing rule as the floating Palette (docs/specs/010-palette/palette-favourites.md, docs/specs/021-event-storming/event-storming.md): the user's
-  // Favourites, or the notation on an event-storming board.
+  // Same landing rule as the floating Palette (palette-layouts, docs/specs/021-event-storming/event-storming.md): the
+  // mode's Popular, or the notation on an event-storming board.
   const defaultId = paletteLandingCategory(editorMode, !!esBoard);
   // Crossing an ES / non-ES tab boundary re-lands on the right default: the
   // host keys this component on `esBoard`, as the Palette keys PaletteTabBar.
@@ -170,15 +157,16 @@ export function ToolbarPalette(props: Props) {
   const swipe = leading != null;
   const tileLimit = swipe ? Infinity : stripLimit;
   const fitted = stripTilesFor(category?.id ?? defaultId, {
-    favouriteIds,
     hasImage: tileActions.hasImage,
     limit: stripLimit,
+    // The category's tiles in this mode's layout (palette-layouts).
+    tiles: category?.tiles,
   });
   const { tiles, dividersAfter } = swipe
     ? stripTilesFor(category?.id ?? defaultId, {
-        favouriteIds,
         hasImage: tileActions.hasImage,
         limit: tileLimit,
+        tiles: category?.tiles,
       })
     : fitted;
   const { hasMore } = fitted;
@@ -207,9 +195,9 @@ export function ToolbarPalette(props: Props) {
   };
   const leaving = leavingId
     ? stripTilesFor(leavingId, {
-        favouriteIds,
         hasImage: tileActions.hasImage,
         limit: tileLimit,
+        tiles: tabs.find((t) => t.id === leavingId)?.tiles,
       })
     : null;
 

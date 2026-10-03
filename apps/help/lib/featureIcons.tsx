@@ -26,12 +26,12 @@ import {
   lucideSpade,
   lucideSparkles,
   lucideSquarePlus,
-  lucideStar,
   lucideStarHalf,
   lucideTimer,
   lucideToggleRight,
   lucideUsers,
   lucideVote,
+  lucideZap,
 } from '@livediagram/icons/lucide';
 import { topCategorySlug } from '@livediagram/help-registry';
 import { Prims, Glyph as UiGlyph } from '@livediagram/ui';
@@ -592,9 +592,9 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
     </Glyph>
   ),
   // Palette → Data elements. Charts are the easiest subjects in the whole set —
-  // each has one unmistakable idiom — with one exception: Rating is stars, and
-  // `favourites` in the Palette settings is already a star. So Rating draws the
-  // SCALE (a row, part filled) rather than the symbol.
+  // each has one unmistakable idiom — with one exception: Rating is stars, and a
+  // star reads as a favourite. So Rating draws the SCALE (a row, part filled)
+  // rather than the symbol.
   // Just the bar, filled part-way. Drawing the ring above the bar — to cover both
   // halves of "Bars and Rings" — made a circle sitting on a stem, which reads as
   // a lightbulb and nothing else. One honest half beats two unreadable ones.
@@ -1146,12 +1146,11 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <Prims prims={lucideCpu} />
     </Glyph>
   ),
-  // Palette → Palette Settings.
-  // A filled star, because Favourites is the one tile that marks a choice
-  // rather than describing a feature.
-  favourites: (
+  // Palette → Popular: a bolt, for the tiles one tap away. Not the tab's own sparkles, which the
+  // AI Tools card already wears here.
+  popular: (
     <Glyph>
-      <Prims prims={lucideStar} />
+      <Prims prims={lucideZap} />
     </Glyph>
   ),
   // Two overlapping panels with the back one showing through.

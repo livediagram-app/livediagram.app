@@ -61,7 +61,7 @@ Scope, by file (all under `apps/live/` unless stated):
 | Placement       | `FlyoutPlacement` (`below` / `above` / `beside`), `data-side`        | Where a flyout opens: off a top or bottom dock, or beside the panel       |
 | Tip             | `FlyoutTip`, `data-flyout-tip` (`top` / `bottom` / `left` / `right`) | The flyout's point at its opener, on the edge facing it                   |
 
-Banned synonyms: "favourite" for a pinned shape (Favourites is the palette's), "frequent slot" (the
+Banned synonyms: "favourite" for a pinned shape (it is a slot, not a favourite), "frequent slot" (the
 slots are Most used and Recent), "More shapes" (merged into Shapes), "toolbar" for a group in prose
 (it is a group; `role="toolbar"` is its semantics).
 

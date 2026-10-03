@@ -25,12 +25,30 @@ const ACTIVITY_PANEL_UI_TYPES = new Set([
   'ActivityRevertPreviewOff',
 ]);
 
+// The palette's Favourites (removed 2026-10-03, docs/specs/010-palette/palette-favourites.md): its
+// curation (add, remove, reorder or reset, the Edit / Reorder modes), its cross-category search,
+// and its help article (now Popular's, at a new address).
+const PALETTE_FAVOURITES_UI = new Set([
+  'Added|PaletteFavourite',
+  'Removed|PaletteFavourite',
+  'Changed|PaletteFavourite',
+  'Toggled|PaletteFavouritesEdit',
+  'Searched|PaletteSearch',
+]);
+const PALETTE_FAVOURITES_HELP_ID = 'favourites';
+
 export function isRetiredEvent(category: string, action: string, type: string | null): boolean {
   if (category === 'Document' && action === 'Reverted') return true;
-  if (category === 'Help') return ACTIVITY_PANEL_HELP_IDS.has(type ?? '');
+  if (category === 'UI' && PALETTE_FAVOURITES_UI.has(`${action}|${type ?? ''}`)) return true;
+  if (category === 'Help') {
+    return ACTIVITY_PANEL_HELP_IDS.has(type ?? '') || type === PALETTE_FAVOURITES_HELP_ID;
+  }
   if (category === 'UI' && (action === 'Opened' || action === 'Toggled')) {
     if (ACTIVITY_PANEL_UI_TYPES.has(type ?? '')) return true;
-    return action === 'Opened' && ACTIVITY_PANEL_HELP_IDS.has(type ?? '');
+    return (
+      action === 'Opened' &&
+      (ACTIVITY_PANEL_HELP_IDS.has(type ?? '') || type === PALETTE_FAVOURITES_HELP_ID)
+    );
   }
   return false;
 }

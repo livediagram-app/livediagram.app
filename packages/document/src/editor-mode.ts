@@ -77,7 +77,7 @@ export function hasBoardLook(mode: EditorMode): boolean {
 }
 
 // Infographic mode draws the canvas as a page on a surround (docs/specs/007-editor/editor-modes.md
-// "The page"); a view of the tab, like the board look, never stored.
+// "The pages"); a view of the tab, like the board look, never stored.
 export function hasPageLook(mode: EditorMode): boolean {
   return mode === 'infographic';
 }

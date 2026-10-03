@@ -37,7 +37,7 @@ No third catalogue, no id set, no MIME, no dispatch branch, no `noTint` plumbing
 
 ## Inherited behaviours (all automatic, all catalogue-driven)
 
-Palette grid + in-tab search, category filter, click-to-add (standalone icon element or fold into the selected shape), drag-to-canvas and drag-onto-shape via `ICON_DND_MIME`, Favourites tiles, the global search "Add to canvas" group, canvas rendering, editor export, the api share thumbnail (client-rendered SVG, so the viewer's emoji font applies), and the MCP render. Telemetry rides the existing `track('Element','Added','Icon')`.
+Palette grid + in-tab search, category filter, click-to-add (standalone icon element or fold into the selected shape), drag-to-canvas and drag-onto-shape via `ICON_DND_MIME`, the global search "Add to canvas" group, canvas rendering, editor export, the api share thumbnail (client-rendered SVG, so the viewer's emoji font applies), and the MCP render. Telemetry rides the existing `track('Element','Added','Icon')`.
 
 ## Tests
 
