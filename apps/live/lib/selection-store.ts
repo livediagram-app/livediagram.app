@@ -24,7 +24,16 @@ export type SelectionStore = {
   setSelection(next: Selection): void;
 };
 
-function sameMembers(a: ReadonlySet<string>, b: ReadonlySet<string>): boolean {
+// The selection as one set: the multi-selection when there is one, else the single selected id.
+export function selectionIds(
+  selectedId: string | null,
+  multiSelectedIds: ReadonlySet<string>,
+): Set<string> {
+  if (multiSelectedIds.size > 0) return new Set(multiSelectedIds);
+  return selectedId ? new Set([selectedId]) : new Set();
+}
+
+export function sameMembers(a: ReadonlySet<string>, b: ReadonlySet<string>): boolean {
   if (a === b) return true;
   if (a.size !== b.size) return false;
   for (const id of a) if (!b.has(id)) return false;

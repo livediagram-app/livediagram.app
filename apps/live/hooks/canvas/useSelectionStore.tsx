@@ -30,19 +30,20 @@ export function useSelectionOf<T>(
   equal: (a: T, b: T) => boolean = Object.is,
 ): T {
   const store = useSelectionStore();
-  // The last slice handed out, per snapshot: an equal slice keeps its identity, so
-  // useSyncExternalStore sees no change and the reader does not re-render.
-  const last = useRef<{ snapshot: Selection; value: T } | null>(null);
+  // The last slice handed out, per snapshot and selector: an equal slice keeps its identity, so
+  // useSyncExternalStore sees no change and the reader does not re-render. A new selector (one that
+  // closes over other data) selects again.
+  const last = useRef<{ snapshot: Selection; select: (s: Selection) => T; value: T } | null>(null);
   const getSlice = () => {
     const snapshot = store.get();
     const prev = last.current;
-    if (prev && prev.snapshot === snapshot) return prev.value;
+    if (prev && prev.snapshot === snapshot && prev.select === select) return prev.value;
     const value = select(snapshot);
     if (prev && equal(prev.value, value)) {
-      last.current = { snapshot, value: prev.value };
+      last.current = { snapshot, select, value: prev.value };
       return prev.value;
     }
-    last.current = { snapshot, value };
+    last.current = { snapshot, select, value };
     return value;
   };
   return useSyncExternalStore(store.subscribe, getSlice, getSlice);

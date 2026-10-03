@@ -45,6 +45,35 @@ type CanvasSelection = {
   showMultiToolbar: boolean;
 };
 
+// The modes that decide whether a selected element shows its grips.
+export type GripContext = {
+  editingId: string | null;
+  isPaintMode: boolean;
+  tabLocked: boolean;
+  readOnly: boolean;
+};
+
+// One element's resize handles and edge anchors (docs/specs/008-canvas/blueprints/selection-store.md):
+// shown on a lone boxed selection, not being edited, in no edit-blocking mode. Fixed-size elements
+// (mode / session buttons by kind, event-storming notes by their creation stamp) advertise no resize,
+// and a table no edge anchors. `single` is "this element is the one selected element".
+export function elementGrips(
+  el: Element,
+  single: boolean,
+  ctx: GripContext,
+): { handles: boolean; anchors: boolean } {
+  const handles =
+    single &&
+    isBoxed(el) &&
+    el.locked !== true &&
+    ctx.editingId !== el.id &&
+    !ctx.isPaintMode &&
+    !ctx.tabLocked &&
+    !ctx.readOnly &&
+    !isFixedSizeElement(el);
+  return { handles, anchors: handles && el.type !== 'table' };
+}
+
 export function deriveCanvasSelection(input: {
   elements: Element[];
   selectedId: string | null;
@@ -135,42 +164,16 @@ export function deriveCanvasSelection(input: {
     !tabLocked &&
     !readOnly
   );
-  // Resize handles and arrow anchors share one predicate: a single
-  // boxed selection, not being edited, in no edit-blocking mode.
-  const handleVisible = (id: string) =>
-    selectedIsBoxed &&
-    id === selectedId &&
-    multiSelectedIds.size === 0 &&
-    editingId !== id &&
-    !isPaintMode &&
-    !selectedLocked &&
-    !tabLocked &&
-    !readOnly;
-
-  // Arrow-anchor dots are suppressed for tables: connecting a
-  // connector to a grid is an unlikely flow and the external dots
-  // clash with the table's own in-cell controls. Resize handles
-  // (resizeVisible) still show.
-  // Resize handles skip the FIXED-SIZE kinds (docs/specs/009-elements/mode-button.md buttons) and any
-  // element stamped fixed at creation (docs/specs/021-event-storming/event-storming.md event-storming notes): both
-  // are one size for life, so offering a handle would advertise a resize the
-  // drag paths deliberately ignore.
-  const resizeVisible = (id: string) => {
-    if (!handleVisible(id)) return false;
+  // Resize handles and edge anchors: the per-element rule each element view also applies.
+  const gripsOf = (id: string) => {
     const el = elements.find((e) => e.id === id);
-    // Fixed-size elements (mode / session buttons by kind, event-storming
-    // notes by their creation stamp — docs/specs/021-event-storming/event-storming.md) advertise no resize.
-    return !(el && isFixedSizeElement(el));
+    const single = id === selectedId && multiSelectedIds.size === 0;
+    return el && single
+      ? elementGrips(el, true, { editingId, isPaintMode, tabLocked, readOnly })
+      : { handles: false, anchors: false };
   };
-
-  // The edge "anchors" are RESIZE grips today (arrows are drawn from the
-  // quick-connect menu now, see SelectionChromeLayer), so they follow the
-  // same fixed-size rule as the corner handles. They used to be exempt on
-  // the reasoning that "an arrow can still point at a button" — true of a
-  // connector anchor, untrue of the widget that actually renders, which is
-  // why a fixed-size sticky could still be dragged wider by its edges.
-  const anchorVisible = (id: string) =>
-    resizeVisible(id) && elements.find((el) => el.id === id)?.type !== 'table';
+  const resizeVisible = (id: string) => gripsOf(id).handles;
+  const anchorVisible = (id: string) => gripsOf(id).anchors;
 
   const unionResizeIds: ReadonlySet<string> | null =
     multiSelectedIds.size > 1 ? multiSelectedIds : null;

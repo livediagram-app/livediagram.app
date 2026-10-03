@@ -107,8 +107,6 @@ export type CanvasProps = {
   // Connection-point markers revealed while dragging an arrow endpoint near
   // a shape, so the user can see exactly where it will snap. Empty otherwise.
   snapTargets: SnapTarget[];
-  selectedId: string | null;
-  multiSelectedIds: ReadonlySet<string>;
   onSelectMarquee: (ids: Set<string>) => void;
   canvasTool: CanvasTool;
   onSetCanvasTool: (tool: CanvasTool) => void;

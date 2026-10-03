@@ -569,8 +569,6 @@ export function EditorCanvasHost() {
         snapGuides={snapGuides}
         distGuides={distGuides}
         snapTargets={snapTargets}
-        selectedId={selectedId}
-        multiSelectedIds={multiSelectedIds}
         remoteSelectionsByElement={remoteSelectionsByElement}
         remoteCursors={remoteCursorRows}
         remoteAvatars={remoteAvatarRows}

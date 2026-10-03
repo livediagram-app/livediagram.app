@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import {
   EMPTY_SELECTION,
   createSelectionStore,
+  selectionIds,
   elementSelectionFlags,
   sameFlags,
 } from './selection-store';
@@ -125,5 +126,13 @@ describe('elementSelectionFlags', () => {
         { selected: true, multi: true, single: false },
       ),
     ).toBe(false);
+  });
+});
+
+describe('selectionIds', () => {
+  it('is the multi-selection when there is one, else the single id, else nothing', () => {
+    expect([...selectionIds('a', new Set(['b', 'c']))]).toEqual(['b', 'c']);
+    expect([...selectionIds('a', new Set())]).toEqual(['a']);
+    expect(selectionIds(null, new Set()).size).toBe(0);
   });
 });

@@ -45,6 +45,27 @@ describe('useSelectionOf', () => {
   });
 });
 
+describe('useSelectionOf with a selector over other data', () => {
+  it('re-selects when the selector changes, though the selection did not', () => {
+    const store = createSelectionStore();
+    store.setSelectedId('p');
+    const wrapper = ({ children }: { children: ReactNode }) => (
+      <SelectionStoreProvider store={store}>{children}</SelectionStoreProvider>
+    );
+
+    const { result, rerender } = renderHook(
+      ({ paths }: { paths: Set<string> }) =>
+        useSelectionOf((s) => (s.selectedId && paths.has(s.selectedId) ? s.selectedId : null)),
+      { wrapper, initialProps: { paths: new Set<string>() } },
+    );
+    expect(result.current).toBeNull();
+
+    rerender({ paths: new Set(['p']) });
+
+    expect(result.current).toBe('p');
+  });
+});
+
 describe('useSelectionStore', () => {
   it('throws outside a provider, never yielding a silent empty selection', () => {
     vi.spyOn(console, 'error').mockImplementation(() => {});

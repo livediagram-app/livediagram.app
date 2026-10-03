@@ -13,6 +13,7 @@ import { applyPaint, paintableArrowFields, paintableBoxedFields } from '@/lib/fo
 import { filterPaintedFields, formatPaintsAnything, type FormatConfig } from '@/lib/format-config';
 import { track } from '@/lib/telemetry';
 import { patchTab } from './editor-page-helpers';
+import { selectionIds } from '@/lib/selection-store';
 
 type SetState<T> = Dispatch<SetStateAction<T>>;
 
@@ -22,15 +23,6 @@ type SetState<T> = Dispatch<SetStateAction<T>>;
 // currentSelectionIds / selectionPrimary resolve the working set;
 // applyFormatFromSource runs the format painter). Returned so the
 // still-inline handlers and the Canvas consume them.
-// The selection as one set: the multi-selection when there is one, else the single selected id.
-export function selectionIds(
-  selectedId: string | null,
-  multiSelectedIds: ReadonlySet<string>,
-): Set<string> {
-  if (multiSelectedIds.size > 0) return new Set(multiSelectedIds);
-  return selectedId ? new Set([selectedId]) : new Set();
-}
-
 export function useElementHelpers(opts: {
   selectedId: string | null;
   activeId: string;

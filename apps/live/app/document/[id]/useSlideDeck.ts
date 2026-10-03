@@ -394,10 +394,6 @@ export function useSlideDeck({
     openSlide,
     setOpenSlideId,
     openSlideInEditor,
-    selectionCount: selectionIds.size,
-    // The ids themselves, for "Remove selection": the panel should not have
-    // to be handed the selection a second time when the hook already has it.
-    currentSelectionIds: useMemo(() => [...selectionIds], [selectionIds]),
     runnable,
     thumbs,
     newSlideFromSelection,
