@@ -421,7 +421,7 @@ export const DOCUMENTS_FILED: Metric = {
   // stack (Taken Offline, Saved to Cloud).
   typeIn: (type) => type !== 'TakenOffline' && type !== 'SavedToCloud',
   title: 'Documents Filed',
-  blurb: 'A document moved into a folder, or back to Unsorted.',
+  blurb: 'A document moved into a folder, or back to the top level.',
 };
 
 export const NOTES: MetricStack = {
@@ -463,11 +463,21 @@ export const EXPLORER_SIDEBAR_PICKS = chart(
   },
 );
 
+// The Explorer's filters (docs/specs/013-workspace/explorer-filters.md "Telemetry"):
+// Explorer·Selected·<Facet>, one per filter that gained a value, by kind (never what was picked).
+export const EXPLORER_FILTERS_PICKED = chart(
+  'Explorer',
+  'Selected',
+  'Explorer Filters Used',
+  'A filter reached for in the Explorer, by kind: words, Opens in, Kind, Template, Made by AI, Edited, People or Space, from a chip, a suggestion or a typed token.',
+  { rising: 'good' },
+);
+
 export const ORGANISATION: MetricStack = {
   stack: true,
   title: 'Organisation',
   blurb:
-    'Folders made and nested, tab folders, tabs and documents filed, and the Explorer sidebar.',
+    'Folders made and nested, tab folders, tabs and documents filed, the Explorer sidebar and its filters.',
   members: [
     FOLDERS_CREATED,
     FOLDERS_RE_PARENTED,
@@ -478,6 +488,7 @@ export const ORGANISATION: MetricStack = {
     FOLDERS_RENAMED,
     TABS_UNFILED,
     EXPLORER_SIDEBAR_PICKS,
+    EXPLORER_FILTERS_PICKED,
   ],
 };
 

@@ -189,9 +189,10 @@ export function registerTools(server: McpServer, env: Env): void {
         'Pass one tab, or several to build a multi-tab document in one call (an ' +
         'overview plus detail tabs). A tab may pass "template" (a kind from list_templates) ' +
         'instead of elements to start from a hand-tuned scaffold. The server validates, lays ' +
-        'out each tab per the layout arg, tags it as AI-generated so it shows in your ' +
-        '"Generated" folder (or files it in the user\'s default folder for what that document is made as, ' +
-        'when they have set one), and returns the link, the folder, and an inline PNG of the first tab.',
+        "out each tab per the layout arg, tags it as made by AI (the Explorer's Made by AI filter finds it), " +
+        "files it at the root of the user's My documents (or in their default folder for what that " +
+        'document is made as, when they have set one), and returns the link, the folder, and an inline ' +
+        'PNG of the first tab.',
       inputSchema: createDocumentShape,
       outputSchema: createDocumentOutput,
     },
@@ -245,9 +246,8 @@ export function registerTools(server: McpServer, env: Env): void {
         tabs.push(buildTab(tabId, t.name, (candidate as Tab).elements, args.layout, args.theme));
       }
       const id = crypto.randomUUID();
-      // Tag the document as MCP-generated (docs/specs/013-workspace/folders.md). The Explorer surfaces a
-      // synthetic "Generated" folder over source != null, so there's no
-      // real folder to create / place it in.
+      // Tag the document as made by AI (docs/specs/013-workspace/folders.md): the Explorer's Made by AI
+      // filter and badge read source != null, wherever the document is filed.
       // The creation intent (docs/specs/013-workspace/default-folders.md): with no folder named, the
       // server files the document in the user's default folder for it, when they have one.
       const intent = creationIntentOf(tabs[0], templateFamilyOf(firstTemplate));
@@ -613,7 +613,7 @@ export function registerTools(server: McpServer, env: Env): void {
       behaviour: 'write',
       title: 'Restore a document from the Trash',
       description:
-        'Bring a deleted document back from the Trash, to the folder it was in (or Unsorted ' +
+        'Bring a deleted document back from the Trash, to the folder it was in (or the root of its space ' +
         'if that folder is gone), with its tabs and share links. Find it with list_trash.',
       inputSchema: restoreDocumentShape,
       outputSchema: restoreDocumentOutput,

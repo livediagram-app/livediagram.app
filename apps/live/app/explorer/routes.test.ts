@@ -14,10 +14,8 @@ const STATIC_NODES: SelectedNode[] = [
   { kind: 'themes' },
   { kind: 'shape-libraries' },
   { kind: 'all' },
-  { kind: 'unsorted' },
-  { kind: 'generated' },
+  { kind: 'search' },
   { kind: 'offline' },
-  { kind: 'dynamic' },
   { kind: 'shared' },
   { kind: 'gallery' },
   { kind: 'invites' },
@@ -37,6 +35,16 @@ describe('explorer route mapping', () => {
       const url = new URL(explorerPathFor(node), 'https://x.test');
       expect(selectedFromRoute(url.pathname, url.searchParams)).toEqual(node);
     }
+  });
+
+  // The retired buckets (docs/specs/013-workspace/folders.md#the-root-and-the-retired-buckets) read as
+  // the views their pages replace themselves with, so the sidebar highlights the right row at once.
+  it('reads the retired Unsorted, Dynamic and Generated addresses as their successors', () => {
+    expect(selectedFromRoute('/explorer/unsorted', new URLSearchParams())).toEqual({ kind: 'all' });
+    expect(selectedFromRoute('/explorer/dynamic/', new URLSearchParams())).toEqual({ kind: 'all' });
+    expect(selectedFromRoute('/explorer/generated', new URLSearchParams())).toEqual({
+      kind: 'search',
+    });
   });
 
   it('URL-encodes ids', () => {

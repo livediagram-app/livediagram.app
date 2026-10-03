@@ -18,7 +18,7 @@ export const metadata = helpMetadata({
 
 The full-page [Explorer](/explorer) is the complete library view, modelled on a desktop file browser: a sidebar on the left to navigate, and a breadcrumb plus a list of folders and documents on the right. It is where all your documents live, organised into folders by project, customer, or topic. (For the compact version inside the editor, see the [Explorer panel](/help/explorer/explorer-panel/).)
 
-The sidebar is one tree in three groups: **Overview**, **Spaces** and **More**. Every document lives in exactly one place, **My documents**, a team, or this browser, and everything else in the sidebar is a view that gathers documents from wherever they live. Search sits in the top bar, and New folder and New document sit at the top of the page you are on.
+The sidebar is one tree in three groups: **Overview**, **Spaces** and **More**. Every document lives in exactly one place, **My documents**, a team, or this browser, and everything else in the sidebar is a view that gathers documents from wherever they live. Search sits in the top bar: type there to search, or pick a filter, and the page you are on narrows to what matches ([Search and filter documents](/help/explorer/filters/)). New folder and New document sit at the top of the page you are on.
 
 <Figure caption="The full-page Explorer: the sidebar's groups on the left, and the chosen view's documents on the right.">
   <ExplorerOverview />
@@ -34,12 +34,12 @@ The sidebar is one tree in three groups: **Overview**, **Spaces** and **More**. 
 
 Your spaces are the top-level folders of the tree.
 
-- **My documents** is [your own library](/help/explorer/personal-space/). Beneath it sit **Unsorted** (documents you have not filed), **Generated** (AI-made documents you have not filed yet), and the folders you create. This is where you do the actual filing: dragging documents into folders, renaming, and nesting folders inside folders.
+- **My documents** is [your own library](/help/explorer/personal-space/). Beneath it sit the folders you create; opening it lists those folders, then the documents you have not filed. This is where you do the actual filing: dragging documents into folders, renaming, and nesting folders inside folders.
 - **Each team** you belong to sits beside it, and expands to the team's shared folders ([Team spaces](/help/explorer/team-spaces/)).
 - **Invites** appears while a team invite is waiting for you.
 - **New team** creates a team. If you are not signed in, a **Sign in to access Teams** card sits here instead.
 
-<Figure caption="My documents is a folder tree: Unsorted and Generated first, then folders you can nest as deep as you like.">
+<Figure caption="My documents is a folder tree: folders you can nest as deep as you like, and the documents at its root.">
   <MyDocumentsTree />
 </Figure>
 
@@ -59,7 +59,7 @@ Each page is named after its row: **Home**, **Shared with me**, **My documents**
 
 ## List or card view
 
-Every browse view, My documents, your folders, Unsorted, Generated, and a team's shared library, can be shown two ways, switched with the **List / Card** toggle at the top-right of the pane:
+Every browse view, My documents, your folders, Recent, Search results, and a team's shared library, can be shown two ways, switched with the **List / Card** toggle at the top-right of the pane:
 
 - **List** packs documents into compact rows, best for scanning a long library by name and date.
 - **Card** shows each document as a tile with a thumbnail of its first tab, best for recognising a document by its shape at a glance.

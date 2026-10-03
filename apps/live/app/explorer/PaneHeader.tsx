@@ -105,8 +105,10 @@ export function PaneHeader({
   const [createButton, setCreateButton] = useState<HTMLButtonElement | null>(null);
   return (
     <div className="mb-4">
-      <div className="mb-2 flex items-center justify-between gap-3">
-        <div className="flex min-w-0 items-center gap-2">
+      {/* Wraps on a phone: the actions take a second line rather than squeezing the title to
+          nothing. */}
+      <div className="mb-2 flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
+        <div className="flex min-w-[10rem] flex-1 items-center gap-2">
           {onOpenNav ? (
             <button
               type="button"

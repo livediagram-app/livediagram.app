@@ -27,10 +27,10 @@ describe('VIEW_TITLES', () => {
   });
 
   it('keeps their own names for the views without a row', () => {
-    expect([VIEW_TITLES.recent, VIEW_TITLES.favourites, VIEW_TITLES.dynamic]).toEqual([
+    expect([VIEW_TITLES.recent, VIEW_TITLES.favourites, VIEW_TITLES.search]).toEqual([
       'Recent',
       'Favourites',
-      'Dynamic',
+      'Search results',
     ]);
   });
 });

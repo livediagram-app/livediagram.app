@@ -225,3 +225,8 @@ Each time a dimension gains a value it did not hold, from a chip, an accepted su
 `MadeBy`, `Edited`, `People`, `Space` ([Telemetry](../017-telemetry/telemetry.md)). Text counts when it goes from empty to
 non-empty. Never a value, a word or an id. A lens arriving with a link, or restored by Back, counts for nothing: only
 the reader's own change does.
+
+## Help
+
+The help centre's [Search and filter documents](../../../apps/help/app/explorer/filters/page.mdx) article describes the
+field, the chips and the typed filters; Search results opens it from its Help button.

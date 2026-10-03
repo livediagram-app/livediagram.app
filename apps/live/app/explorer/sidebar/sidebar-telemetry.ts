@@ -8,8 +8,6 @@ export type SidebarTelemetryRow =
   | 'Activity'
   | 'SharedWithMe'
   | 'MyDocuments'
-  | 'Unsorted'
-  | 'Generated'
   | 'Folder'
   | 'Team'
   | 'TeamFolder'

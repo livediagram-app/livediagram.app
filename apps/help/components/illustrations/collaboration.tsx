@@ -507,7 +507,7 @@ export function TeamSharedTree() {
     { label: 'System overview', depth: 2, folder: false, badge: true },
     { label: 'Data flow', depth: 2, folder: false, badge: true },
     { label: 'Onboarding', depth: 1, folder: true },
-    { label: 'Unsorted', depth: 1, folder: true },
+    { label: 'Retro notes', depth: 1, folder: false, badge: true },
   ];
   return (
     <Scene w={420} h={230} bg="plain">

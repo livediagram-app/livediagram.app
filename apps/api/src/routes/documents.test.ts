@@ -780,7 +780,7 @@ describe('POST /documents carrying an Offline Mode sync (docs/specs/006-document
 
   it("refuses a folder that isn't theirs by name, writing nothing", async () => {
     // docs/specs/013-workspace/folders.md "Placement on create": never filed elsewhere instead.
-    // The sync itself refiles in Unsorted on this refusal (lib/offline/offline-convert.ts).
+    // The sync itself refiles at the root on this refusal (lib/offline/offline-convert.ts).
     db.getDocument.mockResolvedValue(null);
     db.getFolder.mockResolvedValue({ id: 'f1', ownerId: 'someone-else', teamId: null });
     const res = await create({ folderId: 'f1' });

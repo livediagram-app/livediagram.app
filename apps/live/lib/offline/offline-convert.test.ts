@@ -140,7 +140,7 @@ describe('saveOfflineToCloud (offline -> cloud)', () => {
       expect(creates).toHaveLength(2);
       expect(creates[1]![1]).toMatchObject({ folderId: null });
       expect(warn).toHaveBeenCalledWith(
-        `[offline-sync] placement refused reason=${code}, filed in Unsorted`,
+        `[offline-sync] placement refused reason=${code}, filed at root`,
       );
       expect(calls).toEqual(['apiCreateDocument', 'offlineDeleteDocument']);
       warn.mockRestore();

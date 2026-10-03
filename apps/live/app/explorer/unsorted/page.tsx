@@ -1,14 +1,13 @@
 import type { Metadata } from 'next';
-import { ExplorerPane } from '../ExplorerPane';
-import { viewDocumentTitle } from '../view-titles';
+import { RetiredViewRedirect } from '../RetiredViewRedirect';
 
-// /explorer/unsorted — documents with no folder (folder_id IS NULL).
-// The layout's ExplorerShell provides the chrome + state; this page
-// only pins the route and the tab title (docs/specs/013-workspace/folders.md, routes.ts).
+// /explorer/unsorted is retired (docs/specs/013-workspace/folders.md#the-root-and-the-retired-buckets):
+// it replaces itself with its successor, so links to it keep working.
 export const metadata: Metadata = {
-  title: viewDocumentTitle('unsorted'),
+  title: 'Explorer | livediagram',
+  robots: { index: false, follow: false },
 };
 
 export default function Page() {
-  return <ExplorerPane />;
+  return <RetiredViewRedirect from="unsorted" />;
 }

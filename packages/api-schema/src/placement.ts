@@ -3,7 +3,7 @@
 // tokens and the editor branches on them, so both read them from here.
 
 /** Where a document is filed: a team's library (My documents when null) and a folder in it (the
- *  space's root, its Unsorted, when null). */
+ *  space's root when null). */
 export type DocumentPlacement = { teamId: string | null; folderId: string | null };
 
 /** Every refusal of a create's placement, as the response's `error` token. */

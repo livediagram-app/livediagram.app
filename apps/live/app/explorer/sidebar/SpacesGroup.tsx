@@ -2,7 +2,6 @@
 
 import { InviteIcon, MyDocumentsIcon, PlusIcon } from '@/components/primitives/explorer-icons';
 import { useExplorer } from '../ExplorerContext';
-import { SYNTHETIC_FOLDERS } from '../synthetic-folders';
 import {
   MY_DOCUMENTS_EXPAND_KEY,
   SIDEBAR_LABELS,
@@ -39,8 +38,6 @@ export function SpacesGroup({
     commitRenameFolder,
     setRenamingFolderId,
     folderActions,
-    unsortedDocuments,
-    generatedDocuments,
     invites,
     setTeamModalOpen,
     setMobileNavOpen,
@@ -63,34 +60,10 @@ export function SpacesGroup({
           go({ kind: 'all' });
         }}
         depth={0}
-        expandable
+        expandable={rootFolders.length > 0}
         expanded={expanded.has(MY_DOCUMENTS_EXPAND_KEY)}
         onToggleExpand={() => toggleExpand(MY_DOCUMENTS_EXPAND_KEY)}
       >
-        {/* Unsorted and Generated lead, as they did under Dynamic: the same views. */}
-        {(
-          [
-            ['unsorted', 'Unsorted', unsortedDocuments.length],
-            ['generated', 'Generated', generatedDocuments.length],
-          ] as const
-        ).map(([kind, row, count]) => {
-          const { Icon, label } = SYNTHETIC_FOLDERS[kind];
-          return (
-            <SidebarRow
-              key={kind}
-              icon={<Icon />}
-              label={label}
-              textLabel={label}
-              selected={selected.kind === kind}
-              onActivate={() => {
-                trackSidebar(row);
-                go({ kind });
-              }}
-              depth={1}
-              badge={count || undefined}
-            />
-          );
-        })}
         {rootFolders.map((f) => (
           <SidebarFolderSubtree
             key={f.id}

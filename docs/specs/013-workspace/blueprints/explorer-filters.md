@@ -327,25 +327,25 @@ No environment variable or binding.
 
 ## The Explorer page
 
-The lens on `/explorer`, over `@livediagram/explorer-lens`. Files (all under `apps/live/`):
+The lens on `/explorer`, over `@livediagram/explorer-lens`. Files:
 
-| File                                          | Role                                                                                               |
-| --------------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| `app/explorer/lens/lens-views.ts`             | `lensViewOf`, `SEARCH_RESULTS_PATH`, `lensHref`, `carriedHref`                                     |
-| `app/explorer/lens/field-model.ts`            | `splitField`, `joinField`, `writeDraft`, `removePill`: the field's pills and draft over one string |
-| `app/explorer/lens/pane-lens.ts`              | `lensSubjectOf`, `scopeDocuments`, `applyPaneLens`, `RECENT_LIMIT`                                 |
-| `app/explorer/lens/lens-telemetry.ts`         | `trackLensChange`: `Explorer / Selected / <Facet>` per gained facet                                |
-| `app/explorer/lens/useExplorerLens.ts`        | The lens state: input, caret, URL sync, navigation to Search results, logs                         |
-| `app/explorer/lens/LensField.tsx`             | The header field: pills, the input, the suggestion listbox                                         |
-| `app/explorer/lens/LensChips.tsx`             | The chip row, its listboxes, Clear, the issue lines                                                |
-| `app/explorer/lens/LensStates.tsx`            | `LensAnnouncer`, `FilteredEmpty`, `LoadFailed`                                                     |
-| `app/explorer/search/page.tsx`                | `/explorer/search`, Search results                                                                 |
-| `app/explorer/RetiredViewRedirect.tsx`        | `/explorer/unsorted`, `/explorer/dynamic`, `/explorer/generated` replace themselves                |
-| `components/primitives/MadeByAiPill.tsx`      | The Made by AI badge                                                                               |
-| `app/explorer/useExplorerPane.ts`             | Applies the lens to the current view's documents; exposes counts and subjects                      |
-| `app/explorer/useExplorerState.ts`            | Composes `useExplorerLens`; carries the lens in `go`; records which read failed                    |
-| `components/panels/TeamSharedDocuments.tsx`   | Applies the lens to the team library it reads                                                      |
-| `packages/api-schema/src/telemetry-schema.ts` | The `Explorer` category                                                                            |
+| File                                                  | Role                                                                                               |
+| ----------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| `apps/live/app/explorer/lens/lens-views.ts`           | `lensViewOf`, `SEARCH_RESULTS_PATH`, `lensHref`, `carriedHref`                                     |
+| `apps/live/app/explorer/lens/field-model.ts`          | `splitField`, `joinField`, `writeDraft`, `removePill`: the field's pills and draft over one string |
+| `apps/live/app/explorer/lens/pane-lens.ts`            | `lensSubjectOf`, `scopeDocuments`, `applyPaneLens`, `RECENT_LIMIT`                                 |
+| `apps/live/app/explorer/lens/lens-telemetry.ts`       | `trackLensChange`: `Explorer / Selected / <Facet>` per gained facet                                |
+| `apps/live/app/explorer/lens/useExplorerLens.ts`      | The lens state: input, caret, URL sync, navigation to Search results, logs                         |
+| `apps/live/app/explorer/lens/LensField.tsx`           | The header field: pills, the input, the suggestion listbox                                         |
+| `apps/live/app/explorer/lens/LensChips.tsx`           | The chip row, its listboxes, Clear, the issue lines                                                |
+| `apps/live/app/explorer/lens/LensStates.tsx`          | `LensAnnouncer`, `FilteredEmpty`, `LoadFailed`                                                     |
+| `apps/live/app/explorer/search/page.tsx`              | `/explorer/search`, Search results                                                                 |
+| `apps/live/app/explorer/RetiredViewRedirect.tsx`      | `/explorer/unsorted`, `/explorer/dynamic`, `/explorer/generated` replace themselves                |
+| `apps/live/components/primitives/MadeByAiPill.tsx`    | The Made by AI badge                                                                               |
+| `apps/live/app/explorer/useExplorerPane.ts`           | Applies the lens to the current view's documents; exposes counts and subjects                      |
+| `apps/live/app/explorer/useExplorerState.ts`          | Composes `useExplorerLens`; carries the lens in `go`; records which read failed                    |
+| `apps/live/components/panels/TeamSharedDocuments.tsx` | Applies the lens to the team library it reads                                                      |
+| `packages/api-schema/src/telemetry-schema.ts`         | The `Explorer` category                                                                            |
 
 ### Views
 
@@ -463,17 +463,17 @@ id.
 
 ### Testing
 
-| Rule                                                     | Test                                                                      |
-| -------------------------------------------------------- | ------------------------------------------------------------------------- |
-| Which views are scoped, aggregate or none; carry; hrefs  | `app/explorer/lens/lens-views.test.ts`                                    |
-| Pills and draft, completion, caret mapping, pill removal | `app/explorer/lens/field-model.test.ts`                                   |
-| Subjects of every row kind; scope reaches subfolders     | `app/explorer/lens/pane-lens.test.ts`                                     |
-| Telemetry per gained facet only                          | `app/explorer/lens/lens-telemetry.test.ts`                                |
-| Field keys, suggestions, pills, Backspace                | `app/explorer/lens/LensField.test.tsx`                                    |
-| Chips write tokens, listbox semantics, Clear             | `app/explorer/lens/LensChips.test.tsx`                                    |
-| States copy and announcer settle                         | `app/explorer/lens/LensStates.test.tsx`                                   |
-| Routes, retired views                                    | `app/explorer/routes.test.ts`                                             |
-| Real browser, guest and signed in, desktop and phone     | `e2e/explorer-filters.spec.ts`, `e2e/clerk-stub/explorer-filters.spec.ts` |
+| Rule                                                     | Test                                                                                          |
+| -------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| Which views are scoped, aggregate or none; carry; hrefs  | `apps/live/app/explorer/lens/lens-views.test.ts`                                              |
+| Pills and draft, completion, caret mapping, pill removal | `apps/live/app/explorer/lens/field-model.test.ts`                                             |
+| Subjects of every row kind; scope reaches subfolders     | `apps/live/app/explorer/lens/pane-lens.test.ts`                                               |
+| Telemetry per gained facet only                          | `apps/live/app/explorer/lens/lens-telemetry.test.ts`                                          |
+| Field keys, suggestions, pills, Backspace                | `apps/live/app/explorer/lens/LensField.test.tsx`                                              |
+| Chips write tokens, listbox semantics, Clear             | `apps/live/app/explorer/lens/LensChips.test.tsx`                                              |
+| States copy and announcer settle                         | `apps/live/app/explorer/lens/LensStates.test.tsx`                                             |
+| Routes, retired views                                    | `apps/live/app/explorer/routes.test.ts`                                                       |
+| Real browser, guest and signed in, desktop and phone     | `apps/live/e2e/explorer-filters.spec.ts`, `apps/live/e2e/clerk-stub/explorer-filters.spec.ts` |
 
 ## Defaults ledger
 

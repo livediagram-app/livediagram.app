@@ -84,7 +84,7 @@ export function useExplorerMoves({
 
   // Send one of the caller's own documents into a team's shared
   // library (docs/specs/013-workspace/team-shared-documents.md) — straight into a team folder when the move
-  // picker chose one, else the team's Unsorted. Leaves the personal
+  // picker chose one, else the team's root. Leaves the personal
   // lists either way, so the local row is dropped optimistically.
   const moveDocumentToTeam = (id: string, teamId: string, folderId: string | null = null) => {
     if (!ownerId) return;
@@ -108,7 +108,7 @@ export function useExplorerMoves({
   };
 
   // Re-folder a team-library document WITHIN its team (folderId null =
-  // the team's Unsorted), then re-sweep so Recent's rows repaint.
+  // the team's root), then re-sweep so Recent's rows repaint.
   // Same call the team page's own move uses (docs/specs/013-workspace/team-shared-documents.md).
   const moveTeamDocumentToFolder = (id: string, teamId: string, folderId: string | null) => {
     if (!ownerId) return;

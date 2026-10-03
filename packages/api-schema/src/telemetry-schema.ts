@@ -142,6 +142,11 @@ export const TELEMETRY_CATEGORIES = [
   // with outcome ('Opened' | 'ImportOffered' | 'Error'). Never a file or
   // document name, never an id.
   'Drive',
+  // The Explorer's filters (docs/specs/013-workspace/explorer-filters.md "Telemetry"): 'Selected' with
+  // `type` the facet that gained a value ('Text' | 'OpensIn' | 'Kind' | 'Template' | 'MadeBy' |
+  // 'Edited' | 'People' | 'Space', LENS_TELEMETRY_TYPES), from a chip, a suggestion or a typed token.
+  // Never a value, a word, a team or an id.
+  'Explorer',
 ] as const;
 export type TelemetryCategory = (typeof TELEMETRY_CATEGORIES)[number];
 

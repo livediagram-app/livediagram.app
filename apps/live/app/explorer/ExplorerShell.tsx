@@ -6,7 +6,8 @@ import { usePathname } from 'next/navigation';
 import type { ReactNode } from 'react';
 import { Brand, CloseIcon, ProductNav } from '@livediagram/ui';
 import { AuthControls } from '@/components/chrome/AuthControls';
-import { HeaderSearchAction } from '@/components/chrome/HeaderSearchAction';
+import { LensField } from './lens/LensField';
+import { LensAnnouncer } from './lens/LensStates';
 import { ChromeControls } from '@/components/chrome/ChromeControls';
 import { TeamFormModal } from '@/components/dialogs/TeamFormModal';
 import { MoveToFolderDialog } from '@/components/dialogs/MoveToFolderDialog';
@@ -105,6 +106,9 @@ function ShellChrome({ children }: { children: ReactNode }) {
     ownerId,
     prefs,
     setPrefs,
+    lens,
+    lensResult,
+    selected,
   } = useExplorer();
   // Navigating to another section clears a crashed pane's notice.
   const pathname = usePathname();
@@ -129,13 +133,25 @@ function ShellChrome({ children }: { children: ReactNode }) {
       {/* pr-0 so the account control (a full-height, left-bordered toolbar
           button) sits flush to the right edge instead of leaving a 16px gap
           after it; pl-4 keeps the brand padded on the left. */}
-      <header className="sticky top-0 z-[var(--z-chrome)] flex h-14 shrink-0 items-center justify-between gap-4 border-y border-slate-200 bg-white/85 pl-4 pr-0 backdrop-blur dark:border-slate-700 dark:bg-slate-900/85">
-        <div className="flex items-center gap-3">
+      {/* The search field (docs/specs/013-workspace/explorer-filters.md "The field") sits left of the
+          account; below `sm` it wraps onto its own full-width row, so the header grows rather than
+          squeezing the brand. */}
+      <header className="sticky top-0 z-[var(--z-chrome)] flex shrink-0 flex-wrap items-center justify-between gap-x-4 border-y border-slate-200 bg-white/85 pl-4 pr-0 backdrop-blur sm:h-14 sm:flex-nowrap dark:border-slate-700 dark:bg-slate-900/85">
+        <div className="flex h-14 items-center gap-3">
           <Brand href="/" size="md" />
           <ProductNav current="explorer" showOnMobile />
         </div>
-        <div className="flex h-full items-stretch">
-          <HeaderSearchAction onOpen={() => setSearchOpen(true)} />
+        <div className="order-last w-full pb-2 pr-4 sm:order-none sm:ml-auto sm:w-auto sm:pb-0 sm:pr-0">
+          <LensField lens={lens} subjects={lensResult.subjects} />
+          {/* Counts what the lens left once typing settles; the team library counts its own. */}
+          <LensAnnouncer
+            input={lens.input}
+            shown={lensResult.shown}
+            total={lensResult.total}
+            muted={lens.view === null || selected.kind === 'team'}
+          />
+        </div>
+        <div className="flex h-14 items-stretch">
           <AuthControls onOpenAccount={() => openSettingsOn('account')} />
         </div>
       </header>

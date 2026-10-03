@@ -34,6 +34,7 @@ export function TeamPane({
   onLoadResult,
   moveDests,
   onMoveDocumentTo,
+  lens,
 }: {
   ownerId: string;
   teamId: string;
@@ -54,6 +55,8 @@ export function TeamPane({
   // so a team document can be re-homed to My documents / another team.
   moveDests?: ComponentProps<typeof TeamSharedDocuments>['moveDests'];
   onMoveDocumentTo?: ComponentProps<typeof TeamSharedDocuments>['onMoveDocumentTo'];
+  // The Explorer's lens (docs/specs/013-workspace/explorer-filters.md), passed straight through.
+  lens?: ComponentProps<typeof TeamSharedDocuments>['lens'];
 }) {
   const [detail, setDetail] = useState<TeamDetailResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -337,6 +340,7 @@ export function TeamPane({
         teamName={team.name}
         moveDests={moveDests}
         onMoveDocumentTo={onMoveDocumentTo}
+        lens={lens}
       />
 
       <TeamFormModal

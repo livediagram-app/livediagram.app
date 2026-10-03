@@ -23,7 +23,7 @@ export type ExplorerProps = {
   // viewer. Distinct from a document's own ownerId.
   ownerId: string | null;
   // Every folder for the owner. Empty array = no user folders, but
-  // the synthetic Unsorted bucket still renders. See docs/specs/013-workspace/folders.md.
+  // My documents still renders. See docs/specs/013-workspace/folders.md.
   folders: Folder[];
   // Documents shared with the current owner (read-only or edit
   // visitor entries). Empty array hides the section entirely so

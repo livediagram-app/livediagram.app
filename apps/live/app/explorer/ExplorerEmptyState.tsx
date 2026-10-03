@@ -13,18 +13,14 @@ import {
   ThisBrowserIcon,
   PlusIcon,
   ShareIcon,
-  SparkleIcon,
   StarIcon,
-  UnsortedIcon,
 } from '@/components/primitives/explorer-icons';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { EmptyState, SOLID_BRAND_DARK_CONTROL } from '@livediagram/ui';
-import { helpArticleHref } from '@/lib/help-articles';
 import type { SelectedNode } from './views';
 
-type EmptyKind =
-  'recent' | 'shared' | 'unsorted' | 'favourites' | 'generated' | 'offline' | 'folder' | 'default';
+type EmptyKind = 'recent' | 'shared' | 'favourites' | 'offline' | 'folder' | 'default';
 
 const CONTENT: Record<
   EmptyKind,
@@ -41,25 +37,13 @@ const CONTENT: Record<
     title: 'Nothing shared with you yet',
     description: 'Open a share link someone sends you and the document lands here.',
   },
-  unsorted: {
-    icon: <UnsortedIcon />,
-    title: 'Nothing unsorted',
-    description: 'Documents not filed into a folder collect here, ready to organise.',
-  },
   favourites: {
     icon: <StarIcon />,
     title: 'No favourites yet',
     // No CTA: a new document doesn't land here, starring an existing one
     // does — so the generic "New document" button would be a dead end
-    // (docs/specs/013-workspace/favourites.md). Same reason Shared and Unsorted carry none.
+    // (docs/specs/013-workspace/favourites.md). Same reason Shared with me carries none.
     description: 'Mark a document as a favourite to show it here.',
-  },
-  generated: {
-    icon: <SparkleIcon />,
-    title: 'No generated documents yet',
-    description:
-      'Connect an AI tool and the documents it creates for you will appear here automatically.',
-    cta: 'Set up an AI agent',
   },
   offline: {
     icon: <ThisBrowserIcon />,
@@ -85,9 +69,7 @@ const CONTENT: Record<
 function kindFor(selected: SelectedNode): EmptyKind {
   if (selected.kind === 'recent') return 'recent';
   if (selected.kind === 'shared') return 'shared';
-  if (selected.kind === 'unsorted') return 'unsorted';
   if (selected.kind === 'favourites') return 'favourites';
-  if (selected.kind === 'generated') return 'generated';
   if (selected.kind === 'offline') return 'offline';
   if (selected.kind === 'folder') return 'folder';
   return 'default';
@@ -95,27 +77,6 @@ function kindFor(selected: SelectedNode): EmptyKind {
 
 export function EmptyPane({ selected }: { selected: SelectedNode }) {
   const c = CONTENT[kindFor(selected)];
-
-  // Generated is a read-through view of AI output, not somewhere you
-  // author into: its CTA points at the "connect an AI tool" help guide
-  // (external /help, new tab) rather than the new-document flow.
-  if (selected.kind === 'generated') {
-    return (
-      <EmptyState icon={c.icon} title={c.title} description={c.description}>
-        {c.cta ? (
-          <a
-            href={helpArticleHref('connectAiTool')}
-            target="_blank"
-            rel="noreferrer noopener"
-            className={`inline-flex items-center gap-1.5 rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-500 ${SOLID_BRAND_DARK_CONTROL}`}
-          >
-            <SparkleIcon />
-            {c.cta}
-          </a>
-        ) : null}
-      </EmptyState>
-    );
-  }
 
   const ctaHref =
     selected.kind === 'folder' ? `/new?folder=${encodeURIComponent(selected.id)}` : '/new';

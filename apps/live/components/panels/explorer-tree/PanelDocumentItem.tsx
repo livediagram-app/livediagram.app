@@ -3,6 +3,7 @@
 import { DocumentIcon } from '@/components/primitives/explorer-icons';
 import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerButton';
 import { LocalOnlyPill, LOCAL_ONLY_DESCRIPTION } from '@/components/primitives/LocalOnlyPill';
+import { MadeByAiPill, isMadeByAi } from '@/components/primitives/MadeByAiPill';
 import { useRowMenu } from '@/components/primitives/useRowMenu';
 import { DocumentActionsMenu } from '@/app/explorer/document-row-shared';
 import { FavouriteMarker } from '@/app/explorer/document-badges';
@@ -70,6 +71,7 @@ export function PanelDocumentItem({
       trailing={
         <>
           {local ? <LocalOnlyPill tabbable={false} /> : null}
+          {isMadeByAi(doc) ? <MadeByAiPill compact /> : null}
           <EllipsisTriggerButton
             {...menu.triggerProps}
             size="md"

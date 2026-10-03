@@ -81,7 +81,7 @@ export async function updateFolder(
 
 export async function deleteFolder(env: Env, id: string): Promise<void> {
   // Promote direct children before deleting: subfolders become root,
-  // documents fall to Unsorted. ON DELETE SET NULL on both FKs would
+  // documents fall to the root. ON DELETE SET NULL on both FKs would
   // do the same thing, but we run it explicitly so the behaviour is
   // visible in code (and not dependent on SQLite enforcing the FK,
   // which is opt-in via PRAGMA). One batch, so the folder and its Drive
