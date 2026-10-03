@@ -57,3 +57,13 @@ The resulting specs live in docs/specs/024-agents/ and docs/specs/015-api/cli.md
 - ./agent-cli/authoring-from-scratch.md - when building diagrams from nothing: layout experiment, lint checks, preview
 - ./agent-cli/live-collaboration.md - when an agent edits beside a person: presence, changesets, revert, comments
 - ./agent-cli/shared-core-architecture.md - when deciding what the api, MCP and CLI each own; auth, distribution
+
+## Access levels
+
+Who may do what to a document: how other products define levels, what each identity can do in the code, the
+constraints, and where taking part in a session belongs. The resulting spec is docs/specs/013-workspace/share-roles.md.
+
+- ./access-levels/prior-art.md - when comparing access levels with Google, Figma, Miro, Lucid, Notion and facilitation tools
+- ./access-levels/current-abilities.md - when asking what an owner, member, link, embed or token can do today, with code sites
+- ./access-levels/constraints.md - when weighing a role model against migration, the room, persistence, tokens and WCAG
+- ./access-levels/participation.md - when deciding which session acts are viewing, participating, facilitating or editing
