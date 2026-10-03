@@ -35,7 +35,7 @@ export type EditorKeyboardShortcutsDeps = {
   // Selection state. Delete / Backspace acts on whichever is
   // populated (multi wins).
   selectedId: string | null;
-  multiSelectedIds: Set<string>;
+  multiSelectedIds: ReadonlySet<string>;
   editingId: string | null;
   // True for a view-only ('view' share role) session. Suppresses
   // every mutator shortcut (delete, undo, redo, copy, paste) so the

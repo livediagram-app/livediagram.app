@@ -59,7 +59,7 @@ export function useSlideDeck({
   activeTabId: string;
   setActiveId: (id: string) => void;
   selectedId: string | null;
-  multiSelectedIds: Set<string>;
+  multiSelectedIds: ReadonlySet<string>;
   setSelectedId: (id: string | null) => void;
   setMultiSelectedIds: (ids: Set<string>) => void;
   isReadOnly: boolean;

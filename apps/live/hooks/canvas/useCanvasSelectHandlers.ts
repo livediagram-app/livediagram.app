@@ -23,7 +23,7 @@ export function useCanvasSelectHandlers({
   // The format painter is armed: every press paints, so none settles a click.
   isPaintMode: boolean;
   selectedId: string | null;
-  multiSelectedIds: Set<string>;
+  multiSelectedIds: ReadonlySet<string>;
   onSelect: (id: string) => void;
   onDeselect: () => void;
   onShiftSelect: (id: string) => void;

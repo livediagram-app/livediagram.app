@@ -35,7 +35,7 @@ type CanvasSelection = {
   showHandlesFor: (id: string) => boolean;
   showAnchorsFor: (id: string) => boolean;
   // Union (multi-selection) resize-handle state.
-  unionResizeIds: Set<string> | null;
+  unionResizeIds: ReadonlySet<string> | null;
   unionResizeBounds: Bounds | null;
   unionResizePrimaryId: string | null;
   showUnionResize: boolean;
@@ -48,7 +48,7 @@ type CanvasSelection = {
 export function deriveCanvasSelection(input: {
   elements: Element[];
   selectedId: string | null;
-  multiSelectedIds: Set<string>;
+  multiSelectedIds: ReadonlySet<string>;
   editingId: string | null;
   isPaintMode: boolean;
   tabLocked: boolean;
@@ -172,7 +172,8 @@ export function deriveCanvasSelection(input: {
   const anchorVisible = (id: string) =>
     resizeVisible(id) && elements.find((el) => el.id === id)?.type !== 'table';
 
-  const unionResizeIds: Set<string> | null = multiSelectedIds.size > 1 ? multiSelectedIds : null;
+  const unionResizeIds: ReadonlySet<string> | null =
+    multiSelectedIds.size > 1 ? multiSelectedIds : null;
   const unionResizeBounds =
     unionResizeIds && selected ? unionBoxedBounds(elements, unionResizeIds) : null;
   const unionResizePrimaryId = multiSelectedIds.size > 1 ? (multiPrimaryId ?? selectedId) : null;

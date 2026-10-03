@@ -60,7 +60,7 @@ type ClipboardDeps = {
   // pasteImageFile.
   embedMode: boolean;
   selectedId: string | null;
-  multiSelectedIds: Set<string>;
+  multiSelectedIds: ReadonlySet<string>;
   editingId: string | null;
   // Ends typing in a label: pasting copied elements while a note is open for
   // typing puts them on the canvas, not in the note.

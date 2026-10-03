@@ -45,7 +45,7 @@ type CanvasA11yDeps = {
   enabled: boolean;
   elements: Element[];
   selectedId: string | null;
-  multiSelectedIds: Set<string>;
+  multiSelectedIds: ReadonlySet<string>;
   editingId: string | null;
   selectElement: (id: string) => void;
   lockedByOther: (id: string) => boolean;

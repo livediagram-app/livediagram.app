@@ -36,7 +36,7 @@ export function useElementHelpers(opts: {
   activeId: string;
   activeTab: Tab;
   editsBlocked: boolean;
-  multiSelectedIds: Set<string>;
+  multiSelectedIds: ReadonlySet<string>;
   formatSourceId: string | null;
   // The Format Panel's settings (docs/specs/008-canvas/format-panel.md): which parts of a copied style
   // travel, and whether the brush stays loaded.

@@ -9,8 +9,8 @@ who re-renders when it changes.
 
 | File                                                       | Role                                                                                |
 | ---------------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| `apps/live/lib/selection-store.ts` (planned)               | `createSelectionStore`, `Selection`, `SelectionStore`, `EMPTY_SELECTION`            |
-| `apps/live/hooks/canvas/useSelectionStore.tsx` (planned)   | `SelectionStoreProvider`, `useSelectionStore`, `useSelectionOf`                     |
+| `apps/live/lib/selection-store.ts`                         | `createSelectionStore`, `Selection`, `SelectionStore`, `EMPTY_SELECTION`            |
+| `apps/live/hooks/canvas/useSelectionStore.tsx`             | `SelectionStoreProvider`, `useSelectionStore`, `useSelectionOf`                     |
 | `apps/live/hooks/ui/useStableEventProps.ts`                | `useStableEventProps`: every `on*` function prop identity-stable                    |
 | `apps/live/hooks/ui/useStableObject.ts`                    | `useStableObject`: a rebuilt data-and-actions object, stable until its data changes |
 | `apps/live/components/primitives/withStableEventProps.tsx` | `withStableEventProps(Inner)`: `memo` plus stable `on…` props                       |
@@ -52,6 +52,16 @@ Set() }`, frozen).
 - A handler or effect reads `store.get()` when it runs. A handler that sets and then reads sees the
   new value (unlike a stale closure); every set-then-read in the editor is listed in the plan and
   either reads before it sets or uses `setSelection`.
+
+### Where the store is made
+
+- `useEditorUiState` creates the store once (`useState(createSelectionStore)`) and subscribes to
+  the whole `Selection` with `useSyncExternalStore`; `selectedId`, `multiSelectedIds` and the two
+  setters it returns come from the store, so every editor hook keeps its inputs. It also returns
+  `selectionStore`, which `EditorView` hands to `SelectionStoreProvider` around its tree.
+- `multiSelectedIds` is a `ReadonlySet<string>` everywhere it is read: every parameter that took a
+  `Set<string>` only reads it (`withFrameContents`, `duplicateElements`, `unionBoxedBounds`,
+  `deletableIds`, and the editor hooks' inputs), and nothing mutates the selection in place.
 
 ### Subscribing
 

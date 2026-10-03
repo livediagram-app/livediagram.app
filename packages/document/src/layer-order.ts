@@ -30,6 +30,6 @@ export function sendManyToBack(elements: Element[], ids: Set<ElementId>): Elemen
 
 // Union bounding box of multiple boxed elements. Returns null if no boxed
 // elements were found.
-export function unionBoxedBounds(elements: Element[], ids: Set<ElementId>): Rect | null {
+export function unionBoxedBounds(elements: Element[], ids: ReadonlySet<ElementId>): Rect | null {
   return unionRects(elements.filter((el): el is BoxedElement => ids.has(el.id) && isBoxed(el)));
 }

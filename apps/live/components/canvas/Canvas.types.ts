@@ -108,7 +108,7 @@ export type CanvasProps = {
   // a shape, so the user can see exactly where it will snap. Empty otherwise.
   snapTargets: SnapTarget[];
   selectedId: string | null;
-  multiSelectedIds: Set<string>;
+  multiSelectedIds: ReadonlySet<string>;
   onSelectMarquee: (ids: Set<string>) => void;
   canvasTool: CanvasTool;
   onSetCanvasTool: (tool: CanvasTool) => void;
