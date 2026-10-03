@@ -147,6 +147,16 @@ into "during the gesture" and "at release", at the reference speed.
 - At release, ~105 ms is the Map's picture being parsed (`SVGImage::DataChanged`, an
   `IsolatedSVGDocumentHost` for a 1,000-element document) and ~100 ms the commit's script.
 
+## The Map without labels
+
+Measured 2026-10-03 on the reference board. The Map's picture with labels is 417 KB (550 `<text>`,
+642 `<tspan>`); without, 305 KB. Chrome parsing and painting it fresh, CPU throttled 4x: 205-217 ms
+with labels, 94-110 ms without (a repeated identical data URL is served from the image cache and
+reads 25-34 ms either way, which first hid the difference). In the editor, after a drag release, the
+longest task fell 111 → 77 ms (whiteboard) and 210 → 151 ms (diagram), and the long-task total 677 →
+266 ms and 753 → 519 ms; the machine was busier for the first run, so part of that is noise. The
+Map now draws no labels.
+
 ## Not tried
 
 - `contain` / `content-visibility` on element wrappers, level of detail at low zoom, a raster
