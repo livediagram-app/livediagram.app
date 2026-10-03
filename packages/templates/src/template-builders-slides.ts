@@ -1,255 +1,316 @@
-// The slide deck template. The storyboard, which used to share this file as
-// the other framed-panel design template, moved to
+// The slide deck template (docs/specs/008-canvas/canvas-and-palette.md "Templates on pages"): a
+// six-slide seed pitch that opens in Illustrate, one Slide (16:9) page per slide. The storyboard,
+// which used to share this file as the other framed-panel design template, moved to
 // ./template-builders-storyboard once each grew its own narrative.
 //
-// Pure: (cx, cy) -> Element[]. See docs/specs/008-canvas/canvas-and-palette.md "Templates".
+// Pure: () -> Element[], placed on the deck's pages (slideDeckPages) whatever centre is passed.
 
-import { createShape, createText, type Element } from '@livediagram/document';
+import type { Element, IllustratePage } from '@livediagram/document';
+import type { Kit } from './page-layout-kit';
 import { TEMPLATE_CONTENT_LAYER_ID, TEMPLATE_SCAFFOLD_LAYER_ID } from './template-layers';
-import { textAt, uiAt } from './template-wireframe-kit';
+import { pageKits, templatePage } from './template-page-kit';
 
-const MUTED = '#64748b';
-
-// Slide deck: a six-slide seed pitch that follows the arc every good deck
-// does (title, problem, solution, traction, team, the ask) for a made-up
-// start-up, Relay, which lets hospital nurses swap shifts in one tap. Each
-// slide is a 16:9 theme-filled card with a muted kicker naming its beat, one bold headline that makes
-// the point, a body built from the element that suits it (pain rows with
-// glyphs, a three-step process, a KPI stat row over a growth chart, team
-// avatars, a use-of-funds pie) and a "2 / 6" page number. Under every slide
-// a speaker-notes line (a message glyph + muted text) says what to SAY, which
-// is the part a deck outline usually forgets. Frames, page numbers and the
-// how-to are the "Frames" scaffold; everything written on or under a slide is
-// "Content". Colours stay theme-owned.
-type Slide = { kicker: string; headline: string; notes: string };
+// Slide deck: the arc every good deck follows (title, problem, solution, traction, team, the ask)
+// for a made-up start-up, Relay, which lets hospital nurses swap shifts in one tap. Each slide is
+// its own page: a bold kicker naming its beat, one headline that makes the point, a body built
+// from the element that suits it (pain rows beside the one number that hurts, a three-step
+// process, a KPI row over a growth chart, the founders, the milestone and the use of funds) and a
+// footer with the page number. The title slide sits on a dark gradient and the ask on a light one,
+// so the deck opens and closes on a colour. What to SAY rides each headline as its note, the part
+// a deck outline usually forgets. The footers are the "Frames" scaffold; everything else is
+// "Content". Element colours stay theme-owned.
+type Slide = { name: string; kicker: string; headline: string; notes: string };
 
 const SLIDES: Slide[] = [
   {
+    name: 'Title',
     kicker: 'Seed round · March 2027',
     headline: 'Relay: shift swaps in one tap',
     notes: 'Open with Amara’s night shift: 40 minutes on WhatsApp to swap one Saturday.',
   },
   {
+    name: 'Problem',
     kicker: 'The problem',
     headline: 'Swapping one shift takes 14 messages and two days',
     notes: 'Pause on the 14 messages. Everyone in the room has sent one of them.',
   },
   {
+    name: 'Solution',
     kicker: 'The solution',
     headline: 'Post a shift, and Relay finds cover in minutes',
     notes: 'Demo it live if the Wi-Fi holds; the screenshots are in the appendix.',
   },
   {
+    name: 'Traction',
     kicker: 'Traction',
     headline: 'Live on 38 wards in nine months',
     notes: 'Lead with the 94%: it is the number matrons repeat back to us.',
   },
   {
+    name: 'Team',
     kicker: 'The team',
     headline: 'Built by people who worked the rotas',
     notes: 'Thirty seconds, no more. Why us: we lived the problem.',
   },
   {
+    name: 'The Ask',
     kicker: 'The ask',
     headline: 'Raising £1.5m to reach 40 hospitals by 2028',
     notes: 'Say the number, then stop talking and wait for the first question.',
   },
 ];
 
-export function buildSlideDeck(cx: number, cy: number): Element[] {
-  const slideW = 520;
-  const slideH = 292;
-  const gapX = 48;
-  const notesGap = 12;
-  const notesH = 44;
-  const gapY = 44;
-  const titleH = 44;
-  const captionH = 28;
-  const headGap = 28;
-  const cols = 3;
-  const rowPitch = slideH + notesGap + notesH + gapY;
-  const totalW = cols * slideW + (cols - 1) * gapX;
-  const totalH = titleH + captionH + headGap + 2 * rowPitch - gapY;
-  const x0 = cx - totalW / 2;
-  const y0 = cy - totalH / 2;
-  const top = y0 + titleH + captionH + headGap;
+// The title slide's dark gradient (light ink on it) and the ask's light one.
+const TITLE_BACKGROUND = {
+  fill: { kind: 'gradient' as const, from: '#1e1b4b', to: '#4c1d95', angle: 160 },
+};
+const ASK_BACKGROUND = {
+  fill: { kind: 'gradient' as const, from: '#e0f2fe', to: '#ede9fe', angle: 160 },
+};
 
-  const elements: Element[] = [
-    {
-      ...createText(x0, y0),
-      width: totalW,
-      height: titleH,
-      label: 'Relay · seed pitch deck',
-      textSize: 'lg',
-      textBold: true,
-      textAlignX: 'left',
-      layerId: TEMPLATE_CONTENT_LAYER_ID,
-    },
-    {
-      ...createText(x0, y0 + titleH),
-      width: totalW,
-      height: captionH,
-      label:
-        'Six slides, one story: title, problem, solution, traction, team, the ask. Speaker notes sit under each slide.',
-      textSize: 'sm',
-      textColor: MUTED,
-      textAlignX: 'left',
-      layerId: TEMPLATE_SCAFFOLD_LAYER_ID,
-    },
-  ];
-
-  SLIDES.forEach((slide, i) => {
-    const sx = x0 + (i % cols) * (slideW + gapX);
-    const sy = top + Math.floor(i / cols) * rowPitch;
-    // Offset-positioned factories for this slide's content.
-    const ui = uiAt(sx, sy);
-    const text = textAt(sx, sy);
-
-    // The slide itself.
-    elements.push({
-      ...createShape('square', sx, sy),
-      width: slideW,
-      height: slideH,
-      borderRadius: 'sm',
-      layerId: TEMPLATE_SCAFFOLD_LAYER_ID,
-    });
-    elements.push(
-      text(slideW - 88, slideH - 34, 64, 20, `${i + 1} / ${SLIDES.length}`, {
-        textColor: MUTED,
-        textAlignX: 'right',
-        layerId: TEMPLATE_SCAFFOLD_LAYER_ID,
-      }),
-    );
-
-    const isTitle = i === 0;
-    elements.push(
-      text(28, isTitle ? 150 : 22, 380, 22, slide.kicker, { textColor: MUTED, textBold: true }),
-    );
-    elements.push(
-      text(28, isTitle ? 96 : 48, 464, isTitle ? 50 : 64, slide.headline, {
-        textSize: isTitle ? 'lg' : 'md',
-        textBold: true,
-        textAlignY: 'top',
-      }),
-    );
-    elements.push(...SLIDE_BODIES[i]!(ui, text));
-
-    // Speaker notes, under the slide where a presenter looks for them.
-    const ny = sy + slideH + notesGap;
-    elements.push({
-      ...createShape('icon', sx, ny + 2),
-      width: 20,
-      height: 20,
-      iconId: 'message',
-      layerId: TEMPLATE_CONTENT_LAYER_ID,
-    });
-    elements.push({
-      ...createText(sx + 30, ny),
-      width: slideW - 30,
-      height: notesH,
-      label: slide.notes,
-      textSize: 'sm',
-      textColor: MUTED,
-      textItalic: true,
-      textAlignX: 'left',
-      textAlignY: 'top',
-      layerId: TEMPLATE_CONTENT_LAYER_ID,
-    });
-  });
-
-  return elements;
+/** The deck's pages: one landscape Slide (16:9) page per slide. */
+export function slideDeckPages(): IllustratePage[] {
+  return SLIDES.map((s, i) =>
+    templatePage(
+      i + 1,
+      'wide',
+      'landscape',
+      s.name,
+      i === 0 ? TITLE_BACKGROUND : i === SLIDES.length - 1 ? ASK_BACKGROUND : undefined,
+    ),
+  );
 }
 
-type Ui = ReturnType<typeof uiAt>;
-type Text = ReturnType<typeof textAt>;
+// Where a content slide's body starts and ends, in units of its content box.
+const BODY_TOP = 24;
+const FOOTER_H = 5;
+const BODY_GAP = 9;
 
-// One body per slide, in deck order, drawn through that slide's own
-// factories so every offset is slide-local (the slide is 520 x 292; the
-// kicker and headline take its top 112px).
-const SLIDE_BODIES: ((ui: Ui, text: Text) => Element[])[] = [
-  // Title: the mark, and who is presenting.
-  (ui, text) => [
-    ui('icon', 28, 36, 44, 44, { iconId: 'refresh-cw' }),
-    ui('sticker', 420, 28, 72, 72, { stickerId: 'emoji-rocket' }),
-    ui('circle', 28, 220, 40, 40),
-    ui('icon', 38, 230, 20, 20, { iconId: 'user' }),
-    text(80, 218, 320, 22, 'Amara Okafor', { textBold: true }),
-    text(80, 240, 320, 22, 'Co-founder, and an ICU nurse for nine years', { textColor: MUTED }),
-  ],
-  // Problem: three pains, each on a glyph.
-  (ui, text) =>
-    (
-      [
-        ['message', 'Swaps run through WhatsApp groups and paper rotas'],
-        ['clock', 'Nurses lose three hours a month chasing cover'],
-        ['alert-triangle', 'One swap in five is never logged, so the rota is wrong'],
-      ] as const
-    ).flatMap(([iconId, line], r) => [
-      ui('icon', 28, 128 + r * 44, 24, 24, { iconId }),
-      text(64, 126 + r * 44, 420, 28, line),
-    ]),
-  // Solution: the three-step flow, and the rule that makes it safe.
-  (ui, text) => [
-    ui('process', 28, 118, 464, 96, {
-      processSteps: ['Post the shift', 'Relay matches', 'Manager approves'],
-      textSize: 'sm',
+const avatar = (k: Kit, x: number, y: number, d: number): Element => ({
+  ...k.image(x, y, d, d),
+  borderRadius: 'full',
+  aspectLocked: true,
+});
+
+// A content slide's kicker and headline (carrying the speaker notes), and its footer.
+function chrome(k: Kit, i: number): Element[] {
+  const { width: W, height: H } = k.box;
+  const { u } = k;
+  const s = SLIDES[i]!;
+  const scaffold = { layerId: TEMPLATE_SCAFFOLD_LAYER_ID };
+  return [
+    k.text(0, 0, W * 0.6, u * 5, s.kicker, { textBold: true }),
+    { ...k.title(0, u * 6, W * 0.92, u * 13, s.headline), note: s.notes },
+    k.text(0, H - u * FOOTER_H, W * 0.5, u * FOOTER_H, 'Relay · Seed pitch', scaffold),
+    k.text(W - u * 30, H - u * FOOTER_H, u * 30, u * FOOTER_H, `${i + 1} / ${SLIDES.length}`, {
+      ...scaffold,
+      textAlignX: 'right',
     }),
-    text(28, 226, 400, 22, 'Skills, hours and pay grade are checked automatically.', {
-      textColor: MUTED,
-    }),
-  ],
-  // Traction: the three numbers, then the curve behind them.
-  (ui) => [
-    ui('stat-row', 28, 92, 464, 76, {
-      borderRadius: 'md',
-      stats: [
-        { value: '2,900', caption: 'Nurses' },
-        { value: '11,400', caption: 'Swaps made' },
-        { value: '94%', caption: 'Covered within an hour' },
-      ],
-    }),
-    ui('line-chart', 28, 176, 400, 100, {
-      lineCategories: ['Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb'],
-      lineSeries: [
-        { name: 'Swaps a month', values: [120, 260, 410, 690, 940, 1300, 1620, 2100, 2480] },
-      ],
-      chartLegend: false,
-    }),
-  ],
-  // Team: three founders, avatar over name over why-them.
-  (ui, text) =>
-    (
-      [
-        ['Amara Okafor', 'CEO · ex-ICU nurse'],
-        ['Tom Reyes', 'CTO · ex-NHS Digital'],
-        ['Lena Fischer', 'Sales · ex-Cerner'],
-      ] as const
-    ).flatMap(([name, role], p) => {
-      const x = 28 + p * 160;
+  ];
+}
+
+// One body per slide, in deck order. `top` and `bottom` bound a content slide's body.
+const SLIDE_BODIES: ((k: Kit, top: number, bottom: number) => Element[])[] = [
+  // Title: the mark, the promise, and who is presenting.
+  (k) => {
+    const { width: W, height: H } = k.box;
+    const { u } = k;
+    const s = SLIDES[0]!;
+    const y = H * 0.28;
+    const d = u * 12;
+    return [
+      k.shape('icon', 0, 0, u * 9, u * 9, { iconId: 'refresh-cw' }),
+      k.text(u * 12, u * 1.5, u * 40, u * 6, 'Relay', { textSize: 'lg', textBold: true }),
+      k.text(0, y, W * 0.5, u * 5, s.kicker, { textBold: true }),
+      { ...k.title(0, y + u * 6, W * 0.62, u * 14, s.headline), note: s.notes },
+      k.text(
+        0,
+        y + u * 22,
+        W * 0.5,
+        u * 12,
+        'Nurses post a shift, Relay finds cover, and the rota stays right.',
+        { textSize: 'lg' },
+      ),
+      avatar(k, 0, H - d, d),
+      k.text(d + u * 4, H - d + u * 0.5, W * 0.4, u * 6, 'Amara Okafor', {
+        textSize: 'lg',
+        textBold: true,
+      }),
+      k.text(
+        d + u * 4,
+        H - d + u * 6.5,
+        W * 0.4,
+        u * 5,
+        'Co-founder, and an ICU nurse for nine years',
+      ),
+      k.shape('sticker', W * 0.7, H * 0.14, u * 50, u * 50, {
+        stickerId: 'emoji-rocket',
+        rotation: -8,
+      }),
+    ];
+  },
+  // Problem: three pains, each on a glyph, beside the one number that hurts.
+  (k, top, bottom) => {
+    const { width: W } = k.box;
+    const { u } = k;
+    const leftW = W * 0.56;
+    const rowH = (bottom - top) / 3;
+    const panelX = W * 0.62;
+    const panelW = W - panelX;
+    const pains = [
+      ['message', 'Swaps run through WhatsApp groups and paper rotas'],
+      ['clock', 'Nurses lose three hours a month chasing cover'],
+      ['alert-triangle', 'One swap in five is never logged, so the rota is wrong'],
+    ] as const;
+    return [
+      ...pains.flatMap(([iconId, line], r) => [
+        k.shape('icon', 0, top + r * rowH, u * 9, u * 9, { iconId }),
+        k.text(u * 14, top + r * rowH, leftW - u * 14, rowH - u * 4, line, { textSize: 'lg' }),
+      ]),
+      k.shape('square', panelX, top, panelW, bottom - top, {
+        label: '',
+        borderRadius: 'lg',
+        colorPreset: 'soft',
+      }),
+      k.title(panelX + u * 6, top + u * 8, panelW - u * 12, u * 26, '14'),
+      k.text(
+        panelX + u * 6,
+        top + u * 36,
+        panelW - u * 12,
+        u * 16,
+        'messages to swap one Saturday shift, then two days of waiting',
+        { textSize: 'lg' },
+      ),
+    ];
+  },
+  // Solution: the three-step flow, what happens at each step, and the rule that makes it safe.
+  (k, top, bottom) => {
+    const { width: W } = k.box;
+    const { u } = k;
+    const colW = W / 3;
+    const calloutH = u * 17;
+    const steps = [
+      'A nurse posts the shift they cannot work, in one tap.',
+      'Relay offers it to colleagues with the right skills and hours.',
+      'The ward manager approves, and the rota updates itself.',
+    ];
+    return [
+      k.shape('process', 0, top, W, u * 22, {
+        processSteps: ['Post the shift', 'Relay matches', 'Manager approves'],
+        textSize: 'lg',
+      }),
+      ...steps.map((line, i) =>
+        k.text(i * colW + u * 3, top + u * 26, colW - u * 6, u * 14, line, {
+          textSize: 'lg',
+          textAlignX: 'center',
+        }),
+      ),
+      k.shape('callout', 0, bottom - calloutH, W, calloutH, {
+        pageTitle: 'Safe by default',
+        label: 'Skills, hours and pay grade are checked automatically.',
+        textSize: 'lg',
+      }),
+    ];
+  },
+  // Traction: the three numbers, then the curve behind them beside what the wards say.
+  (k, top, bottom) => {
+    const { width: W } = k.box;
+    const { u } = k;
+    const rowH = u * 20;
+    const y = top + rowH + u * 4;
+    return [
+      k.shape('stat-row', 0, top, W, rowH, {
+        borderRadius: 'md',
+        stats: [
+          { value: '2,900', caption: 'Nurses' },
+          { value: '11,400', caption: 'Swaps made' },
+          { value: '94%', caption: 'Covered within an hour' },
+        ],
+      }),
+      k.shape('line-chart', 0, y, W * 0.6, bottom - y, {
+        lineCategories: ['Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb'],
+        lineSeries: [
+          { name: 'Swaps a month', values: [120, 260, 410, 690, 940, 1300, 1620, 2100, 2480] },
+        ],
+        chartLegend: false,
+      }),
+      k.shape('callout', W * 0.64, y, W * 0.36, bottom - y, {
+        pageTitle: 'From the wards',
+        label: '“The first rota tool our night shift actually uses.” Matron, St Anne’s',
+        textSize: 'lg',
+      }),
+    ];
+  },
+  // Team: three founders, avatar over name over role over why-them.
+  (k, top) => {
+    const { width: W } = k.box;
+    const { u } = k;
+    const colW = W / 3;
+    const d = u * 24;
+    const founders = [
+      ['Amara Okafor', 'CEO · ex-ICU nurse', 'Nine years on ICU night shifts'],
+      ['Tom Reyes', 'CTO · ex-NHS Digital', 'Built the NHS staff app'],
+      ['Lena Fischer', 'Sales · ex-Cerner', 'Sold rostering into 60 trusts'],
+    ] as const;
+    return founders.flatMap(([name, role, why], p) => {
+      const x = p * colW;
+      const y = top + u * 2;
+      const centred = { textAlignX: 'center' as const };
       return [
-        ui('circle', x + 44, 104, 64, 64),
-        ui('icon', x + 60, 120, 32, 32, { iconId: 'user' }),
-        text(x, 176, 152, 22, name, { textBold: true, textAlignX: 'center' }),
-        text(x, 198, 152, 22, role, { textColor: MUTED, textAlignX: 'center' }),
+        avatar(k, x + (colW - d) / 2, y, d),
+        k.text(x, y + d + u * 3, colW, u * 7, name, {
+          ...centred,
+          textSize: 'lg',
+          textBold: true,
+        }),
+        k.text(x, y + d + u * 10, colW, u * 6, role, { ...centred, textBold: true }),
+        k.text(x + u * 4, y + d + u * 16, colW - u * 8, u * 10, why, {
+          ...centred,
+          textSize: 'lg',
+        }),
       ];
-    }),
-  // The ask: where the money goes, and what it buys.
-  (ui) => [
-    ui('pie-chart', 28, 116, 220, 150, {
-      pieSlices: [
-        { label: 'Product', value: 45 },
-        { label: 'Sales', value: 35 },
-        { label: 'Ops', value: 20 },
-      ],
-      chartLegend: true,
-      chartLegendPosition: 'right',
-    }),
-    ui('checklist', 268, 120, 224, 112, {
-      checklistItems: [
-        { text: 'Hire four engineers', done: false },
-        { text: 'Launch in three new trusts', done: false },
-        { text: 'Break even in Q3 2028', done: false },
-      ],
-    }),
-  ],
+    });
+  },
+  // The ask: the milestone the money reaches, where it goes, and what it buys.
+  (k, top, bottom) => {
+    const { width: W } = k.box;
+    const { u } = k;
+    return [
+      k.title(0, top, W * 0.28, u * 24, '40'),
+      k.text(0, top + u * 25, W * 0.28, u * 14, 'hospitals live by 2028, from six today', {
+        textSize: 'lg',
+      }),
+      k.shape('pie-chart', W * 0.32, top, W * 0.34, bottom - top, {
+        pieSlices: [
+          { label: 'Product', value: 45 },
+          { label: 'Sales', value: 35 },
+          { label: 'Ops', value: 20 },
+        ],
+        chartLegend: true,
+        chartLegendPosition: 'right',
+      }),
+      k.text(W * 0.71, top, W * 0.29, u * 6, 'What it buys', { textSize: 'lg', textBold: true }),
+      k.shape('checklist', W * 0.71, top + u * 8, W * 0.29, u * 30, {
+        checklistItems: [
+          { text: 'Hire four engineers', done: false },
+          { text: 'Launch in three new trusts', done: false },
+          { text: 'Break even in Q3 2028', done: false },
+        ],
+        textSize: 'lg',
+      }),
+    ];
+  },
 ];
+
+export function buildSlideDeck(_cx: number, _cy: number): Element[] {
+  const kits = pageKits(slideDeckPages());
+  const elements = kits.flatMap((k, i) => {
+    const top = k.u * BODY_TOP;
+    const bottom = k.box.height - k.u * BODY_GAP;
+    return i === 0
+      ? SLIDE_BODIES[0]!(k, top, bottom)
+      : [...chrome(k, i), ...SLIDE_BODIES[i]!(k, top, bottom)];
+  });
+  // Everything but the footers is the slides' content.
+  return elements.map((el) => (el.layerId ? el : { ...el, layerId: TEMPLATE_CONTENT_LAYER_ID }));
+}

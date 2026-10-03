@@ -4,6 +4,7 @@ import {
   type Tab,
 } from '@livediagram/document';
 import { articleTemplateOverrides } from './article-template';
+import { templatePages } from './template-pages';
 import { titleCase } from '@livediagram/api-schema';
 import { templateLayers } from './template-layers';
 
@@ -331,7 +332,7 @@ export const TEMPLATES: TemplateDescriptor[] = [
     kind: 'slide-deck',
     title: 'Slide deck',
     description:
-      'A six-slide pitch (title, problem, solution, traction, team, the ask) with speaker notes.',
+      'A six-slide pitch (title, problem, solution, traction, team, the ask) on Slide (16:9) pages, with speaker notes.',
     extra: true,
   },
   {
@@ -345,7 +346,7 @@ export const TEMPLATES: TemplateDescriptor[] = [
     kind: 'logo-design',
     title: 'Logo design',
     description:
-      'A brand exploration sheet: six labelled artboards of lockups (horizontal, stacked, app icon, one colour) plus a palette strip. Pick one, delete the rest, swap in your own mark.',
+      'A brand exploration on Square pages: six lockups (horizontal, stacked, app icon, one colour), each on its own artboard, plus a palette page. Pick one, delete the rest, swap in your own mark.',
     extra: true,
   },
   {
@@ -359,7 +360,7 @@ export const TEMPLATES: TemplateDescriptor[] = [
     kind: 'live-card',
     title: 'Group card',
     description:
-      'A greeting card the whole team signs: a cover with a photo, and a wall of signed notes with a slot for yours.',
+      'A greeting card the whole team signs, on two card pages: a cover with a photo, and an inside of signed notes with a slot for yours.',
     extra: true,
   },
   {
@@ -875,9 +876,10 @@ export function untitledNameForTemplate(kind: TemplateKind | null): string {
 //     Gantt / kanban / wireframes) where boxes snap to a square grid,
 //   - a blank canvas for clean radial layouts (Venn, flywheel,
 //     pyramid) where the shapes should carry the page,
-//   - a crosshatch backdrop for the slide deck, so the slide frames
+//   - a crosshatch backdrop for the storyboard, so its scene frames
 //     read as cards lifted off a textured surface,
-//   - a checkerboard "design board" for the logo lockup sheet,
+//   - a blank surround for the templates that open on Illustrate pages
+//     (Article, Slide deck, Logo design, Group card): the pages are the paper,
 //   - horizontal rules for the time-ordered timeline / journey,
 //   - the dot grid (explicit, so it survives even a blank-canvas theme)
 //     for the sticky-note / freeform boards.
@@ -897,8 +899,9 @@ const TEMPLATE_PATTERNS: Partial<Record<TemplateKind, BackgroundPattern>> = {
   venn: 'blank',
   flywheel: 'blank',
   pyramid: 'blank',
-  'slide-deck': 'crosshatch',
-  'logo-design': 'checkerboard',
+  // The templates on pages keep a plain surround, like the Article: the pages are the paper.
+  'slide-deck': 'blank',
+  'logo-design': 'blank',
   timeline: 'lines',
   'milestone-timeline': 'lines',
   // The vertical variant reads best on a clean canvas: horizontal ruled
@@ -907,7 +910,7 @@ const TEMPLATE_PATTERNS: Partial<Record<TemplateKind, BackgroundPattern>> = {
   journey: 'lines',
   retrospective: 'grid',
   fishbone: 'grid',
-  'live-card': 'grid',
+  'live-card': 'blank',
   mindmap: 'grid',
   // Tree map rides the dot grid like the radial map; the bubble map is a
   // clean radial layout, so it gets a blank canvas like Venn / pyramid.
@@ -922,8 +925,8 @@ const TEMPLATE_PATTERNS: Partial<Record<TemplateKind, BackgroundPattern>> = {
   // The later batch splits the same three ways: alignment-heavy scaffolds
   // ride graph paper, sticky-note workshop boards pin the dot grid, and
   // the funnel's clean stacked silhouette gets a blank canvas. The
-  // storyboard joins the slide deck on crosshatch so its scene frames
-  // read as cards on a textured board.
+  // storyboard rides crosshatch so its scene frames read as cards on a
+  // textured board.
   roadmap: 'graph',
   'raci-matrix': 'graph',
   'business-model-canvas': 'graph',
@@ -1026,6 +1029,10 @@ export function templateCanvasOverrides(kind: TemplateKind): Partial<Tab> {
   if (kind === 'whiteboard') overrides.opensIn = 'draw';
   // The Article opens in Illustrate on its one article page (docs/specs/007-editor/article-pages.md).
   if (kind === 'article') Object.assign(overrides, articleTemplateOverrides());
+  // The Slide deck, Logo design and Group card open in Illustrate on their own pages
+  // (canvas-and-palette.md "Templates on pages"); their builders place every element on them.
+  const pages = templatePages(kind);
+  if (pages) Object.assign(overrides, { opensIn: 'illustrate', pages });
   if (kind === 'event-storming') {
     overrides.kind = 'event-storming';
     // The seed note is built on a lane, so the board is born settled and the

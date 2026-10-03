@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { Element } from '@livediagram/document';
+import { layOutIllustratePages, type Element } from '@livediagram/document';
+import { templateCanvasOverrides } from '@livediagram/templates';
 import { buildTemplate } from './template-builders';
 
 // Structure pins for the design starters redesigned together
@@ -109,22 +110,25 @@ describe('web page wireframe template', () => {
 });
 
 describe('slide deck template', () => {
+  // The slides are Illustrate pages (canvas-and-palette.md "Templates on pages"), not drawn cards.
   const els = buildTemplate('slide-deck', 0, 0);
-  const slides = shapesOf(els, 'square').filter((s) => s.width === 520);
+  const slides = layOutIllustratePages(templateCanvasOverrides('slide-deck').pages!).map(
+    (p) => p.rect,
+  );
+  const onSlide = (i: number) => els.filter((el) => contains(slides[i]!, centre(el as Box)));
 
-  it('draws six 16:9 slides in a 3 x 2 grid, read left to right', () => {
+  it('lays six 16:9 slides in a row, read left to right', () => {
     expect(slides).toHaveLength(6);
     for (const s of slides) expect(s.width / s.height).toBeCloseTo(16 / 9, 1);
-    const rows = [...new Set(slides.map((s) => s.y))];
-    expect(rows).toHaveLength(2);
+    for (let i = 1; i < slides.length; i++) expect(slides[i]!.x).toBeGreaterThan(slides[i - 1]!.x);
+    expect(shapesOf(els, 'square').some((s) => s.width === 520)).toBe(false);
     expect(els.filter((el) => el.type === 'arrow')).toHaveLength(0);
   });
 
-  it('follows the pitch arc, one kicker per slide, with a page number on each', () => {
-    const l = labels(els);
-    for (const kicker of ['The problem', 'The solution', 'Traction', 'The team', 'The ask'])
-      expect(l).toContain(kicker);
-    for (let n = 1; n <= 6; n++) expect(l).toContain(`${n} / 6`);
+  it('follows the pitch arc, one kicker per slide, with a page number on each after the title', () => {
+    const kickers = ['The problem', 'The solution', 'Traction', 'The team', 'The ask'];
+    kickers.forEach((kicker, i) => expect(labels(onSlide(i + 1))).toContain(kicker));
+    for (let n = 2; n <= 6; n++) expect(labels(onSlide(n - 1))).toContain(`${n} / 6`);
   });
 
   it('builds each body from the element that suits it', () => {
@@ -132,18 +136,11 @@ describe('slide deck template', () => {
       expect(shapesOf(els, kind).length, kind).toBeGreaterThan(0);
   });
 
-  it('puts a speaker-notes line under every slide', () => {
-    const notes = els.filter((el) => el.type === 'text' && el.textItalic);
-    expect(notes).toHaveLength(6);
-    for (const slide of slides) {
-      const below = notes.find(
-        (n) =>
-          (n as Box).y > slide.y + slide.height &&
-          (n as Box).y < slide.y + slide.height + 40 &&
-          (n as Box).x >= slide.x &&
-          (n as Box).x < slide.x + slide.width,
-      );
-      expect(below).toBeDefined();
+  it('carries the speaker notes on every slide’s headline', () => {
+    for (let i = 0; i < slides.length; i++) {
+      const noted = onSlide(i).filter((el) => (el as { note?: string }).note);
+      expect(noted, `slide ${i + 1}`).toHaveLength(1);
+      expect(noted[0]!.type).toBe('text');
     }
   });
 });

@@ -229,19 +229,44 @@ describe('templateCanvasOverrides', () => {
     expect(templateCanvasOverrides('flywheel')).toEqual({ backgroundPattern: 'blank' });
   });
 
-  it('gives the slide deck a crosshatch backdrop', () => {
-    expect(templateCanvasOverrides('slide-deck')).toEqual({
-      backgroundPattern: 'crosshatch',
-      backgroundOpacity: 0.5,
+  it('opens the slide deck in Illustrate on six Slide (16:9) pages, keeping its layers', () => {
+    // canvas-and-palette.md "Templates on pages": a plain surround, the pages are the paper.
+    const o = templateCanvasOverrides('slide-deck');
+    expect(o).toMatchObject({
+      backgroundPattern: 'blank',
+      opensIn: 'illustrate',
       layers: templateLayers('slide-deck'),
     });
+    expect(o.pages).toHaveLength(6);
+    expect(
+      o.pages!.every(
+        (p) => p.size === 'wide' && p.orientation === 'landscape' && p.kind === 'infographic',
+      ),
+    ).toBe(true);
+    expect(o.pages!.map((p) => p.id)).toEqual([
+      'page-1',
+      'page-2',
+      'page-3',
+      'page-4',
+      'page-5',
+      'page-6',
+    ]);
   });
 
-  it('gives the logo sheet a checkerboard design board and timelines ruled lines', () => {
-    expect(templateCanvasOverrides('logo-design')).toEqual({
-      backgroundPattern: 'checkerboard',
-      backgroundOpacity: 0.6,
-    });
+  it('opens the logo exploration on Square pages, and timelines get ruled lines', () => {
+    const o = templateCanvasOverrides('logo-design');
+    expect(o).toMatchObject({ backgroundPattern: 'blank', opensIn: 'illustrate' });
+    // Six lockup artboards, then the palette.
+    expect(o.pages?.map((p) => p.name)).toEqual([
+      'Horizontal',
+      'Stacked',
+      'App Icon',
+      'Horizontal + Tagline',
+      'Stacked + Tagline',
+      'One Colour',
+      'Palette',
+    ]);
+    expect(o.pages!.every((p) => p.size === 'square' && p.kind === 'infographic')).toBe(true);
     expect(templateCanvasOverrides('timeline')).toEqual({
       backgroundPattern: 'lines',
       backgroundOpacity: 0.6,
@@ -253,6 +278,15 @@ describe('templateCanvasOverrides', () => {
       backgroundOpacity: 0.6,
       layers: templateLayers('journey'),
     });
+  });
+
+  it('opens the group card on a cover and an inside, both Portrait post (4:5) pages', () => {
+    const o = templateCanvasOverrides('live-card');
+    expect(o).toMatchObject({ backgroundPattern: 'blank', opensIn: 'illustrate' });
+    expect(o.pages?.map((p) => [p.name, p.size, p.orientation, p.kind])).toEqual([
+      ['Cover', 'social', 'portrait', 'infographic'],
+      ['Inside', 'social', 'portrait', 'infographic'],
+    ]);
   });
 
   it('leaves the blank template to inherit the theme backdrop', () => {
@@ -378,8 +412,10 @@ describe('layered templates (docs/specs/006-document/layers.md)', () => {
     'laptop-wireframe': { names: ['Frames', 'UI'], scaffold: 4, content: 22 },
     // Frames: the browser, the how-to and the Notes heading.
     'browser-wireframe': { names: ['Frames', 'UI'], scaffold: 3, content: 55 },
-    // Frames: six slide cards, their page numbers and the how-to.
-    'slide-deck': { names: ['Frames', 'Content'], scaffold: 13, content: 55 },
+    // Frames: the footer (deck name + page number) of the five content slides; the slides
+    // themselves are Illustrate pages. Content: the title slide's nine pieces, each other
+    // slide's kicker + headline, and its body (pains 9, steps 5, traction 3, team 12, ask 5).
+    'slide-deck': { names: ['Frames', 'Content'], scaffold: 10, content: 53 },
     // Frames: six panel cards, their number chips and the how-to.
     storyboard: { names: ['Frames', 'Content'], scaffold: 13, content: 41 },
     // Spine + the three-entry status legend stay put; each of the six

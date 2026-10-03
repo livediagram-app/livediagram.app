@@ -3,10 +3,11 @@ import {
   ES_LANES,
   laneIndexAt,
   laneCentre,
+  layOutIllustratePages,
   runsPlainText,
   type Element,
 } from '@livediagram/document';
-import type { TemplateKind } from '@livediagram/templates';
+import { templateCanvasOverrides, type TemplateKind } from '@livediagram/templates';
 import { primsBounds } from '@livediagram/icons';
 import { ICON_CATALOG_1 } from '@livediagram/icons/icon-catalog-1';
 import { ICON_CATALOG_2 } from '@livediagram/icons/icon-catalog-2';
@@ -126,6 +127,73 @@ function coordsOf(el: Element): { x: number; y: number }[] {
   return [{ x: el.x, y: el.y }];
 }
 
+// The templates that open in Illustrate on pages of their own (canvas-and-palette.md "Templates
+// on pages").
+const PAGED_KINDS = ['slide-deck', 'logo-design', 'live-card'] as const;
+
+// An element's centre, from its box or, for an arrow, its free endpoints' midpoint.
+function centreOf(el: Element): { x: number; y: number } | undefined {
+  if (el.type === 'arrow') {
+    const pts = coordsOf(el);
+    if (pts.length === 0) return undefined;
+    return {
+      x: pts.reduce((a, p) => a + p.x, 0) / pts.length,
+      y: pts.reduce((a, p) => a + p.y, 0) / pts.length,
+    };
+  }
+  const b = el as { x: number; y: number; width: number; height: number };
+  return { x: b.x + b.width / 2, y: b.y + b.height / 2 };
+}
+
+describe('templates on pages', () => {
+  it.each(PAGED_KINDS)('%s: opens in Illustrate on infographic pages', (kind) => {
+    const o = templateCanvasOverrides(kind);
+    expect(o.opensIn).toBe('illustrate');
+    expect(o.pages?.length).toBeGreaterThan(1);
+    expect(o.pages!.every((p) => p.kind === 'infographic')).toBe(true);
+    expect(new Set(o.pages!.map((p) => p.id)).size).toBe(o.pages!.length);
+  });
+
+  it.each(PAGED_KINDS)(
+    '%s: puts every element centre on one of its pages, and every page gets content',
+    (kind) => {
+      const rects = layOutIllustratePages(templateCanvasOverrides(kind).pages!).map((p) => p.rect);
+      // Wherever the caller centres it: the elements are built in page coordinates.
+      for (const [cx, cy] of [
+        [0, 0],
+        [137, -421],
+      ] as const) {
+        const els = buildTemplate(kind, cx, cy);
+        expect(els.length).toBeGreaterThan(0);
+        const used = new Set<number>();
+        const strays: string[] = [];
+        for (const el of els) {
+          const c = centreOf(el);
+          if (!c) continue;
+          const page = rects.findIndex(
+            (r) => c.x >= r.x && c.x <= r.x + r.width && c.y >= r.y && c.y <= r.y + r.height,
+          );
+          if (page < 0) strays.push(`${el.type} ${'label' in el ? el.label : ''} at ${c.x},${c.y}`);
+          else used.add(page);
+        }
+        expect(strays).toEqual([]);
+        expect(used.size).toBe(rects.length);
+      }
+    },
+  );
+
+  it('keeps the slide deck’s speaker notes on each slide’s headline', () => {
+    const notes = buildTemplate('slide-deck', 0, 0).filter((el) => 'note' in el && el.note);
+    expect(notes).toHaveLength(6);
+  });
+
+  it('keeps the group card a card the team signs: seven signed notes and an open slot', () => {
+    const els = buildTemplate('live-card', 0, 0);
+    expect(els.filter((el) => el.type === 'sticky')).toHaveLength(7);
+    expect(els.some((el) => 'label' in el && el.label === '+ Your message here')).toBe(true);
+  });
+});
+
 describe('the whiteboard template', () => {
   it('starts empty: a whiteboard is a clean board to draw on', () => {
     expect(buildTemplate('whiteboard', 0, 0)).toEqual([]);
@@ -165,41 +233,48 @@ describe('buildTemplate translation invariance', () => {
   // 'blank' is intentionally empty (no seeded element, docs/specs/007-editor/new-document-route.md), so it has no
   // coordinates to shift — excluded from this invariance check (it stays in
   // ALL_KINDS above for the exhaustiveness assertion).
-  it.each(ALL_KINDS.filter((k) => k !== 'blank' && k !== 'whiteboard' && k !== 'article'))(
-    '%s: every coordinate shifts by (cx, cy)',
-    (kind) => {
-      const atOrigin = buildTemplate(kind, 0, 0);
-      const atOffset = buildTemplate(kind, DX, DY);
+  // The templates on pages are built on their pages, not around (cx, cy); 'templates on pages'
+  // below pins where they land instead.
+  it.each(
+    ALL_KINDS.filter(
+      (k) =>
+        k !== 'blank' &&
+        k !== 'whiteboard' &&
+        k !== 'article' &&
+        !(PAGED_KINDS as readonly string[]).includes(k),
+    ),
+  )('%s: every coordinate shifts by (cx, cy)', (kind) => {
+    const atOrigin = buildTemplate(kind, 0, 0);
+    const atOffset = buildTemplate(kind, DX, DY);
 
-      expect(atOffset.length).toBe(atOrigin.length);
-      expect(atOrigin.length).toBeGreaterThan(0);
+    expect(atOffset.length).toBe(atOrigin.length);
+    expect(atOrigin.length).toBeGreaterThan(0);
 
-      for (let i = 0; i < atOrigin.length; i++) {
-        const a = atOrigin[i]!;
-        const b = atOffset[i]!;
-        // Element types stay aligned (a 'shape' at position N stays
-        // a 'shape' at position N regardless of the centre): the
-        // builder is a pure function of (kind, cx, cy).
-        expect(b.type).toBe(a.type);
+    for (let i = 0; i < atOrigin.length; i++) {
+      const a = atOrigin[i]!;
+      const b = atOffset[i]!;
+      // Element types stay aligned (a 'shape' at position N stays
+      // a 'shape' at position N regardless of the centre): the
+      // builder is a pure function of (kind, cx, cy).
+      expect(b.type).toBe(a.type);
 
-        const ca = coordsOf(a);
-        const cb = coordsOf(b);
-        expect(cb.length).toBe(ca.length);
-        for (let j = 0; j < ca.length; j++) {
-          // toBeCloseTo (not toBe) because trig-based builders
-          // (mindmap branches, flywheel sectors) introduce IEEE 754
-          // rounding when the same trig terms get added in different
-          // orders. The contract is "shift by (cx, cy)", not "shift
-          // by exactly (cx, cy) bit-for-bit". Five-decimal precision
-          // is well below sub-pixel and well above floating drift.
-          expect(cb[j]!.x - ca[j]!.x).toBeCloseTo(DX, 5);
-          // The event-storming row lands on a lane (docs/specs/021-event-storming/event-storming.md Phase 6), so it
-          // moves on y by whole lane pitches rather than by exactly DY.
-          if (kind !== 'event-storming') expect(cb[j]!.y - ca[j]!.y).toBeCloseTo(DY, 5);
-        }
+      const ca = coordsOf(a);
+      const cb = coordsOf(b);
+      expect(cb.length).toBe(ca.length);
+      for (let j = 0; j < ca.length; j++) {
+        // toBeCloseTo (not toBe) because trig-based builders
+        // (mindmap branches, flywheel sectors) introduce IEEE 754
+        // rounding when the same trig terms get added in different
+        // orders. The contract is "shift by (cx, cy)", not "shift
+        // by exactly (cx, cy) bit-for-bit". Five-decimal precision
+        // is well below sub-pixel and well above floating drift.
+        expect(cb[j]!.x - ca[j]!.x).toBeCloseTo(DX, 5);
+        // The event-storming row lands on a lane (docs/specs/021-event-storming/event-storming.md Phase 6), so it
+        // moves on y by whole lane pitches rather than by exactly DY.
+        if (kind !== 'event-storming') expect(cb[j]!.y - ca[j]!.y).toBeCloseTo(DY, 5);
       }
-    },
-  );
+    }
+  });
 
   it.each(ALL_KINDS)('%s: returns a fresh array per call (no shared mutable state)', (kind) => {
     // Builders are documented as pure, returning "a fresh array of
