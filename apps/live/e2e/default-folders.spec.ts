@@ -1,6 +1,14 @@
 import type { Page } from '@playwright/test';
-import { apiBase, darkVisitor } from './audit-screens';
-import { expect, expectNoPageErrors, test, untilHydrated } from './fixtures';
+import { apiBase } from './audit-screens';
+import {
+  expect,
+  expectNoPageErrors,
+  guestSigFor,
+  mintSignedGuest,
+  ownerHeaders,
+  test,
+  untilHydrated,
+} from './fixtures';
 
 // Default folders for a guest, in dark mode (docs/specs/013-workspace/default-folders.md
 // "Surfaces"; folders.md "Deleting a folder"): set from the folder menu and shown by the marker,
@@ -10,16 +18,25 @@ import { expect, expectNoPageErrors, test, untilHydrated } from './fixtures';
 
 type Seeded = { owner: string; headers: Record<string, string> };
 
+// A signed guest, as production mints one: the stack signs guest ids, and the app would upgrade a
+// hand-made unsigned id (moving its data) the moment it opens.
 async function guest(page: Page, baseURL: string): Promise<Seeded> {
-  const owner = crypto.randomUUID();
-  await darkVisitor(page, owner);
+  const owner = await mintSignedGuest(page.request);
+  await page.addInitScript(
+    ({ id, sig }) => {
+      localStorage.setItem('livediagram:v2:ui-mode', 'dark');
+      localStorage.setItem('livediagram:v2:name-confirmed', '1');
+      localStorage.setItem('livediagram:v2:self-id', id);
+      if (sig) localStorage.setItem('livediagram:v2:self-sig', sig);
+    },
+    { id: owner, sig: guestSigFor(owner) },
+  );
   return {
     owner,
-    headers: {
-      'X-Owner-Id': owner,
+    headers: ownerHeaders(owner, {
       Origin: new URL(baseURL).origin,
       'Content-Type': 'application/json',
-    },
+    }),
   };
 }
 
