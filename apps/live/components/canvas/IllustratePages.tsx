@@ -92,7 +92,8 @@ export function IllustratePages({
         // an empty page's layout button sits beside it, with its words while there is room for
         // them and the label, as an icon while there is room for that, else not at all.
         const room = page.rect.width * zoom;
-        const empty = !!edit && edit.contentCount(page.id) === 0;
+        // Layouts are for infographic pages: a document page never invites one.
+        const empty = !!edit && !page.flow && edit.contentCount(page.id) === 0;
         const invite = !empty
           ? null
           : !mobile && room >= INVITE_WIDE + COG_ROOM + LABEL_MIN * 2

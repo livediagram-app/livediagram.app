@@ -46,6 +46,7 @@ import { useSwatchOverrides } from '@/hooks/canvas/useSwatchOverrides';
 import { getTheme } from '@/lib/themes';
 import { DEFAULT_SCHEME_ID } from '@livediagram/document';
 import { useEditorMode, usePinTabOpening } from '@/hooks/editor/useEditorMode';
+import { useDocumentPages } from '@/hooks/editor/useDocumentPages';
 import { useIllustratePages } from '@/hooks/editor/useIllustratePages';
 import { editorModeShortcut } from '@/hooks/editor/editor-mode-shortcut';
 import { announce } from '@/lib/announcer';
@@ -1567,6 +1568,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     switchMode: editorMode.setMode,
   });
   // Illustrate mode's pages: their edits, and the view centred on them.
+  // Set once the documents' hook exists (below): a new document's title takes the caret.
+  const documentFocusRef = useRef<((flow: string) => void) | null>(null);
   const illustratePages = useIllustratePages({
     activeTab,
     mode: editorMode.mode,
@@ -1581,6 +1584,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
       setMultiSelectedIds(new Set());
     },
     toastInfo: toast.info,
+    onDocumentCreated: (flow) => documentFocusRef.current?.(flow),
   });
 
   // A locked tab refuses every element mutation. Commit /
@@ -1778,6 +1782,23 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     redoHistory,
     set: { setSelectedId, setEditingId, setFormatSourceId },
   });
+  // The writing of the active tab's document pages (docs/specs/007-editor/document-pages.md).
+  const documents = useDocumentPages({
+    activeTab,
+    on: illustratePages !== null,
+    canEdit: !isReadOnly,
+    commitTabs,
+    tickTabs,
+    undo,
+    redo,
+    clearSelection: () => {
+      setSelectedId(null);
+      setMultiSelectedIds(new Set());
+    },
+  });
+  useAssignRef(documentFocusRef, (flow: string) => documents?.requestFocus(flow, 'start'));
+  const illustrateView =
+    illustratePages && documents ? { ...illustratePages, documents } : illustratePages;
   // --- Placement helpers ---------------------------------------------------
 
   // When a boxed element is selected, new elements inherit its size so a
@@ -2963,7 +2984,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   return {
     // The person's editor mode on the active tab, for the mode switch and the canvas.
     editorMode,
-    illustratePages,
+    illustratePages: illustrateView,
     // The tab menu's Opens in choice for a tab, absent where it is not offered.
     opensInFor: tabOpensIn.choiceFor,
     whiteboardDock,

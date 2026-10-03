@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  docListMarkers,
   docsOf,
   docWordCount,
   MAX_DOC_BLOCK_TEXT,
@@ -193,5 +194,29 @@ describe('document writing: block ops', () => {
         { kind: 'remove', id: 'b' },
       ]).blocks,
     ).toHaveLength(1);
+  });
+});
+
+describe('list markers', () => {
+  const L = (id: string, list: 'bullet' | 'numbered' | 'todo', level = 0) => ({
+    id,
+    type: 'list',
+    list,
+    level,
+  });
+  it('count numbered items by level, restarting after a bullet or another block', () => {
+    const m = docListMarkers([
+      L('a', 'numbered'),
+      L('b', 'numbered', 1),
+      L('c', 'numbered', 1),
+      L('d', 'numbered', 2),
+      L('e', 'numbered'),
+      L('f', 'bullet', 1),
+      L('g', 'numbered', 1),
+      { id: 'p', type: 'paragraph' },
+      L('h', 'numbered'),
+      L('t', 'todo'),
+    ]);
+    expect([...m.values()]).toEqual(['1.', 'a.', 'b.', 'i.', '2.', '◦', 'a.', '1.', '']);
   });
 });

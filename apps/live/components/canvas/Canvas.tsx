@@ -88,6 +88,7 @@ import { useArrowLabelLayouts } from '@/hooks/canvas/useArrowLabelLayouts';
 import { useFontsReady } from '@/components/canvas/useFontsReady';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { IllustratePages } from '@/components/canvas/IllustratePages';
+import { DocumentFlows } from '@/components/canvas/doc/DocumentFlows';
 import { pressIsOffPage } from '@/hooks/canvas/illustrate-page-guard';
 
 export function Canvas(props: CanvasProps) {
@@ -735,6 +736,16 @@ export function Canvas(props: CanvasProps) {
             // Zen, presenting and the isometric view show the sheets alone: no labels, cogs,
             // layout invites or add button.
             bare={props.zenMode === true || canvasTool === 'isometric'}
+          />
+        ) : null}
+        {/* Document pages' writing (DocumentFlows), over the sheets and under the elements, so a
+            zone's elements sit in the room the writing leaves them. */}
+        {props.illustratePages?.documents && canvasTool !== 'isometric' ? (
+          <DocumentFlows
+            view={props.illustratePages}
+            zoom={viewportZoom}
+            interactive={!pendingDraw && canvasTool !== 'spotlight' && canvasTool !== 'avatar'}
+            onLinkRequest={() => {}}
           />
         ) : null}
         <CanvasStillProvider still={props.editorMode === 'draw'}>

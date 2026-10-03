@@ -15,11 +15,19 @@ export function presentedPages(
   if (!presentingPageId) return view;
   const only = <T extends { id: string }>(pages: readonly T[]) =>
     pages.filter((p) => p.id === presentingPageId);
-  if (view) return { ...view, pages: only(view.pages) };
+  if (view)
+    return {
+      ...view,
+      pages: only(view.pages),
+      rowPages: view.pages,
+      // Presenting is reading: the writing takes no caret.
+      documents: view.documents ? { ...view.documents, editable: false } : view.documents,
+    };
   return {
     pages: only(layOutIllustratePages(illustratePagesOf(tab))),
     focusPage: noop,
     themeBackgrounds: [],
+    themeAccent: '#2563eb',
     tabFont: tab.font,
     layoutPreview: null,
     setLayoutPreview: noop,

@@ -156,6 +156,16 @@ export type ThemeBackgroundPreset = { id: string; label: string; fill: PageFill 
 const FALLBACK_ACCENT = '#0ea5e9';
 const isHex = (c: string | null | undefined): c is string => !!c && /^#[0-9a-f]{6}$/i.test(c);
 
+/** The tab theme's accent: its element stroke, else its first palette colour, else the brand blue.
+ *  What theme backgrounds and a document's accent are drawn from. */
+export function themeAccent(theme: Pick<ThemeDefinition, 'elementStroke' | 'palette'>): string {
+  return isHex(theme.elementStroke)
+    ? theme.elementStroke
+    : isHex(theme.palette?.[0]?.stroke)
+      ? theme.palette![0]!.stroke
+      : FALLBACK_ACCENT;
+}
+
 /**
  * Backgrounds drawn from the tab's theme (docs/specs/007-editor/illustrate-pages.md
  * "Backgrounds"), offered first: two pale tints of its accent, its own element fill (when it has
@@ -165,11 +175,7 @@ const isHex = (c: string | null | undefined): c is string => !!c && /^#[0-9a-f]{
 export function themeBackgroundPresets(
   theme: Pick<ThemeDefinition, 'elementStroke' | 'elementFill' | 'palette'>,
 ): ThemeBackgroundPreset[] {
-  const accent = isHex(theme.elementStroke)
-    ? theme.elementStroke
-    : isHex(theme.palette?.[0]?.stroke)
-      ? theme.palette![0]!.stroke
-      : FALLBACK_ACCENT;
+  const accent = themeAccent(theme);
   const second = isHex(theme.palette?.[1]?.stroke)
     ? theme.palette![1]!.stroke
     : shade(accent, 0.25);

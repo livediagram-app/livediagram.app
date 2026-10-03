@@ -25,7 +25,12 @@ import { computeFitBelow } from '@/lib/viewport';
 import { debugLog } from '@/lib/debug-log';
 import { track } from '@/lib/telemetry';
 import { getTheme } from '@/lib/themes';
-import { themeBackgroundPresets, type ThemeBackgroundPreset } from '@/lib/illustrate-page-paint';
+import {
+  themeAccent,
+  themeBackgroundPresets,
+  type ThemeBackgroundPreset,
+} from '@/lib/illustrate-page-paint';
+import type { DocumentPagesView } from './useDocumentPages';
 import { illustratePageEdits, type IllustratePageEdits } from './illustrate-page-edits';
 import type { PageLayoutId } from '@livediagram/templates';
 
@@ -33,10 +38,17 @@ export type { IllustratePageEdits };
 
 export type IllustratePagesView = {
   pages: LaidOutPage[];
+  // The whole row, when `pages` shows only some of it (a page slide presenting): a document's
+  // writing is laid out across all of its pages whichever of them are shown.
+  rowPages?: LaidOutPage[];
   // Frames one page in the view (its label's press).
   focusPage: (pageId: string) => void;
   // Backgrounds drawn from the tab's theme, offered first in the page panel.
   themeBackgrounds: ThemeBackgroundPreset[];
+  // The tab theme's accent: a document's accent unless it picked one of its own.
+  themeAccent: string;
+  // The documents' writing on the pages (useDocumentPages), composed in by the editor.
+  documents?: DocumentPagesView | null;
   // The tab's default face, for what the pages draw themselves (a layout preview).
   tabFont?: string;
   // A layout previewed on a page while its tile is hovered: the page's own content is hidden
@@ -71,6 +83,8 @@ export function useIllustratePages(deps: {
   setViewportOffset: (offset: { x: number; y: number }) => void;
   clearSelection: () => void;
   toastInfo: (message: string) => void;
+  // A new document by its flow id, so its writing can take the caret.
+  onDocumentCreated?: (flow: string) => void;
 }): IllustratePagesView | null {
   const { activeTab, mode, canEdit, tabLoaded, commitTabs } = deps;
   const on = hasPageLook(mode);
@@ -158,9 +172,18 @@ export function useIllustratePages(deps: {
 
   if (!on) return null;
   const focusPage = (pageId: string) => frame(pages.find((p) => p.id === pageId));
-  const themeBackgrounds = themeBackgroundPresets(getTheme(activeTab.theme));
+  const theme = getTheme(activeTab.theme);
+  const themeBackgrounds = themeBackgroundPresets(theme);
   const tabFont = activeTab.font;
-  const shared = { pages, focusPage, themeBackgrounds, tabFont, layoutPreview, setLayoutPreview };
+  const shared = {
+    pages,
+    focusPage,
+    themeBackgrounds,
+    themeAccent: themeAccent(theme),
+    tabFont,
+    layoutPreview,
+    setLayoutPreview,
+  };
   if (!canEdit || activeTab.locked === true) return shared;
   return {
     ...shared,
@@ -172,6 +195,7 @@ export function useIllustratePages(deps: {
       elements: activeTab.elements,
       commitTabs,
       onCreated: setGoTo,
+      onDocumentCreated: deps.onDocumentCreated,
       onLayoutPlaced: deps.clearSelection,
       mayEdit,
     }),

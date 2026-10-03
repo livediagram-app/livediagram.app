@@ -376,6 +376,8 @@ export * from './illustrate-paginate';
 export * from './doc-flow';
 export * from './doc-flow-ops';
 export * from './doc-pages';
+export * from './doc-style';
+export * from './doc-zones';
 export { migrateWhiteboardKind } from './legacy-whiteboard-tab';
 export { downgradeLinks, upgradeLegacyLinks } from './legacy-links';
 

@@ -2,7 +2,7 @@
 // "Collaboration"): the changes between two versions of one flow as id-addressed ops, and applying
 // them, so two people writing in different blocks of the same document merge instead of one
 // overwriting the other. The same shape as the element ops (element-op.ts) for the same reason.
-import type { DocBlock, DocFlow, DocStyle } from './doc-flow';
+import { sameDocValue, type DocBlock, type DocFlow, type DocStyle } from './doc-flow';
 
 export type DocOp =
   // A block added, changed or moved: it goes after `after` (null: first), or failing that before
@@ -11,8 +11,6 @@ export type DocOp =
   | { kind: 'remove'; id: string }
   // The document's style replaced (undefined: back to the defaults).
   | { kind: 'style'; style?: DocStyle };
-
-const sameJson = (a: unknown, b: unknown): boolean => JSON.stringify(a) === JSON.stringify(b);
 
 /** Indexes (into `seq`) of one longest strictly increasing subsequence: O(n log n). */
 function longestIncreasing(seq: readonly number[]): Set<number> {
@@ -59,7 +57,7 @@ export function diffDocFlow(before: DocFlow | undefined, after: DocFlow): DocOp[
     const was = prevIndex.get(b.id);
     if (was !== undefined && stayed.has(i)) {
       const old = prevBlocks[was]!;
-      if (old === b || sameJson(old, b)) return;
+      if (old === b || sameDocValue(old, b)) return;
     }
     ops.push({
       kind: 'put',
@@ -68,7 +66,7 @@ export function diffDocFlow(before: DocFlow | undefined, after: DocFlow): DocOp[
       before: i < after.blocks.length - 1 ? after.blocks[i + 1]!.id : null,
     });
   });
-  if (!sameJson(before?.style, after.style)) ops.push({ kind: 'style', style: after.style });
+  if (!sameDocValue(before?.style, after.style)) ops.push({ kind: 'style', style: after.style });
   return ops;
 }
 

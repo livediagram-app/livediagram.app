@@ -337,6 +337,26 @@ export function docsOf(tab: object | undefined): Readonly<Record<string, DocFlow
 
 const EMPTY_DOCS: Readonly<Record<string, DocFlow>> = Object.freeze({});
 
+/** Whether two blocks (or any plain JSON values) are the same, whatever order their keys are in:
+ *  a block read from storage and one built in the editor list their fields differently. */
+export function sameDocValue(a: unknown, b: unknown): boolean {
+  if (a === b) return true;
+  if (typeof a !== 'object' || typeof b !== 'object' || a === null || b === null) return false;
+  if (Array.isArray(a) !== Array.isArray(b)) return false;
+  if (Array.isArray(a)) {
+    const bs = b as unknown[];
+    return a.length === bs.length && a.every((v, i) => sameDocValue(v, bs[i]));
+  }
+  const ka = Object.keys(a).filter((k) => (a as Record<string, unknown>)[k] !== undefined);
+  const kb = Object.keys(b).filter((k) => (b as Record<string, unknown>)[k] !== undefined);
+  return (
+    ka.length === kb.length &&
+    ka.every((k) =>
+      sameDocValue((a as Record<string, unknown>)[k], (b as Record<string, unknown>)[k]),
+    )
+  );
+}
+
 /** A new block id: `b-` and eight hex digits, never one in `taken`. */
 export function nextDocBlockId(taken?: ReadonlySet<string>): string {
   let id: string;
@@ -396,4 +416,55 @@ export function withFreshDocBlockIds(flow: DocFlow): DocFlow {
     return { ...b, id };
   });
   return flow.style ? { blocks, style: flow.style } : { blocks };
+}
+
+const ROMAN: [number, string][] = [
+  [10, 'x'],
+  [9, 'ix'],
+  [5, 'v'],
+  [4, 'iv'],
+  [1, 'i'],
+];
+const roman = (n: number): string => {
+  let out = '';
+  for (const [v, s] of ROMAN) while (n >= v) ((out += s), (n -= v));
+  return out;
+};
+const alpha = (n: number): string => {
+  let out = '';
+  for (let k = n; k > 0; k = Math.floor((k - 1) / 26))
+    out = String.fromCharCode(97 + ((k - 1) % 26)) + out;
+  return out;
+};
+const BULLETS = ['•', '◦', '▪'];
+
+/**
+ * Each list item's marker (docs/specs/007-editor/document-pages.md "Blocks"): a numbered item counts
+ * 1, 2, 3 at level 0, a, b, c at level 1, i, ii, iii at level 2, repeating, through a run of list
+ * items; a bullet or to-do at a level restarts that level's count; any other block ends the run.
+ * Bullets are •, ◦, ▪ by level. A to-do's marker is its box (empty here).
+ */
+export function docListMarkers(
+  blocks: readonly ({ type: string; list?: DocListKind; level?: number } & { id: string })[],
+): Map<string, string> {
+  const out = new Map<string, string>();
+  let counts: number[] = [];
+  for (const b of blocks) {
+    if (b.type !== 'list' || !b.list) {
+      counts = [];
+      continue;
+    }
+    const level = b.level ?? 0;
+    counts.length = level + 1;
+    if (b.list === 'numbered') {
+      const n = (counts[level] ?? 0) + 1;
+      counts[level] = n;
+      const style = level % 3;
+      out.set(b.id, `${style === 0 ? n : style === 1 ? alpha(n) : roman(n)}.`);
+    } else {
+      counts[level] = 0;
+      out.set(b.id, b.list === 'bullet' ? BULLETS[level % 3]! : '');
+    }
+  }
+  return out;
 }

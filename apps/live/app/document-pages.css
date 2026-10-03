@@ -1,0 +1,336 @@
+/* The writing of a document page (docs/specs/007-editor/document-pages.md "Blocks", "Type",
+   "Document style"). One element per document, laid over its pages in columns, one column a page
+   (DocumentFlow): the browser breaks lines between pages and wraps text round floated zones. Every
+   value comes from the CSS variables DocumentFlow sets from the document's resolved style
+   (docStyleVars), so a style change is a variable change. Sizes are canvas px: the writing zooms
+   with the canvas. */
+
+.doc-flow {
+  position: absolute;
+  column-fill: auto;
+  font-family: var(--doc-body-font);
+  font-size: var(--doc-size);
+  line-height: var(--doc-leading);
+  color: var(--doc-ink);
+  caret-color: var(--doc-accent);
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  font-variant-ligatures: none;
+  orphans: 2;
+  widows: 2;
+  outline: none;
+  cursor: text;
+  /* The space between columns is not the writing's: presses there reach the canvas. */
+  pointer-events: none;
+  --doc-line: calc(var(--doc-size) * var(--doc-leading));
+}
+
+.doc-flow > * {
+  pointer-events: auto;
+}
+
+.doc-flow[data-readonly] {
+  cursor: default;
+}
+
+/* A drawing tool in hand: presses go through the writing to the canvas. */
+.doc-flow[data-inert] > * {
+  pointer-events: none;
+}
+
+.doc-flow ::selection {
+  background: color-mix(in srgb, var(--doc-accent) 28%, transparent);
+}
+
+.doc-flow .doc-block {
+  margin: 0;
+  padding: 0;
+}
+
+/* Body text */
+.doc-flow .doc-body {
+  margin-bottom: calc(var(--doc-para) * var(--doc-line));
+}
+
+/* Title, subtitle, headings */
+.doc-flow .doc-title,
+.doc-flow .doc-h1,
+.doc-flow .doc-h2,
+.doc-flow .doc-h3 {
+  font-family: var(--doc-heading-font);
+  color: var(--doc-heading-color);
+  line-height: 1.25;
+  break-after: avoid;
+  break-inside: avoid;
+}
+.doc-flow .doc-title {
+  font-size: calc(var(--doc-size) * 36 / 16);
+  font-weight: 700;
+  margin-bottom: calc(0.5 * var(--doc-line));
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+.doc-flow .doc-subtitle {
+  font-size: calc(var(--doc-size) * 20 / 16);
+  color: var(--doc-muted);
+  margin-bottom: var(--doc-line);
+}
+.doc-flow .doc-h1 {
+  font-size: calc(var(--doc-size) * 28 / 16);
+  font-weight: 700;
+  margin-top: calc(1.2 * var(--doc-line));
+  margin-bottom: calc(0.4 * var(--doc-line));
+}
+.doc-flow .doc-h2 {
+  font-size: calc(var(--doc-size) * 22 / 16);
+  font-weight: 650;
+  margin-top: var(--doc-line);
+  margin-bottom: calc(0.3 * var(--doc-line));
+}
+.doc-flow .doc-h3 {
+  font-size: calc(var(--doc-size) * 18 / 16);
+  font-weight: 650;
+  margin-top: calc(0.8 * var(--doc-line));
+  margin-bottom: calc(0.2 * var(--doc-line));
+}
+.doc-flow > .doc-block:first-child {
+  margin-top: 0;
+}
+
+/* Lines under text */
+.doc-flow[data-rules='title'] .doc-title,
+.doc-flow[data-rules='headings'] .doc-title,
+.doc-flow[data-rules='headings'] .doc-h1,
+.doc-flow[data-rules='headings'] .doc-h2,
+.doc-flow[data-rules='headings'] .doc-h3 {
+  padding-bottom: 0.18em;
+  border-bottom: 1.5px solid var(--doc-accent);
+}
+
+/* Quote */
+.doc-flow .doc-quote {
+  font-size: calc(var(--doc-size) * 18 / 16);
+  font-style: italic;
+  margin: calc(0.5 * var(--doc-line)) 0 calc(0.75 * var(--doc-line));
+  padding-left: 16px;
+  border-left: 3px solid var(--doc-accent);
+  color: var(--doc-ink);
+}
+
+/* Alignment */
+.doc-flow [data-align='center'] {
+  text-align: center;
+}
+.doc-flow [data-align='right'] {
+  text-align: right;
+}
+.doc-flow [data-align='justify'] {
+  text-align: justify;
+}
+
+/* Lists: a flat run of items, each indented by its level, its marker in the gutter before it. */
+.doc-flow .doc-list {
+  list-style: none;
+  position: relative;
+  padding-left: calc(28px * (var(--doc-level) + 1));
+  margin-bottom: calc(0.25 * var(--doc-line));
+}
+.doc-flow .doc-list::before {
+  position: absolute;
+  left: calc(28px * var(--doc-level));
+  width: 22px;
+  text-align: right;
+  color: var(--doc-accent);
+  font-variant-numeric: tabular-nums;
+  content: attr(data-marker);
+}
+.doc-flow .doc-list-todo::before {
+  content: '';
+  top: calc((var(--doc-line) - 16px) / 2);
+  left: calc(28px * var(--doc-level) + 4px);
+  width: 16px;
+  height: 16px;
+  box-sizing: border-box;
+  border: 1.5px solid var(--doc-accent);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 120ms ease;
+}
+.doc-flow .doc-list-todo.doc-done::before {
+  background: var(--doc-accent);
+}
+.doc-flow .doc-list-todo.doc-done::after {
+  content: '';
+  position: absolute;
+  top: calc((var(--doc-line) - 16px) / 2 + 3px);
+  left: calc(28px * var(--doc-level) + 9.5px);
+  width: 5px;
+  height: 8px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+  pointer-events: none;
+}
+.doc-flow .doc-done {
+  text-decoration: line-through;
+  color: var(--doc-muted);
+}
+
+/* Code */
+.doc-flow .doc-code {
+  font-family: var(--doc-mono-font);
+  font-size: calc(var(--doc-size) * 14 / 16);
+  line-height: 1.55;
+  margin: calc(0.5 * var(--doc-line)) 0 calc(0.75 * var(--doc-line));
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: var(--doc-code-bg);
+  white-space: pre-wrap;
+}
+.doc-flow code.doc-inline-code {
+  font-family: var(--doc-mono-font);
+  font-size: 0.88em;
+  padding: 0.1em 0.32em;
+  border-radius: 4px;
+  background: var(--doc-code-bg);
+}
+
+/* Divider and page break */
+.doc-flow .doc-divider {
+  padding: calc(0.6 * var(--doc-line)) 0;
+}
+.doc-flow .doc-divider hr {
+  border: 0;
+  border-top: 1px solid var(--doc-rule);
+  margin: 0;
+}
+.doc-flow .doc-page-break {
+  break-after: column;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: var(--doc-line);
+  color: var(--doc-muted);
+  font: 500 11px/1 var(--doc-body-font);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  user-select: none;
+}
+.doc-flow .doc-page-break::before,
+.doc-flow .doc-page-break::after {
+  content: '';
+  flex: 1;
+  border-top: 1px dashed var(--doc-rule);
+}
+.doc-flow[data-readonly] .doc-page-break span,
+.doc-flow[data-readonly] .doc-page-break::before,
+.doc-flow[data-readonly] .doc-page-break::after {
+  visibility: hidden;
+}
+
+/* Zones: a box the writing leaves room for; the elements in it are drawn by the canvas above. */
+.doc-flow .doc-zone {
+  display: block;
+  box-sizing: border-box;
+  break-inside: avoid;
+  margin-top: calc(0.4 * var(--doc-line));
+  margin-bottom: calc(0.6 * var(--doc-line));
+  border-radius: 6px;
+  outline: 1px dashed transparent;
+  outline-offset: 2px;
+  transition: outline-color 120ms ease;
+}
+.doc-flow .doc-zone-inline.doc-zone-align-center {
+  margin-left: auto;
+  margin-right: auto;
+}
+.doc-flow .doc-zone-inline.doc-zone-align-right {
+  margin-left: auto;
+}
+.doc-flow .doc-zone-left {
+  float: left;
+  margin-right: 14px;
+}
+.doc-flow .doc-zone-right {
+  float: right;
+  margin-left: 14px;
+}
+.doc-flow:not([data-readonly]) .doc-zone:hover {
+  outline-color: color-mix(in srgb, var(--doc-accent) 45%, transparent);
+}
+.doc-flow .doc-zone.ProseMirror-selectednode {
+  outline: 2px solid var(--doc-accent);
+}
+.doc-flow .doc-zone[data-zone='drawing'] {
+  background: color-mix(in srgb, var(--doc-accent) 4%, transparent);
+}
+.doc-flow[data-readonly] .doc-zone[data-zone='drawing'] {
+  background: none;
+}
+
+/* Inline formats */
+.doc-flow .doc-link {
+  color: var(--doc-accent);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+.doc-flow .doc-color {
+  color: var(--doc-text-color);
+}
+.doc-flow mark.doc-highlight {
+  background: var(--doc-highlight);
+  color: inherit;
+  border-radius: 2px;
+  padding: 0 1px;
+  box-decoration-break: clone;
+}
+
+/* Placeholders on empty blocks, for someone writing */
+.doc-flow .doc-empty::before {
+  content: attr(data-placeholder);
+  color: var(--doc-muted);
+  opacity: 0.6;
+  pointer-events: none;
+  float: left;
+  height: 0;
+}
+.doc-flow .doc-list.doc-empty::before {
+  float: none;
+}
+
+/* Another person's caret (DocumentPresence) */
+.doc-flow .doc-peer-caret {
+  position: relative;
+  margin-left: -1px;
+  margin-right: -1px;
+  border-left: 2px solid var(--doc-peer);
+  pointer-events: none;
+}
+.doc-flow .doc-peer-caret::after {
+  content: attr(data-name);
+  position: absolute;
+  bottom: 100%;
+  left: -2px;
+  padding: 1px 4px;
+  border-radius: 3px 3px 3px 0;
+  background: var(--doc-peer);
+  color: white;
+  font: 600 10px/1.3 var(--doc-body-font);
+  font-style: normal;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 150ms ease;
+}
+.doc-flow .doc-peer-caret:hover::after,
+.doc-flow .doc-peer-caret[data-fresh]::after {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .doc-flow .doc-zone,
+  .doc-flow .doc-list-todo::before,
+  .doc-flow .doc-peer-caret::after {
+    transition: none;
+  }
+}
