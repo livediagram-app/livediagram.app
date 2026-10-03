@@ -109,7 +109,7 @@ page with no valid `id` or `orientation` is skipped (as today).
 
 A **layout** is placed onto one page from its panel's **Layouts** section, a grid of previews.
 
-- **Thirteen layouts**, each a complete, editable starting point in the tab's theme. Most open with
+- **Twenty-one layouts**, each a complete, editable starting point in the tab's theme. Most open with
   a title and a lead line. A **tall** page (not wider than 1.15 times its height) stacks; a
   **wide** one sets things side by side:
   1. **Title page**: an eyebrow line, a large title over a short accent rule, a subtitle, an image
@@ -136,6 +136,26 @@ A **layout** is placed onto one page from its panel's **Layouts** section, a gri
       then "n of 6 done" and a progress bar.
   13. **Event**: "You're invited", a title, an image, when and where (icon rows) and a "Save your
       spot" banner.
+  14. **Section divider**: a big section number, an accent rule, a title and a line, centred
+      down the page.
+  15. **Poster**: a large image (top, or the left on a wide page), a bold headline, a line and a
+      footer.
+  16. **Survey results**: a pie chart of the answers with its legend, three headline figures (a
+      stat row, or stacked beside the chart on a wide page) and a source line.
+  17. **Progress report**: four goals, each a name, its percentage and a progress bar, and an
+      "Updated" line.
+  18. **Roadmap**: Now, Next and Later columns, three item cards each.
+  19. **Agenda**: six timed items, each a title and a note (two columns of three on a page not
+      clearly taller than wide).
+  20. **Questions and answers**: four questions in bold, each with its answer.
+  21. **Profile**: a round photo, a name, a role, a short bio and a stat row of three facts.
+- **Categories**: the picker groups the layouts as /new groups templates, one category at a time:
+  **Covers** (Title page, Quote, Event, Section divider, Poster), **Data** (Big number, Key stats,
+  Chart story, Facts grid, Survey results, Progress report), **Steps and Time** (Process,
+  Timeline, Checklist, Roadmap, Agenda) and **People and Ideas** (Comparison, Top tips, Team,
+  Questions and answers, Profile). The Layouts tab opens on the categories, each a card fronted
+  by its first two layouts fanned, with its count; a card opens its layouts, with an **All
+  layouts / <category>** row to go back.
 - **Body type** is the page-sized medium and large text sizes, never the small one. Headlines
   are large text scaled to their box (`textScale`), so they read the same on the canvas and in
   every export.

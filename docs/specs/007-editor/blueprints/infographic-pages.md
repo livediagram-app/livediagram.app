@@ -6,45 +6,47 @@ every design decision. The mode itself (the switch, the opening mode, the pages'
 
 ## Domain and naming
 
-| Term                        | Identifier                                                                                                                        |
-| --------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| Page                        | `InfographicPage` (`{ id, orientation, size?, background?, name? }`), `packages/document/src/infographic-page.ts`                 |
-| A page laid out             | `LaidOutPage` (`InfographicPage & { index, rect: PageRect }`)                                                                     |
-| Page size                   | `PageSizeId` (`'a4' \| 'letter' \| 'a3' \| 'square' \| 'social' \| 'wide'`), `PAGE_SIZES`, `PAGE_SIZE_IDS`                        |
-| Orientation                 | `PageOrientation`, `PAGE_ORIENTATIONS`; `pageHasOrientation(page)`                                                                |
-| Page background             | `PageBackground` (`{ fill?: PageFill; pattern?: PagePattern }`)                                                                   |
-| Fill                        | `PageFill` (`{ kind: 'solid'; color }` \| `{ kind: 'gradient'; from; to; angle }`)                                                |
-| Pattern                     | `PagePattern` (`'dots' \| 'grid' \| 'lines'`), `PAGE_PATTERNS`                                                                    |
-| The tab's pages             | `infographicPagesOf(tab)` (never empty), `layOutInfographicPages(pages)`                                                          |
-| A page's measures           | `pageDimensions`, `pageSizeLabel`, `pageLabel(page, index, count)`, `pageMargin`                                                  |
-| Page edit carrying content  | `withInfographicPages(tab, next)`                                                                                                 |
-| What is on a page           | `elementAnchorPoint`, `elementIdsOnPage`, `packages/document/src/infographic-page-content.ts`                                     |
-| Duplicate / replace content | `withDuplicatedPage`, `withPageContentReplaced`                                                                                   |
-| Page surface                | `pageFillTone`, `pageSurface`, `pageIsDark`, `elementPageSurfaces`                                                                |
-| Re-inking                   | `legibleOn(color, tone)`, `withPageInkFor(tab, pageId, background)`                                                               |
-| Re-fit                      | `withContentFittedToPage(tab, ids, pageId, { centre? })`                                                                          |
-| Snap boxes                  | `infographicPageSnapBoxes(pages)` (ids `page-snap:<id>`, `page-margin:<id>`)                                                      |
-| Into pages                  | `contentClusters`, `withContentPaginated`, `packages/document/src/infographic-paginate.ts`                                        |
-| Page layout                 | `PageLayoutId`, `PageLayout`, `PAGE_LAYOUTS`, `pageLayoutById`, `packages/templates/src/page-layouts.ts`                          |
-| Layout kit                  | `kit(box)`, `Kit`, `heading`, `verticalSteps`, `LayoutBox`, `page-layout-kit.ts`                                                  |
-| Extra layouts               | `quotePage`, `teamPage`, `factsGridPage`, `checklistPage`, `eventPage`, `page-layouts-extra.ts`                                   |
-| A layout for a page         | `buildPageLayout(layout, page)`, `apps/live/lib/page-layout-build.ts`                                                             |
-| Background catalogue        | `PAGE_SOLID_PRESETS`, `PAGE_GRADIENT_PRESETS`, `themeBackgroundPresets`, `apps/live/lib/infographic-page-paint.ts`                |
-| Sheet paint                 | `pageSheetStyle`, `pagePatternInk`, `fillCss`, `sameFill`, `gradientFill`, `withBackgroundPatch`                                  |
-| The pages view              | `InfographicPagesView`, `useInfographicPage`, `apps/live/hooks/editor/useInfographicPage.ts`                                      |
-| Page edits                  | `InfographicPageEdits`, `infographicPageEdits`, `apps/live/hooks/editor/infographic-page-edits.ts`                                |
-| Sheets and title bars       | `InfographicPages` (`PageCog`, `LayoutInvite`, `ReorderMarker`, `AddPageButton`)                                                  |
-| Page panel                  | `InfographicPagePanel` (`PagePanelTab`, `PagePreview`, `NameField`, `PanelTabs`, `PageActions`)                                   |
-| Panel sections              | `SizeSection`, `OrientationSection`, `BackgroundSection`, `infographic-page-panel-sections.tsx`                                   |
-| Layouts section             | `LayoutsSection`, `infographic-page-layouts-section.tsx`; tile art `LayoutThumb`                                                  |
-| Layout hover preview        | `InfographicLayoutPreview`; `InfographicPagesView.layoutPreview`                                                                  |
-| Page clip                   | `InfographicPageClip` (`hiddenPageId`), `pagesClipPath`                                                                           |
-| Per-element surface         | `PageSurfacesProvider`, `useElementSurface(id)`, `CanvasSurfaceContext.tsx`                                                       |
-| Reorder drag                | `usePageReorderDrag`, `reorderSlot`, `PageReorder`, `apps/live/hooks/canvas/usePageReorderDrag.ts`                                |
-| Page export                 | `pageExportFrame`, `PageExportFrame`, `EXPORT_PAPER` (`apps/live/lib/export-page.ts`); `ImageExportOpts.page`; `exportPagesAsPdf` |
-| Export page row             | `ExportPagePicker`; `ImageExportPanel` `pageExport`                                                                               |
-| Page slide                  | `Slide.pageId`, `slideFrame(slide, tab)` (`packages/document/src/slide-deck.ts`); `newPageSlide`; `PageSlidePicker`               |
-| Slides button               | `SlidesClusterButton`; dock panel `'slides'` (`useDockPopovers`)                                                                  |
+| Term                        | Identifier                                                                                                                                                                 |
+| --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Page                        | `InfographicPage` (`{ id, orientation, size?, background?, name? }`), `packages/document/src/infographic-page.ts`                                                          |
+| A page laid out             | `LaidOutPage` (`InfographicPage & { index, rect: PageRect }`)                                                                                                              |
+| Page size                   | `PageSizeId` (`'a4' \| 'letter' \| 'a3' \| 'square' \| 'social' \| 'wide'`), `PAGE_SIZES`, `PAGE_SIZE_IDS`                                                                 |
+| Orientation                 | `PageOrientation`, `PAGE_ORIENTATIONS`; `pageHasOrientation(page)`                                                                                                         |
+| Page background             | `PageBackground` (`{ fill?: PageFill; pattern?: PagePattern }`)                                                                                                            |
+| Fill                        | `PageFill` (`{ kind: 'solid'; color }` \| `{ kind: 'gradient'; from; to; angle }`)                                                                                         |
+| Pattern                     | `PagePattern` (`'dots' \| 'grid' \| 'lines'`), `PAGE_PATTERNS`                                                                                                             |
+| The tab's pages             | `infographicPagesOf(tab)` (never empty), `layOutInfographicPages(pages)`                                                                                                   |
+| A page's measures           | `pageDimensions`, `pageSizeLabel`, `pageLabel(page, index, count)`, `pageMargin`                                                                                           |
+| Page edit carrying content  | `withInfographicPages(tab, next)`                                                                                                                                          |
+| What is on a page           | `elementAnchorPoint`, `elementIdsOnPage`, `packages/document/src/infographic-page-content.ts`                                                                              |
+| Duplicate / replace content | `withDuplicatedPage`, `withPageContentReplaced`                                                                                                                            |
+| Page surface                | `pageFillTone`, `pageSurface`, `pageIsDark`, `elementPageSurfaces`                                                                                                         |
+| Re-inking                   | `legibleOn(color, tone)`, `withPageInkFor(tab, pageId, background)`                                                                                                        |
+| Re-fit                      | `withContentFittedToPage(tab, ids, pageId, { centre? })`                                                                                                                   |
+| Snap boxes                  | `infographicPageSnapBoxes(pages)` (ids `page-snap:<id>`, `page-margin:<id>`)                                                                                               |
+| Into pages                  | `contentClusters`, `withContentPaginated`, `packages/document/src/infographic-paginate.ts`                                                                                 |
+| Page layout                 | `PageLayoutId`, `PageLayout`, `PAGE_LAYOUTS`, `pageLayoutById`, `packages/templates/src/page-layouts.ts`                                                                   |
+| Layout kit                  | `kit(box)`, `Kit`, `heading`, `verticalSteps`, `LayoutBox`, `page-layout-kit.ts`                                                                                           |
+| Extra layouts               | `quotePage`, `teamPage`, `factsGridPage`, `checklistPage`, `eventPage`, `page-layouts-extra.ts`                                                                            |
+| More layouts                | `buildSectionDivider`, `buildPoster`, `buildSurveyResults`, `buildProgressReport`, `buildRoadmap`, `buildAgenda`, `buildQuestions`, `buildProfile`, `page-layouts-more.ts` |
+| Layout category             | `PageLayoutCategoryId` (`'covers' \| 'data' \| 'steps' \| 'people'`), `PAGE_LAYOUT_CATEGORIES`, `PageLayout.category`, `page-layouts.ts`                                   |
+| A layout for a page         | `buildPageLayout(layout, page)`, `apps/live/lib/page-layout-build.ts`                                                                                                      |
+| Background catalogue        | `PAGE_SOLID_PRESETS`, `PAGE_GRADIENT_PRESETS`, `themeBackgroundPresets`, `apps/live/lib/infographic-page-paint.ts`                                                         |
+| Sheet paint                 | `pageSheetStyle`, `pagePatternInk`, `fillCss`, `sameFill`, `gradientFill`, `withBackgroundPatch`                                                                           |
+| The pages view              | `InfographicPagesView`, `useInfographicPage`, `apps/live/hooks/editor/useInfographicPage.ts`                                                                               |
+| Page edits                  | `InfographicPageEdits`, `infographicPageEdits`, `apps/live/hooks/editor/infographic-page-edits.ts`                                                                         |
+| Sheets and title bars       | `InfographicPages` (`PageCog`, `LayoutInvite`, `ReorderMarker`, `AddPageButton`)                                                                                           |
+| Page panel                  | `InfographicPagePanel` (`PagePanelTab`, `PagePreview`, `NameField`, `PanelTabs`, `PageActions`)                                                                            |
+| Panel sections              | `SizeSection`, `OrientationSection`, `BackgroundSection`, `infographic-page-panel-sections.tsx`                                                                            |
+| Layouts section             | `LayoutsSection` (state: `category` open or null for the overview, `pending`), `infographic-page-layouts-section.tsx`; tile art `LayoutThumb`                              |
+| Layout hover preview        | `InfographicLayoutPreview`; `InfographicPagesView.layoutPreview`                                                                                                           |
+| Page clip                   | `InfographicPageClip` (`hiddenPageId`), `pagesClipPath`                                                                                                                    |
+| Per-element surface         | `PageSurfacesProvider`, `useElementSurface(id)`, `CanvasSurfaceContext.tsx`                                                                                                |
+| Reorder drag                | `usePageReorderDrag`, `reorderSlot`, `PageReorder`, `apps/live/hooks/canvas/usePageReorderDrag.ts`                                                                         |
+| Page export                 | `pageExportFrame`, `PageExportFrame`, `EXPORT_PAPER` (`apps/live/lib/export-page.ts`); `ImageExportOpts.page`; `exportPagesAsPdf`                                          |
+| Export page row             | `ExportPagePicker`; `ImageExportPanel` `pageExport`                                                                                                                        |
+| Page slide                  | `Slide.pageId`, `slideFrame(slide, tab)` (`packages/document/src/slide-deck.ts`); `newPageSlide`; `PageSlidePicker`                                                        |
+| Slides button               | `SlidesClusterButton`; dock panel `'slides'` (`useDockPopovers`)                                                                                                           |
 
 "Page" in code and specs; "sheet" only for the drawn view of one. "Layout" is what goes onto one
 page; "template" stays the whole-tab starting point.
@@ -258,7 +260,7 @@ only the renderer's own markup, whose labels are escaped.
   O(pages); the provider's value is stable while the entries are, so element views do not
   re-render during a drag that keeps elements on their pages.
 - `contentClusters` is O(n²) in elements, run once per mode entry.
-- Layout thumbnails build once per page shape (`useMemo` on the rect); 13 tiles.
+- Layout thumbnails build once per page shape (`useMemo` on the rect); the overview draws two per category (8), a category at most six.
 - PDF export renders each page at scale 2; memory is one canvas at a time.
 
 ## Presentation and UX
@@ -309,7 +311,7 @@ positioned over the canvas.
 | Into pages: clusters, reading order, stray, limits                  | `packages/document/src/infographic-paginate.test.ts`            |
 | Page slides resolve and frame                                       | `packages/document/src/slide-deck.test.ts` "page slides"        |
 | Edits: rename, size, move, delete, duplicate, paint, layout, re-fit | `apps/live/hooks/editor/infographic-page-edits.test.ts`         |
-| Every layout fits every size and orientation                        | `apps/live/lib/page-layouts.test.ts`                            |
+| Every layout fits every size and orientation; each in a category    | `apps/live/lib/page-layouts.test.ts`                            |
 | Sheet paint, presets, theme backgrounds                             | `apps/live/lib/infographic-page-paint.test.ts`                  |
 | Snapping to page edges, centre lines, margins                       | `apps/live/hooks/canvas/boxed-drag-resolve.test.ts`             |
 | Reorder slot                                                        | `apps/live/hooks/canvas/usePageReorderDrag.test.ts`             |

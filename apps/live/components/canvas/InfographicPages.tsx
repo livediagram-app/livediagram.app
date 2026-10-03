@@ -10,7 +10,6 @@ import { usePageReorderDrag, type PageReorder } from '@/hooks/canvas/usePageReor
 import { pageSheetStyle, withBackgroundPatch } from '@/lib/infographic-page-paint';
 import {
   InfographicPagePanel,
-  PAGE_EASE_MS,
   type PagePanelTab,
   type PagePreview,
 } from './InfographicPagePanel';
@@ -104,7 +103,7 @@ export function InfographicPages({
           <div
             key={page.id}
             data-infographic-page={page.orientation}
-            className={`pointer-events-none absolute transition-[left,top,width,height,opacity] ease-out motion-reduce:transition-none ${
+            className={`pointer-events-none absolute transition-[left,top,width,height,opacity] duration-200 ease-out motion-reduce:transition-none ${
               drag.reorder?.pageId === page.id ? 'opacity-60' : ''
             } ${
               background?.fill
@@ -116,7 +115,6 @@ export function InfographicPages({
               top: page.rect.y,
               width: page.rect.width,
               height: page.rect.height,
-              transitionDuration: `${PAGE_EASE_MS}ms`,
               boxShadow: '0 1px 3px rgb(15 23 42 / 0.14), 0 12px 32px rgb(15 23 42 / 0.12)',
               ...pageSheetStyle(background),
             }}

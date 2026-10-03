@@ -13,6 +13,16 @@ import {
   buildQuote,
   buildTeam,
 } from './page-layouts-extra';
+import {
+  buildAgenda,
+  buildPoster,
+  buildProfile,
+  buildProgressReport,
+  buildQuestions,
+  buildRoadmap,
+  buildSectionDivider,
+  buildSurveyResults,
+} from './page-layouts-more';
 
 export type { LayoutBox } from './page-layout-kit';
 
@@ -29,7 +39,25 @@ export type PageLayoutId =
   | 'team'
   | 'facts-grid'
   | 'checklist'
-  | 'event';
+  | 'event'
+  | 'section-divider'
+  | 'poster'
+  | 'survey-results'
+  | 'progress-report'
+  | 'roadmap'
+  | 'agenda'
+  | 'questions'
+  | 'profile';
+
+// The layout picker's categories (docs/specs/007-editor/infographic-pages.md "Layouts"), in order.
+export type PageLayoutCategoryId = 'covers' | 'data' | 'steps' | 'people';
+
+export const PAGE_LAYOUT_CATEGORIES: readonly { id: PageLayoutCategoryId; label: string }[] = [
+  { id: 'covers', label: 'Covers' },
+  { id: 'data', label: 'Data' },
+  { id: 'steps', label: 'Steps and Time' },
+  { id: 'people', label: 'People and Ideas' },
+];
 
 function titlePage(k: Kit): Element[] {
   const { width: W, height: H } = k.box;
@@ -374,6 +402,7 @@ function topTips(k: Kit): Element[] {
 export type PageLayout = {
   id: PageLayoutId;
   label: string;
+  category: PageLayoutCategoryId;
   // One line for the picker's tooltip.
   description: string;
   build: (box: LayoutBox) => Element[];
@@ -382,81 +411,150 @@ export type PageLayout = {
 export const PAGE_LAYOUTS: readonly PageLayout[] = [
   {
     id: 'title',
+    category: 'covers',
     label: 'Title page',
     description: 'A big title, a subtitle, an image and a footer line',
     build: (b) => titlePage(kit(b)),
   },
   {
     id: 'big-number',
+    category: 'data',
     label: 'Big number',
     description: 'One huge figure, its caption and a short paragraph',
     build: (b) => bigNumber(kit(b)),
   },
   {
     id: 'key-stats',
+    category: 'data',
     label: 'Key stats',
     description: 'Two rows of three figures and a takeaway',
     build: (b) => keyStats(kit(b)),
   },
   {
     id: 'process',
+    category: 'steps',
     label: 'Process',
     description: 'Four numbered steps, each with a note',
     build: (b) => process(kit(b)),
   },
   {
     id: 'timeline',
+    category: 'steps',
     label: 'Timeline',
     description: 'Five dated milestones, each with a note',
     build: (b) => timeline(kit(b)),
   },
   {
     id: 'comparison',
+    category: 'people',
     label: 'Comparison',
     description: 'Two columns of three points, side by side',
     build: (b) => comparison(kit(b)),
   },
   {
     id: 'chart-story',
+    category: 'data',
     label: 'Chart story',
     description: 'A bar chart, a progress ring and three takeaways',
     build: (b) => chartStory(kit(b)),
   },
   {
     id: 'top-tips',
+    category: 'people',
     label: 'Top tips',
     description: 'Five tips, each an icon beside a line',
     build: (b) => topTips(kit(b)),
   },
   {
     id: 'quote',
+    category: 'covers',
     label: 'Quote',
     description: 'A big quote and who said it',
     build: buildQuote,
   },
   {
     id: 'team',
+    category: 'people',
     label: 'Team',
     description: 'Six people, a photo, name and role each',
     build: buildTeam,
   },
   {
     id: 'facts-grid',
+    category: 'data',
     label: 'Facts grid',
     description: 'Six cards, each an icon, a figure and a caption',
     build: buildFactsGrid,
   },
   {
     id: 'checklist',
+    category: 'steps',
     label: 'Checklist',
     description: 'A checklist and how much of it is done',
     build: buildChecklist,
   },
   {
     id: 'event',
+    category: 'covers',
     label: 'Event',
     description: 'An invitation: title, image, when and where, and a call to action',
     build: buildEvent,
+  },
+  {
+    id: 'section-divider',
+    category: 'covers',
+    label: 'Section divider',
+    description: 'A big section number, a title and a line on what follows',
+    build: buildSectionDivider,
+  },
+  {
+    id: 'poster',
+    category: 'covers',
+    label: 'Poster',
+    description: 'A large image, a bold headline and a footer',
+    build: buildPoster,
+  },
+  {
+    id: 'survey-results',
+    category: 'data',
+    label: 'Survey results',
+    description: 'A pie chart of the answers and three headline figures',
+    build: buildSurveyResults,
+  },
+  {
+    id: 'progress-report',
+    category: 'data',
+    label: 'Progress report',
+    description: 'Four goals, each with a progress bar',
+    build: buildProgressReport,
+  },
+  {
+    id: 'roadmap',
+    category: 'steps',
+    label: 'Roadmap',
+    description: 'Now, Next and Later, three items each',
+    build: buildRoadmap,
+  },
+  {
+    id: 'agenda',
+    category: 'steps',
+    label: 'Agenda',
+    description: 'Six timed items, each with a note',
+    build: buildAgenda,
+  },
+  {
+    id: 'questions',
+    category: 'people',
+    label: 'Questions and answers',
+    description: 'Four questions and their answers',
+    build: buildQuestions,
+  },
+  {
+    id: 'profile',
+    category: 'people',
+    label: 'Profile',
+    description: 'A photo, a name, a short bio and three facts',
+    build: buildProfile,
   },
 ];
 

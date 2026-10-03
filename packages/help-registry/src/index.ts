@@ -1236,7 +1236,8 @@ export const articles: Article[] = [
   {
     slug: 'infographic-layouts',
     title: 'Infographic Layouts',
-    description: 'Thirteen ready-made pages to start from, previewed on your page as you hover.',
+    description:
+      'Twenty-one ready-made pages in four categories, previewed on your page as you hover.',
     keywords:
       'layout layouts template templates page template start from a layout ready made starter preview hover replace title page big number key stats statistics process steps timeline milestones comparison before after chart story top tips quote testimonial team people facts grid checklist event invitation poster',
     category: 'Canvas',

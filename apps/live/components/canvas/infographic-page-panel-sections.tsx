@@ -191,7 +191,7 @@ function Swatch({
         } ${active ? 'outline outline-2 outline-offset-2 outline-brand-500' : ''}`}
         style={background ? { background } : undefined}
       >
-        {children}
+        <span className="text-optical-centre">{children}</span>
       </button>
     </Tooltip>
   );

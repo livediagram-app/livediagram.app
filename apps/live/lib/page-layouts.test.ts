@@ -6,7 +6,7 @@ import {
   PAGE_SIZE_IDS,
   type Element,
 } from '@livediagram/document';
-import { PAGE_LAYOUTS } from '@livediagram/templates';
+import { PAGE_LAYOUT_CATEGORIES, PAGE_LAYOUTS } from '@livediagram/templates';
 
 // docs/specs/007-editor/infographic-pages.md "Layouts": every layout fits inside the page's
 // margins at every size and orientation, and is a complete starting point.
@@ -16,7 +16,7 @@ const boxes = (els: Element[]) =>
   );
 
 describe('page layouts', () => {
-  it('are the thirteen of the spec, each unique', () => {
+  it('are the twenty-one of the spec, each unique', () => {
     expect(PAGE_LAYOUTS.map((l) => l.id)).toEqual([
       'title',
       'big-number',
@@ -31,7 +31,23 @@ describe('page layouts', () => {
       'facts-grid',
       'checklist',
       'event',
+      'section-divider',
+      'poster',
+      'survey-results',
+      'progress-report',
+      'roadmap',
+      'agenda',
+      'questions',
+      'profile',
     ]);
+  });
+
+  it('each sit in one of the picker categories, every category used', () => {
+    const ids = new Set(PAGE_LAYOUT_CATEGORIES.map((c) => c.id));
+    for (const l of PAGE_LAYOUTS) expect(ids.has(l.category)).toBe(true);
+    for (const c of PAGE_LAYOUT_CATEGORIES) {
+      expect(PAGE_LAYOUTS.some((l) => l.category === c.id)).toBe(true);
+    }
   });
 
   for (const size of PAGE_SIZE_IDS) {
