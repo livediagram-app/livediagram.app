@@ -41,6 +41,13 @@ const EXPORT_LABEL: Record<Format, string> = {
   pdf: 'PDF',
 };
 
+// An Infographic tab's pages exported (docs/specs/007-editor/infographic-pages.md "Telemetry").
+const INFOGRAPHIC_EXPORT_LABEL: Record<ImageFormat, string> = {
+  png: 'InfographicPNG',
+  svg: 'InfographicSVG',
+  pdf: 'InfographicPDF',
+};
+
 type ExportTabDialogProps = {
   tab: Tab;
   documentName: string;
@@ -259,7 +266,7 @@ export function ExportTabDialog({
       track(
         'Document',
         'Exported',
-        pages ? `Infographic${EXPORT_LABEL[format]}` : EXPORT_LABEL[format],
+        pages ? INFOGRAPHIC_EXPORT_LABEL[format] : EXPORT_LABEL[format],
       );
       onClose();
     } catch (e) {
