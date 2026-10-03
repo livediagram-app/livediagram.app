@@ -103,7 +103,11 @@ export function IllustratePages({
   const edit = bare ? undefined : view.edit;
   // The open panel's page and the tab it opened on. Its cog is looked up live (cogs), so a cog
   // remounted by zen or a role change is the one the panel hangs from.
-  const [opened, setOpened] = useState<{ id: string; tab: PagePanelTab } | null>(null);
+  // `seq`: a request to open on a tab (the toolbar's Article Style), so a panel already open
+  // switches to it.
+  const [opened, setOpened] = useState<{ id: string; tab: PagePanelTab; seq?: number } | null>(
+    null,
+  );
   const cogs = useRef(new Map<string, HTMLButtonElement>());
   const mobile = useIsMobileViewport();
   // A background hovered in a page's panel: a shared preview (page-background-preview), so the
@@ -134,7 +138,8 @@ export function IllustratePages({
   const [seenStyleRequest, setSeenStyleRequest] = useState(styleRequest.seq);
   if (styleRequest.seq !== seenStyleRequest) {
     setSeenStyleRequest(styleRequest.seq);
-    if (styleRequest.pageId) setOpened({ id: styleRequest.pageId, tab: 'style' });
+    if (styleRequest.pageId)
+      setOpened({ id: styleRequest.pageId, tab: 'style', seq: styleRequest.seq });
   }
   // The empty page's own invitation opens its panel on Layouts.
   const openLayouts = (id: string) => setOpened({ id, tab: 'layouts' });
@@ -291,7 +296,7 @@ export function IllustratePages({
         <IllustratePagePanel
           // One panel per page: switching cogs starts the next page's panel afresh, its pending
           // Replace and previews going with the last one.
-          key={open.id}
+          key={`${open.id}:${opened.seq ?? 0}`}
           page={open}
           count={pages.length}
           getAnchor={() => anchorOf(open.id)}

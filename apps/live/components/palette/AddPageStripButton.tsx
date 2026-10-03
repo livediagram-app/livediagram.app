@@ -25,6 +25,8 @@ export function AddPageStripButton({ onAdd }: { onAdd: (kind: PageKind) => void 
           aria-label="Add page"
           aria-haspopup="dialog"
           aria-expanded={open}
+          // A press on the + itself toggles the popover rather than counting as outside it.
+          data-add-page-trigger
           onClick={() => setOpen((o) => !o)}
           className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-md transition focus-visible:outline-2 focus-visible:outline-brand-600 ${
             open ? TOOLBAR_CONTROL_PRESSED : TOOLBAR_CONTROL_REST

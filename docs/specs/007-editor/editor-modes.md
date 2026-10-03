@@ -367,6 +367,10 @@ The **Experimental** category is listed after **AI Tools**.
   [Draw mode](../023-draw-mode/draw-mode.md#telemetry-telemetry--public-transparency-dashboard)).
   It was named `Whiteboard`; the stored history is rewritten to `Draw` so the
   dashboard's lines continue.
+- Illustrate mode's events were named for Infographic mode (`ModeInfographic`,
+  `OpensInInfographic`, `InfographicModeOn` / `Off`); migration
+  `0066_illustrate_telemetry.sql` rewrites the stored history to the Illustrate
+  names so the dashboard's lines continue.
 
 ## Naming in the interface
 

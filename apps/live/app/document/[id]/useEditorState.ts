@@ -11,6 +11,8 @@ import {
   useEffectEvent,
 } from 'react';
 import {
+  illustratePagesOf,
+  layOutIllustratePages,
   isEventStormingTab,
   onlyDraftNotesChanged,
   stampTabKind,
@@ -1803,11 +1805,21 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     redoHistory,
     set: { setSelectedId, setEditingId, setFormatSourceId },
   });
-  // The writing of the active tab's document pages (docs/specs/007-editor/article-pages.md).
+  // The writing of the active tab's article pages (docs/specs/007-editor/article-pages.md): in
+  // Illustrate mode, and while a page slide presents in any mode (read only, then: nothing is
+  // edited while presenting).
+  const presentingPage = presentingStep?.slide.pageId ?? null;
+  const presentPages = useMemo(
+    () =>
+      !illustratePages && presentingPage
+        ? layOutIllustratePages(illustratePagesOf(activeTab))
+        : null,
+    [illustratePages, presentingPage, activeTab],
+  );
   const articles = useArticles({
     activeTab,
-    on: illustratePages !== null,
-    pages: illustratePages?.pages ?? null,
+    on: illustratePages !== null || presentingPage !== null,
+    pages: illustratePages?.pages ?? presentPages,
     localEditSeq: localEditSeqRef,
     placeAt: (intent, x, y) => placeIntentAtRef.current?.(intent, x, y),
     canEdit: !isReadOnly,
@@ -3023,6 +3035,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     editorMode,
     leaveIllustrate,
     illustratePages: illustrateView,
+    // A page slide presenting outside Illustrate draws its article's writing from these.
+    presentArticles: articles,
     // The tab menu's Opens in choice for a tab, absent where it is not offered.
     opensInFor: tabOpensIn.choiceFor,
     whiteboardDock,

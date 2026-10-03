@@ -196,6 +196,7 @@ function BoxedElementViewImpl({
   // An article's margin note (docs/specs/007-editor/article-pages.md "Comments and actions"): a
   // click opens what it carries, its comment thread or its action.
   const articleNote = element.type === 'annotation' ? element.articleNote : undefined;
+  const noteDown = useRef<{ x: number; y: number } | null>(null);
   const openArticleNote = articleNote
     ? () => (articleNote === 'action' ? onOpenAction(element.id) : onOpenComments(element.id))
     : undefined;
@@ -401,7 +402,23 @@ function BoxedElementViewImpl({
       onDoubleClick={handleDoubleClick}
       onContextMenu={handleContextMenu}
       onPointerUp={handlePointerUp}
-      onClick={openArticleNote}
+      onClick={
+        openArticleNote
+          ? (e) => {
+              // A drag of the marker ends in a click too: only a press that stayed put opens it.
+              const down = noteDown.current;
+              if (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) > 4) return;
+              openArticleNote();
+            }
+          : undefined
+      }
+      onPointerDownCapture={
+        openArticleNote
+          ? (e) => {
+              noteDown.current = { x: e.clientX, y: e.clientY };
+            }
+          : undefined
+      }
       onPointerEnter={isAnnotation ? () => setHovering(true) : undefined}
       onPointerLeave={isAnnotation ? () => setHovering(false) : undefined}
       onDragOver={acceptsIconDrop ? handleIconDragOver : undefined}
