@@ -204,6 +204,14 @@ zoomed the whole page (Chromium, 1.5x) instead of the canvas, which breaks the e
 gesture. Readability on a phone comes from the UI scale ([UI scale](ui-scale.md)) and the canvas
 zoom instead.
 
+**Menus are bottom sheets on a phone.** Every context menu (an element's, the canvas's, a
+selection's: the shared `ContextMenu`) opens as a sheet docked to the bottom edge instead of a
+card hung off the long-press point, which covered the element it was about and ran under the tab
+bar. Full width (up to 32rem), at most 60% of the screen tall with its own scroll, clear of the
+home indicator, rising in (`animate-sheet-up`). A grab handle across its top drags it down:
+released past 80px, or flicked, it closes (`useSwipeDownDismiss`); otherwise it springs back.
+Outside taps and Escape close it as before. A section's flyout opens in place inside it.
+
 **Haptics.** On a touch screen with a Vibration API (Android; Safari has none, so iOS stays silent)
 the editor gives a short buzz for what a finger cannot see land (`lib/haptics.ts`): **press** (15ms)
 when a long-press opens its menu or holds a path node, **snap** (8ms) once as a move catches an

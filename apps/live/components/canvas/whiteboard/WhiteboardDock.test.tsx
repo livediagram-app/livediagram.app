@@ -368,8 +368,8 @@ describe('WhiteboardDock position', () => {
     const cls = dock().className.split(' ');
     expect(cls).toEqual(
       expect.arrayContaining([
-        'left-[7.5rem]',
-        'max-w-[calc(100%-8.25rem)]',
+        'left-[8.25rem]',
+        'max-w-[calc(100%-9rem)]',
         'lg:left-1/2',
         'lg:-translate-x-1/2',
         'lg:max-w-[calc(100%-15rem)]',
