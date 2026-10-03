@@ -4,8 +4,8 @@ import { EDITOR_MODE_ICON } from './editor-mode/editor-mode-copy';
 
 // "Opens in" (docs/specs/007-editor/editor-modes.md "Where the mode lives"): the tab menu's choice
 // of the editor mode a general tab opens in, for everyone. Every mode of the catalogue is a radio
-// choice, so a further mode joins here without a change to this file. Choosing one switches
-// nobody's current mode. The host leaves `choice` out where it is not offered (an event-storming
+// choice, so a further mode joins here without a change to this file. Choosing one also switches
+// the chooser's own mode, so the already-checked choice still passes through (it switches back). The host leaves `choice` out where it is not offered (an event-storming
 // board, a visitor who cannot edit).
 
 export type OpensInChoice = {
@@ -45,7 +45,7 @@ export function OpensInMenuSection({
               aria-checked={checked}
               aria-disabled={choice.disabled || undefined}
               onClick={() => {
-                if (choice.disabled || checked) return;
+                if (choice.disabled) return;
                 choice.onChange(id);
               }}
               className={`flex w-full items-start gap-2.5 px-3 py-1.5 text-left transition ${

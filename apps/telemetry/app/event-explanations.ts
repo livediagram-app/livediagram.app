@@ -935,6 +935,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'The welcome tour reached its "Shape categories" step, pointing out the palette\'s category tabs.',
   'UI|View|TourStepContextMenu':
     'The welcome tour reached its "The element menu" step, showing the right-click menu on an element.',
+  'UI|View|TourStepEditorMode':
+    'The welcome tour reached its "Diagram & Draw" step, pointing out the switch between the two editor modes.',
   'UI|View|TourStepExplorer': 'The welcome tour reached its "The Explorer" step.',
   'UI|View|TourStepOutro': 'The welcome tour reached its closing "You\'re ready to go" card.',
   'UI|View|TourStepPalette': 'The welcome tour reached its "The Palette" step.',

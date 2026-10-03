@@ -1550,8 +1550,15 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   const anyWelcomeOpen = identityOnlyScreenOpen;
   // --- Element-scoped history helpers (active-tab aware) -------------------
 
-  // The tab menu's Opens in (docs/specs/007-editor/editor-modes.md): the mode a tab opens in.
-  const tabOpensIn = useTabOpensIn({ tabs, canEdit: !isReadOnly, commitTabs });
+  // The tab menu's Opens in (docs/specs/007-editor/editor-modes.md): the mode a tab opens in, which
+  // also switches the chooser's own mode on the active tab.
+  const tabOpensIn = useTabOpensIn({
+    tabs,
+    canEdit: !isReadOnly,
+    commitTabs,
+    activeId,
+    switchMode: editorMode.setMode,
+  });
 
   // A locked tab refuses every element mutation. Commit /
   // tick / element-add helpers all consult this early-return guard
@@ -1578,7 +1585,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     elementsLength: activeTab.elements.length,
     templateChosen: activeTab.templateChosen === true,
   });
-  // The active tab keeps the mode it opened in once loaded: an Opens in change moves nobody.
+  // The active tab keeps the mode it opened in once loaded: an Opens in change moves nobody but the chooser.
   usePinTabOpening(activeTab, activeTabLoadState === 'ready');
   // A view-only session (a 'view' share role) is read-only in exactly
   // the same way a locked tab is: no element or tab mutation may land.

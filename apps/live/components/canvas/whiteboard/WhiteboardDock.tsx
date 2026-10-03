@@ -1,11 +1,14 @@
 'use client';
 
-// The whiteboard's floating dock (docs/specs/023-draw-mode/draw-mode.md "What a whiteboard shows"):
-// four groups side by side, in place of the palette: Drawing tools, Shapes, History and Settings.
-// Each group is its own toolbar with one Tab stop. It sits at the top centre, or the bottom centre
-// by choice ("Where the dock sits"). Flyouts open on the board side of it, one at a time, so nothing
-// moves under the pointer when a tool is picked; on a narrow screen the groups scroll sideways
-// together.
+// Draw mode's tools (docs/specs/023-draw-mode/draw-mode.md "What a whiteboard shows"): three
+// groups, Drawing tools, Shapes and Settings (Undo and Redo live in the bottom bar), each its own
+// toolbar with one Tab stop. Two forms (`variant`):
+// - `dock`, the Toolbar layout's: the groups side by side in a floating bar at the top centre, or
+//   the bottom centre by choice ("Where the dock sits"), the strip's height at the toolbar UI
+//   scale; flyouts open on its board side; on a narrow screen the groups scroll sideways together.
+// - `panel`, the Floating layout's: the body of the Palette panel, the groups stacked as sections;
+//   flyouts open beside the panel.
+// Either way one flyout at a time, and nothing moves under the pointer when a tool is picked.
 
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
@@ -27,26 +30,28 @@ import {
   SlotMenuBody,
 } from './dock-flyouts';
 import { DrawingToolsGroup } from './DrawingToolsGroup';
-import { HistoryGroup } from './HistoryGroup';
 import { SettingsGroup } from './SettingsGroup';
 import { ShapesFlyout } from './ShapesFlyout';
 import { PINS_FULL_HINT, ShapesGroup } from './ShapesGroup';
 import { SlotGhost } from './SlotGhost';
-import { useDockFlyout, type DockFlyout } from './useDockFlyout';
+import { useDockFlyout, type DockFlyout, type DockFlyoutApi } from './useDockFlyout';
 import { useShapeSlotDrag } from './useShapeSlotDrag';
 import { WhiteboardFlyout } from './WhiteboardFlyout';
+import { DockVariantContext, type DockVariant } from './dock-variant';
 import { debugLog } from '@/lib/debug-log';
+import { useUiScale } from '@/components/providers/ui-scale';
+import { toSurfacePx, uiScaleStyle } from '@/lib/ui-scale';
 
 // How long the "seven pinned" hint stays up.
 const HINT_MS = 4000;
 
-// Where the wrapper sits. At the top it keeps clear of the Explorer menu button (top-left, 12 + 46
-// px): beside it on a phone or a tablet, centred with the same clearance on both sides from lg
+// Where the wrapper sits. At the top it keeps clear of the Explorer menu card (top-left, 12 + 98
+// px with the editor mode switch beside the button, plus an 8px gap): beside it on a phone or a tablet, centred with the same clearance on both sides from lg
 // (D33), so a tablet in portrait still shows the whole dock. At the
 // bottom it is lifted above the bottom-right cluster (history, layers, zoom) until the viewport is
 // wide enough for the two side by side (D9).
 const WRAPPER_PLACEMENT: Record<WhiteboardDockPosition, string> = {
-  top: 'top-3 left-[4.25rem] max-w-[calc(100%-5rem)] lg:left-1/2 lg:-translate-x-1/2 lg:max-w-[calc(100%-8.5rem)]',
+  top: 'top-3 left-[7.5rem] max-w-[calc(100%-8.25rem)] lg:left-1/2 lg:-translate-x-1/2 lg:max-w-[calc(100%-15rem)]',
   bottom:
     'bottom-[4.25rem] left-1/2 -translate-x-1/2 max-w-[calc(100%-1.5rem)] min-[1760px]:bottom-4',
 };
@@ -55,20 +60,16 @@ export type WhiteboardDockProps = {
   model: WhiteboardDockModel;
   // The board's ink for this appearance: what the main pen draws with.
   ink: string;
-  canUndo: boolean;
-  canRedo: boolean;
-  onUndo: () => void;
-  onRedo: () => void;
+  // The Toolbar layout's floating `dock` (the default), or the body of the Floating layout's
+  // Palette `panel` (docs/specs/023-draw-mode/draw-mode.md "What a whiteboard shows").
+  variant?: DockVariant;
 };
 
-export function WhiteboardDock({
-  model,
-  ink,
-  canUndo,
-  canRedo,
-  onUndo,
-  onRedo,
-}: WhiteboardDockProps) {
+export function WhiteboardDock({ model, ink, variant = 'dock' }: WhiteboardDockProps) {
+  // The dock is the Toolbar layout strip's twin, so it draws at the toolbar UI scale
+  // (docs/specs/007-editor/ui-scale.md); the panel is scaled by its own host.
+  const scale = useUiScale('toolbar');
+  const panel = variant === 'panel';
   // The canvas the stock colours are drawn for (docs/specs/007-editor/editor-modes.md "One look").
   const appearance = useCanvasSurface();
   const fly = useDockFlyout();
@@ -87,6 +88,7 @@ export function WhiteboardDock({
   useEffect(() => {
     if (shapesRequest === seenRequest.current) return;
     seenRequest.current = shapesRequest;
+    // The Palette panel has no Shapes flyout (its shapes are on show), so no opener: S does nothing.
     const opener = document.querySelector<HTMLElement>(
       '[data-whiteboard-dock] [data-dock-item="shapes"]',
     );
@@ -219,36 +221,134 @@ export function WhiteboardDock({
   // Flyouts and the hint open on the board side: below a dock at the top.
   const below = model.position === 'top';
 
-  return (
-    <div
-      data-floating-panel=""
-      data-whiteboard-dock=""
-      data-dock-position={model.position}
-      onPointerDown={(e) => e.stopPropagation()}
-      onContextMenu={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-      }}
-      className={`pointer-events-none absolute z-[var(--z-toolbar)] w-max ${WRAPPER_PLACEMENT[model.position]}`}
-    >
-      {fly.flyout && open ? (
-        <WhiteboardFlyout
-          key={`${fly.flyout.kind}:${fly.flyout.openerKey}`}
-          id={`whiteboard-flyout-${fly.flyout.kind}`}
-          label={open.label}
-          left={fly.flyout.left}
-          onClose={fly.close}
-          onPointerEnter={fly.cancelHoverClose}
-          onPointerLeave={fly.hoverLeave}
-          // The Shapes flyout's field takes the focus even on a hover, and gives it back on closing.
-          takeFocus={!fly.flyout.hover || fly.flyout.kind === 'shapes'}
-          restoreFocus={fly.flyout.viaHover}
-          hideTitle={open.hideTitle}
-          below={below}
-        >
-          {open.body}
-        </WhiteboardFlyout>
+  const groups = (
+    <>
+      <DrawingToolsGroup model={model} ink={ink} fly={fly} pickAndClose={pickAndClose} />
+      <ShapesGroup
+        model={model}
+        fly={fly}
+        slotDrag={slotDrag}
+        refusing={refusing}
+        pickAndClose={pickAndClose}
+      />
+      <SettingsGroup fly={fly} />
+      {drag ? (
+        <SlotGhost dragKey={drag.source.key} x={drag.x} y={drag.y} refusing={refusing} />
       ) : null}
+    </>
+  );
+
+  return (
+    <DockVariantContext.Provider value={variant}>
+      <div
+        data-floating-panel=""
+        data-whiteboard-dock=""
+        data-dock-variant={variant}
+        data-dock-position={panel ? undefined : model.position}
+        onPointerDown={(e) => e.stopPropagation()}
+        onContextMenu={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+        }}
+        style={
+          panel || scale === 1
+            ? undefined
+            : {
+                ...uiScaleStyle(scale),
+                // Restated so the dock keeps its 12px from the edge however it is zoomed.
+                ...(model.position === 'top' ? { top: toSurfacePx(12, scale) } : {}),
+              }
+        }
+        className={
+          panel
+            ? // The Palette panel's body: the groups stacked as sections, the panel's padding.
+              'relative flex flex-col gap-3 px-2.5 pb-2.5 pt-2'
+            : `pointer-events-none absolute z-[var(--z-toolbar)] w-max ${WRAPPER_PLACEMENT[model.position]}`
+        }
+      >
+        {panel ? (
+          <PanelBody fly={fly} open={open} groups={groups} />
+        ) : (
+          <DockBody below={below} hint={hint} fly={fly} open={open} groups={groups} />
+        )}
+      </div>
+    </DockVariantContext.Provider>
+  );
+}
+
+type OpenFlyout = { label: string; body: ReactNode; hideTitle?: boolean } | null;
+
+// The flyout in force, placed for the variant: on the board side of the dock, or beside the panel.
+function DockFlyoutHost({
+  fly,
+  open,
+  below,
+  beside,
+}: {
+  fly: DockFlyoutApi;
+  open: OpenFlyout;
+  below: boolean;
+  beside: boolean;
+}) {
+  if (!fly.flyout || !open) return null;
+  return (
+    <WhiteboardFlyout
+      key={`${fly.flyout.kind}:${fly.flyout.openerKey}`}
+      id={`whiteboard-flyout-${fly.flyout.kind}`}
+      label={open.label}
+      anchor={fly.flyout.openerKey}
+      placement={beside ? 'beside' : below ? 'below' : 'above'}
+      // The opener's offset in the dock: it changes when the groups scroll under an open flyout.
+      revision={fly.flyout.left}
+      onClose={fly.close}
+      onPointerEnter={fly.cancelHoverClose}
+      onPointerLeave={fly.hoverLeave}
+      // The Shapes flyout's field takes the focus even on a hover, and gives it back on closing.
+      takeFocus={!fly.flyout.hover || fly.flyout.kind === 'shapes'}
+      restoreFocus={fly.flyout.viaHover}
+      hideTitle={open.hideTitle}
+    >
+      {open.body}
+    </WhiteboardFlyout>
+  );
+}
+
+// The panel form: the groups stacked. No "seven pinned" hint: nothing in the panel pins a shape
+// (pinning is the dock's).
+function PanelBody({
+  fly,
+  open,
+  groups,
+}: {
+  fly: DockFlyoutApi;
+  open: OpenFlyout;
+  groups: ReactNode;
+}) {
+  return (
+    <>
+      <DockFlyoutHost fly={fly} open={open} below={false} beside />
+      {groups}
+    </>
+  );
+}
+
+// The dock form: the groups side by side, scrolling together on a narrow screen.
+function DockBody({
+  below,
+  hint,
+  fly,
+  open,
+  groups,
+}: {
+  below: boolean;
+  hint: { left: number } | null;
+  fly: DockFlyoutApi;
+  open: OpenFlyout;
+  groups: ReactNode;
+}) {
+  return (
+    <>
+      <DockFlyoutHost fly={fly} open={open} below={below} beside={false} />
       {hint ? (
         <p
           aria-hidden
@@ -264,27 +364,15 @@ export function WhiteboardDock({
       <p role="status" className="sr-only">
         {hint ? PINS_FULL_HINT : ''}
       </p>
-      {/* The groups scroll together on a narrow screen; the padding keeps their shadows unclipped.
-          Scrolling moves the openers, so an open flyout follows its button. */}
+      {/* The groups scroll together on a narrow screen; the padding keeps their shadows
+          unclipped. Scrolling moves the openers, so an open flyout follows its button. */}
       <div
         data-dock-scroller=""
         onScroll={fly.reanchor}
         className="-m-3 flex items-center gap-3 overflow-x-auto p-3 [scrollbar-width:none]"
       >
-        <DrawingToolsGroup model={model} ink={ink} fly={fly} pickAndClose={pickAndClose} />
-        <ShapesGroup
-          model={model}
-          fly={fly}
-          slotDrag={slotDrag}
-          refusing={refusing}
-          pickAndClose={pickAndClose}
-        />
-        <HistoryGroup canUndo={canUndo} canRedo={canRedo} onUndo={onUndo} onRedo={onRedo} />
-        <SettingsGroup fly={fly} />
-        {drag ? (
-          <SlotGhost dragKey={drag.source.key} x={drag.x} y={drag.y} refusing={refusing} />
-        ) : null}
+        {groups}
       </div>
-    </div>
+    </>
   );
 }

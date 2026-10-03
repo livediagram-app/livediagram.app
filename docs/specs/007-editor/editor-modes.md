@@ -37,23 +37,30 @@ where it is and changes only how the next mark is made.
 
 ## The mode switch
 
-- **Placement:** directly beside the page switcher, at the left end of the
-  tab bar before the Tabs label (`components/chrome/TabBar.tsx`), so the two
-  controls that answer "how am I working and where am I" sit together.
+- **Placement:**
+  - **Toolbar layout:** directly beside the menu (hamburger) button, in its
+    card at the top left, or inline at the strip's left end where a phone
+    puts the button ([Toolbar layout](toolbar-layout.md)).
+  - **Floating layout:** in the **Palette** panel's title row, beside its help
+    and minimise buttons, **labelled** (the mode's name beside its icon,
+    the header has the room). The Palette stays in Draw mode, showing Draw's
+    tools ([Draw mode](../023-draw-mode/draw-mode.md#what-a-whiteboard-shows)).
+  - Both stay up in Draw mode, so the switch never moves when the mode
+    changes.
+  - Not in the tab bar or the Explorer.
 - **A dropdown chip** (`EditorModeSwitch`): a fixed-width chip showing the
-  current mode's icon and name and a chevron, on the faint tint the editor's
-  menu-like controls use. A press opens a menu **above** it (the bar is at the
-  bottom) with one row per mode: its icon, its name, a one-line description
-  shown in full ("Shapes, arrows, the palette and snapping" / "Pens, the
-  eraser and shape recognition"), a check on the current mode and **Shift+D**
-  at the right. Choosing a row switches and closes the menu; Escape or a press
-  outside closes it. Two presses: the chip teaches what each mode is.
-  - On a phone the chip shows its icon and chevron only.
+  current mode's icon and a chevron, with its name in the Floating layout, on the faint tint the
+  editor's menu-like controls use. A press opens a menu **below** it, hanging
+  from the edge with room (left beside the menu button, right in the
+  Palette header), with one compact row per mode at the palette dropdowns' size: its
+  icon and name, a check on the current mode and **Shift+D** on the row the
+  key leads to. Choosing a row switches and closes the menu; Escape or a
+  press outside closes it.
+  - **No hover card:** it would cover the menu the chip opens.
   - Semantics: a menu button (`aria-haspopup="menu"`, `aria-expanded`) named
-    "Editor mode: Diagram", over a `menu` of `menuitemradio` rows.
-- **Power user mode** shows a compact switch instead
-  ([Quick mode switch](power-user-mode.md#quick-mode-switch)): a segmented
-  pill of **icons only**, one segment per mode, one press to switch.
+    "Editor mode: Diagram", over a `menu` of `menuitemradio` rows; arrow keys
+    open it and move within it, wrapping, Home and End jump.
+  - The same for everyone, power user mode or not.
 - **Two options, one chosen:** Diagram and Draw. Exactly one is active.
 - **Switching is instant and lossless:** no dialog, no reload, no change to the
   document; the selection is kept, an in-progress gesture or text edit is
@@ -65,7 +72,7 @@ where it is and changes only how the next mark is made.
 - **Zero layout shift:** the switch has a fixed size, and nothing next to it
   moves when the mode changes.
 - **Shift+D** toggles between the two modes (with more modes, it moves to
-  the next), shown in the switch's tooltip, `aria-keyshortcuts` and Settings ›
+  the next), shown in the switch's menu, `aria-keyshortcuts` and Settings ›
   Keyboard; a switch by key is announced politely ("Draw mode"). It obeys
   the character-key shortcuts setting.
 - **Accessible:** reachable by keyboard, its state exposed to assistive
@@ -83,15 +90,28 @@ where it is and changes only how the next mark is made.
 - **A switch is remembered** for that person and tab, in this browser, and
   wins over the tab's opening mode from then on.
 - **Switching never changes the opening mode.**
-- **A new tab inherits the mode you are in.** A tab added from the tab bar
-  (or Quick Start) opens in the creator's current mode: made in Draw mode, it
-  opens in Draw. A template or import that sets its own opening mode wins.
+- **New documents and new tabs open in Diagram.** Whatever mode its creator
+  is in, a new document or a tab added from the tab bar (or Quick Start)
+  opens in Diagram. Only the template chosen for it changes that: the
+  **Whiteboard** opens in Draw (switching its maker there too), an
+  **Event Storming** board is always Diagram, and every other template,
+  Blank included, opens in Diagram. An import that sets its own opening
+  mode wins.
 - **Opens in:** the tab menu holds an **Opens in** submenu for editors,
   listing every editor mode (Diagram, Draw) as a radio choice with the
-  current one checked. Choosing one sets `Tab.opensIn` for everyone; it does
-  not switch anyone's current mode, including the chooser's. The submenu
-  lists modes from one catalogue, so a further mode joins it as one entry.
-  Not offered on event-storming boards.
+  current one checked. Choosing one sets `Tab.opensIn` for everyone and
+  switches the chooser's own mode on that tab to it (remembered like any
+  switch), so the choice visibly lands; nobody else's current mode changes.
+  Choosing the already-checked mode still switches the chooser to it. The
+  submenu lists modes from one catalogue, so a further mode joins it as one
+  entry. Not offered on event-storming boards; greyed out on a locked tab.
+- **The tab pill shows your mode on it.** Each tab pill leads with the icon
+  of the mode this person works in on that tab (the same glyph the mode
+  switch and the Opens in choices use), resolved as the canvas resolves it:
+  their remembered switch, else the tab's opening mode. It is tinted with the
+  tab's theme accent. The switch, Shift+D and Opens in all update it at
+  once; a visitor who cannot edit sees the opening mode. An event-storming
+  board is always Diagram, so it shows the Diagram icon.
 
 ## One look
 

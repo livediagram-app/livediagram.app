@@ -1,7 +1,7 @@
 // "Opens in" (docs/specs/007-editor/editor-modes.md "Where the mode lives"): the tab menu's choice
 // of the editor mode a general tab opens in. A tab edit like any other (one undo step, synced to
-// everyone); it never switches anyone's current mode, the chooser's included,
-// since that mode is the person's own (useEditorMode).
+// everyone). It also switches the chooser's own mode on that tab (useEditorMode), so the choice
+// visibly lands; nobody else's current mode changes.
 import {
   editorModeSwitchable,
   opensInOf,
@@ -18,13 +18,22 @@ export function useTabOpensIn(deps: {
   // An editor (not a view-role visitor): only they are offered the choice.
   canEdit: boolean;
   commitTabs: (map: (ts: Tab[]) => Tab[]) => void;
+  // The chooser's own mode switch for the active tab (useEditorMode.setMode).
+  activeId: string;
+  switchMode: (mode: EditorMode) => void;
 }) {
-  const { tabs, canEdit, commitTabs } = deps;
+  const { tabs, canEdit, commitTabs, activeId, switchMode } = deps;
 
   const setOpensIn = (tabId: string, mode: EditorMode) => {
     const tab = tabs.find((t) => t.id === tabId);
-    if (!tab || !canEdit || tab.locked || setTabOpensIn(tab, mode) === tab) {
+    if (!tab || !canEdit || tab.locked) {
       debugLog('[editor-mode] opens-in unchanged', { tabId, mode, locked: tab?.locked === true });
+      return;
+    }
+    // The menu only opens on the active tab; the guard keeps a stale menu from switching another.
+    if (tabId === activeId) switchMode(mode);
+    if (setTabOpensIn(tab, mode) === tab) {
+      debugLog('[editor-mode] opens-in unchanged', { tabId, mode, locked: false });
       return;
     }
     if (mode === 'draw') track('Tab', 'Changed', 'OpensInDraw');

@@ -15,6 +15,7 @@ import { Minimap } from '@/components/canvas/Minimap';
 import type { CanvasChromeProps } from './CanvasChrome';
 import { usePaletteChrome } from './usePaletteChrome';
 import { useCanvasToolPanels } from './useCanvasToolPanels';
+import { WhiteboardDock } from './whiteboard/WhiteboardDock';
 
 // Lazy-load CommentsPanel: only mounts when the active tab has at
 // least one element with comments. It stacks below the Palette (the
@@ -398,10 +399,20 @@ export function useCanvasChromePanels({
       />
     ) : null;
 
+  // Draw mode keeps the Palette panel and fills it with Draw's tools instead of the catalogue
+  // (docs/specs/023-draw-mode/draw-mode.md "What a whiteboard shows").
+  const drawTools =
+    props.editorMode === 'draw' && props.whiteboardDock ? (
+      <WhiteboardDock
+        variant="panel"
+        model={props.whiteboardDock}
+        ink={props.whiteboardInk ?? '#1c1917'}
+      />
+    ) : undefined;
   const paletteEl =
-    // Draw mode draws from its dock, not the palette (docs/specs/023-draw-mode/draw-mode.md).
-    chromeHidden || readOnly || toolbarActive || props.editorMode === 'draw' ? null : (
+    chromeHidden || readOnly || toolbarActive ? null : (
       <CommandPalette
+        drawTools={drawTools}
         position={paletteWiring.position}
         canvasTool={canvasTool}
         onSetCanvasTool={onSetCanvasTool}

@@ -39,10 +39,7 @@ import { PANEL_CORNERS, PANEL_IDS, cornerBottomInset, type PanelCorner } from '@
 import type { StampGhost } from '@/components/canvas/useStampGhost';
 import { HoverCard } from '@livediagram/ui';
 import { STRIP_SELECTOR, useStripCrowdsCorners } from '@/hooks/ui/useStripCrowdsCorners';
-import {
-  WHITEBOARD_DOCK_SELECTOR,
-  WHITEBOARD_DOCK_TOP_CLEARANCE_PX,
-} from '@/lib/whiteboard-dock-prefs';
+import { WHITEBOARD_DOCK_SELECTOR } from '@/lib/whiteboard-dock-prefs';
 import { CollaborateClusterButton } from './CollaborateClusterButton';
 import { kindCounts } from '@/components/panels/collaborate/collaborate-model';
 import { panelEnabled } from '@/lib/user-preferences';
@@ -304,7 +301,9 @@ export function CanvasChrome(props: CanvasChromeProps) {
   // The whiteboard's dock, absent for a view-role visitor (nothing to draw with) and while the
   // chrome is away; at the top unless the user chose the bottom (docs/specs/023-draw-mode/draw-mode.md
   // "Where the dock sits").
-  const dockShown = whiteboard && !!props.whiteboardDock && !readOnly && !chromeHidden;
+  // The Toolbar layout's only: the Floating layout shows Draw's tools in the Palette panel.
+  const dockShown =
+    toolbarActive && whiteboard && !!props.whiteboardDock && !readOnly && !chromeHidden;
   const dockOnTop = dockShown && props.whiteboardDock?.position === 'top';
   // The Explorer menu button: top-left on desktop, the far left of the strip
   // on a phone (no room for both across the top). A read-only visitor has no
@@ -391,11 +390,10 @@ export function CanvasChrome(props: CanvasChromeProps) {
             style={
               corner === 'bottom-right'
                 ? { bottom: cornerBottomInset(corner, cornerScale) }
-                : stripSpansTop && corner.startsWith('top')
+                : // The Draw dock is the strip's twin (its height, its scale), so the same clearance.
+                  (stripSpansTop || dockSpansTop) && corner.startsWith('top')
                   ? { top: toolbarTopClearancePx(toolbarScale) }
-                  : dockSpansTop && corner.startsWith('top')
-                    ? { top: WHITEBOARD_DOCK_TOP_CLEARANCE_PX }
-                    : undefined
+                  : undefined
             }
             className={`pointer-events-none absolute flex gap-4 ${DOCK_CORNER_CLASS[corner]}`}
           >
@@ -511,14 +509,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
       {/* The whiteboard's dock (docs/specs/023-draw-mode/draw-mode.md): top or bottom centre, in place
           of the palette. */}
       {dockShown && props.whiteboardDock ? (
-        <WhiteboardDock
-          model={props.whiteboardDock}
-          ink={props.whiteboardInk ?? '#1c1917'}
-          canUndo={canUndo}
-          canRedo={canRedo}
-          onUndo={onUndo}
-          onRedo={onRedo}
-        />
+        <WhiteboardDock model={props.whiteboardDock} ink={props.whiteboardInk ?? '#1c1917'} />
       ) : null}
 
       {/* Floating panels (docs/specs/007-editor/panel-docking.md). In the desktop docking layout they

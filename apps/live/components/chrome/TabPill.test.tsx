@@ -6,6 +6,8 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Tab } from '@livediagram/document';
+import { FlowchartIcon, MarkerIcon } from '@livediagram/ui';
+import { EditorModeProvider } from './editor-mode/editor-mode-context';
 import { TabPill, type TabPillCtx } from './TabPill';
 
 function ctx(over: Partial<TabPillCtx> = {}): TabPillCtx {
@@ -62,5 +64,38 @@ describe('TabPill out of scope', () => {
   it('leaves the scoped tab an ordinary pill', () => {
     render(<TabPill tab={tab('t2', 'Roadmap')} ctx={ctx()} />);
     expect(screen.getByRole('button', { name: /Roadmap/ })).toBeTruthy();
+  });
+});
+
+// docs/specs/007-editor/editor-modes.md "The tab pill shows what it opens in".
+describe('TabPill opening-mode icon', () => {
+  it.each([
+    ['Diagram', undefined, FlowchartIcon],
+    ['Draw', 'draw' as const, MarkerIcon],
+  ])('leads with the %s mode icon', (_, opensIn, Icon) => {
+    const expected = render(<Icon size={12} />).container.querySelector('svg')!.innerHTML;
+    cleanup();
+    render(<TabPill tab={{ ...tab('t2', 'Board'), opensIn }} ctx={ctx()} />);
+    const button = screen.getByRole('button', { name: 'Board' });
+    expect(button.querySelector('svg')!.innerHTML).toBe(expected);
+  });
+
+  it("follows an editor's own switch on the tab over its opening mode", () => {
+    const expected = render(<MarkerIcon size={12} />).container.querySelector('svg')!.innerHTML;
+    cleanup();
+    localStorage.setItem('livediagram:v2:editor-mode:pill-switched', 'draw');
+    render(
+      <EditorModeProvider
+        value={{ mode: 'diagram', setMode: vi.fn(), canSwitch: true, canEdit: true }}
+      >
+        <TabPill
+          tab={tab('pill-switched', 'Board')}
+          ctx={ctx({ activeId: 'pill-switched', isOutOfScope: () => false })}
+        />
+      </EditorModeProvider>,
+    );
+    const button = screen.getByRole('button', { name: 'Board' });
+    expect(button.querySelector('svg')!.innerHTML).toBe(expected);
+    localStorage.clear();
   });
 });

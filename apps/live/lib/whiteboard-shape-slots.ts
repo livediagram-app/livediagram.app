@@ -105,8 +105,8 @@ export type SlotLayout = {
   pinned: readonly { key: WhiteboardShapeKey; left: number; right: number }[];
 };
 
-// How far past the bar a drop still counts as on it: one button's width, so an empty pinned side
-// is still a comfortable target.
+// How far past the bar a drop still counts as on it: a little over one button's width (the dock's are
+// 36px), so an empty pinned side is still a comfortable target.
 export const SLOT_BAR_REACH_PX = 44;
 
 // Where a dragged shape would land: the pinned side (an insertion `index`, 0 to the number pinned,

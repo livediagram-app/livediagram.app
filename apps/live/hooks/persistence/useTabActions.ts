@@ -102,13 +102,11 @@ export function useTabActions(deps: TabActionsDeps) {
   } = deps;
 
   const addTab = () => {
-    // The new tab takes the active tab's look and the creator's current editor mode (newTabSeed).
+    // The new tab takes the active tab's look (newTabSeed), never its creator's mode: it opens in
+    // Diagram.
     // Skips the look when the active tab can't be resolved (mid-mount, or removed in another
     // window), falling back to brand defaults the same way Tab 1 does.
-    const seed = newTabSeed(
-      tabs.find((t) => t.id === activeId),
-      deps.editorMode,
-    );
+    const seed = newTabSeed(tabs.find((t) => t.id === activeId));
     const tab: Tab = { ...createTab(`Tab ${tabs.length + 1}`), ...seed };
     commitTabs((ts) => [...ts, tab]);
     markTabLoaded(tab.id);
