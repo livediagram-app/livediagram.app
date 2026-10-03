@@ -178,7 +178,9 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
 
 - `buildReferenceBoard(seed = REFERENCE_SEED, count = REFERENCE_COUNT)`: a `mulberry32` PRNG;
   elements by the spec's mix, made with the `@livediagram/document` factories, placed over
-  `REFERENCE_AREA`; arrows are `createPinnedArrow` between two random shapes; paths are closed
+  `REFERENCE_AREA`; every element but the arrows is placed first, then each arrow is a
+  `createPinnedArrow` from a random shape to one of its `ARROW_NEIGHBOURS` (3) nearest shapes by
+  centre, as real diagrams join neighbours; paths are closed
   with a fill on odd indexes. Ids are `ref-<n>`; the same seed yields the same board, byte for
   byte.
 
@@ -193,10 +195,17 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
 - Each zoom starts from Shift+1 (fit, centring the board); 100% then presses Mod+0 (a bare `0` is
   the eraser). A screenshot per tab and zoom goes with the report. After an undo the probe waits
   1 s, so its commit lands outside the next gesture's window.
-- Timings are the renderer main thread's `RunTask` durations (`trace-tasks.ts`); compositor and
-  raster threads are not counted. A drag's median frame comes from an in-page
-  `requestAnimationFrame` recorder; the idle row runs without it. Measured values are shown
-  rounded up.
+- Each gesture is a step (`setup`, `act`, `reset`, so every run starts alike: a select starts
+  deselected, a drag and a stroke are undone, a pan and a zoom put the view back) and runs
+  `REPEATS` (5) times untraced. A run's longest task comes from the page's own long-task entries
+  (`timed`: entries ending after the run began), which count only the board's renderer; a drag's
+  median frame from an in-page `requestAnimationFrame` recorder. `medianOfRuns` (`budget.ts`)
+  makes the row: each metric the median of the runs. One more run is traced for attribution
+  (`traces/<tab>-<zoom>-<gesture>.json.gz`) and not counted.
+- The idle row runs `REPEATS` traced 2 s windows; its work is the sum of the renderer main
+  thread's `RunTask` durations (`trace-tasks.ts`; compositor and raster threads are not counted),
+  the median of the five. Measured values are shown rounded up; a longest task of 0 (no
+  long-task entry: the browser reports none under 50 ms) is shown as `< 50 ms`.
 - Before anything else it calibrates (`calibrate.ts`): `benchmarkInPage` (a fixed DOM, layout, JS
   and JSON workload, its median of seven runs) on five fresh blank pages, unthrottled; the fastest
   is the machine's speed (D70). `calibratedThrottle(benchMs)` gives
@@ -207,8 +216,7 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
   rate, it runs:
   open, idle (2 s), pan (30 wheel ticks), zoom (16 Ctrl-wheel ticks), select, drag (30 moves),
   deselect, marquee (25 moves), stroke (30 moves; the pen on the whiteboard, the pencil on the
-  diagram), hover (40 moves). Each runs under a `devtools.timeline` trace and an in-page frame
-  recorder.
+  diagram), hover (40 moves).
 - The probe never sends `Profiler.start`: the trace categories are `devtools.timeline` and
   `disabled-by-default-devtools.timeline` only. Starting V8's profiler makes source positions
   available for every compiled function in one main-thread task (about 1.1 s at 4× on a

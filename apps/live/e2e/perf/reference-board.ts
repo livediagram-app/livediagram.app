@@ -1,7 +1,8 @@
 // The reference board (docs/specs/008-canvas/canvas-performance.md "The reference board"): one
 // synthetic board, built from a seed, so every run of the performance probe measures the same thing
 // and no user content is involved. 1,000 elements in the mix real boards have, spread over four
-// screens by three, every arrow pinned between two shapes and routed behind boxes as drawn.
+// screens by three, every arrow pinned from a shape to one of its nearest neighbours and routed
+// behind boxes as drawn.
 
 import {
   createFreehand,
@@ -20,6 +21,8 @@ export const REFERENCE_SEED = 1;
 export const REFERENCE_COUNT = 1000;
 // Four 1440 px screens wide, three 900 px screens high.
 export const REFERENCE_AREA = { width: 5760, height: 2700 };
+// An arrow joins a shape to one of this many nearest shapes, as real diagrams join neighbours.
+export const ARROW_NEIGHBOURS = 3;
 
 // The spec's mix, as shares of the board.
 const MIX = [
@@ -58,26 +61,22 @@ export function buildReferenceBoard(seed = REFERENCE_SEED, count = REFERENCE_COU
     const j = Math.floor(rand() * (i + 1));
     [kinds[i], kinds[j]] = [kinds[j]!, kinds[i]!];
   }
-  const shapeIds = kinds.flatMap((kind, i) => (kind === 'shape' ? [`ref-${i}`] : []));
   // A top-left that keeps a box of this size inside the area.
   const at = (w: number, h: number) => ({
     x: Math.round(rand() * (REFERENCE_AREA.width - w)),
     y: Math.round(rand() * (REFERENCE_AREA.height - h)),
   });
 
-  return kinds.map((kind, i): Element => {
+  // Everything but the arrows first, so each arrow can find its shape's neighbours.
+  const placed = kinds.map((kind, i): Element | null => {
     const id = `ref-${i}`;
     switch (kind) {
       case 'shape': {
         const shape = createShape(pick(SHAPE_KINDS), 0, 0);
         return { ...shape, ...at(shape.width, shape.height), id, label: `Step ${i}` };
       }
-      case 'arrow': {
-        const from = pick(shapeIds);
-        let to = pick(shapeIds);
-        while (to === from) to = pick(shapeIds);
-        return { ...createPinnedArrow(from, pick(SIDES), to, pick(SIDES)), id };
-      }
+      case 'arrow':
+        return null;
       case 'freehand': {
         const { x, y } = at(220, 120);
         const points = Array.from({ length: 24 }, (_, k) => ({
@@ -107,5 +106,29 @@ export function buildReferenceBoard(seed = REFERENCE_SEED, count = REFERENCE_COU
         return { ...sticky, ...at(sticky.width, sticky.height), id, label: `Idea ${i}` };
       }
     }
+  });
+  const shapes = placed.filter(
+    (el): el is Extract<Element, { type: 'shape' }> => el?.type === 'shape',
+  );
+  const centre = (el: (typeof shapes)[number]) => ({
+    x: el.x + el.width / 2,
+    y: el.y + el.height / 2,
+  });
+  const nearest = (from: (typeof shapes)[number]) => {
+    const c = centre(from);
+    return shapes
+      .filter((el) => el !== from)
+      .sort(
+        (a, b) =>
+          Math.hypot(centre(a).x - c.x, centre(a).y - c.y) -
+          Math.hypot(centre(b).x - c.x, centre(b).y - c.y),
+      )
+      .slice(0, ARROW_NEIGHBOURS);
+  };
+  return placed.map((el, i) => {
+    if (el) return el;
+    const from = pick(shapes);
+    const to = pick(nearest(from));
+    return { ...createPinnedArrow(from.id, pick(SIDES), to.id, pick(SIDES)), id: `ref-${i}` };
   });
 }

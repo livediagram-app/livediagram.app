@@ -16,7 +16,13 @@ import {
   calibratedThrottle,
   type Calibration,
 } from './calibrate';
-import { budgetTable, evaluateBudget, type Gesture, type Measurement } from './budget';
+import {
+  budgetTable,
+  evaluateBudget,
+  medianOfRuns,
+  type Gesture,
+  type Measurement,
+} from './budget';
 import { buildReferenceBoard } from './reference-board';
 import { mainThreadTasks, type TraceEvent } from './trace-tasks';
 
@@ -228,6 +234,54 @@ async function moves(page: Page, from: Point, n: number, step: (i: number) => Po
   }
 }
 
+// Each gesture's runs (docs/specs/008-canvas/canvas-performance.md "Measuring"): this many, untraced,
+// read from the page; one more traced for attribution, not counted.
+const REPEATS = 5;
+
+// One untraced run of `act`, read from the page itself: its longest task (from the long-task entries
+// recorded since load) and, when asked, its frame times.
+async function timed(
+  page: Page,
+  act: () => Promise<void>,
+  frames: boolean,
+): Promise<{ longest: number; frameMs: number[] }> {
+  const from = await page.evaluate((record) => {
+    const w = window as unknown as { __frames: number[]; __recording: boolean };
+    if (record) {
+      w.__frames = [];
+      w.__recording = true;
+      let last = performance.now();
+      const tick = (t: number) => {
+        w.__frames.push(t - last);
+        last = t;
+        if (w.__recording) requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    }
+    return performance.now();
+  }, frames);
+  await act();
+  return page.evaluate((t0) => {
+    const w = window as unknown as {
+      __frames: number[];
+      __recording: boolean;
+      __longTasks: { start: number; end: number }[];
+    };
+    w.__recording = false;
+    const longest = w.__longTasks
+      .filter((t) => t.end > t0)
+      .reduce((max, t) => Math.max(max, t.end - Math.max(t.start, t0)), 0);
+    return { longest, frameMs: (w.__frames ?? []).slice(1) };
+  }, from);
+}
+
+type Step = {
+  gesture: Exclude<Gesture, 'open' | 'idle'>;
+  setup?: () => Promise<void>;
+  act: () => Promise<void>;
+  reset?: () => Promise<void>;
+};
+
 async function measureZoom(
   cdp: CDPSession,
   page: Page,
@@ -235,94 +289,166 @@ async function measureZoom(
   zoom: Measurement['zoom'],
 ): Promise<Measurement[]> {
   // Fit first, which centres the board; 100% then zooms in on that centre (Mod+0; a bare 0 is the eraser).
-  await page.keyboard.press('Escape');
-  await page.keyboard.press('v');
-  await page.keyboard.press('Shift+1');
-  if (zoom === '100%') await page.keyboard.press('ControlOrMeta+0');
-  await page.waitForTimeout(1500);
+  const setView = async () => {
+    await page.keyboard.press('Escape');
+    await page.keyboard.press('v');
+    await page.keyboard.press('Shift+1');
+    if (zoom === '100%') await page.keyboard.press('ControlOrMeta+0');
+    await page.waitForTimeout(1000);
+  };
+  await setView();
+  await page.waitForTimeout(500);
   // What the gestures ran on, kept with the report.
   await page.screenshot({ path: `${OUT}/${tab}-${zoom}.png` });
   const { shape, bare } = await targets(page);
+  const settleUndo = async () => {
+    await page.keyboard.press('ControlOrMeta+z');
+    // Let the undo land before the next run's window opens.
+    await page.waitForTimeout(1000);
+  };
+  const steps: Step[] = [
+    {
+      gesture: 'select',
+      setup: async () => {
+        await page.keyboard.press('Escape');
+        await page.waitForTimeout(300);
+      },
+      act: async () => {
+        await page.mouse.click(shape.x, shape.y);
+        await page.waitForTimeout(400);
+      },
+    },
+    {
+      gesture: 'drag',
+      act: async () => {
+        await page.mouse.move(shape.x, shape.y);
+        await page.mouse.down();
+        await moves(page, shape, 30, (k) => ({ x: k * 4, y: k * 2 }));
+        await page.mouse.up();
+        await page.waitForTimeout(400);
+      },
+      reset: settleUndo,
+    },
+    {
+      gesture: 'deselect',
+      setup: async () => {
+        await page.mouse.click(shape.x, shape.y);
+        await page.waitForTimeout(400);
+      },
+      act: async () => {
+        await page.keyboard.press('Escape');
+        await page.waitForTimeout(400);
+      },
+    },
+    {
+      gesture: 'marquee',
+      act: async () => {
+        await page.mouse.move(bare.x, bare.y);
+        await page.mouse.down();
+        await moves(page, bare, 25, (k) => ({ x: k * 10, y: k * 8 }));
+        await page.mouse.up();
+        await page.waitForTimeout(400);
+      },
+      reset: async () => {
+        await page.keyboard.press('Escape');
+        await page.waitForTimeout(300);
+      },
+    },
+    {
+      gesture: 'stroke',
+      setup: () => page.keyboard.press(tab === 'whiteboard' ? '1' : 'p'),
+      act: async () => {
+        await page.mouse.move(bare.x, bare.y);
+        await page.mouse.down();
+        await moves(page, bare, 30, (k) => ({ x: k * 3, y: Math.sin(k / 3) * 20 }));
+        await page.mouse.up();
+        await page.waitForTimeout(400);
+      },
+      reset: async () => {
+        await page.keyboard.press('Escape');
+        await page.keyboard.press('v');
+        await settleUndo();
+      },
+    },
+    {
+      gesture: 'hover',
+      act: () => moves(page, { x: 300, y: 300 }, 40, (k) => ({ x: k * 20, y: (k % 8) * 30 })),
+    },
+    {
+      gesture: 'pan',
+      act: async () => {
+        await page.mouse.move(VIEW.width / 2, VIEW.height / 2);
+        for (let k = 0; k < 30; k++) {
+          await page.mouse.wheel(30, 20);
+          await page.waitForTimeout(16);
+        }
+        await page.waitForTimeout(300);
+      },
+      reset: setView,
+    },
+    {
+      gesture: 'zoom',
+      act: async () => {
+        await page.mouse.move(VIEW.width / 2, VIEW.height / 2);
+        await page.keyboard.down('Control');
+        for (let k = 0; k < 16; k++) {
+          await page.mouse.wheel(0, k < 8 ? -40 : 40);
+          await page.waitForTimeout(16);
+        }
+        await page.keyboard.up('Control');
+        await page.waitForTimeout(300);
+      },
+      reset: setView,
+    },
+  ];
+
   const out: Measurement[] = [];
-  const run = async (gesture: Gesture, fn: () => Promise<void>, frames = true) => {
-    const { tasks, frameMs } = await traced(cdp, page, `${tab}-${zoom}-${gesture}`, fn, frames);
-    out.push({
+  // The still board: its total main-thread work, read from a trace (a task's length is the wrong
+  // scale for a 5 ms limit).
+  const idle: Measurement[] = [];
+  for (let r = 0; r < REPEATS; r++) {
+    const { tasks } = await traced(
+      cdp,
+      page,
+      `${tab}-${zoom}-idle-${r}`,
+      () => page.waitForTimeout(2000),
+      false,
+    );
+    idle.push({
       tab,
       zoom,
-      gesture,
+      gesture: 'idle',
       longestTaskMs: Math.max(0, ...tasks),
-      ...(gesture === 'drag' ? { medianFrameMs: median(frameMs) } : {}),
-      ...(gesture === 'idle' ? { idleWorkMs: tasks.reduce((a, b) => a + b, 0) } : {}),
+      idleWorkMs: tasks.reduce((a, b) => a + b, 0),
     });
-  };
-
-  await run('idle', () => page.waitForTimeout(2000), false);
-  await run('select', async () => {
-    await page.mouse.click(shape.x, shape.y);
-    await page.waitForTimeout(400);
-  });
-  await run('drag', async () => {
-    await page.mouse.move(shape.x, shape.y);
-    await page.mouse.down();
-    await moves(page, shape, 30, (i) => ({ x: i * 4, y: i * 2 }));
-    await page.mouse.up();
-    await page.waitForTimeout(400);
-  });
-  await page.keyboard.press('ControlOrMeta+z');
-  // Let the undo land before the next gesture's window opens.
-  await page.waitForTimeout(1000);
-  await run('deselect', async () => {
-    await page.keyboard.press('Escape');
-    await page.waitForTimeout(400);
-  });
-  await run('marquee', async () => {
-    await page.mouse.move(bare.x, bare.y);
-    await page.mouse.down();
-    await moves(page, bare, 25, (i) => ({ x: i * 10, y: i * 8 }));
-    await page.mouse.up();
-    await page.waitForTimeout(400);
-    await page.keyboard.press('Escape');
-  });
-  await page.keyboard.press(tab === 'whiteboard' ? '1' : 'p');
-  await run('stroke', async () => {
-    await page.mouse.move(bare.x, bare.y);
-    await page.mouse.down();
-    await moves(page, bare, 30, (i) => ({ x: i * 3, y: Math.sin(i / 3) * 20 }));
-    await page.mouse.up();
-    await page.waitForTimeout(400);
-  });
-  await page.keyboard.press('Escape');
-  await page.keyboard.press('v');
-  await page.keyboard.press('ControlOrMeta+z');
-  // Let the undo land before the next gesture's window opens.
-  await page.waitForTimeout(1000);
-  await run('hover', () =>
-    moves(page, { x: 300, y: 300 }, 40, (i) => ({ x: i * 20, y: (i % 8) * 30 })),
-  );
-  await run('pan', async () => {
-    await page.mouse.move(VIEW.width / 2, VIEW.height / 2);
-    for (let i = 0; i < 30; i++) {
-      await page.mouse.wheel(30, 20);
-      await page.waitForTimeout(16);
+  }
+  out.push(medianOfRuns(idle));
+  for (const step of steps) {
+    const runs: Measurement[] = [];
+    for (let r = 0; r < REPEATS; r++) {
+      await step.setup?.();
+      const { longest, frameMs } = await timed(page, step.act, step.gesture === 'drag');
+      await step.reset?.();
+      runs.push({
+        tab,
+        zoom,
+        gesture: step.gesture,
+        longestTaskMs: longest,
+        ...(step.gesture === 'drag' ? { medianFrameMs: median(frameMs) } : {}),
+      });
     }
-    await page.waitForTimeout(300);
-  });
-  await run('zoom', async () => {
-    await page.mouse.move(VIEW.width / 2, VIEW.height / 2);
-    await page.keyboard.down('Control');
-    for (let i = 0; i < 16; i++) {
-      await page.mouse.wheel(0, i < 8 ? -40 : 40);
-      await page.waitForTimeout(16);
-    }
-    await page.keyboard.up('Control');
-    await page.waitForTimeout(300);
-  });
+    out.push(medianOfRuns(runs));
+    // One more, traced, for attribution; not counted.
+    await step.setup?.();
+    await traced(cdp, page, `${tab}-${zoom}-${step.gesture}`, step.act, false);
+    await step.reset?.();
+  }
   return out;
 }
 
 test('canvas performance budget', async ({ browser, baseURL, page }) => {
-  // A hosted runner takes about 17 minutes; a fast desktop about 4.
-  test.setTimeout(40 * 60_000);
+  // Five runs of each gesture: a fast desktop takes about 15 minutes, a hosted runner about an hour.
+  test.setTimeout(100 * 60_000);
   mkdirSync(`${OUT}/traces`, { recursive: true });
   const benchMs = await benchmark(browser);
   const calibration: Calibration = calibratedThrottle(benchMs);

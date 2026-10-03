@@ -65,7 +65,15 @@ export function evaluateBudget(measurements: readonly Measurement[]): BudgetRow[
       ...m,
       rule: limits.map((l) => `${l.label} ≤ ${l.max} ms`).join(', '),
       // Rounded up, so a value over its ceiling never reads as equal to it.
-      measured: values.map((v) => `${Math.ceil(v)} ms`).join(', '),
+      // A task length of 0 means the page reported no task of 50 ms or more (the browser reports
+      // none shorter), so it reads as under 50 ms.
+      measured: values
+        .map((v, i) =>
+          limits[i]!.metric === 'longestTaskMs' && v === 0
+            ? `< ${LONG_TASK_MS} ms`
+            : `${Math.ceil(v)} ms`,
+        )
+        .join(', '),
       pass: limits.every((l, i) => values[i]! <= l.max),
     };
   });
@@ -80,4 +88,28 @@ export function budgetTable(rows: readonly BudgetRow[]): string {
         `| ${r.tab} | ${r.zoom} | ${r.gesture} | ${r.rule} | ${r.measured} | ${r.pass ? 'pass' : '**fail**'} |`,
     ),
   ].join('\n');
+}
+
+const median = (xs: number[]) => [...xs].sort((a, b) => a - b)[Math.floor(xs.length / 2)]!;
+
+// One row from repeated runs of the same gesture: each metric the median of the runs, since a single
+// run of a gesture can read two to five times another (docs/specs/008-canvas/canvas-performance.md).
+export function medianOfRuns(runs: readonly Measurement[]): Measurement {
+  const [first] = runs;
+  if (!first) throw new Error('NoRuns');
+  if (runs.some((r) => r.tab !== first.tab || r.zoom !== first.zoom || r.gesture !== first.gesture))
+    throw new Error('MixedRuns');
+  const metric = (key: 'medianFrameMs' | 'idleWorkMs' | 'openMs') => {
+    const values = runs.map((r) => r[key]).filter((v): v is number => v !== undefined);
+    return values.length ? { [key]: median(values) } : {};
+  };
+  return {
+    tab: first.tab,
+    zoom: first.zoom,
+    gesture: first.gesture,
+    longestTaskMs: median(runs.map((r) => r.longestTaskMs)),
+    ...metric('medianFrameMs'),
+    ...metric('idleWorkMs'),
+    ...metric('openMs'),
+  };
 }
