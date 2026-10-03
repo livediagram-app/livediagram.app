@@ -3,8 +3,8 @@
 Derived from [Explorer filters](../explorer-filters.md). The spec decides; this file only adds engineering
 precision. Defaults applied where the spec is silent are ledgered in [DEFAULTS.md](DEFAULTS.md) and cited as `Dn`.
 
-This part covers the pure module. The chips, the field, the routes and the telemetry emit follow with the Explorer
-page and consume it unchanged.
+The pure module comes first; [The Explorer page](#the-explorer-page) renders it: the field, the chips, the states,
+the routes and the telemetry emit, consuming the module unchanged.
 
 Scope, by file (all under `packages/explorer-lens/src/`):
 
@@ -325,6 +325,156 @@ statements), enforced in the package's `vitest.config.ts`.
 
 No environment variable or binding.
 
+## The Explorer page
+
+The lens on `/explorer`, over `@livediagram/explorer-lens`. Files (all under `apps/live/`):
+
+| File                                          | Role                                                                                               |
+| --------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| `app/explorer/lens/lens-views.ts`             | `lensViewOf`, `SEARCH_RESULTS_PATH`, `lensHref`, `carriedHref`                                     |
+| `app/explorer/lens/field-model.ts`            | `splitField`, `joinField`, `writeDraft`, `removePill`: the field's pills and draft over one string |
+| `app/explorer/lens/pane-lens.ts`              | `lensSubjectOf`, `scopeDocuments`, `applyPaneLens`, `RECENT_LIMIT`                                 |
+| `app/explorer/lens/lens-telemetry.ts`         | `trackLensChange`: `Explorer / Selected / <Facet>` per gained facet                                |
+| `app/explorer/lens/useExplorerLens.ts`        | The lens state: input, caret, URL sync, navigation to Search results, logs                         |
+| `app/explorer/lens/LensField.tsx`             | The header field: pills, the input, the suggestion listbox                                         |
+| `app/explorer/lens/LensChips.tsx`             | The chip row, its listboxes, Clear, the issue lines                                                |
+| `app/explorer/lens/LensStates.tsx`            | `LensAnnouncer`, `FilteredEmpty`, `LoadFailed`                                                     |
+| `app/explorer/search/page.tsx`                | `/explorer/search`, Search results                                                                 |
+| `app/explorer/RetiredViewRedirect.tsx`        | `/explorer/unsorted`, `/explorer/dynamic`, `/explorer/generated` replace themselves                |
+| `components/primitives/MadeByAiPill.tsx`      | The Made by AI badge                                                                               |
+| `app/explorer/useExplorerPane.ts`             | Applies the lens to the current view's documents; exposes counts and subjects                      |
+| `app/explorer/useExplorerState.ts`            | Composes `useExplorerLens`; carries the lens in `go`; records which read failed                    |
+| `components/panels/TeamSharedDocuments.tsx`   | Applies the lens to the team library it reads                                                      |
+| `packages/api-schema/src/telemetry-schema.ts` | The `Explorer` category                                                                            |
+
+### Views
+
+`lensViewOf(kind)` is `'scoped'` for `all`, `folder`, `team`, `offline`; `'aggregate'` for `recent`, `favourites`,
+`search`, `shared`; `null` (no lens) for every other view. The base list each view narrows:
+
+| View         | Base list (before the lens)                                                                                                           |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `all`        | Unset lens: root folders, then root documents (`folderId === null`, not local only). Set: every own document but local-only root ones |
+| `folder`     | Unset: subfolders and documents in the folder. Set: every document in the folder's subtree (`folderDescendants`)                      |
+| `team`       | The team library at the open spot; set: every document in the spot's subtree                                                          |
+| `offline`    | Every local-only document                                                                                                             |
+| `recent`     | Own, team and shared rows not hidden from Recent, newest first; the first `RECENT_LIMIT` (12) after the lens                          |
+| `favourites` | Starred own and team rows                                                                                                             |
+| `search`     | Own, team and shared rows, newest first, no cap                                                                                       |
+| `shared`     | Shared with me                                                                                                                        |
+
+The lens's subjects for suggestions are the base list's documents; a view with no lens uses the `search` list.
+`lensSubjectOf(row, viewerId)`: a `shared` row is `sharedSubject`; a team row is `documentSubject` with its team id;
+every other row (local only included) is `documentSubject` with `teamId: null`. Folder rows are hidden while the lens
+is set (`D83`).
+
+### Behaviour and state
+
+1. **State.** `useExplorerLens({ selected, teams })` holds `input` (the lens string) and `caret` (a number while the
+   field is focused, else null). `parsed = parseLens(input, context, caret ?? undefined)`; `context = { view, teams }`
+   with `view` `lensViewOf(kind) ?? 'aggregate'`.
+2. **From the URL.** `input` starts as `readLensQuery(location.search)`. When the URL's `q` changes from outside
+   (navigation, Back, Forward, a link) and differs from the normalised `input`, `input` adopts it; no telemetry.
+3. **To the URL.** `setInput(next, caret)` stores both, then on a lens view `replace(pathname + withLensQuery(search,
+next))` when the normalised string differs from the URL's; on a view with no lens and a non-empty `next`, `push(
+lensHref(SEARCH_RESULTS_PATH, next))` (`D82`). It emits `trackLensChange(previous.lens, next.lens)`.
+4. **Carry.** `go(node)` writes `carriedHref(explorerPathFor(node), input, lensViewOf(current), lensViewOf(target))`:
+   the lens rides only from an aggregate view to an aggregate view.
+5. **Field model.** The field shows the string as **pills** (its token words) and a **draft** (every other word,
+   the pending word included). `splitField(input, context, caret)` parses with the caret, merges every token of one
+   dimension into one pill (values in canonical order, inert ones included), and cuts the token words out of the
+   draft, keeping its own spacing and mapping the caret into it. `joinField(tokens, draft)` is the tokens, a space,
+   then the draft. Every edit of the draft runs `writeDraft`, so a completed token moves into the pills at once.
+6. **Keys.** Down / Up move the active suggestion (none at first, wrapping); Enter or Tab with one active accept it
+   (`acceptSuggestion`), Tab with none moves on; Escape closes the list. Backspace with the caret at 0 and no selection
+   selects the last pill; a second Backspace removes it (`removePill`); any other key clears the selection.
+7. **Chips.** A multiple chip's option toggles `toggleDimensionValue`; its Any option `setDimensionValues(…, [])`;
+   the Made by AI toggle sets or clears `made-by:ai`. Each writes the whole input, then re-splits it.
+8. **States.** Per view, in order: loading skeleton; **Failed** when its read failed; **Empty** when the base list is
+   empty; **Filtered empty** when the lens is set and nothing matches; else the list.
+9. **Announce.** `LensAnnouncer` waits `LENS_SETTLE_MS` after the input changes, then writes
+   `announceResults(shown, total)` into a polite `role="status"`; it says nothing on mount.
+10. **Retired views.** `selectedFromRoute` reads `/explorer/unsorted` and `/explorer/dynamic` as `all`, and
+    `/explorer/generated` as `search`; their pages replace the URL with `/explorer/all` and
+    `/explorer/search?q=made-by:ai`.
+
+### Interfaces
+
+```ts
+lensViewOf(kind: SelectedNode['kind']): LensView | null;
+lensHref(path: string, input: string): string; // path plus withLensQuery
+carriedHref(path: string, input: string, from: LensView | null, to: LensView | null): string;
+splitField(input: string, context: LensContext, caret: number | null): FieldParts;
+type FieldParts = { tokens: string; draft: string; draftCaret: number };
+joinField(tokens: string, draft: string): string;
+writeDraft(tokens: string, draft: string, draftCaret: number, context: LensContext): { input: string; caret: number };
+removePill(input: string, dimension: LensDimension, context: LensContext): string;
+lensSubjectOf(row: PaneDocument, viewerId: string): LensSubject;
+scopeDocuments<D>(folderId: string | null, children: Map<string | null, Folder[]>, byFolder: Map<string | null, D[]>): D[];
+trackLensChange(previous: Lens, next: Lens): void;
+```
+
+### Edge cases
+
+| Case                                              | Handling                                                        |
+| ------------------------------------------------- | --------------------------------------------------------------- |
+| A `q` arriving with a link holds an unknown token | Kept as text, reported under the chips by name                  |
+| `space:` in `q` on a scoped view                  | Muted pill "not applied", kept in the URL                       |
+| Typing on Home                                    | Search results opens with the typed text; the field keeps focus |
+| Back to a view with another `q`                   | The field shows that `q`; no telemetry                          |
+| The personal read failed                          | Failed on its views; Try again re-reads; the lens is kept       |
+| A folder deleted while lensed inside it           | The folder view's own handling (back to My documents)           |
+| Team view, lens set, spot changes                 | The lens applies to the new spot's subtree                      |
+| Lens set on a view whose base list is empty       | Empty, not Filtered empty                                       |
+
+### Presentation
+
+- **Field:** a rounded `h-9` box, `w-[22rem]` from `sm`, full width below it in a second header row; a magnifier,
+  the pills (`rounded-full`, 11px, brand tone; muted ones slate and dashed), the input (placeholder "Search or filter
+  documents"), the listbox under the field (`max-h-72`, each option its label then the dimension in muted text, a
+  "No matches" note when marked). Pills and text scroll sideways inside the one-line box (`D50`).
+- **Chip row:** under the pane header, `flex` with sideways scroll; chips are `h-8` rounded buttons with a caret, a
+  set chip in the brand tone showing its values; the listbox a `PortalMenu`-like popover with a check per chosen
+  option. Clear is a text button at the end, `invisible` while the lens is empty (`D85`).
+- **Issues:** one `text-xs` line each under the row, amber info tone, the message from `issueMessage`.
+- **Filtered empty:** the `EmptyState` card, title "No documents match these filters", the issue lines, and a Clear
+  filters button. **Failed:** `EmptyState`, title "Couldn’t load documents", a Try again button.
+- **Made by AI badge:** `MadeByAiPill`, sparkle and "Made by AI", violet tone (`text-violet-800` on `bg-violet-50`,
+  `ring-violet-600`; dark `text-violet-200` on `violet-500/15`, `ring-violet-400`), beside the name on rows, in the
+  card's meta row, and on the floating panel's document rows (`D89`).
+
+### Accessibility
+
+The field is `role="combobox"` on the input, `aria-autocomplete="list"`, `aria-expanded`, `aria-controls` the
+`listbox`, `aria-activedescendant` the active option id, `aria-label="Filter documents"`. Pills: a `span` named by
+`pill.name` with a remove `button` named `pill.removeName` (24 by 24 px). Chips: a `group` named "Filters"; each
+multiple chip a `button` with `aria-haspopup="listbox"`, `aria-expanded`, named by `chip.name`; its listbox
+`aria-multiselectable="true"` with `option`s carrying `aria-selected`, roving focus by Up / Down / Home / End, Enter
+and Space toggling; the Made by AI chip a toggle with `aria-pressed`. Focus rings `ring-2 ring-brand-500`. No
+animation beyond the house `motion-safe` transitions.
+
+### Observability
+
+`debugLog('[explorer-lens] parsed terms=<n> applied=<facets> issues=<reasons|none>')` on settle,
+`[explorer-lens] url replaced view=<aggregate|scoped> empty=<bool>`, `[explorer-lens] url adopted from=link|history`,
+`[explorer-lens] carried from=<view> to=<view> kept=<bool>`, `[explorer-lens] search opened from=<kind>`;
+`console.warn('[explorer] list read failed list=documents|shared')` for a failed read. Never a word of the lens or an
+id.
+
+### Testing
+
+| Rule                                                     | Test                                                                      |
+| -------------------------------------------------------- | ------------------------------------------------------------------------- |
+| Which views are scoped, aggregate or none; carry; hrefs  | `app/explorer/lens/lens-views.test.ts`                                    |
+| Pills and draft, completion, caret mapping, pill removal | `app/explorer/lens/field-model.test.ts`                                   |
+| Subjects of every row kind; scope reaches subfolders     | `app/explorer/lens/pane-lens.test.ts`                                     |
+| Telemetry per gained facet only                          | `app/explorer/lens/lens-telemetry.test.ts`                                |
+| Field keys, suggestions, pills, Backspace                | `app/explorer/lens/LensField.test.tsx`                                    |
+| Chips write tokens, listbox semantics, Clear             | `app/explorer/lens/LensChips.test.tsx`                                    |
+| States copy and announcer settle                         | `app/explorer/lens/LensStates.test.tsx`                                   |
+| Routes, retired views                                    | `app/explorer/routes.test.ts`                                             |
+| Real browser, guest and signed in, desktop and phone     | `e2e/explorer-filters.spec.ts`, `e2e/clerk-stub/explorer-filters.spec.ts` |
+
 ## Defaults ledger
 
-D41 to D44, D46 to D54 and D56 to D58 in [DEFAULTS.md](DEFAULTS.md).
+D41 to D44, D46 to D54, D56 to D58 and D81 to D93 in [DEFAULTS.md](DEFAULTS.md).

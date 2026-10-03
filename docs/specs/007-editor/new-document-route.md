@@ -609,7 +609,7 @@ document"**; everything else stays put.
 
 Skip and the `?blank=1` bypass honour the URL placement context (the `?folder` /
 `?team` pre-seed): the blank document files where the Settings step's
-picker would have defaulted, not silently into personal Unsorted.
+picker would have defaulted, not silently at the personal root.
 
 ### Placement rides the create
 
@@ -626,7 +626,7 @@ its first tab's kind and its template family), so a create with no place chosen 
 - **A refused placement** shows the error card with copy for the reason, eyebrow
   "Placement refused", title "Couldn't file the document there", and one action,
   **Choose another place**, which reopens `/new` without the bypass and placement params, so the
-  picker starts from Unsorted:
+  picker starts from the root of My documents:
   - `team_forbidden`: "You're not a member of that team, so the document can't be filed in its library."
   - `folder_not_found`: "That folder no longer exists, or isn't yours."
   - `folder_scope_mismatch`: "That folder belongs to a different space from the one you chose."

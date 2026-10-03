@@ -1,7 +1,7 @@
 # Explorer filters
 
-Status: specified. The grammar, matching, suggestion engine and view models ship in `@livediagram/explorer-lens`
-(`packages/explorer-lens`); the chips, the field and the routes follow with the Explorer page.
+Status: shipped. The grammar, matching, suggestion engine and view models live in `@livediagram/explorer-lens`
+(`packages/explorer-lens`); the Explorer page renders the chips, the field, the states and the routes over it.
 
 ## What
 
@@ -22,9 +22,45 @@ Two different things narrow a list, and they never mix:
   token. A scoped view lists what lives in its scope.
 - The **lens** narrows whatever the current view lists.
 
-An **aggregate view** lists documents from every place at once: **Recent** (and Home), the **search** results, and
+An **aggregate view** lists documents from every place at once: **Recent**, **Favourites**, **Search results** and
 **Shared with me**. Only aggregate views have no scope to narrow by, so only they show the **Space** chip and apply the
-`space:` token. Every other view is a **scoped view**.
+`space:` token. Every other document view is a **scoped view**.
+
+## Views
+
+| View                                               | Route                                                                              | Lens                              |
+| -------------------------------------------------- | ---------------------------------------------------------------------------------- | --------------------------------- |
+| My documents, and each of its folders              | `/explorer/all`, `/explorer/folder?id=<id>`                                        | Scoped                            |
+| A team, at its root or in one of its folders       | `/explorer/team?id=<id>`                                                           | Scoped                            |
+| This browser                                       | `/explorer/offline`                                                                | Scoped                            |
+| Recent, Favourites, Search results, Shared with me | `/explorer/recent`, `/explorer/favourites`, `/explorer/search`, `/explorer/shared` | Aggregate                         |
+| Home, Activity, the Library pages, Trash, Invites  | Their own                                                                          | None: typing opens Search results |
+
+- **Search results** (`/explorer/search`) lists every document the reader can open: their own (My documents and this
+  browser), every team's they have joined, and Shared with me, newest first, with no cap. It has no sidebar row; its
+  page title is **Search results**.
+- A view that lists no documents has no lens of its own. Typing into the field there takes the reader to Search
+  results with what they typed, the field keeping focus; the view they left keeps no `q`.
+- **A scoped lens reaches the whole scope.** While a lens is set on a scoped view, the list holds every matching
+  document in the scope, its subfolders at any depth included, as one flat list, newest first. Folder rows step
+  aside while the lens is set and return when it is cleared. A row from a subfolder names its folder (the
+  [Recent folder chip](recent-folder-chip.md)).
+- **Recent** lists the 12 newest documents that match.
+- **This browser**'s documents are the reader's own: they read as Space `mine` and People `me`, and keep their
+  **Local only** pill ([Explorer structure](explorer-structure.md#local-only-documents)).
+
+## The chip row
+
+Every document view shows one row of chips under its page header and breadcrumb:
+
+- One chip per dimension, in dimension order (Opens in, Kind, Template, Made by AI, Edited, People), then **Space**
+  on aggregate views only. The folder or team the reader is in is the breadcrumb, never a chip.
+- **Clear** ends the row while the lens is set and empties `q`. It keeps its place when hidden, so nothing moves.
+- A chip opens a listbox of its values under it. Choosing a value toggles it and leaves the listbox open; Escape,
+  Tab, a click outside or the chip again closes it, focus returning to the chip.
+- Under the row, every reported issue reads as one line, its word named (the messages of the
+  [Token grammar](#token-grammar)).
+- On a phone the row scrolls sideways in one line.
 
 ## Dimensions
 
@@ -50,10 +86,10 @@ general diagram tab's environment.
   (`TEMPLATE_FAMILIES`). A document whose recorded value is unknown (made before the intent was recorded) matches no
   value of that dimension; it shows whenever that dimension is not set. A general diagram tab matches no Kind value, and
   a document made from no family matches no Template value.
-- **Made by AI replaces the Generated folder.** AI-made documents are no longer a bucket of their own: they live in
-  Unsorted or in a folder like any other document, and `made-by:ai` finds them anywhere. Generated goes in the same
-  step as the filter chips ship; until then it stays reachable as a sidebar row
-  ([Explorer structure](explorer-structure.md), [Folders](folders.md#dynamic-synthetic-folders)).
+- **Made by AI is a filter, not a place.** AI-made documents are no bucket of their own: they live at the root of
+  their space or in a folder like any other document, and `made-by:ai` finds them anywhere. Every row and card of an
+  AI-made document carries a **Made by AI** badge (a sparkle and the words), so what the filter reads is visible. The
+  old Generated view's address, `/explorer/generated`, opens Search results filtered by `made-by:ai`.
 - **Edited** reads the document's last save, in local time. Today starts at midnight; Last 7 days and Last 30 days count
   back that many days from now; Last 12 months counts back 12 calendar months from now; This year starts at midnight on
   1 January. A save in the future (a skewed clock) counts as edited.
@@ -111,7 +147,9 @@ written where the first stood, or added after the last token; clearing a chip re
 
 ## The field
 
-The top-bar search is the lens field on every Explorer view.
+The top-bar search is the lens field on every Explorer view. It sits in the Explorer header, left of the account
+control; below the `sm` breakpoint it takes its own full-width row under the header. Its placeholder reads "Search or
+filter documents". The app-wide search panel (documents, folders, help, settings) stays on the bottom bar's Search.
 
 - Each token renders as a **pill** inside the field: "Template: Retrospective, Kanban", "Space: Acme". The free text
   follows the pills. A pill that does not apply (a Space pill on a scoped view) is muted and says why.
@@ -164,8 +202,8 @@ Keyboard:
 
 - The lens lives in the view's URL as `?q=<string>`, whitespace collapsed, removed when empty. Every change replaces
   the current history entry (no entry per keystroke).
-- Moving between aggregate views **carries** the lens. Entering a scoped view starts with an empty lens; each view's
-  URL keeps its own.
+- Moving between aggregate views **carries** the lens. Entering a scoped view, or a view with no lens, starts with an
+  empty lens; each view's URL keeps its own. Back and Forward restore the lens of the entry they land on.
 - The lens is **not** stored: a new session starts unfiltered. Saved views come later.
 
 ## States
@@ -176,9 +214,14 @@ Keyboard:
 | Filtered empty | "No documents match these filters", the reported reasons under it, and **Clear filters** (empties `q`) |
 | Failed         | "Couldn’t load documents" and **Try again**; the lens stays as it was                                  |
 
+- **Failed** replaces the list when the view's last read failed: the reader's own documents for their own views,
+  Recent, Favourites and Search results; the shared list for Shared with me. A failed read never reads as Empty.
+- The live region speaks only on document views, and only after the lens changes.
+
 ## Telemetry
 
 Each time a dimension gains a value it did not hold, from a chip, an accepted suggestion or a typed token, the Explorer emits
 `Explorer / Selected / <Dimension>` once, with `<Dimension>` from the closed set `Text`, `OpensIn`, `Kind`, `Template`,
 `MadeBy`, `Edited`, `People`, `Space` ([Telemetry](../017-telemetry/telemetry.md)). Text counts when it goes from empty to
-non-empty. Never a value, a word or an id.
+non-empty. Never a value, a word or an id. A lens arriving with a link, or restored by Back, counts for nothing: only
+the reader's own change does.

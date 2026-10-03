@@ -175,7 +175,7 @@ templateFamily?: 'retrospective' | 'kanban' }`. `readCreationIntent(value)`: `un
   body when a string, `folderId` when not `undefined` (null included), `intent` when set. The
   placement-default functions throw `ApiError` with the token as `code`.
 - **MCP:** `create_document` body gains `intent: creationIntentOf(tabs[0], templateFamilyOf(<the first
-input tab's template kind, or null>))`; output `folder` is `"Generated"` when the created
+input tab's template kind, or null>))`; output `folder` is `"My documents"` when the created
   `document.folderId` is null, else the folder's name (`D24`).
 
 ## Data and persistence

@@ -24,7 +24,7 @@ Scope, by file:
 | `apps/live/components/chrome/ApiErrorPage.tsx`          | `eyebrow` prop                                                           |
 | `apps/live/lib/new-document-params.ts`                  | `choosePlacementAgainUrl`                                                |
 | `apps/live/lib/duplicate-document.ts`, `useTeamLibrary` | A team Duplicate is one create into the team                             |
-| `apps/live/lib/offline/offline-convert.ts`              | The sync's explicit Unsorted refile on a refused folder                  |
+| `apps/live/lib/offline/offline-convert.ts`              | The sync's explicit refile at the root on a refused folder               |
 
 ## Domain and naming
 
@@ -32,7 +32,7 @@ Scope, by file:
 | ----------- | ------------------------------------------------ | -------------------------------------------------------- |
 | Placement   | `DocumentPlacement` `{ teamId, folderId }`       | Where a document is filed; null team = My documents      |
 | Space       | `scope` in logs: `personal` / `team`             | My documents or one team's library                       |
-| Root        | `folderId: null`, log `folder=root`              | The space's Unsorted                                     |
+| Root        | `folderId: null`, log `folder=root`              | The space's root, listed beside its root folders         |
 | Rejection   | `PlacementRejection`, the response `error` token | A named refusal of the whole create                      |
 | Folder step | `FolderStep`, `FOLDER_STEPS`                     | One rung of folder resolution; `null` passes to the next |
 | Via         | `via` in logs: `explicit` / `default` / `root`   | Which folder step decided                                |
@@ -129,7 +129,7 @@ No new request on the happy path (one fewer: the follow-up PUT is gone); no layo
 | `placement: resolved scope=<personal/team> folder=<set/root> via=<step>`           | api, info         |
 | `placement: rejected reason=<code> scope=<personal/team>`                          | api, warn         |
 | `placement: skipped reason=existing`                                               | api, info         |
-| `[offline-sync] placement refused reason=<code>, filed in Unsorted`                | editor, warn      |
+| `[offline-sync] placement refused reason=<code>, filed at root`                    | editor, warn      |
 | `[new] create failed action=<retry/choose>`                                        | editor, debug log |
 | `Http<status>.CreateDocument.<Code>`, e.g. `Http404.CreateDocument.FolderNotFound` | editor telemetry  |
 

@@ -9,16 +9,20 @@ document **lives**, and which **views** compute lists of documents from wherever
 
 - **Places.** A document lives in exactly one place: **My documents**, a **team**, or **this browser**
   ([Offline Mode](../006-document/offline-mode.md)). Moving a document changes its place.
-- **Views.** Everything else (Home, Activity, Shared with me, Unsorted, Generated, the Library pages, Trash) is a
-  computed view. A view never owns a document; it lists documents that live somewhere else.
+- **Views.** Everything else (Home, Activity, Shared with me, Recent, Favourites, Search results, the Library pages,
+  Trash) is a computed view. A view never owns a document; it lists documents that live somewhere else.
+- **A space's root holds documents.** A document filed in no folder sits at the root of its space, listed beside the
+  root folders: there is no Unsorted bucket and no Generated bucket. What an AI made is found with the **Made by AI**
+  filter ([Explorer filters](explorer-filters.md)), wherever it is filed.
 - **Spaces are root folders.** My documents and each team are root-level folder rows in one tree, with their folders
   beneath them. My documents maps one to one onto the [Google Drive mirror](../022-drive-mirror/drive-mirror.md)'s root
   folder.
 
 The sidebar holds navigation only. It carries no greeting, no search field, no New button and no pins:
 
-- **Search** lives in the top bar: a **Search** control in the Explorer header, beside the account control, opens the
-  app-wide search panel (the bottom bar's Search opens the same panel).
+- **Search** lives in the top bar: the lens field of [Explorer filters](explorer-filters.md#the-field), left of the
+  account control, searches and filters the documents of the current view. The bottom bar's Search opens the
+  app-wide search panel.
 - **New folder** and **New document** live in the page header of the view they create in.
 - The account is reached from the header's account menu.
 
@@ -40,20 +44,17 @@ Home is the Explorer's landing view. Recent and Favourites have no sidebar row; 
 
 ### Spaces
 
-| Row          | Opens                                  | Children                                   | Badge                      |
-| ------------ | -------------------------------------- | ------------------------------------------ | -------------------------- |
-| My documents | `/explorer/all`, the My documents root | Unsorted, Generated, then the root folders | None                       |
-| Each team    | `/explorer/team?id=<id>`               | The team's root folders                    | Member count, when above 1 |
-| Invites      | `/explorer/invites`                    | None                                       | Pending invites            |
-| New team     | The New team form (a dialog)           | None                                       | None                       |
+| Row          | Opens                                  | Children                | Badge                      |
+| ------------ | -------------------------------------- | ----------------------- | -------------------------- |
+| My documents | `/explorer/all`, the My documents root | The root folders        | None                       |
+| Each team    | `/explorer/team?id=<id>`               | The team's root folders | Member count, when above 1 |
+| Invites      | `/explorer/invites`                    | None                    | Pending invites            |
+| New team     | The New team form (a dialog)           | None                    | None                       |
 
-- **Unsorted** and **Generated** are My documents' first two children, in that order, before its folders. They are
-  the same views as before ([Folders: Dynamic folders](folders.md#dynamic-synthetic-folders)), each with its badge
-  hidden at zero.
-- **Generated is removed together with the filter UI.** The next build step ships the Explorer's filter chips, with
-  **Made by AI** (`made-by:ai`, [Explorer filters](explorer-filters.md)) among them; that step drops the Generated
-  row, its view and its telemetry type, and Unsorted then holds AI-made documents too. Until then the row stays, so
-  AI-made documents remain reachable as a group.
+- **The My documents root** lists its root folders, then its root documents, newest first. A team's root does the
+  same for the team. The old Unsorted, Generated and Dynamic addresses still answer: `/explorer/unsorted` and
+  `/explorer/dynamic` open the My documents root, `/explorer/generated` opens Search results filtered by
+  `made-by:ai`.
 - A folder row opens its folder, expands to its subfolders, and carries the folder menu (Rename, New subfolder,
   Change folder, Delete). A team folder row opens the team page at that folder and carries no menu.
 - **Invites** shows only while the reader has a pending invite (or is on the Invites view). An invite also reaches the
@@ -91,9 +92,8 @@ the breadcrumb and the help centre's copy. Routes stay as they are.
 | Image gallery   | `/explorer/images`          | Image gallery   |
 | Shape libraries | `/explorer/shape-libraries` | Shape libraries |
 
-Every other row's view already carries its row's label (Activity, Unsorted, Generated, a folder or team by its name,
-Invites, Themes, Trash). Views without a row keep their own names (Recent, Favourites, Dynamic). The synthetic folder
-the My documents list shows for this browser reads **This browser** too.
+Every other row's view already carries its row's label (Activity, a folder or team by its name, Invites, Themes,
+Trash). Views without a row keep their own names (Recent, Favourites, Search results).
 
 ## Visibility at a glance
 
@@ -111,7 +111,7 @@ the My documents list shows for this browser reads **This browser** too.
 
 ## Expansion
 
-- **My documents** starts expanded, so Unsorted stays one click away.
+- **My documents** starts expanded, so its root folders stay one click away.
 - **Library** starts collapsed, and expands by itself when one of its pages is the current view (on arrival and on
   navigating to one), so the highlighted row is always visible.
 - **Teams and folders** start collapsed. A team or folder with no subfolders shows no chevron.
@@ -172,8 +172,9 @@ Current Document card it holds one `nav` named "Explorer" with Overview, Spaces 
 
 What differs is what a row does in an editor, where leaving the document is a bigger step:
 
-- **Rows with documents open in place.** Shared with me, My documents, Unsorted, Generated, each folder, each team and
-  This browser expand to show their documents as rows beneath them. Shared with me with nothing shared, and a team
+- **Rows with documents open in place.** Shared with me, My documents, each folder, each team and This browser
+  expand to show their documents as rows beneath them; My documents and a team show their root folders, then their
+  root documents. Shared with me with nothing shared, and a team
   with nothing in it, go to their Explorer page instead. Activating such a row expands or collapses it; it
   never leaves the editor. A document row opens the document, carries the document menu (`⋯`, right-click,
   Shift+F10), its favourite star and, for an offline document, the Local only pill. The open document's row is the
@@ -183,7 +184,8 @@ What differs is what a row does in an editor, where leaving the document is a bi
   creating teams happen in the Explorer, and the panel keeps its own sign-in notice under the tree.
 - **Compact on open.** Every expandable row starts collapsed (My documents included), so the panel opens at its
   smallest; expansion lasts as long as the editor is open.
-- **Filing.** One of the reader's own document rows drags onto a personal folder row or Unsorted, as before. A personal folder row carries the folder menu plus Show in Explorer; a team folder row carries the team folder verbs
+- **Filing.** One of the reader's own document rows drags onto a personal folder row, or onto My documents to file
+  it at the root. A personal folder row carries the folder menu plus Show in Explorer; a team folder row carries the team folder verbs
   the session may use.
 - Group titles and separators follow Minimal chrome exactly as in the sidebar.
 - The tree scrolls inside the panel when it is taller than the space it has.
@@ -192,8 +194,8 @@ What differs is what a row does in an editor, where leaving the document is a bi
 
 A document saved only in this browser ([Offline Mode](../006-document/offline-mode.md)) is the reader's own: it counts
 wherever the reader's own documents count (Space `mine`, owner "You"), the same as a document in My documents. Every
-row and card of one, wherever it is listed (folders and Unsorted, This browser, Recent and Favourites, search results,
-the floating panel, the Trash), carries the **Local only** pill
+row and card of one, wherever it is listed (folders, This browser, Recent and Favourites, Search results, the
+floating panel, the Trash), carries the **Local only** pill
 ([Offline Mode: Local only pill](../006-document/offline-mode.md#local-only-pill)).
 
 The editor header names such a document with the matching **Local only** badge. Home's "Jump back in" strip carries the
@@ -202,8 +204,8 @@ same pill (`LocalOnlyPill`) when the Home page's own layout lands; until then Ho
 ## Telemetry
 
 Each sidebar activation emits `UI / Selected / Sidebar.<Row>`, where `<Row>` is the row kind from a closed set (Home,
-Activity, SharedWithMe, MyDocuments, Unsorted, Generated, Folder, Team, TeamFolder, Invites, NewTeam, ThisBrowser,
-Library, ImageGallery, Themes, ShapeLibraries, Trash), never a name or id
+Activity, SharedWithMe, MyDocuments, Folder, Team, TeamFolder, Invites, NewTeam, ThisBrowser, Library, ImageGallery,
+Themes, ShapeLibraries, Trash), never a name or id
 ([Telemetry](../017-telemetry/telemetry.md)). Creating the team is still `Team / Created`.
 
 ## Help

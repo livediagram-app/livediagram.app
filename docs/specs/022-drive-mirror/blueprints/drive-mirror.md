@@ -69,30 +69,30 @@ Scope, by file:
 
 ## Domain and naming
 
-| Term           | Identifier                                        | Meaning                                                                    |
-| -------------- | ------------------------------------------------- | -------------------------------------------------------------------------- |
-| Mirror         | `drive-mirror`                                    | The copy of My documents in the user's Drive                               |
-| Connection     | `drive_connections` row, `DriveConnection`        | One user's grant and mirror state                                          |
-| Mode           | `DriveMode`: `off` \| `browser` \| `broker`       | How the deployment gets Google access tokens                               |
-| Status         | `DriveConnectionStatus`                           | `connected` \| `needs_reconnect`                                           |
-| Item           | `drive_items` row, `DriveItem`                    | One mirrored document or folder and the Drive state livediagram last wrote |
-| Item kind      | `DriveItemKind`: `document` \| `folder`           |                                                                            |
-| Root           | `root_folder_id`                                  | The mirror's root folder, named `driveRootName(host)`; Unsorted            |
-| Document file  | `.livediagram` file                               | A document's mirror                                                        |
-| Envelope       | `DocumentEnvelope`, `livediagram.document`        | The file's contents                                                        |
-| Drive state    | `fileState(file)`                                 | `{ name, parentId, trashed, md5, headRevisionId }` of one Drive file       |
-| Echo           | `planInbound` answering `echo`                    | A change whose Drive state equals the item's: livediagram's own write      |
-| Foreign change | the differing attributes in `planInbound`         | The attributes of a change that differ from the item                       |
-| Pass           | `DriveMirrorEngine.pass(kind)`                    | One run: token, snapshot, inbound, outbound                                |
-| Inbound        | `planInbound`                                     | Drive to livediagram                                                       |
-| Outbound       | `planOutbound`                                    | livediagram to Drive                                                       |
-| Lease          | `lease_holder`, `lease_expires_at`                | Which device may write outbound                                            |
-| Device id      | `livediagram:v2:drive-device`                     | A per-browser random id, the lease holder                                  |
-| Elected tab    | Web Lock `livediagram:drive-mirror`               | The one tab per browser that runs the engine                               |
-| Tombstone      | `SeenRow` in a `SeenStore`                        | A row this browser saw that has since disappeared                          |
-| Notice         | `notice = 'unseen_folder'`                        | The item was moved in Drive to a folder livediagram cannot see             |
-| Adoption       | `adoptFolder`                                     | Showing an unseen folder to livediagram with the Picker                    |
-| Foreign file   | `resolveOpenWith` = `import` (`foreign`, `no-id`) | A `.livediagram` file from another deployment, or with no `ldDocumentId`   |
+| Term           | Identifier                                        | Meaning                                                                         |
+| -------------- | ------------------------------------------------- | ------------------------------------------------------------------------------- |
+| Mirror         | `drive-mirror`                                    | The copy of My documents in the user's Drive                                    |
+| Connection     | `drive_connections` row, `DriveConnection`        | One user's grant and mirror state                                               |
+| Mode           | `DriveMode`: `off` \| `browser` \| `broker`       | How the deployment gets Google access tokens                                    |
+| Status         | `DriveConnectionStatus`                           | `connected` \| `needs_reconnect`                                                |
+| Item           | `drive_items` row, `DriveItem`                    | One mirrored document or folder and the Drive state livediagram last wrote      |
+| Item kind      | `DriveItemKind`: `document` \| `folder`           |                                                                                 |
+| Root           | `root_folder_id`                                  | The mirror's root folder, named `driveRootName(host)`; the root of My documents |
+| Document file  | `.livediagram` file                               | A document's mirror                                                             |
+| Envelope       | `DocumentEnvelope`, `livediagram.document`        | The file's contents                                                             |
+| Drive state    | `fileState(file)`                                 | `{ name, parentId, trashed, md5, headRevisionId }` of one Drive file            |
+| Echo           | `planInbound` answering `echo`                    | A change whose Drive state equals the item's: livediagram's own write           |
+| Foreign change | the differing attributes in `planInbound`         | The attributes of a change that differ from the item                            |
+| Pass           | `DriveMirrorEngine.pass(kind)`                    | One run: token, snapshot, inbound, outbound                                     |
+| Inbound        | `planInbound`                                     | Drive to livediagram                                                            |
+| Outbound       | `planOutbound`                                    | livediagram to Drive                                                            |
+| Lease          | `lease_holder`, `lease_expires_at`                | Which device may write outbound                                                 |
+| Device id      | `livediagram:v2:drive-device`                     | A per-browser random id, the lease holder                                       |
+| Elected tab    | Web Lock `livediagram:drive-mirror`               | The one tab per browser that runs the engine                                    |
+| Tombstone      | `SeenRow` in a `SeenStore`                        | A row this browser saw that has since disappeared                               |
+| Notice         | `notice = 'unseen_folder'`                        | The item was moved in Drive to a folder livediagram cannot see                  |
+| Adoption       | `adoptFolder`                                     | Showing an unseen folder to livediagram with the Picker                         |
+| Foreign file   | `resolveOpenWith` = `import` (`foreign`, `no-id`) | A `.livediagram` file from another deployment, or with no `ldDocumentId`        |
 
 Banned synonyms: "sync target", "backup", "Drive location", "Drive save". The mirror is never where a document lives.
 
@@ -212,27 +212,27 @@ Changes are coalesced to **one per file, the latest** (each entry carries the fi
 last entry's `time` dates it), then sorted **folders first**, then files, each in `time` order. `planInbound(change, snapshot, items)`
 returns one `InboundDecision`:
 
-| Situation                                                                              | Decision                                                                |
-| -------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
-| No item for `fileId`, file lacks `ldOrigin === host`                                   | `ignore` (not ours, or the root)                                        |
-| No item, `ldFolderId` names no folder, file not trashed                                | `recreate-folder` (same id, parent by Drive parent)                     |
-| No item, `ldDocumentId` names a document whose item holds another file                 | `ignore` (`foreign-copy`, logged `inbound-foreign-copy`)                |
-| No item, `ldFolderId` names a known folder                                             | `adopt` (record the item, then re-plan)                                 |
-| No item, `ldDocumentId` names a known document                                         | `ignore` (`unrecorded-document`); adopted only by the reconnect listing |
-| `removed`, document item, document in the personal Trash                               | `purge`                                                                 |
-| `removed`, document item, document live                                                | `forget-file` (item dropped; outbound re-creates)                       |
-| `removed`, document item, document outside My documents                                | `forget-file`                                                           |
-| `removed`, folder item                                                                 | `forget-file` (outbound re-creates it while the folder lives)           |
-| No foreign field                                                                       | `echo`                                                                  |
-| Folder item, `trashed` became true                                                     | `bin-folder`                                                            |
-| Document item, `trashed` became true, document live                                    | `trash`                                                                 |
-| Document item, `trashed` became false, document in the personal Trash                  | `restore` then placement by Drive parent                                |
-| Name changed, livediagram name unchanged since sync (`name === ldName`) or Drive later | `rename` to `stripDriveName(file.name)`; empty keeps the old            |
-| Parent changed, livediagram parent unchanged or Drive later, parent a mirrored folder  | `move` to that folder                                                   |
-| Parent changed, same, parent the root                                                  | `move` to Unsorted                                                      |
-| Parent changed, same, parent unknown or none                                           | `move` to Unsorted (document) or top level (folder), `notice`           |
-| Only `md5` / `headRevisionId` changed                                                  | `rewrite` (item `mirroredSavedAt` set to 0)                             |
-| The value livediagram already holds                                                    | recorded only                                                           |
+| Situation                                                                              | Decision                                                                      |
+| -------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| No item for `fileId`, file lacks `ldOrigin === host`                                   | `ignore` (not ours, or the root)                                              |
+| No item, `ldFolderId` names no folder, file not trashed                                | `recreate-folder` (same id, parent by Drive parent)                           |
+| No item, `ldDocumentId` names a document whose item holds another file                 | `ignore` (`foreign-copy`, logged `inbound-foreign-copy`)                      |
+| No item, `ldFolderId` names a known folder                                             | `adopt` (record the item, then re-plan)                                       |
+| No item, `ldDocumentId` names a known document                                         | `ignore` (`unrecorded-document`); adopted only by the reconnect listing       |
+| `removed`, document item, document in the personal Trash                               | `purge`                                                                       |
+| `removed`, document item, document live                                                | `forget-file` (item dropped; outbound re-creates)                             |
+| `removed`, document item, document outside My documents                                | `forget-file`                                                                 |
+| `removed`, folder item                                                                 | `forget-file` (outbound re-creates it while the folder lives)                 |
+| No foreign field                                                                       | `echo`                                                                        |
+| Folder item, `trashed` became true                                                     | `bin-folder`                                                                  |
+| Document item, `trashed` became true, document live                                    | `trash`                                                                       |
+| Document item, `trashed` became false, document in the personal Trash                  | `restore` then placement by Drive parent                                      |
+| Name changed, livediagram name unchanged since sync (`name === ldName`) or Drive later | `rename` to `stripDriveName(file.name)`; empty keeps the old                  |
+| Parent changed, livediagram parent unchanged or Drive later, parent a mirrored folder  | `move` to that folder                                                         |
+| Parent changed, same, parent the root                                                  | `move` to the root of My documents                                            |
+| Parent changed, same, parent unknown or none                                           | `move` to the root of My documents (document) or top level (folder), `notice` |
+| Only `md5` / `headRevisionId` changed                                                  | `rewrite` (item `mirroredSavedAt` set to 0)                                   |
+| The value livediagram already holds                                                    | recorded only                                                                 |
 
 "Drive later" is `Date.parse(change.time) > ldChangedAt`, `ldChangedAt` being the document's `savedAt` or the
 folder's `updatedAt`. A decision may carry several effects (a restore that also moves). After applying, the item
