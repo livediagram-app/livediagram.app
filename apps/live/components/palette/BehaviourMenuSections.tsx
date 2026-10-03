@@ -24,7 +24,8 @@ import {
   type SessionButtonConfig,
   type ShapeElement,
 } from '@livediagram/document';
-import { MenuAccordionSection, MenuTile, MenuTileGrid } from '@/components/primitives/PortalMenu';
+import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
+import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
 import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
 import { SessionElementSettings } from '@/components/canvas/SessionElementSettings';
 import { ToolsMenuGlyph } from '@/components/palette/context-menu-icons';

@@ -18,12 +18,8 @@ import {
   TextColourIcon,
   TextGlyph,
 } from '@/components/palette/context-menu-icons';
-import {
-  MenuAccordionSection,
-  MenuGroupSeparator,
-  MenuTile,
-  MenuTileGrid,
-} from '@/components/primitives/PortalMenu';
+import { MenuAccordionSection, MenuGroupSeparator } from '@/components/primitives/PortalMenu';
+import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
 import {
   ColourRow,
   MenuToggleRow,

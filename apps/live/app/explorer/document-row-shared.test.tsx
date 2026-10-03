@@ -25,7 +25,7 @@ describe('DocumentActionsMenu', () => {
         onDelete={vi.fn()}
       />,
     );
-    const del = screen.getByRole('button', { name: 'Delete' });
+    const del = screen.getByRole('menuitem', { name: 'Delete' });
     expect(del.className).not.toMatch(/rose|red/);
     expect(del.innerHTML).not.toMatch(/rose|red-/);
   });

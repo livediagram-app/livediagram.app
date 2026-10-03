@@ -74,7 +74,15 @@ export function ShareCopyMenu({
         </button>
       </HoverCard>
       {open ? (
-        <PortalMenu anchor={anchor} placement="below" onClose={() => setOpen(false)}>
+        <PortalMenu
+          anchor={anchor}
+          placement="below"
+          onClose={() => setOpen(false)}
+          // A header holding a control (the Live image tab picker) makes it a control menu
+          // (docs/specs/004-interface-design/menus.md).
+          surface={header ? 'control' : 'command'}
+          label={label}
+        >
           {header ? (
             <div className="border-b border-slate-100 px-3 py-2 dark:border-slate-700">
               {header}

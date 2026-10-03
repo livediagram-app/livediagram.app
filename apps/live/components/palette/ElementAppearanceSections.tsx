@@ -47,11 +47,8 @@ import {
   StyleMenuGlyph,
   TextGlyph,
 } from '@/components/palette/context-menu-icons';
-import {
-  MenuAccordionSection,
-  MenuGroupSeparator,
-  MenuTile,
-} from '@/components/primitives/PortalMenu';
+import { MenuAccordionSection, MenuGroupSeparator } from '@/components/primitives/PortalMenu';
+import { MenuTile } from '@/components/primitives/MenuTiles';
 import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
 import { MenuToggleRow } from '@/components/palette/context-menu-input-rows';
 import { TypographySections } from './TypographySections';

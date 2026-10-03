@@ -292,3 +292,25 @@ describe('Shift+D', () => {
     expect(onCycleEditorMode).not.toHaveBeenCalled();
   });
 });
+
+// docs/specs/004-interface-design/menus.md: while focus is inside a menu of either kind the
+// canvas's shortcuts stand down.
+describe('inside a menu', () => {
+  it('leaves Delete, the arrows and Escape to the menu', () => {
+    const { bag, spies } = deps();
+    renderHook(() => useEditorKeyboardShortcuts(bag));
+    const menu = document.createElement('div');
+    menu.setAttribute('data-menu-surface', 'control');
+    const row = document.createElement('button');
+    menu.append(row);
+    document.body.append(menu);
+    for (const key of ['Delete', 'Backspace', 'ArrowDown', 'Escape']) {
+      const e = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true });
+      row.dispatchEvent(e);
+      expect(e.defaultPrevented).toBe(false);
+    }
+    expect(spies.deleteSelected).not.toHaveBeenCalled();
+    expect(spies.onShortcutUsed).not.toHaveBeenCalled();
+    menu.remove();
+  });
+});

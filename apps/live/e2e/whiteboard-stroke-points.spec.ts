@@ -51,11 +51,10 @@ async function savedElements(page: Page): Promise<SavedElement[]> {
 // The tab through the Export dialog, as the file it downloads.
 async function exportTab(page: Page, format: 'SVG' | 'PNG'): Promise<Buffer> {
   await page.getByRole('button', { name: 'Tab menu' }).click();
-  await page
-    .getByRole('menu')
-    .getByRole('button', { name: /^Content/ })
-    .click();
-  await page.getByRole('menu').getByRole('button', { name: 'Export', exact: true }).click();
+  // The Tab menu is a control menu: a named dialog (docs/specs/004-interface-design/menus.md).
+  const tabMenu = page.getByRole('dialog', { name: 'Tab menu' });
+  await tabMenu.getByRole('button', { name: /^Content/ }).click();
+  await tabMenu.getByRole('button', { name: 'Export', exact: true }).click();
   const dialog = page.getByRole('dialog', { name: 'Export tab' });
   await dialog.getByRole('button', { name: new RegExp(`^${format}`) }).click();
   const download = page.waitForEvent('download');

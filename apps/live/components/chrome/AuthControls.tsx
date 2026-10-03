@@ -22,8 +22,8 @@
 
 import { useDeferredAuth } from '@/components/providers/deferred-auth';
 import Link from 'next/link';
-import { useRef, useState } from 'react';
-import { useClickOutside, SOLID_BRAND_DARK, Glyph } from '@livediagram/ui';
+import { useId, useRef, type ReactNode } from 'react';
+import { useClickOutside, SOLID_BRAND_DARK, Glyph, useMenu, useMenuButton } from '@livediagram/ui';
 import { sessionsEnabled } from '@/lib/clerk-config';
 import { track } from '@/lib/telemetry';
 import { useAuthHrefs } from '@/components/chrome/auth-shared';
@@ -50,14 +50,23 @@ type AuthControlsProps = {
 
 function AuthControlsEnabled({ onOpenAccount }: AuthControlsProps) {
   const { authLoaded, isSignedIn, user, signOut } = useDeferredAuth();
-  const [menuOpen, setMenuOpen] = useState(false);
+  // A menu button (docs/specs/004-interface-design/menus.md): the menu keyboard comes from the hooks.
+  const {
+    open: menuOpen,
+    close: closeMenu,
+    toggle,
+    trigger,
+    setTrigger,
+    onTriggerKeyDown,
+  } = useMenuButton();
   const menuRef = useRef<HTMLDivElement>(null);
+  const nameId = useId();
   // Return here after sign-in (must run before the early returns below).
   const { signInHref } = useAuthHrefs();
 
   // Click-outside closes the menu. Listener installs only while
   // the menu is open so an inert button doesn't pay for it.
-  useClickOutside(menuRef, () => setMenuOpen(false), menuOpen);
+  useClickOutside(menuRef, closeMenu, menuOpen);
 
   if (!authLoaded) return null;
 
@@ -87,9 +96,12 @@ function AuthControlsEnabled({ onOpenAccount }: AuthControlsProps) {
   return (
     <div className="relative flex h-full" ref={menuRef}>
       <button
+        ref={setTrigger}
         type="button"
-        onClick={() => setMenuOpen((open) => !open)}
+        onClick={toggle}
+        onKeyDown={onTriggerKeyDown}
         aria-label="Account menu"
+        aria-haspopup="menu"
         aria-expanded={menuOpen}
         className={`${HEADER_ACTION_BTN} ${HEADER_ACTION_TONE}`}
       >
@@ -107,12 +119,14 @@ function AuthControlsEnabled({ onOpenAccount }: AuthControlsProps) {
         <span className="max-w-[4.5rem] truncate">{pillLabel ?? 'Account'}</span>
       </button>
       {menuOpen ? (
-        <div
-          role="menu"
-          className="absolute right-0 top-full mt-1 w-56 rounded-md border border-slate-200 bg-white p-1 shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-800 dark:shadow-black/30"
-        >
+        <AccountMenu trigger={trigger} onClose={closeMenu}>
           {displayName ? (
-            <div className="px-3 py-2 text-xs text-slate-500 dark:text-slate-400">
+            <div
+              data-menu-label=""
+              id={nameId}
+              aria-hidden
+              className="px-3 py-2 text-xs text-slate-500 dark:text-slate-400"
+            >
               <p className="truncate font-medium text-slate-900 dark:text-slate-100">
                 {displayName}
               </p>
@@ -128,8 +142,9 @@ function AuthControlsEnabled({ onOpenAccount }: AuthControlsProps) {
             <button
               type="button"
               role="menuitem"
+              tabIndex={-1}
               onClick={() => {
-                setMenuOpen(false);
+                closeMenu();
                 onOpenAccount();
               }}
               className="block w-full rounded px-3 py-2 text-left text-sm text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-700"
@@ -140,7 +155,8 @@ function AuthControlsEnabled({ onOpenAccount }: AuthControlsProps) {
             <Link
               href="/explorer?settings=account"
               role="menuitem"
-              onClick={() => setMenuOpen(false)}
+              tabIndex={-1}
+              onClick={closeMenu}
               className="block w-full rounded px-3 py-2 text-left text-sm text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-700"
             >
               Account
@@ -149,8 +165,9 @@ function AuthControlsEnabled({ onOpenAccount }: AuthControlsProps) {
           <button
             type="button"
             role="menuitem"
+            tabIndex={-1}
             onClick={() => {
-              setMenuOpen(false);
+              closeMenu();
               track('Session', 'SignedOut');
               // Land on the marketing landing page at `/` (router worker
               // serves marketing there). Once you're signed out, the editor
@@ -161,8 +178,29 @@ function AuthControlsEnabled({ onOpenAccount }: AuthControlsProps) {
           >
             Sign out
           </button>
-        </div>
+        </AccountMenu>
       ) : null}
+    </div>
+  );
+}
+
+function AccountMenu({
+  trigger,
+  onClose,
+  children,
+}: {
+  trigger: HTMLElement | null;
+  onClose: () => void;
+  children: ReactNode;
+}) {
+  const { attach, surfaceProps } = useMenu({ onClose, trigger });
+  return (
+    <div
+      ref={attach}
+      {...surfaceProps}
+      className="absolute right-0 top-full mt-1 w-56 rounded-md border border-slate-200 bg-white p-1 shadow-lg shadow-slate-900/10 outline-none dark:border-slate-700 dark:bg-slate-800 dark:shadow-black/30"
+    >
+      {children}
     </div>
   );
 }

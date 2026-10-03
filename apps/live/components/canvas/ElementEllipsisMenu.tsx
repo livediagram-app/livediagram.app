@@ -1,9 +1,17 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 
 import { Portal } from '@/components/primitives/Portal';
-import { Glyph } from '@livediagram/ui';
+import { useMenuItemProps } from '@/components/primitives/menu-item-props';
+import {
+  Glyph,
+  MenuTreeContext,
+  useControlMenu,
+  useMenu,
+  type MenuKind,
+  type MenuTree,
+} from '@livediagram/ui';
 
 // A small `…` menu attached to an element's own face.
 //
@@ -25,12 +33,18 @@ import { Glyph } from '@livediagram/ui';
 
 export function ElementEllipsisMenu({
   label,
+  kind,
   color,
   align = 'right',
   children,
 }: {
   /** Accessible name for the trigger, e.g. "Timer options". */
   label: string;
+  /**
+   * A command menu of verbs (the collab faces), or a control menu holding a session tool's
+   * settings (docs/specs/004-interface-design/menus.md).
+   */
+  kind: MenuKind;
   /** Trigger colour, so it sits in the element's own palette. */
   color?: string;
   align?: 'left' | 'right';
@@ -42,7 +56,13 @@ export function ElementEllipsisMenu({
   // positioning from there: see the note above on why tracking is unnecessary.
   const [at, setAt] = useState<{ x: number; y: number } | null>(null);
   const trigger = useRef<HTMLButtonElement | null>(null);
+  const [triggerEl, setTriggerEl] = useState<HTMLButtonElement | null>(null);
+  const setTrigger = useCallback((el: HTMLButtonElement | null) => {
+    trigger.current = el;
+    setTriggerEl(el);
+  }, []);
   const popover = useRef<HTMLDivElement | null>(null);
+  const close = useCallback(() => setOpen(false), []);
 
   useEffect(() => {
     if (!open) return;
@@ -63,9 +83,10 @@ export function ElementEllipsisMenu({
   return (
     <div className="pointer-events-auto relative">
       <button
-        ref={trigger}
+        ref={setTrigger}
         type="button"
         aria-label={label}
+        aria-haspopup={kind === 'command' ? 'menu' : 'dialog'}
         aria-expanded={open}
         // The canvas reads a press on an element as select-and-maybe-drag, so
         // the trigger has to stop the gesture or opening the menu drags the
@@ -91,75 +112,138 @@ export function ElementEllipsisMenu({
       </button>
       {open && at ? (
         <Portal>
-          <div
-            ref={popover}
-            role="menu"
-            onPointerDown={(e) => e.stopPropagation()}
-            // A React portal renders into document.body but its events still
-            // bubble up the REACT tree — so without these, a click or
-            // double-click on this panel arrives at the canvas element that
-            // rendered the `…` trigger, however far away it is on screen.
-            //
-            // Double-click was the one that bit: the poll's panel has text
-            // inputs, and double-clicking to select a word in one put the
-            // element underneath into text-edit mode, which re-rendered the
-            // face and took the panel with it. So the gesture you make to edit
-            // a choice was the gesture that threw the panel away.
-            //
-            // Click is stopped for the same reason, one event name away: a
-            // press on the panel's own padding would otherwise reach the
-            // element's select handler. Rows stop their own clicks before this,
-            // so nothing inside loses anything.
-            onClick={(e) => e.stopPropagation()}
-            onDoubleClick={(e) => e.stopPropagation()}
-            // And right-click: the element's handler would arm its context
-            // menu and swallow the browser's own (the paste menu in a choice
-            // field). Only propagation stops, not the default, so the
-            // browser's menu still opens. contextmenu is what arms it, so
-            // pointerup can keep bubbling to the window-level drag listeners.
-            onContextMenu={(e) => e.stopPropagation()}
-            className="fixed z-[var(--z-popover,60)] min-w-[10rem] max-h-[60vh] overflow-y-auto overflow-x-hidden rounded-lg border border-slate-200 bg-white py-1 shadow-lg dark:border-slate-700 dark:bg-slate-900"
-            style={{
-              top: at.y,
-              // Anchored by the edge it opened from, so a menu near the right
-              // of the screen opens leftward instead of off it.
-              ...(align === 'left' ? { left: at.x } : { right: window.innerWidth - at.x }),
-            }}
+          <ElementMenuSurface
+            kind={kind}
+            label={label}
+            trigger={triggerEl}
+            popoverRef={popover}
+            at={at}
+            align={align}
+            onClose={close}
           >
-            {children(() => setOpen(false))}
-          </div>
+            {children(close)}
+          </ElementMenuSurface>
         </Portal>
       ) : null}
     </div>
   );
 }
 
-/** One row in an ElementEllipsisMenu. */
+type SurfaceProps = {
+  kind: MenuKind;
+  label: string;
+  trigger: HTMLButtonElement | null;
+  popoverRef: React.RefObject<HTMLDivElement | null>;
+  at: { x: number; y: number };
+  align: 'left' | 'right';
+  onClose: () => void;
+  children: ReactNode;
+};
+
+// Each kind runs its own hook, so the two never share conditional hooks.
+function ElementMenuSurface(props: SurfaceProps) {
+  return props.kind === 'command' ? <CommandSurface {...props} /> : <ControlSurface {...props} />;
+}
+
+function CommandSurface(props: SurfaceProps) {
+  const { attach, tree, surfaceProps } = useMenu({
+    onClose: props.onClose,
+    trigger: props.trigger,
+  });
+  return <SurfaceFrame {...props} attach={attach} tree={tree} surfaceProps={surfaceProps} />;
+}
+
+function ControlSurface(props: SurfaceProps) {
+  const { attach, tree, surfaceProps } = useControlMenu({
+    onClose: props.onClose,
+    trigger: props.trigger,
+    label: props.label,
+  });
+  return <SurfaceFrame {...props} attach={attach} tree={tree} surfaceProps={surfaceProps} />;
+}
+
+function SurfaceFrame({
+  popoverRef,
+  at,
+  align,
+  attach,
+  tree,
+  surfaceProps,
+  children,
+}: SurfaceProps & {
+  attach: (el: HTMLElement | null) => void;
+  tree: MenuTree;
+  surfaceProps: object;
+}) {
+  const ref = useCallback(
+    (el: HTMLDivElement | null) => {
+      popoverRef.current = el;
+      attach(el);
+    },
+    [popoverRef, attach],
+  );
+  return (
+    <MenuTreeContext.Provider value={tree}>
+      <div
+        ref={ref}
+        {...surfaceProps}
+        onPointerDown={(e) => e.stopPropagation()}
+        // A React portal renders into document.body but its events still
+        // bubble up the REACT tree — so without these, a click or
+        // double-click on this panel arrives at the canvas element that
+        // rendered the `…` trigger, however far away it is on screen.
+        //
+        // Double-click was the one that bit: the poll's panel has text
+        // inputs, and double-clicking to select a word in one put the
+        // element underneath into text-edit mode, which re-rendered the
+        // face and took the panel with it. So the gesture you make to edit
+        // a choice was the gesture that threw the panel away.
+        //
+        // Click is stopped for the same reason, one event name away: a
+        // press on the panel's own padding would otherwise reach the
+        // element's select handler. Rows stop their own clicks before this,
+        // so nothing inside loses anything.
+        onClick={(e) => e.stopPropagation()}
+        onDoubleClick={(e) => e.stopPropagation()}
+        // And right-click: the element's handler would arm its context
+        // menu and swallow the browser's own (the paste menu in a choice
+        // field). Only propagation stops, not the default, so the
+        // browser's menu still opens. contextmenu is what arms it, so
+        // pointerup can keep bubbling to the window-level drag listeners.
+        onContextMenu={(e) => e.stopPropagation()}
+        className="fixed z-[var(--z-popover,60)] min-w-[10rem] max-h-[60vh] overflow-y-auto overflow-x-hidden rounded-lg border border-slate-200 bg-white py-1 shadow-lg dark:border-slate-700 dark:bg-slate-900"
+        style={{
+          top: at.y,
+          // Anchored by the edge it opened from, so a menu near the right
+          // of the screen opens leftward instead of off it.
+          ...(align === 'left' ? { left: at.x } : { right: window.innerWidth - at.x }),
+        }}
+      >
+        {children}
+      </div>
+    </MenuTreeContext.Provider>
+  );
+}
+
+/** One row in an ElementEllipsisMenu: a menu item in a command menu, a button in a control menu. */
 export function ElementMenuItem({
   onPress,
-  active,
   children,
 }: {
   onPress: () => void;
-  /** Marks the current value, for menus that pick one of a set. */
-  active?: boolean;
   children: React.ReactNode;
 }) {
+  const { itemProps } = useMenuItemProps();
   return (
     <button
       type="button"
-      role="menuitem"
-      aria-current={active || undefined}
+      {...itemProps}
       onPointerDown={(e) => e.stopPropagation()}
       onClick={(e) => {
         e.stopPropagation();
         onPress();
       }}
-      className={`flex w-full cursor-pointer items-center justify-between gap-3 px-3 py-1.5 text-left text-xs transition hover:bg-slate-100 dark:hover:bg-slate-800 ${
-        active
-          ? 'font-semibold text-slate-900 dark:text-white'
-          : 'text-slate-700 dark:text-slate-200'
-      }`}
+      className="flex w-full cursor-pointer items-center justify-between gap-3 px-3 py-1.5 text-left text-xs text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
     >
       {children}
     </button>
@@ -201,7 +285,7 @@ export function ElementSettingsButton({
         ref={trigger}
         type="button"
         aria-label={label}
-        aria-haspopup="menu"
+        aria-haspopup="dialog"
         // Same reason as the menu trigger above: the canvas reads a press on an
         // element as select-and-maybe-drag, so this has to stop the gesture or
         // opening the settings drags the element out from under it.
@@ -234,17 +318,11 @@ export function ElementSettingsButton({
 export function ElementMenuSettingsRow({ onOpen }: { onOpen: () => void }) {
   return (
     <>
-      <span className="my-1 block border-t border-slate-100 dark:border-slate-800" />
+      <span
+        role="separator"
+        className="my-1 block border-t border-slate-100 dark:border-slate-800"
+      />
       <ElementMenuItem onPress={onOpen}>All settings…</ElementMenuItem>
     </>
-  );
-}
-
-/** A heading between groups of rows. */
-export function ElementMenuLabel({ children }: { children: React.ReactNode }) {
-  return (
-    <span className="block px-3 pb-0.5 pt-1.5 text-[10px] font-semibold uppercase tracking-wide text-slate-400">
-      {children}
-    </span>
   );
 }

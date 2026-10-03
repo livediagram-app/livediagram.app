@@ -79,7 +79,12 @@ export function DoneCheckFace({
         // the reduced-motion override in canvas-motion.css can reach it.
         className={everyone ? 'lvd-done-complete' : undefined}
         headerExtra={
-          <ElementEllipsisMenu label="Done check options" color={textColor} align="left">
+          <ElementEllipsisMenu
+            kind="command"
+            label="Done check options"
+            color={textColor}
+            align="left"
+          >
             {(close) => (
               <>
                 {mine && onToggleMine ? (

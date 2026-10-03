@@ -89,6 +89,7 @@ export function EllipsisMenuButton({
         type="button"
         onClick={onToggle}
         aria-label="Tab menu"
+        aria-haspopup="dialog"
         aria-expanded={open}
         data-tour-id="tab-menu-trigger"
         className="relative flex h-6 w-6 touch-target items-center justify-center rounded text-current/70 transition hover:bg-white/40 hover:text-current"

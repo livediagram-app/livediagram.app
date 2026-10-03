@@ -142,6 +142,9 @@ export function SelectionPopover({
           <HoverCard title="More" description="Open the element menu.">
             <button
               ref={ellipsisRef}
+              // A stable id: this toolbar unmounts while the element menu it opens is up, and
+              // the menu's Escape finds it again by id (docs/specs/004-interface-design/menus.md).
+              id="selection-more-actions"
               type="button"
               data-context-menu-trigger
               onClick={() => {
@@ -150,6 +153,7 @@ export function SelectionPopover({
                 onOpenContextMenu(rect.left, rect.bottom);
               }}
               aria-label="More actions"
+              aria-haspopup="dialog"
               className="flex h-8 w-8 items-center justify-center rounded-md text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
             >
               <EllipsisIcon />

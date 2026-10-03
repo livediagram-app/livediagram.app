@@ -91,7 +91,13 @@ export function MultiSelectionContextMenu({
   // marquee used to get NO menu at all, which read as broken.
   if (props.selectionElements.length === 0) return null;
   return (
-    <ContextMenu position={position} onClose={onClose} flush anchorBottom={anchorBottom}>
+    <ContextMenu
+      position={position}
+      label="Selection menu"
+      onClose={onClose}
+      flush
+      anchorBottom={anchorBottom}
+    >
       {(() => {
         // Type-aware formatting for the whole selection: only the categories
         // that match the selected element types show, and each control

@@ -1,5 +1,5 @@
 import { EllipsisIcon } from '@livediagram/ui';
-import { forwardRef, type MouseEvent, type PointerEvent } from 'react';
+import { forwardRef, type KeyboardEvent, type MouseEvent, type PointerEvent } from 'react';
 
 // The three-dot glyph every ⋯ trigger draws. Exported for the few menus
 // whose trigger is not this button (a toolbar chip, a tab) but should
@@ -37,6 +37,8 @@ export const EllipsisTriggerButton = forwardRef<
   {
     label: string;
     onClick: (e: MouseEvent<HTMLButtonElement>) => void;
+    // Down / Up Arrow open the menu (useRowMenu supplies it).
+    onKeyDown?: (e: KeyboardEvent<HTMLButtonElement>) => void;
     expanded?: boolean;
     size?: keyof typeof SIZE_CLASS;
     reveal?: boolean;
@@ -50,6 +52,7 @@ export const EllipsisTriggerButton = forwardRef<
   {
     label,
     onClick,
+    onKeyDown,
     expanded,
     size = 'lg',
     reveal = false,
@@ -70,6 +73,7 @@ export const EllipsisTriggerButton = forwardRef<
       ref={ref}
       type="button"
       onClick={onClick}
+      onKeyDown={onKeyDown}
       onPointerDown={onPointerDown}
       tabIndex={tabIndex}
       aria-label={label}
