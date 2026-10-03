@@ -112,7 +112,7 @@ function Divider() {
   return (
     <span
       aria-hidden
-      className="mx-0.5 h-6 w-px shrink-0 bg-slate-200 max-sm:mx-px dark:bg-slate-700"
+      className="mx-0.5 h-6 w-px shrink-0 bg-slate-200 phone:mx-px dark:bg-slate-700"
     />
   );
 }

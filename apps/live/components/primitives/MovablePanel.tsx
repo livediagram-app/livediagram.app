@@ -236,7 +236,13 @@ export function MovablePanel({
                 maxHeight: `calc(100% - ${px(anchor.bottom + 24)}px)`,
               }
             : anchor
-              ? { top: px(anchor.top + 12), left: px(anchor.left) }
+              ? {
+                  top: px(anchor.top + 12),
+                  left: px(anchor.left),
+                  // Kept on the canvas below its button, as the one above it is: a short canvas
+                  // (a phone in landscape, 286px) otherwise ran the Explorer under the tab bar.
+                  maxHeight: `calc(100% - ${px(anchor.top + 24)}px)`,
+                }
               : { top: px(56), right: px(12) }),
         }}
         className="pointer-events-auto absolute z-[var(--z-toolbar)] flex w-64 max-w-[calc(100vw-2rem)] cursor-default flex-col rounded-lg border border-slate-200 bg-white shadow-lg shadow-slate-900/5 transition-opacity duration-micro dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:shadow-slate-950/40"

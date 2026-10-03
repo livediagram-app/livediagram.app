@@ -128,8 +128,13 @@ layout on their first document.
 
 ## On a phone
 
-**A phone always uses Toolbar** (`resolvePanelLayout(prefs, { mobile: true })`,
-below `sm`). It gets the same chrome as a desktop in Toolbar ([Live app](live-app.md)):
+**A phone always uses Toolbar** (`resolvePanelLayout(prefs, { mobile: true })`).
+A phone is a viewport below `sm`, **or a touch screen under 500px tall** (one held sideways:
+844 × 390 was laid out as a desktop, its floating panels covering the 286px canvas).
+`PHONE_MEDIA_QUERY` (`lib/responsive.ts`) and the `phone:` CSS variant (`app/globals.css`) state
+that one query, so JS and CSS flip together; phone-only classes use `phone:`, not `max-sm:`. A
+popover hanging below its button is capped to the canvas below it and scrolls, as one above its
+button always was, so the Explorer fits a landscape phone. It gets the same chrome as a desktop in Toolbar ([Live app](live-app.md)):
 panels in their corners, Layers and Collaborate as popovers over
 their bottom-row buttons. Floating is desktop only: a user who never chose, or
 chose Floating, gets the strip on a phone and Floating back on a desktop,

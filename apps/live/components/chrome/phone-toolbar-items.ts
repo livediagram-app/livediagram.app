@@ -5,5 +5,4 @@
 // bottom-right cluster's are 44px already. Set on a toolbar's card, it reaches the items inside by
 // their size classes, so no item needs a phone-only prop of its own. Menus portal out of the card
 // (or use their own row classes), so they are untouched.
-export const PHONE_TOOLBAR_ITEMS =
-  'max-sm:[&_.px-2]:px-1 [&_.h-9]:relative [&_.h-9]:touch-target-y';
+export const PHONE_TOOLBAR_ITEMS = 'phone:[&_.px-2]:px-1 [&_.h-9]:relative [&_.h-9]:touch-target-y';
