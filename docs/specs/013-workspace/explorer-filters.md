@@ -51,7 +51,9 @@ general diagram tab's environment.
   value of that dimension; it shows whenever that dimension is not set. A general diagram tab matches no Kind value, and
   a document made from no family matches no Template value.
 - **Made by AI replaces the Generated folder.** AI-made documents are no longer a bucket of their own: they live in
-  Unsorted or in a folder like any other document, and `made-by:ai` finds them anywhere.
+  Unsorted or in a folder like any other document, and `made-by:ai` finds them anywhere. Generated goes in the same
+  step as the filter chips ship; until then it stays reachable as a sidebar row
+  ([Explorer structure](explorer-structure.md), [Folders](folders.md#dynamic-synthetic-folders)).
 - **Edited** reads the document's last save, in local time. Today starts at midnight; Last 7 days and Last 30 days count
   back that many days from now; Last 12 months counts back 12 calendar months from now; This year starts at midnight on
   1 January. A save in the future (a skewed clock) counts as edited.

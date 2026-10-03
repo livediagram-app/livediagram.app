@@ -50,6 +50,10 @@ Home is the Explorer's landing view. Recent and Favourites have no sidebar row; 
 - **Unsorted** and **Generated** are My documents' first two children, in that order, before its folders. They are
   the same views as before ([Folders: Dynamic folders](folders.md#dynamic-synthetic-folders)), each with its badge
   hidden at zero.
+- **Generated is removed together with the filter UI.** The next build step ships the Explorer's filter chips, with
+  **Made by AI** (`made-by:ai`, [Explorer filters](explorer-filters.md)) among them; that step drops the Generated
+  row, its view and its telemetry type, and Unsorted then holds AI-made documents too. Until then the row stays, so
+  AI-made documents remain reachable as a group.
 - A folder row opens its folder, expands to its subfolders, and carries the folder menu (Rename, New subfolder,
   Change folder, Delete). A team folder row opens the team page at that folder and carries no menu.
 - **Invites** shows only while the reader has a pending invite (or is on the Invites view). An invite also reaches the
