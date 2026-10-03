@@ -112,15 +112,19 @@ test.describe('quick style panel', () => {
     expectNoPageErrors(pageErrors);
   });
 
-  test('Toolbar: narrow, seven 24 px swatch targets a row', async ({ page, pageErrors }) => {
+  test('Toolbar: narrow, eight 24 px swatch targets a row (the theme’s seven and Ink)', async ({
+    page,
+    pageErrors,
+  }) => {
     await openBoard(page, 'toolbar');
     await drawShape(page, 'o', { x: 500, y: 400 });
     await expect(panel(page)).toBeVisible();
-    expect((await panel(page).boundingBox())!.width).toBeCloseTo(186, 0);
+    expect((await panel(page).boundingBox())!.width).toBeCloseTo(210, 0);
     const swatches = panel(page)
       .getByRole('radiogroup', { name: 'Stroke', exact: true })
       .getByRole('radio');
-    await expect(swatches).toHaveCount(7);
+    await expect(swatches).toHaveCount(8);
+    await expect(swatches.last()).toHaveAccessibleName('Ink');
     for (const box of await Promise.all((await swatches.all()).map((s) => s.boundingBox()))) {
       expect(box!.width).toBeGreaterThanOrEqual(24);
       expect(box!.height).toBeGreaterThanOrEqual(24);
