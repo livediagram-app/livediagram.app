@@ -182,8 +182,13 @@ article's swatches), and a line break inside a block (Shift+Enter). Code blocks 
   - **Comment** (⌘⌥M) and **Assign Action**, with text selected (see "Comments and actions").
 - No undo or redo (the canvas controls have them) and no word count.
 - **Narrow**: when the toolbar is wider than the canvas, it scrolls sideways.
-- **On a phone** the toolbar is a bar along the bottom of the screen, above the keyboard, scrolling
-  sideways; the panel opens as a bottom sheet as on any page.
+- **On a phone** the toolbar is a bar along the bottom of the screen, across it (its controls
+  scroll sideways): above the keyboard while it is up, else above the canvas's bottom controls.
+  The writing taking the caret frames its page for writing: its text column across the screen,
+  the margins off it, so the text reads at a usable size. The panel opens as a bottom sheet as on
+  any page.
+- **Framing an article page** (a press on its label, the page navigator, a new article): the
+  page seen whole, as an infographic page is.
 
 ## Zones
 

@@ -12,6 +12,8 @@ import {
   type RefObject,
 } from 'react';
 import {
+  articleMarginPx,
+  articlesOf,
   hasPageLook,
   illustratePageFitBox,
   illustratePagesOf,
@@ -43,6 +45,8 @@ export type IllustratePagesView = {
   rowPages?: LaidOutPage[];
   // Frames one page in the view (its label's press).
   focusPage: (pageId: string) => void;
+  // An article page framed for writing on a phone: its text column across the screen.
+  readPage: (pageId: string) => void;
   // Backgrounds drawn from the tab's theme, offered first in the page panel.
   themeBackgrounds: ThemeBackgroundPreset[];
   // The tab theme's accent: a document's accent unless it picked one of its own.
@@ -90,18 +94,19 @@ export function useIllustratePages(deps: {
   const on = hasPageLook(mode);
   const tabId = activeTab.id;
 
-  // Frames a page (the first by default) below a top strip. The fit box holds either orientation,
-  // so turning a page needs no refit.
-  const frame = (page?: LaidOutPage) => {
+  // Frames a page (the first by default) below a top strip, seen whole, whatever its kind. The fit
+  // box holds either orientation, so turning a page needs no refit. `read` frames an article page
+  // to be written on a phone instead: its text column across the screen.
+  const frame = (page?: LaidOutPage, read = false) => {
     const canvas = deps.canvasMainRef.current;
     if (!canvas) return;
     const inset = topStripInset(canvas);
     const size = { width: canvas.offsetWidth, height: canvas.offsetHeight };
-    // A document page is framed to be read (its width, room above for its toolbar); an
-    // infographic page to be seen whole.
-    const { zoom, offset } = page?.flow
-      ? computeReadingFrame(size, page.rect, inset)
-      : computeFitBelow(size, illustratePageFitBox(page), inset);
+    const doc = page?.flow ? articlesOf(activeTab)[page.flow] : undefined;
+    const { zoom, offset } =
+      read && page && doc
+        ? computeReadingFrame(size, page.rect, inset, articleMarginPx(doc.style))
+        : computeFitBelow(size, illustratePageFitBox(page), inset);
     deps.setViewportZoom(zoom);
     deps.setViewportOffset(offset);
     debugLog('[illustrate-page] framed', { tabId, page: page?.id ?? 'first', inset, zoom });
@@ -173,12 +178,18 @@ export function useIllustratePages(deps: {
 
   if (!on) return null;
   const focusPage = (pageId: string) => frame(pages.find((p) => p.id === pageId));
+  const readPage = (pageId: string) =>
+    frame(
+      pages.find((p) => p.id === pageId),
+      true,
+    );
   const theme = getTheme(activeTab.theme);
   const themeBackgrounds = themeBackgroundPresets(theme);
   const tabFont = activeTab.font;
   const shared = {
     pages,
     focusPage,
+    readPage,
     themeBackgrounds,
     themeAccent: themeAccent(theme),
     tabFont,

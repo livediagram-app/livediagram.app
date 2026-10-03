@@ -5,7 +5,8 @@
 // writing leaves for them. Each article's editor is its own (ArticleEditor), loaded only
 // once the tab has an article: the editor's code (ProseMirror) is not part of the canvas until a
 // article asks for it.
-import { lazy, Suspense, useLayoutEffect, useMemo } from 'react';
+import { lazy, Suspense, useEffect, useLayoutEffect, useMemo } from 'react';
+import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import {
   articleMarginPx,
   articleTopMarginPx,
@@ -107,6 +108,16 @@ export function ArticleFlows({
   }, [row, articles, elements, moving, selectedIds]);
   useLayoutEffect(() => publishZoneClips(clips), [clips]);
   useLayoutEffect(() => () => publishZoneClips(new Map()), []);
+  // On a phone, the writing taking the caret frames its page for writing: its text column across
+  // the screen (once per time it takes focus).
+  const mobile = useIsMobileViewport();
+  const focusedPage = active?.focused ? active.pageId : null;
+  const readPage = view.readPage;
+  useEffect(() => {
+    if (mobile && focusedPage) readPage(focusedPage);
+    // Framed when the focus arrives, not as the caret moves between pages.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mobile, !!focusedPage]);
   const objectCaret = useObjectDropCaret({
     target,
     selectedIds,

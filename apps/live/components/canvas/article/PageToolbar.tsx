@@ -31,6 +31,7 @@ import {
   TOOLBAR_DIVIDER,
 } from '@/components/chrome/toolbar-surface';
 import { Portal } from '@/components/primitives/Portal';
+import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import {
   articleHandleOf,
   clearActiveArticle,
@@ -92,6 +93,10 @@ const TypeIcon = lucideGlyph(lucideType, 14);
 
 // Screen px: the card's breathing room above and below it when it sits in the page's margin.
 const MARGIN_PAD = 4;
+// Screen px: a phone's bar keeps this clear of the screen's sides and the bottom.
+const PHONE_GUTTER = 8;
+// Screen px: the room the canvas's bottom controls (undo, Fit) take on a phone.
+const PHONE_CONTROLS_ROOM = 64;
 // The smallest the card shrinks to in a thin margin (zoomed far out), as a share of its size.
 const TOOLBAR_MIN_SCALE = 0.55;
 
@@ -144,6 +149,12 @@ export function PageToolbar({
       : null);
   useOffPagePressClears(selected, articlePages);
   const bar = useRef<HTMLDivElement>(null);
+  // Read each frame by the placement (a phone's bar sits along the bottom).
+  const mobile = useIsMobileViewport();
+  const phone = useRef(mobile);
+  useLayoutEffect(() => {
+    phone.current = mobile;
+  });
   // Read each frame: the margin changes with the zoom and the article's style, with no new effect.
   const topRoom = useRef(topRoomOf);
   useLayoutEffect(() => {
@@ -194,6 +205,21 @@ export function PageToolbar({
         (strip && strip.bottom > c.top && strip.top < c.top + 80 ? strip.bottom - c.top : 0);
       const h = el.offsetHeight;
       const w = el.offsetWidth;
+      // On a phone: a bar along the bottom of the screen, above the keyboard when it is up,
+      // across the screen (its controls scroll), for the writing being worked on.
+      if (phone.current) {
+        const vv = window.visualViewport;
+        const keyboard = vv ? vv.offsetTop + vv.height : window.innerHeight;
+        // Keyboard up: right above it. Down: above the canvas's own controls along the bottom.
+        const bottom = keyboard < c.bottom - 1 ? keyboard : c.bottom - PHONE_CONTROLS_ROOM;
+        const across = window.innerWidth - 2 * PHONE_GUTTER;
+        if (el.style.maxWidth !== `${across}px`) el.style.maxWidth = `${across}px`;
+        const left = Math.max(PHONE_GUTTER, (window.innerWidth - w) / 2);
+        el.style.transformOrigin = '0 0';
+        el.style.transform = `translate(${Math.round(left)}px, ${Math.round(bottom - h - PHONE_GUTTER)}px)`;
+        el.style.visibility = 'visible';
+        return;
+      }
       // Always at the page's top, inside it, centred in the top margin; zoomed out until the margin
       // is thinner than the card, the card shrinks to fit it (to TOOLBAR_MIN_SCALE), so it never
       // covers the first line. Off with the page's top.

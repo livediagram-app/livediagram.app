@@ -26,6 +26,7 @@ export function presentedPages(
   return {
     pages: only(layOutIllustratePages(illustratePagesOf(tab))),
     focusPage: noop,
+    readPage: noop,
     themeBackgrounds: [],
     themeAccent: '#2563eb',
     tabFont: tab.font,

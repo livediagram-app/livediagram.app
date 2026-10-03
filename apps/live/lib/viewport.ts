@@ -117,9 +117,15 @@ export function computeReadingFrame(
   rect: Rect,
   page: BBox,
   insetTop: number,
+  // The page's side margin: given, the text column (the page less its margins) fills the width,
+  // the margins off screen, so the text reads larger on a narrow screen.
+  margin = 0,
 ): { zoom: number; offset: Offset } {
   const top = Math.min(rect.height / 2, insetTop + READING_TOP_ROOM);
-  const zoom = Math.max(0.1, Math.min(1, (rect.width - 2 * READING_SIDE_ROOM) / page.width));
+  const zoom = Math.max(
+    0.1,
+    Math.min(1, (rect.width - 2 * READING_SIDE_ROOM) / Math.max(1, page.width - 2 * margin)),
+  );
   const room = rect.height - top - 16;
   const screenTop = page.height * zoom <= room ? top + (room - page.height * zoom) / 2 : top;
   return {
