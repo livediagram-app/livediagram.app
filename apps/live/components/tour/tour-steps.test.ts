@@ -34,6 +34,15 @@ describe('tourStepsFor', () => {
     expect(ids({ mobile: false, esBoard: false })).toEqual(TOUR_STEPS.map((s) => s.id));
   });
 
+  // docs/specs/007-editor/editor-tour.md "The steps": Diagram & Draw follows Shape categories.
+  it('shows the Diagram & Draw step after Shape categories, opening the switch menu', () => {
+    const desktop = ids({ mobile: false, esBoard: false });
+    expect(desktop.indexOf('editor-mode')).toBe(desktop.indexOf('categories') + 1);
+    const step = TOUR_STEPS.find((s) => s.id === 'editor-mode')!;
+    expect(step).toMatchObject({ target: 'editor-mode-menu', alsoHighlight: 'editor-mode' });
+    expect(ids({ mobile: true, esBoard: false })).toContain('editor-mode');
+  });
+
   it('drops the desktop-only step on mobile', () => {
     const mobile = ids({ mobile: true, esBoard: false });
     expect(mobile).not.toContain('theme-canvas');
@@ -44,6 +53,8 @@ describe('tourStepsFor', () => {
     const board = ids({ mobile: false, esBoard: true });
     expect(board).not.toContain('selection-modes');
     expect(board).not.toContain('categories');
+    // Nor a mode switch: a board is always Diagram.
+    expect(board).not.toContain('editor-mode');
     // The rest of the tour still applies: the board has a palette, an
     // explorer, elements, tabs, and a paintbrush.
     expect(board).toContain('palette');
