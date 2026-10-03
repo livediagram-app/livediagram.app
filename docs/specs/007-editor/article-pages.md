@@ -251,11 +251,16 @@ due dates, Activity, email), because it lives on an element: a **margin note**.
   it reads on a dark page) and underlined; a marker (an annotation, `articleNote`, 32 px) appears
   in the page's right margin, centred in the margin and level with the text's first line; the
   comment thread opens on it, or the Assign Action dialog. One edit.
-- **The marker** shows a speech bubble for a comment, a tick in a circle for an action, with the
-  usual comment count and action badges. A click on it opens its thread or its action.
+- **The marker** is a small rounded chip in its note's colour: for a comment an amber speech
+  bubble holding the open comment count (a dot before the first comment), for an action a tick
+  in a circle, filled once the action is done. It carries its own count, so no badge strip rides
+  on it. A click on it, or a plain click on its tinted text, opens its thread, or its action (the
+  Assign Action dialog while none is assigned).
 - **It stays beside its text**: as the writing moves (typing above it, a new style, a page added),
   the marker moves with the text's first line, onto another page too, settled by the writer as a
   zone is.
+- **Several close together** (notes on one line, or lines apart) stack down the margin in the
+  writing's order, 6 px apart, rather than covering each other.
 - **Deleting the marker** takes the tint off its text. Deleting the text leaves the marker, and its
   thread, where it last stood.
 - **Never printed**: exports leave the markers out and the text untinted.

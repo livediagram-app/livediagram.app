@@ -634,10 +634,12 @@ function BoxedElementViewImpl({
 
       {/* The annotation marker IS the note affordance, so it suppresses
           the generic note badge (it would be redundant). */}
-      {linked ||
-      commentCount > 0 ||
-      hasOpenAction ||
-      (element.note && onOpenNote && !isAnnotation) ? (
+      {/* A margin note shows its count on its own face (ArticleNoteFace). */}
+      {!articleNote &&
+      (linked ||
+        commentCount > 0 ||
+        hasOpenAction ||
+        (element.note && onOpenNote && !isAnnotation)) ? (
         <BadgeStrip
           linked={linked}
           linkLabel={element.link ? describeLink(element.link, tabSummaries) : undefined}

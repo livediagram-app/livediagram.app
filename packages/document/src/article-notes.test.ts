@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  ARTICLE_NOTE_GAP,
   ARTICLE_NOTE_SIZE,
   articleNoteCorner,
   newArticleNote,
@@ -33,6 +34,19 @@ describe('margin notes', () => {
     const m = moved.elements[0] as typeof marker;
     expect(m.x).toBe(articleNoteCorner(laid[1]!, 96, { y: 300, height: 20 }).x);
     expect(withNotesSettled(moved, 'f', [{ id: 'n1', index: 1, y: 300, height: 20 }])).toBe(moved);
+  });
+
+  it('stacks notes on one line down the margin instead of over each other', () => {
+    const a = newArticleNote('n1', 'comment', { x: 0, y: 0 });
+    const c = newArticleNote('n2', 'action', { x: 0, y: 0 });
+    const tab = { elements: [a, c], pages, articles: { f: { blocks } } };
+    const out = withNotesSettled(tab, 'f', [
+      { id: 'n1', index: 0, y: 200, height: 20 },
+      { id: 'n2', index: 0, y: 200, height: 20 },
+    ]);
+    const [m1, m2] = out.elements as (typeof a)[];
+    expect(m2!.y - m1!.y).toBe(ARTICLE_NOTE_SIZE + ARTICLE_NOTE_GAP);
+    expect(m2!.x).toBe(m1!.x);
   });
 
   it('untints the text of a marker that was deleted', () => {

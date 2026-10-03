@@ -99,6 +99,8 @@ export type ArticleEditorProps = {
   onUndo: () => void;
   onRedo: () => void;
   onLinkRequest: () => void;
+  // A click on a margin note's text: its thread, or its action, opens beside it.
+  onNoteOpen?: (id: string, kind: 'comment' | 'action') => void;
   // An object put in at the caret (the slash menu): a table, a chart, a drawing...
   onInsert: (flow: string, what: ArticleInsert) => void;
   // A press on the writing: the canvas's selection goes.
@@ -394,6 +396,20 @@ export default function ArticleEditor(props: ArticleEditorProps) {
         publish(v);
       },
       handleDOMEvents: {
+        click: (_v, e) => {
+          // A plain click on a margin note's text opens what it carries; a drag that selects
+          // does not.
+          const note = (e.target as Element | null)?.closest?.('[data-note-id]');
+          const sel = window.getSelection();
+          if (!note || (sel && !sel.isCollapsed)) return false;
+          const id = (note as HTMLElement).dataset.noteId;
+          if (id)
+            latest.current.onNoteOpen?.(
+              id,
+              note.classList.contains('article-note-action') ? 'action' : 'comment',
+            );
+          return false;
+        },
         focus: (v) => {
           publish(v);
           return false;

@@ -12,6 +12,8 @@ import type { AnnotationElement, Element, Tab } from './index';
 
 /** A margin note's marker size, canvas px: small enough for the narrowest margin (48 px). */
 export const ARTICLE_NOTE_SIZE = 32;
+/** The room between margin notes stacked down a page's margin, canvas px. */
+export const ARTICLE_NOTE_GAP = 6;
 
 export type ArticleNoteKind = 'comment' | 'action';
 
@@ -64,10 +66,18 @@ export function withNotesSettled<T extends NotesTab>(
   if (!doc || places.length === 0) return tab;
   const own = layOutIllustratePages(illustratePagesOf(tab)).filter((p) => p.flow === flow);
   const margin = articleMarginPx(doc.style);
+  // In the writing's order, each beside its text; several close together on a page stack down
+  // the margin, ARTICLE_NOTE_GAP apart, rather than covering each other.
   const at = new Map<string, { x: number; y: number }>();
+  const bottom = new Map<number, number>();
   for (const place of places) {
     const page = own[place.index];
-    if (page && !at.has(place.id)) at.set(place.id, articleNoteCorner(page, margin, place));
+    if (!page || at.has(place.id)) continue;
+    const corner = articleNoteCorner(page, margin, place);
+    const below = bottom.get(place.index);
+    if (below !== undefined && corner.y < below) corner.y = below;
+    bottom.set(place.index, corner.y + ARTICLE_NOTE_SIZE + ARTICLE_NOTE_GAP);
+    at.set(place.id, corner);
   }
   let moved = false;
   const elements = (tab.elements as Element[]).map((el) => {

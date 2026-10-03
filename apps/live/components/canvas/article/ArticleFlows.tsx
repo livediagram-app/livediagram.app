@@ -181,6 +181,7 @@ export function ArticleFlows({
                 onUndo={articles.undo}
                 onRedo={articles.redo}
                 onLinkRequest={requestArticleLink}
+                onNoteOpen={articles.openNote}
                 onInsert={articles.insertObject}
                 onWritingPress={articles.onWritingPress}
                 focusRequest={articles.focusRequest}

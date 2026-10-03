@@ -1811,7 +1811,13 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
       setSelectedId(null);
       setMultiSelectedIds(new Set());
     },
-    openNote: (id, kind) => (kind === 'action' ? openAssignActionDialog(id) : openComments(id)),
+    openNote: (id, kind) => {
+      if (kind === 'comment') return openComments(id);
+      // An action already assigned shows in its popover; a new one opens the dialog to assign it.
+      const el = activeTab.elements.find((e) => e.id === id);
+      if (el && isBoxed(el) && elementActions(el).length > 0) openActionPopover(id);
+      else openAssignActionDialog(id);
+    },
   });
   useAssignRef(articleFocusRef, (flow: string) => articles?.requestFocus(flow, 'start'));
   // Set once element creation exists (below): an Insert at the caret places through it.

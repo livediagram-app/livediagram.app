@@ -68,6 +68,8 @@ export type ArticlesView = {
   embed: (flow: string, ids: readonly string[], wrap: ArticleZoneWrap) => void;
   // A comment or an action put on the selected text: a marker in the margin beside it, opened.
   addNote: (flow: string, kind: ArticleNoteKind) => void;
+  // A margin note's thread, or its action, opened (a click on its text).
+  openNote: (id: string, kind: ArticleNoteKind) => void;
   // A zone dragged to the block boundary nearest a canvas point, its elements with it.
   moveZone: (flow: string, zoneId: string, near: { x: number; y: number }) => void;
   // An article's style changed (the Style tab): a look, or one field.
@@ -337,6 +339,11 @@ export function useArticles(deps: {
     [tabId],
   );
 
+  const openNote = useCallback(
+    (id: string, kind: ArticleNoteKind) => latest.current.openNote(id, kind),
+    [],
+  );
+
   const moveZone = useCallback(
     (flow: string, zoneId: string, near: { x: number; y: number }) => {
       const d = latest.current;
@@ -387,6 +394,7 @@ export function useArticles(deps: {
     zoneAction,
     embed,
     addNote,
+    openNote,
     moveZone,
     setStyle,
     stylePreview,
