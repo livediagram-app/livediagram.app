@@ -31,6 +31,9 @@ import { useConfirm } from '@/hooks/ui/useConfirm';
 import { useDocumentListActions } from '@/hooks/persistence/useDocumentListActions';
 import { useToast } from '@/hooks/ui/useToast';
 import { explorerPathFor, selectedFromRoute } from './routes';
+import { useExplorerLens } from './lens/useExplorerLens';
+import { carriedHref, lensViewOf } from './lens/lens-views';
+import { debugLog } from '@/lib/debug-log';
 import { useTimelineUnread } from './useTimelineUnread';
 import { useActivityFeed } from './useActivityFeed';
 import { useExplorerMoves } from './useExplorerMoves';
@@ -137,12 +140,22 @@ export function useExplorerState() {
     declineInvite,
     refresh: refreshTeams,
   } = useTeams(ownerId, { enabled: teamsEnabled });
+  // The lens (docs/specs/013-workspace/explorer-filters.md): one string narrowing every document
+  // view, kept in step with `q` in the address bar.
+  const lens = useExplorerLens({
+    selected,
+    teams,
+    search: searchParams?.toString() ?? '',
+    router,
+  });
   // API tokens (docs/specs/015-api/public-api-and-tokens.md): signed-in only, same gate as teams. Loaded here for
   // the timeline's token-card menus, which offer Revoke for a token that is
   // still live. Managing them is the Settings API Tokens category.
   const tokens = useTokens(ownerId, { enabled: teamsEnabled });
   const [teamModalOpen, setTeamModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  // Which list read failed last, so a view says Failed rather than Empty.
+  const [failedReads, setFailedReads] = useState({ documents: false, shared: false });
   // Folder id mid-rename so the tree / list row swaps to an input
   // until the user commits or escapes.
   const [renamingFolderId, setRenamingFolderId] = useState<string | null>(null);
@@ -220,12 +233,20 @@ export function useExplorerState() {
   // Navigate to a section's route and close the mobile drawer (a
   // no-op on desktop where it's never open). Used by every sidebar
   // row so picking a section on a phone returns you to the content.
+  // The lens rides along only from one aggregate view to another (explorer-filters.md "URL and carry-over").
   const go = useCallback(
     (node: SelectedNode) => {
-      router.push(explorerPathFor(node));
+      const to = lensViewOf(node.kind);
+      const href = carriedHref(explorerPathFor(node), lens.input, lens.view, to);
+      if (lens.input.trim() !== '') {
+        debugLog(
+          `[explorer-lens] carried from=${lens.view ?? 'none'} to=${to ?? 'none'} kept=${href.includes('q=')}`,
+        );
+      }
+      router.push(href);
       setMobileNavOpen(false);
     },
-    [router],
+    [router, lens.input, lens.view],
   );
   const confirm = useConfirm();
   const toast = useToast();
@@ -239,13 +260,17 @@ export function useExplorerState() {
         apiListSharedWith(ownerId).catch(() => null),
         refreshFolders(),
       ]).then(([list, sharedList]) => {
-        // A failed load must not masquerade as an empty account: set only what
-        // actually came back (a failed list keeps its prior value) and tell the
-        // user, rather than flashing the "you have no documents" empty state.
+        // A failed load must not masquerade as an empty account: set only what actually came
+        // back (a failed list keeps its prior value), and the views that read a failed list
+        // show Failed rather than "you have no documents" (explorer-filters.md "States").
         if (list !== null) setDocuments(list);
         if (sharedList !== null) setShared(sharedList);
-        if (list === null || sharedList === null) {
-          toast.error('Could not load your documents. Check your connection and try again.');
+        setFailedReads({ documents: list === null, shared: sharedList === null });
+        if (list === null) console.warn('[explorer] list read failed list=documents');
+        if (sharedList === null) console.warn('[explorer] list read failed list=shared');
+        // Only the shared read failed: the other views still list their rows, so say what is missing.
+        if (list !== null && sharedList === null) {
+          toast.error('Couldn’t load the documents shared with you. Try again in a moment.');
         }
         setLoading(false);
       }),
@@ -432,10 +457,9 @@ export function useExplorerState() {
 
   const {
     documentsByFolder,
-    unsortedDocuments,
-    generatedDocuments,
     offlineDocuments,
     paneContent,
+    lensResult,
     recentCount,
     paneTitle,
     paneCrumbs,
@@ -451,6 +475,9 @@ export function useExplorerState() {
     go,
     recentExcludedIds: prefs.recentExcludedIds ?? [],
     favouriteIds,
+    lens: lens.parsed.lens,
+    viewerId: ownerId ?? '',
+    now: lens.now,
   });
 
   // Merge the authoritative D1 preferences in once the owner is known.
@@ -526,10 +553,12 @@ export function useExplorerState() {
     childrenByParent,
     rootFolders,
     documentsByFolder,
-    unsortedDocuments,
-    generatedDocuments,
     offlineDocuments,
     paneContent,
+    // The lens and what it did to the current view (docs/specs/013-workspace/explorer-filters.md).
+    lens,
+    lensResult,
+    failedReads,
     recentCount,
     // Unread Timeline events (docs/specs/013-workspace/timeline.md §2.5), for the sidebar badge.
     timelineUnread,

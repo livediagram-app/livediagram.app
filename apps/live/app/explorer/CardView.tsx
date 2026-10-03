@@ -13,6 +13,7 @@ import { InlineRenameInput } from '@/components/primitives/InlineRenameInput';
 import { DocumentThumbnail } from '@/components/panels/DocumentThumbnail';
 import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
 import { LocalOnlyPill } from '@/components/primitives/LocalOnlyPill';
+import { MadeByAiPill, isMadeByAi } from '@/components/primitives/MadeByAiPill';
 import { isLocalOnly } from '@/lib/document-space';
 import { DocumentEntryMenu, hrefForDocument, ownerLabelFor } from './document-row-shared';
 import {
@@ -24,9 +25,8 @@ import {
 } from './document-badges';
 import { DriveNoticeMarker } from '@/components/drive/DriveNoticeMarker';
 import { DocumentSyncMark } from '@/components/drive/DocumentSyncMark';
-import { SYNTHETIC_FOLDERS, visibleSyntheticFolders } from './synthetic-folders';
 import { useRowMenu } from '@/components/primitives/useRowMenu';
-import { FolderCard, SyntheticFolderCard } from './explorer-folder-cards';
+import { FolderCard } from './explorer-folder-cards';
 import { CARD_GRID, CARD_PREVIEW as previewArea, CARD_SHELL as cardShell } from '@livediagram/ui';
 import { FolderPreview } from './FolderPreview';
 import { RelativeTimeChip } from '@/components/primitives/RelativeTimeChip';
@@ -63,18 +63,6 @@ export function CardView(props: CardViewProps) {
   } = props;
   return (
     <div className={`lvd-cascade ${CARD_GRID}`}>
-      {visibleSyntheticFolders(props).map((e) => {
-        const { Icon, label } = SYNTHETIC_FOLDERS[e.kind];
-        return (
-          <SyntheticFolderCard
-            key={e.kind}
-            icon={<Icon />}
-            label={label}
-            count={e.count}
-            onOpen={e.onOpen}
-          />
-        );
-      })}
       {folders.map((f) => (
         <FolderCard
           key={f.id}
@@ -192,6 +180,7 @@ function DocumentCard(
             ellipsis, the sync mark holds the right edge. */}
         <div className="flex min-w-0 items-center gap-x-2 [&>*]:shrink-0">
           {isLocalOnly(liveDoc) ? <LocalOnlyPill /> : null}
+          {isMadeByAi(liveDoc) ? <MadeByAiPill /> : null}
           {showVisibilityBadge ? (
             <VisibilityBadge document={liveDoc} iconOnly={iconOnlyBadges} />
           ) : null}

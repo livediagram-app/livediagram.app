@@ -73,7 +73,7 @@ strip in code (it is `jumpBackIn`), "notification" for an action.
 - `selectedFromRoute('/explorer/home')` → `{ kind: 'home' }`; the `default:` case and id-less `folder` / `team` links
   → `{ kind: 'home' }`. `explorerPathFor({ kind: 'home' })` → `/explorer/home`.
 - `/explorer` → 302 `/explorer/home` (worker), `router.replace('/explorer/home')` (dev fallback).
-- `VIEW_TITLES.home = 'Home'` (`SIDEBAR_LABELS.home`); `VIEW_TITLES.timeline = 'All activity'` (`D81`).
+- `VIEW_TITLES.home = 'Home'` (`SIDEBAR_LABELS.home`); `VIEW_TITLES.timeline = 'All activity'` (`D94`).
 - Crumbs: `timeline` → `[{ Home, go home }, { All activity }]`; `home` → `[{ Home }]` (one crumb, not shown).
 - The sidebar Home row: `selected = kind === 'home'`; activation tracks `Sidebar.Home`, clears the unread badge, goes
   home. The panel's Home row opens `/explorer/home`.
@@ -87,7 +87,7 @@ State: `{ status: 'loading' | 'ready' | 'error', jumpBackIn, whatHappened, timel
 'loading' | 'error', lastSeenAt }`.
 
 1. When `enabled` and `ownerId`: `status = 'loading'`; `Promise.all([apiReadHome(owner, { tz }), offlineListOpens()])`
-   with `tz = Intl.DateTimeFormat().resolvedOptions().timeZone` (`D82`). A request id guards a stale response (owner
+   with `tz = Intl.DateTimeFormat().resolvedOptions().timeZone` (`D95`). A request id guards a stale response (owner
    change, retry).
 2. Home `null` → `status = 'error'`. Otherwise `ready`; `jumpBackIn = mergeJumpBackIn(home.jumpBackIn, local)`;
    `whatHappened` as sent; `timeline = home.timeline`; call `onSeen()` (the unread clear: the read moved the mark).
@@ -139,7 +139,7 @@ order of each key's first appearance, re-sorted by the kept event's `occurredAt`
 
 `timelineRows(folded, today)` → a flat list of `{ type: 'day', key, label }` and `{ type: 'entry', entry, side }`:
 a day row before the first entry of each local day; `side` alternates `start`, `end`, `start`, ... over entries only,
-continuing across days (`D83`). Day labels: `Today`, `Yesterday`, else `formatDay(key).label` (`Tue, 29 Sep`), with
+continuing across days (`D96`). Day labels: `Today`, `Yesterday`, else `formatDay(key).label` (`Tue, 29 Sep`), with
 the year appended when it is not the current year.
 
 ### What happened by day
@@ -167,7 +167,7 @@ tracks nothing. The list is rendered only while expanded.
 ### Phone switch
 
 `HomePane` reads `useMediaQuery('(min-width: 768px)')`. Wide: two `section`s side by side. Narrow: `HomeSwitch` and
-one `tabpanel`. `column` state starts `'recent'` on every mount (`D84`).
+one `tabpanel`. `column` state starts `'recent'` on every mount (`D97`).
 
 ## Interfaces and contracts
 
@@ -421,14 +421,14 @@ tabular-nums text-slate-500`) in the other cell, aligned towards the line.
 | Constant                | Value                   | Where              | Provenance                               | Safe range      |
 | ----------------------- | ----------------------- | ------------------ | ---------------------------------------- | --------------- |
 | `HOME_WIDE_QUERY`       | `(min-width: 768px)`    | `HomePane.tsx`     | Spec (`md:`)                             | fixed           |
-| `PAGING_ROOT_MARGIN`    | `400px`                 | `HomeTimeline.tsx` | `D85`: a page lands before it is reached | 200 to 800 px   |
+| `PAGING_ROOT_MARGIN`    | `400px`                 | `HomeTimeline.tsx` | `D98`: a page lands before it is reached | 200 to 800 px   |
 | `STRIP_FADE_EPSILON_PX` | 1                       | `home-model.ts`    | Sub-pixel scroll widths                  | 1 to 2          |
 | `SUMMARY_NAMES_MAX`     | 3                       | `home-copy.ts`     | Spec ("Priya, Sam and Lee")              | 2 to 4          |
-| `AVATAR_STACK_MAX`      | 3                       | `HomeAvatar.tsx`   | `D86`                                    | 2 to 5          |
-| Strip thumbnail         | 128 × 80 px             | `JumpBackIn.tsx`   | `D87`: "small", 16:10                    | 96 to 160 wide  |
-| Timeline thumbnail      | 96 × 64, `lg:` 128 × 80 | `HomeTimeline.tsx` | `D87`: half the column less the gutter   | fixed by column |
-| Timeline column         | 15 rem, `lg:` 20 rem    | `HomePane.tsx`     | `D88`                                    | 15 to 24 rem    |
+| `AVATAR_STACK_MAX`      | 3                       | `HomeAvatar.tsx`   | `D99`                                    | 2 to 5          |
+| Strip thumbnail         | 128 × 80 px             | `JumpBackIn.tsx`   | `D100`: "small", 16:10                   | 96 to 160 wide  |
+| Timeline thumbnail      | 96 × 64, `lg:` 128 × 80 | `HomeTimeline.tsx` | `D100`: half the column less the gutter  | fixed by column |
+| Timeline column         | 15 rem, `lg:` 20 rem    | `HomePane.tsx`     | `D101`                                   | 15 to 24 rem    |
 
 ## Defaults ledger
 
-D81 to D91 in [DEFAULTS.md](DEFAULTS.md).
+D94 to D104 in [DEFAULTS.md](DEFAULTS.md).

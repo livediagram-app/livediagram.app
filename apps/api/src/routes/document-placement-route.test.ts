@@ -134,3 +134,37 @@ describe('PUT /documents/:id/folder — leaving a team library', () => {
     expect(timeline.recordTeamDocumentRemoved).not.toHaveBeenCalled();
   });
 });
+
+// A space's root is no bucket of its own (docs/specs/013-workspace/folders.md#the-root-and-the-retired-buckets):
+// a move to it names the space, never Unsorted.
+describe('PUT /documents/:id/folder — moving to a root', () => {
+  it('names My documents for the personal root', async () => {
+    db.getDocument
+      .mockResolvedValueOnce(inTeam({ teamId: null, folderId: 'f2' }))
+      .mockResolvedValueOnce(inTeam({ teamId: null, folderId: null }));
+    const { ctx, settle } = ctxWith({ folderId: null, teamId: null }, 'alice');
+    await handleDocumentPlacement(ctx);
+    await settle();
+    expect(timeline.recordDocumentMoved).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ id: 'd1' }),
+      'My documents',
+      'alice',
+    );
+  });
+
+  it('names the team for a team library root', async () => {
+    db.getDocument
+      .mockResolvedValueOnce(inTeam({ folderId: 'team-folder' }))
+      .mockResolvedValueOnce(inTeam({ folderId: null }));
+    const { ctx, settle } = ctxWith({ folderId: null, teamId: 'team-1' }, 'alice');
+    await handleDocumentPlacement(ctx);
+    await settle();
+    expect(timeline.recordDocumentMoved).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ id: 'd1' }),
+      'Design',
+      'alice',
+    );
+  });
+});

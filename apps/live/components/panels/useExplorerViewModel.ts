@@ -69,8 +69,8 @@ export function useExplorerViewModel({
   // can ask for children by id without rescanning the full list.
   const foldersByParent = useMemo(() => indexFolders(folders).childrenByParent, [folders]);
 
-  // Offline documents (docs/specs/006-document/offline-mode.md) stay out of the root Unsorted bucket: they
-  // render under the panel's synthetic Offline node instead.
+  // Offline documents (docs/specs/006-document/offline-mode.md) stay out of the My documents root: they
+  // render under the panel's This browser row instead.
   const documentsByFolder = useMemo(
     () =>
       groupDocumentsByFolder(liveDocs, {
@@ -81,7 +81,7 @@ export function useExplorerViewModel({
 
   // Offline documents (docs/specs/006-document/offline-mode.md): everything saved only in this browser,
   // regardless of any folder placement in the local record, for the panel's
-  // always-shown synthetic Offline node (mirrors the /explorer route).
+  // This browser row (mirrors the /explorer route).
   const offlineDocuments = useMemo(
     () =>
       liveDocs.filter((d) => d.ownerId === OFFLINE_OWNER_ID).sort((a, b) => b.savedAt - a.savedAt),

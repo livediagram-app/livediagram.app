@@ -130,7 +130,7 @@ describe('planInbound: documents', () => {
     expect(driveLater).toMatchObject({ effects: [{ kind: 'rename-document', name: 'Drive' }] });
   });
 
-  it('moves into a mirrored folder, or to Unsorted for the root', () => {
+  it('moves into a mirrored folder, or to the root of My documents for the root', () => {
     expect(planInbound(change(file({ parents: ['file-f1'] })), snap())).toMatchObject({
       effects: [{ kind: 'move-document', folderId: 'f1' }],
       types: ['Move'],
@@ -141,7 +141,7 @@ describe('planInbound: documents', () => {
     });
   });
 
-  it('moves to Unsorted with a notice for a folder livediagram cannot see, or none', () => {
+  it('moves to the root of My documents with a notice for a folder livediagram cannot see, or none', () => {
     const d = planInbound(
       change(file({ parents: ['hidden'] })),
       snap({ folderId: 'f1', items: [item({ parentId: 'file-f1' }), folderItem] }),

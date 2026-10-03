@@ -96,6 +96,11 @@ export function useTeamLibrariesSweep(
               empty: d.empty,
               shareCode: d.shareCode,
               ownerId: d.ownerId,
+              // What the Explorer filters and the Made by AI badge read (explorer-filters.md).
+              source: d.source,
+              opensIn: d.opensIn,
+              tabKind: d.tabKind,
+              templateFamily: d.templateFamily,
               team: { id: team.id, name: team.name },
             })),
           };

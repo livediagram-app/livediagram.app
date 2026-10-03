@@ -71,8 +71,8 @@ export const createDocumentOutput = {
   folder: z
     .string()
     .describe(
-      'The Explorer folder it appears in: "Generated", or the name of the user\'s default folder ' +
-        'it was filed in.',
+      'The Explorer folder it appears in: "My documents" for the root, or the name of the user\'s ' +
+        'default folder it was filed in.',
     ),
   url,
 };

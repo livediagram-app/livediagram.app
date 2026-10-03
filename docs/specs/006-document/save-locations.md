@@ -54,7 +54,7 @@ rather than two versions of the same question. A future location that has
 folders gets the same heading with its own name.
 
 It renders the shared `PlacementBrowser` in its **`list` layout**: stacked
-rows, icon beside label, the kind caption ("Unsorted", "Folder", "Open
+rows, icon beside label, the kind caption ("Top level", "Folder", "Open
 folder") pinned right like a file explorer's Type column, with the inline New
 Folder row last. Same browse, same placement strings, same double-click
 commit; only the shape differs. The move-to-folder dialog ([Folders](../013-workspace/folders.md)) keeps the

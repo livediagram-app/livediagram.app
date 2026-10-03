@@ -6,47 +6,47 @@ on the `nav`.
 
 ## Files
 
-| File                                                               | Holds                                                                                                                                            |
-| ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `apps/live/app/explorer/sidebar/sidebar-structure.ts`              | Group titles, row labels, expand keys, `sidebarGroups`, `sidebarDivider`, `isLibraryView`, `initialExpanded`                                     |
-| `apps/live/app/explorer/sidebar/sidebar-telemetry.ts`              | `SidebarTelemetryRow`, `trackSidebar`                                                                                                            |
-| `apps/live/app/explorer/sidebar/useTreeNavigation.ts`              | `useTreeNavigation`: roving tab stop and the tree keys, over the DOM                                                                             |
-| `apps/live/app/explorer/sidebar/ExplorerSidebar.tsx`               | The `nav`: reads the context, computes the layout, renders the three groups in order                                                             |
-| `apps/live/app/explorer/sidebar/SidebarGroup.tsx`                  | One group: its title (visible or visually hidden) or the hairline, and its `tree`                                                                |
-| `apps/live/app/explorer/sidebar/SidebarRow.tsx`                    | `SidebarRow`: one `treeitem` with the chevron gutter, icon, label, badge, trailing slot and child `group`                                        |
-| `apps/live/app/explorer/sidebar/OverviewGroup.tsx`                 | Home, Activity, Shared with me                                                                                                                   |
-| `apps/live/app/explorer/sidebar/SpacesGroup.tsx`                   | My documents (Unsorted, Generated, folders), teams, Invites, New team, the sign-in nudge                                                         |
-| `apps/live/app/explorer/sidebar/TeamRows.tsx`                      | One row per team with its folder subtree                                                                                                         |
-| `apps/live/app/explorer/sidebar/MoreGroup.tsx`                     | This browser, Library (Image gallery, Themes, Shape libraries), Trash                                                                            |
-| `apps/live/app/explorer/sidebar/SidebarFolderSubtree.tsx`          | A personal folder row, its menu, and its subfolders                                                                                              |
-| `apps/live/app/explorer/sidebar/TeamFolderSubtree.tsx`             | A team folder row and its subfolders                                                                                                             |
-| `apps/live/app/explorer/sidebar/SidebarSignInNudge.tsx`            | The guest's "Sign in to access Teams" card                                                                                                       |
-| `apps/live/app/explorer/sidebar/useSidebarExpansion.ts`            | `useSidebarExpansion(selected)`: the `expanded` set, `expand`, `toggleExpand`; Library opens with a Library view                                 |
-| `apps/live/app/explorer/useExplorerState.ts`                       | Composes `useSidebarExpansion`; exposes `prefs` only once hydrated (`useHydrated`)                                                               |
-| `apps/live/hooks/ui/useHydrated.ts`                                | `useHydrated()`: false while React hydrates the static HTML, true after                                                                          |
-| `apps/live/components/chrome/HeaderSearchAction.tsx`               | The Explorer header's Search, opening the search panel; mounted by `ExplorerShell.tsx`                                                           |
-| `apps/live/components/chrome/header-action.tsx`                    | `HEADER_ACTION_TONE`, shared by Search, Sign in and the account                                                                                  |
-| `apps/telemetry/app/catalogue/features.ts`                         | `EXPLORER_SIDEBAR_PICKS`, in the Organisation stack                                                                                              |
-| `apps/telemetry/app/computed-emitters.ts`                          | The sidebar's computed `UI·Selected` values, read from `SidebarTelemetryRow`                                                                     |
-| `apps/telemetry/app/event-explanation.ts`                          | The `UI·Selected·Sidebar.<Row>` sentence                                                                                                         |
-| `apps/live/components/panels/explorer-tree/PanelExplorerTree.tsx`  | The panel's `nav`: `sidebarGroups` with `surface: 'panel'`, the three panel groups, `useTreeNavigation`, a scrolling box                         |
-| `apps/live/components/panels/explorer-tree/PanelTreeContext.ts`    | `PanelTree`, `PanelTreeProvider`, `usePanelTree`: expansion, the open document and the host's verbs                                              |
-| `apps/live/components/panels/explorer-tree/PanelOverviewGroup.tsx` | Home and Activity to the Explorer; Shared with me opening in place                                                                               |
-| `apps/live/components/panels/explorer-tree/PanelSpacesGroup.tsx`   | My documents (Unsorted, Generated, folders) and each team, opening in place                                                                      |
-| `apps/live/components/panels/explorer-tree/PanelMoreGroup.tsx`     | This browser opening in place; Library pages and Trash to the Explorer                                                                           |
-| `apps/live/components/panels/explorer-tree/PanelFolderItem.tsx`    | A panel folder row: subfolders then documents, folder menu with Show in Explorer, drop target, pending rename                                    |
-| `apps/live/components/panels/explorer-tree/PanelDocumentItem.tsx`  | A panel document row: opens the document, the document menu, star, Local only pill, drag source                                                  |
-| `apps/live/components/panels/explorer-tree/panel-tree-model.ts`    | `splitRootDocuments` (Unsorted / Generated), `openExplorerPage`                                                                                  |
-| `apps/live/components/panels/Explorer.tsx`                         | Mounts `PanelExplorerTree` under the Current Document card; its expansion record starts empty (all closed)                                       |
-| `apps/live/app/explorer/sidebar/library-pages.ts`                  | `LIBRARY_PAGES`, shared by the sidebar and the panel                                                                                             |
-| `apps/live/app/explorer/view-titles.ts`                            | `VIEW_TITLES`, `viewDocumentTitle`: every view named by its row                                                                                  |
-| `apps/live/lib/document-space.ts`                                  | `isLocalOnly`, `documentSpace` (`mine` / `team` / `shared`)                                                                                      |
-| `apps/live/components/primitives/LocalOnlyPill.tsx`                | `LocalOnlyPill`, `LOCAL_ONLY_LABEL`, `LOCAL_ONLY_DESCRIPTION`, `LOCAL_ONLY_TONE`                                                                 |
-| `apps/live/lib/search.ts`                                          | A document result carries `localOnly`; `SearchPanel.tsx` shows the pill as a label                                                               |
-| `apps/live/components/panels/TrashPane.tsx`                        | This browser's Trash rows carry the pill                                                                                                         |
-| `apps/live/components/chrome/SharedBadge.tsx`                      | The editor header's Local only state: the pill's label, sentence (`aria-describedby`), tone and glyph                                            |
-| `apps/live/components/primitives/explorer-icons.tsx`               | `HomeIcon` (lucide `house`), `LibraryIcon` (lucide `library`), `ThisBrowserIcon` (lucide `app-window`), `MyDocumentsIcon` (lucide `folder-root`) |
-| `apps/live/components/primitives/EllipsisTriggerButton.tsx`        | `tabIndex` prop: -1 for the folder rows, whose tree owns the tab stop                                                                            |
+| File                                                               | Holds                                                                                                                                              |
+| ------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `apps/live/app/explorer/sidebar/sidebar-structure.ts`              | Group titles, row labels, expand keys, `sidebarGroups`, `sidebarDivider`, `isLibraryView`, `initialExpanded`                                       |
+| `apps/live/app/explorer/sidebar/sidebar-telemetry.ts`              | `SidebarTelemetryRow`, `trackSidebar`                                                                                                              |
+| `apps/live/app/explorer/sidebar/useTreeNavigation.ts`              | `useTreeNavigation`: roving tab stop and the tree keys, over the DOM                                                                               |
+| `apps/live/app/explorer/sidebar/ExplorerSidebar.tsx`               | The `nav`: reads the context, computes the layout, renders the three groups in order                                                               |
+| `apps/live/app/explorer/sidebar/SidebarGroup.tsx`                  | One group: its title (visible or visually hidden) or the hairline, and its `tree`                                                                  |
+| `apps/live/app/explorer/sidebar/SidebarRow.tsx`                    | `SidebarRow`: one `treeitem` with the chevron gutter, icon, label, badge, trailing slot and child `group`                                          |
+| `apps/live/app/explorer/sidebar/OverviewGroup.tsx`                 | Home, Activity, Shared with me                                                                                                                     |
+| `apps/live/app/explorer/sidebar/SpacesGroup.tsx`                   | My documents (its root folders), teams, Invites, New team, the sign-in nudge                                                                       |
+| `apps/live/app/explorer/sidebar/TeamRows.tsx`                      | One row per team with its folder subtree                                                                                                           |
+| `apps/live/app/explorer/sidebar/MoreGroup.tsx`                     | This browser, Library (Image gallery, Themes, Shape libraries), Trash                                                                              |
+| `apps/live/app/explorer/sidebar/SidebarFolderSubtree.tsx`          | A personal folder row, its menu, and its subfolders                                                                                                |
+| `apps/live/app/explorer/sidebar/TeamFolderSubtree.tsx`             | A team folder row and its subfolders                                                                                                               |
+| `apps/live/app/explorer/sidebar/SidebarSignInNudge.tsx`            | The guest's "Sign in to access Teams" card                                                                                                         |
+| `apps/live/app/explorer/sidebar/useSidebarExpansion.ts`            | `useSidebarExpansion(selected)`: the `expanded` set, `expand`, `toggleExpand`; Library opens with a Library view                                   |
+| `apps/live/app/explorer/useExplorerState.ts`                       | Composes `useSidebarExpansion`; exposes `prefs` only once hydrated (`useHydrated`)                                                                 |
+| `apps/live/hooks/ui/useHydrated.ts`                                | `useHydrated()`: false while React hydrates the static HTML, true after                                                                            |
+| `apps/live/app/explorer/lens/LensField.tsx`                        | The Explorer header's search, the lens field ([Explorer filters blueprint](explorer-filters.md#the-explorer-page)); mounted by `ExplorerShell.tsx` |
+| `apps/live/components/chrome/header-action.tsx`                    | `HEADER_ACTION_TONE`, shared by Sign in and the account                                                                                            |
+| `apps/telemetry/app/catalogue/features.ts`                         | `EXPLORER_SIDEBAR_PICKS`, in the Organisation stack                                                                                                |
+| `apps/telemetry/app/computed-emitters.ts`                          | The sidebar's computed `UI·Selected` values, read from `SidebarTelemetryRow`                                                                       |
+| `apps/telemetry/app/event-explanation.ts`                          | The `UI·Selected·Sidebar.<Row>` sentence                                                                                                           |
+| `apps/live/components/panels/explorer-tree/PanelExplorerTree.tsx`  | The panel's `nav`: `sidebarGroups` with `surface: 'panel'`, the three panel groups, `useTreeNavigation`, a scrolling box                           |
+| `apps/live/components/panels/explorer-tree/PanelTreeContext.ts`    | `PanelTree`, `PanelTreeProvider`, `usePanelTree`: expansion, the open document and the host's verbs                                                |
+| `apps/live/components/panels/explorer-tree/PanelOverviewGroup.tsx` | Home and Activity to the Explorer; Shared with me opening in place                                                                                 |
+| `apps/live/components/panels/explorer-tree/PanelSpacesGroup.tsx`   | My documents and each team, opening in place to root folders then root documents; My documents takes a dropped document                            |
+| `apps/live/components/panels/explorer-tree/PanelMoreGroup.tsx`     | This browser opening in place; Library pages and Trash to the Explorer                                                                             |
+| `apps/live/components/panels/explorer-tree/PanelFolderItem.tsx`    | A panel folder row: subfolders then documents, folder menu with Show in Explorer, drop target, pending rename                                      |
+| `apps/live/components/panels/explorer-tree/PanelDocumentItem.tsx`  | A panel document row: opens the document, the document menu, star, Local only pill, drag source                                                    |
+| `apps/live/components/panels/explorer-tree/panel-tree-model.ts`    | `openExplorerPage`                                                                                                                                 |
+| `apps/live/components/panels/Explorer.tsx`                         | Mounts `PanelExplorerTree` under the Current Document card; its expansion record starts empty (all closed)                                         |
+| `apps/live/app/explorer/sidebar/library-pages.ts`                  | `LIBRARY_PAGES`, shared by the sidebar and the panel                                                                                               |
+| `apps/live/app/explorer/view-titles.ts`                            | `VIEW_TITLES`, `viewDocumentTitle`: every view named by its row                                                                                    |
+| `apps/live/lib/document-space.ts`                                  | `isLocalOnly`, `documentSpace` (`mine` / `team` / `shared`)                                                                                        |
+| `apps/live/components/primitives/LocalOnlyPill.tsx`                | `LocalOnlyPill`, `LOCAL_ONLY_LABEL`, `LOCAL_ONLY_DESCRIPTION`, `LOCAL_ONLY_TONE`                                                                   |
+| `apps/live/lib/search.ts`                                          | A document result carries `localOnly`; `SearchPanel.tsx` shows the pill as a label                                                                 |
+| `apps/live/components/panels/TrashPane.tsx`                        | This browser's Trash rows carry the pill                                                                                                           |
+| `apps/live/components/chrome/SharedBadge.tsx`                      | The editor header's Local only state: the pill's label, sentence (`aria-describedby`), tone and glyph                                              |
+| `apps/live/components/primitives/explorer-icons.tsx`               | `HomeIcon` (lucide `house`), `LibraryIcon` (lucide `library`), `ThisBrowserIcon` (lucide `app-window`), `MyDocumentsIcon` (lucide `folder-root`)   |
+| `apps/live/components/primitives/EllipsisTriggerButton.tsx`        | `tabIndex` prop: -1 for the folder rows, whose tree owns the tab stop                                                                              |
 
 ## Domain and naming
 
@@ -83,7 +83,8 @@ name of the view (`kind: 'offline'`), whose row reads "This browser".
 4. **Row activation** (click on the label area, or Enter / Space): `go(node)` for a view row, `toggleExpand` for
    Library, `setTeamModalOpen(true)` and `setMobileNavOpen(false)` for New team, `window.location.assign` for a team
    folder. Home also clears the Timeline unread count. Each activation calls `trackSidebar(row)` first.
-5. **Chevron**: a click on the gutter toggles that row; it never activates it.
+5. **Chevron**: a click on the gutter toggles that row; it never activates it. My documents is expandable only while it
+   has a root folder (the page) or a root folder or document (the panel).
 6. **Roving tab stop** (`useTreeNavigation`): after every render exactly one `treeitem` in the `nav` has
    `tabIndex = 0`: the focused one while focus is inside the `nav`, else the `aria-selected` one, else the first.
 7. **Keys** on a focused `treeitem` (ignored when the event comes from an `input`, `textarea` or a descendant control):
@@ -92,13 +93,11 @@ name of the view (`kind: 'offline'`), whose row reads "This browser".
    closest ancestor `treeitem`; Enter / Space click its activate element; a single printable character focuses the next
    item (wrapping) whose `data-tree-label` starts with it, case-insensitively. Handled keys `preventDefault`.
 8. **Page titles** (`VIEW_TITLES`): the pane title is `VIEW_TITLES[kind]` (a folder or team by its name); the
-   breadcrumb is `[My documents, leaf]` for Unsorted, Generated and Dynamic, `[My documents, …ancestors, folder]` for a
-   folder, and the single leaf otherwise; each static page's `metadata.title` is `viewDocumentTitle(kind)`.
-9. **Panel** (`PanelExplorerTree`): rows with documents toggle on activation (Shared with me, My documents, Unsorted,
-   Generated, folders, teams, This browser; a team or Shared with me with nothing in it goes to its page); Home,
-   Activity, Library pages and Trash, and Shared with me or a team with nothing in it, call `openExplorerPage` (`window.location.assign(explorerPathFor(node))`). The open
-   document's row is `aria-selected`. Keys `space:my-documents`, `space:unsorted`, `space:generated`,
-   `overview:shared`, `more:this-browser`, `more:library`, folder and team ids, all false at first. Activations
+   breadcrumb is `[My documents, …ancestors, folder]` for a folder, and the single leaf otherwise; each static page's `metadata.title` is `viewDocumentTitle(kind)`.
+9. **Panel** (`PanelExplorerTree`): rows with documents toggle on activation (Shared with me, My documents, folders,
+   teams, This browser; a team or Shared with me with nothing in it goes to its page); Home,
+   Activity, Library pages and Trash, and Shared with me, My documents or a team with nothing in it, call `openExplorerPage` (`window.location.assign(explorerPathFor(node))`). The open
+   document's row is `aria-selected`. Keys `space:my-documents`, `overview:shared`, `more:this-browser`, `more:library`, folder and team ids, all false at first. Activations
    call `trackSidebar(row, 'panel')` (`ExplorerPanel.<Row>`).
 10. **Local only**: `isLocalOnly(doc)` (`ownerId === OFFLINE_OWNER_ID`) shows `LocalOnlyPill` beside a list row's
     name, first in a card's meta row, in the panel rows (link out of the tab order; the row's `aria-describedby` is
@@ -154,7 +153,7 @@ export function initialExpanded(selected: SelectedNode): Set<string>;
 | ----------------------------------------------------- | ---------------------------------------------------------------------------------- |
 | On `/explorer/offline` with no offline documents left | This browser stays while selected                                                  |
 | On `/explorer/invites` with none pending              | Invites stays while selected                                                       |
-| Current view has no row (Recent, Favourites, Dynamic) | No row is `aria-selected`; the tab stop falls back to the first row                |
+| Current view has no row (Recent, Favourites, Search)  | No row is `aria-selected`; the tab stop falls back to the first row                |
 | Selected folder hidden inside a collapsed parent      | Same fallback; expansion is the reader's                                           |
 | A team without folders                                | No chevron; gutter still reserved                                                  |
 | Focus on a row whose parent collapses by mouse        | The element unmounts; focus returns to `body`; the next Tab enters on the tab stop |
@@ -183,7 +182,7 @@ keystroke and per render (tens to low hundreds of nodes). No new fetch.
 - Panel: the tree sits in `max-h-[60vh] overflow-y-auto` under the Current Document card, at the panel's `w-64`.
 - Sign-in nudge: the existing card, last in Spaces.
 - New team: a row with `PlusIcon`, label "New team".
-- Header Search: a toolbar-style button left of the account control, magnifier plus "Search" (label hidden below `sm`).
+- Header search: the lens field left of the account control; below `sm` its own row under the header.
 
 ## Accessibility
 

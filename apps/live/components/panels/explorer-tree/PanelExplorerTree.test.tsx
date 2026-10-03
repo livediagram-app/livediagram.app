@@ -114,13 +114,17 @@ describe('PanelExplorerTree', () => {
     expect(topRows('More')).toEqual(['Library', 'Trash']);
   });
 
-  it('opens compact, then opens My documents in place to its buckets, folders and documents', () => {
+  it('opens compact, then opens My documents in place to its folders, then its documents', () => {
     render(<Harness />);
     expect(item('My documents').getAttribute('aria-expanded')).toBe('false');
     activate('My documents');
     expect(item('My documents').getAttribute('aria-expanded')).toBe('true');
-    expect(item(/^Unsorted/)).toBeTruthy();
-    expect(item('Generated')).toBeTruthy();
+    const children = [
+      ...item('My documents').querySelectorAll(':scope > [role="group"] > [role="treeitem"]'),
+    ].map((el) => el.getAttribute('data-tree-label'));
+    expect(children).toEqual(['Projects', 'Loose notes']);
+    expect(screen.queryByText('Unsorted')).toBeNull();
+    expect(screen.queryByText('Generated')).toBeNull();
     activate('Projects');
     expect(item('Plan').getAttribute('aria-selected')).toBe('true');
     expect(assign).not.toHaveBeenCalled();

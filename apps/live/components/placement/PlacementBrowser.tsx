@@ -293,7 +293,7 @@ export function PlacementBrowser({
         ) : (
           <PlacementCard
             label={isPersonalSpace ? 'My documents' : 'Team Library'}
-            sub={isPersonalSpace ? 'Unsorted' : (team?.name ?? 'Team')}
+            sub={isPersonalSpace ? 'Top level' : (team?.name ?? 'Team')}
             icon={isPersonalSpace ? <PersonalSpaceIcon /> : <TeamPlaceIcon />}
             count={children.length}
             selected={placement === rootValue}

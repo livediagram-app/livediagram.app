@@ -103,10 +103,10 @@ export function groupBy<R, K>(rows: readonly R[], keyOf: (r: R) => K): Map<K, R[
   return map;
 }
 
-// Documents per folder id (null = the root's Unsorted bucket), newest first
+// Documents per folder id (null = the root), newest first
 // in every bucket: the order every Explorer list shows a folder's contents
 // in. `exclude` drops rows before bucketing, for the panel, which keeps
-// offline documents out of Unsorted because they get their own node.
+// offline documents off the root because This browser lists them.
 export function groupDocumentsByFolder<D extends { folderId: string | null; savedAt: number }>(
   liveDocs: readonly D[],
   opts: { exclude?: (d: D) => boolean } = {},

@@ -122,7 +122,7 @@ export type BoardDocumentsImport = {
   ownerId: string;
   // Offline Mode documents (in this browser), or cloud ones.
   offline: boolean;
-  // The personal folder the documents are filed in; absent, Unsorted.
+  // The personal folder the documents are filed in; absent, the root.
   folderId?: string | null;
   onProgress?: (p: BoardImportProgress) => void;
   // New documents were made: the caller's document list refreshes.

@@ -141,7 +141,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
         folderId: {
           type: ['string', 'null'],
           description:
-            "A folder of the chosen space. null, present, is that space's root (Unsorted) chosen on " +
+            "A folder of the chosen space. null, present, is that space's root chosen on " +
             'purpose; absent with no teamId is no choice, where a default folder may answer.',
         },
         // The creation intent (docs/specs/013-workspace/default-folders.md).
@@ -1100,7 +1100,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'trash',
     tag: 'Trash',
     summary:
-      'Restore a document from the Trash to its folder, or Unsorted when that folder is gone.',
+      'Restore a document from the Trash to its folder, or the root of its space when that folder is gone.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
     responseSchema: wrap('document', 'Document'),

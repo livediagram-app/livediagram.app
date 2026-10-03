@@ -3168,7 +3168,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "type": "boolean"
       },
       "folderId": {
-        "description": "Null for `shared`, and for a document in its space's Unsorted.",
+        "description": "Null for `shared`, and for a document at its space's root.",
         "type": [
           "string",
           "null"
@@ -3295,7 +3295,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "type": "boolean"
       },
       "folderId": {
-        "description": "Null for `shared`, and for a document in its space's Unsorted.",
+        "description": "Null for `shared`, and for a document at its space's root.",
         "type": [
           "string",
           "null"
@@ -3469,7 +3469,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "type": "boolean"
       },
       "folderId": {
-        "description": "Null for `shared`, and for a document in its space's Unsorted.",
+        "description": "Null for `shared`, and for a document at its space's root.",
         "type": [
           "string",
           "null"
@@ -6293,7 +6293,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "Trash",
       "Draw",
       "Editor",
-      "Drive"
+      "Drive",
+      "Explorer"
     ],
     "type": "string"
   },

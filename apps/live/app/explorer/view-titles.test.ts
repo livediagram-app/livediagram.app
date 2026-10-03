@@ -30,8 +30,8 @@ describe('VIEW_TITLES', () => {
     expect([
       VIEW_TITLES.recent,
       VIEW_TITLES.favourites,
-      VIEW_TITLES.dynamic,
+      VIEW_TITLES.search,
       VIEW_TITLES.timeline,
-    ]).toEqual(['Recent', 'Favourites', 'Dynamic', 'All activity']);
+    ]).toEqual(['Recent', 'Favourites', 'Search results', 'All activity']);
   });
 });

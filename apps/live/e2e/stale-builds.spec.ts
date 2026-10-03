@@ -64,7 +64,7 @@ test.describe('stale builds', () => {
   // The Explorer loads each section's view lazily: Trash's code is a chunk this page never fetched.
   test('a section whose chunk is gone loads in full instead of crashing', async ({ page }) => {
     const seen = chunkLedger(page);
-    await openExplorer(page, '/explorer/unsorted');
+    await openExplorer(page, '/explorer/all');
     await removeUnseenChunks(page, seen, /^\/explorer\/trash/);
     const loads = pageLoads(page);
     await page.getByRole('treeitem', { name: 'Trash', exact: true }).click();
@@ -76,7 +76,7 @@ test.describe('stale builds', () => {
 
   test('reloads at most once: a second failure shows the error, never a loop', async ({ page }) => {
     const seen = chunkLedger(page);
-    await openExplorer(page, '/explorer/unsorted');
+    await openExplorer(page, '/explorer/all');
     // This destination was already reloaded for a moment ago.
     await page.evaluate(() =>
       sessionStorage.setItem(

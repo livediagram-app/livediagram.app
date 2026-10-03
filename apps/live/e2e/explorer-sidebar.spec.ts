@@ -46,14 +46,14 @@ test.describe('explorer sidebar', () => {
     await expect(row(page, 'New team')).toHaveCount(0);
     // This browser holds nothing yet, so it is hidden.
     expect(await rowNames(page, 'More')).toEqual(['Library', 'Trash']);
-    // My documents starts open: Unsorted and Generated first, then the folders.
+    // My documents starts open on its root folders: no Unsorted or Generated bucket.
     const myDocuments = row(page, 'My documents');
     await expect(row(page, 'Projects')).toBeVisible();
     await expect(myDocuments).toHaveAttribute('aria-expanded', 'true');
     const children = await myDocuments
       .locator(':scope > [role="group"] > [role="treeitem"]')
       .evaluateAll((els) => els.map((el) => el.getAttribute('data-tree-label')));
-    expect(children).toEqual(['Unsorted', 'Generated', 'Projects']);
+    expect(children).toEqual(['Projects']);
     // Home is the current view.
     await expect(row(page, /^Home/)).toHaveAttribute('aria-selected', 'true');
     await expect(nav(page).getByText('Favourites')).toHaveCount(0);
@@ -220,8 +220,10 @@ test.describe('editor Explorer panel', () => {
     await page.keyboard.press('Enter');
     await expect(myDocuments).toHaveAttribute('aria-expanded', 'true');
     await page.keyboard.press('ArrowDown');
-    await expect(panel.getByRole('treeitem', { name: /^Unsorted/ })).toBeFocused();
-    await page.keyboard.press('ArrowRight');
+    // The root lists its documents directly: no Unsorted or Generated bucket.
+    const rootRows = myDocuments.locator(':scope > [role="group"] > [role="treeitem"]');
+    await expect(rootRows).toHaveCount(2);
+    await expect(rootRows.first()).toBeFocused();
     await expect(panel.getByRole('treeitem', { name: 'Another' })).toBeVisible();
     await expect(panel.getByRole('treeitem', { name: 'Open one' })).toHaveAttribute(
       'aria-selected',

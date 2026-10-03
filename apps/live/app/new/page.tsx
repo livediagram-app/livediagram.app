@@ -150,7 +150,7 @@ export default function NewDocumentPage() {
   // pre-select the Save In picker, so what the Settings step highlights IS
   // what Create files into. The picker is the single source of truth from
   // here on; there is no separate commit-time fallback (it used to override
-  // an explicit "Unsorted" choice silently).
+  // an explicit root choice silently).
   const [initialPlacement] = useState(() => {
     if (typeof window === 'undefined') return 'unsorted';
     const params = new URLSearchParams(window.location.search);

@@ -1432,7 +1432,7 @@ export const articles: Article[] = [
     title: 'Recent Documents',
     description: 'The default view: the documents you opened or edited most recently.',
     keywords:
-      'history last opened latest edited previously hide exclude remove clutter show restore visible folder location where filed unsorted breadcrumb diagrams',
+      'history last opened latest edited previously hide exclude remove clutter show restore visible folder location where filed root breadcrumb diagrams filter',
     category: 'Explorer',
     categorySlug: 'explorer',
   },
@@ -1453,19 +1453,22 @@ export const articles: Article[] = [
     categorySlug: 'explorer',
   },
   {
-    slug: 'unsorted',
-    title: 'The Unsorted Folder',
-    description: 'The catch-all for documents that are not filed in any folder yet.',
-    keywords: 'inbox uncategorised uncategorized catch all unfiled bucket',
+    slug: 'filters',
+    title: 'Search and Filter Documents',
+    description:
+      'Narrow any document list with words, chips or typed filters like made-by:ai, and share it as a link.',
+    keywords:
+      'search find filter filters chips narrow refine query token tokens made by ai generated opens in mode diagram draw kind event storming template retrospective kanban edited date last week recent people me others owner space team shared unsorted unfiled root lens results',
     category: 'Explorer',
     categorySlug: 'explorer',
   },
   {
     slug: 'personal-space',
     title: 'My Documents and Folders',
-    description: 'Your own library: Unsorted and Generated first, then the folders you create.',
+    description:
+      'Your own library: the folders you create, and your unfiled documents at its root.',
     keywords:
-      'my documents personal space library my work your documents your diagrams own files root folder organise organize unsorted generated favourite favorite star starred bookmark pin quick access',
+      'my documents personal space library my work your documents your diagrams own files root folder organise organize unsorted unfiled made by ai generated favourite favorite star starred bookmark pin quick access',
     category: 'Explorer',
     categorySlug: 'explorer',
   },

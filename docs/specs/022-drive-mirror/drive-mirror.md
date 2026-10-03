@@ -221,7 +221,7 @@ this spec does not restate it.
 
 ## Folders
 
-- The root folder is **Unsorted**: documents without a folder sit
+- The root folder is the **root of My documents**: documents without a folder sit
   directly in it.
 - Every folder in My documents is a Drive folder at the same place in the tree.
 - **Folders created in Drive** by the user are invisible to livediagram under
@@ -255,8 +255,8 @@ folder id):
 | File copied (Drive's "Make a copy")                  | Nothing: livediagram never sees the copy (**verified**, [Copies made in Drive](#copies-made-in-drive)) |
 | File renamed                                         | Document renamed (the `.livediagram` extension is dropped; an empty name keeps the old one)            |
 | File moved to another mirrored folder                | Document moved to that folder                                                                          |
-| File moved to the root folder                        | Document moved to Unsorted                                                                             |
-| File moved to a folder livediagram cannot see        | Document moved to Unsorted, with a notice (see below)                                                  |
+| File moved to the root folder                        | Document moved to the root of My documents                                                             |
+| File moved to a folder livediagram cannot see        | Document moved to the root of My documents, with a notice (see below)                                  |
 | File moved outside the `livediagram` tree entirely   | Same as a folder livediagram cannot see                                                                |
 | File moved to the bin                                | Document moved to Trash ([Trash](../013-workspace/trash.md))                                           |
 | File restored from the bin                           | Document restored from Trash                                                                           |
@@ -313,8 +313,8 @@ copy (below), or **Duplicate** inside livediagram.
   new document's id and recorded (one someone else owns is imported and left
   as it is), so it mirrors the new document like any mirrored
   file and no second file is made for it. The new document lands in the
-  livediagram folder the copy's Drive folder mirrors; in Unsorted when the copy
-  sits in the root, and in Unsorted with [the notice](#folders-livediagram-cannot-see)
+  livediagram folder the copy's Drive folder mirrors; at the root of My documents when the copy
+  sits in the root, and at that root with [the notice](#folders-livediagram-cannot-see)
   when it sits in a folder livediagram cannot see.
 - **Afterwards.** Once opened, the copy can reach livediagram's change feed.
   An inbound change for a file that carries a mirrored document's id under
@@ -334,7 +334,7 @@ livediagram: moving a document's file into it shows up only as "moved to an
 unknown folder". The user's goal is to shape the tree from either side with
 the same result, so the mirror handles this openly, never silently:
 
-- The document moves to **Unsorted**, and a notice in the Cloud Sync row (and on
+- The document moves to the **root of My documents**, and a notice in the Cloud Sync row (and on
   the document's Explorer row) says so: "Moved in Drive to a folder livediagram
   can't see." The notice is kept on the item row, so every device shows it; it
   clears when the document is moved again from either side, or when the folder
@@ -405,7 +405,7 @@ Named constants in one cadence module of the mirror code, with the values and bu
 
 When a check applies a change from Drive, every open view that lists or shows
 documents re-reads itself without a reload: the Explorer (Recent, folders,
-Unsorted, the Trash view), the editor's own Explorer panel and folders, the
+My documents, the Trash view), the editor's own Explorer panel and folders, the
 New Document page's recent list, and the open editor itself (its title after a
 rename, its folder after a move, the deleted card after a move to the Trash).
 Every open tab follows, not only the one that ran the check. It rides the

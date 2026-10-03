@@ -4,7 +4,7 @@
 //
 //   home     → /explorer/home            recent  → /explorer/recent
 //   timeline → /explorer/timeline (All activity)
-//   unsorted → /explorer/unsorted        shared  → /explorer/shared
+//   search   → /explorer/search          shared  → /explorer/shared
 //   favourites → /explorer/favourites
 //   gallery  → /explorer/images          invites → /explorer/invites
 //   shape-libraries → /explorer/shape-libraries
@@ -34,16 +34,12 @@ export function explorerPathFor(node: SelectedNode): string {
       return '/explorer/recent';
     case 'all':
       return '/explorer/all';
-    case 'unsorted':
-      return '/explorer/unsorted';
     case 'favourites':
       return '/explorer/favourites';
-    case 'generated':
-      return '/explorer/generated';
     case 'offline':
       return '/explorer/offline';
-    case 'dynamic':
-      return '/explorer/dynamic';
+    case 'search':
+      return '/explorer/search';
     case 'shared':
       return '/explorer/shared';
     case 'gallery':
@@ -85,16 +81,18 @@ export function selectedFromRoute(pathname: string, search: URLSearchParams): Se
       return { kind: 'recent' };
     case '/explorer/all':
       return { kind: 'all' };
+    // The retired buckets (docs/specs/013-workspace/folders.md#the-root-and-the-retired-buckets):
+    // their pages replace themselves with these views, so the sidebar highlights the row at once.
     case '/explorer/unsorted':
-      return { kind: 'unsorted' };
+    case '/explorer/dynamic':
+      return { kind: 'all' };
+    case '/explorer/generated':
+    case '/explorer/search':
+      return { kind: 'search' };
     case '/explorer/favourites':
       return { kind: 'favourites' };
-    case '/explorer/generated':
-      return { kind: 'generated' };
     case '/explorer/offline':
       return { kind: 'offline' };
-    case '/explorer/dynamic':
-      return { kind: 'dynamic' };
     case '/explorer/shared':
       return { kind: 'shared' };
     case '/explorer/images':

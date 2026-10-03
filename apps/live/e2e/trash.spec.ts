@@ -46,7 +46,7 @@ test('delete, find it in Settings › Trash, restore it', async ({ page, baseURL
   const id = await seed(page, baseURL!, owner, 'Quarterly plan');
   await asOwner(page, owner);
 
-  await page.goto('/explorer/unsorted');
+  await page.goto('/explorer/all');
   await page.getByRole('button', { name: 'Menu for Quarterly plan' }).click();
   await page.getByRole('menu').last().getByText('Delete', { exact: true }).click();
   const confirm = page.getByRole('dialog');

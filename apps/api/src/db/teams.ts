@@ -187,7 +187,7 @@ export async function updateTeam(
 }
 
 export async function deleteTeam(env: Env, id: string): Promise<void> {
-  // Re-home the team's documents to their owners' personal Unsorted FIRST
+  // Re-home the team's documents to the root of their owners' My documents FIRST
   // (docs/specs/013-workspace/team-shared-documents.md): deleting a team must never destroy members' work. Each
   // team document already carries an owner_id (its creator, or whoever a
   // move-out transferred it to), so clearing team_id + folder_id returns

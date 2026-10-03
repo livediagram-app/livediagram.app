@@ -5,29 +5,28 @@ import { MyDocumentsTree } from '@/components/illustrations/explorer';
 export const metadata = helpMetadata({
   title: 'My Documents and Folders',
   description:
-    'My documents is your own document library: Unsorted and Generated for what you have not filed yet, plus the nested folders you create to group documents by project, customer, or topic.',
+    'My documents is your own document library: documents you have not filed sit at its root, beside the nested folders you create to group documents by project, customer, or topic.',
   path: '/help/explorer/personal-space/',
 });
 
 <ArticleLayout
   title="My Documents and Folders"
-  description="Your own library: Unsorted and Generated first, then folders you can nest as deep as you like. Every document has an obvious home."
+  description="Your own library: folders you can nest as deep as you like, and the documents you have not filed at its root. Every document has an obvious home."
   categoryTitle="Explorer"
   categorySlug="explorer"
 >
 
 **My documents** is your own library: the [documents](/explorer/all) you have created, organised however suits you. It is the first row under **Spaces** in the Explorer sidebar, a top-level folder with everything of yours beneath it. Each team you belong to sits beside it as a space of its own ([Team spaces](/help/explorer/team-spaces/)).
 
-A document lives in exactly one place: My documents, a team, or this browser. Moving it changes where it lives. Everything else in the sidebar, Home, Activity, Shared with me, Unsorted and Generated, is a view that gathers documents from wherever they live.
+A document lives in exactly one place: My documents, a team, or this browser. Moving it changes where it lives. Everything else in the sidebar, Home, Activity and Shared with me, is a view that gathers documents from wherever they live.
 
-## Unsorted and Generated
+## The root of My documents
 
-The first two rows beneath My documents fill themselves:
+Opening **My documents** lists its folders first, then every document you have not filed into a folder, newest first. A freshly created document lands there, unless you chose a place for it or set a default folder, so it always has an obvious home without you deciding anything first.
 
-- **Unsorted** catches documents you have not filed anywhere, so a freshly created document always has a home without you deciding anything first.
-- **Generated** collects AI-made documents you have not filed yet, keeping them apart from the ones you drew.
+Documents an AI tool made for you sit there too, like any other, and carry a **Made by AI** badge. To see only those, wherever they are filed, use the **Made by AI** filter ([Search and filter documents](/help/explorer/filters/)).
 
-Neither can be renamed or deleted, and each shows a count badge only when it holds something. Filing a document into a folder of your own moves it out of Unsorted or Generated.
+Filing a document into a folder of your own moves it out of the root; moving it back to **My documents** puts it there again.
 
 Documents saved only in this browser ([Offline Mode](/help/privacy-and-security/offline-mode/)) are yours too, but they live in this browser rather than in My documents: they collect under **This browser**, in the sidebar's **More** group, which shows while there is at least one. Wherever one is listed, a **Local only** pill marks it, because clearing this browser's site data deletes it.
 
@@ -39,9 +38,9 @@ Choose **Favourite** in any document's menu to star it. It's the answer to a bus
 
 ## Folders
 
-Folders give your library structure without forcing it. Every document is in exactly one folder, or none, and folders can nest, so you can build something like "Projects / Customer / Engagement" when you want that depth, or keep everything flat under Unsorted when you do not.
+Folders give your library structure without forcing it. Every document is in exactly one folder, or none, and folders can nest, so you can build something like "Projects / Customer / Engagement" when you want that depth, or keep everything flat at the root when you do not.
 
-<Figure caption="My documents: Unsorted and Generated first, then the folders you create, nested as deep as a project needs.">
+<Figure caption="My documents: the folders you create, nested as deep as a project needs, then the documents at its root.">
   <MyDocumentsTree />
 </Figure>
 
@@ -55,14 +54,14 @@ Folders give your library structure without forcing it. Every document is in exa
 </Step>
 <Step n={3}>Rename or delete a folder from its menu.</Step>
 
-Deleting a folder is safe for its contents: the documents inside drop to Unsorted and any subfolders move up to the top level, so nothing is ever lost when you tidy up.
+Deleting a folder is safe for its contents: the documents inside drop to the root of My documents and any subfolders move up to the top level, so nothing is ever lost when you tidy up.
 
 ## Two places to browse
 
-You will meet My documents in two forms: the **full-page Explorer**, modelled on a desktop file browser, and the compact **floating Explorer panel** in the editor for finding a document mid-task, where it is the **My documents** tab. Both work whether or not you are signed in: a guest sees the documents and folders their own browser owns, and can sign in later to carry that work into an account.
+You will meet My documents in two forms: the **full-page Explorer**, modelled on a desktop file browser, and the compact **floating Explorer panel** in the editor for finding a document mid-task, where **My documents** opens in place to its folders and documents. Both work whether or not you are signed in: a guest sees the documents and folders their own browser owns, and can sign in later to carry that work into an account.
 
 <Tip>
-  Do not over-organise on day one. Start in Unsorted, and pull documents into folders once a real
+  Do not over-organise on day one. Start at the root, and pull documents into folders once a real
   grouping emerges. Folders are easy to add and rearrange whenever you need them.
 </Tip>
 

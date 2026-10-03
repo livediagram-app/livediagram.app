@@ -63,7 +63,7 @@ describe('wantsWelcome (docs/specs/007-editor/new-document-route.md)', () => {
 });
 
 describe('choosePlacementAgainUrl (docs/specs/007-editor/new-document-route.md)', () => {
-  it('drops the refused placement and the bypass, so the wizard starts from Unsorted', () => {
+  it('drops the refused placement and the bypass, so the wizard starts from the root of My documents', () => {
     expect(choosePlacementAgainUrl('?blank=1&welcome=1&team=t1&folder=f1')).toBe('/new');
   });
 

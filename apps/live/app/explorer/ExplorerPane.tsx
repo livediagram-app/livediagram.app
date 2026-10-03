@@ -8,27 +8,22 @@ import { ListView, PaneHeader, SharedList, SkeletonRows, type PaneDocument } fro
 import { CardView } from './CardView';
 import { useExplorerViewMode } from './useExplorerViewMode';
 import { EmptyPane } from './ExplorerEmptyState';
-import { DynamicFolderInfo } from './DynamicFolderInfo';
+import { ViewInfo } from './ViewInfo';
+import { PaneLensBar } from './lens/PaneLensBar';
+import { FilteredEmpty, LoadFailed } from './lens/LensStates';
+import { narrowRows } from './lens/pane-lens';
 import { TimelineControls } from '@livediagram/ui';
 import { DocumentHistoryDialog } from '@/components/panels/DocumentHistoryDialog';
 import { isOfflineIdSync } from '@/lib/offline/offline-store';
 import { useTimelineFeed } from './useTimelineFeed';
 import { useExplorerImport } from './useExplorerImport';
 import { explorerPathFor } from './routes';
+import { VIEW_TITLES } from './view-titles';
 
 // The browse sections that render a folders + documents grid the List/Card
 // toggle (docs/specs/006-document/document-snapshots.md) can swap. Other sections (gallery, themes,
 // profile, team, invites, shared) have their own fixed layout.
-const BROWSE_KINDS = new Set([
-  'recent',
-  'all',
-  'folder',
-  'unsorted',
-  'favourites',
-  'generated',
-  'offline',
-  'dynamic',
-]);
+const BROWSE_KINDS = new Set(['recent', 'all', 'folder', 'search', 'favourites', 'offline']);
 
 // Each Explorer section deep-links its matching help-centre article from a
 // Help button in the pane header (docs/specs/018-help/contextual-help-links.md); the button's hover card copy comes
@@ -44,10 +39,10 @@ const SECTION_HELP: Partial<Record<string, HelpArticleKey>> = {
   gallery: 'imageGallery',
   themes: 'customThemes',
   trash: 'trash',
-  unsorted: 'unsorted',
   offline: 'offlineMode',
   folder: 'folders',
   all: 'folders',
+  search: 'explorerFilters',
 };
 
 // Lazy-load the heavier panes — each is only mounted on its own
@@ -117,9 +112,9 @@ export function ExplorerPane() {
     paneTitle,
     paneCrumbs,
     paneContent,
-    unsortedDocuments,
-    generatedDocuments,
-    offlineDocuments,
+    lens,
+    lensResult,
+    failedReads,
     childrenByParent,
     documentsByFolder,
     setMobileNavOpen,
@@ -152,37 +147,37 @@ export function ExplorerPane() {
   // real team's title is never suppressed by a stale 404 from the last one.
   const [notFoundIn, setNotFoundIn] = useState<typeof selected | null>(null);
   const teamNotFound = notFoundIn === selected;
-  // Where each Recent row lives (docs/specs/013-workspace/recent-folder-chip.md). Recent is the only pane that
-  // spans folders — every other one IS a folder, so a chip there would just
-  // repeat the pane's own title.
+  // Where each row lives (docs/specs/013-workspace/recent-folder-chip.md), on the views that list
+  // more than one place: Recent, Favourites and Search results, and a scoped view whose lens
+  // reaches into its subfolders (explorer-filters.md "Views"). Elsewhere every row sits in the
+  // view's own folder, where the chip would only repeat its title.
   //
   // Rows shared WITH you carry no folderId at all (they live in the sharer's
   // library, not yours), so they get no chip rather than a misleading one.
   const folderChipFor = useCallback(
     (d: PaneDocument): { label: string; onOpen: () => void } | null => {
-      // Recent AND Favourites both aggregate across folders, so both need
-      // to say where a row actually lives (docs/specs/013-workspace/recent-folder-chip.md, docs/specs/013-workspace/favourites.md). Every other
-      // pane IS a folder, where the chip would just repeat its title.
-      const aggregates = selected.kind === 'recent' || selected.kind === 'favourites';
-      if (!aggregates || d.shared) return null;
-      // A team document's folder belongs to the team's library, so the chip
-      // jumps into that team rather than your personal tree.
+      if (d.shared) return null;
+      const aggregates =
+        selected.kind === 'recent' || selected.kind === 'favourites' || selected.kind === 'search';
+      const reaching = lensResult.active && (selected.kind === 'all' || selected.kind === 'folder');
+      if (!aggregates && !reaching) return null;
+      // A row in the folder the reader is in needs no chip.
+      const here = selected.kind === 'folder' ? selected.id : null;
+      if (reaching && d.folderId === here) return null;
+      // A team document's folder belongs to the team's library, which `folderById` (your
+      // personal folders) doesn't index: the chip names the TEAM and opens its library.
       if (d.team) {
-        // Team folders live in the team's own tree, which `folderById`
-        // (your personal folders) doesn't index — so the chip names the
-        // TEAM and opens its library, which is the location that matters
-        // for a team row anyway.
         return { label: d.team.name, onOpen: () => go({ kind: 'team', id: d.team!.id }) };
       }
       if (!d.folderId) {
-        // No folder is still a location: the synthetic Unsorted view.
-        return { label: 'Unsorted', onOpen: () => go({ kind: 'unsorted' }) };
+        // The root is a location too: My documents.
+        return { label: VIEW_TITLES.all, onOpen: () => go({ kind: 'all' }) };
       }
       const folder = folderById.get(d.folderId);
       if (!folder) return null;
       return { label: folder.name, onOpen: () => go({ kind: 'folder', id: folder.id }) };
     },
-    [selected.kind, folderById, go],
+    [selected, folderById, go, lensResult.active],
   );
 
   const hideTeamTitle = selected.kind === 'team' && teamNotFound;
@@ -214,12 +209,9 @@ export function ExplorerPane() {
     selected.kind === 'trash' ||
     selected.kind === 'team' ||
     selected.kind === 'invites' ||
-    // Generated / Offline are read-through dynamic views, not places
-    // you hand-author into (offline documents are created from the /new
-    // wizard's Settings toggle).
-    selected.kind === 'generated' ||
-    selected.kind === 'offline' ||
-    selected.kind === 'dynamic'
+    // This browser is a read-through view, not a place you hand-author into
+    // (offline documents are created from the /new wizard's Settings toggle).
+    selected.kind === 'offline'
       ? undefined
       : () =>
           window.location.assign(
@@ -267,17 +259,22 @@ export function ExplorerPane() {
           selected.kind === 'team' ||
           selected.kind === 'invites' ||
           selected.kind === 'recent' ||
-          selected.kind === 'generated' ||
-          selected.kind === 'offline' ||
-          selected.kind === 'dynamic'
+          selected.kind === 'search' ||
+          selected.kind === 'offline'
             ? undefined
             : () => createFolder(selected.kind === 'folder' ? selected.id : null)
         }
         folderLabel={selected.kind === 'folder' ? 'New Subfolder' : 'New Folder'}
       />
 
-      {/* Dynamic (synthetic) folders explain themselves under the breadcrumb. */}
-      <DynamicFolderInfo selected={selected} />
+      {/* A view the app gathers explains itself under the breadcrumb. */}
+      <ViewInfo selected={selected} />
+      {/* The lens's chips and live region (explorer-filters.md "The chip row"). */}
+      {lens.view !== null ? (
+        <PaneLensBar
+          showIssues={!(lensResult.active && lensResult.shown === 0 && !lensResult.empty)}
+        />
+      ) : null}
 
       {/* Timeline runs ahead of the `loading` gate on purpose: that flag
           tracks the DOCUMENT lists, which this section doesn't read, and
@@ -332,6 +329,14 @@ export function ExplorerPane() {
             // cross-scope pick from the document's current placement.
             moveDests={{ personalFolders: movePersonalFolders, teams: moveTeamDests }}
             onMoveDocumentTo={moveDocumentTo}
+            // The team library reads its own rows, so it narrows them itself.
+            lens={{
+              active: lensResult.active,
+              input: lens.input,
+              issues: lens.parsed.issues,
+              narrow: (rows) => narrowRows(rows, lens.parsed.lens, ownerId, lens.now),
+              clear: () => lens.setInput(''),
+            }}
           />
         ) : null
       ) : selected.kind === 'gallery' ? (
@@ -344,16 +349,19 @@ export function ExplorerPane() {
         <ShapeLibrariesPane />
       ) : selected.kind === 'trash' ? (
         <TrashSection />
-      ) : selected.kind === 'shared' ? (
-        <SharedList shared={shared} ownerId={ownerId} onDismiss={dismissShared} />
-      ) : paneContent.folders.length === 0 &&
-        paneContent.documents.length === 0 &&
-        !paneContent.showUnsortedRow &&
-        // All + Dynamic always lead with synthetic rows, so they're never
-        // "empty" even with zero folders and documents.
-        selected.kind !== 'all' &&
-        selected.kind !== 'dynamic' ? (
+      ) : (selected.kind === 'shared' ? failedReads.shared : failedReads.documents) ? (
+        // A failed read never reads as an empty account (explorer-filters.md "States").
+        <LoadFailed onRetry={() => (ownerId ? void refreshPersonal(ownerId) : undefined)} />
+      ) : lensResult.empty ? (
         <EmptyPane selected={selected} />
+      ) : lensResult.active && lensResult.shown === 0 ? (
+        <FilteredEmpty issues={lens.parsed.issues} onClear={() => lens.setInput('')} />
+      ) : selected.kind === 'shared' ? (
+        <SharedList
+          shared={shared.filter((s) => paneContent.documents.some((d) => d.id === s.id))}
+          ownerId={ownerId}
+          onDismiss={dismissShared}
+        />
       ) : (
         (() => {
           // List and Card take the SAME props (docs/specs/006-document/document-snapshots.md), so build them
@@ -364,22 +372,6 @@ export function ExplorerPane() {
               folders={paneContent.folders}
               documents={paneContent.documents}
               ownerId={ownerId}
-              // The three synthetic folders live inside the Dynamic parent
-              // view; My documents (/all) leads with the single Dynamic row.
-              showUnsortedRow={selected.kind === 'dynamic'}
-              unsortedCount={unsortedDocuments.length}
-              onOpenUnsorted={() => go({ kind: 'unsorted' })}
-              showGeneratedRow={selected.kind === 'dynamic'}
-              generatedCount={generatedDocuments.length}
-              onOpenGenerated={() => go({ kind: 'generated' })}
-              showOfflineRow={selected.kind === 'dynamic'}
-              offlineCount={offlineDocuments.length}
-              onOpenOffline={() => go({ kind: 'offline' })}
-              showDynamicRow={selected.kind === 'all'}
-              dynamicCount={
-                unsortedDocuments.length + generatedDocuments.length + offlineDocuments.length
-              }
-              onOpenDynamic={() => go({ kind: 'dynamic' })}
               onOpenFolder={(id) => go({ kind: 'folder', id })}
               onCommitRenameFolder={commitRenameFolder}
               onCancelRenameFolder={() => setRenamingFolderId(null)}
@@ -412,9 +404,9 @@ export function ExplorerPane() {
                 folders: childrenByParent.get(id) ?? [],
                 documents: documentsByFolder.get(id) ?? [],
               })}
-              // Owner column (desktop): Recent mixes personal + team rows
-              // (docs/specs/013-workspace/team-shared-documents.md), so it's the one list where ownership varies.
-              showOwner={selected.kind === 'recent'}
+              // Owner column (desktop): the views that mix personal, team and shared rows
+              // (docs/specs/013-workspace/team-shared-documents.md) are the ones where ownership varies.
+              showOwner={selected.kind === 'recent' || selected.kind === 'search'}
             />
           );
         })()

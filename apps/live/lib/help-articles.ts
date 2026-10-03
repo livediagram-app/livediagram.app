@@ -84,7 +84,7 @@ export const HELP_ARTICLES = {
   recentDocuments: 'explorer/recent',
   sharedWithYou: 'explorer/shared-with-you',
   folders: 'explorer/folders',
-  unsorted: 'explorer/unsorted',
+  explorerFilters: 'explorer/filters',
   dataElements: 'palette/tools/data-elements',
   palette: 'palette',
   // Settings
@@ -307,9 +307,9 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about folders',
     description: 'Tips for organising documents into a nestable tree of folders.',
   },
-  unsorted: {
-    title: 'Learn about the Unsorted folder',
-    description: 'Where documents live until you file them into a folder.',
+  explorerFilters: {
+    title: 'Learn about search and filters',
+    description: 'Narrow any list with words, chips or typed filters like made-by:ai.',
   },
   dataElements: {
     title: 'Learn about data elements',
