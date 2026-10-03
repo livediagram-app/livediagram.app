@@ -40,6 +40,7 @@ import type { StampGhost } from '@/components/canvas/useStampGhost';
 import { HoverCard } from '@livediagram/ui';
 import { STRIP_SELECTOR, useStripCrowdsCorners } from '@/hooks/ui/useStripCrowdsCorners';
 import { PHONE_TOOLBAR_ITEMS } from '@/components/chrome/phone-toolbar-items';
+import { atLeastInset } from '@/lib/safe-area';
 import { WHITEBOARD_DOCK_SELECTOR } from '@/lib/whiteboard-dock-prefs';
 import { CollaborateClusterButton } from './CollaborateClusterButton';
 import { kindCounts } from '@/components/panels/collaborate/collaborate-model';
@@ -552,13 +553,13 @@ export function CanvasChrome(props: CanvasChromeProps) {
         // as its one way back out, and a deck has its own way out plus no
         // zoom to offer.
         data-zoom-cluster=""
-        // Drawn at the UI scale, still 16px from the corner.
+        // Drawn at the UI scale, still 16px from the corner, or clear of a landscape notch.
         style={
           cornerScale === 1
-            ? undefined
+            ? { right: atLeastInset('1rem', 'right') }
             : {
                 ...uiScaleStyle(cornerScale),
-                right: toSurfacePx(16, cornerScale),
+                right: atLeastInset(`${toSurfacePx(16, cornerScale)}px`, 'right'),
                 bottom: toSurfacePx(16, cornerScale),
               }
         }

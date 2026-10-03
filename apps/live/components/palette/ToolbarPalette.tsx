@@ -15,6 +15,7 @@ import { track } from '@/lib/telemetry';
 import { loadPaletteFavourites } from '@/lib/palette-favourites';
 import { SnapWidth } from '@/components/primitives/SnapWidth';
 import { PHONE_TOOLBAR_ITEMS } from '@/components/chrome/phone-toolbar-items';
+import { safeInlinePadding } from '@/lib/safe-area';
 import { PaletteTintProvider } from './palette-controls';
 import { PaletteGroupProvider } from './palette-group-state';
 import { PaletteDropdown, TOOLBAR_TRIGGER_TONE } from './PaletteDropdown';
@@ -85,7 +86,11 @@ function StripRow({
 }) {
   if (!leading) return <>{children}</>;
   return (
-    <div className="pointer-events-none flex w-full items-start gap-2 px-3 [&>*]:pointer-events-auto">
+    <div
+      // 12px gutters, or a landscape notch's inset where that is bigger (lib/safe-area).
+      style={safeInlinePadding('0.75rem')}
+      className="pointer-events-none flex w-full items-start gap-2 [&>*]:pointer-events-auto"
+    >
       <div ref={leadingRef} data-strip-leading="" className={CARD_CLASS}>
         {leading}
       </div>

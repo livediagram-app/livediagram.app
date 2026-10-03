@@ -199,6 +199,18 @@ These don't change desktop layout. The Toolbar layout is what resolves the old "
 
 The root layout (`apps/live/app/layout.tsx`) exports a `viewport` config that pins the page at `initialScale: 1` with `maximumScale: 1` + `userScalable: false`, so mobile browsers don't auto-zoom on top of the editor's own canvas zoom. The two paths this blocks: pinch-zoom on the whole page, and iOS Safari's automatic focus-zoom when a focused input's effective font-size is under 16px (every TabBar / Explorer / Palette field is well under). Without this, focusing a text input on iOS zooms the page in and leaves the chrome misaligned with the canvas-transform coordinate space the cursor / selection-ring math expects. The canvas zoom (pinch on the canvas surface, or the bottom-right zoom buttons) is the only zoom the editor wants users to drive.
 
+That lock stays. Lifting it was tested (2026-10-03): with page zoom allowed, a pinch on the canvas
+zoomed the whole page (Chromium, 1.5x) instead of the canvas, which breaks the editor's core
+gesture. Readability on a phone comes from the UI scale ([UI scale](ui-scale.md)) and the canvas
+zoom instead.
+
+**Safe areas.** The edge chrome clears the device's safe-area insets (`lib/safe-area.ts`): the
+header below the top inset and past the side insets, the tab bar above the home indicator and past
+the side insets, the strip's row and the bottom-right cluster past a landscape notch. Inline
+`env(safe-area-inset-*)` styles, at least the chrome's own gutters. The editor does not set
+`viewport-fit=cover`, so the insets are 0 today and nothing moves; the rules keep the chrome clear
+the day it goes edge to edge.
+
 ## Out of scope (next iterations)
 
 - **Comments inbox / mentions** — comment threads exist per-element but there's no aggregated view yet. A cross-document inbox is sketched for assigned actions in [Assigned actions](../012-collaboration/assigned-actions.md) and not built either.
