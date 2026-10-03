@@ -349,7 +349,7 @@ Migration on read, in every entry point (`migrateStoredTab` / `migrateIncomingTa
 | Hugging on `sizing` in both modes              | `lib/text-hug.test.ts`, `boxed-drag-resolve.resize.test.ts`, `useEditorDrag.shift-resize.test.tsx`, `useTextStyleSetters.test.ts`          |
 | Template, MCP, imports open in Draw            | `apps/live/lib/templates.test.ts`, `apps/mcp/src/tab-builders.test.ts`, `lib/board-scene/land.test.ts`, `lib/import-merge.test.ts`         |
 | Telemetry rename and history                   | `apps/api/src/db/legacy-migration-0061.test.ts`, telemetry app suites                                                                      |
-| Shift+D                                        | `hooks/editor/editor-mode-shortcut.test.ts`                                                                                                |
+| Shift+D                                        | `hooks/editor/editor-mode-shortcut.test.ts`, e2e "Shift+D moves to the next mode and wraps"                                                |
 
 ## Defaults ledger
 

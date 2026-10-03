@@ -1,15 +1,21 @@
 // Writes src/lucide.generated.ts from the pinned lucide-static package and lucide-manifest.json
 // (docs/specs/004-interface-design/iconography.md, "Source"). Run: `pnpm icons:vendor`.
+// `--adopt-installed` first moves the manifest's pin to the installed lucide-static, for a
+// Dependabot bump (.github/workflows/lucide-revendor.yml).
 import { readFileSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 
 import { lucideModule, type LucideManifest } from '../src/lucide-vendor.ts';
 
 const require = createRequire(import.meta.url);
-const manifest = JSON.parse(
-  readFileSync(new URL('../lucide-manifest.json', import.meta.url), 'utf8'),
-) as LucideManifest;
+const manifestUrl = new URL('../lucide-manifest.json', import.meta.url);
+const manifest = JSON.parse(readFileSync(manifestUrl, 'utf8')) as LucideManifest;
 const installed = (require('lucide-static/package.json') as { version: string }).version;
+if (installed !== manifest.version && process.argv.includes('--adopt-installed')) {
+  console.log(`vendor-lucide: moving the manifest pin from ${manifest.version} to ${installed}`);
+  manifest.version = installed;
+  writeFileSync(manifestUrl, `${JSON.stringify(manifest, null, 2)}\n`);
+}
 if (installed !== manifest.version) {
   console.error(`vendor-lucide: manifest pins ${manifest.version} but ${installed} is installed`);
   process.exit(1);

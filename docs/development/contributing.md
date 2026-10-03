@@ -91,15 +91,15 @@ Both aliases get dropped for a plain `typescript@7.x` once 7.1 ships an API and 
 
 Tests live next to the code they cover, as `*.test.ts` / `*.test.tsx` files. The runner is [Vitest](https://vitest.dev) with the shared config in `@livediagram/vitest-config`. See [`docs/specs/003-system-architecture/testing.md`](../specs/003-system-architecture/testing.md) for the testing contract.
 
+`pnpm install` installs a pre-push hook (`.githooks/pre-push`) that runs format, lint, typecheck and tests for what your push changes, so a CI failure shows up on your machine first ([Before a push](../specs/003-system-architecture/testing.md#before-a-push)).
+
 When you add a feature, add tests for the critical paths. When you fix a bug, add a test that would have caught it.
 
 The bar isn't 100% line coverage; it's "the next regression on this code path fails CI before it ships."
 
 ### End-to-end tests
 
-A [Playwright](https://playwright.dev) suite (`apps/live/e2e`, [`docs/specs/003-system-architecture/e2e-smoke.md`](../specs/003-system-architecture/e2e-smoke.md)) drives the real editor build + api worker in a headless Chromium — the layer the Vitest unit tests can't reach. It is **deliberately off the per-PR gate** because a browser run costs real CI minutes; it runs on push to `main` and on demand (the `E2E Smoke` workflow, `.github/workflows/e2e.yml`).
-
-A change to shared chrome (a Settings row, a panel, the top or bottom bars) can move what a smoke spec measures without failing any PR check, so run the suite on the branch before merging: `gh workflow run e2e.yml --ref <branch>`.
+A [Playwright](https://playwright.dev) suite (`apps/live/e2e`, [`docs/specs/003-system-architecture/e2e-smoke.md`](../specs/003-system-architecture/e2e-smoke.md)) drives the real editor build + api worker in a headless Chromium — the layer the Vitest unit tests can't reach. It runs on **every pull request** as a required check (**Chromium smoke**, in the `E2E Smoke` workflow, `.github/workflows/e2e.yml`), on push to `main`, and on demand: `gh workflow run e2e.yml --ref <branch>`.
 
 Run it locally against a running `pnpm dev` stack (it reuses the servers on `:3002` / `:8787`):
 

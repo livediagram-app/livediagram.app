@@ -5,6 +5,8 @@ import { recordDocumentOpen } from '../home/record-open';
 import {
   recordActionAssigned,
   recordCommentAdded,
+  recordDocumentCreated,
+  recordDocumentDuplicated,
   recordDocumentEdited,
   recordTeamDocumentAdded,
   backfillUserScope,
@@ -234,6 +236,33 @@ describe('Jump back in', () => {
       ['own2', 2, NOW - 3 * DAY],
       ['own1', 1, NOW - HOUR],
     ]);
+  });
+
+  it('counts a marked making as a use; an unmarked one waits for its first open', async () => {
+    // A bulk import's makings carry no mark, as every making recorded before the mark.
+    await recordDocumentCreated(db.env, docs.own1!, ME, { markUsed: false });
+    await recordDocumentDuplicated(db.env, docs.own2!, 'Doc own1', ME, { markUsed: false });
+    expect((await home()).jumpBackIn).toEqual([]);
+
+    await recordDocumentOpen(db.env, docs.own2!, ME, NOW - HOUR);
+    expect((await home()).jumpBackIn.map((d) => d.documentId)).toEqual(['own2']);
+
+    // A single making counts at once, opened or not; a copy is one.
+    addDoc('made', ME);
+    addDoc('copied', ME);
+    await recordDocumentCreated(db.env, docs.made!, ME, { markUsed: true });
+    at(NOW + 60_000);
+    await recordDocumentDuplicated(db.env, docs.copied!, 'Doc made', ME, { markUsed: true });
+    expect((await home()).jumpBackIn.map((d) => [d.documentId, d.useDays, d.lastUsedAt])).toEqual([
+      ['copied', 1, NOW + 60_000],
+      ['made', 1, NOW],
+      ['own2', 1, NOW - HOUR],
+    ]);
+  });
+
+  it("never counts someone else's making", async () => {
+    await recordDocumentCreated(db.env, docs.team1!, 'user_priya', { markUsed: true });
+    expect((await home()).jumpBackIn).toEqual([]);
   });
 
   it("leaves out the backfill's reconstructed edits: only real uses count", async () => {

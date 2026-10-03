@@ -16,8 +16,10 @@ import {
 import {
   DOCUMENT_CONVERSION_HEADER,
   INTENT_INVALID,
+  MARK_USED_INVALID,
   readCreationIntent,
   readDocumentConversion,
+  readMarkUsed,
 } from '@livediagram/api-schema';
 import {} from '../comments';
 import {
@@ -95,6 +97,7 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
       const body = (await request.json()) as Omit<Partial<DocumentDTO>, 'tabs'> & {
         tabs?: Tab[];
         intent?: unknown;
+        markUsed?: unknown;
       };
       const owner = requireOwner(ctx);
       if (owner instanceof Response) return owner;
@@ -118,6 +121,13 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
       if (!intent.ok) {
         logPlacementRejected(INTENT_INVALID, placementScope(body.teamId));
         return intentRejected();
+      }
+      // Whether making it is a use (docs/specs/015-api/api.md "Marking a document used"): absent
+      // counts; anything but a boolean refuses the create before anything is written.
+      const making = readMarkUsed(body.markUsed);
+      if (!making.ok) {
+        console.warn('documents: rejected reason=mark_used_invalid');
+        return badRequest(MARK_USED_INVALID);
       }
       // Validate any seeded tabs up front (structure + per-tab byte cap) so a
       // create can't smuggle a malformed / oversized tab past the tab gate.
@@ -254,11 +264,16 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
         // undeclared, moving a document from this browser INTO the account was
         // reported as a document being created for the first time.
         const conversion = readDocumentConversion(request.headers.get(DOCUMENT_CONVERSION_HEADER));
-        ctx.waitUntil?.(
-          conversion === 'sync'
-            ? recordDocumentSynced(env, liveDoc, owner)
-            : recordDocumentCreated(env, liveDoc, owner),
-        );
+        if (conversion === 'sync') {
+          ctx.waitUntil?.(recordDocumentSynced(env, liveDoc, owner));
+        } else {
+          // Making it is a use of it for its maker, unless the create said not (a bulk import):
+          // docs/specs/013-workspace/explorer-home.md "Making a document".
+          console.info(`home: making doc=${liveDoc.id} marked=${making.markUsed}`);
+          ctx.waitUntil?.(
+            recordDocumentCreated(env, liveDoc, owner, { markUsed: making.markUsed }),
+          );
+        }
       }
       // docs/specs/014-identity/transactional-email.md (#6): on a genuine create (no prior row), check for a document
       // milestone. Count + send run in the background, off the response path.
@@ -427,7 +442,9 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
       const newName = requested || capStoredName(`Copy of ${source.name}`, null, 'document');
       const copy = await copyDocument(env, id, newId, owner, newName, scope.tabScope);
       if (!copy) return notFound();
-      ctx.waitUntil?.(recordDocumentDuplicated(env, copy, source.name, owner));
+      // A copy is one document made on purpose: always a use (docs/specs/015-api/api.md "Marking a
+      // document used").
+      ctx.waitUntil?.(recordDocumentDuplicated(env, copy, source.name, owner, { markUsed: true }));
       // A copy taken by someone who came in through a share link is news the
       // owner wants: their shared document was worth forking.
       //

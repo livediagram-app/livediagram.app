@@ -375,6 +375,15 @@ export const createDocumentShape = {
   tab: tabShape.optional().describe('A single tab — accepted as an alias for tabs: [tab].'),
   layout: layoutField,
   theme: themeField,
+  // Making a document is a use (docs/specs/015-api/mcp-server.md §4.3).
+  markUsed: z
+    .boolean()
+    .optional()
+    .describe(
+      "Whether this document joins the user's Jump back in (their most used and recent documents) " +
+        'at once. Default true. Pass false when making many documents in one go, so a batch ' +
+        "never pushes the user's own work out of reach.",
+    ),
 };
 
 export const addTabShape = {

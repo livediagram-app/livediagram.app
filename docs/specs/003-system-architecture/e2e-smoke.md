@@ -10,18 +10,29 @@ that layer (the "maximum update depth" pan-loop report, panel-gating bugs,
 dialog behaviour, a board losing its kind on reload) is the reason a focused
 test lives here.
 
-## Why it's separate from CI's unit gate
+## When it runs
 
-Browser E2E costs real CI minutes (a browser + a running
-stack), so it is **deliberately not on the per-PR critical path**. The
-`ci.yml` gate (lint / format / typecheck / test / build) stays fast and
-runs on every PR and push. The browser suite is its own workflow,
-`e2e.yml` (named **E2E Smoke**), triggered on:
+The suite is a **per-PR merge gate**. Its job, **Chromium smoke**, is a required status check on
+`main` beside CI's Checks, Tests and Build, so a pull request whose change breaks a browser flow
+cannot merge. A post-merge-only run let regressions land unseen and kept `main` red for
+hours at a time while later pull requests inherited the failure.
 
-- **push to `main`**: a post-merge run, so a regression that slipped
-  a green unit gate is caught within one merge; and
-- **`workflow_dispatch`**: run it by hand against a branch before merge
-  when a change is browser-risky.
+The repository is public, so GitHub-hosted runners cost nothing; the price of the gate is the
+run's wall time (13 to 16 minutes), which runs beside CI's jobs. The run needs no secret, no
+Cloudflare account and no deployed environment: the stack is local to the runner
+([The stack under test](#the-stack-under-test)), so a pull request from a fork runs it too.
+
+The browser suite is its own workflow, `e2e.yml` (named **E2E Smoke**), triggered on:
+
+- **`pull_request`**: every pull request, the gate;
+- **push to `main`**: the merged result, since a pull request is tested against the `main` it
+  was opened on; and
+- **`workflow_dispatch`**: by hand against any branch, and by the Lucide re-vendor workflow
+  after it commits ([Iconography](../004-interface-design/iconography.md)), whose commit no
+  `pull_request` event announces.
+
+A new run on the same ref cancels the one in flight (`concurrency`), so pushing again to a
+pull request never queues two runs of the suite.
 
 It runs **every** spec file in `apps/live/e2e/` except the signed-in ones under `e2e/clerk-stub/`
 (`test:e2e` is `playwright test --project=chromium`, with no other filter); those run as a second
@@ -170,7 +181,7 @@ One spec file per feature, each linking the spec it proves:
 | `arrow-rebind.spec.ts`         | arrows re-anchor live while dragging, keep a quarter point on the new side, and the Settings switch turns it off                                                                                                                                                                                                                                                                              | [Arrow anchors](../008-canvas/arrow-anchors.md)                                                                                                        |
 | `grips-on-top.spec.ts`         | a selected element's resize handles and an arrow's end grips are the topmost thing at their centres, whatever the element's rotation, opacity or animation and whatever is drawn over it                                                                                                                                                                                                      | [Canvas and palette](../008-canvas/canvas-and-palette.md) (Resize)                                                                                     |
 | `viewport-on-add.spec.ts`      | the first element dropped on an empty tab stays where it was dropped; a reloaded tab is framed on its content                                                                                                                                                                                                                                                                                 | [Canvas and palette](../008-canvas/canvas-and-palette.md)                                                                                              |
-| `palette-drag.spec.ts`         | a row found by searching the Toolbar strip's More popover drags onto the canvas, whatever its catalogue                                                                                                                                                                                                                                                                                       | [Palette drag ghost](../010-palette/palette-drag-ghost.md), [Toolbar layout](../007-editor/toolbar-layout.md)                                          |
+| `palette-drag.spec.ts`         | a tile in a category's More popover on the Toolbar strip drags onto the canvas, whatever its catalogue: a shape, and a line icon and a sticker found by their own catalogue's search                                                                                                                                                                                                          | [Palette drag ghost](../010-palette/palette-drag-ghost.md), [Toolbar layout](../007-editor/toolbar-layout.md)                                          |
 | `quick-style-panel.spec.ts`    | one-click styles, the floating and toolbar docking, swatch targets, and custom swatch overrides                                                                                                                                                                                                                                                                                               | [Quick style panel](../008-canvas/quick-style-panel.md)                                                                                                |
 | `multicolour-theme.spec.ts`    | Rainbow gives each limb of a mind map its own palette colour                                                                                                                                                                                                                                                                                                                                  | [Multi-colour themes](../011-theme/multicolour-themes.md)                                                                                              |
 | `appearance.spec.ts`           | the appearance opens on the device setting and cycles, never writes to the document, tells Dark Reader to stand down, and is remembered before first paint                                                                                                                                                                                                                                    | [Live app](../007-editor/live-app.md)                                                                                                                  |
@@ -183,7 +194,7 @@ One spec file per feature, each linking the spec it proves:
 | `contrast-audit.spec.ts`       | dark mode, on the wizard, the editor with its panels and dialogs, the Join dialog and the Explorer: every visible text node meets WCAG AA (4.5:1, or 3:1 for large text) against the background actually painted under it; no allow-list, and what cannot be measured honestly (glyphs under 6px, disabled controls, hidden text, filtered art, text over an image) is reported, never failed | [Colour scheme](../004-interface-design/color-scheme.md#accessibility)                                                                                 |
 | `optical-audit.spec.ts`        | dark mode at 4x, on the wizard, the editor and its dialogs, the Join dialog and the Explorer: every glyph in a small painted shape sits within 0.5px of its centre and stacked actions share one baseline; each failure names the shape, the offset and why it was held to centring                                                                                                           | [Optical alignment](../004-interface-design/optical-alignment.md)                                                                                      |
 | `optical-audit-sites.spec.ts`  | the same audit on the help centre, the telemetry dashboard and the marketing site                                                                                                                                                                                                                                                                                                             | [Optical alignment](../004-interface-design/optical-alignment.md)                                                                                      |
-| `optical-clip.spec.ts`         | a trimmed label that also truncates keeps its descenders, proven in pixels                                                                                                                                                                                                                                                                                                                    | [Optical alignment blueprint](../004-interface-design/blueprints/optical-alignment.md)                                                                 |
+| `optical-clip.spec.ts`         | a trimmed label that also truncates keeps its descenders, proven in pixels across the label's own columns                                                                                                                                                                                                                                                                                     | [Optical alignment blueprint](../004-interface-design/blueprints/optical-alignment.md)                                                                 |
 | `shape-stroke-inside.spec.ts`  | every shape drawn to its box edge paints no stroke outside it, in pixels                                                                                                                                                                                                                                                                                                                      | [Canvas and palette](../008-canvas/canvas-and-palette.md)                                                                                              |
 
 A new browser-risky feature adds one focused spec file here (or a case in the
@@ -202,7 +213,7 @@ tests where it's cheap.
 - `apps/live/e2e/fixtures/`: drawn wall photos for the photo import; `audit-screens.ts`, `contrast.ts`,
   `optical.ts` and `optical-discover.ts`: the screens and measurements the dark-mode audits share.
 - `scripts/e2e-stack.mjs`: the stack boot + static serve (live, help, telemetry, marketing).
-- `.github/workflows/e2e.yml`: the cost-controlled workflow.
+- `.github/workflows/e2e.yml`: the cost-controlled workflow, run on every pull request.
 - `test:e2e` and `test:e2e:clerk-stub` scripts in `apps/live/package.json`; `build:clerk-stub`
   (`apps/live/scripts/build-clerk-stub.mjs`) builds the export the latter runs against.
 - `apps/live/e2e/clerk-stub/`: the fake `window.Clerk` and the signed-in specs.

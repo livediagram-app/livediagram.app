@@ -163,11 +163,11 @@ export function syntheticBoard(dir: string, title: string | null, dark: boolean)
   );
 }
 
-/** A .zip holding two boards: a dark one and an untitled light one. */
-export function syntheticExportZip(): Buffer {
+/** A .zip holding two boards (the dark 'Sprint board' and an untitled light one), or the first only. */
+export function syntheticExportZip(boards: 1 | 2 = 2): Buffer {
   const files = [
     ...syntheticBoard('export/board-dark', 'Sprint board', true),
-    ...syntheticBoard('export/board-light', null, false),
+    ...(boards === 2 ? syntheticBoard('export/board-light', null, false) : []),
   ];
   return Buffer.from(writeZip(files.map(([name, data]) => ({ name, data }))));
 }

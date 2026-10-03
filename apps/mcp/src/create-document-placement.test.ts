@@ -42,14 +42,30 @@ function harness(created: Created, lookups: Record<string, unknown> = {}) {
     },
   } as unknown as Env;
   registerTools(server, env);
-  const run = async (tabs: unknown[]) =>
-    (await handler!({ name: 'Doc', tabs }, { authInfo: { token: 'tok' } })) as {
+  const run = async (tabs: unknown[], extra: Record<string, unknown> = {}) =>
+    (await handler!({ name: 'Doc', tabs, ...extra }, { authInfo: { token: 'tok' } })) as {
       structuredContent: { folder: string };
     };
   return { run, posted, requested };
 }
 
 const elements = { name: 'Tab', elements: [] };
+
+// Making a document is a use, unless the model says not (docs/specs/015-api/mcp-server.md §4.3,
+// docs/specs/013-workspace/explorer-home.md "Making a document").
+describe('create_document markUsed', () => {
+  it('sends nothing when the model gives none: the making counts', async () => {
+    const { run, posted } = harness(undefined);
+    await run([elements]);
+    expect(posted[0]).not.toHaveProperty('markUsed');
+  });
+
+  it.each([true, false])('passes markUsed: %s through to the create', async (markUsed) => {
+    const { run, posted } = harness(undefined);
+    await run([elements], { markUsed });
+    expect(posted[0]!.markUsed).toBe(markUsed);
+  });
+});
 
 describe('create_document intent', () => {
   it('sends a diagram for elements', async () => {

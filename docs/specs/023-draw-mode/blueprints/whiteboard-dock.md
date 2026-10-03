@@ -114,7 +114,9 @@ slots are Most used and Recent), "More shapes" (merged into Shapes), "toolbar" f
   (`stick()`), clears it. `viaHover` stays set for the flyout's life.
 - The flyout focuses, on opening: its field if it has one (the Shapes flyout, even on a hover), else
   its pressed option, else its first button; a hover-opened flyout without a field never takes the
-  focus.
+  focus. It does so once placed (`place` set): it is `visibility: hidden` for its first, unmeasured
+  frame, and a browser will not focus a hidden element, which would leave the focus, and so Escape,
+  on the opener.
 - Closing: Escape returns the focus to the opener, except for a flyout opened by hover, whose field
   took the focus unasked: it closes with `restoreFocus`, which blurs to the board when the focus is
   still inside it or nowhere. A press elsewhere, a pick or the hover close do the same.
@@ -525,6 +527,7 @@ to measure` (warn).
 | Preference parsing and writing, emptied pins kept         | `apps/live/lib/whiteboard-dock-prefs.test.ts`                              |
 | Picks counted, search pick, S request, pins, unpin count  | `apps/live/hooks/canvas/useWhiteboard.test.tsx`                            |
 | Groups, order, tab stops, arrows, scroll re-anchoring     | `apps/live/components/canvas/whiteboard/WhiteboardDock.test.tsx`           |
+| A press focuses the flyout once shown; Escape hands back  | `WhiteboardDock.test.tsx` "takes the focus on a press once it is shown"    |
 | Panel form: sections, no separators, cog as footer row    | `WhiteboardDock.test.tsx` "WhiteboardDock in the Palette panel"            |
 | Panel form: beside flyout, menu shapes shown, no menu     | `WhiteboardDock.test.tsx` "WhiteboardDock in the Palette panel"            |
 | Off the dock: board side, centred, in viewport, tip over  | `WhiteboardDock.test.tsx` "offDock"                                        |

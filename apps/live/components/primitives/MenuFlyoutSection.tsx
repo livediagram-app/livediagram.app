@@ -14,6 +14,7 @@ import { Portal } from '@/components/primitives/Portal';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { useReposition } from '@/hooks/canvas/useReposition';
 import { VIEWPORT_EDGE_MARGIN } from '@/lib/clamp-to-viewport';
+import { coverHost } from './menu-flyout-cover';
 import {
   FlyoutPanel,
   plainTriggerClass,
@@ -174,20 +175,16 @@ function Flyout({
     if (isMobile) {
       const host = trigger.closest('[role="menu"]')?.getBoundingClientRect();
       if (host) {
-        const width = Math.round(host.width);
-        const left = Math.round(
-          Math.max(m, Math.min(host.left, Math.max(m, window.innerWidth - width - m))),
-        );
-        // Prefer the menu's own top. A taller child hangs off the bottom, so
-        // pull it up just enough to fit rather than letting it run off-screen.
-        const maxTop = Math.max(m, window.innerHeight - pr.height - m);
-        const top = Math.round(Math.max(m, Math.min(host.top, maxTop)));
-        // Cover the parent COMPLETELY. A child shorter than its parent left
+        // Cover the parent COMPLETELY (coverHost). A child shorter than its parent left
         // the parent's remaining rows poking out below it, which reads as a
         // stray panel dropped on the menu rather than as having drilled into
         // it — and those rows are still tappable, so the two menus fight.
-        // Bounded by the viewport so a tall parent can't push it off-screen.
-        const minHeight = Math.round(Math.min(host.height, window.innerHeight - top - m));
+        const { left, top, width, minHeight } = coverHost(
+          host,
+          pr.height,
+          { width: window.innerWidth, height: window.innerHeight },
+          m,
+        );
         let settledMobile = true;
         setPos((prev) => {
           if (

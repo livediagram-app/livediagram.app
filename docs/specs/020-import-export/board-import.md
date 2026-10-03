@@ -57,7 +57,12 @@ throws. Only the parse stage has to be pure.
      caller says which. A source may also bring its document as **ready tabs**
      ([draw.io](drawio-import.md): one diagram tab per page): a tab over the cap
      is left out and named ("Page 'Network' is too large to store") while the
-     document's other tabs land, and a document left with no tab fails as above;
+     document's other tabs land, and a document left with no tab fails as above.
+     An import of **one** document counts as a use of it, so it is in Explorer
+     Home's Jump back in at once; an import of **more than one** in one go
+     marks none of them used (`markUsed: false`, in this browser's record too
+     for Offline Mode documents), so it never pushes everything else out
+     ([Explorer Home: Making a document](../013-workspace/explorer-home.md#making-a-document));
    - **insert-at-point**: the elements join the active tab at a point and are
      selected (a paste or a drop).
 

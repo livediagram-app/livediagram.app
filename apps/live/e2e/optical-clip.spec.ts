@@ -18,15 +18,29 @@ async function clippedLabels(scope: Locator): Promise<Locator[]> {
   return clipped;
 }
 
+// Ink may spill this far past the label's sides (an italic overhang) and still be the label's; the
+// row's next item (a category's icon tile) sits a 12px gap away, outside the frame.
+const SIDE_SPILL_PX = 4;
+
 async function paintsFullInk(label: Locator): Promise<boolean> {
-  // The row around the label, so ink spilling past the label's own box is in frame.
-  const frame = label.locator('xpath=..');
-  const clipped = await frame.screenshot({ animations: 'disabled', caret: 'hide' });
+  // The row's full height, so a descender spilling below the label's box is in frame, across the
+  // label's own columns only: re-painting the label after its overflow flips may re-blend a
+  // neighbour's anti-aliased edge, which says nothing about the label's ink.
+  const row = (await label.locator('xpath=..').boundingBox())!;
+  const box = (await label.boundingBox())!;
+  const clip = {
+    x: box.x - SIDE_SPILL_PX,
+    y: row.y,
+    width: box.width + 2 * SIDE_SPILL_PX,
+    height: row.height,
+  };
+  const shot = () => label.page().screenshot({ clip, animations: 'disabled', caret: 'hide' });
+  const clipped = await shot();
   await label.evaluate((el) => {
     el.style.overflow = 'visible';
     el.style.textOverflow = 'clip';
   });
-  const released = await frame.screenshot({ animations: 'disabled', caret: 'hide' });
+  const released = await shot();
   await label.evaluate((el) => {
     el.style.overflow = '';
     el.style.textOverflow = '';

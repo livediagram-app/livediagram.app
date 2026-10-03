@@ -218,6 +218,15 @@ async function routeApiRequest(
   if (tokenAuth?.readOnly && isWrite) {
     return forbidden('read_only_token');
   }
+  // One read is a credential, not content: the share-link list carries every
+  // code (edit links included) and the share password, so a read-only token
+  // that could list it could promote itself to edit by opening a link.
+  const isShareLinkList =
+    segments[1] === 'documents' && segments.length === 4 && segments[3] === 'share';
+  if (tokenAuth?.readOnly && isShareLinkList) {
+    console.warn('[read-only-token] share-link list refused', { tokenId: tokenAuth.tokenId });
+    return forbidden('read_only_token');
+  }
   // Reject oversized bodies up front (cheap Content-Length gate) so a hostile
   // payload never reaches a route's req.json(). The per-field / per-tab caps
   // in the routes catch the rest; this is the blunt outer bound.
