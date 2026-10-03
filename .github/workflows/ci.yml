@@ -4,6 +4,8 @@ on:
   pull_request:
   push:
     branches: [main]
+  # lucide-revendor.yml dispatches it on the commit it pushes, which no pull_request event announces.
+  workflow_dispatch:
 
 # Least privilege: this workflow only checks out and verifies. It never writes
 # to the repo, so the default token stays read-only rather than inheriting

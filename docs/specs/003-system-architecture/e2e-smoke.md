@@ -10,18 +10,29 @@ that layer (the "maximum update depth" pan-loop report, panel-gating bugs,
 dialog behaviour, a board losing its kind on reload) is the reason a focused
 test lives here.
 
-## Why it's separate from CI's unit gate
+## When it runs
 
-Browser E2E costs real CI minutes (a browser + a running
-stack), so it is **deliberately not on the per-PR critical path**. The
-`ci.yml` gate (lint / format / typecheck / test / build) stays fast and
-runs on every PR and push. The browser suite is its own workflow,
-`e2e.yml` (named **E2E Smoke**), triggered on:
+The suite is a **per-PR merge gate**. Its job, **Chromium smoke**, is a required status check on
+`main` beside CI's Checks, Tests and Build, so a pull request whose change breaks a browser flow
+cannot merge. A post-merge-only run let regressions land unseen and kept `main` red for
+hours at a time while later pull requests inherited the failure.
 
-- **push to `main`**: a post-merge run, so a regression that slipped
-  a green unit gate is caught within one merge; and
-- **`workflow_dispatch`**: run it by hand against a branch before merge
-  when a change is browser-risky.
+The repository is public, so GitHub-hosted runners cost nothing; the price of the gate is the
+run's wall time (13 to 16 minutes), which runs beside CI's jobs. The run needs no secret, no
+Cloudflare account and no deployed environment: the stack is local to the runner
+([The stack under test](#the-stack-under-test)), so a pull request from a fork runs it too.
+
+The browser suite is its own workflow, `e2e.yml` (named **E2E Smoke**), triggered on:
+
+- **`pull_request`**: every pull request, the gate;
+- **push to `main`**: the merged result, since a pull request is tested against the `main` it
+  was opened on; and
+- **`workflow_dispatch`**: by hand against any branch, and by the Lucide re-vendor workflow
+  after it commits ([Iconography](../004-interface-design/iconography.md)), whose commit no
+  `pull_request` event announces.
+
+A new run on the same ref cancels the one in flight (`concurrency`), so pushing again to a
+pull request never queues two runs of the suite.
 
 It runs **every** spec file in `apps/live/e2e/` except the signed-in ones under `e2e/clerk-stub/`
 (`test:e2e` is `playwright test --project=chromium`, with no other filter); those run as a second
@@ -202,7 +213,7 @@ tests where it's cheap.
 - `apps/live/e2e/fixtures/`: drawn wall photos for the photo import; `audit-screens.ts`, `contrast.ts`,
   `optical.ts` and `optical-discover.ts`: the screens and measurements the dark-mode audits share.
 - `scripts/e2e-stack.mjs`: the stack boot + static serve (live, help, telemetry, marketing).
-- `.github/workflows/e2e.yml`: the cost-controlled workflow.
+- `.github/workflows/e2e.yml`: the cost-controlled workflow, run on every pull request.
 - `test:e2e` and `test:e2e:clerk-stub` scripts in `apps/live/package.json`; `build:clerk-stub`
   (`apps/live/scripts/build-clerk-stub.mjs`) builds the export the latter runs against.
 - `apps/live/e2e/clerk-stub/`: the fake `window.Clerk` and the signed-in specs.
