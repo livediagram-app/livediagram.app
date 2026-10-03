@@ -26,6 +26,7 @@ import {
   PAGE_SOLID_PRESETS,
   pageSheetStyle,
   sameFill,
+  type ThemeBackgroundPreset,
 } from '@/lib/infographic-page-paint';
 import { hexish } from '@/components/palette/palette-controls';
 
@@ -210,10 +211,13 @@ const PATTERN_PREVIEW: Record<PagePattern | 'none', PageBackground> = {
 
 export function BackgroundSection({
   page,
+  themePresets,
   onBackground,
   onPreview,
 }: {
   page: InfographicPage;
+  // The tab theme's own backgrounds (themeBackgroundPresets), offered first.
+  themePresets: readonly ThemeBackgroundPreset[];
   onBackground: (patch: Partial<PageBackground>) => void;
   onPreview: (patch: Partial<PageBackground> | null) => void;
 }) {
@@ -223,10 +227,34 @@ export function BackgroundSection({
     sameFill(fill, s.color ? { kind: 'solid', color: s.color } : undefined),
   );
   const gradientPicked = PAGE_GRADIENT_PRESETS.some((g) => sameFill(fill, gradientFill(g)));
-  const custom = fill?.kind === 'solid' && !solidPicked ? fill.color : null;
+  const themePicked = themePresets.some((t) => sameFill(fill, t.fill));
+  const custom = fill?.kind === 'solid' && !solidPicked && !themePicked ? fill.color : null;
   return (
     <div onPointerLeave={() => onPreview(null)} onBlur={() => onPreview(null)}>
       <PanelSection title="Background">
+        {themePresets.length ? (
+          <div
+            role="radiogroup"
+            aria-label="Theme backgrounds"
+            className="mb-2 grid grid-cols-7 gap-1.5 border-b border-slate-100 pb-2 dark:border-slate-800"
+          >
+            {themePresets.map((t) => {
+              const on = sameFill(fill, t.fill);
+              return (
+                <Swatch
+                  key={t.id}
+                  label={t.label}
+                  background={fillCss(t.fill)}
+                  active={on}
+                  onPick={() => onBackground({ fill: t.fill })}
+                  onPreview={() => onPreview({ fill: t.fill })}
+                >
+                  {on ? <SwatchCheck fill={t.fill} /> : null}
+                </Swatch>
+              );
+            })}
+          </div>
+        ) : null}
         <div role="radiogroup" aria-label="Background colour" className="grid grid-cols-7 gap-1.5">
           {PAGE_SOLID_PRESETS.map((s) => {
             const presetFill: PageFill | undefined = s.color

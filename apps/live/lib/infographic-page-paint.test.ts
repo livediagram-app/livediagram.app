@@ -6,6 +6,7 @@ import {
   PAGE_GRADIENT_PRESETS,
   pageSheetStyle,
   sameFill,
+  themeBackgroundPresets,
   withBackgroundPatch,
 } from './infographic-page-paint';
 
@@ -54,5 +55,25 @@ describe('page paint', () => {
     expect(sameFill(undefined, undefined)).toBe(true);
     expect(sameFill(g, undefined)).toBe(false);
     expect(fillCss(g)).toBe('linear-gradient(160deg, #bae6fd, #c7d2fe)');
+  });
+
+  it('draws backgrounds from the theme: pale tints first, a deep shade, two gradients', () => {
+    const presets = themeBackgroundPresets({
+      elementStroke: '#7c3aed',
+      elementFill: '#ede9fe',
+      palette: undefined,
+    });
+    expect(presets.map((p) => p.id)).toEqual([
+      'theme-wash',
+      'theme-tint',
+      'theme-fill',
+      'theme-deep',
+      'theme-glow',
+      'theme-dusk',
+    ]);
+    expect(presets[3]!.fill).toEqual({ kind: 'solid', color: expect.stringMatching(/^#/) });
+    // No colours of its own: the brand accent, and no fill swatch.
+    const plain = themeBackgroundPresets({ elementStroke: null, elementFill: null });
+    expect(plain.some((p) => p.id === 'theme-fill')).toBe(false);
   });
 });

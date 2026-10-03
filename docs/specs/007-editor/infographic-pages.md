@@ -75,6 +75,12 @@ page with no valid `id` or `orientation` is skipped (as today).
   **Mint** `#dcfce7`, **Lavender** `#ede9fe`, **Blush** `#fce7f3`, **Sunshine** `#fef9c3`,
   **Ink** `#1e293b`, **Midnight** `#0f172a`, **Forest** `#14532d`, **Plum** `#3b0764`, and a
   **custom** colour (the system colour picker).
+- **From the theme**, offered first in their own row: drawn from the tab's theme accent (its
+  element stroke, else its first palette colour, else the brand blue) and a second colour (a
+  multi-colour theme's next palette colour, else the accent deepened): **Theme wash** (accent
+  tinted 93%), **Theme tint** (80%), **Theme fill** (the theme's own element fill, when it has a
+  light one), **Theme deep** (accent shaded 60%), **Theme glow** (a gradient of the two, light) and
+  **Theme dusk** (the same, dark). A theme change offers new ones; a page keeps the colour it took.
 - **Gradient**: two colours and an angle (`from`, `to`, `angle` in CSS degrees, 0 to 359: 180 runs
   top to bottom). Six presets: **Sunrise** (`#fde68a` to `#fca5a5`), **Ocean** (`#bae6fd` to
   `#c7d2fe`), **Meadow** (`#bbf7d0` to `#a5f3fc`), **Peach** (`#fed7aa` to `#fecdd3`), **Dusk**

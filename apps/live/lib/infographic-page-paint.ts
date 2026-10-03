@@ -2,7 +2,11 @@
 // "Backgrounds"): the panel's preset catalogue, and the CSS a sheet takes from its background. The
 // export paints the same background onto its own canvas (export-page).
 import {
+  isLightColor,
   pageIsDark,
+  shade,
+  tint,
+  type ThemeDefinition,
   type InfographicPage,
   type PageBackground,
   type PageFill,
@@ -144,4 +148,55 @@ export function withBackgroundPatch(
   if (!merged.fill) delete merged.fill;
   if (!merged.pattern) delete merged.pattern;
   return merged.fill || merged.pattern ? merged : undefined;
+}
+
+export type ThemeBackgroundPreset = { id: string; label: string; fill: PageFill };
+
+// The accent a theme without its own stroke paints in (the brand blue).
+const FALLBACK_ACCENT = '#0ea5e9';
+const isHex = (c: string | null | undefined): c is string => !!c && /^#[0-9a-f]{6}$/i.test(c);
+
+/**
+ * Backgrounds drawn from the tab's theme (docs/specs/007-editor/infographic-pages.md
+ * "Backgrounds"), offered first: two pale tints of its accent, its own element fill (when it has
+ * a light one of its own), a deep shade, and a light and a dark gradient running to its second
+ * colour (a multi-colour theme's next branch, else a deeper accent). Pure: theme in, presets out.
+ */
+export function themeBackgroundPresets(
+  theme: Pick<ThemeDefinition, 'elementStroke' | 'elementFill' | 'palette'>,
+): ThemeBackgroundPreset[] {
+  const accent = isHex(theme.elementStroke)
+    ? theme.elementStroke
+    : isHex(theme.palette?.[0]?.stroke)
+      ? theme.palette![0]!.stroke
+      : FALLBACK_ACCENT;
+  const second = isHex(theme.palette?.[1]?.stroke)
+    ? theme.palette![1]!.stroke
+    : shade(accent, 0.25);
+  const solid = (color: string): PageFill => ({ kind: 'solid', color });
+  const out: ThemeBackgroundPreset[] = [
+    { id: 'theme-wash', label: 'Theme wash', fill: solid(tint(accent, 0.93)) },
+    { id: 'theme-tint', label: 'Theme tint', fill: solid(tint(accent, 0.8)) },
+  ];
+  if (isHex(theme.elementFill) && isLightColor(theme.elementFill)) {
+    out.push({
+      id: 'theme-fill',
+      label: 'Theme fill',
+      fill: solid(theme.elementFill.toLowerCase()),
+    });
+  }
+  out.push(
+    { id: 'theme-deep', label: 'Theme deep', fill: solid(shade(accent, 0.6)) },
+    {
+      id: 'theme-glow',
+      label: 'Theme glow',
+      fill: gradientFill({ from: tint(accent, 0.85), to: tint(second, 0.7) }),
+    },
+    {
+      id: 'theme-dusk',
+      label: 'Theme dusk',
+      fill: gradientFill({ from: shade(accent, 0.65), to: shade(second, 0.4) }),
+    },
+  );
+  return out;
 }

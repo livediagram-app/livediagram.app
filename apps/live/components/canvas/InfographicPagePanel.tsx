@@ -19,6 +19,7 @@ import {
 import { Portal } from '@/components/primitives/Portal';
 import { VIEWPORT_EDGE_MARGIN as EDGE } from '@/lib/clamp-to-viewport';
 import type { InfographicPageEdits } from '@/hooks/editor/useInfographicPage';
+import type { ThemeBackgroundPreset } from '@/lib/infographic-page-paint';
 import { LayoutsSection } from './infographic-page-layouts-section';
 import {
   BackgroundSection,
@@ -39,6 +40,7 @@ export function InfographicPagePanel({
   count,
   anchor,
   initialTab,
+  themeBackgrounds,
   edit,
   onPreview,
   onClose,
@@ -47,6 +49,7 @@ export function InfographicPagePanel({
   count: number;
   anchor: HTMLElement;
   initialTab: PagePanelTab;
+  themeBackgrounds: ThemeBackgroundPreset[];
   edit: InfographicPageEdits;
   onPreview: (preview: PagePreview) => void;
   onClose: (restoreFocus: boolean) => void;
@@ -131,6 +134,7 @@ export function InfographicPagePanel({
             />
             <BackgroundSection
               page={page}
+              themePresets={themeBackgrounds}
               onBackground={(patch) => {
                 edit.setBackground(page.id, patch);
                 onPreview(null);

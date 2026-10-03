@@ -13,6 +13,8 @@ import {
 } from '@livediagram/document';
 import { computeFitBelow } from '@/lib/viewport';
 import { debugLog } from '@/lib/debug-log';
+import { getTheme } from '@/lib/themes';
+import { themeBackgroundPresets, type ThemeBackgroundPreset } from '@/lib/infographic-page-paint';
 import { infographicPageEdits, type InfographicPageEdits } from './infographic-page-edits';
 
 export type { InfographicPageEdits };
@@ -21,6 +23,8 @@ export type InfographicPagesView = {
   pages: LaidOutPage[];
   // Frames one page in the view (its label's press).
   focusPage: (pageId: string) => void;
+  // Backgrounds drawn from the tab's theme, offered first in the page panel.
+  themeBackgrounds: ThemeBackgroundPreset[];
   // Absent where the viewer may not change the pages (a view role, a locked tab).
   edit?: InfographicPageEdits;
 };
@@ -98,10 +102,12 @@ export function useInfographicPage(deps: {
   const current = infographicPagesOf(activeTab);
   const pages = layOutInfographicPages(current);
   const focusPage = (pageId: string) => frame(pages.find((p) => p.id === pageId));
-  if (!canEdit || activeTab.locked === true) return { pages, focusPage };
+  const themeBackgrounds = themeBackgroundPresets(getTheme(activeTab.theme));
+  if (!canEdit || activeTab.locked === true) return { pages, focusPage, themeBackgrounds };
   return {
     pages,
     focusPage,
+    themeBackgrounds,
     edit: infographicPageEdits({
       tabId,
       current,

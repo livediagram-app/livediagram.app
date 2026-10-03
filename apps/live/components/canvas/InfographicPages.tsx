@@ -176,6 +176,7 @@ export function InfographicPages({ view, zoom }: { view: InfographicPagesView; z
           count={pages.length}
           anchor={opened.cog}
           initialTab={opened.tab}
+          themeBackgrounds={view.themeBackgrounds}
           edit={edit}
           onPreview={setPreview}
           onClose={close}
