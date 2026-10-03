@@ -11,6 +11,7 @@ import {
   offlineSaveDocumentMeta,
   offlineSaveTab,
 } from '../offline/offline-store';
+import { offlineRecordOpen } from '../offline/offline-opens';
 import {
   API_BASE,
   apiDelete,
@@ -40,8 +41,12 @@ async function _apiLoadTab(
   shareCode: string | null,
   opts: { open?: boolean } = {},
 ): Promise<Tab | null> {
-  // Offline Mode (docs/specs/006-document/offline-mode.md): an offline document's tabs come from IndexedDB.
-  if (await isOfflineId(documentId)) return offlineLoadTab(documentId, tabId);
+  // Offline Mode (docs/specs/006-document/offline-mode.md): an offline document's tabs come from IndexedDB,
+  // and this browser counts its opens, since the server never sees it (offline-opens.ts).
+  if (await isOfflineId(documentId)) {
+    if (opts.open) void offlineRecordOpen(documentId, Date.now());
+    return offlineLoadTab(documentId, tabId);
+  }
   const res = await apiFetch(`${API_BASE}/documents/${documentId}/tabs/${tabId}`, {
     headers: await apiHeaders(ownerId, {
       share: shareCode,

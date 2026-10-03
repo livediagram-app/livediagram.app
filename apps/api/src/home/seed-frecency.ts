@@ -7,12 +7,15 @@
 // open moves back to its earliest seeded day: after one run no edit day lies before it, so running
 // again writes nothing. The stamp only saves the work of looking.
 
-import { TIMELINE_RETENTION_MS } from '@livediagram/api-schema';
+import {
+  TIMELINE_RETENTION_MS,
+  mergeFrecencyKeys,
+  nextFrecencyKey,
+  utcDay,
+} from '@livediagram/api-schema';
 import { REAL_EDIT } from '../db/home';
 import { markFrecencySeeded } from '../db/timeline';
 import type { Env } from '../types';
-import { mergeFrecencyKeys, nextFrecencyKey } from './frecency';
-import { utcDay } from './local-day';
 
 /** The newest real edits one seed reads: one person's recent edit days. */
 export const FRECENCY_SEED_EVENT_MAX = 2000;

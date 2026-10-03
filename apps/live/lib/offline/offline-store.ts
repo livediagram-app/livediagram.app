@@ -58,6 +58,18 @@ export type OfflineDocumentRecord = {
   // (docs/specs/013-workspace/trash.md, see ./offline-trash.ts). Absent = live.
   // A trashed record keeps everything else so a restore is exact.
   trashedAt?: number;
+  // This browser's opens of the document (docs/specs/013-workspace/explorer-home.md "Opens"),
+  // for Home's Jump back in; see ./offline-opens.ts. Optional: a record never opened has none.
+  opens?: LocalOpens;
+};
+
+// A local document's opens, counted like the server's (once per UTC day, the same frecency key).
+export type LocalOpens = {
+  openDays: number;
+  // `YYYY-MM-DD`, UTC: the day the last counted open fell on.
+  lastOpenDay: string;
+  lastOpenedAt: number;
+  frecencyKey: number;
 };
 
 // ---------------------------------------------------------------------------
@@ -109,7 +121,7 @@ export function recordToDocument(rec: OfflineDocumentRecord): LiveDoc {
 }
 
 // Project a record into a list row (drops tab bodies).
-function recordToSummary(rec: OfflineDocumentRecord): DocumentSummary {
+export function recordToSummary(rec: OfflineDocumentRecord): DocumentSummary {
   return {
     id: rec.id,
     ownerId: OFFLINE_OWNER_ID,

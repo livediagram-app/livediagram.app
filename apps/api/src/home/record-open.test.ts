@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import { recordDocumentOpen } from './record-open';
-import { nextFrecencyKey } from './frecency';
+import { nextFrecencyKey } from '@livediagram/api-schema';
 
 // Recording an open (docs/specs/013-workspace/explorer-home.md "Opens"; blueprint "Recording an
 // open"): once per person per document per UTC day, the row first, then a private event.

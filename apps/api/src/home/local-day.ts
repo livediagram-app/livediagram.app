@@ -35,8 +35,3 @@ export function localDay(at: number, timeZone: string): string {
   }
   return format.format(at);
 }
-
-/** `YYYY-MM-DD` of `at` in UTC. */
-export function utcDay(at: number): string {
-  return new Date(at).toISOString().slice(0, 10);
-}

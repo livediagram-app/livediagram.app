@@ -85,6 +85,9 @@ export type HomeJumpBackInItem = HomeDocument & {
   lastOpenedAt: number;
   /** UTC days on which the person opened it. */
   openDays: number;
+  /** The rank: the instant the decayed score falls to one (see ./frecency.ts). Sent so the view
+   *  can place this browser's own local documents among these. */
+  frecencyKey: number;
 };
 
 export type HomeTimelineKind = 'created' | 'updated' | 'opened';

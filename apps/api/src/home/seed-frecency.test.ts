@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import { getScopeState } from '../db/timeline';
-import { nextFrecencyKey, frecencyScore } from './frecency';
+import { nextFrecencyKey, frecencyScore } from '@livediagram/api-schema';
 import { recordDocumentOpen } from './record-open';
 import { FRECENCY_SEED_DOCUMENT_MAX, seedFrecency } from './seed-frecency';
 

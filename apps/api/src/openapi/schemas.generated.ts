@@ -3307,6 +3307,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "null"
         ]
       },
+      "frecencyKey": {
+        "description": "The rank: the instant the decayed score falls to one (see ./frecency.ts). Sent so the view can place this browser's own local documents among these.",
+        "type": "number"
+      },
       "lastOpenedAt": {
         "type": "number"
       },
@@ -3370,6 +3374,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "empty",
       "folderId",
       "folderName",
+      "frecencyKey",
       "lastOpenedAt",
       "name",
       "openDays",

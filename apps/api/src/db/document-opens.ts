@@ -2,7 +2,7 @@
 // "Opens"; blueprint "Data and persistence"). One row per person per document they have opened:
 // the UTC days they opened it on and the frecency key Jump back in ranks by.
 
-import { mergeFrecencyKeys } from '../home/frecency';
+import { mergeFrecencyKeys } from '@livediagram/api-schema';
 import type { Env } from '../types';
 
 export type DocumentOpen = {

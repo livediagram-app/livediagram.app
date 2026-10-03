@@ -76,7 +76,7 @@ export async function readJumpBackIn(
 ): Promise<HomeJumpBackInItem[]> {
   const res = await env.DB.prepare(
     `WITH ${VISIBLE_DOCUMENTS_CTES}
-     SELECT o.open_days, o.last_opened_at, ${PLACE_COLUMNS}
+     SELECT o.open_days, o.last_opened_at, o.frecency_key, ${PLACE_COLUMNS}
        FROM document_opens o
        JOIN visible v ON v.id = o.document_id
        ${PLACE_JOINS}
@@ -85,11 +85,12 @@ export async function readJumpBackIn(
       LIMIT ?3`,
   )
     .bind(personId, now, limit)
-    .all<PlaceRow & { open_days: number; last_opened_at: number }>();
+    .all<PlaceRow & { open_days: number; last_opened_at: number; frecency_key: number }>();
   return (res.results ?? []).map((r) => ({
     ...placeOf(r),
     lastOpenedAt: r.last_opened_at,
     openDays: r.open_days,
+    frecencyKey: r.frecency_key,
   }));
 }
 
