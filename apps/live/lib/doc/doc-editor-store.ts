@@ -42,6 +42,8 @@ export type DocEditorHandle = {
   } | null;
   // The caret's place on the canvas (for an insert there).
   caretCanvasPoint: () => { x: number; y: number } | null;
+  // The writing as laid out now, as draw operations in canvas coordinates (an export).
+  snapshot: () => import('./doc-snapshot').DocDrawOp[];
 };
 
 // Every document's editor on the tab, by flow: what an insert into a document that is not being

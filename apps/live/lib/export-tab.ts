@@ -89,6 +89,13 @@ export { loadTabImages } from './export-tab-images';
 
 // Webfont embedding for downloads (docs/specs/004-interface-design/fonts.md) — the bytes travel with the file.
 import { embeddedFontFaceCss } from './export-fonts';
+import { pageRulingOf, pageWriting, type PageWriting } from './doc/doc-export';
+import { docOpsToSvg, drawDocOps } from './doc/doc-draw';
+
+// The font ids an export declares, with a document page's writing's faces added.
+function withWritingFonts(ids: string[], writing: PageWriting | null): string[] {
+  return writing ? [...new Set([...ids, ...writing.fonts])] : ids;
+}
 
 // Default backdrop pattern colour when a tab leaves it unset (matches the
 // editor's fallback).
@@ -150,7 +157,11 @@ export async function renderTabToCanvas(
   opts: { scale?: number } & ImageExportOpts = {},
 ): Promise<HTMLCanvasElement> {
   const scale = opts.scale ?? 2; // default 2× for crisp output
-  const frame = opts.page ? pageExportFrame(opts.page) : null;
+  const frame = opts.page
+    ? pageExportFrame(opts.page, { ruling: pageRulingOf(tab, opts.page) })
+    : null;
+  // A document page's writing (docs/specs/007-editor/document-pages.md "Everywhere a page goes").
+  const writing = opts.page ? pageWriting(tab, opts.page) : null;
   const reaches = (el: Element) => !frame || frame.reaches(el, tab.elements);
   // Hidden layers drop out of the export (bounds included) unless the
   // dialog's include-hidden option is on (docs/specs/006-document/layers.md). `ordered` is the
@@ -224,6 +235,11 @@ export async function renderTabToCanvas(
   // apply the iso projection so element coords map onto the tilted plane.
   ctx.translate(pad - draw.x, pad - draw.y);
   if (iso) ctx.transform(iso.a, iso.b, iso.c, iso.d, 0, 0);
+  // The writing, over the page and under every element (its zones' elements sit over it).
+  if (writing) {
+    await document.fonts?.ready;
+    drawDocOps(ctx, writing.ops);
+  }
 
   // Isometric: paint every element's extrusion column first, so all the
   // depth sits behind all the element bodies (matching the editor's single
@@ -399,7 +415,10 @@ function svgBoxedExtrusion(el: BoxedElement, surface: CanvasSurface): string {
 export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
   // Same hidden-layer + band-order + band-opacity rules as the canvas
   // renderer above; each band wraps in a <g opacity> when dimmed.
-  const frame = opts.page ? pageExportFrame(opts.page) : null;
+  const frame = opts.page
+    ? pageExportFrame(opts.page, { ruling: pageRulingOf(tab, opts.page) })
+    : null;
+  const writing = opts.page ? pageWriting(tab, opts.page) : null;
   const reaches = (el: Element) => !frame || frame.reaches(el, tab.elements);
   const els = (
     opts.hiddenLayers ? tab.elements : visibleLayerElements(tab.elements, tab.layers)
@@ -442,8 +461,10 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
   // stylesheet (the live preview, where the page has the faces already).
   const fontDefs = opts.fontCss
     ? `<defs><style type="text/css">${opts.fontCss}</style></defs>`
-    : svgFontDefs(exportFontIds(els, tab.font));
+    : svgFontDefs(withWritingFonts(exportFontIds(els, tab.font), writing));
   if (fontDefs) parts.push(fontDefs);
+  // The writing, over the page and under every element.
+  if (writing) parts.push(docOpsToSvg(writing.ops));
   // Element-shadow filter defs (docs/specs/008-canvas/element-shadows.md); empty string when none.
   const shadowDefs = svgShadowDefs(els);
   if (shadowDefs) parts.push(shadowDefs);
@@ -502,7 +523,10 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
 // Permanent Marker installed, and an @import is dead in an offline viewer.
 export async function exportTabAsSvg(tab: Tab, opts: ImageExportOpts = {}): Promise<Blob> {
   const els = opts.hiddenLayers ? tab.elements : visibleLayerElements(tab.elements, tab.layers);
-  const fontCss = opts.fontCss ?? (await embeddedFontFaceCss(exportFontIds(els, tab.font)));
+  const writing = opts.page ? pageWriting(tab, opts.page) : null;
+  const fontCss =
+    opts.fontCss ??
+    (await embeddedFontFaceCss(withWritingFonts(exportFontIds(els, tab.font), writing)));
   return new Blob([renderTabToSvg(tab, { ...opts, fontCss })], { type: 'image/svg+xml' });
 }
 

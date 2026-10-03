@@ -56,6 +56,7 @@ export function pageExportFrame(
   {
     paper = EXPORT_PAPER,
     idPrefix = 'lvd-page',
+    ruling,
   }: {
     // The plain paper's colour: white in an export; the canvas's own paper where a page is drawn
     // as the canvas shows it (the Map).
@@ -63,6 +64,9 @@ export function pageExportFrame(
     // Prefixes the gradient and pattern ids: pages of different tabs share ids (every tab's first
     // page), so markup inlined beside other pages' (slide thumbnails, the Map) needs its own.
     idPrefix?: string;
+    // A document page's Lines, on its writing's baselines inside its margins
+    // (docs/specs/007-editor/document-pages.md "Document style").
+    ruling?: { pitch: number; inset: number };
   } = {},
 ): PageExportFrame {
   const r = page.rect;
@@ -82,7 +86,16 @@ export function pageExportFrame(
   } else {
     parts.push(rect(xmlEscape(fill?.color ?? paper)));
   }
-  if (pattern) {
+  if (pattern && ruling && pattern === 'lines') {
+    // Ruled inside the margins, one line under each line of body text.
+    const p = ruling.pitch;
+    const ink = xmlEscape(pagePatternInk(page.background));
+    parts.push(
+      `<defs><pattern id="${id}-pattern" patternUnits="userSpaceOnUse" x="${r2(r.x + ruling.inset)}" y="${r2(r.y + ruling.inset)}" width="${r2(r.width - 2 * ruling.inset)}" height="${r2(p)}">` +
+        `<rect y="${r2(p - 1)}" width="${r2(r.width - 2 * ruling.inset)}" height="1" fill="${ink}"/></pattern></defs>`,
+      `<rect x="${r2(r.x + ruling.inset)}" y="${r2(r.y + ruling.inset)}" width="${r2(r.width - 2 * ruling.inset)}" height="${r2(r.height - 2 * ruling.inset)}" fill="url(#${id}-pattern)"/>`,
+    );
+  } else if (pattern) {
     const p = PAGE_PATTERN_PITCH;
     parts.push(
       `<defs><pattern id="${id}-pattern" patternUnits="userSpaceOnUse" x="${r2(r.x)}" y="${r2(r.y)}" width="${p}" height="${p}">` +
