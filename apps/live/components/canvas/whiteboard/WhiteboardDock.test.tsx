@@ -421,6 +421,25 @@ describe('WhiteboardDock in the Palette panel', () => {
     expect(within(drawing).getByRole('button', { name: /^Marker 1/ }).textContent).toBe('Marker 1');
   });
 
+  it('captions each tile without its key letter (the key is in the tooltip)', () => {
+    renderPanel();
+    const drawing = screen.getByRole('toolbar', { name: 'Drawing tools' });
+    expect(within(drawing).getByRole('button', { name: 'Path tool' }).textContent).toBe('Path');
+    expect(within(drawing).getByRole('button', { name: 'Select' }).textContent).toBe('Select');
+  });
+
+  it('walks a tile grid by rows with ArrowUp and ArrowDown', () => {
+    renderPanel();
+    const drawing = screen.getByRole('toolbar', { name: 'Drawing tools' });
+    const select = within(drawing).getByRole('button', { name: 'Select' });
+    act(() => select.focus());
+    // Select, Marker 1, Marker 2 / Marker 3, ...: three columns.
+    fireEvent.keyDown(select, { key: 'ArrowDown' });
+    expect(document.activeElement?.getAttribute('aria-label')).toMatch(/^Marker 3/);
+    fireEvent.keyDown(document.activeElement!, { key: 'ArrowUp' });
+    expect(document.activeElement).toBe(select);
+  });
+
   it('draws no separators, and the cog as the footer row', () => {
     renderPanel();
     expect(document.querySelectorAll('.bg-slate-200.w-px')).toHaveLength(0);

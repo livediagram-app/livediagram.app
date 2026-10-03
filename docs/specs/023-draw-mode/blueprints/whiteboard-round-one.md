@@ -66,7 +66,7 @@ Scope, by file:
 | Pen intent       | `PendingDraw` freehand `variant: 'whiteboard'`   | The held pen, with its colour, width and recognition          |
 | Dock             | `WhiteboardDock`                                 | Top- or bottom-centre tool groups (whiteboard-dock.md)        |
 | Dock tool        | `WhiteboardTool`                                 | `select/pen/eraser/sticky/text/shape`                         |
-| Flyout           | `WhiteboardFlyout`                               | A dock button's settings, opened on the dock's board side     |
+| Flyout           | `WhiteboardFlyout`                               | A dock button's settings, off the dock or beside the panel    |
 | Eraser mode      | `WhiteboardEraserMode` (`stroke/partial`)        | Whole-stroke or part-of-stroke erase                          |
 | Pen seen         | `markPenSeen()`, `penSeen()`                     | A `pen` pointer has been used in this page session            |
 | Whiteboard prefs | `WhiteboardPrefs`                                | Pens, active pen, recognition, eraser mode; device-local      |
@@ -877,13 +877,15 @@ validated saves (`validate.ts` bounds `penWidth`). Colours written by a pen come
 
 - Dock: top centre (or bottom, by choice), three groups; placement, separators and copy in
   [whiteboard-dock](whiteboard-dock.md); in the Floating layout the groups fill the Palette panel
-  instead. Buttons 36 × 36 px (the strip's tiles) on the editor's panel surface tokens.
+  instead, as captioned tiles. Dock buttons 36 × 36 px (the strip's tiles) on the editor's panel
+  surface tokens.
 - Pen buttons: a filled nib in the pen's colour (the main pen shows the ink colour), a thickness bar below
   scaled to its width.
 - Flyouts sit on the board side of their button (beside the Palette panel in the Floating
-  layout), never move the dock; clamp to the viewport horizontally (12 px
-  margin, measured from layout width before paint, since the pop-in starts at `scale(0)`), placed
-  with the `translate` property because the pop-in animation owns `transform`.
+  layout), never move the dock, and point at their button with a tip; portalled and `fixed`,
+  placed with `left` / `top` in viewport px, clamped 12 px inside the viewport (measured from the
+  layout size before paint, since the pop-in starts at `scale(0)`): `offDock` / `besidePanel` in
+  [whiteboard-dock](whiteboard-dock.md).
 - Dock buttons and flyout options carry the house `Tooltip` (their accessible name).
 - Copy: buttons "Select", "Marker 1", "Marker 2", "Marker 3" (2 and 3 adding their colour, e.g. "Marker 2, blue, medium"; `PEN_NAMES`), "Eraser", "Sticky note", "Text", "Shapes", "Shape recognition"; pen flyout "Colour" (second and third pens only), "Width" with "Fine", "Medium", "Bold"; eraser flyout
   "Stroke", "Partial" with hints "Remove whole strokes" / "Erase part of a stroke"; Settings flyout
@@ -895,8 +897,9 @@ validated saves (`validate.ts` bounds `penWidth`). Colours written by a pen come
 ## Accessibility
 
 - Each group a `role="toolbar"` ("Drawing tools", "Shapes", "Settings"),
-  `aria-orientation="horizontal"`; roving tabindex per group: one tab stop, ArrowLeft / ArrowRight
-  move (wrapping), Home / End jump ([whiteboard-dock](whiteboard-dock.md)).
+  `aria-orientation="horizontal"` (none on a Palette panel tile grid); roving tabindex per group:
+  one tab stop, ArrowLeft / ArrowRight move (wrapping), Home / End jump, and in a tile grid
+  ArrowUp / ArrowDown a row ([whiteboard-dock](whiteboard-dock.md)).
 - Tool buttons carry `aria-pressed`; a pen's name includes its place, colour (second and third pens) and width ("Marker 3, red, medium");
   flyout openers carry `aria-expanded` and `aria-controls`.
 - A flyout is a `role="group"` labelled by its title; opening moves focus to its selected control;
@@ -910,7 +913,8 @@ validated saves (`validate.ts` bounds `penWidth`). Colours written by a pen come
 ## Web Experience
 
 - Zero layout shift: the dock is `position: absolute` over the canvas, fixed button sizes, flyouts
-  absolutely positioned on its board side (fixed beside the Palette panel); nothing in the page flow changes when a tool or flyout toggles.
+  portalled and `fixed` (off the dock's board side, or beside the Palette panel); nothing in the
+  page flow changes when a tool or flyout toggles.
 - INP: dock handlers set state only; erase work is per sample and bbox-filtered.
 - LCP: no new asset on first paint; the dock renders with the canvas.
 

@@ -71,7 +71,8 @@ screen-px length it writes on that root or a descendant with `toSurfacePx`.
 `toolbar`: `ToolbarPalette`, `ToolbarExplorerButton`, and Draw mode's dock
 (`WhiteboardDock`, its `dock` variant; from
 [Draw mode](../../023-draw-mode/draw-mode.md#what-a-whiteboard-shows), which
-the spec's "Nothing else scales" list does not yet reflect).
+the spec's "Nothing else scales" list names: the dock at the toolbar scale,
+its flyouts at design size).
 `cornerButtons`: the cluster in `CanvasChrome`, `usePanelDock`.
 
 - **`MovablePanel`** (both branches):
@@ -107,10 +108,12 @@ the spec's "Nothing else scales" list does not yet reflect).
 - **`ToolbarExplorerButton`**: zoom on the root; its corner inset is restored
   the same way. Inline in the phone strip it takes no zoom of its own.
 - **`WhiteboardDock`** (`variant="dock"`): zoom on the wrapper; a top dock's
-  `top` is restated as `toSurfacePx(12)`. `useDockFlyout` divides the
-  opener's measured offset by the wrapper's zoom (rect width over
-  `offsetWidth`), so a flyout's `left` is in surface px. The `panel` variant
-  takes no zoom: it sits inside the Palette's `MovablePanel` (`panels`).
+  `top` is restated as `toSurfacePx(12)`. Its flyouts (`WhiteboardFlyout`)
+  are portalled to the body and `fixed`, placed in screen px from the
+  opener's `getBoundingClientRect`, so they take no zoom and need no
+  `toSurfacePx`: they draw at design size. The `panel` variant takes no zoom:
+  it sits inside the Palette's `MovablePanel` (`panels`); its flyouts are
+  portalled the same way.
 
 Popovers that MovablePanel anchors to a scaled button read the button's
 `getBoundingClientRect` (screen px), so they line up at any scale.
@@ -127,6 +130,8 @@ What makes room for a scaled surface:
   `useUiScale('cornerButtons')`, so snap detection matches the landing.
 - `toolbarTopClearancePx(scale)` in `CanvasChrome`: `12 + 46 × scale + 10` at
   the toolbar's scale, the top corners' offset while the strip spans them.
+- A top Draw dock's corner offset is the same `toolbarTopClearancePx(scale)`: the dock is the
+  strip's twin, its height at the toolbar's scale.
 - `useStripCrowdsCorners` takes a `scaleKey` (`"<toolbar>/<panels>"`) and
   `useStripTileLimit` the toolbar's `scale`, as effect dependencies: they
   measure in screen px already, but a zoom change resizes no observed box.

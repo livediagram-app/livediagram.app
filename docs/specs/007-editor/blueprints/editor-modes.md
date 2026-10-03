@@ -191,7 +191,10 @@ export function editorModeShortcut(
   or when `!canSwitch`; else a fixed slot (`data-editor-mode-switch`, `w-12`, or `w-[6.5rem]`
   when `labelled`) around `ModeMenuChip({ mode, onChange, align, labelled })`.
 - Placement: inside `ToolbarExplorerButton`, after the menu button, in its corner card or inline
-  in the phone strip (icon-only, `align` left); in the Floating layout, `CommandPalette` passes
+  in the phone strip (icon-only, `align` left). That card carries `data-floating-panel`, so the
+  canvas's capture-phase pen gesture (`useCanvasSurfaceGestures`) skips a press there: with a Draw
+  tool in hand, a press on the chip or its menu switches rather than starting a stroke. In the
+  Floating layout, `CommandPalette` passes
   `<EditorModeSwitch labelled align="right" />` as its `MovablePanel` `headerActions`, so it
   sits in the Palette panel's title row beside help and minimise, in Diagram and in Draw (the
   panel stays up in Draw mode, showing Draw's tools). Not in `TabBar` (which no longer takes the
@@ -267,14 +270,19 @@ Migration on read, in every entry point (`migrateStoredTab` / `migrateIncomingTa
 ## Presentation and UX
 
 - The chip (`ModeMenuChip`): the mode's icon and a chevron on `TOOLBAR_TRIGGER_TONE`, filling
-  its fixed slot. Icon-only (the Toolbar layout): `h-7`, centred, in the `w-12` slot.
+  its fixed slot. Icon-only (the Toolbar layout): `h-9`, the 36 px menu button's height, centred,
+  in the `w-12` slot.
   `labelled` (the Floating layout's Palette header): `h-6`, left-aligned, the mode's label
   (`text-xs font-medium`) between the icon and the chevron, in the `w-[6.5rem]` slot. No hover
   card (it would cover the menu). The menu opens downward (`absolute top-full mt-1.5`, `left-0`, or `right-0` for
   `align="right"`), `min-w-36`, one compact row per catalogue entry: the 16 px icon, the name
   (`text-xs`), a check on the current row and the `⇧D` hint (`ModeKeyHint`) on the row
-  `nextEditorMode(mode)` leads to; no descriptions. The same for everyone: power user mode does
-  not change it.
+  `nextEditorMode(mode)` leads to; no descriptions. The menu opens at design size: on opening,
+  the chip reads its host's effective zoom (`effectiveZoom`: `currentCSSZoom`, else screen width
+  over layout width) and the menu sets `zoom: 1 / hostZoom`, undoing the toolbar or panel UI
+  scale ([UI scale](../ui-scale.md)). Tour anchors: `data-tour-id="editor-mode"` on the chip,
+  `"editor-mode-menu"` on the menu ([Editor tour](../editor-tour.md) step 4). The same for
+  everyone: power user mode does not change it.
 - The tab pill leads with `TabModeIcon` (in place of the accent dot), tinted with the tab's
   accent.
 - Opens in is an accordion section of the tab menu (`OpensInMenuSection`), after Content: one
@@ -287,7 +295,10 @@ Migration on read, in every entry point (`migrateStoredTab` / `migrateIncomingTa
 - Chip: `aria-haspopup="menu"`, `aria-expanded`, `aria-keyshortcuts="Shift+D"`, named
   "Editor mode: <Label>"; ↑/↓ on the chip open the menu. Rows `menuitemradio` with
   `aria-checked`, focus on the checked row on opening; ↑/↓ wrap, Home/End, Enter/Space, Escape
-  return focus to the chip. The tab pill's icon is `aria-hidden`.
+  return focus to the chip. Tab away closes the menu: a blur closes it only when focus moves to
+  another element outside it (`relatedTarget` set); a blur to nowhere is a press (Safari does not
+  focus a pressed button), so the row's click still lands. A press outside is
+  `useClickOutside`'s. The tab pill's icon is `aria-hidden`.
 - Shift+D carries `aria-keyshortcuts`; a switch by key is announced politely
   (`announce('Draw mode')`). The key obeys the character-key shortcuts setting.
 - Opens in: `role="group"` named "Opens in", `menuitemradio` rows, `aria-disabled` when locked.
@@ -317,25 +328,28 @@ Migration on read, in every entry point (`migrateStoredTab` / `migrateIncomingTa
 
 ## Testing
 
-| Spec rule                                      | Test                                                                                                                               |
-| ---------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| Modes, catalogue, opening mode, ES no switch   | `packages/document/src/editor-mode.test.ts`                                                                                        |
-| Stored whiteboard → general tab in Draw, inked | `legacy-whiteboard-tab.test.ts`, `stored-tab.test.ts`, api `tab-row.test.ts`                                                       |
-| `autoWidth` → `sizing`                         | `legacy-text-sizing.test.ts`, `validate.test.ts`                                                                                   |
-| Per person, per tab; view role; ES             | `apps/live/lib/editor-mode-store.test.ts`, `hooks/editor/useEditorMode.test.tsx`                                                   |
-| Opening mode pinned; template releases         | `useEditorMode.test.tsx`                                                                                                           |
-| One `canEdit`; preview hides the switch        | `useViewPreview.test.tsx`, `components/chrome/editor-mode/EditorModeSwitch.test.tsx`                                               |
-| The switch: icon only, menu below, rows, keys  | `EditorModeSwitch.test.tsx` (the `labelled` form and the Palette header placement have no test yet)                                |
-| The switch beside the menu button              | `components/chrome/ToolbarExplorerButton.test.tsx`, `apps/live/e2e/editor-modes.spec.ts`                                           |
-| The tab pill shows your mode on it             | `components/chrome/TabPill.test.tsx`                                                                                               |
-| A template decides the tab's mode              | `app/document/[id]/useTemplateFlow.test.ts`                                                                                        |
-| Opens in                                       | `hooks/editor/useTabOpensIn.test.tsx`, `components/chrome/OpensInMenuSection.test.tsx`                                             |
-| New tab opens in Diagram                       | `lib/new-tab-seed.test.ts`, e2e `editor-modes.spec.ts` "a new tab opens in Diagram, even when made in Draw mode"                   |
-| Entering / leaving Draw                        | `hooks/canvas/useWhiteboard.test.tsx`, `useWhiteboard.board-tools.test.tsx`                                                        |
-| Hugging on `sizing` in both modes              | `lib/text-hug.test.ts`, `boxed-drag-resolve.resize.test.ts`, `useEditorDrag.shift-resize.test.tsx`, `useTextStyleSetters.test.ts`  |
-| Template, MCP, imports open in Draw            | `apps/live/lib/templates.test.ts`, `apps/mcp/src/tab-builders.test.ts`, `lib/board-scene/land.test.ts`, `lib/import-merge.test.ts` |
-| Telemetry rename and history                   | `apps/api/src/db/legacy-migration-0061.test.ts`, telemetry app suites                                                              |
-| Shift+D                                        | `hooks/editor/editor-mode-shortcut.test.ts`                                                                                        |
+| Spec rule                                      | Test                                                                                                                                       |
+| ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| Modes, catalogue, opening mode, ES no switch   | `packages/document/src/editor-mode.test.ts`                                                                                                |
+| Stored whiteboard → general tab in Draw, inked | `legacy-whiteboard-tab.test.ts`, `stored-tab.test.ts`, api `tab-row.test.ts`                                                               |
+| `autoWidth` → `sizing`                         | `legacy-text-sizing.test.ts`, `validate.test.ts`                                                                                           |
+| Per person, per tab; view role; ES             | `apps/live/lib/editor-mode-store.test.ts`, `hooks/editor/useEditorMode.test.tsx`                                                           |
+| Opening mode pinned; template releases         | `useEditorMode.test.tsx`                                                                                                                   |
+| One `canEdit`; preview hides the switch        | `useViewPreview.test.tsx`, `components/chrome/editor-mode/EditorModeSwitch.test.tsx`                                                       |
+| The switch: icon only, menu below, rows, keys  | `EditorModeSwitch.test.tsx` "EditorModeSwitch chip"                                                                                        |
+| A pressed row lands; Tab away closes           | `EditorModeSwitch.test.tsx` "keeps the menu open through a blur to nowhere…", "closes when focus moves outside (Tab away)"                 |
+| Labelled in the Palette header                 | `EditorModeSwitch.test.tsx` "names the mode when labelled…", e2e "a general tab opens in Diagram, with the chip in the Palette header"     |
+| The switch beside the menu button              | `components/chrome/ToolbarExplorerButton.test.tsx`, `apps/live/e2e/editor-modes.spec.ts`                                                   |
+| A Draw tool in hand never takes the press      | `ToolbarExplorerButton.test.tsx` "marks its card as floating chrome…", e2e "switches back to Diagram with a marker in hand" (both layouts) |
+| The tab pill shows your mode on it             | `components/chrome/TabPill.test.tsx`                                                                                                       |
+| A template decides the tab's mode              | `app/document/[id]/useTemplateFlow.test.ts`                                                                                                |
+| Opens in                                       | `hooks/editor/useTabOpensIn.test.tsx`, `components/chrome/OpensInMenuSection.test.tsx`                                                     |
+| New tab opens in Diagram                       | `lib/new-tab-seed.test.ts`, e2e `editor-modes.spec.ts` "a new tab opens in Diagram, even when made in Draw mode"                           |
+| Entering / leaving Draw                        | `hooks/canvas/useWhiteboard.test.tsx`, `useWhiteboard.board-tools.test.tsx`                                                                |
+| Hugging on `sizing` in both modes              | `lib/text-hug.test.ts`, `boxed-drag-resolve.resize.test.ts`, `useEditorDrag.shift-resize.test.tsx`, `useTextStyleSetters.test.ts`          |
+| Template, MCP, imports open in Draw            | `apps/live/lib/templates.test.ts`, `apps/mcp/src/tab-builders.test.ts`, `lib/board-scene/land.test.ts`, `lib/import-merge.test.ts`         |
+| Telemetry rename and history                   | `apps/api/src/db/legacy-migration-0061.test.ts`, telemetry app suites                                                                      |
+| Shift+D                                        | `hooks/editor/editor-mode-shortcut.test.ts`                                                                                                |
 
 ## Defaults ledger
 

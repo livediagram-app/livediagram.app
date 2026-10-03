@@ -39,10 +39,7 @@ import { PANEL_CORNERS, PANEL_IDS, cornerBottomInset, type PanelCorner } from '@
 import type { StampGhost } from '@/components/canvas/useStampGhost';
 import { HoverCard } from '@livediagram/ui';
 import { STRIP_SELECTOR, useStripCrowdsCorners } from '@/hooks/ui/useStripCrowdsCorners';
-import {
-  WHITEBOARD_DOCK_SELECTOR,
-  WHITEBOARD_DOCK_TOP_CLEARANCE_PX,
-} from '@/lib/whiteboard-dock-prefs';
+import { WHITEBOARD_DOCK_SELECTOR } from '@/lib/whiteboard-dock-prefs';
 import { CollaborateClusterButton } from './CollaborateClusterButton';
 import { kindCounts } from '@/components/panels/collaborate/collaborate-model';
 import { panelEnabled } from '@/lib/user-preferences';
@@ -393,11 +390,10 @@ export function CanvasChrome(props: CanvasChromeProps) {
             style={
               corner === 'bottom-right'
                 ? { bottom: cornerBottomInset(corner, cornerScale) }
-                : stripSpansTop && corner.startsWith('top')
+                : // The Draw dock is the strip's twin (its height, its scale), so the same clearance.
+                  (stripSpansTop || dockSpansTop) && corner.startsWith('top')
                   ? { top: toolbarTopClearancePx(toolbarScale) }
-                  : dockSpansTop && corner.startsWith('top')
-                    ? { top: WHITEBOARD_DOCK_TOP_CLEARANCE_PX }
-                    : undefined
+                  : undefined
             }
             className={`pointer-events-none absolute flex gap-4 ${DOCK_CORNER_CLASS[corner]}`}
           >

@@ -36,6 +36,16 @@ export function ModeMenuChip({
   const label = editorModeLabel(mode);
   const keyLeadsTo = nextEditorMode(mode);
 
+  // The zoom the chip's host draws at (the toolbar or panel UI scale, docs/specs/007-editor/ui-scale.md),
+  // read when the menu opens; the menu undoes it, so it opens at design size like every menu
+  // opened from a scaled surface.
+  const [hostZoom, setHostZoom] = useState(1);
+  const toggle = () =>
+    setOpen((was) => {
+      if (!was && chip.current) setHostZoom(effectiveZoom(chip.current));
+      return !was;
+    });
+
   const closeToChip = () => {
     setOpen(false);
     chip.current?.focus();
@@ -86,15 +96,16 @@ export function ModeMenuChip({
       <button
         ref={chip}
         type="button"
+        data-tour-id="editor-mode"
         aria-haspopup="menu"
         aria-expanded={open}
         aria-label={`Editor mode: ${label}`}
         aria-keyshortcuts={EDITOR_MODE_KEYSHORTCUT}
-        onClick={() => setOpen((was) => !was)}
+        onClick={toggle}
         onKeyDown={(event) => {
           if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') return;
           event.preventDefault();
-          setOpen(true);
+          if (!open) toggle();
         }}
         className={`flex w-full items-center gap-1 rounded-md px-1.5 transition-colors ${
           labelled ? 'h-6 justify-start text-xs font-medium' : 'h-9 justify-center'
@@ -112,8 +123,10 @@ export function ModeMenuChip({
       {open ? (
         <div
           role="menu"
+          data-tour-id="editor-mode-menu"
           aria-label="Editor mode"
           onKeyDown={onMenuKeyDown}
+          style={hostZoom === 1 ? undefined : { zoom: 1 / hostZoom }}
           className={`absolute top-full ${align === 'right' ? 'right-0' : 'left-0'} z-(--z-popover) mt-1.5 flex w-max min-w-36 animate-fade-in flex-col gap-px rounded-lg border border-slate-200/80 bg-white p-1 shadow-xl shadow-slate-900/10 motion-reduce:animate-none dark:border-slate-700/80 dark:bg-slate-900 dark:shadow-slate-950/60`}
         >
           {EDITOR_MODES.map((option, index) => {
@@ -152,4 +165,14 @@ export function ModeMenuChip({
       ) : null}
     </div>
   );
+}
+
+// The effective CSS zoom an element draws at (its own and its ancestors'): `currentCSSZoom` where
+// the browser has it, else its screen width over its layout width. 1 when it cannot be read.
+function effectiveZoom(el: HTMLElement): number {
+  const current = (el as HTMLElement & { currentCSSZoom?: number }).currentCSSZoom;
+  if (typeof current === 'number' && current > 0) return current;
+  const width = el.offsetWidth;
+  const zoom = width > 0 ? el.getBoundingClientRect().width / width : 1;
+  return Number.isFinite(zoom) && zoom > 0 ? zoom : 1;
 }

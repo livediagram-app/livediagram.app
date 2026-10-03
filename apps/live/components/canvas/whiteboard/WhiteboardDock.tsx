@@ -267,7 +267,7 @@ export function WhiteboardDock({ model, ink, variant = 'dock' }: WhiteboardDockP
         }
       >
         {panel ? (
-          <PanelBody hint={hint !== null} fly={fly} open={open} groups={groups} />
+          <PanelBody fly={fly} open={open} groups={groups} />
         ) : (
           <DockBody below={below} hint={hint} fly={fly} open={open} groups={groups} />
         )}
@@ -313,14 +313,13 @@ function DockFlyoutHost({
   );
 }
 
-// The panel form: the groups stacked; the "seven pinned" hint a line under them, inside the panel.
+// The panel form: the groups stacked. No "seven pinned" hint: nothing in the panel pins a shape
+// (pinning is the dock's).
 function PanelBody({
-  hint,
   fly,
   open,
   groups,
 }: {
-  hint: boolean;
   fly: DockFlyoutApi;
   open: OpenFlyout;
   groups: ReactNode;
@@ -329,20 +328,6 @@ function PanelBody({
     <>
       <DockFlyoutHost fly={fly} open={open} below={false} beside />
       {groups}
-      {hint ? (
-        <p
-          aria-hidden
-          data-dock-hint=""
-          data-side="inside"
-          className="animate-pop-in rounded-lg bg-slate-900 px-3 py-2 text-xs text-white dark:bg-slate-100 dark:text-slate-900"
-        >
-          {PINS_FULL_HINT}
-        </p>
-      ) : null}
-      {/* Announced once, whatever the pointer is doing. */}
-      <p role="status" className="sr-only">
-        {hint ? PINS_FULL_HINT : ''}
-      </p>
     </>
   );
 }
