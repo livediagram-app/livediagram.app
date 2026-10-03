@@ -28,8 +28,8 @@ anyone decided it. There was no way to let someone only look, and none to let th
 - **Running a session is facilitation, an Editor's hat**: starting, ending, revealing, clearing and pacing stay with
   editors and the [facilitator baton](../012-collaboration/facilitator.md). A participant takes part and never runs.
 - **A checklist tick is editing**: it is one shared value, not a person's answer.
-- **A Viewer is neutral in the room**: selecting an element never holds it against editors, and a Viewer is not in
-  the Done check's waiting list or a roll call's roster.
+- **Only an Editor's selection holds an element** against other editors; a Viewer's or a Participant's never does.
+- **A Viewer is neutral in the room**: it is not in the Done check's waiting list or a roll call's roster.
 
 ## Ownership
 
@@ -40,7 +40,8 @@ library. On a team document the owner is still its creator; team-wide ownership 
 | -------------------------------------------------------------- | ----- | ----------- | ----------- |
 | Create, revoke and rescope share links; set the share password | ✓     |             |             |
 | Delete to the Trash, restore, purge                            | ✓     | ✓           |             |
-| Move between folders and spaces; take offline                  | ✓     | ✓           |             |
+| Move between folders and spaces                                | ✓     | ✓           |             |
+| Take offline                                                   | ✓     |             |             |
 | Take the facilitator baton back                                | ✓     |             |             |
 
 The owner and joined team members also hold the Editor level. Every gate asks two questions, never one: "is the
@@ -62,7 +63,8 @@ level at least X?" and "does the caller hold this power?".
 - A token carries a level instead of the read-only flag: **view**, **participate** or **edit**, offered on the MCP
   consent screen and in the Settings composer; edit is the default.
 - A token's level never exceeds its owner's access to a document: it narrows, never widens.
-- A participate token may do everything a Participant may, session answers included; an agent acts as its owner
+- A participate token may do everything a Participant may, session answers included, answering through
+  `POST /api/documents/:id/tabs/:tabId/answers` since an agent holds no socket; an agent acts as its owner
   ([Agent presence](../024-agents/agent-presence.md)).
 - An **edit** token also holds its owner's ownership powers, except administration: it may create and manage share
   links (the MCP's `share_document`) and delete to the Trash, but never manages teams, tokens or the account. A view
@@ -71,8 +73,9 @@ level at least X?" and "does the caller hold this power?".
 
 ## Integrity
 
-- **One answer per person, enforced.** The room pins each socket's collaboration key when it says hello and refuses a
-  `vote`, `poll-answer`, response or idea from a non-editor that names any other key.
+- **One answer per person, enforced.** A session below Editor answers under a collaboration key the server derives
+  from the caller and the document and hands over in the room ticket; the room pins it at hello and refuses a `vote`,
+  `poll-answer`, response or idea from a non-editor that names any other key, so nobody can answer as someone else.
 - **Answers persist without an editor.** The room writes a participant's answer to D1 itself, one at a time, with a
   compare-and-swap, as it does for the [Q&A board](../012-collaboration/qa-board.md), so an answer never depends on an
   editor saving the tab.
