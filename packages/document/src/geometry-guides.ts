@@ -123,15 +123,25 @@ export function alignmentGuides(
 // shares with its neighbours along one axis — Figma's pink equal-distance
 // guides. `gap` is the matched spacing; `spans` are the gap segments to
 // draw (each runs `from`->`to` along `axis` at the perpendicular `cross`),
-// tick-capped so the equal gaps read at a glance.
+// tick-capped so the equal gaps read at a glance. A span with its own
+// `axis` is a cross-axis reference: the neighbour's existing gap on the
+// OTHER axis that this axis's gap was matched to (see crossAxisGaps).
 export type DistributionGuide = {
   axis: 'x' | 'y';
   gap: number;
-  spans: { from: number; to: number; cross: number }[];
+  spans: DistributionSpan[];
 };
 
+export type DistributionSpan = { from: number; to: number; cross: number; axis?: 'x' | 'y' };
+
 type DistAxisItem = { low: number; high: number; crossLow: number; crossHigh: number };
-type DistAxisResult = { delta: number; gap: number; spans: { from: number; to: number }[] };
+type DistAxisSpan = { from: number; to: number } | (DistributionSpan & { axis: 'x' | 'y' });
+type DistAxisResult = { delta: number; gap: number; spans: DistAxisSpan[] };
+
+// The gaps an item keeps with its nearest neighbour on each side along
+// one axis (only neighbours overlapping it on the cross axis, so a real
+// row / column). Each comes with the span that draws it.
+type ItemGap = { gap: number; span: DistributionSpan & { axis: 'x' | 'y' } };
 
 // Per-axis equal-spacing search. `cand` is the moving element's interval
 // on the primary axis (low + size) plus its span on the cross axis;
@@ -139,15 +149,20 @@ type DistAxisResult = { delta: number; gap: number; spans: { from: number; to: n
 // the candidate on the cross axis count (so X-spacing considers a
 // horizontal row, Y-spacing a vertical column). Returns the smallest snap
 // within `threshold` that makes a gap equal, or null.
+//
+// `crossGaps(i)` lends item i's gaps on the OTHER axis: the candidate
+// sitting one of those gaps beyond item i keeps spacing consistent across
+// axes (two boxes side by side, a third dropped under one of them).
 function distributeAxis(
   cand: { low: number; size: number; crossLow: number; crossHigh: number },
   items: DistAxisItem[],
   threshold: number,
+  crossGaps: (index: number) => ItemGap[],
 ): DistAxisResult | null {
   const row = items.filter((n) => n.crossLow < cand.crossHigh && n.crossHigh > cand.crossLow);
   const cHigh = cand.low + cand.size;
   let best: DistAxisResult | null = null;
-  const consider = (delta: number, gap: number, spans: { from: number; to: number }[]) => {
+  const consider = (delta: number, gap: number, spans: DistAxisSpan[]) => {
     if (gap < 1 || Math.abs(delta) > threshold) return;
     if (!best || Math.abs(delta) < Math.abs(best.delta)) best = { delta, gap, spans };
   };
@@ -188,7 +203,50 @@ function distributeAxis(
       ]);
     }
   }
+  // Cross-axis: the neighbour N the candidate faces in this row already
+  // keeps a gap on the other axis; sit that same gap beyond (or before) N.
+  const candMid = cand.low + cand.size / 2;
+  items.forEach((N, i) => {
+    if (!(N.crossLow < cand.crossHigh && N.crossHigh > cand.crossLow)) return;
+    const after = candMid > N.high;
+    const before = candMid < N.low;
+    if (!after && !before) return;
+    for (const { gap, span } of crossGaps(i)) {
+      const targetLow = after ? N.high + gap : N.low - gap - cand.size;
+      consider(targetLow - cand.low, gap, [
+        after ? { from: N.high, to: targetLow } : { from: targetLow + cand.size, to: N.low },
+        span,
+      ]);
+    }
+  });
   return best;
+}
+
+// Item i's gap to its nearest neighbour on each side along one axis,
+// among the items overlapping it on the cross axis. The span is drawn on
+// `axis` at the middle of the pair's shared cross-axis extent.
+function nearestGaps(items: DistAxisItem[], i: number, axis: 'x' | 'y'): ItemGap[] {
+  const N = items[i]!;
+  let left: DistAxisItem | null = null;
+  let right: DistAxisItem | null = null;
+  for (let j = 0; j < items.length; j++) {
+    const M = items[j]!;
+    if (j === i || !(M.crossLow < N.crossHigh && M.crossHigh > N.crossLow)) continue;
+    if (M.high <= N.low && (!left || M.high > left.high)) left = M;
+    if (M.low >= N.high && (!right || M.low < right.low)) right = M;
+  }
+  const cross = (M: DistAxisItem) =>
+    (Math.max(M.crossLow, N.crossLow) + Math.min(M.crossHigh, N.crossHigh)) / 2;
+  const out: ItemGap[] = [];
+  if (left) {
+    const span = { axis, from: left.high, to: N.low, cross: cross(left) };
+    out.push({ gap: N.low - left.high, span });
+  }
+  if (right) {
+    const span = { axis, from: N.high, to: right.low, cross: cross(right) };
+    out.push({ gap: right.low - N.high, span });
+  }
+  return out;
 }
 
 // Snap a dragged element to EQUAL spacing with its neighbours (so three
@@ -203,6 +261,20 @@ export function distributionSnap(
   threshold: number,
 ): { dx: number; dy: number; guides: DistributionGuide[] } {
   const boxed = elements.filter((el): el is BoxedElement => isBoxed(el) && !excludeIds.has(el.id));
+  const xItems = boxed.map((el) => ({
+    low: el.x,
+    high: el.x + el.width,
+    crossLow: el.y,
+    crossHigh: el.y + el.height,
+  }));
+  const yItems = boxed.map((el) => ({
+    low: el.y,
+    high: el.y + el.height,
+    crossLow: el.x,
+    crossHigh: el.x + el.width,
+  }));
+  // Same index in both lists is the same element, so X-spacing borrows an
+  // element's vertical gaps and Y-spacing its horizontal ones.
   const xs = distributeAxis(
     {
       low: candidate.x,
@@ -210,13 +282,9 @@ export function distributionSnap(
       crossLow: candidate.y,
       crossHigh: candidate.y + candidate.height,
     },
-    boxed.map((el) => ({
-      low: el.x,
-      high: el.x + el.width,
-      crossLow: el.y,
-      crossHigh: el.y + el.height,
-    })),
+    xItems,
     threshold,
+    (i) => nearestGaps(yItems, i, 'y'),
   );
   const ys = distributeAxis(
     {
@@ -225,24 +293,26 @@ export function distributionSnap(
       crossLow: candidate.x,
       crossHigh: candidate.x + candidate.width,
     },
-    boxed.map((el) => ({
-      low: el.y,
-      high: el.y + el.height,
-      crossLow: el.x,
-      crossHigh: el.x + el.width,
-    })),
+    yItems,
     threshold,
+    (i) => nearestGaps(xItems, i, 'x'),
   );
   const dx = xs?.delta ?? 0;
   const dy = ys?.delta ?? 0;
   const guides: DistributionGuide[] = [];
   if (xs) {
     const cross = candidate.y + dy + candidate.height / 2;
-    guides.push({ axis: 'x', gap: xs.gap, spans: xs.spans.map((s) => ({ ...s, cross })) });
+    guides.push({ axis: 'x', gap: xs.gap, spans: xs.spans.map((s) => withCross(s, cross)) });
   }
   if (ys) {
     const cross = candidate.x + dx + candidate.width / 2;
-    guides.push({ axis: 'y', gap: ys.gap, spans: ys.spans.map((s) => ({ ...s, cross })) });
+    guides.push({ axis: 'y', gap: ys.gap, spans: ys.spans.map((s) => withCross(s, cross)) });
   }
   return { dx, dy, guides };
+}
+
+// A same-axis span is drawn through the candidate's (snapped) middle; a
+// cross-axis reference span already knows where its own pair sits.
+function withCross(s: DistAxisSpan, cross: number): DistributionSpan {
+  return 'axis' in s ? s : { ...s, cross };
 }
