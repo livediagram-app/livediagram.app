@@ -35,6 +35,14 @@ describe('sameDistGuides', () => {
     ).toBe(false);
   });
 
+  it('is false when a span switches to a cross-axis reference', () => {
+    expect(
+      sameDistGuides(d, [
+        { axis: 'x', gap: 20, spans: [{ axis: 'y', from: 0, to: 10, cross: 5 }] },
+      ]),
+    ).toBe(false);
+  });
+
   it('is false when a span differs or the span count differs', () => {
     expect(
       sameDistGuides(d, [{ axis: 'x', gap: 20, spans: [{ from: 0, to: 11, cross: 5 }] }]),

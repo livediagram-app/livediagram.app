@@ -53,7 +53,9 @@ export function sameDistGuides(a: DistributionGuide[], b: DistributionGuide[]): 
     for (let j = 0; j < x.spans.length; j++) {
       const s = x.spans[j]!;
       const t = y.spans[j]!;
-      if (s.from !== t.from || s.to !== t.to || s.cross !== t.cross) return false;
+      if (s.from !== t.from || s.to !== t.to || s.cross !== t.cross || s.axis !== t.axis) {
+        return false;
+      }
     }
   }
   return true;

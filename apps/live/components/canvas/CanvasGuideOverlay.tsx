@@ -181,7 +181,8 @@ export function CanvasGuideOverlay({
                 {distGuides.flatMap((g, gi) =>
                   g.spans.map((s, si) => {
                     const key = `${gi}:${si}`;
-                    if (g.axis === 'x') {
+                    // A cross-axis reference span carries its own axis.
+                    if ((s.axis ?? g.axis) === 'x') {
                       const x1 = cx(s.from);
                       const x2 = cx(s.to);
                       const y = cy(s.cross);
