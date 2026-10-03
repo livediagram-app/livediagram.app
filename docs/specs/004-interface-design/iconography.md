@@ -15,7 +15,7 @@ Every icon livediagram draws follows one grammar, so a glyph looks the same weig
 
 - The base vocabulary is [Lucide](https://lucide.dev) (ISC), the maintained successor of Feather (MIT), whose geometry the Icons catalogue already uses.
 - Lucide is **vendored, not depended on**: a generator copies the pinned SVG data of the glyphs we use into the repo. No icon library is a runtime dependency, so self-hosting and bundles are unaffected.
-- A Dependabot pull request that moves `lucide-static` is re-vendored by CI: `lucide-revendor.yml` sets the manifest's pin to the new version, runs the generator, commits the result to the pull request, then dispatches CI and E2E Smoke on that commit. A glyph the new version dropped fails the generator, and so the workflow, by name.
+- A Dependabot pull request that moves `lucide-static` is re-vendored by CI: `lucide-revendor.yml` sets the manifest's pin to the new version, runs the generator, commits the result to the pull request, then approves the pull request runs its commit starts, which GitHub holds for approval as a bot's push; only pull request runs count as the pull request's required checks. A glyph the new version dropped fails the generator, and so the workflow, by name.
 - A glyph is drawn in-house only when Lucide has no fitting glyph (floor-plan furniture, livediagram-specific actions, effect previews). In-house glyphs follow the same grid, caps, joins and weight.
 - Attribution: the repository's `THIRD_PARTY_NOTICES.md` carries the full Lucide ISC and Feather MIT notices, and the Icons catalogue source points to it.
 
