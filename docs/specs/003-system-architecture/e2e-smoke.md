@@ -43,8 +43,8 @@ Cost controls, all in `e2e.yml` and `playwright.config.ts`:
 - **Parallel everywhere** (`fullyParallel`): 4 workers in CI, one per vCPU of the GitHub runner,
   and Playwright's default locally. Tests stay independent because each opens a fresh browser
   context, so a fresh guest owner whose documents no other test sees.
-- `retries: 1` in CI, a 30-second per-test timeout and a 15-minute job timeout, so a hung run
-  fails fast instead of burning minutes.
+- `retries: 1` in CI, a 30-second per-test timeout and a 20-minute job timeout (two builds and both
+  suites take 13 to 16 minutes), so a hung run fails fast instead of burning minutes.
 - **Traces of first failures** in CI (`retain-on-first-failure`): a test that fails and then passes
   on retry still keeps the trace of its failing attempt, so a flaky test can be read rather than
   guessed at. Each invocation keeps its own artefacts (`test-results` and `playwright-report`, or
