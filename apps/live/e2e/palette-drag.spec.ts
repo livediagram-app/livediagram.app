@@ -22,7 +22,10 @@ async function openMore(page: Page, category: string, query?: string): Promise<v
   await page.getByRole('button', { name: 'Palette category' }).click();
   await page.locator(`[data-option-id="${category}"]`).click();
   await page.getByRole('button', { name: /^More/ }).click();
-  if (query) await more(page).getByRole('textbox', { name: /search/i }).fill(query);
+  if (query)
+    await more(page)
+      .getByRole('textbox', { name: /search/i })
+      .fill(query);
 }
 
 const more = (page: Page) => page.locator('[data-toolbar-more]');

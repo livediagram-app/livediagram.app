@@ -271,13 +271,14 @@ describe('WhiteboardDock settings', () => {
     // each time something inside it was focused.
     const shownAtFocus: boolean[] = [];
     const focus = HTMLElement.prototype.focus;
-    const spy = vi
-      .spyOn(HTMLElement.prototype, 'focus')
-      .mockImplementation(function (this: HTMLElement, options?: FocusOptions) {
-        const card = this.closest<HTMLElement>('#whiteboard-flyout-settings');
-        if (card) shownAtFocus.push(card.style.visibility !== 'hidden');
-        focus.call(this, options);
-      });
+    const spy = vi.spyOn(HTMLElement.prototype, 'focus').mockImplementation(function (
+      this: HTMLElement,
+      options?: FocusOptions,
+    ) {
+      const card = this.closest<HTMLElement>('#whiteboard-flyout-settings');
+      if (card) shownAtFocus.push(card.style.visibility !== 'hidden');
+      focus.call(this, options);
+    });
     const cog = screen.getByRole('button', { name: 'Settings' });
     fireEvent.click(cog);
     spy.mockRestore();
