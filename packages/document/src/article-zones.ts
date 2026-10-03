@@ -8,7 +8,7 @@ import {
   type ArticleFlow,
   type ArticleZoneBlock,
 } from './article-flow';
-import { endpointPosition } from './geometry';
+import { buildElementIndex, endpointPosition, type ElementIndex } from './geometry';
 import {
   illustratePagesOf,
   layOutIllustratePages,
@@ -34,10 +34,14 @@ export function zoneCanvasRect(
 }
 
 /** The point an element belongs to a zone by: a box's centre, an arrow's midpoint. */
-export function zoneAnchorOf(el: Element, elements: readonly Element[]): { x: number; y: number } {
+export function zoneAnchorOf(
+  el: Element,
+  elements: readonly Element[] | ElementIndex,
+): { x: number; y: number } {
   if (isBoxed(el)) return { x: el.x + el.width / 2, y: el.y + el.height / 2 };
-  const a = endpointPosition(el.from, elements as Element[]);
-  const b = endpointPosition(el.to, elements as Element[]);
+  const all = elements as Element[] | ElementIndex;
+  const a = endpointPosition(el.from, all);
+  const b = endpointPosition(el.to, all);
   return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
 }
 
@@ -47,7 +51,11 @@ const inside = (r: PageRect, p: { x: number; y: number }) =>
 /** The ids of the elements in a zone standing at `rect`. */
 export function zoneMemberIds(elements: readonly Element[], rect: PageRect): Set<string> {
   const ids = new Set<string>();
-  for (const el of elements) if (inside(rect, zoneAnchorOf(el, elements))) ids.add(el.id);
+  // Arrows' ends resolve through one index, not a search of every element per arrow.
+  const index = elements.some((el) => el.type === 'arrow')
+    ? buildElementIndex(elements as Element[])
+    : elements;
+  for (const el of elements) if (inside(rect, zoneAnchorOf(el, index))) ids.add(el.id);
   return ids;
 }
 
@@ -145,9 +153,10 @@ export function drawingZoneClips(
     }
   }
   if (zones.length === 0) return out;
+  const index = buildElementIndex(elements as Element[]);
   for (const el of elements) {
     if (!isDrawing(el)) continue;
-    const at = zoneAnchorOf(el, elements);
+    const at = zoneAnchorOf(el, index);
     const zone =
       zones.find(
         (r) => at.x >= r.x && at.x <= r.x + r.width && at.y >= r.y && at.y <= r.y + r.height,

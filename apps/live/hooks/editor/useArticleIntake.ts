@@ -85,10 +85,14 @@ export function useArticleIntake({
     if (was.elements === activeTab.elements && was.articles === activeTab.articles) return;
 
     // Objects dragged off their zones onto their own article: the writing moves their zones there.
-    const relocations = objectsDraggedOut(
-      { ...activeTab, elements: was.elements, articles: was.articles },
-      activeTab,
-    ).map((d) => ({ ...d, res: articleHandleOf(d.flow)?.moveZone(d.zoneId, d.at) ?? null }));
+    // Only an edit that moved elements can drag one out (a typing commit changes the writing alone).
+    const relocations =
+      was.elements === activeTab.elements
+        ? []
+        : objectsDraggedOut(
+            { ...activeTab, elements: was.elements, articles: was.articles },
+            activeTab,
+          ).map((d) => ({ ...d, res: articleHandleOf(d.flow)?.moveZone(d.zoneId, d.at) ?? null }));
     const docsBefore = articlesOf({ articles: was.articles });
     const docsNow = articlesOf(activeTab);
     // Zones that left the writing in this edit.

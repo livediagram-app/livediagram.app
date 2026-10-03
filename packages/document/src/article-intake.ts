@@ -494,9 +494,9 @@ export function objectsDraggedOut(before: DocsTab, now: DocsTab): ObjectDraggedO
       if (z.type !== 'zone' || z.zone !== 'object' || !stillThere.has(z.id)) continue;
       const was = zoneCanvasRect(ownBefore, z);
       if (!was) continue;
-      const objId = elsBefore.find(
-        (el) => isBoxed(el) && zoneMemberIds(elsBefore, was).has(el.id),
-      )?.id;
+      // Members found once per zone (each anchor resolved once), not once per element.
+      const members = zoneMemberIds(elsBefore, was);
+      const objId = elsBefore.find((el) => isBoxed(el) && members.has(el.id))?.id;
       const obj = objId ? elsNow.find((el) => el.id === objId) : undefined;
       if (!obj || !isBoxed(obj)) continue;
       const at = zoneAnchorOf(obj, elsNow);

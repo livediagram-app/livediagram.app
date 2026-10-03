@@ -73,16 +73,17 @@ export function ArticleFlows({
     return out;
   }, [row]);
   const active = useActiveArticle();
-  const target = articles?.editable
-    ? zoneTarget(
-        byFlow,
-        articles.flows,
-        active?.focused ? active.selection.zoneId : null,
-        active?.handle.flow ?? null,
-        selectedIds,
-        elements,
-      )
-    : null;
+  // Derived once per change of what they read (the writing, the selection, the board), never per
+  // canvas render: `flows` keeps its identity while the writing does (articlesOf's cache).
+  const flows = articles?.flows;
+  const editable = articles?.editable === true;
+  const zoneId = active?.focused ? active.selection.zoneId : null;
+  const zoneFlow = active?.handle.flow ?? null;
+  const target = useMemo(
+    () =>
+      editable && flows ? zoneTarget(byFlow, flows, zoneId, zoneFlow, selectedIds, elements) : null,
+    [editable, flows, byFlow, zoneId, zoneFlow, selectedIds, elements],
+  );
   const articlePages = useMemo(
     () => row.flatMap((p) => (p.flow ? [{ id: p.id, flow: p.flow }] : [])),
     [row],
@@ -92,20 +93,21 @@ export function ArticleFlows({
     pagesOf: (flow) => byFlow.get(flow),
     onMove: (flow, zoneId, near) => articles?.moveZone(flow, zoneId, near),
   });
-  const floating =
-    articles?.editable && !target
-      ? floatingTarget(byFlow, articles.flows, selectedIds, elements)
-      : null;
+  const floating = useMemo(
+    () =>
+      editable && flows && !target ? floatingTarget(byFlow, flows, selectedIds, elements) : null,
+    [editable, flows, target, byFlow, selectedIds, elements],
+  );
   // A drawing zone cuts off what of its drawing pokes past its edge; what is being moved shows
   // whole until it lands (it may be leaving the zone).
   const moving = selectionMoving(useCanvasGesture());
   const clips = useMemo(() => {
-    const all = articles
-      ? drawingZoneClips(row, articles.flows, elements, isDrawingElement)
+    const all = flows
+      ? drawingZoneClips(row, flows, elements, isDrawingElement)
       : new Map<string, PageRect>();
     if (moving) for (const id of selectedIds) all.delete(id);
     return all;
-  }, [row, articles, elements, moving, selectedIds]);
+  }, [row, flows, elements, moving, selectedIds]);
   useLayoutEffect(() => publishZoneClips(clips), [clips]);
   useLayoutEffect(() => () => publishZoneClips(new Map()), []);
   // On a phone, the writing taking the caret frames its page for writing: its text column across

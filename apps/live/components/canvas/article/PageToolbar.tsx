@@ -31,6 +31,7 @@ import {
   TOOLBAR_DIVIDER,
 } from '@/components/chrome/toolbar-surface';
 import { Portal } from '@/components/primitives/Portal';
+import { canvasGestureNow, subscribeCanvasGesture } from '@/lib/canvas-gesture';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import {
   articleHandleOf,
@@ -93,6 +94,8 @@ const TypeIcon = lucideGlyph(lucideType, 14);
 
 // Screen px: the card's breathing room above and below it when it sits in the page's margin.
 const MARGIN_PAD = 4;
+// Frames the toolbar keeps placing itself after the last cause to (an easing view settling).
+const PLACE_TRAILING_FRAMES = 3;
 // Screen px: a phone's bar keeps this clear of the screen's sides and the bottom.
 const PHONE_GUTTER = 8;
 // Screen px: the room the canvas's bottom controls (undo, Fit) take on a phone.
@@ -185,11 +188,36 @@ export function PageToolbar({
   if (!active && open) setOpen(null);
 
   const pageId = active?.pageId ?? null;
+  // Placed when something may have moved it, never on idle frames
+  // (docs/specs/008-canvas/canvas-performance.md "At rest"): after each render, while a pan or zoom
+  // gesture is under way, on the wheel and on a resize of the window or of a phone's visible
+  // viewport (the keyboard); then a couple of frames more for anything easing to rest.
+  const place = useRef<() => void>(() => {});
   useLayoutEffect(() => {
     if (!pageId) return;
     let raf = 0;
+    let trailing = 0;
+    const tick = () => {
+      raf = 0;
+      follow();
+      const gesture = canvasGestureNow();
+      if (gesture === 'pan' || gesture === 'zoom' || trailing > 0) {
+        if (gesture !== 'pan' && gesture !== 'zoom') trailing -= 1;
+        raf = requestAnimationFrame(tick);
+      }
+    };
+    const schedule = () => {
+      trailing = PLACE_TRAILING_FRAMES;
+      if (!raf) raf = requestAnimationFrame(tick);
+    };
+    place.current = schedule;
+    const vv = window.visualViewport;
+    window.addEventListener('resize', schedule);
+    window.addEventListener('wheel', schedule, { passive: true });
+    vv?.addEventListener('resize', schedule);
+    vv?.addEventListener('scroll', schedule);
+    const unsubscribe = subscribeCanvasGesture(schedule);
     const follow = () => {
-      raf = requestAnimationFrame(follow);
       const el = bar.current;
       const sheet = document.querySelector(`[data-illustrate-page-id="${CSS.escape(pageId)}"]`);
       const canvas = document.querySelector('[data-canvas-a11y-root]');
@@ -242,8 +270,18 @@ export function PageToolbar({
       el.style.visibility = visible ? 'visible' : 'hidden';
     };
     follow();
-    return () => cancelAnimationFrame(raf);
+    return () => {
+      if (raf) cancelAnimationFrame(raf);
+      place.current = () => {};
+      window.removeEventListener('resize', schedule);
+      window.removeEventListener('wheel', schedule);
+      vv?.removeEventListener('resize', schedule);
+      vv?.removeEventListener('scroll', schedule);
+      unsubscribe();
+    };
   }, [pageId]);
+  // Every render (zoom, offset, writing, selection) may have moved the page.
+  useLayoutEffect(() => place.current());
 
   if (!active) return null;
   const { handle, selection } = active;
