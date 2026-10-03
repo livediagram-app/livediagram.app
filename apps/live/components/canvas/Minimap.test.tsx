@@ -85,7 +85,7 @@ describe('Minimap during a move', () => {
     size: 'medium' as const,
   });
   const drawing = (container: HTMLElement) =>
-    container.querySelector('svg[role="img"] > g')?.innerHTML ?? '';
+    container.querySelector('svg[role="img"] > image')?.getAttribute('href') ?? '';
 
   it('holds its drawing while the selection moves and redraws on release', () => {
     const { container, rerender } = render(<Minimap {...props(elements)} />);
@@ -99,5 +99,28 @@ describe('Minimap during a move', () => {
     expect(drawing(container)).toBe(before);
     act(() => end());
     expect(drawing(container)).not.toBe(before);
+  });
+});
+
+// docs/specs/008-canvas/minimap.md "What it shows": the drawing is one image, not a copy of the board
+// in the page (docs/specs/008-canvas/canvas-performance.md "The Map is one image").
+describe('Minimap drawing', () => {
+  it('is one image, with none of the board in the page', () => {
+    const { container } = mount({ width: 800, height: 600 });
+    const map = container.querySelector('svg[role="img"]')!;
+    expect(map.querySelectorAll('image')).toHaveLength(1);
+    // The window overlay is all the map's own markup: no element's shape is in the page.
+    expect(map.querySelectorAll('rect').length).toBeLessThanOrEqual(1);
+    expect(map.querySelectorAll('g')).toHaveLength(0);
+  });
+
+  it('is a standalone picture of the board', () => {
+    const { container } = mount({ width: 800, height: 600 });
+    const href = container.querySelector('svg[role="img"] > image')!.getAttribute('href')!;
+    expect(href.startsWith('data:image/svg+xml;charset=utf-8,')).toBe(true);
+    const doc = decodeURIComponent(href.slice(href.indexOf(',') + 1));
+    expect(doc.startsWith('<svg xmlns="http://www.w3.org/2000/svg"')).toBe(true);
+    // All four squares, drawn by the headless renderer.
+    expect(doc.match(/<rect /g)?.length ?? 0).toBeGreaterThanOrEqual(4);
   });
 });

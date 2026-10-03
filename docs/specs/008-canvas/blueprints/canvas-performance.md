@@ -159,6 +159,18 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
   array per render.
 - Pan and zoom never redraw the markup; they move only the viewport rectangle, as today.
 
+### The Map is one image
+
+- `Minimap`'s memo builds the board's markup (`svgBoxed` / `svgArrow`, frames first, arrows on
+  top) and wraps it in a standalone document over the padded content box (`PAD_FRACTION`,
+  `PAD_MIN`): `<svg xmlns viewBox width height>` + `svgShadowDefs(elements)` + the markup. Arrowheads
+  are inline polygons and masks travel with their arrows, so nothing references the page's defs.
+- It is shown as one SVG `<image>` at that box in the map's world-space `viewBox`, from a
+  `data:image/svg+xml;charset=utf-8,` URL (pure: no object URL to create or revoke). The window
+  overlay, navigation and paper colour are unchanged.
+- The image cannot load web fonts (`svgFontDefs` is left out), so labels use system fonts.
+- Tests: `Minimap.test.tsx` (one `<image>`, no board nodes in the page; a standalone picture).
+
 ### At rest
 
 - The still-canvas rule is held in a real browser by `e2e/canvas-still.spec.ts`: on a seeded board,
