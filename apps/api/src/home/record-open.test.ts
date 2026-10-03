@@ -17,9 +17,7 @@ const DOC = { id: 'd1', name: 'Payments', ownerId: 'owner', teamId: null };
 function openRow(ownerId = 'me') {
   return db.sql
     .prepare('SELECT * FROM document_opens WHERE owner_id = ? AND document_id = ?')
-    .get(ownerId, 'd1') as
-    | { last_opened_at: number; last_open_day: string }
-    | undefined;
+    .get(ownerId, 'd1') as { last_opened_at: number; last_open_day: string } | undefined;
 }
 
 function openedEvents() {

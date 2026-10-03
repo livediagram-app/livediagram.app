@@ -7,25 +7,25 @@ surfaces that use the rule own their own blueprints ([Explorer Home, data](../..
 
 Scope, by file:
 
-| File                                          | Role                                                       |
-| --------------------------------------------- | ---------------------------------------------------------- |
-| `packages/api-schema/src/within-reach.ts`     | `withinReach`, `WithinReachUse`, `WithinReach`, `utcDay`   |
-| `packages/api-schema/src/within-reach.test.ts` | The rule, its ties and its merge property                 |
-| `packages/api-schema/src/index.ts`            | Re-exports the module                                      |
+| File                                           | Role                                                     |
+| ---------------------------------------------- | -------------------------------------------------------- |
+| `packages/api-schema/src/within-reach.ts`      | `withinReach`, `WithinReachUse`, `WithinReach`, `utcDay` |
+| `packages/api-schema/src/within-reach.test.ts` | The rule, its ties and its merge property                |
+| `packages/api-schema/src/index.ts`             | Re-exports the module                                    |
 
 `@livediagram/api-schema` is the home because it is already the one package both the api worker and the live app
 import (`D48`).
 
 ## Domain and naming
 
-| Term             | Identifier                           | Meaning                                                           |
-| ---------------- | ------------------------------------ | ----------------------------------------------------------------- |
-| Within reach     | `withinReach`, `WithinReach<T>`      | The allocation, and the set it returns                            |
-| Most used        | `WithinReach.mostUsed`               | The first group: the N items used most                            |
-| Recent           | `WithinReach.recent`                 | The second group: the N newest items not among the most used       |
-| Use              | `WithinReachUse`                     | What the surface measures of an item: `uses` and `lastUsedAt`     |
-| Per-row count    | `n`                                  | N, the size of each group                                         |
-| UTC day          | `utcDay(at)`                         | `YYYY-MM-DD` of an instant in UTC, the day a use is counted on     |
+| Term          | Identifier                      | Meaning                                                        |
+| ------------- | ------------------------------- | -------------------------------------------------------------- |
+| Within reach  | `withinReach`, `WithinReach<T>` | The allocation, and the set it returns                         |
+| Most used     | `WithinReach.mostUsed`          | The first group: the N items used most                         |
+| Recent        | `WithinReach.recent`            | The second group: the N newest items not among the most used   |
+| Use           | `WithinReachUse`                | What the surface measures of an item: `uses` and `lastUsedAt`  |
+| Per-row count | `n`                             | N, the size of each group                                      |
+| UTC day       | `utcDay(at)`                    | `YYYY-MM-DD` of an instant in UTC, the day a use is counted on |
 
 Banned: "frecency" (the rule has no decay), "popular" for most used, "last used" as a group name (the group is
 Recent).
@@ -66,14 +66,14 @@ Items are compared by identity; a caller never passes the same item twice.
 
 ## Errors and edge cases
 
-| Case                                      | Handling                                                  |
-| ----------------------------------------- | --------------------------------------------------------- |
-| Empty list                                | `{ mostUsed: [], recent: [] }`                            |
-| Fewer than `n` used items                 | `mostUsed` is short; `recent` still takes up to `n`       |
-| Fewer than `2n` items                     | `recent` is short                                         |
-| An item never used (`uses <= 0`)          | Never most used; may be recent                            |
-| Equal `uses` and `lastUsedAt`             | Given order                                               |
-| `n` zero or negative                      | Both groups empty                                         |
+| Case                             | Handling                                            |
+| -------------------------------- | --------------------------------------------------- |
+| Empty list                       | `{ mostUsed: [], recent: [] }`                      |
+| Fewer than `n` used items        | `mostUsed` is short; `recent` still takes up to `n` |
+| Fewer than `2n` items            | `recent` is short                                   |
+| An item never used (`uses <= 0`) | Never most used; may be recent                      |
+| Equal `uses` and `lastUsedAt`    | Given order                                         |
+| `n` zero or negative             | Both groups empty                                   |
 
 ## Performance and limits
 
@@ -82,14 +82,14 @@ kinds; Home's 8 server items plus this browser's opened local documents).
 
 ## Testing
 
-| Rule                                                       | Test                                              |
-| ---------------------------------------------------------- | ------------------------------------------------- |
-| Most used by uses, ties to the newest, unused never        | `packages/api-schema/src/within-reach.test.ts`    |
-| Recent newest first, never one of the most used            | same                                              |
-| Short groups, empty input, `n <= 0`, stable ties           | same                                              |
-| The merge property over two lists                          | same                                              |
-| The Shapes flyout unchanged                                | `apps/live/lib/whiteboard-shape-slots.test.ts`    |
-| Jump back in's split, merge and alternation                | `apps/live/app/explorer/home/home-model.test.ts`  |
+| Rule                                                | Test                                                                                           |
+| --------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| Most used by uses, ties to the newest, unused never | `packages/api-schema/src/within-reach.test.ts`                                                 |
+| Recent newest first, never one of the most used     | same                                                                                           |
+| Short groups, empty input, `n <= 0`, stable ties    | same                                                                                           |
+| The merge property over two lists                   | same                                                                                           |
+| The Shapes flyout unchanged                         | `apps/live/lib/whiteboard-shape-slots.test.ts`, `apps/live/e2e/whiteboard-shape-slots.spec.ts` |
+| Jump back in's split, merge and alternation         | `apps/live/app/explorer/home/home-model.test.ts`                                               |
 
 ## Constants and configuration
 

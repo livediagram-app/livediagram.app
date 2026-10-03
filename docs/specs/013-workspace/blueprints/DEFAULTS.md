@@ -58,17 +58,17 @@ One row per default applied where a spec is silent or qualitative.
 | D67  | explorer-home      | Which day What happened uses when no time zone is sent                   | UTC                                                                                                              |
 | D68  | explorer-home      | How many actions one What happened read holds                            | 200, newest first; a capped read logs                                                                            |
 | D69  | explorer-home      | Whether a shared document names its team and folder                      | No: the owner's filing is theirs; both are null for `via: 'shared'`                                              |
-| D70  | explorer-home      | Use days of a document opened as guest and as account                    | The days of either; a day under both counts once; the last open is the later |
+| D70  | explorer-home      | Use days of a document opened as guest and as account                    | The days of either; a day under both counts once; the last open is the later                                     |
 | D71  | explorer-home      | Whether Remove from Timeline hides a Home entry                          | No: it is a verb of the Timeline feed only                                                                       |
-| D72  | explorer-home      | Largest Timeline page                                                    | Retired: Home has no Timeline column and no paged read |
+| D72  | explorer-home      | Largest Timeline page                                                    | Retired: Home has no Timeline column and no paged read                                                           |
 | D73  | explorer-home      | Home's rate limit                                                        | 60 reads per 60 s per resolved owner                                                                             |
 | D74  | explorer-home      | Who "you" is in "assigned you an action"                                 | The assignee id is the person's or one of their aliases; an invited member row is not                            |
-| D75  | explorer-home      | What else viewing Home does                                              | Moves the unread mark by the Timeline's visit rule; seeds nothing |
-| D76  | explorer-home      | Which edit days seed frecency                                            | Retired: edit days count as use days at read time (D126), so nothing is seeded |
-| D77  | explorer-home      | Order of documents equal on every Within reach measure                   | Document id ascending |
+| D75  | explorer-home      | What else viewing Home does                                              | Moves the unread mark by the Timeline's visit rule; seeds nothing                                                |
+| D76  | explorer-home      | Which edit days seed frecency                                            | Retired: edit days count as use days at read time (D126), so nothing is seeded                                   |
+| D77  | explorer-home      | Order of documents equal on every Within reach measure                   | Document id ascending                                                                                            |
 | D78  | explorer-home      | Order of the people in a group                                           | Newest action first                                                                                              |
 | D79  | explorer-home      | How a reconstructed edit written before the mark is told apart           | Stored more than 60 s after its own time; marked once by migration 0063                                          |
-| D80  | explorer-home      | How far the frecency seed reaches                                        | Retired: nothing is seeded (D126) |
+| D80  | explorer-home      | How far the frecency seed reaches                                        | Retired: nothing is seeded (D126)                                                                                |
 | D81  | explorer-filters   | Where the search results live and what they list                         | `/explorer/search`, titled Search results: every document the reader can open, newest first, no cap              |
 | D82  | explorer-filters   | What typing does on a view that lists no documents                       | Opens Search results with the typed text (one history entry), the field keeping focus                            |
 | D83  | explorer-filters   | Whether a scoped lens reaches subfolders                                 | Yes, as in a file manager's search: every match in the scope, one flat list; folder rows step aside              |
@@ -84,12 +84,12 @@ One row per default applied where a spec is silent or qualitative.
 | D93  | explorer-filters   | Whether typed tokens of one dimension stay apart                         | No: they merge into one pill, as the canonical string writes them                                                |
 | D94  | explorer-home-view | What the Timeline feed's page is called once Home is its own view        | **All activity**, the words of the link that leads there; the route and the kind keep their names                |
 | D95  | explorer-home-view | Which time zone Home sends                                               | The browser's own (`Intl.DateTimeFormat().resolvedOptions().timeZone`), so days match the clock the person reads |
-| D96  | explorer-home-view | Where the Timeline's alternation restarts                                | Retired: Home has no Timeline column |
-| D97  | explorer-home-view | Whether the phone switch remembers its tab                               | Retired: Home has no Recent / Timeline switch |
-| D98  | explorer-home-view | How early the next Timeline page loads                                   | Retired: Home has no Timeline column to page |
+| D96  | explorer-home-view | Where the Timeline's alternation restarts                                | Retired: Home has no Timeline column                                                                             |
+| D97  | explorer-home-view | Whether the phone switch remembers its tab                               | Retired: Home has no Recent / Timeline switch                                                                    |
+| D98  | explorer-home-view | How early the next Timeline page loads                                   | Retired: Home has no Timeline column to page                                                                     |
 | D99  | explorer-home-view | How many avatars a summary overlaps                                      | Three, then a `+N` disc                                                                                          |
-| D100 | explorer-home-view | Thumbnail sizes                                                          | Grid tiles share the section's width at 80 px high; strip 128 × 80 |
-| D101 | explorer-home-view | The Timeline column's width                                              | Retired: Home has no Timeline column |
+| D100 | explorer-home-view | Thumbnail sizes                                                          | Grid tiles share the section's width at 80 px high; strip 128 × 80                                               |
+| D101 | explorer-home-view | The Timeline column's width                                              | Retired: Home has no Timeline column                                                                             |
 | D102 | explorer-home-view | Whether Home's header keeps the Help link                                | Yes: every section's header carries it; it is not an action on Home                                              |
 | D103 | explorer-home-view | Where See all activity sits                                              | In What happened's heading row, at its end, so it never moves when entries load                                  |
 | D104 | explorer-home-view | Where this browser counts opens of its local documents                   | In the document's own IndexedDB record (`opens`), so the count goes wherever the record goes                     |
@@ -114,10 +114,10 @@ One row per default applied where a spec is silent or qualitative.
 | D123 | default-folders    | Where the wizard's reason line sits                                      | Under the browser, in the slot Always save uses: they never show together, so neither shifts the browser         |
 | D124 | default-folders    | How the Settings rows name the entries                                   | Title case, as every Settings label ("Kanban Boards"); the menus keep the list's own words                       |
 | D125 | default-folders    | Which level opens for a selected folder that holds subfolders            | The level that lists it, as for a leaf, so the checked card always names the folder                              |
-| D126 | explorer-home      | How most used is not empty on day one                                    | A real edit day counts as a use day, always: the edit history reaches back a year, so no one-off seed |
-| D127 | explorer-home      | Which migration number                                                   | 0065; 0064 is taken |
-| D128 | explorer-home-view | How wide the 4 by 2 grid grows                                           | The section's full width, thumbnails a fixed 80 px high, as in the chosen mockup |
-| D129 | explorer-home-view | How a local record of the earlier `opens` shape reads                    | Its last open day and last open; the next open rewrites it in the new shape |
-| D130 | explorer-home-view | Where the Recent page's breadcrumb leads                                 | Home › Recent, as All activity: both are reached from Home and have no sidebar row |
-| D131 | explorer-home-view | How the grid keeps two rows' height with fewer documents                 | A fixed minimum height of two tile rows on the list |
-| D132 | explorer-home-view | Whether Hide from Recent leaves Jump back in                             | No, as before: Hide from Recent tidies the Recent page; Jump back in is what the person reaches for |
+| D126 | explorer-home      | How most used is not empty on day one                                    | A real edit day counts as a use day, always: the edit history reaches back a year, so no one-off seed            |
+| D127 | explorer-home      | Which migration number                                                   | 0065; 0064 is taken                                                                                              |
+| D128 | explorer-home-view | How wide the 4 by 2 grid grows                                           | The section's full width, thumbnails a fixed 80 px high, as in the chosen mockup                                 |
+| D129 | explorer-home-view | How a local record of the earlier `opens` shape reads                    | Its last open day and last open; the next open rewrites it in the new shape                                      |
+| D130 | explorer-home-view | Where the Recent page's breadcrumb leads                                 | Home › Recent, as All activity: both are reached from Home and have no sidebar row                               |
+| D131 | explorer-home-view | How the grid keeps two rows' height with fewer documents                 | A fixed minimum height of two tile rows on the list                                                              |
+| D132 | explorer-home-view | Whether Hide from Recent leaves Jump back in                             | No, as before: Hide from Recent tidies the Recent page; Jump back in is what the person reaches for              |

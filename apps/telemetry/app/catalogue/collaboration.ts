@@ -673,12 +673,7 @@ export const HOME_GROUPS_EXPANDED = chart(
   { types: ['Group'] },
 );
 
-export const HOME_LOADS = chart(
-  'Home',
-  'Loaded',
-  'Home Retries',
-  'A failed read of Home retried.',
-);
+export const HOME_LOADS = chart('Home', 'Loaded', 'Home Retries', 'A failed read of Home retried.');
 
 export const TIMELINE_AND_ACTIVITY: MetricStack = {
   stack: true,

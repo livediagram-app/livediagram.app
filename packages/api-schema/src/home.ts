@@ -13,7 +13,7 @@ export const WITHIN_REACH_USE_WINDOW_DAYS = 90;
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 /** UTC midnight of the use window's first day: 89 days before today. */
-export function useWindowStart(now: number): number {
+export function windowStartOf(now: number): number {
   return Date.parse(`${utcDay(now - (WITHIN_REACH_USE_WINDOW_DAYS - 1) * DAY_MS)}T00:00:00.000Z`);
 }
 

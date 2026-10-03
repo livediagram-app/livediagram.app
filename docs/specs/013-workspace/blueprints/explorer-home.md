@@ -11,58 +11,58 @@ Defaults applied where the spec is silent are ledgered in [DEFAULTS.md](DEFAULTS
 
 Scope, by file:
 
-| File                                                                   | Role                                                                                         |
-| ---------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| `packages/api-schema/src/home.ts`                                      | Wire types, verbs, limits, the window, rejections, the open marker header                    |
-| `packages/api-schema/src/within-reach.ts`                              | `withinReach`, `utcDay`; shared with the view and the Shapes flyout                          |
-| `packages/api-schema/src/error-telemetry.ts`                           | `home` resource                                                                              |
-| `apps/api/migrations/0063_document_opens.sql`                          | `document_opens`, its indexes, `timeline_events_actor_idx`                                   |
-| `apps/api/migrations/0065_within_reach.sql`                            | Drops frecency: the rank index, `frecency_key`, `open_days`, `first_opened_at`, the seed stamp |
-| `apps/api/src/home/local-day.ts`                                       | `parseTimeZone`, `localDay`                                                                  |
-| `apps/api/src/home/what-happened.ts`                                   | `verbOf`, `groupWhatHappened` (pure)                                                         |
-| `apps/api/src/home/record-open.ts`                                     | `recordDocumentOpen`: the dedupe, the write, the last open, the fingerprints                 |
-| `apps/api/src/timeline/seen.ts`                                        | `SEEN_WINDOW_MS`, `isNewVisit`: the unread mark's visit rule, shared with the Timeline route |
-| `apps/api/src/timeline/backfill.ts`                                    | The reconstructed edit says `backfilled: true` and keeps an existing row                     |
-| `apps/api/src/db/document-visibility.ts`                               | `VISIBLE_DOCUMENTS_CTES`: the documents a person can open, shared with Activity              |
-| `apps/api/src/db/document-opens.ts`                                    | The `document_opens` statements: read, record, touch, migrate, delete, sweep                 |
-| `apps/api/src/db/home.ts`                                              | `readJumpBackIn`, `REAL_EDIT`, `readWhatHappenedRows`, `readMe`                              |
-| `apps/api/src/db/collab-index.ts`                                      | Activity's `SCOPE_CTES` composed from `VISIBLE_DOCUMENTS_CTES`                               |
-| `apps/api/src/db/timeline.ts`                                          | `NOT_IN_FEED`: the feed and the unread count leave `document_opened` out                     |
-| `apps/api/src/db/account.ts`                                           | Account deletion and sign-up migration of `document_opens`                                   |
-| `apps/api/src/timeline/document-events.ts`, `tab-save.ts`              | `recordDocumentOpened`; `reply` and `assigneeId` on the snapshots                            |
-| `apps/api/src/timeline/tab-diff.ts`                                    | `newComments` says whether each new comment is a reply                                       |
-| `apps/api/src/routes/document-subresource-routes.ts`                   | The tab read records a marked open; the comment POST stamps `reply`                          |
-| `apps/api/src/routes/home.ts`                                          | `GET /api/home`                                                                              |
-| `apps/api/src/index.ts`, `auth/guest-rest.ts`, `types.ts`              | Dispatch, `HOME_RATE_LIMITER`, the `home_opens` sweep, `home` owner-scoped                   |
-| `apps/api/src/responses.ts`                                            | CORS allows `X-Document-Open`                                                                |
-| `apps/api/wrangler.toml`                                               | `HOME_RATE_LIMITER` in the default and `[env.staging]` blocks                                |
-| `apps/api/src/openapi/manifest.ts`, `apps/api/scripts/gen-openapi-schemas.mjs` | The route; the `HomeResponse` schema                                                |
-| `apps/live/lib/api/home.ts`                                            | `apiReadHome`                                                                                |
-| `apps/live/lib/api/tabs.ts`                                            | `apiLoadTab(..., { open })` sends the marker                                                 |
-| `apps/live/app/document/[id]/seed-fetched-document.ts`                 | The editor's first-tab read is the marked one, unless embedded                               |
-| `apps/live/app/document/[id]/{useIdentityBootstrap,useEditorState}.ts` | `embed` reaches the seed                                                                     |
+| File                                                                           | Role                                                                                           |
+| ------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------- |
+| `packages/api-schema/src/home.ts`                                              | Wire types, verbs, limits, the window, rejections, the open marker header                      |
+| `packages/api-schema/src/within-reach.ts`                                      | `withinReach`, `utcDay`; shared with the view and the Shapes flyout                            |
+| `packages/api-schema/src/error-telemetry.ts`                                   | `home` resource                                                                                |
+| `apps/api/migrations/0063_document_opens.sql`                                  | `document_opens`, its indexes, `timeline_events_actor_idx`                                     |
+| `apps/api/migrations/0065_within_reach.sql`                                    | Drops frecency: the rank index, `frecency_key`, `open_days`, `first_opened_at`, the seed stamp |
+| `apps/api/src/home/local-day.ts`                                               | `parseTimeZone`, `localDay`                                                                    |
+| `apps/api/src/home/what-happened.ts`                                           | `verbOf`, `groupWhatHappened` (pure)                                                           |
+| `apps/api/src/home/record-open.ts`                                             | `recordDocumentOpen`: the dedupe, the write, the last open, the fingerprints                   |
+| `apps/api/src/timeline/seen.ts`                                                | `SEEN_WINDOW_MS`, `isNewVisit`: the unread mark's visit rule, shared with the Timeline route   |
+| `apps/api/src/timeline/backfill.ts`                                            | The reconstructed edit says `backfilled: true` and keeps an existing row                       |
+| `apps/api/src/db/document-visibility.ts`                                       | `VISIBLE_DOCUMENTS_CTES`: the documents a person can open, shared with Activity                |
+| `apps/api/src/db/document-opens.ts`                                            | The `document_opens` statements: read, record, touch, migrate, delete, sweep                   |
+| `apps/api/src/db/home.ts`                                                      | `readJumpBackIn`, `REAL_EDIT`, `readWhatHappenedRows`, `readMe`                                |
+| `apps/api/src/db/collab-index.ts`                                              | Activity's `SCOPE_CTES` composed from `VISIBLE_DOCUMENTS_CTES`                                 |
+| `apps/api/src/db/timeline.ts`                                                  | `NOT_IN_FEED`: the feed and the unread count leave `document_opened` out                       |
+| `apps/api/src/db/account.ts`                                                   | Account deletion and sign-up migration of `document_opens`                                     |
+| `apps/api/src/timeline/document-events.ts`, `tab-save.ts`                      | `recordDocumentOpened`; `reply` and `assigneeId` on the snapshots                              |
+| `apps/api/src/timeline/tab-diff.ts`                                            | `newComments` says whether each new comment is a reply                                         |
+| `apps/api/src/routes/document-subresource-routes.ts`                           | The tab read records a marked open; the comment POST stamps `reply`                            |
+| `apps/api/src/routes/home.ts`                                                  | `GET /api/home`                                                                                |
+| `apps/api/src/index.ts`, `auth/guest-rest.ts`, `types.ts`                      | Dispatch, `HOME_RATE_LIMITER`, the `home_opens` sweep, `home` owner-scoped                     |
+| `apps/api/src/responses.ts`                                                    | CORS allows `X-Document-Open`                                                                  |
+| `apps/api/wrangler.toml`                                                       | `HOME_RATE_LIMITER` in the default and `[env.staging]` blocks                                  |
+| `apps/api/src/openapi/manifest.ts`, `apps/api/scripts/gen-openapi-schemas.mjs` | The route; the `HomeResponse` schema                                                           |
+| `apps/live/lib/api/home.ts`                                                    | `apiReadHome`                                                                                  |
+| `apps/live/lib/api/tabs.ts`                                                    | `apiLoadTab(..., { open })` sends the marker                                                   |
+| `apps/live/app/document/[id]/seed-fetched-document.ts`                         | The editor's first-tab read is the marked one, unless embedded                                 |
+| `apps/live/app/document/[id]/{useIdentityBootstrap,useEditorState}.ts`         | `embed` reaches the seed                                                                       |
 
 ## Domain and naming
 
-| Term              | Identifier                                                      | Meaning                                                                 |
-| ----------------- | --------------------------------------------------------------- | ----------------------------------------------------------------------- |
-| Home              | `home` (route segment, log prefix `home:`)                      | The Explorer landing view's data                                        |
-| Open              | `document_opens` row, `document_opened` event                   | The editor loading a document for a person                              |
-| Open marker       | `DOCUMENT_OPEN_HEADER` `X-Document-Open: 1`, `readDocumentOpen` | The editor's declaration that this tab read is an open                  |
-| Open day          | `last_open_day` (`YYYY-MM-DD`, UTC), `document_opened` event    | A UTC day with at least one open: one event per person per doc/day      |
-| Last open         | `document_opens.last_opened_at`                                 | The person's latest open of a document, moved by every open             |
-| Use day           | `useDays`, CTE `used`                                           | A UTC day with an open or a real edit by the person                     |
-| Use window        | `WITHIN_REACH_USE_WINDOW_DAYS`, `useWindowStart(now)`           | The last 90 UTC days, today included, over which use days count         |
-| Last use          | `lastUsedAt`                                                    | The later of the last open and the last real edit                       |
-| Jump back in      | `jumpBackIn`, `HomeJumpBackInItem`, `HOME_WITHIN_REACH_PER_ROW` | A [Within reach](../../004-interface-design/within-reach.md) set        |
-| What happened     | `whatHappened`, `HomeGroup`, `HomeAction`, `HomePerson`         | Others' actions, grouped                                                |
-| Group             | `HomeGroup`, id `<documentId>:<day>`                            | One document's actions on one local day                                 |
-| Summary           | `HomeGroup.summary`                                             | A group with more than one person: one entry with a sentence            |
-| Verb              | `HomeVerb`, `HOME_VERBS`                                        | The closed action vocabulary, in sentence order                         |
-| Visible documents | `VISIBLE_DOCUMENTS_CTES`, CTE `visible`                         | Own, joined-team, shared with a live link; never trashed                |
-| Via               | `via`: `own` / `team` / `shared`                                | How the person reaches a document                                       |
-| Local day         | `localDay(at, tz)`, `day`                                       | The reader's calendar day for an instant                                |
-| Me                | CTE `me`                                                        | The person's id plus every alias (`owner_aliases`)                      |
+| Term              | Identifier                                                      | Meaning                                                            |
+| ----------------- | --------------------------------------------------------------- | ------------------------------------------------------------------ |
+| Home              | `home` (route segment, log prefix `home:`)                      | The Explorer landing view's data                                   |
+| Open              | `document_opens` row, `document_opened` event                   | The editor loading a document for a person                         |
+| Open marker       | `DOCUMENT_OPEN_HEADER` `X-Document-Open: 1`, `readDocumentOpen` | The editor's declaration that this tab read is an open             |
+| Open day          | `last_open_day` (`YYYY-MM-DD`, UTC), `document_opened` event    | A UTC day with at least one open: one event per person per doc/day |
+| Last open         | `document_opens.last_opened_at`                                 | The person's latest open of a document, moved by every open        |
+| Use day           | `useDays`, CTE `used`                                           | A UTC day with an open or a real edit by the person                |
+| Use window        | `WITHIN_REACH_USE_WINDOW_DAYS`, `windowStartOf(now)`            | The last 90 UTC days, today included, over which use days count    |
+| Last use          | `lastUsedAt`                                                    | The later of the last open and the last real edit                  |
+| Jump back in      | `jumpBackIn`, `HomeJumpBackInItem`, `HOME_WITHIN_REACH_PER_ROW` | A [Within reach](../../004-interface-design/within-reach.md) set   |
+| What happened     | `whatHappened`, `HomeGroup`, `HomeAction`, `HomePerson`         | Others' actions, grouped                                           |
+| Group             | `HomeGroup`, id `<documentId>:<day>`                            | One document's actions on one local day                            |
+| Summary           | `HomeGroup.summary`                                             | A group with more than one person: one entry with a sentence       |
+| Verb              | `HomeVerb`, `HOME_VERBS`                                        | The closed action vocabulary, in sentence order                    |
+| Visible documents | `VISIBLE_DOCUMENTS_CTES`, CTE `visible`                         | Own, joined-team, shared with a live link; never trashed           |
+| Via               | `via`: `own` / `team` / `shared`                                | How the person reaches a document                                  |
+| Local day         | `localDay(at, tz)`, `day`                                       | The reader's calendar day for an instant                           |
+| Me                | CTE `me`                                                        | The person's id plus every alias (`owner_aliases`)                 |
 
 Banned: "visit" or "view" for an open, "frecency" (the rule has no decay), "notification" for a What happened
 action, "timeline" for anything on Home (the feed is All activity, `GET /api/timeline`).
@@ -97,7 +97,7 @@ browser's local documents in by the same rule ([view blueprint](explorer-home-vi
 `readJumpBackIn(env, personId, now, n = HOME_WITHIN_REACH_PER_ROW)`, one statement:
 
 1. `used`: the person's `timeline_events` with `actor_id = person`, `source_type = 'document'`, `occurred_at` in
-   `[useWindowStart(now), now]`, and `event_type = 'document_opened'` or (`'document_edited'` and `REAL_EDIT`),
+   `[windowStartOf(now), now]`, and `event_type = 'document_opened'` or (`'document_edited'` and `REAL_EDIT`),
    grouped by `source_id`: `use_days = COUNT(DISTINCT occurred_at / DAY_MS)` (UTC days), `last_at = MAX(occurred_at)`.
    An edit day counts as an open day (spec "an edit needs an open"), which is also what keeps day one from being
    empty: the edit history reaches back a year, opens only to when they began to be recorded (`D126`).
@@ -109,7 +109,7 @@ browser's local documents in by the same rule ([view blueprint](explorer-home-vi
 4. The picked rows with their place columns, ordered `document_id ASC`; then `withinReach(rows, n, useOf)` with
    `useOf = { uses: useDays, lastUsedAt }`; the response is `[...mostUsed, ...recent]` (at most `2n`).
 
-`useWindowStart(now)` is UTC midnight of `utcDay(now - (WITHIN_REACH_USE_WINDOW_DAYS - 1) days)`: the window is the
+`windowStartOf(now)` is UTC midnight of `utcDay(now - (WITHIN_REACH_USE_WINDOW_DAYS - 1) days)`: the window is the
 last 90 UTC days, today included, the same days the browser keeps for its local documents.
 
 ### Reads
@@ -299,7 +299,7 @@ person's `user` scope), kept for the Timeline's year, well past the 90-day windo
   documents cascade with the documents. The `document_opened` events go with `deleteTimelineForOwner` (actor and
   user scope).
 - **Sign-up migration** (`migrateDocumentOpens(from, to)`): `UPDATE OR IGNORE ... SET owner_id = to WHERE owner_id =
-  from` moves every row the account does not already hold; each leftover (opened under both) merges into the
+from` moves every row the account does not already hold; each leftover (opened under both) merges into the
   account's row, `last_opened_at` and `last_open_day` the later (`D70`); then the guest rows are deleted. The events
   move with `migrateTimelineOwner`, so the use days are the days of either identity: a day opened under both counts
   once.
@@ -311,29 +311,29 @@ person's `user` scope), kept for the Timeline's year, well past the 90-day windo
 
 ## Errors and edge cases
 
-| Case                                                 | Handling                                                                          |
-| ---------------------------------------------------- | --------------------------------------------------------------------------------- |
-| Tab read refused (403 / 404 / 410)                   | Nothing recorded: the gate runs first                                             |
-| Marker on a resync / lazy load                       | Not sent; if a client sends it anyway, it only moves the last open                |
-| Two first opens of the day race                      | The guarded upsert lets one through; the other logs `reason=race`, no event       |
-| Two opens race the last open                         | `last_opened_at` only moves forwards                                              |
-| D1 failure while recording                           | `open-failed` logged, the tab read already answered                               |
-| Opened across UTC midnight                           | Two open days, as the spec's UTC rule says                                        |
-| Opened and edited on one day                         | One use day (`COUNT(DISTINCT day)`)                                               |
-| A reconstructed edit                                 | Not a use day (`REAL_EDIT`)                                                       |
-| Opened more than 90 days ago only                    | `use_days = 0`: never most used, still recent by its last open                    |
-| Document trashed, team left, link revoked or expired | Dropped by `visible`; its rows remain until purge / sweep                         |
-| Tab-scoped shared document                           | In Jump back in; never in What happened                                           |
-| Own action on someone else's document                | Not in What happened (`me`); a use day when it is an edit                         |
-| Guest-era action of the person (aliased id)          | Excluded from What happened by `me`                                               |
-| Actor without a participant row                      | `HomePerson.name` / `color` / `pictureUrl` null                                   |
-| Legacy `comment_added` / `action_assigned` rows      | `commented` / `assigned`                                                          |
-| Future-dated event                                   | Excluded (`occurred_at <= now`)                                                   |
-| What happened over its cap                           | First 200 actions newest first; `what-happened-capped` logged                     |
-| `tz` with a DST change inside the window             | `Intl` resolves each instant's own offset                                         |
-| A person with no opens and no edits                  | Empty arrays                                                                      |
-| `document_opened` in `GET /api/timeline`             | Left out by `NOT_IN_FEED`; never counted unread                                   |
-| A client still asking `GET /api/home/timeline`       | 404                                                                               |
+| Case                                                 | Handling                                                                    |
+| ---------------------------------------------------- | --------------------------------------------------------------------------- |
+| Tab read refused (403 / 404 / 410)                   | Nothing recorded: the gate runs first                                       |
+| Marker on a resync / lazy load                       | Not sent; if a client sends it anyway, it only moves the last open          |
+| Two first opens of the day race                      | The guarded upsert lets one through; the other logs `reason=race`, no event |
+| Two opens race the last open                         | `last_opened_at` only moves forwards                                        |
+| D1 failure while recording                           | `open-failed` logged, the tab read already answered                         |
+| Opened across UTC midnight                           | Two open days, as the spec's UTC rule says                                  |
+| Opened and edited on one day                         | One use day (`COUNT(DISTINCT day)`)                                         |
+| A reconstructed edit                                 | Not a use day (`REAL_EDIT`)                                                 |
+| Opened more than 90 days ago only                    | `use_days = 0`: never most used, still recent by its last open              |
+| Document trashed, team left, link revoked or expired | Dropped by `visible`; its rows remain until purge / sweep                   |
+| Tab-scoped shared document                           | In Jump back in; never in What happened                                     |
+| Own action on someone else's document                | Not in What happened (`me`); a use day when it is an edit                   |
+| Guest-era action of the person (aliased id)          | Excluded from What happened by `me`                                         |
+| Actor without a participant row                      | `HomePerson.name` / `color` / `pictureUrl` null                             |
+| Legacy `comment_added` / `action_assigned` rows      | `commented` / `assigned`                                                    |
+| Future-dated event                                   | Excluded (`occurred_at <= now`)                                             |
+| What happened over its cap                           | First 200 actions newest first; `what-happened-capped` logged               |
+| `tz` with a DST change inside the window             | `Intl` resolves each instant's own offset                                   |
+| A person with no opens and no edits                  | Empty arrays                                                                |
+| `document_opened` in `GET /api/timeline`             | Left out by `NOT_IN_FEED`; never counted unread                             |
+| A client still asking `GET /api/home/timeline`       | 404                                                                         |
 
 ## Security and trust
 
@@ -356,14 +356,14 @@ person's `user` scope), kept for the Timeline's year, well past the 90-day windo
 
 Let `L` be the person's library (own + joined-team + shared documents).
 
-| Path                  | Cost                                                                                                  |
-| --------------------- | ----------------------------------------------------------------------------------------------------- |
-| Tab read, marked      | Response path: nothing. `waitUntil`: 1 point read; then 1 update (same day) or 1 upsert + the emit    |
-| Tab read, unmarked    | Nothing                                                                                               |
-| Jump back in          | `L` + the person's events in 90 days on `timeline_events_actor_idx` (a heavy user: 40 a day, 3,600)   |
-| What happened         | `L` + every document-scope row of `L` within retention (worst case `L = 2,000`, 20 events each: 40k)  |
-| `document_opens` size | One row per person per document opened in the last 365 days, ~100 B; 2,000 documents ≈ 200 KB         |
-| Response              | Worst 8 documents at ~0.4 KB, 200 actions at ~0.3 KB: ~65 KB; typical under 15 KB                     |
+| Path                  | Cost                                                                                                 |
+| --------------------- | ---------------------------------------------------------------------------------------------------- |
+| Tab read, marked      | Response path: nothing. `waitUntil`: 1 point read; then 1 update (same day) or 1 upsert + the emit   |
+| Tab read, unmarked    | Nothing                                                                                              |
+| Jump back in          | `L` + the person's events in 90 days on `timeline_events_actor_idx` (a heavy user: 40 a day, 3,600)  |
+| What happened         | `L` + every document-scope row of `L` within retention (worst case `L = 2,000`, 20 events each: 40k) |
+| `document_opens` size | One row per person per document opened in the last 365 days, ~100 B; 2,000 documents ≈ 200 KB        |
+| Response              | Worst 8 documents at ~0.4 KB, 200 actions at ~0.3 KB: ~65 KB; typical under 15 KB                    |
 
 The What happened scan is the one that grows with a team's history. The measured remedy, if it bites, is an
 `added_at` range on the document-scope membership, not a cleverer query (as [Timeline](../timeline.md) §3.2 says of
@@ -376,44 +376,44 @@ stay on their own lazy route.
 
 ## Observability
 
-| Fingerprint                                              | Where         |
-| -------------------------------------------------------- | ------------- |
-| `home: open-recorded doc=<id>`                           | api, info     |
-| `home: open-touched doc=<id>`                            | api, info     |
-| `home: open-skipped reason=race doc=<id>`                | api, info     |
-| `home: open-failed doc=<id>` + error                     | api, error    |
-| `home: read jump=<n> used=<n> recent=<n> groups=<n> actions=<n>` | api, info |
-| `home: what-happened-capped max=<n>`                     | api, warn     |
-| `home: rejected reason=<token>`                          | api, warn     |
-| `home: rate-limited`                                     | api, warn     |
-| `home: seen-marked`                                      | api, info     |
-| `home: seen-mark-failed` + error                         | api, error    |
-| `home: opens-migrated moved=<n> merged=<n>`              | api, info     |
-| `home_opens sweep: deleted <n> rows older than <cutoff>` | api cron, log |
-| `[home] read failed status=<n/thrown/unparseable>`       | editor, warn  |
+| Fingerprint                                                      | Where         |
+| ---------------------------------------------------------------- | ------------- |
+| `home: open-recorded doc=<id>`                                   | api, info     |
+| `home: open-touched doc=<id>`                                    | api, info     |
+| `home: open-skipped reason=race doc=<id>`                        | api, info     |
+| `home: open-failed doc=<id>` + error                             | api, error    |
+| `home: read jump=<n> used=<n> recent=<n> groups=<n> actions=<n>` | api, info     |
+| `home: what-happened-capped max=<n>`                             | api, warn     |
+| `home: rejected reason=<token>`                                  | api, warn     |
+| `home: rate-limited`                                             | api, warn     |
+| `home: seen-marked`                                              | api, info     |
+| `home: seen-mark-failed` + error                                 | api, error    |
+| `home: opens-migrated moved=<n> merged=<n>`                      | api, info     |
+| `home_opens sweep: deleted <n> rows older than <cutoff>`         | api cron, log |
+| `[home] read failed status=<n/thrown/unparseable>`               | editor, warn  |
 
 ## Testing
 
-| Rule                                                                                         | Test                                                                                   |
-| -------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
-| Rejection tokens, the marker reader, the use window                                          | `packages/api-schema/src/home.test.ts`                                                 |
-| The within-reach allocation                                                                  | `packages/api-schema/src/within-reach.test.ts`                                         |
-| Time zone parse and local day                                                                | `apps/api/src/home/local-day.test.ts`                                                  |
-| Verbs, grouping, summary, order, counts                                                      | `apps/api/src/home/what-happened.test.ts`                                              |
-| Record, same-day touch, next day, race, private scope, failure log                           | `apps/api/src/home/record-open.test.ts` (real SQLite)                                  |
-| The tab read records a marked open only, never an unmarked or refused one                    | `apps/api/src/routes/document-open-marker.test.ts` (real SQLite)                       |
-| Jump back in: use days in the window, edit days, dedupe, the split, access, ties             | `apps/api/src/routes/home-jump-back-in.test.ts` (real SQLite)                          |
-| Reads: others only, opens private, rejections, rate limit, the unread mark, no timeline      | `apps/api/src/routes/home.test.ts` (real SQLite)                                       |
-| The backfill marks its edit, never marks a real one; migration 0063 marks legacy rows        | `apps/api/src/home/real-edits.test.ts` (real SQLite)                                   |
-| The feed and the unread count leave opens out                                                | `apps/api/src/db/timeline-opens.test.ts` (real SQLite)                                 |
-| Migration merge and account deletion                                                         | `apps/api/src/db/document-opens.test.ts`, `account-owner-columns.test.ts`              |
-| Reply flag on both comment paths, `assigneeId` on assignment                                 | `apps/api/src/timeline/tab-diff.test.ts`, `apps/api/src/routes/home-snapshots.test.ts` |
-| CORS allows the marker                                                                       | `apps/api/src/responses.test.ts`                                                       |
-| Activity unchanged on the shared visibility                                                  | `apps/api/src/db/activity-mentions.test.ts`, `apps/api/src/db/trash-surfaces.test.ts`  |
-| OpenAPI parity and schemas                                                                   | `apps/api/src/openapi/*.test.ts`                                                       |
-| Route labels know `home`                                                                     | `apps/api/src/route-resources.test.ts`, `packages/api-schema/src/error-telemetry.test.ts` |
-| Client wrapper: null on failure; the marker header and its dedupe key                        | `apps/live/lib/api/home.test.ts`, `apps/live/lib/api-client.test.ts`                   |
-| The seed marks the first-tab read unless embedded                                            | `apps/live/app/document/[id]/seed-fetched-document.test.ts`                            |
+| Rule                                                                                    | Test                                                                                      |
+| --------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| Rejection tokens, the marker reader, the use window                                     | `packages/api-schema/src/home.test.ts`                                                    |
+| The within-reach allocation                                                             | `packages/api-schema/src/within-reach.test.ts`                                            |
+| Time zone parse and local day                                                           | `apps/api/src/home/local-day.test.ts`                                                     |
+| Verbs, grouping, summary, order, counts                                                 | `apps/api/src/home/what-happened.test.ts`                                                 |
+| Record, same-day touch, next day, race, private scope, failure log                      | `apps/api/src/home/record-open.test.ts` (real SQLite)                                     |
+| The tab read records a marked open only, never an unmarked or refused one               | `apps/api/src/routes/document-open-marker.test.ts` (real SQLite)                          |
+| Jump back in: use days in the window, edit days, dedupe, the split, access, ties        | `apps/api/src/routes/home.test.ts` (real SQLite)                                          |
+| Reads: others only, opens private, rejections, rate limit, the unread mark, no timeline | `apps/api/src/routes/home.test.ts` (real SQLite)                                          |
+| The backfill marks its edit, never marks a real one; migration 0063 marks legacy rows   | `apps/api/src/home/real-edits.test.ts` (real SQLite)                                      |
+| The feed and the unread count leave opens out                                           | `apps/api/src/db/timeline-opens.test.ts` (real SQLite)                                    |
+| Migration merge and account deletion                                                    | `apps/api/src/db/document-opens.test.ts`, `account-owner-columns.test.ts`                 |
+| Reply flag on both comment paths, `assigneeId` on assignment                            | `apps/api/src/timeline/tab-diff.test.ts`, `apps/api/src/routes/home-snapshots.test.ts`    |
+| CORS allows the marker                                                                  | `apps/api/src/responses.test.ts`                                                          |
+| Activity unchanged on the shared visibility                                             | `apps/api/src/db/activity-mentions.test.ts`, `apps/api/src/db/trash-surfaces.test.ts`     |
+| OpenAPI parity and schemas                                                              | `apps/api/src/openapi/*.test.ts`                                                          |
+| Route labels know `home`                                                                | `apps/api/src/route-resources.test.ts`, `packages/api-schema/src/error-telemetry.test.ts` |
+| Client wrapper: null on failure; the marker header and its dedupe key                   | `apps/live/lib/api/home.test.ts`, `apps/live/lib/api-client.test.ts`                      |
+| The seed marks the first-tab read unless embedded                                       | `apps/live/app/document/[id]/seed-fetched-document.test.ts`                               |
 
 ## Constants and configuration
 

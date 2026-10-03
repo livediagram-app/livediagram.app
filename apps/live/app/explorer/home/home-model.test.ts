@@ -117,7 +117,12 @@ describe('jumpBackInSet', () => {
   });
 
   it('shows a document that is both most used and recent once, under most used', () => {
-    const set = jumpBackInSet([server('a', 5, 100), server('b', 1, 90), server('c', 0, 80)], [], NOW, 1);
+    const set = jumpBackInSet(
+      [server('a', 5, 100), server('b', 1, 90), server('c', 0, 80)],
+      [],
+      NOW,
+      1,
+    );
     expect(ids(set)).toEqual({ mostUsed: ['a'], recent: ['b'] });
   });
 
@@ -146,7 +151,8 @@ describe('phoneOrder', () => {
       [],
       NOW,
     );
-  const order = (s: JumpBackInSet) => phoneOrder(s).map(({ item, group }) => `${item.documentId}:${group}`);
+  const order = (s: JumpBackInSet) =>
+    phoneOrder(s).map(({ item, group }) => `${item.documentId}:${group}`);
 
   it('alternates most used and recent, at most eight', () => {
     expect(order(set(['m1', 'm2', 'm3', 'm4'], ['r1', 'r2', 'r3', 'r4']))).toEqual([

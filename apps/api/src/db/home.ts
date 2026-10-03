@@ -6,7 +6,7 @@
 import {
   HOME_OPENED_EVENT_TYPE,
   HOME_WITHIN_REACH_PER_ROW,
-  useWindowStart,
+  windowStartOf,
   withinReach,
   type HomeDocument,
   type HomeJumpBackInItem,
@@ -129,15 +129,13 @@ export async function readJumpBackIn(
        ${PLACE_JOINS}
       ORDER BY v.id ASC`,
   )
-    .bind(personId, now, useWindowStart(now), n, 2 * n)
+    .bind(personId, now, windowStartOf(now), n, 2 * n)
     .all<JumpBackInRow>();
-  const items = (res.results ?? []).map(
-    (r): HomeJumpBackInItem => ({
-      ...placeOf(r),
-      useDays: r.use_days,
-      lastUsedAt: r.last_used_at,
-    }),
-  );
+  const items = (res.results ?? []).map((r): HomeJumpBackInItem => ({
+    ...placeOf(r),
+    useDays: r.use_days,
+    lastUsedAt: r.last_used_at,
+  }));
   return withinReach(items, n, (d) => ({ uses: d.useDays, lastUsedAt: d.lastUsedAt }));
 }
 

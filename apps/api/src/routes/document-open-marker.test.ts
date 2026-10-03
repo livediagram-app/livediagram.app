@@ -36,7 +36,9 @@ async function readTab(owner: string, headers: Record<string, string> = {}) {
 }
 
 function opens() {
-  return db.sql.prepare('SELECT owner_id, last_open_day FROM document_opens ORDER BY owner_id').all();
+  return db.sql
+    .prepare('SELECT owner_id, last_open_day FROM document_opens ORDER BY owner_id')
+    .all();
 }
 
 beforeEach(() => {

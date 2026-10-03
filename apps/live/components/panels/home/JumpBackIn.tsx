@@ -73,7 +73,12 @@ export function JumpBackIn({
         <ul aria-labelledby={HEADING_ID} className={GRID}>
           {set.mostUsed.map((item) => (
             <li key={item.documentId} className="min-w-0">
-              <JumpBackInTile ownerId={ownerId} item={item} group="mostUsed" thumbClassName={GRID_THUMB} />
+              <JumpBackInTile
+                ownerId={ownerId}
+                item={item}
+                group="mostUsed"
+                thumbClassName={GRID_THUMB}
+              />
             </li>
           ))}
           {set.recent.map((item, i) => (
@@ -82,7 +87,12 @@ export function JumpBackIn({
               key={item.documentId}
               className={`min-w-0 ${i === 0 && set.mostUsed.length > 0 ? 'col-start-1' : ''}`}
             >
-              <JumpBackInTile ownerId={ownerId} item={item} group="recent" thumbClassName={GRID_THUMB} />
+              <JumpBackInTile
+                ownerId={ownerId}
+                item={item}
+                group="recent"
+                thumbClassName={GRID_THUMB}
+              />
             </li>
           ))}
         </ul>

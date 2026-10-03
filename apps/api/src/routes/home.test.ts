@@ -380,7 +380,7 @@ describe('the read', () => {
     expect(logs).toContain('home: read jump=0 used=0 recent=0 groups=0 actions=0');
   });
 
-  it('seeds nothing: the Timeline backfill is the feed\'s business', async () => {
+  it("seeds nothing: the Timeline backfill is the feed's business", async () => {
     db.sql.exec('DELETE FROM timeline_scope_state');
     await home();
     await Promise.all(pending);

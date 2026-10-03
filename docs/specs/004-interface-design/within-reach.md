@@ -24,10 +24,10 @@ side's set and then the set of both, and loses nothing.
 
 ## Where it is used
 
-| Surface                                                       | Item          | A use                                     | N   | Empty place                       |
-| ------------------------------------------------------------- | ------------- | ----------------------------------------- | --- | --------------------------------- |
-| [Draw mode: Shape slots](../023-draw-mode/draw-mode.md#shape-slots) | A shape kind  | A pick; counted for as long as it is kept | 3   | The next fallback kind            |
-| [Explorer Home: Jump back in](../013-workspace/explorer-home.md#jump-back-in) | A document    | A day the person opened (or edited) it, over the last 90 days | 4   | Nothing: the place is not drawn |
+| Surface                                                                       | Item         | A use                                                         | N   | Empty place                     |
+| ----------------------------------------------------------------------------- | ------------ | ------------------------------------------------------------- | --- | ------------------------------- |
+| [Draw mode: Shape slots](../023-draw-mode/draw-mode.md#shape-slots)           | A shape kind | A pick; counted for as long as it is kept                     | 3   | The next fallback kind          |
+| [Explorer Home: Jump back in](../013-workspace/explorer-home.md#jump-back-in) | A document   | A day the person opened (or edited) it, over the last 90 days | 4   | Nothing: the place is not drawn |
 
 ## Presentation
 

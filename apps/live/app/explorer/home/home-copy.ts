@@ -129,4 +129,3 @@ export function locationLabel(
 export function clockTime(at: number): string {
   return timeLabel(at);
 }
-

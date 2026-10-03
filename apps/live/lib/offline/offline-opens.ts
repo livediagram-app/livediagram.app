@@ -8,7 +8,7 @@
 // Document) and never leaves the browser.
 
 import type { DocumentSummary } from '@livediagram/api-schema';
-import { useWindowStart, utcDay } from '@livediagram/api-schema';
+import { windowStartOf, utcDay } from '@livediagram/api-schema';
 import {
   offlineBackend,
   recordToSummary,
@@ -41,7 +41,7 @@ export function localOpensOf(raw: unknown): LocalOpens | undefined {
  *  last open moved forwards. */
 export function nextLocalOpens(prev: LocalOpens | undefined, now: number): LocalOpens {
   const day = utcDay(now);
-  const from = utcDay(useWindowStart(now));
+  const from = utcDay(windowStartOf(now));
   return {
     days: [day, ...(prev?.days ?? []).filter((d) => d !== day && d >= from)],
     lastOpenedAt: Math.max(prev?.lastOpenedAt ?? 0, now),

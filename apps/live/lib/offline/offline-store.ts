@@ -61,8 +61,7 @@ export type LocalOpens = { days: string[]; lastOpenedAt: number };
 // What a record may hold: the current shape, or the one records were written in before Within
 // reach. Read through `localOpensOf` (offline-opens.ts); the next open rewrites it.
 export type StoredLocalOpens =
-  | LocalOpens
-  | { openDays: number; lastOpenDay: string; lastOpenedAt: number; frecencyKey: number };
+  LocalOpens | { openDays: number; lastOpenDay: string; lastOpenedAt: number; frecencyKey: number };
 
 // ---------------------------------------------------------------------------
 // Pure transforms (unit-tested — no IndexedDB involved)

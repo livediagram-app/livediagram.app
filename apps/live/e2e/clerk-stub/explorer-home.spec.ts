@@ -4,7 +4,8 @@ import { freshUserId, installClerkStub, type StubUser } from './clerk-stub';
 
 // Explorer Home signed in (docs/specs/013-workspace/explorer-home.md), against the Clerk-enabled
 // export: a team member's Home names what a teammate did on a team document, where it lives, and
-// opens it; the person's own Jump back in and Timeline hold the document they opened.
+// opens it; the person's own Jump back in holds the document they opened, on a desktop and on a
+// phone, and See more leads to Recent.
 
 test.use({ colorScheme: 'dark', viewport: { width: 1280, height: 800 } });
 
@@ -96,26 +97,38 @@ test('a teammate’s work on a team document reaches Home, named and placed', as
     'true',
   );
 
-  const recent = page.getByRole('region', { name: 'Recent' });
   await expect(
-    recent
+    page
       .getByRole('list', { name: 'Jump back in' })
       .getByRole('link', { name: 'Payments architecture' }),
   ).toHaveAttribute('href', `/document/${doc}`);
+  const happened = page.getByRole('region', { name: 'What happened' });
 
   // One teammate: each action its own entry, naming who, what, which document and where.
-  const comment = recent.getByRole('link', { name: /^Bob commented on Payments architecture/ });
+  const comment = happened.getByRole('link', { name: /^Bob commented on Payments architecture/ });
   await expect(comment).toContainText('“Split this out?”');
   await expect(comment).toContainText('Platform team');
   await expect(
-    recent.getByRole('link', { name: /^Bob edited Payments architecture/ }),
+    happened.getByRole('link', { name: /^Bob edited Payments architecture/ }),
   ).toBeVisible();
 
+  // Home has no Timeline of its own.
+  await expect(page.getByRole('region', { name: 'Timeline' })).toHaveCount(0);
+
+  // A phone: the same document in the strip, which ends in See more.
+  await page.setViewportSize({ width: 390, height: 844 });
   await expect(
     page
-      .getByRole('region', { name: 'Timeline' })
-      .getByRole('link', { name: /^Payments architecture, created at / }),
+      .getByRole('list', { name: 'Jump back in' })
+      .getByRole('link', { name: 'Payments architecture' }),
   ).toBeVisible();
+  await page
+    .getByRole('region', { name: 'Jump back in' })
+    .getByRole('link', { name: 'See more' })
+    .click();
+  await expect(page).toHaveURL(/\/explorer\/recent\/?$/);
+  await page.goBack();
+  await page.setViewportSize({ width: 1280, height: 800 });
 
   await comment.click();
   await expect(page).toHaveURL(new RegExp(`/document/${doc}`));

@@ -77,7 +77,6 @@ the **4 most used** and the **4 most recent**, no document twice.
 
 ## What happened
 
-
 - What **other people** did to documents the person can open, grouped under day headings (**Today**, **Yesterday**,
   then the date). The days are the person's own (their time zone), and the section covers the last **14 days**.
 - "Documents the person can open" are the ones they own, the ones in a team they have joined, and the ones shared

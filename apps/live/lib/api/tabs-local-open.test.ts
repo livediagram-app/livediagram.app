@@ -24,7 +24,9 @@ describe('apiLoadTab on a document stored only in this browser', () => {
     const tab = await apiLoadTab('owner', 'local-1', 't1', null, { open: true });
     expect(tab?.id).toBe('t1');
     await vi.waitFor(async () =>
-      expect((await offlineGetRecord('local-1'))?.opens).toMatchObject({ days: [expect.any(String)] }),
+      expect((await offlineGetRecord('local-1'))?.opens).toMatchObject({
+        days: [expect.any(String)],
+      }),
     );
     expect(fetch).not.toHaveBeenCalled();
   });

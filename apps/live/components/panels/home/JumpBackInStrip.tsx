@@ -56,7 +56,12 @@ export function JumpBackInStrip({
           <ul aria-labelledby={labelledBy} className="flex shrink-0 gap-3">
             {tiles.map(({ item, group }) => (
               <li key={item.documentId} className={`${STRIP_TILE} snap-start`}>
-                <JumpBackInTile ownerId={ownerId} item={item} group={group} thumbClassName={STRIP_THUMB} />
+                <JumpBackInTile
+                  ownerId={ownerId}
+                  item={item}
+                  group={group}
+                  thumbClassName={STRIP_THUMB}
+                />
               </li>
             ))}
           </ul>

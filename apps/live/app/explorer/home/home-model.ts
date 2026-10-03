@@ -4,7 +4,7 @@
 
 import {
   HOME_WITHIN_REACH_PER_ROW,
-  useWindowStart,
+  windowStartOf,
   utcDay,
   withinReach,
   type HomeDocument,
@@ -53,7 +53,7 @@ export function jumpBackInSet(
   now: number,
   n = HOME_WITHIN_REACH_PER_ROW,
 ): JumpBackInSet {
-  const from = utcDay(useWindowStart(now));
+  const from = utcDay(windowStartOf(now));
   const items: JumpBackInItem[] = [
     ...server.map((d) => ({
       documentId: d.documentId,
@@ -84,9 +84,7 @@ export function jumpBackInSet(
 }
 
 /** The phone's strip: most used, recent, alternating; the rest of the longer group after. */
-export function phoneOrder(
-  set: JumpBackInSet,
-): { item: JumpBackInItem; group: JumpBackInGroup }[] {
+export function phoneOrder(set: JumpBackInSet): { item: JumpBackInItem; group: JumpBackInGroup }[] {
   const out: { item: JumpBackInItem; group: JumpBackInGroup }[] = [];
   const length = Math.max(set.mostUsed.length, set.recent.length);
   for (let i = 0; i < length; i += 1) {
