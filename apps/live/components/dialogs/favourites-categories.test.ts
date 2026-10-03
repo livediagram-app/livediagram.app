@@ -14,13 +14,19 @@ import { tilesForCategory } from '@/components/palette/palette-tile-defs';
 // but Favourites, minus any category with nothing to show.
 const OPEN_ENDED = ['icons', 'stickers', 'technology'];
 const pillIds = PALETTE_CATEGORIES.filter(
-  (c) => c.id !== 'favourites' && (OPEN_ENDED.includes(c.id) || tilesForCategory(c.id).length > 0),
+  (c) =>
+    c.id !== 'favourites' &&
+    c.id !== 'popular' &&
+    (OPEN_ENDED.includes(c.id) || tilesForCategory(c.id).length > 0),
 ).map((c) => c.id);
 
 describe('Edit Favourites category pills', () => {
   it('offers every palette category that has something in it', () => {
     const expected = PALETTE_CATEGORIES.map((c) => c.id).filter(
-      (id) => id !== 'favourites' && (OPEN_ENDED.includes(id) || tilesForCategory(id).length > 0),
+      (id) =>
+        id !== 'favourites' &&
+        id !== 'popular' &&
+        (OPEN_ENDED.includes(id) || tilesForCategory(id).length > 0),
     );
     expect(pillIds).toEqual(expected);
   });

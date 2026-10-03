@@ -1567,7 +1567,9 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     canEdit: !isReadOnly,
     tabLoaded: loadedTabIds.has(activeId),
     commitTabs,
-    fitToBounds,
+    canvasMainRef,
+    setViewportZoom,
+    setViewportOffset,
   });
 
   // A locked tab refuses every element mutation. Commit /

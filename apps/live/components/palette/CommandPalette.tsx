@@ -7,6 +7,7 @@ import { EditorModeSwitch } from '@/components/chrome/editor-mode/EditorModeSwit
 
 import type { CanvasTool, CommandPaletteProps } from './CommandPalette.types';
 import { usePaletteCatalogue } from './usePaletteCatalogue';
+import { paletteLandingCategory } from './palette-mode-categories';
 
 export type { CanvasTool };
 
@@ -65,7 +66,7 @@ export function CommandPalette(props: CommandPaletteProps) {
               // too: a mode offers its own categories, so a switch re-lands on Favourites rather
               // than on a category the new mode leaves out.
               key={esBoard ? 'es-board' : editorMode}
-              defaultOpenId={esBoard ? 'event-storming' : 'favourites'}
+              defaultOpenId={paletteLandingCategory(editorMode, !!esBoard)}
               // Distraction-free capture surface (docs/specs/021-event-storming/event-storming.md): an ES board hides
               // both dropdowns — the notation IS the palette there.
               hideHeader={esBoard}

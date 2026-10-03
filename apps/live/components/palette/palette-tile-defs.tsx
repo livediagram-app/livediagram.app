@@ -1,4 +1,5 @@
 import type { EmbedProvider, EventStormingNoteKind } from '@livediagram/document';
+import { POPULAR_TILE_IDS } from './popular-tiles';
 import { EVENT_STORMING_NOTES, REACTION_EMOJI } from '@livediagram/document';
 
 import type {
@@ -1847,6 +1848,10 @@ export function tileDisplayName(def: PaletteTileDef): string {
  * those through their own search.
  */
 export function tilesForCategory(categoryId: string): PaletteTileDef[] {
+  // Popular is a hand-picked list across sections (popular-tiles), not a section of its own.
+  if (categoryId === 'popular') {
+    return POPULAR_TILE_IDS.map(tileById).filter((t): t is PaletteTileDef => t !== undefined);
+  }
   if (TOOL_GROUPS.some((g) => g.id === categoryId)) {
     return tilesInToolGroup(categoryId as ToolGroupId);
   }

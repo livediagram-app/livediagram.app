@@ -188,12 +188,12 @@ element in the same colour.
 ## The palette per mode
 
 Each mode offers the palette categories it is for
-(`apps/live/components/palette/palette-mode-categories.ts`). Favourites is
-offered in every mode, as it is the person's own pick.
+(`apps/live/components/palette/palette-mode-categories.ts`).
 
 | Category       | Diagram | Infographic |
 | -------------- | ------- | ----------- |
-| Favourites     | yes     | yes         |
+| Favourites     | yes     | no          |
+| Popular        | no      | yes         |
 | Shapes         | yes     | yes         |
 | My shapes      | yes     | yes         |
 | Write          | yes     | yes         |
@@ -209,9 +209,16 @@ offered in every mode, as it is the person's own pick.
 | Data           | yes     | yes         |
 | Behaviours     | yes     | no          |
 
+- **The landing category** is Favourites in Diagram mode, **Popular** in
+  Infographic mode, and the notation on an event-storming board
+  (`paletteLandingCategory`). Switching mode re-lands the palette there, so it
+  never shows a category the new mode leaves out.
+- **Popular** is twelve tiles an infographic is most often built from, each
+  reachable from a category Infographic mode offers
+  (`apps/live/components/palette/popular-tiles.ts`): Text, Square, Circle,
+  Image, Speech bubble, Pie, Bar, Donut, Stat row, Process, Timeline, Callout.
+  It is not a category of Edit Favourites.
 - Draw mode shows its own tools in place of the categories.
-- Switching mode re-lands the palette on Favourites, so it never shows a
-  category the new mode leaves out.
 - Elements already on the canvas are untouched: narrowing the palette only
   changes what is offered to add.
 
@@ -221,7 +228,7 @@ Infographic mode draws an **A4 page** on the canvas, like an artboard in a
 design tool.
 
 - **The page** is a sheet of paper (white in light chrome, slate-900 in dark)
-  with a soft shadow, anchored at the canvas origin, under every element.
+  with a soft shadow, **centred on the canvas origin**, under every element.
   - **A4** at 96 px per inch: **794 x 1123** in portrait, **1123 x 794** in
     landscape (`A4_SHORT_SIDE`, `A4_LONG_SIDE`,
     `packages/document/src/infographic-page.ts`).
@@ -229,18 +236,41 @@ design tool.
     absent), so everyone lays out on the same page.
 - **The surround** is the tab's own canvas: its colour and pattern, and every
   canvas setting, apply behind the page exactly as in Diagram mode.
-- **The orientation toggle** sits above the page's top-left corner beside its
-  name (**A4**): a **Portrait** / **Landscape** radio group, held at one screen
-  size at any zoom. Choosing one is a tab edit (one undo step, synced to
-  everyone). A viewer who cannot edit (a view role, a locked tab) sees the
-  current orientation as text.
-- **Centred in the viewport:** entering Infographic mode, opening a tab in it,
-  and changing the orientation fit the whole page into view, centred.
+- **Its name** (**A4 · Portrait** / **A4 · Landscape**) sits above the page's
+  top-left corner, and **the page settings cog** above its top-right, both held
+  at one screen size at any zoom. The cog (tooltip **Page settings**) opens a
+  menu under it with an **Orientation** heading and **Portrait** /
+  **Landscape** radio rows; Escape or an outside press closes it. Choosing is a
+  tab edit (one undo step, synced to everyone). A viewer who cannot edit (a
+  view role, a locked tab) gets no cog.
+- **Turning the page animates:** the sheet eases between the two shapes about
+  its centre over 200 ms (none under reduced motion).
+- **Centred in the viewport:** entering Infographic mode or opening a tab in it
+  fits a square of the page's long side (`infographicPageFitBox`), so either
+  orientation fits at the same zoom and turning the page never moves the view.
+  Where the Toolbar layout's strip lies over the canvas's top edge, the page
+  centres in the band below it (`computeFitBelow`).
+- **Only the page is drawn on.** A draw, tap-to-place or double-click-to-add
+  that starts off the page is ignored (`pressIsOffPage`); elements already on
+  the canvas still move freely, on or off the page.
 - **The sheet is a view, never an element.** It takes no pointer events (a
-  press on it is a press on the empty canvas); elements may sit off it;
-  exports and thumbnails see the tab's own backdrop.
+  press on it is a press on the empty canvas); exports and thumbnails see the
+  tab's own backdrop.
 - The sheet is `apps/live/components/canvas/InfographicPage.tsx`; the
   orientation and centring are `apps/live/hooks/editor/useInfographicPage.ts`.
+
+## Experimental modes
+
+Infographic mode is an experiment, offered only once **Settings ›
+Experimental › Infographic Mode** is on (off by default; the
+`infographicModeEnabled` preference). The **Experimental** category is listed
+after **AI Tools**.
+
+- While it is off, Infographic is offered nowhere: not on the mode switch, not
+  in Opens in, and Shift+D skips it (`apps/live/lib/offered-editor-modes.ts`).
+- A tab stored as opening in Infographic, or remembered in it, opens in Diagram
+  for a person who has it off. Nothing stored changes.
+- Turning it on fires `UI` · `Toggled` · `InfographicModeOn` (and `…Off`).
 
 ## Existing whiteboards
 
@@ -257,8 +287,8 @@ design tool.
   the switch before the mode applies.
 - `Tab` · `Changed` · `OpensInDiagram` / `OpensInDraw` / `OpensInInfographic`, fired
   by Opens in.
-- `Tab` · `Changed` · `PagePortrait` / `PageLandscape`, fired by the page's
-  orientation toggle in Infographic mode.
+- `Tab` · `Changed` · `PagePortrait` / `PageLandscape`, fired by the page
+  settings' orientation in Infographic mode.
 - Draw mode's own events are the **`Draw`** category (pens, shapes, eraser,
   recognition, background, snap colours,
   [Draw mode](../023-draw-mode/draw-mode.md#telemetry-telemetry--public-transparency-dashboard)).

@@ -1,5 +1,5 @@
 // The page Infographic mode draws the canvas as (docs/specs/007-editor/editor-modes.md "The
-// page"): an A4 sheet at the canvas origin, portrait or landscape. The orientation is the tab's
+// page"): an A4 sheet centred on the canvas origin, portrait or landscape. The orientation is the tab's
 // (`Tab.pageOrientation`, portrait when absent) so everyone lays out on the same page; the sheet
 // itself is a view, never stored as an element.
 
@@ -22,13 +22,26 @@ export function pageOrientationOf(tab: { pageOrientation?: unknown } | undefined
   return isPageOrientation(tab?.pageOrientation) ? tab.pageOrientation : 'portrait';
 }
 
-/** The A4 page's rect in canvas coordinates, anchored at the origin. */
+/** The A4 page's rect in canvas coordinates, centred on the origin, so turning it keeps its
+ *  centre where it was. */
 export function infographicPageRect(orientation: PageOrientation): PageRect {
   const portrait = orientation === 'portrait';
-  return {
-    x: 0,
-    y: 0,
-    width: portrait ? A4_SHORT_SIDE : A4_LONG_SIDE,
-    height: portrait ? A4_LONG_SIDE : A4_SHORT_SIDE,
-  };
+  const width = portrait ? A4_SHORT_SIDE : A4_LONG_SIDE;
+  const height = portrait ? A4_LONG_SIDE : A4_SHORT_SIDE;
+  return { x: -width / 2, y: -height / 2, width, height };
+}
+
+/** The box the view fits to frame the page: a square of the long side, centred on the origin, so
+ *  either orientation fits at the same zoom and turning the page never moves the view. */
+export function infographicPageFitBox(): PageRect {
+  return { x: -A4_LONG_SIDE / 2, y: -A4_LONG_SIDE / 2, width: A4_LONG_SIDE, height: A4_LONG_SIDE };
+}
+
+/** Whether a canvas point lies on the page (its edges included). */
+export function isOnInfographicPage(
+  orientation: PageOrientation,
+  point: { x: number; y: number },
+): boolean {
+  const r = infographicPageRect(orientation);
+  return point.x >= r.x && point.x <= r.x + r.width && point.y >= r.y && point.y <= r.y + r.height;
 }

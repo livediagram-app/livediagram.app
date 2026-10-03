@@ -4,6 +4,7 @@ import {
   FIT_TO_SCREEN_MAX_AT_FIT,
   FIT_TO_SCREEN_MIN,
   FIT_TO_SCREEN_PADDING,
+  computeFitBelow,
   computeFitToScreen,
   computeViewportCenter,
   isContentOffScreen,
@@ -138,5 +139,28 @@ describe('isContentOffScreen', () => {
     // Centred bbox, but zoomed 4x and panned so it clears the right edge.
     const offset = { x: 1200, y: viewport.height / 2 - 50 };
     expect(isContentOffScreen(viewport, bbox, offset, 4)).toBe(true);
+  });
+});
+
+// Infographic mode centres its page below the Toolbar layout's strip
+// (docs/specs/007-editor/editor-modes.md "The page").
+describe('computeFitBelow', () => {
+  const rect = { width: 1200, height: 800 };
+  const box = { x: -500, y: -500, width: 1000, height: 1000 };
+  // Where a canvas y lands on screen under the centred transform.
+  const screenY = (cy: number, zoom: number, oy: number) =>
+    rect.height / 2 + zoom * (cy + oy - rect.height / 2);
+
+  it('matches the plain fit with no inset', () => {
+    expect(computeFitBelow(rect, box, 0)).toEqual(computeFitToScreen(rect, box));
+  });
+
+  it('centres the box in the band below the inset, zoomed to fit that band', () => {
+    const { zoom, offset } = computeFitBelow(rect, box, 100);
+    expect(zoom).toBeLessThan(computeFitToScreen(rect, box).zoom);
+    const top = screenY(box.y, zoom, offset.y);
+    const bottom = screenY(box.y + box.height, zoom, offset.y);
+    expect(top).toBeGreaterThanOrEqual(100);
+    expect((top + bottom) / 2).toBeCloseTo((100 + rect.height) / 2);
   });
 });

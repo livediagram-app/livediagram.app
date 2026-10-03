@@ -28,6 +28,7 @@ import { useUiScale } from '@/components/providers/ui-scale';
 import { toSurfacePx, uiScaleStyle, uiUnscaleStyle } from '@/lib/ui-scale';
 import { RAIL_LEAVE_MS, ToolbarStripRail } from './ToolbarStripRail';
 import { usePaletteCatalogue } from './usePaletteCatalogue';
+import { paletteLandingCategory } from './palette-mode-categories';
 import type { CommandPaletteProps } from './CommandPalette.types';
 import type { PaletteAddHandlers } from './palette-add-handlers';
 
@@ -82,14 +83,15 @@ export function ToolbarPalette(props: Props) {
     setMoreOpenState(open);
     setFavouriteIds(loadPaletteFavourites(validIds));
   };
-  const { tabs, tileActions, canvasToolOptions, onCanvasToolChange } = usePaletteCatalogue({
-    ...props,
-    // A tile used from the More popover closes it, so the canvas is clear to
-    onTileUsed: () => setMoreOpen(false),
-  });
+  const { tabs, tileActions, canvasToolOptions, onCanvasToolChange, editorMode } =
+    usePaletteCatalogue({
+      ...props,
+      // A tile used from the More popover closes it, so the canvas is clear to
+      onTileUsed: () => setMoreOpen(false),
+    });
   // Same landing rule as the floating Palette (docs/specs/010-palette/palette-favourites.md, docs/specs/021-event-storming/event-storming.md): the user's
   // Favourites, or the notation on an event-storming board.
-  const defaultId = esBoard ? 'event-storming' : 'favourites';
+  const defaultId = paletteLandingCategory(editorMode, !!esBoard);
   // Crossing an ES / non-ES tab boundary re-lands on the right default: the
   // host keys this component on `esBoard`, as the Palette keys PaletteTabBar.
   const [categoryId, setCategoryId] = useState(defaultId);
