@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useRef } from 'react';
+import { useDeferredValue, useMemo, useRef } from 'react';
 import {
   boundsOfPoints,
   endpointPosition,
@@ -122,8 +122,10 @@ export function Minimap({
   size,
 }: MinimapProps) {
   const svgRef = useRef<SVGSVGElement>(null);
-  // Drawn as the elements settle, not per frame of a gesture (docs/specs/008-canvas/canvas-performance.md).
-  const elements = useSettledElements(liveElements);
+  // Drawn as the elements settle, not per frame of a gesture (docs/specs/008-canvas/canvas-performance.md),
+  // and deferred: the change that settles them (a drag's release) commits first, and the Map's picture,
+  // rebuilt and re-parsed for the whole board, follows as its own render.
+  const elements = useDeferredValue(useSettledElements(liveElements));
   const draggingRef = useRef(false);
 
   // Which paper the canvas is (light / dark), from the SAME context the canvas
