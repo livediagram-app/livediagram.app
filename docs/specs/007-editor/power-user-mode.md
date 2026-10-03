@@ -74,7 +74,7 @@ the interface, and leaves the controls:
 - **Palette tile captions.** Palette tiles show their icon only.
 - **Status bar text.** The bottom bar's Search, Settings and appearance controls show their icons only.
 - **The "Tabs" label** before the tab pills is hidden.
-- **Panel titles and help buttons.** Floating panels (Explorer, Palette, Map, Layers, Activity, ...) hide their
+- **Panel titles and help buttons.** Floating panels (Explorer, Palette, Map, Layers, ...) hide their
   header title and their `?` help button. A panel with a `⋯` menu gains a **Help** row there, opening the same
   article. The Explorer is the one panel with a `⋯` menu today. A panel without one simply drops its `?`: no menu is
   added to hold it, and the help centre stays one click away in the header's **Editor** menu.

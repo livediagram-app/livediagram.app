@@ -30,8 +30,8 @@ For social posts and short "about" fields.
 
 > livediagram is a multiplayer diagram canvas in the browser. Open a link and
 > start drawing with your team: live cursors, comments, shapes, arrows,
-> mindmaps, and a per-tab history you can revert. No sign-in wall. MIT-licensed,
-> free, and self-hostable. [251]
+> mindmaps, and undo and redo. No sign-in wall. MIT-licensed, free, and
+> self-hostable. [230]
 
 ---
 
@@ -41,8 +41,8 @@ For directory cards and "short pitch" fields.
 
 > livediagram is a real-time, multiplayer diagram and mindmap editor that works
 > without signing in. Open a link and start drawing with your team: live
-> cursors, comments, 17 templates, and a per-tab activity log with one-click
-> revert. MIT-licensed, free forever, and self-hostable on Cloudflare. [49 words]
+> cursors, comments, 17 templates, and undo that never touches anyone else's
+> work. MIT-licensed, free forever, and self-hostable on Cloudflare. [49 words]
 
 ---
 
@@ -57,11 +57,11 @@ For Product Hunt, app store short descriptions, README intros.
 >
 > Build with ten core shapes, sticky notes, images, freehand sketching with
 > shape recognition, and arrows you can curve, bend, and label. Start from 17
-> templates, recolor everything with 18 themes, and revert any change from a
-> per-tab activity log. Share view or edit links any time.
+> templates, recolor everything with 18 themes, and step back any slip with
+> undo. Share view or edit links any time.
 >
 > It is MIT-licensed, free for everyone with no paid tier, and self-hostable end
-> to end on Cloudflare. [115 words]
+> to end on Cloudflare. [113 words]
 
 ---
 
@@ -88,13 +88,13 @@ For longer listing bodies and "about this project" sections.
 > recolor the whole canvas with 18 themes, and organize work into tabs and
 > nested folders.
 >
-> Nothing is lost: every change is recorded in a per-tab activity log you can
-> revert with one click, even after later edits. Share view-only or editable
+> Nothing is lost: every change saves on its own, and undo and redo step back
+> and forth through your recent edits. Share view-only or editable
 > links and revoke them whenever you like. Export any tab to Markdown, PDF, PNG,
 > or JSON.
 >
 > livediagram is MIT-licensed, free for everyone with no paid tier and no plan
-> for one, and self-hostable end to end on Cloudflare. [255 words]
+> for one, and self-hostable end to end on Cloudflare. [254 words]
 
 ---
 
@@ -142,8 +142,8 @@ detailed GitHub / Product Hunt write-up.
 >
 > #### Nothing gets lost
 >
-> Every change is recorded in a per-tab activity log, and you can revert any
-> single entry with one click, even after later edits landed on top of it.
+> Every change saves on its own as you work, and undo and redo step back and
+> forth through your recent edits without touching anyone else's work.
 > Share view-only or editable links per document and revoke them whenever you
 > want. Anyone you share with can make their own copy. Export any tab to
 > Markdown, PDF, PNG, or JSON, and import the JSON back as a new tab.
@@ -156,4 +156,4 @@ detailed GitHub / Product Hunt write-up.
 > entire stack on your own Cloudflare account; the open-source core never calls
 > home and never gates features behind a license check.
 >
-> Open a link, draw, share. That is the whole pitch. [497 words]
+> Open a link, draw, share. That is the whole pitch. [495 words]

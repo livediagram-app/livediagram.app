@@ -1,8 +1,8 @@
 'use client';
 
 // Live poll (docs/specs/012-collaboration/live-poll.md): the ephemeral pulse-check. Everything here is
-// MEMORY-ONLY by design — no tab field, no commitTabs, no autosave, no
-// change-log line, nothing that could reach D1. The poll exists as three
+// MEMORY-ONLY by design — no tab field, no commitTabs, no autosave,
+// nothing that could reach D1. The poll exists as three
 // room ops and the state below, and dies with the last client holding it.
 //
 // The inbound half lives in useRoomConnection (which owns the socket); it

@@ -287,7 +287,7 @@ describe('settings sub-categories', () => {
   it('nests one sub-category per panel under Panels, directly after it and in order', () => {
     const ids = SETTINGS_CATEGORIES.map((c) => c.id);
     const children = SETTINGS_CATEGORIES.filter((c) => c.parent === 'panels').map((c) => c.id);
-    expect(children).toEqual(['layers', 'activity', 'map', 'collaborate', 'quickStyle']);
+    expect(children).toEqual(['layers', 'map', 'collaborate', 'quickStyle']);
     const at = ids.indexOf('panels');
     expect(ids.slice(at + 1, at + 1 + children.length)).toEqual(children);
   });
@@ -303,7 +303,6 @@ describe('settings sub-categories', () => {
     const first = (id: string) => SETTINGS_CATEGORIES.find((c) => c.id === id)!.rows[0]!;
     const switches: Record<string, [string, string]> = {
       layers: ['layersPanelEnabled', 'Enable Layers Panel'],
-      activity: ['activityPanelEnabled', 'Enable Activity Panel'],
       map: ['showMinimap', 'Enable Map'],
       collaborate: ['collaboratePanelEnabled', 'Enable Collaborate Panel'],
       quickStyle: ['quickStylePanelEnabled', 'Enable Quick Style Panel'],
@@ -329,7 +328,6 @@ describe('settings sub-categories', () => {
       'layerHoverPreview',
     ]);
     expect(rows('layers', { layersPanelEnabled: false })).toEqual(['layersPanelEnabled']);
-    expect(rows('activity', { activityPanelEnabled: false })).toEqual(['activityPanelEnabled']);
     expect(rows('map', { showMinimap: false })).toEqual(['showMinimap']);
     expect(rows('map', {})).toEqual(['showMinimap', 'mapDimOutside', 'mapSize']);
   });

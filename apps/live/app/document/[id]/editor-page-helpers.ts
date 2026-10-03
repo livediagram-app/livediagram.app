@@ -191,13 +191,10 @@ export function computeTabSaveDiff(
 //   - sessionRole:      owners edit; visitors inherit the link's role.
 //   - sessionShareCode: owners send none; visitors carry the code that
 //                       admitted them so write paths can authorise.
-//   - canEditLog:       owner OR edit-role visitor may read/write the
-//                       change log.
 export type DocumentSession = {
   isOwner: boolean;
   sessionRole: 'edit' | 'view';
   sessionShareCode: string | null;
-  canEditLog: boolean;
 };
 
 export function resolveDocumentSession(input: {
@@ -211,7 +208,6 @@ export function resolveDocumentSession(input: {
     isOwner,
     sessionRole: isOwner ? 'edit' : input.shareRole,
     sessionShareCode: isOwner ? null : input.shareCodeParam,
-    canEditLog: isOwner || input.shareRole === 'edit',
   };
 }
 

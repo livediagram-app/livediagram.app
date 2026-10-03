@@ -77,7 +77,7 @@ pen's pressure at each point when it reported one. It replaces the former `point
 - The former shape is accepted **only as migration input**, at every place a stored or foreign
   element arrives: the api's tab writes (create and save, which also serve API-token scripts and
   the Google Drive mirror's copies), the MCP server's own validation of what a model writes, realtime element operations from peers, clipboard pastes,
-  tab file imports, and change-log entries applied by Revert. Each runs the same migration
+  and tab file imports. Each runs the same migration
   before validation, so nothing downstream ever sees the former shape.
 - The migration is idempotent: a stroke already carrying `packedPoints` is returned unchanged.
 - The tab export file's `schemaVersion` and the clipboard payload's become `2`, because the

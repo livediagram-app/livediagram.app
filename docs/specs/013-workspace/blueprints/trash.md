@@ -84,7 +84,7 @@ Invariants:
   only. A trashed document is reachable solely through `db/trash.ts`.
 - **I2** `purgeDocuments` only ever removes trashed rows (`trashedIdsIn` filters its input), so no caller can
   skip the Trash by naming an id. The permanent path trashes first.
-- **I3** Trashing touches no child row: tabs, links, share links, stars, change log, collaboration index,
+- **I3** Trashing touches no child row: tabs, links, share links, stars, collaboration index,
   Timeline events and image references all stay until the purge.
 - **I4** Restore returns the document to `folder_id` only when that folder still exists in its scope (the
   owner's personal tree, or its team's); otherwise the root of that space. `team_id` and `owner_id` are unchanged.

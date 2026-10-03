@@ -327,8 +327,7 @@ export type Tab = {
   templateChosen?: boolean;
   // True when the tab is locked: every element becomes read-only,
   // adds via the palette are blocked, theme / background mutations
-  // are blocked, and the Activity panel hides its Revert + Undo
-  // buttons for as long as this tab is active. Toggled from the
+  // are blocked for as long as this tab is active. Toggled from the
   // tab ellipsis menu.
   locked?: boolean;
   // Per-document folder name (docs/specs/006-document/tab-folders.md). Tabs sharing a name render

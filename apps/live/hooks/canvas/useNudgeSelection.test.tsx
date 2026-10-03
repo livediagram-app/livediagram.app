@@ -48,7 +48,6 @@ function harness(opts: {
       tick: (m) => {
         elements = m(elements);
       },
-      scheduleElementChangeLog: vi.fn(),
       autoRebindArrowsRef: { current: false },
     }),
   ).result;

@@ -33,7 +33,7 @@ const R2_DELETE_CHUNK = 1000;
 // D1 wipe + bulk-delete from R2 + then drop the rows.
 //
 // Returns `{ documents, folders, images }` change counts for the
-// audit log. Idempotent: re-running with the same owner id is a
+// caller's log line. Idempotent: re-running with the same owner id is a
 // no-op once the rows are gone.
 export async function deleteAccount(
   env: Env,
@@ -172,7 +172,7 @@ export async function deleteAccount(
 // stops showing up there, which is the right outcome (the Clerk
 // twin is identical bytes anyway).
 //
-// Other tables (`change_log`, `share_links`, `tabs`) don't carry
+// Other tables (`share_links`, `tabs`) don't carry
 // their own owner_id, they link via `document_id` which is
 // owner-bound, so updating the documents cascade-fixes them
 // implicitly.

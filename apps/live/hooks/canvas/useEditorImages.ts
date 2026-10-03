@@ -23,7 +23,7 @@
 //   moved.
 //
 // All mutations route through the page's `commit` so they snapshot
-// history + emit the activity log exactly like the rest of element
+// history exactly like the rest of element
 // CRUD; this hook only relocates the code, it doesn't change that
 // contract.
 
@@ -54,8 +54,8 @@ type EditorImagesDeps = {
   // Viewport centre in canvas coordinates — where freshly placed
   // images land.
   getViewportCenter: () => { x: number; y: number };
-  // The history-aware element mutator. Snapshots history + emits the
-  // activity log, same path the rest of element CRUD uses.
+  // The history-aware element mutator. Snapshots history, same path the
+  // rest of element CRUD uses.
   commit: (mapElements: (els: Element[]) => Element[]) => void;
   // Selects an element by id (or clears with null). Newly placed
   // images select themselves so the user can immediately resize.

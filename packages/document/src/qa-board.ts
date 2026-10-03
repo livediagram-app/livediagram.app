@@ -16,7 +16,7 @@ export type QaNote = {
   // same votes, the one asked first holds its place.
   at: number;
   // Absent = anonymous. Stamped by the SERVER from the caller's participant
-  // record, never read from the request (docs/specs/012-collaboration/qa-board.md, the docs/specs/012-collaboration/activity-and-audit.md rule).
+  // record, never read from the request (docs/specs/012-collaboration/qa-board.md).
   author?: { name: string; color: string };
   // Voter ids (see qaVoterId). One entry per person, so the count is the
   // length.

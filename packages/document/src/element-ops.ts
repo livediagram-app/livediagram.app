@@ -6,8 +6,7 @@
 // ship only what it touched, so different-element edits merge instead.
 //
 // Pure + reusable: `diffToElementOps` derives the ops from the before/after
-// element arrays the editor already computes on every commit (the same diff
-// that feeds the change log), and `applyElementOp` applies one op to an
+// element arrays the editor already computes on every commit, and `applyElementOp` applies one op to an
 // element array by id. Both are transport-agnostic — the room wraps an
 // `ElementOp` in a `{ tabId, op }` frame (see @livediagram/api-schema).
 //

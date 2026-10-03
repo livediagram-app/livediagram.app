@@ -32,7 +32,6 @@ import {
   lucideToggleRight,
   lucideUsers,
   lucideVote,
-  lucideWorkflow,
 } from '@livediagram/icons/lucide';
 import { topCategorySlug } from '@livediagram/help-registry';
 import { Prims, Glyph as UiGlyph } from '@livediagram/ui';
@@ -1103,18 +1102,7 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M16.8 14.8h4.4" />
     </Glyph>
   ),
-  // Activity Panel category.
-  'what-it-is': (
-    <Glyph>
-      <rect x="4" y="4" width="16" height="16" rx="2" />
-      <path d="M8 9h8M8 13h8M8 17h5" />
-    </Glyph>
-  ),
-  'how-it-works': (
-    <Glyph>
-      <Prims prims={lucideWorkflow} />
-    </Glyph>
-  ),
+  // Canvas category: Undo / Redo.
   undo: (
     <Glyph>
       <path d="M9 7L4 12l5 5" />
@@ -1125,12 +1113,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
     <Glyph>
       <path d="M15 7l5 5-5 5" />
       <path d="M20 12H9a5 5 0 000 10h1" />
-    </Glyph>
-  ),
-  'reverting-changes': (
-    <Glyph>
-      <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
-      <path d="M3 3v5h5M12 7v5l4 2" />
     </Glyph>
   ),
   'session-tools': (
@@ -1626,13 +1608,6 @@ export const FEATURE_CATEGORY_ICONS: Record<string, ReactNode> = {
       <path d="M4 7V5.5A1.5 1.5 0 015.5 4H8M16 4h2.5A1.5 1.5 0 0120 5.5V7M20 15v3.5a1.5 1.5 0 01-1.5 1.5H16" />
       <path d="M4 12v3" />
       <path d="M9 11l6.5 3-2.7 1 1.6 3-1.6.8-1.6-3-1.9 1.9z" />
-    </Glyph>
-  ),
-  // A panel with a pulse: what just happened.
-  'activity-panel': (
-    <Glyph>
-      <rect x="3" y="4" width="18" height="16" rx="2" />
-      <path d="M6 13h3l1.5-3 2 6 1.5-3h3" />
     </Glyph>
   ),
 };

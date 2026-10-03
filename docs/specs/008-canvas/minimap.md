@@ -9,13 +9,11 @@ lets you jump the viewport anywhere with a tap or drag.
   like the Palette), labelled **"Map"**: drag its header to move it and collapse
   it to a banner. It **docks into the four canvas corners** like the other panels
   ([Panel corner docking](../007-editor/panel-docking.md)) — snap-to-corner on drag, free-drop, and a
-  device-local persisted position; its default corner is **bottom-left**, where
-  it stacks with the Activity panel.
+  device-local persisted position; its default corner is **bottom-left**.
 - **When.** Shown when it's **enabled** (`showMinimap` preference, **on by
   default**), the tab has **at least 4 elements**, and **on desktop** (hidden on
-  mobile, where the canvas is already edge-to-edge). It **stacks** with the Activity panel in the bottom-left rather than
-  hiding behind it (the docking layout reflows them); the old "defer until
-  Activity is minimised" rule is gone.
+  mobile, where the canvas is already edge-to-edge). It stacks with any other panel docked bottom-left rather than hiding
+  behind it (the docking layout reflows them).
 - **Enable / disable + reset.** The map's preferences (**Enable Map**, **Dim
   Outside the View**, **Map Size**) live in the **Settings** dialog
   ([User preferences](../007-editor/user-preferences.md)), under Panels › Map.
@@ -95,7 +93,7 @@ letterboxing handled for free.
   version of `isMobileViewportSync` so the panel mounts / unmounts when the
   viewport crosses the `sm` breakpoint.
 - `Canvas` renders it gated on
-  `mapEnabled && !isMobile && elements.length >= 4 && (mapPosition !== null || activityMinimized)`.
+  `!chromeHidden && !isMobile && mapEnabled && elements.length >= 4` (useCanvasChromePanels).
 
 Boxed elements only for now (arrows are usually within their endpoints'
 boxes); extending the bounds to arrow geometry is a possible follow-up.

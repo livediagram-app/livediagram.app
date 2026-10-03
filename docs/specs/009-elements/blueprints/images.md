@@ -98,8 +98,8 @@ change (D46).
    box's ratio at drag start (`resolveBoxedResize` in `boxed-drag-resolve.ts`). `[QB2]`
 6. **Reset to natural size.** A context-menu action sets width and height to `naturalWidth` /
    `naturalHeight` about the element's centre, disabled when either is absent. `[QB3]`
-7. **Activity.** Setting `imageId` from null logs `Set image on <name>`; setting it to null logs
-   `Cleared image on <name>` (`summarizeEdits` in `change-summaries.ts`). `[QB4]`
+7. **Activity.** Retired: the Set / Cleared image entries went with the Activity panel
+   (removed 2026-10-03). `[QB4]`
 
 ### Upload (`POST /api/images`)
 
@@ -309,7 +309,7 @@ read a 503 as `null` and `{}`.
 - **Tab body**: the element fields above, validated by `validate.ts` (`imageId` string or null).
 - **Never on the wire**: `owner_id`, `sha256` (`imageRowToSummary`).
 - **Snapshot / restore**: a tab snapshot carries only `imageId`; restoring an element whose image
-  was deleted renders **broken**. Revert restores the prior `imageId`.
+  was deleted renders **broken**. Undo restores the prior `imageId`.
 - **Account deletion** ([Owner-keyed data](../../015-api/api.md#owner-keyed-data)): one
   `IMAGES.delete(ids)` for every owned id (GB17), then `DELETE FROM images WHERE owner_id = ?`.
   An image a surviving shared tab still places in another owner's document goes too; that
@@ -458,7 +458,7 @@ backfill fingerprints live in [Image reference index](image-reference-index.md#o
 | No colour controls                                   | `supportsColours covers … freehand; not image`            | `packages/document/src/geometry.test.ts`       |
 | Offline data-URI rewrite                             | `offline-images` suites                                   | `apps/live/lib/offline/offline-images.test.ts` |
 | Palette hides without R2 `[QB1]`                     | none                                                      |                                                |
-| Set / Cleared image log `[QB4]`                      | none                                                      |                                                |
+| Set / Cleared image log `[QB4]` (retired)            | n/a                                                       |                                                |
 | Picker, placeholder states, paste, export in browser | none (GB8)                                                |                                                |
 | Escaped `href`, validated `imageId` (GB1)            | none                                                      |                                                |
 | Account deletion past 1000 images (GB17)             | none                                                      |                                                |

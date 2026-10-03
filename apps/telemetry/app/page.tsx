@@ -30,6 +30,7 @@ import { HelpView } from './HelpView';
 import { EditingView } from './EditingView';
 import { ExceptionsView } from './ExceptionsView';
 import { MetricSearch } from './MetricSearch';
+import { dropRetiredEvents } from './retired-events';
 
 // Same origin as the editor + api under the router (livediagram.app).
 // An origin-relative '/api' is correct even though this app is served
@@ -82,7 +83,8 @@ export default function TelemetryDashboard() {
       .then((r) => (r.ok ? (r.json() as Promise<TelemetrySummary>) : Promise.reject(r.status)))
       .then((data) => {
         if (cancelled) return;
-        setSummary(data);
+        // Retired features never render (see retired-events.ts).
+        setSummary(dropRetiredEvents(data));
         setStatus('ready');
       })
       .catch(() => {

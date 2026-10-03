@@ -25,7 +25,7 @@ A **shape kind**, `agenda`. Its `label` is the session's name.
 ## Pressing a segment
 
 Routes through **`startTimer`**, the same entry point the Current Tab menu and
-the session button already use — so the edit-role gate, the change-log line and
+the session button already use — so the edit-role gate and
 the telemetry all still happen exactly once, in the one place that owns them
 ([Session tools (timer + voting)](session-tools.md), [Session button](session-button.md)). It then writes `agendaCurrent`.
 

@@ -33,10 +33,9 @@ import { useStableCollab } from '@/components/canvas/element-layer-props';
 // EditorContext — the same host pattern as EditorModals /
 // EditorContextMenuHost — plus the handful of locals only the Canvas
 // props consume (the quick-connect arrow starter, the memoised Explorer
-// / Activity list props, the owner-badge resolution).
+// list props, the owner-badge resolution).
 export function EditorCanvasHost() {
   const {
-    activeId,
     activeTab,
     scrollIntoView,
     activeTabLoadState,
@@ -45,8 +44,6 @@ export function EditorCanvasHost() {
     slideDeck,
     slideDeckPanelPosition,
     setSlideDeckPanelPosition,
-    activityMinimized,
-    activityPosition,
     layers,
     activeLayerId,
     layerInertIds,
@@ -167,10 +164,7 @@ export function EditorCanvasHost() {
     canvasMainRef,
     canvasTool,
     castVote,
-    changeLog,
-    changeLogLoading,
     chooseTemplate,
-    clearActivityForActiveTab,
     clearTimer,
     clearVote,
     clerkDisplayName,
@@ -219,7 +213,6 @@ export function EditorCanvasHost() {
     folders,
     followLink,
     formatSourceId,
-    handleActivityRowClick,
     handleCanvasDoubleClick,
     hydrated,
     identityOnlyScreenOpen,
@@ -267,18 +260,11 @@ export function EditorCanvasHost() {
     doneVoteReview,
     retryActiveTabLoad,
     revealVote,
-    revertChange,
-    previewRevert,
-    clearRevertPreview,
-    savedAt,
-    saveStatus,
     selectedId,
     selectElement,
     selectMarquee,
     confirm,
     selfParticipant,
-    setActivityMinimized,
-    setActivityPosition,
     setAiPanelPosition,
     exitAvatarTool,
     pressModeButton,
@@ -395,10 +381,9 @@ export function EditorCanvasHost() {
     at: { x: number; y: number };
     holders: LockHolder[];
   } | null>(null);
-  // Stable references for the two list-shaped props the Explorer +
-  // Activity panels take, so those (React.memo'd) panels don't
-  // re-render on every drag frame just because the editor re-rendered.
-  // Both recompute only when their real inputs change, not per frame.
+  // A stable reference for the list-shaped prop the Explorer takes, so the
+  // (React.memo'd) panel doesn't re-render on every drag frame just because
+  // the editor re-rendered. It recomputes only when its real input changes.
   const explorerTeams = useMemo(() => teams.map((t) => ({ id: t.id, name: t.name })), [teams]);
   // Team-library folder mutations for the Explorer panel's team tree
   // (docs/specs/013-workspace/team-shared-documents.md) - see useTeamFolderActions.
@@ -438,10 +423,6 @@ export function EditorCanvasHost() {
   const [projectStockColours] = useState(createStockColourProjector);
   const surface = canvasSurface(backdrop.backgroundColor);
   const canvasElements = projectStockColours(presentingElements ?? activeTab.elements, surface);
-  const activeTabChangeLog = useMemo(
-    () => changeLog.filter((entry) => entry.tabId === activeId),
-    [changeLog, activeId],
-  );
   // Lazy per-tab load gate (docs/specs/006-document/per-tab-storage.md): show a blocking loader / error over
   // the canvas while the active tab's content is still being fetched, so
   // the user never edits a blank placeholder whose autosave would
@@ -764,10 +745,6 @@ export function EditorCanvasHost() {
         teamDocuments={teamDocuments}
         onDismissShared={dismissSharedDocument}
         documentListLoading={documentListLoading}
-        changeLog={activeTabChangeLog}
-        changeLogLoading={changeLogLoading}
-        activityPosition={activityPosition}
-        activityMinimized={activityMinimized}
         mapPosition={mapPosition}
         onMoveMap={(x, y) =>
           // Equality-guarded so a drag tick that resolves to the same spot
@@ -775,17 +752,6 @@ export function EditorCanvasHost() {
           setMapPosition((p) => (p && p.x === x && p.y === y ? p : { x, y }))
         }
         onResetMap={() => setMapPosition((p) => (p === null ? p : null))}
-        onMoveActivity={(x, y) => setActivityPosition({ x, y })}
-        onToggleActivityMinimized={() => {
-          // Emit only the open transition (minimized -> expanded);
-          // closing isn't a feature-reach signal. The closure read is
-          // safe because this is a single user click, not a rapid
-          // race, so no stale-state risk. The dock / popover layouts
-          // open Activity through useDockPopovers, which counts there.
-          if (activityMinimized) track('UI', 'Opened', 'Activity');
-          setActivityMinimized((v) => !v);
-        }}
-        onResetActivity={() => setActivityPosition(null)}
         layers={layers}
         activeLayerId={activeLayerId}
         layerCounts={layerCounts}
@@ -870,8 +836,8 @@ export function EditorCanvasHost() {
         // +1 for the local participant: livePresence is the REMOTE roster.
         participantCount={livePresence.length + 1}
         onToggleLayersMinimized={() => {
-          // Emit only the open transition, matching the Activity dock
-          // (the dock / popover layouts count in useDockPopovers).
+          // Emit only the open transition; closing isn't a feature-reach
+          // signal (the dock / popover layouts count in useDockPopovers).
           if (layersMinimized) track('Layer', 'Opened', 'Panel');
           setLayersMinimized((v) => !v);
         }}
@@ -921,13 +887,6 @@ export function EditorCanvasHost() {
             : (id, done, actionId) =>
                 done ? completeAction(id, actionId) : reopenAction(id, actionId)
         }
-        onRevertChange={revertChange}
-        onPreviewRevert={previewRevert}
-        onClearRevertPreview={clearRevertPreview}
-        onActivityRowClick={handleActivityRowClick}
-        onClearActivity={isReadOnly ? undefined : clearActivityForActiveTab}
-        saveStatus={saveStatus}
-        savedAt={savedAt}
         currentDocumentId={documentId}
         onOpenDocument={openDocument}
         onNewDocument={newDocument}

@@ -513,8 +513,7 @@ export const SELF_PAINTING_SHAPES = new Set<string>([
   // strokeStyle. They were the drift this list was created to stop, recurring:
   // added to isSelfDrawingShape and not here, so the Border accordion kept
   // offering Strength and Pattern on them. Not merely inert — the pick was
-  // committed, so it wrote to the element, autosaved, appended a change-log
-  // entry and broadcast an op to every peer in the room, for no visual change
+  // committed, so it wrote to the element, autosaved and broadcast an op to every peer in the room, for no visual change
   // at any zoom.
   'progress-bar',
   'progress-ring',

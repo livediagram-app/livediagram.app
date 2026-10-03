@@ -136,7 +136,7 @@ outside its accept-set to `square` so a node the model _invented_ off-vocabulary
 renders rather than being dropped, and Clean asks the model to return every element with
 its real `shape` forwarded. Unpinned, one Clean flattened every composite in the tab —
 checklists, code blocks, charts, lanes, entities, progress rings, 30 of the 51 ShapeKinds —
-and autosaved, change-logged and broadcast the result. The coercion is right for an
+and autosaved and broadcast the result. The coercion is right for an
 invented element and has no business touching one the user already had.
 
 Correspondingly, everything the worker's prompt asks the model to produce must survive

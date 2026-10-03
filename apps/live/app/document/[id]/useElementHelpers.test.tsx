@@ -24,7 +24,6 @@ const SLOT: InsertionSlot = {
 function harness(elements: Element[] = ROW) {
   const tab: Tab = { id: 't1', name: 'Tab 1', elements } as Tab;
   const commitTabs = vi.fn();
-  const emitChange = vi.fn();
   const { result } = renderHook(() =>
     useElementHelpers({
       selectedId: null,
@@ -37,13 +36,12 @@ function harness(elements: Element[] = ROW) {
       getViewportCenter: () => ({ x: 0, y: 0 }),
       commit: vi.fn(),
       commitTabs,
-      emitChange,
       setSelectedId: vi.fn(),
       setEditingId: vi.fn(),
       setFormatSourceId: vi.fn(),
     }),
   );
-  return { helpers: result.current, commitTabs, emitChange, tab };
+  return { helpers: result.current, commitTabs, tab };
 }
 
 // The x of every element on the tab the single commit produced.
@@ -106,7 +104,6 @@ describe('addBoxedAt with an insertion slot (docs/specs/021-event-storming/event
         getViewportCenter: () => ({ x: 0, y: 0 }),
         commit: vi.fn(),
         commitTabs,
-        emitChange: vi.fn(),
         setSelectedId: vi.fn(),
         setEditingId: vi.fn(),
         setFormatSourceId: vi.fn(),

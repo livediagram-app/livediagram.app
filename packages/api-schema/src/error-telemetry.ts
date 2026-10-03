@@ -140,7 +140,6 @@ const API_ROUTE_WORDS: ReadonlySet<string> = new Set([
   'tabs',
   'share',
   'members',
-  'log',
   'comments',
   'room-ticket',
   'invite-link',

@@ -17,7 +17,7 @@ want to create a document" end-to-end.
 `/live` currently serves two distinct experiences from one component:
 
 1. **Editor** — `/live?d=<id>` (owner) or `/live?s=<code>` (visitor).
-   State: load document, autosave, room broadcast, activity log, etc.
+   State: load document, autosave, room broadcast, etc.
 2. **Welcome / Create new** — `/live` with no params. State:
    `templatePickerMode`, `welcomeOpen`, `loadedExistingDocument`,
    `nameConfirmed`, and the `commitDocumentId()` flow that mints a
@@ -205,7 +205,7 @@ Kept on the editor route:
 - The `templates` variant of the template picker (per-tab content
   scaffolding).
 - The visitor identity confirmation modal (`identityOnlyScreenOpen`).
-- Everything else: autosave, room, activity, tab management,
+- Everything else: autosave, room, tab management,
   document metadata, share dialog, etc.
 
 ## `/new` state
@@ -275,7 +275,7 @@ The TemplatePicker card (`apps/live/components/palette/TemplatePicker.tsx`) is t
 
 The card has no backdrop, so the editor header stays live beside it. It stacks on the `canvas-modal` rung: above every canvas surface, beneath the header, so the header's menus (the apps menu, the account menu) open in front of the card rather than behind it.
 
-This is the only welcome surface so it sets the mobile floor for the rest of the editor's panel chrome (Palette / Context / Explorer / Activity, see [07-live-app](live-app.md)). Those are addressed separately.
+This is the only welcome surface so it sets the mobile floor for the rest of the editor's panel chrome (Palette / Context / Explorer, see [07-live-app](live-app.md)). Those are addressed separately.
 
 ## Jump back in (recent documents card)
 

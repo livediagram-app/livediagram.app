@@ -148,7 +148,7 @@ Every plan is a pure function of the element list; the editor applies it in one 
    (`arrowEnds: 'none'`, `arrowStyle: 'curved'`).
 5. **One commit** (`commitTabs`, active tab, `templateChosen: true`): write `label` on `id` when
    given, `applyMindMoves` (positions and connector faces as patches over the elements in the
-   commit), then append the node and its connector. `emitChange` with the same result.
+   commit), then append the node and its connector.
 6. Select the node, `setEditingId(node.id)`, `beginMindHandoff(node.id, handoffActions)`, and
    `scrollIntoView(node, { sideMargin: MIND_REVEAL_SIDE_MARGIN })` (`D139`).
 7. `console.debug('[mind-grow] ...')`, `track('Element', 'Added', 'MindNode')`.

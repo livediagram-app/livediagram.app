@@ -7,8 +7,8 @@ Double-clicking such a file in Drive opens it in livediagram.
 
 The mirror is a **copy**, never the document's home
 ([Save Locations](../006-document/save-locations.md#google-drive-is-a-mirror-not-a-location)).
-livediagram's database stays the source of truth, so realtime collaboration,
-share links and the change log are untouched by it.
+livediagram's database stays the source of truth, so realtime collaboration
+and share links are untouched by it.
 
 Evidence for every Google claim below (scopes, tokens, quotas, fields) is in
 [Migration readiness, section A](../../research/migration-readiness.md#a-google-drive-two-way-mirror);
@@ -291,7 +291,7 @@ folder id):
   rewritten from livediagram on the next outbound pass, so the canonical copy
   comes back without waiting for the next edit.
 - Inbound changes go through the ordinary api routes (rename, move, delete,
-  restore), so authorisation, the change log and realtime rooms behave exactly
+  restore), so authorisation and realtime rooms behave exactly
   as if the user had done it in livediagram.
 
 ## Copies made in Drive

@@ -25,7 +25,6 @@ function harness(
       commitTabs: (map) => {
         tabs = map(tabs);
       },
-      emitTabMeta: vi.fn(),
       emitVote: vi.fn(),
       selfId: 'me',
       isFacilitator: opts.isFacilitator ?? false,

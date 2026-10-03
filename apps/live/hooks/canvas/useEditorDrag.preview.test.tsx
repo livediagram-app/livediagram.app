@@ -16,7 +16,7 @@ const BOX = (id: string, x: number): Element =>
 
 function harness() {
   let elements: Element[] = [BOX('a', 0), BOX('b', 400)];
-  const calls = { tick: 0, commit: 0, checkpoint: 0, cancel: 0, log: 0 };
+  const calls = { tick: 0, commit: 0, checkpoint: 0, cancel: 0 };
   const deps = {
     get activeTab() {
       return { id: 't', name: 'Tab', elements } as Tab;
@@ -45,13 +45,9 @@ function harness() {
     },
     markCheckpoint: () => {
       calls.checkpoint += 1;
-      return 1;
     },
     cancelToCheckpoint: () => {
       calls.cancel += 1;
-    },
-    scheduleElementChangeLog: () => {
-      calls.log += 1;
     },
     styleNewElement: <T,>(el: T) => el,
     autoRebindArrowsRef: { current: false },
@@ -113,12 +109,12 @@ describe('a drag draws from a preview', () => {
     h.press();
     h.pointer('pointermove', 100);
     h.pointer('pointermove', 150);
-    expect(h.calls).toEqual({ tick: 0, commit: 0, checkpoint: 0, cancel: 0, log: 0 });
+    expect(h.calls).toEqual({ tick: 0, commit: 0, checkpoint: 0, cancel: 0 });
     expect(h.xOf('a')).toBe(0);
     expect((localPreview()?.changed.get('a') as { x: number } | undefined)?.x).toBe(100);
   });
 
-  it('writes once on release: one checkpoint, one tick, one log entry', () => {
+  it('writes once on release: one checkpoint, one tick', () => {
     const h = harness();
     h.press();
     h.pointer('pointermove', 100);
@@ -126,7 +122,6 @@ describe('a drag draws from a preview', () => {
     h.pointer('pointerup', 150);
     expect(h.calls.checkpoint).toBe(1);
     expect(h.calls.tick).toBe(1);
-    expect(h.calls.log).toBe(1);
     expect(h.xOf('a')).toBe(100);
     expect(h.xOf('b')).toBe(400);
     expect(localPreview()).toBeNull();
@@ -136,7 +131,7 @@ describe('a drag draws from a preview', () => {
     const h = harness();
     h.press();
     h.pointer('pointerup', 50);
-    expect(h.calls).toEqual({ tick: 0, commit: 0, checkpoint: 0, cancel: 0, log: 0 });
+    expect(h.calls).toEqual({ tick: 0, commit: 0, checkpoint: 0, cancel: 0 });
     expect(localPreview()).toBeNull();
   });
 

@@ -90,7 +90,7 @@ colour values never equal a Charcoal hex, so they are kept.
 | Element `fillColor` / `strokeColor` / `textColor` | Stored | Charcoal's baked values removed        |
 
 Read-time only (D7). The rewrite persists with the tab's next save; an unsaved tab is migrated again on every read,
-which I1 makes harmless. D1 is untouched; snapshots and change-log rows keep what they recorded.
+which I1 makes harmless. D1 is untouched; snapshots keep what they recorded.
 
 ## Errors and edge cases
 

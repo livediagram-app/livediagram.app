@@ -52,7 +52,7 @@ import {
 // round-trip) in exactly one place per setting.
 //
 // EVERY preference has a row here, and for most this is now the ONLY control:
-// the Palette / Layers / Activity / AI / Map gear popovers that used to carry
+// the Palette / Layers / AI / Map gear popovers that used to carry
 // them are gone (docs/specs/007-editor/user-preferences.md). One setting, one place. The panels kept their
 // reset-position button, which was the only non-preference thing those
 // popovers held, and the Slide Deck popover stays because its contents are
@@ -487,10 +487,9 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
       }),
       uiScalePartRow('cornerButtons', {
         label: 'Corner Buttons Scale',
-        keywords:
-          'undo redo zoom controls layers theme activity corner buttons size bigger smaller',
+        keywords: 'undo redo zoom controls layers theme corner buttons size bigger smaller',
         description:
-          'The buttons in the bottom-right corner: Activity, Undo and Redo, Layers, theme and zoom.',
+          'The buttons in the bottom-right corner: Undo and Redo, Layers, theme and zoom.',
         changed: 'UiScaleCornerButtons',
       }),
     ],
@@ -609,32 +608,6 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         read: (p) => p.layerHoverPreview !== false,
         write: (p, v) => ({ ...p, layerHoverPreview: v }),
         event: { category: 'UI', on: 'LayerHoverPreviewOn', off: 'LayerHoverPreviewOff' },
-      },
-    ],
-  },
-  {
-    id: 'activity',
-    label: 'Activity',
-    parent: 'panels',
-    rows: [
-      panelSwitch('activityPanelEnabled', {
-        label: 'Enable Activity Panel',
-        keywords: 'activity history panel hide show turn off remove',
-        description:
-          'Shows the Activity panel, the tab’s history of changes, and its button beside Undo and Redo. Turned off, Undo and Redo stay.',
-        event: { category: 'UI', on: 'ActivityPanelOn', off: 'ActivityPanelOff' },
-      }),
-      {
-        kind: 'toggle',
-        key: 'activityRevertHoverPreview',
-        parent: 'activityPanelEnabled',
-        keywords: 'undo history revert preview hover activity',
-        label: 'Preview Revert on Hover',
-        description:
-          'Shows what the canvas would look like after a revert while you hover that entry in the Activity panel, so you can check before committing to it.',
-        read: (p) => p.activityRevertHoverPreview !== false,
-        write: (p, v) => ({ ...p, activityRevertHoverPreview: v }),
-        event: { category: 'UI', on: 'ActivityRevertPreviewOn', off: 'ActivityRevertPreviewOff' },
       },
     ],
   },

@@ -51,7 +51,7 @@ Each writer appends statements to the D1 batch that writes the body.
 | `seedTabs`                  | the same, per seeded tab                                                                                     |
 | `copyDocument`              | per copied tab: `imageRefAddStatements(env, freshTabId, imageRefIdsFromData(data))`                          |
 | `swapTabData`               | batch `[UPDATE tabs … WHERE data = ?, ...imageRefAddStatements(nextData ids)]`; result 0's `changes` decides |
-| `deleteTabRow`              | when no link is left: batch `[imageRefPruneTabStatement, DELETE tabs, DELETE change_log]`                    |
+| `deleteTabRow`              | when no link is left: batch `[imageRefPruneTabStatement, DELETE tabs]`                                       |
 | `documentRemovalStatements` | first: `DELETE FROM image_refs WHERE tab_id IN (doomed tabs)`; then the tabs and documents deletes           |
 
 `imageRefReplaceStatements(env, tabId, ids)`, with `ids` bound as one JSON array:

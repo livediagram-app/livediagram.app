@@ -3,11 +3,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Characterisation tests for handleParticipants (docs/specs/014-identity/auth-and-guest-access.md). GET is
 // deliberately open (ids + display fields already leak through the WS
-// room / change-log). PUT is the security-sensitive path: it must reject
+// room). PUT is the security-sensitive path: it must reject
 // an unauthenticated caller (400) and, critically, a caller trying to
 // rewrite a participant id that isn't their own resolved owner (403) —
-// the impersonation guard, since change-log rows store name + colour
-// denormalised at write time.
+// the impersonation guard, since a participant's name + colour shows
+// across every document they collaborate on.
 
 const { db } = vi.hoisted(() => ({
   db: {

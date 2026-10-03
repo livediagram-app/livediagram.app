@@ -1,6 +1,5 @@
 import {
   AccountSyncArt,
-  ActivityArt,
   AiAssistArt,
   AlignmentGuidesArt,
   AnimatedIconsArt,
@@ -140,7 +139,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         href: '/help/collaboration/sharing/',
         title: 'Multiplayer, no setup',
         description:
-          'Share one link and the whole team is on the canvas live, with cursors, presence, comments, and an activity log you can rewind. No seats to buy, no setup.',
+          'Share one link and the whole team is on the canvas live, with cursors, presence, and comments. No seats to buy, no setup.',
       },
       {
         art: <MarkdownImportArt />,
@@ -631,17 +630,10 @@ export const LANDING_SECTIONS: LandingSection[] = [
       },
       {
         art: <UndoRedoArt />,
-        href: '/help/activity-panel/undo/',
+        href: '/help/canvas/undo/',
         title: 'Undo and redo',
         description:
-          'Back out a recent edit with Cmd-Z, or bring it back with Cmd-Shift-Z. For anything older, the activity log can revert a specific change.',
-      },
-      {
-        art: <ActivityArt />,
-        href: '/help/activity-panel/reverting-changes/',
-        title: 'Activity log with one-click revert',
-        description:
-          'Every tab keeps a running log of who changed what. Hit revert on any entry to undo just that change, even after later edits, without disturbing the rest.',
+          "Back out a recent edit with Cmd-Z, or bring it back with Cmd-Shift-Z. A whole drag is one step, and your undo never reaches into anyone else's work.",
       },
       {
         art: <AccountSyncArt />,

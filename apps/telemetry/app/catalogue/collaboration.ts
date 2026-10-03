@@ -581,7 +581,7 @@ export const STOPWATCHES: MetricStack = {
   headline: STOPWATCHES_STARTED,
 };
 
-// The Explorer Timeline (docs/specs/013-workspace/timeline.md) and the editor's Activity panel.
+// The Explorer Timeline (docs/specs/013-workspace/timeline.md) and the Explorer's Activity section (docs/specs/013-workspace/activity-page.md).
 // Timeline·Opened carries four things by type: two ways of arriving on the
 // feed (Landing, the Explorer's default page, and Nav, a deliberate visit),
 // which is how the landing-page change is measured, and two things done in it
@@ -630,14 +630,14 @@ export const ACTIVITY_OPENED = chart(
   'Activity',
   'Opened',
   'Activity Opened',
-  'The editor Activity panel shown, each time it mounts. Expanding it from minimised also counts in Dialogs & Panels.',
+  "The Explorer's Activity section opened, once per visit.",
 );
 
 export const ACTIVITY_THREADS = chart(
   'Activity',
   'Selected',
   'Activity Items Opened',
-  'An action or a comment thread opened from the Activity panel.',
+  "An action or a comment thread opened from the Explorer's Activity section.",
 );
 
 // Explorer Home (docs/specs/013-workspace/explorer-home.md): arrivals by type, documents opened
@@ -684,7 +684,7 @@ export const TIMELINE_AND_ACTIVITY: MetricStack = {
   stack: true,
   title: 'Timeline & Activity',
   blurb:
-    'Keeping up with what changed: Explorer Home, the Explorer Timeline and the editor Activity panel.',
+    "Keeping up with what changed: Explorer Home, the Explorer Timeline and the Explorer's Activity section.",
   members: [
     HOME_LANDINGS,
     HOME_VISITS,

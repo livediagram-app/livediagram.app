@@ -110,7 +110,6 @@ function harness(
   // The editor's real history semantics, minimally: a checkpoint pushes a
   // snapshot, ticks mutate without one, cancel restores and pops.
   const snapshots: Element[][] = [];
-  const logged: { before: Element[]; after: Element[] }[] = [];
   const toasts: string[] = [];
   const framed: { x: number; y: number; w: number; h: number }[] = [];
   let selection = new Set<string>();
@@ -134,7 +133,6 @@ function harness(
       cancelToCheckpoint: () => {
         elements = snapshots.pop() ?? elements;
       },
-      emitChange: (_tabId, before, after) => logged.push({ before, after }),
       setSelectedId: () => {},
       setMultiSelectedIds: (ids) => {
         selection = ids;
@@ -152,7 +150,6 @@ function harness(
     undoOnce: () => {
       elements = snapshots.pop() ?? elements;
     },
-    logged,
     toasts,
     selection: () => selection,
     framed,
@@ -498,14 +495,6 @@ describe('correcting the draft, then Add', () => {
     expect(vi.mocked(track).mock.calls.filter((c) => c[1] === 'Added')).toHaveLength(1);
   });
 
-  it('logs the import as one activity entry', async () => {
-    const h = await landed();
-    act(() => h.api().accept());
-    expect(h.logged).toHaveLength(1);
-    expect(h.logged[0]!.before).toEqual([]);
-    expect(h.logged[0]!.after).toHaveLength(1);
-  });
-
   it('clears the session view state on the way out', async () => {
     const h = await landed();
     act(() => h.api().accept());
@@ -530,7 +519,6 @@ describe('Discard', () => {
     const h = await landed();
     act(() => h.api().discard());
     expect(h.steps()).toBe(0);
-    expect(h.logged).toEqual([]);
   });
 
   it('removes a draft that outlived its session, as an ordinary edit', () => {

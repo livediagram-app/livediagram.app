@@ -84,6 +84,13 @@ describe('legacyHelpRedirect', () => {
       ['/help/canvas/whiteboards/', '/help/canvas/draw-mode/'],
       // The Highlighter became a Draw tile again (docs/specs/008-canvas/highlighter.md "History").
       ['/help/selection-modes/highlighter/', '/help/palette/tools/highlighter/'],
+      // The Activity Panel was removed (docs/specs/012-collaboration/README.md); Undo / Redo moved to Canvas.
+      ['/help/activity-panel/', '/help/canvas/undo/'],
+      ['/help/activity-panel/undo/', '/help/canvas/undo/'],
+      ['/help/activity-panel/redo/', '/help/canvas/redo/'],
+      ['/help/activity-panel/what-it-is/', '/help/canvas/undo/'],
+      ['/help/activity-panel/how-it-works/', '/help/canvas/undo/'],
+      ['/help/activity-panel/reverting-changes/', '/help/canvas/undo/'],
     ];
     for (const [from, to] of cases) {
       const res = legacyHelpRedirect(new URL(`https://livediagram.app${from}`))!;

@@ -36,8 +36,7 @@ is the team, not the individual.
   chart, Timeline, Fishbone, Pyramid, Flywheel, Venn, User journey, Logo
   design, plus three UI wireframes).
 - 18 themes that recolor the whole canvas in one click.
-- Per-tab activity log with one-click surgical revert on any entry, even after
-  later edits.
+- Undo and redo (Cmd/Ctrl+Z, Cmd/Ctrl+Shift+Z), personal to each editor.
 - Tabs per document (link across them, copy a tab into another document), nested
   folders in the Explorer.
 - Editor or view-only share links, revocable any time. "Shared with you"

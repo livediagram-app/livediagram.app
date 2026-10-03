@@ -52,7 +52,7 @@ collaborator to the owner's id:
   connected participant's `id`, unredacted, to all room peers, and that id was
   the owner id. Any co-present collaborator, including a **view-only** share
   visitor, could read it off a presence frame.
-- **Change-log / Activity**: `GET /documents/<id>/log` returned each entry's
+- **Change-log / Activity** (endpoint since removed with the Activity panel, 2026-10-03): `GET /documents/<id>/log` returned each entry's
   `participantId` unredacted to any **edit-access** collaborator (edit-share
   holders, joined team members). A static, reliable harvest.
 
@@ -77,8 +77,6 @@ closed the escalation. The fix is [§4](#4-x-owner-id-trust-change).
 - **Presence carries no owner id.** The room mints a random presence id per
   socket and builds each presence entry itself (`helloPresence`,
   `document-room-rules.ts`); a client never supplies or learns one.
-- **The change log is redacted.** `GET /documents/<id>/log` blanks
-  `participantId` for every caller but the document owner (`routes/documents.ts`).
 - **An account id is never a guest credential.** A Clerk-shaped `X-Owner-Id`
   is refused on every owner-scoped route with `401
 account_id_not_a_guest_credential`, unconditionally ([§4.1](#41-a-clerk-account-id-in-x-owner-id-is-refused-unconditionally)).
@@ -473,7 +471,7 @@ hardening landed first:
    even though §4 already neutralises a leaked id, because people WILL probe
    for it):
    - Redact `participantId` in the change-log read for non-owners (the static
-     harvest), the same way comment authors and the document `ownerId` already
+     harvest; moot since the change log was removed on 2026-10-03), the same way comment authors and the document `ownerId` already
      are.
    - Give each realtime session a **room-scoped ephemeral presence id**
      (random per connection) for the broadcast presence / cursor frames,

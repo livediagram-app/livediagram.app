@@ -73,7 +73,7 @@ Signed-in status surfaces in the editor header via `<AuthControls>` (initial bub
 
 ## Identity display name
 
-A signed-in user's participant `name` is driven by their Clerk profile (`firstName + lastName`, falling back to `fullName` then `username`). On every editor mount we seed the participant record with the current Clerk name, and re-`PUT` it whenever it has drifted from the persisted value — so renaming yourself in Clerk propagates to denormalised activity-log rows on the next load.
+A signed-in user's participant `name` is driven by their Clerk profile (`firstName + lastName`, falling back to `fullName` then `username`). On every editor mount we seed the participant record with the current Clerk name, and re-`PUT` it whenever it has drifted from the persisted value — so renaming yourself in Clerk propagates to everything that reads the participant row on the next load.
 
 Two welcome-modal rules follow from that:
 

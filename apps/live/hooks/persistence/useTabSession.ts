@@ -5,11 +5,7 @@
 // mutations, so every handler here is naturally edit-role only.
 //
 // All mutations go through `commitTabs` (which does NOT push undo
-// history) — a timer start or a vote dot shouldn't be undoable. The
-// facilitator lifecycle actions emit a one-shot activity-log line via
-// `emitTabMeta` with `undoable: false` (no history step was pushed,
-// so the entry must stay out of the undo pairing); the high-frequency
-// vote casts deliberately do NOT log.
+// history), so a timer start or a vote dot isn't undoable.
 
 import {
   applyVoteDelta,
@@ -35,9 +31,8 @@ type TabSessionDeps = {
   activeId: string;
   activeTab: Tab;
   // Tab mutator that does NOT push undo history (same one the appearance
-  // setters use); we pair the facilitator actions with an explicit log emit.
+  // setters use).
   commitTabs: (mapTabs: (ts: Tab[]) => Tab[]) => void;
-  emitTabMeta: (tabId: string, summary: string, opts?: { undoable?: boolean }) => void;
   // The local participant id — whose dots a cast/retract adds or removes.
   selfId: string;
   // Broadcast ONE dot the instant it is cast or taken back (docs/specs/012-collaboration/session-tools.md).
@@ -53,7 +48,7 @@ type TabSessionDeps = {
 };
 
 export function useTabSession(deps: TabSessionDeps) {
-  const { editsBlocked, activeId, commitTabs, emitTabMeta, selfId, emitVote } = deps;
+  const { editsBlocked, activeId, commitTabs, selfId, emitVote } = deps;
   // One flag for every verb that runs the room, so a new one cannot be added
   // without deciding which side of the line it is on.
   const runBlocked = deps.editsBlocked || deps.sessionToolsBlocked;
@@ -71,11 +66,6 @@ export function useTabSession(deps: TabSessionDeps) {
         ? { mode, running: true, durationMs, anchorAt: now + (durationMs ?? 0) }
         : { mode, running: true, anchorAt: now };
     patchActive((t) => ({ ...t, timer }));
-    emitTabMeta(
-      activeId,
-      mode === 'countdown' ? 'Started a countdown timer' : 'Started a stopwatch',
-      { undoable: false },
-    );
     track('Tab', 'Started', mode === 'countdown' ? 'CountdownTimer' : 'StopwatchTimer');
   };
 
@@ -229,22 +219,6 @@ export function useTabSession(deps: TabSessionDeps) {
       round: crypto.randomUUID(),
     };
     patchActive((t) => ({ ...t, vote }));
-    const layerName = vote.voteLayerId
-      ? (deps.activeTab.layers ?? []).find((l) => l.id === vote.voteLayerId)?.name
-      : undefined;
-    const privacyNote = [
-      layerName ? `on ${layerName}` : null,
-      vote.onePerElement ? 'one dot per item' : null,
-      vote.hideCursors ? 'cursors hidden' : null,
-      vote.hideCounts ? 'counts hidden' : null,
-    ].filter(Boolean);
-    emitTabMeta(
-      activeId,
-      `Started a vote (${votesPerPerson} ${votesPerPerson === 1 ? 'dot' : 'dots'} each${
-        privacyNote.length > 0 ? `, ${privacyNote.join(', ')}` : ''
-      })`,
-      { undoable: false },
-    );
     track('Tab', 'Started', 'Vote');
     // A second, separate line for the privacy modes so the vote-start series
     // stays comparable across the change (docs/specs/017-telemetry/telemetry.md): cursors default ON, so
@@ -260,7 +234,6 @@ export function useTabSession(deps: TabSessionDeps) {
     // handler is reachable from more than one surface.
     if (!isVoteHost(deps.activeTab.vote, selfId, deps.isFacilitator)) return;
     patchActive((t) => (t.vote ? { ...t, vote: { ...t.vote, active: false } } : t));
-    emitTabMeta(activeId, 'Ended the vote', { undoable: false });
     track('Tab', 'Ended', 'Vote');
   };
 
@@ -272,7 +245,6 @@ export function useTabSession(deps: TabSessionDeps) {
     patchActive((t) =>
       t.vote ? { ...t, vote: { ...t.vote, revealed: true, reviewIndex: 0 } } : t,
     );
-    emitTabMeta(activeId, 'Revealed the vote results', { undoable: false });
     track('Tab', 'Revealed', 'Vote');
   };
 
@@ -292,7 +264,7 @@ export function useTabSession(deps: TabSessionDeps) {
   };
 
   // Add one of MY dots to an element, if a vote is open and I have budget
-  // left. No history, no activity-log line (too frequent).
+  // left. No history (too frequent).
   //
   // Whether a dot lands is decided OUTSIDE the state updater, from the
   // rendered tab: a press with the budget spent (or a second dot on a

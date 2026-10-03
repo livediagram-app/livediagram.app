@@ -1,13 +1,13 @@
-// Human-readable element naming, shared by the change log (docs/specs/012-collaboration/activity-and-audit.md)
-// and the canvas accessibility layer (docs/specs/004-interface-design/canvas-accessibility.md): aria-labels and live
-// announcements read the same names the activity log prints, so the
-// two surfaces can't drift. Lifted verbatim from lib/change-log.ts.
+// Human-readable element naming for the canvas accessibility layer
+// (docs/specs/004-interface-design/canvas-accessibility.md) and the other surfaces that name an element:
+// aria-labels and live announcements read the same names everywhere, so
+// they can't drift.
 
 import type { BoxedElement, Element } from '@livediagram/document';
 
 // Display kind for an element — capitalised, no article. Shapes
-// surface their concrete sub-kind ('Square', 'Diamond'…) so log
-// entries read as "Added a Square" rather than the abstract "Shape".
+// surface their concrete sub-kind ('Square', 'Diamond'…) so a name
+// reads as "Square" rather than the abstract "Shape".
 export function kindLabel(el: Element): string {
   if (el.type === 'arrow') return 'Arrow';
   if (el.type === 'text') return 'Text';

@@ -72,7 +72,6 @@ export const HELP_ARTICLES = {
   // Explorer / data
   // Standing panels.
   explorerPanel: 'explorer/explorer-panel',
-  activityPanel: 'activity-panel/what-it-is',
   layers: 'canvas/layers',
   minimap: 'user-interface/minimap',
   sessionPolls: 'collaboration/session-tools/polls',
@@ -258,10 +257,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   explorerPanel: {
     title: 'Learn about the Explorer',
     description: 'Tips and tricks to help you get the most out of the Explorer.',
-  },
-  activityPanel: {
-    title: 'Learn about the Activity panel',
-    description: 'Tips for reading, filtering and reverting the change log.',
   },
   layers: {
     title: 'Learn about layers',

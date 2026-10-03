@@ -36,20 +36,9 @@ function liveDoc(sql: DatabaseSync, id: string, ownerId = 'owner', teamId: strin
 }
 
 // A tab created in `documentId` through the real autosave path, with one
-// history entry and one collaboration-index row hanging off it.
+// collaboration-index row hanging off it.
 async function tab(db: SqliteD1, documentId: string, id: string): Promise<void> {
   await upsertTab(db.env, documentId, { id, name: id, elements: [] } as unknown as Tab, 0);
-  insert(db.sql, 'change_log', {
-    id: `log-${id}`,
-    tab_id: id,
-    participant_id: 'owner',
-    kind: 'edit',
-    summary: 'Edited',
-    element_ids: '[]',
-    before_state: '{}',
-    after_state: '{}',
-    created_at: T0,
-  });
   insert(db.sql, 'collab_actions', {
     tab_id: id,
     element_id: `el-${id}`,
@@ -72,7 +61,6 @@ function count(sql: DatabaseSync, table: string, where: string, ...args: string[
 function tabFootprint(sql: DatabaseSync, id: string) {
   return {
     body: count(sql, 'tabs', 'id = ?', id),
-    history: count(sql, 'change_log', 'tab_id = ?', id),
     actions: count(sql, 'collab_actions', 'tab_id = ?', id),
     links: sql
       .prepare('SELECT document_id FROM document_tabs WHERE tab_id = ? ORDER BY document_id')
@@ -81,10 +69,10 @@ function tabFootprint(sql: DatabaseSync, id: string) {
   };
 }
 
-const GONE = { body: 0, history: 0, actions: 0, links: [] };
+const GONE = { body: 0, actions: 0, links: [] };
 
 describe('deleteDocument', () => {
-  it('removes the tabs only it holds, with their history and index rows', async () => {
+  it('removes the tabs only it holds, with their index rows', async () => {
     const db = sqliteD1();
     liveDoc(db.sql, 'A');
     await tab(db, 'A', 't1');
@@ -106,7 +94,6 @@ describe('deleteDocument', () => {
 
     expect(tabFootprint(db.sql, 'shared')).toEqual({
       body: 1,
-      history: 1,
       actions: 1,
       links: ['B'],
     });
@@ -127,7 +114,6 @@ describe('deleteDocument', () => {
 
     expect(tabFootprint(db.sql, 'wanderer')).toEqual({
       body: 1,
-      history: 1,
       actions: 1,
       links: ['B', 'C'],
     });
@@ -212,7 +198,6 @@ describe('DELETE /api/documents/:id?permanent=true with a shared tab', () => {
     expect(res?.status).toBe(204);
     expect(tabFootprint(db.sql, 'shared')).toEqual({
       body: 1,
-      history: 1,
       actions: 1,
       links: ['B'],
     });
@@ -250,7 +235,6 @@ describe('deleteAccount with a tab shared into someone else’s document', () =>
     expect(tabFootprint(db.sql, 'private')).toEqual(GONE);
     expect(tabFootprint(db.sql, 'shared')).toEqual({
       body: 1,
-      history: 1,
       actions: 1,
       links: ['theirs'],
     });

@@ -48,8 +48,6 @@ export const ROOT_TYPES = [
   'HomeResponse',
   'HomeTimelinePage',
   'ImageSummary',
-  'ChangeLogEntry',
-  'ChangeLogKind',
   'SharedWithItem',
   'ParticipantRecord',
   'Team',

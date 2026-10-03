@@ -95,7 +95,7 @@ photograph of a physical wall **in the browser**, with classical computer
 vision. The photograph itself is never uploaded: only the CROPS — one sticky
 each — go to `POST /api/ai/read-notes` so the model can read the handwriting,
 and the route forwards them to the provider and discards them. Nothing is
-persisted anywhere: not R2, not D1, not IndexedDB, not the change log, not a log
+persisted anywhere: not R2, not D1, not IndexedDB, not a log
 line. The browser also re-encodes every crop, which drops EXIF (including the
 GPS tag) after honouring the orientation flag.
 

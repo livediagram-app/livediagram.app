@@ -994,7 +994,7 @@
  *
  * Every feature card carries a small, self-contained mock of the real
  * editor surface it describes (canvas shapes, palette, share dialog,
- * activity log, …). Like the hero, the motion is pure CSS so it works
+ * undo and redo, …). Like the hero, the motion is pure CSS so it works
  * under static export with no JS. Each loops independently on a ~5–7 s
  * cycle, reusing a small shared vocabulary of keyframes. Reduced-motion
  * settles every one to its finished state.

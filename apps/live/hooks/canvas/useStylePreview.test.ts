@@ -53,7 +53,6 @@ function harness() {
       commitTabs: (map) => {
         committed = map(committed);
       },
-      emitChange: () => {},
       previewingRef: { current: false } as React.MutableRefObject<boolean>,
     }),
   ).result.current;

@@ -9,8 +9,7 @@ closed until the facilitator opens it.
 
 Brainwriting, pre-mortems, retro round one and "what is nobody saying" all
 depend on the same thing: an idea that cannot be traced to the person who had
-it. A sticky note can't do this — the change log ([Activity and audit log](activity-and-audit.md)) attributes every
-element to its author by design, and the author's cursor was sitting on it as
+it. A sticky note can't do this — the author's cursor was sitting on it as
 they typed.
 
 ## Anonymity is structural
@@ -22,9 +21,9 @@ the entire schema.
 That matters because every other route to a name is one refactor away from
 being reintroduced. The two that had to be closed deliberately:
 
-- **The change log.** Adding a card commits the element WITHOUT a log entry,
-  the same exception the high-frequency vote casts already take ([Session tools (timer + voting)](session-tools.md)). An
-  entry saying "Priya edited Idea Box" beside six anonymous cards is a
+- **The change log** (since removed with the Activity panel, 2026-10-03, which
+  closes this leak for good). Adding a card committed the element WITHOUT a log
+  entry: an entry saying "Priya edited Idea Box" beside six anonymous cards is a
   five-second deanonymisation.
 - **The selection lock.** Adding a card does not select the element, so the
   [Live app](../007-editor/live-app.md) concurrent-selection highlight doesn't put a coloured ring and a name

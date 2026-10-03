@@ -14,7 +14,6 @@ const TOLERANCE_PX = 0.5;
 export const CENTRING_EXCEPTIONS: Record<string, string> = {
   // The tab-activity clock (the editor's history button): its rewind arrow leaves the dial at the
   // top left, so the ink leans that way by design; centring it would push the dial off-centre.
-  ActivityIcon: 'a clock with a rewind arrow at its top left',
 };
 
 const ICONS = (Object.entries(icons) as [string, unknown][]).filter(

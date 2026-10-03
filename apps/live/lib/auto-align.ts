@@ -86,7 +86,7 @@ export function autoAlignElement(el: Element): Element {
 
 // Top-level entry: grid-snap every element across a tab. `Element[] in,
 // Element[] out`, so the editor can drop it through `commit()` and pick up
-// undo / activity-log behaviour for free. A pure per-element snap — no
+// undo behaviour for free. A pure per-element snap — no
 // cross-element resizing or relocation (see the header note); Auto Layout is
 // the structural pass.
 export function autoAlignElements(elements: Element[]): Element[] {

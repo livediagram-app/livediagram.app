@@ -9,20 +9,18 @@ import { requireOwner, type RouteContext } from './context';
 import { MAX_PARTICIPANT_NAME_LEN, MAX_COLOR_LEN } from '../limits';
 
 // GET stays open — participant ids are already broadcast through
-// the WS room and embedded in change-log rows, so anyone in a
+// the WS room and embedded in comment authors, so anyone in a
 // shared session can already learn the id; the endpoint just
 // exposes display name + colour, which the same shared session
-// surfaces in every cursor / activity entry anyway. The published
+// surfaces in every cursor and comment anyway. The published
 // profile picture is the exception: it goes only to a signed-in
 // caller (docs/specs/014-identity/profile-picture.md §5), so an anonymous
 // share-link visitor reads null.
 //
 // PUT is owner-only on the participant. Without this guard any
 // caller who knew (or guessed) another participant's id could
-// rewrite their display name + colour — and because change-log
-// rows store name + colour denormalised at write time, that
-// vandalism would propagate across every document they'd
-// collaborated on. The guard requires the caller's resolved
+// rewrite their display name + colour, and that vandalism would
+// propagate across every document they'd collaborated on. The guard requires the caller's resolved
 // owner (Clerk Bearer OR X-Owner-Id, docs/specs/014-identity/auth-and-guest-access.md) to match the
 // participant id being mutated.
 export async function handleParticipants(ctx: RouteContext): Promise<Response> {

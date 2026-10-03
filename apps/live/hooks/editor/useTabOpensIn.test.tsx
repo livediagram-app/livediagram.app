@@ -16,9 +16,8 @@ function setup(tabs: Tab[], canEdit = true) {
   const commitTabs = vi.fn((map: (ts: Tab[]) => Tab[]) => {
     state = map(state);
   });
-  const emitTabMeta = vi.fn();
-  const hook = renderHook(() => useTabOpensIn({ tabs: state, canEdit, commitTabs, emitTabMeta }));
-  return { hook, commitTabs, emitTabMeta, tabs: () => state };
+  const hook = renderHook(() => useTabOpensIn({ tabs: state, canEdit, commitTabs }));
+  return { hook, commitTabs, tabs: () => state };
 }
 
 afterEach(() => vi.mocked(track).mockClear());
@@ -44,13 +43,12 @@ describe('useTabOpensIn', () => {
     expect(setup([locked]).hook.result.current.choiceFor(locked)?.disabled).toBe(true);
   });
 
-  it('sets the opening mode for everyone as one tab edit, reported and logged', () => {
-    const { hook, tabs, commitTabs, emitTabMeta } = setup([general, drawTab]);
+  it('sets the opening mode for everyone as one tab edit, reported', () => {
+    const { hook, tabs, commitTabs } = setup([general, drawTab]);
     act(() => hook.result.current.choiceFor(general)!.onChange('draw'));
     expect(tabs()[0]!.opensIn).toBe('draw');
     expect(tabs()[1]).toBe(drawTab);
     expect(commitTabs).toHaveBeenCalledTimes(1);
-    expect(emitTabMeta).toHaveBeenCalledWith('g', 'Opens in Draw');
     expect(track).toHaveBeenCalledWith('Tab', 'Changed', 'OpensInDraw');
   });
 

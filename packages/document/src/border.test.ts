@@ -53,8 +53,8 @@ describe('supportsBorderControls', () => {
   // agree, and they silently didn't — progress-bar / progress-ring were added
   // to the first and not the second, so the Border accordion went on offering
   // Strength and Pattern on a shape whose renderer has a hardcoded arc stroke
-  // and never reads either field. The picks were committed, autosaved,
-  // change-logged and broadcast to every peer, for no visual change.
+  // and never reads either field. The picks were committed, autosaved
+  // and broadcast to every peer, for no visual change.
   //
   // Asserted over the real ShapeKind vocabulary rather than a hand-written
   // list, so the next self-drawing kind cannot land half-registered: the

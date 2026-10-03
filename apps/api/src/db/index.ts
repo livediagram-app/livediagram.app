@@ -12,7 +12,6 @@ export * from './tabs';
 export * from './participants';
 export * from './share';
 export * from './shared';
-export * from './change-log';
 export * from './folders';
 export * from './favourites';
 export * from './placement-defaults';

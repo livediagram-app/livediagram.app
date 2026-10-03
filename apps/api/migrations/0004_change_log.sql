@@ -1,5 +1,5 @@
--- Per-diagram audit log. One row per undoable commit. See spec
--- docs/specs/012-collaboration/activity-and-audit.md.
+-- Per-diagram audit log. One row per undoable commit. Dropped by
+-- 0064_drop_change_log.sql (see docs/specs/012-collaboration/README.md).
 --
 -- before_state / after_state are JSON objects keyed by element id:
 --   null  → element didn't exist on that side of the change

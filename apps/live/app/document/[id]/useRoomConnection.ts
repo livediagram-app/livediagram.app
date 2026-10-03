@@ -8,7 +8,6 @@ import {
 } from 'react';
 import type { QaNote, Tab } from '@livediagram/document';
 import {
-  CHANGE_LOG_LIST_LIMIT,
   type AvatarPresence,
   type FacilitatorReason,
   type LivePoll,
@@ -16,12 +15,7 @@ import {
 import { nextFreeColor, type Participant } from '@/lib/identity';
 import { useDeferredAuth } from '@/components/providers/deferred-auth';
 import { usePublishedPicture } from '@/hooks/persistence/usePublishedPicture';
-import {
-  apiCreateRoomTicket,
-  connectRoom,
-  type ChangeLogEntry,
-  type RoomHandlers,
-} from '@/lib/api-client';
+import { apiCreateRoomTicket, connectRoom, type RoomHandlers } from '@/lib/api-client';
 import { parseLaserConfig } from '@/lib/laser-config';
 import {
   createPresenceCoalescer,
@@ -91,7 +85,6 @@ export function useRoomConnection(opts: {
   setRemoteViewports: Dispatch<
     SetStateAction<Map<string, { tabId: string; pan: { x: number; y: number }; zoom: number }>>
   >;
-  setChangeLog: Dispatch<SetStateAction<ChangeLogEntry[]>>;
   setDocumentName: Dispatch<SetStateAction<string>>;
   setSelfParticipant: Dispatch<SetStateAction<Participant>>;
   // Live poll (docs/specs/012-collaboration/live-poll.md) inbound handlers, owned by useLivePoll. Stable
@@ -159,7 +152,6 @@ export function useRoomConnection(opts: {
     setRemoteLaserTrails,
     setRemoteAvatars,
     setRemoteViewports,
-    setChangeLog,
     setDocumentName,
     setSelfParticipant,
     receiveAvatarPush,
@@ -412,8 +404,8 @@ export function useRoomConnection(opts: {
         });
       } else if (op.kind === 'poll-start') {
         // Live poll (docs/specs/012-collaboration/live-poll.md). Purely ephemeral: it lands in the poll
-        // hook's memory and never touches tabs, autosave, or the change
-        // log, so there is nothing here to persist or undo.
+        // hook's memory and never touches tabs or autosave, so there is
+        // nothing here to persist or undo.
         receivePoll(op.poll);
       } else if (op.kind === 'poll-answer') {
         // `from` keys the answer so a peer changing their mind replaces
@@ -421,17 +413,6 @@ export function useRoomConnection(opts: {
         receivePollAnswer(from, op.pollId, op.value, op.key);
       } else if (op.kind === 'poll-end') {
         receivePollEnd(op.pollId);
-      } else if (op.kind === 'log') {
-        // Remote participant just emitted an audit entry. Prepend it
-        // to the local list (de-duped by id so a sender that round-
-        // trips its own op doesn't show a duplicate). Cap at the same
-        // limit the server hydrates so the panel stays consistent.
-        setChangeLog((prev) => {
-          if (prev.some((e) => e.id === op.entry.id)) return prev;
-          return [op.entry, ...prev].slice(0, CHANGE_LOG_LIST_LIMIT);
-        });
-      } else if (op.kind === 'log-remove') {
-        setChangeLog((prev) => prev.filter((e) => e.id !== op.entryId));
       } else if (op.kind === 'qa') {
         // The api's word on a Q&A board (docs/specs/012-collaboration/qa-board.md). System-only: the worker
         // sends it through /broadcast after the write is already in D1, and

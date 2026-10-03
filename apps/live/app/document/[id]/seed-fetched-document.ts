@@ -14,8 +14,7 @@ type SetState<T> = Dispatch<SetStateAction<T>>;
 // eager first-tab fetch, the autosave "last saved" mirror, the document
 // name, the #t=<id> hash tab pick, and the shareable / team / owner
 // fields. The branches keep what genuinely differs — isOwner / session
-// role / share-code bookkeeping, the change-log fetch, and the
-// identity-prompt rules.
+// role / share-code bookkeeping and the identity-prompt rules.
 export function makeSeedFetchedDocument(deps: {
   activeId: string;
   // Whether this editor's first-tab read is an open of the document, for the reader's Home

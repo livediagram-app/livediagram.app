@@ -35,8 +35,8 @@ import) to place nodes they never drew.
 - **Final snap:** the result is run through `autoAlignElements`, the same way the
   AI-apply / import-merge path already finishes, so the tidy output is also
   grid-aligned. The two tools compose: Auto Layout then Auto-align.
-- One undoable op (`commit` snapshots the pre-layout state) and one activity-log
-  entry, so it can be reverted in a single step.
+- One undoable op (`commit` snapshots the pre-layout state), so it can be
+  undone in a single step.
 
 ### Fewer crossings
 
@@ -147,9 +147,9 @@ on all of them, and the rules are the same ones for the same reasons.
   commits.
 - The first hover snapshots the tab. Every hover lays out from that snapshot, so
   sweeping down the rows shows each style cleanly rather than stacking them.
-- Preview and revert go through `tickTabs`: present-only, no undo snapshot, no
-  activity entry, and autosave skips the tick (`previewingRef`), so nothing
-  ephemeral is ever persisted or logged.
+- Preview and revert go through `tickTabs`: present-only, no undo snapshot, and
+  autosave skips the tick (`previewingRef`), so nothing ephemeral is ever
+  persisted.
 - The click ends the preview first and commits second, in one React batch, so
   undo returns to the layout the author actually had rather than to the preview.
 - **Mouse pointers only.** On touch a tap IS the commit, so a preview would be a

@@ -82,7 +82,7 @@ A new presence RoomOp, ephemeral exactly like `cursor` / `laser` / `viewport`:
 
 Never logged, never ordered (no `seq`), never replayed to a reconnecting client.
 A "look at this" that arrives after the moment has passed is noise, so a late
-joiner is not told about one, and it reaches D1, the change log and undo
+joiner is not told about one, and it reaches D1 and undo
 precisely never.
 
 It carries **no sender name**: the room envelope already identifies the sender,
@@ -110,7 +110,6 @@ renamed participant's invitation reads correctly.
   present, and erring that way is the harmless direction.
 - **You never invite yourself.** The presser's own view does not move; they are
   already looking at it.
-- It is **not** in the change log: nothing changed.
 
 ## The element
 

@@ -19,8 +19,8 @@ a drag's cost to what it moves, whatever the size of the board
   its drawing through a gesture, [Minimap](minimap.md)), the selection chrome (already hidden while
   the selection moves). Alignment guides and snapping read the document, which is the board
   without the dragged elements' movement, as they do today.
-- **On release the preview becomes the document in one change**: one undo step, one activity entry,
-  one autosave, one set of element ops to the room, as a drag makes today.
+- **On release the preview becomes the document in one change**: one undo step, one autosave,
+  one set of element ops to the room, as a drag makes today.
 - **What the release adds is part of that change.** A freshly drawn arrow's collision bow
   ([Arrow collision avoidance](arrow-collision-avoidance.md)) is applied to the preview before it
   is written, not written after it: a later write through `commit` starts from the document as

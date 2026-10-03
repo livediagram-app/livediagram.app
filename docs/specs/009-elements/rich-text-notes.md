@@ -58,8 +58,8 @@ video), mirroring how `richText` sits beside `label`:
   single delta-free run). A note without formatting stores only `note`.
 - Committing an empty note strips **both** fields.
 
-Note edits run through the editor's history `commit`, so undo / redo and the
-change log treat them like any other element edit.
+Note edits run through the editor's history `commit`, so undo / redo treat
+them like any other element edit.
 
 ## The popover
 

@@ -24,7 +24,7 @@ export function useLaneSettle(deps: {
   // A view-only session, a locked tab, or a tab whose content is not loaded
   // yet: nothing may be written, and a half-loaded tab must not be marked.
   editsBlocked: boolean;
-  // One undoable step on the active tab, with its activity-log diff.
+  // One undoable step on the active tab.
   commitActiveTab: (mapTab: (t: Tab) => Tab) => void;
   // Set the mark without an undo step (a board with nothing to move).
   markSettled: (tabId: string) => void;

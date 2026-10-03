@@ -32,11 +32,11 @@ has happened since they were last here**, not just a list of files.
 
 ## Non-goals
 
-- **Not a replacement for the Activity Panel** ([Activity and audit log](../012-collaboration/activity-and-audit.md)). That panel is
-  element-level, tab-scoped, and revertable — a precision instrument for
-  one document. The Timeline never renders an element diff and never
-  offers Revert. Document editing appears here as one coalesced "worked
-  on" event per person per document per day (§4.2).
+- **Not an element-level audit log.** The Timeline never renders an
+  element diff and never offers Revert. Document editing appears here as
+  one coalesced "worked on" event per person per document per day (§4.2).
+  (The editor's per-tab Activity panel, which did keep element diffs with
+  per-entry revert, was removed on 2026-10-03.)
 - **Not realtime.** No Durable Object fan-out, no per-user socket. The
   feed is read on load, with a Refresh button and a stale-read refresh
   (§6.3). livediagram's realtime rooms are per-document; a per-user
@@ -90,8 +90,7 @@ v1 ships exactly one scope type: `user`, where `scopeId` is an owner id.
 The Timeline page reads `user:<caller>`.
 
 `scopeType` is a free-text column with no CHECK constraint, so a later
-per-document timeline (`document:<id>`, a natural second home for the
-Activity Panel's data) or a team activity feed (`team:<id>`) is a new
+per-document timeline (`document:<id>`) or a team activity feed (`team:<id>`) is a new
 scope value plus a renderer — no migration, no change to the read path.
 That is the whole reason for the join table below; see §3.4.
 
@@ -837,7 +836,7 @@ CREATE TABLE timeline_events (
   dedupe_key   TEXT NOT NULL DEFAULT '',  -- '' for one-shot events; see §4.2
   title        TEXT NOT NULL,
   description  TEXT,
-  occurred_at  INTEGER NOT NULL,          -- epoch ms, matching change_log
+  occurred_at  INTEGER NOT NULL,          -- epoch ms
   snapshot     TEXT NOT NULL,             -- JSON extras for the renderer
   created_at   INTEGER NOT NULL,
   UNIQUE (source_type, source_id, event_type, dedupe_key)
@@ -869,7 +868,7 @@ today. The idempotency the empty key buys — a retry or a backfill
 overlap landing on the existing row — only matters for events the
 backfill writes, and it writes none of these.
 
-`occurred_at` is epoch ms, matching `change_log` rather than the ISO
+`occurred_at` is epoch ms rather than the ISO
 strings Manager Toolkit uses. Manager Toolkit has a whole normalisation
 helper because SQLite defaults, `toISOString()`, and date-only columns
 produce three lexically-incomparable formats in one column. An integer
@@ -926,10 +925,9 @@ The join table and the free-text `scope_type` were the forward plan, and
 two of the three have since shipped:
 
 - **A per-document timeline** (`scope_type = 'document'`) — every document
-  keeps its own history, surfaced from the row menu as **History**. The
-  Activity Panel's element diffs stay where they are; this carries the
-  _document-level_ events [Activity and audit log](../012-collaboration/activity-and-audit.md) explicitly lists as out of scope for
-  its V1 (rename, share toggle, theme change). Its read gate defers to
+  keeps its own history, surfaced from the row menu as **History**. It
+  carries _document-level_ events (rename, share toggle, theme change),
+  never element diffs. Its read gate defers to
   the document's OWN gate rather than re-deriving one, which is what lets
   a share-link visitor read the history of a document they can open but
   which sits in nobody's `user` scope.
@@ -1019,11 +1017,9 @@ Favourites are not built. Everything here is additive.
   `ON DELETE CASCADE` makes the order safe regardless; run them
   explicitly for clarity.
 - **Retention is 365 days.** A daily sweep deletes events older than
-  that. It joins the existing 03:00 UTC cron that already prunes
-  `change_log` at 90 days ([Activity and audit log](../012-collaboration/activity-and-audit.md)), running immediately after it.
-  365 rather than 90 because a timeline's value is partly "when did I
-  last touch this" and a year is the natural unit for that question,
-  where an element-level audit trail's value decays in weeks.
+  that. It runs on the api worker's daily 03:00 UTC cron. 365 days
+  because a timeline's value is partly "when did I last touch this" and
+  a year is the natural unit for that question.
 
 ## 4. Event catalogue
 
@@ -1117,9 +1113,8 @@ whatever the server held is gone, so its prior events would point at a 404.
 is the highest-volume write in the product and a naive emit would bury
 everything else even with stacking.
 
-- Emitted from the tab-save path (`upsertTab`), not from
-  `change_log` — the log is tab-scoped and 90-day, and reading it back
-  to derive a daily rollup would be a join per save.
+- Emitted from the tab-save path (`upsertTab`), the one write every
+  edit goes through.
 - `dedupe_key = "<actorId>:<YYYY-MM-DD>"` in UTC. The first save of the
   day inserts; every later save that day hits the `UNIQUE` constraint
   and **updates** `occurred_at` to now and bumps a `saves` counter in
@@ -1430,7 +1425,7 @@ is the whole story.
 
 `TimelineEvent`, `TimelineScopeRef`, `TimelineReadResult`, and
 `TIMELINE_PAGE_SIZE` / `TIMELINE_PAGE_MAX` go in
-`@livediagram/api-schema` alongside `ChangeLogEntry`, per the existing
+`@livediagram/api-schema`, per the existing
 convention that every DTO the worker emits and the editor consumes
 lives there.
 
@@ -1484,9 +1479,8 @@ route. The one thing a renderer can't supply, the ⋯ menu, comes in
 through the separate `cardSlots` hook (§2.8), because it needs the
 Explorer's loaded lists and handlers rather than the event alone.
 
-This split is what lets a per-document timeline (§3.4) or the editor's
-Activity Panel adopt the same components later without either one
-inheriting Explorer-specific copy.
+This split is what lets a per-document timeline (§3.4) adopt the same
+components without inheriting Explorer-specific copy.
 
 **Colour.** Each tone gets a CSS variable pair
 (`--ld-timeline-<tone>` and `--ld-timeline-<tone>-soft`) defined in the

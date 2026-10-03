@@ -98,10 +98,10 @@ describe('docs/specs/007-editor/ai-assistance.md lists the AI route error tokens
   });
 });
 
-// The bug these exist for, twice over: the tab cap and the change-log entry
-// cap were both written as `Number.isFinite(Number(headers.get(...)))`, which
-// is TRUE for an absent header (Number(null) === 0), so both measured a
-// chunked body as zero bytes and never fired. The rule now lives in one place.
+// The bug these exist for: the tab cap (and a since-removed second cap) were
+// written as `Number.isFinite(Number(headers.get(...)))`, which is TRUE for an
+// absent header (Number(null) === 0), so they measured a chunked body as zero
+// bytes and never fired. The rule now lives in one place.
 function req(headers: Record<string, string> = {}): Request {
   return new Request('https://api.test/x', { method: 'POST', headers });
 }

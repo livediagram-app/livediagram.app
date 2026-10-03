@@ -20,7 +20,6 @@ function setup() {
       activeTab: { id: 't', name: 'Tab', elements: [] } as unknown as Tab,
       tick: vi.fn(),
       markCheckpoint: () => 1,
-      emitChange: vi.fn(),
       setSelectedId: vi.fn(),
       setEditingId: vi.fn(),
       whiteboard: null,

@@ -72,6 +72,7 @@ import { usePowerUserOffer } from '@/hooks/ui/usePowerUserOffer';
 import { useDocumentHistory } from '@/hooks/canvas/useDocumentHistory';
 import { useCanvasA11y } from '@/hooks/canvas/useCanvasA11y';
 import { useLaneSettle } from '@/hooks/canvas/useLaneSettle';
+import { useBurstCheckpoint } from '@/hooks/canvas/useBurstCheckpoint';
 import { useNudgeSelection } from '@/hooks/canvas/useNudgeSelection';
 import { useFolders } from '@/hooks/persistence/useFolders';
 import { useConfirm } from '@/hooks/ui/useConfirm';
@@ -84,8 +85,6 @@ import {
 import type { PollCandidate } from '@/lib/poll-collaborators';
 import { track } from '@/lib/telemetry';
 import { pollResultElement } from '@/lib/poll-capture';
-import { useActivityLogDebounce } from '@/hooks/collab/useActivityLogDebounce';
-import { useActivityLogEmitter } from '@/hooks/collab/useActivityLogEmitter';
 import { useEditorBroadcast } from '@/hooks/collab/useEditorBroadcast';
 import { useLivePoll } from '@/hooks/collab/useLivePoll';
 import { useFavourites } from '@/hooks/persistence/useFavourites';
@@ -119,18 +118,7 @@ import { useCanvasPinchZoom } from '@/hooks/canvas/useCanvasPinchZoom';
 import { useCapabilities } from '@/hooks/persistence/useCapabilities';
 import { participantKey, type Participant } from '@/lib/identity';
 import { markNameConfirmed } from '@/lib/local-identity';
-import {
-  apiNotifyActionAssigned,
-  apiSaveDocumentMeta,
-  apiSaveSelf,
-  type ChangeLogEntry,
-} from '@/lib/api-client';
-import {
-  emptyEntryHistory,
-  entryHistoryCancel,
-  entryHistoryPush,
-  type EntryHistory,
-} from '@/lib/entry-history';
+import { apiNotifyActionAssigned, apiSaveDocumentMeta, apiSaveSelf } from '@/lib/api-client';
 import {
   actionRowsFromElements,
   commentRowsFromElements,
@@ -149,7 +137,6 @@ import { useRoomConnection } from './useRoomConnection';
 import { useRoomResync } from './useRoomResync';
 import { useIdentityBootstrap } from './useIdentityBootstrap';
 import { useEditorHistory } from './useEditorHistory';
-import { useRevertPreview } from './useRevertPreview';
 import { useTemplateFlow } from './useTemplateFlow';
 import { usePanelLayout } from './usePanelLayout';
 import { usePresenceRows } from './usePresenceRows';
@@ -172,12 +159,6 @@ import { useEditorPersistence } from './editor-persistence';
 import { useEditorRealtime } from './editor-realtime';
 import { useAssignRef, useLatest } from '@/hooks/ui/useLatest';
 import { useDragPreviewBroadcast } from '@/hooks/collab/useDragPreviewBroadcast';
-
-// Activity-log past/future stacks share the cap with the
-// state-snapshot stack: we can't undo past what useDocumentHistory
-// remembers, so there's no point in tracking more log entries than
-// that. Imported from the hook directly so the two stacks can't
-// drift.
 
 export function useEditorState(opts: { embed?: boolean } = {}) {
   // Read-only embed view (docs/specs/013-workspace/embeds.md). The flag forces view behaviour
@@ -213,23 +194,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     redo: redoHistory,
   } = useDocumentHistory(initialTabs);
 
-  // Per-step Undo/Redo memory for the activity log (docs/specs/012-collaboration/activity-and-audit.md): one
-  // token-stamped marker per history step, holding the log entry that
-  // step emitted or null. Every history push below pairs with a marker
-  // push; the emitter (useActivityLogEmitter) fills a marker in — the
-  // debounced emitters by the token their gesture's push returned
-  // (their flush can land after OTHER steps were pushed), the
-  // immediate commit-then-emit path by newest; and undo/redo
-  // (useEditorHistory) pop/replay markers 1:1 with the snapshot stack.
-  // So undoing an entry-less step (add tab, vote, no-op checkpoint)
-  // can never delete some other edit's audit row. A ref because
-  // nothing renders from it and the matching API call needs a
-  // synchronous mutation.
-  const entryHistoryRef = useRef<EntryHistory>(emptyEntryHistory());
-  const historyTokenRef = useRef(0);
-  const commitTabs = (mapTabs: (ts: Tab[]) => Tab[]): number => {
-    const token = ++historyTokenRef.current;
-    entryHistoryRef.current = entryHistoryPush(entryHistoryRef.current, token);
+  const commitTabs = (mapTabs: (ts: Tab[]) => Tab[]) => {
     // Layer stamping (docs/specs/006-document/layers.md): elements APPEARING in this commit without
     // a valid layerId land on the active layer. One choke point, so no
     // individual creation path (draw, paste, AI, template, Mermaid
@@ -257,38 +222,25 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
         return els === t.elements ? t : { ...t, elements: els };
       });
     });
-    return token;
   };
-  const markCheckpoint = (): number => {
+  const markCheckpoint = () => {
     // A gesture inside the draft (dragging a draft note) must not push a step
     // of its own, or Undo after Add would stop at that drag instead of taking
     // the whole import back.
-    if (photoDraftOpenRef.current) return historyTokenRef.current;
-    const token = ++historyTokenRef.current;
-    entryHistoryRef.current = entryHistoryPush(entryHistoryRef.current, token);
+    if (photoDraftOpenRef.current) return;
     rawMarkCheckpoint();
-    return token;
   };
   // Stable identity: usePerTabLoad takes this, and an identity that changed
   // every render once turned a failed tab load into a refetch on every
   // re-render (the 30s presence tick included), each one an Error report.
-  const resetTabs = useCallback(
-    (tabs: Tab[] | ((prev: Tab[]) => Tab[])) => {
-      // reset clears the snapshot stacks (context switch), so the
-      // markers must go with them or the pairing skews.
-      entryHistoryRef.current = emptyEntryHistory();
-      rawResetTabs(tabs);
-    },
-    [rawResetTabs],
-  );
+  const resetTabs = rawResetTabs;
   // Escape-cancel for an in-flight drag: restore the gesture's
-  // checkpoint and DISCARD the step (no redo entry — a cancelled drag
-  // never happened), popping its marker in step.
+  // checkpoint and DISCARD the step (no redo entry, a cancelled drag
+  // never happened).
   // Restore the armed checkpoint and DISCARD the step. The photo draft's own
   // Discard calls this directly: it is the gesture's owner, so it is the one
   // caller that always means it.
   const cancelGesture = () => {
-    entryHistoryRef.current = entryHistoryCancel(entryHistoryRef.current);
     rawCancelToCheckpoint();
   };
   const cancelToCheckpoint = () => {
@@ -608,8 +560,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   const toast = useToast();
   // Persistence-facing state: autosave status pill + savedAt, document
   // name (mirrored to the tab title), the Explorer's owned + shared
-  // document lists, the activity/audit change log, and the transient
-  // import-error toast — plus the two list-refresh helpers the hydration
+  // document lists, and the transient import-error toast — plus the two list-refresh helpers the hydration
   // + autosave paths call. See editor-persistence; the slice is spread
   // into the returned view-model below, so the explicit return doesn't
   // re-list these.
@@ -625,8 +576,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     setDocumentList,
     sharedDocuments,
     setSharedDocuments,
-    setChangeLog,
-    setChangeLogLoading,
     setImportError,
     refreshDocumentList,
     refreshSharedList,
@@ -845,8 +794,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     refs: { lastPersistedSelfRef, lastSavedTabsRef, lastSavedNameRef, loadedTabIdsRef },
     set: {
       setActiveId,
-      setChangeLog,
-      setChangeLogLoading,
       setDocumentId,
       setDocumentName,
       setDocumentPresentation,
@@ -1012,7 +959,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     setRemoteLaserTrails,
     setRemoteAvatars,
     setRemoteViewports,
-    setChangeLog,
     setDocumentName,
     setSelfParticipant,
     receiveAvatarPush,
@@ -1604,34 +1550,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   const anyWelcomeOpen = identityOnlyScreenOpen;
   // --- Element-scoped history helpers (active-tab aware) -------------------
 
-  // Single emission point for activity-log entries. Every editorial
-  // change goes through here — both element commits and surgical
-  // reverts — so the audit stays honest. See
-  // docs/specs/012-collaboration/activity-and-audit.md. Optimistic: we prepend the entry
-  // Activity-log entry emission lives in useActivityLogEmitter.
-  // The hook owns the shared appendLogEntry path (optimistic local
-  // append + fire-and-forget API + room broadcast + entry-history
-  // push) and exposes the two emit shapes the page calls: emitChange
-  // for element diffs, emitTabMeta for theme / canvas / lock /
-  // background tweaks. `entryHistoryRef` stays declared in this
-  // file because the undo / redo flow below also reads + mutates
-  // it; passing the ref in lets the hook write to the same buffer.
-  // Live mirror of the panel list for the emitter's coalescing check
-  // (a repeat edit folds into the newest entry only while that entry
-  // is still ours). A ref, not the state value, so the emit callbacks
-  // read the current list instead of a stale closure.
-  const changeLogRef = useLatest(persistence.changeLog);
-  const { emitChange, emitTabMeta } = useActivityLogEmitter({
-    documentId,
-    selfParticipant,
-    setChangeLog,
-    entryHistoryRef,
-    sessionShareCode,
-    roomRef,
-    changeLogRef,
-  });
   // The tab menu's Opens in (docs/specs/007-editor/editor-modes.md): the mode a tab opens in.
-  const tabOpensIn = useTabOpensIn({ tabs, canEdit: !isReadOnly, commitTabs, emitTabMeta });
+  const tabOpensIn = useTabOpensIn({ tabs, canEdit: !isReadOnly, commitTabs });
 
   // A locked tab refuses every element mutation. Commit /
   // tick / element-add helpers all consult this early-return guard
@@ -1708,22 +1628,18 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
       return;
     }
     commitTabs((ts) => patchTab(ts, activeId, { elements: after }));
-    emitChange(activeId, before, after);
   };
 
   // Tab-level history commit scoped to the ACTIVE tab, for mutations
   // that touch more than the elements array — the layer ops and the
   // layer-aware Bring to Front / Send to Back also restack
-  // `tab.layers`. Reads the LIVE tab (same rationale as `commit`) and
-  // emits the element diff so a mass change (layer delete) reaches the
-  // activity log.
+  // `tab.layers`. Reads the LIVE tab (same rationale as `commit`).
   const commitActiveTab = (mapTab: (t: Tab) => Tab) => {
     if (editsBlocked) return;
     const liveTab = tabsRef.current.find((t) => t.id === activeId) ?? activeTab;
     const next = mapTab(liveTab);
     if (next === liveTab) return;
     commitTabs((ts) => ts.map((t) => (t.id === activeId ? mapTab(t) : t)));
-    emitChange(activeId, liveTab.elements, next.elements);
   };
 
   // Style memory (docs/specs/008-canvas/quick-style-panel.md): what the panel or the context menu last
@@ -1821,62 +1737,17 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     commit((existingEls) => mergeAiElements(existingEls, elements, mode));
   };
 
-  // Click handler for Activity rows (Revert has its own button that
-  // stops propagation). Element-related entries select the affected
-  // element on the right tab; tab-meta entries pop the matching
-  // accordion in the Editor panel so the user can see what changed
-  // and tweak it again.
-  // Hover-to-preview for the Activity rows' Revert (docs/specs/012-collaboration/activity-and-audit.md): resting
-  // on a revertable row shows the revert result live; leaving restores.
-  // Shares previewingRef with the style previews so autosave skips the
-  // ephemeral frames. See useRevertPreview.
-  const { previewRevert, clearRevertPreview } = useRevertPreview({
-    tabsRef,
-    tickTabs,
-    previewingRef,
-  });
-
-  // Activity log + undo/redo handlers. See useEditorHistory.
-  const {
-    handleActivityRowClick,
-    clearActivityForActiveTab,
-    revertChange: revertChangeCommit,
-    tick,
-    undo,
-    redo,
-  } = useEditorHistory({
+  // Undo / redo handlers. See useEditorHistory.
+  const { tick, undo, redo } = useEditorHistory({
     activeId,
-    documentId,
-    selfId: selfParticipant.id,
-    sessionShareCode,
-    tabs,
     editsBlocked,
     canUndo,
     canRedo,
-    commitTabs,
     tickTabs,
     undoHistory,
     redoHistory,
-    refs: { roomRef, entryHistoryRef },
-    set: {
-      setActiveId,
-      setSelectedId,
-      setMultiSelectedIds,
-      setEditingId,
-      setChangeLog,
-      setFormatSourceId,
-    },
+    set: { setSelectedId, setEditingId, setFormatSourceId },
   });
-
-  // The Revert button sits inside the hovered row, so its click lands
-  // while the hover preview is still on screen. Clear the preview FIRST:
-  // the restore tick and the revert's commit compose in one React batch,
-  // so the history snapshot captures the true pre-hover state instead of
-  // baking the preview into the undo baseline.
-  const revertChange = (entry: ChangeLogEntry) => {
-    clearRevertPreview();
-    revertChangeCommit(entry);
-  };
   // --- Placement helpers ---------------------------------------------------
 
   // When a boxed element is selected, new elements inherit its size so a
@@ -1902,7 +1773,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     getViewportCenter,
     commit,
     commitTabs,
-    emitChange,
     setSelectedId,
     setEditingId,
     setFormatSourceId,
@@ -1922,7 +1792,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     // The draft OWNS the gesture, so it cancels it directly rather than
     // through the guard that keeps everyone else out of its checkpoint.
     cancelToCheckpoint: cancelGesture,
-    emitChange,
     setSelectedId,
     setMultiSelectedIds,
     fitToBounds,
@@ -1976,8 +1845,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
 
   // Tab-lifecycle actions (add / import / rename / duplicate / delete /
   // reorder, active-tab lock, link-into-document, clear content). They
-  // touch history, the activity log, selection, telemetry, confirm /
-  // toast, the change-log panel and the document list — see
+  // touch history, selection, telemetry, confirm / toast and the
+  // document list; see
   // useTabActions. Document-level lifecycle + the template flow stay in
   // the page below.
   const {
@@ -2003,7 +1872,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     createTab,
     commit,
     commitTabs,
-    emitTabMeta,
     markTabLoaded,
     isTabLoaded: (id: string) => loadedTabIdsRef.current.has(id),
     setActiveId,
@@ -2013,7 +1881,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     setTemplatePickerMode,
     setImportError,
     requestFit,
-    setChangeLog,
     refreshDocumentList,
     confirm,
     toast,
@@ -2027,9 +1894,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     renameFolder: renameTabFolder,
   } = useTabFolders({
     tabs,
-    activeId,
     commitTabs,
-    emitTabMeta,
   });
 
   // Document-level lifecycle + navigation (delete / duplicate /
@@ -2126,18 +1991,10 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     requestFit,
   });
 
-  // Debounced activity-log emitters (see hooks/useActivityLogDebounce
-  // for the per-key slot machinery + the 500 ms window rationale).
-  // `scheduleTabMetaLog` handles canvas-pattern / background-colour /
-  // opacity edits, `scheduleElementChangeLog` handles fill-colour /
-  // stroke-colour / text-colour / element-opacity sliders.
-  const { scheduleTabMetaLog, scheduleElementChangeLog } = useActivityLogDebounce({
-    emitChange,
-    emitTabMeta,
-    tabsRef,
-    activeId,
-    activeTabElements: activeTab.elements,
-  });
+  // One undo step per burst of a continuous control: the background
+  // sliders (useTabCanvas) and the element colour / opacity pickers
+  // (useElementStyle). See useBurstCheckpoint.
+  const checkpointBurst = useBurstCheckpoint(markCheckpoint);
 
   // Tab-level appearance + layout actions (theme switch, background
   // pattern / colour / opacity / pattern-colour, reset-to-theme,
@@ -2164,9 +2021,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     commit,
     commitTabs,
     tickTabs,
-    markCheckpoint,
-    emitTabMeta,
-    scheduleTabMetaLog,
+    checkpointBurst,
   });
 
   // Live session tools (docs/specs/012-collaboration/session-tools.md): facilitator timer + dot-voting handlers.
@@ -2197,7 +2052,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     // placing a dot isn't undoable (and mustn't evict real edits
     // from the bounded undo stack).
     commitTabs: tickTabs,
-    emitTabMeta,
     // Dots and the host are keyed by the collab key, not the owner id: the
     // owner id is a guest's credential, and a dot op broadcasts its voter to
     // every socket in the room (docs/specs/012-collaboration/collab-race-hardening.md, docs/specs/012-collaboration/participant-responses.md).
@@ -2361,7 +2215,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     commitTabs,
     setSelectedId,
     setEditingId,
-    emitChange,
     scrollIntoView,
   });
 
@@ -2490,7 +2343,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     activeTab,
     tick,
     markCheckpoint,
-    emitChange,
     setSelectedId,
     setEditingId,
   });
@@ -2603,8 +2455,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     commit: rememberingCommit,
     commitActiveTab,
     tickTabs: rememberingTickTabs,
-    markCheckpoint,
-    scheduleElementChangeLog,
+    checkpointBurst,
   });
 
   // The quick style panel (docs/specs/008-canvas/quick-style-panel.md): its view of the selection and one
@@ -2732,7 +2583,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     tabsRef,
     tickTabs,
     commitTabs,
-    emitChange,
     previewingRef,
     onCommitted: styleMemory.recordEdit,
   });
@@ -2852,7 +2702,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     laneBoard: esBoard,
     markCheckpoint,
     tick,
-    scheduleElementChangeLog,
     autoRebindArrowsRef,
   });
 
@@ -2902,7 +2751,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     commit,
     markCheckpoint,
     cancelToCheckpoint,
-    scheduleElementChangeLog,
     onIconElementDroppedOnShape: editsBlocked ? undefined : dropIconElementOnShape,
     // Click (not drag) on an annotation marker opens its note editor
     // (docs/specs/009-elements/annotations.md). Blocked alongside other edits on a locked / read-only tab.
@@ -3266,7 +3114,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     exitFormatTool,
     beginErase,
     chooseTemplate,
-    clearActivityForActiveTab,
     clearTabContent,
     clerkDisplayName,
     clerkUserId,
@@ -3316,7 +3163,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     fitToScreen,
     folders,
     followLink,
-    handleActivityRowClick,
     handleCanvasDoubleClick,
     hydrated,
     identityOnlyScreenOpen,
@@ -3455,9 +3301,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     resetElementsToTheme,
     resolveThread,
     retryActiveTabLoad,
-    revertChange,
-    previewRevert,
-    clearRevertPreview,
     revokeShareLink,
     lockedByOther,
     selectElement,

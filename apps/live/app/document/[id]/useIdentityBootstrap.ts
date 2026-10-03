@@ -8,7 +8,6 @@ import {
 import { documentIdFromPath } from '@/lib/legacy-editor-path';
 import type { Tab } from '@livediagram/document';
 import {
-  apiListChangeLog,
   apiListShareLinks,
   apiLoadDocument,
   apiLoadSelf,
@@ -18,7 +17,6 @@ import {
   readCachedSharePassword,
   setSessionSharePassword,
   writeCachedSharePassword,
-  type ChangeLogEntry,
   type ShareLink,
   type SharedWithItem,
   type ShareRole,
@@ -62,8 +60,6 @@ export function useIdentityBootstrap(opts: {
   };
   set: {
     setActiveId: SetState<string>;
-    setChangeLog: SetState<ChangeLogEntry[]>;
-    setChangeLogLoading: SetState<boolean>;
     setDocumentId: SetState<string | null>;
     setDocumentName: SetState<string>;
     setDocumentPresentation: SetState<string | null>;
@@ -113,8 +109,6 @@ export function useIdentityBootstrap(opts: {
   const { lastPersistedSelfRef, lastSavedTabsRef, lastSavedNameRef, loadedTabIdsRef } = refs;
   const {
     setActiveId,
-    setChangeLog,
-    setChangeLogLoading,
     setDocumentId,
     setDocumentName,
     setDocumentPresentation,
@@ -385,23 +379,6 @@ export function useIdentityBootstrap(opts: {
           // writes can present it as authorisation. Owner accessing
           // via a share URL keeps null.
           setSessionShareCode(session.sessionShareCode);
-          // Visitors with an edit-role share code can read + write the
-          // log too. View-only visitors get nothing from the endpoint
-          // (the API gates POST/DELETE but currently still serves
-          // GET when authorised; we skip the fetch so view-only
-          // visitors don't even attempt it). Owner case is handled
-          // in the ?d= branch below.
-          if (session.canEditLog) {
-            const codeForFetch = session.sessionShareCode;
-            apiListChangeLog(self.id, fetched.id, codeForFetch)
-              .then((entries) => {
-                setChangeLog(entries);
-                setChangeLogLoading(false);
-              })
-              .catch(() => setChangeLogLoading(false));
-          } else {
-            setChangeLogLoading(false);
-          }
           // Signed-in user opening their own document via a share URL
           // already has a confirmed identity — never prompt. Visitors
           // (signed in or not) still see the welcome card so they get
@@ -498,16 +475,6 @@ export function useIdentityBootstrap(opts: {
               })
               .catch(() => {});
           }
-          // For an offline document this dispatches to the log kept in
-          // its IndexedDB record rather than the server.
-          apiListChangeLog(self.id, fetched.id, null)
-            .then((entries) => {
-              setChangeLog(entries);
-              setChangeLogLoading(false);
-            })
-            .catch(() => setChangeLogLoading(false));
-        } else {
-          setChangeLogLoading(false);
         }
         // Owner branch (`?d=<id>` / `/document/<id>`): a signed-in
         // user is by definition the owner here and their identity is
@@ -518,11 +485,6 @@ export function useIdentityBootstrap(opts: {
           setTemplatePickerMode('identity');
         }
         setDocumentId(id);
-      }
-      // No URL params → no document yet → no log to fetch. Clear the
-      // skeleton so the panel renders the empty-state copy.
-      if (!shareCodeParam && !id) {
-        setChangeLogLoading(false);
       }
       setNameConfirmed(hasConfirmedName());
       refreshDocumentList(self.id);

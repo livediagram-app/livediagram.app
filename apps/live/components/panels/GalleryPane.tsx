@@ -114,8 +114,7 @@ export function GalleryPane({ ownerId }: GalleryPaneProps) {
           </p>
         ) : !gallery ? (
           // Tile skeletons matching the gallery grid, rather than a bare
-          // "Loading…" line — same animate-pulse / aria-busy convention as
-          // ActivityPanel's loading state.
+          // "Loading…" line, the editor's animate-pulse / aria-busy convention.
           <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4" aria-busy="true">
             {[0, 1, 2, 3].map((i) => (
               <li

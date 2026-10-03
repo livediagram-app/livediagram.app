@@ -240,8 +240,7 @@ export function isDecisionShape(kind: ShapeKind): boolean {
 // --- Roll call (docs/specs/012-collaboration/roll-call.md) --------------------------------------------------
 
 // A FROZEN snapshot. `name` + `color` are copied at the moment the roll is
-// taken and never re-joined to the live participant — the opposite of the
-// change log's migration 0013, and deliberately so: minutes are a statement
+// taken and never re-joined to the live participant, deliberately so: minutes are a statement
 // about a past moment, so someone since renamed or deleted must still appear
 // under the name they were in the room under.
 export type RollCallEntry = { name: string; color: string; at: number };

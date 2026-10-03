@@ -14,7 +14,9 @@ export function legacyEditorRedirect(url: URL): Response | null {
 }
 
 // Renamed help articles: the ones about the container moved when it became a document,
-// Whiteboards became Draw mode, and the Highlighter went from a selection mode to a Draw tile. The old addresses are links people have already shared
+// Whiteboards became Draw mode, the Highlighter went from a selection mode to a Draw tile, and
+// the Activity Panel category went when the panel was removed (Undo and Redo moved to Canvas;
+// its other articles land on Undo). The old addresses are links people have already shared
 // (docs/specs/018-help/help-app.md, "Renamed articles").
 const LEGACY_HELP_ARTICLES: Readonly<Record<string, string>> = {
   'tabs/add-to-diagram': 'tabs/add-to-document',
@@ -25,6 +27,12 @@ const LEGACY_HELP_ARTICLES: Readonly<Record<string, string>> = {
   'developers/working-with-diagrams': 'developers/working-with-documents',
   'canvas/whiteboards': 'canvas/draw-mode',
   'selection-modes/highlighter': 'palette/tools/highlighter',
+  'activity-panel': 'canvas/undo',
+  'activity-panel/what-it-is': 'canvas/undo',
+  'activity-panel/how-it-works': 'canvas/undo',
+  'activity-panel/undo': 'canvas/undo',
+  'activity-panel/redo': 'canvas/redo',
+  'activity-panel/reverting-changes': 'canvas/undo',
 };
 
 export function legacyHelpRedirect(url: URL): Response | null {

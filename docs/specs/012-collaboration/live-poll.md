@@ -16,7 +16,7 @@ and rely on a delete to clean up.
 
 So a poll lives **only in the realtime room**. It is carried by three new
 `RoomOp` kinds and held in connected clients' memory. Nothing is written to
-D1, nothing enters the change log, nothing is undoable, and no migration or
+D1, nothing is undoable, and no migration or
 schema change is needed anywhere.
 
 **The room remembers it while it runs** ([Collaboration race hardening](collab-race-hardening.md)). The Durable Object keeps
@@ -166,7 +166,7 @@ when an op arrives so a hand-crafted frame can't blow up a peer's panel:
      backdrop left to click, so Skip and Escape are the whole of it.
 
 3. **Results.** A **`PollPanel`** built on the shared `MovablePanel`, like
-   Collaborate / Layers / Activity: draggable, resettable, and dockable
+   Collaborate / Layers: draggable, resettable, and dockable
    into a corner stack, homed **top-right directly under the Palette**
    (the corner the panels you act on live in). It registers as a real
    `PanelId` rather than floating outside the panel system, but it is the

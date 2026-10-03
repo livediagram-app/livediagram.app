@@ -104,23 +104,6 @@ describe('a trashed document, to someone who could open it', () => {
     ['GET', '/api/documents/A/tabs/t1'],
     ['PUT', '/api/documents/A/tabs/t1', { body: { id: 't1', name: 't1', elements: [] } }],
     ['DELETE', '/api/documents/A/tabs/t1'],
-    ['GET', '/api/documents/A/log'],
-    [
-      'POST',
-      '/api/documents/A/log',
-      {
-        body: {
-          id: 'e1',
-          tabId: 't1',
-          kind: 'edit',
-          summary: 's',
-          elementIds: [],
-          before: {},
-          after: {},
-          createdAt: T0,
-        },
-      },
-    ],
     ['POST', '/api/documents/A/copy', { body: {} }],
     ['PUT', '/api/documents/A/folder', { body: { folderId: null } }],
     ['GET', '/api/documents/A/shared-tabs'],

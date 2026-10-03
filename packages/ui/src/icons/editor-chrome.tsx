@@ -4,7 +4,7 @@ import { Glyph, type IconProps } from './Glyph';
 import { lucideGlyph } from './lucide-glyph';
 
 // The editor's bottom chrome (docs/specs/004-interface-design/iconography.md): the canvas cluster
-// (tab activity, undo / redo, layers, the look-and-feel brush) and the tab bar's settings. Shared
+// (undo / redo, layers, the look-and-feel brush) and the tab bar's settings. Shared
 // so the marketing hero's editor mock draws the very same glyphs as the editor it depicts.
 
 export function UndoIcon({ size = 13, ...rest }: IconProps = {}) {
@@ -21,17 +21,6 @@ export function RedoIcon({ size = 13, ...rest }: IconProps = {}) {
     <Glyph size={size} units={16} {...rest}>
       <path d="M12.5 6.5H5.75A3.25 3.25 0 0 0 2.5 9.75v0A3.25 3.25 0 0 0 5.75 13H10" />
       <path d="M10 3.5L13 6.5L10 9.5" />
-    </Glyph>
-  );
-}
-
-// Tab activity: a clock with a rewind arrow.
-export function ActivityIcon({ size = 20, ...rest }: IconProps = {}) {
-  return (
-    <Glyph size={size} units={20} {...rest}>
-      <path d="M3.5 6.5A6.5 6.5 0 1 1 3 10.5" />
-      <path d="M3 3.5V6.5H6" />
-      <path d="M10 6.5V10.5L12.75 12" />
     </Glyph>
   );
 }

@@ -2,8 +2,8 @@
 // useElementStyle into its own sibling (like the arrow / shape / text /
 // data-shape setter hooks). These deliberately bypass `commit`: they
 // fire on every drag tick of a colour / slider control, so they write
-// via the non-history tab mutator and debounce a single log entry —
-// one undoable step per picker gesture. Keeping that policy in one
+// via the non-history tab mutator and checkpoint once per burst (see
+// useBurstCheckpoint), so a picker gesture is one undoable step. Keeping that policy in one
 // file makes it auditable. `resetColorsSelected` (the "Reset to theme"
 // action) lives here too since it is the inverse of these writes.
 
@@ -24,11 +24,7 @@ export function useColorStyleSetters(deps: {
   editsBlocked: boolean;
   commit: (mapElements: (els: Element[]) => Element[]) => void;
   tickTabs: (mapTabs: (ts: Tab[]) => Tab[]) => void;
-  markCheckpoint: () => number;
-  scheduleElementChangeLog: (
-    key: string,
-    opts?: { fillToken?: number; onWindowStart?: () => number },
-  ) => void;
+  checkpointBurst: (key: string) => void;
 }) {
   const {
     currentSelectionIds,
@@ -37,23 +33,21 @@ export function useColorStyleSetters(deps: {
     editsBlocked,
     commit,
     tickTabs,
-    markCheckpoint,
-    scheduleElementChangeLog,
+    checkpointBurst,
   } = deps;
 
   // Debounced field write shared by the colour / opacity pickers:
-  // one undoable step per gesture — the debounce window opening runs
-  // the checkpoint (its token routes the flushed log entry to this
-  // gesture's undo marker), then every tick mutates without history,
+  // one undoable step per gesture (the burst opening runs the
+  // checkpoint), then every tick mutates without history,
   // so dragging a picker doesn't spam the realtime channel or flood
   // the bounded undo stack. `update` maps one already-selected
   // element, returning it unchanged for the element types the field
   // doesn't apply to.
-  const commitSelectedStyle = (logField: string, update: (el: Element) => Element) => {
+  const commitSelectedStyle = (field: string, update: (el: Element) => Element) => {
     if (editsBlocked) return;
     const ids = currentSelectionIds();
     if (ids.size === 0) return;
-    scheduleElementChangeLog(logField, { onWindowStart: markCheckpoint });
+    checkpointBurst(field);
     tickTabs((ts) =>
       ts.map((t) =>
         t.id === activeId

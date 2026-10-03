@@ -88,11 +88,11 @@ an editor gets their remembered choice, else the mode the tab opened in on this 
   Diagram.
 - `setTabOpensIn(tab, mode)`: the same tab when not switchable or unchanged; else
   `{ ...tab, opensIn: mode }` (written explicitly, Diagram included).
-- **Opens in** (`useTabOpensIn({ tabs, canEdit, commitTabs, emitTabMeta })`):
+- **Opens in** (`useTabOpensIn({ tabs, canEdit, commitTabs })`):
   `choiceFor(tab)` is `undefined` unless `canEdit && editorModeSwitchable(tab)`; else
   `{ mode: opensInOf(tab), onChange, disabled: tab.locked }`. `setOpensIn` refuses a missing,
-  locked or unchanged tab; else one `commitTabs` (one undo step, synced) and
-  `emitTabMeta(tabId, 'Opens in <Label>')`. It never touches the mode store.
+  locked or unchanged tab; else one `commitTabs` (one undo step, synced). It never touches the
+  mode store.
 - **New tab** (`useTabActions.addTab`): `newTabSeed(activeTab, editorMode.mode)` adds
   `opensIn: creatorMode` when it is not the default, after the source tab's look. A template's
   `templateCanvasOverrides` (`opensIn: 'draw'` for `whiteboard`) is applied over it later.

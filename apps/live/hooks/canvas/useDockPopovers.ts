@@ -15,7 +15,7 @@ import { useUiScale } from '@/components/providers/ui-scale';
 // scaled width or a scaled popover runs off the right edge.
 const POPOVER_WIDTH = 256;
 
-export type DockPanel = 'explorer' | 'activity' | 'layers' | 'collaborate';
+export type DockPanel = 'explorer' | 'layers' | 'collaborate';
 
 export type { DockAnchor };
 
@@ -28,7 +28,6 @@ export type { DockAnchor };
 // is not a new open.
 function trackDockPanelOpened(id: DockPanel): void {
   if (id === 'layers') track('Layer', 'Opened', 'Panel');
-  else if (id === 'activity') track('UI', 'Opened', 'Activity');
   else if (id === 'collaborate') track('UI', 'Opened', 'Collaborate');
 }
 

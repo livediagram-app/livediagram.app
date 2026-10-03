@@ -1,17 +1,18 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
-import { SavedState, ActivityHistory } from '@/components/illustrations/troubleshooting';
+import { SavedState } from '@/components/illustrations/troubleshooting';
+import { UndoStep } from '@/components/illustrations/undo-redo';
 
 export const metadata = helpMetadata({
   title: 'My Changes Are Missing',
   description:
-    'A checklist for recovering apparently lost work in livediagram, using autosave, per-tab storage, and the Activity Panel.',
+    'A checklist for recovering apparently lost work in livediagram, using autosave, per-tab storage, and undo.',
   path: '/help/troubleshooting/missing-changes/',
 });
 
-<ArticleLayout title="My Changes Are Missing" description="What to check when work seems to have vanished, and how to recover it with history and the Activity Panel." categoryTitle="Troubleshooting" categorySlug="troubleshooting">
+<ArticleLayout title="My Changes Are Missing" description="What to check when work seems to have vanished, and how to recover it with autosave and undo." categoryTitle="Troubleshooting" categorySlug="troubleshooting">
 
-Work in livediagram is saved automatically as you go, so missing changes are usually hiding rather than gone: you may be looking at a different tab, a different document, or a different identity than the one you edited under. This checklist walks through finding them and, where needed, recovering them from history.
+Work in livediagram is saved automatically as you go, so missing changes are usually hiding rather than gone: you may be looking at a different tab, a different document, or a different identity than the one you edited under. This checklist walks through finding them and, where needed, recovering them with undo or the Trash.
 
 ## First, find them
 
@@ -34,18 +35,19 @@ When livediagram is updated while you have a document open, and the update chang
   <SavedState />
 </Figure>
 
-## Recover from history
+## Recover a recent step
 
-If a specific change was undone, reverted, or overwritten, the [Activity Panel](/help/activity-panel/what-it-is/) is your recovery tool.
+If you have just undone, moved or deleted something by mistake, [Redo](/help/canvas/redo/) and [Undo](/help/canvas/undo/) are your recovery tools.
 
-<Figure caption="The Activity Panel lists recent edits with who made each one, and reverts a single entry without disturbing the rest.">
-  <ActivityHistory />
+<Figure caption="Undo steps back your most recent change; redo puts it back.">
+  <UndoStep />
 </Figure>
 
-1. **Open the Activity Panel.** It lists recent edits on the current tab, newest first, with who made each one.
-2. **Find the change** you are missing in the list.
-3. **Revert** an entry to roll that specific change back, surgically, without disturbing other people's unrelated edits.
-4. **Use Undo and Redo** in the panel for the most recent steps.
+1. **Press Undo** (**Cmd/Ctrl+Z**, or the undo button at the bottom-right) to step back your most recent changes, one at a time.
+2. **Press Redo** (**Cmd/Ctrl+Shift+Z**) if you went back too far.
+3. Undo covers your own recent steps in this session. It is cleared when you reload, and it never reaches into someone else's edits.
+
+A deleted document is not gone either: it waits in the [Trash](/help/account-and-data/trash/) for 30 days until you restore it.
 
 ## What collaboration does and doesn't protect
 
@@ -55,11 +57,6 @@ If a specific change was undone, reverted, or overwritten, the [Activity Panel](
 
 If a connection drops, the editor **catches up on reconnect** rather than reloading: it asks for what it missed and applies it. Your viewport, your selection and your undo history survive, so a wobbly connection no longer costs you your place. If it has been away too long to catch up, it re-fetches the document, still without a page reload.
 
-<Note>
-  Whatever happened, the Activity Panel records who changed what, so you can see it and revert the
-  entry rather than reconstructing the work.
-</Note>
-
-If you have checked the right tab, document, and identity, reloaded, and cannot find the change in the Activity Panel, [contact us](/help/contact/) with the document URL and roughly when you made the edit.
+If you have checked the right tab, document, and identity, reloaded, and the change is still missing, [contact us](/help/contact/) with the document URL and roughly when you made the edit.
 
 </ArticleLayout>

@@ -124,7 +124,7 @@ export function snapTabColours(
 
 - Writes only existing, validated fields (`penColour` is one of the seven names; removing
   `strokeColor` is always valid). No new field, no migration, no schema regeneration.
-- Collaboration and the activity log see an ordinary element change through `commit`.
+- Collaboration sees an ordinary element change through `commit`.
 
 ## Errors and edge cases
 

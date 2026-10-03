@@ -23,7 +23,7 @@
 // History bypass is the key reason this lives in its own hook
 // rather than alongside the main element-CRUD path: every other
 // element mutation runs through `commit`, which captures
-// before / after for history + activity log. Comments must NOT
+// a history snapshot. Comments must NOT
 // snapshot history, so they go through `applyElementDelta`, which
 // ticks. Keeping that rule in one file makes the policy auditable.
 
@@ -33,8 +33,8 @@ import { track } from '@/lib/telemetry';
 import type { ApplyElementDelta } from '@/hooks/collab/useElementDeltas';
 
 type EditorCommentsDeps = {
-  // Applies one delta to the ACTIVE tab without pushing a snapshot (per
-  // the docs/specs/012-collaboration/activity-and-audit.md activity-log carve-out for non-undoable edits) and sends
+  // Applies one delta to the ACTIVE tab without pushing a snapshot (a
+  // comment is not an undoable edit) and sends
   // it to the room. Comments are tab-scoped: switching tabs while a
   // thread is open keeps the popover up, but the write targets whichever
   // tab is active at call time.

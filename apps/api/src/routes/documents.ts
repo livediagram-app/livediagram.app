@@ -1,41 +1,32 @@
 // /api/documents — document metadata, per-tab content, copy, folder
 // assignment, tab linking, comments, share links, the realtime WS
-// upgrade, and the change-log. The largest resource: every sub-path
+// upgrade. The largest resource: every sub-path
 // under a document id lives here.
 
 import type { Tab } from '@livediagram/document';
 import { isValidTab, migrateIncomingTab } from '@livediagram/document';
 import { capStoredName } from '../names';
 import {
-  MAX_CHANGE_LOG_ENTRY_BYTES,
   MAX_DECK_LEN,
   MAX_TAB_BYTES,
   TabTooLargeError,
-  bodyExceedsCap,
-  declaredBodyBytes,
   logTabRefused,
   tabDataBytes,
 } from '../limits';
 import {
-  CHANGE_LOG_TAB_NOT_SAVED,
   DOCUMENT_CONVERSION_HEADER,
   INTENT_INVALID,
   readCreationIntent,
   readDocumentConversion,
 } from '@livediagram/api-schema';
-import { parseChangeLogEntryBody } from '../change-log-body';
 import {} from '../comments';
 import {
   copyDocument,
-  deleteChangeLogEntry,
-  deleteChangeLogForTab,
   getDocument,
   getDocumentThumbMeta,
   getTrashedDocumentMeta,
   countDocumentsByOwner,
   getParticipant,
-  insertChangeLogEntry,
-  listChangeLog,
   listDocumentsByOwner,
   listSharedWith,
   reorderTabs,
@@ -46,11 +37,9 @@ import {
 } from '../db';
 import {
   badRequest,
-  conflict,
   documentTrashed,
   forbidden,
   json,
-  noContent,
   notFound,
   payloadTooLarge,
   svgImage,
@@ -82,13 +71,11 @@ import {
   placementScope,
 } from '../placement/placement-log';
 import { intentRejected, placementRejected } from '../placement/placement-response';
-import type { ChangeLogEntryDTO, DocumentDTO } from '../types';
+import type { DocumentDTO } from '../types';
 import {
   gateEdit,
   gateGrant,
   missingDocument,
-  requireDocumentGrant,
-  requireOwnedDocument,
   requireOwner,
   shareCodeOf,
   type RouteContext,
@@ -397,8 +384,8 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
   // caller's own files. Accepted from (a) the owner — same as
   // any other "duplicate" path; (b) a visitor with an active
   // `shared_with` row for the source; (c) a visitor providing
-  // a valid X-Share-Code for the source. Skips share_links /
-  // change_log on the copy by design (docs/specs/014-identity/auth-and-guest-access.md + docs/specs/012-collaboration/activity-and-audit.md) so
+  // a valid X-Share-Code for the source. Skips share_links on the
+  // copy by design (docs/specs/014-identity/auth-and-guest-access.md) so
   // the new document reads as the visitor's own clean workspace.
   if (segments.length === 4 && segments[3] === 'copy') {
     const id = segments[2]!;
@@ -517,111 +504,6 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
   // the Durable Object upgrade — see document-room-routes.ts.
   const roomResp = await handleDocumentRoomRoutes(ctx);
   if (roomResp) return roomResp;
-
-  // /api/documents/<id>/log — owner OR edit-role share-code holder.
-  //   GET  → newest-first list of audit entries (capped at 200).
-  //   POST → append a new entry. Body is a ChangeLogEntryDTO.
-  // See docs/specs/012-collaboration/activity-and-audit.md.
-  if (segments.length === 4 && segments[3] === 'log') {
-    const id = segments[2]!;
-    // A tab-scoped edit visitor (docs/specs/013-workspace/tab-scoped-share-links.md) reads and writes their
-    // tab's entries only.
-    const granted = await requireDocumentGrant(ctx, id, 'edit');
-    if (granted instanceof Response) return granted;
-    const { document: access, grant } = granted;
-
-    if (request.method === 'GET') {
-      const entries = await listChangeLog(env, id, grant.tabScope);
-      // Redact each entry's author owner id for non-owners (docs/specs/015-api/public-api-and-tokens.md §6): it's
-      // the same value a token / X-Owner-Id authenticates with, so a non-owner
-      // edit collaborator must not be able to harvest it from the audit trail.
-      // The owner still sees the real ids; display name / colour are untouched
-      // (mirrors redactCommentAuthorIds + the document-DTO ownerId redaction).
-      const isOwner = ctx.resolveOwner() === access.ownerId;
-      const safe = isOwner ? entries : entries.map((e) => ({ ...e, participantId: '' }));
-      return json({ entries: safe });
-    }
-    if (request.method === 'POST') {
-      // Per-entry byte cap: only the 8MB outer body cap applied before, so 30
-      // huge entries could balloon the capped list response. Nothing
-      // downstream measures anything — parseChangeLogEntryBody copies summary
-      // and the before/after payloads straight through — so this cap is the
-      // only bound on what an edit-access caller can write, and every
-      // collaborator refetches up to 30 of them per GET.
-      //
-      // Checked twice on purpose: a declared length lets us reject a hostile
-      // entry BEFORE parsing it, and bodyExceedsCap then re-checks the parsed
-      // body for the request shapes no header can size. The second call costs
-      // nothing when a header was present.
-      const declared = declaredBodyBytes(request);
-      if (declared !== null && declared > MAX_CHANGE_LOG_ENTRY_BYTES) {
-        return payloadTooLarge();
-      }
-      const body = (await request.json()) as Partial<ChangeLogEntryDTO>;
-      if (bodyExceedsCap(request, body, MAX_CHANGE_LOG_ENTRY_BYTES)) {
-        return payloadTooLarge();
-      }
-      const entry = parseChangeLogEntryBody(body);
-      if (!entry) return badRequest('missing change_log fields');
-      if (grant.tabScope !== null && entry.tabId !== grant.tabScope) return notFound();
-      // The entry's tab must belong to THIS document. The log is listed by
-      // joining through document_tabs, so an unchecked tab id let an editor of
-      // one document write rows into another document's activity panel. It is
-      // also what turned a brand-new tab's first edit (logged before the
-      // debounced autosave created the tab row) into a foreign-key 500: that
-      // case now answers a 409 the editor retries.
-      if (entry.tabId && !access.tabs.some((t) => t.id === entry.tabId)) {
-        return conflict(CHANGE_LOG_TAB_NOT_SAVED);
-      }
-      // Stamp the author from the resolved caller's participant record
-      // rather than trusting the body, so a client can't forge
-      // participantId / participantName / participantColor and frame
-      // another collaborator in the audit trail — the same defence the
-      // comment-write paths apply. requireDocumentGrant already proved
-      // the caller is identified, so resolveOwner() is non-null here.
-      const caller = ctx.resolveOwner()!;
-      const writer = await getParticipant(env, caller);
-      const stamped = {
-        ...entry,
-        participantId: caller,
-        participantName: writer?.name ?? entry.participantName,
-        participantColor: writer?.color ?? entry.participantColor,
-      };
-      await insertChangeLogEntry(env, stamped);
-      return json({ entry: stamped }, { status: 201 });
-    }
-  }
-
-  // /api/documents/<id>/log/<entryId> — owner OR edit-role share
-  // visitor. DELETE drops a single log entry; called by Revert
-  // and by the symmetric Undo path so the entry vanishes on the
-  // canvas of every connected client.
-  if (segments.length === 5 && segments[3] === 'log') {
-    const id = segments[2]!;
-    const entryId = segments[4]!;
-    const granted = await requireDocumentGrant(ctx, id, 'edit');
-    if (granted instanceof Response) return granted;
-
-    if (request.method === 'DELETE') {
-      await deleteChangeLogEntry(env, id, entryId, granted.grant.tabScope);
-      return noContent();
-    }
-  }
-
-  // /api/documents/<id>/log/tab/<tabId> — owner-only DELETE that
-  // drops every log entry for a tab. Called by the live app when
-  // it deletes a tab so the per-tab audit dies with the tab.
-  if (segments.length === 6 && segments[3] === 'log' && segments[4] === 'tab') {
-    const id = segments[2]!;
-    const tabId = segments[5]!;
-    const access = await requireOwnedDocument(ctx, id);
-    if (access instanceof Response) return access;
-
-    if (request.method === 'DELETE') {
-      await deleteChangeLogForTab(env, id, tabId);
-      return noContent();
-    }
-  }
 
   return notFound();
 }

@@ -123,7 +123,7 @@ characters; `sourceUrl` and optional `licenseUrl` strings of at most 2048 charac
 ## Data and persistence
 
 - `credit` is an optional field of the image element in `tabs.data`; it rides the normal autosave,
-  realtime `update-element` op, undo, change log and copy paths with no new branch.
+  realtime `update-element` op, undo and copy paths with no new branch.
 - No migration: absent means "no credit", which every existing image is.
 - The gallery row is an ordinary upload; its `original_name` is the result's title (or
   `openverse-<id>`). The gallery does not store the credit (D152).

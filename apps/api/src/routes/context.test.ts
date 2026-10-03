@@ -22,13 +22,7 @@ const { access } = vi.hoisted(() => ({
 vi.mock('../auth/document-access', () => access);
 
 import type { RouteContext } from './context';
-import {
-  ownsDocument,
-  requireDocumentGrant,
-  requireOwnedDocument,
-  requireOwner,
-  sharePasswordOf,
-} from './context';
+import { ownsDocument, requireOwnedDocument, requireOwner, sharePasswordOf } from './context';
 
 function makeCtx(
   opts: { owner?: string | null; headers?: Record<string, string> } = {},
@@ -103,8 +97,7 @@ describe('requireOwnedDocument', () => {
   // `GET /api/teams/<id>` (`members[].userId`), so the hybrid X-Owner-Id path
   // must not prove ownership of one — otherwise a removed member who kept the
   // id reaches the owner-only surfaces this guard fronts: the share password
-  // in the clear, minting an edit-role link, clearing the password, wiping a
-  // tab's audit trail.
+  // in the clear, minting an edit-role link, clearing the password.
   it('403s a TEAM document when the owner id arrives only as the guest header', async () => {
     db.getDocument.mockResolvedValue({ id: 'd1', ownerId: 'user_owner', teamId: 'team-1' });
     // resolveOwner() returns the header value; verifiedUserId stays null.
@@ -175,60 +168,5 @@ describe('ownsDocument', () => {
       false,
     );
     expect(await ownsDocument(makeCtx({ owner: null }), { ownerId: 'x', teamId: 't' })).toBe(false);
-  });
-});
-
-describe('requireDocumentGrant', () => {
-  it('404s a missing document before gating', async () => {
-    db.getDocument.mockResolvedValue(null);
-    const out = await requireDocumentGrant(makeCtx({ owner: 'g' }), 'd1', 'read');
-    expect((out as Response).status).toBe(404);
-    expect(access.resolveDocumentGrant).not.toHaveBeenCalled();
-  });
-
-  it('403s when the caller holds no grant', async () => {
-    db.getDocument.mockResolvedValue({ id: 'd1', ownerId: 'other', teamId: null });
-    access.resolveDocumentGrant.mockResolvedValue(null);
-    const out = await requireDocumentGrant(makeCtx({ owner: 'g' }), 'd1', 'read');
-    expect((out as Response).status).toBe(403);
-  });
-
-  it('403s a view grant in edit mode', async () => {
-    db.getDocument.mockResolvedValue({ id: 'd1', ownerId: 'other', teamId: null });
-    access.resolveDocumentGrant.mockResolvedValue({ role: 'view', tabScope: null });
-    const out = await requireDocumentGrant(makeCtx({ owner: 'g' }), 'd1', 'edit');
-    expect((out as Response).status).toBe(403);
-  });
-
-  it('returns the document and the grant, scope included', async () => {
-    const liveDoc = { id: 'd1', ownerId: 'other', teamId: null };
-    const grant = { role: 'edit', tabScope: 't2' };
-    db.getDocument.mockResolvedValue(liveDoc);
-    access.resolveDocumentGrant.mockResolvedValue(grant);
-    const out = await requireDocumentGrant(makeCtx({ owner: 'g' }), 'd1', 'edit');
-    expect(out).toEqual({ document: liveDoc, grant });
-  });
-
-  it('400s an unidentified caller', async () => {
-    const out = await requireDocumentGrant(makeCtx({ owner: null }), 'd1', 'read');
-    expect((out as Response).status).toBe(400);
-  });
-
-  it('forwards verifiedUserId (session OR api token) to the team-membership check', async () => {
-    db.getDocument.mockResolvedValue({ id: 'd1', ownerId: 'other', teamId: 'team-1' });
-    access.resolveDocumentGrant.mockResolvedValue({ role: 'edit', tabScope: null });
-    // A token caller: no Clerk session, but a server-verified account id.
-    const ctx = { ...makeCtx({ owner: 'user-9' }), verifiedUserId: 'user-9' };
-    await requireDocumentGrant(ctx, 'd1', 'read');
-    expect(access.resolveDocumentGrant).toHaveBeenCalledWith(
-      ctx.env,
-      'd1',
-      'user-9',
-      null,
-      'other',
-      null,
-      'team-1',
-      'user-9',
-    );
   });
 });
