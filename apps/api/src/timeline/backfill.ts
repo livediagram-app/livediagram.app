@@ -7,7 +7,8 @@
 // Runs inside waitUntil after the response is served, and stamps
 // `backfilled_at` so it never runs twice. Every insert hits the
 // timeline UNIQUE key, so overlapping with events the live write path
-// already emitted updates those rows rather than duplicating them.
+// already emitted never duplicates them; the reconstructions (a creation,
+// an edit) leave the real row as it is.
 
 import { dedupeKeyForDay, markScopeBackfilled } from '../db/timeline';
 import type { Env } from '../types';
@@ -63,6 +64,10 @@ export async function backfillUserScope(env: Env, ownerId: string): Promise<void
         description: row.name,
         occurredAt: row.created_at,
         snapshot: { documentId: row.id, documentName: row.name },
+        // A reconstruction: it never overwrites the real creation already recorded, whose snapshot
+        // may say the making counts as a use (docs/specs/013-workspace/explorer-home.md "Making a
+        // document").
+        keepExisting: true,
       },
       scope,
     );

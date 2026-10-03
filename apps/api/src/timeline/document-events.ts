@@ -22,10 +22,21 @@ function documentSnapshot(liveDoc: DocumentRef): Record<string, unknown> {
   return { documentId: liveDoc.id, documentName: liveDoc.name };
 }
 
+/** Whether a making counts as a use of the document for its maker
+ *  (docs/specs/013-workspace/explorer-home.md "Making a document"). */
+export type Making = { markUsed: boolean };
+
+// A making that counts carries `markUsed: true`, which Explorer Home's Jump back in reads
+// (MARKED_MAKING, db/home.ts); one that does not carries nothing, as every making before the mark.
+function makingSnapshot(making: Making): Record<string, unknown> {
+  return making.markUsed ? { markUsed: true } : {};
+}
+
 export async function recordDocumentCreated(
   env: Env,
   liveDoc: DocumentRef,
   actorId: string,
+  making: Making,
 ): Promise<void> {
   await record(
     env,
@@ -36,7 +47,7 @@ export async function recordDocumentCreated(
       eventType: 'document_created',
       title: 'Document Created',
       description: liveDoc.name,
-      snapshot: documentSnapshot(liveDoc),
+      snapshot: { ...documentSnapshot(liveDoc), ...makingSnapshot(making) },
     },
     await audienceForDocument(env, liveDoc),
   );
@@ -47,6 +58,7 @@ export async function recordDocumentDuplicated(
   copy: DocumentRef,
   sourceName: string,
   actorId: string,
+  making: Making,
 ): Promise<void> {
   await record(
     env,
@@ -57,7 +69,7 @@ export async function recordDocumentDuplicated(
       eventType: 'document_duplicated',
       title: 'Document Duplicated',
       description: `${sourceName} → ${copy.name}`,
-      snapshot: { ...documentSnapshot(copy), sourceName },
+      snapshot: { ...documentSnapshot(copy), sourceName, ...makingSnapshot(making) },
     },
     await audienceForDocument(env, copy),
   );

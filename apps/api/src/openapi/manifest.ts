@@ -162,6 +162,15 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
         // The document's own dates, ms since the epoch (docs/specs/015-api/api.md "Document dates").
         createdAt: { type: 'integer' },
         savedAt: { type: 'integer' },
+        // Making a document is a use (docs/specs/015-api/api.md "Marking a document used").
+        markUsed: {
+          type: 'boolean',
+          description:
+            'Whether making the document counts as a use of it for the caller, so it joins their ' +
+            'Jump back in at once. Default true; send false when making many documents in one go ' +
+            '(the editor does for an import of more than one), so they wait until opened. Not a ' +
+            'boolean: 400 invalid markUsed.',
+        },
       },
       required: ['id', 'name'],
     },

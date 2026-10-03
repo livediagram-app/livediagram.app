@@ -31,15 +31,17 @@ Jump back in is a **[Within reach](../004-interface-design/within-reach.md)** se
 the **4 most used** and the **4 most recent**, no document twice.
 
 - **Most used**: the documents the person used on the most days in the **last 90 days**. A **use day** is a UTC
-  day on which they opened the document ([Opens](#opens)) or edited it (an edit needs an open, so the days before
-  opens were recorded still count, through their edits). Equal counts go to the one used most recently.
-- **Recent**: the documents the person used most recently, newest first: the later of their last open and their
-  last edit. A document that is both shows under **Most used**, and Recent takes the next most recent instead.
+  day on which they opened the document ([Opens](#opens)), edited it (an edit needs an open, so the days before
+  opens were recorded still count, through their edits) or made it ([Making a document](#making-a-document)).
+  Equal counts go to the one used most recently.
+- **Recent**: the documents the person used most recently, newest first: the latest of their last open, their last
+  edit and their making of it. A document that is both shows under **Most used**, and Recent takes the next most
+  recent instead.
 - **Not empty on day one**: every day the person edited a document before opens were recorded counts as a day
   they opened it, so Most used reflects the work they already did.
-- **Making a document is not a use.** A document joins Jump back in at its first open or edit. The New Document
-  wizard opens what it makes, so a document made there is in at once; one made without being opened (an import
-  from the Explorer, a duplicate, one an AI tool made) waits on the Recent page and in its folder until then.
+- **Making a document is a use**, and a **bulk import is not** ([Making a document](#making-a-document)): what the
+  person just made is in Jump back in at once, opened or not, while one big import never pushes everything else
+  out of it.
 - Only documents the person can open now: never one in the Trash, nor one whose share link has lapsed or whose
   team they have left.
 - A document stored only in this browser ([Offline Mode](../006-document/offline-mode.md)) takes part with this
@@ -77,6 +79,29 @@ the **4 most used** and the **4 most recent**, no document twice.
 - The grid keeps its two rows' height whatever lands in it, so nothing below moves when Home loads.
 - With no document at all, the section holds one quiet line: "The documents you use most and last will gather
   here." On a phone the strip still ends in its See more tile.
+
+### Making a document
+
+- **Making a document is a use.** The day a person makes a document is a use day of it, and the moment they make
+  it a use, however they make it: the New Document wizard, an import of one document, a duplicate, a copy of a
+  document shared with them, or one an AI tool or an API client makes for them. So a document made without being
+  opened is in Jump back in at once.
+- **Once a day, as ever.** The wizard opens what it makes: the making and the first open fall on one day, which is
+  one use day, not two.
+- **A bulk import is not a use.** An import that makes **more than one document in one go** (a Microsoft
+  Whiteboard export of several boards, several draw.io files, several Excalidraw files) does not mark its
+  documents used, so one big import never pushes everything else out of the recent row. They wait on the Recent
+  page and in their folder until they are opened or edited. The import of a single document counts as any other
+  making does.
+- **The create says so.** Creating a document says whether it counts as a use: `markUsed`, true unless the caller
+  sends `false` ([API](../015-api/api.md), `POST /api/documents`). The editor's bulk imports send `false`; any API
+  client may, and an AI tool's create may too ([MCP server](../015-api/mcp-server.md), `create_document`).
+- Moving a document is not making it: saving an [Offline Mode](../006-document/offline-mode.md) document to the
+  cloud, or taking a cloud one offline, is no use of it.
+- Only makings from when a making began to count are counted: a document made before that joins at its next open
+  or edit, as before.
+- A document stored only in this browser counts its making in this browser's record ([Opens](#opens)), by the same
+  rule: a bulk import of local documents marks none of them used.
 
 ## What happened
 
@@ -160,8 +185,10 @@ An **open** is the editor loading a document for a person to look at.
 - Offline Mode documents never reach the server, so the server records none of their opens. **This browser counts
   them instead**: the editor opening a document stored only here adds the day to that document's own record in
   this browser, by the same once-per-UTC-day rule, keeping the days of the last 90, and moves its last open. Its
-  last edit is the record's own save time. So Jump back in places it among the rest by the same rule. The record
-  lives and dies with the document's local record and never leaves the browser.
+  last edit is the record's own save time. Making a document here starts that record with the day and the moment
+  it was made, as an open would, unless it came in a bulk import ([Making a document](#making-a-document)). So
+  Jump back in places it among the rest by the same rule. The record lives and dies with the document's local
+  record and never leaves the browser.
 
 ### Guests, sign-up and deletion
 

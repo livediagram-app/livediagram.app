@@ -21,6 +21,7 @@ import {
   upsertTab,
 } from './offline-store';
 import { memBackend, testRecord as rec, testTab as tab } from './offline-test-utils';
+import { nextLocalOpens } from './offline-opens';
 
 afterEach(() => __setOfflineBackend(null));
 
@@ -88,6 +89,22 @@ describe('offline store ops (in-memory backend)', () => {
     await offlineDeleteDocument('d1');
     expect(await isOfflineId('d1')).toBe(false);
     expect(await offlineLoadDocument('d1')).toBeNull();
+  });
+
+  it('starts the record of uses with its making (docs/specs/013-workspace/explorer-home.md)', async () => {
+    const backend = memBackend();
+    __setOfflineBackend(backend);
+    const now = Date.UTC(2026, 9, 3, 18);
+    await offlineCreateDocument({ id: 'd1', name: 'Doc' }, now);
+    expect((await backend.get('d1'))?.opens).toEqual(nextLocalOpens(undefined, now));
+    expect((await backend.get('d1'))?.opens).toEqual({ days: ['2026-10-03'], lastOpenedAt: now });
+  });
+
+  it('starts no record for a making that is no use (a bulk import)', async () => {
+    const backend = memBackend();
+    __setOfflineBackend(backend);
+    await offlineCreateDocument({ id: 'd1', name: 'Doc' }, 100, { markUsed: false });
+    expect((await backend.get('d1'))?.opens).toBeUndefined();
   });
 
   it('migrates a tab saved against a retired scheme on load (docs/specs/011-theme/retired-schemes.md)', async () => {

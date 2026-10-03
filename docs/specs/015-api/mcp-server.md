@@ -199,8 +199,8 @@ plus the deep-link `url`. So "show me my auth-flow diagram" → `find_documents`
 
 Create a new document from elements the model produced. Input: `name`, `tabs:
 [{ name, elements: Element[] }]` (one tab, or several to build a **multi-tab**
-document in one call — an overview plus a detail tab per subsystem), and the
-optional `layout`. Each tab may instead pass `template: TemplateKind` in place
+document in one call — an overview plus a detail tab per subsystem), the
+optional `layout`, and the optional `markUsed` (boolean, default `true`). Each tab may instead pass `template: TemplateKind` in place
 of `elements` — the server materialises the hand-tuned scaffold from
 `@livediagram/templates` ([§4.5](#45-list_templates)), keeping its curated
 layout (`layout` is ignored for a template tab) and applying that template's
@@ -235,7 +235,12 @@ canvas overrides; the model then personalises labels via `update_document`'s
    user's [default folder](../013-workspace/default-folders.md) for that intent,
    when they have one.
 4. **Persists** all tabs via `POST /api/documents` (which seeds a `tabs[]` array
-   and accepts `source`).
+   and accepts `source`). Making a document is a use of it, so it joins the user's
+   Jump back in at once ([Explorer Home](../013-workspace/explorer-home.md#making-a-document));
+   `markUsed: false` is passed through to the create
+   ([API](api.md#marking-a-document-used)) for a model making many documents in one go,
+   so a batch never pushes the user's own work out of reach. Absent, nothing is sent and the
+   create counts.
 5. **Returns** the new `id`, tab count + ids, the folder ("My documents" for the root,
    or the name of the default folder it was filed in), the deep-link `url`,
    **and the rendered PNG of the first tab** so the user sees the result inline.
