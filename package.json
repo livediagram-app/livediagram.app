@@ -32,9 +32,9 @@
     "esbuild": "^0.28.2",
     "eslint": "^10.11.0",
     "prettier": "^3.9.9",
-    "turbo": "^2.11.3",
+    "turbo": "^2.11.5",
     "typescript": "npm:@typescript/typescript6@^6.0.2",
-    "wrangler": "^4.137.0"
+    "wrangler": "^4.145.0"
   },
   "engines": {
     "node": ">=22",
