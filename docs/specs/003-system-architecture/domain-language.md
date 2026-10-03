@@ -47,15 +47,19 @@ interchangeable. These are design decisions, taken before any feature that uses 
 
 The words for a program working on documents for a person ([Agents](../024-agents/README.md)).
 
-| Term               | Means                                                                                       | Never called                            |
-| ------------------ | ------------------------------------------------------------------------------------------- | --------------------------------------- |
-| **agent**          | A program acting as a person through their API token: an MCP client, a CLI caller, a script | bot, AI user, assistant                 |
-| **changeset**      | One agent write to one tab: atomic, sequenced by the room, attributed, revertable           | batch, commit, patch                    |
-| **edit operation** | One step in a changeset (`set`, `add`, `connect`, ...), compiled into element ops           | op (that is a room op), action, command |
-| **view**           | A read-only text projection of a tab (outline, graph, layout, ...)                          | mode, format                            |
-| **ref**            | The short name a view prints for an element: its id, or its shortest unique id prefix       | handle (that is a mention), alias       |
-| **selector**       | An expression matching one or more elements (a ref, `type:sticky`, `in:f1`)                 | query, filter (that is the Explorer's)  |
-| **lint finding**   | One problem the diagram lint reports (`box-overlap`), with the refs involved                | warning, issue                          |
+| Term               | Means                                                                                                   | Never called                            |
+| ------------------ | ------------------------------------------------------------------------------------------------------- | --------------------------------------- |
+| **agent**          | A program acting as a person through their API token: an MCP client, a CLI caller, a script             | bot, AI user, assistant                 |
+| **changeset**      | One agent write to one tab: atomic, sequenced by the room, attributed, revertable                       | batch, commit, patch                    |
+| **edit operation** | One step in a changeset (`set`, `add`, `connect`, ...), compiled into element ops                       | op (that is a room op), action, command |
+| **view**           | A read-only text projection of a tab (outline, graph, layout, ...)                                      | mode, format                            |
+| **ref**            | The short name a view prints for an element: its id, or its shortest unique id prefix                   | handle (that is a mention), alias       |
+| **selector**       | An expression matching one or more elements (a ref, `type:sticky`, `in:f1`)                             | query, filter (that is the Explorer's)  |
+| **lint finding**   | One problem the diagram lint reports (`box-overlap`), with the refs involved                            | warning, issue                          |
+| **access level**   | What a share link, embed or token admits: Viewer, Participant or Editor (`view`, `participate`, `edit`) | permission, scope (the field is `role`) |
+| **ownership**      | The owner's powers over a document (sharing, delete, move), apart from any level                        | admin, edit level                       |
 
+- **Participant** is the access level; a person's name, colour and picture (the `participants` table) are their
+  **display identity**.
 - An **element op** (`ElementOp`) stays the room's unit; an edit operation is the agent's, and compiles into them.
 - A CLI **command** and an MCP **tool** are the two front doors to one **verb** (`tab.view`, `element.set`).

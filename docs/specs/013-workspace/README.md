@@ -4,7 +4,7 @@ Follow the references below only as needed; never upfront.
 
 - ./explorer-structure.md - when working on the Explorer sidebar or the editor's Explorer panel: places vs views, the Overview / Spaces / More groups, page titles that follow the rows, visibility rules, titles vs separators (Minimal chrome), alignment, ARIA tree keyboard model, mobile drawer, Local only documents
 - ./folders.md - when working on Folders: Nested folders for documents in the Explorer; documents with no folder sit at the root of their space; deleting a folder moves its contents up to its parent
-- ./share-roles.md - when working on what a share link, embed or API token may do: the view, comment and edit roles
+- ./share-roles.md - when working on what a share link, embed or API token may do: Viewer, Participant, Editor; ownership powers
 - ./share-password.md - when working on Share password: Optional per-document password gating share-link view + edit access; the visitor's per-share-code password cache in localStorage
 - ./teams.md - when working on Teams: Teams with Admin/Member roles, email invites, Explorer section
 - ./embeds.md - when working on Read-only embeds (`/embed`): Iframe-able `/embed` share view + Copy-embed-code in Share

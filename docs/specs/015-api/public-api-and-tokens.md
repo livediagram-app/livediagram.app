@@ -153,7 +153,7 @@ source changes.
 
 ### 3.4 Access — full read + write, with an optional read-only flag
 
-> **Specified, not built:** the read-only flag becomes a token role (view, comment or edit), one vocabulary with
+> **Specified, not built:** the read-only flag becomes a token level (view, participate or edit), one vocabulary with
 > share links ([Share roles](../013-workspace/share-roles.md#api-tokens)). Read-only tokens become view tokens; the
 > rest become edit tokens.
 

@@ -47,12 +47,12 @@ person's, and comments are how people and agents talk on the canvas when nobody 
 - Agents cannot be mentioned. An agent that answers comments reads new ones as they arrive ([CLI](../015-api/cli.md)
   `wait --for comment`) or on its next read.
 
-## Token roles
+## Token levels
 
-What an agent may do follows its token's [role](../013-workspace/share-roles.md#api-tokens), through the same gates
-as a share link: reading needs read access; comments and presence need the comment gate; changesets need the edit
-gate. A token that passes the comment gate but not the edit gate may comment and set presence and submits no
-changesets; a token that passes neither reads and writes nothing, comments and presence included.
+What an agent may do follows its token's [level](../013-workspace/share-roles.md#api-tokens), through the same gates
+as a share link: reading needs read access; comments, session answers and presence need the participation gate
+(`gateParticipate`); changesets need the edit gate. A participate token comments, takes part and sets presence and
+submits no changesets; a view token reads and writes nothing, comments and presence included.
 
 ## Limits
 
