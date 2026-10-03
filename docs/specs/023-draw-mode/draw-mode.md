@@ -85,7 +85,8 @@ palette holds in the layout in force:
   It is the strip's twin: the **same height** as the Diagram strip (its
   buttons the strip's tile size) and drawn at the **toolbar UI scale**
   ([UI scale](../007-editor/ui-scale.md)), so switching modes never changes
-  the size of the bar at the top.
+  the size of the bar at the top. Its flyouts are not scaled: they open at
+  their design size, like every menu opened from a scaled surface.
 
 The groups, their buttons, flyouts, keys and behaviour below are the same
 in both; "the dock" below means either form unless it says otherwise. Every flyout has a

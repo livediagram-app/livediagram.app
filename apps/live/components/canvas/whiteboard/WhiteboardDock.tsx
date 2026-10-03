@@ -296,7 +296,10 @@ function DockFlyoutHost({
       key={`${fly.flyout.kind}:${fly.flyout.openerKey}`}
       id={`whiteboard-flyout-${fly.flyout.kind}`}
       label={open.label}
-      left={fly.flyout.left}
+      anchor={fly.flyout.openerKey}
+      placement={beside ? 'beside' : below ? 'below' : 'above'}
+      // The opener's offset in the dock: it changes when the groups scroll under an open flyout.
+      revision={fly.flyout.left}
       onClose={fly.close}
       onPointerEnter={fly.cancelHoverClose}
       onPointerLeave={fly.hoverLeave}
@@ -304,8 +307,6 @@ function DockFlyoutHost({
       takeFocus={!fly.flyout.hover || fly.flyout.kind === 'shapes'}
       restoreFocus={fly.flyout.viaHover}
       hideTitle={open.hideTitle}
-      below={below}
-      besideOf={beside ? fly.flyout.openerKey : undefined}
     >
       {open.body}
     </WhiteboardFlyout>

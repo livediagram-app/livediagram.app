@@ -97,7 +97,7 @@ export function ModeMenuChip({
           setOpen(true);
         }}
         className={`flex w-full items-center gap-1 rounded-md px-1.5 transition-colors ${
-          labelled ? 'h-6 justify-start text-xs font-medium' : 'h-7 justify-center'
+          labelled ? 'h-6 justify-start text-xs font-medium' : 'h-9 justify-center'
         } ${TOOLBAR_TRIGGER_TONE} ${MODE_SWITCH_FOCUS}`}
       >
         <Icon aria-hidden />

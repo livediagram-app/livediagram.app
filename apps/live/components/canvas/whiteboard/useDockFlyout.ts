@@ -18,7 +18,9 @@ export type DockFlyout = {
   // Opened by hover, even if it has since been made to stay: closing gives the focus back to the
   // board, not to the opener (the Shapes flyout's field takes the focus on a hover).
   viaHover: boolean;
-  // Horizontal centre, in px from the dock wrapper's left edge; measured once, on opening.
+  // The opener's horizontal centre, in screen px from the dock wrapper's left edge: measured on
+  // opening and again when the groups scroll, so the flyout (placed from the opener's own screen
+  // rect) knows to re-place itself.
   left: number;
   // The opener's data-dock-item, which gets the focus back on Escape.
   openerKey: string;
@@ -30,16 +32,10 @@ export type DockFlyout = {
 // brushing past) never snaps it shut.
 const HOVER_CLOSE_MS = 250;
 
-// The opener's centre in the dock wrapper's own px: a dock drawn at the toolbar UI scale
-// (docs/specs/007-editor/ui-scale.md) is zoomed, so screen px are divided back by its zoom, read
-// off the wrapper itself (its screen width over its layout width).
 function measure(opener: HTMLElement): number {
-  const wrapEl = opener.closest<HTMLElement>('[data-whiteboard-dock]');
-  if (!wrapEl) return 0;
-  const wrap = wrapEl.getBoundingClientRect();
+  const wrap = opener.closest('[data-whiteboard-dock]')?.getBoundingClientRect();
   const btn = opener.getBoundingClientRect();
-  const zoom = wrapEl.offsetWidth > 0 ? wrap.width / wrapEl.offsetWidth : 1;
-  return (btn.left + btn.width / 2 - wrap.left) / (zoom || 1);
+  return wrap ? btn.left + btn.width / 2 - wrap.left : 0;
 }
 
 export function useDockFlyout() {

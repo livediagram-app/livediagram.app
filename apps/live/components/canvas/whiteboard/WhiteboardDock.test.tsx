@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { DEFAULT_WHITEBOARD_PREFS } from '@/lib/whiteboard-prefs';
 import { dockModel as model, renderDock } from './dock-test-utils';
 import { WhiteboardDock } from './WhiteboardDock';
-import { besidePanel } from './WhiteboardFlyout';
+import { besidePanel, offDock } from './WhiteboardFlyout';
 
 const itemsOf = (group: string) =>
   [
@@ -342,7 +342,9 @@ describe('WhiteboardDock position', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Settings' }));
     const flyout = screen.getByRole('group', { name: 'Settings' });
     expect(flyout.dataset.side).toBe('below');
-    expect(flyout.className).toContain('top-full');
+    // Portalled and fixed, so the toolbar UI scale never zooms it.
+    expect(flyout.className).toContain('fixed');
+    expect(dock().contains(flyout)).toBe(false);
     // Its tip points up at the button that opened it.
     expect(flyout.querySelector('[data-flyout-tip]')?.getAttribute('data-flyout-tip')).toBe('top');
     fireEvent.click(screen.getByRole('button', { name: 'Settings' }));
@@ -356,7 +358,7 @@ describe('WhiteboardDock position', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Settings' }));
     const flyout = screen.getByRole('group', { name: 'Settings' });
     expect(flyout.dataset.side).toBe('above');
-    expect(flyout.className).toContain('bottom-full');
+    expect(flyout.className).toContain('fixed');
     fireEvent.click(screen.getByRole('button', { name: 'Settings' }));
     expect(refusePin().dataset.side).toBe('above');
   });
@@ -446,6 +448,30 @@ describe('WhiteboardDock in the Palette panel', () => {
     const shapes = screen.getByRole('toolbar', { name: 'Shapes' });
     expect(within(shapes).queryByRole('button', { name: 'Shapes' })).toBeNull();
     expect(shapes.querySelectorAll('[data-dock-item^="menu:"]').length).toBeGreaterThan(0);
+  });
+});
+
+describe('offDock', () => {
+  const flyout = { offsetWidth: 200, offsetHeight: 120 };
+  const dockBox = { top: 12, bottom: 58 };
+
+  it('opens on the board side of the dock, centred on its opener, the tip over it', () => {
+    expect(offDock(dockBox, { left: 500, width: 36 }, flyout, true, { width: 1280 })).toEqual({
+      left: 418,
+      top: 66,
+      tipLeft: 100,
+    });
+    // A dock at the bottom: above it.
+    expect(
+      offDock({ top: 700, bottom: 746 }, { left: 500, width: 36 }, flyout, false, { width: 1280 })
+        .top,
+    ).toBe(700 - 8 - 120);
+  });
+
+  it('stays in the viewport near an edge, its tip still over the opener', () => {
+    const at = offDock(dockBox, { left: 10, width: 36 }, flyout, true, { width: 1280 });
+    expect(at.left).toBe(12);
+    expect(at.tipLeft).toBe(28 - 12);
   });
 });
 
