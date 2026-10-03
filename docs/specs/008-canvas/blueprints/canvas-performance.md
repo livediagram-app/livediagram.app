@@ -154,7 +154,10 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
   - when that gesture ends it returns the current elements on the next render;
   - otherwise a change shows at once if `MAP_REDRAW_MIN_MS` has passed since the last change it
     showed, else when that much time has passed (one trailing timer, replaced, never stacked).
-- `Minimap` memoises its markup on the settled elements. Its `elements` input is memoised in
+- `Minimap` reads the settled elements through `useDeferredValue`, so the change that settles them (a
+  drag's release) commits first and the Map's rebuild and image parse follow as their own render
+  (measured on the reference board: the worst task after a release fell from 171-219 ms to at most
+  128 ms). `Minimap` memoises its markup on the deferred elements. Its `elements` input is memoised in
   `useCanvasChromePanels` on `(elements, tabLayers)`, so a hidden layer no longer yields a new
   array per render.
 - Pan and zoom never redraw the markup; they move only the viewport rectangle, as today.
