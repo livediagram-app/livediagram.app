@@ -191,9 +191,10 @@ A **zone** is how anything other than text sits in the writing: it is a block of
 laid out with it, holding ordinary canvas elements that move with it.
 
 - **Object zone** (`zone: 'object'`): one element (an image, a chart, a table, a code element, a
-  video, an icon, a sticker, a component), the zone hugging it exactly. Resizing the element
+  video, an icon, a sticker, a sticky note, a component), the zone hugging it exactly, with no
+  boundary of its own. Resizing the element
   resizes the zone.
-- **Drawing zone** (`zone: 'drawing'`): an area of the page for shapes, sticky notes, text labels
+- **Drawing zone** (`zone: 'drawing'`): an area of the page for shapes, text labels
   and the arrows between them, worked on with every Diagram tool. It is a size of its own (by
   default the text width x 240 px) with grips on its bottom edge (taller or shorter), its right
   edge (wider or narrower, up to the text width, a wrapped zone two thirds of it) and its
@@ -237,8 +238,8 @@ laid out with it, holding ordinary canvas elements that move with it.
     after the last block); a tile **dragged** onto a page puts it where it is dropped. On a drawing
     zone it joins that zone at that point. Elsewhere on the writing it starts a new zone at the
     block boundary nearest the drop: a **drawing zone** for drawing elements (shapes of the
-    Shapes and Flowchart families, arrows, sticky notes, text, mind nodes, frames), an **object
-    zone** for everything else. The **Text** tile dropped on the writing puts the caret there
+    Shapes and Flowchart families, arrows, text, mind nodes, frames), an **object zone** for
+    everything else, a sticky note included (a sticky dropped into a drawing joins it there). The **Text** tile dropped on the writing puts the caret there
     instead.
   - The new zone, and its element, are selected; the zone bar shows.
 - **Loose elements** (on an article page but in no zone) stay fixed to their page in front of the

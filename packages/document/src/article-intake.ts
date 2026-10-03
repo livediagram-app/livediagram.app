@@ -48,9 +48,11 @@ const DRAWING_SHAPES: ReadonlySet<ShapeKind> = new Set<ShapeKind>([
   'frame',
 ]);
 
-/** Whether an element is drawn with (and so goes into a drawing zone). */
+/** Whether an element is drawn with (and so goes into a drawing zone). A sticky note is an object
+ *  of its own (an object zone: in line, wrapped or floating, no boundary), though one dropped into
+ *  a drawing joins it there. */
 export function isDrawingElement(el: Element): boolean {
-  if (el.type === 'arrow' || el.type === 'text' || el.type === 'sticky') return true;
+  if (el.type === 'arrow' || el.type === 'text') return true;
   if (el.type === 'freehand' || el.type === 'path') return true;
   return el.type === 'shape' && DRAWING_SHAPES.has(el.shape);
 }
