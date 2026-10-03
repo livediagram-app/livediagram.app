@@ -261,14 +261,14 @@ spec. No layout shift: roles and `tabIndex` add no box, and `inert` changes no s
 | Keyboard-only focus, Escape layering, return                                               | `packages/ui/src/menu/useControlMenu.test.tsx`                                            |
 | Rows take the kind's roles                                                                 | `apps/live/components/primitives/PortalMenu.test.tsx`                                     |
 | Submenu keys and roles                                                                     | `apps/live/components/primitives/MenuFlyoutSection.test.tsx`, `UseAsDefaultMenu.test.tsx` |
-| Canvas stands down inside a menu                                                           | `apps/live/hooks/canvas/useEditorKeyboardShortcuts.test.tsx`                              |
+| Canvas stands down inside a menu                                                           | `apps/live/hooks/canvas/useEditorKeyboardShortcuts.dom.test.tsx`                          |
 | Folder menu + submenu, element menu, Tab menu, zoom presets, phone drill-down, by keyboard | e2e `apps/live/e2e/menu-keyboard.spec.ts`                                                 |
 | Element quick menu kinds                                                                   | `apps/live/components/canvas/ElementEllipsisMenu.test.tsx`                                |
 | Opens in as toggle buttons                                                                 | `apps/live/components/chrome/OpensInMenuSection.test.tsx`                                 |
 | Locked element menu focus and Escape                                                       | `apps/live/components/canvas/LockedElementMenu.test.tsx`                                  |
 | Row ⋯ opens on Down / Up Arrow                                                             | `apps/live/components/primitives/useRowMenu.test.tsx`                                     |
 | Shape tiles are named                                                                      | `apps/live/lib/element-names.test.ts`                                                     |
-| Signed-in folder menu by keyboard                                                          | e2e `apps/live/e2e/clerk-stub/default-folders-team.spec.ts`                               |
+| Signed-in account menu by keyboard; a team folder's submenu                                | e2e `apps/live/e2e/clerk-stub/menu-keyboard.spec.ts`, `default-folders-team.spec.ts`      |
 | Contrast and optical audits still pass                                                     | e2e `contrast-audit.spec.ts`, `optical-audit.spec.ts`                                     |
 
 ## Constants and configuration
