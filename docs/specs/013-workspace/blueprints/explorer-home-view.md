@@ -114,8 +114,8 @@ ties by `documentId` ascending (`D77`), keep the first `max`.
 - `nextLocalOpens(prev, now)`: `day = utcDay(now)`; `prev?.lastOpenDay === day` → `null` (same day); else
   `{ openDays: (prev?.openDays ?? 0) + 1, lastOpenDay: day, lastOpenedAt: now, frecencyKey: nextFrecencyKey(prev?.frecencyKey ?? null, now) }`.
 - `offlineRecordOpen(id, now)`: inside `serializeOfflineWrite`, read the record; absent or trashed → skip; next null
-  → log `[home] local-open-skipped reason=same-day`; else put `{ ...rec, opens }` (no `savedAt` change: an open is not
-  an edit) and log `[home] local-open-recorded days=<n>`. A thrown error logs `[home] local-open-failed` and resolves.
+  → trace (`debugLog`) `[home] local-open-skipped reason=same-day`; else put `{ ...rec, opens }` (no `savedAt` change: an open is not
+  an edit) and trace `[home] local-open-recorded days=<n>`. A thrown error logs `[home] local-open-failed` and resolves.
 - `_apiLoadTab`: for a local id with `opts.open`, `void offlineRecordOpen(documentId, Date.now())` before reading the
   tab. The editor's first-tab read is the only marked one (data blueprint `D66`), so embeds never count.
 - `offlineListOpens()`: live records (no `trashedAt`) with `opens`, as `{ document: recordToSummary(rec), opens }`.
