@@ -5,6 +5,8 @@ import { recordDocumentOpen } from '../home/record-open';
 import {
   recordActionAssigned,
   recordCommentAdded,
+  recordDocumentCreated,
+  recordDocumentDuplicated,
   recordDocumentEdited,
   recordTeamDocumentAdded,
   backfillUserScope,
@@ -234,6 +236,16 @@ describe('Jump back in', () => {
       ['own2', 2, NOW - 3 * DAY],
       ['own1', 1, NOW - HOUR],
     ]);
+  });
+
+  it('leaves out a document made but never opened or edited, until its first open', async () => {
+    // An import or an AI tool makes a document with no open; a duplicate is not one either.
+    await recordDocumentCreated(db.env, docs.own1!, ME);
+    await recordDocumentDuplicated(db.env, docs.own2!, 'Doc own1', ME);
+    expect((await home()).jumpBackIn).toEqual([]);
+
+    await recordDocumentOpen(db.env, docs.own2!, ME, NOW - HOUR);
+    expect((await home()).jumpBackIn.map((d) => d.documentId)).toEqual(['own2']);
   });
 
   it("leaves out the backfill's reconstructed edits: only real uses count", async () => {

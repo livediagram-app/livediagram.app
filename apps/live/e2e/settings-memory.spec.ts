@@ -73,7 +73,7 @@ test('Settings reopens on the last category and row, across a resize', async ({
   await dismissQuickTour(page);
 
   await openSettings(page);
-  await dialog(page).getByRole('button', { name: 'Editor' }).click();
+  await dialog(page).getByRole('button', { name: 'Editor', exact: true }).click();
   const scroller = dialog(page)
     .locator('[data-settings-row]')
     .first()
@@ -115,17 +115,18 @@ test('Settings reopens on the last category and row, across a resize', async ({
 // Rects are shrunk by the scale but scrollTop is not, so an unscaled measure
 // lands short by 4% of how far the row's top sits above the pane: several
 // pixels deep inside a tall row, such as Editor's Alignment Guides row (with its drawing), 160px
-// into it: deep, yet still the top row (it is about 200px tall).
+// into it: deep, yet still the top row (it is about 200px tall). A window short enough that the
+// pane holds more below the row than that: Editor's last rows, not the window, set how far it scrolls.
 test('Settings reopens deep inside a tall row without drifting', async ({ page, pageErrors }) => {
   await page.emulateMedia({ colorScheme: 'dark' });
-  await page.setViewportSize({ width: 1280, height: 720 });
+  await page.setViewportSize({ width: 1280, height: 640 });
   // Straight to a blank canvas: the /new?blank=1 bypass (Start Blank).
   await page.goto('/new?blank=1');
   await page.locator('[data-canvas-a11y-root]').waitFor();
   await dismissQuickTour(page);
 
   await openSettings(page);
-  await dialog(page).getByRole('button', { name: 'Editor' }).click();
+  await dialog(page).getByRole('button', { name: 'Editor', exact: true }).click();
   const scroller = dialog(page)
     .locator('[data-settings-row]')
     .first()

@@ -303,6 +303,7 @@ The ink audit is the arbiter: a site that fails it joins the migration.
 | Spec rule                                | Test                                                                                  |
 | ---------------------------------------- | ------------------------------------------------------------------------------------- |
 | Tolerance, cap band, ink, intent, stacks | `optical-audit.spec.ts`, `optical-audit-sites.spec.ts`                                |
+| Truncated label keeps its ink            | `optical-clip.spec.ts`: the label's columns at row height, clipped against released   |
 | Utilities                                | `optical-utilities.test.ts`                                                           |
 | Primitives and their invariants          | `optical.test.tsx`                                                                    |
 | Button labels and edges                  | `Button.test.tsx`                                                                     |

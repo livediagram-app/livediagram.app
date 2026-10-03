@@ -265,6 +265,30 @@ describe('WhiteboardDock settings', () => {
     expect(cog.getAttribute('aria-expanded')).toBe('true');
   });
 
+  it('takes the focus on a press once it is shown, and Escape hands it back', () => {
+    renderDock();
+    // A browser will not focus a hidden element (jsdom will): record whether the flyout was shown
+    // each time something inside it was focused.
+    const shownAtFocus: boolean[] = [];
+    const focus = HTMLElement.prototype.focus;
+    const spy = vi
+      .spyOn(HTMLElement.prototype, 'focus')
+      .mockImplementation(function (this: HTMLElement, options?: FocusOptions) {
+        const card = this.closest<HTMLElement>('#whiteboard-flyout-settings');
+        if (card) shownAtFocus.push(card.style.visibility !== 'hidden');
+        focus.call(this, options);
+      });
+    const cog = screen.getByRole('button', { name: 'Settings' });
+    fireEvent.click(cog);
+    spy.mockRestore();
+    const settings = screen.getByRole('group', { name: 'Settings' });
+    expect(shownAtFocus).toEqual([true]);
+    expect(document.activeElement).toBe(within(settings).getByRole('button', { name: 'Plain' }));
+    fireEvent.keyDown(document.activeElement!, { key: 'Escape' });
+    expect(screen.queryByRole('group', { name: 'Settings' })).toBeNull();
+    expect(document.activeElement).toBe(cog);
+  });
+
   it('heads Background, Cursor and Drawing, not a title of its own', () => {
     renderDock();
     fireEvent.click(screen.getByRole('button', { name: 'Settings' }));

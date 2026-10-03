@@ -193,14 +193,23 @@ export function WhiteboardFlyout({
     restoreRef.current = restoreFocus;
   });
 
+  // The focus moves in once the flyout is placed: it is hidden for its first, unmeasured frame, and a
+  // browser will not focus a hidden element, which would leave the focus (and so Escape) on the
+  // opener. Once only: a re-place (`revision`) keeps the focus where the user has taken it.
+  const placed = place !== null;
   useEffect(() => {
+    if (!placed || !takeFocus) return;
     const node = ref.current;
     // A field first (More shapes opens typing), then the choice in force, then the first button.
     const initial =
       node?.querySelector<HTMLElement>('input') ??
       node?.querySelector<HTMLElement>('[aria-pressed="true"]') ??
       node?.querySelector<HTMLElement>('button');
-    if (takeFocus) initial?.focus({ preventScroll: true });
+    initial?.focus({ preventScroll: true });
+  }, [placed, takeFocus]);
+
+  useEffect(() => {
+    const node = ref.current;
     const onDown = (e: PointerEvent) => {
       const target = e.target as Node | null;
       if (!target || node?.contains(target)) return;

@@ -1,6 +1,22 @@
 import { auditContrast, type ContrastReport } from './contrast';
-import { CANVAS, darkVisitor, freshDarkPage, seedDocument, shareLink } from './audit-screens';
-import { dismissQuickTour, expect, expectNoPageErrors, test, untilHydrated } from './fixtures';
+import {
+  CANVAS,
+  darkVisitor,
+  documentRow,
+  freshDarkPage,
+  jumpBackIn,
+  seedDocument,
+  seedOpenedDocument,
+  shareLink,
+} from './audit-screens';
+import {
+  dismissQuickTour,
+  expect,
+  expectNoPageErrors,
+  test,
+  untilHydrated,
+  mintSignedGuest,
+} from './fixtures';
 
 // Contrast audit, dark mode (docs/specs/003-system-architecture/e2e-smoke.md; the palette it guards is
 // docs/specs/004-interface-design/color-scheme.md, Dark palette (Steel)). Every visible text node on each
@@ -79,13 +95,20 @@ test.describe('Contrast audit, dark mode', () => {
     await visitor.context().close();
   });
 
+  // Home as a returning owner meets it (the document they opened in Jump back in), then My
+  // documents, which lists it as a row.
   test('the Explorer', async ({ page, pageErrors, baseURL }) => {
-    const owner = crypto.randomUUID();
-    await seedDocument(page, owner, new URL(baseURL!).origin);
+    // Signed, so the identity holds across the two page loads.
+    const owner = await mintSignedGuest(page.request);
+    await seedOpenedDocument(page, owner, new URL(baseURL!).origin);
     await darkVisitor(page, owner);
     await page.goto('/explorer');
-    await page.getByText('Contrast').first().waitFor();
-    expectAA(await auditContrast(page), 'Explorer');
+    await jumpBackIn(page, 'Contrast').waitFor();
+    expectAA(await auditContrast(page), 'Explorer Home');
+
+    await page.goto('/explorer/all');
+    await documentRow(page, 'Contrast').waitFor();
+    expectAA(await auditContrast(page), 'Explorer, My documents');
     expectNoPageErrors(pageErrors);
   });
 });

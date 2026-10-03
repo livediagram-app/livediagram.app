@@ -2,8 +2,9 @@ import type { Page } from '@playwright/test';
 import { expect, test, expectNoPageErrors, openStartBlank } from './fixtures';
 
 // Palette drag-to-canvas (docs/specs/010-palette/palette-drag-ghost.md) from the Toolbar layout's strip
-// (docs/specs/007-editor/toolbar-layout.md): a row found by searching the More popover drags onto the
-// canvas like the tile it stands for, whatever its catalogue (shape, line icon, sticker).
+// (docs/specs/007-editor/toolbar-layout.md): a tile in a category's More popover drags onto the canvas
+// like the tile it stands for, whatever its catalogue: a shape from Shapes' full body, a line icon and
+// a sticker found by searching their own catalogue's body.
 
 const CANVAS = '[data-canvas-a11y-root]';
 
@@ -16,35 +17,39 @@ async function openToolbarBoard(page: Page): Promise<void> {
   await openStartBlank(page);
 }
 
-async function searchMore(page: Page, query: string): Promise<void> {
+// The strip on a category, then its More popover open, searched when the body has a search field.
+async function openMore(page: Page, category: string, query?: string): Promise<void> {
+  await page.getByRole('button', { name: 'Palette category' }).click();
+  await page.locator(`[data-option-id="${category}"]`).click();
   await page.getByRole('button', { name: /^More/ }).click();
-  await page
-    .getByRole('searchbox')
-    .or(page.getByRole('textbox', { name: /search/i }))
-    .first()
-    .fill(query);
+  if (query) await more(page).getByRole('textbox', { name: /search/i }).fill(query);
 }
+
+const more = (page: Page) => page.locator('[data-toolbar-more]');
 
 // The elements on the canvas, by accessible name (the canvas a11y root names each one).
 const placed = (page: Page, name: RegExp) => page.locator(CANVAS).getByRole('img', { name });
 
-async function dragRowOntoCanvas(page: Page, rowName: string, at: { x: number; y: number }) {
-  const row = page.getByRole('option', { name: rowName, exact: true }).first();
-  await expect(row).toHaveAttribute('draggable', 'true');
-  await row.dragTo(page.locator(CANVAS), { targetPosition: at });
+async function dragTileOntoCanvas(page: Page, tileName: string, at: { x: number; y: number }) {
+  const tile = more(page).getByRole('button', { name: tileName, exact: true }).first();
+  await expect(tile).toHaveAttribute('draggable', 'true');
+  await tile.dragTo(page.locator(CANVAS), { targetPosition: at });
 }
 
 test.describe('Toolbar strip drag', () => {
-  for (const { row, placedAs } of [
-    { row: 'Add speech bubble', placedAs: /speech bubble/i },
-    { row: 'Add Message', placedAs: /^Icon$/ },
-    { row: 'Add Speech balloon', placedAs: /^Icon$/ },
+  for (const { category, query, tile, placedAs } of [
+    { category: 'shapes', query: undefined, tile: 'Add speech bubble', placedAs: /speech bubble/i },
+    { category: 'icons', query: 'speech', tile: 'Add Message', placedAs: /^Icon$/ },
+    { category: 'stickers', query: 'speech', tile: 'Speech balloon', placedAs: /^Sticker$/ },
   ]) {
-    test(`a searched "${row}" row drags onto the canvas`, async ({ page, pageErrors }) => {
+    test(`a "${tile}" tile from the ${category} More popover drags onto the canvas`, async ({
+      page,
+      pageErrors,
+    }) => {
       await openToolbarBoard(page);
-      await searchMore(page, 'speech');
+      await openMore(page, category, query);
       await expect(placed(page, placedAs)).toHaveCount(0);
-      await dragRowOntoCanvas(page, row, { x: 300, y: 500 });
+      await dragTileOntoCanvas(page, tile, { x: 300, y: 500 });
       await expect(placed(page, placedAs)).toHaveCount(1);
       expectNoPageErrors(pageErrors);
     });
