@@ -537,6 +537,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone pasted Markdown into a document, and it became headings, lists and formatting.',
   'Element|Changed|DocZoneWrap':
     "Someone changed how a picture or drawing sits in a document's writing: in line, or wrapped.",
+  'Element|Changed|DocZoneResized':
+    "Someone made a drawing in a document's writing taller or shorter.",
   'Element|Changed|DocZoneRemoved':
     "Someone deleted a picture or drawing from a document's writing.",
   'Tab|Changed|PageRemoved': 'Someone deleted a page from an Illustrate tab.',

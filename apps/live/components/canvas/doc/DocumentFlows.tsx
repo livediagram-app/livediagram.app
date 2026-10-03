@@ -23,7 +23,7 @@ import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import type { DocInk } from '@/lib/doc/doc-style-vars';
 import { docHandleOf, requestDocLink, useActiveDoc } from '@/lib/doc/doc-editor-store';
 import { PageToolbar } from './PageToolbar';
-import { ZoneBar } from './ZoneBar';
+import { ZoneBar, ZoneResizeGrip } from './ZoneBar';
 
 const DocumentFlowEditor = lazy(() => import('./DocumentFlowEditor'));
 
@@ -149,6 +149,14 @@ export function DocumentFlows({
           />
         ) : null}
       </div>
+      {target && target.zone.zone === 'drawing' ? (
+        <ZoneResizeGrip
+          zoneId={target.zone.id}
+          rect={target.rect}
+          zoom={zoom}
+          onResize={(height) => docs.zoneAction(target.flow, target.zone.id, { height })}
+        />
+      ) : null}
       {target ? (
         <ZoneBar
           zone={target.zone}

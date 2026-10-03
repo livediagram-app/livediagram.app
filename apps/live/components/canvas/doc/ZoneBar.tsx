@@ -48,7 +48,7 @@ export function ZoneBar({
         // Under the zone: above it sits the element's own toolbar.
         left: rect.x + rect.width / 2,
         top: rect.y + rect.height,
-        transform: `translate(-50%, 0) scale(${1 / zoom}) translateY(12px)`,
+        transform: `translate(-50%, 0) scale(${1 / zoom}) translateY(18px)`,
         transformOrigin: 'top center',
       }}
       onPointerDown={(e) => {
@@ -147,5 +147,61 @@ function Choice({
         {children}
       </button>
     </Tooltip>
+  );
+}
+
+/** A drawing zone's bottom grip: drag to make it taller or shorter (previewed on the writing as it
+ *  moves; one edit on release, never shorter than what is drawn in it). */
+export function ZoneResizeGrip({
+  zoneId,
+  rect,
+  zoom,
+  onResize,
+}: {
+  zoneId: string;
+  rect: PageRect;
+  zoom: number;
+  onResize: (height: number) => void;
+}) {
+  const zoneEl = () =>
+    document.querySelector<HTMLElement>(`.doc-zone[data-block-id="${CSS.escape(zoneId)}"]`);
+  return (
+    <div
+      role="separator"
+      aria-orientation="horizontal"
+      aria-label="Drawing height"
+      className="pointer-events-auto absolute flex cursor-ns-resize items-center justify-center"
+      style={{
+        left: rect.x + rect.width / 2,
+        top: rect.y + rect.height,
+        transform: `translate(-50%, -50%) scale(${1 / zoom})`,
+        width: 44,
+        height: 16,
+      }}
+      onPointerDown={(e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        const startY = e.clientY;
+        const el = zoneEl();
+        const target = e.currentTarget;
+        target.setPointerCapture(e.pointerId);
+        let height = rect.height;
+        const move = (ev: PointerEvent) => {
+          height = Math.max(24, rect.height + (ev.clientY - startY) / zoom);
+          if (el) el.style.height = `${height}px`;
+        };
+        const up = () => {
+          target.removeEventListener('pointermove', move);
+          target.removeEventListener('pointerup', up);
+          target.removeEventListener('pointercancel', up);
+          onResize(Math.round(height));
+        };
+        target.addEventListener('pointermove', move);
+        target.addEventListener('pointerup', up);
+        target.addEventListener('pointercancel', up);
+      }}
+    >
+      <span className="h-1.5 w-8 rounded-full bg-white shadow ring-1 ring-brand-500" />
+    </div>
   );
 }

@@ -323,7 +323,15 @@ export const DOCUMENT_FORMATTING = chart(
   'Document Formatting',
   "The page toolbar used on a document's writing (a format, a text style or list, a link) and a zone in the writing wrapped, placed or deleted.",
   {
-    types: ['DocFormat', 'DocBlockStyle', 'DocLink', 'DocPaste', 'DocZoneWrap', 'DocZoneRemoved'],
+    types: [
+      'DocFormat',
+      'DocBlockStyle',
+      'DocLink',
+      'DocPaste',
+      'DocZoneWrap',
+      'DocZoneResized',
+      'DocZoneRemoved',
+    ],
   },
 );
 

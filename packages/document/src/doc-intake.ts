@@ -4,6 +4,8 @@
 // elements sit in it are decided here; where in the writing it goes is the editor's (it alone
 // knows where the lines fall). Pure.
 import {
+  DOC_ZONE_MAX,
+  DOC_ZONE_MIN,
   docsOf,
   type DocBlock,
   type DocFlow,
@@ -396,4 +398,32 @@ export function withZoneRemoved<T extends DocsTab>(tab: T, flow: string, zoneId:
   const emptied = withZoneContentsRemoved(tab, flow, [zone]);
   const blocks = doc.blocks.filter((b) => b.id !== zoneId);
   return withDocFlow(emptied, flow, doc.style ? { blocks, style: doc.style } : { blocks });
+}
+
+/** A drawing zone made `height` tall (its bottom grip dragged), never shorter than its elements
+ *  need (DOC_DRAWING_PAD below the lowest) nor than DOC_ZONE_MIN. */
+export function withZoneHeight<T extends DocsTab>(
+  tab: T,
+  flow: string,
+  zoneId: string,
+  height: number,
+): T {
+  const doc = docsOf(tab)[flow];
+  const zone = doc?.blocks.find((b): b is DocZoneBlock => b.id === zoneId && b.type === 'zone');
+  if (!doc || !zone) return tab;
+  const pages = layOutIllustratePages(illustratePagesOf(tab)).filter((p) => p.flow === flow);
+  const rect = zoneCanvasRect(pages, zone);
+  let least = DOC_ZONE_MIN;
+  if (rect) {
+    const els = tab.elements as Element[];
+    const members = els.filter((el) => zoneMemberIds(els, rect).has(el.id));
+    if (members.length) {
+      const box = boundsOf(members, els);
+      least = Math.max(least, box.y + box.height + DOC_DRAWING_PAD - rect.y);
+    }
+  }
+  const next = Math.round(Math.min(DOC_ZONE_MAX, Math.max(least, height)));
+  if (next === zone.height) return tab;
+  const blocks = doc.blocks.map((b) => (b.id === zoneId ? { ...zone, height: next } : b));
+  return withDocFlow(tab, flow, doc.style ? { blocks, style: doc.style } : { blocks });
 }

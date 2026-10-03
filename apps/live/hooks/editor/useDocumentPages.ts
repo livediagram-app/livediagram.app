@@ -12,6 +12,7 @@ import {
   layOutIllustratePages,
   withDocFlow,
   withZoneLanded,
+  withZoneHeight,
   withZoneRemoved,
   withZoneWrap,
   type DocZoneAlign,
@@ -90,7 +91,8 @@ export type DocStyleChange = { look: DocLookId } | { patch: Partial<DocStyle> };
 
 export type DocInsert =
   'image' | 'table' | 'chart' | 'pie' | 'line' | 'callout' | 'sticky' | 'drawing';
-export type ZoneAction = { wrap: DocZoneWrap } | { align: DocZoneAlign } | { remove: true };
+export type ZoneAction =
+  { wrap: DocZoneWrap } | { align: DocZoneAlign } | { height: number } | { remove: true };
 
 // A new drawing's height before anything is drawn in it.
 const NEW_DRAWING_HEIGHT = 240;
@@ -220,11 +222,13 @@ export function useDocumentPages(deps: {
       const d = latest.current;
       if (!d.canEdit || d.activeTab.locked === true) return;
       if ('remove' in action) track('Element', 'Changed', 'DocZoneRemoved');
+      else if ('height' in action) track('Element', 'Changed', 'DocZoneResized');
       else track('Element', 'Changed', 'DocZoneWrap');
       d.commitTabs((ts) =>
         ts.map((t) => {
           if (t.id !== tabId) return t;
           if ('remove' in action) return withZoneRemoved(t, flow, zoneId);
+          if ('height' in action) return withZoneHeight(t, flow, zoneId, action.height);
           return withZoneWrap(t, flow, zoneId, action, textWidth(t, flow));
         }),
       );
