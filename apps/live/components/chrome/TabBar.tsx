@@ -367,7 +367,9 @@ export function TabBar({
             at its padding edge, so with zero padding the ring vanished
             along whichever edges the pill touched (bottom + first pill's
             left). */}
-        <div className="scrollbar-slim -m-1 flex flex-1 items-center gap-1 overflow-x-auto p-1">
+        {/* Sideways only: the tab menu's and Add tab's 44px tap areas (touch-target) reach past
+            the row, and a free y axis drew a vertical scrollbar beside Search for them. */}
+        <div className="scrollbar-slim -m-1 flex flex-1 items-center gap-1 overflow-x-auto overflow-y-hidden p-1">
           {groupTabsIntoRuns(tabs).map((run) =>
             run.kind === 'loose' ? (
               renderTabPill(run.tab)
