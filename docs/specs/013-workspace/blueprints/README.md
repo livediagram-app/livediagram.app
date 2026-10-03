@@ -13,3 +13,4 @@ Follow the references below only as needed; never upfront.
 - ./explorer-home-view.md - when changing the Home page: its route, columns, strip, entries, Timeline column, local opens
 - ./DEFAULTS.md - when a workspace blueprint applies a default the spec leaves open
 - ./COMPLETENESS.md - when checking which completeness categories a workspace blueprint covers
+- ./empty-document-cleanup.md - when implementing or changing the daily move of empty documents to the Trash: the sweep, the trash reason, the restore restart

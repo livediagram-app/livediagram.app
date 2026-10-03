@@ -2,7 +2,11 @@
 // view"): your personal Trash, one group per joined team (by name), then this
 // browser's local Trash. Each group is one Empty Trash scope. Pure.
 
-import { trashDaysLeft, type TrashedDocument } from '@livediagram/api-schema';
+import {
+  EMPTY_DOCUMENT_STALE_DAYS,
+  trashDaysLeft,
+  type TrashedDocument,
+} from '@livediagram/api-schema';
 import type { TrashListing } from './api/trash';
 
 export type TrashScope =
@@ -54,6 +58,25 @@ export function trashGroups(listing: TrashListing): TrashGroup[] {
     });
   }
   return groups;
+}
+
+// A row's lead: when it went in, and, for one the empty clean-up moved, why
+// (docs/specs/013-workspace/empty-document-cleanup.md "In the Trash").
+export function trashedOnLabel(row: Pick<TrashedDocument, 'trashedAt' | 'reason'>): string {
+  const on = new Date(row.trashedAt).toLocaleDateString(undefined, {
+    day: 'numeric',
+    month: 'short',
+  });
+  return row.reason === 'empty' ? `Moved here ${on} because it was empty` : `Deleted ${on}`;
+}
+
+// The deleted card's lead for someone who may restore it, with the days left.
+export function trashedCardLead(row: Pick<TrashedDocument, 'trashedAt' | 'reason'>, now: number) {
+  const where =
+    row.reason === 'empty'
+      ? `It was empty for ${EMPTY_DOCUMENT_STALE_DAYS} days, so it moved to the Trash`
+      : 'It is in the Trash';
+  return `${where} (${daysLeftLabel(row.trashedAt, now).toLowerCase()}).`;
 }
 
 export function daysLeftLabel(trashedAt: number, now: number): string {

@@ -8,7 +8,7 @@
 import { useState } from 'react';
 import { Button, TrashIcon, buttonClassName } from '@livediagram/ui';
 import type { TrashedDocument } from '@livediagram/api-schema';
-import { daysLeftLabel } from '@/lib/trash-groups';
+import { trashedCardLead } from '@/lib/trash-groups';
 
 export function DocumentTrashedCard({
   restorable,
@@ -39,7 +39,7 @@ export function DocumentTrashedCard({
         </h1>
         <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
           {restorable
-            ? `It is in the Trash (${daysLeftLabel(restorable.trashedAt, now).toLowerCase()}). Restore it to put it back where it was.`
+            ? `${trashedCardLead(restorable, now)} Restore it to put it back where it was.`
             : 'It is no longer available. If it is restored, this link works again.'}
         </p>
         {failed ? (

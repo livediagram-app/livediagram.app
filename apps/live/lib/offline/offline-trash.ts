@@ -21,6 +21,8 @@ function trashRow(rec: OfflineDocumentRecord & { trashedAt: number }): TrashedDo
     teamName: null,
     trashedAt: rec.trashedAt,
     purgeAt: trashPurgeDueAt(rec.trashedAt),
+    // Only the server's clean-up moves empty documents; a local row was deleted.
+    reason: 'deleted',
   };
 }
 

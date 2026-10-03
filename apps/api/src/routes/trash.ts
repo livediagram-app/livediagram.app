@@ -52,7 +52,7 @@ export async function handleTrash(ctx: RouteContext): Promise<Response> {
   if (!allowed) return notFound();
 
   if (restore) {
-    await restoreDocument(env, id);
+    await restoreDocument(env, id, Date.now());
     const liveDoc = await getDocument(env, id);
     console.info('[trash] restored', id);
     return json({ document: liveDoc ? redactDocumentForReader(liveDoc, owner) : null });

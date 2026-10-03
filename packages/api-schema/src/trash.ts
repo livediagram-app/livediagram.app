@@ -9,6 +9,17 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 export const TRASH_RETENTION_DAYS = 30;
 export const TRASH_RETENTION_MS = TRASH_RETENTION_DAYS * DAY_MS;
 
+// How long a document must sit empty and unsaved before the daily clean-up
+// moves it to the Trash (docs/specs/013-workspace/empty-document-cleanup.md).
+// Operator decision; the help article promises it.
+export const EMPTY_DOCUMENT_STALE_DAYS = 30;
+export const EMPTY_DOCUMENT_STALE_MS = EMPTY_DOCUMENT_STALE_DAYS * DAY_MS;
+
+// Why a document is in the Trash: someone deleted it, or the clean-up moved it
+// because it stayed empty. The database stores NULL for `deleted`.
+export const TRASH_REASONS = ['deleted', 'empty'] as const;
+export type TrashReason = (typeof TRASH_REASONS)[number];
+
 // The error every door answers for a document that is in the Trash, to a
 // caller who could have opened it (HTTP 410).
 export const DOCUMENT_TRASHED_ERROR = 'document_trashed';
@@ -28,6 +39,7 @@ export type TrashedDocument = {
   // When it was deleted, and when the daily purge becomes due (epoch ms).
   trashedAt: number;
   purgeAt: number;
+  reason: TrashReason;
 };
 
 export function trashPurgeDueAt(trashedAt: number): number {

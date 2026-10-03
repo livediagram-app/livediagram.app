@@ -13,16 +13,12 @@ import { TRASH_RETENTION_DAYS } from '@livediagram/api-schema';
 import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
 import { InfoNote } from '@/components/primitives/InfoNote';
 import { DocumentIcon } from '@/components/primitives/explorer-icons';
-import { daysLeftLabel, trashGroups, type TrashGroup } from '@/lib/trash-groups';
+import { daysLeftLabel, trashGroups, trashedOnLabel, type TrashGroup } from '@/lib/trash-groups';
 import type { TrashController } from '@/hooks/persistence/useTrash';
 
 type Confirming =
   | { kind: 'purge'; id: string; name: string; group: TrashGroup; anchor: HTMLElement }
   | { kind: 'empty'; group: TrashGroup; anchor: HTMLElement };
-
-function deletedOn(ms: number): string {
-  return new Date(ms).toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
-}
 
 export function TrashPane({ trash }: { trash: TrashController }) {
   const [confirming, setConfirming] = useState<Confirming | null>(null);
@@ -91,7 +87,7 @@ export function TrashPane({ trash }: { trash: TrashController }) {
                       {group.scope.kind === 'local' ? <LocalOnlyPill /> : null}
                     </p>
                     <p className="text-xs text-slate-500 dark:text-slate-400">
-                      Deleted {deletedOn(row.trashedAt)} · {daysLeftLabel(row.trashedAt, now)}
+                      {trashedOnLabel(row)} · {daysLeftLabel(row.trashedAt, now)}
                     </p>
                   </div>
                   <div className="flex shrink-0 items-center gap-1.5">

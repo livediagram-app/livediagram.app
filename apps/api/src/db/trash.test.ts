@@ -3,6 +3,7 @@ import type { DatabaseSync } from 'node:sqlite';
 import type { Tab } from '@livediagram/document';
 import { TRASH_RETENTION_MS } from '@livediagram/api-schema';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
+import { DAY, T0, liveDoc, insert, team } from './test-trash-fixtures';
 import type { Env } from '../types';
 import { deleteAccount } from './account';
 import {
@@ -28,33 +29,6 @@ import {
 // restoring puts it back where it was, and the purge removes it the way a
 // delete always has, shared tabs spared.
 
-const T0 = 1_700_000_000_000;
-const DAY = 24 * 60 * 60 * 1000;
-
-function insert(sql: DatabaseSync, table: string, row: Record<string, string | number | null>) {
-  const cols = Object.keys(row);
-  sql
-    .prepare(`INSERT INTO ${table} (${cols.join(', ')}) VALUES (${cols.map(() => '?').join(', ')})`)
-    .run(...Object.values(row));
-}
-
-function liveDoc(
-  sql: DatabaseSync,
-  id: string,
-  opts: { owner?: string; team?: string | null; folder?: string | null } = {},
-) {
-  insert(sql, 'documents', {
-    id,
-    owner_id: opts.owner ?? 'owner',
-    name: `Diagram ${id}`,
-    shareable: 0,
-    team_id: opts.team ?? null,
-    folder_id: opts.folder ?? null,
-    saved_at: T0,
-    created_at: T0,
-  });
-}
-
 function folder(sql: DatabaseSync, id: string, owner = 'owner', team: string | null = null) {
   insert(sql, 'folders', {
     id,
@@ -64,21 +38,6 @@ function folder(sql: DatabaseSync, id: string, owner = 'owner', team: string | n
     created_at: T0,
     updated_at: T0,
   });
-}
-
-function team(sql: DatabaseSync, id: string, members: [string, 'joined' | 'pending'][]) {
-  insert(sql, 'teams', { id, name: `Team ${id}`, created_at: T0, updated_at: T0 });
-  for (const [user, status] of members) {
-    insert(sql, 'team_members', {
-      id: `m-${id}-${user}`,
-      team_id: id,
-      user_id: user,
-      role: 'member',
-      status,
-      created_at: T0,
-      updated_at: T0,
-    });
-  }
 }
 
 async function tab(db: SqliteD1, documentId: string, id: string) {
@@ -203,7 +162,7 @@ describe('restoreDocument', () => {
     liveDoc(sql, 'A', { folder: 'F' });
     await trashDocument(env, 'A', T0);
 
-    expect(await restoreDocument(env, 'A')).toBe(true);
+    expect(await restoreDocument(env, 'A', T0 + DAY)).toBe(true);
 
     expect(column(sql, 'A', 'trashed_at')).toBeNull();
     expect((await getDocument(env, 'A'))?.folderId).toBe('F');
@@ -216,7 +175,7 @@ describe('restoreDocument', () => {
     await trashDocument(env, 'A', T0);
     await deleteFolder(env, 'F');
 
-    await restoreDocument(env, 'A');
+    await restoreDocument(env, 'A', T0 + DAY);
 
     expect((await getDocument(env, 'A'))?.folderId).toBeNull();
   });
@@ -230,7 +189,7 @@ describe('restoreDocument', () => {
     await trashDocument(env, 'A', T0);
     await deleteFolder(env, 'F');
 
-    await restoreDocument(env, 'A');
+    await restoreDocument(env, 'A', T0 + DAY);
 
     expect((await getDocument(env, 'A'))?.folderId).toBe('P');
   });
@@ -246,8 +205,8 @@ describe('restoreDocument', () => {
     await trashDocument(env, 'A', T0);
     await trashDocument(env, 'T', T0);
 
-    await restoreDocument(env, 'A');
-    await restoreDocument(env, 'T');
+    await restoreDocument(env, 'A', T0 + DAY);
+    await restoreDocument(env, 'T', T0 + DAY);
 
     expect((await getDocument(env, 'A'))?.folderId).toBeNull();
     expect((await getDocument(env, 'T'))?.folderId).toBeNull();
@@ -260,7 +219,7 @@ describe('restoreDocument', () => {
     liveDoc(sql, 'T', { team: 'team', folder: 'TF' });
     await trashDocument(env, 'T', T0);
 
-    await restoreDocument(env, 'T');
+    await restoreDocument(env, 'T', T0 + DAY);
 
     expect((await listDocumentsByTeam(env, 'team')).map((d) => [d.id, d.folderId])).toEqual([
       ['T', 'TF'],
@@ -270,8 +229,8 @@ describe('restoreDocument', () => {
   it('does nothing to a live or missing document', async () => {
     const { env, sql } = sqliteD1();
     liveDoc(sql, 'A');
-    expect(await restoreDocument(env, 'A')).toBe(false);
-    expect(await restoreDocument(env, 'nope')).toBe(false);
+    expect(await restoreDocument(env, 'A', T0 + DAY)).toBe(false);
+    expect(await restoreDocument(env, 'nope', T0 + DAY)).toBe(false);
   });
 });
 
@@ -298,6 +257,7 @@ describe('listTrash', () => {
         teamName: 'Team joined',
         trashedAt: T0 + 1,
         purgeAt: T0 + 1 + TRASH_RETENTION_MS,
+        reason: 'deleted',
       },
       {
         id: 'mine',
@@ -306,6 +266,7 @@ describe('listTrash', () => {
         teamName: null,
         trashedAt: T0,
         purgeAt: T0 + TRASH_RETENTION_MS,
+        reason: 'deleted',
       },
     ]);
   });

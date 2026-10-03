@@ -504,8 +504,10 @@ The way back from `delete_document`, with exactly the REST Trash's authority
 and every team Trash they have joined.
 
 - **`list_trash`** — `{}`. Read-only. Each document the user may restore:
-  `{ id, name, library, deletedAt, purgeAt }`, `library` being `personal` or
-  the team's name, the two times ISO 8601.
+  `{ id, name, library, reason, deletedAt, purgeAt }`, `library` being
+  `personal` or the team's name, `reason` being `deleted` or `empty` (moved by
+  the [empty document clean-up](../013-workspace/empty-document-cleanup.md)),
+  the two times ISO 8601.
 - **`restore_document`** — `{ documentId }`. Restores it to its folder, or
   the root of its space when that folder is gone, and returns `{ restored, id, name, url }`.
   A 404 (not in the Trash, or not the user's) becomes a model-correctable error
@@ -693,7 +695,7 @@ and no `structuredContent`; MCP exempts errors from the output schema.
 | `share_document`   | `url`, `role`, `expiresAt` (ms epoch, or null for never), `documentUrl`                                   |
 | `rename_document`  | `renamed` (`document` or `tab`), `name`, then `id` + `url` for a document or `tabId` for a tab            |
 | `delete_document`  | `deleted` (`document` or `tab`), `documentId`, then `trashed` + `restorableForDays` or `tabId`            |
-| `list_trash`       | `trash[]` of `{ id, name, library, deletedAt, purgeAt }` (ISO timestamps)                                 |
+| `list_trash`       | `trash[]` of `{ id, name, library, reason, deletedAt, purgeAt }` (ISO timestamps)                         |
 | `restore_document` | `restored`, `id`, `name` (null when the api omits it), `url`                                              |
 
 **The schema and the result can't drift.** The schemas live in

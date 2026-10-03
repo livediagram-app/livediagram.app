@@ -6691,6 +6691,13 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
+  "TrashReason": {
+    "enum": [
+      "deleted",
+      "empty"
+    ],
+    "type": "string"
+  },
   "TrashedDocument": {
     "additionalProperties": false,
     "properties": {
@@ -6702,6 +6709,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "purgeAt": {
         "type": "number"
+      },
+      "reason": {
+        "$ref": "#/components/schemas/TrashReason"
       },
       "teamId": {
         "type": [
@@ -6725,7 +6735,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "teamId",
       "teamName",
       "trashedAt",
-      "purgeAt"
+      "purgeAt",
+      "reason"
     ],
     "type": "object"
   },

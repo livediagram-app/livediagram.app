@@ -77,7 +77,7 @@ describe('Timeline, while a document is in the Trash', () => {
     const scope = { scopeType: 'user' as const, scopeId: 'owner' };
     await trashDocument(env, 'A', T0);
 
-    await restoreDocument(env, 'A');
+    await restoreDocument(env, 'A', T0 + DAY);
 
     expect((await readTimeline(env, { scope, limit: 10 })).items.map((e) => e.id)).toEqual(['own']);
   });

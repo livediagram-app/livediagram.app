@@ -15,6 +15,7 @@ const row = (id: string, name: string) => ({
   teamName: null,
   trashedAt: Date.now(),
   purgeAt: Date.now() + 86_400_000,
+  reason: 'deleted' as const,
 });
 
 describe('TrashPane', () => {
