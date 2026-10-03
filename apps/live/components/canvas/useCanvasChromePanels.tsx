@@ -79,6 +79,7 @@ export function useCanvasChromePanels({
   // rendered outside the corner layer (then its panelEl is null).
   toolbarClusterEls: ReactNode;
   collaborateEl: ReactNode;
+  slidesPopoverEl: ReactNode;
   // True when Layers opens as a popover over its cluster button
   // (Toolbar, and zen).
   clusterPopovers: boolean;
@@ -266,6 +267,10 @@ export function useCanvasChromePanels({
     chromeHidden,
     stackBelowY,
     panelWiringFor,
+    slidesPopover:
+      activeDockPanel === 'slides'
+        ? { anchor: activeDockAnchor ?? undefined, onClose: closeDockPanel }
+        : null,
   });
 
   const explorerEl = zenMode ? null : (
@@ -530,7 +535,8 @@ export function useCanvasChromePanels({
     laser: laserEl,
     spotlight: spotlightEl,
     eraser: eraserEl,
-    'slide-deck': slideDeckEl,
+    // Over its cluster button (Infographic mode) it renders beside the corner layer, like Collaborate.
+    'slide-deck': activeDockPanel === 'slides' ? null : slideDeckEl,
     format: formatEl,
   };
   return {
@@ -539,6 +545,7 @@ export function useCanvasChromePanels({
     // Toolbar's cluster popovers, rendered beside the corner layer rather than
     // in it (see panelEls).
     collaborateEl,
+    slidesPopoverEl: activeDockPanel === 'slides' ? slideDeckEl : null,
     toolbarClusterEls: toolbarActive ? layersEl : null,
     clusterPopovers,
     paletteTint,

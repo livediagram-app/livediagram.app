@@ -26,6 +26,7 @@ import { OffscreenContentHint } from '@/components/canvas/OffscreenContentHint';
 import { ToolbarPalette } from '@/components/palette/ToolbarPalette';
 import { pickPaletteAddHandlers } from '@/components/palette/palette-add-handlers';
 import { ToolbarExplorerButton } from '@/components/chrome/ToolbarExplorerButton';
+import { SlidesClusterButton } from '@/components/canvas/SlidesClusterButton';
 import { LayersClusterButton } from '@/components/canvas/LayersClusterButton';
 import { UndoRedoClusterStrip } from '@/components/canvas/UndoRedoClusterStrip';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
@@ -331,6 +332,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
     toolbarExplorerEl,
     toolbarClusterEls,
     collaborateEl,
+    slidesPopoverEl,
     clusterPopovers,
     paletteTint,
   } = useCanvasChromePanels({
@@ -494,6 +496,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
           positions against the canvas, so it renders outside the corner
           layer, as Toolbar's cluster popovers do. */}
       {zenMode ? null : collaborateEl}
+      {zenMode ? null : slidesPopoverEl}
       {toolbarActive && !readOnly && !whiteboard ? (
         <ToolbarPalette
           key={props.esBoard ? 'es-board' : 'standard'}
@@ -580,6 +583,14 @@ export function CanvasChrome(props: CanvasChromeProps) {
                 onRedo={onRedo}
                 canUndo={canUndo}
                 canRedo={canRedo}
+              />
+            ) : null}
+            {/* Slides (docs/specs/007-editor/infographic-pages.md "Slides"): in Infographic mode, where
+                Layers would be, the deck one press away. */}
+            {!zenMode && props.infographicPages && props.slideDeck ? (
+              <SlidesClusterButton
+                popoverOpen={activeDockPanel === 'slides'}
+                onTogglePopover={(button) => handleDockButtonClick('slides', button, true)}
               />
             ) : null}
             {/* Layers (docs/specs/006-document/layers.md): see LayersClusterButton. */}

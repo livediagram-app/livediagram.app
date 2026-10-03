@@ -15,7 +15,8 @@ import { useUiScale } from '@/components/providers/ui-scale';
 // scaled width or a scaled popover runs off the right edge.
 const POPOVER_WIDTH = 256;
 
-export type DockPanel = 'explorer' | 'layers' | 'collaborate';
+// 'slides': the Slide Deck panel over its cluster button in Infographic mode.
+export type DockPanel = 'explorer' | 'layers' | 'collaborate' | 'slides';
 
 export type { DockAnchor };
 
@@ -29,6 +30,7 @@ export type { DockAnchor };
 function trackDockPanelOpened(id: DockPanel): void {
   if (id === 'layers') track('Layer', 'Opened', 'Panel');
   else if (id === 'collaborate') track('UI', 'Opened', 'Collaborate');
+  else if (id === 'slides') track('UI', 'Opened', 'SlideDeck');
 }
 
 export function useDockPopovers(mainRef: Ref<HTMLElement>) {

@@ -243,6 +243,10 @@ Never a colour, name or layout content.
 
 ## Chrome in Infographic mode
 
+- **Slides button**: in the bottom-right cluster, where Layers sits in the other modes (left of
+  the brush), a **Slides** button opens the Slide Deck panel as a popover hanging above it (an
+  outside press closes it; the button shows pressed while open). An infographic is likely to be
+  presented, so its deck is one press away. Telemetry: `UI · Opened · SlideDeck`.
 - **No Layers**: the Layers button and panel are not offered (a page is arranged by its pages, not
   layers); the tab's layers are untouched and come back in the other modes.
 
