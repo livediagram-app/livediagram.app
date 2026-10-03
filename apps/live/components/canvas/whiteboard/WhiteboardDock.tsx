@@ -88,6 +88,7 @@ export function WhiteboardDock({ model, ink, variant = 'dock' }: WhiteboardDockP
   useEffect(() => {
     if (shapesRequest === seenRequest.current) return;
     seenRequest.current = shapesRequest;
+    // The Palette panel has no Shapes flyout (its shapes are on show), so no opener: S does nothing.
     const opener = document.querySelector<HTMLElement>(
       '[data-whiteboard-dock] [data-dock-item="shapes"]',
     );

@@ -11,20 +11,22 @@ const BESIDE_GAP_PX = 22;
 
 // A flyout beside the Palette panel (docs/specs/023-draw-mode/draw-mode.md "What a whiteboard
 // shows"): on the side of the panel with more room, its top level with the opener's, kept inside
-// the viewport. Pure, from measured rects and the flyout's layout size.
+// the viewport; its tip on the edge facing the panel, level with the opener's centre. Pure, from
+// measured rects and the flyout's layout size.
 export function besidePanel(
   panel: { left: number; right: number },
-  opener: { top: number },
+  opener: { top: number; height?: number },
   flyout: { offsetWidth: number; offsetHeight: number },
   viewport: { width: number; height: number } = {
     width: window.innerWidth,
     height: window.innerHeight,
   },
-): { left: number; top: number } {
+): { left: number; top: number; side: 'left' | 'right'; tipTop: number } {
   const roomLeft = panel.left;
   const roomRight = viewport.width - panel.right;
+  const side = roomLeft >= roomRight ? 'left' : 'right';
   const left =
-    roomLeft >= roomRight
+    side === 'left'
       ? Math.max(VIEWPORT_MARGIN_PX, panel.left - BESIDE_GAP_PX - flyout.offsetWidth)
       : Math.min(
           viewport.width - VIEWPORT_MARGIN_PX - flyout.offsetWidth,
@@ -34,7 +36,39 @@ export function besidePanel(
     VIEWPORT_MARGIN_PX,
     Math.min(opener.top, viewport.height - VIEWPORT_MARGIN_PX - flyout.offsetHeight),
   );
-  return { left, top };
+  const centre = opener.top + (opener.height ?? 0) / 2 - top;
+  const tipTop = Math.max(TIP_INSET_PX, Math.min(centre, flyout.offsetHeight - TIP_INSET_PX));
+  return { left, top, side, tipTop };
+}
+
+// How close the tip may come to a corner of the card (its rounding is 12px).
+const TIP_INSET_PX = 14;
+
+// The flyout's tip: a small rotated square on the edge facing its opener, with the card's own
+// border on its two outer sides, so it reads as part of the card pointing at the button.
+function FlyoutTip({
+  edge,
+  offset,
+}: {
+  edge: 'top' | 'bottom' | 'left' | 'right';
+  // Along the edge, from the card's left (top / bottom) or top (left / right): px or a CSS length.
+  offset: number | string;
+}) {
+  const place = {
+    top: '-top-[6px] border-l border-t',
+    bottom: '-bottom-[6px] border-b border-r',
+    left: '-left-[6px] border-b border-l',
+    right: '-right-[6px] border-r border-t',
+  }[edge];
+  const at = typeof offset === 'number' ? `${offset - 5}px` : `calc(${offset} - 5px)`;
+  return (
+    <span
+      aria-hidden
+      data-flyout-tip={edge}
+      style={edge === 'top' || edge === 'bottom' ? { left: at } : { top: at }}
+      className={`pointer-events-none absolute h-2.5 w-2.5 rotate-45 border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900 ${place}`}
+    />
+  );
 }
 
 // A dock button's settings, opened on the board side of the dock (below a dock at the top, above
@@ -83,7 +117,7 @@ export function WhiteboardFlyout({
   const ref = useRef<HTMLDivElement>(null);
   // Where a beside-the-panel flyout sits, in viewport px; null until measured (it stays hidden
   // for that one frame rather than flashing at the corner).
-  const [beside, setBeside] = useState<{ left: number; top: number } | null>(null);
+  const [beside, setBeside] = useState<ReturnType<typeof besidePanel> | null>(null);
   useLayoutEffect(() => {
     const node = ref.current;
     if (!besideOf || !node) return;
@@ -181,6 +215,16 @@ export function WhiteboardFlyout({
           : `absolute ${below ? 'top-full mt-2' : 'bottom-full mb-2'}`
       } w-max max-w-[min(20rem,calc(100vw-1.5rem))] animate-pop-in rounded-xl border border-slate-200 bg-white p-3 shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40`}
     >
+      {/* The tip points at the button that opened it, wherever the card sits. */}
+      {besideOf ? (
+        beside ? (
+          <FlyoutTip edge={beside.side === 'left' ? 'right' : 'left'} offset={beside.tipTop} />
+        ) : null
+      ) : (
+        // The card is centred on its opener, then nudged into the viewport: the tip undoes the
+        // nudge so it stays over the button.
+        <FlyoutTip edge={below ? 'top' : 'bottom'} offset={`calc(50% - ${nudge}px)`} />
+      )}
       {hideTitle ? null : <FlyoutHeading className="mb-2">{label}</FlyoutHeading>}
       {children}
     </div>
