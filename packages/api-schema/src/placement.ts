@@ -2,7 +2,7 @@
 // document is filed, and the named refusals when that cannot be honoured. The api answers these
 // tokens and the editor branches on them, so both read them from here.
 
-/** Where a document is filed: a team's library (Personal Space when null) and a folder in it (the
+/** Where a document is filed: a team's library (My documents when null) and a folder in it (the
  *  space's root, its Unsorted, when null). */
 export type DocumentPlacement = { teamId: string | null; folderId: string | null };
 

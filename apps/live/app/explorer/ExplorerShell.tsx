@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import type { ReactNode } from 'react';
 import { Brand, CloseIcon, ProductNav } from '@livediagram/ui';
 import { AuthControls } from '@/components/chrome/AuthControls';
+import { HeaderSearchAction } from '@/components/chrome/HeaderSearchAction';
 import { ChromeControls } from '@/components/chrome/ChromeControls';
 import { TeamFormModal } from '@/components/dialogs/TeamFormModal';
 import { MoveToFolderDialog } from '@/components/dialogs/MoveToFolderDialog';
@@ -21,8 +22,9 @@ import { CustomThemeProvider } from '@/components/primitives/CustomThemeProvider
 import { ShapeLibraryProvider } from '@/components/primitives/ShapeLibraryProvider';
 import { AreaErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
 import { ExplorerProvider, useExplorer } from './ExplorerContext';
-import { ExplorerSidebar } from './ExplorerSidebar';
+import { ExplorerSidebar } from './sidebar/ExplorerSidebar';
 import { useExplorerState } from './useExplorerState';
+import { isLocalOnly } from '@/lib/document-space';
 
 // Lazy-load SearchPanel — same rationale as the editor route: it's
 // gated on `searchOpen`, never default-rendered, and dropping ~375
@@ -132,7 +134,10 @@ function ShellChrome({ children }: { children: ReactNode }) {
           <Brand href="/" size="md" />
           <ProductNav current="explorer" showOnMobile />
         </div>
-        <AuthControls onOpenAccount={() => openSettingsOn('account')} />
+        <div className="flex h-full items-stretch">
+          <HeaderSearchAction onOpen={() => setSearchOpen(true)} />
+          <AuthControls onOpenAccount={() => openSettingsOn('account')} />
+        </div>
       </header>
 
       <main
@@ -211,7 +216,7 @@ function ShellChrome({ children }: { children: ReactNode }) {
       {/* Move-destination modal (docs/specs/013-workspace/folders.md + docs/specs/013-workspace/team-shared-documents.md): the shared
           placement browser (docs/specs/006-document/offline-mode.md's Save In UI) for every document
           (personal or team) and for folder re-parenting. It offers
-          "Personal Space" plus each team as a space (for document moves);
+          "My documents" plus each team as a space (for document moves);
           `moveDocumentTo` routes the pick from the subject's current
           placement. Folder moves are personal-only, so they pass no
           teams. The New Folder tile creates in the picked scope. */}
@@ -278,7 +283,7 @@ function ShellChrome({ children }: { children: ReactNode }) {
       />
       {searchOpen ? (
         <SearchPanel
-          documents={liveDocs.map((d) => ({ id: d.id, name: d.name }))}
+          documents={liveDocs.map((d) => ({ id: d.id, name: d.name, localOnly: isLocalOnly(d) }))}
           folders={folders.map((f) => ({ id: f.id, name: f.name }))}
           shared={shared.map((s) => ({ id: s.id, name: s.name, shareCode: s.shareCode }))}
           teams={teams.map((t) => ({ id: t.id, name: t.name }))}

@@ -71,7 +71,7 @@ Scope, by file:
 
 | Term           | Identifier                                        | Meaning                                                                    |
 | -------------- | ------------------------------------------------- | -------------------------------------------------------------------------- |
-| Mirror         | `drive-mirror`                                    | The copy of Personal Space in the user's Drive                             |
+| Mirror         | `drive-mirror`                                    | The copy of My documents in the user's Drive                               |
 | Connection     | `drive_connections` row, `DriveConnection`        | One user's grant and mirror state                                          |
 | Mode           | `DriveMode`: `off` \| `browser` \| `broker`       | How the deployment gets Google access tokens                               |
 | Status         | `DriveConnectionStatus`                           | `connected` \| `needs_reconnect`                                           |
@@ -196,7 +196,7 @@ stops the pass on a rate-limit error. `expectedParent(folderId)` is the folder's
      `now - savedAt >= DRIVE_WRITE_IDLE_MS` and `now - lastContentWrite(id) >= DRIVE_WRITE_MIN_INTERVAL_MS` x back-off.
      A deferred upload schedules a `write` pass for the moment it becomes due.
 3. **Trashed personal documents** with an item not trashed: `updateFile { trashed: true }`.
-4. **Items of documents neither live nor trashed in Personal Space** (moved into a team) not trashed:
+4. **Items of documents neither live nor trashed in My documents** (moved into a team) not trashed:
    `updateFile { trashed: true }`; the row stays, so a move back out restores it (step 2).
 5. **Tombstones:** for each: `getFile`; 404 or already gone: drop. Document: `trashed` then `deleteFile`, else
    `updateFile { trashed: true }`. Folder: `updateFile { trashed: true }` (its contents moved up in steps 1 and 2).
@@ -221,7 +221,7 @@ returns one `InboundDecision`:
 | No item, `ldDocumentId` names a known document                                         | `ignore` (`unrecorded-document`); adopted only by the reconnect listing |
 | `removed`, document item, document in the personal Trash                               | `purge`                                                                 |
 | `removed`, document item, document live                                                | `forget-file` (item dropped; outbound re-creates)                       |
-| `removed`, document item, document outside Personal Space                              | `forget-file`                                                           |
+| `removed`, document item, document outside My documents                                | `forget-file`                                                           |
 | `removed`, folder item                                                                 | `forget-file` (outbound re-creates it while the folder lives)           |
 | No foreign field                                                                       | `echo`                                                                  |
 | Folder item, `trashed` became true                                                     | `bin-folder`                                                            |

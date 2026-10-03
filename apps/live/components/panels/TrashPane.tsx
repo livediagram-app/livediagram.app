@@ -5,8 +5,9 @@
 // joined team, then this browser only. Each row offers Restore and Delete
 // permanently; each group Empty Trash. The two destructive actions confirm in
 // a popover beside the button, as the Explorer's delete does. Reached from
-// the sidebar's Library section and from Settings › Account.
+// the sidebar's More group and from Settings › Account.
 import { useState } from 'react';
+import { LocalOnlyPill } from '@/components/primitives/LocalOnlyPill';
 import { Button, EmptyState, TrashIcon } from '@livediagram/ui';
 import { TRASH_RETENTION_DAYS } from '@livediagram/api-schema';
 import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
@@ -82,8 +83,12 @@ export function TrashPane({ trash }: { trash: TrashController }) {
                     <DocumentIcon size={14} />
                   </span>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-slate-800 dark:text-slate-100">
-                      {row.name || 'Untitled document'}
+                    <p className="flex min-w-0 items-center gap-2">
+                      <span className="truncate text-sm font-medium text-slate-800 dark:text-slate-100">
+                        {row.name || 'Untitled document'}
+                      </span>
+                      {/* This browser's Trash (docs/specs/006-document/offline-mode.md#local-only-pill). */}
+                      {group.scope.kind === 'local' ? <LocalOnlyPill /> : null}
                     </p>
                     <p className="text-xs text-slate-500 dark:text-slate-400">
                       Deleted {deletedOn(row.trashedAt)} · {daysLeftLabel(row.trashedAt, now)}

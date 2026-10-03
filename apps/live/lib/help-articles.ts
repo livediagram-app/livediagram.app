@@ -288,7 +288,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     description: 'How uploaded images are stored and reused across documents.',
   },
   timeline: {
-    title: 'Learn about the Timeline',
+    title: 'Learn about Home',
     description: 'Everything that has happened across your documents, teams and account.',
   },
   activity: {
@@ -300,7 +300,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     description: 'Your most recently opened documents, personal and team, in one list.',
   },
   sharedWithYou: {
-    title: 'Learn about Shared with You',
+    title: 'Learn about Shared with me',
     description: 'Documents other people have shared with you, collected here.',
   },
   folders: {

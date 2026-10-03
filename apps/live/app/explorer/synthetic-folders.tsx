@@ -1,8 +1,8 @@
 import type { ComponentType } from 'react';
 import {
   DynamicFolderIcon,
-  OfflineFolderIcon,
   SparkleIcon,
+  ThisBrowserIcon,
   UnsortedIcon,
 } from '@/components/primitives/explorer-icons';
 import type { ExplorerViewProps } from './explorer-view-props';
@@ -23,7 +23,8 @@ export const SYNTHETIC_FOLDERS: Record<
 > = {
   unsorted: { Icon: UnsortedIcon, label: 'Unsorted' },
   generated: { Icon: SparkleIcon, label: 'Generated' },
-  offline: { Icon: OfflineFolderIcon, label: 'Offline' },
+  // The place a document saved only in this browser lives, named as its sidebar row.
+  offline: { Icon: ThisBrowserIcon, label: 'This browser' },
   dynamic: { Icon: DynamicFolderIcon, label: 'Dynamic' },
 };
 

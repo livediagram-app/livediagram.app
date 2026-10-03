@@ -12,7 +12,7 @@ One row per default applied where the spec is silent or qualitative.
 | D6  | drive-mirror | Order of changes within one `changes.list` read         | Folders first, then files, each by `time`, so a restored folder exists before its documents are placed   |
 | D7  | drive-mirror | A name from Drive longer than a livediagram name allows | Truncated to `MAX_NAME_LEN`                                                                              |
 | D8  | drive-mirror | A page token Drive rejects                              | Take a new start token and re-run the adoption listing                                                   |
-| D9  | drive-mirror | Progress denominator for the first mirror               | Live Personal Space documents at the start of the pass                                                   |
+| D9  | drive-mirror | Progress denominator for the first mirror               | Live documents in My documents at the start of the pass                                                  |
 | D10 | drive-mirror | Where the reconnect banner sits                         | Bottom-left, dismissible for the browser session                                                         |
 | D11 | drive-mirror | Relative wording of **Last synced**                     | "Just now" under a minute, then the shared relative-time formatter, "Not yet" before the first pass      |
 | D12 | drive-mirror | Where `/drive/connected` returns to                     | The page the user connected from, else `/explorer`                                                       |

@@ -22,7 +22,7 @@ Two D1 tables, owned by the api worker (migration `0019_teams.sql`):
 Teams are keyed by Clerk user ids and invites are keyed by email, so the whole feature requires a verified Clerk session:
 
 - Every `/api/teams*` endpoint requires a verified Clerk Bearer token. The guest `X-Owner-Id` path gets `401 sign_in_required`. This does NOT violate [Auth + guest access](../014-identity/auth-and-guest-access.md)'s no-sign-in-wall rule: the canvas and everything else stays guest-accessible; only the Teams surface asks for an account.
-- In the Explorer, guests see the Team Spaces section with a "sign in to use teams" link instead of team rows. Clerk-disabled self-host deployments ([Open source + distribution](../002-project-scope/open-source-and-business-model.md)) hide the section entirely.
+- In the Explorer sidebar, guests see the sign-in nudge ("Sign in to access Teams") at the end of the Spaces group instead of team rows and New team ([Explorer structure](explorer-structure.md)). Clerk-disabled self-host deployments ([Open source + distribution](../002-project-scope/open-source-and-business-model.md)) show neither.
 
 ### Email claim
 
@@ -97,11 +97,11 @@ Wire DTOs (`Team`, `TeamListItem`, `TeamMember`, `TeamRole`) live in `@livediagr
 
 ## Explorer UI
 
-In the Explorer sidebar, a **Team Spaces** section (labelled to mirror Personal Space, so the two kinds of library read as the same noun) sits under the Personal Space section (above Library):
+In the Explorer sidebar, each team is a root-level folder row in the **Spaces** group, after **My documents**: the two kinds of space read as the same noun ([Explorer structure](explorer-structure.md)).
 
-- One row per team the user has joined; selecting it shows the team in the right pane.
-- A "New team" affordance opens a create modal (name + organisation); submitting creates the team with the user as Admin.
-- An **Invites** row directly under "New team", carrying a count badge when invites are pending. Selecting it shows each pending invite as a card (team name, organisation, joined-member count) with **Accept** and **Decline** actions. Accepting selects the newly joined team; declining removes the card.
+- One row per team the user has joined; selecting it shows the team in the right pane, and it expands to the team's folders.
+- An **Invites** row, shown while an invite is pending, with a count badge. Selecting it shows each pending invite as a card (team name, organisation, joined-member count) with **Accept** and **Decline** actions. Accepting selects the newly joined team; declining removes the card.
+- **New team**, the group's last row (signed-in only), opens a create modal (name + organisation); submitting creates the team with the user as Admin. A guest sees the sign-in nudge in its place.
 
 The right-pane team view is **one calm card**, not a stack of panels:
 

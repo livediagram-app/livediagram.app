@@ -1493,33 +1493,22 @@ The default lands in three places, all of which must change together
    `default:` case, which catches mangled URLs and id-less
    `folder`/`team` links, returns `{ kind: 'timeline' }`.
 
-**Recent is not removed.** It keeps its route, its sidebar row, and its
-badge. It answers a different question ("what did I touch last") and
-answers it better than a feed does.
+**Recent is not removed.** It keeps its route (`/explorer/recent`); it answers
+a different question ("what did I touch last"). It has no sidebar row: Home is
+the sidebar's recency view ([Explorer structure](explorer-structure.md)).
 
 ### 8.2 Sidebar
 
-Quick find gains Timeline at the top and **Favourites moves into it**:
+The Timeline is the sidebar's **Home** row, first in the Overview group
+([Explorer structure](explorer-structure.md)), and its page is titled **Home**
+(heading, document title and breadcrumb); "Timeline" names the feed itself:
 
+```text
+Overview
+  ⌂  Home              ← the Timeline, and the landing view
+  ◔  Activity
+  ↗  Shared with me
 ```
-Quick find
-  ⏱  Timeline          ← new, and the landing view
-  🕐  Recent
-  ★  Favourites        ← moved up from Personal Space › Dynamic
-  ↗  Shared with you
-
-Personal Space
-  ⊞  Dynamic
-     ▫ Unsorted
-     ✨ Generated
-     ⬒  Offline
-  … root folders
-```
-
-Favourites is a user's own curated shortlist, not a synthetic view of
-where a document happens to sit, so it belongs beside Recent rather than
-buried a level down among Unsorted / Generated / Offline. The Dynamic
-parent's badge stops adding `favouriteCount` when it does.
 
 Timeline **does** carry an unread badge. This section deferred it ("an
 unread count needs a per-user last-seen marker, which is a preference
@@ -1537,7 +1526,7 @@ section and must not drag a feed nobody is looking at.
 Adding the section touches the same files every Explorer section does:
 `views.tsx` (the `SelectedNode` union), `routes.ts` (both directions),
 `apps/live/app/explorer/timeline/page.tsx` (the route stub),
-`ExplorerSidebar.tsx`,
+the sidebar group that holds its row (`app/explorer/sidebar/`, [Explorer structure](explorer-structure.md)),
 `components/primitives/explorer-icons.tsx`, `useExplorerPane.ts` (pane content, title, crumbs),
 `ExplorerPane.tsx` (dispatch — Timeline is not a `BROWSE_KIND`),
 `ExplorerEmptyState.tsx`, and `routes.test.ts`'s `STATIC_NODES`.

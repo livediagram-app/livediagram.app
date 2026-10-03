@@ -135,7 +135,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
         teamId: {
           type: ['string', 'null'],
           description:
-            "The team library to file into; absent or null = the caller's Personal Space. " +
+            "The team library to file into; absent or null = the caller's My documents. " +
             'Requires a signed-in caller (or API token) who has joined the team.',
         },
         folderId: {

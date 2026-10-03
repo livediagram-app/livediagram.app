@@ -47,9 +47,10 @@ test('the apps menu opens in front of the new-document wizard', async ({ page, p
 
 test('the explorer renders for a guest', async ({ page, pageErrors }) => {
   await page.goto('/explorer');
-  // The sidebar's quick-find sections are always present for a guest.
-  await expect(page.getByText('Recent', { exact: false }).first()).toBeVisible();
-  await expect(page.getByText('Shared with you', { exact: false })).toBeVisible();
+  // The sidebar's Overview rows are always present for a guest
+  // (docs/specs/013-workspace/explorer-structure.md).
+  await expect(page.getByRole('treeitem', { name: /^Home/ })).toBeVisible();
+  await expect(page.getByRole('treeitem', { name: /^Shared with me/ })).toBeVisible();
   expectNoPageErrors(pageErrors);
 });
 

@@ -5,7 +5,7 @@ Status: shipped
 ## What
 
 A **Favourite** / **Unfavourite** toggle on the document menu in both Explorer
-surfaces, and a **Favourites** view under **Personal Space → Dynamic** that collects
+surfaces, and a **Favourites** view at `/explorer/favourites` that collects
 every starred document — personal or team — in one place.
 
 The motivating case is team folders: a shared library accumulates documents
@@ -54,9 +54,6 @@ ids with **the document lists the client already has permission to see**. An id
 for something you can no longer open simply doesn't appear. Checking on write
 would cost a lookup per star to prevent nothing.
 
-The sidebar badge counts the same intersection, not the raw id count, so a
-star on a team you've since left doesn't inflate it.
-
 ## An offline document's star lives in the browser
 
 The table's `document_id` is a foreign key into `documents`, and an offline
@@ -81,9 +78,10 @@ across; it is dropped with the copy that held it.
 
 ## The view
 
-Under **Personal Space → Dynamic**, beside Unsorted / Offline — the issue
-asked for it "within Personal Space", and it behaves like the other synthetic folders
-(a computed list, not a real folder you can move things into).
+At `/explorer/favourites`. It has **no sidebar row**
+([Explorer structure](explorer-structure.md)); the route keeps working for links
+and bookmarks. It behaves like the synthetic folders (a computed list, not a real
+folder you can move things into).
 
 - **Sorted most-recently-updated first**, exactly like Recent and every folder,
   so there's nothing new to learn. Deliberately _not_ sort-by-date-favourited:

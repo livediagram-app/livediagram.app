@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
+import { VIEW_TITLES } from './view-titles';
 import type { DocumentListItem, Folder, SharedWithItem } from '@/lib/api-client';
 import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
 import { groupDocumentsByFolder } from '@/lib/folder-tree';
@@ -196,54 +197,27 @@ export function useExplorerPane({
     return Math.min(RECENT_LIMIT, visible);
   }, [liveDocs, teamDocuments, shared, excluded]);
 
+  // Each view is named by its sidebar row (VIEW_TITLES); a folder or team by its own name.
   const paneTitle = useMemo(() => {
-    if (selected.kind === 'timeline') return 'Timeline';
-    if (selected.kind === 'activity') return 'Activity';
-    if (selected.kind === 'recent') return 'Recent';
-    if (selected.kind === 'shared') return 'Shared with You';
-    if (selected.kind === 'gallery') return 'Image Gallery';
-    if (selected.kind === 'themes') return 'Themes';
-    if (selected.kind === 'shape-libraries') return 'Shape libraries';
-    if (selected.kind === 'trash') return 'Trash';
-    if (selected.kind === 'team') {
-      return teams.find((t) => t.id === selected.id)?.name ?? 'Team';
-    }
-    if (selected.kind === 'invites') return 'Invites';
-    if (selected.kind === 'all') return 'Personal Space';
-    if (selected.kind === 'unsorted') return 'Unsorted';
-    if (selected.kind === 'favourites') return 'Favourites';
-    if (selected.kind === 'generated') return 'Generated';
-    if (selected.kind === 'offline') return 'Offline';
-    if (selected.kind === 'dynamic') return 'Dynamic';
-    return folderById.get(selected.id)?.name ?? 'Folder';
+    if (selected.kind === 'team') return teams.find((t) => t.id === selected.id)?.name ?? 'Team';
+    if (selected.kind === 'folder') return folderById.get(selected.id)?.name ?? 'Folder';
+    return VIEW_TITLES[selected.kind];
   }, [selected, folderById, teams]);
 
-  // Breadcrumb segments for the pane header. Each segment carries
-  // an optional onClick — the leaf (current selection) is plain
-  // text so the user can't navigate to where they already are.
+  // Breadcrumb segments for the pane header, following the sidebar's rows. Each segment carries
+  // an optional onClick — the leaf (current selection) is plain text so the user can't navigate
+  // to where they already are. Unsorted, Generated and the folders sit under My documents; every
+  // other view is a top-level row (or has none) and its trail is a single leaf.
   type Crumb = { name: string; onClick?: () => void };
   const paneCrumbs = useMemo<Crumb[]>(() => {
-    const all: Crumb = { name: 'Personal Space', onClick: () => go({ kind: 'all' }) };
-    if (selected.kind === 'timeline') return [{ name: 'Timeline' }];
-    if (selected.kind === 'activity') return [{ name: 'Activity' }];
-    if (selected.kind === 'recent') return [{ name: 'Recent' }];
-    if (selected.kind === 'shared') return [{ name: 'Shared with You' }];
-    if (selected.kind === 'gallery') return [{ name: 'Image Gallery' }];
-    if (selected.kind === 'themes') return [{ name: 'Themes' }];
-    if (selected.kind === 'shape-libraries') return [{ name: 'Shape libraries' }];
-    if (selected.kind === 'trash') return [{ name: 'Trash' }];
-    if (selected.kind === 'team') return [{ name: paneTitle }];
-    if (selected.kind === 'invites') return [{ name: 'Invites' }];
-    if (selected.kind === 'all') return [{ name: 'Personal Space' }];
-    const dynamic: Crumb = { name: 'Dynamic', onClick: () => go({ kind: 'dynamic' }) };
-    if (selected.kind === 'dynamic') return [all, { name: 'Dynamic' }];
-    if (selected.kind === 'unsorted') return [all, dynamic, { name: 'Unsorted' }];
-    // Favourites sits in Quick find now, not under Personal Space > Dynamic
-    // (docs/specs/013-workspace/timeline.md §8.2), so its trail is a single leaf like Recent's —
-    // a crumb that walks up to a parent it no longer has would be a lie.
-    if (selected.kind === 'favourites') return [{ name: 'Favourites' }];
-    if (selected.kind === 'generated') return [all, dynamic, { name: 'Generated' }];
-    if (selected.kind === 'offline') return [all, dynamic, { name: 'Offline' }];
+    const all: Crumb = { name: VIEW_TITLES.all, onClick: () => go({ kind: 'all' }) };
+    if (
+      selected.kind === 'unsorted' ||
+      selected.kind === 'generated' ||
+      selected.kind === 'dynamic'
+    )
+      return [all, { name: VIEW_TITLES[selected.kind] }];
+    if (selected.kind !== 'folder') return [{ name: paneTitle }];
     const chain = breadcrumb(selected.id);
     return [
       all,

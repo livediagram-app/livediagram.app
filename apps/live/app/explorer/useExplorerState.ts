@@ -35,6 +35,9 @@ import { useTimelineUnread } from './useTimelineUnread';
 import { useActivityFeed } from './useActivityFeed';
 import { useExplorerMoves } from './useExplorerMoves';
 import { useExplorerPane } from './useExplorerPane';
+import { useSidebarExpansion } from './sidebar/useSidebarExpansion';
+import { useHydrated } from '@/hooks/ui/useHydrated';
+import { MY_DOCUMENTS_EXPAND_KEY } from './sidebar/sidebar-structure';
 import type { SelectedNode } from './views';
 import { indexFolders, folderBreadcrumb, folderDescendants } from '@/lib/folder-tree';
 import { useOpenSettingsRequests } from '@/hooks/ui/useOpenSettingsRequests';
@@ -50,6 +53,9 @@ import { useOpenSettingsRequests } from '@/hooks/ui/useOpenSettingsRequests';
 // Open to both guests and signed-in users (docs/specs/014-identity/auth-and-guest-access.md + docs/specs/013-workspace/folders.md): the
 // owner id resolves to the Clerk userId when signed in, otherwise to
 // the `livediagram:v2:self-id` localStorage UUID.
+// The preferences a hydrating render sees: none.
+const NO_PREFERENCES: UserPreferences = {};
+
 export function useExplorerState() {
   // Full page loads once a newer build is live (docs/specs/016-platform/stale-builds.md).
   const router = useAppNavigation();
@@ -69,9 +75,14 @@ export function useExplorerState() {
   // Synced user preferences (docs/specs/007-editor/user-preferences.md). Owned HERE rather than in
   // ExplorerShell because the pane needs them too (Recent honours the
   // hidden-from-Recent list, docs/specs/013-workspace/hide-from-recent.md) — two useState copies would drift
-  // the moment one of them wrote. Seeded from the localStorage cache for
-  // an instant first paint; the authoritative D1 copy merges in on mount.
-  const [prefs, setPrefs] = useState<UserPreferences>(() => readUserPreferences());
+  // the moment one of them wrote. Seeded from the localStorage cache; the
+  // authoritative D1 copy merges in on mount. Exposed only once hydrated: a
+  // build without sign-in prerenders this shell, and the render that
+  // hydrates it must match that HTML (the sidebar's Minimal chrome, the
+  // appearance control's power-user wording), so it sees no preferences.
+  const [storedPrefs, setPrefs] = useState<UserPreferences>(() => readUserPreferences());
+  const hydrated = useHydrated();
+  const prefs = hydrated ? storedPrefs : NO_PREFERENCES;
   // Owner id resolution mirrors new/page.tsx + editor-page.tsx: a
   // signed-in user is keyed by Clerk userId, a guest is keyed by the
   // localStorage UUID (minted on first visit). Null until Clerk has
@@ -178,11 +189,9 @@ export function useExplorerState() {
       setSettingsOpen(true);
     }
   }
-  // Which folder branches (and which teams) are open in the sidebar.
-  // Local state only; a fresh visit starts everything collapsed. Team
-  // ids live in the same set so a team's folder subtree expands the
-  // same way a personal folder does (one expand model, docs/specs/013-workspace/team-shared-documents.md).
-  const [expanded, setExpanded] = useState<Set<string>>(() => new Set<string>());
+  // Which sidebar rows are open: folders, teams, My documents and Library
+  // (docs/specs/013-workspace/explorer-structure.md#expansion).
+  const { expanded, expand, toggleExpand } = useSidebarExpansion(selected);
   // Team libraries swept lazily (docs/specs/013-workspace/team-shared-documents.md) for the four consumers: the
   // search panel's Folders group, the move modal's team destinations,
   // the Recent list's team rows, and the sidebar's team subtrees.
@@ -312,7 +321,8 @@ export function useExplorerState() {
     const created = await hookCreateFolder({ parentId });
     if (created) {
       setRenamingFolderId(created.id);
-      if (parentId) setExpanded((prev) => new Set(prev).add(parentId));
+      // Reveal the new row so its rename field shows: its parent, or My documents for a root folder.
+      expand(parentId ?? MY_DOCUMENTS_EXPAND_KEY);
     }
   };
 
@@ -470,15 +480,6 @@ export function useExplorerState() {
     },
     [ownerId],
   );
-
-  const toggleExpand = (id: string) => {
-    setExpanded((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  };
 
   // Folder-row context-menu actions, shared between the tree and
   // the list view so both surfaces offer the same set.

@@ -84,7 +84,7 @@ export const DRIVE_CONNECTED = chart(
   'Drive',
   'Linked',
   'Drive Connected',
-  'Someone connected Google Drive to mirror their Personal Space.',
+  'Someone connected Google Drive to mirror My documents.',
 );
 
 export const DRIVE_DISCONNECTED = chart(
@@ -107,7 +107,7 @@ export const DRIVE_FIRST_MIRROR = chart(
   'Drive',
   'Created',
   'First Mirrors Finished',
-  'A newly connected Personal Space finished copying every document into Drive.',
+  'A newly connected mirror finished copying every document in My documents into Drive.',
   { types: ['FirstMirror'] },
 );
 
@@ -128,7 +128,7 @@ export const DRIVE_OPEN_WITH = chart(
 export const DRIVE_MIRROR: MetricStack = {
   stack: true,
   title: 'Google Drive',
-  blurb: 'Personal Spaces mirrored to Google Drive, and what comes back from Drive.',
+  blurb: 'My documents mirrored to Google Drive, and what comes back from Drive.',
   headline: DRIVE_CONNECTED,
   members: [
     DRIVE_CONNECTED,

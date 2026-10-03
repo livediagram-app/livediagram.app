@@ -88,7 +88,7 @@ export function DocumentSyncMark({
 }: {
   documentId: string;
   savedAt: number;
-  // The document belongs in Drive: the user's own, in their Personal Space, not
+  // The document belongs in Drive: the user's own, in My documents, not
   // offline. Known from the row itself, so a new document shows Waiting at once.
   mirrorable: boolean;
 }) {

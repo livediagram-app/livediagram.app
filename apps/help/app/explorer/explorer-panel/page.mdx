@@ -5,7 +5,7 @@ import { ExplorerPanel } from '@/components/illustrations/explorer';
 export const metadata = helpMetadata({
   title: 'Explorer Panel',
   description:
-    'The floating Explorer panel is the compact document switcher inside the editor and the new-document flow, built for finding a document fast while you work.',
+    'The floating Explorer panel is the compact document switcher inside the editor: the same Overview, Spaces and More as the Explorer, opening documents in place.',
   path: '/help/explorer/explorer-panel/',
 });
 
@@ -20,17 +20,22 @@ The floating **Explorer panel** is the compact side panel you meet inside the ed
 
 ## What the panel shows
 
-The panel carries the same sections as the full page, trimmed to fit a side rail: your **Recent** documents up top for the common case, plus access to **Personal Space**, **Shared with You**, and **Team Spaces** when you need to reach further. Pick one and it opens straight away; the document you were in stays put behind it.
+Under a **Current Document** card, the panel shows the same three groups as the [Explorer page](/help/explorer/explorer-page/)'s sidebar, **Overview**, **Spaces** and **More**, trimmed to the panel's width.
+
+- **Rows with documents open in place.** **Shared with me**, **My documents** (with **Unsorted**, **Generated** and your folders), each team and **This browser** open to show their documents right there. Pick a document and it opens; the one you are in stays put behind it, and its row is highlighted.
+- **Home**, **Activity**, the **Library** pages and **Trash** open their page in the full Explorer.
+- The panel opens compact, everything closed, and remembers what you opened while the editor is open.
+- Drag one of your documents onto a folder or onto **Unsorted** to file it.
 
 <Figure caption="The floating Explorer panel docks over the canvas so you can open another document without leaving this one.">
   <ExplorerPanel />
 </Figure>
 
-It is the same data as the full page, just a quicker door into it: folders, ownership, and sharing all behave identically, so anything you can open from the [Explorer page](/help/explorer/explorer-page/) you can open here too. **Hide from Recent** works here as well, and a document you hide from either surface stays hidden in both.
+It is the same data as the full page, just a quicker door into it: folders, ownership, and sharing all behave identically. Each document has the same menu as on the full page, from its **⋯** button, a right-click, or **Shift+F10**, so **Hide from Recent** works here as well. A document saved only in this browser carries the **Local only** pill ([Offline Mode](/help/privacy-and-security/offline-mode/)).
 
-Three things are deliberately page-only, because a side rail has no room for them: the [Timeline](/help/explorer/timeline/) feed, the folder or team chip on each Recent row, and the content previews on folder cards. The panel shows the plain name.
+The keyboard works as in the sidebar: one stop when you press Tab, then the arrow keys to move, **Right** and **Left** to open and close, and **Enter** to open a row. Answering team invites and creating a team happen in the full Explorer.
 
-The **⋯** button in the panel's header, beside the help button, opens a menu with **New Document** and **Open Explorer** (the full-page library's Recent list), then **Share** and **Export** for the document you are in, then **Search**, **GitHub** (the open-source code) and **Settings**.
+The **⋯** button in the panel's header, beside the help button, opens a menu with **New Document** and **Open Explorer** (the full-page library), then **Share** and **Export** for the document you are in, then **Search**, **GitHub** (the open-source code) and **Settings**.
 
 ## When you will see it
 

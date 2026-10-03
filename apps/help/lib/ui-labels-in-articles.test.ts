@@ -46,6 +46,10 @@ function uiLabels(): Map<string, Set<string>> {
         // and taking the latter as truth flags a correct article.
         for (const m of src.matchAll(/(?<![\w-])label="([^"]{3,30})"/g)) add(m[1]!);
         for (const m of src.matchAll(/menuLabel: '([^']{3,30})'/g)) add(m[1]!);
+        // A label table (`export const SIDEBAR_LABELS = { home: 'Home', ... }`): rows that
+        // print a shared constant rather than a literal `label="..."`.
+        for (const table of src.matchAll(/export const \w+_LABELS = \{([\s\S]*?)\n\}/g))
+          for (const m of table[1]!.matchAll(/^\s+\w+: '([^']{3,30})',?$/gm)) add(m[1]!);
       }
     }
   };

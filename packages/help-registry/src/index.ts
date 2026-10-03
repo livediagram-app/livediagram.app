@@ -560,7 +560,7 @@ export const articles: Article[] = [
   {
     slug: 'google-drive',
     title: 'Google Drive',
-    description: 'Sync your Personal Space to your own Google Drive, both ways.',
+    description: 'Sync My documents to your own Google Drive, both ways.',
     keywords:
       'google drive mirror sync backup copy cloud storage open with livediagram file folders',
     category: 'Account and Data',
@@ -643,7 +643,8 @@ export const articles: Article[] = [
     slug: 'offline-mode',
     title: 'Offline Mode',
     description: 'Save a document only in this browser, and move it to or from your account.',
-    keywords: 'local only browser private no sync device localstorage disconnect save location',
+    keywords:
+      'local only pill this browser private no sync device localstorage disconnect save location clear site data lost',
     category: 'Privacy and Security',
     categorySlug: 'privacy-and-security',
     parentSlug: 'privacy-and-security',
@@ -1351,8 +1352,10 @@ export const articles: Article[] = [
   {
     slug: 'explorer-page',
     title: 'Explorer Page',
-    description: 'The full-page library: the sidebar sections, list view, and folders.',
-    keywords: 'library home dashboard files my documents my diagrams list manage browse',
+    description:
+      "The full-page library: the sidebar's Overview, Spaces and More, views, and folders.",
+    keywords:
+      'library home dashboard files my documents my diagrams list manage browse sidebar overview spaces more keyboard navigation tree',
     category: 'Explorer',
     categorySlug: 'explorer',
   },
@@ -1390,9 +1393,9 @@ export const articles: Article[] = [
     slug: 'explorer-panel',
     title: 'Explorer Panel',
     description:
-      'The compact in-editor Explorer for switching documents without leaving the canvas.',
+      'The compact in-editor Explorer: the same Overview, Spaces and More, opening documents in place.',
     keywords:
-      'sidebar switch documents diagrams files library in editor open more menu new share export github',
+      'sidebar overview spaces more tree keyboard switch documents diagrams files library in editor open more menu new share export github',
     category: 'Explorer',
     categorySlug: 'explorer',
   },
@@ -1406,10 +1409,11 @@ export const articles: Article[] = [
   },
   {
     slug: 'timeline',
-    title: 'Timeline',
-    description: 'The Explorer\u2019s landing view: a day-by-day feed of everything that happened.',
+    title: 'Home',
+    description:
+      'The Explorer\u2019s landing view: a day-by-day timeline of everything that happened.',
     keywords:
-      'feed activity history what happened whats new latest events log stream notifications updates recent changes calendar month view upcoming expiring stacked grouped collapse day colour color red amber green deleted preview thumbnail card cards grid menu ellipsis rename move duplicate created updated unread unseen new badge since last visit who did what other people filter local time remove dismiss hide clutter tidy clean up refresh live update revoke token accept decline invite leave team edit theme share',
+      'home timeline landing start feed activity history what happened whats new latest events log stream notifications updates recent changes calendar month view upcoming expiring stacked grouped collapse day colour color red amber green deleted preview thumbnail card cards grid menu ellipsis rename move duplicate created updated unread unseen new badge since last visit who did what other people filter local time remove dismiss hide clutter tidy clean up refresh live update revoke token accept decline invite leave team edit theme share',
     category: 'Explorer',
     categorySlug: 'explorer',
   },
@@ -1434,9 +1438,9 @@ export const articles: Article[] = [
   },
   {
     slug: 'shared-with-you',
-    title: 'Shared With You',
+    title: 'Shared With Me',
     description: 'Documents other people have shared with you, collected in one place.',
-    keywords: 'received from others incoming shares collaborations',
+    keywords: 'shared with me received from others incoming shares collaborations',
     category: 'Explorer',
     categorySlug: 'explorer',
   },
@@ -1458,19 +1462,18 @@ export const articles: Article[] = [
   },
   {
     slug: 'personal-space',
-    title: 'Personal Space and Folders',
-    description:
-      'Your own library: the Unsorted and Favourites buckets, and the folders you create.',
+    title: 'My Documents and Folders',
+    description: 'Your own library: Unsorted and Generated first, then the folders you create.',
     keywords:
-      'personal library my work your documents your diagrams own files organise organize favourite favorite star starred bookmark pin quick access',
+      'my documents personal space library my work your documents your diagrams own files root folder organise organize unsorted generated favourite favorite star starred bookmark pin quick access',
     category: 'Explorer',
     categorySlug: 'explorer',
   },
   {
     slug: 'team-spaces',
     title: 'Team Spaces',
-    description: 'The teams you belong to, their shared folders, and your pending invites.',
-    keywords: 'teams shared workspace invites membership group',
+    description: 'Each team as a space beside My documents, its shared folders, and your invites.',
+    keywords: 'teams team spaces shared workspace invites membership group new team',
     category: 'Explorer',
     categorySlug: 'explorer',
   },

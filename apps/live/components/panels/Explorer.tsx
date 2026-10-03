@@ -1,6 +1,6 @@
 'use client';
 
-import { memo, useState } from 'react';
+import { memo, useCallback, useState } from 'react';
 import { DocumentRowShell } from './DocumentRowShell';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
@@ -11,8 +11,8 @@ import { useMinimalChrome } from '@/components/providers/minimal-chrome';
 import { SignInPrompt } from '@/components/chrome/SignInPrompt';
 import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
 import { ExplorerHeaderMenu } from '@/components/panels/ExplorerHeaderMenu';
-import { DocumentRow } from '@/components/panels/explorer-views';
-import { ExplorerSections } from '@/components/panels/ExplorerSections';
+import { DocumentRow } from '@/components/panels/DocumentRow';
+import { PanelExplorerTree } from '@/components/panels/explorer-tree/PanelExplorerTree';
 
 import type { ExplorerProps } from './Explorer.types';
 import { useExplorerViewModel } from './useExplorerViewModel';
@@ -118,7 +118,6 @@ function ExplorerImpl({
     current,
     currentTeam,
     currentShared,
-    recents,
     foldersByTeam,
     documentsByTeam,
     foldersByParent,
@@ -132,11 +131,12 @@ function ExplorerImpl({
     teamFolders,
     teamDocuments,
     deletedTeamIds,
-    recentExcludedIds,
   });
 
   const toggleFolder = (key: string) =>
     setExpandedFolders((prev) => ({ ...prev, [key]: !prev[key] }));
+  // Stable, so a folder row's effect that clears the request runs once.
+  const clearPendingRename = useCallback(() => setPendingRenameFolderId(null), []);
 
   const handleCreateChild = async (parentId: string) => {
     if (!onCreateFolder) return;
@@ -240,7 +240,7 @@ function ExplorerImpl({
                         : undefined
                     }
                     // Change Folder for a team document (docs/specs/013-workspace/team-shared-documents.md): opens the
-                    // move picker on this team's tree, with Personal Space + the
+                    // move picker on this team's tree, with My documents + the
                     // other teams one Back away. Routed through the
                     // scope-aware onMoveDocumentTo.
                     onMoveRequest={
@@ -268,51 +268,45 @@ function ExplorerImpl({
           </div>
         ) : null}
 
-        {/* Recent / Personal Space / Teams as a single tab bar (was three
-            stacked accordions) so only one list takes vertical space.
-            Shared-with-you documents interleave into Recent (matching the
-            /explorer page); Personal Space holds the folder tree + Unsorted
-            (docs/specs/013-workspace/folders.md); Teams mirrors it per team (docs/specs/013-workspace/team-shared-documents.md). The card owns
-            its own tab state and hides itself when no section has
-            anything to show — see ExplorerSections. */}
-        <ExplorerSections
-          loading={loading}
-          ownerId={ownerId}
-          recentExcludedIds={recentExcludedIds}
-          onToggleRecentExclusion={onToggleRecentExclusion}
-          favouriteIds={favouriteIds}
-          onToggleFavourite={onToggleFavourite}
-          currentDocumentId={currentDocumentId}
-          documents={liveDocs}
-          folders={folders}
-          teams={teams}
-          recents={recents}
-          foldersByParent={foldersByParent}
-          documentsByFolder={documentsByFolder}
+        {/* The sidebar's three groups, Overview, Spaces and More, built from the same rows and
+            keyboard model (docs/specs/013-workspace/explorer-structure.md#the-floating-explorer-panel). */}
+        <PanelExplorerTree
+          tree={{
+            ownerId,
+            currentDocumentId,
+            exitingDocumentIds,
+            expanded: expandedFolders,
+            onToggle: toggleFolder,
+            onOpenDocument,
+            onDeleteDocument: openDeleteConfirm,
+            onDuplicateDocument,
+            onMoveDocumentRequest: onMoveDocumentToFolder ? openMovePicker : undefined,
+            // A team row's move opens the picker for that team; the pick then routes through
+            // the scope-aware onMoveDocumentTo (docs/specs/013-workspace/team-shared-documents.md).
+            onMoveTeamDocumentRequest: onMoveDocumentTo
+              ? (id, teamId) => setMoveTarget({ id, teamId })
+              : undefined,
+            onMoveDocumentToFolder,
+            onDismissShared,
+            favouriteIds,
+            onToggleFavourite,
+            recentExcludedIds,
+            onToggleRecentExclusion,
+            pendingRenameFolderId,
+            onRenameFolderCommitted: clearPendingRename,
+            onRenameFolder,
+            onDeleteFolder,
+            onCreateChild: (parentId) => void handleCreateChild(parentId),
+            onTeamFolders,
+            onCreateTeamChild: (teamId, parentId) => void handleCreateTeamChild(teamId, parentId),
+          }}
+          busy={loading}
+          shared={shared}
+          ownIndex={{ foldersByParent, documentsByFolder }}
           offlineDocuments={offlineDocuments}
+          teams={teams}
           foldersByTeam={foldersByTeam}
           documentsByTeam={documentsByTeam}
-          expandedFolders={expandedFolders}
-          onToggleFolder={toggleFolder}
-          pendingRenameFolderId={pendingRenameFolderId}
-          onRenameFolderCommitted={() => setPendingRenameFolderId(null)}
-          exitingDocumentIds={exitingDocumentIds}
-          onOpenDocument={onOpenDocument}
-          onDismissShared={onDismissShared}
-          onRenameFolder={onRenameFolder}
-          onDeleteFolder={onDeleteFolder}
-          onCreateChild={handleCreateChild}
-          onTeamFolders={onTeamFolders}
-          onCreateTeamChild={handleCreateTeamChild}
-          onDeleteDocument={openDeleteConfirm}
-          onDuplicateDocument={onDuplicateDocument}
-          onMoveDocumentRequest={onMoveDocumentToFolder ? openMovePicker : undefined}
-          // A team row's move opens the picker for that team; the pick then
-          // routes through the scope-aware onMoveDocumentTo (docs/specs/013-workspace/team-shared-documents.md).
-          onMoveTeamDocumentRequest={
-            onMoveDocumentTo ? (id, teamId) => setMoveTarget({ id, teamId }) : undefined
-          }
-          onMoveDocumentToFolder={onMoveDocumentToFolder}
         />
 
         {/* Sign-in prompt for signed-out guests; an onboarding notice, so
@@ -323,7 +317,7 @@ function ExplorerImpl({
       {/* Move-destination modal (docs/specs/013-workspace/folders.md), the same shared placement
           browser as the /explorer page. With the scope-aware
           onMoveDocumentTo wired (signed-in sessions with teams), the picker
-          offers every space — Personal Space plus each team — so a team document
+          offers every space — My documents plus each team — so a team document
           can be re-homed to the personal tree (and vice versa) right from
           the editor. Purely personal picks keep the optimistic
           onMoveDocumentToFolder path. */}

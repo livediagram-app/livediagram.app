@@ -31,13 +31,10 @@ import { PictureDisc } from '@/components/primitives/PictureDisc';
 import { accountInitial } from '@/lib/account-avatar';
 import {
   HEADER_ACTION_BTN,
+  HEADER_ACTION_TONE,
   HEADER_ICON_SLOT_PX,
   HeaderGlyph,
 } from '@/components/chrome/header-action';
-
-// Shared tone for the (non-Share) header actions — slate text, subtle hover.
-const HEADER_ACTION_TONE =
-  'text-slate-600 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800';
 
 // Account self-deletion now lives on the Explorer profile page (docs/specs/014-identity/profile-and-email-notifications.md),
 // reachable from the "Profile" item below, so the destructive action has one

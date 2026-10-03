@@ -1,13 +1,19 @@
 'use client';
 
-import { useState, type HTMLAttributes } from 'react';
+import { useId, useState, type HTMLAttributes } from 'react';
 import { Chip, PrivateDotIcon, SharedDotIcon } from '@livediagram/ui';
+import { ThisBrowserIcon } from '@/components/primitives/explorer-icons';
+import {
+  LOCAL_ONLY_DESCRIPTION,
+  LOCAL_ONLY_LABEL,
+  LOCAL_ONLY_TONE,
+} from '@/components/primitives/LocalOnlyPill';
 
 // The visibility pill rendered beside the document title, split out of
 // EditorHeader. Share links win: a shared team document reads "Shared" as
 // normal; "Team" covers the team-but-unshared case where "Private" would be a
-// lie (every joined member can open it); "Offline" (docs/specs/006-document/offline-mode.md) supersedes
-// "Private" for browser-only documents. Hovering (or focusing) the pill opens a
+// lie (every joined member can open it); "Local only" (docs/specs/006-document/offline-mode.md)
+// supersedes "Private" for browser-only documents, matching the Explorer's Local only pill. Hovering (or focusing) the pill opens a
 // legend popover explaining every badge, with the current one highlighted, so
 // the four states can be compared in place instead of hunting each hover card.
 
@@ -41,20 +47,18 @@ const SHARE_STATE_META: Record<
       'bg-brand-50 px-2 text-[10px] font-semibold text-brand-700 ring-1 ring-brand-200 dark:bg-brand-500/10 dark:text-brand-300 dark:ring-brand-500/30',
     dot: 'text-brand-500 dark:text-brand-400',
   },
-  // Offline Mode (docs/specs/006-document/offline-mode.md): saved only in this browser, never on the server.
-  // Amber so it reads as a distinct, deliberate state rather than a neutral
-  // default.
+  // Offline Mode (docs/specs/006-document/offline-mode.md): saved only in this browser, never on the
+  // server. The Local only pill's words, sentence and amber tone (text 4.5:1 on its fill, ring 3:1).
   offline: {
-    label: 'Offline',
-    description: 'Saved only in this browser. Not synced, not backed up.',
-    badge:
-      'bg-amber-50 px-2 text-[10px] font-semibold text-amber-700 ring-1 ring-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-500/30',
-    dot: 'text-amber-500',
+    label: LOCAL_ONLY_LABEL,
+    description: LOCAL_ONLY_DESCRIPTION,
+    badge: `px-2 text-[10px] font-semibold ${LOCAL_ONLY_TONE}`,
+    dot: '',
   },
 };
 
 // Legend read order: the default first, then the progressively-wider
-// audiences, with Offline last as the deliberate opt-out.
+// audiences, with Local only last as the deliberate opt-out.
 const LEGEND_ORDER: ShareState[] = ['private', 'shared', 'team', 'offline'];
 
 // The pill's rendered height, pinned: its caps label is trimmed to cap height, so padding alone would
@@ -63,7 +67,9 @@ const STATE_CHIP_HEIGHT_PX = 19;
 
 // The icon carries its colour itself: a wrapper would hide the svg from the chip's edge compensation.
 function StateDot({ state, className }: { state: ShareState; className: string }) {
-  return state === 'private' || state === 'offline' ? (
+  // The Local only pill's own glyph: a browser window.
+  if (state === 'offline') return <ThisBrowserIcon size={10} />;
+  return state === 'private' ? (
     <PrivateDotIcon className={className} />
   ) : (
     <SharedDotIcon className={className} />
@@ -101,6 +107,7 @@ export function SharedBadge({
   const state: ShareState = offline ? 'offline' : shareable ? 'shared' : team ? 'team' : 'private';
   const meta = SHARE_STATE_META[state];
   const [open, setOpen] = useState(false);
+  const descriptionId = useId();
   return (
     <span
       className="relative inline-flex"
@@ -112,8 +119,12 @@ export function SharedBadge({
       <ShareStateChip
         state={state}
         tabIndex={0}
-        aria-label={`${meta.label}: ${meta.description}`}
+        aria-label={meta.label}
+        aria-describedby={descriptionId}
       />
+      <span id={descriptionId} className="sr-only">
+        {meta.description}
+      </span>
       {/* The badge legend (docs/specs/006-document/offline-mode.md follow-up): every visibility state with its
           meaning, current row highlighted. Anchored below the pill; the header
           creates its own stacking context and doesn't clip overflow (the

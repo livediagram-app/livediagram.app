@@ -72,7 +72,7 @@ export function useDriveMirror(): DriveMirrorContextValue {
 // Where one document stands with Google Drive, for its Explorer row
 // (docs/specs/022-drive-mirror/drive-mirror.md, "The Explorer shows each document's sync").
 // `mirrorable`: the row's own knowledge that the document belongs in Drive
-// (it is the user's, in their Personal Space, not offline), so a document the
+// (it is the user's, in My documents, not offline), so a document the
 // engine has not seen yet (new, duplicated, imported, moved out of a team)
 // shows Waiting at once instead of nothing. Null: nothing to say (Drive not
 // connected, the first read of drive_items not back yet, not mirrored, or a
