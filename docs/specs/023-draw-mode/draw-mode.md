@@ -300,6 +300,13 @@ The shapes group learns and keeps the shapes a user reaches for.
   kinds are dropped on read.
 - **Telemetry:** `Draw` · `Changed` · `ShapePinned` / `ShapeUnpinned`
   (never the kind).
+- **On a phone** (below `sm`, the dock only; `splitPhonePins`), the bar keeps **only the first
+  pinned shape** (Arrow, by default) and the rest move into the **Shapes** flyout as a **Pinned**
+  row above the six slots (Rectangle, by default), so the bar fits the width. They are still
+  pinned and still count as such: none shows twice, and their shape keys work as before. The
+  flyout grows by that row (it stays fixed while typing). Shapes do not drag on or off the bar
+  there; pinning and unpinning go through the slot's menu (long-press). A pinned shape in the
+  flyout has no menu: it is already pinned.
 
 ## Pens
 

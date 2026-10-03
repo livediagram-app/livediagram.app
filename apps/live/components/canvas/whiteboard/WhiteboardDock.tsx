@@ -18,6 +18,7 @@ import { whiteboardShapeEntry } from '@/lib/whiteboard-shape-catalogue';
 import {
   pinFromMenu,
   resolveSlotDrop,
+  splitPhonePins,
   unpinShape,
   type SlotOutcome,
   type SlotSource,
@@ -39,6 +40,7 @@ import { useShapeSlotDrag } from './useShapeSlotDrag';
 import { WhiteboardFlyout } from './WhiteboardFlyout';
 import { DockVariantContext, type DockVariant } from './dock-variant';
 import { debugLog } from '@/lib/debug-log';
+import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { useUiScale } from '@/components/providers/ui-scale';
 import { toSurfacePx, uiScaleStyle } from '@/lib/ui-scale';
 
@@ -70,6 +72,13 @@ export function WhiteboardDock({ model, ink, variant = 'dock' }: WhiteboardDockP
   // (docs/specs/007-editor/ui-scale.md); the panel is scaled by its own host.
   const scale = useUiScale('toolbar');
   const panel = variant === 'panel';
+  // A phone's dock: one pinned shape on the bar, the rest in the Shapes flyout, and no dragging
+  // shapes on or off the bar (its drop targets would not match the pins it hides).
+  const isMobile = useIsMobileViewport();
+  const phone = !panel && isMobile;
+  const pins = phone
+    ? splitPhonePins(model.pinnedShapes)
+    : { onBar: model.pinnedShapes, inMenu: [] };
   // The canvas the stock colours are drawn for (docs/specs/007-editor/editor-modes.md "One look").
   const appearance = useCanvasSurface();
   const fly = useDockFlyout();
@@ -182,6 +191,8 @@ export function WhiteboardDock({ model, ink, variant = 'dock' }: WhiteboardDockP
             <ShapesFlyout
               ink={ink}
               slots={model.slotShapes}
+              menuPins={pins.inMenu}
+              canDrag={!phone}
               slotDrag={slotDrag}
               onPin={(key) => chooseFromMenu({ key, from: 'flyout' })}
               onEngage={fly.stick}
@@ -226,6 +237,8 @@ export function WhiteboardDock({ model, ink, variant = 'dock' }: WhiteboardDockP
       <DrawingToolsGroup model={model} ink={ink} fly={fly} pickAndClose={pickAndClose} />
       <ShapesGroup
         model={model}
+        pinned={pins.onBar}
+        canDrag={!phone}
         fly={fly}
         slotDrag={slotDrag}
         refusing={refusing}
