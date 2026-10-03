@@ -300,8 +300,6 @@ function parseCursor(raw: string): { occurredAt: number; id: string } | null {
 
 export type TimelineScopeState = {
   backfilledAt: number | null;
-  /** When Explorer Home seeded this person's Jump back in (user scope only). */
-  frecencySeededAt: number | null;
   /** When this scope was last READ by its owner — the unread watermark. */
   lastSeenAt: number | null;
 };
@@ -311,18 +309,16 @@ export async function getScopeState(
   scope: TimelineScopeRef,
 ): Promise<TimelineScopeState | null> {
   const row = await env.DB.prepare(
-    'SELECT backfilled_at, frecency_seeded_at, last_seen_at FROM timeline_scope_state WHERE scope_type = ?1 AND scope_id = ?2',
+    'SELECT backfilled_at, last_seen_at FROM timeline_scope_state WHERE scope_type = ?1 AND scope_id = ?2',
   )
     .bind(scope.scopeType, scope.scopeId)
     .first<{
       backfilled_at: number | null;
-      frecency_seeded_at: number | null;
       last_seen_at: number | null;
     }>();
   if (!row) return null;
   return {
     backfilledAt: row.backfilled_at,
-    frecencySeededAt: row.frecency_seeded_at,
     lastSeenAt: row.last_seen_at,
   };
 }
@@ -387,16 +383,6 @@ export async function countUnseen(
     .bind(scope.scopeType, scope.scopeId, since, cap + 1, now)
     .first<{ n: number }>();
   return row?.n ?? 0;
-}
-
-// Explorer Home seeded this person's Jump back in (docs/specs/013-workspace/explorer-home.md). A
-// statement, so the stamp lands in the same batch as the seed's writes.
-export function markFrecencySeeded(env: Env, personId: string, at: number): D1PreparedStatement {
-  return env.DB.prepare(
-    `INSERT INTO timeline_scope_state (scope_type, scope_id, frecency_seeded_at)
-     VALUES ('user', ?1, ?2)
-     ON CONFLICT (scope_type, scope_id) DO UPDATE SET frecency_seeded_at = excluded.frecency_seeded_at`,
-  ).bind(personId, at);
 }
 
 export async function markScopeBackfilled(env: Env, scope: TimelineScopeRef): Promise<void> {

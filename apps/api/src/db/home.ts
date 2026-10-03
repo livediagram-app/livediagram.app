@@ -1,15 +1,16 @@
 // Explorer Home's reads (docs/specs/013-workspace/explorer-home.md; blueprint "Reads"). Each one
 // scopes by the documents the person can open FIRST (VISIBLE_DOCUMENTS_CTES) and filters after.
 //
-// Binds shared by all three: ?1 = the person's owner id, ?2 = now.
+// Binds shared by both: ?1 = the person's owner id, ?2 = now.
 
 import {
   HOME_OPENED_EVENT_TYPE,
+  HOME_WITHIN_REACH_PER_ROW,
+  useWindowStart,
+  withinReach,
   type HomeDocument,
   type HomeJumpBackInItem,
-  type HomeTimelineEntry,
-  type HomeTimelineKind,
-  type HomeTimelinePage,
+  type WithinReach,
 } from '@livediagram/api-schema';
 import { WHAT_HAPPENED_EVENT_TYPES, type WhatHappenedRow } from '../home/what-happened';
 import type { Env } from '../types';
@@ -64,111 +65,80 @@ function placeOf(row: PlaceRow): HomeDocument {
   };
 }
 
-// ---------- Jump back in ----------------------------------------------
-
-/** The person's documents, strongest frecency first. The key orders as the score does at every
- *  instant, so the rank index answers in order. */
-export async function readJumpBackIn(
-  env: Env,
-  personId: string,
-  now: number,
-  limit: number,
-): Promise<HomeJumpBackInItem[]> {
-  const res = await env.DB.prepare(
-    `WITH ${VISIBLE_DOCUMENTS_CTES}
-     SELECT o.open_days, o.last_opened_at, o.frecency_key, ${PLACE_COLUMNS}
-       FROM document_opens o
-       JOIN visible v ON v.id = o.document_id
-       ${PLACE_JOINS}
-      WHERE o.owner_id = ?1
-      ORDER BY o.frecency_key DESC, o.document_id ASC
-      LIMIT ?3`,
-  )
-    .bind(personId, now, limit)
-    .all<PlaceRow & { open_days: number; last_opened_at: number; frecency_key: number }>();
-  return (res.results ?? []).map((r) => ({
-    ...placeOf(r),
-    lastOpenedAt: r.last_opened_at,
-    openDays: r.open_days,
-    frecencyKey: r.frecency_key,
-  }));
-}
-
-// ---------- Timeline --------------------------------------------------
-
 /** An event a real actor made: not the Timeline backfill's reconstructed edit, which may credit a
  *  teammate's save to the owner (docs/specs/013-workspace/timeline.md §5). On `e`. */
 export const REAL_EDIT = `json_extract(e.snapshot, '$.backfilled') IS NOT 1`;
 
-const KIND_OF: Record<string, HomeTimelineKind> = {
-  document_created: 'created',
-  // A duplicate is a document the person created (spec).
-  document_duplicated: 'created',
-  document_edited: 'updated',
-  [HOME_OPENED_EVENT_TYPE]: 'opened',
-};
+// ---------- Jump back in ----------------------------------------------
 
-const TIMELINE_EVENT_TYPES_SQL = Object.keys(KIND_OF)
-  .map((t) => `'${t}'`)
-  .join(', ');
+const DAY_MS = 24 * 60 * 60 * 1000;
 
-export type HomeCursor = { occurredAt: number; id: string };
+type JumpBackInRow = PlaceRow & { use_days: number; last_used_at: number };
 
-/** `<occurredAt>:<id>`, or null when it is not one. */
-export function parseHomeCursor(raw: string): HomeCursor | null {
-  const at = raw.indexOf(':');
-  if (at <= 0) return null;
-  const occurredAt = Number(raw.slice(0, at));
-  const id = raw.slice(at + 1);
-  if (!Number.isFinite(occurredAt) || !id) return null;
-  return { occurredAt, id };
-}
-
-/** One page of the person's own created / updated / opened events, newest first, on documents
- *  they can still open. Keyset on (occurred_at, id): the column grows at the head while it is
- *  read, and an offset would skip or repeat. */
-export async function readHomeTimeline(
+/** The person's server-side Within reach set (blueprint "Jump back in"): use days are the UTC days
+ *  in the window with an open or a real edit by them; the last use is the later of their last open
+ *  and last real edit. SQL narrows to the n most used and the 2n most recent (which by the merge
+ *  property hold the whole set); `withinReach` then allocates exactly, over rows in id order. */
+export async function readJumpBackIn(
   env: Env,
   personId: string,
   now: number,
-  opts: { limit: number; cursor: HomeCursor | null },
-): Promise<HomeTimelinePage> {
-  const binds: unknown[] = [personId, now, opts.limit + 1];
-  let keyset = '';
-  if (opts.cursor) {
-    binds.push(opts.cursor.occurredAt, opts.cursor.id);
-    keyset = 'AND (e.occurred_at < ?4 OR (e.occurred_at = ?4 AND e.id < ?5))';
-  }
+  n: number = HOME_WITHIN_REACH_PER_ROW,
+): Promise<WithinReach<HomeJumpBackInItem>> {
   const res = await env.DB.prepare(
-    `WITH ${VISIBLE_DOCUMENTS_CTES}
-     SELECT e.id AS event_id, e.event_type, e.occurred_at, ${PLACE_COLUMNS}
-       FROM timeline_events e
-       JOIN visible v ON v.id = e.source_id
+    `WITH ${VISIBLE_DOCUMENTS_CTES},
+     used AS (
+       SELECT e.source_id AS document_id,
+              COUNT(DISTINCT e.occurred_at / ${DAY_MS}) AS use_days,
+              MAX(e.occurred_at) AS last_at
+         FROM timeline_events e
+        WHERE e.actor_id = ?1
+          AND e.source_type = 'document'
+          AND e.occurred_at >= ?3 AND e.occurred_at <= ?2
+          AND (e.event_type = '${HOME_OPENED_EVENT_TYPE}'
+               OR (e.event_type = 'document_edited' AND ${REAL_EDIT}))
+        GROUP BY e.source_id
+     ),
+     candidates(document_id) AS (
+       SELECT document_id FROM used
+       UNION
+       SELECT document_id FROM document_opens WHERE owner_id = ?1
+     ),
+     reach AS (
+       SELECT c.document_id,
+              COALESCE(u.use_days, 0) AS use_days,
+              MAX(COALESCE(u.last_at, 0), COALESCE(o.last_opened_at, 0)) AS last_used_at
+         FROM candidates c
+         JOIN visible v ON v.id = c.document_id
+         LEFT JOIN used u ON u.document_id = c.document_id
+         LEFT JOIN document_opens o ON o.owner_id = ?1 AND o.document_id = c.document_id
+     ),
+     picked(document_id) AS (
+       SELECT document_id FROM (
+         SELECT document_id FROM reach WHERE use_days > 0
+          ORDER BY use_days DESC, last_used_at DESC, document_id ASC LIMIT ?4)
+       UNION
+       SELECT document_id FROM (
+         SELECT document_id FROM reach
+          ORDER BY last_used_at DESC, document_id ASC LIMIT ?5)
+     )
+     SELECT r.use_days, r.last_used_at, ${PLACE_COLUMNS}
+       FROM picked p
+       JOIN reach r ON r.document_id = p.document_id
+       JOIN visible v ON v.id = p.document_id
        ${PLACE_JOINS}
-      WHERE e.actor_id = ?1
-        AND e.source_type = 'document'
-        AND e.event_type IN (${TIMELINE_EVENT_TYPES_SQL})
-        AND e.occurred_at <= ?2
-        AND ${REAL_EDIT}
-        ${keyset}
-      ORDER BY e.occurred_at DESC, e.id DESC
-      LIMIT ?3`,
+      ORDER BY v.id ASC`,
   )
-    .bind(...binds)
-    .all<PlaceRow & { event_id: string; event_type: string; occurred_at: number }>();
-  const rows = res.results ?? [];
-  const page = rows.slice(0, opts.limit);
-  const last = page[page.length - 1];
-  const items: HomeTimelineEntry[] = page.map((r) => ({
-    ...placeOf(r),
-    id: r.event_id,
-    kind: KIND_OF[r.event_type]!,
-    occurredAt: r.occurred_at,
-  }));
-  return {
-    items,
-    nextCursor: rows.length > opts.limit && last ? `${last.occurred_at}:${last.event_id}` : null,
-  };
+    .bind(personId, now, useWindowStart(now), n, 2 * n)
+    .all<JumpBackInRow>();
+  const items = (res.results ?? []).map(
+    (r): HomeJumpBackInItem => ({
+      ...placeOf(r),
+      useDays: r.use_days,
+      lastUsedAt: r.last_used_at,
+    }),
+  );
+  return withinReach(items, n, (d) => ({ uses: d.useDays, lastUsedAt: d.lastUsedAt }));
 }
 
 // ---------- What happened ---------------------------------------------
