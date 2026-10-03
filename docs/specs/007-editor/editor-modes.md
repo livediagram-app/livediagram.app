@@ -90,12 +90,13 @@ where it is and changes only how the next mark is made.
 - **A switch is remembered** for that person and tab, in this browser, and
   wins over the tab's opening mode from then on.
 - **Switching never changes the opening mode.**
-- **A new tab inherits the mode you are in.** A tab added from the tab bar
-  (or Quick Start) opens in the creator's current mode: made in Draw mode, it
-  opens in Draw. A template chosen for it then decides: the Whiteboard opens
-  in Draw, every other template in Diagram (switching its maker there too);
-  Blank keeps the mode the tab was made in. An import that sets its own
-  opening mode wins.
+- **New documents and new tabs open in Diagram.** Whatever mode its creator
+  is in, a new document or a tab added from the tab bar (or Quick Start)
+  opens in Diagram. Only the template chosen for it changes that: the
+  **Whiteboard** opens in Draw (switching its maker there too), an
+  **Event Storming** board is always Diagram, and every other template,
+  Blank included, opens in Diagram. An import that sets its own opening
+  mode wins.
 - **Opens in:** the tab menu holds an **Opens in** submenu for editors,
   listing every editor mode (Diagram, Draw) as a radio choice with the
   current one checked. Choosing one sets `Tab.opensIn` for everyone and

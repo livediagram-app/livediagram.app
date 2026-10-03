@@ -17,7 +17,7 @@ const source: Tab = {
 // A tab added from the tab bar carries the look of the tab it was added from.
 describe('newTabSeed', () => {
   it('carries the source tab’s theme, canvas and type', () => {
-    expect(newTabSeed(source, 'diagram')).toEqual({
+    expect(newTabSeed(source)).toEqual({
       theme: 'slate',
       backgroundPattern: 'grid',
       backgroundColor: '#fdf2f8',
@@ -28,15 +28,13 @@ describe('newTabSeed', () => {
     });
   });
 
-  // docs/specs/007-editor/editor-modes.md "Where the mode lives": a new tab inherits the mode
-  // its creator is in.
-  it('opens in the creator’s current mode, not the source tab’s opening mode', () => {
-    expect(newTabSeed(source, 'draw').opensIn).toBe('draw');
-    expect(newTabSeed({ ...source, opensIn: 'draw' }, 'diagram').opensIn).toBeUndefined();
-    expect(newTabSeed(undefined, 'draw')).toEqual({ opensIn: 'draw' });
+  // docs/specs/007-editor/editor-modes.md "Where the mode lives": a new tab opens in Diagram,
+  // whatever mode its creator is in.
+  it('never carries an opening mode, even from a tab that opens in Draw', () => {
+    expect(newTabSeed({ ...source, opensIn: 'draw' }).opensIn).toBeUndefined();
   });
 
   it('falls back to defaults with no source tab', () => {
-    expect(newTabSeed(undefined, 'diagram')).toEqual({});
+    expect(newTabSeed(undefined)).toEqual({});
   });
 });

@@ -29,15 +29,12 @@ export function templatePickerTabAction(
 }
 
 // The mode a chosen template's tab opens in (docs/specs/007-editor/editor-modes.md "Where the
-// mode lives"): the Whiteboard draws, every other scaffold is a diagram, even on a tab made in
-// Draw mode. Blank has nothing to say, so the tab keeps the mode it was made in; an
-// event-storming board has no mode to give (it is always Diagram). Undefined leaves the tab as is.
-export function templateOpensIn(
-  kind: TemplateKind,
-  overrides: Pick<Tab, 'opensIn' | 'kind'>,
-): EditorMode | undefined {
+// mode lives"): the Whiteboard draws, every other template is a diagram, Blank included, even on
+// a tab that opened in Draw. An event-storming board has no mode to give (it is always Diagram).
+// Undefined leaves the tab as is.
+export function templateOpensIn(overrides: Pick<Tab, 'opensIn' | 'kind'>): EditorMode | undefined {
   if (overrides.opensIn) return overrides.opensIn;
-  return kind === 'blank' || overrides.kind ? undefined : 'diagram';
+  return overrides.kind ? undefined : 'diagram';
 }
 
 // Template / identity modal actions, lifted out of editor-page.tsx:
@@ -187,7 +184,7 @@ export function useTemplateFlow(opts: {
     // even though the picker pre-selects the current theme. The
     // per-template pattern override still wins at creation time.
     const overrides = templateCanvasOverrides(kind);
-    const opensIn = templateOpensIn(kind, overrides);
+    const opensIn = templateOpensIn(overrides);
     commitTabs((ts) =>
       ts.map((t) => {
         if (t.id !== activeId) return t;

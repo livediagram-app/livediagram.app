@@ -24,9 +24,9 @@ design decision. Draw mode's own tools are blueprinted in
 | The mode switch             | `EditorModeSwitch` (chip `ModeMenuChip`), `apps/live/components/chrome/editor-mode/` |
 | The editor's resolved mode  | `EditorModeProvider` / `useEditorModeState()`, `editor-mode-context.tsx`             |
 | The tab pill's mode icon    | `TabModeIcon`, `apps/live/components/chrome/editor-mode/`                            |
-| A template's opening mode   | `templateOpensIn(kind, overrides)`, `apps/live/app/document/[id]/useTemplateFlow.ts` |
+| A template's opening mode   | `templateOpensIn(overrides)`, `apps/live/app/document/[id]/useTemplateFlow.ts`       |
 | Opens in                    | `useTabOpensIn` (`apps/live/hooks/editor/`), `OpensInMenuSection` (chrome)           |
-| A new tab's seed            | `newTabSeed(source, creatorMode)`, `apps/live/lib/new-tab-seed.ts`                   |
+| A new tab's seed            | `newTabSeed(source)`, `apps/live/lib/new-tab-seed.ts`                                |
 | A text box's sizing         | `TextElement.sizing?: TextSizing` (`'fit' \| 'wrap'`), absent = a fixed box          |
 | Ink by name                 | `INK_PEN_COLOUR` (`'ink'`), a `PenColourName`, drawn in `PEN_INK`                    |
 | Legacy whiteboard migration | `migrateWhiteboardKind(tab)`, `packages/document/src/legacy-whiteboard-tab.ts`       |
@@ -102,13 +102,14 @@ tab.locked }`. `setOpensIn` refuses a missing or locked tab (or `!canEdit`). Oth
   even when the opening mode is unchanged (the checked row); a stale menu on another tab switches
   nothing. An unchanged opening mode then stops there; else one `commitTabs` (one undo step,
   synced). `OpensInMenuSection` passes a press on the checked row through to `onChange` for this.
-- **New tab** (`useTabActions.addTab`): `newTabSeed(activeTab, editorMode.mode)` adds
-  `opensIn: creatorMode` when it is not the default, after the source tab's look. A template
-  chosen for it then decides (`useTemplateFlow`): `templateOpensIn(kind, overrides)` is
-  `overrides.opensIn` when set (`'draw'` for `whiteboard`), else `undefined` for `blank` or an
-  event-storming template (`overrides.kind` set), else `'diagram'`. When defined it is written on
-  the tab after `templateCanvasOverrides` and `releaseOpening(activeId)` runs; undefined leaves
-  the seeded `opensIn` as it was.
+- **New tab** (`useTabActions.addTab`): `newTabSeed(activeTab)` copies the source tab's look
+  and never an `opensIn`, so the tab opens in Diagram whatever its creator's mode. A template
+  chosen for it then decides (`useTemplateFlow`): `templateOpensIn(overrides)` is
+  `overrides.opensIn` when set (`'draw'` for `whiteboard`), else `undefined` for an
+  event-storming template (`overrides.kind` set), else `'diagram'` (Blank included). When
+  defined it is written on the tab after `templateCanvasOverrides` and `releaseOpening(activeId)`
+  runs. A new document's first tab takes the same `templateCanvasOverrides` on `/new`, so it
+  too opens in Diagram unless it is a Whiteboard.
 - **Templates, MCP, imports**: `templateCanvasOverrides('whiteboard')` → `{ opensIn: 'draw',
 backgroundPattern: 'graph' }`, used by the picker, `/new` and the MCP `buildTemplateTab`; the
   board-scene `tabPatchOf` (whiteboard profile) and `importBoardsAsDocuments` write
@@ -177,7 +178,7 @@ export type OpensInChoice = {
   onChange: (m: EditorMode) => void;
   disabled: boolean;
 };
-export function newTabSeed(source: Tab | undefined, creatorMode: EditorMode): Partial<Tab>;
+export function newTabSeed(source: Tab | undefined): Partial<Tab>;
 export function editorModeShortcut(
   s: EditorModeState,
   announce: (m: string) => void,
@@ -195,8 +196,7 @@ export function editorModeShortcut(
   Not in `TabBar`, which no longer takes the mode.
 - `TabModeIcon({ tab, style? })`: the effective mode's `EDITOR_MODE_ICON`, 12 px, `aria-hidden`;
   `TabPill` passes `style={{ color: legibleTabAccent(tab, isDark) }}`.
-- `templateOpensIn(kind: TemplateKind, overrides: Pick<Tab, 'opensIn' | 'kind'>):
-EditorMode | undefined`.
+- `templateOpensIn(overrides: Pick<Tab, 'opensIn' | 'kind'>): EditorMode | undefined`.
 - `PortalMenu.opensIn?: OpensInChoice`: absent, no Opens in section.
 - Wire: `Tab.opensIn` and `TextElement.sizing` are in the OpenAPI schema
   (`EditorMode`, `TextSizing`); `TabKind` is `'diagram' | 'event-storming'`.
@@ -325,7 +325,7 @@ Migration on read, in every entry point (`migrateStoredTab` / `migrateIncomingTa
 | The tab pill shows your mode on it             | `components/chrome/TabPill.test.tsx`                                                                                               |
 | A template decides the tab's mode              | `app/document/[id]/useTemplateFlow.test.ts`                                                                                        |
 | Opens in                                       | `hooks/editor/useTabOpensIn.test.tsx`, `components/chrome/OpensInMenuSection.test.tsx`                                             |
-| New tab inherits                               | `lib/new-tab-seed.test.ts`                                                                                                         |
+| New tab opens in Diagram                       | `lib/new-tab-seed.test.ts`                                                                                                         |
 | Entering / leaving Draw                        | `hooks/canvas/useWhiteboard.test.tsx`, `useWhiteboard.board-tools.test.tsx`                                                        |
 | Hugging on `sizing` in both modes              | `lib/text-hug.test.ts`, `boxed-drag-resolve.resize.test.ts`, `useEditorDrag.shift-resize.test.tsx`, `useTextStyleSetters.test.ts`  |
 | Template, MCP, imports open in Draw            | `apps/live/lib/templates.test.ts`, `apps/mcp/src/tab-builders.test.ts`, `lib/board-scene/land.test.ts`, `lib/import-merge.test.ts` |

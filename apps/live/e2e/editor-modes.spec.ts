@@ -3,7 +3,7 @@ import { dismissQuickTour, expect, expectNoPageErrors, test } from './fixtures';
 
 // Editor modes end to end (docs/specs/007-editor/editor-modes.md), in dark mode: the chip beside
 // the Explorer switches a general tab between Diagram and Draw, a stroke drawn in Draw stays in
-// Diagram, Shift+D toggles, the choice survives a reload, a new tab inherits the creator's mode,
+// Diagram, Shift+D toggles, the choice survives a reload, a new tab opens in Diagram,
 // and Opens in changes the tab's opening mode, switching only the chooser. Synthesised content only.
 
 const CANVAS = '[data-canvas-a11y-root]';
@@ -98,13 +98,13 @@ test.describe('editor modes', () => {
     expectNoPageErrors(pageErrors);
   });
 
-  test('a new tab inherits the mode its creator is in', async ({ page, pageErrors }) => {
+  test('a new tab opens in Diagram, even when made in Draw mode', async ({ page, pageErrors }) => {
     await openBlank(page);
     await chooseMode(page, 'Draw');
     await page.getByRole('button', { name: 'Add tab' }).click();
     await page.keyboard.press('Escape');
     await expect(page.locator('[data-editor-tabbar]').getByText('Tab 2')).toBeVisible();
-    await expect(chip(page)).toHaveAccessibleName('Editor mode: Draw');
+    await expect(chip(page)).toHaveAccessibleName('Editor mode: Diagram');
     expectNoPageErrors(pageErrors);
   });
 

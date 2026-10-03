@@ -37,18 +37,16 @@ describe('templatePickerTabAction', () => {
 
 // docs/specs/007-editor/editor-modes.md "Where the mode lives": a template decides the mode.
 describe('templateOpensIn', () => {
-  it('opens a diagram template in Diagram, even on a tab made in Draw mode', () => {
-    expect(templateOpensIn('mindmap', templateCanvasOverrides('mindmap'))).toBe('diagram');
+  it('opens every template but the Whiteboard in Diagram, Blank included', () => {
+    expect(templateOpensIn(templateCanvasOverrides('mindmap'))).toBe('diagram');
+    expect(templateOpensIn(templateCanvasOverrides('blank'))).toBe('diagram');
   });
 
   it('opens the Whiteboard in Draw', () => {
-    expect(templateOpensIn('whiteboard', templateCanvasOverrides('whiteboard'))).toBe('draw');
+    expect(templateOpensIn(templateCanvasOverrides('whiteboard'))).toBe('draw');
   });
 
-  it('leaves Blank and an event-storming board as they are', () => {
-    expect(templateOpensIn('blank', templateCanvasOverrides('blank'))).toBeUndefined();
-    expect(
-      templateOpensIn('event-storming', templateCanvasOverrides('event-storming')),
-    ).toBeUndefined();
+  it('gives an event-storming board no mode (it is always Diagram)', () => {
+    expect(templateOpensIn(templateCanvasOverrides('event-storming'))).toBeUndefined();
   });
 });
