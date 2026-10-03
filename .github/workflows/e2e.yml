@@ -1,11 +1,10 @@
 name: E2E Smoke
 
-# Browser E2E (docs/specs/003-system-architecture/e2e-smoke.md) is deliberately OFF the per-PR critical path —
-# it costs a browser download + a running stack. The fast unit gate
-# (ci.yml) still runs on every PR/push. This runs:
-#   - on push to main (a post-merge smoke), and
-#   - on demand (workflow_dispatch) against a branch before merge.
+# Browser E2E (docs/specs/003-system-architecture/e2e-smoke.md "When it runs"): a per-PR merge gate.
+# Its job is a required check on main; it needs no secret, so fork PRs run it too. Dispatched by
+# lucide-revendor.yml after it commits to a Dependabot PR.
 on:
+  pull_request:
   push:
     branches: [main]
   workflow_dispatch:

@@ -65,6 +65,44 @@
       "dependsOn": ["^build"],
       "outputs": ["coverage/**"]
     },
+    // The help app's guards (repo paths and spec links quoted in docs and code) read every tracked
+    // file, so every tracked file is an input: a docs-only change must never replay a cached pass
+    // (docs/specs/003-system-architecture/testing.md "Before a push").
+    "@livediagram/help#test": {
+      "dependsOn": ["^build"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/**",
+        "!$TURBO_ROOT$/**/node_modules/**",
+        "!$TURBO_ROOT$/**/.next*/**",
+        "!$TURBO_ROOT$/**/out/**",
+        "!$TURBO_ROOT$/**/dist/**",
+        "!$TURBO_ROOT$/**/coverage/**",
+        "!$TURBO_ROOT$/**/.turbo/**",
+        "!$TURBO_ROOT$/**/.wrangler/**",
+        "!$TURBO_ROOT$/**/test-results*/**",
+        "!$TURBO_ROOT$/**/playwright-report*/**",
+        "!$TURBO_ROOT$/.git/**"
+      ]
+    },
+    "@livediagram/help#test:coverage": {
+      "dependsOn": ["^build"],
+      "outputs": ["coverage/**"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/**",
+        "!$TURBO_ROOT$/**/node_modules/**",
+        "!$TURBO_ROOT$/**/.next*/**",
+        "!$TURBO_ROOT$/**/out/**",
+        "!$TURBO_ROOT$/**/dist/**",
+        "!$TURBO_ROOT$/**/coverage/**",
+        "!$TURBO_ROOT$/**/.turbo/**",
+        "!$TURBO_ROOT$/**/.wrangler/**",
+        "!$TURBO_ROOT$/**/test-results*/**",
+        "!$TURBO_ROOT$/**/playwright-report*/**",
+        "!$TURBO_ROOT$/.git/**"
+      ]
+    },
     "typecheck": {
       "dependsOn": ["^build"]
     },
