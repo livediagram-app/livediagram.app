@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { layOutInfographicPages } from '@livediagram/document';
-import { pagesClipPath } from './InfographicPageClip';
+import { layOutIllustratePages } from '@livediagram/document';
+import { pagesClipPath } from './IllustratePageClip';
 
-// Infographic mode cuts elements off at the page edges (docs/specs/007-editor/editor-modes.md
+// Illustrate mode cuts elements off at the page edges (docs/specs/007-editor/editor-modes.md
 // "The pages").
 describe('pagesClipPath', () => {
   it('traces every page as one closed rectangle', () => {
-    const pages = layOutInfographicPages([
+    const pages = layOutIllustratePages([
       { id: 'a', orientation: 'portrait' },
       { id: 'b', orientation: 'landscape' },
     ]);

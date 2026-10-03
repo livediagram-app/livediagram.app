@@ -1,6 +1,6 @@
 'use client';
 
-// The page panel's Layouts (docs/specs/007-editor/infographic-pages.md "Layouts"): the layouts by
+// The page panel's Layouts (docs/specs/007-editor/illustrate-pages.md "Layouts"): the layouts by
 // category, as /new browses templates: the categories first (each a card fronted by its first
 // layout, with a count), then one category's layouts, each previewed for this page, with a way
 // back. Onto an empty page a press places it at once; onto
@@ -18,7 +18,7 @@ import { ChevronLeftIcon } from '@livediagram/ui';
 import { CountBadge } from '@/components/primitives/CountBadge';
 import { Button } from '@livediagram/ui';
 import { LayoutThumb } from './infographic-layout-thumb';
-import { PanelSection } from './infographic-page-panel-sections';
+import { PanelSection } from './illustrate-page-panel-sections';
 
 export function LayoutsSection({
   page,

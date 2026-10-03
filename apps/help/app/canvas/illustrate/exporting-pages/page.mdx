@@ -3,22 +3,22 @@ import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
 
 export const metadata = helpMetadata({
-  title: 'Exporting and Presenting Infographics',
+  title: 'Exporting and Presenting Pages',
   description:
     'Export an infographic as a PDF of every page or a PNG or SVG of one page, each exactly its sheet, and turn its pages into slides to present.',
-  path: '/help/canvas/infographics/exporting-infographics/',
+  path: '/help/canvas/illustrate/exporting-pages/',
 });
 
 <ArticleLayout
-  title="Exporting and Presenting Infographics"
+  title="Exporting and Presenting Pages"
   description="Every page as a print-ready PDF, one page as an image, and pages as slides."
   categoryTitle="Canvas"
   categorySlug="canvas"
-  parentArticle={{ title: 'Infographics', slug: 'infographics' }}
-  subArticles={getSubArticles('infographics').filter((a) => a.slug !== 'exporting-infographics')}
+  parentArticle={{ title: 'Illustrate Mode', slug: 'illustrate' }}
+  subArticles={getSubArticles('illustrate').filter((a) => a.slug !== 'exporting-pages')}
 >
 
-In Infographic mode, export and present work in **pages**, not the content of the whole tab.
+In Illustrate mode, export and present work in **pages**, not the content of the whole tab.
 
 ## Exporting
 
@@ -33,9 +33,9 @@ The **Isometric view** and **Background pattern** switches are not offered for p
 
 ## Turning Pages Into Slides
 
-An infographic is often presented, so its deck is one press away: in the bottom-right corner, where the Layers button sits in the other modes, the **Slides** button opens the Slide Deck panel just above it.
+Pages are often presented, so its deck is one press away: in the bottom-right corner, where the Layers button sits in the other modes, the **Slides** button opens the Slide Deck panel just above it.
 
-In Infographic mode the panel adds slides **a page at a time**: pick a page from the list and press **Add as slide**. A page slide is the page itself:
+In Illustrate mode the panel adds slides **a page at a time**: pick a page from the list and press **Add as slide**. A page slide is the page itself:
 
 - It shows whatever is on the page **now**, so it follows your edits, a new layout, a resize or a reorder without you touching the deck.
 - It is framed to **exactly** the page.

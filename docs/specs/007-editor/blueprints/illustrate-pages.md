@@ -1,6 +1,6 @@
-# Infographic pages blueprint
+# Illustrate pages blueprint
 
-Derived from [Infographic pages](../infographic-pages.md). Implementation detail only; the spec owns
+Derived from [Illustrate pages](../illustrate-pages.md). Implementation detail only; the spec owns
 every design decision. The mode itself (the switch, the opening mode, the pages' basics) is
 [Editor modes](editor-modes.md).
 
@@ -8,39 +8,39 @@ every design decision. The mode itself (the switch, the opening mode, the pages'
 
 | Term                        | Identifier                                                                                                                                                                 |
 | --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Page                        | `InfographicPage` (`{ id, orientation, size?, background?, name? }`), `packages/document/src/infographic-page.ts`                                                          |
-| A page laid out             | `LaidOutPage` (`InfographicPage & { index, rect: PageRect }`)                                                                                                              |
+| Page                        | `IllustratePage` (`{ id, orientation, size?, background?, name? }`), `packages/document/src/illustrate-page.ts`                                                            |
+| A page laid out             | `LaidOutPage` (`IllustratePage & { index, rect: PageRect }`)                                                                                                               |
 | Page size                   | `PageSizeId` (`'a4' \| 'letter' \| 'a3' \| 'square' \| 'social' \| 'wide'`), `PAGE_SIZES`, `PAGE_SIZE_IDS`                                                                 |
 | Orientation                 | `PageOrientation`, `PAGE_ORIENTATIONS`; `pageHasOrientation(page)`                                                                                                         |
 | Page background             | `PageBackground` (`{ fill?: PageFill; pattern?: PagePattern }`)                                                                                                            |
 | Fill                        | `PageFill` (`{ kind: 'solid'; color }` \| `{ kind: 'gradient'; from; to; angle }`)                                                                                         |
 | Pattern                     | `PagePattern` (`'dots' \| 'grid' \| 'lines'`), `PAGE_PATTERNS`                                                                                                             |
-| The tab's pages             | `infographicPagesOf(tab)` (never empty), `layOutInfographicPages(pages)`                                                                                                   |
+| The tab's pages             | `illustratePagesOf(tab)` (never empty), `layOutIllustratePages(pages)`                                                                                                     |
 | A page's measures           | `pageDimensions`, `pageSizeLabel`, `pageLabel(page, index, count)`, `pageMargin`                                                                                           |
-| Page edit carrying content  | `withInfographicPages(tab, next)`                                                                                                                                          |
-| What is on a page           | `elementAnchorPoint`, `elementIdsOnPage`, `packages/document/src/infographic-page-content.ts`                                                                              |
+| Page edit carrying content  | `withIllustratePages(tab, next)`                                                                                                                                           |
+| What is on a page           | `elementAnchorPoint`, `elementIdsOnPage`, `packages/document/src/illustrate-page-content.ts`                                                                               |
 | Duplicate / replace content | `withDuplicatedPage`, `withPageContentReplaced`                                                                                                                            |
 | Page surface                | `pageFillTone`, `pageSurface`, `pageIsDark`, `elementPageSurfaces`                                                                                                         |
 | Re-inking                   | `legibleOn(color, tone)`, `withPageInkFor(tab, pageId, background)`                                                                                                        |
 | Re-fit                      | `withContentFittedToPage(tab, ids, pageId, { centre? })`                                                                                                                   |
-| Snap boxes                  | `infographicPageSnapBoxes(pages)` (ids `page-snap:<id>`, `page-margin:<id>`)                                                                                               |
-| Into pages                  | `contentClusters`, `withContentPaginated`, `packages/document/src/infographic-paginate.ts`                                                                                 |
+| Snap boxes                  | `illustratePageSnapBoxes(pages)` (ids `page-snap:<id>`, `page-margin:<id>`)                                                                                                |
+| Into pages                  | `contentClusters`, `withContentPaginated`, `packages/document/src/illustrate-paginate.ts`                                                                                  |
 | Page layout                 | `PageLayoutId`, `PageLayout`, `PAGE_LAYOUTS`, `pageLayoutById`, `packages/templates/src/page-layouts.ts`                                                                   |
 | Layout kit                  | `kit(box)`, `Kit`, `heading`, `verticalSteps`, `LayoutBox`, `page-layout-kit.ts`                                                                                           |
 | Extra layouts               | `quotePage`, `teamPage`, `factsGridPage`, `checklistPage`, `eventPage`, `page-layouts-extra.ts`                                                                            |
 | More layouts                | `buildSectionDivider`, `buildPoster`, `buildSurveyResults`, `buildProgressReport`, `buildRoadmap`, `buildAgenda`, `buildQuestions`, `buildProfile`, `page-layouts-more.ts` |
 | Layout category             | `PageLayoutCategoryId` (`'covers' \| 'data' \| 'steps' \| 'people'`), `PAGE_LAYOUT_CATEGORIES`, `PageLayout.category`, `page-layouts.ts`                                   |
 | A layout for a page         | `buildPageLayout(layout, page)`, `apps/live/lib/page-layout-build.ts`                                                                                                      |
-| Background catalogue        | `PAGE_SOLID_PRESETS`, `PAGE_GRADIENT_PRESETS`, `themeBackgroundPresets`, `apps/live/lib/infographic-page-paint.ts`                                                         |
+| Background catalogue        | `PAGE_SOLID_PRESETS`, `PAGE_GRADIENT_PRESETS`, `themeBackgroundPresets`, `apps/live/lib/illustrate-page-paint.ts`                                                          |
 | Sheet paint                 | `pageSheetStyle`, `pagePatternInk`, `fillCss`, `sameFill`, `gradientFill`, `withBackgroundPatch`                                                                           |
-| The pages view              | `InfographicPagesView`, `useInfographicPage`, `apps/live/hooks/editor/useInfographicPage.ts`                                                                               |
-| Page edits                  | `InfographicPageEdits`, `infographicPageEdits`, `apps/live/hooks/editor/infographic-page-edits.ts`                                                                         |
-| Sheets and title bars       | `InfographicPages` (`PageCog`, `LayoutInvite`, `ReorderMarker`, `AddPageButton`)                                                                                           |
-| Page panel                  | `InfographicPagePanel` (`PagePanelTab`, `PagePreview`, `NameField`, `PanelTabs`, `PageActions`)                                                                            |
-| Panel sections              | `SizeSection`, `OrientationSection`, `BackgroundSection`, `infographic-page-panel-sections.tsx`                                                                            |
+| The pages view              | `IllustratePagesView`, `useIllustratePages`, `apps/live/hooks/editor/useIllustratePages.ts`                                                                                |
+| Page edits                  | `IllustratePageEdits`, `illustratePageEdits`, `apps/live/hooks/editor/illustrate-page-edits.ts`                                                                            |
+| Sheets and title bars       | `IllustratePages` (`PageCog`, `LayoutInvite`, `ReorderMarker`, `AddPageButton`)                                                                                            |
+| Page panel                  | `IllustratePagePanel` (`PagePanelTab`, `PagePreview`, `NameField`, `PanelTabs`, `PageActions`)                                                                             |
+| Panel sections              | `SizeSection`, `OrientationSection`, `BackgroundSection`, `illustrate-page-panel-sections.tsx`                                                                             |
 | Layouts section             | `LayoutsSection` (state: `category` open or null for the overview, `pending`), `infographic-page-layouts-section.tsx`; tile art `LayoutThumb`                              |
-| Layout hover preview        | `InfographicLayoutPreview`; `InfographicPagesView.layoutPreview`                                                                                                           |
-| Page clip                   | `InfographicPageClip` (`hiddenPageId`), `pagesClipPath`                                                                                                                    |
+| Layout hover preview        | `InfographicLayoutPreview`; `IllustratePagesView.layoutPreview`                                                                                                            |
+| Page clip                   | `IllustratePageClip` (`hiddenPageId`), `pagesClipPath`                                                                                                                     |
 | Per-element surface         | `PageSurfacesProvider`, `useElementSurface(id)`, `CanvasSurfaceContext.tsx`                                                                                                |
 | Reorder drag                | `usePageReorderDrag`, `reorderSlot`, `PageReorder`, `apps/live/hooks/canvas/usePageReorderDrag.ts`                                                                         |
 | Page export                 | `pageExportFrame`, `PageExportFrame`, `EXPORT_PAPER` (`apps/live/lib/export-page.ts`); `ImageExportOpts.page`; `exportPagesAsPdf`                                          |
@@ -53,42 +53,42 @@ page; "template" stays the whole-tab starting point.
 
 ## Constants and configuration
 
-| Constant                        | Value                                                           | Where / provenance                                                    |
-| ------------------------------- | --------------------------------------------------------------- | --------------------------------------------------------------------- |
-| `A4_SHORT_SIDE`, `A4_LONG_SIDE` | 794, 1123                                                       | `infographic-page.ts`; A4 at 96 px per inch                           |
-| `PAGE_SIZES`                    | spec "Sizes" table                                              | `infographic-page.ts`                                                 |
-| `INFOGRAPHIC_PAGE_GAP`          | 96 px                                                           | Editor modes "The pages"                                              |
-| `MAX_INFOGRAPHIC_PAGES`         | 20                                                              | Spec "Page actions"                                                   |
-| `PAGE_NAME_MAX`                 | 60                                                              | D23                                                                   |
-| `PAGE_MARGIN_FRACTION`          | 0.07                                                            | Spec "Layouts", "Snapping"                                            |
-| `PAGE_GRADIENT_ANGLE`           | 160 (CSS degrees)                                               | Spec "Backgrounds"                                                    |
-| `PAGE_PATTERN_PITCH`            | 24 px                                                           | Spec "Backgrounds"                                                    |
-| Pattern ink                     | `rgb(15 23 42 / 0.1)` light, `rgb(255 255 255 / 0.14)` dark     | `pagePatternInk`; D24                                                 |
-| `FALLBACK_ACCENT`               | `#0ea5e9`                                                       | `themeBackgroundPresets`; the brand blue                              |
-| Theme tints / shades            | wash 0.93, tint 0.8, deep 0.6, glow 0.85 / 0.7, dusk 0.65 / 0.4 | spec "From the theme" (wash, tint, deep); D25 (glow, dusk)            |
-| Default gradient angle on read  | 180                                                             | `parseFill`; D31                                                      |
-| `PAGE_INK_FLOOR`                | 3 (contrast)                                                    | Spec "Colours of their own are re-inked"                              |
-| `PAGE_INK_CONTRAST`             | 4.5 (contrast)                                                  | Spec, WCAG AA text                                                    |
-| `WIDE_RATIO`                    | 1.15                                                            | `page-layout-kit.ts`; spec "Layouts" tall / wide                      |
-| `TITLE_FILL`, `GLYPH_WIDTH`     | 0.72, 0.6                                                       | `page-layout-kit.ts`; D26                                             |
-| Panel `WIDTH`, `GAP`            | 304 px, 6 px                                                    | `InfographicPagePanel.tsx`; D27                                       |
-| `PAGE_EASE_MS`                  | 200 ms                                                          | Editor modes "Turning, adding and deleting animate"                   |
-| `COG_ROOM`, `LABEL_MIN`         | 32 px, 40 px                                                    | `InfographicPages.tsx`; spec "The label fits its page" (40); D28 (32) |
-| `INVITE_WIDE`, `INVITE_ICON`    | 150 px, 30 px                                                   | `InfographicPages.tsx`; D28                                           |
-| `THUMB_W`                       | 76 px                                                           | `infographic-layout-thumb.tsx`; D29                                   |
-| `DRAG_THRESHOLD`                | 6 px                                                            | `usePageReorderDrag.ts`; spec "Drag a page's label"                   |
-| `PAGINATE_CLUSTER_GAP`          | 120 px                                                          | `infographic-paginate.ts`; spec "Into pages"                          |
-| `LANDSCAPE_RATIO`               | 1.1                                                             | `infographic-paginate.ts`; spec "Into pages"                          |
-| `STRAY_SHARE`                   | 0.5                                                             | `infographic-paginate.ts`; spec "Into pages"                          |
-| `EXPORT_PAPER`                  | `#ffffff`                                                       | `export-page.ts`; spec "Export"                                       |
-| `PT_PER_PX`                     | 0.75                                                            | `export-tab-pdf.ts`; spec "Export"                                    |
-| Hover preview layer             | `z-[1]` over the element layer                                  | `InfographicLayoutPreview`; D30                                       |
+| Constant                        | Value                                                           | Where / provenance                                                   |
+| ------------------------------- | --------------------------------------------------------------- | -------------------------------------------------------------------- |
+| `A4_SHORT_SIDE`, `A4_LONG_SIDE` | 794, 1123                                                       | `illustrate-page.ts`; A4 at 96 px per inch                           |
+| `PAGE_SIZES`                    | spec "Sizes" table                                              | `illustrate-page.ts`                                                 |
+| `ILLUSTRATE_PAGE_GAP`           | 96 px                                                           | Editor modes "The pages"                                             |
+| `MAX_ILLUSTRATE_PAGES`          | 20                                                              | Spec "Page actions"                                                  |
+| `PAGE_NAME_MAX`                 | 60                                                              | D23                                                                  |
+| `PAGE_MARGIN_FRACTION`          | 0.07                                                            | Spec "Layouts", "Snapping"                                           |
+| `PAGE_GRADIENT_ANGLE`           | 160 (CSS degrees)                                               | Spec "Backgrounds"                                                   |
+| `PAGE_PATTERN_PITCH`            | 24 px                                                           | Spec "Backgrounds"                                                   |
+| Pattern ink                     | `rgb(15 23 42 / 0.1)` light, `rgb(255 255 255 / 0.14)` dark     | `pagePatternInk`; D24                                                |
+| `FALLBACK_ACCENT`               | `#0ea5e9`                                                       | `themeBackgroundPresets`; the brand blue                             |
+| Theme tints / shades            | wash 0.93, tint 0.8, deep 0.6, glow 0.85 / 0.7, dusk 0.65 / 0.4 | spec "From the theme" (wash, tint, deep); D25 (glow, dusk)           |
+| Default gradient angle on read  | 180                                                             | `parseFill`; D31                                                     |
+| `PAGE_INK_FLOOR`                | 3 (contrast)                                                    | Spec "Colours of their own are re-inked"                             |
+| `PAGE_INK_CONTRAST`             | 4.5 (contrast)                                                  | Spec, WCAG AA text                                                   |
+| `WIDE_RATIO`                    | 1.15                                                            | `page-layout-kit.ts`; spec "Layouts" tall / wide                     |
+| `TITLE_FILL`, `GLYPH_WIDTH`     | 0.72, 0.6                                                       | `page-layout-kit.ts`; D26                                            |
+| Panel `WIDTH`, `GAP`            | 304 px, 6 px                                                    | `IllustratePagePanel.tsx`; D27                                       |
+| `PAGE_EASE_MS`                  | 200 ms                                                          | Editor modes "Turning, adding and deleting animate"                  |
+| `COG_ROOM`, `LABEL_MIN`         | 32 px, 40 px                                                    | `IllustratePages.tsx`; spec "The label fits its page" (40); D28 (32) |
+| `INVITE_WIDE`, `INVITE_ICON`    | 150 px, 30 px                                                   | `IllustratePages.tsx`; D28                                           |
+| `THUMB_W`                       | 76 px                                                           | `infographic-layout-thumb.tsx`; D29                                  |
+| `DRAG_THRESHOLD`                | 6 px                                                            | `usePageReorderDrag.ts`; spec "Drag a page's label"                  |
+| `PAGINATE_CLUSTER_GAP`          | 120 px                                                          | `illustrate-paginate.ts`; spec "Into pages"                          |
+| `LANDSCAPE_RATIO`               | 1.1                                                             | `illustrate-paginate.ts`; spec "Into pages"                          |
+| `STRAY_SHARE`                   | 0.5                                                             | `illustrate-paginate.ts`; spec "Into pages"                          |
+| `EXPORT_PAPER`                  | `#ffffff`                                                       | `export-page.ts`; spec "Export"                                      |
+| `PT_PER_PX`                     | 0.75                                                            | `export-tab-pdf.ts`; spec "Export"                                   |
+| Hover preview layer             | `z-[1]` over the element layer                                  | `InfographicLayoutPreview`; D30                                      |
 
 ## Data and persistence
 
-- `Tab.pages?: InfographicPage[]`, in row order, stored with the tab (synced and saved as any tab
+- `Tab.pages?: IllustratePage[]`, in row order, stored with the tab (synced and saved as any tab
   field). Absent: one page in the legacy `pageOrientation` (Editor modes "The pages").
-- **Parsing** (`parsePage`, `parseFill`, `parseBackground`, private to `infographic-page.ts`):
+- **Parsing** (`parsePage`, `parseFill`, `parseBackground`, private to `illustrate-page.ts`):
   - no string `id` or no valid `orientation`: the page is skipped;
   - `size` kept when a `PageSizeId` other than `'a4'` (A4 is stored as absent);
   - a fill kept when `solid` with a 3- or 6-digit hex `color`, or `gradient` with hex `from` / `to`;
@@ -104,11 +104,11 @@ page; "template" stays the whole-tab starting point.
 
 ## Behaviour and state
 
-### The view (`useInfographicPage`)
+### The view (`useIllustratePages`)
 
-Returns null outside a page look (`hasPageLook(mode)`), else `InfographicPagesView`:
+Returns null outside a page look (`hasPageLook(mode)`), else `IllustratePagesView`:
 `pages` (laid out), `focusPage(id)` (frames one page: `computeFitBelow` of
-`infographicPageFitBox(page)` below the Toolbar strip), `themeBackgrounds`, `tabFont`,
+`illustratePageFitBox(page)` below the Toolbar strip), `themeBackgrounds`, `tabFont`,
 `layoutPreview` / `setLayoutPreview` (state held here so the clip and the overlay share it), and
 `edit` (absent for a viewer or a locked tab).
 
@@ -116,17 +116,17 @@ On `[on, tabLoaded, tabId]`: `paginate()` (Into pages, below) then a frame later
 (frames the first page). After `onCreated(id)` (add, duplicate) the hook frames that page once it
 appears in the row (`goTo` state, consumed in a `requestAnimationFrame`).
 
-### Edits (`infographicPageEdits`)
+### Edits (`illustratePageEdits`)
 
 Every edit is one `commitTabs` call that re-reads the tab at commit time:
 
 - `setOrientation`, `setSize`: `reshapePage`: ids = `elementIdsOnPage` before; pages patched;
-  `withInfographicPages`; then `withContentFittedToPage(tab, ids, pageId)`.
+  `withIllustratePages`; then `withContentFittedToPage(tab, ids, pageId)`.
 - `rename(id, raw)`: trimmed, cut to `PAGE_NAME_MAX`; a no-op when unchanged.
 - `setBackground(id, patch)`: `withBackgroundPatch`; when the patch carries `fill`,
   `withPageInkFor(tab, id, background)` in the same commit.
 - `movePageTo(id, index)`, `movePage(id, ±1)`: reorder the list; content follows its page.
-- `addPage`: the last page's size and orientation; `nextInfographicPageId(current)`; absent at
+- `addPage`: the last page's size and orientation; `nextIllustratePageId(current)`; absent at
   the limit.
 - `duplicatePage(id)`: `withDuplicatedPage` with `crypto.randomUUID` element ids; absent at the
   limit.
@@ -154,15 +154,15 @@ ends map; pinned ends follow. Returns the same tab when nothing moves.
   stored ones.
 - `contentClusters`: union-find over pinned arrow ends and pairs of bounds within the gap (edge to
   edge, O(n²)); reading order by rows (`top < row's first bottom`) then x.
-- `paginate`: room = `MAX_INFOGRAPHIC_PAGES - kept.length` (at least 1); clusters past the room
-  merge into the last; each cluster a page (`nextInfographicPageId`), landscape when wider than
+- `paginate`: room = `MAX_ILLUSTRATE_PAGES - kept.length` (at least 1); clusters past the room
+  merge into the last; each cluster a page (`nextIllustratePageId`), landscape when wider than
   `LANDSCAPE_RATIO` x its height; each fitted with `{ centre: true }`.
 - Run only by an editor on an unlocked tab; one `commitTabs`; a toast, `PagesLaidOut`.
 
 ### Surfaces and ink
 
 - `elementPageSurfaces(elements, pages)`: an element's page by its anchor point; only pages with a
-  fill are entered. `InfographicPageClip` wraps the element views in `PageSurfacesProvider`, whose
+  fill are entered. `IllustratePageClip` wraps the element views in `PageSurfacesProvider`, whose
   value keeps its identity while the entries do (keyed on `id:surface` pairs).
 - `useElementSurface(id)`: the page's surface, else the canvas's; used by `BoxedElementView`,
   `TableView`, `useBoxedElementAnimation`, `ArrowView`.
@@ -175,12 +175,12 @@ ends map; pinned ends follow. Returns the same tab when nothing moves.
 ### Panel, previews, reorder
 
 - Panel opened from a cog (tab Page) or the invite (tab Layouts); `opened = { id, cog, tab }` in
-  `InfographicPages`. Desktop: fixed, beside the cog when it fits (`a.right + GAP + WIDTH + EDGE
+  `IllustratePages`. Desktop: fixed, beside the cog when it fits (`a.right + GAP + WIDTH + EDGE
 <= innerWidth`), else right-aligned under it; re-placed on resize and `PAGE_EASE_MS + 20` after
   the page's rect changes. Mobile (`useIsMobileViewport`): `BottomSheet`.
 - Closes: outside pointerdown (`useClickOutside`, the trigger whitelisted by
   `[data-page-panel-trigger]`), Escape (capture; restores focus to the cog), a wheel outside it.
-- Background preview: `PagePreview` state in `InfographicPages`; the sheet paints
+- Background preview: `PagePreview` state in `IllustratePages`; the sheet paints
   `withBackgroundPatch(page, preview.patch)`; cleared on leave, on commit and on unmount.
 - Layout preview: `view.layoutPreview` set on tile pointerenter / focus; the clip drops that page
   (`hiddenPageId`); `InfographicLayoutPreview` draws `svgBoxed` / `svgArrow` markup of
@@ -190,11 +190,11 @@ ends map; pinned ends follow. Returns the same tab when nothing moves.
   a drag (`reorder = { pageId, slot }`); release calls `movePageTo(id, slot)`; the following click
   is swallowed (`endsDrag`); Escape cancels. `reorderSlot` = count of other pages whose centre is
   left of the dragged page's centre (rect centre + screen dx / zoom).
-- Bare sheets: `InfographicPages` `bare` (zen, presenting) drops `edit` and labels.
+- Bare sheets: `IllustratePages` `bare` (zen, presenting) drops `edit` and labels.
 
 ### Snapping
 
-`useEditorDrag` passes `pageSnapBoxes` (`infographicPageSnapBoxes(view.pages)`, from
+`useEditorDrag` passes `pageSnapBoxes` (`illustratePageSnapBoxes(view.pages)`, from
 `useEditorState`) to `resolveBoxedMove` / `resolveBoxedResize`, which add them to the alignment
 targets (`snapToAlignment`, `snapResizeBounds`, `alignmentGuides`) but not to `distributionSnap`.
 
@@ -206,7 +206,7 @@ bounds = the page rect, no padding, no isometric, no tab backdrop or pattern; ba
 anchored at the page's corner); surface = `pageSurface(page) ?? 'light'`; elements filtered to
 those whose bounds meet the page (arrows kept). The canvas rasterises `backgroundSvg` first.
 `exportPagesAsPdf` renders each page and writes one PDF page per image with a MediaBox of the page
-size x `PT_PER_PX`. The dialog's `pages` prop (Infographic mode, tab scope) selects the page row.
+size x `PT_PER_PX`. The dialog's `pages` prop (Illustrate mode, tab scope) selects the page row.
 
 ### Slides
 
@@ -218,7 +218,7 @@ prepend the page's `backgroundSvg`.
 
 ## Interfaces and contracts
 
-- `InfographicPageEdits`: `setOrientation(id, o)`, `setSize(id, size)`, `rename(id, name)`,
+- `IllustratePageEdits`: `setOrientation(id, o)`, `setSize(id, size)`, `rename(id, name)`,
   `setBackground(id, Partial<PageBackground>)` (`{ fill: undefined }` = paper), `movePage(id, -1 |
 1)`, `movePageTo(id, index)`, `addPage?()`, `duplicatePage?(id)`, `removePage?(id)`,
   `applyLayout(id, PageLayoutId)`, `contentCount(id)`. An unknown page id commits nothing.
@@ -256,7 +256,7 @@ only the renderer's own markup, whose labels are escaped.
 ## Performance and limits
 
 - At most 20 pages; per-render layout is O(pages).
-- `elementPageSurfaces` and `infographicPageSnapBoxes` run per render: O(elements x pages) and
+- `elementPageSurfaces` and `illustratePageSnapBoxes` run per render: O(elements x pages) and
   O(pages); the provider's value is stable while the entries are, so element views do not
   re-render during a drag that keeps elements on their pages.
 - `contentClusters` is O(n²) in elements, run once per mode entry.
@@ -293,29 +293,29 @@ positioned over the canvas.
 
 ## Observability
 
-- `debugLog` fingerprints: `[infographic-page] orientation set`, `size set`, `renamed`,
+- `debugLog` fingerprints: `[illustrate-page] orientation set`, `size set`, `renamed`,
   `background set`, `moved`, `page added`, `duplicated`, `page removed`, `layout placed`,
   `framed`, `content laid out into pages`.
 - Telemetry as the spec's Telemetry section, charted in `apps/telemetry/app/catalogue/features.ts`
-  (`PAGE_ORIENTATION`, `INFOGRAPHIC_PAGES`, `INFOGRAPHIC_PAGE_SETUP`,
-  `INFOGRAPHIC_PAGE_BUILDING`) and `collaboration.ts` (`SLIDES_ADDED`, `SLIDE_DECK_OPENED`), with
+  (`PAGE_ORIENTATION`, `ILLUSTRATE_PAGES`, `ILLUSTRATE_PAGE_SETUP`,
+  `ILLUSTRATE_PAGE_BUILDING`) and `collaboration.ts` (`SLIDES_ADDED`, `SLIDE_DECK_OPENED`), with
   explanations in `event-explanations.ts`.
 
 ## Testing
 
-| Spec rule                                                           | Test                                                            |
-| ------------------------------------------------------------------- | --------------------------------------------------------------- |
-| A page's fields, parsing, sizes, labels, mixed row                  | `packages/document/src/infographic-page-model.test.ts`          |
-| Content on a page, duplicate, replace                               | `infographic-page-model.test.ts` "page content"                 |
-| Dark pages, per-element surface, re-inking                          | `infographic-page-model.test.ts` "page backgrounds", "page ink" |
-| Into pages: clusters, reading order, stray, limits                  | `packages/document/src/infographic-paginate.test.ts`            |
-| Page slides resolve and frame                                       | `packages/document/src/slide-deck.test.ts` "page slides"        |
-| Edits: rename, size, move, delete, duplicate, paint, layout, re-fit | `apps/live/hooks/editor/infographic-page-edits.test.ts`         |
-| Every layout fits every size and orientation; each in a category    | `apps/live/lib/page-layouts.test.ts`                            |
-| Sheet paint, presets, theme backgrounds                             | `apps/live/lib/infographic-page-paint.test.ts`                  |
-| Snapping to page edges, centre lines, margins                       | `apps/live/hooks/canvas/boxed-drag-resolve.test.ts`             |
-| Reorder slot                                                        | `apps/live/hooks/canvas/usePageReorderDrag.test.ts`             |
-| The clip, and a clip with no page                                   | `apps/live/components/canvas/InfographicPageClip.test.ts`       |
+| Spec rule                                                           | Test                                                           |
+| ------------------------------------------------------------------- | -------------------------------------------------------------- |
+| A page's fields, parsing, sizes, labels, mixed row                  | `packages/document/src/illustrate-page-model.test.ts`          |
+| Content on a page, duplicate, replace                               | `illustrate-page-model.test.ts` "page content"                 |
+| Dark pages, per-element surface, re-inking                          | `illustrate-page-model.test.ts` "page backgrounds", "page ink" |
+| Into pages: clusters, reading order, stray, limits                  | `packages/document/src/illustrate-paginate.test.ts`            |
+| Page slides resolve and frame                                       | `packages/document/src/slide-deck.test.ts` "page slides"       |
+| Edits: rename, size, move, delete, duplicate, paint, layout, re-fit | `apps/live/hooks/editor/illustrate-page-edits.test.ts`         |
+| Every layout fits every size and orientation; each in a category    | `apps/live/lib/page-layouts.test.ts`                           |
+| Sheet paint, presets, theme backgrounds                             | `apps/live/lib/illustrate-page-paint.test.ts`                  |
+| Snapping to page edges, centre lines, margins                       | `apps/live/hooks/canvas/boxed-drag-resolve.test.ts`            |
+| Reorder slot                                                        | `apps/live/hooks/canvas/usePageReorderDrag.test.ts`            |
+| The clip, and a clip with no page                                   | `apps/live/components/canvas/IllustratePageClip.test.ts`       |
 
 Not covered by a unit test (browser-checked): panel placement, hover previews, the bottom sheet,
 the Slides popover, PDF bytes.

@@ -1,5 +1,5 @@
 // Feature art for the landing page's infographics section (docs/specs/019-marketing/marketing-site.md,
-// docs/specs/007-editor/infographic-pages.md). Small stills drawn from the same primitives as every
+// docs/specs/007-editor/illustrate-pages.md). Small stills drawn from the same primitives as every
 // other art block: pages in a row, a page built from a layout, backgrounds, a diagram laid out into
 // pages, and pages leaving as a PDF.
 
@@ -65,7 +65,7 @@ function Heading({ x, y, w }: { x: number; y: number; w: number }) {
 }
 
 /** Three pages in a row: A4 portrait, a landscape slide, a square post. */
-export function InfographicPagesArt() {
+export function IllustratePagesArt() {
   return (
     <Frame canvas>
       <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
@@ -190,7 +190,7 @@ export function InfographicLayoutArt() {
 }
 
 /** Pages painted three ways: a theme tint, a gradient with dots, a dark page with light ink. */
-export function InfographicBackgroundsArt() {
+export function IllustrateBackgroundsArt() {
   return (
     <Frame canvas>
       <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
@@ -227,7 +227,7 @@ export function InfographicBackgroundsArt() {
 }
 
 /** A diagram on the loose, laid out onto pages of its own. */
-export function InfographicIntoPagesArt() {
+export function IllustrateIntoPagesArt() {
   return (
     <Frame canvas>
       <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
@@ -274,7 +274,7 @@ export function InfographicIntoPagesArt() {
 }
 
 /** Pages leaving as one PDF, a page apiece. */
-export function InfographicExportArt() {
+export function IllustrateExportArt() {
   return (
     <Frame canvas>
       <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">

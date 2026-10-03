@@ -1,5 +1,5 @@
 // PDF export (docs/specs/013-workspace/folders.md export menu). Wraps the rendered canvas into a minimal,
-// hand-rolled PDF (one page, or one per Infographic page) (raw RGB pixels, FlateDecode-compressed) so we
+// hand-rolled PDF (one page, or one per Illustrate page) (raw RGB pixels, FlateDecode-compressed) so we
 // don't pull in a multi-hundred-KB pdf library for a single-image export.
 // Split out of export-tab.ts: the PDF container format is a self-contained
 // concern, distinct from the canvas/SVG renderers; it just needs the rendered
@@ -18,7 +18,7 @@ export async function exportTabAsPdf(tab: Tab, opts: ImageExportOpts = {}): Prom
 // CSS px to PDF points (96 to 72 per inch): an A4 page is 595 x 842 pt, as printed.
 const PT_PER_PX = 0.75;
 
-/** An Infographic tab's pages as one PDF (docs/specs/007-editor/infographic-pages.md "Export"):
+/** An Illustrate tab's pages as one PDF (docs/specs/007-editor/illustrate-pages.md "Export"):
  *  every page in row order, one PDF page each at its own size and orientation in print points,
  *  each exactly its sheet. */
 export async function exportPagesAsPdf(

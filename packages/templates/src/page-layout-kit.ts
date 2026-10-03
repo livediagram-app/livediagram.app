@@ -1,4 +1,4 @@
-// The page layouts' shared kit (docs/specs/007-editor/infographic-pages.md "Layouts"): element
+// The page layouts' shared kit (docs/specs/007-editor/illustrate-pages.md "Layouts"): element
 // factories placed in a page's content box, a headline sized to its box, the heading every layout
 // opens with, and the numbered discs a tall page stacks its steps in.
 import {

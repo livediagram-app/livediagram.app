@@ -15,7 +15,7 @@ import { useUiScale } from '@/components/providers/ui-scale';
 // scaled width or a scaled popover runs off the right edge.
 const POPOVER_WIDTH = 256;
 
-// 'slides': the Slide Deck panel over its cluster button in Infographic mode.
+// 'slides': the Slide Deck panel over its cluster button in Illustrate mode.
 export type DockPanel = 'explorer' | 'layers' | 'collaborate' | 'slides';
 
 export type { DockAnchor };

@@ -1,23 +1,23 @@
-// The Infographic sheets the canvas shows while a page slide presents
-// (docs/specs/007-editor/infographic-pages.md "Slides"): that page's sheet alone. In the presenter's
-// Infographic mode it is the mode's own view narrowed to the page; in any other mode (modes are
+// The Illustrate sheets the canvas shows while a page slide presents
+// (docs/specs/007-editor/illustrate-pages.md "Slides"): that page's sheet alone. In the presenter's
+// Illustrate mode it is the mode's own view narrowed to the page; in any other mode (modes are
 // per person), the sheet is built from the tab, so a page slide always presents on its page.
-import { infographicPagesOf, layOutInfographicPages, type Tab } from '@livediagram/document';
-import type { InfographicPagesView } from '@/hooks/editor/useInfographicPage';
+import { illustratePagesOf, layOutIllustratePages, type Tab } from '@livediagram/document';
+import type { IllustratePagesView } from '@/hooks/editor/useIllustratePages';
 
 const noop = () => {};
 
 export function presentedPages(
-  view: InfographicPagesView | null,
+  view: IllustratePagesView | null,
   tab: Tab,
   presentingPageId: string | null,
-): InfographicPagesView | null {
+): IllustratePagesView | null {
   if (!presentingPageId) return view;
   const only = <T extends { id: string }>(pages: readonly T[]) =>
     pages.filter((p) => p.id === presentingPageId);
   if (view) return { ...view, pages: only(view.pages) };
   return {
-    pages: only(layOutInfographicPages(infographicPagesOf(tab))),
+    pages: only(layOutIllustratePages(illustratePagesOf(tab))),
     focusPage: noop,
     themeBackgrounds: [],
     tabFont: tab.font,

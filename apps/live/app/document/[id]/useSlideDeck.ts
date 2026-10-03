@@ -162,7 +162,7 @@ export function useSlideDeck({
     track('UI', 'Added', 'Slide');
   }, [activeTabId, commitDeck, isReadOnly, selectionIds]);
 
-  // An Infographic page as a slide (docs/specs/007-editor/infographic-pages.md "Slides"): the slide
+  // An Illustrate page as a slide (docs/specs/007-editor/illustrate-pages.md "Slides"): the slide
   // is the page, resolved live, so it follows the page's content wherever the page goes.
   const newPageSlide = useCallback(
     (pageId: string) => {

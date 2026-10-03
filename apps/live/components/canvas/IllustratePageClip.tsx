@@ -4,13 +4,13 @@ import type { ReactNode } from 'react';
 import { elementPageSurfaces, type Element, type LaidOutPage } from '@livediagram/document';
 import { PageSurfacesProvider } from './CanvasSurfaceContext';
 
-// Infographic mode cuts elements off at the page edges (docs/specs/007-editor/editor-modes.md "The
+// Illustrate mode cuts elements off at the page edges (docs/specs/007-editor/editor-modes.md "The
 // pages"): whatever hangs off a page is hidden, and cannot be pressed, as if the pages were the
 // only paper. A layer over the canvas world clipped to the pages, holding the element views only:
 // the selection grips are portalled to their own layer above it, so an element hanging off a page
 // still shows every handle. The layer takes no presses itself (globals.css [data-page-clip]), so a
 // press on the empty canvas still reaches the canvas. It also inks each element for the page it is
-// on (docs/specs/007-editor/infographic-pages.md "A dark page has light ink").
+// on (docs/specs/007-editor/illustrate-pages.md "A dark page has light ink").
 
 /** The pages as one CSS clip path, in canvas coordinates (the world's origin). */
 export function pagesClipPath(pages: readonly LaidOutPage[]): string {
@@ -22,13 +22,13 @@ export function pagesClipPath(pages: readonly LaidOutPage[]): string {
   return `path('${rects.join('')}')`;
 }
 
-export function InfographicPageClip({
+export function IllustratePageClip({
   pages,
   elements,
   hiddenPageId = null,
   children,
 }: {
-  // Absent outside Infographic mode, where nothing is clipped.
+  // Absent outside Illustrate mode, where nothing is clipped.
   pages: readonly LaidOutPage[] | null;
   elements: Element[];
   // A page whose content is hidden (left out of the clip): one under a layout preview.

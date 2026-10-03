@@ -17,8 +17,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Editor|Changed|ModeDiagram':
     'Someone switched a tab to Diagram mode, for shapes, arrows and the palette.',
   'Editor|Changed|ModeDraw': 'Someone switched a tab to Draw mode, to draw freehand with pens.',
-  'Editor|Changed|ModeInfographic':
-    'Someone switched a tab to Infographic mode, to lay out a page of icons, stickers, components and media.',
+  'Editor|Changed|ModeIllustrate':
+    'Someone switched a tab to Illustrate mode, to lay out a page of icons, stickers, components and media.',
   'Draw|Created|Template':
     'Someone started a new document as a whiteboard, a plain board drawn on with pens, from the New Document wizard.',
   'Draw|Created|NewTab':
@@ -506,21 +506,21 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone set a tab to open in Diagram mode for everyone, from the tab menu.',
   'Tab|Changed|OpensInDraw':
     'Someone set a tab to open in Draw mode for everyone, from the tab menu.',
-  'Tab|Changed|PageAdded': 'Someone added a page to an infographic tab.',
-  'Tab|Changed|PageRemoved': 'Someone deleted a page from an infographic tab.',
-  'Tab|Changed|PagePortrait': 'Someone turned an infographic page to portrait.',
-  'Tab|Changed|PageLandscape': 'Someone turned an infographic page to landscape.',
-  'Tab|Changed|PageSize': 'Someone changed an infographic page to another size.',
-  'Tab|Changed|PageBackground': "Someone changed an infographic page's background colour.",
-  'Tab|Changed|PagePattern': "Someone changed an infographic page's background pattern.",
-  'Tab|Changed|PageRenamed': 'Someone renamed an infographic page.',
-  'Tab|Changed|PageDuplicated': 'Someone duplicated an infographic page with its content.',
-  'Tab|Changed|PageMoved': 'Someone moved an infographic page left or right in its row.',
+  'Tab|Changed|PageAdded': 'Someone added a page to an Illustrate tab.',
+  'Tab|Changed|PageRemoved': 'Someone deleted a page from an Illustrate tab.',
+  'Tab|Changed|PagePortrait': 'Someone turned an Illustrate page to portrait.',
+  'Tab|Changed|PageLandscape': 'Someone turned an Illustrate page to landscape.',
+  'Tab|Changed|PageSize': 'Someone changed an Illustrate page to another size.',
+  'Tab|Changed|PageBackground': "Someone changed an Illustrate page's background colour.",
+  'Tab|Changed|PagePattern': "Someone changed an Illustrate page's background pattern.",
+  'Tab|Changed|PageRenamed': 'Someone renamed an Illustrate page.',
+  'Tab|Changed|PageDuplicated': 'Someone duplicated an Illustrate page with its content.',
+  'Tab|Changed|PageMoved': 'Someone moved an Illustrate page left or right in its row.',
   'Tab|Changed|PagesLaidOut':
-    "A tab's content was laid out into infographic pages as it entered Infographic mode.",
-  'Tab|Changed|PageLayout': 'Someone put a ready-made layout onto an infographic page.',
-  'Tab|Changed|OpensInInfographic':
-    'Someone set a tab to open in Infographic mode for everyone, from the tab menu.',
+    "A tab's content was laid out into Illustrate pages as it entered Illustrate mode.",
+  'Tab|Changed|PageLayout': 'Someone put a ready-made layout onto an Illustrate page.',
+  'Tab|Changed|OpensInIllustrate':
+    'Someone set a tab to open in Illustrate mode for everyone, from the tab menu.',
   'Tab|Changed|DefaultTextSize':
     "Someone changed a tab's default text size, used for new elements added to it.",
   'Tab|Changed|Font':
@@ -772,7 +772,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Opened|SignInReasonsExplorer':
     'Someone clicked "Learn more" on the guest sign-in banner shown in the Explorer, opening the reasons-to-sign-in card.',
   'UI|Opened|SlideDeck':
-    "Someone opened the deck-building panel: the Slide Deck tool, or an infographic's Slides button.",
+    "Someone opened the deck-building panel: the Slide Deck tool, or an Illustrate tab's Slides button.",
   'UI|Opened|SlideElementDetail':
     'While presenting, someone clicked an element on the slide to read its detail, such as a note or comment, without leaving presentation mode.',
   'UI|Opened|TechGroup': "Someone opened a category inside the palette's Technology tab.",
@@ -925,9 +925,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone turned off quick-add on hover in the palette, in Settings > Editor.',
   'UI|Toggled|QuickAddHoverOn':
     'Someone turned on quick-add on hover in the palette, in Settings > Editor.',
-  'UI|Toggled|InfographicModeOff':
-    'Someone turned off Infographic mode, in Settings > Experimental.',
-  'UI|Toggled|InfographicModeOn': 'Someone turned on Infographic mode, in Settings > Experimental.',
+  'UI|Toggled|IllustrateModeOff': 'Someone turned off Illustrate mode, in Settings > Experimental.',
+  'UI|Toggled|IllustrateModeOn': 'Someone turned on Illustrate mode, in Settings > Experimental.',
   'UI|Toggled|ReduceMotionOff': 'Someone turned off reduced motion, in Settings > Accessibility.',
   'UI|Toggled|ReduceMotionOn': 'Someone turned on reduced motion, in Settings > Accessibility.',
   'UI|Toggled|ShortcutsOff': 'Someone turned off keyboard shortcuts, in Settings > Keyboard.',

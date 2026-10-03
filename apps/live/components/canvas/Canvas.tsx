@@ -87,8 +87,8 @@ import { useCanvasSelectHandlers } from '@/hooks/canvas/useCanvasSelectHandlers'
 import { useArrowLabelLayouts } from '@/hooks/canvas/useArrowLabelLayouts';
 import { useFontsReady } from '@/components/canvas/useFontsReady';
 import { useLatest } from '@/hooks/ui/useLatest';
-import { InfographicPages } from '@/components/canvas/InfographicPages';
-import { pressIsOffPage } from '@/hooks/canvas/infographic-page-guard';
+import { IllustratePages } from '@/components/canvas/IllustratePages';
+import { pressIsOffPage } from '@/hooks/canvas/illustrate-page-guard';
 
 export function Canvas(props: CanvasProps) {
   const {
@@ -528,9 +528,9 @@ export function Canvas(props: CanvasProps) {
     onBeginEdit: props.onBeginEdit,
     onCancelDraw: props.onCancelDraw,
   });
-  // In Infographic mode a press off the page is claimed and dropped: nothing is made there.
+  // In Illustrate mode a press off the page is claimed and dropped: nothing is made there.
   const offPage = (e: { clientX: number; clientY: number }) =>
-    pressIsOffPage(props.infographicPages, e, wrapperRef, viewportZoom);
+    pressIsOffPage(props.illustratePages, e, wrapperRef, viewportZoom);
   const beginPendingDrawOrPolygon = (e: React.PointerEvent): boolean =>
     offPage(e) || pathTool.beginPathPress(e) || beginPolygonPoint(e) || beginPendingDrawGesture(e);
 
@@ -727,10 +727,10 @@ export function Canvas(props: CanvasProps) {
             behind the real element layer, which caps each column at z=0.
             Only mounted while the tool is active. */}
         {canvasTool === 'isometric' ? <IsometricDepthLayer elements={elements} /> : null}
-        {/* Infographic mode's A4 pages, under every element (InfographicPages). */}
-        {props.infographicPages ? (
-          <InfographicPages
-            view={props.infographicPages}
+        {/* Illustrate mode's A4 pages, under every element (IllustratePages). */}
+        {props.illustratePages ? (
+          <IllustratePages
+            view={props.illustratePages}
             zoom={viewportZoom}
             // Zen, presenting and the isometric view show the sheets alone: no labels, cogs,
             // layout invites or add button.

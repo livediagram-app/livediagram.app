@@ -2,14 +2,14 @@
 
 import { useCallback, useRef, useState, type CSSProperties } from 'react';
 import { lucidePanelsTopLeft, lucideSettings } from '@livediagram/icons/lucide';
-import { INFOGRAPHIC_PAGE_GAP, pageLabel, type LaidOutPage } from '@livediagram/document';
+import { ILLUSTRATE_PAGE_GAP, pageLabel, type LaidOutPage } from '@livediagram/document';
 import { HoverCard, lucideGlyph, PlusIcon, Tooltip } from '@livediagram/ui';
-import type { InfographicPagesView } from '@/hooks/editor/useInfographicPage';
+import type { IllustratePagesView } from '@/hooks/editor/useIllustratePages';
 import { InfographicLayoutPreview } from './InfographicLayoutPreview';
 import { usePageReorderDrag, type PageReorder } from '@/hooks/canvas/usePageReorderDrag';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
-import { pageSheetStyle, withBackgroundPatch } from '@/lib/infographic-page-paint';
-import { InfographicPagePanel, type PagePanelTab, type PagePreview } from './InfographicPagePanel';
+import { pageSheetStyle, withBackgroundPatch } from '@/lib/illustrate-page-paint';
+import { IllustratePagePanel, type PagePanelTab, type PagePreview } from './IllustratePagePanel';
 
 const CogIcon = lucideGlyph(lucideSettings, 16);
 const LayoutIcon = lucideGlyph(lucidePanelsTopLeft, 14);
@@ -27,19 +27,19 @@ const steady = (zoom: number, origin: string): CSSProperties => ({
   transformOrigin: origin,
 });
 
-// Infographic mode's pages (docs/specs/007-editor/infographic-pages.md): sheets in a row, painted
+// Illustrate mode's pages (docs/specs/007-editor/illustrate-pages.md): sheets in a row, painted
 // in canvas space under every element so they pan and zoom with them, on the tab's own canvas,
 // which stays the surround. Each sheet wears its own background (a hover in its panel previews
 // one). A change of size, turn or removal eases the sheets to their new places. The sheets take no
 // pointer events: a press on one is a press on the canvas. Each page's label sits above its
 // top-left corner (a press frames the page) and its settings cog above its top-right; the
 // add-a-page button follows the last page; all held at one screen size.
-export function InfographicPages({
+export function IllustratePages({
   view,
   zoom,
   bare = false,
 }: {
-  view: InfographicPagesView;
+  view: IllustratePagesView;
   zoom: number;
   // The sheets alone, without their title bars or the add button (zen, presenting).
   bare?: boolean;
@@ -97,7 +97,7 @@ export function InfographicPages({
         return (
           <div
             key={page.id}
-            data-infographic-page={page.orientation}
+            data-illustrate-page={page.orientation}
             className={`pointer-events-none absolute transition-[left,top,width,height,opacity] duration-200 ease-out motion-reduce:transition-none ${
               drag.reorder?.pageId === page.id ? 'opacity-60' : ''
             } ${
@@ -169,7 +169,7 @@ export function InfographicPages({
       {edit?.addPage ? (
         <AddPageButton
           // Centred in a gap's width to the right of the last page, on the row's axis.
-          x={last.rect.x + last.rect.width + INFOGRAPHIC_PAGE_GAP / 2}
+          x={last.rect.x + last.rect.width + ILLUSTRATE_PAGE_GAP / 2}
           zoom={zoom}
           onAdd={edit.addPage}
         />
@@ -182,7 +182,7 @@ export function InfographicPages({
         />
       ) : null}
       {open && opened && edit ? (
-        <InfographicPagePanel
+        <IllustratePagePanel
           // One panel per page: switching cogs starts the next page's panel afresh, its pending
           // Replace and previews going with the last one.
           key={open.id}
@@ -226,7 +226,7 @@ function AddPageButton({ x, zoom, onAdd }: { x: number; zoom: number; onAdd: () 
   );
 }
 
-// The cog that opens the page's panel (InfographicPagePanel).
+// The cog that opens the page's panel (IllustratePagePanel).
 function PageCog({
   name,
   open,
@@ -306,9 +306,9 @@ function ReorderMarker({
   const before = others[reorder.slot - 1];
   const after = others[reorder.slot];
   const x = before
-    ? before.rect.x + before.rect.width + INFOGRAPHIC_PAGE_GAP / 2
+    ? before.rect.x + before.rect.width + ILLUSTRATE_PAGE_GAP / 2
     : after
-      ? after.rect.x - INFOGRAPHIC_PAGE_GAP / 2
+      ? after.rect.x - ILLUSTRATE_PAGE_GAP / 2
       : 0;
   const top = Math.min(...pages.map((p) => p.rect.y));
   const bottom = Math.max(...pages.map((p) => p.rect.y + p.rect.height));

@@ -34,7 +34,7 @@ export function useCanvasSurface(): CanvasSurface {
   return useContext(CanvasSurfaceContext);
 }
 
-// Infographic pages with a fill of their own (docs/specs/007-editor/infographic-pages.md "A dark page
+// Illustrate pages with a fill of their own (docs/specs/007-editor/illustrate-pages.md "A dark page
 // has light ink"): the surface of each element on one, by id, over the canvas's own.
 const PageSurfacesContext = createContext<ReadonlyMap<string, CanvasSurface> | null>(null);
 

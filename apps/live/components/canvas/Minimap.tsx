@@ -52,7 +52,7 @@ const MAP_HEIGHT: Record<MapSize, string> = {
 
 type MinimapProps = {
   elements: Element[];
-  // Infographic mode's pages (docs/specs/007-editor/infographic-pages.md "Getting around the
+  // Illustrate mode's pages (docs/specs/007-editor/illustrate-pages.md "Getting around the
   // pages"): drawn under the content as their sheets, each outlined, and counted in the bounds.
   pages?: readonly LaidOutPage[];
   // The tab default face (docs/specs/004-interface-design/fonts.md): the miniature paints what the canvas

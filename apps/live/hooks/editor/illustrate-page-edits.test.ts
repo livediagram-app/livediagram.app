@@ -1,15 +1,15 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
-  infographicPagesOf,
-  layOutInfographicPages,
+  illustratePagesOf,
+  layOutIllustratePages,
   type Element,
   type Tab,
 } from '@livediagram/document';
-import { infographicPageEdits } from './infographic-page-edits';
+import { illustratePageEdits } from './illustrate-page-edits';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
-// docs/specs/007-editor/infographic-pages.md "Page actions": each edit is one tab commit.
+// docs/specs/007-editor/illustrate-pages.md "Page actions": each edit is one tab commit.
 const box = (id: string, cx: number) =>
   ({ id, type: 'shape', shape: 'square', x: cx - 10, y: -10, width: 20, height: 20 }) as Element;
 
@@ -21,9 +21,9 @@ function harness(tab: Tab) {
     tabs = map(tabs);
   });
   const edits = () =>
-    infographicPageEdits({
+    illustratePageEdits({
       tabId: tab.id,
-      current: infographicPagesOf(tabs[0]!),
+      current: illustratePagesOf(tabs[0]!),
       elements: tabs[0]!.elements,
       commitTabs,
       onCreated,
@@ -43,13 +43,13 @@ const twoPages = (): Tab =>
     ],
   }) as unknown as Tab;
 
-describe('infographic page edits', () => {
+describe('Illustrate page edits', () => {
   it('renames, trimming, and clears an empty name', () => {
     const h = harness(twoPages());
     h.edits().rename('page-1', '  Intro  ');
-    expect(infographicPagesOf(h.tab())[0]!.name).toBe('Intro');
+    expect(illustratePagesOf(h.tab())[0]!.name).toBe('Intro');
     h.edits().rename('page-1', '');
-    expect(infographicPagesOf(h.tab())[0]!.name).toBeUndefined();
+    expect(illustratePagesOf(h.tab())[0]!.name).toBeUndefined();
   });
 
   it('stores A4 as no size, and skips a no-op', () => {
@@ -57,15 +57,15 @@ describe('infographic page edits', () => {
     h.edits().setSize('page-1', 'a4');
     expect(h.commitTabs).not.toHaveBeenCalled();
     h.edits().setSize('page-1', 'square');
-    expect(infographicPagesOf(h.tab())[0]!.size).toBe('square');
+    expect(illustratePagesOf(h.tab())[0]!.size).toBe('square');
     h.edits().setSize('page-1', 'a4');
-    expect('size' in infographicPagesOf(h.tab())[0]!).toBe(false);
+    expect('size' in illustratePagesOf(h.tab())[0]!).toBe(false);
   });
 
   it('moves a page with its content', () => {
     const h = harness(twoPages());
     h.edits().movePage('page-1', 1);
-    expect(infographicPagesOf(h.tab()).map((p) => p.id)).toEqual(['page-2', 'page-1']);
+    expect(illustratePagesOf(h.tab()).map((p) => p.id)).toEqual(['page-2', 'page-1']);
     const a = h.tab().elements.find((e) => e.id === 'a') as Element & { x: number };
     expect(a.x + 10).toBe(794 + 96);
   });
@@ -81,7 +81,7 @@ describe('infographic page edits', () => {
   it('duplicates a page, announcing the copy', () => {
     const h = harness(twoPages());
     h.edits().duplicatePage!('page-1');
-    const ids = infographicPagesOf(h.tab()).map((p) => p.id);
+    const ids = illustratePagesOf(h.tab()).map((p) => p.id);
     expect(ids).toHaveLength(3);
     expect([ids[0], ids[2]]).toEqual(['page-1', 'page-2']);
     expect(h.tab().elements).toHaveLength(3);
@@ -94,13 +94,13 @@ describe('infographic page edits', () => {
       fill: { kind: 'solid', color: '#0f172a' },
       pattern: 'dots',
     });
-    expect(infographicPagesOf(h.tab())[1]!.background?.pattern).toBe('dots');
+    expect(illustratePagesOf(h.tab())[1]!.background?.pattern).toBe('dots');
     const commits = h.commitTabs.mock.calls.length;
     // The same again is no edit.
     h.edits().setBackground('page-2', { pattern: 'dots' });
     expect(h.commitTabs.mock.calls.length).toBe(commits);
     h.edits().setBackground('page-2', { fill: undefined, pattern: undefined });
-    expect(infographicPagesOf(h.tab())[1]!.background).toBeUndefined();
+    expect(illustratePagesOf(h.tab())[1]!.background).toBeUndefined();
   });
 
   it('replaces a page with a layout inside its margins, leaving other pages alone', () => {
@@ -118,7 +118,7 @@ describe('infographic page edits', () => {
     const h = harness(twoPages());
     h.edits().applyLayout('page-1', 'top-tips');
     h.edits().setOrientation('page-1', 'landscape');
-    const [page] = layOutInfographicPages(infographicPagesOf(h.tab()));
+    const [page] = layOutIllustratePages(illustratePagesOf(h.tab()));
     const r = page!.rect;
     const onPage = h.tab().elements.filter((e) => e.id !== 'b' && e.type !== 'arrow');
     for (const e of onPage as (Element & {

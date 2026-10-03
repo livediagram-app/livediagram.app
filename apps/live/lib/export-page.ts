@@ -1,4 +1,4 @@
-// Exporting one Infographic page (docs/specs/007-editor/infographic-pages.md "Export"): exactly its
+// Exporting one Infographic page (docs/specs/007-editor/illustrate-pages.md "Export"): exactly its
 // sheet. The frame is the page's rect with no padding; the background is the page's own paint
 // (the paper exports white); the elements are those that reach onto the page, cut off at its edges
 // by the frame itself; and every element without colours of its own is inked for the page. The
@@ -12,7 +12,7 @@ import {
   type PageFill,
 } from '@livediagram/document';
 import { xmlEscape } from '@livediagram/icons';
-import { PAGE_PATTERN_PITCH, pagePatternInk } from './infographic-page-paint';
+import { PAGE_PATTERN_PITCH, pagePatternInk } from './illustrate-page-paint';
 
 // The paper's colour in an export: the page as printed.
 export const EXPORT_PAPER = '#ffffff';

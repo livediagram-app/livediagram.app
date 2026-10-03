@@ -50,7 +50,7 @@ type Slide = {
   // A page slide: an Infographic page of the tab, resolved live (what is on
   // the page now, framed to the page; elementIds empty). While it presents,
   // the canvas shows that page's sheet alone. See
-  // docs/specs/007-editor/infographic-pages.md "Slides".
+  // docs/specs/007-editor/illustrate-pages.md "Slides".
   pageId?: string;
   // What you mean to SAY over this slide. The slide's own, not any
   // element's. See Presenter notes below.

@@ -1,7 +1,7 @@
 'use client';
 
 // A layout previewed on its page while its tile is hovered (docs/specs/007-editor/
-// infographic-pages.md "Layouts"): the layout built for the page, drawn over the whole sheet in the
+// illustrate-pages.md "Layouts"): the layout built for the page, drawn over the whole sheet in the
 // page's own background so it covers what is there now, through the same renderer the exports
 // use. A picture only: nothing is placed, nothing enters the history, and it goes when the hover
 // does. Above the element layer, taking no presses.
@@ -17,7 +17,7 @@ import {
 } from '@livediagram/document';
 import type { PageLayoutId } from '@livediagram/templates';
 import { resolveIconArtLoaded, resolveStickerArtLoaded } from '@/lib/icon-registry';
-import { pageSheetStyle } from '@/lib/infographic-page-paint';
+import { pageSheetStyle } from '@/lib/illustrate-page-paint';
 import { buildPageLayout } from '@/lib/page-layout-build';
 import { useCanvasSurface } from './CanvasSurfaceContext';
 

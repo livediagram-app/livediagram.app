@@ -20,7 +20,7 @@ import {
   stampNewElementLayers,
   voteHidesCursors,
   elementActions,
-  infographicPageSnapBoxes,
+  illustratePageSnapBoxes,
   type BoxedElement,
   type CommentMention,
   type Element,
@@ -46,7 +46,7 @@ import { useSwatchOverrides } from '@/hooks/canvas/useSwatchOverrides';
 import { getTheme } from '@/lib/themes';
 import { DEFAULT_SCHEME_ID } from '@livediagram/document';
 import { useEditorMode, usePinTabOpening } from '@/hooks/editor/useEditorMode';
-import { useInfographicPage } from '@/hooks/editor/useInfographicPage';
+import { useIllustratePages } from '@/hooks/editor/useIllustratePages';
 import { editorModeShortcut } from '@/hooks/editor/editor-mode-shortcut';
 import { announce } from '@/lib/announcer';
 import { useTabOpensIn } from '@/hooks/editor/useTabOpensIn';
@@ -1566,8 +1566,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     activeId,
     switchMode: editorMode.setMode,
   });
-  // Infographic mode's pages: their edits, and the view centred on them.
-  const infographicPages = useInfographicPage({
+  // Illustrate mode's pages: their edits, and the view centred on them.
+  const illustratePages = useIllustratePages({
     activeTab,
     mode: editorMode.mode,
     canEdit: !isReadOnly,
@@ -2787,7 +2787,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     autoRebindArrowsRef,
     styleNewElement: styleMemory.styleNewElement,
     alignmentGuidesRef,
-    pageSnapBoxes: infographicPages ? infographicPageSnapBoxes(infographicPages.pages) : null,
+    pageSnapBoxes: illustratePages ? illustratePageSnapBoxes(illustratePages.pages) : null,
     isPinchingRef,
     // Insert between (docs/specs/021-event-storming/event-storming.md): dragging a note already on the board into a
     // gap, while Alt is held. Same gate the palette drag uses, so both entry
@@ -2963,7 +2963,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   return {
     // The person's editor mode on the active tab, for the mode switch and the canvas.
     editorMode,
-    infographicPages,
+    illustratePages,
     // The tab menu's Opens in choice for a tab, absent where it is not offered.
     opensInFor: tabOpensIn.choiceFor,
     whiteboardDock,
@@ -3226,7 +3226,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     // instead of the tab's elements while it is non-null, which is what makes
     // a slide a slide.
     presentingElements,
-    // The page a page slide is presenting (docs/specs/007-editor/infographic-pages.md "Slides"):
+    // The page a page slide is presenting (docs/specs/007-editor/illustrate-pages.md "Slides"):
     // the canvas then shows that sheet alone, as it shows the slide's elements alone.
     presentingPageId: presentingStep?.slide.pageId ?? null,
     livePresence,

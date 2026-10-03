@@ -1224,12 +1224,12 @@ export const articles: Article[] = [
     categorySlug: 'canvas',
   },
   {
-    slug: 'infographics',
-    title: 'Infographics',
+    slug: 'illustrate',
+    title: 'Illustrate Mode',
     description:
       'Work on a tab as pages: sizes for print and social, backgrounds, layouts, then export or present.',
     keywords:
-      'infographic infographics infographic mode poster one pager one-pager flyer handout report page pages sheet sheets a4 a3 letter us letter square social post instagram linkedin story stories slide portrait landscape orientation size page size background backgrounds colour color gradient pattern dots grid lines theme dark page name rename duplicate move reorder drag delete add page snap margins margin fit resize scale lay out into pages diagram to infographic convert mind map editor mode switch modes opens in experimental',
+      'illustrate illustrate mode infographic infographics poster one pager one-pager flyer handout report page pages sheet sheets a4 a3 letter us letter square social post instagram linkedin story stories slide portrait landscape orientation size page size background backgrounds colour color gradient pattern dots grid lines theme dark page name rename duplicate move reorder drag delete add page snap margins margin fit resize scale lay out into pages diagram to infographic convert mind map editor mode switch modes opens in experimental',
     category: 'Canvas',
     categorySlug: 'canvas',
   },
@@ -1241,18 +1241,18 @@ export const articles: Article[] = [
     keywords:
       'layout layouts template templates page template start from a layout ready made starter preview hover replace title page big number key stats statistics process steps timeline milestones comparison before after chart story top tips quote testimonial team people facts grid checklist event invitation poster',
     category: 'Canvas',
-    categorySlug: 'canvas/infographics',
-    parentSlug: 'infographics',
+    categorySlug: 'canvas/illustrate',
+    parentSlug: 'illustrate',
   },
   {
-    slug: 'exporting-infographics',
-    title: 'Exporting and Presenting Infographics',
+    slug: 'exporting-pages',
+    title: 'Exporting and Presenting Pages',
     description: 'Every page as a print-ready PDF, one page as an image, and pages as slides.',
     keywords:
       'export download pdf png svg image print printable pages page infographic slides slide deck present presentation add as slide page slide deck from pages',
     category: 'Canvas',
-    categorySlug: 'canvas/infographics',
-    parentSlug: 'infographics',
+    categorySlug: 'canvas/illustrate',
+    parentSlug: 'illustrate',
   },
   {
     slug: 'using-tabs',

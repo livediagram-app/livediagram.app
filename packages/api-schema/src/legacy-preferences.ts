@@ -1,8 +1,12 @@
-// Preference keys renamed when the container became a document
-// (docs/specs/007-editor/user-preferences.md). Stored rows are migrated in D1; this upgrades
-// a copy that can still arrive from elsewhere (a browser's localStorage cache, a row written
-// by an old client during the deploy). An opt-out must never be lost on the way.
-const RENAMED: Readonly<Record<string, string>> = { notifyDiagramJoin: 'notifyDocumentJoin' };
+// Preference keys renamed (docs/specs/007-editor/user-preferences.md): `notifyDiagramJoin` when the
+// container became a document (stored rows migrated in D1), `infographicModeEnabled` when
+// Infographic mode became Illustrate mode (upgraded here on read only). This upgrades a copy that
+// can still arrive from elsewhere (a browser's localStorage cache, a row written by an old client
+// during the deploy). An opt-out must never be lost on the way.
+const RENAMED: Readonly<Record<string, string>> = {
+  notifyDiagramJoin: 'notifyDocumentJoin',
+  infographicModeEnabled: 'illustrateModeEnabled',
+};
 
 // Preference keys whose feature is gone (docs/specs/007-editor/user-preferences.md "Retired keys"):
 // dropped on read, so the next write stores the blob without them.

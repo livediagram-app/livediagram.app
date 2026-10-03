@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { InfographicPage } from '@livediagram/document';
+import type { IllustratePage } from '@livediagram/document';
 import {
   fillCss,
   gradientFill,
@@ -8,10 +8,10 @@ import {
   sameFill,
   themeBackgroundPresets,
   withBackgroundPatch,
-} from './infographic-page-paint';
+} from './illustrate-page-paint';
 
-// docs/specs/007-editor/infographic-pages.md "Backgrounds".
-const page = (background?: InfographicPage['background']): InfographicPage => ({
+// docs/specs/007-editor/illustrate-pages.md "Backgrounds".
+const page = (background?: IllustratePage['background']): IllustratePage => ({
   id: 'p',
   orientation: 'portrait',
   ...(background ? { background } : {}),

@@ -1,4 +1,4 @@
-// What an Infographic page is painted with (docs/specs/007-editor/infographic-pages.md
+// What an Illustrate page is painted with (docs/specs/007-editor/illustrate-pages.md
 // "Backgrounds"): the panel's preset catalogue, and the CSS a sheet takes from its background. The
 // export paints the same background onto its own canvas (export-page).
 import {
@@ -7,7 +7,7 @@ import {
   shade,
   tint,
   type ThemeDefinition,
-  type InfographicPage,
+  type IllustratePage,
   type PageBackground,
   type PageFill,
   type PagePattern,
@@ -140,7 +140,7 @@ export function pagePatternInk(background: PageBackground | undefined): string {
 
 /** The page with `patch` laid over its background (a hover preview, or an edit about to land). */
 export function withBackgroundPatch(
-  page: InfographicPage,
+  page: IllustratePage,
   patch: Partial<PageBackground> | undefined,
 ): PageBackground | undefined {
   if (!patch) return page.background;
@@ -157,7 +157,7 @@ const FALLBACK_ACCENT = '#0ea5e9';
 const isHex = (c: string | null | undefined): c is string => !!c && /^#[0-9a-f]{6}$/i.test(c);
 
 /**
- * Backgrounds drawn from the tab's theme (docs/specs/007-editor/infographic-pages.md
+ * Backgrounds drawn from the tab's theme (docs/specs/007-editor/illustrate-pages.md
  * "Backgrounds"), offered first: two pale tints of its accent, its own element fill (when it has
  * a light one of its own), a deep shade, and a light and a dark gradient running to its second
  * colour (a multi-colour theme's next branch, else a deeper accent). Pure: theme in, presets out.

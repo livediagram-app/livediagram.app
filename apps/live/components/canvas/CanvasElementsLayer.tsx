@@ -45,7 +45,7 @@ import { usePhotoDraftView } from '@/lib/photo-draft-preview';
 import { RemoteCursor } from '@/components/canvas/RemoteCursor';
 import { useInsertShift } from '@/hooks/canvas/useInsertShift';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
-import { InfographicPageClip } from '@/components/canvas/InfographicPageClip';
+import { IllustratePageClip } from '@/components/canvas/IllustratePageClip';
 
 type Bounds = { x: number; y: number; width: number; height: number };
 
@@ -456,16 +456,16 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             above all boxes inside a single SVG layer). Each arrow
             gets its own <svg> overlay; pointer events on the SVG are
             disabled in CSS, only the inner arrow line picks them up. */}
-      {/* Infographic mode cuts elements off at the page edges (InfographicPageClip); not in the
+      {/* Illustrate mode cuts elements off at the page edges (IllustratePageClip); not in the
           isometric view, whose 3D stack a clip would flatten. */}
-      <InfographicPageClip
+      <IllustratePageClip
         pages={
-          props.infographicPages && props.canvasTool !== 'isometric'
-            ? props.infographicPages.pages
+          props.illustratePages && props.canvasTool !== 'isometric'
+            ? props.illustratePages.pages
             : null
         }
         // A page under a layout preview shows only the preview.
-        hiddenPageId={props.infographicPages?.layoutPreview?.pageId ?? null}
+        hiddenPageId={props.illustratePages?.layoutPreview?.pageId ?? null}
         elements={elements}
       >
         {shownOrder.map(({ element, layerOpacity }, isoDepth) => {
@@ -672,7 +672,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             />
           );
         })}
-      </InfographicPageClip>
+      </IllustratePageClip>
 
       {/* The line or arrow being drawn (docs/specs/023-draw-mode/draw-mode.md "Shapes"): the
           element the release lands, after every element, where it will land. */}

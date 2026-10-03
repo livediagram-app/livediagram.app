@@ -1,5 +1,5 @@
-// Infographic mode's pages (docs/specs/007-editor/infographic-pages.md): the active tab's pages
-// laid out in their row, the edits to them (infographic-page-edits) and framing one in the view. It
+// Illustrate mode's pages (docs/specs/007-editor/illustrate-pages.md): the active tab's pages
+// laid out in their row, the edits to them (illustrate-page-edits) and framing one in the view. It
 // also centres the view on the first page whenever the mode or the tab changes.
 import {
   useCallback,
@@ -13,9 +13,9 @@ import {
 } from 'react';
 import {
   hasPageLook,
-  infographicPageFitBox,
-  infographicPagesOf,
-  layOutInfographicPages,
+  illustratePageFitBox,
+  illustratePagesOf,
+  layOutIllustratePages,
   withContentPaginated,
   type EditorMode,
   type LaidOutPage,
@@ -25,13 +25,13 @@ import { computeFitBelow } from '@/lib/viewport';
 import { debugLog } from '@/lib/debug-log';
 import { track } from '@/lib/telemetry';
 import { getTheme } from '@/lib/themes';
-import { themeBackgroundPresets, type ThemeBackgroundPreset } from '@/lib/infographic-page-paint';
-import { infographicPageEdits, type InfographicPageEdits } from './infographic-page-edits';
+import { themeBackgroundPresets, type ThemeBackgroundPreset } from '@/lib/illustrate-page-paint';
+import { illustratePageEdits, type IllustratePageEdits } from './illustrate-page-edits';
 import type { PageLayoutId } from '@livediagram/templates';
 
-export type { InfographicPageEdits };
+export type { IllustratePageEdits };
 
-export type InfographicPagesView = {
+export type IllustratePagesView = {
   pages: LaidOutPage[];
   // Frames one page in the view (its label's press).
   focusPage: (pageId: string) => void;
@@ -44,7 +44,7 @@ export type InfographicPagesView = {
   layoutPreview: { pageId: string; layout: PageLayoutId } | null;
   setLayoutPreview: (preview: { pageId: string; layout: PageLayoutId } | null) => void;
   // Absent where the viewer may not change the pages (a view role, a locked tab).
-  edit?: InfographicPageEdits;
+  edit?: IllustratePageEdits;
 };
 
 // The Toolbar layout's strip lies over the canvas's top edge; the page centres below it.
@@ -60,7 +60,7 @@ function topStripInset(canvas: HTMLElement): number {
   return overlaps ? s.bottom - c.top : 0;
 }
 
-export function useInfographicPage(deps: {
+export function useIllustratePages(deps: {
   activeTab: Tab;
   mode: EditorMode;
   canEdit: boolean;
@@ -71,7 +71,7 @@ export function useInfographicPage(deps: {
   setViewportOffset: (offset: { x: number; y: number }) => void;
   clearSelection: () => void;
   toastInfo: (message: string) => void;
-}): InfographicPagesView | null {
+}): IllustratePagesView | null {
   const { activeTab, mode, canEdit, tabLoaded, commitTabs } = deps;
   const on = hasPageLook(mode);
   const tabId = activeTab.id;
@@ -84,19 +84,19 @@ export function useInfographicPage(deps: {
     const inset = topStripInset(canvas);
     const { zoom, offset } = computeFitBelow(
       { width: canvas.offsetWidth, height: canvas.offsetHeight },
-      infographicPageFitBox(page),
+      illustratePageFitBox(page),
       inset,
     );
     deps.setViewportZoom(zoom);
     deps.setViewportOffset(offset);
-    debugLog('[infographic-page] framed', { tabId, page: page?.id ?? 'first', inset, zoom });
+    debugLog('[illustrate-page] framed', { tabId, page: page?.id ?? 'first', inset, zoom });
   };
   // Centred on the first page after the tab's own first fit (a frame later), so the page wins.
   const centre = useEffectEvent(() =>
-    frame(layOutInfographicPages(infographicPagesOf(activeTab))[0]),
+    frame(layOutIllustratePages(illustratePagesOf(activeTab))[0]),
   );
   // Entering the mode with content off the first page and no pages yet lays the content out into
-  // pages (withContentPaginated, docs/specs/007-editor/infographic-pages.md "Into pages"): one
+  // pages (withContentPaginated, docs/specs/007-editor/illustrate-pages.md "Into pages"): one
   // edit, so one undo puts it back, said in a toast. Then the view frames the first page.
   const paginate = useEffectEvent(() => {
     if (!canEdit || activeTab.locked === true) return;
@@ -110,7 +110,7 @@ export function useInfographicPage(deps: {
         : `Laid out into ${n} pages. Undo puts it back.`,
     );
     track('Tab', 'Changed', 'PagesLaidOut');
-    debugLog('[infographic-page] content laid out into pages', { tabId, pages: n });
+    debugLog('[illustrate-page] content laid out into pages', { tabId, pages: n });
   });
   useEffect(() => {
     if (!on || !tabLoaded) return;
@@ -127,10 +127,10 @@ export function useInfographicPage(deps: {
   const storedPages = activeTab.pages;
   const legacyOrientation = activeTab.pageOrientation;
   const current = useMemo(
-    () => infographicPagesOf({ pages: storedPages, pageOrientation: legacyOrientation }),
+    () => illustratePagesOf({ pages: storedPages, pageOrientation: legacyOrientation }),
     [storedPages, legacyOrientation],
   );
-  const pages = useMemo(() => layOutInfographicPages(current), [current]);
+  const pages = useMemo(() => layOutIllustratePages(current), [current]);
 
   // Edit rights now, for a commit made as the panel closes (layout phase: current before any
   // passive cleanup of that render runs).
@@ -139,17 +139,17 @@ export function useInfographicPage(deps: {
     canEditNow.current = canEdit && activeTab.locked !== true;
   });
   const mayEdit = useCallback(() => canEditNow.current, []);
-  const [layoutPreview, setLayoutPreview] = useState<InfographicPagesView['layoutPreview']>(null);
+  const [layoutPreview, setLayoutPreview] = useState<IllustratePagesView['layoutPreview']>(null);
   // A page just added or duplicated: framed once it lands in the row (a frame later, as its
   // sheet mounts).
   const [goTo, setGoTo] = useState<string | null>(null);
   const goToLanded = useEffectEvent(() => {
-    const page = layOutInfographicPages(infographicPagesOf(activeTab)).find((p) => p.id === goTo);
+    const page = layOutIllustratePages(illustratePagesOf(activeTab)).find((p) => p.id === goTo);
     if (!page) return;
     setGoTo(null);
     frame(page);
   });
-  const landed = goTo !== null && infographicPagesOf(activeTab).some((p) => p.id === goTo);
+  const landed = goTo !== null && illustratePagesOf(activeTab).some((p) => p.id === goTo);
   useEffect(() => {
     if (!landed) return;
     const raf = requestAnimationFrame(() => goToLanded());
@@ -166,7 +166,7 @@ export function useInfographicPage(deps: {
     ...shared,
     // mayEdit reads a ref, but only when an edit commits (in a handler), never during render.
     // eslint-disable-next-line react-hooks/refs
-    edit: infographicPageEdits({
+    edit: illustratePageEdits({
       tabId,
       current,
       elements: activeTab.elements,

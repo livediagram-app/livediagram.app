@@ -9,7 +9,7 @@ import { ChartIcon, FlowchartIcon, MarkerIcon, type IconProps } from '@livediagr
 export const EDITOR_MODE_ICON: Record<EditorMode, ComponentType<IconProps>> = {
   diagram: FlowchartIcon,
   draw: MarkerIcon,
-  infographic: ChartIcon,
+  illustrate: ChartIcon,
 };
 
 // Shift+D, as `aria-keyshortcuts` spells it and as the interface shows it.

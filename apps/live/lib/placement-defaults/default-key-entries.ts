@@ -16,7 +16,7 @@ type Words = { label: string; noun: string };
 const MODE_WORDS: Record<EditorMode, Words> = {
   diagram: { label: 'Diagrams', noun: 'diagrams' },
   draw: { label: 'Whiteboards', noun: 'whiteboards' },
-  infographic: { label: 'Infographics', noun: 'infographics' },
+  illustrate: { label: 'Illustrate pages', noun: 'Illustrate pages' },
 };
 
 const KIND_WORDS: Record<SpecificTabKind, Words> = {

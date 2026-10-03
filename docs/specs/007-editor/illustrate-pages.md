@@ -1,6 +1,6 @@
-# Infographic pages
+# Illustrate pages
 
-Infographic mode ([Editor modes](editor-modes.md)) lays a tab out as **pages**: sheets on the
+Illustrate mode ([Editor modes](editor-modes.md)) lays a tab out as **pages**: sheets on the
 canvas, each built up into one finished visual. This spec is what a page **is** and everything a
 page offers: its size, its background, a ready-made layout to start from, the page's own actions,
 snapping to it, and exporting it. The basics (pages in a row, the add button, content moving with
@@ -10,7 +10,7 @@ its page, clipping, centring) are in [Editor modes](editor-modes.md) "The pages"
 
 | Term                | Means                                                                                                     |
 | ------------------- | --------------------------------------------------------------------------------------------------------- |
-| **page**            | One sheet of a tab in Infographic mode (`InfographicPage`), stored in `Tab.pages` in row order.           |
+| **page**            | One sheet of a tab in Illustrate mode (`IllustratePage`), stored in `Tab.pages` in row order.             |
 | **page size**       | The sheet's format (`PageSizeId`): its short and long side in canvas px.                                  |
 | **orientation**     | Portrait (the long side upright) or landscape. A square page has none.                                    |
 | **page background** | What the sheet is painted with (`PageBackground`): a solid colour or a two-stop gradient, plus a pattern. |
@@ -46,7 +46,7 @@ its page, clipping, centring) are in [Editor modes](editor-modes.md) "The pages"
 
 ## A page
 
-`InfographicPage = { id, orientation, size?, background?, name? }`. Every field after `orientation`
+`IllustratePage = { id, orientation, size?, background?, name? }`. Every field after `orientation`
 is optional and absent on a page that never set it:
 
 - `size` absent is **A4**.
@@ -223,14 +223,14 @@ From the page panel's footer:
   the dragged sheet dims; release moves it there with its content, one edit. Escape cancels.
 - **The label fits its page**: it truncates to the page's width on screen less the title bar's
   buttons, and hides when under 40 px.
-- **Snapping to the pages**: while a move or a resize is in hand in Infographic mode, an element
+- **Snapping to the pages**: while a move or a resize is in hand in Illustrate mode, an element
   snaps to the edges, the centre lines and the margins (7% of the short side) of every page, with
   the same guides as element-to-element alignment (not to the pages' spacing: equal-spacing snaps
   stay element to element).
 
 ## Export
 
-In Infographic mode the Export dialog exports **pages**, not the tab's content bounds:
+In Illustrate mode the Export dialog exports **pages**, not the tab's content bounds:
 
 - **PDF**: every page, in order, one PDF page each, each at its own size and orientation.
 - **PNG** and **SVG**: one page, chosen in the dialog (**Page 1**, **Page 2**, ... or its name);
@@ -243,18 +243,18 @@ In Infographic mode the Export dialog exports **pages**, not the tab's content b
 - The dialog shows a **Page** row: a picker for PNG / SVG, "All n pages, one PDF page each" (and a
   preview picker) for PDF. The Isometric and Background pattern options are not offered: a page is
   its own background and is never tilted.
-- Outside Infographic mode, export is unchanged.
+- Outside Illustrate mode, export is unchanged.
 
 ## Telemetry
 
 `Tab · Changed ·` `PageAdded`, `PageRemoved`, `PagePortrait`, `PageLandscape`, `PageSize`,
 `PageBackground`, `PagePattern`, `PageRenamed`, `PageDuplicated`, `PageMoved`, `PageLayout`,
-`PagesLaidOut`; `Document · Exported · InfographicPNG / InfographicSVG / InfographicPDF`;
+`PagesLaidOut`; `Document · Exported · IllustratePNG / IllustrateSVG / IllustratePDF`;
 `UI · Added · PageSlide`; `UI · Opened · SlideDeck`. Never a colour, name or layout content.
 
 ## Into pages
 
-- When a tab enters Infographic mode (a switch, or opening in it), an editor's client lays its
+- When a tab enters Illustrate mode (a switch, or opening in it), an editor's client lays its
   loose content out into pages (a viewer or a locked tab is left alone):
   - **No pages stored**, and content that does **not fit inside the first page**: the whole tab is
     laid out afresh.
@@ -277,7 +277,7 @@ In Infographic mode the Export dialog exports **pages**, not the tab's content b
 
 ## Slides
 
-- In Infographic mode the Slide Deck panel adds slides **a page at a time**: a page picker (each
+- In Illustrate mode the Slide Deck panel adds slides **a page at a time**: a page picker (each
   page by its label) and **Add as slide**, in place of "Select elements to make a slide".
 - A **page slide** (`Slide.pageId`, docs/specs/012-collaboration/presentation-mode.md) is the page,
   resolved live: it shows whatever is on the page now and is framed to exactly the page, so it
@@ -289,7 +289,7 @@ In Infographic mode the Export dialog exports **pages**, not the tab's content b
   page slide presents, the canvas shows that page's sheet alone (its neighbours are not drawn), as
   it shows only a slide's elements.
 
-## Chrome in Infographic mode
+## Chrome in Illustrate mode
 
 - **Slides button**: in the bottom-right cluster, where Layers sits in the other modes (left of
   the brush), a **Slides** button opens the Slide Deck panel as a popover hanging above it (an

@@ -2498,7 +2498,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "enum": [
       "diagram",
       "draw",
-      "infographic"
+      "illustrate"
     ],
     "type": "string"
   },
@@ -3470,6 +3470,31 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
+  "IllustratePage": {
+    "additionalProperties": false,
+    "properties": {
+      "background": {
+        "$ref": "#/components/schemas/PageBackground"
+      },
+      "id": {
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      },
+      "orientation": {
+        "$ref": "#/components/schemas/PageOrientation"
+      },
+      "size": {
+        "$ref": "#/components/schemas/PageSizeId"
+      }
+    },
+    "required": [
+      "id",
+      "orientation"
+    ],
+    "type": "object"
+  },
   "ImageCredit": {
     "additionalProperties": false,
     "properties": {
@@ -3676,31 +3701,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "width",
       "height",
       "createdAt"
-    ],
-    "type": "object"
-  },
-  "InfographicPage": {
-    "additionalProperties": false,
-    "properties": {
-      "background": {
-        "$ref": "#/components/schemas/PageBackground"
-      },
-      "id": {
-        "type": "string"
-      },
-      "name": {
-        "type": "string"
-      },
-      "orientation": {
-        "$ref": "#/components/schemas/PageOrientation"
-      },
-      "size": {
-        "$ref": "#/components/schemas/PageSizeId"
-      }
-    },
-    "required": [
-      "id",
-      "orientation"
     ],
     "type": "object"
   },
@@ -5544,7 +5544,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "pages": {
         "items": {
-          "$ref": "#/components/schemas/InfographicPage"
+          "$ref": "#/components/schemas/IllustratePage"
         },
         "type": "array"
       },

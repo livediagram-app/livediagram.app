@@ -142,7 +142,7 @@ describe('isContentOffScreen', () => {
   });
 });
 
-// Infographic mode centres its page below the Toolbar layout's strip
+// Illustrate mode centres its page below the Toolbar layout's strip
 // (docs/specs/007-editor/editor-modes.md "The pages").
 describe('computeFitBelow', () => {
   const rect = { width: 1200, height: 800 };

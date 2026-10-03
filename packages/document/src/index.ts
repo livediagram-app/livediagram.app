@@ -13,7 +13,7 @@
 import { isSelfDrawingShape } from './data-shapes';
 import type { TabKind } from './tab-kind';
 import type { EditorMode } from './editor-mode';
-import type { InfographicPage, PageOrientation } from './infographic-page';
+import type { IllustratePage, PageOrientation } from './illustrate-page';
 import type { TabTimer, TabVote } from './session';
 
 // Layer type used by the `Tab.layers` field below (docs/specs/006-document/layers.md). Type-only
@@ -284,12 +284,12 @@ export type Tab = {
   // lives"): a person who has not switched on this tab sees it in this mode. Absent = 'diagram'
   // (read via `opensInOf`); switching never changes it.
   opensIn?: EditorMode;
-  // Infographic mode's pages (docs/specs/007-editor/editor-modes.md "The pages"): the A4 sheets,
+  // Illustrate mode's pages (docs/specs/007-editor/editor-modes.md "The pages"): the A4 sheets,
   // in row order, each portrait or landscape, that everyone lays the tab out on. Absent = one page
-  // (read via `infographicPagesOf`).
-  pages?: InfographicPage[];
+  // (read via `illustratePagesOf`).
+  pages?: IllustratePage[];
   // Legacy: a single page's orientation, from before multiple pages. Read as one page when `pages`
-  // is absent; dropped the first time the pages change (`withInfographicPages`).
+  // is absent; dropped the first time the pages change (`withIllustratePages`).
   pageOrientation?: PageOrientation;
   // An event-storming board whose workshop notes have been settled onto the
   // lanes once (docs/specs/021-event-storming/event-storming.md "Always on a lane"). Set by that settle, by the
@@ -365,9 +365,9 @@ export type Tab = {
 export { takesTypedLabel } from './element-types';
 export { DEFAULT_TAB_KIND, stampTabKind, tabKindOf, type TabKind } from './tab-kind';
 export * from './editor-mode';
-export * from './infographic-page';
-export * from './infographic-page-content';
-export * from './infographic-paginate';
+export * from './illustrate-page';
+export * from './illustrate-page-content';
+export * from './illustrate-paginate';
 export { migrateWhiteboardKind } from './legacy-whiteboard-tab';
 export { downgradeLinks, upgradeLegacyLinks } from './legacy-links';
 

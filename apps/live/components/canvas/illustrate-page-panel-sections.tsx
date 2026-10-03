@@ -1,6 +1,6 @@
 'use client';
 
-// The page panel's sections (docs/specs/007-editor/infographic-pages.md "Sizes", "Backgrounds"):
+// The page panel's sections (docs/specs/007-editor/illustrate-pages.md "Sizes", "Backgrounds"):
 // size tiles, the orientation switch and the background swatches. Each hover previews on the page
 // itself (`onPreview`), and a press commits; leaving the section drops the preview.
 import { useEffect, useRef, type ReactNode } from 'react';
@@ -10,7 +10,7 @@ import {
   PAGE_SIZES,
   pageHasOrientation,
   pageIsDark,
-  type InfographicPage,
+  type IllustratePage,
   type PageBackground,
   type PageFill,
   type PageOrientation,
@@ -28,7 +28,7 @@ import {
   pageSheetStyle,
   sameFill,
   type ThemeBackgroundPreset,
-} from '@/lib/infographic-page-paint';
+} from '@/lib/illustrate-page-paint';
 import { hexish } from '@/components/palette/palette-controls';
 
 export function PanelSection({ title, children }: { title: string; children: ReactNode }) {
@@ -86,7 +86,7 @@ export function SizeSection({
   page,
   onSize,
 }: {
-  page: InfographicPage;
+  page: IllustratePage;
   onSize: (size: PageSizeId) => void;
 }) {
   const current = page.size ?? 'a4';
@@ -117,7 +117,7 @@ export function OrientationSection({
   page,
   onOrientation,
 }: {
-  page: InfographicPage;
+  page: IllustratePage;
   onOrientation: (o: PageOrientation) => void;
 }) {
   if (!pageHasOrientation(page)) return null;
@@ -221,7 +221,7 @@ export function BackgroundSection({
   onBackground,
   onPreview,
 }: {
-  page: InfographicPage;
+  page: IllustratePage;
   // The tab theme's own backgrounds (themeBackgroundPresets), offered first.
   themePresets: readonly ThemeBackgroundPreset[];
   onBackground: (patch: Partial<PageBackground>) => void;

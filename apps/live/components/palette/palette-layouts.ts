@@ -96,9 +96,9 @@ const DIAGRAM: PaletteLayout = {
   ],
 };
 
-// Infographic mode: Popular, the mock-up kit, glyphs, stickers, pictures and charts; no pens, tech
+// Illustrate mode: Popular, the mock-up kit, glyphs, stickers, pictures and charts; no pens, tech
 // icons, behaviours or workshop notation.
-const INFOGRAPHIC: PaletteLayout = {
+const ILLUSTRATE: PaletteLayout = {
   landing: 'popular',
   categories: [
     {
@@ -137,11 +137,11 @@ const INFOGRAPHIC: PaletteLayout = {
   ],
 };
 
-export const PALETTE_LAYOUTS = { diagram: DIAGRAM, infographic: INFOGRAPHIC } as const;
+export const PALETTE_LAYOUTS = { diagram: DIAGRAM, illustrate: ILLUSTRATE } as const;
 
 /** The layout a mode's palette shows. Draw mode shows its own tools, so it borrows Diagram's. */
 export function paletteLayoutFor(mode: EditorMode): PaletteLayout {
-  return mode === 'infographic' ? INFOGRAPHIC : DIAGRAM;
+  return mode === 'illustrate' ? ILLUSTRATE : DIAGRAM;
 }
 
 export type ResolvedPaletteCategory = (typeof PALETTE_CATEGORIES)[number] & {

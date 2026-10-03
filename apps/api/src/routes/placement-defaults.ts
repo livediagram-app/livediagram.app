@@ -11,7 +11,7 @@
 // per-owner write rate limit in index.ts.
 
 import {
-  isPlacementDefaultKey,
+  parsePlacementDefaultKey,
   type PlacementDefaultKey,
   type PlacementDefaultRejection,
 } from '@livediagram/api-schema';
@@ -46,7 +46,7 @@ function keyOf(segment: string): PlacementDefaultKey | null {
   } catch {
     return null;
   }
-  return isPlacementDefaultKey(decoded) ? decoded : null;
+  return parsePlacementDefaultKey(decoded);
 }
 
 /** The `folderId` of a PUT body, or null when the body is not `{ folderId: <non-empty string> }`. */

@@ -258,7 +258,7 @@ describe('parseStoredPresentation', () => {
   });
 });
 
-describe('page slides (docs/specs/007-editor/infographic-pages.md "Slides")', () => {
+describe('page slides (docs/specs/007-editor/illustrate-pages.md "Slides")', () => {
   it('resolves a page slide to what is on the page, framed to the page', () => {
     const tab = {
       id: 't',

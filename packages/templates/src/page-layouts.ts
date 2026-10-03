@@ -1,4 +1,4 @@
-// Page layouts (docs/specs/007-editor/infographic-pages.md "Layouts"): ready-made arrangements put
+// Page layouts (docs/specs/007-editor/illustrate-pages.md "Layouts"): ready-made arrangements put
 // onto ONE Infographic page, to start from and then edit. Pure builders: the page's content box (the
 // page less its margins) in, ordinary elements out, laid out in proportions of the box so a layout
 // fits every size and orientation. Elements carry no colours of their own: the tab's theme paints
@@ -49,7 +49,7 @@ export type PageLayoutId =
   | 'questions'
   | 'profile';
 
-// The layout picker's categories (docs/specs/007-editor/infographic-pages.md "Layouts"), in order.
+// The layout picker's categories (docs/specs/007-editor/illustrate-pages.md "Layouts"), in order.
 export type PageLayoutCategoryId = 'covers' | 'data' | 'steps' | 'people';
 
 export const PAGE_LAYOUT_CATEGORIES: readonly { id: PageLayoutCategoryId; label: string }[] = [

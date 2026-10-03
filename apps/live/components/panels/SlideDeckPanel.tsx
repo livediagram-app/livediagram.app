@@ -69,7 +69,7 @@ function SlideRow({
   index: number;
   /** Absent when the slide's tab has been deleted. */
   tabName: string | undefined;
-  // A page slide's page, named (when its tab is the one in Infographic mode); else "Page".
+  // A page slide's page, named (when its tab is the one in Illustrate mode); else "Page".
   pageName?: string;
   isOpen: boolean;
   isDragging: boolean;
@@ -232,7 +232,7 @@ export function SlideDeckPanel({
   tabs: { id: string; name: string }[];
   activeTabId: string;
   isReadOnly: boolean;
-  // The active tab's pages while it is shown in Infographic mode: slides are then added a page at
+  // The active tab's pages while it is shown in Illustrate mode: slides are then added a page at
   // a time (PageSlidePicker) rather than from a selection.
   pages?: readonly { id: string; label: string }[];
 } & ModePanelProps) {

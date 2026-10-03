@@ -1,5 +1,5 @@
-// What sits on an Infographic page, and the page edits that touch it
-// (docs/specs/007-editor/infographic-pages.md): duplicating a page with everything on it, and
+// What sits on an Illustrate page, and the page edits that touch it
+// (docs/specs/007-editor/illustrate-pages.md): duplicating a page with everything on it, and
 // replacing a page's content with a layout. Plus the page's own surface, so elements with no colour
 // of their own are inked for a dark page. Pure: tab in, tab out, one tab edit each.
 import {
@@ -13,16 +13,16 @@ import {
 import { duplicateElements } from './duplicate';
 import { endpointPosition } from './geometry';
 import {
-  infographicPageAt,
-  infographicPagesOf,
-  layOutInfographicPages,
+  illustratePageAt,
+  illustratePagesOf,
+  layOutIllustratePages,
   PAGE_NAME_MAX,
   pageMargin,
-  withInfographicPages,
-  type InfographicPage,
+  withIllustratePages,
+  type IllustratePage,
   type LaidOutPage,
   type PageFill,
-} from './infographic-page';
+} from './illustrate-page';
 import { isBoxed, type Element, type Endpoint, type ShapeElement, type Tab } from './index';
 
 type Point = { x: number; y: number };
@@ -44,7 +44,7 @@ export function elementIdsOnPage(
 ): Set<string> {
   const ids = new Set<string>();
   for (const el of elements) {
-    const page = infographicPageAt(pages, elementAnchorPoint(el, elements));
+    const page = illustratePageAt(pages, elementAnchorPoint(el, elements));
     if (page?.id === pageId) ids.add(el.id);
   }
   return ids;
@@ -60,22 +60,22 @@ export function withDuplicatedPage<T extends Pick<Tab, 'elements'>>(
   tab: T & { pages?: unknown; pageOrientation?: unknown },
   pageId: string,
   newPageId: string,
-): T & { pages: InfographicPage[] } {
-  const pages = infographicPagesOf(tab);
+): T & { pages: IllustratePage[] } {
+  const pages = illustratePagesOf(tab);
   const index = pages.findIndex((p) => p.id === pageId);
   if (index < 0) return { ...tab, pages };
   const source = pages[index]!;
-  const copy: InfographicPage = {
+  const copy: IllustratePage = {
     ...source,
     id: newPageId,
     ...(source.name ? { name: `${source.name} copy`.slice(0, PAGE_NAME_MAX) } : {}),
   };
   const next = [...pages.slice(0, index + 1), copy, ...pages.slice(index + 1)];
-  const before = layOutInfographicPages(pages);
+  const before = layOutIllustratePages(pages);
   const onPage = elementIdsOnPage(tab.elements, before, pageId);
   // Everything else first: the pages after it, and their content, move along.
-  const moved = withInfographicPages(tab, next);
-  const after = layOutInfographicPages(next);
+  const moved = withIllustratePages(tab, next);
+  const after = layOutIllustratePages(next);
   const from = before[index]!.rect;
   const to = after[index + 1]!.rect;
   const dx = to.x + to.width / 2 - (from.x + from.width / 2);
@@ -114,14 +114,14 @@ export function withDuplicatedPage<T extends Pick<Tab, 'elements'>>(
 /**
  * The tab with everything on a page removed (and every arrow pinned to something removed), then
  * `placed` added: a layout put onto a page that had content (docs/specs/007-editor/
- * infographic-pages.md "Layouts"). One tab edit.
+ * illustrate-pages.md "Layouts"). One tab edit.
  */
 export function withPageContentReplaced<T extends Pick<Tab, 'elements'>>(
   tab: T & { pages?: unknown; pageOrientation?: unknown },
   pageId: string,
   placed: Element[],
 ): T {
-  const pages = layOutInfographicPages(infographicPagesOf(tab));
+  const pages = layOutIllustratePages(illustratePagesOf(tab));
   const gone = elementIdsOnPage(tab.elements, pages, pageId);
   // Arrows pinned to anything removed go too, and so, in turn, do arrows riding a removed arrow
   // (on-arrow ends), until nothing more goes.
@@ -169,13 +169,13 @@ export function pageFillTone(fill: PageFill): string {
 
 /** The surface a page's own fill makes, or null for the plain paper (which leaves elements inked
  *  as the canvas inks them). */
-export function pageSurface(page: Pick<InfographicPage, 'background'>): CanvasSurface | null {
+export function pageSurface(page: Pick<IllustratePage, 'background'>): CanvasSurface | null {
   const fill = page.background?.fill;
   return fill ? canvasSurface(pageFillTone(fill)) : null;
 }
 
 /** Whether a page's fill is dark: its elements with no colour of their own take light ink. */
-export function pageIsDark(page: Pick<InfographicPage, 'background'>): boolean {
+export function pageIsDark(page: Pick<IllustratePage, 'background'>): boolean {
   const fill = page.background?.fill;
   return !!fill && !isLightColor(pageFillTone(fill));
 }
@@ -190,18 +190,18 @@ export function elementPageSurfaces(
   const out = new Map<string, CanvasSurface>();
   if (!pages.some((p) => p.background?.fill)) return out;
   for (const el of elements) {
-    const page = infographicPageAt(pages, elementAnchorPoint(el, elements));
+    const page = illustratePageAt(pages, elementAnchorPoint(el, elements));
     const surface = page && pageSurface(page);
     if (surface) out.set(el.id, surface);
   }
   return out;
 }
 
-/** What a move or resize in Infographic mode snaps to besides other elements: each page's edges
- *  and centre lines, and its margins (docs/specs/007-editor/infographic-pages.md "Snapping to the
+/** What a move or resize in Illustrate mode snaps to besides other elements: each page's edges
+ *  and centre lines, and its margins (docs/specs/007-editor/illustrate-pages.md "Snapping to the
  *  page"). Never drawn or stored: stand-in boxes the alignment snap measures, one for the sheet
  *  and one for its margin box, with ids no element can take. */
-export function infographicPageSnapBoxes(pages: readonly LaidOutPage[]): ShapeElement[] {
+export function illustratePageSnapBoxes(pages: readonly LaidOutPage[]): ShapeElement[] {
   return pages.flatMap((page) => {
     const m = pageMargin(page);
     const { x, y, width, height } = page.rect;
@@ -241,7 +241,7 @@ export function legibleOn(color: string, tone: string): string {
 
 /**
  * The tab with the colours of its own that sit straight on a page re-inked to read on the page's
- * new background (docs/specs/007-editor/infographic-pages.md "A dark page has light ink"): a text
+ * new background (docs/specs/007-editor/illustrate-pages.md "A dark page has light ink"): a text
  * element's text, an arrow's line, an icon's glyph. Anything on a fill of its own (a card, a
  * shape) reads against that fill and is left alone, as is every element with no colour of its own
  * (the page's surface inks those). `background` is the page's background after the change.
@@ -249,9 +249,9 @@ export function legibleOn(color: string, tone: string): string {
 export function withPageInkFor<T extends Pick<Tab, 'elements'>>(
   tab: T & { pages?: unknown; pageOrientation?: unknown },
   pageId: string,
-  background: InfographicPage['background'],
+  background: IllustratePage['background'],
 ): T {
-  const pages = layOutInfographicPages(infographicPagesOf(tab));
+  const pages = layOutIllustratePages(illustratePagesOf(tab));
   const on = elementIdsOnPage(tab.elements, pages, pageId);
   const tone = background?.fill ? pageFillTone(background.fill) : '#ffffff';
   let changed = false;
@@ -283,7 +283,7 @@ export function withPageInkFor<T extends Pick<Tab, 'elements'>>(
 
 /**
  * The tab with the given elements (a page's content from before a change of size or orientation)
- * fitted into that page's margin box as it now is (docs/specs/007-editor/infographic-pages.md
+ * fitted into that page's margin box as it now is (docs/specs/007-editor/illustrate-pages.md
  * "Sizes"): content that already fits stays its size, centred where the re-centring put it;
  * content that no longer fits is scaled down as one, about the page's centre, until it does. Text
  * scales with it (textScale), so a scaled page reads as the same page, smaller. Pinned arrows
@@ -296,7 +296,7 @@ export function withContentFittedToPage<T extends Pick<Tab, 'elements'>>(
   // Centre the content on the page even when it already fits (laying content out into pages).
   { centre = false }: { centre?: boolean } = {},
 ): T {
-  const page = layOutInfographicPages(infographicPagesOf(tab)).find((p) => p.id === pageId);
+  const page = layOutIllustratePages(illustratePagesOf(tab)).find((p) => p.id === pageId);
   if (!page || ids.size === 0) return tab;
   let minX = Infinity;
   let minY = Infinity;

@@ -77,7 +77,7 @@ export type ImageExportOpts = {
   // Google stylesheet by @import, which only a browser opening the file
   // directly will honour.
   fontCss?: string;
-  // One Infographic page to export (docs/specs/007-editor/infographic-pages.md "Export"): the
+  // One Illustrate page to export (docs/specs/007-editor/illustrate-pages.md "Export"): the
   // frame becomes exactly its sheet, painted with its background; isometric and the tab's own
   // backdrop do not apply.
   page?: LaidOutPage;

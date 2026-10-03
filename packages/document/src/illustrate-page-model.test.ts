@@ -1,15 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import {
-  INFOGRAPHIC_PAGE_GAP,
-  infographicPagesOf,
-  layOutInfographicPages,
+  ILLUSTRATE_PAGE_GAP,
+  illustratePagesOf,
+  layOutIllustratePages,
   pageDimensions,
   pageHasOrientation,
   pageLabel,
   pageMargin,
-  withInfographicPages,
-  type InfographicPage,
-} from './infographic-page';
+  withIllustratePages,
+  type IllustratePage,
+} from './illustrate-page';
 import {
   elementIdsOnPage,
   elementPageSurfaces,
@@ -20,11 +20,11 @@ import {
   withDuplicatedPage,
   withPageContentReplaced,
   withPageInkFor,
-} from './infographic-page-content';
+} from './illustrate-page-content';
 import { contrastRatio } from './colors';
 import type { Element } from './index';
 
-// docs/specs/007-editor/infographic-pages.md: a page's size, background and name, and the edits
+// docs/specs/007-editor/illustrate-pages.md: a page's size, background and name, and the edits
 // that carry its content.
 const box = (id: string, cx: number, cy: number) =>
   ({
@@ -41,7 +41,7 @@ const centre = (el: Element) =>
 
 describe('a page', () => {
   it('keeps its valid optional fields and drops the rest', () => {
-    const [page] = infographicPagesOf({
+    const [page] = illustratePagesOf({
       pages: [
         {
           id: 'p',
@@ -62,7 +62,7 @@ describe('a page', () => {
   });
 
   it('normalises a gradient angle and drops an unknown size', () => {
-    const [page] = infographicPagesOf({
+    const [page] = illustratePagesOf({
       pages: [
         {
           id: 'p',
@@ -103,36 +103,36 @@ describe('a page', () => {
   });
 
   it('lays mixed sizes out in a row, each centred on the axis', () => {
-    const [a, b] = layOutInfographicPages([
+    const [a, b] = layOutIllustratePages([
       { id: 'a', orientation: 'portrait' },
       { id: 'b', orientation: 'portrait', size: 'square' },
     ]);
-    expect(b!.rect.x).toBe(a!.rect.x + a!.rect.width + INFOGRAPHIC_PAGE_GAP);
+    expect(b!.rect.x).toBe(a!.rect.x + a!.rect.width + ILLUSTRATE_PAGE_GAP);
     expect(b!.rect.y).toBe(-540);
   });
 
   it('re-centres its content when its size changes, and moves the pages after it', () => {
-    const pages: InfographicPage[] = [
+    const pages: IllustratePage[] = [
       { id: 'a', orientation: 'portrait' },
       { id: 'b', orientation: 'portrait' },
     ];
-    const [, b] = layOutInfographicPages(pages);
+    const [, b] = layOutIllustratePages(pages);
     const onB = box('x', b!.rect.x + b!.rect.width / 2, 0);
-    const next = withInfographicPages({ elements: [onB], pages }, [
+    const next = withIllustratePages({ elements: [onB], pages }, [
       { id: 'a', orientation: 'portrait', size: 'a3' },
       { id: 'b', orientation: 'portrait' },
     ]);
-    const [, b2] = layOutInfographicPages(next.pages);
+    const [, b2] = layOutIllustratePages(next.pages);
     expect(centre(next.elements[0]!)).toEqual({ x: b2!.rect.x + b2!.rect.width / 2, y: 0 });
   });
 });
 
 describe('page content', () => {
-  const pages: InfographicPage[] = [
+  const pages: IllustratePage[] = [
     { id: 'a', orientation: 'portrait', name: 'Intro' },
     { id: 'b', orientation: 'portrait' },
   ];
-  const [, laidB] = layOutInfographicPages(pages);
+  const [, laidB] = layOutIllustratePages(pages);
   const bx = laidB!.rect.x + laidB!.rect.width / 2;
   const onA = [box('a1', 0, 0), box('a2', 100, 100)];
   const arrow = {
@@ -144,7 +144,7 @@ describe('page content', () => {
   const tab = { elements: [...onA, arrow, box('b1', bx, 0)], pages };
 
   it('knows what is on a page, arrows by their midpoint', () => {
-    const laid = layOutInfographicPages(pages);
+    const laid = layOutIllustratePages(pages);
     expect([...elementIdsOnPage(tab.elements, laid, 'a')].sort()).toEqual(['a1', 'a2', 'ar']);
     expect([...elementIdsOnPage(tab.elements, laid, 'b')]).toEqual(['b1']);
   });
@@ -153,7 +153,7 @@ describe('page content', () => {
     const next = withDuplicatedPage(tab, 'a', 'page-9');
     expect(next.pages.map((p) => p.id)).toEqual(['a', 'page-9', 'b']);
     expect(next.pages[1]!.name).toBe('Intro copy');
-    const laid = layOutInfographicPages(next.pages);
+    const laid = layOutIllustratePages(next.pages);
     const originals = new Set(tab.elements.map((el) => el.id));
     const copies = next.elements.filter((el) => !originals.has(el.id));
     expect(copies).toHaveLength(3);
@@ -206,7 +206,7 @@ describe('page content', () => {
   it('keeps a copied name within the name limit, and reads a repeated page id once', () => {
     const long = { ...tab, pages: [{ ...pages[0]!, name: 'x'.repeat(60) }, pages[1]!] };
     expect(withDuplicatedPage(long, 'a', 'p2').pages[1]!.name!.length).toBe(60);
-    expect(infographicPagesOf({ pages: [pages[0], pages[0], pages[1]] }).map((p) => p.id)).toEqual([
+    expect(illustratePagesOf({ pages: [pages[0], pages[0], pages[1]] }).map((p) => p.id)).toEqual([
       'a',
       'b',
     ]);
@@ -231,7 +231,7 @@ describe('page backgrounds', () => {
   });
 
   it('ink elements on a filled page for that page, and leave the rest to the canvas', () => {
-    const pages = layOutInfographicPages([
+    const pages = layOutIllustratePages([
       {
         id: 'a',
         orientation: 'portrait',
@@ -244,7 +244,7 @@ describe('page backgrounds', () => {
     const off = box('z', 0, 5000);
     const surfaces = elementPageSurfaces([onA, onB, off], pages);
     expect([...surfaces]).toEqual([['x', 'dark']]);
-    expect(elementPageSurfaces([onA], layOutInfographicPages([pages[1]!])).size).toBe(0);
+    expect(elementPageSurfaces([onA], layOutIllustratePages([pages[1]!])).size).toBe(0);
   });
 });
 

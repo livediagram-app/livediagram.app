@@ -251,9 +251,9 @@ export function CanvasChrome(props: CanvasChromeProps) {
   // buttons with them (Undo / Redo stay). Read once here and handed to
   // useCanvasChromePanels, so a button and its panel share one value.
   const panelsOn = {
-    // Not in Infographic mode: a page is laid out by its pages, not layers
-    // (docs/specs/007-editor/infographic-pages.md).
-    layers: panelEnabled(settings, 'layersPanelEnabled') && !props.infographicPages,
+    // Not in Illustrate mode: a page is laid out by its pages, not layers
+    // (docs/specs/007-editor/illustrate-pages.md).
+    layers: panelEnabled(settings, 'layersPanelEnabled') && !props.illustratePages,
     collaborate: panelEnabled(settings, 'collaboratePanelEnabled'),
   };
 
@@ -585,10 +585,10 @@ export function CanvasChrome(props: CanvasChromeProps) {
                 canRedo={canRedo}
               />
             ) : null}
-            {/* Slides (docs/specs/007-editor/infographic-pages.md "Slides"): in Infographic mode, where
+            {/* Slides (docs/specs/007-editor/illustrate-pages.md "Slides"): in Illustrate mode, where
                 Layers would be, the deck one press away. */}
             {/* Desktop only, as the Slide Deck itself is. */}
-            {!zenMode && !isMobile && props.infographicPages && props.slideDeck ? (
+            {!zenMode && !isMobile && props.illustratePages && props.slideDeck ? (
               <SlidesClusterButton
                 popoverOpen={activeDockPanel === 'slides'}
                 onTogglePopover={(button) => handleDockButtonClick('slides', button, true)}

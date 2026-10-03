@@ -1,5 +1,5 @@
-// The pages Infographic mode draws on the canvas (docs/specs/007-editor/editor-modes.md "The
-// pages", docs/specs/007-editor/infographic-pages.md): sheets in a row, each its own size
+// The pages Illustrate mode draws on the canvas (docs/specs/007-editor/editor-modes.md "The
+// pages", docs/specs/007-editor/illustrate-pages.md): sheets in a row, each its own size
 // (A4 unless it says otherwise), orientation, background and name. The first is centred on the
 // canvas origin and each further one sits a gap to the right of the one before. The pages are the
 // tab's (`Tab.pages`), so everyone lays out on the same ones; the sheets themselves are a view,
@@ -16,12 +16,12 @@ export const A4_SHORT_SIDE = 794;
 export const A4_LONG_SIDE = 1123;
 
 // The space between two pages in the row, in canvas px.
-export const INFOGRAPHIC_PAGE_GAP = 96;
+export const ILLUSTRATE_PAGE_GAP = 96;
 
 // The most pages a tab holds: a row past this is a document, not an infographic.
-export const MAX_INFOGRAPHIC_PAGES = 20;
+export const MAX_ILLUSTRATE_PAGES = 20;
 
-// A page's format (docs/specs/007-editor/infographic-pages.md "Sizes"): its short and long side.
+// A page's format (docs/specs/007-editor/illustrate-pages.md "Sizes"): its short and long side.
 export type PageSizeId = 'a4' | 'letter' | 'a3' | 'square' | 'social' | 'wide';
 
 export const PAGE_SIZES: Readonly<
@@ -46,7 +46,7 @@ export function isPageSizeId(v: unknown): v is PageSizeId {
   return typeof v === 'string' && v in PAGE_SIZES;
 }
 
-// What a page is painted with (docs/specs/007-editor/infographic-pages.md "Backgrounds"): a fill
+// What a page is painted with (docs/specs/007-editor/illustrate-pages.md "Backgrounds"): a fill
 // (absent is the paper) and a pattern over it.
 export type PageFill =
   { kind: 'solid'; color: string } | { kind: 'gradient'; from: string; to: string; angle: number };
@@ -57,7 +57,7 @@ export type PageBackground = { fill?: PageFill; pattern?: PagePattern };
 // The longest page name kept: a label, not a caption.
 export const PAGE_NAME_MAX = 60;
 
-export type InfographicPage = {
+export type IllustratePage = {
   id: string;
   orientation: PageOrientation;
   // Absent is A4.
@@ -70,7 +70,7 @@ export type InfographicPage = {
 
 export type PageRect = { x: number; y: number; width: number; height: number };
 
-export type LaidOutPage = InfographicPage & { index: number; rect: PageRect };
+export type LaidOutPage = IllustratePage & { index: number; rect: PageRect };
 
 // The id the first page of a tab that never stored its pages answers to.
 const FIRST_PAGE_ID = 'page-1';
@@ -111,7 +111,7 @@ function parseBackground(v: unknown): PageBackground | undefined {
 
 /** A stored page, or undefined when it has no valid id or orientation. Its optional fields keep
  *  what is valid and drop the rest. */
-function parsePage(v: unknown): InfographicPage | undefined {
+function parsePage(v: unknown): IllustratePage | undefined {
   const p = v as Record<string, unknown> | null;
   if (!p || typeof p !== 'object' || typeof p.id !== 'string' || !isPageOrientation(p.orientation))
     return undefined;
@@ -129,25 +129,25 @@ function parsePage(v: unknown): InfographicPage | undefined {
 /** The tab's pages, in order: its stored ones, or one page in its legacy orientation (portrait
  *  unless it said landscape). Never empty; malformed entries, and a repeat of an id already seen,
  *  are skipped. */
-export function infographicPagesOf(
+export function illustratePagesOf(
   tab: { pages?: unknown; pageOrientation?: unknown } | undefined,
-): InfographicPage[] {
+): IllustratePage[] {
   const seen = new Set<string>();
   const stored = Array.isArray(tab?.pages)
-    ? tab.pages.map(parsePage).filter((p): p is InfographicPage => {
+    ? tab.pages.map(parsePage).filter((p): p is IllustratePage => {
         if (!p || seen.has(p.id)) return false;
         seen.add(p.id);
         return true;
       })
     : [];
-  if (stored.length > 0) return stored.slice(0, MAX_INFOGRAPHIC_PAGES);
+  if (stored.length > 0) return stored.slice(0, MAX_ILLUSTRATE_PAGES);
   const orientation = isPageOrientation(tab?.pageOrientation) ? tab.pageOrientation : 'portrait';
   return [{ id: FIRST_PAGE_ID, orientation }];
 }
 
 /** A page's width and height in canvas px: its size's sides, the long one upright in portrait.
  *  A square page is the same either way. */
-export function pageDimensions(page: Pick<InfographicPage, 'orientation' | 'size'>): {
+export function pageDimensions(page: Pick<IllustratePage, 'orientation' | 'size'>): {
   width: number;
   height: number;
 } {
@@ -158,20 +158,20 @@ export function pageDimensions(page: Pick<InfographicPage, 'orientation' | 'size
 }
 
 /** Whether a page has an orientation to choose (a square page has none). */
-export function pageHasOrientation(page: Pick<InfographicPage, 'size'>): boolean {
+export function pageHasOrientation(page: Pick<IllustratePage, 'size'>): boolean {
   const { short, long } = PAGE_SIZES[page.size ?? 'a4'];
   return short !== long;
 }
 
 /** The size's name as this page shows it ("A4", "Slide (16:9)"). */
-export function pageSizeLabel(page: Pick<InfographicPage, 'orientation' | 'size'>): string {
+export function pageSizeLabel(page: Pick<IllustratePage, 'orientation' | 'size'>): string {
   return PAGE_SIZES[page.size ?? 'a4'][page.orientation];
 }
 
 /** The label above a page: its name, or "Page n" once there are several, then its size and, where
  *  it has one, its orientation ("Page 2 · A4 · Landscape", "Launch · Square"). */
 export function pageLabel(
-  page: Pick<InfographicPage, 'orientation' | 'size' | 'name'>,
+  page: Pick<IllustratePage, 'orientation' | 'size' | 'name'>,
   index: number,
   count: number,
 ): string {
@@ -189,23 +189,23 @@ export function pageLabel(
 }
 
 /** The page's own margin, in canvas px: what layouts keep clear and snapping offers. */
-export function pageMargin(page: Pick<InfographicPage, 'orientation' | 'size'>): number {
+export function pageMargin(page: Pick<IllustratePage, 'orientation' | 'size'>): number {
   const { width, height } = pageDimensions(page);
   return Math.round(Math.min(width, height) * PAGE_MARGIN_FRACTION);
 }
 
-// A page's margin as a share of its short side (docs/specs/007-editor/infographic-pages.md).
+// A page's margin as a share of its short side (docs/specs/007-editor/illustrate-pages.md).
 export const PAGE_MARGIN_FRACTION = 0.07;
 
 /** Where each page sits: the first centred on the origin, each further one a gap to the right,
  *  every page centred on the row's horizontal axis (y = 0). */
-export function layOutInfographicPages(pages: readonly InfographicPage[]): LaidOutPage[] {
+export function layOutIllustratePages(pages: readonly IllustratePage[]): LaidOutPage[] {
   let x = 0;
   return pages.map((page, index) => {
     const { width, height } = pageDimensions(page);
     if (index === 0) x = -width / 2;
     const rect = { x, y: -height / 2, width, height };
-    x += width + INFOGRAPHIC_PAGE_GAP;
+    x += width + ILLUSTRATE_PAGE_GAP;
     return { ...page, index, rect };
   });
 }
@@ -213,7 +213,7 @@ export function layOutInfographicPages(pages: readonly InfographicPage[]): LaidO
 /** The box the view fits to frame a page (the first by default): a square of its long side,
  *  centred on the page, so either orientation fits at the same zoom and turning it never moves the
  *  view. With no page, an A4 one at the origin. */
-export function infographicPageFitBox(page?: Pick<LaidOutPage, 'rect'>): PageRect {
+export function illustratePageFitBox(page?: Pick<LaidOutPage, 'rect'>): PageRect {
   if (!page) {
     return {
       x: -A4_LONG_SIDE / 2,
@@ -232,7 +232,7 @@ function contains(r: PageRect, p: { x: number; y: number }): boolean {
 }
 
 /** The page a canvas point lies on (edges included), if any. */
-export function infographicPageAt(
+export function illustratePageAt(
   pages: readonly LaidOutPage[],
   point: { x: number; y: number },
 ): LaidOutPage | undefined {
@@ -242,7 +242,7 @@ export function infographicPageAt(
 /** A new page's id: never one a page has had before, so a page slide (Slide.pageId) of a deleted
  *  page stays empty rather than finding a new page under its old id. Random, checked against the
  *  tab's pages. */
-export function nextInfographicPageId(pages: readonly InfographicPage[]): string {
+export function nextIllustratePageId(pages: readonly IllustratePage[]): string {
   const taken = new Set(pages.map((p) => p.id));
   let id: string;
   do id = `page-${crypto.randomUUID().slice(0, 8)}`;
@@ -256,14 +256,14 @@ export function nextInfographicPageId(pages: readonly InfographicPage[]): string
  * turned, or was removed). Elements on a removed page, or on no page, stay where they are. One
  * tab edit, so one undo step. The legacy `pageOrientation` is dropped once pages are stored.
  */
-export function withInfographicPages<T extends Pick<Tab, 'elements'>>(
+export function withIllustratePages<T extends Pick<Tab, 'elements'>>(
   tab: T & { pages?: unknown; pageOrientation?: unknown },
-  next: readonly InfographicPage[],
-): T & { pages: InfographicPage[] } {
-  const before = layOutInfographicPages(infographicPagesOf(tab));
-  const after = new Map(layOutInfographicPages(next).map((p) => [p.id, p.rect]));
+  next: readonly IllustratePage[],
+): T & { pages: IllustratePage[] } {
+  const before = layOutIllustratePages(illustratePagesOf(tab));
+  const after = new Map(layOutIllustratePages(next).map((p) => [p.id, p.rect]));
   const shift = (point: { x: number; y: number }): { dx: number; dy: number } | null => {
-    const page = infographicPageAt(before, point);
+    const page = illustratePageAt(before, point);
     const moved = page && after.get(page.id);
     if (!page || !moved) return null;
     // Re-centred on the page's centre, so a page that turned keeps its content about its middle.

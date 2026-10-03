@@ -1,4 +1,4 @@
-// More page layouts (docs/specs/007-editor/infographic-pages.md "Layouts"): a quote, a team, a
+// More page layouts (docs/specs/007-editor/illustrate-pages.md "Layouts"): a quote, a team, a
 // facts grid, a checklist and an event poster. Same contract as page-layouts.ts: the page's
 // content box in, uncoloured elements out, a tall page stacking and a wide one setting side by side.
 import type { Element } from '@livediagram/document';

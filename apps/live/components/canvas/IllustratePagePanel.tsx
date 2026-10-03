@@ -1,6 +1,6 @@
 'use client';
 
-// A page's panel (docs/specs/007-editor/infographic-pages.md "page panel"): opened from the cog
+// A page's panel (docs/specs/007-editor/illustrate-pages.md "page panel"): opened from the cog
 // above the page's top-right corner, in screen space so it reads at one size whatever the zoom.
 // Its name, then two tabs: Page (size, orientation, background; every hover over a background
 // previews on the page itself) and Layouts; then the page's actions. It closes on an outside press, Escape, or the canvas
@@ -23,25 +23,25 @@ import { SegmentSlider } from '@/components/primitives/SegmentSlider';
 import { BottomSheet } from '@/components/primitives/BottomSheet';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { VIEWPORT_EDGE_MARGIN as EDGE } from '@/lib/clamp-to-viewport';
-import type { InfographicPageEdits } from '@/hooks/editor/useInfographicPage';
-import type { ThemeBackgroundPreset } from '@/lib/infographic-page-paint';
+import type { IllustratePageEdits } from '@/hooks/editor/useIllustratePages';
+import type { ThemeBackgroundPreset } from '@/lib/illustrate-page-paint';
 import type { PageLayoutId } from '@livediagram/templates';
 import { LayoutsSection } from './infographic-page-layouts-section';
 import {
   BackgroundSection,
   OrientationSection,
   SizeSection,
-} from './infographic-page-panel-sections';
+} from './illustrate-page-panel-sections';
 
 const WIDTH = 304;
 const GAP = 6;
-// The sheets' own ease (InfographicPages).
+// The sheets' own ease (IllustratePages).
 const PAGE_EASE_MS = 200;
 
 export type PagePreview = { pageId: string; patch: Partial<PageBackground> } | null;
 export type PagePanelTab = 'page' | 'layouts';
 
-export function InfographicPagePanel({
+export function IllustratePagePanel({
   page,
   count,
   getAnchor,
@@ -58,7 +58,7 @@ export function InfographicPagePanel({
   getAnchor: () => HTMLElement | undefined;
   initialTab: PagePanelTab;
   themeBackgrounds: ThemeBackgroundPreset[];
-  edit: InfographicPageEdits;
+  edit: IllustratePageEdits;
   onPreview: (preview: PagePreview) => void;
   // A layout shown on the page while its tile is hovered (InfographicLayoutPreview); null clears.
   onLayoutPreview: (layout: PageLayoutId | null) => void;
@@ -343,7 +343,7 @@ function PageActions({
 }: {
   page: LaidOutPage;
   count: number;
-  edit: InfographicPageEdits;
+  edit: IllustratePageEdits;
   onClose: () => void;
 }) {
   const { duplicatePage, removePage } = edit;

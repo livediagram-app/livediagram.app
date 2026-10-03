@@ -1,6 +1,6 @@
 'use client';
 
-// The Export dialog's page choice in Infographic mode (docs/specs/007-editor/infographic-pages.md
+// The Export dialog's page choice in Illustrate mode (docs/specs/007-editor/illustrate-pages.md
 // "Export"): a PNG or SVG is one page, chosen here (the first by default); a PDF is every page,
 // which this says instead.
 import { pageLabel, type LaidOutPage } from '@livediagram/document';

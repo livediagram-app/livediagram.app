@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { layOutInfographicPages } from '@livediagram/document';
+import { layOutIllustratePages } from '@livediagram/document';
 import { reorderSlot } from './usePageReorderDrag';
 
-// docs/specs/007-editor/infographic-pages.md "Getting around the pages": a dragged label's page
+// docs/specs/007-editor/illustrate-pages.md "Getting around the pages": a dragged label's page
 // lands after every other page whose centre is left of its own.
-const pages = layOutInfographicPages(
+const pages = layOutIllustratePages(
   ['a', 'b', 'c'].map((id) => ({ id, orientation: 'portrait' as const })),
 );
 const centre = (i: number) => pages[i]!.rect.x + pages[i]!.rect.width / 2;

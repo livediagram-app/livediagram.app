@@ -1,20 +1,20 @@
-// The edits to an Infographic tab's pages (docs/specs/007-editor/infographic-pages.md): turn,
+// The edits to an Illustrate tab's pages (docs/specs/007-editor/illustrate-pages.md): turn,
 // resize, rename and paint a page; add, duplicate, move and delete one. Each is one tab edit (one
 // undo step, synced to everyone) that moves the content of every page it shifts along with it
-// (withInfographicPages), re-reading the tab at commit time so two quick edits compose.
+// (withIllustratePages), re-reading the tab at commit time so two quick edits compose.
 import {
   elementIdsOnPage,
-  infographicPagesOf,
-  layOutInfographicPages,
-  MAX_INFOGRAPHIC_PAGES,
-  nextInfographicPageId,
+  illustratePagesOf,
+  layOutIllustratePages,
+  MAX_ILLUSTRATE_PAGES,
+  nextIllustratePageId,
   PAGE_NAME_MAX,
   withDuplicatedPage,
-  withInfographicPages,
+  withIllustratePages,
   withPageContentReplaced,
   withPageInkFor,
   withContentFittedToPage,
-  type InfographicPage,
+  type IllustratePage,
   type PageBackground,
   type PageOrientation,
   type PageSizeId,
@@ -22,11 +22,11 @@ import {
 } from '@livediagram/document';
 import type { PageLayoutId } from '@livediagram/templates';
 import { buildPageLayout } from '@/lib/page-layout-build';
-import { sameFill, withBackgroundPatch } from '@/lib/infographic-page-paint';
+import { sameFill, withBackgroundPatch } from '@/lib/illustrate-page-paint';
 import { debugLog } from '@/lib/debug-log';
 import { track } from '@/lib/telemetry';
 
-export type InfographicPageEdits = {
+export type IllustratePageEdits = {
   setOrientation: (pageId: string, next: PageOrientation) => void;
   setSize: (pageId: string, size: PageSizeId) => void;
   // Empty clears the name.
@@ -51,7 +51,7 @@ export type InfographicPageEdits = {
 
 type TabChange = (tab: Tab) => Tab | null;
 
-export function infographicPageEdits({
+export function illustratePageEdits({
   tabId,
   current,
   elements,
@@ -61,7 +61,7 @@ export function infographicPageEdits({
   mayEdit = () => true,
 }: {
   tabId: string;
-  current: readonly InfographicPage[];
+  current: readonly IllustratePage[];
   // The tab's elements now, to count a page's content.
   elements: Tab['elements'];
   // After a layout lands: the selection is cleared, so none of the replaced elements stays selected.
@@ -72,37 +72,37 @@ export function infographicPageEdits({
   commitTabs: (map: (ts: Tab[]) => Tab[]) => void;
   // A new page (added or duplicated) by its id, so the view can go to it.
   onCreated: (pageId: string) => void;
-}): InfographicPageEdits {
+}): IllustratePageEdits {
   // A locked tab, or a person no longer editing, takes no page edit.
   const commitTab = (change: TabChange) => {
     if (!mayEdit()) return;
     commitTabs((ts) => ts.map((t) => (t.id === tabId && t.locked !== true ? (change(t) ?? t) : t)));
   };
   // A change to the page list alone (content follows its page).
-  const commitPages = (change: (pages: InfographicPage[]) => InfographicPage[] | null) =>
+  const commitPages = (change: (pages: IllustratePage[]) => IllustratePage[] | null) =>
     commitTab((t) => {
-      const next = change(infographicPagesOf(t));
-      return next ? withInfographicPages(t, next) : null;
+      const next = change(illustratePagesOf(t));
+      return next ? withIllustratePages(t, next) : null;
     });
-  const patchPage = (pageId: string, patch: (p: InfographicPage) => InfographicPage) =>
+  const patchPage = (pageId: string, patch: (p: IllustratePage) => IllustratePage) =>
     commitPages((ps) => ps.map((p) => (p.id === pageId ? patch(p) : p)));
   const page = (pageId: string) => current.find((p) => p.id === pageId);
 
   // A turn or a new size re-fits the page's content into the page as it now is: what was on it
   // before stays on it, scaled down as one where it no longer fits (withContentFittedToPage).
-  const reshapePage = (pageId: string, patch: (p: InfographicPage) => InfographicPage) =>
+  const reshapePage = (pageId: string, patch: (p: IllustratePage) => IllustratePage) =>
     commitTab((t) => {
-      const before = layOutInfographicPages(infographicPagesOf(t));
+      const before = layOutIllustratePages(illustratePagesOf(t));
       const ids = elementIdsOnPage(t.elements, before, pageId);
-      const next = infographicPagesOf(t).map((p) => (p.id === pageId ? patch(p) : p));
-      return withContentFittedToPage(withInfographicPages(t, next), ids, pageId);
+      const next = illustratePagesOf(t).map((p) => (p.id === pageId ? patch(p) : p));
+      return withContentFittedToPage(withIllustratePages(t, next), ids, pageId);
     });
 
   const setOrientation = (pageId: string, next: PageOrientation) => {
     if (page(pageId)?.orientation === next) return;
     track('Tab', 'Changed', next === 'landscape' ? 'PageLandscape' : 'PagePortrait');
     reshapePage(pageId, (p) => ({ ...p, orientation: next }));
-    debugLog('[infographic-page] orientation set', { tabId, pageId, orientation: next });
+    debugLog('[illustrate-page] orientation set', { tabId, pageId, orientation: next });
   };
   const setSize = (pageId: string, size: PageSizeId) => {
     if ((page(pageId)?.size ?? 'a4') === size) return;
@@ -111,7 +111,7 @@ export function infographicPageEdits({
       const { size: _drop, ...rest } = p;
       return size === 'a4' ? rest : { ...rest, size };
     });
-    debugLog('[infographic-page] size set', { tabId, pageId, size });
+    debugLog('[illustrate-page] size set', { tabId, pageId, size });
   };
   const rename = (pageId: string, raw: string) => {
     const name = raw.trim().slice(0, PAGE_NAME_MAX);
@@ -121,7 +121,7 @@ export function infographicPageEdits({
       const { name: _drop, ...rest } = p;
       return name ? { ...rest, name } : rest;
     });
-    debugLog('[infographic-page] renamed', { tabId, pageId, named: name !== '' });
+    debugLog('[illustrate-page] renamed', { tabId, pageId, named: name !== '' });
   };
   // A new fill also re-inks the page's own-coloured text, lines and icons so they still read on it
   // (withPageInkFor), in the same edit.
@@ -134,7 +134,7 @@ export function infographicPageEdits({
     if (sameFill(was?.fill, next?.fill) && was?.pattern === next?.pattern) return;
     track('Tab', 'Changed', 'fill' in patch ? 'PageBackground' : 'PagePattern');
     commitTab((t) => {
-      const ps = infographicPagesOf(t);
+      const ps = illustratePagesOf(t);
       const target = ps.find((p) => p.id === pageId);
       if (!target) return null;
       const background = withBackgroundPatch(target, patch);
@@ -143,10 +143,10 @@ export function infographicPageEdits({
         const { background: _drop, ...rest } = p;
         return background ? { ...rest, background } : rest;
       });
-      const repaged = withInfographicPages(t, next);
+      const repaged = withIllustratePages(t, next);
       return 'fill' in patch ? withPageInkFor(repaged, pageId, background) : repaged;
     });
-    debugLog('[infographic-page] background set', { tabId, pageId, keys: Object.keys(patch) });
+    debugLog('[illustrate-page] background set', { tabId, pageId, keys: Object.keys(patch) });
   };
   const movePageTo = (pageId: string, index: number) => {
     const from = current.findIndex((p) => p.id === pageId);
@@ -159,7 +159,7 @@ export function infographicPageEdits({
       next.splice(Math.max(0, Math.min(index, next.length)), 0, ps[i]!);
       return next;
     });
-    debugLog('[infographic-page] moved', { tabId, pageId, from, to: index });
+    debugLog('[illustrate-page] moved', { tabId, pageId, from, to: index });
   };
   const movePage = (pageId: string, by: -1 | 1) => {
     const i = current.findIndex((p) => p.id === pageId);
@@ -168,9 +168,9 @@ export function infographicPageEdits({
   // A new page takes the last page's size and orientation, on the plain paper.
   const addPage = () => {
     track('Tab', 'Changed', 'PageAdded');
-    const id = nextInfographicPageId(current);
+    const id = nextIllustratePageId(current);
     commitPages((ps) => {
-      if (ps.length >= MAX_INFOGRAPHIC_PAGES || ps.some((p) => p.id === id)) return null;
+      if (ps.length >= MAX_ILLUSTRATE_PAGES || ps.some((p) => p.id === id)) return null;
       const last = ps[ps.length - 1]!;
       return [
         ...ps,
@@ -182,52 +182,52 @@ export function infographicPageEdits({
       ];
     });
     onCreated(id);
-    debugLog('[infographic-page] page added', { tabId, count: current.length + 1 });
+    debugLog('[illustrate-page] page added', { tabId, count: current.length + 1 });
   };
   const duplicatePage = (pageId: string) => {
     if (!page(pageId)) return;
     track('Tab', 'Changed', 'PageDuplicated');
-    const id = nextInfographicPageId(current);
+    const id = nextIllustratePageId(current);
     commitTab((t) => {
-      const ps = infographicPagesOf(t);
-      if (ps.length >= MAX_INFOGRAPHIC_PAGES || ps.some((p) => p.id === id)) return null;
+      const ps = illustratePagesOf(t);
+      if (ps.length >= MAX_ILLUSTRATE_PAGES || ps.some((p) => p.id === id)) return null;
       return withDuplicatedPage(t, pageId, id);
     });
     onCreated(id);
-    debugLog('[infographic-page] duplicated', { tabId, pageId });
+    debugLog('[illustrate-page] duplicated', { tabId, pageId });
   };
   // A deleted page takes its content with it; the pages after it close the gap.
   const removePage = (pageId: string) => {
     if (!page(pageId) || current.length <= 1) return;
     track('Tab', 'Changed', 'PageRemoved');
     commitTab((t) => {
-      const ps = infographicPagesOf(t);
+      const ps = illustratePagesOf(t);
       if (ps.length <= 1) return null;
       const emptied = withPageContentReplaced(t, pageId, []);
-      return withInfographicPages(
+      return withIllustratePages(
         emptied,
         ps.filter((p) => p.id !== pageId),
       );
     });
-    debugLog('[infographic-page] page removed', { tabId, pageId });
+    debugLog('[illustrate-page] page removed', { tabId, pageId });
   };
 
   // Laid out in the page's content box (the page less its margins), one tab edit.
   const applyLayout = (pageId: string, layoutId: PageLayoutId) => {
     track('Tab', 'Changed', 'PageLayout');
     commitTab((t) => {
-      const page = layOutInfographicPages(infographicPagesOf(t)).find((p) => p.id === pageId);
+      const page = layOutIllustratePages(illustratePagesOf(t)).find((p) => p.id === pageId);
       if (!page) return null;
       const placed = buildPageLayout(layoutId, page);
       return withPageContentReplaced(t, pageId, placed);
     });
     onLayoutPlaced();
-    debugLog('[infographic-page] layout placed', { tabId, pageId, layout: layoutId });
+    debugLog('[illustrate-page] layout placed', { tabId, pageId, layout: layoutId });
   };
-  const laidOut = layOutInfographicPages(current);
+  const laidOut = layOutIllustratePages(current);
   const contentCount = (pageId: string) => elementIdsOnPage(elements, laidOut, pageId).size;
 
-  const room = current.length < MAX_INFOGRAPHIC_PAGES;
+  const room = current.length < MAX_ILLUSTRATE_PAGES;
   return {
     setOrientation,
     setSize,

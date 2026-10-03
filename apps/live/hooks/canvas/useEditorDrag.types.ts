@@ -96,7 +96,7 @@ export type EditorDragDeps = {
   // unaffected). Tracked via ref so a mid-drag toggle takes effect on
   // the next pointermove without re-attaching listeners.
   alignmentGuidesRef: React.RefObject<boolean>;
-  // Infographic mode's page lines (infographicPageSnapBoxes): what a move or resize snaps to
+  // Illustrate mode's page lines (illustratePageSnapBoxes): what a move or resize snaps to
   // besides other elements. Null outside the mode.
   pageSnapBoxes?: Element[] | null;
   // Set to true while a 2-finger pinch is active. The move handler

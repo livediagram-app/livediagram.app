@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { contentClusters, withContentPaginated } from './infographic-paginate';
-import { elementIdsOnPage } from './infographic-page-content';
-import { layOutInfographicPages } from './infographic-page';
+import { contentClusters, withContentPaginated } from './illustrate-paginate';
+import { elementIdsOnPage } from './illustrate-page-content';
+import { layOutIllustratePages } from './illustrate-page';
 import type { Element } from './index';
 
-// docs/specs/007-editor/infographic-pages.md "Into pages".
+// docs/specs/007-editor/illustrate-pages.md "Into pages".
 const box = (id: string, x: number, y: number, w = 100, h = 60) =>
   ({ id, type: 'shape', shape: 'square', x, y, width: w, height: h }) as Element;
 const arrow = (id: string, from: string, to: string) =>
@@ -40,7 +40,7 @@ describe('withContentPaginated', () => {
     };
     const out = withContentPaginated(tab)!;
     expect(out.pages.map((p) => p.orientation)).toEqual(['landscape', 'portrait']);
-    const laid = layOutInfographicPages(out.pages);
+    const laid = layOutIllustratePages(out.pages);
     expect([...elementIdsOnPage(out.elements, laid, laid[0]!.id)]).toEqual(['wide1']);
     expect([...elementIdsOnPage(out.elements, laid, laid[1]!.id)].sort()).toEqual([
       'tall1',
@@ -79,7 +79,7 @@ describe('withContentPaginated', () => {
     expect(out.pages.map((p) => p.id)[0]).toBe('page-1');
     expect(out.pages).toHaveLength(2);
     expect(out.elements[0]).toMatchObject({ x: -50, y: -30 });
-    const laid = layOutInfographicPages(out.pages);
+    const laid = layOutIllustratePages(out.pages);
     expect([...elementIdsOnPage(out.elements, laid, laid[1]!.id)]).toEqual(['stray']);
   });
 
@@ -119,7 +119,7 @@ describe('withContentPaginated', () => {
       pages,
     })!;
     expect(out.pages).toHaveLength(20);
-    const laid = layOutInfographicPages(out.pages);
+    const laid = layOutIllustratePages(out.pages);
     expect(elementIdsOnPage(out.elements, laid, 'p19').has('stray')).toBe(true);
   });
 });
