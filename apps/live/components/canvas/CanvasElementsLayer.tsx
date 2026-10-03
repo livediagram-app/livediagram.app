@@ -3,6 +3,8 @@ import { participantKey } from '@/lib/identity';
 import { useStableHandlers } from '@/hooks/ui/useStableHandlers';
 import { idBound } from './element-layer-props';
 import { arrowViewGeometry } from './arrow-view-frame';
+import { affectedArrows, buildArrowLinks, previewArrowGeometry } from './drag-affected-arrows';
+import { useDragPreview } from '@/lib/drag-preview';
 import { useFontsReady } from './useFontsReady';
 import {
   eventStormingNoteFont,
@@ -25,7 +27,7 @@ import type { PointerEvent as ReactPointerEvent } from 'react';
 import { type QuickConnectDirection } from '@/lib/canvas';
 import { ArrowDefs } from '@/components/canvas/arrow-defs';
 import { ArrowView } from '@/components/canvas/ArrowView';
-import type { ArrowLabels } from '@/hooks/canvas/useArrowLabelLayouts';
+import type { ArrowLabelRender, ArrowLabels } from '@/hooks/canvas/useArrowLabelLayouts';
 import { FreeArrowSelection } from '@/components/canvas/FreeArrowSelection';
 import { DrawnArrowPreview } from '@/components/canvas/DrawnArrowPreview';
 import { BoxedElementView } from '@/components/canvas/BoxedElementView';
@@ -376,6 +378,62 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     }
     return out;
   }, [drawnElements, elementIndex, gridTracker]);
+  // A drag in progress, ours or a collaborator's (docs/specs/008-canvas/drag-preview.md): the elements
+  // it changes are drawn from it, and only the arrows depending on them are re-derived; the maps
+  // above stay as built from the document.
+  const overlay = useDragPreview(props.activeTabId ?? '');
+  const arrowLinks = useMemo(
+    () => (hasArrows ? buildArrowLinks(drawnElements) : null),
+    [hasArrows, drawnElements],
+  );
+  const preview = useMemo(() => {
+    if (!overlay) return null;
+    const shown = ordered.flatMap((o) =>
+      overlay.removed.has(o.element.id)
+        ? []
+        : [
+            {
+              element: overlay.changed.get(o.element.id) ?? o.element,
+              layerOpacity: o.layerOpacity,
+            },
+            ...overlay.added
+              .filter((a) => a.after === o.element.id)
+              .map((a) => ({ element: a.el, layerOpacity: o.layerOpacity })),
+          ],
+    );
+    const placed = new Set(shown.map((o) => o.element.id));
+    for (const a of overlay.added)
+      if (!placed.has(a.el.id)) shown.push({ element: a.el, layerOpacity: 1 });
+    const geometry = new Map<string, ReturnType<typeof arrowViewGeometry>>();
+    const labels = new Map<string, ArrowLabelRender>();
+    if (elementIndex && arrowLinks) {
+      const index = new Map(elementIndex);
+      for (const [id, el] of overlay.changed) index.set(id, el);
+      for (const { el } of overlay.added) index.set(el.id, el);
+      const grid = gridTracker.gridFor(drawnElements);
+      const ids = affectedArrows(overlay, drawnElements, arrowLinks);
+      for (const { el } of overlay.added) if (el.type === 'arrow') ids.add(el.id);
+      const virtual = shown.map((o) => o.element);
+      for (const id of ids) {
+        const arrow = index.get(id);
+        if (!arrow || arrow.type !== 'arrow') continue;
+        geometry.set(id, previewArrowGeometry(arrow, index, grid, overlay));
+        if (arrow.label) {
+          const base = arrowLabels.renderOf(id);
+          const layout = arrowLabels.draftLayout(arrow, arrow.label, virtual);
+          labels.set(id, {
+            layout,
+            knockouts: [
+              ...base.knockouts.filter((k) => k !== base.layout?.knockout),
+              ...(layout?.knockout ? [layout.knockout] : []),
+            ],
+          });
+        }
+      }
+    }
+    return { shown, geometry, labels };
+  }, [overlay, ordered, elementIndex, arrowLinks, gridTracker, drawnElements, arrowLabels]);
+  const shownOrder = preview?.shown ?? ordered;
   // The grips layer's portal hosts (docs/specs/008-canvas/canvas-and-palette.md "Resize"), set once
   // it mounts; every element view portals its grips into them.
   const [gripHosts, setGripHosts] = useState<SelectionGripHosts | null>(null);
@@ -397,7 +455,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             above all boxes inside a single SVG layer). Each arrow
             gets its own <svg> overlay; pointer events on the SVG are
             disabled in CSS, only the inner arrow line picks them up. */}
-      {ordered.map(({ element, layerOpacity }, isoDepth) => {
+      {shownOrder.map(({ element, layerOpacity }, isoDepth) => {
         // Shift-duplicate ghost (docs/specs/008-canvas/shift-drag-duplicate.md): the dragged set renders
         // translucent while its materialised copy holds the start
         // position, multiplied over any per-layer opacity.
@@ -453,9 +511,13 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
               >
                 <ArrowView
                   arrow={element}
-                  frame={arrowGeometry.get(element.id)!.frame}
-                  holes={arrowGeometry.get(element.id)!.holes}
-                  labelRender={arrowLabels.renderOf(element.id)}
+                  frame={
+                    (preview?.geometry.get(element.id) ?? arrowGeometry.get(element.id)!).frame
+                  }
+                  holes={
+                    (preview?.geometry.get(element.id) ?? arrowGeometry.get(element.id)!).holes
+                  }
+                  labelRender={preview?.labels.get(element.id) ?? arrowLabels.renderOf(element.id)}
                   draftLayout={arrowLabels.draftLayout}
                   isSelected={element.id === selectedId || multiSelectedIds.has(element.id)}
                   isPaintMode={isPaintMode}

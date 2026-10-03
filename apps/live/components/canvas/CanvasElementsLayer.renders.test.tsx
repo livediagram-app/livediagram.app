@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { render } from '@testing-library/react';
+import { act, render } from '@testing-library/react';
 import { memo } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createPinnedArrow, createShape, type Element } from '@livediagram/document';
@@ -15,10 +15,12 @@ import { createPinnedArrow, createShape, type Element } from '@livediagram/docum
 
 const renders = { boxed: new Map<string, number>(), arrow: new Map<string, number>() };
 const bump = (m: Map<string, number>, id: string) => m.set(id, (m.get(id) ?? 0) + 1);
+const drawnAs = new Map<string, Element>();
 
 vi.mock('./BoxedElementView', () => ({
   BoxedElementView: memo(function BoxedStub({ element }: { element: Element }) {
     bump(renders.boxed, element.id);
+    drawnAs.set(element.id, element);
     return null;
   }),
 }));
@@ -33,6 +35,7 @@ vi.mock('./ArrowView', async (importOriginal) => {
   };
 });
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
+import { resetDragPreviewForTests, setLocalPreview } from '@/lib/drag-preview';
 
 const { CanvasElementsLayer } = await import('./CanvasElementsLayer');
 
@@ -63,6 +66,7 @@ function layerProps(
   return {
     ...STABLE,
     elements: over.elements ?? BOARD,
+    activeTabId: 't',
     selectedId: over.selectedId ?? null,
     viewportZoom: over.zoom ?? 1,
     multiSelectedIds: new Set<string>(),
@@ -172,5 +176,51 @@ describe('arrow views render only for their own changes', () => {
     const across = BOARD.map((el) => (el.id === c.id ? { ...el, x: 200, y: 0 } : el));
     rerender(<CanvasElementsLayer {...layerProps({ elements: across })} />);
     expect([...renders.arrow.keys()]).toEqual([ab.id]);
+  });
+});
+
+// docs/specs/008-canvas/drag-preview.md: while a gesture lasts the layer draws from its preview, and
+// redraws only what the preview changes.
+describe('drawing a drag preview', () => {
+  afterEach(() => resetDragPreviewForTests());
+
+  it('draws the moved element where the preview has it, and redraws it and its arrow only', () => {
+    mount();
+    const movedA = { ...a, y: 40 };
+    act(() =>
+      setLocalPreview(
+        't',
+        BOARD.map((el) => (el.id === a.id ? movedA : el)),
+        BOARD,
+      ),
+    );
+    expect([...renders.boxed.keys()]).toEqual([a.id]);
+    expect(drawnAs.get(a.id)).toBe(movedA);
+    expect([...renders.arrow.keys()]).toEqual([ab.id]);
+  });
+
+  it('ignores a preview for another tab', () => {
+    mount();
+    act(() =>
+      setLocalPreview(
+        'other',
+        BOARD.map((el) => (el.id === a.id ? { ...a, y: 40 } : el)),
+        BOARD,
+      ),
+    );
+    expect(counts()).toEqual({ boxed: 0, arrows: 0 });
+  });
+
+  it('draws the document again once the preview ends', () => {
+    mount();
+    act(() =>
+      setLocalPreview(
+        't',
+        BOARD.map((el) => (el.id === a.id ? { ...a, y: 40 } : el)),
+        BOARD,
+      ),
+    );
+    act(() => resetDragPreviewForTests());
+    expect(drawnAs.get(a.id)).toBe(a);
   });
 });
