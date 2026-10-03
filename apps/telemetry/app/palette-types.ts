@@ -42,7 +42,6 @@ export const SELECTION_MODES: readonly string[] = [
   'Laser',
   'Spotlight',
   'Eraser',
-  'Highlighter',
   'FormatPainter',
   'Isometric',
   'AvatarMode',

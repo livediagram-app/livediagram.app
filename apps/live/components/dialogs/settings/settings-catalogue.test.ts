@@ -35,13 +35,15 @@ describe('settings catalogue', () => {
     }
   });
 
-  it('offers the Draw mode dock position under Editor, in its own Draw mode section', () => {
+  it('offers the Draw mode dock position in the Editor › Draw sub-category', () => {
     // docs/specs/023-draw-mode/draw-mode.md "Where the dock sits": top by default, bottom by choice;
-    // the section says Draw mode (docs/specs/007-editor/editor-modes.md "Naming in the interface").
-    const editor = SETTINGS_CATEGORIES.find((c) => c.id === 'editor')!;
-    const row = editor.rows.find((r) => r.key === 'whiteboardDockPosition');
+    // the sub-category says Draw, as the mode switch does (docs/specs/007-editor/editor-modes.md
+    // "Naming in the interface").
+    const draw = SETTINGS_CATEGORIES.find((c) => c.id === 'draw')!;
+    expect(settingsCategoryPath(draw)).toBe('Editor › Draw');
+    const row = draw.rows.find((r) => r.key === 'whiteboardDockPosition');
     if (row?.kind !== 'choice') throw new Error('no Dock Position choice row');
-    expect(row.section).toBe('Draw mode');
+    expect(row.section).toBeUndefined();
     expect(row.keywords).toContain('draw mode');
     expect(row.keywords).toContain('whiteboard');
     expect(row.helpArticle).toBe('drawMode');
@@ -53,9 +55,6 @@ describe('settings catalogue', () => {
     expect(row.read({})).toBe('top');
     expect(row.write({}, 'bottom')).toEqual({ whiteboardDockPosition: 'bottom' });
     expect(row.event).toEqual({ category: 'UI', changed: 'WhiteboardDockPosition' });
-    // Before the Power User section, which closes the category.
-    const at = editor.rows.indexOf(row);
-    expect(editor.rows.findIndex((r) => r.section === 'Power User')).toBeGreaterThan(at);
   });
 
   it('round-trips every toggle through read/write in both directions', () => {
@@ -262,8 +261,29 @@ describe('settings catalogue', () => {
   });
 });
 
-// Panels holds sub-categories (docs/specs/007-editor/user-preferences.md), each its own pane.
+// Editor and Panels hold sub-categories (docs/specs/007-editor/user-preferences.md), each its own pane.
 describe('settings sub-categories', () => {
+  it('nests one sub-category per mode with settings of its own under Editor: Draw, and no Diagram yet', () => {
+    const ids = SETTINGS_CATEGORIES.map((c) => c.id);
+    const children = SETTINGS_CATEGORIES.filter((c) => c.parent === 'editor').map((c) => c.id);
+    expect(children).toEqual(['draw']);
+    const at = ids.indexOf('editor');
+    expect(ids.slice(at + 1, at + 1 + children.length)).toEqual(children);
+  });
+
+  it('keeps every setting that acts in both modes on Editor itself', () => {
+    const keys = SETTINGS_CATEGORIES.find((c) => c.id === 'editor')!.rows.map((r) => r.key);
+    expect(keys).toEqual([
+      'quickAddOnHover',
+      'alignmentGuides',
+      'autoRebindArrows',
+      'middleMousePan',
+      'powerUserMode',
+      'minimalChrome',
+      'powerUserPreset',
+    ]);
+  });
+
   it('nests one sub-category per panel under Panels, directly after it and in order', () => {
     const ids = SETTINGS_CATEGORIES.map((c) => c.id);
     const children = SETTINGS_CATEGORIES.filter((c) => c.parent === 'panels').map((c) => c.id);

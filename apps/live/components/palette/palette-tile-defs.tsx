@@ -129,9 +129,10 @@ type PaletteTileAction =
     }
   | { type: 'text' }
   | { type: 'freehand' }
-  // Marker variant of the pencil (docs/specs/008-canvas/highlighter.md) and the click-to-place
-  // vertex tool (docs/specs/008-canvas/polygon-tool.md) — separate action types so each tile maps
-  // to its own arm-handler and pressed state.
+  // Marker variant of the pencil (docs/specs/008-canvas/highlighter.md), the recognising pen
+  // (docs/specs/008-canvas/two-pens.md) and the click-to-place vertex tool (docs/specs/008-canvas/polygon-tool.md)
+  // are separate action types, so each tile maps to its own arm-handler and pressed state.
+  | { type: 'highlighter' }
   | { type: 'shape-pen' }
   | { type: 'video'; provider?: EmbedProvider }
   | { type: 'sticker'; stickerId: string }
@@ -506,9 +507,21 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     description:
       'Draw a rough circle, square, triangle or line and it converts to the real shape on release.',
     shortcut: '6',
-    dividerAfter: true,
     action: { type: 'shape-pen' },
     icon: <ShapePenIcon size={TILE_GLYPH_PX} />,
+  },
+  // The marker (docs/specs/008-canvas/highlighter.md): the third pen, one stroke per pick like the
+  // other two. No shortcut: only the common flowchart vocabulary gets letters.
+  {
+    id: 'tools:highlighter',
+    blurb: 'A wide translucent marker stroke',
+    section: 'tools',
+    toolGroup: 'draw',
+    label: 'Highlighter',
+    description: 'A wide translucent yellow marker. Drag to call attention to a region.',
+    dividerAfter: true,
+    action: { type: 'highlighter' },
+    icon: <HighlighterIcon size={TILE_GLYPH_PX} />,
   },
   {
     id: 'tools:polygon',
@@ -727,23 +740,6 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     // (buildCanvasToolOptions): eight identical pointers told the reader
     // nothing about which mode a row would hand out.
     icon: <FormatPainterIcon size={TILE_GLYPH_PX} />,
-  },
-  {
-    id: 'tools:mode-highlighter',
-    tileGroup: 'mode',
-    blurb: 'Hand out the marker',
-    caption: 'Highlighter',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Highlighter mode button',
-    description:
-      'A button that switches whoever presses it into Highlighter mode. It changes the mode for that person only, and pressing it again hands them back the mode they were in.',
-    filled: true,
-    action: { type: 'shape', kind: 'mode-button', mode: 'highlighter' },
-    // The mode's OWN glyph, the one the canvas-tool popover shows for it
-    // (buildCanvasToolOptions): eight identical pointers told the reader
-    // nothing about which mode a row would hand out.
-    icon: <HighlighterIcon size={TILE_GLYPH_PX} />,
   },
   {
     id: 'tools:mode-isometric',

@@ -253,7 +253,7 @@ export type SettingsCategorySpec = {
   id: SettingsCategoryId;
   label: string;
   // The top-level category this is a sub-category of (Panels holds one per
-  // panel). The list nests it, untiled and indented, beneath its
+  // panel, Editor one per mode with settings of its own). The list nests it, untiled and indented, beneath its
   // parent; it is still its own pane. A parent's sub-categories follow it
   // directly, like a section's rows.
   parent?: SettingsIconId;
@@ -371,27 +371,6 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         event: { category: 'UI', on: 'MiddleMousePanOn', off: 'MiddleMousePanOff' },
       },
       {
-        // docs/specs/023-draw-mode/draw-mode.md "Where the dock sits": only Draw mode has a dock,
-        // so only Draw mode moves with this. Named Draw mode in the interface
-        // (docs/specs/007-editor/editor-modes.md "Naming in the interface").
-        kind: 'choice',
-        key: 'whiteboardDockPosition',
-        keywords:
-          'draw mode drawing mode whiteboard dock toolbar tools pens top bottom position tablet ipad drawing',
-        section: 'Draw mode',
-        label: 'Dock Position',
-        description:
-          "Where Draw mode's dock of pens, shapes and tools sits. Top keeps it where the Toolbar layout keeps its tools; Bottom puts it closer to hand when drawing on a tablet. Only Draw mode has a dock, so Diagram mode is unchanged.",
-        helpArticle: 'drawMode',
-        options: [
-          { id: 'top', label: 'Top' },
-          { id: 'bottom', label: 'Bottom' },
-        ],
-        read: readWhiteboardDockPosition,
-        write: (p, v) => withWhiteboardDockPosition(p, v as WhiteboardDockPosition),
-        event: { category: 'UI', changed: 'WhiteboardDockPosition' },
-      },
-      {
         // A preset, not a flag (docs/specs/007-editor/power-user-mode.md): switching on writes the
         // recommended values once; switching off restores the untouched ones.
         kind: 'toggle',
@@ -431,6 +410,36 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
           'What switching the mode on set. Change any of them in its own row; switching the mode off restores the ones you left alone.',
         parent: 'powerUserMode',
         available: (ctx) => ctx.powerUserMode === true,
+      },
+    ],
+  },
+  {
+    // Settings that apply only in Draw mode (docs/specs/007-editor/user-preferences.md):
+    // a setting that acts in both modes stays on Editor itself. Named Draw, as the mode
+    // switch names it (docs/specs/007-editor/editor-modes.md "Naming in the interface").
+    // There is no Diagram sibling while no setting applies only to Diagram mode.
+    id: 'draw',
+    label: 'Draw',
+    parent: 'editor',
+    rows: [
+      {
+        // docs/specs/023-draw-mode/draw-mode.md "Where the dock sits": only Draw mode has a dock,
+        // so only Draw mode moves with this.
+        kind: 'choice',
+        key: 'whiteboardDockPosition',
+        keywords:
+          'draw mode drawing mode whiteboard dock toolbar tools pens top bottom position tablet ipad drawing',
+        label: 'Dock Position',
+        description:
+          "Where Draw mode's dock of pens, shapes and tools sits. Top keeps it where the Toolbar layout keeps its tools; Bottom puts it closer to hand when drawing on a tablet. Only Draw mode has a dock, so Diagram mode is unchanged.",
+        helpArticle: 'drawMode',
+        options: [
+          { id: 'top', label: 'Top' },
+          { id: 'bottom', label: 'Bottom' },
+        ],
+        read: readWhiteboardDockPosition,
+        write: (p, v) => withWhiteboardDockPosition(p, v as WhiteboardDockPosition),
+        event: { category: 'UI', changed: 'WhiteboardDockPosition' },
       },
     ],
   },

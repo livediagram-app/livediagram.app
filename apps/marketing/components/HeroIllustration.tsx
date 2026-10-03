@@ -74,7 +74,8 @@ const CARDS: {
   // What the dot navigation says about this window while it is centred.
   label: string;
   // The canvas tool the palette's picker names. A pair is two beats: the
-  // mind map reads Highlighter while the swipe happens, then Laser.
+  // mind map reads Select while the Highlighter (a Draw tile, not a mode) swipes,
+  // then Laser.
   tool: string | [string, string];
   tabs: TabDef[];
   showCursor: boolean;
@@ -137,7 +138,7 @@ const CARDS: {
     key: 'mindmap',
     title: 'Team mind map',
     label: 'A mind map, highlighted and laser-pointed for the room',
-    tool: ['Highlighter', 'Laser'],
+    tool: ['Select', 'Laser'],
     tabs: [
       { name: 'Ideas', color: '#0ea5e9', active: true },
       { name: 'Themes', color: '#ec4899' },

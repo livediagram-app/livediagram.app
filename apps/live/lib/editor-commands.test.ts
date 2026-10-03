@@ -303,7 +303,6 @@ describe('canvas tool commands', () => {
       'tool:pan',
       'tool:eraser',
       'tool:format',
-      'tool:highlighter',
       'tool:laser',
       'tool:spotlight',
       'tool:avatar',
@@ -326,10 +325,9 @@ describe('canvas tool commands', () => {
 
   it('drops the content-dependent tools on an empty canvas', () => {
     const got = ids({ ...base, canvasEmpty: true }).filter((id) => id.startsWith('tool:'));
-    // Hand and the Highlighter survive: Select is current, and everything
-    // else acts on existing content — the same gating the tool dropdown
-    // applies. The marker is the exception because it MAKES content.
-    expect(got).toEqual(['tool:pan', 'tool:highlighter']);
+    // Only Hand survives: Select is current, and everything else acts on
+    // existing content, the same gating the tool dropdown applies.
+    expect(got).toEqual(['tool:pan']);
   });
 
   it('withholds Spotlight on mobile', () => {
@@ -391,10 +389,14 @@ describe('the photo-import command', () => {
 });
 
 describe('tool commands on a whiteboard (docs/specs/023-draw-mode/draw-mode.md)', () => {
-  it('offers neither the highlighter nor the format painter', () => {
+  it('offers no format painter', () => {
     const onBoard = ids({ ...base, whiteboard: true });
-    expect(onBoard).not.toContain('tool:highlighter');
     expect(onBoard).not.toContain('tool:format');
-    expect(ids(base)).toContain('tool:highlighter');
+    expect(ids(base)).toContain('tool:format');
+  });
+
+  // docs/specs/008-canvas/highlighter.md "Not a selection mode": the marker is a Draw tile.
+  it('never offers the highlighter as a tool', () => {
+    expect(ids(base)).not.toContain('tool:highlighter');
   });
 });

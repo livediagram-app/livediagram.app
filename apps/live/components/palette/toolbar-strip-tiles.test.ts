@@ -63,7 +63,7 @@ describe('stripTilesFor', () => {
   it.each([
     ['shapes', ['shapes:diamond', 'shapes:stadium']],
     ['write', ['tools:text']],
-    ['draw', ['tools:shape-pen', 'tools:polygon']],
+    ['draw', ['tools:highlighter', 'tools:polygon']],
     ['build', ['tools:table']],
     ['components', ['tools:entity']],
     ['devices', ['devices:laptop']],

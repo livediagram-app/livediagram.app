@@ -8,7 +8,7 @@
 import { act, cleanup, render } from '@testing-library/react';
 import { beginCanvasGesture, resetCanvasGesturesForTests } from '@/lib/canvas-gesture';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
-import { createShape } from '@livediagram/document';
+import { createPinnedArrow, createShape, createText } from '@livediagram/document';
 import { Minimap } from './Minimap';
 
 afterEach(cleanup);
@@ -122,5 +122,41 @@ describe('Minimap drawing', () => {
     expect(doc.startsWith('<svg xmlns="http://www.w3.org/2000/svg"')).toBe(true);
     // All four squares, drawn by the headless renderer.
     expect(doc.match(/<rect /g)?.length ?? 0).toBeGreaterThanOrEqual(4);
+  });
+});
+
+// docs/specs/008-canvas/minimap.md "What it shows": the picture draws no labels.
+describe('Minimap labels', () => {
+  it('leaves every label out of the picture, keeping the shapes and arrows', () => {
+    const labelled = [
+      { ...createShape('square', 0, 0), id: 's1', label: 'Checkout' },
+      { ...createShape('square', 400, 0), id: 's2', label: 'Pay' },
+      { ...createText(0, 300), id: 't1', label: 'A note' },
+      { ...createShape('square', 400, 300), id: 's3' },
+      { ...createPinnedArrow('s1', 'e', 's2', 'w'), id: 'a1', label: 'next' },
+    ];
+    const { container } = render(
+      <Minimap
+        elements={labelled}
+        viewportOffset={{ x: 0, y: 0 }}
+        viewportZoom={1}
+        setViewportOffset={vi.fn()}
+        setViewportZoom={vi.fn()}
+        mainSize={{ width: 800, height: 600 }}
+        paperColor="#ffffff"
+        accentColor={ACCENT}
+        position={null}
+        onMove={vi.fn()}
+        onResetPosition={vi.fn()}
+        dimOutside
+        size="medium"
+      />,
+    );
+    const href = container.querySelector('svg[role="img"] > image')!.getAttribute('href')!;
+    const doc = decodeURIComponent(href.slice(href.indexOf(',') + 1));
+    expect(doc).not.toContain('<text');
+    expect(doc).not.toMatch(/Checkout|Pay|A note|next/);
+    expect(doc.match(/<rect /g)?.length ?? 0).toBeGreaterThanOrEqual(3);
+    expect(doc).toContain('<path');
   });
 });

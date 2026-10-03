@@ -258,15 +258,14 @@ export function useCanvasChromePanels({
       : paletteBottomY;
 
   // The six tool-config panels (avatar / laser / spotlight / eraser / format /
-  // highlighter), see useCanvasToolPanels. They share one contract: on screen
+  // slide deck), see useCanvasToolPanels. They share one contract: on screen
   // only while their own tool is active.
-  const { avatarEl, laserEl, spotlightEl, eraserEl, formatEl, highlighterEl, slideDeckEl } =
-    useCanvasToolPanels({
-      props,
-      chromeHidden,
-      stackBelowY,
-      panelWiringFor,
-    });
+  const { avatarEl, laserEl, spotlightEl, eraserEl, formatEl, slideDeckEl } = useCanvasToolPanels({
+    props,
+    chromeHidden,
+    stackBelowY,
+    panelWiringFor,
+  });
 
   const explorerEl = zenMode ? null : (
     <Explorer
@@ -516,7 +515,6 @@ export function useCanvasChromePanels({
     laser: laserEl,
     spotlight: spotlightEl,
     eraser: eraserEl,
-    highlighter: highlighterEl,
     'slide-deck': slideDeckEl,
     format: formatEl,
   };

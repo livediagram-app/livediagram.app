@@ -116,7 +116,7 @@ Invariants:
 
 ```ts
 export const SELECTION_MODES = ['select', 'pan', 'laser', 'spotlight', 'avatar', 'eraser',
-  'format', 'isometric', 'highlighter'] as const;
+  'format', 'isometric'] as const;
 export type SelectionMode = (typeof SELECTION_MODES)[number];
 export const DEFAULT_BUTTON_MODE: SelectionMode = 'avatar';
 export function isSelectionMode(value: unknown): value is SelectionMode;
@@ -146,7 +146,11 @@ onPressModeButton?: (element: ShapeElement) => void; // Canvas.types, BoxedEleme
 
 ## Data and persistence
 
-- **Persisted:** `mode`, plus the ordinary shape fields. No migration: absent means Avatar.
+- **Persisted:** `mode`, plus the ordinary shape fields. Absent means Avatar.
+- **Migration:** `migrateLegacyModeButtons` (`packages/document/src/legacy-mode-buttons.ts`, run by
+  `migrateStoredElements`) drops a retired `mode` (`'highlighter'`, a mode until the Highlighter
+  became a Draw tile, [Highlighter](../../008-canvas/highlighter.md)), so the button loads as an
+  Avatar button rather than failing I4.
 - **Not persisted by default:** colours. A fresh button stores none; an author's pick or a themed
   tab's projection is stored and wins.
 - **Never persisted:** the viewer's tool, the prior tool, the spawn point, the Leave state.
@@ -235,6 +239,7 @@ No log exists today. Proposed fingerprints (gap, see the report):
 | A stamped skin reads as unset; a pick is kept        | "treat the skin …", "keep a colour the author picked"     | `packages/document/src/behaviour-skin.test.ts`      |
 | Drag tolerance is 4 px, radial (D108)                | `isDragTravel` block                                      | `apps/live/lib/press-gestures.test.ts`              |
 | Unknown `mode` rejected, every mode accepted (I4)    | `mode button validation` block                            | `packages/document/src/validate.test.ts`            |
+| A stored Highlighter mode migrates to the default    | `migrateLegacyModeButtons` block                          | `packages/document/src/legacy-mode-buttons.test.ts` |
 | Fixed size                                           | "names the controls that never take resize handles"       | `packages/document/src/selection-mode.test.ts`      |
 | No resize handles on fixed-size elements             | fixed-size block                                          | `apps/live/lib/canvas-selection.test.ts`            |
 | Shared settings `…` on the face                      | "gives the shared menu to a kind with settings behind it" | `packages/document/src/behaviour-shapes.test.ts`    |

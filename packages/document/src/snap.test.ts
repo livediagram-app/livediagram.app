@@ -315,6 +315,54 @@ describe('distributionSnap', () => {
     const out = distributionSnap(box(195, 0, 100, 100), [a, c], new Set(['a']), 10);
     expect(out.dx).toBe(0); // only one neighbour left → no pair
   });
+
+  describe('across axes', () => {
+    // A (0..100) and B (200..300) side by side: a 100px horizontal gap.
+    const a = shape('a', { x: 0, y: 0, width: 100, height: 100 });
+    const b = shape('b', { x: 200, y: 0, width: 100, height: 100 });
+
+    it('snaps under a neighbour to the gap it keeps on the other axis', () => {
+      // B's bottom is 100, so one 100px gap below it is y = 200.
+      const out = distributionSnap(box(200, 195, 100, 100), [a, b], new Set(), 10);
+      expect(out.dy).toBe(5);
+      expect(out.dx).toBe(0);
+      const g = out.guides.find((gd) => gd.axis === 'y');
+      expect(g?.gap).toBe(100);
+      // The new vertical gap through the candidate's middle, plus the
+      // horizontal A-B gap it copied, drawn through that pair's middle.
+      expect(g?.spans).toEqual([
+        { from: 100, to: 200, cross: 250 },
+        { axis: 'x', from: 100, to: 200, cross: 50 },
+      ]);
+    });
+
+    it('snaps above a neighbour too', () => {
+      // One 100px gap above A (top 0) puts a 100-tall candidate at y = -200.
+      const out = distributionSnap(box(0, -204, 100, 100), [a, b], new Set(), 10);
+      expect(out.dy).toBe(4);
+    });
+
+    it('works the other way: a column lends its gap to a row', () => {
+      const top = shape('top', { x: 0, y: 0, width: 100, height: 100 });
+      const bottom = shape('bottom', { x: 0, y: 160, width: 100, height: 100 });
+      // 60px vertical gap; beside `bottom` that is x = 160.
+      const out = distributionSnap(box(163, 160, 100, 100), [top, bottom], new Set(), 10);
+      expect(out.dx).toBe(-3);
+      expect(out.guides.find((gd) => gd.axis === 'x')?.gap).toBe(60);
+    });
+
+    it('only borrows from the neighbour the candidate faces', () => {
+      // Below and between A and B, overlapping neither column: no anchor.
+      const out = distributionSnap(box(120, 195, 60, 100), [a, b], new Set(), 10);
+      expect(out.dy).toBe(0);
+      expect(out.guides).toHaveLength(0);
+    });
+
+    it('ignores a dragged neighbour as the gap source', () => {
+      const out = distributionSnap(box(200, 195, 100, 100), [a, b], new Set(['a']), 10);
+      expect(out.dy).toBe(0); // B has no other-axis neighbour left
+    });
+  });
 });
 
 describe('snapArrowPoint', () => {

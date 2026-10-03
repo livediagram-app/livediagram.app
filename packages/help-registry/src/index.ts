@@ -180,8 +180,8 @@ export const categories: Category[] = [
     slug: 'selection-modes',
     title: 'Selection Modes',
     description:
-      'The pointer modes at the top of the palette: Select, Hand, Eraser, Format Painter, Highlighter, Laser, Spotlight, Avatar, Slide Deck, and Isometric.',
-    articleCount: 11,
+      'The pointer modes at the top of the palette: Select, Hand, Eraser, Format Painter, Laser, Spotlight, Avatar, Slide Deck, and Isometric.',
+    articleCount: 10,
     kind: 'feature',
   },
   {
@@ -799,15 +799,6 @@ export const articles: Article[] = [
     title: 'Eraser',
     description: 'Click or drag across elements to delete them quickly.',
     keywords: 'delete remove rub out erase clear wipe',
-    category: 'Selection Modes',
-    categorySlug: 'selection-modes',
-  },
-  {
-    slug: 'highlighter',
-    title: 'Highlighter',
-    description: 'Mark up the canvas with a wide translucent marker in five colours.',
-    keywords:
-      'highlighter highlight marker mark up markup annotate emphasise emphasize pen draw attention translucent transparent yellow green pink blue orange colour color strength thin medium bold review workshop',
     category: 'Selection Modes',
     categorySlug: 'selection-modes',
   },
@@ -1676,7 +1667,7 @@ export const articles: Article[] = [
     title: 'Quick Style Panel',
     description: 'Restyle a selection in one click; the next shape of that kind remembers it.',
     keywords:
-      'quick style panel colour color stroke background fill width thickness dashed dotted flowing animated arrow align alignment icon remember memory next shape clear styles reset format custom swatch override picker hex brand',
+      'quick style panel colour color stroke background fill width thickness dashed dotted flowing animated arrow align alignment icon remember memory next shape clear styles reset format custom swatch override picker hex brand highlighter highlight marker',
     category: 'Canvas',
     categorySlug: 'canvas',
   },
@@ -1805,6 +1796,16 @@ export const articles: Article[] = [
     parentSlug: 'tools',
   },
   {
+    slug: 'highlighter',
+    title: 'Highlighter',
+    description: 'Lay a wide, translucent marker stroke from the Draw category, in five colours.',
+    keywords:
+      'highlighter highlight marker mark up markup annotate emphasise emphasize pen draw attention translucent transparent yellow green pink blue orange colour color width thin medium bold strength quick style review workshop underline circle',
+    category: 'Palette',
+    categorySlug: 'palette/tools',
+    parentSlug: 'tools',
+  },
+  {
     slug: 'images',
     title: 'Images',
     description: 'Add images to the canvas by uploading, from your gallery, or by searching.',
@@ -1908,7 +1909,7 @@ export const articles: Article[] = [
     title: 'Selection Mode Buttons',
     description: 'A button that hands whoever presses it a selection mode.',
     keywords:
-      'mode button selection mode switch tool avatar select hand pan laser spotlight eraser format painter isometric highlighter control bar press leave walkthrough read-only',
+      'mode button selection mode switch tool avatar select hand pan laser spotlight eraser format painter isometric control bar press leave walkthrough read-only',
     category: 'Palette',
     categorySlug: 'palette/behaviour',
     parentSlug: 'behaviour',

@@ -28,8 +28,6 @@ function setup(pendingDraw: PendingDraw) {
     pendingDraw,
     setPendingDraw,
     setSelectedId,
-    highlighterColor: '#fde047',
-    highlighterWidth: 14,
     zoomRef: { current: 1 },
   });
   return {
@@ -209,5 +207,38 @@ describe('a whiteboard pen stroke', () => {
     const s = setup(pen({ recognise: false }));
     s.commit(loop, false);
     expect(s.elements[0]!.type).toBe('freehand');
+  });
+});
+
+// docs/specs/008-canvas/highlighter.md "The tile": one-shot, marker yellow, never recognised or closed.
+describe('makeCommitFreehand highlighter', () => {
+  const marker: PendingDraw = { type: 'freehand', variant: 'highlighter' };
+
+  it('lands an open marker stroke in yellow, selects it and puts the tile down', () => {
+    const s = setup(marker);
+    s.commit(loop, true);
+    const stroke = s.elements[0] as FreehandElement;
+    expect(stroke).toMatchObject({
+      type: 'freehand',
+      pen: 'highlighter',
+      closed: false,
+      strokeColor: '#fde047',
+    });
+    expect('penWidth' in stroke).toBe(false);
+    expect(s.setSelectedId).toHaveBeenCalledWith(stroke.id);
+    expect(s.setPendingDraw).toHaveBeenCalledWith(null);
+  });
+
+  it('lands in the colour and width the arm carries', () => {
+    const s = setup({ ...marker, colour: '#f9a8d4', width: 22 });
+    s.commit(loop, false);
+    expect(s.elements[0]).toMatchObject({ strokeColor: '#f9a8d4', penWidth: 22 });
+  });
+
+  it('disarms on a gesture too short to be a stroke', () => {
+    const s = setup(marker);
+    s.commit([{ x: 0, y: 0 }], false);
+    expect(s.elements).toHaveLength(0);
+    expect(s.setPendingDraw).toHaveBeenCalledWith(null);
   });
 });

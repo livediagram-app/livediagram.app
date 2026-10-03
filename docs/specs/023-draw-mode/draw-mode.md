@@ -61,7 +61,7 @@ centred across the **top** of the canvas by default (see
 [Where the dock sits](#where-the-dock-sits)), like Microsoft Whiteboard's.
 
 - **Hidden in Draw mode:** the palette (floating and the Toolbar
-  layout's strip), the format painter, the highlighter (a whiteboard's pens are its markers), the Theme &
+  layout's strip), the format painter, the Highlighter tile with the palette (a whiteboard's pens are its markers), the Theme &
   canvas brush and the theme-mode banner, the tool panels (the eraser's
   settings live in the dock's flyout instead) and the empty-canvas banner (the dock is the hint). The header,
   tab bar, Explorer (its menu button keeps its corner on a phone),
@@ -160,8 +160,9 @@ centred across the **top** of the canvas by default (see
   [Snap colours](#snap-colours)). Text and
   the Path tool are always in the drawing tools bar; nothing hides them.
 - **No highlighter.** A whiteboard's pens are its markers, so the dock has
-  none, search does not offer it (nor the format painter), and one held in
-  Diagram mode is put down on entering Draw mode.
+  none (search does not offer the format painter either), and a Highlighter
+  armed from the palette in Diagram mode is put down on entering Draw mode,
+  like any palette arm.
 - The dock never moves when a tool is picked: flyouts open on the board side
   of it (**below** a dock at the top, **above** one at the bottom), and each
   group's own width is fixed per breakpoint, so nothing shifts under the
@@ -179,8 +180,10 @@ centred across the **top** of the canvas by default (see
   Toolbar layout's strip sits in Diagram mode
   ([Toolbar layout](../007-editor/toolbar-layout.md)), so a whiteboard's tools
   are where the rest of the product keeps them.
-- **Bottom by choice**: Settings, **Editor**, a **Draw mode** section with
-  one row, **Dock Position** (**Top** / **Bottom**). The bottom is closer to
+- **Bottom by choice**: Settings, **Editor › Draw** (the sub-category for
+  settings that apply only in Draw mode,
+  [User preferences](../007-editor/user-preferences.md)), the row **Dock
+  Position** (**Top** / **Bottom**). The bottom is closer to
   hand when drawing on a tablet and leaves the top of the board free. Only
   Draw mode has a dock, so nothing in Diagram mode moves with it.
 - **Stored per user** in the synced preferences
@@ -337,9 +340,9 @@ The shapes group learns and keeps the shapes a user reaches for.
 - Markers 2 and 3 start as **Blue** and **Red**. **Existing strokes
   stay as drawn**: a stroke keeps the exact colour it was drawn in; only
   strokes drawn after this record a named colour.
-- **A pen stays in hand.** After a stroke the pen is still armed, as the
-  highlighter is ([Highlighter](../008-canvas/highlighter.md)): the next drag
-  draws again, and the stroke just drawn is not selected. Select, Escape or
+- **A pen stays in hand.** After a stroke the pen is still armed (unlike the
+  Diagram palette's one-shot pens, [Highlighter](../008-canvas/highlighter.md)
+  among them): the next drag draws again, and the stroke just drawn is not selected. Select, Escape or
   another tool puts it down.
 - **Ink like Excalidraw's, with pressure.** A pen stroke is drawn the way
   [Excalidraw](https://excalidraw.com) draws freehand, with

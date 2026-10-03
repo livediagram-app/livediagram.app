@@ -89,6 +89,16 @@ const PAD_FRACTION = 0.12;
 const PAD_MIN = 48;
 // What the catalogue resolvers find before the catalogue chunk lands.
 const NO_ART = () => undefined;
+// An element as the Map draws it: its label left out (docs/specs/008-canvas/minimap.md "What it shows").
+function withoutLabel(el: Element): Element {
+  if (!('label' in el) && !('richText' in el)) return el;
+  const {
+    label: _label,
+    richText: _richText,
+    ...rest
+  } = el as Element & { label?: unknown; richText?: unknown };
+  return rest as Element;
+}
 // The map's on-screen size in px (the w-64 panel — matching the Palette — and
 // its h-36 svg). The viewBox is expanded to this aspect ratio so the wireframe
 // fills the panel edge-to-edge rather than letterboxing into white bars under
@@ -143,21 +153,22 @@ export function Minimap({
   // panning/zooming re-renders just the viewport overlay below. It is shown as ONE image of that markup
   // (docs/specs/008-canvas/minimap.md "What it shows"), not injected as live elements: on a large
   // board a live copy doubled the page and slowed every gesture
-  // (docs/specs/008-canvas/canvas-performance.md "The Map is one image"). An image cannot load the
-  // app's web fonts, so its labels fall back to the system's.
+  // (docs/specs/008-canvas/canvas-performance.md "The Map is one image"). It draws no labels: at the
+  // Map's size they are a pixel or two tall, and laying them out was half the picture's cost.
   const { picture, bounds } = useMemo(() => {
+    const drawn = elements.map(withoutLabel);
     const corners: Point[] = [];
     const parts: string[] = [];
     // The resolvers find nothing until the catalogue chunk lands, which
     // re-runs the build with the glyphs.
     const resolveIconArt = iconsLoaded ? resolveIconArtLoaded : NO_ART;
     const resolveStickerArt = iconsLoaded ? resolveStickerArtLoaded : NO_ART;
-    const labels = arrowLabelPass(elements, {
+    const labels = arrowLabelPass(drawn, {
       fontFamilyOf: (a) => arrowLabelFontStack(a, tabFont),
     });
     // Boxed first (frames behind their contents), then arrows on top —
     // matching the canvas z-order.
-    for (const el of framesFirst(elements)) {
+    for (const el of framesFirst(drawn)) {
       if (el.type === 'arrow') continue;
       if (!isBoxed(el)) continue;
       parts.push(
@@ -170,10 +181,10 @@ export function Minimap({
       );
       corners.push({ x: el.x, y: el.y }, { x: el.x + el.width, y: el.y + el.height });
     }
-    for (const el of elements) {
+    for (const el of drawn) {
       if (el.type !== 'arrow') continue;
-      parts.push(svgArrow(el, elements, surface, tabFont, labels, 'lvd-minimap-ko-'));
-      corners.push(endpointPosition(el.from, elements), endpointPosition(el.to, elements));
+      parts.push(svgArrow(el, drawn, surface, tabFont, labels, 'lvd-minimap-ko-'));
+      corners.push(endpointPosition(el.from, drawn), endpointPosition(el.to, drawn));
     }
     const content = boundsOfPoints(corners);
     if (!content) return { picture: null, bounds: null };

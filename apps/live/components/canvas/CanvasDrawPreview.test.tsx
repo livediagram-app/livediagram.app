@@ -11,8 +11,6 @@ const base = {
   penPoints: null,
   polygonVertices: [],
   polygonCursor: null,
-  highlighterColor: '#fde047',
-  highlighterWidth: 14,
   stamp: null,
   viewportZoom: 2,
   wrapperRef: { current: wrapper },

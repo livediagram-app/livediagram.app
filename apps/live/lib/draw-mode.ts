@@ -96,8 +96,12 @@ export type PendingDraw =
   // mode banner, which made "will this stroke convert?" a hidden mode you had
   // to check before every stroke. It is now which pen you picked, so the
   // answer is the tile you clicked.
-  | { type: 'freehand'; variant?: 'highlighter' | 'shape-pen' }
-  // A whiteboard pen (docs/specs/023-draw-mode/draw-mode.md "Pens"): held like the highlighter,
+  | { type: 'freehand'; variant?: 'shape-pen' }
+  // The Highlighter tile's arm (docs/specs/008-canvas/highlighter.md): the colour and width the
+  // stroke lands in ride the intent, set from the Quick style panel's Highlighter rows, so the
+  // preview and the commit read them where they already read the arm. Absent: Yellow / Medium.
+  | { type: 'freehand'; variant: 'highlighter'; colour?: string; width?: number }
+  // A whiteboard pen (docs/specs/023-draw-mode/draw-mode.md "Pens"): held in the hand,
   // carrying the pen's colour (null = the board's ink), width in px and whether
   // shape recognition is on.
   | {
@@ -158,14 +162,6 @@ const COMPONENT_LABELS: Record<ComponentKind, string> = {
 // phone-width viewport, so mobile gets the bare "Drag to draw"
 // (the gesture still auto-closes, the user just doesn't see the
 // hint until they try it).
-// Is this the held Highlighter's own intent (docs/specs/008-canvas/highlighter.md)? The marker rides the
-// freehand gesture, so it is a `pendingDraw` like any other, but it is a TOOL
-// rather than a one-shot arm — the surfaces that speak to an arm (the mode
-// banner and its Cancel) ask this so they can leave it alone.
-export function isMarkerIntent(intent: PendingDraw | null | undefined): boolean {
-  return intent?.type === 'freehand' && intent.variant === 'highlighter';
-}
-
 // A whiteboard pen draws freely: no alignment guides and no start snap
 // (docs/specs/023-draw-mode/draw-mode.md "No guides for pens").
 export function isWhiteboardPenIntent(
@@ -190,15 +186,12 @@ export function opensForTyping(intent: PendingDraw, whiteboard: boolean): boolea
   return intent.type === 'text' || (whiteboard && intent.type === 'sticky');
 }
 
-// A pen held in the hand rather than armed for one gesture: the highlighter,
-// a whiteboard pen (docs/specs/023-draw-mode/draw-mode.md "Pens") and the Path tool
-// (docs/specs/023-draw-mode/path-tool.md). None wears the one-shot banner.
+// A pen held in the hand rather than armed for one gesture: a whiteboard pen
+// (docs/specs/023-draw-mode/draw-mode.md "Pens") and the Path tool
+// (docs/specs/023-draw-mode/path-tool.md). Neither wears the one-shot banner. The
+// highlighter is a one-shot Draw tile (docs/specs/008-canvas/highlighter.md), so it does.
 export function isHeldPenIntent(intent: PendingDraw | null | undefined): boolean {
-  return (
-    isMarkerIntent(intent) ||
-    (intent?.type === 'freehand' && intent.variant === 'whiteboard') ||
-    isPathIntent(intent)
-  );
+  return (intent?.type === 'freehand' && intent.variant === 'whiteboard') || isPathIntent(intent);
 }
 
 // The Path tool in hand (docs/specs/023-draw-mode/path-tool.md).

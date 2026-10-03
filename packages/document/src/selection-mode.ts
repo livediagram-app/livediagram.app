@@ -24,10 +24,6 @@ export const SELECTION_MODES = [
   'eraser',
   'format',
   'isometric',
-  // The marker (docs/specs/008-canvas/highlighter.md). A mode rather than a one-shot draw intent: you
-  // highlight a passage, not a single stroke, so it stays until you put it
-  // down like the Eraser does.
-  'highlighter',
 ] as const;
 
 export type SelectionMode = (typeof SELECTION_MODES)[number];
@@ -48,7 +44,6 @@ export const SELECTION_MODE_LABEL: Record<SelectionMode, string> = {
   eraser: 'Eraser',
   format: 'Format',
   isometric: 'Isometric',
-  highlighter: 'Highlighter',
 };
 
 export function isSelectionMode(value: unknown): value is SelectionMode {

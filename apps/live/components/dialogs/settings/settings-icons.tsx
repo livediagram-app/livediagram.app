@@ -12,9 +12,10 @@ import type { ReactNode } from 'react';
 import { Glyph, lucideGlyph } from '@livediagram/ui';
 import { lucideLayers, lucideMap, lucidePalette } from '@livediagram/icons/lucide';
 import { CollaborateGlyph } from '@/components/panels/collaborate/CollaborateGlyph';
+import { EDITOR_MODE_ICON } from '@/components/chrome/editor-mode/editor-mode-copy';
 
 // The categories that carry a tile: every top-level one. A sub-category
-// (one per panel, under Panels) draws none of its own.
+// (one per panel under Panels, one per mode under Editor) draws none of its own.
 export type SettingsIconId =
   | 'account'
   | 'documents'
@@ -28,8 +29,8 @@ export type SettingsIconId =
   | 'tokens'
   | 'privacy';
 
-// The sub-categories, nested under a top-level category (Panels).
-export type SettingsSubcategoryId = 'layers' | 'map' | 'collaborate' | 'quickStyle';
+// The sub-categories, nested under a top-level category (Editor, Panels).
+export type SettingsSubcategoryId = 'draw' | 'layers' | 'map' | 'collaborate' | 'quickStyle';
 
 // Every category, top-level and sub-category alike: each opens its own pane.
 export type SettingsCategoryId = SettingsIconId | SettingsSubcategoryId;
@@ -184,13 +185,16 @@ export const CATEGORY_GLYPHS: Record<SettingsIconId, ReactNode> = {
 // are the toolbar's own (Lucide layers, as LayersStackIcon; the Collaborate
 // button's glyph), at 16px. The Map and Quick Style
 // have no toolbar button, so they take Lucide's map and palette from the
-// same family. Plain and untinted, not a tile: the tile belongs to
+// same family. Draw is the marker the editor mode switch shows for Draw
+// mode, so the row reads as that mode's settings. Plain and untinted, not a tile: the tile belongs to
 // the top-level category above, and a second column of tiles would read as
 // more top-level categories.
 const LayersSubGlyph = lucideGlyph(lucideLayers, 16);
 const MapSubGlyph = lucideGlyph(lucideMap, 16);
 const QuickStyleSubGlyph = lucideGlyph(lucidePalette, 16);
+const DrawSubGlyph = EDITOR_MODE_ICON.draw;
 const SUBCATEGORY_GLYPHS: Record<SettingsSubcategoryId, () => ReactNode> = {
+  draw: () => <DrawSubGlyph size={16} />,
   layers: () => <LayersSubGlyph />,
   map: () => <MapSubGlyph />,
   collaborate: () => <CollaborateGlyph size={16} />,

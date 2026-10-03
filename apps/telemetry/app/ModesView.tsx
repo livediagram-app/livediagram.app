@@ -43,7 +43,7 @@ export function ModesView({
           <RankCard
             trend={trend}
             title="Selection Modes"
-            subtitle="Laser, spotlight, eraser, highlighter, format painter, isometric, avatar"
+            subtitle="Laser, spotlight, eraser, format painter, isometric, avatar"
             category="Canvas"
             action="Used"
             items={modes}

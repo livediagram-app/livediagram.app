@@ -215,3 +215,78 @@ describe('useQuickStyle swatches on a themed canvas', () => {
     expect(options[1]!.swatch).toBe(penColourHex('blue', 'dark'));
   });
 });
+
+// docs/specs/008-canvas/highlighter.md "Settings": the Highlighter rows, on a diagram tab.
+describe('useQuickStyle Highlighter rows', () => {
+  const highlight = {
+    ...createFreehand(
+      [
+        { x: 0, y: 0 },
+        { x: 40, y: 10 },
+      ],
+      false,
+    ),
+    id: 'h1',
+    pen: 'highlighter',
+    strokeColor: '#fde047',
+  } as Element;
+  const box = { ...createShape('square', 100, 0), id: 'b1' } as Element;
+
+  function diagram(selection: string[], toolIntent: PendingDraw | null = null) {
+    let elements: Element[] = [highlight, box];
+    const tab = { id: 't', name: 'Tab', elements } as unknown as Tab;
+    const commit = vi.fn((map: (els: Element[]) => Element[]) => {
+      elements = map(elements);
+    });
+    const highlighter = { colour: '#fde047', width: 14, setColour: vi.fn(), setWidth: vi.fn() };
+    const { result } = renderHook(() =>
+      useQuickStyle({
+        activeTab: tab,
+        drawMode: false,
+        theme: defaultScheme('light'),
+        selectionIds: new Set(selection),
+        editsBlocked: false,
+        liveElements: () => elements,
+        commit,
+        memory: {
+          recordEdit: vi.fn(),
+          forget: vi.fn(),
+          styleNewElement: <T,>(el: T) => el,
+        } as never,
+        swatchOverrides: { overrides: {}, setOverride: vi.fn(), clearOverride: vi.fn() } as never,
+        highlighter,
+        toolIntent,
+      }),
+    );
+    return { result, commit, highlighter, elements: () => elements };
+  }
+
+  it('shows the armed tile’s next stroke, and sets it without touching the board', () => {
+    const { result, commit, highlighter } = diagram([], {
+      type: 'freehand',
+      variant: 'highlighter',
+    });
+    expect(result.current.view?.highlighter?.subject).toEqual({
+      kind: 'tool',
+      name: 'Highlighter',
+    });
+    act(() => result.current.setHighlighterColour('#86efac'));
+    act(() => result.current.setHighlighterWidth('thin'));
+    expect(highlighter.setColour).toHaveBeenCalledWith('#86efac');
+    expect(highlighter.setWidth).toHaveBeenCalledWith(8);
+    expect(commit).not.toHaveBeenCalled();
+  });
+
+  it('shows no Highlighter rows with nothing selected and nothing armed', () => {
+    expect(diagram([]).result.current.view).toBeNull();
+  });
+
+  it('restyles the selected highlights in one commit, and counts a mixed selection', () => {
+    const { result, commit, elements } = diagram(['h1', 'b1']);
+    expect(result.current.view?.caption).toBe('2 elements');
+    act(() => result.current.setHighlighterWidth('bold'));
+    expect(commit).toHaveBeenCalledTimes(1);
+    expect(elements()[0]).toMatchObject({ penWidth: 22 });
+    expect(elements()[1]).toBe(box);
+  });
+});

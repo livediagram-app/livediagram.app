@@ -2,6 +2,7 @@
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import type { QuickStyleView } from '@/lib/quick-style';
 import { customOptions, heldPenStyle, stockOptions } from '@/lib/quick-style-pen';
+import { toolHighlighterStyle } from '@/lib/quick-style-highlighter';
 import { DEFAULT_WHITEBOARD_PREFS } from '@/lib/whiteboard-prefs';
 import { describe, expect, it, vi } from 'vitest';
 import { QuickRadioRow } from './quick-style-rows';
@@ -215,6 +216,8 @@ describe('QuickStylePanel under Minimal chrome (docs/specs/007-editor/power-user
     setTextColour: vi.fn(),
     setPenColour: vi.fn(),
     setPenWidth: vi.fn(),
+    setHighlighterColour: vi.fn(),
+    setHighlighterWidth: vi.fn(),
     setBoardStroke: vi.fn(),
     setBoardTextColour: vi.fn(),
     clearStyles: vi.fn(),
@@ -262,6 +265,8 @@ describe('QuickStylePanel on a whiteboard: the marker rows', () => {
     setTextColour: vi.fn(),
     setPenColour: vi.fn(),
     setPenWidth: vi.fn(),
+    setHighlighterColour: vi.fn(),
+    setHighlighterWidth: vi.fn(),
     setBoardStroke: vi.fn(),
     setBoardTextColour: vi.fn(),
     clearStyles: vi.fn(),
@@ -466,6 +471,8 @@ describe('QuickStylePanel: the Ink swatch', () => {
     setTextColour: vi.fn(),
     setPenColour: vi.fn(),
     setPenWidth: vi.fn(),
+    setHighlighterColour: vi.fn(),
+    setHighlighterWidth: vi.fn(),
     setBoardStroke: vi.fn(),
     setBoardTextColour: vi.fn(),
     clearStyles: vi.fn(),
@@ -504,5 +511,48 @@ describe('QuickStylePanel: the Ink swatch', () => {
     const stroke = within(screen.getByRole('radiogroup', { name: 'Stroke' })).getAllByRole('radio');
     fireEvent.contextMenu(stroke[7]!);
     expect(screen.queryByRole('dialog')).toBeNull();
+  });
+});
+
+// docs/specs/008-canvas/highlighter.md "Settings": the Highlighter rows.
+describe('QuickStylePanel: the Highlighter rows', () => {
+  const api = (highlighter: QuickStyleView['highlighter']) => ({
+    view: { targetIds: [], sections: {}, highlighter },
+    setStroke: vi.fn(),
+    setBackground: vi.fn(),
+    setWidth: vi.fn(),
+    setStrokeStyle: vi.fn(),
+    setTextAlign: vi.fn(),
+    setIconAlign: vi.fn(),
+    setCorners: vi.fn(),
+    setTextColour: vi.fn(),
+    setPenColour: vi.fn(),
+    setPenWidth: vi.fn(),
+    setHighlighterColour: vi.fn(),
+    setHighlighterWidth: vi.fn(),
+    setBoardStroke: vi.fn(),
+    setBoardTextColour: vi.fn(),
+    clearStyles: vi.fn(),
+    setSwatchOverride: vi.fn(),
+    clearSwatchOverride: vi.fn(),
+  });
+
+  it('sets the armed Highlighter\u2019s next stroke, captioned with its name', () => {
+    const quickStyle = api(toolHighlighterStyle('#fde047', 14));
+    render(<QuickStylePanel quickStyle={quickStyle} hidden={false} layout="toolbar" />);
+    expect(screen.getByText('Highlighter')).toBeTruthy();
+    const colour = screen.getByRole('radiogroup', { name: 'Highlighter colour' });
+    expect(within(colour).getByRole('radio', { name: 'Yellow' }).getAttribute('aria-checked')).toBe(
+      'true',
+    );
+    fireEvent.click(within(colour).getByRole('radio', { name: 'Pink' }));
+    expect(quickStyle.setHighlighterColour).toHaveBeenCalledWith('#f9a8d4');
+    const width = screen.getByRole('radiogroup', { name: 'Highlighter width' });
+    expect(within(width).getByRole('radio', { name: 'Medium' }).getAttribute('aria-checked')).toBe(
+      'true',
+    );
+    fireEvent.click(within(width).getByRole('radio', { name: 'Bold' }));
+    expect(quickStyle.setHighlighterWidth).toHaveBeenCalledWith('bold');
+    expect(screen.queryByTestId('quick-style-clear')).toBeNull();
   });
 });

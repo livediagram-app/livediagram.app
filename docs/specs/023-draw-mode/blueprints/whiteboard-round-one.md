@@ -2,7 +2,7 @@
 
 Derived from [Draw mode](../draw-mode.md), with [Editor modes](../../007-editor/editor-modes.md) (and
 its [blueprint](../../007-editor/blueprints/editor-modes.md)) for how Draw mode is entered, left and
-stored, [Highlighter](../../008-canvas/highlighter.md) for the held-tool pattern,
+stored, [Highlighter](../../008-canvas/highlighter.md) for the marker recipe,
 [Eraser panel](../../008-canvas/eraser-panel.md) for the erase gesture and
 [Two pens instead of a pen and a mode](../../008-canvas/two-pens.md) for recognition. The spec decides;
 this file adds engineering precision. Defaults applied where the spec is silent are ledgered in
@@ -108,14 +108,14 @@ marker), "rubber", "eraser size" on a whiteboard, "theme" for the whiteboard loo
   `penAdjustsColour`; `activePenId: 'main'`;
   `recognise: false`; `eraserMode: 'stroke'`).
 - `activeWhiteboardTool(canvasTool, pendingDraw)`:
-  - `canvasTool === 'eraser'` → `eraser` (a stray `highlighter` reads as `select`);
+  - `canvasTool === 'eraser'` → `eraser` (a stray Highlighter arm reads as `select`);
   - `pendingDraw` freehand `variant: 'whiteboard'` → `pen`;
   - `pendingDraw.type` `sticky` → `sticky`, `text` → `text`, `shape` or `arrow` → `shape`;
   - otherwise `select`.
 - Transitions (the dock's actions, `useWhiteboard`):
   - **Select**: `setCanvasTool('select')`, `cancelDraw()`.
   - **Pen p**: when `p` is already the active pen and the tool is `pen`, toggle its flyout; else set
-    `activePenId = p`, leave eraser / highlighter (`setCanvasTool('select')`), arm
+    `activePenId = p`, leave the eraser (`setCanvasTool('select')`), arm
     `whiteboardPenIntent(p, recognise)`, track `Whiteboard / Selected / penTelemetryType(p)`.
   - **Eraser**: when active, toggle its flyout; else `cancelDraw()`, `selectCanvasTool('eraser')`.
   - **Sticky / Text**: `setCanvasTool('select')`, arm `{ type: 'sticky' }` / `{ type: 'text' }`
@@ -229,7 +229,7 @@ same in Diagram mode and to every collaborator ([One look](../../007-editor/edit
 Gated on `drawMode` (the `editorMode` prop on `Canvas`, `useWhiteboard().whiteboard`):
 
 - `panelEls.palette`, `ToolbarPalette`, `QuickStylePanel`, the Theme & canvas brush,
-  `ThemeModeBanner`, `EmptyCanvasBanner`, the tool panels (`eraser`, `highlighter`, `format`): not
+  `ThemeModeBanner`, `EmptyCanvasBanner`, the tool panels (`eraser`, `format`): not
   rendered.
 - The Explorer menu button leaves the strip for its corner on a phone (`menuInStrip` false).
 - The draw-mode banner does not show for a held pen (`isHeldPenIntent`).
@@ -655,8 +655,8 @@ outline is rebuilt per update, as Excalidraw does.
 - `CanvasStillProvider` (`apps/live/components/canvas/CanvasStillContext.tsx`), provided by `Canvas` with
   `still = editorMode === 'draw'`; `useBoxedElementAnimation` drops `animate-element-pop-in` when
   still. Author-set looping animations are untouched.
-- On entering a whiteboard with `highlighter` or `format` held, the hook sets `select`, and arms the
-  pen when the tab has no elements; `buildEditorCommands` with `whiteboard: true` drops `tool:highlighter` and `tool:format`.
+- On entering a whiteboard with `format` held, the hook sets `select`, and arms the
+  pen when the tab has no elements; `buildEditorCommands` with `whiteboard: true` drops `tool:format`.
 
 ## Interfaces and contracts
 

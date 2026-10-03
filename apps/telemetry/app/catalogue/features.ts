@@ -594,7 +594,6 @@ const MODE_TITLES: Record<string, string> = {
   Laser: 'Laser',
   Spotlight: 'Spotlight',
   Eraser: 'Eraser',
-  Highlighter: 'Highlighter',
   FormatPainter: 'Format Painter',
   Isometric: 'Isometric',
   AvatarMode: 'Avatar Mode',
@@ -823,6 +822,16 @@ export const CUSTOM_SWATCHES = chart(
   { types: ['QuickSwatchCustom', 'QuickSwatchReset'], rising: 'neutral' },
 );
 
+// The Highlighter's next-stroke settings (docs/specs/008-canvas/highlighter.md "Settings"), chosen in
+// the quick style panel while its tile is armed. Restyling a drawn highlight is an Element change.
+export const HIGHLIGHTER_SETTINGS = chart(
+  'UI',
+  'Changed',
+  'Highlighter Settings',
+  "The Highlighter's colour or width changed for the next stroke, in the quick style panel.",
+  { types: ['HighlighterColour', 'HighlighterWidth'], rising: 'neutral' },
+);
+
 export const LOOK_AND_FEEL: MetricStack = {
   stack: true,
   title: 'Look & Feel',
@@ -835,6 +844,7 @@ export const LOOK_AND_FEEL: MetricStack = {
     CANVAS_CONTROLS_TWEAKED,
     CUSTOM_THEMES,
     CUSTOM_SWATCHES,
+    HIGHLIGHTER_SETTINGS,
   ],
   headline: [THEMES_CHOSEN, CANVAS_STYLES_PICKED],
   seeAlso: { view: 'lookfeel', label: 'See Each Preset on the Look & Feel Tab' },

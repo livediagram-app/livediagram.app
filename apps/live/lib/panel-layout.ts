@@ -36,9 +36,6 @@ export type PanelId =
   | 'eraser'
   // Format Panel (docs/specs/008-canvas/format-panel.md): what the painter copies, on the same terms.
   | 'format'
-  // Highlighter Panel (docs/specs/008-canvas/highlighter.md): the marker's colour + strength, on the same
-  // terms — the settings that used to hang off the top mode banner.
-  | 'highlighter'
   // Slide Deck panel (docs/specs/012-collaboration/presentation-mode.md): where a deck is built and started.
   | 'slide-deck';
 
@@ -63,7 +60,6 @@ export const PANEL_IDS: readonly PanelId[] = [
   'spotlight',
   'eraser',
   'format',
-  'highlighter',
   'slide-deck',
 ];
 
@@ -110,7 +106,6 @@ export const DEFAULT_PANEL_CORNER: Record<PanelId, PanelCorner> = {
   spotlight: 'top-right',
   eraser: 'top-right',
   format: 'top-right',
-  highlighter: 'top-right',
   'slide-deck': 'top-right',
 };
 

@@ -601,7 +601,11 @@ export function Canvas(props: CanvasProps) {
       onPointerDown={surface.onPointerDown}
       // focus-visible ring only: pointer focus stays outline-free, but a
       // keyboard user Tabbing to the canvas sees where they landed.
-      className={`relative flex-1 touch-none select-none overflow-hidden outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand-400/70 [-webkit-touch-callout:none] [-webkit-tap-highlight-color:transparent] ${
+      // overflow-clip, not overflow-hidden: a hidden box still scrolls (focus revealing a label
+      // editor past the bottom edge, a scrollIntoView), and the corner chrome positioned in it (the
+      // bottom-right cluster, the Map) rode up the screen by every scroll and stayed there. A
+      // clipped box clips the same and can never scroll (docs/specs/008-canvas/canvas-and-palette.md).
+      className={`relative flex-1 touch-none select-none overflow-clip outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand-400/70 [-webkit-touch-callout:none] [-webkit-tap-highlight-color:transparent] ${
         pendingDraw ? '' : cursorClass
       }`}
       style={{

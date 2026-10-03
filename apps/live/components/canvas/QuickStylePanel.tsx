@@ -42,6 +42,7 @@ import {
 import type { ShownSwatch } from '@/lib/swatch-overrides';
 import { SwatchOverridePopover } from './SwatchOverridePopover';
 import { BoardColourRows, QuickPenRows } from './QuickPenRows';
+import { QuickHighlighterRows } from './QuickHighlighterRows';
 import {
   QUICK_BORDER_PX,
   QUICK_COMPACT_PADDING_PX,
@@ -335,7 +336,7 @@ function QuickStyleSections({
   const { width, style, textAlign, iconAlign, corners } = view.sections;
   // Whose style this is when it is not plainly the selection: the pen in hand,
   // the selected strokes, or a tool's next mark. Power user mode leaves it out.
-  const caption = view.caption ?? view.pen?.subject.name;
+  const caption = view.caption ?? view.pen?.subject.name ?? view.highlighter?.subject.name;
   return (
     <>
       {showSubject && caption ? (
@@ -344,6 +345,14 @@ function QuickStyleSections({
       {view.pen ? (
         <QuickPenRows
           pen={view.pen}
+          quickStyle={quickStyle}
+          showTitles={showTitles}
+          density={density}
+        />
+      ) : null}
+      {view.highlighter ? (
+        <QuickHighlighterRows
+          highlighter={view.highlighter}
           quickStyle={quickStyle}
           showTitles={showTitles}
           density={density}

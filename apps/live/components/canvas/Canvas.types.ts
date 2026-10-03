@@ -239,12 +239,6 @@ export type CanvasProps = {
   eraserPanelPosition?: { x: number; y: number } | null;
   onMoveEraserPanel?: (x: number, y: number) => void;
   onResetEraserPanel?: () => void;
-  // Highlighter Panel (docs/specs/008-canvas/highlighter.md): where it sits. Its two settings ride
-  // highlighterColor / highlighterWidth below, which already crossed this
-  // boundary for the mode banner the panel replaced.
-  highlighterPanelPosition?: { x: number; y: number } | null;
-  onMoveHighlighterPanel?: (x: number, y: number) => void;
-  onResetHighlighterPanel?: () => void;
   // Slide Deck panel (docs/specs/012-collaboration/presentation-mode.md): the deck builder, present only while its tool
   // is picked. The deck itself rides `slideDeck`.
   slideDeckPanelPosition?: { x: number; y: number } | null;
@@ -369,15 +363,9 @@ export type CanvasProps = {
   onBeginFreehand: () => void;
   // Highlighter variant of the pencil (docs/specs/008-canvas/highlighter.md) + the polygon
   // click-to-place tool (docs/specs/008-canvas/polygon-tool.md), armed from the palette tiles.
+  onBeginHighlighter: () => void;
   onBeginShapePen: () => void;
   onBeginPolygon: () => void;
-  // Highlighter banner settings (docs/specs/008-canvas/highlighter.md): the colour + stroke width the
-  // next marker strokes commit with, plus their setters for the banner's
-  // two popovers. Session-local editor state, not a persisted preference.
-  highlighterColor: string;
-  highlighterWidth: number;
-  onSetHighlighterColor: (color: string) => void;
-  onSetHighlighterWidth: (width: number) => void;
   // Draw-to-size mode. Picking any palette element except the annotation
   // (docs/specs/008-canvas/canvas-and-palette.md "Placement on add") stashes the intent here; the canvas then
   // enters a drag-to-define gesture. pointer-up calls onCommitDraw with the start + end

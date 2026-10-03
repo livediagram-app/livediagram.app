@@ -82,6 +82,8 @@ describe('legacyHelpRedirect', () => {
       ['/help/developers/working-with-diagrams', '/help/developers/working-with-documents'],
       // Whiteboarding became Draw mode (docs/specs/007-editor/editor-modes.md "Naming in the interface").
       ['/help/canvas/whiteboards/', '/help/canvas/draw-mode/'],
+      // The Highlighter became a Draw tile again (docs/specs/008-canvas/highlighter.md "History").
+      ['/help/selection-modes/highlighter/', '/help/palette/tools/highlighter/'],
       // The Activity Panel was removed (docs/specs/012-collaboration/README.md); Undo / Redo moved to Canvas.
       ['/help/activity-panel/', '/help/canvas/undo/'],
       ['/help/activity-panel/undo/', '/help/canvas/undo/'],

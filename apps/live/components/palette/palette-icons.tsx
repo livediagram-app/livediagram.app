@@ -130,11 +130,11 @@ export function IsometricIcon({ size = 14 }: IconSizeProps = {}) {
 
 // Eraser tool (docs/specs/008-canvas/canvas-and-palette.md): a tilted block eraser sitting on the canvas
 // baseline. The diagonal band reads as the eraser's two-tone body.
-// The Highlighter tool (docs/specs/008-canvas/highlighter.md), which is a canvas mode rather than a one-shot
-// draw intent. A chisel-tip marker over the band it lays down: the band is what
-// separates it from the pencil at 13px, where the two nibs are the same three
-// strokes. Monochrome (unlike the old palette tile's fixed yellow) because this
-// glyph rides the tool dropdown and a Mode Button face, both of which tint it.
+// The Highlighter tile (docs/specs/008-canvas/highlighter.md), in the Draw category beside the pens.
+// A chisel-tip marker over the band it lays down: the band is what separates it
+// from the pencil at 13px, where the two nibs are the same three strokes.
+// Monochrome, tinted like the Shape Pen's glyph beside it. The drawing is the
+// one it wore as a selection mode, kept in MODE_GLYPHS.
 export function HighlighterIcon({ size = 14 }: IconSizeProps = {}) {
   return <ModeGlyphIcon mode="highlighter" size={size} />;
 }

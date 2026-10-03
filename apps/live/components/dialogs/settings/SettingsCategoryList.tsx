@@ -27,7 +27,7 @@ function childrenOf<C extends SettingsCategorySpec>(categories: readonly C[], id
 // only the chevron and the selected highlight differ, and splitting it would
 // be how the two drift apart.
 //
-// A category with sub-categories (Panels, one per panel) is an
+// A category with sub-categories (Panels, one per panel; Editor, Draw) is an
 // ACCORDION: its sub-categories sit indented beneath it (a plain glyph, no
 // tile) only while it is expanded, so they do not take up the list all the
 // time. It starts collapsed, and is held open while one of its sub-categories is the current

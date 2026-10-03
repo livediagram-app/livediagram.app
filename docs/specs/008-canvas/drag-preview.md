@@ -21,6 +21,11 @@ a drag's cost to what it moves, whatever the size of the board
   without the dragged elements' movement, as they do today.
 - **On release the preview becomes the document in one change**: one undo step, one autosave,
   one set of element ops to the room, as a drag makes today.
+- **What the release adds is part of that change.** A freshly drawn arrow's collision bow
+  ([Arrow collision avoidance](arrow-collision-avoidance.md)) is applied to the preview before it
+  is written, not written after it: a later write through `commit` starts from the document as
+  last rendered, before the release has landed, and put a quick-connect arrow's end back at its
+  start.
 - **A cancelled gesture leaves the document untouched**: Escape, the browser cancelling the
   pointer, or the canvas going away drops the preview, and nothing is written.
 

@@ -110,7 +110,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Canvas|Used|FormatPainter':
     "Someone picked up the Format tool, ready to copy one element's style onto others by tapping them.",
   'Canvas|Used|Highlighter':
-    'Someone picked up the Highlighter, a see-through marker pen for annotating the canvas.',
+    'Someone picked up the Highlighter mode, a see-through marker pen for annotating the canvas. No longer recorded: the Highlighter is a Draw tile now, counted when a stroke is added.',
   'Canvas|Used|InsertBetween':
     'Someone held Alt and dragged a note into the gap between two notes on an event-storming board (a workshop technique that maps a process as a timeline of sticky notes), and the board made room for it.',
   'Canvas|Used|Isometric':
@@ -636,6 +636,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone toggled which style properties the format painter copies (fill, border, text, effects, or size), in the Format panel.',
   'UI|Changed|FormatMode':
     'Someone changed whether the format painter keeps applying after each use or turns off after one copy, in the Format panel.',
+  'UI|Changed|HighlighterColour':
+    "Someone changed the Highlighter's colour for their next stroke, in the Quick style panel.",
+  'UI|Changed|HighlighterWidth':
+    "Someone changed the Highlighter's width for their next stroke, in the Quick style panel.",
   'UI|Changed|LaserColour': "Someone changed the laser pointer's colour, in the Laser panel.",
   'UI|Changed|LaserEffect': "Someone changed the laser pointer's trail effect, in the Laser panel.",
   'UI|Changed|LaserTrail':

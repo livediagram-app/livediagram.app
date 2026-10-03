@@ -4593,8 +4593,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "avatar",
       "eraser",
       "format",
-      "isometric",
-      "highlighter"
+      "isometric"
     ],
     "type": "string"
   },

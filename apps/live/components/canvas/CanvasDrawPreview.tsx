@@ -8,16 +8,13 @@ import type { StampGhost } from '@/components/canvas/useStampGhost';
 import { NoteGhost } from '@/components/canvas/NoteGhost';
 import { PenShapePreview } from '@/components/canvas/whiteboard/BoardShapePreview';
 import { useCanvasClientOrigin } from '@/hooks/canvas/useCanvasClientOrigin';
+import { HIGHLIGHTER_COLOR, HIGHLIGHTER_WIDTH } from '@/lib/highlighter-config';
 
 type CanvasDrawPreviewProps = {
   drawDrag: { startX: number; startY: number; currentX: number; currentY: number } | null;
   penPoints: { x: number; y: number }[] | null;
   polygonVertices: { x: number; y: number }[];
   polygonCursor: { x: number; y: number } | null;
-  // The highlighter banner's live settings (docs/specs/008-canvas/highlighter.md), so the in-flight
-  // preview matches what will commit.
-  highlighterColor: string;
-  highlighterWidth: number;
   pendingDraw: PendingDraw | null;
   // The armed fixed-size note's ghost (docs/specs/021-event-storming/event-storming.md Phase 4), when the tile is a
   // stamp rather than a draw-to-size. It replaces the size box entirely.
@@ -39,8 +36,6 @@ export function CanvasDrawPreview({
   penPoints,
   polygonVertices,
   polygonCursor,
-  highlighterColor,
-  highlighterWidth,
   pendingDraw,
   stamp,
   viewportZoom,
@@ -105,9 +100,10 @@ export function CanvasDrawPreview({
               })
               .join(' ');
             // The highlighter variant previews with the committed
-            // marker recipe (wide translucent yellow, docs/specs/008-canvas/highlighter.md) so
-            // what you see while dragging is what lands.
-            const isHighlighter = pendingDraw.variant === 'highlighter';
+            // marker recipe (wide translucent, in the arm's colour and width,
+            // docs/specs/008-canvas/highlighter.md) so what you see while dragging is what lands.
+            const marker = pendingDraw.variant === 'highlighter' ? pendingDraw : null;
+            const isHighlighter = marker !== null;
             return (
               <svg
                 aria-hidden
@@ -116,8 +112,8 @@ export function CanvasDrawPreview({
                 <path
                   d={d}
                   fill="none"
-                  stroke={isHighlighter ? highlighterColor : 'rgb(14, 165, 233)'}
-                  strokeWidth={isHighlighter ? highlighterWidth : 2}
+                  stroke={marker ? (marker.colour ?? HIGHLIGHTER_COLOR) : 'rgb(14, 165, 233)'}
+                  strokeWidth={marker ? (marker.width ?? HIGHLIGHTER_WIDTH) : 2}
                   strokeOpacity={isHighlighter ? 0.45 : undefined}
                   style={isHighlighter ? { mixBlendMode: 'multiply' } : undefined}
                   strokeLinecap="round"

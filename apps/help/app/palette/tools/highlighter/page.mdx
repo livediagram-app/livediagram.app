@@ -1,0 +1,80 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import {
+  HighlighterTile,
+  HighlighterStroke,
+} from '@/components/illustrations/palette-tools-drawing';
+
+export const metadata = helpMetadata({
+  title: 'Highlighter',
+  description:
+    "Use the Highlighter in livediagram's Draw category to mark up the canvas with a wide translucent stroke in five colours and three widths, set from the Quick style panel.",
+  path: '/help/palette/tools/highlighter/',
+});
+
+<ArticleLayout
+  title="Highlighter"
+  description="Mark up the canvas with a wide translucent marker that leaves everything underneath legible."
+  categoryTitle="Palette"
+  categorySlug="palette"
+  parentArticle={{ title: "Tools", slug: "tools" }}
+  subArticles={getSubArticles("highlighter")}
+>
+
+The Highlighter is a wide, semi-transparent marker for calling attention to things: circling a region during a review, underlining a label while you talk, marking the three boxes a workshop has to come back to. Strokes are translucent and blend like a real pen, so text and shapes underneath stay legible and overlapping passes darken.
+
+It lives in the palette's **Draw** category, third after **Freehand** and the **Shape Pen**. It has no keyboard shortcut, but typing "highlighter" into the palette's search finds the tile.
+
+<Figure caption="The Highlighter tile is picked in the Draw category, and the banner asks for a drag. The stroke goes down under the label, which stays legible through it.">
+  <HighlighterTile />
+</Figure>
+
+## Marking things up
+
+<Step n={1}>
+  Pick **Highlighter** from the palette's **Draw** category. A banner reads **Drag to highlight**,
+  with a Cancel action.
+</Step>
+<Step n={2}>Drag across the canvas. A live preview of the marker follows the pointer.</Step>
+<Step n={3}>
+  Release to lay the stroke down. It lands selected, and the tile puts itself down, just like
+  Freehand.
+</Step>
+
+Each stroke is **one pick of the tile**, so a stray tap afterwards never leaves a mark, and one `⌘Z` takes back just the last stroke. To change your mind before you drag, press `Escape`, choose **Cancel** on the banner, or pick another tile.
+
+## Colour and width
+
+The Highlighter's settings live in the [Quick style panel](/help/canvas/quick-style-panel/) on the left of the canvas:
+
+- **Highlighter colour**: **Yellow** (the default), **Green**, **Pink**, **Blue**, or **Orange**.
+- **Highlighter width**: **Thin**, **Medium** (the default), or **Bold**. Bold covers a whole line of text.
+
+**Before you draw**, pick the tile: the panel shows the two rows under the name **Highlighter**, and whatever you choose there is what your strokes land in, this one and the next. The settings last for the session, so the Highlighter starts on yellow and medium again the next time you open the editor, like a real pen cup.
+
+**After you draw**, select one or more highlights and the same rows restyle them. Changing a stroke this way does not change the settings for your next one. Width is only in the panel; colour is also in the element's **Colours** menu.
+
+<Figure caption="A committed highlight around a shape: wide and translucent, so the label underneath stays legible, and selected on release like any element.">
+  <HighlighterStroke />
+</Figure>
+
+## Strokes are ordinary elements
+
+A committed highlight is a regular element, not a separate annotation layer. Once it is down you can:
+
+- Move it, resize it (the marker keeps its width, so a scaled highlight still looks like the same pen), rotate it, and lock it.
+- Recolour or rewidth it from the Quick style panel (or recolour it from its **Colours** menu), or put it on a [layer](/help/canvas/layers/).
+- Take it off again with the [Eraser](/help/selection-modes/eraser/): set the eraser to **Drawings only** to sweep away the mark-up while leaving everything else untouched.
+
+Highlights are never converted into shapes: a stroke commits exactly as you drew it, and ending back where you started never closes or fills it. Turning a rough sketch into a real shape is the [Shape Pen's](/help/palette/tools/drawing/) job.
+
+The Highlighter belongs to the palette, so it is not in [Draw mode](/help/canvas/draw-mode/): a whiteboard's own pens are its markers.
+
+<Tip>
+  Highlighting is quick and disposable by design. If a mark needs to say something, a [sticky
+  note](/help/palette/tools/sticky-notes/) or a [comment](/help/collaboration/comments/) carries the
+  words; the marker just says "look here".
+</Tip>
+
+</ArticleLayout>
