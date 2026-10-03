@@ -602,6 +602,15 @@ type Element = {
 - When the active tab has zero elements (and the template picker isn't open), an **empty-state card** is centred on the canvas. It contains, top to bottom: a brand-coloured icon (square + circle, evoking diagram primitives), the tab name in bold, an `EMPTY CANVAS` subtitle, a one-paragraph hint explaining the three ways to start ("Open the palette on the left to add shapes, double-click anywhere to drop text, or connect elements by dragging from their anchor dots"), and a **Browse templates** button that opens the template picker. The card sits on top of any background pattern so it stays legible on coloured / patterned canvases.
 - The empty-state card disappears once the active tab has at least one element.
 
+## The canvas never scrolls
+
+The canvas box (`<main>` in `Canvas.tsx`) is `overflow: clip`, not `overflow: hidden`. It clips
+the same, but cannot scroll: a hidden box still scrolled when the browser revealed something
+focused past its edge (a label editor on a box at the bottom of the view) or a `scrollIntoView`
+reached it, and everything positioned in it (the bottom-right cluster, the Map, the corner
+panels) rode up the screen by that much and stayed there, edit after edit. Panning and zooming
+move the canvas's own transform, never a scroll. Pinned by `e2e/chrome-drift.spec.ts`.
+
 ## Templates
 
 A first-run **welcome screen** doubles as the template picker — the "Start a new document" modal lets users scaffold a starter document and set up their identity in one step. It is also reachable from the empty-state card's **Browse templates** button.
