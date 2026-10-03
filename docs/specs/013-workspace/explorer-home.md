@@ -14,8 +14,11 @@ brings, in one screen: "what was I working on?" and "what happened while I was a
 ## Layout
 
 - **One column**, at every width: **Jump back in**, then **What happened**. It scrolls with the page.
-- Each section is its own wrapper in the page, headed by its title, so the sections can be set apart without
-  restructuring.
+- **Headings with a rule** set the sections apart. Each section opens with its heading row: the title (a larger
+  heading, about 16 px, bold), the section's quiet link at the right end (**See more**, **See all activity**), and
+  a hairline rule under the row (1 px, the page's line colour, spanning the section's width). Generous space (about
+  28 px) separates one section from the next.
+- No cards and no panel backgrounds: the sections sit directly on the page.
 - The page header carries **New document**, as every Explorer section does, and the section's Help link, as every
   section's header does ([Contextual help links](../018-help/contextual-help-links.md)). Home has no other header
   actions: no import, no folder, no view switch.
@@ -53,8 +56,8 @@ the **4 most used** and the **4 most recent**, no document twice.
 ### Desktop and tablet
 
 - A **4 by 2 grid** that never scrolls sideways: the top row holds the most used, the bottom row the recent, each
-  most used or newest first from the left. The thumbnails share the column's width equally, up to a comfortable
-  size.
+  most used or newest first from the left. The tiles share the section's width equally; the thumbnails keep one
+  short height, so the grid's height never depends on the width.
 
 ### Phone
 

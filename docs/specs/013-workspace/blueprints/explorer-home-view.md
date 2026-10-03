@@ -148,8 +148,8 @@ it runs out; at most `2n` (8) items. `groupOf(set, item)` names the half an item
 
 `JumpBackIn` reads `useMediaQuery(HOME_WIDE_QUERY)`. Wide: one `ul`, `grid grid-cols-4`, the most used then the
 recent. The first recent item carries `col-start-1` when there is any most used item, so it opens the second row
-whatever the first row's length. A sizer two tiles high shares the list's grid area (`[grid-area:1/1]`, `invisible`,
-`aria-hidden`), so the grid keeps two rows' height with fewer items (`D131`).
+whatever the first row's length. The list's minimum height is two tile rows (2 × 100 px + the 12 px gap), so the
+grid keeps two rows' height with fewer items (`D131`).
 
 ### Strip (phone)
 
@@ -265,7 +265,7 @@ Component props:
 | Owner id changes mid-read (a guest signs in)          | The request id drops the stale answer; the read re-runs for the new id                            |
 | A document in both groups                             | Most used only (`withinReach`)                                                                    |
 | No most used document, some recent                    | The recent take the grid's top row; the phone's strip is the recent alone                         |
-| Fewer than 8 documents                                | Only what exists; the grid's sizer keeps two rows' height                                         |
+| Fewer than 8 documents                                | Only what exists; the grid's minimum height keeps two rows                                        |
 | No document at all                                    | The empty line; on a phone the strip still ends in See more                                       |
 | Group whose actor has no name                         | "Someone"                                                                                         |
 | Group of more than three people                       | "Priya, Sam, Lee and 2 others"                                                                    |
@@ -291,13 +291,14 @@ Component props:
 
 ## Presentation and UX
 
-- Body: one column, `flex flex-col gap-8`; each section a `section` wrapper (`data-home-section="jump-back-in"` /
-  `"what-happened"`), with no background, card or rule of its own yet.
-- Section heading (`h2`): `text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400`, in a
-  heading row (`flex items-baseline justify-between`, 8 px below) whose end holds the quiet link (See more, See all
-  activity): `text-xs font-medium text-brand-700 dark:text-brand-300 hover:underline`.
-- Grid: `ul grid max-w-3xl grid-cols-4 gap-3` (`D128`). Tile: a link, the thumbnail `aspect-[8/5] w-full rounded-md`
-  (slate border), the name below (`mt-1 block truncate text-xs leading-4`). Local only: `LocalOnlyPill asLabel`
+- Body: one column, `flex flex-col gap-7` (28 px between sections); each section a `section` wrapper
+  (`data-home-section="jump-back-in"` / `"what-happened"`), with no background or card.
+- Heading row (`SECTION_HEADER`): `flex items-baseline justify-between gap-4 border-b border-slate-200 pb-2
+  dark:border-slate-700` (the page's line colour), 12 px above the section's body. The heading (`h2`,
+  `SECTION_HEADING`): `text-base font-semibold text-slate-900 dark:text-slate-100`. The quiet link at the end (See
+  more, See all activity): `text-sm font-medium text-brand-700 dark:text-brand-300 hover:underline`.
+- Grid: `ul grid min-h-[13.25rem] grid-cols-4 gap-3`, the section's full width (`D128`). Tile: a link, the
+  thumbnail `h-20 w-full rounded-md` (slate border), the name below (`mt-1 block h-4 truncate text-xs leading-4`). Local only: `LocalOnlyPill asLabel`
   absolutely in the thumbnail's bottom-left corner (4 px inset).
 - Strip: a scroller `scrollbar-slim -mx-1 flex h-28 snap-x gap-3 overflow-x-auto px-1 pb-2 pt-1`; the `ul` inside it
   `flex gap-3`; tiles `w-32 shrink-0 snap-start` with a 128 × 80 thumbnail. See more tile: the same 128 × 80 box,
@@ -324,7 +325,8 @@ Component props:
 - Each section is a `section aria-labelledby` its `h2` (**Jump back in**, **What happened**): two region landmarks.
 - Jump back in: one `ul aria-labelledby` the heading, grid or strip; each `li` one link whose accessible name is the
   document name ("Payments architecture", plus ", Local only" for a local one, from the pill label); a `Tooltip`
-  shows the full name. No row, group or sub-label is exposed (Calm by default). The grid's sizer is `aria-hidden`.
+  shows the full name. No row, group or sub-label is exposed (Calm by default). The heading rule is a border,
+  never content.
 - See more: a link named "See more" in the heading row (wide) or as the tile after the list (narrow), never both.
 - Summary: `button aria-expanded aria-controls=<list id>`; the list `ul id` follows it. Avatars `aria-hidden`; the
   sentence names everyone.
@@ -337,8 +339,8 @@ Component props:
 ## Web Experience
 
 - LCP: the first screen is one api read; the largest element is a heading or the skeleton, both painted at once.
-- CLS 0: headings render with the skeletons; the grid's skeleton and sizer have its two rows' box at every width
-  (the same `aspect-[8/5]` tiles in the same grid); the strip, its skeleton and its empty state share `h-28`; What
+- CLS 0: headings and their rules render with the skeletons; the grid, its skeleton and its empty state share one
+  fixed height at every width (`min-h-[13.25rem]`; tiles are a fixed 100 px high); the strip, its skeleton and its empty state share `h-28`; What
   happened is last on the page; thumbnails keep their box (`DocumentThumbnail`); the fade and the chevron change
   opacity / transform only. Expanding a group is a user-initiated change.
 - INP: handlers are one state set or one navigation each.
@@ -367,6 +369,7 @@ Component props:
 | Read, error, retry, stale owner, unread clear, mark kept                         | `apps/live/app/explorer/home/useHome.test.tsx`                                          |
 | A clear outlives an unread count still in flight                                 | `apps/live/app/explorer/useTimelineUnread.test.tsx`                                     |
 | Grid and strip: names, no group labels, row break, pill, fade, See more, telemetry | `apps/live/components/panels/home/JumpBackIn.test.tsx`                                |
+| Headings with a rule: the heading row and its link, per section                  | `apps/live/components/panels/home/HomePane.test.tsx`                                  |
 | Entries: one-person links, summary disclosure, telemetry, See all                | `apps/live/components/panels/home/WhatHappened.test.tsx`                                |
 | One column, two sections, no Timeline, the error state                           | `apps/live/components/panels/home/HomePane.test.tsx`                                    |
 | Routes, titles, crumbs (Recent and All activity under Home), the landing 302     | `routes.test.ts`, `view-titles.test.ts`, `apps/live/src/worker.test.ts`                 |
@@ -381,7 +384,8 @@ Component props:
 | `STRIP_FADE_EPSILON_PX` | 1                    | `home-model.ts`    | Sub-pixel scroll widths                  | 1 to 2         |
 | `SUMMARY_NAMES_MAX`     | 3                    | `home-copy.ts`     | Spec ("Priya, Sam and Lee")              | 2 to 4         |
 | `AVATAR_STACK_MAX`      | 3                    | `HomeAvatar.tsx`   | `D99`                                    | 2 to 5         |
-| Grid width              | `max-w-3xl` (48 rem) | `JumpBackIn.tsx`   | `D128`: four tiles up to ~180 px wide    | 40 to 56 rem   |
+| Grid tile height        | 100 px (80 + 4 + 16) | `JumpBackInTile.tsx` | `D128`: the strip's 80 px thumbnail    | 64 to 120 px   |
+| Section gap             | 28 px (`gap-7`)      | `HomePane.tsx`     | Spec ("about 28 px")                     | 24 to 40 px    |
 | Strip thumbnail         | 128 × 80 px          | `JumpBackInTile.tsx` | `D100`: "small", 16:10                 | 96 to 160 wide |
 
 ## Defaults ledger

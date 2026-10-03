@@ -88,7 +88,7 @@ One row per default applied where a spec is silent or qualitative.
 | D97  | explorer-home-view | Whether the phone switch remembers its tab                               | Retired: Home has no Recent / Timeline switch |
 | D98  | explorer-home-view | How early the next Timeline page loads                                   | Retired: Home has no Timeline column to page |
 | D99  | explorer-home-view | How many avatars a summary overlaps                                      | Three, then a `+N` disc                                                                                          |
-| D100 | explorer-home-view | Thumbnail sizes                                                          | Grid tiles share the column (16:10, `max-w-3xl`); strip 128 × 80; 16:10 like the card previews |
+| D100 | explorer-home-view | Thumbnail sizes                                                          | Grid tiles share the section's width at 80 px high; strip 128 × 80 |
 | D101 | explorer-home-view | The Timeline column's width                                              | Retired: Home has no Timeline column |
 | D102 | explorer-home-view | Whether Home's header keeps the Help link                                | Yes: every section's header carries it; it is not an action on Home                                              |
 | D103 | explorer-home-view | Where See all activity sits                                              | In What happened's heading row, at its end, so it never moves when entries load                                  |
@@ -116,8 +116,8 @@ One row per default applied where a spec is silent or qualitative.
 | D125 | default-folders    | Which level opens for a selected folder that holds subfolders            | The level that lists it, as for a leaf, so the checked card always names the folder                              |
 | D126 | explorer-home      | How most used is not empty on day one                                    | A real edit day counts as a use day, always: the edit history reaches back a year, so no one-off seed |
 | D127 | explorer-home      | Which migration number                                                   | 0065; 0064 is taken |
-| D128 | explorer-home-view | How wide the 4 by 2 grid grows                                           | `max-w-3xl` (48 rem): four tiles of up to ~180 px |
+| D128 | explorer-home-view | How wide the 4 by 2 grid grows                                           | The section's full width, thumbnails a fixed 80 px high, as in the chosen mockup |
 | D129 | explorer-home-view | How a local record of the earlier `opens` shape reads                    | Its last open day and last open; the next open rewrites it in the new shape |
 | D130 | explorer-home-view | Where the Recent page's breadcrumb leads                                 | Home › Recent, as All activity: both are reached from Home and have no sidebar row |
-| D131 | explorer-home-view | How the grid keeps two rows' height with fewer documents                 | An invisible, `aria-hidden` sizer two tiles high shares the list's grid area |
+| D131 | explorer-home-view | How the grid keeps two rows' height with fewer documents                 | A fixed minimum height of two tile rows on the list |
 | D132 | explorer-home-view | Whether Hide from Recent leaves Jump back in                             | No, as before: Hide from Recent tidies the Recent page; Jump back in is what the person reaches for |

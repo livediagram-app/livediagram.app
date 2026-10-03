@@ -14,7 +14,7 @@ Scope, by file:
 | `packages/api-schema/src/index.ts`            | Re-exports the module                                      |
 
 `@livediagram/api-schema` is the home because it is already the one package both the api worker and the live app
-import, and it already holds the shared, pure rules of Home's data (`D48`).
+import (`D48`).
 
 ## Domain and naming
 
@@ -78,7 +78,7 @@ Items are compared by identity; a caller never passes the same item twice.
 ## Performance and limits
 
 `O(k log k)` for `k` items: two sorts of copies. Callers pass at most a few hundred items (the dock's 20 kept shape
-kinds; Home's 12 server candidates plus this browser's local documents).
+kinds; Home's 8 server items plus this browser's opened local documents).
 
 ## Testing
 
