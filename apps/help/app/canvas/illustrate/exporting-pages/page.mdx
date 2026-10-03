@@ -5,13 +5,13 @@ import { helpMetadata } from '@/lib/seo';
 export const metadata = helpMetadata({
   title: 'Exporting and Presenting Pages',
   description:
-    'Export an infographic as a PDF of every page or a PNG or SVG of one page, each exactly its sheet, and turn its pages into slides to present.',
+    'Export pages as a PDF, PNG or SVG of every page or just one, each exactly its sheet, and turn them into slides to present.',
   path: '/help/canvas/illustrate/exporting-pages/',
 });
 
 <ArticleLayout
   title="Exporting and Presenting Pages"
-  description="Every page as a print-ready PDF, one page as an image, and pages as slides."
+  description="Every page or one page as a PDF or images, and pages as slides."
   categoryTitle="Canvas"
   categorySlug="canvas"
   parentArticle={{ title: 'Illustrate Mode', slug: 'illustrate' }}
@@ -22,14 +22,22 @@ In Illustrate mode, export and present work in **pages**, not the content of the
 
 ## Exporting
 
-Open **Export** as usual (see [Exporting a Tab](/help/tabs/export-tabs/)) and pick an image format. A **Page** row sits above the preview:
+Open **Export** as usual (see [Exporting a Tab](/help/tabs/export-tabs/)). Illustrate mode offers the formats that suit pages: **PDF**, **PNG** and **SVG**, plus **JSON** to keep a copy of the tab. The diagram-tool formats (Mermaid, Markdown, Excalidraw) are not offered, since a page is not a diagram.
 
-- **PDF** exports **every page**, in order, one PDF page each, each at its own size and orientation. Paper sizes come out at print size: an A4 page is a true A4 page.
-- **PNG** and **SVG** export **one page**, chosen in the Page row (the first by default).
+Pick a format and choose **All pages** or **One page** above the preview:
+
+- **PDF** starts on **All pages**: one PDF with every page in order, each at its own size and orientation. Paper sizes come out at print size: an A4 page is a true A4 page. With **One page** you get a one-page PDF of the page you pick.
+- **PNG** and **SVG** start on **One page**, the first by default, and you get that page's image. With **All pages** you get a **.zip** holding one image per page, numbered in page order (`01 Page 1 - A4 - Portrait.png`, ...).
+
+The file is named after the document and tab, plus the page's label when you export one page. With All pages, the page list picks which page the preview shows.
 
 Each page exports **exactly its sheet**: its size, its background and pattern, and what is on it, cut off at its edges just as the canvas shows it. The space around the pages is never included. The plain paper exports white, and the preview shows the page you picked.
 
 The **Isometric view** and **Background pattern** switches are not offered for pages: a page is its own background, and it is never tilted.
+
+## Importing
+
+In Illustrate mode, **Import** takes **JSON** only: a livediagram tab, pages and all. Mermaid, Markdown, Excalidraw and draw.io files are diagrams; switch to Diagram mode to import those.
 
 ## Turning Pages Into Slides
 
