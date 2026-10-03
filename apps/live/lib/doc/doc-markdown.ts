@@ -1,0 +1,134 @@
+// Pasted text read as writing (docs/specs/007-editor/document-pages.md "Writing", Paste): Markdown
+// (headings, lists by indent, to-dos, quotes, code fences, dividers; bold, italic, strikethrough,
+// inline code and links) becomes the blocks it means; other plain text becomes one paragraph per
+// line. Pure: text in, blocks out (ids fresh).
+import {
+  isSafeDocHref,
+  nextDocBlockId,
+  normaliseRuns,
+  type DocBlock,
+  type DocListKind,
+  type DocRun,
+} from '@livediagram/document';
+
+// Something that only Markdown writes: a heading, a list, a quote, a fence, a rule, emphasis or a link.
+const MARKDOWN_SIGNAL =
+  /^(#{1,6}\s|\s*([-*+]|\d+[.)])\s|>\s|```|(-{3,}|\*{3,}|_{3,})\s*$)|\*\*[^*]+\*\*|\[[^\]]+\]\([^)]+\)|`[^`]+`/m;
+
+export function looksLikeMarkdown(text: string): boolean {
+  return MARKDOWN_SIGNAL.test(text);
+}
+
+const INLINE =
+  /(\*\*([^*]+)\*\*|__([^_]+)__|~~([^~]+)~~|`([^`]+)`|\[([^\]]+)\]\(([^)\s]+)\)|\*([^*\s][^*]*)\*|_([^_\s][^_]*)_)/;
+
+/** One line's inline Markdown as runs. */
+export function parseInline(text: string, base: Omit<DocRun, 'text'> = {}): DocRun[] {
+  const runs: DocRun[] = [];
+  let rest = text;
+  while (rest) {
+    const m = INLINE.exec(rest);
+    if (!m) {
+      runs.push({ ...base, text: rest });
+      break;
+    }
+    if (m.index > 0) runs.push({ ...base, text: rest.slice(0, m.index) });
+    const [, , bold, bold2, strike, code, linkText, href, ital, ital2] = m;
+    if (bold ?? bold2) runs.push(...parseInline((bold ?? bold2)!, { ...base, b: true }));
+    else if (strike) runs.push(...parseInline(strike, { ...base, s: true }));
+    else if (code) runs.push({ ...base, text: code, code: true });
+    else if (linkText && href)
+      runs.push(...parseInline(linkText, isSafeDocHref(href) ? { ...base, href } : base));
+    else if (ital ?? ital2) runs.push(...parseInline((ital ?? ital2)!, { ...base, i: true }));
+    rest = rest.slice(m.index + m[0].length);
+  }
+  return normaliseRuns(runs);
+}
+
+const levelOf = (indent: string) => Math.min(4, Math.floor(indent.replace(/\t/g, '  ').length / 2));
+
+/** Markdown as blocks. */
+export function parseMarkdownBlocks(text: string): DocBlock[] {
+  const taken = new Set<string>();
+  const id = () => {
+    const next = nextDocBlockId(taken);
+    taken.add(next);
+    return next;
+  };
+  const blocks: DocBlock[] = [];
+  const lines = text.replace(/\r\n?/g, '\n').split('\n');
+  let para: string[] = [];
+  const flush = () => {
+    if (para.length === 0) return;
+    blocks.push({ id: id(), type: 'paragraph', runs: parseInline(para.join(' ')) });
+    para = [];
+  };
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i]!;
+    if (/^```/.test(line.trim())) {
+      flush();
+      const body: string[] = [];
+      for (i++; i < lines.length && !/^```/.test(lines[i]!.trim()); i++) body.push(lines[i]!);
+      blocks.push({ id: id(), type: 'code', text: body.join('\n') });
+      continue;
+    }
+    if (!line.trim()) {
+      flush();
+      continue;
+    }
+    const heading = /^(#{1,6})\s+(.*)$/.exec(line);
+    if (heading) {
+      flush();
+      const n = heading[1]!.length;
+      const style = n === 1 ? 'h1' : n === 2 ? 'h2' : 'h3';
+      blocks.push({ id: id(), type: 'paragraph', style, runs: parseInline(heading[2]!) });
+      continue;
+    }
+    if (/^\s*(-{3,}|\*{3,}|_{3,})\s*$/.test(line)) {
+      flush();
+      blocks.push({ id: id(), type: 'divider' });
+      continue;
+    }
+    const todo = /^(\s*)[-*+]\s+\[( |x|X)\]\s+(.*)$/.exec(line);
+    const bullet = /^(\s*)[-*+]\s+(.*)$/.exec(line);
+    const numbered = /^(\s*)\d+[.)]\s+(.*)$/.exec(line);
+    const item = todo ?? bullet ?? numbered;
+    if (item) {
+      flush();
+      const list: DocListKind = todo ? 'todo' : bullet ? 'bullet' : 'numbered';
+      const level = levelOf(item[1]!);
+      blocks.push({
+        id: id(),
+        type: 'list',
+        list,
+        ...(level > 0 ? { level } : {}),
+        ...(todo && todo[2] !== ' ' ? { checked: true as const } : {}),
+        runs: parseInline(todo ? todo[3]! : item[2]!),
+      });
+      continue;
+    }
+    const quote = /^>\s?(.*)$/.exec(line);
+    if (quote) {
+      flush();
+      blocks.push({ id: id(), type: 'paragraph', style: 'quote', runs: parseInline(quote[1]!) });
+      continue;
+    }
+    para.push(line.trim());
+  }
+  flush();
+  return blocks;
+}
+
+/** Plain text, one paragraph per line (blank lines dropped). */
+export function plainTextBlocks(text: string): DocBlock[] {
+  const taken = new Set<string>();
+  return text
+    .replace(/\r\n?/g, '\n')
+    .split('\n')
+    .filter((l) => l.trim())
+    .map((line) => {
+      const blockId = nextDocBlockId(taken);
+      taken.add(blockId);
+      return { id: blockId, type: 'paragraph' as const, runs: [{ text: line }] };
+    });
+}

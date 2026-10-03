@@ -104,6 +104,7 @@ export function DocumentFlows({
                 onUndo={docs.undo}
                 onRedo={docs.redo}
                 onLinkRequest={requestDocLink}
+                onInsert={docs.insertObject}
                 onWritingPress={docs.onWritingPress}
                 focusRequest={docs.focusRequest}
               />

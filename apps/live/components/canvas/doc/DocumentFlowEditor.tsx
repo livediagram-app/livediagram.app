@@ -8,7 +8,7 @@
 // an undo) is merged in block by block, so neither loses the other. After every change it measures
 // where the writing reaches (how many pages, where each zone landed) and reports it, so the host
 // can add or remove pages and move zones' elements (useDocumentPages).
-import { useEffect, useLayoutEffect, useRef, type CSSProperties } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
 import {
   EditorState,
   Selection,
@@ -17,7 +17,9 @@ import {
   type Transaction,
 } from 'prosemirror-state';
 import { EditorView } from 'prosemirror-view';
-import type { Node as PMNode } from 'prosemirror-model';
+import { Slice, type Node as PMNode } from 'prosemirror-model';
+import { looksLikeMarkdown, parseMarkdownBlocks, plainTextBlocks } from '@/lib/doc/doc-markdown';
+import { track } from '@/lib/telemetry';
 import { gapCursor } from 'prosemirror-gapcursor';
 import {
   applyDocOps,
@@ -42,6 +44,11 @@ import { docSchema } from '@/lib/doc/doc-schema';
 import { columnAt, flowFrame, pagePlaceOf } from '@/lib/doc/doc-flow-geometry';
 import { docStyleVars, type DocInk } from '@/lib/doc/doc-style-vars';
 import { snapshotBars, snapshotWriting } from '@/lib/doc/doc-snapshot';
+import { removeSlashQuery, slashPlugin, type SlashBridge } from '@/lib/doc/doc-slash';
+import { filterSlashItems, type SlashItem } from '@/lib/doc/doc-slash-items';
+import { setBlockStyle, toggleList } from '@/lib/doc/doc-commands';
+import { SlashMenu } from './SlashMenu';
+import type { DocInsert } from '@/hooks/editor/useDocumentPages';
 import { debugLog } from '@/lib/debug-log';
 
 // How long typing pauses before it is written to the tab (docs/specs/007-editor/document-pages.md
@@ -83,6 +90,8 @@ export type DocumentFlowEditorProps = {
   onUndo: () => void;
   onRedo: () => void;
   onLinkRequest: () => void;
+  // An object put in at the caret (the slash menu): a table, a chart, a drawing...
+  onInsert: (flow: string, what: DocInsert) => void;
   // A press on the writing: the canvas's selection goes.
   onWritingPress: () => void;
   focusRequest: FocusRequest;
@@ -103,6 +112,38 @@ export default function DocumentFlowEditor(props: DocumentFlowEditorProps) {
   // Set while an undo or redo from the writing is under way: the change it brings back takes the
   // caret.
   const undoing = useRef(false);
+  // The slash menu: open with its query and where the `/` is, and the entry highlighted.
+  const [slash, setSlash] = useState<{
+    query: string;
+    at: { left: number; top: number; bottom: number };
+  } | null>(null);
+  const [slashIndex, setSlashIndex] = useState(0);
+  const slashItems = slash ? filterSlashItems(slash.query) : [];
+  const slashLive = useRef({ items: slashItems, index: slashIndex });
+  useLayoutEffect(() => {
+    slashLive.current = { items: slashItems, index: slashIndex };
+  });
+  const pickSlash = (item: SlashItem) => {
+    const view = viewRef.current;
+    if (!view) return;
+    removeSlashQuery(view);
+    setSlash(null);
+    const a = item.action;
+    if (a.kind === 'style') setBlockStyle(a.style)(view.state, view.dispatch, view);
+    else if (a.kind === 'list') toggleList(a.list)(view.state, view.dispatch, view);
+    else if (a.kind === 'block')
+      handleRef.current?.insert(
+        a.block === 'divider'
+          ? [docSchema.nodes.divider!.create()]
+          : [docSchema.nodes.page_break!.create(), docSchema.nodes.paragraph!.create()],
+      );
+    else latest.current.onInsert(latest.current.flow, a.what);
+    view.focus();
+  };
+  const pickSlashRef = useRef(pickSlash);
+  useLayoutEffect(() => {
+    pickSlashRef.current = pickSlash;
+  });
 
   // Everything below reads the view through the ref; created once, below.
   const flush = () => {
@@ -187,9 +228,36 @@ export default function DocumentFlowEditor(props: DocumentFlowEditorProps) {
     const mount = host.current;
     if (!mount) return;
     const isEditable = () => latest.current.editable;
+    const bridge: SlashBridge = {
+      onChange: (s, v) => {
+        if (!s.active) {
+          setSlash(null);
+          return;
+        }
+        try {
+          const c = v.coordsAtPos(s.from);
+          setSlash((prev) => {
+            if (prev?.query !== s.query) setSlashIndex(0);
+            return { query: s.query, at: { left: c.left, top: c.top, bottom: c.bottom } };
+          });
+        } catch {
+          setSlash(null);
+        }
+      },
+      onKey: (key) => {
+        const { items, index } = slashLive.current;
+        if (items.length === 0) return false;
+        if (key === 'down') setSlashIndex((index + 1) % items.length);
+        else if (key === 'up') setSlashIndex((index - 1 + items.length) % items.length);
+        else if (key === 'enter') pickSlashRef.current(items[index] ?? items[0]!);
+        return true;
+      },
+    };
     const state = EditorState.create({
       doc: blocksToDoc(committed.current.blocks),
       plugins: [
+        // First, so its keys come before Enter's and the arrows'.
+        slashPlugin(bridge),
         ...docKeymap({
           undo: () => {
             flush();
@@ -249,6 +317,44 @@ export default function DocumentFlowEditor(props: DocumentFlowEditorProps) {
       },
       // The canvas is not a scrolling page: ProseMirror must never scroll its ancestors.
       handleScrollToSelection: () => true,
+      // Pasted text (docs/specs/007-editor/document-pages.md "Writing", Paste): Markdown becomes
+      // the blocks it means, several lines of plain text a paragraph each, its first and last
+      // joining the text around the caret. Into code, or a single plain line: as typed.
+      clipboardTextParser: (text, $context) => {
+        if ($context.parent.type.spec.code) return undefined as unknown as Slice;
+        const markdown = looksLikeMarkdown(text);
+        if (!markdown && !text.includes('\n')) return undefined as unknown as Slice;
+        const blocks = markdown ? parseMarkdownBlocks(text) : plainTextBlocks(text);
+        if (blocks.length === 0) return undefined as unknown as Slice;
+        if (markdown) track('Element', 'Changed', 'DocPaste');
+        const doc = blocksToDoc(blocks);
+        const first = doc.firstChild!;
+        const last = doc.lastChild!;
+        return new Slice(doc.content, first.isTextblock ? 1 : 0, last.isTextblock ? 1 : 0);
+      },
+      // Into an empty block, pasted text comes whole: the block gives its place to the pasted
+      // blocks, the first keeping its own style (a heading stays a heading).
+      handlePaste: (v, event) => {
+        const data = event.clipboardData;
+        if (!data || data.types.includes('text/html')) return false;
+        const text = data.getData('text/plain');
+        const { $from, empty } = v.state.selection;
+        if (!empty || $from.depth < 1 || $from.parent.content.size > 0) return false;
+        if ($from.parent.type.spec.code) return false;
+        const markdown = looksLikeMarkdown(text);
+        if (!markdown && !text.includes('\n')) return false;
+        const blocks = markdown ? parseMarkdownBlocks(text) : plainTextBlocks(text);
+        if (blocks.length === 0) return false;
+        const nodes: PMNode[] = [];
+        blocksToDoc(blocks).forEach((n) => nodes.push(n));
+        const start = $from.before(1);
+        const tr = v.state.tr.replaceWith(start, $from.after(1), nodes);
+        const end = start + nodes.reduce((n, node) => n + node.nodeSize, 0);
+        tr.setSelection(Selection.near(tr.doc.resolve(end), -1)).setMeta('uiEvent', 'paste');
+        v.dispatch(tr.scrollIntoView());
+        if (markdown) track('Element', 'Changed', 'DocPaste');
+        return true;
+      },
       dispatchTransaction(tr: Transaction) {
         const v = viewRef.current;
         if (!v) return;
@@ -519,20 +625,31 @@ export default function DocumentFlowEditor(props: DocumentFlowEditorProps) {
   }, [request?.seq]);
 
   return (
-    <div
-      ref={host}
-      // Not positioned: the writing's box places itself on the canvas.
-      style={{ display: 'contents' }}
-      // A press in the writing is the writing's: no marquee, no pan, no element press beneath.
-      onPointerDown={(e) => {
-        if (!latest.current.interactive) return;
-        if (!(e.target as HTMLElement).closest?.('.doc-flow > *')) return;
-        e.stopPropagation();
-        latest.current.onWritingPress();
-      }}
-      onDoubleClick={(e) => e.stopPropagation()}
-      onContextMenu={(e) => e.stopPropagation()}
-    />
+    <>
+      {slash && props.editable ? (
+        <SlashMenu
+          at={slash.at}
+          items={slashItems}
+          index={Math.min(slashIndex, Math.max(0, slashItems.length - 1))}
+          onPick={pickSlash}
+          onHover={setSlashIndex}
+        />
+      ) : null}
+      <div
+        ref={host}
+        // Not positioned: the writing's box places itself on the canvas.
+        style={{ display: 'contents' }}
+        // A press in the writing is the writing's: no marquee, no pan, no element press beneath.
+        onPointerDown={(e) => {
+          if (!latest.current.interactive) return;
+          if (!(e.target as HTMLElement).closest?.('.doc-flow > *')) return;
+          e.stopPropagation();
+          latest.current.onWritingPress();
+        }}
+        onDoubleClick={(e) => e.stopPropagation()}
+        onContextMenu={(e) => e.stopPropagation()}
+      />
+    </>
   );
 }
 

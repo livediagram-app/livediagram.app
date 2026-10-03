@@ -518,6 +518,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Element|Added|DocImage': "Someone inserted an image at the caret in a document's writing.",
   'Element|Added|DocTable': "Someone inserted a table at the caret in a document's writing.",
   'Element|Added|DocChart': "Someone inserted a chart at the caret in a document's writing.",
+  'Element|Added|DocCallout': "Someone inserted a callout at the caret in a document's writing.",
+  'Element|Added|DocSticky': "Someone inserted a sticky note at the caret in a document's writing.",
   'Element|Added|DocDrawing':
     "Someone started a drawing in a document's writing: from Insert, or by putting shapes onto the page.",
   'Element|Added|DocObject':
@@ -531,6 +533,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Element|Changed|DocBlockStyle':
     "Someone changed a block of a document's writing to another style or a list, from the page toolbar.",
   'Element|Changed|DocLink': 'Someone added a link to text in a document.',
+  'Element|Changed|DocPaste':
+    'Someone pasted Markdown into a document, and it became headings, lists and formatting.',
   'Element|Changed|DocZoneWrap':
     "Someone changed how a picture or drawing sits in a document's writing: in line, or wrapped.",
   'Element|Changed|DocZoneRemoved':

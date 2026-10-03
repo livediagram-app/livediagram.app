@@ -305,6 +305,8 @@ export const DOCUMENT_INSERTS = chart(
       'DocImage',
       'DocTable',
       'DocChart',
+      'DocCallout',
+      'DocSticky',
       'DocDrawing',
       'DocObject',
       'DocDivider',
@@ -320,7 +322,9 @@ export const DOCUMENT_FORMATTING = chart(
   'Changed',
   'Document Formatting',
   "The page toolbar used on a document's writing (a format, a text style or list, a link) and a zone in the writing wrapped, placed or deleted.",
-  { types: ['DocFormat', 'DocBlockStyle', 'DocLink', 'DocZoneWrap', 'DocZoneRemoved'] },
+  {
+    types: ['DocFormat', 'DocBlockStyle', 'DocLink', 'DocPaste', 'DocZoneWrap', 'DocZoneRemoved'],
+  },
 );
 
 export const DOCUMENT_STYLES = chart(

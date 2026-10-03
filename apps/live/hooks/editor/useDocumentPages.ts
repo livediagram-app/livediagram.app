@@ -56,11 +56,26 @@ export type DocumentPagesView = {
   setStylePreview: (preview: { flow: string; style: DocStyle } | null) => void;
 };
 
+// What each insert places at the caret (the writing then takes it into a zone).
+const PLACE_INTENT = {
+  image: { type: 'image' },
+  table: { type: 'table' },
+  chart: { type: 'shape', kind: 'bar-chart' },
+  pie: { type: 'shape', kind: 'pie-chart' },
+  line: { type: 'shape', kind: 'line-chart' },
+  callout: { type: 'shape', kind: 'callout' },
+  sticky: { type: 'sticky' },
+} as const;
+
 // Telemetry (docs/specs/007-editor/document-pages.md "Telemetry"): what was inserted, which look.
 const INSERT_EVENT = {
   image: 'DocImage',
   table: 'DocTable',
   chart: 'DocChart',
+  pie: 'DocChart',
+  line: 'DocChart',
+  callout: 'DocCallout',
+  sticky: 'DocSticky',
   drawing: 'DocDrawing',
 } as const;
 const LOOK_EVENT = {
@@ -73,7 +88,8 @@ const LOOK_EVENT = {
 
 export type DocStyleChange = { look: DocLookId } | { patch: Partial<DocStyle> };
 
-export type DocInsert = 'image' | 'table' | 'chart' | 'drawing';
+export type DocInsert =
+  'image' | 'table' | 'chart' | 'pie' | 'line' | 'callout' | 'sticky' | 'drawing';
 export type ZoneAction = { wrap: DocZoneWrap } | { align: DocZoneAlign } | { remove: true };
 
 // A new drawing's height before anything is drawn in it.
@@ -88,7 +104,7 @@ export function useDocumentPages(deps: {
   localEditSeq: RefObject<number>;
   // An element of its default size put at a canvas point (useElementCreation placeIntentAt).
   placeAt: (
-    intent: { type: 'shape'; kind: 'bar-chart' } | { type: 'table' } | { type: 'image' },
+    intent: (typeof PLACE_INTENT)[Exclude<DocInsert, 'drawing'>],
     x: number,
     y: number,
   ) => void;
@@ -194,15 +210,7 @@ export function useDocumentPages(deps: {
       if (!at) return;
       // Just under the caret's line, so the object lands after the block being written in.
       handle.flush();
-      d.placeAt(
-        what === 'chart'
-          ? { type: 'shape', kind: 'bar-chart' }
-          : what === 'table'
-            ? { type: 'table' }
-            : { type: 'image' },
-        at.x,
-        at.y + 30,
-      );
+      d.placeAt(PLACE_INTENT[what], at.x, at.y + 30);
     },
     [tabId],
   );
