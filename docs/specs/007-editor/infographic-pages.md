@@ -274,7 +274,8 @@ In Infographic mode the Export dialog exports **pages**, not the tab's content b
   follows the page's edits, reorders and size changes. Its row reads `<tab> · <page label>`; its
   thumbnail is the page on its background. A page deleted leaves its slide empty (shown, fixable),
   as an element slide's deleted elements do.
-- Zen and presenting show the sheets alone: no labels, cogs, layout invites or add button. While a
+- Zen, presenting and the isometric view show the sheets alone: no labels, cogs, layout invites or
+  add button. While a
   page slide presents, the canvas shows that page's sheet alone (its neighbours are not drawn), as
   it shows only a slide's elements.
 

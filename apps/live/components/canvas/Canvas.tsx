@@ -732,8 +732,9 @@ export function Canvas(props: CanvasProps) {
           <InfographicPages
             view={props.infographicPages}
             zoom={viewportZoom}
-            // Zen and presenting show the sheets alone: no labels, cogs or add button.
-            bare={props.zenMode === true}
+            // Zen, presenting and the isometric view show the sheets alone: no labels, cogs,
+            // layout invites or add button.
+            bare={props.zenMode === true || canvasTool === 'isometric'}
           />
         ) : null}
         <CanvasStillProvider still={props.editorMode === 'draw'}>
