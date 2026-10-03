@@ -81,6 +81,7 @@ import {
   UndoRedoArt,
   UnlimitedTabsArt,
   ZenModeArt,
+  ArticlePagesArt,
   IllustrateBackgroundsArt,
   IllustrateExportArt,
   IllustrateIntoPagesArt,
@@ -383,9 +384,9 @@ export const LANDING_SECTIONS: LandingSection[] = [
   {
     id: 'infographics',
     cta: 'Explore infographics',
-    title: 'Infographics, page by page',
+    title: 'Infographics and articles, page by page',
     description:
-      'Switch a tab into Illustrate mode and work on pages: sized for print or social, painted from your theme, started from a layout, then exported or presented.',
+      'Switch a tab into Illustrate mode and work on pages: infographics to lay out, articles to write, sized for print or social, painted from your theme, then exported or presented.',
     items: [
       {
         art: <IllustratePagesArt />,
@@ -400,6 +401,13 @@ export const LANDING_SECTIONS: LandingSection[] = [
         title: 'Start a page from a layout',
         description:
           'Twenty-one ready-made pages in four categories, from a title page and key stats to a roadmap, a team and an event invite. Hover one to preview it on your page, press it to place it, then make it yours.',
+      },
+      {
+        art: <ArticlePagesArt />,
+        href: '/help/canvas/illustrate/articles/',
+        title: 'Write articles on pages',
+        description:
+          'Write like a doc, right on the canvas: a formatting toolbar on the page, writing that flows onto new pages, charts and drawings wrapped in the text, and comments on any words.',
       },
       {
         art: <IllustrateBackgroundsArt />,

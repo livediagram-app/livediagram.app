@@ -358,6 +358,14 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M7.5 18h9" />
     </Glyph>
   ),
+  // A page of writing: a title over lines of text, a short last line where a paragraph ends.
+  articles: (
+    <Glyph>
+      <rect x="5" y="2.5" width="14" height="19" rx="1.5" />
+      <path d="M8 6.5h6" />
+      <path d="M8 10h8M8 13h8M8 16h5" />
+    </Glyph>
+  ),
   // Two pages, the front one heading out: every page as its own sheet.
   'exporting-pages': (
     <Glyph>
