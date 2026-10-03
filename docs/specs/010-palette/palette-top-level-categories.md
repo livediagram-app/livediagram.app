@@ -6,6 +6,11 @@ Status: shipped
 
 A flattening of the palette's category structure.
 
+This is the category catalogue and each category's **default** tiles. Which
+categories a palette offers, under what names and holding which tiles, is now
+per editor mode: see [Editor modes, "The palette per
+mode"](../007-editor/editor-modes.md#the-palette-per-mode).
+
 **The Tools tab is gone.** Every group it held became a top-level palette
 category of its own, and a tab with no categories left is not a tab.
 

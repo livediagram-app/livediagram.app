@@ -31,7 +31,7 @@ import { useUiScale } from '@/components/providers/ui-scale';
 import { toSurfacePx, uiScaleStyle, uiUnscaleStyle } from '@/lib/ui-scale';
 import { RAIL_LEAVE_MS, ToolbarStripRail } from './ToolbarStripRail';
 import { usePaletteCatalogue } from './usePaletteCatalogue';
-import { paletteLandingCategory } from './palette-mode-categories';
+import { paletteLandingCategory } from './palette-layouts';
 import type { CommandPaletteProps } from './CommandPalette.types';
 import type { PaletteAddHandlers } from './palette-add-handlers';
 
@@ -173,12 +173,15 @@ export function ToolbarPalette(props: Props) {
     favouriteIds,
     hasImage: tileActions.hasImage,
     limit: stripLimit,
+    // The category's tiles in this mode's layout (palette-layouts).
+    tiles: category?.tiles,
   });
   const { tiles, dividersAfter } = swipe
     ? stripTilesFor(category?.id ?? defaultId, {
         favouriteIds,
         hasImage: tileActions.hasImage,
         limit: tileLimit,
+        tiles: category?.tiles,
       })
     : fitted;
   const { hasMore } = fitted;
@@ -210,6 +213,7 @@ export function ToolbarPalette(props: Props) {
         favouriteIds,
         hasImage: tileActions.hasImage,
         limit: tileLimit,
+        tiles: tabs.find((t) => t.id === leavingId)?.tiles,
       })
     : null;
 

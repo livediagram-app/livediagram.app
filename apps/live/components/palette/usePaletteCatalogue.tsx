@@ -16,7 +16,7 @@ import { withTileActionPreamble } from './palette-tile-actions';
 import { paletteCategoryTabs } from './palette-category-tabs';
 import { useShapeLibraries } from '@/components/primitives/ShapeLibraryProvider';
 import type { PaletteAddHandlers } from './palette-add-handlers';
-import { paletteCategoryOffered } from './palette-mode-categories';
+import { paletteCategoriesFor } from './palette-layouts';
 import { useEditorModeState } from '@/components/chrome/editor-mode/editor-mode-context';
 
 // Everything a palette SURFACE needs that isn't how it is drawn: the tile
@@ -85,7 +85,7 @@ export function usePaletteCatalogue({
   // appears / disappears as the viewport crosses the breakpoint; a client
   // mount reads it synchronously, so there's no flicker.
   const { libraries } = useShapeLibraries();
-  // The palette narrows to the categories the viewer's editor mode is for (palette-mode-categories).
+  // The viewer's editor mode picks the palette layout (palette-layouts).
   const editorMode = useEditorModeState()?.mode ?? DEFAULT_EDITOR_MODE;
   const isMobile = useIsMobileViewport();
   // If the viewport shrinks into mobile while Spotlight is active (desktop ->
@@ -216,7 +216,15 @@ export function usePaletteCatalogue({
   // (the headings PaletteTabBar's CATEGORY_BANDS actually renders).
   // It renders the dropdown straight from this order, so the array IS
   // the grid layout.
-  const allTabs = paletteCategoryTabs({
+  // The mode's palette layout (palette-layouts): its categories, in order, with their tiles. My
+  // shapes shows only when the owner has a shape to place (docs/specs/013-workspace/shape-libraries.md);
+  // Event Storming only on an ES board (docs/specs/021-event-storming/event-storming.md).
+  const hasLibraryShapes = libraries.some((l) => l.items.length > 0);
+  const categories = paletteCategoriesFor(editorMode, { esBoard: !!esBoard }).filter(
+    (c) => hasLibraryShapes || c.id !== 'my-shapes',
+  );
+  const tabs = paletteCategoryTabs({
+    categories,
     pendingDraw,
     tileActions,
     // Only on an ES board: the category renders elsewhere too (a favourited
@@ -237,16 +245,6 @@ export function usePaletteCatalogue({
     techResults,
     insertLibraryShape: (item) => armed(() => onInsertLibraryShape(item))(),
   });
-  // My shapes shows only when the owner has a shape to place (docs/specs/013-workspace/shape-libraries.md).
-  const hasLibraryShapes = libraries.some((l) => l.items.length > 0);
-  // Event Storming is the ES board's own category (docs/specs/021-event-storming/event-storming.md),
-  // where it is the only one: an ordinary tab's category picker does not offer it.
-  const tabs = allTabs.filter(
-    (t) =>
-      (esBoard || t.id !== 'event-storming') &&
-      (hasLibraryShapes || t.id !== 'my-shapes') &&
-      paletteCategoryOffered(editorMode, t.id),
-  );
 
   // The canvas-tool picker's options, and its change handler: 'zen' is an
   // action entry, not a tool, so it fires the toggle and keeps the current

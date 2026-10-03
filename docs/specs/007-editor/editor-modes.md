@@ -187,8 +187,36 @@ element in the same colour.
 
 ## The palette per mode
 
-Each mode offers the palette categories it is for
-(`apps/live/components/palette/palette-mode-categories.ts`).
+Each mode has its own **palette layout**
+(`apps/live/components/palette/palette-layouts.ts`): the categories its
+palette offers, in order, what each is called there, and which tiles each
+holds.
+
+- **Identity is shared, arrangement is per mode.** A category's glyph and its
+  default label, blurb and band live in the category catalogue
+  (`PALETTE_CATEGORIES`); a tile's identity in the tile catalogue
+  (`PALETTE_TILES`). A layout only arranges them, so one tile can sit in
+  different categories in different modes, and a category can be renamed,
+  re-banded or re-filled for one mode without touching another.
+- **A layout entry** names a category and may override its `label`,
+  `description` and `band`, and list its `tiles` by id, in order. With no list
+  it holds the category's own tiles (`tilesForCategory`), so a layout spells
+  out only where a mode differs. `boardOnly` keeps a category to
+  event-storming boards.
+- **Catalogue categories** (Favourites, My shapes, Icons, Stickers, Tech) are
+  bodies with their own content and take no tile list.
+- **A body decides presentation only** (a grid, rows with a blurb, the
+  Behaviours group browser, Media's and Components' collapsed groups); it
+  renders whatever tiles the layout hands it. A category with no body of its
+  own, such as Popular, is a tile grid.
+- **Every surface reads the layout:** the floating Palette, the Toolbar
+  layout's strip, and the Edit Favourites dialog (Diagram's layout, since
+  Favourites is Diagram's category).
+- Draw mode shows its own tools in place of the palette, so it borrows
+  Diagram's layout.
+
+Today the two layouts differ as below, and Infographic's **Write** leaves out
+**Page** (the page is the canvas there).
 
 | Category       | Diagram | Infographic |
 | -------------- | ------- | ----------- |
@@ -211,14 +239,13 @@ Each mode offers the palette categories it is for
 
 - **The landing category** is Favourites in Diagram mode, **Popular** in
   Infographic mode, and the notation on an event-storming board
-  (`paletteLandingCategory`). Switching mode re-lands the palette there, so it
+  (the layout's `landing`). Switching mode re-lands the palette there, so it
   never shows a category the new mode leaves out.
 - **Popular** is twelve tiles an infographic is most often built from, each
-  reachable from a category Infographic mode offers
-  (`apps/live/components/palette/popular-tiles.ts`): Text, Square, Circle,
+  reachable from another category Infographic mode offers, listed in its
+  layout entry: Text, Square, Circle,
   Image, Speech bubble, Pie, Bar, Donut, Stat row, Process, Timeline, Callout.
   It is not a category of Edit Favourites.
-- Draw mode shows its own tools in place of the categories.
 - Elements already on the canvas are untouched: narrowing the palette only
   changes what is offered to add.
 

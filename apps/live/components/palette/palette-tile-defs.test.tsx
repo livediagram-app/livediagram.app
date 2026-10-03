@@ -127,8 +127,8 @@ describe('tool blurbs', () => {
 // true by intent rather than by accident.
 const TILES_PER_CATEGORY: Record<string, number> = {
   favourites: 0,
-  // Infographic mode's hand-picked twelve (popular-tiles).
-  popular: 12,
+  // Popular has no tiles of its own: Infographic mode's layout fills it (palette-layouts).
+  popular: 0,
   shapes: 13,
   build: 5,
   write: 4,

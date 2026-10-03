@@ -7,7 +7,7 @@ import { EditorModeSwitch } from '@/components/chrome/editor-mode/EditorModeSwit
 
 import type { CanvasTool, CommandPaletteProps } from './CommandPalette.types';
 import { usePaletteCatalogue } from './usePaletteCatalogue';
-import { paletteLandingCategory } from './palette-mode-categories';
+import { paletteLandingCategory } from './palette-layouts';
 
 export type { CanvasTool };
 

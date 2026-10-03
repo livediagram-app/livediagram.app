@@ -15,12 +15,8 @@ import { Dialog } from '@/components/dialogs/Dialog';
 import { DialogCloseButton } from '@/components/dialogs/DialogCloseButton';
 import { matches } from '@/lib/search';
 import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
-import { PALETTE_CATEGORIES } from '@/components/palette/palette-category-tabs';
-import {
-  tileDisplayName,
-  tilesForCategory,
-  type PaletteTileDef,
-} from '@/components/palette/palette-tile-defs';
+import { paletteCategoriesFor } from '@/components/palette/palette-layouts';
+import { tileDisplayName, type PaletteTileDef } from '@/components/palette/palette-tile-defs';
 import {
   searchIconTiles,
   searchStickerTiles,
@@ -51,23 +47,20 @@ type PaletteFavouritesDialogProps = {
 // Build, Write, Draw, Media, Stickers, Collaborate. Deriving it means a new
 // category shows up here the day it is added.
 //
-// Two adjustments to the palette's list:
-//   - Favourites is dropped. It is what this dialog EDITS, so offering it as
+// Favourites is Diagram mode's category, so the pills are Diagram mode's palette layout
+// (palette-layouts: its categories, names and tiles; an ordinary tab, so no Event Storming), with:
+//   - Favourites dropped. It is what this dialog EDITS, so offering it as
 //     a source to pick from is circular.
-//   - Event Storming is dropped: it is the ES board's own category, never offered on the ordinary
-//     tabs this dialog is reached from (docs/specs/021-event-storming/event-storming.md).
-//   - Categories with no favouritable tiles are dropped, so a choice can never
+//   - Categories with no favouritable tiles dropped, so a choice can never
 //     lead to an empty grid. Icons / Stickers / Technology are kept
 //     regardless: their catalogues are open-ended and load async, so they are
 //     empty at this moment rather than empty as such.
 const OPEN_ENDED: string[] = ['icons', 'stickers', 'technology'];
-const CATEGORY_CHOICES: { id: string; label: string }[] = PALETTE_CATEGORIES.filter(
-  (c) =>
-    c.id !== 'favourites' &&
-    c.id !== 'popular' &&
-    c.id !== 'event-storming' &&
-    (OPEN_ENDED.includes(c.id) || tilesForCategory(c.id).length > 0),
+const DIAGRAM_CATEGORIES = paletteCategoriesFor('diagram');
+const CATEGORY_CHOICES: { id: string; label: string }[] = DIAGRAM_CATEGORIES.filter(
+  (c) => c.id !== 'favourites' && (OPEN_ENDED.includes(c.id) || (c.tiles?.length ?? 0) > 0),
 ).map((c) => ({ id: c.id, label: c.label }));
+const categoryTiles = (id: string) => DIAGRAM_CATEGORIES.find((c) => c.id === id)?.tiles ?? [];
 
 // One toggleable tile: glyph + caption with the add / remove corner badge.
 function ToggleTile({
@@ -130,12 +123,12 @@ export function PaletteFavouritesDialog({
       ? searchIconTiles(query)
       : // Stickers were listed as an open-ended catalogue (so the pill showed)
         // but never resolved here, so the tab fell through to the empty
-        // tilesForCategory('stickers') and read "No controls match".
+        // categoryTiles('stickers') and read "No controls match".
         category === 'stickers'
         ? searchStickerTiles(query)
         : category === 'technology'
           ? searchTechTiles(query)
-          : tilesForCategory(category).filter(
+          : categoryTiles(category).filter(
               (t) =>
                 (!t.needsImage || hasImage) &&
                 (matches(query, tileDisplayName(t)) || matches(query, t.label)),

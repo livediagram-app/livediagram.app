@@ -88,7 +88,11 @@ export function stripCrowdsCorners(strip: Span, corners: Span[], gap = 8): boole
 // reached through it.
 const ALWAYS_MORE = new Set(['favourites', 'icons', 'stickers', 'technology', 'behaviour']);
 
-function allTilesFor(categoryId: string, favouriteIds: readonly string[]): PaletteTileDef[] {
+function allTilesFor(
+  categoryId: string,
+  favouriteIds: readonly string[],
+  tiles: readonly PaletteTileDef[] | null | undefined,
+): PaletteTileDef[] {
   switch (categoryId) {
     case 'favourites':
       return favouriteIds
@@ -110,7 +114,8 @@ function allTilesFor(categoryId: string, favouriteIds: readonly string[]): Palet
         .slice(0, STRIP_TILE_LIMIT + 1)
         .map(techTileDef);
     default:
-      return tilesForCategory(categoryId);
+      // The mode's layout hands in the category's tiles; the default membership otherwise.
+      return tiles ? [...tiles] : tilesForCategory(categoryId);
   }
 }
 
@@ -126,13 +131,16 @@ export function stripTilesFor(
     favouriteIds,
     hasImage,
     limit = STRIP_TILE_LIMIT,
+    tiles,
   }: {
     favouriteIds: readonly string[];
     hasImage: boolean;
     limit?: number;
+    // The category's tiles in the palette's mode (palette-layouts); its default tiles when absent.
+    tiles?: readonly PaletteTileDef[] | null;
   },
 ): { tiles: PaletteTileDef[]; hasMore: boolean; dividersAfter: ReadonlySet<string> } {
-  const all = visibleTiles(allTilesFor(categoryId, favouriteIds), hasImage);
+  const all = visibleTiles(allTilesFor(categoryId, favouriteIds, tiles), hasImage);
   const between = (tiles: PaletteTileDef[]) => tiles.slice(0, -1).filter((t) => t.dividerAfter);
   const cost = (tiles: PaletteTileDef[]) => tiles.length + DIVIDER_TILES * between(tiles).length;
   // The whole category with its dividers, when it all fits.

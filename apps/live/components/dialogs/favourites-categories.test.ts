@@ -1,34 +1,28 @@
 import { describe, expect, it } from 'vitest';
 
-import { PALETTE_CATEGORIES } from '@/components/palette/palette-category-tabs';
-import { tilesForCategory } from '@/components/palette/palette-tile-defs';
+import { paletteCategoriesFor } from '@/components/palette/palette-layouts';
 
 // Drift guard for the Edit Favourites dialog's category pills (docs/specs/010-palette/palette-favourites.md).
 //
 // The dialog used to keep its own hand-written list of categories. It drifted
 // silently: by the time it was noticed it was offering a "Tools" category that
 // had been deleted and hiding six that existed. The pills now derive from
-// PALETTE_CATEGORIES, and these tests are why that stays true.
+// Diagram mode's palette layout (Favourites is Diagram's category), and these
+// tests are why that stays true.
 
 // The dialog's own rule, restated once here rather than exported: everything
 // but Favourites, minus any category with nothing to show.
 const OPEN_ENDED = ['icons', 'stickers', 'technology'];
-const pillIds = PALETTE_CATEGORIES.filter(
-  (c) =>
-    c.id !== 'favourites' &&
-    c.id !== 'popular' &&
-    (OPEN_ENDED.includes(c.id) || tilesForCategory(c.id).length > 0),
-).map((c) => c.id);
+const diagram = paletteCategoriesFor('diagram');
+const pillIds = diagram
+  .filter((c) => c.id !== 'favourites' && (OPEN_ENDED.includes(c.id) || (c.tiles?.length ?? 0) > 0))
+  .map((c) => c.id);
 
 describe('Edit Favourites category pills', () => {
-  it('offers every palette category that has something in it', () => {
-    const expected = PALETTE_CATEGORIES.map((c) => c.id).filter(
-      (id) =>
-        id !== 'favourites' &&
-        id !== 'popular' &&
-        (OPEN_ENDED.includes(id) || tilesForCategory(id).length > 0),
+  it("offers every category of Diagram mode's palette that has something in it", () => {
+    expect(pillIds).toEqual(
+      diagram.map((c) => c.id).filter((id) => id !== 'favourites' && id !== 'my-shapes'),
     );
-    expect(pillIds).toEqual(expected);
   });
 
   it('includes the categories the stale list was missing', () => {
@@ -59,7 +53,7 @@ describe('Edit Favourites category pills', () => {
   it('never leads to an empty grid', () => {
     for (const id of pillIds) {
       if (OPEN_ENDED.includes(id)) continue;
-      expect(tilesForCategory(id).length).toBeGreaterThan(0);
+      expect(diagram.find((c) => c.id === id)!.tiles!.length).toBeGreaterThan(0);
     }
   });
 });
