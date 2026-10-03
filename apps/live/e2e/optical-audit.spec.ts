@@ -1,6 +1,22 @@
 import type { Page } from '@playwright/test';
-import { CANVAS, darkVisitor, freshDarkPage, seedDocument, shareLink } from './audit-screens';
-import { dismissQuickTour, expect, expectNoPageErrors, test, untilHydrated } from './fixtures';
+import {
+  CANVAS,
+  darkVisitor,
+  documentRow,
+  freshDarkPage,
+  jumpBackIn,
+  seedDocument,
+  seedOpenedDocument,
+  shareLink,
+} from './audit-screens';
+import {
+  dismissQuickTour,
+  expect,
+  expectNoPageErrors,
+  test,
+  untilHydrated,
+  mintSignedGuest,
+} from './fixtures';
 import { auditOptical, OPTICAL_TOLERANCE_PX } from './optical';
 
 // Optical alignment audit (docs/specs/004-interface-design/optical-alignment.md): on each screen, every glyph
@@ -79,13 +95,20 @@ test.describe('Optical alignment audit', () => {
     await visitor.context().close();
   });
 
+  // Home as a returning owner meets it (the document they opened in Jump back in), then My
+  // documents, which lists it as a row.
   test('the Explorer', async ({ page, pageErrors, baseURL }) => {
-    const owner = crypto.randomUUID();
-    await seedDocument(page, owner, new URL(baseURL!).origin);
+    // Signed, so the identity holds across the two page loads.
+    const owner = await mintSignedGuest(page.request);
+    await seedOpenedDocument(page, owner, new URL(baseURL!).origin);
     await darkVisitor(page, owner);
     await page.goto('/explorer');
-    await page.getByText('Contrast').first().waitFor();
-    await expectCentred(page, 'Explorer');
+    await jumpBackIn(page, 'Contrast').waitFor();
+    await expectCentred(page, 'Explorer Home');
+
+    await page.goto('/explorer/all');
+    await documentRow(page, 'Contrast').waitFor();
+    await expectCentred(page, 'Explorer, My documents');
     expectNoPageErrors(pageErrors);
   });
 });

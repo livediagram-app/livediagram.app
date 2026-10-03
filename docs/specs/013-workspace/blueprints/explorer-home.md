@@ -322,6 +322,7 @@ from` moves every row the account does not already hold; each leftover (opened u
 | Opened and edited on one day                         | One use day (`COUNT(DISTINCT day)`)                                         |
 | A reconstructed edit                                 | Not a use day (`REAL_EDIT`)                                                 |
 | Opened more than 90 days ago only                    | `use_days = 0`: never most used, still recent by its last open              |
+| Created and never opened or edited                   | Not in `candidates` (no use, `D133`): on the Recent page, not Jump back in  |
 | Document trashed, team left, link revoked or expired | Dropped by `visible`; its rows remain until purge / sweep                   |
 | Tab-scoped shared document                           | In Jump back in; never in What happened                                     |
 | Own action on someone else's document                | Not in What happened (`me`); a use day when it is an edit                   |

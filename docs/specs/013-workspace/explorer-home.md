@@ -37,6 +37,9 @@ the **4 most used** and the **4 most recent**, no document twice.
   last edit. A document that is both shows under **Most used**, and Recent takes the next most recent instead.
 - **Not empty on day one**: every day the person edited a document before opens were recorded counts as a day
   they opened it, so Most used reflects the work they already did.
+- **Making a document is not a use.** A document joins Jump back in at its first open or edit. The New Document
+  wizard opens what it makes, so a document made there is in at once; one made without being opened (an import
+  from the Explorer, a duplicate, one an AI tool made) waits on the Recent page and in its folder until then.
 - Only documents the person can open now: never one in the Trash, nor one whose share link has lapsed or whose
   team they have left.
 - A document stored only in this browser ([Offline Mode](../006-document/offline-mode.md)) takes part with this

@@ -121,3 +121,4 @@ One row per default applied where a spec is silent or qualitative.
 | D130 | explorer-home-view | Where the Recent page's breadcrumb leads                                 | Home › Recent, as All activity: both are reached from Home and have no sidebar row                               |
 | D131 | explorer-home-view | How the grid keeps two rows' height with fewer documents                 | A fixed minimum height of two tile rows on the list                                                              |
 | D132 | explorer-home-view | Whether Hide from Recent leaves Jump back in                             | No, as before: Hide from Recent tidies the Recent page; Jump back in is what the person reaches for              |
+| D133 | explorer-home      | Whether making a document counts as a use                                | No: a use is an open or an edit; the wizard opens what it makes, so only made-unopened documents wait            |

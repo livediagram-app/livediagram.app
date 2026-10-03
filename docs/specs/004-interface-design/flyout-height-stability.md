@@ -83,6 +83,10 @@ the flyout stops pretending to be a side panel and becomes a **drill-down**:
   A shorter child used to leave the parent's remaining rows poking out below,
   which both read as a stray panel and left those rows tappable, so the two
   menus fought over the same gesture.
+- Sideways it keeps the host's own inset and adds none: a floating menu
+  already sits inside the screen's margin, and a bottom sheet runs edge to
+  edge, so its cover does too (`coverHost`, `components/primitives/menu-flyout-cover.ts`).
+  A margin added on top slid a full-width cover past the right edge.
 - It gains a **header** — the category's icon and name, and a **Close** button
   that returns to the parent. On desktop neither is needed: the panel sits
   beside the menu, so the parent is still on screen and still shows which row
