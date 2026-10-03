@@ -39,7 +39,10 @@ export function receivePeerDragPreview(
     return;
   }
   if (op.end) {
-    stop(presenceId);
+    // A landed drag stays drawn until its real change arrives (endPeerDragPreview), so the elements
+    // never jump back while the dragger's save is on its way; the expiry below still applies.
+    if (op.landed && timers.has(presenceId)) arm(presenceId);
+    else stop(presenceId);
     return;
   }
   const patches = typeof op.tabId === 'string' ? parseDragPreviewPatches(op.patches) : null;
@@ -48,6 +51,11 @@ export function receivePeerDragPreview(
     return;
   }
   setPeerPreview(presenceId, op.tabId, patches);
+  arm(presenceId);
+}
+
+// (Re)starts a peer preview's expiry.
+function arm(presenceId: string): void {
   const timer = timers.get(presenceId);
   if (timer !== undefined) clearTimeout(timer);
   timers.set(

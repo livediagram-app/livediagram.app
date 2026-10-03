@@ -29,11 +29,14 @@ a drag's cost to what it moves, whatever the size of the board
 - **The dragger's preview goes to the room as presence**: ephemeral, unordered, never logged or
   replayed, like a cursor. At most one message every 33 ms (the cursor's rate), carrying the tab,
   and for each previewed element only what the gesture changes (position and size for a box; the
-  changed geometry for an arrow). A last message says the preview has ended.
+  changed geometry for an arrow). A last message says the preview has ended, and whether the
+  gesture landed or was cancelled.
 - **A collaborator draws a peer's preview the same way** the dragger draws their own: those elements
-  from the preview, the rest of each element as the collaborator has it, nothing written. It ends on
-  the peer's end message, when the peer's real change arrives, when the peer leaves, or after 2 s
-  without a message. In every case the
+  from the preview, the rest of each element as the collaborator has it, nothing written. A
+  cancelled gesture's preview ends on its end message; a landed one is kept until the peer's real
+  change arrives (which follows the release by the autosave's wait), so the elements never jump back
+  to where they started. Either way it also ends when the peer leaves, or after 2 s without a
+  message. In every case the
   canvas falls back to the document.
 - **Only an editor's preview is drawn.** The room relays a preview only from an editor, and a
   collaborator draws one only from an editor: other presence travels from any role, and a preview

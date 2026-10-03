@@ -61,10 +61,19 @@ export function setLocalPreview(
   changedNow();
 }
 
-export function clearLocalPreview(): void {
+// How our last preview ended: written to the document (`landed`) or dropped (`cancelled`), for the
+// end message collaborators get.
+let lastEnding: 'landed' | 'cancelled' = 'cancelled';
+
+export function clearLocalPreview(how: 'landed' | 'cancelled' = 'cancelled'): void {
   if (local === null) return;
   local = null;
+  lastEnding = how;
   changedNow();
+}
+
+export function localPreviewEnding(): 'landed' | 'cancelled' {
+  return lastEnding;
 }
 
 export function localPreview(): DragOverlay | null {

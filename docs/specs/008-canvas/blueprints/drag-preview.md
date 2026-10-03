@@ -96,14 +96,15 @@ drags for collaborators.
 
 - `useDragPreviewBroadcast`: while a local preview lasts, at most every `DRAG_PREVIEW_SEND_MS` it
   sends `{ kind: 'drag-preview', tabId, patches }` with one patch per changed element (added and
-  removed are not sent: copies appear on release), and `{ kind: 'drag-preview', tabId, end: true }`
-  when it clears. More than `DRAG_PREVIEW_MAX_ELEMENTS` changed elements → no patches are sent for
+  removed are not sent: copies appear on release), and `{ kind: 'drag-preview', tabId, end: true }` when it clears, with `landed: true` when the store says the
+  preview was written (`clearLocalPreview('landed')`), not cancelled. More than `DRAG_PREVIEW_MAX_ELEMENTS` changed elements → no patches are sent for
   that gesture; collaborators see the result on release.
 - A boxed patch carries `x`, `y`, `width`, `height`, `rotation`; an arrow patch `from`, `to`,
   `curveOffset`, `elbowOffset`, `curvePoints`, `labelOffset` (each field the element has).
 - Receiving (`peer-drag-previews.ts`, called from `useRoomConnection`): on a `drag-preview` from a
   presence id whose role (kept from the latest presence list) is `edit`, parses the patches
-  (`parseDragPreviewPatches`) and sets that peer's preview; on `end`, on that peer leaving or the
+  (`parseDragPreviewPatches`) and sets that peer's preview; on `end` (a landed `end` keeps the preview,
+  re-arming the expiry, until the peer's real change), on that peer leaving or the
   room closing, on any element or tab op from that peer (D74), or `PEER_PREVIEW_EXPIRY_MS` after its
   last message, clears it. A sender whose role is not `edit` is dropped and logged once. The room
   drops a non-editor's `drag-preview` too.

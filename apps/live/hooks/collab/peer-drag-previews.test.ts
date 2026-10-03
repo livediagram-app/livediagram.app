@@ -86,3 +86,28 @@ describe("a collaborator's drag preview", () => {
     expect(drawn()).toBeNull();
   });
 });
+
+describe('a landed drag', () => {
+  it('stays drawn after the end message until the real change arrives, never jumping back', () => {
+    receivePeerDragPreview('p1', move(90), role('edit'));
+    receivePeerDragPreview(
+      'p1',
+      { kind: 'drag-preview', tabId: 't', end: true, landed: true },
+      role('edit'),
+    );
+    expect((drawn()?.changed.get(a.id) as { x: number }).x).toBe(90);
+    endPeerDragPreview('p1');
+    expect(drawn()).toBeNull();
+  });
+
+  it('still expires if the real change never comes', () => {
+    receivePeerDragPreview('p1', move(90), role('edit'));
+    receivePeerDragPreview(
+      'p1',
+      { kind: 'drag-preview', tabId: 't', end: true, landed: true },
+      role('edit'),
+    );
+    vi.advanceTimersByTime(PEER_PREVIEW_EXPIRY_MS);
+    expect(drawn()).toBeNull();
+  });
+});

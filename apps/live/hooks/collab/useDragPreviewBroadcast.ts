@@ -15,7 +15,12 @@ import {
   type RoomOp,
   type RoomOutgoing,
 } from '@livediagram/api-schema';
-import { localPreview, subscribeDragPreview, type DragOverlay } from '@/lib/drag-preview';
+import {
+  localPreview,
+  localPreviewEnding,
+  subscribeDragPreview,
+  type DragOverlay,
+} from '@/lib/drag-preview';
 
 // The cursor's rate (docs/specs/015-api/api.md).
 export const DRAG_PREVIEW_SEND_MS = 33;
@@ -61,7 +66,13 @@ export function useDragPreviewBroadcast(deps: {
       if (!overlay || overlay.tabId !== activeId) {
         if (timer) clearTimeout(timer);
         timer = null;
-        if (sentTab) send({ kind: 'drag-preview', tabId: sentTab, end: true });
+        if (sentTab)
+          send({
+            kind: 'drag-preview',
+            tabId: sentTab,
+            end: true,
+            ...(localPreviewEnding() === 'landed' ? { landed: true as const } : {}),
+          });
         sentTab = null;
         return;
       }
