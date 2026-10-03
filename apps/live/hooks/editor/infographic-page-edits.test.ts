@@ -1,5 +1,10 @@
 import { describe, expect, it, vi } from 'vitest';
-import { infographicPagesOf, type Element, type Tab } from '@livediagram/document';
+import {
+  infographicPagesOf,
+  layOutInfographicPages,
+  type Element,
+  type Tab,
+} from '@livediagram/document';
 import { infographicPageEdits } from './infographic-page-edits';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
@@ -101,5 +106,27 @@ describe('infographic page edits', () => {
     expect(els.some((e) => e.id === 'b')).toBe(true);
     expect(h.edits().contentCount('page-1')).toBe(els.length - 1);
     expect(h.onLayoutPlaced).toHaveBeenCalled();
+  });
+
+  it('re-fits a full page into the page when it turns, text scaling with it', () => {
+    const h = harness(twoPages());
+    h.edits().applyLayout('page-1', 'top-tips');
+    h.edits().setOrientation('page-1', 'landscape');
+    const [page] = layOutInfographicPages(infographicPagesOf(h.tab()));
+    const r = page!.rect;
+    const onPage = h.tab().elements.filter((e) => e.id !== 'b' && e.type !== 'arrow');
+    for (const e of onPage as (Element & {
+      x: number;
+      y: number;
+      width: number;
+      height: number;
+    })[]) {
+      expect(e.x).toBeGreaterThanOrEqual(r.x - 1);
+      expect(e.y).toBeGreaterThanOrEqual(r.y - 1);
+      expect(e.x + e.width).toBeLessThanOrEqual(r.x + r.width + 1);
+      expect(e.y + e.height).toBeLessThanOrEqual(r.y + r.height + 1);
+    }
+    const title = onPage.find((e) => e.type === 'text') as { textScale?: number };
+    expect(title.textScale).toBeLessThan(2);
   });
 });

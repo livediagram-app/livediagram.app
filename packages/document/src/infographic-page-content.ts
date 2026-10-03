@@ -265,3 +265,87 @@ export function withPageInkFor<T extends Pick<Tab, 'elements'>>(
   });
   return changed ? { ...tab, elements } : tab;
 }
+
+/**
+ * The tab with the given elements (a page's content from before a change of size or orientation)
+ * fitted into that page's margin box as it now is (docs/specs/007-editor/infographic-pages.md
+ * "Sizes"): content that already fits stays its size, centred where the re-centring put it;
+ * content that no longer fits is scaled down as one, about the page's centre, until it does. Text
+ * scales with it (textScale), so a scaled page reads as the same page, smaller. Pinned arrows
+ * follow their ends; a free end moves with the content.
+ */
+export function withContentFittedToPage<T extends Pick<Tab, 'elements'>>(
+  tab: T & { pages?: unknown; pageOrientation?: unknown },
+  ids: ReadonlySet<string>,
+  pageId: string,
+): T {
+  const page = layOutInfographicPages(infographicPagesOf(tab)).find((p) => p.id === pageId);
+  if (!page || ids.size === 0) return tab;
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+  const take = (x: number, y: number) => {
+    minX = Math.min(minX, x);
+    minY = Math.min(minY, y);
+    maxX = Math.max(maxX, x);
+    maxY = Math.max(maxY, y);
+  };
+  for (const el of tab.elements) {
+    if (!ids.has(el.id)) continue;
+    if (isBoxed(el)) {
+      take(el.x, el.y);
+      take(el.x + el.width, el.y + el.height);
+    } else {
+      for (const ep of [el.from, el.to]) if (ep.kind === 'free') take(ep.x, ep.y);
+    }
+  }
+  if (!Number.isFinite(minX)) return tab;
+  const m = pageMargin(page);
+  const roomW = page.rect.width - 2 * m;
+  const roomH = page.rect.height - 2 * m;
+  const s = Math.min(1, roomW / Math.max(1, maxX - minX), roomH / Math.max(1, maxY - minY));
+  const cx = page.rect.x + page.rect.width / 2;
+  const cy = page.rect.y + page.rect.height / 2;
+  // The content's centre lands on the page's (scaled about it); unscaled content keeps its place
+  // unless it pokes out of the margin box, when it is nudged back in.
+  const ox = (minX + maxX) / 2;
+  const oy = (minY + maxY) / 2;
+  const scaled = s < 1;
+  const toX = scaled ? cx : ox;
+  const toY = scaled ? cy : oy;
+  const halfW = ((maxX - minX) * s) / 2;
+  const halfH = ((maxY - minY) * s) / 2;
+  const nudgeX = clampInto(toX, halfW, page.rect.x + m, page.rect.x + page.rect.width - m) - toX;
+  const nudgeY = clampInto(toY, halfH, page.rect.y + m, page.rect.y + page.rect.height - m) - toY;
+  if (!scaled && nudgeX === 0 && nudgeY === 0) return tab;
+  const mapX = (x: number) => toX + nudgeX + (x - ox) * s;
+  const mapY = (y: number) => toY + nudgeY + (y - oy) * s;
+  const r = (n: number) => Math.round(n * 100) / 100;
+  const elements = tab.elements.map((el): Element => {
+    if (!ids.has(el.id)) return el;
+    if (isBoxed(el)) {
+      const next = {
+        ...el,
+        x: r(mapX(el.x)),
+        y: r(mapY(el.y)),
+        width: r(el.width * s),
+        height: r(el.height * s),
+      } as Element;
+      if (scaled && next.type === 'text') {
+        return { ...next, textScale: r((next.textScale ?? 1) * s) };
+      }
+      return next;
+    }
+    const end = (ep: Endpoint): Endpoint =>
+      ep.kind === 'free' ? { ...ep, x: r(mapX(ep.x)), y: r(mapY(ep.y)) } : ep;
+    return { ...el, from: end(el.from), to: end(el.to) };
+  });
+  return { ...tab, elements };
+}
+
+// A centre that keeps a half-extent inside [lo, hi] (centred when it cannot).
+function clampInto(c: number, half: number, lo: number, hi: number): number {
+  if (hi - lo <= 2 * half) return (lo + hi) / 2;
+  return Math.min(hi - half, Math.max(lo + half, c));
+}

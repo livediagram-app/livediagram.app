@@ -60,8 +60,11 @@ page with no valid `id` or `orientation` is skipped (as today).
 - Paper sizes are at the CSS 96 px per inch; screen sizes are their own pixels.
 - A **square** page has no orientation: its panel shows no Portrait / Landscape choice, and it keeps
   whatever orientation it had, so turning it back to another size restores it.
-- **Changing size re-centres the page's content** on the page, as turning it does, and moves the
-  pages after it; content is never scaled.
+- **Changing size or orientation re-fits the page's content**: everything on the page before the
+  change stays on it. Content that still fits the new margin box keeps its size, re-centred (and
+  nudged back inside the margins if it pokes out); content that no longer fits is scaled down as
+  one, about the page's centre, until it does, its text scaling with it. Nothing is cut off. The
+  pages after it move along. One edit, one undo.
 - The page label reads `<name or Page n> · <size label> · <Portrait|Landscape>` (no orientation for
   a square page; no `Page n` while there is one page and no name).
 

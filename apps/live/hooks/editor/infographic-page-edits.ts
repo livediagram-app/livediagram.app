@@ -14,6 +14,7 @@ import {
   withInfographicPages,
   withPageContentReplaced,
   withPageInkFor,
+  withContentFittedToPage,
   type InfographicPage,
   type PageBackground,
   type PageOrientation,
@@ -78,16 +79,26 @@ export function infographicPageEdits({
     commitPages((ps) => ps.map((p) => (p.id === pageId ? patch(p) : p)));
   const page = (pageId: string) => current.find((p) => p.id === pageId);
 
+  // A turn or a new size re-fits the page's content into the page as it now is: what was on it
+  // before stays on it, scaled down as one where it no longer fits (withContentFittedToPage).
+  const reshapePage = (pageId: string, patch: (p: InfographicPage) => InfographicPage) =>
+    commitTab((t) => {
+      const before = layOutInfographicPages(infographicPagesOf(t));
+      const ids = elementIdsOnPage(t.elements, before, pageId);
+      const next = infographicPagesOf(t).map((p) => (p.id === pageId ? patch(p) : p));
+      return withContentFittedToPage(withInfographicPages(t, next), ids, pageId);
+    });
+
   const setOrientation = (pageId: string, next: PageOrientation) => {
     if (page(pageId)?.orientation === next) return;
     track('Tab', 'Changed', next === 'landscape' ? 'PageLandscape' : 'PagePortrait');
-    patchPage(pageId, (p) => ({ ...p, orientation: next }));
+    reshapePage(pageId, (p) => ({ ...p, orientation: next }));
     debugLog('[infographic-page] orientation set', { tabId, pageId, orientation: next });
   };
   const setSize = (pageId: string, size: PageSizeId) => {
     if ((page(pageId)?.size ?? 'a4') === size) return;
     track('Tab', 'Changed', 'PageSize');
-    patchPage(pageId, (p) => {
+    reshapePage(pageId, (p) => {
       const { size: _drop, ...rest } = p;
       return size === 'a4' ? rest : { ...rest, size };
     });
