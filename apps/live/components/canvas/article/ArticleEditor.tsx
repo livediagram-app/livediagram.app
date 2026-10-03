@@ -12,6 +12,7 @@ import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from
 import {
   EditorState,
   Selection,
+  NodeSelection,
   TextSelection,
   type Command,
   type Transaction,
@@ -29,7 +30,6 @@ import {
   applyArticleOps,
   diffArticleFlow,
   nextArticleBlockId,
-  articleWordCount,
   type ArticleBlock,
   type ArticleFlow,
   type LaidOutPage,
@@ -400,6 +400,72 @@ export default function ArticleEditor(props: ArticleEditorProps) {
     viewRef.current = view;
     // A handle for driving the writing in development (browser checks); never in production.
     if (process.env.NODE_ENV !== 'production') Reflect.set(window, '__docView', view);
+    // Canvas px per screen px of the writing, and the writing's frame on the canvas.
+    const scaleAndFrame = () => {
+      const p = latest.current;
+      const frame = flowFrame(p.pages, p.margin);
+      const root = view.dom.getBoundingClientRect();
+      const z = root.width / Math.max(1, view.dom.offsetWidth) || p.zoom;
+      return { frame, root, z };
+    };
+    // The block boundary nearest a canvas point, by the blocks' own boxes (an element dragged over
+    // the writing covers the point, so a hit test there finds the element): the block whose box (in
+    // the point's column) is nearest, before it when the point is in its upper half. With the drop
+    // caret for it: a line across the column at the boundary, in canvas px. A block named `skipId`
+    // (the zone being moved) is never a neighbour.
+    const boundaryNear = (near: { x: number; y: number }, skipId: string | null) => {
+      const { frame, root, z } = scaleAndFrame();
+      const left = root.left + (near.x - frame.x) * z;
+      const top = root.top + (near.y - frame.y) * z;
+      let best: { pos: number; size: number; before: boolean; d: number; r: DOMRect } | null = null;
+      let pos = 0;
+      view.state.doc.forEach((node) => {
+        const dom = view.nodeDOM(pos) as HTMLElement | null;
+        if (node.attrs.id !== skipId)
+          for (const r of dom ? Array.from(dom.getClientRects()) : []) {
+            if (left < r.left - 24 * z || left > r.right + 24 * z) continue;
+            const d = top < r.top ? r.top - top : top > r.bottom ? top - r.bottom : 0;
+            if (!best || d < best.d)
+              best = { pos, size: node.nodeSize, before: top < r.top + r.height / 2, d, r };
+          }
+        pos += node.nodeSize;
+      });
+      const found = best as { pos: number; size: number; before: boolean; r: DOMRect } | null;
+      if (!found) return null;
+      // The caret spans the column the block sits in.
+      const index = columnAt(frame, (found.r.left - root.left) / z);
+      return {
+        pos: found.before ? found.pos : found.pos + found.size,
+        caret: {
+          x: frame.x + index * frame.stride,
+          y: frame.y + ((found.before ? found.r.top : found.r.bottom) - root.top) / z,
+          width: frame.columnWidth,
+        },
+      };
+    };
+    // Where a zone now in the writing landed, the writing taken as written: the host writes these
+    // blocks, the zone placed, in one edit.
+    const landedOf = (id: string) => {
+      const { frame, root, z } = scaleAndFrame();
+      const el = view.dom.querySelector<HTMLElement>(`[data-block-id="${CSS.escape(id)}"]`);
+      if (!el) return null;
+      const r = el.getBoundingClientRect();
+      const place = pagePlaceOf(frame, { x: (r.left - root.left) / z, y: (r.top - root.top) / z });
+      const blocks = docToBlocks(view.state.doc, committed.current.blocks);
+      committed.current = { ...committed.current, blocks };
+      if (idle.current !== null) {
+        window.clearTimeout(idle.current);
+        idle.current = null;
+      }
+      lastLocal.current = Date.now();
+      return {
+        id,
+        blocks,
+        index: place.index,
+        x: Math.round(place.x * 2) / 2,
+        y: Math.round(place.y * 2) / 2,
+      };
+    };
     handleRef.current = {
       flow: latest.current.flow,
       run: (command: Command) => {
@@ -434,43 +500,43 @@ export default function ArticleEditor(props: ArticleEditorProps) {
           return null;
         }
       },
+      boundaryNear: (near, skipId) => {
+        const found = boundaryNear(near, skipId);
+        return found ? { pos: found.pos, caret: found.caret } : null;
+      },
+      moveZone: (id, near) => {
+        const doc = view.state.doc;
+        let from = -1;
+        doc.forEach((n, pos) => {
+          if (n.attrs.id === id && n.type === articleSchema.nodes.zone) from = pos;
+        });
+        const node = from >= 0 ? doc.nodeAt(from) : null;
+        const found = boundaryNear(near, id);
+        if (!node || !found) return null;
+        // Dropped where it already is: nothing moves.
+        if (found.pos === from || found.pos === from + node.nodeSize) return null;
+        const tr = view.state.tr.delete(from, from + node.nodeSize);
+        const at = tr.mapping.map(found.pos);
+        tr.insert(at, node);
+        tr.setSelection(NodeSelection.create(tr.doc, at));
+        view.dispatch(tr);
+        return landedOf(id);
+      },
       insertZone: (spec, near) => {
-        const p = latest.current;
-        const frame = flowFrame(p.pages, p.margin);
-        const root = view.dom.getBoundingClientRect();
-        const z = root.width / Math.max(1, view.dom.offsetWidth) || p.zoom;
         const doc = view.state.doc;
         const ids = new Set<string>();
         doc.forEach((n) => ids.add(n.attrs.id as string));
         const id = nextArticleBlockId(ids);
         const node = articleSchema.nodes.zone!.create({ id, ...spec });
-        // The block boundary nearest the point: before the block it is in when it is in that
-        // block's upper half, else after it; with no point, after the caret's block.
+        // The block boundary nearest the point; with no point, after the caret's block.
         let at = doc.content.size;
         const blockAt = (at: number) => {
           const $p = doc.resolve(Math.min(at, doc.content.size));
           return $p.depth >= 1 ? { start: $p.before(1), end: $p.after(1) } : null;
         };
         if (near) {
-          // By the blocks' own boxes (an element dropped over the writing covers the point, so a
-          // hit test there finds the element): the block whose box (in the point's column) is
-          // nearest the point, before it when the point is in its upper half.
-          const left = root.left + (near.x - frame.x) * z;
-          const top = root.top + (near.y - frame.y) * z;
-          let best: { pos: number; size: number; before: boolean; d: number } | null = null;
-          let pos = 0;
-          doc.forEach((node) => {
-            const dom = view.nodeDOM(pos) as HTMLElement | null;
-            for (const r of dom ? Array.from(dom.getClientRects()) : []) {
-              if (left < r.left - 24 * z || left > r.right + 24 * z) continue;
-              const d = top < r.top ? r.top - top : top > r.bottom ? top - r.bottom : 0;
-              if (!best || d < best.d)
-                best = { pos, size: node.nodeSize, before: top < r.top + r.height / 2, d };
-            }
-            pos += node.nodeSize;
-          });
-          const found = best as { pos: number; size: number; before: boolean } | null;
-          if (found) at = found.before ? found.pos : found.pos + found.size;
+          const found = boundaryNear(near, null);
+          if (found) at = found.pos;
         } else {
           const block = blockAt(view.state.selection.from);
           if (block) at = block.end;
@@ -495,28 +561,7 @@ export default function ArticleEditor(props: ArticleEditorProps) {
           tr.insert(tr.doc.content.size, articleSchema.nodes.paragraph!.create());
         tr.setSelection(TextSelection.near(tr.doc.resolve(at + node.nodeSize + 1)));
         view.dispatch(tr);
-        const el = view.dom.querySelector<HTMLElement>(`[data-block-id="${CSS.escape(id)}"]`);
-        if (!el) return null;
-        const r = el.getBoundingClientRect();
-        const place = pagePlaceOf(frame, {
-          x: (r.left - root.left) / z,
-          y: (r.top - root.top) / z,
-        });
-        // Taken as written: the host writes these blocks, the zone placed, in one edit.
-        const blocks = docToBlocks(view.state.doc, committed.current.blocks);
-        committed.current = { ...committed.current, blocks };
-        if (idle.current !== null) {
-          window.clearTimeout(idle.current);
-          idle.current = null;
-        }
-        lastLocal.current = Date.now();
-        return {
-          id,
-          blocks,
-          index: place.index,
-          x: Math.round(place.x * 2) / 2,
-          y: Math.round(place.y * 2) / 2,
-        };
+        return landedOf(id);
       },
       snapshot: () => {
         const p = latest.current;
@@ -568,14 +613,6 @@ export default function ArticleEditor(props: ArticleEditorProps) {
         } catch {
           return null;
         }
-      },
-      words: () => {
-        const blocks = docToBlocks(view.state.doc, committed.current.blocks);
-        const { from, to, empty } = view.state.selection;
-        const selected = empty
-          ? 0
-          : (view.state.doc.textBetween(from, to, ' ', ' ').match(/\S+/g) ?? []).length;
-        return { total: articleWordCount(blocks), selected };
       },
     };
     const unregister = registerArticleHandle(handleRef.current);

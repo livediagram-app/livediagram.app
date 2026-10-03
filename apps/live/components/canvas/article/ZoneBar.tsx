@@ -2,10 +2,12 @@
 
 // The zone bar (docs/specs/007-editor/article-pages.md "Zones"): under a zone's bottom edge while the
 // zone, or elements all in it, are selected. How it sits in the writing (In line, Wrap left, Wrap
-// right), where an inline one sits across the text, and Delete (the zone and its elements). Drawn in
+// right), where an inline one sits across the text, and Delete (the zone and its elements), led by a
+// grip that drags the zone to a new place in the writing. Drawn in
 // canvas space at one screen size, so it rides the zone through a pan or a zoom.
 import type { ReactNode } from 'react';
 import {
+  lucideGripVertical,
   lucidePanelLeft,
   lucidePanelRight,
   lucideRows2,
@@ -24,17 +26,21 @@ const WrapRight = I(lucidePanelRight);
 const AlignLeft = I(lucideTextAlignStart);
 const AlignCenter = I(lucideTextAlignCenter);
 const AlignRight = I(lucideTextAlignEnd);
+const Grip = I(lucideGripVertical);
 
 export function ZoneBar({
   zone,
   rect,
   zoom,
   onAction,
+  onMoveStart,
 }: {
   zone: ArticleZoneBlock;
   rect: PageRect;
   zoom: number;
   onAction: (action: ZoneAction) => void;
+  // A press on the grip: the zone is dragged through the writing (useZoneDrag).
+  onMoveStart: (e: React.PointerEvent<HTMLElement>) => void;
 }) {
   const wrap = zone.wrap ?? 'inline';
   const align = zone.align ?? 'center';
@@ -57,6 +63,22 @@ export function ZoneBar({
       }}
       onDoubleClick={(e) => e.stopPropagation()}
     >
+      <Tooltip label="Drag to move">
+        <button
+          type="button"
+          aria-label="Drag to move"
+          data-zone-grip=""
+          onPointerDown={(e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            onMoveStart(e);
+          }}
+          className="flex h-7 w-6 cursor-grab touch-none items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 active:cursor-grabbing dark:hover:bg-slate-800 dark:hover:text-slate-200"
+        >
+          <Grip />
+        </button>
+      </Tooltip>
+      <span aria-hidden className="mx-0.5 h-5 w-px bg-slate-200 dark:bg-slate-700" />
       <Choice
         label="In line"
         pressed={wrap === 'inline'}
@@ -150,9 +172,10 @@ function Choice({
   );
 }
 
-/** A drawing zone's bottom grip: drag to make it taller or shorter (previewed on the writing as it
- *  moves; one edit on release, never shorter than what is drawn in it). */
-export function ZoneResizeGrip({
+/** A drawing zone's grips: its bottom edge (taller or shorter), its right edge (wider or narrower)
+ *  and its bottom-right corner (both), previewed on the writing as they move; one edit on release,
+ *  never smaller than what is drawn in it (the host clamps). */
+export function ZoneResizeGrips({
   zoneId,
   rect,
   zoom,
@@ -161,47 +184,91 @@ export function ZoneResizeGrip({
   zoneId: string;
   rect: PageRect;
   zoom: number;
-  onResize: (height: number) => void;
+  onResize: (size: { width?: number; height?: number }) => void;
 }) {
   const zoneEl = () =>
     document.querySelector<HTMLElement>(`.article-zone[data-block-id="${CSS.escape(zoneId)}"]`);
+  const start = (e: React.PointerEvent<HTMLElement>, axes: { x: boolean; y: boolean }) => {
+    e.stopPropagation();
+    e.preventDefault();
+    const startX = e.clientX;
+    const startY = e.clientY;
+    const el = zoneEl();
+    const target = e.currentTarget;
+    target.setPointerCapture(e.pointerId);
+    let width = rect.width;
+    let height = rect.height;
+    const move = (ev: PointerEvent) => {
+      if (axes.x) width = Math.max(24, rect.width + (ev.clientX - startX) / zoom);
+      if (axes.y) height = Math.max(24, rect.height + (ev.clientY - startY) / zoom);
+      if (el) {
+        if (axes.x) el.style.width = `${width}px`;
+        if (axes.y) el.style.height = `${height}px`;
+      }
+    };
+    const up = () => {
+      target.removeEventListener('pointermove', move);
+      target.removeEventListener('pointerup', up);
+      target.removeEventListener('pointercancel', up);
+      onResize({
+        ...(axes.x ? { width: Math.round(width) } : {}),
+        ...(axes.y ? { height: Math.round(height) } : {}),
+      });
+    };
+    target.addEventListener('pointermove', move);
+    target.addEventListener('pointerup', up);
+    target.addEventListener('pointercancel', up);
+  };
+  const steady = `translate(-50%, -50%) scale(${1 / zoom})`;
   return (
-    <div
-      role="separator"
-      aria-orientation="horizontal"
-      aria-label="Drawing height"
-      className="pointer-events-auto absolute flex cursor-ns-resize items-center justify-center"
-      style={{
-        left: rect.x + rect.width / 2,
-        top: rect.y + rect.height,
-        transform: `translate(-50%, -50%) scale(${1 / zoom})`,
-        width: 44,
-        height: 16,
-      }}
-      onPointerDown={(e) => {
-        e.stopPropagation();
-        e.preventDefault();
-        const startY = e.clientY;
-        const el = zoneEl();
-        const target = e.currentTarget;
-        target.setPointerCapture(e.pointerId);
-        let height = rect.height;
-        const move = (ev: PointerEvent) => {
-          height = Math.max(24, rect.height + (ev.clientY - startY) / zoom);
-          if (el) el.style.height = `${height}px`;
-        };
-        const up = () => {
-          target.removeEventListener('pointermove', move);
-          target.removeEventListener('pointerup', up);
-          target.removeEventListener('pointercancel', up);
-          onResize(Math.round(height));
-        };
-        target.addEventListener('pointermove', move);
-        target.addEventListener('pointerup', up);
-        target.addEventListener('pointercancel', up);
-      }}
-    >
-      <span className="h-1.5 w-8 rounded-full bg-white shadow ring-1 ring-brand-500" />
-    </div>
+    <>
+      <div
+        role="separator"
+        aria-orientation="horizontal"
+        aria-label="Drawing height"
+        className="pointer-events-auto absolute flex cursor-ns-resize items-center justify-center"
+        style={{
+          left: rect.x + rect.width / 2,
+          top: rect.y + rect.height,
+          transform: steady,
+          width: 44,
+          height: 16,
+        }}
+        onPointerDown={(e) => start(e, { x: false, y: true })}
+      >
+        <span className="h-1.5 w-8 rounded-full bg-white shadow ring-1 ring-brand-500" />
+      </div>
+      <div
+        role="separator"
+        aria-orientation="vertical"
+        aria-label="Drawing width"
+        className="pointer-events-auto absolute flex cursor-ew-resize items-center justify-center"
+        style={{
+          left: rect.x + rect.width,
+          top: rect.y + rect.height / 2,
+          transform: steady,
+          width: 16,
+          height: 44,
+        }}
+        onPointerDown={(e) => start(e, { x: true, y: false })}
+      >
+        <span className="h-8 w-1.5 rounded-full bg-white shadow ring-1 ring-brand-500" />
+      </div>
+      <div
+        role="separator"
+        aria-label="Drawing size"
+        className="pointer-events-auto absolute flex cursor-nwse-resize items-center justify-center"
+        style={{
+          left: rect.x + rect.width,
+          top: rect.y + rect.height,
+          transform: steady,
+          width: 18,
+          height: 18,
+        }}
+        onPointerDown={(e) => start(e, { x: true, y: true })}
+      >
+        <span className="h-2.5 w-2.5 rounded-sm bg-white shadow ring-1 ring-brand-500" />
+      </div>
+    </>
   );
 }

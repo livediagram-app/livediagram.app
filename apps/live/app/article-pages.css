@@ -258,6 +258,9 @@
 .article-flow:not([data-readonly]) .article-zone:hover {
   outline-color: color-mix(in srgb, var(--article-accent) 45%, transparent);
 }
+.article-flow .article-zone.article-zone-lifted {
+  opacity: 0.35;
+}
 .article-flow .article-zone.ProseMirror-selectednode {
   outline: 2px solid var(--article-accent);
 }

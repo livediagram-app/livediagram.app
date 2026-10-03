@@ -28,7 +28,8 @@ import {
 } from '@/lib/article/article-editor-store';
 import { PageToolbar } from './PageToolbar';
 import { previewedBackground, usePageBackgroundPreview } from '@/lib/page-background-preview';
-import { ZoneBar, ZoneResizeGrip } from './ZoneBar';
+import { ZoneBar, ZoneResizeGrips } from './ZoneBar';
+import { useZoneDrag, type ZoneDragState } from './useZoneDrag';
 
 const ArticleEditor = lazy(() => import('./ArticleEditor'));
 
@@ -74,6 +75,11 @@ export function ArticleFlows({
         elements,
       )
     : null;
+  const zoneDrag = useZoneDrag({
+    zoom,
+    pagesOf: (flow) => byFlow.get(flow),
+    onMove: (flow, zoneId, near) => articles?.moveZone(flow, zoneId, near),
+  });
   if (!articles || byFlow.size === 0) return null;
   return (
     <>
@@ -166,22 +172,24 @@ export function ArticleFlows({
           />
         ) : null}
       </div>
-      {target && target.zone.zone === 'drawing' ? (
-        <ZoneResizeGrip
+      {target && target.zone.zone === 'drawing' && !zoneDrag.drag ? (
+        <ZoneResizeGrips
           zoneId={target.zone.id}
           rect={target.rect}
           zoom={zoom}
-          onResize={(height) => articles.zoneAction(target.flow, target.zone.id, { height })}
+          onResize={(size) => articles.zoneAction(target.flow, target.zone.id, { size })}
         />
       ) : null}
-      {target ? (
+      {target && !zoneDrag.drag ? (
         <ZoneBar
           zone={target.zone}
           rect={target.rect}
           zoom={zoom}
           onAction={(action) => articles.zoneAction(target.flow, target.zone.id, action)}
+          onMoveStart={(e) => zoneDrag.start(e, target.flow, target.zone, target.rect)}
         />
       ) : null}
+      {zoneDrag.drag ? <ZoneDragMarks drag={zoneDrag.drag} zoom={zoom} /> : null}
     </>
   );
 }
@@ -239,4 +247,55 @@ function inkOf(page: LaidOutPage, surface: 'light' | 'dark'): ArticleInk {
     inkCache.set(key, ink);
   }
   return ink;
+}
+
+// While a zone is dragged: its ghost under the pointer, and the caret where it would land.
+function ZoneDragMarks({ drag, zoom }: { drag: ZoneDragState; zoom: number }) {
+  return (
+    <>
+      <div
+        aria-hidden
+        data-zone-ghost=""
+        className="pointer-events-none absolute rounded-md border-dashed border-brand-500 bg-brand-500/5"
+        style={{
+          left: drag.ghost.x,
+          top: drag.ghost.y,
+          width: drag.ghost.width,
+          height: drag.ghost.height,
+          borderWidth: 2 / zoom,
+        }}
+      />
+      {drag.caret ? <DropCaretMark caret={drag.caret} zoom={zoom} /> : null}
+    </>
+  );
+}
+
+/** The drop caret: a brand line across the column at a block boundary, a dot at each end. */
+export function DropCaretMark({
+  caret,
+  zoom,
+}: {
+  caret: { x: number; y: number; width: number };
+  zoom: number;
+}) {
+  const t = 3 / zoom;
+  const dot = 9 / zoom;
+  return (
+    <div
+      aria-hidden
+      data-drop-caret=""
+      className="pointer-events-none absolute"
+      style={{ left: caret.x, top: caret.y - t / 2, width: caret.width, height: t }}
+    >
+      <span className="absolute inset-0 rounded-full bg-brand-500" />
+      <span
+        className="absolute rounded-full border-brand-500 bg-white dark:bg-slate-900"
+        style={{ left: -dot / 2, top: t / 2 - dot / 2, width: dot, height: dot, borderWidth: t }}
+      />
+      <span
+        className="absolute rounded-full border-brand-500 bg-white dark:bg-slate-900"
+        style={{ right: -dot / 2, top: t / 2 - dot / 2, width: dot, height: dot, borderWidth: t }}
+      />
+    </div>
+  );
 }

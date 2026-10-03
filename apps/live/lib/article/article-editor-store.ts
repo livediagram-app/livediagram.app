@@ -25,14 +25,30 @@ export type ArticleEditorHandle = {
   focus: () => void;
   // The caret's place on screen, for a popover under it (a link field).
   caretRect: () => DOMRect | null;
-  // How many words the writing holds, and how many of them are selected.
-  words: () => { total: number; selected: number };
   // A zone put into the writing at the block boundary nearest a canvas point (or after the block
   // the caret is in), the writing so far taken as written: its blocks, the zone's id, and where it
   // landed (its page by index among the article's pages, and its spot from that page's corner).
   insertZone: (
     spec: { zone: 'object' | 'drawing'; width: number; height: number },
     near: { x: number; y: number } | null,
+  ) => {
+    id: string;
+    blocks: import('@livediagram/document').ArticleBlock[];
+    index: number;
+    x: number;
+    y: number;
+  } | null;
+  // The block boundary nearest a canvas point (never beside the block `skipId`): its position in
+  // the writing, and the drop caret for it, a line across the column in canvas px.
+  boundaryNear: (
+    near: { x: number; y: number },
+    skipId: string | null,
+  ) => { pos: number; caret: { x: number; y: number; width: number } } | null;
+  // A zone moved to the block boundary nearest a canvas point, the writing so far taken as
+  // written; where it landed, as insertZone says. Null when it would not move.
+  moveZone: (
+    id: string,
+    near: { x: number; y: number },
   ) => {
     id: string;
     blocks: import('@livediagram/document').ArticleBlock[];

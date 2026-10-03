@@ -414,30 +414,43 @@ export function withZoneRemoved<T extends DocsTab>(tab: T, flow: string, zoneId:
   return withArticleFlow(emptied, flow, doc.style ? { blocks, style: doc.style } : { blocks });
 }
 
-/** A drawing zone made `height` tall (its bottom grip dragged), never shorter than its elements
- *  need (ARTICLE_DRAWING_PAD below the lowest) nor than ARTICLE_ZONE_MIN. */
-export function withZoneHeight<T extends DocsTab>(
+/** A drawing zone resized (its grips dragged): `height` tall, `width` wide, never smaller than its
+ *  elements need (ARTICLE_DRAWING_PAD past the furthest) nor than ARTICLE_ZONE_MIN, never taller
+ *  than ARTICLE_ZONE_MAX nor wider than the text (a wrapped zone: ARTICLE_WRAP_MAX_SHARE of it). */
+export function withZoneSize<T extends DocsTab>(
   tab: T,
   flow: string,
   zoneId: string,
-  height: number,
+  size: { width?: number; height?: number },
+  textWidth: number,
 ): T {
   const doc = articlesOf(tab)[flow];
   const zone = doc?.blocks.find((b): b is ArticleZoneBlock => b.id === zoneId && b.type === 'zone');
   if (!doc || !zone) return tab;
   const pages = layOutIllustratePages(illustratePagesOf(tab)).filter((p) => p.flow === flow);
   const rect = zoneCanvasRect(pages, zone);
-  let least = ARTICLE_ZONE_MIN;
+  let leastH = ARTICLE_ZONE_MIN;
+  let leastW = ARTICLE_ZONE_MIN;
   if (rect) {
     const els = tab.elements as Element[];
     const members = els.filter((el) => zoneMemberIds(els, rect).has(el.id));
     if (members.length) {
       const box = boundsOf(members, els);
-      least = Math.max(least, box.y + box.height + ARTICLE_DRAWING_PAD - rect.y);
+      leastH = Math.max(leastH, box.y + box.height + ARTICLE_DRAWING_PAD - rect.y);
+      leastW = Math.max(leastW, box.x + box.width + ARTICLE_DRAWING_PAD - rect.x);
     }
   }
-  const next = Math.round(Math.min(ARTICLE_ZONE_MAX, Math.max(least, height)));
-  if (next === zone.height) return tab;
-  const blocks = doc.blocks.map((b) => (b.id === zoneId ? { ...zone, height: next } : b));
+  const widest =
+    (zone.wrap ?? 'inline') === 'inline' ? textWidth : textWidth * ARTICLE_WRAP_MAX_SHARE;
+  const height =
+    size.height === undefined
+      ? zone.height
+      : Math.round(Math.min(ARTICLE_ZONE_MAX, Math.max(leastH, size.height)));
+  const width =
+    size.width === undefined
+      ? zone.width
+      : Math.round(Math.min(Math.max(widest, leastW), Math.max(leastW, size.width)));
+  if (height === zone.height && width === zone.width) return tab;
+  const blocks = doc.blocks.map((b) => (b.id === zoneId ? { ...zone, width, height } : b));
   return withArticleFlow(tab, flow, doc.style ? { blocks, style: doc.style } : { blocks });
 }

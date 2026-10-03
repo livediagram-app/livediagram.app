@@ -158,24 +158,21 @@ article's swatches), and a line break inside a block (Shift+Enter). Code blocks 
 - **Look**: the Toolbar layout's card exactly (`toolbar-surface.ts`): the same surface, 36 px
   controls, hairline dividers, and the Style menu's trigger in the brand tint of the palette's
   pickers, so it reads as the same product as the panels around it.
-- **Controls**, left to right, each a button with a tooltip naming it and its shortcut, pressed
-  state shown (`aria-pressed`):
-  - **Undo**, **Redo**;
+- **Controls**, left to right, each with a tooltip naming it and its shortcut, pressed state shown
+  (`aria-pressed`); the formats used all the time are buttons, the rest menus:
   - **Style** (a menu, each entry drawn in its own type: Text, Title, Subtitle, Heading 1, Heading
     2, Heading 3, Quote, Code);
-  - **Bold**, **Italic**, **Underline**, **Strikethrough**;
-  - **Text colour** and **Highlight** (a popover of the article's swatches: the accent, ink,
+  - **Bold**, **Italic**, **Underline**;
+  - **Colour** (a menu: text colour and highlight, from the article's swatches: the accent, ink,
     muted, and the seven colours of the theme; highlight's are their pale tints; **None** first);
   - **Link**;
-  - **Align** (a menu: left, centre, right, justify);
-  - **Bulleted list**, **Numbered list**, **To-do list** (pressed again: back to text);
-  - **Decrease indent**, **Increase indent**;
-  - **Insert** (a menu: Image, Table, Chart, Drawing, Divider, Page break, Code, Callout, Icon);
-  - **Clear formatting**;
-  - **Article style** (opens the page panel on Style);
-  - the **word count** ("1,204 words"; with a selection, "38 of 1,204 words").
-- **Narrow**: when the toolbar is wider than the canvas, the controls after Lists fold into a
-  **More** menu.
+  - **Lists** (a menu: bulleted, numbered, to-do; indent and outdent);
+  - **Alignment** (a menu: left, centre, right, justify);
+  - **More formatting** (a menu: strikethrough, inline code, superscript, subscript, clear
+    formatting, Article style, which opens the page panel on Style);
+  - **Insert** (a menu: Image, Table, Chart, Drawing, Divider, Page break, Quote, Code, Callout).
+- No undo or redo (the canvas controls have them) and no word count.
+- **Narrow**: when the toolbar is wider than the canvas, it scrolls sideways.
 - **On a phone** the toolbar is a bar along the bottom of the screen, above the keyboard, scrolling
   sideways; the panel opens as a bottom sheet as on any page.
 
@@ -189,8 +186,9 @@ laid out with it, holding ordinary canvas elements that move with it.
   resizes the zone.
 - **Drawing zone** (`zone: 'drawing'`): an area of the page for shapes, sticky notes, text labels
   and the arrows between them, worked on with every Diagram tool. It is a size of its own (by
-  default the text width x 240 px) with a resize grip on its bottom edge (and its right edge
-  when not the full width); it grows to keep its elements inside it with 16 px to spare, and never
+  default the text width x 240 px) with grips on its bottom edge (taller or shorter), its right
+  edge (wider or narrower, up to the text width, a wrapped zone two thirds of it) and its
+  bottom-right corner (both); it grows to keep its elements inside it with 16 px to spare, and never
   shrinks past them.
 - **Wrap**: **In line** (default; on its own line between blocks, aligned left, centre (default)
   or right), **Wrap left** (at the left of the text, the text running down its right) or **Wrap
@@ -202,9 +200,14 @@ laid out with it, holding ordinary canvas elements that move with it.
   stays where it is dropped, fixed to the page in front of the text (a **loose element**). An
   element dragged into a drawing zone joins it; one whose centre stays inside but pokes out grows
   the zone.
-- **The zone bar**: a small bar over a zone's top edge while the zone or one of its elements is
-  selected: **In line**, **Wrap left**, **Wrap right**, then (In line) **Align left / centre /
-  right**, then **Delete** (the zone and its elements). Hovering a zone shows its outline faintly
+- **The zone bar**: a small bar under a zone's bottom edge while the zone or one of its elements
+  is selected: a **grip** (tooltip **Drag to move**), then **In line**, **Wrap left**, **Wrap
+  right**, then (In line) **Align left / centre / right**, then **Delete** (the zone and its
+  elements).
+- **Moving a zone**: dragging the grip carries a dashed ghost of the zone with the pointer, the
+  zone itself dimmed in place, and a **drop caret** (a brand line across the column, a ring at each
+  end) at the block boundary nearest the pointer. Release moves the zone there, its elements with
+  it, as one edit; Escape, or a release where it already sits, leaves it be. Hovering a zone shows its outline faintly
   for someone who may edit.
 - **Selecting a zone**: a press on a drawing zone's empty area selects the zone (outlined); the
   arrow keys then move the caret off it, Backspace / Delete remove it, ⌘C / ⌘X copy or cut it with

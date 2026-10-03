@@ -330,6 +330,7 @@ export const ARTICLE_FORMATTING = chart(
       'ArticlePaste',
       'ArticleZoneWrap',
       'ArticleZoneResized',
+      'ArticleZoneMoved',
       'ArticleZoneRemoved',
     ],
   },

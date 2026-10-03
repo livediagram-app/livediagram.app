@@ -185,7 +185,6 @@ export function PageToolbar({
     selection.style === 'list'
       ? (LIST_OPTIONS.find((l) => l.id === selection.list)?.label ?? 'List')
       : (STYLE_OPTIONS.find((s) => s.id === selection.style)?.label ?? 'Text');
-  const words = handle.words();
   const S = articleSchema;
   const insertBlock = (what: BlockInsert) => {
     handle.insert(
@@ -316,6 +315,15 @@ export function PageToolbar({
         >
           <AlignGlyph align={selection.align ?? 'left'} />
         </Button>
+        <Button
+          label="More formatting"
+          anchor="more"
+          menu
+          expanded={open === 'more'}
+          onPress={() => toggleOpen('more')}
+        >
+          <More />
+        </Button>
         <Divider />
         <Button
           label="Insert"
@@ -326,23 +334,6 @@ export function PageToolbar({
         >
           <Plus />
         </Button>
-        <Button
-          label="More formatting"
-          anchor="more"
-          menu
-          expanded={open === 'more'}
-          onPress={() => toggleOpen('more')}
-        >
-          <More />
-        </Button>
-        <span
-          className="whitespace-nowrap px-2 text-[11px] tabular-nums text-slate-500 dark:text-slate-400"
-          aria-live="polite"
-        >
-          {words.selected > 0
-            ? `${words.selected.toLocaleString()} of ${words.total.toLocaleString()} words`
-            : `${words.total.toLocaleString()} ${words.total === 1 ? 'word' : 'words'}`}
-        </span>
       </div>
       {open === 'style' ? (
         <ToolbarPopover anchor="style" onClose={close} label="Text style" width={210}>

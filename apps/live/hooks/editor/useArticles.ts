@@ -12,7 +12,12 @@ import {
   layOutIllustratePages,
   withArticleFlow,
   withZoneLanded,
-  withZoneHeight,
+  withZoneSize,
+  withElementsMoved,
+  zoneCanvasRect,
+  zoneMemberIds,
+  type ArticleZoneBlock,
+  type Element,
   withZoneRemoved,
   withZoneWrap,
   type ArticleZoneAlign,
@@ -49,8 +54,10 @@ export type ArticlesView = {
   onWritingPress: () => void;
   // Insert at the caret (the page toolbar): an empty drawing, or an object the writing takes in.
   insertObject: (flow: string, what: ArticleInsert) => void;
-  // A zone's wrap, place across the text, or removal (the zone bar).
+  // A zone's wrap, place across the text, size, or removal (the zone bar, its grips).
   zoneAction: (flow: string, zoneId: string, action: ZoneAction) => void;
+  // A zone dragged to the block boundary nearest a canvas point, its elements with it.
+  moveZone: (flow: string, zoneId: string, near: { x: number; y: number }) => void;
   // An article's style changed (the Style tab): a look, or one field.
   setStyle: (flow: string, change: ArticleStyleChange) => void;
   // A style shown on an article while a Style tab choice is hovered.
@@ -93,7 +100,10 @@ export type ArticleStyleChange = { look: ArticleLookId } | { patch: Partial<Arti
 export type ArticleInsert =
   'image' | 'table' | 'chart' | 'pie' | 'line' | 'callout' | 'sticky' | 'drawing';
 export type ZoneAction =
-  { wrap: ArticleZoneWrap } | { align: ArticleZoneAlign } | { height: number } | { remove: true };
+  | { wrap: ArticleZoneWrap }
+  | { align: ArticleZoneAlign }
+  | { size: { width?: number; height?: number } }
+  | { remove: true };
 
 // A new drawing's height before anything is drawn in it.
 const NEW_DRAWING_HEIGHT = 240;
@@ -223,17 +233,34 @@ export function useArticles(deps: {
       const d = latest.current;
       if (!d.canEdit || d.activeTab.locked === true) return;
       if ('remove' in action) track('Element', 'Changed', 'ArticleZoneRemoved');
-      else if ('height' in action) track('Element', 'Changed', 'ArticleZoneResized');
+      else if ('size' in action) track('Element', 'Changed', 'ArticleZoneResized');
       else track('Element', 'Changed', 'ArticleZoneWrap');
       d.commitTabs((ts) =>
         ts.map((t) => {
           if (t.id !== tabId) return t;
           if ('remove' in action) return withZoneRemoved(t, flow, zoneId);
-          if ('height' in action) return withZoneHeight(t, flow, zoneId, action.height);
+          if ('size' in action)
+            return withZoneSize(t, flow, zoneId, action.size, textWidth(t, flow));
           return withZoneWrap(t, flow, zoneId, action, textWidth(t, flow));
         }),
       );
       debugLog('[article] zone changed', { tabId, flow, zoneId, action });
+    },
+    [tabId],
+  );
+
+  const moveZone = useCallback(
+    (flow: string, zoneId: string, near: { x: number; y: number }) => {
+      const d = latest.current;
+      const handle = articleHandleOf(flow);
+      if (!handle || !d.canEdit || d.activeTab.locked === true) return;
+      const res = handle.moveZone(zoneId, near);
+      if (!res) return;
+      track('Element', 'Changed', 'ArticleZoneMoved');
+      d.commitTabs((ts) =>
+        ts.map((t) => (t.id === tabId ? withZoneMoved(t, flow, zoneId, res) : t)),
+      );
+      debugLog('[article] zone moved', { tabId, flow, zoneId, index: res.index });
     },
     [tabId],
   );
@@ -270,8 +297,39 @@ export function useArticles(deps: {
     onWritingPress,
     insertObject,
     zoneAction,
+    moveZone,
     setStyle,
     stylePreview,
     setStylePreview,
+  };
+}
+
+// A zone moved in the writing (landed where the editor measured it), its elements carried from its
+// old place to its new one in the same edit.
+export function withZoneMoved(
+  t: Tab,
+  flow: string,
+  zoneId: string,
+  res: Parameters<typeof withZoneLanded>[2],
+): Tab {
+  const pagesOf = (tab: Tab) =>
+    layOutIllustratePages(illustratePagesOf(tab)).filter((p) => p.flow === flow);
+  const zoneOf = (tab: Tab) =>
+    articlesOf(tab)[flow]?.blocks.find(
+      (b): b is ArticleZoneBlock => b.id === zoneId && b.type === 'zone',
+    );
+  const before = zoneOf(t);
+  const from = before ? zoneCanvasRect(pagesOf(t), before) : null;
+  const landed = withZoneLanded(t, flow, res);
+  if (!from || !landed.rect) return landed.tab;
+  const ids = zoneMemberIds(t.elements as Element[], from);
+  return {
+    ...landed.tab,
+    elements: withElementsMoved(
+      landed.tab.elements as Element[],
+      ids,
+      landed.rect.x - from.x,
+      landed.rect.y - from.y,
+    ),
   };
 }

@@ -540,7 +540,9 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Element|Changed|ArticleZoneWrap':
     "Someone changed how a picture or drawing sits in an article's writing: in line, or wrapped.",
   'Element|Changed|ArticleZoneResized':
-    "Someone made a drawing in an article's writing taller or shorter.",
+    "Someone made a drawing in an article's writing bigger or smaller.",
+  'Element|Changed|ArticleZoneMoved':
+    "Someone dragged a picture or drawing to a new place in an article's writing.",
   'Element|Changed|ArticleZoneRemoved':
     "Someone deleted a picture or drawing from an article's writing.",
   'Tab|Changed|PageRemoved': 'Someone deleted a page from an Illustrate tab.',
