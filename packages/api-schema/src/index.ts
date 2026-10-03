@@ -639,3 +639,4 @@ export * from './placement-defaults';
 // Explorer Home: opens, Jump back in, the own Timeline and What happened
 // (docs/specs/013-workspace/explorer-home.md).
 export * from './home';
+export * from './drag-preview';

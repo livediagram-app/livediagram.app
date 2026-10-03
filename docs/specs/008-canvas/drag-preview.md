@@ -31,12 +31,13 @@ a drag's cost to what it moves, whatever the size of the board
   and for each previewed element only what the gesture changes (position and size for a box; the
   changed geometry for an arrow). A last message says the preview has ended.
 - **A collaborator draws a peer's preview the same way** the dragger draws their own: those elements
-  from the preview, nothing written. It ends on the peer's end message, when the real change for
-  those elements arrives, when the peer leaves, or after 2 s without a message. In every case the
+  from the preview, the rest of each element as the collaborator has it, nothing written. It ends on
+  the peer's end message, when the peer's real change arrives, when the peer leaves, or after 2 s
+  without a message. In every case the
   canvas falls back to the document.
-- **Only an editor's preview is drawn.** A preview from a participant who may only view is ignored:
-  presence travels from any role, and a preview must never let a viewer make others' elements
-  appear to move.
+- **Only an editor's preview is drawn.** The room relays a preview only from an editor, and a
+  collaborator draws one only from an editor: other presence travels from any role, and a preview
+  must never let a viewer make others' elements appear to move.
 - **Two people dragging the same element** each see their own preview. Whoever releases last wins,
   as two edits to one element do today ([Realtime conflict
   resolution](../012-collaboration/realtime-conflict-resolution.md)).

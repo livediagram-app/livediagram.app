@@ -76,7 +76,7 @@ describe('applyOverlay', () => {
 
 describe('useDragPreview', () => {
   it('follows the local preview for its tab only', () => {
-    const { result } = renderHook(() => useDragPreview('t'));
+    const { result } = renderHook(() => useDragPreview('t', doc));
     expect(result.current).toBeNull();
     act(() => setLocalPreview('t', [a, { ...b, x: 1 }, c], doc));
     expect(result.current?.changed.has(b.id)).toBe(true);
@@ -84,25 +84,20 @@ describe('useDragPreview', () => {
     expect(result.current).toBeNull();
   });
 
-  it('merges peers beneath the local preview', () => {
-    const { result } = renderHook(() => useDragPreview('t'));
-    const peerB = { ...b, x: 7 };
-    const peerC = { ...c, x: 8 };
+  it('resolves peer patches against the elements drawn, beneath the local preview', () => {
+    const { result } = renderHook(() => useDragPreview('t', doc));
     act(() =>
-      setPeerPreview('p1', {
-        tabId: 't',
-        changed: new Map([
-          [b.id, peerB],
-          [c.id, peerC],
-        ]),
-        removed: new Set(),
-        added: [],
-      }),
+      setPeerPreview('p1', 't', [
+        { id: b.id, x: 7 },
+        { id: c.id, x: 8 },
+        { id: 'gone', x: 1 },
+      ]),
     );
+    expect(result.current!.changed.get(c.id)).toEqual({ ...c, x: 8 });
+    expect(result.current!.changed.has('gone')).toBe(false);
     const localB = { ...b, x: 9 };
     act(() => setLocalPreview('t', [a, localB, c], doc));
     expect(result.current!.changed.get(b.id)).toBe(localB);
-    expect(result.current!.changed.get(c.id)).toBe(peerC);
     act(() => {
       clearLocalPreview();
       clearPeerPreview('p1');
@@ -110,11 +105,32 @@ describe('useDragPreview', () => {
     expect(result.current).toBeNull();
   });
 
+  it('ignores a peer preview for another tab', () => {
+    const { result } = renderHook(() => useDragPreview('t', doc));
+    act(() => setPeerPreview('p1', 'other', [{ id: b.id, x: 7 }]));
+    expect(result.current).toBeNull();
+  });
+
   it('keeps one merged object until something changes', () => {
-    const { result, rerender } = renderHook(() => useDragPreview('t'));
+    const { result, rerender } = renderHook(() => useDragPreview('t', doc));
     act(() => setLocalPreview('t', [a, { ...b, x: 1 }, c], doc));
     const first = result.current;
     rerender();
     expect(result.current).toBe(first);
+  });
+});
+
+describe('several readers', () => {
+  it('gives each reader a stable preview, whatever elements each draws', () => {
+    const other: Element[] = [a, b];
+    const first = renderHook(() => useDragPreview('t', doc));
+    const second = renderHook(() => useDragPreview('t', other));
+    act(() => setPeerPreview('p1', 't', [{ id: b.id, x: 7 }]));
+    const one = first.result.current;
+    const two = second.result.current;
+    first.rerender();
+    second.rerender();
+    expect(first.result.current).toBe(one);
+    expect(second.result.current).toBe(two);
   });
 });

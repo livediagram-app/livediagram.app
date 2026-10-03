@@ -5,17 +5,17 @@ drags for collaborators.
 
 ## Files
 
-| File                                                          | Role                                                                           |
-| ------------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| `apps/live/lib/drag-preview.ts`                               | The preview store: local and peer overlays, `useDragPreview`, `applyOverlay`   |
-| `apps/live/hooks/canvas/useEditorDrag.ts`                     | Writes ticks to the preview; reads through the virtual tab; commits on release |
-| `apps/live/components/canvas/CanvasElementsLayer.tsx`         | Draws each element through the overlay; re-derives only the affected arrows    |
-| `apps/live/components/canvas/drag-affected-arrows.ts`         | `affectedArrows`: arrows pinned to, or crossing, a previewed box               |
-| `apps/live/components/canvas/Canvas.tsx`                      | Derives the selection from the previewed elements while a preview lasts        |
-| `apps/live/hooks/canvas/useArrowLabelLayouts.ts`              | `draftLayout(arrow, text, elements?)`: lays out a previewed arrow's label      |
-| `packages/api-schema/src/room-messages.ts`                    | `drag-preview` presence op, in `PRESENCE_OP_KINDS`                             |
-| `apps/live/hooks/collab/useDragPreviewBroadcast.ts` (planned) | Sends the local preview at `DRAG_PREVIEW_SEND_MS`, and its end                 |
-| `apps/live/hooks/collab/usePeerDragPreviews.ts` (planned)     | Receives peers' previews: role check, expiry, cleared by real ops              |
+| File                                                  | Role                                                                           |
+| ----------------------------------------------------- | ------------------------------------------------------------------------------ |
+| `apps/live/lib/drag-preview.ts`                       | The preview store: local and peer overlays, `useDragPreview`, `applyOverlay`   |
+| `apps/live/hooks/canvas/useEditorDrag.ts`             | Writes ticks to the preview; reads through the virtual tab; commits on release |
+| `apps/live/components/canvas/CanvasElementsLayer.tsx` | Draws each element through the overlay; re-derives only the affected arrows    |
+| `apps/live/components/canvas/drag-affected-arrows.ts` | `affectedArrows`: arrows pinned to, or crossing, a previewed box               |
+| `apps/live/components/canvas/Canvas.tsx`              | Derives the selection from the previewed elements while a preview lasts        |
+| `apps/live/hooks/canvas/useArrowLabelLayouts.ts`      | `draftLayout(arrow, text, elements?)`: lays out a previewed arrow's label      |
+| `packages/api-schema/src/room-messages.ts`            | `drag-preview` presence op, in `PRESENCE_OP_KINDS`                             |
+| `apps/live/hooks/collab/useDragPreviewBroadcast.ts`   | Sends the local preview at `DRAG_PREVIEW_SEND_MS`, and its end                 |
+| `apps/live/hooks/collab/peer-drag-previews.ts`        | Receives peers' previews: role check, expiry, cleared by real ops              |
 
 ## Domain and naming
 
@@ -32,7 +32,12 @@ drags for collaborators.
 ### The local preview
 
 - `drag-preview.ts` is a module store (the `canvas-gesture.ts` pattern): one local `DragOverlay | null`
-  and a map of peer previews by presence id, a version number bumped on every change, listeners.
+  and each peer's raw patches by presence id (`setPeerPreview(presenceId, tabId, patches)`),
+  listeners. A peer's patches are resolved at read time against the elements the reader draws
+  (`useDragPreview(tabId, elements)`), so the rest of each element is the reader's own. The merged
+  result is cached per tab and per element array (a `WeakMap`) and dropped on any change: `Canvas`
+  and the element layer read different arrays, and a shared single-entry cache made each read evict
+  the other, a fresh object every time and a render loop.
 - `setLocalPreview(tabId, next, base)` derives the overlay (`overlayBetween`) by identity against
   `base`, the board as the gesture found it (so a collaborator's change to another element mid-gesture
   is never part of the overlay, and is never undone by it): an element of `next` not
@@ -95,11 +100,13 @@ drags for collaborators.
   when it clears. More than `DRAG_PREVIEW_MAX_ELEMENTS` changed elements → no patches are sent for
   that gesture; collaborators see the result on release.
 - A boxed patch carries `x`, `y`, `width`, `height`, `rotation`; an arrow patch `from`, `to`,
-  `curveOffset`, `elbowOffset`, `curvePoints`, `labelOffset` (fields present only when changed).
-- `usePeerDragPreviews`: on a `drag-preview` from a presence id whose participant role is `edit`,
-  sets that peer's preview (patches applied to the document's elements give `changed`); on `end`,
-  on that peer leaving, on an element op for any of its ids, or `PEER_PREVIEW_EXPIRY_MS` after its
-  last message, clears it. A sender whose role is not `edit` is dropped and logged.
+  `curveOffset`, `elbowOffset`, `curvePoints`, `labelOffset` (each field the element has).
+- Receiving (`peer-drag-previews.ts`, called from `useRoomConnection`): on a `drag-preview` from a
+  presence id whose role (kept from the latest presence list) is `edit`, parses the patches
+  (`parseDragPreviewPatches`) and sets that peer's preview; on `end`, on that peer leaving or the
+  room closing, on any element or tab op from that peer (D74), or `PEER_PREVIEW_EXPIRY_MS` after its
+  last message, clears it. A sender whose role is not `edit` is dropped and logged once. The room
+  drops a non-editor's `drag-preview` too.
 
 ## Interfaces and contracts
 
@@ -118,9 +125,13 @@ export function setLocalPreview(
 ): void;
 export function clearLocalPreview(): void;
 export function localPreview(): DragOverlay | null;
-export function setPeerPreview(presenceId: string, overlay: DragOverlay): void;
+export function setPeerPreview(
+  presenceId: string,
+  tabId: string,
+  patches: readonly PeerPatch[],
+): void;
 export function clearPeerPreview(presenceId: string): void;
-export function useDragPreview(tabId: string): DragOverlay | null; // merged; null when none
+export function useDragPreview(tabId: string, elements: readonly Element[]): DragOverlay | null;
 export function applyOverlay(elements: readonly Element[], overlay: DragOverlay): Element[];
 
 // packages/api-schema/src/room-messages.ts
@@ -204,7 +215,7 @@ type DragPreviewOp =
 | What is redrawn                                       | `CanvasElementsLayer.renders.test.tsx`: a preview re-renders the moved element and affected arrows only |
 | Affected arrows                                       | `drag-affected-arrows.test.ts`                                                                          |
 | Selection follows the preview                         | `usePreviewedElements.test.tsx`                                                                         |
-| Live movement, expiry, end, real-op clear, role check | `usePeerDragPreviews.test.tsx`, `useDragPreviewBroadcast.test.tsx`                                      |
+| Live movement, expiry, end, real-op clear, role check | `peer-drag-previews.test.ts`, `useDragPreviewBroadcast.test.tsx`                                        |
 | Presence classification                               | `room-messages` test: `drag-preview` is presence                                                        |
 | Budget                                                | The probe's drag rows                                                                                   |
 
@@ -218,4 +229,4 @@ type DragPreviewOp =
 
 ## Defaults ledger
 
-D71 to D73 in [DEFAULTS.md](DEFAULTS.md).
+D71 to D74 in [DEFAULTS.md](DEFAULTS.md).

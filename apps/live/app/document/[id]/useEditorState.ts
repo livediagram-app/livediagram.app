@@ -171,6 +171,7 @@ import { useTabScope } from './useTabScope';
 import { useEditorPersistence } from './editor-persistence';
 import { useEditorRealtime } from './editor-realtime';
 import { useAssignRef, useLatest } from '@/hooks/ui/useLatest';
+import { useDragPreviewBroadcast } from '@/hooks/collab/useDragPreviewBroadcast';
 
 // Activity-log past/future stacks share the cap with the
 // state-snapshot stack: we can't undo past what useDocumentHistory
@@ -1129,6 +1130,12 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     activeId,
     canvasTool,
     cursorsHidden: voteCursorsHidden,
+  });
+  // Our drags, live for collaborators (docs/specs/008-canvas/drag-preview.md), whenever the room is open.
+  useDragPreviewBroadcast({
+    roomRef,
+    live: hydrated && !!documentId && (documentShareable || !!documentTeamId),
+    activeId,
   });
   // Viewport state (pan offset, zoom, the canvas wrapper ref the
   // measurements read through, and a parallel zoomRef the drag hook

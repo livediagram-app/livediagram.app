@@ -547,7 +547,12 @@ describe('DocumentRoom op-role enforcement', () => {
   // exclusion: it is ADDRESSED rather than broadcast (see its own tests just
   // below), so "a peer received it" is not the right assertion for it.
   const ADDRESSED_PRESENCE_KINDS = ['avatar-push'];
-  for (const kind of [...PRESENCE_OP_KINDS].filter((k) => !ADDRESSED_PRESENCE_KINDS.includes(k))) {
+  // `drag-preview` is presence an editor alone may send: a viewer's would make others' elements appear
+  // to move (docs/specs/008-canvas/drag-preview.md). Its own test below pins both halves.
+  const EDITOR_ONLY_PRESENCE_KINDS = ['drag-preview'];
+  for (const kind of [...PRESENCE_OP_KINDS].filter(
+    (k) => !ADDRESSED_PRESENCE_KINDS.includes(k) && !EDITOR_ONLY_PRESENCE_KINDS.includes(k),
+  )) {
     it(`relays a '${kind}' presence op from a view-role session`, () => {
       const { room } = newRoom();
       const editor = connect(room, 'editor', 'edit');
@@ -604,6 +609,7 @@ describe('DocumentRoom op-role enforcement', () => {
   // the gate, or renamed, this fails rather than silently excluding nothing.
   it('excludes only kinds that really are in the presence set', () => {
     expect(ADDRESSED_PRESENCE_KINDS.filter((k) => !isPresenceKind(k))).toEqual([]);
+    expect(EDITOR_ONLY_PRESENCE_KINDS.filter((k) => !isPresenceKind(k))).toEqual([]);
   });
 
   // The dangerous direction. Everything in PRESENCE_OP_KINDS is relayed from a
@@ -671,6 +677,25 @@ describe('DocumentRoom op-role enforcement', () => {
     // would push every real mutation out of the 256-slot catch-up log within
     // half a minute of somebody scrolling, forcing the next reconnecting peer
     // into a full D1 re-hydrate.
+    expect(received[0]).not.toHaveProperty('seq');
+  });
+
+  // docs/specs/008-canvas/drag-preview.md: an editor's live drag relays unordered, and a viewer's never
+  // relays at all — a viewer must not make others' elements appear to move.
+  it("relays an editor's drag preview unordered, and drops a viewer's", () => {
+    const { room } = newRoom();
+    const editor = connect(room, 'editor', 'edit');
+    const viewer = connect(room, 'viewer', 'view');
+    const other = connect(room, 'other', 'edit');
+    other.ws.sent.length = 0;
+    const op = { kind: 'drag-preview', tabId: 't', patches: [{ id: 'a', x: 10, y: 20 }] };
+
+    sendFrame(room, viewer.ws, { kind: 'op', op });
+    expect(opsReceived(other.ws)).toHaveLength(0);
+
+    sendFrame(room, editor.ws, { kind: 'op', op });
+    const received = opsReceived(other.ws);
+    expect(received).toHaveLength(1);
     expect(received[0]).not.toHaveProperty('seq');
   });
 

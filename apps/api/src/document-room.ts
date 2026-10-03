@@ -661,6 +661,9 @@ export class DocumentRoom implements DurableObject {
       if (!scopedSenderMayRelay(msg.op, session.tabScope ?? null)) return;
       const isPresenceOp = isPresenceOpKind(opKind);
       if (sender.role !== 'edit' && !isPresenceOp) return;
+      // A drag preview (docs/specs/008-canvas/drag-preview.md) is presence, but shows elements moving: only
+      // an editor's may reach anyone, so a viewer can never make others' elements appear to move.
+      if (opKind === 'drag-preview' && sender.role !== 'edit') return;
       // Running the session belongs to whoever holds the baton (docs/specs/012-collaboration/facilitator.md).
       // Only these two ops can be enforced here: a poll start / end is its own
       // kind, while the timer and the dot vote ride the same `tab` /
