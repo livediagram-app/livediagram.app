@@ -14,12 +14,9 @@ import { BottomSheet } from '@/components/primitives/BottomSheet';
 // Auto-clamps to the viewport so a click in the bottom-right corner
 // still surfaces a usable menu instead of clipping off-screen.
 //
-// On a phone it is a BOTTOM SHEET instead (docs/specs/007-editor/live-app.md "Mobile chrome"): the
-// width of the screen, docked to the bottom edge, at most 60% of its height (scrolling inside),
-// clear of the home indicator, with a grab handle that swipes it closed. A card hung off a long-press
-// point covered the element it was about and ran under the tab bar; the sheet sits in thumb reach
-// and leaves the top of the canvas, where the element usually is, in view. Outside taps, Escape and
-// the long-press grace work the same either way.
+// On a phone it is a BottomSheet instead (docs/specs/007-editor/live-app.md "Menus are bottom
+// sheets on a phone"): a card hung off a long-press point covered the element it was about and ran
+// under the tab bar. Outside taps, Escape and the long-press grace work the same either way.
 
 type ContextMenuProps = {
   position: { x: number; y: number };
@@ -149,7 +146,6 @@ export function ContextMenu({
         role="menu"
         data-tour-id="context-menu"
         data-context-menu=""
-        data-context-menu-sheet=""
         onPointerDown={(e) => e.stopPropagation()}
         onContextMenu={(e) => e.preventDefault()}
         onClose={onClose}
