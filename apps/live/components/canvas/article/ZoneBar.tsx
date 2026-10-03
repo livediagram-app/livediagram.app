@@ -1,12 +1,13 @@
 'use client';
 
 // The zone bar (docs/specs/007-editor/article-pages.md "Zones"): under a zone's bottom edge while the
-// zone, or elements all in it, are selected. How it sits in the writing (In line, Wrap left, Wrap
-// right), where an inline one sits across the text, and Delete (the zone and its elements), led by a
+// zone, or elements all in it, are selected, or under a floating object on an article page. How it
+// sits (In line, Wrap left, Wrap right, or Float in front of the text), where an inline one sits across the text, and Delete (the zone and its elements), led by a
 // grip that drags the zone to a new place in the writing. Drawn in
 // canvas space at one screen size, so it rides the zone through a pan or a zoom.
 import type { ReactNode } from 'react';
 import {
+  lucideBringToFront,
   lucideGripVertical,
   lucidePanelLeft,
   lucidePanelRight,
@@ -16,8 +17,7 @@ import {
   lucideTextAlignStart,
 } from '@livediagram/icons/lucide';
 import { lucideGlyph, Tooltip, TrashIcon } from '@livediagram/ui';
-import type { ArticleZoneBlock, PageRect } from '@livediagram/document';
-import type { ZoneAction } from '@/hooks/editor/useArticles';
+import type { ArticleZoneAlign, ArticleZoneWrap, PageRect } from '@livediagram/document';
 
 const I = (g: Parameters<typeof lucideGlyph>[0]) => lucideGlyph(g, 16);
 const Inline = I(lucideRows2);
@@ -27,28 +27,41 @@ const AlignLeft = I(lucideTextAlignStart);
 const AlignCenter = I(lucideTextAlignCenter);
 const AlignRight = I(lucideTextAlignEnd);
 const Grip = I(lucideGripVertical);
+const Float = I(lucideBringToFront);
+
+// How a zone (or a floating object) sits: in the writing (in line, or wrapped), or in front of it.
+export type ZoneFit = ArticleZoneWrap | 'float';
 
 export function ZoneBar({
-  zone,
+  fit,
+  align,
+  drawing,
   rect,
   zoom,
-  onAction,
+  onFit,
+  onAlign,
+  onRemove,
   onMoveStart,
 }: {
-  zone: ArticleZoneBlock;
+  fit: ZoneFit;
+  align: ArticleZoneAlign;
+  // A drawing zone (named so, and its Delete takes its drawing); else an object.
+  drawing: boolean;
   rect: PageRect;
   zoom: number;
-  onAction: (action: ZoneAction) => void;
-  // A press on the grip: the zone is dragged through the writing (useZoneDrag).
-  onMoveStart: (e: React.PointerEvent<HTMLElement>) => void;
+  onFit: (fit: ZoneFit) => void;
+  onAlign: (align: ArticleZoneAlign) => void;
+  // Absent for a floating object: its own toolbar deletes it.
+  onRemove?: () => void;
+  // A press on the grip (a zone in the writing): the zone is dragged through it (useZoneDrag).
+  onMoveStart?: (e: React.PointerEvent<HTMLElement>) => void;
 }) {
-  const wrap = zone.wrap ?? 'inline';
-  const align = zone.align ?? 'center';
   return (
     <div
       role="toolbar"
-      aria-label={zone.zone === 'drawing' ? 'Drawing' : 'Object in the text'}
+      aria-label={drawing ? 'Drawing' : 'Object in the text'}
       data-article-keep-active=""
+      data-zone-bar=""
       className="pointer-events-auto absolute flex items-center gap-0.5 rounded-lg border border-slate-200 bg-white p-0.5 shadow-md shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-900"
       style={{
         // Under the zone: above it sits the element's own toolbar.
@@ -63,79 +76,70 @@ export function ZoneBar({
       }}
       onDoubleClick={(e) => e.stopPropagation()}
     >
-      <Tooltip label="Drag to move">
-        <button
-          type="button"
-          aria-label="Drag to move"
-          data-zone-grip=""
-          onPointerDown={(e) => {
-            e.stopPropagation();
-            e.preventDefault();
-            onMoveStart(e);
-          }}
-          className="flex h-7 w-6 cursor-grab touch-none items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 active:cursor-grabbing dark:hover:bg-slate-800 dark:hover:text-slate-200"
-        >
-          <Grip />
-        </button>
-      </Tooltip>
-      <span aria-hidden className="mx-0.5 h-5 w-px bg-slate-200 dark:bg-slate-700" />
-      <Choice
-        label="In line"
-        pressed={wrap === 'inline'}
-        onPress={() => onAction({ wrap: 'inline' })}
-      >
+      {onMoveStart ? (
+        <>
+          <Tooltip label="Drag to move">
+            <button
+              type="button"
+              aria-label="Drag to move"
+              data-zone-grip=""
+              onPointerDown={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                onMoveStart(e);
+              }}
+              className="flex h-7 w-6 cursor-grab touch-none items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 active:cursor-grabbing dark:hover:bg-slate-800 dark:hover:text-slate-200"
+            >
+              <Grip />
+            </button>
+          </Tooltip>
+          <Sep />
+        </>
+      ) : null}
+      <Choice label="In line" pressed={fit === 'inline'} onPress={() => onFit('inline')}>
         <Inline />
       </Choice>
-      <Choice
-        label="Wrap left"
-        pressed={wrap === 'left'}
-        onPress={() => onAction({ wrap: 'left' })}
-      >
+      <Choice label="Wrap left" pressed={fit === 'left'} onPress={() => onFit('left')}>
         <WrapLeft />
       </Choice>
-      <Choice
-        label="Wrap right"
-        pressed={wrap === 'right'}
-        onPress={() => onAction({ wrap: 'right' })}
-      >
+      <Choice label="Wrap right" pressed={fit === 'right'} onPress={() => onFit('right')}>
         <WrapRight />
       </Choice>
-      {wrap === 'inline' ? (
+      <Choice label="Float" pressed={fit === 'float'} onPress={() => onFit('float')}>
+        <Float />
+      </Choice>
+      {fit === 'inline' ? (
         <>
-          <span aria-hidden className="mx-0.5 h-5 w-px bg-slate-200 dark:bg-slate-700" />
-          <Choice
-            label="Align left"
-            pressed={align === 'left'}
-            onPress={() => onAction({ align: 'left' })}
-          >
+          <Sep />
+          <Choice label="Align left" pressed={align === 'left'} onPress={() => onAlign('left')}>
             <AlignLeft />
           </Choice>
           <Choice
             label="Align centre"
             pressed={align === 'center'}
-            onPress={() => onAction({ align: 'center' })}
+            onPress={() => onAlign('center')}
           >
             <AlignCenter />
           </Choice>
-          <Choice
-            label="Align right"
-            pressed={align === 'right'}
-            onPress={() => onAction({ align: 'right' })}
-          >
+          <Choice label="Align right" pressed={align === 'right'} onPress={() => onAlign('right')}>
             <AlignRight />
           </Choice>
         </>
       ) : null}
-      <span aria-hidden className="mx-0.5 h-5 w-px bg-slate-200 dark:bg-slate-700" />
-      <Choice
-        label={zone.zone === 'drawing' ? 'Delete drawing' : 'Delete'}
-        danger
-        onPress={() => onAction({ remove: true })}
-      >
-        <TrashIcon className="h-4 w-4" />
-      </Choice>
+      {onRemove ? (
+        <>
+          <Sep />
+          <Choice label={drawing ? 'Delete drawing' : 'Delete'} danger onPress={onRemove}>
+            <TrashIcon className="h-4 w-4" />
+          </Choice>
+        </>
+      ) : null}
     </div>
   );
+}
+
+function Sep() {
+  return <span aria-hidden className="mx-0.5 h-5 w-px bg-slate-200 dark:bg-slate-700" />;
 }
 
 function Choice({

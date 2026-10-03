@@ -163,3 +163,16 @@ export function useStylePanelRequest(): Signal {
     () => panelSignal,
   );
 }
+
+// Zones let go of by the writing (Float) rather than deleted: their elements stay on the page, so the
+// intake (useArticleIntake), which takes a departed zone's elements with it, leaves theirs be.
+const released = new Set<string>();
+
+export function markZoneReleased(zoneId: string): void {
+  released.add(zoneId);
+}
+
+/** Whether a zone that left the writing was let go of (and forgets it: asked once, by the intake). */
+export function takeZoneReleased(zoneId: string): boolean {
+  return released.delete(zoneId);
+}

@@ -414,6 +414,15 @@ export function withZoneRemoved<T extends DocsTab>(tab: T, flow: string, zoneId:
   return withArticleFlow(emptied, flow, doc.style ? { blocks, style: doc.style } : { blocks });
 }
 
+/** A zone let go of by the writing (Float): its block leaves the writing, its elements stay where
+ *  they are, in front of the text, as loose elements of the page. */
+export function withZoneReleased<T extends DocsTab>(tab: T, flow: string, zoneId: string): T {
+  const doc = articlesOf(tab)[flow];
+  if (!doc || !doc.blocks.some((b) => b.id === zoneId && b.type === 'zone')) return tab;
+  const blocks = doc.blocks.filter((b) => b.id !== zoneId);
+  return withArticleFlow(tab, flow, doc.style ? { blocks, style: doc.style } : { blocks });
+}
+
 /** A drawing zone resized (its grips dragged): `height` tall, `width` wide, never smaller than its
  *  elements need (ARTICLE_DRAWING_PAD past the furthest) nor than ARTICLE_ZONE_MIN, never taller
  *  than ARTICLE_ZONE_MAX nor wider than the text (a wrapped zone: ARTICLE_WRAP_MAX_SHARE of it). */

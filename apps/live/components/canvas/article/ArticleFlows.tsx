@@ -8,6 +8,7 @@
 import { lazy, Suspense, useMemo } from 'react';
 import {
   articleMarginPx,
+  isBoxed,
   pageFillTone,
   pageIsDark,
   zoneAnchorOf,
@@ -85,6 +86,10 @@ export function ArticleFlows({
     pagesOf: (flow) => byFlow.get(flow),
     onMove: (flow, zoneId, near) => articles?.moveZone(flow, zoneId, near),
   });
+  const floating =
+    articles?.editable && !target
+      ? floatingTarget(byFlow, articles.flows, selectedIds, elements)
+      : null;
   const objectCaret = useObjectDropCaret({
     target,
     selectedIds,
@@ -194,11 +199,34 @@ export function ArticleFlows({
       ) : null}
       {target && !zoneDrag.drag ? (
         <ZoneBar
-          zone={target.zone}
+          fit={target.zone.wrap ?? 'inline'}
+          align={target.zone.align ?? 'center'}
+          drawing={target.zone.zone === 'drawing'}
           rect={target.rect}
           zoom={zoom}
-          onAction={(action) => articles.zoneAction(target.flow, target.zone.id, action)}
+          onFit={(fit) =>
+            articles.zoneAction(
+              target.flow,
+              target.zone.id,
+              fit === 'float' ? { float: true } : { wrap: fit },
+            )
+          }
+          onAlign={(align) => articles.zoneAction(target.flow, target.zone.id, { align })}
+          onRemove={() => articles.zoneAction(target.flow, target.zone.id, { remove: true })}
           onMoveStart={(e) => zoneDrag.start(e, target.flow, target.zone, target.rect)}
+        />
+      ) : null}
+      {floating && !target && !zoneDrag.drag ? (
+        <ZoneBar
+          fit="float"
+          align="center"
+          drawing={false}
+          rect={floating.rect}
+          zoom={zoom}
+          onFit={(fit) => {
+            if (fit !== 'float') articles.embed(floating.flow, floating.ids, fit);
+          }}
+          onAlign={() => {}}
         />
       ) : null}
       {zoneDrag.drag ? <ZoneDragMarks drag={zoneDrag.drag} zoom={zoom} /> : null}
@@ -311,4 +339,44 @@ export function DropCaretMark({
       />
     </div>
   );
+}
+
+// Elements floating on an article page (in no zone, every one on the same article's pages), all
+// boxes: what a floating object's zone bar is for, with their bounds.
+function floatingTarget(
+  byFlow: ReadonlyMap<string, LaidOutPage[]>,
+  articles: Readonly<Record<string, import('@livediagram/document').ArticleFlow>>,
+  selectedIds: ReadonlySet<string>,
+  elements: readonly Element[],
+): { flow: string; ids: string[]; rect: PageRect } | null {
+  if (selectedIds.size === 0) return null;
+  const selected = elements.filter((e) => selectedIds.has(e.id));
+  if (selected.length === 0 || !selected.every(isBoxed)) return null;
+  const boxes = selected.filter(isBoxed);
+  const within = (r: PageRect, p: { x: number; y: number }) =>
+    p.x >= r.x && p.x <= r.x + r.width && p.y >= r.y && p.y <= r.y + r.height;
+  const centre = (e: (typeof boxes)[number]) => ({ x: e.x + e.width / 2, y: e.y + e.height / 2 });
+  for (const [flow, pages] of byFlow) {
+    if (!boxes.every((e) => pages.some((p) => within(p.rect, centre(e))))) continue;
+    const zones = (articles[flow]?.blocks ?? []).filter(
+      (b): b is ArticleZoneBlock => b.type === 'zone',
+    );
+    const inZone = boxes.some((e) =>
+      zones.some((z) => {
+        const r = zoneCanvasRect(pages, z);
+        return !!r && within(r, centre(e));
+      }),
+    );
+    if (inZone) return null;
+    const x = Math.min(...boxes.map((e) => e.x));
+    const y = Math.min(...boxes.map((e) => e.y));
+    const right = Math.max(...boxes.map((e) => e.x + e.width));
+    const bottom = Math.max(...boxes.map((e) => e.y + e.height));
+    return {
+      flow,
+      ids: boxes.map((e) => e.id),
+      rect: { x, y, width: right - x, height: bottom - y },
+    };
+  }
+  return null;
 }

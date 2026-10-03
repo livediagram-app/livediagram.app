@@ -209,8 +209,12 @@ laid out with it, holding ordinary canvas elements that move with it.
   the zone.
 - **The zone bar**: a small bar under a zone's bottom edge while the zone or one of its elements
   is selected: a **grip** (tooltip **Drag to move**), then **In line**, **Wrap left**, **Wrap
-  right**, then (In line) **Align left / centre / right**, then **Delete** (the zone and its
-  elements).
+  right**, **Float**, then (In line) **Align left / centre / right**, then **Delete** (the zone and
+  its elements). **Float** lets the zone go: its block leaves the writing and its elements stay
+  where they are, in front of the text, as loose elements. A floating object (loose boxes on an
+  article page, in no zone) shows the same bar with **Float** pressed and no grip or Delete;
+  choosing **In line**, **Wrap left** or **Wrap right** puts it back into the writing at the block
+  boundary nearest it.
 - **Moving a zone**: dragging the grip carries a dashed ghost of the zone with the pointer, the
   zone itself dimmed in place, and a **drop caret** (a brand line across the column, a ring at each
   end) at the block boundary nearest the pointer. Release moves the zone there, its elements with

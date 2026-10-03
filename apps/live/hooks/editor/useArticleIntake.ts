@@ -30,7 +30,7 @@ import {
   type LaidOutPage,
   type Tab,
 } from '@livediagram/document';
-import { articleHandleOf } from '@/lib/article/article-editor-store';
+import { articleHandleOf, takeZoneReleased } from '@/lib/article/article-editor-store';
 import { ELEMENT_GESTURES, useCanvasGesture } from '@/lib/canvas-gesture';
 import { flowFrame } from '@/lib/article/article-flow-geometry';
 import { debugLog } from '@/lib/debug-log';
@@ -93,7 +93,8 @@ export function useArticleIntake({
     for (const [flow, before] of Object.entries(docsBefore)) {
       const now = new Set((docsNow[flow]?.blocks ?? []).map((b) => b.id));
       const gone = before.blocks.filter(
-        (b): b is ArticleZoneBlock => b.type === 'zone' && !now.has(b.id),
+        (b): b is ArticleZoneBlock =>
+          b.type === 'zone' && !now.has(b.id) && !takeZoneReleased(b.id),
       );
       if (gone.length) goneZones.set(flow, gone);
     }

@@ -331,6 +331,7 @@ export const ARTICLE_FORMATTING = chart(
       'ArticleZoneWrap',
       'ArticleZoneResized',
       'ArticleZoneMoved',
+      'ArticleZoneFloat',
       'ArticleZoneRemoved',
     ],
   },

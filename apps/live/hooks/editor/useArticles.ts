@@ -19,6 +19,9 @@ import {
   type ArticleZoneBlock,
   type Element,
   withZoneRemoved,
+  withZoneReleased,
+  withElementsIntoZone,
+  zonePlanFor,
   withZoneWrap,
   type ArticleZoneAlign,
   type ArticleZoneWrap,
@@ -34,7 +37,7 @@ import {
 } from '@livediagram/document';
 import { debugLog } from '@/lib/debug-log';
 import { useArticleIntake } from './useArticleIntake';
-import { articleHandleOf } from '@/lib/article/article-editor-store';
+import { articleHandleOf, markZoneReleased } from '@/lib/article/article-editor-store';
 import { flowFrame } from '@/lib/article/article-flow-geometry';
 import { track } from '@/lib/telemetry';
 import type { FlowLayout, FocusRequest } from '@/components/canvas/article/ArticleEditor';
@@ -56,6 +59,9 @@ export type ArticlesView = {
   insertObject: (flow: string, what: ArticleInsert) => void;
   // A zone's wrap, place across the text, size, or removal (the zone bar, its grips).
   zoneAction: (flow: string, zoneId: string, action: ZoneAction) => void;
+  // Floating elements on an article page (none in a zone) put into the writing, in line or wrapped,
+  // at the block boundary nearest them.
+  embed: (flow: string, ids: readonly string[], wrap: ArticleZoneWrap) => void;
   // A zone dragged to the block boundary nearest a canvas point, its elements with it.
   moveZone: (flow: string, zoneId: string, near: { x: number; y: number }) => void;
   // An article's style changed (the Style tab): a look, or one field.
@@ -103,6 +109,7 @@ export type ZoneAction =
   | { wrap: ArticleZoneWrap }
   | { align: ArticleZoneAlign }
   | { size: { width?: number; height?: number } }
+  | { float: true }
   | { remove: true };
 
 // A new drawing's height before anything is drawn in it.
@@ -233,18 +240,55 @@ export function useArticles(deps: {
       const d = latest.current;
       if (!d.canEdit || d.activeTab.locked === true) return;
       if ('remove' in action) track('Element', 'Changed', 'ArticleZoneRemoved');
-      else if ('size' in action) track('Element', 'Changed', 'ArticleZoneResized');
+      else if ('float' in action) {
+        track('Element', 'Changed', 'ArticleZoneFloat');
+        markZoneReleased(zoneId);
+      } else if ('size' in action) track('Element', 'Changed', 'ArticleZoneResized');
       else track('Element', 'Changed', 'ArticleZoneWrap');
       d.commitTabs((ts) =>
         ts.map((t) => {
           if (t.id !== tabId) return t;
           if ('remove' in action) return withZoneRemoved(t, flow, zoneId);
+          if ('float' in action) return withZoneReleased(t, flow, zoneId);
           if ('size' in action)
             return withZoneSize(t, flow, zoneId, action.size, textWidth(t, flow));
           return withZoneWrap(t, flow, zoneId, action, textWidth(t, flow));
         }),
       );
       debugLog('[article] zone changed', { tabId, flow, zoneId, action });
+    },
+    [tabId],
+  );
+
+  const embed = useCallback(
+    (flow: string, ids: readonly string[], wrap: ArticleZoneWrap) => {
+      const d = latest.current;
+      const handle = articleHandleOf(flow);
+      if (!handle || !d.canEdit || d.activeTab.locked === true || ids.length === 0) return;
+      const all = d.activeTab.elements;
+      const els = all.filter((e) => ids.includes(e.id));
+      const width = textWidth(d.activeTab, flow);
+      const plan = zonePlanFor(els, all, width);
+      const res = handle.insertZone(
+        { zone: plan.zone, width: plan.width, height: plan.height },
+        { x: plan.bounds.x + plan.bounds.width / 2, y: plan.bounds.y + plan.bounds.height / 2 },
+      );
+      if (!res) return;
+      track('Element', 'Changed', 'ArticleZoneWrap');
+      d.commitTabs((ts) =>
+        ts.map((t) => {
+          if (t.id !== tabId) return t;
+          const landed = withZoneLanded(t, flow, res);
+          if (!landed.rect) return landed.tab;
+          let next = {
+            ...landed.tab,
+            elements: withElementsIntoZone(landed.tab.elements, new Set(ids), plan, landed.rect),
+          };
+          if (wrap !== 'inline') next = withZoneWrap(next, flow, res.id, { wrap }, width);
+          return next;
+        }),
+      );
+      debugLog('[article] floating elements put in the writing', { tabId, flow, wrap });
     },
     [tabId],
   );
@@ -297,6 +341,7 @@ export function useArticles(deps: {
     onWritingPress,
     insertObject,
     zoneAction,
+    embed,
     moveZone,
     setStyle,
     stylePreview,
