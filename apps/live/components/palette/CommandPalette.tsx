@@ -14,7 +14,7 @@ export function CommandPalette(props: CommandPaletteProps) {
   const { position, onMoveTo, onReset, esBoard, onSize, themeTint, dock, drawTools } = props;
   // Handlers, categories and the canvas-tool options are shared with the
   // Toolbar layout's strip (docs/specs/007-editor/toolbar-layout.md) — see usePaletteCatalogue.
-  const { tabs, canvasToolOptions, onCanvasToolChange } = usePaletteCatalogue(props);
+  const { tabs, editorMode, canvasToolOptions, onCanvasToolChange } = usePaletteCatalogue(props);
   const { canvasTool } = props;
   return (
     <MovablePanel
@@ -61,8 +61,10 @@ export function CommandPalette(props: CommandPaletteProps) {
               // an event-storming board (docs/specs/021-event-storming/event-storming.md), where the notation is the
               // whole point: it opens on the Event Storming category. Keyed so
               // crossing an ES / non-ES tab boundary re-lands on the right
-              // default rather than whatever was open on the other tab.
-              key={esBoard ? 'es-board' : 'standard'}
+              // default rather than whatever was open on the other tab. Keyed on the editor mode
+              // too: a mode offers its own categories, so a switch re-lands on Favourites rather
+              // than on a category the new mode leaves out.
+              key={esBoard ? 'es-board' : editorMode}
               defaultOpenId={esBoard ? 'event-storming' : 'favourites'}
               // Distraction-free capture surface (docs/specs/021-event-storming/event-storming.md): an ES board hides
               // both dropdowns — the notation IS the palette there.

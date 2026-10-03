@@ -17,6 +17,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Editor|Changed|ModeDiagram':
     'Someone switched a tab to Diagram mode, for shapes, arrows and the palette.',
   'Editor|Changed|ModeDraw': 'Someone switched a tab to Draw mode, to draw freehand with pens.',
+  'Editor|Changed|ModeDesign':
+    'Someone switched a tab to Design mode, for components, devices, logos and media.',
   'Draw|Created|Template':
     'Someone started a new document as a whiteboard, a plain board drawn on with pens, from the New Document wizard.',
   'Draw|Created|NewTab':
@@ -503,6 +505,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone set a tab to open in Diagram mode for everyone, from the tab menu.',
   'Tab|Changed|OpensInDraw':
     'Someone set a tab to open in Draw mode for everyone, from the tab menu.',
+  'Tab|Changed|OpensInDesign':
+    'Someone set a tab to open in Design mode for everyone, from the tab menu.',
   'Tab|Changed|DefaultTextSize':
     "Someone changed a tab's default text size, used for new elements added to it.",
   'Tab|Changed|Font':

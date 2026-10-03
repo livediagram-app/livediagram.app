@@ -6,7 +6,13 @@
 
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { EDITOR_MODES, ES_BOARD_LAYER_ID, type EditorMode, type Tab } from '@livediagram/document';
+import {
+  EDITOR_MODES,
+  ES_BOARD_LAYER_ID,
+  editorModeLabel,
+  type EditorMode,
+  type Tab,
+} from '@livediagram/document';
 import { useEditorMode, type EditorModeState } from '@/hooks/editor/useEditorMode';
 import { EditorModeProvider } from './editor-mode-context';
 import { EditorModeSwitch } from './EditorModeSwitch';
@@ -40,9 +46,7 @@ const chip = () => screen.getByRole('button', { name: /^Editor mode:/ });
 describe('EditorModeSwitch chip', () => {
   it.each(EDITOR_MODES)('is a collapsed menu button named after %s', (mode) => {
     renderSwitch(mode);
-    expect(chip().getAttribute('aria-label')).toBe(
-      `Editor mode: ${mode === 'draw' ? 'Draw' : 'Diagram'}`,
-    );
+    expect(chip().getAttribute('aria-label')).toBe(`Editor mode: ${editorModeLabel(mode)}`);
     expect(chip().getAttribute('aria-haspopup')).toBe('menu');
     expect(chip().getAttribute('aria-expanded')).toBe('false');
     expect(chip().getAttribute('aria-keyshortcuts')).toBe('Shift+D');
@@ -64,8 +68,9 @@ describe('EditorModeSwitch chip', () => {
     expect(rows.map((row) => row.textContent)).toEqual([
       expect.stringMatching(/^Diagram/),
       expect.stringMatching(/^Draw/),
+      expect.stringMatching(/^Design/),
     ]);
-    expect(rows.map((row) => row.getAttribute('aria-checked'))).toEqual(['false', 'true']);
+    expect(rows.map((row) => row.getAttribute('aria-checked'))).toEqual(['false', 'true', 'false']);
     expect(document.activeElement).toBe(rows[1]);
   });
 
@@ -76,6 +81,7 @@ describe('EditorModeSwitch chip', () => {
     expect(screen.getAllByRole('menuitemradio').map((row) => row.textContent)).toEqual([
       'Diagram',
       'Draw⇧D',
+      'Design',
     ]);
   });
 
@@ -97,17 +103,19 @@ describe('EditorModeSwitch chip', () => {
     renderSwitch('diagram');
     fireEvent.click(chip());
     const menu = screen.getByRole('menu');
-    const [diagram, draw] = screen.getAllByRole('menuitemradio');
+    const [diagram, draw, design] = screen.getAllByRole('menuitemradio');
     fireEvent.keyDown(menu, { key: 'ArrowDown' });
     expect(document.activeElement).toBe(draw);
+    fireEvent.keyDown(menu, { key: 'ArrowDown' });
+    expect(document.activeElement).toBe(design);
     fireEvent.keyDown(menu, { key: 'ArrowDown' });
     expect(document.activeElement).toBe(diagram);
     fireEvent.keyDown(menu, { key: 'ArrowUp' });
-    expect(document.activeElement).toBe(draw);
+    expect(document.activeElement).toBe(design);
     fireEvent.keyDown(menu, { key: 'Home' });
     expect(document.activeElement).toBe(diagram);
     fireEvent.keyDown(menu, { key: 'End' });
-    expect(document.activeElement).toBe(draw);
+    expect(document.activeElement).toBe(design);
   });
 
   it.each([

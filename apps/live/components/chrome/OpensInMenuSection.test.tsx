@@ -30,8 +30,9 @@ describe('OpensInMenuSection', () => {
     expect(items.map((i) => i.textContent)).toEqual([
       expect.stringContaining('Diagram'),
       expect.stringContaining('Draw'),
+      expect.stringContaining('Design'),
     ]);
-    expect(items.map((i) => i.getAttribute('aria-checked'))).toEqual(['false', 'true']);
+    expect(items.map((i) => i.getAttribute('aria-checked'))).toEqual(['false', 'true', 'false']);
   });
 
   it('sets the opening mode on a choice', () => {

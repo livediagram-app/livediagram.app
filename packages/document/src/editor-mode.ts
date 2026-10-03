@@ -1,5 +1,5 @@
-// Editor modes (docs/specs/007-editor/editor-modes.md): how a general tab is worked on, Diagram or
-// Draw. A mode tunes tools and rules; it never decides what the tab is (that is its kind). The
+// Editor modes (docs/specs/007-editor/editor-modes.md): how a general tab is worked on, Diagram,
+// Draw or Design. A mode tunes tools and rules; it never decides what the tab is (that is its kind). The
 // mode a person works in is theirs (the editor remembers it per tab, device-locally); the tab only
 // says which mode it OPENS in (`Tab.opensIn`, Diagram when absent).
 import type { Layer } from './layers';
@@ -10,6 +10,11 @@ import { isEventStormingTab } from './event-storming';
 export const EDITOR_MODE_CATALOGUE = [
   { id: 'diagram', label: 'Diagram', description: 'Shapes, arrows, the palette and snapping.' },
   { id: 'draw', label: 'Draw', description: 'Pens, the eraser and shape recognition.' },
+  {
+    id: 'design',
+    label: 'Design',
+    description: 'Components, devices, logos and media for mock-ups.',
+  },
 ] as const satisfies readonly { id: string; label: string; description: string }[];
 
 export type EditorMode = (typeof EDITOR_MODE_CATALOGUE)[number]['id'];

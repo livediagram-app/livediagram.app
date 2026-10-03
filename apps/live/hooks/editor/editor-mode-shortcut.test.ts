@@ -17,7 +17,8 @@ describe('editorModeShortcut', () => {
 
   it.each([
     ['diagram', 'draw', 'Draw mode'],
-    ['draw', 'diagram', 'Diagram mode'],
+    ['draw', 'design', 'Design mode'],
+    ['design', 'diagram', 'Diagram mode'],
   ] as const)('from %s switches to %s and announces "%s"', (from, to, message) => {
     const s = state(from);
     const announce = vi.fn();

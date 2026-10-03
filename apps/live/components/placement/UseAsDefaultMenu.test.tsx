@@ -4,7 +4,7 @@ import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import type { PlacementDefaultKey } from '@livediagram/api-schema';
 import { UseAsDefaultMenu } from './UseAsDefaultMenu';
 
-// The submenu (docs/specs/013-workspace/default-folders.md "Use as default for"): the five entries
+// The submenu (docs/specs/013-workspace/default-folders.md "Use as default for"): the six entries
 // as checkable items under "New documents that open as".
 
 beforeAll(() => {
@@ -37,6 +37,7 @@ describe('UseAsDefaultMenu', () => {
     expect(items.map((i) => i.textContent)).toEqual([
       'Diagrams',
       'Whiteboards',
+      'Designs',
       'Event Storming boards',
       'Retrospectives',
       'Kanban boards',
@@ -44,6 +45,7 @@ describe('UseAsDefaultMenu', () => {
     expect(items.map((i) => i.getAttribute('aria-checked'))).toEqual([
       'false',
       'true',
+      'false',
       'false',
       'false',
       'false',
@@ -55,7 +57,7 @@ describe('UseAsDefaultMenu', () => {
     open({ isChecked: () => false, isDisabled: () => false, toggle });
     fireEvent.click(screen.getByRole('menuitemcheckbox', { name: 'Retrospectives' }));
     expect(toggle).toHaveBeenCalledWith('template:retrospective');
-    expect(screen.getAllByRole('menuitemcheckbox')).toHaveLength(5);
+    expect(screen.getAllByRole('menuitemcheckbox')).toHaveLength(6);
   });
 
   it('keeps a disabled entry in place and inert', () => {

@@ -13,6 +13,13 @@ import type { OpensInChoice } from '@/components/chrome/OpensInMenuSection';
 import { debugLog } from '@/lib/debug-log';
 import { track } from '@/lib/telemetry';
 
+// The telemetry type an Opens in choice of each mode fires.
+const OPENS_IN_EVENT: Record<EditorMode, string> = {
+  diagram: 'OpensInDiagram',
+  draw: 'OpensInDraw',
+  design: 'OpensInDesign',
+};
+
 export function useTabOpensIn(deps: {
   tabs: Tab[];
   // An editor (not a view-role visitor): only they are offered the choice.
@@ -36,8 +43,7 @@ export function useTabOpensIn(deps: {
       debugLog('[editor-mode] opens-in unchanged', { tabId, mode, locked: false });
       return;
     }
-    if (mode === 'draw') track('Tab', 'Changed', 'OpensInDraw');
-    else track('Tab', 'Changed', 'OpensInDiagram');
+    track('Tab', 'Changed', OPENS_IN_EVENT[mode]);
     commitTabs((ts) => ts.map((t) => (t.id === tabId ? setTabOpensIn(t, mode) : t)));
     debugLog('[editor-mode] opens-in set', { tabId, mode });
   };

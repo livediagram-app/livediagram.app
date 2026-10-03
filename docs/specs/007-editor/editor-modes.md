@@ -1,7 +1,7 @@
 # Editor modes
 
-A general tab is drawn on in one of two **editor modes**: **Diagram** and
-**Draw**. A mode decides which tools and rules are in focus; it never decides
+A general tab is drawn on in one of three **editor modes**: **Diagram**,
+**Draw** and **Design** (Design is an experiment under review). A mode decides which tools and rules are in focus; it never decides
 what the tab is. Like a drawing tool that switches between a pixel mode and a
 vector mode over the same picture, switching mode keeps every element exactly
 where it is and changes only how the next mark is made.
@@ -11,16 +11,17 @@ where it is and changes only how the next mark is made.
 | Term             | Means                                                                                                                  |
 | ---------------- | ---------------------------------------------------------------------------------------------------------------------- |
 | **tab kind**     | What a tab **is** ([Document](../006-document/document.md)). Reserved for specific uses.                               |
-| **editor mode**  | How a general tab is **worked on** right now: `diagram` or `draw` (`EditorMode`).                                      |
+| **editor mode**  | How a general tab is **worked on** right now: `diagram`, `draw` or `design` (`EditorMode`).                            |
 | **Diagram mode** | Structured drawing: the palette, shapes, arrows, icons, templates, snapping and guides.                                |
 | **Draw mode**    | Freehand whiteboarding: the dock, preset pens, eraser, shape recognition ([Draw mode](../023-draw-mode/draw-mode.md)). |
+| **Design mode**  | Mock-ups: Diagram mode's canvas with the palette narrowed to components, devices, logos, icons and media.              |
 | **mode switch**  | The control beside the page switcher that changes the editor mode.                                                     |
 
 - "Whiteboard" names the activity and Draw mode's look, never a tab kind and
   never a type of document.
 - "Mode" on its own is ambiguous here (Zen mode, Presentation mode, Power user
-  mode); in specs and code say **editor mode**. The interface says **Diagram**
-  and **Draw**.
+  mode); in specs and code say **editor mode**. The interface says **Diagram**,
+  **Draw** and **Design**.
 
 ## Kinds versus modes
 
@@ -28,7 +29,7 @@ where it is and changes only how the next mark is made.
   its own: the [event-storming board](../021-event-storming/event-storming.md)
   is one. A new kind is added only when a use cannot be served by a mode.
 - **Everything else is the general tab** (`kind: 'diagram'`, the default). It
-  carries every element type; both modes work on it.
+  carries every element type; every mode works on it.
 - **Whiteboarding is a mode, not a kind.** `TabKind` is `'diagram' |
 'event-storming'`; there is no `'whiteboard'` kind.
 - **Content is shared between modes.** A stroke drawn in Draw mode is a
@@ -177,10 +178,42 @@ element in the same colour.
     migrated whiteboard without it becomes `'wrap'`, as it hugged there.
 - **Entering Draw mode**, by opening a tab or by switching, puts the active
   pen in hand on an empty tab and Select on a tab with content.
+- **Design mode** is Diagram mode with the palette narrowed to mock-ups (below);
+  every other rule, tool and shortcut is Diagram mode's.
 - **No further cue:** the dock (in place of the palette) and the switch's
   own label say which mode is on; no tint, accent or notice is added.
 - **Leaving a mode puts its tool down**, as leaving a whiteboard did: a pen,
   the eraser or an armed shape never carries over into the other mode.
+
+## The palette per mode
+
+Each mode offers the palette categories it is for
+(`apps/live/components/palette/palette-mode-categories.ts`). Favourites is
+offered in every mode, as it is the person's own pick.
+
+| Category       | Diagram | Design |
+| -------------- | ------- | ------ |
+| Favourites     | yes     | yes    |
+| Shapes         | yes     | yes    |
+| My shapes      | yes     | yes    |
+| Write          | yes     | yes    |
+| Draw           | yes     | no     |
+| Build          | yes     | yes    |
+| Components     | no      | yes    |
+| Devices        | no      | yes    |
+| Event Storming | board   | no     |
+| Icons          | yes     | yes    |
+| Stickers       | yes     | no     |
+| Tech (logos)   | yes     | yes    |
+| Media          | yes     | yes    |
+| Data           | yes     | no     |
+| Behaviours     | yes     | no     |
+
+- Draw mode shows its own tools in place of the categories.
+- Switching mode re-lands the palette on Favourites, so it never shows a
+  category the new mode leaves out.
+- Elements already on the canvas are untouched: narrowing the palette only
+  changes what is offered to add.
 
 ## Existing whiteboards
 
@@ -193,9 +226,10 @@ element in the same colour.
 
 ## Telemetry ([Telemetry](../017-telemetry/telemetry.md))
 
-- `Editor` · `Changed` · `ModeDiagram` / `ModeDraw`, fired by the switch
-  before the mode applies.
-- `Tab` · `Changed` · `OpensInDiagram` / `OpensInDraw`, fired by Opens in.
+- `Editor` · `Changed` · `ModeDiagram` / `ModeDraw` / `ModeDesign`, fired by
+  the switch before the mode applies.
+- `Tab` · `Changed` · `OpensInDiagram` / `OpensInDraw` / `OpensInDesign`, fired
+  by Opens in.
 - Draw mode's own events are the **`Draw`** category (pens, shapes, eraser,
   recognition, background, snap colours,
   [Draw mode](../023-draw-mode/draw-mode.md#telemetry-telemetry--public-transparency-dashboard)).
@@ -213,7 +247,7 @@ element in the same colour.
 
 ## Non-goals
 
-- More than two editor modes until use asks for one.
+- Further editor modes beyond Design until use asks for one.
 - A mode per element or per layer.
 - Converting content between modes (a stroke into a shape on switching).
 
