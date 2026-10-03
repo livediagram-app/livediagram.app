@@ -66,6 +66,17 @@ A gesture's cost scales with what it changes and what is on screen, never with t
   document once, on release ([Drag preview](drag-preview.md)): the moved elements and the arrows
   that depend on them re-render each frame, and nothing derived from the rest of the board is
   recomputed.
+- **The canvas re-renders only for what it shows.** The editor around the canvas re-renders for
+  many reasons (a panel opening, a toast, a collaborator's presence, the selection); none of them
+  re-renders the canvas unless something the canvas shows changed. The canvas's event handlers keep
+  their identity across the editor's renders, and calling one runs the editor's newest version.
+- **A selection change re-renders what it touches.** Which elements are selected is held in one
+  selection store per editor, not passed down as canvas props. Selecting, deselecting, a marquee's
+  result, select-all and a remote change of the local selection re-render, inside the canvas, only
+  what shows the selection: the element views whose selected state changed and the selection chrome
+  (toolbars, popover, resize box, handles and anchors). The element layer and the Map do not
+  re-render for it. Handlers and effects that act on the selection read it from the store when they
+  run.
 - **Derived layouts are computed once per change.** Arrow labels, ink projection and theme
   colours are laid out per element change and cached per element identity, as arrow labels are
   today.
