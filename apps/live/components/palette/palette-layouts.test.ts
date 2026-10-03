@@ -94,6 +94,11 @@ describe('palette layouts', () => {
     expect(everywhere).not.toContain('tools:mind-node');
   });
 
+  it("leaves Media's embeds out of Diagram, keeping its own two", () => {
+    expect(tileIds('diagram', 'media')).toEqual(['tools:image', 'tools:avatar']);
+    expect(tileIds('infographic', 'media')).toContain('media:embed-youtube');
+  });
+
   it('defaults a category to its own tiles', () => {
     expect(tileIds('diagram', 'shapes')).toEqual(tilesForCategory('shapes').map((t) => t.id));
   });

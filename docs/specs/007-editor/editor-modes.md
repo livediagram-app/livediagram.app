@@ -217,7 +217,9 @@ holds.
 
 Today the two layouts differ as below. Within the shared categories,
 Infographic's **Write** leaves out **Page** (the page is the canvas there) and
-its **Build** leaves out **Mind node** (mind maps are a diagram's).
+its **Build** leaves out **Mind node** (mind maps are a diagram's); Diagram's
+**Media** leaves out the **Embed** group (YouTube, Vimeo, Loom, Figma, Google
+Docs, Website), keeping Image and Avatar.
 
 | Category       | Diagram | Infographic |
 | -------------- | ------- | ----------- |
