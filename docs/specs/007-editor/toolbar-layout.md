@@ -27,7 +27,7 @@ to the top centre of the canvas, the way Excalidraw's tool bar works:
   sits directly before the tiles it chooses, so it reads as their label.
 - **Then the current category's first twelve tiles** (fewer on a narrow window, see "Decided in review"), icon-only, each with its
   hover card, shortcut letter, drag-to-place, theme tint and pressed state. They
-  are the same tiles as the Palette's (`palette-tile-defs`, [Palette Favourites](../010-palette/palette-favourites.md)),
+  are the same tiles as the Palette's (`palette-tile-defs`, arranged by the mode's palette layout, [Editor modes](editor-modes.md#the-palette-per-mode)),
   rendered by the same `PaletteTile`, so one change reaches both layouts.
 - **Right: More (⋯ ▾)**, when the category has more than the strip shows.
 
@@ -36,7 +36,7 @@ to the top centre of the canvas, the way Excalidraw's tool bar works:
 A strip has room for about a dozen tiles. Shapes fits; Icons (~180),
 Stickers, Technology and Collaborate do not. More opens the current
 category's full Palette body in a popover hanging from the More button's own
-right edge: search, group browser, Favourites Edit / Reorder, everything. It
+right edge: search, group browser, everything. It
 is the exact node the floating Palette renders, not a copy. The popover is
 wide (26rem) rather than tall, so a body rarely has to scroll. Picking a tile
 from it closes it, so the canvas is clear to draw on; switching category
@@ -46,15 +46,12 @@ its catalogue a moment later focuses the field as soon as it appears); on a phon
 because focusing would raise the keyboard over the popover.
 
 More appears when the category has more than twelve tiles, and always for
-Favourites, Icons, Stickers, Technology and Collaborate, whose bodies carry
-more than tiles (search, group browsing, Edit / Reorder). It sits outside the
+Icons, Stickers, Technology and Collaborate, whose bodies carry
+more than tiles (search, group browsing). It sits outside the
 animated tile rail, so it rides the rail's width change.
 
 For Icons / Stickers / Technology the strip's twelve are the first twelve of the
 catalogue in its own order.
-
-In the Favourites body, More keeps the **Reorder / Edit** footer, as the floating Palette has it:
-Favourites are in the order you set, in every layout.
 
 ## The strip's order and dividers
 
@@ -76,16 +73,17 @@ which moved things under the pointer after every add; it is gone, its stored lis
 - **Behaviour**: the Selection Mode buttons | everything else.
 - **Event Storming**: the notation | Hotspot.
 
-Favourites (your own set) and the Icons / Stickers / Technology catalogues have none. A category
+Popular divides where its tiles' own groups do (after the Diamond), and the Icons / Stickers /
+Technology catalogues have none. A category
 has two at most. A divider shows only between two tiles both on the strip. They take room, about
 a fifth of a tile each: a category that fits whole with them shows them; one whose tiles fit only
 without them drops them before any tile; one that overflows shows as many tiles as fit with their
 dividers between them, so a divider costs a tile only when the strip's spare part-tile can't hold
-it (a 430px phone shows four Favourites and the divider after the diamond, not three).
+it (a 430px phone shows four of Diagram's Popular and the divider after the diamond, not three).
 
 The chosen category lasts the page load: the strip is hidden rather than
 unmounted while zen or the welcome flow hides the chrome. Nothing is stored,
-so a new page load starts on Favourites.
+so a new page load starts on the mode's Popular.
 
 ## The Explorer and the other panels
 
@@ -190,8 +188,7 @@ ringed, so the difference is visible before switching ([User preferences](user-p
 
 ## Motion
 
-- **A change to the strip's tiles animates** (`ToolbarStripRail`, FLIP; a favourite added,
-  removed or reordered, or the window letting more or fewer tiles on): tiles that moved slide
+- **A change to the strip's tiles animates** (`ToolbarStripRail`, FLIP; a category switched, or the window letting more or fewer tiles on): tiles that moved slide
   from their old slot to their new one over 200ms (the `short` token of [Motion](../004-interface-design/motion.md)), a tile new to the strip
   pops in, and the one pushed off the end pops out where it stood. Reduced
   motion collapses it to instant.
@@ -227,10 +224,10 @@ ringed, so the difference is visible before switching ([User preferences](user-p
 
 ## Decided in review
 
-- **The strip opens on Favourites every time**, like the floating Palette
-  ([Palette Favourites](../010-palette/palette-favourites.md)). It does not remember the last category across documents.
+- **The strip opens on the mode's Popular every time**, like the floating Palette
+  ([Editor modes](editor-modes.md#the-palette-per-mode)). It does not remember the last category across documents.
 - **Twelve tiles is enough** on desktop (raised from ten, which cut Shapes and
-  Favourites short). Below that, the strip shows as many as fit, **measured**
+  Popular short). Below that, the strip shows as many as fit, **measured**
   rather than estimated (`useStripTileLimit`): its own chrome (the pickers,
   More, dividers and padding, whatever they measure in the current category),
   one tile's pitch, and the room the centred strip may take (the window less

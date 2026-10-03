@@ -173,7 +173,7 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   locking: '#94a3b8',
   snapping: '#22c55e',
   // Palette → Palette Settings
-  favourites: '#eab308',
+  popular: '#eab308',
   'panel-opacity': '#64748b',
   'quick-add-on-hover': '#10b981',
   'auto-attach-arrows': '#10b981',

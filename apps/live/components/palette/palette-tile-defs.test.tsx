@@ -13,15 +13,15 @@ import {
   tilesInToolGroup,
 } from './palette-tile-defs';
 
-// The shared tile catalogue (docs/specs/010-palette/palette-favourites.md) feeds the category tabs, Favourites
-// (which persists tile IDS across sessions), the search panel, and — since
+// The shared tile catalogue feeds the category tabs, the palette layouts
+// (which address tiles by id), the search panel, and — since
 // the Tools tab grew grouped sub-sections (docs/specs/008-canvas/canvas-and-palette.md "Sub-categories") — the
 // TOOL_GROUPS render loop. These invariants pin the contracts those
 // surfaces rely on; none of them surface as errors during a normal render
 // (an ungrouped tools tile just silently vanishes from the Tools tab).
 
 describe('PALETTE_TILES catalogue', () => {
-  it('has unique ids (favourites persist ids; a duplicate would collide in the grid keys and the favourites list)', () => {
+  it('has unique ids (layouts address tiles by id; a duplicate would collide in the grid keys and the layouts)', () => {
     const ids = PALETTE_TILES.map((t) => t.id);
     expect(new Set(ids).size).toBe(ids.length);
   });
@@ -122,12 +122,11 @@ describe('tool blurbs', () => {
 // fails this test, and the failure is the prompt to re-read that category's
 // description and decide whether it still describes what is in the tab.
 //
-// Categories filled from a catalogue rather than from tiles (Favourites,
+// Categories filled from a catalogue or a layout rather than from tiles (Popular,
 // Icons, Stickers, Technology, My shapes) hold none, and are pinned at 0 so that stays
 // true by intent rather than by accident.
 const TILES_PER_CATEGORY: Record<string, number> = {
-  favourites: 0,
-  // Popular has no tiles of its own: Infographic mode's layout fills it (palette-layouts).
+  // Popular has no tiles of its own: each mode's layout fills it (palette-layouts).
   popular: 0,
   shapes: 13,
   build: 5,
@@ -195,7 +194,7 @@ describe('TOOL_GROUPS', () => {
 // "Sub-categories"): each tab hands PaletteGroupBrowser a list of group
 // definitions, and a tile is drawn by the category whose id matches its
 // `tileGroup`. A tile whose group is in no definition is drawn by nothing: it
-// stays in the catalogue, keeps working in search and in Favourites, and is
+// stays in the catalogue, keeps working in search and in a layout's Popular, and is
 // simply absent from the palette tab it belongs to. No error, no empty
 // category, nothing to notice — the browser drops a category with no tiles, so
 // a typo'd group id fails silently at both ends.

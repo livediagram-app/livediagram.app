@@ -152,7 +152,7 @@ export function usePaletteCatalogue({
     armed(byKind[kind])();
   };
   // The add-handler bundle every catalogue-driven tile grid consumes
-  // (docs/specs/010-palette/palette-favourites.md). All handlers above already wrap the mobile-close /
+  // (palette-tile-defs). All handlers above already wrap the mobile-close /
   // draw-armed behaviour, so a tile behaves the same from any tab.
   // Avatar mode (docs/specs/008-canvas/avatar-mode.md) is read-only, so reaching for a tile means the user
   // wants to edit again: every add leaves the mode first (back to whichever
@@ -227,8 +227,7 @@ export function usePaletteCatalogue({
     categories,
     pendingDraw,
     tileActions,
-    // Only on an ES board: the category renders elsewhere too (a favourited
-    // note kind), where a board switch means nothing.
+    // Only on an ES board: a board switch anywhere else means nothing.
     esBoardControls: esBoard ? esBoardControls : undefined,
     addIcon,
     iconQuery,

@@ -167,7 +167,7 @@ One more, from the Data elements: **half a subject drawn clearly beats the whole
 subject drawn ambiguously.** Progress Bars and Rings covers both, and a ring above
 a bar is a circle on a stem, which reads as a lightbulb and nothing else. It draws
 the bar only. Rating hit the same collision rule from the other side — stars, when
-`favourites` is already a star — so it draws the SCALE, a row part-filled, rather
+a star reads as a favourite — so it draws the SCALE, a row part-filled, rather
 than the symbol.
 
 Voting's five are the clearest case of the whole exercise, and needed no redraw

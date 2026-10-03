@@ -1,0 +1,35 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { PopularCatalogue } from '@/components/illustrations/palette-catalogues';
+
+export const metadata = helpMetadata({
+  title: 'Popular',
+  description:
+    'The palette category it opens on: twelve of the tiles most reached for, picked from across the palette, so your everyday shapes and tools are one tap away.',
+  path: '/help/palette/popular/',
+});
+
+<ArticleLayout
+  title="Popular"
+  description="The palette's landing grid: the tiles most reached for, in one place."
+  categoryTitle="Palette"
+  categorySlug="palette"
+  subArticles={getSubArticles("popular")}
+>
+
+**Popular** is the palette's first category, and the one it opens on. It holds twelve of the tiles people reach for most, picked from across the palette, so your everyday vocabulary isn't spread over Shapes, Write, Draw and Build. Each tile behaves exactly like the same tile in its home category: tap to add, drag to place, and it previews the tab theme the same way.
+
+<Figure caption="Popular: a fixed grid of the tiles most reached for.">
+  <PopularCatalogue />
+</Figure>
+
+## What's in it
+
+In **Diagram** mode: Square, Circle, Diamond, Text, Arrow, Frame, Sticky note, Image, Shape Pen, Table, Code and Entity.
+
+In **Infographic** mode it is picked for a visual page instead: Text, Square, Circle, Image, Speech bubble, Pie, Bar, Donut, Stat row, Process, Timeline and Callout.
+
+The list is the same for everyone and is not edited. Everything else is a category away in the palette's category picker, or a search away in the editor's **Search** panel.
+
+</ArticleLayout>

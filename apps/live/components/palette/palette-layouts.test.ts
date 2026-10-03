@@ -32,9 +32,9 @@ describe('palette layouts', () => {
     }
   });
 
-  it('gives Diagram every category but the mock-up kit, the charts and Popular', () => {
+  it('gives Diagram Popular, then every category but the mock-up kit and the charts', () => {
     expect(ids('diagram')).toEqual([
-      'favourites',
+      'popular',
       'shapes',
       'my-shapes',
       'write',
@@ -69,8 +69,8 @@ describe('palette layouts', () => {
     ]);
   });
 
-  it('lands Diagram on Favourites, Infographic on Popular, a board on its notation', () => {
-    expect(paletteLandingCategory('diagram', false)).toBe('favourites');
+  it('lands every mode on its Popular, a board on its notation', () => {
+    expect(paletteLandingCategory('diagram', false)).toBe('popular');
     expect(paletteLandingCategory('infographic', false)).toBe('popular');
     expect(paletteLandingCategory('diagram', true)).toBe('event-storming');
   });
@@ -106,6 +106,23 @@ describe('palette layouts', () => {
 
   it('defaults a category to its own tiles', () => {
     expect(tileIds('diagram', 'shapes')).toEqual(tilesForCategory('shapes').map((t) => t.id));
+  });
+
+  it("fills Diagram's Popular with what used to be the default Favourites", () => {
+    expect(tileIds('diagram', 'popular')).toEqual([
+      'shapes:square',
+      'shapes:circle',
+      'shapes:diamond',
+      'tools:text',
+      'tools:arrow',
+      'tools:frame',
+      'tools:sticky',
+      'tools:image',
+      'tools:shape-pen',
+      'tools:table',
+      'tools:code-block',
+      'tools:entity',
+    ]);
   });
 
   it('picks twelve Popular tiles, each reachable from another Infographic category', () => {

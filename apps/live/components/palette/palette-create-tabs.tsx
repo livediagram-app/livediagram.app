@@ -18,15 +18,14 @@ import {
 import type { PaletteTileDef } from './palette-tile-defs';
 import { EventStormingBoardRows, type EsBoardControls } from './EventStormingBoardRows';
 
-// The palette's creation-category tab bodies. Since docs/specs/010-palette/palette-favourites.md every tile is
+// The palette's creation-category tab bodies. Every tile is
 // a data entry in the shared catalogue (palette-tile-defs.tsx) rendered
 // through PaletteTileGrid. Each body is how its category is PRESENTED (a grid, rows with a
 // blurb, a group browser); which tiles it holds is the mode's palette layout's call
 // (palette-layouts.ts, docs/specs/007-editor/editor-modes.md "The palette per mode"), handed in
 // as `tiles`. The
-// search-driven tabs (Icons / Technology) stay in CommandPalette since they
-// own their search state; the Favourites tab (docs/specs/010-palette/palette-favourites.md) has its own file
-// (PaletteFavouritesTab).
+// search-driven tabs (Icons / Stickers / Technology) have their own files since they
+// own their search state.
 //
 // There is no longer a Tools tab (docs/specs/010-palette/palette-top-level-categories.md): every group it held graduated to
 // a top-level category, and a tab with no categories left is not a tab.

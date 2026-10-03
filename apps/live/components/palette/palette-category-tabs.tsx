@@ -31,7 +31,6 @@ import {
   PaletteShapesTab,
   PaletteComponentsTab,
 } from '@/components/palette/palette-create-tabs';
-import { PaletteFavouritesTab } from '@/components/palette/PaletteFavouritesTab';
 import type { ComponentProps } from 'react';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { PaletteTileGrid, type PaletteTileActions } from '@/components/palette/PaletteTileGrid';
@@ -101,8 +100,6 @@ export function paletteCategoryTabs(
   const bodyFor = (c: ResolvedPaletteCategory): React.ReactNode => {
     const tiles = c.tiles ?? [];
     switch (c.id) {
-      case 'favourites':
-        return <PaletteFavouritesTab {...tab} />;
       case 'my-shapes':
         return <PaletteMyShapesTab onInsert={insertLibraryShape} />;
       case 'icons':

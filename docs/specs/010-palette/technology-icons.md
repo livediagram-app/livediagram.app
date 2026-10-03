@@ -138,7 +138,7 @@ and the glyph is white.
 ([Iconography](../004-interface-design/iconography.md)): 1.25px on screen, 1px at
 12px or less, expressed in tile-box units by `techGlyphStrokeUnits(sizePx)`
 (`@livediagram/icons`). On the canvas `sizePx` is the size preset (32 / 48 / 64 /
-96px); in the palette it is the thumbnail size (18px category and favourite tiles,
+96px); in the palette it is the thumbnail size (18px category and strip tiles,
 22px picker tiles). The stroke scales with the tile, so canvas zoom, or a box too
 small for its preset, shrinks the mark as one picture, and the export draws the
 same weight.

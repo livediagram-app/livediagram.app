@@ -3,12 +3,9 @@
 // The palette's category catalogue: which categories exist, in band order,
 // with the label, blurb and glyph each one wears.
 //
-// Its own module, holding NO component imports, because two surfaces need the
-// list and one of them is reached from inside a category body: the palette's
-// Favourites tab renders the Edit Favourites dialog, which draws a pill per
-// category. With this living beside the tab bodies, that closed a cycle
-// (catalogue -> favourites tab -> dialog -> catalogue) and the dialog saw an
-// undefined list at module-eval time.
+// Its own module, holding NO component imports, so anything that needs the list (the mode
+// layouts, the whiteboard dock's shape catalogue) can import it without pulling in the category
+// bodies, and without the import cycle an earlier dialog reached from inside a body once closed.
 
 import {
   BehaviourTabIcon,
@@ -17,7 +14,6 @@ import {
   DataTabIcon,
   DevicesTabIcon,
   DrawTabIcon,
-  FavouritesTabIcon,
   PopularTabIcon,
   IconsTabIcon,
   MediaTabIcon,
@@ -33,12 +29,10 @@ import {
  * The category catalogue's IDENTITY: which categories exist, in band order,
  * with the label, blurb and glyph each one wears. No bodies.
  *
- * Split from `paletteCategoryTabs` below because two surfaces need the list
- * and only one of them can build the bodies: the Edit Favourites dialog draws
- * a pill per category but has no search state to hand the Icons / Stickers /
- * Tech tabs. It used to keep its own copy of the list, which drifted the
- * moment the palette changed — by the time it was noticed it was offering a
- * Tools category that no longer existed and hiding six that did.
+ * Split from `paletteCategoryTabs` because several surfaces need the list and only the palette
+ * builds the bodies. A surface that once kept its own copy of the list drifted the moment the
+ * palette changed — by the time it was noticed it was offering a Tools category that no longer
+ * existed and hiding six that did.
  *
  * Order IS layout: PaletteTabBar renders the dropdown straight from this
  * array, grouping by `group` under the CATEGORY_BANDS headings (0 Common,
@@ -53,23 +47,14 @@ export const PALETTE_CATEGORIES: {
   icon: React.ReactNode;
 }[] = [
   {
-    id: 'favourites',
-    label: 'Favourites',
-    // No band: it is every category at once, so it spans the row
-    // above the first heading rather than sitting under one.
-    fullWidth: true,
-    description:
-      'Your go-to tiles from every category in one grid. Edit to add or remove controls.',
-    icon: <FavouritesTabIcon />,
-  },
-  {
-    // Popular (docs/specs/007-editor/editor-modes.md "The palette per mode"): Infographic mode's
-    // landing category in place of Favourites, twelve picks across the categories it offers.
+    // Popular (docs/specs/007-editor/editor-modes.md "The palette per mode"): every mode's
+    // landing category, twelve tiles that mode is most often built from, picked across its
+    // categories by its palette layout. No band: it draws from every category at once, so it
+    // spans the row above the first heading rather than sitting under one.
     id: 'popular',
     label: 'Popular',
     fullWidth: true,
-    description:
-      'The twelve tiles an infographic is most often built from: text, shapes, an image, a speech bubble, charts, a stat row, a process, a timeline and a callout.',
+    description: 'The tiles most reached for in this mode, from across its categories.',
     icon: <PopularTabIcon />,
   },
   {

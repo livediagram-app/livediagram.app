@@ -12,7 +12,7 @@ type PaletteTab = {
   // CATEGORY_BANDS below (docs/specs/010-palette/palette-top-level-categories.md). Nine equal-weight categories in one grid
   // is a wall; four named bands say what kind of thing each category is.
   //
-  // Left unset for Favourites, which is not a kind of thing at all — it is
+  // Left unset for Popular, which is not a kind of thing at all — it is
   // every category at once, so it sits full width above the first band with
   // no heading over it.
   group?: number;

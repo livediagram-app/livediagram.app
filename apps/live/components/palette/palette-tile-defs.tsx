@@ -70,18 +70,17 @@ const pathD = (i: number) => {
 };
 const lucideStickyNotePaths = { body: pathD(0), fold: pathD(1) };
 
-// The shared palette tile catalogue (docs/specs/010-palette/palette-favourites.md): every creation tile across
-// the Shapes / Tools / Data / Components / Devices categories as one data
-// entry — label, glyph, tinting flags, and an action descriptor that
-// PaletteTileGrid maps to the editor's add-handlers. The category tabs and
-// the Favourites grid all render from this one catalogue, so a tile is
-// defined once and Favourites can never drift from the home tabs.
+// The shared palette tile catalogue: every creation tile across the categories as one data
+// entry — label, glyph, tinting flags, and an action descriptor that PaletteTileGrid maps to the
+// editor's add-handlers. Every category body, Popular, the Toolbar strip and the Search panel
+// render from this one catalogue (arranged per mode by palette-layouts.ts), so a tile is defined
+// once and can never drift between the places it shows.
 //
 // Pure data: a flat catalogue, exempt from the file-size target (see
 // AGENTS.md) — extend it in place rather than splitting it.
 
-// 'icons' and 'technology' exist only on DYNAMIC tiles (individual icon
-// favourites, palette-dynamic-tiles.tsx) — no PALETTE_TILES entry carries
+// 'icons' and 'technology' exist only on DYNAMIC tiles (individual catalogue
+// icons on the Toolbar strip, palette-dynamic-tiles.tsx) — no PALETTE_TILES entry carries
 // them, so tilesInSection never returns them.
 export type PaletteTileSection =
   | 'shapes'
@@ -151,15 +150,15 @@ type PaletteTileAction =
   | { type: 'annotation' }
   | { type: 'link-card' }
   | { type: 'component'; kind: ComponentKind }
-  // Dynamic icon favourites (palette-dynamic-tiles.tsx): a single line-art /
-  // Technology catalogue entry promoted to a tile.
+  // Dynamic icon tiles (palette-dynamic-tiles.tsx): a single line-art /
+  // Technology catalogue entry as a tile.
   | { type: 'icon'; iconId: string }
   | { type: 'tech-icon'; iconId: string };
 
 // Themed sub-groups within the Tools section (docs/specs/008-canvas/canvas-and-palette.md "Sub-categories"):
 // the Tools tab renders one labelled grid per group instead of a flat
 // sixteen-tile wall. Group membership is metadata on the tile — ids stay
-// stable, so favourites persistence and search are untouched.
+// stable, so palette layouts and search are untouched.
 export type ToolGroupId = 'write' | 'draw' | 'behaviour';
 
 // Display order, headings, and a one-line "what's in here" for the Tools tab's
@@ -194,8 +193,8 @@ export const TOOL_GROUPS: { id: ToolGroupId; label: string }[] = [
 ];
 
 export type PaletteTileDef = {
-  // Stable id, persisted in the favourites list — never rename one without
-  // accepting that saved favourites referencing it fall back silently.
+  // Stable id: palette layouts (palette-layouts.ts) and the Search panel address tiles by it, so
+  // renaming one means renaming it there too.
   id: string;
   section: PaletteTileSection;
   // Which Tools-tab group the tile renders under. Required exactly when
@@ -761,9 +760,8 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   },
   {
     // Portal (docs/specs/009-elements/portal-element.md): step in here, come out of the portal it is linked to.
-    // The tile id keeps its original 'door' word because it is persisted in
-    // saved favourites — renaming it would silently drop the tile for anyone
-    // who had favourited it.
+    // The tile id keeps its original 'door' word: ids are stable, since palette layouts and
+    // search address tiles by them.
     id: 'tools:door',
     tileGroup: 'move',
     blurb: 'Step through to its linked portal',
@@ -1786,8 +1784,8 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   // the kind's canonical fill + kind riding the intent (the kind routes the
   // note onto its stage's layer on event-storming boards). Its own top-level
   // category in the Structure band — promoted out of the Write accordion.
-  // Tile ids keep their historical 'tools:' prefix: Favourites persist ids,
-  // so a rename would silently drop saved favourites (docs/specs/010-palette/palette-favourites.md).
+  // Tile ids keep their historical 'tools:' prefix: ids are stable, since palette layouts and
+  // search address tiles by them.
   ...EVENT_STORMING_NOTES.map((note): PaletteTileDef => ({
     id: `tools:es-${note.kind}`,
     section: 'event-storming',
@@ -1823,7 +1821,7 @@ export function tileById(id: string): PaletteTileDef | undefined {
 // The tile's short human name: the explicit caption where one is set,
 // otherwise derived from the action label the same way IconButton derives
 // its tile caption ("Add web browser" → "Web browser", "Pencil (freehand)"
-// → "Pencil"). Used by the edit-favourites dialog rows.
+// → "Pencil"). Used by the Search panel's add-to-canvas entries.
 export function tileDisplayName(def: PaletteTileDef): string {
   if (def.caption) return def.caption;
   const base = def.label
@@ -1841,8 +1839,8 @@ export function tileDisplayName(def: PaletteTileDef): string {
  *
  * Most categories are a section. Three are not: Write, Draw and Behaviour are
  * tool GROUPS inside the tools section (docs/specs/010-palette/palette-top-level-categories.md), so `tilesInSection('write')`
- * is empty and a caller that assumed otherwise silently showed nothing. The
- * Edit Favourites dialog assumed exactly that and dropped all three.
+ * is empty and a caller that assumed otherwise silently showed nothing (the
+ * since-removed Edit Favourites dialog did exactly that and dropped all three).
  *
  * Returns [] for the open-ended catalogues (Icons / Stickers / Technology),
  * whose contents are async data rather than fixed tiles — callers handle

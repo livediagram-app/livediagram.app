@@ -47,8 +47,8 @@ export function CommandPalette(props: CommandPaletteProps) {
           left, category picker on the right. The tool dropdown is a mode
           switch, not an element-add control, so it stays a permanent
           fixture; Select is the default and Space pans regardless of the
-          active tool, mirroring Figma. Favourites is the default category
-          (the user's own go-to tiles, docs/specs/010-palette/palette-favourites.md). */}
+          active tool, mirroring Figma. The mode's Popular is the default
+          category (palette-layouts). */}
       {/* At most one collapsible tile group open across the palette
           (palette-group-state): Behaviour's two groups hold eight tiles
           between them and both open ran the category past the panel. */}
@@ -56,14 +56,14 @@ export function CommandPalette(props: CommandPaletteProps) {
         <PaletteGroupProvider>
           <PaletteTintProvider tint={themeTint}>
             <PaletteTabBar
-              // No storageKey: the palette always opens on Favourites when a
-              // document loads (the user's go-to tiles, docs/specs/010-palette/palette-favourites.md) rather than
+              // No storageKey: the palette always opens on the mode's Popular when a
+              // document loads (palette-layouts) rather than
               // restoring the last-used category across documents — EXCEPT on
               // an event-storming board (docs/specs/021-event-storming/event-storming.md), where the notation is the
               // whole point: it opens on the Event Storming category. Keyed so
               // crossing an ES / non-ES tab boundary re-lands on the right
               // default rather than whatever was open on the other tab. Keyed on the editor mode
-              // too: a mode offers its own categories, so a switch re-lands on Favourites rather
+              // too: a mode offers its own categories, so a switch re-lands on Popular rather
               // than on a category the new mode leaves out.
               key={esBoard ? 'es-board' : editorMode}
               defaultOpenId={paletteLandingCategory(editorMode, !!esBoard)}

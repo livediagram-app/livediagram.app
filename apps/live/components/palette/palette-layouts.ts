@@ -6,8 +6,9 @@
 // renamed or re-filled for one mode without touching another.
 //
 // An entry with no `tiles` holds its category's own tiles (tilesForCategory), so a layout spells
-// out only where a mode differs. The catalogue categories (Favourites, My shapes, Icons, Stickers,
-// Tech) are bodies with their own content and take no tile list.
+// out only where a mode differs. The catalogue categories (My shapes, Icons, Stickers, Tech) are
+// bodies with their own content and take no tile list. Every mode lands on its own Popular, a
+// fixed pick of twelve tiles from across its categories.
 import type { EditorMode } from '@livediagram/document';
 import { PALETTE_CATEGORIES } from './palette-categories';
 import { tileById, tilesForCategory, type PaletteTileDef } from './palette-tile-defs';
@@ -32,7 +33,6 @@ export type PaletteLayout = {
 
 // The categories whose body is its own content rather than a list of tiles.
 export const CATALOGUE_CATEGORIES: ReadonlySet<string> = new Set([
-  'favourites',
   'my-shapes',
   'icons',
   'stickers',
@@ -56,12 +56,31 @@ const EMBED_TILES = [
   'media:embed-website',
 ];
 
-// Diagram mode: every category but the mock-up kit (Components, Devices), the charts (Data) and
-// Infographic's Popular, each with its own tiles but Media's embeds.
+// Diagram mode: Popular, then every category but the mock-up kit (Components, Devices) and the
+// charts (Data), each with its own tiles but Media's embeds.
 const DIAGRAM: PaletteLayout = {
-  landing: 'favourites',
+  landing: 'popular',
   categories: [
-    { id: 'favourites' },
+    {
+      // The twelve tiles a diagram is most often built from (what used to be the default
+      // Favourites): the basic shapes, words, an arrow and a frame, a note and a picture, the
+      // shape pen, and the table, code block and entity.
+      id: 'popular',
+      tiles: [
+        'shapes:square',
+        'shapes:circle',
+        'shapes:diamond',
+        'tools:text',
+        'tools:arrow',
+        'tools:frame',
+        'tools:sticky',
+        'tools:image',
+        'tools:shape-pen',
+        'tools:table',
+        'tools:code-block',
+        'tools:entity',
+      ],
+    },
     { id: 'shapes' },
     { id: 'my-shapes' },
     { id: 'write' },
@@ -77,8 +96,8 @@ const DIAGRAM: PaletteLayout = {
   ],
 };
 
-// Infographic mode: Popular in place of Favourites, the mock-up kit, glyphs, stickers, pictures
-// and charts; no pens, tech icons, behaviours or workshop notation.
+// Infographic mode: Popular, the mock-up kit, glyphs, stickers, pictures and charts; no pens, tech
+// icons, behaviours or workshop notation.
 const INFOGRAPHIC: PaletteLayout = {
   landing: 'popular',
   categories: [

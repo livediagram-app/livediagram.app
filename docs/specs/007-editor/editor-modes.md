@@ -203,15 +203,14 @@ holds.
   it holds the category's own tiles (`tilesForCategory`), so a layout spells
   out only where a mode differs. `boardOnly` keeps a category to
   event-storming boards.
-- **Catalogue categories** (Favourites, My shapes, Icons, Stickers, Tech) are
+- **Catalogue categories** (My shapes, Icons, Stickers, Tech) are
   bodies with their own content and take no tile list.
 - **A body decides presentation only** (a grid, rows with a blurb, the
   Behaviours group browser, Media's and Components' collapsed groups); it
   renders whatever tiles the layout hands it. A category with no body of its
   own, such as Popular, is a tile grid.
 - **Every surface reads the layout:** the floating Palette, the Toolbar
-  layout's strip, and the Edit Favourites dialog (Diagram's layout, since
-  Favourites is Diagram's category).
+  layout's strip (the Toolbar layout's).
 - Draw mode shows its own tools in place of the palette, so it borrows
   Diagram's layout.
 
@@ -225,8 +224,7 @@ Docs, Website), keeping Image and Avatar.
 
 | Category       | Diagram | Infographic |
 | -------------- | ------- | ----------- |
-| Favourites     | yes     | no          |
-| Popular        | no      | yes         |
+| Popular        | yes     | yes         |
 | Shapes         | yes     | yes         |
 | My shapes      | yes     | yes         |
 | Write          | yes     | yes         |
@@ -242,15 +240,20 @@ Docs, Website), keeping Image and Avatar.
 | Data           | no      | yes         |
 | Behaviours     | yes     | no          |
 
-- **The landing category** is Favourites in Diagram mode, **Popular** in
-  Infographic mode, and the notation on an event-storming board
+- **The landing category** is the mode's **Popular**, and the notation on an
+  event-storming board
   (the layout's `landing`). Switching mode re-lands the palette there, so it
   never shows a category the new mode leaves out.
-- **Popular** is twelve tiles an infographic is most often built from, each
-  reachable from another category Infographic mode offers, listed in its
-  layout entry: Text, Square, Circle,
-  Image, Speech bubble, Pie, Bar, Donut, Stat row, Process, Timeline, Callout.
-  It is not a category of Edit Favourites.
+- **Popular** is every mode's landing category: twelve tiles that mode is most
+  often built from, listed in its layout entry, fixed (not edited or
+  reordered). It replaced the per-browser **Favourites**
+  ([Palette Favourites](../010-palette/palette-favourites.md), removed).
+  - **Diagram**: Square, Circle, Diamond, Text, Arrow, Frame, Sticky note,
+    Image, Shape pen, Table, Code block, Entity (what were the default
+    Favourites).
+  - **Infographic**: Text, Square, Circle, Image, Speech bubble, Pie, Bar,
+    Donut, Stat row, Process, Timeline, Callout, each also reachable from
+    another category the mode offers.
 - Elements already on the canvas are untouched: narrowing the palette only
   changes what is offered to add.
 

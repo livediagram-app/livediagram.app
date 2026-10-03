@@ -562,17 +562,6 @@ export const EDITOR_SEARCH: MetricStack = {
 };
 
 // The palette beyond adding elements (Palette tab has the rankings).
-export const PALETTE_FAVOURITES = chart(
-  'UI',
-  'Added',
-  'Palette Favourites',
-  'Favourites added, removed, reordered, or the editor opened.',
-  {
-    actionIn: ['Removed', 'Changed', 'Toggled'],
-    typeIn: (type) => (type ?? '').startsWith('PaletteFavourite'),
-  },
-);
-
 export const PALETTE_SEARCHES = chart(
   'UI',
   'Searched',
@@ -602,9 +591,8 @@ export const TOOLBAR_CATEGORY = chart(
 export const PALETTE_USE: MetricStack = {
   stack: true,
   title: 'Palette Use',
-  blurb:
-    'How the palette gets used beyond adding elements: favourites, searches, groups, and the toolbar.',
-  members: [PALETTE_FAVOURITES, PALETTE_SEARCHES, PALETTE_GROUPS_OPENED, TOOLBAR_CATEGORY],
+  blurb: 'How the palette gets used beyond adding elements: searches, groups, and the toolbar.',
+  members: [PALETTE_SEARCHES, PALETTE_GROUPS_OPENED, TOOLBAR_CATEGORY],
   seeAlso: { view: 'palette', label: 'See Each Element on the Palette Tab' },
 };
 

@@ -17,7 +17,7 @@ Specs live in numbered category folders: the reserved `001`–`005` first (visio
 - ./007-editor/README.md - when working on the live editor shell: routes, editor modes, preferences, power user mode, panels, tours, AI, command palette
 - ./008-canvas/README.md - when working on canvas tools and gestures: drawing, arrows, snapping, sizing, corner radius, tool panels and the Quick Style Panel
 - ./009-elements/README.md - when adding or changing an element kind or its content
-- ./010-palette/README.md - when working on the palette: categories, favourites, icon and sticker catalogues, presets
+- ./010-palette/README.md - when working on the palette: categories, per-mode layouts and Popular, icon and sticker catalogues, presets
 - ./011-theme/README.md - when working on tab themes: built-in, multi-colour and custom themes
 - ./012-collaboration/README.md - when working on realtime, sessions, facilitation, comments, actions or room tools
 - ./013-workspace/README.md - when working on the Explorer, its filters, folders, default folders, teams, favourites, shape libraries, share links or the Trash

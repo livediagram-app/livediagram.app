@@ -19,8 +19,8 @@ import type { ReactNode } from 'react';
 // delete-account confirm has no close button, the password gate leads with a
 // lock icon.
 //
-// MoveToFolder / PaletteFavourites / TabOrganise share the same tree but a
-// tighter `px-5 pb-3 pt-5`. All three agree with each other, so that reads as
+// MoveToFolder / TabOrganise share the same tree but a
+// tighter `px-5 pb-3 pt-5`. Both agree with each other, so that reads as
 // a deliberate compact size rather than drift, and folding them in here would
 // silently reflow them. If it turns out to be accidental, they belong here
 // too — but that is a design call, not a refactor.

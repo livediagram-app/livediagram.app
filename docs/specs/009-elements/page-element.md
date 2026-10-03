@@ -44,7 +44,7 @@ it disagreed with itself.
 Page is also simply more accurate: it is one sheet, not a document that flows
 across sheets (see Out of scope).
 
-The flowchart shape keeps its name: its id is persisted in palette favourites,
+The flowchart shape keeps its name: palette layouts and search address it by id,
 and "Document" is its correct name in flowchart vocabulary.
 
 ## The masthead

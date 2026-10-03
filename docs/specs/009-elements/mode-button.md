@@ -30,7 +30,7 @@ It also gives a presenter somewhere to put a control bar — a row of buttons th
 
 ## Configuring it
 
-In the palette it is **Selection Mode**, in the Tools tab's **Behaviour** group — the group for elements that DO something when someone interacts with them, rather than elements that say something. (The tile's internal id is unchanged: ids are persisted in saved favourites, so renaming one would silently drop it for anyone who had favourited it.)
+In the palette it is **Selection Mode**, in the Tools tab's **Behaviour** group — the group for elements that DO something when someone interacts with them, rather than elements that say something. (The tile's internal id is unchanged: palette layouts and search address tiles by id.)
 
 Right-click the button → **Button**: a "Switches the presser to" tile grid of all eight modes (Select, Hand, Laser, Spotlight, Avatar, Eraser, Format, Isometric), the current one marked active. Tiles rather than a list so the icons match the palette's own mode picker.
 

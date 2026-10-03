@@ -6,7 +6,6 @@ import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { PALETTE_ADD_HANDLER_KEYS, type PaletteAddHandlers } from './palette-add-handlers';
 import { ToolbarPalette } from './ToolbarPalette';
 import type { EsBoardControls } from './EventStormingBoardRows';
-import { savePaletteFavourites } from '@/lib/palette-favourites';
 import type { EditorMode } from '@livediagram/document';
 import type { ReactNode } from 'react';
 import { EditorModeProvider } from '@/components/chrome/editor-mode/editor-mode-context';
@@ -83,13 +82,13 @@ function pickCategory(id: string) {
 const strip = () => document.querySelector('[data-toolbar-palette] > div') as HTMLElement;
 
 describe('ToolbarPalette', () => {
-  it('opens on Favourites with the selection mode and category pickers', () => {
+  it('opens on Popular with the selection mode and category pickers', () => {
     show();
     expect(screen.getByRole('button', { name: 'Selection mode' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Palette category' }).textContent).toContain(
-      'Favourites',
+      'Popular',
     );
-    // The shipped favourites lead with the square.
+    // Diagram's Popular leads with the square.
     expect(within(strip()).getByRole('button', { name: 'Add square' })).toBeTruthy();
   });
 
@@ -111,8 +110,9 @@ describe('ToolbarPalette', () => {
 
   it('only offers More when the category has more than the strip shows', () => {
     show();
-    // Favourites always has More: its search and Edit live there.
-    expect(screen.getByRole('button', { name: 'More Favourites' })).toBeTruthy();
+    // Collaborate always has More: its group browser lives there.
+    pickCategory('behaviour');
+    expect(screen.getByRole('button', { name: 'More Collaborate' })).toBeTruthy();
     cleanup();
     // Devices fits in the strip whole.
     show({ mode: 'infographic' });
@@ -139,11 +139,10 @@ describe('ToolbarPalette', () => {
 
   it("opens the category's full body under More, and closes it when a tile is used", () => {
     const { h } = show();
-    fireEvent.click(screen.getByRole('button', { name: 'More Favourites' }));
+    pickCategory('shapes');
+    fireEvent.click(screen.getByRole('button', { name: 'More Shapes' }));
     const popover = document.querySelector('[data-toolbar-more]') as HTMLElement;
     expect(popover).not.toBeNull();
-    // The Favourites body itself: its cross-category search.
-    expect(within(popover).getByPlaceholderText('Search all elements')).toBeTruthy();
     fireEvent.click(within(popover).getByRole('button', { name: 'Add circle' }));
     expect(h.onAddShape).toHaveBeenCalledWith('circle', expect.anything());
     expect(document.querySelector('[data-toolbar-more]')).toBeNull();
@@ -151,47 +150,38 @@ describe('ToolbarPalette', () => {
 
   it('focuses the search field when More opens (docs/specs/007-editor/toolbar-layout.md)', () => {
     show();
-    fireEvent.click(screen.getByRole('button', { name: 'More Favourites' }));
+    pickCategory('behaviour');
+    fireEvent.click(screen.getByRole('button', { name: 'More Collaborate' }));
     const popover = document.querySelector('[data-toolbar-more]') as HTMLElement;
     expect(document.activeElement).toBe(
-      within(popover).getByPlaceholderText('Search all elements'),
+      within(popover).getByPlaceholderText('Search collaboration'),
     );
   });
 
   it('leaves focus alone on a phone, where it would raise the keyboard', () => {
     mobile.value = true;
     show();
-    fireEvent.click(screen.getByRole('button', { name: 'More Favourites' }));
+    pickCategory('behaviour');
+    fireEvent.click(screen.getByRole('button', { name: 'More Collaborate' }));
     const popover = document.querySelector('[data-toolbar-more]') as HTMLElement;
     expect(document.activeElement).not.toBe(
-      within(popover).getByPlaceholderText('Search all elements'),
+      within(popover).getByPlaceholderText('Search collaboration'),
     );
   });
 
   it('closes More when the category changes, since it showed the old one', () => {
     show();
-    fireEvent.click(screen.getByRole('button', { name: 'More Favourites' }));
+    pickCategory('behaviour');
+    fireEvent.click(screen.getByRole('button', { name: 'More Collaborate' }));
     expect(document.querySelector('[data-toolbar-more]')).not.toBeNull();
     pickCategory('shapes');
     expect(document.querySelector('[data-toolbar-more]')).toBeNull();
   });
 
-  // The Favourites body writes its edits straight to storage; the strip catches up on close
-  // (docs/specs/010-palette/palette-favourites.md).
-  it('shows favourites edited under More once it closes', () => {
-    show();
-    fireEvent.click(screen.getByRole('button', { name: 'More Favourites' }));
-    act(() => savePaletteFavourites(['shapes:diamond']));
-    act(() => {
-      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
-    });
-    expect(within(strip()).getByRole('button', { name: 'Add diamond' })).toBeTruthy();
-    expect(within(strip()).queryByRole('button', { name: 'Add square' })).toBeNull();
-  });
-
   it('closes More on Escape', () => {
     show();
-    fireEvent.click(screen.getByRole('button', { name: 'More Favourites' }));
+    pickCategory('behaviour');
+    fireEvent.click(screen.getByRole('button', { name: 'More Collaborate' }));
     act(() => {
       document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
     });

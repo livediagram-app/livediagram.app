@@ -12,15 +12,12 @@
 // screen, which the drill-in categories already made affordable: you arrive
 // here having chosen a group of three to eight tools, not facing all 28.
 
-import { Tooltip } from '@livediagram/ui';
-import { StarIcon } from '@/components/primitives/explorer-icons';
 import { useEffect, useRef } from 'react';
 import { setPaletteDragPreview } from '@/lib/palette-drag-preview';
 import type { PendingDraw } from '@/lib/draw-mode';
 import type { PaletteTileDef } from './palette-tile-defs';
 import { tileCaption } from './tile-caption';
 import { tileDragStart } from './palette-tile-drag';
-// The SAME star the Explorer's favourites use, so one glyph means one thing.
 import { tileActive, tileHandler, visibleTiles, type PaletteTileActions } from './PaletteTileGrid';
 
 function PaletteToolRow({
@@ -29,8 +26,6 @@ function PaletteToolRow({
   pendingDraw,
   id,
   highlighted = false,
-  favourite,
-  onToggleFavourite,
 }: {
   def: PaletteTileDef;
   actions: PaletteTileActions;
@@ -39,9 +34,6 @@ function PaletteToolRow({
   // The keyboard-walked row (docs/specs/010-palette/palette-top-level-categories.md). Distinct from `armed`, which means a
   // draw gesture is queued: this is only "the arrow keys are pointing here".
   highlighted?: boolean;
-  /** Is this tile already a favourite? Absent = no star on this list. */
-  favourite?: boolean;
-  onToggleFavourite?: (id: string) => void;
 }) {
   const armed = tileActive(def, pendingDraw);
   const rowRef = useRef<HTMLButtonElement>(null);
@@ -53,9 +45,7 @@ function PaletteToolRow({
 
   const onClick = tileHandler(def, actions);
   const dragStart = tileDragStart(def.action);
-  // Built first, then wrapped when the list offers favouriting, so the row's
-  // own markup has exactly one shape.
-  const row = (
+  return (
     <button
       ref={rowRef}
       id={id}
@@ -73,9 +63,7 @@ function PaletteToolRow({
       onDragEnd={() => setPaletteDragPreview(null)}
       aria-label={def.label}
       aria-pressed={armed}
-      className={`flex w-full items-center gap-2.5 rounded-lg border py-1.5 pl-2 text-left transition ${
-        onToggleFavourite ? 'pr-8' : 'pr-2'
-      } ${
+      className={`flex w-full items-center gap-2.5 rounded-lg border py-1.5 pl-2 pr-2 text-left transition ${
         armed
           ? 'border-brand-300 bg-brand-50 dark:border-brand-500 dark:bg-brand-950/40'
           : highlighted
@@ -113,52 +101,6 @@ function PaletteToolRow({
       ) : null}
     </button>
   );
-
-  if (!onToggleFavourite) return row;
-
-  // The CAPTION, not `def.label`: a catalogue label is phrased as the action
-  // that places it ("Add Laughing face"), which read as "Add Add Laughing face
-  // to favourites".
-  const caption = tileCaption(def.label, def.caption);
-  const starLabel = favourite
-    ? `Remove ${caption} from favourites`
-    : `Add ${caption} to favourites`;
-
-  // The star is a SIBLING of the row, not a child: a button inside a button is
-  // invalid, and nesting one would make the whole row's click ambiguous. It
-  // sits absolutely at the right edge, and the row reserves space for it with
-  // padding so a long name is truncated before it reaches the star rather
-  // than sliding underneath it.
-  return (
-    <div className="group/row relative">
-      {row}
-      <Tooltip label={starLabel}>
-        <button
-          type="button"
-          aria-label={starLabel}
-          aria-pressed={favourite}
-          onClick={(e) => {
-            // The row underneath adds the element to the canvas. Starring must
-            // not also do that.
-            e.stopPropagation();
-            onToggleFavourite(def.id);
-          }}
-          // ALWAYS visible, not hover-revealed. A hover-only control is
-          // undiscoverable — you have to already know it is there — and on a
-          // touchscreen there is no hover at all, so it would simply not exist.
-          // An unfavourited star is muted instead: present enough to find, quiet
-          // enough that a list of twenty rows is not twenty invitations.
-          className={`absolute right-1.5 top-1/2 flex h-6 w-6 -translate-y-1/2 cursor-pointer items-center justify-center rounded transition ${
-            favourite
-              ? 'text-amber-400 hover:bg-amber-50 hover:text-amber-500 dark:hover:bg-amber-500/15'
-              : 'text-slate-300 hover:bg-slate-100 hover:text-amber-400 dark:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-amber-400'
-          }`}
-        >
-          <StarIcon size={14} filled={favourite === true} />
-        </button>
-      </Tooltip>
-    </div>
-  );
 }
 
 export function PaletteToolRows({
@@ -167,16 +109,10 @@ export function PaletteToolRows({
   pendingDraw,
   activeIndex,
   optionIdPrefix,
-  favouriteIds,
-  onToggleFavourite,
 }: {
   tiles: PaletteTileDef[];
   actions: PaletteTileActions;
   pendingDraw: PendingDraw | null | undefined;
-  /** Current favourites, so each row can show whether it is one. Omit both of
-   *  these and the list draws no stars at all. */
-  favouriteIds?: ReadonlySet<string>;
-  onToggleFavourite?: (id: string) => void;
   // Index of the keyboard-walked row, or -1 / undefined for none. Set by a
   // search box that owns the arrow keys (docs/specs/010-palette/palette-top-level-categories.md) — the list itself takes no
   // focus, so the caller drives it.
@@ -195,8 +131,6 @@ export function PaletteToolRows({
           pendingDraw={pendingDraw}
           id={optionIdPrefix ? `${optionIdPrefix}-${i}` : undefined}
           highlighted={activeIndex === i}
-          favourite={favouriteIds?.has(def.id)}
-          onToggleFavourite={onToggleFavourite}
         />
       ))}
     </div>
