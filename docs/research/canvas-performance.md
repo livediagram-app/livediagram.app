@@ -183,11 +183,16 @@ Measured 2026-10-03, on the runner unless stated.
 
 - **Zoom** (68-110 ms) is the browser re-rasterising every element at the new scale; script in the
   gesture is small once the board keeps its identity. Two compositor-only remedies, scoped to the
-  zoom gesture, each crashed the renderer mid-zoom on the 1,000-element board, every run, locally:
-  `will-change: transform` on the world (one layer the size of the board, the same failure as
-  lifting the arrows' canvas-sized SVGs) and `content-visibility: auto` on element wrappers. Neither
-  is safe to ship. What remains is the spec's Later list: level of detail at low zoom, and not
+  zoom gesture, measured on the runner (locally they crashed, but so did the unchanged build: swap
+  was exhausted, so those crashes said nothing about either):
+  - `will-change: transform` on the world: one layer the size of the board, re-rasterised whole;
+    zoom 4,463-4,475 ms at fit and 509-531 ms at 100%, against 68-110 ms.
+  - `content-visibility: auto` on element wrappers while zooming: the browser toggles rendering on
+    every wrapper mid-gesture; 244-311 ms against 68-110 ms.
+
+  Neither ships. What remains is the spec's Later list: level of detail at low zoom, and not
   mounting off-screen elements when zoomed in.
+
 - **Marquee** at fit (61-70 ms): the drag itself costs nothing; the whole task is the release. In a
   local unminified profile (4x): `Canvas`'s own body about 34 ms (two `...props` spreads into
   `CanvasElementsLayer` and `CanvasChrome` about 10 ms of it, the rest the compiler's cache checks),
