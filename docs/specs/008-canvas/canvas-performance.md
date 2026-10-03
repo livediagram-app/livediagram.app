@@ -111,6 +111,9 @@ Taken up only when the rules above leave the budget unmet; each is a change to t
   run with a failing row opens one issue, **Canvas performance budget**, or comments on it if open,
   with the table and the commits since the previous run; the first all-pass run closes it. No
   one has to remember to run or read it.
+- **A branch can be measured on demand**: the same workflow, started by hand on any branch, runs
+  the same probe and writes the same job summary, and leaves the issue alone; only a run on `main`
+  reports to it.
 
 ## Observability
 

@@ -63,7 +63,8 @@ async function report() {
   const open = (await api('/issues?state=open&per_page=100')).find(
     (i) => i.title === BUDGET_ISSUE_TITLE && !i.pull_request,
   );
-  const action = budgetIssueAction({ misses, issueOpen: Boolean(open) });
+  const onMain = env('GITHUB_REF') === 'refs/heads/main';
+  const action = budgetIssueAction({ misses, issueOpen: Boolean(open), onMain });
   const body = budgetIssueComment({
     action,
     table,
@@ -73,7 +74,9 @@ async function report() {
     commits,
     runUrl,
   });
-  console.log(`[canvas-perf] ${misses} of ${rows.length} over budget; issue: ${action}`);
+  console.log(
+    `[canvas-perf] ${misses} of ${rows.length} over budget on ${env('GITHUB_REF')}; issue: ${action}`,
+  );
   if (action === 'open') {
     await api('/issues', {
       method: 'POST',
