@@ -18,8 +18,11 @@ beforeAll(() => {
   // Everything is in view at once.
   globalThis.IntersectionObserver = class {
     private cb: IntersectionObserverCallback;
-    constructor(cb: IntersectionObserverCallback) {
+    // The real signature, options included, so a caller passing them is calling what it calls.
+    readonly options: IntersectionObserverInit | undefined;
+    constructor(cb: IntersectionObserverCallback, options?: IntersectionObserverInit) {
       this.cb = cb;
+      this.options = options;
     }
     observe() {
       this.cb([{ isIntersecting: true } as IntersectionObserverEntry], this as never);

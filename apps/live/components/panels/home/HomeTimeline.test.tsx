@@ -22,7 +22,11 @@ const today = (h: number) => {
   return d.getTime();
 };
 
-let observed: { callback: IntersectionObserverCallback; el: Element }[] = [];
+let observed: {
+  callback: IntersectionObserverCallback;
+  el: Element;
+  options: IntersectionObserverInit | undefined;
+}[] = [];
 beforeEach(() => {
   track.mockReset();
   observed = [];
@@ -30,11 +34,13 @@ beforeEach(() => {
     'IntersectionObserver',
     class {
       callback: IntersectionObserverCallback;
-      constructor(callback: IntersectionObserverCallback) {
+      readonly options: IntersectionObserverInit | undefined;
+      constructor(callback: IntersectionObserverCallback, options?: IntersectionObserverInit) {
         this.callback = callback;
+        this.options = options;
       }
       observe(el: Element) {
-        observed.push({ callback: this.callback, el });
+        observed.push({ callback: this.callback, el, options: this.options });
       }
       disconnect() {}
     },
@@ -98,6 +104,8 @@ describe('HomeTimeline', () => {
     const props = renderIt({ hasMore: true });
     const slot = screen.getByTestId('home-timeline-paging');
     const watcher = observed.find((o) => o.el === slot)!;
+    // Early enough that the page lands before the reader reaches the end.
+    expect(watcher.options).toEqual({ rootMargin: '400px' });
     watcher.callback(
       [{ isIntersecting: true } as IntersectionObserverEntry],
       {} as IntersectionObserver,
