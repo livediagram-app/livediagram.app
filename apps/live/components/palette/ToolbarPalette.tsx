@@ -8,11 +8,13 @@ import {
   useRef,
   useState,
   type ReactNode,
+  type RefObject,
 } from 'react';
 import { ChevronDownIcon, EllipsisIcon, HoverCard } from '@livediagram/ui';
 import { track } from '@/lib/telemetry';
 import { loadPaletteFavourites } from '@/lib/palette-favourites';
 import { SnapWidth } from '@/components/primitives/SnapWidth';
+import { PHONE_COMPACT_ITEMS } from '@/components/chrome/phone-compact';
 import { PaletteTintProvider } from './palette-controls';
 import { PaletteGroupProvider } from './palette-group-state';
 import { PaletteDropdown, TOOLBAR_TRIGGER_TONE } from './PaletteDropdown';
@@ -56,14 +58,41 @@ type Props = Pick<
     // The chrome is hidden (zen, the welcome flow). Hidden rather than
     // unmounted, so the strip keeps its state for the page load.
     hidden?: boolean;
-    // Rendered at the far left of the strip, before the selection mode: the
-    // Explorer menu button on a phone, which has no room for it in a corner.
+    // Its own card at the far left of the strip's row, the strip beside it: the
+    // Explorer menu button and mode switch on a phone, which has no room for
+    // them in a corner card above the strip.
     leading?: ReactNode;
   };
 // Clicks inside these don't count as "outside" the More popover: the icon
 // filter's portalled dropdown menus, and the Edit Favourites dialog that the
 // Favourites body opens (closing the popover would unmount it mid-edit).
 const INSIDE_SELECTOR = '[data-palette-dropdown-menu], [role="dialog"], [data-tour-popover]';
+
+// The strip's card, and the leading card beside it on a phone.
+const CARD_CLASS = `flex items-center gap-0.5 rounded-xl border border-slate-200 bg-white p-1 shadow-md shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40 ${PHONE_COMPACT_ITEMS}`;
+
+// With a leading card (a phone), the menu card sits at the left gutter and the
+// strip beside it rather than centred (docs/specs/007-editor/toolbar-layout.md
+// "On a phone"). Without one, the strip alone, centred by its parent.
+function StripRow({
+  leading,
+  leadingRef,
+  children,
+}: {
+  leading?: ReactNode;
+  leadingRef: RefObject<HTMLDivElement | null>;
+  children: ReactNode;
+}) {
+  if (!leading) return <>{children}</>;
+  return (
+    <div className="pointer-events-none flex w-full items-start gap-2 px-3 [&>*]:pointer-events-auto">
+      <div ref={leadingRef} data-strip-leading="" className={CARD_CLASS}>
+        {leading}
+      </div>
+      {children}
+    </div>
+  );
+}
 
 function Divider() {
   return <span aria-hidden className="mx-0.5 h-6 w-px shrink-0 bg-slate-200 dark:bg-slate-700" />;
@@ -105,7 +134,9 @@ export function ToolbarPalette(props: Props) {
   // Measured from the strip itself (useStripTileLimit); the estimate only
   // covers the first paint.
   const cardRef = useRef<HTMLDivElement>(null);
+  const leadingRef = useRef<HTMLDivElement>(null);
   const stripLimit = useStripTileLimit(cardRef, {
+    leadingRef,
     isMobile,
     scale,
     fallback: isMobile
@@ -263,139 +294,131 @@ export function ToolbarPalette(props: Props) {
         <PaletteTintProvider tint={themeTint}>
           {/* Whole-pixel wide, and the same parity as the canvas, so centring
               it can't leave the strip on a half pixel (see SnapWidth). */}
-          <SnapWidth matchParentParity>
-            {/* The tour's Palette anchor (docs/specs/007-editor/editor-tour.md) is the card, not the
+          <StripRow leading={leading} leadingRef={leadingRef}>
+            <SnapWidth matchParentParity>
+              {/* The tour's Palette anchor (docs/specs/007-editor/editor-tour.md) is the card, not the
                 full-width row around it, so the ring frames the strip. */}
-            <div
-              ref={cardRef}
-              data-tour-id="palette"
-              className="flex items-center gap-0.5 rounded-xl border border-slate-200 bg-white p-1 shadow-md shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
-            >
-              {/* Event-storming boards hide the selection mode (docs/specs/021-event-storming/event-storming.md): the
+              <div ref={cardRef} data-tour-id="palette" className={CARD_CLASS}>
+                {/* Event-storming boards hide the selection mode (docs/specs/021-event-storming/event-storming.md): the
                 notation is the palette there. */}
-              {leading ? (
-                <>
-                  {leading}
-                  <Divider />
-                </>
-              ) : null}
-              {/* ...and lead with the board's own control instead, as the floating palette's
+                {/* ...and lead with the board's own control instead, as the floating palette's
                 Event Storming category does. */}
-              {esBoard && props.esBoardControls?.onImportPhoto ? (
-                <>
-                  <EsPhotoStripButton controls={props.esBoardControls} />
-                  <Divider />
-                </>
-              ) : null}
-              {esBoard ? null : (
-                <>
-                  <PaletteDropdown
-                    ariaLabel="Selection mode"
-                    dataTourId="canvas-tool"
-                    hoverCardTitle="Selection Mode"
-                    hoverCardDescription="Choose how the pointer acts on the canvas."
-                    value={canvasTool}
-                    variant="toolbar"
-                    iconOnly
-                    autoHeight
-                    grid
-                    menuClassName=""
-                    groupLabels={{ 0: 'Edit', 1: 'Present', 2: 'Preview' }}
-                    onChange={onCanvasToolChange}
-                    options={canvasToolOptions}
-                  />
-                  <Divider />
-                  {/* The category picker sits between the selection mode and the
-                    tiles it chooses, so it reads as a label for them (docs/specs/007-editor/toolbar-layout.md).
-                    Its width follows its label's text, which is fractional:
-                    snapped, so the tiles after it stay on whole pixels. */}
-                  <SnapWidth>
+                {esBoard && props.esBoardControls?.onImportPhoto ? (
+                  <>
+                    <EsPhotoStripButton controls={props.esBoardControls} />
+                    <Divider />
+                  </>
+                ) : null}
+                {esBoard ? null : (
+                  <>
                     <PaletteDropdown
-                      ariaLabel="Palette category"
-                      dataTourId="palette-category"
-                      value={category?.id ?? defaultId}
+                      ariaLabel="Selection mode"
+                      dataTourId="canvas-tool"
+                      hoverCardTitle="Selection Mode"
+                      hoverCardDescription="Choose how the pointer acts on the canvas."
+                      value={canvasTool}
                       variant="toolbar"
-                      // A phone shows the category's icon alone, so the
-                      // strip has room for more tiles.
-                      iconOnly={isMobile}
+                      iconOnly
                       autoHeight
                       grid
                       menuClassName=""
-                      groupLabels={CATEGORY_BANDS}
-                      onChange={switchCategory}
-                      options={tabs.map((tab) => ({
-                        id: tab.id,
-                        label: tab.label,
-                        icon: tab.icon,
-                        group: tab.group,
-                        fullWidth: tab.fullWidth,
-                      }))}
+                      groupLabels={{ 0: 'Edit', 1: 'Present', 2: 'Preview' }}
+                      onChange={onCanvasToolChange}
+                      options={canvasToolOptions}
                     />
-                  </SnapWidth>
-                  <Divider />
-                </>
-              )}
-              <ToolbarStripRail
-                railKey={category?.id ?? defaultId}
-                items={[
-                  ...tiles.map((def) => {
-                    const tile = (
-                      <PaletteTile
-                        def={def}
-                        actions={tileActions}
-                        pendingDraw={pendingDraw}
-                        compact
+                    <Divider />
+                    {/* The category picker sits between the selection mode and the
+                    tiles it chooses, so it reads as a label for them (docs/specs/007-editor/toolbar-layout.md).
+                    Its width follows its label's text, which is fractional:
+                    snapped, so the tiles after it stay on whole pixels. */}
+                    <SnapWidth>
+                      <PaletteDropdown
+                        ariaLabel="Palette category"
+                        dataTourId="palette-category"
+                        value={category?.id ?? defaultId}
+                        variant="toolbar"
+                        // A phone shows the category's icon alone, so the
+                        // strip has room for more tiles.
+                        iconOnly={isMobile}
+                        autoHeight
+                        grid
+                        menuClassName=""
+                        groupLabels={CATEGORY_BANDS}
+                        onChange={switchCategory}
+                        options={tabs.map((tab) => ({
+                          id: tab.id,
+                          label: tab.label,
+                          icon: tab.icon,
+                          group: tab.group,
+                          fullWidth: tab.fullWidth,
+                        }))}
                       />
-                    );
-                    // A fixed divider rides with the tile it follows.
-                    return dividersAfter.has(def.id) ? (
-                      <span key={def.id} className="flex items-center">
-                        {tile}
-                        <Divider />
-                      </span>
-                    ) : (
-                      <Fragment key={def.id}>{tile}</Fragment>
-                    );
-                  }),
-                ]}
-                leavingItems={
-                  leaving
-                    ? [
-                        ...leaving.tiles.map((def) => (
-                          <span key={def.id} className="flex items-center">
-                            <PaletteTile
-                              def={def}
-                              actions={tileActions}
-                              pendingDraw={null}
-                              compact
-                            />
-                            {leaving.dividersAfter.has(def.id) ? <Divider /> : null}
-                          </span>
-                        )),
-                      ]
-                    : null
-                }
-              />
-              {/* Outside the rail so it rides the rail's width change rather
+                    </SnapWidth>
+                    <Divider />
+                  </>
+                )}
+                <ToolbarStripRail
+                  railKey={category?.id ?? defaultId}
+                  items={[
+                    ...tiles.map((def) => {
+                      const tile = (
+                        <PaletteTile
+                          def={def}
+                          actions={tileActions}
+                          pendingDraw={pendingDraw}
+                          compact
+                        />
+                      );
+                      // A fixed divider rides with the tile it follows.
+                      return dividersAfter.has(def.id) ? (
+                        <span key={def.id} className="flex items-center">
+                          {tile}
+                          <Divider />
+                        </span>
+                      ) : (
+                        <Fragment key={def.id}>{tile}</Fragment>
+                      );
+                    }),
+                  ]}
+                  leavingItems={
+                    leaving
+                      ? [
+                          ...leaving.tiles.map((def) => (
+                            <span key={def.id} className="flex items-center">
+                              <PaletteTile
+                                def={def}
+                                actions={tileActions}
+                                pendingDraw={null}
+                                compact
+                              />
+                              {leaving.dividersAfter.has(def.id) ? <Divider /> : null}
+                            </span>
+                          )),
+                        ]
+                      : null
+                  }
+                />
+                {/* Outside the rail so it rides the rail's width change rather
                 than popping out and back in with the tiles. Only there when
                 the category has more than the strip shows. */}
-              {hasMore ? (
-                <>
-                  <Divider />
-                  {moreOpen ? (
-                    moreButton
-                  ) : (
-                    <HoverCard
-                      title={`More ${category?.label ?? ''}`.trim()}
-                      description={category?.description ?? 'Everything in this category.'}
-                    >
-                      {moreButton}
-                    </HoverCard>
-                  )}
-                </>
-              ) : null}
-            </div>
-          </SnapWidth>
+                {hasMore ? (
+                  <>
+                    <Divider />
+                    {moreOpen ? (
+                      moreButton
+                    ) : (
+                      <HoverCard
+                        title={`More ${category?.label ?? ''}`.trim()}
+                        description={category?.description ?? 'Everything in this category.'}
+                      >
+                        {moreButton}
+                      </HoverCard>
+                    )}
+                  </>
+                ) : null}
+              </div>
+            </SnapWidth>
+          </StripRow>
           {moreOpen && category ? (
             // The category's full Palette body, the exact node the floating
             // Palette renders. Capped to the window so a long category

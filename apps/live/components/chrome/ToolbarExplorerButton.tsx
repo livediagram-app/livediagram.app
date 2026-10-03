@@ -16,8 +16,8 @@ import { EditorModeSwitch } from './editor-mode/EditorModeSwitch';
 // pressing this button while the Explorer is open closes it via the toggle
 // rather than closing it on pointer-down and reopening it on click.
 //
-// `inline` drops the corner card so the button can sit at the far left of
-// the Palette strip instead, which is where a phone puts it.
+// `inline` drops the corner positioning so the strip's row can hold it in its
+// own card at the far left, beside the strip, which is where a phone puts it.
 //
 // The editor mode switch (docs/specs/007-editor/editor-modes.md "The mode switch") rides beside the
 // button, in the corner card or inline, so it goes wherever the menu goes; it renders nothing where

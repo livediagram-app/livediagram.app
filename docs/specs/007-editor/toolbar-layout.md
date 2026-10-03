@@ -17,7 +17,7 @@ to the top centre of the canvas, the way Excalidraw's tool bar works:
 
 - **Top left, before the strip: the menu button and the editor mode
   switch** ([The mode switch](editor-modes.md#the-mode-switch)), in one card.
-  On a phone both move inline to the strip's far left (below).
+  On a phone that card sits at the far left of the strip's row, the strip beside it (below).
 - **Left: the selection mode.** The canvas-tool picker (Select / Hand /
   Eraser / Format / Laser / Spotlight / Avatar / Isometric / Zen, [Tile grids for the palette dropdowns](../004-interface-design/dropdown-tile-grid.md))
   as a compact icon trigger. It opens the same banded tile grid the Palette's
@@ -77,9 +77,11 @@ which moved things under the pointer after every add; it is gone, its stored lis
 - **Event Storming**: the notation | Hotspot.
 
 Favourites (your own set) and the Icons / Stickers / Technology catalogues have none. A category
-has two at most. A divider shows only between two tiles both on the strip. They take room: a
-category that fits whole with them shows them; one whose tiles fit only without them drops them
-before any tile; one that overflows shows one tile fewer, its dividers between those.
+has two at most. A divider shows only between two tiles both on the strip. They take room, about
+a fifth of a tile each: a category that fits whole with them shows them; one whose tiles fit only
+without them drops them before any tile; one that overflows shows as many tiles as fit with their
+dividers between them, so a divider costs a tile only when the strip's spare part-tile can't hold
+it (a 430px phone shows four Favourites and the divider after the diamond, not three).
 
 The chosen category lasts the page load: the strip is hidden rather than
 unmounted while zen or the welcome flow hides the chrome. Nothing is stored,
@@ -135,13 +137,15 @@ since the stored value is untouched. The Settings row greys Floating
 out and rings Toolbar ([User preferences](user-preferences.md)); the tour's welcome card shows no
 layout picker there ([Interactive editor tour ("Show me around")](editor-tour.md)). What changes to fit the width:
 
-- **The menu button moves into the strip**, at its far left with the editor
-  mode switch beside it, before the selection mode. There is no room for a corner button and a strip side by
-  side, and the strip needs the whole top row.
+- **The menu button and mode switch get their own card, left of the strip.**
+  The card sits at the left gutter and the strip follows it 8px to the right,
+  left-aligned rather than centred, so the two read as separate toolbars on
+  one row. There is no room for a corner card above a strip that needs the
+  whole top row.
 - **The category picker is icon-only**, like the selection mode.
 - **The tile count follows the width** (`phoneStripTileLimit`): whatever fits
-  between 12px gutters once the menu button, the mode switch, the two pickers, More and the
-  card's padding are paid for, at least three. Three on a 390px phone, four
+  between 12px gutters once the menu card (and its gap), the two pickers, More and the
+  card's padding are paid for, at least two. Two on a 360px phone, three on a 390px one, four
   from about 410px. More holds the rest.
 - **More spans the screen** between the gutters instead of hanging from its
   button.
@@ -222,7 +226,7 @@ ringed, so the difference is visible before switching ([User preferences](user-p
   rather than estimated (`useStripTileLimit`): its own chrome (the pickers,
   More, dividers and padding, whatever they measure in the current category),
   one tile's pitch, and the room the centred strip may take (the window less
-  the Explorer menu button on both sides; on a phone, less its gutters). The
+  the Explorer menu button on both sides; on a phone, less its gutters and the menu card). The
   rest is behind More. A longer category name or a new control keeps fitting
   with no constant to update; an estimate stands in only for the first paint.
 - **The top corners give way to the strip.** When the strip reaches a panel
@@ -235,6 +239,10 @@ ringed, so the difference is visible before switching ([User preferences](user-p
   treatment ([Where the dock sits](../023-draw-mode/draw-mode.md#where-the-dock-sits)),
   in every layout, its corners starting 76px down.
 - **Undo / Redo stay where they are**, in the bottom-right dock.
+- **A phone's toolbar items are a touch tighter** (`PHONE_COMPACT_ITEMS`): below `sm`, each
+  square button and trigger in the menu card, the strip and the bottom-right cluster gives up
+  4px (36px to 32px, the cluster's 44px to 40px), so the menu card and the strip share the top
+  row. Their menus keep their size.
 - **The category picker stays on the bar**, left of the tiles. Folding it
   into More (a category list, then the category behind a BackBar) was tried
   and taken back out: it hid the current category and cost a click to

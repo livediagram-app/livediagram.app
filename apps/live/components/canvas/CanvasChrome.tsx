@@ -39,6 +39,7 @@ import { PANEL_CORNERS, PANEL_IDS, cornerBottomInset, type PanelCorner } from '@
 import type { StampGhost } from '@/components/canvas/useStampGhost';
 import { HoverCard } from '@livediagram/ui';
 import { STRIP_SELECTOR, useStripCrowdsCorners } from '@/hooks/ui/useStripCrowdsCorners';
+import { PHONE_COMPACT_ITEMS } from '@/components/chrome/phone-compact';
 import { WHITEBOARD_DOCK_SELECTOR } from '@/lib/whiteboard-dock-prefs';
 import { CollaborateClusterButton } from './CollaborateClusterButton';
 import { kindCounts } from '@/components/panels/collaborate/collaborate-model';
@@ -305,8 +306,9 @@ export function CanvasChrome(props: CanvasChromeProps) {
   const dockShown =
     toolbarActive && whiteboard && !!props.whiteboardDock && !readOnly && !chromeHidden;
   const dockOnTop = dockShown && props.whiteboardDock?.position === 'top';
-  // The Explorer menu button: top-left on desktop, the far left of the strip
-  // on a phone (no room for both across the top). A read-only visitor has no
+  // The Explorer menu button: top-left on desktop; on a phone, its own card at
+  // the left of the strip's row, the strip beside it (no room for a corner card
+  // above a strip that needs the whole top row). A read-only visitor has no
   // strip, and nor does a whiteboard, so it keeps the corner there.
   const menuInStrip = isMobile && !readOnly && !whiteboard;
   const explorerMenuButton = (
@@ -560,7 +562,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
                 bottom: toSurfacePx(16, cornerScale),
               }
         }
-        className="pointer-events-none absolute bottom-4 right-4 z-[var(--z-panel)] flex items-center gap-2"
+        className={`pointer-events-none absolute bottom-4 right-4 z-[var(--z-panel)] flex items-center gap-2 ${PHONE_COMPACT_ITEMS}`}
       >
         {welcomeOpen ? null : (
           <>

@@ -22,13 +22,17 @@ import { visibleTiles } from './PaletteTileGrid';
 
 export const STRIP_TILE_LIMIT = 12;
 const STRIP_TILE_PX = 38;
-const MIN_STRIP_TILES = 3;
+// Two, not three: a 360px phone has room for two beside the menu card, and a
+// third would run the strip off the screen.
+const MIN_STRIP_TILES = 2;
 // A phone's strip fits as many tiles as its width allows once the side
-// gutters, the Explorer menu button, the icon-only selection mode + category
-// picker, More, the dividers and the card's padding are paid for: three on a
-// 390px phone, four from about 410px.
+// gutters, the menu card beside it (the Explorer menu button and mode switch,
+// plus its 8px gap), the icon-only selection mode + category picker, More, the
+// dividers and the card's padding are paid for: two on a 360px phone, three on
+// a 390px one, four
+// from about 410px.
 const PHONE_GUTTERS_PX = 24;
-const PHONE_STRIP_CHROME_PX = 220;
+const PHONE_STRIP_CHROME_PX = 236;
 // A desktop strip is centred, so it has to clear the Explorer menu card
 // (top-left, 12px in, 96px wide with the mode switch, plus an 8px gap) on BOTH sides. Its own
 // chrome is wider than a phone's because the category picker shows its name:
@@ -50,9 +54,10 @@ export function desktopStripTileLimit(viewportWidth: number): number {
   return fitTiles(viewportWidth - 2 * DESKTOP_MENU_CLEARANCE_PX - DESKTOP_STRIP_CHROME_PX);
 }
 
-// The strip's tile count from MEASURED sizes (useStripTileLimit): the room
-// the strip may take, less its own chrome (pickers, More, dividers, padding),
-// over one tile's pitch. The two *StripTileLimit functions above are the same
+// The strip's room from MEASURED sizes (useStripTileLimit): the room the
+// strip may take, less its own chrome (pickers, More, dividers, padding), over
+// one tile's pitch. Kept fractional (in tiles), so stripTilesFor can spend a
+// part-tile of slack on a divider instead of giving up a whole tile for it. The two *StripTileLimit functions above are the same
 // rule over estimated sizes, used only before the first measurement.
 export function fitStripTiles({
   available,
@@ -64,7 +69,7 @@ export function fitStripTiles({
   pitch: number;
 }): number {
   if (!(pitch > 0)) return MIN_STRIP_TILES;
-  return fitTiles(available - chrome, pitch);
+  return Math.min(STRIP_TILE_LIMIT, Math.max(MIN_STRIP_TILES, (available - chrome) / pitch));
 }
 
 // Whether the strip reaches into a top-corner panel stack, horizontally, with
@@ -109,7 +114,12 @@ function allTilesFor(categoryId: string, favouriteIds: readonly string[]): Palet
   }
 }
 
-// A divider is a fifth of a tile wide; a strip that holds any gives up one tile for them.
+// A divider is about a fifth of a tile wide (a 1px rule with 2px either side,
+// against a 32-38px tile pitch). `limit` is the room in tiles, possibly
+// fractional (fitStripTiles): a strip shows as many tiles as fit with the
+// dividers between them, so a divider costs a tile only when the slack
+// can't hold it.
+const DIVIDER_TILES = 0.2;
 export function stripTilesFor(
   categoryId: string,
   {
@@ -124,8 +134,9 @@ export function stripTilesFor(
 ): { tiles: PaletteTileDef[]; hasMore: boolean; dividersAfter: ReadonlySet<string> } {
   const all = visibleTiles(allTilesFor(categoryId, favouriteIds), hasImage);
   const between = (tiles: PaletteTileDef[]) => tiles.slice(0, -1).filter((t) => t.dividerAfter);
+  const cost = (tiles: PaletteTileDef[]) => tiles.length + DIVIDER_TILES * between(tiles).length;
   // The whole category with its dividers, when it all fits.
-  if (all.length + (between(all).length > 0 ? 1 : 0) <= limit) {
+  if (cost(all) <= limit) {
     return {
       tiles: all,
       hasMore: ALWAYS_MORE.has(categoryId),
@@ -136,9 +147,11 @@ export function stripTilesFor(
   if (all.length <= limit) {
     return { tiles: all, hasMore: ALWAYS_MORE.has(categoryId), dividersAfter: NO_DIVIDERS };
   }
-  // Overflowing: the first tiles with their dividers, one tile fewer to make the room.
-  const head = all.slice(0, limit);
-  const shown = between(head).length > 0 ? all.slice(0, limit - 1) : head;
+  // Overflowing: the first tiles with their dividers, a tile fewer only while
+  // the dividers don't fit in the slack.
+  let count = Math.floor(limit);
+  while (count > 1 && cost(all.slice(0, count)) > limit) count -= 1;
+  const shown = all.slice(0, count);
   return {
     tiles: shown,
     hasMore: true,
