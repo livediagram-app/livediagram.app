@@ -142,7 +142,11 @@ export async function importDrawioLibrary(input: DrawioInput): Promise<DrawioLib
         imageKeys,
       });
       if (converted.elements.length === 0) throw new Error('empty');
-      items.push({ title, width, height, elements: fromOrigin(converted.elements) });
+      // The item is as large as its content as converted, page scale included; draw.io's w / h
+      // describe its own rendering.
+      const elements = fromOrigin(converted.elements);
+      const bounds = contentBounds(elements);
+      items.push({ title, width: bounds.w, height: bounds.h, elements });
     } catch (error) {
       tally.add('library-item-unreadable');
       debugLog('[drawio-import] library item unreadable', { cause: String(error) });

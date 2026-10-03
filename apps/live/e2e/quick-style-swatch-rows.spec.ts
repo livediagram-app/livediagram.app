@@ -3,7 +3,7 @@ import { dismissQuickTour, expect, expectNoPageErrors, openStartBlank, test } fr
 
 // A swatch row never wraps and is never clipped (docs/specs/008-canvas/quick-style-panel.md "Where
 // it sits"): the panel's width counts the targets, their gaps, the padding and the border exactly.
-// Checked in the Toolbar and Floating layouts, for a diagram's seven-swatch rows and a whiteboard's
+// Checked in the Toolbar and Floating layouts, for a diagram's eight-swatch rows (the theme's seven and Ink) and Draw mode's
 // Marker colour rows (the eight stock colours, and the tab's eight custom colours).
 
 type Layout = 'floating' | 'toolbar';
@@ -69,7 +69,7 @@ function expectFit(rows: Awaited<ReturnType<typeof rowsFit>>) {
 
 for (const layout of ['toolbar', 'floating'] as const) {
   test.describe(`swatch rows, ${layout}`, () => {
-    test('a diagram’s seven-swatch rows sit on one line, unclipped', async ({
+    test('a diagram’s eight-swatch rows sit on one line, unclipped', async ({
       page,
       pageErrors,
     }) => {
@@ -80,7 +80,7 @@ for (const layout of ['toolbar', 'floating'] as const) {
       await page.mouse.click(500, 400);
       await expect(panel(page)).toBeVisible();
       const rows = await rowsFit(page);
-      expect(rows.find((r) => r.name === 'Stroke')?.count).toBe(7);
+      expect(rows.find((r) => r.name === 'Stroke')?.count).toBe(8);
       expectFit(rows);
       expectNoPageErrors(pageErrors);
     });

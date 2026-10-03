@@ -47,10 +47,13 @@ describe('importDrawioLibrary', () => {
       ),
     );
     if (!r.ok) throw new Error(r.error);
-    expect(r.items.map((i) => [i.title, i.width, i.height])).toEqual([
-      ['Service', 120, 60],
-      ['', 320, 60],
-    ]);
+    expect(r.items.map((i) => i.title)).toEqual(['Service', '']);
+    // An item's size is its content as converted (the page scale included), never draw.io's w / h.
+    for (const item of r.items) {
+      const bounds = contentBounds(item.elements);
+      expect([item.width, item.height]).toEqual([bounds.w, bounds.h]);
+    }
+    expect(r.items[0]!.width).toBeGreaterThan(120);
     const [one, pair] = r.items;
     expect((one!.elements[0] as ShapeElement).label).toBe('Service');
     expect(contentBounds(one!.elements)).toMatchObject({ x: 0, y: 0 });

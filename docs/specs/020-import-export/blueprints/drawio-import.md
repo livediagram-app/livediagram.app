@@ -594,7 +594,8 @@ pageIdToTab })`): nodes (`type: 'node'`) to a graph (`id` minted, `label` from `
   item: `xml` decoded with `decompressDiagram` when it does not start with `<`, read as one
   `mxGraphModel`, converted by `convertPage` into elements normalised to the item's top-left at
   (0, 0); an image item (`data` a `data:` URL) → one `image` element `w` × `h` plus an image request;
-  `{ title (string, may be empty), width: w, height: h, elements }`. An item that fails is counted
+  `{ title (string, may be empty), width, height, elements }`, the width and height the converted
+  elements' own bounds (`contentBounds`, page scale included) for an `xml` item, `w` × `h` for an image item. An item that fails is counted
   `library-item-unreadable`; none readable → refusal `empty-library`. At most
   `DRAWIO_MAX_LIBRARY_ITEMS`, the rest `content-truncated`.
 - `importDrawio` given a library → refusal `library` ("This is a draw.io shape library. Import it with

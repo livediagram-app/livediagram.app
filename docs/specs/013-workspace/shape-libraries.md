@@ -19,7 +19,8 @@ week stay two libraries.
   keyed by the request owner id, the Clerk `sub` when signed in or the `X-Owner-Id` guest id otherwise
   ([Auth + guest access](../014-identity/auth-and-guest-access.md)). **Guests have libraries too**, and
   a guest who signs up carries them over with the existing `POST /api/migrate` owner-id remap.
-- **An item**: an id, a **title** (may be empty), a **width** and **height**, and its **elements**:
+- **An item**: an id, a **title** (may be empty), a **width** and **height** (the size of its
+  elements), and its **elements**:
   ordinary livediagram elements positioned from the item's top-left corner at (0, 0), as the draw.io
   mapping ([draw.io import](../020-import-export/drawio-import.md)) produced them, connections
   between them included. Pictures in an item (an image item, or an image inside a shape snippet) are

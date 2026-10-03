@@ -1,3 +1,4 @@
+import { DARK_CANVAS_BACKGROUND_COLOR, DEFAULT_BACKGROUND_COLOR } from '@livediagram/document';
 import { expect, test, dismissQuickTour, expectNoPageErrors } from './fixtures';
 
 // Appearance (docs/specs/007-editor/live-app.md) end to end: the three settings on the real control, and
@@ -18,8 +19,8 @@ async function startBlank(page: import('@playwright/test').Page): Promise<void> 
   await page.locator(CANVAS).waitFor();
   await dismissQuickTour(page);
 }
-const DARK_CANVAS = '#0d121a';
-const LIGHT_CANVAS = '#ffffff';
+const DARK_CANVAS = DARK_CANVAS_BACKGROUND_COLOR;
+const LIGHT_CANVAS = DEFAULT_BACKGROUND_COLOR;
 
 const rgb = (hex: string) => {
   const n = parseInt(hex.slice(1), 16);
