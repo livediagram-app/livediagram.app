@@ -3,6 +3,9 @@
 // them, so two people writing in different blocks of the same article merge instead of one
 // overwriting the other. The same shape as the element ops (element-op.ts) for the same reason.
 import {
+  isArticleId,
+  parseArticleBlock,
+  parseArticleStyle,
   sameArticleValue,
   type ArticleBlock,
   type ArticleFlow,
@@ -10,9 +13,11 @@ import {
 } from './article-flow';
 
 export type ArticleOp =
-  // A block added, changed or moved: it goes after `after` (null: first), or failing that before
-  // `before` (null: last), or failing both where it already was (else at the end).
-  | { kind: 'put'; block: ArticleBlock; after: string | null; before: string | null }
+  // A block added or moved: it goes after `after` (null: first), or failing that before `before`
+  // (null: last), or failing both where it already was (else at the end). A block that only
+  // changed, in its place, carries neither: it is replaced where it stands on the receiver, so a
+  // collaborator's block added beside it keeps its own place (else at the end, when missing).
+  | { kind: 'put'; block: ArticleBlock; after?: string | null; before?: string | null }
   | { kind: 'remove'; id: string }
   // The article's style replaced (undefined: back to the defaults).
   | { kind: 'style'; style?: ArticleStyle };
@@ -63,6 +68,8 @@ export function diffArticleFlow(before: ArticleFlow | undefined, after: ArticleF
     if (was !== undefined && stayed.has(i)) {
       const old = prevBlocks[was]!;
       if (old === b || sameArticleValue(old, b)) return;
+      ops.push({ kind: 'put', block: b });
+      return;
     }
     ops.push({
       kind: 'put',
@@ -96,14 +103,22 @@ export function applyArticleOps(
       continue;
     }
     const at = blocks.findIndex((b) => b.id === op.block.id);
+    if (op.after === undefined && op.before === undefined) {
+      if (at >= 0) blocks[at] = op.block;
+      else blocks.push(op.block);
+      continue;
+    }
     if (at >= 0) blocks.splice(at, 1);
-    const afterAt = op.after === null ? -1 : blocks.findIndex((b) => b.id === op.after);
+    const afterAt =
+      op.after === null || op.after === undefined ? -1 : blocks.findIndex((b) => b.id === op.after);
     if (op.after === null || afterAt >= 0) {
       blocks.splice(afterAt + 1, 0, op.block);
       continue;
     }
     const beforeAt =
-      op.before === null ? blocks.length : blocks.findIndex((b) => b.id === op.before);
+      op.before === null || op.before === undefined
+        ? blocks.length
+        : blocks.findIndex((b) => b.id === op.before);
     if (beforeAt >= 0) {
       blocks.splice(beforeAt, 0, op.block);
       continue;
@@ -112,4 +127,36 @@ export function applyArticleOps(
   }
   if (blocks.length === 0) blocks.push({ id: 'b-empty', type: 'paragraph', runs: [] });
   return style ? { blocks, style } : { blocks };
+}
+
+const placeOf = (v: unknown): string | null | undefined | false =>
+  v === undefined || v === null ? v : isArticleId(v) ? v : false;
+
+/** A peer's ops read defensively (docs/specs/007-editor/article-pages.md "Collaboration"): each
+ *  block parsed as a stored one, ids bounded, anything malformed dropped; null when `v` is not a
+ *  list at all. What a receiver applies, never the wire value itself. */
+export function parseArticleOps(v: unknown): ArticleOp[] | null {
+  if (!Array.isArray(v)) return null;
+  const out: ArticleOp[] = [];
+  for (const raw of v as unknown[]) {
+    const o = raw as Record<string, unknown> | null;
+    if (!o || typeof o !== 'object') continue;
+    if (o.kind === 'remove' && isArticleId(o.id)) out.push({ kind: 'remove', id: o.id });
+    else if (o.kind === 'style') {
+      const style = parseArticleStyle(o.style);
+      out.push(style ? { kind: 'style', style } : { kind: 'style' });
+    } else if (o.kind === 'put') {
+      const block = parseArticleBlock(o.block);
+      const after = placeOf(o.after);
+      const before = placeOf(o.before);
+      if (!block || after === false || before === false) continue;
+      out.push({
+        kind: 'put',
+        block,
+        ...(after !== undefined ? { after } : {}),
+        ...(before !== undefined ? { before } : {}),
+      });
+    }
+  }
+  return out;
 }

@@ -11,7 +11,7 @@ import {
   parseArticleStyle,
   withFreshArticleBlockIds,
 } from './article-flow';
-import { applyArticleOps, diffArticleFlow } from './article-flow-ops';
+import { applyArticleOps, diffArticleFlow, parseArticleOps } from './article-flow-ops';
 import type { ArticleBlock, ArticleFlow } from './article-flow';
 
 const P = (id: string, text = id): ArticleBlock => ({
@@ -163,6 +163,33 @@ describe('article writing: block ops', () => {
     const a = flow(P('a'), P('b'));
     const ops = diffArticleFlow(a, flow(P('a'), P('x'), P('b')));
     expect(ops).toEqual([{ kind: 'put', block: P('x'), after: 'a', before: 'b' }]);
+  });
+
+  it('converges when one writes in a block while the other adds a block beside it', () => {
+    const base = flow(P('x'), P('y'));
+    const editY = diffArticleFlow(base, flow(P('x'), P('y', 'Y!')));
+    const addZ = diffArticleFlow(base, flow(P('x'), P('z'), P('y')));
+    // A changed block that kept its place carries no position.
+    expect(editY).toEqual([{ kind: 'put', block: P('y', 'Y!') }]);
+    const expected = flow(P('x'), P('z'), P('y', 'Y!'));
+    expect(applyArticleOps(applyArticleOps(base, editY), addZ)).toEqual(expected);
+    expect(applyArticleOps(applyArticleOps(base, addZ), editY)).toEqual(expected);
+  });
+
+  it("reads a peer's ops defensively", () => {
+    expect(parseArticleOps('nope')).toBeNull();
+    expect(
+      parseArticleOps([
+        { kind: 'put', block: null },
+        { kind: 'put', block: P('a'), after: 7 },
+        { kind: 'remove', id: '' },
+        { kind: 'put', block: P('b'), after: null },
+        { kind: 'remove', id: 'c' },
+      ]),
+    ).toEqual([
+      { kind: 'put', block: P('b'), after: null },
+      { kind: 'remove', id: 'c' },
+    ]);
   });
 
   it('merges two people writing different blocks', () => {

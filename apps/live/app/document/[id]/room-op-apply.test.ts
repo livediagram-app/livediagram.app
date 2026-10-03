@@ -199,7 +199,26 @@ describe('applyRoomOpToTabs: documents', () => {
     expect(tabs[0]!.articles!.f!.blocks).toEqual([P('a', 'mine'), P('b', 'theirs')]);
   });
 
-  it('removes a document, and drops the field with the last one', () => {
+  it('drops writing for an article this tab no longer has, unless it is new', () => {
+    const tabs = [tab()];
+    const late: RoomOp = {
+      kind: 'article',
+      tabId: 't1',
+      flow: 'f',
+      ops: [{ kind: 'put', block: P('a') }],
+    };
+    expect(applyRoomOpToTabs(tabs, late)[0]!.articles).toBeUndefined();
+    const created: RoomOp = { ...late, created: true };
+    expect(applyRoomOpToTabs(tabs, created)[0]!.articles!.f!.blocks).toEqual([P('a')]);
+  });
+
+  it('ignores a malformed article frame', () => {
+    const tabs = [tab({ articles: { f: { blocks: [P('a')] } } })];
+    const bad = { kind: 'article', tabId: 't1', flow: 'f', ops: 'x' } as unknown as RoomOp;
+    expect(applyRoomOpToTabs(tabs, bad)).toBe(tabs);
+  });
+
+  it('removes an article, and drops the field with the last one', () => {
     const tabs = [tab({ articles: { f: { blocks: [P('a')] } } })];
     const op: RoomOp = { kind: 'article', tabId: 't1', flow: 'f', removed: true };
     expect(applyRoomOpToTabs(tabs, op)[0]!.articles).toBeUndefined();

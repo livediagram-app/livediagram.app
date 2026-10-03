@@ -148,3 +148,30 @@ describe("the first page's own choice of kind", () => {
     expect(withPageKindChosen(art, 'p1', 'article', 'g')).toBeNull();
   });
 });
+
+describe('a duplicated article keeps its margin notes to itself', () => {
+  it('points the copy at the copies of its markers', () => {
+    const pages = [D('p', 'f')];
+    const r = layOutIllustratePages(pages)[0]!.rect;
+    const marker = {
+      ...box('m1', r.x + r.width - 40, r.y + 120),
+      type: 'annotation',
+      articleNote: 'comment',
+    } as unknown as Element;
+    const tab = {
+      elements: [marker],
+      pages,
+      articles: {
+        f: {
+          blocks: [{ id: 'b', type: 'paragraph' as const, runs: [{ text: 'hi', note: 'm1' }] }],
+        },
+      },
+    };
+    const out = withArticleDuplicated(tab, 'f', 'g')!;
+    const copyMarker = out.elements.find((e) => e.id !== 'm1')!;
+    const run = (articlesOf(out)['g']!.blocks[0] as { runs: { note?: string }[] }).runs[0]!;
+    expect(run.note).toBe(copyMarker.id);
+    const original = (articlesOf(out)['f']!.blocks[0] as { runs: { note?: string }[] }).runs[0]!;
+    expect(original.note).toBe('m1');
+  });
+});

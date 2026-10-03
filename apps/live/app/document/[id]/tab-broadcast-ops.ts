@@ -54,19 +54,21 @@ export function tabArticleOps(before: Tab, after: Tab): RoomOp[] {
     if (was[flow] === doc) continue;
     // In frames the room will carry (it drops one over 256K characters): ops in order, a frame
     // closing before it would pass ARTICLE_FRAME_CHARS. Applied in order, the frames compose.
+    const created = was[flow] ? {} : { created: true as const };
     let frame: ArticleOp[] = [];
     let chars = 0;
     for (const op of diffArticleFlow(was[flow], doc)) {
       const size = JSON.stringify(op).length;
       if (frame.length > 0 && chars + size > ARTICLE_FRAME_CHARS) {
-        ops.push({ kind: 'article', tabId: after.id, flow, ops: frame });
+        ops.push({ kind: 'article', tabId: after.id, flow, ops: frame, ...created });
         frame = [];
         chars = 0;
       }
       frame.push(op);
       chars += size;
     }
-    if (frame.length > 0) ops.push({ kind: 'article', tabId: after.id, flow, ops: frame });
+    if (frame.length > 0)
+      ops.push({ kind: 'article', tabId: after.id, flow, ops: frame, ...created });
   }
   return ops;
 }

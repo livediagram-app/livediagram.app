@@ -1,5 +1,8 @@
 import {
   applyArticleOps,
+  illustratePagesOf,
+  isArticleId,
+  parseArticleOps,
   applyElementDelta,
   articlesOf,
   applyElementOp,
@@ -77,12 +80,23 @@ export function applyRoomOpToTabs(tabs: Tab[], op: RoomOp): Tab[] {
       // ONE document's writing, block by block (docs/specs/007-editor/article-pages.md
       // "Collaboration"): two people writing different blocks merge.
       return updateTab(tabs, op.tabId, (tab) => {
+        if (!isArticleId(op.flow)) return tab;
         const articles = { ...articlesOf(tab) };
         if ('removed' in op) {
-          if (!(op.flow in articles)) return tab;
+          if (!Object.hasOwn(articles, op.flow)) return tab;
           delete articles[op.flow];
         } else {
-          articles[op.flow] = applyArticleOps(articles[op.flow], op.ops);
+          // Read defensively: a malformed frame changes nothing.
+          const ops = parseArticleOps(op.ops);
+          if (!ops) return tab;
+          // Writing for an article this tab no longer has (removed while the writer typed) is
+          // dropped, unless the article is new or its pages are here.
+          const known =
+            Object.hasOwn(articles, op.flow) ||
+            op.created === true ||
+            illustratePagesOf(tab).some((p) => p.flow === op.flow);
+          if (!known) return tab;
+          articles[op.flow] = applyArticleOps(articles[op.flow], ops);
         }
         if (Object.keys(articles).length > 0) return { ...tab, articles };
         const { articles: _drop, ...rest } = tab;

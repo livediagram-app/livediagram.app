@@ -159,7 +159,10 @@ export function isSafeArticleHref(v: unknown): v is string {
   return typeof v === 'string' && v.length <= MAX_DOC_HREF && SAFE_HREF.test(v.trim());
 }
 
-const isId = (v: unknown): v is string => typeof v === 'string' && v.length > 0 && v.length <= 64;
+/** An id an article stores or sends (a block's, a flow's, a margin note's): 1 to 64 characters. */
+export const isArticleId = (v: unknown): v is string =>
+  typeof v === 'string' && v.length > 0 && v.length <= 64;
+const isId = isArticleId;
 const member = <T extends string>(list: readonly T[], v: unknown): v is T => list.includes(v as T);
 
 const RUN_FLAGS = ['b', 'i', 'u', 's', 'code', 'sup', 'sub'] as const;
@@ -201,7 +204,8 @@ export function normaliseRuns(v: unknown): ArticleRun[] {
     const run = parseRun(raw);
     if (!run) continue;
     if (run.text.length > left) run.text = run.text.slice(0, left);
-    left -= run.text.length;
+    // A link's address counts against the block's budget too, so no block outgrows a room frame.
+    left -= run.text.length + (run.href?.length ?? 0);
     const last = out[out.length - 1];
     if (last && sameFormat(last, run)) last.text += run.text;
     else if (out.length < MAX_DOC_RUNS) out.push(run);

@@ -5,6 +5,7 @@
 import {
   articlesOf,
   newArticleFlow,
+  normaliseRuns,
   withFreshArticleBlockIds,
   type ArticleBlock,
   type ArticleFlow,
@@ -192,12 +193,17 @@ export function withArticleDuplicated<T extends PagesTab>(
       }
     }
   }
-  const { newElements } = duplicateElements(tab.elements, copied, to.x - from.x, to.y - from.y);
+  const { newElements, idMap } = duplicateElements(
+    tab.elements,
+    copied,
+    to.x - from.x,
+    to.y - from.y,
+  );
   const doc = articlesOf(tab)[flow] ?? newArticleFlow();
   return withArticleFlow(
     { ...moved, elements: [...moved.elements, ...newElements] },
     newFlow,
-    withZonePagesMapped(withFreshArticleBlockIds(doc), pageMap),
+    withNotesRelinked(withZonePagesMapped(withFreshArticleBlockIds(doc), pageMap), idMap),
   );
 }
 
@@ -288,4 +294,24 @@ export function withPageKindChosen<T extends PagesTab>(
     flow,
     newArticleFlow(),
   );
+}
+
+/** A copied article's margin notes tied to the copies of their markers (`idMap`: original
+ *  element id to copy's): a note whose marker was not copied loses its mark, so the copy never
+ *  points at the original article's comments. */
+function withNotesRelinked(doc: ArticleFlow, idMap: ReadonlyMap<string, string>): ArticleFlow {
+  const blocks = doc.blocks.map((b) => {
+    if (!('runs' in b) || !b.runs.some((r) => r.note)) return b;
+    const runs = b.runs.map((r) => {
+      if (!r.note) return r;
+      const copy = idMap.get(r.note);
+      if (copy) return { ...r, note: copy };
+      const { note: _n, nk: _k, ...rest } = r;
+      void _n;
+      void _k;
+      return rest;
+    });
+    return { ...b, runs: normaliseRuns(runs) };
+  });
+  return doc.style ? { blocks, style: doc.style } : { blocks };
 }

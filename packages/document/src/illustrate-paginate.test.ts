@@ -137,3 +137,17 @@ describe('withContentPaginated: how many pages', () => {
     expect(out.pages).toHaveLength(20);
   });
 });
+
+describe('into pages never loses an article', () => {
+  it('keeps article pages when every element is stray', () => {
+    const tab = {
+      elements: [
+        { id: 's', type: 'shape', shape: 'square', x: 9000, y: 9000, width: 40, height: 40 },
+      ] as Element[],
+      pages: [{ id: 'a', orientation: 'portrait' as const, kind: 'article' as const, flow: 'f' }],
+      articles: { f: { blocks: [{ id: 'b', type: 'paragraph' as const, runs: [] }] } },
+    };
+    const out = withContentPaginated(tab)!;
+    expect(out.pages.some((p) => p.flow === 'f')).toBe(true);
+  });
+});

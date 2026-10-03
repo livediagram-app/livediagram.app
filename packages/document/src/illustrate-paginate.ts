@@ -150,7 +150,8 @@ export function withContentPaginated<T extends Pick<Tab, 'elements'>>(
   if (strayIds.length === 0) return null;
   const stray = new Set(strayIds.flat());
   const content = tab.elements.filter((el) => stray.has(el.id));
-  const pagesEmpty = stray.size === tab.elements.length;
+  // An article page is never empty: its writing is no element, and it keeps its page.
+  const pagesEmpty = stray.size === tab.elements.length && !stored.some((p) => p.flow);
   return pagesEmpty
     ? paginate({ ...tab, pages: undefined }, tab.elements, [])
     : paginate(tab, content, stored);

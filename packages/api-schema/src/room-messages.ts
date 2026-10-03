@@ -395,7 +395,9 @@ export type RoomOp =
   // A document's writing on a tab changed (docs/specs/007-editor/article-pages.md
   // "Collaboration"): its block ops, applied by block id, or the whole document gone (`removed`).
   // `Tab.articles` never rides a `tab-meta` patch, which would replace every document wholesale.
-  | { kind: 'article'; tabId: string; flow: string; ops: ArticleOp[] }
+  // `created`: the article is new (its first frames): a receiver without it takes it, where puts
+  // for an article it no longer has (removed meanwhile) are dropped.
+  | { kind: 'article'; tabId: string; flow: string; ops: ArticleOp[]; created?: true }
   | { kind: 'article'; tabId: string; flow: string; removed: true }
   | {
       kind: 'vote';

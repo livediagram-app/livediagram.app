@@ -184,7 +184,7 @@ describe('comment author ids stay off the wire (docs/specs/012-collaboration/col
   });
 });
 
-describe('tabBroadcastOps: documents (docs/specs/007-editor/article-pages.md "Collaboration")', () => {
+describe('tabBroadcastOps: articles (docs/specs/007-editor/article-pages.md "Collaboration")', () => {
   const P = (id: string, text = id) => ({ id, type: 'paragraph' as const, runs: [{ text }] });
   const withDoc = (...blocks: ReturnType<typeof P>[]) => tab({ articles: { f: { blocks } } });
 
@@ -196,12 +196,13 @@ describe('tabBroadcastOps: documents (docs/specs/007-editor/article-pages.md "Co
         kind: 'article',
         tabId: 't1',
         flow: 'f',
-        ops: [{ kind: 'put', block: P('a', 'A!'), after: null, before: 'b' }],
+        // In its place: no position, so a collaborator's neighbour keeps its own.
+        ops: [{ kind: 'put', block: P('a', 'A!') }],
       },
     ]);
   });
 
-  it('says a removed document by name', () => {
+  it('says a removed article by name', () => {
     expect(tabBroadcastOps(withDoc(P('a')), tab())).toEqual([
       { kind: 'article', tabId: 't1', flow: 'f', removed: true },
     ]);
