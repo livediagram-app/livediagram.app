@@ -388,8 +388,7 @@ export default function DocumentFlowEditor(props: DocumentFlowEditorProps) {
     });
     viewRef.current = view;
     // A handle for driving the writing in development (browser checks); never in production.
-    if (process.env.NODE_ENV !== 'production')
-      (window as unknown as { __docView?: EditorView }).__docView = view;
+    if (process.env.NODE_ENV !== 'production') Reflect.set(window, '__docView', view);
     handleRef.current = {
       flow: latest.current.flow,
       run: (command: Command) => {
