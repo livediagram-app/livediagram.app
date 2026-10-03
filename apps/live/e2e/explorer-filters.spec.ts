@@ -183,7 +183,7 @@ test.describe('explorer filters', () => {
     const owner = crypto.randomUUID();
     await darkVisitor(page, owner);
     await seed(page, owner, new URL(baseURL!).origin);
-    await arrive(page, '/explorer/timeline');
+    await arrive(page, '/explorer/home');
     await field(page).click();
     await field(page).pressSequentially('payment');
     await expect(page).toHaveURL(/\/explorer\/search\?q=payment$/);
@@ -196,7 +196,7 @@ test.describe('explorer filters', () => {
     await nav.getByRole('treeitem', { name: /^Shared with me/ }).click();
     await expect(page).toHaveURL(/\/explorer\/shared\?q=payment$/);
     await nav.getByRole('treeitem', { name: /^Home/ }).click();
-    await expect(page).toHaveURL(/\/explorer\/timeline$/);
+    await expect(page).toHaveURL(/\/explorer\/home$/);
     await expect(field(page)).toHaveValue('');
     // Back restores the lens of the entry it lands on.
     await page.goBack();

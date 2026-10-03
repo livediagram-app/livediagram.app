@@ -35,12 +35,12 @@ Top to bottom. "Opens" names the view a row selects; every view keeps its own ro
 
 | Row            | Opens                                                    | Badge                                                     |
 | -------------- | -------------------------------------------------------- | --------------------------------------------------------- |
-| Home           | `/explorer/timeline`, the [Timeline](timeline.md)        | Other people's events since the reader last looked (§2.5) |
+| Home           | `/explorer/home` ([Explorer Home](explorer-home.md))     | Other people's events since the reader last looked (§2.5) |
 | Activity       | `/explorer/activity` ([Activity page](activity-page.md)) | Open actions assigned to the reader                       |
 | Shared with me | `/explorer/shared`                                       | Documents shared with the reader                          |
 
-Home is the Explorer's landing view. Recent and Favourites have no sidebar row; their routes (`/explorer/recent`,
-`/explorer/favourites`) keep working.
+Home is the Explorer's landing view. Recent, Favourites and All activity (the [Timeline](timeline.md) feed) have no
+sidebar row; their routes (`/explorer/recent`, `/explorer/favourites`, `/explorer/timeline`) keep working.
 
 ### Spaces
 
@@ -85,7 +85,7 @@ the breadcrumb and the help centre's copy. Routes stay as they are.
 
 | Row             | Route                       | Page title      |
 | --------------- | --------------------------- | --------------- |
-| Home            | `/explorer/timeline`        | Home            |
+| Home            | `/explorer/home`            | Home            |
 | Shared with me  | `/explorer/shared`          | Shared with me  |
 | My documents    | `/explorer/all`             | My documents    |
 | This browser    | `/explorer/offline`         | This browser    |
@@ -93,7 +93,8 @@ the breadcrumb and the help centre's copy. Routes stay as they are.
 | Shape libraries | `/explorer/shape-libraries` | Shape libraries |
 
 Every other row's view already carries its row's label (Activity, a folder or team by its name, Invites, Themes,
-Trash). Views without a row keep their own names (Recent, Favourites, Search results).
+Trash). Views without a row keep their own names (Recent, Favourites, Search results, and All activity at
+`/explorer/timeline`, whose breadcrumb leads back to Home).
 
 ## Visibility at a glance
 
@@ -199,7 +200,7 @@ floating panel, the Trash), carries the **Local only** pill
 ([Offline Mode: Local only pill](../006-document/offline-mode.md#local-only-pill)).
 
 The editor header names such a document with the matching **Local only** badge. Home's "Jump back in" strip carries the
-same pill (`LocalOnlyPill`) when the Home page's own layout lands; until then Home is the Timeline feed.
+same pill (`LocalOnlyPill`) on the document's thumbnail ([Explorer Home](explorer-home.md)).
 
 ## Telemetry
 

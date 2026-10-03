@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { HomeResponse, HomeTimelinePage } from '@livediagram/api-schema';
+import { nextFrecencyKey, type HomeResponse, type HomeTimelinePage } from '@livediagram/api-schema';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import { recordDocumentOpen } from '../home/record-open';
 import {
@@ -163,6 +163,10 @@ describe('Jump back in', () => {
       lastOpenedAt: NOW - DAY,
       shareCode: null,
     });
+    // The key travels, so the view can rank this browser's local documents among these.
+    const keys = jumpBackIn.map((d) => d.frecencyKey);
+    expect(keys).toEqual([...keys].sort((a, b) => b - a));
+    expect(jumpBackIn[2]!.frecencyKey).toBe(nextFrecencyKey(null, NOW - HOUR));
     expect(jumpBackIn[1]).toMatchObject({ via: 'shared', shareCode: 'SCOPED', tabId: 'tab-x' });
     expect(jumpBackIn[3]).toMatchObject({
       via: 'shared',

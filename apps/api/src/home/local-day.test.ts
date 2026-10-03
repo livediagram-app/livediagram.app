@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { localDay, parseTimeZone, utcDay } from './local-day';
+import { localDay, parseTimeZone } from './local-day';
 
 // The reader's day (docs/specs/013-workspace/explorer-home.md "What happened"): groups and day
 // headings follow the person's time zone; opens are counted per UTC day.
@@ -30,11 +30,5 @@ describe('localDay', () => {
     expect(localDay(AT, 'Europe/Amsterdam')).toBe('2023-11-14');
     expect(localDay(AT, 'Pacific/Auckland')).toBe('2023-11-15');
     expect(localDay(AT, 'America/Los_Angeles')).toBe('2023-11-14');
-  });
-});
-
-describe('utcDay', () => {
-  it('is the UTC calendar day', () => {
-    expect(utcDay(AT)).toBe('2023-11-14');
   });
 });

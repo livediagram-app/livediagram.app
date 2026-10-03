@@ -51,7 +51,7 @@ test('a signed-in member sees teams as root folders and New team last', async ({
     teamId: team,
   });
   await installClerkStub(page, member(userId));
-  await page.goto('/explorer/timeline');
+  await page.goto('/explorer/home');
   await expect(nav(page).getByRole('treeitem', { name: 'Design guild' })).toBeVisible({
     timeout: 30_000,
   });
@@ -80,7 +80,7 @@ test('a signed-out visitor sees the sign-in nudge instead of New team', async ({
   pageErrors,
 }) => {
   await installClerkStub(page, null);
-  await page.goto('/explorer/timeline');
+  await page.goto('/explorer/home');
   await expect(nav(page).getByRole('treeitem', { name: /^Home/ })).toBeVisible({
     timeout: 30_000,
   });

@@ -590,7 +590,7 @@ export const TIMELINE_LANDINGS = chart(
   'Timeline',
   'Opened',
   'Timeline Landings',
-  'The Explorer opened straight onto the Timeline, its default page.',
+  'A page load that started on All activity, the Timeline feed.',
   { types: ['Landing'] },
 );
 
@@ -598,7 +598,7 @@ export const TIMELINE_VISITS = chart(
   'Timeline',
   'Opened',
   'Timeline Visits',
-  'The Timeline opened on purpose, from the Explorer nav after starting elsewhere.',
+  "The Timeline opened after starting elsewhere, usually from Home's See all activity.",
   { types: ['Nav'] },
 );
 
@@ -640,11 +640,57 @@ export const ACTIVITY_THREADS = chart(
   'An action or a comment thread opened from the Activity panel.',
 );
 
+// Explorer Home (docs/specs/013-workspace/explorer-home.md): arrivals by type, documents opened
+// from each part of Home, summaries expanded, and further Timeline pages.
+export const HOME_LANDINGS = chart(
+  'Home',
+  'Opened',
+  'Home Landings',
+  'The Explorer opened straight onto Home, its default page.',
+  { types: ['Landing'] },
+);
+
+export const HOME_VISITS = chart(
+  'Home',
+  'Opened',
+  'Home Visits',
+  'Home opened after starting elsewhere in the Explorer.',
+  { types: ['Nav'] },
+);
+
+export const HOME_DOCUMENTS_OPENED = chart(
+  'Home',
+  'Selected',
+  'Documents Opened from Home',
+  'A document opened from Jump back in, What happened or the Timeline column.',
+);
+
+export const HOME_GROUPS_EXPANDED = chart(
+  'Home',
+  'Opened',
+  'Home Summaries Expanded',
+  "A summary of several people's work on one document opened up to every action.",
+  { types: ['Group'] },
+);
+
+export const HOME_LOADS = chart(
+  'Home',
+  'Loaded',
+  'Home Loads',
+  "More of Home's Timeline loaded, or a failed read retried.",
+);
+
 export const TIMELINE_AND_ACTIVITY: MetricStack = {
   stack: true,
   title: 'Timeline & Activity',
-  blurb: 'Keeping up with what changed: the Explorer Timeline and the editor Activity panel.',
+  blurb:
+    'Keeping up with what changed: Explorer Home, the Explorer Timeline and the editor Activity panel.',
   members: [
+    HOME_LANDINGS,
+    HOME_VISITS,
+    HOME_DOCUMENTS_OPENED,
+    HOME_GROUPS_EXPANDED,
+    HOME_LOADS,
     TIMELINE_LANDINGS,
     TIMELINE_VISITS,
     TIMELINE_MENUS,

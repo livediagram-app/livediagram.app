@@ -9,5 +9,6 @@ Follow the references below only as needed; never upfront.
 - ./explorer-filters.md - when implementing or changing Explorer filters: the lens grammar, matching, suggestions, view models, `q`
 - ./explorer-structure.md - when implementing or changing the Explorer sidebar: layout rules, rows, ARIA tree keyboard hook
 - ./explorer-home.md - when changing Home's data: recording opens, frecency, the `/api/home` reads and their wire
+- ./explorer-home-view.md - when changing the Home page: its route, columns, strip, entries, Timeline column, local opens
 - ./DEFAULTS.md - when a workspace blueprint applies a default the spec leaves open
 - ./COMPLETENESS.md - when checking which completeness categories a workspace blueprint covers

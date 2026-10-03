@@ -115,12 +115,16 @@ instead of the API, and the "Saved" indicator means _saved on this device_.
   [Explorer structure](../013-workspace/explorer-structure.md)) opens
   `/explorer/offline`, the list of every offline document, titled **This
   browser**; the row shows while this browser holds at least one.
+- **Home.** An offline document's opens are counted in its own local record, never
+  sent anywhere, so Home's Jump back in ranks it among the reader's other
+  documents, with the **Local only** pill on its thumbnail
+  ([Explorer Home](../013-workspace/explorer-home.md#opens)).
 
 ### Local only pill
 
 Every row and card of an offline document carries a **Local only** pill,
 wherever the document is listed: the list and card views (folders, Search results,
-This browser, Recent, Favourites), the folder previews' tiles excepted (they
+This browser, Recent, Favourites), Home's Jump back in strip, the folder previews' tiles excepted (they
 are pictures, not rows), the search panel's results, the floating Explorer
 panel's rows and its Current Document card, and the Trash.
 

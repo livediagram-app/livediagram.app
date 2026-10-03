@@ -1,9 +1,10 @@
 # Timeline
 
-The Explorer's landing page becomes a chronological feed of everything
-that has happened across the user's documents, teams, and account —
-grouped by day as a grid of cards, stacked when a day gets busy, and
-switchable into a calendar month grid.
+The Timeline is a chronological feed of everything that has happened
+across the user's documents, teams, and account, grouped by day as a
+grid of cards, stacked when a day gets busy, and switchable into a
+calendar month grid. Its page is **All activity**, reached from Home
+([Explorer Home](explorer-home.md), §8).
 
 Modelled on the Timeline subsystem in the Manager Toolkit monorepo
 (`specs/dashboard/timeline/spec.md` + `packages/ui/src/timeline/*` there),
@@ -1505,58 +1506,56 @@ feed vanishing and coming back.
 
 ## 8. Explorer integration
 
-### 8.1 Timeline becomes the landing view
+### 8.1 Home is the landing view; the feed is All activity
 
-The default lands in three places, all of which must change together
-(they exist because a static export has no single entry point):
+The Explorer lands on **Home** ([Explorer Home](explorer-home.md)), not on this feed. A static export has no single
+entry point, so the landing is applied in several places, all reading one constant, `EXPLORER_LANDING_PATH`
+(`apps/live/lib/explorer-landing.ts`):
 
-1. `apps/live/src/worker.ts` — the `/explorer` → `/explorer/recent`
-   302 becomes `/explorer/timeline`.
-2. `apps/live/app/explorer/page.tsx` — the client `router.replace`
-   fallback for the dev server and direct asset hits.
-3. `apps/live/app/explorer/routes.ts` — `selectedFromRoute`'s
-   `default:` case, which catches mangled URLs and id-less
-   `folder`/`team` links, returns `{ kind: 'timeline' }`.
+1. `apps/live/src/worker.ts`: the `/explorer` 302.
+2. `apps/live/app/explorer/page.tsx`: the client `router.replace` fallback for the dev server and direct asset hits.
+3. `scripts/e2e-stack.mjs`: the end-to-end stack's stand-in for the worker.
 
-**Recent is not removed.** It keeps its route (`/explorer/recent`); it answers
-a different question ("what did I touch last"). It has no sidebar row: Home is
-the sidebar's recency view ([Explorer structure](explorer-structure.md)).
+`apps/live/app/explorer/routes.ts`'s `selectedFromRoute` `default:` case, which catches mangled URLs and id-less
+`folder`/`team` links, returns `{ kind: 'home' }`; its test holds the route table to the constant.
+
+The feed keeps its route, `/explorer/timeline`, and its page is titled **All activity** (heading, document title and
+breadcrumb, **Home › All activity**). Home says what the person was working on and what others did; All activity is
+the whole record, the person's own doings included, with its filters, calendar and paging.
+
+**Recent is not removed.** It keeps its route (`/explorer/recent`); it answers a different question ("what did I
+touch last"). It has no sidebar row.
 
 ### 8.2 Sidebar
 
-The Timeline is the sidebar's **Home** row, first in the Overview group
-([Explorer structure](explorer-structure.md)), and its page is titled **Home**
-(heading, document title and breadcrumb); "Timeline" names the feed itself:
+The feed has **no sidebar row**. It is reached from Home: What happened's quiet **See all activity** link opens it.
+The sidebar's **Home** row ([Explorer structure](explorer-structure.md)) opens Home, and carries this feed's unread
+badge:
 
 ```text
 Overview
-  ⌂  Home              ← the Timeline, and the landing view
+  ⌂  Home              ← Home, the landing view; badge: unread feed events
   ◔  Activity
   ↗  Shared with me
 ```
 
-Timeline **does** carry an unread badge. This section deferred it ("an
-unread count needs a per-user last-seen marker, which is a preference
-write on every visit"), and the objection turned out not to hold: the
-marker is `timeline_scope_state.last_seen_at`, a row the read already
-touches, so it costs no extra write — and without it the feed could not
-answer the question it exists for, since new and old looked identical.
-The badge counts only OTHER people's events (a number that rises because
-you renamed something is noise) and reads from its own cheap endpoint
-rather than a field on the feed, because it renders on every Explorer
-section and must not drag a feed nobody is looking at.
+The badge counts only OTHER people's events since the reader last looked (§2.5). Viewing Home counts as having
+looked, exactly as reading this feed does ([Explorer Home](explorer-home.md) "Unread"). The marker is
+`timeline_scope_state.last_seen_at`, a row the read already touches, so it costs no extra write; the badge reads from
+its own cheap endpoint rather than a field on the feed, because it renders on every Explorer section and must not
+drag a feed nobody is looking at.
 
 ### 8.3 The section checklist
 
-Adding the section touches the same files every Explorer section does:
+Adding an Explorer section touches the same files every section does:
 `views.tsx` (the `SelectedNode` union), `routes.ts` (both directions),
-`apps/live/app/explorer/timeline/page.tsx` (the route stub),
-the sidebar group that holds its row (`app/explorer/sidebar/`, [Explorer structure](explorer-structure.md)),
-`components/primitives/explorer-icons.tsx`, `useExplorerPane.ts` (pane content, title, crumbs),
-`ExplorerPane.tsx` (dispatch — Timeline is not a `BROWSE_KIND`),
+`apps/live/app/explorer/<section>/page.tsx` (the route stub),
+the sidebar group that holds its row, if it has one (`app/explorer/sidebar/`, [Explorer structure](explorer-structure.md)),
+`components/primitives/explorer-icons.tsx`, `view-titles.ts` and `useExplorerPane.ts` (pane content, title, crumbs),
+`ExplorerPane.tsx` (dispatch; neither Home nor the feed is a `BROWSE_KIND`),
 `ExplorerEmptyState.tsx`, and `routes.test.ts`'s `STATIC_NODES`.
 
-The pane is lazy-loaded like `ProfilePane` / `TeamPane`, so the
+The feed's pane is lazy-loaded like `ProfilePane` / `TeamPane`, so the
 calendar grid and mini-calendar chunk stays off the critical path for
 users who never switch modes.
 
@@ -1588,8 +1587,8 @@ New category `Timeline` in the closed enum in
 `@livediagram/api-schema` ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)). Existing actions cover it:
 
 - `Timeline`/`Opened` — the section is viewed. `type` is `Landing` when
-  it was the default landing view, `Nav` when reached from the sidebar,
-  so the landing-page change is measurable.
+  the page load started on it, `Nav` when reached from elsewhere (Home's
+  See all activity link).
 - `Timeline`/`Changed` with `type` `List` | `Calendar` — mode switch.
 - `Timeline`/`Selected` with `type` the source type — a filter chip
   toggled.

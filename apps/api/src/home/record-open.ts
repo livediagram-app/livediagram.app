@@ -8,8 +8,7 @@
 import { getDocumentOpen, recordOpenDay } from '../db/document-opens';
 import { recordDocumentOpened } from '../timeline/document-events';
 import type { DocumentDTO, Env } from '../types';
-import { nextFrecencyKey } from './frecency';
-import { utcDay } from './local-day';
+import { nextFrecencyKey, utcDay } from '@livediagram/api-schema';
 
 type DocumentRef = Pick<DocumentDTO, 'id' | 'name' | 'ownerId' | 'teamId'>;
 

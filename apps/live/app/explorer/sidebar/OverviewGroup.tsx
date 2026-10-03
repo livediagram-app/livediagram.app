@@ -13,18 +13,18 @@ export function OverviewGroup({ divider, first }: { divider: SidebarDivider; fir
   const assigned = activity.assignedToMe.length;
   return (
     <SidebarGroup id="overview" divider={divider} first={first}>
-      {/* Home is the Timeline (docs/specs/013-workspace/timeline.md §8.2). Its badge counts
-          OTHER people's events since the reader last looked, cleared on
-          navigation so the number doesn't linger while the feed loads. */}
+      {/* Home (docs/specs/013-workspace/explorer-home.md). Its badge counts OTHER people's
+          Timeline events since the reader last looked (timeline.md §8.2), cleared on navigation
+          so the number doesn't linger while Home loads. */}
       <SidebarRow
         icon={<HomeIcon />}
         label={SIDEBAR_LABELS.home}
         textLabel={SIDEBAR_LABELS.home}
-        selected={selected.kind === 'timeline'}
+        selected={selected.kind === 'home'}
         onActivate={() => {
           trackSidebar('Home');
           timelineUnread.clear();
-          go({ kind: 'timeline' });
+          go({ kind: 'home' });
         }}
         depth={0}
         badge={timelineUnread.count > 0 ? timelineUnread.count : undefined}

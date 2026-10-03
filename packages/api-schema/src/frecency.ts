@@ -1,5 +1,7 @@
 // Frecency: how Jump back in ranks (docs/specs/013-workspace/explorer-home.md "Jump back in";
-// blueprint "Frecency").
+// blueprint "Frecency"). Shared by the api, which keys every server open, and the browser, which
+// keys its own opens of documents stored only there the same way, so the two rank as one list
+// (docs/specs/013-workspace/blueprints/explorer-home-view.md "Merge").
 //
 // A document's score at time t is the sum, over the days the person opened it, of
 // 2^(-(t - t_d) / H): each open day adds one, and its weight halves every half-life H. Storing
@@ -7,6 +9,11 @@
 // the frecency KEY: the instant at which the score decays to exactly one, so that
 // score(t) = 2^((key - t) / H). The score rises with the key at every instant, so ordering by the
 // key IS ordering by the score, whenever the read happens, straight off an index.
+
+/** `YYYY-MM-DD` of `at` in UTC: an open's day, the boundary every coalesced event uses. */
+export function utcDay(at: number): string {
+  return new Date(at).toISOString().slice(0, 10);
+}
 
 /** A fortnight: the spec's half-life. */
 export const FRECENCY_HALF_LIFE_MS = 14 * 24 * 60 * 60 * 1000;

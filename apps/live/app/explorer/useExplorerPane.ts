@@ -193,9 +193,13 @@ export function useExplorerPane({
   }, [selected, folderById, teams]);
 
   // Breadcrumb segments for the pane header, following the sidebar's rows. The leaf (the current
-  // view) is plain text. Folders sit under My documents; every other view is its own single leaf.
+  // view) is plain text. Folders sit under My documents, All activity under Home; every other view
+  // is its own single leaf.
   type Crumb = { name: string; onClick?: () => void };
   const paneCrumbs = useMemo<Crumb[]>(() => {
+    // All activity is reached from Home, and leads back to it.
+    if (selected.kind === 'timeline')
+      return [{ name: VIEW_TITLES.home, onClick: () => go({ kind: 'home' }) }, { name: paneTitle }];
     if (selected.kind !== 'folder') return [{ name: paneTitle }];
     const chain = breadcrumb(selected.id);
     return [

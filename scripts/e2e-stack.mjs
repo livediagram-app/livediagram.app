@@ -43,6 +43,7 @@ import {
   cacheRule,
   isBuildAsset,
 } from '../apps/router/src/cache-policy.ts';
+import { EXPLORER_LANDING_PATH } from '../apps/live/lib/explorer-landing.ts';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 // E2E_LIVE_OUT serves another export of the live app, e.g. the Clerk-enabled `.next/out-clerk-stub`
@@ -455,9 +456,9 @@ function startLiveServer() {
       return;
     }
     if (pathname === '/api' || pathname.startsWith('/api/')) return proxyApi(req, res);
-    // Match the worker's /explorer → /explorer/recent redirect.
+    // Match the worker's /explorer → Home redirect, from the same constant.
     if (pathname === '/explorer' || pathname === '/explorer/') {
-      res.writeHead(302, { Location: '/explorer/recent' });
+      res.writeHead(302, { Location: EXPLORER_LANDING_PATH });
       res.end();
       return;
     }

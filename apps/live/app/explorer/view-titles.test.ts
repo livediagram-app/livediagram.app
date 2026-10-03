@@ -6,7 +6,7 @@ import { SIDEBAR_LABELS } from './sidebar/sidebar-structure';
 
 describe('VIEW_TITLES', () => {
   it('names each view with a row by that row', () => {
-    expect(VIEW_TITLES.timeline).toBe(SIDEBAR_LABELS.home);
+    expect(VIEW_TITLES.home).toBe(SIDEBAR_LABELS.home);
     expect(VIEW_TITLES.activity).toBe(SIDEBAR_LABELS.activity);
     expect(VIEW_TITLES.shared).toBe(SIDEBAR_LABELS.shared);
     expect(VIEW_TITLES.all).toBe(SIDEBAR_LABELS.myDocuments);
@@ -19,7 +19,7 @@ describe('VIEW_TITLES', () => {
   });
 
   it('reads Home, Shared with me and This browser', () => {
-    expect([VIEW_TITLES.timeline, VIEW_TITLES.shared, VIEW_TITLES.offline]).toEqual([
+    expect([VIEW_TITLES.home, VIEW_TITLES.shared, VIEW_TITLES.offline]).toEqual([
       'Home',
       'Shared with me',
       'This browser',
@@ -27,10 +27,11 @@ describe('VIEW_TITLES', () => {
   });
 
   it('keeps their own names for the views without a row', () => {
-    expect([VIEW_TITLES.recent, VIEW_TITLES.favourites, VIEW_TITLES.search]).toEqual([
-      'Recent',
-      'Favourites',
-      'Search results',
-    ]);
+    expect([
+      VIEW_TITLES.recent,
+      VIEW_TITLES.favourites,
+      VIEW_TITLES.search,
+      VIEW_TITLES.timeline,
+    ]).toEqual(['Recent', 'Favourites', 'Search results', 'All activity']);
   });
 });

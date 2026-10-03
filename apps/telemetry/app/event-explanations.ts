@@ -415,6 +415,20 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone searched the help centre and found no matching article: a direct list of articles worth writing. The search words are never recorded.',
   'Help|Searched|Results':
     'Someone searched the help centre and got at least one matching article. Counted once per finished search; the search words are never recorded.',
+  'Home|Loaded|More': "More of Home's Timeline column loaded as someone scrolled towards its end.",
+  'Home|Loaded|Retry':
+    'Someone pressed "Try again" after Home, or a further page of it, failed to load.',
+  'Home|Opened|Group':
+    "Someone expanded a summary of several people's work on one document in Home's What happened, to see every action.",
+  'Home|Opened|Landing':
+    'Someone arrived at the Explorer with Home as the very section that loaded.',
+  'Home|Opened|Nav': 'Someone went to Home from another section of the Explorer.',
+  'Home|Selected|JumpBackIn':
+    "Someone opened a document from Home's Jump back in, the strip of the documents they return to most.",
+  'Home|Selected|Timeline':
+    "Someone opened a document from Home's Timeline column, the documents they created, updated or opened.",
+  'Home|Selected|WhatHappened':
+    "Someone opened a document from Home's What happened, which lists what other people did to their documents.",
   'Layer|Added|': 'A new layer was added in the Layers panel.',
   'Layer|Changed|Opacity': "A layer's opacity was adjusted.",
   'Layer|Cleared|': 'A layer was emptied (its elements deleted, the layer kept).',
@@ -448,9 +462,11 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Page|View|/document':
     "Someone opened a document in the editor. Every document's page counts under this same path, with no document-specific detail recorded.",
   'Page|View|/explorer': 'Someone opened the Explorer, landing on its default section.',
+  'Page|View|/explorer/home': "Someone opened the Explorer's Home, its landing section.",
   'Page|View|/explorer/activity': "Someone navigated to the Explorer's Activity section.",
   'Page|View|/explorer/shared': "Someone navigated to the Explorer's Shared with You section.",
-  'Page|View|/explorer/timeline': "Someone navigated to the Explorer's Timeline section.",
+  'Page|View|/explorer/timeline':
+    "Someone navigated to the Explorer's All activity section, the Timeline feed.",
   'Page|View|/features/foundations':
     "Someone visited the marketing site's Foundations features page.",
   'Page|View|/features/simple': "Someone visited the marketing site's Simple features page.",
@@ -565,10 +581,11 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Timeline|Loaded|Retry':
     'Someone clicked "Try again" after the Timeline failed to load, retrying the read.',
   'Timeline|Opened|Landing':
-    'Someone arrived at the Explorer with the Timeline as the very section that loaded, rather than switching to it from elsewhere.',
+    'Someone arrived at the Explorer with All activity, the Timeline feed, as the very section that loaded.',
   'Timeline|Opened|Menu':
     'Someone opened the ⋯ menu on a Timeline card or on a collapsed run of cards.',
-  'Timeline|Opened|Nav': 'Someone switched to the Timeline from another section of the Explorer.',
+  'Timeline|Opened|Nav':
+    "Someone went to All activity, the Timeline feed, from elsewhere in the Explorer, usually Home's See all activity link.",
   'Timeline|Opened|Stack':
     'Someone expanded a collapsed run of similar Timeline entries (like "12 documents renamed") into its individual cards.',
   'Timeline|Removed|Entry': 'Someone removed a single entry from their Timeline feed.',
@@ -1095,6 +1112,9 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Team|Shared': 'A team turned on a way for people to ask to join it.',
   'Theme|Created': 'Someone created a custom theme with their own colours.',
   'Theme|Deleted': 'Someone deleted a custom theme they had created.',
+  'Home|Loaded': "More of Home's Timeline column loaded, or Home was read again after failing.",
+  'Home|Opened': "Someone opened the Explorer's Home, or expanded a summary within it.",
+  'Home|Selected': "Someone opened a document from one part of the Explorer's Home.",
   'Timeline|Changed': "Someone switched how the Explorer's Timeline displays its history.",
   'Timeline|Loaded':
     'The Timeline loaded more of its history, either the next page or a retry after a failed read.',

@@ -67,7 +67,8 @@ Every Explorer section is its own page under `/explorer` (the chrome — header,
 
 | Section                                                        | Route                                                              |
 | -------------------------------------------------------------- | ------------------------------------------------------------------ |
-| Home, the [Timeline](timeline.md)                              | `/explorer/timeline` (default)                                     |
+| Home ([Explorer Home](explorer-home.md))                       | `/explorer/home` (default)                                         |
+| All activity, the [Timeline](timeline.md) feed                 | `/explorer/timeline` (no sidebar row)                              |
 | Activity ([Activity page](activity-page.md))                   | `/explorer/activity`                                               |
 | Shared with me                                                 | `/explorer/shared`                                                 |
 | Recent documents                                               | `/explorer/recent` (no sidebar row)                                |
@@ -85,7 +86,7 @@ Every Explorer section is its own page under `/explorer` (the chrome — header,
 | Shape libraries ([Shape libraries](shape-libraries.md))        | `/explorer/shape-libraries`                                        |
 | Trash ([Trash](trash.md))                                      | `/explorer/trash`                                                  |
 
-`/explorer` itself redirects to `/explorer/timeline` (worker-level 302 in production, client replace in dev). Folder and team ids ride the **query string**, not a path segment: `output: 'export'` can't enumerate user-minted ids, and the `/document/<id>` placeholder-rewrite workaround ([Dedicated route for new-document creation](../007-editor/new-document-route.md)) is deliberately kept single-purpose. The sidebar's groups, rows, labels and visibility rules are [Explorer structure](explorer-structure.md).
+`/explorer` itself redirects to `/explorer/home` (worker-level 302 in production, client replace in dev). Folder and team ids ride the **query string**, not a path segment: `output: 'export'` can't enumerate user-minted ids, and the `/document/<id>` placeholder-rewrite workaround ([Dedicated route for new-document creation](../007-editor/new-document-route.md)) is deliberately kept single-purpose. The sidebar's groups, rows, labels and visibility rules are [Explorer structure](explorer-structure.md).
 
 Out of scope (V1):
 

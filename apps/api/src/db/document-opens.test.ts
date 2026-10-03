@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
-import { frecencyScore } from '../home/frecency';
+import { frecencyScore } from '@livediagram/api-schema';
 import { deleteOldDocumentOpens, migrateDocumentOpens } from './document-opens';
 
 // document_opens on sign-up and over time (docs/specs/013-workspace/explorer-home.md "Guests,
