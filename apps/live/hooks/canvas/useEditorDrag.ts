@@ -729,14 +729,25 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
             // a frame); otherwise leave the icon as a plain move, so an icon
             // dropped on a frame lands inside it as a standalone element.
             const target = d.activeTab.elements.find((el) => el.id === id);
+            // The fold writes through the gesture (tick). A drag that moved nothing (the snap put
+            // the icon back where it started) committed no preview and so marked no checkpoint:
+            // mark it as the fold lands, so the fold is its own undo step rather than joining the
+            // last one.
+            const fold = (position: 'left' | 'right' | 'above' | 'below') => {
+              if (checkpointPendingRef.current) {
+                d.markCheckpoint();
+                checkpointPendingRef.current = false;
+              }
+              d.onIconElementDroppedOnShape?.(drag.primaryId, id, position);
+            };
             // Onto another icon: the dragged icon replaces it, keeping its box, place and style
             // (docs/specs/008-canvas/canvas-and-palette.md "Swapping an icon"); any icon, a tech mark too.
             if (target?.type === 'shape' && target.shape === 'icon') {
-              d.onIconElementDroppedOnShape(drag.primaryId, id, 'left');
+              fold('left');
             } else if (target && acceptsInlineIcon(target) && !isTechIconId(dragged.iconId)) {
               const rect = host.getBoundingClientRect();
               const position = iconDropSide(e.clientX, e.clientY, rect);
-              d.onIconElementDroppedOnShape(drag.primaryId, id, position);
+              fold(position);
             }
             break;
           }

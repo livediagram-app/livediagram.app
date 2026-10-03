@@ -64,6 +64,8 @@ export function usePageReorderDrag({
     onPointerDown: (e: PointerEvent<HTMLElement>) => {
       e.stopPropagation();
       if (e.button !== 0) return;
+      // A fresh press: whatever ended the last one has been had.
+      dragged.current = false;
       press.current = { pageId, x: e.clientX, dragging: false };
       e.currentTarget.setPointerCapture(e.pointerId);
     },

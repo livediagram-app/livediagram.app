@@ -171,6 +171,27 @@ describe('page content', () => {
     expect([...elementIdsOnPage(next.elements, laid, 'b')]).toEqual(['b1']);
   });
 
+  it('leaves behind a copy of an arrow riding an arrow that stays behind', () => {
+    const offPin = {
+      id: 'off',
+      type: 'arrow',
+      from: { kind: 'pinned', elementId: 'a1', anchor: 'e' },
+      to: { kind: 'pinned', elementId: 'b1', anchor: 'w' },
+    } as Element;
+    // Midpoint on page a, riding 'off', which is pinned to b1 off the page.
+    const rider = {
+      id: 'rides',
+      type: 'arrow',
+      from: { kind: 'on-arrow', arrowId: 'off', t: 0.1 },
+      to: { kind: 'free', x: 50, y: 50 },
+    } as Element;
+    const base = { ...tab, elements: [...tab.elements, offPin, rider] };
+    const next = withDuplicatedPage(base, 'a', 'p2');
+    const originals = new Set(base.elements.map((el) => el.id));
+    const copies = next.elements.filter((el) => !originals.has(el.id));
+    expect(copies.filter((el) => el.type === 'arrow')).toHaveLength(1);
+  });
+
   it('removes arrows riding a removed arrow, in turn, with the page’s content', () => {
     const rider = {
       id: 'rider',

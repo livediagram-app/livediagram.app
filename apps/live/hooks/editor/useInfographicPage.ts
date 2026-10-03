@@ -1,7 +1,16 @@
 // Infographic mode's pages (docs/specs/007-editor/infographic-pages.md): the active tab's pages
 // laid out in their row, the edits to them (infographic-page-edits) and framing one in the view. It
 // also centres the view on the first page whenever the mode or the tab changes.
-import { useEffect, useEffectEvent, useMemo, useState, type RefObject } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useEffectEvent,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type RefObject,
+} from 'react';
 import {
   hasPageLook,
   infographicPageFitBox,
@@ -123,6 +132,13 @@ export function useInfographicPage(deps: {
   );
   const pages = useMemo(() => layOutInfographicPages(current), [current]);
 
+  // Edit rights now, for a commit made as the panel closes (layout phase: current before any
+  // passive cleanup of that render runs).
+  const canEditNow = useRef(canEdit && activeTab.locked !== true);
+  useLayoutEffect(() => {
+    canEditNow.current = canEdit && activeTab.locked !== true;
+  });
+  const mayEdit = useCallback(() => canEditNow.current, []);
   const [layoutPreview, setLayoutPreview] = useState<InfographicPagesView['layoutPreview']>(null);
   // A page just added or duplicated: framed once it lands in the row (a frame later, as its
   // sheet mounts).
@@ -148,6 +164,8 @@ export function useInfographicPage(deps: {
   if (!canEdit || activeTab.locked === true) return shared;
   return {
     ...shared,
+    // mayEdit reads a ref, but only when an edit commits (in a handler), never during render.
+    // eslint-disable-next-line react-hooks/refs
     edit: infographicPageEdits({
       tabId,
       current,
@@ -155,6 +173,7 @@ export function useInfographicPage(deps: {
       commitTabs,
       onCreated: setGoTo,
       onLayoutPlaced: deps.clearSelection,
+      mayEdit,
     }),
   };
 }

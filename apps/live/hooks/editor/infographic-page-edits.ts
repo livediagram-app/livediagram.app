@@ -58,6 +58,7 @@ export function infographicPageEdits({
   commitTabs,
   onCreated,
   onLayoutPlaced,
+  mayEdit = () => true,
 }: {
   tabId: string;
   current: readonly InfographicPage[];
@@ -65,12 +66,18 @@ export function infographicPageEdits({
   elements: Tab['elements'];
   // After a layout lands: the selection is cleared, so none of the replaced elements stays selected.
   onLayoutPlaced: () => void;
+  // Whether this person may still edit, asked at commit time: a panel closing because editing went
+  // (a view role) must not write its last typed name.
+  mayEdit?: () => boolean;
   commitTabs: (map: (ts: Tab[]) => Tab[]) => void;
   // A new page (added or duplicated) by its id, so the view can go to it.
   onCreated: (pageId: string) => void;
 }): InfographicPageEdits {
-  const commitTab = (change: TabChange) =>
-    commitTabs((ts) => ts.map((t) => (t.id === tabId ? (change(t) ?? t) : t)));
+  // A locked tab, or a person no longer editing, takes no page edit.
+  const commitTab = (change: TabChange) => {
+    if (!mayEdit()) return;
+    commitTabs((ts) => ts.map((t) => (t.id === tabId && t.locked !== true ? (change(t) ?? t) : t)));
+  };
   // A change to the page list alone (content follows its page).
   const commitPages = (change: (pages: InfographicPage[]) => InfographicPage[] | null) =>
     commitTab((t) => {

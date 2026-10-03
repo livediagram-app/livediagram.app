@@ -292,6 +292,8 @@ export function BackgroundSection({
               }}
             >
               <CustomColourInput
+                // A new value is a new input: its native change listener attaches to that one.
+                key={hexish(custom ?? '#ffffff')}
                 value={hexish(custom ?? '#ffffff')}
                 onPreview={(color) => onPreview({ fill: { kind: 'solid', color } })}
                 onCommit={(color) => onBackground({ fill: { kind: 'solid', color } })}
@@ -386,7 +388,6 @@ function CustomColourInput({
       type="color"
       aria-label="Custom background colour"
       defaultValue={value}
-      key={value}
       onInput={(e) => onPreview(e.currentTarget.value)}
       className="absolute h-0 w-0 opacity-0"
     />

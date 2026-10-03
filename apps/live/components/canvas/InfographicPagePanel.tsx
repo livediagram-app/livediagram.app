@@ -140,7 +140,14 @@ export function InfographicPagePanel({
         placeholder={count > 1 ? placeLabel : 'Untitled page'}
         onRename={(name) => edit.rename(page.id, name)}
       />
-      <PanelTabs tab={tab} onTab={setTab} />
+      <PanelTabs
+        tab={tab}
+        onTab={(next) => {
+          // Leaving Layouts takes its preview (a pending Replace's too) off the page.
+          if (next !== 'layouts') onLayoutPreview(null);
+          setTab(next);
+        }}
+      />
       {tab === 'page' ? (
         <>
           <SizeSection page={page} onSize={(size) => edit.setSize(page.id, size)} />

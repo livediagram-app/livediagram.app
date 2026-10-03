@@ -81,15 +81,33 @@ export function withDuplicatedPage<T extends Pick<Tab, 'elements'>>(
   const dx = to.x + to.width / 2 - (from.x + from.width / 2);
   const dy = to.y + to.height / 2 - (from.y + from.height / 2);
   // The shared duplication (ids, links, mind-map parents, portals, arrow-on-arrow ends remapped),
-  // less any arrow tied to something left behind: those stay with the original.
-  const pinnedOff = (ep: Endpoint) => ep.kind === 'pinned' && !onPage.has(ep.elementId);
-  const copied = new Set(
-    [...onPage].filter((id) => {
-      const el = tab.elements.find((e) => e.id === id);
-      return !el || isBoxed(el) || !(pinnedOff(el.from) || pinnedOff(el.to));
-    }),
+  // less any arrow tied to something left behind: pinned to an element off the page, or riding an
+  // arrow that is not copied. Settled as a fixpoint, since leaving one arrow behind can leave its
+  // riders behind too. Those stay with the original.
+  const copied = new Set(onPage);
+  let dropped = true;
+  while (dropped) {
+    dropped = false;
+    for (const el of tab.elements) {
+      if (!copied.has(el.id) || el.type !== 'arrow') continue;
+      const tied = [el.from, el.to].some(
+        (ep) =>
+          (ep.kind === 'pinned' && !onPage.has(ep.elementId)) ||
+          (ep.kind === 'on-arrow' && !copied.has(ep.arrowId)),
+      );
+      if (tied) {
+        copied.delete(el.id);
+        dropped = true;
+      }
+    }
+  }
+  const { newElements, idMap } = duplicateElements(tab.elements, copied, dx, dy);
+  // In the source page's own paint order, so an arrow under a card stays under its copy.
+  const rank = new Map(tab.elements.map((el, i) => [el.id, i]));
+  const sourceOf = new Map([...idMap].map(([from, to]) => [to, from]));
+  const copies = [...newElements].sort(
+    (x, y) => (rank.get(sourceOf.get(x.id) ?? '') ?? 0) - (rank.get(sourceOf.get(y.id) ?? '') ?? 0),
   );
-  const { newElements: copies } = duplicateElements(tab.elements, copied, dx, dy);
   return { ...moved, elements: [...moved.elements, ...copies] };
 }
 
