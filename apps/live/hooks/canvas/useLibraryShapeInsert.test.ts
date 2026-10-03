@@ -208,4 +208,17 @@ describe('useLibraryShapeInsert, consecutive clicks', () => {
     h.insert(service);
     expect(h.boxes()).toEqual([[440, 270, 120, 60]]);
   });
+
+  it('measures what it places, whatever size the item records', () => {
+    // A library stored before items recorded their converted size: draw.io's 120 x 60, drawn larger.
+    const grown: ShapeLibraryItem = {
+      ...service,
+      elements: [{ ...shape('a', 0), width: 148, height: 74 }],
+    };
+    const h = host();
+    h.insert(grown);
+    h.insert(grown);
+    const [first, second] = h.boxes();
+    expect(second![0]).toBe(first![0]! + 148 + 24);
+  });
 });

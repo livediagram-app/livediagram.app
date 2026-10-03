@@ -10,6 +10,7 @@
 import { useRef } from 'react';
 import {
   MAX_ELEMENTS_PER_TAB,
+  contentBounds,
   duplicateElements,
   type BoxedElement,
   type Element,
@@ -102,10 +103,14 @@ export function useLibraryShapeInsert(d: LibraryShapeInsertDeps): InsertLibraryS
     }
     // Forget inserts that moved, went, or belong to another tab.
     placed.current = placed.current.filter((p) => inPlace(p, tab));
+    // The footprint is what lands: the elements' own bounds, which a library stored with another
+    // recorded size would otherwise misstate.
+    const bounds = item.elements.length > 0 ? contentBounds(item.elements) : null;
+    const size = bounds ? { width: bounds.w, height: bounds.h } : item;
     const box = at
-      ? boxAround(at, item.width, item.height)
+      ? boxAround(at, size.width, size.height)
       : clickFootprint(
-          item,
+          size,
           d.getViewportCenter(),
           placed.current.map((p) => p.box),
         );
