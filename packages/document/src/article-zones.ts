@@ -119,3 +119,49 @@ export function withZonesSettled<
     articles: { ...(tab.articles as Record<string, ArticleFlow>), [flow]: nextDoc },
   };
 }
+
+/**
+ * The drawing-zone clips (docs/specs/007-editor/article-pages.md "Zones"): a drawing zone is a
+ * window onto its drawing, so whatever of a drawing element pokes past its edge is cut off. Every
+ * drawing element (`isDrawing`) whose anchor is inside a drawing zone, or a box of which overlaps
+ * one, is clipped to that zone's rect. Objects (images, charts) never are: floating in front of the
+ * text, they show whole.
+ */
+export function drawingZoneClips(
+  pages: readonly LaidOutPage[],
+  articles: Readonly<Record<string, ArticleFlow>>,
+  elements: readonly Element[],
+  isDrawing: (el: Element) => boolean,
+): Map<string, PageRect> {
+  const out = new Map<string, PageRect>();
+  const zones: PageRect[] = [];
+  for (const [flow, doc] of Object.entries(articles)) {
+    const own = pages.filter((p) => p.flow === flow);
+    if (own.length === 0) continue;
+    for (const b of doc.blocks) {
+      if (b.type !== 'zone' || b.zone !== 'drawing') continue;
+      const r = zoneCanvasRect(own, b);
+      if (r) zones.push(r);
+    }
+  }
+  if (zones.length === 0) return out;
+  for (const el of elements) {
+    if (!isDrawing(el)) continue;
+    const at = zoneAnchorOf(el, elements);
+    const zone =
+      zones.find(
+        (r) => at.x >= r.x && at.x <= r.x + r.width && at.y >= r.y && at.y <= r.y + r.height,
+      ) ??
+      (isBoxed(el)
+        ? zones.find(
+            (r) =>
+              el.x < r.x + r.width &&
+              el.x + el.width > r.x &&
+              el.y < r.y + r.height &&
+              el.y + el.height > r.y,
+          )
+        : undefined);
+    if (zone) out.set(el.id, zone);
+  }
+  return out;
+}

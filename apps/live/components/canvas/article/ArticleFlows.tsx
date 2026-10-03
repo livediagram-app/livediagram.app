@@ -5,10 +5,12 @@
 // writing leaves for them. Each article's editor is its own (ArticleEditor), loaded only
 // once the tab has an article: the editor's code (ProseMirror) is not part of the canvas until a
 // article asks for it.
-import { lazy, Suspense, useMemo } from 'react';
+import { lazy, Suspense, useLayoutEffect, useMemo } from 'react';
 import {
   articleMarginPx,
+  drawingZoneClips,
   isBoxed,
+  isDrawingElement,
   pageFillTone,
   pageIsDark,
   zoneAnchorOf,
@@ -32,6 +34,8 @@ import { previewedBackground, usePageBackgroundPreview } from '@/lib/page-backgr
 import { ZoneBar, ZoneResizeGrips } from './ZoneBar';
 import { useZoneDrag, type ZoneDragState } from './useZoneDrag';
 import { useObjectDropCaret } from './useObjectDropCaret';
+import { publishZoneClips } from '@/lib/article/zone-clip-store';
+import { selectionMoving, useCanvasGesture } from '@/lib/canvas-gesture';
 
 const ArticleEditor = lazy(() => import('./ArticleEditor'));
 
@@ -90,6 +94,18 @@ export function ArticleFlows({
     articles?.editable && !target
       ? floatingTarget(byFlow, articles.flows, selectedIds, elements)
       : null;
+  // A drawing zone cuts off what of its drawing pokes past its edge; what is being moved shows
+  // whole until it lands (it may be leaving the zone).
+  const moving = selectionMoving(useCanvasGesture());
+  const clips = useMemo(() => {
+    const all = articles
+      ? drawingZoneClips(row, articles.flows, elements, isDrawingElement)
+      : new Map<string, PageRect>();
+    if (moving) for (const id of selectedIds) all.delete(id);
+    return all;
+  }, [row, articles, elements, moving, selectedIds]);
+  useLayoutEffect(() => publishZoneClips(clips), [clips]);
+  useLayoutEffect(() => () => publishZoneClips(new Map()), []);
   const objectCaret = useObjectDropCaret({
     target,
     selectedIds,

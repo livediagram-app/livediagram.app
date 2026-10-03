@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { withZonesSettled, zoneMemberIds } from './article-zones';
+import { drawingZoneClips, withZonesSettled, zoneMemberIds } from './article-zones';
 import { layOutIllustratePages, type IllustratePage } from './illustrate-page';
 import type { Element } from './index';
 
@@ -76,5 +76,32 @@ describe('zones settled where the writing lays them out', () => {
     ]);
     const ys = Object.fromEntries(out.elements.map((e) => [e.id, (e as { y: number }).y - p1.y]));
     expect(ys).toEqual({ in: 310, inB: 510 });
+  });
+});
+
+describe('a drawing zone cuts off its drawing at its edge', () => {
+  const p1 = laid[0]!.rect;
+  const rect = { x: p1.x + 100, y: p1.y + 100, width: 200, height: 100 };
+  const articles = { f: { blocks: [zone('z', { page: 'd1', x: 100, y: 100 })] } };
+  const drawing = () => true;
+
+  it('clips members, and boxes poking in from outside, to the zone', () => {
+    const inside = box('in', p1.x + 110, p1.y + 110);
+    const pokingIn = box('poke', p1.x + 85, p1.y + 150);
+    const away = box('away', p1.x + 500, p1.y + 500);
+    const clips = drawingZoneClips(laid, articles, [inside, pokingIn, away], drawing);
+    expect(clips.get('in')).toEqual(rect);
+    expect(clips.get('poke')).toEqual(rect);
+    expect(clips.has('away')).toBe(false);
+  });
+
+  it('never clips an object (it floats whole)', () => {
+    const clips = drawingZoneClips(
+      laid,
+      articles,
+      [box('img', p1.x + 110, p1.y + 110)],
+      () => false,
+    );
+    expect(clips.size).toBe(0);
   });
 });

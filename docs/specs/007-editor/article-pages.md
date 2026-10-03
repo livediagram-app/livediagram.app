@@ -204,7 +204,10 @@ laid out with it, holding ordinary canvas elements that move with it.
   its zone moves to that block boundary, the object with it; dropped by its own place, it settles
   back. Any other element dragged so its centre leaves its zone is no longer in it: it stays where
   it is dropped, fixed to the page in front of the text (a **loose element**), as is an object
-  dropped off its article's pages. An
+  dropped off its article's pages.
+- **A drawing zone is a window**: whatever of a drawing element pokes past its edge (a member near
+  its edge, or a shape overlapping it from outside) is cut off there, on the canvas; objects are
+  never cut. While a selection is moved it shows whole, so a shape dragged out stays in view. An
   element dragged into a drawing zone joins it; one whose centre stays inside but pokes out grows
   the zone.
 - **The zone bar**: a small bar under a zone's bottom edge while the zone or one of its elements

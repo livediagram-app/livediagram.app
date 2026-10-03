@@ -1,4 +1,5 @@
 import { memo, useRef, useState } from 'react';
+import { useZoneClip, zoneClipPolygon } from '@/lib/article/zone-clip-store';
 import { PhotoDraftRing, PhotoMatchedBadge } from '@/components/canvas/photo-badges';
 import {
   BORDER_DASH_ARRAY,
@@ -165,6 +166,10 @@ function BoxedElementViewImpl({
   // reset) restores resize.
   const rotation = element.rotation ?? 0;
   const isRotated = rotation % 360 !== 0;
+  // In an article's drawing zone: cut off at the zone's edge (a turned element is left whole).
+  const zoneClip = useZoneClip(element.id);
+  const clipPath =
+    zoneClip && !isRotated ? zoneClipPolygon(zoneClip, element.x, element.y) : undefined;
   // Layer-scoped vote (docs/specs/012-collaboration/vote-layer-scope.md). Only while casting is OPEN: after End
   // vote the canvas goes back to normal so the results walkthrough reads
   // against the full canvas. `votableInVote` already folds in the kind
@@ -443,6 +448,7 @@ function BoxedElementViewImpl({
         // is typing isn't hidden behind elements painted above it. (The
         // selection handles live in the grips layer, SelectionChromeLayer.)
         ...(editLook.raise ? { zIndex: 10 } : {}),
+        ...(clipPath ? { clipPath } : {}),
         // Only the drawn line picks a pen stroke not yet selected (its hit
         // line, in FreehandSvg); the rest of its box lets pointers through.
         ...(lineHit || shapeHit ? { pointerEvents: 'none' as const } : {}),
