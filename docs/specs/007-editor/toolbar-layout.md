@@ -9,12 +9,15 @@ One of the two panel layouts, next to **Floating** (the desktop default,
 to the top centre of the canvas, the way Excalidraw's tool bar works:
 
 ```
- ☰        ┌──────────────────────────────────────────────────────┐
+ ☰ ⬡|✎   ┌──────────────────────────────────────────────────────┐
  │        │ [↖ ▾] │ [Shapes ▾] │ □ ◇ ○ → ─ ✎ A ▤ … │ [⋯ ▾] │
  ▼        └──────────────────────────────────────────────────────┘
  Explorer            (Undo/Redo, Layers, zoom: the Floating bottom row)
 ```
 
+- **Top left, before the strip: the menu button and the editor mode
+  switch** ([The mode switch](editor-modes.md#the-mode-switch)), in one card.
+  On a phone both move inline to the strip's far left (below).
 - **Left: the selection mode.** The canvas-tool picker (Select / Hand /
   Eraser / Format / Laser / Spotlight / Avatar / Isometric / Zen, [Tile grids for the palette dropdowns](../004-interface-design/dropdown-tile-grid.md))
   as a compact icon trigger. It opens the same banded tile grid the Palette's
@@ -132,12 +135,12 @@ since the stored value is untouched. The Settings row greys Floating
 out and rings Toolbar ([User preferences](user-preferences.md)); the tour's welcome card shows no
 layout picker there ([Interactive editor tour ("Show me around")](editor-tour.md)). What changes to fit the width:
 
-- **The menu button moves into the strip**, at its far left, before the
-  selection mode. There is no room for a corner button and a strip side by
+- **The menu button moves into the strip**, at its far left with the editor
+  mode switch beside it, before the selection mode. There is no room for a corner button and a strip side by
   side, and the strip needs the whole top row.
 - **The category picker is icon-only**, like the selection mode.
 - **The tile count follows the width** (`phoneStripTileLimit`): whatever fits
-  between 12px gutters once the menu button, the two pickers, More and the
+  between 12px gutters once the menu button, the mode switch, the two pickers, More and the
   card's padding are paid for, at least three. Three on a 390px phone, four
   from about 410px. More holds the rest.
 - **More spans the screen** between the gutters instead of hanging from its
@@ -163,7 +166,9 @@ ringed, so the difference is visible before switching ([User preferences](user-p
   (follow-me pill, mode banners, timer, [Canvas and palette](../008-canvas/canvas-and-palette.md)) moves
   down to clear it.
 - Event-storming boards ([Event storming](../021-event-storming/event-storming.md)) hide the Palette's header; the strip
-  hides both its pickers the same way and shows the notation's tiles.
+  hides both its pickers the same way and shows the notation's tiles, led by
+  the board's **Add from photo** (an icon button with a hover card, the
+  floating palette's board row) where the deployment offers photo import.
 - Read-only sessions have no palette, so no strip. The menu button still
   shows.
 - Zen hides the strip and the menu button along with the rest of the chrome.

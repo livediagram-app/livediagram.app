@@ -4,6 +4,7 @@ import { track } from '@/lib/telemetry';
 import { HoverCard, Glyph } from '@livediagram/ui';
 import { useUiScale } from '@/components/providers/ui-scale';
 import { toSurfacePx, uiScaleStyle } from '@/lib/ui-scale';
+import { EditorModeSwitch } from './editor-mode/EditorModeSwitch';
 
 // The Toolbar layout's menu button (docs/specs/007-editor/toolbar-layout.md), top-left of the canvas where
 // the Explorer panel would float. It toggles that same Explorer panel open as
@@ -17,6 +18,10 @@ import { toSurfacePx, uiScaleStyle } from '@/lib/ui-scale';
 //
 // `inline` drops the corner card so the button can sit at the far left of
 // the Palette strip instead, which is where a phone puts it.
+//
+// The editor mode switch (docs/specs/007-editor/editor-modes.md "The mode switch") rides beside the
+// button, in the corner card or inline, so it goes wherever the menu goes; it renders nothing where
+// no switch is offered.
 export function ToolbarExplorerButton({
   open,
   onToggle,
@@ -63,8 +68,8 @@ export function ToolbarExplorerButton({
       }
       className={
         inline
-          ? 'flex'
-          : 'pointer-events-auto absolute left-3 top-3 z-[var(--z-toolbar)] rounded-xl border border-slate-200 bg-white p-1 shadow-md shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40'
+          ? 'flex items-center gap-1'
+          : 'pointer-events-auto absolute left-3 top-3 z-[var(--z-toolbar)] flex items-center gap-1 rounded-xl border border-slate-200 bg-white p-1 shadow-md shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40'
       }
       onPointerDown={(e) => e.stopPropagation()}
       onContextMenu={(e) => {
@@ -80,6 +85,7 @@ export function ToolbarExplorerButton({
           {button}
         </HoverCard>
       )}
+      <EditorModeSwitch />
     </div>
   );
 }

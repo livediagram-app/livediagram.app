@@ -8,7 +8,6 @@ import {
   lucideShapes,
   lucideStickyNote,
   lucideType,
-  lucideUndo2,
 } from '@livediagram/icons/lucide';
 
 export const DOCK_ICON_PX = 20;
@@ -65,25 +64,6 @@ export function OffGlyph() {
   return (
     <Glyph size={DOCK_ICON_PX} units={24}>
       <path d="M5 15 C5 8 13 5 15.5 10.5 S10 20 6 16.5" />
-    </Glyph>
-  );
-}
-
-export function UndoGlyph() {
-  return (
-    <Glyph size={DOCK_ICON_PX} units={24}>
-      <Prims prims={lucideUndo2} />
-    </Glyph>
-  );
-}
-
-// Undo, mirrored.
-export function RedoGlyph() {
-  return (
-    <Glyph size={DOCK_ICON_PX} units={24}>
-      <g transform="matrix(-1 0 0 1 24 0)">
-        <Prims prims={lucideUndo2} />
-      </g>
     </Glyph>
   );
 }

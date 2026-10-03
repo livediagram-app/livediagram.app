@@ -28,16 +28,7 @@ describe('the Shapes flyout', () => {
     const m = model();
     const { view } = renderDock(m);
     const again = (n: number) =>
-      view.rerender(
-        <WhiteboardDock
-          model={{ ...m, shapesRequest: n }}
-          ink="#1c1917"
-          canUndo
-          canRedo={false}
-          onUndo={vi.fn()}
-          onRedo={vi.fn()}
-        />,
-      );
+      view.rerender(<WhiteboardDock model={{ ...m, shapesRequest: n }} ink="#1c1917" />);
     again(1);
     expect(flyout()).toBeTruthy();
     expect(document.activeElement).toBe(field());
@@ -118,10 +109,6 @@ describe('the Shapes flyout', () => {
           slotShapes: { mostUsed: ['star', 'cloud', 'hexagon'], recent: m.slotShapes.recent },
         }}
         ink="#1c1917"
-        canUndo
-        canRedo={false}
-        onUndo={vi.fn()}
-        onRedo={vi.fn()}
       />,
     );
     expect(labels().slice(3)).toEqual(['Diamond', 'Cylinder', 'Line']);

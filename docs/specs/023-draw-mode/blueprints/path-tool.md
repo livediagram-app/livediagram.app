@@ -192,8 +192,8 @@ instead; releasing Space resumes shaping from the node's new place. Release ends
   whenever a draft exists, so the board's history never runs under a draft. Placing a node, or the
   draft ending, empties the redo list. `usePathDrawGesture.history`
   (`{ canUndo: true, canRedo, undo, redo }`, null without a draft) replaces `canUndo` / `canRedo` /
-  `onUndo` / `onRedo` on `CanvasChrome`, so the dock's History group and the corner cluster step through
-  the draft too.
+  `onUndo` / `onRedo` on `CanvasChrome`, so the corner cluster (the only Undo and Redo buttons, in
+  Draw mode too) steps through the draft too.
 - Space, Alt, Shift: read from the pointer events and a Space key flag.
 
 **Rubber band**: while not dragging, the last node to `cursor` (Shift: constrained) as a cubic

@@ -98,15 +98,14 @@ centred across the **top** of the canvas by default (see
   "Marker stroke", "3 marker strokes"); power user mode leaves it out.
 - **Read-only:** a view-role visitor sees the board without the dock; there
   is nothing on it they could use.
-- **One dock, no modes.** Every user sees the same four groups; the shapes
+- **One dock, no modes.** Every user sees the same three groups; the shapes
   bar stays small by starting with just two pinned shapes, so there is no
   simpler mode to switch to.
-- **The dock is four groups side by side**, centred together at the top
+- **The dock is three groups side by side**, centred together at the top
   (or bottom) of the canvas with a clear gap between them, left to right: **drawing
-  tools**, **shapes**, **history** (Undo, Redo) and **settings** (the cog on
-  its own). Each group is its own pill, and its own toolbar for assistive
-  technology ("Drawing tools", "Shapes", "History", "Settings"), each one Tab
-  stop with arrow keys moving within it.
+  tools**, **shapes** and **settings** (the cog on its own). Each group is its
+  own pill, and its own toolbar for assistive technology ("Drawing tools",
+  "Shapes", "Settings"), each one Tab stop with arrow keys moving within it.
 - **Drawing tools, left to right:**
   1. **Select** (marquee and move; the ordinary select tool). A board with content opens on
      Select; an empty one puts the active pen in hand.
@@ -144,8 +143,8 @@ centred across the **top** of the canvas by default (see
        picks one, which arms it like a dock shape (plain ink, the tool style
        of its kind, drawn with a drag or dropped with a click) and closes the
        flyout; **Escape** closes it without picking.
-- **History:** **Undo** and **Redo**, the same actions as the bottom-right
-  cluster and the keyboard; disabled when there is nothing to undo or redo.
+- **No Undo or Redo in the dock:** the bottom-right cluster and the keyboard
+  already carry them in every mode, so the dock does not repeat them.
 - **The sticky note is a shape here, not a drawing tool.** It has no button
   in the drawing tools bar; it is one of the shapes: found in the Shapes
   flyout's search ("sticky", "note", "post-it"), shown in its slots once

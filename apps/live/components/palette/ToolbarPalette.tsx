@@ -17,6 +17,7 @@ import { PaletteTintProvider } from './palette-controls';
 import { PaletteGroupProvider } from './palette-group-state';
 import { PaletteDropdown, TOOLBAR_TRIGGER_TONE } from './PaletteDropdown';
 import { CATEGORY_BANDS } from './PaletteTabBar';
+import { EsPhotoStripButton } from './EsPhotoStripButton';
 import { PaletteTile } from './PaletteTileGrid';
 import { PALETTE_TILES } from './palette-tile-defs';
 import { desktopStripTileLimit, phoneStripTileLimit, stripTilesFor } from './toolbar-strip-tiles';
@@ -275,6 +276,14 @@ export function ToolbarPalette(props: Props) {
               {leading ? (
                 <>
                   {leading}
+                  <Divider />
+                </>
+              ) : null}
+              {/* ...and lead with the board's own control instead, as the floating palette's
+                Event Storming category does. */}
+              {esBoard && props.esBoardControls?.onImportPhoto ? (
+                <>
+                  <EsPhotoStripButton controls={props.esBoardControls} />
                   <Divider />
                 </>
               ) : null}

@@ -1,7 +1,8 @@
 'use client';
 
 // The whiteboard's floating dock (docs/specs/023-draw-mode/draw-mode.md "What a whiteboard shows"):
-// four groups side by side, in place of the palette: Drawing tools, Shapes, History and Settings.
+// three groups side by side, in place of the palette: Drawing tools, Shapes and Settings (Undo
+// and Redo live in the bottom bar).
 // Each group is its own toolbar with one Tab stop. It sits at the top centre, or the bottom centre
 // by choice ("Where the dock sits"). Flyouts open on the board side of it, one at a time, so nothing
 // moves under the pointer when a tool is picked; on a narrow screen the groups scroll sideways
@@ -27,7 +28,6 @@ import {
   SlotMenuBody,
 } from './dock-flyouts';
 import { DrawingToolsGroup } from './DrawingToolsGroup';
-import { HistoryGroup } from './HistoryGroup';
 import { SettingsGroup } from './SettingsGroup';
 import { ShapesFlyout } from './ShapesFlyout';
 import { PINS_FULL_HINT, ShapesGroup } from './ShapesGroup';
@@ -40,13 +40,13 @@ import { debugLog } from '@/lib/debug-log';
 // How long the "seven pinned" hint stays up.
 const HINT_MS = 4000;
 
-// Where the wrapper sits. At the top it keeps clear of the Explorer menu button (top-left, 12 + 46
-// px): beside it on a phone or a tablet, centred with the same clearance on both sides from lg
+// Where the wrapper sits. At the top it keeps clear of the Explorer menu card (top-left, 12 + 98
+// px with the editor mode switch beside the button, plus an 8px gap): beside it on a phone or a tablet, centred with the same clearance on both sides from lg
 // (D33), so a tablet in portrait still shows the whole dock. At the
 // bottom it is lifted above the bottom-right cluster (history, layers, zoom) until the viewport is
 // wide enough for the two side by side (D9).
 const WRAPPER_PLACEMENT: Record<WhiteboardDockPosition, string> = {
-  top: 'top-3 left-[4.25rem] max-w-[calc(100%-5rem)] lg:left-1/2 lg:-translate-x-1/2 lg:max-w-[calc(100%-8.5rem)]',
+  top: 'top-3 left-[7.5rem] max-w-[calc(100%-8.25rem)] lg:left-1/2 lg:-translate-x-1/2 lg:max-w-[calc(100%-15rem)]',
   bottom:
     'bottom-[4.25rem] left-1/2 -translate-x-1/2 max-w-[calc(100%-1.5rem)] min-[1760px]:bottom-4',
 };
@@ -55,20 +55,9 @@ export type WhiteboardDockProps = {
   model: WhiteboardDockModel;
   // The board's ink for this appearance: what the main pen draws with.
   ink: string;
-  canUndo: boolean;
-  canRedo: boolean;
-  onUndo: () => void;
-  onRedo: () => void;
 };
 
-export function WhiteboardDock({
-  model,
-  ink,
-  canUndo,
-  canRedo,
-  onUndo,
-  onRedo,
-}: WhiteboardDockProps) {
+export function WhiteboardDock({ model, ink }: WhiteboardDockProps) {
   // The canvas the stock colours are drawn for (docs/specs/007-editor/editor-modes.md "One look").
   const appearance = useCanvasSurface();
   const fly = useDockFlyout();
@@ -279,7 +268,6 @@ export function WhiteboardDock({
           refusing={refusing}
           pickAndClose={pickAndClose}
         />
-        <HistoryGroup canUndo={canUndo} canRedo={canRedo} onUndo={onUndo} onRedo={onRedo} />
         <SettingsGroup fly={fly} />
         {drag ? (
           <SlotGhost dragKey={drag.source.key} x={drag.x} y={drag.y} refusing={refusing} />

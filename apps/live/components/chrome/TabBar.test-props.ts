@@ -21,7 +21,6 @@ export function tabBarProps(over: Partial<TabBarProps>): TabBarProps {
     participantsByTab: new Map(),
     selfId: 'me',
     selfRole: 'edit' as const,
-    editorMode: { mode: 'diagram' as const, setMode: vi.fn(), canSwitch: true, canEdit: true },
     ...over,
   };
   return new Proxy(base, {

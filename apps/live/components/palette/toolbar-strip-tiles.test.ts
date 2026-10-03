@@ -135,11 +135,11 @@ describe('desktopStripTileLimit', () => {
   });
 
   it('sheds tiles on a narrow window so the centred strip clears the menu button', () => {
-    // Menu button clearance (66px) on both sides, 280px of strip chrome, ~38px tiles.
+    // Menu card clearance (116px) on both sides, 280px of strip chrome, ~38px tiles.
     for (const width of [640, 700, 800]) {
       const tiles = desktopStripTileLimit(width);
       expect(tiles).toBeLessThan(STRIP_TILE_LIMIT);
-      expect(280 + tiles * 38).toBeLessThanOrEqual(width - 2 * 66);
+      expect(280 + tiles * 38).toBeLessThanOrEqual(width - 2 * 116);
     }
   });
 });

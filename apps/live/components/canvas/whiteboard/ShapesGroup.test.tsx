@@ -268,16 +268,7 @@ describe('dragging onto and off the pinned side', () => {
 });
 
 function dock(m: WhiteboardDockModel) {
-  return (
-    <WhiteboardDock
-      model={m}
-      ink="#1c1917"
-      canUndo
-      canRedo={false}
-      onUndo={vi.fn()}
-      onRedo={vi.fn()}
-    />
-  );
+  return <WhiteboardDock model={m} ink="#1c1917" />;
 }
 
 function rect(left: number, width: number): DOMRect {

@@ -1,5 +1,5 @@
 import { useEffect, useRef, type Dispatch, type SetStateAction } from 'react';
-import type { Tab } from '@livediagram/document';
+import type { EditorMode, Tab } from '@livediagram/document';
 import { releaseOpening } from '@/lib/editor-mode-store';
 import { track, titleCaseType } from '@/lib/telemetry';
 import { getTheme, recolourElementsForTheme, switchThemeBackdrop } from '@/lib/themes';
@@ -26,6 +26,18 @@ export function templatePickerTabAction(
   if (mode !== 'templates') return 'reset';
   if (pickerTabId === null) return 'record';
   return pickerTabId === activeId ? 'keep' : 'close';
+}
+
+// The mode a chosen template's tab opens in (docs/specs/007-editor/editor-modes.md "Where the
+// mode lives"): the Whiteboard draws, every other scaffold is a diagram, even on a tab made in
+// Draw mode. Blank has nothing to say, so the tab keeps the mode it was made in; an
+// event-storming board has no mode to give (it is always Diagram). Undefined leaves the tab as is.
+export function templateOpensIn(
+  kind: TemplateKind,
+  overrides: Pick<Tab, 'opensIn' | 'kind'>,
+): EditorMode | undefined {
+  if (overrides.opensIn) return overrides.opensIn;
+  return kind === 'blank' || overrides.kind ? undefined : 'diagram';
 }
 
 // Template / identity modal actions, lifted out of editor-page.tsx:
@@ -175,6 +187,7 @@ export function useTemplateFlow(opts: {
     // even though the picker pre-selects the current theme. The
     // per-template pattern override still wins at creation time.
     const overrides = templateCanvasOverrides(kind);
+    const opensIn = templateOpensIn(kind, overrides);
     commitTabs((ts) =>
       ts.map((t) => {
         if (t.id !== activeId) return t;
@@ -185,12 +198,13 @@ export function useTemplateFlow(opts: {
           templateChosen: true,
           ...(backdrop && themeId ? { theme: themeId, ...backdrop } : {}),
           ...overrides,
+          ...(opensIn ? { opensIn } : {}),
         };
       }),
     );
-    // A template that sets its own opening mode decides the tab's mode afresh, for its maker too
-    // (docs/specs/007-editor/editor-modes.md "Where the mode lives").
-    if (overrides.opensIn) releaseOpening(activeId);
+    // ...and decides it afresh for its maker too: the mode pinned when the empty tab opened is
+    // released, so the canvas follows the template's.
+    if (opensIn) releaseOpening(activeId);
     // The scaffold replaced the tab's content, so frame it. Blank leaves the view where it is.
     if (elements.length > 0) requestFit();
     // Auto-select when a template produces a single element so the user can

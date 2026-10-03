@@ -29,13 +29,13 @@ const MIN_STRIP_TILES = 3;
 // 390px phone, four from about 410px.
 const PHONE_GUTTERS_PX = 24;
 const PHONE_STRIP_CHROME_PX = 220;
-// A desktop strip is centred, so it has to clear the Explorer menu button
-// (top-left, 12px in, 46px wide, plus an 8px gap) on BOTH sides. Its own
+// A desktop strip is centred, so it has to clear the Explorer menu card
+// (top-left, 12px in, 96px wide with the mode switch, plus an 8px gap) on BOTH sides. Its own
 // chrome is wider than a phone's because the category picker shows its name:
 // measured at 239px with "Favourites", padded for a longer name like
-// "Event Storming". Twelve tiles fit from about 870px; a narrower window
+// "Event Storming". Twelve tiles fit from about 970px; a narrower window
 // sheds tiles to More rather than running the strip under the menu button.
-const DESKTOP_MENU_CLEARANCE_PX = 66;
+const DESKTOP_MENU_CLEARANCE_PX = 116;
 const DESKTOP_STRIP_CHROME_PX = 280;
 
 function fitTiles(roomPx: number, pitch = STRIP_TILE_PX): number {

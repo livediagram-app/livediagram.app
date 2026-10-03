@@ -13,15 +13,16 @@ const itemsOf = (group: string) =>
   ].map((el) => el.dataset.dockItem ?? '|');
 
 describe('WhiteboardDock groups', () => {
-  it('is four labelled horizontal toolbars, each one tab stop', () => {
+  it('is three labelled horizontal toolbars, each one tab stop, with no Undo or Redo', () => {
     renderDock();
     const bars = screen.getAllByRole('toolbar');
     expect(bars.map((b) => b.getAttribute('aria-label'))).toEqual([
       'Drawing tools',
       'Shapes',
-      'History',
       'Settings',
     ]);
+    expect(screen.queryByRole('button', { name: 'Undo' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Redo' })).toBeNull();
     for (const bar of bars) {
       expect(bar.getAttribute('aria-orientation')).toBe('horizontal');
       expect(bar.querySelectorAll('[data-dock-item][tabindex="0"]')).toHaveLength(1);
@@ -78,7 +79,7 @@ describe('WhiteboardDock groups', () => {
     expect(screen.getByRole('button', { name: 'Text' }).getAttribute('tabindex')).toBe('-1');
     // The other groups keep their own stops.
     expect(screen.getByRole('button', { name: 'Select' }).getAttribute('tabindex')).toBe('-1');
-    expect(screen.getByRole('button', { name: 'Undo' }).getAttribute('tabindex')).toBe('0');
+    expect(screen.getByRole('button', { name: 'Settings' }).getAttribute('tabindex')).toBe('0');
   });
 });
 
@@ -112,24 +113,6 @@ describe('WhiteboardDock scrolling', () => {
     } finally {
       spy.mockRestore();
     }
-  });
-});
-
-describe('WhiteboardDock history', () => {
-  it('offers Undo and Redo in its own group, on every layout', () => {
-    const { onUndo } = renderDock();
-    const history = screen.getByRole('toolbar', { name: 'History' });
-    fireEvent.click(within(history).getByRole('button', { name: 'Undo' }));
-    expect(onUndo).toHaveBeenCalled();
-  });
-
-  it('marks Undo and Redo unavailable with nothing to do, and ignores a press', () => {
-    const { onRedo } = renderDock(model(), { canUndo: false, canRedo: false });
-    const redo = screen.getByRole('button', { name: 'Redo' });
-    expect(redo.getAttribute('aria-disabled')).toBe('true');
-    expect(screen.getByRole('button', { name: 'Undo' }).getAttribute('aria-disabled')).toBe('true');
-    fireEvent.click(redo);
-    expect(onRedo).not.toHaveBeenCalled();
   });
 });
 
@@ -375,16 +358,16 @@ describe('WhiteboardDock position', () => {
     expect(refusePin().dataset.side).toBe('above');
   });
 
-  it('keeps clear of the Explorer menu button at the top: beside it below lg, centred from lg', () => {
+  it('keeps clear of the Explorer menu card (button + mode switch) at the top: beside it below lg, centred from lg', () => {
     renderDock();
     const cls = dock().className.split(' ');
     expect(cls).toEqual(
       expect.arrayContaining([
-        'left-[4.25rem]',
-        'max-w-[calc(100%-5rem)]',
+        'left-[7.5rem]',
+        'max-w-[calc(100%-8.25rem)]',
         'lg:left-1/2',
         'lg:-translate-x-1/2',
-        'lg:max-w-[calc(100%-8.5rem)]',
+        'lg:max-w-[calc(100%-15rem)]',
       ]),
     );
   });
@@ -392,16 +375,7 @@ describe('WhiteboardDock position', () => {
   it('moves between top and bottom in place, keeping its groups', () => {
     const { view } = renderDock();
     const before = screen.getByRole('button', { name: 'Select' });
-    view.rerender(
-      <WhiteboardDock
-        model={model('pen', { position: 'bottom' })}
-        ink="#1c1917"
-        canUndo
-        canRedo={false}
-        onUndo={vi.fn()}
-        onRedo={vi.fn()}
-      />,
-    );
+    view.rerender(<WhiteboardDock model={model('pen', { position: 'bottom' })} ink="#1c1917" />);
     expect(dock().dataset.dockPosition).toBe('bottom');
     expect(screen.getByRole('button', { name: 'Select' })).toBe(before);
   });
@@ -413,16 +387,7 @@ describe('WhiteboardDock position log', () => {
     const { view } = renderDock();
     expect(debug).toHaveBeenCalledWith('[whiteboard-dock] position', 'top');
     debug.mockClear();
-    view.rerender(
-      <WhiteboardDock
-        model={model('pen', { position: 'bottom' })}
-        ink="#1c1917"
-        canUndo
-        canRedo={false}
-        onUndo={vi.fn()}
-        onRedo={vi.fn()}
-      />,
-    );
+    view.rerender(<WhiteboardDock model={model('pen', { position: 'bottom' })} ink="#1c1917" />);
     expect(debug).toHaveBeenCalledWith('[whiteboard-dock] position', 'bottom');
     debug.mockRestore();
   });

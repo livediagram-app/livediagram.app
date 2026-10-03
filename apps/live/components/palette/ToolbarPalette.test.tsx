@@ -5,6 +5,7 @@ import { act, cleanup, fireEvent, render, screen, within } from '@testing-librar
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { PALETTE_ADD_HANDLER_KEYS, type PaletteAddHandlers } from './palette-add-handlers';
 import { ToolbarPalette } from './ToolbarPalette';
+import type { EsBoardControls } from './EventStormingBoardRows';
 import { savePaletteFavourites } from '@/lib/palette-favourites';
 
 const mobile = vi.hoisted(() => ({ value: false }));
@@ -34,7 +35,9 @@ function handlers(): PaletteAddHandlers {
   ) as unknown as PaletteAddHandlers;
 }
 
-function show(props: { esBoard?: boolean; hidden?: boolean } = {}) {
+function show(
+  props: { esBoard?: boolean; hidden?: boolean; esBoardControls?: EsBoardControls } = {},
+) {
   const h = handlers();
   const onSetCanvasTool = vi.fn();
   const view = render(
@@ -164,6 +167,31 @@ describe('ToolbarPalette', () => {
     expect(
       within(strip()).getAllByRole('button', { name: /^Add .* note$/ }).length,
     ).toBeGreaterThan(0);
+  });
+
+  // docs/specs/021-event-storming/event-storming.md: the floating palette's board row, in the strip.
+  it('offers Add from photo on an event-storming board, as the floating palette does', () => {
+    const onImportPhoto = vi.fn();
+    show({ esBoard: true, esBoardControls: { onImportPhoto } });
+    fireEvent.click(within(strip()).getByRole('button', { name: 'Add from photo' }));
+    expect(onImportPhoto).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps Add from photo focusable but inert while it is unavailable', () => {
+    const onImportPhoto = vi.fn();
+    show({ esBoard: true, esBoardControls: { onImportPhoto, photoDisabled: true } });
+    const button = within(strip()).getByRole('button', { name: 'Add from photo' });
+    expect(button.getAttribute('aria-disabled')).toBe('true');
+    fireEvent.click(button);
+    expect(onImportPhoto).not.toHaveBeenCalled();
+  });
+
+  it('offers no Add from photo off a board, or where the deployment has no photo import', () => {
+    show({ esBoardControls: { onImportPhoto: vi.fn() } });
+    expect(screen.queryByRole('button', { name: 'Add from photo' })).toBeNull();
+    cleanup();
+    show({ esBoard: true, esBoardControls: {} });
+    expect(screen.queryByRole('button', { name: 'Add from photo' })).toBeNull();
   });
 
   it('hides rather than unmounts, so the chosen category survives', () => {

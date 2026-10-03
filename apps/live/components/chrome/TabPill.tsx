@@ -1,11 +1,11 @@
 import type { ComponentProps, Dispatch, SetStateAction } from 'react';
 import { NameEditor } from '@/components/primitives/NameEditor';
-import { opensInOf, type Tab } from '@livediagram/document';
+import type { Tab } from '@livediagram/document';
 import type { Participant } from '@/lib/identity';
 import { legibleTabAccent } from '@/lib/tab-accent';
 import { TabLockIcon } from '@/components/chrome/tab-bar-icons';
 import { TabPresenceStack } from '@/components/chrome/TabPresenceStack';
-import { EDITOR_MODE_ICON } from './editor-mode/editor-mode-copy';
+import { TabModeIcon } from './editor-mode/TabModeIcon';
 import { EllipsisMenuButton } from './EllipsisMenuButton';
 import { OutOfScopeTabPill } from './OutOfScopeTabPill';
 import type { useTabReorderDrag } from './useTabReorderDrag';
@@ -80,7 +80,6 @@ export function TabPill({ tab, ctx }: { tab: Tab; ctx: TabPillCtx }) {
     );
   }
   const isActive = tab.id === activeId;
-  const ModeIcon = EDITOR_MODE_ICON[opensInOf(tab)];
   const isEditing = editingId === tab.id;
   const caret = reorderDrag.caretFor(tab.id);
   const showCaretBefore = caret === 'before';
@@ -165,15 +164,10 @@ export function TabPill({ tab, ctx }: { tab: Tab; ctx: TabPillCtx }) {
           aria-current={isActive ? 'page' : undefined}
           className="flex h-7 items-center gap-1.5 rounded-lg text-sm font-medium"
         >
-          {/* The mode the tab opens in (docs/specs/007-editor/editor-modes.md), tinted with the
-              tab theme's accent; the pill text itself stays neutral so it reads on the bar for ANY
-              theme. */}
-          <ModeIcon
-            aria-hidden
-            size={12}
-            className="shrink-0"
-            style={{ color: legibleTabAccent(tab, isDark) }}
-          />
+          {/* The mode you work in on this tab (docs/specs/007-editor/editor-modes.md), tinted with
+              the tab theme's accent; the pill text itself stays neutral so it reads on the bar for
+              ANY theme. */}
+          <TabModeIcon tab={tab} style={{ color: legibleTabAccent(tab, isDark) }} />
           {tab.locked ? <TabLockIcon /> : null}
           {/* Trimmed to its cap band so the name centres on its letters; the button's height is
               pinned because the trimmed name no longer props it open. */}

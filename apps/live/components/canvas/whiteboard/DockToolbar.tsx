@@ -88,8 +88,6 @@ export type DockButtonProps = {
   pressed?: boolean;
   // An opener: aria-expanded / aria-controls for its flyout.
   controls?: { id: string; expanded: boolean };
-  // Nothing to do (Undo with no history): stays focusable, as a toolbar's items do.
-  unavailable?: boolean;
   // The key that picks this tool (docs/specs/023-draw-mode/draw-mode.md "Keyboard shortcuts").
   shortcut?: string;
   // A right-click (or the context-menu key) on the button.
@@ -118,12 +116,9 @@ export const DockButton = forwardRef<HTMLButtonElement, DockButtonProps>(
           aria-expanded={o.controls?.expanded}
           aria-controls={o.controls?.id}
           aria-haspopup={o.controls ? 'true' : undefined}
-          aria-disabled={o.unavailable || undefined}
           tabIndex={focusKey === o.itemKey ? 0 : -1}
           onFocus={() => setFocusKey(o.itemKey)}
-          onClick={(e) => {
-            if (!o.unavailable) o.onPress(e.currentTarget);
-          }}
+          onClick={(e) => o.onPress(e.currentTarget)}
           onContextMenu={
             o.onContext
               ? (e) => {
@@ -143,11 +138,7 @@ export const DockButton = forwardRef<HTMLButtonElement, DockButtonProps>(
               ? (e) => (e.pointerType !== 'touch' ? o.onHoverLeave!() : undefined)
               : undefined
           }
-          className={`relative flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-slate-600 transition focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-brand-500 dark:text-slate-300 ${
-            o.unavailable
-              ? 'cursor-not-allowed opacity-40'
-              : 'hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-slate-800 dark:hover:text-white'
-          } ${
+          className={`relative flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-slate-600 transition focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-brand-500 dark:text-slate-300 hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-slate-800 dark:hover:text-white ${
             o.pressed
               ? 'bg-brand-50 text-brand-700 ring-2 ring-inset ring-brand-500 dark:bg-brand-500/15 dark:text-brand-200'
               : ''

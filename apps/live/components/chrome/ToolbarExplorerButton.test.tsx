@@ -3,6 +3,7 @@
 // hands itself over as the popover's anchor.
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { EditorModeProvider } from './editor-mode/editor-mode-context';
 import { ToolbarExplorerButton } from './ToolbarExplorerButton';
 
 afterEach(cleanup);
@@ -34,5 +35,18 @@ describe('ToolbarExplorerButton', () => {
     expect(screen.getByRole('button', { name: 'Explorer' }).closest('[data-dock-button]')).not.toBe(
       null,
     );
+  });
+
+  // docs/specs/007-editor/editor-modes.md "The mode switch": beside the menu button, wherever it sits.
+  it.each([false, true])('carries the editor mode switch beside it (inline %s)', (inline) => {
+    render(
+      <EditorModeProvider
+        value={{ mode: 'diagram', setMode: vi.fn(), canSwitch: true, canEdit: true }}
+      >
+        <ToolbarExplorerButton open={false} onToggle={vi.fn()} inline={inline} />
+      </EditorModeProvider>,
+    );
+    const card = screen.getByRole('button', { name: 'Explorer' }).closest('[data-dock-button]')!;
+    expect(card.contains(screen.getByRole('button', { name: 'Editor mode: Diagram' }))).toBe(true);
   });
 });

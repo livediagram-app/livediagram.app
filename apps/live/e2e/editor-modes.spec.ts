@@ -2,9 +2,9 @@ import type { Page } from '@playwright/test';
 import { dismissQuickTour, expect, expectNoPageErrors, test } from './fixtures';
 
 // Editor modes end to end (docs/specs/007-editor/editor-modes.md), in dark mode: the chip beside
-// the tabs switches a general tab between Diagram and Draw, a stroke drawn in Draw stays in
+// the Explorer switches a general tab between Diagram and Draw, a stroke drawn in Draw stays in
 // Diagram, Shift+D toggles, the choice survives a reload, a new tab inherits the creator's mode,
-// and Opens in changes the tab's opening mode without switching anyone. Synthesised content only.
+// and Opens in changes the tab's opening mode, switching only the chooser. Synthesised content only.
 
 const CANVAS = '[data-canvas-a11y-root]';
 const apiBase = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
@@ -52,7 +52,7 @@ async function drawWave(page: Page, from: { x: number; y: number }) {
 }
 
 test.describe('editor modes', () => {
-  test('a general tab opens in Diagram, with the chip beside the tabs', async ({
+  test('a general tab opens in Diagram, with the chip beside the Explorer', async ({
     page,
     pageErrors,
   }) => {
@@ -108,17 +108,14 @@ test.describe('editor modes', () => {
     expectNoPageErrors(pageErrors);
   });
 
-  test('Opens in sets the opening mode without switching the chooser', async ({
-    page,
-    pageErrors,
-  }) => {
+  test('Opens in sets the opening mode and switches the chooser', async ({ page, pageErrors }) => {
     await openBlank(page);
     await page.getByRole('button', { name: 'Tab menu' }).click();
     await page.getByRole('button', { name: /^Opens in/ }).click();
     const opensIn = page.getByRole('group', { name: 'Opens in' });
     await opensIn.getByRole('menuitemradio', { name: /^Draw/ }).click();
     await page.keyboard.press('Escape');
-    await expect(chip(page)).toHaveAccessibleName('Editor mode: Diagram');
+    await expect(chip(page)).toHaveAccessibleName('Editor mode: Draw');
     await expect.poll(() => savedOpensIn(page), { timeout: 15_000 }).toBe('draw');
 
     // A fresh page, with no choice remembered for this tab, opens it in its opening mode.
