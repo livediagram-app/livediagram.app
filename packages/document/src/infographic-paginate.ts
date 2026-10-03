@@ -8,6 +8,7 @@ import {
   infographicPagesOf,
   layOutInfographicPages,
   MAX_INFOGRAPHIC_PAGES,
+  nextInfographicPageId,
   type InfographicPage,
 } from './infographic-page';
 import { withContentFittedToPage } from './infographic-page-content';
@@ -90,34 +91,58 @@ export function contentClusters(elements: Element[], gap = PAGINATE_CLUSTER_GAP)
   return rows.flatMap((row) => row.sort((a, b) => a.box.x - b.box.x).map((c) => c.ids));
 }
 
+const overlaps = (a: Box, r: { x: number; y: number; width: number; height: number }) =>
+  a.x < r.x + r.width && a.r > r.x && a.y < r.y + r.height && a.b > r.y;
+
 /**
- * The tab laid out into pages, or null when there is nothing to do: no content, pages already
- * stored, or everything already inside the first page. At most MAX_INFOGRAPHIC_PAGES pages: clusters
- * past the last page share it.
+ * The tab laid out into pages, or null when there is nothing to do (docs/specs/007-editor/
+ * infographic-pages.md "Into pages"):
+ * - with no pages stored, content that does not fit inside the first page is laid out afresh;
+ * - with pages stored, content on no page at all (not even partly) is: onto new pages after the
+ *   last, or afresh when every page is empty.
+ * At most MAX_INFOGRAPHIC_PAGES pages: clusters past the last page share it.
  */
 export function withContentPaginated<T extends Pick<Tab, 'elements'>>(
   tab: T & { pages?: unknown; pageOrientation?: unknown },
 ): (T & { pages: InfographicPage[] }) | null {
-  if (tab.elements.length === 0 || Array.isArray(tab.pages)) return null;
-  // Nothing to do while everything already fits inside the first page (edges included).
-  const r = layOutInfographicPages(infographicPagesOf(tab))[0]!.rect;
-  const fits = tab.elements.every((el) => {
-    const b = boundsOf(el, tab.elements);
-    return (
-      b.x >= r.x - 1 && b.y >= r.y - 1 && b.r <= r.x + r.width + 1 && b.b <= r.y + r.height + 1
-    );
-  });
-  if (fits) return null;
-  const clusters = contentClusters(tab.elements);
+  if (tab.elements.length === 0) return null;
+  const stored = Array.isArray(tab.pages) ? infographicPagesOf(tab) : null;
+  const laid = layOutInfographicPages(infographicPagesOf(tab));
+  const boxOf = (el: Element) => boundsOf(el, tab.elements);
+  if (!stored) {
+    // Nothing to do while everything already fits inside the first page (edges included).
+    const r = laid[0]!.rect;
+    const fits = tab.elements.every((el) => {
+      const b = boxOf(el);
+      return (
+        b.x >= r.x - 1 && b.y >= r.y - 1 && b.r <= r.x + r.width + 1 && b.b <= r.y + r.height + 1
+      );
+    });
+    return fits ? null : paginate(tab, tab.elements, []);
+  }
+  const stray = tab.elements.filter((el) => !laid.some((p) => overlaps(boxOf(el), p.rect)));
+  if (stray.length === 0) return null;
+  const pagesEmpty = stray.length === tab.elements.length;
+  return pagesEmpty
+    ? paginate({ ...tab, pages: undefined }, tab.elements, [])
+    : paginate(tab, stray, stored);
+}
+
+// `content` laid onto new pages after `kept` (the tab's pages that stay).
+function paginate<T extends Pick<Tab, 'elements'>>(
+  tab: T & { pages?: unknown },
+  content: Element[],
+  kept: InfographicPage[],
+): T & { pages: InfographicPage[] } {
+  const room = Math.max(1, MAX_INFOGRAPHIC_PAGES - kept.length);
+  const clusters = contentClusters(content);
   const capped =
-    clusters.length <= MAX_INFOGRAPHIC_PAGES
+    clusters.length <= room
       ? clusters
-      : [
-          ...clusters.slice(0, MAX_INFOGRAPHIC_PAGES - 1),
-          clusters.slice(MAX_INFOGRAPHIC_PAGES - 1).flat(),
-        ];
+      : [...clusters.slice(0, room - 1), clusters.slice(room - 1).flat()];
   const byId = new Map(tab.elements.map((el) => [el.id, el]));
-  const pages: InfographicPage[] = capped.map((ids, i) => {
+  const added: InfographicPage[] = [];
+  for (const ids of capped) {
     const box = ids
       .map((id) => boundsOf(byId.get(id)!, tab.elements))
       .reduce((a, b) => ({
@@ -127,13 +152,16 @@ export function withContentPaginated<T extends Pick<Tab, 'elements'>>(
         b: Math.max(a.b, b.b),
       }));
     const wide = box.r - box.x > (box.b - box.y) * LANDSCAPE_RATIO;
-    return { id: `page-${i + 1}`, orientation: wide ? 'landscape' : 'portrait' };
-  });
-  // The pages stored without moving anything (the content is off them all as yet), then each
+    added.push({
+      id: nextInfographicPageId([...kept, ...added]),
+      orientation: wide ? 'landscape' : 'portrait',
+    });
+  }
+  // The pages stored without moving anything (the content is off the new ones as yet), then each
   // cluster fitted into its page.
-  let out = { ...tab, pages } as T & { pages: InfographicPage[] };
+  let out = { ...tab, pages: [...kept, ...added] } as T & { pages: InfographicPage[] };
   capped.forEach((ids, i) => {
-    out = withContentFittedToPage(out, new Set(ids), pages[i]!.id, { centre: true });
+    out = withContentFittedToPage(out, new Set(ids), added[i]!.id, { centre: true });
   });
   return out;
 }

@@ -55,14 +55,27 @@ describe('withContentPaginated', () => {
     expect(out.pages).toEqual([{ id: 'page-1', orientation: 'landscape' }]);
   });
 
-  it('leaves alone a tab already inside its first page, one with pages, or one with nothing', () => {
+  it('leaves alone a tab already inside its first page, or one with nothing', () => {
     expect(withContentPaginated({ elements: [box('a', -50, -30)] })).toBeNull();
     expect(withContentPaginated({ elements: [], pages: [] })).toBeNull();
-    expect(
-      withContentPaginated({
-        elements: [box('a', 5000, 0)],
-        pages: [{ id: 'page-1', orientation: 'portrait' }],
-      }),
-    ).toBeNull();
+  });
+
+  it('with pages stored, lays out only what is on no page: afresh when every page is empty', () => {
+    const out = withContentPaginated({
+      elements: [box('a', 5000, 0, 60, 200)],
+      pages: [{ id: 'page-1', orientation: 'landscape' }],
+    })!;
+    expect(out.pages).toEqual([{ id: 'page-1', orientation: 'portrait' }]);
+  });
+
+  it('with pages stored and in use, adds pages after them for stray content', () => {
+    const out = withContentPaginated({
+      elements: [box('kept', -50, -30), box('stray', 5000, 0)],
+      pages: [{ id: 'page-1', orientation: 'portrait' }],
+    })!;
+    expect(out.pages.map((p) => p.id)).toEqual(['page-1', 'page-2']);
+    expect(out.elements[0]).toMatchObject({ x: -50, y: -30 });
+    const laid = layOutInfographicPages(out.pages);
+    expect([...elementIdsOnPage(out.elements, laid, 'page-2')]).toEqual(['stray']);
   });
 });

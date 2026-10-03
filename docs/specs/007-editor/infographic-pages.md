@@ -207,9 +207,13 @@ Never a colour, name or layout content.
 
 ## Into pages
 
-- A tab that enters Infographic mode (a switch, or opening in it) with **no pages stored** and
-  content that does **not fit inside its first page** is laid out into pages, once, by an editor
-  (a viewer or a locked tab is left alone):
+- When a tab enters Infographic mode (a switch, or opening in it), an editor's client lays its
+  loose content out into pages (a viewer or a locked tab is left alone):
+  - **No pages stored**, and content that does **not fit inside the first page**: the whole tab is
+    laid out afresh.
+  - **Pages stored**, and content on **no page at all** (not even partly): onto new pages after
+    the last; or afresh when every page is empty (the stored pages are replaced).
+  - So content left in the surround is gathered onto pages the next time the tab enters the mode.
   - The content splits into **clusters**: elements joined by a pinned arrow, and elements within
     120 px of each other (edge to edge), belong together.
   - Clusters go in **reading order**: rows top to bottom (a cluster joins a row while its top is
