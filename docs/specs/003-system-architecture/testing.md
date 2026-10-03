@@ -236,7 +236,9 @@ v5 test runner with every check green: nothing invoked the broken path.
   - `apps/help`: the article registry's consistency with the
     filesystem (slugs ↔ `page.mdx`, per-category counts), the internal-link,
     UI-label, template and shortcut guards over article text, search and
-    article telemetry, and the schema.org JSON-LD builders.
+    article telemetry, the schema.org JSON-LD builders, and the docs guards: every repo path quoted in
+    `docs/` exists, and every blueprint DEFAULTS.md ledger id, COMPLETENESS.md section and README.md
+    index entry is unique, so a merge that keeps both sides of one fails a test.
 
 - **Hooks and components** in `apps/live` and `packages/ui` render in tests, and the
   environment is opted into **per file** rather than per workspace. A test

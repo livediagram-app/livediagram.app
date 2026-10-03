@@ -473,7 +473,7 @@ chroma }` in OKLCH: blue (255, 0.18), red (25, 0.19), orange (50, 0.17), green (
   `recogniseBoardStroke(stroke.ink(penWidth))` locks a found shape with `snapTo` (grabbed at the
   last sample, as the dwell does) and gives `recognised`, or null (the stroke stays ink). It reads
   neither `recognise` nor `inkHeld()`: Alt with recognition on and no shape shown recognises at
-  once too (D22). `flipStrokeRecognition(stroke, penWidth, via)` logs
+  once too (D35). `flipStrokeRecognition(stroke, penWidth, via)` logs
   `[whiteboard] recognition flip by <via>: <recognised|broken|no shape>`, and on a flip tracks
   `Whiteboard` / `Toggled` / `RecogniseOnceKey` | `RecogniseOnceChip` | `BreakShapeKey` |
   `BreakShapeChip` and calls `notify()`.
