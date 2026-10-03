@@ -14,7 +14,7 @@ function ElementGlyph({ el }: { el: Element }) {
   if (el.type === 'arrow') return null;
   const { x, y, width: w, height: h } = el;
   if (el.type === 'text') {
-    const big = el.textSize === 'scale';
+    const big = el.textSize === 'scale' || (el.textScale ?? 1) > 1;
     const barH = big ? h * 0.55 : Math.min(h * 0.4, 14);
     const barW = big ? Math.min(w, w * 0.9) : w * 0.85;
     return (

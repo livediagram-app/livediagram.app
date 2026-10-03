@@ -152,13 +152,19 @@ In Infographic mode the Export dialog exports **pages**, not the tab's content b
 - **PNG** and **SVG**: one page, chosen in the dialog (**Page 1**, **Page 2**, ... or its name);
   the first by default.
 - Each page exports **exactly its sheet**: its size, its background and pattern, and the elements on
-  it clipped to its edges, as the canvas shows them. The surround is not exported.
+  it clipped to its edges, as the canvas shows them. The surround is not exported. The plain paper
+  exports white; elements are inked for the page's own surface.
+- A PDF page is the page's size in print points (CSS px x 0.75: A4 is 595.5 x 842.25 pt).
+- The dialog shows a **Page** row: a picker for PNG / SVG, "All n pages, one PDF page each" (and a
+  preview picker) for PDF. The Isometric and Background pattern options are not offered: a page is
+  its own background and is never tilted.
 - Outside Infographic mode, export is unchanged.
 
 ## Telemetry
 
 `Tab · Changed ·` `PageSize`, `PageBackground`, `PagePattern`, `PageRenamed`, `PageDuplicated`,
-`PageMoved`, `PageLayout`; `Export · <format> · Pages`. Never a colour, name or layout content.
+`PageMoved`, `PageLayout`; `Document · Exported · InfographicPNG / InfographicSVG / InfographicPDF`.
+Never a colour, name or layout content.
 
 ## Non-goals
 

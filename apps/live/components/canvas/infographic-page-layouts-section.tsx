@@ -6,7 +6,7 @@
 import { useState } from 'react';
 import type { LaidOutPage } from '@livediagram/document';
 import { PAGE_LAYOUTS, type PageLayoutId } from '@livediagram/templates';
-import { Button, Tooltip } from '@livediagram/ui';
+import { Button, HoverCard } from '@livediagram/ui';
 import { LayoutThumb } from './infographic-layout-thumb';
 import { PanelSection } from './infographic-page-panel-sections';
 
@@ -59,7 +59,7 @@ export function LayoutsSection({
       ) : null}
       <div className="grid grid-cols-3 gap-1.5">
         {PAGE_LAYOUTS.map((l) => (
-          <Tooltip key={l.id} label={l.description}>
+          <HoverCard key={l.id} title={l.label} description={l.description}>
             <button
               type="button"
               onClick={() => pick(l.id)}
@@ -71,7 +71,7 @@ export function LayoutsSection({
               <LayoutThumb layout={l.id} page={page} />
               {l.label}
             </button>
-          </Tooltip>
+          </HoverCard>
         ))}
       </div>
     </PanelSection>

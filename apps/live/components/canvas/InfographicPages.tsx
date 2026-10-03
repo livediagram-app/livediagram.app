@@ -3,7 +3,7 @@
 import { useCallback, useRef, useState, type CSSProperties } from 'react';
 import { lucidePanelsTopLeft, lucideSettings } from '@livediagram/icons/lucide';
 import { INFOGRAPHIC_PAGE_GAP, pageLabel } from '@livediagram/document';
-import { lucideGlyph, PlusIcon, Tooltip } from '@livediagram/ui';
+import { HoverCard, lucideGlyph, PlusIcon, Tooltip } from '@livediagram/ui';
 import type { InfographicPagesView } from '@/hooks/editor/useInfographicPage';
 import { pageSheetStyle, withBackgroundPatch } from '@/lib/infographic-page-paint';
 import {
@@ -96,10 +96,9 @@ export function InfographicPages({ view, zoom }: { view: InfographicPagesView; z
                 ...steady(zoom, 'bottom left'),
               }}
             >
-              <Tooltip label="Fit page to screen">
+              <HoverCard title={label} description="Press to fit this page to the screen.">
                 <button
                   type="button"
-                  aria-label={`${label}, fit to screen`}
                   onClick={() => focusPage(page.id)}
                   onPointerDown={(e) => e.stopPropagation()}
                   onDoubleClick={(e) => e.stopPropagation()}
@@ -107,7 +106,7 @@ export function InfographicPages({ view, zoom }: { view: InfographicPagesView; z
                 >
                   {label}
                 </button>
-              </Tooltip>
+              </HoverCard>
             </div>
             {edit ? (
               <div

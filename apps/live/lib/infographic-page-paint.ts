@@ -124,10 +124,14 @@ export function pageSheetStyle(background: PageBackground | undefined): CSSPrope
     style.backgroundImage = images.join(', ');
     style.backgroundSize = sizes.join(', ');
   }
-  if (fill) {
-    style.color = pageIsDark({ background }) ? 'rgb(255 255 255 / 0.14)' : 'rgb(15 23 42 / 0.1)';
-  }
+  if (fill) style.color = pagePatternInk(background);
   return style;
+}
+
+/** The pattern's ink on a page: faint white on a dark fill, faint slate on a light one (and on the
+ *  plain paper, whose sheet sets it by class on screen). */
+export function pagePatternInk(background: PageBackground | undefined): string {
+  return pageIsDark({ background }) ? 'rgb(255 255 255 / 0.14)' : 'rgb(15 23 42 / 0.1)';
 }
 
 /** The page with `patch` laid over its background (a hover preview, or an edit about to land). */

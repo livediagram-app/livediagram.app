@@ -9,6 +9,7 @@ import {
   createPinnedArrow,
   createShape,
   createText,
+  LABEL_FONT_PX,
   type Element,
   type ImageElement,
   type ShapeElement,
@@ -56,6 +57,10 @@ type Kit = {
 
 // Wider than this many times its height, a box is laid out side by side.
 const WIDE_RATIO = 1.15;
+// A headline's type: its size as a share of its box's height (the rest is line spacing), and a
+// bold glyph's mean advance as a share of the size (generous, so a long title never wraps).
+const TITLE_FILL = 0.72;
+const GLYPH_WIDTH = 0.6;
 
 function kit(box: LayoutBox): Kit {
   const r = (n: number) => Math.round(n);
@@ -79,16 +84,22 @@ function kit(box: LayoutBox): Kit {
       textAlignY: 'top',
       ...extra,
     }),
-    title: (x, y, w, h, label) => ({
-      ...createText(r(box.x + x), r(box.y + y)),
-      width: r(w),
-      height: r(h),
-      label,
-      textSize: 'scale',
-      textBold: true,
-      textAlignX: 'left',
-      textAlignY: 'middle',
-    }),
+    // A headline sized to its box: large type scaled up (textScale, honoured on the canvas and in
+    // every export alike) until one line fills the box's height or its width, whichever is first.
+    title: (x, y, w, h, label) => {
+      const fontPx = Math.min(h * TITLE_FILL, w / (Math.max(1, label.length) * GLYPH_WIDTH));
+      return {
+        ...createText(r(box.x + x), r(box.y + y)),
+        width: r(w),
+        height: r(h),
+        label,
+        textSize: 'lg',
+        textScale: Math.round((fontPx / LABEL_FONT_PX.lg) * 100) / 100,
+        textBold: true,
+        textAlignX: 'left',
+        textAlignY: 'middle',
+      };
+    },
     image: (x, y, w, h) => ({
       ...createImage(r(box.x + x), r(box.y + y)),
       width: r(w),
