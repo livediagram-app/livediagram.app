@@ -11,6 +11,8 @@ import type { IllustratePagesView } from '@/hooks/editor/useIllustratePages';
 import { pagesClipPath } from '@/components/canvas/IllustratePageClip';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import type { DocInk } from '@/lib/doc/doc-style-vars';
+import { requestDocLink } from '@/lib/doc/doc-editor-store';
+import { PageToolbar } from './PageToolbar';
 
 const DocumentFlowEditor = lazy(() => import('./DocumentFlowEditor'));
 
@@ -18,13 +20,11 @@ export function DocumentFlows({
   view,
   zoom,
   interactive,
-  onLinkRequest,
 }: {
   view: IllustratePagesView;
   zoom: number;
   // Whether presses on the writing are the writing's (no drawing tool in hand, not zen).
   interactive: boolean;
-  onLinkRequest: () => void;
 }) {
   const docs = view.documents;
   const surface = useCanvasSurface();
@@ -70,13 +70,14 @@ export function DocumentFlows({
               onLayout={docs.onLayout}
               onUndo={docs.undo}
               onRedo={docs.redo}
-              onLinkRequest={onLinkRequest}
+              onLinkRequest={requestDocLink}
               onWritingPress={docs.onWritingPress}
               focusRequest={docs.focusRequest}
             />
           );
         })}
       </Suspense>
+      {docs.editable ? <PageToolbar accent={view.themeAccent} /> : null}
     </div>
   );
 }

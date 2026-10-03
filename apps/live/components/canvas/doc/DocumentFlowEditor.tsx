@@ -271,6 +271,9 @@ export default function DocumentFlowEditor(props: DocumentFlowEditorProps) {
       },
     });
     viewRef.current = view;
+    // A handle for driving the writing in development (browser checks); never in production.
+    if (process.env.NODE_ENV !== 'production')
+      (window as unknown as { __docView?: EditorView }).__docView = view;
     handleRef.current = {
       flow: latest.current.flow,
       run: (command: Command) => {
@@ -284,6 +287,18 @@ export default function DocumentFlowEditor(props: DocumentFlowEditorProps) {
         view.focus();
       },
       flush,
+      undo: () => {
+        flush();
+        undoing.current = true;
+        latest.current.onUndo();
+        view.focus();
+      },
+      redo: () => {
+        flush();
+        undoing.current = true;
+        latest.current.onRedo();
+        view.focus();
+      },
       focus: () => view.focus(),
       caretRect: () => {
         try {

@@ -745,7 +745,6 @@ export function Canvas(props: CanvasProps) {
             view={props.illustratePages}
             zoom={viewportZoom}
             interactive={!pendingDraw && canvasTool !== 'spotlight' && canvasTool !== 'avatar'}
-            onLinkRequest={() => {}}
           />
         ) : null}
         <CanvasStillProvider still={props.editorMode === 'draw'}>

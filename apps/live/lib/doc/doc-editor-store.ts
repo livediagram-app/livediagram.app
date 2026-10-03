@@ -19,6 +19,9 @@ export type DocEditorHandle = {
   insert: (nodes: PMNode[]) => void;
   // Writes what is typed to the tab now, ahead of the idle commit.
   flush: () => void;
+  // The editor's own history, as ⌘Z and ⇧⌘Z in the writing.
+  undo: () => void;
+  redo: () => void;
   focus: () => void;
   // The caret's place on screen, for a popover under it (a link field).
   caretRect: () => DOMRect | null;
@@ -63,4 +66,36 @@ const subscribe = (l: () => void) => {
 
 export function useActiveDoc(): ActiveDoc | null {
   return useSyncExternalStore(subscribe, getActiveDoc, () => null);
+}
+
+// Requests the page toolbar answers: ⌘K in the writing opens its link field; its Document style
+// button asks the page's panel to open on Style. Counters, so the same request twice is two.
+type Signal = { seq: number; pageId?: string };
+let linkSignal: Signal = { seq: 0 };
+let panelSignal: Signal = { seq: 0 };
+
+export function requestDocLink(): void {
+  linkSignal = { seq: linkSignal.seq + 1 };
+  emit();
+}
+
+export function requestStylePanel(pageId: string): void {
+  panelSignal = { seq: panelSignal.seq + 1, pageId };
+  emit();
+}
+
+export function useDocLinkRequest(): number {
+  return useSyncExternalStore(
+    subscribe,
+    () => linkSignal.seq,
+    () => 0,
+  );
+}
+
+export function useStylePanelRequest(): Signal {
+  return useSyncExternalStore(
+    subscribe,
+    () => panelSignal,
+    () => panelSignal,
+  );
 }

@@ -20,6 +20,7 @@ import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { pageSheetStyle, withBackgroundPatch } from '@/lib/illustrate-page-paint';
 import { IllustratePagePanel, type PagePanelTab, type PagePreview } from './IllustratePagePanel';
 import { AddPagePopover } from './AddPagePopover';
+import { useStylePanelRequest } from '@/lib/doc/doc-editor-store';
 
 const CogIcon = lucideGlyph(lucideSettings, 16);
 const LayoutIcon = lucideGlyph(lucidePanelsTopLeft, 14);
@@ -78,6 +79,13 @@ export function IllustratePages({
     [opened],
   );
   const toggle = (id: string) => setOpened((o) => (o?.id === id ? null : { id, tab: 'page' }));
+  // The page toolbar's Document style button opens the page's panel on Style.
+  const styleRequest = useStylePanelRequest();
+  const [seenStyleRequest, setSeenStyleRequest] = useState(styleRequest.seq);
+  if (styleRequest.seq !== seenStyleRequest) {
+    setSeenStyleRequest(styleRequest.seq);
+    if (styleRequest.pageId) setOpened({ id: styleRequest.pageId, tab: 'style' });
+  }
   // The empty page's own invitation opens its panel on Layouts.
   const openLayouts = (id: string) => setOpened({ id, tab: 'layouts' });
   const anchorOf = useCallback((id: string) => cogs.current.get(id), []);
@@ -109,6 +117,7 @@ export function IllustratePages({
           <div
             key={page.id}
             data-illustrate-page={page.orientation}
+            data-illustrate-page-id={page.id}
             className={`pointer-events-none absolute transition-[left,top,width,height,opacity] duration-200 ease-out motion-reduce:transition-none ${
               drag.reorder?.pageIds.includes(page.id) ? 'opacity-60' : ''
             } ${
