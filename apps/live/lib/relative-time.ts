@@ -1,12 +1,12 @@
 // Relative-time formatting shared by the footer save indicator, the
-// Explorer's "Your documents" list, and the Activity panel rows.
-// Kept here so all three panels read identically — previously each
+// Explorer's "Your documents" list, and the Explorer's Activity page rows.
+// Kept here so every surface reads identically — previously each
 // surface had its own slightly different copy.
 //
 // Four formatters, coarsening as the space they have to fit shrinks:
 //   formatRelativeTime         — verbose ("2 mins ago"), reached through
 //                                relativeSince by every list row.
-//   formatRelativeTimeShort    — compact ("2 min ago"), Activity panel rows.
+//   formatRelativeTimeShort    — compact ("2 min ago"), Activity page rows.
 //   formatRelativeTimeCompact  — ultra-compact ("2m ago"), comment threads.
 //   formatTimeLeftCompact      — the forward-looking countdown ("6d left")
 //                                for expiring share links (docs/specs/013-workspace/share-link-expiry.md).
@@ -94,7 +94,7 @@ export function formatRelativeTimeShort(deltaMs: number): string {
 // reads this, so every row on a page agrees and refreshes on the same tick.
 //
 // All subscribers share ONE module-level interval: the editor mounts
-// up to ~8 surfaces calling this hook (Explorer panel, ActivityPanel,
+// up to ~8 surfaces calling this hook (Explorer panel,
 // every ParticipantAvatar, the explorer route's three views), and the
 // prior per-hook setInterval spun up 8 timers that fired at slightly
 // different offsets, so rows refreshed in a stagger over a 30s window

@@ -11,7 +11,6 @@
 import type { ReactNode } from 'react';
 import { Glyph, lucideGlyph } from '@livediagram/ui';
 import { lucideLayers, lucideMap, lucidePalette } from '@livediagram/icons/lucide';
-import { ActivityIcon } from '@/components/panels/activity-panel-parts';
 import { CollaborateGlyph } from '@/components/panels/collaborate/CollaborateGlyph';
 
 // The categories that carry a tile: every top-level one. A sub-category
@@ -30,7 +29,7 @@ export type SettingsIconId =
   | 'privacy';
 
 // The sub-categories, nested under a top-level category (Panels).
-export type SettingsSubcategoryId = 'layers' | 'activity' | 'map' | 'collaborate' | 'quickStyle';
+export type SettingsSubcategoryId = 'layers' | 'map' | 'collaborate' | 'quickStyle';
 
 // Every category, top-level and sub-category alike: each opens its own pane.
 export type SettingsCategoryId = SettingsIconId | SettingsSubcategoryId;
@@ -181,9 +180,9 @@ export const CATEGORY_GLYPHS: Record<SettingsIconId, ReactNode> = {
 };
 
 // A sub-category's glyph: the same mark its panel carries in the editor, so
-// the row is recognisable as that panel's settings. Layers and Activity are
-// the toolbar's own (Lucide layers, as LayersStackIcon; the Activity panel's
-// clock; the Collaborate button's glyph), at 16px. The Map and Quick Style
+// the row is recognisable as that panel's settings. Layers and Collaborate
+// are the toolbar's own (Lucide layers, as LayersStackIcon; the Collaborate
+// button's glyph), at 16px. The Map and Quick Style
 // have no toolbar button, so they take Lucide's map and palette from the
 // same family. Plain and untinted, not a tile: the tile belongs to
 // the top-level category above, and a second column of tiles would read as
@@ -193,7 +192,6 @@ const MapSubGlyph = lucideGlyph(lucideMap, 16);
 const QuickStyleSubGlyph = lucideGlyph(lucidePalette, 16);
 const SUBCATEGORY_GLYPHS: Record<SettingsSubcategoryId, () => ReactNode> = {
   layers: () => <LayersSubGlyph />,
-  activity: () => <ActivityIcon size={16} />,
   map: () => <MapSubGlyph />,
   collaborate: () => <CollaborateGlyph size={16} />,
   quickStyle: () => <QuickStyleSubGlyph />,

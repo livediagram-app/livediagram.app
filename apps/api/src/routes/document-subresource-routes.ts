@@ -1,6 +1,6 @@
 // /api/documents — document metadata, per-tab content, copy, folder
 // assignment, tab linking, comments, share links, the realtime WS
-// upgrade, and the change-log. The largest resource: every sub-path
+// upgrade. The largest resource: every sub-path
 // under a document id lives here.
 
 import type { Tab } from '@livediagram/document';
@@ -208,8 +208,7 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
       // match the resolved owner's participant record. Without
       // this the client can claim any authorName / authorColor
       // and impersonate another participant in the comment
-      // thread (see the docs/specs/014-identity/auth-and-guest-access.md + docs/specs/012-collaboration/activity-and-audit.md security audit
-      // thread). Existing comments preserve their original
+      // thread (see the docs/specs/014-identity/auth-and-guest-access.md security audit). Existing comments preserve their original
       // authors (compared by id against the prior tab).
       // getDocument already joined the owner's participant row — reuse it
       // when the writer IS the owner (the common autosave case) instead

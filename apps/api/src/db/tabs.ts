@@ -250,12 +250,6 @@ export async function tabIdsHeldElsewhere(
 // an unlink from one of their containing documents so the body
 // stays readable from the rest. Legacy single-link tabs end up
 // fully deleted, matching the prior contract.
-//
-// change_log entries follow the tabs row: they live on the tab id
-// (per #14 in docs/specs/006-document/tab-document-many-to-many.md), so they get dropped only when the tab
-// itself goes away. Cascading the log on every unlink would wipe
-// the audit panel for every other document that still surfaces the
-// shared tab.
 export async function deleteTabRow(env: Env, documentId: string, tabId: string): Promise<void> {
   await env.DB.prepare('DELETE FROM document_tabs WHERE document_id = ? AND tab_id = ?')
     .bind(documentId, tabId)
@@ -268,7 +262,6 @@ export async function deleteTabRow(env: Env, documentId: string, tabId: string):
     await env.DB.batch([
       imageRefPruneTabStatement(env, tabId),
       env.DB.prepare('DELETE FROM tabs WHERE id = ?').bind(tabId),
-      env.DB.prepare('DELETE FROM change_log WHERE tab_id = ?').bind(tabId),
     ]);
   }
 }

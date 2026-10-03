@@ -49,7 +49,7 @@ describe('SettingsCategoryList sub-categories', () => {
     expect(onSelect).toHaveBeenCalledWith('panels');
     const labels = screen.getAllByRole('button').map((b) => b.textContent);
     const at = labels.indexOf('Panels');
-    expect(labels.slice(at + 2, at + 5)).toEqual(['Layers', 'Activity', 'Map']);
+    expect(labels.slice(at + 2, at + 5)).toEqual(['Layers', 'Map', 'Collaborate']);
   });
 
   it('folds away again on a second click, handing a sub-category’s selection back to Panels', () => {

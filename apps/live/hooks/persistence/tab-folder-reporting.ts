@@ -1,21 +1,13 @@
-// How a tab's folder membership change gets reported — to the activity log and
-// to telemetry (docs/specs/006-document/tab-folders.md + docs/specs/017-telemetry/telemetry.md).
+// How a tab's folder membership change gets reported to telemetry (docs/specs/006-document/tab-folders.md + docs/specs/017-telemetry/telemetry.md).
 //
 // Its own module because there are TWO code paths to the same outcome: the
 // ellipsis menu (useTabFolders) and a drag that adopts the drop target's
 // membership (useTabActions.reorderTabs). They had drifted: leaving a folder
 // by menu recorded `Tab·Removed`, leaving it by drag recorded
-// `Tab·Reordered`, and the log strings were duplicated verbatim in both
-// files. Which control someone reached for is not the fact being measured, so
+// `Tab·Reordered`. Which control someone reached for is not the fact being measured, so
 // one decision point now serves both.
 
 import { track } from '@/lib/telemetry';
-
-// The activity-log line for a transition. `to` is the folder the tab landed
-// in, or null when it became loose again; `from` names the folder it left.
-export function tabFolderTransitionSummary(from: string | null, to: string | null): string {
-  return to !== null ? `Moved tab to folder '${to}'` : `Removed tab from folder '${from}'`;
-}
 
 // Telemetry for a transition.
 //

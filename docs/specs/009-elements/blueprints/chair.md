@@ -78,7 +78,7 @@ CHAIR_SITTER_FACING[facing])`. `sitOn` drops the walk target, arrival callback a
 
 Invariants:
 
-- **I1:** no seating state is ever written to the document, the change log, D1 or undo.
+- **I1:** no seating state is ever written to the document, D1 or undo.
 - **I2:** occupancy is a pure function of current presence.
 - **I3:** two or more sitters are allowed; nothing locks a chair.
 - **I4:** sitting fires once per arrival, never per frame.

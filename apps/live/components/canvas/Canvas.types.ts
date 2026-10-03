@@ -31,7 +31,7 @@ import type { ArrowEnd, DragMode, QuickConnectDirection, QuickConnectKind } from
 import type { PendingDraw } from '@/lib/draw-mode';
 import type { TemplateKind } from '@livediagram/templates';
 import type { UserPreferences } from '@/lib/user-preferences';
-import type { ChangeLogEntry, DocumentListItem, Folder, SharedWithItem } from '@/lib/api-client';
+import type { DocumentListItem, Folder, SharedWithItem } from '@/lib/api-client';
 import type { TeamFolderHandlers } from '@/components/panels/Explorer.types';
 import type { TeamDocumentRow, TeamFolderRow } from '@/hooks/persistence/useTeamLibrariesSweep';
 import type { CanvasTool } from '@/components/palette/CommandPalette';
@@ -473,21 +473,14 @@ export type CanvasProps = {
   teamFolders?: TeamFolderRow[];
   teamDocuments?: TeamDocumentRow[];
   documentListLoading: boolean;
-  changeLog: ChangeLogEntry[];
-  changeLogLoading: boolean;
-  activityPosition: { x: number; y: number } | null;
-  activityMinimized: boolean;
   // Map panel (docs/specs/008-canvas/minimap.md) position + move/reset, shared with the other panels.
   mapPosition: { x: number; y: number } | null;
   onMoveMap: (x: number, y: number) => void;
   onResetMap: () => void;
-  onMoveActivity: (x: number, y: number) => void;
-  onToggleActivityMinimized: () => void;
-  onResetActivity: () => void;
   // Layers panel (docs/specs/006-document/layers.md). `layers` is the NORMALISED stack (bottom ->
   // top, never empty) the panel renders; `tabLayers` above stays the raw
   // field for the render-order helpers. Minimised by default into a
-  // bottom-right dock button, mirroring Activity.
+  // bottom-right dock button.
   layers: Layer[];
   activeLayerId: string;
   layerCounts: Map<string, number>;
@@ -498,7 +491,7 @@ export type CanvasProps = {
   onToggleLayersMinimized: () => void;
   // Live poll (docs/specs/012-collaboration/live-poll.md). The panel exists only while a poll is running,
   // so `poll` null means it isn't rendered at all — there is no minimised
-  // state to keep, unlike Layers / Activity.
+  // state to keep, unlike Layers.
   pollPanel: {
     poll: import('@livediagram/api-schema').LivePoll;
     answers: Map<string, string | null>;
@@ -569,15 +562,6 @@ export type CanvasProps = {
   // The Collaborate panel row's round check (docs/specs/012-collaboration/assigned-actions.md §5): complete
   // (done) or reopen the action in place. Absent for a read-only visitor.
   onToggleActionDone?: (elementId: string, done: boolean, actionId: string) => void;
-  onRevertChange: (entry: ChangeLogEntry) => void;
-  // Hover-to-preview for a row's Revert (docs/specs/012-collaboration/activity-and-audit.md): enter shows the
-  // revert result live on the canvas, leave restores. Nothing commits.
-  onPreviewRevert: (entry: ChangeLogEntry) => void;
-  onClearRevertPreview: () => void;
-  onActivityRowClick: (entry: ChangeLogEntry) => void;
-  onClearActivity?: () => void;
-  saveStatus: import('@/components/chrome/EditorHeader').SaveStatus;
-  savedAt: number | null;
   currentDocumentId: string | null;
   onOpenDocument: (id: string, shareCode?: string) => void;
   onNewDocument: () => void;

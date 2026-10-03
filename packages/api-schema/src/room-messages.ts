@@ -1,5 +1,5 @@
 import type { ElementDelta, ElementOp, QaNote, Tab } from '@livediagram/document';
-import type { ChangeLogEntry, ParticipantPresence } from './index';
+import type { ParticipantPresence } from './index';
 import type { AvatarConfig } from './avatar';
 import type { LivePoll } from './poll';
 import type { DragPreviewPatch } from './drag-preview';
@@ -43,7 +43,7 @@ export type AvatarPresence = {
   // Occupancy rides HERE, on ephemeral presence, and is deliberately never
   // written to the document: a chair therefore cannot be left permanently
   // occupied by somebody who closed their laptop, cannot conflict between two
-  // clients, and reaches D1, the change log and undo not at all. Optional so a
+  // clients, and reaches D1 and undo not at all. Optional so a
   // packet from an older client still parses as "standing".
   seatedOn?: string | null;
 };
@@ -135,8 +135,6 @@ export const MUTATION_OP_KINDS = [
   // (docs/specs/012-collaboration/collab-race-hardening.md). A mutation for the same reasons as a dot.
   'el-delta',
   'document-meta',
-  'log',
-  'log-remove',
   'poll-start',
   'poll-end',
 ] as const;
@@ -332,14 +330,6 @@ export type ClientMessage =
 // kinds grow this union (and matching handlers in the editor) —
 // nothing in the api worker changes.
 export type RoomOp =
-  // A new audit-log entry just landed. Used to mirror activity into
-  // every connected client's panel without a round-trip through D1.
-  // The owner of the document is the persistent writer; everyone else
-  // updates their local list when this op arrives.
-  | { kind: 'log'; entry: ChangeLogEntry }
-  // The named log entry was removed (e.g. via Undo or Revert). Other
-  // clients drop it from their local list so the panel stays in sync.
-  | { kind: 'log-remove'; entryId: string }
   // The sender just switched to (or initially focused) a tab. Drives
   // the per-tab avatar dots in the TabBar so collaborators can see at
   // a glance which tab each peer is working on.
@@ -509,7 +499,7 @@ export type RoomOp =
   | { kind: 'focus-here'; tabId: string; at: { x: number; y: number }; zoom: number }
   // --- Live poll (docs/specs/012-collaboration/live-poll.md) -------------------------------------------
   // Deliberately NOT a Tab field like the timer / dot-vote: a poll is
-  // ephemeral, so nothing here reaches D1, the change log, or undo. The
+  // ephemeral, so nothing here reaches D1 or undo. The
   // room keeps the running poll and its answers in its own storage and
   // replays them on hello (docs/specs/012-collaboration/live-poll.md).
   // `poll-start` / `poll-end` are sequenced mutations; `poll-answer` relays

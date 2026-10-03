@@ -16,8 +16,7 @@ to peers (`useRoomConnection` merges it). So **late-joiners and reloads see
 current state for free**, and persistence is automatic.
 
 `commitTabs` does **not** push undo history — starting a timer or placing a dot
-isn't undoable. The facilitator lifecycle actions emit a one-shot Activity-log
-line (`emitTabMeta`); the high-frequency vote casts deliberately don't log.
+isn't undoable.
 
 **One exception, learned the hard way: dots needed their own op.** Everything
 above holds for the timer and for a vote's lifecycle, which have a single

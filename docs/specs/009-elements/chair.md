@@ -77,7 +77,7 @@ This is the rule that makes the feature safe, and it is [Avatar mode](../008-can
 unchanged: everyone's character is authoritative on its owner's machine. So a
 chair cannot be left permanently occupied by someone who closed their laptop, a
 chair's occupancy cannot conflict between two clients, and no seating state
-reaches D1, the change log or undo.
+reaches D1 or undo.
 
 - The chair renders **occupied** — a soft ring in the sitter's presence colour
   and their name under it — derived from the peer presence the canvas already

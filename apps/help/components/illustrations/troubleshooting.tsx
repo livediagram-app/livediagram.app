@@ -1,6 +1,6 @@
 // Troubleshooting-category illustrations (docs/specs/018-help/help-app.md): the concrete states a stuck
 // editor shows (a loading canvas, a sign-in error, a dropped live connection, a
-// rendering glitch, the autosave indicator and the Activity Panel). Composed
+// rendering glitch, the autosave indicator). Composed
 // only from the shared primitives so the house style holds.
 
 import { useId } from 'react';
@@ -205,57 +205,6 @@ export function SavedState() {
         <Label x={154} y={71} size={12} weight={600} tone="strong">
           All changes saved
         </Label>
-      </Panel>
-    </Scene>
-  );
-}
-
-/** The Activity Panel: a list of recent edits, newest first, with a Revert
- *  action on the selected entry, the recovery tool for a lost change. */
-export function ActivityHistory() {
-  const rows: { who: string; what: string; colour: 'emerald' | 'violet' | 'brand' }[] = [
-    { who: 'You', what: 'Moved "Server"', colour: 'brand' },
-    { who: 'Ada', what: 'Deleted "Cache"', colour: 'emerald' },
-    { who: 'You', what: 'Edited label', colour: 'brand' },
-    { who: 'Sam', what: 'Added arrow', colour: 'violet' },
-  ];
-  return (
-    <Scene w={420} h={240}>
-      <Panel x={92} y={20} w={236} h={200} title="ACTIVITY">
-        {rows.map((row, i) => {
-          const ry = 58 + i * 38;
-          const selected = i === 1;
-          return (
-            <g key={i}>
-              {selected && (
-                <rect x={100} y={ry - 4} width={220} height={34} rx={6} className="fill-brand-50" />
-              )}
-              <Avatar cx={116} cy={ry + 13} r={9} initial={row.who[0]} colour={row.colour} />
-              <Label x={134} y={ry + 8} size={11} weight={600} tone="strong">
-                {row.what}
-              </Label>
-              <Label x={134} y={ry + 21} size={9} weight={500} tone="muted">
-                {row.who}
-              </Label>
-              {selected && (
-                <g>
-                  <rect
-                    x={262}
-                    y={ry + 2}
-                    width={50}
-                    height={22}
-                    rx={6}
-                    className="fill-white stroke-brand-300"
-                    strokeWidth={1.5}
-                  />
-                  <Label x={287} y={ry + 14} anchor="middle" size={10} weight={600} tone="accent">
-                    Revert
-                  </Label>
-                </g>
-              )}
-            </g>
-          );
-        })}
       </Panel>
     </Scene>
   );

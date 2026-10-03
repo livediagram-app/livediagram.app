@@ -468,56 +468,6 @@ export type ImageSummary = {
   createdAt: number;
 };
 
-// ---------------------------------------------------------------------
-// Change log (docs/specs/012-collaboration/activity-and-audit.md)
-// ---------------------------------------------------------------------
-
-export type ChangeLogKind = 'add' | 'edit' | 'delete' | 'revert';
-
-// One row of the audit log. `beforeState` / `afterState` are objects
-// keyed by element id; a null on either side means the element didn't
-// exist on that side of the change (an add has before=null for that
-// id, a delete has after=null).
-export type ChangeLogEntry = {
-  id: string;
-  // Tab the change happened on. Nullable in the schema for legacy
-  // document-scoped entries; new entries always carry a real id
-  // (since #14 dropped the document_id column the tab id is now the
-  // canonical pointer into the change_log → tabs → document_tabs
-  // chain — see docs/specs/006-document/tab-document-many-to-many.md).
-  tabId: string | null;
-  participantId: string;
-  participantName: string;
-  participantColor: string;
-  kind: ChangeLogKind;
-  summary: string;
-  elementIds: string[];
-  beforeState: Record<string, unknown>;
-  afterState: Record<string, unknown>;
-  createdAt: number;
-};
-
-// How many of the most recent change-log entries the Activity Panel
-// surfaces (docs/specs/012-collaboration/activity-and-audit.md). Shared so the server hydrate (`GET .../log` LIMIT)
-// and the client's in-session list cap can't drift apart: the panel shows
-// "the most recent N", and if the client retained more than the server
-// hydrates, a reload would silently change how much history is visible.
-// Older entries stay in D1 for audit completeness; the UI just pages to N.
-export const CHANGE_LOG_LIST_LIMIT = 30;
-
-// One change-log entry's JSON (docs/specs/012-collaboration/activity-and-audit.md). The before/after
-// payloads are per-gesture element diffs, a few KB in practice, so this bounds a hostile near-8MB
-// entry from bloating both storage and the capped list response (30 entries per GET). The worker
-// refuses anything larger; the client logs a larger change as a summary entry instead.
-export const MAX_CHANGE_LOG_ENTRY_BYTES = 256 * 1024;
-
-// The 409 `error` token `POST .../log` answers when the entry names a tab
-// that isn't (yet) linked to the document. The common cause is benign: the
-// editor logs an edit the moment it happens, but a brand-new tab only
-// reaches D1 on the debounced autosave, so the first edit on it can beat
-// its own tab row. The client retries that one quietly (docs/specs/012-collaboration/activity-and-audit.md).
-export const CHANGE_LOG_TAB_NOT_SAVED = 'tab_not_saved';
-
 // Canonical hash function for the X-Image-Sha256 wire-format header.
 // Lives here so the client and server can't drift on the dedup key
 // (see ./sha256.ts for the rationale).

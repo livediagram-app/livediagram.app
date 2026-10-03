@@ -44,7 +44,6 @@ export function useElementHelpers(opts: {
   getViewportCenter: () => { x: number; y: number };
   commit: (updater: (els: Element[]) => Element[]) => void;
   commitTabs: (updater: (tabs: Tab[]) => Tab[]) => void;
-  emitChange: (tabId: string, before: Element[], after: Element[]) => void;
   setSelectedId: SetState<string | null>;
   setEditingId: SetState<string | null>;
   setFormatSourceId: SetState<string | null>;
@@ -60,7 +59,6 @@ export function useElementHelpers(opts: {
     getViewportCenter,
     commit,
     commitTabs,
-    emitChange,
     setSelectedId,
     setEditingId,
     setFormatSourceId,
@@ -162,12 +160,6 @@ export function useElementHelpers(opts: {
           )
         : patchTab(ts, activeId, { elements: after, templateChosen: true }),
     );
-    // Activity-log the add. commit() (the element-only setter) does
-    // this on every change; addBoxed bypasses commit because it also
-    // touches templateChosen on the tab, so the emitChange call has
-    // to be repeated here. Without it, palette adds never appear in
-    // the Activity panel.
-    emitChange(activeId, before, after);
     setSelectedId(el.id);
     // Only kinds that take typed text: a sticker or a session button renders
     // its own face from its setting, so a caret there edits nothing.

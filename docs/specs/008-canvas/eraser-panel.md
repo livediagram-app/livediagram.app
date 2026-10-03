@@ -29,7 +29,7 @@ While the tool is active with a size above Point, a ring follows the cursor at t
 ## What it does not change
 
 - **Locked elements, and everything on a locked or hidden layer, are still skipped** ([Canvas and palette](canvas-and-palette.md) Locking, [Layers](../006-document/layers.md)). No setting here can erase them; that is what locking is for.
-- **One gesture is still one undo** and one activity-log entry, however much it removes — the existing checkpoint-then-tick pattern is untouched.
+- **One gesture is still one undo**, however much it removes — the existing checkpoint-then-tick pattern is untouched.
 - Arrows pinned to an erased element still go with it, as they always have.
 
 ## Persistence

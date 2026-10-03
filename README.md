@@ -1,6 +1,6 @@
 # livediagram
 
-A collaborative diagram editor that works without signing in. Open a link, draw, share. Real-time presence, cursors, comments, per-tab activity log with surgical revert. The canvas never sits behind an auth wall, so the friction to start is "open the link, start drawing."
+A collaborative diagram editor that works without signing in. Open a link, draw, share. Real-time presence, cursors, comments, undo and redo. The canvas never sits behind an auth wall, so the friction to start is "open the link, start drawing."
 
 **Live at [livediagram.app](https://livediagram.app).** MIT-licensed and self-hostable end-to-end.
 

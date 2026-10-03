@@ -127,11 +127,8 @@ renamed_classes = [{ from = "DiagramRoom", to = "DocumentRoom" }]
 # entry per cron; each fires the same handler with `event.cron` set
 # to the matching pattern so the body can dispatch.
 #
-# `0 3 * * *`: daily at 03:00 UTC. Fires three independent retention
-# sweeps on this trigger:
-#   - change_log, 90-day floor (item #16 / docs/specs/012-collaboration/activity-and-audit.md). Matches what's
-#     surfaced in the Activity Panel; older entries were never user-
-#     visible, just sitting on the table.
+# `0 3 * * *`: daily at 03:00 UTC. Fires independent retention sweeps
+# on this trigger, among them:
 #   - events, 60-day floor (docs/specs/017-telemetry/telemetry.md "Retention"). The /telemetry
 #     dashboard surfaces a 30-day max window, so anything past 60
 #     days is dead storage.

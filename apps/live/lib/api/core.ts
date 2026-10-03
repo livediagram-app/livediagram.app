@@ -5,7 +5,6 @@
 // import from here; callers go through the lib/api-client.ts barrel.
 import type {
   ApiToken,
-  ChangeLogEntry,
   CustomTheme,
   LiveDoc,
   Folder,
@@ -119,8 +118,6 @@ export type CreateTokenResponse = {
 // clear. `password` is null when the document has no password.
 export type ShareLinksResponse = { links: ShareLink[]; password: string | null };
 export type SharePasswordResponse = { password: string | null };
-export type ChangeLogListResponse = { entries: ChangeLogEntry[] };
-export type ChangeLogAppendResponse = { entry: ChangeLogEntry };
 // GET /api/participants/<id>. `null` when you ask for your own id before you have saved a profile
 // (docs/specs/015-api/api.md); another absent id is a 404.
 export type ParticipantResponse = {

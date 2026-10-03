@@ -95,7 +95,7 @@ Banned synonyms: "snap all", "normalise" (for the settle), "grid" for the lane s
   single selection when it is a workshop note, else the first workshop note of the selection
   in document order (D2). `dy := laneStepTop(anchor, sign(dy)) − anchor.y`; `dx := 0` for
   that press. Every member moves by that `dy`.
-- Otherwise unchanged. The burst, the checkpoint, the log and the telemetry are unchanged.
+- Otherwise unchanged. The burst, the checkpoint and the telemetry are unchanged.
 
 ### Rows to lanes (`event-storming-lane-landing.ts`)
 
@@ -147,7 +147,7 @@ Banned synonyms: "snap all", "normalise" (for the settle), "grid" for the lane s
   the tab id is not in the session's `settledThisSession` set.
 - Adds the id to `settledThisSession` first (so a re-render cannot run it twice).
 - `movedIds` non-empty: `commitActiveTab(t => ({ ...t, elements, esLanesSettled: true }))`
-  (one undo step, with the activity-log diff), `toastInfo(settleToast(n))`,
+  (one undo step), `toastInfo(settleToast(n))`,
   `track('Canvas', 'Used', 'LanesSettled')`, `console.info('[es-lanes] settled', { tabId, moved })`.
 - `movedIds` empty: `tickTabs` sets `esLanesSettled: true` on the active tab (no undo step),
   `console.debug('[es-lanes] marked', { tabId })`.
@@ -295,8 +295,7 @@ only skips a settle the forger could have undone. MCP input is already validated
   every drag frame, because the snap always answers.
 - Settle toast (info tone): `Lined up 1 note on the lanes.` / `Lined up N notes on the lanes.`
   (`settleToast(n)`). Undo takes it back like any step.
-- Activity log: the settle is an ordinary element diff ("Moved N Domain Events"…), through
-  `commitActiveTab`.
+- Collaboration: the settle is an ordinary element change, through `commitActiveTab`.
 
 ## Accessibility
 

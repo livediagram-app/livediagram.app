@@ -12,7 +12,7 @@ to the top centre of the canvas, the way Excalidraw's tool bar works:
  ☰        ┌──────────────────────────────────────────────────────┐
  │        │ [↖ ▾] │ [Shapes ▾] │ □ ◇ ○ → ─ ✎ A ▤ … │ [⋯ ▾] │
  ▼        └──────────────────────────────────────────────────────┘
- Explorer            (Layers, Activity, zoom: the Floating bottom row)
+ Explorer            (Undo/Redo, Layers, zoom: the Floating bottom row)
 ```
 
 - **Left: the selection mode.** The canvas-tool picker (Select / Hand /
@@ -89,10 +89,10 @@ the top-left corner of the canvas toggles the real Explorer open as a
 popover hanging under it, and closed again. The popover hangs from the
 button's left edge (`computeDockAnchor(..., 'button')`).
 
-Layers, Activity and Collaborate open as **popovers over their bottom-row
+Layers and Collaborate open as **popovers over their bottom-row
 buttons** ([Live app](live-app.md)): they are not corner panels here. Every
 other panel (AI, the minimap, Poll, Vote and the tool panels) behaves exactly
-as in **Floating**, docking in its corner. Layers, Activity and Collaborate render outside
+as in **Floating**, docking in its corner. Layers and Collaborate render outside
 the corner layer in this layout, since a popover positions against the
 canvas and a corner stack would move it.
 
@@ -103,7 +103,7 @@ are menus: opening one closes whichever other is open, and a press anywhere
 outside closes it. The strip stops `pointerdown` from reaching the canvas, so
 their outside-press listeners run in the capture phase, before that. The
 Explorer popover gets the same (`dismissOnOutside`), and so do the Layers and
-Activity popovers ([Live app](live-app.md)). The strip's dropdown menus are kept
+Collaborate popovers ([Live app](live-app.md)). The strip's dropdown menus are kept
 on screen sideways as well as vertically, whatever the trigger's position.
 
 ## The setting
@@ -125,7 +125,7 @@ layout on their first document.
 
 **A phone always uses Toolbar** (`resolvePanelLayout(prefs, { mobile: true })`,
 below `sm`). It gets the same chrome as a desktop in Toolbar ([Live app](live-app.md)):
-panels in their corners, Layers, Activity and Collaborate as popovers over
+panels in their corners, Layers and Collaborate as popovers over
 their bottom-row buttons. Floating is desktop only: a user who never chose, or
 chose Floating, gets the strip on a phone and Floating back on a desktop,
 since the stored value is untouched. The Settings row greys Floating
@@ -236,8 +236,8 @@ ringed, so the difference is visible before switching ([User preferences](user-p
   switch.
 - **The menu button opens the Explorer**, not a menu of its own (an earlier
   cut had New / Recent / Search / Settings entries).
-- **The other panels follow Floating**: they dock in their corners. Layers,
-  Activity and Collaborate are the exception, popovers over their bottom-row
+- **The other panels follow Floating**: they dock in their corners. Layers
+  and Collaborate are the exception, popovers over their bottom-row
   buttons.
 
 ## Help

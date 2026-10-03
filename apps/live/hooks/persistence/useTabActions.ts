@@ -3,9 +3,9 @@
 // linking a tab into another document, and clearing a tab's content.
 //
 // This is the busiest of the extracted hooks because tab lifecycle
-// genuinely touches a lot: history (`commit` / `commitTabs`), the
-// activity log (`emitTabMeta`), selection state, telemetry, the
-// confirm dialog + toasts, the change-log panel, and the document list.
+// genuinely touches a lot: history (`commit` / `commitTabs`),
+// selection state, telemetry, the confirm dialog + toasts, and the
+// document list.
 // The deps object reflects that — the page still owns all that state;
 // this hook only relocates the handlers verbatim so the logic lives in
 // one auditable place. No behaviour change.
@@ -23,12 +23,12 @@ import {
   type Element,
   type Tab,
 } from '@livediagram/document';
-import { apiLinkTab, type ChangeLogEntry } from '@/lib/api-client';
+import { apiLinkTab } from '@/lib/api-client';
 import { newTabSeed } from '@/lib/new-tab-seed';
 import { track } from '@/lib/telemetry';
 import { useBoardSceneImport } from './useBoardSceneImport';
 import { remintElementIds, useTabImport } from './useTabImport';
-import { tabFolderTransitionSummary, trackTabFolderTransition } from './tab-folder-reporting';
+import { trackTabFolderTransition } from './tab-folder-reporting';
 import type { useConfirm } from '@/hooks/ui/useConfirm';
 import type { useToast } from '@/hooks/ui/useToast';
 
@@ -50,7 +50,6 @@ type TabActionsDeps = {
   createTab: (name: string) => Tab;
   commit: (mapElements: (els: Element[]) => Element[]) => void;
   commitTabs: (mapTabs: (ts: Tab[]) => Tab[]) => void;
-  emitTabMeta: (tabId: string, summary: string) => void;
   // Mark a freshly-created tab as loaded so the lazy per-tab fetch
   // (docs/specs/006-document/per-tab-storage.md) skips it — a locally-created tab has no server row to
   // pull, so without this the canvas would flash its loading overlay
@@ -72,8 +71,6 @@ type TabActionsDeps = {
   setImportError: (message: string | null) => void;
   // Frames the tab once replaced content has rendered (useTabEntryEffects).
   requestFit: () => void;
-  // Drops change-log rows for a deleted tab from the visible panel.
-  setChangeLog: (update: (prev: ChangeLogEntry[]) => ChangeLogEntry[]) => void;
   // Re-pulls the owner's document list after a cross-document tab link.
   refreshDocumentList: (ownerId: string) => void;
   confirm: ReturnType<typeof useConfirm>;
@@ -90,7 +87,6 @@ export function useTabActions(deps: TabActionsDeps) {
     createTab,
     commit,
     commitTabs,
-    emitTabMeta,
     markTabLoaded,
     isTabLoaded,
     setActiveId,
@@ -100,7 +96,6 @@ export function useTabActions(deps: TabActionsDeps) {
     setTemplatePickerMode,
     setImportError,
     requestFit,
-    setChangeLog,
     refreshDocumentList,
     confirm,
     toast,
@@ -164,7 +159,6 @@ export function useTabActions(deps: TabActionsDeps) {
     if (!target) return;
     const next = !target.locked;
     commitTabs((ts) => ts.map((t) => (t.id === activeId ? { ...t, locked: next } : t)));
-    emitTabMeta(activeId, next ? 'Locked tab' : 'Unlocked tab');
     track('Tab', next ? 'Locked' : 'Unlocked');
     if (next) {
       // Drop any in-progress UI state that would be useless on a
@@ -183,10 +177,6 @@ export function useTabActions(deps: TabActionsDeps) {
     const trimmed = truncateName(name);
     if (trimmed === previous.trim()) return;
     commitTabs((ts) => ts.map((t) => (t.id === id ? { ...t, name: trimmed } : t)));
-    emitTabMeta(
-      id,
-      previous ? `Renamed tab '${previous}' to '${trimmed}'` : `Renamed tab to '${trimmed}'`,
-    );
     track('Tab', 'Renamed');
   };
 
@@ -284,16 +274,6 @@ export function useTabActions(deps: TabActionsDeps) {
           }),
         })),
     );
-    // Local cascade: drop audit-log entries for the gone tab from the
-    // visible panel immediately. The server-side cascade lives inside
-    // deleteTabRow (apps/api/src/db.ts): it only drops the change_log
-    // rows when the underlying `tabs` row is itself dropped, so a
-    // shared tab unlinked from this document keeps its history in any
-    // document that still surfaces it (per docs/specs/006-document/tab-document-many-to-many.md). The previous
-    // client-side apiDeleteChangeLogForTab call wiped the log
-    // globally, which silently broke the audit panel for every other
-    // document sharing the tab.
-    setChangeLog((prev) => prev.filter((entry) => entry.tabId !== id));
     if (activeId === id) {
       const fallback = tabs[idx + 1] ?? tabs[idx - 1];
       if (fallback) setActiveId(fallback.id);
@@ -312,7 +292,7 @@ export function useTabActions(deps: TabActionsDeps) {
     // loose tabs makes it loose, and dropping onto the folder chip (which
     // targets the run's first member) joins too. So one drag both reorders
     // AND moves the tab in / out of a folder. (Closure values drive the
-    // telemetry / activity log below; the mutation itself recomputes from
+    // telemetry below; the mutation itself recomputes from
     // live state inside the commit.)
     const srcFolder = tabFolderName(tabs[srcIdx0]!);
     const targetFolder = tabFolderName(tabs[tgtIdx0]!);
@@ -341,7 +321,6 @@ export function useTabActions(deps: TabActionsDeps) {
     // as `Tab·Removed`, which made "how do people manage tab folders?"
     // unanswerable from the numbers.)
     if (srcFolder !== targetFolder) {
-      emitTabMeta(sourceId, tabFolderTransitionSummary(srcFolder, targetFolder));
       trackTabFolderTransition(srcFolder, targetFolder);
     } else {
       track('Tab', 'Reordered');

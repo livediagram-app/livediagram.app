@@ -611,26 +611,19 @@ export const TABLES: MetricStack = {
   members: [TABLE_ROWS_ADDED, TABLE_ROWS_REMOVED, TABLE_ROWS_MOVED, TABLE_STYLE_TOGGLES],
 };
 
-// Undo, redo and revert.
+// Undo and redo. (Document·Reverted, the Activity panel's per-entry revert, retired with
+// the panel on 2026-10-03 and has no chart; its explanation stays for Search.)
 export const UNDOS = chart('Document', 'Undone', 'Undos', 'A change undone.', {
   rising: 'neutral',
 });
 
 export const REDOS = chart('Document', 'Redone', 'Redos', 'An undo redone.', { rising: 'neutral' });
 
-export const REVERTS = chart(
-  'Document',
-  'Reverted',
-  'Reverts',
-  'A document rolled back to an earlier point from the Activity panel.',
-  { rising: 'neutral' },
-);
-
-export const UNDO_AND_REVERT: MetricStack = {
+export const UNDO_AND_REDO: MetricStack = {
   stack: true,
-  title: 'Undo & Revert',
-  blurb: 'Changes taken back: undone, redone, or rolled back from the Activity panel.',
-  members: [UNDOS, REDOS, REVERTS],
+  title: 'Undo & Redo',
+  blurb: 'Changes taken back with undo, or put back with redo.',
+  members: [UNDOS, REDOS],
   rising: 'neutral',
 };
 

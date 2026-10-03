@@ -9,7 +9,6 @@ import {
   FolderIcon,
   LinkIcon,
   PixelWalker,
-  RevertIcon,
   SlidersIcon,
   TeamIcon,
 } from './canvas-parts';
@@ -719,39 +718,6 @@ export function LaserArt() {
       <span className="absolute bottom-1.5 right-2 rounded bg-white/90 px-1.5 py-0.5 text-[8px] font-medium text-rose-500 shadow-sm dark:bg-slate-900/90">
         laser
       </span>
-    </Frame>
-  );
-}
-
-export function ActivityArt() {
-  const rows = [
-    { c: SKY, who: 'You', what: 'added “Ready?”', revert: true },
-    { c: PINK, who: 'Jordan', what: 'recoloured 3' },
-    { c: '#8b5cf6', who: 'Alex', what: 'grouped 2' },
-  ];
-  return (
-    <Frame>
-      <div className="flex h-full flex-col gap-1 px-3 py-2">
-        <p className="text-[8px] font-semibold uppercase tracking-wide text-slate-400">Activity</p>
-        {rows.map((r, i) => (
-          <div
-            key={i}
-            className="fa-pop flex items-center gap-1.5 rounded px-1 py-0.5 text-[8px]"
-            style={{ animationDelay: `${0.3 + i * 0.6}s` }}
-          >
-            <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: r.c }} />
-            <span className="text-slate-600 dark:text-slate-300">
-              <span className="font-semibold text-slate-700 dark:text-slate-200">{r.who}</span>{' '}
-              {r.what}
-            </span>
-            {r.revert ? (
-              <span className="fa-pulse ml-auto flex items-center gap-0.5 rounded bg-slate-100 px-1 py-0.5 text-[7px] font-medium text-slate-500 dark:bg-slate-800 dark:text-slate-400">
-                <RevertIcon /> revert
-              </span>
-            ) : null}
-          </div>
-        ))}
-      </div>
     </Frame>
   );
 }

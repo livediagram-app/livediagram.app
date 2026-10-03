@@ -144,7 +144,7 @@ export const KEYBOARD_SETTINGS = settingsStack(
 
 export const PANELS_SETTINGS = settingsStack(
   'Panels Settings',
-  'What the Layers, Activity and minimap panels show.',
+  'What the Layers and minimap panels show.',
   [
     toggle(
       'UI',
@@ -166,13 +166,6 @@ export const PANELS_SETTINGS = settingsStack(
       'LayerHoverPreviewOff',
       'Preview Layer on Hover',
       'Highlighting a layer\u2019s elements on hover.',
-    ),
-    toggle(
-      'UI',
-      'ActivityRevertPreviewOn',
-      'ActivityRevertPreviewOff',
-      'Preview Revert on Hover',
-      'Previewing a revert from the Activity panel.',
     ),
     toggle(
       'UI',

@@ -609,9 +609,8 @@ export async function migrateTimelineOwner(
     .run();
 }
 
-// Daily retention sweep (docs/specs/013-workspace/timeline.md §3.5). Runs alongside the change_log
-// prune in the same cron; 365 days here (TIMELINE_RETENTION_MS) against
-// that one's 90. Signature matches the other sweeps so it slots into
+// Daily retention sweep (docs/specs/013-workspace/timeline.md §3.5). Runs alongside the other
+// prunes in the same cron; 365 days here (TIMELINE_RETENTION_MS). Signature matches the other sweeps so it slots into
 // the shared `scheduleSweep` helper rather than growing its own.
 //
 // Guards on `occurred_at`, so the forward-dated expiry warnings are

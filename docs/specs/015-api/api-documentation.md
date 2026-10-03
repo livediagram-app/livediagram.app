@@ -13,7 +13,7 @@
 
 The api worker ([API app](api.md)) is documented two ways today:
 
-- **Prose** in [API app](api.md) plus the per-feature specs (teams → [Teams](../013-workspace/teams.md), images → [Image element + per-owner gallery](../009-elements/images.md), telemetry → [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md), change log → [Activity and audit log](../012-collaboration/activity-and-audit.md), share password / expiry → [Share password](../013-workspace/share-password.md) / [Share-link expiry](../013-workspace/share-link-expiry.md)).
+- **Prose** in [API app](api.md) plus the per-feature specs (teams → [Teams](../013-workspace/teams.md), images → [Image element + per-owner gallery](../009-elements/images.md), telemetry → [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md), share password / expiry → [Share password](../013-workspace/share-password.md) / [Share-link expiry](../013-workspace/share-link-expiry.md)).
 - **Compile-time payload shapes** in `@livediagram/api-schema` — every request / response DTO, imported by both the worker (which builds them) and the live editor (which consumes them), so the typechecker catches drift between the two sides.
 
 What's missing is a **single, machine-readable description of the surface**: the paths, methods, auth requirements, and status codes. The TS types cover payload _shape_ but say nothing about URL shape, verbs, or auth; the prose isn't discoverable, testable, or consumable by tooling. A self-hoster or integrator can't point a client generator, a Postman import, or a docs viewer at anything.

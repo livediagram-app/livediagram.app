@@ -250,23 +250,3 @@ export async function requireOwnedDocument(
   if (!(await ownsDocument(ctx, existing))) return forbidden();
   return existing;
 }
-
-// Share-gated resource: resolve the caller, load the document, and resolve
-// the caller's grant (owner, joined team member, or a share code; edit mode
-// also needs the edit role). Returns the document plus the grant, whose
-// `tabScope` the route applies (docs/specs/013-workspace/tab-scoped-share-links.md), or 400 / 404 / 403.
-// Used by the change-log paths, where a non-owner share visitor is a
-// legitimate caller.
-export async function requireDocumentGrant(
-  ctx: RouteContext,
-  documentId: string,
-  mode: 'read' | 'edit',
-): Promise<{ document: DocumentDTO; grant: DocumentGrant } | Response> {
-  const owner = ctx.resolveOwner();
-  if (!owner) return missingAuth();
-  const liveDoc = await getDocument(ctx.env, documentId);
-  if (!liveDoc) return missingDocument(ctx, documentId);
-  const grant = await gateGrant(ctx, documentId, liveDoc.ownerId, liveDoc.teamId);
-  if (!grant || (mode === 'edit' && grant.role !== 'edit')) return forbidden();
-  return { document: liveDoc, grant };
-}

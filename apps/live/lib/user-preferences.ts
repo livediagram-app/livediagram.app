@@ -68,8 +68,6 @@ export type UserPreferences = {
   // Layers: the panel, its cluster button, "Move to layer" in the element
   // menus and the export's "Hidden layers" row. Layers still apply.
   layersPanelEnabled?: boolean;
-  // Activity: the panel and its button. Undo / Redo stay.
-  activityPanelEnabled?: boolean;
   // Collaborate: the panel and its button. Comments and actions stay.
   collaboratePanelEnabled?: boolean;
   // Quick style: the selection's style panel. Style memory stays.
@@ -146,21 +144,13 @@ export type UserPreferences = {
   middleMousePan?: boolean;
   // Minimap (docs/specs/008-canvas/minimap.md). When `false`, the bottom-left canvas minimap is hidden.
   // Missing / undefined / true === shown, the default (and even then only once
-  // the tab has a few elements, the Activity panel is minimised, and on
-  // desktop). The minimap's own close button writes an explicit `false`.
+  // the tab has a few elements, and on desktop). The minimap's own close button writes an explicit `false`.
   showMinimap?: boolean;
   // Layers panel hover-solo (docs/specs/006-document/layers.md). When `false`, resting the pointer
   // on a Layers-panel row no longer solos that layer on the canvas.
   // Missing / undefined / true === on, the default. Flipped from the
   // panel's settings gear (desktop-only chrome, like the hover itself).
   layerHoverPreview?: boolean;
-  // Activity panel revert hover-preview (docs/specs/012-collaboration/activity-and-audit.md). When `false`,
-  // resting the pointer on a revertable Activity row no longer
-  // previews the revert on the canvas (the Revert button itself is
-  // unaffected). Missing / undefined / true === on, the default.
-  // Flipped from the Activity panel's settings gear, mirroring
-  // `layerHoverPreview` above.
-  activityRevertHoverPreview?: boolean;
   // Email notifications (docs/specs/014-identity/profile-and-email-notifications.md). Account-level settings flipped from the
   // Settings dialog; the api worker reads them server-side before
   // sending the matching transactional email (docs/specs/014-identity/transactional-email.md). Distinct from
@@ -386,10 +376,7 @@ export async function fetchUserPreferences(ownerId: string): Promise<UserPrefere
 // on unless stored `false`, so the Settings row and every surface it gates
 // read one rule.
 export type PanelSwitch =
-  | 'layersPanelEnabled'
-  | 'activityPanelEnabled'
-  | 'collaboratePanelEnabled'
-  | 'quickStylePanelEnabled';
+  'layersPanelEnabled' | 'collaboratePanelEnabled' | 'quickStylePanelEnabled';
 export function panelEnabled(prefs: UserPreferences | undefined, key: PanelSwitch): boolean {
   return prefs?.[key] !== false;
 }

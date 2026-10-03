@@ -20,7 +20,6 @@ export type {
   ParticipantPresence,
   ShareRole,
   ShareLink as ShareLinkDTO,
-  ChangeLogEntry as ChangeLogEntryDTO,
   ServerMessage,
   ClientMessage,
 } from '@livediagram/api-schema';

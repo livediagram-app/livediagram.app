@@ -20,7 +20,7 @@ export type ShareLinkRow = {
 // Pure mapper from D1 row to wire-format DTO. Pulled out of db.ts
 // so the defensive role normalisation has a test surface of its
 // own without dragging the rest of the D1 module along (same
-// pattern as image-strip.ts, image-sniff.ts, change-log-row.ts).
+// pattern as image-strip.ts, image-sniff.ts, tab-row.ts).
 //
 // The role check is intentionally `=== 'view'`: any other value
 // (including 'edit', any future role added on the server before

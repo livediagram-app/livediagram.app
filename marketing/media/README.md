@@ -23,7 +23,7 @@ captioned with what it shows so copywriters can match it to a claim in
 | `settings.png`      | The Settings dialog with its grouped toggles: Canvas, Interface, AI (AI Assistant), Privacy (anonymous usage events). Stale: it shows the removed Minimal panel layout toggle; retake. |
 | `org-hierarchy.png` | An org-chart diagram (CEO to VPs to leads) in **dark mode**, with theme-coloured tabs.                                                                                                 |
 | `backlog.png`       | A Kanban sprint board (Backlog to Done) in dark mode. Stale: it shows the removed Minimal layout's dock popover; retake.                                                               |
-| `sprint-review.png` | A retrospective / Sprint Review board with per-person image-upload cards, and the Tab Activity log panel.                                                                              |
+| `sprint-review.png` | A retrospective / Sprint Review board with per-person image-upload cards. Stale: it shows the removed Tab Activity panel; retake.                                                      |
 
 ### Mobile (`mobile/`)
 

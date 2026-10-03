@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Element, FreehandElement, Tab } from '@livediagram/document';
-import type { ChangeLogEntry, RoomOp } from '@livediagram/api-schema';
+import type { RoomOp } from '@livediagram/api-schema';
 import { migrateRoomOp } from './room-op-migrate';
 
 // docs/specs/006-document/stroke-points.md "Migration of stored strokes": a peer whose browser
@@ -47,17 +47,6 @@ describe('migrateRoomOp', () => {
       const op = migrateRoomOp({ kind: 'el', tabId: 't1', op: elOp });
       packed((op as { op: { element: Element } }).op.element);
     }
-  });
-
-  it('migrates a change-log entry', () => {
-    vi.spyOn(console, 'info').mockImplementation(() => {});
-    const entry = {
-      id: 'e',
-      beforeState: { f1: legacyStroke },
-      afterState: { f1: null },
-    } as unknown as ChangeLogEntry;
-    const op = migrateRoomOp({ kind: 'log', entry });
-    packed((op as Extract<RoomOp, { kind: 'log' }>).entry.beforeState.f1);
   });
 
   it('returns every other op, and an op with nothing to migrate, as it came', () => {

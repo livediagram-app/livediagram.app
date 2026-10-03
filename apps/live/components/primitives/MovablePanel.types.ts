@@ -89,7 +89,7 @@ export type MovablePanelProps = {
   onReset?: () => void;
   onMoveTo: (x: number, y: number) => void;
   // Optional: only called by the legacy dock-button minimise path
-  // (the Activity panel still uses it). Collapsible panels manage
+  // (the Layers panel uses it). Collapsible panels manage
   // their own banner state internally and never invoke this.
   onMinimize?: () => void;
   // When set AND the panel is at its default corner (position is null)

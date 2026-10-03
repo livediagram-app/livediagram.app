@@ -21,7 +21,7 @@ export async function insertTelemetryEvents(
 // 60-day floor (twice the dashboard's longest window, see docs/specs/017-telemetry/telemetry.md
 // "Retention"). The events_ts_idx supports the range scan. Returns
 // the row count deleted so the handler can log it for observability,
-// mirroring `deleteOldChangeLogEntries`.
+// mirroring the other retention sweeps.
 export async function deleteOldEvents(env: Env, cutoffMs: number): Promise<number> {
   const result = await env.DB.prepare('DELETE FROM events WHERE ts < ?').bind(cutoffMs).run();
   return result.meta.changes ?? 0;

@@ -23,7 +23,7 @@ describe('panel-layout', () => {
     // only while its session is running — so most of the time this corner
     // renders as just palette + ai.
     expect(layout.corners['top-right']).toEqual(['palette', 'vote', 'poll', 'ai']);
-    expect(layout.corners['bottom-left']).toEqual(['activity', 'minimap']);
+    expect(layout.corners['bottom-left']).toEqual(['minimap']);
     // Collaborate (docs/specs/012-collaboration/assigned-actions.md §5) sits with Layers, above the cluster
     // buttons they both minimise into.
     expect(layout.corners['bottom-right']).toEqual(['layers', 'collaborate']);

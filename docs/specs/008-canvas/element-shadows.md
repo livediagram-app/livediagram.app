@@ -75,4 +75,4 @@ equivalence), so exports match the canvas. Snapshots ([Document SVG snapshots](.
 - Themes never write shadows; presets are theme-independent.
 - Telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)): preset commits fire `track('Element', 'Changed',
 'Shadow')` via the shared preview/commit path; slider drags stay untracked
-  like the opacity slider (the debounced change-log entry covers audit).
+  like the opacity slider.

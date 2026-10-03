@@ -387,13 +387,10 @@ board's behaviour changes at all.
   the preview promised.
 - **One undoable step.** The ripple and the new note are one commit
   through the ordinary choke point, so layer stamping, board-kind
-  stamping, the activity-log entry and autosave all happen as usual, and
+  stamping and autosave all happen as usual, and
   a single Undo restores the board exactly. The ripple runs against the
   tab as it is at drop time, not the snapshot the drag started from, so
   a peer's mid-drag edit is not reverted by the drop that follows it.
-  The activity log names the act ("Inserted a Sticky note, moving 2
-  Sticky notes right") rather than listing an add and some unrelated
-  edits.
 - **Never offered where the drop would be refused**: a view-only
   session, a locked tab, or a hidden / locked active layer sees no
   preview at all. `canInsertBetweenOn(gate, altHeld)` is ONE predicate
@@ -921,7 +918,7 @@ low-threshold capture surface can least afford.
   different, the review SHOWS it ("on the board as …") and leaves it. The board
   is the record; the photo is a reading of one moment of the wall.
 - **The photo is never stored, and never even sent.** Not R2, not D1, not
-  IndexedDB, not the change log — and not the api either. The browser decodes
+  IndexedDB — and not the api either. The browser decodes
   it (honouring the EXIF orientation flag), detects on a downscaled working
   copy, cuts each detected sticky out of the full-resolution bitmap and
   re-encodes that CROP as a small JPEG (which drops EXIF with it). Only the

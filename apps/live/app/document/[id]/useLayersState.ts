@@ -42,7 +42,7 @@ export function useLayersState(opts: {
   // undoable step per drag gesture instead of one per tick (the same
   // policy the colour setters follow).
   tickTabs: (mapTabs: (ts: Tab[]) => Tab[]) => void;
-  markCheckpoint: () => number;
+  markCheckpoint: () => void;
   // Surfaces the "adding is paused" notice when the active layer goes
   // hidden / locked — the block itself is silent by design.
   toastInfo: (message: string) => void;

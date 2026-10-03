@@ -166,7 +166,7 @@ v5 test runner with every check green: nothing invoked the broken path.
     event-storming lanes + photo placement, names, themes, element shadows,
     the headless SVG renderer's fidelity and coverage, validation.
   - `apps/live`: the lib layer's helpers (api client + Offline Mode store,
-    auto-align, canvas geometry + backgrounds, change-log, export/import,
+    auto-align, canvas geometry + backgrounds, export/import,
     search, templates + theme catalogues, user preferences, telemetry policy,
     placement, help deep links, the photo-model worker's plumbing), the pure
     helpers behind hooks, and a large jsdom layer of hook and component tests

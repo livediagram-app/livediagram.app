@@ -172,7 +172,7 @@ export async function deleteAccount(
 // stops showing up there, which is the right outcome (the Clerk
 // twin is identical bytes anyway).
 //
-// Other tables (`change_log`, `share_links`, `tabs`) don't carry
+// Other tables (`share_links`, `tabs`) don't carry
 // their own owner_id, they link via `document_id` which is
 // owner-bound, so updating the documents cascade-fixes them
 // implicitly.

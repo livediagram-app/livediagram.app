@@ -352,9 +352,8 @@ describe('response helpers (observed through api callers)', () => {
 //     (apiDismissSharedWith, apiDeleteImage) opted in to a stricter
 //     behaviour where 404 surfaces as a real error. The helper's
 //     `allow404: false` flag preserves that distinction.
-//   - share-code forwarding. The three DELETEs that take a
-//     `shareCode` (delete tab, delete change-log-for-tab, delete
-//     change-log entry) must round-trip the code as an
+//   - share-code forwarding. A DELETE that takes a `shareCode`
+//     (delete tab) must round-trip the code as an
 //     `X-Share-Code` request header, otherwise an edit-role
 //     visitor's revoke would 403 server-side.
 //

@@ -57,7 +57,6 @@ const LIVE_ROOT_ASSETS = new Set(['/icon.svg']);
 const HELP_CATEGORY_SEGMENTS = new Set([
   'about',
   'account-and-data',
-  'activity-panel',
   'canvas',
   'collaboration',
   'contact',

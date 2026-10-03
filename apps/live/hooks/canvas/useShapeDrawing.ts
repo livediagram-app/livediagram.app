@@ -51,8 +51,8 @@ type ShapeDrawingDeps = {
   // The viewer works in Draw mode (docs/specs/007-editor/editor-modes.md): what is drawn is
   // written the Draw way (unpainted ink, no fill, hugging text, a sticky open for typing).
   drawMode: boolean;
-  // Every draw lands through the functional `commit` (live elements +
-  // activity-log emit): the commit closure is frozen for the whole
+  // Every draw lands through the functional `commit` (live elements): the
+  // commit closure is frozen for the whole
   // gesture, so a wholesale write of gesture-start elements would
   // revert anything that landed mid-drag.
   commit: (mapElements: (els: Element[]) => Element[]) => void;

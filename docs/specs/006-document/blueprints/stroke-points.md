@@ -172,10 +172,9 @@ export function migrateIncomingElements(elements: readonly unknown[]): Element[]
   whose elements are all objects is migrated, anything else passes through for validation to
   refuse) and `migrateIncomingElements(elements: readonly unknown[]): Element[]` (non-objects
   dropped). Callers: the api's create and tab save (`migrateIncomingTab` before `isValidTab`),
-  `migrateRoomOp` on every received room op (`tab`, `el` add and update, `log`),
+  `migrateRoomOp` on every received room op (`tab`, `el` add and update),
   `parseElementsPayload` (clipboard) and `parseImportedTab` (tab file) via
-  `migrateIncomingElements` before `isValidElement`, and `migrateChangeLogEntry` on entries from
-  `apiListChangeLog` (online and offline) and the room's `log` op, before Revert can apply them.
+  `migrateIncomingElements` before `isValidElement`.
 - **Versions:** `TAB_SCHEMA_VERSION` and `CLIPBOARD_SCHEMA_VERSION` become 2;
   `DOCUMENT_SCHEMA_VERSION` stays 1 (read only into the api's create).
 
@@ -205,7 +204,6 @@ fields from the type and compiling every workspace, plus the untyped entry point
 | Realtime            | `apps/live/app/document/[id]/useRoomConnection.ts`, `room-op-migrate.ts`             | `migrateRoomOp` on receipt                                                          |
 | Clipboard           | `apps/live/lib/clipboard-payload.ts`                                                 | migrate before `isValidElement`; `CLIPBOARD_SCHEMA_VERSION` 2                       |
 | Tab file import     | `apps/live/lib/import-tab.ts`, `export-tab-text.ts`                                  | migrate; `TAB_SCHEMA_VERSION` 2                                                     |
-| Change log          | `apps/live/lib/api/change-log.ts`, `change-log-migrate.ts`, room `log` op            | `migrateChangeLogEntry`                                                             |
 | Api writes          | `apps/api/src/routes/documents.ts`, `document-subresource-routes.ts`                 | `migrateStoredTab` before `isValidTab`                                              |
 | Api reads           | `apps/api/src/tab-row.ts`, `thumbnail.ts`                                            | unchanged (already migrate)                                                         |
 | Offline store       | `apps/live/lib/offline/offline-store.ts`                                             | unchanged (already migrates)                                                        |
@@ -307,7 +305,6 @@ The api's existing `invalid tab` 400 covers a block that fails validation.
 | Clipboard and tab import migrate                                                                                                | `apps/live/lib/clipboard-payload.test.ts`, `import-tab.test.ts`                     |
 | Room ops migrated on receipt                                                                                                    | `apps/live/app/document/[id]/room-op-migrate.test.ts`                               |
 | Untrusted tabs and elements: migrated or passed through                                                                         | `packages/document/src/legacy-stroke-points.test.ts`                                |
-| Change-log entries migrate                                                                                                      | `apps/live/lib/change-log-migrate.test.ts`                                          |
 | MCP packs a model's former-shape stroke; an update's points replace the block                                                   | `apps/mcp/src/element-normalise.test.ts`                                            |
 | Every template builds a valid tab with packed strokes (MCP and editor)                                                          | `apps/mcp/src/tab-builders.test.ts`                                                 |
 | Drive mirror round trip keeps packed strokes byte for byte                                                                      | `apps/live/lib/drive/open-with.test.ts`                                             |

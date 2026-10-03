@@ -10,14 +10,13 @@
 //   - The first hover snapshots the affected elements' ORIGINAL values. Every
 //     hover maps the preset from those originals (not from the current preview)
 //     so hovering A then B previews B cleanly, never B-stacked-on-A.
-//   - Preview + revert go through `tickTabs` (present-only, NO undo snapshot and
-//     NO activity-log emit), so sweeping across a row of tiles can't spam
+//   - Preview + revert go through `tickTabs` (present-only, NO undo snapshot),
+//     so sweeping across a row of tiles can't spam
 //     history or the realtime channel.
 //   - The click commit restores the originals into the present FIRST, then
 //     applies the preset. The two functional `setHistory` updaters compose in
 //     one React batch, so undo snapshots the TRUE pre-hover state — not the
-//     preview that was momentarily on screen. The activity entry is emitted with
-//     the original `before`, so it diffs and reverts correctly.
+//     preview that was momentarily on screen.
 //   - It also works with no prior hover (touch tap, or a click that never fired
 //     pointerenter): the commit captures the originals on the spot.
 //
@@ -92,12 +91,10 @@ export function useStylePreview(deps: {
   currentSelectionIds: () => Set<string>;
   // Live tabs mirror — read the current elements without a stale render closure.
   tabsRef: MutableRefObject<Tab[]>;
-  // Present-only mutator (no history, no log) for the ephemeral preview + revert.
+  // Present-only mutator (no history) for the ephemeral preview + revert.
   tickTabs: (mapTabs: (tabs: Tab[]) => Tab[]) => void;
   // History-pushing mutator for the committed change.
   commitTabs: (mapTabs: (tabs: Tab[]) => Tab[]) => void;
-  // Activity-log emit for the committed change (before/after element diff).
-  emitChange: (tabId: string, before: Element[], after: Element[]) => void;
   // Flipped on while a preview is on screen so autosave skips the ephemeral
   // tick (the preview mutates `tabs` to render, but must not be persisted).
   // Cleared by the commit and the revert.
@@ -114,7 +111,6 @@ export function useStylePreview(deps: {
     tabsRef,
     tickTabs,
     commitTabs,
-    emitChange,
     previewingRef,
     onCommitted,
   } = deps;
@@ -186,7 +182,7 @@ export function useStylePreview(deps: {
     );
   };
 
-  // Commit `mapEl` as one history step + activity entry, from the true original
+  // Commit `mapEl` as one history step, from the true original
   // base (see the file header).
   const commitStyle = (
     mapEl: (el: Element) => Element,
@@ -207,7 +203,6 @@ export function useStylePreview(deps: {
     // the composed updaters snapshot the original onto the undo stack.
     writeElements(before);
     commitTabs((ts) => ts.map((t) => (t.id === activeId ? { ...t, elements: after } : t)));
-    emitChange(activeId, before, after);
     onCommitted?.(before, after);
     track('Element', 'Changed', telemetryType);
   };

@@ -11,13 +11,7 @@
 // dispatch can answer "is this id offline?" cheaply.
 
 import { upgradeStores } from './legacy-offline-store';
-import type {
-  ChangeLogEntry,
-  LiveDoc,
-  DocumentSummary,
-  RecordedIntent,
-  TabSummary,
-} from '@livediagram/api-schema';
+import type { LiveDoc, DocumentSummary, RecordedIntent, TabSummary } from '@livediagram/api-schema';
 import { migrateStoredTab, stampTabKind } from '@livediagram/document';
 import type { Tab } from '@livediagram/document';
 import { DocumentTrashedError } from '../document-trashed';
@@ -40,10 +34,6 @@ export type OfflineDocumentRecord = {
   createdAt: number;
   savedAt: number;
   tabs: Tab[];
-  // Activity / change log, newest first (docs/specs/006-document/offline-mode.md: local-only, kept in the
-  // document record). Optional so records written before the field existed
-  // stay valid. Managed by ./offline-change-log.ts.
-  log?: ChangeLogEntry[];
   // Slide deck (docs/specs/012-collaboration/presentation-mode.md), serialised StoredPresentation. Offline documents get
   // decks for the same reason they get everything else: Offline Mode is the
   // whole product minus the server, not a reduced one. Optional so records
@@ -319,8 +309,8 @@ function forgetId(id: string): void {
 // ---------------------------------------------------------------------------
 
 // Every mutation below rewrites the WHOLE record after reading it, so two
-// concurrent ops (a tab autosave racing a change-log append, or a revert's
-// log wipe racing the reverted tab's save) could each read the same snapshot
+// concurrent ops (two tab autosaves, or a tab save racing a rename) could
+// each read the same snapshot
 // and the later put would silently drop the earlier write. One module-level
 // chain serialises all read-modify-write ops; each is a couple of IndexedDB
 // round-trips, so queueing adds no perceptible latency.

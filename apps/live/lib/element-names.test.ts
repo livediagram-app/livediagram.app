@@ -9,9 +9,9 @@ import {
 } from '@livediagram/document';
 import { describeMany, describeOne, elementAriaLabel, kindLabel } from './element-names';
 
-// Shared element naming (docs/specs/004-interface-design/canvas-accessibility.md + docs/specs/012-collaboration/activity-and-audit.md): the change log and the
-// canvas aria-labels / announcements read the same names. These tests
-// pin the formats both surfaces rely on.
+// Shared element naming (docs/specs/004-interface-design/canvas-accessibility.md): the canvas aria-labels /
+// announcements and the other surfaces that name an element read the same
+// names. These tests pin the formats they rely on.
 
 const square = (label?: string) => ({ ...createShape('square', 0, 0), label });
 const arrow = (label?: string) => ({

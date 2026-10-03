@@ -2,14 +2,10 @@
 // editor-page.tsx: theme switching, the background controls (pattern /
 // colour / opacity / pattern-colour), reset-elements-to-theme, and
 // auto-align. They all mutate the *active tab* rather than a selected
-// element, and share the same activity-log policy: structural one-shot
-// edits (theme, pattern, reset) emit immediately via `emitTabMeta`,
-// while the high-frequency slider edits (background colour / opacity /
-// pattern colour) debounce through `scheduleTabMetaLog`.
-//
-// `scheduleTabMetaLog` is passed in rather than created here because
-// the same debounce hook also feeds `scheduleElementChangeLog` to
-// useElementStyle — one debounce instance, two consumers.
+// element. Structural one-shot edits (theme, pattern, reset) commit one
+// undo step each, while the high-frequency slider edits (background
+// colour / opacity / pattern colour) take one step per burst through
+// `checkpointBurst` (see useBurstCheckpoint).
 
 import {
   isBoxed,
@@ -21,26 +17,8 @@ import {
 import { track, titleCaseType } from '@/lib/telemetry';
 import { AUTO_LAYOUT_CHOICES, type AutoLayoutChoice } from '@/lib/auto-layout-choices';
 import { cleanupElements } from '@/lib/tab-cleanup';
-import { FONTS } from '@livediagram/document';
-import { PATTERNS } from '@/components/palette/palette-controls';
 import { useTabTheme } from './useTabTheme';
 import { useDebouncedCanvasTelemetry } from './useDebouncedCanvasTelemetry';
-
-// Human-readable names for the activity log, so an entry reads
-// "Changed default text size to Medium" rather than leaking the raw
-// internal code ("md"). These mirror the labels shown on the controls
-// themselves (TabSection hover cards for sizes, `PATTERNS` for patterns).
-const TEXT_SIZE_LABELS: Record<TextSize, string> = {
-  scale: 'Scale to fit',
-  sm: 'Small',
-  md: 'Medium',
-  lg: 'Large',
-};
-// Pattern display name from the single source of truth (`PATTERNS`),
-// falling back to the raw id only if a new pattern lands without a
-// label entry.
-const patternLabel = (pattern: BackgroundPattern): string =>
-  PATTERNS.find((p) => p.id === pattern)?.label ?? pattern;
 
 type TabCanvasDeps = {
   // True when edits are disallowed (read-only role / locked tab). Every
@@ -48,50 +26,27 @@ type TabCanvasDeps = {
   editsBlocked: boolean;
   activeId: string;
   activeTab: Tab;
-  // History-aware element mutator (snapshots + emits the log). Used by
-  // auto-align, whose before/after diff IS the log entry.
+  // History-aware element mutator. Used by auto-align and auto-layout.
   commit: (mapElements: (els: Element[]) => Element[]) => void;
   // History-pushing tab mutator, for the DISCRETE tab-meta edits (theme
-  // / font / pattern picks) — each is one undoable step, paired with an
-  // explicit activity-log emit.
+  // / font / pattern picks); each is one undoable step.
   commitTabs: (mapTabs: (ts: Tab[]) => Tab[]) => void;
-  // Non-history tab mutator + one-shot checkpoint, for the CONTINUOUS
+  // Non-history tab mutator + per-burst checkpoint, for the CONTINUOUS
   // slider setters: a commit per onChange tick flooded the bounded undo
   // stack in a single drag, so a gesture checkpoints once (when its
-  // debounce window opens) and ticks thereafter. The checkpoint returns
-  // its undo-marker token so the debounced log entry can fill the
-  // gesture's OWN step (see lib/entry-history).
+  // burst opens, see useBurstCheckpoint) and ticks thereafter.
   tickTabs: (mapTabs: (ts: Tab[]) => Tab[]) => void;
-  markCheckpoint: () => number;
-  // Immediate activity-log entry for one-shot tab-meta edits.
-  emitTabMeta: (tabId: string, summary: string) => void;
-  // Debounced activity-log entry for the slider-driven appearance
-  // edits, keyed so rapid changes collapse to one line. Runs
-  // `onWindowStart` once per fresh window (gesture start) and fills
-  // the marker of the token it returns.
-  scheduleTabMetaLog: (key: string, summary: string, onWindowStart?: () => number) => void;
+  checkpointBurst: (key: string) => void;
 };
 
 export function useTabCanvas(deps: TabCanvasDeps) {
-  const {
-    editsBlocked,
-    activeId,
-    activeTab,
-    commit,
-    commitTabs,
-    tickTabs,
-    markCheckpoint,
-    emitTabMeta,
-    scheduleTabMetaLog,
-  } = deps;
+  const { editsBlocked, activeId, activeTab, commit, commitTabs, tickTabs, checkpointBurst } = deps;
 
-  // Shared body of the four slider setters: one undoable step per
-  // gesture (checkpoint when the log's debounce window opens, its
-  // token handed to the debouncer so the flushed entry fills THIS
-  // gesture's marker), then history-less ticks for the rest of the
-  // drag.
-  const patchActiveTabDebounced = (key: string, summary: string, patch: (t: Tab) => Tab) => {
-    scheduleTabMetaLog(key, summary, markCheckpoint);
+  // Shared body of the slider setters: one undoable step per gesture
+  // (checkpoint when its burst opens), then history-less ticks for the
+  // rest of the drag.
+  const patchActiveTabDebounced = (key: string, patch: (t: Tab) => Tab) => {
+    checkpointBurst(key);
     tickTabs((ts) => ts.map((t) => (t.id === activeId ? patch(t) : t)));
   };
 
@@ -102,10 +57,7 @@ export function useTabCanvas(deps: TabCanvasDeps) {
   const autoAlignTab = () => {
     if (editsBlocked) return;
     if (activeTab.elements.length === 0) return;
-    // `commit` snapshots the pre-align state (so undo restores it)
-    // AND fires emitChange for the activity log. Adding emitTabMeta
-    // on top would duplicate the entry without adding undo coverage;
-    // the diff-based summary from emitChange is the canonical line.
+    // `commit` snapshots the pre-align state, so undo restores it.
     commit((els) => cleanupElements(els, 'align'));
     track('Tab', 'Aligned');
   };
@@ -144,13 +96,6 @@ export function useTabCanvas(deps: TabCanvasDeps) {
         return { ...t, font };
       }),
     );
-    // Name the font in the entry ("Changed tab font to Poppins") — a
-    // bare "Changed tab font" tells the reader nothing they can act on.
-    const fontLabel = font ? (FONTS.find((f) => f.id === font)?.label ?? font) : null;
-    emitTabMeta(
-      activeId,
-      fontLabel ? `Changed the tab font to ${fontLabel}` : 'Reset the tab font to the default',
-    );
     track('Tab', 'Changed', 'Font');
   };
 
@@ -180,7 +125,6 @@ export function useTabCanvas(deps: TabCanvasDeps) {
   const setTabDefaultTextSize = (size: TextSize) => {
     if (editsBlocked) return;
     commitTabs((ts) => ts.map((t) => (t.id === activeId ? { ...t, defaultTextSize: size } : t)));
-    emitTabMeta(activeId, `Changed default text size to ${TEXT_SIZE_LABELS[size]}`);
     track('Tab', 'Changed', 'DefaultTextSize');
   };
 
@@ -188,14 +132,6 @@ export function useTabCanvas(deps: TabCanvasDeps) {
     if (editsBlocked) return;
     commitTabs((ts) =>
       ts.map((t) => (t.id === activeId ? { ...t, backgroundPattern: pattern } : t)),
-    );
-    // 'blank' means no pattern at all, so name the effect rather than
-    // saying "Changed canvas pattern to Blank".
-    emitTabMeta(
-      activeId,
-      pattern === 'blank'
-        ? 'Removed canvas pattern'
-        : `Changed canvas pattern to ${patternLabel(pattern)}`,
     );
     // Telemetry (docs/specs/017-telemetry/telemetry.md): `type` is the pattern preset, never content.
     track('Canvas', 'Changed', titleCaseType(pattern));
@@ -208,12 +144,11 @@ export function useTabCanvas(deps: TabCanvasDeps) {
     activeId,
     activeTab,
     commitTabs,
-    emitTabMeta,
   });
 
   const setBackgroundColor = (color: string) => {
     if (editsBlocked) return;
-    patchActiveTabDebounced('backgroundColor', `Changed canvas colour to ${color}`, (t) => ({
+    patchActiveTabDebounced('backgroundColor', (t) => ({
       ...t,
       backgroundColor: color,
     }));
@@ -222,17 +157,13 @@ export function useTabCanvas(deps: TabCanvasDeps) {
 
   const setBackgroundOpacity = (opacity: number) => {
     if (editsBlocked) return;
-    patchActiveTabDebounced(
-      'backgroundOpacity',
-      `Changed background opacity to ${Math.round(opacity * 100)}%`,
-      (t) => ({ ...t, backgroundOpacity: opacity }),
-    );
+    patchActiveTabDebounced('backgroundOpacity', (t) => ({ ...t, backgroundOpacity: opacity }));
     scheduleCanvasTelemetry('backgroundOpacity', 'BackgroundOpacity');
   };
 
   const setPatternColor = (color: string) => {
     if (editsBlocked) return;
-    patchActiveTabDebounced('patternColor', `Changed pattern colour to ${color}`, (t) => ({
+    patchActiveTabDebounced('patternColor', (t) => ({
       ...t,
       patternColor: color,
     }));
@@ -241,11 +172,10 @@ export function useTabCanvas(deps: TabCanvasDeps) {
 
   const setBackgroundPatternScale = (scale: number) => {
     if (editsBlocked) return;
-    patchActiveTabDebounced(
-      'backgroundPatternScale',
-      `Changed pattern size to ${Math.round(scale * 100)}%`,
-      (t) => ({ ...t, backgroundPatternScale: scale }),
-    );
+    patchActiveTabDebounced('backgroundPatternScale', (t) => ({
+      ...t,
+      backgroundPatternScale: scale,
+    }));
     scheduleCanvasTelemetry('backgroundPatternScale', 'BackgroundPatternScale');
   };
 
@@ -255,11 +185,10 @@ export function useTabCanvas(deps: TabCanvasDeps) {
   // CanvasStyleControls); a static pattern simply ignores the field.
   const setBackgroundAnimationSpeed = (speed: number) => {
     if (editsBlocked) return;
-    patchActiveTabDebounced(
-      'backgroundAnimationSpeed',
-      `Changed background animation speed to ${Math.round(speed * 100)}%`,
-      (t) => ({ ...t, backgroundAnimationSpeed: speed }),
-    );
+    patchActiveTabDebounced('backgroundAnimationSpeed', (t) => ({
+      ...t,
+      backgroundAnimationSpeed: speed,
+    }));
     scheduleCanvasTelemetry('backgroundAnimationSpeed', 'BackgroundAnimationSpeed');
   };
 

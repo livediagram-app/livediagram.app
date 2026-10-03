@@ -2,15 +2,13 @@
 
 // The eraser canvas tool (docs/specs/008-canvas/canvas-and-palette.md). Pressing on the canvas deletes
 // whatever element is under the pointer; holding and dragging deletes
-// everything the drag passes over. The whole press-drag is ONE undo and
-// ONE activity-log entry, however many elements it removes:
+// everything the drag passes over. The whole press-drag is ONE undo,
+// however many elements it removes:
 //   - markCheckpoint() once (on the first actual deletion) → single undo,
 //     the same checkpoint-then-tick pattern useEditorDrag uses for a move;
-//   - tick() per removal for live feedback (no per-element log / history);
-//   - emitChange(before → after) once on release → single activity entry
-//     diffing the whole gesture (the same path multi-delete uses).
-// An empty-canvas press that erases nothing costs no checkpoint and no
-// entry (the checkpoint is taken lazily, only when something is removed).
+//   - tick() per removal for live feedback (no per-element history).
+// An empty-canvas press that erases nothing costs no checkpoint (it is
+// taken lazily, only when something is removed).
 //
 // Hit-testing rides the DOM rather than re-deriving per-type geometry:
 // every element wrapper (and the arrow hit band) carries data-element-id,
@@ -29,7 +27,6 @@
 // working even if the pointer leaves the canvas surface mid-drag.
 
 import { useEffect, useRef } from 'react';
-import type { ChangeLogEntry } from '@livediagram/api-schema';
 import { arrowReferencesAny, type Element, type Tab } from '@livediagram/document';
 
 import { elementHostsAtPoint } from '@/lib/dom-hit-test';
@@ -71,19 +68,7 @@ type EraserDeps = {
   // Element-level write WITHOUT a fresh history checkpoint (see
   // useEditorHistory.tick) — paired with one markCheckpoint() per gesture.
   tick: (mapElements: (els: Element[]) => Element[]) => void;
-  // Returns the pushed step's undo-marker token (lib/entry-history).
-  markCheckpoint: () => number;
-  // One activity-log entry for the gesture (diffs before → after). Same
-  // emitter the history-aware commit uses; the fill token routes the
-  // entry to the gesture's OWN undo step even if another step landed
-  // between the checkpoint and the release.
-  emitChange: (
-    tabId: string,
-    before: Element[],
-    after: Element[],
-    override?: { kind: ChangeLogEntry['kind']; summary: string },
-    opts?: { fillToken?: number },
-  ) => void;
+  markCheckpoint: () => void;
   setSelectedId: (id: string | null) => void;
   setEditingId: (id: string | null) => void;
   // On a whiteboard (docs/specs/023-draw-mode/draw-mode.md "Eraser"): a stroke is touched where its INK
@@ -100,13 +85,9 @@ export function useCanvasEraser(deps: EraserDeps) {
   // lingers, and growing it lets the tick filter cascade pinned arrows
   // once an endpoint is erased.
   const erasedRef = useRef<Set<string>>(new Set());
-  // The pre-gesture element list, for the single end-of-gesture diff.
-  const beforeRef = useRef<Element[]>([]);
   // Whether this gesture has taken its undo checkpoint yet (taken lazily
-  // on the first real deletion so an empty press is a no-op), and the
-  // checkpoint's marker token for the end-of-gesture log emit.
+  // on the first real deletion so an empty press is a no-op).
   const checkpointedRef = useRef(false);
-  const gestureTokenRef = useRef<number | undefined>(undefined);
   // Whiteboard: the press's canvas frame, the previous sample (the brush sweeps
   // the segment between samples, so a fast swipe cannot skip a stroke) and
   // whether a Partial step changed anything.
@@ -118,7 +99,7 @@ export function useCanvasEraser(deps: EraserDeps) {
 
   const checkpointOnce = () => {
     if (checkpointedRef.current) return;
-    gestureTokenRef.current = depsRef.current.markCheckpoint();
+    depsRef.current.markCheckpoint();
     checkpointedRef.current = true;
   };
 
@@ -220,7 +201,6 @@ export function useCanvasEraser(deps: EraserDeps) {
     const { editsBlocked, activeTab, setSelectedId, setEditingId } = depsRef.current;
     if (editsBlocked || activeTab.locked === true) return;
     erasedRef.current = new Set();
-    beforeRef.current = activeTab.elements;
     checkpointedRef.current = false;
     frameRef.current = frame ?? null;
     prevRef.current = null;
@@ -249,12 +229,6 @@ export function useCanvasEraser(deps: EraserDeps) {
       detach();
       if (erasedRef.current.size > 0 || cutRef.current) {
         track('Element', 'Deleted', 'Eraser');
-        // One activity entry for the whole gesture: diff the pre-gesture
-        // list against the now-current one.
-        const { activeId, activeTab: liveTab, emitChange } = depsRef.current;
-        emitChange(activeId, beforeRef.current, liveTab.elements, undefined, {
-          fillToken: gestureTokenRef.current,
-        });
       }
       erasedRef.current = new Set();
     };

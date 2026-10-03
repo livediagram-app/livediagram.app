@@ -79,7 +79,7 @@ Parsing is **field by field with per-field fallbacks**: a value this build doesn
 - The whole canvas layer goes **pointer-inert** (`pointer-events: none`), so no click can select, drag, resize, or double-click-edit any element kind. A per-element guard cannot cover every path (boxed elements, arrow hit-bands, labels), which is why the layer-level switch is the mechanism.
 - The **arrow keys belong to the avatar**, so they never nudge a selection.
 - The **mutating plain-key shortcuts are suppressed** (element adds, Eraser, Pencil). The non-mutating view tools (`V` / `H` / `K` / `I` / `Z`) keep working so you can always leave, and `Escape` exits the mode to Select (Hand on touch), matching Isometric.
-- Nothing is persisted or written to the change log. The one thing that leaves the browser is the ephemeral presence snapshot peers need to draw the character (below).
+- Nothing is persisted. The one thing that leaves the browser is the ephemeral presence snapshot peers need to draw the character (below).
 - **Reaching for the palette leaves the mode.** Picking any palette tile — or dragging one onto the canvas — exits Avatar mode back to **whichever tool was active before it** (not a hardcoded Select) and then performs the add, so a click on the palette mid-walk drops the element instead of being swallowed by a read-only canvas. Implemented as one wrapper over the whole tile-action bundle, so tiles added later inherit it.
 
 ## Realtime

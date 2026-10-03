@@ -27,7 +27,7 @@ import { ToolbarPalette } from '@/components/palette/ToolbarPalette';
 import { pickPaletteAddHandlers } from '@/components/palette/palette-add-handlers';
 import { ToolbarExplorerButton } from '@/components/chrome/ToolbarExplorerButton';
 import { LayersClusterButton } from '@/components/canvas/LayersClusterButton';
-import { ActivityClusterStrip } from '@/components/canvas/ActivityClusterStrip';
+import { UndoRedoClusterStrip } from '@/components/canvas/UndoRedoClusterStrip';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { Fragment, type Dispatch, type RefObject, type SetStateAction } from 'react';
 import type { DockAnchor, DockPanel } from '@/hooks/canvas/useDockPopovers';
@@ -191,14 +191,13 @@ const DOCK_CORNER_CLASS: Record<PanelCorner, string> = {
 
 // The floating chrome layer of the canvas: empty-state prompt, template
 // picker, multi-select toolbar, mode banners, Explorer, the
-// Activity / Comments / Editor / Context panels, the palette, and
+// Comments / Editor / Context panels, the palette, and
 // the zoom / undo cluster. Extracted from Canvas.tsx verbatim; consumes
 // Canvas's props plus the computed ChromeExtras.
 
 export function CanvasChrome(props: CanvasChromeProps) {
   const {
     activeDockPanel,
-    activityMinimized,
     canRedo,
     canUndo,
     canvasTool,
@@ -225,7 +224,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
     onIsoOrbit,
     onIsoReset,
     onSkipTemplatePicker,
-    onToggleActivityMinimized,
     onUndo,
     pendingDraw,
     penPoints,
@@ -260,7 +258,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
   // buttons with them (Undo / Redo stay). Read once here and handed to
   // useCanvasChromePanels, so a button and its panel share one value.
   const panelsOn = {
-    activity: panelEnabled(settings, 'activityPanelEnabled'),
     layers: panelEnabled(settings, 'layersPanelEnabled'),
     collaborate: panelEnabled(settings, 'collaboratePanelEnabled'),
   };
@@ -547,7 +544,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
           {panelEls.explorer}
           {panelEls.collaborate}
           {panelEls.ai}
-          {panelEls.activity}
           {panelEls.palette}
           {panelEls.minimap}
           {panelEls.layers}
@@ -563,12 +559,11 @@ export function CanvasChrome(props: CanvasChromeProps) {
         </>
       )}
 
-      {/* Bottom-right cluster. Order, left to right: the Activity strip
-          (with inline Undo / Redo), the Layers button, the Collaborate button
-          (only while the tab has a thread or an action), the Theme & Canvas
-          paintbrush, then the Zoom controls. Activity + Layers minimise into
-          their buttons in desktop Floating and open as popovers above them
-          everywhere else (clusterPopovers, docs/specs/007-editor/live-app.md); Collaborate is a popover
+      {/* Bottom-right cluster. Order, left to right: the Undo / Redo
+          strip, the Layers button, the Collaborate button (only while the tab
+          has a thread or an action), the Theme & Canvas paintbrush, then the
+          Zoom controls. Layers minimises into its button in desktop Floating
+          and opens as a popover above it everywhere else (clusterPopovers, docs/specs/007-editor/live-app.md); Collaborate is a popover
           in every layout. */}
       <div
         // Presenting hides this cluster (docs/specs/012-collaboration/presentation-mode.md): zen keeps the zoom controls
@@ -590,22 +585,9 @@ export function CanvasChrome(props: CanvasChromeProps) {
         {welcomeOpen ? null : (
           <>
             {offscreenContent ? <OffscreenContentHint onBringBack={onFitToScreen} /> : null}
-            {/* Activity + Undo / Redo (docs/specs/012-collaboration/activity-and-audit.md): see ActivityClusterStrip. */}
-            {/* With the Activity panel off there is no panel to carry Undo /
-                Redo in Floating, so the strip shows in every layout, as just
-                those two. */}
-            {!zenMode &&
-            !readOnly &&
-            (!panelsOn.activity || clusterPopovers || activityMinimized) ? (
-              <ActivityClusterStrip
-                showActivity={panelsOn.activity}
-                popoverOpen={clusterPopovers && activeDockPanel === 'activity'}
-                onExpand={onToggleActivityMinimized}
-                onTogglePopover={
-                  !clusterPopovers
-                    ? undefined
-                    : (button) => handleDockButtonClick('activity', button, true)
-                }
+            {/* Undo / Redo: see UndoRedoClusterStrip. */}
+            {!zenMode && !readOnly ? (
+              <UndoRedoClusterStrip
                 onUndo={onUndo}
                 onRedo={onRedo}
                 canUndo={canUndo}

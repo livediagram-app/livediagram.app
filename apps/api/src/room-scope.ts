@@ -8,7 +8,6 @@
 // Ops that carry no tab and say nothing about one, which a scoped session
 // still receives: session tools and the worker's share-link and Trash notices.
 const TAB_LESS_DELIVERED = new Set([
-  'log-remove',
   'poll-start',
   'poll-answer',
   'poll-end',
@@ -18,9 +17,9 @@ const TAB_LESS_DELIVERED = new Set([
 ]);
 
 // The tab-less ops a scoped session may itself send.
-const TAB_LESS_SENDABLE = new Set(['log-remove', 'poll-start', 'poll-answer', 'poll-end']);
+const TAB_LESS_SENDABLE = new Set(['poll-start', 'poll-answer', 'poll-end']);
 
-type LooseOp = { kind?: unknown; tabId?: unknown; entry?: { tabId?: unknown }; tabs?: unknown };
+type LooseOp = { kind?: unknown; tabId?: unknown; tabs?: unknown };
 
 function asOp(op: unknown): LooseOp | null {
   return typeof op === 'object' && op !== null ? (op as LooseOp) : null;
@@ -29,7 +28,6 @@ function asOp(op: unknown): LooseOp | null {
 // Whether an op is about the scoped tab. `undefined` = the op names no tab
 // at all, so the caller decides by kind.
 function onScope(o: LooseOp, tabScope: string): boolean | undefined {
-  if (o.kind === 'log') return o.entry?.tabId === tabScope;
   if ('tabId' in o) return o.tabId === tabScope;
   if (o.kind === 'select') return false;
   return undefined;

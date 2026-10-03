@@ -154,9 +154,7 @@ export async function recordTeamDocumentRemoved(
 
 // The coalesced editing event (docs/specs/013-workspace/timeline.md §4.2).
 //
-// Emitted from the tab-save path rather than from `change_log`: the log
-// is tab-scoped and 90-day, and reading it back to derive a daily
-// rollup would be a join on every save. The dedupe key collapses a
+// Emitted from the tab-save path. The dedupe key collapses a
 // whole day of saves by one person on one document into a single row
 // whose occurred_at walks forward — otherwise the highest-volume write
 // in the product would bury every other event kind, stacking or not.

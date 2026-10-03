@@ -108,7 +108,6 @@ function harness(element: Element, kind: TabKind = 'diagram') {
     },
     markCheckpoint: () => 1,
     cancelToCheckpoint: vi.fn(),
-    scheduleElementChangeLog: vi.fn(),
     autoRebindArrowsRef: { current: false },
     alignmentGuidesRef: { current: false },
     isPinchingRef: { current: false },

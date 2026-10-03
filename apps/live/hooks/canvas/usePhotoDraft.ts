@@ -130,10 +130,8 @@ type PhotoDraftDeps = {
   // them: arm one checkpoint, write through `tick`, and either leave the step
   // standing or cancel back to it.
   tick: (mapElements: (els: Element[]) => Element[]) => void;
-  markCheckpoint: () => number;
+  markCheckpoint: () => void;
   cancelToCheckpoint: () => void;
-  // One activity-log entry for the whole import, diffing before → after.
-  emitChange: (tabId: string, before: Element[], after: Element[]) => void;
   setSelectedId: (id: string | null) => void;
   setMultiSelectedIds: (ids: Set<string>) => void;
   // Frame a rectangle of canvas (the viewport's own helper). The draft calls
@@ -215,8 +213,9 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
   // Cancel pressed in that window must not land a draft over a board the
   // author has moved on from.
   const runRef = useRef(0);
-  // The board as it stood before the draft landed, for the activity-log diff.
-  const beforeRef = useRef<Element[] | null>(null);
+  // Whether this session armed the landing's checkpoint, so Discard knows it
+  // has a step to cancel back to.
+  const checkpointedRef = useRef(false);
   const live = useLatest(deps);
   // The photo as picked, kept for the review's life: a box the author moves
   // is cut again from it, at full resolution.
@@ -526,7 +525,7 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
         return;
       }
       const matchedIds = new Set(result.matches.map((m) => m.boardId));
-      beforeRef.current = d.activeTab.elements;
+      checkpointedRef.current = true;
       d.markCheckpoint();
       const finalNotes = buildDraftNotes(result.additions, d.activeTab);
       d.tick((els) => [...els, ...finalNotes]);
@@ -577,10 +576,9 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
     // import — the landing AND every correction — is one step.
     const after = acceptDraft(d.activeTab.elements);
     d.tick(() => after);
-    if (beforeRef.current) d.emitChange(d.activeId, beforeRef.current, after);
     track('AI', 'Used', 'PhotoNotes');
     for (const _ of drafts) track('Element', 'Added', 'Sticky');
-    beforeRef.current = null;
+    checkpointedRef.current = false;
     setPhotoDraftView(null);
     setState(EMPTY);
   }, [live]);
@@ -588,7 +586,7 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
   const discard = useCallback(() => {
     const d = live.current;
     if (draftNotesOf(d.activeTab.elements).length === 0) return;
-    if (beforeRef.current) {
+    if (checkpointedRef.current) {
       // The ordinary cancel path: restore the armed snapshot and throw the
       // step away, so a discarded import leaves no trace in the undo stack.
       d.cancelToCheckpoint();
@@ -597,7 +595,7 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
       // back to, so it is removed as an ordinary edit instead.
       d.tick((els) => discardDraft(els));
     }
-    beforeRef.current = null;
+    checkpointedRef.current = false;
     setPhotoDraftView(null);
     setState(EMPTY);
   }, [live]);

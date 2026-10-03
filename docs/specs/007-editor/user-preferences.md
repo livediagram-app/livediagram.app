@@ -158,7 +158,7 @@ type UserPreferences = {
   // stay readable in use. Applied via the `--lvd-panel-opacity` custom
   // property (usePanelOpacity), read by every surface tagged
   // `data-panel-translucent`: MovablePanel in both its floating and its
-  // popover branch (so the Explorer, Layers, Activity and Collaborate
+  // popover branch (so the Explorer, Layers and Collaborate
   // popovers follow it too), the Map, the Quick style panel in every
   // layout and the Toolbar layout's strip. Buttons are not panels: the
   // bottom-right cluster buttons and the zoom controls stay opaque.
@@ -187,11 +187,6 @@ type UserPreferences = {
   // order, visibility, lock and opacity still shape the canvas, and new
   // elements still land on the active layer.
   layersPanelEnabled?: boolean;
-  // `activityPanelEnabled` false: no Activity panel and no Tab Activity
-  // button. Undo and Redo stay, as the cluster strip's only two buttons
-  // (shown in every layout, since the panel that otherwise carries them
-  // in Floating is gone). The change log is still recorded.
-  activityPanelEnabled?: boolean;
   // `collaboratePanelEnabled` false: no Collaborate panel and no
   // Collaborate cluster button, even while the tab has comment threads or
   // actions (the only time either shows when on). Comments and actions
@@ -353,12 +348,16 @@ Missing key === undefined === default behaviour. Concretely:
   reads as 1, out-of-range values clamp ([UI scale](ui-scale.md)). Emits
   `UI`/`Changed`/`UiScale` (or `UiScalePanels`, `UiScaleToolbar`,
   `UiScaleCornerButtons`) on release.
-- `layersPanelEnabled` / `activityPanelEnabled` / `collaboratePanelEnabled` /
+- `layersPanelEnabled` / `collaboratePanelEnabled` /
   `quickStylePanelEnabled` undefined / true → the panel is on (the
   default). `false` removes it and the chrome that reaches it, leaving the
   feature working (see the data model). Emits `UI`/`Toggled`/
-  `LayersPanel{On,Off}`, `ActivityPanel{On,Off}`, `CollaboratePanel{On,Off}`
+  `LayersPanel{On,Off}`, `CollaboratePanel{On,Off}`
   and `QuickStylePanel{On,Off}`.
+- **Retired keys.** `activityPanelEnabled` and the Activity panel's revert
+  hover preview went with the Activity panel (removed 2026-10-03). A value
+  still stored under either is ignored on read and dropped on the next
+  write; Undo and Redo always show in the bottom-right cluster.
 - `quickAddOnHover` undefined / false → click to open an element's quick-add
   `+` menu (the default; hover-open can feel twitchy, so it's opt-in). `true`
   opens it on hover instead, closing a beat after the pointer leaves both the
@@ -519,7 +518,7 @@ and the dialog stays as the one complete, browsable index of them.
   Minimal chrome while the mode is on), **Appearance** (theme, UI scale with a slider per part), **Keyboard**
   (the Keyboard Shortcuts on/off switch, then the full shortcut catalogue as
   collapsible groups), **Panels** (panel layout, panel opacity; with the
-  sub-categories **Layers**, **Activity**, **Map**, **Collaborate** and
+  sub-categories **Layers**, **Map**, **Collaborate** and
   **Quick Style**, one per panel),
   **Notifications** (in-editor, plus the six email preferences),
   **Accessibility** (reduce motion, show welcome tour), **AI Tools** (assistant,
@@ -549,9 +548,9 @@ and the dialog stays as the one complete, browsable index of them.
   only here - see **UI placement** below.
 
   A category can hold **sub-categories** (`parent` on the sub-category's
-  spec): Panels holds Layers, Activity, Map, Collaborate and Quick Style,
+  spec): Panels holds Layers, Map, Collaborate and Quick Style,
   one per panel, each its own pane. Each opens with that panel's **Enable
-  switch** ("Enable Layers Panel", "Enable Activity Panel", "Enable Map",
+  switch** ("Enable Layers Panel", "Enable Map",
   "Enable Collaborate Panel", "Enable Quick Style Panel"; see the panel
   switches in the data model). The panel's other rows nest beneath the
   switch (`parent`) and are offered only while it is on, the way power
@@ -577,8 +576,8 @@ and the dialog stays as the one complete, browsable index of them.
   right-pointing arrow read as the row's own "go" arrow, so the
   sub-categories behind it went unfound.) A
   sub-category carries a plain 16px glyph rather than a tile: its panel's own
-  mark in the editor (Lucide layers for Layers, the Activity panel's clock,
-  the Collaborate button's glyph; the Map and Quick Style, which have no
+  mark in the editor (Lucide layers for Layers, the Collaborate button's
+  glyph; the Map and Quick Style, which have no
   toolbar button, take Lucide map and Lucide palette). Search matches a
   sub-category's rows on its parent's name too, and the canvas search names
   it by path ("in Panels › Layers").

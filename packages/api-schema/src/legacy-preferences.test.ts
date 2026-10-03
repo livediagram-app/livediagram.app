@@ -17,6 +17,16 @@ describe('upgradeLegacyPreferences', () => {
     });
   });
 
+  it('drops the retired Activity panel keys', () => {
+    expect(
+      upgradeLegacyPreferences({
+        activityPanelEnabled: false,
+        activityRevertHoverPreview: false,
+        theme: 'dark',
+      }),
+    ).toEqual({ theme: 'dark' });
+  });
+
   it('returns the same object when there is nothing to upgrade', () => {
     const prefs = { notifyDocumentJoin: false };
     expect(upgradeLegacyPreferences(prefs)).toBe(prefs);

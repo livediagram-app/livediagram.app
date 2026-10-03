@@ -1,6 +1,6 @@
 # Panel corner docking
 
-The editor's floating panels (Palette, Explorer, Activity, Comments, AI, Minimap) each
+The editor's floating panels (Palette, Explorer, Comments, AI, Minimap) each
 ship pinned to a fixed corner (see [Canvas and palette](../008-canvas/canvas-and-palette.md)). This spec lets
 the user **choose which corner each panel sits in**, drag a panel between corners with a
 **snap-to-corner** affordance, **stack** more than one panel in the same corner, and have
@@ -18,10 +18,10 @@ theirs without adding a settings screen.
 
 - **Both panel layouts.** The corner stacks apply in Floating and in Toolbar
   ([Toolbar layout](toolbar-layout.md)), and so on a phone, which always uses Toolbar. In Toolbar the
-  Palette is the strip and the Explorer, Layers, Activity and Collaborate are popovers over
+  Palette is the strip and the Explorer, Layers and Collaborate are popovers over
   their buttons, so they take no corner. **Zen mode** ([Zen mode](zen-mode.md)) still hides
   all chrome; while it is on the docking system is inert.
-- **Participating panels:** Palette, Explorer, Activity, Comments, AI, Minimap — every
+- **Participating panels:** Palette, Explorer, Comments, AI, Minimap — every
   panel built on the shared `MovablePanel`.
 - **Zoom controls stay fixed** bottom-right (they are not a `MovablePanel`; zen mode and
   the body-height measurement both rely on that pin). They are not dockable, and the
@@ -49,7 +49,7 @@ When the user has never arranged panels, the corners match today's defaults:
 | -------------- | ---------------------------- |
 | `top-left`     | Explorer                     |
 | `top-right`    | Palette, Comments, AI        |
-| `bottom-left`  | Activity, Minimap            |
+| `bottom-left`  | Minimap                      |
 | `bottom-right` | _(empty; zoom controls pin)_ |
 
 This preserves the existing arrangement, including Comments / AI stacking beneath the
@@ -113,7 +113,6 @@ type PanelCorner = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 type PanelId =
   | 'palette'
   | 'explorer'
-  | 'activity'
   | 'collaborate'
   | 'ai'
   | 'minimap'

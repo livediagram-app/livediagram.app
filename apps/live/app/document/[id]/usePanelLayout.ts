@@ -13,16 +13,12 @@ type Pos = { x: number; y: number };
 export function usePanelLayout() {
   const [palettePosition, setPalettePosition] = useState<Pos | null>(null);
   const [explorerPosition, setExplorerPosition] = useState<Pos | null>(null);
-  const [activityPosition, setActivityPosition] = useState<Pos | null>(null);
   const [mapPosition, setMapPosition] = useState<Pos | null>(null);
   const [commentsPanelPosition, setCommentsPanelPosition] = useState<Pos | null>(null);
   const [aiPanelPosition, setAiPanelPosition] = useState<Pos | null>(null);
   const [aiPanelVisible, setAiPanelVisible] = useState(false);
-  // Activity defaults to minimised: most users only peek at it
-  // occasionally, and the dock button keeps it one click away.
-  const [activityMinimized, setActivityMinimized] = useState(true);
-  // Layers panel (docs/specs/006-document/layers.md): same pattern — minimised into a bottom-right
-  // dock button until the user opts in, so default chrome is unchanged.
+  // Layers panel (docs/specs/006-document/layers.md): minimised into a bottom-right dock button
+  // until the user opts in, so default chrome is unchanged.
   const [layersPanelPosition, setLayersPanelPosition] = useState<Pos | null>(null);
   const [layersMinimized, setLayersMinimized] = useState(true);
   // Live poll (docs/specs/012-collaboration/live-poll.md): position only. The panel has no minimised state
@@ -55,8 +51,6 @@ export function usePanelLayout() {
     setPalettePosition,
     explorerPosition,
     setExplorerPosition,
-    activityPosition,
-    setActivityPosition,
     mapPosition,
     setMapPosition,
     commentsPanelPosition,
@@ -65,8 +59,6 @@ export function usePanelLayout() {
     setAiPanelPosition,
     aiPanelVisible,
     setAiPanelVisible,
-    activityMinimized,
-    setActivityMinimized,
     layersPanelPosition,
     setLayersPanelPosition,
     layersMinimized,

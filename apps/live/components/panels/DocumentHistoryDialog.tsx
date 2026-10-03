@@ -6,10 +6,8 @@
 // question you ask while looking at the row — bouncing to a route and
 // back would lose your place in the library.
 //
-// Distinct from the editor's Activity Panel (docs/specs/012-collaboration/activity-and-audit.md), which is
-// element-level, tab-scoped and revertable. This is the document-level
-// story: created, renamed, commented on, shared, filed — the events
-// docs/specs/012-collaboration/activity-and-audit.md explicitly left out of scope.
+// The document-level story: created, renamed, commented on, shared,
+// filed.
 
 import { Dialog } from '@/components/dialogs/Dialog';
 import { DialogHeader } from '@/components/dialogs/DialogHeader';

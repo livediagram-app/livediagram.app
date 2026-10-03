@@ -16,7 +16,7 @@ and rely on a delete to clean up.
 
 So a poll lives **only in the realtime room**. It is carried by three new
 `RoomOp` kinds and held in connected clients' memory. Nothing is written to
-D1, nothing enters the change log, nothing is undoable, and no migration or
+D1, nothing is undoable, and no migration or
 schema change is needed anywhere.
 
 **The room remembers it while it runs** ([Collaboration race hardening](collab-race-hardening.md)). The Durable Object keeps

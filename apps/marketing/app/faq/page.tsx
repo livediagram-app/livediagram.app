@@ -74,7 +74,7 @@ const FAQS: { q: string; a: ReactNode; aText?: string }[] = [
   },
   {
     q: 'Can I undo a mistake?',
-    a: 'Yes. Undo and redo cover your recent edits. For anything older, each tab keeps an activity log so you can revert a specific change, even after later edits.',
+    a: 'Yes. Press Cmd-Z (or Ctrl-Z) to step back your recent edits, and Cmd-Shift-Z to bring one back. The undo and redo buttons also sit in the bottom-right corner of the canvas.',
   },
   {
     q: 'Does it work on my phone or tablet?',

@@ -68,9 +68,9 @@ baton, because the REST path can't see which socket holds it.
 
 Named by default, with an **Anonymous** toggle beside the field. A named note
 gets the author's name and colour stamped **by the server** from their
-participant record (the same anti-impersonation rule comments take, [Activity and audit log](activity-and-audit.md)),
-never read from the request. An anonymous note has no `author` at all, and like
-the Idea box ([Idea box](idea-box.md)) nothing about the write goes to the change log. The
+participant record (the same anti-impersonation rule comments take),
+never read from the request. An anonymous note has no `author` at all, like
+the Idea box ([Idea box](idea-box.md)). The
 wire-level limit [Idea box](idea-box.md) states applies here too: this is anonymity against
 the room, not against someone reading the api's logs.
 

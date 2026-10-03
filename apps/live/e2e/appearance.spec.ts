@@ -127,7 +127,7 @@ test.describe('Appearance', () => {
     await page.waitForTimeout(2000); // well past the autosave debounce
 
     // A preference write is fine (it is the user's own setting); a write to the
-    // document, its tabs or its change log is not.
+    // document or its tabs is not.
     expect(writes.filter((w) => /\/api\/documents/.test(w))).toEqual([]);
     expectNoPageErrors(pageErrors);
   });

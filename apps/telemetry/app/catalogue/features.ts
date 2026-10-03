@@ -701,12 +701,6 @@ export const SHORTCUTS_OPENED = opened(
   (t) => t === 'Shortcuts',
 );
 
-export const ACTIVITY_PANEL_OPENED = opened(
-  'Activity Panel Opened',
-  'The Activity panel expanded from minimised, or opened as a popover from its bottom-row button. Its mounting also counts in Timeline & Activity.',
-  (t) => t === 'Activity',
-);
-
 export const TOUR_OFFERED = opened(
   'Tour Offered',
   'The welcome tour offered.',
@@ -774,7 +768,6 @@ export const PANELS_OPENED: MetricStack = {
     PICKERS_OPENED,
     HELP_FROM_EDITOR,
     SHORTCUTS_OPENED,
-    ACTIVITY_PANEL_OPENED,
     OTHER_OPENED,
   ],
   seeAlso: { view: 'editing', label: 'See Each Dialog on the Editing Tab' },

@@ -25,7 +25,7 @@ export type TabRow = {
 // Pure mapper from D1 tab row to wire-format DTO. Pulled out of db.ts
 // so the JSON.parse + camelCase reassembly contract has a test surface
 // of its own without dragging the rest of the D1 module along (same
-// pattern as change-log-row.ts, share-link-row.ts, image-strip.ts).
+// pattern as share-link-row.ts, image-strip.ts).
 //
 // Critical because every tab read in the editor passes through this:
 // a regression that dropped a field from the spread, swapped id with

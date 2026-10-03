@@ -106,16 +106,6 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
   // One-shot guard so an arrow-to-arrow connection (docs/specs/008-canvas/arrow-to-arrow.md) is tracked once
   // per endpoint drag, not on every pointer-move tick. Reset on drag start.
   const arrowConnectTrackedRef = useRef(false);
-  // True for the duration of a gesture that edits EXISTING elements
-  // (move / resize / rotate / arrow-handle), gating the activity-log
-  // emit. Set when the armed checkpoint is flushed on the first real
-  // tick; reset on pointer-up. Stays false for arrow creation-on-drag
-  // (beginAnchorDrag), which never arms a checkpoint because it already
-  // logged an "Added" entry via `commit` — so we don't double-log it.
-  const logGestureRef = useRef(false);
-  // The undo-marker token of the current gesture's checkpoint, handed
-  // to the debounced log so its flush fills the right step.
-  const gestureTokenRef = useRef<number | undefined>(undefined);
   // Shift-duplicate ghosting (docs/specs/008-canvas/shift-drag-duplicate.md). Holding Shift during a boxed move
   // swaps identities: the ORIGINAL elements park back at their start
   // position (keeping their ids, so every arrow pinned to them stays put),
@@ -163,7 +153,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
     setLocalPreview(next.tabId, next.virtual, next.base);
   });
   // The preview becomes the document in one change: one checkpoint (for an edit of existing
-  // elements; a creation drag never arms one), one write, one activity entry.
+  // elements; a creation drag never arms one), one write.
   const commitPreview = useEffectEvent(() => {
     const p = previewRef.current;
     previewRef.current = null;
@@ -172,16 +162,10 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
     clearLocalPreview(count > 0 ? 'landed' : 'cancelled');
     if (!p || !overlay || count === 0) return;
     if (checkpointPendingRef.current) {
-      gestureTokenRef.current = depsRef.current.markCheckpoint();
+      depsRef.current.markCheckpoint();
       checkpointPendingRef.current = false;
-      logGestureRef.current = true;
     }
     depsRef.current.tick((els) => applyOverlay(els, overlay));
-    if (logGestureRef.current) {
-      depsRef.current.scheduleElementChangeLog('element-drag', {
-        fillToken: gestureTokenRef.current,
-      });
-    }
     debugLog('[drag-preview] commit', { count });
   });
   const cancelPreview = useEffectEvent(() => {
@@ -287,8 +271,6 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
       scheduleGuides([]);
       scheduleSnapTargets([]);
       checkpointPendingRef.current = false;
-      logGestureRef.current = false;
-      gestureTokenRef.current = undefined;
       // An open insertion offer dies with the gesture. Only the preview is
       // being discarded here — the dragged note's live position is restored
       // by the checkpoint, and the other notes never moved for real.
@@ -668,7 +650,6 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
         scheduleGuides([]);
         scheduleSnapTargets([]);
         checkpointPendingRef.current = false;
-        logGestureRef.current = false;
         return;
       }
       // Shift-duplicate finalisation (docs/specs/008-canvas/shift-drag-duplicate.md). The identity swap already
@@ -776,11 +757,6 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
       // Disarm any checkpoint the gesture never used (a click that
       // selected without moving), so it can't attach to a later one.
       checkpointPendingRef.current = false;
-      // Close the log gesture so the next drag starts clean. The
-      // pending debounce timer (if any) still flushes the entry; this
-      // only stops a later gesture from inheriting this one's "log it"
-      // flag. (Cancelling the flush isn't wanted — that's the entry.)
-      logGestureRef.current = false;
     };
     // Quick-connect arrow follow mode: the placing click. Captured on the
     // way DOWN (capture phase) so it commits the endpoint and is swallowed

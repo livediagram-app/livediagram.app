@@ -70,9 +70,8 @@ out in whatever theme the tab is created with.
 On a desktop pointer, **hovering** a preset tile shows it **live** on the
 selected element(s) so the user can compare looks at a glance; the change only
 sticks on **click**. Moving the pointer off the tile reverts to the pre-hover
-look. The preview is ephemeral — it never lands an undo step or an activity-log
-entry, and is reverted before the click commits, so undo snapshots the true
-pre-hover state and the activity entry diffs from it correctly. Touch / pen
+look. The preview is ephemeral — it never lands an undo step, and is reverted
+before the click commits, so undo snapshots the true pre-hover state. Touch / pen
 input does not preview (a tap is the commit).
 
 ### Granular controls preview too

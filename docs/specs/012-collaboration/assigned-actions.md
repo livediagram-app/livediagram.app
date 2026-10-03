@@ -15,7 +15,7 @@ email ([Transactional & lifecycle email (Resend)](../014-identity/transactional-
 An action is collaboration metadata on an element, exactly like a comment
 thread: it lives in the element, persists through the normal tab autosave,
 syncs to everyone in the realtime room, and is deliberately **not undoable**
-(the [Activity and audit log](activity-and-audit.md) carve-out comments already use): Cmd+Z must never silently
+(the carve-out comments already use): Cmd+Z must never silently
 unassign someone's work.
 
 ## 1. Data model

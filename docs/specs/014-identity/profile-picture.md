@@ -251,4 +251,4 @@ page has not seen appears), made only for signed-in readers, reading at most
   to Google with the person's OAuth token, and a Clerk secret key the api
   does not hold).
 - Verifying server-side that a picture URL is the account's own (§6).
-- Pictures on the activity feed, change-log entries and exported files.
+- Pictures on the activity feed and exported files.

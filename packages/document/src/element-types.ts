@@ -603,7 +603,7 @@ export type TableElement = {
   rowHeights?: (number | null)[];
   // Tables have no single label (cells carry the text). Declared as an
   // always-undefined optional so the generic "boxed element has a
-  // label" code paths (change log, export, search) compile without a
+  // label" code paths (export, search) compile without a
   // per-type guard, mirroring ImageElement.
   label?: string;
   locked?: boolean;
@@ -806,14 +806,14 @@ export type ImageElement = {
   credit?: ImageCredit;
   // Optional alt text (accessibility + future export-to-markdown).
   // Aliases as the element's `label` so the surrounding "boxed
-  // element has a label" code paths (change log, Markdown export,
-  // search index) all see the alt text without needing an
+  // element has a label" code paths (Markdown export, search
+  // index) all see the alt text without needing an
   // ImageElement-specific branch.
   alt?: string;
   // Shared boxed-element fields. ImageElement doesn't render text
   // or borders inside the image (the bitmap fills the box), but the
   // shape / sticky / text variants do, and a wide swath of code
-  // (change log, format painter, Markdown / canvas export, Editor
+  // (format painter, Markdown / canvas export, Editor
   // panel state plumbing in Canvas.tsx) reads these fields off
   // every BoxedElement. Declaring them here as always-undefined
   // optionals keeps the TS union ergonomic without forcing every
@@ -917,8 +917,8 @@ export type FreehandElement = {
   // strokes (which want the smoothing).
   straightEdges?: boolean;
   // Shared boxed-element fields, see ImageElement above for the
-  // rationale: the union code paths (change log, format painter,
-  // export, Editor panel) all read these uniformly. Labels render
+  // rationale: the union code paths (format painter, export,
+  // Editor panel) all read these uniformly. Labels render
   // on top of the SVG path (BoxedElementView), fill / stroke /
   // border-width / border-style follow the Colours + Border
   // accordions, and the rest of the bag (lock, group, opacity,

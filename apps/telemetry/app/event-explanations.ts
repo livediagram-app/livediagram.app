@@ -156,7 +156,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Document|Removed|ShareLink':
     "Someone revoked a share link from a document's Share dialog, so it stops working.",
   'Document|Renamed|': 'A document was renamed.',
-  'Document|Reverted|': "Someone reverted a single change from a tab's activity log.",
+  'Document|Reverted|':
+    "Someone reverted a single change from a tab's activity log, in the since-removed Activity panel.",
   'Document|Shared|Edit': 'Someone generated an edit-role share link for a document.',
   'Document|Shared|ExpiryWeek':
     'Someone set a share link to expire after a week, when creating it.',
@@ -711,7 +712,7 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone dragged a slide to a new position in the Slide Deck. Counted once per completed drag, not per position crossed.',
   'UI|Opened|ActionSignInNudge':
     'A signed-out visitor opened the "Assign action" dialog and saw the sign-in nudge, since a guest can only assign work to themself. Counted once per dialog open.',
-  'UI|Opened|Activity': 'Someone expanded the Activity panel.',
+  'UI|Opened|Activity': 'Someone expanded the since-removed Activity panel.',
   'UI|Opened|Collaborate': 'Someone opened the Collaborate panel from its bottom-bar button.',
   'UI|Opened|BehaviourGroup':
     "Someone opened a category inside the palette's Behaviours tab (session tools like polls, votes, and record-keeping elements).",
@@ -788,7 +789,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Opened|recent':
     "Someone opened the help article about the Explorer's Recent section, from a help link or a search result.",
   'UI|Opened|what-it-is':
-    "Someone opened the help article explaining the editor's Activity panel (the change-log panel, not the Explorer section), from a help link or a search result.",
+    "Someone opened the help article explaining the editor's since-removed Activity panel (the change-log panel, not the Explorer section), from a help link or a search result.",
   'UI|Opened|your-first-diagram':
     'Someone opened the help article about building their first diagram, from the empty-canvas banner or a search result.',
   'UI|Removed|PaletteFavourite':
@@ -809,9 +810,9 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Started|Tour':
     "Someone clicked past the welcome tour's first card, beginning the step-by-step walkthrough.",
   'UI|Toggled|ActivityRevertPreviewOff':
-    'Someone turned off the hover preview that shows what a change would look like before reverting it, in Settings > Panels.',
+    'Someone turned off the hover preview that showed what a change would look like before reverting it, in the since-removed Activity panel settings.',
   'UI|Toggled|ActivityRevertPreviewOn':
-    'Someone turned on the hover preview that shows what a change would look like before reverting it, in Settings > Panels.',
+    'Someone turned on the hover preview that showed what a change would look like before reverting it, in the since-removed Activity panel settings.',
   'UI|Toggled|AlignmentGuidesOff':
     'Someone turned off the alignment guides that appear while dragging elements, in Settings > Editor.',
   'UI|Toggled|AlignmentGuidesOn':
@@ -990,7 +991,8 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Document|Removed':
     "Someone removed something from a document's sharing, such as revoking a share link.",
   'Document|Renamed': 'A document was renamed.',
-  'Document|Reverted': "Someone reverted a single change from a tab's activity log.",
+  'Document|Reverted':
+    "Someone reverted a single change from a tab's activity log, in the since-removed Activity panel.",
   'Document|Shared':
     "Someone created or changed a document's share link: its role, how long it lasts, or its password.",
   'Document|Undone': 'Someone hit Undo on a document edit.',
@@ -1176,7 +1178,7 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
 export const API_OPERATIONS: Readonly<Record<string, string>> = {
   AcceptTeamInvite: 'accepting a team invite',
   AddTab: 'adding a tab to a document, from an AI tool connected over MCP',
-  AppendChangeLog: "recording an entry in a document's change history",
+  AppendChangeLog: "recording an entry in a document's since-removed change history",
   CopyDocument: 'duplicating a document',
   CreateCustomTheme: 'saving a new custom theme',
   CreateDocument: 'creating a new document',
@@ -1184,8 +1186,8 @@ export const API_OPERATIONS: Readonly<Record<string, string>> = {
   CreateShareLink: 'generating a share link',
   CreateTeam: 'creating a team',
   CreateToken: 'creating an API token',
-  DeleteChangeLog: "clearing a document's change history",
-  DeleteChangeLogEntry: "removing one entry from a document's change history",
+  DeleteChangeLog: "clearing a document's since-removed change history",
+  DeleteChangeLogEntry: "removing one entry from a document's since-removed change history",
   DeleteComment: 'deleting a comment',
   DeleteCustomTheme: 'deleting a saved custom theme',
   DeleteDocument: 'deleting a document',
@@ -1203,7 +1205,7 @@ export const API_OPERATIONS: Readonly<Record<string, string>> = {
   JoinTeamByInviteLink: 'joining a team through its invite link',
   LinkTab: 'linking a tab into another document',
   List: "listing a visitor's documents",
-  ListChangeLog: "listing a document's change history",
+  ListChangeLog: "listing a document's since-removed change history",
   ListCustomThemes: "listing an account's saved custom themes",
   ListFolders: "listing an account's folders",
   ListImages: 'listing the images saved to an account',

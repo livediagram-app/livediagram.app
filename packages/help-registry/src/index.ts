@@ -196,8 +196,8 @@ export const categories: Category[] = [
     slug: 'canvas',
     title: 'Canvas',
     description:
-      'Master the infinite canvas where diagrams come together: placing, selecting, linking, annotating, noting, layering, rotating, animating, shadowing, locking, theming, and templating.',
-    articleCount: 22,
+      'Master the infinite canvas where diagrams come together: placing, selecting, linking, annotating, noting, layering, rotating, animating, shadowing, locking, undoing, theming, and templating.',
+    articleCount: 24,
     kind: 'feature',
   },
   {
@@ -214,14 +214,6 @@ export const categories: Category[] = [
     description:
       'Work together in real time: comments, assigned actions, live presence, teams, sharing, and session tools.',
     articleCount: 7,
-    kind: 'feature',
-  },
-  {
-    slug: 'activity-panel',
-    title: 'Activity Panel',
-    description:
-      'The running record of every change to a document, with undo, redo, and reverting a single change.',
-    articleCount: 5,
     kind: 'feature',
   },
   {
@@ -1697,6 +1689,22 @@ export const articles: Article[] = [
     categorySlug: 'canvas',
   },
   {
+    slug: 'undo',
+    title: 'Undo',
+    description: 'Step back your most recent change, with a keyboard shortcut and a button.',
+    keywords: 'ctrl z cmd z revert back mistake reverse cancel history',
+    category: 'Canvas',
+    categorySlug: 'canvas',
+  },
+  {
+    slug: 'redo',
+    title: 'Redo',
+    description: 'Re-apply a change you just undid.',
+    keywords: 'ctrl y cmd shift z repeat restore forward again history',
+    category: 'Canvas',
+    categorySlug: 'canvas',
+  },
+  {
     slug: 'snapping',
     title: 'Alignment & Snapping',
     description: 'Drag to snap elements into line with guides; hold Cmd/Ctrl to place freely.',
@@ -2196,48 +2204,6 @@ export const articles: Article[] = [
     category: 'Tools',
     categorySlug: 'tools/ai',
     parentSlug: 'ai',
-  },
-
-  // ---- Activity Panel (feature category landings) ----
-  {
-    slug: 'what-it-is',
-    title: 'What the Activity Panel Is',
-    description: 'A running record of every change to a document: who did what, and when.',
-    keywords: 'history log changes record audit trail events',
-    category: 'Activity Panel',
-    categorySlug: 'activity-panel',
-  },
-  {
-    slug: 'how-it-works',
-    title: 'How the Activity Panel Works',
-    description: 'Per-tab entries, real-time updates, jumping to an element, and clearing history.',
-    keywords: 'history log entries realtime jump clear changes',
-    category: 'Activity Panel',
-    categorySlug: 'activity-panel',
-  },
-  {
-    slug: 'undo',
-    title: 'Undo',
-    description: 'Step back your most recent change, with a keyboard shortcut and a button.',
-    keywords: 'ctrl z cmd z revert back mistake reverse cancel',
-    category: 'Activity Panel',
-    categorySlug: 'activity-panel',
-  },
-  {
-    slug: 'redo',
-    title: 'Redo',
-    description: 'Re-apply a change you just undid.',
-    keywords: 'ctrl y cmd shift z repeat restore forward again',
-    category: 'Activity Panel',
-    categorySlug: 'activity-panel',
-  },
-  {
-    slug: 'reverting-changes',
-    title: 'Reverting a Change',
-    description: 'Cancel one specific past change without disturbing later edits.',
-    keywords: 'rollback undo history restore specific single revert',
-    category: 'Activity Panel',
-    categorySlug: 'activity-panel',
   },
 
   // ---- Sub-articles: Session Tools ----

@@ -20,7 +20,7 @@ export type ImageRow = {
 // Pure mapper from D1 image row to wire-format ImageSummary. Pulled
 // out of db.ts so the shape has its own test surface without
 // dragging the rest of the D1 module along (same pattern as
-// tab-row.ts, folder-row.ts, change-log-row.ts, share-link-row.ts,
+// tab-row.ts, folder-row.ts, share-link-row.ts,
 // image-strip.ts, image-sniff.ts).
 //
 // The `original_name ?? undefined` rewrite is the one non-trivial

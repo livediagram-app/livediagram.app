@@ -15,13 +15,13 @@ const button = () => document.createElement('button');
 describe('useDockPopovers panel-open telemetry', () => {
   beforeEach(() => trackMock.mockReset());
 
-  it('counts a Layers and an Activity open through the popover path', () => {
+  it('counts a Layers and a Collaborate open through the popover path', () => {
     const { result } = renderHook(() => useDockPopovers({ current: null }));
     act(() => result.current.handleDockButtonClick('layers', button()));
-    act(() => result.current.handleDockButtonClick('activity', button()));
+    act(() => result.current.handleDockButtonClick('collaborate', button()));
     expect(trackMock.mock.calls).toEqual([
       ['Layer', 'Opened', 'Panel'],
-      ['UI', 'Opened', 'Activity'],
+      ['UI', 'Opened', 'Collaborate'],
     ]);
   });
 

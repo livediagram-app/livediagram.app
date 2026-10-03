@@ -7,7 +7,6 @@ const { resolveApiTokenMock } = vi.hoisted(() => ({ resolveApiTokenMock: vi.fn()
 vi.mock('./db', () => ({
   resolveApiToken: resolveApiTokenMock,
   listDocumentsByOwner: async () => [],
-  deleteOldChangeLogEntries: async () => {},
   deleteOldEvents: async () => {},
 }));
 

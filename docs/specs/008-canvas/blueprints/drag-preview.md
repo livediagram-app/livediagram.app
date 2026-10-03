@@ -64,7 +64,7 @@ drags for collaborators.
   `commitPreview()` writes it before anything else does, and the release logic runs on the snapshot
   (its `d.tick` / `d.commit` now chain on the committed state, inside the same undo step). The
   placing click in follow mode commits first too. `commitPreview`: `markCheckpoint()` (when the gesture changed anything),
-  `deps.tick(els => applyOverlay(els, overlay))`, `scheduleElementChangeLog('element-drag', ...)`,
+  `deps.tick(els => applyOverlay(els, overlay))`,
   `clearLocalPreview()`.
 - The drag effect running with no drag while a preview remains (a route that neither committed nor
   cancelled) commits it, matching the old behaviour where every tick was a write.

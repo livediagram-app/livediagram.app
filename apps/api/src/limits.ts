@@ -82,10 +82,6 @@ export const MAX_DECK_LEN = 256 * 1024;
 // A custom theme's JSON definition (palette + per-shape colours).
 export const MAX_THEME_DEF_BYTES = 256 * 1024;
 
-// One change-log entry's JSON: shared with the client, which logs a larger change as a summary
-// entry (docs/specs/012-collaboration/activity-and-audit.md).
-export { MAX_CHANGE_LOG_ENTRY_BYTES } from '@livediagram/api-schema';
-
 // Realtime presence identity, broadcast to every connected peer.
 export const MAX_PARTICIPANT_NAME_LEN = 120;
 export const MAX_COLOR_LEN = 64;

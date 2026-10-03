@@ -58,12 +58,9 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'multi-select': '#8b5cf6',
   'link-cards': '#10b981',
   'choosing-fonts': '#0284c7',
-  // Activity Panel category
-  'what-it-is': '#94a3b8',
-  'how-it-works': '#64748b',
+  // Canvas category: Undo / Redo
   undo: '#0ea5e9',
   redo: '#06b6d4',
-  'reverting-changes': '#f43f5e',
   'data-elements': '#22c55e',
   'style-presets': '#e11d48',
   'layout-cleanup': '#2563eb',
@@ -238,7 +235,6 @@ export const FEATURE_CATEGORY_HEX: Record<string, string> = {
   tools: '#475569',
   'search-panel': '#0891b2',
   'selection-modes': '#8b5cf6',
-  'activity-panel': '#14b8a6',
 };
 
 /** Default colour used when no slug match is found. */

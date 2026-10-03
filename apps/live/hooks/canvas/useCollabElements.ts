@@ -166,16 +166,11 @@ export function useCollabElements({
 
   // --- Idea box (docs/specs/012-collaboration/idea-box.md) --------------------------------------------------
   // Anonymity is structural — there is nowhere in `ideaCards` to record an
-  // author. Two other routes to a name are closed here rather than in the
+  // author. One other route to a name is closed here rather than in the
   // schema:
-  //   * no change-log entry, the same exception the high-frequency vote casts
-  //     take (docs/specs/012-collaboration/session-tools.md) — "Priya edited Idea Box" beside six anonymous cards is
-  //     a five-second deanonymisation. `tickTabs` is already the non-logging
-  //     path, so this comes for free and must STAY free: routing this through
-  //     a logging commit would quietly undo the feature.
-  //   * no selection, so the docs/specs/007-editor/live-app.md concurrent-selection ring doesn't put a
-  //     name on the box at the moment somebody types into it. This function
-  //     deliberately never touches the selection.
+  // no selection, so the docs/specs/007-editor/live-app.md concurrent-selection ring doesn't put a name
+  // on the box at the moment somebody types into it. This function
+  // deliberately never touches the selection.
   const addIdea = (element: ShapeElement, text: string) => {
     const clean = text.trim();
     if (!clean || editsBlocked) return;
@@ -238,7 +233,7 @@ export function useCollabElements({
   // --- Agenda (docs/specs/012-collaboration/agenda.md) ----------------------------------------------------
   // Pressing a segment starts the tab timer through `startTimer` — the same
   // entry point the Current Tab menu and the session button use, so the
-  // edit-role gate, the change-log line and the telemetry all still happen
+  // edit-role gate and the telemetry all still happen
   // exactly once, where they are owned.
   //
   // Pressing while another segment runs REPLACES the timer rather than

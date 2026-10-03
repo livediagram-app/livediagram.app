@@ -35,8 +35,8 @@ relays them; it does not merge them.
 op: ElementOp }` and `{ kind: 'tab-meta'; tabId; patch }` alongside the kept
   `tab` op (back-compat fallback). `ElementOp` (add / update / remove / reorder)
   lives in `@livediagram/document` so it's shared and unit-tested off-socket.
-- Derivation is free: the editor already diffs before/after on every commit for
-  the change log; `diffToElementOps(before, after)` reuses that same diff. Apply
+- Derivation is free: `diffToElementOps(before, after)` diffs the tab's
+  elements before and after each commit. Apply
   is `applyElementOp(elements, op)` by id — an op for an already-removed id is a
   safe no-op.
 - `update` replaces the whole element by id (simple + correct). Two peers editing

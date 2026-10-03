@@ -386,10 +386,10 @@ export async function markThumbRendered(env: Env, id: string, now: number): Prom
 // "Copy this document to my own files" — duplicates the source document
 // under a brand-new id owned by `newOwnerId`. Carries the document
 // meta (name with "Copy of " prefix unless the caller overrides) and
-// every tab's content; deliberately does NOT copy share_links,
-// change_log, or the shareable flag. The new document starts private
-// + audit-free so the visitor's copy reads as their own clean
-// workspace, not a clone of the host's collab history.
+// every tab's content; deliberately does NOT copy share_links or the
+// shareable flag. The new document starts private so the visitor's
+// copy reads as their own clean workspace, not a clone of the host's
+// collab setup.
 //
 // Caller is expected to have already authorised the copy (the index
 // handler checks ownership / share_code / shared_with). This helper
@@ -418,7 +418,7 @@ export async function copyDocument(
   // each under the new document id with a freshly minted tab id.
   // Preserves order_index verbatim so the cloned document opens to
   // the same tab layout the visitor was looking at. Skipping
-  // share_links + change_log is by design — those don't survive
+  // share_links is by design — they don't survive
   // ownership transfer. Copy semantics (vs link semantics, docs/specs/006-document/tab-document-many-to-many.md)
   // are deliberate: edits to the copy stay isolated from the source.
   const tabRows = await env.DB.prepare(

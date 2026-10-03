@@ -82,6 +82,13 @@ describe('legacyHelpRedirect', () => {
       ['/help/developers/working-with-diagrams', '/help/developers/working-with-documents'],
       // Whiteboarding became Draw mode (docs/specs/007-editor/editor-modes.md "Naming in the interface").
       ['/help/canvas/whiteboards/', '/help/canvas/draw-mode/'],
+      // The Activity Panel was removed (docs/specs/012-collaboration/README.md); Undo / Redo moved to Canvas.
+      ['/help/activity-panel/', '/help/canvas/undo/'],
+      ['/help/activity-panel/undo/', '/help/canvas/undo/'],
+      ['/help/activity-panel/redo/', '/help/canvas/redo/'],
+      ['/help/activity-panel/what-it-is/', '/help/canvas/undo/'],
+      ['/help/activity-panel/how-it-works/', '/help/canvas/undo/'],
+      ['/help/activity-panel/reverting-changes/', '/help/canvas/undo/'],
     ];
     for (const [from, to] of cases) {
       const res = legacyHelpRedirect(new URL(`https://livediagram.app${from}`))!;

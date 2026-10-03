@@ -29,7 +29,7 @@ export const CATEGORY_DESCRIPTIONS: Record<TelemetryCategory, string> = {
   Action:
     'Per-element assigned actions: assigning (with or without the email nudge), completing, reopening, editing / reassigning, deleting, opening the popover.',
   Search: 'Global search panel: open, query, picked-result kind.',
-  UI: 'Editor chrome: light/dark toggle, dialogs (Settings, Shortcuts, Share, Activity), share-link copy, welcome dismiss.',
+  UI: 'Editor chrome: light/dark toggle, dialogs (Settings, Shortcuts, Share, and the since-removed Activity panel), share-link copy, welcome dismiss.',
   Folder:
     'Folders: create, rename, delete, re-parent. Explorer folders of documents, or (type Tab) tab folders inside one document.',
   Layer:

@@ -1,9 +1,8 @@
 // "Opens in" (docs/specs/007-editor/editor-modes.md "Where the mode lives"): the tab menu's choice
 // of the editor mode a general tab opens in. A tab edit like any other (one undo step, synced to
-// everyone, in the activity log); it never switches anyone's current mode, the chooser's included,
+// everyone); it never switches anyone's current mode, the chooser's included,
 // since that mode is the person's own (useEditorMode).
 import {
-  editorModeLabel,
   editorModeSwitchable,
   opensInOf,
   setTabOpensIn,
@@ -19,9 +18,8 @@ export function useTabOpensIn(deps: {
   // An editor (not a view-role visitor): only they are offered the choice.
   canEdit: boolean;
   commitTabs: (map: (ts: Tab[]) => Tab[]) => void;
-  emitTabMeta: (tabId: string, summary: string) => void;
 }) {
-  const { tabs, canEdit, commitTabs, emitTabMeta } = deps;
+  const { tabs, canEdit, commitTabs } = deps;
 
   const setOpensIn = (tabId: string, mode: EditorMode) => {
     const tab = tabs.find((t) => t.id === tabId);
@@ -32,7 +30,6 @@ export function useTabOpensIn(deps: {
     if (mode === 'draw') track('Tab', 'Changed', 'OpensInDraw');
     else track('Tab', 'Changed', 'OpensInDiagram');
     commitTabs((ts) => ts.map((t) => (t.id === tabId ? setTabOpensIn(t, mode) : t)));
-    emitTabMeta(tabId, `Opens in ${editorModeLabel(mode)}`);
     debugLog('[editor-mode] opens-in set', { tabId, mode });
   };
 

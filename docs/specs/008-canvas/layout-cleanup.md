@@ -35,8 +35,8 @@ import) to place nodes they never drew.
 - **Final snap:** the result is run through `autoAlignElements`, the same way the
   AI-apply / import-merge path already finishes, so the tidy output is also
   grid-aligned. The two tools compose: Auto Layout then Auto-align.
-- One undoable op (`commit` snapshots the pre-layout state) and one activity-log
-  entry, so it can be reverted in a single step.
+- One undoable op (`commit` snapshots the pre-layout state), so it can be
+  undone in a single step.
 
 ### Fewer crossings
 

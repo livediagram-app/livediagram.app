@@ -5,8 +5,7 @@ import { HoverCard } from '@livediagram/ui';
 
 // The Layers button in the bottom-right cluster (docs/specs/006-document/layers.md), in every layout.
 //
-// In the Floating layout the panel ships minimised into it, mirroring the
-// Activity strip, and the button un-minimises it (`onExpand`). In the Toolbar
+// In the Floating layout the panel ships minimised into it, and the button un-minimises it (`onExpand`). In the Toolbar
 // layout (docs/specs/007-editor/toolbar-layout.md) it opens the panel as a
 // popover hanging ABOVE it instead (`onTogglePopover`, handed the button to
 // anchor to), and shows pressed while that popover is open.

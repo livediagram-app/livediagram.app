@@ -18,19 +18,15 @@ import {
   type Tab,
 } from '@livediagram/document';
 import { track } from '@/lib/telemetry';
-import { tabFolderTransitionSummary, trackTabFolderTransition } from './tab-folder-reporting';
+import { trackTabFolderTransition } from './tab-folder-reporting';
 
 type TabFoldersDeps = {
   tabs: Tab[];
-  // The tab the ellipsis menu acts on (folder ops target the active
-  // tab; the menu auto-switches to a tab before opening on it).
-  activeId: string;
   commitTabs: (mapTabs: (ts: Tab[]) => Tab[]) => void;
-  emitTabMeta: (tabId: string, summary: string) => void;
 };
 
 export function useTabFolders(deps: TabFoldersDeps) {
-  const { tabs, activeId, commitTabs, emitTabMeta } = deps;
+  const { tabs, commitTabs } = deps;
 
   // Move a tab into a folder by name. Handles both menu paths — picking
   // an existing folder and typing a brand-new name (same name = same
@@ -46,7 +42,6 @@ export function useTabFolders(deps: TabFoldersDeps) {
     commitTabs((ts) =>
       normalizeFolderOrder(ts.map((t) => (t.id === tabId ? { ...t, folder: name } : t))),
     );
-    emitTabMeta(tabId, tabFolderTransitionSummary(tabFolderName(target), name));
     // Two facts when the name is new, so two events (the deliberate double-emit
     // pattern docs/specs/017-telemetry/telemetry.md uses for Tab·Started·Vote + PrivateVote): the folder came
     // into existence, AND this tab is now filed in it. The old either/or made
@@ -64,7 +59,6 @@ export function useTabFolders(deps: TabFoldersDeps) {
     commitTabs((ts) =>
       normalizeFolderOrder(ts.map((t) => (t.id === tabId ? { ...t, folder: undefined } : t))),
     );
-    emitTabMeta(tabId, tabFolderTransitionSummary(previous, null));
     trackTabFolderTransition(previous, null);
   };
 
@@ -80,10 +74,6 @@ export function useTabFolders(deps: TabFoldersDeps) {
         ts.map((t) => (tabFolderName(t) === oldName ? { ...t, folder: newName } : t)),
       ),
     );
-    // Attribute the rename to the active tab when it's in this folder,
-    // otherwise to the first member, so the activity log has a subject.
-    const subjectId = members.some((t) => t.id === activeId) ? activeId : members[0]!.id;
-    emitTabMeta(subjectId, `Renamed folder '${oldName}' to '${newName}'`);
     // The folder is the subject here, not a tab: this used to emit
     // `Tab·Renamed`, which the dashboard counts as tabs renamed.
     track('Folder', 'Renamed', 'Tab');

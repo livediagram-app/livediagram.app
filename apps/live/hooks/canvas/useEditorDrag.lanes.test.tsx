@@ -90,7 +90,6 @@ function harness(
     cancelToCheckpoint: () => {
       elements = history.pop() ?? elements;
     },
-    scheduleElementChangeLog: vi.fn(),
     autoRebindArrowsRef: { current: false },
     alignmentGuidesRef: { current: true },
     isPinchingRef: { current: false },

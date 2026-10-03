@@ -190,8 +190,7 @@ same in Diagram mode and to every collaborator ([One look](../../007-editor/edit
   elements are removed whole, arrows pinned to them cascade, as today.
 - **Partial**: only `freehand` elements; each touched one is replaced by `eraseStrokePart(...)`
   inside the functional `tick`, so consecutive samples compose on the live list.
-- Both: one `markCheckpoint` on the first change, one activity entry on release, locked elements and
-  inert layers skipped.
+- Both: one `markCheckpoint` on the first change, locked elements and inert layers skipped.
 
 ### Stroke geometry (`whiteboard-stroke.ts`)
 

@@ -66,7 +66,7 @@ export function useBehaviourElements({
 }) {
   // --- Session button (docs/specs/012-collaboration/session-button.md) --------------------------------------------
   // Pressing one starts the tool FOR THE ROOM, through the same entry points
-  // the menus use — so the edit gate, the change-log entry, and the telemetry
+  // the menus use — so the edit gate and the telemetry
   // that go with each tool all still happen exactly once, in one place.
   const pressSessionButton = (element: ShapeElement) => {
     // It starts the timer / vote / poll for the room, so it is one of the

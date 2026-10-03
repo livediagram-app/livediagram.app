@@ -20,7 +20,6 @@ export type PanelCorner = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-rig
 export type PanelId =
   | 'palette'
   | 'explorer'
-  | 'activity'
   | 'collaborate'
   | 'ai'
   | 'minimap'
@@ -53,7 +52,6 @@ export const PANEL_CORNERS: readonly PanelCorner[] = [
 export const PANEL_IDS: readonly PanelId[] = [
   'palette',
   'explorer',
-  'activity',
   'collaborate',
   'ai',
   'minimap',
@@ -93,7 +91,6 @@ export const DEFAULT_PANEL_CORNER: Record<PanelId, PanelCorner> = {
   // it minimises into.
   collaborate: 'bottom-right',
   ai: 'top-right',
-  activity: 'bottom-left',
   minimap: 'bottom-left',
   // Layers (docs/specs/006-document/layers.md): the one panel homed bottom-right, above the fixed
   // zoom cluster (that corner's inset already clears it).
@@ -132,7 +129,7 @@ export function defaultPanelLayout(): PanelLayout {
   // the order they stacked historically rather than PANEL_IDS order.
   corners['top-left'] = ['explorer'];
   corners['top-right'] = ['palette', 'vote', 'poll', 'ai'];
-  corners['bottom-left'] = ['activity', 'minimap'];
+  corners['bottom-left'] = ['minimap'];
   corners['bottom-right'] = ['layers', 'collaborate'];
   return { corners, free: {} };
 }

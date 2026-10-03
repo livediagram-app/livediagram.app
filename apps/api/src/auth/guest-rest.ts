@@ -1,7 +1,7 @@
 // Guest REST signature gate (docs/specs/015-api/public-api-and-tokens.md §4).
 //
 // The guest `X-Owner-Id` header is a bearer value that leaks to collaborators
-// (presence frames, the change-log), and the REST path trusted it with no
+// (presence frames, comment authors), and the REST path trusted it with no
 // proof — so a harvested id (a guest UUID, OR a signed-up user's Clerk `sub`
 // presented via the header fallback) could be used to act as that owner. The
 // fix: on owner-scoped routes, a presented `X-Owner-Id` must carry a valid

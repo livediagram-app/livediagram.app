@@ -11,7 +11,6 @@ import { runTokenExpirySweep } from './email/token-expiry';
 import { runTimelineExpirySweep } from './timeline';
 import { runImageRetention } from './image-refs/retention';
 import {
-  deleteOldChangeLogEntries,
   deleteOldEvents,
   deleteOldSessionSightings,
   deleteOldTimelineEvents,
@@ -379,8 +378,7 @@ const worker = {
   // Scheduled handler. Wired to the cron schedule in wrangler.toml.
   // One worker invocation per `triggers.crons` entry; dispatch on
   // `event.cron` for each pattern. Today's daily 03:00 UTC trigger
-  // fires two independent retention sweeps:
-  //   - change_log, 90-day floor (item #16 / docs/specs/012-collaboration/activity-and-audit.md).
+  // fires independent retention sweeps:
   //   - events,     60-day floor (docs/specs/017-telemetry/telemetry.md "Retention").
   //   - images,     30-day floor, unused only, after the reference-index backfill
   //                 (docs/specs/009-elements/images.md "Retention").
@@ -391,14 +389,6 @@ const worker = {
   async scheduled(event: ScheduledController, env: Env, ctx: ExecutionContext): Promise<void> {
     if (event.cron === '0 3 * * *') {
       const now = Date.now();
-      scheduleSweep(
-        ctx,
-        env,
-        'change_log',
-        'entries',
-        now - CHANGE_LOG_RETENTION_MS,
-        deleteOldChangeLogEntries,
-      );
       scheduleSweep(ctx, env, 'events', 'rows', now - EVENTS_RETENTION_MS, deleteOldEvents);
       // docs/specs/017-telemetry/telemetry.md: session ids seen for the sign-in count (auth/session-telemetry.ts).
       scheduleSweep(
@@ -409,8 +399,7 @@ const worker = {
         now - AUTH_SESSION_RETENTION_MS,
         deleteOldSessionSightings,
       );
-      // docs/specs/013-workspace/timeline.md §3.5: the Timeline feed keeps a year, where the
-      // element-level change_log above keeps 90 days.
+      // docs/specs/013-workspace/timeline.md §3.5: the Timeline feed keeps a year.
       scheduleSweep(
         ctx,
         env,
@@ -461,7 +450,7 @@ export default worker;
 
 // Run one daily retention sweep in the background: delete rows older than
 // `cutoff`, then log the count (or the failure) to `wrangler tail`. The
-// retention sweeps (change_log / events / sessions / timeline) share this exact waitUntil +
+// retention sweeps (events / sessions / timeline / opens) share this exact waitUntil +
 // then/catch shape; `label` + `unit` keep each log line reading naturally. A
 // zero is the normal case most days — observability without a metrics pipeline.
 function scheduleSweep(
@@ -482,11 +471,6 @@ function scheduleSweep(
       }),
   );
 }
-
-// 90 days in ms. Pulled out as a named constant because the
-// scheduled handler is the only caller and naming it makes the
-// intent obvious from the dispatch site.
-const CHANGE_LOG_RETENTION_MS = 90 * 24 * 60 * 60 * 1000;
 
 // 90 days in ms: how long a seen Clerk session id is kept for the sign-in
 // count (docs/specs/017-telemetry/telemetry.md). Longer than any session Clerk keeps alive by default.

@@ -645,7 +645,7 @@ export class DocumentRoom implements DurableObject {
       // and mutate nothing, so they relay from ANY connected session —
       // that's how a view-only visitor still shows their cursor, current
       // selection, and which tab they're on to everyone else. Mutation
-      // ops (tab content, document-meta, change-log) stay edit-role-only:
+      // ops (tab content, document-meta) stay edit-role-only:
       // a viewer must not be able to inject edits into peers' canvases.
       // The role is the server-verified one (X-Verified-Role, re-stamped
       // in hello), not anything the client claims.

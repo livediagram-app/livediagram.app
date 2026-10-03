@@ -1,20 +1,20 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
-import { UndoStep } from '@/components/illustrations/activity-panel';
+import { UndoStep } from '@/components/illustrations/undo-redo';
 
 export const metadata = helpMetadata({
   title: 'Undo',
   description:
     'Step back your most recent change with a keyboard shortcut or the undo button. Undo is personal to you and covers your last few steps.',
-  path: '/help/activity-panel/undo/',
+  path: '/help/canvas/undo/',
 });
 
 <ArticleLayout
   title="Undo"
   description="Step back your most recent change with a keyboard shortcut or the undo button."
-  categoryTitle="Activity Panel"
-  categorySlug="activity-panel"
+  categoryTitle="Canvas"
+  categorySlug="canvas"
   subArticles={getSubArticles("undo")}
 >
 
@@ -23,7 +23,7 @@ export const metadata = helpMetadata({
 Undo takes back your most recent change. You can:
 
 - Press **Cmd+Z** on a Mac, or **Ctrl+Z** on Windows and Linux.
-- Click the undo button, which lives in the controls at the bottom-right and at the top of the Activity Panel.
+- Click the undo button in the controls at the bottom-right of the canvas.
 
 A whole drag counts as a single step, so one undo takes you all the way back to before you started dragging.
 
@@ -36,16 +36,16 @@ A whole drag counts as a single step, so one undo takes you all the way back to 
 Undo steps back the changes that **you** made. Each person editing the document has their own short undo history of their last few steps, so undoing never reaches into someone else's work.
 
 <Note>
-  Your quick undo history is just for the current session and is cleared when you reload the page.
-  The saved Activity history itself stays put.
+  Your undo history is just for the current session and is cleared when you reload the page. Your
+  document itself is saved as you go, so reloading never loses work.
 </Note>
 
 ## What other people see
 
-When you undo, the matching line disappears from the Activity Panel for everyone, keeping the record honest.
+When you undo, the change is reversed for everyone on the document, just like any other edit.
 
 Undo is not available to people who are only viewing the document.
 
-When you have gone back too far, use [Redo](/help/activity-panel/redo/) to put a change back.
+When you have gone back too far, use [Redo](/help/canvas/redo/) to put a change back.
 
 </ArticleLayout>

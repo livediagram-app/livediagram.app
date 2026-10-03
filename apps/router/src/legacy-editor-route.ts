@@ -13,9 +13,10 @@ export function legacyEditorRedirect(url: URL): Response | null {
   return Response.redirect(next.toString(), 308);
 }
 
-// Renamed help articles: the ones about the container moved when it became a document, and
-// Whiteboards became Draw mode. The old addresses are links people have already shared
-// (docs/specs/018-help/help-app.md, "Renamed articles").
+// Renamed help articles: the ones about the container moved when it became a document,
+// Whiteboards became Draw mode, and the Activity Panel category went when the panel was
+// removed (Undo and Redo moved to Canvas; its other articles land on Undo). The old addresses
+// are links people have already shared (docs/specs/018-help/help-app.md, "Renamed articles").
 const LEGACY_HELP_ARTICLES: Readonly<Record<string, string>> = {
   'tabs/add-to-diagram': 'tabs/add-to-document',
   'troubleshooting/diagram-not-loading': 'troubleshooting/document-not-loading',
@@ -24,6 +25,12 @@ const LEGACY_HELP_ARTICLES: Readonly<Record<string, string>> = {
   'getting-started/sharing-your-diagram': 'getting-started/sharing-your-document',
   'developers/working-with-diagrams': 'developers/working-with-documents',
   'canvas/whiteboards': 'canvas/draw-mode',
+  'activity-panel': 'canvas/undo',
+  'activity-panel/what-it-is': 'canvas/undo',
+  'activity-panel/how-it-works': 'canvas/undo',
+  'activity-panel/undo': 'canvas/undo',
+  'activity-panel/redo': 'canvas/redo',
+  'activity-panel/reverting-changes': 'canvas/undo',
 };
 
 export function legacyHelpRedirect(url: URL): Response | null {

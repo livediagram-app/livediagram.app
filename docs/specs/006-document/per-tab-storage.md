@@ -41,7 +41,7 @@ CREATE TABLE tabs (
 );
 ```
 
-A `tabs` row is the tab's body and nothing else. Which documents contain it, and its order and folder in each, live on the `document_tabs` link ([Tab ↔ document many-to-many](tab-document-many-to-many.md)). Nothing on the row points at a document, so nothing cascades from `documents` into `tabs`: removing a tab from a document, deleting a document and deleting an account each drop a tab explicitly once no document links it. `change_log`, `collab_actions` and `collab_threads` cascade from `tabs(id)`, so a dropped tab takes its history and index rows with it. `image_refs` has no foreign key ([Images, Reference index](../009-elements/images.md#reference-index)), so each delete path prunes a dropped tab's image references in the same batch.
+A `tabs` row is the tab's body and nothing else. Which documents contain it, and its order and folder in each, live on the `document_tabs` link ([Tab ↔ document many-to-many](tab-document-many-to-many.md)). Nothing on the row points at a document, so nothing cascades from `documents` into `tabs`: removing a tab from a document, deleting a document and deleting an account each drop a tab explicitly once no document links it. `collab_actions` and `collab_threads` cascade from `tabs(id)`, so a dropped tab takes its index rows with it. `image_refs` has no foreign key ([Images, Reference index](../009-elements/images.md#reference-index)), so each delete path prunes a dropped tab's image references in the same batch.
 
 The table was introduced by `0005_tabs.sql` and has this shape since `0049_tabs_drop_legacy_columns.sql`, which removed the original `document_id` + `order_index` columns and the `document_id` foreign key.
 
@@ -144,7 +144,6 @@ So a 403 sets `writesForbiddenRef` and a distinct `forbidden` save status:
   so the doomed retries stop.
 - The toast fires **once** and says what actually happened, naming the likely
   cause and the way out (export a copy) rather than a connection to check.
-- The Activity panel badge reads **No access** instead of **Not saved**.
 - Opening a different document clears it — the block is about this one.
 
 The user still loses the unsaved work, and no client-side design can prevent
@@ -173,7 +172,6 @@ So it gets its own `unauthenticated` save status (`saveFailureStatus` in
 
 - The toast reads "Couldn't confirm you're signed in, so your changes aren't
   saving. Sign in again to keep them."
-- The Activity panel badge reads **Signed out**.
 - The autosave keeps retrying on the next edit, unlike `forbidden`: the
   session can come back, and when it does the next save lands.
 
@@ -233,10 +231,6 @@ How this rolled out, recorded here so future schema changes can repeat the patte
 2. `diagrams.data` was kept in place for one release window so a deployed-but-not-yet-shipped client didn't 500.
 3. Migration 0006 dropped `diagrams.data`.
 
-## Audit log
-
-The `change_log` table is tab-scoped — its row carries a `tab_id` (every entry in practice; the column is nullable for historical reasons) and cascades on `tab_id` via the FK to `tabs(id)`. The legacy `document_id` column on `change_log` was dropped in migration 0012 (item #14 — see [Tab ↔ document many-to-many](tab-document-many-to-many.md)); per-document log reads derive the set of contributing tabs via `document_tabs`. The client's `deleteTab` flow still calls `DELETE /log/tab/:tabId` to drop the entries up front — see [12-activity-and-audit.md](../012-collaboration/activity-and-audit.md).
-
 ## Risk
 
 - D1 doesn't currently support cross-row transactions cleanly, so the
@@ -247,7 +241,6 @@ The `change_log` table is tab-scoped — its row carries a `tab_id` (every entry
 
 ## What this does NOT change
 
-- The owner-only audit log gate (still applies).
 - Realtime presence (still room-level).
 - Sharing (per-document share codes; no per-tab sharing yet). Tab-level reuse across documents is a server-side relationship under [Tab ↔ document many-to-many](tab-document-many-to-many.md), not user-visible sharing.
 - The frontend `Tab` type shape (just where it's persisted).

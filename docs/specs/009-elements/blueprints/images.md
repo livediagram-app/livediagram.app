@@ -309,7 +309,7 @@ read a 503 as `null` and `{}`.
 - **Tab body**: the element fields above, validated by `validate.ts` (`imageId` string or null).
 - **Never on the wire**: `owner_id`, `sha256` (`imageRowToSummary`).
 - **Snapshot / restore**: a tab snapshot carries only `imageId`; restoring an element whose image
-  was deleted renders **broken**. Revert restores the prior `imageId`.
+  was deleted renders **broken**. Undo restores the prior `imageId`.
 - **Account deletion** ([Owner-keyed data](../../015-api/api.md#owner-keyed-data)): one
   `IMAGES.delete(ids)` for every owned id (GB17), then `DELETE FROM images WHERE owner_id = ?`.
   An image a surviving shared tab still places in another owner's document goes too; that

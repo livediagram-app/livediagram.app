@@ -194,7 +194,7 @@ response.
 ## Data and persistence
 
 - **Persisted:** `note`, `noteRich` on the element, in the tab JSON (D1 or IndexedDB), through the
-  normal tab sync and change log.
+  normal tab sync.
 - **Never persisted:** `noteOpenId`, the popover position, the link field's draft, `ActiveFormat`.
 - **Readers of the mirror:** the badge's has-a-note test (`BadgeStrip`), the menu's Add / Edit Note
   label, `hasReadableDetail` in presentation mode, JSON export, and the MCP and API payloads. Search
