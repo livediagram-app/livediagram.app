@@ -4,6 +4,10 @@ import { describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { boardFiles } from '@/lib/ms-whiteboard/ms-whiteboard-fixtures';
 import { MsWhiteboardImportPanel } from './MsWhiteboardImportPanel';
+// The hook loads its parser lazily; load it at collection so no test pays the cold transform
+// (docs/specs/003-system-architecture/testing.md "A test never pays a cold module load").
+import '@/lib/ms-whiteboard/import';
+import '@/lib/ms-whiteboard/file-sets';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 vi.spyOn(console, 'info').mockImplementation(() => {});
