@@ -318,10 +318,10 @@ a design tool.
 
 ## Experimental modes
 
-Infographic mode is an experiment, offered only once **Settings ›
-Experimental › Infographic Mode** is on (off by default; the
-`infographicModeEnabled` preference). The **Experimental** category is listed
-after **AI Tools**.
+Infographic mode is still new, so it keeps a switch in **Settings ›
+Experimental › Infographic Mode**: **on by default** (the
+`infographicModeEnabled` preference; only an explicit `false` turns it off).
+The **Experimental** category is listed after **AI Tools**.
 
 - While it is off, Infographic is offered nowhere: not on the mode switch, not
   in Opens in, and Shift+D skips it (`apps/live/lib/offered-editor-modes.ts`).
