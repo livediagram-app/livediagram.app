@@ -377,15 +377,15 @@ tabular-nums text-slate-500`) in the other cell, aligned towards the line.
 
 ## Observability
 
-| Fingerprint                                                                                 | Where        |
-| ------------------------------------------------------------------------------------------- | ------------ |
-| `[home] read failed status=<n/thrown/unparseable>`                                          | editor, warn |
-| `[home] local-open-recorded days=<n>`                                                       | editor, info |
-| `[home] local-open-skipped reason=same-day`                                                 | editor, info |
-| `[home] local-open-failed` + error                                                          | editor, warn |
-| `[home] local-opens-unavailable` + error                                                    | editor, warn |
-| `[home] page failed`                                                                        | editor, warn |
-| `Home·Opened·Landing/Nav`, `Home·Selected·*`, `Home·Opened·Group`, `Home·Loaded·More/Retry` | telemetry    |
+| Fingerprint                                                                                 | Where                                   |
+| ------------------------------------------------------------------------------------------- | --------------------------------------- |
+| `[home] read failed status=<n/thrown/unparseable>`                                          | editor, warn                            |
+| `[home] local-open-recorded days=<n>`                                                       | editor, `debugLog` trace (scope `home`) |
+| `[home] local-open-skipped reason=same-day`                                                 | editor, `debugLog` trace (scope `home`) |
+| `[home] local-open-failed` + error                                                          | editor, warn                            |
+| `[home] local-opens-unavailable` + error                                                    | editor, warn                            |
+| `[home] page failed`                                                                        | editor, warn                            |
+| `Home·Opened·Landing/Nav`, `Home·Selected·*`, `Home·Opened·Group`, `Home·Loaded·More/Retry` | telemetry                               |
 
 ## Testing
 

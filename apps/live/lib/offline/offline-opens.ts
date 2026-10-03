@@ -14,6 +14,7 @@ import {
   serializeOfflineWrite,
   type LocalOpens,
 } from './offline-store';
+import { debugLog } from '@/lib/debug-log';
 
 export type { LocalOpens };
 
@@ -40,12 +41,12 @@ export async function offlineRecordOpen(id: string, now: number): Promise<void> 
       if (!rec || rec.trashedAt !== undefined) return;
       const opens = nextLocalOpens(rec.opens, now);
       if (!opens) {
-        console.info('[home] local-open-skipped reason=same-day');
+        debugLog('[home] local-open-skipped reason=same-day');
         return;
       }
       // savedAt stays: an open is not an edit, and bumping it would reorder every list.
       await offlineBackend().put({ ...rec, opens });
-      console.info(`[home] local-open-recorded days=${opens.openDays}`);
+      debugLog(`[home] local-open-recorded days=${opens.openDays}`);
     });
   } catch (err) {
     console.warn('[home] local-open-failed', err);
