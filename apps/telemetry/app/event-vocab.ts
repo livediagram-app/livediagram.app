@@ -44,8 +44,9 @@ export const CATEGORY_DESCRIPTIONS: Record<TelemetryCategory, string> = {
   Help: 'Help-centre articles: views and per-article helpful / not-really feedback.',
   Page: 'Pages viewed across the whole site (marketing, editor, help centre, this dashboard), by path, with ids and query strings stripped.',
   Cta: 'The landing funnel: a call to action on a public page (the landing hero, a template card, a header button) brought somebody to the New Document page, and whether that visit created a document. Named by which button it was, never who pressed it.',
+  Home: "The Explorer's landing view: arriving on it (straight away, or after starting elsewhere), opening a document from Jump back in, What happened or the Timeline column, expanding a summary of several people's work, and loading more of the Timeline.",
   Timeline:
-    "The Explorer's activity feed: opening it (split by whether it was the landing view or a deliberate visit), switching between the list and calendar views, toggling a filter chip, expanding a collapsed run of same-day events, and paging further back.",
+    "The Explorer's activity feed, All activity: opening it (split by whether the page load started on it or it was reached from Home), switching between the list and calendar views, toggling a filter chip, expanding a collapsed run of same-day events, and paging further back.",
   Activity:
     "The Explorer's Activity page (open actions and comment threads across every document): opening it, clicking a row through to the document (split by action vs thread), and retrying a failed read.",
   Token: 'API tokens: created by hand or by an AI tool connecting over MCP, and revoked.',
@@ -98,6 +99,8 @@ const CATEGORY_COLORS: Record<TelemetryCategory, string> = {
   // Distinct from Document's sky (#0ea5e9) and Session's slate: the
   // Timeline sits next to both in the stacked bar.
   Timeline: '#0369a1',
+  // Indigo-violet: the landing view, apart from the Timeline's deep sky and Activity's amber.
+  Home: '#4f46e5',
   // Amber, so the inbox reads apart from the Timeline's deep sky beside it.
   Activity: '#d97706',
   Token: '#d946ef',

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { explorerPathFor, selectedFromRoute } from './routes';
 import type { SelectedNode } from './views';
+import { EXPLORER_LANDING_PATH } from '@/lib/explorer-landing';
 
 // The mapping is the explorer's URL contract (docs/specs/013-workspace/folders.md): every sidebar
 // section must round-trip node → path → node, because the sidebar
@@ -60,6 +61,7 @@ describe('explorer route mapping', () => {
   // agree, or a mangled link lands somewhere the address bar doesn't.
   it('falls back to home for /explorer, id-less folder/team URLs, and junk', () => {
     expect(selectedFromRoute('/explorer', new URLSearchParams())).toEqual({ kind: 'home' });
+    expect(explorerPathFor({ kind: 'home' })).toBe(EXPLORER_LANDING_PATH);
     expect(selectedFromRoute('/explorer/folder', new URLSearchParams())).toEqual({
       kind: 'home',
     });

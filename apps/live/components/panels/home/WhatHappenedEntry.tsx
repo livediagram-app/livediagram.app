@@ -50,14 +50,13 @@ export function ActionEntry({ group, action }: { group: HomeGroup; action: HomeA
           {detail ? (
             <span className={`mt-0.5 block truncate text-xs ${MUTED}`}>{detail}</span>
           ) : null}
-          <span className={`mt-0.5 block truncate text-xs ${MUTED}`}>{locationLabel(group)}</span>
+          <span className={`mt-0.5 block text-xs ${MUTED}`}>
+            {locationLabel(group)} ·{' '}
+            <time dateTime={new Date(action.occurredAt).toISOString()} className="tabular-nums">
+              {clockTime(action.occurredAt)}
+            </time>
+          </span>
         </span>
-        <time
-          dateTime={new Date(action.occurredAt).toISOString()}
-          className={`shrink-0 text-xs tabular-nums ${MUTED}`}
-        >
-          {clockTime(action.occurredAt)}
-        </time>
       </a>
     </li>
   );
@@ -92,18 +91,18 @@ export function SummaryEntry({ group }: { group: HomeGroup }) {
               {sentence.document}
             </strong>
           </span>
-          <span className={`mt-0.5 block truncate text-xs ${MUTED}`}>
-            {locationLabel(group)} · {updatesLabel(group.total)}
+          <span className={`mt-0.5 block text-xs ${MUTED}`}>
+            {locationLabel(group)} · {updatesLabel(group.total)} ·{' '}
+            <time dateTime={new Date(group.latestAt).toISOString()} className="tabular-nums">
+              {clockTime(group.latestAt)}
+            </time>
           </span>
         </span>
-        <span className={`flex shrink-0 items-center gap-1 text-xs tabular-nums ${MUTED}`}>
-          <time dateTime={new Date(group.latestAt).toISOString()}>{clockTime(group.latestAt)}</time>
-          <span
-            aria-hidden
-            className={`motion-safe:transition-transform ${expanded ? 'rotate-180' : ''}`}
-          >
-            <ChevronGlyph />
-          </span>
+        <span
+          aria-hidden
+          className={`mt-0.5 shrink-0 ${MUTED} motion-safe:transition-transform ${expanded ? 'rotate-180' : ''}`}
+        >
+          <ChevronGlyph />
         </span>
       </button>
       <ul id={listId} hidden={!expanded} className="ml-9 mt-1 flex flex-col gap-0.5">

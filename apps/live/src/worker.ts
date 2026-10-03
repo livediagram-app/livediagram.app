@@ -72,7 +72,7 @@ export default {
     // Location is a clean (`/live`-free) path — the router selects the
     // live app for /explorer routes directly (docs/specs/016-platform/router-app.md).
     if (url.pathname === '/explorer' || url.pathname === '/explorer/') {
-      return Response.redirect(`${url.origin}/explorer/home`, 302);
+      return Response.redirect(`${url.origin}${EXPLORER_LANDING_PATH}`, 302);
     }
     // `/document` (and the editor's address before the rename, see ../lib/legacy-editor-path) shares one HTML file. We
     // rewrite the request rather than redirect so the browser URL
@@ -93,3 +93,4 @@ export default {
   },
 };
 import { isEditorPath } from '../lib/legacy-editor-path';
+import { EXPLORER_LANDING_PATH } from '../lib/explorer-landing';

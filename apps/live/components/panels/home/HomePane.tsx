@@ -88,7 +88,7 @@ export function HomePane({
 
   if (wide) {
     return (
-      <div className="grid grid-cols-[minmax(0,1fr)_16rem] gap-8 lg:grid-cols-[minmax(0,1fr)_20rem]">
+      <div className="grid grid-cols-[minmax(0,1fr)_15rem] gap-6 lg:grid-cols-[minmax(0,1fr)_20rem] lg:gap-8">
         <section aria-labelledby={RECENT_HEADING} className="min-w-0">
           <h2 id={RECENT_HEADING} className={`mb-3 ${SECTION_HEADING}`}>
             {HOME_COPY.recent}

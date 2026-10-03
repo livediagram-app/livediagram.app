@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import { useAppNavigation } from '@/hooks/navigation/useAppNavigation';
+import { EXPLORER_LANDING_PATH } from '@/lib/explorer-landing';
 
 // /explorer is an index with no content of its own: every section
 // lives at /explorer/<section> (docs/specs/013-workspace/folders.md, routes.ts). Default landing
@@ -13,7 +14,7 @@ export default function ExplorerIndexRedirect() {
   // Full page loads once a newer build is live (docs/specs/016-platform/stale-builds.md).
   const router = useAppNavigation();
   useEffect(() => {
-    router.replace('/explorer/home');
+    router.replace(EXPLORER_LANDING_PATH);
   }, [router]);
   return null;
 }

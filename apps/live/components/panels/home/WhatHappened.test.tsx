@@ -68,7 +68,7 @@ describe('WhatHappened', () => {
     const comment = screen.getByRole('link', { name: /Sam commented on Onboarding/ });
     expect(comment.getAttribute('href')).toBe('/document/d2');
     expect(within(comment).getByText('“Looks good”')).toBeTruthy();
-    expect(within(comment).getByText('My documents › Guides')).toBeTruthy();
+    expect(comment.textContent).toContain('My documents › Guides · ');
     expect(screen.getByRole('link', { name: /Sam edited Onboarding/ })).toBeTruthy();
     fireEvent.click(comment);
     expect(track).toHaveBeenCalledWith('Home', 'Selected', 'WhatHappened');
@@ -80,7 +80,7 @@ describe('WhatHappened', () => {
       name: /Priya, Sam and Lee assigned you an action, edited and commented in Payments architecture/,
     });
     expect(summary.getAttribute('aria-expanded')).toBe('false');
-    expect(summary.textContent).toContain('Platform team · 3 updates');
+    expect(summary.textContent).toContain('Platform team · 3 updates · ');
     const list = document.getElementById(summary.getAttribute('aria-controls')!)!;
     expect(list.hidden).toBe(true);
 
