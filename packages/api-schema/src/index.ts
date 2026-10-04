@@ -599,3 +599,6 @@ export * from './article-caret';
 export * from './within-reach';
 // Making a document is a use, a bulk import is not (docs/specs/013-workspace/explorer-home.md).
 export * from './creation-use';
+// Document views and ref refusals (docs/specs/024-agents/document-views.md).
+export * from './document-views';
+export * from './ref-errors';
