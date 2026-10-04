@@ -1,48 +1,41 @@
 'use client';
 
-// Animated hero: six editor windows on a sliding stage.
+// Animated hero: four editor windows on a sliding stage (docs/specs/019-marketing/marketing-site.md
+// "Hero"), the launch window then one per editor mode, each showing its mode in action.
 //   1. Your canvas — the launch window (hero-launch.tsx): a fresh, empty,
 //      private document. While centred, a click grows it to fill the screen
 //      and lands on a new blank document with Quick Start open.
-//   2. Flowchart — shared, a teammate cursor, and the theme beat: the Tab
-//      Look & Feel dialog opens, a theme card is picked, and the diagram
-//      recolours (the only window that recolours; its canvas tints to match).
-//   3. Slide deck — the same flowchart presented (docs/specs/012-collaboration/presentation-mode.md): full screen, so
-//      no header, tab bar or panels, only the canvas and the presenting HUD;
-//      four slides travel across it a piece at a time and end on the whole
-//      picture.
-//   4. Mind map — shared, a Highlighter swipe across one node, then a laser
-//      pointer that rings one node then another.
-//   5. Release timeline — private (amber badge, just you, no collaborators),
-//      with the Layers panel docked beside it.
-//   6. Architecture — shared; a comment thread lands on one service and an
-//      assigned action on another, ticked off by the end.
-// The chrome mirrors today's editor: the Editor menu and Share button in the
-// header, the tabbed palette with its search box and labelled tiles, the zoom
-// cluster, and the bottom tab bar's toolbelt. Below the stage, a label names
-// the centred window and a row of dots moves between them.
-// The centred window plays its pure-CSS build (globals.css, hero-*); the
-// peeking windows render settled (.hero-static), blurred + faded, with the
-// stage edges masked so they fade out rather than hard-clip. The stage
-// auto-advances every 16s (the launch window holds for 32s) and centres a window when clicked (timer resets on
-// interaction). Every window ends the same way: over its last second it
-// fades to a light grey, the stage moves on, and the next window lifts from
-// that grey (hero-fade), so no build is ever seen snapping back to its first
-// frame. Windows are wider on mobile (less peek, more legible).
+//   2. Diagram — a flowchart built, shared with a teammate's cursor, renamed, and restyled in a
+//      click: the Tab Look & Feel dialog opens, a theme card is picked, and it recolours.
+//   3. Draw — a retro whiteboard: a title underlined in marker, stickies, the highlighter, a
+//      teammate's blue marker ringing the best note, and a doodle (hero-draw-board.tsx).
+//   4. Illustrate — an infographic page laid out: a band and title, a headline number, stat
+//      chips, a growing bar chart and a filling donut, then a teammate selects the chart
+//      (hero-illustrate-page.tsx).
+// Every window is in the Toolbar panel layout, its strip wearing its mode: the mode switch and
+// the mode's tiles (hero-mode-palette.tsx), and the glyph on its tab. Below the stage, a label names the centred window and a row of dots
+// moves between them.
+// The centred window plays its pure-CSS build (hero-animations.css, hero-mode-animations.css);
+// the peeking windows render settled (.hero-static), blurred + faded, with the stage edges masked
+// so they fade out rather than hard-clip. The stage auto-advances every 16s (the launch window
+// holds for 32s) and centres a window when clicked (timer resets on interaction). Every window
+// ends the same way: over its last second it fades to a light grey, the stage moves on, and the
+// next window lifts from that grey (hero-fade). Windows are wider on mobile (less peek, more
+// legible).
 //
-// It's the page's third 'use client' boundary; with JS off it renders the
-// first window centred, and reduced-motion settles every build, the canvas
-// tint, and hides the laser.
+// With JS off it renders the first window centred, and reduced motion settles every build.
 
 import { useEffect, useRef, useState } from 'react';
-import { PREFERS_REDUCED_MOTION, useMediaQuery } from '@livediagram/ui';
 import {
-  ArchitectureDiagram,
-  FlowchartDiagram,
-  MindMapDiagram,
-  SlideDeckDiagram,
-  TimelineDiagram,
-} from './hero-diagrams';
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  PREFERS_REDUCED_MOTION,
+  useMediaQuery,
+} from '@livediagram/ui';
+import { FlowchartDiagram } from './hero-diagrams';
+import { DrawBoard } from './hero-draw-board';
+import { IllustratePage } from './hero-illustrate-page';
+import type { HeroMode } from './hero-mode-palette';
 import { snapStage } from '@/lib/hero-stage';
 import { EditorWindow, type TabDef } from './hero-editor-window';
 import { useStageBox } from './useStageBox';
@@ -73,43 +66,30 @@ const CARDS: {
   title: string;
   // What the dot navigation says about this window while it is centred.
   label: string;
-  // The canvas tool the palette's picker names. A pair is two beats: the
-  // mind map reads Select while the Highlighter (a Draw tile, not a mode) swipes,
-  // then Laser.
-  tool: string | [string, string];
+  mode: HeroMode;
   tabs: TabDef[];
   showCursor: boolean;
   shared: boolean;
   theming: boolean;
-  // Presenting (docs/specs/012-collaboration/presentation-mode.md): the panels give way to the presenting HUD, and
-  // the canvas shows the deck's slides instead of the whole diagram.
-  presenting?: boolean;
-  // Dock the Layers panel (docs/specs/006-document/layers.md) on this window's canvas, and minimise
-  // the palette to its header bar (as the editor does), so the wide
-  // timeline has the canvas to itself.
-  layers?: boolean;
   // The launch window: a link that grows into a new document (hero-launch.tsx).
   launch?: boolean;
-  // Draw the editor in its Toolbar panel layout (docs/specs/007-editor/toolbar-layout.md).
-  toolbar?: boolean;
 }[] = [
   {
     key: 'launch',
     title: LAUNCH_TITLE,
     label: 'A fresh canvas of your own: click it to start drawing',
-    tool: 'Select',
+    mode: 'diagram',
     tabs: [{ name: LAUNCH_TAB, color: '#0ea5e9', active: true }],
     showCursor: false,
     shared: false,
     theming: false,
     launch: true,
-    toolbar: true,
   },
   {
-    key: 'flowchart',
+    key: 'diagram',
     title: 'Quarterly planning',
-    label: 'A flowchart, shared live, restyled in a single click',
-    tool: 'Select',
+    label: 'Diagram: a flowchart built together and restyled in a single click',
+    mode: 'diagram',
     tabs: [
       { name: 'Overview', color: '#0ea5e9', active: true },
       { name: 'Roadmap', color: '#ec4899' },
@@ -120,59 +100,24 @@ const CARDS: {
     theming: true,
   },
   {
-    key: 'slides',
-    title: 'Quarterly planning',
-    label: 'The same flowchart presented as slides, one piece at a time',
-    tool: 'Select',
+    key: 'draw',
+    title: 'Sprint retro',
+    label: 'Draw: sketch on a whiteboard together, markers, stickies and all',
+    mode: 'draw',
     tabs: [
-      { name: 'Overview', color: '#0ea5e9', active: true },
-      { name: 'Roadmap', color: '#ec4899' },
-      { name: 'Launch', color: '#8b5cf6' },
-    ],
-    showCursor: false,
-    shared: true,
-    theming: false,
-    presenting: true,
-  },
-  {
-    key: 'mindmap',
-    title: 'Team mind map',
-    label: 'A mind map, highlighted and laser-pointed for the room',
-    tool: ['Select', 'Laser'],
-    tabs: [
-      { name: 'Ideas', color: '#0ea5e9', active: true },
-      { name: 'Themes', color: '#ec4899' },
-      { name: 'Actions', color: '#8b5cf6' },
+      { name: 'Went well', color: '#10b981', active: true },
+      { name: 'To improve', color: '#f59e0b' },
     ],
     showCursor: false,
     shared: true,
     theming: false,
   },
   {
-    key: 'timeline',
-    title: 'Release timeline',
-    label: 'A private timeline, organised into layers',
-    tool: 'Select',
-    tabs: [
-      { name: 'Roadmap', color: '#0ea5e9', active: true },
-      { name: 'Milestones', color: '#ec4899' },
-      { name: 'Releases', color: '#8b5cf6' },
-    ],
-    showCursor: false,
-    shared: false,
-    theming: false,
-    layers: true,
-  },
-  {
-    key: 'comments',
-    title: 'Platform architecture',
-    label: 'An architecture diagram, discussed in comments and turned into actions',
-    tool: 'Select',
-    tabs: [
-      { name: 'Services', color: '#0ea5e9', active: true },
-      { name: 'Data', color: '#ec4899' },
-      { name: 'Infra', color: '#8b5cf6' },
-    ],
+    key: 'illustrate',
+    title: 'Year in review',
+    label: 'Illustrate: lay out an infographic page, ready to print or share',
+    mode: 'illustrate',
+    tabs: [{ name: 'Report', color: '#8b5cf6', active: true }],
     showCursor: false,
     shared: true,
     theming: false,
@@ -226,97 +171,96 @@ export function HeroIllustration() {
   const current = CARDS[active] ?? CARDS[0]!;
   return (
     <div className="mx-auto mt-16 w-full max-w-6xl">
-      <div
-        ref={stageRef}
-        aria-hidden
-        data-hero-anchor="stage"
-        className="w-full overflow-hidden [--hero-card:88] sm:[--hero-card:68] [mask-image:linear-gradient(to_right,transparent,black_4%,black_96%,transparent)]"
-      >
+      <div className="relative [--hero-card:88] sm:[--hero-card:68]">
         <div
-          className="hero-track flex w-full"
-          style={
-            snapped
-              ? { gap: `${snapped.gapPx}px`, transform: `translateX(${snapped.translatePx}px)` }
-              : { gap: `${GAP}%`, transform: `translateX(${tx})` }
-          }
+          ref={stageRef}
+          aria-hidden
+          data-hero-anchor="stage"
+          className="w-full overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_4%,black_96%,transparent)]"
         >
-          {CARDS.map((c, i) => {
-            const playing = i === active;
-            const liveDoc = c.launch ? null : c.key === 'mindmap' ? (
-              <MindMapDiagram playing={playing} />
-            ) : c.key === 'slides' ? (
-              <SlideDeckDiagram />
-            ) : c.key === 'comments' ? (
-              <ArchitectureDiagram />
-            ) : c.key === 'timeline' ? (
-              <TimelineDiagram />
-            ) : (
-              <FlowchartDiagram />
-            );
-            const frame = (
-              <EditorWindow
-                title={c.title}
-                tabs={c.tabs}
-                shared={c.shared}
-                theming={c.theming}
-                showCursor={c.showCursor}
-                layers={c.layers ?? false}
-                presenting={c.presenting ?? false}
-                tool={c.tool}
-                playing={playing}
-                document={liveDoc}
-                overlay={
-                  c.launch ? (
-                    <LaunchCanvasOverlay playing={playing} afterConnector={!moved} />
-                  ) : undefined
-                }
-                toolbar={c.toolbar ?? false}
-                empty={c.launch ?? false}
-                veil={!c.launch}
-              />
-            );
-            const cardClassName =
-              'hero-card-dim shrink-0 text-left ' +
-              (playing ? '' : 'scale-[0.97] opacity-60 blur-[2px]');
-            // The launch window is a real link (a plain one with JS off): centred, a click grows
-            // it into the editor; off-centre, a click centres it like any other window.
-            if (c.launch) {
+          <div
+            className="hero-track flex w-full"
+            style={
+              snapped
+                ? { gap: `${snapped.gapPx}px`, transform: `translateX(${snapped.translatePx}px)` }
+                : { gap: `${GAP}%`, transform: `translateX(${tx})` }
+            }
+          >
+            {CARDS.map((c, i) => {
+              const playing = i === active;
+              const liveDoc = c.launch ? null : c.mode === 'draw' ? (
+                <DrawBoard />
+              ) : c.mode === 'illustrate' ? (
+                <IllustratePage />
+              ) : (
+                <FlowchartDiagram />
+              );
+              const frame = (
+                <EditorWindow
+                  title={c.title}
+                  tabs={c.tabs}
+                  shared={c.shared}
+                  theming={c.theming}
+                  showCursor={c.showCursor}
+                  mode={c.mode}
+                  playing={playing}
+                  document={liveDoc}
+                  overlay={
+                    c.launch ? (
+                      <LaunchCanvasOverlay playing={playing} afterConnector={!moved} />
+                    ) : undefined
+                  }
+                  empty={c.launch ?? false}
+                  veil={!c.launch}
+                />
+              );
+              const cardClassName =
+                'hero-card-dim shrink-0 text-left ' +
+                (playing ? '' : 'scale-[0.97] opacity-60 blur-[2px]');
+              // The launch window is a real link (a plain one with JS off): centred, a click grows
+              // it into the editor; off-centre, a click centres it like any other window.
+              if (c.launch) {
+                return (
+                  <a
+                    key={c.key}
+                    href={LAUNCH_HREF}
+                    data-hero-anchor="window"
+                    tabIndex={-1}
+                    onPointerEnter={prefetchLaunch}
+                    onClick={(e) => {
+                      if (!playing) {
+                        e.preventDefault();
+                        show(i);
+                      } else if (launch(e)) {
+                        e.preventDefault();
+                      }
+                    }}
+                    style={{ width: cardWidth }}
+                    className={'group block cursor-pointer ' + cardClassName}
+                  >
+                    {frame}
+                  </a>
+                );
+              }
               return (
-                <a
+                <button
                   key={c.key}
-                  href={LAUNCH_HREF}
-                  data-hero-anchor="window"
+                  type="button"
                   tabIndex={-1}
-                  onPointerEnter={prefetchLaunch}
-                  onClick={(e) => {
-                    if (!playing) {
-                      e.preventDefault();
-                      show(i);
-                    } else if (launch(e)) {
-                      e.preventDefault();
-                    }
-                  }}
+                  onClick={() => show(i)}
                   style={{ width: cardWidth }}
-                  className={'group block cursor-pointer ' + cardClassName}
+                  className={cardClassName}
                 >
                   {frame}
-                </a>
+                </button>
               );
-            }
-            return (
-              <button
-                key={c.key}
-                type="button"
-                tabIndex={-1}
-                onClick={() => show(i)}
-                style={{ width: cardWidth }}
-                className={cardClassName}
-              >
-                {frame}
-              </button>
-            );
-          })}
+            })}
+          </div>
         </div>
+        {/* Previous and next, in the gutters either side of the centred window, so the stage reads
+          as something to move through. Outside the decorative stage, so they are reachable. */}
+        <StageArrow side="left" onClick={() => show((active - 1 + CARDS.length) % CARDS.length)} />
+        <StageArrow side="right" onClick={() => show((active + 1) % CARDS.length)} />
       </div>
       {layer}
 
@@ -346,5 +290,26 @@ export function HeroIllustration() {
         </div>
       </div>
     </div>
+  );
+}
+
+// A gutter's centre: half a gap outside the centred window's edge (its edges sit at
+// (100 - card) / 2 % in from either side).
+const GUTTER = `calc((100 - var(--hero-card)) / 2 * 1% - ${GAP / 2}%)`;
+
+function StageArrow({ side, onClick }: { side: 'left' | 'right'; onClick: () => void }) {
+  const Icon = side === 'left' ? ChevronLeftIcon : ChevronRightIcon;
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={side === 'left' ? 'Previous example' : 'Next example'}
+      style={side === 'left' ? { left: GUTTER } : { right: GUTTER }}
+      className={`absolute top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border border-slate-200 bg-white/95 text-slate-600 shadow-lg shadow-slate-900/10 backdrop-blur transition hover:scale-105 hover:border-brand-300 hover:text-brand-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 motion-reduce:transition-none motion-reduce:hover:scale-100 sm:h-11 sm:w-11 dark:border-slate-700 dark:bg-slate-800/95 dark:text-slate-300 dark:hover:border-brand-500/60 dark:hover:text-brand-300 ${
+        side === 'left' ? '-translate-x-1/2' : 'translate-x-1/2'
+      }`}
+    >
+      <Icon size={18} aria-hidden />
+    </button>
   );
 }

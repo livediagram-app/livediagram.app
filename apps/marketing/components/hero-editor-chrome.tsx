@@ -20,7 +20,7 @@ import {
   ThemeBrushIcon,
   UndoIcon,
 } from '@livediagram/ui';
-import { Shape } from './hero-illustration-glyphs';
+import { HERO_MODE, MODE_TILES, type HeroMode } from './hero-mode-palette';
 
 const CARD =
   'flex h-7 items-center rounded-md border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900';
@@ -92,20 +92,23 @@ export function ToolbarMenuButton() {
   );
 }
 
-// The strip's Favourites, the editor's default go-to tiles in their order. A phone shows fewer.
-const STRIP_TILES = ['rect', 'circle', 'diamond', 'text', 'arrow', 'frame', 'note', 'image', 'pen'];
-const NARROW_TILES = 5;
+// The strip shows the mode's first tiles; a phone fewer.
+const NARROW_TILES = 4;
 
 function StripDivider() {
   return <span aria-hidden className="mx-0.5 h-4 w-px shrink-0 bg-slate-200 dark:bg-slate-700" />;
 }
 
-// The Palette in the Toolbar layout: one strip at the top centre of the canvas. The selection
-// mode (Select), the category picker (Favourites), the category's first tiles, and More.
-export function ToolbarStrip() {
+// The Palette in the Toolbar layout: one strip at the top centre of the canvas. The mode switch
+// (the mode's glyph and name), the selection mode (Select), the category picker (Popular; Draw
+// has its tools instead), the mode's tiles (the tool in hand marked), and More.
+export function ToolbarStrip({ mode }: { mode: HeroMode }) {
   const select = MODE_GLYPHS.select!;
+  const { label, Icon } = HERO_MODE[mode];
+  const pill =
+    'flex h-6 items-center gap-1 rounded bg-brand-50 px-1.5 text-[9px] font-medium text-brand-600 dark:bg-brand-500/15 dark:text-brand-300';
   return (
-    <div className="pointer-events-none absolute inset-x-0 top-2 flex justify-center">
+    <div className="pointer-events-none absolute inset-x-0 top-2 z-10 flex justify-center">
       <div className="flex items-center gap-0.5 rounded-lg border border-slate-200 bg-white p-0.5 text-slate-600 shadow-md shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
         <span className="flex h-6 w-5 items-center justify-center sm:hidden">
           <MenuIcon size={10} />
@@ -113,31 +116,43 @@ export function ToolbarStrip() {
         <span className="contents sm:hidden">
           <StripDivider />
         </span>
-        <span className="flex h-6 items-center gap-0.5 rounded bg-brand-50 px-1 text-brand-600 dark:bg-brand-500/15 dark:text-brand-300">
+        <span className={pill}>
+          <Icon size={10} />
+          <span className="hidden sm:text-optical-line">{label}</span>
+          <ChevronDownIcon size={7} />
+        </span>
+        <StripDivider />
+        <span className="flex h-6 items-center gap-0.5 px-1">
           <Glyph size={10} units={select.units}>
             <Prims prims={select.prims} />
           </Glyph>
           <ChevronDownIcon size={7} />
         </span>
+        {mode === 'draw' ? null : (
+          <>
+            <StripDivider />
+            <span className="flex h-6 items-center gap-1 px-1.5 text-[9px] font-medium">
+              <Glyph size={10} units={24}>
+                <Prims prims={lucideStar} />
+              </Glyph>
+              <span className="hidden sm:text-optical-line">Popular</span>
+              <ChevronDownIcon size={7} />
+            </span>
+          </>
+        )}
         <StripDivider />
-        <span className="flex h-6 items-center gap-1 rounded bg-brand-50 px-1.5 text-[9px] font-medium text-brand-600 dark:bg-brand-500/15 dark:text-brand-300">
-          <Glyph size={10} units={24}>
-            <Prims prims={lucideStar} />
-          </Glyph>
-          <span className="hidden sm:text-optical-line">Favourites</span>
-          <ChevronDownIcon size={7} />
-        </span>
-        <StripDivider />
-        {STRIP_TILES.map((kind, i) => (
+        {MODE_TILES[mode].map((t, i) => (
           <span
-            key={kind}
-            className={`h-6 w-5 items-center justify-center ${i < NARROW_TILES ? 'flex' : 'hidden sm:flex'}`}
+            key={t.key}
+            className={`h-6 w-6 items-center justify-center rounded ${
+              i < NARROW_TILES ? 'flex' : 'hidden sm:flex'
+            } ${t.active ? 'bg-brand-50 text-brand-600 dark:bg-brand-500/15 dark:text-brand-300' : ''}`}
           >
-            <Shape kind={kind} />
+            {t.glyph}
           </span>
         ))}
         <StripDivider />
-        <span className="flex h-6 items-center gap-0.5 rounded bg-brand-50 px-1 text-brand-600 dark:bg-brand-500/15 dark:text-brand-300">
+        <span className="flex h-6 items-center gap-0.5 px-1">
           <EllipsisIcon size={10} />
           <ChevronDownIcon size={7} />
         </span>

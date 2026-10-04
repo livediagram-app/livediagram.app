@@ -3,6 +3,7 @@
 @import '@livediagram/template-previews/preview-art-tile.css';
 @import '@livediagram/template-previews/preview-motion.css';
 @import './hero-animations.css';
+@import './hero-mode-animations.css';
 @import './feature-art-animations.css';
 @import './page-motion.css';
 @import './privacy-art.css';
@@ -29,13 +30,6 @@
   .hero-line4,
   .hero-theme,
   .hero-text-in,
-  .hero-comment,
-  .hero-highlight,
-  .hero-slide4,
-  .hero-slide-hud4,
-  .hero-tool-b,
-  .hero-note,
-  .hero-action,
   .hero-cursor {
     animation: none;
     opacity: 1;
@@ -47,13 +41,7 @@
     animation: none;
     opacity: 0;
   }
-  /* the laser pointer (mind-map card) stays hidden */
-  .hero-laser-a,
-  .hero-laser-b,
-  .hero-laser-dot,
-  .hero-laser-trail,
-  .hero-slide-hud,
-  .hero-tool-a,
+  /* the theme dialog, its pointer and the window veils stay hidden */
   .hero-dialog,
   .hero-dialog-cursor,
   .hero-fade,

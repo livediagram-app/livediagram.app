@@ -1,0 +1,167 @@
+/* The hero's Draw and Illustrate windows (components/hero-draw-board.tsx,
+   components/hero-illustrate-page.tsx; docs/specs/019-marketing/marketing-site.md "Hero").
+   Unlike the flowchart's one 16s timeline, every mark here plays once at its own delay (--d): the
+   window's group is remounted each time it reaches centre, and its veil (hero-fade) covers the
+   last second, so nothing has to clear on a loop. Off-centre (.hero-static) and under reduced
+   motion every mark shows settled. */
+
+/* A piece lands: a small overshoot from 70%. */
+.hm-pop {
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: hm-pop 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.3) var(--d, 0s) both;
+}
+@keyframes hm-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.7);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* A stroke draws on along its length (--len) over --dur, as a hand would draw it; --to stops it
+   short (the donut fills only its share). */
+.hm-draw {
+  stroke-dasharray: var(--len) var(--len);
+  animation: hm-draw var(--dur, 0.6s) ease-in-out var(--d, 0s) both;
+}
+@keyframes hm-draw {
+  0% {
+    opacity: 0;
+    stroke-dashoffset: var(--len);
+  }
+  1% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    stroke-dashoffset: var(--to, 0);
+  }
+}
+/* The highlighter's swipe: translucent, as the Highlighter lays it. */
+.hm-highlight {
+  stroke-opacity: 0.55;
+}
+
+/* A band wipes in from the left. */
+.hm-wipe {
+  transform-box: fill-box;
+  transform-origin: left center;
+  animation: hm-wipe 0.6s cubic-bezier(0.65, 0, 0.35, 1) var(--d, 0s) both;
+}
+@keyframes hm-wipe {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: none;
+  }
+}
+
+/* A bar grows up from its axis. */
+.hm-grow {
+  transform-box: fill-box;
+  transform-origin: bottom;
+  animation: hm-grow 0.55s cubic-bezier(0.2, 0.9, 0.3, 1.15) var(--d, 0s) both;
+}
+@keyframes hm-grow {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: none;
+  }
+}
+
+/* The teammate's pen on the whiteboard: it rides the ring as the ring is drawn, glides to the
+   arrow's start and rides the arrow, timed to the two strokes (3.4s to 5.4s), then lifts away.
+   The path is the ring, a glide, then the arrow; their lengths (440, 140, 120) set the stops. */
+.hm-pen {
+  transform-box: view-box;
+  transform-origin: 0 0;
+  offset-path: path(
+    'M246 34 C 320 30, 324 168, 246 172 C 168 176, 166 40, 236 38 L262 176 C 270 210, 300 232, 340 236'
+  );
+  offset-rotate: 0deg;
+  opacity: 0;
+  animation:
+    hm-pen 2s linear 3.4s both,
+    hm-lift 0.4s ease-out 5.8s forwards;
+}
+@keyframes hm-pen {
+  0% {
+    offset-distance: 0%;
+    opacity: 1;
+  }
+  60% {
+    offset-distance: 62.9%;
+  }
+  70% {
+    offset-distance: 82.9%;
+  }
+  100% {
+    offset-distance: 100%;
+    opacity: 1;
+  }
+}
+@keyframes hm-lift {
+  to {
+    opacity: 0;
+  }
+}
+
+/* The teammate's cursor on the page: it comes in from the right, settles on the chart, and stays. */
+.hm-cursor {
+  opacity: 0;
+  animation: hm-cursor 0.8s cubic-bezier(0.3, 0, 0.2, 1) var(--d, 0s) both;
+}
+@keyframes hm-cursor {
+  from {
+    opacity: 0;
+    transform: translate(330px, 120px);
+  }
+  20% {
+    opacity: 1;
+  }
+  to {
+    opacity: 1;
+    transform: translate(258px, 172px);
+  }
+}
+
+.hero-static .hm-pop,
+.hero-static .hm-draw,
+.hero-static .hm-wipe,
+.hero-static .hm-grow {
+  animation: none;
+  opacity: 1;
+  transform: none;
+  stroke-dashoffset: var(--to, 0);
+}
+.hero-static .hm-pen,
+.hero-static .hm-cursor {
+  display: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hm-pop,
+  .hm-draw,
+  .hm-wipe,
+  .hm-grow {
+    animation: none;
+    opacity: 1;
+    transform: none;
+    stroke-dashoffset: var(--to, 0);
+  }
+  .hm-pen {
+    display: none;
+  }
+  .hm-cursor {
+    animation: none;
+    opacity: 1;
+    transform: translate(258px, 172px);
+  }
+}

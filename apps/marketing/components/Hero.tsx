@@ -26,7 +26,8 @@ export function Hero() {
         {/* An arrow from the headline to the illustration, drawn on load (HeroConnectors). */}
         <HeroConnectors />
         {/* Says what it is and the one thing that sets it apart (docs/specs/019-marketing/marketing-site.md). */}
-        <h1 className="mx-auto whitespace-nowrap text-[clamp(1.5rem,7.6vw,4.5rem)] font-semibold leading-tight tracking-tight text-slate-900 dark:text-slate-100">
+        {/* Lifted above the stage below it, so the word card opens over the windows. */}
+        <h1 className="relative z-20 mx-auto whitespace-nowrap text-[clamp(1.5rem,7.6vw,4.5rem)] font-semibold leading-tight tracking-tight text-slate-900 dark:text-slate-100">
           {/* The rotating first word (HeroTitleLine) is decorative: the stable headline is what
               screen readers and crawlers read. One line at every width: the size scales with the
               viewport so the longest word still fits. */}
