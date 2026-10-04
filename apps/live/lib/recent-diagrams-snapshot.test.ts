@@ -49,6 +49,12 @@ const thumbUrl = (id: string, savedAt: number) =>
 
 const note = () => parseRecentDiagrams(localStorage.getItem(RECENT_DIAGRAMS_KEY));
 
+// Another tab's write, as the browser reports it: a `storage` event naming the key. Built as a plain
+// event with `key` set, which is all the listener reads.
+function storageEvent(key: string): Event {
+  return Object.defineProperty(new Event('storage'), 'key', { value: key });
+}
+
 let caches: ReturnType<typeof fakeCaches>;
 
 // The module keeps per-page state (forgotten, the latest list, its listeners), so each test loads a
@@ -195,12 +201,12 @@ describe('hiding from Recent', () => {
       USER_PREFERENCES_STORAGE_KEY,
       JSON.stringify({ recentExcludedIds: ['b'] }),
     );
-    window.dispatchEvent(new StorageEvent('storage', { key: USER_PREFERENCES_STORAGE_KEY }));
+    window.dispatchEvent(storageEvent(USER_PREFERENCES_STORAGE_KEY));
     expect(note().map((d) => d.id)).toEqual(['a']);
 
     // Another key changing is not a preference change.
     localStorage.setItem(USER_PREFERENCES_STORAGE_KEY, '{}');
-    window.dispatchEvent(new StorageEvent('storage', { key: 'something-else' }));
+    window.dispatchEvent(storageEvent('something-else'));
     expect(note().map((d) => d.id)).toEqual(['a']);
   });
 });
