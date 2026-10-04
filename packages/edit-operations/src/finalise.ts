@@ -7,12 +7,15 @@ import type { EditRejection } from '@livediagram/api-schema';
 import {
   MAX_ELEMENTS_PER_TAB,
   coerceShapeKind,
+  deriveContainers,
+  isContainer,
   elementValidationIssue,
   isValidTab,
   landWorkshopArrivals,
   lanesToFront,
   normaliseElement,
   rebindArrowAnchorsAfterMove,
+  type BoxedElement,
   type Element,
   type ElementId,
   type Tab,
@@ -20,10 +23,12 @@ import {
 import { kindOf } from './element-text';
 import { sameValue } from './equality';
 import { invalidResult } from './rejections';
-import { currentElements, type EditState } from './state';
+import { currentElements, replaceElement, type EditState } from './state';
 import type { EditLog } from './types';
 
 type Raw = Record<string, unknown>;
+
+const GEOMETRY: ReadonlySet<string> = new Set(['x', 'y', 'width', 'height', 'from', 'to']);
 
 // The coercions normalising may make that change what the caller asked for.
 function noteCoercions(state: EditState, before: Raw, after: Raw, log: EditLog, op: number) {
@@ -45,9 +50,11 @@ function noteCoercions(state: EditState, before: Raw, after: Raw, log: EditLog, 
 }
 
 function normaliseTouched(state: EditState, log: EditLog): void {
-  for (const [id, { operation }] of state.touched) {
+  for (const [id, { operation, written }] of state.touched) {
     const el = state.byId.get(id);
-    if (!el) continue;
+    // Normalising settles what an operation wrote; an element only moved, carried or grown changes
+    // nothing but where it is and how big.
+    if (!el || (!!state.before.has(id) && written.every((key) => GEOMETRY.has(key)))) continue;
     const normalised = normaliseElement(el) as Raw;
     noteCoercions(state, el as unknown as Raw, normalised, log, operation);
     if (normalised.type === 'shape') {
@@ -62,7 +69,7 @@ function normaliseTouched(state: EditState, log: EditLog): void {
         normalised.shape = shape;
       }
     }
-    state.byId.set(id, normalised as unknown as Element);
+    replaceElement(state, normalised as unknown as Element);
   }
 }
 
@@ -107,14 +114,51 @@ export function tabRejection(tab: Tab): EditRejection {
   return invalidResult('the tab', undefined, { field: 'id', rule: 'an id and a name' });
 }
 
+// Workshop notes a lane took in: a note no operation wrote reports the landing as its move.
+function noteLandings(state: EditState, landed: readonly Element[]): void {
+  for (const el of landed) {
+    if (state.byId.get(el.id) === el) continue;
+    replaceElement(state, el);
+    // Only notes that moved arrive, and moving one touches it.
+    const touched = state.touched.get(el.id)!;
+    if (touched.written.length > 0 || !state.before.has(el.id)) continue;
+    touched.moved = 'landed on a lane';
+    delete touched.shift;
+  }
+}
+
+// Every container directly before its earliest member when it is after it, innermost first, so an
+// outer container ends before the inner ones it holds (I6).
+export function containersBehindMembers(elements: readonly Element[]): Element[] {
+  const byId = new Map(elements.map((el) => [el.id, el]));
+  const members = new Map<BoxedElement, ElementId[]>();
+  for (const [id, holder] of deriveContainers(elements)) {
+    const container = holder ? byId.get(holder) : undefined;
+    // A mind node holds its children by link, not by drawing behind them.
+    if (container && container.type !== 'arrow' && isContainer(container))
+      members.set(container, [...(members.get(container) ?? []), id]);
+  }
+  const order = elements.map((el) => el.id);
+  const innermostFirst = [...members].sort(([a], [b]) => a.width * a.height - b.width * b.height);
+  for (const [container, held] of innermostFirst) {
+    const at = order.indexOf(container.id);
+    const earliest = Math.min(...held.map((id) => order.indexOf(id)));
+    if (earliest > at) continue;
+    order.splice(at, 1);
+    order.splice(earliest, 0, container.id);
+  }
+  return order.map((id) => byId.get(id)!);
+}
+
 export function finalise(state: EditState, log: EditLog): Tab | EditRejection {
   normaliseTouched(state, log);
   const issue = touchedIssue(state);
   if (issue) return issue;
-  const landed = landWorkshopArrivals(state.tab, currentElements(state), 'ops');
+  const landed = landWorkshopArrivals(state.tab, [...currentElements(state)], 'ops');
+  noteLandings(state, landed);
   const rebound = rebindArrowAnchorsAfterMove(landed, movedBoxes(state.before, landed));
   // An element that ends as it began is the element it began as (E1, I2).
-  const elements = lanesToFront(rebound).map((el) => {
+  const elements = containersBehindMembers(lanesToFront(rebound)).map((el) => {
     const was = state.before.get(el.id);
     return was && was !== el && sameValue(was, el) ? was : el;
   });

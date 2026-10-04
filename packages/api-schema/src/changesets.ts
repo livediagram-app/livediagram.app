@@ -153,6 +153,8 @@ export type ResultLine =
       refs: string[];
       delta?: [number, number];
       reason: 'make room' | 'carried' | 'laid out' | 'landed on a lane';
+      // How `layout` laid them out; a direction only for the flow style.
+      layout?: { style: 'flow' | 'tree' | 'mindmap'; direction?: 'down' | 'right' };
     }
   | { mark: 'container'; ref: string; joined: string[]; left: string[] }
   | { mark: '!'; warning: EditWarning };

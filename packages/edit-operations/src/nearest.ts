@@ -43,14 +43,21 @@ export function nearestName(
 }
 
 // Up to NEAREST_CANDIDATES_MAX elements whose id, or label ignoring case, is within
-// NEAREST_MAX_DISTANCE of the selector: nearest first, element order on a tie.
-export function nearestElements(selector: string, elements: readonly Element[]): Element[] {
+// NEAREST_MAX_DISTANCE of the selector: nearest first, element order on a tie. A label the caller
+// quoted is compared with labels only.
+export function nearestElements(
+  selector: string,
+  elements: readonly Element[],
+  { labelsOnly = false }: { labelsOnly?: boolean } = {},
+): Element[] {
   const query = selector.toLowerCase();
   const scored: { el: Element; distance: number; index: number }[] = [];
   elements.forEach((el, index) => {
     const label = (labelOf(el) ?? '').toLowerCase().slice(0, LABEL_CUT_CHARS);
     const distance = Math.min(
-      editDistanceWithin(selector, el.id, NEAREST_MAX_DISTANCE),
+      labelsOnly
+        ? NEAREST_MAX_DISTANCE + 1
+        : editDistanceWithin(selector, el.id, NEAREST_MAX_DISTANCE),
       label ? editDistanceWithin(query, label, NEAREST_MAX_DISTANCE) : NEAREST_MAX_DISTANCE + 1,
     );
     if (distance <= NEAREST_MAX_DISTANCE) scored.push({ el, distance, index });

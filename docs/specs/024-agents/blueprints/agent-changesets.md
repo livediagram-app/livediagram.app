@@ -419,11 +419,13 @@ before)`. Derived by diffing back rather than op by op, so removes, adds and a r
 layout, theme, name } }`, no base; then reads the tab to render the PNG (CS36). Structured output gains
   `changesetId`, `rev`, `text`, `lint`.
 - `update_document` `replace`: `{ replace: { graph | mermaid | elements, layout } }`, no base.
-- `update_document` `ops`: `mcpOpsToEditOperations(args.ops)` in the JSON form: `add` → `add` of the element's
-  kind with `id`, its fields and placement `at:x,y`; `update` → `set` on `elementId` with the element's given
-  fields; `remove` → `rm` on `elementId` (pinned arrows go too and are listed). The engine lands event-storming notes
-  on lanes and coerces shapes. Base: `{ rev: args.rev ?? loaded.rev, elements }` with the fingerprints of the ops'
-  named ids from the tab the tool loads at call time. Input gains optional `rev`, the revision `read_document`
+- `update_document` `ops`: `mcpOpsToEditOperations(args.ops)` in the JSON form: `add` → `add` of the whole
+  element; `update` → `set` with the element's given fields; `remove` → `rm` (pinned arrows go too and are listed).
+  `elementId` is an id or a ref as `read_document` prints it, resolved with `resolveRef` against the loaded tab; the
+  target is that element's always-safe `id:"…"` ref, and a word naming nothing goes as given for the engine to
+  refuse (EO54). The engine lands event-storming notes on lanes and coerces shapes. Base:
+  `{ rev: args.rev ?? loaded.rev, elements }` with the fingerprints of the elements the ops name, from the tab the
+  tool loads at call time. Input gains optional `rev`, the revision `read_document`
   returned.
 - `rename_document` with `tabId`: `PUT .../tabs/:tabId/name { name }`.
 - A 4xx from the route returns `errorResult(changesetErrorText(err))` (the route's `text` or `message`, never

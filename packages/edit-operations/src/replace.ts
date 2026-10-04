@@ -10,6 +10,7 @@ import {
   buildGraphTab,
   buildTab,
   coerceShapeKind,
+  contentOrigin,
   diffToElementOps,
   elementValidationIssue,
   getBuiltInTheme,
@@ -27,7 +28,7 @@ import { buildTemplateTab, resolveTemplate, validTemplateKinds } from '@livediag
 import { tabRejection } from './finalise';
 import { graphBodyIssue } from './graph-body';
 import { invalidResult, tabLocked } from './rejections';
-import { addedLine, removedLine } from './results';
+import { addedLine, lineNaming, removedLine } from './results';
 import type { ApplyOutcome, EditLog, ReplaceBody, ReplaceOptions } from './types';
 
 type Source = 'graph' | 'mermaid' | 'template' | 'elements';
@@ -153,11 +154,13 @@ export function applyReplace(
   const kept = new Set(next.elements.map((el) => el.id));
   const had = new Set(before.map((el) => el.id));
   const createdIds = next.elements.filter((el) => !had.has(el.id)).map((el) => el.id);
+  // Refs as the next tab prints them; the origin the reader of the old tab had, or the new one's.
+  const naming = lineNaming(before, next.elements, contentOrigin(tab ? before : next.elements));
   return {
     tab: next,
     results: [
-      ...next.elements.filter((el) => !had.has(el.id)).map((el) => addedLine(el)),
-      ...before.filter((el) => !kept.has(el.id)).map((el) => removedLine(el)),
+      ...next.elements.filter((el) => !had.has(el.id)).map((el) => addedLine(el, naming)),
+      ...before.filter((el) => !kept.has(el.id)).map((el) => removedLine(el, naming)),
     ],
     elementOps,
     inverse: invertElementOps(before, elementOps),

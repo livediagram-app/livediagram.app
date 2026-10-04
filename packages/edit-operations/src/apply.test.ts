@@ -205,7 +205,7 @@ describe('applyEditOperations', () => {
       expect(
         applied(outcome).elementOps.map((op) => op.kind === 'update' && op.element.id),
       ).toContain('a3');
-      expect(lines(outcome)).toEqual(['~ n4  @0,300→@300,200']);
+      expect(lines(outcome)).toEqual(['~ n4  @40,300→@340,200', 'f2  -n4']);
     });
 
     it('puts lanes behind everything else', () => {

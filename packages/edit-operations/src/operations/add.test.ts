@@ -16,7 +16,7 @@ describe('add with an element', () => {
     expect(tab.elements.at(-1)).toMatchObject({ id: 'idea', x: 400, y: 0, width: 200 });
     expect(createdIds).toEqual(['idea']);
     expect(targets).toEqual([]);
-    expect(lines(outcome)).toEqual(['+ idea  sticky "Idea" @400,0 200×200']);
+    expect(lines(outcome)).toEqual(['+ idea  sticky "Idea" @440,0 200×200']);
   });
 
   it('mints an id with makeId when the element has none', () => {

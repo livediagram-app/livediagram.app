@@ -75,6 +75,16 @@ function detectDirection(centers: Map<ElementId, Pt>, edges: Edge[]): LayoutDire
   return vy >= vx ? 'TB' : 'LR';
 }
 
+// The flow direction `autoLayoutElements` detects for these elements when none is given.
+export function flowDirectionOf(elements: readonly Element[]): LayoutDirection {
+  const boxed = elements.filter(isBoxed);
+  const arrows = elements.filter((e): e is ArrowElement => e.type === 'arrow');
+  const centers = new Map<ElementId, Pt>(
+    boxed.map((n) => [n.id, { x: n.x + n.width / 2, y: n.y + n.height / 2 }]),
+  );
+  return detectDirection(centers, buildEdges(arrows, new Set(centers.keys())));
+}
+
 // Longest-path layering: sources at rank 0, each node one rank past its
 // deepest predecessor. Cycles are broken by ignoring back edges (relax only
 // along the topological order; remaining cycle nodes are appended in input

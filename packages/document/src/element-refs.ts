@@ -49,16 +49,31 @@ function printedRef(id: string, longestShared: number): string {
 
 // The ref of every id: a slug id is its own ref, else the shortest prefix unique among `ids`, at least
 // REF_MIN_LENGTH characters. Sorting by UTF-16 code units puts an id's longest shared prefix beside it.
-// An id outside the table (a dangling arrow end) prints in the always-safe `id:"…"` form.
+// An id outside the table (a dangling arrow end) prints in the always-safe `id:"…"` form. The sort
+// runs on the first ref asked of an id that is not a slug, so a table of slug ids costs no sort.
 export function computeRefs(ids: readonly string[]): RefTable {
-  const sorted = [...ids].sort(compareCodeUnits);
-  const refs = new Map<string, string>();
-  sorted.forEach((id, i) => {
-    const before = i > 0 ? commonPrefixLength(id, sorted[i - 1]!) : 0;
-    const after = i < sorted.length - 1 ? commonPrefixLength(id, sorted[i + 1]!) : 0;
-    refs.set(id, printedRef(id, Math.max(before, after)));
-  });
-  return { ids, refOf: (id) => refs.get(id) ?? `${ID_REF_PREFIX}${JSON.stringify(id)}` };
+  let present: ReadonlySet<string> | null = null;
+  let refs: ReadonlyMap<string, string> | null = null;
+  const prefixRefs = () => {
+    const sorted = [...ids].sort(compareCodeUnits);
+    return new Map(
+      sorted.map((id, i) => {
+        const before = i > 0 ? commonPrefixLength(id, sorted[i - 1]!) : 0;
+        const after = i < sorted.length - 1 ? commonPrefixLength(id, sorted[i + 1]!) : 0;
+        return [id, printedRef(id, Math.max(before, after))];
+      }),
+    );
+  };
+  return {
+    ids,
+    refOf: (id) => {
+      present ??= new Set(ids);
+      if (!present.has(id)) return `${ID_REF_PREFIX}${JSON.stringify(id)}`;
+      if (isSlugId(id)) return id;
+      refs ??= prefixRefs();
+      return refs.get(id)!;
+    },
+  };
 }
 
 function unquotedIdRef(input: string): string | null {

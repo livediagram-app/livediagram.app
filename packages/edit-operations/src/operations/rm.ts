@@ -12,7 +12,15 @@ import {
   type Endpoint,
   type ShapeElement,
 } from '@livediagram/document';
-import { type EditState, refuseLocked, removeElement, resolveTarget, writeFields } from '../state';
+import { resolveSome } from '../selectors';
+import {
+  type EditState,
+  type Removal,
+  refsOf,
+  refuseLocked,
+  removeElement,
+  writeFields,
+} from '../state';
 import type { RmOperation } from '../types';
 
 const attachedTo = (end: Endpoint): ElementId | null =>
@@ -83,7 +91,7 @@ function keepArrows(
     state.warnings.push({
       code: 'arrows_freed',
       ref: arrow.id,
-      message: `${arrow.id} ${ends.join(' and ')} freed where it was drawn: ${target} was removed`,
+      message: `${refsOf(state).refOf(arrow.id)} ${ends.join(' and ')} freed where it was drawn: ${refsOf(state).refOf(target)} was removed`,
     });
   }
   return null;
@@ -101,12 +109,29 @@ function orphansOf(state: EditState, removed: ReadonlySet<ElementId>): ShapeElem
 
 export function applyRm(
   state: EditState,
-  { target, keepArrows: keep }: RmOperation,
+  { target, all, keepArrows: keep }: RmOperation,
   operation: number,
 ): EditRejection | null {
-  const resolved = resolveTarget(state, target, operation);
+  const resolved = resolveSome(state, target, operation, all === true);
   if ('rejection' in resolved) return resolved.rejection;
-  const { el } = resolved;
+  for (const { id } of resolved.els) {
+    // An arrow already gone with an earlier target's cascade.
+    const el = state.byId.get(id);
+    if (!el) continue;
+    const rejection = removeOne(state, el, keep === true, operation);
+    if (rejection) return rejection;
+  }
+  return null;
+}
+
+// Removes one element with its cascade; `removal` says why it went when no operation named it.
+export function removeOne(
+  state: EditState,
+  el: Element,
+  keep: boolean,
+  operation: number,
+  removal: Removal = {},
+): EditRejection | null {
   const targetLocked = lockRejection(state, el, operation);
   if (targetLocked) return targetLocked;
   const attached = arrowsByAttachment(state);
@@ -129,7 +154,7 @@ export function applyRm(
     const { mindParentId: _removed, ...rest } = orphan;
     writeFields(state, rest, operation, ['mindParentId']);
   }
-  removeElement(state, el.id, operation, {});
+  removeElement(state, el.id, operation, removal);
   for (const [id, by] of pulled) removeElement(state, id, operation, { pinnedTo: by });
   return null;
 }

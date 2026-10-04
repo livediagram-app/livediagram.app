@@ -7,7 +7,7 @@ import { ELEMENT_FIELD_NAMES, type Element } from '@livediagram/document';
 import { layerLockOf } from '../locks';
 import { idTaken, unknownField } from '../rejections';
 import { type EditState, isTaken, putElement, refuseLocked } from '../state';
-import type { AddOperation } from '../types';
+import type { AddElementOperation } from '../types';
 import { PROTOTYPE_KEYS } from '../vocabulary';
 
 const fieldNamesOf = (type: unknown): readonly string[] =>
@@ -17,7 +17,7 @@ const fieldNamesOf = (type: unknown): readonly string[] =>
 
 export function applyAdd(
   state: EditState,
-  { element: raw }: AddOperation,
+  { element: raw }: AddElementOperation,
   operation: number,
 ): EditRejection | null {
   const prototypeKey = Object.keys(raw).find((key) => PROTOTYPE_KEYS.has(key));

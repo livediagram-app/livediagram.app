@@ -11,52 +11,55 @@ precision. Defaults applied where the spec is silent are ledgered in [DEFAULTS.m
 
 Scope, by file:
 
-| File                                                                         | Role                                                                                                                                   |
-| ---------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| `packages/edit-operations/{package.json,tsconfig.json,eslint.config.js,...}` | New private workspace package `@livediagram/edit-operations`, laid out like `packages/explorer-lens` (EO1)                             |
-| `packages/edit-operations/src/index.ts`                                      | The public surface (listed under [Interfaces and contracts](#interfaces-and-contracts))                                                |
-| `packages/edit-operations/src/types.ts`                                      | `EditOperation`, `Selector`, `Placement`, `FieldValue`, `ApplyOptions`, outcomes, `ResultLine`, codes                                  |
-| `packages/edit-operations/src/vocabulary.ts`                                 | `EDIT_OPERATION_NAMES`, `PLACEMENT_KEYS`, `SELECTOR_KEYS`, `OPERATION_FLAGS`, `RESERVED_WORDS`, constants                              |
-| `packages/edit-operations/src/tokenise.ts` (planned)                         | `tokeniseLine`: words, quotes, escapes, columns                                                                                        |
-| `packages/edit-operations/src/parse-line.ts` (planned)                       | `parseOperationLine`: one line form line into one `EditOperation`                                                                      |
-| `packages/edit-operations/src/parse-json.ts`                                 | `validateEditOperation`: one JSON form object, checked member by member                                                                |
-| `packages/edit-operations/src/parse.ts` (planned)                            | `parseEditOperations(text)`: lines, comments, form per line, the count cap                                                             |
-| `packages/edit-operations/src/format-operation.ts` (planned)                 | `formatOperation`: the canonical line form of an operation (rejection headers, round trips)                                            |
-| `packages/edit-operations/src/selectors.ts` (planned)                        | `parseSelector`, `resolveSelector`, `resolveOne`: matching against the working state                                                   |
-| `packages/edit-operations/src/graph-walk.ts` (planned)                       | `downstreamOf`, `upstreamOf`: reachability along pinned arrows                                                                         |
-| `packages/edit-operations/src/nearest.ts`                                    | `nearestCandidates`: banded edit distance over labels and refs                                                                         |
-| `packages/edit-operations/src/fields.ts` (planned)                           | `FIELD_ALIASES`, `fieldsOfKind`, `resolveFieldWrite`: keys, unknown fields, value coercion                                             |
-| `packages/edit-operations/src/colours.ts` (planned)                          | `resolveColourValue`: theme slots, hex, sticky presets                                                                                 |
-| `packages/edit-operations/src/labels.ts` (planned)                           | `applyLabel` (cap into the note), `fitToLabel` (grow around the centre)                                                                |
-| `packages/edit-operations/src/placement.ts` (planned)                        | `resolvePlacement`, `defaultPlacement`, `nudgeUntilFree`                                                                               |
-| `packages/edit-operations/src/make-room.ts` (planned)                        | `makeRoom`: the insert shift, its scope and container growth                                                                           |
-| `packages/edit-operations/src/state.ts`                                      | `EditState`: the working element map and order, touched / moved / named / created sets, targets, the content origin                    |
-| `packages/edit-operations/src/membership.ts` (planned)                       | `membershipOf(state)`: each boxed element's container by `smallestHolder`, before and after                                            |
-| `packages/edit-operations/src/locks.ts`                                      | `lockedIds(state)`: locked elements and elements on locked layers (`lockedLayerElementIds`)                                            |
-| `packages/edit-operations/src/ids.ts` (planned)                              | `newElementId`: `id=` checks, `slugIdFor` with the changeset's taken ids, `makeId` fallback                                            |
-| `packages/edit-operations/src/operations/*.ts`                               | One file per operation: `add`, `set`, `rm`, `move`, `connect`, `rewire`, `insert`, `wrap`, `unwrap`, ...                               |
-| `packages/edit-operations/src/finalise.ts`                                   | Normalise touched, lanes and containers behind members, landing, arrow rebind, validation with reasons                                 |
-| `packages/edit-operations/src/apply.ts`                                      | `applyEditOperations`                                                                                                                  |
-| `packages/edit-operations/src/replace.ts`                                    | `applyReplace`: the `replace` body through the same outcome shape                                                                      |
-| `packages/edit-operations/src/results.ts`, `format-results.ts`               | `buildResultLines`, `formatResultLines`, `formatResultFooter`                                                                          |
-| `packages/edit-operations/src/rejections.ts`                                 | `rejection` builders per code, `formatRejections`                                                                                      |
-| `packages/edit-operations/src/fixtures/checkout-flow.ts`                     | The research's checkout tab (`n1` to `n8`, `t1`, `a1` to `a7`) plus a frame `f2`, used by every suite                                  |
-| `packages/document/src/element-normalise.ts` (+ test)                        | moved from `apps/mcp/src/`: `normaliseElement(s)`, `lanesToFront`, `mergeElementUpdate`                                                |
-| `packages/document/src/graph-input.ts` (+ test)                              | moved from `apps/mcp/src/`: `GRAPH_LABEL_MAX`, `capLabel`, `layoutGraph`, `resolveGraphInput`                                          |
-| `packages/document/src/tab-builders.ts` (+ test)                             | moved from `apps/mcp/src/`: `applyLayout`, `buildTab`, `buildGraphTab`, `landWorkshopArrivals` (EO2)                                   |
-| `packages/templates/src/template-tab.ts` (+ test)                            | `buildTemplateTab`, `resolveTemplate`, `validTemplateKinds`: the template builders, in `templates` because it imports `document` (EO1) |
-| `packages/document/src/element-fields.ts` (+ test)                           | `ELEMENT_FIELD_NAMES`: every stored field per element type, compile-time exhaustive                                                    |
-| `packages/document/src/validate.ts` (+ test)                                 | `elementValidationIssue(el)` names the field and rule; `isValidElement` delegates to it                                                |
-| `packages/document/src/containment.ts` (+ test)                              | Shared: `boxCentre`, `boxHoldsPoint`, `smallestHolder`, `contentOrigin`; this blueprint adds `isContainer` and `containerContents`     |
-| `packages/document/src/element-refs.ts` (+ test)                             | Shared: `SLUG_ID_PATTERN`, `isSlugId`, `slugIdFor`, `REF_MIN_LENGTH`, `computeRefs`, `RefTable`, `resolveRef`, `kindTokenOf`           |
-| `packages/document/src/auto-layout-shared.ts`, `auto-layout-clusters.ts`     | Export `LAYER_GAP`, `SIBLING_GAP`, `FRAME_PAD`, `FRAME_TOP` through `index.ts`                                                         |
-| `packages/document/src/index.ts`, `packages/templates/src/index.ts`          | Re-export the moved and new modules                                                                                                    |
-| `apps/mcp/src/tools.ts`, `schema.ts`                                         | Import the moved modules from `@livediagram/document` / `@livediagram/templates`; local files removed                                  |
-| `apps/live/lib/canvas.ts`                                                    | `withFrameContents` and `isFrameEl` removed; `framesFirst` reads `isContainer`                                                         |
-| `apps/live/hooks/canvas/useBoxedDragHandlers.ts`                             | The drag's move set is `containerContents(elements, ids)`: a person's drag carries what an agent's `move` carries                      |
-| `apps/live/lib/canvas.test.ts`                                               | The `withFrameContents` suite moves to `containment.test.ts`, rewritten for the centre rule                                            |
-| `apps/api/package.json`                                                      | Depends on `@livediagram/edit-operations`; the changeset route is the [Agent changesets](agent-changesets.md) blueprint's              |
-| `docs/development/architecture.md`, `README.md`                              | The new package in the package list; `AGENTS.md`'s repo layout needs the operator's permission to change                               |
+| File                                                                              | Role                                                                                                                                                                |
+| --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `packages/edit-operations/{package.json,tsconfig.json,eslint.config.js,...}`      | Private workspace package `@livediagram/edit-operations`, laid out like `packages/explorer-lens` (EO1)                                                              |
+| `packages/edit-operations/src/index.ts`                                           | The public surface (listed under [Interfaces and contracts](#interfaces-and-contracts))                                                                             |
+| `packages/edit-operations/src/types.ts`                                           | `EditOperation` and one type per operation, `Selector`, `Placement`, `FieldValue`, `ApplyOptions`, outcomes                                                         |
+| `packages/edit-operations/src/vocabulary.ts`                                      | `EDIT_OPERATION_NAMES`, `OPERATION_MEMBERS`, `PLACEMENT_RELATIONS`, `SELECTOR_KEYS`, `FLAG_MEMBERS`, `RESERVED_WORDS`, constants                                    |
+| `packages/edit-operations/src/tokenise.ts`                                        | `tokeniseLine`: words, quotes, JSON escapes, columns                                                                                                                |
+| `packages/edit-operations/src/parse-line.ts`                                      | `parseOperationWords`: one line form line's words into one raw operation                                                                                            |
+| `packages/edit-operations/src/parse-json.ts`                                      | `validateEditOperation(s)`: one JSON form object, checked member by member                                                                                          |
+| `packages/edit-operations/src/parse.ts`                                           | `parseEditOperations(text)`: lines, comments, form per line, the count cap, errors with line and caret                                                              |
+| `packages/edit-operations/src/format-operation.ts`                                | `formatOperation`: the canonical line form of an operation (rejection headers, round trips)                                                                         |
+| `packages/edit-operations/src/selectors.ts`                                       | `parseSelector`, `resolveSelector`, `resolveOne`, `resolveSome`, `resolveMembers` (`wrap`, `layout`), `isSingleWord`                                                |
+| `packages/edit-operations/src/graph-walk.ts`                                      | `reachableFrom`: `downstream:` and `upstream:` along pinned arrows                                                                                                  |
+| `packages/edit-operations/src/nearest.ts`                                         | `nearestElements`, `nearestName`: banded edit distance over labels and refs                                                                                         |
+| `packages/edit-operations/src/fields.ts`                                          | `FIELD_ALIASES`, `ALIAS_FIELDS`, `aliasesOf`, `writeFieldsOnto`, `fieldValue`: keys, unknown fields, value writes                                                   |
+| `packages/edit-operations/src/colours.ts`                                         | `resolveColourValue`, `fillSlotNames`, `fillValue`: theme slots, hex, sticky presets                                                                                |
+| `packages/edit-operations/src/labels.ts`                                          | `applyLabel` (cap into the note), `fitToLabel` (grow around the centre)                                                                                             |
+| `packages/edit-operations/src/placement.ts`                                       | `resolvePlacement`, `defaultSpot`, `nudgeUntilFree`, `firstOverlapIn`, `boxOf`, `shifted`                                                                           |
+| `packages/edit-operations/src/make-room.ts`                                       | `makeRoom`: the insert shift, its scope, container growth outward                                                                                                   |
+| `packages/edit-operations/src/state.ts`                                           | `EditState` and its writers (`putElement`, `moveElement`, `insertElement`, `removeElement`, `reorder`), memoised refs, holders and element list                     |
+| `packages/edit-operations/src/locks.ts`                                           | `lockedIds(tab)`, `layerLockOf`: locked elements and elements on locked layers                                                                                      |
+| `packages/edit-operations/src/ids.ts`                                             | `newElementId` (`id=` checks), `mintId` (`slugIdFor` over `state.taken`)                                                                                            |
+| `packages/edit-operations/src/operations/*.ts`                                    | One file per operation: `add` (an element), `add-kind`, `set`, `rm`, `move`, `connect` (and `rewire`), `insert`, `wrap`, `unwrap`, `order`, `layout`, `test-fields` |
+| `packages/edit-operations/src/finalise.ts`                                        | Normalise touched, landing, arrow rebind, lanes first, `containersBehindMembers`, validation with reasons                                                           |
+| `packages/edit-operations/src/apply.ts`                                           | `applyEditOperations`                                                                                                                                               |
+| `packages/edit-operations/src/replace.ts`                                         | `applyReplace`: the `replace` body through the same outcome shape                                                                                                   |
+| `packages/edit-operations/src/results.ts`, `format-results.ts`                    | `buildResultLines` (membership by `deriveContainers` before and after), `formatResultLines`, `formatResultFooter`                                                   |
+| `packages/edit-operations/src/rejections.ts`                                      | `rejection` builders per code, `formatRejections`                                                                                                                   |
+| `packages/edit-operations/src/fixtures/checkout-flow.ts`, `run.ts`, `outcomes.ts` | The research's checkout tab (`n1` to `n8`, `t1`, `a1` to `a7`) plus a frame `f2`; a line-form runner; outcome readers                                               |
+| `packages/edit-operations/src/invariants.test.ts`, `performance.test.ts`          | I1 to I7 over one changeset per operation; cost growth with the tab and the changeset                                                                               |
+| `packages/document/src/element-normalise.ts` (+ test)                             | moved from `apps/mcp/src/`: `normaliseElement(s)`, `lanesToFront`, `mergeElementUpdate`                                                                             |
+| `packages/document/src/graph-input.ts` (+ test)                                   | moved from `apps/mcp/src/`: `GRAPH_LABEL_MAX`, `capLabel`, `layoutGraph`, `resolveGraphInput`                                                                       |
+| `packages/document/src/tab-builders.ts` (+ test)                                  | moved from `apps/mcp/src/`: `applyLayout`, `buildTab`, `buildGraphTab`, `landWorkshopArrivals` (EO2)                                                                |
+| `packages/templates/src/template-tab.ts` (+ test)                                 | `buildTemplateTab`, `resolveTemplate`, `validTemplateKinds`: the template builders, in `templates` because it imports `document` (EO1)                              |
+| `packages/document/src/element-fields.ts` (+ test)                                | `ELEMENT_FIELD_NAMES`: every stored field per element type, compile-time exhaustive                                                                                 |
+| `packages/document/src/validate.ts` (+ test)                                      | `elementValidationIssue(el)` names the field and rule; `isValidElement` delegates to it                                                                             |
+| `packages/document/src/containment.ts` (+ test)                                   | Shared: `boxCentre`, `boxHoldsPoint`, `smallestHolder`, `deriveContainers`, `contentOrigin`; this blueprint adds `isContainer` and `containerContents`              |
+| `packages/document/src/element-refs.ts` (+ test)                                  | Shared: `SLUG_ID_PATTERN`, `isSlugId`, `slugIdFor`, `REF_MIN_LENGTH`, `computeRefs`, `RefTable`, `resolveRef`, `kindWordOf`                                         |
+| `packages/document/src/auto-layout.ts` (+ test)                                   | `flowDirectionOf`: the direction `autoLayoutElements` detects, named by `layout`'s result line                                                                      |
+| `packages/document/src/element-ops.ts` (+ test)                                   | `applyElementOps` writes runs of updates through an id index: exactly the sequential reduce, linear in the changeset                                                |
+| `packages/document/src/auto-layout-shared.ts`, `auto-layout-clusters.ts`          | Export `LAYER_GAP`, `SIBLING_GAP`, `FRAME_PAD`, `FRAME_TOP` through `index.ts`                                                                                      |
+| `packages/document/src/index.ts`, `packages/templates/src/index.ts`               | Re-export the moved and new modules                                                                                                                                 |
+| `apps/mcp/src/tools.ts`, `schema.ts`, `changeset-client.ts`                       | Import the moved modules; `ops` mode resolves an `elementId` as an id or a ref and targets it by `id:"…"`                                                           |
+| `apps/api/src/changesets/request.ts`                                              | `operations` as a JSON array or the line form as a string, parsed with the engine's log                                                                             |
+| `apps/live/lib/canvas.ts`                                                         | (awaits the drag-rule decision) `withFrameContents` and `isFrameEl` removed; `framesFirst` reads `isContainer`                                                      |
+| `apps/live/hooks/canvas/useBoxedDragHandlers.ts`                                  | (awaits the drag-rule decision) The drag's move set is `containerContents(elements, ids)`                                                                           |
+| `apps/live/lib/canvas.test.ts`                                                    | (awaits the drag-rule decision) The `withFrameContents` suite moves to `containment.test.ts`                                                                        |
+| `apps/api/package.json`                                                           | Depends on `@livediagram/edit-operations`; the changeset route is the [Agent changesets](agent-changesets.md) blueprint's                                           |
+| `docs/development/architecture.md`, `README.md`                                   | The package in the package list                                                                                                                                     |
 
 ## Domain and naming
 
@@ -64,29 +67,29 @@ Scope, by file:
 | ------------------ | --------------------------------------------------- | -------------------------------------------------------------------------------------- |
 | Edit operation     | `EditOperation` (union on `op`)                     | One step of a changeset, in its JSON form                                              |
 | Operation name     | `EditOperationName`, `EDIT_OPERATION_NAMES`         | `add set rm move connect rewire insert wrap unwrap order layout test`                  |
-| Line form          | `parseOperationLine`, `formatOperation`             | One operation a line, words and quoted values                                          |
+| Line form          | `parseEditOperations`, `formatOperation`            | One operation a line, words and quoted values                                          |
 | JSON form          | `validateEditOperation`                             | One object a line                                                                      |
 | Operation number   | `operation` (1-based) on rejections                 | Position among the operations, comments and blank lines not counted                    |
-| Selector           | `Selector` (a string), `ParsedSelector`             | A ref, a quoted label, or `key:value` terms, all of which must match                   |
+| Selector           | `Selector` (a string), `parseSelector`              | A ref, a quoted label, or `key:value` terms, all of which must match                   |
 | Selector term      | `SelectorTerm` (union on `kind`)                    | One word of a selector                                                                 |
 | Ref                | `computeRefs`, `RefTable`, `resolveRef` (shared)    | An element's short name, as views print it                                             |
 | Slug id            | `isSlugId`, `SLUG_ID_PATTERN`, `slugIdFor` (shared) | The id an agent names or the engine mints from a label or kind token                   |
-| Kind token         | `kindTokenOf` (shared)                              | The shape for shapes, else the element type: what `type:` and results print            |
+| Kind word          | `kindWordOf` (shared)                               | The shape for shapes, else the element type: what `type:` and results print            |
 | Placement          | `Placement` (union on `rel`)                        | Where `add` and `move` put an element                                                  |
 | Content origin     | `contentOrigin(tab)` (shared)                       | The point coordinates shown and taken are relative to                                  |
 | Field              | `fields` member, `FieldValue`                       | A key and its value; `null` unsets                                                     |
 | Field alias        | `FIELD_ALIASES`                                     | A spec-named key (`label`, `note`, `shape`, `fill`, `text`, `line`)                    |
 | Live field         | `LIVE_ELEMENT_FIELDS` (`@livediagram/document`)     | A multi-writer field that travels as a delta; never written by an operation            |
-| Theme slot         | `ThemeSlotName`, `resolveColourValue`               | `theme` or one of the theme's six quick-swatch hues, written as a binding              |
+| Theme slot         | `fillSlotNames`, `resolveColourValue`               | `theme` or one of the theme's six quick-swatch hues, written as a binding              |
 | Container          | `isContainer` (frame or lane)                       | A shape whose box holds members                                                        |
-| Member, membership | `membershipOf(state)` over `smallestHolder`         | An element and the smallest frame or lane holding its centre                           |
+| Member, membership | `deriveContainers` (shared) over `smallestHolder`   | An element and the smallest frame or lane holding its centre                           |
 | Carried            | `containerContents(elements, ids)`                  | What a moved container takes with it, in the editor's drag and in `move` alike         |
 | Lock               | `lockedIds(state)`, `element_locked`                | A locked tab, a locked element, or an element on a locked layer                        |
 | Make room          | `makeRoom`                                          | The insert's shift of what lies beyond the new node                                    |
 | Capture            | `frame_captures`, `bystanders`                      | A non-member a new frame or lane would hold                                            |
 | Working state      | `EditState`                                         | The tab as the operations have left it so far                                          |
 | Touched            | `EditState.touched`                                 | Elements an operation created or changed; only these are normalised                    |
-| Named              | `EditState.named`                                   | Elements an operation's selector or new id named                                       |
+| Moved              | `Touch.moved` (`MoveReason`), `moveElement`         | Elements shifted, carried, laid out or landed without an operation writing them        |
 | Targets            | `targets: ElementId[]`                              | Existing elements the operations resolved; fingerprinted and checked for holds         |
 | Created ids        | `createdIds: ElementId[]`                           | Elements the changeset created that are in the next tab                                |
 | Outcome            | `ApplyOutcome` = `ApplySuccess \| ApplyRejection`   | `{ tab, results, elementOps, inverse, warnings, targets, createdIds }` or `{ errors }` |
@@ -108,9 +111,9 @@ door), "batch", "patch", "query" or "filter" for a selector, "handle" or "alias"
 
 1. **Count.** More than `CHANGESET_MAX_OPERATIONS` operations: `too_large`.
 2. **Tab lock.** `tab.locked`: `element_locked` naming the tab, before any operation.
-3. **Prepare.** `EditState.from(tab)`: elements by id, their order, `origin = contentOrigin(tab)`,
-   `theme = options.theme ?? getBuiltInTheme(tab.theme)`, `refs = computeRefs(tab.elements)` (for removed
-   elements' lines), `locked = lockedIds(tab)`.
+3. **Prepare.** `createState(tab, options, log)`: elements by id, their order, `origin = contentOrigin(tab)`,
+   `theme = options.theme ?? getBuiltInTheme(tab.theme)`, `taken` (the tab's ids and the reserved words),
+   `locked = lockedIds(tab)`; refs, holders and the element list are memoised and cleared by every write.
 4. **Apply each operation in order** against the working state. Every selector resolves against the state as the
    operations before it left it, so an `id=` given earlier is addressable later. Each operation adds the
    pre-existing ids it resolved to `state.targets`, records its named, touched and created ids, its moves and its
@@ -162,7 +165,7 @@ word     := ref | label          (one element)
 | `ref`               | `resolveRef(word, refs)`: the element whose id equals it, else the one id it is a prefix of; several: ambiguous |
 | `"Label"`           | Elements whose `label`, trimmed, equals it trimmed, compared after `toLowerCase()` (EO11)                       |
 | `label~text`        | Elements whose `label` contains the text, compared after `toLowerCase()`                                        |
-| `type:<v>`          | `kindTokenOf(el) === v` or `el.type === v`, so `type:square` and `type:shape` both match a square               |
+| `type:<v>`          | `kindWordOf(el) === v` or `el.type === v`, so `type:square` and `type:shape` both match a square                |
 | `shape:<v>`         | Shapes whose `shape === v`                                                                                      |
 | `in:<word>`         | Elements whose chain of holders includes the container `<word>` names; arrows are never members (EO14)          |
 | `from:<word>`       | Arrows whose `from` is pinned to that element                                                                   |
@@ -301,7 +304,8 @@ means `newElementId` ([Ids](#ids)).
   5. **Rewire.** The arrow keeps its id, from end, label and style; its `to` is pinned to the node. A new arrow
      from the node to b copies every field of the old arrow except `id`, `from`, `to`, `label`, `labelOffset`,
      `labelMaxWidth`, `curveOffset`, `curvePoints`, `elbowOffset`, `commentThread` and `link`; both arrows drop
-     their route fields and re-anchor facing (EO33). Annotation `(style of <arrow ref>)`.
+     their route fields and re-anchor facing (EO33). Annotation `(style of <arrow ref>)`. The new arrow goes directly
+     after the node in the element order (the node is the newest element, EO55).
 - **`wrap <selector…> in frame|lane [id=] key=value… [tidy] [absorb | make-room]`.** Members are the union of the
   member selectors: each ref or quoted label word is its own selector (exactly one match each), the remaining
   terms together form one more (one or more matches).
@@ -316,16 +320,18 @@ means `newElementId` ([Ids](#ids)).
   4. The container is `createShape('frame' | 'lane')` with the box, a new id, fields as `set` (a frame's default
      label `Frame`, a lane's `Lane` unless `label=` is given), painted, on the lowest member's layer, inserted in
      the order directly before its earliest member.
+- Members that are only arrows: `invalid_value` ("a frame or lane holds boxes").
 - **`unwrap <frame>`.** The target must be a frame or lane (`invalid_value` otherwise). It is removed; its members
   stay where they are; arrows pinned to the container are removed as `rm` removes them (EO36).
 - **`order <selector> front|back|above=<x>|below=<x>`.** Moves the target in the element order: last, first,
-  directly after x, directly before x. Finalise then restores I6, so a container never ends above its members and
+  directly after x, directly before x; x the target itself is `invalid_value`. Finalise then restores I6, so a container never ends above its members and
   a member never below its container (EO37).
-- **`layout <selector> [style=flow|tree|mindmap] [direction=down|right]`.** The selection's boxed elements and the
+- **`layout <selector> [style=flow|tree|mindmap] [direction=down|right]`.** The selection (its members taken as `wrap` takes them, `resolveMembers`, EO57): its boxed elements and the
   arrows with both ends among them are laid out by `autoLayoutElements(subset, { style, direction, originX,
 originY, fixedSizeIds })`, origin the selection's bounding-box top-left, every selected box keeping its size;
   edgeless selected boxes are swept below with `sweepEdgelessNodes` (EO38). `direction` maps `down`→`TB`,
-  `right`→`LR`; omitted, flow detects it. Nothing outside the selection moves. A locked element in the selection
+  `right`→`LR`; omitted, flow detects it (`flowDirectionOf`). Nothing outside the selection moves; a locked arrow
+  between selected boxes keeps its ends. A locked element in the selection
   is `element_locked`.
 - **`test <selector> key=value…`.** For each field, the value `set` would write (aliases resolved, no label cap,
   no coercion warning) is compared with the stored value by deep equality; strings exactly; `key=` holds when the
@@ -351,19 +357,23 @@ the earlier in element order on a tie, as `smallestHolder` decides.
 
 ### Make room
 
-`makeRoom(state, { node, a, b, axis, shift })`:
+`makeRoom(state, { node, b, axis, shift, gap })`. Membership (`deriveContainers`) is read once, over the elements
+before the node, and every step uses it:
 
-1. **Scope.** `scope = smallestHolder` of b. With a container, the units are its members whose holder is the
-   scope. Without one, the units are the boxed elements and containers without a holder that are, or hold, an
-   element of b's connected component along pinned arrows (either direction), the new node excluded.
+1. **Scope.** The scope is b's holder. With one, the units are its direct members. Without one, the units are the
+   topmost containers of (or the elements themselves in) b's connected component along pinned arrows, either
+   direction, built only when the shift reaches the top level.
 2. **Beyond.** A unit is beyond when its centre on the axis lies past the midline (the node's near edge minus
    half the gap), in the axis' direction.
 3. **Shift.** Each unit beyond, a container unit with its `containerContents` ([Carry](#carry)), moves by `shift` along the axis.
    Locked units stay where they are (EO47).
-4. **Grow.** The scope container, and every container whose holder chain holds a shifted element, grows along the
-   axis by `shift` on its far side, so every shifted element keeps its membership. A locked container does not
-   grow (EO47).
-5. Annotation `make room`; the shifted ids join `state.moved`, never `state.named` or `state.targets`.
+4. **Grow and go outward.** The scope container grows along the axis by `shift` on its far side, so every
+   shifted element keeps its membership; then room is made in the scope's own holder, with the midline at the
+   container's old far edge and the container itself left out, so an outer container grows in turn and what lay
+   past it shifts. A locked container does not grow, and a mind node holds but has no room to grow; room is still
+   made beyond either (EO47, EO52).
+5. Annotation `make room`: each shifted element is marked moved with its summed shift (`moveElement`), never a
+   target.
 
 ### Ids
 
@@ -371,7 +381,7 @@ the earlier in element order on a tie, as `smallestHolder` decides.
 
 - `id=` must satisfy `isSlugId` and not be a reserved word (`invalid_value`, EO9); if taken, `id_taken` with a
   free suggestion (`slugIdFor(given, kind, taken)`).
-- Without `id=`: `slugIdFor(label, kindTokenOf(el), taken)`, where `taken` is every id of the tab plus every id
+- Without `id=`: `slugIdFor(label, kindWordOf(el), state.taken)`, where `taken` is every id of the tab plus every id
   minted earlier in the changeset. An unlabelled element's base is its kind token (`arrow`, `arrow-2`, `sticky`).
   `options.makeId()` is used only when the result would not satisfy `isSlugId` (EO8).
 
@@ -386,7 +396,7 @@ On the working state, in order:
    lanes; a landed note joins `state.moved` with annotation `landed on a lane`.
 4. `rebindArrowAnchorsAfterMove(elements, geometryChanged)` for every boxed element whose box changed.
 5. `lanesToFront`, then each container moved to directly before its earliest member when it is after it (I6).
-6. Membership before and after (`membershipOf`) for every boxed element, for the container lines.
+6. Membership before and after (`deriveContainers`) is read by the result lines' container lines.
 
 ### Replace
 
@@ -408,7 +418,7 @@ On the working state, in order:
 Public surface of `@livediagram/edit-operations`:
 
 ```ts
-export function parseEditOperations(text: string): ParseOutcome;
+export function parseEditOperations(text: string, log?: EditLog): ParseOutcome;
 export function validateEditOperations(input: readonly unknown[]): ParseOutcome;
 export function formatOperation(operation: EditOperation): string;
 export function applyEditOperations(
@@ -424,7 +434,12 @@ export function applyReplace(
 export function formatResultLines(results: readonly ResultLine[]): string[];
 export function formatResultFooter(footer: ResultFooter): string;
 export function formatRejections(errors: readonly EditRejection[]): string[];
-export { EDIT_OPERATION_NAMES, EDIT_REJECTION_CODES, EDIT_WARNING_CODES, PLACEMENT_GAP /* ... */ };
+export function validateEditOperation(
+  raw: unknown,
+  operation: number,
+): EditOperation | EditRejection;
+export { EDIT_MAX_ERRORS, EDIT_OPERATION_NAMES };
+// The rejection and warning codes and `ResultLine` are the wire's, in `@livediagram/api-schema`.
 ```
 
 ```ts
@@ -538,6 +553,7 @@ type ResultLine =
       refs: string[];
       delta?: [number, number];
       reason: 'make room' | 'carried' | 'laid out' | 'landed on a lane';
+      layout?: { style: 'flow' | 'tree' | 'mindmap'; direction?: 'down' | 'right' };
     }
   | { mark: 'container'; ref: string; joined: string[]; left: string[] }
   | { mark: '!'; warning: EditWarning };
@@ -563,7 +579,11 @@ Text, two spaces after the ref, `·` between changes:
   strings at 48, the views' cuts); numbers and enum values bare; absent prints nothing (`fill →green`); objects
   and arrays print `(changed)`. A colour pair prints once under its alias, as the slot name or the hex.
 - An element's ref is its ref in the next tab, a removed one's in the input tab.
-- Anchor-only arrow changes print no line (EO40).
+- Anchor-only arrow changes print no line (EO40). Route fields a `rewire` or `insert` drops, and `straight` set on
+  arrows `layout` lays out (the shared `reanchorArrow`, EO53), print as changes.
+- `order` prints as a change of its own, `~ t1  order front`, `~ n1  order above n3`.
+- A `»` line for `layout` names the style, and the flow's direction: `laid out (flow, right)`, `laid out (tree)`.
+- A moved element whose shift sums to nothing, or that a lane landed back where it was, prints nothing (EO56).
 
 Footer (`formatResultFooter`), composed by the api or the CLI from what only they know:
 
@@ -662,15 +682,18 @@ Worst case: `MAX_ELEMENTS_PER_TAB` (10,000) elements, `CHANGESET_MAX_OPERATIONS`
   `downstream` / `upstream` one breadth-first walk over an adjacency map built once per changeset and rebuilt only
   after an arrow changes, `O(n + arrows)`. 500 filter selectors over 10,000 elements: 5,000,000 checks, about 20
   ms in a Worker.
-- **Overlap and occupancy.** Placement and capture query `elementGridFor(elements)` (`ELEMENT_GRID_CELL` 256),
-  rebuilt lazily after geometry changes.
-- **Containment.** `membershipOf` is `O(n × containers)` through `smallestHolder`; computed twice per changeset (before and after) and for
+- **Overlap and occupancy.** Placement buckets the occupiers once per placement (`firstOverlapIn`, cells of
+  `ELEMENT_GRID_CELL` 256, boxes over `ELEMENT_GRID_MAX_CELLS` cells on a list every query checks), so each nudge step
+  costs the neighbourhood and a walk past a row of n boxes costs O(n). Capture (`wrap`) reads holders once.
+- **Containment.** `deriveContainers` is `O(n × containers)` through `smallestHolder`; computed twice per changeset (before and after) and for
   `in:` on demand.
 - **Nearest candidates** run only on `target_not_found` / `unknown_field`: banded Levenshtein with band
   `NEAREST_MAX_DISTANCE` over labels cut to 60 characters, `O(n × 60 × band)`, about 6,000,000 cells at worst.
 - **Layout** costs `autoLayoutElements` on the selection only.
-- **Budget.** A 500-operation changeset on a 2,000-element tab applies within `EDIT_APPLY_BUDGET_MS` in the
-  `apply.bench.ts` benchmark (not a gate: CI runs it and logs the figure).
+- **Budget.** `EDIT_APPLY_BUDGET_MS` is the aim for a 500-operation changeset on a 2,000-element tab, measured, not
+  a gate. Measured: 498 operations on 1,980 elements take 39 ms without inserts, and 88 ms with 83 of them inserts
+  (make room reads the tab's holders and the connected group once per insert). The gate is `performance.test.ts`:
+  four times the tab, or four times the changeset, costs under eight times as much.
 
 ## Observability
 
@@ -692,80 +715,83 @@ and changeset ids. Fields are counts, codes and names only.
 | `[edit-ops] locked`           | An operation refused for a lock              | `operation`, `op`, `scope` (tab, element, layer)                     |
 | `[edit-ops] theme-fallback`   | No theme passed and `tab.theme` not built in | (none)                                                               |
 | `[edit-ops] replace`          | `applyReplace` ran                           | `source` (graph, mermaid, template, elements), `elements`            |
+| `[edit-ops] laid-out`         | `layout` or `wrap tidy` laid boxes out       | `operation`, `boxes`, `arrows`, `style`                              |
+| `[edit-ops] test-failed`      | A `test` found other values                  | `operation`, `fields`                                                |
 
 ## Testing
 
-Every suite uses `fixtures/checkout-flow.ts` (planned) and a fixed `makeId`; no test touches the network or the clock.
+Every suite uses `packages/edit-operations/src/fixtures/checkout-flow.ts` and a fixed `makeId`; no test touches the network or the clock.
 
-| Spec rule                                                                                                                | Test                                                                                                                                                              |
-| ------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| The vocabulary: twelve operations, each line form parses to its JSON form                                                | `parse.test.ts` › "reads every operation's line form"                                                                                                             |
-| Values with spaces quoted; `#` starts a comment line                                                                     | `tokenise.test.ts` › "quotes", "escapes", "comment lines", "hex is text"                                                                                          |
-| One parser turns the line form into the JSON form; both accepted                                                         | `parse.test.ts` › "mixes forms", `format-operation.test.ts` › round trip                                                                                          |
-| `parse_error` names the column and what was expected                                                                     | `rejections.test.ts` › "parse_error"                                                                                                                              |
-| `unknown_operation` names the vocabulary                                                                                 | `rejections.test.ts` › "unknown_operation"                                                                                                                        |
-| Each selector row (ref, prefix, id, label, `label~`, type, shape, in, arrows, downstream, upstream, selected)            | `selectors.test.ts`, one `it` per row                                                                                                                             |
-| Exactly one match unless `all`; none with nearest labels; several with candidates                                        | `selectors.test.ts` › "cardinality", `rejections.test.ts` (spec example verbatim)                                                                                 |
-| `selected` with nothing selected is refused                                                                              | `selectors.test.ts` › "selected"                                                                                                                                  |
-| `add` sized for its label by the kind's factory                                                                          | `operations/add.test.ts` (planned)                                                                                                                                |
-| `id=` names the new element for later operations; `id_taken`                                                             | `operations/add.test.ts` (planned), `ids.test.ts`                                                                                                                 |
-| `set` changes the named fields; `key=` unsets; no geometry but widen-to-fit                                              | `operations/set.test.ts` (planned), `labels.test.ts`                                                                                                              |
-| `rm` removes pinned arrows and lists them; `keep-arrows` frees their ends                                                | `operations/rm.test.ts` (planned)                                                                                                                                 |
-| `move`: pinned arrows follow; a frame or lane carries its members; membership changes reported                           | `operations/move.test.ts` (planned)                                                                                                                               |
-| The centre rule decides what a moved container carries: straddling boxes, nested containers, free arrows, smallest owner | `packages/document/src/containment.test.ts` › "containerContents"                                                                                                 |
-| A person dragging a frame or lane carries exactly what `move` carries                                                    | `apps/live/hooks/canvas/useEditorDrag.lanes.test.tsx` › "carries by the centre rule" (the same fixture as `operations/move.test.ts` (planned))                    |
-| `connect`: pinned, anchors facing; second arrow needs `again`, else `arrow_exists`                                       | `operations/connect.test.ts` (planned)                                                                                                                            |
-| Locks: a locked tab, element or layer refuses with `element_locked`; make room passes locked units by                    | `locks.test.ts`                                                                                                                                                   |
-| Live fields are never written by `set`                                                                                   | `fields.test.ts` › "live fields"                                                                                                                                  |
-| One value a term; `wrap` members are a union                                                                             | `selectors.test.ts` › "comma", `operations/wrap.test.ts` (planned) › "members"                                                                                    |
-| `targets` and `createdIds` list what the changeset resolved and created                                                  | `apply.test.ts` › "targets", "created ids"                                                                                                                        |
-| `rewire` moves one end                                                                                                   | `operations/rewire.test.ts` (planned)                                                                                                                             |
-| `insert`: midpoint, a→new keeps the arrow, new→b copies its style, make room in scope; `not_connected`                   | `operations/insert.test.ts` (planned), `make-room.test.ts`                                                                                                        |
-| `wrap`: frame or lane around members; `tidy`; `frame_captures`; `absorb`; `make-room`                                    | `operations/wrap.test.ts` (planned)                                                                                                                               |
-| `unwrap` keeps members in place                                                                                          | `operations/unwrap.test.ts` (planned)                                                                                                                             |
-| `order`: frames and lanes stay behind their contents                                                                     | `operations/order.test.ts` (planned)                                                                                                                              |
-| `layout` lays out only the selection, keeping its top-left                                                               | `operations/layout.test.ts` (planned)                                                                                                                             |
-| `test` fails the changeset unless the values hold                                                                        | `operations/test-op.test.ts` (planned)                                                                                                                            |
-| Placement words (`align:` on the nearer axis), `gap:`, default placement, nudge until free                               | `placement.test.ts`, one `it` per word                                                                                                                            |
-| Coordinates shown and taken are rounded and relative to the content origin                                               | `placement.test.ts` › "origin", `results.test.ts` › "rounded"                                                                                                     |
-| `shape=` coerced as the MCP does                                                                                         | `fields.test.ts` › "shape coercion"                                                                                                                               |
-| `fill=` theme slot; hex with `colour_overrides_theme`; stickies excepted                                                 | `colours.test.ts`                                                                                                                                                 |
-| `text=`, `note=`, `line=` vocabulary                                                                                     | `fields.test.ts`                                                                                                                                                  |
-| A label over 40 characters keeps the heading, full text into the note                                                    | `labels.test.ts` (the MCP spec's three examples)                                                                                                                  |
-| Unknown field names the kind's fields; invalid value names the allowed values                                            | `rejections.test.ts` › "unknown_field", "invalid_value"                                                                                                           |
-| Only `layout` and `replace` lay out many elements; untouched stays identical                                             | `apply.test.ts` › "untouched elements are the same objects" (I2, I3)                                                                                              |
-| Results: the spec's example lines, formatted character for character                                                     | `results.test.ts` › "spec example" (its line data through `formatResultLines`)                                                                                    |
-| The same text for a dry run and a write                                                                                  | `results.test.ts` › "one formatter"                                                                                                                               |
-| Rejections: the spec's example rejection, formatted character for character                                              | `rejections.test.ts` › "spec example"                                                                                                                             |
-| A rejected changeset applies nothing                                                                                     | `apply.test.ts` › "atomic" (I1)                                                                                                                                   |
-| `elementOps` and `inverse` round trip                                                                                    | `apply.test.ts` › "round trip" (I4)                                                                                                                               |
-| Deterministic                                                                                                            | `apply.test.ts` › "same input, same outcome" (I5)                                                                                                                 |
-| `too_large` over `CHANGESET_MAX_OPERATIONS`                                                                              | `parse.test.ts` › "count cap"                                                                                                                                     |
-| `replace` from graph, Mermaid, template, elements                                                                        | `replace.test.ts`                                                                                                                                                 |
-| Moved MCP modules behave as before                                                                                       | `packages/document/src/{element-normalise,graph-input,tab-builders}.test.ts` (moved), `packages/templates/src/template-tab.test.ts`, `apps/mcp/src/tools.test.ts` |
-| Every stored field listed per type                                                                                       | `packages/document/src/element-fields.test.ts` (plus the compile-time `satisfies`)                                                                                |
-| Validation names the field and rule                                                                                      | `packages/document/src/validate.test.ts` › "issues"                                                                                                               |
-| Refs, slugs, kind tokens, containment, origin (the document-views blueprint's tests; `isContainer` here)                 | `packages/document/src/{element-refs,containment}.test.ts`                                                                                                        |
-| Observability: each fingerprint fires with its fields and no content                                                     | `apply.test.ts` › "logs" (a recording `log`)                                                                                                                      |
+| Spec rule                                                                                                                | Test                                                                                                                                  |
+| ------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
+| The vocabulary: twelve operations, each line form parses to its JSON form                                                | `parse.test.ts` › "parseEditOperations: the line form (the vocabulary)"                                                               |
+| Values with spaces quoted; `#` starts a comment line, and is text inside a line                                          | `tokenise.test.ts` › "quotes", "escapes", "keeps # as text", `parse.test.ts` › "skips comments"                                       |
+| One parser turns the line form into the JSON form; both accepted                                                         | `parse.test.ts` › "mixes forms", "formatOperation round trip"                                                                         |
+| `parse_error` names the line, the column and what was expected                                                           | `parse.test.ts` › "names the line, the column and what was expected"                                                                  |
+| `unknown_operation` names the vocabulary                                                                                 | `rejections.test.ts` › "unknown_operation"                                                                                            |
+| Each selector row (ref, prefix, id, `id:"…"`, label, `label~`, type, shape, in, arrows, downstream, upstream, selected)  | `selectors.test.ts` › "selector rows", one `it` per row                                                                               |
+| Exactly one match unless `all`; none with nearest labels; several with candidates                                        | `selectors.test.ts` › "cardinality"                                                                                                   |
+| `selected` with nothing selected is refused                                                                              | `selectors.test.ts` › "selected"                                                                                                      |
+| `add` sized for its label by the kind's factory, placed by a placement word                                              | `packages/edit-operations/src/operations/add-kind.test.ts`                                                                            |
+| `id=` names the new element for later operations; `id_taken`                                                             | `packages/edit-operations/src/operations/add-kind.test.ts`, `ids.test.ts`                                                             |
+| `set` changes the named fields; `key=` unsets; no geometry but widen-to-fit                                              | `packages/edit-operations/src/operations/set.test.ts`, `labels.test.ts`                                                               |
+| `rm` removes pinned arrows and lists them; `keep-arrows` frees their ends                                                | `packages/edit-operations/src/operations/rm.test.ts`                                                                                  |
+| `move`: pinned arrows follow; a frame or lane carries its members; membership changes reported                           | `packages/edit-operations/src/operations/move.test.ts`                                                                                |
+| The centre rule decides what a moved container carries: straddling boxes, nested containers, free arrows, smallest owner | `packages/document/src/containment.test.ts` › "containerContents"                                                                     |
+| A person dragging a frame or lane carries exactly what `move` carries                                                    | (awaits the drag-rule decision)                                                                                                       |
+| `connect`: pinned, anchors facing; second arrow needs `again`, else `arrow_exists`; `rewire` moves one end               | `packages/edit-operations/src/operations/connect.test.ts`                                                                             |
+| Locks: a locked tab, element or layer refuses with `element_locked`; make room passes locked units by                    | `locks.test.ts`, `invariants.test.ts` › "no locked element changes", `make-room.test.ts` › "passes a locked unit by"                  |
+| Live fields are never written by `set`                                                                                   | `fields.test.ts` › "refuses identity, live and prototype fields"                                                                      |
+| One value a term; `wrap` and `layout` members: each ref or quoted label one element, the rest together                   | `selectors.test.ts` › "reads what does not parse", `packages/edit-operations/src/operations/wrap.test.ts` › "takes members from refs" |
+| `targets` and `createdIds` list what the changeset resolved and created                                                  | `apply.test.ts` › "lists the existing elements it resolved", "lists the elements it created"                                          |
+| `insert`: midpoint, a→new keeps the arrow, new→b copies its style, make room in scope; `not_connected`                   | `packages/edit-operations/src/operations/insert.test.ts`, `make-room.test.ts`                                                         |
+| `wrap`: frame or lane around members; `tidy`; `frame_captures`; `absorb`; `make-room`                                    | `packages/edit-operations/src/operations/wrap.test.ts`                                                                                |
+| `unwrap` keeps members in place                                                                                          | `packages/edit-operations/src/operations/unwrap.test.ts`                                                                              |
+| `order`: frames and lanes stay behind their contents                                                                     | `packages/edit-operations/src/operations/order.test.ts`, `finalise.test.ts` › "containersBehindMembers"                               |
+| `layout` lays out only the selection, keeping its top-left                                                               | `packages/edit-operations/src/operations/layout.test.ts`                                                                              |
+| `test` fails the changeset unless the values hold                                                                        | `packages/edit-operations/src/operations/test-fields.test.ts`                                                                         |
+| Placement words (`align:` on the nearer axis), `gap:`, default placement, nudge until free                               | `placement.test.ts`, one `it` per word                                                                                                |
+| Coordinates shown and taken are rounded and relative to the content origin                                               | `placement.test.ts`, `results.test.ts` › "prints a free end as a point from the origin"                                               |
+| `shape=` coerced as the MCP does                                                                                         | `fields.test.ts` › "coerces an off-vocabulary shape"                                                                                  |
+| `fill=` theme slot; hex with `colour_overrides_theme`; stickies excepted                                                 | `colours.test.ts`                                                                                                                     |
+| `text=`, `note=`, `line=` vocabulary                                                                                     | `fields.test.ts`                                                                                                                      |
+| A label over 40 characters keeps the heading, full text into the note                                                    | `labels.test.ts` (the MCP spec's three examples)                                                                                      |
+| Unknown field names the kind's fields; invalid value names the allowed values                                            | `rejections.test.ts` › "unknown_field", "invalid_value"                                                                               |
+| Only `layout` and `replace` lay out many elements; untouched stays identical                                             | `invariants.test.ts` › "what stayed is the same object" (I2, I3)                                                                      |
+| Results: the spec's example lines, formatted character for character                                                     | `results.test.ts` › "prints the spec example character for character"                                                                 |
+| Rejections: the spec's example rejection, formatted character for character                                              | `rejections.test.ts` › "spec example"                                                                                                 |
+| A rejected changeset applies nothing                                                                                     | `invariants.test.ts` › "a rejected changeset carries no tab" (I1)                                                                     |
+| `elementOps` and `inverse` round trip                                                                                    | `invariants.test.ts` › "element ops and their inverse round trip" (I4)                                                                |
+| Deterministic                                                                                                            | `invariants.test.ts` › "the same input gives the same outcome" (I5)                                                                   |
+| Containers behind members; lanes first                                                                                   | `invariants.test.ts` › "lanes first, and every container behind its members" (I6)                                                     |
+| `too_large` over `CHANGESET_MAX_OPERATIONS`                                                                              | `parse.test.ts` › "caps the line length, the operation count"                                                                         |
+| Cost grows linearly with the tab and with the changeset                                                                  | `performance.test.ts`                                                                                                                 |
+| `replace` from graph, Mermaid, template, elements                                                                        | `replace.test.ts`                                                                                                                     |
+| Moved MCP modules behave as before                                                                                       | `packages/document/src/{element-normalise,graph-input,tab-builders}.test.ts`                                                          |
+| Every stored field listed per type                                                                                       | `packages/document/src/element-fields.test.ts` (plus the compile-time `satisfies`)                                                    |
+| Validation names the field and rule                                                                                      | `packages/document/src/validate.test.ts` › "elementValidationIssue"                                                                   |
+| Refs, slugs, kind words, containment, origin (the document-views blueprint's tests; `isContainer` here)                  | `packages/document/src/{element-refs,containment}.test.ts`                                                                            |
+| Batched element ops equal the sequential reduce                                                                          | `packages/document/src/element-ops.test.ts` › "applyElementOps, batched"                                                              |
+| Observability: each fingerprint fires with its fields and no content                                                     | `apply.test.ts` › "logs" (a recording `log`), `make-room.test.ts` › "logs what it shifted"                                            |
 
 ## Constants and configuration
 
-| Constant                   | Value                     | Provenance                                                                          | Safe range      |
-| -------------------------- | ------------------------- | ----------------------------------------------------------------------------------- | --------------- |
-| `CHANGESET_MAX_OPERATIONS` | 500                       | [Agent changesets](../agent-changesets.md), imported from `@livediagram/api-schema` | owned there     |
-| `GRAPH_LABEL_MAX`          | 40                        | Spec; the MCP's graph input                                                         | 24 to 80        |
-| `PLACEMENT_GAP`            | `LAYER_GAP` (90)          | The layout engine's rank gap (EO23)                                                 | 16 to 200       |
-| `PLACEMENT_GAP_MAX`        | 2,000                     | Larger reads as a separate drawing (EO23)                                           | 500 to 10,000   |
-| `INSERT_MIN_GAP`           | 16                        | Below it boxes read as touching (EO32)                                              | 8 to 40         |
-| `FRAME_PAD`, `FRAME_TOP`   | 32, 64                    | The clustered layout's frame padding and header band                                | 16 to 96        |
-| `SLUG_ID_PATTERN`          | `^[a-z][a-z0-9_-]{0,23}$` | [Document views](../document-views.md), from `@livediagram/document`                | fixed           |
-| `REF_MIN_LENGTH`           | 4                         | [Document views](../document-views.md), from `@livediagram/document`                | fixed           |
-| `EDIT_LINE_MAX_CHARS`      | 16,384                    | A 4,000-character code value with escapes and its other fields fits (EO3)           | 8,192 to 65,536 |
-| `EDIT_MAX_ERRORS`          | 10                        | Enough to fix a batch of typos in one round (EO7)                                   | 1 to 50         |
-| `REJECTION_CANDIDATES_MAX` | 10                        | A readable list; the rest counted (EO45)                                            | 5 to 25         |
-| `NEAREST_CANDIDATES_MAX`   | 5                         | The few worth trying (EO45)                                                         | 3 to 10         |
-| `NEAREST_MAX_DISTANCE`     | 3                         | Typos and short slips, not other words (EO45)                                       | 2 to 5          |
-| `EDIT_APPLY_BUDGET_MS`     | 50                        | A tenth of a request's patience at the 500-operation cap                            | 20 to 200       |
+| Constant                   | Value                     | Provenance                                                                            | Safe range      |
+| -------------------------- | ------------------------- | ------------------------------------------------------------------------------------- | --------------- |
+| `CHANGESET_MAX_OPERATIONS` | 500                       | [Agent changesets](../agent-changesets.md), imported from `@livediagram/api-schema`   | owned there     |
+| `GRAPH_LABEL_MAX`          | 40                        | Spec; the MCP's graph input                                                           | 24 to 80        |
+| `PLACEMENT_GAP`            | `LAYER_GAP` (90)          | The layout engine's rank gap (EO23)                                                   | 16 to 200       |
+| `PLACEMENT_GAP_MAX`        | 2,000                     | Larger reads as a separate drawing (EO23)                                             | 500 to 10,000   |
+| `INSERT_MIN_GAP`           | 16                        | Below it boxes read as touching (EO32)                                                | 8 to 40         |
+| `FRAME_PAD`, `FRAME_TOP`   | 32, 64                    | The clustered layout's frame padding and header band                                  | 16 to 96        |
+| `SLUG_ID_PATTERN`          | `^[a-z][a-z0-9_-]{0,23}$` | [Document views](../document-views.md), from `@livediagram/document`                  | fixed           |
+| `REF_MIN_LENGTH`           | 4                         | [Document views](../document-views.md), from `@livediagram/document`                  | fixed           |
+| `EDIT_LINE_MAX_CHARS`      | 16,384                    | A 4,000-character code value with escapes and its other fields fits (EO3)             | 8,192 to 65,536 |
+| `EDIT_MAX_ERRORS`          | 10                        | Enough to fix a batch of typos in one round (EO7)                                     | 1 to 50         |
+| `REJECTION_CANDIDATES_MAX` | 10                        | A readable list; the rest counted (EO45)                                              | 5 to 25         |
+| `NEAREST_CANDIDATES_MAX`   | 5                         | The few worth trying (EO45)                                                           | 3 to 10         |
+| `NEAREST_MAX_DISTANCE`     | 3                         | Typos and short slips, not other words (EO45)                                         | 2 to 5          |
+| `EDIT_APPLY_BUDGET_MS`     | 50                        | A tenth of a request's patience at the 500-operation cap; a measured aim, not in code | 20 to 200       |
 
 No environment variable, binding or secret; self-hosting needs nothing new.
 

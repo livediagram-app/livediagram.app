@@ -493,11 +493,13 @@ export const updateDocumentShape = {
         elementId: z
           .string()
           .optional()
-          .describe('update / remove: the id of the existing element to change.'),
+          .describe(
+            'update / remove: the existing element to change, by its id or the ref read_document prints.',
+          ),
       }),
     )
     .optional()
-    .describe('ops mode: ordered add / update / remove against existing element ids.'),
+    .describe('ops mode: ordered add / update / remove against existing elements, by id or ref.'),
 };
 
 export const shareDocumentShape = {

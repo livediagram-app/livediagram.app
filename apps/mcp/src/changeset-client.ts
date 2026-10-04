@@ -9,7 +9,13 @@ import {
   type ChangesetRequest,
   type ChangesetResponse,
 } from '@livediagram/api-schema';
-import { elementFingerprint, type Element, type Tab } from '@livediagram/document';
+import {
+  computeRefs,
+  elementFingerprint,
+  resolveRef,
+  type Element,
+  type Tab,
+} from '@livediagram/document';
 import { ApiError, apiJson } from './api';
 import type { Env } from './env';
 
@@ -39,11 +45,29 @@ export type McpOp = {
   elementId?: string;
 };
 
-// The JSON form of the edit operations an ops list means: `add` takes the whole element, `update` is
-// `set` on its id with the fields it names, `remove` is `rm` (pinned arrows go too and are listed).
-// An `id` or `type` the model repeats unchanged in an update is dropped, since neither can change.
-export function mcpOpsToEditOperations(ops: readonly McpOp[], current: Tab): unknown[] | string {
+// The element an op's `elementId` names: its id, or a ref as read_document prints it (a unique prefix,
+// `id:"…"`), resolved as the api resolves it.
+function namedIn(current: Tab): (elementId: string) => Element | undefined {
   const byId = new Map<string, Element>(current.elements.map((e) => [e.id, e]));
+  const refs = computeRefs(current.elements.map((e) => e.id));
+  return (elementId) => {
+    const found = resolveRef(elementId, refs);
+    return found.kind === 'found' ? byId.get(found.id) : undefined;
+  };
+}
+
+// The selector an op targets: the element it names, by the always-safe `id:"…"` ref, so no id reads
+// as a keyword or a term; a word naming nothing goes as given, for the api to refuse with candidates.
+function targetOf(elementId: string, named: Element | undefined): string {
+  return named ? `id:${JSON.stringify(named.id)}` : elementId;
+}
+
+// The JSON form of the edit operations an ops list means: `add` takes the whole element, `update` is
+// `set` on the element it names with the fields it gives, `remove` is `rm` (pinned arrows go too and
+// are listed). An `id` or `type` the model repeats unchanged in an update is dropped, since neither
+// can change.
+export function mcpOpsToEditOperations(ops: readonly McpOp[], current: Tab): unknown[] | string {
+  const named = namedIn(current);
   const out: unknown[] = [];
   for (const [i, op] of ops.entries()) {
     const n = i + 1;
@@ -52,27 +76,27 @@ export function mcpOpsToEditOperations(ops: readonly McpOp[], current: Tab): unk
       out.push({ op: 'add', element: op.element });
     } else if (op.op === 'update') {
       if (!op.elementId || !op.element) return `ops[${n}]: update needs "elementId" and "element"`;
-      const stored = byId.get(op.elementId);
+      const stored = named(op.elementId);
       const fields = { ...op.element };
-      if (fields.id === op.elementId) delete fields.id;
+      if (stored && fields.id === stored.id) delete fields.id;
       if (stored && fields.type === stored.type) delete fields.type;
-      out.push({ op: 'set', target: op.elementId, fields });
+      out.push({ op: 'set', target: targetOf(op.elementId, stored), fields });
     } else {
       if (!op.elementId) return `ops[${n}]: remove needs "elementId"`;
-      out.push({ op: 'rm', target: op.elementId });
+      out.push({ op: 'rm', target: targetOf(op.elementId, named(op.elementId)) });
     }
   }
   return out;
 }
 
 // The base of an ops changeset: the revision the model read (`read_document`'s `rev`, else the
-// tab as loaded now) and the fingerprint of every existing element its ops name, taken from the
-// tab as loaded now, so a person's change since is overwritten only on the fields the ops set.
+// tab as loaded now) and the fingerprint of every existing element its ops name, by id or ref, taken
+// from the tab as loaded now, so a person's change since is overwritten only on the fields the ops set.
 export function baseFor(ops: readonly McpOp[], current: Tab & { rev: number }, rev?: number) {
+  const named = namedIn(current);
   const elements: Record<string, string> = {};
-  const byId = new Map<string, Element>(current.elements.map((e) => [e.id, e]));
   for (const op of ops) {
-    const el = op.elementId ? byId.get(op.elementId) : undefined;
+    const el = op.elementId ? named(op.elementId) : undefined;
     if (el) elements[el.id] = elementFingerprint(el);
   }
   return { rev: rev ?? current.rev, elements };

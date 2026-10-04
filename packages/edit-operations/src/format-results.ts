@@ -24,7 +24,7 @@ const signed = (n: number) => (n < 0 ? `${n}` : `+${n}`);
 const at = ([x, y]: readonly [number, number] | readonly number[]) => `@${x},${y}`;
 
 // A scalar value: structured ones print as `(changed)` before they reach here.
-function value(key: string, v: JsonValue | undefined): string {
+export function formatValue(key: string, v: JsonValue | undefined): string {
   if (v === undefined) return '';
   if (typeof v !== 'string') return String(v);
   return TOKEN.test(v) && !TEXT_KEYS.has(key)
@@ -36,14 +36,16 @@ const isPoint = (v: JsonValue | undefined): v is [number, number] =>
   Array.isArray(v) && v.length === 2 && v.every((n) => typeof n === 'number');
 
 function formatChange({ key, from, to }: FieldChange): string {
+  // Where `order` put it: `order front`, `order above n5`.
+  if (key === 'order') return `order ${String(to)}`;
   if (key === 'at' && isPoint(from) && isPoint(to)) return `${at(from)}→${at(to)}`;
   if ((key === 'from' || key === 'to') && (isPoint(from) || isPoint(to))) {
-    const end = (v: JsonValue | undefined) => (isPoint(v) ? at(v) : value(key, v));
+    const end = (v: JsonValue | undefined) => (isPoint(v) ? at(v) : formatValue(key, v));
     return `${key} ${end(from)}→${end(to)}`;
   }
   const isStructured = (v: JsonValue | undefined) => typeof v === 'object' && v !== null;
   if (isStructured(from) || isStructured(to)) return `${key} (changed)`;
-  return `${key} ${value(key, from)}→${value(key, to)}`;
+  return `${key} ${formatValue(key, from)}→${formatValue(key, to)}`;
 }
 
 const labelText = (label: string | undefined) =>
@@ -72,9 +74,12 @@ function formatLine(line: ResultLine): string {
       return `- ${line.ref}  ${line.kind}${ends}${labelText(line.label)}${reason}`;
     }
     case '»': {
+      const layout = line.layout
+        ? ` (${[line.layout.style, line.layout.direction].filter(Boolean).join(', ')})`
+        : '';
       const how = line.delta
         ? `${signed(line.delta[0])},${signed(line.delta[1])} (${line.reason})`
-        : line.reason;
+        : `${line.reason}${layout}`;
       return `» ${line.refs.join(' ')}  ${how}`;
     }
     case 'container':

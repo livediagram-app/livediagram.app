@@ -3,7 +3,9 @@ import {
   boxCentre,
   boxHoldsPoint,
   contentOrigin,
+  containerContents,
   deriveContainers,
+  isContainer,
   smallestHolder,
 } from './containment';
 import { createPinnedArrow, createShape } from './factories';
@@ -149,5 +151,97 @@ describe('contentOrigin', () => {
 
   it('is 0,0 without boxed content', () => {
     expect(contentOrigin([])).toEqual({ x: 0, y: 0 });
+  });
+});
+
+describe('isContainer', () => {
+  it('is a frame or a lane', () => {
+    expect(isContainer(box('frame', 'f', 0, 0, 10, 10))).toBe(true);
+    expect(isContainer(box('lane', 'l', 0, 0, 10, 10))).toBe(true);
+    expect(isContainer(box('square', 's', 0, 0, 10, 10))).toBe(false);
+    expect(isContainer({ ...createPinnedArrow('a', 'e', 'b', 'w'), id: 'arr' })).toBe(false);
+  });
+});
+
+describe('containerContents', () => {
+  const frame = box('frame', 'frame', 100, 100, 200, 200);
+  const inside = box('square', 'inside', 130, 130, 40, 40);
+  const outside = box('square', 'outside', 480, 480, 40, 40);
+
+  it('returns ids itself when no id is a container', () => {
+    const ids = new Set(['inside']);
+    expect(containerContents([frame, inside], ids)).toBe(ids);
+  });
+
+  it('carries what the container holds, not what lies outside', () => {
+    expect([...containerContents([frame, inside, outside], new Set(['frame']))].sort()).toEqual([
+      'frame',
+      'inside',
+    ]);
+  });
+
+  it('carries a box straddling the edge by its centre', () => {
+    const centreIn = box('square', 'centre-in', 270, 130, 40, 40);
+    const centreOut = box('square', 'centre-out', 290, 130, 40, 40);
+    const out = containerContents([frame, centreIn, centreOut], new Set(['frame']));
+    expect(out.has('centre-in')).toBe(true);
+    expect(out.has('centre-out')).toBe(false);
+  });
+
+  it('carries a nested container with all it holds, never one that only overlaps', () => {
+    const nested = box('frame', 'nested', 120, 120, 100, 100);
+    const inNested = box('square', 'in-nested', 140, 140, 20, 20);
+    const overlapping = box('frame', 'overlapping', 250, 250, 200, 200);
+    const out = containerContents([frame, nested, inNested, overlapping], new Set(['frame']));
+    expect([...out].sort()).toEqual(['frame', 'in-nested', 'nested']);
+  });
+
+  it('gives an element in overlapping containers to the smallest', () => {
+    const big = box('frame', 'big', 0, 0, 400, 400);
+    const small = box('lane', 'small', 100, 100, 150, 150);
+    const el = box('square', 'el', 150, 150, 20, 20);
+    // Dragging the smaller carries it; the bigger carries the smaller and so the element too.
+    expect(containerContents([big, small, el], new Set(['small'])).has('el')).toBe(true);
+    expect(containerContents([big, small, el], new Set(['big'])).has('el')).toBe(true);
+    // Overlapping, not nested: the lane's centre (150,150) lies outside it, the element (170,170) in both.
+    const lane = box('lane', 'lane', 100, 100, 100, 100);
+    const sibling = box('frame', 'sibling', 155, 155, 300, 300);
+    const shared = box('square', 'shared', 160, 160, 20, 20);
+    expect(containerContents([sibling, lane, shared], new Set(['sibling'])).has('shared')).toBe(
+      false,
+    );
+    expect(containerContents([sibling, lane, shared], new Set(['lane'])).has('shared')).toBe(true);
+  });
+
+  it('carries an arrow whose free ends all lie inside, not one reaching out or fully pinned', () => {
+    const freeIn = {
+      ...createPinnedArrow('x', 'e', 'y', 'w'),
+      id: 'free-in',
+      from: { kind: 'free' as const, x: 120, y: 120 },
+      to: { kind: 'free' as const, x: 200, y: 200 },
+    };
+    const freeOut = { ...freeIn, id: 'free-out', to: { kind: 'free' as const, x: 480, y: 480 } };
+    const halfPinned = {
+      ...freeIn,
+      id: 'half',
+      to: { kind: 'pinned' as const, elementId: 'outside', anchor: 'n' as const },
+    };
+    const pinned = { ...createPinnedArrow('inside', 'e', 'outside', 'w'), id: 'pinned' };
+    const out = containerContents(
+      [frame, inside, outside, freeIn, freeOut, halfPinned, pinned],
+      new Set(['frame']),
+    );
+    expect(out.has('free-in')).toBe(true);
+    expect(out.has('half')).toBe(true);
+    expect(out.has('free-out')).toBe(false);
+    expect(out.has('pinned')).toBe(false);
+  });
+
+  it('carries a mind map child through its root in the container', () => {
+    const map = deriveContainers;
+    expect(map).toBeTypeOf('function');
+    const root = { ...mind('root'), x: 130, y: 130, width: 40, height: 20 };
+    const child = { ...mind('child', 'root'), x: 900, y: 900 };
+    expect(containerContents([frame, root, child], new Set(['frame'])).has('child')).toBe(true);
   });
 });

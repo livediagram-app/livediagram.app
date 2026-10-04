@@ -13,6 +13,15 @@ import {
 } from '@livediagram/document';
 import { finalise } from './finalise';
 import { applyAdd } from './operations/add';
+import { applyAddKind } from './operations/add-kind';
+import { applyConnect, applyRewire } from './operations/connect';
+import { applyInsert } from './operations/insert';
+import { applyLayout } from './operations/layout';
+import { applyMove } from './operations/move';
+import { applyOrder } from './operations/order';
+import { applyTest } from './operations/test-fields';
+import { applyUnwrap } from './operations/unwrap';
+import { applyWrap } from './operations/wrap';
 import { applyRm } from './operations/rm';
 import { applySet } from './operations/set';
 import { buildResultLines } from './results';
@@ -29,11 +38,31 @@ function applyOperation(
 ): EditRejection | null {
   switch (operation.op) {
     case 'add':
-      return applyAdd(state, operation, index);
+      return 'element' in operation
+        ? applyAdd(state, operation, index)
+        : applyAddKind(state, operation, index);
     case 'set':
       return applySet(state, operation, index);
     case 'rm':
       return applyRm(state, operation, index);
+    case 'move':
+      return applyMove(state, operation, index);
+    case 'connect':
+      return applyConnect(state, operation, index);
+    case 'rewire':
+      return applyRewire(state, operation, index);
+    case 'insert':
+      return applyInsert(state, operation, index);
+    case 'unwrap':
+      return applyUnwrap(state, operation, index);
+    case 'order':
+      return applyOrder(state, operation, index);
+    case 'test':
+      return applyTest(state, operation, index);
+    case 'layout':
+      return applyLayout(state, operation, index);
+    case 'wrap':
+      return applyWrap(state, operation, index);
   }
 }
 
@@ -68,7 +97,7 @@ export function applyEditOperations(
   const next = finalise(state, log);
   if ('code' in next) return rejected(log, next, operations);
   const elementOps = diffToElementOps(tab.elements, next.elements);
-  const results = buildResultLines(state, next.elements);
+  const results = buildResultLines({ ...state, beforeElements: tab.elements }, next.elements);
   const present = new Set<ElementId>(next.elements.map((el) => el.id));
   const count = (mark: string) => results.filter((line) => line.mark === mark).length;
   log('[edit-ops] applied', {

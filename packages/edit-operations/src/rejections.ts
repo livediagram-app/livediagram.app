@@ -9,9 +9,8 @@ import {
 } from '@livediagram/api-schema';
 import type { Element } from '@livediagram/document';
 import { describeElement, kindOf, labelOf, quoteCut } from './element-text';
-import { nearestElements, nearestName } from './nearest';
+import { nearestName } from './nearest';
 import {
-  APPLIED_OPERATION_NAMES,
   DID_YOU_MEAN_MAX_DISTANCE,
   EDIT_OPERATION_NAMES,
   LABEL_CUT_CHARS,
@@ -50,36 +49,30 @@ export function unknownOperation(word: string, operation: number): EditRejection
   };
 }
 
-// A name of the vocabulary this build does not apply yet.
-export function notAppliedOperation(word: string, operation: number): EditRejection {
-  return {
-    code: 'unknown_operation',
-    operation,
-    details: [
-      `"${word}" is not applied by this build: it applies ${APPLIED_OPERATION_NAMES.join(' ')}`,
-      'the rest of the vocabulary arrives with the full engine',
-    ],
-    hint: 'use add, set and rm, or send a replace',
-  };
-}
-
 export function parseError(operation: number, detail: string): EditRejection {
   return { code: 'parse_error', operation, details: [detail] };
 }
 
-export function targetNotFound(
-  selector: string,
+// A line that does not parse: where, what was expected, and the line with a caret under the column.
+export function lineParseError(
   operation: number,
-  elements: readonly Element[],
-): EditRejection {
-  const near = nearestElements(selector, elements);
+  line: number,
+  text: string,
+  column: number,
+  expected: string,
+): EditRejection & { line: number } {
+  const quoting = /key=value|closing|selector/.test(expected);
   return {
-    code: 'target_not_found',
+    code: 'parse_error',
     operation,
-    details: near.length
-      ? [`"${selector}" matches nothing; nearest:`, ...near.map((el) => `  ${describeElement(el)}`)]
-      : [`"${selector}" matches nothing`],
-    hint: 'use an element id exactly, as the tab lists it',
+    line,
+    column,
+    details: [
+      `line ${line}, column ${column}: expected ${expected}`,
+      text,
+      `${' '.repeat(column - 1)}^`,
+    ],
+    hint: quoting ? 'quote values with spaces: label="Sign in"' : `write ${expected}`,
   };
 }
 
@@ -88,12 +81,17 @@ export function unknownField(
   kind: string,
   key: string,
   fields: readonly string[],
+  aliases: readonly string[] = [],
 ): EditRejection {
+  const stored = fields.filter((field) => !aliases.includes(field));
+  const listed = aliases.length
+    ? `${aliases.join(' ')}, then ${stored.join(' ')}`
+    : stored.join(' ');
   return {
     code: 'unknown_field',
     operation,
-    details: [`${kind} has no field "${key}"`, `fields: ${fields.join(' ')}`],
-    ...didYouMean(key, fields),
+    details: [`${kind} has no field "${key}"`, `fields: ${listed}`],
+    ...didYouMean(key, [...aliases, ...stored]),
   };
 }
 
@@ -182,4 +180,61 @@ export function formatRejections(errors: readonly EditRejection[]): string[] {
     ...(rejection.hint ? [`  hint: ${rejection.hint}`] : []),
   ]);
   return [...lines, 'nothing was applied'];
+}
+
+// `connect a -> b` where an arrow a→b exists, without `again`.
+export function arrowExists(operation: number, ends: string, existing: string): EditRejection {
+  return {
+    code: 'arrow_exists',
+    operation,
+    details: [`${ends} already has an arrow:`, `  ${existing}`],
+    hint: 'add again for a second arrow, or set the existing one',
+  };
+}
+
+// `insert … between a b` with no a→b arrow: the arrows touching a and b, to choose from.
+export function notConnected(
+  operation: number,
+  ends: string,
+  touching: readonly string[],
+  a: string,
+  b: string,
+): EditRejection {
+  return {
+    code: 'not_connected',
+    operation,
+    details: [
+      `no arrow ${ends}`,
+      ...(touching.length ? ['arrows touching them:', ...touching.map((t) => `  ${t}`)] : []),
+    ],
+    hint: `connect ${a} -> ${b} first, or insert between the ends of one of these`,
+  };
+}
+
+// `wrap` would hold elements that are not its members.
+export function frameCaptures(
+  operation: number,
+  container: string,
+  bystanders: readonly string[],
+): EditRejection {
+  return {
+    code: 'frame_captures',
+    operation,
+    details: [`the ${container} would hold non-members:`, ...bystanders.map((b) => `  ${b}`)],
+    hint: 'add them to the members, or add absorb or make-room',
+  };
+}
+
+// `test` found a value other than the one it expected.
+export function testFailed(
+  operation: number,
+  failures: readonly string[],
+  ref: string,
+): EditRejection {
+  return {
+    code: 'test_failed',
+    operation,
+    details: [...failures],
+    hint: `re-read ${ref}: it changed since you read it`,
+  };
 }

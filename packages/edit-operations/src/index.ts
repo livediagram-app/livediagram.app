@@ -1,22 +1,30 @@
 // @livediagram/edit-operations: the engine a changeset runs on
-// (docs/specs/024-agents/edit-operations.md, blueprint "Interfaces and contracts"). This build
-// applies `add` (a whole element), `set` and `rm` addressed by element id, and `replace`; the line
-// form and the rest of the vocabulary arrive with the full engine.
+// (docs/specs/024-agents/edit-operations.md, blueprint "Interfaces and contracts"): both forms of
+// the edit operations, applied to a tab, and `replace`.
 
 export { validateEditOperation, validateEditOperations } from './parse-json';
+export { parseEditOperations } from './parse';
+export { formatOperation } from './format-operation';
 export { applyEditOperations } from './apply';
 export { applyReplace } from './replace';
 export { formatResultFooter, formatResultLines } from './format-results';
 export { formatRejections } from './rejections';
-export {
-  APPLIED_OPERATION_NAMES,
-  EDIT_MAX_ERRORS,
-  EDIT_OPERATION_NAMES,
-  type AppliedOperationName,
-  type EditOperationName,
-} from './vocabulary';
+export { EDIT_MAX_ERRORS, EDIT_OPERATION_NAMES, type EditOperationName } from './vocabulary';
 export type {
+  AddElementOperation,
+  AddKindOperation,
   AddOperation,
+  ConnectOperation,
+  Fields,
+  InsertOperation,
+  LayoutOperation,
+  MoveOperation,
+  OrderOperation,
+  Placement,
+  RewireOperation,
+  TestOperation,
+  UnwrapOperation,
+  WrapOperation,
   ApplyOptions,
   ApplyOutcome,
   ApplyRejection,

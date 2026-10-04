@@ -7,10 +7,8 @@ import {
   idTaken,
   invalidResult,
   invalidValue,
-  notAppliedOperation,
   parseError,
   tabLocked,
-  targetNotFound,
   tooLarge,
   unknownField,
   unknownOperation,
@@ -91,46 +89,12 @@ describe('rejection builders', () => {
     expect(unknownOperation('paint', 1).hint).toBeUndefined();
   });
 
-  it('unknown_operation for a later operation names what this build applies', () => {
-    expect(notAppliedOperation('move', 4)).toEqual({
-      code: 'unknown_operation',
-      operation: 4,
-      details: [
-        '"move" is not applied by this build: it applies add set rm',
-        'the rest of the vocabulary arrives with the full engine',
-      ],
-      hint: 'use add, set and rm, or send a replace',
-    });
-  });
-
   it('parse_error names the member', () => {
     expect(parseError(2, 'member "fields": expected an object')).toEqual({
       code: 'parse_error',
       operation: 2,
       details: ['member "fields": expected an object'],
     });
-  });
-
-  it('target_not_found lists the nearest elements', () => {
-    expect(targetNotFound('n33', 1, elements)).toEqual({
-      code: 'target_not_found',
-      operation: 1,
-      details: [
-        '"n33" matches nothing; nearest:',
-        '  n3  square "Login"',
-        '  n1  stadium "Start"',
-        '  n2  square "Cart"',
-        '  n4  square "Address"',
-        '  n5  square "Card details"',
-      ],
-      hint: 'use an element id exactly, as the tab lists it',
-    });
-  });
-
-  it('target_not_found without near elements says so plainly', () => {
-    expect(targetNotFound('zzzzzzzzzz', 3, elements).details).toEqual([
-      '"zzzzzzzzzz" matches nothing',
-    ]);
   });
 
   it('unknown_field names the kind, its fields and the nearest one', () => {
