@@ -166,6 +166,14 @@ export const AGENT_TOAST_SHOW = chart(
   { types: ['Toast'] },
 );
 
+// Document views (docs/specs/024-agents/document-views.md): which views agents read a document through.
+export const AGENT_VIEWED = chart(
+  'Agent',
+  'Viewed',
+  'Agent Views Read',
+  'A document read as text by an agent or a script: an outline, a graph, a layout and so on.',
+);
+
 export const AGENT_CHANGESETS: MetricStack = {
   stack: true,
   title: 'Agent changes',

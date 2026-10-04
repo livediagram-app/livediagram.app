@@ -40,6 +40,27 @@ export async function getTab(env: Env, documentId: string, tabId: string): Promi
   return row ? rowToTab(row) : null;
 }
 
+// A page of a document's tabs in order, bodies included: `overview` reads a document this way so it
+// never holds more than `limit` bodies at once (docs/specs/024-agents/blueprints/document-views.md, VW47).
+export async function tabBodiesInOrder(
+  env: Env,
+  documentId: string,
+  offset: number,
+  limit: number,
+): Promise<TabDTO[]> {
+  const { results } = await env.DB.prepare(
+    `SELECT t.id, dt.document_id, t.name, dt.order_index, t.data, t.updated_at, t.rev, dt.folder
+       FROM tabs t
+       JOIN document_tabs dt ON dt.tab_id = t.id
+      WHERE dt.document_id = ?
+      ORDER BY dt.order_index, t.id
+      LIMIT ? OFFSET ?`,
+  )
+    .bind(documentId, limit, offset)
+    .all<TabRow>();
+  return results.map(rowToTab);
+}
+
 // The raw `tabs.data` JSON for a document's first tab (lowest
 // order_index in the document_tabs link), or null when the document has
 // no tabs. Used by the SVG snapshot render-cache (docs/specs/006-document/document-snapshots.md), which needs

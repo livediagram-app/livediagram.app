@@ -588,7 +588,8 @@ export const articles: Article[] = [
     slug: 'working-with-documents',
     title: 'Working with Documents',
     description: 'Worked examples: list, read, create, and update documents, tabs, and folders.',
-    keywords: 'examples curl crud create update list read api requests diagrams',
+    keywords:
+      'examples curl crud create update list read api requests diagrams outline view text agent',
     category: 'Developers',
     categorySlug: 'developers',
   },

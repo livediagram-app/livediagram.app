@@ -5,6 +5,7 @@
 //
 // Named for the family already here: ./mermaid-shared, ./mermaid-er,
 // ./mermaid-state.
+import { boxCentre, smallestHolder } from './containment';
 import { ARROW_THICKNESS_PX } from './arrow-style';
 import type { ArrowElement, Element, ElementLink } from './index';
 import { visibleLayerElements, type Layer } from './layers';
@@ -78,13 +79,7 @@ export function mermaidFromTab(tab: { elements: Element[]; layers?: Layer[] }): 
   // matching what the import produces.
   const frameOf = new Map<string, string>();
   for (const n of nodes) {
-    const cx = n.x + n.width / 2;
-    const cy = n.y + n.height / 2;
-    let best: BoxedShape | null = null;
-    for (const f of frames) {
-      const inside = cx >= f.x && cx <= f.x + f.width && cy >= f.y && cy <= f.y + f.height;
-      if (inside && (best === null || f.width * f.height < best.width * best.height)) best = f;
-    }
+    const best = smallestHolder(boxCentre(n), frames);
     if (best) frameOf.set(n.id, best.id);
   }
 

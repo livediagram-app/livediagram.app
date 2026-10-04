@@ -36,7 +36,8 @@ export default defineProject({
     // The editor's source spans app/, components/ and hooks/ beside lib/ and src/: the report counts
     // all of it, so untested components show as such rather than vanishing from the total.
     coverage: {
-      include: ['app/**', 'components/**', 'hooks/**', 'lib/**', 'src/**'],
+      // Code only: the folders also hold fixtures (`.drawio`, `.svg`, ...) that are not source.
+      include: ['{app,components,hooks,lib,src}/**/*.{ts,tsx}'],
     },
   },
   resolve: {

@@ -12,48 +12,54 @@ Scope, by file:
 
 | File                                                                    | Role                                                                                                                        |
 | ----------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| `packages/document/src/element-refs.ts` (planned)                       | Refs, slug ids and kind words: `computeRefs`, `resolveRef`, `isSlugId`, `slugIdFor`, `kindWordOf`, `isKnownElement`         |
-| `packages/document/src/containment.ts` (planned)                        | The centre rule and the content origin: `boxCentre`, `boxHoldsPoint`, `smallestHolder`, `deriveContainers`, `contentOrigin` |
+| `packages/document/src/element-refs.ts`                                 | Refs, slug ids and kind words: `computeRefs`, `resolveRef`, `isSlugId`, `slugIdFor`, `kindWordOf`, `isKnownElement`         |
+| `packages/document/src/containment.ts`                                  | The centre rule and the content origin: `boxCentre`, `boxHoldsPoint`, `smallestHolder`, `deriveContainers`, `contentOrigin` |
+| `packages/document/src/style-keys.ts`                                   | `STYLE_KEYS`, `styleKeysFor`: the style keys views print and edit operations write                                          |
 | `packages/document/src/mermaid-serialise.ts`                            | `mermaidFromTab` calls `smallestHolder` over frames; its output is byte-identical                                           |
-| `packages/document/src/index.ts`                                        | Re-exports `./element-refs` and `./containment`                                                                             |
-| `packages/api-schema/src/document-views.ts` (planned)                   | `VIEW_NAMES`, `ViewName`, `VIEW_QUERY`, `ViewDoor`, every view's JSON wire type, `UNKNOWN_VIEW_ERROR`                       |
-| `packages/api-schema/src/ref-errors.ts` (planned)                       | `TARGET_NOT_FOUND_ERROR`, `TARGET_AMBIGUOUS_ERROR`, `RefCandidate`, `RefErrorBody`                                          |
+| `packages/document/src/index.ts`                                        | Re-exports `./element-refs`, `./containment` and `./style-keys`                                                             |
+| `packages/api-schema/src/document-views.ts`                             | `VIEW_NAMES`, `ViewName`, `VIEW_QUERY`, `ViewDoor`, every view's JSON wire type, `UNKNOWN_VIEW_ERROR`                       |
+| `packages/api-schema/src/ref-errors.ts`                                 | `TARGET_NOT_FOUND_ERROR`, `TARGET_AMBIGUOUS_ERROR`, `RefCandidate`, `RefErrorBody`                                          |
 | `packages/api-schema/src/telemetry-schema.ts`                           | `TELEMETRY_ACTIONS` gains `Viewed`                                                                                          |
 | `packages/api-schema/src/index.ts`                                      | Re-exports both new files                                                                                                   |
 | `packages/document-views/{package.json,tsconfig.json,eslint.config.js}` | The new package `@livediagram/document-views` (depends on `document`, `api-schema`), shaped like `explorer-lens`            |
-| `packages/document-views/vitest.config.ts` (planned)                    | 100% line, branch, function and statement thresholds                                                                        |
-| `packages/document-views/src/index.ts` (planned)                        | The public surface: `renderView`, every view function, the budget                                                           |
-| `packages/document-views/src/constants.ts` (planned)                    | The view constants in [Constants and configuration](#constants-and-configuration)                                           |
-| `packages/document-views/src/text.ts` (planned)                         | `cutAtWord`, `jsonString`, `attrValue`, `cellText`                                                                          |
-| `packages/document-views/src/visibility.ts` (planned)                   | `partitionVisible`: printed elements, hidden-layer elements                                                                 |
-| `packages/document-views/src/tree.ts` (planned)                         | `buildViewTree`: `deriveContainers`, then reading order per container                                                       |
-| `packages/document-views/src/reading-order.ts` (planned)                | `readingOrder`, `rowsOf`                                                                                                    |
-| `packages/document-views/src/freehand-runs.ts` (planned)                | `freehandRuns`: consecutive bare strokes folded into one line                                                               |
-| `packages/document-views/src/content-summary.ts` (planned)              | `contentSummaryOf`: entity, table, code block, charts, checklist                                                            |
-| `packages/document-views/src/state-attribute.ts` (planned)              | `stateAttributeOf`: the one state attribute of each content kind that has one                                               |
-| `packages/document-views/src/attributes.ts` (planned)                   | `attributesOf`: the ordered attribute list of one element                                                                   |
-| `packages/document-views/src/style-attributes.ts` (planned)             | `styleAttributesOf` for `style`                                                                                             |
-| `packages/document-views/src/edges.ts` (planned)                        | `edgesOf`: outgoing arrows per source, own-line arrows, end rendering                                                       |
-| `packages/document-views/src/header.ts` (planned)                       | `countElements`, `viewHeader`, `headerLine`                                                                                 |
-| `packages/document-views/src/model.ts` (planned)                        | `buildViewModel(tab, context)`: the one model every tab view reads                                                          |
+| `packages/document-views/vitest.config.ts`                              | 100% line, branch, function and statement thresholds                                                                        |
+| `packages/document-views/src/index.ts`                                  | The public surface: `renderView`, every view function, the budget                                                           |
+| `packages/document-views/src/constants.ts`                              | The view constants in [Constants and configuration](#constants-and-configuration)                                           |
+| `packages/document-views/src/text.ts`                                   | `cutAtWord`, `jsonString`, `attrValue`, `cellText`, `plural`                                                                |
+| `packages/document-views/src/fields.ts`                                 | Typed reads of shared optional fields (`textField`, `boxOf`, `threadOf`, …): views never cast an element                    |
+| `packages/document-views/src/view-attribute.ts`                         | `ViewAttribute`, `flagAttribute`, `countAttribute`, `shapeKindOf`                                                           |
+| `packages/document-views/src/visibility.ts`                             | `partitionVisible`: printed elements, hidden-layer elements                                                                 |
+| `packages/document-views/src/tree.ts`                                   | `buildViewTree`: `deriveContainers`, then reading order per container                                                       |
+| `packages/document-views/src/reading-order.ts`                          | `readingOrder`, `rowsOf`                                                                                                    |
+| `packages/document-views/src/freehand-runs.ts`                          | `freehandRuns`: consecutive bare strokes folded into one line                                                               |
+| `packages/document-views/src/content-summary.ts`                        | `contentSummaryOf`: entity, table, code block, charts, checklist                                                            |
+| `packages/document-views/src/state-attribute.ts`                        | `stateAttributeOf`: the one state attribute of each content kind that has one                                               |
+| `packages/document-views/src/attributes.ts`                             | `attributesOf`: the ordered attribute list of one element                                                                   |
+| `packages/document-views/src/style-attributes.ts`                       | `styleAttributesOf` for `style`                                                                                             |
+| `packages/document-views/src/edges.ts`                                  | `edgesOf`: outgoing arrows per source, own-line arrows, end rendering                                                       |
+| `packages/document-views/src/header.ts`                                 | `countElements`, `viewHeader`, `headerLine`                                                                                 |
+| `packages/document-views/src/model.ts`                                  | `buildViewModel(tab, context)`, the one model every tab view reads; `headerFactsOf`, `tabRefsFor`                           |
 | `packages/document-views/src/{outline,graph,layout,comments}.ts`        | One view each                                                                                                               |
 | `packages/document-views/src/{show,find,diff,overview}.ts`              | One view each                                                                                                               |
-| `packages/document-views/src/budget.ts` (planned)                       | `estimateTokens`, `fitOutline`, `fitLines`                                                                                  |
-| `packages/document-views/src/elision.ts` (planned)                      | `elisionLine`, in the reading door's own syntax                                                                             |
-| `packages/document-views/src/render-view.ts` (planned)                  | `renderView(request, tab, context)`: the dispatcher the api and the CLI call                                                |
+| `packages/document-views/src/budget.ts`                                 | `estimateTokens`, `fitLines`, `fitOf`, `ViewFit`, `ViewResult` (the outline's ladder, `fitOutline`, is in `outline.ts`)     |
+| `packages/document-views/src/elision.ts`                                | `buildElision`, `elisionLine`, `elisionCommand`, in the reading door's own syntax                                           |
+| `packages/document-views/src/render-view.ts`                            | `renderView(request, tab, context)`: resolves `ref` and `only`, then dispatches; the api and the CLI call it                |
+| `packages/document-views/src/performance.test.ts`                       | A 10,000-element tab with 100 containers renders and fits within a second                                                   |
 | `packages/document-views/src/__fixtures__/*.ts`                         | The checkout tab, its "after" twin, the three-tab document, the agent-built tab, the 300-element tab, the edge cases        |
 | `packages/document-views/src/__fixtures__/golden/*`                     | One golden file per view (see [Testing](#testing))                                                                          |
 | `apps/api/package.json`                                                 | Depends on `@livediagram/document-views`                                                                                    |
 | `apps/api/src/responses.ts`                                             | `textPlain(body, init)`                                                                                                     |
-| `apps/api/src/routes/document-views-route.ts` (planned)                 | `parseViewQuery`, `answerTabView`, `answerOverview`, the `Agent·Viewed` event                                               |
+| `apps/api/src/routes/document-views-route.ts`                           | `parseViewQuery`, `answerTabView`, `answerOverview`, the `Agent·Viewed` event                                               |
 | `apps/api/src/routes/document-subresource-routes.ts`                    | The tab GET hands a `view` query to `answerTabView` after its gate and redaction                                            |
 | `apps/api/src/routes/documents.ts`                                      | The document GET hands `view=overview` to `answerOverview` after its gate and redaction                                     |
 | `apps/api/src/db/tabs.ts`                                               | `tabBodiesInOrder(env, documentId, offset, limit)`                                                                          |
 | `apps/api/src/openapi/{manifest,document,types}.ts`                     | The view query parameters; `textResponse` on the two GETs                                                                   |
 | `apps/api/scripts/gen-openapi-schemas.mjs`                              | The view wire types join `ROOT_TYPES`                                                                                       |
-| `apps/mcp/src/api.ts`                                                   | `apiText`                                                                                                                   |
+| `apps/mcp/src/api.ts`                                                   | `apiText` → `{ text, etag }`, sharing `apiJson`'s failure path (`apiOk`)                                                    |
 | `apps/mcp/src/tool-helpers.ts`                                          | `viewResult`: the view text first, then its one-line JSON                                                                   |
-| `apps/mcp/src/{tools,schema,output-schema}.ts`                          | `read_document` reads a view (the outline by default); `format: "json"`, `image: true`                                      |
+| `apps/mcp/src/read-document.ts`                                         | `readDocument`: the view (the outline by default), `format: "json"`, `image: true`, ref refusals as results                 |
+| `apps/mcp/src/{tools,schema,output-schema}.ts`                          | `read_document` registered on `readDocument`; its input and output schemas; `READ_DOCUMENT_DEFAULT_BUDGET`                  |
+| `apps/mcp/src/image-result.ts`                                          | `tabPreview`: the PNG on its own, which `imageResult` and `readDocument` attach                                             |
 | `apps/telemetry/app/catalogue/connections.ts`                           | The `Agent·Viewed` chart, by view                                                                                           |
 | `docs/development/architecture.md`, `README.md`                         | The new package in the layout and the package list                                                                          |
 | `@livediagram/edit-operations`, `@livediagram/diagram-lint` (own)       | Import refs, slug ids, kind words, `deriveContainers` and `contentOrigin` from `@livediagram/document`                      |
@@ -135,7 +141,8 @@ tab ref unique within the document (`VW4`).
   is unique by construction.
 - A prefix of at least `REF_MIN_LENGTH` characters that now matches several elements is refused as `ambiguous`
   with `stale: true` (the refusal says "matches N elements now; one was added since your read?"). A ref matching
-  nothing is `not-found` with up to `REF_NEAREST_MAX` nearest refs by shared prefix length, then label.
+  nothing is `not-found` with up to `REF_NEAREST_MAX` nearest refs: ids sharing at least the first character with
+  the input, by shared prefix length, then ref in code-unit order (resolution reads ids only).
 - Labels never resolve: `resolveRef` reads ids only. Label matching is the selector engine's
   ([Edit operations](../edit-operations.md#selectors)).
 
@@ -145,7 +152,8 @@ tab ref unique within the document (`VW4`).
 
 1. `label` NFKD-normalised, combining marks (`\p{M}`) removed, lower-cased.
 2. Every run of characters outside `[a-z0-9]` becomes one `-`; leading and trailing `-` removed.
-3. Empty: the base is `kindWord` (with `:` replaced by `-`). Starting with a digit: the base is `kindWord-` plus it.
+3. Empty: the base is `kindWord` slugged by steps 1 and 2 (so `es:actor` gives `es-actor`), or `element` when that
+   does not start with a letter. Starting with a digit: the base is that kind base, `-`, then the slug.
 4. The base is cut to `SLUG_ID_MAX_LENGTH` characters and trailing `-` trimmed.
 5. Free in `takenIds`: done. Else the first free of `base-2`, `base-3`, …, the base cut to fit
    `SLUG_ID_MAX_LENGTH` with its suffix and trailing `-` trimmed before the suffix.
@@ -165,8 +173,10 @@ non-empty unique ids. The round-trip tests in [Testing](#testing) hold this.
 | The notation `actor`                      | `es:actor`, so it never reads as the `actor` shape                            |
 | `type: 'shape'`, `shape` in `SHAPE_KINDS` | the shape (`square`, `frame`, `lane`, `entity`, `mind-node`, `actor`, …)      |
 | `type` in `ELEMENT_TYPES`, not a shape    | the type (`text`, `sticky`, `table`, `image`, `freehand`, `path`, `arrow`, …) |
-| `type: 'shape'`, unknown `shape`          | `? <shape>` (`VW12`)                                                          |
+| `type: 'shape'`, unknown `shape`          | `? <shape>` (`VW12`); `? shape` when it has none                              |
 | unknown `type`                            | `? <type>`                                                                    |
+
+An unknown name prints bare when it matches `^[A-Za-z0-9_.:-]+$`, else as a JSON string (I4).
 
 `SHAPE_KINDS` and `ELEMENT_TYPES` are `packages/document/src/validate.ts`'s sets, so the kind words know exactly what
 the document model knows. An event-storming note still in photo draft carries the flag `draft` (`VW13`).
@@ -182,9 +192,10 @@ own full-box rule (`withFrameContents`) and does not change.
    with the lowest array index, which becomes a root of its tree (`VW24`).
 2. **Geometry otherwise.** Candidates are `frame` and `lane` shapes other than the element itself whose stored box
    holds the element's centre (`boxHoldsPoint`, edges inclusive) and whose area is strictly greater than the
-   element's (`VW23`). The smallest candidate by area wins; equal areas go to the earlier in array order. This is
-   `smallestHolder`, the rule `mermaidFromTab` applies (smallest frame holding the centre, inclusive, the earlier on
-   a tie); the strict-area guard makes nesting acyclic. Rotation is ignored: centres and boxes are the stored
+   element's (`VW23`). The smallest candidate by area wins; equal areas go to the earlier in array order.
+   `smallestHolder(point, holders)` is that point query alone, the rule `mermaidFromTab` applies (smallest frame
+   holding the centre, inclusive, the earlier on a tie); `deriveContainers` passes it only the strictly larger
+   candidates, and that guard makes nesting acyclic. Rotation is ignored: centres and boxes are the stored
    axis-aligned ones.
 3. Elements without numeric `x`, `y`, `width`, `height` (only unknown kinds can lack them) sit at the root.
 
@@ -362,17 +373,21 @@ with a fixed id). The keys are the edit-operations field keys, so a printed styl
 ### Every view
 
 All take a tab (`overview` a document) and `ViewOptions { budget?, json?, only?, coarse?, style?, ref?, q?, all?,
-door?, now? }`. `renderView(request, tab, context) → { text, json, elision }` dispatches by `request.view`.
+door?, now? }`. `renderView(request, tab, context)` builds the model once, resolves `ref` and `only` (a hidden-layer
+element is `target_not_found` "on a hidden layer", I7, `VW62`; `find` without `q` is `invalid_value`, `VW64`) and
+dispatches by `request.view`, answering `{ ok: true, view, text, json, fit, elements }` or `{ ok: false, refusal }`.
+Each tab view is a function of the model (`outlineView(model, options)`, …) answering `{ text, json, fit }`; `fit`
+is the full view's estimate and the step it took (a ladder state, or `lines-dropped`), for the `[views] budget` log.
 
 | View       | Function                                | Served by                | Lines after the header                                                                  |
 | ---------- | --------------------------------------- | ------------------------ | --------------------------------------------------------------------------------------- |
-| `outline`  | `outlineView(tab, context, options)`    | api, CLI offline         | The grammar above, depth-first in reading order, own-line arrows at the end of the root |
+| `outline`  | `outlineView(model, options)`           | api, CLI offline         | The grammar above, depth-first in reading order, own-line arrows at the end of the root |
 | `graph`    | `graphView`                             | api, CLI offline         | Nodes, a blank line, arrows (below)                                                     |
 | `layout`   | `layoutView`                            | api, CLI offline         | Exact geometry, or coarse rows with `coarse`                                            |
 | `comments` | `commentsView`                          | api, CLI offline         | Open threads, every comment in full; `all` adds resolved ones                           |
 | `show`     | `showView` (`ref` required)             | api, CLI offline         | One element in full                                                                     |
 | `find`     | `findView` (`q` required)               | api, CLI offline         | Matches with their container chains                                                     |
-| `lint`     | `@livediagram/diagram-lint`             | api, CLI offline         | The lint's own output ([Diagram lint](../diagram-lint.md)) under the same header        |
+| `lint`     | `@livediagram/diagram-lint` (not built) | api, CLI offline         | The lint's own output ([Diagram lint](../diagram-lint.md)) under the same header        |
 | `diff`     | `diffView(before, after, context)`      | CLI only, from its cache | Added, removed, changed and moved elements                                              |
 | `overview` | `overviewView(document, tabs, options)` | api, CLI offline         | One line per tab                                                                        |
 
@@ -395,10 +410,11 @@ line names them with the outline as the command.
 order, `<ref> <x>,<y> <w>x<h>` with `r=<deg>` when rotated, then one line per printed arrow,
 `<ref> <from>.<anchor> → <to>.<anchor> [<arrowStyle>]` (`arrowStyle` only when not `straight`; a free end prints
 `<x>,<y>`, an on-arrow end `arrow:<ref>@<t>` with `t` to two decimals). Numbers are integers, rounded, relative to
-`contentOrigin(printed)`.
+`contentOrigin(printed)`. An element without geometry prints `<ref> no geometry` (`VW61`).
 
 **`layout`, coarse** (`VW32`): `canvas: ` then the root's rows, refs separated by spaces, rows by `/`; then one
-`<container ref>: <rows>` line per container with children, depth-first in reading order. Arrows are left out.
+`<container ref>: <rows>` line per container with children, depth-first in reading order. Elements without geometry
+form a last row. Arrows are left out.
 
 **`comments`** (`VW33`): per open thread, in the outline's depth-first order:
 
@@ -426,10 +442,11 @@ them with `all`; with `all` they print with `· resolved ·`. `authorId` never p
 
 Left out, and named on `omitted:`: `id`, `type`, `shape` and `label` (in the first line); `x`, `y`, `width`,
 `height`, `rotation` (on `at`); the plain-text mirrors' runs `richText`, `noteRich`; `packedPoints`; and every
-person id, listed in `PERSON_ID_FIELDS` (`commentThread.comments[].authorId`, `action.assignerId`,
+person id, listed in `PERSON_ID_FIELDS` (`commentThread.comments[].authorId`, the mentions' `userId` and
+`memberId` on `commentThread.comments[].mentions[]`, `action.assignerId`,
 `action.assignee.userId`, `action.assignee.memberId`, `action.teamId`, the same on `actions[]`,
 `responses[].participantId`, `qaNotes[].voters`). A test walks every element type's fields so a new person-id
-field fails until it is listed. The edges list both directions with arrow refs, in array order. `code` prints as a
+field fails until it is listed; `omitted:` names only the ones the element holds. The edges list both directions with arrow refs, in array order. `code` prints as a
 JSON string.
 
 **`find`** (`VW35`): `q` is NFKC-normalised and lower-cased; it matches a printed element's label, note, table
@@ -453,6 +470,8 @@ tab <ref> <name> · since rev <a> · rev <b> · <n> changes
 `<change>` is one of `kind <a> → <b>`, `label <a> → <b>`, `note added|removed|changed`, `in <a> → <b>` (`canvas` for
 the root), a summary `<a> → <b>`, an attribute `<key> <a> → <b>`, `comments <a> → <b>`, `from <a> → <b>`,
 `to <a> → <b>`, `moved +dx,+dy`, `resized +dw,+dh`, `rotated`, `restyled` (any style attribute), `+<n> other fields`.
+A missing label, summary or attribute prints `none` and a flag attribute `on` (`VW63`); a summary change prints the
+two summaries alone. Each change speaks for the stored fields behind it; the others that differ are the other fields.
 Removed lines come first in the before tab's order; added and changed follow in the after tab's order.
 
 **`overview`** (`VW37`):
@@ -476,7 +495,9 @@ the document's `savedAt` and `now`: `just now` under a minute, `<n>m ago`, `<n>h
 part    := "notes hidden" | "attributes hidden" | count " elements in " kindWord " " ref " hidden" | count " " noun " hidden"
 ```
 
-The command names only what differs from the current request: `only` the largest collapsed container, else
+The three largest collapsed containers are named, in reading order; the rest print as one part,
+`<n> elements in <m> other containers hidden` (`ELISION_CONTAINERS_NAMED`, `VW60`); the JSON lists every one. The
+command names only what differs from the current request: `only` the largest collapsed container, else
 `budget` the estimate of the full view, `all` for resolved threads, `view outline` for unconnected graph nodes. It is
 written in the reading door's syntax (`VW54`):
 
@@ -487,7 +508,7 @@ written in the reading door's syntax (`VW54`):
 
 ### JSON forms
 
-The `json` option returns the same model as the text, as the wire types in `packages/api-schema/src/document-views.ts` (planned)
+The `json` option returns the same model as the text, as the wire types in `packages/api-schema/src/document-views.ts`
 (`VW49`). Strings are uncut (`VW46`); the budget applies, and `elision` says what was dropped.
 
 ```ts
@@ -600,7 +621,7 @@ type OverviewView = {
 
 ### Refs on the wire
 
-`packages/api-schema/src/ref-errors.ts` (planned): `TARGET_NOT_FOUND_ERROR = 'target_not_found'`,
+`packages/api-schema/src/ref-errors.ts`: `TARGET_NOT_FOUND_ERROR = 'target_not_found'`,
 `TARGET_AMBIGUOUS_ERROR = 'target_ambiguous'` (the codes [Edit operations](../edit-operations.md#rejections) names),
 `RefCandidate = { ref, kind, label }`, `RefErrorBody = { error, message, input, candidates: RefCandidate[],
 stale: boolean }`.
@@ -621,7 +642,8 @@ through `textPlain`, with `Cache-Control: no-cache`, the CORS set and the `ETag`
 allowed values:
 
 - `view` in the door's names: `overview` on the document; `outline`, `graph`, `layout`, `comments`, `show`, `find`,
-  `lint` on the tab. `diff` is `unknown_view` with the message "diff is computed by the CLI: livediagram tab diff".
+  `lint` on the tab once the lint is built. `diff` is `unknown_view` with the message "diff is computed by the CLI:
+  livediagram tab diff"; until then `lint` is `unknown_view` with "the lint view arrives with the diagram lint".
 - `budget`: an integer in `[1, VIEW_BUDGET_MAX]`.
 - `only`, `ref`: resolved by `resolveRef`; `only` (outline and layout only) naming an arrow is `invalid_value`
   (`VW41`). The header still counts the whole tab.
@@ -629,11 +651,13 @@ allowed values:
 - `door`: `cli` (default) or `mcp`; the MCP always sends `mcp` (`VW57`).
 - A parameter its view does not take is `invalid_value`.
 - `ref` on `show` and `q` on `find` are required.
+- Flags (`json`, `coarse`, `style`, `all`) take `1`; `only` and `ref` take 1 to `REF_INPUT_MAX_LENGTH` characters.
 
 The tab door renders after `gateRead`, `getTab` and `redactCommentAuthorIds`, with `context.tabIds` from
 `getDocument`'s tab summaries and `context.rev` from the tab row. The document door renders after `gateGrant` and
 `redactDocumentForScope`, reading in-scope tab bodies through `tabBodiesInOrder` in batches of `OVERVIEW_TAB_BATCH`,
-summarising each batch and dropping it before the next (`VW47`).
+summarising each batch (`headerFactsOf`) and dropping it before the next (`VW47`); a tab-scoped visitor's one tab is
+read alone. A view read records no visitor open and no Home open: those signal a person at the canvas.
 
 Every answered view sends one anonymous event, `reportServerEvent(env, 'Agent', 'Viewed', <type>)`, off the
 response path through `ctx.waitUntil`, with the type the view in title case (`Overview`, `Outline`, `Graph`,
@@ -661,9 +685,10 @@ types join `ROOT_TYPES`.
 - The description: "Read one tab as text: by default its outline, one line per element with its ref, label and
   arrows, about a tenth of the element JSON. view picks another (graph, layout, comments, show, find, lint), budget
   fits it to a token count, format "json" returns the elements, image adds a PNG preview."
-- `apiText(env, token, path) → Promise<string>` mirrors `apiJson`: Bearer token, `ApiError` on non-2xx, a 5xx
-  reported to `Error` telemetry. An `ApiError` carrying `target_not_found` or `target_ambiguous` becomes an
-  `isError` result naming the candidates.
+- `apiText(env, token, path) → Promise<{ text, etag }>` shares `apiJson`'s path (`apiOk`): Bearer token, `ApiError` on
+  non-2xx, a 5xx reported to `Error` telemetry. The revision in the result is the view's `ETag`; a view without one
+  is an error, never a revision of 0. An `ApiError` carrying `target_not_found` or `target_ambiguous` becomes an
+  `isError` result naming the candidates; any other 400 or 404 with a `message` becomes an `isError` result with it.
 
 ### The CLI
 
@@ -769,31 +794,31 @@ Every rule maps to a deterministic test; the spec's rules are numbered here.
 
 | Rule                                                                 | Test                                                                                                                            |
 | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| R1 A slug id is its own ref                                          | `packages/document/src/element-refs.test.ts` (planned)                                                                          |
+| R1 A slug id is its own ref                                          | `packages/document/src/element-refs.test.ts`                                                                                    |
 | R2 Otherwise the shortest unique prefix, at least 4; `id:"…"` unsafe | `element-refs.test.ts` (collisions at 4, 5, an id that prefixes another, short ids, unsafe ids)                                 |
 | R3 A ref, any unique prefix or a full id resolves                    | `element-refs.test.ts`                                                                                                          |
-| R4 An ambiguous prefix is refused with candidates, never guessed     | `element-refs.test.ts`, `apps/api/src/routes/document-views-route.test.ts` (planned)                                            |
+| R4 An ambiguous prefix is refused with candidates, never guessed     | `element-refs.test.ts`, `apps/api/src/routes/document-views-route.test.ts`                                                      |
 | R5 A prefix made ambiguous by an add says so                         | `element-refs.test.ts` (`stale`), `document-views-route.test.ts`                                                                |
 | R6 A label is never a ref                                            | `element-refs.test.ts` (an element labelled like another's id)                                                                  |
 | R7 Agent-added elements take label slugs, `-2` on a clash            | `element-refs.test.ts`; `slug-id-roundtrip.test.ts` (isValidTab, `applyElementDelta`); `apps/api/src/collab-index/rows.test.ts` |
-| R8 One line per element, indentation is containment                  | `packages/document-views/src/outline.test.ts` (planned), golden `checkout.outline.txt`                                          |
+| R8 One line per element, indentation is containment                  | `packages/document-views/src/outline.test.ts`, golden `checkout.outline.txt`                                                    |
 | R9 Kind words, notations, `es:actor`                                 | `element-refs.test.ts` (kind words)                                                                                             |
 | R10 JSON strings, cut 60 / 48 on a word boundary                     | `text.test.ts`                                                                                                                  |
-| R11 Smallest frame or lane holding the centre; mind parent wins      | `packages/document/src/containment.test.ts` (planned); `mermaid.test.ts` unchanged; `tree.test.ts`                              |
+| R11 Smallest frame or lane holding the centre; mind parent wins      | `packages/document/src/containment.test.ts`; `mermaid.test.ts` unchanged; `tree.test.ts`                                        |
 | R12 Arrows on the source line; free ends on their own                | `edges.test.ts`                                                                                                                 |
 | R13 Reading order                                                    | `reading-order.test.ts`                                                                                                         |
 | R14 Content summaries and state attributes                           | `content-summary.test.ts`, `state-attribute.test.ts` (every kind in the table)                                                  |
 | R15 Bare strokes fold into one counted line                          | `freehand-runs.test.ts`, golden `edge-cases.outline.txt`                                                                        |
 | R16 What the outline leaves out; hidden counted                      | `outline.test.ts`, `header.test.ts`                                                                                             |
 | R17 Each view holds what the table says                              | `{graph,layout,comments,show,find,diff,overview}.test.ts` and their goldens                                                     |
-| R18 Every view opens with the header and its `rev`                   | `render-view.test.ts` (every view, `lint` through a stub renderer)                                                              |
+| R18 Every view opens with the header and its `rev`                   | `render-view.test.ts` (every served view; `lint` with the lint)                                                                 |
 | R19 `json` carries the same data; the plain GET is the raw tab       | `render-view.test.ts` (text and JSON agree on refs and counts)                                                                  |
-| R20 Budget ladder, chars ÷ 3; no default budget but the MCP's        | `budget.test.ts` (300-element fixture, each state); `apps/mcp/src/tools.test.ts` (8,000 sent by default)                        |
-| R21 Never silent: one elision line, in the door's syntax             | `budget.test.ts`, `elision.test.ts` (both doors), `comments.test.ts`, `graph.test.ts`                                           |
+| R20 Budget ladder, chars ÷ 3; no default budget but the MCP's        | `outline.test.ts` (each ladder state), `fixtures-goldens.test.ts` (300 elements); `apps/mcp/src/read-document.test.ts` (8,000)  |
+| R21 Never silent: one elision line, in the door's syntax             | `outline.test.ts`, `graph.test.ts`, `comments.test.ts`, `overview.test.ts`, `diff.test.ts` (both doors)                         |
 | R22 One pure package                                                 | `render-view.test.ts` (twice, byte-equal; no clock)                                                                             |
 | R23 `?view=` answers `text/plain`; overview on the document; no diff | `document-views-route.test.ts` (real SQLite: gates, scope, 400s, `diff` refused, headers)                                       |
-| R24 `read_document` reads a view; JSON and the PNG only on request   | `apps/mcp/src/tools.test.ts`, `output-schema.test.ts` (text block layout, no image by default)                                  |
-| R25 Unknown kinds print `?`, counted, never dropped                  | `unknown-kinds.test.ts`                                                                                                         |
+| R24 `read_document` reads a view; JSON and the PNG only on request   | `apps/mcp/src/read-document.test.ts`, `output-schema.test.ts` (text block layout, no image by default)                          |
+| R25 Unknown kinds print `?`, counted, never dropped                  | `outline.test.ts`, `fixtures-goldens.test.ts` (the edge-case tab)                                                               |
 | R26 One `Agent·Viewed` event per answered view                       | `document-views-route.test.ts`; `packages/api-schema/src/telemetry-schema.test.ts`; `apps/telemetry` catalogue suite            |
 | OpenAPI parity                                                       | `apps/api/src/openapi/*.test.ts`                                                                                                |
 
@@ -816,33 +841,39 @@ The checkout tab uses the factories (`createText`, `createShape`, `createTable`,
 `1434`, `0cee`, `1fc0`), the tab id `0b3481f3-59fb-4bd0-a21a-152f1ba9bba5`, every `createdAt` to a fixed epoch and
 the geometry of the research's appendix (title 40,20 520x48; Edge 40,100 300x440; Services 400,100 580x440; Data
 1040,100 280x440; Customer 150,140 80x110; Auth 440,150 200x72; Orders 720,150 200x72; the rest placed so the
-research's coarse rows hold). `isValidTab` accepts it. Its outline golden is the full rule output: the research's
-§4.1 render with `· rev 41` on the header, which the spec's shorter example abbreviates. `token-cost.test.ts` holds
-the outline at or under 400 estimated tokens (chars ÷ 3) and at most a tenth of the pretty JSON's estimate.
+research's coarse rows hold). `isValidTab` accepts it. Its outline golden is the full rule output: `outline.test.ts`
+reads the research's §4.1 render and compares it with `· rev 41` on the header, which the spec's shorter example
+abbreviates, and holds the outline at or under 400 estimated tokens (chars ÷ 3) and at most a tenth of the pretty
+JSON's estimate.
 
-A vitest bench (`tree.bench.ts`, not part of the test run) renders a 10,000-element tab with 100 containers.
+`performance.test.ts` times growth, not a ceiling: four times the elements in the same ten frames must cost under
+eight times as much (measured 3 to 5, under coverage too; a quadratic step costs 16), the fastest of three renders
+each, within an explicit 30 s timeout (coverage on a CI runner makes tens of milliseconds seconds). An absolute time depends on the machine and on coverage instrumentation, and flaked in CI. Goldens are kept
+out of Prettier (`.prettierignore`).
 
 ## Constants and configuration
 
-| Constant                       | Value                         | Provenance                                    | Safe range      |
-| ------------------------------ | ----------------------------- | --------------------------------------------- | --------------- |
-| `SLUG_ID_PATTERN`              | `^[a-z][a-z0-9_-]{0,23}$`     | Spec, "Refs" (in `@livediagram/document`)     | fixed           |
-| `SLUG_ID_MAX_LENGTH`           | 24                            | Spec (the pattern's bound)                    | fixed           |
-| `REF_MIN_LENGTH`               | 4                             | Spec                                          | fixed           |
-| `LABEL_CUT_CHARS`              | 60                            | Spec                                          | fixed           |
-| `NOTE_CUT_CHARS`               | 48                            | Spec                                          | fixed           |
-| `ENTITY_FIELDS_SHOWN`          | 8                             | Spec                                          | fixed           |
-| `CHARS_PER_TOKEN`              | 3                             | Spec (measured 3.07 for the outline)          | fixed           |
-| `READ_DOCUMENT_DEFAULT_BUDGET` | 8,000                         | Spec, "Budgets" (in `apps/mcp/src/schema.ts`) | 2,000 to 32,000 |
-| `ALT_CUT_CHARS`                | 48                            | As notes (`VW53`)                             | 24 to 120       |
-| `ACTION_CUT_CHARS`             | 48                            | As notes (`VW53`)                             | 24 to 120       |
-| `ATTR_BARE_PATTERN`            | `^[A-Za-z0-9._:/#?&=%+@~-]+$` | URL-safe without quotes or spaces (`VW15`)    | narrower only   |
-| `REF_NEAREST_MAX`              | 5                             | Enough to choose from (`VW53`)                | 1 to 20         |
-| `REF_INPUT_MAX_LENGTH`         | 256                           | Above any stored id in practice (`VW53`)      | 64 to 1,024     |
-| `FIND_QUERY_MAX_LENGTH`        | 200                           | A phrase, not a document (`VW53`)             | 50 to 1,000     |
-| `VIEW_BUDGET_MAX`              | 1,000,000                     | Above a full 10,000-element outline (`VW53`)  | 200,000 and up  |
-| `OVERVIEW_TAB_BATCH`           | 8                             | About 15 MB of bodies at the tab cap (`VW47`) | 1 to 16         |
-| `VIEW_SLOW_MS`                 | 100                           | Well above a 1,000-element render (`VW53`)    | 50 to 1,000     |
+| Constant                       | Value                         | Provenance                                                                 | Safe range      |
+| ------------------------------ | ----------------------------- | -------------------------------------------------------------------------- | --------------- |
+| `SLUG_ID_PATTERN`              | `^[a-z][a-z0-9_-]{0,23}$`     | Spec, "Refs" (in `@livediagram/document`)                                  | fixed           |
+| `SLUG_ID_MAX_LENGTH`           | 24                            | Spec (the pattern's bound)                                                 | fixed           |
+| `REF_MIN_LENGTH`               | 4                             | Spec                                                                       | fixed           |
+| `LABEL_CUT_CHARS`              | 60                            | Spec                                                                       | fixed           |
+| `NOTE_CUT_CHARS`               | 48                            | Spec                                                                       | fixed           |
+| `ENTITY_FIELDS_SHOWN`          | 8                             | Spec                                                                       | fixed           |
+| `CHARS_PER_TOKEN`              | 3                             | Spec (measured 3.07 for the outline)                                       | fixed           |
+| `READ_DOCUMENT_DEFAULT_BUDGET` | 8,000                         | Spec, "Budgets" (in `apps/mcp/src/schema.ts`)                              | 2,000 to 32,000 |
+| `ALT_CUT_CHARS`                | 48                            | As notes (`VW53`)                                                          | 24 to 120       |
+| `ACTION_CUT_CHARS`             | 48                            | As notes (`VW53`)                                                          | 24 to 120       |
+| `ATTR_BARE_PATTERN`            | `^[A-Za-z0-9._:/#?&=%+@~-]+$` | URL-safe without quotes or spaces (`VW15`)                                 | narrower only   |
+| `REF_NEAREST_MAX`              | 5                             | Enough to choose from (`VW53`)                                             | 1 to 20         |
+| `REF_INPUT_MAX_LENGTH`         | 256                           | Above any stored id in practice (`VW53`); in `@livediagram/api-schema`     | 64 to 1,024     |
+| `FIND_QUERY_MAX_LENGTH`        | 200                           | A phrase, not a document (`VW53`); in `@livediagram/api-schema`            | 50 to 1,000     |
+| `VIEW_BUDGET_MAX`              | 1,000,000                     | Above a full 10,000-element outline (`VW53`); in `@livediagram/api-schema` | 200,000 and up  |
+| `OVERVIEW_TAB_BATCH`           | 8                             | About 15 MB of bodies at the tab cap (`VW47`)                              | 1 to 16         |
+| `VIEW_SLOW_MS`                 | 100                           | Well above a 1,000-element render (`VW53`)                                 | 50 to 1,000     |
+| `ELISION_CONTAINERS_NAMED`     | 3                             | A line that stays short (`VW60`)                                           | 1 to 10         |
+| `PROGRESS_DEFAULT`             | 50                            | Where the editor draws an unset progress                                   | fixed           |
 
 No environment variable or binding; self-hosting needs nothing new.
 
@@ -855,4 +886,4 @@ or external resource.
 
 ## Defaults ledger
 
-VW1 to VW59 in [DEFAULTS.md](DEFAULTS.md).
+VW1 to VW64 in [DEFAULTS.md](DEFAULTS.md).

@@ -32,9 +32,14 @@ const LIVE_DOC = { id: 'd1', name: 'Roadmap', tabs: [{ id: 't1', name: 'Tab 1' }
 
 // A plausible api with non-empty lists, so the array item schemas are exercised.
 async function api(request: Request): Promise<Response> {
-  const path = new URL(request.url).pathname.replace(/^\/api/, '');
+  const url = new URL(request.url);
+  const path = url.pathname.replace(/^\/api/, '');
   if (request.method === 'DELETE') return new Response(null, { status: 204 });
   const json = (body: unknown) => Response.json(body);
+  // A document view: text with the tab revision as its ETag, as the api answers it.
+  if (url.searchParams.has('view')) {
+    return new Response('tab t1 "Tab 1" · 0 elements · rev 3', { headers: { ETag: 'W/"3"' } });
+  }
   if (path === '/documents' && request.method === 'GET') {
     return json({ documents: [{ id: 'd1', name: 'Roadmap', savedAt: 1_700_000_000_000 }] });
   }
@@ -57,6 +62,11 @@ async function api(request: Request): Promise<Response> {
 const CALLS: { tool: string; output: keyof typeof outputs; args: Record<string, unknown> }[] = [
   { tool: 'find_documents', output: 'findDocumentsOutput', args: {} },
   { tool: 'read_document', output: 'readDocumentOutput', args: { documentId: 'd1' } },
+  {
+    tool: 'read_document',
+    output: 'readDocumentOutput',
+    args: { documentId: 'd1', format: 'json' },
+  },
   { tool: 'list_templates', output: 'listTemplatesOutput', args: {} },
   {
     tool: 'create_document',
@@ -120,9 +130,19 @@ describe('tool output schemas', () => {
       expect(result.isError, JSON.stringify(result.content)).toBeFalsy();
       const structured = result.structuredContent;
       z.object(outputs[output]).strict().parse(structured);
-      // The text block carries the same object for clients that ignore structuredContent.
+      // The text block carries the same object for clients that ignore structuredContent; a view
+      // carries its text, then one line naming the document, the tab and its revision (VW55).
       const [first] = result.content as { type: string; text: string }[];
-      expect(JSON.parse(first!.text)).toEqual(structured);
+      const view = z.object({ tab: z.object({ text: z.string() }) }).safeParse(structured);
+      if (view.success) {
+        const { tab, ...rest } = structured as { tab: { text: string; view: string } };
+        const { text, view: _view, ...tabMeta } = tab;
+        const [viewText, line, ...extra] = first!.text.split('\n');
+        expect([viewText, extra]).toEqual([text, []]);
+        expect(JSON.parse(line!)).toEqual({ ...rest, tab: tabMeta });
+      } else {
+        expect(JSON.parse(first!.text)).toEqual(structured);
+      }
     });
   }
 

@@ -30,12 +30,12 @@ Scope, by file:
 | `packages/diagram-lint/src/log.ts` (planned)                          | `LintLogger`, `consoleLintLogger`, the `[lint]` fingerprints                                              |
 | `packages/diagram-lint/src/fixtures/*.ts`                             | One fixture tab per code (finding and clean twin), the 15-node architecture graph                         |
 | `packages/api-schema/src/lint.ts` (planned), `index.ts`               | Wire types: `LINT_CODES`, `LINT_SEVERITY`, `LintFinding`, `LintReport`, `LintMeasures`                    |
-| `packages/api-schema/src/document-views.ts` (planned)                 | `VIEW_NAMES` gains `lint`                                                                                 |
+| `packages/api-schema/src/document-views.ts`                           | `VIEW_NAMES` gains `lint`                                                                                 |
 | `packages/document/src/svg-render-primitives.ts`                      | `LABEL_ESTIMATE_CHAR_EM`, `estimatedLabelMeasure`; `labelMeasure`'s fallback calls it                     |
 | `packages/document/src/svg-render-describe.ts`, `svg-render.ts`       | `drawsStandardLabel` (lifted from `svgBoxed`'s label condition) and `labelRoom`                           |
 | `packages/document/src/graph-input.ts`                                | The moved MCP graph input: `layoutGraph(input, { makeEdgeId })` passes the id option through              |
 | `packages/document/src/{element-refs,containment}.ts`                 | Shared homes, consumed here: `elementRefs`, `isContainer`, `containerMap`                                 |
-| `apps/api/src/routes/document-views-route.ts` (planned)               | `answerTabView` answers `view=lint` with `lintTab`                                                        |
+| `apps/api/src/routes/document-views-route.ts`                         | `answerTabView` answers `view=lint` with `lintTab`                                                        |
 | `apps/api/src` changeset route (agent-changesets blueprint)           | Lints the result tab; `lintFooterPart` fills the footer's lint slot; `lint` on the response               |
 | `apps/mcp/src/tools.ts`, `output-schema.ts`, `package.json`           | `create_document`, `add_tab`, `update_document` append the summary line                                   |
 | `apps/cli/src/commands/{tab,graph}.ts` (CLI blueprint)                | `tab lint` reads the view; `graph lint` lints locally; `--json`, `--compare`, exit codes                  |
@@ -471,7 +471,7 @@ added: the front doors already count the verbs (`Cli·Used·TabLint`, `Cli·Used
 | Templates draw without errors                                          | `templates.test.ts`: every `@livediagram/templates` kind lints with 0 errors                               |
 | Headless renders and the lint measure alike                            | `packages/document/src/svg-render-primitives.test.ts` (planned): fallback is `estimatedLabelMeasure`       |
 | `drawsStandardLabel`, `labelRoom`, `makeEdgeId`                        | Their `packages/document` tests; the `svg-render` suites unchanged                                         |
-| The api serves the lint as a view, text and `json=1`, read gate        | `apps/api/src/routes/document-views-route.test.ts` (planned) (real SQLite)                                 |
+| The api serves the lint as a view, text and `json=1`, read gate        | `apps/api/src/routes/document-views-route.test.ts` (real SQLite)                                           |
 | A changeset's footer carries the verdict; whole tab; dry run; failure  | The changeset route tests (agent-changesets blueprint)                                                     |
 | MCP write results carry the summary line; other writes do not          | `apps/mcp/src/tools.test.ts`; `output-schema.test.ts`                                                      |
 | `tab lint`, `graph lint`, `--json`, `--compare`, exit 1 on errors      | `apps/cli/src/commands/{tab,graph}.test.ts` (CLI blueprint)                                                |

@@ -487,3 +487,112 @@ describe('mermaidFromTab', () => {
     expect(r.graph.edges[1]).toMatchObject({ label: 'next' });
   });
 });
+
+describe('mermaidFromTab frame membership', () => {
+  const shape = (
+    id: string,
+    kind: string,
+    x: number,
+    y: number,
+    w: number,
+    h: number,
+    label: string,
+  ) => ({ id, type: 'shape', shape: kind, x, y, width: w, height: h, label }) as Element;
+
+  it('puts a node in the smallest frame holding its centre, the earlier on a tie, edges inclusive', () => {
+    const text = mermaidFromTab({
+      elements: [
+        shape('outer', 'frame', 0, 0, 1000, 1000, 'Outer'),
+        shape('inner', 'frame', 0, 0, 200, 200, 'Inner'),
+        shape('twin', 'frame', 0, 0, 200, 200, 'Twin'),
+        shape('a', 'square', 50, 50, 20, 20, 'A'),
+        shape('edge', 'square', 190, 190, 20, 20, 'On the edge'),
+        shape('big', 'square', -400, -400, 1200, 1200, 'Bigger than its frame'),
+        shape('out', 'square', 2000, 0, 20, 20, 'Outside'),
+      ],
+    });
+    expect(text).toBe(
+      [
+        'flowchart TD',
+        '  subgraph s1["Outer"]',
+        '  end',
+        '  subgraph s2["Inner"]',
+        '    n1["A"]',
+        '    n2["On the edge"]',
+        '    n3["Bigger than its frame"]',
+        '  end',
+        '  subgraph s3["Twin"]',
+        '  end',
+        '  n4["Outside"]',
+        '',
+      ].join('\n'),
+    );
+  });
+});
+
+describe('mermaidFromTab fallbacks and line forms', () => {
+  const node = (id: string, extra: Record<string, unknown> = {}) =>
+    ({
+      id,
+      type: 'shape',
+      shape: 'square',
+      x: 0,
+      y: 0,
+      width: 10,
+      height: 10,
+      ...extra,
+    }) as Element;
+  const arrow = (id: string, from: string, to: string, extra: Record<string, unknown> = {}) =>
+    ({
+      id,
+      type: 'arrow',
+      from: { kind: 'pinned', elementId: from, anchor: 'e' },
+      to: { kind: 'pinned', elementId: to, anchor: 'w' },
+      ...extra,
+    }) as Element;
+
+  it('names unlabelled nodes and frames by their ids and boxes an unknown shape', () => {
+    const text = mermaidFromTab({
+      elements: [
+        node('a', { label: '  ' }),
+        node('b', { shape: 'blob', label: 'Blob' }),
+        node('c', { shape: undefined, label: 'No kind' }),
+        node('d'),
+        node('f', { shape: 'frame', x: 500, width: 100, height: 100 }),
+      ],
+    });
+    expect(text).toBe(
+      [
+        'flowchart TD',
+        '  subgraph s1["s1"]',
+        '  end',
+        '  n1["n1"]',
+        '  n2["Blob"]',
+        '  n3["No kind"]',
+        '  n4["n4"]',
+        '',
+      ].join('\n'),
+    );
+  });
+
+  it('spells undirected dashed and thick lines, circle heads, and skips free ends', () => {
+    const text = mermaidFromTab({
+      elements: [
+        node('a', { label: 'A' }),
+        node('b', { label: 'B' }),
+        arrow('dashed', 'a', 'b', { arrowEnds: 'none', strokeStyle: 'dashed' }),
+        arrow('thick', 'a', 'b', { arrowEnds: 'none', strokeWidth: 99 }),
+        arrow('circles', 'a', 'b', { arrowEnds: 'both', arrowheadShape: 'circle' }),
+        {
+          id: 'free',
+          type: 'arrow',
+          from: { kind: 'free', x: 0, y: 0 },
+          to: { kind: 'pinned', elementId: 'b', anchor: 'w' },
+        } as Element,
+        arrow('to-nowhere', 'a', 'gone'),
+        arrow('free-head', 'a', 'b', { to: { kind: 'free', x: 9, y: 9 } }),
+      ],
+    });
+    expect(text.split('\n').slice(3, -1)).toEqual(['  n1 -.- n2', '  n1 === n2', '  n1 o--o n2']);
+  });
+});
