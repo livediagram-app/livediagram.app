@@ -60,7 +60,7 @@ jobs:
       - name: Build live app
         env:
           NEXT_PUBLIC_BUILD_ID: e2e-build
-        run: pnpm --filter @livediagram/live build
+        run: bash scripts/next-build-cold-retry.sh pnpm --filter @livediagram/live build
 
       # Playwright's webServer boots scripts/e2e-stack.mjs (api worker on local D1 + the static
       # serve). CI=1 makes it always start fresh.
@@ -71,9 +71,6 @@ jobs:
       - name: Save build cache
         if: matrix.shard == 1
         uses: ./.github/actions/next-cache-save
-        with:
-          name: live
-          paths: apps/live/.next/cache
 
       # A failure, a flaky test that passed on retry, or a run cut off by the job timeout: each
       # leaves the trace of its failing attempt (retain-on-first-failure) in test-results, and a
@@ -113,26 +110,24 @@ jobs:
             apps/marketing/.next/cache
 
       # The optical audit of the other sites needs their exports, and the stack serves help and
-      # telemetry on the live origin, so live is built beside them, all four at once.
-      - name: Build live, help, telemetry and marketing
+      # telemetry on the live origin, so live is built beside them. Marketing comes last, as turbo.json
+      # orders it: its licences page runs Next's analyzer in every other app, on that app's Turbopack
+      # cache, and beside the app's own build the two corrupt it (a SIGBUS mid-build).
+      - name: Build live, help and telemetry
         env:
           NEXT_PUBLIC_BUILD_ID: e2e-build
         run: >-
-          pnpm --filter @livediagram/live --filter @livediagram/help
-          --filter @livediagram/telemetry --filter @livediagram/marketing build
+          bash scripts/next-build-cold-retry.sh pnpm --filter @livediagram/live --filter @livediagram/help
+          --filter @livediagram/telemetry build
+
+      - name: Build marketing
+        run: bash scripts/next-build-cold-retry.sh pnpm --filter @livediagram/marketing build
 
       - name: Run sites audit
         run: pnpm --filter @livediagram/live test:e2e:sites
 
       - name: Save build cache
         uses: ./.github/actions/next-cache-save
-        with:
-          name: sites
-          paths: |
-            apps/live/.next/cache
-            apps/help/.next/cache
-            apps/telemetry/.next/cache
-            apps/marketing/.next/cache
 
       - name: Upload report with traces
         if: always() && hashFiles('apps/live/test-results/**/trace.zip', 'apps/live/playwright-report/data/*.zip') != ''
@@ -170,16 +165,13 @@ jobs:
       # build-time switch, so they run against their own export with a stub key and a fake
       # window.Clerk; no Clerk account or secret is involved.
       - name: Build live app with Clerk stubbed
-        run: pnpm --filter @livediagram/live build:clerk-stub
+        run: bash scripts/next-build-cold-retry.sh pnpm --filter @livediagram/live build:clerk-stub
 
       - name: Run signed-in specs
         run: pnpm --filter @livediagram/live test:e2e:clerk-stub
 
       - name: Save build cache
         uses: ./.github/actions/next-cache-save
-        with:
-          name: live-clerk-stub
-          paths: apps/live/.next/cache
 
       - name: Upload report with traces
         if: always() && hashFiles('apps/live/test-results-clerk-stub/**/trace.zip', 'apps/live/playwright-report-clerk-stub/data/*.zip') != ''

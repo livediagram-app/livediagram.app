@@ -45,7 +45,7 @@ export function HeroOverview({
       <div
         className={`relative h-full overflow-hidden rounded-lg border border-slate-100 dark:border-slate-800 ${CANVAS}`}
       >
-        <div className="absolute inset-0 flex flex-wrap content-center justify-center gap-x-3 gap-y-6 px-3 py-4 sm:gap-x-8 sm:gap-y-5 sm:px-6 sm:py-5">
+        <div className="hero-overview-frames absolute inset-0 flex flex-wrap content-center justify-center gap-x-3 gap-y-6 px-3 py-4 sm:gap-x-8 sm:gap-y-5 sm:px-6 sm:py-5">
           {scenes.map((scene) => (
             <OverviewFrame key={scene.key} scene={scene} onOpen={onOpen} />
           ))}

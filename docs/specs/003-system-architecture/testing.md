@@ -173,17 +173,30 @@ setup. The E2E suite sizes its shards the same way ([End-to-end tests](e2e-smoke
 
 Tests and each Editor unit tests job upload their `lcov` reports to
 [Codecov](https://app.codecov.io/gh/livediagram-app/livediagram.app), which merges the four uploads
-of a commit into one report and comments it on the pull request (`codecov.yml`): a summary, the
-coverage diff and one row per area (Editor, API, MCP, Help and marketing, Packages), never a list of
-files, which an editor change would fill with hundreds. It informs; it never
-gates: its statuses are informational, and the enforced bar stays the thresholds above. The upload
-authenticates with GitHub's OIDC token (`id-token: write`), so no Codecov secret exists; a pull
-request from a fork uploads tokenless. A failed upload logs its error and leaves the job green, so a
-Codecov outage never holds back a merge.
+of a commit into one report (`codecov.yml`). It informs; it never gates: its statuses are
+informational, and the enforced bar stays the thresholds above. The upload authenticates with
+GitHub's OIDC token (`id-token: write`), so no Codecov secret exists; a pull request from a fork
+uploads tokenless. A failed upload logs its error and leaves the job green, so a Codecov outage never
+holds back a merge.
 
-The comment's layout and the project status come from `codecov.yml` only on a Codecov plan that
-reads it: on the Team plan Codecov writes a fixed, patch-only comment whatever the file says, so the
-`livediagram-app` organisation stays on a plan other than Team.
+The pull request's coverage comment is ours, not Codecov's (`comment: false`): the organisation's
+free Developer plan is Codecov's team tier, which writes a fixed, patch-only comment whatever
+`codecov.yml` asks for. After CI succeeds, `coverage-comment.yml` runs
+`scripts/coverage-comment.mjs`, which waits until Codecov has processed all four uploads of the
+head commit, reads its numbers from Codecov's public API and writes one comment, edited in place on
+each later run:
+
+- the patch coverage (the changed lines), and the project coverage with its change;
+- Codecov's impacted file tree graph, linked to the pull request's file tree on Codecov (its
+  public graph token, read from Codecov's API, embeds the image);
+- one row per area (Editor, API, MCP, Help and marketing, Packages), `main` against the pull
+  request, never a list of files, which an editor change would fill with hundreds;
+- Codecov's coverage diff: coverage, files, lines, hits, misses and partials, `+` marking what got
+  better and `-` what got worse.
+
+It runs from `main`'s copy of the workflow and script and never checks out the pull request's code,
+so it comments on a pull request from a fork too. `workflow_dispatch` with a pull request number runs
+it by hand; `COVERAGE_COMMENT_DRY_RUN=1` prints the comment instead of posting it.
 
 ## Before a push
 

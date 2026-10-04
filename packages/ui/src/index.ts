@@ -27,6 +27,7 @@ export { PageViewTracker } from './PageViewTracker';
 export { PageViewBoot } from './PageViewBoot';
 export { POPOVER_VIEWPORT_MARGIN, clampIntoRange } from './popover';
 export { useMediaQuery, PREFERS_REDUCED_MOTION } from './useMediaQuery';
+export { formatRelativeTime, formatRelativeTimeShort, relativeSince } from './relative-time';
 export { useCopiedFlash } from './useCopiedFlash';
 export { useClickOutside } from './useClickOutside';
 export { useEscape } from './useEscape';
