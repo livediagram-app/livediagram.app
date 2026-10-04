@@ -42,7 +42,8 @@ infographic page takes the last infographic page's size and orientation (else A4
 article is as [Article pages](article-pages.md) "An article" says. The popover is the same on
 a phone (a bottom sheet). The **+** is named **Add page** and shows the popover open as pressed. In the
 Toolbar layout the strip ends, after a divider, with the same **+** (Add page), opening the same
-popover, while in Illustrate mode.
+popover, while in Illustrate mode; not on a phone, where the strip has no room to spare and the
+row's own **+** adds a page.
 
 A tab entering Illustrate mode with no pages stored starts with one page, its kind unchosen.
 

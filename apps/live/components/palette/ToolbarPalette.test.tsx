@@ -52,6 +52,7 @@ function show({
   hidden?: boolean;
   esBoardControls?: EsBoardControls;
   mode?: EditorMode;
+  onAddPage?: () => void;
 } = {}) {
   const h = handlers();
   const onSetCanvasTool = vi.fn();
@@ -248,5 +249,14 @@ describe('ToolbarPalette', () => {
     expect(screen.getByRole('button', { name: 'Palette category' }).textContent).toContain(
       'Devices',
     );
+  });
+
+  it('ends with Add page in Illustrate mode, but not on a phone (docs/specs/007-editor/illustrate-pages.md)', () => {
+    show({ mode: 'illustrate', onAddPage: vi.fn() });
+    expect(screen.getByRole('button', { name: 'Add page' })).toBeTruthy();
+    cleanup();
+    mobile.value = true;
+    show({ mode: 'illustrate', onAddPage: vi.fn() });
+    expect(screen.queryByRole('button', { name: 'Add page' })).toBeNull();
   });
 });

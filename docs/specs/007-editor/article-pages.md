@@ -168,7 +168,9 @@ article's swatches), and a line break inside a block (Shift+Enter). Code blocks 
 - **Controls**, left to right, each with a tooltip naming it and its shortcut, pressed state shown
   (`aria-pressed`); the formats used all the time are buttons, the rest menus:
   - **Style** (a menu, each entry drawn in its own type: Text, Title, Subtitle, Heading 1, Heading
-    2, Heading 3, Quote, Code);
+    2, Heading 3, Quote, Code); on a phone its button names the style short (H1, H2, H3, and
+    Bullets, Numbers, To-do for a list) and is only as wide as the name shown, the menu keeping
+    the full names;
   - **Bold**, **Italic**, **Underline**;
   - **Colour** (a menu: **Text** then **Highlight**, each led by its clearing choice, **Default
     colour** / **No highlight**; text offers the article's **Accent** and nine fixed colours chosen
@@ -185,10 +187,21 @@ article's swatches), and a line break inside a block (Shift+Enter). Code blocks 
   - **Comment** (⌘⌥M) and **Assign Action**, with text selected (see "Comments and actions").
 - No undo or redo (the canvas controls have them) and no word count.
 - **Narrow**: when the toolbar is wider than the canvas, it scrolls sideways.
-- **On a phone** the toolbar is a bar along the bottom of the screen, across it (its controls
-  scroll sideways): above the keyboard while it is up, else above the canvas's bottom controls.
+- **On a phone** the toolbar is a bar fixed along the top of the canvas, across it (its controls
+  scroll sideways), in the Toolbar strip's place: the strip (its menu and palette) stands aside
+  while the bar shows, so the writing has the room, and comes back when the caret leaves the
+  article. The bar stays there whatever the page, the zoom or the keyboard does, and its menus
+  open down from it.
+- **A finger on a page** (a phone or any touch screen): a finger that travels more than a few px
+  (`TOUCH_PAN_SLOP`) on an article page's writing or paper pans the view, as a thumb scrolls a
+  document, whatever the tool; one that lifts where it landed is a tap, which puts the caret there;
+  one held still for a long press (`LONG_PRESS_MS`) is the browser's, selecting text, so a slide
+  after it stretches the selection rather than panning. Selected writing keeps the phone's Copy
+  and Paste callout.
+  A second finger hands the view to the pinch.
   The writing taking the caret frames its page for writing: its text column across the screen,
-  the margins off it, so the text reads at a usable size. The panel opens as a bottom sheet as on
+  the margins off it, so the text reads at a usable size; the view glides there as a page framed
+  from its label does (at once under reduced motion). The panel opens as a bottom sheet as on
   any page.
 - **Framing an article page** (a press on its label, the page navigator, a new article): the
   page seen whole, as an infographic page is.

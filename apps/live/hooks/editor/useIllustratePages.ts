@@ -48,6 +48,9 @@ export type IllustratePagesView = {
   focusPage: (pageId: string) => void;
   // An article page framed for writing on a phone: its text column across the screen.
   readPage: (pageId: string) => void;
+  // A finger's pan over an article page begun from the view now: moves it by a screen-px drag.
+  // Absent where nothing pans the view from a page (presenting).
+  panFrom?: () => (dx: number, dy: number) => void;
   // Backgrounds drawn from the tab's theme, offered first in the page panel.
   themeBackgrounds: ThemeBackgroundPreset[];
   // The tab theme's accent: a document's accent unless it picked one of its own.
@@ -70,7 +73,8 @@ const TOP_STRIP_SELECTOR = '[data-toolbar-palette]:not(.hidden)';
 /** How far a top strip laid over the canvas reaches down into it, in screen px. */
 function topStripInset(canvas: HTMLElement): number {
   const strip = document.querySelector<HTMLElement>(TOP_STRIP_SELECTOR);
-  if (!strip) return 0;
+  // Stood aside (a phone's page toolbar in its place): its room is the page's.
+  if (!strip || getComputedStyle(strip).visibility === 'hidden') return 0;
   const c = canvas.getBoundingClientRect();
   const s = strip.getBoundingClientRect();
   const overlaps = s.bottom > c.top && s.top < c.top + c.height / 2;
@@ -100,8 +104,9 @@ export function useIllustratePages(deps: {
   // Frames a page (the first by default) below a top strip, seen whole, whatever its kind. The fit
   // box holds either orientation, so turning a page needs no refit. `read` frames an article page
   // to be written on a phone instead: its text column across the screen.
-  // A page framed on request (its navigator, its label, a page just added) glides there; the frame
-  // on entering the mode lands at once. A glide under way gives way to the next.
+  // A page framed on request (its navigator, its label, a page just added, an article page taking
+  // the caret on a phone) glides there; the frame on entering the mode lands at once. A glide under
+  // way gives way to the next, or to a finger's pan.
   const glide = useRef<(() => void) | null>(null);
   useEffect(() => () => glide.current?.(), []);
   const frame = (page?: LaidOutPage, read = false, glides = false) => {
@@ -204,7 +209,18 @@ export function useIllustratePages(deps: {
     frame(
       pages.find((p) => p.id === pageId),
       true,
+      true,
     );
+  const panFrom = () => {
+    glide.current?.();
+    glide.current = null;
+    const from = deps.getViewport();
+    return (dx: number, dy: number) =>
+      deps.setViewportOffset({
+        x: from.offset.x + dx / from.zoom,
+        y: from.offset.y + dy / from.zoom,
+      });
+  };
   const theme = getTheme(activeTab.theme);
   const themeBackgrounds = themeBackgroundPresets(theme);
   const tabFont = activeTab.font;
@@ -212,6 +228,7 @@ export function useIllustratePages(deps: {
     pages,
     focusPage,
     readPage,
+    panFrom,
     themeBackgrounds,
     themeAccent: themeAccent(theme),
     tabFont,

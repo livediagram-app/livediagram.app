@@ -168,9 +168,10 @@ export function PageToolbar({
   // A menu goes with the article.
   if (!active && open) setOpen(null);
 
+  const phone = useIsMobileViewport();
   const bar = usePageToolbarPlacement({
     pageId: active?.pageId ?? null,
-    phone: useIsMobileViewport(),
+    phone,
     topRoomOf,
   });
 
@@ -189,10 +190,14 @@ export function PageToolbar({
     fn();
     setOpen(null);
   };
-  const styleLabel =
+  const styleOption =
     selection.style === 'list'
-      ? (LIST_OPTIONS.find((l) => l.id === selection.list)?.label ?? 'List')
-      : (STYLE_OPTIONS.find((s) => s.id === selection.style)?.label ?? 'Text');
+      ? LIST_OPTIONS.find((l) => l.id === selection.list)
+      : STYLE_OPTIONS.find((s) => s.id === selection.style);
+  const styleLabel = styleOption?.label ?? (selection.style === 'list' ? 'List' : 'Text');
+  // On a phone the button shows the short name (H1, Bullets) and is only as wide as it, so no room
+  // is spent on the longest style's width; its accessible name stays the full one.
+  const styleShown = phone ? (styleOption?.short ?? styleLabel) : styleLabel;
   const S = articleSchema;
   const insertBlock = (what: BlockInsert) => {
     handle.insert(
@@ -246,12 +251,12 @@ export function PageToolbar({
           aria-haspopup="menu"
           aria-expanded={open === 'style'}
           onClick={() => toggleOpen('style')}
-          className={`flex h-9 min-w-[124px] shrink-0 items-center gap-1.5 rounded-md px-2 text-xs font-medium transition ${
+          className={`flex h-9 ${phone ? '' : 'min-w-[124px]'} shrink-0 items-center gap-1.5 rounded-md px-2 text-xs font-medium transition ${
             open === 'style' ? TOOLBAR_CONTROL_PRESSED : TOOLBAR_TRIGGER_TONE
           }`}
         >
           <TypeIcon />
-          <span className="flex-1 truncate text-left">{styleLabel}</span>
+          <span className="flex-1 truncate text-left">{styleShown}</span>
           <ChevronDownIcon className="shrink-0" />
         </button>
         <Divider />

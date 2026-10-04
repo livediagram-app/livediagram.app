@@ -13,6 +13,8 @@
   line-height: var(--article-leading);
   color: var(--article-ink);
   caret-color: var(--article-accent);
+  /* The canvas turns iOS's callout off; selected writing gets it back (Copy, Paste). */
+  -webkit-touch-callout: default;
   white-space: pre-wrap;
   overflow-wrap: break-word;
   font-variant-ligatures: none;
@@ -355,4 +357,11 @@
 .article-flow .article-note-action {
   border-bottom-color: rgb(14 165 233 / 0.7);
   background: rgb(56 189 248 / 0.2);
+}
+
+/* On a phone the page toolbar takes the Toolbar strip's place at the top of the canvas
+   (docs/specs/007-editor/article-pages.md "On a phone"): the strip stands aside while it shows.
+   The attribute is TOOLBAR_TOP_ATTR (page-toolbar-placement.ts). */
+:root[data-article-toolbar-top] [data-toolbar-palette] {
+  visibility: hidden;
 }
