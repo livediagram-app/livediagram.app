@@ -37,7 +37,7 @@ import {
   forgetZonesReleased,
   takeZoneReleased,
 } from '@/lib/article/article-editor-store';
-import { ELEMENT_GESTURES, useCanvasGesture } from '@/lib/canvas-gesture';
+import { useElementGestureActive } from '@/lib/canvas-gesture';
 import { articleTextWidth } from '@/lib/article/article-flow-geometry';
 import { debugLog } from '@/lib/debug-log';
 import { track } from '@/lib/telemetry';
@@ -68,11 +68,13 @@ export function useArticleIntake({
     seq: 0,
   });
 
-  const gesture = useCanvasGesture();
+  // Only whether an element gesture is open: the editor root calls this, and must not render for a
+  // pan, a zoom or a marquee (docs/specs/008-canvas/canvas-performance.md).
+  const elementGesture = useElementGestureActive();
   const gestureEdit = useRef(false);
   useLayoutEffect(() => {
     // Mid-gesture: hold what was seen at its start, to settle against when it ends.
-    if (gesture !== 'idle' && ELEMENT_GESTURES.has(gesture)) {
+    if (elementGesture) {
       gestureEdit.current = true;
       return;
     }
@@ -212,5 +214,5 @@ export function useArticleIntake({
     for (const { plan } of intakes)
       track('Element', 'Added', plan.zone === 'drawing' ? 'ArticleDrawing' : 'ArticleObject');
     // The writing's editors are told of the new blocks through the tab, like any change.
-  }, [activeTab, tabId, on, editable, pages, localEditSeq, tickTabs, gesture]);
+  }, [activeTab, tabId, on, editable, pages, localEditSeq, tickTabs, elementGesture]);
 }

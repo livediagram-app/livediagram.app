@@ -433,9 +433,8 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
               },
               setGhostIds: setShiftDupGhostIds,
               setDrag,
-              selectedId: d.selectedId,
+              ...d.readSelection(),
               setSelectedId: d.setSelectedId,
-              multiSelectedIds: d.multiSelectedIds,
               setMultiSelectedIds: d.setMultiSelectedIds,
               tick,
             })

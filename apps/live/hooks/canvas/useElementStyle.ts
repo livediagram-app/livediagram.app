@@ -17,6 +17,7 @@
 // burst through `checkpointBurst`.
 // Keeping that policy in one file makes it auditable.
 
+import type { Selection } from '@/lib/selection-store';
 import {
   bringElementsToFrontLayer,
   isBoxed,
@@ -49,7 +50,8 @@ type EditorElementStyleDeps = {
   // The single-selected element id (null in multi-select / none).
   // Shape-only setters (shape kind, border presets) target it
   // directly.
-  selectedId: string | null;
+  // Read when a setter runs (docs/specs/008-canvas/blueprints/selection-store.md).
+  readSelection: () => Selection;
   // The active tab — read for its theme (resetColors) and id.
   activeTab: Tab;
   activeId: string;
@@ -74,7 +76,7 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
   const {
     currentSelectionIds,
     selectionPrimary,
-    selectedId,
+    readSelection,
     activeTab,
     activeId,
     editsBlocked,
@@ -154,7 +156,7 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     setMarkerSizeSelected,
     applyShapeColorPresetSelected,
     resetShapeStyleSelected,
-  } = useShapeStyleSetters({ currentSelectionIds, commit, activeTab, selectedId });
+  } = useShapeStyleSetters({ currentSelectionIds, commit, activeTab, readSelection });
 
   const {
     setTextSizeSelected,
@@ -188,6 +190,7 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
   });
 
   const toggleLockSelected = () => {
+    const { selectedId } = readSelection();
     if (!selectedId) return;
     const source = selectionPrimary();
     if (!source) return;
@@ -198,6 +201,7 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
   };
 
   const toggleAspectLockSelected = () => {
+    const { selectedId } = readSelection();
     if (!selectedId) return;
     const source = selectionPrimary();
     if (!source || !isBoxed(source)) return;

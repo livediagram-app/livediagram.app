@@ -136,6 +136,7 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
       // again here nudged or even deleted the whole table mid-cell-edit.
       if (e.defaultPrevented) return;
       const live = liveRef.current;
+      const { selectedId, multiSelectedIds } = live.readSelection();
       const target = e.target as Element | null;
       // <select> included: a letter press there is the browser's
       // type-ahead, not a canvas shortcut.
@@ -167,12 +168,12 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
         !e.shiftKey &&
         !live.isReadOnly &&
         live.editingId === null &&
-        live.selectedId !== null &&
-        live.multiSelectedIds.size === 0 &&
-        live.canGrowMindNode(live.selectedId)
+        selectedId !== null &&
+        multiSelectedIds.size === 0 &&
+        live.canGrowMindNode(selectedId)
       ) {
         e.preventDefault();
-        live.onGrowMindNode(live.selectedId, key === 'Tab' ? 'child' : 'sibling');
+        live.onGrowMindNode(selectedId, key === 'Tab' ? 'child' : 'sibling');
         return;
       }
 
@@ -195,8 +196,8 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
         live.canvasTool !== 'isometric' &&
         live.canvasTool !== 'avatar' &&
         !(live.whiteboard !== null && live.canvasTool === 'eraser') &&
-        live.selectedId === null &&
-        live.multiSelectedIds.size === 0
+        selectedId === null &&
+        multiSelectedIds.size === 0
       ) {
         e.preventDefault();
         live.onToggleZen();
@@ -221,7 +222,7 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
         live.canvasTool !== 'avatar' &&
         // A whiteboard eraser in hand is put down first (the narrow listener).
         !(live.whiteboard !== null && live.canvasTool === 'eraser') &&
-        (live.selectedId !== null || live.multiSelectedIds.size > 0)
+        (selectedId !== null || multiSelectedIds.size > 0)
       ) {
         e.preventDefault();
         live.onDeselect();
@@ -233,10 +234,10 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
         if (live.isReadOnly) return;
         if (inText) return;
         if (live.editingId !== null) return;
-        if (live.multiSelectedIds.size > 0) {
+        if (multiSelectedIds.size > 0) {
           e.preventDefault();
           live.deleteMultiSelected();
-        } else if (live.selectedId !== null) {
+        } else if (selectedId !== null) {
           e.preventDefault();
           live.deleteSelected();
         }
@@ -282,7 +283,7 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
         // Avatar mode (docs/specs/008-canvas/avatar-mode.md) owns the arrow keys: they steer the walking
         // character (useAvatarWalk), and the mode is read-only anyway.
         if (live.canvasTool === 'avatar') return;
-        const hasSelection = live.multiSelectedIds.size > 0 || live.selectedId !== null;
+        const hasSelection = multiSelectedIds.size > 0 || selectedId !== null;
         if (!hasSelection) return;
         const step = e.shiftKey ? 10 : 1;
         const dx = key === 'ArrowLeft' ? -step : key === 'ArrowRight' ? step : 0;
@@ -313,12 +314,12 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
       // returns false and falls through to the shortcuts.
       if (
         !live.isReadOnly &&
-        live.selectedId !== null &&
-        live.multiSelectedIds.size === 0 &&
+        selectedId !== null &&
+        multiSelectedIds.size === 0 &&
         key.length === 1 &&
         key !== ' '
       ) {
-        if (live.onTypeIntoSelected(live.selectedId, key)) {
+        if (live.onTypeIntoSelected(selectedId, key)) {
           e.preventDefault();
           return;
         }
@@ -433,6 +434,7 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
       if (wasDrag) return;
       if (heldFor > 600) return; // long-press with no drag is not a tap
       const live = liveRef.current;
+      const { selectedId, multiSelectedIds } = live.readSelection();
       if (live.isReadOnly) return;
       if (live.editingId !== null) return;
       if (isTypingTarget(e.target)) return;
@@ -440,10 +442,10 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
       // has no well-defined "which element gets the label edit"
       // answer, so leave the pan modifier as the only behaviour
       // there.
-      if (live.multiSelectedIds.size > 0) return;
-      if (live.selectedId === null) return;
+      if (multiSelectedIds.size > 0) return;
+      if (selectedId === null) return;
       e.preventDefault();
-      live.onBeginEditSelected(live.selectedId);
+      live.onBeginEditSelected(selectedId);
     };
     document.addEventListener('pointerdown', onPointerDown, true);
     document.addEventListener('keydown', onKeyDown);

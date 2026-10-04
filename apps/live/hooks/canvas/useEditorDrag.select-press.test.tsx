@@ -21,9 +21,11 @@ function harness(multi: string[]) {
   const deps = {
     activeTab: { id: 't', name: 'Tab', kind: 'diagram', elements } as Tab,
     zoomRef: { current: 1 },
-    selectedId: null,
     setSelectedId,
-    multiSelectedIds: new Set(multi.map((k) => ids[k]!)),
+    readSelection: () => ({
+      selectedId: null,
+      multiSelectedIds: new Set(multi.map((k) => ids[k]!)),
+    }),
     setMultiSelectedIds,
     editingId: null,
     isReadOnly: false,

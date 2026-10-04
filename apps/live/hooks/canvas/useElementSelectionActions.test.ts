@@ -39,8 +39,7 @@ function setup(elements: Element[], opts: { tabLocked?: boolean; selection?: str
   const selection = new Set(opts.selection ?? []);
   const actions = buildSelectionActions({
     currentSelectionIds: () => selection,
-    selectedId: opts.selection?.[0] ?? null,
-    multiSelectedIds: selection,
+    readSelection: () => ({ selectedId: opts.selection?.[0] ?? null, multiSelectedIds: selection }),
     activeTab,
     commit: (map) => {
       result = map(elements);

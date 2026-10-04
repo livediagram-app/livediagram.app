@@ -1,3 +1,4 @@
+import type { Selection } from '@/lib/selection-store';
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import type {
   AlignmentGuide,
@@ -27,9 +28,9 @@ export type EditorDragDeps = {
   // Read-only selection state. Drag never sets selection directly
   // except through the supplied setter (so the parent owns the
   // truth).
-  selectedId: string | null;
+  // Read when a press or a drag frame acts (docs/specs/008-canvas/blueprints/selection-store.md).
+  readSelection: () => Selection;
   setSelectedId: (id: string | null) => void;
-  multiSelectedIds: ReadonlySet<string>;
   // Written by the shift-duplicate identity swap (docs/specs/008-canvas/shift-drag-duplicate.md): the cursor-
   // following set becomes the fresh clones, so the selection must follow
   // them (and swing back if the duplicate is dissolved).

@@ -1,5 +1,8 @@
 'use client';
 
+import { useCallback } from 'react';
+import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
+import { EMPTY_SELECTION, type Selection } from '@/lib/selection-store';
 import dynamic from 'next/dynamic';
 import { DEFAULT_MIND_FLOW, isMindNode, mindFlowOf, resolveLayerId } from '@livediagram/document';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
@@ -25,9 +28,7 @@ export function EditorContextMenuHost() {
     userPreferences,
     activeTab,
     isReadOnly,
-    selectedId,
     editingId,
-    multiSelectedIds,
     closeContextMenu,
     openLinkPicker,
     removeIconFromElement,
@@ -183,6 +184,12 @@ export function EditorContextMenuHost() {
     openComments,
     openAssignAction,
   } = useEditorContext();
+  // The selection the menu acts on, read from the store while a menu is open: a closed menu never
+  // renders for a selection change (docs/specs/008-canvas/blueprints/selection-store.md).
+  const menuOpen = !!contextMenu && contextMenu.mode !== 'canvas' && !isReadOnly;
+  const { selectedId, multiSelectedIds } = useSelectionOf(
+    useCallback((sel: Selection) => (menuOpen ? sel : EMPTY_SELECTION), [menuOpen]),
+  );
 
   const { swatches } = useColourPalette();
 

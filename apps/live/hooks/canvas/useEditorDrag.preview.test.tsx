@@ -22,9 +22,8 @@ function harness() {
       return { id: 't', name: 'Tab', elements } as Tab;
     },
     zoomRef: { current: 1 },
-    selectedId: 'a',
     setSelectedId: vi.fn(),
-    multiSelectedIds: new Set<string>(),
+    readSelection: () => ({ selectedId: 'a', multiSelectedIds: new Set<string>() }),
     setMultiSelectedIds: vi.fn(),
     editingId: null,
     isReadOnly: false,

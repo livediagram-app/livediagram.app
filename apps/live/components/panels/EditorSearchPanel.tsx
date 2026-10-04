@@ -45,7 +45,7 @@ export function EditorSearchPanel() {
     setSearchOpen,
     openSettingsAt,
   } = useEditorContext();
-  const { commandItems, runCommand } = useEditorCommands();
+  const { commandItems, runCommand } = useEditorCommands(searchOpen);
   const tileActions = useEditorTileActions();
   // The icon catalogues load async (lib/icon-registry.ts); subscribing here
   // re-renders the panel — and rebuilds the palette items below — the moment

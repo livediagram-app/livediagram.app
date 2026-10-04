@@ -230,6 +230,23 @@ is the runner machine's compositor, which the CPU calibration does not model. Re
 against runs on the same runner, and judge a change in script time by a local A/B, not by the nightly.
 What remains in a select's long task is mostly the editor root rendering above the canvas.
 
+## The editor root and the selection
+
+Measured 2026-10-04. With the selection read only where it shows (handlers `readSelection()`,
+effects subscribing, panels gated on being open) and the root reading the gesture store only as
+"is an element gesture open", the editor root renders 0 times for a deselect, a select-all and a
+marquee (it rendered on each, and on every pan and zoom start and end, through `useArticleIntake`).
+Script time on the reference diagram, three interleaved rounds of 12 against `main`:
+
+| Moment   | `main`       | Branch       |
+| -------- | ------------ | ------------ |
+| Select   | 12.1-15.5 ms | 12.5-16.2 ms |
+| Deselect | 4.7-5.3 ms   | 2.3-2.7 ms   |
+| Marquee  | 35.0-37.6 ms | 29.8-30.8 ms |
+
+A click-select is unchanged: the press opens a pending drag in the root's state and the release
+closes it, two root renders that are drag state, not selection.
+
 ## Not tried
 
 - `contain` on element wrappers, a raster snapshot of still elements during a gesture, and fewer

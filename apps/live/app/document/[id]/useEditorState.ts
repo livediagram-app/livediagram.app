@@ -43,7 +43,7 @@ import { useLaserConfig } from '@/hooks/canvas/useLaserConfig';
 import { useEraserConfig } from '@/hooks/canvas/useEraserConfig';
 import { useFormatConfig } from '@/hooks/canvas/useFormatConfig';
 import { useStyleMemory } from '@/hooks/canvas/useStyleMemory';
-import { useQuickStyle } from '@/hooks/canvas/useQuickStyle';
+import type { QuickStyleDeps } from '@/hooks/canvas/useQuickStyle';
 import { useSwatchOverrides } from '@/hooks/canvas/useSwatchOverrides';
 import { getTheme } from '@/lib/themes';
 import { DEFAULT_SCHEME_ID } from '@livediagram/document';
@@ -150,7 +150,7 @@ import { usePresenceRows } from './usePresenceRows';
 import { usePresenceState } from './usePresenceState';
 import { useEditorDialogs } from './useEditorDialogs';
 import { useElementHelpers } from './useElementHelpers';
-import { selectionIds } from '@/lib/selection-store';
+import { usePruneInertSelection } from '@/hooks/canvas/usePruneInertSelection';
 import { useElementCreation } from './useElementCreation';
 import { useMindGrowth } from './useMindGrowth';
 import { useLayersState } from './useLayersState';
@@ -307,14 +307,14 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   const {
     activeId,
     setActiveId,
-    selectedId,
+    readSelection,
+    selectionStore,
     setSelectedId,
     editingId,
     setEditingId,
     setEditCursorAtEnd,
     formatSourceId,
     setFormatSourceId,
-    multiSelectedIds,
     setMultiSelectedIds,
     templatePickerMode,
     setTemplatePickerMode,
@@ -1028,8 +1028,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     hydrated,
     documentId,
     documentServerStored: realtime.documentServerStored,
-    selectedId,
-    multiSelectedIds,
+    selection: selectionStore,
     activeId,
     roomRef,
   });
@@ -1199,7 +1198,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     centreOn,
     isCentredOn,
     scrollIntoView,
-  } = useEditorViewport({ activeTab, selectedId });
+  } = useEditorViewport({ activeTab, readSelection });
   // A phone's keyboard never hides the caret on the canvas (useKeyboardAvoidance).
   useKeyboardAvoidance({ canvasMainRef, zoom: viewportZoom, setViewportOffset });
 
@@ -1244,8 +1243,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     tabs,
     activeTabId: activeId,
     setActiveId,
-    selectedId,
-    multiSelectedIds,
+    readSelection,
     setSelectedId,
     setMultiSelectedIds,
     isReadOnly,
@@ -1818,17 +1816,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     toastInfo: toast.info,
   });
 
-  // A layer turning hidden or locked (locally or by a peer) drops its
-  // elements from any live selection — the same guarantee delete gives. Adjusted during render when the
-  // inert set changes (it is memoised), so a hidden element is never shown selected for a frame.
-  const [prunedForInertIds, setPrunedForInertIds] = useState(layerInertIds);
-  if (layerInertIds !== prunedForInertIds) {
-    setPrunedForInertIds(layerInertIds);
-    if (selectedId && layerInertIds.has(selectedId)) setSelectedId(null);
-    if ([...multiSelectedIds].some((id) => layerInertIds.has(id))) {
-      setMultiSelectedIds(new Set([...multiSelectedIds].filter((id) => !layerInertIds.has(id))));
-    }
-  }
+  // A layer turning hidden or locked drops its elements from the live selection (layers.md).
+  usePruneInertSelection(layerInertIds, selectionStore);
 
   // Apply AI-returned elements as a single undo block (docs/specs/007-editor/ai-assistance.md).
   // Generate handles both modifications and additions in one pass:
@@ -1906,13 +1895,12 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     exitFormatPainter,
     applyFormatFromSource,
   } = useElementHelpers({
-    selectedId,
+    readSelection,
     activeId,
     activeTab,
     // Creation-only helpers: additionally blocked while the active layer
     // is hidden / locked (docs/specs/006-document/layers.md).
     editsBlocked: createBlocked,
-    multiSelectedIds,
     formatSourceId,
     formatConfig: formatSettings.config,
     getViewportCenter,
@@ -2331,7 +2319,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     highlighter,
   } = useShapeDrawing({
     editsBlocked: createBlocked,
-    selectedId,
+    readSelection,
     canvasTool,
     setCanvasTool,
     activeTab,
@@ -2395,7 +2383,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     imagesBlocked: embedMode,
     activeId,
     activeTab,
-    selectedId,
+    readSelection,
     commitTabs,
     setSelectedId,
     setEditingId,
@@ -2435,8 +2423,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     spawnConnectSelected,
   } = useElementSelectionActions({
     currentSelectionIds,
-    selectedId,
-    multiSelectedIds,
+    readSelection,
     activeTab,
     commit,
     setSelectedId,
@@ -2593,7 +2580,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   } = useElementStyle({
     currentSelectionIds,
     selectionPrimary,
-    selectedId,
+    readSelection,
     activeTab,
     activeId,
     editsBlocked,
@@ -2606,10 +2593,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
 
   // The quick style panel (docs/specs/008-canvas/quick-style-panel.md): its view of the selection and one
   // action per choice. The panel itself decides where and whether it shows.
-  const quickSelectionIds = useMemo(
-    () => selectionIds(selectedId, multiSelectedIds),
-    [selectedId, multiSelectedIds],
-  );
   const swatchOverrides = useSwatchOverrides({
     themeId: activeTab.theme ?? DEFAULT_SCHEME_ID,
     userPreferences,
@@ -2617,11 +2600,11 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     writeUserPreferences,
     ownerId: selfParticipant.id,
   });
-  const quickStyle = useQuickStyle({
+  // Every input of the Quick Style view but the selection, which QuickStyleHost reads from the store.
+  const quickStyleDeps: QuickStyleDeps = {
     activeTab,
     drawMode,
     theme: activeTheme,
-    selectionIds: quickSelectionIds,
     editsBlocked,
     liveElements: liveActiveElements,
     commit,
@@ -2634,7 +2617,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     },
     highlighter,
     toolIntent: pendingDraw,
-  });
+  };
 
   // Portal links (docs/specs/009-elements/portal-element.md) live off the style hook: a link can point at a
   // portal on ANOTHER tab, so these setters need the whole tab list and a
@@ -2776,13 +2759,12 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     selectElement,
     toggleInMultiSelect,
   } = useSelectionEditing({
-    selectedId,
+    readSelection,
     isReadOnly,
     layerInertIds,
     adoptLayerName: layersState.adoptLayerNameFromLabel,
     formatSourceId,
     formatToolActive,
-    multiSelectedIds,
     documentName,
     tabs,
     activeTab,
@@ -2808,8 +2790,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   useCanvasA11y({
     enabled: keyboardEnabled,
     elements: activeTab.elements,
-    selectedId,
-    multiSelectedIds,
+    selection: selectionStore,
     editingId,
     selectElement,
     lockedByOther,
@@ -2842,8 +2823,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // didn't have.
   const nudgeSelection = useNudgeSelection({
     isReadOnly,
-    multiSelectedIds,
-    selectedId,
+    readSelection,
     activeTab,
     laneBoard: esBoard,
     markCheckpoint,
@@ -2881,9 +2861,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     activeTab,
     layerInertIds,
     zoomRef,
-    selectedId,
+    readSelection,
     setSelectedId,
-    multiSelectedIds,
     setMultiSelectedIds,
     editingId,
     isReadOnly,
@@ -2928,8 +2907,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   const { copySelection, pasteFromClipboard, dropBoardFile, hasClipboard } = useClipboard({
     isReadOnly,
     embedMode,
-    selectedId,
-    multiSelectedIds,
+    readSelection,
     editingId,
     setEditingId,
     activeTab,
@@ -2988,8 +2966,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   useEditorKeyboardShortcuts({
     formatSourceId,
     setFormatSourceId,
-    selectedId,
-    multiSelectedIds,
+    readSelection,
     editingId,
     isReadOnly,
     deleteSelected,
@@ -3014,7 +2991,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     pendingDraw,
     onCancelDraw: cancelDrawShape,
     onToggleLock: () => {
-      if (multiSelectedIds.size > 0) {
+      if (readSelection().multiSelectedIds.size > 0) {
         toggleLockMultiSelected();
       } else {
         toggleLockSelected();
@@ -3030,7 +3007,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
       setMultiSelectedIds(allIds);
     },
     onDuplicate: () => {
-      if (multiSelectedIds.size > 0) {
+      if (readSelection().multiSelectedIds.size > 0) {
         duplicateMultiSelected();
       } else {
         duplicateSelected();
@@ -3040,7 +3017,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
       // Copy to the in-app clipboard, then delete: the two halves the
       // editor already exposes, composed into one undo-friendly action.
       copySelection();
-      if (multiSelectedIds.size > 0) {
+      if (readSelection().multiSelectedIds.size > 0) {
         deleteMultiSelected();
       } else {
         deleteSelected();
@@ -3138,7 +3115,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     // insert-between preview (docs/specs/021-event-storming/event-storming.md) never offers a slot the drop
     // would refuse.
     createBlocked,
-    quickStyle,
+    quickStyleDeps,
     // Note acts on an event-storming board (docs/specs/021-event-storming/event-storming.md).
     ...noteActions,
     // Photo import (docs/specs/021-event-storming/event-storming.md Phase 8): the draft run, whether the entry

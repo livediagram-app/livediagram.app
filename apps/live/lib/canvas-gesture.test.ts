@@ -6,6 +6,7 @@ import {
   beginCanvasGesture,
   canvasGestureNow,
   resetCanvasGesturesForTests,
+  useElementGestureActive,
   selectionMoving,
   useCanvasGesture,
 } from './canvas-gesture';
@@ -86,5 +87,38 @@ describe('canvas gesture store', () => {
     expect(selectionMoving('pan')).toBe(false);
     expect(selectionMoving('stroke')).toBe(false);
     expect(selectionMoving('idle')).toBe(false);
+  });
+});
+
+// docs/specs/008-canvas/canvas-performance.md: what renders for a pan, zoom or marquee. A reader that only
+// asks "is an element gesture in progress?" renders only when that answer flips.
+describe('useElementGestureActive', () => {
+  it('answers whether an element gesture is open, rendering only when that flips', () => {
+    let renders = 0;
+    const { result } = renderHook(() => {
+      renders += 1;
+      return useElementGestureActive();
+    });
+    const before = renders;
+
+    let end = () => {};
+    act(() => {
+      end = beginCanvasGesture('marquee');
+    });
+    act(() => end());
+    act(() => {
+      end = beginCanvasGesture('pan');
+    });
+    act(() => end());
+    expect(renders).toBe(before);
+    expect(result.current).toBe(false);
+
+    act(() => {
+      end = beginCanvasGesture('move');
+    });
+    expect(result.current).toBe(true);
+    act(() => end());
+    expect(result.current).toBe(false);
+    expect(renders).toBe(before + 2);
   });
 });

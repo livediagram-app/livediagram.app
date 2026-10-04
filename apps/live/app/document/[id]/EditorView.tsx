@@ -33,7 +33,7 @@ import { TourHost } from '@/components/tour/TourHost';
 import { EditorAnchoredPopovers } from '@/components/panels/EditorAnchoredPopovers';
 import { EditorSearchPanel } from '@/components/panels/EditorSearchPanel';
 import { ThemeModeBanner } from '@/components/chrome/ThemeModeBanner';
-import { ModifierHintBanner } from '@/components/chrome/ModifierHintBanner';
+import { ModifierHint } from '@/components/chrome/ModifierHintBanner';
 import { PhotoDraftBar } from '@/components/chrome/PhotoDraftBar';
 import { PhotoImportProgress } from '@/components/chrome/PhotoImportProgress';
 import { PhotoReviewOverlay } from '@/components/chrome/PhotoReviewOverlay';
@@ -57,7 +57,7 @@ import { resolveUiScales } from '@/lib/ui-scale';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 // Each major area fails on its own and reports which one it was (docs/specs/017-telemetry/telemetry.md).
 import { AreaErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
-import { QuickStylePanel } from '@/components/canvas/QuickStylePanel';
+import { QuickStyleHost } from '@/components/canvas/QuickStyleHost';
 import { panelEnabled, resolvePanelLayout } from '@/lib/user-preferences';
 
 // How long a guest edits before the sign-in nudge appears (docs/specs/014-identity/sign-in-encouragement.md).
@@ -89,7 +89,7 @@ export function EditorView() {
     followMe,
     anyWelcomeOpen,
     embedMode,
-    quickStyle,
+    quickStyleDeps,
     autoAlignTab,
     autoLayoutTab,
     previewCleanup,
@@ -150,7 +150,6 @@ export function EditorView() {
     moveTabToFolder,
     removeTabFromFolder,
     reorderTabs,
-    selectedId,
     connectSourceId,
     cancelConnect,
     selfParticipant,
@@ -233,8 +232,6 @@ export function EditorView() {
     // (docs/specs/007-editor/illustrate-pages.md).
     ctx.editorMode.mode !== 'illustrate' &&
     activeTab.elements.length === 0;
-  // The primary selection's flavour for the modifier hint's no-drag messages.
-  const shiftSelected = selectedId ? activeTab.elements.find((el) => el.id === selectedId) : null;
   // The photo draft awaiting a decision, and the session-local view state
   // that goes with it (docs/specs/021-event-storming/event-storming.md Phase 8).
   const draftNotes = draftNotesOf(activeTab.elements);
@@ -244,13 +241,6 @@ export function EditorView() {
     { mode: ctx.editorMode.mode, drawPattern: readDrawPattern(userPreferences) },
     appearance,
   );
-  const shiftSelectedKind = !shiftSelected
-    ? null
-    : shiftSelected.type === 'arrow'
-      ? ('arrow' as const)
-      : shiftSelected.type === 'table'
-        ? ('table' as const)
-        : ('other' as const);
 
   return (
     // Which paper the canvas is, for every element that carries no colour of
@@ -481,8 +471,8 @@ export function EditorView() {
               a selection. Stands down in zen / embeds / presenting and while an
               element menu is open, which is the complete home of every setting. */}
                 <AreaErrorBoundary area="QuickStyle">
-                  <QuickStylePanel
-                    quickStyle={quickStyle}
+                  <QuickStyleHost
+                    deps={quickStyleDeps}
                     hidden={
                       zenMode ||
                       embedMode ||
@@ -580,10 +570,10 @@ export function EditorView() {
           right now, and offers the Alt insert-between gesture while a note is
           on the move. Suppressed while a mode banner owns the top slot. */}
                 {minimalChrome ? null : (
-                  <ModifierHintBanner
+                  <ModifierHint
                     drag={drag}
                     esBoard={esBoard}
-                    selectedKind={shiftSelectedKind}
+                    elements={activeTab.elements}
                     hasElements={activeTab.elements.length > 0}
                     suppressed={
                       canvasTool === 'format' || formatSourceId !== null || pendingDraw !== null

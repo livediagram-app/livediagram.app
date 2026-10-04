@@ -58,10 +58,12 @@ export function useBoxedDragHandlers({
     // unlike per-element `locked` (selectable to inspect, below), a
     // press on one doesn't even land a selection.
     if (d.layerInertIds.has(elementId)) return;
+    // The selection as the press found it, before this press changes it.
+    const { multiSelectedIds } = d.readSelection();
     d.setSelectedId(elementId);
     // Only Shift adds to a selection (docs/specs/008-canvas/canvas-and-palette.md "Marquee
     // box-select"): a press outside the multi-selection selects this element alone.
-    if (d.multiSelectedIds.size > 0 && !d.multiSelectedIds.has(elementId)) {
+    if (multiSelectedIds.size > 0 && !multiSelectedIds.has(elementId)) {
       d.setMultiSelectedIds(new Set());
     }
     // Selection above still lands so viewers can inspect; the drag
@@ -73,8 +75,8 @@ export function useBoxedDragHandlers({
     // (members reposition + resize proportionally around the corner opposite
     // the drag handle). A bare single-element drag falls through to the
     // singleton set.
-    const baseIds = d.multiSelectedIds.has(elementId)
-      ? d.multiSelectedIds
+    const baseIds = multiSelectedIds.has(elementId)
+      ? multiSelectedIds
       : new Set<string>([elementId]);
 
     // Frame sections (docs/specs/008-canvas/canvas-and-palette.md): MOVING a frame carries everything inside
