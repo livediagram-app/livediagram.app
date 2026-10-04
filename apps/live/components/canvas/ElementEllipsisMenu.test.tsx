@@ -33,7 +33,7 @@ function mountInFace(handlers: {
       onDoubleClick={handlers.onDoubleClick}
       onContextMenu={handlers.onContextMenu}
     >
-      <ElementEllipsisMenu label="Poll options">
+      <ElementEllipsisMenu label="Poll options" kind="control">
         {(close) => (
           <>
             <input aria-label="Choice" defaultValue="Ariel" />
@@ -47,7 +47,7 @@ function mountInFace(handlers: {
 
 function openMenu() {
   fireEvent.click(screen.getByRole('button', { name: 'Poll options' }));
-  return screen.getByRole('menu');
+  return screen.getByRole('dialog', { name: 'Poll options' });
 }
 
 describe('ElementEllipsisMenu event containment', () => {
@@ -68,7 +68,7 @@ describe('ElementEllipsisMenu event containment', () => {
     fireEvent.doubleClick(screen.getByLabelText('Choice'));
     expect(onDoubleClick).not.toHaveBeenCalled();
     // And the panel is still open, which is the half the user actually feels.
-    expect(screen.getByRole('menu')).toBeTruthy();
+    expect(screen.getByRole('dialog', { name: 'Poll options' })).toBeTruthy();
   });
 
   it('does not leak a right-click in a field, and leaves the browser menu alone', () => {
@@ -95,7 +95,37 @@ describe('ElementEllipsisMenu event containment', () => {
     // closes the panel.
     mountInFace({});
     openMenu();
-    fireEvent.click(screen.getByRole('menuitem', { name: 'All settings…' }));
+    fireEvent.click(screen.getByRole('button', { name: 'All settings…' }));
+    expect(screen.queryByRole('dialog')).toBeNull();
+  });
+});
+
+// docs/specs/004-interface-design/menus.md: a menu of verbs is a command menu, a menu holding a
+// session tool's form is a control menu, and each row takes the role of the kind it sits in.
+describe('ElementEllipsisMenu kinds', () => {
+  it('is a menu of menu items for verbs, focused on open and closed by Escape', () => {
+    render(
+      <ElementEllipsisMenu label="Q&A board options" kind="command">
+        {(close) => <ElementMenuItem onPress={close}>Empty the board</ElementMenuItem>}
+      </ElementEllipsisMenu>,
+    );
+    const trigger = screen.getByRole('button', { name: 'Q&A board options' });
+    expect(trigger.getAttribute('aria-haspopup')).toBe('menu');
+    trigger.focus();
+    fireEvent.click(trigger);
+    const item = screen.getByRole('menuitem', { name: 'Empty the board' });
+    expect(document.activeElement).toBe(item);
+    fireEvent.keyDown(item, { key: 'Escape' });
     expect(screen.queryByRole('menu')).toBeNull();
+    expect(document.activeElement).toBe(trigger);
+  });
+
+  it('is a named dialog for settings', () => {
+    mountInFace({});
+    expect(screen.getByRole('button', { name: 'Poll options' }).getAttribute('aria-haspopup')).toBe(
+      'dialog',
+    );
+    openMenu();
+    expect(screen.queryByRole('menuitem')).toBeNull();
   });
 });

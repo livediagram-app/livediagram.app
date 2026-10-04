@@ -28,13 +28,14 @@ users doing.
 
 ## It reuses the frame, deliberately
 
-`shape: 'lane'`, and one predicate change. `withFrameContents`
-(`apps/live/lib/canvas.ts`) already answers "which elements travel with this
-container", including the two rules that make it correct: a container only
-carries a box it FULLY contains, and an element overlapped by two containers
-belongs to the backmost one. Lanes join that predicate rather than getting
-their own copy, so both kinds share the containment rules and can't drift
-apart.
+`shape: 'lane'`, and one predicate change. `containerContents`
+(the shared containment helper in `@livediagram/document`) answers "which elements travel with this
+container" for frames and lanes alike, by the one membership rule: an element
+belongs to the smallest frame or lane holding its centre, so a box straddling
+the edge travels when its centre is inside, and an element overlapped by two
+containers belongs to the smaller. Lanes share that predicate rather than
+getting their own copy, so both kinds share the containment rules, and an
+agent's `move` carries exactly what a person's drag does.
 
 What differs from a frame is presentation only:
 

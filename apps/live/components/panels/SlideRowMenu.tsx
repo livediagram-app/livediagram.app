@@ -21,14 +21,13 @@ import { lucideGroup, lucideMinus } from '@livediagram/icons/lucide';
 
 import { slideName, type Slide } from '@livediagram/document';
 
+import { MenuAccordionSection, PortalMenu } from '@/components/primitives/PortalMenu';
 import {
-  MenuAccordionSection,
   MenuTile,
   MenuTileGrid,
   MenuToolbar,
   MenuToolButton,
-  PortalMenu,
-} from '@/components/primitives/PortalMenu';
+} from '@/components/primitives/MenuTiles';
 import { EyeIcon, EyeOffIcon } from '@/components/panels/layers-panel-icons';
 import { NoteMenuIcon } from '@/components/palette/context-menu-icons';
 

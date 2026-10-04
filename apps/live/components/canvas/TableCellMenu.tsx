@@ -12,7 +12,8 @@ import { ColourRow } from '@/components/palette/context-menu-input-rows';
 import { FillColourIcon, TextColourIcon } from '@/components/palette/context-menu-icons';
 import { useColourPalette } from '@/hooks/ui/useColourPalette';
 import { TextSizeTiles } from '@/components/palette/context-menu-rows';
-import { MenuAccordionSection, MenuTile, MenuTileGrid } from '@/components/primitives/PortalMenu';
+import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
+import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
 import { AlignIcon, CellLinkIcon } from '@/components/canvas/table-icons';
 
 // The per-cell context menu (docs/specs/008-canvas/canvas-and-palette.md Table): right-click / long-press a cell
@@ -78,7 +79,7 @@ export function TableCellMenu({
         : 'text-slate-600 hover:bg-brand-50 dark:text-slate-200 dark:hover:bg-slate-700'
     }`;
   return createPortal(
-    <ContextMenu position={position} onClose={onClose} flush>
+    <ContextMenu position={position} label="Cell menu" onClose={onClose} flush>
       <p className="px-3 pb-0.5 pt-2 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
         {single ? 'Selected Cell' : `${cells.length} Cells`}
       </p>

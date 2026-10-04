@@ -484,7 +484,8 @@ dark:text-slate-400`, then `+N` at 10px semibold; after the count badge; in a tr
 
 ### Accessibility (surfaces)
 
-- The submenu trigger is a `button` with `aria-haspopup="menu"` and `aria-expanded`; its items are
+- The submenu trigger is a `menuitem` with `aria-haspopup="menu"`, `aria-expanded` and, while open,
+  `aria-controls` ([Menus](../../004-interface-design/menus.md)); its items are
   `menuitemcheckbox` with `aria-checked`; a disabled root entry has `aria-disabled="true"` and keeps
   focusability for discovery.
 - The marker's icons are `aria-hidden`; its words are a visually hidden span: in a tree row they are

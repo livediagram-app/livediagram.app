@@ -7,7 +7,13 @@ import {
   createSticky,
   createText,
 } from '@livediagram/document';
-import { describeMany, describeOne, elementAriaLabel, kindLabel } from './element-names';
+import {
+  describeMany,
+  describeOne,
+  elementAriaLabel,
+  kindLabel,
+  shapeKindLabel,
+} from './element-names';
 
 // Shared element naming (docs/specs/004-interface-design/canvas-accessibility.md): the canvas aria-labels /
 // announcements and the other surfaces that name an element read the same
@@ -77,5 +83,12 @@ describe('a path (docs/specs/023-draw-mode/path-tool.md "Accessibility")', () =>
     expect(kindLabel(open)).toBe('Path');
     expect(elementAriaLabel(open)).toBe('Path, 3 points');
     expect(elementAriaLabel({ ...open, closed: true })).toBe('Closed path, 3 points');
+  });
+});
+
+describe('shapeKindLabel', () => {
+  it('reads a shape kind as prose, for the Shape tiles of the element menu', () => {
+    expect(shapeKindLabel('square')).toBe('Square');
+    expect(shapeKindLabel('pie-chart')).toBe('Pie chart');
   });
 });

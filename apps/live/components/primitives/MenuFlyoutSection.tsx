@@ -9,7 +9,8 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { ChevronRightIcon } from '@livediagram/ui';
+import { ChevronRightIcon, MENU_SURFACE_ATTR, useMenuKind } from '@livediagram/ui';
+import { useMenuItemProps } from './menu-item-props';
 import { Portal } from '@/components/primitives/Portal';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { useReposition } from '@/hooks/canvas/useReposition';
@@ -38,6 +39,9 @@ import {
 // outside-click to close only itself when you click another row or off-menu.
 // Consecutive frames agreeing on the position before the tracker stops.
 const SETTLE_FRAMES = 3;
+
+// The menu a flyout row sits in, of either kind (docs/specs/004-interface-design/menus.md).
+const HOST_MENU = `[${MENU_SURFACE_ATTR}]`;
 
 // A flyout that would hold exactly ONE section is not a flyout at all: the
 // section takes the flyout's place in the host menu (docs/specs/008-canvas/canvas-and-palette.md).
@@ -126,7 +130,16 @@ function Flyout({
   plain = false,
 }: MenuFlyoutSectionProps) {
   const triggerRef = useRef<HTMLButtonElement>(null);
+  // Also held in state: the flyout's menu hook is handed it as its trigger (names it, returns focus).
+  const [triggerEl, setTriggerEl] = useState<HTMLButtonElement | null>(null);
+  const setTrigger = useCallback((el: HTMLButtonElement | null) => {
+    triggerRef.current = el;
+    setTriggerEl(el);
+  }, []);
   const panelRef = useRef<HTMLDivElement>(null);
+  // A submenu in a command menu, a sub-panel in a control menu (or outside any menu).
+  const kind = useMenuKind() === 'command' ? 'command' : 'control';
+  const { itemProps } = useMenuItemProps();
   const [localOpen, setLocalOpen] = useState(false);
   const controlled = controlledOpen !== undefined;
   const open = controlled ? controlledOpen : localOpen;
@@ -173,7 +186,7 @@ function Flyout({
     // reads as having replaced the parent rather than as a stray panel. Falls
     // through to the side layout if the trigger somehow has no menu ancestor.
     if (isMobile) {
-      const host = trigger.closest('[role="menu"]')?.getBoundingClientRect();
+      const host = trigger.closest(HOST_MENU)?.getBoundingClientRect();
       if (host) {
         // Cover the parent COMPLETELY (coverHost). A child shorter than its parent left
         // the parent's remaining rows poking out below it, which reads as a
@@ -215,7 +228,7 @@ function Flyout({
     // or below the menu at a lopsided offset. Centred, it grows evenly both
     // ways and always reads as belonging to the menu beside it; the clamp
     // below still keeps it on screen.
-    const host = isPanel ? trigger.closest('[role="menu"]')?.getBoundingClientRect() : undefined;
+    const host = isPanel ? trigger.closest(HOST_MENU)?.getBoundingClientRect() : undefined;
     const rawTop = host
       ? host.top + host.height / 2 - pr.height / 2
       : tr.top + pr.height + m <= window.innerHeight
@@ -329,8 +342,9 @@ function Flyout({
       className={flush ? '' : 'border-t border-slate-100 first:border-t-0 dark:border-slate-800'}
     >
       <button
-        ref={triggerRef}
+        ref={setTrigger}
         type="button"
+        {...itemProps}
         onClick={() => {
           const next = !open;
           setPos(null);
@@ -338,7 +352,7 @@ function Flyout({
           if (next) onOpen?.();
         }}
         aria-expanded={open}
-        aria-haspopup="menu"
+        aria-haspopup={kind === 'command' ? 'menu' : 'dialog'}
         className={plain ? plainTriggerClass(open) : sectionTriggerClass(open)}
       >
         {plain ? (
@@ -359,6 +373,8 @@ function Flyout({
         <Portal>
           <FlyoutPanel
             panelRef={panelRef}
+            trigger={triggerEl}
+            kind={kind}
             isPanel={isPanel}
             isMobile={isMobile}
             pos={pos}

@@ -48,9 +48,8 @@ import {
   MenuAccordionSection,
   MenuActionRow,
   MenuGroupSeparator,
-  MenuTile,
-  MenuTileGrid,
 } from '@/components/primitives/PortalMenu';
+import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
 import { ShapeIcon } from '@/components/primitives/shape-icon';
 import { SizeSection } from '@/components/palette/SizeSection';
 
@@ -62,6 +61,7 @@ import { ElementContentSections } from './ElementContentSections';
 import { ElementAppearanceSections } from './ElementAppearanceSections';
 import { MultiSelectionContextMenu } from './MultiSelectionContextMenu';
 
+import { shapeKindLabel } from '@/lib/element-names';
 import { COMMON_SHAPES, ROTATION_ANGLES } from './context-menu-constants';
 
 // Cursor position + which menu to show. `element` carries the clicked
@@ -152,7 +152,13 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
       onClose();
     };
     return (
-      <ContextMenu position={position} onClose={onClose} flush anchorBottom={anchorBottom}>
+      <ContextMenu
+        position={position}
+        label="Element menu"
+        onClose={onClose}
+        flush
+        anchorBottom={anchorBottom}
+      >
         {/* Layer — pinned FIRST in the menu (before the type-specific
             categories, which render conditionally and so would otherwise
             shuffle Layer's position around). Groups front/back + opacity +
@@ -295,6 +301,7 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
               {COMMON_SHAPES.map((kind) => (
                 <SizeButton
                   key={kind}
+                  label={shapeKindLabel(kind)}
                   active={target.type === 'shape' && target.shape === kind}
                   onClick={() => props.onSetShapeKind([target.id], kind)}
                   onPointerEnter={onMouseHover(() => props.onPreviewShapeKind([target.id], kind))}

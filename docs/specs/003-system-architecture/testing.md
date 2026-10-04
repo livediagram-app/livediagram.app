@@ -2,7 +2,7 @@
 
 How livediagram is tested below the browser: unit tests, and hook and component tests in jsdom. The goal is a fast, consistent, zero-config-per-file test setup that runs the same locally and in CI.
 
-The whole editor in a real browser, against the production build and the api worker, is the separate Playwright suite in [End-to-end tests](e2e-smoke.md); it runs after merge, not on the per-PR gate.
+The whole editor in a real browser, against the production build and the api worker, is the separate Playwright suite in [End-to-end tests](e2e-smoke.md); it is a per-PR merge gate of its own.
 
 ## Runner
 
@@ -145,10 +145,37 @@ runs the build and the staging config check. No CI change is needed to start run
 tests; adding a `test` script to a workspace is enough for Turborepo to pick
 it up.
 
+Checks, Tests and Build are required status checks on `main`, with E2E Smoke's Chromium smoke
+([End-to-end tests](e2e-smoke.md#when-it-runs)). Only runs started by the pull request count: a
+`workflow_dispatch` run on the same commit is not attached to it.
+
 Coverage is a separate step because it enforces the thresholds above — and
 because running it at all keeps the coverage tooling exercised. It previously
 did not run in CI, which is how a v4 coverage provider came to sit against a
 v5 test runner with every check green: nothing invoked the broken path.
+
+## Before a push
+
+A **pre-push hook** runs what CI's Checks and Tests would fail on, for what the push changes, so
+a deterministic failure surfaces in seconds on the machine rather than minutes later on CI.
+
+- `pnpm install` installs it: the root `prepare` script runs `scripts/git-hooks/install.mjs`,
+  which points `core.hooksPath` at the tracked `.githooks/` directory. It skips, saying so, when
+  `CI` is set or outside a git work tree.
+- `.githooks/pre-push` runs `scripts/git-hooks/pre-push.mjs`, which takes the files changed since
+  the merge base with `origin/main` and runs, stopping at the first failure:
+  1. `prettier --check` on the changed files Prettier formats;
+  2. `turbo run lint typecheck test --affected`, against that merge base, for the workspaces the
+     change touches and their dependants;
+  3. the help app's suite whenever a changed file sits outside `apps/` and `packages/`, since
+     its guards (repo paths and spec links in docs and code) read the whole repository and
+     `--affected` assigns a root file to no workspace.
+- Nothing changed since the merge base: it prints that and passes.
+- The hook is a fast shift-left, not the gate: CI still runs everything, and the E2E suite stays
+  in CI.
+
+The help app's `test` and `test:coverage` tasks declare the repository's tracked text as turbo
+inputs (`turbo.json`), so a docs-only change never replays a cached pass of those guards.
 
 ## What's tested now, what's ahead
 

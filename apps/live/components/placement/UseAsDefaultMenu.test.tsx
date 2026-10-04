@@ -2,6 +2,7 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import type { PlacementDefaultKey } from '@livediagram/api-schema';
+import { PortalMenu } from '@/components/primitives/PortalMenu';
 import { UseAsDefaultMenu } from './UseAsDefaultMenu';
 
 // The submenu (docs/specs/013-workspace/default-folders.md "Use as default for"): the six entries
@@ -16,16 +17,40 @@ beforeAll(() => {
   } as unknown as typeof ResizeObserver;
 });
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  document.body.innerHTML = '';
+});
 
+// Inside the folder menu, a command menu, as every host renders it.
 function open(menu: Parameters<typeof UseAsDefaultMenu>[0]['menu']) {
-  render(<UseAsDefaultMenu menu={menu} />);
-  const trigger = screen.getByRole('button', { name: /use as default for/i });
+  const anchor = document.createElement('button');
+  document.body.append(anchor);
+  render(
+    <PortalMenu anchor={anchor} onClose={() => {}}>
+      <UseAsDefaultMenu menu={menu} />
+    </PortalMenu>,
+  );
+  const trigger = screen.getByRole('menuitem', { name: /use as default for/i });
   expect(trigger.getAttribute('aria-haspopup')).toBe('menu');
   fireEvent.click(trigger);
+  expect(trigger.getAttribute('aria-expanded')).toBe('true');
 }
 
 describe('UseAsDefaultMenu', () => {
+  it('is a submenu named by its header, reached and left by the arrow keys', () => {
+    open({ isChecked: () => false, isDisabled: () => false, toggle: () => {} });
+    const sub = screen.getByRole('menu', { name: 'New documents that open as' });
+    const trigger = screen.getByRole('menuitem', { name: /use as default for/i });
+    expect(trigger.getAttribute('aria-controls')).toBe(sub.id);
+    expect(document.activeElement?.textContent).toBe('Diagrams');
+    fireEvent.keyDown(document.activeElement!, { key: 'ArrowDown' });
+    expect(document.activeElement?.textContent).toBe('Whiteboards');
+    fireEvent.keyDown(document.activeElement!, { key: 'ArrowLeft' });
+    expect(screen.queryByRole('menu', { name: 'New documents that open as' })).toBeNull();
+    expect(document.activeElement).toBe(trigger);
+  });
+
   it('lists the entries as checkable items, checked where the folder holds them', () => {
     open({
       isChecked: (key) => key === 'mode:draw',

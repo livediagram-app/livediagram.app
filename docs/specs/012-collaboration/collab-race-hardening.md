@@ -143,7 +143,7 @@ a ledger that would outgrow the storage value limit stops recording rather
 than failing.
 
 **A save is merged with it.** When a tab PUT arrives for a document with a
-room (shared, or in a team) carrying the room cursor its snapshot was taken at
+room carrying the room cursor its snapshot was taken at
 (`X-Room-Cursor: <epoch>:<seq>`), the api reads the room's ledger for that tab
 (`GET /ledger` on the DO stub, internal only) and merges into the incoming tab
 only the entries sequenced after that cursor (`mergeRoomLedger` in
@@ -158,8 +158,9 @@ than the incoming element's is ignored: the save carries a clear the
 ledger hasn't seen a delta for yet.
 
 If the room can't be reached, the save goes through unmerged, as before.
-A document with no room (never shared, not in a team) has one writer and
-isn't merged.
+Every server-stored document has a room, since an agent is a second writer
+even on a personal one ([Agent changesets](../024-agents/agent-changesets.md#rooms-for-personal-documents));
+an agent's changesets merge into a save by their own rule, not through this ledger.
 
 **Comments joined the ledger in phase 5**, once the room stamped their
 authors; at first they were left out, because the api credits every comment
