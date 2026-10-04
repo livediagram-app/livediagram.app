@@ -15,7 +15,7 @@ const PLACE_TRAILING_FRAMES = 3;
 // Screen px: a phone's bar keeps this clear of the screen's sides and its top.
 const PHONE_GUTTER = 8;
 // On the root while a phone's bar shows: the Toolbar strip it replaces is hidden.
-export const TOOLBAR_TOP_ATTR = 'data-article-toolbar-top';
+const TOOLBAR_TOP_ATTR = 'data-article-toolbar-top';
 // The smallest the card shrinks to in a thin margin (zoomed far out), as a share of its size.
 const TOOLBAR_MIN_SCALE = 0.55;
 
