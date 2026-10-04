@@ -141,13 +141,28 @@ export function patchLine(
 }
 
 /**
+ * Codecov's impacted file tree graph for the pull request, linked to its file tree; null without a
+ * graph token (Codecov's public token for embedding graphs and badges).
+ */
+export function treeGraph(
+  /** @type {string} */ codecovUrl,
+  /** @type {string | null} */ graphToken,
+) {
+  if (!graphToken) return null;
+  const svg = `${codecovUrl}/graphs/tree.svg?width=650&height=150&src=pr&token=${encodeURIComponent(graphToken)}`;
+  return `[![Impacted file tree graph](${svg})](${codecovUrl}?src=pr&el=tree)`;
+}
+
+/**
  * The whole comment.
  * @param {{ pr: number, baseSha: string, headSha: string, base: Totals, head: Totals,
  *   patch: { hits: number, misses: number, partials: number } | null,
- *   areas: { name: string, base: Totals, head: Totals }[], codecovUrl: string }} report
+ *   areas: { name: string, base: Totals, head: Totals }[], codecovUrl: string,
+ *   graphToken?: string | null }} report
  */
 export function renderComment(report) {
-  const { pr, baseSha, headSha, base, head, patch, areas, codecovUrl } = report;
+  const { pr, baseSha, headSha, base, head, patch, areas, codecovUrl, graphToken = null } = report;
+  const tree = treeGraph(codecovUrl, graphToken);
   const baseCov = coverageOf(base);
   const headCov = coverageOf(head);
   const delta = pctDelta(baseCov, headCov);
@@ -161,6 +176,7 @@ export function renderComment(report) {
     `## [Coverage](${codecovUrl}) report`,
     patchLine(patch),
     `:bar_chart: Project coverage is ${pct(headCov)}${delta ? ` (${delta})` : ''}, comparing \`main\` at \`${baseSha.slice(0, 7)}\` with \`${headSha.slice(0, 7)}\`.`,
+    ...(tree ? ['', tree] : []),
     '',
     `| Area | \`main\` | #${pr} | +/- |`,
     '| --- | ---: | ---: | ---: |',
@@ -177,19 +193,20 @@ async function json(/** @type {string} */ url, /** @type {RequestInit} */ init =
   return res.json();
 }
 
-/** Codecov's view of the pull request: its compared commits and their processing state. */
+/** Codecov's view of the pull request (its compared commits and their state), and the graph token. */
 async function codecovPull(
   /** @type {string} */ owner,
   /** @type {string} */ repo,
   /** @type {number} */ pr,
 ) {
-  const query = `{ owner(username: "${owner}") { repository(name: "${repo}") { ... on Repository { pull(id: ${pr}) { head { commitid state } comparedTo { commitid state } } } } } }`;
+  const query = `{ owner(username: "${owner}") { repository(name: "${repo}") { ... on Repository { graphToken pull(id: ${pr}) { head { commitid state } comparedTo { commitid state } } } } } }`;
   const body = await json(CODECOV_GRAPHQL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ query }),
   });
-  return body.data?.owner?.repository?.pull ?? null;
+  const repository = body.data?.owner?.repository;
+  return { pull: repository?.pull ?? null, graphToken: repository?.graphToken ?? null };
 }
 
 async function totalsAt(
@@ -222,8 +239,9 @@ async function main() {
 
   // Codecov processes the uploads a little after CI ends: wait for this head, with every upload in.
   let pull = null;
+  let graphToken = null;
   for (let attempt = 1; attempt <= POLL_ATTEMPTS; attempt += 1) {
-    pull = await codecovPull(owner, repo, pr);
+    ({ pull, graphToken } = await codecovPull(owner, repo, pr));
     const commit = await fetch(`${repoApi}/commits/${headSha}/`).then((r) =>
       r.ok ? r.json() : null,
     );
@@ -261,6 +279,7 @@ async function main() {
     patch: summary.patch ?? null,
     areas,
     codecovUrl: `https://app.codecov.io/gh/${owner}/${repo}/pull/${pr}`,
+    graphToken,
   });
 
   if (dryRun) {

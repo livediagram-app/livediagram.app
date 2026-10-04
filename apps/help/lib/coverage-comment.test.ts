@@ -8,6 +8,7 @@ import {
   pctDelta,
   renderComment,
   sumTotals,
+  treeGraph,
 } from '../../../scripts/coverage-comment.mjs';
 
 // scripts/coverage-comment.mjs writes the pull request's coverage comment from Codecov's public API
@@ -135,6 +136,47 @@ describe('renderComment', () => {
   it('has a row per area and the coverage diff', () => {
     expect(comment).toContain('| Editor | 50.00% | 52.00% | +2.00% |');
     expect(comment).toContain('```diff');
+  });
+});
+
+describe('treeGraph', () => {
+  const url = 'https://app.codecov.io/gh/o/r/pull/9';
+
+  it('embeds the Codecov tree graph, linked to the file tree of the pull request', () => {
+    expect(treeGraph(url, 'TOK EN')).toBe(
+      '[![Impacted file tree graph](https://app.codecov.io/gh/o/r/pull/9/graphs/tree.svg?width=650&height=150&src=pr&token=TOK%20EN)](https://app.codecov.io/gh/o/r/pull/9?src=pr&el=tree)',
+    );
+  });
+
+  it('is left out without a graph token', () => {
+    expect(treeGraph(url, null)).toBeNull();
+    const comment = renderComment({
+      pr: 9,
+      baseSha: 'a',
+      headSha: 'b',
+      base: totals(1, 1, 0, 0),
+      head: totals(1, 1, 0, 0),
+      patch: null,
+      areas: [],
+      codecovUrl: url,
+    });
+    expect(comment).not.toContain('tree.svg');
+  });
+
+  it('sits between the summary and the area table', () => {
+    const comment = renderComment({
+      pr: 9,
+      baseSha: 'a',
+      headSha: 'b',
+      base: totals(1, 1, 0, 0),
+      head: totals(1, 1, 0, 0),
+      patch: null,
+      areas: [],
+      codecovUrl: url,
+      graphToken: 'T',
+    });
+    expect(comment.indexOf('Project coverage')).toBeLessThan(comment.indexOf('tree.svg'));
+    expect(comment.indexOf('tree.svg')).toBeLessThan(comment.indexOf('| Area |'));
   });
 });
 
