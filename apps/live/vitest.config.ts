@@ -33,6 +33,11 @@ export default defineProject({
     // when jsdom is torn down crashes a later file in the same worker with
     // `window is not defined`. The shared setup file says why in full.
     setupFiles: ['@livediagram/vitest-config/react-cleanup'],
+    // The editor's source spans app/, components/ and hooks/ beside lib/ and src/: the report counts
+    // all of it, so untested components show as such rather than vanishing from the total.
+    coverage: {
+      include: ['app/**', 'components/**', 'hooks/**', 'lib/**', 'src/**'],
+    },
   },
   resolve: {
     // One React, shared with the workspace packages. `packages/ui` peers

@@ -13,7 +13,7 @@ test lives here.
 ## When it runs
 
 The suite is a **per-PR merge gate**. **Every one of its jobs** (below) is a required status check
-on `main` beside CI's Checks, Tests and Build, so a pull request whose change breaks a browser flow
+on `main` beside CI's jobs ([CI](testing.md#ci)), so a pull request whose change breaks a browser flow
 cannot merge. A check is named after its job, so renaming a job or changing the shard count
 updates the `main` ruleset's required checks in the same change; until then a pull request waits
 on a check that never reports, or merges without one. A post-merge-only run let regressions land unseen and kept `main` red for
