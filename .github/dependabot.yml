@@ -35,10 +35,11 @@ updates:
       - dependency-name: '@huggingface/transformers'
         update-types: ['version-update:semver-major']
 
-  # Keeps the actions in ci.yml / deploy.yml / e2e.yml current. Same class of
-  # drift as the npm tree, and easy to forget because nothing here has a lockfile.
+  # Keeps the actions in ci.yml / deploy.yml / e2e.yml and the composite actions current. Same class
+  # of drift as the npm tree, and easy to forget because nothing here has a lockfile.
   - package-ecosystem: 'github-actions'
-    directory: '/' # Scans .github/workflows
+    # '/' scans .github/workflows; composite actions under .github/actions need naming.
+    directories: ['/', '/.github/actions/*']
     schedule:
       interval: 'weekly'
     commit-message:

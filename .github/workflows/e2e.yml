@@ -1,7 +1,8 @@
 name: E2E Smoke
 
 # Browser E2E (docs/specs/003-system-architecture/e2e-smoke.md "When it runs"): a per-PR merge gate.
-# Its job is a required check on main; it needs no secret, so fork PRs run it too.
+# Its gate job is a required check on main; it needs no secret, so fork PRs run it too. The suite is
+# spread over parallel jobs so the run stays within 5 minutes; the gate passes only when all did.
 on:
   pull_request:
   push:
@@ -16,71 +17,109 @@ concurrency:
   group: e2e-${{ github.ref }}
   cancel-in-progress: true
 
+# Playwright's own image carries Chromium and every system library it needs, so no run downloads or
+# apt-installs them. Its tag is the locked @playwright/test version; e2e-setup checks every job's tag.
+# Host IPC: Chromium in a container otherwise runs on a 64 MB /dev/shm.
 jobs:
   smoke:
-    name: Chromium smoke
+    name: Smoke shard ${{ matrix.shard }}/${{ strategy.job-total }}
     runs-on: ubuntu-latest
-    # Two builds (guest and Clerk-stubbed) and both suites take 13 to 16 minutes: 20 still stops a hung
-    # run well before GitHub's six hours (docs/specs/003-system-architecture/e2e-smoke.md).
-    timeout-minutes: 20
-    # Playwright's own image carries Chromium and every system library it needs, so no run downloads
-    # or apt-installs them. Its tag is the locked @playwright/test version; the first step checks it.
+    # Twice the 5-minute budget: a hung shard stops well before GitHub's six hours.
+    timeout-minutes: 10
     container:
       image: mcr.microsoft.com/playwright:v1.63.0-noble
-      # Host IPC: Chromium in a container otherwise runs on a 64 MB /dev/shm.
+      options: --user 1001 --ipc=host
+    strategy:
+      # Every shard reports, so one failing shard never hides another's failures.
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4, 5, 6]
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7
+
+      - name: Set up
+        uses: ./.github/actions/e2e-setup
+
+      # Built the way production builds it: a clean env with no NEXT_PUBLIC_API_BASE / Clerk keys,
+      # so it calls same-origin `/api` (the e2e stack proxies it) and runs in guest mode. A build
+      # id, so the stale build spec can make the server report a newer one
+      # (docs/specs/016-platform/stale-builds.md).
+      - name: Build live app
+        env:
+          NEXT_PUBLIC_BUILD_ID: e2e-build
+        run: pnpm --filter @livediagram/live build
+
+      # Playwright's webServer boots scripts/e2e-stack.mjs (api worker on local D1 + the static
+      # serve). CI=1 makes it always start fresh.
+      - name: Run smoke shard
+        run: pnpm --filter @livediagram/live test:e2e:smoke --shard=${{ matrix.shard }}/${{ strategy.job-total }}
+
+      # A failure, a flaky test that passed on retry, or a run cut off by the job timeout: each
+      # leaves the trace of its failing attempt (retain-on-first-failure) in test-results, and a
+      # finished run copies it into its report. always(): a timed-out job is cancelled, not failed.
+      - name: Upload report with traces
+        if: always() && hashFiles('apps/live/test-results/**/trace.zip', 'apps/live/playwright-report/data/*.zip') != ''
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report-shard-${{ matrix.shard }}
+          path: |
+            apps/live/playwright-report
+            apps/live/test-results
+          retention-days: 7
+
+  sites:
+    name: Sites audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    container:
+      image: mcr.microsoft.com/playwright:v1.63.0-noble
       options: --user 1001 --ipc=host
     steps:
       - name: Check out
         uses: actions/checkout@v7
 
-      - name: Set up pnpm
-        uses: pnpm/action-setup@v6
-        with:
-          version: 9.15.0
+      - name: Set up
+        uses: ./.github/actions/e2e-setup
 
-      - name: Set up Node
-        uses: actions/setup-node@v7
-        with:
-          node-version: 22
-          cache: pnpm
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      # The image's browsers belong to one Playwright version: a bump of @playwright/test without the
-      # image tag would look for a Chromium the image doesn't have.
-      - name: Check the image matches Playwright
-        run: |
-          locked="$(pnpm --filter @livediagram/live exec playwright --version | awk '{print $2}')"
-          image="$(grep -o 'mcr.microsoft.com/playwright:v[0-9.]*' .github/workflows/e2e.yml | head -n 1)"
-          echo "Playwright ${locked}, image ${image}"
-          if [ "${image}" != "mcr.microsoft.com/playwright:v${locked}" ]; then
-            echo "::error::Set the e2e.yml container image to v${locked}"
-            exit 1
-          fi
-
-      # Build the live app the way production does — a clean env with no
-      # NEXT_PUBLIC_API_BASE / Clerk keys, so it calls same-origin `/api`
-      # (the e2e stack proxies it) and runs in guest mode.
-      - name: Build live app
-        # A build id, so the stale build spec can make the server report a newer one
-        # (docs/specs/016-platform/stale-builds.md).
+      # The optical audit of the other sites needs their exports, and the stack serves help and
+      # telemetry on the live origin, so live is built beside them, all four at once.
+      - name: Build live, help, telemetry and marketing
         env:
           NEXT_PUBLIC_BUILD_ID: e2e-build
-        run: pnpm --filter @livediagram/live build
+        run: >-
+          pnpm --filter @livediagram/live --filter @livediagram/help
+          --filter @livediagram/telemetry --filter @livediagram/marketing build
 
-      # The optical-alignment audit also opens the help centre, the telemetry
-      # dashboard and the marketing site; the e2e stack serves their exports.
-      - name: Build help, telemetry and marketing
-        run: pnpm --filter @livediagram/help --filter @livediagram/telemetry --filter @livediagram/marketing build
+      - name: Run sites audit
+        run: pnpm --filter @livediagram/live test:e2e:sites
 
-      # Playwright's webServer boots scripts/e2e-stack.mjs (api worker on
-      # local D1 + the static serve). CI=1 makes it always start fresh.
-      - name: Run smoke suite
-        run: pnpm --filter @livediagram/live test:e2e
+      - name: Upload report with traces
+        if: always() && hashFiles('apps/live/test-results/**/trace.zip', 'apps/live/playwright-report/data/*.zip') != ''
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report-sites
+          path: |
+            apps/live/playwright-report
+            apps/live/test-results
+          retention-days: 7
 
-      # The signed-in specs (docs/specs/014-identity/blueprints/profile-picture.md) need Clerk ON,
-      # a build-time switch, so they run against a second export with a stub key and a fake
+  signed-in:
+    name: Signed-in specs
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    container:
+      image: mcr.microsoft.com/playwright:v1.63.0-noble
+      options: --user 1001 --ipc=host
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7
+
+      - name: Set up
+        uses: ./.github/actions/e2e-setup
+
+      # The signed-in specs (docs/specs/014-identity/blueprints/profile-picture.md) need Clerk ON, a
+      # build-time switch, so they run against their own export with a stub key and a fake
       # window.Clerk; no Clerk account or secret is involved.
       - name: Build live app with Clerk stubbed
         run: pnpm --filter @livediagram/live build:clerk-stub
@@ -88,17 +127,35 @@ jobs:
       - name: Run signed-in specs
         run: pnpm --filter @livediagram/live test:e2e:clerk-stub
 
-      # A failure, a flaky test that passed on retry, or a run cut off by the job timeout: each leaves
-      # the trace of its failing attempt (retain-on-first-failure) in its test-results folder, and a
-      # finished run copies it into its report. always(): a timed-out job is cancelled, not failed.
-      - name: Upload reports with traces
-        if: always() && hashFiles('apps/live/test-results*/**/trace.zip', 'apps/live/playwright-report*/data/*.zip') != ''
+      - name: Upload report with traces
+        if: always() && hashFiles('apps/live/test-results-clerk-stub/**/trace.zip', 'apps/live/playwright-report-clerk-stub/data/*.zip') != ''
         uses: actions/upload-artifact@v7
         with:
-          name: playwright-report
+          name: playwright-report-clerk-stub
           path: |
-            apps/live/playwright-report
             apps/live/playwright-report-clerk-stub
-            apps/live/test-results
             apps/live/test-results-clerk-stub
           retention-days: 7
+
+  # The required check on main. It stands for the whole suite, so the check's name never changes
+  # with the shard count. always(): a failed or cancelled job above still lands here and fails it,
+  # rather than leaving the check skipped, which GitHub would count as passing.
+  gate:
+    name: Chromium smoke
+    needs: [smoke, sites, signed-in]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Every e2e job passed
+        env:
+          RESULTS: ${{ join(needs.*.result, ' ') }}
+        run: |
+          set -euo pipefail
+          echo "smoke, sites, signed-in: ${RESULTS}"
+          for result in ${RESULTS}; do
+            if [ "${result}" != "success" ]; then
+              echo "::error::An e2e job ended ${result}; see its log above."
+              exit 1
+            fi
+          done
