@@ -13,7 +13,11 @@ import { createPinnedArrow, createShape, type Element } from '@livediagram/docum
 // what production memo lets through. Runs without the React Compiler, so it holds whether or not the
 // compiler memoises the parent.
 
-const renders = { boxed: new Map<string, number>(), arrow: new Map<string, number>() };
+const renders = {
+  boxed: new Map<string, number>(),
+  arrow: new Map<string, number>(),
+  frame: new Map<string, number>(),
+};
 const bump = (m: Map<string, number>, id: string) => m.set(id, (m.get(id) ?? 0) + 1);
 const drawnAs = new Map<string, Element>();
 
@@ -35,6 +39,18 @@ vi.mock('./ArrowView', async (importOriginal) => {
   };
 });
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
+// Each arrow's free-arrow frame slot, counted through its real memo comparison.
+vi.mock('./selection-aware-views', async (importOriginal) => {
+  const real = await importOriginal<typeof import('./selection-aware-views')>();
+  type FrameProps = Parameters<typeof real.FreeArrowFrame>[0];
+  return {
+    ...real,
+    FreeArrowFrame: memo(function FrameStub(props: FrameProps) {
+      bump(renders.frame, props.arrow.id);
+      return null;
+    }),
+  };
+});
 // The grips layer is re-created on every layer render, so its count is the layer's.
 const layerRenders = { count: 0 };
 vi.mock('@/components/canvas/SelectionGripsLayer', async (importOriginal) => {
@@ -137,6 +153,7 @@ function mount(first = layerProps()) {
   });
   renders.boxed.clear();
   renders.arrow.clear();
+  renders.frame.clear();
   layerRenders.count = 0;
   return view;
 }
@@ -144,6 +161,7 @@ function mount(first = layerProps()) {
 afterEach(() => {
   renders.boxed.clear();
   renders.arrow.clear();
+  renders.frame.clear();
 });
 
 describe('element views render only for their own changes', () => {
@@ -153,10 +171,11 @@ describe('element views render only for their own changes', () => {
     expect(counts()).toEqual({ boxed: 0, arrows: 0 });
   });
 
-  it('renders no element view for a zoom', () => {
+  it('renders no element view, and no arrow frame slot, for a zoom', () => {
     const { rerender } = mount();
     rerender(<CanvasElementsLayer {...layerProps({ zoom: 2 })} />);
     expect(counts()).toEqual({ boxed: 0, arrows: 0 });
+    expect(renders.frame.size).toBe(0);
   });
 
   it('renders only the elements a selection change touches', () => {

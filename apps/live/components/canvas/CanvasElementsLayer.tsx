@@ -526,7 +526,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
                 <FreeArrowFrame
                   arrow={element}
                   elements={elements}
-                  zoom={viewportZoom}
                   standsDown={
                     element.id === editingId ||
                     element.id === props.reshapingArrowId ||

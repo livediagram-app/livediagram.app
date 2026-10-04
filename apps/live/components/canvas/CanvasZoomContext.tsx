@@ -5,7 +5,7 @@
 // A zoom re-renders those consumers only; the element views around them, which take no zoom, keep
 // their last render. Outside a provider the zoom is 1.
 
-import { createContext, useContext, type ReactNode } from 'react';
+import { createContext, useContext, type ComponentProps, type ReactNode } from 'react';
 
 const CanvasZoomContext = createContext(1);
 
@@ -15,4 +15,11 @@ export function CanvasZoomProvider({ zoom, children }: { zoom: number; children:
 
 export function useCanvasZoom(): number {
   return useContext(CanvasZoomContext);
+}
+
+// A div counter-scaled to keep its size on screen. It reads the zoom itself, so whatever renders it
+// takes no zoom and does not render for one.
+export function CounterScaled({ style, ...props }: ComponentProps<'div'>) {
+  const zoom = useCanvasZoom();
+  return <div {...props} style={{ ...style, transform: `scale(${1 / zoom})` }} />;
 }

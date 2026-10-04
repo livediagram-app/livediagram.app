@@ -11,6 +11,7 @@ import { ArrowView, arrowViewPropsEqual } from '@/components/canvas/ArrowView';
 import { BoxedElementView } from '@/components/canvas/BoxedElementView';
 import { FreeArrowSelection } from '@/components/canvas/FreeArrowSelection';
 import { BoxGripsPortal } from '@/components/canvas/SelectionGripsLayer';
+import { useCanvasZoom } from '@/components/canvas/CanvasZoomContext';
 import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
 import { elementGrips } from '@/lib/canvas-selection';
 import { elementSelectionFlags, sameFlags, type Selection } from '@/lib/selection-store';
@@ -63,14 +64,12 @@ export const SelectableArrowView = memo(
 export const FreeArrowFrame = memo(function FreeArrowFrame({
   arrow,
   elements,
-  zoom,
   standsDown,
   onBeginArrowTranslate,
   onBeginArrowScale,
 }: {
   arrow: ArrowElement;
   elements: Element[];
-  zoom: number;
   // Editing, reshaping, read-only, tab-locked or painting: any of them hides the frame.
   standsDown: boolean;
   onBeginArrowTranslate: (id: string, e: ReactPointerEvent) => void;
@@ -89,6 +88,25 @@ export const FreeArrowFrame = memo(function FreeArrowFrame({
     arrow.locked !== true;
   if (!framed) return null;
   return (
+    <FramedArrow
+      arrow={arrow}
+      elements={elements}
+      onBeginArrowTranslate={onBeginArrowTranslate}
+      onBeginArrowScale={onBeginArrowScale}
+    />
+  );
+});
+
+// The one framed arrow's frame: it alone follows the zoom (its grips keep their screen size), so a
+// zoom renders it and no other arrow's slot (docs/specs/008-canvas/canvas-performance.md).
+function FramedArrow({
+  arrow,
+  elements,
+  onBeginArrowTranslate,
+  onBeginArrowScale,
+}: Omit<ComponentProps<typeof FreeArrowFrame>, 'standsDown'>) {
+  const zoom = useCanvasZoom();
+  return (
     <BoxGripsPortal>
       <FreeArrowSelection
         arrowId={arrow.id}
@@ -99,4 +117,4 @@ export const FreeArrowFrame = memo(function FreeArrowFrame({
       />
     </BoxGripsPortal>
   );
-});
+}
