@@ -37,3 +37,8 @@ export function cellText(text: string, inEntity = false): string {
   const escaped = JSON.stringify(text).slice(1, -1).replace(/\|/g, '\\|');
   return inEntity ? escaped.replace(/;/g, '\\;').replace(/\}/g, '\\}') : escaped;
 }
+
+// `1 element`, `2 elements`.
+export function plural(count: number, one: string, many: string): string {
+  return `${count} ${count === 1 ? one : many}`;
+}

@@ -3,7 +3,7 @@
 import type { Element } from '@livediagram/document';
 import type { ViewHeader, ViewName } from '@livediagram/api-schema';
 import { threadOf } from './fields';
-import { jsonString } from './text';
+import { jsonString, plural } from './text';
 
 export type ElementCounts = ViewHeader['counts'];
 export type HeaderFacts = Omit<ViewHeader, 'view'>;
@@ -30,8 +30,6 @@ export function threadCounts(printed: readonly Element[]): ViewHeader['threads']
 export function viewHeader(view: ViewName, facts: HeaderFacts): ViewHeader {
   return { view, ...facts };
 }
-
-const plural = (count: number, one: string, many: string) => `${count} ${count === 1 ? one : many}`;
 
 // Everything after the tab's name, ` · `-joined; `overview` reuses it on each tab line.
 export function headerSegments(facts: HeaderFacts): string {
