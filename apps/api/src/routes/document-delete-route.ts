@@ -54,7 +54,7 @@ export async function handleDocumentDelete(ctx: RouteContext, id: string): Promi
   await trashDocument(env, id, Date.now());
   // Open sessions end now, with the deleted state; later joins are refused
   // because the room's admission reads live documents only.
-  ctx.waitUntil?.(broadcastDocumentTrashed(env, existing));
+  ctx.waitUntil?.(broadcastDocumentTrashed(env, existing.id));
   if (permanent) {
     await purgeDocuments(env, [id]);
     console.info('[trash] deleted permanently', id);

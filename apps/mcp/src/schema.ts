@@ -9,7 +9,6 @@
 // isValidTab in the document package stays the runtime guard, so
 // the structure still lives in one authoritative place (this string is guidance,
 // not a second validator).
-import { GRAPH_LABEL_MAX } from './graph-input';
 import { z } from 'zod';
 import {
   ANCHORS,
@@ -18,6 +17,7 @@ import {
   CODE_THEMES,
   ELEMENT_TYPES,
   ENTITY_MAX_FIELDS,
+  GRAPH_LABEL_MAX,
   NAME_MAX_LENGTH,
   SHAPE_KINDS,
   STICKY_PRESETS,
@@ -403,6 +403,15 @@ export const updateDocumentShape = {
   documentId: z.string().describe('The document to edit (from find_documents / read_document).'),
   tabId: z.string().optional().describe('Which tab to edit; defaults to the first.'),
   mode: z.enum(['replace', 'ops']).describe('"replace" the whole tab, or apply granular "ops".'),
+  rev: z
+    .number()
+    .int()
+    .min(0)
+    .optional()
+    .describe(
+      'ops mode: the tab revision read_document returned. An element a person changed since is then a ' +
+        'conflict, never silently overwritten; read again and redo the edit.',
+    ),
   graph: graphField,
   mermaid: mermaidField,
   elements: elementArray

@@ -30,7 +30,7 @@ export async function getTab(env: Env, documentId: string, tabId: string): Promi
   // also carries the per-document order_index, so the returned summary's
   // position is correct for whichever document the caller asked about.
   const row = await env.DB.prepare(
-    `SELECT t.id, dt.document_id, t.name, dt.order_index, t.data, t.updated_at, dt.folder
+    `SELECT t.id, dt.document_id, t.name, dt.order_index, t.data, t.updated_at, t.rev, dt.folder
        FROM tabs t
        JOIN document_tabs dt ON dt.tab_id = t.id
       WHERE t.id = ? AND dt.document_id = ?`,
@@ -117,55 +117,113 @@ export async function getTabData(
   return row?.data ?? null;
 }
 
-// Full upsert for a single tab. Splits the live-app's Tab type into
-// columns + a `data` JSON blob (everything except id + name) so list
-// queries can return summaries without parsing element trees.
-export async function upsertTab(
+// How a tab write moves the revision (docs/specs/024-agents/agent-changesets.md "The tab revision"):
+// `advance` from whatever is stored, or to exactly `expected + 1`, which the trigger
+// `tabs_rev_advances` turns into a compare-and-swap (CS3).
+export type TabRevWrite = { advance: true } | { expected: number };
+
+// The statements of one tab write. Splits the live-app's Tab type into columns + a `data` JSON
+// blob (everything except id + name) so list queries can return summaries without parsing element
+// trees. The body goes to `tabs` (RETURNING its new `rev`, always first), this document's position
+// to its `document_tabs` link (docs/specs/006-document/tab-document-many-to-many.md), the
+// document's `saved_at`, and the collaboration and image reference indexes, replaced in the SAME
+// batch as the blob they mirror so they can never drift. Exported so a changeset batches its
+// record beside the write: a lost compare-and-swap then aborts the whole batch.
+export function tabWriteStatements(
   env: Env,
   documentId: string,
   input: Tab,
   orderIndex: number,
-): Promise<void> {
+  revision: TabRevWrite,
+  now = Date.now(),
+): D1PreparedStatement[] {
   // Action panel lists are bounded here, the one place every tab write
   // meets (docs/specs/012-collaboration/action-panel.md "The data").
   const tab = { ...input, elements: capElementActions(input.elements) };
   const { id, name, ...rest } = tab;
   const data = JSON.stringify(rest);
   assertTabDataFits(id, data, 'upsertTab');
-  const now = Date.now();
-  // The body goes to `tabs`, this document's position to its `document_tabs`
-  // link (docs/specs/006-document/tab-document-many-to-many.md). The two writes
-  // are independent — even if the link upsert no-ops (existing entry)
-  // the tab body still gets updated.
-  // One DB.batch instead of three sequential round trips: this runs
-  // once per 600ms per active editor (the autosave), so the two extra
-  // serial D1 hops were the single largest latency item on the path.
-  await env.DB.batch([
+  const advance = 'advance' in revision;
+  const insertRev = advance ? 1 : revision.expected + 1;
+  return [
     env.DB.prepare(
-      `INSERT INTO tabs (id, name, data, updated_at, element_count)
-       VALUES (?, ?, ?, ?, ?)
+      `INSERT INTO tabs (id, name, data, updated_at, element_count, rev)
+       VALUES (?, ?, ?, ?, ?, ?)
        ON CONFLICT(id) DO UPDATE SET
          name = excluded.name,
          data = excluded.data,
          updated_at = excluded.updated_at,
-         element_count = excluded.element_count`,
-    ).bind(id, name, data, now, tab.elements.length),
+         element_count = excluded.element_count,
+         rev = ${advance ? 'tabs.rev + 1' : 'excluded.rev'}
+       RETURNING rev`,
+    ).bind(id, name, data, now, tab.elements.length, insertRev),
     env.DB.prepare(
       `INSERT INTO document_tabs (document_id, tab_id, order_index, added_at)
        VALUES (?, ?, ?, ?)
        ON CONFLICT (document_id, tab_id) DO UPDATE SET order_index = excluded.order_index`,
     ).bind(documentId, id, orderIndex, now),
-    // Bump the document's saved_at so the Explorer's "Updated X ago"
-    // line stays accurate. Pure metadata write — no element JSON.
+    // The Explorer's "Updated X ago" line. Pure metadata write — no element JSON.
     env.DB.prepare('UPDATE documents SET saved_at = ? WHERE id = ?').bind(now, documentId),
-    // The collaboration index (docs/specs/013-workspace/activity-page.md §2.1): the tab's action + thread
-    // rows, replaced in the SAME batch as the blob they mirror so the two
-    // can never drift. After the tabs upsert, which the rows' FK needs.
+    // The collaboration index (docs/specs/013-workspace/activity-page.md §2.1), after the tabs
+    // upsert, which the rows' FK needs.
     ...collabIndexStatements(env, id, tab.elements),
-    // The image reference index (docs/specs/009-elements/images.md, "Reference index"), for the same
-    // reason: a reference this batch missed is an image the retention sweep reaps.
+    // The image reference index (docs/specs/009-elements/images.md, "Reference index"): a reference
+    // this batch missed is an image the retention sweep reaps.
     ...imageRefReplaceStatements(env, id, imageRefIds(tab.elements)),
-  ]);
+  ];
+}
+
+// The revision the first statement of a tabWriteStatements batch returned.
+export function revFromBatch(results: readonly unknown[]): number {
+  const first = results[0] as { results?: { rev?: unknown }[] } | undefined;
+  const rev = first?.results?.[0]?.rev;
+  if (typeof rev !== 'number') throw new Error('tab write returned no revision');
+  return rev;
+}
+
+// A batch the trigger aborted because the tab moved since it was read.
+export function isTabRevStale(err: unknown): boolean {
+  return err instanceof Error && err.message.includes('tab_rev_stale');
+}
+
+// Full upsert for a single tab, advancing its revision from whatever is stored. One batch: the
+// extra serial D1 hops were once the largest latency item on a save. Answers the new revision.
+export async function upsertTab(
+  env: Env,
+  documentId: string,
+  input: Tab,
+  orderIndex: number,
+): Promise<number> {
+  const results = await env.DB.batch(
+    tabWriteStatements(env, documentId, input, orderIndex, { advance: true }),
+  );
+  return revFromBatch(results);
+}
+
+// A tab write at the revision the caller read: lands as `expectedRev + 1`, or throws
+// `tab_rev_stale` (isTabRevStale) and writes nothing when the tab moved since (CS3, CS4).
+export async function upsertTabAtRev(
+  env: Env,
+  documentId: string,
+  input: Tab,
+  orderIndex: number,
+  expectedRev: number,
+): Promise<number> {
+  const results = await env.DB.batch(
+    tabWriteStatements(env, documentId, input, orderIndex, { expected: expectedRev }),
+  );
+  return revFromBatch(results);
+}
+
+// A tab rename (docs/specs/024-agents/agent-changesets.md "Whole-tab saves and tab renames"): the
+// name column only, advancing the revision (CS42). Answers the new revision, or null for no tab.
+export async function renameTab(env: Env, tabId: string, name: string): Promise<number | null> {
+  const row = await env.DB.prepare(
+    'UPDATE tabs SET name = ?, rev = rev + 1, updated_at = ? WHERE id = ? RETURNING rev',
+  )
+    .bind(name, Date.now(), tabId)
+    .first<{ rev: number }>();
+  return row?.rev ?? null;
 }
 
 // Bulk-seed a fresh document's tabs in one batch (create path). The
@@ -194,13 +252,14 @@ export async function seedTabs(
     const data = JSON.stringify(rest);
     return [
       env.DB.prepare(
-        `INSERT INTO tabs (id, name, data, updated_at, element_count)
-         VALUES (?, ?, ?, ?, ?)
+        `INSERT INTO tabs (id, name, data, updated_at, element_count, rev)
+         VALUES (?, ?, ?, ?, ?, 1)
          ON CONFLICT(id) DO UPDATE SET
            name = excluded.name,
            data = excluded.data,
            updated_at = excluded.updated_at,
-           element_count = excluded.element_count`,
+           element_count = excluded.element_count,
+           rev = tabs.rev + 1`,
       ).bind(id, name, data, now, tab.elements.length),
       env.DB.prepare(
         `INSERT INTO document_tabs (document_id, tab_id, order_index, added_at)
@@ -419,7 +478,7 @@ export async function swapTabData(
   const now = Date.now();
   const [res] = await env.DB.batch([
     env.DB.prepare(
-      'UPDATE tabs SET data = ?, updated_at = ?, element_count = ? WHERE id = ? AND data = ?',
+      'UPDATE tabs SET data = ?, updated_at = ?, element_count = ?, rev = rev + 1 WHERE id = ? AND data = ?',
     ).bind(nextData, now, nextElementCount, tabId, expectedData),
     ...imageRefAddStatements(env, tabId, imageRefIdsFromData(nextData)),
   ]);

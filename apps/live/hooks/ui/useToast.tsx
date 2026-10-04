@@ -56,11 +56,24 @@ export type ToastOffer = {
   onDecline: () => void;
 };
 
+// An action toast (docs/specs/024-agents/agent-changesets.md "In the editor"): an info toast with
+// buttons that names a change and offers to act on it. Upserted in place by `key`, so a burst
+// updates one toast; no timeout (WCAG 2.2.1): it stays until dismissed or replaced.
+export type ToastAction = {
+  label: string;
+  ariaLabel?: string;
+  onSelect: () => void;
+  disabled?: boolean;
+};
+export type ToastActionSpec = { key: string; message: string; actions: ToastAction[] };
+
 type ToastEntry = {
   id: number;
   message: string;
   tone: ToastTone;
   offer?: ToastOffer;
+  key?: string;
+  actions?: ToastAction[];
 };
 
 type ToastApi = {
@@ -68,6 +81,7 @@ type ToastApi = {
   success: (message: string) => void;
   info: (message: string) => void;
   offer: (offer: ToastOffer) => void;
+  action: (spec: ToastActionSpec) => void;
 };
 
 const noop: ToastApi = {
@@ -75,6 +89,7 @@ const noop: ToastApi = {
   success: () => {},
   info: () => {},
   offer: () => {},
+  action: () => {},
 };
 
 const ToastContext = createContext<ToastApi>(noop);
@@ -102,14 +117,33 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  // Info tone, so the "Show notifications" preference silences it like any other.
+  const upsertAction = useCallback((spec: ToastActionSpec) => {
+    if (readUserPreferences().notificationsEnabled === false) return;
+    setToasts((prev) => {
+      const entry = {
+        message: spec.message,
+        tone: 'info' as const,
+        key: spec.key,
+        actions: spec.actions,
+      };
+      const at = prev.findIndex((t) => t.key === spec.key);
+      if (at === -1) return [...prev, { id: nextId++, ...entry }];
+      const next = prev.slice();
+      next[at] = { ...prev[at]!, ...entry };
+      return next;
+    });
+  }, []);
+
   const api = useMemo<ToastApi>(
     () => ({
       error: (msg) => push(msg, 'error'),
       success: (msg) => push(msg, 'success'),
       info: (msg) => push(msg, 'info'),
       offer: (offer) => push(offer.message, 'info', offer),
+      action: upsertAction,
     }),
-    [push],
+    [push, upsertAction],
   );
 
   return (
@@ -153,11 +187,12 @@ function ToastStack({
 
 function ToastBubble({ toast, onDismiss }: { toast: ToastEntry; onDismiss: () => void }) {
   const offer = toast.offer;
+  const waits = offer !== undefined || toast.actions !== undefined;
   useEffect(() => {
-    if (offer) return;
+    if (waits) return;
     const id = setTimeout(onDismiss, AUTO_DISMISS_MS);
     return () => clearTimeout(id);
-  }, [onDismiss, offer]);
+  }, [onDismiss, waits]);
   const answer = (confirm: boolean) => {
     onDismiss();
     if (!offer) return;
@@ -196,6 +231,25 @@ function ToastBubble({ toast, onDismiss }: { toast: ToastEntry; onDismiss: () =>
             >
               <ButtonContent>{offer.declineLabel}</ButtonContent>
             </button>
+          </div>
+        ) : null}
+        {toast.actions && toast.actions.length > 0 ? (
+          <div className="flex flex-wrap gap-2">
+            {toast.actions.map((action, i) => (
+              <button
+                key={action.label}
+                type="button"
+                onClick={action.onSelect}
+                disabled={action.disabled}
+                aria-label={action.ariaLabel}
+                className={buttonClassName({
+                  size: 'xs',
+                  variant: i === 0 ? 'secondary' : 'primary',
+                })}
+              >
+                <ButtonContent>{action.label}</ButtonContent>
+              </button>
+            ))}
           </div>
         ) : null}
       </div>

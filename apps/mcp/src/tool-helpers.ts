@@ -2,8 +2,8 @@
 // error result shapes, the deep links, the bearer-token guard every tool
 // uses, and the load-a-tab sequence the read and edit tools share.
 // Deliberately render-free, so it can be unit-tested: the inline-PNG
-// result lives in image-result.ts and the pure tab builders in
-// tab-builders.ts, for the same reason. tools.ts keeps the registrations.
+// result lives in image-result.ts and the pure tab builders in @livediagram/document
+// and @livediagram/templates. tools.ts keeps the registrations.
 
 import type { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js';
 import type { LiveDoc, DocumentResponse, TabRecord, TabResponse } from '@livediagram/api-schema';

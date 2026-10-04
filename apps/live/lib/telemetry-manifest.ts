@@ -30,6 +30,7 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Activity·Loaded',
   'Activity·Opened',
   'Activity·Selected',
+  'Agent·Opened',
   'Canvas·Changed',
   'Canvas·Used',
   'Canvas·Zoomed',

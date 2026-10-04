@@ -166,6 +166,8 @@ import { useTabScope } from './useTabScope';
 import { useEditorPersistence } from './editor-persistence';
 import { useEditorRealtime } from './editor-realtime';
 import { useAssignRef, useLatest } from '@/hooks/ui/useLatest';
+import { boundsOfElements } from '@/lib/changeset-reveals';
+import { useChangesetFeed } from './useChangesetFeed';
 import { useDragPreviewBroadcast } from '@/hooks/collab/useDragPreviewBroadcast';
 import { useArticleCaretBroadcast } from '@/hooks/collab/useArticleCaretBroadcast';
 
@@ -780,6 +782,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     setSavedAt,
     setDocumentList,
     onDocumentTrashed: () => documentTrashed.setDocumentTrashed(true),
+    changesetSeen: realtime.changesetSeen.seen,
   });
 
   // Persist self only when name or color actually changed. Without
@@ -804,7 +807,13 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     refreshDocumentList,
     refreshSharedList,
     resetTabs,
-    refs: { lastPersistedSelfRef, lastSavedTabsRef, lastSavedNameRef, loadedTabIdsRef },
+    refs: {
+      lastPersistedSelfRef,
+      lastSavedTabsRef,
+      lastSavedNameRef,
+      loadedTabIdsRef,
+      noteChangesetSeen: realtime.changesetSeen.noteSeen,
+    },
     set: {
       setActiveId,
       setDocumentId,
@@ -819,6 +828,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
       setDocumentShareable,
       setDocumentShareCode,
       setDocumentTeamId,
+      setDocumentServerStored: realtime.setDocumentServerStored,
       setHydrated,
       setIsOwner,
       setLoadedExistingDocument,
@@ -881,6 +891,25 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     applyRemoteTabs,
     lastSavedTabsRef,
     setTabLoadErrors,
+    noteChangesetSeen: realtime.changesetSeen.noteSeen,
+  });
+  // Agent changesets relayed through the room (docs/specs/024-agents/agent-changesets.md "In the
+  // editor"): applied, outlined, toasted. See useChangesetFeed.
+  const changesetFeed = useChangesetFeed({
+    documentId,
+    selfId: selfParticipant.id,
+    sessionShareCodeRef,
+    seenRef: realtime.changesetSeen.seenRef,
+    noteSeen: realtime.changesetSeen.noteSeen,
+    loadedTabIdsRef,
+    markTabLoaded,
+    applyRemoteTabs,
+    saveBaseline: { tabs: lastSavedTabsRef, name: lastSavedNameRef, journal: remoteOpJournalRef },
+    countAppliedOp,
+    refetchTabs: resyncFromServer,
+    // Declared with the viewport, further down.
+    revealInView: (tabId, ids) => revealChangesetRef.current?.(tabId, ids),
+    toast,
   });
   // Realtime room: WebSocket per shared document (presence + ops). See
   // useRoomConnection.
@@ -953,7 +982,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   useRoomConnection({
     hydrated,
     documentId,
-    documentShareable,
+    documentServerStored: realtime.documentServerStored,
     documentTeamId,
     selfParticipant,
     sessionShareCode,
@@ -989,6 +1018,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     receiveQa: qaBoard.receiveQa,
     receiveDocumentTrashed: () => documentTrashed.setDocumentTrashed(true),
     resyncFromServer,
+    receiveChangeset: changesetFeed.receiveChangeset,
+    onRoomJoined: () => void changesetFeed.checkSinceLoad(),
   });
 
   // Broadcast local selection + active-tab focus to peers (presence
@@ -996,9 +1027,9 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   usePresenceBroadcast({
     hydrated,
     documentId,
-    documentShareable,
-    documentTeamId,
+    documentServerStored: realtime.documentServerStored,
     selectedId,
+    multiSelectedIds,
     activeId,
     roomRef,
   });
@@ -1019,6 +1050,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     retryNonce: tabLoadRetryNonce,
     lastSavedTabsRef,
     resetTabs,
+    noteChangesetSeen: realtime.changesetSeen.noteSeen,
   });
 
   // Teams the signed-in user belongs to (docs/specs/013-workspace/teams.md), surfaced in the
@@ -1378,6 +1410,18 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     },
     onCentreOn: centreOn,
     isAlreadyThere: (tabId, at, zoom) => tabId === activeId && isCentredOn(at, zoom),
+  });
+  // The toast's Show (docs/specs/024-agents/agent-changesets.md "In the editor", CS34): the tab, then
+  // every element the changeset touched that is still there, framed no closer than 100%.
+  const revealChangesetRef = useLatest((tabId: string, ids: readonly string[]) => {
+    const tab = tabsRef.current.find((t) => t.id === tabId);
+    const bounds = tab ? boundsOfElements(tab.elements, ids) : null;
+    if (!bounds) return;
+    if (tabId !== activeId) {
+      skipTabFitRef.current = tabId;
+      setActiveId(tabId);
+    }
+    fitToBounds(bounds, { maxZoom: 1 });
   });
   const receiveFocusRef = useLatest<
     ((from: string, tabId: string, at: { x: number; y: number }, zoom: number) => void) | null
@@ -3034,6 +3078,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   });
 
   return {
+    // The outlines relayed changesets draw (useChangesetFeed), for the canvas overlay.
+    changesetReveals: changesetFeed.reveals,
     // The person's editor mode on the active tab, for the mode switch and the canvas.
     editorMode,
     leaveIllustrate,

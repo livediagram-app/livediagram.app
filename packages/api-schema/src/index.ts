@@ -172,7 +172,11 @@ export type TabSummary = {
 // row's audit metadata. `folder` here is the per-document membership
 // from the document_tabs link (docs/specs/006-document/tab-folders.md), distinct from anything in the
 // tab body — it is never stored in the `tabs.data` blob.
+//
+// `rev` (docs/specs/024-agents/agent-changesets.md "The tab revision") advances with every write
+// of the tab: an editor save, a changeset, a revert, a rename. The read also carries it as a weak ETag.
 export type TabRecord = Tab & {
+  rev: number;
   documentId: string;
   orderIndex: number;
   updatedAt: number;
@@ -557,6 +561,7 @@ export * from './page-views';
 export * from './read-notes';
 export * from './poll';
 export * from './room-messages';
+export * from './changesets';
 export * from './telemetry-schema';
 export * from './server-emitted-events';
 export * from './error-telemetry';

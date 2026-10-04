@@ -1282,6 +1282,268 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
+  "ChangesetAuthor": {
+    "additionalProperties": false,
+    "properties": {
+      "color": {
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "name",
+      "color"
+    ],
+    "type": "object"
+  },
+  "ChangesetBase": {
+    "additionalProperties": false,
+    "properties": {
+      "elements": {
+        "additionalProperties": {
+          "type": "string"
+        },
+        "type": "object"
+      },
+      "rev": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "rev"
+    ],
+    "type": "object"
+  },
+  "ChangesetCounts": {
+    "additionalProperties": false,
+    "properties": {
+      "added": {
+        "type": "number"
+      },
+      "changed": {
+        "type": "number"
+      },
+      "removed": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "added",
+      "changed",
+      "removed"
+    ],
+    "type": "object"
+  },
+  "ChangesetDetail": {
+    "additionalProperties": false,
+    "properties": {
+      "changeset": {
+        "$ref": "#/components/schemas/ChangesetSummary"
+      },
+      "results": {
+        "items": {
+          "$ref": "#/components/schemas/ResultLine"
+        },
+        "type": "array"
+      },
+      "text": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "changeset",
+      "results",
+      "text"
+    ],
+    "type": "object"
+  },
+  "ChangesetReplaceBody": {
+    "additionalProperties": false,
+    "properties": {
+      "elements": {
+        "items": {},
+        "type": "array"
+      },
+      "graph": {},
+      "layout": {
+        "enum": [
+          "auto",
+          "preserve"
+        ],
+        "type": "string"
+      },
+      "mermaid": {
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      },
+      "template": {
+        "type": "string"
+      },
+      "theme": {
+        "type": "string"
+      }
+    },
+    "type": "object"
+  },
+  "ChangesetRequest": {
+    "additionalProperties": false,
+    "properties": {
+      "base": {
+        "$ref": "#/components/schemas/ChangesetBase"
+      },
+      "operations": {
+        "anyOf": [
+          {
+            "items": {},
+            "type": "array"
+          },
+          {
+            "type": "string"
+          }
+        ]
+      },
+      "replace": {
+        "$ref": "#/components/schemas/ChangesetReplaceBody"
+      },
+      "strict": {
+        "type": "boolean"
+      },
+      "summary": {
+        "type": "string"
+      }
+    },
+    "type": "object"
+  },
+  "ChangesetResponse": {
+    "additionalProperties": false,
+    "properties": {
+      "changeset": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/ChangesetWritten"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "dryRun": {
+        "type": "boolean"
+      },
+      "lint": {
+        "type": "null"
+      },
+      "results": {
+        "items": {
+          "$ref": "#/components/schemas/ResultLine"
+        },
+        "type": "array"
+      },
+      "text": {
+        "type": "string"
+      },
+      "warnings": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      }
+    },
+    "required": [
+      "dryRun",
+      "changeset",
+      "results",
+      "text",
+      "warnings",
+      "lint"
+    ],
+    "type": "object"
+  },
+  "ChangesetSummary": {
+    "additionalProperties": false,
+    "properties": {
+      "agent": {
+        "type": "boolean"
+      },
+      "author": {
+        "$ref": "#/components/schemas/ChangesetAuthor"
+      },
+      "counts": {
+        "$ref": "#/components/schemas/ChangesetCounts"
+      },
+      "createdAt": {
+        "type": "number"
+      },
+      "id": {
+        "type": "string"
+      },
+      "rev": {
+        "type": "number"
+      },
+      "revertOf": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "summary": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "tabId": {
+        "type": "string"
+      },
+      "tokenId": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "id",
+      "tabId",
+      "rev",
+      "author",
+      "agent",
+      "summary",
+      "counts",
+      "revertOf",
+      "createdAt"
+    ],
+    "type": "object"
+  },
+  "ChangesetWritten": {
+    "additionalProperties": false,
+    "properties": {
+      "id": {
+        "type": "string"
+      },
+      "previousRev": {
+        "type": "number"
+      },
+      "rebasedOver": {
+        "type": "number"
+      },
+      "rev": {
+        "type": "number"
+      },
+      "tabId": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "id",
+      "tabId",
+      "rev",
+      "previousRev",
+      "rebasedOver"
+    ],
+    "type": "object"
+  },
   "ChartLegendPosition": {
     "enum": [
       "top",
@@ -2921,6 +3183,36 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "const": "unseen_folder",
     "type": "string"
   },
+  "EditWarning": {
+    "additionalProperties": false,
+    "properties": {
+      "code": {
+        "$ref": "#/components/schemas/EditWarningCode"
+      },
+      "message": {
+        "type": "string"
+      },
+      "ref": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "code",
+      "message"
+    ],
+    "type": "object"
+  },
+  "EditWarningCode": {
+    "enum": [
+      "no_base",
+      "shape_coerced",
+      "value_coerced",
+      "label_capped",
+      "colour_overrides_theme",
+      "arrows_freed"
+    ],
+    "type": "string"
+  },
   "EditorMode": {
     "enum": [
       "diagram",
@@ -3262,6 +3554,24 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "hotspot"
     ],
     "type": "string"
+  },
+  "FieldChange": {
+    "additionalProperties": false,
+    "properties": {
+      "from": {
+        "$ref": "#/components/schemas/JsonValue"
+      },
+      "key": {
+        "type": "string"
+      },
+      "to": {
+        "$ref": "#/components/schemas/JsonValue"
+      }
+    },
+    "required": [
+      "key"
+    ],
+    "type": "object"
   },
   "Folder": {
     "additionalProperties": false,
@@ -4137,6 +4447,34 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "JsonValue": {
+    "anyOf": [
+      {
+        "type": "string"
+      },
+      {
+        "type": "number"
+      },
+      {
+        "type": "boolean"
+      },
+      {
+        "type": "null"
+      },
+      {
+        "items": {
+          "$ref": "#/components/schemas/JsonValue"
+        },
+        "type": "array"
+      },
+      {
+        "additionalProperties": {
+          "$ref": "#/components/schemas/JsonValue"
+        },
+        "type": "object"
+      }
+    ]
+  },
   "KnownTimelineEventType": {
     "enum": [
       "document_created",
@@ -4952,6 +5290,269 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     },
     "required": [
       "texts"
+    ],
+    "type": "object"
+  },
+  "ResultLine": {
+    "anyOf": [
+      {
+        "additionalProperties": false,
+        "properties": {
+          "at": {
+            "items": {
+              "type": "number"
+            },
+            "maxItems": 2,
+            "minItems": 2,
+            "type": "array"
+          },
+          "ends": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 2,
+            "minItems": 2,
+            "type": "array"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "mark": {
+            "const": "+",
+            "type": "string"
+          },
+          "ref": {
+            "type": "string"
+          },
+          "size": {
+            "items": {
+              "type": "number"
+            },
+            "maxItems": 2,
+            "minItems": 2,
+            "type": "array"
+          },
+          "styleOf": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "mark",
+          "ref",
+          "kind"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "changes": {
+            "items": {
+              "$ref": "#/components/schemas/FieldChange"
+            },
+            "type": "array"
+          },
+          "mark": {
+            "const": "~",
+            "type": "string"
+          },
+          "ref": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "mark",
+          "ref",
+          "changes"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "ends": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 2,
+            "minItems": 2,
+            "type": "array"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "mark": {
+            "const": "-",
+            "type": "string"
+          },
+          "pinnedTo": {
+            "type": "string"
+          },
+          "reason": {
+            "enum": [
+              "pinned",
+              "unwrapped"
+            ],
+            "type": "string"
+          },
+          "ref": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "mark",
+          "ref",
+          "kind"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "delta": {
+            "items": {
+              "type": "number"
+            },
+            "maxItems": 2,
+            "minItems": 2,
+            "type": "array"
+          },
+          "mark": {
+            "const": "»",
+            "type": "string"
+          },
+          "reason": {
+            "enum": [
+              "make room",
+              "carried",
+              "laid out",
+              "landed on a lane"
+            ],
+            "type": "string"
+          },
+          "refs": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "mark",
+          "refs",
+          "reason"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "joined": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "left": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "mark": {
+            "const": "container",
+            "type": "string"
+          },
+          "ref": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "mark",
+          "ref",
+          "joined",
+          "left"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "mark": {
+            "const": "!",
+            "type": "string"
+          },
+          "warning": {
+            "$ref": "#/components/schemas/EditWarning"
+          }
+        },
+        "required": [
+          "mark",
+          "warning"
+        ],
+        "type": "object"
+      }
+    ]
+  },
+  "RevertKept": {
+    "additionalProperties": false,
+    "properties": {
+      "id": {
+        "type": "string"
+      },
+      "reason": {
+        "enum": [
+          "changed",
+          "gone",
+          "present",
+          "order"
+        ],
+        "type": "string"
+      }
+    },
+    "required": [
+      "id",
+      "reason"
+    ],
+    "type": "object"
+  },
+  "RevertResponse": {
+    "additionalProperties": false,
+    "properties": {
+      "changeset": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/ChangesetWritten"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "kept": {
+        "items": {
+          "$ref": "#/components/schemas/RevertKept"
+        },
+        "type": "array"
+      },
+      "lint": {
+        "type": "null"
+      },
+      "reverted": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "changeset",
+      "reverted",
+      "kept",
+      "lint"
     ],
     "type": "object"
   },
@@ -6027,6 +6628,117 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
+  "TabRecord": {
+    "additionalProperties": false,
+    "properties": {
+      "articles": {
+        "additionalProperties": {
+          "$ref": "#/components/schemas/ArticleFlow"
+        },
+        "type": "object"
+      },
+      "backgroundAnimationSpeed": {
+        "type": "number"
+      },
+      "backgroundColor": {
+        "type": "string"
+      },
+      "backgroundOpacity": {
+        "type": "number"
+      },
+      "backgroundPattern": {
+        "$ref": "#/components/schemas/BackgroundPattern"
+      },
+      "backgroundPatternScale": {
+        "type": "number"
+      },
+      "defaultTextSize": {
+        "$ref": "#/components/schemas/TextSize"
+      },
+      "documentId": {
+        "type": "string"
+      },
+      "elements": {
+        "items": {
+          "$ref": "#/components/schemas/Element"
+        },
+        "type": "array"
+      },
+      "esLanesSettled": {
+        "type": "boolean"
+      },
+      "folder": {
+        "type": "string"
+      },
+      "font": {
+        "type": "string"
+      },
+      "id": {
+        "$ref": "#/components/schemas/TabId"
+      },
+      "kind": {
+        "$ref": "#/components/schemas/TabKind"
+      },
+      "layers": {
+        "items": {
+          "$ref": "#/components/schemas/Layer"
+        },
+        "type": "array"
+      },
+      "locked": {
+        "type": "boolean"
+      },
+      "name": {
+        "type": "string"
+      },
+      "opensIn": {
+        "$ref": "#/components/schemas/EditorMode"
+      },
+      "orderIndex": {
+        "type": "number"
+      },
+      "pageOrientation": {
+        "$ref": "#/components/schemas/PageOrientation"
+      },
+      "pages": {
+        "items": {
+          "$ref": "#/components/schemas/IllustratePage"
+        },
+        "type": "array"
+      },
+      "patternColor": {
+        "type": "string"
+      },
+      "rev": {
+        "type": "number"
+      },
+      "templateChosen": {
+        "type": "boolean"
+      },
+      "theme": {
+        "type": "string"
+      },
+      "timer": {
+        "$ref": "#/components/schemas/TabTimer"
+      },
+      "updatedAt": {
+        "type": "number"
+      },
+      "vote": {
+        "$ref": "#/components/schemas/TabVote"
+      }
+    },
+    "required": [
+      "documentId",
+      "elements",
+      "id",
+      "name",
+      "orderIndex",
+      "rev",
+      "updatedAt"
+    ],
+    "type": "object"
+  },
   "TabSummary": {
     "additionalProperties": false,
     "properties": {
@@ -6606,6 +7318,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "Returned",
       "Restored",
       "Applied",
+      "Conflicted",
+      "Held",
       "Sent",
       "Api",
       "Client",
@@ -6647,7 +7361,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "Draw",
       "Editor",
       "Drive",
-      "Explorer"
+      "Explorer",
+      "Agent"
     ],
     "type": "string"
   },

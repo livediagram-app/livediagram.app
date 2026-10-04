@@ -98,6 +98,7 @@ export function opForTheWire(op: unknown): unknown {
     tab?: { elements?: Element[] };
     op?: { kind?: unknown; element?: Element };
     delta?: { kind?: unknown; comment?: unknown };
+    elementOps?: unknown[];
   } | null;
   if (!o || typeof o !== 'object') return op;
   if (o.kind === 'tab' && Array.isArray(o.tab?.elements)) {
@@ -106,10 +107,22 @@ export function opForTheWire(op: unknown): unknown {
   if (o.kind === 'el' && (o.op?.kind === 'add' || o.op?.kind === 'update') && o.op.element) {
     return { ...o, op: { ...o.op, element: withoutCommentAuthorIds(o.op.element) } };
   }
+  // An agent changeset (docs/specs/024-agents/agent-changesets.md): every element an add or an
+  // update carries.
+  if (o.kind === 'changeset' && Array.isArray(o.elementOps)) {
+    return { ...o, elementOps: o.elementOps.map(elementOpForTheWire) };
+  }
   if (o.kind === 'el-delta' && o.delta?.kind === 'comment-add' && isComment(o.delta.comment)) {
     return { ...o, delta: { ...o.delta, comment: withoutCommentAuthorId(o.delta.comment) } };
   }
   return op;
+}
+
+function elementOpForTheWire(op: unknown): unknown {
+  const o = op as { kind?: unknown; element?: Element } | null;
+  if (!o || (o.kind !== 'add' && o.kind !== 'update') || !o.element) return op;
+  const element = withoutCommentAuthorIds(o.element);
+  return element === o.element ? op : { ...o, element };
 }
 
 // Stamp a comment an editor posts with the name and colour of the session
@@ -141,7 +154,10 @@ export function stampCommentAuthor(
 // cards, the roll, the agenda's current row and the picker's result. A
 // snapshot from before somebody answered would otherwise take their answer
 // away from the whole room the moment anyone pressed undo.
-const LIVE_ELEMENT_FIELDS = [
+//
+// Also what an element fingerprint leaves out (docs/specs/024-agents/agent-changesets.md): people
+// change these through deltas that never conflict with an agent's edit.
+export const LIVE_ELEMENT_FIELDS = [
   'commentThread',
   'action',
   'actions',

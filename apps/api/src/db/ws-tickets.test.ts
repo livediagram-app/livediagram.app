@@ -2,8 +2,20 @@ import { describe, expect, it } from 'vitest';
 import { fakeD1 } from '../test-d1';
 import { consumeWsTicket, createWsTicket } from './ws-tickets';
 
-const EDIT = { role: 'edit', tabScope: null, shareCode: null, account: false } as const;
-const VIEW = { role: 'view', tabScope: null, shareCode: null, account: false } as const;
+const EDIT = {
+  role: 'edit',
+  tabScope: null,
+  shareCode: null,
+  account: false,
+  personTag: null,
+} as const;
+const VIEW = {
+  role: 'view',
+  tabScope: null,
+  shareCode: null,
+  account: false,
+  personTag: null,
+} as const;
 
 // A ws ticket is the only thing standing between "passed the REST access
 // gates for this document" and an open realtime socket: the upgrade can't
@@ -17,7 +29,7 @@ describe('createWsTicket (docs/specs/007-editor/live-app.md room auth)', () => {
     const db = fakeD1();
     const ticket = await createWsTicket(db.env, 'diag-1', EDIT, 1_000_000);
     const insert = db.one('INSERT INTO ws_tickets');
-    expect(insert.bindings).toEqual([ticket, 'diag-1', 'edit', 1_060_000, null, null, 0]);
+    expect(insert.bindings).toEqual([ticket, 'diag-1', 'edit', 1_060_000, null, null, 0, null]);
   });
 
   // docs/specs/013-workspace/tab-scoped-share-links.md: the ticket carries the scope and the admitting code
@@ -29,8 +41,18 @@ describe('createWsTicket (docs/specs/007-editor/live-app.md room auth)', () => {
       tabScope: 't2',
       shareCode: 'CODE2345',
       account: false,
+      personTag: null,
     });
-    expect(db.one('INSERT INTO ws_tickets').bindings.slice(4)).toEqual(['t2', 'CODE2345', 0]);
+    expect(db.one('INSERT INTO ws_tickets').bindings.slice(4)).toEqual(['t2', 'CODE2345', 0, null]);
+  });
+
+  // docs/specs/024-agents/agent-changesets.md "Held elements": an account's ticket carries its
+  // person tag to the room.
+  it('writes the person tag of the account that minted it', async () => {
+    const db = fakeD1();
+    await createWsTicket(db.env, 'diag-1', { ...EDIT, account: true, personTag: 'tag1' });
+    expect(db.one('INSERT INTO ws_tickets').sql).toContain('person_tag');
+    expect(db.one('INSERT INTO ws_tickets').bindings.slice(6)).toEqual([1, 'tag1']);
   });
 
   it('mints an unguessable ticket, never a value the caller supplied', async () => {
@@ -52,12 +74,21 @@ describe('createWsTicket (docs/specs/007-editor/live-app.md room auth)', () => {
 
 describe('consumeWsTicket (docs/specs/007-editor/live-app.md room auth)', () => {
   it('returns the admission the ticket was minted with', async () => {
-    const db = fakeD1(() => ({ first: { role: 'view', tab_scope: 't2', share_code: 'CODE2345' } }));
+    const db = fakeD1(() => ({
+      first: {
+        role: 'view',
+        tab_scope: 't2',
+        share_code: 'CODE2345',
+        account: 1,
+        person_tag: 'tag1',
+      },
+    }));
     expect(await consumeWsTicket(db.env, 'tkt', 'diag-1', 5)).toEqual({
       role: 'view',
       tabScope: 't2',
       shareCode: 'CODE2345',
-      account: false,
+      account: true,
+      personTag: 'tag1',
     });
   });
 
@@ -68,6 +99,7 @@ describe('consumeWsTicket (docs/specs/007-editor/live-app.md room auth)', () => 
       tabScope: null,
       shareCode: null,
       account: false,
+      personTag: null,
     });
   });
 

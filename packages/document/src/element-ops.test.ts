@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { createShape, type Element } from './index';
-import { applyElementOp, applyElementOps, diffToElementOps } from './element-ops';
+import { applyElementOp, applyElementOps, diffToElementOps, invertElementOps } from './element-ops';
 
 const el = (id: string, over: Partial<Element> = {}): Element =>
   ({ id, type: 'shape', shape: 'square', x: 0, y: 0, width: 10, height: 10, ...over }) as Element;
@@ -120,4 +120,32 @@ describe('applyElementOp on a Q&A board', () => {
     }) as ReturnType<typeof board>[];
     expect(out!.qaNotes[0]!.voters).toEqual(['a', 'z']);
   });
+});
+
+describe('invertElementOps (docs/specs/024-agents/agent-changesets.md "Revert")', () => {
+  const at = (id: string, x = 0) => el(id, { x });
+  const ids = (els: Element[]) => els.map((e) => e.id);
+
+  const cases: [string, Element[], Element[]][] = [
+    ['removes from the front', [at('a'), at('b'), at('c')], [at('c')]],
+    ['removes in the middle and the end', [at('a'), at('b'), at('c'), at('d')], [at('a'), at('c')]],
+    ['adds and updates', [at('a'), at('b')], [at('n'), at('a', 5), at('b'), at('m')]],
+    [
+      'reorders beside an add and a remove',
+      [at('a'), at('b'), at('c')],
+      [at('c'), at('x'), at('a')],
+    ],
+    ['empties the tab', [at('a'), at('b')], []],
+  ];
+
+  for (const [name, before, after] of cases) {
+    it(`undoes exactly: ${name}`, () => {
+      const ops = diffToElementOps(before, after);
+      const inverse = invertElementOps(before, ops);
+      const there = applyElementOps(before, ops);
+      expect(ids(there)).toEqual(ids(after));
+      const back = applyElementOps(there, inverse);
+      expect(back).toEqual(before);
+    });
+  }
 });

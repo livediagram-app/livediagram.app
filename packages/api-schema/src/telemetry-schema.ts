@@ -154,6 +154,11 @@ export const TELEMETRY_CATEGORIES = [
   // 'Edited' | 'People' | 'Space', LENS_TELEMETRY_TYPES), from a chip, a suggestion or a typed token.
   // Never a value, a word, a team or an id.
   'Explorer',
+  // Agent changesets (docs/specs/024-agents/agent-changesets.md "Observability and telemetry"):
+  // 'Applied', 'Conflicted' and 'Held' for an agent's changeset, 'Reverted' for a revert of one,
+  // typed by the front door ('Mcp' | 'Cli' | 'Api' | 'Editor'); 'Opened'·'Toast' when a person asks to
+  // see what changed. Never content, never an id.
+  'Agent',
 ] as const;
 export type TelemetryCategory = (typeof TELEMETRY_CATEGORIES)[number];
 
@@ -231,6 +236,10 @@ export const TELEMETRY_ACTIONS = [
   // Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md): a change made in Google
   // Drive was applied to livediagram. Only ever paired with the 'Drive' category.
   'Applied',
+  // Agent changesets (docs/specs/024-agents/agent-changesets.md): a changeset refused because an
+  // element it targets changed since the agent read it, or because a person holds one.
+  'Conflicted',
+  'Held',
   // Email (docs/specs/014-identity/transactional-email.md): a transactional / lifecycle email left the worker for
   // the provider. Only ever paired with the 'Email' category.
   'Sent',

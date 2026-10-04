@@ -1,6 +1,9 @@
 # Agent changesets
 
-**Status: specified, not built.** Closes livediagram-app/livediagram.app#343.
+**Status: built.** Closed livediagram-app/livediagram.app#343. Operations are taken in the JSON form of `add`
+(a whole element), `set` and `rm` addressed by element id, plus `replace`, until the rest of the
+[edit operations](edit-operations.md) land; the [lint](diagram-lint.md) and the [agent presence](agent-presence.md)
+refresh are not built yet, so an answer's lint is `null`.
 
 Every agent write to a tab is a **changeset**: one atomic write, applied by the api, sequenced by the document's
 room, shown live to everyone with the tab open, credited to the person whose token wrote it, and revertable as one
@@ -99,7 +102,8 @@ drag previews stay for documents with an audience.
 - A tab `PUT` presented with an API token is refused `405 use_changesets`, its message naming the changeset route.
   The CLI and the MCP server never do whole-tab saves.
 - A tab is renamed with `PUT /api/documents/:id/tabs/:tabId/name { name }`, which advances the tab's `rev` and is
-  relayed to the room as `document-meta`. The CLI's and the MCP's tab renames use it.
+  relayed to the room as the `tab-meta` an editor's own rename sends. (A `document-meta` keeps every open editor's
+  tab names, so a peer's stale tab list can never revert a rename.) The CLI's and the MCP's tab renames use it.
 
 ## Conflicts
 
@@ -146,7 +150,11 @@ The room's answer is the source; when the room cannot be reached, nothing counts
 
 ## In the editor
 
-- The element ops apply as a peer's would and fold into the save baseline, so the next autosave carries them.
+- The element ops apply as a peer's would and fold into the save baseline, so the next autosave carries them. The
+  revision a save sends as `X-Changeset-Seen` is the one its own snapshot holds, never one that arrived after it.
+- An editor joining its room reads the document's newest changesets and re-reads, in place, any open tab it is
+  behind on: a changeset relayed before it joined (a first join replays no log), or one whose relay never arrived,
+  reaches the screen without a reload. What it brings is not outlined or toasted.
 - Each element the changeset touched shows an outline in the owner's colour for `CHANGESET_REVEAL_MS`; with reduced
   motion it appears and disappears without animation.
 - A toast names the person and the change: "Webber changed 3 elements: add payment service · Show · Undo" (the

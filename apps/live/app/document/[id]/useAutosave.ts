@@ -69,6 +69,9 @@ export function useAutosave(opts: {
   // A save refused because the document is in the Trash
   // (docs/specs/013-workspace/trash.md): writes stop, the editor shows why.
   onDocumentTrashed: () => void;
+  // The changeset revision each tab holds, committed with the `tabs` of this render
+  // (useChangesetSeen): sent with each save so the api merges only what the save lacks.
+  changesetSeen: ReadonlyMap<string, number>;
 }) {
   const {
     hydrated,
@@ -89,6 +92,7 @@ export function useAutosave(opts: {
     setSavedAt,
     setDocumentList,
     onDocumentTrashed,
+    changesetSeen,
   } = opts;
 
   // The caller passes a fresh function each render; read it when a save is refused (an effect event), so
@@ -186,6 +190,7 @@ export function useAutosave(opts: {
         nameChanged,
         name: documentName,
         tabs,
+        changesetSeen,
       });
     };
     window.addEventListener('beforeunload', handler);
@@ -201,6 +206,7 @@ export function useAutosave(opts: {
     lastSavedTabsRef,
     lastSavedNameRef,
     loadedTabIdsRef,
+    changesetSeen,
   ]);
 
   useEffect(() => {
@@ -263,6 +269,8 @@ export function useAutosave(opts: {
             // the set, so it can't authorise its own wipe (docs/specs/006-document/per-tab-storage.md).
             allowEmpty: loadedTabIdsRef.current.has(t.id),
             roomCursor,
+            // From the same render as `t`, never ahead of it (useChangesetSeen).
+            ...(changesetSeen.has(t.id) ? { changesetSeen: changesetSeen.get(t.id) } : {}),
           }).then(() => {
             // Broadcast granular element ops (docs/specs/012-collaboration/realtime-conflict-resolution.md, Level 0) derived from
             // the last state peers saw so concurrent different-element edits
@@ -369,6 +377,7 @@ export function useAutosave(opts: {
     sessionShareCode,
     opsInRender,
     retryTick,
+    changesetSeen,
     lastSavedTabsRef,
     lastSavedNameRef,
     loadedTabIdsRef,

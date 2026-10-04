@@ -9,6 +9,7 @@ import { isPersonalOwner, shareLinkForDocument, sharePasswordOk } from '../auth/
 import { consumeWsTicket, createWsTicket, getDocumentMeta } from '../db';
 import { forbidden, json, notFound } from '../responses';
 import { gateGrant, missingDocument, type RouteContext } from './context';
+import { personTagFor } from '../person-tag';
 
 // Returns null when the request isn't a room route.
 export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Response | null> {
@@ -47,6 +48,10 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
       tabScope: grant.tabScope,
       shareCode: grant.shareCode,
       account: ctx.clerkUserId !== null,
+      // The same verified session carries its person tag, so the room can tell this owner's
+      // sessions from everyone else's without holding the owner id
+      // (docs/specs/024-agents/agent-changesets.md "Held elements").
+      personTag: ctx.clerkUserId === null ? null : await personTagFor(id, ctx.clerkUserId),
     });
     return json({ ticket });
   }
@@ -67,6 +72,8 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
     let shareCode: string | null = null;
     // Only a ticket can say the session is a verified account; every other leg is anonymous.
     let account = false;
+    // Only a ticket carries a person tag; every other leg has none.
+    let personTag: string | null = null;
     const claimedOwnerId = url.searchParams.get('o');
     // Gate-only projection — the upgrade uses only ownerId/teamId. A document
     // in the Trash (docs/specs/013-workspace/trash.md) reads as missing, so no
@@ -100,7 +107,7 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
     const isOwnerUpgrade =
       !accountIdClaimed && isPersonalOwner(claimedOwnerId, liveDoc.ownerId, liveDoc.teamId);
     if (admission) {
-      ({ role, tabScope, shareCode, account } = admission);
+      ({ role, tabScope, shareCode, account, personTag } = admission);
     } else if (isOwnerUpgrade) {
       role = 'edit';
     } else {
@@ -156,6 +163,9 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
     // Whether a verified account holds this session (docs/specs/014-identity/profile-picture.md §6),
     // set on every path for the same reason as the headers above.
     forwarded.headers.set('X-Verified-Account', account ? '1' : '0');
+    // The person tag (docs/specs/024-agents/agent-changesets.md, CS39), set on every path for the
+    // same reason as the headers above. Empty = none.
+    forwarded.headers.set('X-Verified-Person', personTag ?? '');
     return stub.fetch(forwarded);
   }
 

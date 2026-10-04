@@ -45,7 +45,7 @@ The change ships expand then contract ([spec](../share-roles.md#moving-to-three-
 | Release         | What ships                                                                                                                                                                                                                                                                                                                    | Migration                               |
 | --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------- |
 | **1. Readers**  | `AccessLevel` with `participate`; every reader (`rowToShareLink`, `consumeWsTicket`, the room's `X-Verified-Role` and attachment, `apiLoadShared`, roster badges) parses through `parseStoredLevel`. Every gate is unchanged: `participate` is "not edit", exactly today's view. No writer emits `participate`.               | none                                    |
-| **2. Levels**   | Migration 0067; the gates, the room's op classes, derived keys in tickets, key pinning and participation writes; the answers route; ownership powers; the writers (Share dialog, `POST /share`, token mint, MCP); the UI, which now mints a ticket for every session; telemetry. Writers keep `api_tokens.read_only` in step. | `0067_access_levels.sql`                |
+| **2. Levels**   | Migration 0068; the gates, the room's op classes, derived keys in tickets, key pinning and participation writes; the answers route; ownership powers; the writers (Share dialog, `POST /share`, token mint, MCP); the UI, which now mints a ticket for every session; telemetry. Writers keep `api_tokens.read_only` in step. | `0068_access_levels.sql`                |
 | **3. Contract** | Token resolution and mint stop touching `read_only`; the column is dropped.                                                                                                                                                                                                                                                   | the next free number at that time (SR2) |
 
 - Release 2 ships no sooner than `ACCESS_LEVELS_SOAK_DAYS` after release 1 (SR3), so an editor bundle loaded
@@ -61,7 +61,7 @@ The change ships expand then contract ([spec](../share-roles.md#moving-to-three-
 | `packages/api-schema/src/index.ts`                                                                                        | 1, 2    | `ShareRole` removed; `ShareLink.role`, `SharedWithItem.role`, `ParticipantPresence.role`: `AccessLevel`; `ApiToken.role` replaces `readOnly` (2)                   |
 | `packages/api-schema/src/room-messages.ts`                                                                                | 2       | `PARTICIPATION_OP_KINDS`, `PARTICIPATION_DELTA_KINDS`, `classifyRoomOp`, `minimumLevelForOp`; `poll-answer` leaves `PRESENCE_OP_KINDS`                             |
 | `apps/api/src/share-link-row.ts`, `api-token-row.ts`, `db/ws-tickets.ts`, `db/shared.ts`                                  | 1, 2    | Readers through `parseStoredLevel`; token row reads `role` (2)                                                                                                     |
-| `apps/api/migrations/0067_access_levels.sql` (planned) (new)                                                              | 2       | Link and visit rebuilds, ticket and token columns                                                                                                                  |
+| `apps/api/migrations/0068_access_levels.sql` (planned) (new)                                                              | 2       | Link and visit rebuilds, ticket and token columns                                                                                                                  |
 | `apps/api/migrations/<next>_drop_api_token_read_only.sql` (new)                                                           | 3       | Drops `api_tokens.read_only`                                                                                                                                       |
 | `apps/api/src/db/api-tokens.ts`                                                                                           | 2, 3    | `createApiToken`, `mintApiToken`, `resolveApiToken` carry `level`                                                                                                  |
 | `apps/api/src/auth/document-access.ts`                                                                                    | 2       | `resolveDocumentGrant(..., tokenLevel)`; `canReadDocument`, `canParticipateDocument`, `canEditDocument`                                                            |
@@ -395,7 +395,7 @@ token-usable operation carries `x-token-level`.
 | Room attachment `pinnedKey`                    | ephemeral  | Per socket, from `X-Verified-Collab-Key`, survives hibernation                        |
 | Timeline share snapshots, telemetry rows       | history    | Unchanged (SR14)                                                                      |
 
-Migration `0067_access_levels.sql`, one batch:
+Migration `0068_access_levels.sql`, one batch:
 
 1. `share_links` rebuild: `CREATE TABLE share_links_new (code TEXT PRIMARY KEY, document_id TEXT NOT NULL, role TEXT
 NOT NULL CHECK (role IN ('view', 'participate', 'edit')), created_at INTEGER NOT NULL, expiry TEXT NULL, expires_at
@@ -624,7 +624,7 @@ note "Before {ACCESS_LEVELS_MIGRATED_ON}, View counted links that are now Partic
 | Every op kind and delta kind classified; unknown is edit; the three lists disjoint                                                     | `packages/api-schema/src/room-op-classes.test.ts` (planned) (new)                                                               |
 | Editor and room share the vocabulary                                                                                                   | `apps/live/app/document/[id]/room-op-vocabulary.test.ts`                                                                        |
 | Release-1 readers: `participate` reads as non-edit, unknown as view                                                                    | `apps/api/src/share-link-row.test.ts`, `db/ws-tickets.test.ts`, `document-room-rules.test.ts`                                   |
-| Migration 0067: links, visits, tickets, tokens, indexes                                                                                | `apps/api/src/db/legacy-migration-0067.test.ts` (planned) (new, real SQLite)                                                    |
+| Migration 0068: links, visits, tickets, tokens, indexes                                                                                | `apps/api/src/db/legacy-migration-0067.test.ts` (planned) (new, real SQLite)                                                    |
 | Grant ceiling for owner, member, link, token, token over link                                                                          | `apps/api/src/auth/document-access.test.ts`                                                                                     |
 | Ownership powers by caller and token level                                                                                             | `apps/api/src/auth/ownership.test.ts` (planned) (new)                                                                           |
 | Choke point table                                                                                                                      | `apps/api/src/auth/token-level-gate.test.ts` (planned) (new), `apps/api/src/index.test.ts`                                      |
@@ -668,7 +668,7 @@ note "Before {ACCESS_LEVELS_MIGRATED_ON}, View counted links that are now Partic
 | `ACCESS_LEVELS_MIGRATED_ON` | release 2's deploy date           | SR19                           | fixed once shipped  |
 | Room refusal log sampling   | 1 in 100                          | SR18                           | 1 to 1000           |
 
-No new environment variable or binding; self-hosting needs migration 0067 and, later, the contract migration.
+No new environment variable or binding; self-hosting needs migration 0068 and, later, the contract migration.
 
 ## Assets and external resources
 

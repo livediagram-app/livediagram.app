@@ -57,6 +57,7 @@ export function useIdentityBootstrap(opts: {
     lastSavedTabsRef: MutableRefObject<Tab[]>;
     lastSavedNameRef: MutableRefObject<string>;
     loadedTabIdsRef: MutableRefObject<Set<string>>;
+    noteChangesetSeen: (tabId: string, rev: number) => void;
   };
   set: {
     setActiveId: SetState<string>;
@@ -72,6 +73,7 @@ export function useIdentityBootstrap(opts: {
     setDocumentOwnerName: SetState<string | null>;
     setDocumentShareable: SetState<boolean>;
     setDocumentTeamId: SetState<string | null>;
+    setDocumentServerStored: SetState<boolean>;
     setDocumentShareCode: SetState<string | null>;
     setHydrated: SetState<boolean>;
     setIsOwner: SetState<boolean>;
@@ -106,7 +108,13 @@ export function useIdentityBootstrap(opts: {
     refs,
     set,
   } = opts;
-  const { lastPersistedSelfRef, lastSavedTabsRef, lastSavedNameRef, loadedTabIdsRef } = refs;
+  const {
+    lastPersistedSelfRef,
+    lastSavedTabsRef,
+    lastSavedNameRef,
+    loadedTabIdsRef,
+    noteChangesetSeen,
+  } = refs;
   const {
     setActiveId,
     setDocumentId,
@@ -121,6 +129,7 @@ export function useIdentityBootstrap(opts: {
     setDocumentShareable,
     setDocumentShareCode,
     setDocumentTeamId,
+    setDocumentServerStored,
     setHydrated,
     setIsOwner,
     setLoadedExistingDocument,
@@ -148,6 +157,7 @@ export function useIdentityBootstrap(opts: {
     lastSavedTabsRef,
     lastSavedNameRef,
     loadedTabIdsRef,
+    noteChangesetSeen,
     setActiveId,
     setDocumentName,
     setDocumentPresentation,
@@ -370,6 +380,8 @@ export function useIdentityBootstrap(opts: {
           // guard refuses any other (docs/specs/013-workspace/tab-scoped-share-links.md).
           setSessionTabScope(scopeTabId);
           await seedFetchedDocument(self.id, fetched, codeForVisitor, scopeTabId);
+          // A share link always opens a server document: it has a room.
+          setDocumentServerStored(true);
           setDocumentId(fetched.id);
           setIsOwner(session.isOwner);
           // Visitors inherit the role from their share code; owners are
@@ -461,6 +473,9 @@ export function useIdentityBootstrap(opts: {
         // without this it would wrongly get visitor chrome (Make a
         // copy, the owner badge row).
         const offline = fetched.ownerId === OFFLINE_OWNER_ID;
+        // Every server-stored document has a room, personal ones included (docs/specs/024-agents/
+        // agent-changesets.md "Rooms for personal documents"); an offline one has none.
+        setDocumentServerStored(!offline);
         setIsOwner(offline || fetched.ownerId === self.id);
         setSessionRole('edit');
         if (offline || fetched.ownerId === self.id) {

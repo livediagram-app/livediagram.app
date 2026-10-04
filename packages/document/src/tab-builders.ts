@@ -1,32 +1,16 @@
-// Pure tab builders for the MCP tools (docs/specs/015-api/mcp-server.md): turn validated elements, a
-// node/edge graph, or a template kind into a finished, themed, persistable
-// Tab. Split out of tool-helpers.ts because those also carry the inline-PNG
-// result helper (imageResult → the resvg WASM renderer), which can't load in
-// the plain-node test environment — keeping the builders render-free lets
-// them be unit-tested directly.
+// Pure tab builders (docs/specs/015-api/mcp-server.md, docs/specs/024-agents/edit-operations.md):
+// validated elements or a node/edge graph turned into a finished, themed, persistable Tab, and the
+// event-storming landing every authoring path shares. Render-free, so the MCP, the api and the CLI
+// all build tabs the same way. Template tabs are `buildTemplateTab` in @livediagram/templates.
 
-import {
-  autoLayoutElements,
-  coerceShapeKind,
-  getBuiltInTheme,
-  isEventStormingNote,
-  isEventStormingTab,
-  isLayoutCandidate,
-  landArrivals,
-  nodesLookUnplaced,
-  recolourElementsForTheme,
-  type Element,
-  type Tab,
-  stampTabKind,
-} from '@livediagram/document';
+import { autoLayoutElements, isLayoutCandidate, nodesLookUnplaced } from './auto-layout';
+import { isEventStormingNote, isEventStormingTab } from './event-storming';
+import { landArrivals } from './event-storming-lane-landing';
 import { layoutGraph, type GraphInput } from './graph-input';
-import {
-  TEMPLATES,
-  buildTemplate,
-  templateCanvasOverrides,
-  type TemplateKind,
-  isTemplateKind,
-} from '@livediagram/templates';
+import { recolourElementsForTheme } from './theme-graph';
+import { getBuiltInTheme } from './themes';
+import { coerceShapeKind } from './validate';
+import type { Element, Tab } from './index';
 
 // Layout is the model's call (docs/specs/015-api/mcp-server.md §4.3). 'preserve' keeps the coordinates
 // it gave (a ring for a cycle, a tree, a grid); 'auto' forces a clean server
@@ -84,44 +68,13 @@ export function buildGraphTab(
   return buildTab(tabId, name, layoutGraph(graph), 'preserve', themeId);
 }
 
-// Resolve a tool's `template` argument against the shared catalogue
-// (docs/specs/015-api/mcp-server.md §4.5). Returns null for an unknown kind — the caller answers
-// with the valid kinds so the model can self-correct without a round
-// trip to list_templates.
-export function resolveTemplate(kind: string): TemplateKind | null {
-  return isTemplateKind(kind) ? kind : null;
-}
-
-export const validTemplateKinds = () => TEMPLATES.map((t) => t.kind).join(', ');
-
-// Materialise a template tab: the curated scaffold at its hand-tuned
-// coordinates (layout deliberately NOT run — that's the point of a
-// template), themed by buildTab like any other elements, plus the
-// template's canvas overrides + the templateChosen flag the editor's
-// Quick Start uses.
-export function buildTemplateTab(
-  tabId: string,
-  name: string,
-  kind: TemplateKind,
-  themeId?: string,
-): Tab {
-  // stampTabKind fills the ordinary 'diagram' for every template that
-  // doesn't declare a tab kind of its own (docs/specs/021-event-storming/event-storming.md), so a tab minted
-  // here is indistinguishable from one the editor commits.
-  return stampTabKind({
-    ...buildTab(tabId, name, buildTemplate(kind, 0, 0), 'preserve', themeId),
-    templateChosen: true,
-    ...templateCanvasOverrides(kind),
-  });
-}
-
-// Notes an MCP call adds or moves on an event-storming tab land on lanes
+// Workshop notes a call adds or moves on an event-storming tab land on lanes
 // (docs/specs/021-event-storming/event-storming.md "Always on a lane"), exactly as a paste does: a lane per row,
 // and a lone arrival on an occupied spot takes the nearest free slot. In ops
 // mode the arrivals are the workshop notes that are new or whose x / y an op
 // changed; in replace mode every workshop note arrives. Nothing else moves,
 // and an ordinary tab comes back exactly as the call wrote it.
-export function landMcpArrivals(
+export function landWorkshopArrivals(
   before: Pick<Tab, 'elements'> & Partial<Pick<Tab, 'kind' | 'layers'>>,
   next: Element[],
   mode: 'ops' | 'replace',

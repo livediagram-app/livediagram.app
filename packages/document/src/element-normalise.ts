@@ -7,20 +7,15 @@
 // tidied. Input is untrusted JSON: anything not shaped like the field it claims
 // to be is left for isValidTab to judge.
 
-import {
-  CODE_LANGUAGES,
-  coerceShapeKind,
-  createShape,
-  createSticky,
-  createTable,
-  createText,
-  entityHeight,
-  isCodeThemeId,
-  migrateIncomingElements,
-  normalizeTable,
-  type TableElement,
-  type TextSize,
-} from '@livediagram/document';
+import { CODE_LANGUAGES } from './data-shapes';
+import { isCodeThemeId } from './code-themes';
+import { entityHeight } from './entity-geometry';
+import { createShape } from './shape-factory';
+import { createSticky, createTable, createText } from './factories';
+import { migrateIncomingElements } from './stored-tab';
+import { normalizeTable } from './table';
+import { coerceShapeKind } from './validate';
+import type { TableElement, TextSize } from './index';
 
 type Raw = Record<string, unknown>;
 

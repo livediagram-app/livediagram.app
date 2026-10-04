@@ -125,6 +125,9 @@ export async function deleteAccount(
   await env.DB.prepare('DELETE FROM favourites WHERE owner_id = ?').bind(ownerId).run();
   // placement_defaults (docs/specs/013-workspace/default-folders.md): no foreign key reaches them.
   await env.DB.prepare('DELETE FROM placement_defaults WHERE owner_id = ?').bind(ownerId).run();
+  // agent_changesets (docs/specs/024-agents/agent-changesets.md, CS27): the ones they wrote on other
+  // people's documents; those on their own went with the documents. Parts follow by cascade.
+  await env.DB.prepare('DELETE FROM agent_changesets WHERE author_id = ?').bind(ownerId).run();
   // timeline (docs/specs/013-workspace/timeline.md §3.5): the feed, the events this owner authored,
   // and the scope-state row. Hard, not soft — soft delete is a
   // user-facing affordance in this product, never a retention strategy.
@@ -285,6 +288,11 @@ export async function migrateOwnerId(
     .bind(toOwnerId, fromOwnerId)
     .run();
   await migrateShapeLibraries(env, fromOwnerId, toOwnerId);
+  // agent_changesets (docs/specs/024-agents/agent-changesets.md, CS27): what they wrote and reverted
+  // as a guest stays theirs.
+  await env.DB.prepare('UPDATE agent_changesets SET author_id = ? WHERE author_id = ?')
+    .bind(toOwnerId, fromOwnerId)
+    .run();
   return {
     documents: documentsRes.meta.changes ?? 0,
     folders: foldersRes.meta.changes ?? 0,
