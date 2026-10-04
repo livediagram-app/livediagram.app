@@ -34,13 +34,14 @@ The header's **Start Blank** (`StartBlankMenu` in `packages/ui`) is a menu butto
 - **Opens** on hover with a mouse (without moving focus, the same CSS hover the apps menu uses) and on a press, Enter, Space or an arrow key (focus on the first row, the [menu](../004-interface-design/menus.md) keyboard). A chevron beside the label turns when it is open. Escape, an outside press or a choice closes it.
 - **Rows**, in mode order, each the editor mode switch's glyph (`EDITOR_MODE_ICON`: `FlowchartIcon`, `MarkerIcon`, `IllustrateIcon`), a name and one line under it:
 
-| Row                | Opens                              | Line under it                                   | Source               |
-| ------------------ | ---------------------------------- | ----------------------------------------------- | -------------------- |
-| Blank Diagram      | `/new?blank=1`                     | An empty canvas for shapes, connectors and more | `HeaderDraw`         |
-| Blank Whiteboard   | `/new?template=whiteboard`         | Free drawing without distractions               | `HeaderWhiteboard`   |
-| Blank Illustration | `/new?template=blank-illustration` | An empty page for an infographic or an article  | `HeaderIllustration` |
+| Row                | Opens                              | Line under it                       | Source               |
+| ------------------ | ---------------------------------- | ----------------------------------- | -------------------- |
+| Blank Diagram      | `/new?blank=1`                     | Shapes, connectors and structure    | `HeaderDraw`         |
+| Blank Whiteboard   | `/new?template=whiteboard`         | Free drawing without distractions   | `HeaderWhiteboard`   |
+| Blank Illustration | `/new?template=blank-illustration` | Pages for infographics and articles | `HeaderIllustration` |
 
 - Each row carries its own [landing-funnel](landing-funnel.md) source, so the funnel tells the three blanks apart.
+- Each line under a name stays on one line; the menu is as wide as its longest row.
 - The menu drops from the button's right edge, so it never runs off the page beside the primary.
 - Blank Illustration's kind (`blank-illustration`) arrives with [Templates by mode](../007-editor/templates-by-mode.md); until then an unknown kind opens the plain wizard, as any stale template link does.
 

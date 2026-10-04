@@ -33,7 +33,7 @@ const BLANKS: {
 }[] = [
   {
     label: 'Blank Diagram',
-    desc: 'An empty canvas for shapes, connectors and more',
+    desc: 'Shapes, connectors and structure',
     href: '/new?blank=1',
     slot: 'HeaderDraw',
     Icon: FlowchartIcon,
@@ -47,7 +47,7 @@ const BLANKS: {
   },
   {
     label: 'Blank Illustration',
-    desc: 'An empty page for an infographic or an article',
+    desc: 'Pages for infographics and articles',
     href: '/new?template=blank-illustration',
     slot: 'HeaderIllustration',
     Icon: IllustrateIcon,
@@ -106,7 +106,7 @@ export function StartBlankMenu({
         <div
           ref={attach}
           {...surfaceProps}
-          className="w-72 rounded-xl border border-slate-200 bg-white p-1.5 shadow-lg shadow-slate-900/10 outline-none dark:border-slate-700 dark:bg-slate-800 dark:shadow-black/30"
+          className="w-max rounded-xl border border-slate-200 bg-white p-1.5 shadow-lg shadow-slate-900/10 outline-none dark:border-slate-700 dark:bg-slate-800 dark:shadow-black/30"
         >
           {BLANKS.map(({ label, desc, href, slot, Icon }) => (
             <a
@@ -124,7 +124,9 @@ export function StartBlankMenu({
                 <span className="text-sm font-semibold text-slate-800 dark:text-slate-100 dark:group-hover/blank:text-white">
                   {label}
                 </span>
-                <span className="text-xs text-slate-500 dark:text-slate-400">{desc}</span>
+                <span className="whitespace-nowrap text-xs text-slate-500 dark:text-slate-400">
+                  {desc}
+                </span>
               </span>
             </a>
           ))}
