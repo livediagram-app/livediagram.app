@@ -88,7 +88,7 @@ describe('set', () => {
 
   it('writes named geometry as stored coordinates', () => {
     expect(lines(run([set('t1', { x: 300, width: 200 })]))).toEqual([
-      '~ t1  @150,620→@300,620 · width 160→200',
+      '~ t1  @190,620→@340,620 · width 160→200',
     ]);
   });
 
@@ -103,7 +103,7 @@ describe('set', () => {
       { op: 'add', element: { id: 'x', type: 'sticky', x: 400, y: 0, width: 200, height: 200 } },
       set('x', { label: 'Later' }),
     ]);
-    expect(lines(outcome)).toEqual(['+ x  sticky "Later" @400,0 200×200']);
+    expect(lines(outcome)).toEqual(['+ x  sticky "Later" @440,0 200×200']);
     expect(applied(outcome).targets).toEqual([]);
   });
 

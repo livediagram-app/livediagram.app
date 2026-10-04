@@ -56,8 +56,8 @@ export function aliasesOf(el: Element): Alias[] {
   });
 }
 
-export type FieldsWrite = {
-  next: Element;
+export type FieldsWrite<T extends Element = Element> = {
+  next: T;
   // The keys written, aliases as named: the order a ~ line prints them in.
   written: string[];
   warnings: EditWarning[];
@@ -71,13 +71,13 @@ const oneOf = (values: readonly string[], value: FieldValue) =>
   typeof value === 'string' && values.includes(value);
 
 // Writes `fields` onto `el`. `ref` names the element in warnings.
-export function writeFieldsOnto(
-  el: Element,
+export function writeFieldsOnto<T extends Element>(
+  el: T,
   fields: Fields,
   theme: ThemeDefinition,
   ref: string,
   operation: number,
-): FieldsWrite | EditRejection {
+): FieldsWrite<T> | EditRejection {
   const aliases = aliasesOf(el);
   const stored = ELEMENT_FIELD_NAMES[el.type];
   const patch: Patch = {};
@@ -129,8 +129,9 @@ export function writeFieldsOnto(
   const merged = mergeElementUpdate(el, set);
   for (const [key, v] of Object.entries(patch))
     if (v === null || v === undefined) delete merged[key];
-  // Every key was checked against the element's type above; finalise validates the values.
-  return { next: merged as Element, written: Object.keys(fields), warnings, capped };
+  // Every key was checked against the element's type above, so the element keeps its type; finalise
+  // validates the values.
+  return { next: merged as T, written: Object.keys(fields), warnings, capped };
 }
 
 const overridesTheme = (ref: string, key: string, value: FieldValue): EditWarning => ({

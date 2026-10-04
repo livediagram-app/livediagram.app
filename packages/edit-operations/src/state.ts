@@ -5,6 +5,7 @@
 import type { EditRejection, EditWarning } from '@livediagram/api-schema';
 import {
   computeRefs,
+  contentOrigin,
   DEFAULT_SCHEME_ID,
   deriveContainers,
   getBuiltInTheme,
@@ -23,7 +24,18 @@ import type { ApplyOptions, EditLog, EditOperation } from './types';
 
 // The first operation that touched an element, and the fields operations wrote on it in the order
 // written: how its ~ line orders them.
-export type Touch = { operation: number; written: string[]; fit?: Fit };
+// Why an element moved without an operation naming it.
+export type MoveReason = 'make room' | 'carried' | 'laid out' | 'landed on a lane';
+
+// `moved` marks an element only moved along, which prints as a » line and is not normalised.
+export type Touch = {
+  operation: number;
+  written: string[];
+  fit?: Fit;
+  moved?: MoveReason;
+  // The summed shift of an element moved along, when the move had one.
+  shift?: [number, number];
+};
 
 // Why an element left: named by an operation, or pinned to one that was.
 export type Removal = { pinnedTo?: ElementId };
@@ -48,6 +60,8 @@ export type EditState = {
   readonly selected: readonly ElementId[] | null;
   // The tab's theme, which theme colour names and new elements' paint come from.
   readonly theme: ThemeDefinition;
+  // The input tab's content origin: what coordinates shown and taken are relative to.
+  readonly origin: { x: number; y: number };
   // Refs, recomputed when an element is added or removed; holders, after any write.
   readonly memo: { refs: RefTable | null; holders: Map<ElementId, ElementId | null> | null };
 };
@@ -80,6 +94,7 @@ export function createState(tab: Tab, options: ApplyOptions, log: EditLog): Edit
     log,
     selected: options.selected === undefined ? [] : options.selected,
     theme: options.theme ?? themeOf(tab, log),
+    origin: contentOrigin(tab.elements),
     memo: { refs: null, holders: null },
   };
 }
@@ -110,8 +125,9 @@ export function writeFields(
   keys: readonly string[],
 ): void {
   putElement(state, el, operation);
-  const { written } = touch(state, el.id, operation);
-  for (const key of keys) if (!written.includes(key)) written.push(key);
+  const touched = touch(state, el.id, operation);
+  for (const key of keys) if (!touched.written.includes(key)) touched.written.push(key);
+  delete touched.moved;
 }
 
 // Writes an element over its id (or appends a new one) and marks it touched. An id created and
@@ -123,6 +139,22 @@ export function putElement(state: EditState, el: Element, operation: number): vo
   state.memo.holders = null;
   state.byId.set(el.id, el);
   touch(state, el.id, operation);
+}
+
+// Writes an element an operation moved without naming it (carried, made room for, laid out, landed).
+export function moveElement(
+  state: EditState,
+  el: Element,
+  operation: number,
+  reason: MoveReason,
+  shift?: [number, number],
+): void {
+  putElement(state, el, operation);
+  const touched = touch(state, el.id, operation);
+  if (touched.written.length > 0 || state.created.includes(el.id)) return;
+  touched.moved ??= reason;
+  if (shift)
+    touched.shift = [(touched.shift?.[0] ?? 0) + shift[0], (touched.shift?.[1] ?? 0) + shift[1]];
 }
 
 export function removeElement(

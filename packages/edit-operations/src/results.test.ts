@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import type { ResultLine } from '@livediagram/api-schema';
+import { getBuiltInTheme, type Element } from '@livediagram/document';
 import { formatResultFooter, formatResultLines } from './format-results';
-import { addedLine, removedLine } from './results';
+import { addedLine, buildResultLines, removedLine } from './results';
 import { checkoutFlow } from './fixtures/checkout-flow';
 
 const byId = (id: string) => checkoutFlow().elements.find((el) => el.id === id)!;
@@ -129,16 +130,17 @@ describe('formatResultFooter', () => {
 });
 
 describe('result line builders', () => {
+  const naming = { refOf: (id: string) => id, origin: { x: -40, y: 0 } };
   it('builds a + line for a box and an arrow', () => {
-    expect(addedLine(byId('n3'))).toEqual({
+    expect(addedLine(byId('n3'), naming)).toEqual({
       mark: '+',
       ref: 'n3',
       kind: 'square',
       label: 'Login',
-      at: [0, 200],
+      at: [40, 200],
       size: [140, 60],
     });
-    expect(addedLine(byId('a6'))).toEqual({
+    expect(addedLine(byId('a6'), naming)).toEqual({
       mark: '+',
       ref: 'a6',
       kind: 'arrow',
@@ -147,8 +149,41 @@ describe('result line builders', () => {
     });
   });
 
+  it('prints a free end as a point from the origin', () => {
+    const loose = {
+      id: 'l',
+      type: 'arrow',
+      from: { kind: 'free', x: -40, y: 5 },
+      to: { kind: 'pinned', elementId: 'n1', anchor: 'n' },
+    } as Element;
+    expect(addedLine(loose, naming)).toMatchObject({ ends: ['@0,5', 'n1'] });
+  });
+
+  it('groups what moved without a shift by its reason alone', () => {
+    const tab = checkoutFlow();
+    const moved = tab.elements.map((el) =>
+      el.id === 'n1' || el.id === 'n2' ? { ...el, x: 300 } : el,
+    ) as Element[];
+    const lines = buildResultLines(
+      {
+        before: new Map(tab.elements.map((el) => [el.id, el])),
+        beforeElements: tab.elements,
+        touched: new Map([
+          ['n2', { written: [], moved: 'laid out' as const }],
+          ['n1', { written: [], moved: 'laid out' as const }],
+        ]),
+        removed: new Map(),
+        warnings: [],
+        theme: getBuiltInTheme(undefined),
+        origin: { x: -40, y: 0 },
+      },
+      moved,
+    );
+    expect(lines).toEqual([{ mark: '»', refs: ['n1', 'n2'], reason: 'laid out' }]);
+  });
+
   it('builds a - line, with the element an arrow went with', () => {
-    expect(removedLine(byId('a1'), { pinnedTo: 'n1' })).toEqual({
+    expect(removedLine(byId('a1'), naming, { pinnedTo: 'n1' })).toEqual({
       mark: '-',
       ref: 'a1',
       kind: 'arrow',
@@ -156,7 +191,7 @@ describe('result line builders', () => {
       reason: 'pinned',
       pinnedTo: 'n1',
     });
-    expect(removedLine(byId('n1'))).toEqual({
+    expect(removedLine(byId('n1'), naming)).toEqual({
       mark: '-',
       ref: 'n1',
       kind: 'stadium',

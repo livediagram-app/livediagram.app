@@ -25,6 +25,8 @@ import type { EditLog } from './types';
 
 type Raw = Record<string, unknown>;
 
+const GEOMETRY: ReadonlySet<string> = new Set(['x', 'y', 'width', 'height', 'from', 'to']);
+
 // The coercions normalising may make that change what the caller asked for.
 function noteCoercions(state: EditState, before: Raw, after: Raw, log: EditLog, op: number) {
   const id = String(after.id);
@@ -45,9 +47,11 @@ function noteCoercions(state: EditState, before: Raw, after: Raw, log: EditLog, 
 }
 
 function normaliseTouched(state: EditState, log: EditLog): void {
-  for (const [id, { operation }] of state.touched) {
+  for (const [id, { operation, written }] of state.touched) {
     const el = state.byId.get(id);
-    if (!el) continue;
+    // Normalising settles what an operation wrote; an element only moved, carried or grown changes
+    // nothing but where it is and how big.
+    if (!el || (!state.created.includes(id) && written.every((key) => GEOMETRY.has(key)))) continue;
     const normalised = normaliseElement(el) as Raw;
     noteCoercions(state, el as unknown as Raw, normalised, log, operation);
     if (normalised.type === 'shape') {

@@ -205,7 +205,7 @@ describe('applyEditOperations', () => {
       expect(
         applied(outcome).elementOps.map((op) => op.kind === 'update' && op.element.id),
       ).toContain('a3');
-      expect(lines(outcome)).toEqual(['~ n4  @0,300→@300,200']);
+      expect(lines(outcome)).toEqual(['~ n4  @40,300→@340,200', 'f2  -n4']);
     });
 
     it('puts lanes behind everything else', () => {
@@ -290,7 +290,6 @@ describe('applyEditOperations', () => {
 
 describe('operations not applied yet', () => {
   it('refuses them by name', () => {
-    expect(refused(run([{ op: 'add', kind: 'square' }])).details[0]).toContain('"add <kind>"');
     expect(refused(run([{ op: 'unwrap', target: 'f2' }])).details[0]).toContain('"unwrap"');
   });
 });

@@ -13,6 +13,8 @@ import {
 } from '@livediagram/document';
 import { finalise } from './finalise';
 import { applyAdd } from './operations/add';
+import { applyAddKind } from './operations/add-kind';
+import { applyMove } from './operations/move';
 import { applyRm } from './operations/rm';
 import { applySet } from './operations/set';
 import { buildResultLines } from './results';
@@ -31,11 +33,13 @@ function applyOperation(
     case 'add':
       return 'element' in operation
         ? applyAdd(state, operation, index)
-        : notAppliedOperation('add <kind>', index);
+        : applyAddKind(state, operation, index);
     case 'set':
       return applySet(state, operation, index);
     case 'rm':
       return applyRm(state, operation, index);
+    case 'move':
+      return applyMove(state, operation, index);
     default:
       return notAppliedOperation(operation.op, index);
   }
@@ -72,7 +76,7 @@ export function applyEditOperations(
   const next = finalise(state, log);
   if ('code' in next) return rejected(log, next, operations);
   const elementOps = diffToElementOps(tab.elements, next.elements);
-  const results = buildResultLines(state, next.elements);
+  const results = buildResultLines({ ...state, beforeElements: tab.elements }, next.elements);
   const present = new Set<ElementId>(next.elements.map((el) => el.id));
   const count = (mark: string) => results.filter((line) => line.mark === mark).length;
   log('[edit-ops] applied', {

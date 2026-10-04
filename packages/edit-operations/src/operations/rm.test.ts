@@ -70,8 +70,8 @@ describe('rm', () => {
       ['arrows_freed', 'a4'],
     ]);
     expect(lines(outcome)).toEqual([
-      '~ a3  to n4→@70,300',
-      '~ a4  from n4→@70,360',
+      '~ a3  to n4→@110,300',
+      '~ a4  from n4→@110,360',
       '- n4  square "Address"',
       '! arrows_freed  a3 to freed where it was drawn: n4 was removed',
       '! arrows_freed  a4 from freed where it was drawn: n4 was removed',
