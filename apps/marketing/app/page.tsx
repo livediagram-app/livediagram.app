@@ -3,6 +3,7 @@ import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
 import { Hero } from '@/components/Hero';
 import { PrivacySection } from '@/components/PrivacySection';
+import { PromiseCanvas } from '@/components/PromiseCanvas';
 import { StartDrawingCta } from '@/components/StartDrawingCta';
 import { StoryBeat } from '@/components/StoryBeat';
 import { LANDING_BEATS } from '@/lib/landing-beats';
@@ -15,8 +16,8 @@ const TemplateGallery = dynamic(() =>
   import('@/components/TemplateGallery').then((m) => m.TemplateGallery),
 );
 
-// The page tells one story (docs/specs/019-marketing/marketing-site.md): what it is, one click to a real
-// diagram, then five beats that each cover a few feature categories and link
+// The page tells one story (docs/specs/019-marketing/marketing-site.md): what it is, its promises
+// (no small print), one click to a real diagram, then five beats that each cover a few feature categories and link
 // into all of them.
 export default function LandingPage() {
   return (
@@ -24,6 +25,7 @@ export default function LandingPage() {
       <Header surface="Home" />
       <main>
         <Hero />
+        <PromiseCanvas />
         <TemplateGallery />
         {LANDING_BEATS.map((beat, index) => (
           <StoryBeat key={beat.id} beat={beat} index={index} />

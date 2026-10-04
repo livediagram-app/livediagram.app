@@ -20,7 +20,7 @@ export const ICON_ART_ALLOWLIST = [
   '**/components/feature-art/**',
   '**/components/HeroIllustration.tsx',
   '**/components/hero-editor-window.tsx',
-  '**/components/hero-theme-dialog.tsx',
+  '**/components/PromiseCanvas.tsx',
   '**/components/hero-illustration-glyphs.tsx',
   // Style-value previews, option previews and coloured chips.
   '**/components/palette/palette-style-previews.tsx',

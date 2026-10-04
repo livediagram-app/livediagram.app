@@ -169,3 +169,12 @@ export function EyeGlyph({ off }: { off: boolean }) {
     </Glyph>
   );
 }
+
+// A collaborator's pointer, as the editor draws a teammate's cursor, in their colour.
+export function CollaboratorPointer({ color }: { color: string }) {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill={color} stroke="white" aria-hidden>
+      <path d="M2 1 L14 8 L8 9 L11 14 L9 15 L6 10 L2 14 Z" />
+    </svg>
+  );
+}
