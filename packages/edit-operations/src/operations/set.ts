@@ -14,7 +14,8 @@ import { kindOf } from '../element-text';
 import { sameValue } from '../equality';
 import { layerLockOf } from '../locks';
 import { invalidValue, unknownField } from '../rejections';
-import { type EditState, refuseLocked, resolveTarget, writeFields } from '../state';
+import { resolveSome } from '../selectors';
+import { type EditState, refuseLocked, writeFields } from '../state';
 import type { FieldValue, SetOperation } from '../types';
 import { PROTOTYPE_KEYS } from '../vocabulary';
 
@@ -46,12 +47,24 @@ function fieldRejection(
 
 export function applySet(
   state: EditState,
-  { target, fields }: SetOperation,
+  { target, fields, all }: SetOperation,
   operation: number,
 ): EditRejection | null {
-  const resolved = resolveTarget(state, target, operation);
+  const resolved = resolveSome(state, target, operation, all === true);
   if ('rejection' in resolved) return resolved.rejection;
-  const { el } = resolved;
+  for (const el of resolved.els) {
+    const rejection = setOne(state, el, fields, operation);
+    if (rejection) return rejection;
+  }
+  return null;
+}
+
+function setOne(
+  state: EditState,
+  el: Element,
+  fields: SetOperation['fields'],
+  operation: number,
+): EditRejection | null {
   const lock = state.locked.get(el.id);
   if (lock) return refuseLocked(state, 'set', operation, el, lock);
   const patch: Record<string, FieldValue> = {};

@@ -9,7 +9,7 @@ import {
 } from '@livediagram/api-schema';
 import type { Element } from '@livediagram/document';
 import { describeElement, kindOf, labelOf, quoteCut } from './element-text';
-import { nearestElements, nearestName } from './nearest';
+import { nearestName } from './nearest';
 import {
   APPLIED_OPERATION_NAMES,
   DID_YOU_MEAN_MAX_DISTANCE,
@@ -87,22 +87,6 @@ export function lineParseError(
       `${' '.repeat(column - 1)}^`,
     ],
     hint: quoting ? 'quote values with spaces: label="Sign in"' : `write ${expected}`,
-  };
-}
-
-export function targetNotFound(
-  selector: string,
-  operation: number,
-  elements: readonly Element[],
-): EditRejection {
-  const near = nearestElements(selector, elements);
-  return {
-    code: 'target_not_found',
-    operation,
-    details: near.length
-      ? [`"${selector}" matches nothing; nearest:`, ...near.map((el) => `  ${describeElement(el)}`)]
-      : [`"${selector}" matches nothing`],
-    hint: 'use an element id exactly, as the tab lists it',
   };
 }
 

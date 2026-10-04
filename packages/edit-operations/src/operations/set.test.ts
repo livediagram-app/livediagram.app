@@ -40,7 +40,7 @@ describe('set', () => {
   it('prints the fields it wrote first, then what normalising added', () => {
     const tab = checkoutFlow();
     tab.elements.push({
-      id: 'lane',
+      id: 'l1',
       type: 'shape',
       shape: 'lane',
       x: 0,
@@ -48,8 +48,8 @@ describe('set', () => {
       width: 800,
       height: 200,
     });
-    const [line] = lines(run([set('lane', { label: 'Payments' })], tab));
-    expect(line).toMatch(/^~ lane {2}label →"Payments" · textSize →\w+ · textAlignX →\w+/);
+    const [line] = lines(run([set('l1', { label: 'Payments' })], tab));
+    expect(line).toMatch(/^~ l1 {2}label →"Payments" · textSize →\w+ · textAlignX →\w+/);
   });
 
   it('prints nothing for a value the element already holds (E1)', () => {

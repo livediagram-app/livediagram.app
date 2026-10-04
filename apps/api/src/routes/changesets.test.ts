@@ -203,7 +203,7 @@ describe('submitting a changeset', () => {
         422,
         'target_not_found',
       ],
-      [{ operations: [{ op: 'wrap', targets: ['a'] }] }, 400, 'unknown_operation'],
+      [{ operations: [{ op: 'paint', target: 'a' }] }, 400, 'unknown_operation'],
       [{ operations: 'set a label=x' }, 400, 'invalid_body'],
       [{ operations: [], replace: { elements: [] } }, 400, 'invalid_body'],
       [

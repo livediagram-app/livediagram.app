@@ -3,9 +3,17 @@
 // resolved and removed. Operations write on this copy; the input tab is never mutated (I1).
 
 import type { EditRejection, EditWarning } from '@livediagram/api-schema';
-import type { Element, ElementId, Tab } from '@livediagram/document';
+import {
+  computeRefs,
+  deriveContainers,
+  type Element,
+  type ElementId,
+  type RefTable,
+  type Tab,
+} from '@livediagram/document';
 import { lockedIds } from './locks';
-import { elementLocked, targetNotFound, type LockReason } from './rejections';
+import type { Naming } from './element-text';
+import { elementLocked, type LockReason } from './rejections';
 import type { ApplyOptions, EditLog, EditOperation } from './types';
 
 // The first operation that touched an element, and the fields operations wrote on it in the order
@@ -31,6 +39,10 @@ export type EditState = {
   readonly locked: ReadonlyMap<ElementId, LockReason>;
   readonly makeId: () => string;
   readonly log: EditLog;
+  // The owner's selection; null when the room was not read.
+  readonly selected: readonly ElementId[] | null;
+  // Refs, recomputed when an element is added or removed; holders, after any write.
+  readonly memo: { refs: RefTable | null; holders: Map<ElementId, ElementId | null> | null };
 };
 
 export function createState(tab: Tab, options: ApplyOptions, log: EditLog): EditState {
@@ -48,6 +60,8 @@ export function createState(tab: Tab, options: ApplyOptions, log: EditLog): Edit
     locked: lockedIds(tab),
     makeId: options.makeId ?? (() => crypto.randomUUID()),
     log,
+    selected: options.selected === undefined ? [] : options.selected,
+    memo: { refs: null, holders: null },
   };
 }
 
@@ -86,6 +100,8 @@ export function writeFields(
 export function putElement(state: EditState, el: Element, operation: number): void {
   const known = state.byId.has(el.id) || state.before.has(el.id) || state.removed.has(el.id);
   if (!known) state.order.push(el.id);
+  if (!state.byId.has(el.id)) state.memo.refs = null;
+  state.memo.holders = null;
   state.byId.set(el.id, el);
   touch(state, el.id, operation);
 }
@@ -97,6 +113,8 @@ export function removeElement(
   removal: Removal,
 ): void {
   state.byId.delete(id);
+  state.memo.refs = null;
+  state.memo.holders = null;
   state.removed.set(id, removal);
   touch(state, id, operation);
 }
@@ -106,17 +124,32 @@ export function isTaken(state: EditState, id: ElementId): boolean {
   return state.byId.has(id) || state.before.has(id);
 }
 
-// The element a selector names, against the working state: in this build, the exact id. A
-// pre-existing element joins the targets the first time it resolves.
-export function resolveTarget(
-  state: EditState,
-  selector: string,
-  operation: number,
-): { el: Element } | { rejection: EditRejection } {
-  const el = state.byId.get(selector);
-  if (!el) return { rejection: targetNotFound(selector, operation, currentElements(state)) };
-  if (state.before.has(el.id) && !state.targets.includes(el.id)) state.targets.push(el.id);
-  return { el };
+// The working elements' refs: an element's short name, as views print it.
+export function refsOf(state: EditState): RefTable {
+  state.memo.refs ??= computeRefs(currentElements(state).map((el) => el.id));
+  return state.memo.refs;
+}
+
+// Each working element's container (the smallest frame or lane holding its centre), or null.
+export function holdersOf(state: EditState): ReadonlyMap<ElementId, ElementId | null> {
+  state.memo.holders ??= deriveContainers(currentElements(state));
+  return state.memo.holders;
+}
+
+// How refusals name working elements: by ref, with their container.
+export function namingOf(state: EditState): Naming {
+  return {
+    refOf: (id) => refsOf(state).refOf(id),
+    containerOf: (id) => {
+      const holder = holdersOf(state).get(id);
+      return holder ? refsOf(state).refOf(holder) : null;
+    },
+  };
+}
+
+// A pre-existing element joins the targets the first time an operation resolves it (EO46).
+export function noteTarget(state: EditState, id: ElementId): void {
+  if (state.before.has(id) && !state.targets.includes(id)) state.targets.push(id);
 }
 
 // The refusal of an operation that would change a locked element, logged with its scope.

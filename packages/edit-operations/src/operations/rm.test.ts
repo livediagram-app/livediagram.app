@@ -176,3 +176,25 @@ describe('rm', () => {
     });
   });
 });
+
+describe('rm with selectors', () => {
+  it('removes every match with all, once each, even an arrow an earlier match took with it', () => {
+    const outcome = run([{ op: 'rm', target: 'label~s', all: true }]);
+    expect(lines(outcome)).toEqual([
+      '- n1  stadium "Start"',
+      '- a1  arrow n1→n2 (pinned to n1)',
+      '- n4  square "Address"',
+      '- a3  arrow n3→n4 (pinned to n4)',
+      '- a4  arrow n4→n5 (pinned to n4)',
+      '- n5  square "Card details"',
+      '- a5  arrow n5→n6 (pinned to n5)',
+      '- n6  diamond "3-D Secure?"',
+      '- a6  arrow n6→n7 "yes" (pinned to n6)',
+      '- t1  text "Retry up to 3 times"',
+    ]);
+  });
+
+  it('needs all for several matches', () => {
+    expect(refused(run([rm('type:stadium')])).code).toBe('target_ambiguous');
+  });
+});
