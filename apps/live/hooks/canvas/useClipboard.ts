@@ -65,7 +65,7 @@ type ClipboardDeps = {
   // pasteImageFile.
   embedMode: boolean;
   selectedId: string | null;
-  multiSelectedIds: Set<string>;
+  multiSelectedIds: ReadonlySet<string>;
   editingId: string | null;
   // Ends typing in a label: pasting copied elements while a note is open for
   // typing puts them on the canvas, not in the note.
@@ -323,11 +323,12 @@ export function useClipboard(deps: ClipboardDeps) {
       // the element clipboard on the canvas.
       if (e.defaultPrevented) return;
       if (primaryPaste.current?.isPrimarySelectionPaste()) return;
-      const target = e.target as Element | null;
+      // A DOM target: `Element` in this file is the diagram element type.
+      const target = e.target as EventTarget | null;
       // An article's writing hands on what it cannot hold (docs/specs/007-editor/article-pages.md
       // "Zones": a pasted image or copied elements go into the writing as zones).
       const intoArticle =
-        target instanceof Element &&
+        target instanceof HTMLElement &&
         !!target.closest('[data-article-flow]') &&
         articlePasteIsCanvas(e.clipboardData ?? null);
       if (

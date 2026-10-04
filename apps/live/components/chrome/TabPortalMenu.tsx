@@ -17,11 +17,13 @@ import {
   MenuAccordionSection,
   MenuActionRow,
   MenuGroupSeparator,
+} from '@/components/primitives/PortalMenu';
+import {
   MenuTile,
   MenuTileGrid,
   MenuToolbar,
   MenuToolButton,
-} from '@/components/primitives/PortalMenu';
+} from '@/components/primitives/MenuTiles';
 import { CollaborateMenuIcon, PasteMenuIcon } from '@/components/palette/context-menu-icons';
 import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
 import { SessionStudio } from '@/components/panels/session-studio/SessionStudio';
@@ -32,7 +34,7 @@ import {
   AddTabToFolderDialog,
 } from '@/components/dialogs/TabOrganiseDialogs';
 import type { CanvasMenuActions, CanvasMenuTarget } from './TabBar';
-import { DuplicateIcon, useEscape } from '@livediagram/ui';
+import { DuplicateIcon, MenuTreeContext, useControlMenu } from '@livediagram/ui';
 import type { SessionToolsProps } from '@/components/chrome/session-tools-props';
 
 // The unified tab / canvas portal menu (actions, copy-to-document, and
@@ -131,7 +133,21 @@ export function PortalMenu({
   // menu's container so the outside-click handler treats it as "inside".
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [deleteRow, setDeleteRow] = useState<HTMLDivElement | null>(null);
-  const ref = useRef<HTMLDivElement>(null);
+  const ref = useRef<HTMLDivElement | null>(null);
+  // A control menu (docs/specs/004-interface-design/menus.md): Escape, focus in when the keyboard
+  // opened it, focus back to the tab's ⋯ (or wherever it was) on close.
+  const { attach, element, tree, surfaceProps } = useControlMenu({
+    onClose,
+    trigger: anchor ?? null,
+    label: point ? 'Canvas menu' : 'Tab menu',
+  });
+  const setRef = useCallback(
+    (el: HTMLDivElement | null) => {
+      ref.current = el;
+      attach(el);
+    },
+    [attach],
+  );
   const phone = useIsMobileViewport();
   const [pos, setPos] = useState<{ left: number; top: number } | null>(null);
   const [adjust, setAdjust] = useState({ x: 0, y: 0 });
@@ -175,7 +191,7 @@ export function PortalMenu({
     const observer = new ResizeObserver(clamp);
     observer.observe(node);
     return () => observer.disconnect();
-  }, [pos, adjust, phone]);
+  }, [pos, adjust, phone, element]);
 
   useEffect(() => {
     // Grace window after the menu opens during which outside mouse events are
@@ -242,7 +258,6 @@ export function PortalMenu({
   }, [onClose, anchor]);
   // Escape closes it too — via the shared hook, which registers the same
   // document-level bubble listener this effect used to open-code.
-  useEscape(onClose);
 
   // Modal pickers replace the anchored box entirely (see the `view` note
   // above); dismissing them dismisses the menu.
@@ -459,14 +474,14 @@ export function PortalMenu({
     return (
       <>
         <BottomSheet
-          ref={ref}
-          role="menu"
+          ref={setRef}
+          {...surfaceProps}
           data-tour-id="tab-menu"
           onContextMenu={(e) => e.preventDefault()}
           onClose={onClose}
           zClassName="z-[var(--z-modal)]"
         >
-          {body}
+          <MenuTreeContext.Provider value={tree}>{body}</MenuTreeContext.Provider>
         </BottomSheet>
         {confirm ? <Portal>{confirm}</Portal> : null}
       </>
@@ -478,15 +493,15 @@ export function PortalMenu({
   return (
     <Portal>
       <div
-        ref={ref}
-        role="menu"
+        ref={setRef}
+        {...surfaceProps}
         data-tour-id="tab-menu"
         onContextMenu={(e) => e.preventDefault()}
         // lvd-menu-stagger cascades the direct children (toolbar + category
         // sections) in one at a time for the same falling-stack entrance the
         // element context menu uses (ContextMenu.tsx); animate-fade-in matches
         // its whole-menu fade. See globals.css.
-        className="lvd-menu-stagger animate-fade-in fixed z-[var(--z-modal)] flex w-56 flex-col rounded-md border border-slate-200 bg-white py-1 text-sm shadow-lg dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
+        className="lvd-menu-stagger animate-fade-in fixed z-[var(--z-modal)] flex w-56 outline-none flex-col rounded-md border border-slate-200 bg-white py-1 text-sm shadow-lg dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
         style={{
           // adjust nudges the box back on-screen when it would overflow an edge.
           // Anchor mode pins the menu's right edge to the ellipsis button and
@@ -501,7 +516,7 @@ export function PortalMenu({
             : 'translate(-100%, calc(-100% - 4px))',
         }}
       >
-        {body}
+        <MenuTreeContext.Provider value={tree}>{body}</MenuTreeContext.Provider>
       </div>
       {confirm}
     </Portal>

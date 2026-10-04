@@ -36,7 +36,7 @@ export function freshCopyFields(el: Element): { rotation?: number } {
 // extra arrows (e.g. a connector from the original to the duplicate).
 export function duplicateElements(
   elements: Element[],
-  ids: Set<ElementId>,
+  ids: ReadonlySet<ElementId>,
   dx: number,
   dy: number,
 ): { newElements: Element[]; idMap: Map<ElementId, ElementId> } {

@@ -158,7 +158,8 @@ describe('EditorModeSwitch chip', () => {
   it('closes on Escape and returns focus to the chip', () => {
     renderSwitch('diagram');
     fireEvent.click(chip());
-    fireEvent.keyDown(window, { key: 'Escape' });
+    // Escape from inside the menu, where opening put the focus.
+    fireEvent.keyDown(document.activeElement!, { key: 'Escape' });
     expect(screen.queryByRole('menu')).toBeNull();
     expect(document.activeElement).toBe(chip());
   });
@@ -168,7 +169,7 @@ describe('EditorModeSwitch chip', () => {
     const { onChange } = renderSwitch('draw');
     fireEvent.click(chip());
     const [diagram, draw] = screen.getAllByRole('menuitemradio');
-    fireEvent.blur(draw!, { relatedTarget: null });
+    fireEvent.focusOut(draw!, { relatedTarget: null });
     expect(screen.queryByRole('menu')).not.toBeNull();
     fireEvent.click(diagram!);
     expect(onChange).toHaveBeenCalledWith('diagram');
@@ -179,7 +180,7 @@ describe('EditorModeSwitch chip', () => {
     const outside = document.createElement('button');
     document.body.append(outside);
     fireEvent.click(chip());
-    fireEvent.blur(screen.getAllByRole('menuitemradio')[0]!, { relatedTarget: outside });
+    fireEvent.focusOut(screen.getAllByRole('menuitemradio')[0]!, { relatedTarget: outside });
     expect(screen.queryByRole('menu')).toBeNull();
     outside.remove();
   });

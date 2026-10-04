@@ -40,7 +40,7 @@ export function useSelectionEditing(opts: {
   // no drag entry for it (their clicks land here via selectElement), so
   // selectElement owns the arm-then-paint cycle for them.
   formatToolActive: boolean;
-  multiSelectedIds: Set<string>;
+  multiSelectedIds: ReadonlySet<string>;
   documentName: string;
   tabs: Tab[];
   activeTab: Tab;

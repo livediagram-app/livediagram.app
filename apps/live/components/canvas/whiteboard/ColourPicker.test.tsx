@@ -109,11 +109,11 @@ describe('ColourPicker', () => {
     const { onRemove, rerender } = setup('blue', ['#ff6b00', '#00a39b']);
     const orange = screen.getByRole('button', { name: 'Custom #ff6b00' });
     fireEvent.contextMenu(orange);
-    const remove = screen.getByRole('button', { name: 'Remove' });
+    const remove = screen.getByRole('menuitem', { name: 'Remove' });
     expect(document.activeElement).toBe(remove);
     fireEvent.click(remove);
     expect(onRemove).toHaveBeenCalledWith('#ff6b00');
-    expect(screen.queryByRole('button', { name: 'Remove' })).toBeNull();
+    expect(screen.queryByRole('menuitem', { name: 'Remove' })).toBeNull();
     rerender(['#00a39b']);
     expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Custom #00a39b' }));
   });
@@ -123,11 +123,11 @@ describe('ColourPicker', () => {
     const teal = screen.getByRole('button', { name: 'Custom #00a39b' });
     teal.focus();
     fireEvent.keyDown(teal, { key: 'F10', shiftKey: true });
-    fireEvent.keyDown(screen.getByRole('button', { name: 'Remove' }), { key: 'Escape' });
-    expect(screen.queryByRole('button', { name: 'Remove' })).toBeNull();
+    fireEvent.keyDown(screen.getByRole('menuitem', { name: 'Remove' }), { key: 'Escape' });
+    expect(screen.queryByRole('menuitem', { name: 'Remove' })).toBeNull();
     expect(document.activeElement).toBe(teal);
     fireEvent.keyDown(teal, { key: 'ContextMenu' });
-    fireEvent.click(screen.getByRole('button', { name: 'Remove' }));
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Remove' }));
     expect(onRemove).toHaveBeenCalledWith('#00a39b');
     // The last one gone: the focus goes to +.
     rerender([]);
@@ -139,7 +139,7 @@ describe('ColourPicker', () => {
   it('offers no menu on a stock colour', () => {
     const { stock } = setup();
     fireEvent.contextMenu(within(stock()).getByRole('button', { name: 'Blue' }));
-    expect(screen.queryByRole('button', { name: 'Remove' })).toBeNull();
+    expect(screen.queryByRole('menuitem', { name: 'Remove' })).toBeNull();
   });
 
   it('opens the custom picker in place with +, and Use applies the hex', () => {

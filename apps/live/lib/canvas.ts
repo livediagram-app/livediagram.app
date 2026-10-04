@@ -110,7 +110,10 @@ export function inheritedSizeFor(
 const isFrameEl = (el: Element): boolean =>
   el.type === 'shape' && (el.shape === 'frame' || el.shape === 'lane');
 
-export function withFrameContents(elements: Element[], ids: Set<string>): Set<string> {
+export function withFrameContents(
+  elements: Element[],
+  ids: ReadonlySet<string>,
+): ReadonlySet<string> {
   const draggedFrameIds = new Set(
     elements.filter((el) => ids.has(el.id) && isFrameEl(el)).map((el) => el.id),
   );

@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import { elementKindLabel, type Element } from '@livediagram/document';
-import { PortalMenu, MenuTile, MenuTileGrid } from '@/components/primitives/PortalMenu';
+import { PortalMenu } from '@/components/primitives/PortalMenu';
+import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
 import { HoverCard, Glyph } from '@livediagram/ui';
 
 // One selectable bucket in the Filter Selection menu: a human label plus the

@@ -9,7 +9,6 @@ import { tabBackgroundStyle, worldPatternOrigin } from '@/lib/canvas-backgrounds
 import { useObservedSize } from '@/hooks/canvas/useObservedSize';
 import { AnimatedCanvasBackground } from '@/components/canvas/AnimatedCanvasBackground';
 import { pointerToCanvas } from '@/lib/canvas';
-import { deriveCanvasSelection } from '@/lib/canvas-selection';
 import { canvasCursorClass } from '@/lib/canvas-chrome';
 import { useDockPopovers } from '@/hooks/canvas/useDockPopovers';
 import { drawIntentCursor, isWhiteboardPenIntent } from '@/lib/draw-mode';
@@ -20,6 +19,7 @@ import { useZoomControls } from '@/hooks/canvas/useZoomControls';
 import { usePaletteDrop } from '@/hooks/canvas/usePaletteDrop';
 import { isDarkCanvas } from '@/lib/dark-canvas';
 import { isDrawingElement, isEventStormingTab, zoneAnchorOf } from '@livediagram/document';
+import type { Element } from '@livediagram/document';
 import { getTheme } from '@/lib/themes';
 import { CanvasSelectionToolbars } from '@/components/canvas/CanvasSelectionToolbars';
 // Lazy-load TemplatePicker (1163 lines + its theme / share helpers)
@@ -43,6 +43,10 @@ import { CanvasElementsLayer } from '@/components/canvas/CanvasElementsLayer';
 import { CanvasZoomProvider } from '@/components/canvas/CanvasZoomContext';
 import { useCanvasLongTaskLog } from '@/hooks/canvas/useCanvasLongTaskLog';
 import { usePreviewedElements } from '@/hooks/canvas/usePreviewedElements';
+import { useSelectionOf, useSelectionStore } from '@/hooks/canvas/useSelectionStore';
+import type { CanvasSelectionInput } from '@/hooks/canvas/useCanvasSelectionView';
+import type { Selection } from '@/lib/selection-store';
+import { withStableEventProps } from '@/components/primitives/withStableEventProps';
 import { MindGrowProvider } from '@/components/canvas/MindGrowContext';
 import { CanvasStillProvider } from '@/components/canvas/CanvasStillContext';
 import { CanvasLiveRegion } from '@/components/canvas/CanvasLiveRegion';
@@ -91,7 +95,11 @@ import { IllustratePages } from '@/components/canvas/IllustratePages';
 import { ArticleFlows } from '@/components/canvas/article/ArticleFlows';
 import { pressIsOffPage } from '@/hooks/canvas/illustrate-page-guard';
 
-export function Canvas(props: CanvasProps) {
+// The canvas boundary (docs/specs/008-canvas/canvas-performance.md "The canvas re-renders only for what it
+// shows"): memoised, its `on…` props stable, so an editor render that changes nothing it shows stops here.
+export const Canvas = withStableEventProps(CanvasView);
+
+function CanvasView(props: CanvasProps) {
   const {
     tabLocked,
     readOnly,
@@ -110,8 +118,6 @@ export function Canvas(props: CanvasProps) {
     viewportZoom,
     setViewportZoom,
     elements,
-    selectedId,
-    multiSelectedIds,
     onSelectMarquee,
     canvasTool,
     onCanvasPointerMove,
@@ -172,7 +178,10 @@ export function Canvas(props: CanvasProps) {
   const [paletteBottomY, setPaletteBottomY] = useState<number>(0);
   // Which quick-connect ring (if any) is open. Self-contained state + reset /
   // outside-close effects live in useQuickRing.
-  const [quickRingOpen, setQuickRingOpen] = useQuickRing(selectedId);
+  // The selection lives in the store (docs/specs/008-canvas/blueprints/selection-store.md): the canvas
+  // reads it when a handler runs and subscribes only to the narrow slices it draws.
+  const selectionStore = useSelectionStore();
+  const [quickRingOpen, setQuickRingOpen] = useQuickRing(selectionStore);
   // Which panel is open as a popover off its button (the Toolbar Explorer,
   // the cluster popovers). See useDockPopovers; the popover anchor math is
   // the tested computeDockAnchor.
@@ -199,7 +208,10 @@ export function Canvas(props: CanvasProps) {
     onDeselect,
     onSelectMarquee,
     onShiftSelect,
-    currentSelection: () => new Set([...multiSelectedIds, ...(selectedId ? [selectedId] : [])]),
+    currentSelection: () => {
+      const { selectedId, multiSelectedIds } = selectionStore.get();
+      return new Set([...multiSelectedIds, ...(selectedId ? [selectedId] : [])]);
+    },
     isPinchingRef,
   });
 
@@ -236,11 +248,6 @@ export function Canvas(props: CanvasProps) {
   // (docs/specs/008-canvas/arrow-labels.md). Laid out here, not in the element
   // layer, because the selection toolbars clear a label as part of its arrow.
   const fontsReady = useFontsReady();
-  // The selection as one set, for a document zone's bar (ArticleFlows).
-  const articleSelectedIds = useMemo(
-    () => new Set([...multiSelectedIds, ...(selectedId ? [selectedId] : [])]),
-    [multiSelectedIds, selectedId],
-  );
   const arrowLabels = useArrowLabelLayouts(elements, hasArrows, props.tabFont, fontsReady);
 
   // Selection-display derivation (primary element, bounds, and every
@@ -248,24 +255,39 @@ export function Canvas(props: CanvasProps) {
   // it's unit-tested. Memoised because it walks the elements. It reads the elements as a drag in
   // progress shows them (docs/specs/008-canvas/drag-preview.md), so the union handles follow a resize.
   const selectionElements = usePreviewedElements(elements, props.activeTabId ?? '');
-  const canvasSelection = useMemo(
-    () =>
-      deriveCanvasSelection({
-        elements: selectionElements,
-        selectedId,
-        multiSelectedIds,
-        editingId,
-        isPaintMode,
-        tabLocked,
-        readOnly,
-        esBoard: isEventStormingTab({ kind: tabKind, layers: tabLayers }),
-        elementMenuOpen: props.elementMenuOpen === true,
-        labelRectOf: arrowLabels.labelRectOf,
-      }),
+  // An object in an article's writing (a chart, an image, a table) connects to nothing: no
+  // quick-connect pluses on it (docs/specs/007-editor/article-pages.md "Zones"). A predicate the
+  // selection derivation applies, so the canvas itself still doesn't read the selection.
+  const articlePages = props.illustratePages?.pages;
+  const plusBlocked = useMemo(() => {
+    if (!articlePages?.some((p) => p.flow)) return undefined;
+    return (el: Element) => {
+      if (isDrawingElement(el)) return false;
+      const at = zoneAnchorOf(el, selectionElements);
+      return articlePages.some(
+        (p) =>
+          p.flow &&
+          at.x >= p.rect.x &&
+          at.x <= p.rect.x + p.rect.width &&
+          at.y >= p.rect.y &&
+          at.y <= p.rect.y + p.rect.height,
+      );
+    };
+  }, [articlePages, selectionElements]);
+  const selectionInput = useMemo<CanvasSelectionInput>(
+    () => ({
+      elements: selectionElements,
+      editingId,
+      isPaintMode,
+      tabLocked,
+      readOnly,
+      esBoard: isEventStormingTab({ kind: tabKind, layers: tabLayers }),
+      elementMenuOpen: props.elementMenuOpen === true,
+      labelRectOf: arrowLabels.labelRectOf,
+      plusBlocked,
+    }),
     [
       selectionElements,
-      selectedId,
-      multiSelectedIds,
       editingId,
       isPaintMode,
       tabLocked,
@@ -274,35 +296,21 @@ export function Canvas(props: CanvasProps) {
       tabKind,
       props.elementMenuOpen,
       arrowLabels,
+      plusBlocked,
     ],
   );
-  const {
-    selectionBounds,
-    showPlus,
-    showHandlesFor: showHandles,
-    showAnchorsFor,
-    unionResizeBounds,
-    unionResizePrimaryId,
-    showUnionResize,
-  } = canvasSelection;
-
-  // An object in an article's writing (a chart, an image, a table) connects to nothing: no
-  // quick-connect pluses on it (docs/specs/007-editor/article-pages.md "Zones").
-  const articlePages = props.illustratePages?.pages;
-  const plusAllowed = useMemo(() => {
-    if (!showPlus || !selectedId || !articlePages?.some((p) => p.flow)) return showPlus;
-    const el = elements.find((e) => e.id === selectedId);
-    if (!el || isDrawingElement(el)) return true;
-    const at = zoneAnchorOf(el, elements);
-    return !articlePages.some(
-      (p) =>
-        p.flow &&
-        at.x >= p.rect.x &&
-        at.x <= p.rect.x + p.rect.width &&
-        at.y >= p.rect.y &&
-        at.y <= p.rect.y + p.rect.height,
-    );
-  }, [showPlus, selectedId, articlePages, elements]);
+  // The one selected element when it is a path: the path tool's edit gesture arms on it.
+  const soleSelectedPathId = useSelectionOf(
+    useCallback(
+      (s: Selection) =>
+        s.multiSelectedIds.size === 0 &&
+        s.selectedId !== null &&
+        elements.some((el) => el.id === s.selectedId && el.type === 'path')
+          ? s.selectedId
+          : null,
+      [elements],
+    ),
+  );
 
   // Spotlight presenter tool (docs/specs/008-canvas/canvas-and-palette.md): screen-space light position +
   // radius. Local to Canvas so the click handlers, the pointer tracker, and
@@ -494,8 +502,7 @@ export function Canvas(props: CanvasProps) {
     useCanvasSelectHandlers({
       inertIds: props.layerInertIds,
       isPaintMode,
-      selectedId,
-      multiSelectedIds,
+      readSelection: selectionStore.get,
       onSelect,
       onDeselect,
       onShiftSelect,
@@ -548,8 +555,7 @@ export function Canvas(props: CanvasProps) {
     viewportZoom,
     activeTabId: props.activeTabId,
     editingId,
-    selectedId,
-    multiSelectCount: multiSelectedIds.size,
+    soleSelectedPathId,
     onCommitPath: props.onCommitPath,
     onCommitPathEdit: props.onCommitPathEdit,
     onDressPath: props.onDressPath,
@@ -774,7 +780,6 @@ export function Canvas(props: CanvasProps) {
             view={props.illustratePages}
             zoom={viewportZoom}
             interactive={!pendingDraw && canvasTool !== 'spotlight' && canvasTool !== 'avatar'}
-            selectedIds={articleSelectedIds}
             elements={elements}
           />
         ) : null}
@@ -803,14 +808,8 @@ export function Canvas(props: CanvasProps) {
                 onPressFocusButton={props.onPressFocusButton}
                 hasArrows={hasArrows}
                 arrowLabels={arrowLabels}
-                showHandles={showHandles}
-                showAnchorsFor={showAnchorsFor}
                 badgeColor={badgeColor}
-                selectionBounds={selectionBounds}
-                showPlus={plusAllowed}
-                showUnionResize={showUnionResize}
-                unionResizeBounds={unionResizeBounds}
-                unionResizePrimaryId={unionResizePrimaryId}
+                selectionInput={selectionInput}
                 isPaintMode={isPaintMode}
                 handleArrowSelect={handleArrowSelect}
                 handleElementClick={handleElementClick}
@@ -938,7 +937,7 @@ export function Canvas(props: CanvasProps) {
 
       <CanvasSelectionToolbars
         props={props}
-        selection={canvasSelection}
+        selectionInput={selectionInput}
         quickRingOpen={quickRingOpen !== null}
       />
       {pathTool.toolbar ? (

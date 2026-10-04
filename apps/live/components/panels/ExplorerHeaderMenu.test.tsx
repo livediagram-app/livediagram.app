@@ -23,7 +23,7 @@ describe('ExplorerHeaderMenu', () => {
     openMenu();
     const menu = screen.getByRole('menu');
     const rows = within(menu)
-      .getAllByRole('button')
+      .getAllByRole('menuitem')
       .map((row) => row.textContent);
     const github = rows.indexOf('GitHub');
     expect(github).toBeGreaterThan(-1);
@@ -33,7 +33,7 @@ describe('ExplorerHeaderMenu', () => {
   it('opens the licences page in a new tab, as GitHub does', () => {
     const open = vi.spyOn(window, 'open').mockReturnValue(null);
     openMenu();
-    fireEvent.click(within(screen.getByRole('menu')).getByRole('button', { name: 'Licences' }));
+    fireEvent.click(within(screen.getByRole('menu')).getByRole('menuitem', { name: 'Licences' }));
     expect(open).toHaveBeenCalledWith('/licences', '_blank', 'noopener,noreferrer');
     expect(screen.queryByRole('menu')).toBeNull();
   });

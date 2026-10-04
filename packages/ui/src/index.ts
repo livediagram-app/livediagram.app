@@ -54,3 +54,4 @@ export {
 } from './seo';
 export * from './appearance';
 export * from './optical';
+export * from './menu';

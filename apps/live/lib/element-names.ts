@@ -25,12 +25,14 @@ export function kindLabel(el: Element): string {
   if (el.type === 'path') return 'Path';
   if (el.type === 'link-card') return 'Link card';
   if (el.type === 'video') return 'Embed';
-  if (el.type === 'shape') {
-    // Hyphenated kinds read as prose ('pie-chart' → 'Pie chart').
-    const s = el.shape.split('-').join(' ');
-    return s.charAt(0).toUpperCase() + s.slice(1);
-  }
+  if (el.type === 'shape') return shapeKindLabel(el.shape);
   return 'Element';
+}
+
+/** A shape kind as prose: hyphenated kinds read as words ('pie-chart' → 'Pie chart'). */
+export function shapeKindLabel(kind: string): string {
+  const s = kind.split('-').join(' ');
+  return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
 export function article(label: string): 'a' | 'an' {

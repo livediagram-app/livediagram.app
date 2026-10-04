@@ -62,7 +62,7 @@ test('a team folder becomes a member’s default, and new boards land in it', as
   const menu = page.getByRole('button', { name: /^Menu for (folder )?Boards$/ }).last();
   await expect(menu).toBeVisible({ timeout: 30_000 });
   await menu.click();
-  await page.getByRole('button', { name: 'Use as default for' }).click();
+  await page.getByRole('menuitem', { name: 'Use as default for' }).click();
   await page.getByRole('menuitemcheckbox', { name: 'Kanban boards' }).click();
   await expect.poll(defaults).toEqual([{ key: 'template:kanban', folderId }]);
   await page.keyboard.press('Escape');

@@ -13,8 +13,8 @@
 // stretching across the canvas and colliding with the zoom dock when a
 // document has many tabs.
 
-import { useRef, useState } from 'react';
-import { MenuIcon, useClickOutside, useEscape, Glyph } from '@livediagram/ui';
+import { useRef, type ReactNode } from 'react';
+import { MenuIcon, useClickOutside, Glyph, useMenu, useMenuButton } from '@livediagram/ui';
 import type { Tab } from '@livediagram/document';
 
 function OpenExternalIcon() {
@@ -47,10 +47,17 @@ type EmbedChromeProps = {
 
 export function EmbedChrome({ tabs, activeId, onSelectTab, shareCode }: EmbedChromeProps) {
   const openUrl = shareCode ? `/document/shared?s=${encodeURIComponent(shareCode)}` : '/new';
-  const [menuOpen, setMenuOpen] = useState(false);
+  // A menu button (docs/specs/004-interface-design/menus.md); Escape and the keys come from the hooks.
+  const {
+    open: menuOpen,
+    close: closeMenu,
+    toggle,
+    trigger,
+    setTrigger,
+    onTriggerKeyDown,
+  } = useMenuButton();
   const menuRef = useRef<HTMLDivElement>(null);
-  useClickOutside(menuRef, () => setMenuOpen(false), menuOpen);
-  useEscape(() => setMenuOpen(false));
+  useClickOutside(menuRef, closeMenu, menuOpen);
 
   const activeName = tabs.find((t) => t.id === activeId)?.name ?? 'Tab';
 
@@ -71,8 +78,10 @@ export function EmbedChrome({ tabs, activeId, onSelectTab, shareCode }: EmbedChr
       {tabs.length > 1 ? (
         <div ref={menuRef} className="pointer-events-auto relative">
           <button
+            ref={setTrigger}
             type="button"
-            onClick={() => setMenuOpen((o) => !o)}
+            onClick={toggle}
+            onKeyDown={onTriggerKeyDown}
             aria-haspopup="menu"
             aria-expanded={menuOpen}
             className="flex max-w-[44vw] items-center gap-1.5 rounded-full bg-white/90 px-2.5 py-1.5 text-[11px] font-medium text-slate-700 shadow-sm transition hover:bg-white hover:text-slate-900 dark:bg-slate-900/90 dark:text-slate-200 dark:hover:bg-slate-900 dark:hover:text-white"
@@ -82,10 +91,7 @@ export function EmbedChrome({ tabs, activeId, onSelectTab, shareCode }: EmbedChr
             <ChevronIcon />
           </button>
           {menuOpen ? (
-            <div
-              role="menu"
-              className="absolute bottom-full left-0 mb-1 flex max-h-[50vh] w-44 max-w-[60vw] flex-col overflow-y-auto rounded-lg border border-slate-200 bg-white py-1 shadow-lg dark:border-slate-700 dark:bg-slate-900"
-            >
+            <TabMenu trigger={trigger} onClose={closeMenu}>
               {tabs.map((t) => {
                 const active = t.id === activeId;
                 return (
@@ -94,9 +100,10 @@ export function EmbedChrome({ tabs, activeId, onSelectTab, shareCode }: EmbedChr
                     type="button"
                     role="menuitemradio"
                     aria-checked={active}
+                    tabIndex={-1}
                     onClick={() => {
                       onSelectTab(t.id);
-                      setMenuOpen(false);
+                      closeMenu();
                     }}
                     className={
                       'truncate px-3 py-1.5 text-left text-[11px] font-medium transition ' +
@@ -109,10 +116,31 @@ export function EmbedChrome({ tabs, activeId, onSelectTab, shareCode }: EmbedChr
                   </button>
                 );
               })}
-            </div>
+            </TabMenu>
           ) : null}
         </div>
       ) : null}
+    </div>
+  );
+}
+
+function TabMenu({
+  trigger,
+  onClose,
+  children,
+}: {
+  trigger: HTMLElement | null;
+  onClose: () => void;
+  children: ReactNode;
+}) {
+  const { attach, surfaceProps } = useMenu({ onClose, trigger, label: 'Tabs' });
+  return (
+    <div
+      ref={attach}
+      {...surfaceProps}
+      className="absolute bottom-full left-0 mb-1 flex max-h-[50vh] w-44 max-w-[60vw] flex-col overflow-y-auto rounded-lg border border-slate-200 bg-white py-1 shadow-lg outline-none dark:border-slate-700 dark:bg-slate-900"
+    >
+      {children}
     </div>
   );
 }

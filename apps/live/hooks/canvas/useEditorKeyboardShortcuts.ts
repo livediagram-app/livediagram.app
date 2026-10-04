@@ -17,6 +17,7 @@
 // silently no-op'd.
 
 import { useEffect } from 'react';
+import { isInMenuSurface } from '@livediagram/ui';
 import { anyModalOpen } from '@/lib/modal-guard';
 import { isMobileViewportSync } from '@/lib/responsive';
 import {
@@ -65,6 +66,8 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
       // A modal dialog owns the keyboard while open (its own Escape
       // closes it); cancelling canvas modes behind it double-acts.
       if (anyModalOpen()) return;
+      // A menu holding focus owns the keyboard (docs/specs/004-interface-design/menus.md).
+      if (isInMenuSurface(e.target)) return;
       // A closer handler already claimed this keystroke (e.g. the table's
       // selected-cell layer) — don't double-act on it.
       if (e.defaultPrevented) return;
@@ -123,6 +126,10 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
       // rectangle (and Backspace deleted the selection) on the canvas
       // BEHIND the modal.
       if (anyModalOpen()) return;
+      // While focus is inside a menu of either kind the canvas stands down: an arrow there never
+      // nudges, Delete never deletes, Tab never grows a mind map
+      // (docs/specs/004-interface-design/menus.md).
+      if (isInMenuSurface(e.target)) return;
       // A closer handler already claimed this keystroke — the table's
       // selected-cell layer prevents default on the keys it consumes
       // (arrows / Backspace / Escape / type-to-edit), and acting on them
@@ -399,7 +406,9 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
     if (!deps.enabled) return;
     let spaceDownAt: number | null = null;
     let pointerDownSinceSpace = false;
+    // A focused menu row is pressed by Space, not tapped into a label edit.
     const isTypingTarget = (t: EventTarget | null) =>
+      isInMenuSurface(t) ||
       t instanceof HTMLInputElement ||
       t instanceof HTMLTextAreaElement ||
       (t instanceof HTMLElement && t.isContentEditable);

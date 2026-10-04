@@ -29,7 +29,7 @@ export type EditorDragDeps = {
   // truth).
   selectedId: string | null;
   setSelectedId: (id: string | null) => void;
-  multiSelectedIds: Set<string>;
+  multiSelectedIds: ReadonlySet<string>;
   // Written by the shift-duplicate identity swap (docs/specs/008-canvas/shift-drag-duplicate.md): the cursor-
   // following set becomes the fresh clones, so the selection must follow
   // them (and swing back if the duplicate is dissolved).

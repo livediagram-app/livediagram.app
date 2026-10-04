@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { act, renderHook } from '@testing-library/react';
-import type { MouseEvent } from 'react';
+import type { KeyboardEvent, MouseEvent } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { useRowMenu } from './useRowMenu';
 
@@ -26,6 +26,22 @@ describe('useRowMenu', () => {
     expect(e.stopPropagation).toHaveBeenCalled();
     act(() => result.current.triggerProps.onClick(mouse()));
     expect(result.current.open).toBe(false);
+  });
+
+  // docs/specs/004-interface-design/menus.md: Down or Up Arrow on the trigger opens it too.
+  it('opens on Down or Up Arrow from the trigger, and ignores other keys', () => {
+    const { result } = renderHook(() => useRowMenu());
+    const key = (k: string) =>
+      ({ key: k, preventDefault: vi.fn(), stopPropagation: vi.fn() }) as unknown as KeyboardEvent;
+    act(() => result.current.triggerProps.onKeyDown(key('a')));
+    expect(result.current.open).toBe(false);
+    const down = key('ArrowDown');
+    act(() => result.current.triggerProps.onKeyDown(down));
+    expect(result.current.open).toBe(true);
+    expect(down.preventDefault).toHaveBeenCalled();
+    act(() => result.current.close());
+    act(() => result.current.triggerProps.onKeyDown(key('ArrowUp')));
+    expect(result.current.open).toBe(true);
   });
 
   it('opens on right-click, replacing the browser menu', () => {

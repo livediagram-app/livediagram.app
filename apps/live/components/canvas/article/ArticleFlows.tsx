@@ -38,6 +38,13 @@ import { useZoneDrag, type ZoneDragState } from './useZoneDrag';
 import { useObjectDropCaret } from './useObjectDropCaret';
 import { publishZoneClips } from '@/lib/article/zone-clip-store';
 import { selectionMoving, useCanvasGesture } from '@/lib/canvas-gesture';
+import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
+import type { Selection } from '@/lib/selection-store';
+
+const selectionAsSet = (s: Selection): ReadonlySet<string> =>
+  new Set([...s.multiSelectedIds, ...(s.selectedId ? [s.selectedId] : [])]);
+const sameIds = (a: ReadonlySet<string>, b: ReadonlySet<string>) =>
+  a.size === b.size && [...a].every((id) => b.has(id));
 
 const ArticleEditor = lazy(() => import('./ArticleEditor'));
 // The toolbar drives the writing's commands (ProseMirror), so it loads with the editor, not with
@@ -48,17 +55,18 @@ export function ArticleFlows({
   view,
   zoom,
   interactive,
-  selectedIds,
   elements,
 }: {
   view: IllustratePagesView;
   zoom: number;
   // Whether presses on the writing are the writing's (no drawing tool in hand, not zen).
   interactive: boolean;
-  // The canvas's selection and elements: a selection all in one zone shows its zone bar.
-  selectedIds: ReadonlySet<string>;
+  // The canvas's elements: a selection all in one zone shows its zone bar.
   elements: readonly Element[];
 }) {
+  // The selection as one set, read from the store here so the canvas doesn't re-render for it
+  // (docs/specs/008-canvas/blueprints/selection-store.md).
+  const selectedIds = useSelectionOf(selectionAsSet, sameIds);
   const articles = view.articles;
   const surface = useCanvasSurface();
   // A background hovered in a page's panel inks the writing as it would on the press.

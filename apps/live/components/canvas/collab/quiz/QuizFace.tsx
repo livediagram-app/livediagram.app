@@ -253,7 +253,7 @@ export function QuizFace({
           className="absolute -translate-x-1/2"
           style={{ left: c, top: c - QUIZ_DISC_RADIUS + ELLIPSIS_INSET }}
         >
-          <ElementEllipsisMenu label="Quiz options" color={textColor}>
+          <ElementEllipsisMenu kind="command" label="Quiz options" color={textColor}>
             {(close) => {
               const row = (text: string, fn?: () => void) =>
                 fn ? (

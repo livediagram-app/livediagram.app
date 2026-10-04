@@ -126,7 +126,8 @@ test.describe('editor modes', () => {
     await page.getByRole('button', { name: 'Tab menu' }).click();
     await page.getByRole('button', { name: /^Opens in/ }).click();
     const opensIn = page.getByRole('group', { name: 'Opens in' });
-    await opensIn.getByRole('menuitemradio', { name: /^Draw/ }).click();
+    // The Tab menu is a control menu, so each mode is a toggle button (docs/specs/004-interface-design/menus.md).
+    await opensIn.getByRole('button', { name: /^Draw/ }).click();
     await page.keyboard.press('Escape');
     await expect(chip(page)).toHaveAccessibleName('Editor mode: Draw');
     await expect.poll(() => savedOpensIn(page), { timeout: 15_000 }).toBe('draw');

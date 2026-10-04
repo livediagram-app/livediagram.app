@@ -5,7 +5,12 @@ import {
   isMindNode,
 } from '@livediagram/document';
 import { elementMenuAnchor } from '@/lib/context-menu-anchor';
-import type { deriveCanvasSelection } from '@/lib/canvas-selection';
+import {
+  useCanvasSelectionView,
+  type CanvasSelectionInput,
+} from '@/hooks/canvas/useCanvasSelectionView';
+import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
+import type { Selection } from '@/lib/selection-store';
 import { selectionMoving, useCanvasGesture } from '@/lib/canvas-gesture';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { FloatingToolbar } from '@/components/chrome/FloatingToolbar';
@@ -17,14 +22,17 @@ import { useInsertionSlot } from '@/lib/insertion-preview';
 // and the marquee multi-selection toolbar, each riding a sibling wrapper
 // that mirrors the canvas transform so they counter-scale with zoom and
 // float over the selection. Extracted from Canvas as one cohesive layer —
-// Canvas passes its props plus the derived selection view-model through.
+const multiOf = (s: Selection) => s.multiSelectedIds;
+
+// Canvas passes its props and what the selection is derived from; the toolbars read the selection
+// from the store, so a selection change re-renders them and not the canvas.
 export function CanvasSelectionToolbars({
   props,
-  selection,
+  selectionInput,
   quickRingOpen,
 }: {
   props: CanvasProps;
-  selection: ReturnType<typeof deriveCanvasSelection>;
+  selectionInput: CanvasSelectionInput;
   // A quick-connect ring owns the space around the element while open; the
   // popover fades out (kept mounted) so it animates away and back.
   quickRingOpen: boolean;
@@ -36,7 +44,8 @@ export function CanvasSelectionToolbars({
     showPopover,
     multiToolbarBounds,
     showMultiToolbar,
-  } = selection;
+  } = useCanvasSelectionView(selectionInput);
+  const multiSelectedIds = useSelectionOf(multiOf);
   // Insert-between preview (docs/specs/021-event-storming/event-storming.md): the toolbars anchor to element BOUNDS,
   // and the preview slides elements by a render-time transform their bounds
   // know nothing about — so while a slot is open they would float over empty
@@ -54,7 +63,6 @@ export function CanvasSelectionToolbars({
     canvasTool,
     viewportZoom,
     viewportOffset,
-    multiSelectedIds,
     onDuplicateSelected,
     onToggleLockSelected,
     onDeleteSelected,

@@ -24,6 +24,7 @@ import { readDrawPattern } from '@/lib/whiteboard-dock-prefs';
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { Canvas } from '@/components/canvas/Canvas';
+import { useStableObject } from '@/hooks/ui/useStableObject';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useShapeLibraries } from '@/components/primitives/ShapeLibraryProvider';
 import type { LibraryShapeRef } from '@/lib/shape-library-dnd';
@@ -503,6 +504,18 @@ export function EditorCanvasHost() {
     resetQuiz: isReadOnly || runBlocked ? undefined : quiz.resetQuiz,
     saveQuiz: isReadOnly || runBlocked ? undefined : quiz.saveQuiz,
   });
+  // Object props the canvas boundary compares by identity (docs/specs/008-canvas/canvas-performance.md
+  // "The canvas re-renders only for what it shows"): new only when their data changes.
+  const esBoardControls = useStableObject({
+    ...(photoImportAvailable
+      ? {
+          onImportPhoto: openPhotoImport,
+          photoDisabled: photoImportBlocked,
+          photoDisabledReason: photoDraft.draftOpen ? 'Finish the current draft first' : undefined,
+        }
+      : {}),
+  });
+  const stableSlideDeck = useStableObject(slideDeck);
 
   return (
     <>
@@ -562,8 +575,6 @@ export function EditorCanvasHost() {
         snapGuides={snapGuides}
         distGuides={distGuides}
         snapTargets={snapTargets}
-        selectedId={selectedId}
-        multiSelectedIds={multiSelectedIds}
         remoteSelectionsByElement={remoteSelectionsByElement}
         remoteCursors={remoteCursorRows}
         remoteAvatars={remoteAvatarRows}
@@ -705,17 +716,7 @@ export function EditorCanvasHost() {
         onAddText={addText}
         onAddSticky={addSticky}
         esBoard={esBoard}
-        esBoardControls={{
-          ...(photoImportAvailable
-            ? {
-                onImportPhoto: openPhotoImport,
-                photoDisabled: photoImportBlocked,
-                photoDisabledReason: photoDraft.draftOpen
-                  ? 'Finish the current draft first'
-                  : undefined,
-              }
-            : {}),
-        }}
+        esBoardControls={esBoardControls}
         onAddNextNote={createBlocked ? undefined : addNextNote}
         onDropPhoto={readPhotoFile}
         onDropFile={isReadOnly ? undefined : dropBoardFile}
@@ -822,7 +823,7 @@ export function EditorCanvasHost() {
         onMoveFormatPanel={(x, y) => setFormatPanelPosition({ x, y })}
         onResetFormatPanel={() => setFormatPanelPosition(null)}
         // Slide Deck (docs/specs/012-collaboration/presentation-mode.md): the deck itself plus its panel's placement.
-        slideDeck={slideDeck}
+        slideDeck={stableSlideDeck}
         slideDeckPanelPosition={slideDeckPanelPosition}
         onMoveSlideDeckPanel={(x, y) => setSlideDeckPanelPosition({ x, y })}
         onResetSlideDeckPanel={() => setSlideDeckPanelPosition(null)}

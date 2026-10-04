@@ -3,7 +3,8 @@
 import { DocumentIcon, FolderOutlineIcon, PlusIcon } from '@/components/primitives/explorer-icons';
 import { useState } from 'react';
 import { Button, Glyph } from '@livediagram/ui';
-import { MenuTile, MenuTileGrid, PortalMenu } from '@/components/primitives/PortalMenu';
+import { PortalMenu } from '@/components/primitives/PortalMenu';
+import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
 import { ViewToggle } from '@/app/explorer/ViewToggle';
 import type { ExplorerViewMode } from '@/app/explorer/useExplorerViewMode';
 import type { Folder } from '@livediagram/api-schema';

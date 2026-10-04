@@ -385,11 +385,30 @@
  * their own (one with a hardcoded hex). :focus-visible keeps pointer clicks
  * from showing it; form fields keep their own focus:ring / focus:border, and
  * a control that sets its own focus-visible:outline-* utility still wins
- * (this sits in the base layer). */
+ * (this sits in the base layer). Brand 600 in light (4.1:1 on white; brand 500
+ * was 2.77:1, under WCAG 1.4.11's 3:1), brand 500 in dark (4.4:1 or more on the
+ * dark surfaces). docs/specs/004-interface-design/menus.md "Focus ring".
+ *
+ * Inside a menu of either kind the ring sits INSIDE the row (inset 2px), so a
+ * full-width row in a clipped menu never loses half of it: brand 600 in light
+ * (3.57:1 or more on white, slate 100 and the checked brand 100), brand 400 in
+ * dark (5.6:1 or more on slate 900, slate 800 and the checked tint). */
 @layer base {
   :is(button, a, summary, [role='button']):focus-visible {
-    outline: 2px solid var(--color-brand-500);
+    outline: 2px solid var(--color-brand-600);
     outline-offset: 2px;
+  }
+  .dark :is(button, a, summary, [role='button']):focus-visible {
+    outline-color: var(--color-brand-500);
+  }
+  [data-menu-surface] :is(button, a, summary, [role='button'], [role^='menuitem']):focus-visible {
+    outline: 2px solid var(--color-brand-600);
+    outline-offset: -2px;
+  }
+  .dark
+    [data-menu-surface]
+    :is(button, a, summary, [role='button'], [role^='menuitem']):focus-visible {
+    outline-color: var(--color-brand-400);
   }
 }
 
