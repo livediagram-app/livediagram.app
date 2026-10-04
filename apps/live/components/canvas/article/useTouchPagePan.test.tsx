@@ -3,6 +3,7 @@
 import { act, renderHook } from '@testing-library/react';
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { LONG_PRESS_MS } from '@/hooks/ui/useLongPress';
 import { canvasGestureNow, resetCanvasGesturesForTests } from '@/lib/canvas-gesture';
 import { TOUCH_PAN_SLOP, useTouchPagePan } from './useTouchPagePan';
 
@@ -92,5 +93,36 @@ describe('useTouchPagePan', () => {
   it('leaves a second finger to the pinch', () => {
     const { handle } = setup();
     expect(handle(press('touch', 0, 0, false))).toBe(false);
+  });
+
+  it('leaves a finger held still for a long press to text selection: a slide after it never pans', () => {
+    vi.useFakeTimers();
+    try {
+      const { handle, panFrom } = setup();
+      const onTap = vi.fn();
+      handle(press('touch'), onTap);
+      act(() => vi.advanceTimersByTime(LONG_PRESS_MS));
+      fire('pointermove', { pointerId: 1, clientX: 100, clientY: 20 });
+      fire('pointerup', { pointerId: 1 });
+      expect(panFrom).not.toHaveBeenCalled();
+      expect(onTap).not.toHaveBeenCalled();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('keeps panning once the pan began, however long the finger stays down', () => {
+    vi.useFakeTimers();
+    try {
+      const { handle, move } = setup();
+      handle(press('touch'));
+      fire('pointermove', { pointerId: 1, clientX: 100, clientY: 60 });
+      act(() => vi.advanceTimersByTime(LONG_PRESS_MS * 2));
+      fire('pointermove', { pointerId: 1, clientX: 100, clientY: 20 });
+      fire('pointerup', { pointerId: 1 });
+      expect(move).toHaveBeenLastCalledWith(0, -80);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

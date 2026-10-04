@@ -13,6 +13,8 @@
   line-height: var(--article-leading);
   color: var(--article-ink);
   caret-color: var(--article-accent);
+  /* The canvas turns iOS's callout off; selected writing gets it back (Copy, Paste). */
+  -webkit-touch-callout: default;
   white-space: pre-wrap;
   overflow-wrap: break-word;
   font-variant-ligatures: none;

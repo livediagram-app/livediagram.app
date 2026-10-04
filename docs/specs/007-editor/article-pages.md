@@ -194,7 +194,10 @@ article's swatches), and a line break inside a block (Shift+Enter). Code blocks 
   open down from it.
 - **A finger on a page** (a phone or any touch screen): a finger that travels more than a few px
   (`TOUCH_PAN_SLOP`) on an article page's writing or paper pans the view, as a thumb scrolls a
-  document, whatever the tool; one that lifts where it landed is a tap, which puts the caret there.
+  document, whatever the tool; one that lifts where it landed is a tap, which puts the caret there;
+  one held still for a long press (`LONG_PRESS_MS`) is the browser's, selecting text, so a slide
+  after it stretches the selection rather than panning. Selected writing keeps the phone's Copy
+  and Paste callout.
   A second finger hands the view to the pinch.
   The writing taking the caret frames its page for writing: its text column across the screen,
   the margins off it, so the text reads at a usable size; the view glides there as a page framed

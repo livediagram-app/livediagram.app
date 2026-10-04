@@ -308,7 +308,8 @@ focused: true })`. On blur: an open slash menu closes; a tick later (one pending
   primary touch only; past `TOUCH_PAN_SLOP` it begins `panFrom()` and a `'pan'` canvas gesture and
   moves the view by the drag (one commit per frame); a release short of it is a tap (the paper's
   `focusAt`, the writing's `onWritingPress` after the browser's caret); a cancel or a second
-  finger's pointerdown ends it with no tap. The writing and paper still stop the press reaching
+  finger's pointerdown ends it with no tap, and so does `LONG_PRESS_MS` held short of the slop (the
+  browser's text selection). `.article-flow` restores `-webkit-touch-callout: default`. The writing and paper still stop the press reaching
   the canvas (no marquee).
 - Buttons never take focus (`onMouseDown` preventDefault); `handle.run` refocuses the writing.
   ⌘K (`requestArticleLink`) opens the link field; ⌘⌥M (`requestArticleComment`) adds a comment
