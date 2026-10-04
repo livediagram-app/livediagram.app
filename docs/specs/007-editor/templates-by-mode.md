@@ -57,7 +57,8 @@ sees only what starts there.
 ## The mode on a card
 
 - Every template card shows its mode's glyph **to the left of its title**, in the muted text
-  colour, 14px, with the accessible name "Opens in <Mode>" (a tooltip says the same on hover).
+  colour, 14px. The glyph is a picture only: a screen reader hears "Opens in <Mode>" **after** the
+  title (", Opens in Draw"), so a card's accessible name still starts with its title.
 - Category tiles carry no glyph: a category can hold templates of several modes.
 
 ## Three blanks

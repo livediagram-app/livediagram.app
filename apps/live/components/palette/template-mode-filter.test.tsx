@@ -73,7 +73,10 @@ const choose = (name: string) => {
 const stage = () => screen.getAllByRole('heading', { level: 3 })[0]!.closest('section') ?? document;
 const tiles = () => screen.queryAllByRole('button', { name: /^Browse .* templates$/ });
 const cardModes = () =>
-  screen.getAllByRole('img', { name: /^Opens in / }).map((el) => el.getAttribute('aria-label'));
+  Array.from(document.querySelectorAll('[data-template-mode]')).map(
+    (el) =>
+      `Opens in ${el.getAttribute('data-template-mode')![0]!.toUpperCase()}${el.getAttribute('data-template-mode')!.slice(1)}`,
+  );
 
 afterEach(() => {
   act(() => setIllustrateModeEnabled(true));
@@ -195,8 +198,11 @@ describe('the mode filter', () => {
 });
 
 describe('the mode on a card', () => {
-  it('names the mode every card opens in', () => {
+  it('names the mode every card opens in, after its title', () => {
     render(<Step />);
+    expect(screen.getAllByRole('button', { pressed: true })[0]!.textContent).toMatch(
+      /^Blank Diagram, Opens in Diagram/,
+    );
     expect(cardModes().slice(0, 3)).toEqual([
       'Opens in Diagram',
       'Opens in Draw',

@@ -22,6 +22,7 @@ export function PickerCard({
   className = '',
   clampDescription = true,
   labelIcon,
+  labelNote,
   children,
 }: {
   active: boolean;
@@ -47,6 +48,8 @@ export function PickerCard({
   // A glyph before the label: a template card's editor mode
   // (docs/specs/007-editor/templates-by-mode.md "The mode on a card").
   labelIcon?: ReactNode;
+  // Read after the label by a screen reader only (a template card's mode).
+  labelNote?: string;
   children: ReactNode;
 }) {
   return (
@@ -77,7 +80,10 @@ export function PickerCard({
           labelIcon ? (
             <p className="flex items-start gap-1 text-xs font-semibold text-slate-900 dark:text-slate-100">
               {labelIcon}
-              <span className="line-clamp-2 min-w-0 break-words">{label}</span>
+              <span className="line-clamp-2 min-w-0 break-words">
+                {label}
+                {labelNote ? <span className="sr-only">, {labelNote}</span> : null}
+              </span>
             </p>
           ) : (
             <p className="line-clamp-2 break-words text-xs font-semibold text-slate-900 dark:text-slate-100">
