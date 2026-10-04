@@ -12,13 +12,16 @@ test lives here.
 
 ## When it runs
 
-The suite is a **per-PR merge gate**. Its job, **Chromium smoke**, is a required status check on
-`main` beside CI's Checks, Tests and Build, so a pull request whose change breaks a browser flow
-cannot merge. A post-merge-only run let regressions land unseen and kept `main` red for
+The suite is a **per-PR merge gate**. **Every one of its jobs** (below) is a required status check
+on `main` beside CI's jobs ([CI](testing.md#ci)), so a pull request whose change breaks a browser flow
+cannot merge. A check is named after its job, so renaming a job or changing the shard count
+updates the `main` ruleset's required checks in the same change; until then a pull request waits
+on a check that never reports, or merges without one. A post-merge-only run let regressions land unseen and kept `main` red for
 hours at a time while later pull requests inherited the failure.
 
 The repository is public, so GitHub-hosted runners cost nothing; the price of the gate is the
-run's wall time (13 to 16 minutes), which runs beside CI's jobs. The run needs no secret, no
+run's wall time, which runs beside CI's jobs and **stays within 5 minutes**, so the gate never
+holds back a merge for longer than CI itself does. The run needs no secret, no
 Cloudflare account and no deployed environment: the stack is local to the runner
 ([The stack under test](#the-stack-under-test)), so a pull request from a fork runs it too.
 
@@ -33,9 +36,17 @@ The browser suite is its own workflow, `e2e.yml` (named **E2E Smoke**), triggere
 A new run on the same ref cancels the one in flight (`concurrency`), so pushing again to a
 pull request never queues two runs of the suite.
 
-It runs **every** spec file in `apps/live/e2e/` except the signed-in ones under `e2e/clerk-stub/`
-(`test:e2e` is `playwright test --project=chromium`, with no other filter); those run as a second
-step against their own build ([Signed-in specs](#signed-in-specs-clerk-stub)).
+It runs **every** spec file in `apps/live/e2e/` (bar the opt-in Drive, perf and WebKit projects),
+spread over parallel jobs so the wall time is the slowest job, not the sum:
+
+| Job                 | Builds                                       | Runs                                                                      |
+| ------------------- | -------------------------------------------- | ------------------------------------------------------------------------- |
+| **Smoke shard i/8** | live                                         | `test:e2e:smoke --shard=i/8`: an eighth of the `chromium` project's tests |
+| **Sites audit**     | live, help, telemetry, marketing             | `test:e2e:sites`: the `sites` project, `optical-audit-sites.spec.ts`      |
+| **Signed-in specs** | live with Clerk stubbed (`build:clerk-stub`) | the `clerk-stub` project ([Signed-in specs](#signed-in-specs-clerk-stub)) |
+
+Only the sites audit opens help, telemetry and marketing, so only its job pays for their builds.
+Locally `test:e2e` runs the `chromium` and `sites` projects together, as one run.
 
 Cost controls, all in `e2e.yml` and `playwright.config.ts`:
 
@@ -53,13 +64,20 @@ Cost controls, all in `e2e.yml` and `playwright.config.ts`:
 - **Parallel everywhere** (`fullyParallel`): 4 workers in CI, one per vCPU of the GitHub runner,
   and Playwright's default locally. Tests stay independent because each opens a fresh browser
   context, so a fresh guest owner whose documents no other test sees.
-- `retries: 1` in CI, a 30-second per-test timeout and a 20-minute job timeout (two builds and both
-  suites take 13 to 16 minutes), so a hung run fails fast instead of burning minutes.
+- **Sharded** (`--shard=i/8`, the matrix in `e2e.yml`): Playwright splits the `chromium` project's
+  tests evenly by count across eight jobs; each boots its own stack, so shards share nothing. When
+  the suite grows past the 5-minute budget, the shard count grows with it.
+- **No dependency cache** in the e2e jobs: in the container its store path never matches a saved
+  cache, so `setup-node`'s `cache: pnpm` only cost a 75-second save per job, while a cold
+  `pnpm install` takes about 15 seconds.
+- `retries: 1` in CI, a 30-second per-test timeout and a 10-minute job timeout (twice the budget),
+  so a hung run fails fast instead of burning minutes.
 - **Traces of first failures** in CI (`retain-on-first-failure`): a test that fails and then passes
   on retry still keeps the trace of its failing attempt, so a flaky test can be read rather than
   guessed at. Each invocation keeps its own artefacts (`test-results` and `playwright-report`, or
   their `-clerk-stub` twins), since a run clears its output folder when it starts. `e2e.yml`
-  uploads them whenever any holds a trace, a timed-out run included. Locally a trace is kept for a
+  uploads them whenever any holds a trace, a timed-out run included, one artefact per job
+  (`playwright-report-shard-i`, `playwright-report-sites`, `playwright-report-clerk-stub`). Locally a trace is kept for a
   retry only.
 - **No model downloads.** The photo-import tests stub the handwriting reader
   and serve the boundary model's weights from the app itself; nothing pulls
@@ -137,7 +155,7 @@ boot, serves its JWKS on `/e2e/jwks.json`, starts the api worker with `CLERK_JWK
 it, and mints a session token for any test account on `/e2e/token?sub=user_…`, which the fake
 `window.Clerk` hands out. So a stub account is a real verified account to the api and the realtime
 room, and two or three stub browsers can collaborate in one document. A test that changes an
-account's synced settings takes a fresh id (`freshUserId`), since the stack's D1 outlives a test. `e2e.yml` builds and runs them after the smoke suite.
+account's synced settings takes a fresh id (`freshUserId`), since the stack's D1 outlives a test. `e2e.yml` builds and runs them in their own job, beside the smoke shards.
 
 ## No uncaught errors
 
@@ -202,8 +220,8 @@ tests where it's cheap.
 
 ## Layout
 
-- `apps/live/playwright.config.ts`: chromium project (plus the opt-in webkit one), `webServer` →
-  `scripts/e2e-stack.mjs`, `reuseExistingServer` locally.
+- `apps/live/playwright.config.ts`: the `chromium` and `sites` projects (plus the opt-in ones),
+  `webServer` → `scripts/e2e-stack.mjs`, `reuseExistingServer` locally.
 - `apps/live/e2e/*.spec.ts`: the spec files above.
 - `apps/live/e2e/fixtures.ts`: the `test` with its `pageErrors` fixture, `expectNoPageErrors`, and the
   shared flows (`startBlankDocument`, `startTemplateDocument`, `startEventStormingRow`, `seedTab`,
@@ -212,8 +230,9 @@ tests where it's cheap.
 - `apps/live/e2e/fixtures/`: drawn wall photos for the photo import; `audit-screens.ts`, `contrast.ts`,
   `optical.ts` and `optical-discover.ts`: the screens and measurements the dark-mode audits share.
 - `scripts/e2e-stack.mjs`: the stack boot + static serve (live, help, telemetry, marketing).
-- `.github/workflows/e2e.yml`: the cost-controlled workflow, run on every pull request.
-- `test:e2e` and `test:e2e:clerk-stub` scripts in `apps/live/package.json`; `build:clerk-stub`
+- `.github/workflows/e2e.yml`: the sharded workflow, run on every pull request;
+  `.github/actions/e2e-setup/`: the setup its jobs share (pnpm, Node, install, image check).
+- `test:e2e`, `test:e2e:smoke`, `test:e2e:sites` and `test:e2e:clerk-stub` scripts in `apps/live/package.json`; `build:clerk-stub`
   (`apps/live/scripts/build-clerk-stub.mjs`) builds the export the latter runs against.
 - `apps/live/e2e/clerk-stub/`: the fake `window.Clerk` and the signed-in specs.
 

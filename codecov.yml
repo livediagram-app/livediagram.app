@@ -1,0 +1,21 @@
+# Codecov (docs/specs/003-system-architecture/testing.md "Coverage report"). The report informs; it never
+# gates: the enforced bar is the per-file thresholds in apps/api/vitest.config.ts, run by CI's Tests job.
+codecov:
+  notify:
+    # CI uploads five reports per commit: Tests (every workspace but the editor) and the four Editor
+    # unit tests shards. Codecov waits for all five, so no status or comment shows a partial picture.
+    after_n_builds: 5
+
+coverage:
+  status:
+    project:
+      default:
+        informational: true
+    patch:
+      default:
+        informational: true
+
+comment:
+  layout: 'condensed_header, diff, files'
+  after_n_builds: 5
+  require_changes: false

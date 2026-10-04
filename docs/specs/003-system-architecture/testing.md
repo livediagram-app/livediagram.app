@@ -106,8 +106,11 @@ Watch mode while developing: `pnpm --filter @livediagram/<name> exec vitest`.
 
 Coverage uses the built-in **v8** provider. Reports are written to a
 gitignored `coverage/` directory per workspace (`text` summary in the
-terminal, plus `html` + `lcov` for tooling). Only first-party source
-(`src/**`, `lib/**`) is counted; test files and type-only `.d.ts` are
+terminal, plus `html` + `lcov` for tooling). The `lcov` report names each file
+from the repository root (`apps/live/lib/...`), so reports from different
+workspaces never collide. Only first-party source (`src/**`, `lib/**`) is
+counted; the editor (`apps/live`) also counts `app/**`, `components/**` and
+`hooks/**`, where most of its source lives. Test files and type-only `.d.ts` are
 excluded. `index.ts` is intentionally **not** excluded — in this repo a
 package's `index.ts` is its implementation (e.g. `@livediagram/document`), not
 a barrel of re-exports.
@@ -138,14 +141,17 @@ the "decides who may see this" or "decides what may be deleted" set.
 
 ## CI
 
-CI runs three parallel jobs (`.github/workflows/ci.yml`): **Checks** runs lint →
+CI runs parallel jobs (`.github/workflows/ci.yml`): **Checks** runs lint →
 format → typecheck; **Tests** runs **test** → **coverage thresholds**, each
-suite exactly once (a workspace with `test:coverage` runs only that); **Build**
-runs the build and the staging config check. No CI change is needed to start running
+suite exactly once (a workspace with `test:coverage` runs only that), for every
+workspace but the editor; **Editor unit tests i/4** run the editor's suite
+(`apps/live`, most of the repository's tests) under coverage, a quarter of its
+files each (`vitest run --shard=i/4`); **Build** runs the build and the staging
+config check. No CI change is needed to start running
 tests; adding a `test` script to a workspace is enough for Turborepo to pick
 it up.
 
-Checks, Tests and Build are required status checks on `main`, with E2E Smoke's Chromium smoke
+Checks, Tests, every Editor unit tests job and Build are required status checks on `main`, with every E2E Smoke job
 ([End-to-end tests](e2e-smoke.md#when-it-runs)). Only runs started by the pull request count: a
 `workflow_dispatch` run on the same commit is not attached to it.
 
@@ -153,6 +159,16 @@ Coverage is a separate step because it enforces the thresholds above — and
 because running it at all keeps the coverage tooling exercised. It previously
 did not run in CI, which is how a v4 coverage provider came to sit against a
 v5 test runner with every check green: nothing invoked the broken path.
+
+### Coverage report
+
+Tests and each Editor unit tests job upload their `lcov` reports to
+[Codecov](https://app.codecov.io/gh/livediagram-app/livediagram.app), which merges the five uploads
+of a commit into one report and comments it on the pull request (`codecov.yml`). It informs; it never
+gates: its statuses are informational, and the enforced bar stays the thresholds above. The upload
+authenticates with GitHub's OIDC token (`id-token: write`), so no Codecov secret exists; a pull
+request from a fork uploads tokenless. A failed upload logs its error and leaves the job green, so a
+Codecov outage never holds back a merge.
 
 ## Before a push
 
