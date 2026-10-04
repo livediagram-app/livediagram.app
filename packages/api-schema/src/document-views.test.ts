@@ -3,6 +3,7 @@ import {
   DOCUMENT_VIEW_NAMES,
   isTabViewName,
   isViewDoor,
+  LINT_VIEW_NAME,
   TAB_VIEW_NAMES,
   VIEW_NAMES,
   VIEW_PARAMETERS,
@@ -11,8 +12,8 @@ import {
 } from './document-views';
 
 describe('document view names', () => {
-  it('serves every view but diff through one api door each', () => {
-    const served = [...DOCUMENT_VIEW_NAMES, ...TAB_VIEW_NAMES];
+  it('serves every view but diff through one api door each, the lint on the tab door', () => {
+    const served = [...DOCUMENT_VIEW_NAMES, ...TAB_VIEW_NAMES, LINT_VIEW_NAME];
     expect(new Set(served).size).toBe(served.length);
     expect(VIEW_NAMES.filter((v) => !served.includes(v as never))).toEqual(['diff']);
   });
