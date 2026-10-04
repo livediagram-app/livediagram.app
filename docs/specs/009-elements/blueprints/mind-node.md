@@ -219,7 +219,7 @@ a flow is picked. Logs `[mind-layout] relayout`; tracks `Element·Changed·MindF
 ### Moving a branch
 
 A drag of a mind node carries its whole subtree: the drag set is
-`withMindSubtrees(elements, withFrameContents(elements, ids))`. A resize touches one node.
+`withMindSubtrees(elements, containerContents(elements, ids))`. A resize touches one node.
 
 ### Delete
 

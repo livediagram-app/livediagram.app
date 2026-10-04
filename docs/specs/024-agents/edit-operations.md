@@ -76,10 +76,8 @@ match together.
 
 **Membership** is the smallest frame or lane holding an element's centre, the rule [views](document-views.md) nest
 by; it decides `in:`, what `wrap` would capture, what a moved frame carries and the membership lines of a result.
-[Canvas and palette](../008-canvas/canvas-and-palette.md) gives the editor's drag the same rule, so an agent's `move`
-and a person's drag take the same elements along. The editor's drag is not moved onto it yet: it still carries by
-full containment, which was chosen for people because the centre rule took half-out neighbours along; which rule
-people's drags follow is an open decision.
+The editor's drag carries by the same rule ([Canvas and palette](../008-canvas/canvas-and-palette.md)), so an agent's
+`move` and a person's drag take the same elements along.
 
 ## Placement
 

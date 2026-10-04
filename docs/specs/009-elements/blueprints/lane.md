@@ -14,7 +14,8 @@ Scope, by file:
 | `packages/document/src/colors.ts`                              | `hasHeadingBand`                                                        |
 | `packages/document/src/svg-render-shapes.ts`                   | `svgLaneGutter`: the export's strip and rule                            |
 | `packages/document/src/arrow-label-layout.ts`                  | Lanes are not label obstacles                                           |
-| `apps/live/lib/canvas.ts`                                      | `withFrameContents`, `framesFirst`, container size donation             |
+| `apps/live/lib/canvas.ts`                                      | `framesFirst`, container size donation                                  |
+| `packages/document/src/containment.ts`                         | `isContainer`, `containerContents`: what a moved frame or lane carries  |
 | `apps/live/components/canvas/LaneGutter.tsx`                   | The canvas strip, the seam and its drag                                 |
 | `apps/live/components/canvas/BoxedElementView.tsx`             | Mounts `LaneGutter` behind the label                                    |
 | `apps/live/components/canvas/CanvasElementsLayer.tsx`          | Wires `onCommitHeaderSize` and `onSnapSeam`                             |
@@ -30,7 +31,7 @@ Scope, by file:
 | Term          | Identifier                                         | Meaning                                           |
 | ------------- | -------------------------------------------------- | ------------------------------------------------- |
 | Lane          | `shape: 'lane'`                                    | The element kind                                  |
-| Container     | `isFrameEl` (frame or lane)                        | A shape that carries what it fully contains       |
+| Container     | `isContainer` (frame or lane)                      | A shape that carries what it holds by the centre  |
 | Gutter        | (render) strip or band                             | The tinted title backdrop                         |
 | Gutter edge   | `LaneGutterEdge`: `left right top bottom centre-x` | Where the gutter runs, from the title's alignment |
 | Band          | `isLaneBand(edge)`                                 | A gutter across the lane (`top` / `bottom`)       |
@@ -64,9 +65,9 @@ Banned synonyms: "swimlane" in code (fine in copy), "header" for the gutter in c
    - The live size is written to state and to `liveSizeRef`.
      `pointerup` / `pointercancel` reads `liveSizeRef`, returns to idle and calls
      `onCommitSize(round(size))` (`D21`): one `commit`, one undo step.
-6. **Carry.** Dragging a lane moves, through `withFrameContents`, every non-container boxed element
-   whose box it fully contains and whose backmost container it is, and every arrow whose free ends
-   all sit in it. Pinned ends follow their elements.
+6. **Carry.** Dragging a lane moves, through `containerContents`, every element whose chain of
+   holders reaches it (the smallest frame or lane holding each centre), nested frames and lanes with
+   what they hold, and every arrow whose free ends all sit in it. Pinned ends follow their elements.
 7. **Paint order.** `framesFirst` puts containers first, so lanes sit behind their contents [QA11].
 8. **Size donation.** A selected container never donates its size to a new element [QA11].
 9. **Stacking.** Lanes are never repositioned automatically. Each lane draws its own border, so
@@ -93,8 +94,8 @@ Invariants:
 
 - **I1:** exactly one gutter edge per alignment pair (nine pairs, five edges).
 - **I2:** a committed `headerSize` lies in `[MIN_GUTTER_PX, span - MIN_GUTTER_PX]` at commit time.
-- **I3:** a container is never carried as another container's content.
-- **I4:** an element inside several containers belongs to the backmost one.
+- **I3:** a container travels with another only when nested in it (its centre inside, its area smaller).
+- **I4:** an element inside several containers belongs to the smallest, the earlier on a tie.
 
 ## Interfaces and contracts
 
@@ -137,8 +138,12 @@ export function snapSeamCoordinate(
   threshold?: number,
 ): { value: number; snappedTo: number | null };
 
-// apps/live/lib/canvas.ts
-export function withFrameContents(elements: Element[], ids: Set<string>): Set<string>;
+// packages/document/src/containment.ts
+export function containerContents(
+  elements: readonly Element[],
+  ids: ReadonlySet<ElementId>,
+  known?: ReadonlyMap<ElementId, ElementId | null>,
+): ReadonlySet<ElementId>;
 
 // apps/live/app/document/[id]/useSelectionEditing.ts
 commitHeaderSize: (elementId: string, headerSize: number) => void;
@@ -168,8 +173,8 @@ No migration.
 | E4  | Fast drag leaving the seam               | Listeners on `window`, release always commits     |
 | E5  | `pointercancel`                          | Commits the last live size                        |
 | E6  | `zoom` of 0                              | Treated as 1                                      |
-| E7  | Element straddling a lane edge           | Not carried (full containment)                    |
-| E8  | Overlapping lanes and frames             | Backmost container owns (I4)                      |
+| E7  | Element straddling a lane edge           | Carried when its centre is inside                 |
+| E8  | Overlapping lanes and frames             | The smallest container owns (I4)                  |
 | E9  | Locked lane                              | Seam inert [GA7]                                  |
 
 ## Security and trust
@@ -181,7 +186,7 @@ CSS `background-color` and SVG `fill`, which ignore invalid values.
 
 `laneSeamCoordinates` and `alignmentCoordinates` are `O(n)` per `pointermove`; at
 `MAX_ELEMENTS_PER_TAB` (10 000) that is 30 000 numbers per move, well inside a frame.
-`withFrameContents` is `O(n * c)` for `c` containers and runs once per drag start.
+`containerContents` is `O(n * c)` for `c` containers and runs once per drag start.
 
 ## Presentation and UX
 
@@ -214,25 +219,25 @@ None in code today [GA1]. The upright toggle tracks `Element·Changed·LaneUprig
 
 ## Testing
 
-| Rule                                                    | Test                                                                         | File                                                                                            |
-| ------------------------------------------------------- | ---------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| Gutter edge from alignment (I1)                         | laneGutterEdge, six cases                                                    | `apps/live/components/canvas/lane-gutter.test.ts`                                               |
-| Seam coordinates per edge, other axis ignored           | laneSeamCoordinates                                                          | `packages/document/src/lane-seam-snapping.test.ts`                                              |
-| Alignment grid                                          | alignmentCoordinates                                                         | `packages/document/src/lane-seam-snapping.test.ts`                                              |
-| Threshold and seam-wins tie                             | snapSeamCoordinate                                                           | `packages/document/src/lane-seam-snapping.test.ts`                                              |
-| Export strip follows the edge, fill vs wash             | chrome the canvas draws on a box                                             | `packages/document/src/svg-render.test.ts`                                                      |
-| Export draws a body                                     | every kind with a body draws one                                             | `packages/document/src/export-consistency.test.ts`                                              |
-| Release slices are lanes                                | user story map drops an activity backbone over release-banded story stickies | `apps/live/lib/templates.test.ts`                                                               |
-| Swimlane: role lanes, steps clear of gutters            | the swimlane template (four cases)                                           | `apps/live/lib/template-flows.test.ts`                                                          |
-| Column lanes with header bands                          | groups the steps into Requester / Manager / Finance role columns             | `apps/live/lib/template-flows.test.ts`                                                          |
-| Tier lanes                                              | stacks the Clients / Edge / Services / Data lanes                            | `apps/live/lib/template-builders.test.ts`                                                       |
-| Containment rules (I3, I4) for frames                   | withFrameContents                                                            | `apps/live/lib/canvas.test.ts`                                                                  |
-| A lane carries its contents                             | none [GA14]                                                                  |                                                                                                 |
-| Drag clamp, centred 2x, one commit (I2)                 | none [GA14]                                                                  |                                                                                                 |
-| Render clamp of a stored size                           | none [QA10]                                                                  |                                                                                                 |
-| Upright: default size, side only, band ignores          | isUprightTitle, laneSizeOfElement                                            | `packages/document/src/lane-gutter.test.ts`                                                     |
-| Upright title renders turned on canvas and export       | the strip and the turned frame                                               | `packages/document/src/svg-render.test.ts`, `apps/live/components/canvas/upright-title.test.ts` |
-| Upright toggle: offered on side strips only, one commit | the Text section switch                                                      | `apps/live/components/palette/*.test.tsx`                                                       |
+| Rule                                                    | Test                                                                         | File                                                                                                |
+| ------------------------------------------------------- | ---------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| Gutter edge from alignment (I1)                         | laneGutterEdge, six cases                                                    | `apps/live/components/canvas/lane-gutter.test.ts`                                                   |
+| Seam coordinates per edge, other axis ignored           | laneSeamCoordinates                                                          | `packages/document/src/lane-seam-snapping.test.ts`                                                  |
+| Alignment grid                                          | alignmentCoordinates                                                         | `packages/document/src/lane-seam-snapping.test.ts`                                                  |
+| Threshold and seam-wins tie                             | snapSeamCoordinate                                                           | `packages/document/src/lane-seam-snapping.test.ts`                                                  |
+| Export strip follows the edge, fill vs wash             | chrome the canvas draws on a box                                             | `packages/document/src/svg-render.test.ts`                                                          |
+| Export draws a body                                     | every kind with a body draws one                                             | `packages/document/src/export-consistency.test.ts`                                                  |
+| Release slices are lanes                                | user story map drops an activity backbone over release-banded story stickies | `apps/live/lib/templates.test.ts`                                                                   |
+| Swimlane: role lanes, steps clear of gutters            | the swimlane template (four cases)                                           | `apps/live/lib/template-flows.test.ts`                                                              |
+| Column lanes with header bands                          | groups the steps into Requester / Manager / Finance role columns             | `apps/live/lib/template-flows.test.ts`                                                              |
+| Tier lanes                                              | stacks the Clients / Edge / Services / Data lanes                            | `apps/live/lib/template-builders.test.ts`                                                           |
+| Containment rules (I3, I4) for frames and lanes         | containerContents; a frame carries by the centre rule                        | `packages/document/src/containment.test.ts`, `apps/live/hooks/canvas/useEditorDrag.frames.test.tsx` |
+| A lane carries its contents                             | none [GA14]                                                                  |                                                                                                     |
+| Drag clamp, centred 2x, one commit (I2)                 | none [GA14]                                                                  |                                                                                                     |
+| Render clamp of a stored size                           | none [QA10]                                                                  |                                                                                                     |
+| Upright: default size, side only, band ignores          | isUprightTitle, laneSizeOfElement                                            | `packages/document/src/lane-gutter.test.ts`                                                         |
+| Upright title renders turned on canvas and export       | the strip and the turned frame                                               | `packages/document/src/svg-render.test.ts`, `apps/live/components/canvas/upright-title.test.ts`     |
+| Upright toggle: offered on side strips only, one commit | the Text section switch                                                      | `apps/live/components/palette/*.test.tsx`                                                           |
 
 ## Constants and configuration
 

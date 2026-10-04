@@ -184,8 +184,8 @@ the document model knows. An event-storming note still in photo draft carries th
 ### Containment (`@livediagram/document`, `containment.ts`)
 
 `deriveContainers(elements) → Map<ElementId, ElementId | null>` assigns each non-arrow element at most one
-container; views, the edit-operations membership reports and the lint all read it. The editor's frame drag keeps its
-own full-box rule (`withFrameContents`) and does not change.
+container; views, the edit-operations membership reports, the lint and the editor's frame drag (through
+`containerContents`) all read it.
 
 1. **Mind parent first.** A `mind-node` whose `mindParentId` names a `mind-node` in the input nests under it.
    Following parent links from any node, a link that returns to a node already on the chain is ignored at the node
