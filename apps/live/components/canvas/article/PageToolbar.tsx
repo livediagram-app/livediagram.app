@@ -195,8 +195,8 @@ export function PageToolbar({
       ? LIST_OPTIONS.find((l) => l.id === selection.list)
       : STYLE_OPTIONS.find((s) => s.id === selection.style);
   const styleLabel = styleOption?.label ?? (selection.style === 'list' ? 'List' : 'Text');
-  // On a phone the button shows the short name (H1, Bullets) so it can be narrower; its accessible
-  // name stays the full one.
+  // On a phone the button shows the short name (H1, Bullets) and is only as wide as it, so no room
+  // is spent on the longest style's width; its accessible name stays the full one.
   const styleShown = phone ? (styleOption?.short ?? styleLabel) : styleLabel;
   const S = articleSchema;
   const insertBlock = (what: BlockInsert) => {
@@ -251,7 +251,7 @@ export function PageToolbar({
           aria-haspopup="menu"
           aria-expanded={open === 'style'}
           onClick={() => toggleOpen('style')}
-          className={`flex h-9 ${phone ? 'min-w-[88px]' : 'min-w-[124px]'} shrink-0 items-center gap-1.5 rounded-md px-2 text-xs font-medium transition ${
+          className={`flex h-9 ${phone ? '' : 'min-w-[124px]'} shrink-0 items-center gap-1.5 rounded-md px-2 text-xs font-medium transition ${
             open === 'style' ? TOOLBAR_CONTROL_PRESSED : TOOLBAR_TRIGGER_TONE
           }`}
         >
