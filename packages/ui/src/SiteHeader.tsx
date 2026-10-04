@@ -5,11 +5,12 @@ import { Brand } from './Brand';
 import { ButtonContent, buttonClassName } from './Button';
 import { ProductNav, type ProductNavKey } from './ProductNav';
 import { ShareRail } from './ShareRail';
+import { StartBlankMenu } from './StartBlankMenu';
 
 // The public site header shared by the marketing landing page, the telemetry
 // dashboard and the help centre so the three read as one product. Brand +
 // apps-menu dropdown on the left, the CTA pair on the right (a secondary
-// "Start Blank", straight to a blank canvas at /new?blank=1, docs/specs/007-editor/new-document-route.md, beside the
+// "Start Blank", a menu of one blank per editor mode (StartBlankMenu), beside the
 // primary "Choose Template", /new, the encouraged wizard path), with the
 // ShareRail pinned to the page edge below. Cross-surface navigation (Help,
 // Explorer, Telemetry, ...) lives in the apps menu, so the header itself
@@ -82,22 +83,13 @@ export function SiteHeader({
   );
 }
 
-// The default CTA pair. Start Blank is hidden on mobile: Brand + dropdown + the
+// The default CTA pair. The Start Blank menu is hidden on mobile: Brand + dropdown + the
 // primary already fill a narrow bar, and the wizard's own Skip covers the
 // escape. `max-sm:hidden` (a variant, so it wins over the base inline-flex).
 function DefaultActions({ ctaSurface }: { ctaSurface?: Exclude<CtaSurface, 'Help'> }) {
   return (
     <>
-      <a
-        href={ctaSurface ? ctaHref('/new?blank=1', `${ctaSurface}.HeaderDraw`) : '/new?blank=1'}
-        className={buttonClassName({
-          variant: 'secondary',
-          size: 'md',
-          className: 'shrink-0 shadow-sm max-sm:hidden',
-        })}
-      >
-        <ButtonContent>Start Blank</ButtonContent>
-      </a>
+      <StartBlankMenu ctaSurface={ctaSurface} className="max-sm:hidden" />
       <a
         href={ctaSurface ? ctaHref('/new', `${ctaSurface}.Header`) : '/new'}
         className={buttonClassName({ size: 'md', className: 'shrink-0 shadow-sm' })}

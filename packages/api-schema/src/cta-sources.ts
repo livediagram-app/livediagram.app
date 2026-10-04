@@ -12,6 +12,8 @@ export const CTA_SOURCES = {
   Home: [
     'Header',
     'HeaderDraw',
+    'HeaderWhiteboard',
+    'HeaderIllustration',
     'Hero',
     'HeroDraw',
     'HeroBrainstorm',
@@ -20,11 +22,11 @@ export const CTA_SOURCES = {
     'GalleryDraw',
     'Closing',
   ],
-  Feature: ['Header', 'HeaderDraw', 'Hero', 'Closing'],
-  Compare: ['Header', 'HeaderDraw', 'Card'],
-  Faq: ['Header', 'HeaderDraw', 'Card'],
-  Status: ['Header', 'HeaderDraw'],
-  Dashboard: ['Header', 'HeaderDraw'],
+  Feature: ['Header', 'HeaderDraw', 'HeaderWhiteboard', 'HeaderIllustration', 'Hero', 'Closing'],
+  Compare: ['Header', 'HeaderDraw', 'HeaderWhiteboard', 'HeaderIllustration', 'Card'],
+  Faq: ['Header', 'HeaderDraw', 'HeaderWhiteboard', 'HeaderIllustration', 'Card'],
+  Status: ['Header', 'HeaderDraw', 'HeaderWhiteboard', 'HeaderIllustration'],
+  Dashboard: ['Header', 'HeaderDraw', 'HeaderWhiteboard', 'HeaderIllustration'],
   Help: ['Header'],
 } as const satisfies Record<string, readonly string[]>;
 

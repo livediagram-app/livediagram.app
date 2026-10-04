@@ -1,6 +1,7 @@
 export { Brand, BrandMark, BRAND_MARK, brandMarkSvg } from './Brand';
 export { ProductNav, type ProductNavKey } from './ProductNav';
 export { SiteHeader } from './SiteHeader';
+export { StartBlankMenu } from './StartBlankMenu';
 export { SiteFooter } from './SiteFooter';
 export {
   Button,
