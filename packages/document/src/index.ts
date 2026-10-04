@@ -13,7 +13,8 @@
 import { isSelfDrawingShape } from './data-shapes';
 import type { TabKind } from './tab-kind';
 import type { EditorMode } from './editor-mode';
-import type { InfographicPage, PageOrientation } from './infographic-page';
+import type { IllustratePage, PageOrientation } from './illustrate-page';
+import type { ArticleFlow } from './article-flow';
 import type { TabTimer, TabVote } from './session';
 
 // Layer type used by the `Tab.layers` field below (docs/specs/006-document/layers.md). Type-only
@@ -284,12 +285,16 @@ export type Tab = {
   // lives"): a person who has not switched on this tab sees it in this mode. Absent = 'diagram'
   // (read via `opensInOf`); switching never changes it.
   opensIn?: EditorMode;
-  // Infographic mode's pages (docs/specs/007-editor/editor-modes.md "The pages"): the A4 sheets,
+  // Illustrate mode's pages (docs/specs/007-editor/editor-modes.md "The pages"): the A4 sheets,
   // in row order, each portrait or landscape, that everyone lays the tab out on. Absent = one page
-  // (read via `infographicPagesOf`).
-  pages?: InfographicPage[];
+  // (read via `illustratePagesOf`).
+  pages?: IllustratePage[];
+  // The writing of the tab's article pages, by flow id (docs/specs/007-editor/article-pages.md):
+  // each document's blocks and style, shared by its pages (`IllustratePage.flow`). Read via
+  // `articlesOf`; synced block by block (the `doc` room op), never in a `tab-meta` patch.
+  articles?: Record<string, ArticleFlow>;
   // Legacy: a single page's orientation, from before multiple pages. Read as one page when `pages`
-  // is absent; dropped the first time the pages change (`withInfographicPages`).
+  // is absent; dropped the first time the pages change (`withIllustratePages`).
   pageOrientation?: PageOrientation;
   // An event-storming board whose workshop notes have been settled onto the
   // lanes once (docs/specs/021-event-storming/event-storming.md "Always on a lane"). Set by that settle, by the
@@ -365,9 +370,17 @@ export type Tab = {
 export { takesTypedLabel } from './element-types';
 export { DEFAULT_TAB_KIND, stampTabKind, tabKindOf, type TabKind } from './tab-kind';
 export * from './editor-mode';
-export * from './infographic-page';
-export * from './infographic-page-content';
-export * from './infographic-paginate';
+export * from './illustrate-page';
+export * from './illustrate-page-content';
+export * from './illustrate-paginate';
+export * from './article-flow';
+export * from './article-flow-ops';
+export * from './article-pages';
+export * from './article-style';
+export * from './article-zones';
+export * from './article-notes';
+export * from './article-to-page';
+export * from './article-intake';
 export { migrateWhiteboardKind } from './legacy-whiteboard-tab';
 export { downgradeLinks, upgradeLegacyLinks } from './legacy-links';
 

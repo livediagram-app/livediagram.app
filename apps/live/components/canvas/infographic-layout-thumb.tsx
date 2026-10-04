@@ -1,6 +1,6 @@
 'use client';
 
-// A layout's preview tile art (docs/specs/007-editor/infographic-pages.md "Layouts"): the layout
+// A layout's preview tile art (docs/specs/007-editor/illustrate-pages.md "Layouts"): the layout
 // built for THIS page's size and orientation, drawn small as a wireframe, so the tile shows what
 // will land rather than a stock picture. Text is drawn as bars (a title thicker), images as a
 // shaded block, icons as dots, everything else as an outlined box.

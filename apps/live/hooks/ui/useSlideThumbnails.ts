@@ -1,12 +1,14 @@
 'use client';
 
+import { pageRulingOf, pageWritingBars } from '@/lib/article/article-export';
+import { articleOpsToSvg } from '@/lib/article/article-draw';
 import { useMemo } from 'react';
 import {
   r2,
   resolveSlide,
   slideFrame,
-  infographicPagesOf,
-  layOutInfographicPages,
+  illustratePagesOf,
+  layOutIllustratePages,
   arrowLabelFontStack,
   arrowLabelPass,
   svgArrow,
@@ -58,10 +60,19 @@ export function useSlideThumbnails(deck: Deck, tabs: Tab[]): Map<string, SlideTh
       // connector never disappears under the box it points at.
       const parts: string[] = [];
       const page = slide.pageId
-        ? layOutInfographicPages(infographicPagesOf(tab)).find((p) => p.id === slide.pageId)
+        ? layOutIllustratePages(illustratePagesOf(tab)).find((p) => p.id === slide.pageId)
         : undefined;
-      if (page)
-        parts.push(pageExportFrame(page, { idPrefix: `lvd-slide-${slide.id}` }).backgroundSvg);
+      if (page) {
+        parts.push(
+          pageExportFrame(page, {
+            idPrefix: `lvd-slide-${slide.id}`,
+            ruling: pageRulingOf(tab, page),
+          }).backgroundSvg,
+        );
+        // An article page's writing, as lines of text.
+        const bars = pageWritingBars(page);
+        if (bars.length) parts.push(articleOpsToSvg(bars));
+      }
       for (const el of elements) {
         if (el.type !== 'arrow') {
           parts.push(

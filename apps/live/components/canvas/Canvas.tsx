@@ -18,7 +18,8 @@ import { useQuickRing } from '@/hooks/canvas/useQuickRing';
 import { useZoomControls } from '@/hooks/canvas/useZoomControls';
 import { usePaletteDrop } from '@/hooks/canvas/usePaletteDrop';
 import { isDarkCanvas } from '@/lib/dark-canvas';
-import { isEventStormingTab } from '@livediagram/document';
+import { isDrawingElement, isEventStormingTab, zoneAnchorOf } from '@livediagram/document';
+import type { Element } from '@livediagram/document';
 import { getTheme } from '@/lib/themes';
 import { CanvasSelectionToolbars } from '@/components/canvas/CanvasSelectionToolbars';
 // Lazy-load TemplatePicker (1163 lines + its theme / share helpers)
@@ -90,8 +91,9 @@ import { useCanvasSelectHandlers } from '@/hooks/canvas/useCanvasSelectHandlers'
 import { useArrowLabelLayouts } from '@/hooks/canvas/useArrowLabelLayouts';
 import { useFontsReady } from '@/components/canvas/useFontsReady';
 import { useLatest } from '@/hooks/ui/useLatest';
-import { InfographicPages } from '@/components/canvas/InfographicPages';
-import { pressIsOffPage } from '@/hooks/canvas/infographic-page-guard';
+import { IllustratePages } from '@/components/canvas/IllustratePages';
+import { ArticleFlows } from '@/components/canvas/article/ArticleFlows';
+import { pressIsOffPage } from '@/hooks/canvas/illustrate-page-guard';
 
 // The canvas boundary (docs/specs/008-canvas/canvas-performance.md "The canvas re-renders only for what it
 // shows"): memoised, its `on…` props stable, so an editor render that changes nothing it shows stops here.
@@ -154,7 +156,13 @@ function CanvasView(props: CanvasProps) {
   // Long tasks, with the gesture they fell in, while the canvas-perf debug scope is on
   // (docs/specs/008-canvas/canvas-performance.md "Observability").
   useCanvasLongTaskLog();
-  const offscreenContent = useOffscreenContent(elements, viewportOffset, viewportZoom, mainRef);
+  const offscreenContent = useOffscreenContent(
+    elements,
+    viewportOffset,
+    viewportZoom,
+    mainRef,
+    props.illustratePages?.pages,
+  );
   // The canvas's size, for the pattern's zoom centre (worldPatternOrigin).
   const mainSize = useObservedSize(mainRef) ?? { width: 0, height: 0 };
 
@@ -247,6 +255,25 @@ function CanvasView(props: CanvasProps) {
   // it's unit-tested. Memoised because it walks the elements. It reads the elements as a drag in
   // progress shows them (docs/specs/008-canvas/drag-preview.md), so the union handles follow a resize.
   const selectionElements = usePreviewedElements(elements, props.activeTabId ?? '');
+  // An object in an article's writing (a chart, an image, a table) connects to nothing: no
+  // quick-connect pluses on it (docs/specs/007-editor/article-pages.md "Zones"). A predicate the
+  // selection derivation applies, so the canvas itself still doesn't read the selection.
+  const articlePages = props.illustratePages?.pages;
+  const plusBlocked = useMemo(() => {
+    if (!articlePages?.some((p) => p.flow)) return undefined;
+    return (el: Element) => {
+      if (isDrawingElement(el)) return false;
+      const at = zoneAnchorOf(el, selectionElements);
+      return articlePages.some(
+        (p) =>
+          p.flow &&
+          at.x >= p.rect.x &&
+          at.x <= p.rect.x + p.rect.width &&
+          at.y >= p.rect.y &&
+          at.y <= p.rect.y + p.rect.height,
+      );
+    };
+  }, [articlePages, selectionElements]);
   const selectionInput = useMemo<CanvasSelectionInput>(
     () => ({
       elements: selectionElements,
@@ -257,6 +284,7 @@ function CanvasView(props: CanvasProps) {
       esBoard: isEventStormingTab({ kind: tabKind, layers: tabLayers }),
       elementMenuOpen: props.elementMenuOpen === true,
       labelRectOf: arrowLabels.labelRectOf,
+      plusBlocked,
     }),
     [
       selectionElements,
@@ -268,6 +296,7 @@ function CanvasView(props: CanvasProps) {
       tabKind,
       props.elementMenuOpen,
       arrowLabels,
+      plusBlocked,
     ],
   );
   // The one selected element when it is a path: the path tool's edit gesture arms on it.
@@ -535,9 +564,9 @@ function CanvasView(props: CanvasProps) {
     onBeginEdit: props.onBeginEdit,
     onCancelDraw: props.onCancelDraw,
   });
-  // In Infographic mode a press off the page is claimed and dropped: nothing is made there.
+  // In Illustrate mode a press off the page is claimed and dropped: nothing is made there.
   const offPage = (e: { clientX: number; clientY: number }) =>
-    pressIsOffPage(props.infographicPages, e, wrapperRef, viewportZoom);
+    pressIsOffPage(props.illustratePages, e, wrapperRef, viewportZoom);
   const beginPendingDrawOrPolygon = (e: React.PointerEvent): boolean =>
     offPage(e) || pathTool.beginPathPress(e) || beginPolygonPoint(e) || beginPendingDrawGesture(e);
 
@@ -734,14 +763,24 @@ function CanvasView(props: CanvasProps) {
             behind the real element layer, which caps each column at z=0.
             Only mounted while the tool is active. */}
         {canvasTool === 'isometric' ? <IsometricDepthLayer elements={elements} /> : null}
-        {/* Infographic mode's A4 pages, under every element (InfographicPages). */}
-        {props.infographicPages ? (
-          <InfographicPages
-            view={props.infographicPages}
+        {/* Illustrate mode's A4 pages, under every element (IllustratePages). */}
+        {props.illustratePages ? (
+          <IllustratePages
+            view={props.illustratePages}
             zoom={viewportZoom}
             // Zen, presenting and the isometric view show the sheets alone: no labels, cogs,
             // layout invites or add button.
             bare={props.zenMode === true || canvasTool === 'isometric'}
+          />
+        ) : null}
+        {/* Article pages' writing (ArticleFlows), over the sheets and under the elements, so a
+            zone's elements sit in the room the writing leaves them. */}
+        {props.illustratePages?.articles && canvasTool !== 'isometric' ? (
+          <ArticleFlows
+            view={props.illustratePages}
+            zoom={viewportZoom}
+            interactive={!pendingDraw && canvasTool !== 'spotlight' && canvasTool !== 'avatar'}
+            elements={elements}
           />
         ) : null}
         <CanvasStillProvider still={props.editorMode === 'draw'}>

@@ -1,5 +1,7 @@
 'use client';
 
+import type { PageKind } from '@livediagram/document';
+import { AddPageStripButton } from './AddPageStripButton';
 import {
   Fragment,
   useEffect,
@@ -13,6 +15,7 @@ import { ChevronDownIcon, EllipsisIcon, HoverCard } from '@livediagram/ui';
 import { track } from '@/lib/telemetry';
 import { SnapWidth } from '@/components/primitives/SnapWidth';
 import { PHONE_TOOLBAR_ITEMS } from '@/components/chrome/phone-toolbar-items';
+import { TOOLBAR_CARD } from '@/components/chrome/toolbar-surface';
 import { safeInlinePadding } from '@/lib/safe-area';
 import { PaletteTintProvider } from './palette-controls';
 import { PaletteGroupProvider } from './palette-group-state';
@@ -61,6 +64,8 @@ type Props = Pick<
     // Explorer menu button and mode switch on a phone, which has no room for
     // them in a corner card above the strip.
     leading?: ReactNode;
+    // Illustrate mode: a + at the strip's end adds a page (AddPageStripButton).
+    onAddPage?: (kind: PageKind) => void;
   };
 // Clicks inside these don't count as "outside" the More popover: the icon
 // filter's portalled dropdown menus, and any dialog a category body opens
@@ -68,7 +73,7 @@ type Props = Pick<
 const INSIDE_SELECTOR = '[data-palette-dropdown-menu], [role="dialog"], [data-tour-popover]';
 
 // The strip's card, and the leading card beside it on a phone.
-const CARD_CLASS = `flex items-center gap-0.5 rounded-xl border border-slate-200 bg-white p-1 shadow-md shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40 ${PHONE_TOOLBAR_ITEMS}`;
+const CARD_CLASS = `${TOOLBAR_CARD} ${PHONE_TOOLBAR_ITEMS}`;
 
 // With a leading card (a phone), the menu card sits at the left gutter and the
 // strip beside it rather than centred (docs/specs/007-editor/toolbar-layout.md
@@ -444,6 +449,12 @@ export function ToolbarPalette(props: Props) {
                         {moreButton}
                       </HoverCard>
                     )}
+                  </>
+                ) : null}
+                {props.onAddPage ? (
+                  <>
+                    <Divider />
+                    <AddPageStripButton onAdd={props.onAddPage} />
                   </>
                 ) : null}
               </div>

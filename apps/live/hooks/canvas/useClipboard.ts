@@ -33,7 +33,12 @@ import { useEffect, useRef, useState, type RefObject } from 'react';
 import { duplicateElements, type Element, type Tab } from '@livediagram/document';
 import { anyModalOpen } from '@/lib/modal-guard';
 import { watchPrimarySelectionPaste } from '@/lib/primary-selection-paste';
-import { parseElementsPayload, serialiseElements, stripIdentity } from '@/lib/clipboard-payload';
+import {
+  articlePasteIsCanvas,
+  parseElementsPayload,
+  serialiseElements,
+  stripIdentity,
+} from '@/lib/clipboard-payload';
 import { landPastedCopies, pasteTranslation } from '@/lib/paste-placement';
 import { addImageFileForDocument } from '@/lib/upload-image';
 import {
@@ -318,12 +323,20 @@ export function useClipboard(deps: ClipboardDeps) {
       // the element clipboard on the canvas.
       if (e.defaultPrevented) return;
       if (primaryPaste.current?.isPrimarySelectionPaste()) return;
-      const target = e.target as Element | null;
+      // A DOM target: `Element` in this file is the diagram element type.
+      const target = e.target as EventTarget | null;
+      // An article's writing hands on what it cannot hold (docs/specs/007-editor/article-pages.md
+      // "Zones": a pasted image or copied elements go into the writing as zones).
+      const intoArticle =
+        target instanceof HTMLElement &&
+        !!target.closest('[data-article-flow]') &&
+        articlePasteIsCanvas(e.clipboardData ?? null);
       if (
-        target instanceof HTMLInputElement ||
-        target instanceof HTMLTextAreaElement ||
-        target instanceof HTMLSelectElement ||
-        (target instanceof HTMLElement && target.isContentEditable)
+        !intoArticle &&
+        (target instanceof HTMLInputElement ||
+          target instanceof HTMLTextAreaElement ||
+          target instanceof HTMLSelectElement ||
+          (target instanceof HTMLElement && target.isContentEditable))
       ) {
         return;
       }

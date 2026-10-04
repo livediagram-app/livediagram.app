@@ -1,4 +1,4 @@
-// A page layout built for one page (docs/specs/007-editor/infographic-pages.md "Layouts"): laid out
+// A page layout built for one page (docs/specs/007-editor/illustrate-pages.md "Layouts"): laid out
 // in the page's content box, the page less its margins. Shared by placing a layout, its picker
 // tile and its hover preview, so all three show the same arrangement.
 import { pageMargin, type Element, type LaidOutPage } from '@livediagram/document';

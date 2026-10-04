@@ -99,7 +99,7 @@ describe('ToolbarPalette', () => {
   });
 
   it('swaps the tiles when the category changes', () => {
-    show({ mode: 'infographic' });
+    show({ mode: 'illustrate' });
     pickCategory('devices');
     expect(screen.getByRole('button', { name: 'Palette category' }).textContent).toContain(
       'Devices',
@@ -115,20 +115,20 @@ describe('ToolbarPalette', () => {
     expect(screen.getByRole('button', { name: 'More Collaborate' })).toBeTruthy();
     cleanup();
     // Devices fits in the strip whole.
-    show({ mode: 'infographic' });
+    show({ mode: 'illustrate' });
     pickCategory('devices');
     expect(screen.queryByRole('button', { name: /^More/ })).toBeNull();
   });
 
   // The palette per mode (docs/specs/007-editor/editor-modes.md "The palette per mode").
-  it('offers the mock-up kit and the charts in Infographic mode only', () => {
+  it('offers the mock-up kit and the charts in Illustrate mode only', () => {
     show();
     fireEvent.click(screen.getByRole('button', { name: 'Palette category' }));
     expect(document.querySelector('[data-option-id="devices"]')).toBeNull();
     expect(document.querySelector('[data-option-id="components"]')).toBeNull();
     expect(document.querySelector('[data-option-id="data"]')).toBeNull();
     cleanup();
-    show({ mode: 'infographic' });
+    show({ mode: 'illustrate' });
     fireEvent.click(screen.getByRole('button', { name: 'Palette category' }));
     expect(document.querySelector('[data-option-id="devices"]')).not.toBeNull();
     expect(document.querySelector('[data-option-id="data"]')).not.toBeNull();
@@ -223,13 +223,13 @@ describe('ToolbarPalette', () => {
   });
 
   it('hides rather than unmounts, so the chosen category survives', () => {
-    const view = show({ mode: 'infographic' });
+    const view = show({ mode: 'illustrate' });
     pickCategory('devices');
     const h = handlers();
     const rerender = (hidden: boolean) =>
       view.rerender(
         inMode(
-          'infographic',
+          'illustrate',
           <ToolbarPalette
             canvasTool="select"
             onSetCanvasTool={vi.fn()}

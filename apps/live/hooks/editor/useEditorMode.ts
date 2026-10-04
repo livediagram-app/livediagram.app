@@ -8,12 +8,12 @@
 //   this page (usePinTabOpening), else the tab's opening mode (`tab.opensIn`), else 'diagram'. Event-storming boards are always 'diagram'. A visitor who
 //   cannot edit (`canEdit: false`, the view role) always gets the opening mode.
 // - `canSwitch` is true only for an editor on a general tab; the mode switch shows only then.
-// - `setMode(next)` fires `Editor · Changed · ModeDiagram | ModeDraw | ModeInfographic` and then applies: it
+// - `setMode(next)` fires `Editor · Changed · ModeDiagram | ModeDraw | ModeIllustrate` and then applies: it
 //   remembers the choice in this browser for this tab (never on the tab itself, so nobody else
 //   is affected). A no-op when the switch is not offered or `next` is already the mode.
 // - Every caller on the page shares one store: the switch and the editor always agree.
 import { useCallback, useEffect, useSyncExternalStore } from 'react';
-import { isEditorMode, opensInOf, type EditorMode } from '@livediagram/document';
+import { parseEditorMode, opensInOf, type EditorMode } from '@livediagram/document';
 import {
   openedMode,
   pinOpening,
@@ -39,10 +39,10 @@ const nothingStored = () => '|';
 const MODE_EVENT: Record<EditorMode, string> = {
   diagram: 'ModeDiagram',
   draw: 'ModeDraw',
-  infographic: 'ModeInfographic',
+  illustrate: 'ModeIllustrate',
 };
 
-const modeOrNull = (v: string | undefined): EditorMode | null => (isEditorMode(v) ? v : null);
+const modeOrNull = (v: string | undefined): EditorMode | null => parseEditorMode(v) ?? null;
 
 export function useEditorMode(
   tab: EditorModeTab | undefined,

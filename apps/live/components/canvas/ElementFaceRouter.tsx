@@ -25,6 +25,7 @@ import { ElementSettingsButton } from '@/components/canvas/ElementEllipsisMenu';
 import { CollabFaceRouter } from '@/components/canvas/collab/CollabFaceRouter';
 import { CollabSettingsSlot } from '@/components/canvas/collab/collab-chrome';
 import { CommentPanelFace } from '@/components/canvas/CommentPanelFace';
+import { ArticleNoteFace } from '@/components/canvas/article/ArticleNoteFace';
 import { ActionPanelFace } from '@/components/canvas/ActionPanelFace';
 import { FreehandSvg } from '@/components/canvas/boxed-element-overlays';
 import { PathSvg } from '@/components/canvas/path/PathSvg';
@@ -359,6 +360,8 @@ export function ElementFaceRouter({
           targetName={onEnterPortal?.(element).targetName ?? null}
           onEnter={onEnterPortal?.(element).travel}
         />
+      ) : element.type === 'annotation' && element.articleNote ? (
+        <ArticleNoteFace element={element} />
       ) : element.type === 'annotation' ? (
         <AnnotationGlyph
           stroke={remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element, surface)}

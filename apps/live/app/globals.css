@@ -5,6 +5,7 @@
 @import './qa-board.css';
 @import './canvas-motion.css';
 @import './thumbnail-loader.css';
+@import './article-pages.css';
 
 /* A phone: narrower than `sm`, or a touch screen under 500px tall (one held sideways). The JS twin
  * is PHONE_MEDIA_QUERY (lib/responsive.ts); the two state the same query. Phone-only layout uses
@@ -39,7 +40,7 @@
   }
 }
 
-/* Infographic mode's page clip (components/canvas/InfographicPageClip.tsx): the layer covers the
+/* Illustrate mode's page clip (components/canvas/IllustratePageClip.tsx): the layer covers the
    canvas world without taking presses itself, so a press on the empty canvas still reaches the
    canvas; the element views inside take them as anywhere else. Zero specificity, in the base layer,
    so an element's own pointer-events utility still wins. */

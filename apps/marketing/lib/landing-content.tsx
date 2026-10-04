@@ -81,11 +81,12 @@ import {
   UndoRedoArt,
   UnlimitedTabsArt,
   ZenModeArt,
-  InfographicBackgroundsArt,
-  InfographicExportArt,
-  InfographicIntoPagesArt,
+  ArticlePagesArt,
+  IllustrateBackgroundsArt,
+  IllustrateExportArt,
+  IllustrateIntoPagesArt,
   InfographicLayoutArt,
-  InfographicPagesArt,
+  IllustratePagesArt,
 } from '@/components/FeatureArt';
 import type { FeatureProps } from '@/components/Section';
 
@@ -383,41 +384,48 @@ export const LANDING_SECTIONS: LandingSection[] = [
   {
     id: 'infographics',
     cta: 'Explore infographics',
-    title: 'Infographics, page by page',
+    title: 'Infographics and articles, page by page',
     description:
-      'Switch a tab into Infographic mode and work on pages: sized for print or social, painted from your theme, started from a layout, then exported or presented.',
+      'Switch a tab into Illustrate mode and work on pages: infographics to lay out, articles to write, sized for print or social, painted from your theme, then exported or presented.',
     items: [
       {
-        art: <InfographicPagesArt />,
-        href: '/help/canvas/infographics/',
+        art: <IllustratePagesArt />,
+        href: '/help/canvas/illustrate/',
         title: 'Pages for print and social',
         description:
           'A4, US Letter and A3 for print; square, portrait post and story or slide for social. Each page has its own size and orientation, and everything on it moves with it.',
       },
       {
         art: <InfographicLayoutArt />,
-        href: '/help/canvas/infographics/infographic-layouts/',
+        href: '/help/canvas/illustrate/infographic-layouts/',
         title: 'Start a page from a layout',
         description:
           'Twenty-one ready-made pages in four categories, from a title page and key stats to a roadmap, a team and an event invite. Hover one to preview it on your page, press it to place it, then make it yours.',
       },
       {
-        art: <InfographicBackgroundsArt />,
-        href: '/help/canvas/infographics/',
+        art: <ArticlePagesArt />,
+        href: '/help/canvas/illustrate/articles/',
+        title: 'Write articles on pages',
+        description:
+          'Write like a doc, right on the canvas: a formatting toolbar on the page, writing that flows onto new pages, charts and drawings wrapped in the text, and comments on any words.',
+      },
+      {
+        art: <IllustrateBackgroundsArt />,
+        href: '/help/canvas/illustrate/',
         title: 'Backgrounds from your theme',
         description:
           'Paint a page in a tint of your theme, a solid colour or a gradient, with dots, a grid or ruled lines over it. Text keeps reading on a dark page, because the ink follows the page.',
       },
       {
-        art: <InfographicIntoPagesArt />,
-        href: '/help/canvas/infographics/',
+        art: <IllustrateIntoPagesArt />,
+        href: '/help/canvas/illustrate/',
         title: 'Turn any diagram into pages',
         description:
-          'Switch a diagram, mind map or sketch to Infographic mode and it lands on pages, a page for each part, scaled to fit. One undo puts it back.',
+          'Switch a diagram, mind map or sketch to Illustrate mode and it lands on pages, a page for each part, scaled to fit. One undo puts it back.',
       },
       {
-        art: <InfographicExportArt />,
-        href: '/help/canvas/infographics/exporting-infographics/',
+        art: <IllustrateExportArt />,
+        href: '/help/canvas/illustrate/exporting-pages/',
         title: 'Every page, print-ready',
         description:
           'Export every page as one PDF at true print size, or one page as a PNG or SVG. Add pages to a slide deck and present them full screen, one page at a time.',
@@ -435,7 +443,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         art: <TemplatesArt />,
         href: '/help/canvas/templates/',
         group: 'Templates & themes',
-        title: 'Sixty-two starter templates',
+        title: 'Sixty-four starter templates',
         description:
           'Start from a board that already makes sense: flowcharts and mind maps, retrospectives and Kanban, roadmaps and org charts, meeting agendas and risk matrices, wireframes, architecture and UML, even a to-scale floor plan. Browse them by category in the picker, edit one, or start blank.',
       },

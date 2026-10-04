@@ -290,10 +290,10 @@ export const EXPERIMENTAL_SETTINGS = settingsStack(
   [
     toggle(
       'UI',
-      'InfographicModeOn',
-      'InfographicModeOff',
-      'Infographic Mode',
-      'The Infographic editor mode, switched on or off.',
+      'IllustrateModeOn',
+      'IllustrateModeOff',
+      'Illustrate Mode',
+      'The Illustrate editor mode, switched on or off.',
     ),
   ],
 );

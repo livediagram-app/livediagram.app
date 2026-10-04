@@ -204,6 +204,9 @@ export function buildTemplate(kind: TemplateKind, cx: number, cy: number): Eleme
     // kind, which templateCanvasOverrides sets, not any seeded element.
     case 'whiteboard':
       return [];
+    // An article's writing and page are tab data (templateCanvasOverrides), not elements.
+    case 'article':
+      return [];
   }
 }
 

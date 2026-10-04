@@ -3,8 +3,8 @@
 import { SlideDeckIcon } from '@/components/palette/palette-icons';
 import { HoverCard } from '@livediagram/ui';
 
-// The Slides button in the bottom-right cluster, in Infographic mode (docs/specs/007-editor/
-// infographic-pages.md "Slides"): an infographic is likely to be presented, so its deck sits one
+// The Slides button in the bottom-right cluster, in Illustrate mode (docs/specs/007-editor/
+// illustrate-pages.md "Slides"): an infographic is likely to be presented, so its deck sits one
 // press away, where Layers sits in the other modes. It opens the Slide Deck panel as a popover
 // hanging ABOVE it, as the Layers button does, and shows pressed while it is open.
 //

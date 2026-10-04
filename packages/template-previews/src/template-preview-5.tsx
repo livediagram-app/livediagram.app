@@ -843,6 +843,48 @@ export function templatePreviewGroup5(kind: TemplateKind): ReactElement | null {
           />
         </svg>
       );
+    case 'article':
+      // An article (docs/specs/007-editor/article-pages.md): a page of writing, a title over lines
+      // with a heading, a bulleted pair and a small chart in the text. Hover story: a new line is
+      // written at the foot.
+      return (
+        <svg width="72" height="40" viewBox="0 0 80 44" aria-hidden>
+          <rect
+            x="22"
+            y="2"
+            width="36"
+            height="40"
+            rx="2"
+            fill="rgb(255 255 255)"
+            stroke="rgb(203 213 225)"
+            strokeWidth="0.9"
+          />
+          <rect x="27" y="7" width="17" height="3" rx="1" fill="rgb(15 23 42)" />
+          <rect x="27" y="12" width="24" height="1.4" rx="0.7" fill="rgb(148 163 184)" />
+          <rect x="27" y="15" width="26" height="1.4" rx="0.7" fill="rgb(148 163 184)" />
+          <rect x="27" y="19" width="11" height="2" rx="1" fill="rgb(51 65 85)" />
+          <circle cx="28" cy="24" r="0.9" fill="rgb(14 165 233)" />
+          <rect x="30" y="23.3" width="10" height="1.4" rx="0.7" fill="rgb(148 163 184)" />
+          <circle cx="28" cy="27" r="0.9" fill="rgb(14 165 233)" />
+          <rect x="30" y="26.3" width="8" height="1.4" rx="0.7" fill="rgb(148 163 184)" />
+          <rect x="43" y="22" width="10" height="8" rx="1" fill="rgb(240 249 255)" />
+          <rect x="44.5" y="26" width="2" height="3" fill="rgb(56 189 248)" />
+          <rect x="47.5" y="24" width="2" height="5" fill="rgb(14 165 233)" />
+          <rect x="50.5" y="25" width="2" height="4" fill="rgb(2 132 199)" />
+          <rect x="27" y="33" width="26" height="1.4" rx="0.7" fill="rgb(148 163 184)" />
+          <path
+            className="pv-draw"
+            pathLength="1"
+            strokeDasharray="0 1"
+            d="M27 37.2 L48 37.2"
+            fill="none"
+            stroke="rgb(100 116 139)"
+            strokeWidth="1.4"
+            strokeLinecap="round"
+            style={pv({ '--pv-at': '400ms', '--pv-dur': '900ms' })}
+          />
+        </svg>
+      );
     default:
       return null;
   }

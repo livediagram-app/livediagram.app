@@ -20,5 +20,5 @@ export * from './feature-art/structure';
 // Presentation mode (docs/specs/012-collaboration/presentation-mode.md): decks, the full-screen slide, notes, and the
 // fact that presenting is yours alone.
 export * from './feature-art/present';
-// Infographic pages (docs/specs/007-editor/infographic-pages.md): pages, layouts, backgrounds, export.
+// Infographic pages (docs/specs/007-editor/illustrate-pages.md): pages, layouts, backgrounds, export.
 export * from './feature-art/infographics';

@@ -1199,7 +1199,7 @@ export const articles: Article[] = [
     title: 'Templates',
     description: 'Start from a themed template instead of a blank canvas.',
     keywords:
-      'starter kanban flowchart swot gantt wireframe prebuilt scaffold quick start retro sailboat postmortem risk stakeholder persona agenda objectives crazy 8s opportunity tree',
+      'starter kanban flowchart swot gantt wireframe prebuilt scaffold quick start retro sailboat postmortem risk stakeholder persona agenda objectives crazy 8s opportunity tree article brief document write writing',
     category: 'Canvas',
     categorySlug: 'canvas',
   },
@@ -1224,12 +1224,12 @@ export const articles: Article[] = [
     categorySlug: 'canvas',
   },
   {
-    slug: 'infographics',
-    title: 'Infographics',
+    slug: 'illustrate',
+    title: 'Illustrate Mode',
     description:
       'Work on a tab as pages: sizes for print and social, backgrounds, layouts, then export or present.',
     keywords:
-      'infographic infographics infographic mode poster one pager one-pager flyer handout report page pages sheet sheets a4 a3 letter us letter square social post instagram linkedin story stories slide portrait landscape orientation size page size background backgrounds colour color gradient pattern dots grid lines theme dark page name rename duplicate move reorder drag delete add page snap margins margin fit resize scale lay out into pages diagram to infographic convert mind map editor mode switch modes opens in experimental',
+      'illustrate illustrate mode infographic infographics poster one pager one-pager flyer handout report page pages sheet sheets a4 a3 letter us letter square social post instagram linkedin story stories slide portrait landscape orientation size page size background article articles write writing document page kind infographic or article first page choice navigator next page previous page backgrounds colour color gradient pattern dots grid lines theme dark page name rename duplicate move reorder drag delete add page snap margins margin fit resize scale lay out into pages diagram to infographic convert mind map editor mode switch modes opens in experimental',
     category: 'Canvas',
     categorySlug: 'canvas',
   },
@@ -1241,18 +1241,29 @@ export const articles: Article[] = [
     keywords:
       'layout layouts template templates page template start from a layout ready made starter preview hover replace title page big number key stats statistics process steps timeline milestones comparison before after chart story top tips quote testimonial team people facts grid checklist event invitation poster',
     category: 'Canvas',
-    categorySlug: 'canvas/infographics',
-    parentSlug: 'infographics',
+    categorySlug: 'canvas/illustrate',
+    parentSlug: 'illustrate',
   },
   {
-    slug: 'exporting-infographics',
-    title: 'Exporting and Presenting Infographics',
+    slug: 'articles',
+    title: 'Writing Articles',
+    description:
+      'Write on pages like a doc: text that flows onto new pages, with pictures, charts and drawings in it.',
+    keywords:
+      'article articles write writing document doc word google docs page pages text paragraph heading headings title subtitle list bullet numbered todo checklist quote code divider page break flow overflow new page toolbar formatting bold italic underline link colour color highlight align markdown shortcut slash menu paste picture image chart table sticky drawing inline wrap float move drag resize comment comments action actions assign margin note style look font fonts margins page numbers line spacing lined paper notebook convert page element leave illustrate',
+    category: 'Canvas',
+    categorySlug: 'canvas/illustrate',
+    parentSlug: 'illustrate',
+  },
+  {
+    slug: 'exporting-pages',
+    title: 'Exporting and Presenting Pages',
     description: 'Every page as a print-ready PDF, one page as an image, and pages as slides.',
     keywords:
       'export download pdf png svg image print printable pages page infographic slides slide deck present presentation add as slide page slide deck from pages',
     category: 'Canvas',
-    categorySlug: 'canvas/infographics',
-    parentSlug: 'infographics',
+    categorySlug: 'canvas/illustrate',
+    parentSlug: 'illustrate',
   },
   {
     slug: 'using-tabs',

@@ -780,14 +780,15 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
     rows: [
       {
         kind: 'toggle',
-        key: 'infographicModeEnabled',
-        keywords: 'infographic page a4 poster editor mode experiment labs beta',
-        label: 'Infographic Mode',
+        key: 'illustrateModeEnabled',
+        keywords:
+          'illustrate infographic article page pages a4 poster writing word document editor mode experiment labs beta',
+        label: 'Illustrate Mode',
         description:
-          'Infographic mode in the editor mode switch: pages to lay out icons, charts, components and media on, export and present. Still new, so it may change. On by default.',
-        read: (p) => p.infographicModeEnabled !== false,
-        write: (p, v) => ({ ...p, infographicModeEnabled: v }),
-        event: { category: 'UI', on: 'InfographicModeOn', off: 'InfographicModeOff' },
+          'Illustrate mode in the editor mode switch: pages to lay out as infographics or write as articles, then export and present. Still new, so it may change. On by default.',
+        read: (p) => p.illustrateModeEnabled !== false,
+        write: (p, v) => ({ ...p, illustrateModeEnabled: v }),
+        event: { category: 'UI', on: 'IllustrateModeOn', off: 'IllustrateModeOff' },
       },
     ],
   },

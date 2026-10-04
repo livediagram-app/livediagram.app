@@ -4,7 +4,7 @@
 // opens-in decides whether anything was recorded: when it reads null, so does everything else.
 
 import { isCreationTabKind, isTemplateFamily, type RecordedIntent } from '@livediagram/api-schema';
-import { isEditorMode } from '@livediagram/document';
+import { parseEditorMode } from '@livediagram/document';
 
 export type RecordedIntentRow = {
   opens_in: string | null;
@@ -15,9 +15,11 @@ export type RecordedIntentRow = {
 const UNKNOWN: RecordedIntent = { opensIn: null, tabKind: null, templateFamily: null };
 
 export function readRecordedIntent(row: RecordedIntentRow): RecordedIntent {
-  if (!isEditorMode(row.opens_in)) return UNKNOWN;
+  // A row recorded before Illustrate mode's rename says `infographic`.
+  const opensIn = parseEditorMode(row.opens_in);
+  if (!opensIn) return UNKNOWN;
   return {
-    opensIn: row.opens_in,
+    opensIn,
     tabKind: isCreationTabKind(row.tab_kind) ? row.tab_kind : null,
     templateFamily: isTemplateFamily(row.template_family) ? row.template_family : null,
   };

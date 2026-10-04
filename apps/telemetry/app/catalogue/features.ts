@@ -245,8 +245,8 @@ export const EDITOR_MODE_SWITCHES = chart(
   'Editor',
   'Changed',
   'Editor Mode Switches',
-  'A tab switched to Diagram, Draw or Infographic mode by the person working on it.',
-  { types: ['ModeDiagram', 'ModeDraw', 'ModeInfographic'] },
+  'A tab switched to Diagram, Draw or Illustrate mode by the person working on it.',
+  { types: ['ModeDiagram', 'ModeDraw', 'ModeIllustrate'] },
 );
 
 // The mode a tab opens in, set from the tab menu's Opens in (docs/specs/007-editor/editor-modes.md).
@@ -254,44 +254,115 @@ export const TAB_OPENS_IN = chart(
   'Tab',
   'Changed',
   'Opening Modes Set',
-  'A tab set to open in Diagram, Draw or Infographic mode for everyone, from the tab menu.',
-  { types: ['OpensInDiagram', 'OpensInDraw', 'OpensInInfographic'] },
+  'A tab set to open in Diagram, Draw or Illustrate mode for everyone, from the tab menu.',
+  { types: ['OpensInDiagram', 'OpensInDraw', 'OpensInIllustrate'] },
 );
 
-// Infographic mode's A4 page turned portrait or landscape (docs/specs/007-editor/editor-modes.md "The page").
+// Illustrate mode's A4 page turned portrait or landscape (docs/specs/007-editor/editor-modes.md "The page").
 export const PAGE_ORIENTATION = chart(
   'Tab',
   'Changed',
   'Page Orientations Set',
-  "An infographic tab's A4 page turned to portrait or landscape, from the page's settings.",
+  "An Illustrate tab's A4 page turned to portrait or landscape, from the page's settings.",
   { types: ['PagePortrait', 'PageLandscape'] },
 );
 
-// Infographic pages added after the last one, or deleted (docs/specs/007-editor/editor-modes.md "The pages").
-export const INFOGRAPHIC_PAGES = chart(
+// Illustrate pages added after the last one, or deleted (docs/specs/007-editor/editor-modes.md "The pages").
+export const ILLUSTRATE_PAGES = chart(
   'Tab',
   'Changed',
-  'Infographic Pages Added and Deleted',
-  'A page added to an infographic tab from the plus after its last page, or deleted from its settings.',
-  { types: ['PageAdded', 'PageRemoved'] },
+  'Illustrate Pages Added and Deleted',
+  'A page added to an Illustrate tab from the plus after its last page (an infographic page, or a new article), or deleted from its settings.',
+  {
+    types: [
+      'PageAdded',
+      'ArticleAdded',
+      'PageRemoved',
+      'ArticlesToPages',
+      'PageKindInfographic',
+      'PageKindArticle',
+    ],
+  },
 );
 
-// An infographic page's own settings (docs/specs/007-editor/infographic-pages.md).
-export const INFOGRAPHIC_PAGE_SETUP = chart(
+// An Illustrate page's own settings (docs/specs/007-editor/illustrate-pages.md).
+export const ILLUSTRATE_PAGE_SETUP = chart(
   'Tab',
   'Changed',
-  'Infographic Pages Set Up',
-  "An infographic page's size, name, background or pattern changed from its panel.",
+  'Illustrate Pages Set Up',
+  "An Illustrate page's size, name, background or pattern changed from its panel.",
   { types: ['PageSize', 'PageRenamed', 'PageBackground', 'PagePattern'] },
 );
 
-// Building infographic pages: a layout placed, a page duplicated or moved.
-export const INFOGRAPHIC_PAGE_BUILDING = chart(
+// Building Illustrate pages: a layout placed, a page duplicated or moved.
+export const ILLUSTRATE_PAGE_BUILDING = chart(
   'Tab',
   'Changed',
-  'Infographic Pages Built',
-  'A layout put onto an infographic page, a page duplicated or moved, or a tab laid out into pages.',
+  'Illustrate Pages Built',
+  'A layout put onto an Illustrate page, a page duplicated or moved, or a tab laid out into pages.',
   { types: ['PageLayout', 'PageDuplicated', 'PageMoved', 'PagesLaidOut'] },
+);
+
+// Writing articles (docs/specs/007-editor/article-pages.md "Telemetry").
+export const ARTICLE_INSERTS = chart(
+  'Element',
+  'Added',
+  'Article Inserts',
+  'Something put into the writing of an article: an image, table, chart or drawing at the caret, an object or drawing taken in from the palette, or a divider, page break, quote or code block.',
+  {
+    types: [
+      'ArticleImage',
+      'ArticleTable',
+      'ArticleChart',
+      'ArticleCallout',
+      'ArticleSticky',
+      'ArticleDrawing',
+      'ArticleObject',
+      'ArticleDivider',
+      'ArticlePageBreak',
+      'ArticleQuote',
+      'ArticleCode',
+      'ArticleComment',
+      'ArticleAction',
+    ],
+  },
+);
+
+export const ARTICLE_FORMATTING = chart(
+  'Element',
+  'Changed',
+  'Article Formatting',
+  "The page toolbar used on an article's writing (a format, a text style or list, a link) and a zone in the writing wrapped, placed or deleted.",
+  {
+    types: [
+      'ArticleFormat',
+      'ArticleBlockStyle',
+      'ArticleLink',
+      'ArticlePaste',
+      'ArticleZoneWrap',
+      'ArticleZoneResized',
+      'ArticleZoneMoved',
+      'ArticleZoneFloat',
+      'ArticleZoneRemoved',
+    ],
+  },
+);
+
+export const ARTICLE_LOOKS = chart(
+  'Tab',
+  'Changed',
+  'Article Looks',
+  "An article's look chosen in its Style tab, or one of its style fields changed.",
+  {
+    types: [
+      'ArticleLookClean',
+      'ArticleLookClassic',
+      'ArticleLookReport',
+      'ArticleLookNotebook',
+      'ArticleLookBold',
+      'ArticleStyle',
+    ],
+  },
 );
 
 export const WHITEBOARDS: MetricStack = {
@@ -304,9 +375,12 @@ export const WHITEBOARDS: MetricStack = {
     EDITOR_MODE_SWITCHES,
     TAB_OPENS_IN,
     PAGE_ORIENTATION,
-    INFOGRAPHIC_PAGES,
-    INFOGRAPHIC_PAGE_SETUP,
-    INFOGRAPHIC_PAGE_BUILDING,
+    ILLUSTRATE_PAGES,
+    ILLUSTRATE_PAGE_SETUP,
+    ILLUSTRATE_PAGE_BUILDING,
+    ARTICLE_INSERTS,
+    ARTICLE_FORMATTING,
+    ARTICLE_LOOKS,
     WHITEBOARD_PENS,
     WHITEBOARD_SETTINGS,
     WHITEBOARD_RECOGNITION,

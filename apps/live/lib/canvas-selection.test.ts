@@ -81,6 +81,21 @@ describe('deriveCanvasSelection', () => {
     expect(s.showHandlesFor('a')).toBe(false);
   });
 
+  it('an element the caller blocks (an object in an article) keeps the popover but loses the plus', () => {
+    const s = derive({
+      elements: [box('a'), box('b')],
+      selectedId: 'a',
+      plusBlocked: (el) => el.id === 'a',
+    });
+    expect(s.showPopover).toBe(true);
+    expect(s.showPlus).toBe(false);
+    expect(s.showHandlesFor('a')).toBe(true);
+    expect(
+      derive({ elements: [box('b')], selectedId: 'b', plusBlocked: (el) => el.id === 'a' })
+        .showPlus,
+    ).toBe(true);
+  });
+
   it('read-only keeps the popover but suppresses plus + handles', () => {
     const s = derive({ elements: [box('a')], selectedId: 'a', readOnly: true });
     expect(s.showPopover).toBe(true); // popover does NOT gate on readOnly

@@ -133,3 +133,13 @@ export function parseElementsPayload(text: string | null | undefined): Element[]
     return true;
   });
 }
+
+/** Whether a paste into an article's writing is the canvas's to make: an image file, or elements
+ *  copied from a canvas (the writing takes text, links and formatting itself). */
+export function articlePasteIsCanvas(data: DataTransfer | null): boolean {
+  if (!data) return false;
+  if (data.files && data.files.length > 0) return true;
+  for (const item of Array.from(data.items ?? []))
+    if (item.kind === 'file' && item.type.startsWith('image/')) return true;
+  return parseElementsPayload(data.getData('text/plain')) !== null;
+}

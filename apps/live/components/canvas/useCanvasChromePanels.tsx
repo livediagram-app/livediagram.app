@@ -262,12 +262,12 @@ export function useCanvasChromePanels({
   // The six tool-config panels (avatar / laser / spotlight / eraser / format /
   // slide deck), see useCanvasToolPanels. They share one contract: on screen
   // only while their own tool is active.
-  // The Slides popover belongs to Infographic mode's button: leaving the mode (Shift+D, a tab
+  // The Slides popover belongs to Illustrate mode's button: leaving the mode (Shift+D, a tab
   // switch) closes it rather than leaving it floating with no button under it.
-  const slidesOpen = activeDockPanel === 'slides' && !!props.infographicPages;
+  const slidesOpen = activeDockPanel === 'slides' && !!props.illustratePages;
   useEffect(() => {
-    if (activeDockPanel === 'slides' && !props.infographicPages) closeDockPanel();
-  }, [activeDockPanel, props.infographicPages, closeDockPanel]);
+    if (activeDockPanel === 'slides' && !props.illustratePages) closeDockPanel();
+  }, [activeDockPanel, props.illustratePages, closeDockPanel]);
   const { avatarEl, laserEl, spotlightEl, eraserEl, formatEl, slideDeckEl } = useCanvasToolPanels({
     props,
     chromeHidden,
@@ -460,10 +460,11 @@ export function useCanvasChromePanels({
     !chromeHidden &&
     !isMobile &&
     mapEnabled &&
-    (elements.length >= 4 || (props.infographicPages?.pages.length ?? 0) > 0) ? (
+    (elements.length >= 4 || (props.illustratePages?.pages.length ?? 0) > 0) ? (
       <Minimap
         elements={mapElements}
-        pages={props.infographicPages?.pages}
+        pages={props.illustratePages?.pages}
+        writing={props.illustratePages?.articles?.flows}
         tabFont={props.tabFont}
         viewportOffset={props.viewportOffset}
         viewportZoom={viewportZoom}
@@ -540,7 +541,7 @@ export function useCanvasChromePanels({
     laser: laserEl,
     spotlight: spotlightEl,
     eraser: eraserEl,
-    // Over its cluster button (Infographic mode) it renders beside the corner layer, like Collaborate.
+    // Over its cluster button (Illustrate mode) it renders beside the corner layer, like Collaborate.
     'slide-deck': slidesOpen ? null : slideDeckEl,
     format: formatEl,
   };

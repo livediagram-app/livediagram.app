@@ -212,9 +212,9 @@ type UserPreferences = {
   // Defaults to false (full motion, subject to the OS setting).
   reduceMotion?: boolean;
 
-  // Settings › Experimental › Infographic Mode (editor-modes.md
-  // "Experimental modes"): offers Infographic mode. Defaults to true (only false hides it).
-  infographicModeEnabled?: boolean;
+  // Settings › Experimental › Illustrate Mode (editor-modes.md
+  // "Experimental modes"): offers Illustrate mode. Defaults to true (only false hides it).
+  illustrateModeEnabled?: boolean;
 
   // Email notification preferences (docs/specs/014-identity/profile-and-email-notifications.md). Account-level email
   // settings that share this synced blob rather than a parallel store,
@@ -708,9 +708,9 @@ and the dialog stays as the one complete, browsable index of them.
   notes that errors are always shown regardless. The
   Accessibility group holds `reduceMotion`, noting the OS setting is
   always respected and this only adds a user-forced override. The
-  Experimental group, after AI Tools, holds `infographicModeEnabled`
+  Experimental group, after AI Tools, holds `illustrateModeEnabled`
   ([Editor modes](editor-modes.md#experimental-modes)), on by default;
-  it emits `UI`/`Toggled`/`InfographicMode{On,Off}`.
+  it emits `UI`/`Toggled`/`IllustrateMode{On,Off}`.
 
 - **Per-tool surfaces**: none today. The pencil's ModeBanner used to
   carry a `recogniseShapes` toggle; [Two pens instead of a pen and a mode](../008-canvas/two-pens.md) replaced it with two

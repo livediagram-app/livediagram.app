@@ -1,4 +1,5 @@
 import { memo, useRef, useState } from 'react';
+import { useZoneClip, zoneClipPolygon } from '@/lib/article/zone-clip-store';
 import { PhotoDraftRing, PhotoMatchedBadge } from '@/components/canvas/photo-badges';
 import {
   BORDER_DASH_ARRAY,
@@ -165,6 +166,10 @@ function BoxedElementViewImpl({
   // reset) restores resize.
   const rotation = element.rotation ?? 0;
   const isRotated = rotation % 360 !== 0;
+  // In an article's drawing zone: cut off at the zone's edge (a turned element is left whole).
+  const zoneClip = useZoneClip(element.id);
+  const clipPath =
+    zoneClip && !isRotated ? zoneClipPolygon(zoneClip, element.x, element.y) : undefined;
   // Layer-scoped vote (docs/specs/012-collaboration/vote-layer-scope.md). Only while casting is OPEN: after End
   // vote the canvas goes back to normal so the results walkthrough reads
   // against the full canvas. `votableInVote` already folds in the kind
@@ -188,6 +193,13 @@ function BoxedElementViewImpl({
   // floats its note above everything; clicking it (handled in the drag
   // engine's click-vs-drag test) opens the editable note popover.
   const isAnnotation = element.type === 'annotation';
+  // An article's margin note (docs/specs/007-editor/article-pages.md "Comments and actions"): a
+  // click opens what it carries, its comment thread or its action.
+  const articleNote = element.type === 'annotation' ? element.articleNote : undefined;
+  const noteDown = useRef<{ x: number; y: number } | null>(null);
+  const openArticleNote = articleNote
+    ? () => (articleNote === 'action' ? onOpenAction(element.id) : onOpenComments(element.id))
+    : undefined;
   const [hovering, setHovering] = useState(false);
 
   // Right-click selects the element + asks the page to open a
@@ -390,6 +402,23 @@ function BoxedElementViewImpl({
       onDoubleClick={handleDoubleClick}
       onContextMenu={handleContextMenu}
       onPointerUp={handlePointerUp}
+      onClick={
+        openArticleNote
+          ? (e) => {
+              // A drag of the marker ends in a click too: only a press that stayed put opens it.
+              const down = noteDown.current;
+              if (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) > 4) return;
+              openArticleNote();
+            }
+          : undefined
+      }
+      onPointerDownCapture={
+        openArticleNote
+          ? (e) => {
+              noteDown.current = { x: e.clientX, y: e.clientY };
+            }
+          : undefined
+      }
       onPointerEnter={isAnnotation ? () => setHovering(true) : undefined}
       onPointerLeave={isAnnotation ? () => setHovering(false) : undefined}
       onDragOver={acceptsIconDrop ? handleIconDragOver : undefined}
@@ -443,6 +472,7 @@ function BoxedElementViewImpl({
         // is typing isn't hidden behind elements painted above it. (The
         // selection handles live in the grips layer, SelectionChromeLayer.)
         ...(editLook.raise ? { zIndex: 10 } : {}),
+        ...(clipPath ? { clipPath } : {}),
         // Only the drawn line picks a pen stroke not yet selected (its hit
         // line, in FreehandSvg); the rest of its box lets pointers through.
         ...(lineHit || shapeHit ? { pointerEvents: 'none' as const } : {}),
@@ -621,10 +651,12 @@ function BoxedElementViewImpl({
 
       {/* The annotation marker IS the note affordance, so it suppresses
           the generic note badge (it would be redundant). */}
-      {linked ||
-      commentCount > 0 ||
-      hasOpenAction ||
-      (element.note && onOpenNote && !isAnnotation) ? (
+      {/* A margin note shows its count on its own face (ArticleNoteFace). */}
+      {!articleNote &&
+      (linked ||
+        commentCount > 0 ||
+        hasOpenAction ||
+        (element.note && onOpenNote && !isAnnotation)) ? (
         <BadgeStrip
           linked={linked}
           linkLabel={element.link ? describeLink(element.link, tabSummaries) : undefined}

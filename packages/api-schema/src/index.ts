@@ -589,6 +589,7 @@ export * from './placement-defaults';
 // Explorer Home: opens, Jump back in and What happened (docs/specs/013-workspace/explorer-home.md).
 export * from './home';
 export * from './drag-preview';
+export * from './article-caret';
 // Within reach: N most used plus N recent (docs/specs/004-interface-design/within-reach.md).
 export * from './within-reach';
 // Making a document is a use, a bulk import is not (docs/specs/013-workspace/explorer-home.md).

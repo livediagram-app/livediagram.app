@@ -96,6 +96,9 @@ export function deriveCanvasSelection(input: {
   // line (docs/specs/008-canvas/arrow-labels.md), so the floating toolbars
   // clear it as they clear the line.
   labelRectOf?: (id: ElementId) => Bounds | null;
+  // An element that never shows quick-connect pluses, beyond the rules below: an object in an
+  // article's writing connects to nothing (docs/specs/007-editor/article-pages.md "Zones").
+  plusBlocked?: (el: Element) => boolean;
 }): CanvasSelection {
   const {
     elements,
@@ -108,6 +111,7 @@ export function deriveCanvasSelection(input: {
     esBoard,
     elementMenuOpen,
     labelRectOf,
+    plusBlocked,
   } = input;
 
   // An element's selection extent (docs/specs/008-canvas/arrow-labels.md): an arrow spans
@@ -162,7 +166,8 @@ export function deriveCanvasSelection(input: {
     !isPaintMode &&
     !selectedLocked &&
     !tabLocked &&
-    !readOnly
+    !readOnly &&
+    !plusBlocked?.(selected)
   );
   // Resize handles and edge anchors: the per-element rule each element view also applies.
   const gripsOf = (id: string) => {

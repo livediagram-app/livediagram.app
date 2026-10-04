@@ -41,11 +41,11 @@ const EXPORT_LABEL: Record<Format, string> = {
   pdf: 'PDF',
 };
 
-// An Infographic tab's pages exported (docs/specs/007-editor/infographic-pages.md "Telemetry").
-const INFOGRAPHIC_EXPORT_LABEL: Record<ImageFormat, string> = {
-  png: 'InfographicPNG',
-  svg: 'InfographicSVG',
-  pdf: 'InfographicPDF',
+// An Illustrate tab's pages exported (docs/specs/007-editor/illustrate-pages.md "Telemetry").
+const ILLUSTRATE_EXPORT_LABEL: Record<ImageFormat, string> = {
+  png: 'IllustratePNG',
+  svg: 'IllustrateSVG',
+  pdf: 'IllustratePDF',
 };
 
 type ExportTabDialogProps = {
@@ -67,7 +67,7 @@ type ExportTabDialogProps = {
   // image options then leave out "Hidden layers", and hidden layers stay out
   // of the export as they stay off the canvas.
   offerHiddenLayers?: boolean;
-  // Infographic mode's pages (docs/specs/007-editor/infographic-pages.md "Export"): PDF exports
+  // Illustrate mode's pages (docs/specs/007-editor/illustrate-pages.md "Export"): PDF exports
   // every page, PNG and SVG one chosen page, each exactly its sheet. Absent elsewhere.
   pages?: LaidOutPage[];
 };
@@ -263,11 +263,7 @@ export function ExportTabDialog({
       } else {
         downloadBlob(await exportTabAsPdf(tab, renderOpts), `${baseName}.pdf`);
       }
-      track(
-        'Document',
-        'Exported',
-        pages ? INFOGRAPHIC_EXPORT_LABEL[format] : EXPORT_LABEL[format],
-      );
+      track('Document', 'Exported', pages ? ILLUSTRATE_EXPORT_LABEL[format] : EXPORT_LABEL[format]);
       onClose();
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Export failed.');

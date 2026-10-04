@@ -343,7 +343,8 @@ export function EditorCanvasHost() {
     whiteboardDock,
     drag,
     editorMode,
-    infographicPages,
+    illustratePages,
+    presentArticles,
   } = useEditorContext();
   // The viewer's editor mode (docs/specs/007-editor/editor-modes.md): Draw brings the dock and its
   // rules into focus; the board look keys on it through hasBoardLook.
@@ -552,7 +553,12 @@ export function EditorCanvasHost() {
         tabLayers={activeTab.layers}
         tabKind={activeTab.kind}
         editorMode={editorMode.mode}
-        infographicPages={presentedPages(infographicPages, activeTab, presentingPageId)}
+        illustratePages={presentedPages(
+          illustratePages,
+          activeTab,
+          presentingPageId,
+          presentArticles,
+        )}
         whiteboardDock={whiteboardDock.whiteboard ? whiteboardDock : undefined}
         whiteboardInk={PEN_INK[surface]}
         previewDrawnArrow={(intent, startX, startY, endX, endY) =>

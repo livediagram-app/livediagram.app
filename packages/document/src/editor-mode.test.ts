@@ -16,15 +16,15 @@ import type { Tab } from './index';
 
 // Editor modes (docs/specs/007-editor/editor-modes.md): how a general tab is worked on.
 describe('editor modes', () => {
-  it('are Diagram, Draw and Infographic, Diagram by default', () => {
-    expect(EDITOR_MODES).toEqual(['diagram', 'draw', 'infographic']);
+  it('are Diagram, Draw and Illustrate, Diagram by default', () => {
+    expect(EDITOR_MODES).toEqual(['diagram', 'draw', 'illustrate']);
     expect(DEFAULT_EDITOR_MODE).toBe('diagram');
   });
 
   it('recognises a mode and nothing else', () => {
     expect(isEditorMode('diagram')).toBe(true);
     expect(isEditorMode('draw')).toBe(true);
-    expect(isEditorMode('infographic')).toBe(true);
+    expect(isEditorMode('illustrate')).toBe(true);
     expect(isEditorMode('whiteboard')).toBe(false);
     expect(isEditorMode(undefined)).toBe(false);
     expect(isEditorMode(1)).toBe(false);
@@ -79,7 +79,7 @@ describe('hasBoardLook', () => {
 describe('the editor mode catalogue', () => {
   it('lists every mode once, in order, with the words the interface shows', () => {
     expect(EDITOR_MODE_CATALOGUE.map((m) => m.id)).toEqual(EDITOR_MODES);
-    expect(EDITOR_MODES.map(editorModeLabel)).toEqual(['Diagram', 'Draw', 'Infographic']);
+    expect(EDITOR_MODES.map(editorModeLabel)).toEqual(['Diagram', 'Draw', 'Illustrate']);
     for (const m of EDITOR_MODE_CATALOGUE) expect(m.description.length).toBeGreaterThan(0);
   });
 });
@@ -110,13 +110,13 @@ describe('setTabOpensIn', () => {
 describe('nextEditorMode', () => {
   it('moves forward through the catalogue, wrapping at the end', () => {
     expect(nextEditorMode('diagram')).toBe('draw');
-    expect(nextEditorMode('draw')).toBe('infographic');
-    expect(nextEditorMode('infographic')).toBe('diagram');
+    expect(nextEditorMode('draw')).toBe('illustrate');
+    expect(nextEditorMode('illustrate')).toBe('diagram');
   });
 
   it('moves backward with a negative step, wrapping at the start', () => {
-    expect(nextEditorMode('diagram', -1)).toBe('infographic');
-    expect(nextEditorMode('infographic', -1)).toBe('draw');
+    expect(nextEditorMode('diagram', -1)).toBe('illustrate');
+    expect(nextEditorMode('illustrate', -1)).toBe('draw');
     expect(nextEditorMode('draw', -1)).toBe('diagram');
   });
 
@@ -128,9 +128,9 @@ describe('nextEditorMode', () => {
   });
 });
 
-// Infographic mode's page (docs/specs/007-editor/editor-modes.md "The pages").
+// Illustrate mode's page (docs/specs/007-editor/editor-modes.md "The pages").
 describe('hasPageLook', () => {
-  it('draws the page in Infographic mode only', () => {
-    expect(EDITOR_MODES.filter(hasPageLook)).toEqual(['infographic']);
+  it('draws the page in Illustrate mode only', () => {
+    expect(EDITOR_MODES.filter(hasPageLook)).toEqual(['illustrate']);
   });
 });

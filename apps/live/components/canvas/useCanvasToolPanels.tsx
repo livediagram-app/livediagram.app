@@ -30,7 +30,7 @@ export function useCanvasToolPanels({
   slidesPopover,
 }: {
   props: CanvasChromeProps;
-  // The Slide Deck as a popover over its cluster button (Infographic mode), while open.
+  // The Slide Deck as a popover over its cluster button (Illustrate mode), while open.
   slidesPopover?: { anchor: DockAnchor | undefined; onClose: () => void } | null;
   chromeHidden: boolean;
   // undefined once corner docking owns stacking; otherwise the measured
@@ -208,16 +208,16 @@ export function useCanvasToolPanels({
         tabs={tabSummaries}
         activeTabId={activeTabId ?? ''}
         isReadOnly={readOnly}
-        pages={props.infographicPages?.pages.map((p) => ({
+        pages={props.illustratePages?.pages.map((p) => ({
           id: p.id,
-          label: pageLabel(p, p.index, Math.max(2, props.infographicPages!.pages.length)),
+          label: pageLabel(p, p.index, Math.max(2, props.illustratePages!.pages.length)),
         }))}
         position={slideDeckWiring.position}
         stackBelowY={stackBelowY}
         onMoveTo={(x, y) => onMoveSlideDeckPanel?.(x, y)}
         onReset={slideDeckWiring.onReset}
         dock={slidesPopover ? undefined : slideDeckWiring.dock}
-        // Over the Slides cluster button (Infographic mode): a popover, closed by an outside press.
+        // Over the Slides cluster button (Illustrate mode): a popover, closed by an outside press.
         asPopover={!!slidesPopover}
         popoverOpen={!!slidesPopover}
         popoverAnchor={slidesPopover?.anchor}

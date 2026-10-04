@@ -88,7 +88,7 @@ test.describe('editor modes', () => {
     expectNoPageErrors(pageErrors);
   });
 
-  // Infographic is on by default, so there are three modes: Shift+D moves to the next, and wraps
+  // Illustrate is on by default, so there are three modes: Shift+D moves to the next, and wraps
   // (docs/specs/007-editor/editor-modes.md "The mode switch").
   test('Shift+D moves to the next mode and wraps, and the choice survives a reload', async ({
     page,
@@ -105,7 +105,7 @@ test.describe('editor modes', () => {
     await expect(chip(page)).toHaveAccessibleName('Editor mode: Draw');
 
     await page.keyboard.press('Shift+D');
-    await expect(chip(page)).toHaveAccessibleName('Editor mode: Infographic');
+    await expect(chip(page)).toHaveAccessibleName('Editor mode: Illustrate');
     await page.keyboard.press('Shift+D');
     await expect(chip(page)).toHaveAccessibleName('Editor mode: Diagram');
     expectNoPageErrors(pageErrors);

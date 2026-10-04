@@ -11,6 +11,8 @@ import {
   useEffectEvent,
 } from 'react';
 import {
+  illustratePagesOf,
+  layOutIllustratePages,
   isEventStormingTab,
   onlyDraftNotesChanged,
   stampTabKind,
@@ -20,7 +22,7 @@ import {
   stampNewElementLayers,
   voteHidesCursors,
   elementActions,
-  infographicPageSnapBoxes,
+  illustratePageSnapBoxes,
   type BoxedElement,
   type CommentMention,
   type Element,
@@ -46,10 +48,12 @@ import { useSwatchOverrides } from '@/hooks/canvas/useSwatchOverrides';
 import { getTheme } from '@/lib/themes';
 import { DEFAULT_SCHEME_ID } from '@livediagram/document';
 import { useEditorMode, usePinTabOpening } from '@/hooks/editor/useEditorMode';
-import { useInfographicPage } from '@/hooks/editor/useInfographicPage';
+import { useArticles } from '@/hooks/editor/useArticles';
+import { useIllustratePages } from '@/hooks/editor/useIllustratePages';
 import { editorModeShortcut } from '@/hooks/editor/editor-mode-shortcut';
 import { announce } from '@/lib/announcer';
-import { useTabOpensIn } from '@/hooks/editor/useTabOpensIn';
+import { useSwitchSetsOpensIn, useTabOpensIn } from '@/hooks/editor/useTabOpensIn';
+import { useLeaveIllustrate } from '@/hooks/editor/useLeaveIllustrate';
 import { usePortalSetters } from '@/hooks/canvas/usePortalSetters';
 import { useBehaviourElements } from '@/hooks/canvas/useBehaviourElements';
 import { useCollabElements } from '@/hooks/canvas/useCollabElements';
@@ -163,6 +167,7 @@ import { useEditorPersistence } from './editor-persistence';
 import { useEditorRealtime } from './editor-realtime';
 import { useAssignRef, useLatest } from '@/hooks/ui/useLatest';
 import { useDragPreviewBroadcast } from '@/hooks/collab/useDragPreviewBroadcast';
+import { useArticleCaretBroadcast } from '@/hooks/collab/useArticleCaretBroadcast';
 
 export function useEditorState(opts: { embed?: boolean } = {}) {
   // Read-only embed view (docs/specs/013-workspace/embeds.md). The flag forces view behaviour
@@ -198,7 +203,11 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     redo: redoHistory,
   } = useDocumentHistory(initialTabs);
 
+  // Counts this person's own edits (never a remote op, an undo or a tick): what lets the documents
+  // take in what was just added to a page (useArticleIntake) without taking a peer's.
+  const localEditSeqRef = useRef(0);
   const commitTabs = (mapTabs: (ts: Tab[]) => Tab[]) => {
+    localEditSeqRef.current += 1;
     // Layer stamping (docs/specs/006-document/layers.md): elements APPEARING in this commit without
     // a valid layerId land on the active layer. One choke point, so no
     // individual creation path (draw, paste, AI, template, Mermaid
@@ -1047,7 +1056,15 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   const activeTab = tabs.find((t) => t.id === activeId) ?? tabs[0]!;
   // The editor mode this person works on the tab in (docs/specs/007-editor/editor-modes.md): every
   // tool and rule gate keys on it, never on what the tab is.
-  const editorMode = useEditorMode(activeTab, { canEdit });
+  const rawEditorMode = useEditorMode(activeTab, { canEdit });
+  // An editor's switch also moves the tab's Opens in, so the two never disagree.
+  const switchedMode = useSwitchSetsOpensIn(rawEditorMode, { tab: activeTab, canEdit, tickTabs });
+  // Leaving Illustrate on a tab with articles asks first (turn them into Page elements, or keep).
+  const { editorMode, leave: leaveIllustrate } = useLeaveIllustrate(switchedMode, {
+    tab: activeTab,
+    canEdit,
+    commitTabs,
+  });
   const drawMode = editorMode.mode === 'draw';
   // Comment authors' pictures for the open tab (docs/specs/014-identity/profile-picture.md §5).
   useCommentPicturesLoader(documentId, activeTab?.id, activeTab?.elements, sessionShareCode);
@@ -1086,6 +1103,13 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     roomRef,
     live: hydrated && !!documentId && (documentShareable || !!documentTeamId),
     activeId,
+  });
+  // Where we are writing in an article, live for collaborators (docs/specs/007-editor/article-pages.md).
+  useArticleCaretBroadcast({
+    roomRef,
+    live: hydrated && !!documentId && (documentShareable || !!documentTeamId),
+    activeId,
+    hidden: voteCursorsHidden,
   });
   // Viewport state (pan offset, zoom, the canvas wrapper ref the
   // measurements read through, and a parallel zoomRef the drag hook
@@ -1565,10 +1589,12 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     canEdit: !isReadOnly,
     commitTabs,
     activeId,
-    switchMode: editorMode.setMode,
+    switchMode: rawEditorMode.setMode,
   });
-  // Infographic mode's pages: their edits, and the view centred on them.
-  const infographicPages = useInfographicPage({
+  // Illustrate mode's pages: their edits, and the view centred on them.
+  // Set once the documents' hook exists (below): a new document's title takes the caret.
+  const articleFocusRef = useRef<((flow: string) => void) | null>(null);
+  const illustratePages = useIllustratePages({
     activeTab,
     mode: editorMode.mode,
     canEdit: !isReadOnly,
@@ -1582,6 +1608,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
       setMultiSelectedIds(new Set());
     },
     toastInfo: toast.info,
+    onArticleCreated: (flow) => articleFocusRef.current?.(flow),
   });
 
   // A locked tab refuses every element mutation. Commit /
@@ -1779,6 +1806,47 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     redoHistory,
     set: { setSelectedId, setEditingId, setFormatSourceId },
   });
+  // The writing of the active tab's article pages (docs/specs/007-editor/article-pages.md): in
+  // Illustrate mode, and while a page slide presents in any mode (read only, then: nothing is
+  // edited while presenting).
+  const presentingPage = presentingStep?.slide.pageId ?? null;
+  const presentPages = useMemo(
+    () =>
+      !illustratePages && presentingPage
+        ? layOutIllustratePages(illustratePagesOf(activeTab))
+        : null,
+    [illustratePages, presentingPage, activeTab],
+  );
+  const articles = useArticles({
+    activeTab,
+    on: illustratePages !== null || presentingPage !== null,
+    pages: illustratePages?.pages ?? presentPages,
+    localEditSeq: localEditSeqRef,
+    placeAt: (intent, x, y) => placeIntentAtRef.current?.(intent, x, y),
+    canEdit: !isReadOnly,
+    commitTabs,
+    tickTabs,
+    undo,
+    redo,
+    clearSelection: () => {
+      setSelectedId(null);
+      setMultiSelectedIds(new Set());
+    },
+    openNote: (id, kind) => {
+      if (kind === 'comment') return openComments(id);
+      // An action already assigned shows in its popover; a new one opens the dialog to assign it.
+      const el = activeTab.elements.find((e) => e.id === id);
+      if (el && isBoxed(el) && elementActions(el).length > 0) openActionPopover(id);
+      else openAssignActionDialog(id);
+    },
+  });
+  useAssignRef(articleFocusRef, (flow: string) => articles?.requestFocus(flow, 'start'));
+  // Set once element creation exists (below): an Insert at the caret places through it.
+  const placeIntentAtRef = useRef<
+    ((intent: Parameters<typeof placeIntentAt>[0], x: number, y: number) => void) | null
+  >(null);
+  const illustrateView =
+    illustratePages && articles ? { ...illustratePages, articles } : illustratePages;
   // --- Placement helpers ---------------------------------------------------
 
   // When a boxed element is selected, new elements inherit its size so a
@@ -2268,6 +2336,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     addProcess,
     addAvatar,
     dropPaletteItem,
+    placeIntentAt,
     addText,
     addSticky,
     addArrow,
@@ -2289,6 +2358,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     beginDraw,
     styleNewElement: styleMemory.styleNewElement,
   });
+  useAssignRef(placeIntentAtRef, placeIntentAt);
 
   // Inline-icon attach/detach mutators (a shape's single inline icon).
   // Cohesive slice extracted to useInlineIconMutators: editsBlocked, commit and the elements.
@@ -2788,7 +2858,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     autoRebindArrowsRef,
     styleNewElement: styleMemory.styleNewElement,
     alignmentGuidesRef,
-    pageSnapBoxes: infographicPages ? infographicPageSnapBoxes(infographicPages.pages) : null,
+    pageSnapBoxes: illustratePages ? illustratePageSnapBoxes(illustratePages.pages) : null,
     isPinchingRef,
     // Insert between (docs/specs/021-event-storming/event-storming.md): dragging a note already on the board into a
     // gap, while Alt is held. Same gate the palette drag uses, so both entry
@@ -2964,7 +3034,10 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   return {
     // The person's editor mode on the active tab, for the mode switch and the canvas.
     editorMode,
-    infographicPages,
+    leaveIllustrate,
+    illustratePages: illustrateView,
+    // A page slide presenting outside Illustrate draws its article's writing from these.
+    presentArticles: articles,
     // The tab menu's Opens in choice for a tab, absent where it is not offered.
     opensInFor: tabOpensIn.choiceFor,
     whiteboardDock,
@@ -3227,7 +3300,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     // instead of the tab's elements while it is non-null, which is what makes
     // a slide a slide.
     presentingElements,
-    // The page a page slide is presenting (docs/specs/007-editor/infographic-pages.md "Slides"):
+    // The page a page slide is presenting (docs/specs/007-editor/illustrate-pages.md "Slides"):
     // the canvas then shows that sheet alone, as it shows the slide's elements alone.
     presentingPageId: presentingStep?.slide.pageId ?? null,
     livePresence,
