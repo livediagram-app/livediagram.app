@@ -135,6 +135,9 @@ export function useRoomConnection(opts: {
   // An agent's changeset (docs/specs/024-agents/agent-changesets.md "In the editor"), relayed by the
   // worker; useChangesetFeed decides what to do with it.
   receiveChangeset: (op: ChangesetRoomOp) => void;
+  // The room has greeted this connection (its first presence list): what was relayed before it
+  // joined is caught up through the api (useChangesetFeed's checkSinceLoad).
+  onRoomJoined: () => void;
 }) {
   const {
     hydrated,
@@ -173,6 +176,7 @@ export function useRoomConnection(opts: {
     receiveDocumentTrashed,
     resyncFromServer,
     receiveChangeset,
+    onRoomJoined,
   } = opts;
 
   // Who we connect as, read when the socket opens: the id is stable for the session, and a name or colour
@@ -206,11 +210,18 @@ export function useRoomConnection(opts: {
   // The facilitator token is read on demand by the room, always as it is now.
   const roomReadFacilitatorToken = useEffectEvent(() => readFacilitatorToken());
 
+  // Whether this connection has had its first presence list: reset by every (re)open below.
+  const joinedRef = useRef(false);
+  const roomJoined = useEffectEvent(() => onRoomJoined());
   // The room's handlers, as effect events: the socket opens once per document (the effect below), and each
   // message still runs against the current props, which is what a handler must see.
   const roomPresence = useEffectEvent(
     (participants: Parameters<NonNullable<RoomHandlers['onPresence']>>[0]) => {
       const now = Date.now();
+      if (!joinedRef.current) {
+        joinedRef.current = true;
+        roomJoined();
+      }
       // Each peer's server-verified role, read when their drag preview arrives: only an editor's is
       // drawn (docs/specs/008-canvas/drag-preview.md).
       roleByPresenceRef.current = new Map(participants.map((p) => [p.id, p.role] as const));
@@ -497,6 +508,7 @@ export function useRoomConnection(opts: {
       prunePeerDragPreviews(new Set());
       return;
     }
+    joinedRef.current = false;
     // Batched cursor / laser / avatar presence, committed one Map update
     // per animation frame instead of one per packet — see the coalescer.
     // Created per effect run, so a reconnect starts with empty buffers.

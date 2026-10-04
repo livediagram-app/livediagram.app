@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState, type MutableRefObject } from 'react';
 import { CHANGESET_REVEAL_MS, type ChangesetRoomOp } from '@livediagram/api-schema';
 import type { Tab } from '@livediagram/document';
-import { apiRevertChangeset } from '@/lib/api-client';
+import { apiListChangesets, apiRevertChangeset } from '@/lib/api-client';
 import { debugLog } from '@/lib/debug-log';
 import { track } from '@/lib/telemetry';
 import type { useToast } from '@/hooks/ui/useToast';
@@ -128,7 +128,33 @@ export function useChangesetFeed(opts: {
     ],
   );
 
-  return { receiveChangeset, reveals };
+  // On joining the room: a changeset that landed between the tab load and the join was relayed
+  // before this editor was there to hear it (a first join replays no log). The newest changesets
+  // name any loaded tab this editor is behind on; those are re-read in place. Also covers a relay
+  // that never reached the room. Content only: what it brings is outlined and toasted by nothing.
+  const checkSinceLoad = useCallback(async () => {
+    const { documentId: id, selfId: self } = latest.current;
+    if (!id) return;
+    try {
+      const newest = new Map<string, number>();
+      for (const c of await apiListChangesets(self, id, sessionShareCodeRef.current)) {
+        newest.set(c.tabId, Math.max(newest.get(c.tabId) ?? 0, c.rev));
+      }
+      const behind = [...newest]
+        .filter(
+          ([tabId, rev]) =>
+            loadedTabIdsRef.current.has(tabId) && rev > (seenRef.current.get(tabId) ?? 0),
+        )
+        .map(([tabId]) => tabId);
+      if (behind.length === 0) return;
+      debugLog('[changeset] join-refetch', { tabs: behind.length });
+      await refetchTabs({ tabIds: behind });
+    } catch (err) {
+      console.warn('[changeset] join-check-failed', { error: String(err) });
+    }
+  }, [sessionShareCodeRef, loadedTabIdsRef, seenRef, refetchTabs]);
+
+  return { receiveChangeset, checkSinceLoad, reveals };
 }
 
 type ToastRefs = {

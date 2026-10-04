@@ -1009,6 +1009,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     receiveDocumentTrashed: () => documentTrashed.setDocumentTrashed(true),
     resyncFromServer,
     receiveChangeset: changesetFeed.receiveChangeset,
+    onRoomJoined: () => void changesetFeed.checkSinceLoad(),
   });
 
   // Broadcast local selection + active-tab focus to peers (presence

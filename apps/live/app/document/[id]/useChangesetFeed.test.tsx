@@ -5,8 +5,10 @@ import type { ChangesetRoomOp } from '@livediagram/api-schema';
 import type { Tab } from '@livediagram/document';
 
 const apiRevertChangeset = vi.fn();
+const apiListChangesets = vi.fn();
 vi.mock('@/lib/api-client', () => ({
   apiRevertChangeset: (...a: unknown[]) => apiRevertChangeset(...a),
+  apiListChangesets: (...a: unknown[]) => apiListChangesets(...a),
 }));
 const track = vi.fn();
 vi.mock('@/lib/telemetry', () => ({ track: (...a: unknown[]) => track(...a) }));
@@ -86,6 +88,7 @@ function setup(seen = new Map([['t1', 1]])) {
 
 beforeEach(() => {
   apiRevertChangeset.mockReset();
+  apiListChangesets.mockReset();
   track.mockReset();
 });
 
@@ -172,6 +175,33 @@ describe('useChangesetFeed', () => {
     expect(toast.error).toHaveBeenCalledWith("Could not undo Webber's change");
     expect(warn).toHaveBeenCalledWith('[changeset] undo-failed', { status: 409 });
     expect(lastToast().actions.every((a) => !a.disabled)).toBe(true);
+    warn.mockRestore();
+  });
+});
+
+// A changeset that landed between the tab load and the room join was never relayed to this editor:
+// on joining, it reads the newest changesets and re-reads every loaded tab it is behind on.
+describe('useChangesetFeed on joining the room', () => {
+  it('re-reads a loaded tab with a changeset newer than its load, and leaves the rest', async () => {
+    apiListChangesets.mockResolvedValue([
+      { id: 'cs_0000000003', tabId: 't1', rev: 3 },
+      { id: 'cs_0000000002', tabId: 'unloaded', rev: 9 },
+    ]);
+    const { result, deps } = setup(new Map([['t1', 1]]));
+    await act(async () => result.current.checkSinceLoad());
+    expect(apiListChangesets).toHaveBeenCalledWith('me', 'd1', null);
+    expect(deps.refetchTabs).toHaveBeenCalledWith({ tabIds: ['t1'] });
+  });
+
+  it('re-reads nothing when every loaded tab is up to date, and survives a failed read', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    apiListChangesets.mockResolvedValue([{ id: 'cs_0000000001', tabId: 't1', rev: 1 }]);
+    const { result, deps } = setup(new Map([['t1', 1]]));
+    await act(async () => result.current.checkSinceLoad());
+    expect(deps.refetchTabs).not.toHaveBeenCalled();
+    apiListChangesets.mockRejectedValue(new Error('offline'));
+    await act(async () => result.current.checkSinceLoad());
+    expect(warn).toHaveBeenCalledWith('[changeset] join-check-failed', expect.anything());
     warn.mockRestore();
   });
 });
