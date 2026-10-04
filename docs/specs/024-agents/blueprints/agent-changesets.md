@@ -561,6 +561,10 @@ rows wait with their document and go with its purge (cascade). A tab unlinked fr
   `CHANGESET_MAX_OPERATIONS`, `MAX_BODY_BYTES` and `CHANGESET_PART_MAX_BYTES` bound the work; `MAX_SELECTION_IDS`
   bounds a hostile `select`.
 - A forged `X-Changeset-Seen` can only make its own save drop or keep changesets; it reaches no other tab.
+- A `replace` compiles graph and Mermaid text from any token holder inside the worker, so the label cap and the
+  Mermaid parser read it in linear time: no pattern that backtracks over a run of one character
+  (`packages/document/src/mermaid-scan.ts`; `graph-input-redos.test.ts` times growth and checks each scan
+  against the pattern it replaced).
 
 ## Performance and limits
 

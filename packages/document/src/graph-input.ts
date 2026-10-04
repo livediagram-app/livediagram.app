@@ -50,20 +50,57 @@ const CLAUSE_START =
 // the heading is the noun phrase before the first clause word, if there is one
 // of at least two words; otherwise the text is cut at a word boundary and
 // marked with an ellipsis. Returns the text unchanged when it already fits.
+//
+// The text is untrusted (any API token's changeset reaches it), so every pass is a linear scan:
+// the regular expressions these replace backtracked quadratically over a long run of spaces,
+// brackets or punctuation.
 export function capLabel(text: string, max = GRAPH_LABEL_MAX): { label: string; cut: boolean } {
   const whole = text.replace(/\s+/g, ' ').trim();
   if (whole.length <= max) return { label: whole, cut: false };
-  const clean = whole.replace(/\s*[([][^)\]]*[)\]]/g, '').trim() || whole;
+  const clean = withoutAsides(whole).trim() || whole;
   if (clean.length <= max) return { label: clean, cut: true };
   const clause = CLAUSE_START.exec(clean);
   if (clause) {
-    const head = clean.slice(0, clause.index).replace(/[\s,;:.-]+$/, '');
+    const head = trimTrailingPunctuation(clean.slice(0, clause.index));
     if (head.length <= max && head.includes(' ')) return { label: head, cut: true };
   }
   const room = clean.slice(0, max - 1);
   const space = room.lastIndexOf(' ');
   const head = space > max * 0.5 ? room.slice(0, space) : room;
-  return { label: `${head.replace(/[\s,;:.-]+$/, '')}…`, cut: true };
+  return { label: `${trimTrailingPunctuation(head)}…`, cut: true };
+}
+
+const OPENERS = new Set(['(', '[']);
+const CLOSERS = new Set([')', ']']);
+const TRAILING = new Set([',', ';', ':', '.', '-']);
+const isSpace = (ch: string) => /\s/.test(ch);
+
+// Every bracketed aside with the whitespace before it: an opener up to the first closer after it,
+// of either kind, as `\s*[([][^)\]]*[)\]]` matched. An opener with no closer after it stays.
+function withoutAsides(text: string): string {
+  const nextCloser = new Array<number>(text.length + 1).fill(-1);
+  for (let i = text.length - 1; i >= 0; i -= 1) {
+    nextCloser[i] = CLOSERS.has(text[i + 1] ?? '') ? i + 1 : nextCloser[i + 1]!;
+  }
+  // Characters kept so far; popping the whitespace before an aside costs only what it removes.
+  const out: string[] = [];
+  for (let i = 0; i < text.length; i += 1) {
+    const close = OPENERS.has(text[i]!) ? nextCloser[i]! : -1;
+    if (close === -1) {
+      out.push(text[i]!);
+      continue;
+    }
+    while (out.length > 0 && isSpace(out[out.length - 1]!)) out.pop();
+    i = close;
+  }
+  return out.join('');
+}
+
+// The text without trailing whitespace and `, ; : . -`, as `[\s,;:.-]+$` removed them.
+function trimTrailingPunctuation(text: string): string {
+  let end = text.length;
+  while (end > 0 && (TRAILING.has(text[end - 1]!) || isSpace(text[end - 1]!))) end -= 1;
+  return text.slice(0, end);
 }
 
 // The graph with every label within the cap: an over-long node label keeps its
