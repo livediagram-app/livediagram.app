@@ -71,6 +71,17 @@ describe('set', () => {
     expect(elementOps).toEqual([]);
   });
 
+  it('prints nothing for an element changed and changed back in one changeset (E1, I2)', () => {
+    const start = checkoutFlow();
+    const { results, elementOps, tab } = applied(
+      run([set('n3', { label: 'Sign in' }), set('n3', { label: 'Login' })], start),
+    );
+    expect(results).toEqual([]);
+    expect(elementOps).toEqual([]);
+    // The very element it began as, so nothing downstream sees a change.
+    expect(tab.elements.find((e) => e.id === 'n3')).toBe(start.elements.find((e) => e.id === 'n3'));
+  });
+
   it('writes named geometry as stored coordinates', () => {
     expect(lines(run([set('t1', { x: 300, width: 200 })]))).toEqual([
       '~ t1  @150,620→@300,620 · width 160→200',
