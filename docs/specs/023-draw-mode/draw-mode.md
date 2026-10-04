@@ -35,14 +35,16 @@ pen widths, dock spacing) are named constants, tuned in place.
 
 ## Creating one
 
-- **New Document wizard:** a **Whiteboard** template (a `TemplateKind` with a
+- **New Document wizard:** a **Blank Whiteboard** template (kind id `whiteboard`, a
   blank builder and a preview tile, `packages/templates`), producing a document
-  with one tab that opens in Draw mode. It is a card on the **Popular** shelf, third (after Blank Canvas and
-  Mind map), described **"Free drawing without distractions"**. It is not a category: a
+  with one tab that opens in Draw mode. It is a card on the **Popular** shelf, second (after
+  Blank Diagram), described **"Free drawing without distractions"**. It is not a category: a
   different activity from the diagram templates, so it is never a category tile or on a
-  category shelf.
+  category shelf. Draw has templates of its own too (Sketchnote, Rich Picture, Comic Strip,
+  Doodle Warm-Up), and the template step's **Draw** filter shows just them
+  ([Templates by mode](../007-editor/templates-by-mode.md)).
 - **New tab:** the tab bar's new-tab action opens Quick Start as on any
-  document, and Quick Start offers **Whiteboard** on its Popular shelf, so a whiteboard can be added to any document in the same two
+  document, and Quick Start offers **Blank Whiteboard** on its Popular shelf, so a whiteboard can be added to any document in the same two
   clicks as an ordinary tab.
 - **No theme step.** Like every template now, picking the Whiteboard
   template goes straight to the settings step in the New Document wizard and
