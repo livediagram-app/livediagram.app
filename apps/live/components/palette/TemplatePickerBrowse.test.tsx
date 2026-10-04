@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { fireEvent, render, screen } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import {
@@ -11,7 +11,7 @@ import {
 import { TemplatePickerBrowse, type ShelfCategory } from './TemplatePickerBrowse';
 import type { TemplateModeFilter } from './useTemplateModeFilter';
 
-// The whiteboard tile and the `?browse=` collections on the template shelf
+// The whiteboard tile on the template shelf
 // (docs/specs/023-draw-mode/draw-mode.md "Creating one", docs/specs/007-editor/new-document-route.md).
 
 globalThis.ResizeObserver ??= class {
@@ -87,34 +87,5 @@ describe('the blanks', () => {
     expect(stage().textContent).toContain('Design');
     expect(screen.queryByText('Blank Whiteboard')).toBeNull();
     expect(screen.queryByText('Blank Illustration')).toBeNull();
-  });
-});
-
-describe('a ?browse= collection', () => {
-  it('opens drilled in: every card of the collection at once, under a back bar, nothing else', () => {
-    render(<Shelf initial="brainstorm" />);
-    expect(screen.getByRole('button', { name: /All templates/ })).toBeTruthy();
-    expect(screen.getByText('Brainstorm')).toBeTruthy();
-    for (const title of [
-      'Mind map',
-      'Tree mind map',
-      'Bubble map',
-      'Affinity map',
-      'Fishbone',
-      'Event storming',
-    ]) {
-      expect(screen.getByText(title)).toBeTruthy();
-    }
-    expect(screen.queryByText('Explore More Categories')).toBeNull();
-    expect(screen.queryByText('Kanban')).toBeNull();
-  });
-
-  it('goes back to the shelf with Popular open', () => {
-    render(<Shelf initial="brainstorm" />);
-    fireEvent.click(screen.getByRole('button', { name: /All templates/ }));
-    expect(stage().textContent).toContain('Popular');
-    // The collection's drilled-in view is gone (its back bar with it); the Brainstorm tile left is
-    // the category's, which shares the collection's name.
-    expect(screen.queryByRole('button', { name: /All templates/ })).toBeNull();
   });
 });

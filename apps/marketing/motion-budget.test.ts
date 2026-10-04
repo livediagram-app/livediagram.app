@@ -8,6 +8,8 @@ import { checkMotionBudget, formatViolations } from '@livediagram/tailwind-confi
 // listed here.
 const CONTENT_STYLESHEETS = [
   'app/hero-animations.css',
+  'app/hero-mode-animations.css',
+  'app/promises.css',
   'app/feature-art-animations.css',
   'app/page-motion.css',
   'components/ShowcaseStagger.module.css',

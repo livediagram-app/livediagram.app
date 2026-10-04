@@ -1,0 +1,529 @@
+/* The hero's mode windows (components/hero-diagram-board.tsx, hero-draw-board.tsx,
+   hero-mindmap-board.tsx, hero-illustrate-page.tsx, hero-article-page.tsx;
+   docs/specs/019-marketing/marketing-site.md "Hero"). Every mark plays once at its own delay (--d): the
+   window's group is remounted each time it reaches centre, and its veil (hero-fade) covers the
+   last second, so nothing has to clear on a loop. Off-centre (.hero-static) and under reduced
+   motion every mark shows settled. */
+
+/* A piece lands: a small overshoot from 70%. */
+.hm-pop {
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: hm-pop 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.3) var(--d, 0s) both;
+}
+@keyframes hm-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.7);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* A stroke draws on along its length (--len) over --dur, as a hand would draw it; --to stops it
+   short (the donut fills only its share). */
+.hm-draw {
+  stroke-dasharray: var(--len) var(--len);
+  animation: hm-draw var(--dur, 0.6s) ease-in-out var(--d, 0s) both;
+}
+@keyframes hm-draw {
+  0% {
+    opacity: 0;
+    stroke-dashoffset: var(--len);
+  }
+  1% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    stroke-dashoffset: var(--to, 0);
+  }
+}
+/* The highlighter's swipe: translucent, as the Highlighter lays it. */
+.hm-highlight {
+  stroke-opacity: 0.55;
+}
+
+/* A band wipes in from the left. */
+.hm-wipe {
+  transform-box: fill-box;
+  transform-origin: left center;
+  animation: hm-wipe 0.6s cubic-bezier(0.65, 0, 0.35, 1) var(--d, 0s) both;
+}
+@keyframes hm-wipe {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: none;
+  }
+}
+
+/* A bar grows up from its axis. */
+.hm-grow {
+  transform-box: fill-box;
+  transform-origin: bottom;
+  animation: hm-grow 0.55s cubic-bezier(0.2, 0.9, 0.3, 1.15) var(--d, 0s) both;
+}
+@keyframes hm-grow {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: none;
+  }
+}
+
+/* The teammate's pen on the whiteboard: it rides the ring as the ring is drawn, glides to the
+   arrow's start and rides the arrow, timed to the two strokes (3.4s to 5.4s), then lifts away.
+   The path (the ring, a glide, then the arrow) and the stops (--p1, --p2, each leg's share of its
+   length) come from the layout (components/hero-draw-board.tsx). */
+.hm-pen {
+  transform-box: view-box;
+  transform-origin: 0 0;
+  offset-rotate: 0deg;
+  opacity: 0;
+  animation:
+    hm-pen 2s linear 3.4s both,
+    hm-lift 0.4s ease-out 5.8s forwards;
+}
+@keyframes hm-pen {
+  0% {
+    offset-distance: 0%;
+    opacity: 1;
+  }
+  60% {
+    offset-distance: var(--p1);
+  }
+  70% {
+    offset-distance: var(--p2);
+  }
+  100% {
+    offset-distance: 100%;
+    opacity: 1;
+  }
+}
+@keyframes hm-lift {
+  to {
+    opacity: 0;
+  }
+}
+
+/* The teammate's cursor on the page: it comes in from the right, settles on the chart, and stays. */
+.hm-cursor {
+  opacity: 0;
+  animation: hm-cursor 0.8s cubic-bezier(0.3, 0, 0.2, 1) var(--d, 0s) both;
+}
+@keyframes hm-cursor {
+  from {
+    opacity: 0;
+    transform: translate(var(--sx), var(--sy));
+  }
+  20% {
+    opacity: 1;
+  }
+  to {
+    opacity: 1;
+    transform: translate(var(--cx), var(--cy));
+  }
+}
+
+.hero-static .hm-pop,
+.hero-static .hm-draw,
+.hero-static .hm-wipe,
+.hero-static .hm-grow {
+  animation: none;
+  opacity: 1;
+  transform: none;
+  stroke-dashoffset: var(--to, 0);
+}
+.hero-static .hm-pen,
+.hero-static .hm-cursor {
+  display: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hm-pop,
+  .hm-draw,
+  .hm-wipe,
+  .hm-grow {
+    animation: none;
+    opacity: 1;
+    transform: none;
+    stroke-dashoffset: var(--to, 0);
+  }
+  .hm-pen {
+    display: none;
+  }
+  .hm-cursor {
+    animation: none;
+    opacity: 1;
+    transform: translate(var(--cx), var(--cy));
+  }
+}
+
+/* --- The Diagram window (components/hero-diagram-board.tsx) --- */
+
+/* A piece fades in. */
+.hm-fade {
+  opacity: 0;
+  animation: hm-fade 0.5s ease-out var(--d, 0s) both;
+}
+@keyframes hm-fade {
+  to {
+    opacity: 1;
+  }
+}
+
+/* A label typed out, one letter a step (--steps), as its shape lands. */
+.hm-type {
+  /* jump-none: the last step is the whole word, reached inside the animation, so a finished label
+     never rests a letter short (steps(n, end) can hold its final step a hair before 100%). */
+  animation: hm-type 0.5s steps(var(--steps, 10), jump-none) var(--d, 0s) both;
+}
+@keyframes hm-type {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+/* The Yes step lands 8px low and is dragged onto the guide. */
+.hm-snap {
+  animation: hm-snap 0.4s cubic-bezier(0.3, 0, 0.2, 1) 6s both;
+}
+@keyframes hm-snap {
+  from {
+    transform: translateY(8px);
+  }
+  to {
+    transform: none;
+  }
+}
+/* The pink alignment guide shows while it snaps. */
+.hm-guide {
+  opacity: 0;
+  animation: hm-guide 0.9s linear 5.95s both;
+}
+@keyframes hm-guide {
+  0% {
+    opacity: 0;
+  }
+  12%,
+  78% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+/* The selection and its colour row, gone once the colour is picked. */
+.hm-select {
+  opacity: 0;
+  animation: hm-select 2.2s linear var(--d, 0s) both;
+}
+@keyframes hm-select {
+  0% {
+    opacity: 0;
+  }
+  5%,
+  85% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+/* Picked green: the step takes the green the theme picker would give it. */
+.hm-recolour {
+  animation: hm-recolour 0.3s ease-out 7.8s both;
+}
+@keyframes hm-recolour {
+  from {
+    fill: var(--art-ink-fill);
+    stroke: var(--art-ink-stroke);
+  }
+  to {
+    fill: var(--art-pick-fill);
+    stroke: var(--art-pick-stroke);
+  }
+}
+
+/* The two cursors ride their paths, timed to the drops. The path and how far along it each stop
+   lies (--p1 ...) come from the layout (lib/hero-motion.ts cursorRide), so the phone's portrait
+   layout rides its own; the keyframes fix only when each stop is reached. */
+.hm-you,
+.hm-teammate {
+  transform-box: view-box;
+  transform-origin: 0 0;
+  offset-rotate: 0deg;
+  opacity: 0;
+}
+.hm-you {
+  animation: hm-you 7.4s linear 0.4s both;
+}
+@keyframes hm-you {
+  0% {
+    offset-distance: 0%;
+    opacity: 1;
+  }
+  8.11%,
+  12.16% {
+    offset-distance: var(--p1);
+  }
+  18.92%,
+  22.97% {
+    offset-distance: var(--p2);
+  }
+  29.73%,
+  54.05% {
+    offset-distance: var(--p3);
+  }
+  62.16%,
+  75.68% {
+    offset-distance: var(--p4);
+  }
+  81.08%,
+  91.89% {
+    offset-distance: var(--p5);
+  }
+  100% {
+    offset-distance: 100%;
+    opacity: 1;
+  }
+}
+.hm-teammate {
+  animation: hm-teammate 5.7s linear 3.8s both;
+}
+@keyframes hm-teammate {
+  0% {
+    offset-distance: 0%;
+    opacity: 1;
+  }
+  10.53%,
+  21.05% {
+    offset-distance: var(--p1);
+  }
+  28.07%,
+  71.93% {
+    offset-distance: var(--p2);
+  }
+  80.7%,
+  91.23% {
+    offset-distance: var(--p3);
+  }
+  100% {
+    offset-distance: 100%;
+    opacity: 1;
+  }
+}
+
+.hero-static .hm-fade,
+.hero-static .hm-type,
+.hero-static .hm-snap {
+  animation: none;
+  opacity: 1;
+  clip-path: none;
+  transform: none;
+}
+.hero-static .hm-recolour {
+  animation: none;
+  fill: var(--art-pick-fill);
+  stroke: var(--art-pick-stroke);
+}
+.hero-static .hm-guide,
+.hero-static .hm-select,
+.hero-static .hm-you,
+.hero-static .hm-teammate {
+  display: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hm-fade,
+  .hm-type,
+  .hm-snap {
+    animation: none;
+    opacity: 1;
+    clip-path: none;
+    transform: none;
+  }
+  .hm-recolour {
+    animation: none;
+    fill: var(--art-pick-fill);
+    stroke: var(--art-pick-stroke);
+  }
+  .hm-guide,
+  .hm-select,
+  .hm-you,
+  .hm-teammate {
+    display: none;
+  }
+}
+
+/* --- The Article window (components/hero-article-page.tsx) --- */
+
+/* Where you are writing: a caret that blinks once it arrives. */
+.hm-caret {
+  opacity: 0;
+  animation: hm-caret 1s steps(1, end) var(--d, 0s) infinite;
+}
+@keyframes hm-caret {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+.hero-static .hm-caret {
+  display: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hm-caret {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+/* --- The Town Hall window (components/hero-townhall-board.tsx) --- */
+
+/* A value gives way to the next (a vote count ticking over). */
+.hm-out {
+  animation: hm-out 0.25s ease-in var(--d, 0s) both;
+}
+@keyframes hm-out {
+  to {
+    opacity: 0;
+  }
+}
+/* A question slides to its new place in the list (--dy). */
+.hm-move {
+  animation: hm-move 0.6s cubic-bezier(0.3, 0, 0.2, 1) var(--d, 0s) both;
+}
+@keyframes hm-move {
+  from {
+    transform: none;
+  }
+  to {
+    transform: translateY(var(--dy, 0));
+  }
+}
+/* A reaction floats up from the room and fades. */
+.hm-float {
+  opacity: 0;
+  animation: hm-float 1.8s ease-out var(--d, 0s) both;
+}
+@keyframes hm-float {
+  0% {
+    opacity: 0;
+    transform: translateY(0) scale(0.7);
+  }
+  15% {
+    opacity: 1;
+    transform: translateY(-12px) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-90px) scale(1.05);
+  }
+}
+/* The LIVE dot breathes: an ambient loop, so the shorthand carries `infinite`. */
+.hm-live {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .hm-live {
+    animation: hm-live 1.6s ease-in-out infinite;
+  }
+}
+@keyframes hm-live {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+.hero-static .hm-out {
+  animation: none;
+  opacity: 0;
+}
+.hero-static .hm-move {
+  animation: none;
+  transform: translateY(var(--dy, 0));
+}
+.hero-static .hm-float {
+  display: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hm-out {
+    animation: none;
+    opacity: 0;
+  }
+  .hm-move {
+    animation: none;
+    transform: translateY(var(--dy, 0));
+  }
+  .hm-float {
+    display: none;
+  }
+  .hm-live {
+    animation: none;
+  }
+}
+
+/* --- Build yours (components/HeroIllustration.tsx) --- */
+
+/* The call to action lands in the middle of the canvas once the scene has played out (11s into the
+   22s cycle, so it holds for about ten seconds before the window fades), centred by the translate
+   and rising into place; until then it is not there to press. Its halo breathes while it is up.
+   Reduced motion shows it at once, still. */
+.hero-build {
+  translate: -50% -50%;
+  visibility: hidden;
+  opacity: 0;
+  animation: hero-build 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.2) 11s both;
+}
+@keyframes hero-build {
+  from {
+    visibility: visible;
+    opacity: 0;
+    transform: translateY(10px) scale(0.92);
+  }
+  to {
+    visibility: visible;
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .hero-build-halo {
+    animation: hero-build-halo 2.4s ease-in-out 11.5s infinite;
+  }
+}
+@keyframes hero-build-halo {
+  0%,
+  100% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.06);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-build {
+    animation: none;
+    visibility: visible;
+    opacity: 1;
+  }
+  .hero-build-halo {
+    animation: none;
+  }
+}

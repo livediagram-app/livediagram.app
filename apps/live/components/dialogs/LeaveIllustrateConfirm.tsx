@@ -9,9 +9,14 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { editorModeLabel, type EditorMode } from '@livediagram/document';
 import { lucideTriangleAlert } from '@livediagram/icons/lucide';
-import { Button, lucideGlyph, useClickOutside, useEscape } from '@livediagram/ui';
+import {
+  Button,
+  lucideGlyph,
+  useClickOutside,
+  useEscape,
+  EDITOR_MODE_ICONS,
+} from '@livediagram/ui';
 import { Portal } from '@/components/primitives/Portal';
-import { EDITOR_MODE_ICON } from '@/components/chrome/editor-mode/editor-mode-copy';
 import { VIEWPORT_EDGE_MARGIN as EDGE } from '@/lib/clamp-to-viewport';
 import type { LeaveIllustrate } from '@/hooks/editor/useLeaveIllustrate';
 
@@ -91,7 +96,7 @@ function SwitchCard({
   // A press on the switch itself is the switch's (it reopens its menu), not a cancel.
   useClickOutside(ref, onCancel, true, '[data-tour-id="editor-mode"]');
   const label = editorModeLabel(mode);
-  const ModeIcon = EDITOR_MODE_ICON[mode];
+  const ModeIcon = EDITOR_MODE_ICONS[mode];
   return (
     <Portal>
       <div

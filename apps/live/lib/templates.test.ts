@@ -4,11 +4,6 @@ import {
   BLANK_TEMPLATE_FOR_MODE,
   templateEditorMode,
   TEMPLATES,
-  TEMPLATE_COLLECTIONS,
-  isTemplateCollection,
-  templateBrowseHref,
-  templateShelfLabel,
-  templateShelfTemplates,
   TEMPLATE_CATEGORIES,
   TEMPLATE_CONTENT_LAYER_ID,
   TEMPLATE_SCAFFOLD_LAYER_ID,
@@ -980,58 +975,6 @@ describe('untitledNameForTemplate', () => {
   it('keeps "Untitled document" for blank or no template', () => {
     expect(untitledNameForTemplate('blank')).toBe('Untitled document');
     expect(untitledNameForTemplate(null)).toBe('Untitled document');
-  });
-});
-
-describe('TEMPLATE_COLLECTIONS', () => {
-  it('holds the brainstorming formats, mind maps first', () => {
-    // docs/specs/007-editor/new-document-route.md "?browse=<collection>".
-    const brainstorm = TEMPLATE_COLLECTIONS.find((c) => c.id === 'brainstorm')!;
-    expect(brainstorm.label).toBe('Brainstorm');
-    expect(brainstorm.kinds).toEqual([
-      'mindmap',
-      'mindmap-tree',
-      'mindmap-bubble',
-      'affinity-map',
-      'fishbone',
-      'event-storming',
-    ]);
-  });
-
-  it('names only listed templates', () => {
-    const listed = new Set(TEMPLATES.filter((t) => !t.hidden).map((t) => t.kind));
-    for (const c of TEMPLATE_COLLECTIONS) for (const k of c.kinds) expect(listed.has(k)).toBe(true);
-  });
-
-  it('never shares an id with a category, so one view id names either', () => {
-    const categories = new Set<string>(TEMPLATE_CATEGORIES.map((c) => c.id));
-    for (const c of TEMPLATE_COLLECTIONS) expect(categories.has(c.id)).toBe(false);
-  });
-
-  it('links a collection into the wizard', () => {
-    expect(templateBrowseHref('brainstorm')).toBe('/new?browse=brainstorm');
-    expect(isTemplateCollection('brainstorm')).toBe(true);
-    expect(isTemplateCollection('mindmaps')).toBe(false);
-  });
-});
-
-describe('templateShelfTemplates', () => {
-  const listed = TEMPLATES.filter((t) => !t.hidden);
-  it('lists a collection in its own order', () => {
-    expect(templateShelfTemplates('brainstorm', listed).map((t) => t.kind)).toEqual(
-      TEMPLATE_COLLECTIONS[0]!.kinds,
-    );
-  });
-
-  it('lists a category in the given order, without the quick-picks', () => {
-    const kinds = templateShelfTemplates('flowcharts', listed).map((t) => t.kind);
-    expect(kinds).toContain('flowchart');
-    expect(kinds).not.toContain('blank');
-  });
-
-  it('names a shelf', () => {
-    expect(templateShelfLabel('brainstorm')).toBe('Brainstorm');
-    expect(templateShelfLabel('planning')).toBe('Agile');
   });
 });
 

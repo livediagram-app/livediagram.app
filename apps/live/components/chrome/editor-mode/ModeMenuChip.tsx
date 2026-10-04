@@ -7,10 +7,10 @@ import {
   useMenu,
   useMenuButton,
   type MenuInitialFocus,
+  EDITOR_MODE_ICONS,
 } from '@livediagram/ui';
 import { TOOLBAR_TRIGGER_TONE } from '@/components/palette/PaletteDropdown';
 import {
-  EDITOR_MODE_ICON,
   EDITOR_MODE_KEYSHORTCUT,
   MODE_SWITCH_FOCUS,
   type EditorModeSwitchProps,
@@ -46,7 +46,7 @@ export function ModeMenuChip({
     setTrigger,
   } = useMenuButton();
   const root = useRef<HTMLDivElement>(null);
-  const Icon = EDITOR_MODE_ICON[mode];
+  const Icon = EDITOR_MODE_ICONS[mode];
   const label = editorModeLabel(mode);
   // An experimental mode switched off in Settings is not offered (offered-editor-modes).
   const modes = useOfferedEditorModes();
@@ -149,7 +149,7 @@ function ModeMenu({
     >
       {modes.map((option) => {
         const checked = option === mode;
-        const RowIcon = EDITOR_MODE_ICON[option];
+        const RowIcon = EDITOR_MODE_ICONS[option];
         return (
           <button
             key={option}

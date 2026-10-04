@@ -1,11 +1,6 @@
 import { scrollToTopWithin } from '@/lib/scroll-within';
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
-import type {
-  TemplateCategory,
-  TemplateCollection,
-  TemplateDescriptor,
-  TemplateKind,
-} from '@livediagram/templates';
+import type { TemplateCategory, TemplateDescriptor, TemplateKind } from '@livediagram/templates';
 import { TEMPLATES } from '@livediagram/templates';
 import { MaximizeIcon, MinimizeIcon, SnapCarousel, Tooltip, useMediaQuery } from '@livediagram/ui';
 import { CategoryTile, TemplateCard } from '@/components/palette/template-picker-cards';
@@ -13,9 +8,7 @@ import { track } from '@/lib/telemetry';
 
 // A shelf the picker can open: a real template category, or the curated
 // Popular set (POPULAR_TEMPLATE_KINDS) that leads it.
-// A collection (`?browse=<collection>`, docs/specs/007-editor/new-document-route.md) is a shelf too:
-// shown only while it is the open one, with no folded tile of its own.
-export type ShelfCategory = TemplateCategory | 'popular' | TemplateCollection;
+export type ShelfCategory = TemplateCategory | 'popular';
 
 export type Shelf = {
   id: ShelfCategory;

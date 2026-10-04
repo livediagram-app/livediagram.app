@@ -68,29 +68,34 @@ serves the link builders, the editor's reader, the ingest validator and the
 dashboard, so a CTA can't be linked with a source the editor ignores or the
 ingest drops.
 
-| Surface     | Pages it covers                    | Slots                                                                                                           |
-| ----------- | ---------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| `Home`      | `/`                                | `Header`, `HeaderDraw`, `Hero`, `HeroDraw`, `HeroBrainstorm`, `HeroCanvas`, `Gallery`, `GalleryDraw`, `Closing` |
-| `Feature`   | `/features/<id>`                   | `Header`, `HeaderDraw`, `Hero`, `Closing`                                                                       |
-| `Compare`   | `/alternatives`, `/alternatives/*` | `Header`, `HeaderDraw`, `Card`                                                                                  |
-| `Faq`       | `/faq`                             | `Header`, `HeaderDraw`, `Card`                                                                                  |
-| `Status`    | `/status`                          | `Header`, `HeaderDraw`                                                                                          |
-| `Dashboard` | `/telemetry`                       | `Header`, `HeaderDraw`                                                                                          |
-| `Help`      | `/help`, `/help/*`                 | `Header`                                                                                                        |
+| Surface     | Pages it covers                    | Slots                                                                                                                                                                  |
+| ----------- | ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Home`      | `/`                                | `Header`, `HeaderDraw`, `HeaderWhiteboard`, `HeaderIllustration`, `Hero`, `HeroDraw`, `HeroBrainstorm`, `HeroCanvas`, `HeroBuild`, `Gallery`, `GalleryDraw`, `Closing` |
+| `Feature`   | `/features/<id>`                   | `Header`, `HeaderDraw`, `HeaderWhiteboard`, `HeaderIllustration`, `Hero`, `Closing`                                                                                    |
+| `Compare`   | `/alternatives`, `/alternatives/*` | `Header`, `HeaderDraw`, `HeaderWhiteboard`, `HeaderIllustration`, `Card`                                                                                               |
+| `Faq`       | `/faq`                             | `Header`, `HeaderDraw`, `HeaderWhiteboard`, `HeaderIllustration`, `Card`                                                                                               |
+| `Status`    | `/status`                          | `Header`, `HeaderDraw`, `HeaderWhiteboard`, `HeaderIllustration`                                                                                                       |
+| `Dashboard` | `/telemetry`                       | `Header`, `HeaderDraw`, `HeaderWhiteboard`, `HeaderIllustration`                                                                                                       |
+| `Help`      | `/help`, `/help/*`                 | `Header`                                                                                                                                                               |
 
 The slots:
 
-- `Header` / `HeaderDraw`: the shared `SiteHeader` pair, Choose Template
-  (`/new`) and Start Blank (`/new?blank=1`). The help centre's header has one
+- `Header` / `HeaderDraw` / `HeaderWhiteboard` / `HeaderIllustration`: the shared `SiteHeader`
+  pair, Choose Template (`/new`) and the Start Blank menu's three rows: Blank Diagram
+  (`/new?blank=1`, keeping `HeaderDraw` so the old Start Blank series carries on), Blank
+  Whiteboard (`/new?template=whiteboard`) and Blank Illustration
+  (`/new?template=blank-illustration`). The help centre's header has one
   Start drawing button, its `Header`.
-- `Hero` / `HeroDraw` / `HeroBrainstorm`: the landing hero's three, Diagram
+- `Hero` / `HeroDraw` / `HeroBrainstorm` (**retired**: the landing hero no longer has buttons; the slots stay in the table so their stored history still reads on the dashboard, and no link carries them any more): the landing hero's three, Diagram
   (`/new`), Drawing (`/new?template=whiteboard`) and Brainstorm
-  (`/new?browse=brainstorm`). `HeroDraw` kept its slot when Start Blank's blank
+  (`/new?browse=brainstorm`, a collection since removed). `HeroDraw` kept its slot when Start Blank's blank
   canvas became Drawing's whiteboard: it is the same button in the same place,
   so its series carries on. On a feature page, `Hero` is the category hero's
   Start drawing.
-- `HeroCanvas`: the hero stage's launch window, the mini canvas that grows
-  into the editor (`/new?blank=1&welcome=1`).
+- `HeroBuild`: the **Build yours** button on each of the hero's mode windows, opening the template
+  step narrowed to that window's kind (`/new?mode=…` and, for the Mind map and Article, `&q=…`).
+- `HeroCanvas` (**retired**: the launch window left the hero; the slot stays so its history still reads): the hero stage's launch window, the mini canvas that grew
+  into the editor.
 - `Gallery`: any card in the landing template gallery
   (`/new?template=<kind>`). The template itself is already reported by
   `Template·Used`, so it is not repeated in the source. `GalleryDraw` is the

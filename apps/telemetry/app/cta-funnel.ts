@@ -55,10 +55,13 @@ export const SURFACE_LABELS: Record<CtaSurface, string> = {
 // What each slot's button says, so a row reads as the thing on the page.
 const SLOT_LABELS: Record<CtaSlot, string> = {
   Header: 'Header: Choose Template',
-  HeaderDraw: 'Header: Start Blank',
+  HeaderDraw: 'Header: Blank Diagram',
+  HeaderWhiteboard: 'Header: Blank Whiteboard',
+  HeaderIllustration: 'Header: Blank Illustration',
   Hero: 'Hero: Diagram',
   HeroDraw: 'Hero: Drawing',
   HeroBrainstorm: 'Hero: Brainstorm',
+  HeroBuild: 'Hero: Build Yours',
   HeroCanvas: 'Hero: Canvas',
   Gallery: 'Template Gallery Cards',
   GalleryDraw: 'Gallery: Blank Canvas Link',

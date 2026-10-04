@@ -12,19 +12,24 @@ export const CTA_SOURCES = {
   Home: [
     'Header',
     'HeaderDraw',
+    'HeaderWhiteboard',
+    'HeaderIllustration',
+    // Retired with the hero's old buttons and launch window: nothing links them now, but they stay
+    // so a page a browser still has cached reports, and the dashboard labels the rows they left.
     'Hero',
     'HeroDraw',
     'HeroBrainstorm',
     'HeroCanvas',
+    'HeroBuild',
     'Gallery',
     'GalleryDraw',
     'Closing',
   ],
-  Feature: ['Header', 'HeaderDraw', 'Hero', 'Closing'],
-  Compare: ['Header', 'HeaderDraw', 'Card'],
-  Faq: ['Header', 'HeaderDraw', 'Card'],
-  Status: ['Header', 'HeaderDraw'],
-  Dashboard: ['Header', 'HeaderDraw'],
+  Feature: ['Header', 'HeaderDraw', 'HeaderWhiteboard', 'HeaderIllustration', 'Hero', 'Closing'],
+  Compare: ['Header', 'HeaderDraw', 'HeaderWhiteboard', 'HeaderIllustration', 'Card'],
+  Faq: ['Header', 'HeaderDraw', 'HeaderWhiteboard', 'HeaderIllustration', 'Card'],
+  Status: ['Header', 'HeaderDraw', 'HeaderWhiteboard', 'HeaderIllustration'],
+  Dashboard: ['Header', 'HeaderDraw', 'HeaderWhiteboard', 'HeaderIllustration'],
   Help: ['Header'],
 } as const satisfies Record<string, readonly string[]>;
 

@@ -5,6 +5,7 @@ import type { TemplateCategory, TemplateDescriptor, TemplateKind } from '@livedi
 import {
   TEMPLATE_CATEGORIES,
   TEMPLATES,
+  BLANK_TEMPLATE_FOR_MODE,
   POPULAR_TEMPLATE_KINDS,
   templateCategory,
   untitledNameForTemplate,
@@ -31,6 +32,7 @@ import { useTemplateModeFilter } from '@/components/palette/useTemplateModeFilte
 import { placeNameOf, skipLocationStepFor, CONTEXT_PLACE_FALLBACK } from '@/lib/skip-location-step';
 import { useWizardSkipLocation } from './useWizardSkipLocation';
 import { WizardSavingIn, WizardSkipLocationCheckbox } from './WizardSkipLocation';
+import { useOfferedEditorModes } from '@/lib/offered-editor-modes';
 
 // Whether this render is past hydration, as a store with nothing to subscribe to: prerender and
 // hydration read the server snapshot, every later render the client one.
@@ -65,9 +67,10 @@ export function TemplatePicker({
   teams = [],
   teamFolders = {},
   initialPlacement,
+  initialModeChoice = null,
+  initialQuery = null,
   defaults,
   skipLocation,
-  initialShelf = null,
   onCreateFolder,
   onCreateTeam,
 }: TemplatePickerProps) {
@@ -103,13 +106,25 @@ export function TemplatePicker({
     if (nameLocked || nameEdited.current) return;
     setName(participant.name);
   }, [participant.name, nameLocked]);
-  const [templateKind, setTemplateKind] = useState<TemplateKind>('blank');
+  // Undefined until the author picks a card: until then a `?mode=` preset's blank is the selection
+  // (docs/specs/007-editor/new-document-route.md), so Create never starts something filtered away.
+  // Read at render, not as a useState seed, because the URL only arrives after hydration.
+  // A preset whose mode is not offered (switched off) falls back as the mode filter does, to
+  // Everything and the plain blank.
+  const [chosenKind, setTemplateKind] = useState<TemplateKind | undefined>(undefined);
+  const offeredModes = useOfferedEditorModes();
+  const presetMode =
+    initialModeChoice && offeredModes.includes(initialModeChoice) ? initialModeChoice : null;
+  const templateKind: TemplateKind =
+    chosenKind ?? (presetMode ? BLANK_TEMPLATE_FOR_MODE[presetMode] : 'blank');
   // Free-text filter for the template grid (title / description / kind /
   // category label). Empty = show the whole catalogue. The input updates
   // `templateQuery` instantly (responsive caret), but filtering reads a
   // debounced copy so a fast typist doesn't thrash the grid (and the
   // height-animated container) on every keystroke.
-  const [templateQuery, setTemplateQuery] = useState('');
+  // Undefined until the author types: until then a `?q=` preset is the search.
+  const [typedQuery, setTemplateQuery] = useState<string | undefined>(undefined);
+  const templateQuery = typedQuery ?? initialQuery ?? '';
   const [debouncedQuery, setDebouncedQuery] = useState('');
   useEffect(() => {
     const id = setTimeout(() => setDebouncedQuery(templateQuery), 180);
@@ -119,11 +134,7 @@ export function TemplatePicker({
   // default (Popular). Held here, not in the browse, so it survives a peek
   // at the location step. A non-empty search query overrides the shelf and
   // shows flat results.
-  // Undefined until the author opens a shelf: until then a `?browse=<collection>` link's
-  // collection is the open one (docs/specs/007-editor/new-document-route.md). Read at render, not as a
-  // useState seed, because the URL only arrives after hydration.
-  const [chosenCategory, setOpenCategory] = useState<ShelfCategory | null | undefined>(undefined);
-  const openCategory = chosenCategory === undefined ? initialShelf : chosenCategory;
+  const [openCategory, setOpenCategory] = useState<ShelfCategory | null>(null);
   // The shelf's inverted flow (desktop only): the open shelf shows every card,
   // the other categories become the carousel. Held here for the same reason.
   const [shelfExpanded, setShelfExpanded] = useState(false);
@@ -231,14 +242,21 @@ export function TemplatePicker({
   const hydrated = useSyncExternalStore(noSubscription, isClient, isServer);
   const [shuffled] = useState(() => shufflePinned(LISTED_TEMPLATES, (t) => t.kind === 'blank'));
   // Every view of the step shows only the chosen mode's templates (docs/specs/007-editor/templates-by-mode.md).
-  const modeFilter = useTemplateModeFilter({ selected: templateKind, onSelect: setTemplateKind });
+  const modeFilter = useTemplateModeFilter({
+    selected: templateKind,
+    onSelect: setTemplateKind,
+    initial: initialModeChoice,
+  });
   const templates = (hydrated ? shuffled : LISTED_TEMPLATES).filter(modeFilter.shows);
   const trimmedName = name.trim();
   const effectiveName = trimmedName || participant.name;
   // Keyword filter over the shuffled catalogue. Matches title /
   // description / kind / category label so "design", "uml", "wireframe"
   // etc. all narrow the grid; empty query passes everything through.
-  const templateFilter = debouncedQuery.trim().toLowerCase();
+  // A `?q=` preset filters at once (the pre-paint guard lifts on it); only typing is debounced.
+  const templateFilter = (typedQuery === undefined ? templateQuery : debouncedQuery)
+    .trim()
+    .toLowerCase();
   const matchesQuery = (t: TemplateDescriptor) => {
     const catLabel =
       TEMPLATE_CATEGORIES.find((c) => c.id === templateCategory(t.kind))?.label ?? '';

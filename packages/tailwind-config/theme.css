@@ -413,6 +413,18 @@
 }
 
 /*
+ * Every enabled button shows the pointer, in every app (Tailwind's preflight resets a button's
+ * cursor to the default arrow). In the base layer, so a utility such as `cursor-not-allowed`
+ * still wins.
+ */
+@layer base {
+  button:not(:disabled),
+  [role='button']:not([aria-disabled='true']) {
+    cursor: pointer;
+  }
+}
+
+/*
  * Scrollbars (docs/specs/004-interface-design/scrollbars.md). The themed bar is the DEFAULT for every
  * element that scrolls, in every app, so no surface is born on the OS scrollbar (a bright white bar
  * in dark mode). Thin, no track, a rounded slate-500 thumb: slate 500 is the lightest slate that

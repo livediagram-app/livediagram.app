@@ -1,31 +1,33 @@
 import { PreviewFan } from '@livediagram/template-previews';
-import type { TemplateCategory } from '@livediagram/templates';
 import { BAND_CARD, BAND_CONTROL_HOVER, BAND_LABEL } from '@/components/band-classes';
-import type { GalleryTemplate } from '@/lib/template-gallery';
+import type { GalleryShelf, ShelfId } from '@/lib/template-gallery';
 
-// The template gallery's folded categories (docs/specs/019-marketing/marketing-site.md): one card
-// per category not yet open, so they read as part of the gallery rather than a row of tags under
+// The template gallery's folded shelves (docs/specs/019-marketing/marketing-site.md): one card
+// per shelf not open (Popular among them once another is), so they read as part of the gallery rather than a row of tags under
 // it. Each shows a fanned stack of its first three templates' previews (PreviewFan, shared with
 // the editor's template picker), its name and how many templates it holds. Hovering or
 // focusing a card fans the stack wider. Clicking opens the
 // category's carousel above, as the chips it replaced did.
 
-type Group = { id: TemplateCategory; label: string; templates: GalleryTemplate[] };
-
 export function CategoryTiles({
   groups,
   onOpen,
 }: {
-  groups: Group[];
-  onOpen: (id: TemplateCategory) => void;
+  groups: GalleryShelf[];
+  onOpen: (id: ShelfId) => void;
 }) {
-  const total = groups.reduce((n, g) => n + g.templates.length, 0);
+  // Popular only repeats templates the categories already hold, so it is left out of the
+  // "more templates" sum, as the editor's template step does (TemplatePickerShelf).
+  const total = groups
+    .filter((g) => g.id !== 'popular')
+    .reduce((n, g) => n + g.templates.length, 0);
   return (
     <div>
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
         <h3 className={BAND_LABEL}>Explore More Categories</h3>
         <p className="text-sm text-slate-500 dark:text-slate-400">
-          {groups.length} more categories, {total} more templates
+          {groups.length} more {groups.length === 1 ? 'category' : 'categories'}, {total} more{' '}
+          {total === 1 ? 'template' : 'templates'}
         </p>
       </div>
       <ul className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
@@ -43,7 +45,7 @@ export function CategoryTiles({
                   {group.label}
                 </span>
                 <span className="shrink-0 rounded-full bg-brand-50 px-2 py-0.5 text-xs font-medium text-brand-700 dark:bg-brand-500/15 dark:text-brand-200">
-                  {group.templates.length} templates
+                  {group.templates.length} {group.templates.length === 1 ? 'template' : 'templates'}
                 </span>
               </span>
             </button>

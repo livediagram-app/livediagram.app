@@ -1,7 +1,8 @@
 import type { Participant } from '@/lib/identity';
 import type { SaveLocationId } from '@/lib/save-locations';
 import type { SkipLocationStep } from '@/lib/skip-location-step';
-import type { TemplateCollection, TemplateKind } from '@livediagram/templates';
+import type { EditorMode } from '@livediagram/document';
+import type { TemplateKind } from '@livediagram/templates';
 import type { AlwaysSave, WizardDefaults } from './useWizardPlacement';
 
 // The TemplatePicker's props and what its welcome wizard hands back on Create, lifted out of the
@@ -70,15 +71,17 @@ export type TemplatePickerProps = {
   teamFolders?: Record<string, { id: string; name: string; parentId: string | null }[]>;
   // Pre-selected placement (the /new URL's folder / team context).
   initialPlacement?: string;
+  // The template step's presets (the /new URL's `?mode=` and `?q=`,
+  // docs/specs/007-editor/new-document-route.md): the mode filter to open on (its blank selected) and
+  // words to open the search with. Null or absent: Everything and an empty search.
+  initialModeChoice?: EditorMode | null;
+  initialQuery?: string | null;
   // The reader's default folders (docs/specs/013-workspace/default-folders.md): the Location step
   // pre-selects the template's default at the My documents root, and offers Always save.
   defaults?: WizardDefaults;
   // Where to save without a Location step (docs/specs/013-workspace/default-folders.md "Skipping
   // the Location step"), resolved by the page; null or absent is the two-step wizard.
   skipLocation?: SkipLocationStep | null;
-  // The collection the template step opens on (the /new URL's `?browse=`),
-  // or null for the category overview.
-  initialShelf?: TemplateCollection | null;
   // Inline folder creation from the placement browser (name popover). Creates
   // in the given scope and returns the new folder (null on failure).
   onCreateFolder?: (

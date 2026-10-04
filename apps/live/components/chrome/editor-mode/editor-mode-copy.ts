@@ -1,16 +1,8 @@
-import type { ComponentType } from 'react';
 import type { EditorMode } from '@livediagram/document';
-import { FlowchartIcon, IllustrateIcon, MarkerIcon, type IconProps } from '@livediagram/ui';
 
 // What the editor's mode controls show for each editor mode beyond the words, which come from the
 // document's one mode catalogue (editorModeLabel / editorModeDescription), and the shortcut that
 // moves to the next mode (docs/specs/007-editor/editor-modes.md "The mode switch").
-
-export const EDITOR_MODE_ICON: Record<EditorMode, ComponentType<IconProps>> = {
-  diagram: FlowchartIcon,
-  draw: MarkerIcon,
-  illustrate: IllustrateIcon,
-};
 
 // Shift+D, as `aria-keyshortcuts` spells it and as the interface shows it.
 export const EDITOR_MODE_KEYSHORTCUT = 'Shift+D';

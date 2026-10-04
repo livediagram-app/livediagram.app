@@ -1,5 +1,5 @@
 // The hero illustration's glyph vocabulary: the small, stateless pieces the
-// six editor windows draw themselves out of. Split from HeroIllustration,
+// editor windows draw themselves out of. Split from HeroIllustration,
 // which was over the 1000-line mark and mixed a timed animation with 370
 // lines of SVG paths. Every one of these is pure markup with no state, no
 // module constants and no reference to another, so they read on their own.
@@ -65,34 +65,6 @@ export function Shape({ kind }: { kind: string }) {
           <polygon points="8,3 13,8 8,13 3,8" strokeLinejoin="round" />
         </svg>
       );
-    case 'cyl':
-      return (
-        <svg {...common}>
-          <path d="M3 5 L3 12 A5 1.5 0 0 0 13 12 L13 5" strokeLinejoin="round" />
-          <ellipse cx="8" cy="5" rx="5" ry="1.5" />
-        </svg>
-      );
-    case 'para':
-      return (
-        <svg {...common}>
-          <polygon points="4,3 13,3 12,13 3,13" strokeLinejoin="round" />
-        </svg>
-      );
-    case 'hex':
-      return (
-        <svg {...common}>
-          <polygon points="4,3 11,3 14,8 11,13 4,13 1,8" strokeLinejoin="round" />
-        </svg>
-      );
-    case 'doc':
-      return (
-        <svg {...common}>
-          <path
-            d="M3 3 L13 3 L13 12 C11 13.4 9.5 11.5 8 12.6 C6.5 13.7 5 11.5 3 12.6 Z"
-            strokeLinejoin="round"
-          />
-        </svg>
-      );
     case 'pill':
       return (
         <svg {...common}>
@@ -143,14 +115,6 @@ export function Shape({ kind }: { kind: string }) {
   return null;
 }
 
-export function StarGlyph() {
-  return (
-    <Glyph size={8} units={12} strokeLinecap="butt">
-      <path d="M6 1.5l1.4 2.9 3.1.4-2.3 2.2.6 3.1L6 8.6 3.2 10.1l.6-3.1L1.5 4.8l3.1-.4z" />
-    </Glyph>
-  );
-}
-
 // The editor's Share button mark.
 export function ShareGlyph() {
   return (
@@ -160,12 +124,11 @@ export function ShareGlyph() {
   );
 }
 
-export function EyeGlyph({ off }: { off: boolean }) {
+// A collaborator's pointer, as the editor draws a teammate's cursor, in their colour.
+export function CollaboratorPointer({ color }: { color: string }) {
   return (
-    <Glyph size={10} units={16}>
-      <path d="M1.5 8s2.5-4.5 6.5-4.5S14.5 8 14.5 8 12 12.5 8 12.5 1.5 8 1.5 8z" />
-      <circle cx="8" cy="8" r="2" />
-      {off ? <path d="M2.5 13.5l11-11" /> : null}
-    </Glyph>
+    <svg width="16" height="16" viewBox="0 0 16 16" fill={color} stroke="white" aria-hidden>
+      <path d="M2 1 L14 8 L8 9 L11 14 L9 15 L6 10 L2 14 Z" />
+    </svg>
   );
 }

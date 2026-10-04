@@ -2,7 +2,7 @@
 
 import type { CSSProperties, PointerEventHandler, ReactNode } from 'react';
 import { HoverCard } from '@livediagram/ui';
-import { CountBadge } from './CountBadge';
+import { CountBadge } from '@livediagram/ui';
 import { useMenuItemProps } from './menu-item-props';
 
 // The tile family of the menu rows (PortalMenu.tsx holds the menu and its list rows): a toolbar of

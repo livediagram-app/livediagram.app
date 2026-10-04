@@ -7,7 +7,7 @@ import type {
   MovablePanelPlacementProps,
   MovablePanelPopoverProps,
 } from '@/components/primitives/MovablePanel.types';
-import { CountBadge } from '@/components/primitives/CountBadge';
+import { CountBadge } from '@livediagram/ui';
 import { KindChips, SideTabs } from '@/components/panels/collaborate/CollaborateControls';
 import { CollaborateEmpty } from '@/components/panels/collaborate/CollaborateEmpty';
 import { ActionRowItem, CommentRowItem } from '@/components/panels/collaborate/CollaborateRows';

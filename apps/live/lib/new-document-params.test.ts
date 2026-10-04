@@ -2,9 +2,10 @@ import { describe, expect, it } from 'vitest';
 import { templateCreateHref } from '@livediagram/templates';
 import {
   choosePlacementAgainUrl,
-  wantsWelcome,
-  wizardBrowseCollection,
   wizardBypassKind,
+  SEARCH_PRESET_MAX,
+  wizardPresetMode,
+  wizardPresetQuery,
 } from './new-document-params';
 
 describe('wizardBypassKind (docs/specs/007-editor/new-document-route.md)', () => {
@@ -35,45 +36,36 @@ describe('wizardBypassKind (docs/specs/007-editor/new-document-route.md)', () =>
   });
 });
 
-describe('wizardBrowseCollection', () => {
-  it('opens the wizard on a known collection', () => {
-    expect(wizardBrowseCollection('?browse=brainstorm')).toBe('brainstorm');
-    expect(wizardBrowseCollection('?folder=f1&browse=brainstorm&via=Home.HeroBrainstorm')).toBe(
-      'brainstorm',
-    );
-  });
-
-  it('ignores an unknown or missing collection', () => {
-    expect(wizardBrowseCollection('?browse=everything')).toBeNull();
-    expect(wizardBrowseCollection('')).toBeNull();
-  });
-});
-
-describe('wantsWelcome (docs/specs/007-editor/new-document-route.md)', () => {
-  it('rides the blank bypass', () => {
-    expect(wantsWelcome('?blank=1&welcome=1')).toBe(true);
-    expect(wantsWelcome('?welcome=1&blank=1&via=Home.HeroCanvas')).toBe(true);
-  });
-
-  it('does nothing without the blank bypass', () => {
-    expect(wantsWelcome('?welcome=1')).toBe(false);
-    expect(wantsWelcome('?template=kanban&welcome=1')).toBe(false);
-    expect(wantsWelcome('?blank=1')).toBe(false);
-  });
-});
-
 describe('choosePlacementAgainUrl (docs/specs/007-editor/new-document-route.md)', () => {
   it('drops the refused placement and the bypass, so the wizard starts from the root of My documents', () => {
-    expect(choosePlacementAgainUrl('?blank=1&welcome=1&team=t1&folder=f1')).toBe('/new');
+    expect(choosePlacementAgainUrl('?blank=1&team=t1&folder=f1')).toBe('/new');
   });
 
   it('keeps every other param', () => {
-    expect(choosePlacementAgainUrl('?template=flowchart&folder=f1&browse=uml&cta=hero')).toBe(
-      '/new?browse=uml&cta=hero',
+    expect(choosePlacementAgainUrl('?template=flowchart&folder=f1&mode=draw&cta=hero')).toBe(
+      '/new?mode=draw&cta=hero',
     );
   });
 
   it('is plain /new for a plain visit', () => {
     expect(choosePlacementAgainUrl('')).toBe('/new');
+  });
+});
+
+// docs/specs/007-editor/new-document-route.md "?mode= and ?q=": the template step's presets.
+describe('wizardPresetMode / wizardPresetQuery', () => {
+  it('reads a known mode, and ignores an unknown one', () => {
+    expect(wizardPresetMode('?mode=draw')).toBe('draw');
+    expect(wizardPresetMode('?folder=f1&mode=illustrate&via=Home.HeroBuild')).toBe('illustrate');
+    expect(wizardPresetMode('?mode=sideways')).toBeNull();
+    expect(wizardPresetMode('')).toBeNull();
+  });
+
+  it('reads the words, trimmed and capped, and ignores none', () => {
+    expect(wizardPresetQuery('?q=mind%20map')).toBe('mind map');
+    expect(wizardPresetQuery('?q=%20%20article%20')).toBe('article');
+    expect(wizardPresetQuery(`?q=${'x'.repeat(80)}`)).toHaveLength(SEARCH_PRESET_MAX);
+    expect(wizardPresetQuery('?q=%20')).toBeNull();
+    expect(wizardPresetQuery('?mode=draw')).toBeNull();
   });
 });

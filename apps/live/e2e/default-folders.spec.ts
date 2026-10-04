@@ -195,9 +195,10 @@ test.describe('default folders', () => {
       .first()
       .click();
     await page.getByRole('radio', { name: /Retros/ }).click();
-    const box = page.getByRole('checkbox', { name: 'Always save whiteboards here' });
-    await expect(box).not.toBeChecked();
-    await box.check();
+    const toggle = page.getByRole('switch', { name: 'Always save whiteboards here' });
+    await expect(toggle).toHaveAttribute('aria-checked', 'false');
+    await toggle.click();
+    await expect(toggle).toHaveAttribute('aria-checked', 'true');
     const id = await create(page);
     expect(await documentFolder(page, s, id)).toBe(retros);
     expect(await defaults(page, s)).toEqual({ 'mode:draw': retros });

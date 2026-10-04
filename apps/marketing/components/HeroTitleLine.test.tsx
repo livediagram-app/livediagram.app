@@ -41,17 +41,25 @@ describe('the hero headline word', () => {
     vi.unstubAllGlobals();
   });
 
-  it('cycles Diagram, Document, Whiteboard, Brainstorm, 2.5s each, then wraps', () => {
+  it('cycles Diagram, Document, Workshop, Whiteboard, Illustrate, Brainstorm, 2.5s each, then wraps', () => {
     stubMotion(false);
     const { container } = render(<HeroTitleLine> together</HeroTitleLine>);
     const seen = [shownWord(container)];
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < 6; i++) {
       act(() => vi.advanceTimersByTime(2499));
       expect(shownWord(container)).toBe(seen.at(-1));
       act(() => vi.advanceTimersByTime(1));
       seen.push(shownWord(container));
     }
-    expect(seen).toEqual(['Diagram', 'Document', 'Whiteboard', 'Brainstorm', 'Diagram']);
+    expect(seen).toEqual([
+      'Diagram',
+      'Document',
+      'Workshop',
+      'Whiteboard',
+      'Illustrate',
+      'Brainstorm',
+      'Diagram',
+    ]);
   });
 
   it('holds Diagram under reduced motion', () => {

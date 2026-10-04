@@ -3,6 +3,8 @@
 @import '@livediagram/template-previews/preview-art-tile.css';
 @import '@livediagram/template-previews/preview-motion.css';
 @import './hero-animations.css';
+@import './hero-mode-animations.css';
+@import './promises.css';
 @import './feature-art-animations.css';
 @import './page-motion.css';
 @import './privacy-art.css';
@@ -18,52 +20,11 @@
 @source '../../../packages/template-previews/src/PreviewFan.tsx';
 
 @media (prefers-reduced-motion: reduce) {
-  .hero-pop1,
-  .hero-pop2,
-  .hero-pop3,
-  .hero-pop4,
-  .hero-pop5,
-  .hero-line1,
-  .hero-line2,
-  .hero-line3,
-  .hero-line4,
-  .hero-theme,
-  .hero-text-in,
-  .hero-comment,
-  .hero-highlight,
-  .hero-slide4,
-  .hero-slide-hud4,
-  .hero-tool-b,
-  .hero-note,
-  .hero-action,
-  .hero-cursor {
-    animation: none;
-    opacity: 1;
-    transform: none;
-    stroke-dashoffset: 0;
-  }
-  /* show only the settled label (the renamed one) */
-  .hero-text-out {
-    animation: none;
-    opacity: 0;
-  }
-  /* the laser pointer (mind-map card) stays hidden */
-  .hero-laser-a,
-  .hero-laser-b,
-  .hero-laser-dot,
-  .hero-laser-trail,
-  .hero-slide-hud,
-  .hero-tool-a,
-  .hero-dialog,
-  .hero-dialog-cursor,
+  /* the window veils stay hidden */
   .hero-fade,
   .hero-fade-out {
     animation: none;
     opacity: 0;
-  }
-  /* the themed canvas holds its settled tint */
-  .hero-theme-canvas {
-    animation: none;
   }
 
   .fa-pop,
