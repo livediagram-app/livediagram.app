@@ -148,6 +148,34 @@ describe('SelectionPopover mind-node growth', () => {
     expect(sibling).toHaveBeenCalledOnce();
   });
 
+  it('offers Edit Outline only where it is given (a root), firing its handler', () => {
+    setTouch(false);
+    const outline = vi.fn();
+    const { unmount } = render(
+      <SelectionPopover
+        bounds={BOUNDS}
+        canvasOffset={{ x: 0, y: 0 }}
+        zoom={1}
+        onAddMindChild={vi.fn()}
+        onAddMindSibling={vi.fn()}
+      />,
+    );
+    expect(screen.queryByRole('button', { name: 'Edit Outline' })).toBeNull();
+    unmount();
+    render(
+      <SelectionPopover
+        bounds={BOUNDS}
+        canvasOffset={{ x: 0, y: 0 }}
+        zoom={1}
+        onAddMindChild={vi.fn()}
+        onAddMindSibling={vi.fn()}
+        onEditMindOutline={outline}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Edit Outline' }));
+    expect(outline).toHaveBeenCalledOnce();
+  });
+
   it('shows neither on an element that is not a mind node', () => {
     setTouch(false);
     renderSingle();

@@ -92,8 +92,8 @@ export function mindStyleSource(
   return root.id === parent.id ? null : parent;
 }
 
-// A pinned connector joining two nodes, whichever end it was drawn from.
-function connectorBetween(elements: Element[], a: ElementId, b: ElementId) {
+/** A pinned connector joining two nodes, whichever end it was drawn from. */
+export function mindConnectorBetween(elements: Element[], a: ElementId, b: ElementId) {
   return elements.find(
     (el): el is ArrowElement =>
       el.type === 'arrow' &&
@@ -105,13 +105,16 @@ function connectorBetween(elements: Element[], a: ElementId, b: ElementId) {
 }
 
 /** A sibling's connector, else the one into the parent. */
-function connectorStyleSource(elements: Element[], parent: ShapeElement): ArrowElement | null {
+export function mindConnectorStyleSource(
+  elements: Element[],
+  parent: ShapeElement,
+): ArrowElement | null {
   for (const kid of mindChildren(elements, parent.id)) {
-    const c = connectorBetween(elements, parent.id, kid.id);
+    const c = mindConnectorBetween(elements, parent.id, kid.id);
     if (c) return c;
   }
   const grand = parentOf(elements, parent);
-  return (grand && connectorBetween(elements, grand.id, parent.id)) ?? null;
+  return (grand && mindConnectorBetween(elements, grand.id, parent.id)) ?? null;
 }
 
 const toMoves = (elements: Element[], shifts: readonly MindShift[]): MindMove[] =>
@@ -216,7 +219,7 @@ export function planMindGrowth(
     moves,
     reanchored,
     styleFrom,
-    connectorStyleFrom: connectorStyleSource(elements, parent),
+    connectorStyleFrom: mindConnectorStyleSource(elements, parent),
   };
 }
 
@@ -230,13 +233,15 @@ export function relayoutMindMap(
   elements: Element[],
   nodeId: ElementId,
   flow?: MindFlow,
+  // Siblings in this order rather than as drawn (an outline save): a rank per node.
+  order?: ReadonlyMap<ElementId, number>,
 ): MindRelayout | null {
   const node = elements.find((el) => el.id === nodeId);
   if (!node || !isMindNode(node)) return null;
   const root = mindRootOf(elements, node);
   const current = mindFlowOf(elements, root);
   const target = flow ?? current;
-  const layout = layoutMindTree(elements, root.id, target, undefined, current);
+  const layout = layoutMindTree(elements, root.id, target, undefined, current, order);
   const own = layoutMoves(elements, layout);
   const mapIds = new Set(layout.keys());
   const pushed = makeRoom(elements, mapIds, movedRects(elements, own));

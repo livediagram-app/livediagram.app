@@ -10,7 +10,11 @@ import {
   SendToBackIcon,
   TextIcon,
 } from '@/components/canvas/selection-popover-icons';
-import { MIND_CHILD_OPTION, MIND_SIBLING_OPTION } from '@/components/canvas/quick-connect-options';
+import {
+  MIND_CHILD_OPTION,
+  MIND_OUTLINE_ACTION,
+  MIND_SIBLING_OPTION,
+} from '@/components/canvas/quick-connect-options';
 import { EditPointsIcon } from '@/components/palette/palette-icons';
 
 type Bounds = { x: number; y: number; width: number; height: number };
@@ -42,6 +46,8 @@ type SelectionPopoverProps = {
   // on the toolbar. Passed only for an editable, unlocked mind node.
   onAddMindChild?: () => void;
   onAddMindSibling?: () => void;
+  // A mind map's root: its whole map as an outline (docs/specs/009-elements/mind-node.md "Edit Outline").
+  onEditMindOutline?: () => void;
   // Duplicate the selected element, a one-click toolbar action (it used to
   // live only in the right-click context menu). Omitted in read-only /
   // view-role mode.
@@ -91,6 +97,7 @@ export function SelectionPopover({
   onEditPoints,
   onAddMindChild,
   onAddMindSibling,
+  onEditMindOutline,
   onDuplicate,
   onBringToFront,
   onSendToBack,
@@ -205,6 +212,15 @@ export function SelectionPopover({
           >
             {MIND_SIBLING_OPTION.icon}
           </PopoverButton>
+          {onEditMindOutline ? (
+            <PopoverButton
+              label={MIND_OUTLINE_ACTION.label}
+              description={MIND_OUTLINE_ACTION.description}
+              onClick={onEditMindOutline}
+            >
+              {MIND_OUTLINE_ACTION.icon}
+            </PopoverButton>
+          ) : null}
           <Divider />
         </>
       ) : null}

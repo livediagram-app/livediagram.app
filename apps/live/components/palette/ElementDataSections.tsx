@@ -430,6 +430,7 @@ export function ElementDataSections({
                 current={props.mindFlow}
                 onSet={props.onSetMindFlow}
                 onTidy={props.onTidyMindMap}
+                onEditOutline={props.onEditMindOutline}
               />
             </MenuAccordionSection>
           ) : null}

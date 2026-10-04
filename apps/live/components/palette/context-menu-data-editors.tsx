@@ -445,10 +445,13 @@ export function MindFlowTiles({
   current,
   onSet,
   onTidy,
+  onEditOutline,
 }: {
   current: MindFlow;
   onSet: (flow: MindFlow) => void;
   onTidy: () => void;
+  // A root only (docs/specs/009-elements/mind-node.md "Edit Outline").
+  onEditOutline?: () => void;
 }) {
   return (
     <>
@@ -473,6 +476,11 @@ export function MindFlowTiles({
       <div className="px-2 pb-1.5 pt-1">
         <MenuActionButton label="Tidy Map" onClick={onTidy} />
       </div>
+      {onEditOutline ? (
+        <div className="px-2 pb-1.5">
+          <MenuActionButton label="Edit Outline" onClick={onEditOutline} />
+        </div>
+      ) : null}
     </>
   );
 }

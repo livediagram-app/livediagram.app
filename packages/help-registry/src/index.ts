@@ -990,7 +990,7 @@ export const articles: Article[] = [
     title: 'Mind Maps',
     description: 'Tab adds a child, Enter a sibling — build a branch from the keyboard.',
     keywords:
-      'mind map mindmap node branch child sibling tab enter keyboard tree hierarchy brainstorm outline',
+      'mind map mindmap node branch child sibling tab enter keyboard tree hierarchy brainstorm outline edit outline markdown list indent bullets',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Elements',

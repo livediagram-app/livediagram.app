@@ -6,7 +6,6 @@ import {
   mindChildren,
   mindFlowOf,
   mindRootOf,
-  MIND_CONNECTOR_LOOK,
   planMindGrowth,
   relayoutMindMap,
   type ArrowElement,
@@ -14,11 +13,10 @@ import {
   type ShapeElement,
   type Tab,
 } from '@livediagram/document';
-import { paintableArrowFields, paintableBoxedFields } from '@/lib/format-painter';
+import { dressMindConnector, dressMindNode } from '@/lib/mind-dress';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { beginMindHandoff, type HandoffActions } from '@/lib/mind-handoff';
 import { track } from '@/lib/telemetry';
-import { deriveNewBoxedColours } from '@/lib/themes';
 import { debugLog } from '@/lib/debug-log';
 
 type SetState<T> = Dispatch<SetStateAction<T>>;
@@ -75,21 +73,9 @@ export function useMindGrowth(opts: {
     return !!el && isMindNode(el);
   };
 
-  // The new node's look: the tab's theme like any new element, then its
-  // level's look on top (docs/specs/009-elements/mind-node.md "A new node looks like its level").
-  const dress = (node: ShapeElement, styleFrom: ShapeElement | null): ShapeElement => {
-    const themed: ShapeElement = {
-      ...node,
-      ...deriveNewBoxedColours(node, {
-        backgroundColor: activeTab.backgroundColor,
-        patternColor: activeTab.patternColor,
-        theme: activeTab.theme,
-      }),
-      ...(activeTab.defaultTextSize ? { textSize: activeTab.defaultTextSize } : {}),
-    };
-    if (!styleFrom) return themed;
-    return { ...themed, ...(paintableBoxedFields(styleFrom) as Partial<ShapeElement>) };
-  };
+  // The new node's look: the tab's theme, then its level's (lib/mind-dress.ts).
+  const dress = (node: ShapeElement, styleFrom: ShapeElement | null): ShapeElement =>
+    dressMindNode(node, styleFrom, activeTab);
 
   // What was typed for a node whose editor never opened (the handoff timed
   // out): written straight onto its label, so nothing typed is lost.
@@ -111,12 +97,7 @@ export function useMindGrowth(opts: {
     if (!plan) return;
     const node = dress(plan.node, plan.styleFrom);
     const arrow: ArrowElement | null = plan.arrow
-      ? {
-          ...plan.arrow,
-          ...(plan.connectorStyleFrom
-            ? paintableArrowFields(plan.connectorStyleFrom)
-            : MIND_CONNECTOR_LOOK),
-        }
+      ? dressMindConnector(plan.arrow, plan.connectorStyleFrom)
       : null;
     const added: Element[] = arrow ? [node, arrow] : [node];
     // Applied against the elements as they stand IN the commit, as patches:

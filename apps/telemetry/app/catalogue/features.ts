@@ -824,6 +824,13 @@ export const SHORTCUTS_OPENED = opened(
   (t) => t === 'Shortcuts',
 );
 
+// Edit Outline (docs/specs/009-elements/mind-node.md): how often a mind map is opened as text.
+export const MIND_OUTLINE_OPENED = opened(
+  'Mind Map Outline Opened',
+  "A mind map's outline opened to edit it as text.",
+  (t) => t === 'MindOutline',
+);
+
 export const TOUR_OFFERED = opened(
   'Tour Offered',
   'The welcome tour offered.',
@@ -891,6 +898,7 @@ export const PANELS_OPENED: MetricStack = {
     PICKERS_OPENED,
     HELP_FROM_EDITOR,
     SHORTCUTS_OPENED,
+    MIND_OUTLINE_OPENED,
     OTHER_OPENED,
   ],
   seeAlso: { view: 'editing', label: 'See Each Dialog on the Editing Tab' },

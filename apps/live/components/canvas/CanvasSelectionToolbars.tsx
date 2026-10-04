@@ -149,6 +149,10 @@ export function CanvasSelectionToolbars({
               ? {
                   onAddMindChild: () => props.onGrowMindNode(selected.id, 'child'),
                   onAddMindSibling: () => props.onGrowMindNode(selected.id, 'sibling'),
+                  // A root only: its whole map as an outline ("Edit Outline").
+                  ...(props.canEditMindOutline?.(selected.id) && props.onEditMindOutline
+                    ? { onEditMindOutline: () => props.onEditMindOutline!(selected.id) }
+                    : {}),
                 }
               : {})}
             onDuplicate={readOnly ? undefined : selected ? onDuplicateSelected : undefined}

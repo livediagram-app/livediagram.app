@@ -294,6 +294,84 @@ sibling order as drawn, and re-anchors its connectors. Other trees in the way
 slide down, as they do for growth. It is the way back to a tidy map after
 dragging nodes around, and from then on growth keeps it tidy.
 
+## Edit Outline
+
+A whole map can be written as text: an indented outline, edited in a dialog and applied back to
+the map in one go. Restructuring a map by dragging node by node is slow; reading and rewriting it
+as a list is how people already think about an outline.
+
+**Where.** An **Edit Outline** button is on the selection toolbar of a selected **root** node (the
+node `mindRootOf` names, so a node whose parent was deleted counts as a root too), beside Add
+child and Add sibling, and in the Mind Map menu section under Tidy Map. Not on other nodes: the
+outline is the whole map, and the root is where a map begins. Not for a viewer, a locked node or a
+node on a hidden or locked layer.
+
+**The dialog**, titled **Edit Outline**, holds one monospaced text area, focused, with the map
+written out:
+
+```
+Team offsite
+- Venue
+  - Lake District
+- Agenda
+  - Day 1: planning
+```
+
+- The first line is the root's text. Every other node is a `- ` bullet, indented two spaces per
+  level under its parent, siblings in the map's order (as the layout reads it).
+- Tab indents the line the caret is on (or every selected line) by two spaces and Shift+Tab
+  outdents, so the outline is shaped from the keyboard; Tab never leaves the text area.
+- A node's text is written on one line; a node with several lines of text is written with its
+  lines joined by a space.
+- Footer: **Cancel** and **Save**. Escape cancels. ⌘/Ctrl+Enter saves. Above the buttons a
+  quiet line counts what Save will do: "3 added, 1 renamed, 2 removed", or "No changes".
+
+**What it reads.** The outline is read forgivingly, so a list pasted from elsewhere works:
+
+- Blank lines are skipped. The first non-blank line is the root, whatever marks it (`- `, `# `,
+  `1. ` or nothing).
+- Bullets `- `, `* `, `+ ` and numbered items `1. ` / `1) ` nest by indentation (a tab counts as
+  two spaces); a line with no marker counts as a bullet at its indentation.
+- Headings nest by their `#` count: under a `#` root, `##` lines are its children, `###` lines
+  theirs, and bullets under a heading nest one level below it.
+- An indentation deeper than one level below the line above is read as one level below it, so a
+  line can never skip a level. A second line at the root's level is read as a child of the root
+  (a map has one root).
+- Inline Markdown is stripped from the text: `**bold**`, `_italic_`, `` `code` ``, links (their
+  text kept) and task boxes (`[ ]`, `[x]`).
+- An outline with no lines can't be saved: Save is disabled, with "Write at least the root".
+
+**Saving** applies the whole outline to the map, as one change (one undo step):
+
+- **Lines keep their nodes.** Each line is matched to an existing node, so its colour, size,
+  icon, comments, actions and links stay with it:
+  1. a child line whose text equals an existing child's text, under the same parent;
+  2. else any existing node of the map with that text, which then **moves** to its new parent;
+  3. else, among the parent's still unmatched children, the one in the same place, which is then
+     **renamed**.
+     Text is compared trimmed and case-sensitively. The root line always keeps the root.
+- **New lines become new nodes**, looking like their level (the same rule as a node added from
+  the keyboard: a sibling's look, else a cousin's at the same depth, else the parent's), joined
+  to their parent by a connector that looks like their siblings'.
+- **A node whose line is gone is removed**, with the connectors pinned to it. If any node would be
+  removed, Save first asks, inside the dialog: "Remove N nodes?" ("Remove 1 node?"), naming up to
+  three of them, with **Keep Editing** and **Remove** (destructive). Remove saves; Keep Editing
+  goes back to the text.
+- A renamed node takes the line's text as plain text; a node whose text is unchanged keeps its
+  formatting.
+- A moved node's old connector goes and a new one joins it to its new parent, in its new
+  siblings' connector look.
+- **The map is laid out again** in its flow, in the outline's order (the order is the outline's,
+  never the old drawing's), with the root where it was, its connectors re-anchored and other trees
+  in the way moved aside, exactly as Tidy Map does. A balanced map deals its branches to the side
+  with less, in order.
+- Nothing changes and nothing is committed when the outline matches the map.
+- The save keeps every surviving node's id, so collaborators receive the changes as ordinary
+  element edits.
+
+**Telemetry**: `UI` · `Opened` · `MindOutline` when the dialog opens (as the other dialogs), and `Element` ·
+`Changed` · `MindOutline` on a save that changes the map.
+
 ## Round nodes
 
 A mind node honours its **corner radius** setting; with none it is a soft

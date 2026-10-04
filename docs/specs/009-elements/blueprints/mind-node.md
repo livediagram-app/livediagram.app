@@ -6,36 +6,41 @@ cited as `Dn`.
 
 Scope, by file:
 
-| File                                                         | Role                                                                           |
-| ------------------------------------------------------------ | ------------------------------------------------------------------------------ |
-| `packages/document/src/mind-map.ts`                          | Tree walks, free placement (`nextMindChildPosition`), `makeRoom`, root sibling |
-| `packages/document/src/mind-flow.ts`                         | `MindFlow`, per-flow free placement, gaps, `mindConnectorAnchors`              |
-| `packages/document/src/mind-layout.ts`                       | `layoutMindTree`, `isMindTreeTidy`, `reanchorMindConnectors`                   |
-| `packages/document/src/mind-grow.ts`                         | `planMindGrowth`, `relayoutMindMap`, `mindStyleSource`, `applyMindMoves`       |
-| `packages/document/src/anchor-choice.ts`                     | `bestAnchorTowards`: the bubble flow's connector faces                         |
-| `packages/document/src/shape-factory.ts`                     | `SHAPE_DEFAULT_SIZE['mind-node']` (250 × 80)                                   |
-| `packages/document/src/element-types.ts`                     | `mindParentId`, `mindFlow`                                                     |
-| `packages/document/src/validate.ts`                          | `mindParentId` is a string; `mindFlow` a known flow                            |
-| `packages/document/src/duplicate.ts`                         | Re-parents copied children onto copied parents                                 |
-| `packages/document/src/svg-render.ts`                        | The export's corner radius                                                     |
-| `apps/live/app/document/[id]/useMindGrowth.ts`               | `canGrowMindNode`, `growMindNode`, `abandonMindNode`: one commit each          |
-| `apps/live/lib/mind-handoff.ts`                              | Typing ahead: `beginMindHandoff`, `claimMindHandoff`, `applyHandoffKey`        |
-| `apps/live/lib/format-painter.ts`                            | `paintableBoxedFields`, `paintableArrowFields`: the look a new node copies     |
-| `apps/live/hooks/canvas/useEditorKeyboardShortcuts.ts`       | Tab / Enter on a selected node                                                 |
-| `apps/live/hooks/canvas/useCanvasA11y.ts`                    | `ownsTabKey`: traversal stands aside                                           |
-| `apps/live/components/canvas/useMindLabelKeys.ts`            | Tab / Enter / Escape in the label editor; claims the handoff                   |
-| `apps/live/components/canvas/RichTextEditor.tsx`             | Hands its key events to `useMindLabelKeys`                                     |
-| `apps/live/components/canvas/MindGrowContext.tsx`            | `useMindGrow`: grow and abandon, editor canvas only                            |
-| `apps/live/components/canvas/quick-connect-options.tsx`      | `MIND_CHILD_OPTION`, `MIND_SIBLING_OPTION`                                     |
-| `apps/live/components/canvas/QuickConnectRing.tsx`           | Leads with the two growth options                                              |
-| `apps/live/components/canvas/SelectionPopover.tsx`           | `onAddMindChild`, `onAddMindSibling`: the toolbar buttons                      |
-| `apps/live/components/canvas/CanvasSelectionToolbars.tsx`    | Offers the toolbar buttons on an editable, unlocked mind node                  |
-| `apps/live/hooks/canvas/useMindMapSetters.ts`                | `setMindFlowSelected`, `tidyMindMapSelected`                                   |
-| `apps/live/components/palette/context-menu-data-editors.tsx` | `MindFlowTiles`, with Tidy Map                                                 |
-| `apps/live/hooks/canvas/useBoxedDragHandlers.ts`             | A drag carries the subtree (`withMindSubtrees`)                                |
-| `apps/live/components/canvas/element-variant.ts`             | The canvas corner radius                                                       |
-| `apps/live/hooks/canvas/useEditorViewport.ts`                | `scrollIntoView` with a side margin                                            |
-| `packages/templates/src/template-builders-mindmaps.ts`       | The three live mind-map templates                                              |
+| File                                                         | Role                                                                                |
+| ------------------------------------------------------------ | ----------------------------------------------------------------------------------- |
+| `packages/document/src/mind-map.ts`                          | Tree walks, free placement (`nextMindChildPosition`), `makeRoom`, root sibling      |
+| `packages/document/src/mind-flow.ts`                         | `MindFlow`, per-flow free placement, gaps, `mindConnectorAnchors`                   |
+| `packages/document/src/mind-layout.ts`                       | `layoutMindTree`, `isMindTreeTidy`, `reanchorMindConnectors`                        |
+| `packages/document/src/mind-grow.ts`                         | `planMindGrowth`, `relayoutMindMap`, `mindStyleSource`, `applyMindMoves`            |
+| `packages/document/src/mind-outline-text.ts`                 | `mindOutlineText`, `parseMindOutline`, `mindOutlineLine`: outline to and from text  |
+| `packages/document/src/mind-outline.ts`                      | `summariseMindOutline`, `applyMindOutline`: match lines to nodes, apply, re-lay out |
+| `packages/document/src/anchor-choice.ts`                     | `bestAnchorTowards`: the bubble flow's connector faces                              |
+| `packages/document/src/shape-factory.ts`                     | `SHAPE_DEFAULT_SIZE['mind-node']` (250 × 80)                                        |
+| `packages/document/src/element-types.ts`                     | `mindParentId`, `mindFlow`                                                          |
+| `packages/document/src/validate.ts`                          | `mindParentId` is a string; `mindFlow` a known flow                                 |
+| `packages/document/src/duplicate.ts`                         | Re-parents copied children onto copied parents                                      |
+| `packages/document/src/svg-render.ts`                        | The export's corner radius                                                          |
+| `apps/live/app/document/[id]/useMindGrowth.ts`               | `canGrowMindNode`, `growMindNode`, `abandonMindNode`: one commit each               |
+| `apps/live/app/document/[id]/useMindOutline.ts`              | `MindOutlineApi`: the open root, `canEdit`, `save` as one commit                    |
+| `apps/live/lib/mind-dress.ts`                                | `dressMindNode`, `dressMindConnector`: one look for growth and outline saves        |
+| `apps/live/components/dialogs/MindOutlineDialog.tsx`         | The Edit Outline dialog: text area, count line, remove confirm                      |
+| `apps/live/lib/mind-handoff.ts`                              | Typing ahead: `beginMindHandoff`, `claimMindHandoff`, `applyHandoffKey`             |
+| `apps/live/lib/format-painter.ts`                            | `paintableBoxedFields`, `paintableArrowFields`: the look a new node copies          |
+| `apps/live/hooks/canvas/useEditorKeyboardShortcuts.ts`       | Tab / Enter on a selected node                                                      |
+| `apps/live/hooks/canvas/useCanvasA11y.ts`                    | `ownsTabKey`: traversal stands aside                                                |
+| `apps/live/components/canvas/useMindLabelKeys.ts`            | Tab / Enter / Escape in the label editor; claims the handoff                        |
+| `apps/live/components/canvas/RichTextEditor.tsx`             | Hands its key events to `useMindLabelKeys`                                          |
+| `apps/live/components/canvas/MindGrowContext.tsx`            | `useMindGrow`: grow and abandon, editor canvas only                                 |
+| `apps/live/components/canvas/quick-connect-options.tsx`      | `MIND_CHILD_OPTION`, `MIND_SIBLING_OPTION`                                          |
+| `apps/live/components/canvas/QuickConnectRing.tsx`           | Leads with the two growth options                                                   |
+| `apps/live/components/canvas/SelectionPopover.tsx`           | `onAddMindChild`, `onAddMindSibling`: the toolbar buttons                           |
+| `apps/live/components/canvas/CanvasSelectionToolbars.tsx`    | Offers the toolbar buttons on an editable, unlocked mind node                       |
+| `apps/live/hooks/canvas/useMindMapSetters.ts`                | `setMindFlowSelected`, `tidyMindMapSelected`                                        |
+| `apps/live/components/palette/context-menu-data-editors.tsx` | `MindFlowTiles`, with Tidy Map                                                      |
+| `apps/live/hooks/canvas/useBoxedDragHandlers.ts`             | A drag carries the subtree (`withMindSubtrees`)                                     |
+| `apps/live/components/canvas/element-variant.ts`             | The canvas corner radius                                                            |
+| `apps/live/hooks/canvas/useEditorViewport.ts`                | `scrollIntoView` with a side margin                                                 |
+| `packages/templates/src/template-builders-mindmaps.ts`       | The three live mind-map templates                                                   |
 
 ## Domain and naming
 
@@ -215,6 +220,19 @@ Inside one commit: the roots of every selected mind node, once each; per root
 re-anchors applied, other trees pushed down by `makeRoom`, and `mindFlow` written on the root when
 a flow is picked. Logs `[mind-layout] relayout`; tracks `Element·Changed·MindFlow` or
 `Element·Changed·MindTidy`.
+
+### Edit Outline (`useMindOutline`)
+
+`canEdit(id)`: not `editsBlocked`, the tab unlocked, and `id` a mind node that is its own
+`mindRootOf`. Opening tracks `UI·Opened·MindOutline`; the dialog takes
+`mindOutlineText(elements, rootId, mindFlowOf(root))`. Save parses with `parseMindOutline` (null:
+Save disabled), then `applyMindOutline` matches lines to nodes in three passes (same text under the
+same parent; else the same text anywhere in the map, a move; else the same place under the same
+parent, a rename), removes unmatched nodes and every arrow pinned to them, creates new nodes dressed
+by `dressMindNode` from their level's look, and re-lays out with `relayoutMindMap(next, rootId,
+undefined, order)` where `order` is the outline's line order. Null (no change) commits nothing.
+Otherwise one commit, `[mind-outline] saved root=`, `track('Element', 'Changed', 'MindOutline')`.
+Removals ask first in the dialog (`summariseMindOutline(...).removed`).
 
 ### Moving a branch
 
@@ -419,6 +437,7 @@ keys typed before it mounts are held, not dropped (INP).
 | `[mind-handoff] claim id= chars= end= queued=`               | `mind-handoff.ts`      | The new editor claims it          |
 | `[mind-handoff] unclaimed id= timeout=`                      | `mind-handoff.ts`      | The timeout settles it            |
 | `[mind-layout] relayout root= flow= moves=`                  | `useMindMapSetters.ts` | Tidy Map or a flow pick, per root |
+| `[mind-outline] saved root=`                                 | `useMindOutline.ts`    | An outline save changed the map   |
 
 Abandon, the canvas key guards and `makeRoom` emit nothing [GA1].
 
@@ -443,6 +462,8 @@ Abandon, the canvas key guards and `makeRoom` emit nothing [GA1].
 | Tidiness check                                  | isMindTreeTidy (three cases)                                                                             | `packages/document/src/mind-layout.test.ts`                   |
 | Re-anchoring                                    | reanchorMindConnectors (three cases)                                                                     | `packages/document/src/mind-layout.test.ts`                   |
 | Four flows, read from the root (I4)             | mind flows (tree, downward, balanced, bubble)                                                            | `packages/document/src/mind-flow.test.ts`                     |
+| Edit Outline: write, parse, match, apply        | mindOutlineText; parseMindOutline; applyMindOutline                                                      | `packages/document/src/mind-outline.test.ts`                  |
+| Edit Outline dialog: indent, save, confirm      | MindOutlineDialog (five cases)                                                                           | `apps/live/components/dialogs/MindOutlineDialog.test.tsx`     |
 | Typing ahead                                    | applyHandoffKey; beginMindHandoff / claimMindHandoff                                                     | `apps/live/lib/mind-handoff.test.ts`                          |
 | Toolbar buttons on a mind node only             | SelectionPopover mind-node growth (two cases)                                                            | `apps/live/components/canvas/SelectionPopover.test.tsx`       |
 | Traversal stands aside for plain Tab only       | useCanvasA11y Tab ownership                                                                              | `apps/live/hooks/canvas/useCanvasA11y.tab-ownership.test.tsx` |

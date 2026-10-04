@@ -87,6 +87,14 @@ export const MIND_SIBLING_OPTION: Option = {
   icon: <MindSiblingIcon />,
 };
 
+// Edit Outline (docs/specs/009-elements/mind-node.md "Edit Outline"): on a root's selection toolbar
+// and in its Mind Map menu section, not the "+" ring, which adds one node at a time.
+export const MIND_OUTLINE_ACTION = {
+  label: 'Edit Outline',
+  description: 'Write the whole map as an indented list, then save it back to the map.',
+  icon: <MindOutlineIcon />,
+};
+
 // Listed order matches the spec; they fan across the arc in this order.
 export const OPTIONS: Option[] = [
   {
@@ -192,6 +200,19 @@ function MindSiblingIcon() {
       <rect x="6.5" y="1.5" width="8.5" height="5" rx="1" fill="currentColor" />
       <rect x="6.5" y="9" width="8.5" height="6.5" rx="1.5" />
       <path d="M10.75 10.75v3M9.25 12.25h3" />
+    </Glyph>
+  );
+}
+
+// A root line with two indented bullet lines under it: the map as an outline.
+function MindOutlineIcon() {
+  return (
+    <Glyph size={OPTION_ICON_SIZE} units={16}>
+      <path d="M1.5 3h13" />
+      <circle cx="4.5" cy="8" r="1" fill="currentColor" />
+      <path d="M7 8h7.5" />
+      <circle cx="7.5" cy="13" r="1" fill="currentColor" />
+      <path d="M10 13h4.5" />
     </Glyph>
   );
 }

@@ -253,6 +253,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Element|Changed|Marker': "Someone added or removed a status marker next to a shape's label.",
   'Element|Changed|MarkerSize': "Someone changed the size of a shape's status marker.",
   'Element|Changed|MindFlow': "Someone changed a mind map's flow direction.",
+  'Element|Changed|MindOutline':
+    'Someone saved an edited outline onto a mind map, re-shaping the map from its text.',
   'Element|Changed|ModeButton':
     "Someone changed which selection mode a Mode Button element switches everyone into when it's pressed.",
   'Element|Changed|Nudge':
@@ -808,6 +810,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Opened|Collaborators':
     "Someone opened the Collaborators dialog, either from a tab's presence stack or from a command.",
   'UI|Opened|IconGroup': "Someone opened a category inside the palette's Icons tab.",
+  'UI|Opened|MindOutline': "Someone opened a mind map's outline to edit it as text.",
   'UI|Opened|PresentationSettings':
     "Someone opened the settings popover on the presentation's on-screen controls, while presenting.",
   'UI|Opened|PresenterNotes': 'Someone opened the speaker-notes card while presenting.',
