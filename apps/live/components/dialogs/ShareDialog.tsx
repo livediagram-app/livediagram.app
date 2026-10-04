@@ -5,7 +5,7 @@ import { Button, useCopiedFlash } from '@livediagram/ui';
 import { DialogCloseButton } from '@/components/dialogs/DialogCloseButton';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { DialogFooter } from '@/components/dialogs/DialogFooter';
-import { CountBadge } from '@/components/primitives/CountBadge';
+import { CountBadge } from '@livediagram/ui';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import type { ShareLinkExpiry, ShareRole } from '@/lib/api-client';
 import { useRelativeNow } from '@/lib/relative-time';

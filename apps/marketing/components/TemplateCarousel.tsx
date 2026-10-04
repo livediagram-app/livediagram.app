@@ -42,11 +42,12 @@ export function TemplateCarousel({
         </>
       }
       // Each card is a snap point sized to a quarter / half / all of the
-      // track less the gaps, so a page is always whole cards. A category
-      // with fewer cards than a page grows them to fill the row, so its
-      // edges line up with the band (a lone search hit stops at half).
+      // track less the gaps, so a page is always whole cards. A shelf with
+      // fewer cards than a page keeps its cards that size, starting at the
+      // left, as the editor's template step does: a mode filter or a search
+      // that leaves two never blows them up to half the band.
       trackClassName="tg-reveal-track mt-3"
-      itemClassName="[&>li]:basis-full sm:[&>li]:max-w-[calc((100%-0.75rem)/2)] sm:[&>li]:basis-[calc((100%-0.75rem)/2)] lg:[&>li]:basis-[calc((100%-2.25rem)/4)]"
+      itemClassName="[&>li]:basis-full sm:[&>li]:max-w-[calc((100%-0.75rem)/2)] sm:[&>li]:basis-[calc((100%-0.75rem)/2)] lg:[&>li]:max-w-[calc((100%-2.25rem)/4)] lg:[&>li]:basis-[calc((100%-2.25rem)/4)]"
     >
       {children}
     </SnapCarousel>

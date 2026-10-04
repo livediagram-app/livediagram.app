@@ -1,23 +1,20 @@
 import { PreviewFan } from '@livediagram/template-previews';
-import type { TemplateCategory } from '@livediagram/templates';
 import { BAND_CARD, BAND_CONTROL_HOVER, BAND_LABEL } from '@/components/band-classes';
-import type { GalleryTemplate } from '@/lib/template-gallery';
+import type { GalleryShelf, ShelfId } from '@/lib/template-gallery';
 
-// The template gallery's folded categories (docs/specs/019-marketing/marketing-site.md): one card
-// per category not yet open, so they read as part of the gallery rather than a row of tags under
+// The template gallery's folded shelves (docs/specs/019-marketing/marketing-site.md): one card
+// per shelf not open (Popular among them once another is), so they read as part of the gallery rather than a row of tags under
 // it. Each shows a fanned stack of its first three templates' previews (PreviewFan, shared with
 // the editor's template picker), its name and how many templates it holds. Hovering or
 // focusing a card fans the stack wider. Clicking opens the
 // category's carousel above, as the chips it replaced did.
 
-type Group = { id: TemplateCategory; label: string; templates: GalleryTemplate[] };
-
 export function CategoryTiles({
   groups,
   onOpen,
 }: {
-  groups: Group[];
-  onOpen: (id: TemplateCategory) => void;
+  groups: GalleryShelf[];
+  onOpen: (id: ShelfId) => void;
 }) {
   const total = groups.reduce((n, g) => n + g.templates.length, 0);
   return (
@@ -25,7 +22,8 @@ export function CategoryTiles({
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
         <h3 className={BAND_LABEL}>Explore More Categories</h3>
         <p className="text-sm text-slate-500 dark:text-slate-400">
-          {groups.length} more categories, {total} more templates
+          {groups.length} more {groups.length === 1 ? 'category' : 'categories'}, {total} more{' '}
+          {total === 1 ? 'template' : 'templates'}
         </p>
       </div>
       <ul className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">

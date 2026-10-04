@@ -7,7 +7,7 @@
 // one. A box that shows you your own card tells the room what you wrote the
 // moment somebody watches you type it.
 
-import { CountBadge } from '@/components/primitives/CountBadge';
+import { CountBadge } from '@livediagram/ui';
 import { useState } from 'react';
 import { IDEA_MAX_TEXT, type ShapeElement } from '@livediagram/document';
 import { CollabPanel, tint } from './collab-chrome';

@@ -15,7 +15,7 @@ import {
   type PageLayoutId,
 } from '@livediagram/templates';
 import { ChevronLeftIcon } from '@livediagram/ui';
-import { CountBadge } from '@/components/primitives/CountBadge';
+import { CountBadge } from '@livediagram/ui';
 import { Button } from '@livediagram/ui';
 import { LayoutThumb } from './infographic-layout-thumb';
 import { PanelSection } from './illustrate-page-panel-sections';

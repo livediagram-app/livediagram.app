@@ -1,7 +1,7 @@
 'use client';
 
 import { useId, type HTMLAttributes, type ReactNode } from 'react';
-import { CountBadge } from '@/components/primitives/CountBadge';
+import { CountBadge } from '@livediagram/ui';
 import { TreeChevronIcon } from '@/components/primitives/explorer-icons';
 
 // One sidebar row (docs/specs/013-workspace/explorer-structure.md): a `treeitem` whose own line

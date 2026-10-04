@@ -1,4 +1,5 @@
-import { lucideWorkflow } from '@livediagram/icons/lucide';
+import { lucideLayoutGrid, lucideWorkflow } from '@livediagram/icons/lucide';
+import type { ComponentType } from 'react';
 
 import { Glyph, type IconProps } from './Glyph';
 import { lucideGlyph } from './lucide-glyph';
@@ -46,3 +47,17 @@ export function MindmapIcon({ size = 16, ...rest }: IconProps) {
     </Glyph>
   );
 }
+
+// Each editor mode's mark (docs/specs/007-editor/editor-modes.md "Each mode's mark"), keyed by the
+// mode's id: the same glyph on the mode switch, Opens in, the tab pill, the template mode filter
+// and the marketing site's mode pictures.
+export const EDITOR_MODE_ICONS: Readonly<
+  Record<'diagram' | 'draw' | 'illustrate', ComponentType<IconProps>>
+> = {
+  diagram: FlowchartIcon,
+  draw: MarkerIcon,
+  illustrate: IllustrateIcon,
+};
+
+// "Everything", every mode at once, in the template mode filter: a grid.
+export const EverythingIcon = lucideGlyph(lucideLayoutGrid, 16);

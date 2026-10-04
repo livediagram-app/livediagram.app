@@ -6,7 +6,7 @@
 // the section order, and each piece here is one cohesive slice.
 
 import { ActivityIcon, TeamIcon } from '@/components/primitives/explorer-icons';
-import { CountBadge } from '@/components/primitives/CountBadge';
+import { CountBadge } from '@livediagram/ui';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 import type { ActivityAction, ActivityPlace, ActivityThread } from '@livediagram/api-schema';

@@ -8,7 +8,7 @@ that happens to contain a number; a badge reads as a count at a glance, lines
 up from label to label, and matches the Explorer's folder counts.
 
 - **Chrome** (panels, dialogs, menus, tiles) uses `CountBadge`
-  (`apps/live/components/primitives/CountBadge.tsx`), the same grey pill the
+  (`packages/ui/src/CountBadge.tsx`, shared with the marketing site), the same grey pill the
   Explorer puts beside a folder's name. `MenuTile` takes a `count`, and the
   element `…` menus' rows put the badge at their trailing edge.
 - **On the canvas** a board's own controls draw the badge in the card's accent

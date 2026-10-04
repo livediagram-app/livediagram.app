@@ -1,4 +1,4 @@
-import { SOLID_BRAND_DARK } from '@livediagram/ui';
+import { SOLID_BRAND_DARK } from './brand-classes';
 
 // The small count pill: how many things are inside or waiting. The
 // Explorer page's rows, cards and sidebar and the floating panel's tree
