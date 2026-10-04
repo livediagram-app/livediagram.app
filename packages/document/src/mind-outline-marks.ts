@@ -208,7 +208,11 @@ export function mindMarkdownToMarks(line: string): TextRun[] {
     const canOpen = underscore ? !/\w/.test(before) && !/\s/.test(after) : !/\s/.test(after);
     const canClose = underscore ? !/\w/.test(after) && !/\s/.test(before) : !/\s/.test(before);
     const closes = t.raw === '</u>' ? '<u>' : t.raw === '<u>' ? null : t.raw;
-    const at = closes && canClose ? open.findLastIndex((j) => tokens[j]!.raw === closes) : -1;
+    // The nearest still-open marker this one closes (searched from the top of the stack).
+    let at = -1;
+    if (closes && canClose)
+      for (let k = open.length - 1; k >= 0 && at < 0; k--)
+        if (tokens[open[k]!]!.raw === closes) at = k;
     if (at >= 0) {
       const j = open[at]!;
       tokens[j]!.pair = i;
