@@ -1,3 +1,4 @@
+import { useCanvasViewKey } from '@/hooks/canvas/useViewportStore';
 import type { RefObject } from 'react';
 import { BORDER_STROKE_PX, DEFAULT_BORDER_STROKE, isSelfDrawingShape } from '@livediagram/document';
 import { isSvgRenderedShape, ShapeSvgOverlay } from '@/components/canvas/shape-svg-overlay';
@@ -19,10 +20,10 @@ type CanvasDrawPreviewProps = {
   // The armed fixed-size note's ghost (docs/specs/021-event-storming/event-storming.md Phase 4), when the tile is a
   // stamp rather than a draw-to-size. It replaces the size box entirely.
   stamp: StampGhost | null;
-  viewportZoom: number;
   wrapperRef: RefObject<HTMLDivElement | null>;
-  // The view the wrapper sits in (useCanvasClientOrigin).
-  viewKey: string;
+  // The canvas size. With the view, read from the viewport store here, it is what the wrapper's
+  // origin follows (useCanvasViewKey), so the chrome around this takes no view.
+  mainSize: { width: number; height: number };
   // The board's ink on a whiteboard (docs/specs/023-draw-mode/draw-mode.md), what the main pen
   // previews in. Absent elsewhere.
   whiteboardInk?: string;
@@ -38,11 +39,11 @@ export function CanvasDrawPreview({
   polygonCursor,
   pendingDraw,
   stamp,
-  viewportZoom,
   wrapperRef,
-  viewKey,
+  mainSize,
   whiteboardInk,
 }: CanvasDrawPreviewProps) {
+  const { viewportZoom, viewKey } = useCanvasViewKey(mainSize);
   // A whiteboard shape or line previews as it will land (docs/specs/023-draw-mode/draw-mode.md
   // "Shapes"): in the board's ink, solid, unfilled.
   const inkOf = (colour: string | null) => colour ?? whiteboardInk ?? 'currentColor';

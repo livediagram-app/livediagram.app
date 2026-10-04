@@ -1,5 +1,5 @@
-import { useStoreSlice } from '@/hooks/ui/useStoreSlice';
-import type { View, ViewportStore } from '@/lib/viewport-store';
+import type { View } from '@/lib/viewport-store';
+import { useViewportOf, useViewportStore } from '@/hooks/canvas/useViewportStore';
 import { useCallback, useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
 import {
   DEFAULT_BUTTON_MODE,
@@ -99,19 +99,11 @@ import { pressIsOffPage } from '@/hooks/canvas/illustrate-page-guard';
 
 // The canvas boundary (docs/specs/008-canvas/canvas-performance.md "The canvas re-renders only for what it
 // shows"): memoised, its `on…` props stable, so an editor render that changes nothing it shows stops here.
-export const Canvas = withStableEventProps(CanvasWithView);
+export const Canvas = withStableEventProps(CanvasView);
 
-// The canvas is what shows the view (docs/specs/008-canvas/canvas-performance.md "A pan or zoom renders
-// the canvas, not the editor"): it subscribes to the viewport store, so a pan or zoom renders from
-// here down and nothing above it.
+// The canvas is what shows the view (docs/specs/008-canvas/blueprints/viewport-store.md "Inside the
+// canvas"): CanvasView subscribes to it; what it renders takes the view only where it shows it.
 const wholeView = (v: View) => v;
-function CanvasWithView({
-  viewport,
-  ...props
-}: Omit<CanvasProps, 'viewportZoom' | 'viewportOffset'> & { viewport: ViewportStore }) {
-  const view = useStoreSlice(viewport, wholeView);
-  return <CanvasView {...props} viewportZoom={view.zoom} viewportOffset={view.offset} />;
-}
 
 function CanvasView(props: CanvasProps) {
   const {
@@ -127,9 +119,7 @@ function CanvasView(props: CanvasProps) {
     tabPatternColor,
     mainRef,
     isPinchingRef,
-    viewportOffset,
     setViewportOffset,
-    viewportZoom,
     setViewportZoom,
     elements,
     onSelectMarquee,
@@ -152,6 +142,10 @@ function CanvasView(props: CanvasProps) {
     tabLoadState,
     onRetryTabLoad,
   } = props;
+  const { zoom: viewportZoom, offset: viewportOffset } = useViewportOf(wholeView);
+  // The zoom when a handler runs, for what is handed down and must keep its identity across zooms.
+  const viewportStore = useViewportStore();
+  const readZoom = useCallback(() => viewportStore.get().zoom, [viewportStore]);
 
   const wrapperRef = useRef<HTMLDivElement>(null);
   // A whiteboard pen's own cursor, as chosen in the dock's More flyout.
@@ -252,7 +246,7 @@ function CanvasView(props: CanvasProps) {
     zoomIn: handleZoomIn,
     zoomOut: handleZoomOut,
     setZoomTo: handleSetZoom,
-  } = useZoomControls(viewportZoom, setViewportZoom);
+  } = useZoomControls(setViewportZoom);
 
   // "Are there any arrows" decides whether to mount the ArrowDefs and lay out
   // labels. `some` short-circuits on the first arrow, so the typical render
@@ -452,7 +446,7 @@ function CanvasView(props: CanvasProps) {
     activeTabId: props.activeTabId,
     onFollowLink: props.onFollowLink,
     mainRef,
-    viewportZoom,
+    readZoom,
     setViewportOffset,
     teleportTo: avatar.teleportTo,
   });

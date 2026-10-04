@@ -336,7 +336,6 @@ export function EditorCanvasHost() {
     toggleZenMode,
     undo,
     userPreferences,
-    viewport,
     zenMode,
     whiteboardDock,
     drag,
@@ -535,7 +534,6 @@ export function EditorCanvasHost() {
         tabFont={activeTab.font}
         mainRef={canvasMainRef}
         isPinchingRef={isPinchingRef}
-        viewport={viewport}
         setViewportZoom={setViewportZoom}
         onFitToScreen={() => {
           fitToScreen();

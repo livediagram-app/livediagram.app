@@ -11,8 +11,9 @@ type Point = { x: number; y: number };
 
 type WhiteboardPenGestureDeps = Pick<
   CanvasProps,
-  'pendingDraw' | 'viewportZoom' | 'isPinchingRef' | 'onCommitFreehand'
+  'pendingDraw' | 'isPinchingRef' | 'onCommitFreehand'
 > & {
+  viewportZoom: number;
   wrapperRef: RefObject<HTMLDivElement | null>;
 };
 

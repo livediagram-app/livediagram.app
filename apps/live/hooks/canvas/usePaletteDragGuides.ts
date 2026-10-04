@@ -1,5 +1,6 @@
 'use client';
 
+import { useLatest } from '@/hooks/ui/useLatest';
 import { useEffect, useRef, useState, type RefObject } from 'react';
 import {
   type AlignmentGuide,
@@ -51,14 +52,15 @@ const emptied = <T>(current: T[]): T[] => current;
 
 export function usePaletteDragGuides({
   elements,
-  viewportZoom,
+  readZoom,
   wrapperRef,
   insertGate,
   inertIds,
   timeline,
 }: {
   elements: Element[];
-  viewportZoom: number;
+  // The zoom now, read on each dragover (docs/specs/008-canvas/blueprints/viewport-store.md).
+  readZoom: () => number;
   wrapperRef: RefObject<HTMLElement | null>;
   // Insert between (docs/specs/021-event-storming/event-storming.md): what the board and session allow. The other
   // half of the gate — the held Alt — is read off each dragover, so an
@@ -83,6 +85,8 @@ export function usePaletteDragGuides({
   // in-flight slot's hysteresis with it) — and a peer's mid-drag edit is still
   // seen, because the handler reads the ref.
   const board = useRef({ elements, inertIds, insertGate, timeline });
+  // The zoom reader, through the latest-value ref: the drag's listeners never re-attach for it.
+  const zoomOf = useLatest(readZoom);
   useEffect(() => {
     board.current = { elements, inertIds, insertGate, timeline };
   });
@@ -121,7 +125,7 @@ export function usePaletteDragGuides({
         clear();
         return;
       }
-      const { x, y } = pointerToCanvas(e.clientX, e.clientY, rect, viewportZoom);
+      const { x, y } = pointerToCanvas(e.clientX, e.clientY, rect, zoomOf.current());
       const { elements: live, inertIds: inert, insertGate: gate, timeline: lanes } = board.current;
       // Alt, live: press it mid-drag and the slot opens on the next move,
       // release it and the ordinary alignment snap takes back over. Only for
@@ -199,7 +203,7 @@ export function usePaletteDragGuides({
       setInsertionSlot(null);
       setLanePreview(null);
     };
-  }, [preview, viewportZoom, wrapperRef]);
+  }, [preview, zoomOf, wrapperRef]);
 
   return { guides, distGuides };
 }

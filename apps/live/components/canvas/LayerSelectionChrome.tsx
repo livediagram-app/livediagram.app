@@ -14,6 +14,7 @@ import {
   type CanvasSelectionInput,
 } from '@/hooks/canvas/useCanvasSelectionView';
 import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
+import { useCanvasZoom } from '@/components/canvas/CanvasZoomContext';
 import type { Selection } from '@/lib/selection-store';
 
 const singleId = (s: Selection) => s.selectedId;
@@ -24,7 +25,6 @@ export function LayerSelectionChrome({
   selectionInput,
   elements,
   editingId,
-  zoom,
   nextNote,
   pluses,
   onBeginDrag,
@@ -32,7 +32,6 @@ export function LayerSelectionChrome({
   selectionInput: CanvasSelectionInput;
   elements: Element[];
   editingId: string | null;
-  zoom: number;
   // The event-storming next-note buttons, when the board offers them.
   nextNote: { blocked: boolean; onAdd: ComponentProps<typeof NextNoteButtons>['onAdd'] } | null;
   pluses: Omit<PlusesProps, 'selectedElement' | 'bounds' | 'zoom'>;
@@ -41,6 +40,8 @@ export function LayerSelectionChrome({
   const { selectionBounds, showPlus, showUnionResize, unionResizeBounds, unionResizePrimaryId } =
     useCanvasSelectionView(selectionInput);
   const selectedId = useSelectionOf(singleId);
+  // Counter-scaled chrome: the zoom from the canvas's zoom context, so the layer passes none.
+  const zoom = useCanvasZoom();
   return (
     <>
       {/* The next-note buttons on the note you are pointing at or have selected

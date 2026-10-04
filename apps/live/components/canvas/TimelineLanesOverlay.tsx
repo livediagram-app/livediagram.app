@@ -1,5 +1,6 @@
 'use client';
 
+import { useCanvasViewKey } from '@/hooks/canvas/useViewportStore';
 import type { RefObject } from 'react';
 import {
   deriveTextColorForBg,
@@ -32,19 +33,19 @@ const BLEED_PX = 64;
 export function TimelineLanesOverlay({
   timeline,
   tabThemeId,
-  viewportZoom,
   wrapperRef,
-  viewKey,
+  mainSize,
 }: {
   // The active tab's lane stack, or null when lanes are off / this is not an
   // event-storming board. Null draws nothing at all.
   timeline: EsTimeline | null;
   tabThemeId: ThemeId;
-  viewportZoom: number;
   wrapperRef: RefObject<HTMLDivElement | null>;
-  // The view the wrapper sits in (useCanvasClientOrigin).
-  viewKey: string;
+  // The canvas size. With the view, read from the viewport store here, it is what the wrapper's
+  // origin follows (useCanvasViewKey), so the chrome around this takes no view.
+  mainSize: { width: number; height: number };
 }) {
+  const { viewportZoom, viewKey } = useCanvasViewKey(mainSize);
   const preview = useLanePreview();
   const rect = useCanvasClientOrigin(wrapperRef, !!timeline && !!preview, viewKey);
   if (!timeline || !preview || !rect) return null;

@@ -1,3 +1,6 @@
+import { useCallback } from 'react';
+import { useViewportOf } from '@/hooks/canvas/useViewportStore';
+import type { View } from '@/lib/viewport-store';
 import {
   elementHasText,
   elementKindLabel,
@@ -22,6 +25,8 @@ import { useInsertionSlot } from '@/lib/insertion-preview';
 // and the marquee multi-selection toolbar, each riding a sibling wrapper
 // that mirrors the canvas transform so they counter-scale with zoom and
 // float over the selection. Extracted from Canvas as one cohesive layer —
+// What the toolbars read while nothing is selected: never drawn, so any fixed view will do.
+const RESTING_VIEW: View = { zoom: 1, offset: { x: 0, y: 0 } };
 const multiOf = (s: Selection) => s.multiSelectedIds;
 
 // Canvas passes its props and what the selection is derived from; the toolbars read the selection
@@ -46,6 +51,12 @@ export function CanvasSelectionToolbars({
     showMultiToolbar,
   } = useCanvasSelectionView(selectionInput);
   const multiSelectedIds = useSelectionOf(multiOf);
+  // The toolbars mirror the canvas transform, so they follow the view, but only while they show:
+  // with nothing selected a zoom renders none of this (docs/specs/008-canvas/blueprints/viewport-store.md).
+  const showing = selected !== null || showMultiToolbar;
+  const { zoom: viewportZoom, offset: viewportOffset } = useViewportOf(
+    useCallback((v: View) => (showing ? v : RESTING_VIEW), [showing]),
+  );
   // Insert-between preview (docs/specs/021-event-storming/event-storming.md): the toolbars anchor to element BOUNDS,
   // and the preview slides elements by a render-time transform their bounds
   // know nothing about — so while a slot is open they would float over empty
@@ -61,8 +72,6 @@ export function CanvasSelectionToolbars({
     elements,
     readOnly,
     canvasTool,
-    viewportZoom,
-    viewportOffset,
     onDuplicateSelected,
     onToggleLockSelected,
     onDeleteSelected,

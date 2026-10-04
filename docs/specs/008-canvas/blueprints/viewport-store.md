@@ -5,15 +5,16 @@ canvas, not the editor**. The same shape as the [Selection store](selection-stor
 
 ## Files
 
-| File                                               | Role                                                                    |
-| -------------------------------------------------- | ----------------------------------------------------------------------- |
-| `apps/live/lib/viewport-store.ts`                  | `createViewportStore`, `View`, `ViewportStore`                          |
-| `apps/live/hooks/ui/useStoreSlice.ts`              | `useStoreSlice(store, select, equal)`: the shared slice subscription    |
-| `apps/live/hooks/canvas/useSelectionStore.tsx`     | `useSelectionOf` delegates to `useStoreSlice`                           |
-| `apps/live/hooks/canvas/useEditorViewport.ts`      | Holds the store; `zoomRef` / `viewportOffsetRef` read it; no view state |
-| `apps/live/app/document/[id]/useEditorState.ts`    | Never subscribes; passes `viewport` on; effects subscribe               |
-| `apps/live/components/canvas/EditorCanvasHost.tsx` | Passes the store, not the view values, to the canvas                    |
-| `apps/live/components/canvas/Canvas.tsx`           | Subscribes to the view (phase 1); the canvas is the view's reader       |
+| File                                               | Role                                                                       |
+| -------------------------------------------------- | -------------------------------------------------------------------------- |
+| `apps/live/lib/viewport-store.ts`                  | `createViewportStore`, `View`, `ViewportStore`                             |
+| `apps/live/hooks/ui/useStoreSlice.ts`              | `useStoreSlice(store, select, equal)`: the shared slice subscription       |
+| `apps/live/hooks/canvas/useSelectionStore.tsx`     | `useSelectionOf` delegates to `useStoreSlice`                              |
+| `apps/live/hooks/canvas/useEditorViewport.ts`      | Holds the store; `zoomRef` / `viewportOffsetRef` read it; no view state    |
+| `apps/live/app/document/[id]/useEditorState.ts`    | Never subscribes; passes `viewport` on; effects subscribe                  |
+| `apps/live/components/canvas/EditorCanvasHost.tsx` | Passes the store, not the view values, to the canvas                       |
+| `apps/live/components/canvas/Canvas.tsx`           | `CanvasView` subscribes to the view; children subscribe where they show it |
+| `apps/live/hooks/canvas/useViewportStore.tsx`      | `ViewportStoreProvider`, `useViewportStore`, `useViewportOf`               |
 
 ## Domain and naming
 
@@ -48,9 +49,20 @@ canvas, not the editor**. The same shape as the [Selection store](selection-stor
 | The editor context                | carries `viewport`, not `viewportZoom` / `viewportOffset`                                                                                                                                                   |
 | `EditorCanvasHost` → `Canvas`     | passes `viewport`; `CanvasView` subscribes with `useStoreSlice`                                                                                                                                             |
 
-The canvas and everything it renders keep their props: phase 1 moves the subscription from the root
-to the canvas. Phase 2 (inside the canvas: the transform applied from the store, overlays
-subscribing) is planned in `plans/0041-viewport-store.md`.
+### Inside the canvas
+
+- `ViewportStoreProvider` (`hooks/canvas/useViewportStore.tsx`) wraps the editor view beside
+  the selection's provider; `useViewportOf(select, equal)` subscribes to a slice, `useViewportStore()`
+  returns the store and throws `ViewportStoreMissing` outside a provider.
+- `CanvasProps` carries no `viewportZoom` / `viewportOffset`. `CanvasView` subscribes to the whole
+  view and is the canvas-level reader: its transform, its gesture hooks and the zoom context it
+  provides read it. What it renders takes the view only where it shows it:
+  - `CanvasChrome` and its panels take no view; inside it the parts that convert canvas points to
+    the screen (the guide and lane overlays, draw previews, palette-drag guides, `canvasViewKey`),
+    the zoom controls and the Map subscribe with `useViewportOf`;
+  - the element layer's remote cursors and laser overlay, and the selection toolbars, subscribe.
+- A zoom tick therefore renders `CanvasView`, the counter-scaled parts and those subscribers; the
+  floating panels (Palette, Explorer, the command palette) render 0 times.
 
 ## Errors and edge cases
 

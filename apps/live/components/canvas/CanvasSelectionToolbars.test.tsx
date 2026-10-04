@@ -11,6 +11,8 @@ import { CanvasSelectionToolbars } from './CanvasSelectionToolbars';
 import type { CanvasProps } from './Canvas.types';
 import { createSelectionStore } from '@/lib/selection-store';
 import { SelectionStoreProvider } from '@/hooks/canvas/useSelectionStore';
+import { ViewportStoreProvider } from '@/hooks/canvas/useViewportStore';
+import { createViewportStore } from '@/lib/viewport-store';
 
 // docs/specs/008-canvas/canvas-performance.md: the selection chrome is hidden while a selection is
 // moved, resized or reshaped, and comes back when the gesture ends.
@@ -26,8 +28,6 @@ function renderToolbars(multi: boolean) {
     elements,
     readOnly: false,
     canvasTool: 'select',
-    viewportZoom: 1,
-    viewportOffset: { x: 0, y: 0 },
     onDuplicateSelected: vi.fn(),
     onToggleLockSelected: vi.fn(),
     onDeleteSelected: vi.fn(),
@@ -46,11 +46,13 @@ function renderToolbars(multi: boolean) {
   };
   return render(
     <SelectionStoreProvider store={store}>
-      <CanvasSelectionToolbars
-        props={props}
-        selectionInput={selectionInput}
-        quickRingOpen={false}
-      />
+      <ViewportStoreProvider store={createViewportStore(1)}>
+        <CanvasSelectionToolbars
+          props={props}
+          selectionInput={selectionInput}
+          quickRingOpen={false}
+        />
+      </ViewportStoreProvider>
     </SelectionStoreProvider>,
   );
 }

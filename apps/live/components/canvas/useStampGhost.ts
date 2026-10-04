@@ -9,10 +9,10 @@ import {
   type StampPlacement,
 } from '@/lib/stamp-placement';
 
-type StampGhostDeps = Pick<
-  CanvasProps,
-  'pendingDraw' | 'elements' | 'tabKind' | 'tabLayers' | 'viewportZoom'
-> & { wrapperRef: RefObject<HTMLDivElement | null> };
+type StampGhostDeps = Pick<CanvasProps, 'pendingDraw' | 'elements' | 'tabKind' | 'tabLayers'> & {
+  viewportZoom: number;
+  wrapperRef: RefObject<HTMLDivElement | null>;
+};
 
 // The ghost as the preview draws it: the placement, and the same box in
 // SCREEN coords, worked out in the pointer handler that produced it so the
