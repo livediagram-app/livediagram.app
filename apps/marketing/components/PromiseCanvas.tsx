@@ -12,7 +12,7 @@ import { useEffect, useRef, useState, type ComponentType, type CSSProperties } f
 import { PROMISES, type Promise, type PromiseId } from '@/lib/promises';
 import { CollaboratorPointer } from './hero-illustration-glyphs';
 
-// The promises (docs/specs/019-marketing/marketing-site.md "Promises"), between the hero and the
+// The promises (docs/specs/019-marketing/marketing-site.md "Promises"), straight after the
 // template gallery, under "Built with your values in mind", told the way the product tells things: as a diagram on a canvas. A
 // "livediagram" hub sits in the middle of a dotted canvas, with the five promises as nodes around
 // it (Completely Free, No Account Needed, Open Source, Private by Design, Real-Time Collaboration),
@@ -127,7 +127,7 @@ export function PromiseCanvas() {
   const [hot, setHot] = useState<PromiseId | null>(null);
   return (
     <section aria-labelledby="promises-heading" className="relative">
-      <div className="mx-auto max-w-6xl px-6 pb-20 pt-4 sm:pb-24">
+      <div className="mx-auto max-w-6xl px-6 py-20 sm:py-24">
         <div className="mx-auto max-w-2xl text-center">
           <p className="text-sm font-semibold uppercase tracking-wide text-brand-600 dark:text-brand-300">
             No catch

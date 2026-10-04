@@ -68,6 +68,8 @@ describe('SiteHeader', () => {
     render(<SiteHeader ctaSurface="Home" />);
     const [inHeader, onRail] = screen.getAllByRole('button', { name: /^Appearance: / });
     expect(inHeader!.className).toContain('xl:hidden');
+    // A phone's header has no room for it.
+    expect(inHeader!.className).toContain('max-sm:hidden');
     expect(onRail!.closest('[role="toolbar"]')?.getAttribute('aria-label')).toBe('Appearance');
   });
 });

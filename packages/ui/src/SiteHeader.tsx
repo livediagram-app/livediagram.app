@@ -16,7 +16,8 @@ import { StartBlankMenu } from './StartBlankMenu';
 // Explorer, Telemetry, ...) lives in the apps menu, so the header itself
 // carries just those CTAs, plus the quiet Appearance toggle just left of them
 // (docs/specs/004-interface-design/appearance.md). Where the ShareRail shows (xl+) the toggle
-// moves to its own rail under it, so the header holds only the CTAs there.
+// moves to its own rail under it, so the header holds only the CTAs there; on a phone there is no
+// room for it, so it is left out (the device's own setting applies through System).
 //
 // `productNav` is the current section key for the apps-menu dropdown next to
 // the logo (the landing page passes 'home', which reads as "Welcome").
@@ -74,7 +75,7 @@ export function SiteHeader({
             </div>
           ) : null}
           <div className="flex shrink-0 items-center gap-2">
-            <SiteAppearanceToggle className={shareRail ? 'xl:hidden' : ''} />
+            <SiteAppearanceToggle className={`max-sm:hidden ${shareRail ? 'xl:hidden' : ''}`} />
             {actions ?? <DefaultActions ctaSurface={ctaSurface} />}
           </div>
         </div>

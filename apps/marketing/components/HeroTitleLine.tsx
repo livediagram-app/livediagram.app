@@ -16,7 +16,8 @@ import { HERO_WORDS, HeroWordCard } from './HeroWordCard';
 // sliding up out of the clipped slot as the next slides up into place (hero-word-* in
 // app/hero-animations.css). The static HTML reads "Diagram",
 // the first paint has no motion, and reduced motion holds "Diagram". A dotted underline marks the
-// word as more than it shows: hovering it (or tapping it, on touch) opens a card listing every word
+// word as more than it shows (only where there is a mouse to hover with; a touch screen gets no
+// underline and no card): hovering it opens a card listing every word
 // (HeroWordCard, the current one in brand) and holds the cycle while it is up. Decorative: the h1 carries the stable
 // text for screen readers.
 
@@ -41,8 +42,8 @@ export function HeroTitleLine({ children }: { children: ReactNode }) {
   const wordRefs = useRef<(HTMLSpanElement | null)[]>([]);
   const slotRef = useRef<HTMLSpanElement>(null);
   const [widths, setWidths] = useState<number[] | null>(null);
-  // The card listing every word: opened by hovering the word with a mouse, or tapping it, and
-  // closed by leaving it or tapping anywhere else. The cycle holds while it is up.
+  // The card listing every word: opened by hovering the word with a mouse and closed by leaving it.
+  // A touch screen never opens it. The cycle holds while it is up.
   const [open, setOpen] = useState(false);
   const triggerRef = useRef<HTMLSpanElement>(null);
   const cardRef = useRef<HTMLSpanElement>(null);
@@ -66,16 +67,6 @@ export function HeroTitleLine({ children }: { children: ReactNode }) {
       // The pointer stays on the word.
       card.style.setProperty('--hero-card-nudge', `${-nudge}px`);
     }
-  }, [open]);
-  useEffect(() => {
-    if (!open) return;
-    const onDown = (e: PointerEvent) => {
-      if (e.pointerType !== 'mouse' && !triggerRef.current?.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    };
-    document.addEventListener('pointerdown', onDown);
-    return () => document.removeEventListener('pointerdown', onDown);
   }, [open]);
 
   useEffect(() => {
@@ -126,9 +117,6 @@ export function HeroTitleLine({ children }: { children: ReactNode }) {
         onPointerLeave={(e) => {
           if (e.pointerType === 'mouse') setOpen(false);
         }}
-        onPointerUp={(e) => {
-          if (e.pointerType !== 'mouse') setOpen((o) => !o);
-        }}
       >
         <span ref={slotRef} className="hero-word-slot inline-grid justify-items-end">
           {HERO_WORDS.map(({ word }, i) => {
@@ -147,7 +135,7 @@ export function HeroTitleLine({ children }: { children: ReactNode }) {
                 ref={(el) => {
                   wordRefs.current[i] = el;
                 }}
-                className={`[grid-area:1/1] underline decoration-slate-300 decoration-dotted decoration-[0.05em] underline-offset-[0.14em] transition group-hover:decoration-brand-400 dark:decoration-slate-600 ${state}`}
+                className={`[grid-area:1/1] decoration-slate-300 decoration-dotted decoration-[0.05em] underline-offset-[0.14em] transition group-hover:decoration-brand-400 [@media(hover:hover)]:underline dark:decoration-slate-600 ${state}`}
               >
                 {word}
               </span>
@@ -156,7 +144,7 @@ export function HeroTitleLine({ children }: { children: ReactNode }) {
         </span>
       </span>
       {open ? (
-        // Opened by a hover or a tap (a hint cannot open on a tap).
+        // Opened by a mouse hover only.
         <HeroWordCard shown={shown} left={wordCentre} cardRef={cardRef} />
       ) : null}
       {children}

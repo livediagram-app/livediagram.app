@@ -10,6 +10,15 @@ import type { CSSProperties } from 'react';
 
 const FONT = 'ui-sans-serif, system-ui, sans-serif';
 const CENTRE = { x: 300, y: 140 };
+// On a phone the map is drawn tall: the centre in the middle, two branches above it and two below,
+// each branch's ideas stacked away from the centre.
+const PORTRAIT_CENTRE = { x: 180, y: 206 };
+const PORTRAIT_AT: Record<string, { x: number; y: number }> = {
+  Marketing: { x: 92, y: 104 },
+  Product: { x: 268, y: 104 },
+  Support: { x: 268, y: 308 },
+  Events: { x: 92, y: 308 },
+};
 
 const at = (d: number, extra?: Record<string, string | number>) =>
   ({ '--d': `${d}s`, ...extra }) as CSSProperties;
@@ -86,7 +95,16 @@ const BRANCHES: Branch[] = [
 
 // A branch from the centre: a curve out, drawn thick at the centre and thinning toward the
 // branch, as a mind map draws its main branches (two strokes, the thick one shorter).
-function trunk(b: Branch) {
+function trunk(b: Branch, portrait: boolean) {
+  if (portrait) {
+    const c = PORTRAIT_CENTRE;
+    const up = b.y < c.y;
+    const sx = c.x + (b.x < c.x ? -30 : 30);
+    const sy = c.y + (up ? -24 : 24);
+    const ey = b.y + (up ? 16 : -16);
+    const my = (sy + ey) / 2;
+    return `M${sx} ${sy} C${sx} ${my}, ${b.x} ${my}, ${b.x} ${ey}`;
+  }
   const sx = CENTRE.x + (b.x < CENTRE.x ? -58 : 58);
   const ex = b.x + (b.x < CENTRE.x ? 46 : -46);
   const mx = (sx + ex) / 2;
@@ -99,7 +117,18 @@ function leafY(b: Branch, i: number) {
   return b.y + (i - (b.leaves.length - 1) / 2) * step;
 }
 
-function LeafNode({ b, leaf, i }: { b: Branch; leaf: Leaf; i: number }) {
+function LeafNode({
+  b,
+  leaf,
+  i,
+  portrait,
+}: {
+  b: Branch;
+  leaf: Leaf;
+  i: number;
+  portrait: boolean;
+}) {
+  if (portrait) return <PortraitLeaf b={b} leaf={leaf} i={i} />;
   const y = leafY(b, i);
   const fromX = b.x + (b.side === 'left' ? -46 : 46);
   const lineStart = b.side === 'left' ? fromX - 26 : fromX + 26;
@@ -141,10 +170,62 @@ function LeafNode({ b, leaf, i }: { b: Branch; leaf: Leaf; i: number }) {
   );
 }
 
-// A key press, shown as a keycap with what it does, at the canvas's foot.
-function KeyPress({ d, cap, does }: { d: number; cap: string; does: string }) {
+// A phone's leaf: stacked above a top branch or below a bottom one, written on an underline. Its line
+// leaves the branch sideways and runs up (or down) just left of the stack, so it never crosses a word.
+function PortraitLeaf({ b, leaf, i }: { b: Branch; leaf: Leaf; i: number }) {
+  const up = b.y < PORTRAIT_CENTRE.y;
+  const y = up ? b.y - 44 - i * 30 : b.y + 42 + i * 30;
+  const edgeY = b.y + (up ? -16 : 16);
+  const width = leaf.text.length * 6.4 + 8;
+  const start = b.x - 44;
   return (
-    <g className="hm-press" style={at(d)}>
+    <g>
+      <path
+        className="hm-draw"
+        style={at(leaf.d, { '--dur': '0.35s', '--len': 80 })}
+        d={`M${b.x - 30} ${edgeY} C${start - 8} ${edgeY}, ${start - 8} ${y + 4}, ${start} ${y + 4}`}
+        fill="none"
+        stroke={b.color}
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+      <path
+        className="hm-draw"
+        style={at(leaf.d + 0.25, { '--dur': '0.3s', '--len': width })}
+        d={`M${start} ${y + 4} L${start + width} ${y + 4}`}
+        stroke={b.color}
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+      <text
+        className="hm-type fill-(--art-text)"
+        style={at(leaf.d + 0.3, { '--steps': leaf.text.length })}
+        x={start + 4}
+        y={y}
+        fontFamily={FONT}
+        fontSize="11.5"
+        fontWeight="600"
+      >
+        {leaf.text}
+      </text>
+    </g>
+  );
+}
+
+// A key press, shown as a keycap with what it does, at the canvas's foot.
+function KeyPress({
+  d,
+  cap,
+  does,
+  portrait,
+}: {
+  d: number;
+  cap: string;
+  does: string;
+  portrait: boolean;
+}) {
+  return (
+    <g className="hm-press" style={at(d)} transform={portrait ? 'translate(-120 154)' : undefined}>
       <rect
         x="226"
         y="300"
@@ -186,16 +267,18 @@ function KeyPress({ d, cap, does }: { d: number; cap: string; does: string }) {
   );
 }
 
-export function MindMapBoard() {
+export function MindMapBoard({ portrait = false }: { portrait?: boolean }) {
+  const centre = portrait ? PORTRAIT_CENTRE : CENTRE;
+  const branches = portrait ? BRANCHES.map((b) => ({ ...b, ...PORTRAIT_AT[b.label]! })) : BRANCHES;
   return (
     <>
       {/* Branches out from the centre, each thick at its root. */}
-      {BRANCHES.map((b) => (
+      {branches.map((b) => (
         <g key={b.label}>
           <path
             className="hm-draw"
             style={at(b.d - 0.15, { '--dur': '0.45s', '--len': 220 })}
-            d={trunk(b)}
+            d={trunk(b, portrait)}
             fill="none"
             stroke={b.color}
             strokeWidth="3"
@@ -204,7 +287,7 @@ export function MindMapBoard() {
           <path
             className="hm-draw"
             style={at(b.d - 0.15, { '--dur': '0.3s', '--len': 220, '--to': 150 })}
-            d={trunk(b)}
+            d={trunk(b, portrait)}
             fill="none"
             stroke={b.color}
             strokeWidth="7"
@@ -215,13 +298,13 @@ export function MindMapBoard() {
 
       {/* The centre. */}
       <g className="hm-pop" style={at(0.2)}>
-        <rect x={CENTRE.x - 62} y={CENTRE.y - 24} width="124" height="48" rx="24" fill="#0ea5e9" />
+        <rect x={centre.x - 62} y={centre.y - 24} width="124" height="48" rx="24" fill="#0ea5e9" />
       </g>
       <text
         className="hm-type"
         style={at(0.35, { '--steps': 11 })}
-        x={CENTRE.x}
-        y={CENTRE.y + 5}
+        x={centre.x}
+        y={centre.y + 5}
         textAnchor="middle"
         fontFamily={FONT}
         fontSize="14"
@@ -232,7 +315,7 @@ export function MindMapBoard() {
       </text>
 
       {/* The branch nodes, in their colours. */}
-      {BRANCHES.map((b) => (
+      {branches.map((b) => (
         <g key={b.label}>
           <g className="hm-pop" style={at(b.d)}>
             <rect
@@ -260,22 +343,22 @@ export function MindMapBoard() {
             {b.label}
           </text>
           {b.leaves.map((leaf, i) => (
-            <LeafNode key={leaf.text} b={b} leaf={leaf} i={i} />
+            <LeafNode key={leaf.text} b={b} leaf={leaf} i={i} portrait={portrait} />
           ))}
         </g>
       ))}
 
       {/* The keys that grew it: Tab adds a child idea, Enter a sibling. */}
-      <KeyPress d={2.85} cap="Tab" does="Add an idea" />
-      <KeyPress d={3.35} cap="Enter" does="And another" />
-      <KeyPress d={3.85} cap="Enter" does="And another" />
-      <KeyPress d={5.75} cap="Tab" does="Add an idea" />
-      <KeyPress d={7.45} cap="Tab" does="Add an idea" />
+      <KeyPress d={2.85} cap="Tab" does="Add an idea" portrait={portrait} />
+      <KeyPress d={3.35} cap="Enter" does="And another" portrait={portrait} />
+      <KeyPress d={3.85} cap="Enter" does="And another" portrait={portrait} />
+      <KeyPress d={5.75} cap="Tab" does="Add an idea" portrait={portrait} />
+      <KeyPress d={7.45} cap="Tab" does="Add an idea" portrait={portrait} />
 
       {/* A rocket on the centre, for the launch. */}
       <g className="hm-pop" style={at(8.9)}>
-        <circle cx={CENTRE.x + 56} cy={CENTRE.y - 22} r="14" fill="white" stroke="#e2e8f0" />
-        <text x={CENTRE.x + 56} y={CENTRE.y - 17} textAnchor="middle" fontSize="15">
+        <circle cx={centre.x + 56} cy={centre.y - 22} r="14" fill="white" stroke="#e2e8f0" />
+        <text x={centre.x + 56} y={centre.y - 17} textAnchor="middle" fontSize="15">
           🚀
         </text>
       </g>
@@ -283,7 +366,12 @@ export function MindMapBoard() {
       {/* The teammate filling in Events. */}
       <g
         className="hm-cursor"
-        style={at(4.4, { '--sx': '330px', '--sy': '330px', '--cx': '112px', '--cy': '262px' })}
+        style={at(
+          4.4,
+          portrait
+            ? { '--sx': '330px', '--sy': '470px', '--cx': '128px', '--cy': '362px' }
+            : { '--sx': '330px', '--sy': '330px', '--cx': '112px', '--cy': '262px' },
+        )}
         aria-hidden
       >
         <path

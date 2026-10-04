@@ -1,4 +1,5 @@
 import type { CSSProperties, ReactNode } from 'react';
+import { cursorRide, type Point } from '@/lib/hero-motion';
 
 // The hero's Diagram window (docs/specs/019-marketing/marketing-site.md "Hero"): two people map a
 // sign-up flow together in Diagram mode. Inside a frame, you drop three steps from the strip (each
@@ -112,9 +113,19 @@ function Drop({ d, children }: { d: number; children: ReactNode }) {
   );
 }
 
-function Cursor({ className, color, name }: { className: string; color: string; name: string }) {
+function Cursor({
+  className,
+  color,
+  name,
+  ride,
+}: {
+  className: string;
+  color: string;
+  name: string;
+  ride: readonly Point[];
+}) {
   return (
-    <g className={className} aria-hidden>
+    <g className={className} style={cursorRide(ride) as CSSProperties} aria-hidden>
       <path
         d="M0 0 L12 7 L7 8 L9.5 12.5 L7.5 13.5 L5 9 L1.5 12.5 Z"
         fill={color}
@@ -139,16 +150,166 @@ function Cursor({ className, color, name }: { className: string; color: string; 
 
 const SWATCHES = ['#f87171', '#fbbf24', '#4ade80', '#60a5fa', '#c084fc'];
 
-export function DiagramBoard() {
+type Box = { cx: number; cy: number; w: number; h: number };
+type Link = { d: string; len: number; label?: { x: number; y: number; text: string } };
+
+// Where everything sits: the wide window's landscape layout, and a phone's portrait one, where the
+// flow runs down the screen (the Yes step beside the decision, the No step below it).
+type Layout = {
+  frame: { x: number; y: number; w: number; h: number };
+  visit: Box;
+  create: Box;
+  verified: { cx: number; cy: number; hw: number; hh: number };
+  reminder: Box;
+  tour: Box;
+  db: { cx: number; top: number; w: number };
+  sticky: { x: number; y: number };
+  guide: { x1: number; x2: number; y: number };
+  links: {
+    visitCreate: Link;
+    createVerified: Link;
+    no: Link;
+    retry: Link;
+    yes: Link;
+    writes: Link;
+  };
+  you: Point[];
+  teammate: Point[];
+};
+
+const LANDSCAPE: Layout = {
+  frame: { x: 20, y: -44, w: 560, h: 340 },
+  visit: { cx: 110, cy: 32, w: 120, h: 44 },
+  create: { cx: 110, cy: 135, w: 120, h: 50 },
+  verified: { cx: 290, cy: 135, hw: 70, hh: 40 },
+  reminder: { cx: 290, cy: 255, w: 130, h: 50 },
+  tour: { cx: 475, cy: 135, w: 130, h: 50 },
+  db: { cx: 475, top: 228, w: 110 },
+  sticky: { x: 410, y: -31 },
+  guide: { x1: 40, x2: 565, y: 135 },
+  links: {
+    visitCreate: { d: 'M110 54 L110 110 M104 103 L110 110 L116 103', len: 70 },
+    createVerified: { d: 'M170 135 L220 135 M213 129 L220 135 L213 141', len: 60 },
+    no: {
+      d: 'M290 175 L290 230 M284 223 L290 230 L296 223',
+      len: 70,
+      label: { x: 290, y: 205, text: 'No' },
+    },
+    retry: {
+      d: 'M225 255 L110 255 L110 160 M104 167 L110 160 L116 167',
+      len: 230,
+      label: { x: 160, y: 255, text: 'Retry' },
+    },
+    yes: {
+      d: 'M360 135 L410 135 M403 129 L410 135 L403 141',
+      len: 60,
+      label: { x: 384, y: 126, text: 'Yes' },
+    },
+    writes: {
+      d: 'M475 166 L475 218 M469 211 L475 218 L481 211',
+      len: 60,
+      label: { x: 498, y: 195, text: 'writes' },
+    },
+  },
+  you: [
+    [330, -40],
+    [110, 32],
+    [110, 135],
+    [290, 135],
+    [475, 150],
+    [475, 137],
+    [480, 86],
+  ],
+  teammate: [
+    [620, 300],
+    [290, 255],
+    [170, 255],
+    [470, 15],
+    [545, 268],
+  ],
+};
+
+const PORTRAIT: Layout = {
+  frame: { x: 8, y: -32, w: 344, h: 432 },
+  visit: { cx: 110, cy: 22, w: 120, h: 44 },
+  create: { cx: 110, cy: 115, w: 120, h: 50 },
+  verified: { cx: 110, cy: 215, hw: 60, hh: 36 },
+  reminder: { cx: 110, cy: 322, w: 130, h: 50 },
+  tour: { cx: 268, cy: 215, w: 130, h: 50 },
+  db: { cx: 268, top: 300, w: 110 },
+  sticky: { x: 208, y: -22 },
+  guide: { x1: 16, x2: 344, y: 215 },
+  links: {
+    visitCreate: { d: 'M110 44 L110 90 M104 83 L110 90 L116 83', len: 60 },
+    createVerified: { d: 'M110 140 L110 179 M104 172 L110 179 L116 172', len: 50 },
+    no: {
+      d: 'M110 251 L110 297 M104 290 L110 297 L116 290',
+      len: 60,
+      label: { x: 110, y: 277, text: 'No' },
+    },
+    retry: {
+      d: 'M45 322 L24 322 L24 115 L50 115 M43 109 L50 115 L43 121',
+      len: 260,
+      label: { x: 24, y: 222, text: 'Retry' },
+    },
+    yes: {
+      d: 'M170 215 L203 215 M196 209 L203 215 L196 221',
+      len: 45,
+      label: { x: 187, y: 205, text: 'Yes' },
+    },
+    writes: {
+      d: 'M268 240 L268 290 M262 283 L268 290 L274 283',
+      len: 60,
+      label: { x: 292, y: 266, text: 'writes' },
+    },
+  },
+  you: [
+    [300, -38],
+    [110, 22],
+    [110, 115],
+    [110, 215],
+    [268, 230],
+    [268, 217],
+    [272, 151],
+  ],
+  teammate: [
+    [350, 470],
+    [110, 322],
+    [40, 322],
+    [266, 10],
+    [334, 330],
+  ],
+};
+
+function Rect({ box, round }: { box: Box; round?: boolean }) {
+  return (
+    <rect
+      x={box.cx - box.w / 2}
+      y={box.cy - box.h / 2}
+      width={box.w}
+      height={box.h}
+      rx={round ? box.h / 2 : 8}
+      className={INK}
+      strokeWidth="2"
+    />
+  );
+}
+
+export function DiagramBoard({ portrait = false }: { portrait?: boolean }) {
+  const L = portrait ? PORTRAIT : LANDSCAPE;
+  const { tour, verified: v } = L;
+  const dbBottom = L.db.top + 42;
+  const dbLeft = L.db.cx - L.db.w / 2;
+  const dbRight = L.db.cx + L.db.w / 2;
   return (
     <>
       {/* The frame the flow lives in, with its name. */}
       <g className="hm-fade" style={at(0.1)}>
         <rect
-          x="20"
-          y="-44"
-          width="560"
-          height="340"
+          x={L.frame.x}
+          y={L.frame.y}
+          width={L.frame.w}
+          height={L.frame.h}
           rx="10"
           fill="none"
           className="stroke-(--art-ink-stroke)"
@@ -157,8 +318,8 @@ export function DiagramBoard() {
           opacity="0.6"
         />
         <text
-          x="34"
-          y="-26"
+          x={L.frame.x + 14}
+          y={L.frame.y + 18}
           fontFamily={FONT}
           fontSize="11"
           fontWeight="700"
@@ -170,53 +331,47 @@ export function DiagramBoard() {
 
       {/* Your three steps: dropped from the strip, labelled as they land. */}
       <Drop d={1.0}>
-        <rect x="50" y="10" width="120" height="44" rx="22" className={INK} strokeWidth="2" />
+        <Rect box={L.visit} round />
       </Drop>
-      <Typed x={110} y={37} d={1.1}>
+      <Typed x={L.visit.cx} y={L.visit.cy + 5} d={1.1}>
         Visit site
       </Typed>
       <Drop d={1.8}>
-        <rect x="50" y="110" width="120" height="50" rx="8" className={INK} strokeWidth="2" />
+        <Rect box={L.create} />
       </Drop>
-      <Typed x={110} y={140} d={1.9}>
+      <Typed x={L.create.cx} y={L.create.cy + 5} d={1.9}>
         Create account
       </Typed>
-      <Connector d="M110 54 L110 110 M104 103 L110 110 L116 103" at={2.0} len={70} />
+      <Connector {...L.links.visitCreate} at={2.0} />
       <Drop d={2.6}>
-        <polygon points="290,95 360,135 290,175 220,135" className={INK} strokeWidth="2" />
+        <polygon
+          points={`${v.cx},${v.cy - v.hh} ${v.cx + v.hw},${v.cy} ${v.cx},${v.cy + v.hh} ${v.cx - v.hw},${v.cy}`}
+          className={INK}
+          strokeWidth="2"
+        />
       </Drop>
-      <Typed x={290} y={139} d={2.7} size={12}>
+      <Typed x={v.cx} y={v.cy + 4} d={2.7} size={12}>
         Verified?
       </Typed>
-      <Connector d="M170 135 L220 135 M213 129 L220 135 L213 141" at={3.2} len={60} />
+      <Connector {...L.links.createVerified} at={3.2} />
 
       {/* The teammate's No branch and the Retry loop back. */}
       <Drop d={4.4}>
-        <rect x="225" y="230" width="130" height="50" rx="8" className={INK} strokeWidth="2" />
+        <Rect box={L.reminder} />
       </Drop>
-      <Typed x={290} y={260} d={4.5}>
+      <Typed x={L.reminder.cx} y={L.reminder.cy + 5} d={4.5}>
         Send reminder
       </Typed>
-      <Connector
-        d="M290 175 L290 230 M284 223 L290 230 L296 223"
-        at={4.8}
-        len={70}
-        label={{ x: 290, y: 205, text: 'No' }}
-      />
-      <Connector
-        d="M225 255 L110 255 L110 160 M104 167 L110 160 L116 167"
-        at={5.1}
-        len={230}
-        label={{ x: 160, y: 255, text: 'Retry' }}
-      />
+      <Connector {...L.links.no} at={4.8} />
+      <Connector {...L.links.retry} at={5.1} />
 
       {/* Your Yes step lands a little low, is dragged, and snaps onto the guide. */}
       <line
         className="hm-guide"
-        x1="40"
-        y1="135"
-        x2="565"
-        y2="135"
+        x1={L.guide.x1}
+        y1={L.guide.y}
+        x2={L.guide.x2}
+        y2={L.guide.y}
         stroke="#ec4899"
         strokeWidth="1"
         strokeDasharray="4 3"
@@ -224,23 +379,23 @@ export function DiagramBoard() {
       <g className="hm-snap">
         <Drop d={5.0}>
           <rect
-            x="410"
-            y="110"
-            width="130"
-            height="50"
+            x={tour.cx - tour.w / 2}
+            y={tour.cy - tour.h / 2}
+            width={tour.w}
+            height={tour.h}
             rx="8"
             className={`hm-recolour ${INK}`}
             strokeWidth="2"
           />
         </Drop>
-        <Typed x={475} y={140} d={5.1}>
+        <Typed x={tour.cx} y={tour.cy + 5} d={5.1}>
           Welcome tour
         </Typed>
         {/* Picked green: done. */}
         <g className="hm-pop" style={at(7.95)}>
-          <circle cx="532" cy="112" r="8" fill="#16a34a" />
+          <circle cx={tour.cx + 57} cy={tour.cy - 23} r="8" fill="#16a34a" />
           <path
-            d="M528 112 l3 3 l5 -6"
+            d={`M${tour.cx + 53} ${tour.cy - 23} l3 3 l5 -6`}
             fill="none"
             stroke="white"
             strokeWidth="2"
@@ -249,21 +404,24 @@ export function DiagramBoard() {
           />
         </g>
       </g>
-      <Connector
-        d="M360 135 L410 135 M403 129 L410 135 L403 141"
-        at={6.5}
-        len={60}
-        label={{ x: 384, y: 126, text: 'Yes' }}
-      />
+      <Connector {...L.links.yes} at={6.5} />
 
       {/* You select it: the outline, its handles and the colour row. */}
       <g className="hm-select" style={at(7.0)}>
-        <rect x="404" y="104" width="142" height="62" fill="none" stroke={YOU} strokeWidth="1.5" />
+        <rect
+          x={tour.cx - 71}
+          y={tour.cy - 31}
+          width="142"
+          height="62"
+          fill="none"
+          stroke={YOU}
+          strokeWidth="1.5"
+        />
         {[
-          [404, 104],
-          [546, 104],
-          [404, 166],
-          [546, 166],
+          [tour.cx - 71, tour.cy - 31],
+          [tour.cx + 71, tour.cy - 31],
+          [tour.cx - 71, tour.cy + 31],
+          [tour.cx + 71, tour.cy + 31],
         ].map(([hx, hy]) => (
           <rect
             key={`${hx}-${hy}`}
@@ -279,8 +437,8 @@ export function DiagramBoard() {
         ))}
         <g className="hm-pop" style={at(7.2)}>
           <rect
-            x="430"
-            y="68"
+            x={tour.cx - 45}
+            y={tour.cy - 67}
             width="96"
             height="26"
             rx="7"
@@ -289,8 +447,8 @@ export function DiagramBoard() {
           {SWATCHES.map((c, i) => (
             <circle
               key={c}
-              cx={445 + i * 16.5}
-              cy="81"
+              cx={tour.cx - 30 + i * 16.5}
+              cy={tour.cy - 54}
               r="6"
               fill={c}
               stroke={i === 2 ? '#15803d' : 'none'}
@@ -302,40 +460,63 @@ export function DiagramBoard() {
 
       {/* The teammate's sticky question, and the database wired in. */}
       <Drop d={8.4}>
-        <g transform="rotate(2 470 15)">
-          <rect x="412" y="-28" width="118" height="64" rx="3" fill="#0f172a" opacity="0.08" />
-          <rect x="410" y="-31" width="118" height="64" rx="3" fill="#fde68a" />
-          <text x="422" y="-8" fontFamily={FONT} fontSize="11" fontWeight="600" fill="#1c1917">
+        <g transform={`rotate(2 ${L.sticky.x + 59} ${L.sticky.y + 32})`}>
+          <rect
+            x={L.sticky.x + 2}
+            y={L.sticky.y + 3}
+            width="118"
+            height="64"
+            rx="3"
+            fill="#0f172a"
+            opacity="0.08"
+          />
+          <rect x={L.sticky.x} y={L.sticky.y} width="118" height="64" rx="3" fill="#fde68a" />
+          <text
+            x={L.sticky.x + 12}
+            y={L.sticky.y + 23}
+            fontFamily={FONT}
+            fontSize="11"
+            fontWeight="600"
+            fill="#1c1917"
+          >
             Add SSO here
           </text>
-          <text x="422" y="8" fontFamily={FONT} fontSize="11" fontWeight="600" fill="#1c1917">
+          <text
+            x={L.sticky.x + 12}
+            y={L.sticky.y + 39}
+            fontFamily={FONT}
+            fontSize="11"
+            fontWeight="600"
+            fill="#1c1917"
+          >
             later? – JR
           </text>
         </g>
       </Drop>
       <Drop d={9.5}>
         <path
-          d="M420 228 L420 270 A55 10 0 0 0 530 270 L530 228"
+          d={`M${dbLeft} ${L.db.top} L${dbLeft} ${dbBottom} A${L.db.w / 2} 10 0 0 0 ${dbRight} ${dbBottom} L${dbRight} ${L.db.top}`}
           className={INK}
           strokeWidth="2"
           strokeLinejoin="round"
         />
-        <ellipse cx="475" cy="228" rx="55" ry="10" className={INK} strokeWidth="2" />
+        <ellipse
+          cx={L.db.cx}
+          cy={L.db.top}
+          rx={L.db.w / 2}
+          ry="10"
+          className={INK}
+          strokeWidth="2"
+        />
       </Drop>
-      <Typed x={475} y={258} d={9.6}>
+      <Typed x={L.db.cx} y={L.db.top + 30} d={9.6}>
         Users DB
       </Typed>
-      <Connector
-        d="M475 166 L475 218 M469 211 L475 218 L481 211"
-        at={9.8}
-        len={60}
-        dashed
-        label={{ x: 498, y: 195, text: 'writes' }}
-      />
+      <Connector {...L.links.writes} at={9.8} dashed />
 
       {/* The two of you, live. */}
-      <Cursor className="hm-you" color={YOU} name="TM" />
-      <Cursor className="hm-teammate" color={TEAMMATE} name="JR" />
+      <Cursor className="hm-you" color={YOU} name="TM" ride={L.you} />
+      <Cursor className="hm-teammate" color={TEAMMATE} name="JR" ride={L.teammate} />
     </>
   );
 }

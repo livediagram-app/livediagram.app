@@ -13,6 +13,9 @@ import {
 } from './hero-editor-chrome';
 import { HERO_CANVAS_ATTR } from './hero-launch';
 
+// Every window's diagram is drawn in this box on a wide screen.
+export const LANDSCAPE_VIEWBOX = '0 -60 600 400';
+
 export type TabDef = { name: string; color: string; active?: boolean };
 
 // Every window sits on the Default scheme's canvas (the --art-* palette in
@@ -33,6 +36,7 @@ export function EditorWindow({
   title,
   tabs,
   document: liveDoc,
+  viewBox = LANDSCAPE_VIEWBOX,
   playing,
   shared,
   mode,
@@ -43,6 +47,8 @@ export function EditorWindow({
   title: string;
   tabs: TabDef[];
   document: ReactNode;
+  // The diagram's viewBox: the wide landscape one, or a phone's portrait one for a portrait layout.
+  viewBox?: string;
   playing: boolean;
   shared: boolean;
   // The editor mode the window is in (docs/specs/007-editor/editor-modes.md): its palette and the
@@ -111,7 +117,7 @@ export function EditorWindow({
         {/* Canvas surface. */}
         <div
           {...{ [HERO_CANVAS_ATTR]: '' }}
-          className={`relative h-[300px] sm:h-[360px] ${CANVAS}`}
+          className={`relative h-[460px] sm:h-[360px] ${CANVAS}`}
         >
           {/* The Toolbar panel layout (docs/specs/007-editor/toolbar-layout.md): the Palette is a
               strip at the top centre and a menu button stands where the Explorer would float. */}
@@ -121,13 +127,10 @@ export function EditorWindow({
           {/* The canvas cluster (static chrome), drawn from the editor's own glyphs. */}
           <CanvasCluster className="absolute bottom-2 right-2 hidden sm:flex" empty={empty} />
 
-          {/* The diagram centres in the canvas below the strip, so nothing sits under it. */}
-          <div className="absolute inset-x-0 bottom-0 top-10">
-            <svg
-              className="h-full w-full"
-              viewBox="0 -60 600 400"
-              preserveAspectRatio="xMidYMid meet"
-            >
+          {/* The diagram centres in the canvas below the strip, with clear space under it (more on a
+              phone, whose portrait layouts run nearer the top), so nothing crowds the toolbar. */}
+          <div className="absolute inset-x-0 bottom-2 top-16 sm:bottom-0 sm:top-10">
+            <svg className="h-full w-full" viewBox={viewBox} preserveAspectRatio="xMidYMid meet">
               <g key={playing ? 'play' : 'idle'} className={playing ? undefined : 'hero-static'}>
                 {liveDoc}
               </g>

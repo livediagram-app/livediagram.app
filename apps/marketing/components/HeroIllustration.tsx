@@ -27,8 +27,8 @@
 // so they fade out rather than hard-clip. The stage auto-advances every 16s (the launch window
 // holds for 32s) and centres a window when clicked (timer resets on interaction). Every window
 // ends the same way: over its last second it fades to a light grey, the stage moves on, and the
-// next window lifts from that grey (hero-fade). Windows are wider on mobile (less peek, more
-// legible).
+// next window lifts from that grey (hero-fade). On a phone the windows are tall, each scene in its
+// own portrait layout, and wider (less peek, more legible).
 //
 // With JS off it renders the first window centred, and reduced motion settles every build.
 
@@ -61,9 +61,9 @@ import {
 // Geometry: each window is `card`% of the stage with a GAP% gutter, so the
 // centred window sits at translateX = (100 - card) / 2 - i * (card + GAP).
 // `card` is wider on mobile so the windows stay legible there.
-// Kept in step with the stage's --hero-card (88 / sm:68), the same widths for the first paint.
+// Kept in step with the stage's --hero-card (92 / sm:68), the same widths for the first paint.
 const CARD_WIDE = 68;
-const CARD_NARROW = 88;
+const CARD_NARROW = 92;
 const GAP = 3;
 
 // One build cycle: every window but the launch window plays for this long, and the hero-* build
@@ -145,9 +145,18 @@ const CARDS: {
 // Window width as a % of the stage, for the whole-pixel snap: narrower peek (wider window) on
 // phones. It only matters once the stage is measured (after hydration, when the media query is
 // true to the device); the first paint takes the same numbers from CSS (--hero-card).
-function useCardWidth() {
-  return useMediaQuery('(max-width: 639px)') ? CARD_NARROW : CARD_WIDE;
-}
+// A phone: narrower peek, wider windows, and each window's portrait layout.
+const PHONE = '(max-width: 639px)';
+
+// The portrait viewBox a phone draws each window's layout in: taller than wide, the pages' windows
+// taller still so two pages stack.
+const PORTRAIT_VIEWBOX: Record<string, string> = {
+  diagram: '0 -40 360 520',
+  draw: '0 -40 360 520',
+  mindmap: '0 -40 360 520',
+  infographic: '10 -40 360 680',
+  article: '10 -40 360 680',
+};
 
 export function HeroIllustration() {
   const [active, setActive] = useState(0);
@@ -158,7 +167,8 @@ export function HeroIllustration() {
     setActive(i);
     setMoved(true);
   };
-  const card = useCardWidth();
+  const portrait = useMediaQuery(PHONE);
+  const card = portrait ? CARD_NARROW : CARD_WIDE;
 
   // Auto-advance one window per build cycle; reset whenever `active` changes
   // (so a click gives the clicked window a full cycle). Skipped under reduced
@@ -173,7 +183,7 @@ export function HeroIllustration() {
   }, [active, reduceMotion]);
 
   // Before measurement (the static HTML and the first paint) the window width comes from CSS, by
-  // breakpoint (--hero-card on the stage: 88 on a phone, 68 from sm), so a phone paints its own
+  // breakpoint (--hero-card on the stage: 92 on a phone, 68 from sm), so a phone paints its own
   // layout from the first frame; a JS media query reads "desktop" in the static HTML, and the
   // window used to paint cramped and then grow.
   const tx = `calc(((100 - var(--hero-card)) / 2 - ${active} * (var(--hero-card) + ${GAP})) * 1%)`;
@@ -188,8 +198,9 @@ export function HeroIllustration() {
 
   const current = CARDS[active] ?? CARDS[0]!;
   return (
-    <div className="mx-auto mt-16 w-full max-w-6xl">
-      <div className="relative [--arrow-clear:0px] [--hero-card:88] sm:[--arrow-clear:20px] sm:[--hero-card:68]">
+    // On a phone the stage reaches nearer the screen edges, so the window has the room.
+    <div className="-mx-4 mt-16 w-[calc(100%+2rem)] sm:mx-auto sm:w-full sm:max-w-6xl">
+      <div className="relative [--arrow-clear:0px] [--hero-card:92] sm:[--arrow-clear:20px] sm:[--hero-card:68]">
         <div
           ref={stageRef}
           aria-hidden
@@ -207,15 +218,15 @@ export function HeroIllustration() {
             {CARDS.map((c, i) => {
               const playing = i === active;
               const liveDoc = c.launch ? null : c.mode === 'draw' ? (
-                <DrawBoard />
+                <DrawBoard portrait={portrait} />
               ) : c.key === 'mindmap' ? (
-                <MindMapBoard />
+                <MindMapBoard portrait={portrait} />
               ) : c.key === 'article' ? (
-                <ArticlePage />
+                <ArticlePage portrait={portrait} />
               ) : c.key === 'infographic' ? (
-                <InfographicPages />
+                <InfographicPages portrait={portrait} />
               ) : (
-                <DiagramBoard />
+                <DiagramBoard portrait={portrait} />
               );
               const frame = (
                 <EditorWindow
@@ -225,6 +236,7 @@ export function HeroIllustration() {
                   mode={c.mode}
                   playing={playing}
                   document={liveDoc}
+                  viewBox={portrait ? PORTRAIT_VIEWBOX[c.key] : undefined}
                   overlay={
                     c.launch ? (
                       <LaunchCanvasOverlay playing={playing} afterConnector={!moved} />

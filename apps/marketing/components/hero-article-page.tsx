@@ -1,4 +1,5 @@
 import type { CSSProperties } from 'react';
+import { PAGE, secondPageAt } from './hero-illustrate-page';
 
 // The hero's Article window (docs/specs/019-marketing/marketing-site.md "Hero"): an article page
 // written in Illustrate mode (docs/specs/007-editor/illustrate-pages.md, an article page's kind). A
@@ -15,10 +16,7 @@ const BODY = '#334155';
 const MUTED = '#64748b';
 const BRAND = '#0ea5e9';
 
-// The page: A4 portrait at the mock's scale.
-const PAGE = { x: 85, y: -24, w: 210, h: 297 };
-// The gap between pages in the row.
-const PAGE_GAP = 30;
+// The page, A4 portrait at the mock's scale, and where page 2 sits: shared with the Infographic.
 
 const at = (d: number, extra?: Record<string, string | number>) =>
   ({ '--d': `${d}s`, ...extra }) as CSSProperties;
@@ -51,7 +49,8 @@ const SECTION = [
   'minutes, not days.',
 ];
 
-export function ArticlePage() {
+export function ArticlePage({ portrait = false }: { portrait?: boolean }) {
+  const second = secondPageAt(portrait);
   const { x, y, w, h } = PAGE;
   const left = x + 20;
   return (
@@ -61,7 +60,7 @@ export function ArticlePage() {
       <text x={x} y={y - 8} fontFamily={SANS} fontSize="9" fontWeight="600" fill={MUTED}>
         Page 1 · Article
       </text>
-      <SecondPage x={x + w + PAGE_GAP} />
+      <SecondPage {...second} />
 
       {/* Kicker and title, typed. */}
       <text
@@ -144,8 +143,8 @@ export function ArticlePage() {
       <rect
         className="hm-caret"
         style={at(8.9)}
-        x={x + w + PAGE_GAP + 20 + 50}
-        y={y + 62}
+        x={second.x + 20 + 50}
+        y={second.y + 62}
         width="1.2"
         height="10"
         fill={BRAND}
@@ -271,8 +270,8 @@ const PAGE_TWO = [
 ];
 
 // Page 2: the article runs on, a second heading, its paragraph, and a figure with its caption.
-function SecondPage({ x }: { x: number }) {
-  const { y, w, h } = PAGE;
+function SecondPage({ x, y }: { x: number; y: number }) {
+  const { w, h } = PAGE;
   const left = x + 20;
   return (
     <>

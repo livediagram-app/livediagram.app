@@ -14,7 +14,7 @@ const DEEP = '#075985';
 const MUTED = '#64748b';
 
 // The page: A4 portrait at the mock's scale (210 x 297).
-const PAGE = { x: 85, y: -24, w: 210, h: 297 };
+export const PAGE = { x: 85, y: -24, w: 210, h: 297 };
 // The gap between pages in the row.
 const PAGE_GAP = 30;
 
@@ -29,13 +29,20 @@ const STATS = [
 
 const BARS = [34, 48, 42, 62, 78];
 
-export function InfographicPages() {
+// Where page 2 sits: beside page 1 in the row, or under it on a phone (the portrait layout).
+export function secondPageAt(portrait: boolean) {
+  return portrait
+    ? { x: PAGE.x, y: PAGE.y + PAGE.h + PAGE_GAP - 4 }
+    : { x: PAGE.x + PAGE.w + PAGE_GAP, y: PAGE.y };
+}
+
+export function InfographicPages({ portrait = false }: { portrait?: boolean }) {
   const { x, y, w } = PAGE;
   const left = x + 18;
   return (
     <>
       {/* The page itself, a white sheet with its shadow. */}
-      <Sheet x={x} n={1} />
+      <Sheet x={x} y={y} n={1} />
 
       {/* Header band and title. */}
       <g className="hm-wipe" style={at(0.3)}>
@@ -228,14 +235,14 @@ export function InfographicPages() {
         </text>
       </g>
 
-      <SecondPage x={x + w + PAGE_GAP} />
+      <SecondPage {...secondPageAt(portrait)} />
     </>
   );
 }
 
 // A page: a white sheet with its shadow and its name above it.
-function Sheet({ x, n }: { x: number; n: number }) {
-  const { y, w, h } = PAGE;
+function Sheet({ x, y, n }: { x: number; y: number; n: number }) {
+  const { w, h } = PAGE;
   return (
     <>
       <rect x={x + 2} y={y + 3} width={w} height={h} rx="2" fill="#0f172a" opacity="0.08" />
@@ -256,13 +263,13 @@ const MILESTONES = [
 
 // Page 2, "Looking ahead": a band and title, a roadmap whose line draws through three milestones,
 // and a pull quote.
-function SecondPage({ x }: { x: number }) {
-  const { y, w } = PAGE;
+function SecondPage({ x, y }: { x: number; y: number }) {
+  const { w } = PAGE;
   const left = x + 18;
   const lineY = y + 128;
   return (
     <>
-      <Sheet x={x} n={2} />
+      <Sheet x={x} y={y} n={2} />
       <g className="hm-wipe" style={at(6.4)}>
         <rect x={x} y={y} width={w} height="62" rx="2" fill={VIOLET} />
         <rect x={x} y={y + 52} width={w} height="10" fill={VIOLET} />

@@ -79,13 +79,11 @@
 
 /* The teammate's pen on the whiteboard: it rides the ring as the ring is drawn, glides to the
    arrow's start and rides the arrow, timed to the two strokes (3.4s to 5.4s), then lifts away.
-   The path is the ring, a glide, then the arrow; their lengths (440, 140, 120) set the stops. */
+   The path (the ring, a glide, then the arrow) and the stops (--p1, --p2, each leg's share of its
+   length) come from the layout (components/hero-draw-board.tsx). */
 .hm-pen {
   transform-box: view-box;
   transform-origin: 0 0;
-  offset-path: path(
-    'M246 34 C 320 30, 324 168, 246 172 C 168 176, 166 40, 236 38 L262 176 C 270 210, 300 232, 340 236'
-  );
   offset-rotate: 0deg;
   opacity: 0;
   animation:
@@ -98,10 +96,10 @@
     opacity: 1;
   }
   60% {
-    offset-distance: 62.9%;
+    offset-distance: var(--p1);
   }
   70% {
-    offset-distance: 82.9%;
+    offset-distance: var(--p2);
   }
   100% {
     offset-distance: 100%;
@@ -181,7 +179,9 @@
 
 /* A label typed out, one letter a step (--steps), as its shape lands. */
 .hm-type {
-  animation: hm-type 0.5s steps(var(--steps, 10), end) var(--d, 0s) both;
+  /* jump-none: the last step is the whole word, reached inside the animation, so a finished label
+     never rests a letter short (steps(n, end) can hold its final step a hair before 100%). */
+  animation: hm-type 0.5s steps(var(--steps, 10), jump-none) var(--d, 0s) both;
 }
 @keyframes hm-type {
   from {
@@ -253,8 +253,9 @@
   }
 }
 
-/* The two cursors ride their paths, timed to the drops (the stops are each leg's share of the
-   path's length; components/hero-diagram-board.tsx names the beats). */
+/* The two cursors ride their paths, timed to the drops. The path and how far along it each stop
+   lies (--p1 ...) come from the layout (lib/hero-motion.ts cursorRide), so the phone's portrait
+   layout rides its own; the keyframes fix only when each stop is reached. */
 .hm-you,
 .hm-teammate {
   transform-box: view-box;
@@ -263,7 +264,6 @@
   opacity: 0;
 }
 .hm-you {
-  offset-path: path('M330 -40 L110 32 L110 135 L290 135 L475 150 L475 137 L480 86');
   animation: hm-you 7.4s linear 0.4s both;
 }
 @keyframes hm-you {
@@ -273,23 +273,23 @@
   }
   8.11%,
   12.16% {
-    offset-distance: 30.29%;
+    offset-distance: var(--p1);
   }
   18.92%,
   22.97% {
-    offset-distance: 43.76%;
+    offset-distance: var(--p2);
   }
   29.73%,
   54.05% {
-    offset-distance: 67.31%;
+    offset-distance: var(--p3);
   }
   62.16%,
   75.68% {
-    offset-distance: 91.59%;
+    offset-distance: var(--p4);
   }
   81.08%,
   91.89% {
-    offset-distance: 93.3%;
+    offset-distance: var(--p5);
   }
   100% {
     offset-distance: 100%;
@@ -297,7 +297,6 @@
   }
 }
 .hm-teammate {
-  offset-path: path('M620 300 L290 255 L170 255 L470 15 L545 268');
   animation: hm-teammate 5.7s linear 3.8s both;
 }
 @keyframes hm-teammate {
@@ -307,15 +306,15 @@
   }
   10.53%,
   21.05% {
-    offset-distance: 30.25%;
+    offset-distance: var(--p1);
   }
   28.07%,
   71.93% {
-    offset-distance: 41.14%;
+    offset-distance: var(--p2);
   }
   80.7%,
   91.23% {
-    offset-distance: 76.04%;
+    offset-distance: var(--p3);
   }
   100% {
     offset-distance: 100%;

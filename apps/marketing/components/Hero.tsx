@@ -22,12 +22,12 @@ export function Hero() {
         aria-hidden
         className="pointer-events-none absolute inset-x-0 -top-40 -z-10 h-[600px] bg-gradient-to-b from-brand-100 via-brand-50 to-transparent dark:from-brand-500/20 dark:via-brand-500/5"
       />
-      <div className="relative mx-auto max-w-6xl px-6 pt-24 pb-20 text-center sm:pt-32 sm:pb-28">
+      <div className="relative mx-auto max-w-6xl px-4 pt-24 sm:px-6 pb-20 text-center sm:pt-32 sm:pb-28">
         {/* An arrow from the headline to the illustration, drawn on load (HeroConnectors). */}
         <HeroConnectors />
         {/* Says what it is and the one thing that sets it apart (docs/specs/019-marketing/marketing-site.md). */}
         {/* Lifted above the stage below it, so the word card opens over the windows. */}
-        <h1 className="relative z-20 mx-auto whitespace-nowrap text-[clamp(1.5rem,7.6vw,4.5rem)] font-semibold leading-tight tracking-tight text-slate-900 dark:text-slate-100">
+        <h1 className="relative z-20 mx-auto whitespace-nowrap text-[clamp(1.5rem,8.2vw,4.5rem)] font-semibold leading-tight tracking-tight text-slate-900 dark:text-slate-100">
           {/* The rotating first word (HeroTitleLine) is decorative: the stable headline is what
               screen readers and crawlers read. One line at every width: the size scales with the
               viewport so the longest word still fits. */}
