@@ -7,7 +7,7 @@ import {
   parseRoomCursor,
   readRoomSelections,
   relayChangeset,
-  relayTabList,
+  relayTabRename,
 } from './room-client';
 
 const card: ShapeElement = {
@@ -148,18 +148,15 @@ describe('relayChangeset', () => {
   });
 });
 
-describe('relayTabList', () => {
-  it('posts a document-meta op', async () => {
+describe('relayTabRename', () => {
+  it("posts the tab-meta op an editor's own rename sends", async () => {
     const { env, stubFetch } = envWith(async () => new Response(null, { status: 204 }));
-    const meta = {
-      kind: 'document-meta' as const,
-      name: 'Doc',
-      tabs: [{ id: 't1', name: 'A', orderIndex: 0 }],
-    };
-    await relayTabList(env, 'd1', meta);
+    await relayTabRename(env, 'd1', 't1', 'Renamed');
     const [url, init] = stubFetch.mock.calls[0] as unknown as [string, RequestInit];
     expect(url).toBe('https://room/mutation');
-    expect(JSON.parse(init.body as string)).toEqual({ op: meta });
+    expect(JSON.parse(init.body as string)).toEqual({
+      op: { kind: 'tab-meta', tabId: 't1', patch: { name: 'Renamed' } },
+    });
   });
 });
 

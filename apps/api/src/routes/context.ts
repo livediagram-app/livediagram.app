@@ -44,6 +44,10 @@ export type RouteContext = {
   // Hybrid identity (docs/specs/014-identity/auth-and-guest-access.md): the verified Clerk userId, else the
   // legacy X-Owner-Id header, else null. Resolved once in `fetch`.
   resolveOwner: () => string | null;
+  // The API token the request presented, or null for a Clerk session or a guest. Only a token
+  // makes a changeset an agent's, and a token may never do a whole-tab save
+  // (docs/specs/024-agents/agent-changesets.md). Optional so unit tests can leave it out.
+  token?: { id: string } | null;
   // Schedule background work that may outlive the response (docs/specs/014-identity/transactional-email.md email
   // sends). Forwards to the fetch handler's ExecutionContext.waitUntil.
   // Optional so unit tests can build a RouteContext without a real

@@ -2036,14 +2036,10 @@ describe('DocumentRoom and agent changesets', () => {
     expect([...state.store.keys()].some((k) => k.startsWith('ledger:'))).toBe(false);
   });
 
-  it('sequences a document-meta the api made (a tab rename)', async () => {
+  it('sequences the tab-meta of a tab rename the api made', async () => {
     const { room } = newRoom();
     const peer = join(room, 'p');
-    const meta = {
-      kind: 'document-meta',
-      name: 'Doc',
-      tabs: [{ id: 't1', name: 'Renamed', orderIndex: 0 }],
-    };
+    const meta = { kind: 'tab-meta', tabId: 't1', patch: { name: 'Renamed' } };
     expect((await room.fetch(mutation(meta))).status).toBe(204);
     expect(JSON.parse(peer.sent.at(-1)!)).toMatchObject({ from: 'system', op: meta });
   });

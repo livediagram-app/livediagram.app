@@ -33,6 +33,7 @@ export const ROOT_TYPES = [
   'DocumentSource',
   'TabSummary',
   'Tab',
+  'TabRecord',
   'Folder',
   'CustomTheme',
   'CustomThemeDefinition',

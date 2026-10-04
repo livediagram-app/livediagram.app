@@ -167,13 +167,16 @@ export async function relayChangeset(
   return false;
 }
 
-// The document's tab list after the api renamed a tab (CS42), as the same document-meta op an
-// editor sends. Best-effort and logged, like the changeset relay.
-export async function relayTabList(
+// A tab the api renamed (CS42), as the same tab-meta op an editor's own rename sends: a
+// document-meta keeps every open editor's names, so a stale tab list can never revert a rename.
+// Best-effort and logged, like the changeset relay.
+export async function relayTabRename(
   env: Env,
   documentId: string,
-  op: Extract<RoomOp, { kind: 'document-meta' }>,
+  tabId: string,
+  name: string,
 ): Promise<boolean> {
+  const op: RoomOp = { kind: 'tab-meta', tabId, patch: { name } };
   try {
     const res = await roomFetch(
       env,
@@ -183,12 +186,12 @@ export async function relayTabList(
       ROOM_RELAY_TIMEOUT_MS,
     );
     if (res.ok) return true;
-    console.warn('[room-mutation] document-meta did not reach the room', {
+    console.warn('[room-mutation] tab-meta did not reach the room', {
       documentId,
       error: `status ${res.status}`,
     });
   } catch (err) {
-    console.warn('[room-mutation] document-meta did not reach the room', {
+    console.warn('[room-mutation] tab-meta did not reach the room', {
       documentId,
       error: String(err),
     });

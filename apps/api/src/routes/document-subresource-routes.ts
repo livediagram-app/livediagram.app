@@ -3,24 +3,10 @@
 // upgrade. The largest resource: every sub-path
 // under a document id lives here.
 
-import type { Tab } from '@livediagram/document';
-import {
-  applyElementDelta,
-  isValidTab,
-  migrateIncomingTab,
-  preferNewerQaAll,
-  sanitizeMentions,
-} from '@livediagram/document';
-import { broadcastShareOp, mergeRoomLedger, relayElementDelta } from '../room-client';
-import { MAX_TAB_BYTES, bodyExceedsCap, storeTab } from '../limits';
-import { capStoredName } from '../names';
-import {
-  findCommentHost,
-  hasNewComments,
-  redactCommentAuthorIds,
-  removeComment,
-  rewriteCommentAuthors,
-} from '../comments';
+import { applyElementDelta, sanitizeMentions } from '@livediagram/document';
+import { broadcastShareOp, relayElementDelta } from '../room-client';
+import { storeTab } from '../limits';
+import { findCommentHost, redactCommentAuthorIds, removeComment } from '../comments';
 import { emailEnabled } from '../email/client';
 import { notifyNewComment } from '../email/notifications';
 import {
@@ -34,21 +20,15 @@ import {
   tabLinkedToOwnedDocument,
   upsertTab,
 } from '../db';
-import {
-  badRequest,
-  conflict,
-  forbidden,
-  json,
-  noContent,
-  notFound,
-  payloadTooLarge,
-} from '../responses';
-import { recordCommentAdded, recordTabSave, recordVisitorOpened } from '../timeline';
-import { DOCUMENT_OPEN_HEADER, readDocumentOpen } from '@livediagram/api-schema';
+import { badRequest, forbidden, json, noContent, notFound, payloadTooLarge } from '../responses';
+import { recordCommentAdded, recordVisitorOpened } from '../timeline';
+import { DOCUMENT_OPEN_HEADER, readDocumentOpen, tabEtag } from '@livediagram/api-schema';
 import { recordDocumentOpen } from '../home/record-open';
 import { handleDocumentShareRoutes } from './document-share-routes';
 import { handleQaBoardRoute } from './qa-board-routes';
 import { handleCommentPicturesRoute } from './comment-pictures-routes';
+import { handleTabPut, refuseTokenTabPut } from './tab-put-route';
+import { handleTabRename } from './tab-name-route';
 import {
   gateEdit,
   gateGrant,
@@ -82,9 +62,22 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
   //            through the existing row, or appends when new.
   //   DELETE — remove one tab.
   //   PUT / DELETE are writes: owner or edit-role only.
+  // /api/documents/<id>/tabs/<tabId>/name: a tab rename (docs/specs/024-agents/agent-changesets.md).
+  if (
+    segments.length === 6 &&
+    segments[3] === 'tabs' &&
+    segments[5] === 'name' &&
+    request.method === 'PUT'
+  ) {
+    return handleTabRename(ctx, segments[2]!, segments[4]!);
+  }
   if (segments.length === 5 && segments[3] === 'tabs') {
     const id = segments[2]!;
     const tabId = segments[4]!;
+    if (request.method === 'PUT') {
+      const refused = refuseTokenTabPut(ctx, id, tabId);
+      if (refused) return refused;
+    }
     const owner = requireOwner(ctx);
     if (owner instanceof Response) return owner;
     const existing = await getDocument(env, id);
@@ -135,149 +128,16 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
       if (readDocumentOpen(request.headers.get(DOCUMENT_OPEN_HEADER))) {
         ctx.waitUntil?.(recordDocumentOpen(env, existing, owner, Date.now()));
       }
-      return json({ tab: safe });
+      // The revision as a weak ETag too (docs/specs/024-agents/agent-changesets.md "The tab
+      // revision", CS5): what an agent read, for its changeset base.
+      return json({ tab: safe }, { headers: { ETag: tabEtag(tab.rev) } });
     }
 
     // Writes below: owner or edit-role share visitor only, and a tab-scoped
     // visitor on their own tab only.
     const allowed = await gateEdit(ctx, id, existing.ownerId, existing.teamId, tabId);
     if (!allowed) return forbidden();
-    if (request.method === 'PUT') {
-      // A former stored shape (freehand points before docs/specs/006-document/stroke-points.md,
-      // from a browser loaded before a deploy or an API-token script) is migrated, not refused.
-      const received = migrateIncomingTab(await request.json()) as Tab;
-      // Structural schema gate (shared with the app, @livediagram/document):
-      // discriminant, required fields, endpoints, array bounds + unique ids.
-      if (!isValidTab(received)) {
-        return badRequest('invalid tab');
-      }
-      // Byte cap on the single tab (the body cap bounds the whole request;
-      // this bounds one tab's element + comment tree specifically). Nothing
-      // else bounds this route: the outer gate in index.ts is a
-      // Content-Length check too and defers to "the per-tab caps in the
-      // routes" for the rest. See bodyExceedsCap for why the header alone
-      // isn't enough.
-      if (bodyExceedsCap(request, received, MAX_TAB_BYTES)) {
-        return payloadTooLarge();
-      }
-      // Fold in whatever answers, ideas, ticks and dots the room holds that
-      // this client hadn't seen when it snapshotted, so a stale save can't
-      // erase them from D1 (docs/specs/012-collaboration/collab-race-hardening.md phase 3). A no-op for a document with no
-      // room, or a save with no room cursor.
-      // In parallel with the stored tab it doesn't depend on.
-      const [{ tab: body, commentAuthors }, existingTab] = await Promise.all([
-        mergeRoomLedger(env, id, { ...received, id: tabId }, request.headers.get('X-Room-Cursor')),
-        getTab(env, id, tabId),
-      ]);
-      // The name cap (docs/specs/006-document/name-length.md): a tab rename rides
-      // this save, so a new or changed name is shortened here; an autosave
-      // echoing the stored name unchanged keeps it.
-      body.name = capStoredName(body.name, existingTab?.name ?? null, 'tab');
-      // (existingTab, read above) gives the order index; append if new.
-      // Data-loss backstop (docs/specs/006-document/per-tab-storage.md). Refuse to blank a tab that
-      // currently holds content unless the client explicitly marks the
-      // empty write intentional via `X-Allow-Empty: 1`. The live editor
-      // sets that header only when it had the tab's content
-      // authoritatively loaded — so a real reset-canvas / delete-all (on
-      // the active, loaded tab) passes, while the lazy-load wipe (a
-      // never-opened placeholder PUT carrying no such header) is rejected
-      // and the stored row survives. Independent of the client-side
-      // autosave guard — belt and suspenders, and it also protects older
-      // clients that predate that guard. A legitimately-empty incoming
-      // tab over an already-empty (or new) row is untouched by this.
-      if (
-        body.elements.length === 0 &&
-        existingTab &&
-        existingTab.elements.length > 0 &&
-        request.headers.get('X-Allow-Empty') !== '1'
-      ) {
-        return conflict('empty_tab_overwrite_blocked');
-      }
-      // A Q&A board's notes are owned by the qa endpoint (docs/specs/012-collaboration/qa-board.md): keep
-      // whichever copy has the higher `qaRev`, so an autosave built from a
-      // snapshot taken before a vote landed can't erase it, and an editor's
-      // later save carries a newer rev back if a race ever did.
-      if (existingTab) body.elements = preferNewerQaAll(existingTab.elements, body.elements);
-      const orderIndex = existingTab?.orderIndex ?? existing.tabs.length; // tabs[] is already summaries
-      // Rewrite the author fields on any newly-added comment to
-      // match the resolved owner's participant record. Without
-      // this the client can claim any authorName / authorColor
-      // and impersonate another participant in the comment
-      // thread (see the docs/specs/014-identity/auth-and-guest-access.md security audit). Existing comments preserve their original
-      // authors (compared by id against the prior tab).
-      // getDocument already joined the owner's participant row — reuse it
-      // when the writer IS the owner (the common autosave case) instead
-      // of re-fetching the same row every 600ms.
-      const writerParticipant =
-        owner === existing.ownerId && existing.ownerName !== null
-          ? {
-              id: owner,
-              name: existing.ownerName,
-              color: existing.ownerColor ?? '#0ea5e9',
-              // createdAt satisfies the ParticipantRecord shape; the
-              // rewrite only reads id/name/color.
-              createdAt: existing.createdAt,
-              pictureUrl: null,
-            }
-          : await getParticipant(env, owner);
-      const sanitised = writerParticipant
-        ? {
-            ...body,
-            elements: rewriteCommentAuthors(
-              body.elements,
-              existingTab?.elements ?? [],
-              writerParticipant,
-              commentAuthors,
-            ),
-          }
-        : body;
-      // The merged tab (room ledger, server-stamped authors) may outgrow the request: the storage
-      // layer measures what it stores (docs/specs/015-api/api.md "Tab size").
-      if (!(await storeTab(() => upsertTab(env, id, { ...sanitised, id: tabId }, orderIndex)))) {
-        return payloadTooLarge();
-      }
-      // docs/specs/013-workspace/timeline.md: the coalesced "worked on" event plus anything the
-      // save added that the feed cares about (comments, thread
-      // resolutions, assigned + completed actions). Diffed against the
-      // stored tab because comments and actions live inside element
-      // JSON, so the save that wrote them is the only place that can
-      // tell they're new. Off the response path — this fires on every
-      // ~600ms autosave.
-      ctx.waitUntil?.(
-        recordTabSave(env, existing, owner, sanitised.elements, existingTab?.elements ?? []),
-      );
-      // docs/specs/014-identity/transactional-email.md (#1): an edit-role visitor (not the owner) adding a comment
-      // notifies the owner immediately. Best-effort, off the request path.
-      if (
-        emailEnabled(env) &&
-        owner !== existing.ownerId &&
-        hasNewComments(body.elements, existingTab?.elements ?? [])
-      ) {
-        ctx.waitUntil?.(
-          notifyNewComment(
-            env,
-            { id, ownerId: existing.ownerId, name: existing.name },
-            writerParticipant?.name ?? null,
-          ),
-        );
-      }
-      // Echo what was just written instead of reading it back: the
-      // response contract (OpenAPI `Tab`) is unchanged, but the extra
-      // SELECT + JSON.parse of the full blob per autosave is gone. The
-      // row-derived fields are known here (folder is link metadata the
-      // client strips before persisting, so it is absent by design —
-      // matching what a read-back of a fresh write returns).
-      return json({
-        tab: {
-          ...sanitised,
-          id: tabId,
-          name: body.name,
-          documentId: id,
-          orderIndex,
-          updatedAt: Date.now(),
-        },
-      });
-    }
+    if (request.method === 'PUT') return handleTabPut(ctx, existing, tabId, owner);
     if (request.method === 'DELETE') {
       // A tab-scoped link can't delete the tab it is scoped to: that would
       // end its own link, and the document's structure isn't the visitor's.

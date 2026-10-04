@@ -8,10 +8,13 @@ import type { Env } from '../types';
 
 export type ChangesetPart = 'ops' | 'inverse' | 'results';
 
-// Each element a changeset touched, as it found it and as it left it (CS17).
+// Each element a changeset touched, as it found it and as it left it (CS17), and, when it
+// reordered, the order it found the elements it kept in: what the merge on save compares a save's
+// order against.
 export type ChangesetFingerprints = {
   before: Record<string, string>;
   after: Record<string, string>;
+  beforeOrder?: string[];
 };
 
 export type ChangesetRecord = {
@@ -80,7 +83,11 @@ function rowToRecord(row: ChangesetRow): ChangesetRecord {
 
 function parseFingerprints(json: string): ChangesetFingerprints {
   const parsed = JSON.parse(json) as Partial<ChangesetFingerprints> | null;
-  return { before: parsed?.before ?? {}, after: parsed?.after ?? {} };
+  return {
+    before: parsed?.before ?? {},
+    after: parsed?.after ?? {},
+    ...(Array.isArray(parsed?.beforeOrder) ? { beforeOrder: parsed.beforeOrder } : {}),
+  };
 }
 
 export function insertChangesetStatement(env: Env, r: ChangesetRecord): D1PreparedStatement {

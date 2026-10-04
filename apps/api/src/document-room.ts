@@ -161,7 +161,7 @@ type SessionAttachment = {
 
 // The room ops the worker originates through /mutation: a view-role visitor's comment, an agent
 // changeset, a tab rename (docs/specs/024-agents/agent-changesets.md).
-const WORKER_MUTATION_KINDS = new Set(['el-delta', 'changeset', 'document-meta']);
+const WORKER_MUTATION_KINDS = new Set(['el-delta', 'changeset', 'tab-meta']);
 // A person tag is a SHA-256 hex digest; the clamp keeps a forged header from bloating the attachment.
 const MAX_PERSON_TAG_LEN = 64;
 
@@ -296,7 +296,7 @@ export class DocumentRoom implements DurableObject {
     // sent to everybody. A view-role visitor's comment is written by the api,
     // not by a client socket (the room refuses view-role mutations), so
     // without this editors never saw it and their next save erased it. An agent
-    // changeset and a tab rename the api applied (docs/specs/024-agents/agent-changesets.md)
+    // changeset and a tab rename (tab-meta) the api applied (docs/specs/024-agents/agent-changesets.md)
     // take the same path, one seq and one catch-up slot each whatever their size.
     if (request.method === 'POST' && url.pathname === '/mutation') {
       const op = (await readBody(request))?.op;

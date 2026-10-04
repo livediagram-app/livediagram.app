@@ -287,6 +287,7 @@ async function routeApiRequest(
     verifiedUserId,
     clerkEmail,
     resolveOwner,
+    token: tokenAuth ? { id: tokenAuth.tokenId } : null,
     waitUntil: (promise) => executionCtx?.waitUntil(promise),
   };
   try {

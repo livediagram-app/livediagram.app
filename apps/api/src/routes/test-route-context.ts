@@ -25,6 +25,8 @@ export function makeTestRouteContext(
     // NO Clerk session, docs/specs/015-api/public-api-and-tokens.md).
     verifiedUserId?: string | null;
     clerkEmail?: string | null;
+    // The API token the request presented (docs/specs/024-agents/agent-changesets.md).
+    token?: { id: string } | null;
     // JSON-encoded into the request body when present.
     body?: unknown;
     headers?: Record<string, string>;
@@ -54,6 +56,7 @@ export function makeTestRouteContext(
     verifiedUserId,
     clerkEmail: opts.clerkEmail ?? null,
     resolveOwner: () => opts.owner ?? null,
+    token: opts.token ?? null,
     ...(opts.waitUntil ? { waitUntil: opts.waitUntil } : {}),
   };
 }
