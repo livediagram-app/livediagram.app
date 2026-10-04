@@ -12,7 +12,7 @@ canvas, not the editor**. The same shape as the [Selection store](selection-stor
 | `apps/live/hooks/canvas/useSelectionStore.tsx`     | `useSelectionOf` delegates to `useStoreSlice`                              |
 | `apps/live/hooks/canvas/useEditorViewport.ts`      | Holds the store; `zoomRef` / `viewportOffsetRef` read it; no view state    |
 | `apps/live/app/document/[id]/useEditorState.ts`    | Never subscribes; passes `viewport` on; effects subscribe                  |
-| `apps/live/components/canvas/EditorCanvasHost.tsx` | Passes the store, not the view values, to the canvas                       |
+| `apps/live/components/canvas/EditorCanvasHost.tsx` | Passes no view to the canvas                                               |
 | `apps/live/components/canvas/Canvas.tsx`           | `CanvasView` subscribes to the view; children subscribe where they show it |
 | `apps/live/hooks/canvas/useViewportStore.tsx`      | `ViewportStoreProvider`, `useViewportStore`, `useViewportOf`               |
 
@@ -47,7 +47,7 @@ canvas, not the editor**. The same shape as the [Selection store](selection-stor
 | `useCanvasPinchZoom`              | reads `viewport.get()` per event (bursts within a frame compound correctly) and zooms at a point with one `setView`                                                                                         |
 | `TourHost` (viewport centre)      | `viewport.get().offset` when the step runs                                                                                                                                                                  |
 | The editor context                | carries `viewport`, not `viewportZoom` / `viewportOffset`                                                                                                                                                   |
-| `EditorCanvasHost` → `Canvas`     | passes `viewport`; `CanvasView` subscribes with `useStoreSlice`                                                                                                                                             |
+| `EditorCanvasHost` → `Canvas`     | passes no view; `EditorView` provides the store (`ViewportStoreProvider`) and `CanvasView` subscribes with `useViewportOf`                                                                                  |
 
 ### Inside the canvas
 
