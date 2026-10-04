@@ -79,7 +79,7 @@ describe('pageMetadata', () => {
         url: 'https://livediagram.app/opengraph-image',
         width: 1200,
         height: 630,
-        alt: 'livediagram: a real-time multiplayer canvas for diagrams and mindmaps',
+        alt: 'livediagram: a real-time canvas for diagrams, whiteboards, illustrations and documents',
       },
     ]);
     const tw = md.twitter as Record<string, unknown> | undefined;

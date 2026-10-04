@@ -11,6 +11,8 @@ import {
   REPO_URL,
   SITE_NAME,
   SITE_URL,
+  SITE_DESCRIPTION,
+  SITE_TITLE,
 } from '@livediagram/ui';
 import { VIEW_TRANSITION_GUARD_SCRIPT } from '../lib/view-transition-guard';
 
@@ -20,9 +22,9 @@ import { VIEW_TRANSITION_GUARD_SCRIPT } from '../lib/view-transition-guard';
 // against the production origin; without it Next logs a warning
 // and falls back to localhost in dev (which would otherwise leak
 // into preview builds).
-const TITLE = 'livediagram: Diagrams your team builds together';
-const DESCRIPTION =
-  'A real-time multiplayer canvas for diagrams and mindmaps. Built for teams who think visually.';
+// The shared words for what livediagram is (packages/ui site.ts).
+const TITLE = SITE_TITLE;
+const DESCRIPTION = SITE_DESCRIPTION;
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

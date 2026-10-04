@@ -66,7 +66,7 @@ export function EditorWindow({
     <div className="rounded-xl border border-slate-200 bg-white p-2 shadow-xl shadow-brand-500/10 dark:border-slate-800 dark:bg-slate-900">
       <div className="relative overflow-hidden rounded-lg border border-slate-100 dark:border-slate-800">
         {/* The fade. While playing it lifts from light grey over the first
-            beat and drops back to it over the last second, timed to the 16s cycle,
+            beat and drops back to it over the last second, timed to the 22s cycle,
             so the window's ending is the same whatever its last beat was and
             the stage advances behind the grey. When the window stops playing
             it is remounted to lift once more, so the peeking card doesn't

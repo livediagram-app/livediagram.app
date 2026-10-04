@@ -26,7 +26,7 @@
 // moves between them.
 // The centred window plays its pure-CSS build (hero-animations.css, hero-mode-animations.css);
 // the peeking windows render settled (.hero-static), blurred + faded, with the stage edges masked
-// so they fade out rather than hard-clip. The stage auto-advances every 16s (the launch window
+// so they fade out rather than hard-clip. The stage auto-advances every 22s (the launch window
 // holds for 32s) and centres a window when clicked (timer resets on interaction). Every window
 // ends the same way: over its last second it fades to a light grey, the stage moves on, and the
 // next window lifts from that grey (hero-fade). On a phone the windows are tall, each scene in its
@@ -40,6 +40,7 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
   EverythingIcon,
+  SparkleIcon,
   PREFERS_REDUCED_MOTION,
   useMediaQuery,
 } from '@livediagram/ui';
@@ -73,7 +74,7 @@ const GAP = 3;
 
 // One build cycle: every window but the launch window plays for this long, and the hero-* build
 // and veil keyframes are timed to it.
-const CYCLE_MS = 16000;
+const CYCLE_MS = 22000;
 
 const CARDS: {
   key: string;
@@ -447,7 +448,9 @@ function StageArrow({ side, onClick }: { side: 'left' | 'right'; onClick: () => 
 
 // A mode window's call to action: once the scene has played out, it lands in the middle of the
 // canvas (hero-build, hero-mode-animations.css) and opens the template step narrowed to this
-// window's kind. Only on the centred window; a peeking one shows none.
+// window's kind. The link carries the entrance; its face carries the look and the hover (a lift,
+// a brighter gradient, the arrow nudging on), so neither transform fights the other. A soft halo
+// breathes behind it. Only on the centred window; a peeking one shows none.
 function BuildYours({ href, live }: { href: string; live: boolean }) {
   if (!live) return null;
   return (
@@ -455,10 +458,23 @@ function BuildYours({ href, live }: { href: string; live: boolean }) {
       href={ctaHref(href, 'Home.HeroBuild')}
       tabIndex={-1}
       onClick={(e) => e.stopPropagation()}
-      className="hero-build absolute left-1/2 top-1/2 z-30 inline-flex items-center gap-2 rounded-full bg-brand-500 px-6 py-3 text-base font-semibold text-white shadow-xl shadow-brand-500/30 ring-4 ring-white/70 transition-colors hover:bg-brand-600 dark:bg-brand-600 dark:ring-slate-900/70 dark:hover:bg-brand-500"
+      className="hero-build group/build absolute left-1/2 top-1/2 z-30 rounded-full outline-none"
     >
-      Build yours
-      <ChevronRightIcon size={16} aria-hidden />
+      <span
+        aria-hidden
+        className="hero-build-halo absolute -inset-2 rounded-full bg-brand-400/30 blur-md"
+      />
+      <span className="relative inline-flex items-center gap-2.5 rounded-full bg-gradient-to-r from-brand-500 to-indigo-500 py-3 pl-4 pr-5 text-base font-semibold text-white shadow-[0_12px_32px_-10px] shadow-brand-600/70 ring-1 ring-inset ring-white/25 transition duration-200 ease-out group-hover/build:from-brand-400 group-hover/build:to-indigo-400 dark:from-brand-600 dark:to-indigo-600 dark:group-hover/build:from-brand-500 dark:group-hover/build:to-indigo-500 group-hover/build:shadow-[0_18px_40px_-10px] motion-safe:group-hover/build:-translate-y-0.5 motion-safe:group-hover/build:scale-[1.03] group-active/build:translate-y-0 group-active/build:scale-100">
+        <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/20">
+          <SparkleIcon size={15} aria-hidden />
+        </span>
+        Build yours
+        <ChevronRightIcon
+          size={16}
+          aria-hidden
+          className="transition-transform duration-200 motion-safe:group-hover/build:translate-x-1"
+        />
+      </span>
     </a>
   );
 }

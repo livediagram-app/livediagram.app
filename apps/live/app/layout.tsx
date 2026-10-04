@@ -24,7 +24,7 @@ import './globals.css';
 // nested page in the static export. See docs/specs/007-editor/live-app.md "SEO and indexing".
 export const metadata: Metadata = {
   title: 'livediagram',
-  description: 'Build diagrams and mindmaps. Multiplayer canvas.',
+  description: 'Diagrams, whiteboards, illustrations and documents. Multiplayer canvas.',
   // PWA install affordances. The editor is what users add to their home
   // screen, but only its app/icon.svg favicon was linked, so an installed
   // editor PWA showed no icon. livediagram.app is one origin (the router

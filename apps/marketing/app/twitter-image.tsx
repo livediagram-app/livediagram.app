@@ -1,3 +1,4 @@
+import { SITE_NAME, SITE_PITCH } from '@livediagram/ui';
 import { ImageResponse } from 'next/og';
 import { renderSocialCard } from './opengraph-image';
 
@@ -9,7 +10,7 @@ import { renderSocialCard } from './opengraph-image';
 // can't trace re-exported per-route config through a barrel.
 
 export const dynamic = 'force-static';
-export const alt = 'livediagram: a real-time multiplayer canvas for diagrams and mindmaps';
+export const alt = `${SITE_NAME}: ${SITE_PITCH}`;
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 

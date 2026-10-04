@@ -1,15 +1,14 @@
 'use client';
 
 import { SiteAppearanceToggle } from './appearance/SiteAppearanceToggle';
-import { SITE_URL as SHARE_URL } from './site';
+import { SITE_PITCH, SITE_URL as SHARE_URL } from './site';
 import { useCopiedFlash } from './useCopiedFlash';
 
 // The URL we want people to pass along is the shared site origin (./site), so
 // this rail is shareable from any app that renders the shared SiteHeader.
 
 /** The line we want people to pass along; the URL is the shared site origin. */
-const SHARE_TEXT =
-  'livediagram: a real-time multiplayer canvas for diagrams and mindmaps. No sign-up needed.';
+const SHARE_TEXT = `livediagram: ${SITE_PITCH}. No sign-up needed.`;
 
 // The card each rail sits on, flush against the right edge of the page.
 const RAIL_CARD =

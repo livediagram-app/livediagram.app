@@ -12,7 +12,7 @@ export function SiteFooter() {
         <div>
           <Brand size="sm" />
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-            Free diagrams and mindmaps for teams who think together.
+            Free diagrams, whiteboards and pages for teams who think together.
           </p>
         </div>
         <nav

@@ -14,6 +14,18 @@ export const SITE_URL = 'https://livediagram.app';
 // The product / site name: the metadata siteName and the JSON-LD name.
 export const SITE_NAME = 'livediagram';
 
+// What livediagram is, in the words every public surface uses (docs/specs/019-marketing/marketing-site.md
+// "SEO and metadata"), kept here so they can't drift: the landing page's title, its description
+// (also the web app manifest's), and the one-line pitch the share card, the share images' alt text
+// and the share rail build on. It names every kind of thing the canvas makes, not just diagrams.
+export const SITE_TITLE = 'livediagram: Diagram, draw and illustrate together, live';
+export const SITE_DESCRIPTION =
+  'A free, real-time canvas for diagrams, whiteboards, mind maps, infographics and documents. Built for teams who think visually.';
+// Lower case: it follows "livediagram: " or starts a sentence through sentencePitch.
+export const SITE_PITCH =
+  'a real-time canvas for diagrams, whiteboards, illustrations and documents';
+export const sentencePitch = () => `${SITE_PITCH[0]!.toUpperCase()}${SITE_PITCH.slice(1)}.`;
+
 // The open-source repository (docs/specs/002-project-scope/open-source-and-business-model.md: the codebase is public + MIT), linked
 // from the footer, the FAQ, the status page, the help centre's contact page,
 // the editor's bottom bar and Explorer menu, and the `sameAs` JSON-LD.

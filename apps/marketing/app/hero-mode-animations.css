@@ -391,8 +391,9 @@
 /* --- Build yours (components/HeroIllustration.tsx) --- */
 
 /* The call to action lands in the middle of the canvas once the scene has played out (11s into the
-   16s cycle), centred by the translate and rising into place; until then it is not there to press.
-   Reduced motion shows it at once. */
+   22s cycle, so it holds for about ten seconds before the window fades), centred by the translate
+   and rising into place; until then it is not there to press. Its halo breathes while it is up.
+   Reduced motion shows it at once, still. */
 .hero-build {
   translate: -50% -50%;
   visibility: hidden;
@@ -411,10 +412,29 @@
     transform: none;
   }
 }
+@media (prefers-reduced-motion: no-preference) {
+  .hero-build-halo {
+    animation: hero-build-halo 2.4s ease-in-out 11.5s infinite;
+  }
+}
+@keyframes hero-build-halo {
+  0%,
+  100% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.06);
+  }
+}
 @media (prefers-reduced-motion: reduce) {
   .hero-build {
     animation: none;
     visibility: visible;
     opacity: 1;
+  }
+  .hero-build-halo {
+    animation: none;
   }
 }
