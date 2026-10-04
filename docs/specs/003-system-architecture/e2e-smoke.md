@@ -72,6 +72,10 @@ Cost controls, all in `e2e.yml` and `playwright.config.ts`:
   floor: more shards finish no sooner, and each takes one of the account's 20 concurrent runner
   slots that every other pull request's run waits on. When the suite grows past the floor, the
   shard count grows with it.
+- **No type check in the builds**: `e2e.yml` sets `BUILD_SKIP_TYPECHECK=1`, so `next build` skips its
+  own type check (`typescriptConfig()` in `@livediagram/next-config`, shared by the four Next
+  apps). CI's required Checks job already type-checks every app with `tsc --noEmit` against the
+  same tsconfig; repeating it cost each live build about 40 seconds. Deploys leave it unset.
 - **No dependency cache** in the e2e jobs: in the container its store path never matches a saved
   cache, so `setup-node`'s `cache: pnpm` only cost a 75-second save per job, while a cold
   `pnpm install` takes about 15 seconds.

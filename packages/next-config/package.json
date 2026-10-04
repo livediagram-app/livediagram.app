@@ -1,0 +1,22 @@
+{
+  "name": "@livediagram/next-config",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "default": "./index.js"
+    }
+  },
+  "scripts": {
+    "test": "vitest run",
+    "clean": "rm -rf node_modules .turbo"
+  },
+  "devDependencies": {
+    "@livediagram/vitest-config": "workspace:*",
+    "vitest": "^5.0.3"
+  }
+}

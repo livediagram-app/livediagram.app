@@ -28,6 +28,7 @@
   },
   "devDependencies": {
     "@livediagram/eslint-config": "workspace:*",
+    "@livediagram/next-config": "workspace:*",
     "@livediagram/tailwind-config": "workspace:*",
     "@livediagram/templates": "workspace:*",
     "@livediagram/vitest-config": "workspace:*",

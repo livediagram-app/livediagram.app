@@ -18,6 +18,11 @@ concurrency:
   group: e2e-${{ github.ref }}
   cancel-in-progress: true
 
+# These builds exist to be tested, and CI's required Checks job already type-checks every app, so
+# `next build` skips its own type check here (@livediagram/next-config). Deploys keep it.
+env:
+  BUILD_SKIP_TYPECHECK: '1'
+
 # Playwright's own image carries Chromium and every system library it needs, so no run downloads or
 # apt-installs them. Its tag is the locked @playwright/test version; e2e-setup checks every job's tag.
 # Host IPC: Chromium in a container otherwise runs on a 64 MB /dev/shm.
