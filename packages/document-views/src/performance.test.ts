@@ -11,7 +11,9 @@ import { outlineView } from './outline';
 const FRAMES = 10;
 const GROWTH = 4;
 const RATIO_CEILING = 8;
-const RUNS = 5;
+const RUNS = 3;
+// Sized to time tens of milliseconds a render; coverage on a CI runner makes that seconds.
+const TIMEOUT_MS = 30_000;
 
 // `FRAMES` frames, each holding `perFrame` boxes joined pairwise by arrows.
 function tabOf(perFrame: number) {
@@ -48,12 +50,16 @@ function fastestRender(tab: ReturnType<typeof tabOf>): number {
 }
 
 describe('views as tabs grow', () => {
-  it('cost about linearly more, never quadratically', () => {
-    const small = tabOf(160);
-    const large = tabOf(160 * GROWTH);
-    fastestRender(small);
-    const ratio = fastestRender(large) / fastestRender(small);
-    expect(large.elements.length).toBeGreaterThan(GROWTH * (small.elements.length - FRAMES));
-    expect(ratio).toBeLessThan(RATIO_CEILING);
-  });
+  it(
+    'cost about linearly more, never quadratically',
+    () => {
+      const small = tabOf(120);
+      const large = tabOf(120 * GROWTH);
+      fastestRender(small);
+      const ratio = fastestRender(large) / fastestRender(small);
+      expect(large.elements.length).toBeGreaterThan(GROWTH * (small.elements.length - FRAMES));
+      expect(ratio).toBeLessThan(RATIO_CEILING);
+    },
+    TIMEOUT_MS,
+  );
 });

@@ -847,8 +847,8 @@ abbreviates, and holds the outline at or under 400 estimated tokens (chars ÷ 3)
 JSON's estimate.
 
 `performance.test.ts` times growth, not a ceiling: four times the elements in the same ten frames must cost under
-eight times as much (measured 3 to 5, under coverage too; a quadratic step costs 16), the fastest of five renders
-each. An absolute time depends on the machine and on coverage instrumentation, and flaked in CI. Goldens are kept
+eight times as much (measured 3 to 5, under coverage too; a quadratic step costs 16), the fastest of three renders
+each, within an explicit 30 s timeout (coverage on a CI runner makes tens of milliseconds seconds). An absolute time depends on the machine and on coverage instrumentation, and flaked in CI. Goldens are kept
 out of Prettier (`.prettierignore`).
 
 ## Constants and configuration
