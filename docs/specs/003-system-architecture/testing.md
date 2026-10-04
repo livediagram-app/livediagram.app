@@ -187,6 +187,8 @@ head commit, reads its numbers from Codecov's public API and writes one comment,
 each later run:
 
 - the patch coverage (the changed lines), and the project coverage with its change;
+- Codecov's impacted file tree graph, linked to the pull request's file tree on Codecov (its
+  public graph token, read from Codecov's API, embeds the image);
 - one row per area (Editor, API, MCP, Help and marketing, Packages), `main` against the pull
   request, never a list of files, which an editor change would fill with hundreds;
 - Codecov's coverage diff: coverage, files, lines, hits, misses and partials, `+` marking what got
