@@ -108,9 +108,10 @@ Coverage uses the built-in **v8** provider. Reports are written to a
 gitignored `coverage/` directory per workspace (`text` summary in the
 terminal, plus `html` + `lcov` for tooling). The `lcov` report names each file
 from the repository root (`apps/live/lib/...`), so reports from different
-workspaces never collide. Only first-party source (`src/**`, `lib/**`) is
-counted; the editor (`apps/live`) also counts `app/**`, `components/**` and
-`hooks/**`, where most of its source lives. Test files and type-only `.d.ts` are
+workspaces never collide. Only first-party TypeScript source under `src/` and
+`lib/` is counted; the editor (`apps/live`) also counts `app/`, `components/`
+and `hooks/`, where most of its source lives. Fixtures beside the code
+(`.drawio`, goldens, model weights) are never parsed as source. Test files and type-only `.d.ts` are
 excluded. `index.ts` is intentionally **not** excluded — in this repo a
 package's `index.ts` is its implementation (e.g. `@livediagram/document`), not
 a barrel of re-exports.
