@@ -292,8 +292,11 @@ export function MindMapBoard({ portrait = false }: { portrait?: boolean }) {
         </g>
       ))}
 
-      {/* A rocket on the centre, for the launch. */}
-      <g className="hm-pop" style={at(8.9)}>
+      {/* A rocket on the centre, for the launch. An emoji's ink is the platform's emoji font's
+          (Linux CI's sits 1px off where macOS's centres), so no nudge centres it everywhere: a
+          decoration, not a control, it is left out of the optical audit
+          (docs/specs/004-interface-design/blueprints/DEFAULTS.md D45). */}
+      <g className="hm-pop" style={at(8.9)} data-optical-ignore="">
         <circle cx={centre.x + 56} cy={centre.y - 22} r="14" fill="white" stroke="#e2e8f0" />
         <text x={centre.x + 56} y={centre.y - 17} textAnchor="middle" fontSize="15">
           🚀
