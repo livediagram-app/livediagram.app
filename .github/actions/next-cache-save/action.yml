@@ -1,0 +1,22 @@
+name: Next build cache, save
+description: >-
+  Saves Turbopack's build cache for one set of Next builds, on main only: pull requests read main's
+  cache but never write their own, so they cannot evict it from the repository's cache storage.
+
+inputs:
+  name:
+    description: The cache's name; the same as its restore.
+    required: true
+  paths:
+    description: The `.next/cache` directories, one per line; the same as its restore.
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Save Next build cache
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      uses: actions/cache/save@v6
+      with:
+        path: ${{ inputs.paths }}
+        key: next-${{ inputs.name }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}

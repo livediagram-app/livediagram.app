@@ -76,6 +76,13 @@ Cost controls, all in `e2e.yml` and `playwright.config.ts`:
   own type check (`typescriptConfig()` in `@livediagram/next-config`, shared by the four Next
   apps). CI's required Checks job already type-checks every app with `tsc --noEmit` against the
   same tsconfig; repeating it cost each live build about 40 seconds. Deploys leave it unset.
+- **A warm build cache**: each job restores Turbopack's build cache (`.next/cache`) from the latest
+  run on `main` before it builds, so it compiles only what changed
+  (`.github/actions/next-cache-restore`). Only runs on `main` save it, keyed by lockfile and commit,
+  one copy per set of builds (`live`, `live-clerk-stub`, `sites`); pull requests read it and never
+  write their own, so they cannot evict it. Turbopack re-checks every input, so a cache from an
+  older commit only ever saves work, and a lockfile change starts cold. Each restore logs
+  `[next-cache] <name>: <matched key>` or a miss.
 - **No dependency cache** in the e2e jobs: in the container its store path never matches a saved
   cache, so `setup-node`'s `cache: pnpm` only cost a 75-second save per job, while a cold
   `pnpm install` takes about 15 seconds.
