@@ -57,7 +57,7 @@ afterEach(cleanup);
 describe('SettingsPlacementDefaultRow', () => {
   it('lists the six entries in title case under Where New Documents Go', () => {
     const rows = SETTINGS_CATEGORIES.find((c) => c.id === 'documents')!.rows;
-    expect(rows.map((r) => r.label)).toEqual([
+    expect(rows.filter((r) => r.kind === 'placementDefault').map((r) => r.label)).toEqual([
       'Diagrams',
       'Whiteboards',
       'Illustrate Pages',

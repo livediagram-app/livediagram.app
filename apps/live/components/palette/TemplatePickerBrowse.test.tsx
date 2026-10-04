@@ -29,6 +29,8 @@ const ALL_MODES: TemplateModeFilter = {
   options: ['all', 'diagram', 'draw', 'illustrate'],
   choose: () => {},
   shows: () => true,
+  offered: () => true,
+  counts: { all: 0, diagram: 0, draw: 0, illustrate: 0 },
 };
 const popular = POPULAR_TEMPLATE_KINDS.map(byKind);
 const categoryTemplates = (c: TemplateCategory) =>
@@ -111,6 +113,8 @@ describe('a ?browse= collection', () => {
     render(<Shelf initial="brainstorm" />);
     fireEvent.click(screen.getByRole('button', { name: /All templates/ }));
     expect(stage().textContent).toContain('Popular');
-    expect(screen.queryByRole('button', { name: 'Browse Brainstorm templates' })).toBeNull();
+    // The collection's drilled-in view is gone (its back bar with it); the Brainstorm tile left is
+    // the category's, which shares the collection's name.
+    expect(screen.queryByRole('button', { name: /All templates/ })).toBeNull();
   });
 });

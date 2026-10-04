@@ -1,10 +1,11 @@
 // @vitest-environment jsdom
-import { act, fireEvent, render, screen, within } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { useState } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   POPULAR_TEMPLATE_KINDS,
   TEMPLATES,
+  TEMPLATE_CATEGORIES,
   templateCategory,
   templateEditorMode,
   type TemplateCategory,
@@ -37,7 +38,9 @@ function Step({ initial = null, query = '' }: { initial?: ShelfCategory | null; 
   const popular = POPULAR_TEMPLATE_KINDS.flatMap((k) => listed.filter((t) => t.kind === k));
   const inCategory = (c: TemplateCategory) =>
     listed.filter((t) => t.kind !== 'blank' && templateCategory(t.kind) === c);
-  const matches = query ? listed.filter((t) => t.title.toLowerCase().includes(query)) : [];
+  const matching = (t: (typeof TEMPLATES)[number]) => t.title.toLowerCase().includes(query);
+  const matches = query ? listed.filter(matching) : [];
+  const everywhere = query ? TEMPLATES.filter((t) => filter.offered(t) && matching(t)).length : 0;
   return (
     <>
       <output data-testid="selected">{kind}</output>
@@ -47,6 +50,7 @@ function Step({ initial = null, query = '' }: { initial?: ShelfCategory | null; 
         setTemplateQuery={() => {}}
         templateFilter={query}
         filteredTemplates={matches}
+        matchesInEveryMode={matches.length === 0 && filter.choice !== 'all' ? everywhere : 0}
         openCategory={open}
         setOpenCategory={setOpen}
         shelfExpanded={false}
@@ -61,7 +65,11 @@ function Step({ initial = null, query = '' }: { initial?: ShelfCategory | null; 
   );
 }
 
-const choose = (name: string) => fireEvent.click(screen.getByRole('radio', { name }));
+const chip = () => screen.getByRole('button', { name: /^Show templates for:/ });
+const choose = (name: string) => {
+  fireEvent.click(chip());
+  fireEvent.click(screen.getByRole('menuitemradio', { name: new RegExp(`^${name}`) }));
+};
 const stage = () => screen.getAllByRole('heading', { level: 3 })[0]!.closest('section') ?? document;
 const tiles = () => screen.queryAllByRole('button', { name: /^Browse .* templates$/ });
 const cardModes = () =>
@@ -73,12 +81,20 @@ afterEach(() => {
 });
 
 describe('the mode filter', () => {
-  it('offers All, Diagram, Draw and Illustrate, All chosen', () => {
+  it('offers Everything, Diagram, Draw and Illustrate, Everything chosen, with their counts', () => {
     render(<Step />);
-    const group = screen.getByRole('radiogroup', { name: 'Show templates for' });
-    const radios = within(group).getAllByRole('radio');
-    expect(radios.map((r) => r.textContent)).toEqual(['All', 'Diagram', 'Draw', 'Illustrate']);
-    expect(screen.getByRole('radio', { name: 'All' }).getAttribute('aria-checked')).toBe('true');
+    expect(chip().getAttribute('aria-label')).toBe('Show templates for: Everything');
+    fireEvent.click(chip());
+    const rows = screen.getAllByRole('menuitemradio');
+    expect(rows.map((r) => r.textContent?.replace(/\d+/g, ''))).toEqual([
+      'Everything',
+      'Diagram',
+      'Draw',
+      'Illustrate',
+    ]);
+    expect(rows[0]!.getAttribute('aria-checked')).toBe('true');
+    const draw = TEMPLATES.filter((t) => templateEditorMode(t.kind) === 'draw').length;
+    expect(rows[2]!.textContent).toBe(`Draw${draw}`);
   });
 
   it('narrows Popular, the category tiles and their counts to the chosen mode', () => {
@@ -91,7 +107,20 @@ describe('the mode filter', () => {
       ),
     );
     expect(tiles()).toHaveLength(drawCategories.size);
-    for (const tile of tiles()) expect(tile.textContent).toMatch(/1$/);
+    for (const tile of tiles()) {
+      const category = [...drawCategories].find((c) =>
+        tile
+          .getAttribute('aria-label')!
+          .includes(TEMPLATE_CATEGORIES.find((x) => x.id === c)!.label),
+      )!;
+      const inCategory = TEMPLATES.filter(
+        (t) =>
+          templateEditorMode(t.kind) === 'draw' &&
+          t.kind !== 'whiteboard' &&
+          templateCategory(t.kind) === category,
+      ).length;
+      expect(tile.textContent).toMatch(new RegExp(`${inCategory}$`));
+    }
     expect(trackMock).toHaveBeenCalledWith('UI', 'Toggled', 'TemplateModeDraw');
   });
 
@@ -101,7 +130,7 @@ describe('the mode filter', () => {
     expect(screen.getByTestId('selected').textContent).toBe('blank-illustration');
     choose('Draw');
     expect(screen.getByTestId('selected').textContent).toBe('whiteboard');
-    choose('All');
+    choose('Everything');
     expect(screen.getByTestId('selected').textContent).toBe('whiteboard');
   });
 
@@ -118,24 +147,37 @@ describe('the mode filter', () => {
     expect(screen.getByText(/No Draw/).textContent).toContain('templates match');
   });
 
-  it('moves with the arrow keys', () => {
-    render(<Step />);
-    const group = screen.getByRole('radiogroup', { name: 'Show templates for' });
-    fireEvent.keyDown(group, { key: 'ArrowRight' });
-    expect(screen.getByRole('radio', { name: 'Diagram' }).getAttribute('aria-checked')).toBe(
-      'true',
-    );
-    fireEvent.keyDown(group, { key: 'ArrowLeft' });
-    fireEvent.keyDown(group, { key: 'ArrowLeft' });
-    expect(screen.getByRole('radio', { name: 'Illustrate' }).getAttribute('aria-checked')).toBe(
-      'true',
-    );
+  it('offers Everything when a search finds nothing in the mode but does elsewhere', () => {
+    render(<Step query="mind" />);
+    choose('Draw');
+    const offer = screen.getByRole('button', { name: /in Everything$/ });
+    fireEvent.click(offer);
+    expect(chip().getAttribute('aria-label')).toBe('Show templates for: Everything');
+    expect(screen.queryByText(/templates match/)).toBeNull();
+  });
+
+  it('opens on a mouse hover without taking focus, and closes once the pointer leaves', () => {
+    vi.useFakeTimers();
+    try {
+      render(<Step />);
+      const root = chip().parentElement!;
+      fireEvent.pointerEnter(root, { pointerType: 'mouse' });
+      expect(screen.getByRole('menu', { name: 'Show templates for' })).toBeTruthy();
+      expect(document.activeElement).not.toBe(screen.getAllByRole('menuitemradio')[0]);
+      fireEvent.pointerLeave(root, { pointerType: 'mouse' });
+      act(() => vi.advanceTimersByTime(250));
+      expect(screen.queryByRole('menu', { name: 'Show templates for' })).toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('offers no Illustrate option, and shows no Illustrate template, when Illustrate is off', () => {
     act(() => setIllustrateModeEnabled(false));
     render(<Step />);
-    expect(screen.queryByRole('radio', { name: 'Illustrate' })).toBeNull();
+    fireEvent.click(chip());
+    expect(screen.queryByRole('menuitemradio', { name: /^Illustrate/ })).toBeNull();
+    fireEvent.click(chip());
     expect(cardModes()).not.toContain('Opens in Illustrate');
     expect(screen.queryByText('Blank Illustration')).toBeNull();
   });

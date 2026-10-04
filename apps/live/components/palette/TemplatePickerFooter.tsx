@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { Button } from '@livediagram/ui';
 import type { WizardStep } from './template-picker-wizard';
 import { ArrowRightIcon, FolderOpenIcon, SparkleIcon, Spinner } from './template-picker-icons';
@@ -16,6 +17,8 @@ export function TemplatePickerFooter({
   skipToDefaults,
   goToStep,
   onCommit,
+  oneStep = false,
+  note,
 }: {
   isIdentity: boolean;
   isWelcome: boolean;
@@ -28,7 +31,13 @@ export function TemplatePickerFooter({
   // Commit the current pick — Join in identity mode, Create on the welcome
   // wizard's Location step, Apply in Quick Start.
   onCommit: () => void;
+  // The welcome wizard without its Location step (docs/specs/013-workspace/default-folders.md
+  // "Skipping the Location step"): the template step commits, as Create.
+  oneStep?: boolean;
+  // A quiet line above the buttons, inside the footer's rule ("Saving in <place>").
+  note?: ReactNode;
 }) {
+  const advances = isWelcome && step === 'template' && !oneStep;
   return (
     <>
       {/* Footer. Identity mode keeps a flat Cancel + Join row; the other
@@ -47,75 +56,79 @@ export function TemplatePickerFooter({
           </Button>
         </DialogFooter>
       ) : (
-        <div className="flex items-center gap-2 border-t border-slate-100 px-6 py-4 dark:border-slate-800">
-          {/* Far-left escape hatch: the welcome flow jumps to the Explorer
+        <div className="border-t border-slate-100 dark:border-slate-800">
+          {note}
+          <div className="flex items-center gap-2 px-6 py-4">
+            {/* Far-left escape hatch: the welcome flow jumps to the Explorer
             to open an existing document; the in-editor templates flow
             cancels back to the canvas. */}
-          {isWelcome ? (
-            onOpenExisting ? (
-              <button
-                type="button"
-                onClick={onOpenExisting}
-                className="mr-auto inline-flex items-center gap-1.5 rounded-lg px-2.5 py-2 text-xs font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+            {isWelcome ? (
+              onOpenExisting ? (
+                <button
+                  type="button"
+                  onClick={onOpenExisting}
+                  className="mr-auto inline-flex items-center gap-1.5 rounded-lg px-2.5 py-2 text-xs font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+                >
+                  <FolderOpenIcon />
+                  Open Existing Document
+                </button>
+              ) : null
+            ) : (
+              <Button
+                variant="secondary"
+                size="xs"
+                onClick={onSkip}
+                // rounded-lg + py-2 keep the wizard footer's taller rhythm;
+                // overrides append after the size scale, so they win.
+                className="mr-auto rounded-lg py-2"
               >
-                <FolderOpenIcon />
-                Open Existing Document
-              </button>
-            ) : null
-          ) : (
-            <Button
-              variant="secondary"
-              size="xs"
-              onClick={onSkip}
-              // rounded-lg + py-2 keep the wizard footer's taller rhythm;
-              // overrides append after the size scale, so they win.
-              className="mr-auto rounded-lg py-2"
-            >
-              Cancel
-            </Button>
-          )}
-          {/* Right cluster: (welcome only) Skip, then the primary Next /
+                Cancel
+              </Button>
+            )}
+            {/* Right cluster: (welcome only) Skip, then the primary Next /
             commit action. Going BACK to the template step is driven by
             the step rail at the top (clicking "1 Template") — a footer
             Back button here read ambiguously against the category
             "All templates / All themes" bar, so it's gone. */}
-          {isWelcome && step === 'template' ? (
-            /* Skip the wizard: Blank template, Default theme (docs/specs/007-editor/new-document-route.md).
+            {isWelcome && step === 'template' ? (
+              /* Skip the wizard: Blank template, Default theme (docs/specs/007-editor/new-document-route.md).
              Only on the first (template) step — once the user has
              reached the theme step, Back / Create are the actions. */
-            <Button
-              variant="secondary"
-              size="xs"
-              onClick={skipToDefaults}
-              disabled={busy}
-              className="rounded-lg py-2"
-            >
-              Skip
-            </Button>
-          ) : null}
-          {/* Advance vs commit. The welcome wizard's template step moves on
-            to Location (Next), where Create commits. Quick Start has one
-            page, so it commits (Apply) straight away. */}
-          {isWelcome && step === 'template' ? (
-            <Button
-              size="xs"
-              onClick={() => goToStep('settings')}
-              className="gap-1.5 rounded-lg px-4 py-2 shadow-sm"
-            >
-              Next
-              <ArrowRightIcon />
-            </Button>
-          ) : (
-            <Button
-              size="xs"
-              onClick={onCommit}
-              disabled={busy}
-              className="gap-1.5 rounded-lg px-4 py-2 shadow-sm"
-            >
-              {busy ? <Spinner /> : <SparkleIcon />}
-              {busy ? 'Creating…' : isWelcome ? 'Create' : 'Apply'}
-            </Button>
-          )}
+              <Button
+                variant="secondary"
+                size="xs"
+                onClick={skipToDefaults}
+                disabled={busy}
+                className="rounded-lg py-2"
+              >
+                Skip
+              </Button>
+            ) : null}
+            {/* Advance vs commit. The welcome wizard's template step moves on
+            to Location (Next), where Create commits; with no Location step
+            it commits (Create) itself. Quick Start has one page, so it
+            commits (Apply) straight away. */}
+            {advances ? (
+              <Button
+                size="xs"
+                onClick={() => goToStep('settings')}
+                className="gap-1.5 rounded-lg px-4 py-2 shadow-sm"
+              >
+                Next
+                <ArrowRightIcon />
+              </Button>
+            ) : (
+              <Button
+                size="xs"
+                onClick={onCommit}
+                disabled={busy}
+                className="gap-1.5 rounded-lg px-4 py-2 shadow-sm"
+              >
+                {busy ? <Spinner /> : <SparkleIcon />}
+                {busy ? 'Creating…' : isWelcome ? 'Create' : 'Apply'}
+              </Button>
+            )}
+          </div>
         </div>
       )}
     </>

@@ -6,9 +6,10 @@
 // template of a mode not offered is never shown. Choosing a mode the selected template is not of
 // selects that mode's blank, so one card is always selected and Next never starts something
 // filtered away.
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import {
   BLANK_TEMPLATE_FOR_MODE,
+  TEMPLATES,
   templateEditorMode,
   type TemplateDescriptor,
   type TemplateKind,
@@ -34,6 +35,10 @@ export type TemplateModeFilter = {
   choose: (next: TemplateModeChoice) => void;
   // Whether a template shows under the choice.
   shows: (t: TemplateDescriptor) => boolean;
+  // Whether a template shows under Everything (its mode is offered).
+  offered: (t: TemplateDescriptor) => boolean;
+  // How many listed templates each option holds.
+  counts: Readonly<Record<TemplateModeChoice, number>>;
 };
 
 export function useTemplateModeFilter({
@@ -53,6 +58,20 @@ export function useTemplateModeFilter({
     },
     [offered, choice],
   );
+  const offeredTemplate = useCallback(
+    (t: TemplateDescriptor) => offered.includes(templateEditorMode(t.kind)),
+    [offered],
+  );
+  const counts = useMemo(() => {
+    const out: Record<TemplateModeChoice, number> = { all: 0, diagram: 0, draw: 0, illustrate: 0 };
+    for (const t of TEMPLATES) {
+      const mode = templateEditorMode(t.kind);
+      if (t.hidden || !offered.includes(mode)) continue;
+      out.all += 1;
+      out[mode] += 1;
+    }
+    return out;
+  }, [offered]);
   const choose = (next: TemplateModeChoice) => {
     if (next === choice) return;
     track('UI', 'Toggled', MODE_EVENT[next]);
@@ -60,5 +79,12 @@ export function useTemplateModeFilter({
     const selectedMode = templateEditorMode(selected);
     if (next !== 'all' && selectedMode !== next) onSelect(BLANK_TEMPLATE_FOR_MODE[next]);
   };
-  return { choice, options: ['all', ...offered], choose, shows };
+  return {
+    choice,
+    options: ['all', ...offered],
+    choose,
+    shows,
+    offered: offeredTemplate,
+    counts,
+  };
 }

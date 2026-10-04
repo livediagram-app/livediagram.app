@@ -7,7 +7,7 @@ import {
   isBlankTemplate,
   templateShelfTemplates,
 } from '@livediagram/templates';
-import { CloseIcon, SearchIcon } from '@livediagram/ui';
+import { Button, CloseIcon, SearchIcon } from '@livediagram/ui';
 import { editorModeLabel } from '@livediagram/document';
 import { AnimatedHeightBox } from '@/components/primitives/AnimatedHeightBox';
 import { BackBar } from '@/components/primitives/BackBar';
@@ -45,6 +45,7 @@ export function TemplatePickerBrowse({
   setTemplateQuery,
   templateFilter,
   filteredTemplates,
+  matchesInEveryMode = 0,
   openCategory,
   setOpenCategory,
   shelfExpanded,
@@ -62,6 +63,8 @@ export function TemplatePickerBrowse({
   // The debounced, normalised filter actually applied (empty = browse).
   templateFilter: string;
   filteredTemplates: TemplateDescriptor[];
+  // A search with no match in the chosen mode: how many it finds in every mode.
+  matchesInEveryMode?: number;
   // The shelf the user last opened; null is the default, Popular.
   openCategory: ShelfCategory | null;
   setOpenCategory: (c: ShelfCategory | null) => void;
@@ -164,10 +167,19 @@ export function TemplatePickerBrowse({
       >
         {templateFilter ? (
           filteredTemplates.length === 0 ? (
-            <p className="px-1 py-6 text-center text-xs text-slate-400 dark:text-slate-400">
-              No {modeFilter.choice === 'all' ? '' : `${editorModeLabel(modeFilter.choice)} `}
-              templates match “{templateQuery.trim()}”.
-            </p>
+            <div className="flex flex-col items-center gap-2 px-1 py-6 text-center">
+              <p className="text-xs text-slate-400 dark:text-slate-400">
+                No {modeFilter.choice === 'all' ? '' : `${editorModeLabel(modeFilter.choice)} `}
+                templates match “{templateQuery.trim()}”.
+              </p>
+              {/* Found in other modes: one press shows them (docs/specs/007-editor/templates-by-mode.md). */}
+              {matchesInEveryMode > 0 ? (
+                <Button size="xs" variant="secondary" onClick={() => modeFilter.choose('all')}>
+                  Show {matchesInEveryMode} {matchesInEveryMode === 1 ? 'match' : 'matches'} in
+                  Everything
+                </Button>
+              ) : null}
+            </div>
           ) : (
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
               {filteredTemplates.map((t) => (
