@@ -9,10 +9,9 @@
 // sized for a 28px tile and stroked to read at that size.
 
 import type { ReactNode } from 'react';
-import { Glyph, lucideGlyph } from '@livediagram/ui';
+import { Glyph, lucideGlyph, EDITOR_MODE_ICONS } from '@livediagram/ui';
 import { lucideLayers, lucideMap, lucidePalette } from '@livediagram/icons/lucide';
 import { CollaborateGlyph } from '@/components/panels/collaborate/CollaborateGlyph';
-import { EDITOR_MODE_ICON } from '@/components/chrome/editor-mode/editor-mode-copy';
 
 // The categories that carry a tile: every top-level one. A sub-category
 // (one per panel under Panels, one per mode under Editor, Notifications and
@@ -200,7 +199,7 @@ export const CATEGORY_GLYPHS: Record<SettingsIconId, ReactNode> = {
 const LayersSubGlyph = lucideGlyph(lucideLayers, 16);
 const MapSubGlyph = lucideGlyph(lucideMap, 16);
 const QuickStyleSubGlyph = lucideGlyph(lucidePalette, 16);
-const DrawSubGlyph = EDITOR_MODE_ICON.draw;
+const DrawSubGlyph = EDITOR_MODE_ICONS.draw;
 const SUBCATEGORY_GLYPHS: Record<SettingsSubcategoryId, () => ReactNode> = {
   draw: () => <DrawSubGlyph size={16} />,
   layers: () => <LayersSubGlyph />,

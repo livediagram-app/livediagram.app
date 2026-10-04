@@ -94,8 +94,8 @@ The slots:
   Start drawing.
 - `HeroBuild`: the **Build yours** button on each of the hero's mode windows, opening the template
   step narrowed to that window's kind (`/new?mode=…` and, for the Mind map and Article, `&q=…`).
-- `HeroCanvas` (**retired**: the launch window left the hero; the slot stays so its history still reads): the hero stage's launch window, the mini canvas that grows
-  into the editor (`/new?blank=1&welcome=1`).
+- `HeroCanvas` (**retired**: the launch window left the hero; the slot stays so its history still reads): the hero stage's launch window, the mini canvas that grew
+  into the editor.
 - `Gallery`: any card in the landing template gallery
   (`/new?template=<kind>`). The template itself is already reported by
   `Template·Used`, so it is not repeated in the source. `GalleryDraw` is the

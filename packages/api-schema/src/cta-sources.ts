@@ -14,6 +14,8 @@ export const CTA_SOURCES = {
     'HeaderDraw',
     'HeaderWhiteboard',
     'HeaderIllustration',
+    // Retired with the hero's old buttons and launch window: nothing links them now, but they stay
+    // so a page a browser still has cached reports, and the dashboard labels the rows they left.
     'Hero',
     'HeroDraw',
     'HeroBrainstorm',

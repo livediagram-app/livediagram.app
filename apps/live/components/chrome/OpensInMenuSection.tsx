@@ -1,8 +1,8 @@
+import { EDITOR_MODE_ICONS } from '@livediagram/ui';
 import { EDITOR_MODE_CATALOGUE, type EditorMode } from '@livediagram/document';
 import type { ReactNode } from 'react';
 import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
 import { useMenuItemProps } from '@/components/primitives/menu-item-props';
-import { EDITOR_MODE_ICON } from './editor-mode/editor-mode-copy';
 import { useOfferedEditorModes } from '@/lib/offered-editor-modes';
 
 // "Opens in" (docs/specs/007-editor/editor-modes.md "Where the mode lives"): the tab menu's choice
@@ -27,7 +27,7 @@ export function OpensInMenuSection({
   open: boolean;
   onToggle: () => void;
 }) {
-  const Current = EDITOR_MODE_ICON[choice.mode];
+  const Current = EDITOR_MODE_ICONS[choice.mode];
   // An experimental mode switched off in Settings is not offered (offered-editor-modes).
   const offered = useOfferedEditorModes();
   return (
@@ -41,7 +41,7 @@ export function OpensInMenuSection({
       <div role="group" aria-label="Opens in" className="flex flex-col">
         {EDITOR_MODE_CATALOGUE.filter((m) => offered.includes(m.id)).map(
           ({ id, label, description }) => {
-            const Icon = EDITOR_MODE_ICON[id];
+            const Icon = EDITOR_MODE_ICONS[id];
             const checked = id === choice.mode;
             return (
               <OpensInChoiceRow

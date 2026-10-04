@@ -8,13 +8,9 @@ import { isTemplateKind, type TemplateKind } from '@livediagram/templates';
 // One reader for both so the page, its bfcache-restore cleanup and the
 // pre-hydration guard agree on what counts.
 
-// Rides the blank bypass: the marketing hero's launch window (/new?blank=1&welcome=1). The
-// document opens on the blank canvas the hero grew into, with the tour's welcome offer.
-export const WELCOME_PARAM = 'welcome';
-
 // The params the bypass reads; the bfcache restore strips exactly these so
 // Back from the editor lands on the plain wizard with placement intact.
-export const WIZARD_BYPASS_PARAMS = ['blank', 'template', WELCOME_PARAM] as const;
+export const WIZARD_BYPASS_PARAMS = ['blank', 'template'] as const;
 
 // Which template the query asks to commit without the wizard, or null for
 // the wizard itself. `blank` wins when both are present (it is the older,
@@ -40,12 +36,6 @@ export function wizardPresetMode(search: string): EditorMode | null {
 export function wizardPresetQuery(search: string): string | null {
   const q = new URLSearchParams(search).get('q')?.trim().slice(0, SEARCH_PRESET_MAX);
   return q ? q : null;
-}
-
-// Whether the bypass is the hero's welcome landing. Only the blank bypass carries it: the hero
-// grows a blank canvas, so only a blank document can land on it.
-export function wantsWelcome(search: string): boolean {
-  return wizardBypassKind(search) === 'blank' && new URLSearchParams(search).has(WELCOME_PARAM);
 }
 
 // The placement context params (/new?folder=<id>, /new?team=<id>), pre-seeding the Settings

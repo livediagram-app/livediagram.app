@@ -4,11 +4,11 @@
 // TemplatePicker so the same card renders in the open shelf's carousel
 // and the flat search results without the JSX being copy-pasted.
 
+import { EDITOR_MODE_ICONS } from '@livediagram/ui';
 import type { TemplateDescriptor, TemplateKind } from '@livediagram/templates';
 import { templateEditorMode } from '@livediagram/templates';
 import { editorModeLabel, type EditorMode } from '@livediagram/document';
 import { PickerCard } from '@/components/palette/PickerCard';
-import { EDITOR_MODE_ICON } from '@/components/chrome/editor-mode/editor-mode-copy';
 import { PreviewFan, TemplatePreview } from '@livediagram/template-previews';
 
 // The editor mode a template opens in, as the glyph left of its title
@@ -16,7 +16,7 @@ import { PreviewFan, TemplatePreview } from '@livediagram/template-previews';
 // muted. A picture only: a screen reader hears "Opens in <Mode>" after the title (the card's
 // labelNote), so a card's name still starts with its title.
 function TemplateModeGlyph({ mode }: { mode: EditorMode }) {
-  const Icon = EDITOR_MODE_ICON[mode];
+  const Icon = EDITOR_MODE_ICONS[mode];
   return (
     <span
       aria-hidden

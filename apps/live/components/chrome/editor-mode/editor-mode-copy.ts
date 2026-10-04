@@ -1,14 +1,8 @@
-import type { ComponentType } from 'react';
 import type { EditorMode } from '@livediagram/document';
-import { EDITOR_MODE_ICONS, type IconProps } from '@livediagram/ui';
 
 // What the editor's mode controls show for each editor mode beyond the words, which come from the
 // document's one mode catalogue (editorModeLabel / editorModeDescription), and the shortcut that
 // moves to the next mode (docs/specs/007-editor/editor-modes.md "The mode switch").
-
-// The shared map (@livediagram/ui), typed to the document's modes.
-export const EDITOR_MODE_ICON: Readonly<Record<EditorMode, ComponentType<IconProps>>> =
-  EDITOR_MODE_ICONS;
 
 // Shift+D, as `aria-keyshortcuts` spells it and as the interface shows it.
 export const EDITOR_MODE_KEYSHORTCUT = 'Shift+D';

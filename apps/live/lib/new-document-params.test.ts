@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import { templateCreateHref } from '@livediagram/templates';
 import {
   choosePlacementAgainUrl,
-  wantsWelcome,
   wizardBypassKind,
   SEARCH_PRESET_MAX,
   wizardPresetMode,
@@ -37,27 +36,14 @@ describe('wizardBypassKind (docs/specs/007-editor/new-document-route.md)', () =>
   });
 });
 
-describe('wantsWelcome (docs/specs/007-editor/new-document-route.md)', () => {
-  it('rides the blank bypass', () => {
-    expect(wantsWelcome('?blank=1&welcome=1')).toBe(true);
-    expect(wantsWelcome('?welcome=1&blank=1&via=Home.HeroCanvas')).toBe(true);
-  });
-
-  it('does nothing without the blank bypass', () => {
-    expect(wantsWelcome('?welcome=1')).toBe(false);
-    expect(wantsWelcome('?template=kanban&welcome=1')).toBe(false);
-    expect(wantsWelcome('?blank=1')).toBe(false);
-  });
-});
-
 describe('choosePlacementAgainUrl (docs/specs/007-editor/new-document-route.md)', () => {
   it('drops the refused placement and the bypass, so the wizard starts from the root of My documents', () => {
-    expect(choosePlacementAgainUrl('?blank=1&welcome=1&team=t1&folder=f1')).toBe('/new');
+    expect(choosePlacementAgainUrl('?blank=1&team=t1&folder=f1')).toBe('/new');
   });
 
   it('keeps every other param', () => {
-    expect(choosePlacementAgainUrl('?template=flowchart&folder=f1&browse=uml&cta=hero')).toBe(
-      '/new?browse=uml&cta=hero',
+    expect(choosePlacementAgainUrl('?template=flowchart&folder=f1&mode=draw&cta=hero')).toBe(
+      '/new?mode=draw&cta=hero',
     );
   });
 
