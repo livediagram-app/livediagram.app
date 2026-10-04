@@ -6270,6 +6270,30 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             "minItems": 2,
             "type": "array"
           },
+          "layout": {
+            "additionalProperties": false,
+            "properties": {
+              "direction": {
+                "enum": [
+                  "down",
+                  "right"
+                ],
+                "type": "string"
+              },
+              "style": {
+                "enum": [
+                  "flow",
+                  "tree",
+                  "mindmap"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "style"
+            ],
+            "type": "object"
+          },
           "mark": {
             "const": "»",
             "type": "string"
