@@ -175,8 +175,7 @@ export function TemplatePickerBrowse({
               {/* Found in other modes: one press shows them (docs/specs/007-editor/templates-by-mode.md). */}
               {matchesInEveryMode > 0 ? (
                 <Button size="xs" variant="secondary" onClick={() => modeFilter.choose('all')}>
-                  Show {matchesInEveryMode} {matchesInEveryMode === 1 ? 'match' : 'matches'} in
-                  Everything
+                  {`Show ${matchesInEveryMode} ${matchesInEveryMode === 1 ? 'match' : 'matches'} in Everything`}
                 </Button>
               ) : null}
             </div>
