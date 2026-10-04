@@ -42,6 +42,17 @@ function paint(el: HTMLElement, marks: TextRun[]) {
 
 const keyOf = (marks: TextRun[]) => JSON.stringify(marks);
 
+/**
+ * The row's DOM without its `<br>`s, to read from. A row's line breaks are text ('\n', typed in by
+ * Shift+Enter), so a `<br>` is only ever the browser's placeholder in an emptied span, which the
+ * shared reader would otherwise read as a phantom extra line.
+ */
+function withoutBreaks(el: HTMLElement): HTMLElement {
+  const copy = el.cloneNode(true) as HTMLElement;
+  copy.querySelectorAll('br').forEach((br) => br.remove());
+  return copy;
+}
+
 export const OutlineRowEditor = memo(function OutlineRowEditor({
   id,
   marks,
@@ -93,7 +104,7 @@ export const OutlineRowEditor = memo(function OutlineRowEditor({
       className={className}
       onInput={(e) => {
         const el = e.currentTarget;
-        const next = outlineMarks(readRunsFromDom(el));
+        const next = outlineMarks(readRunsFromDom(withoutBreaks(el)));
         reconcileTrailingNewline(el);
         shown.current = keyOf(next);
         onMarks(id, next);

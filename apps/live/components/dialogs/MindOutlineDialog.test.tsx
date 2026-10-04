@@ -72,6 +72,14 @@ describe('MindOutlineDialog', () => {
     expect(saved(onSave)).toBe('Root\n- **A**\n- B');
   });
 
+  it("never reads the browser's placeholder <br> in an emptied row as an extra line", () => {
+    const { onSave } = open();
+    const a = level(1)[0]!;
+    a.innerHTML = '<span>A</span><br>';
+    fireEvent.input(a);
+    expect(saved(onSave)).toBe('Root\n- A\n- B');
+  });
+
   it('reads a pasted list as rows', () => {
     open();
     const b = level(1)[1]!;
