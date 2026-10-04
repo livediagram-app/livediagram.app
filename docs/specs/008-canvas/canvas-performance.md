@@ -71,12 +71,14 @@ A gesture's cost scales with what it changes and what is on screen, never with t
   re-renders the canvas unless something the canvas shows changed. The canvas's event handlers keep
   their identity across the editor's renders, and calling one runs the editor's newest version.
 - **A selection change re-renders what it touches.** Which elements are selected is held in one
-  selection store per editor, not passed down as canvas props. Selecting, deselecting, a marquee's
-  result, select-all and a remote change of the local selection re-render, inside the canvas, only
-  what shows the selection: the element views whose selected state changed and the selection chrome
-  (toolbars, popover, resize box, handles and anchors). The element layer and the Map do not
-  re-render for it. Handlers and effects that act on the selection read it from the store when they
-  run.
+  selection store per editor, not passed down as props. Selecting, deselecting, a marquee's result,
+  select-all and a remote change of the local selection re-render, anywhere in the editor, only what
+  shows the selection: the element views whose selected state changed, the selection chrome
+  (toolbars, popover, resize box, handles and anchors), and the panels that describe the selection
+  (Quick Style, the slide deck, an open context menu). The editor root, the canvas, the element
+  layer and the Map do not re-render for it. Handlers read the selection from the store when they
+  run; effects that follow it (presence, scrolling a selection into view, the screen-reader
+  announcement, dropping hidden elements from it) subscribe to the store.
 - **Derived layouts are computed once per change.** Arrow labels, ink projection and theme
   colours are laid out per element change and cached per element identity, as arrow labels are
   today.

@@ -59,10 +59,11 @@ Set() }`, frozen).
 
 ### Where the store is made
 
-- `useEditorUiState` creates the store once (`useState(createSelectionStore)`) and subscribes to
-  the whole `Selection` with `useSyncExternalStore`; `selectedId`, `multiSelectedIds` and the two
-  setters it returns come from the store, so every editor hook keeps its inputs. It also returns
-  `selectionStore`, which `EditorView` hands to `SelectionStoreProvider` around its tree.
+- `useEditorUiState` creates the store once (`useState(createSelectionStore)`) and does not
+  subscribe to it: the editor root never renders for a selection change. It returns
+  `selectionStore`, `readSelection` (`selectionStore.get`) and the two setters, and no
+  `selectedId` / `multiSelectedIds` values. `EditorView` hands the store to
+  `SelectionStoreProvider` around its tree.
 - `multiSelectedIds` is a `ReadonlySet<string>` everywhere it is read: every parameter that took a
   `Set<string>` only reads it (`withFrameContents`, `duplicateElements`, `unionBoxedBounds`,
   `deletableIds`, and the editor hooks' inputs), and nothing mutates the selection in place.
@@ -112,8 +113,19 @@ multiSelectedIds.size === 0`. Element views compare the three booleans.
     subscription;
   - `SlideDeckPanel` reads `selectionIds(selectedId, multiSelectedIds)` from the store (compared
     with `sameMembers`); `useSlideDeck` no longer returns `selectionCount` / `currentSelectionIds`.
-- Above the boundary nothing changes: the editor, the host and its hooks read `selectedId` and
-  `multiSelectedIds` from `useEditorUiState` as before.
+
+### Above the canvas
+
+Every editor hook that took `selectedId` / `multiSelectedIds` takes `readSelection: () =>
+Selection` instead and reads it where it acts. By kind:
+
+| Reader                            | Hooks and components                                                                                                                                                                                                                                                                                                                                                                                                                                                        | Becomes                                                                                                                                                                                                                    |
+| --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Handlers                          | `useElementHelpers`, `useElementCreation`, `useArrowConnect`, `useSelectionEditing`, `useElementSelectionActions`, `shift-duplicate-swap`, `useElementDuplication`, `useBoxedDragHandlers`, `useShapeStyleSetters`, `useElementStyle`, `useClipboard`, `useQuickConnectStart`, `useNudgeSelection`, `useShapeDrawing`, `useEditorDrag`, `useEditorKeyboardShortcuts`, `useSlideDeck` actions, `EditorCanvasHost`, `EditorTabDialogs`, `EditorView`, the root's own handlers | `readSelection()` at the start of the handler                                                                                                                                                                              |
+| Effects that follow the selection | `usePresenceBroadcast`, `useEditorViewport` (scroll into view), `useCanvasA11y` (announcement)                                                                                                                                                                                                                                                                                                                                                                              | a `selectionStore.subscribe` inside the effect, acting on each change; never `useSelectionOf`, which would render the root that calls them                                                                                 |
+| The hidden-layer pruning          | the root                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | a `useLayoutEffect` on `layerInertIds` that reads `readSelection()` and sets once, before paint                                                                                                                            |
+| Views that show the selection     | `EditorContextMenuHost`, `EditorSearchPanel` (`useEditorCommands`)                                                                                                                                                                                                                                                                                                                                                                                                          | `useSelectionOf` in the component                                                                                                                                                                                          |
+| The Quick Style view              | `useQuickStyle`, called by the root                                                                                                                                                                                                                                                                                                                                                                                                                                         | the root returns `quickStyleDeps` (every input but the selection); `QuickStyleHost` (`components/canvas/QuickStyleHost.tsx` (planned)) subscribes to `selectionIds` and calls `useQuickStyle`, rendering `QuickStylePanel` |
 
 ## Interfaces and contracts
 
@@ -195,8 +207,8 @@ export function withStableEventProps<P extends object>(Inner: ComponentType<P>):
   selection chrome, never the element layer. Its script time is measured by a local A/B on the
   reference board (alternating builds, several rounds); the runner's budget rows are too noisy to
   resolve it (docs/research/canvas-performance.md).
-- Above the boundary the editor root still renders for a selection change; it is most of what a
-  select's long task holds now.
+- The editor root renders 0 times for a selection change; the props diagnostic counts `LivePage`
+  renders per action.
 
 ## Observability
 
