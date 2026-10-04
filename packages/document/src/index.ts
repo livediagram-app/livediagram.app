@@ -509,6 +509,9 @@ export * from './table';
 // the API uses to vet incoming tabs / documents). See validate.ts.
 export * from './validate';
 
+// Every stored field per element type (docs/specs/024-agents/blueprints/edit-operations.md).
+export * from './element-fields';
+
 // Deterministic auto-layout for AI-generated diagrams (docs/specs/007-editor/ai-assistance.md).
 export * from './auto-layout';
 
