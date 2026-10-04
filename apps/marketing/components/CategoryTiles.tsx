@@ -16,7 +16,11 @@ export function CategoryTiles({
   groups: GalleryShelf[];
   onOpen: (id: ShelfId) => void;
 }) {
-  const total = groups.reduce((n, g) => n + g.templates.length, 0);
+  // Popular only repeats templates the categories already hold, so it is left out of the
+  // "more templates" sum, as the editor's template step does (TemplatePickerShelf).
+  const total = groups
+    .filter((g) => g.id !== 'popular')
+    .reduce((n, g) => n + g.templates.length, 0);
   return (
     <div>
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
@@ -41,7 +45,7 @@ export function CategoryTiles({
                   {group.label}
                 </span>
                 <span className="shrink-0 rounded-full bg-brand-50 px-2 py-0.5 text-xs font-medium text-brand-700 dark:bg-brand-500/15 dark:text-brand-200">
-                  {group.templates.length} templates
+                  {group.templates.length} {group.templates.length === 1 ? 'template' : 'templates'}
                 </span>
               </span>
             </button>

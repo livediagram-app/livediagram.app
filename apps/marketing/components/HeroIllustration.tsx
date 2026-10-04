@@ -34,7 +34,7 @@
 // With JS off it renders the first window centred, and reduced motion settles every build.
 
 import { ctaHref } from '@livediagram/api-schema';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type RefObject } from 'react';
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -215,14 +215,18 @@ export function HeroIllustration() {
   // (so a click gives the clicked window a full cycle). Skipped under reduced
   // motion (and stops if the visitor turns it on mid-visit).
   const reduceMotion = useMediaQuery(PREFERS_REDUCED_MOTION);
+  // Held while keyboard focus is on the stage's controls (arrows, dots, the Build your own link):
+  // the auto-advance waits, so nothing focused unmounts under the visitor, and the label below is
+  // announced only then (an announcement every cycle would talk over the page).
+  const [held, setHeld] = useState(false);
   // The overview holds longer (OVERVIEW_DWELL_MS): it is where a visitor picks what to watch.
   useEffect(() => {
-    if (reduceMotion) return;
+    if (reduceMotion || held) return;
     const card = CARDS[active];
     const dwell = card?.overview ? OVERVIEW_DWELL_MS : CYCLE_MS;
     const id = window.setTimeout(() => show((active + 1) % CARDS.length), dwell);
     return () => window.clearTimeout(id);
-  }, [active, reduceMotion]);
+  }, [active, reduceMotion, held]);
 
   // The headline holds the centred window's word; the overview lets it cycle.
   useEffect(() => {
@@ -242,10 +246,22 @@ export function HeroIllustration() {
   const snapped = box ? snapStage(box, card, GAP, active) : null;
   const cardWidth = snapped ? `${snapped.cardPx}px` : 'calc(var(--hero-card) * 1%)';
 
+  const prevRef = useRef<HTMLButtonElement>(null);
+  const nextRef = useRef<HTMLButtonElement>(null);
+
   const current = CARDS[active] ?? CARDS[0]!;
   return (
     // On a phone the stage reaches nearer the screen edges, so the window has the room.
-    <div className="-mx-4 mt-16 w-[calc(100%+2rem)] sm:mx-auto sm:w-full sm:max-w-6xl">
+    <div
+      className="-mx-4 mt-16 w-[calc(100%+2rem)] sm:mx-auto sm:w-full sm:max-w-6xl"
+      onFocus={(e) => {
+        // Keyboard focus only: a mouse press focuses a dot too, and should keep the stage moving.
+        if (e.target.matches(':focus-visible')) setHeld(true);
+      }}
+      onBlur={(e) => {
+        if (!e.currentTarget.contains(e.relatedTarget)) setHeld(false);
+      }}
+    >
       <div className="relative [--arrow-clear:0px] [--hero-card:92] sm:[--arrow-clear:20px] sm:[--hero-card:68]">
         <div
           ref={stageRef}
@@ -291,6 +307,9 @@ export function HeroIllustration() {
               const cardClassName =
                 'hero-card-dim shrink-0 text-left ' +
                 (playing ? '' : 'scale-[0.97] opacity-60 blur-[2px]');
+              // A peeking window is a dimmed, blurred preview, not glyphs to read: the optical audit
+              // measures the centred one (docs/specs/004-interface-design/blueprints/DEFAULTS.md D45).
+              const optical = playing ? {} : { 'data-optical-ignore': '' };
               // The overview holds buttons of its own (its frames), so it is not one itself: off
               // centre, a press on it centres it; centred, its frames do the work.
               if (c.overview) {
@@ -298,6 +317,7 @@ export function HeroIllustration() {
                   <div
                     key={c.key}
                     data-hero-anchor="window"
+                    {...optical}
                     onClick={() => {
                       if (!playing) show(i);
                     }}
@@ -316,6 +336,7 @@ export function HeroIllustration() {
               return (
                 <div
                   key={c.key}
+                  {...optical}
                   onClick={() => {
                     if (!playing) show(i);
                   }}
@@ -332,9 +353,27 @@ export function HeroIllustration() {
           as something to move through. Outside the decorative stage, so they are reachable. */}
         {/* Only where there is somewhere to go: no previous on the first window, no next on the
             last (the auto-advance still wraps round). */}
-        {active > 0 ? <StageArrow side="left" onClick={() => show(active - 1)} /> : null}
+        {/* Stepping onto an end hands focus to the other arrow, as the pressed one goes. */}
+        {active > 0 ? (
+          <StageArrow
+            side="left"
+            buttonRef={prevRef}
+            onClick={() => {
+              show(active - 1);
+              if (active - 1 === 0) requestAnimationFrame(() => nextRef.current?.focus());
+            }}
+          />
+        ) : null}
         {active < CARDS.length - 1 ? (
-          <StageArrow side="right" onClick={() => show(active + 1)} />
+          <StageArrow
+            side="right"
+            buttonRef={nextRef}
+            onClick={() => {
+              show(active + 1);
+              if (active + 1 === CARDS.length - 1)
+                requestAnimationFrame(() => prevRef.current?.focus());
+            }}
+          />
         ) : null}
       </div>
 
@@ -342,7 +381,10 @@ export function HeroIllustration() {
           window so a visitor moves between them at their own pace (the
           auto-advance timer resets on each choice). */}
       <div className="mt-6 flex flex-col items-center gap-3">
-        <p className="text-sm text-slate-500 dark:text-slate-400" aria-live="polite">
+        <p
+          className="text-sm text-slate-500 dark:text-slate-400"
+          aria-live={held ? 'polite' : 'off'}
+        >
           {current.label}
         </p>
         {/* The stage is decorative, so its Build yours buttons are out of reach of a keyboard or a
@@ -401,10 +443,19 @@ export function HeroIllustration() {
 // no room beside the window, so there the arrow sits astride its edge instead.
 const EDGE = 'calc((100 - var(--hero-card)) / 2 * 1% - var(--arrow-clear))';
 
-function StageArrow({ side, onClick }: { side: 'left' | 'right'; onClick: () => void }) {
+function StageArrow({
+  side,
+  onClick,
+  buttonRef,
+}: {
+  side: 'left' | 'right';
+  onClick: () => void;
+  buttonRef: RefObject<HTMLButtonElement | null>;
+}) {
   const Icon = side === 'left' ? ChevronLeftIcon : ChevronRightIcon;
   return (
     <button
+      ref={buttonRef}
       type="button"
       onClick={onClick}
       aria-label={side === 'left' ? 'Previous example' : 'Next example'}
