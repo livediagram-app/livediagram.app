@@ -7,7 +7,8 @@
    :root and dark half under .dark, and the colours packages/document/src/colors.ts gives an
    unpainted element on it: a shape's ink, a text element, an arrow and its label, a table's
    grid, and the shade a heading band or marker takes above a shape. The --art-pick-* set is the
-   scheme the hero's theme beat picks: Forest in light, Pine in dark. app/dark-art.test.ts holds
+   green the theme picker gives a shape (Forest in light, Pine in dark), which the Diagram window's
+   recoloured step takes. app/dark-art.test.ts holds
    every value to its source. Markup reads them through utilities, keyframes through var(). */
 :root {
   --art-paper: #fbfaf7;
@@ -44,12 +45,10 @@
   --art-pick-text: #dcfce7;
 }
 
-/* Hero two-card stage. Two editor windows ride a track; each card is 50% of
-   the track, so translating ±25% centres one card while its neighbour peeks
-   ~half on the opposite side. The track position is state-driven (the active
-   card, advanced on a timer or by a click); this transition animates the
-   slide between the two. The centred card plays its build keyframes; the
-   peeking card renders settled (.hero-static, below). */
+/* The hero stage's track (components/HeroIllustration.tsx): the windows ride it, and its position is
+   state-driven (the centred window, advanced on a timer, a click, a dot or an arrow); this
+   transition animates the slide between them. The centred window plays its build; the peeking ones
+   render settled (.hero-static, in hero-mode-animations.css). */
 .hero-track {
   transition: transform 0.6s ease;
   will-change: transform;

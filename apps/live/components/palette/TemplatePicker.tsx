@@ -67,7 +67,6 @@ export function TemplatePicker({
   initialPlacement,
   defaults,
   skipLocation,
-  initialShelf = null,
   onCreateFolder,
   onCreateTeam,
 }: TemplatePickerProps) {
@@ -119,11 +118,7 @@ export function TemplatePicker({
   // default (Popular). Held here, not in the browse, so it survives a peek
   // at the location step. A non-empty search query overrides the shelf and
   // shows flat results.
-  // Undefined until the author opens a shelf: until then a `?browse=<collection>` link's
-  // collection is the open one (docs/specs/007-editor/new-document-route.md). Read at render, not as a
-  // useState seed, because the URL only arrives after hydration.
-  const [chosenCategory, setOpenCategory] = useState<ShelfCategory | null | undefined>(undefined);
-  const openCategory = chosenCategory === undefined ? initialShelf : chosenCategory;
+  const [openCategory, setOpenCategory] = useState<ShelfCategory | null>(null);
   // The shelf's inverted flow (desktop only): the open shelf shows every card,
   // the other categories become the carousel. Held here for the same reason.
   const [shelfExpanded, setShelfExpanded] = useState(false);

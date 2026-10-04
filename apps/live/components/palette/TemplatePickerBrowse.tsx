@@ -1,16 +1,9 @@
 import { useState } from 'react';
 import type { TemplateCategory, TemplateDescriptor, TemplateKind } from '@livediagram/templates';
-import {
-  TEMPLATE_CATEGORIES,
-  TEMPLATE_COLLECTIONS,
-  TEMPLATES,
-  isBlankTemplate,
-  templateShelfTemplates,
-} from '@livediagram/templates';
+import { TEMPLATE_CATEGORIES, isBlankTemplate } from '@livediagram/templates';
 import { Button, CloseIcon, SearchIcon } from '@livediagram/ui';
 import { editorModeLabel } from '@livediagram/document';
 import { AnimatedHeightBox } from '@/components/primitives/AnimatedHeightBox';
-import { BackBar } from '@/components/primitives/BackBar';
 import { TemplateCard } from '@/components/palette/template-picker-cards';
 import { TemplateModeFilterControl } from '@/components/palette/TemplateModeFilterControl';
 import type { TemplateModeFilter } from '@/components/palette/useTemplateModeFilter';
@@ -79,7 +72,7 @@ export function TemplatePickerBrowse({
   // (docs/specs/006-document/offline-mode.md). The same handler backs double-click, so either gesture works.
   onTemplateCommit: (kind: TemplateKind) => void;
   // The mode filter (docs/specs/007-editor/templates-by-mode.md): the lists above arrive already
-  // narrowed to it; a collection is narrowed here.
+  // narrowed to it.
   modeFilter: TemplateModeFilter;
 }) {
   const shelves: Shelf[] = [
@@ -89,10 +82,6 @@ export function TemplatePickerBrowse({
       description: 'Where most people start.',
       items: popularTemplates,
     },
-    ...TEMPLATE_COLLECTIONS.filter((c) => c.id === openCategory).map((c): Shelf => ({
-      ...c,
-      items: templateShelfTemplates(c.id, TEMPLATES).filter(modeFilter.shows),
-    })),
     ...TEMPLATE_CATEGORIES.map((c): Shelf => ({
       ...c,
       items: categoryTemplates(c.id).filter(onShelf),
@@ -105,13 +94,7 @@ export function TemplatePickerBrowse({
     .filter((shelf) => shelf.items.length > 0);
   const openId = openCategory ?? 'popular';
   const open = shelves.find((shelf) => shelf.id === openId) ?? shelves[0];
-  // A collection is never a folded tile: it leaves once another shelf opens.
-  // A `?browse=` collection opens drilled in, as it always has: every card of it at once under a
-  // back bar, the shelf and the other categories out of the way (docs/specs/007-editor/new-document-route.md).
-  const collection = open && TEMPLATE_COLLECTIONS.some((c) => c.id === open.id) ? open : undefined;
-  const folded = shelves.filter(
-    (shelf) => shelf !== open && !TEMPLATE_COLLECTIONS.some((c) => c.id === shelf.id),
-  );
+  const folded = shelves.filter((shelf) => shelf !== open);
   // True once the user has opened a tile in this mount. Only then does the
   // stage replay its entrance and scroll into view: on load the modal's own
   // entrance is the only motion, so nothing jitters as the page arrives.
@@ -161,10 +144,7 @@ export function TemplatePickerBrowse({
           the whole catalogue. Blank is special-cased out of the category
           grouping (it's a "start from scratch", not a category template) and
           leads the Popular shelf instead. */}
-      <AnimatedHeightBox
-        viewKey={templateFilter ? 'search' : collection ? 'collection' : 'shelf'}
-        className="mt-4"
-      >
+      <AnimatedHeightBox viewKey={templateFilter ? 'search' : 'shelf'} className="mt-4">
         {templateFilter ? (
           filteredTemplates.length === 0 ? (
             <div className="flex flex-col items-center gap-2 px-1 py-6 text-center">
@@ -192,25 +172,6 @@ export function TemplatePickerBrowse({
               ))}
             </div>
           )
-        ) : collection ? (
-          <>
-            <BackBar
-              label="All templates"
-              current={collection.label}
-              onClick={() => setOpenCategory('popular')}
-            />
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-              {collection.items.map((t) => (
-                <TemplateCard
-                  key={t.kind}
-                  template={t}
-                  active={templateKind === t.kind}
-                  onSelect={() => onTemplateCommit(t.kind)}
-                  onCommit={() => onTemplateCommit(t.kind)}
-                />
-              ))}
-            </div>
-          </>
         ) : (
           <TemplatePickerShelf
             open={open}

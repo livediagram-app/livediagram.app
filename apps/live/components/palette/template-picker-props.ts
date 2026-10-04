@@ -1,7 +1,7 @@
 import type { Participant } from '@/lib/identity';
 import type { SaveLocationId } from '@/lib/save-locations';
 import type { SkipLocationStep } from '@/lib/skip-location-step';
-import type { TemplateCollection, TemplateKind } from '@livediagram/templates';
+import type { TemplateKind } from '@livediagram/templates';
 import type { AlwaysSave, WizardDefaults } from './useWizardPlacement';
 
 // The TemplatePicker's props and what its welcome wizard hands back on Create, lifted out of the
@@ -76,9 +76,6 @@ export type TemplatePickerProps = {
   // Where to save without a Location step (docs/specs/013-workspace/default-folders.md "Skipping
   // the Location step"), resolved by the page; null or absent is the two-step wizard.
   skipLocation?: SkipLocationStep | null;
-  // The collection the template step opens on (the /new URL's `?browse=`),
-  // or null for the category overview.
-  initialShelf?: TemplateCollection | null;
   // Inline folder creation from the placement browser (name popover). Creates
   // in the given scope and returns the new folder (null on failure).
   onCreateFolder?: (

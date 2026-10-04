@@ -1,11 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { templateCreateHref } from '@livediagram/templates';
-import {
-  choosePlacementAgainUrl,
-  wantsWelcome,
-  wizardBrowseCollection,
-  wizardBypassKind,
-} from './new-document-params';
+import { choosePlacementAgainUrl, wantsWelcome, wizardBypassKind } from './new-document-params';
 
 describe('wizardBypassKind (docs/specs/007-editor/new-document-route.md)', () => {
   it('reads ?blank as the blank template, whatever its value', () => {
@@ -32,20 +27,6 @@ describe('wizardBypassKind (docs/specs/007-editor/new-document-route.md)', () =>
 
   it('reads back the link the templates package builds for the gallery', () => {
     expect(wizardBypassKind(templateCreateHref('swot').slice('/new'.length))).toBe('swot');
-  });
-});
-
-describe('wizardBrowseCollection', () => {
-  it('opens the wizard on a known collection', () => {
-    expect(wizardBrowseCollection('?browse=brainstorm')).toBe('brainstorm');
-    expect(wizardBrowseCollection('?folder=f1&browse=brainstorm&via=Home.HeroBrainstorm')).toBe(
-      'brainstorm',
-    );
-  });
-
-  it('ignores an unknown or missing collection', () => {
-    expect(wizardBrowseCollection('?browse=everything')).toBeNull();
-    expect(wizardBrowseCollection('')).toBeNull();
   });
 });
 

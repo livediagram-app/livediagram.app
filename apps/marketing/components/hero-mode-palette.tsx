@@ -6,26 +6,20 @@
 
 import { lucideChartColumn, lucideChartPie, lucideMessageSquare } from '@livediagram/icons/lucide';
 import { MODE_GLYPHS } from '@livediagram/icons/mode-glyphs';
-import {
-  FlowchartIcon,
-  Glyph,
-  IllustrateIcon,
-  MarkerIcon,
-  Prims,
-  type IconProps,
-} from '@livediagram/ui';
+import { EDITOR_MODE_ICONS, Glyph, MarkerIcon, Prims, type IconProps } from '@livediagram/ui';
 import type { ComponentType, ReactNode } from 'react';
 import { Shape } from './hero-illustration-glyphs';
 
 export type HeroMode = 'diagram' | 'draw' | 'illustrate';
 
+// Each mode's name and its glyph, the editor's own (EDITOR_MODE_ICONS).
 export const HERO_MODE: Record<HeroMode, { label: string; Icon: ComponentType<IconProps> }> = {
-  diagram: { label: 'Diagram', Icon: FlowchartIcon },
-  draw: { label: 'Draw', Icon: MarkerIcon },
-  illustrate: { label: 'Illustrate', Icon: IllustrateIcon },
+  diagram: { label: 'Diagram', Icon: EDITOR_MODE_ICONS.diagram },
+  draw: { label: 'Draw', Icon: EDITOR_MODE_ICONS.draw },
+  illustrate: { label: 'Illustrate', Icon: EDITOR_MODE_ICONS.illustrate },
 };
 
-export type Tile = { key: string; label: string; glyph: ReactNode; active?: boolean };
+type Tile = { key: string; label: string; glyph: ReactNode; active?: boolean };
 
 function Lucide({ prims }: { prims: Parameters<typeof Prims>[0]['prims'] }) {
   return (

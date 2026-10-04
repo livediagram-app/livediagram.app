@@ -88,7 +88,7 @@ The slots:
   Start drawing button, its `Header`.
 - `Hero` / `HeroDraw` / `HeroBrainstorm` (**retired**: the landing hero no longer has buttons; the slots stay in the table so their stored history still reads on the dashboard, and no link carries them any more): the landing hero's three, Diagram
   (`/new`), Drawing (`/new?template=whiteboard`) and Brainstorm
-  (`/new?browse=brainstorm`). `HeroDraw` kept its slot when Start Blank's blank
+  (`/new?browse=brainstorm`, a collection since removed). `HeroDraw` kept its slot when Start Blank's blank
   canvas became Drawing's whiteboard: it is the same button in the same place,
   so its series carries on. On a feature page, `Hero` is the category hero's
   Start drawing.

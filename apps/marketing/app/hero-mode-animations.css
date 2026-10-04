@@ -1,6 +1,6 @@
-/* The hero's Draw and Illustrate windows (components/hero-draw-board.tsx,
-   components/hero-illustrate-page.tsx; docs/specs/019-marketing/marketing-site.md "Hero").
-   Unlike the flowchart's one 16s timeline, every mark here plays once at its own delay (--d): the
+/* The hero's mode windows (components/hero-diagram-board.tsx, hero-draw-board.tsx,
+   hero-mindmap-board.tsx, hero-illustrate-page.tsx, hero-article-page.tsx;
+   docs/specs/019-marketing/marketing-site.md "Hero"). Every mark plays once at its own delay (--d): the
    window's group is remounted each time it reaches centre, and its veil (hero-fade) covers the
    last second, so nothing has to clear on a loop. Off-centre (.hero-static) and under reduced
    motion every mark shows settled. */

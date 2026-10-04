@@ -1,9 +1,4 @@
-import {
-  isTemplateCollection,
-  isTemplateKind,
-  type TemplateCollection,
-  type TemplateKind,
-} from '@livediagram/templates';
+import { isTemplateKind, type TemplateKind } from '@livediagram/templates';
 
 // The /new query params that skip the wizard (docs/specs/007-editor/new-document-route.md): `?blank=1` commits
 // a blank document, `?template=<kind>` (built by the templates package's
@@ -29,14 +24,6 @@ export function wizardBypassKind(search: string): TemplateKind | null {
   if (params.has('blank')) return 'blank';
   const template = params.get('template');
   return isTemplateKind(template) ? template : null;
-}
-
-// Which template collection the wizard opens on (`?browse=<id>`,
-// docs/specs/007-editor/new-document-route.md), or null for the category overview. Not a bypass:
-// nothing is committed until the author picks. Unknown ids are ignored.
-export function wizardBrowseCollection(search: string): TemplateCollection | null {
-  const browse = new URLSearchParams(search).get('browse');
-  return isTemplateCollection(browse) ? browse : null;
 }
 
 // Whether the bypass is the hero's welcome landing. Only the blank bypass carries it: the hero

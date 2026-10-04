@@ -50,7 +50,6 @@ import {
   WIZARD_BYPASS_PARAMS,
   choosePlacementAgainUrl,
   wantsWelcome,
-  wizardBrowseCollection,
   wizardBypassKind,
 } from '@/lib/new-document-params';
 import { markQuietLanding } from '@/lib/quiet-landing';
@@ -77,9 +76,6 @@ const EditorPage = dynamic(loadEditor, {
 const subscribeNever = () => () => {};
 const bypassKindFromUrl = () => wizardBypassKind(window.location.search);
 const noBypass = () => null;
-// The collection the wizard opens on (`?browse=`), read the same way.
-const browseFromUrl = () => wizardBrowseCollection(window.location.search);
-const noBrowse = () => null;
 const isBypassUrl = () => bypassKindFromUrl() !== null;
 const welcomeFromUrl = () => wantsWelcome(window.location.search);
 const noWelcome = () => false;
@@ -221,16 +217,6 @@ export default function NewDocumentPage() {
   useLayoutEffect(() => {
     if (!bypassKindFromUrl()) document.documentElement.removeAttribute('data-just-draw');
   }, []);
-  // `?browse=<collection>` (docs/specs/007-editor/new-document-route.md): the same external-store read,
-  // and the same guard: the prerendered step is the category overview, so the
-  // wizard card stays hidden until the render that shows the collection (or,
-  // for an unknown one, at once), so the author never sees it swap.
-  const browseShelf = useSyncExternalStore(subscribeNever, browseFromUrl, noBrowse);
-  useLayoutEffect(() => {
-    if (browseFromUrl() === browseShelf) {
-      document.documentElement.removeAttribute('data-wizard-browse');
-    }
-  }, [browseShelf]);
 
   const backOut = () => {
     if (submitting) return;
@@ -538,10 +524,10 @@ export default function NewDocumentPage() {
       <script
         dangerouslySetInnerHTML={{
           __html:
-            "try{var p=new URLSearchParams(location.search);if(p.has('blank')||p.has('template'))document.documentElement.setAttribute('data-just-draw','');if(p.has('browse'))document.documentElement.setAttribute('data-wizard-browse','')}catch(e){}",
+            "try{var p=new URLSearchParams(location.search);if(p.has('blank')||p.has('template'))document.documentElement.setAttribute('data-just-draw','')}catch(e){}",
         }}
       />
-      <style>{`html[data-just-draw] [data-wizard-only],html[data-wizard-browse] [data-wizard-only]{visibility:hidden}`}</style>
+      <style>{`html[data-just-draw] [data-wizard-only]{visibility:hidden}`}</style>
       {/* The quiet landing's loader, prerendered so it paints from the first frame on the
           hero's canvas (lib/quiet-landing-boot.ts); hidden everywhere else. */}
       <div className={QUIET_LANDING_LOADER_CLASS} aria-hidden="true">
@@ -581,7 +567,6 @@ export default function NewDocumentPage() {
               initialPlacement={initialPlacement}
               defaults={wizardDefaults}
               skipLocation={skipLocation}
-              initialShelf={browseShelf}
               onCreateFolder={createPickerFolder}
               // Teams are Clerk-only (docs/specs/013-workspace/teams.md): a guest gets no New Team tile.
               onCreateTeam={clerkUserId ? createPickerTeam : undefined}

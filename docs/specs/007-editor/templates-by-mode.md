@@ -44,7 +44,6 @@ sees only what starts there.
   - **Search** results are the matches of that mode only; the empty state names the mode
     ("No Draw templates match …"), and when the search does match in other modes it offers them:
     a **Show N matches in Everything** button switches to Everything, the search kept.
-  - A `?browse=` collection shows only its templates of that mode.
 - If the open shelf has none of the mode's templates, **Popular** opens instead.
 - If the selected template is not of the mode, the selection moves to the mode's blank (Blank
   Diagram, Blank Whiteboard or Blank Illustration; Everything keeps the selection), so one card is always
@@ -131,7 +130,7 @@ already infographic pages, built with the page layouts' kit.
 ## Testing
 
 - Every template's mode equals the mode its overrides open it in (`templates.test.ts`).
-- The filter: each option narrows Popular, shelves, tiles, counts, search and collections to its
+- The filter: each option narrows Popular, shelves, tiles, counts and search to its
   mode; an emptied open shelf falls back to Popular; a filtered-away selection falls back to the
   mode's blank; with Illustrate not offered there is no Illustrate option or template.
 - Every card shows its mode glyph with "Opens in <Mode>".
