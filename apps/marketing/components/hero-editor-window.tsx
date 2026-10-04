@@ -27,7 +27,7 @@ export const CANVAS =
 // A tab pill in the accent it is given as --tab. Dark lifts that accent 60% toward
 // white, as the editor's legibleTabAccent does for the dark bar.
 const TAB_PILL =
-  'flex items-center gap-2 rounded-md px-2 py-1 text-xs font-medium text-(--tab) dark:text-[color-mix(in_srgb,var(--tab)_40%,white)]';
+  'flex shrink-0 items-center gap-2 whitespace-nowrap rounded-md px-2 py-1 text-xs font-medium text-(--tab) dark:text-[color-mix(in_srgb,var(--tab)_40%,white)]';
 
 // One editor-window mock: shared chrome plus a caller-supplied SVG diagram.
 // The diagram group is keyed on `playing` so its build animation restarts each
@@ -117,7 +117,7 @@ export function EditorWindow({
         {/* Canvas surface. */}
         <div
           {...{ [HERO_CANVAS_ATTR]: '' }}
-          className={`relative h-[460px] sm:h-[440px] ${CANVAS}`}
+          className={`relative h-[460px] sm:h-[360px] ${CANVAS}`}
         >
           {/* The Toolbar panel layout (docs/specs/007-editor/toolbar-layout.md): the Palette is a
               strip at the top centre and a menu button stands where the Explorer would float. */}

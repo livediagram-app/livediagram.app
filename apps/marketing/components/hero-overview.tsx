@@ -36,15 +36,19 @@ export function HeroOverview({
   onOpen: (key: string) => void;
 }) {
   // A bare board, not an editor window: the card the other windows sit in, its paper and dot grid,
-  // and nothing else. It fills its card, whose height the stage takes from the windows beside it.
+  // and nothing else. It fills its card, whose height comes from the windows beside it.
   return (
     <div className="h-full rounded-xl border border-slate-200 bg-white p-2 shadow-xl shadow-brand-500/10 dark:border-slate-800 dark:bg-slate-900">
+      {/* The frames are placed over the board, not in its flow, so the card takes its height from
+          the windows beside it and never grows taller than they are. */}
       <div
-        className={`relative flex h-full flex-wrap content-center justify-center gap-x-3 gap-y-6 overflow-hidden rounded-lg border border-slate-100 px-3 py-4 sm:gap-x-6 sm:gap-y-6 sm:px-6 sm:py-6 dark:border-slate-800 ${CANVAS}`}
+        className={`relative h-full overflow-hidden rounded-lg border border-slate-100 dark:border-slate-800 ${CANVAS}`}
       >
-        {scenes.map((scene) => (
-          <OverviewFrame key={scene.key} scene={scene} onOpen={onOpen} />
-        ))}
+        <div className="absolute inset-0 flex flex-wrap content-center justify-center gap-x-3 gap-y-6 px-3 py-4 sm:gap-x-8 sm:gap-y-5 sm:px-6 sm:py-5">
+          {scenes.map((scene) => (
+            <OverviewFrame key={scene.key} scene={scene} onOpen={onOpen} />
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -62,7 +66,7 @@ function OverviewFrame({ scene, onOpen }: { scene: OverviewScene; onOpen: (key: 
         e.stopPropagation();
         onOpen(scene.key);
       }}
-      className="group/frame flex w-[calc(50%-0.375rem)] flex-col text-left sm:w-[calc((100%-3rem)/3)]"
+      className="group/frame flex w-[calc(50%-0.375rem)] flex-col text-left sm:w-[calc((100%-4rem)/3)] sm:max-w-[15.5rem]"
     >
       {/* The frame's name, above its top-left corner, as the editor labels a frame. */}
       <span className="mb-1.5 flex items-center gap-1 px-0.5 text-[9px] font-semibold text-slate-500 transition-colors group-hover/frame:text-brand-600 sm:text-xs dark:text-slate-400 dark:group-hover/frame:text-brand-300">
