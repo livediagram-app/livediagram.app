@@ -73,7 +73,8 @@ const TOP_STRIP_SELECTOR = '[data-toolbar-palette]:not(.hidden)';
 /** How far a top strip laid over the canvas reaches down into it, in screen px. */
 function topStripInset(canvas: HTMLElement): number {
   const strip = document.querySelector<HTMLElement>(TOP_STRIP_SELECTOR);
-  if (!strip) return 0;
+  // Stood aside (a phone's page toolbar in its place): its room is the page's.
+  if (!strip || getComputedStyle(strip).visibility === 'hidden') return 0;
   const c = canvas.getBoundingClientRect();
   const s = strip.getBoundingClientRect();
   const overlaps = s.bottom > c.top && s.top < c.top + c.height / 2;

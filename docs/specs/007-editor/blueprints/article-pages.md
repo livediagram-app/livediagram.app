@@ -299,8 +299,11 @@ focused: true })`. On blur: an open slash menu closes; a tick later (one pending
   `clamp(TOOLBAR_MIN_SCALE, (room - 2 * MARGIN_PAD) / h, 1)`, kept inside the page and the canvas
   (`maxWidth`, scrolls sideways), hidden when its page's top is out of the canvas or under the
   Toolbar strip; phone (`useIsMobileViewport`), a bar across the top: `PHONE_GUTTER` below the
-  higher of the canvas top's floor (below the Toolbar strip) and the visible viewport's top
-  (`visualViewport.offsetTop`, so a keyboard that scrolls the layout viewport never carries it off).
+  higher of the canvas top and the visible viewport's top (`visualViewport.offsetTop`, so a
+  keyboard that scrolls the layout viewport never carries it off), over the Toolbar strip's place.
+  While it shows, the root carries `TOOLBAR_TOP_ATTR` (`data-article-toolbar-top`) and
+  `article-pages.css` hides `[data-toolbar-palette]`; `topStripInset` reads a hidden strip as no
+  inset, so the reading frame gives its room to the page.
 - A finger on the writing or its paper (`useTouchPagePan`, given `IllustratePagesView.panFrom`):
   primary touch only; past `TOUCH_PAN_SLOP` it begins `panFrom()` and a `'pan'` canvas gesture and
   moves the view by the drag (one commit per frame); a release short of it is a tap (the paper's

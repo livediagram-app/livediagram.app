@@ -14,6 +14,8 @@ const MARGIN_PAD = 4;
 const PLACE_TRAILING_FRAMES = 3;
 // Screen px: a phone's bar keeps this clear of the screen's sides and its top.
 const PHONE_GUTTER = 8;
+// On the root while a phone's bar shows: the Toolbar strip it replaces is hidden.
+export const TOOLBAR_TOP_ATTR = 'data-article-toolbar-top';
 // The smallest the card shrinks to in a thin margin (zoomed far out), as a share of its size.
 const TOOLBAR_MIN_SCALE = 0.55;
 
@@ -80,12 +82,13 @@ export function usePageToolbarPlacement({
         (strip && strip.bottom > c.top && strip.top < c.top + 80 ? strip.bottom - c.top : 0);
       const h = el.offsetHeight;
       const w = el.offsetWidth;
-      // On a phone: a bar fixed along the top of what is on screen, below a top strip, across the
-      // screen (its controls scroll), whatever the page, the zoom or the keyboard does. The visible
-      // viewport's top, as the keyboard can scroll the layout viewport up under it.
+      // On a phone: a bar fixed along the top of what is on screen, in the Toolbar strip's place
+      // (hidden while the bar shows, the room is the writing's), across the screen (its controls
+      // scroll), whatever the page, the zoom or the keyboard does. The visible viewport's top, as
+      // the keyboard can scroll the layout viewport up under it.
       if (latest.current.phone) {
         const seen = window.visualViewport?.offsetTop ?? 0;
-        const top = Math.max(floor, seen + PHONE_GUTTER);
+        const top = Math.max(c.top, seen) + PHONE_GUTTER;
         const across = window.innerWidth - 2 * PHONE_GUTTER;
         if (el.style.maxWidth !== `${across}px`) el.style.maxWidth = `${across}px`;
         const left = Math.max(PHONE_GUTTER, (window.innerWidth - w) / 2);
@@ -126,6 +129,13 @@ export function usePageToolbarPlacement({
       unsubscribe();
     };
   }, [pageId]);
+  // On a phone the bar takes the Toolbar strip's place: the strip (its menu and palette) stands
+  // aside while the bar shows (article-pages.css), and comes back with the article's caret gone.
+  useLayoutEffect(() => {
+    if (!pageId || !phone) return;
+    document.documentElement.setAttribute(TOOLBAR_TOP_ATTR, '');
+    return () => document.documentElement.removeAttribute(TOOLBAR_TOP_ATTR);
+  }, [pageId, phone]);
   // Every render (zoom, offset, writing, selection) may have moved the page.
   useLayoutEffect(() => place.current());
 
