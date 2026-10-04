@@ -34,7 +34,7 @@ jobs:
       # Every shard reports, so one failing shard never hides another's failures.
       fail-fast: false
       matrix:
-        shard: [1, 2, 3, 4, 5, 6, 7, 8]
+        shard: [1, 2, 3, 4, 5, 6]
     steps:
       - name: Check out
         uses: actions/checkout@v7
