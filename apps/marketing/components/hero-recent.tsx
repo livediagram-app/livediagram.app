@@ -43,7 +43,10 @@ export function HeroRecent({
           <p className="mb-2 px-0.5 text-[10px] font-semibold uppercase tracking-wider text-brand-700 sm:mb-3 sm:text-xs dark:text-brand-300">
             Welcome back
           </p>
-          <ul className="flex flex-1 flex-wrap content-start justify-center gap-x-3 gap-y-3 sm:gap-x-6 sm:gap-y-4">
+          {/* The tiles fill the window down to the link. On a phone the window is taller than its three
+              rows need, so the rows spread out evenly over it rather than leaving a gap above the link;
+              from sm the rows sit from the top. */}
+          <ul className="flex flex-1 flex-wrap content-evenly justify-center gap-x-3 gap-y-3 sm:content-start sm:gap-x-6 sm:gap-y-4">
             {diagrams.map((d) => (
               <li
                 key={d.id}

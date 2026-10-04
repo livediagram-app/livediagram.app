@@ -47,7 +47,7 @@ on the same origin (the router serves `/` and `/explorer` from one host).
 - **It never moves on by itself.** The stage does not auto-advance off Welcome back: a returning
   visitor came for their diagrams, so it stays until they move it with the arrows or dots. Once moved,
   the other windows auto-advance as usual, and the stage settles again when it comes back round.
-- **Tiles:** three over two on a wide window, two across on a phone (three rows), each a 3:2 thumbnail
+- **Tiles:** three over two on a wide window, two across on a phone (three rows, spread evenly down the tall phone window so no gap gathers above the link), each a 3:2 thumbnail
   over the diagram's name (one line, truncated) and how long since it was saved ("2 hours ago"). The
   thumbnail box takes the diagram's own background colour, as the Explorer's cards do; with no thumbnail,
   a quiet placeholder with the diagram glyph. Hovering a tile lifts it and rings it in brand, as the
