@@ -43,6 +43,29 @@ export function textResult(value: StructuredValue): ToolResult {
   };
 }
 
+// A document view (docs/specs/024-agents/document-views.md): the view's text first, then one line of
+// JSON naming the document, the tab, its revision and its link (VW55).
+export function viewResult(
+  text: string,
+  meta: {
+    id: string;
+    name: string;
+    tab: { id: string; name: string; rev: number; view: string };
+    url: string;
+  },
+): ToolResult {
+  const line = {
+    id: meta.id,
+    name: meta.name,
+    tab: { id: meta.tab.id, name: meta.tab.name, rev: meta.tab.rev },
+    url: meta.url,
+  };
+  return {
+    content: [{ type: 'text', text: `${text}\n${JSON.stringify(line)}` }],
+    structuredContent: { ...meta, tab: { ...meta.tab, text } },
+  };
+}
+
 export function errorResult(message: string): ToolResult {
   return { content: [{ type: 'text', text: message }], isError: true };
 }

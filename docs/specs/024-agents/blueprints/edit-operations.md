@@ -47,8 +47,8 @@ Scope, by file:
 | `packages/templates/src/template-tab.ts` (+ test)                            | `buildTemplateTab`, `resolveTemplate`, `validTemplateKinds`: the template builders, in `templates` because it imports `document` (EO1) |
 | `packages/document/src/element-fields.ts` (+ test)                           | `ELEMENT_FIELD_NAMES`: every stored field per element type, compile-time exhaustive                                                    |
 | `packages/document/src/validate.ts` (+ test)                                 | `elementValidationIssue(el)` names the field and rule; `isValidElement` delegates to it                                                |
-| `packages/document/src/containment.ts` (planned) (+ test)                    | Shared: `boxCentre`, `boxHoldsPoint`, `smallestHolder`, `contentOrigin`; this blueprint adds `isContainer` and `containerContents`     |
-| `packages/document/src/element-refs.ts` (planned) (+ test)                   | Shared: `SLUG_ID_PATTERN`, `isSlugId`, `slugIdFor`, `REF_MIN_LENGTH`, `computeRefs`, `RefTable`, `resolveRef`, `kindTokenOf`           |
+| `packages/document/src/containment.ts` (+ test)                              | Shared: `boxCentre`, `boxHoldsPoint`, `smallestHolder`, `contentOrigin`; this blueprint adds `isContainer` and `containerContents`     |
+| `packages/document/src/element-refs.ts` (+ test)                             | Shared: `SLUG_ID_PATTERN`, `isSlugId`, `slugIdFor`, `REF_MIN_LENGTH`, `computeRefs`, `RefTable`, `resolveRef`, `kindTokenOf`           |
 | `packages/document/src/auto-layout-shared.ts`, `auto-layout-clusters.ts`     | Export `LAYER_GAP`, `SIBLING_GAP`, `FRAME_PAD`, `FRAME_TOP` through `index.ts`                                                         |
 | `packages/document/src/index.ts`, `packages/templates/src/index.ts`          | Re-export the moved and new modules                                                                                                    |
 | `apps/mcp/src/tools.ts`, `schema.ts`                                         | Import the moved modules from `@livediagram/document` / `@livediagram/templates`; local files removed                                  |
@@ -334,7 +334,7 @@ originY, fixedSizeIds })`, origin the selection's bounding-box top-left, every s
 
 ### Carry
 
-`containerContents(elements, ids) → Set<ElementId>` in `packages/document/src/containment.ts` (planned), the one rule for
+`containerContents(elements, ids) → Set<ElementId>` in `packages/document/src/containment.ts`, the one rule for
 what travels with a moved frame or lane, called by the editor's drag (`useBoxedDragHandlers`) and by `move` and
 make room here:
 
@@ -712,7 +712,7 @@ Every suite uses `fixtures/checkout-flow.ts` (planned) and a fixed `makeId`; no 
 | `set` changes the named fields; `key=` unsets; no geometry but widen-to-fit                                              | `operations/set.test.ts` (planned), `labels.test.ts`                                                                                                              |
 | `rm` removes pinned arrows and lists them; `keep-arrows` frees their ends                                                | `operations/rm.test.ts` (planned)                                                                                                                                 |
 | `move`: pinned arrows follow; a frame or lane carries its members; membership changes reported                           | `operations/move.test.ts` (planned)                                                                                                                               |
-| The centre rule decides what a moved container carries: straddling boxes, nested containers, free arrows, smallest owner | `packages/document/src/containment.test.ts` (planned) › "containerContents"                                                                                       |
+| The centre rule decides what a moved container carries: straddling boxes, nested containers, free arrows, smallest owner | `packages/document/src/containment.test.ts` › "containerContents"                                                                                                 |
 | A person dragging a frame or lane carries exactly what `move` carries                                                    | `apps/live/hooks/canvas/useEditorDrag.lanes.test.tsx` › "carries by the centre rule" (the same fixture as `operations/move.test.ts` (planned))                    |
 | `connect`: pinned, anchors facing; second arrow needs `again`, else `arrow_exists`                                       | `operations/connect.test.ts` (planned)                                                                                                                            |
 | Locks: a locked tab, element or layer refuses with `element_locked`; make room passes locked units by                    | `locks.test.ts`                                                                                                                                                   |

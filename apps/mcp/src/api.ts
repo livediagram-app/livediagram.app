@@ -73,12 +73,12 @@ export function postTelemetry(env: Env, category: string, action: string, type: 
 // (docs/specs/015-api/mcp-server.md §4.12) so the public Exceptions dashboard shows where the MCP
 // breaks. A 4xx is NOT reported: it's expected model-correctable input (a bad
 // id, malformed elements), not a fault, and would only flood the dashboard.
-export async function apiJson<T>(
+async function apiOk(
   env: Env,
   token: string,
   path: string,
   init: RequestInit = {},
-): Promise<T> {
+): Promise<Response> {
   let res: Response;
   try {
     res = await apiFetch(env, token, path, init);
@@ -92,7 +92,27 @@ export async function apiJson<T>(
     if (res.status >= 500) reportApiFailure(env, `Http${res.status}`);
     throw new ApiError(res.status, (await res.text().catch(() => '')).slice(0, 500));
   }
-  return (await res.json()) as T;
+  return res;
+}
+
+export async function apiJson<T>(
+  env: Env,
+  token: string,
+  path: string,
+  init: RequestInit = {},
+): Promise<T> {
+  return (await (await apiOk(env, token, path, init)).json()) as T;
+}
+
+// A text answer (a document view, docs/specs/024-agents/document-views.md) with its ETag, failing exactly
+// as apiJson does.
+export async function apiText(
+  env: Env,
+  token: string,
+  path: string,
+): Promise<{ text: string; etag: string | null }> {
+  const res = await apiOk(env, token, path);
+  return { text: await res.text(), etag: res.headers.get('ETag') };
 }
 
 // One MCP-side api failure to the Error category, labelled with the tool that

@@ -638,3 +638,8 @@ export * from './fonts';
 // because the api and the MCP worker can answer the same questions.
 export * from './slide-deck';
 export * from './lane-seam-snapping';
+// Refs, slug ids, kind words, derived containment and the style keys (docs/specs/024-agents/document-views.md):
+// how views, edit operations and the lint name and place elements alike.
+export * from './element-refs';
+export * from './containment';
+export * from './style-keys';

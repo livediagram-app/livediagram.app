@@ -112,11 +112,14 @@ function responsesFor(route: RouteSpec): Record<string, unknown> {
         responses[key] = { description: 'Success.' };
       } else {
         responses[key] = {
-          description: 'Success.',
+          description: route.textResponse
+            ? `Success. ${route.textResponse.description}`
+            : 'Success.',
           content: {
             [route.responseMediaType ?? 'application/json']: {
               schema: bodyToSchema(route.responseSchema),
             },
+            ...(route.textResponse ? { 'text/plain': { schema: { type: 'string' } } } : {}),
           },
         };
       }

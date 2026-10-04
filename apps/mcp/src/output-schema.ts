@@ -34,9 +34,14 @@ export const readDocumentOutput = {
       id: tabId,
       name: z.string().describe('The tab name.'),
       rev: z.number().describe('The tab revision: pass it as rev to update_document.'),
+      view: z.string().optional().describe('The view read (format "view").'),
+      text: z.string().optional().describe('The view text (format "view").'),
       elements: z
         .array(z.record(z.string(), z.unknown()))
-        .describe('The tab elements, in the format of the livediagram://schema/elements resource.'),
+        .optional()
+        .describe(
+          'The tab elements (format "json"), in the format of the livediagram://schema/elements resource.',
+        ),
     })
     .describe('The tab that was read.'),
   url,

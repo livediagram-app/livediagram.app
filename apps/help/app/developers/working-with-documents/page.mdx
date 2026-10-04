@@ -71,6 +71,33 @@ curl https://livediagram.app/api/documents/abc123/tabs/tab-1 \
 }
 ```
 
+## Read a tab as text
+
+The element JSON carries every coordinate and colour. When you want what a tab **means**, which is usually what a script or an AI model needs, ask for a **view** instead. The outline gives one line per element, nested by frame, with its arrows on the same line:
+
+```bash
+curl "https://livediagram.app/api/documents/abc123/tabs/tab-1?view=outline" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+```text
+tab tab-1 "Overview" · 3 elements: 2 boxes, 1 arrow · rev 7
+square n1 "Web" → n2
+square n2 "API"
+```
+
+Each element is named by a short **ref**: its id when that is short and readable, otherwise the first few characters of it. Anywhere the API takes an element, a ref, any unique start of the id or the full id all work. The first line ends with the tab's revision.
+
+Other views answer other questions:
+
+- `view=graph` lists what connects to what.
+- `view=layout` gives positions and sizes; add `coarse=1` for rows instead.
+- `view=comments` shows the open comment threads in full; add `all=1` for resolved ones too.
+- `view=show&ref=n1` prints one element with every field and its arrows both ways.
+- `view=find&q=api` lists the elements whose text contains `api`.
+
+Add `budget=2000` to fit a view to about 2,000 tokens. The view then leaves out detail in a fixed order, and its last line says what it left out and how to see it. Add `json=1` for the same view as JSON. To see every tab of a document at a glance, ask the document itself: `GET /documents/abc123?view=overview`.
+
 ## Create a document
 
 `POST /documents` creates a document. You supply the `id` (any unique string), a `name`, and optionally the `tabs` to seed it with. Nodes are **shape** elements with a position and size; this creates one tab with two boxes:

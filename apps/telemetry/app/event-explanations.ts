@@ -452,6 +452,13 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Layer|Toggled|OthersHidden': 'Someone hid every layer except one.',
   'Layer|Toggled|Shown': 'A hidden layer was shown again.',
   'Layer|Toggled|Unlocked': 'A locked layer was unlocked.',
+  'Agent|Viewed|Overview': 'An agent or a script read a document at a glance: one line per tab.',
+  'Agent|Viewed|Outline': 'An agent or a script read a tab as an outline, one line per element.',
+  'Agent|Viewed|Graph': 'An agent or a script read what connects to what on a tab.',
+  'Agent|Viewed|Layout': 'An agent or a script read where things sit on a tab.',
+  'Agent|Viewed|Comments': 'An agent or a script read the open comment threads on a tab.',
+  'Agent|Viewed|Show': 'An agent or a script read one element in full.',
+  'Agent|Viewed|Find': 'An agent or a script searched a tab for some text.',
   'Agent|Opened|Toast':
     "Somebody pressed Show on the toast an agent's change raised, to see what it touched.",
   'Mcp|Used|AddTab': 'An AI tool connected over MCP added a new tab to a document.',
@@ -1154,6 +1161,7 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Layer|Selected': 'Someone switched which layer is active.',
   'Layer|Toggled': 'Someone switched something on a layer on or off, such as hiding or locking it.',
   'Agent|Opened': "Somebody opened something an agent's change pointed them to.",
+  'Agent|Viewed': 'An agent or a script read a document as text.',
   'Agent|Applied':
     'An agent changed a tab with a changeset: through the MCP server, the CLI or the API.',
   'Agent|Conflicted':

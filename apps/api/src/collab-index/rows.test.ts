@@ -50,6 +50,15 @@ describe('collabIndexRowsFromElements', () => {
     });
   });
 
+  it('keys rows on a slug id an agent minted, as on any id', () => {
+    const { threads } = collabIndexRowsFromElements([
+      shape('redis-cache', 'Redis cache', {
+        commentThread: { comments: [comment('c1', 100, 'user_a')], resolved: false },
+      }),
+    ]);
+    expect(threads.map((t) => t.elementId)).toEqual(['redis-cache']);
+  });
+
   it('projects an action with its element label and identities', () => {
     const { actions } = collabIndexRowsFromElements([
       shape('s1', ' Retry ', {

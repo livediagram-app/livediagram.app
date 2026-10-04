@@ -13,7 +13,9 @@
 // parameters are derived from the `{param}` placeholders in `path` by
 // document.ts, so they aren't repeated here.
 
+import { TAB_VIEW_NAMES } from '@livediagram/api-schema';
 import { NAME_MAX_LENGTH } from '@livediagram/document';
+import { FIND_QUERY_MAX_LENGTH, VIEW_BUDGET_MAX } from '@livediagram/document-views';
 import type { BodySchema } from './types';
 
 /** How a caller authenticates (docs/specs/014-identity/auth-and-guest-access.md):
@@ -50,6 +52,8 @@ export interface RouteSpec {
   /** Media type of the success body. Defaults to `application/json`; the SVG
    *  snapshot endpoints answer `image/svg+xml`. */
   responseMediaType?: string;
+  /** A plain-text form of the success body beside the JSON one (a document view). */
+  textResponse?: { description: string };
   /** Meaningful status codes. The first 2xx is the success response; the rest
    *  are documented with the shared Error schema by document.ts. */
   statuses: number[];
@@ -72,6 +76,69 @@ const nameField = {
     `At most ${NAME_MAX_LENGTH} characters; a longer name is stored shortened at a word boundary ` +
     'with an ellipsis, and whitespace runs collapse to one space.',
 };
+// The document views' query (docs/specs/024-agents/document-views.md): `view` turns the plain read into a
+// view, text by default.
+const VIEW_COMMON_QUERY = [
+  { name: 'view', required: false, description: 'A view instead of the plain read.' },
+  {
+    name: 'json',
+    required: false,
+    description: '`1` answers the view as JSON (`OutlineView`, `GraphView`, …) instead of text.',
+  },
+  {
+    name: 'budget',
+    required: false,
+    description: `Fit the view to this many tokens (characters ÷ 3), 1 to ${VIEW_BUDGET_MAX}; what it leaves out is named on its last line.`,
+  },
+  {
+    name: 'door',
+    required: false,
+    description: '`cli` (default) or `mcp`: the syntax of the command the last line names.',
+  },
+];
+const TAB_VIEW_QUERY = [
+  {
+    ...VIEW_COMMON_QUERY[0]!,
+    description: `A view instead of the plain read: ${TAB_VIEW_NAMES.join(', ')}.`,
+  },
+  ...VIEW_COMMON_QUERY.slice(1),
+  {
+    name: 'only',
+    required: false,
+    description:
+      'outline, layout: one element (a ref, unique prefix or id) and what nests under it.',
+  },
+  {
+    name: 'coarse',
+    required: false,
+    description: 'layout: `1` for rows per container instead of geometry.',
+  },
+  {
+    name: 'style',
+    required: false,
+    description: 'outline: `1` adds the non-default style attributes.',
+  },
+  {
+    name: 'ref',
+    required: false,
+    description: 'show (required): the element, by ref, unique prefix or id.',
+  },
+  {
+    name: 'q',
+    required: false,
+    description: `find (required): the text to look for, 1 to ${FIND_QUERY_MAX_LENGTH} characters.`,
+  },
+  { name: 'all', required: false, description: 'comments: `1` adds resolved threads.' },
+];
+const DOCUMENT_VIEW_QUERY = [
+  {
+    ...VIEW_COMMON_QUERY[0]!,
+    description:
+      '`overview`: one line per tab, its counts and revision, instead of the plain read.',
+  },
+  ...VIEW_COMMON_QUERY.slice(1),
+];
+
 const wrap = (key: string, name: string): BodySchema => ({
   type: 'object',
   properties: { [key]: ref(name) },
@@ -182,11 +249,14 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/documents/{id}',
     segment: 'documents',
     tag: 'Documents',
-    summary: 'Get a document (metadata + tab summaries; tab contents fetched separately).',
+    summary:
+      'Get a document (metadata + tab summaries; tab contents fetched separately), or with `view=overview` one line per tab.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
+    query: DOCUMENT_VIEW_QUERY,
     responseSchema: wrap('document', 'Document'),
-    statuses: [200, 401, 404, 410],
+    textResponse: { description: 'With `view=overview`: the document and one line per tab.' },
+    statuses: [200, 400, 401, 404, 410],
   },
   {
     method: 'PUT',
@@ -274,8 +344,13 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
       'Get the full contents (elements) of one tab, with its revision (`rev`, also the weak `ETag`): what a changeset base names.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
+    query: TAB_VIEW_QUERY,
     responseSchema: wrap('tab', 'TabRecord'),
-    statuses: [200, 401, 403, 404, 410],
+    textResponse: {
+      description:
+        'With `view`: the tab as text, its first line the header with `rev`. A ref that names nothing is 404 `target_not_found`, several 400 `target_ambiguous`, each with candidates (`RefErrorBody`).',
+    },
+    statuses: [200, 400, 401, 403, 404, 410],
   },
   {
     method: 'PUT',
