@@ -42,7 +42,10 @@ function candidate(model: ViewModel, el: Element): RefCandidate {
 }
 
 // The printed element `input` names, or why not.
-function resolveElement(model: ViewModel, input: string): { el: Element } | { refusal: ViewRefusal } {
+function resolveElement(
+  model: ViewModel,
+  input: string,
+): { el: Element } | { refusal: ViewRefusal } {
   const byId = new Map(model.tab.elements.map((el) => [el.id, el]));
   const resolution = resolveRef(input, model.refs);
   if (resolution.kind === 'ambiguous') {
@@ -86,7 +89,11 @@ function resolveElement(model: ViewModel, input: string): { el: Element } | { re
   return { el };
 }
 
-export function renderView(request: ViewRequest, tab: Tab, context: ViewContext = {}): RenderedView {
+export function renderView(
+  request: ViewRequest,
+  tab: Tab,
+  context: ViewContext = {},
+): RenderedView {
   const model = buildViewModel(tab, context);
   const { budget, door } = request;
   const done = (result: { text: string; json: unknown }): RenderedView => ({
@@ -101,7 +108,10 @@ export function renderView(request: ViewRequest, tab: Tab, context: ViewContext 
     const resolved = resolveElement(model, request.only);
     if ('refusal' in resolved) return { ok: false, refusal: resolved.refusal };
     if (resolved.el.type === 'arrow') {
-      return { ok: false, refusal: { error: 'invalid_value', message: 'only takes an element, not an arrow' } };
+      return {
+        ok: false,
+        refusal: { error: 'invalid_value', message: 'only takes an element, not an arrow' },
+      };
     }
     only = resolved.el.id;
   }
@@ -121,6 +131,11 @@ export function renderView(request: ViewRequest, tab: Tab, context: ViewContext 
       return done(showView(model, resolved.el, { budget, door }));
     }
     case 'find':
-      return done(findView(model, request.q ?? '', { budget, door }));
+      if (!request.q)
+        return {
+          ok: false,
+          refusal: { error: 'invalid_value', message: 'find needs q, the text to look for' },
+        };
+      return done(findView(model, request.q, { budget, door }));
   }
 }

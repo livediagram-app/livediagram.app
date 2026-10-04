@@ -1,0 +1,46 @@
+tab edge-tab "Edge cases" · 52 elements: 43 boxes, 2 frames, 7 arrows · 2 hidden · 3 unknown
+square huge "Huge"
+frame frame-a "A"
+  square both "In both"
+frame frame-b "B"
+square bare → quoted "one", quoted "two" ~dotted ~both
+square quoted "Line one\nsays \"hi\" → there | here" → free
+square tilted → tilted, arrow:par-1
+? hologram holo "Unknown type"
+? blob blob
+square id:"My node" "Unsafe id"
+square Q1 "Short id"
+square abcd "Slug prefix"
+square abcd9 "Longer id"
+table ragged 2x3 Name | Owner | 
+es:actor es-actor "Customer"
+freehand lone
+square splitter
+freehand ×3 (1 closed)
+mind-node mind-a "A"
+  mind-node mind-b "B"
+    mind-node mind-c "C"
+mind-node mind-d "D"
+estimate state-estimate "Estimate" votes=1 revealed
+temperature state-temperature "How are we feeling?" votes=0
+done-check state-done-check "Everyone done?" done=1
+idea-box state-idea-box "Ideas" ideas=2
+qa-board state-qa-board "Questions" questions=0
+agenda state-agenda "Agenda" item=2/2
+decision state-decision "We will …" status=accepted
+roll-call state-roll-call "Roll call" present=0
+quiz state-quiz "Which planet is closest to the sun?" state=open
+picker state-picker picked=Sam
+reveal state-reveal "Hidden" revealed
+stat-row state-stat-row stats=3
+process state-process steps=3
+site-header state-site-header "Brand" links=3
+legend state-legend items=3
+rating state-rating rating=4/5
+progress-bar state-progress-bar progress=40
+progress-ring state-progress-ring progress=50
+timeline-rail state-timeline-rail points=3
+page state-page title="Quarterly review"
+? hologram nowhere "No geometry"
+arrow free-src free → bare
+arrow rider-src arrow:par-2 → tilted

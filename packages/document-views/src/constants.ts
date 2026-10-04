@@ -21,5 +21,7 @@ export const VIEW_BUDGET_MAX = 1_000_000;
 export const OVERVIEW_TAB_BATCH = 8;
 // Well above a 1,000-element render (VW53).
 export const VIEW_SLOW_MS = 100;
+// Collapsed containers an elision line names; the rest are one total (VW39).
+export const ELISION_CONTAINERS_NAMED = 3;
 // Where a progress bar or ring with no value sits, as the editor draws it.
 export const PROGRESS_DEFAULT = 50;
