@@ -65,8 +65,10 @@ type MindOutlineRead = {
   more: boolean;
 };
 
-const HEADING = /^(#{1,6})\s+(.*)$/;
-const ITEM = /^(?:[-*+]|\d+[.)])\s+(.*)$/;
+// A heading's `#`s and a list item's marker, each followed by white space (the content is what is
+// left once that space is trimmed off: no backtracking over it).
+const HEADING = /^(#{1,6})(?=\s)/;
+const ITEM = /^(?:[-*+]|\d{1,9}[.)])(?=\s)/;
 // A marker with nothing after it yet: an empty item, never text.
 const BARE_MARKER = /^(?:[-*+]|\d+[.)]|#{1,6})$/;
 
@@ -99,7 +101,8 @@ function mindOutlineLines(text: string): (MindOutlineRead | null)[] {
     }
     const heading = HEADING.exec(body);
     const item = heading ? null : ITEM.exec(body);
-    const rawContent = heading ? heading[2]! : item ? item[1]! : body;
+    const marker = heading ?? item;
+    const rawContent = marker ? body.slice(marker[0].length).trimStart() : body;
     const marks = trimRuns(mindMarkdownToMarks(rawContent));
     const content = runsPlainText(marks);
     const column = indent + body.length - rawContent.length;

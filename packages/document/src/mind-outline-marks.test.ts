@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { cpuMsOf } from '@livediagram/vitest-config/cpu-time';
 import { createShape } from './factories';
 import {
   mindMarkdownToMarks,
@@ -132,5 +133,18 @@ describe('saving marks', () => {
     )!;
     const fresh = out.find((e) => e.type === 'shape' && e.label === 'New') as ShapeElement;
     expect(fresh.richText).toEqual([{ text: 'New', underline: true }]);
+  });
+});
+
+describe('reading stays linear (CodeQL js/polynomial-redos)', () => {
+  it('reads a long run of brackets, spaces or markers at once', () => {
+    let read: unknown;
+    const spent = cpuMsOf(() => {
+      read = mindMarkdownToMarks('['.repeat(50_000));
+      parseMindOutline(`Root\n* ${' '.repeat(50_000)}x\n# ${' '.repeat(50_000)}y`);
+      mindMarkdownToMarks('*_'.repeat(25_000));
+    });
+    expect(read).toEqual([{ text: '['.repeat(50_000) }]);
+    expect(spent).toBeLessThan(200);
   });
 });

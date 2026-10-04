@@ -164,15 +164,42 @@ export function mindMarksToMarkdown(marks: TextRun[]): string {
 
 type Token = { raw: string; literal: string | null; pair: number };
 
-const TOKEN = /(\\[\\*_<`[]|`[^`]*`|!?\[[^\]]*\]\([^)]*\)|\*\*|__|<u>|<\/u>|\*|_)/;
+const TOKEN = /(\\[\\*_<`[]|`[^`]*`|\*\*|__|<u>|<\/u>|\*|_)/;
 
 const literalOf = (raw: string): string | null => {
   if (raw.startsWith('\\')) return raw.slice(1);
   if (raw.startsWith('`')) return raw.slice(1, -1);
-  const link = /^!?\[([^\]]*)\]\(/.exec(raw);
-  if (link) return link[1]!;
   return /^(\*\*|__|<u>|<\/u>|\*|_)$/.test(raw) ? null : raw;
 };
+
+/**
+ * Links (`[text](url)`, and images `![text](url)`) read as their text, in one pass with no
+ * backtracking; an escaped `\[` stays as written for the tokens to read.
+ */
+function linkText(s: string): string {
+  let out = '';
+  let at = 0;
+  for (;;) {
+    const open = s.indexOf('[', at);
+    if (open < 0) break;
+    if (s[open - 1] === '\\') {
+      out += s.slice(at, open + 1);
+      at = open + 1;
+      continue;
+    }
+    const close = s.indexOf(']', open + 1);
+    if (close < 0) break;
+    const end = s[close + 1] === '(' ? s.indexOf(')', close + 2) : -1;
+    if (end < 0) {
+      out += s.slice(at, close + 1);
+      at = close + 1;
+      continue;
+    }
+    out += s.slice(at, s[open - 1] === '!' ? open - 1 : open) + s.slice(open + 1, close);
+    at = end + 1;
+  }
+  return out + s.slice(at);
+}
 
 const KIND: Record<string, MarkKey> = {
   '**': 'bold',
@@ -189,7 +216,7 @@ const KIND: Record<string, MarkKey> = {
  * read as itself.
  */
 export function mindMarkdownToMarks(line: string): TextRun[] {
-  const body = line.replace(/^\[[ xX]\]\s+/, '');
+  const body = linkText(line.replace(/^\[[ xX]\] /, ''));
   const tokens: Token[] = body
     .split(TOKEN)
     .filter((raw) => raw !== '')
