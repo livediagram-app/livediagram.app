@@ -43,6 +43,14 @@ describe('overviewView (R17, VW37)', () => {
     expect(json.tabs[1]).toEqual({ outOfScope: true, ref: '51c9' });
   });
 
+  it("prints only the document's id, name and time, whatever record it is given", () => {
+    const record = { ...CHECKOUT_DOCUMENT, ownerId: 'user_secret' };
+    expect(overviewView(record, inputs(), { now: FIXED_EPOCH }).json.document).toEqual({
+      ...CHECKOUT_DOCUMENT,
+      tabs: 3,
+    });
+  });
+
   it('fits a budget', () => {
     const { text, json } = overviewView(CHECKOUT_DOCUMENT, inputs(), {
       now: FIXED_EPOCH,

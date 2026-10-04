@@ -40,6 +40,7 @@ import {
   shareCodeOf,
   type RouteContext,
 } from './context';
+import { answerTabView, parseViewQuery } from './document-views-route';
 
 // Tab-content sub-resource routes for /api/documents/<id>/...,
 // split out of documents.ts. Returns a Response when it handles the path, or
@@ -88,6 +89,10 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
     if (!existing) return missingDocument(ctx, id);
 
     if (request.method === 'GET') {
+      // A document view (docs/specs/024-agents/document-views.md): checked before any read, rendered
+      // after the same gate and redaction as the plain tab.
+      const view = parseViewQuery(new URL(request.url), 'tab');
+      if (view instanceof Response) return view;
       // Naming the tab confines a tab-scoped link to its own tab
       // (docs/specs/013-workspace/tab-scoped-share-links.md). Every other tab reads as missing: 404, no
       // existence leak.
@@ -104,6 +109,7 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
         owner === existing.ownerId
           ? tab
           : { ...tab, elements: redactCommentAuthorIds(tab.elements, owner) };
+      if (view) return answerTabView(ctx, view, existing, safe);
       // docs/specs/013-workspace/timeline.md §4.3: somebody arrived through a SHARE LINK and opened this.
       // The tab read is the honest signal for "opened" — the document GET is hit
       // by link previews and polls, whereas fetching tab content means a person

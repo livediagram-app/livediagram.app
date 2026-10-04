@@ -49,6 +49,7 @@ import {
 import { documentDates } from '@livediagram/api-schema';
 import { getDocumentTabImageSvg, getDocumentThumbnailSvg } from '../thumbnail';
 import { redactDocumentForReader, redactDocumentForScope } from '../redact-document';
+import { answerOverview, parseViewQuery } from './document-views-route';
 import { emailEnabled } from '../email/client';
 import { notifyMilestone } from '../email/notifications';
 import {
@@ -295,6 +296,8 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
       // tab-content read below uses, so a team member can open a team
       // document by raw id (not just via a share link). A miss returns
       // 404 (not 403) so a guessed UUID can't probe existence.
+      const view = parseViewQuery(new URL(request.url), 'document');
+      if (view instanceof Response) return view;
       const d = await getDocument(env, id);
       if (!d) return missingDocument(ctx, id);
       const grant = await gateGrant(ctx, id, d.ownerId, d.teamId);
@@ -309,6 +312,8 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
         redactDocumentForReader(d, ctx.resolveOwner()),
         grant.tabScope,
       );
+      // The overview view (docs/specs/024-agents/document-views.md), after the same gate and scope.
+      if (view) return answerOverview(ctx, view, liveDoc, grant.tabScope);
       return json({ document: liveDoc });
     }
     if (request.method === 'PUT') {

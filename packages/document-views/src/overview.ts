@@ -60,7 +60,13 @@ export function overviewView(
     text: fitted.text,
     fit: fitOf(fitted),
     json: {
-      document: { ...document, tabs: tabs.length },
+      // Named fields only: a caller may pass a richer document record than this view prints.
+      document: {
+        id: document.id,
+        name: document.name,
+        savedAt: document.savedAt,
+        tabs: tabs.length,
+      },
       tabs: entries.slice(0, fitted.kept).map((e) => e.json),
       elision: fitted.elision,
     },

@@ -52,6 +52,16 @@ export function json(body: unknown, init: ResponseInit = {}): Response {
   return new Response(JSON.stringify(body), { ...init, headers });
 }
 
+// A text body with the JSON helper's CORS and caching (docs/specs/024-agents/document-views.md): a
+// document view, which an agent reads as plain text.
+export function textPlain(body: string, init: ResponseInit = {}): Response {
+  const headers = new Headers(init.headers);
+  headers.set('Content-Type', 'text/plain; charset=utf-8');
+  headers.set('Cache-Control', 'no-cache');
+  for (const [k, v] of Object.entries(CORS_HEADERS)) headers.set(k, v);
+  return new Response(body, { ...init, headers });
+}
+
 export function notFound(): Response {
   return json({ error: 'not_found' }, { status: 404 });
 }

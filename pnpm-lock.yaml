@@ -60,6 +60,9 @@ importers:
       '@livediagram/document':
         specifier: workspace:*
         version: link:../../packages/document
+      '@livediagram/document-views':
+        specifier: workspace:*
+        version: link:../../packages/document-views
       '@livediagram/edit-operations':
         specifier: workspace:*
         version: link:../../packages/edit-operations
