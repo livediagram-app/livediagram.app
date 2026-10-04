@@ -18,13 +18,10 @@ const stampCentre = (p: StampPlacement) => ({
 // hook can't drift from what Canvas passes.
 type CanvasDrawGestureDeps = Pick<
   CanvasProps,
-  | 'pendingDraw'
-  | 'elements'
-  | 'viewportZoom'
-  | 'isPinchingRef'
-  | 'onCommitDraw'
-  | 'onCommitFreehand'
+  'pendingDraw' | 'elements' | 'isPinchingRef' | 'onCommitDraw' | 'onCommitFreehand'
 > & {
+  // The zoom now (CanvasView reads it from the viewport store).
+  viewportZoom: number;
   wrapperRef: RefObject<HTMLDivElement | null>;
   // Set while the armed tile is a fixed-size note (useStampGhost): the gesture
   // then STAMPS the note at this placement instead of drawing a box to size.

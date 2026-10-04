@@ -11,7 +11,7 @@ import { CanvasAiPanel } from './CanvasAiPanel';
 import { CommandPalette } from '@/components/palette/CommandPalette';
 import { pickPaletteAddHandlers } from '@/components/palette/palette-add-handlers';
 import { Explorer } from '@/components/panels/Explorer';
-import { Minimap } from '@/components/canvas/Minimap';
+import { ViewMinimap } from '@/components/canvas/view-readers';
 import type { CanvasChromeProps } from './CanvasChrome';
 import { usePaletteChrome } from './usePaletteChrome';
 import { useCanvasToolPanels } from './useCanvasToolPanels';
@@ -181,7 +181,6 @@ export function useCanvasChromePanels({
     teamDocuments,
     teamFolders,
     teams,
-    viewportZoom,
     zenMode,
     onToggleZen,
   } = props;
@@ -461,13 +460,11 @@ export function useCanvasChromePanels({
     !isMobile &&
     mapEnabled &&
     (elements.length >= 4 || (props.illustratePages?.pages.length ?? 0) > 0) ? (
-      <Minimap
+      <ViewMinimap
         elements={mapElements}
         pages={props.illustratePages?.pages}
         writing={props.illustratePages?.articles?.flows}
         tabFont={props.tabFont}
-        viewportOffset={props.viewportOffset}
-        viewportZoom={viewportZoom}
         setViewportOffset={props.setViewportOffset}
         setViewportZoom={props.setViewportZoom}
         mainSize={props.mainSize}

@@ -27,7 +27,6 @@ import { type QuickConnectDirection } from '@/lib/canvas';
 import { ArrowDefs } from '@/components/canvas/arrow-defs';
 import type { ArrowLabelRender, ArrowLabels } from '@/hooks/canvas/useArrowLabelLayouts';
 import { DrawnArrowPreview } from '@/components/canvas/DrawnArrowPreview';
-import { LaserOverlay } from '@/components/canvas/LaserOverlay';
 import {
   SelectionGripsContext,
   SelectionGripsLayer,
@@ -42,7 +41,7 @@ import {
 } from '@/components/canvas/selection-aware-views';
 import type { CanvasSelectionInput } from '@/hooks/canvas/useCanvasSelectionView';
 import { usePhotoDraftView } from '@/lib/photo-draft-preview';
-import { RemoteCursor } from '@/components/canvas/RemoteCursor';
+import { ZoomedLaserOverlay, ZoomedRemoteCursor } from '@/components/canvas/view-readers';
 import { useInsertShift } from '@/hooks/canvas/useInsertShift';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { IllustratePageClip } from '@/components/canvas/IllustratePageClip';
@@ -183,7 +182,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     tabFont,
     tabLocked,
     tabSummaries,
-    viewportZoom,
     quickRingOpen,
     setQuickRingOpen,
     settings,
@@ -661,14 +659,14 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
       ) : null}
 
       {remoteCursors.map((c) => (
-        <RemoteCursor key={c.id} cursor={c} zoom={viewportZoom} />
+        <ZoomedRemoteCursor key={c.id} cursor={c} />
       ))}
 
       {/* Laser overlay sits inside the viewport-transformed wrapper
             so trail coordinates (canvas-space) pan + zoom with
             elements. The overlay component owns its own RAF loop
             and only runs while there's at least one active trail. */}
-      <LaserOverlay trails={laserTrails} zoom={viewportZoom} />
+      <ZoomedLaserOverlay trails={laserTrails} />
 
       {/* What a relayed changeset touched (docs/specs/024-agents/agent-changesets.md "In the editor"):
           above the elements, below the selection chrome. */}
@@ -681,7 +679,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
           selectionInput={props.selectionInput}
           elements={elements}
           editingId={editingId}
-          zoom={viewportZoom}
           nextNote={
             props.esBoard && props.onAddNextNote
               ? {

@@ -1,20 +1,25 @@
 // @vitest-environment jsdom
-import { render } from '@testing-library/react';
+import { render as rtlRender } from '@testing-library/react';
+import type { ReactElement } from 'react';
+import { createViewportStore } from '@/lib/viewport-store';
+import { ViewportStoreProvider } from '@/hooks/canvas/useViewportStore';
 import { describe, expect, it } from 'vitest';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { CanvasDrawPreview } from './CanvasDrawPreview';
 
 // docs/specs/023-draw-mode/draw-mode.md "Pens": what you see while drawing is what lands.
 const wrapper = document.createElement('div');
+// The overlay reads the view from the viewport store, at 2x here.
+const render = (ui: ReactElement) =>
+  rtlRender(<ViewportStoreProvider store={createViewportStore(2)}>{ui}</ViewportStoreProvider>);
 const base = {
   drawDrag: null,
   penPoints: null,
   polygonVertices: [],
   polygonCursor: null,
   stamp: null,
-  viewportZoom: 2,
   wrapperRef: { current: wrapper },
-  viewKey: '0,0,1',
+  mainSize: { width: 1000, height: 1000 },
   whiteboardInk: '#1c1917',
 };
 const pen: PendingDraw = {

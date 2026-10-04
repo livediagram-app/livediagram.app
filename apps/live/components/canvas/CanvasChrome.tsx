@@ -1,3 +1,5 @@
+import { useViewportStore } from '@/hooks/canvas/useViewportStore';
+import { ViewZoomControls } from '@/components/canvas/view-readers';
 import { ES_LANES } from '@livediagram/document';
 import { computeDrawGuides } from '@/components/canvas/canvas-draw-guides';
 import { CanvasGuideOverlay } from '@/components/canvas/CanvasGuideOverlay';
@@ -21,7 +23,6 @@ const TemplatePicker = dynamic(
 );
 
 import { ThemeBrushIcon } from '@/components/palette/palette-icons';
-import { ZoomControls } from '@/components/chrome/ZoomControls';
 import { OffscreenContentHint } from '@/components/canvas/OffscreenContentHint';
 import { ToolbarPalette } from '@/components/palette/ToolbarPalette';
 import { pickPaletteAddHandlers } from '@/components/palette/palette-add-handlers';
@@ -30,7 +31,7 @@ import { SlidesClusterButton } from '@/components/canvas/SlidesClusterButton';
 import { LayersClusterButton } from '@/components/canvas/LayersClusterButton';
 import { UndoRedoClusterStrip } from '@/components/canvas/UndoRedoClusterStrip';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
-import { Fragment, type Dispatch, type RefObject, type SetStateAction } from 'react';
+import { Fragment, useCallback, type Dispatch, type RefObject, type SetStateAction } from 'react';
 import type { DockAnchor, DockPanel } from '@/hooks/canvas/useDockPopovers';
 import { useCornerDocking } from '@/hooks/ui/useCornerDocking';
 import { PanelSnapSlot } from '@/components/canvas/PanelSnapSlot';
@@ -234,15 +235,15 @@ export function CanvasChrome(props: CanvasChromeProps) {
     tabThemeId,
     templatePickerLockedName,
     templatePickerMode,
-    viewportZoom,
     welcomeOpen,
     wrapperRef,
     zenMode,
     onToggleZen,
   } = props;
-  // What moves the canvas wrapper on screen: the overlays that convert canvas points to client
-  // coordinates re-measure its origin only when this changes (useCanvasClientOrigin).
-  const canvasViewKey = `${props.viewportOffset.x},${props.viewportOffset.y},${viewportZoom},${props.mainSize.width},${props.mainSize.height}`;
+  // The view is not a prop here: the parts that show it read it from the viewport store, so a pan or
+  // zoom renders them and not this chrome or its panels (docs/specs/008-canvas/blueprints/viewport-store.md).
+  const viewport = useViewportStore();
+  const readZoom = useCallback(() => viewport.get().zoom, [viewport]);
   // Zen / focus mode (docs/specs/007-editor/zen-mode.md): hide all floating chrome. `chromeHidden`
   // folds it in next to the welcome-flow gate that already suppresses
   // the same panels, so each panel stays hidden in either state.
@@ -272,7 +273,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
   // promise something it can't keep.
   const paletteDrag = usePaletteDragGuides({
     elements,
-    viewportZoom,
+    readZoom,
     wrapperRef,
     insertGate: {
       esBoard: props.esBoard === true,
@@ -446,9 +447,8 @@ export function CanvasChrome(props: CanvasChromeProps) {
       <TimelineLanesOverlay
         timeline={props.esBoard === true ? ES_LANES : null}
         tabThemeId={tabThemeId}
-        viewportZoom={viewportZoom}
         wrapperRef={wrapperRef}
-        viewKey={canvasViewKey}
+        mainSize={props.mainSize}
       />
 
       <CanvasGuideOverlay
@@ -456,11 +456,10 @@ export function CanvasChrome(props: CanvasChromeProps) {
         allSnapTargets={allSnapTargets}
         distGuides={paletteDrag.distGuides.length > 0 ? paletteDrag.distGuides : distGuides}
         drawHover={drawHover}
-        viewportZoom={viewportZoom}
         marquee={marquee}
         tabThemeId={tabThemeId}
         wrapperRef={wrapperRef}
-        viewKey={canvasViewKey}
+        mainSize={props.mainSize}
       />
 
       <CanvasDrawPreview
@@ -471,9 +470,8 @@ export function CanvasChrome(props: CanvasChromeProps) {
         pendingDraw={pendingDraw}
         stamp={stamp}
         whiteboardInk={whiteboard ? props.whiteboardInk : undefined}
-        viewportZoom={viewportZoom}
         wrapperRef={wrapperRef}
-        viewKey={canvasViewKey}
+        mainSize={props.mainSize}
       />
 
       {/* Top-of-canvas floating chrome (docs/specs/008-canvas/canvas-and-palette.md): owner / role badge, the
@@ -650,8 +648,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
                 </HoverCard>
               </div>
             ) : null}
-            <ZoomControls
-              zoom={viewportZoom}
+            <ViewZoomControls
               onZoomIn={handleZoomIn}
               onZoomOut={handleZoomOut}
               onSetZoom={handleSetZoom}

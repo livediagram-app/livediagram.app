@@ -4,6 +4,8 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { ES_LANE_HEIGHT, laneTop, type EsTimeline } from '@livediagram/document';
 import { setLanePreview } from '@/lib/lane-preview';
 import { TimelineLanesOverlay } from './TimelineLanesOverlay';
+import { createViewportStore } from '@/lib/viewport-store';
+import { ViewportStoreProvider } from '@/hooks/canvas/useViewportStore';
 
 // The lit lane (docs/specs/021-event-storming/event-storming.md Phase 6). What matters here is that it draws NOTHING
 // until a drag has claimed a lane, and that what it draws lands where the drop
@@ -20,13 +22,14 @@ function wrapper(left = 0, top = 0) {
 
 function draw(opts: { zoom?: number; timeline?: EsTimeline | null } = {}) {
   const { container } = render(
-    <TimelineLanesOverlay
-      timeline={opts.timeline === undefined ? TIMELINE : opts.timeline}
-      tabThemeId="brand"
-      viewportZoom={opts.zoom ?? 1}
-      wrapperRef={wrapper()}
-      viewKey="0,0,1"
-    />,
+    <ViewportStoreProvider store={createViewportStore(opts.zoom ?? 1)}>
+      <TimelineLanesOverlay
+        timeline={opts.timeline === undefined ? TIMELINE : opts.timeline}
+        tabThemeId="brand"
+        wrapperRef={wrapper()}
+        mainSize={{ width: 1000, height: 1000 }}
+      />
+    </ViewportStoreProvider>,
   );
   return container;
 }

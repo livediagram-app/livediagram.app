@@ -1,3 +1,4 @@
+import type { Dispatch, SetStateAction } from 'react';
 import type { ShapeLibraryItem } from '@livediagram/api-schema';
 import type { LibraryShapeRef } from '@/lib/shape-library-dnd';
 // Prop contract for the Canvas component, split out of Canvas.tsx
@@ -62,10 +63,10 @@ export type CanvasProps = {
   // the inline label editor (CanvasElementsLayer) for font inheritance.
   tabFont?: string;
   mainRef: Ref<HTMLElement>;
-  viewportOffset: { x: number; y: number };
   setViewportOffset: (offset: { x: number; y: number }) => void;
-  viewportZoom: number;
-  setViewportZoom: (zoom: number) => void;
+  // The view itself is not a prop: it lives in the viewport store, read where it shows
+  // (docs/specs/008-canvas/blueprints/viewport-store.md "Inside the canvas").
+  setViewportZoom: Dispatch<SetStateAction<number>>;
   onFitToScreen: () => void;
   isPinchingRef?: React.RefObject<boolean>;
   elements: Element[];
