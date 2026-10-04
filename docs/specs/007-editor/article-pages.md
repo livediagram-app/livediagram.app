@@ -185,8 +185,13 @@ article's swatches), and a line break inside a block (Shift+Enter). Code blocks 
   - **Comment** (⌘⌥M) and **Assign Action**, with text selected (see "Comments and actions").
 - No undo or redo (the canvas controls have them) and no word count.
 - **Narrow**: when the toolbar is wider than the canvas, it scrolls sideways.
-- **On a phone** the toolbar is a bar along the bottom of the screen, across it (its controls
-  scroll sideways): above the keyboard while it is up, else above the canvas's bottom controls.
+- **On a phone** the toolbar is a bar fixed along the top of the screen, across it (its controls
+  scroll sideways), just below the Toolbar strip: it stays there whatever the page, the zoom or the
+  keyboard does, so it is always where the thumb last found it, and its menus open down from it.
+- **A finger on a page** (a phone or any touch screen): a finger that travels more than a few px
+  (`TOUCH_PAN_SLOP`) on an article page's writing or paper pans the view, as a thumb scrolls a
+  document, whatever the tool; one that lifts where it landed is a tap, which puts the caret there.
+  A second finger hands the view to the pinch.
   The writing taking the caret frames its page for writing: its text column across the screen,
   the margins off it, so the text reads at a usable size. The panel opens as a bottom sheet as on
   any page.

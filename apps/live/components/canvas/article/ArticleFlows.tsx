@@ -36,6 +36,7 @@ import { previewedBackground, usePageBackgroundPreview } from '@/lib/page-backgr
 import { ZoneBar, ZoneResizeGrips } from './ZoneBar';
 import { useZoneDrag, type ZoneDragState } from './useZoneDrag';
 import { useObjectDropCaret } from './useObjectDropCaret';
+import { useTouchPagePan } from './useTouchPagePan';
 import { publishZoneClips } from '@/lib/article/zone-clip-store';
 import { selectionMoving, useCanvasGesture } from '@/lib/canvas-gesture';
 import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
@@ -131,6 +132,8 @@ export function ArticleFlows({
     // Framed when the focus arrives, not as the caret moves between pages.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mobile, !!focusedPage]);
+  // A finger on the writing or its paper pans the view when it travels; a tap is the writing's.
+  const touchPress = useTouchPagePan(view.panFrom);
   const objectCaret = useObjectDropCaret({
     target,
     selectedIds,
@@ -148,7 +151,8 @@ export function ArticleFlows({
         style={{ clipPath: pagesClipPath(view.pages) }}
       >
         {/* A press on an article page's blank paper (its margins, below the writing) puts the
-            caret at the writing nearest it, as on a page of a word processor. */}
+            caret at the writing nearest it, as on a page of a word processor; a finger does so
+            on its tap, and pans the view when it travels. */}
         {articles.editable && interactive
           ? [...byFlow].flatMap(([flow, pages]) =>
               pages
@@ -169,8 +173,12 @@ export function ArticleFlows({
                       if (e.button !== 0) return;
                       e.stopPropagation();
                       e.preventDefault();
-                      articles.onWritingPress();
-                      articleHandleOf(flow)?.focusAt(e.clientX, e.clientY);
+                      const { clientX, clientY } = e;
+                      const take = () => {
+                        articles.onWritingPress();
+                        articleHandleOf(flow)?.focusAt(clientX, clientY);
+                      };
+                      if (!touchPress(e, take)) take();
                     }}
                   />
                 )),
@@ -210,6 +218,7 @@ export function ArticleFlows({
                 onNoteOpen={articles.openNote}
                 onInsert={articles.insertObject}
                 onWritingPress={articles.onWritingPress}
+                onTouchPress={touchPress}
                 focusRequest={articles.focusRequest}
                 onFocusTaken={articles.focusTaken}
               />

@@ -48,6 +48,9 @@ export type IllustratePagesView = {
   focusPage: (pageId: string) => void;
   // An article page framed for writing on a phone: its text column across the screen.
   readPage: (pageId: string) => void;
+  // A finger's pan over an article page begun from the view now: moves it by a screen-px drag.
+  // Absent where nothing pans the view from a page (presenting).
+  panFrom?: () => (dx: number, dy: number) => void;
   // Backgrounds drawn from the tab's theme, offered first in the page panel.
   themeBackgrounds: ThemeBackgroundPreset[];
   // The tab theme's accent: a document's accent unless it picked one of its own.
@@ -205,6 +208,16 @@ export function useIllustratePages(deps: {
       pages.find((p) => p.id === pageId),
       true,
     );
+  const panFrom = () => {
+    glide.current?.();
+    glide.current = null;
+    const from = deps.getViewport();
+    return (dx: number, dy: number) =>
+      deps.setViewportOffset({
+        x: from.offset.x + dx / from.zoom,
+        y: from.offset.y + dy / from.zoom,
+      });
+  };
   const theme = getTheme(activeTab.theme);
   const themeBackgrounds = themeBackgroundPresets(theme);
   const tabFont = activeTab.font;
@@ -212,6 +225,7 @@ export function useIllustratePages(deps: {
     pages,
     focusPage,
     readPage,
+    panFrom,
     themeBackgrounds,
     themeAccent: themeAccent(theme),
     tabFont,

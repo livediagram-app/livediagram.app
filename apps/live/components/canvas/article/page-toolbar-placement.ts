@@ -2,7 +2,7 @@
 
 // Where the page toolbar sits (docs/specs/007-editor/article-pages.md "The page toolbar"): at the
 // top of its page, inside it, centred in the top margin, shrinking to a thin margin and narrowing to
-// the page's width on screen; on a phone, a bar along the bottom of the screen. Written straight to
+// the page's width on screen; on a phone, a bar fixed along the top of the screen. Written straight to
 // the card's style (a pan or a zoom moves the page with no render), and only when something may
 // have moved it, never on idle frames (docs/specs/008-canvas/canvas-performance.md "At rest").
 import { useLayoutEffect, useRef, type RefObject } from 'react';
@@ -12,10 +12,8 @@ import { canvasGestureNow, subscribeCanvasGesture } from '@/lib/canvas-gesture';
 const MARGIN_PAD = 4;
 // Frames the toolbar keeps placing itself after the last cause to (an easing view settling).
 const PLACE_TRAILING_FRAMES = 3;
-// Screen px: a phone's bar keeps this clear of the screen's sides and the bottom.
+// Screen px: a phone's bar keeps this clear of the screen's sides and its top.
 const PHONE_GUTTER = 8;
-// Screen px: the room the canvas's bottom controls (undo, Fit) take on a phone.
-const PHONE_CONTROLS_ROOM = 64;
 // The smallest the card shrinks to in a thin margin (zoomed far out), as a share of its size.
 const TOOLBAR_MIN_SCALE = 0.55;
 
@@ -26,7 +24,7 @@ export function usePageToolbarPlacement({
   topRoomOf,
 }: {
   pageId: string | null;
-  // A phone's bar sits along the bottom.
+  // A phone's bar sits fixed along the top.
   phone: boolean;
   // The screen px of a page's top margin at the current zoom: the room the card sits in.
   topRoomOf: (pageId: string) => number;
@@ -82,18 +80,17 @@ export function usePageToolbarPlacement({
         (strip && strip.bottom > c.top && strip.top < c.top + 80 ? strip.bottom - c.top : 0);
       const h = el.offsetHeight;
       const w = el.offsetWidth;
-      // On a phone: a bar along the bottom of the screen, above the keyboard when it is up,
-      // across the screen (its controls scroll), for the writing being worked on.
+      // On a phone: a bar fixed along the top of what is on screen, below a top strip, across the
+      // screen (its controls scroll), whatever the page, the zoom or the keyboard does. The visible
+      // viewport's top, as the keyboard can scroll the layout viewport up under it.
       if (latest.current.phone) {
-        const vv = window.visualViewport;
-        const keyboard = vv ? vv.offsetTop + vv.height : window.innerHeight;
-        // Keyboard up: right above it. Down: above the canvas's own controls along the bottom.
-        const bottom = keyboard < c.bottom - 1 ? keyboard : c.bottom - PHONE_CONTROLS_ROOM;
+        const seen = window.visualViewport?.offsetTop ?? 0;
+        const top = Math.max(floor, seen + PHONE_GUTTER);
         const across = window.innerWidth - 2 * PHONE_GUTTER;
         if (el.style.maxWidth !== `${across}px`) el.style.maxWidth = `${across}px`;
         const left = Math.max(PHONE_GUTTER, (window.innerWidth - w) / 2);
         el.style.transformOrigin = '0 0';
-        el.style.transform = `translate(${Math.round(left)}px, ${Math.round(bottom - h - PHONE_GUTTER)}px)`;
+        el.style.transform = `translate(${Math.round(left)}px, ${Math.round(top)}px)`;
         el.style.visibility = 'visible';
         return;
       }
