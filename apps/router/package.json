@@ -14,7 +14,7 @@
     "clean": "rm -rf dist .wrangler node_modules .turbo"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^5.20260930.2",
+    "@cloudflare/workers-types": "^5.20261001.1",
     "@livediagram/api-schema": "workspace:*",
     "@livediagram/eslint-config": "workspace:*",
     "@livediagram/help-registry": "workspace:*",
