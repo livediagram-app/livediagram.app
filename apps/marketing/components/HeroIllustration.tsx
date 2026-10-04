@@ -171,7 +171,7 @@ export function HeroIllustration() {
   const current = CARDS[active] ?? CARDS[0]!;
   return (
     <div className="mx-auto mt-16 w-full max-w-6xl">
-      <div className="relative [--hero-card:88] sm:[--hero-card:68]">
+      <div className="relative [--arrow-clear:0px] [--hero-card:88] sm:[--arrow-clear:20px] sm:[--hero-card:68]">
         <div
           ref={stageRef}
           aria-hidden
@@ -259,8 +259,12 @@ export function HeroIllustration() {
         </div>
         {/* Previous and next, in the gutters either side of the centred window, so the stage reads
           as something to move through. Outside the decorative stage, so they are reachable. */}
-        <StageArrow side="left" onClick={() => show((active - 1 + CARDS.length) % CARDS.length)} />
-        <StageArrow side="right" onClick={() => show((active + 1) % CARDS.length)} />
+        {/* Only where there is somewhere to go: no previous on the first window, no next on the
+            last (the auto-advance still wraps round). */}
+        {active > 0 ? <StageArrow side="left" onClick={() => show(active - 1)} /> : null}
+        {active < CARDS.length - 1 ? (
+          <StageArrow side="right" onClick={() => show(active + 1)} />
+        ) : null}
       </div>
       {layer}
 
@@ -293,9 +297,10 @@ export function HeroIllustration() {
   );
 }
 
-// A gutter's centre: half a gap outside the centred window's edge (its edges sit at
-// (100 - card) / 2 % in from either side).
-const GUTTER = `calc((100 - var(--hero-card)) / 2 * 1% - ${GAP / 2}%)`;
+// The centred window's edge (it sits (100 - card) / 2 % in from either side), less a clear space
+// (--arrow-clear, set on the stage: 20px from `sm`), so an arrow stands off the window. A phone has
+// no room beside the window, so there the arrow sits astride its edge instead.
+const EDGE = 'calc((100 - var(--hero-card)) / 2 * 1% - var(--arrow-clear))';
 
 function StageArrow({ side, onClick }: { side: 'left' | 'right'; onClick: () => void }) {
   const Icon = side === 'left' ? ChevronLeftIcon : ChevronRightIcon;
@@ -304,9 +309,11 @@ function StageArrow({ side, onClick }: { side: 'left' | 'right'; onClick: () => 
       type="button"
       onClick={onClick}
       aria-label={side === 'left' ? 'Previous example' : 'Next example'}
-      style={side === 'left' ? { left: GUTTER } : { right: GUTTER }}
+      style={side === 'left' ? { left: EDGE } : { right: EDGE }}
       className={`absolute top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border border-slate-200 bg-white/95 text-slate-600 shadow-lg shadow-slate-900/10 backdrop-blur transition hover:scale-105 hover:border-brand-300 hover:text-brand-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 motion-reduce:transition-none motion-reduce:hover:scale-100 sm:h-11 sm:w-11 dark:border-slate-700 dark:bg-slate-800/95 dark:text-slate-300 dark:hover:border-brand-500/60 dark:hover:text-brand-300 ${
-        side === 'left' ? '-translate-x-1/2' : 'translate-x-1/2'
+        side === 'left'
+          ? '-translate-x-1/2 sm:-translate-x-full'
+          : 'translate-x-1/2 sm:translate-x-full'
       }`}
     >
       <Icon size={18} aria-hidden />
