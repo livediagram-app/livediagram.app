@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { CHANGESET_MAX_OPERATIONS } from '@livediagram/api-schema';
 import { parseChangesetRequest, rejectionStatus } from './request';
 
 // docs/specs/024-agents/blueprints/agent-changesets.md "Interfaces and contracts", CS8 to CS10.
@@ -50,6 +51,43 @@ describe('parseChangesetRequest', () => {
     expect(replace({ mermaid: 'x', template: 'kanban' })).toBe('invalid_body');
     expect(replace({ elements: {} })).toBe('invalid_body');
     expect(replace({ elements: [], layout: 'sideways' })).toBe('invalid_body');
+  });
+
+  it('reads the line form from a string, logging the parse', () => {
+    const logged: string[] = [];
+    const out = parseChangesetRequest(
+      { operations: '# rename\nset n3 label="Sign in"\n{"op":"rm","target":"n7"}' },
+      (fingerprint) => logged.push(fingerprint),
+    );
+    expect(out.ok && out.value.body).toEqual({
+      kind: 'operations',
+      operations: [
+        { op: 'set', target: 'n3', fields: { label: 'Sign in' } },
+        { op: 'rm', target: 'n7' },
+      ],
+    });
+    expect(logged).toEqual(['[edit-ops] parsed']);
+  });
+
+  it('refuses a line that does not read with where and why, and too many lines as too_large', () => {
+    const bad = parseChangesetRequest({ operations: 'set n3 label="Sign in' });
+    expect(bad.ok ? null : bad.refusal).toMatchObject({
+      status: 400,
+      body: { error: 'parse_error' },
+    });
+    expect(bad.ok ? '' : String(bad.refusal.body.text)).toContain('line 1');
+    const many = parseChangesetRequest({
+      operations: 'rm a\n'.repeat(CHANGESET_MAX_OPERATIONS + 1),
+    });
+    expect(many.ok ? null : many.refusal).toMatchObject({
+      status: 413,
+      body: { error: 'too_large' },
+    });
+  });
+
+  it('refuses operations that are neither an array nor a string', () => {
+    const out = parseChangesetRequest({ operations: { op: 'rm' } });
+    expect(out.ok ? null : out.refusal.body.error).toBe('invalid_body');
   });
 
   it('maps engine codes to statuses (CS9)', () => {

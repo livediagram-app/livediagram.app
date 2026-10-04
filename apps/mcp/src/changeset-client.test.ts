@@ -41,8 +41,27 @@ describe('mcpOpsToEditOperations', () => {
         op: 'add',
         element: { id: 'n', type: 'shape', shape: 'square', x: 0, y: 0, width: 1, height: 1 },
       },
-      { op: 'set', target: 'a', fields: { label: 'Sign in' } },
-      { op: 'rm', target: 'b' },
+      { op: 'set', target: 'id:"a"', fields: { label: 'Sign in' } },
+      { op: 'rm', target: 'id:"b"' },
+    ]);
+  });
+
+  it('takes a ref as read_document prints it, and passes a word naming nothing as given', () => {
+    const uuid = '7f3a2c91-0000-4000-8000-000000000001';
+    const withUuid: Tab = { ...tab, elements: [...tab.elements, box(uuid), box('frame')] };
+    expect(
+      mcpOpsToEditOperations(
+        [
+          { op: 'update', elementId: '7f3a', element: { id: uuid, label: 'x' } },
+          { op: 'remove', elementId: 'frame' },
+          { op: 'remove', elementId: 'nowhere' },
+        ],
+        withUuid,
+      ),
+    ).toEqual([
+      { op: 'set', target: `id:"${uuid}"`, fields: { label: 'x' } },
+      { op: 'rm', target: 'id:"frame"' },
+      { op: 'rm', target: 'nowhere' },
     ]);
   });
 
@@ -69,6 +88,11 @@ describe('baseFor', () => {
       elements: { a: elementFingerprint(box('a')) },
     });
     expect(baseFor([], tab).rev).toBe(7);
+    const uuid = '7f3a2c91-0000-4000-8000-000000000001';
+    const withUuid = { ...tab, elements: [...tab.elements, box(uuid)] };
+    expect(baseFor([{ op: 'remove', elementId: '7f3a' }], withUuid).elements).toEqual({
+      [uuid]: elementFingerprint(box(uuid)),
+    });
   });
 });
 
@@ -160,7 +184,7 @@ describe('the tools on changesets', () => {
     expect(submitted).toMatchObject({
       method: 'POST',
       body: {
-        operations: [{ op: 'rm', target: 'b' }],
+        operations: [{ op: 'rm', target: 'id:"b"' }],
         base: { rev: 6, elements: { b: elementFingerprint(box('b')) } },
       },
     });

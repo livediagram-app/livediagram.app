@@ -17,6 +17,7 @@ import { getChangeset, getChangesetPart, getDocument, getParticipant, listChange
 import type { ChangesetRecord } from '../db';
 import { forbidden, json, notFound } from '../responses';
 import { frontDoorOf } from '../changesets/front-door';
+import { engineLog } from '../changesets/log';
 import { parseChangesetRequest } from '../changesets/request';
 import { revertChangeset } from '../changesets/revert';
 import { submitChangeset, type SubmitResult } from '../changesets/submit';
@@ -74,7 +75,7 @@ async function handleSubmit(
   if (!(await gateEdit(ctx, document.id, document.ownerId, document.teamId, tabId)))
     return forbidden();
   const raw = await ctx.request.json().catch(() => undefined);
-  const parsed = parseChangesetRequest(raw);
+  const parsed = parseChangesetRequest(raw, engineLog({ documentId: document.id, tabId }));
   if (!parsed.ok) return json(parsed.refusal.body, { status: parsed.refusal.status });
   const result = await submitChangeset({
     env: ctx.env,

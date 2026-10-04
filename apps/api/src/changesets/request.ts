@@ -7,7 +7,9 @@ import {
 } from '@livediagram/api-schema';
 import {
   formatRejections,
+  parseEditOperations,
   validateEditOperations,
+  type EditLog,
   type EditOperation,
   type ReplaceBody,
 } from '@livediagram/edit-operations';
@@ -56,7 +58,8 @@ export function engineRefusal(errors: readonly EditRejection[]): Refusal {
   };
 }
 
-export function parseChangesetRequest(raw: unknown): ParseResult {
+// `log` takes the engine's parse lines (`[edit-ops] parsed`, `[edit-ops] parse-rejected`).
+export function parseChangesetRequest(raw: unknown, log: EditLog = () => {}): ParseResult {
   if (!isRecord(raw))
     return refuse(400, { error: 'invalid_body', message: 'expected a JSON object' });
   const hasOps = raw.operations !== undefined;
@@ -90,29 +93,27 @@ export function parseChangesetRequest(raw: unknown): ParseResult {
         '"base" is { rev: a non-negative integer, elements?: { <element id>: <16 hex fingerprint> } }',
     });
   }
-  const body = hasOps ? parseOperations(raw.operations) : parseReplace(raw.replace);
+  const body = hasOps ? parseOperations(raw.operations, log) : parseReplace(raw.replace);
   if ('refusal' in body) return { ok: false, refusal: body.refusal };
   return { ok: true, value: { body, ...(base ? { base } : {}), strict, summary } };
 }
 
-function parseOperations(raw: unknown): ChangesetBody | { refusal: Refusal } {
+// The operations in either form: a string of lines (the line form, JSON objects allowed on a line) or
+// an array of operation objects.
+function parseOperations(raw: unknown, log: EditLog): ChangesetBody | { refusal: Refusal } {
   if (typeof raw === 'string') {
-    return {
-      refusal: {
-        status: 400,
-        body: {
-          error: 'invalid_body',
-          message:
-            'This server takes operations as a JSON array of operation objects; the line form arrives with the full edit-operation engine.',
-        },
-      },
-    };
+    const parsed = parseEditOperations(raw, log);
+    if ('errors' in parsed) return { refusal: engineRefusal(parsed.errors) };
+    return { kind: 'operations', operations: parsed.operations };
   }
   if (!Array.isArray(raw)) {
     return {
       refusal: {
         status: 400,
-        body: { error: 'invalid_body', message: '"operations" must be an array' },
+        body: {
+          error: 'invalid_body',
+          message: '"operations" is an array of operation objects, or the line form as a string',
+        },
       },
     };
   }

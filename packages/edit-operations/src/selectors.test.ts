@@ -36,6 +36,14 @@ describe('selector rows', () => {
     expect(ids('7f', stateOf(tab))).toEqual(['7f3a2c91-0000-4000-8000-000000000001']);
   });
 
+  it('the always-safe id:"" form the views print for an id that is not a plain word', () => {
+    const tab = withElements(sticky('frame', 'Old'), sticky('a b', 'Spaced'));
+    expect(ids('id:"frame"', stateOf(tab))).toEqual(['frame']);
+    expect(ids('id:"a b"', stateOf(tab))).toEqual(['a b']);
+    expect(ids('id:"n3" type:square')).toEqual(['n3']);
+    expect(ids('id:"gone"')).toEqual([]);
+  });
+
   it('a quoted label, ignoring case and outer space; label~ for part of one', () => {
     expect(ids('"login"')).toEqual(['n3']);
     expect(ids('" Charge Card "')).toEqual(['n7']);

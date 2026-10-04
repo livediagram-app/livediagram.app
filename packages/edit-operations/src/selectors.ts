@@ -37,6 +37,8 @@ const KEYED = /^([a-zA-Z][a-zA-Z-]*):/;
 function termOf(word: Word): SelectorTerm | string {
   if (isQuotedWord(word)) return { kind: 'label', text: word.value };
   const prefix = unquotedPrefix(word);
+  // The always-safe ref the views print for an id that is not a plain word: `id:"…"`.
+  if (prefix === 'id:' && word.raw.length > 3) return { kind: 'ref', text: word.raw };
   if (/^label~/i.test(prefix)) return { kind: 'label~', text: word.value.slice('label~'.length) };
   const keyed = KEYED.exec(prefix);
   if (keyed) {

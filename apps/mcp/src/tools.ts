@@ -369,7 +369,7 @@ export function registerTools(server: McpServer, env: Env): void {
       description:
         'Edit an existing tab. mode "replace" swaps the whole tab’s elements (validated + ' +
         'auto-laid-out); mode "ops" applies an ordered list of add/update/remove against ' +
-        'existing element ids and PRESERVES positions (no auto-layout). On an event-storming tab, ' +
+        'existing elements (by id, or the ref read_document prints) and PRESERVES positions (no auto-layout). On an event-storming tab, ' +
         'event-storming notes you add or move land on the board’s horizontal lanes (240px apart, ' +
         'lane 0 centred at y=100). Returns an inline PNG.',
       inputSchema: updateDocumentShape,

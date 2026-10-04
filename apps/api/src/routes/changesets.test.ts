@@ -204,7 +204,9 @@ describe('submitting a changeset', () => {
         'target_not_found',
       ],
       [{ operations: [{ op: 'paint', target: 'a' }] }, 400, 'unknown_operation'],
-      [{ operations: 'set a label=x' }, 400, 'invalid_body'],
+      [{ operations: 'set a label="x' }, 400, 'parse_error'],
+      [{ operations: 'set nope label=x' }, 422, 'target_not_found'],
+      [{ operations: 7 }, 400, 'invalid_body'],
       [{ operations: [], replace: { elements: [] } }, 400, 'invalid_body'],
       [
         {
@@ -243,6 +245,22 @@ describe('submitting a changeset', () => {
     expect(stored(db)).toEqual(before);
     expect(records(db)).toEqual([]);
     expect(r.calls.some((c) => c.url.endsWith('/mutation'))).toBe(false);
+  });
+
+  it('applies the line form, answering the result lines', async () => {
+    quiet();
+    const { db } = await setUp();
+    const res = await submit(db, { operations: 'set a fill=green\nconnect a -> b label=next' });
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as { text: string };
+    expect(body.text.split('\n').slice(0, 2)).toEqual([
+      '~ a  fill →green · textSize →md',
+      '+ next  a→b "next"',
+    ]);
+    expect(stored(db).find((e) => e.id === 'next')).toMatchObject({
+      type: 'arrow',
+      label: 'next',
+    });
   });
 
   it('answers a dry run with the plan only', async () => {
