@@ -11,6 +11,12 @@
 // not a second validator).
 import { z } from 'zod';
 import {
+  FIND_QUERY_MAX_LENGTH,
+  REF_INPUT_MAX_LENGTH,
+  TAB_VIEW_NAMES,
+  VIEW_BUDGET_MAX,
+} from '@livediagram/api-schema';
+import {
   ANCHORS,
   CODE_LANGUAGES,
   CODE_MAX_LENGTH,
@@ -334,9 +340,62 @@ export const findDocumentsShape = {
   limit: z.number().int().min(1).max(50).optional().describe('Max results (default 20).'),
 };
 
+// What read_document fits every view to unless told otherwise (docs/specs/024-agents/document-views.md
+// "Budgets", VW45).
+export const READ_DOCUMENT_DEFAULT_BUDGET = 8000;
+
 export const readDocumentShape = {
   documentId: z.string().describe('The document id (from find_documents).'),
   tabId: z.string().optional().describe('Which tab to read; defaults to the first.'),
+  view: z
+    .enum(TAB_VIEW_NAMES)
+    .optional()
+    .describe(
+      'How to read the tab. outline (default): one line per element with its ref, label and arrows, ' +
+        'nested by frame. graph: what connects to what. layout: where things sit. comments: open threads ' +
+        'in full. show: one element in full (needs ref). find: elements holding some text (needs q).',
+    ),
+  budget: z
+    .number()
+    .int()
+    .min(1)
+    .max(VIEW_BUDGET_MAX)
+    .optional()
+    .describe(
+      `Fit the view to about this many tokens (default ${READ_DOCUMENT_DEFAULT_BUDGET}); the last line says what was left out and how to see it.`,
+    ),
+  only: z
+    .string()
+    .min(1)
+    .max(REF_INPUT_MAX_LENGTH)
+    .optional()
+    .describe('outline, layout: one element (a ref from a view) and what nests under it.'),
+  ref: z
+    .string()
+    .min(1)
+    .max(REF_INPUT_MAX_LENGTH)
+    .optional()
+    .describe('show: the element, by the ref a view printed, any unique prefix, or its id.'),
+  q: z
+    .string()
+    .min(1)
+    .max(FIND_QUERY_MAX_LENGTH)
+    .optional()
+    .describe('find: the text to look for, case-insensitive.'),
+  coarse: z.boolean().optional().describe('layout: rows per frame instead of coordinates.'),
+  all: z.boolean().optional().describe('comments: include resolved threads.'),
+  style: z
+    .boolean()
+    .optional()
+    .describe('outline: add the colours and line styles that differ from the defaults.'),
+  format: z
+    .enum(['view', 'json'])
+    .optional()
+    .describe("view (default) returns the text view; json returns the tab's elements as stored."),
+  image: z
+    .boolean()
+    .optional()
+    .describe('Also attach a PNG preview of the tab (costs about a thousand tokens).'),
 };
 
 // A document or tab name (docs/specs/006-document/name-length.md). Shortened with

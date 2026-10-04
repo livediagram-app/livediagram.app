@@ -72,6 +72,14 @@ export const VIEW_REQUIRED: Readonly<Partial<Record<TabViewName, ViewQueryParame
   find: 'q',
 };
 
+// The bounds the api holds view queries to (VW53).
+// Above a full 10,000-element outline.
+export const VIEW_BUDGET_MAX = 1_000_000;
+// Above any stored id in practice.
+export const REF_INPUT_MAX_LENGTH = 256;
+// A phrase, not a document.
+export const FIND_QUERY_MAX_LENGTH = 200;
+
 export const UNKNOWN_VIEW_ERROR = 'unknown_view';
 export const INVALID_VIEW_VALUE_ERROR = 'invalid_value';
 

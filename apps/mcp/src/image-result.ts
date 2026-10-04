@@ -48,11 +48,13 @@ async function buildImageResolver(
 
 // `auth` (env + the caller's token) enables real image embedding; omit it to
 // render placeholders for image elements (the pre-embedding behaviour).
-export async function imageResult(
-  value: StructuredValue,
+export type ImageBlock = { type: 'image'; data: string; mimeType: string };
+
+// A PNG preview of the tab, its images and icons resolved as the editor draws them.
+export async function tabPreview(
   tab: Tab,
   auth?: { env: Env; token: string },
-): Promise<ToolResult> {
+): Promise<ImageBlock> {
   const resolveImageHref = auth ? await buildImageResolver(auth.env, auth.token, tab) : undefined;
   const png = await svgToPngBase64(
     renderElementsToSvg(tab, {
@@ -61,10 +63,15 @@ export async function imageResult(
       resolveStickerArt,
     }),
   );
+  return { type: 'image', data: png, mimeType: 'image/png' };
+}
+
+export async function imageResult(
+  value: StructuredValue,
+  tab: Tab,
+  auth?: { env: Env; token: string },
+): Promise<ToolResult> {
   // The structured result (and its text form) first, then the preview.
   const result = textResult(value);
-  return {
-    ...result,
-    content: [...result.content, { type: 'image', data: png, mimeType: 'image/png' }],
-  };
+  return { ...result, content: [...result.content, await tabPreview(tab, auth)] };
 }
