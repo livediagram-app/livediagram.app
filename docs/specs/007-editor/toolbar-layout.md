@@ -75,7 +75,10 @@ which moved things under the pointer after every add; it is gone, its stored lis
 
 Popular divides where its tiles' own groups do (after the Diamond), and the Icons / Stickers /
 Technology catalogues have none. A category
-has two at most. A divider shows only between two tiles both on the strip. They take room, about
+has two at most. A divider shows only between two tiles both on the strip, and on a phone's
+swiping strip only while a tile on each side of it is at least partly in view: scrolled to where
+the tiles after it are out of sight, it is hidden, never left standing at the strip's edge beside
+More's own divider (`useEdgeDividers`, re-checked as the strip scrolls or resizes). They take room, about
 a fifth of a tile each: a category that fits whole with them shows them; one whose tiles fit only
 without them drops them before any tile; one that overflows shows as many tiles as fit with their
 dividers between them, so a divider costs a tile only when the strip's spare part-tile can't hold
