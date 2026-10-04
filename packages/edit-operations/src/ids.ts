@@ -9,14 +9,9 @@ import { idTaken, invalidValue } from './rejections';
 import type { EditState } from './state';
 import { RESERVED_WORDS } from './vocabulary';
 
-// Every id an element of the tab holds or the changeset used, and every keyword.
-function takenIds(state: EditState): Set<string> {
-  return new Set([
-    ...state.before.keys(),
-    ...state.byId.keys(),
-    ...state.removed.keys(),
-    ...RESERVED_WORDS,
-  ]);
+// An id no one named: a slug of the label, or of the kind word, free among taken ids and keywords.
+export function mintId(state: EditState, label: string | undefined, kind: string): string {
+  return slugIdFor(label ?? '', kind, state.taken);
 }
 
 export function newElementId(
@@ -24,8 +19,8 @@ export function newElementId(
   { given, label, kind }: { given?: string; label?: string; kind: string },
   operation: number,
 ): string | EditRejection {
-  const taken = takenIds(state);
-  if (given === undefined) return slugIdFor(label ?? '', kind, taken);
+  if (given === undefined) return mintId(state, label, kind);
+  const taken = state.taken;
   if (!isSlugId(given) || RESERVED_WORDS.has(given))
     return invalidValue(
       operation,

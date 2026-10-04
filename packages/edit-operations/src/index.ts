@@ -9,12 +9,7 @@ export { applyEditOperations } from './apply';
 export { applyReplace } from './replace';
 export { formatResultFooter, formatResultLines } from './format-results';
 export { formatRejections } from './rejections';
-export {
-  APPLIED_OPERATION_NAMES,
-  EDIT_MAX_ERRORS,
-  EDIT_OPERATION_NAMES,
-  type EditOperationName,
-} from './vocabulary';
+export { EDIT_MAX_ERRORS, EDIT_OPERATION_NAMES, type EditOperationName } from './vocabulary';
 export type {
   AddElementOperation,
   AddKindOperation,

@@ -7,7 +7,6 @@ import {
   idTaken,
   invalidResult,
   invalidValue,
-  notAppliedOperation,
   parseError,
   tabLocked,
   tooLarge,
@@ -88,18 +87,6 @@ describe('rejection builders', () => {
       hint: 'did you mean set?',
     });
     expect(unknownOperation('paint', 1).hint).toBeUndefined();
-  });
-
-  it('unknown_operation for a later operation names what this build applies', () => {
-    expect(notAppliedOperation('move', 4)).toEqual({
-      code: 'unknown_operation',
-      operation: 4,
-      details: [
-        '"move" is not applied by this build: it applies add set rm',
-        'the rest of the vocabulary arrives with the full engine',
-      ],
-      hint: 'use add, set and rm, or send a replace',
-    });
   });
 
   it('parse_error names the member', () => {

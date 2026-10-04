@@ -14,7 +14,7 @@ import { describeElement, kindOf, labelOf } from './element-text';
 import { reachableFrom } from './graph-walk';
 import { nearestElements } from './nearest';
 import { currentElements, holdersOf, namingOf, noteTarget, refsOf, type EditState } from './state';
-import { isQuotedWord, tokeniseLine, unquotedPrefix, type Word } from './tokenise';
+import { hasQuotes, isQuotedWord, tokeniseLine, unquotedPrefix, type Word } from './tokenise';
 import { REJECTION_CANDIDATES_MAX, RESERVED_WORDS, SELECTOR_KEYS } from './vocabulary';
 
 // Keys whose value names one element.
@@ -74,6 +74,40 @@ export function parseSelector(selector: string): SelectorTerm[] | string {
     terms.push(term);
   }
   return terms;
+}
+
+// A bare word that names one element by itself: a ref or a quoted label, not a `key:value`, `~` or
+// `->` term and not a reserved word.
+export function isSingleWord(word: Word): boolean {
+  if (isQuotedWord(word)) return true;
+  if (hasQuotes(word) || RESERVED_WORDS.has(word.value)) return false;
+  return !/[:=~]|->/.test(word.value);
+}
+
+// What an operation that acts on many by nature (`wrap`, `layout`) acts on: each ref or quoted
+// label names exactly one element, and the other words of a selector together one or more. In
+// element order, each once.
+export function resolveMembers(
+  state: EditState,
+  selectors: readonly string[],
+  operation: number,
+): Resolved<{ els: readonly Element[] }> {
+  const ids = new Set<ElementId>();
+  for (const selector of selectors) {
+    const tokens = tokeniseLine(selector);
+    if ('error' in tokens) return resolveSelector(state, selector, operation);
+    const rest = tokens.words.filter((word) => !isSingleWord(word));
+    for (const word of tokens.words.filter(isSingleWord)) {
+      const one = resolveOne(state, word.raw, operation);
+      if ('rejection' in one) return one;
+      ids.add(one.el.id);
+    }
+    if (rest.length === 0) continue;
+    const some = resolveSome(state, rest.map((word) => word.raw).join(' '), operation, true);
+    if ('rejection' in some) return some;
+    for (const el of some.els) ids.add(el.id);
+  }
+  return { els: currentElements(state).filter((el) => ids.has(el.id)) };
 }
 
 // A selector as a refusal quotes it: as written when it is one quoted label, else in quotes.
@@ -174,6 +208,9 @@ function applyTerm(
   const word = (text: string) => resolveWord(state, text, operation);
   switch (term.kind) {
     case 'ref': {
+      // An exact id names its element outright, as resolveRef would.
+      const exact = state.byId.get(term.text);
+      if (exact) return { kept: candidates.includes(exact) ? [exact] : [] };
       const found = resolveRef(term.text, refsOf(state));
       if (found.kind === 'ambiguous')
         return {
@@ -259,7 +296,7 @@ export function resolveSelector(
   state: EditState,
   selector: string,
   operation: number,
-): Resolved<{ els: Element[] }> {
+): Resolved<{ els: readonly Element[] }> {
   const terms = parseSelector(selector);
   if (typeof terms === 'string')
     return {
@@ -303,7 +340,7 @@ export function resolveSome(
   selector: string,
   operation: number,
   all: boolean,
-): Resolved<{ els: Element[] }> {
+): Resolved<{ els: readonly Element[] }> {
   const resolved = resolveSelector(state, selector, operation);
   if ('rejection' in resolved) return resolved;
   const { els } = resolved;

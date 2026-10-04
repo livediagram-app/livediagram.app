@@ -1,5 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { autoLayoutElements, isLayoutCandidate, nodesLookUnplaced } from './auto-layout';
+import {
+  autoLayoutElements,
+  flowDirectionOf,
+  isLayoutCandidate,
+  nodesLookUnplaced,
+} from './auto-layout';
 import { createShape, createPinnedArrow } from './factories';
 import type { ArrowElement, BoxedElement, Element, ShapeElement } from './index';
 
@@ -202,5 +207,38 @@ describe('nodesLookUnplaced', () => {
         shape('c', 800, 0, 140, 60),
       ]),
     ).toBe(false);
+  });
+});
+
+describe('flowDirectionOf', () => {
+  it('reads down when the arrows run more vertically', () => {
+    expect(
+      flowDirectionOf([shape('a', 0, 0, 140, 60), shape('b', 20, 200, 140, 60), arrow('a', 'b')]),
+    ).toBe('TB');
+  });
+
+  it('reads right when the arrows run more horizontally', () => {
+    expect(
+      flowDirectionOf([shape('a', 0, 0, 140, 60), shape('b', 300, 20, 140, 60), arrow('a', 'b')]),
+    ).toBe('LR');
+  });
+
+  it('reads down without arrows', () => {
+    expect(flowDirectionOf([shape('a', 0, 0, 140, 60), shape('b', 300, 0, 140, 60)])).toBe('TB');
+  });
+
+  it('agrees with the direction autoLayoutElements lays out in', () => {
+    const els = [
+      shape('a', 0, 0, 140, 60),
+      shape('b', 300, 20, 140, 60),
+      shape('c', 600, 0, 140, 60),
+      arrow('a', 'b'),
+      arrow('b', 'c'),
+    ];
+    const out = autoLayoutElements(els)
+      .filter((el) => el.type !== 'arrow')
+      .map(box);
+    expect(flowDirectionOf(els)).toBe('LR');
+    expect(new Set(out.map((el) => el.y)).size).toBe(1);
   });
 });

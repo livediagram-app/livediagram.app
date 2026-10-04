@@ -102,9 +102,43 @@ export function applyElementOp(elements: Element[], op: ElementOp): Element[] {
   }
 }
 
-// Apply a sequence of ops in order (convenience for a whole commit's ops).
+// Apply a sequence of ops in order (a whole commit's ops): exactly `ops.reduce(applyElementOp, elements)`,
+// with runs of updates written through an index of ids rather than a pass over every element each, so a
+// changeset touching thousands of elements stays linear.
 export function applyElementOps(elements: Element[], ops: ElementOp[]): Element[] {
-  return ops.reduce(applyElementOp, elements);
+  let out = elements;
+  // Whether `out` is a copy this call made, safe to write into.
+  let owned = false;
+  let positions: Map<string, number[]> | null = null;
+  for (const op of ops) {
+    if (op.kind !== 'update') {
+      const next = applyElementOp(out, op);
+      owned ||= next !== out;
+      out = next;
+      positions = null;
+      continue;
+    }
+    positions ??= positionsOf(out);
+    const at = positions.get(op.element.id);
+    if (!at) continue;
+    if (!owned) {
+      out = out.slice();
+      owned = true;
+    }
+    for (const i of at) out[i] = preferNewerQa(out[i]!, op.element);
+  }
+  return out;
+}
+
+// Where each id sits, every place for an id held twice.
+function positionsOf(elements: readonly Element[]): Map<string, number[]> {
+  const positions = new Map<string, number[]>();
+  elements.forEach((el, i) => {
+    const known = positions.get(el.id);
+    if (known) known.push(i);
+    else positions.set(el.id, [i]);
+  });
+  return positions;
 }
 
 // The ops that undo `ops` applied to `before` (docs/specs/024-agents/agent-changesets.md "Revert"):

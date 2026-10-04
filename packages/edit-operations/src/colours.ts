@@ -64,3 +64,12 @@ export function resolveColourValue(
 
 export const isHexColour = (value: unknown): boolean =>
   typeof value === 'string' && HEX.test(value);
+
+// A fill as it reads: its slot's name when bound to one, else the colour.
+export function fillValue(el: Element, theme: ThemeDefinition): string | undefined {
+  const slot = Reflect.get(el, 'fillSwatch');
+  const swatch = quickSwatches(theme, 'fill').find((s) => s.slot !== 0 && s.slot === slot);
+  if (swatch) return slotName(swatch.name);
+  const colour = Reflect.get(el, 'fillColor');
+  return typeof colour === 'string' ? colour : undefined;
+}

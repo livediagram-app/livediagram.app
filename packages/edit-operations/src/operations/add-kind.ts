@@ -138,6 +138,22 @@ export function growInto(state: EditState, placed: Placed, operation: number): v
   touched.fit = { ...touched.fit, taller: [container.height, height] };
 }
 
+// A made element onto its layer, refused when that layer is locked, then added.
+export function commitNew(
+  state: EditState,
+  made: { el: BoxedElement; placed: Placed },
+  verb: 'add' | 'insert',
+  index: number,
+): EditRejection | null {
+  const layerId = made.el.layerId ?? layerFor(state, made.placed.ref);
+  const el = layerId === undefined ? made.el : { ...made.el, layerId };
+  const lock = layerLockOf(state.tab.layers, el.layerId);
+  if (lock) return refuseLocked(state, verb, index, el, lock);
+  writeFields(state, el, index, []);
+  state.created.push(el.id);
+  return null;
+}
+
 export function applyAddKind(
   state: EditState,
   operation: AddKindOperation,
@@ -147,12 +163,8 @@ export function applyAddKind(
     resolvePlacement(state, operation.place, size, new Set(), index);
   const made = createKind(state, operation, index, place);
   if ('rejection' in made) return made.rejection;
-  const layerId = made.el.layerId ?? layerFor(state, made.placed.ref);
-  const el = layerId === undefined ? made.el : { ...made.el, layerId };
-  const lock = layerLockOf(state.tab.layers, el.layerId);
-  if (lock) return refuseLocked(state, 'add', index, el, lock);
-  writeFields(state, el, index, []);
-  state.created.push(el.id);
+  const refused = commitNew(state, made, 'add', index);
+  if (refused) return refused;
   growInto(state, made.placed, index);
   return null;
 }

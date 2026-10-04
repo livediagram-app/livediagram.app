@@ -80,12 +80,12 @@ describe('validateEditOperations', () => {
         { op: 'add', element: {}, id: 'x' },
       ]).map((e) => e.details[0]),
     ).toEqual([
-      'add takes exactly one of "kind", "element"',
-      'add takes exactly one of "kind", "element"',
-      'move takes exactly one of "place", "by"',
-      'rewire takes exactly one of "from", "to"',
-      'order takes exactly one of "to", "above", "below"',
-      'wrap takes at most one of "absorb", "makeRoom"',
+      'add takes exactly one of "kind", "element" (in a line: add <kind> key=value…)',
+      'add takes exactly one of "kind", "element" (in a line: add <kind> key=value…)',
+      'move takes exactly one of "place", "by" (in a line: a placement such as below=n3, or by=dx,dy)',
+      'rewire takes exactly one of "from", "to" (in a line: from=<x> or to=<y>)',
+      'order takes exactly one of "to", "above", "below" (in a line: front, back, above=<x> or below=<x>)',
+      'wrap takes at most one of "absorb", "makeRoom" (in a line: absorb or make-room)',
       'add with "element" takes no "id": the element carries it',
     ]);
   });

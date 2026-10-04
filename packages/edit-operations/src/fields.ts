@@ -14,7 +14,7 @@ import {
   type Element,
   type ThemeDefinition,
 } from '@livediagram/document';
-import { isHexColour, resolveColourValue } from './colours';
+import { fillValue, isHexColour, resolveColourValue } from './colours';
 import { kindOf } from './element-text';
 import { applyLabel } from './labels';
 import { invalidValue, unknownField } from './rejections';
@@ -54,6 +54,21 @@ export function aliasesOf(el: Element): Alias[] {
         return el.type === 'arrow';
     }
   });
+}
+
+// The stored fields an alias writes under another name, so a ~ line prints the change under the name
+// the agent used.
+export const ALIAS_FIELDS: Readonly<Record<string, readonly string[]>> = {
+  fill: ['fillColor', 'fillSwatch'],
+  text: ['textSize'],
+  line: ['arrowStyle'],
+};
+
+// What an element holds under a field name, an alias read as it is written.
+export function fieldValue(el: Element, key: string, theme: ThemeDefinition): unknown {
+  if (key === 'fill') return fillValue(el, theme);
+  const stored = ALIAS_FIELDS[key];
+  return Reflect.get(el, stored ? stored[0]! : key);
 }
 
 export type FieldsWrite<T extends Element = Element> = {

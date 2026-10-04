@@ -17,9 +17,6 @@ export const EDIT_OPERATION_NAMES = [
 ] as const;
 export type EditOperationName = (typeof EDIT_OPERATION_NAMES)[number];
 
-// The operations this build applies; the others parse and are refused until they land.
-export const APPLIED_OPERATION_NAMES: readonly EditOperationName[] = ['add', 'set', 'rm'];
-
 // The members each operation's JSON form takes, `op` included.
 export const OPERATION_MEMBERS: Readonly<Record<EditOperationName, readonly string[]>> = {
   add: ['op', 'kind', 'id', 'fields', 'place', 'element'],

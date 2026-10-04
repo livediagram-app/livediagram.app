@@ -4,12 +4,12 @@
 // forms share one validation.
 
 import type { FieldValue } from './types';
-import { hasQuotes, isQuotedWord, unquotedPrefix, type Word } from './tokenise';
+import { hasQuotes, unquotedPrefix, type Word } from './tokenise';
+import { isSingleWord } from './selectors';
 import {
   EDIT_OPERATION_NAMES,
   FLAG_MEMBERS,
   PLACEMENT_RELATIONS,
-  RESERVED_WORDS,
   type EditOperationName,
   type FlagWord,
 } from './vocabulary';
@@ -95,14 +95,6 @@ const numbers = (text: string): [number, number] | null => {
   const pair = parts.map(Number);
   return pair.every(Number.isFinite) ? [pair[0]!, pair[1]!] : null;
 };
-
-// A bare word that names one element by itself: a ref or a quoted label, not a `key:value`, `~` or
-// `->` term and not a reserved word.
-export function isSingleWord(word: Word): boolean {
-  if (isQuotedWord(word)) return true;
-  if (hasQuotes(word) || RESERVED_WORDS.has(word.value)) return false;
-  return !/[:=~]|->/.test(word.value);
-}
 
 type Collected = {
   fields: Record<string, FieldValue>;

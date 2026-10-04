@@ -4,26 +4,11 @@
 // translates by the same delta. Pinned arrows follow by construction; finalise re-anchors them.
 
 import type { EditRejection } from '@livediagram/api-schema';
-import {
-  containerContents,
-  type Element,
-  type ElementId,
-  type Endpoint,
-} from '@livediagram/document';
-import { boxOf, resolvePlacement } from '../placement';
+import { containerContents, type Element, type ElementId } from '@livediagram/document';
+import { boxOf, resolvePlacement, shifted } from '../placement';
 import { resolveSome } from '../selectors';
 import { currentElements, moveElement, refuseLocked, type EditState, writeFields } from '../state';
 import type { MoveOperation } from '../types';
-
-const shiftEnd = (end: Endpoint, dx: number, dy: number): Endpoint =>
-  end.kind === 'free' ? { ...end, x: end.x + dx, y: end.y + dy } : end;
-
-// The element shifted by the delta: a box moves; an arrow moves its free ends.
-export function shifted(el: Element, dx: number, dy: number): Element {
-  if (el.type === 'arrow')
-    return { ...el, from: shiftEnd(el.from, dx, dy), to: shiftEnd(el.to, dx, dy) };
-  return { ...el, x: el.x + dx, y: el.y + dy };
-}
 
 // The bounding box of boxed elements, or null when none is boxed.
 export function boundsOf(
@@ -83,7 +68,7 @@ export function applyMove(
     const el = shifted(state.byId.get(id)!, dx, dy);
     if (named.has(id))
       writeFields(state, el, index, el.type === 'arrow' ? ['from', 'to'] : ['x', 'y']);
-    else moveElement(state, el, index, 'carried', [dx, dy]);
+    else moveElement(state, el, index, 'carried', { shift: [dx, dy] });
   }
   return null;
 }

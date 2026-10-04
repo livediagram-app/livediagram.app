@@ -13,7 +13,14 @@ import {
   type ShapeElement,
 } from '@livediagram/document';
 import { resolveSome } from '../selectors';
-import { type EditState, refsOf, refuseLocked, removeElement, writeFields } from '../state';
+import {
+  type EditState,
+  type Removal,
+  refsOf,
+  refuseLocked,
+  removeElement,
+  writeFields,
+} from '../state';
 import type { RmOperation } from '../types';
 
 const attachedTo = (end: Endpoint): ElementId | null =>
@@ -117,11 +124,13 @@ export function applyRm(
   return null;
 }
 
-function removeOne(
+// Removes one element with its cascade; `removal` says why it went when no operation named it.
+export function removeOne(
   state: EditState,
   el: Element,
   keep: boolean,
   operation: number,
+  removal: Removal = {},
 ): EditRejection | null {
   const targetLocked = lockRejection(state, el, operation);
   if (targetLocked) return targetLocked;
@@ -145,7 +154,7 @@ function removeOne(
     const { mindParentId: _removed, ...rest } = orphan;
     writeFields(state, rest, operation, ['mindParentId']);
   }
-  removeElement(state, el.id, operation, {});
+  removeElement(state, el.id, operation, removal);
   for (const [id, by] of pulled) removeElement(state, id, operation, { pinnedTo: by });
   return null;
 }

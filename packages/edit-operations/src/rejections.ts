@@ -11,7 +11,6 @@ import type { Element } from '@livediagram/document';
 import { describeElement, kindOf, labelOf, quoteCut } from './element-text';
 import { nearestName } from './nearest';
 import {
-  APPLIED_OPERATION_NAMES,
   DID_YOU_MEAN_MAX_DISTANCE,
   EDIT_OPERATION_NAMES,
   LABEL_CUT_CHARS,
@@ -47,19 +46,6 @@ export function unknownOperation(word: string, operation: number): EditRejection
     operation,
     details: [`"${word}" is not an operation`, `operations: ${EDIT_OPERATION_NAMES.join(' ')}`],
     ...didYouMean(word, EDIT_OPERATION_NAMES),
-  };
-}
-
-// A name of the vocabulary this build does not apply yet.
-export function notAppliedOperation(word: string, operation: number): EditRejection {
-  return {
-    code: 'unknown_operation',
-    operation,
-    details: [
-      `"${word}" is not applied by this build: it applies ${APPLIED_OPERATION_NAMES.join(' ')}`,
-      'the rest of the vocabulary arrives with the full engine',
-    ],
-    hint: 'use add, set and rm, or send a replace',
   };
 }
 
@@ -194,4 +180,61 @@ export function formatRejections(errors: readonly EditRejection[]): string[] {
     ...(rejection.hint ? [`  hint: ${rejection.hint}`] : []),
   ]);
   return [...lines, 'nothing was applied'];
+}
+
+// `connect a -> b` where an arrow a→b exists, without `again`.
+export function arrowExists(operation: number, ends: string, existing: string): EditRejection {
+  return {
+    code: 'arrow_exists',
+    operation,
+    details: [`${ends} already has an arrow:`, `  ${existing}`],
+    hint: 'add again for a second arrow, or set the existing one',
+  };
+}
+
+// `insert … between a b` with no a→b arrow: the arrows touching a and b, to choose from.
+export function notConnected(
+  operation: number,
+  ends: string,
+  touching: readonly string[],
+  a: string,
+  b: string,
+): EditRejection {
+  return {
+    code: 'not_connected',
+    operation,
+    details: [
+      `no arrow ${ends}`,
+      ...(touching.length ? ['arrows touching them:', ...touching.map((t) => `  ${t}`)] : []),
+    ],
+    hint: `connect ${a} -> ${b} first, or insert between the ends of one of these`,
+  };
+}
+
+// `wrap` would hold elements that are not its members.
+export function frameCaptures(
+  operation: number,
+  container: string,
+  bystanders: readonly string[],
+): EditRejection {
+  return {
+    code: 'frame_captures',
+    operation,
+    details: [`the ${container} would hold non-members:`, ...bystanders.map((b) => `  ${b}`)],
+    hint: 'add them to the members, or add absorb or make-room',
+  };
+}
+
+// `test` found a value other than the one it expected.
+export function testFailed(
+  operation: number,
+  failures: readonly string[],
+  ref: string,
+): EditRejection {
+  return {
+    code: 'test_failed',
+    operation,
+    details: [...failures],
+    hint: `re-read ${ref}: it changed since you read it`,
+  };
 }

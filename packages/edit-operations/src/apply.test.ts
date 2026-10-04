@@ -287,9 +287,3 @@ describe('applyEditOperations', () => {
     });
   });
 });
-
-describe('operations not applied yet', () => {
-  it('refuses them by name', () => {
-    expect(refused(run([{ op: 'unwrap', target: 'f2' }])).details[0]).toContain('"unwrap"');
-  });
-});

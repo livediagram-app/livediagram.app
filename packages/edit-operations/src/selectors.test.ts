@@ -98,6 +98,8 @@ describe('selector rows', () => {
   it('every term must match', () => {
     expect(ids('type:square label~c')).toEqual(['n2', 'n5', 'n7']);
     expect(ids('n3 type:diamond')).toEqual([]);
+    expect(ids('type:diamond n3')).toEqual([]);
+    expect(ids('type:square n3')).toEqual(['n3']);
   });
 });
 

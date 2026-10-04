@@ -14,11 +14,18 @@ import {
 import { finalise } from './finalise';
 import { applyAdd } from './operations/add';
 import { applyAddKind } from './operations/add-kind';
+import { applyConnect, applyRewire } from './operations/connect';
+import { applyInsert } from './operations/insert';
+import { applyLayout } from './operations/layout';
 import { applyMove } from './operations/move';
+import { applyOrder } from './operations/order';
+import { applyTest } from './operations/test-fields';
+import { applyUnwrap } from './operations/unwrap';
+import { applyWrap } from './operations/wrap';
 import { applyRm } from './operations/rm';
 import { applySet } from './operations/set';
 import { buildResultLines } from './results';
-import { notAppliedOperation, tabLocked, tooLarge } from './rejections';
+import { tabLocked, tooLarge } from './rejections';
 import { createState, type EditState } from './state';
 import type { ApplyOptions, ApplyOutcome, EditLog, EditOperation } from './types';
 
@@ -40,8 +47,22 @@ function applyOperation(
       return applyRm(state, operation, index);
     case 'move':
       return applyMove(state, operation, index);
-    default:
-      return notAppliedOperation(operation.op, index);
+    case 'connect':
+      return applyConnect(state, operation, index);
+    case 'rewire':
+      return applyRewire(state, operation, index);
+    case 'insert':
+      return applyInsert(state, operation, index);
+    case 'unwrap':
+      return applyUnwrap(state, operation, index);
+    case 'order':
+      return applyOrder(state, operation, index);
+    case 'test':
+      return applyTest(state, operation, index);
+    case 'layout':
+      return applyLayout(state, operation, index);
+    case 'wrap':
+      return applyWrap(state, operation, index);
   }
 }
 

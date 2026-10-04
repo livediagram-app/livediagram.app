@@ -9,6 +9,7 @@ import {
   FRAME_TOP,
   isContainer,
   type Element,
+  type Endpoint,
   type ElementId,
 } from '@livediagram/document';
 import { resolveOne } from './selectors';
@@ -27,6 +28,16 @@ export type Placed = {
   // A container `inside:` had to grow to hold the element (EO27).
   grow?: { container: Element; height: number };
 };
+
+const shiftEnd = (end: Endpoint, dx: number, dy: number): Endpoint =>
+  end.kind === 'free' ? { ...end, x: end.x + dx, y: end.y + dy } : end;
+
+// The element shifted by the delta: a box moves; an arrow moves its free ends.
+export function shifted(el: Element, dx: number, dy: number): Element {
+  if (el.type === 'arrow')
+    return { ...el, from: shiftEnd(el.from, dx, dy), to: shiftEnd(el.to, dx, dy) };
+  return { ...el, x: el.x + dx, y: el.y + dy };
+}
 
 export const boxOf = (el: Element): Box | null =>
   el.type === 'arrow' ? null : { x: el.x, y: el.y, width: el.width, height: el.height };

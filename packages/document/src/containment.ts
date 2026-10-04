@@ -84,7 +84,10 @@ function mindParents(elements: readonly Element[]): Map<ElementId, ElementId> {
 // strictly greater area holding its centre (earlier on a tie), else null for the root.
 export function deriveContainers(elements: readonly Element[]): Map<ElementId, ElementId | null> {
   const parents = mindParents(elements);
-  const containers = elements.filter(hasGeometry).filter(isContainerShape);
+  const byArea = elements
+    .filter(hasGeometry)
+    .filter(isContainerShape)
+    .sort((a, b) => areaOf(a) - areaOf(b));
   const result = new Map<ElementId, ElementId | null>();
   for (const el of elements) {
     if (el.type === 'arrow') continue;
@@ -99,8 +102,10 @@ export function deriveContainers(elements: readonly Element[]): Map<ElementId, E
       continue;
     }
     const area = areaOf(el);
-    const larger = containers.filter((c) => c !== el && areaOf(c) > area);
-    result.set(id, smallestHolder(boxCentre(el), larger)?.id ?? null);
+    const centre = boxCentre(el);
+    // Ascending area, the earlier first on a tie: the first holder found is the smallest.
+    const holder = byArea.find((c) => areaOf(c) > area && boxHoldsPoint(c, centre));
+    result.set(id, holder?.id ?? null);
   }
   return result;
 }
@@ -125,12 +130,14 @@ export function isContainer(el: Element): boolean {
 export function containerContents(
   elements: readonly Element[],
   ids: ReadonlySet<ElementId>,
+  // `deriveContainers(elements)`, when the caller already has it.
+  known?: ReadonlyMap<ElementId, ElementId | null>,
 ): ReadonlySet<ElementId> {
   const moved = new Set(
     elements.filter((el) => ids.has(el.id) && isContainer(el)).map((el) => el.id),
   );
   if (moved.size === 0) return ids;
-  const holders = deriveContainers(elements);
+  const holders = known ?? deriveContainers(elements);
   const carried = new Map<ElementId, boolean>();
   // Whether the chain of holders from `id` reaches a moved container. Chains end: each holder is
   // strictly larger, and mind-map loops are broken (deriveContainers).

@@ -9,7 +9,6 @@ import type { EditWarning, FieldChange, JsonValue, ResultLine } from '@livediagr
 import {
   computeRefs,
   deriveContainers,
-  quickSwatches,
   type ArrowElement,
   type Element,
   type ElementId,
@@ -18,7 +17,9 @@ import {
 import type { Fit } from './labels';
 import { endRef, kindOf, labelOf } from './element-text';
 import { sameValue as same } from './equality';
-import type { MoveReason, Removal } from './state';
+import { ALIAS_FIELDS } from './fields';
+import { fillValue } from './colours';
+import type { LaidOut, MoveReason, Removal, Touch } from './state';
 
 // How a result names elements and places points: by ref, relative to the content origin.
 export type LineNaming = { refOf: (id: ElementId) => string; origin: { x: number; y: number } };
@@ -30,7 +31,7 @@ const pointIn = (naming: LineNaming, x: number, y: number): [number, number] => 
 const size = (w: number, h: number): [number, number] => [Math.round(w), Math.round(h)];
 
 // The `+` line of a new element.
-export function addedLine(el: Element, naming: LineNaming): ResultLine {
+export function addedLine(el: Element, naming: LineNaming): Extract<ResultLine, { mark: '+' }> {
   const label = labelOf(el);
   const ref = naming.refOf(el.id);
   const common = { mark: '+' as const, ref, kind: kindOf(el), ...(label ? { label } : {}) };
@@ -52,7 +53,9 @@ export function removedLine(el: Element, naming: LineNaming, removal: Removal = 
       : {}),
     ...(removal.pinnedTo
       ? { reason: 'pinned' as const, pinnedTo: naming.refOf(removal.pinnedTo) }
-      : {}),
+      : removal.unwrapped
+        ? { reason: 'unwrapped' as const }
+        : {}),
   };
 }
 
@@ -84,22 +87,6 @@ function rankOf(change: FieldChange, written: readonly string[]): number {
   const keys = change.key === 'at' ? ['x', 'y'] : [change.key, ...aliasesWriting(change.key)];
   const ranks = keys.map((key) => written.indexOf(key)).filter((rank) => rank >= 0);
   return ranks.length ? Math.min(...ranks) : written.length;
-}
-
-// The stored fields an alias writes, so a ~ line prints the change under the name the agent used.
-const ALIAS_FIELDS: Readonly<Record<string, readonly string[]>> = {
-  fill: ['fillColor', 'fillSwatch'],
-  text: ['textSize'],
-  line: ['arrowStyle'],
-};
-
-// A fill as it reads: its slot's name when bound to one, else the colour.
-function fillValue(el: Element, theme: ThemeDefinition): JsonValue | undefined {
-  const slot = Reflect.get(el, 'fillSwatch');
-  const swatch = quickSwatches(theme, 'fill').find((s) => s.slot !== 0 && s.slot === slot);
-  if (swatch) return swatch.name.toLowerCase().replace(/\s+/g, '-');
-  const colour = Reflect.get(el, 'fillColor');
-  return typeof colour === 'string' ? colour : undefined;
 }
 
 // Changes under the aliases written, and fit to label as `widened` / `taller`.
@@ -185,10 +172,7 @@ export type ResultSource = {
   // The input tab's elements, in order.
   beforeElements: readonly Element[];
   // Ids in the order operations first touched them, with the fields they wrote.
-  touched: ReadonlyMap<
-    ElementId,
-    { written: readonly string[]; fit?: Fit; moved?: MoveReason; shift?: [number, number] }
-  >;
+  touched: ReadonlyMap<ElementId, Omit<Touch, 'operation'>>;
   removed: ReadonlyMap<ElementId, Removal>;
   warnings: readonly EditWarning[];
   theme: ThemeDefinition;
@@ -216,29 +200,31 @@ function movedLines(
 ): ResultLine[] {
   const groups = new Map<
     string,
-    { delta?: [number, number]; reason: MoveReason; ids: Set<ElementId> }
+    { delta?: [number, number]; reason: MoveReason; layout?: LaidOut; ids: Set<ElementId> }
   >();
   for (const [id, touched] of source.touched) {
-    if (!touched.moved || !after.has(id)) continue;
+    const now = after.get(id);
+    if (!touched.moved || !now) continue;
     const delta: [number, number] | undefined = touched.shift
       ? [Math.round(touched.shift[0]), Math.round(touched.shift[1])]
       : undefined;
-    // Moved and moved back.
-    if (delta && delta[0] === 0 && delta[1] === 0) continue;
-    const key = `${delta?.join(',') ?? ''},${touched.moved}`;
+    // Moved and moved back, or laid out where it was.
+    if (delta ? delta[0] === 0 && delta[1] === 0 : same(source.before.get(id), now)) continue;
+    const { moved: reason, layout } = touched;
+    const key = JSON.stringify([delta, reason, layout]);
     const group = groups.get(key) ?? {
       ...(delta ? { delta } : {}),
-      reason: touched.moved,
+      reason,
+      ...(layout ? { layout } : {}),
       ids: new Set<ElementId>(),
     };
     group.ids.add(id);
     groups.set(key, group);
   }
-  return [...groups.values()].map(({ delta, reason, ids }) => ({
+  return [...groups.values()].map(({ ids, ...line }) => ({
     mark: '»' as const,
     refs: next.filter((el) => ids.has(el.id)).map((el) => naming.refOf(el.id)),
-    ...(delta ? { delta } : {}),
-    reason,
+    ...line,
   }));
 }
 
@@ -279,8 +265,10 @@ export function buildResultLines(source: ResultSource, next: readonly Element[])
   for (const [id, touched] of source.touched) {
     const { written } = touched;
     const [prev, cur] = [source.before.get(id), after.get(id)];
-    if (cur && !prev) lines.push(addedLine(cur, naming));
-    else if (prev && !cur) lines.push(removedLine(prev, naming, source.removed.get(id)));
+    if (cur && !prev) {
+      const line = addedLine(cur, naming);
+      lines.push(touched.styleOf ? { ...line, styleOf: naming.refOf(touched.styleOf) } : line);
+    } else if (prev && !cur) lines.push(removedLine(prev, naming, source.removed.get(id)));
     else if (prev && cur && !touched.moved) {
       const changes = aliasChanges(
         fieldChanges(prev, cur, written, naming),
@@ -289,7 +277,9 @@ export function buildResultLines(source: ResultSource, next: readonly Element[])
         touched,
         source.theme,
       );
-      if (changes.length) lines.push({ mark: '~', ref: naming.refOf(id), changes });
+      const ordered = touched.ordered ? [{ key: 'order', to: touched.ordered }] : [];
+      if (changes.length + ordered.length)
+        lines.push({ mark: '~', ref: naming.refOf(id), changes: [...changes, ...ordered] });
     }
   }
   return [
