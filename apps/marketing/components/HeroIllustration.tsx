@@ -1,6 +1,6 @@
 'use client';
 
-// Animated hero: five editor windows on a sliding stage (docs/specs/019-marketing/marketing-site.md
+// Animated hero: six editor windows on a sliding stage (docs/specs/019-marketing/marketing-site.md
 // "Hero"), the launch window then one per editor mode, each showing its mode in action.
 //   1. Your canvas — the launch window (hero-launch.tsx): a fresh, empty,
 //      private document. While centred, a click grows it to fill the screen
@@ -10,10 +10,13 @@
 //      coloured, a sticky question and a database wired in (hero-diagram-board.tsx).
 //   3. Draw — a retro whiteboard: a title underlined in marker, stickies, the highlighter, a
 //      teammate's blue marker ringing the best note, and a doodle (hero-draw-board.tsx).
-//   4. Infographic (Illustrate mode) — two pages laid out side by side: stats, a growing bar
+//   4. Mind map — a launch plan grown from the centre: four colour-coded branches on tapered
+//      curves, ideas sprouting on underlines as Tab and Enter add them, a teammate filling a
+//      branch, a rocket sticker (hero-mindmap-board.tsx).
+//   5. Infographic (Illustrate mode) — two pages laid out side by side: stats, a growing bar
 //      chart and a filling donut on one, a roadmap and a pull quote on the next
 //      (hero-illustrate-page.tsx).
-//   5. Article (Illustrate mode) — an article page written line by line, with a header image, a
+//   6. Article (Illustrate mode) — an article page written line by line, with a header image, a
 //      heading and a pull quote, and a phrase set in bold from the rich-text toolbar
 //      (hero-article-page.tsx).
 // Every window is in the Toolbar panel layout, its strip wearing its mode: the mode switch and
@@ -40,6 +43,7 @@ import { DiagramBoard } from './hero-diagram-board';
 import { DrawBoard } from './hero-draw-board';
 import { ArticlePage } from './hero-article-page';
 import { InfographicPages } from './hero-illustrate-page';
+import { MindMapBoard } from './hero-mindmap-board';
 import type { HeroMode } from './hero-mode-palette';
 import { snapStage } from '@/lib/hero-stage';
 import { EditorWindow, type TabDef } from './hero-editor-window';
@@ -106,6 +110,17 @@ const CARDS: {
     tabs: [
       { name: 'Went well', color: '#10b981', active: true },
       { name: 'To improve', color: '#f59e0b' },
+    ],
+    shared: true,
+  },
+  {
+    key: 'mindmap',
+    title: 'Launch plan',
+    label: 'Mind map: grow ideas out from the centre, one Tab at a time',
+    mode: 'diagram',
+    tabs: [
+      { name: 'Ideas', color: '#0ea5e9', active: true },
+      { name: 'Actions', color: '#10b981' },
     ],
     shared: true,
   },
@@ -193,6 +208,8 @@ export function HeroIllustration() {
               const playing = i === active;
               const liveDoc = c.launch ? null : c.mode === 'draw' ? (
                 <DrawBoard />
+              ) : c.key === 'mindmap' ? (
+                <MindMapBoard />
               ) : c.key === 'article' ? (
                 <ArticlePage />
               ) : c.key === 'infographic' ? (

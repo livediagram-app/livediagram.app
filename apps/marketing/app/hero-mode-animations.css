@@ -388,3 +388,35 @@
     opacity: 1;
   }
 }
+
+/* --- The Mind Map window (components/hero-mindmap-board.tsx) --- */
+
+/* A key press: the keycap chip shows for a beat, then goes. */
+.hm-press {
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: hm-press 0.5s ease-out var(--d, 0s) both;
+}
+@keyframes hm-press {
+  0% {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  20%,
+  70% {
+    opacity: 1;
+    transform: none;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+.hero-static .hm-press {
+  display: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hm-press {
+    display: none;
+  }
+}

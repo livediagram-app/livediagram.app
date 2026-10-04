@@ -13,7 +13,7 @@ import { PROMISES, type Promise, type PromiseId } from '@/lib/promises';
 import { CollaboratorPointer } from './hero-illustration-glyphs';
 
 // The promises (docs/specs/019-marketing/marketing-site.md "Promises"), between the hero and the
-// template gallery, told the way the product tells things: as a diagram on a canvas. A
+// template gallery, under "Built with your values in mind", told the way the product tells things: as a diagram on a canvas. A
 // "livediagram" hub sits in the middle of a dotted canvas, with the five promises as nodes around
 // it (Completely Free, No Account Needed, Open Source, Private by Design, Real-Time Collaboration),
 // each a card with its value set large in its own hue. When the canvas scrolls into view the hub
@@ -30,10 +30,9 @@ type Look = {
   stroke: string;
   chip: string;
   value: string;
-  // Where the node sits on the wide canvas (its centre, in the 1000 x 520 layout box), and where its
-  // connector meets it.
+  // Where the node sits on the wide canvas: its centre, in the 1000 x 520 layout box. Its connector
+  // runs to that centre, under the card, so the line meets the card's edge at any width.
   at: { x: number; y: number };
-  dock: { x: number; y: number };
 };
 
 const LOOK: Record<PromiseId, Look> = {
@@ -43,7 +42,6 @@ const LOOK: Record<PromiseId, Look> = {
     chip: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-300',
     value: 'text-emerald-600 dark:text-emerald-300',
     at: { x: 165, y: 118 },
-    dock: { x: 307, y: 118 },
   },
   'no-account': {
     Icon: lucideGlyph(lucideUserX, 20),
@@ -51,7 +49,6 @@ const LOOK: Record<PromiseId, Look> = {
     chip: 'bg-amber-50 text-amber-600 dark:bg-amber-500/15 dark:text-amber-300',
     value: 'text-amber-600 dark:text-amber-300',
     at: { x: 165, y: 392 },
-    dock: { x: 307, y: 392 },
   },
   'open-source': {
     Icon: lucideGlyph(lucideGitFork, 20),
@@ -59,7 +56,6 @@ const LOOK: Record<PromiseId, Look> = {
     chip: 'bg-sky-50 text-sky-600 dark:bg-sky-500/15 dark:text-sky-300',
     value: 'text-sky-600 dark:text-sky-300',
     at: { x: 835, y: 118 },
-    dock: { x: 693, y: 118 },
   },
   private: {
     Icon: lucideGlyph(lucideEyeOff, 20),
@@ -67,7 +63,6 @@ const LOOK: Record<PromiseId, Look> = {
     chip: 'bg-rose-50 text-rose-600 dark:bg-rose-500/15 dark:text-rose-300',
     value: 'text-rose-600 dark:text-rose-300',
     at: { x: 835, y: 392 },
-    dock: { x: 693, y: 392 },
   },
   live: {
     Icon: lucideGlyph(lucideUsers, 20),
@@ -75,7 +70,6 @@ const LOOK: Record<PromiseId, Look> = {
     chip: 'bg-violet-50 text-violet-600 dark:bg-violet-500/15 dark:text-violet-300',
     value: 'text-violet-600 dark:text-violet-300',
     at: { x: 500, y: 428 },
-    dock: { x: 500, y: 368 },
   },
 };
 
@@ -93,7 +87,7 @@ const BOX = { w: 1000, h: 520 };
 // A smooth connector from the hub to a node: out horizontally, then in.
 function connectorPath(id: PromiseId) {
   const a = HUB_EDGE[id];
-  const b = LOOK[id].dock;
+  const b = LOOK[id].at;
   if (id === 'live') return `M${a.x} ${a.y} L${b.x} ${b.y}`;
   const mid = (a.x + b.x) / 2;
   return `M${a.x} ${a.y} C${mid} ${a.y}, ${mid} ${b.y}, ${b.x} ${b.y}`;
@@ -142,7 +136,7 @@ export function PromiseCanvas() {
             id="promises-heading"
             className="mt-3 text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl dark:text-slate-100"
           >
-            There isn&rsquo;t any small print.
+            Built with your values in mind
           </h2>
           <p className="mt-4 text-lg leading-relaxed text-slate-600 dark:text-slate-300">
             livediagram is free, open and private for everyone, and it stays that way.

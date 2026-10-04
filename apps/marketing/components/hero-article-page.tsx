@@ -16,7 +16,7 @@ const MUTED = '#64748b';
 const BRAND = '#0ea5e9';
 
 // The page: A4 portrait at the mock's scale.
-const PAGE = { x: 85, y: -46, w: 210, h: 297 };
+const PAGE = { x: 85, y: -24, w: 210, h: 297 };
 // The gap between pages in the row.
 const PAGE_GAP = 30;
 
