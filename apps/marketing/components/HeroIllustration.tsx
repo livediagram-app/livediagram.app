@@ -4,6 +4,8 @@
 // "Hero"): an overview first, then the modes in action.
 //   0. Overview — a bare board (no editor chrome), one named frame per mode window, each drawing
 //      its scene settled; pressing a frame moves the stage to that window (hero-overview.tsx).
+//      A returning visitor sees Welcome back here instead: their six most recent diagrams and a
+//      link to Explorer Home (hero-recent.tsx, docs/specs/019-marketing/returning-visitor.md).
 //   2. Diagram — two people map a sign-up flow in a frame: steps dropped and labelled, arrows
 //      joined, a branch and a loop added by a teammate, a step snapped onto an alignment guide and
 //      coloured, a sticky question and a database wired in (hero-diagram-board.tsx).
@@ -53,6 +55,8 @@ import type { HeroMode } from './hero-mode-palette';
 import { snapStage } from '@/lib/hero-stage';
 import { pinHeroWord } from '@/lib/hero-word-pin';
 import { HeroOverview, type OverviewScene } from './hero-overview';
+import { EXPLORER_HOME_HREF, HeroRecent } from './hero-recent';
+import { useRecentDiagrams } from './useRecentDiagrams';
 import { EditorWindow, type TabDef } from './hero-editor-window';
 import { useStageBox } from './useStageBox';
 
@@ -183,6 +187,9 @@ const OVERVIEW_SCENES: OverviewScene[] = CARDS.filter((c) => c.short).map((c) =>
   mode: c.mode,
 }));
 
+// What the dot navigation says about the first window when it is a returning visitor's Welcome back.
+const RECENT_LABEL = 'Welcome back: your recent diagrams, one press away';
+
 // The overview holds longer than a build cycle: it is where a visitor picks what to watch.
 const OVERVIEW_DWELL_MS = 24000;
 
@@ -209,6 +216,9 @@ export function HeroIllustration() {
     setActive(i);
   };
   const portrait = useMediaQuery(PHONE);
+  // A returning visitor's recent diagrams (null for a new one): the first window becomes Welcome back.
+  const recent = useRecentDiagrams();
+  const labelOf = (c: (typeof CARDS)[number]) => (c.overview && recent ? RECENT_LABEL : c.label);
   const card = portrait ? CARD_NARROW : CARD_WIDE;
 
   // Auto-advance one window per build cycle; reset whenever `active` changes
@@ -220,13 +230,16 @@ export function HeroIllustration() {
   // announced only then (an announcement every cycle would talk over the page).
   const [held, setHeld] = useState(false);
   // The overview holds longer (OVERVIEW_DWELL_MS): it is where a visitor picks what to watch.
+  // Welcome back never moves on by itself: a returning visitor came for their diagrams, so the stage
+  // stays on them until the visitor moves it (docs/specs/019-marketing/returning-visitor.md).
+  const stay = !!recent && !!CARDS[active]?.overview;
   useEffect(() => {
-    if (reduceMotion || held) return;
+    if (reduceMotion || held || stay) return;
     const card = CARDS[active];
     const dwell = card?.overview ? OVERVIEW_DWELL_MS : CYCLE_MS;
     const id = window.setTimeout(() => show((active + 1) % CARDS.length), dwell);
     return () => window.clearTimeout(id);
-  }, [active, reduceMotion, held]);
+  }, [active, reduceMotion, held, stay]);
 
   // The headline holds the centred window's word; the overview lets it cycle.
   useEffect(() => {
@@ -322,12 +335,16 @@ export function HeroIllustration() {
                       if (!playing) show(i);
                     }}
                     style={{ width: cardWidth }}
-                    className={`cursor-pointer ${cardClassName}`}
+                    className={`${playing ? '' : 'cursor-pointer '}${cardClassName}`}
                   >
-                    <HeroOverview
-                      scenes={OVERVIEW_SCENES}
-                      onOpen={(key) => show(CARDS.findIndex((k) => k.key === key))}
-                    />
+                    {recent ? (
+                      <HeroRecent diagrams={recent} playing={playing} onCentre={() => show(i)} />
+                    ) : (
+                      <HeroOverview
+                        scenes={OVERVIEW_SCENES}
+                        onOpen={(key) => show(CARDS.findIndex((k) => k.key === key))}
+                      />
+                    )}
                   </div>
                 );
               }
@@ -381,11 +398,13 @@ export function HeroIllustration() {
           window so a visitor moves between them at their own pace (the
           auto-advance timer resets on each choice). */}
       <div className="mt-6 flex flex-col items-center gap-3">
+        {/* The overview's caption is hidden, like its frames, while <html data-returning> says Jump
+            back in is about to take its place (hero-animations.css), so it never flashes either. */}
         <p
-          className="text-sm text-slate-500 dark:text-slate-400"
+          className={`text-sm text-slate-500 dark:text-slate-400 ${current.overview && !recent ? 'hero-overview-label' : ''}`}
           aria-live={held ? 'polite' : 'off'}
         >
-          {current.label}
+          {labelOf(current)}
         </p>
         {/* The stage is decorative, so its Build yours buttons are out of reach of a keyboard or a
             screen reader; this is the same link for the centred window, shown when focused. */}
@@ -397,6 +416,15 @@ export function HeroIllustration() {
             Build your own {current.short?.toLowerCase()}
           </a>
         ) : null}
+        {/* Welcome back's way to everything else, for the same keyboard and screen-reader reach. */}
+        {current.overview && recent ? (
+          <a
+            href={EXPLORER_HOME_HREF}
+            className="sr-only rounded-md text-sm font-semibold text-brand-700 focus:not-sr-only focus:px-2 focus:py-1 dark:text-brand-300"
+          >
+            Open Explorer Home
+          </a>
+        ) : null}
         {/* Each dot sits in a 24px-tall hit area; the overview's is always a small grid, a little
             larger (in brand while it is showing), so the way back to it is easy to find and hit. */}
         <div className="flex items-center" role="group" aria-label="Hero examples">
@@ -404,7 +432,7 @@ export function HeroIllustration() {
             <button
               key={c.key}
               type="button"
-              aria-label={c.label}
+              aria-label={labelOf(c)}
               aria-current={i === active}
               onClick={() => show(i)}
               className="group/dot flex h-6 items-center justify-center rounded-full px-1 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-brand-500"

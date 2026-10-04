@@ -269,3 +269,28 @@
     visibility: hidden;
   }
 }
+
+/* Returning visitor (docs/specs/019-marketing/returning-visitor.md): the <head> script marks
+   <html data-returning> before first paint when this browser holds a recent-diagrams note, so the
+   overview's frames stay hidden (their space kept) until Welcome back draws in their place, and a
+   returning visitor never sees them flash. Each tile's thumbnail fades in as the cache answers. */
+[data-returning] .hero-overview-frames,
+[data-returning] .hero-overview-label {
+  visibility: hidden;
+}
+
+.hero-recent-thumb {
+  animation: hero-recent-thumb-in 240ms ease-out both;
+}
+
+@keyframes hero-recent-thumb-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-recent-thumb {
+    animation: none;
+  }
+}

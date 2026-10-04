@@ -10,47 +10,13 @@
 //   formatRelativeTimeCompact  — ultra-compact ("2m ago"), comment threads.
 //   formatTimeLeftCompact      — the forward-looking countdown ("6d left")
 //                                for expiring share links (docs/specs/013-workspace/share-link-expiry.md).
-// The first two share their ladder; see relativeLadder below.
+// The first two share their ladder, in @livediagram/ui (relative-time.ts).
 
 import { useSyncExternalStore } from 'react';
 
-// The ladder both the verbose and the compact formatter walk. They agreed on
-// every rung from one minute up — the same singular cases, the same
-// 'yesterday' — and differed only in how they word seconds and plural
-// minutes, so those two are arguments and everything else is shared. Written
-// out twice, a later change to (say) the day boundary lands in one copy.
-function relativeLadder(
-  deltaMs: number,
-  secs: (n: number) => string,
-  mins: (n: number) => string,
-): string {
-  const seconds = Math.floor(deltaMs / 1000);
-  if (seconds < 5) return 'just now';
-  if (seconds < 60) return secs(seconds);
-  const minutes = Math.floor(seconds / 60);
-  if (minutes === 1) return '1 min ago';
-  if (minutes < 60) return mins(minutes);
-  const hours = Math.floor(minutes / 60);
-  if (hours === 1) return '1 hour ago';
-  if (hours < 24) return `${hours} hours ago`;
-  const days = Math.floor(hours / 24);
-  if (days === 1) return 'yesterday';
-  return `${days} days ago`;
-}
-
-export function formatRelativeTime(deltaMs: number): string {
-  return relativeLadder(
-    deltaMs,
-    (n) => `${n} secs ago`,
-    (n) => `${n} mins ago`,
-  );
-}
-
-// Verbose relative time elapsed since a past timestamp, at `now`: the instant from useRelativeNow()
-// in a component, so render stays pure and every row on the page agrees.
-export function relativeSince(timestamp: number, now: number): string {
-  return formatRelativeTime(now - timestamp);
-}
+// The verbose and short ladders (and relativeSince) live in @livediagram/ui, so the landing page's
+// Welcome back tiles (docs/specs/019-marketing/returning-visitor.md) read exactly as the app's rows do.
+export { formatRelativeTime, formatRelativeTimeShort, relativeSince } from '@livediagram/ui';
 
 // Forward-looking compact countdown ("6d left" / "3h left"), used by
 // the Share dialog's expiring-link rows (docs/specs/013-workspace/share-link-expiry.md). Zero or negative
@@ -79,14 +45,6 @@ export function formatRelativeTimeCompact(deltaMs: number): string {
   if (hours < 24) return `${hours}h ago`;
   const days = Math.floor(hours / 24);
   return `${days}d ago`;
-}
-
-export function formatRelativeTimeShort(deltaMs: number): string {
-  return relativeLadder(
-    deltaMs,
-    (n) => `${n}s ago`,
-    (n) => `${n} min ago`,
-  );
 }
 
 // The clock relative-time strings read: the instant of the latest shared tick, every 30 seconds
