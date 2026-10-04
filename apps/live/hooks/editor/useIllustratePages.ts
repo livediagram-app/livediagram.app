@@ -104,7 +104,8 @@ export function useIllustratePages(deps: {
   // Frames a page (the first by default) below a top strip, seen whole, whatever its kind. The fit
   // box holds either orientation, so turning a page needs no refit. `read` frames an article page
   // to be written on a phone instead: its text column across the screen.
-  // A page framed on request (its navigator, its label, a page just added) glides there; the frame
+  // A page framed on request (its navigator, its label, a page just added, an article page taking
+  // the caret on a phone) glides there; the frame
   // on entering the mode lands at once. A glide under way gives way to the next.
   const glide = useRef<(() => void) | null>(null);
   useEffect(() => () => glide.current?.(), []);
@@ -207,6 +208,7 @@ export function useIllustratePages(deps: {
   const readPage = (pageId: string) =>
     frame(
       pages.find((p) => p.id === pageId),
+      true,
       true,
     );
   const panFrom = () => {

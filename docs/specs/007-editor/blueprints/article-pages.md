@@ -441,7 +441,9 @@ caret)`; `syncArticlePeople(participants)` names and colours carets and drops th
 - **Present** (`presentedPages`): the view narrowed to the page, `rowPages` the whole row (the
   writing lays out across all its pages), `articles.editable: false`.
 - **Phone framing**: `ArticleFlows` calls `view.readPage(pageId)` once each time the writing takes
-  focus on a phone (`computeReadingFrame` with the margin, so the column fills the width).
+  focus on a phone (`computeReadingFrame` with the margin, so the column fills the width), gliding
+  there (`glideViewport`, `VIEW_GLIDE_MS`; at once under reduced motion); a finger's pan
+  (`panFrom`) stops a glide under way.
 - **Isometric**: `ArticleFlows` is not mounted (`canvasTool !== 'isometric'`).
 
 ## Interfaces and contracts

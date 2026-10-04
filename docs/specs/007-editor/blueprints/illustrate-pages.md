@@ -137,7 +137,8 @@ Returns null outside a page look (`hasPageLook(mode)`), else `IllustratePagesVie
 `pages` (laid out), `rowPages?` (the whole row while a page slide presents, `presentedPages`),
 `focusPage(id)` (frames one page whatever its kind: `computeFitBelow` of
 `illustratePageFitBox(page)` below the Toolbar strip), `readPage(id)` (an article page on a phone:
-`computeReadingFrame` with its margin), `themeBackgrounds`, `themeAccent`, `articles?` (composed
+`computeReadingFrame` with its margin, gliding there), `panFrom?` (a finger's pan from the view
+now; stops a glide), `themeBackgrounds`, `themeAccent`, `articles?` (composed
 in by `useEditorState`), `tabFont`, `layoutPreview` / `setLayoutPreview` (state held here so the
 clip and the overlay share it), and `edit` (absent for a viewer or a locked tab).
 

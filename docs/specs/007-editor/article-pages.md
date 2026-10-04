@@ -195,7 +195,8 @@ article's swatches), and a line break inside a block (Shift+Enter). Code blocks 
   document, whatever the tool; one that lifts where it landed is a tap, which puts the caret there.
   A second finger hands the view to the pinch.
   The writing taking the caret frames its page for writing: its text column across the screen,
-  the margins off it, so the text reads at a usable size. The panel opens as a bottom sheet as on
+  the margins off it, so the text reads at a usable size; the view glides there as a page framed
+  from its label does (at once under reduced motion). The panel opens as a bottom sheet as on
   any page.
 - **Framing an article page** (a press on its label, the page navigator, a new article): the
   page seen whole, as an infographic page is.
