@@ -1,6 +1,7 @@
 'use client';
 
 import { pageRulingOf, pageWritingBars } from '@/lib/article/article-export';
+import { useArticleLaidOutSeq } from '@/lib/article/article-editor-store';
 import { articleOpsToSvg } from '@/lib/article/article-draw';
 import { useMemo } from 'react';
 import {
@@ -40,7 +41,11 @@ export type SlideThumb = { markup: string; viewBox: string };
 export function useSlideThumbnails(deck: Deck, tabs: Tab[]): Map<string, SlideThumb> {
   // Re-render once the async icon catalogues land so icon glyphs pop in.
   const iconsLoaded = useIconCatalogs();
+  // An article's writing laid out for the first time: its lines of text can be drawn now.
+  const laidOut = useArticleLaidOutSeq();
   return useMemo(() => {
+    // Read so the pictures redraw once the writing they draw has been laid out.
+    void laidOut;
     // The resolvers find nothing until the catalogues land; gating them on the
     // flag makes the rebuild on landing a real input of this memo.
     const art = iconsLoaded
@@ -114,5 +119,5 @@ export function useSlideThumbnails(deck: Deck, tabs: Tab[]): Map<string, SlideTh
       });
     }
     return out;
-  }, [deck, tabs, iconsLoaded]);
+  }, [deck, tabs, iconsLoaded, laidOut]);
 }

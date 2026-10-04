@@ -8,6 +8,7 @@ import { saveOfflineToCloud } from '@/lib/offline/offline-convert';
 import { tabAsSeen } from '@/lib/export-as-seen';
 import { panelEnabled } from '@/lib/user-preferences';
 import { LeaveIllustrateDialog } from '@/components/dialogs/LeaveIllustrateDialog';
+import { LeaveIllustrateConfirm } from '@/components/dialogs/LeaveIllustrateConfirm';
 
 const ExportTabDialog = dynamic(
   () => import('@/components/dialogs/ExportTabDialog').then((m) => m.ExportTabDialog),
@@ -74,6 +75,7 @@ export function EditorTabDialogs() {
   return (
     <>
       <LeaveIllustrateDialog leave={leaveIllustrate} />
+      <LeaveIllustrateConfirm leave={leaveIllustrate} />
       {exportOpen ? (
         <ExportTabDialog
           // Export what the author is LOOKING at: a tab on the Default colour

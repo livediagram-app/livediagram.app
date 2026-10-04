@@ -33,6 +33,7 @@ import {
 import {
   clearActiveArticle,
   registerArticleHandle,
+  noteArticleLaidOut,
   setActiveArticle,
   getActiveArticle,
   requestArticleComment,
@@ -132,6 +133,8 @@ export default function ArticleEditor(props: ArticleEditorProps) {
   const idle = useRef<number | null>(null);
   const lastLocal = useRef(0);
   const measureFrame = useRef<number | null>(null);
+  // Whether this writing's layout has been announced to the pictures drawn from it (the Map).
+  const announced = useRef(false);
   // Set while an undo or redo from the writing is under way: the change it brings back takes the
   // caret.
   // An undo or redo from the writing in hand: the writing it brings back takes the caret. Set as
@@ -264,6 +267,11 @@ export default function ArticleEditor(props: ArticleEditorProps) {
     });
     const local = Date.now() - lastLocal.current < WRITER_WINDOW_MS || view.hasFocus();
     p.onLayout({ flow: p.flow, pagesNeeded, zones, notes, local });
+    // The first layout (and the one after web fonts land) is news to the Map and the thumbnails.
+    if (!announced.current) {
+      announced.current = true;
+      noteArticleLaidOut();
+    }
   };
   const scheduleMeasure = () => {
     if (measureFrame.current !== null) return;
@@ -494,7 +502,10 @@ export default function ArticleEditor(props: ArticleEditorProps) {
     scheduleMeasure();
     // Web fonts arriving change every line's length.
     const fonts = document.fonts;
-    const onFonts = () => scheduleMeasure();
+    const onFonts = () => {
+      announced.current = false;
+      scheduleMeasure();
+    };
     fonts?.addEventListener?.('loadingdone', onFonts);
     debugLog('[article] writing mounted', { flow: latest.current.flow });
     return () => {

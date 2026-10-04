@@ -1,6 +1,7 @@
 'use client';
 
 import { pageWritingBars } from '@/lib/article/article-export';
+import { useArticleLaidOutSeq } from '@/lib/article/article-editor-store';
 import { articleOpsToSvg } from '@/lib/article/article-draw';
 import { useDeferredValue, useMemo, useRef } from 'react';
 import {
@@ -158,6 +159,8 @@ export function Minimap({
   const viewColors = selectionBoxColors(accentColor, surface);
   // Re-render once the async icon catalogues land so Technology marks pop in.
   const iconsLoaded = useIconCatalogs();
+  // An article's writing laid out for the first time: its lines of text can be drawn now.
+  const laidOut = useArticleLaidOutSeq();
   // One pass builds the full-fidelity markup (the SAME headless renderer the
   // exports / live image use — real colours, silhouettes, tables, freehand,
   // icon glyphs, rotation, curved arrows) plus the content bounds; recomputed
@@ -244,7 +247,7 @@ export function Minimap({
     };
     // `writing` changes with the documents' text, which the bars read off the editors.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [elements, pages, tabFont, iconsLoaded, surface, writing]);
+  }, [elements, pages, tabFont, iconsLoaded, surface, writing, laidOut]);
 
   const recentreToClient = (clientX: number, clientY: number) => {
     const svg = svgRef.current;
