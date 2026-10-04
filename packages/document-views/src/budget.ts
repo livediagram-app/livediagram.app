@@ -18,7 +18,26 @@ export type Omission = { noun: string; count: number };
 // What a view leaves out whatever the budget, and the arguments that show it.
 export type FixedOmission = { omitted: Omission[]; args: ElisionArguments };
 
-export type FittedLines = { text: string; elision: Elision; kept: number; fullTokens: number };
+// `kept` of `total` lines printed.
+export type FittedLines = {
+  text: string;
+  elision: Elision;
+  kept: number;
+  total: number;
+  fullTokens: number;
+};
+
+// How a view was fitted: the estimate of the whole view, and the step it took to fit (the outline's
+// ladder states, or `lines-dropped`).
+export type ViewFit = { estimate: number; state: string };
+export type ViewResult<J> = { text: string; json: J; fit: ViewFit };
+
+export function fitOf(fitted: FittedLines): ViewFit {
+  return {
+    estimate: fitted.fullTokens,
+    state: fitted.kept < fitted.total ? 'lines-dropped' : 'full',
+  };
+}
 
 function omissionsOf(counts: ReadonlyMap<Noun, number>): Omission[] {
   return [...counts].flatMap(([noun, count]) =>
@@ -56,7 +75,13 @@ export function fitLines(input: {
   const fullTokens = estimateTokens(allLines + elisionLength(elisionFor(none, 0)));
   const whole = elisionFor(none, fullTokens);
   if (budget === undefined || fullTokens <= budget) {
-    return { text: compose(lines.length, whole), elision: whole, kept: lines.length, fullTokens };
+    return {
+      text: compose(lines.length, whole),
+      elision: whole,
+      kept: lines.length,
+      total: lines.length,
+      fullTokens,
+    };
   }
 
   const left = new Map<Noun, number>();
@@ -77,5 +102,5 @@ export function fitLines(input: {
     kept++;
   }
   const elision = elisionFor(left, fullTokens);
-  return { text: compose(kept, elision), elision, kept, fullTokens };
+  return { text: compose(kept, elision), elision, kept, total: lines.length, fullTokens };
 }

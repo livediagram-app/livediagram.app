@@ -6,7 +6,7 @@ import { isKnownElement, type Element } from '@livediagram/document';
 import { attributesOf, isOpenCommentsAttribute } from './attributes';
 import { contentSummaryOf } from './content-summary';
 import { edgeJson, edgeText, ownLineText, type ViewEdge } from './edges';
-import { estimateTokens } from './budget';
+import { estimateTokens, type ViewResult } from './budget';
 import { buildElision, elisionLine, type ElisionArguments } from './elision';
 import { textField } from './fields';
 import { headerLine, viewHeader } from './header';
@@ -55,9 +55,7 @@ type Entry = {
   end: number;
 };
 
-export type OutlineResult = {
-  text: string;
-  json: OutlineView;
+export type OutlineResult = ViewResult<OutlineView> & {
   state: OutlineState;
   // The estimate of the whole outline, unfitted.
   fullTokens: number;
@@ -340,7 +338,7 @@ export function outlineView(model: ViewModel, options: OutlineOptions = {}): Out
     ownLineArrows: fit.root ? [] : ownLine.map(edgeJson),
     elision,
   };
-  return { text, json, state, fullTokens };
+  return { text, json, state, fullTokens, fit: { estimate: fullTokens, state } };
 }
 
 // One element's outline line at full detail: what `find` prints for a match.

@@ -52,6 +52,17 @@ describe('renderView', () => {
     }
   });
 
+  it('says how each view was fitted', () => {
+    expect(render({ view: 'outline' })).toMatchObject({ fit: { state: 'full' } });
+    expect(render({ view: 'outline', budget: 300 })).toMatchObject({
+      fit: { state: 'attributes-dropped' },
+    });
+    expect(render({ view: 'graph' })).toMatchObject({ fit: { state: 'full' } });
+    expect(render({ view: 'graph', budget: 100 })).toMatchObject({
+      fit: { state: 'lines-dropped' },
+    });
+  });
+
   it('passes options through', () => {
     const coarse = render({ view: 'layout', coarse: true, only: 'c991' });
     expect(coarse.ok && coarse.text.split('\n')[1]).toBe('c991: 202b 146b / 6406 e4a8 / 12de 0556');

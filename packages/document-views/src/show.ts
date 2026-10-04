@@ -3,7 +3,7 @@
 // arrows both ways. Mirrors, packed points and person ids are left out and named.
 import type { ShowView, ViewDoor } from '@livediagram/api-schema';
 import { contentOrigin, type Element, type Endpoint } from '@livediagram/document';
-import { fitLines, type ViewLine } from './budget';
+import { fitLines, fitOf, type ViewLine, type ViewResult } from './budget';
 import { LABEL_CUT_CHARS } from './constants';
 import { edgeJson, endText, type ViewEdge } from './edges';
 import {
@@ -189,7 +189,7 @@ export function showView(
   model: ViewModel,
   el: Element,
   options: ShowOptions = {},
-): { text: string; json: ShowView } {
+): ViewResult<ShowView> {
   const ref = model.refs.refOf(el.id);
   const kind = model.kindOf(el);
   const node = model.tree.nodes.get(el.id);
@@ -235,6 +235,7 @@ export function showView(
   const { id: _id, type: _type, ...jsonFields } = fields;
   return {
     text: fitted.text,
+    fit: fitOf(fitted),
     json: {
       header: viewHeader('show', model.facts),
       ref,

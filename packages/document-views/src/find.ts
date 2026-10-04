@@ -2,7 +2,7 @@
 // holds the query, each under its container chain. Substring only, so no pattern reaches a regex engine.
 import { FIND_FIELDS, type FindField, type FindView, type ViewDoor } from '@livediagram/api-schema';
 import type { Element } from '@livediagram/document';
-import { fitLines, type ViewLine } from './budget';
+import { fitLines, fitOf, type ViewLine, type ViewResult } from './budget';
 import { LABEL_CUT_CHARS } from './constants';
 import { ownLineText, type ViewEdge } from './edges';
 import { arrayField, isObject, stringField, textField, threadOf } from './fields';
@@ -69,7 +69,7 @@ export function findView(
   model: ViewModel,
   q: string,
   options: FindOptions = {},
-): { text: string; json: FindView } {
+): ViewResult<FindView> {
   const wanted = normaliseFind(q);
   const lines: ViewLine[] = [];
   const matches: FindView['matches'] = [];
@@ -146,6 +146,7 @@ export function findView(
   });
   return {
     text: fitted.text,
+    fit: fitOf(fitted),
     json: { header: viewHeader('find', model.facts), q, matches, elision: fitted.elision },
   };
 }

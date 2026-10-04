@@ -3,7 +3,7 @@
 import type { DiffView, ViewDoor } from '@livediagram/api-schema';
 import { STYLE_KEYS, type Element, type Tab } from '@livediagram/document';
 import { attributesOf } from './attributes';
-import { fitLines, type ViewLine } from './budget';
+import { fitLines, fitOf, type ViewLine, type ViewResult } from './budget';
 import { LABEL_CUT_CHARS } from './constants';
 import { contentSummaryOf } from './content-summary';
 import { edgeText, endText, type ViewEdge } from './edges';
@@ -245,7 +245,7 @@ export function diffView(
   afterTab: Tab,
   context: DiffContext,
   options: DiffOptions = {},
-): { text: string; json: DiffView } {
+): ViewResult<DiffView> {
   const viewContext: ViewContext = { tabIds: context.tabIds };
   const before = buildViewModel(beforeTab, { ...viewContext, rev: context.since });
   const after = buildViewModel(afterTab, { ...viewContext, rev: context.rev });
@@ -287,6 +287,7 @@ export function diffView(
   const fitted = fitLines({ header, lines, budget: options.budget, door: options.door ?? 'cli' });
   return {
     text: fitted.text,
+    fit: fitOf(fitted),
     json: {
       header: viewHeader('diff', facts),
       since: context.since,

@@ -1,7 +1,7 @@
 // The graph view (docs/specs/024-agents/blueprints/document-views.md "graph", VW30): the elements an
 // arrow touches, then every arrow in its stored direction with its ref.
 import type { GraphView, ViewDoor } from '@livediagram/api-schema';
-import { fitLines, type ViewLine } from './budget';
+import { fitLines, fitOf, type ViewLine, type ViewResult } from './budget';
 import { LABEL_CUT_CHARS } from './constants';
 import { edgeJson, endText, type ViewEdge } from './edges';
 import { textField } from './fields';
@@ -24,10 +24,7 @@ function arrowLine(edge: ViewEdge): string {
   return `${endText(edge.from)} -> ${endText(edge.to)}${labelText(edge.label)} [${edge.ref}]`;
 }
 
-export function graphView(
-  model: ViewModel,
-  options: GraphOptions = {},
-): { text: string; json: GraphView } {
+export function graphView(model: ViewModel, options: GraphOptions = {}): ViewResult<GraphView> {
   const connected = new Set(model.edges.all.flatMap((edge) => pinnedIds(edge.arrow)));
   const all = depthFirst(model.tree.roots);
   const nodes = all.filter((node) => connected.has(node.el.id));
@@ -61,6 +58,7 @@ export function graphView(
   const keptArrows = Math.max(0, fitted.kept - lines.length + model.edges.all.length);
   return {
     text: fitted.text,
+    fit: fitOf(fitted),
     json: {
       header: viewHeader('graph', model.facts),
       nodes: nodes.slice(0, keptNodes).map((node) => ({

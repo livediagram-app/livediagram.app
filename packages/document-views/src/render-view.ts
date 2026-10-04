@@ -9,6 +9,7 @@ import {
   type ViewDoor,
 } from '@livediagram/api-schema';
 import { resolveRef, type Element, type Tab } from '@livediagram/document';
+import type { ViewFit, ViewResult } from './budget';
 import { commentsView } from './comments';
 import { textField } from './fields';
 import { findView } from './find';
@@ -34,7 +35,7 @@ export type ViewRequest = {
 export type ViewRefusal = RefErrorBody | { error: 'invalid_value'; message: string };
 
 export type RenderedView =
-  | { ok: true; view: TabViewName; text: string; json: unknown; elements: number }
+  | { ok: true; view: TabViewName; text: string; json: unknown; fit: ViewFit; elements: number }
   | { ok: false; refusal: ViewRefusal };
 
 function candidate(model: ViewModel, el: Element): RefCandidate {
@@ -96,10 +97,12 @@ export function renderView(
 ): RenderedView {
   const model = buildViewModel(tab, context);
   const { budget, door } = request;
-  const done = (result: { text: string; json: unknown }): RenderedView => ({
+  const done = (result: ViewResult<unknown>): RenderedView => ({
     ok: true,
     view: request.view,
-    ...result,
+    text: result.text,
+    json: result.json,
+    fit: result.fit,
     elements: model.printed.length,
   });
 

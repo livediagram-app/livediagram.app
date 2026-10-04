@@ -2,7 +2,7 @@
 // in the outline's order, every comment in full; resolved threads counted, or shown with `all`.
 import type { CommentsView, ViewDoor } from '@livediagram/api-schema';
 import type { Element } from '@livediagram/document';
-import { fitLines, type ViewLine } from './budget';
+import { fitLines, fitOf, type ViewLine, type ViewResult } from './budget';
 import { LABEL_CUT_CHARS } from './constants';
 import { numberField, stringField, textField, threadOf } from './fields';
 import { headerLine, viewHeader } from './header';
@@ -68,7 +68,7 @@ function threadLines(thread: Thread): ViewLine[] {
 export function commentsView(
   model: ViewModel,
   options: CommentsOptions = {},
-): { text: string; json: CommentsView } {
+): ViewResult<CommentsView> {
   const elements = depthFirst(model.tree.roots).map((n) => n.el);
   const threads = elements.flatMap((el) => {
     const thread = threadOfElement(model, el);
@@ -101,6 +101,7 @@ export function commentsView(
   });
   return {
     text: fitted.text,
+    fit: fitOf(fitted),
     json: { header: viewHeader('comments', model.facts), threads: json, elision: fitted.elision },
   };
 }

@@ -2,7 +2,7 @@
 // line per tab, built from each tab's header facts so the caller never holds every tab body at once.
 import type { OverviewView, ViewDoor } from '@livediagram/api-schema';
 import { computeRefs } from '@livediagram/document';
-import { fitLines, type ViewLine } from './budget';
+import { fitLines, fitOf, type ViewLine, type ViewResult } from './budget';
 import { headerSegments, type HeaderFacts } from './header';
 import { jsonString, plural } from './text';
 
@@ -32,7 +32,7 @@ export function overviewView(
   document: OverviewDocument,
   tabs: readonly OverviewTabInput[],
   options: OverviewOptions,
-): { text: string; json: OverviewView } {
+): ViewResult<OverviewView> {
   const refs = computeRefs(tabs.map((t) => t.id));
   const entries = tabs.map((tab) => {
     const ref = refs.refOf(tab.id);
@@ -58,6 +58,7 @@ export function overviewView(
   });
   return {
     text: fitted.text,
+    fit: fitOf(fitted),
     json: {
       document: { ...document, tabs: tabs.length },
       tabs: entries.slice(0, fitted.kept).map((e) => e.json),

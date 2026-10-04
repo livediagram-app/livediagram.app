@@ -2,7 +2,7 @@
 // geometry relative to the content origin, or coarse rows per container.
 import type { LayoutView, ViewDoor } from '@livediagram/api-schema';
 import { contentOrigin, type Endpoint } from '@livediagram/document';
-import { fitLines, type ViewLine } from './budget';
+import { fitLines, fitOf, type ViewLine, type ViewResult } from './budget';
 import type { ViewEdge } from './edges';
 import { boxOf, numberField } from './fields';
 import { headerLine, viewHeader } from './header';
@@ -113,10 +113,7 @@ function exactLayout(model: ViewModel, options: LayoutOptions, origin: Origin) {
   return { lines: [...records.map((r) => r.line), ...arrowLines], records, arrows: arrowJson };
 }
 
-export function layoutView(
-  model: ViewModel,
-  options: LayoutOptions = {},
-): { text: string; json: LayoutView } {
+export function layoutView(model: ViewModel, options: LayoutOptions = {}): ViewResult<LayoutView> {
   const origin = contentOrigin(model.printed);
   const header = headerLine(model.facts);
   const door = options.door ?? 'cli';
@@ -125,6 +122,7 @@ export function layoutView(
     const fitted = fitLines({ header, lines, budget: options.budget, door });
     return {
       text: fitted.text,
+      fit: fitOf(fitted),
       json: {
         header: viewHeader('layout', model.facts),
         origin,
@@ -140,6 +138,7 @@ export function layoutView(
 
   return {
     text: fitted.text,
+    fit: fitOf(fitted),
     json: {
       header: viewHeader('layout', model.facts),
       origin,
