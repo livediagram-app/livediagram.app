@@ -247,6 +247,25 @@ Script time on the reference diagram, three interleaved rounds of 12 against `ma
 A click-select is unchanged: the press opens a pending drag in the root's state and the release
 closes it, two root renders that are drag state, not selection.
 
+## The viewport store, and culling off-screen elements
+
+Measured 2026-10-04 on the reference board, local, interleaved builds.
+
+- Moving the pan and zoom into a viewport store (#378, #382) stopped the editor root, the element
+  layer, the corner chrome, the panels and the command palette rendering for a zoom or pan tick: only
+  the canvas and the parts that show the view render. Script time against the previous `main`: zoom
+  (8 ticks) 48-51 ms to 26-34 ms, pan 31-35 ms to 9-10 ms.
+- Not mounting off-screen elements was tried as an experiment on top (arrows kept, elements outside
+  the screen plus a margin unmounted, the visible set from the element grid):
+  - culling on every tick: zoom script at 100% 24-30 ms to 157-176 ms, pan 7-9 ms to 72-88 ms;
+  - culling to 1,500 px canvas cells, so the set changes only crossing a cell: longest zoom task at
+    100% 58-91 ms to 170-196 ms, from fit 61-82 ms to 203-454 ms (zooming in mounts hundreds of
+    views at once). Total long-task time once settled fell (486-998 ms to 267-470 ms), but the budget
+    judges the longest task.
+
+  Mounting React element views is the expensive step, so unmounting to save drawing loses. Set aside
+  in the spec's Later list until an element can be shown without a mount.
+
 ## Not tried
 
 - `contain` on element wrappers, a raster snapshot of still elements during a gesture, and fewer

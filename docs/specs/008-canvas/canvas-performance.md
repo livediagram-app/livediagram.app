@@ -100,6 +100,10 @@ Taken up only when the rules above leave the budget unmet; each is a change to t
   help at fit zoom, where everything is on screen; it must keep a focused or selected element,
   remote selections, find-and-jump and the canvas live region working, and exports untouched
   (they use the headless renderer, not the DOM).
+  Measured and set aside: unmounting what leaves the screen makes a zoom or pan mount and unmount
+  element views as the view moves, and mounting is what makes long tasks. Culling to snapped canvas
+  cells raised a 100% zoom's longest task from about 60-90 ms to 170-195 ms (research notes). Taken
+  up again only with a way to show an element that costs no React mount (a raster stand-in).
 - **Level of detail at low zoom**: text and icons below a few screen pixels drawn as simpler
   marks.
 - **Containment** (`contain` on element wrappers) so a change inside one element does not
