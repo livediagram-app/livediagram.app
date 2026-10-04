@@ -150,7 +150,11 @@ test.describe('menus by keyboard', () => {
     await expect(elementMenu).toBeVisible();
     await expect(elementMenu.getByRole('button', { name: 'Layer' })).toBeFocused();
     await shot(page, 'after-element-menu-focus');
-    // Arrows in the menu never nudge the element; Delete never deletes it.
+    // Arrows in the menu never nudge the element; Delete never deletes it. Measured once its entry
+    // animation has finished: mid-animation the box is still growing to its size.
+    await square.evaluate((el) =>
+      Promise.all(el.getAnimations({ subtree: true }).map((anim) => anim.finished)),
+    );
     const before = await square.boundingBox();
     await page.keyboard.press('ArrowDown');
     await page.keyboard.press('Delete');

@@ -25,7 +25,8 @@ function harness(elements: Element[], selection: Set<string>) {
     useElementStyle({
       currentSelectionIds: () => new Set(selection),
       selectionPrimary: () => elements.find((e) => selection.has(e.id)) ?? null,
-      selectedId: null, // multi-select: no single id
+      // multi-select: no single id
+      readSelection: () => ({ selectedId: null, multiSelectedIds: new Set<string>() }),
       activeTab: committed,
       activeId: 'tab1',
       editsBlocked: false,

@@ -6,6 +6,7 @@ import { describe, expect, it, vi } from 'vitest';
 import type { Tab } from '@livediagram/document';
 import type { CanvasTool } from '@/components/palette/CommandPalette';
 import { useShapeDrawing } from './useShapeDrawing';
+import { createSelectionStore } from '@/lib/selection-store';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn(), titleCaseType: (s: string) => s }));
 
@@ -13,25 +14,26 @@ vi.mock('@/lib/telemetry', () => ({ track: vi.fn(), titleCaseType: (s: string) =
 // for one stroke and clears the selection, like the pens. It is not a canvas tool.
 
 function setup() {
+  const selection = createSelectionStore();
+  selection.setSelection({ selectedId: 'el-1', multiSelectedIds: new Set(['el-2']) });
   return renderHook(
     ({ tool }: { tool: CanvasTool }) => {
-      const [selectedId, setSelectedId] = useState<string | null>('el-1');
-      const [multi, setMultiSelectedIds] = useState<Set<string>>(new Set(['el-2']));
       const [editingId, setEditingId] = useState<string | null>('el-1');
       const drawing = useShapeDrawing({
         editsBlocked: false,
-        selectedId,
+        readSelection: selection.get,
         canvasTool: tool,
         setCanvasTool: vi.fn(),
         activeTab: { id: 't1', name: 'Tab', elements: [] } as unknown as Tab,
         drawMode: false,
         commit: vi.fn(),
-        setSelectedId,
-        setMultiSelectedIds,
+        setSelectedId: selection.setSelectedId,
+        setMultiSelectedIds: selection.setMultiSelectedIds,
         setEditingId,
         zoomRef: { current: 1 },
         styleNewElement: (el) => el,
       });
+      const { selectedId, multiSelectedIds: multi } = selection.get();
       return { drawing, selectedId, multi, editingId };
     },
     { initialProps: { tool: 'select' as CanvasTool } },

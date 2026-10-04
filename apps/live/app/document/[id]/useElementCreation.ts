@@ -1,3 +1,4 @@
+import type { Selection } from '@/lib/selection-store';
 import { type Dispatch, type SetStateAction } from 'react';
 import {
   type EventStormingNoteKind,
@@ -45,7 +46,8 @@ export function useElementCreation(opts: {
   activeTab: Tab;
   // The single-selected element id, so "add an icon" can drop it INSIDE
   // a selected shape instead of creating a standalone icon element.
-  selectedId: string | null;
+  // Read where an add acts on the selection (docs/specs/008-canvas/blueprints/selection-store.md).
+  readSelection: () => Selection;
   commitTabs: (updater: (tabs: Tab[]) => Tab[]) => void;
   setSelectedId: SetState<string | null>;
   setEditingId: SetState<string | null>;
@@ -70,7 +72,7 @@ export function useElementCreation(opts: {
     imagesBlocked,
     activeId,
     activeTab,
-    selectedId,
+    readSelection,
     commitTabs,
     setSelectedId,
     setEditingId,
@@ -119,6 +121,7 @@ export function useElementCreation(opts: {
     // 'icon' shape (an icon-on-an-icon is meaningless) AND frames (a frame
     // is a container — an icon dropped with a frame selected becomes a
     // standalone element you place inside it, see docs/specs/009-elements/annotations.md).
+    const { selectedId } = readSelection();
     const sel = selectedId ? activeTab.elements.find((e) => e.id === selectedId) : null;
     if (sel && acceptsInlineIcon(sel)) {
       commitTabs((ts) =>
@@ -274,7 +277,7 @@ export function useElementCreation(opts: {
     editsBlocked,
     activeId,
     activeTab,
-    selectedId,
+    readSelection,
     setSelectedId,
     beginDraw,
     commitTabs,

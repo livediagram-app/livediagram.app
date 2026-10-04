@@ -95,12 +95,12 @@ export type QuickStyleApi = {
   clearSwatchOverride: (role: QuickSwatchRole, slot: QuickSwatchSlot) => void;
 };
 
-export function useQuickStyle(deps: {
+// Everything the Quick Style view is built from but the selection, which its host reads from the store.
+export type QuickStyleDeps = {
   activeTab: Tab;
   // The viewer works in Draw mode (docs/specs/007-editor/editor-modes.md): the board rows show.
   drawMode: boolean;
   theme: ThemeDefinition;
-  selectionIds: ReadonlySet<string>;
   editsBlocked: boolean;
   // The live active-tab elements, read at the moment of a choice.
   liveElements: () => Element[];
@@ -125,7 +125,11 @@ export function useQuickStyle(deps: {
   // The draw intent in hand: on a whiteboard, a shape, line, arrow or text tool
   // with nothing selected makes the panel style what it draws next.
   toolIntent?: PendingDraw | null;
-}): QuickStyleApi {
+};
+
+export function useQuickStyle(
+  deps: QuickStyleDeps & { selectionIds: ReadonlySet<string> },
+): QuickStyleApi {
   const { activeTab, theme, selectionIds, editsBlocked, liveElements, commit, memory } = deps;
   const { overrides } = deps.swatchOverrides;
 

@@ -16,8 +16,7 @@ function duplicate(elements: Element[], selected: string[]): Element[] {
   let committed: Element[] = elements;
   const { result } = renderHook(() =>
     useElementDuplication({
-      selectedId: null,
-      multiSelectedIds: new Set(selected),
+      readSelection: () => ({ selectedId: null, multiSelectedIds: new Set(selected) }),
       activeTab: { id: 't', name: 'T', elements } as Tab,
       commit: (m) => {
         committed = m(committed);
@@ -74,8 +73,10 @@ describe('duplicate on an event-storming board', () => {
     let committed: Element[] = elements;
     const { result } = renderHook(() =>
       useElementDuplication({
-        selectedId: selected.length === 1 ? selected[0]! : null,
-        multiSelectedIds: new Set(selected.length > 1 ? selected : []),
+        readSelection: () => ({
+          selectedId: selected.length === 1 ? selected[0]! : null,
+          multiSelectedIds: new Set(selected.length > 1 ? selected : []),
+        }),
         activeTab: { id: 't', name: 'T', kind: 'event-storming', elements } as Tab,
         commit: (m) => {
           committed = m(committed);

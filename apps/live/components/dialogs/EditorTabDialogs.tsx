@@ -1,5 +1,8 @@
 'use client';
 
+import { useCallback } from 'react';
+import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
+import { EMPTY_SELECTION, type Selection } from '@/lib/selection-store';
 import dynamic from 'next/dynamic';
 
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
@@ -36,7 +39,6 @@ export function EditorTabDialogs() {
     illustratePages,
     activeTab,
     tabs,
-    multiSelectedIds,
     documentName,
     imageContext,
     setExportOpen,
@@ -61,6 +63,16 @@ export function EditorTabDialogs() {
     setShareDialogOpen,
     leaveIllustrate,
   } = useEditorContext();
+  // The selection the export covers, read from the store while a selection export is open
+  // (docs/specs/008-canvas/blueprints/selection-store.md).
+  const exportingSelection = exportOpen && exportScope === 'selection';
+  const multiSelectedIds = useSelectionOf(
+    useCallback(
+      (sel: Selection) =>
+        exportingSelection ? sel.multiSelectedIds : EMPTY_SELECTION.multiSelectedIds,
+      [exportingSelection],
+    ),
+  );
 
   // Offline documents (docs/specs/006-document/offline-mode.md) can't be shared until they're synced to the
   // owner's account; the Share dialog shows a gate that runs this conversion,

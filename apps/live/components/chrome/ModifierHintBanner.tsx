@@ -1,6 +1,10 @@
 'use client';
 
+import { useCallback, type ComponentProps } from 'react';
+import type { Element } from '@livediagram/document';
 import type { DragState } from '@/lib/canvas';
+import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
+import type { Selection } from '@/lib/selection-store';
 import { TopCenterBanner } from '@/components/chrome/TopCenter';
 import { useShiftHeld } from '@/hooks/ui/useShiftHeld';
 import { useInsertionDragInHand } from '@/lib/insertion-preview';
@@ -52,6 +56,31 @@ export function ModifierHintBanner({
   const message = shiftHintMessage(drag, selectedKind, hasElements);
   if (!message) return null;
   return <Hint modifier="⇧ Shift">{message}</Hint>;
+}
+
+// The selected element's flavour for the no-drag hints: an arrow, a table, anything else, or none.
+export function selectedKindOf(
+  elements: readonly Element[],
+  selectedId: string | null,
+): 'arrow' | 'table' | 'other' | null {
+  const el = selectedId ? elements.find((e) => e.id === selectedId) : undefined;
+  if (!el) return null;
+  return el.type === 'arrow' ? 'arrow' : el.type === 'table' ? 'table' : 'other';
+}
+
+// The banner with its selection read from the store (docs/specs/008-canvas/blueprints/selection-store.md):
+// a selection change renders this, not the editor view that places it.
+export function ModifierHint({
+  elements,
+  ...banner
+}: { elements: readonly Element[] } & Omit<
+  ComponentProps<typeof ModifierHintBanner>,
+  'selectedKind'
+>) {
+  const selectedKind = useSelectionOf(
+    useCallback((s: Selection) => selectedKindOf(elements, s.selectedId), [elements]),
+  );
+  return <ModifierHintBanner {...banner} selectedKind={selectedKind} />;
 }
 
 function Hint({ modifier, children }: { modifier: string; children: React.ReactNode }) {

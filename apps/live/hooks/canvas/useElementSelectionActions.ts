@@ -9,6 +9,7 @@
 // the page passes those setters in. Verbatim relocation — no
 // behaviour change.
 
+import type { Selection } from '@/lib/selection-store';
 import { haptic } from '@/lib/haptics';
 import {
   arrowReferencesAny,
@@ -33,9 +34,9 @@ type EditorSelectionActionsDeps = {
   // marquee bag).
   currentSelectionIds: () => Set<string>;
   // The single-selected element id (null in multi-select / none).
-  selectedId: string | null;
+  // Read when an action runs (docs/specs/008-canvas/blueprints/selection-store.md).
+  readSelection: () => Selection;
   // The marquee multi-selection bag.
-  multiSelectedIds: ReadonlySet<string>;
   // The active tab — read for its element list.
   activeTab: Tab;
   // History-aware element mutator (snapshots + emits the log).
@@ -59,8 +60,7 @@ type EditorSelectionActionsDeps = {
 export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
   const {
     currentSelectionIds,
-    selectedId,
-    multiSelectedIds,
+    readSelection,
     activeTab,
     commit,
     setSelectedId,
@@ -76,8 +76,7 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
   // re-pinning) — see useElementDuplication (mounted here so the
   // caller's return shape is unchanged).
   const { duplicateSelected, duplicateMultiSelected } = useElementDuplication({
-    selectedId,
-    multiSelectedIds,
+    readSelection,
     activeTab,
     commit,
     setSelectedId,
@@ -160,6 +159,7 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
   // resolves toward "all locked" with one click instead of leaving the
   // user to figure out the inverse state.
   const toggleLockMultiSelected = () => {
+    const { multiSelectedIds } = readSelection();
     if (multiSelectedIds.size === 0) return;
     const anyUnlocked = activeTab.elements.some(
       (el) => multiSelectedIds.has(el.id) && el.locked !== true,
@@ -174,6 +174,7 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
   // arrows that reference one of them. Falls back to single-element delete
   // when there's no active multi-selection.
   const deleteMultiSelected = () => {
+    const { multiSelectedIds } = readSelection();
     if (multiSelectedIds.size === 0) return;
     if (activeTab.locked === true) return;
     // Same lock rule as deleteSelected: protect locked members, delete the
@@ -217,6 +218,7 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
   // 'text' drops a caption to the side. Neither draws a
   // connector arrow; the + menu's Arrow action is how you connect them.
   const spawnConnectSelected = (direction: QuickConnectDirection, kind: QuickConnectKind) => {
+    const { selectedId } = readSelection();
     if (!selectedId) return;
     const source = activeTab.elements.find((el) => el.id === selectedId);
     if (!source || !isBoxed(source)) return;

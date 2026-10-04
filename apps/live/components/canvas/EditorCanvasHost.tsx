@@ -234,7 +234,6 @@ export function EditorCanvasHost() {
     mapPosition,
     moveDocumentToFolder,
     moveDocumentTo,
-    multiSelectedIds,
     narrowMultiSelection,
     newDocument,
     openActionPopover,
@@ -263,7 +262,7 @@ export function EditorCanvasHost() {
     doneVoteReview,
     retryActiveTabLoad,
     revealVote,
-    selectedId,
+    readSelection,
     selectElement,
     selectMarquee,
     confirm,
@@ -436,7 +435,7 @@ export function EditorCanvasHost() {
   // can't disagree); consumed here for the overlay.
   const tabLoadState = activeTabLoadState;
   // Quick add + connect Arrow starter (docs/specs/008-canvas/canvas-and-palette.md) — see useQuickConnectStart.
-  const { handleStartArrow } = useQuickConnectStart({ selectedId, beginAnchorDrag });
+  const { handleStartArrow } = useQuickConnectStart({ readSelection, beginAnchorDrag });
 
   // While a label is being edited, ride the element context menu alongside
   // the editor (docs/specs/008-canvas/canvas-and-palette.md) — see useEditModeContextMenu.
@@ -1162,12 +1161,6 @@ export function EditorCanvasHost() {
                 onMove: (x, y) => setAiPanelPosition({ x, y }),
                 onReset: () => setAiPanelPosition(null),
                 contextElements: activeTab.elements,
-                focusIds:
-                  multiSelectedIds.size > 0
-                    ? [...multiSelectedIds]
-                    : selectedId !== null
-                      ? [selectedId]
-                      : [],
                 onApplyElements: applyAiElements,
                 ownerId: selfParticipant.id,
                 tabId: activeTab.id,

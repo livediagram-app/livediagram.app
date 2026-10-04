@@ -14,6 +14,9 @@
 // old one. Deleting an element is handled the same way — by NOT handling it,
 // so the slide simply resolves past the missing id and undo puts it back.
 
+import { selectionIds, type Selection } from '@/lib/selection-store';
+
+const idsOf = (s: Selection) => selectionIds(s.selectedId, s.multiSelectedIds);
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import {
@@ -47,8 +50,7 @@ export function useSlideDeck({
   tabs,
   activeTabId,
   setActiveId,
-  selectedId,
-  multiSelectedIds,
+  readSelection,
   setSelectedId,
   setMultiSelectedIds,
   isReadOnly,
@@ -58,8 +60,8 @@ export function useSlideDeck({
   tabs: Tab[];
   activeTabId: string;
   setActiveId: (id: string) => void;
-  selectedId: string | null;
-  multiSelectedIds: ReadonlySet<string>;
+  // Read when a slide is made from the selection (docs/specs/008-canvas/blueprints/selection-store.md).
+  readSelection: () => Selection;
   setSelectedId: (id: string | null) => void;
   setMultiSelectedIds: (ids: Set<string>) => void;
   isReadOnly: boolean;
@@ -133,10 +135,6 @@ export function useSlideDeck({
 
   // The current selection, as a set. A multi-selection wins; otherwise the
   // single selected element; otherwise nothing.
-  const selectionIds = useMemo(() => {
-    if (multiSelectedIds.size > 0) return new Set(multiSelectedIds);
-    return selectedId ? new Set([selectedId]) : new Set<string>();
-  }, [multiSelectedIds, selectedId]);
 
   // Read by verbs that need the CURRENT deck without taking it as a dep.
   const deckRef = useLatest<Deck>(deck);
@@ -151,16 +149,17 @@ export function useSlideDeck({
   // --- Editing verbs --------------------------------------------------------
 
   const newSlideFromSelection = useCallback(() => {
-    if (isReadOnly || selectionIds.size === 0) return;
+    const ids = idsOf(readSelection());
+    if (isReadOnly || ids.size === 0) return;
     const slide: Slide = {
       id: crypto.randomUUID(),
       tabId: activeTabId,
-      elementIds: [...selectionIds],
+      elementIds: [...ids],
     };
     commitDeck((prev) => ({ slides: [...prev.slides, slide] }));
     setOpenSlideId(slide.id);
     track('UI', 'Added', 'Slide');
-  }, [activeTabId, commitDeck, isReadOnly, selectionIds]);
+  }, [activeTabId, commitDeck, isReadOnly, readSelection]);
 
   // An Illustrate page as a slide (docs/specs/007-editor/illustrate-pages.md "Slides"): the slide
   // is the page, resolved live, so it follows the page's content wherever the page goes.
@@ -177,19 +176,20 @@ export function useSlideDeck({
 
   const addSelectionToSlide = useCallback(
     (slideId: string) => {
-      if (isReadOnly || selectionIds.size === 0) return;
+      const ids = idsOf(readSelection());
+      if (isReadOnly || ids.size === 0) return;
       commitDeck((prev) => ({
         slides: prev.slides.map((s) =>
           // Only its own tab's elements: a slide holds one tab's elements, so
           // adding from another tab is not a thing to refuse politely, it is
           // a thing that cannot be expressed.
           s.id === slideId && s.tabId === activeTabId
-            ? { ...s, elementIds: [...new Set([...s.elementIds, ...selectionIds])] }
+            ? { ...s, elementIds: [...new Set([...s.elementIds, ...ids])] }
             : s,
         ),
       }));
     },
-    [activeTabId, commitDeck, isReadOnly, selectionIds],
+    [activeTabId, commitDeck, isReadOnly, readSelection],
   );
 
   const removeFromSlide = useCallback(

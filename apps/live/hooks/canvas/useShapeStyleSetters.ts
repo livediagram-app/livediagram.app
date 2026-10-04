@@ -1,3 +1,4 @@
+import type { Selection } from '@/lib/selection-store';
 import {
   isBoxed,
   SHAPE_DEFAULT_SIZE,
@@ -26,7 +27,8 @@ type ShapeStyleSetterDeps = {
   currentSelectionIds: () => Set<string>;
   commit: (mapElements: (els: Element[]) => Element[]) => void;
   activeTab: Tab;
-  selectedId: string | null;
+  // Read when a setter runs (docs/specs/008-canvas/blueprints/selection-store.md).
+  readSelection: () => Selection;
 };
 
 /**
@@ -48,13 +50,14 @@ export function useShapeStyleSetters({
   currentSelectionIds,
   commit,
   activeTab,
-  selectedId,
+  readSelection,
 }: ShapeStyleSetterDeps) {
   // Morph the selected shape into a different kind, preserving width /
   // height / label / colour overrides. Circle and diamond are 1:1
   // shapes — coming from a non-square box, snap to the larger side so
   // the result fits the original footprint.
   const setShapeKindSelected = (kind: ShapeKind) => {
+    const { selectedId } = readSelection();
     if (!selectedId) return;
     commit((els) => els.map((el) => (el.id === selectedId ? applyShapeKindToEl(el, kind) : el)));
     track('Element', 'Changed', 'ShapeMorph');
@@ -66,6 +69,7 @@ export function useShapeStyleSetters({
   // doesn't jump in size, just snaps the width:height back to default,
   // and recentre about the old centre so it doesn't drift.
   const resetAspectRatioSelected = () => {
+    const { selectedId } = readSelection();
     if (!selectedId) return;
     commit((els) =>
       els.map((el) => {
@@ -97,6 +101,7 @@ export function useShapeStyleSetters({
   // Honours the aspect lock: with it on, changing one dimension carries the
   // other, so the lock means the same thing here as it does on a drag handle.
   const setSizeSelected = (size: { width?: number; height?: number }) => {
+    const { selectedId } = readSelection();
     if (!selectedId) return;
     commit((els) =>
       els.map((el) => {
@@ -128,6 +133,7 @@ export function useShapeStyleSetters({
   // steps, the only way to rotate (there's no free-drag handle). Boxed
   // elements only.
   const setRotationSelected = (deg: number) => {
+    const { selectedId } = readSelection();
     if (!selectedId) return;
     commit((els) => els.map((el) => (el.id === selectedId ? applyRotationToEl(el, deg) : el)));
     track('Element', 'Changed', 'Rotation');

@@ -87,9 +87,8 @@ function harness(element: Element, kind: TabKind = 'diagram') {
       return { id: 't', name: 'Tab', kind, elements } as Tab;
     },
     zoomRef: { current: 1 },
-    selectedId: element.id,
     setSelectedId: vi.fn(),
-    multiSelectedIds: new Set<string>(),
+    readSelection: () => ({ selectedId: element.id, multiSelectedIds: new Set<string>() }),
     setMultiSelectedIds: vi.fn(),
     editingId: null,
     isReadOnly: false,

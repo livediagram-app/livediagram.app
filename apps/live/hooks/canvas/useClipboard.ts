@@ -29,6 +29,7 @@
 // the hook registers, so `pasteFromClipboard` / `pasteImageFile` stay
 // internal.
 
+import type { Selection } from '@/lib/selection-store';
 import { useEffect, useRef, useState, type RefObject } from 'react';
 import { duplicateElements, type Element, type Tab } from '@livediagram/document';
 import { anyModalOpen } from '@/lib/modal-guard';
@@ -64,8 +65,8 @@ type ClipboardDeps = {
   // Editable embeds (docs/specs/013-workspace/embeds.md) still don't paste-upload images — see
   // pasteImageFile.
   embedMode: boolean;
-  selectedId: string | null;
-  multiSelectedIds: ReadonlySet<string>;
+  // Read when a copy runs (docs/specs/008-canvas/blueprints/selection-store.md).
+  readSelection: () => Selection;
   editingId: string | null;
   // Ends typing in a label: pasting copied elements while a note is open for
   // typing puts them on the canvas, not in the note.
@@ -103,8 +104,7 @@ export function useClipboard(deps: ClipboardDeps) {
   const {
     isReadOnly,
     embedMode,
-    selectedId,
-    multiSelectedIds,
+    readSelection,
     editingId,
     setEditingId,
     activeTab,
@@ -131,6 +131,7 @@ export function useClipboard(deps: ClipboardDeps) {
 
   const copySelection = () => {
     if (isReadOnly) return;
+    const { selectedId, multiSelectedIds } = readSelection();
     const idSet =
       multiSelectedIds.size > 0
         ? new Set(multiSelectedIds)

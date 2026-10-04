@@ -1,3 +1,4 @@
+import type { Selection } from '@/lib/selection-store';
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import type { Anchor } from '@livediagram/document';
 import type { QuickConnectDirection } from '@/lib/canvas';
@@ -11,13 +12,15 @@ import type { EditorDragApi } from './useEditorDrag.types';
 // click-to-connect gesture (the next shape tap sets the other end),
 // reusing addArrow's connect-from-selection path.
 export function useQuickConnectStart({
-  selectedId,
+  readSelection,
   beginAnchorDrag,
 }: {
-  selectedId: string | null;
+  // Read when the press lands (docs/specs/008-canvas/blueprints/selection-store.md).
+  readSelection: () => Selection;
   beginAnchorDrag: EditorDragApi['beginAnchorDrag'];
 }) {
   const handleStartArrow = (direction: QuickConnectDirection, e: ReactPointerEvent) => {
+    const { selectedId } = readSelection();
     if (selectedId === null) return;
     // The arrow pins to the picked side's anchor; its stroke is the tab
     // theme's, like every drawn connector.

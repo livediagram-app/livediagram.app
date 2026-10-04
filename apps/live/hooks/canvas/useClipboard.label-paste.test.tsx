@@ -28,8 +28,7 @@ function harness(editingId: string | null) {
     useClipboard({
       isReadOnly: false,
       embedMode: false,
-      selectedId: 'open',
-      multiSelectedIds: new Set(),
+      readSelection: () => ({ selectedId: 'open', multiSelectedIds: new Set<string>() }),
       editingId,
       setEditingId,
       activeTab: { id: 't', name: 'Board', elements } as Tab,

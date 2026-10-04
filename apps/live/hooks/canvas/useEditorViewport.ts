@@ -8,6 +8,7 @@
 // useEditorDrag so the helpers always read fresh tab elements
 // without re-creating themselves on every parent render.
 
+import type { Selection } from '@/lib/selection-store';
 import { useCallback, useEffect, useEffectEvent, useRef, useState } from 'react';
 import { isBoxed, unionBoxedBounds, type Tab } from '@livediagram/document';
 import { computeFitToScreen, computeViewportCenter } from '@/lib/viewport';
@@ -30,9 +31,9 @@ const DESKTOP_DEFAULT_ZOOM = 1;
 
 type EditorViewportDeps = {
   activeTab: Tab;
-  // The single-selected element id. Used to scroll a freshly-added element
-  // into view on mobile (the add handlers select what they create).
-  selectedId: string | null;
+  // The selection, read when the board changes: a freshly added element scrolls into view on mobile
+  // (the add handlers select what they create, in the same event, so the store already holds it).
+  readSelection: () => Selection;
 };
 
 // Screen-px margins kept clear when scrolling an element into view: room
@@ -244,12 +245,12 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
       return;
     }
     if (typeof window === 'undefined' || window.innerWidth > OVERVIEW_ZOOM_BREAKPOINT_PX) return;
-    const sel = deps.selectedId;
+    const sel = deps.readSelection().selectedId;
     if (!sel || prev.has(sel) || !ids.has(sel)) return;
     const el = els.find((e) => e.id === sel);
     if (!el || !isBoxed(el)) return;
     scrollToNew(el.x, el.y, el.width, el.height);
-  }, [deps.activeTab.elements, deps.selectedId]);
+  }, [deps.activeTab.elements, deps]);
 
   const fitToScreen = useCallback(() => {
     const rect = canvasMainRef.current?.getBoundingClientRect();

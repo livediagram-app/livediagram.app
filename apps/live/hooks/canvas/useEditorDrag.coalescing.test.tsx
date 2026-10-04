@@ -45,9 +45,8 @@ function harness() {
     },
 
     zoomRef: { current: 1 },
-    selectedId: 'drag',
     setSelectedId: vi.fn(),
-    multiSelectedIds: new Set<string>(),
+    readSelection: () => ({ selectedId: 'drag', multiSelectedIds: new Set<string>() }),
     setMultiSelectedIds: vi.fn(),
     editingId: null,
     isReadOnly: false,

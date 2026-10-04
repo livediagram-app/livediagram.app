@@ -781,7 +781,6 @@ export type CanvasProps = {
     onMove: (x: number, y: number) => void;
     onReset: () => void;
     contextElements: Element[];
-    focusIds: string[];
     onApplyElements: (elements: Element[], mode: 'clean') => void;
     ownerId: string;
     // The active tab's ID — the conversation-reset key. The NAME must

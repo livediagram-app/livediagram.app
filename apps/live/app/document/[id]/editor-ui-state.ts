@@ -1,10 +1,4 @@
-import {
-  useCallback,
-  useState,
-  useSyncExternalStore,
-  type MutableRefObject,
-  type SetStateAction,
-} from 'react';
+import { useCallback, useState, type MutableRefObject, type SetStateAction } from 'react';
 import { useToast } from '@/hooks/ui/useToast';
 import { createSelectionStore } from '@/lib/selection-store';
 import { OUT_OF_SCOPE_MESSAGE, isTabOutOfScope } from '@/lib/tab-scope';
@@ -41,14 +35,11 @@ export function useEditorUiState(
     },
     [tabScopeRef, toast],
   );
-  // The selection lives in a store (docs/specs/008-canvas/blueprints/selection-store.md): the canvas
-  // reads it per element; the editor subscribes to the whole of it here.
+  // The selection lives in a store (docs/specs/008-canvas/blueprints/selection-store.md). The editor
+  // root holds it but never subscribes: handlers read it with readSelection() when they run, effects
+  // subscribe in their effect, and only the views that show the selection render for a change.
   const [selectionStore] = useState(createSelectionStore);
-  const { selectedId, multiSelectedIds } = useSyncExternalStore(
-    selectionStore.subscribe,
-    selectionStore.get,
-    selectionStore.get,
-  );
+  const readSelection = selectionStore.get;
   const { setSelectedId, setMultiSelectedIds } = selectionStore;
   const [editingId, setEditingId] = useState<string | null>(null);
   // True when the active label edit began via type-to-edit (docs/specs/008-canvas/canvas-and-palette.md): the
@@ -79,7 +70,7 @@ export function useEditorUiState(
     selectionStore,
     activeId,
     setActiveId,
-    selectedId,
+    readSelection,
     setSelectedId,
     editingId,
     setEditingId,
@@ -87,7 +78,6 @@ export function useEditorUiState(
     setEditCursorAtEnd,
     formatSourceId,
     setFormatSourceId,
-    multiSelectedIds,
     setMultiSelectedIds,
     templatePickerMode,
     setTemplatePickerMode,

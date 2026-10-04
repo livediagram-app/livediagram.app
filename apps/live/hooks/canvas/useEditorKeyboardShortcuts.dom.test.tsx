@@ -8,30 +8,42 @@ import type { EditorKeyboardShortcutsDeps } from './editor-shortcut-keys';
 // (docs/specs/008-canvas/canvas-and-palette.md#selection-popover), and every key the editor acts on
 // is counted once for the power user mode offer (docs/specs/007-editor/power-user-mode.md).
 
-function deps(overrides: Partial<EditorKeyboardShortcutsDeps> = {}) {
+// A case states the selection as values; the hook reads it through readSelection.
+type Overrides = Partial<EditorKeyboardShortcutsDeps> & {
+  selectedId?: string | null;
+  multiSelectedIds?: ReadonlySet<string>;
+};
+
+function deps(overrides: Overrides = {}) {
   const spies = {
     deleteSelected: vi.fn(),
     deleteMultiSelected: vi.fn(),
     onShortcutUsed: vi.fn(),
     setCanvasTool: vi.fn(),
   };
+  const target: Record<string, unknown> = {
+    formatSourceId: null,
+    pendingDraw: null,
+    selectedId: 'a',
+    multiSelectedIds: new Set<string>(),
+    editingId: null,
+    isReadOnly: false,
+    canvasTool: 'select',
+    enabled: true,
+    zenMode: false,
+    canGrowMindNode: () => false,
+    // An ordinary diagram tab unless a test says otherwise.
+    whiteboard: null,
+    ...spies,
+    ...overrides,
+  };
+  // The hook reads the selection when a key is pressed (docs/specs/008-canvas/blueprints/selection-store.md).
+  target.readSelection = () => ({
+    selectedId: target.selectedId,
+    multiSelectedIds: target.multiSelectedIds,
+  });
   const base = new Proxy(
-    {
-      formatSourceId: null,
-      pendingDraw: null,
-      selectedId: 'a',
-      multiSelectedIds: new Set<string>(),
-      editingId: null,
-      isReadOnly: false,
-      canvasTool: 'select',
-      enabled: true,
-      zenMode: false,
-      canGrowMindNode: () => false,
-      // An ordinary diagram tab unless a test says otherwise.
-      whiteboard: null,
-      ...spies,
-      ...overrides,
-    } as Record<string, unknown>,
+    target,
     // Every other callback in the bag is a harmless no-op.
     { get: (t, k: string) => (k in t ? t[k] : () => {}) },
   );

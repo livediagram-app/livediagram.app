@@ -1,5 +1,8 @@
 'use client';
 
+import { useMemo } from 'react';
+import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
+import { sameMembers, selectionIds, type Selection } from '@/lib/selection-store';
 import { AskIcon, BlinkCursor, CleanIcon, PlugIcon, SendIcon, Spinner } from './ai-panel-icons';
 import type { Element } from '@livediagram/document';
 import type { AiMode } from '@/lib/api-client';
@@ -7,9 +10,10 @@ import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { useAiPanelSession } from './useAiPanelSession';
 import { HoverCard, SOLID_BRAND_DARK_CONTROL } from '@livediagram/ui';
 
+const selectionSetOf = (s: Selection) => selectionIds(s.selectedId, s.multiSelectedIds);
+
 type AiPanelProps = {
   contextElements: Element[]; // all tab elements
-  focusIds: string[]; // selected element IDs (empty = whole tab)
   // The conversation-reset key. The NAME below is payload only — keying
   // the reset on it wiped the conversation on every rename and leaked
   // history across two same-named tabs.
@@ -59,13 +63,17 @@ const PLACEHOLDERS: Record<AiMode, string> = {
 
 export function AiPanelContent({
   contextElements,
-  focusIds,
   tabId,
   tabName,
   ownerId,
   onApplyElements,
   showSuggestions,
 }: AiPanelProps) {
+  // What the request is about: the selection, read from the store (empty = the whole tab). The panel
+  // describes it, so a selection change renders the panel and not the editor
+  // (docs/specs/008-canvas/blueprints/selection-store.md).
+  const selected = useSelectionOf(selectionSetOf, sameMembers);
+  const focusIds = useMemo(() => [...selected], [selected]);
   // The request session (mode / prompt / streaming status / history +
   // handleSend) lives in useAiPanelSession; the panel keeps the render.
   const {

@@ -17,6 +17,7 @@
 // beginFreehand, commitFreehand) is consumed by the Canvas + keyboard
 // hook. Verbatim relocation — no behaviour change.
 
+import type { Selection } from '@/lib/selection-store';
 import { useRef, useState } from 'react';
 import { createFreehand, type Element, type Tab } from '@livediagram/document';
 import { getTheme } from '@/lib/themes';
@@ -34,7 +35,8 @@ type ShapeDrawingDeps = {
   editsBlocked: boolean;
   // The currently-selected element id, read at arm-time so a tap-to-drop
   // inherits its size (see beginDraw / commitDraw).
-  selectedId: string | null;
+  // Read when a draw begins (docs/specs/008-canvas/blueprints/selection-store.md).
+  readSelection: () => Selection;
   canvasTool: CanvasTool;
   setCanvasTool: (tool: CanvasTool) => void;
   activeTab: Tab;
@@ -62,7 +64,7 @@ type ShapeDrawingDeps = {
 export function useShapeDrawing(deps: ShapeDrawingDeps) {
   const {
     editsBlocked,
-    selectedId,
+    readSelection,
     canvasTool,
     setCanvasTool,
     activeTab,
@@ -101,6 +103,7 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
   const beginDraw = (intent: PendingDraw): void => {
     // Capture the selection's size BEFORE clearing it so commitDraw's
     // tap branch can inherit it.
+    const { selectedId } = readSelection();
     inheritSizeRef.current = selectedId
       ? (activeTab.elements.find((el) => el.id === selectedId) ?? null)
       : null;
