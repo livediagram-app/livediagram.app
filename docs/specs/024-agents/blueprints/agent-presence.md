@@ -36,7 +36,7 @@ Scope, by file:
 | `apps/api/migrations/0068_ws_ticket_person_tag.sql` (planned)                                          | `ws_tickets.person_tag` (PR1)                                                                    |
 | `apps/api/src/db/ws-tickets.ts`                                                                        | `WsAdmission.personTag`; written at mint, returned at consume                                    |
 | `apps/api/src/db/tabs.ts`                                                                              | `tabIdsWithComments(env, documentId)`                                                            |
-| `apps/api/src/person-tag.ts`                                                                 | `personTagFor(documentId, ownerId)`                                                              |
+| `apps/api/src/person-tag.ts`                                                                           | `personTagFor(documentId, ownerId)`                                                              |
 | `apps/api/src/comments.ts`                                                                             | `tokenId` locked by `rewriteCommentAuthors`, blanked by `redactCommentAuthorIds`; `threadsOfTab` |
 | `apps/api/src/routes/comment-routes.ts` (planned)                                                      | `handleCommentRoutes`: add, delete-own (moved, PR28), reply, resolve, reopen, list               |
 | `apps/api/src/routes/agent-presence-routes.ts` (planned)                                               | `handleAgentPresenceRoute`: `PUT` / `DELETE .../tabs/:tabId/presence`                            |
