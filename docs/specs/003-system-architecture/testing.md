@@ -144,9 +144,9 @@ the "decides who may see this" or "decides what may be deleted" set.
 CI runs parallel jobs (`.github/workflows/ci.yml`): **Checks** runs lint →
 format → typecheck; **Tests** runs **test** → **coverage thresholds**, each
 suite exactly once (a workspace with `test:coverage` runs only that), for every
-workspace but the editor; **Editor unit tests i/4** run the editor's suite
-(`apps/live`, most of the repository's tests) under coverage, a quarter of its
-files each (`vitest run --shard=i/4`); **Build** runs the build and the staging
+workspace but the editor; **Editor unit tests i/3** run the editor's suite
+(`apps/live`, most of the repository's tests) under coverage, a third of its
+files each (`vitest run --shard=i/3`); **Build** runs the build and the staging
 config check. No CI change is needed to start running
 tests; adding a `test` script to a workspace is enough for Turborepo to pick
 it up.
@@ -160,10 +160,18 @@ because running it at all keeps the coverage tooling exercised. It previously
 did not run in CI, which is how a v4 coverage provider came to sit against a
 v5 test runner with every check green: nothing invoked the broken path.
 
+### Sizing the shards
+
+A pull request waits for its slowest job, so splitting a suite further than the slowest job that cannot
+be split (Checks, about 4 minutes) buys no time, while each extra job takes one of the account's 20
+concurrent runner slots that every other run waits on. The editor's suite is split into the fewest
+shards that finish inside Checks: three, at about 3 minutes each, of which about 30 seconds is
+setup. The E2E suite sizes its shards the same way ([End-to-end tests](e2e-smoke.md#when-it-runs)).
+
 ### Coverage report
 
 Tests and each Editor unit tests job upload their `lcov` reports to
-[Codecov](https://app.codecov.io/gh/livediagram-app/livediagram.app), which merges the five uploads
+[Codecov](https://app.codecov.io/gh/livediagram-app/livediagram.app), which merges the four uploads
 of a commit into one report and comments it on the pull request (`codecov.yml`). It informs; it never
 gates: its statuses are informational, and the enforced bar stays the thresholds above. The upload
 authenticates with GitHub's OIDC token (`id-token: write`), so no Codecov secret exists; a pull

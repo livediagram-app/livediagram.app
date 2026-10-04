@@ -35,7 +35,7 @@ Three jobs run in parallel, each after its own `pnpm install --frozen-lockfile`,
 
 - **Checks**: `pnpm lint`, `pnpm format:check`, `pnpm typecheck`.
 - **Tests**: `pnpm turbo run test --concurrency=2` for every workspace without `test:coverage`, then `pnpm turbo run test:coverage --concurrency=2 --filter=!@livediagram/live` for those with it (enforcing the per-file coverage thresholds), and uploads their coverage to Codecov.
-- **Editor unit tests i/4**: the editor's suite (`apps/live`) under coverage, a quarter of its files per job (`vitest run --shard=i/4`), each uploading its coverage to Codecov ([Coverage report](../003-system-architecture/testing.md#coverage-report)). Each suite runs exactly once; `scripts/ci-test-filters.mjs` derives the exclusions from the manifests, so adding or removing a coverage script needs no CI edit.
+- **Editor unit tests i/3**: the editor's suite (`apps/live`) under coverage, a third of its files per job (`vitest run --shard=i/3`), each uploading its coverage to Codecov ([Coverage report](../003-system-architecture/testing.md#coverage-report)). Each suite runs exactly once; `scripts/ci-test-filters.mjs` derives the exclusions from the manifests, so adding or removing a coverage script needs no CI edit.
 - **Build**: `pnpm build`, then `pnpm staging:check`.
 
 No job needs another's output: only the seven apps have a `build` script, and no workspace depends on an app, so checks and tests build nothing. The `main` ruleset requires all three checks by name.
