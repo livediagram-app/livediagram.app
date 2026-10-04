@@ -180,6 +180,10 @@ authenticates with GitHub's OIDC token (`id-token: write`), so no Codecov secret
 request from a fork uploads tokenless. A failed upload logs its error and leaves the job green, so a
 Codecov outage never holds back a merge.
 
+The comment's layout and the project status come from `codecov.yml` only on a Codecov plan that
+reads it: on the Team plan Codecov writes a fixed, patch-only comment whatever the file says, so the
+`livediagram-app` organisation stays on a plan other than Team.
+
 ## Before a push
 
 A **pre-push hook** runs what CI's Checks and Tests would fail on, for what the push changes, so
