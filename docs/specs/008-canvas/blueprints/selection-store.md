@@ -191,8 +191,12 @@ export function withStableEventProps<P extends object>(Inner: ComponentType<P>):
 
 - Per selection change: one `get()` comparison per subscriber. With 1,000 element views that is
   1,000 selector calls of O(1) and as many re-renders as views whose flags flipped.
-- Budget: marquee release and select within the spec's rows; the target is the editor root plus the
-  selection chrome only, measured on the runner (`gh workflow run canvas-perf.yml --ref <branch>`).
+- What a selection change renders is pinned by the render-count test: the flipped views and the
+  selection chrome, never the element layer. Its script time is measured by a local A/B on the
+  reference board (alternating builds, several rounds); the runner's budget rows are too noisy to
+  resolve it (docs/research/canvas-performance.md).
+- Above the boundary the editor root still renders for a selection change; it is most of what a
+  select's long task holds now.
 
 ## Observability
 
