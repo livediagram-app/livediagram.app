@@ -438,8 +438,8 @@ function BuildYours({ href, live }: { href: string; live: boolean }) {
         aria-hidden
         className="hero-build-halo absolute -inset-2 rounded-full bg-brand-400/30 blur-md"
       />
-      <span className="relative inline-flex items-center gap-2.5 rounded-full bg-gradient-to-r from-brand-500 to-indigo-500 py-3 pl-4 pr-5 text-base font-semibold text-white shadow-[0_12px_32px_-10px] shadow-brand-600/70 ring-1 ring-inset ring-white/25 transition duration-200 ease-out group-hover/build:from-brand-400 group-hover/build:to-indigo-400 dark:from-brand-600 dark:to-indigo-600 dark:group-hover/build:from-brand-500 dark:group-hover/build:to-indigo-500 group-hover/build:shadow-[0_18px_40px_-10px] motion-safe:group-hover/build:-translate-y-0.5 motion-safe:group-hover/build:scale-[1.03] group-active/build:translate-y-0 group-active/build:scale-100">
-        <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/20">
+      <span className="relative inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-brand-500 to-indigo-500 py-2 pl-2 pr-3.5 text-sm font-semibold sm:py-3 sm:pl-4 sm:pr-5 sm:text-base text-white shadow-[0_12px_32px_-10px] shadow-brand-600/70 ring-1 ring-inset ring-white/25 transition duration-200 ease-out group-hover/build:from-brand-400 group-hover/build:to-indigo-400 dark:from-brand-600 dark:to-indigo-600 dark:group-hover/build:from-brand-500 dark:group-hover/build:to-indigo-500 group-hover/build:shadow-[0_18px_40px_-10px] motion-safe:group-hover/build:-translate-y-0.5 motion-safe:group-hover/build:scale-[1.03] group-active/build:translate-y-0 group-active/build:scale-100">
+        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-white/20 sm:h-7 sm:w-7">
           <SparkleIcon size={15} aria-hidden />
         </span>
         Build yours

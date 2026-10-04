@@ -14,16 +14,24 @@ export function Hero() {
         <HeroConnectors />
         {/* Says what it is and the one thing that sets it apart (docs/specs/019-marketing/marketing-site.md). */}
         {/* Lifted above the stage below it, so the word card opens over the windows. */}
-        <h1 className="relative z-20 mx-auto whitespace-nowrap text-[clamp(1.5rem,8.2vw,4.5rem)] font-semibold leading-tight tracking-tight text-slate-900 dark:text-slate-100">
+        <h1 className="relative z-20 mx-auto whitespace-nowrap text-[clamp(1.5rem,9.4vw,4.5rem)] font-semibold sm:text-[clamp(1.5rem,8.2vw,4.5rem)] leading-tight tracking-tight text-slate-900 dark:text-slate-100">
           {/* The rotating first word (HeroTitleLine) is decorative: the stable headline is what
-              screen readers and crawlers read. One line at every width: the size scales with the
-              viewport so the longest word still fits. */}
+              screen readers and crawlers read. One line from `sm`, the size scaling with the viewport
+              so the longest word still fits; on a phone "live." takes a second line, so the words
+              can be larger. */}
           <span className="sr-only">Diagram together, live.</span>
           <span aria-hidden>
             <HeroTitleLine>
               {' '}
-              together, <span className="text-brand-600 dark:text-brand-300">live</span>.
+              together,
+              <span className="max-sm:hidden">
+                {' '}
+                <span className="text-brand-600 dark:text-brand-300">live</span>.
+              </span>
             </HeroTitleLine>
+          </span>
+          <span aria-hidden className="block sm:hidden">
+            <span className="text-brand-600 dark:text-brand-300">live</span>.
           </span>
         </h1>
         <p
