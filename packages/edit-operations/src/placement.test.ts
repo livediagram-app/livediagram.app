@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import type { Element, Tab } from '@livediagram/document';
 import { checkoutFlow, fixedIds } from './fixtures/checkout-flow';
-import { defaultSpot, nudgeUntilFree, resolvePlacement } from './placement';
+import {
+  defaultSpot,
+  firstOverlapIn,
+  nudgeUntilFree,
+  resolvePlacement,
+  type Box,
+} from './placement';
 import { createState, putElement } from './state';
 import type { Placement } from './types';
 import { PLACEMENT_GAP } from './vocabulary';
@@ -201,5 +207,45 @@ describe('nudgeUntilFree', () => {
       width: 10,
       height: 10,
     });
+  });
+});
+
+describe('firstOverlapIn', () => {
+  // A seeded walk over boxes, so the comparison is deterministic.
+  function boxes(seed: number, count: number): Box[] {
+    let s = seed;
+    const next = () => (s = (s * 1103515245 + 12345) % 2147483648) / 2147483648;
+    return Array.from({ length: count }, () => ({
+      x: Math.round(next() * 4000 - 2000),
+      y: Math.round(next() * 4000 - 2000),
+      width: Math.round(10 + next() * 300),
+      height: Math.round(10 + next() * 200),
+    }));
+  }
+  const naive = (taken: readonly Box[], box: Box) =>
+    taken.find(
+      (o) =>
+        box.x < o.x + o.width &&
+        o.x < box.x + box.width &&
+        box.y < o.y + o.height &&
+        o.y < box.y + box.height,
+    );
+
+  it('finds the first overlapping box in order, as a scan would', () => {
+    const taken = [
+      ...boxes(7, 300),
+      { x: -5000, y: -5000, width: 10_000, height: 10_000 },
+      ...boxes(9, 50),
+    ];
+    const first = firstOverlapIn(taken);
+    for (const box of boxes(11, 200)) expect(first(box)).toBe(naive(taken, box));
+    const sparse = boxes(13, 300);
+    const firstSparse = firstOverlapIn(sparse);
+    for (const box of boxes(17, 200)) expect(firstSparse(box)).toBe(naive(sparse, box));
+  });
+
+  it('checks everything for a query box spanning the board', () => {
+    const taken = boxes(19, 40);
+    expect(firstOverlapIn(taken)({ x: -3000, y: -3000, width: 6000, height: 6000 })).toBe(taken[0]);
   });
 });

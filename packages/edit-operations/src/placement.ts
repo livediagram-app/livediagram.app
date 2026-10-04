@@ -5,6 +5,8 @@
 
 import type { EditRejection } from '@livediagram/api-schema';
 import {
+  ELEMENT_GRID_CELL,
+  ELEMENT_GRID_MAX_CELLS,
   FRAME_PAD,
   FRAME_TOP,
   isContainer,
@@ -55,13 +57,52 @@ function occupiers(state: EditState, moving: ReadonlySet<ElementId>): Box[] {
   });
 }
 
-// Moves `box` along `side` past each occupier it overlaps, one at a time: each step passes one
-// occupier, so the walk ends.
+// The first of `taken` a box overlaps, in their order, found through buckets of ELEMENT_GRID_CELL so a
+// query costs the neighbourhood, not the tab. A box spanning more than ELEMENT_GRID_MAX_CELLS cells sits
+// on a list every query checks; a query box that large checks everything.
+export function firstOverlapIn(taken: readonly Box[]): (box: Box) => Box | undefined {
+  const cellsOf = (box: Box) => {
+    const [x0, x1] = [
+      Math.floor(box.x / ELEMENT_GRID_CELL),
+      Math.floor((box.x + box.width) / ELEMENT_GRID_CELL),
+    ];
+    const [y0, y1] = [
+      Math.floor(box.y / ELEMENT_GRID_CELL),
+      Math.floor((box.y + box.height) / ELEMENT_GRID_CELL),
+    ];
+    if ((x1 - x0 + 1) * (y1 - y0 + 1) > ELEMENT_GRID_MAX_CELLS) return null;
+    const cells: string[] = [];
+    for (let x = x0; x <= x1; x++) for (let y = y0; y <= y1; y++) cells.push(`${x},${y}`);
+    return cells;
+  };
+  const buckets = new Map<string, number[]>();
+  const wide: number[] = [];
+  taken.forEach((box, i) => {
+    const cells = cellsOf(box);
+    if (!cells) wide.push(i);
+    else
+      for (const cell of cells) {
+        const bucket = buckets.get(cell);
+        if (bucket) bucket.push(i);
+        else buckets.set(cell, [i]);
+      }
+  });
+  return (box) => {
+    const cells = cellsOf(box);
+    const candidates = cells
+      ? [...wide, ...cells.flatMap((cell) => buckets.get(cell) ?? [])]
+      : taken.map((_, i) => i);
+    const hits = candidates.filter((i) => overlaps(box, taken[i]!));
+    return hits.length ? taken[Math.min(...hits)] : undefined;
+  };
+}
+
+// Moves `box` along `side` past each occupier it overlaps, one at a time. The walk only ever moves one
+// way and lands past what it hit, so it meets each occupier at most once: it ends within `taken.length` steps.
 export function nudgeUntilFree(box: Box, side: Side, gap: number, taken: readonly Box[]): Box {
+  const firstOverlap = firstOverlapIn(taken);
   let at = box;
-  for (let step = 0; step <= taken.length; step++) {
-    const hit = taken.find((other) => overlaps(at, other));
-    if (!hit) return at;
+  for (let hit = firstOverlap(at); hit; hit = firstOverlap(at)) {
     at =
       side === 'right-of'
         ? { ...at, x: hit.x + hit.width + gap }

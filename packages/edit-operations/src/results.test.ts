@@ -16,7 +16,7 @@ describe('formatResultLines', () => {
         changes: [
           { key: 'label', from: 'Login', to: 'Sign in' },
           { key: 'shape', from: 'square', to: 'stadium' },
-          { key: 'widened', from: 140, to: 152 },
+          { key: 'widened', from: 140, to: 160 },
         ],
       },
       {
@@ -24,12 +24,18 @@ describe('formatResultLines', () => {
         ref: 'verify',
         kind: 'square',
         label: 'Verify email',
-        at: [0, 300],
-        size: [140, 60],
+        at: [45, 300],
+        size: [131, 120],
       },
+      { mark: '~', ref: 'f2', changes: [{ key: 'taller', from: 200, to: 360 }] },
       { mark: '~', ref: 'a3', changes: [{ key: 'to', from: 'n4', to: 'verify' }] },
       { mark: '+', ref: 'arrow', kind: 'arrow', ends: ['verify', 'n4'], styleOf: 'a3' },
-      { mark: '»', refs: ['n4', 'n5', 'n6'], delta: [0, 100], reason: 'make room' },
+      {
+        mark: '»',
+        refs: ['n4', 'n5', 'n6', 'n7', 'n8'],
+        delta: [0, 160],
+        reason: 'make room',
+      },
       { mark: 'container', ref: 'f2', joined: ['verify'], left: [] },
     ];
     const footer = formatResultFooter({
@@ -42,11 +48,12 @@ describe('formatResultLines', () => {
     });
     expect([...formatResultLines(results), footer].join('\n')).toBe(
       [
-        '~ n3  label "Login"→"Sign in" · shape square→stadium · widened 140→152',
-        '+ verify  square "Verify email" @0,300 140×60',
+        '~ n3  label "Login"→"Sign in" · shape square→stadium · widened 140→160',
+        '+ verify  square "Verify email" @45,300 131×120',
+        '~ f2  taller 200→360',
         '~ a3  to n4→verify',
         '+ arrow  verify→n4 (style of a3)',
-        '» n4 n5 n6  +0,+100 (make room)',
+        '» n4 n5 n6 n7 n8  +0,+160 (make room)',
         'f2  +verify',
         'rev 41→42 · cs_8k2m4q7d1x · lint clean · revert: livediagram changeset revert cs_8k2m4q7d1x',
       ].join('\n'),

@@ -83,7 +83,29 @@ function fastestApply(tab: Tab, operations: readonly EditOperation[]): number {
   return fastest;
 }
 
+// One row of `count` boxes side by side: a box placed right of the first walks past every one.
+function rowOf(count: number): Tab {
+  const elements: Element[] = Array.from({ length: count }, (_, i) => ({
+    id: `r${i}`,
+    type: 'shape',
+    shape: 'square',
+    x: i * 150,
+    y: 0,
+    width: 140,
+    height: 60,
+  }));
+  return { id: 'row', name: 'Row', elements };
+}
+
 describe('performance', () => {
+  it('walks past a row of boxes in time linear in the row', { timeout: TIMEOUT_MS }, () => {
+    const add = parseEditOperations('add square right-of:r0 gap:0');
+    if ('errors' in add) throw new Error('add');
+    const small = fastestApply(rowOf(500), add.operations);
+    const large = fastestApply(rowOf(500 * GROWTH), add.operations);
+    expect(large / small).toBeLessThan(RATIO_CEILING);
+  });
+
   it('grows about linearly with the tab', { timeout: TIMEOUT_MS }, () => {
     const operations = changesetOf(10);
     const small = fastestApply(tabOf(25), operations);
