@@ -168,7 +168,8 @@ article's swatches), and a line break inside a block (Shift+Enter). Code blocks 
 - **Controls**, left to right, each with a tooltip naming it and its shortcut, pressed state shown
   (`aria-pressed`); the formats used all the time are buttons, the rest menus:
   - **Style** (a menu, each entry drawn in its own type: Text, Title, Subtitle, Heading 1, Heading
-    2, Heading 3, Quote, Code);
+    2, Heading 3, Quote, Code); on a phone its button names the style short (H1, H2, H3, and
+    Bullets, Numbers, To-do for a list) so it is narrower, the menu keeping the full names;
   - **Bold**, **Italic**, **Underline**;
   - **Colour** (a menu: **Text** then **Highlight**, each led by its clearing choice, **Default
     colour** / **No highlight**; text offers the article's **Accent** and nine fixed colours chosen

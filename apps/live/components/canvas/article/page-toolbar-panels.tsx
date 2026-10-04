@@ -91,15 +91,29 @@ const Rule = () => <div className="my-1 h-px bg-slate-100 dark:bg-slate-800" />;
 export const STYLE_OPTIONS: {
   id: ArticleParagraphStyle | 'code';
   label: string;
+  // The Style button's label on a phone, where the toolbar has no room to spare.
+  short?: string;
   preview: string;
   keys?: string;
 }[] = [
   { id: 'body', label: 'Text', preview: 'text-sm', keys: 'Mod-Alt-0' },
   { id: 'title', label: 'Title', preview: 'text-xl font-bold' },
   { id: 'subtitle', label: 'Subtitle', preview: 'text-base text-slate-500' },
-  { id: 'h1', label: 'Heading 1', preview: 'text-lg font-bold', keys: 'Mod-Alt-1' },
-  { id: 'h2', label: 'Heading 2', preview: 'text-base font-semibold', keys: 'Mod-Alt-2' },
-  { id: 'h3', label: 'Heading 3', preview: 'text-sm font-semibold', keys: 'Mod-Alt-3' },
+  { id: 'h1', label: 'Heading 1', short: 'H1', preview: 'text-lg font-bold', keys: 'Mod-Alt-1' },
+  {
+    id: 'h2',
+    label: 'Heading 2',
+    short: 'H2',
+    preview: 'text-base font-semibold',
+    keys: 'Mod-Alt-2',
+  },
+  {
+    id: 'h3',
+    label: 'Heading 3',
+    short: 'H3',
+    preview: 'text-sm font-semibold',
+    keys: 'Mod-Alt-3',
+  },
   { id: 'quote', label: 'Quote', preview: 'text-sm italic border-l-2 border-brand-500 pl-2' },
   { id: 'code', label: 'Code', preview: 'font-mono text-xs' },
 ];
@@ -128,10 +142,10 @@ export function StylePanel({
   );
 }
 
-export const LIST_OPTIONS: { id: ArticleListKind; label: string; keys: string }[] = [
-  { id: 'bullet', label: 'Bulleted list', keys: 'Mod-Shift-8' },
-  { id: 'numbered', label: 'Numbered list', keys: 'Mod-Shift-7' },
-  { id: 'todo', label: 'To-do list', keys: 'Mod-Shift-9' },
+export const LIST_OPTIONS: { id: ArticleListKind; label: string; short: string; keys: string }[] = [
+  { id: 'bullet', label: 'Bulleted list', short: 'Bullets', keys: 'Mod-Shift-8' },
+  { id: 'numbered', label: 'Numbered list', short: 'Numbers', keys: 'Mod-Shift-7' },
+  { id: 'todo', label: 'To-do list', short: 'To-do', keys: 'Mod-Shift-9' },
 ];
 
 export function ListPanel({
