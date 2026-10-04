@@ -53,14 +53,14 @@ function renderWizard(skipLocation?: SkipLocationStep | null) {
   return onPick;
 }
 const settingsOf = (onPick: ReturnType<typeof vi.fn>) => onPick.mock.calls[0]![3] as object;
-const checkbox = () => screen.getByRole('checkbox', { name: /and skip this step/ });
+const checkbox = () => screen.getByRole('switch', { name: /and skip this step/ });
 
-describe('the Location step checkbox', () => {
+describe('the Location step switch', () => {
   it('starts unticked, names the selection, and is not sent unticked', () => {
     const onPick = renderWizard();
     fireEvent.click(screen.getByRole('button', { name: /^Next/ }));
-    expect((checkbox() as HTMLInputElement).checked).toBe(false);
-    expect(checkbox().closest('label')!.textContent).toBe(
+    expect(checkbox().getAttribute('aria-checked')).toBe('false');
+    expect(checkbox().textContent).toBe(
       'Always save new documents in My documents and skip this step',
     );
     fireEvent.click(screen.getByRole('button', { name: 'Create' }));
@@ -74,7 +74,7 @@ describe('the Location step checkbox', () => {
     fireEvent.click(screen.getByRole('radio', { name: /My documents/ }));
     fireEvent.click(screen.getByRole('radio', { name: /Workshops/ }));
     fireEvent.click(checkbox());
-    expect(checkbox().closest('label')!.textContent).toContain('in Workshops and');
+    expect(checkbox().textContent).toContain('in Workshops and');
     fireEvent.click(screen.getByRole('button', { name: 'Create' }));
     expect(settingsOf(onPick)).toMatchObject({
       folderId: 'w',
@@ -91,7 +91,7 @@ describe('the Location step checkbox', () => {
     fireEvent.click(screen.getByRole('button', { name: /^Next/ }));
     fireEvent.click(screen.getByRole('radio', { name: /Local Browser/ }));
     fireEvent.click(checkbox());
-    expect(checkbox().closest('label')!.textContent).toContain('in Local Browser and');
+    expect(checkbox().textContent).toContain('in Local Browser and');
     fireEvent.click(screen.getByRole('button', { name: 'Create' }));
     expect(settingsOf(onPick)).toMatchObject({
       saveLocation: 'browser',
@@ -105,7 +105,7 @@ describe('the Location step checkbox', () => {
     fireEvent.click(checkbox());
     fireEvent.click(screen.getByRole('button', { name: /Template/ }));
     fireEvent.click(screen.getByRole('button', { name: /^Next/ }));
-    expect((checkbox() as HTMLInputElement).checked).toBe(false);
+    expect(checkbox().getAttribute('aria-checked')).toBe('false');
   });
 });
 

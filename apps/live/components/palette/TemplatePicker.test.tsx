@@ -260,8 +260,8 @@ describe('TemplatePicker, default folders', () => {
     const onPick = renderWithDefaults();
     fireEvent.click(screen.getByRole('radio', { name: /My documents/ }));
     fireEvent.click(screen.getByRole('radio', { name: /Elsewhere/ }));
-    const box = screen.getByRole('checkbox', { name: 'Always save diagrams here' });
-    expect((box as HTMLInputElement).checked).toBe(false);
+    const box = screen.getByRole('switch', { name: 'Always save diagrams here' });
+    expect(box.getAttribute('aria-checked')).toBe('false');
     fireEvent.click(box);
     fireEvent.click(screen.getByRole('button', { name: 'Create' }));
     expect(onPick.mock.calls[0]![3]).toMatchObject({

@@ -291,7 +291,7 @@ document will go and why.
   reads "**Whiteboards** go to **Workshops** by default", the entry's label and the folder's name,
   with a **Change default** button that opens the [default folder picker](#the-default-folder-picker)
   for that key. A new default chosen there is pre-selected at once.
-  - The line and the Always save checkbox below never show together, so they share one slot
+  - The line and the Always save switch below never show together, so they share one slot
     under the browser, kept whenever the folder step shows: neither moves the browser as it appears.
 - **Changing template re-resolves** the pre-selection, unless the reader has picked a place
   themselves: their pick stands.
@@ -303,13 +303,13 @@ document will go and why.
   - the root shown only because nothing else resolved is **no choice**: the create carries no
     placement and the server's precedence decides, so a default the wizard could not yet see is
     still honoured.
-- **Always save <these> here.** A checkbox under the folder browser, worded for the intent's most
+- **Always save <these> here.** A switch row (`SwitchRow`, the house iOS-style switch) under the folder browser, worded for the intent's most
   specific key ("Always save whiteboards here", "Always save Event Storming boards here"), offers
   to make the selection that key's default.
   - It shows only when the selection could be a default (a personal folder, a team folder, or the
     My documents root) and is not already where those documents go.
-  - It starts unticked each time it appears.
-  - Ticked, Create sets the key's default to the selected folder (or clears it, at the My documents
+  - It starts off each time it appears.
+  - On, Create sets the key's default to the selected folder (or clears it, at the My documents
     root) before creating. A failed write is logged and never stops the create.
 - None of this applies to **Local Browser**: an offline document has no folder step
   ([Non-goals](#non-goals)).
@@ -326,15 +326,15 @@ the defaults above.
   (`unsorted`, a personal folder, a team's root or a team folder; always `unsorted` for Local
   Browser), and the place's name as shown then, for the lines below. Off is `null`, written
   explicitly so a cleared value wins the merge over another device's cache.
-- **The checkbox.** At the bottom of the Location step, below everything else, a checkbox reads
+- **The switch.** At the bottom of the Location step, below everything else, a switch row (`SwitchRow`) reads
   "Always save new documents in **<place>** and skip this step". `<place>` is the current selection
   as the reader sees it: a folder's name, **My documents**, a team's name, a team folder with its
   team ("Workshops · Design team"), or **Local Browser** when that save location is chosen. It
-  follows the selection while ticked.
-  - It starts unticked each time the Location step shows.
+  follows the selection while on.
+  - It starts off each time the Location step shows.
   - It sits in its own row under the per-key [Always save](#the-new-document-wizard) slot, so the
     two can both show and neither moves the other.
-  - Ticked, Create saves the preference (telemetry first), then creates as usual; a double-click
+  - On, Create saves the preference (telemetry first), then creates as usual; a double-click
     commit on a destination card saves that destination.
 - **While it is on, the wizard has one step.** On `/new` the step rail is not shown, the template
   step's primary button reads **Create**, and choosing a template card (a click or a double-click

@@ -1,9 +1,9 @@
 'use client';
 
-import { useId } from 'react';
+import { SwitchRow } from '@/components/primitives/SwitchRow';
 
 // The two faces of skipping the Location step (docs/specs/013-workspace/default-folders.md
-// "Skipping the Location step"): the Location step's checkbox that turns it on, and the quiet
+// "Skipping the Location step"): the Location step's switch that turns it on, and the quiet
 // "Saving in <place>" line the one-step wizard shows instead, with Change.
 
 const PLACE = 'font-semibold text-slate-800 dark:text-slate-100';
@@ -18,23 +18,16 @@ export function WizardSkipLocationCheckbox({
   checked: boolean;
   onChange: (on: boolean) => void;
 }) {
-  const id = useId();
   return (
-    <label
-      htmlFor={id}
-      className="flex cursor-pointer items-start gap-2 border-t border-slate-100 pt-4 text-sm text-slate-600 dark:border-slate-800 dark:text-slate-300"
-    >
-      <input
-        id={id}
-        type="checkbox"
+    <div className="border-t border-slate-100 pt-4 dark:border-slate-800">
+      <SwitchRow
         checked={checked}
-        onChange={(e) => onChange(e.target.checked)}
-        className="mt-0.5 h-4 w-4 shrink-0 accent-brand-600"
-      />
-      <span className="min-w-0">
+        onChange={onChange}
+        className="text-sm text-slate-600 dark:text-slate-300"
+      >
         Always save new documents in <span className={PLACE}>{placeName}</span> and skip this step
-      </span>
-    </label>
+      </SwitchRow>
+    </div>
   );
 }
 
