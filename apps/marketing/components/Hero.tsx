@@ -1,19 +1,6 @@
 import { HeroConnectors } from './HeroConnectors';
 import { HeroIllustration } from './HeroIllustration';
 import { HeroTitleLine } from './HeroTitleLine';
-import { PROOF_POINTS } from '@/lib/proof-points';
-
-// The proof points live on the stage's launch window now (hero-launch.tsx); the stage is
-// decorative, so screen readers get them here.
-function ProofPoints() {
-  return (
-    <ul className="sr-only">
-      {PROOF_POINTS.map((point) => (
-        <li key={point}>{point}</li>
-      ))}
-    </ul>
-  );
-}
 
 export function Hero() {
   return (
@@ -46,7 +33,6 @@ export function Hero() {
           Make whatever&rsquo;s on your mind, from diagrams and whiteboards to illustrations and
           documents. Share a link and your team builds it with you in real time.
         </p>
-        <ProofPoints />
 
         <HeroIllustration />
       </div>

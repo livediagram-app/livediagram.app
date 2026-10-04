@@ -1,12 +1,9 @@
 'use client';
 
 // Animated hero: seven editor windows on a sliding stage (docs/specs/019-marketing/marketing-site.md
-// "Hero"): an overview first, then the modes in action, then the launch window.
+// "Hero"): an overview first, then the modes in action.
 //   0. Overview — a bare board (no editor chrome), one named frame per mode window, each drawing
 //      its scene settled; pressing a frame moves the stage to that window (hero-overview.tsx).
-//   1. Your canvas — the launch window (hero-launch.tsx), last on the stage: a fresh, empty,
-//      private document. While centred, a click grows it to fill the screen and lands on a new
-//      blank document with Quick Start open.
 //   2. Diagram — two people map a sign-up flow in a frame: steps dropped and labelled, arrows
 //      joined, a branch and a loop added by a teammate, a step snapped onto an alignment guide and
 //      coloured, a sticky question and a database wired in (hero-diagram-board.tsx).
@@ -26,8 +23,8 @@
 // moves between them.
 // The centred window plays its pure-CSS build (hero-animations.css, hero-mode-animations.css);
 // the peeking windows render settled (.hero-static), blurred + faded, with the stage edges masked
-// so they fade out rather than hard-clip. The stage auto-advances every 22s (the launch window
-// holds for 32s) and centres a window when clicked (timer resets on interaction). Every window
+// so they fade out rather than hard-clip. The stage auto-advances every 22s (the overview holds
+// for 24s) and centres a window when clicked (timer resets on interaction). Every window
 // ends the same way: over its last second it fades to a light grey, the stage moves on, and the
 // next window lifts from that grey (hero-fade). On a phone the windows are tall, each scene in its
 // own portrait layout, and wider (less peek, more legible).
@@ -54,15 +51,6 @@ import { snapStage } from '@/lib/hero-stage';
 import { HeroOverview, type OverviewScene } from './hero-overview';
 import { EditorWindow, type TabDef } from './hero-editor-window';
 import { useStageBox } from './useStageBox';
-import {
-  LAUNCH_DWELL_MS,
-  LAUNCH_HREF,
-  LAUNCH_TAB,
-  LAUNCH_TITLE,
-  LaunchCanvasOverlay,
-  prefetchLaunch,
-  useLaunchGrow,
-} from './hero-launch';
 
 // Geometry: each window is `card`% of the stage with a GAP% gutter, so the
 // centred window sits at translateX = (100 - card) / 2 - i * (card + GAP).
@@ -72,7 +60,7 @@ const CARD_WIDE = 68;
 const CARD_NARROW = 92;
 const GAP = 3;
 
-// One build cycle: every window but the launch window plays for this long, and the hero-* build
+// One build cycle: every mode window plays for this long, and the hero-* build
 // and veil keyframes are timed to it.
 const CYCLE_MS = 22000;
 
@@ -91,8 +79,6 @@ const CARDS: {
   build?: string;
   // The overview: every window after it as a frame, each opening its window (hero-overview.tsx).
   overview?: boolean;
-  // The launch window: a link that grows into a new document (hero-launch.tsx).
-  launch?: boolean;
 }[] = [
   {
     key: 'overview',
@@ -163,15 +149,6 @@ const CARDS: {
     tabs: [{ name: 'Draft', color: '#0ea5e9', active: true }],
     shared: true,
   },
-  {
-    key: 'launch',
-    title: LAUNCH_TITLE,
-    label: 'A fresh canvas of your own: click it to start drawing',
-    mode: 'diagram',
-    tabs: [{ name: LAUNCH_TAB, color: '#0ea5e9', active: true }],
-    shared: false,
-    launch: true,
-  },
 ];
 
 // The overview's frames: every window that shows a mode at work.
@@ -212,12 +189,11 @@ export function HeroIllustration() {
   // (so a click gives the clicked window a full cycle). Skipped under reduced
   // motion (and stops if the visitor turns it on mid-visit).
   const reduceMotion = useMediaQuery(PREFERS_REDUCED_MOTION);
-  // The launch window holds longer (LAUNCH_DWELL_MS): it is the one a visitor can step into. The
-  // overview holds longer still (OVERVIEW_DWELL_MS): it is where a visitor picks what to watch.
+  // The overview holds longer (OVERVIEW_DWELL_MS): it is where a visitor picks what to watch.
   useEffect(() => {
     if (reduceMotion) return;
     const card = CARDS[active];
-    const dwell = card?.launch ? LAUNCH_DWELL_MS : card?.overview ? OVERVIEW_DWELL_MS : CYCLE_MS;
+    const dwell = card?.overview ? OVERVIEW_DWELL_MS : CYCLE_MS;
     const id = window.setTimeout(() => show((active + 1) % CARDS.length), dwell);
     return () => window.clearTimeout(id);
   }, [active, reduceMotion]);
@@ -233,8 +209,6 @@ export function HeroIllustration() {
   const box = useStageBox(stageRef);
   const snapped = box ? snapStage(box, card, GAP, active) : null;
   const cardWidth = snapped ? `${snapped.cardPx}px` : 'calc(var(--hero-card) * 1%)';
-
-  const { launch, layer } = useLaunchGrow();
 
   const current = CARDS[active] ?? CARDS[0]!;
   return (
@@ -257,18 +231,17 @@ export function HeroIllustration() {
           >
             {CARDS.map((c, i) => {
               const playing = i === active;
-              const liveDoc =
-                c.launch || c.overview ? null : c.mode === 'draw' ? (
-                  <DrawBoard portrait={portrait} />
-                ) : c.key === 'mindmap' ? (
-                  <MindMapBoard portrait={portrait} />
-                ) : c.key === 'article' ? (
-                  <ArticlePage portrait={portrait} />
-                ) : c.key === 'infographic' ? (
-                  <InfographicPages portrait={portrait} />
-                ) : (
-                  <DiagramBoard portrait={portrait} />
-                );
+              const liveDoc = c.overview ? null : c.mode === 'draw' ? (
+                <DrawBoard portrait={portrait} />
+              ) : c.key === 'mindmap' ? (
+                <MindMapBoard portrait={portrait} />
+              ) : c.key === 'article' ? (
+                <ArticlePage portrait={portrait} />
+              ) : c.key === 'infographic' ? (
+                <InfographicPages portrait={portrait} />
+              ) : (
+                <DiagramBoard portrait={portrait} />
+              );
               const frame = (
                 <EditorWindow
                   title={c.title}
@@ -278,44 +251,12 @@ export function HeroIllustration() {
                   playing={playing}
                   document={liveDoc}
                   viewBox={portrait ? PORTRAIT_VIEWBOX[c.key] : undefined}
-                  overlay={
-                    c.launch ? (
-                      <LaunchCanvasOverlay playing={playing} afterConnector={false} />
-                    ) : c.build ? (
-                      <BuildYours href={c.build} live={playing} />
-                    ) : undefined
-                  }
-                  empty={c.launch ?? false}
-                  veil={!c.launch && !c.overview}
+                  overlay={c.build ? <BuildYours href={c.build} live={playing} /> : undefined}
                 />
               );
               const cardClassName =
                 'hero-card-dim shrink-0 text-left ' +
                 (playing ? '' : 'scale-[0.97] opacity-60 blur-[2px]');
-              // The launch window is a real link (a plain one with JS off): centred, a click grows
-              // it into the editor; off-centre, a click centres it like any other window.
-              if (c.launch) {
-                return (
-                  <a
-                    key={c.key}
-                    href={LAUNCH_HREF}
-                    tabIndex={-1}
-                    onPointerEnter={prefetchLaunch}
-                    onClick={(e) => {
-                      if (!playing) {
-                        e.preventDefault();
-                        show(i);
-                      } else if (launch(e)) {
-                        e.preventDefault();
-                      }
-                    }}
-                    style={{ width: cardWidth }}
-                    className={'group block cursor-pointer ' + cardClassName}
-                  >
-                    {frame}
-                  </a>
-                );
-              }
               // The overview holds buttons of its own (its frames), so it is not one itself: off
               // centre, a press on it centres it; centred, its frames do the work.
               if (c.overview) {
@@ -362,7 +303,6 @@ export function HeroIllustration() {
           <StageArrow side="right" onClick={() => show(active + 1)} />
         ) : null}
       </div>
-      {layer}
 
       {/* Dot navigation: a label for the centred window, and one dot per
           window so a visitor moves between them at their own pace (the

@@ -26,17 +26,16 @@ const CARD =
   'flex h-7 items-center rounded-md border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900';
 const CELL = 'flex h-full w-7 items-center justify-center';
 
-// The canvas cluster, bottom right, as CanvasChrome lays it out: undo / redo, Layers, the Tab Look & Feel brush, and the zoom readout. `empty` is a new document's,
-// where undo and redo have nothing to do and sit disabled.
-export function CanvasCluster({ className, empty }: { className: string; empty: boolean }) {
-  const history = empty ? 'text-slate-300 dark:text-slate-600' : '';
+// The canvas cluster, bottom right, as CanvasChrome lays it out: undo / redo, Layers, the Tab Look &
+// Feel brush, and the zoom readout.
+export function CanvasCluster({ className }: { className: string }) {
   return (
     <div className={`items-center gap-1.5 text-slate-600 dark:text-slate-300 ${className}`}>
       <span className={`${CARD} overflow-hidden`}>
-        <span className={`${CELL} ${history}`}>
+        <span className={CELL}>
           <UndoIcon size={8} />
         </span>
-        <span className={`${CELL} ${history} border-l border-slate-100 dark:border-slate-800`}>
+        <span className={`${CELL} border-l border-slate-100 dark:border-slate-800`}>
           <RedoIcon size={8} />
         </span>
       </span>

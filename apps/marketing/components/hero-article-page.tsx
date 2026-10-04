@@ -82,7 +82,7 @@ export function ArticlePage({ portrait = false }: { portrait?: boolean }) {
         x={left}
         y={y + 46}
         fontFamily={SERIF}
-        fontSize="15"
+        fontSize="13.5"
         fontWeight="700"
         fill={INK}
       >

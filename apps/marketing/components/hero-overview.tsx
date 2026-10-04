@@ -76,7 +76,7 @@ function OverviewFrame({ scene, onOpen }: { scene: OverviewScene; onOpen: (key: 
           aria-hidden
           className="ml-auto opacity-0 transition-opacity group-hover/frame:opacity-100"
         >
-          Open ›
+          Watch ›
         </span>
       </span>
       <span className="block overflow-hidden rounded-lg border border-slate-200 bg-(--art-paper) shadow-sm transition duration-micro group-hover/frame:border-brand-400 group-hover/frame:shadow-md motion-safe:group-hover/frame:-translate-y-0.5 dark:border-slate-700 dark:group-hover/frame:border-brand-500/70">

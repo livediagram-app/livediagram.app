@@ -1,4 +1,4 @@
-import { lucideFileText, lucideLightbulb, lucidePencilLine } from '@livediagram/icons/lucide';
+import { lucideFileText, lucideLightbulb, lucideUsers } from '@livediagram/icons/lucide';
 import {
   FlowchartIcon,
   IllustrateIcon,
@@ -36,10 +36,10 @@ export const HERO_WORDS: readonly {
     Icon: lucideGlyph(lucideFileText, 16),
   },
   {
-    word: 'Write',
-    many: 'Writing',
-    what: 'Articles and long reads, on pages that export cleanly',
-    Icon: lucideGlyph(lucidePencilLine, 16),
+    word: 'Facilitate',
+    many: 'Facilitation',
+    what: 'Retros, workshops and town halls, run live with your team',
+    Icon: lucideGlyph(lucideUsers, 16),
   },
   {
     word: 'Whiteboard',

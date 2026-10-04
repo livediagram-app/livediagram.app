@@ -11,7 +11,6 @@ import {
   ToolbarMenuButton,
   ToolbarStrip,
 } from './hero-editor-chrome';
-import { HERO_CANVAS_ATTR } from './hero-launch';
 
 // Every window's diagram is drawn in this box on a wide screen.
 export const LANDSCAPE_VIEWBOX = '0 -60 600 400';
@@ -41,8 +40,6 @@ export function EditorWindow({
   shared,
   mode,
   overlay,
-  empty = false,
-  veil = true,
 }: {
   title: string;
   tabs: TabDef[];
@@ -54,13 +51,8 @@ export function EditorWindow({
   // The editor mode the window is in (docs/specs/007-editor/editor-modes.md): its palette and the
   // glyph on its tab.
   mode: HeroMode;
-  // Drawn over the canvas, above the diagram (the launch window's invitation and empty banner).
+  // Drawn over the canvas, above the diagram (the Build yours button).
   overlay?: ReactNode;
-  // A new document with nothing on it yet: undo and redo sit disabled.
-  empty?: boolean;
-  // The end-of-cycle veil hides a build snapping back to its first frame; a window with no build
-  // (the launch window) has nothing to hide and holds longer than a cycle, so it goes without.
-  veil?: boolean;
 }) {
   return (
     <div className="rounded-xl border border-slate-200 bg-white p-2 shadow-xl shadow-brand-500/10 dark:border-slate-800 dark:bg-slate-900">
@@ -71,15 +63,13 @@ export function EditorWindow({
             the stage advances behind the grey. When the window stops playing
             it is remounted to lift once more, so the peeking card doesn't
             snap from grey to its settled frame. */}
-        {veil ? (
-          <div
-            key={playing ? 'play' : 'idle'}
-            aria-hidden
-            className={`pointer-events-none absolute inset-0 z-20 bg-slate-200 dark:bg-slate-950 ${
-              playing ? 'hero-fade' : 'hero-fade-out'
-            }`}
-          />
-        ) : null}
+        <div
+          key={playing ? 'play' : 'idle'}
+          aria-hidden
+          className={`pointer-events-none absolute inset-0 z-20 bg-slate-200 dark:bg-slate-950 ${
+            playing ? 'hero-fade' : 'hero-fade-out'
+          }`}
+        />
         {/* Editor header strip (static chrome) */}
         <div className="flex items-center justify-between gap-2 border-b border-slate-100 bg-white px-3 py-2 dark:border-slate-800 dark:bg-slate-900">
           <div className="flex items-center gap-2">
@@ -115,17 +105,14 @@ export function EditorWindow({
         </div>
 
         {/* Canvas surface. */}
-        <div
-          {...{ [HERO_CANVAS_ATTR]: '' }}
-          className={`relative h-[460px] sm:h-[360px] ${CANVAS}`}
-        >
+        <div className={`relative h-[460px] sm:h-[360px] ${CANVAS}`}>
           {/* The Toolbar panel layout (docs/specs/007-editor/toolbar-layout.md): the Palette is a
               strip at the top centre and a menu button stands where the Explorer would float. */}
           <ToolbarMenuButton mode={mode} />
           <ToolbarStrip mode={mode} />
 
           {/* The canvas cluster (static chrome), drawn from the editor's own glyphs. */}
-          <CanvasCluster className="absolute bottom-2 right-2 hidden sm:flex" empty={empty} />
+          <CanvasCluster className="absolute bottom-2 right-2 hidden sm:flex" />
 
           {/* The diagram centres in the canvas below the strip, with clear space under it (more on a
               phone, whose portrait layouts run nearer the top), so nothing crowds the toolbar. */}

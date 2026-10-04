@@ -5,7 +5,7 @@ import { PREFERS_REDUCED_MOTION, useMediaQuery } from '@livediagram/ui';
 import { HERO_WORDS, HeroWordCard } from './HeroWordCard';
 
 // The headline's first word cycles through what livediagram is for
-// (docs/specs/019-marketing/marketing-site.md): Diagram, Document, Write, Whiteboard, Illustrate, Brainstorm ...
+// (docs/specs/019-marketing/marketing-site.md): Diagram, Document, Facilitate, Whiteboard, Illustrate, Brainstorm ...
 // together, live. The headline stays on one line, and a change never moves anything in layout
 // (docs/specs/004-interface-design/layout-stability.md): every word sits in the same grid cell, so
 // the slot is as wide as the widest, and each word is right-aligned in it, snug against
