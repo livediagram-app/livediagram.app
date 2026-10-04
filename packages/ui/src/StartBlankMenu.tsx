@@ -83,7 +83,11 @@ export function StartBlankMenu({
         aria-expanded={open}
         onClick={toggle}
         onKeyDown={onTriggerKeyDown}
-        className={buttonClassName({ variant: 'secondary', size: 'md', className: 'shadow-sm' })}
+        className={buttonClassName({
+          variant: 'secondary',
+          size: 'md',
+          className: 'cursor-pointer shadow-sm',
+        })}
       >
         <ButtonContent>Start Blank</ButtonContent>
         <ChevronDownIcon

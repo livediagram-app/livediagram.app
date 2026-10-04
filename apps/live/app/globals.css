@@ -54,10 +54,8 @@
 }
 
 @layer base {
-  button:not(:disabled),
-  [role='button']:not([aria-disabled='true']) {
-    cursor: pointer;
-  }
+  /* The pointer cursor on every enabled button now lives in the shared theme
+   * (@livediagram/tailwind-config), so every app gets it. */
 
   /* The keyboard-focus ring (WCAG 2.4.7) now lives in the shared theme
    * (@livediagram/tailwind-config) so every app gets the same branded ring;
