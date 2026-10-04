@@ -97,4 +97,16 @@ describe('scalableSnapshotSvg', () => {
       '<svg viewBox="0 0 4 2"><g/></svg>',
     );
   });
+
+  it('leaves the size of anything but the root svg alone', () => {
+    const svg = '<svg width="4" height="2"><rect width="1" height="1"/></svg>';
+    expect(scalableSnapshotSvg(svg)).toBe('<svg><rect width="1" height="1"/></svg>');
+  });
+
+  it('stays fast on hostile markup', () => {
+    const t = performance.now();
+    scalableSnapshotSvg('<svg' + ' '.repeat(100_000));
+    svgBackgroundColor('<rect'.repeat(50_000));
+    expect(performance.now() - t).toBeLessThan(200);
+  });
 });
