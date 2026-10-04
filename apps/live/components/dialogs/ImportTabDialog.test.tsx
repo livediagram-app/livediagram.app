@@ -64,3 +64,21 @@ describe('ImportTabDialog, draw.io', () => {
     expect(screen.getByText("Here's how your images came across.")).toBeTruthy();
   });
 });
+
+describe('ImportTabDialog, offered formats', () => {
+  it('offers only the formats it is given (Illustrate mode: JSON)', () => {
+    render(
+      <ImportTabDialog
+        tabName="Poster"
+        onImportFile={vi.fn()}
+        onImportText={vi.fn()}
+        onClose={vi.fn()}
+        formats={['json']}
+      />,
+    );
+    expect(screen.getByRole('button', { name: /JSON/ })).toBeTruthy();
+    for (const other of [/Mermaid/, /Markdown/, /Excalidraw/, /draw\.io/]) {
+      expect(screen.queryByRole('button', { name: other })).toBeNull();
+    }
+  });
+});

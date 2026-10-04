@@ -102,6 +102,9 @@ export function EditorTabDialogs() {
           tabName={activeTab.name}
           onImportFile={importIntoActiveTab}
           onImportText={importTextIntoActiveTab}
+          // Illustrate mode imports a livediagram tab only: the other formats are diagrams
+          // (docs/specs/007-editor/illustrate-pages.md "Import").
+          formats={illustratePages ? ['json'] : undefined}
           onClose={() => setImportOpen(false)}
         />
       ) : null}
