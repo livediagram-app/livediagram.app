@@ -1,5 +1,6 @@
 'use client';
 
+import type { ViewportStore } from '@/lib/viewport-store';
 import { useEffect, useRef, type RefObject } from 'react';
 import { clamp } from '@livediagram/document';
 import { ZOOM_MIN, ZOOM_MAX } from '@/lib/canvas';
@@ -30,10 +31,8 @@ import { useLatest } from '@/hooks/ui/useLatest';
 
 type Deps = {
   canvasMainRef: React.RefObject<HTMLElement | null>;
-  viewportZoom: number;
-  setViewportZoom: (z: number) => void;
-  viewportOffset: { x: number; y: number };
-  setViewportOffset: (o: { x: number; y: number }) => void;
+  // The view, read when a gesture fires and written back (docs/specs/008-canvas/blueprints/viewport-store.md).
+  viewport: ViewportStore;
 };
 
 type Api = {
@@ -81,10 +80,10 @@ export function useCanvasPinchZoom(deps: Deps): Api {
       const clamped = clamp(newZoom, ZOOM_MIN, ZOOM_MAX);
       const { wCX, wCY } = wrapperCenter();
       const k = 1 / clamped - 1 / fromZoom;
-      depsRef.current.setViewportZoom(clamped);
-      depsRef.current.setViewportOffset({
-        x: (focalX - wCX) * k + fromOffset.x,
-        y: (focalY - wCY) * k + fromOffset.y,
+      // One change of the view: zoom and offset together.
+      depsRef.current.viewport.setView({
+        zoom: clamped,
+        offset: { x: (focalX - wCX) * k + fromOffset.x, y: (focalY - wCY) * k + fromOffset.y },
       });
     };
 
@@ -120,8 +119,8 @@ export function useCanvasPinchZoom(deps: Deps): Api {
       const t1 = e.touches[1]!;
       pinch = {
         startDist: touchDist(t0, t1),
-        startZoom: depsRef.current.viewportZoom,
-        startOffset: { ...depsRef.current.viewportOffset },
+        startZoom: depsRef.current.viewport.get().zoom,
+        startOffset: { ...depsRef.current.viewport.get().offset },
         midX: (t0.clientX + t1.clientX) / 2,
         midY: (t0.clientY + t1.clientY) / 2,
       };
@@ -160,7 +159,7 @@ export function useCanvasPinchZoom(deps: Deps): Api {
     const flushPan = () => {
       panRaf = null;
       if (pendingPan) {
-        depsRef.current.setViewportOffset(pendingPan);
+        depsRef.current.viewport.setOffset(pendingPan);
         pendingPan = null;
       }
     };
@@ -187,7 +186,7 @@ export function useCanvasPinchZoom(deps: Deps): Api {
       if (e.ctrlKey || e.metaKey) {
         e.preventDefault();
         noteWheel('zoom');
-        const { viewportZoom, viewportOffset } = depsRef.current;
+        const { zoom: viewportZoom, offset: viewportOffset } = depsRef.current.viewport.get();
         // deltaY > 0 = pinch-close / scroll-down = zoom out; < 0 = zoom in.
         const factor = Math.exp(-e.deltaY / 200);
         const newZoom = clamp(viewportZoom * factor, ZOOM_MIN, ZOOM_MAX);
@@ -201,8 +200,8 @@ export function useCanvasPinchZoom(deps: Deps): Api {
       // the pointer-pan maths.
       e.preventDefault();
       noteWheel('pan');
-      const { viewportZoom } = depsRef.current;
-      const base = pendingPan ?? depsRef.current.viewportOffset;
+      const { zoom: viewportZoom, offset: current } = depsRef.current.viewport.get();
+      const base = pendingPan ?? current;
       pendingPan = {
         x: base.x - e.deltaX / viewportZoom,
         y: base.y - e.deltaY / viewportZoom,

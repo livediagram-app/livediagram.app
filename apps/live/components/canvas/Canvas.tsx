@@ -1,3 +1,5 @@
+import { useStoreSlice } from '@/hooks/ui/useStoreSlice';
+import type { View, ViewportStore } from '@/lib/viewport-store';
 import { useCallback, useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
 import {
   DEFAULT_BUTTON_MODE,
@@ -97,7 +99,19 @@ import { pressIsOffPage } from '@/hooks/canvas/illustrate-page-guard';
 
 // The canvas boundary (docs/specs/008-canvas/canvas-performance.md "The canvas re-renders only for what it
 // shows"): memoised, its `on…` props stable, so an editor render that changes nothing it shows stops here.
-export const Canvas = withStableEventProps(CanvasView);
+export const Canvas = withStableEventProps(CanvasWithView);
+
+// The canvas is what shows the view (docs/specs/008-canvas/canvas-performance.md "A pan or zoom renders
+// the canvas, not the editor"): it subscribes to the viewport store, so a pan or zoom renders from
+// here down and nothing above it.
+const wholeView = (v: View) => v;
+function CanvasWithView({
+  viewport,
+  ...props
+}: Omit<CanvasProps, 'viewportZoom' | 'viewportOffset'> & { viewport: ViewportStore }) {
+  const view = useStoreSlice(viewport, wholeView);
+  return <CanvasView {...props} viewportZoom={view.zoom} viewportOffset={view.offset} />;
+}
 
 function CanvasView(props: CanvasProps) {
   const {

@@ -1,5 +1,6 @@
 'use client';
 
+import type { View } from '@/lib/viewport-store';
 import { useKeyboardAvoidance } from '@/hooks/canvas/useKeyboardAvoidance';
 import {
   useCallback,
@@ -1185,9 +1186,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   }, [tabs, activeId, setActiveId]);
 
   const {
-    viewportOffset,
+    viewport,
     setViewportOffset,
-    viewportZoom,
     setViewportZoom,
     zoomRef,
     viewportOffsetRef,
@@ -1200,7 +1200,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     scrollIntoView,
   } = useEditorViewport({ activeTab, readSelection });
   // A phone's keyboard never hides the caret on the canvas (useKeyboardAvoidance).
-  useKeyboardAvoidance({ canvasMainRef, zoom: viewportZoom, setViewportOffset });
+  useKeyboardAvoidance({ canvasMainRef, zoomRef, setViewportOffset });
 
   // Bring Focus (docs/specs/012-collaboration/bring-focus.md): ask everyone else to come and look at this
   // element, at our zoom, on our tab.
@@ -1283,11 +1283,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // Where the editor was looking before the deck took over, so exiting puts it
   // back. Without this you left a presentation zoomed to whatever the last
   // slide needed — often 250% on one box — and had to hunt around the canvas.
-  const [preShowView, setPreShowView] = useState<{
-    tabId: string;
-    zoom: number;
-    offset: { x: number; y: number };
-  } | null>(null);
+  const [preShowView, setPreShowView] = useState<{ tabId: string } | null>(null);
   const presenting = slideDeck.presentingAt !== null;
   // Captured on the way in, restored on the way out: state adjusted during render on the transition
   // (docs/specs/003-system-architecture/react-state-and-effects.md), so the restore lands in the same
@@ -1296,14 +1292,27 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   if (presenting !== wasPresenting) {
     setWasPresenting(presenting);
     if (presenting) {
-      setPreShowView({ tabId: activeId, zoom: viewportZoom, offset: viewportOffset });
+      setPreShowView({ tabId: activeId });
     } else if (preShowView) {
       setPreShowView(null);
       setActiveId(preShowView.tabId);
-      setViewportZoom(preShowView.zoom);
-      setViewportOffset(preShowView.offset);
     }
   }
+  // The view itself (it lives in the viewport store, docs/specs/008-canvas/blueprints/viewport-store.md,
+  // never written during render) is captured as a deck starts and put back as it ends, in a layout
+  // effect: before the exit paints, and declared before the slide fit below, so the capture is the
+  // view from before the first slide was framed.
+  const viewBeforeShow = useRef<View | null>(null);
+  useLayoutEffect(() => {
+    if (presenting) {
+      viewBeforeShow.current = viewport.get();
+      return;
+    }
+    if (viewBeforeShow.current) {
+      viewport.setView(viewBeforeShow.current);
+      viewBeforeShow.current = null;
+    }
+  }, [presenting, viewport]);
   // Every editor keyboard surface is off while a deck is running (docs/specs/012-collaboration/presentation-mode.md).
   // The overlay owns the keyboard then — it consumes the keys it uses, but
   // everything else fell straight through to the editor, so pressing G in
@@ -1370,12 +1379,16 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // Publish where WE are looking, on change (docs/specs/012-collaboration/follow-me-viewport.md). Unsolicited by design
   // — see the RoomOp comment — and throttled to ~10 Hz inside the broadcaster,
   // so an idle participant sends nothing at all.
-  // `broadcastViewport` is re-created every render, so it is called through an effect event; the viewport
-  // (and the tab) are the trigger.
-  const publishViewport = useEffectEvent(() => broadcastViewport(viewportOffset, viewportZoom));
+  // `broadcastViewport` is re-created every render, so it is called through an effect event. It follows
+  // the viewport store (a pan or zoom renders no part of the editor) and sends again on a tab switch.
+  const publishViewport = useEffectEvent(() => {
+    const view = viewport.get();
+    broadcastViewport(view.offset, view.zoom);
+  });
   useEffect(() => {
     publishViewport();
-  }, [viewportOffset, viewportZoom, activeId]);
+    return viewport.subscribe(publishViewport);
+  }, [viewport, activeId]);
 
   // Follow-me viewport (docs/specs/012-collaboration/follow-me-viewport.md): pin our pan / zoom / tab to a peer's until
   // we take the canvas back. View-role visitors can both follow and be
@@ -1385,10 +1398,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     remoteViewports,
     livePresenceIds: livePresence.map((p) => p.id),
     activeId,
-    viewportOffset,
-    viewportZoom,
-    setViewportOffset,
-    setZoom: setViewportZoom,
+    viewport,
     onFollowTab: setActiveId,
     onNotice: (message) => toast.info(message),
   });
@@ -1432,10 +1442,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // Pinch-to-zoom on touch screens + trackpad pinch (Ctrl+wheel).
   const { isPinchingRef } = useCanvasPinchZoom({
     canvasMainRef,
-    viewportZoom,
-    setViewportZoom,
-    viewportOffset,
-    setViewportOffset,
+    viewport,
   });
 
   // Capture an Activity-page element deep link BEFORE the tab-entry
@@ -3616,8 +3623,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     toggleRecentExclusion,
     favouriteIds,
     toggleFavourite,
-    viewportOffset,
-    viewportZoom,
+    viewport,
     writeUserPreferences,
   };
 }

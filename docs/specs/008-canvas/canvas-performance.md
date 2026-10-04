@@ -45,6 +45,11 @@ A gesture's cost scales with what it changes and what is on screen, never with t
 - **A pan or zoom moves the canvas, not its elements.** The viewport is one transform on the
   element layer. No element view takes the pan offset as a prop or reads it from a context; zoom
   reaches only what is counter-scaled to stay a constant screen size (grips, handles, badges).
+- **A pan or zoom renders the canvas, not the editor.** The view (pan offset and zoom) is held in
+  one viewport store per editor, not as the editor's render state. A wheel tick, a pinch frame, a
+  pan or a glide renders what shows the view (the canvas and its counter-scaled parts, the zoom
+  controls, the Map's view box) and nothing else: the editor root, the panels and the chrome do not
+  render for it. Handlers read the view from the store when they run.
 - **A gesture frame never reads layout after writing it.** Chrome that follows a selection (the
   floating toolbar, the selection popover) is **hidden while a selection is being moved or
   resized** and placed again when the gesture ends; elsewhere it positions from canvas geometry

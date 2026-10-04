@@ -38,11 +38,12 @@ function caretBottom(field: HTMLElement): number {
 
 export function useKeyboardAvoidance({
   canvasMainRef,
-  zoom,
+  zoomRef,
   setViewportOffset,
 }: {
   canvasMainRef: RefObject<HTMLElement | null>;
-  zoom: number;
+  // The zoom now, read when the keyboard moves.
+  zoomRef: RefObject<number>;
   setViewportOffset: Dispatch<SetStateAction<{ x: number; y: number }>>;
 }): void {
   const phone = useIsMobileViewport();
@@ -60,7 +61,7 @@ export function useKeyboardAvoidance({
     const dy = keyboardOverlap(caretBottom(field), vv.offsetTop + vv.height);
     if (dy === 0) return;
     // The offset is in canvas units (the zoom applies about the viewport's centre).
-    setViewportOffset((o) => ({ x: o.x, y: o.y - dy / zoom }));
+    setViewportOffset((o) => ({ x: o.x, y: o.y - dy / zoomRef.current }));
   });
 
   useEffect(() => {

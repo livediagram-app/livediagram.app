@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { createViewportStore } from '@/lib/viewport-store';
 import {
   WHEEL_SETTLE_MS,
   canvasGestureNow,
@@ -25,16 +26,10 @@ afterEach(() => {
   resetCanvasGesturesForTests();
 });
 
+let viewport = createViewportStore(1);
 function setup() {
-  return renderHook(() =>
-    useCanvasPinchZoom({
-      canvasMainRef: { current: canvas },
-      viewportZoom: 1,
-      viewportOffset: { x: 0, y: 0 },
-      setViewportZoom: vi.fn(),
-      setViewportOffset: vi.fn(),
-    } as never),
-  );
+  viewport = createViewportStore(1);
+  return renderHook(() => useCanvasPinchZoom({ canvasMainRef: { current: canvas }, viewport }));
 }
 
 const wheel = (init: WheelEventInit) =>
@@ -69,5 +64,27 @@ describe('useCanvasPinchZoom gestures', () => {
     wheel({ deltaY: 10 });
     unmount();
     expect(canvasGestureNow()).toBe('idle');
+  });
+});
+
+// The view lives in the viewport store (docs/specs/008-canvas/blueprints/viewport-store.md): a wheel
+// reads it when it fires and writes it back.
+describe('useCanvasPinchZoom view', () => {
+  it('zooms in on a Ctrl-wheel, as one change of the view', () => {
+    setup();
+    const listener = vi.fn();
+    viewport.subscribe(listener);
+    wheel({ deltaY: -40, ctrlKey: true, clientX: 0, clientY: 0 });
+    expect(viewport.get().zoom).toBeGreaterThan(1);
+    expect(listener).toHaveBeenCalledTimes(1);
+  });
+
+  it('pans by the wheel delta in canvas units, once the frame comes', () => {
+    setup();
+    act(() => viewport.setZoom(2));
+    wheel({ deltaX: 20, deltaY: 40 });
+    wheel({ deltaX: 20, deltaY: 0 });
+    act(() => vi.advanceTimersByTime(20));
+    expect(viewport.get().offset).toEqual({ x: -20, y: -20 });
   });
 });
