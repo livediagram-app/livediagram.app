@@ -14,8 +14,9 @@ Scope, by file:
 | ----------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
 | `packages/document/src/element-refs.ts` (planned)                       | Refs, slug ids and kind words: `computeRefs`, `resolveRef`, `isSlugId`, `slugIdFor`, `kindWordOf`, `isKnownElement`         |
 | `packages/document/src/containment.ts` (planned)                        | The centre rule and the content origin: `boxCentre`, `boxHoldsPoint`, `smallestHolder`, `deriveContainers`, `contentOrigin` |
+| `packages/document/src/style-keys.ts` (planned)                         | `STYLE_KEYS`, `styleKeysFor`: the style keys views print and edit operations write                                          |
 | `packages/document/src/mermaid-serialise.ts`                            | `mermaidFromTab` calls `smallestHolder` over frames; its output is byte-identical                                           |
-| `packages/document/src/index.ts`                                        | Re-exports `./element-refs` and `./containment`                                                                             |
+| `packages/document/src/index.ts`                                        | Re-exports `./element-refs`, `./containment` and `./style-keys`                                                             |
 | `packages/api-schema/src/document-views.ts` (planned)                   | `VIEW_NAMES`, `ViewName`, `VIEW_QUERY`, `ViewDoor`, every view's JSON wire type, `UNKNOWN_VIEW_ERROR`                       |
 | `packages/api-schema/src/ref-errors.ts` (planned)                       | `TARGET_NOT_FOUND_ERROR`, `TARGET_AMBIGUOUS_ERROR`, `RefCandidate`, `RefErrorBody`                                          |
 | `packages/api-schema/src/telemetry-schema.ts`                           | `TELEMETRY_ACTIONS` gains `Viewed`                                                                                          |
@@ -135,7 +136,8 @@ tab ref unique within the document (`VW4`).
   is unique by construction.
 - A prefix of at least `REF_MIN_LENGTH` characters that now matches several elements is refused as `ambiguous`
   with `stale: true` (the refusal says "matches N elements now; one was added since your read?"). A ref matching
-  nothing is `not-found` with up to `REF_NEAREST_MAX` nearest refs by shared prefix length, then label.
+  nothing is `not-found` with up to `REF_NEAREST_MAX` nearest refs: ids sharing at least the first character with
+  the input, by shared prefix length, then ref in code-unit order (resolution reads ids only).
 - Labels never resolve: `resolveRef` reads ids only. Label matching is the selector engine's
   ([Edit operations](../edit-operations.md#selectors)).
 
@@ -145,7 +147,8 @@ tab ref unique within the document (`VW4`).
 
 1. `label` NFKD-normalised, combining marks (`\p{M}`) removed, lower-cased.
 2. Every run of characters outside `[a-z0-9]` becomes one `-`; leading and trailing `-` removed.
-3. Empty: the base is `kindWord` (with `:` replaced by `-`). Starting with a digit: the base is `kindWord-` plus it.
+3. Empty: the base is `kindWord` slugged by steps 1 and 2 (so `es:actor` gives `es-actor`), or `element` when that
+   does not start with a letter. Starting with a digit: the base is that kind base, `-`, then the slug.
 4. The base is cut to `SLUG_ID_MAX_LENGTH` characters and trailing `-` trimmed.
 5. Free in `takenIds`: done. Else the first free of `base-2`, `base-3`, …, the base cut to fit
    `SLUG_ID_MAX_LENGTH` with its suffix and trailing `-` trimmed before the suffix.
@@ -165,8 +168,10 @@ non-empty unique ids. The round-trip tests in [Testing](#testing) hold this.
 | The notation `actor`                      | `es:actor`, so it never reads as the `actor` shape                            |
 | `type: 'shape'`, `shape` in `SHAPE_KINDS` | the shape (`square`, `frame`, `lane`, `entity`, `mind-node`, `actor`, …)      |
 | `type` in `ELEMENT_TYPES`, not a shape    | the type (`text`, `sticky`, `table`, `image`, `freehand`, `path`, `arrow`, …) |
-| `type: 'shape'`, unknown `shape`          | `? <shape>` (`VW12`)                                                          |
+| `type: 'shape'`, unknown `shape`          | `? <shape>` (`VW12`); `? shape` when it has none                              |
 | unknown `type`                            | `? <type>`                                                                    |
+
+An unknown name prints bare when it matches `^[A-Za-z0-9_.:-]+$`, else as a JSON string (I4).
 
 `SHAPE_KINDS` and `ELEMENT_TYPES` are `packages/document/src/validate.ts`'s sets, so the kind words know exactly what
 the document model knows. An event-storming note still in photo draft carries the flag `draft` (`VW13`).
@@ -182,9 +187,10 @@ own full-box rule (`withFrameContents`) and does not change.
    with the lowest array index, which becomes a root of its tree (`VW24`).
 2. **Geometry otherwise.** Candidates are `frame` and `lane` shapes other than the element itself whose stored box
    holds the element's centre (`boxHoldsPoint`, edges inclusive) and whose area is strictly greater than the
-   element's (`VW23`). The smallest candidate by area wins; equal areas go to the earlier in array order. This is
-   `smallestHolder`, the rule `mermaidFromTab` applies (smallest frame holding the centre, inclusive, the earlier on
-   a tie); the strict-area guard makes nesting acyclic. Rotation is ignored: centres and boxes are the stored
+   element's (`VW23`). The smallest candidate by area wins; equal areas go to the earlier in array order.
+   `smallestHolder(point, holders)` is that point query alone, the rule `mermaidFromTab` applies (smallest frame
+   holding the centre, inclusive, the earlier on a tie); `deriveContainers` passes it only the strictly larger
+   candidates, and that guard makes nesting acyclic. Rotation is ignored: centres and boxes are the stored
    axis-aligned ones.
 3. Elements without numeric `x`, `y`, `width`, `height` (only unknown kinds can lack them) sit at the root.
 
