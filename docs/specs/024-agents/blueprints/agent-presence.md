@@ -10,18 +10,18 @@ cited as `PRn`.
 
 It builds on the sibling blueprints and calls what they provide by these names:
 
-| Provided by      | Name used here                                                                                | What it is                                                                       |
-| ---------------- | --------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
-| share-roles      | `ShareRole`, `TokenRole`                                                                      | The levels on grants, tickets, room sessions and tokens; no member is named here |
-| share-roles      | `gateParticipate`, `gateEdit` `(ctx, id, ownerId, teamId, tabId?)`                            | True when the caller's grant and its token (if any) pass that gate               |
-| share-roles      | The write choke point's route-gate matcher                                                    | Lets a token's write reach a route only when the token passes that route's gate  |
-| agent-changesets | `ctx.token: { id, ownerId, role } \| null` on `RouteContext`                                  | The presenting API token, null for a session or a guest                          |
-| agent-changesets | `roomStubFor` returns a stub for every server-stored document                                 | Rooms for personal documents                                                     |
-| agent-changesets | `upsertTabAtRev(env, documentId, tab, orderIndex, rev)`, `tabs.rev`                           | The compare-and-swap tab write; every write increments `rev`                     |
-| agent-changesets | `agentFrontDoor(request): 'Mcp' \| 'Cli' \| 'Api'`                                            | The telemetry type of an agent request                                           |
-| agent-changesets | The changeset route's success step                                                            | Calls `refreshAgentPresence` here                                                |
-| document         | `tabRefs(tab)`, `resolveRef(tab, input)` in `packages/document/src/element-refs.ts` (planned) | Refs and ref resolution                                                          |
-| document-views   | `viewLabel(el)`, `readingOrder(elements)`                                                     | The view label, reading order                                                    |
+| Provided by      | Name used here                                                                      | What it is                                                                       |
+| ---------------- | ----------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| share-roles      | `ShareRole`, `TokenRole`                                                            | The levels on grants, tickets, room sessions and tokens; no member is named here |
+| share-roles      | `gateParticipate`, `gateEdit` `(ctx, id, ownerId, teamId, tabId?)`                  | True when the caller's grant and its token (if any) pass that gate               |
+| share-roles      | The write choke point's route-gate matcher                                          | Lets a token's write reach a route only when the token passes that route's gate  |
+| agent-changesets | `ctx.token: { id, ownerId, role } \| null` on `RouteContext`                        | The presenting API token, null for a session or a guest                          |
+| agent-changesets | `roomStubFor` returns a stub for every server-stored document                       | Rooms for personal documents                                                     |
+| agent-changesets | `upsertTabAtRev(env, documentId, tab, orderIndex, rev)`, `tabs.rev`                 | The compare-and-swap tab write; every write increments `rev`                     |
+| agent-changesets | `agentFrontDoor(request): 'Mcp' \| 'Cli' \| 'Api'`                                  | The telemetry type of an agent request                                           |
+| agent-changesets | The changeset route's success step                                                  | Calls `refreshAgentPresence` here                                                |
+| document         | `tabRefs(tab)`, `resolveRef(tab, input)` in `packages/document/src/element-refs.ts` | Refs and ref resolution                                                          |
+| document-views   | `viewLabel(el)`, `readingOrder(elements)`                                           | The view label, reading order                                                    |
 
 Scope, by file:
 
