@@ -2,8 +2,8 @@
 
 // Animated hero: seven editor windows on a sliding stage (docs/specs/019-marketing/marketing-site.md
 // "Hero"): an overview first, then the modes in action, then the launch window.
-//   0. Overview — the board zoomed out, one named frame per mode window, each drawing its scene
-//      settled; pressing a frame moves the stage to that window (hero-overview.tsx).
+//   0. Overview — a bare board (no editor chrome), one named frame per mode window, each drawing
+//      its scene settled; pressing a frame moves the stage to that window (hero-overview.tsx).
 //   1. Your canvas — the launch window (hero-launch.tsx), last on the stage: a fresh, empty,
 //      private document. While centred, a click grows it to fill the screen and lands on a new
 //      blank document with Quick Start open.
@@ -270,11 +270,6 @@ export function HeroIllustration() {
                   overlay={
                     c.launch ? (
                       <LaunchCanvasOverlay playing={playing} afterConnector={false} />
-                    ) : c.overview ? (
-                      <HeroOverview
-                        scenes={OVERVIEW_SCENES}
-                        onOpen={(key) => show(CARDS.findIndex((k) => k.key === key))}
-                      />
                     ) : undefined
                   }
                   empty={c.launch ?? false}
@@ -321,7 +316,10 @@ export function HeroIllustration() {
                     style={{ width: cardWidth }}
                     className={`cursor-pointer ${cardClassName}`}
                   >
-                    {frame}
+                    <HeroOverview
+                      scenes={OVERVIEW_SCENES}
+                      onOpen={(key) => show(CARDS.findIndex((k) => k.key === key))}
+                    />
                   </div>
                 );
               }

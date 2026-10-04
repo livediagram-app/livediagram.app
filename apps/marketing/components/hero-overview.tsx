@@ -1,6 +1,6 @@
 import { EDITOR_MODE_ICONS } from '@livediagram/ui';
 import type { ComponentType, ReactNode } from 'react';
-import { LANDSCAPE_VIEWBOX } from './hero-editor-window';
+import { CANVAS, LANDSCAPE_VIEWBOX } from './hero-editor-window';
 import { ArticlePage } from './hero-article-page';
 import { DiagramBoard } from './hero-diagram-board';
 import { DrawBoard } from './hero-draw-board';
@@ -9,10 +9,10 @@ import { MindMapBoard } from './hero-mindmap-board';
 import type { HeroMode } from './hero-mode-palette';
 
 // The hero's first window (docs/specs/019-marketing/marketing-site.md "Hero"): an overview of every
-// window that follows, as the editor shows a board zoomed out, one named frame per scene. Each frame
+// window that follows, a bare board (no editor chrome) with one named frame per scene. Each frame
 // draws its scene settled (the same components the windows play, under .hero-static), and pressing
-// one moves the stage to that window. One row of five on a wide window, clear of the strip above and
-// the canvas cluster below; two across on a phone.
+// one moves the stage to that window. Three over two on a wide window, the second row centred so it
+// clears the canvas cluster in the corner; two across on a phone.
 
 export type OverviewScene = {
   key: string;
@@ -35,21 +35,17 @@ export function HeroOverview({
   scenes: readonly OverviewScene[];
   onOpen: (key: string) => void;
 }) {
+  // A bare board, not an editor window: the card the other windows sit in, its paper and dot grid,
+  // and nothing else. It fills its card, whose height the stage takes from the windows beside it.
   return (
-    <div className="absolute inset-x-3 bottom-3 top-16 flex flex-col justify-center sm:inset-x-5 sm:bottom-12 sm:top-14">
-      {/* On a wide window the board carries a heading, as a canvas text element would, and a hint
-          under the frames; a phone's taller board spends that room on the frames. */}
-      <p className="mb-5 hidden px-0.5 text-left text-xl font-semibold tracking-tight text-(--art-text) sm:block">
-        One canvas, every way to work
-      </p>
-      <div className="flex flex-wrap justify-center gap-x-3 gap-y-3 sm:flex-nowrap sm:gap-x-3">
+    <div className="h-full rounded-xl border border-slate-200 bg-white p-2 shadow-xl shadow-brand-500/10 dark:border-slate-800 dark:bg-slate-900">
+      <div
+        className={`relative flex h-full flex-wrap content-center justify-center gap-x-3 gap-y-6 overflow-hidden rounded-lg border border-slate-100 px-3 py-4 sm:gap-x-6 sm:gap-y-6 sm:px-6 sm:py-6 dark:border-slate-800 ${CANVAS}`}
+      >
         {scenes.map((scene) => (
           <OverviewFrame key={scene.key} scene={scene} onOpen={onOpen} />
         ))}
       </div>
-      <p className="mt-4 hidden px-0.5 text-left text-xs font-medium text-slate-500 sm:block dark:text-slate-400">
-        Pick a frame to see it built, live.
-      </p>
     </div>
   );
 }
@@ -66,11 +62,11 @@ function OverviewFrame({ scene, onOpen }: { scene: OverviewScene; onOpen: (key: 
         e.stopPropagation();
         onOpen(scene.key);
       }}
-      className="group/frame flex w-[calc(50%-0.375rem)] flex-col text-left sm:w-[calc(20%-0.6rem)]"
+      className="group/frame flex w-[calc(50%-0.375rem)] flex-col text-left sm:w-[calc((100%-3rem)/3)]"
     >
       {/* The frame's name, above its top-left corner, as the editor labels a frame. */}
-      <span className="mb-1 flex items-center gap-1 px-0.5 text-[9px] font-semibold text-slate-500 transition-colors group-hover/frame:text-brand-600 sm:text-[10px] dark:text-slate-400 dark:group-hover/frame:text-brand-300">
-        <Icon size={10} className="shrink-0" />
+      <span className="mb-1.5 flex items-center gap-1 px-0.5 text-[9px] font-semibold text-slate-500 transition-colors group-hover/frame:text-brand-600 sm:text-xs dark:text-slate-400 dark:group-hover/frame:text-brand-300">
+        <Icon size={11} className="shrink-0" />
         {scene.label}
         <span
           aria-hidden

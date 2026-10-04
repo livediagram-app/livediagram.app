@@ -21,7 +21,7 @@ export type TabDef = { name: string; color: string; active?: boolean };
 // Every window sits on the Default scheme's canvas (the --art-* palette in
 // hero-animations.css, its light or dark half with the appearance), dotted as the
 // editor dots it: 1px dots on a 24px grid.
-const CANVAS =
+export const CANVAS =
   'bg-(color:--art-paper) bg-[radial-gradient(circle_at_center,_var(--art-grid)_1px,_transparent_1px)] bg-[size:24px_24px]';
 
 // A tab pill in the accent it is given as --tab. Dark lifts that accent 60% toward
@@ -117,7 +117,7 @@ export function EditorWindow({
         {/* Canvas surface. */}
         <div
           {...{ [HERO_CANVAS_ATTR]: '' }}
-          className={`relative h-[460px] sm:h-[360px] ${CANVAS}`}
+          className={`relative h-[460px] sm:h-[440px] ${CANVAS}`}
         >
           {/* The Toolbar panel layout (docs/specs/007-editor/toolbar-layout.md): the Palette is a
               strip at the top centre and a menu button stands where the Explorer would float. */}
