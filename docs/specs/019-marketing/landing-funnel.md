@@ -68,15 +68,15 @@ serves the link builders, the editor's reader, the ingest validator and the
 dashboard, so a CTA can't be linked with a source the editor ignores or the
 ingest drops.
 
-| Surface     | Pages it covers                    | Slots                                                                                                                                                     |
-| ----------- | ---------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `Home`      | `/`                                | `Header`, `HeaderDraw`, `HeaderWhiteboard`, `HeaderIllustration`, `Hero`, `HeroDraw`, `HeroBrainstorm`, `HeroCanvas`, `Gallery`, `GalleryDraw`, `Closing` |
-| `Feature`   | `/features/<id>`                   | `Header`, `HeaderDraw`, `HeaderWhiteboard`, `HeaderIllustration`, `Hero`, `Closing`                                                                       |
-| `Compare`   | `/alternatives`, `/alternatives/*` | `Header`, `HeaderDraw`, `HeaderWhiteboard`, `HeaderIllustration`, `Card`                                                                                  |
-| `Faq`       | `/faq`                             | `Header`, `HeaderDraw`, `HeaderWhiteboard`, `HeaderIllustration`, `Card`                                                                                  |
-| `Status`    | `/status`                          | `Header`, `HeaderDraw`, `HeaderWhiteboard`, `HeaderIllustration`                                                                                          |
-| `Dashboard` | `/telemetry`                       | `Header`, `HeaderDraw`, `HeaderWhiteboard`, `HeaderIllustration`                                                                                          |
-| `Help`      | `/help`, `/help/*`                 | `Header`                                                                                                                                                  |
+| Surface     | Pages it covers                    | Slots                                                                                                                                                                  |
+| ----------- | ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Home`      | `/`                                | `Header`, `HeaderDraw`, `HeaderWhiteboard`, `HeaderIllustration`, `Hero`, `HeroDraw`, `HeroBrainstorm`, `HeroCanvas`, `HeroBuild`, `Gallery`, `GalleryDraw`, `Closing` |
+| `Feature`   | `/features/<id>`                   | `Header`, `HeaderDraw`, `HeaderWhiteboard`, `HeaderIllustration`, `Hero`, `Closing`                                                                                    |
+| `Compare`   | `/alternatives`, `/alternatives/*` | `Header`, `HeaderDraw`, `HeaderWhiteboard`, `HeaderIllustration`, `Card`                                                                                               |
+| `Faq`       | `/faq`                             | `Header`, `HeaderDraw`, `HeaderWhiteboard`, `HeaderIllustration`, `Card`                                                                                               |
+| `Status`    | `/status`                          | `Header`, `HeaderDraw`, `HeaderWhiteboard`, `HeaderIllustration`                                                                                                       |
+| `Dashboard` | `/telemetry`                       | `Header`, `HeaderDraw`, `HeaderWhiteboard`, `HeaderIllustration`                                                                                                       |
+| `Help`      | `/help`, `/help/*`                 | `Header`                                                                                                                                                               |
 
 The slots:
 
@@ -92,6 +92,8 @@ The slots:
   canvas became Drawing's whiteboard: it is the same button in the same place,
   so its series carries on. On a feature page, `Hero` is the category hero's
   Start drawing.
+- `HeroBuild`: the **Build yours** button on each of the hero's mode windows, opening the template
+  step narrowed to that window's kind (`/new?mode=…` and, for the Mind map and Article, `&q=…`).
 - `HeroCanvas`: the hero stage's launch window, the mini canvas that grows
   into the editor (`/new?blank=1&welcome=1`).
 - `Gallery`: any card in the landing template gallery

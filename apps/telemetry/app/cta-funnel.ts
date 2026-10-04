@@ -61,6 +61,7 @@ const SLOT_LABELS: Record<CtaSlot, string> = {
   Hero: 'Hero: Diagram',
   HeroDraw: 'Hero: Drawing',
   HeroBrainstorm: 'Hero: Brainstorm',
+  HeroBuild: 'Hero: Build Yours',
   HeroCanvas: 'Hero: Canvas',
   Gallery: 'Template Gallery Cards',
   GalleryDraw: 'Gallery: Blank Canvas Link',

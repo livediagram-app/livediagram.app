@@ -44,12 +44,17 @@ export type TemplateModeFilter = {
 export function useTemplateModeFilter({
   selected,
   onSelect,
+  initial = null,
 }: {
   selected: TemplateKind;
   onSelect: (kind: TemplateKind) => void;
+  // The mode to open on (a `/new?mode=` preset); null opens on Everything.
+  initial?: EditorMode | null;
 }): TemplateModeFilter {
   const offered = useOfferedEditorModes();
-  const [chosen, setChosen] = useState<TemplateModeChoice>('all');
+  // Undefined until the author chooses: until then the preset (or Everything) is the choice.
+  const [chosenState, setChosen] = useState<TemplateModeChoice | undefined>(undefined);
+  const chosen: TemplateModeChoice = chosenState ?? initial ?? 'all';
   const choice = chosen !== 'all' && !offered.includes(chosen) ? 'all' : chosen;
   const shows = useCallback(
     (t: TemplateDescriptor) => {

@@ -475,6 +475,17 @@ default document name) without walking the wizard:
   page, its restore cleanup and the guard agree on what counts. This is
   the URL the marketing site's template gallery links every card to
   ([Marketing site](../019-marketing/marketing-site.md)); it fires `UI / Used / TemplateLink`.
+- **`/new?mode=<mode>` and `/new?q=<words>`**: open the wizard on the template step **already
+  narrowed**: `mode` (`diagram`, `draw` or `illustrate`) sets the [mode filter](templates-by-mode.md)
+  in place of Everything, and selects that mode's blank so Create never starts something filtered
+  away; `q` fills the search box (trimmed, at most 60 characters), so the step opens on its
+  matches. They compose with each other and with the placement params, and are not a bypass:
+  nothing is committed until the author picks. An unknown mode, or an empty `q`, is ignored. The
+  author can change either at once, as if they had chosen it. The static page's HTML is the
+  unfiltered step, so a pre-paint guard (`data-wizard-preset`, like the bypass's) hides the wizard
+  card (`visibility`, so nothing moves) until React has rendered the preset. Read by
+  `wizardPresetMode` and `wizardPresetQuery` in `apps/live/lib/new-document-params.ts`. The
+  marketing hero's **Build yours** buttons link here ([Marketing site](../019-marketing/marketing-site.md)).
 - **`/new?blank=1&welcome=1`**: The marketing hero's **launch
   window** ([Marketing site](../019-marketing/marketing-site.md)), which grows
   into a full-screen blank canvas before navigating here. It commits the blank
@@ -670,6 +681,9 @@ theme for a new tab.
 - `/new?template=not-a-kind` → the plain wizard.
 - `/new?template=whiteboard` → no wizard; a document created whose tab opens
   in Draw mode ([Editor modes](editor-modes.md)), the Ink pen in hand.
+- `/new?mode=draw` → the wizard, its mode filter on Draw and Blank Whiteboard selected.
+- `/new?mode=illustrate&q=article` → the wizard on Illustrate, the search reading "article".
+- `/new?mode=sideways` → the plain wizard, on Everything.
 - `/new?browse=brainstorm` → the plain wizard: the Brainstorm collection (and `?browse=`) was
   removed with the landing hero's Brainstorm button, its only link; the Brainstorm category remains.
 

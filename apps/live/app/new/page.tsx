@@ -51,6 +51,8 @@ import {
   choosePlacementAgainUrl,
   wantsWelcome,
   wizardBypassKind,
+  wizardPresetMode,
+  wizardPresetQuery,
 } from '@/lib/new-document-params';
 import { markQuietLanding } from '@/lib/quiet-landing';
 import { backOutTarget } from '@/lib/back-out';
@@ -75,6 +77,10 @@ const EditorPage = dynamic(loadEditor, {
 // not change under the page, so nothing needs to subscribe.
 const subscribeNever = () => () => {};
 const bypassKindFromUrl = () => wizardBypassKind(window.location.search);
+// The template step's presets (`?mode=`, `?q=`), read the same way.
+const presetModeFromUrl = () => wizardPresetMode(window.location.search);
+const presetQueryFromUrl = () => wizardPresetQuery(window.location.search);
+const noPreset = () => null;
 const noBypass = () => null;
 const isBypassUrl = () => bypassKindFromUrl() !== null;
 const welcomeFromUrl = () => wantsWelcome(window.location.search);
@@ -217,6 +223,17 @@ export default function NewDocumentPage() {
   useLayoutEffect(() => {
     if (!bypassKindFromUrl()) document.documentElement.removeAttribute('data-just-draw');
   }, []);
+
+  // `?mode=` / `?q=` (docs/specs/007-editor/new-document-route.md): the template step opens
+  // narrowed. The prerendered step is unfiltered, so the wizard card stays hidden (the pre-paint
+  // `data-wizard-preset` flag) until the render that shows the preset.
+  const presetMode = useSyncExternalStore(subscribeNever, presetModeFromUrl, noPreset);
+  const presetQuery = useSyncExternalStore(subscribeNever, presetQueryFromUrl, noPreset);
+  useLayoutEffect(() => {
+    if (presetModeFromUrl() === presetMode && presetQueryFromUrl() === presetQuery) {
+      document.documentElement.removeAttribute('data-wizard-preset');
+    }
+  }, [presetMode, presetQuery]);
 
   const backOut = () => {
     if (submitting) return;
@@ -524,10 +541,10 @@ export default function NewDocumentPage() {
       <script
         dangerouslySetInnerHTML={{
           __html:
-            "try{var p=new URLSearchParams(location.search);if(p.has('blank')||p.has('template'))document.documentElement.setAttribute('data-just-draw','')}catch(e){}",
+            "try{var p=new URLSearchParams(location.search);if(p.has('blank')||p.has('template'))document.documentElement.setAttribute('data-just-draw','');if(p.has('mode')||p.has('q'))document.documentElement.setAttribute('data-wizard-preset','')}catch(e){}",
         }}
       />
-      <style>{`html[data-just-draw] [data-wizard-only]{visibility:hidden}`}</style>
+      <style>{`html[data-just-draw] [data-wizard-only],html[data-wizard-preset] [data-wizard-only]{visibility:hidden}`}</style>
       {/* The quiet landing's loader, prerendered so it paints from the first frame on the
           hero's canvas (lib/quiet-landing-boot.ts); hidden everywhere else. */}
       <div className={QUIET_LANDING_LOADER_CLASS} aria-hidden="true">
@@ -565,6 +582,8 @@ export default function NewDocumentPage() {
               teams={teams}
               teamFolders={teamFolders}
               initialPlacement={initialPlacement}
+              initialModeChoice={presetMode}
+              initialQuery={presetQuery}
               defaults={wizardDefaults}
               skipLocation={skipLocation}
               onCreateFolder={createPickerFolder}

@@ -34,10 +34,12 @@
 //
 // With JS off it renders the first window centred, and reduced motion settles every build.
 
+import { ctaHref } from '@livediagram/api-schema';
 import { useEffect, useRef, useState } from 'react';
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
+  EverythingIcon,
   PREFERS_REDUCED_MOTION,
   useMediaQuery,
 } from '@livediagram/ui';
@@ -83,6 +85,9 @@ const CARDS: {
   shared: boolean;
   // The name its frame carries on the overview (hero-overview.tsx).
   short?: string;
+  // Where its Build yours button goes: the template step narrowed to this kind
+  // (docs/specs/007-editor/new-document-route.md "?mode= and ?q=").
+  build?: string;
   // The overview: every window after it as a frame, each opening its window (hero-overview.tsx).
   overview?: boolean;
   // The launch window: a link that grows into a new document (hero-launch.tsx).
@@ -99,6 +104,7 @@ const CARDS: {
   },
   {
     key: 'diagram',
+    build: '/new?mode=diagram',
     short: 'Diagram',
     title: 'Onboarding',
     label: 'Diagram: map a flow together, with arrows that connect and shapes that snap',
@@ -112,6 +118,7 @@ const CARDS: {
   },
   {
     key: 'draw',
+    build: '/new?mode=draw',
     short: 'Draw',
     title: 'Sprint retro',
     label: 'Draw: sketch on a whiteboard together, markers, stickies and all',
@@ -124,6 +131,7 @@ const CARDS: {
   },
   {
     key: 'mindmap',
+    build: '/new?mode=diagram&q=mind%20map',
     short: 'Mind map',
     title: 'Launch plan',
     label: 'Mind map: grow ideas out from the centre, one Tab at a time',
@@ -136,6 +144,7 @@ const CARDS: {
   },
   {
     key: 'infographic',
+    build: '/new?mode=illustrate',
     short: 'Infographic',
     title: 'Year in review',
     label: 'Infographic: lay out pages of numbers, charts and quotes, ready to print or share',
@@ -145,6 +154,7 @@ const CARDS: {
   },
   {
     key: 'article',
+    build: '/new?mode=illustrate&q=article',
     short: 'Article',
     title: 'Field notes',
     label: 'Article: write long reads on pages, with images, headings and pull quotes',
@@ -170,8 +180,8 @@ const OVERVIEW_SCENES: OverviewScene[] = CARDS.filter((c) => c.short).map((c) =>
   mode: c.mode,
 }));
 
-// The overview holds a little less than a build cycle: it has no build to play.
-const OVERVIEW_DWELL_MS = 12000;
+// The overview holds longer than a build cycle: it is where a visitor picks what to watch.
+const OVERVIEW_DWELL_MS = 24000;
 
 // Window width as a % of the stage, for the whole-pixel snap: narrower peek (wider window) on
 // phones. It only matters once the stage is measured (after hydration, when the media query is
@@ -202,7 +212,7 @@ export function HeroIllustration() {
   // motion (and stops if the visitor turns it on mid-visit).
   const reduceMotion = useMediaQuery(PREFERS_REDUCED_MOTION);
   // The launch window holds longer (LAUNCH_DWELL_MS): it is the one a visitor can step into. The
-  // overview, with nothing to play, holds a little less than a cycle.
+  // overview holds longer still (OVERVIEW_DWELL_MS): it is where a visitor picks what to watch.
   useEffect(() => {
     if (reduceMotion) return;
     const card = CARDS[active];
@@ -270,6 +280,8 @@ export function HeroIllustration() {
                   overlay={
                     c.launch ? (
                       <LaunchCanvasOverlay playing={playing} afterConnector={false} />
+                    ) : c.build ? (
+                      <BuildYours href={c.build} live={playing} />
                     ) : undefined
                   }
                   empty={c.launch ?? false}
@@ -323,17 +335,19 @@ export function HeroIllustration() {
                   </div>
                 );
               }
+              // A mode window holds a link (Build yours), so it is not a button itself: a press on it
+              // centres it.
               return (
-                <button
+                <div
                   key={c.key}
-                  type="button"
-                  tabIndex={-1}
-                  onClick={() => show(i)}
+                  onClick={() => {
+                    if (!playing) show(i);
+                  }}
                   style={{ width: cardWidth }}
-                  className={cardClassName}
+                  className={`${playing ? '' : 'cursor-pointer '}${cardClassName}`}
                 >
                   {frame}
-                </button>
+                </div>
               );
             })}
           </div>
@@ -356,7 +370,19 @@ export function HeroIllustration() {
         <p className="text-sm text-slate-500 dark:text-slate-400" aria-live="polite">
           {current.label}
         </p>
-        <div className="flex items-center gap-2" role="group" aria-label="Hero examples">
+        {/* The stage is decorative, so its Build yours buttons are out of reach of a keyboard or a
+            screen reader; this is the same link for the centred window, shown when focused. */}
+        {current.build ? (
+          <a
+            href={ctaHref(current.build, 'Home.HeroBuild')}
+            className="sr-only rounded-md text-sm font-semibold text-brand-700 focus:not-sr-only focus:px-2 focus:py-1 dark:text-brand-300"
+          >
+            Build your own {current.short?.toLowerCase()}
+          </a>
+        ) : null}
+        {/* Each dot sits in a 24px-tall hit area; the overview's is always a small grid, a little
+            larger (in brand while it is showing), so the way back to it is easy to find and hit. */}
+        <div className="flex items-center" role="group" aria-label="Hero examples">
           {CARDS.map((c, i) => (
             <button
               key={c.key}
@@ -364,13 +390,30 @@ export function HeroIllustration() {
               aria-label={c.label}
               aria-current={i === active}
               onClick={() => show(i)}
-              className={
-                'h-2 rounded-full transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 ' +
-                (i === active
-                  ? 'w-7 bg-brand-500'
-                  : 'w-2 bg-slate-300 hover:bg-slate-400 dark:bg-slate-600')
-              }
-            />
+              className="group/dot flex h-6 items-center justify-center rounded-full px-1 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-brand-500"
+            >
+              {c.overview ? (
+                <EverythingIcon
+                  size={14}
+                  aria-hidden
+                  className={`mx-0.5 transition-colors ${
+                    i === active
+                      ? 'text-brand-500'
+                      : 'text-slate-400 group-hover/dot:text-brand-500 dark:text-slate-500'
+                  }`}
+                />
+              ) : (
+                <span
+                  aria-hidden
+                  className={
+                    'block h-2 rounded-full transition-all ' +
+                    (i === active
+                      ? 'w-7 bg-brand-500'
+                      : 'w-2 bg-slate-300 group-hover/dot:bg-slate-400 dark:bg-slate-600')
+                  }
+                />
+              )}
+            </button>
           ))}
         </div>
       </div>
@@ -399,5 +442,24 @@ function StageArrow({ side, onClick }: { side: 'left' | 'right'; onClick: () => 
     >
       <Icon size={18} aria-hidden />
     </button>
+  );
+}
+
+// A mode window's call to action, bottom left of its canvas (the canvas cluster holds the right):
+// open the template step narrowed to this window's kind. Live only on the centred window; on a
+// peeking one a press centres the window instead.
+function BuildYours({ href, live }: { href: string; live: boolean }) {
+  return (
+    <a
+      href={ctaHref(href, 'Home.HeroBuild')}
+      tabIndex={-1}
+      onClick={(e) => e.stopPropagation()}
+      className={`absolute bottom-3 left-3 z-20 inline-flex items-center gap-1.5 rounded-full bg-brand-500 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-brand-500/30 transition hover:bg-brand-600 motion-safe:hover:-translate-y-0.5 dark:bg-brand-600 dark:hover:bg-brand-500 ${
+        live ? '' : 'pointer-events-none'
+      }`}
+    >
+      Build yours
+      <ChevronRightIcon size={14} aria-hidden />
+    </a>
   );
 }

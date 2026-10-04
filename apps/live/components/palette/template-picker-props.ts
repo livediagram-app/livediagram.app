@@ -1,6 +1,7 @@
 import type { Participant } from '@/lib/identity';
 import type { SaveLocationId } from '@/lib/save-locations';
 import type { SkipLocationStep } from '@/lib/skip-location-step';
+import type { EditorMode } from '@livediagram/document';
 import type { TemplateKind } from '@livediagram/templates';
 import type { AlwaysSave, WizardDefaults } from './useWizardPlacement';
 
@@ -70,6 +71,11 @@ export type TemplatePickerProps = {
   teamFolders?: Record<string, { id: string; name: string; parentId: string | null }[]>;
   // Pre-selected placement (the /new URL's folder / team context).
   initialPlacement?: string;
+  // The template step's presets (the /new URL's `?mode=` and `?q=`,
+  // docs/specs/007-editor/new-document-route.md): the mode filter to open on (its blank selected) and
+  // words to open the search with. Null or absent: Everything and an empty search.
+  initialModeChoice?: EditorMode | null;
+  initialQuery?: string | null;
   // The reader's default folders (docs/specs/013-workspace/default-folders.md): the Location step
   // pre-selects the template's default at the My documents root, and offers Always save.
   defaults?: WizardDefaults;

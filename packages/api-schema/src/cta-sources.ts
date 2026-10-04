@@ -18,6 +18,7 @@ export const CTA_SOURCES = {
     'HeroDraw',
     'HeroBrainstorm',
     'HeroCanvas',
+    'HeroBuild',
     'Gallery',
     'GalleryDraw',
     'Closing',

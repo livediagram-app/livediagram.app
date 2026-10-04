@@ -25,7 +25,8 @@ sees only what starts there.
   Everything, `EDITOR_MODE_ICON` for the modes, the glyphs of the mode switch) and how many
   templates it holds, in a count badge. A dropdown, not a row of buttons, so a mode added later is one more row.
   **Everything** is the default and is chosen each time the step opens; the choice is not
-  remembered.
+  remembered. A `/new?mode=` link ([New document route](new-document-route.md)) opens the step on
+  that mode instead, its blank selected.
 - **Hovering the chip** with a mouse opens the menu without moving focus, so the choice is in plain
   sight; it closes a moment (`HOVER_CLOSE_MS`, 200ms) after the pointer leaves the chip and menu. A
   press or the keyboard opens it as a menu button does (focus on the checked row); opened that way
