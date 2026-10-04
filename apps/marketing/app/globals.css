@@ -19,39 +19,11 @@
 @source '../../../packages/template-previews/src/PreviewFan.tsx';
 
 @media (prefers-reduced-motion: reduce) {
-  .hero-pop1,
-  .hero-pop2,
-  .hero-pop3,
-  .hero-pop4,
-  .hero-pop5,
-  .hero-line1,
-  .hero-line2,
-  .hero-line3,
-  .hero-line4,
-  .hero-theme,
-  .hero-text-in,
-  .hero-cursor {
-    animation: none;
-    opacity: 1;
-    transform: none;
-    stroke-dashoffset: 0;
-  }
-  /* show only the settled label (the renamed one) */
-  .hero-text-out {
-    animation: none;
-    opacity: 0;
-  }
-  /* the theme dialog, its pointer and the window veils stay hidden */
-  .hero-dialog,
-  .hero-dialog-cursor,
+  /* the window veils stay hidden */
   .hero-fade,
   .hero-fade-out {
     animation: none;
     opacity: 0;
-  }
-  /* the themed canvas holds its settled tint */
-  .hero-theme-canvas {
-    animation: none;
   }
 
   .fa-pop,

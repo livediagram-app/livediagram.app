@@ -5,8 +5,9 @@
 //   1. Your canvas — the launch window (hero-launch.tsx): a fresh, empty,
 //      private document. While centred, a click grows it to fill the screen
 //      and lands on a new blank document with Quick Start open.
-//   2. Diagram — a flowchart built, shared with a teammate's cursor, renamed, and restyled in a
-//      click: the Tab Look & Feel dialog opens, a theme card is picked, and it recolours.
+//   2. Diagram — two people map a sign-up flow in a frame: steps dropped and labelled, arrows
+//      joined, a branch and a loop added by a teammate, a step snapped onto an alignment guide and
+//      coloured, a sticky question and a database wired in (hero-diagram-board.tsx).
 //   3. Draw — a retro whiteboard: a title underlined in marker, stickies, the highlighter, a
 //      teammate's blue marker ringing the best note, and a doodle (hero-draw-board.tsx).
 //   4. Illustrate — an infographic page laid out: a band and title, a headline number, stat
@@ -32,7 +33,7 @@ import {
   PREFERS_REDUCED_MOTION,
   useMediaQuery,
 } from '@livediagram/ui';
-import { FlowchartDiagram } from './hero-diagrams';
+import { DiagramBoard } from './hero-diagram-board';
 import { DrawBoard } from './hero-draw-board';
 import { IllustratePage } from './hero-illustrate-page';
 import type { HeroMode } from './hero-mode-palette';
@@ -68,9 +69,7 @@ const CARDS: {
   label: string;
   mode: HeroMode;
   tabs: TabDef[];
-  showCursor: boolean;
   shared: boolean;
-  theming: boolean;
   // The launch window: a link that grows into a new document (hero-launch.tsx).
   launch?: boolean;
 }[] = [
@@ -80,24 +79,20 @@ const CARDS: {
     label: 'A fresh canvas of your own: click it to start drawing',
     mode: 'diagram',
     tabs: [{ name: LAUNCH_TAB, color: '#0ea5e9', active: true }],
-    showCursor: false,
     shared: false,
-    theming: false,
     launch: true,
   },
   {
     key: 'diagram',
-    title: 'Quarterly planning',
-    label: 'Diagram: a flowchart built together and restyled in a single click',
+    title: 'Onboarding',
+    label: 'Diagram: map a flow together, with arrows that connect and shapes that snap',
     mode: 'diagram',
     tabs: [
-      { name: 'Overview', color: '#0ea5e9', active: true },
-      { name: 'Roadmap', color: '#ec4899' },
-      { name: 'Launch', color: '#8b5cf6' },
+      { name: 'Sign-up', color: '#0ea5e9', active: true },
+      { name: 'Checkout', color: '#ec4899' },
+      { name: 'Billing', color: '#8b5cf6' },
     ],
-    showCursor: true,
     shared: true,
-    theming: true,
   },
   {
     key: 'draw',
@@ -108,9 +103,7 @@ const CARDS: {
       { name: 'Went well', color: '#10b981', active: true },
       { name: 'To improve', color: '#f59e0b' },
     ],
-    showCursor: false,
     shared: true,
-    theming: false,
   },
   {
     key: 'illustrate',
@@ -118,9 +111,7 @@ const CARDS: {
     label: 'Illustrate: lay out an infographic page, ready to print or share',
     mode: 'illustrate',
     tabs: [{ name: 'Report', color: '#8b5cf6', active: true }],
-    showCursor: false,
     shared: true,
-    theming: false,
   },
 ];
 
@@ -193,15 +184,13 @@ export function HeroIllustration() {
               ) : c.mode === 'illustrate' ? (
                 <IllustratePage />
               ) : (
-                <FlowchartDiagram />
+                <DiagramBoard />
               );
               const frame = (
                 <EditorWindow
                   title={c.title}
                   tabs={c.tabs}
                   shared={c.shared}
-                  theming={c.theming}
-                  showCursor={c.showCursor}
                   mode={c.mode}
                   playing={playing}
                   document={liveDoc}

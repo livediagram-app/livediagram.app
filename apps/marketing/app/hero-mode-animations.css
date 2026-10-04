@@ -165,3 +165,201 @@
     transform: translate(258px, 172px);
   }
 }
+
+/* --- The Diagram window (components/hero-diagram-board.tsx) --- */
+
+/* A piece fades in. */
+.hm-fade {
+  opacity: 0;
+  animation: hm-fade 0.5s ease-out var(--d, 0s) both;
+}
+@keyframes hm-fade {
+  to {
+    opacity: 1;
+  }
+}
+
+/* A label typed out, one letter a step (--steps), as its shape lands. */
+.hm-type {
+  animation: hm-type 0.5s steps(var(--steps, 10), end) var(--d, 0s) both;
+}
+@keyframes hm-type {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+/* The Yes step lands 8px low and is dragged onto the guide. */
+.hm-snap {
+  animation: hm-snap 0.4s cubic-bezier(0.3, 0, 0.2, 1) 6s both;
+}
+@keyframes hm-snap {
+  from {
+    transform: translateY(8px);
+  }
+  to {
+    transform: none;
+  }
+}
+/* The pink alignment guide shows while it snaps. */
+.hm-guide {
+  opacity: 0;
+  animation: hm-guide 0.9s linear 5.95s both;
+}
+@keyframes hm-guide {
+  0% {
+    opacity: 0;
+  }
+  12%,
+  78% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+/* The selection and its colour row, gone once the colour is picked. */
+.hm-select {
+  opacity: 0;
+  animation: hm-select 2.2s linear var(--d, 0s) both;
+}
+@keyframes hm-select {
+  0% {
+    opacity: 0;
+  }
+  5%,
+  85% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+/* Picked green: the step takes the green the theme picker would give it. */
+.hm-recolour {
+  animation: hm-recolour 0.3s ease-out 7.8s both;
+}
+@keyframes hm-recolour {
+  from {
+    fill: var(--art-ink-fill);
+    stroke: var(--art-ink-stroke);
+  }
+  to {
+    fill: var(--art-pick-fill);
+    stroke: var(--art-pick-stroke);
+  }
+}
+
+/* The two cursors ride their paths, timed to the drops (the stops are each leg's share of the
+   path's length; components/hero-diagram-board.tsx names the beats). */
+.hm-you,
+.hm-teammate {
+  transform-box: view-box;
+  transform-origin: 0 0;
+  offset-rotate: 0deg;
+  opacity: 0;
+}
+.hm-you {
+  offset-path: path('M330 -40 L110 32 L110 135 L290 135 L475 150 L475 137 L480 86');
+  animation: hm-you 7.4s linear 0.4s both;
+}
+@keyframes hm-you {
+  0% {
+    offset-distance: 0%;
+    opacity: 1;
+  }
+  8.11%,
+  12.16% {
+    offset-distance: 30.29%;
+  }
+  18.92%,
+  22.97% {
+    offset-distance: 43.76%;
+  }
+  29.73%,
+  54.05% {
+    offset-distance: 67.31%;
+  }
+  62.16%,
+  75.68% {
+    offset-distance: 91.59%;
+  }
+  81.08%,
+  91.89% {
+    offset-distance: 93.3%;
+  }
+  100% {
+    offset-distance: 100%;
+    opacity: 1;
+  }
+}
+.hm-teammate {
+  offset-path: path('M620 300 L290 255 L170 255 L470 15 L545 268');
+  animation: hm-teammate 5.7s linear 3.8s both;
+}
+@keyframes hm-teammate {
+  0% {
+    offset-distance: 0%;
+    opacity: 1;
+  }
+  10.53%,
+  21.05% {
+    offset-distance: 30.25%;
+  }
+  28.07%,
+  71.93% {
+    offset-distance: 41.14%;
+  }
+  80.7%,
+  91.23% {
+    offset-distance: 76.04%;
+  }
+  100% {
+    offset-distance: 100%;
+    opacity: 1;
+  }
+}
+
+.hero-static .hm-fade,
+.hero-static .hm-type,
+.hero-static .hm-snap {
+  animation: none;
+  opacity: 1;
+  clip-path: none;
+  transform: none;
+}
+.hero-static .hm-recolour {
+  animation: none;
+  fill: var(--art-pick-fill);
+  stroke: var(--art-pick-stroke);
+}
+.hero-static .hm-guide,
+.hero-static .hm-select,
+.hero-static .hm-you,
+.hero-static .hm-teammate {
+  display: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hm-fade,
+  .hm-type,
+  .hm-snap {
+    animation: none;
+    opacity: 1;
+    clip-path: none;
+    transform: none;
+  }
+  .hm-recolour {
+    animation: none;
+    fill: var(--art-pick-fill);
+    stroke: var(--art-pick-stroke);
+  }
+  .hm-guide,
+  .hm-select,
+  .hm-you,
+  .hm-teammate {
+    display: none;
+  }
+}

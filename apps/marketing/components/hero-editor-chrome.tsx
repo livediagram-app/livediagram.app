@@ -80,14 +80,23 @@ export function TabBarToolbelt() {
   );
 }
 
-// The Toolbar layout's menu button, top left, where the Explorer would float. On a phone it
-// rides at the head of the strip instead (the editor's menuInStrip).
-export function ToolbarMenuButton() {
+// The Toolbar layout's menu button, top left, where the Explorer would float, with the editor
+// mode switch joined to it (the mode's glyph and name). On a phone it rides at the head of the
+// strip instead (the editor's menuInStrip), the mode as its glyph alone.
+export function ToolbarMenuButton({ mode }: { mode: HeroMode }) {
+  const { label, Icon } = HERO_MODE[mode];
   return (
     <span
-      className={`${CARD} absolute left-2 top-2 hidden w-7 justify-center text-slate-600 sm:flex dark:text-slate-300`}
+      className={`${CARD} absolute left-2 top-2 hidden overflow-hidden text-slate-600 sm:flex dark:text-slate-300`}
     >
-      <MenuIcon size={11} />
+      <span className={CELL}>
+        <MenuIcon size={11} />
+      </span>
+      <span className="flex h-full items-center gap-1 border-l border-slate-100 bg-brand-50 px-2 text-[9px] font-medium text-brand-700 dark:border-slate-800 dark:bg-brand-500/15 dark:text-brand-200">
+        <Icon size={10} />
+        <span className="text-optical-line">{label}</span>
+        <ChevronDownIcon size={7} />
+      </span>
     </span>
   );
 }
@@ -99,12 +108,12 @@ function StripDivider() {
   return <span aria-hidden className="mx-0.5 h-4 w-px shrink-0 bg-slate-200 dark:bg-slate-700" />;
 }
 
-// The Palette in the Toolbar layout: one strip at the top centre of the canvas. The mode switch
-// (the mode's glyph and name), the selection mode (Select), the category picker (Popular; Draw
+// The Palette in the Toolbar layout: one strip at the top centre of the canvas. The selection
+// mode (Select), the category picker (Popular; Draw
 // has its tools instead), the mode's tiles (the tool in hand marked), and More.
 export function ToolbarStrip({ mode }: { mode: HeroMode }) {
   const select = MODE_GLYPHS.select!;
-  const { label, Icon } = HERO_MODE[mode];
+  const { Icon } = HERO_MODE[mode];
   const pill =
     'flex h-6 items-center gap-1 rounded bg-brand-50 px-1.5 text-[9px] font-medium text-brand-600 dark:bg-brand-500/15 dark:text-brand-300';
   return (
@@ -113,15 +122,14 @@ export function ToolbarStrip({ mode }: { mode: HeroMode }) {
         <span className="flex h-6 w-5 items-center justify-center sm:hidden">
           <MenuIcon size={10} />
         </span>
+        {/* On a phone the menu rides here, the mode switch joined to it. */}
+        <span className={`${pill} sm:hidden`}>
+          <Icon size={10} />
+          <ChevronDownIcon size={7} />
+        </span>
         <span className="contents sm:hidden">
           <StripDivider />
         </span>
-        <span className={pill}>
-          <Icon size={10} />
-          <span className="hidden sm:text-optical-line">{label}</span>
-          <ChevronDownIcon size={7} />
-        </span>
-        <StripDivider />
         <span className="flex h-6 items-center gap-0.5 px-1">
           <Glyph size={10} units={select.units}>
             <Prims prims={select.prims} />

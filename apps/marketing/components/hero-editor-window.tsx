@@ -2,15 +2,7 @@
 // with today's editor, around a caller-supplied SVG diagram (docs/specs/019-marketing/marketing-site.md).
 
 import { type CSSProperties, type ReactNode } from 'react';
-import {
-  Brand,
-  ChevronDownIcon,
-  MenuIcon,
-  PrivateDotIcon,
-  Chip,
-  SharedDotIcon,
-  TabsLabelIcon,
-} from '@livediagram/ui';
+import { Brand, PrivateDotIcon, Chip, SharedDotIcon, TabsLabelIcon } from '@livediagram/ui';
 import { ShareGlyph, TabAvatar } from './hero-illustration-glyphs';
 import { HERO_MODE, type HeroMode } from './hero-mode-palette';
 import {
@@ -19,17 +11,15 @@ import {
   ToolbarMenuButton,
   ToolbarStrip,
 } from './hero-editor-chrome';
-import { HeroThemeDialog } from './hero-theme-dialog';
 import { HERO_CANVAS_ATTR } from './hero-launch';
 
 export type TabDef = { name: string; color: string; active?: boolean };
 
 // Every window sits on the Default scheme's canvas (the --art-* palette in
 // hero-animations.css, its light or dark half with the appearance), dotted as the
-// editor dots it: 1px dots on a 24px grid. The flowchart recolours from it to Forest
-// in light and Pine in dark (the hero-theme / hero-theme-canvas keyframes).
+// editor dots it: 1px dots on a 24px grid.
 const CANVAS =
-  'bg-(color:--art-paper) bg-[radial-gradient(circle_at_center,_var(--hero-grid,var(--art-grid))_1px,_transparent_1px)] bg-[size:24px_24px]';
+  'bg-(color:--art-paper) bg-[radial-gradient(circle_at_center,_var(--art-grid)_1px,_transparent_1px)] bg-[size:24px_24px]';
 
 // A tab pill in the accent it is given as --tab. Dark lifts that accent 60% toward
 // white, as the editor's legibleTabAccent does for the dark bar.
@@ -45,8 +35,6 @@ export function EditorWindow({
   document: liveDoc,
   playing,
   shared,
-  theming,
-  showCursor,
   mode,
   overlay,
   empty = false,
@@ -57,8 +45,6 @@ export function EditorWindow({
   document: ReactNode;
   playing: boolean;
   shared: boolean;
-  theming: boolean;
-  showCursor: boolean;
   // The editor mode the window is in (docs/specs/007-editor/editor-modes.md): its palette and the
   // glyph on its tab.
   mode: HeroMode;
@@ -92,12 +78,6 @@ export function EditorWindow({
         <div className="flex items-center justify-between gap-2 border-b border-slate-100 bg-white px-3 py-2 dark:border-slate-800 dark:bg-slate-900">
           <div className="flex items-center gap-2">
             <Brand size="sm" />
-            {/* The Editor menu, as the real header carries it. */}
-            <span className="optical-edges hidden items-center gap-1 rounded-md border border-slate-200 px-1.5 py-0.5 text-[10px] font-medium text-slate-600 sm:inline-flex dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200">
-              <MenuIcon size={9} />
-              <span className="text-optical-line">Editor</span>
-              <ChevronDownIcon size={8} />
-            </span>
           </div>
           <div className="flex min-w-0 items-center gap-2">
             <span className="hidden truncate text-xs text-slate-400 sm:inline">{title}</span>
@@ -128,21 +108,14 @@ export function EditorWindow({
           </span>
         </div>
 
-        {/* Canvas surface. The flowchart additionally animates its theme beat
-            (overriding the resting colour) while it is centred. */}
+        {/* Canvas surface. */}
         <div
           {...{ [HERO_CANVAS_ATTR]: '' }}
-          className={
-            'relative ' +
-            CANVAS +
-            ' ' +
-            'h-[300px] sm:h-[360px]' +
-            (theming && playing ? ' hero-theme-canvas' : '')
-          }
+          className={`relative h-[300px] sm:h-[360px] ${CANVAS}`}
         >
           {/* The Toolbar panel layout (docs/specs/007-editor/toolbar-layout.md): the Palette is a
               strip at the top centre and a menu button stands where the Explorer would float. */}
-          <ToolbarMenuButton />
+          <ToolbarMenuButton mode={mode} />
           <ToolbarStrip mode={mode} />
 
           {/* The canvas cluster (static chrome), drawn from the editor's own glyphs. */}
@@ -161,36 +134,7 @@ export function EditorWindow({
             </svg>
           </div>
 
-          {/* The Tab Look & Feel dialog (docs/specs/011-theme/canvas-and-theme-dialog.md): opens over the canvas,
-              a theme card is picked (the selection ring moves, the pointer
-              dips), it closes, and the recolour follows. Themed window only. */}
-          {theming && playing ? <HeroThemeDialog /> : null}
-
           {overlay}
-
-          {/* Remote collaborator's cursor sweeping the canvas (flowchart card
-              only; the mind-map card uses an in-canvas laser pointer, the
-              private timeline has no collaborators). */}
-          {showCursor && playing ? (
-            <span className="hero-cursor pointer-events-none absolute" aria-hidden>
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 16 16"
-                fill="#ec4899"
-                stroke="white"
-                strokeWidth="1"
-              >
-                <path d="M2 1 L14 8 L8 9 L11 14 L9 15 L6 10 L2 14 Z" />
-              </svg>
-              <span
-                className="absolute -top-3 left-3 whitespace-nowrap rounded px-1.5 py-0.5 text-[10px] font-semibold text-white"
-                style={{ backgroundColor: '#ec4899' }}
-              >
-                JR
-              </span>
-            </span>
-          ) : null}
         </div>
 
         {/* Bottom tab bar (static chrome): colour-coded tabs relevant to this
