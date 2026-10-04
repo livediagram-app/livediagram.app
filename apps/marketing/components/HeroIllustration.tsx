@@ -445,21 +445,20 @@ function StageArrow({ side, onClick }: { side: 'left' | 'right'; onClick: () => 
   );
 }
 
-// A mode window's call to action, bottom left of its canvas (the canvas cluster holds the right):
-// open the template step narrowed to this window's kind. Live only on the centred window; on a
-// peeking one a press centres the window instead.
+// A mode window's call to action: once the scene has played out, it lands in the middle of the
+// canvas (hero-build, hero-mode-animations.css) and opens the template step narrowed to this
+// window's kind. Only on the centred window; a peeking one shows none.
 function BuildYours({ href, live }: { href: string; live: boolean }) {
+  if (!live) return null;
   return (
     <a
       href={ctaHref(href, 'Home.HeroBuild')}
       tabIndex={-1}
       onClick={(e) => e.stopPropagation()}
-      className={`absolute bottom-3 left-3 z-20 inline-flex items-center gap-1.5 rounded-full bg-brand-500 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-brand-500/30 transition hover:bg-brand-600 motion-safe:hover:-translate-y-0.5 dark:bg-brand-600 dark:hover:bg-brand-500 ${
-        live ? '' : 'pointer-events-none'
-      }`}
+      className="hero-build absolute left-1/2 top-1/2 z-30 inline-flex items-center gap-2 rounded-full bg-brand-500 px-6 py-3 text-base font-semibold text-white shadow-xl shadow-brand-500/30 ring-4 ring-white/70 transition-colors hover:bg-brand-600 dark:bg-brand-600 dark:ring-slate-900/70 dark:hover:bg-brand-500"
     >
       Build yours
-      <ChevronRightIcon size={14} aria-hidden />
+      <ChevronRightIcon size={16} aria-hidden />
     </a>
   );
 }

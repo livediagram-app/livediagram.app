@@ -388,34 +388,33 @@
   }
 }
 
-/* --- The Mind Map window (components/hero-mindmap-board.tsx) --- */
+/* --- Build yours (components/HeroIllustration.tsx) --- */
 
-/* A key press: the keycap chip shows for a beat, then goes. */
-.hm-press {
+/* The call to action lands in the middle of the canvas once the scene has played out (11s into the
+   16s cycle), centred by the translate and rising into place; until then it is not there to press.
+   Reduced motion shows it at once. */
+.hero-build {
+  translate: -50% -50%;
+  visibility: hidden;
   opacity: 0;
-  transform-box: fill-box;
-  transform-origin: center;
-  animation: hm-press 0.5s ease-out var(--d, 0s) both;
+  animation: hero-build 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.2) 11s both;
 }
-@keyframes hm-press {
-  0% {
+@keyframes hero-build {
+  from {
+    visibility: visible;
     opacity: 0;
-    transform: translateY(4px);
+    transform: translateY(10px) scale(0.92);
   }
-  20%,
-  70% {
+  to {
+    visibility: visible;
     opacity: 1;
     transform: none;
   }
-  100% {
-    opacity: 0;
-  }
-}
-.hero-static .hm-press {
-  display: none;
 }
 @media (prefers-reduced-motion: reduce) {
-  .hm-press {
-    display: none;
+  .hero-build {
+    animation: none;
+    visibility: visible;
+    opacity: 1;
   }
 }

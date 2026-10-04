@@ -4,8 +4,7 @@ import type { CSSProperties } from 'react';
 // grown from the centre in Diagram mode's mind map (docs/specs/009-elements/mind-node.md). The
 // centre lands, four colour-coded branches grow out on tapered curves (Marketing, Product, Support,
 // Events), and ideas sprout from each, written on an underline as a mind map draws its leaves; a
-// key chip shows the Tab and Enter presses that add them, a teammate fills the Events branch at the
-// same time, and a rocket sticker lands on the centre. Each piece arrives at its own --d delay
+// teammate fills the Events branch at the same time, and a rocket sticker lands on the centre. Each piece arrives at its own --d delay
 // (hero-mode-animations.css).
 
 const FONT = 'ui-sans-serif, system-ui, sans-serif';
@@ -212,61 +211,6 @@ function PortraitLeaf({ b, leaf, i }: { b: Branch; leaf: Leaf; i: number }) {
   );
 }
 
-// A key press, shown as a keycap with what it does, at the canvas's foot.
-function KeyPress({
-  d,
-  cap,
-  does,
-  portrait,
-}: {
-  d: number;
-  cap: string;
-  does: string;
-  portrait: boolean;
-}) {
-  return (
-    <g className="hm-press" style={at(d)} transform={portrait ? 'translate(-120 154)' : undefined}>
-      <rect
-        x="226"
-        y="300"
-        width="148"
-        height="26"
-        rx="8"
-        className="fill-white stroke-slate-200 dark:fill-slate-900 dark:stroke-slate-700"
-      />
-      <rect
-        x="234"
-        y="305"
-        width="38"
-        height="16"
-        rx="4"
-        className="fill-slate-100 stroke-slate-300 dark:fill-slate-800 dark:stroke-slate-600"
-      />
-      <text
-        x="253"
-        y="316.5"
-        textAnchor="middle"
-        fontFamily={FONT}
-        fontSize="9"
-        fontWeight="700"
-        className="fill-slate-700 dark:fill-slate-200"
-      >
-        {cap}
-      </text>
-      <text
-        x="280"
-        y="317"
-        fontFamily={FONT}
-        fontSize="9.5"
-        fontWeight="600"
-        className="fill-slate-500 dark:fill-slate-400"
-      >
-        {does}
-      </text>
-    </g>
-  );
-}
-
 export function MindMapBoard({ portrait = false }: { portrait?: boolean }) {
   const centre = portrait ? PORTRAIT_CENTRE : CENTRE;
   const branches = portrait ? BRANCHES.map((b) => ({ ...b, ...PORTRAIT_AT[b.label]! })) : BRANCHES;
@@ -347,13 +291,6 @@ export function MindMapBoard({ portrait = false }: { portrait?: boolean }) {
           ))}
         </g>
       ))}
-
-      {/* The keys that grew it: Tab adds a child idea, Enter a sibling. */}
-      <KeyPress d={2.85} cap="Tab" does="Add an idea" portrait={portrait} />
-      <KeyPress d={3.35} cap="Enter" does="And another" portrait={portrait} />
-      <KeyPress d={3.85} cap="Enter" does="And another" portrait={portrait} />
-      <KeyPress d={5.75} cap="Tab" does="Add an idea" portrait={portrait} />
-      <KeyPress d={7.45} cap="Tab" does="Add an idea" portrait={portrait} />
 
       {/* A rocket on the centre, for the launch. */}
       <g className="hm-pop" style={at(8.9)}>
