@@ -1,0 +1,69 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Edit a Mind Map as an Outline',
+  description:
+    'Open a whole mind map as an indented list of rows, restructure it with the keyboard or paste a list in, and save it back to the map in one undoable step.',
+  path: '/help/palette/mind-maps/edit-outline/',
+});
+
+<ArticleLayout
+  title="Edit a Mind Map as an Outline"
+  description="Rewrite a whole map as a list, then save it back in one go."
+  categoryTitle="Palette"
+  categorySlug="palette"
+  parentArticle={{ title: 'Mind Maps', slug: 'mind-maps' }}
+  subArticles={getSubArticles('mind-maps').filter((a) => a.slug !== 'edit-outline')}
+>
+
+Dragging nodes around one at a time is slow when you want to rethink a whole map. **Edit Outline** opens the map as a list instead, one row per node, so you can reshuffle it the way you would reorganise notes in a document.
+
+## Open it
+
+<Step n={1}>Find the map's root, the node the map starts from.</Step>
+
+<Step n={2}>
+  Press **Edit Outline** on the badge at its top-right corner, or open the root's menu and find it
+  under **Mind Map**, just below **Tidy Map**.
+</Step>
+
+Beside it, the **Tidy Map** badge lays the map out neatly again and tells you whether anything moved.
+
+The first row is the root, a size larger. Every other row has a bullet and sits one step in from its parent, and each level has its own colour, so the nesting reads at a glance.
+
+## Edit the rows
+
+You never type spaces to nest a row: its level is part of the row, so nothing can end up misaligned.
+
+- **Enter** starts a new node after the one you are on, at the same level. On an empty row, it steps the row out a level instead.
+- **Tab** and **Shift+Tab** move a row a level in or out, with its children.
+- **Backspace** at the start of an empty row removes it; on a row with text, it joins the row onto the one above.
+- **Shift+Enter** starts a second line inside the same node.
+- **Alt+↑** and **Alt+↓** move a row, children and all, past its neighbour.
+
+The toolbar above the rows does the same things with a tap: **Outdent**, **Indent**, **Move Up**, **Move Down** and **Line Break**. On a phone, where there is no Tab key, that is how you nest rows and break a line.
+
+## Bold, italic and underline
+
+Select some text in a row and press **Bold**, **Italic** or **Underline** on the toolbar, or use **⌘/Ctrl+B**, **I** and **U**. The rows show a node's formatting as it looks on the canvas. Other styling (colour, size, links) is not shown here and is left exactly as it was.
+
+## Paste a list in
+
+Paste several lines into a row and they arrive as rows, nested from the row you pasted into. Pasting is forgiving, so a list from a document or another app works: bullets, numbered items, indented lines and `#` headings all become levels, `**bold**`, `_italic_` and `<u>underline</u>` become formatting, and links or task boxes are reduced to their text.
+
+## What Save does
+
+**Save** (or **⌘/Ctrl+Enter**) applies the whole outline to the map at once. A short line beside the buttons tells you what it will do, such as "3 added, 1 renamed, 2 removed".
+
+- **Nodes you kept stay as they were.** Each line is matched to its existing node, so colours, sizes, icons, comments and links stay put, even when you move a line under a different parent.
+- **New lines become new nodes**, styled like the other nodes at their level and joined by matching connectors.
+- **Removed lines ask first.** If any nodes would be removed, you are shown which ones and can choose **Remove** or **Keep Editing**.
+- **The map is laid out again** when its structure changed (nodes added, removed or moved), in the outline's order, with the root staying where it was, just as **Tidy Map** does. Changing only words or formatting leaves every node where it is.
+
+**Cancel** (or **Escape**) closes the dialog without changing anything.
+
+<Tip>Saving is a single step, so one **Undo** puts the whole map back exactly as it was.</Tip>
+
+</ArticleLayout>

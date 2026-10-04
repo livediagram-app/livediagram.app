@@ -649,6 +649,8 @@ export type CanvasProps = {
   // edited, and opening it.
   canEditMindOutline?: (id: string) => boolean;
   onEditMindOutline?: (id: string) => void;
+  // Tidy Map on the map `id` belongs to (the badge on a map's root).
+  onTidyMindMap?: (id: string) => void;
   // Escape on the empty node a Tab made one time too many removes it.
   onAbandonMindNode: (id: string) => boolean;
   onSetPageHeading: (elementId: string, field: 'pageTitle' | 'pageSubtitle', value: string) => void;

@@ -12,9 +12,22 @@
 // deliberately NOT treated this way (element-parts.tsx): interaction
 // grips need a constant hit size.
 import { initialsOf } from '@/lib/identity';
-import { ActionIcon, CommentIcon, LinkIcon, NoteIcon, HoverCard, GlyphDisc } from '@livediagram/ui';
+import {
+  ActionIcon,
+  CommentIcon,
+  LinkIcon,
+  MindOutlineIcon,
+  NoteIcon,
+  TidyMapIcon,
+  HoverCard,
+  GlyphDisc,
+} from '@livediagram/ui';
 import { IDENTITY_FILL, identityVars } from '@/lib/identity-fill';
 import { useCanvasZoom } from '@/components/canvas/CanvasZoomContext';
+import type { BadgeInset } from '@/lib/badge-anchor';
+
+// A corner this round or rounder gets a fully round chip; sharper ones a softly squared chip.
+const ROUND_CHIP_FROM_PX = 10;
 
 // Below this canvas zoom the on-element adornments (badge pill, lock
 // badge, remote-selector avatars) disappear entirely.
@@ -62,12 +75,12 @@ export function RemoteSelectorsStrip({
   );
 }
 
-// Floating cluster at the top-right of the element. Link / note / action /
-// comment render as SEGMENTS of one connected pill — a single control,
-// with hairline separators between segments rather than detached circles —
-// so an element carrying several affordances reads as one tidy cluster.
-// Scales with the canvas zoom and hides below ADORNMENT_MIN_ZOOM (see the
-// header comment).
+// The chip at the top-right of the element (docs/specs/008-canvas/canvas-and-palette.md). Outline and
+// tidy (a mind map root) / link / note / action / comment render as SEGMENTS of one connected
+// chip, hairline separators between them, so an element carrying several affordances reads as one
+// tidy control. A light surface with quiet icons that take the element's accent on hover, rounded
+// to suit the element's corners and sitting on its outline (badgeCornerInset). Scales with the
+// canvas zoom and hides below ADORNMENT_MIN_ZOOM (see the header comment).
 export function BadgeStrip({
   linked,
   linkLabel,
@@ -80,6 +93,10 @@ export function BadgeStrip({
   onOpenComments,
   onOpenNote,
   onOpenAction,
+  onEditOutline,
+  onTidyMap,
+  inset,
+  cornerPx,
 }: {
   linked: boolean;
   // Destination shown in the link badge's hover card (e.g. the URL),
@@ -98,6 +115,15 @@ export function BadgeStrip({
   onOpenComments: () => void;
   onOpenNote?: () => void;
   onOpenAction?: () => void;
+  // A mind map root's Edit Outline (docs/specs/009-elements/mind-node.md "Edit Outline"): the
+  // first segment, so a map announces it can be edited as a list.
+  onEditOutline?: () => void;
+  // The same root's Tidy Map, beside it.
+  onTidyMap?: () => void;
+  // Where on the element's outline the chip sits, in from the top-right corner.
+  inset: BadgeInset;
+  // The element's corner radius, which the chip's own rounding follows.
+  cornerPx: number;
 }) {
   const zoom = useCanvasZoom();
   // Order (LTR inside the pill, which is anchored to the top-right of
@@ -107,13 +133,37 @@ export function BadgeStrip({
   // segment list so the hairline separators land between every pair
   // regardless of which affordances are present.
   const segments: { key: string; node: React.ReactNode }[] = [];
+  if (onEditOutline) {
+    segments.push({
+      key: 'outline',
+      node: (
+        <HoverCard title="Edit Outline" description="Edit the whole map as a list.">
+          <BadgeButton label="Edit Outline" color={badgeColor} onClick={onEditOutline}>
+            <MindOutlineIcon size={15} />
+          </BadgeButton>
+        </HoverCard>
+      ),
+    });
+  }
+  if (onTidyMap) {
+    segments.push({
+      key: 'tidy',
+      node: (
+        <HoverCard title="Tidy Map" description="Lay the whole map out neatly again.">
+          <BadgeButton label="Tidy Map" color={badgeColor} onClick={onTidyMap}>
+            <TidyMapIcon size={15} />
+          </BadgeButton>
+        </HoverCard>
+      ),
+    });
+  }
   if (linked) {
     segments.push({
       key: 'link',
       node: (
         <HoverCard title="Follow link" description={linkLabel ?? 'Open the linked destination.'}>
           <BadgeButton label="Follow link" color={badgeColor} onClick={onFollowLink}>
-            <LinkIcon size={13} />
+            <LinkIcon size={15} />
           </BadgeButton>
         </HoverCard>
       ),
@@ -124,7 +174,7 @@ export function BadgeStrip({
       key: 'note',
       node: (
         <BadgeButton label="Open note" color={badgeColor} onClick={onOpenNote}>
-          <NoteIcon size={13} />
+          <NoteIcon size={15} />
         </BadgeButton>
       ),
     });
@@ -140,7 +190,7 @@ export function BadgeStrip({
             onClick={onOpenAction}
             dataAttr="data-action-trigger"
           >
-            <ActionIcon size={13} />
+            <ActionIcon size={15} />
           </BadgeButton>
         </HoverCard>
       ),
@@ -156,8 +206,8 @@ export function BadgeStrip({
           onClick={onOpenComments}
           dataAttr="data-comment-trigger"
         >
-          <CommentIcon size={13} />
-          <span className="absolute right-0 top-0 flex h-3 min-w-[12px] items-center justify-center rounded-full bg-rose-500 px-0.5 text-[8px] font-semibold leading-none text-white">
+          <CommentIcon size={15} />
+          <span className="text-[11px] font-semibold tabular-nums leading-none">
             <span className="text-optical-centre">{commentCount}</span>
           </span>
         </BadgeButton>
@@ -168,11 +218,22 @@ export function BadgeStrip({
   return (
     <div
       onPointerDown={(e) => e.stopPropagation()}
-      style={identityVars(badgeColor)}
-      className={`pointer-events-auto absolute -right-1 -top-1 flex items-stretch overflow-hidden rounded-full shadow-sm ring-1 ring-white/60 ${IDENTITY_FILL}`}
+      style={{
+        ...identityVars(badgeColor),
+        // Centred on the outline point: half in, half out, the edge through its middle.
+        right: inset.x,
+        top: inset.y,
+        transform: 'translate(50%, -50%)',
+      }}
+      className={`pointer-events-auto absolute flex items-stretch overflow-hidden bg-white shadow-[0_1px_2px_rgb(15_23_42/0.08),0_2px_8px_-2px_rgb(15_23_42/0.16)] ring-1 ring-slate-900/10 dark:bg-slate-800 dark:ring-white/10 ${
+        cornerPx >= ROUND_CHIP_FROM_PX ? 'rounded-full' : 'rounded-md'
+      }`}
     >
       {segments.map((seg, i) => (
-        <span key={seg.key} className={`flex ${i > 0 ? 'border-l border-white/35' : ''}`}>
+        <span
+          key={seg.key}
+          className={`flex ${i > 0 ? 'border-l border-slate-200 dark:border-slate-700' : ''}`}
+        >
           {seg.node}
         </span>
       ))}
@@ -202,11 +263,10 @@ function BadgeButton({
         e.stopPropagation();
         onClick();
       }}
-      // A SEGMENT of the connected pill (the wrapper owns the shared
-      // theme-coloured background + rounding): rectangular hit area,
-      // hover brightens just this segment.
+      // A SEGMENT of the connected chip (the wrapper owns the surface + rounding): a quiet icon that
+      // takes the element's accent colour on hover.
       style={identityVars(color)}
-      className={`relative flex h-6 w-7 items-center justify-center text-white transition hover:brightness-110 ${IDENTITY_FILL}`}
+      className="relative flex h-8 min-w-9 items-center justify-center gap-1 px-2 text-slate-500 transition hover:bg-slate-50 hover:text-(--identity) dark:text-slate-300 dark:hover:bg-slate-700/60 dark:hover:text-white"
       {...extra}
     >
       {children}

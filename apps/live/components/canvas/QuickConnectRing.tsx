@@ -180,10 +180,14 @@ export function QuickConnectRing({
         : webRow
           ? [...OPTIONS, webRowOption(webRow.label, webRow.description)]
           : onGrowMind
-            ? // A mind node leads with its two growth actions: they are what
-              // the ring is for on a mind map, and Duplicate / Arrow / Text
-              // still follow for everything else you might want.
-              [MIND_CHILD_OPTION, MIND_SIBLING_OPTION, ...OPTIONS]
+            ? // A mind node's ring is how a map grows: its two growth actions
+              // and Duplicate. A free arrow, a sketch or a loose label is not
+              // (docs/specs/009-elements/mind-node.md).
+              [
+                MIND_CHILD_OPTION,
+                MIND_SIBLING_OPTION,
+                ...OPTIONS.filter((o) => o.kind === 'duplicate'),
+              ]
             : OPTIONS;
   // `rendered` keeps the options mounted through the exit transition;
   // `active` drives the per-option fade/scale (off → on for enter, on →

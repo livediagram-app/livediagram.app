@@ -15,7 +15,6 @@ import {
   supportsBorderRadius,
   supportsColours,
   supportsShadow,
-  type BorderRadius,
   type BorderStroke,
   type BorderStyle,
   type BoxedElement,
@@ -127,8 +126,7 @@ export function MultiSelectionContextMenu({
         const borderableSel = sel.some((el) => supportsBorderControls(el));
         const borderSrc = sel.find((el) => supportsBorderControls(el)) as
           { strokeWidth?: BorderStroke; strokeStyle?: BorderStyle; type: string } | undefined;
-        const radiusSrc = sel.find((el) => supportsBorderRadius(el)) as
-          { borderRadius?: BorderRadius } | undefined;
+        const radiusSrc = sel.find((el) => supportsBorderRadius(el));
         // Shadow (docs/specs/008-canvas/element-shadows.md): the section shows when any member supports it;
         // the sliders/active-tile read off the first such member, and the
         // setters apply selection-wide (unsupported members no-op).

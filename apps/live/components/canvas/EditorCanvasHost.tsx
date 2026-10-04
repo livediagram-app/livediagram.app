@@ -311,6 +311,7 @@ export function EditorCanvasHost() {
     setHeroCaptionLine,
     growMindNode,
     mindOutline,
+    tidyMindMap,
     abandonMindNode,
     setTextAlignSelected,
     setUserPreferences,
@@ -1063,6 +1064,7 @@ export function EditorCanvasHost() {
         onGrowMindNode={growMindNode}
         canEditMindOutline={mindOutline.canEdit}
         onEditMindOutline={mindOutline.open}
+        onTidyMindMap={tidyMindMap}
         onAbandonMindNode={abandonMindNode}
         chartPalette={themeChartPalette(getTheme(activeTab.theme))}
         onCancelEdit={cancelEdit}

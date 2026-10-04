@@ -2551,6 +2551,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     setLegendItemsSelected,
     setMindFlowSelected,
     tidyMindMapSelected,
+    tidyMindMap,
     setPageHeading,
     setWebRows,
     appendWebRowTo,
@@ -2605,6 +2606,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     commitActiveTab,
     tickTabs: rememberingTickTabs,
     checkpointBurst,
+    notify: (tone, message) => toast[tone](message),
   });
 
   // The quick style panel (docs/specs/008-canvas/quick-style-panel.md): its view of the selection and one
@@ -3493,6 +3495,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     setLegendItemsSelected,
     setMindFlowSelected,
     tidyMindMapSelected,
+    tidyMindMap,
     toggleChecklistItem,
     setPageHeading,
     setWebRows,

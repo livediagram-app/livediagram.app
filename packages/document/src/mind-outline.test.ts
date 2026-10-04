@@ -66,9 +66,11 @@ describe('mindOutlineText', () => {
     );
   });
 
-  it('joins a node with several lines of text onto one line', () => {
-    const els = offsite().map((e) => (e.id === 'travel' ? { ...e, label: 'Travel\nby train' } : e));
-    expect(outlineOf(els)).toContain('- Travel by train');
+  it("writes a node's further lines under its first, lined up with its text", () => {
+    const els = offsite().map((e) =>
+      e.id === 'lake' ? { ...e, label: 'Lake District\n by the water \n\n' } : e,
+    );
+    expect(outlineOf(els)).toContain('  - Lake District\n    by the water\n- Agenda');
   });
 });
 
@@ -106,6 +108,17 @@ describe('parseMindOutline', () => {
       ['Done now'],
       ['see'],
     ]);
+  });
+
+  it('reads a plain line lined up under a marked line, or the root, as more of its text', () => {
+    expect(tree(parse('Brand voice\nHow we sound\n- Warm\n  but direct\n  - Plain words'))).toEqual(
+      ['Brand voice\nHow we sound', ['Warm\nbut direct', ['Plain words']]],
+    );
+  });
+
+  it('reads a plain line under a plain line as a node, and a blank line ends a node', () => {
+    expect(tree(parse('Root\n  Child\n  Sibling'))).toEqual(['Root', ['Child'], ['Sibling']]);
+    expect(tree(parse('Root\n- A\n\n  B'))).toEqual(['Root', ['A', ['B']]]);
   });
 
   it('is null with no lines', () => {
@@ -181,6 +194,14 @@ describe('applyMindOutline', () => {
     expect(summariseMindOutline(els, 'root', parse(text)).moved).toBe(1);
   });
 
+  it('gives a node a second line from a further line', () => {
+    const els = offsite();
+    const text = outlineOf(els).replace('- Travel', '- Travel\n  by train');
+    expect(summariseMindOutline(els, 'root', parse(text)).renamed).toBe(1);
+    const out = applyMindOutline(els, 'root', parse(text), dress)!;
+    expect(shape(out, 'travel').label).toBe('Travel\nby train');
+  });
+
   it('renames the node in the same place when its text changed, keeping its id', () => {
     const els = offsite();
     const text = outlineOf(els).replace('- Travel', '- Getting there');
@@ -190,14 +211,18 @@ describe('applyMindOutline', () => {
     expect(shape(out, 'travel').label).toBe('Getting there');
   });
 
-  it('keeps a node of several lines, and its formatting, when its joined line is unchanged', () => {
+  it('keeps a node of several lines, and its formatting, when its lines are unchanged', () => {
     const els = offsite().map((e) =>
       e.id === 'root'
-        ? ({ ...e, label: 'Team offsite\nLake District', richText: [{ text: 'x' }] } as Element)
+        ? ({
+            ...e,
+            label: 'Team offsite\nLake District',
+            richText: [{ text: 'Team offsite\nLake District', color: '#dc2626' }],
+          } as Element)
         : e,
     );
     const text = outlineOf(els);
-    expect(text.split('\n')[0]).toBe('Team offsite Lake District');
+    expect(text.split('\n').slice(0, 2)).toEqual(['Team offsite', 'Lake District']);
     expect(summariseMindOutline(els, 'root', parse(text)).renamed).toBe(0);
     expect(applyMindOutline(els, 'root', parse(text), dress)).toBeNull();
   });

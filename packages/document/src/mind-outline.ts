@@ -17,24 +17,33 @@ import {
 } from './mind-grow';
 import { isMindNode, mindFlowOf, mindRootOf } from './mind-map';
 import { mindNodesInOrder } from './mind-layout';
-import { mindOutlineLine, type MindOutlineNode } from './mind-outline-text';
+import { mindOutlineNodeText, type MindOutlineNode } from './mind-outline-text';
+import {
+  mindNodeMarks,
+  mindRichTextFor,
+  restyleMindNode,
+  sameMindMarks,
+} from './mind-outline-marks';
+import type { TextRun } from './rich-text';
 
 /** What a save will do, for the dialog's count and its removal question. */
 export type MindOutlineSummary = {
   added: number;
   renamed: number;
+  // Same text, different bold / italic / underline.
+  restyled: number;
   moved: number;
   removed: ShapeElement[];
 };
 
-// The outline flattened depth first: each line's text and the index of its parent line.
-type Flat = { text: string; parent: number };
+// The outline flattened depth first: each node's text, its marks and the index of its parent.
+type Flat = { text: string; marks: TextRun[]; parent: number };
 
 function flatten(root: MindOutlineNode): Flat[] {
   const out: Flat[] = [];
   const walk = (node: MindOutlineNode, parent: number) => {
     const at = out.length;
-    out.push({ text: node.text.trim(), parent });
+    out.push({ text: node.text.trim(), marks: node.marks, parent });
     for (const kid of node.children) walk(kid, at);
   };
   walk(root, -1);
@@ -70,7 +79,7 @@ function match(elements: Element[], root: ShapeElement, outline: MindOutlineNode
     lines.forEach((line, i) => {
       if (nodeOf[i]) return;
       const parent = nodeOf[line.parent];
-      const sameText = (n: ShapeElement) => mindOutlineLine(n.label) === line.text;
+      const sameText = (n: ShapeElement) => mindOutlineNodeText(n.label) === line.text;
       const found =
         (parent && kidsOf(parent).find((n) => !taken.has(n.id) && sameText(n))) ?? free(sameText);
       if (found) {
@@ -106,25 +115,40 @@ export function summariseMindOutline(
   outline: MindOutlineNode,
 ): MindOutlineSummary {
   const root = elements.find((el): el is ShapeElement => el.id === rootId && isMindNode(el));
-  if (!root) return { added: 0, renamed: 0, moved: 0, removed: [] };
+  if (!root) return { added: 0, renamed: 0, restyled: 0, moved: 0, removed: [] };
   const { lines, nodeOf, map } = match(elements, root, outline);
   const kept = new Set(nodeOf.filter(Boolean).map((n) => n!.id));
   let added = 0;
   let renamed = 0;
+  let restyled = 0;
   let moved = 0;
   lines.forEach((line, i) => {
     const node = nodeOf[i];
     if (!node) return void (added += 1);
-    if (i === 0) {
-      if (mindOutlineLine(node.label) !== line.text) renamed += 1;
-      return;
-    }
-    if (mindOutlineLine(node.label) !== line.text) renamed += 1;
+    const change = changeOf(node, line);
+    if (change === 'renamed') renamed += 1;
+    if (change === 'restyled') restyled += 1;
+    if (i === 0) return;
     const parent = nodeOf[line.parent];
     if (parent && node.mindParentId !== parent.id) moved += 1;
   });
   const removed = map.map(({ node }) => node).filter((n) => !kept.has(n.id));
-  return { added, renamed, moved, removed };
+  return { added, renamed, restyled, moved, removed };
+}
+
+/** How a kept node's text changes: new words, the same words restyled, or not at all. */
+function changeOf(node: ShapeElement, line: Flat): 'renamed' | 'restyled' | null {
+  if (mindOutlineNodeText(node.label) !== line.text) return 'renamed';
+  return sameMindMarks(mindNodeMarks(node), line.marks) ? null : 'restyled';
+}
+
+/** A kept node's text fields after `line`: new text with its marks, or its marks changed. */
+function textOf(node: ShapeElement, line: Flat): Partial<ShapeElement> {
+  const change = changeOf(node, line);
+  if (change === 'renamed')
+    return { label: line.text, richText: mindRichTextFor(node, line.text, line.marks) };
+  if (change === 'restyled') return { richText: restyleMindNode(node, line.marks) };
+  return {};
 }
 
 export type MindOutlineDress = {
@@ -155,6 +179,7 @@ export function applyMindOutline(
   if (
     summary.added === 0 &&
     summary.renamed === 0 &&
+    summary.restyled === 0 &&
     summary.moved === 0 &&
     summary.removed.length === 0 &&
     sameOrder
@@ -196,16 +221,15 @@ export function applyMindOutline(
     const existing = nodeOf[i];
     if (i === 0) {
       ids.push(root.id);
-      if (mindOutlineLine(root.label) !== line.text)
-        next = next.map((el) =>
-          el.id === root.id ? { ...el, label: line.text, richText: undefined } : el,
-        );
+      const text = textOf(root, line);
+      if (Object.keys(text).length)
+        next = next.map((el) => (el.id === root.id ? ({ ...el, ...text } as Element) : el));
       return;
     }
     const parent = byId(ids[line.parent]!)!;
     if (existing) {
       ids.push(existing.id);
-      const renamed = mindOutlineLine(existing.label) !== line.text;
+      const text = textOf(existing, line);
       const moved = existing.mindParentId !== parent.id;
       if (moved) {
         const old = existing.mindParentId
@@ -213,15 +237,9 @@ export function applyMindOutline(
           : undefined;
         if (old) next = next.filter((el) => el.id !== old.id);
       }
-      if (renamed || moved)
+      if (Object.keys(text).length || moved)
         next = next.map((el) =>
-          el.id === existing.id
-            ? {
-                ...el,
-                ...(renamed ? { label: line.text, richText: undefined } : {}),
-                mindParentId: parent.id,
-              }
-            : el,
+          el.id === existing.id ? ({ ...el, ...text, mindParentId: parent.id } as Element) : el,
         );
       if (moved) connectTo(parent, byId(existing.id)!);
       return;
@@ -232,10 +250,12 @@ export function applyMindOutline(
       id: dress.newId(),
       label: line.text,
     };
-    const node = {
-      ...dress.node(fresh, look),
+    const dressed = dress.node(fresh, look);
+    const node: ShapeElement = {
+      ...dressed,
       id: fresh.id,
       label: line.text,
+      richText: mindRichTextFor(dressed, line.text, line.marks),
       mindParentId: parent.id,
     };
     next = [...next, node];
@@ -243,6 +263,10 @@ export function applyMindOutline(
     connectTo(parent, node, look);
   });
 
+  // Only a change of structure lays the map out again: text and formatting alone move nothing.
+  const restructured =
+    summary.added > 0 || summary.moved > 0 || summary.removed.length > 0 || !sameOrder;
+  if (!restructured) return next;
   // Laid out again in the outline's order, connectors re-anchored, other trees moved aside.
   const order = new Map(ids.map((id, i) => [id, i]));
   const relayout = relayoutMindMap(next, root.id, undefined, order);

@@ -3,12 +3,16 @@ export { Glyph, type IconProps } from './Glyph';
 export { lucideGlyph } from './lucide-glyph';
 export { Prims } from './Prims';
 export {
+  ArrowDownIcon,
+  ArrowUpIcon,
   CheckIcon,
   CloseIcon,
   CopyIcon,
   DuplicateIcon,
   FormatPainterIcon,
+  IndentIcon,
   LockIcon,
+  OutdentIcon,
   PencilIcon,
   PlusIcon,
   RefreshIcon,
@@ -25,7 +29,14 @@ export {
   SearchIcon,
 } from './navigation';
 export { CircleXIcon, PrivateDotIcon, SharedDotIcon, SparkleIcon, TabsLabelIcon } from './status';
-export { ActionIcon, CommentIcon, LinkIcon, NoteIcon } from './badges';
+export {
+  ActionIcon,
+  CommentIcon,
+  LinkIcon,
+  MindOutlineIcon,
+  NoteIcon,
+  TidyMapIcon,
+} from './badges';
 export {
   EDITOR_MODE_ICONS,
   EverythingIcon,

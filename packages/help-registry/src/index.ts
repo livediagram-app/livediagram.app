@@ -996,6 +996,16 @@ export const articles: Article[] = [
     group: 'Elements',
   },
   {
+    slug: 'edit-outline',
+    title: 'Edit a Mind Map as an Outline',
+    description: 'Rewrite a whole mind map as an indented list, then save it back in one go.',
+    keywords:
+      'mind map mindmap outline edit outline list bullets indent outdent restructure rearrange reorder text markdown paste bold italic underline rows tree hierarchy bulk',
+    category: 'Palette',
+    categorySlug: 'palette/mind-maps',
+    parentSlug: 'mind-maps',
+  },
+  {
     slug: 'collaborate',
     title: 'Collaborate elements',
     description:

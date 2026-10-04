@@ -189,6 +189,20 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M8 11l8-4M8 12h8M8 13l8 4" />
     </Glyph>
   ),
+  // The same map as an indented list: a bold root line, then bullets stepping
+  // in a level each. The stepped indent is what makes it an outline rather
+  // than the plain bullet list `checklists` or `markdown-import` would be.
+  'edit-outline': (
+    <Glyph>
+      <path d="M3 5h11" />
+      <circle cx="6" cy="10.5" r="1.2" fill="currentColor" stroke="none" />
+      <path d="M9 10.5h10" />
+      <circle cx="10" cy="15" r="1.2" fill="currentColor" stroke="none" />
+      <path d="M13 15h8" />
+      <circle cx="6" cy="19.5" r="1.2" fill="currentColor" stroke="none" />
+      <path d="M9 19.5h8" />
+    </Glyph>
+  ),
   // Two bubbles rather than two people: the Collaborate tiles are the things
   // a group leaves on the canvas, not the people leaving them (the
   // Collaboration category owns that glyph).

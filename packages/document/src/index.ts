@@ -440,6 +440,7 @@ export * from './mind-map';
 export * from './mind-layout';
 export * from './mind-grow';
 export * from './mind-outline-text';
+export * from './mind-outline-marks';
 export * from './mind-outline';
 export * from './youtube';
 export * from './arrow-path';

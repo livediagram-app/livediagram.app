@@ -213,6 +213,19 @@ home indicator, rising in (`animate-sheet-up`). A grab handle across its top dra
 released past 80px, or flicked, it closes (`useSwipeDownDismiss`); otherwise it springs back.
 Outside taps and Escape close it as before. A section's flyout opens in place inside it.
 
+**A dialog closes from the backdrop only on a press that starts there.** Clicking the dim
+backdrop closes a dialog, but only when the press began on the backdrop: selecting text and
+releasing the drag past the panel's edge lands the click on the backdrop too, and must never throw
+away what was being edited (`Dialog`).
+
+**Working dialogs rise as sheets on a phone.** A dialog you work in rather than answer, where
+the thing being edited sits behind it (Edit Outline), opens on a phone as a sheet docked to the
+bottom edge instead of filling the screen: full width, rounded at the top, at most 85% of the
+screen tall with its own scroll, clear of the home indicator, rising in (`animate-sheet-up`), with
+the same grab handle that drags it down to close it (`useSwipeDownDismiss`). It stays a modal
+dialog: the dim behind it, the focus trap, Escape and the backdrop tap all behave as on a
+desktop, where it is the usual centred card (`Dialog`'s `phoneSheet`).
+
 **The keyboard never hides the caret.** The on-screen keyboard shrinks the visual viewport, not
 the page, and the canvas never scrolls, so a label edited low on a phone was typed behind the
 keyboard. While a text field inside the canvas has focus, each visual-viewport change re-checks

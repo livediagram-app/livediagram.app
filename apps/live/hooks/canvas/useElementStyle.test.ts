@@ -40,6 +40,7 @@ function harness(elements: Element[], selection: Set<string>) {
         committed = map([committed])[0]!;
       },
       checkpointBurst: () => {},
+      notify: () => {},
     }),
   ).result.current;
   return { style, result: () => committed.elements, tab: () => committed };

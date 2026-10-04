@@ -89,6 +89,7 @@
     "list",
     "list-ordered",
     "list-todo",
+    "list-tree",
     "locate-fixed",
     "lock",
     "lock-open",
