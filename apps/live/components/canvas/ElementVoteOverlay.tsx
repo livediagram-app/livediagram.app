@@ -5,7 +5,7 @@ import {
   type TabVote,
 } from '@livediagram/document';
 import { HoverCard, SOLID_BRAND_DARK, GlyphDisc } from '@livediagram/ui';
-import { useCanvasZoom } from '@/components/canvas/CanvasZoomContext';
+import { CounterScaled } from '@/components/canvas/CanvasZoomContext';
 
 // The dot-vote overlay (docs/specs/012-collaboration/session-tools.md), lifted out of BoxedElementView: the
 // tally pill on the element's bottom-right corner — live count,
@@ -37,7 +37,6 @@ export function ElementVoteOverlay({
   onRetractVote?: (elementId: string) => void;
   onCastVote?: (elementId: string) => void;
 }) {
-  const zoom = useCanvasZoom();
   // Dot-vote tally for this element: total dots, how many are mine, and
   // whether it is a revealed winner.
   const myVotes =
@@ -77,7 +76,7 @@ export function ElementVoteOverlay({
         />
       ) : null}
       {showStepper ? (
-        <div
+        <CounterScaled
           // Sits INSIDE the element's bottom-right rather than hanging off
           // the corner: the stepper is a control you aim at, so it wants
           // clearance from the edge (and from a neighbour's stepper on a
@@ -93,7 +92,6 @@ export function ElementVoteOverlay({
           // than an occluding one. `pointer-fine` covers both conditions —
           // a coarse pointer keeps the plain opaque stepper.
           className="lvd-vote-stepper absolute bottom-1.5 right-1.5 origin-bottom-right transition-opacity"
-          style={{ transform: `scale(${1 / zoom})` }}
           // The stepper sits ON the element, whose own press casts a dot
           // too (docs/specs/012-collaboration/session-tools.md). Without this a click meant for minus would
           // bubble into that and immediately re-add what it removed.
@@ -133,13 +131,10 @@ export function ElementVoteOverlay({
               +
             </VoteStepButton>
           </div>
-        </div>
+        </CounterScaled>
       ) : null}
       {showReadOnlyCount ? (
-        <div
-          className="absolute bottom-1.5 right-1.5 origin-bottom-right"
-          style={{ transform: `scale(${1 / zoom})` }}
-        >
+        <CounterScaled className="absolute bottom-1.5 right-1.5 origin-bottom-right">
           <HoverCard
             title={
               tallyHidden
@@ -162,7 +157,7 @@ export function ElementVoteOverlay({
               <span className="text-optical-centre">{voteTotal}</span>
             </span>
           </HoverCard>
-        </div>
+        </CounterScaled>
       ) : null}
     </>
   );

@@ -102,7 +102,8 @@ multiSelectedIds.size === 0`. Element views compare the three booleans.
     (plain `memo`, `arrowViewPropsEqual`), so a layer render costs what it did;
   - `showHandles` / `showAnchors` come from `elementGrips(element, single, ctx)` in
     `lib/canvas-selection.ts`, which `deriveCanvasSelection` also uses, so the rule lives once;
-  - `FreeArrowFrame` reads `single` for its arrow and portals the free arrow's move frame;
+  - `FreeArrowFrame` reads `single` for its arrow and takes no zoom; only the framed arrow's
+    `FramedArrow` reads `useCanvasZoom()`, so a zoom renders no other arrow's slot;
   - `LayerSelectionChrome` (the next-note buttons, quick-connect pluses and union resize box) and
     `CanvasSelectionToolbars` take `selectionInput` (`CanvasSelectionInput`: the derivation's
     inputs other than the selection, memoised in `Canvas`) and call `useCanvasSelectionView`;
