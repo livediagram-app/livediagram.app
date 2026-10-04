@@ -9,6 +9,7 @@ import {
   type ReactNode,
 } from 'react';
 import { MOTION_MS } from '@livediagram/tailwind-config/motion';
+import { useEdgeDividers } from './useEdgeDividers';
 
 // The moving part of the Toolbar layout's strip (docs/specs/007-editor/toolbar-layout.md): the tiles of the
 // current category plus its More button. Switching category can take the
@@ -137,6 +138,8 @@ export function ToolbarStripRail({
     return () => window.clearTimeout(done);
   });
   useLayoutEffect(() => flip(order, railKey), [order, railKey]);
+  // A swiping rail hides a divider whose tiles are not both in view (useEdgeDividers).
+  useEdgeDividers(railRef, scrollable, order);
 
   useLayoutEffect(() => {
     // A new category starts at its first tile, not wherever the last was swiped to.

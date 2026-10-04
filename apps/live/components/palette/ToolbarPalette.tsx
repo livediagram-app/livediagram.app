@@ -34,6 +34,7 @@ import { usePaletteCatalogue } from './usePaletteCatalogue';
 import { paletteLandingCategory } from './palette-layouts';
 import type { CommandPaletteProps } from './CommandPalette.types';
 import type { PaletteAddHandlers } from './palette-add-handlers';
+import { STRIP_DIVIDER_ATTR } from './useEdgeDividers';
 
 // The Toolbar layout's Palette (docs/specs/007-editor/toolbar-layout.md): one horizontal strip pinned to the
 // top centre of the canvas, the way Excalidraw's tool bar works. Selection
@@ -115,6 +116,7 @@ function Divider() {
   return (
     <span
       aria-hidden
+      {...{ [STRIP_DIVIDER_ATTR]: '' }}
       className="mx-0.5 h-6 w-px shrink-0 bg-slate-200 phone:mx-px dark:bg-slate-700"
     />
   );
