@@ -1,10 +1,12 @@
 'use client';
 
-// Animated hero: six editor windows on a sliding stage (docs/specs/019-marketing/marketing-site.md
-// "Hero"), the launch window then one per editor mode, each showing its mode in action.
-//   1. Your canvas — the launch window (hero-launch.tsx): a fresh, empty,
-//      private document. While centred, a click grows it to fill the screen
-//      and lands on a new blank document with Quick Start open.
+// Animated hero: seven editor windows on a sliding stage (docs/specs/019-marketing/marketing-site.md
+// "Hero"): an overview first, then the modes in action, then the launch window.
+//   0. Overview — the board zoomed out, one named frame per mode window, each drawing its scene
+//      settled; pressing a frame moves the stage to that window (hero-overview.tsx).
+//   1. Your canvas — the launch window (hero-launch.tsx), last on the stage: a fresh, empty,
+//      private document. While centred, a click grows it to fill the screen and lands on a new
+//      blank document with Quick Start open.
 //   2. Diagram — two people map a sign-up flow in a frame: steps dropped and labelled, arrows
 //      joined, a branch and a loop added by a teammate, a step snapped onto an alignment guide and
 //      coloured, a sticky question and a database wired in (hero-diagram-board.tsx).
@@ -46,6 +48,7 @@ import { InfographicPages } from './hero-illustrate-page';
 import { MindMapBoard } from './hero-mindmap-board';
 import type { HeroMode } from './hero-mode-palette';
 import { snapStage } from '@/lib/hero-stage';
+import { HeroOverview, type OverviewScene } from './hero-overview';
 import { EditorWindow, type TabDef } from './hero-editor-window';
 import { useStageBox } from './useStageBox';
 import {
@@ -78,20 +81,25 @@ const CARDS: {
   mode: HeroMode;
   tabs: TabDef[];
   shared: boolean;
+  // The name its frame carries on the overview (hero-overview.tsx).
+  short?: string;
+  // The overview: every window after it as a frame, each opening its window (hero-overview.tsx).
+  overview?: boolean;
   // The launch window: a link that grows into a new document (hero-launch.tsx).
   launch?: boolean;
 }[] = [
   {
-    key: 'launch',
-    title: LAUNCH_TITLE,
-    label: 'A fresh canvas of your own: click it to start drawing',
+    key: 'overview',
+    title: 'Everything you can make',
+    label: 'Every way to work, on one canvas: pick one to see it in action',
     mode: 'diagram',
-    tabs: [{ name: LAUNCH_TAB, color: '#0ea5e9', active: true }],
-    shared: false,
-    launch: true,
+    tabs: [{ name: 'Overview', color: '#0ea5e9', active: true }],
+    shared: true,
+    overview: true,
   },
   {
     key: 'diagram',
+    short: 'Diagram',
     title: 'Onboarding',
     label: 'Diagram: map a flow together, with arrows that connect and shapes that snap',
     mode: 'diagram',
@@ -104,6 +112,7 @@ const CARDS: {
   },
   {
     key: 'draw',
+    short: 'Draw',
     title: 'Sprint retro',
     label: 'Draw: sketch on a whiteboard together, markers, stickies and all',
     mode: 'draw',
@@ -115,6 +124,7 @@ const CARDS: {
   },
   {
     key: 'mindmap',
+    short: 'Mind map',
     title: 'Launch plan',
     label: 'Mind map: grow ideas out from the centre, one Tab at a time',
     mode: 'diagram',
@@ -126,6 +136,7 @@ const CARDS: {
   },
   {
     key: 'infographic',
+    short: 'Infographic',
     title: 'Year in review',
     label: 'Infographic: lay out pages of numbers, charts and quotes, ready to print or share',
     mode: 'illustrate',
@@ -134,13 +145,33 @@ const CARDS: {
   },
   {
     key: 'article',
+    short: 'Article',
     title: 'Field notes',
     label: 'Article: write long reads on pages, with images, headings and pull quotes',
     mode: 'illustrate',
     tabs: [{ name: 'Draft', color: '#0ea5e9', active: true }],
     shared: true,
   },
+  {
+    key: 'launch',
+    title: LAUNCH_TITLE,
+    label: 'A fresh canvas of your own: click it to start drawing',
+    mode: 'diagram',
+    tabs: [{ name: LAUNCH_TAB, color: '#0ea5e9', active: true }],
+    shared: false,
+    launch: true,
+  },
 ];
+
+// The overview's frames: every window that shows a mode at work.
+const OVERVIEW_SCENES: OverviewScene[] = CARDS.filter((c) => c.short).map((c) => ({
+  key: c.key,
+  label: c.short!,
+  mode: c.mode,
+}));
+
+// The overview holds a little less than a build cycle: it has no build to play.
+const OVERVIEW_DWELL_MS = 12000;
 
 // Window width as a % of the stage, for the whole-pixel snap: narrower peek (wider window) on
 // phones. It only matters once the stage is measured (after hydration, when the media query is
@@ -160,12 +191,8 @@ const PORTRAIT_VIEWBOX: Record<string, string> = {
 
 export function HeroIllustration() {
   const [active, setActive] = useState(0);
-  // Until the stage first moves, the launch window is on its page-load play, where its flow waits
-  // for the headline's connector to land.
-  const [moved, setMoved] = useState(false);
   const show = (i: number) => {
     setActive(i);
-    setMoved(true);
   };
   const portrait = useMediaQuery(PHONE);
   const card = portrait ? CARD_NARROW : CARD_WIDE;
@@ -174,10 +201,12 @@ export function HeroIllustration() {
   // (so a click gives the clicked window a full cycle). Skipped under reduced
   // motion (and stops if the visitor turns it on mid-visit).
   const reduceMotion = useMediaQuery(PREFERS_REDUCED_MOTION);
-  // The launch window holds longer (LAUNCH_DWELL_MS): it is the one a visitor can step into.
+  // The launch window holds longer (LAUNCH_DWELL_MS): it is the one a visitor can step into. The
+  // overview, with nothing to play, holds a little less than a cycle.
   useEffect(() => {
     if (reduceMotion) return;
-    const dwell = CARDS[active]?.launch ? LAUNCH_DWELL_MS : CYCLE_MS;
+    const card = CARDS[active];
+    const dwell = card?.launch ? LAUNCH_DWELL_MS : card?.overview ? OVERVIEW_DWELL_MS : CYCLE_MS;
     const id = window.setTimeout(() => show((active + 1) % CARDS.length), dwell);
     return () => window.clearTimeout(id);
   }, [active, reduceMotion]);
@@ -217,17 +246,18 @@ export function HeroIllustration() {
           >
             {CARDS.map((c, i) => {
               const playing = i === active;
-              const liveDoc = c.launch ? null : c.mode === 'draw' ? (
-                <DrawBoard portrait={portrait} />
-              ) : c.key === 'mindmap' ? (
-                <MindMapBoard portrait={portrait} />
-              ) : c.key === 'article' ? (
-                <ArticlePage portrait={portrait} />
-              ) : c.key === 'infographic' ? (
-                <InfographicPages portrait={portrait} />
-              ) : (
-                <DiagramBoard portrait={portrait} />
-              );
+              const liveDoc =
+                c.launch || c.overview ? null : c.mode === 'draw' ? (
+                  <DrawBoard portrait={portrait} />
+                ) : c.key === 'mindmap' ? (
+                  <MindMapBoard portrait={portrait} />
+                ) : c.key === 'article' ? (
+                  <ArticlePage portrait={portrait} />
+                ) : c.key === 'infographic' ? (
+                  <InfographicPages portrait={portrait} />
+                ) : (
+                  <DiagramBoard portrait={portrait} />
+                );
               const frame = (
                 <EditorWindow
                   title={c.title}
@@ -239,11 +269,16 @@ export function HeroIllustration() {
                   viewBox={portrait ? PORTRAIT_VIEWBOX[c.key] : undefined}
                   overlay={
                     c.launch ? (
-                      <LaunchCanvasOverlay playing={playing} afterConnector={!moved} />
+                      <LaunchCanvasOverlay playing={playing} afterConnector={false} />
+                    ) : c.overview ? (
+                      <HeroOverview
+                        scenes={OVERVIEW_SCENES}
+                        onOpen={(key) => show(CARDS.findIndex((k) => k.key === key))}
+                      />
                     ) : undefined
                   }
                   empty={c.launch ?? false}
-                  veil={!c.launch}
+                  veil={!c.launch && !c.overview}
                 />
               );
               const cardClassName =
@@ -256,7 +291,6 @@ export function HeroIllustration() {
                   <a
                     key={c.key}
                     href={LAUNCH_HREF}
-                    data-hero-anchor="window"
                     tabIndex={-1}
                     onPointerEnter={prefetchLaunch}
                     onClick={(e) => {
@@ -272,6 +306,23 @@ export function HeroIllustration() {
                   >
                     {frame}
                   </a>
+                );
+              }
+              // The overview holds buttons of its own (its frames), so it is not one itself: off
+              // centre, a press on it centres it; centred, its frames do the work.
+              if (c.overview) {
+                return (
+                  <div
+                    key={c.key}
+                    data-hero-anchor="window"
+                    onClick={() => {
+                      if (!playing) show(i);
+                    }}
+                    style={{ width: cardWidth }}
+                    className={`cursor-pointer ${cardClassName}`}
+                  >
+                    {frame}
+                  </div>
                 );
               }
               return (
