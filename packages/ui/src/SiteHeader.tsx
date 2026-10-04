@@ -15,7 +15,8 @@ import { StartBlankMenu } from './StartBlankMenu';
 // ShareRail pinned to the page edge below. Cross-surface navigation (Help,
 // Explorer, Telemetry, ...) lives in the apps menu, so the header itself
 // carries just those CTAs, plus the quiet Appearance toggle just left of them
-// (docs/specs/004-interface-design/appearance.md), on every public page.
+// (docs/specs/004-interface-design/appearance.md). Where the ShareRail shows (xl+) the toggle
+// moves to its own rail under it, so the header holds only the CTAs there.
 //
 // `productNav` is the current section key for the apps-menu dropdown next to
 // the logo (the landing page passes 'home', which reads as "Welcome").
@@ -73,7 +74,7 @@ export function SiteHeader({
             </div>
           ) : null}
           <div className="flex shrink-0 items-center gap-2">
-            <SiteAppearanceToggle />
+            <SiteAppearanceToggle className={shareRail ? 'xl:hidden' : ''} />
             {actions ?? <DefaultActions ctaSurface={ctaSurface} />}
           </div>
         </div>

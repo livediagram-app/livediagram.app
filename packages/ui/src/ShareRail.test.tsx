@@ -9,4 +9,11 @@ describe('ShareRail', () => {
     const label = /<span class="([^"]*)">Share<\/span>/.exec(renderToStaticMarkup(<ShareRail />));
     expect(label?.[1]).toContain('text-slate-500 dark:text-slate-400');
   });
+
+  // docs/specs/004-interface-design/appearance.md: the toggle's own rail under the share rail.
+  it('carries the Appearance toggle on a separate rail under it', () => {
+    const html = renderToStaticMarkup(<ShareRail />);
+    expect(html).toMatch(/role="toolbar" aria-label="Appearance"[^>]*>.*aria-label="Appearance: /);
+    expect(html.indexOf('Copy link')).toBeLessThan(html.indexOf('role="toolbar"'));
+  });
 });

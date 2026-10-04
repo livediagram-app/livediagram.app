@@ -63,4 +63,11 @@ describe('SiteHeader', () => {
     expect(toggle()).toBeTruthy();
     expect(screen.getByRole('link', { name: 'Start drawing' })).toBeTruthy();
   });
+
+  it('hands the toggle to the share rail from xl up, keeping it in the header below', () => {
+    render(<SiteHeader ctaSurface="Home" />);
+    const [inHeader, onRail] = screen.getAllByRole('button', { name: /^Appearance: / });
+    expect(inHeader!.className).toContain('xl:hidden');
+    expect(onRail!.closest('[role="toolbar"]')?.getAttribute('aria-label')).toBe('Appearance');
+  });
 });
