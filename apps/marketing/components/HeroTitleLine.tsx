@@ -2,9 +2,10 @@
 
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { PREFERS_REDUCED_MOTION, useMediaQuery } from '@livediagram/ui';
+import { HERO_WORDS, HeroWordCard } from './HeroWordCard';
 
 // The headline's first word cycles through what livediagram is for
-// (docs/specs/019-marketing/marketing-site.md): Diagram, Document, Whiteboard, Brainstorm ...
+// (docs/specs/019-marketing/marketing-site.md): Diagram, Document, Write, Whiteboard, Illustrate, Brainstorm ...
 // together, live. The headline stays on one line, and a change never moves anything in layout
 // (docs/specs/004-interface-design/layout-stability.md): every word sits in the same grid cell, so
 // the slot is as wide as the widest, and each word is right-aligned in it, snug against
@@ -16,10 +17,8 @@ import { PREFERS_REDUCED_MOTION, useMediaQuery } from '@livediagram/ui';
 // app/hero-animations.css). The static HTML reads "Diagram",
 // the first paint has no motion, and reduced motion holds "Diagram". A dotted underline marks the
 // word as more than it shows: hovering it (or tapping it, on touch) opens a card listing every word
-// (the current one in brand) and holds the cycle while it is up. Decorative: the h1 carries the stable
+// (HeroWordCard, the current one in brand) and holds the cycle while it is up. Decorative: the h1 carries the stable
 // text for screen readers.
-
-const HERO_WORDS = ['Diagram', 'Document', 'Whiteboard', 'Brainstorm'] as const;
 
 // How long each word holds before the next.
 const WORD_MS = 2500;
@@ -53,6 +52,7 @@ export function HeroTitleLine({ children }: { children: ReactNode }) {
     const card = cardRef.current;
     if (!open || !card) return;
     card.style.marginLeft = '';
+    card.style.removeProperty('--hero-card-nudge');
     const r = card.getBoundingClientRect();
     const margin = 8;
     const nudge =
@@ -61,7 +61,11 @@ export function HeroTitleLine({ children }: { children: ReactNode }) {
         : r.right > window.innerWidth - margin
           ? window.innerWidth - margin - r.right
           : 0;
-    if (nudge) card.style.marginLeft = `${nudge}px`;
+    if (nudge) {
+      card.style.marginLeft = `${nudge}px`;
+      // The pointer stays on the word.
+      card.style.setProperty('--hero-card-nudge', `${-nudge}px`);
+    }
   }, [open]);
   useEffect(() => {
     if (!open) return;
@@ -127,7 +131,7 @@ export function HeroTitleLine({ children }: { children: ReactNode }) {
         }}
       >
         <span ref={slotRef} className="hero-word-slot inline-grid justify-items-end">
-          {HERO_WORDS.map((word, i) => {
+          {HERO_WORDS.map(({ word }, i) => {
             const state =
               i === shown
                 ? leaving === null
@@ -152,31 +156,8 @@ export function HeroTitleLine({ children }: { children: ReactNode }) {
         </span>
       </span>
       {open ? (
-        // Every word, centred under the one showing: the hover card's look, opened by a hover or
-        // a tap (a hint cannot open on a tap), outside the slot so its clip cannot cut it.
-        <span
-          ref={cardRef}
-          className="absolute top-full z-10 mt-2 w-max -translate-x-1/2 animate-fade-in whitespace-normal rounded-lg border border-slate-200 bg-white px-3 py-2 text-left text-xs font-normal tracking-normal shadow-lg shadow-slate-900/10 motion-reduce:animate-none dark:border-slate-700 dark:bg-slate-800 dark:shadow-slate-950/40"
-          style={{ left: wordCentre }}
-        >
-          <span className="flex items-center gap-2 font-semibold">
-            {HERO_WORDS.map((word, i) => (
-              <span
-                key={word}
-                className={
-                  i === shown
-                    ? 'text-brand-600 dark:text-brand-300'
-                    : 'text-slate-500 dark:text-slate-400'
-                }
-              >
-                {word}
-              </span>
-            ))}
-          </span>
-          <span className="mt-0.5 block leading-relaxed text-slate-600 dark:text-slate-300">
-            Whatever you&rsquo;re making, make it together.
-          </span>
-        </span>
+        // Opened by a hover or a tap (a hint cannot open on a tap).
+        <HeroWordCard shown={shown} left={wordCentre} cardRef={cardRef} />
       ) : null}
       {children}
     </span>
