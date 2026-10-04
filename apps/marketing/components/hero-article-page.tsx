@@ -4,8 +4,9 @@ import type { CSSProperties } from 'react';
 // written in Illustrate mode (docs/specs/007-editor/illustrate-pages.md, an article page's kind). A
 // kicker and a serif title are typed, the byline and a header image land, the paragraphs are written
 // line by line under a numbered heading, a pull quote sets in, and the teammate selects a phrase:
-// the rich-text toolbar opens over it and the phrase turns bold and highlighted. A caret blinks
-// where you are writing. Each piece arrives at its own --d delay (hero-mode-animations.css).
+// the rich-text toolbar opens over it and the phrase turns bold and highlighted. The article runs
+// on to a second page beside it: a second heading, its paragraph and a figure with a caption. A
+// caret blinks where you are writing. Each piece arrives at its own --d delay (hero-mode-animations.css).
 
 const SANS = 'ui-sans-serif, system-ui, sans-serif';
 const SERIF = 'Georgia, Cambria, serif';
@@ -15,7 +16,9 @@ const MUTED = '#64748b';
 const BRAND = '#0ea5e9';
 
 // The page: A4 portrait at the mock's scale.
-const PAGE = { x: 195, y: -46, w: 210, h: 297 };
+const PAGE = { x: 85, y: -46, w: 210, h: 297 };
+// The gap between pages in the row.
+const PAGE_GAP = 30;
 
 const at = (d: number, extra?: Record<string, string | number>) =>
   ({ '--d': `${d}s`, ...extra }) as CSSProperties;
@@ -58,6 +61,7 @@ export function ArticlePage() {
       <text x={x} y={y - 8} fontFamily={SANS} fontSize="9" fontWeight="600" fill={MUTED}>
         Page 1 · Article
       </text>
+      <SecondPage x={x + w + PAGE_GAP} />
 
       {/* Kicker and title, typed. */}
       <text
@@ -136,12 +140,12 @@ export function ArticlePage() {
       {SECTION.map((text, i) => (
         <Line key={text} x={left} y={y + 207 + i * 12} d={4.5 + i * 0.55} text={text} />
       ))}
-      {/* Where you are writing. */}
+      {/* Where you are writing, once page 2 is written. */}
       <rect
         className="hm-caret"
-        style={at(6.1)}
-        x={left + 74}
-        y={y + 224}
+        style={at(8.9)}
+        x={x + w + PAGE_GAP + 20 + 50}
+        y={y + 62}
         width="1.2"
         height="10"
         fill={BRAND}
@@ -176,7 +180,7 @@ export function ArticlePage() {
           toolbar opens over it, and Bold and Highlight set it in bold on yellow. */}
       <rect
         className="hm-pop"
-        style={at(7.6)}
+        style={at(9.6)}
         x={left + 19}
         y={y + 162}
         width="130"
@@ -186,7 +190,7 @@ export function ArticlePage() {
         // fillOpacity, not opacity: the landing animation owns the element's opacity.
         fillOpacity="0.45"
       />
-      <g className="hm-pop" style={at(8.6)}>
+      <g className="hm-pop" style={at(10.6)}>
         <rect
           x={left - 2}
           y={y + 161}
@@ -202,7 +206,7 @@ export function ArticlePage() {
           </tspan>
         </text>
       </g>
-      <g className="hm-select" style={at(7.8)}>
+      <g className="hm-select" style={at(9.8)}>
         <rect
           x={left + 26}
           y={y + 138}
@@ -228,7 +232,7 @@ export function ArticlePage() {
           </text>
         ))}
       </g>
-      <g className="hm-cursor" style={at(7.1, CURSOR(left, y))} aria-hidden>
+      <g className="hm-cursor" style={at(9.1, CURSOR(left, y))} aria-hidden>
         <path
           d="M0 0 L12 7 L7 8 L9.5 12.5 L7.5 13.5 L5 9 L1.5 12.5 Z"
           fill="#ec4899"
@@ -259,3 +263,79 @@ const CURSOR = (left: number, y: number) => ({
   '--cx': `${left + 146}px`,
   '--cy': `${y + 172}px`,
 });
+
+const PAGE_TWO = [
+  'On Fridays the whole team watches one',
+  'thing go live, then we write down what',
+  'we learned.',
+];
+
+// Page 2: the article runs on, a second heading, its paragraph, and a figure with its caption.
+function SecondPage({ x }: { x: number }) {
+  const { y, w, h } = PAGE;
+  const left = x + 20;
+  return (
+    <>
+      <rect x={x + 2} y={y + 3} width={w} height={h} rx="2" fill="#0f172a" opacity="0.08" />
+      <rect x={x} y={y} width={w} height={h} rx="2" className="fill-white dark:fill-slate-100" />
+      <text x={x} y={y - 8} fontFamily={SANS} fontSize="9" fontWeight="600" fill={MUTED}>
+        Page 2 · Article
+      </text>
+      <text
+        className="hm-type"
+        style={at(6.9, { '--steps': 16 })}
+        x={left}
+        y={y + 30}
+        fontFamily={SANS}
+        fontSize="10"
+        fontWeight="800"
+        fill={INK}
+      >
+        2. Friday demos
+      </text>
+      {PAGE_TWO.map((text, i) => (
+        <Line key={text} x={left} y={y + 46 + i * 12} d={7.3 + i * 0.5} text={text} />
+      ))}
+      {/* A figure: a small chart of releases per week, and its caption. */}
+      <g className="hm-wipe" style={at(8.6)}>
+        <rect x={left} y={y + 90} width={w - 40} height="92" rx="4" fill="#f1f5f9" />
+        {[30, 42, 38, 56, 64, 72].map((bh, i) => (
+          <rect
+            key={i}
+            x={left + 14 + i * 26}
+            y={y + 170 - bh}
+            width="14"
+            height={bh}
+            rx="2"
+            fill={i === 5 ? BRAND : '#bae6fd'}
+          />
+        ))}
+      </g>
+      <text
+        className="hm-fade"
+        style={at(9.0)}
+        x={left}
+        y={y + 196}
+        fontFamily={SANS}
+        fontSize="7.5"
+        fontStyle="italic"
+        fill={MUTED}
+      >
+        Releases per week, since we started.
+      </text>
+      <g className="hm-fade" style={at(9.2)}>
+        {[0, 1, 2, 3].map((i) => (
+          <rect
+            key={i}
+            x={left}
+            y={y + 214 + i * 12}
+            width={i === 3 ? 96 : 168}
+            height="4"
+            rx="2"
+            fill="#e2e8f0"
+          />
+        ))}
+      </g>
+    </>
+  );
+}
