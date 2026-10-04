@@ -19,7 +19,7 @@ export const HERO_MODE: Record<HeroMode, { label: string; Icon: ComponentType<Ic
   illustrate: { label: 'Illustrate', Icon: EDITOR_MODE_ICONS.illustrate },
 };
 
-type Tile = { key: string; label: string; glyph: ReactNode; active?: boolean };
+type Tile = { key: string; glyph: ReactNode; active?: boolean };
 
 function Lucide({ prims }: { prims: Parameters<typeof Prims>[0]['prims'] }) {
   return (
@@ -70,41 +70,41 @@ function Highlighter() {
 
 // Diagram's Popular: the first nine of its twelve.
 const DIAGRAM_TILES: Tile[] = [
-  { key: 'rect', label: 'Square', glyph: <Shape kind="rect" /> },
-  { key: 'circle', label: 'Circle', glyph: <Shape kind="circle" /> },
-  { key: 'diamond', label: 'Diamond', glyph: <Shape kind="diamond" /> },
-  { key: 'text', label: 'Text', glyph: <Shape kind="text" /> },
-  { key: 'arrow', label: 'Arrow', glyph: <Shape kind="arrow" /> },
-  { key: 'frame', label: 'Frame', glyph: <Shape kind="frame" /> },
-  { key: 'note', label: 'Note', glyph: <Shape kind="note" /> },
-  { key: 'image', label: 'Image', glyph: <Shape kind="image" /> },
-  { key: 'pen', label: 'Shape Pen', glyph: <Shape kind="pen" /> },
+  { key: 'rect', glyph: <Shape kind="rect" /> },
+  { key: 'circle', glyph: <Shape kind="circle" /> },
+  { key: 'diamond', glyph: <Shape kind="diamond" /> },
+  { key: 'text', glyph: <Shape kind="text" /> },
+  { key: 'arrow', glyph: <Shape kind="arrow" /> },
+  { key: 'frame', glyph: <Shape kind="frame" /> },
+  { key: 'note', glyph: <Shape kind="note" /> },
+  { key: 'image', glyph: <Shape kind="image" /> },
+  { key: 'pen', glyph: <Shape kind="pen" /> },
 ];
 
 // Draw's dock: its drawing tools, the blue marker in hand.
 const DRAW_TILES: Tile[] = [
-  { key: 'select', label: 'Select', glyph: <SelectGlyph /> },
-  { key: 'm1', label: 'Marker 1', glyph: <Marker color="#1c1917" /> },
-  { key: 'm2', label: 'Marker 2', glyph: <Marker color="#2563eb" />, active: true },
-  { key: 'm3', label: 'Marker 3', glyph: <Marker color="#dc2626" /> },
-  { key: 'text', label: 'Text', glyph: <Shape kind="text" /> },
-  { key: 'note', label: 'Sticky', glyph: <Shape kind="note" /> },
-  { key: 'hl', label: 'Highlighter', glyph: <Highlighter /> },
-  { key: 'arrow', label: 'Arrow', glyph: <Shape kind="arrow" /> },
-  { key: 'eraser', label: 'Eraser', glyph: <Eraser /> },
+  { key: 'select', glyph: <SelectGlyph /> },
+  { key: 'm1', glyph: <Marker color="#1c1917" /> },
+  { key: 'm2', glyph: <Marker color="#2563eb" />, active: true },
+  { key: 'm3', glyph: <Marker color="#dc2626" /> },
+  { key: 'text', glyph: <Shape kind="text" /> },
+  { key: 'note', glyph: <Shape kind="note" /> },
+  { key: 'hl', glyph: <Highlighter /> },
+  { key: 'arrow', glyph: <Shape kind="arrow" /> },
+  { key: 'eraser', glyph: <Eraser /> },
 ];
 
 // Illustrate's Popular: the first nine of its twelve.
 const ILLUSTRATE_TILES: Tile[] = [
-  { key: 'text', label: 'Text', glyph: <Shape kind="text" /> },
-  { key: 'rect', label: 'Square', glyph: <Shape kind="rect" /> },
-  { key: 'circle', label: 'Circle', glyph: <Shape kind="circle" /> },
-  { key: 'image', label: 'Image', glyph: <Shape kind="image" /> },
-  { key: 'bubble', label: 'Speech', glyph: <Lucide prims={lucideMessageSquare} /> },
-  { key: 'pie', label: 'Pie', glyph: <Lucide prims={lucideChartPie} /> },
-  { key: 'bar', label: 'Bar', glyph: <Lucide prims={lucideChartColumn} /> },
-  { key: 'donut', label: 'Donut', glyph: <Donut /> },
-  { key: 'stat', label: 'Stat Row', glyph: <Shape kind="pill" /> },
+  { key: 'text', glyph: <Shape kind="text" /> },
+  { key: 'rect', glyph: <Shape kind="rect" /> },
+  { key: 'circle', glyph: <Shape kind="circle" /> },
+  { key: 'image', glyph: <Shape kind="image" /> },
+  { key: 'bubble', glyph: <Lucide prims={lucideMessageSquare} /> },
+  { key: 'pie', glyph: <Lucide prims={lucideChartPie} /> },
+  { key: 'bar', glyph: <Lucide prims={lucideChartColumn} /> },
+  { key: 'donut', glyph: <Donut /> },
+  { key: 'stat', glyph: <Shape kind="pill" /> },
 ];
 
 export const MODE_TILES: Record<HeroMode, Tile[]> = {
