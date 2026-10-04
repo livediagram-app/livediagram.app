@@ -273,7 +273,7 @@ means `newElementId` ([Ids](#ids)).
   `element` (a whole raw element, as the MCP's `ops` mode sends) instead of `kind` and `fields`: it is taken as
   given, its geometry kept, its `id` kept when free (`id_taken` otherwise).
 - **`set <selector> key=value… [all]`.** Each target gets the fields in order. No geometry changes except named
-  geometry and fit to label.
+  geometry and fit to label. A target the fields leave as it was is not touched, so it is never normalised (E1, I2).
 - **`rm <selector> [all] [keep-arrows]`.** Removes the targets. Arrows with an end pinned to (or `on-arrow` to) a
   removed element (`arrowReferencesAny`, repeated until no more are found) are removed too; with `keep-arrows`
   those ends become `free` at their current `endpointPosition` instead, warning `arrows_freed`. A locked arrow in
@@ -436,7 +436,8 @@ type ApplyOptions = {
   makeId?: () => string; // ids no slug can name; default crypto.randomUUID
   log?: (fingerprint: string, fields: Readonly<Record<string, string | number | boolean>>) => void;
 };
-type ReplaceOptions = ApplyOptions & { tabId: string; name: string };
+// `themeId` names a created tab's theme by id (custom themes included); it wins over `theme`.
+type ReplaceOptions = ApplyOptions & { tabId: string; name: string; themeId?: string };
 
 type ReplaceBody =
   | { graph: GraphInput }
@@ -517,17 +518,25 @@ type ResultLine =
       ref: string;
       kind: string;
       label?: string;
-      at?: Point;
-      size?: Size;
+      at?: [number, number];
+      size?: [number, number];
       ends?: [string, string];
       styleOf?: string;
     }
   | { mark: '~'; ref: string; changes: FieldChange[] }
-  | { mark: '-'; ref: string; kind: string; label?: string; reason?: 'pinned' | 'unwrapped' }
+  | {
+      mark: '-';
+      ref: string;
+      kind: string;
+      label?: string;
+      ends?: [string, string];
+      reason?: 'pinned' | 'unwrapped';
+      pinnedTo?: string;
+    }
   | {
       mark: '»';
       refs: string[];
-      delta?: Point;
+      delta?: [number, number];
       reason: 'make room' | 'carried' | 'laid out' | 'landed on a lane';
     }
   | { mark: 'container'; ref: string; joined: string[]; left: string[] }

@@ -65,6 +65,7 @@ curl https://livediagram.app/api/documents/abc123/tabs/tab-1 \
   "tab": {
     "id": "tab-1",
     "name": "Overview",
+    "rev": 7,
     "elements": [/* ... */]
   }
 }
@@ -98,19 +99,36 @@ Arrows, text, images, and the rest of the element types follow the same pattern 
 
 ## Update a tab
 
-To change what is on a tab, send the whole tab with `PUT`. It replaces that tab's contents, so include every element you want to keep:
+Scripts and agents change a tab with a **changeset**: a short list of edit operations, applied together or not at all. Anyone with the document open sees the change arrive straight away, it is credited to you, and it can be undone as one unit for 30 days. Changes people make in the editor at the same time are kept.
 
 ```bash
-curl -X PUT https://livediagram.app/api/documents/svc-map/tabs/tab-1 \
+curl -X POST https://livediagram.app/api/documents/svc-map/tabs/tab-1/changesets \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
-  -d '{ "id": "tab-1", "name": "Overview", "elements": [ /* the full set */ ] }'
+  -d '{
+    "summary": "rename the API box, add a database",
+    "operations": [
+      { "op": "set", "target": "n2", "fields": { "label": "Orders API" } },
+      { "op": "add", "element": { "id": "n3", "type": "shape", "shape": "cylinder", "x": 0, "y": 320, "width": 160, "height": 80, "label": "Orders DB" } },
+      { "op": "rm", "target": "old-note" }
+    ]
+  }'
 ```
 
+`set` changes only the fields you name, `add` takes a whole element, and `rm` removes an element along with any arrow pinned to it. The answer lists what changed, the changeset's id and the tab's new revision. Add `?dryRun=1` to see the answer without changing anything.
+
+To rebuild a whole tab, send `"replace"` instead of `"operations"`, with `elements` (or a `graph`, `mermaid` text or a `template`). A replace on a tab id the document doesn't have yet creates that tab.
+
 <Note>
-  A tab `PUT` is a full replace, not a merge. Read the tab first if you need to preserve the
-  elements already on it.
+  Every tab read returns the tab's `rev`. Send it back as `"base": { "rev": 7 }` and the changeset is
+  refused with `409 changeset_conflict` if an element it touches changed since you read it, so
+  nothing you didn't see gets overwritten. An element somebody has selected in the editor is left
+  alone too: the changeset is refused with `409 elements_held`, naming who holds it.
 </Note>
+
+To rename a tab, `PUT` its name: `PUT /documents/svc-map/tabs/tab-1/name` with `{ "name": "Overview" }`. The whole-tab `PUT` the editor saves with is not open to tokens; it answers `405 use_changesets`.
+
+`GET /documents/svc-map/changesets` lists the recent changesets, and `POST /documents/svc-map/changesets/<id>/revert` undoes one, leaving any element somebody changed since.
 
 ## Organise into folders
 

@@ -202,7 +202,8 @@ tab's [outline view](../024-agents/document-views.md), about a tenth of the elem
 the refs the edit tools take (`format: "json"` returns the elements instead), plus the deep-link
 `url`. With `image: true` it also attaches an inline **PNG** of the tab as MCP image content
 ([§5](#5-visualise--inline-image-render)); without it a read costs no image tokens. So "show me my auth-flow diagram" → `find_documents` →
-`read_document` with `image: true` renders it inline.
+`read_document` with `image: true` renders it inline. Its structured result carries the tab's `rev`,
+which `update_document` takes back as the base of its ops ([§4.4](#44-update_document)).
 
 ### 4.3 `create_document`
 
