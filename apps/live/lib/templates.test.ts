@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { buildTemplate, buildTemplatedTab } from './template-builders';
 import {
+  BLANK_TEMPLATE_FOR_MODE,
+  templateEditorMode,
   TEMPLATES,
   TEMPLATE_COLLECTIONS,
   isTemplateCollection,
@@ -28,7 +30,7 @@ import { getTheme } from './themes';
 
 // The catalogue's shape (count + default/extra split + no kind
 // drift) is load-bearing across both the picker and the marketing
-// site. docs/specs/019-marketing/marketing-site.md pins "64 templates (11 default + 53 extra)" and
+// site. docs/specs/019-marketing/marketing-site.md pins "73 templates (11 default + 62 extra)" and
 // docs/specs/008-canvas/canvas-and-palette.md catalogues the picker UX. These tests pin the array so
 // either the spec or the catalogue can't silently drift away from
 // the other.
@@ -102,24 +104,33 @@ describe('TEMPLATES catalogue', () => {
     'floor-plan',
     'whiteboard',
     'article',
+    'blank-illustration',
+    'sketchnote',
+    'rich-picture',
+    'comic-strip',
+    'doodle-warmup',
+    'event-poster',
+    'year-in-review',
+    'resume',
+    'recipe-card',
   ];
 
   // Hidden templates are buildable but never listed, so every user-facing
-  // count (docs/specs/019-marketing/marketing-site.md's "64 templates", the picker grids, the MCP catalogue)
+  // count (docs/specs/019-marketing/marketing-site.md's "73 templates", the picker grids, the MCP catalogue)
   // is over the listed subset. The mechanism is generic; nothing ships
   // hidden today (the docs/specs/007-editor/guided-tour-sample.md guided-tour sample used it until the
   // interactive tour, docs/specs/007-editor/editor-tour.md, superseded it).
   const listed = TEMPLATES.filter((t) => !t.hidden);
 
-  it('lists exactly 64 templates (11 default + 53 extra, matches docs/specs/019-marketing/marketing-site.md and docs/specs/008-canvas/canvas-and-palette.md)', () => {
-    expect(listed).toHaveLength(64);
+  it('lists exactly 73 templates (11 default + 62 extra, matches docs/specs/019-marketing/marketing-site.md and docs/specs/008-canvas/canvas-and-palette.md)', () => {
+    expect(listed).toHaveLength(73);
   });
 
-  it('splits cleanly into 11 default + 53 extra (`extra` is catalogue metadata; the picker browses by category)', () => {
+  it('splits cleanly into 11 default + 62 extra (`extra` is catalogue metadata; the picker browses by category)', () => {
     const defaults = listed.filter((t) => !t.extra);
     const extras = listed.filter((t) => t.extra);
     expect(defaults).toHaveLength(11);
-    expect(extras).toHaveLength(53);
+    expect(extras).toHaveLength(62);
   });
 
   it('ships no hidden templates (the flag is generic; docs/specs/007-editor/guided-tour-sample.md was retired by docs/specs/007-editor/editor-tour.md)', () => {
@@ -153,7 +164,12 @@ describe('TEMPLATES catalogue', () => {
       // docs/specs/023-draw-mode/draw-mode.md); every other kind seeds content. Either way the
       // switch must handle the union member.
       // An article's writing is tab data, not elements (templateCanvasOverrides).
-      const empty = kind === 'blank' || kind === 'whiteboard' || kind === 'article';
+      // A blank illustration is its one empty page, which asks what it is for.
+      const empty =
+        kind === 'blank' ||
+        kind === 'whiteboard' ||
+        kind === 'article' ||
+        kind === 'blank-illustration';
       expect(tab.elements.length).toBeGreaterThan(empty ? -1 : 0);
     }
   });
@@ -1008,5 +1024,30 @@ describe('templateShelfTemplates', () => {
   it('names a shelf', () => {
     expect(templateShelfLabel('brainstorm')).toBe('Brainstorm');
     expect(templateShelfLabel('planning')).toBe('Agile');
+  });
+});
+
+// Templates by mode (docs/specs/007-editor/templates-by-mode.md): the mode a card shows is the mode
+// its tab opens in, and each mode's blank is of that mode.
+describe('templateEditorMode', () => {
+  it('is the mode every template opens in', () => {
+    for (const t of TEMPLATES) {
+      expect(templateEditorMode(t.kind), t.kind).toBe(
+        templateCanvasOverrides(t.kind).opensIn ?? 'diagram',
+      );
+    }
+  });
+
+  it('gives every mode a blank of its own mode', () => {
+    for (const [mode, kind] of Object.entries(BLANK_TEMPLATE_FOR_MODE)) {
+      expect(templateEditorMode(kind)).toBe(mode);
+    }
+  });
+
+  it('opens every paged template in Illustrate', () => {
+    for (const t of TEMPLATES) {
+      if (templateCanvasOverrides(t.kind).pages)
+        expect(templateEditorMode(t.kind)).toBe('illustrate');
+    }
   });
 });

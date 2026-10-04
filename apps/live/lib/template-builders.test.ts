@@ -100,6 +100,15 @@ const ALL_KINDS = [
   'objectives-planner',
   'whiteboard',
   'article',
+  'blank-illustration',
+  'sketchnote',
+  'rich-picture',
+  'comic-strip',
+  'doodle-warmup',
+  'event-poster',
+  'year-in-review',
+  'resume',
+  'recipe-card',
 ] as const satisfies readonly TemplateKind[];
 
 // Real exhaustiveness check: any TemplateKind missing from
@@ -129,7 +138,15 @@ function coordsOf(el: Element): { x: number; y: number }[] {
 
 // The templates that open in Illustrate on pages of their own (canvas-and-palette.md "Templates
 // on pages").
-const PAGED_KINDS = ['slide-deck', 'logo-design', 'live-card'] as const;
+const PAGED_KINDS = [
+  'slide-deck',
+  'logo-design',
+  'live-card',
+  'event-poster',
+  'year-in-review',
+  'resume',
+  'recipe-card',
+] as const;
 
 // An element's centre, from its box or, for an arrow, its free endpoints' midpoint.
 function centreOf(el: Element): { x: number; y: number } | undefined {
@@ -149,7 +166,7 @@ describe('templates on pages', () => {
   it.each(PAGED_KINDS)('%s: opens in Illustrate on infographic pages', (kind) => {
     const o = templateCanvasOverrides(kind);
     expect(o.opensIn).toBe('illustrate');
-    expect(o.pages?.length).toBeGreaterThan(1);
+    expect(o.pages?.length).toBeGreaterThan(0);
     expect(o.pages!.every((p) => p.kind === 'infographic')).toBe(true);
     expect(new Set(o.pages!.map((p) => p.id)).size).toBe(o.pages!.length);
   });
@@ -241,6 +258,7 @@ describe('buildTemplate translation invariance', () => {
         k !== 'blank' &&
         k !== 'whiteboard' &&
         k !== 'article' &&
+        k !== 'blank-illustration' &&
         !(PAGED_KINDS as readonly string[]).includes(k),
     ),
   )('%s: every coordinate shifts by (cx, cy)', (kind) => {

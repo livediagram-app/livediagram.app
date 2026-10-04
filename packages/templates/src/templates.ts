@@ -5,6 +5,7 @@ import {
 } from '@livediagram/document';
 import { articleTemplateOverrides } from './article-template';
 import { templatePages } from './template-pages';
+import { templateEditorMode } from './template-modes';
 import { titleCase } from '@livediagram/api-schema';
 import { templateLayers } from './template-layers';
 
@@ -168,7 +169,23 @@ export type TemplateKind =
   | 'whiteboard'
   // Article (docs/specs/007-editor/article-pages.md): a tab that opens in Illustrate mode on one
   // article page, written as a short project brief.
-  | 'article';
+  | 'article'
+  // Blank Illustration (docs/specs/007-editor/templates-by-mode.md "Three blanks"): a tab that opens
+  // in Illustrate on one empty page, which asks what it is for. A quick-pick beside the other two
+  // blanks, never inside a category grid.
+  | 'blank-illustration'
+  // Draw templates (docs/specs/007-editor/templates-by-mode.md "Draw templates"): boards drawn with
+  // freehand strokes, stickies, text and stickers, opening in Draw mode.
+  | 'sketchnote'
+  | 'rich-picture'
+  | 'comic-strip'
+  | 'doodle-warmup'
+  // Illustrate templates (docs/specs/007-editor/templates-by-mode.md "Illustrate templates"):
+  // documents of pages, opening in Illustrate on pages of their own (template-pages.ts).
+  | 'event-poster'
+  | 'year-in-review'
+  | 'resume'
+  | 'recipe-card';
 
 export type TemplateDescriptor = {
   kind: TemplateKind;
@@ -194,13 +211,19 @@ export type TemplateDescriptor = {
 export const TEMPLATES: TemplateDescriptor[] = [
   {
     kind: 'blank',
-    title: 'Blank Canvas',
-    description: 'An empty canvas to start with whatever you like.',
+    title: 'Blank Diagram',
+    description: 'An empty canvas for shapes, connectors and whatever you like.',
   },
   {
     kind: 'whiteboard',
-    title: 'Whiteboard',
+    title: 'Blank Whiteboard',
     description: 'Free drawing without distractions',
+  },
+  {
+    kind: 'blank-illustration',
+    title: 'Blank Illustration',
+    description: 'An empty page for an infographic or an article, sized for print or social.',
+    extra: true,
   },
   {
     kind: 'mindmap',
@@ -611,6 +634,62 @@ export const TEMPLATES: TemplateDescriptor[] = [
       'Write personal objectives that stick: start with why, a sentence formula, a SMART test, key results and check-ins.',
     extra: true,
   },
+  {
+    kind: 'sketchnote',
+    title: 'Sketchnote',
+    description:
+      'Visual notes from a talk, drawn by hand: a lettered banner, the big idea in a cloud, then key points, quotes and questions.',
+    extra: true,
+  },
+  {
+    kind: 'rich-picture',
+    title: 'Rich Picture',
+    description:
+      'Draw a messy problem as people see it: stick-figure stakeholders, what they say, where they clash, and a legend of symbols.',
+    extra: true,
+  },
+  {
+    kind: 'comic-strip',
+    title: 'Comic Strip',
+    description:
+      'Tell a product story in six hand-drawn panels, with captions, speech bubbles and a sticker for each moment.',
+    extra: true,
+  },
+  {
+    kind: 'doodle-warmup',
+    title: 'Doodle Warm-Up',
+    description:
+      'A meeting icebreaker: draw your teammate in 60 seconds, one frame each, then vote for the best likeness.',
+    extra: true,
+  },
+  {
+    kind: 'event-poster',
+    title: 'Event Poster',
+    description:
+      'An A3 poster for a community night market: a bold title, the date, time and place, a photo and three highlights.',
+    extra: true,
+  },
+  {
+    kind: 'year-in-review',
+    title: 'Year in Review',
+    description:
+      "A four-page team report: a cover, the year's headline numbers, a timeline of its moments and a thank-you.",
+    extra: true,
+  },
+  {
+    kind: 'resume',
+    title: 'Résumé',
+    description:
+      'A one-page A4 résumé: name and role, a short profile, an experience timeline, skills and education.',
+    extra: true,
+  },
+  {
+    kind: 'recipe-card',
+    title: 'Recipe Card',
+    description:
+      'A recipe to share in two pages: the dish with serves and timings, then the ingredients and the method in steps.',
+    extra: true,
+  },
 ];
 
 // Picker grouping. Templates are organised into a handful of
@@ -755,8 +834,19 @@ const TEMPLATE_CATEGORY: Record<TemplateKind, TemplateCategory> = {
   'uml-class': 'technical',
   'state-machine': 'technical',
   'event-storming': 'technical',
-  // Nominal, like Blank: the picker shows Whiteboard only as a quick-pick.
+  // Nominal, like Blank: the picker shows the other two blanks only as quick-picks.
   whiteboard: 'design',
+  'blank-illustration': 'design',
+  // Draw templates (docs/specs/007-editor/templates-by-mode.md).
+  sketchnote: 'mindmaps',
+  'rich-picture': 'strategy',
+  'comic-strip': 'design',
+  'doodle-warmup': 'planning',
+  // Illustrate templates.
+  'event-poster': 'project-management',
+  'year-in-review': 'strategy',
+  resume: 'design',
+  'recipe-card': 'design',
   'incident-postmortem': 'technical',
 };
 
@@ -825,12 +915,15 @@ export function templateShelfTemplates(
 }
 // The picker's "Popular" shelf (docs/specs/008-canvas/canvas-and-palette.md "Templates section"): where
 // most people start, open by default above the categories. Not a category of
-// its own (every kind here still lives in its real one); Blank Canvas leads it,
-// so the picker needs no separate blank card.
+// its own (every kind here still lives in its real one); the three blanks lead it, one per editor
+// mode (docs/specs/007-editor/templates-by-mode.md "Three blanks"), so the picker needs no separate
+// blank card.
 export const POPULAR_TEMPLATE_KINDS: readonly TemplateKind[] = [
   'blank',
-  'mindmap',
   'whiteboard',
+  'blank-illustration',
+  'mindmap',
+  'sketchnote',
   'sailboat',
   'flowchart',
   'orgchart',
@@ -864,7 +957,8 @@ export const UNTITLED_DOCUMENT_NAME = 'Untitled document';
 
 export function untitledNameForTemplate(kind: TemplateKind | null): string {
   if (!kind || kind === 'blank') return UNTITLED_DOCUMENT_NAME;
-  const title = TEMPLATES.find((t) => t.kind === kind)?.title;
+  // A blank names what it makes ("Untitled Whiteboard"), not the card ("Blank Whiteboard").
+  const title = TEMPLATES.find((t) => t.kind === kind)?.title.replace(/^Blank /, '');
   return title ? `Untitled ${titleCase(title)}` : UNTITLED_DOCUMENT_NAME;
 }
 
@@ -879,7 +973,7 @@ export function untitledNameForTemplate(kind: TemplateKind | null): string {
 //   - a crosshatch backdrop for the storyboard, so its scene frames
 //     read as cards lifted off a textured surface,
 //   - a blank surround for the templates that open on Illustrate pages
-//     (Article, Slide deck, Logo design, Group card): the pages are the paper,
+//     (Article, Slide deck, Logo design, Group card and the rest): the pages are the paper,
 //   - horizontal rules for the time-ordered timeline / journey,
 //   - the dot grid (explicit, so it survives even a blank-canvas theme)
 //     for the sticky-note / freeform boards.
@@ -952,6 +1046,11 @@ const TEMPLATE_PATTERNS: Partial<Record<TemplateKind, BackgroundPattern>> = {
   storyboard: 'crosshatch',
   // A new whiteboard starts on Grid (docs/specs/023-draw-mode/draw-mode.md "Board background").
   whiteboard: WHITEBOARD_DEFAULT_PATTERN,
+  // The Draw templates start on the whiteboard's board too.
+  sketchnote: WHITEBOARD_DEFAULT_PATTERN,
+  'rich-picture': WHITEBOARD_DEFAULT_PATTERN,
+  'comic-strip': WHITEBOARD_DEFAULT_PATTERN,
+  'doodle-warmup': WHITEBOARD_DEFAULT_PATTERN,
   // The twelve-starter batch follows the same split: the retro formats,
   // Crazy 8s, persona, agenda and objectives are sticky-note / workshop
   // boards on the dot grid, as is the postmortem (a dense written report,
@@ -971,6 +1070,12 @@ const TEMPLATE_PATTERNS: Partial<Record<TemplateKind, BackgroundPattern>> = {
   'meeting-agenda': 'grid',
   // An article's surround stays plain: the page is the paper.
   article: 'blank',
+  // The other Illustrate templates: their pages are the paper.
+  'blank-illustration': 'blank',
+  'event-poster': 'blank',
+  'year-in-review': 'blank',
+  resume: 'blank',
+  'recipe-card': 'blank',
   // A personal planning sheet, read closely like a page: even dots behind
   // its cards read as noise, so it gets a clean canvas.
   'objectives-planner': 'blank',
@@ -1008,7 +1113,8 @@ export function templateCanvasOverrides(kind: TemplateKind): Partial<Tab> {
   // two wins.
   // A whiteboard draws its own quiet board pattern (docs/specs/023-draw-mode/draw-mode.md "Board
   // background"), so it never takes a template's dimming.
-  const quiet = pattern && kind !== 'whiteboard' ? TEMPLATE_PATTERN_OPACITY[pattern] : undefined;
+  const mode = templateEditorMode(kind);
+  const quiet = pattern && mode !== 'draw' ? TEMPLATE_PATTERN_OPACITY[pattern] : undefined;
   const soft =
     kind === 'mindmap' ||
     kind === 'mindmap-tree' ||
@@ -1024,9 +1130,10 @@ export function templateCanvasOverrides(kind: TemplateKind): Partial<Tab> {
   // The kind, not a layer id, is what the editor reads to decide it is a
   // workshop board, so it must land on every application path: the picker,
   // /new, and the MCP worker all go through here.
-  // The Whiteboard template is a general tab that OPENS in Draw mode
-  // (docs/specs/007-editor/editor-modes.md "Where the mode lives"); whiteboarding is no kind.
-  if (kind === 'whiteboard') overrides.opensIn = 'draw';
+  // A template's mode (docs/specs/007-editor/templates-by-mode.md): the Draw templates are general
+  // tabs that OPEN in Draw mode (docs/specs/007-editor/editor-modes.md "Where the mode lives";
+  // whiteboarding is no kind), the Illustrate ones open in Illustrate (their pages below).
+  if (mode !== 'diagram') overrides.opensIn = mode;
   // The Article opens in Illustrate on its one article page (docs/specs/007-editor/article-pages.md).
   if (kind === 'article') Object.assign(overrides, articleTemplateOverrides());
   // The Slide deck, Logo design and Group card open in Illustrate on their own pages

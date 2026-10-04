@@ -72,6 +72,15 @@ const TEMPLATE_FAMILY: Record<TemplateKind, TemplateFamily | null> = {
   'objectives-planner': null,
   whiteboard: null,
   article: null,
+  'blank-illustration': null,
+  sketchnote: null,
+  'rich-picture': null,
+  'comic-strip': null,
+  'doodle-warmup': null,
+  'event-poster': null,
+  'year-in-review': null,
+  resume: null,
+  'recipe-card': null,
 };
 
 /** The family a document made from this template belongs to; null for no template or no family. */
