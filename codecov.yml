@@ -3,7 +3,7 @@
 codecov:
   notify:
     # CI uploads four reports per commit: Tests (every workspace but the editor) and the three Editor
-    # unit tests shards. Codecov waits for all four, so no status or comment shows a partial picture.
+    # unit tests shards. Codecov waits for all four, so no status shows a partial picture.
     after_n_builds: 4
 
 coverage:
@@ -15,31 +15,7 @@ coverage:
       default:
         informational: true
 
-# One row per area of the repo in the pull request comment, matched by path, so the uploads carry no
-# flags. Every covered file falls in exactly one component.
-component_management:
-  individual_components:
-    - component_id: editor
-      name: Editor
-      paths: ['apps/live/**']
-    - component_id: api
-      name: API
-      paths: ['apps/api/**']
-    - component_id: mcp
-      name: MCP
-      paths: ['apps/mcp/**']
-    - component_id: sites
-      name: Help and marketing
-      paths: ['apps/help/**', 'apps/marketing/**']
-    - component_id: packages
-      name: Packages
-      paths: ['packages/**']
-
-# A summary and two tables (the coverage diff and the components), never a list of files: an editor
-# change touches hundreds of them.
-comment:
-  layout: 'header, diff, components'
-  # Codecov hides the project totals, and with them both tables, unless told otherwise.
-  hide_project_coverage: false
-  after_n_builds: 4
-  require_changes: false
+# Off: on this organisation's free plan Codecov writes a fixed, patch-only comment whatever this file
+# asks for. The pull request's coverage comment comes from coverage-comment.yml instead, built from
+# Codecov's numbers.
+comment: false
