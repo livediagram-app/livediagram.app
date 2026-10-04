@@ -336,8 +336,7 @@ export function EditorCanvasHost() {
     toggleZenMode,
     undo,
     userPreferences,
-    viewportOffset,
-    viewportZoom,
+    viewport,
     zenMode,
     whiteboardDock,
     drag,
@@ -536,13 +535,12 @@ export function EditorCanvasHost() {
         tabFont={activeTab.font}
         mainRef={canvasMainRef}
         isPinchingRef={isPinchingRef}
-        viewportZoom={viewportZoom}
+        viewport={viewport}
         setViewportZoom={setViewportZoom}
         onFitToScreen={() => {
           fitToScreen();
           track('Canvas', 'Zoomed', 'Fit');
         }}
-        viewportOffset={viewportOffset}
         setViewportOffset={setViewportOffset}
         // Presenting (docs/specs/012-collaboration/presentation-mode.md) narrows the canvas to one slide's elements. The
         // real canvas still draws them — a slide has to respond to clicks and

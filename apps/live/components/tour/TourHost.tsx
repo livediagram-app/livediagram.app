@@ -111,7 +111,7 @@ export function TourHost() {
         });
         const hostRect = ctx.canvasMainRef.current?.getBoundingClientRect();
         const centre = hostRect
-          ? computeViewportCenter(hostRect, ctx.viewportOffset)
+          ? computeViewportCenter(hostRect, ctx.viewport.get().offset)
           : { x: 400, y: 300 };
         const el: Element = {
           ...base,

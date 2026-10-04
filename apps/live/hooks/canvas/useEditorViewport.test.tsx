@@ -38,7 +38,7 @@ function setup() {
 describe('useEditorViewport scrolling a new element into view', () => {
   it('scrolls to an added element that the add selected', () => {
     const { selection, near, view } = setup();
-    const before = view.result.current.viewportOffset;
+    const before = view.result.current.viewport.get().offset;
     const far = createShape('square', 3000, 3000);
 
     act(() => {
@@ -47,16 +47,37 @@ describe('useEditorViewport scrolling a new element into view', () => {
     });
 
     act(() => vi.advanceTimersByTime(800));
-    expect(view.result.current.viewportOffset).not.toEqual(before);
+    expect(view.result.current.viewport.get().offset).not.toEqual(before);
   });
 
   it('leaves the view alone for an added element that is not selected', () => {
     const { near, view } = setup();
-    const before = view.result.current.viewportOffset;
+    const before = view.result.current.viewport.get().offset;
 
     act(() => view.rerender({ tab: tabOf([near, createShape('square', 3000, 3000)]) }));
 
     act(() => vi.advanceTimersByTime(800));
-    expect(view.result.current.viewportOffset).toEqual(before);
+    expect(view.result.current.viewport.get().offset).toEqual(before);
+  });
+});
+
+// docs/specs/008-canvas/canvas-performance.md "A pan or zoom renders the canvas, not the editor".
+describe('useEditorViewport view', () => {
+  it('never renders its host for a zoom or a pan, and reads the newest view', () => {
+    const selection = createSelectionStore();
+    let renders = 0;
+    const { result } = renderHook(() => {
+      renders += 1;
+      return useEditorViewport({ activeTab: tabOf([]), readSelection: selection.get });
+    });
+    const before = renders;
+
+    act(() => result.current.setViewportZoom(2));
+    act(() => result.current.setViewportOffset({ x: 30, y: -10 }));
+
+    expect(renders).toBe(before);
+    expect(result.current.viewport.get()).toEqual({ zoom: 2, offset: { x: 30, y: -10 } });
+    expect(result.current.zoomRef.current).toBe(2);
+    expect(result.current.viewportOffsetRef.current).toEqual({ x: 30, y: -10 });
   });
 });

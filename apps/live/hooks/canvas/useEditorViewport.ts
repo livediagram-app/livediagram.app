@@ -8,6 +8,7 @@
 // useEditorDrag so the helpers always read fresh tab elements
 // without re-creating themselves on every parent render.
 
+import { createViewportStore, type ViewportStore } from '@/lib/viewport-store';
 import type { Selection } from '@/lib/selection-store';
 import { useCallback, useEffect, useEffectEvent, useRef, useState } from 'react';
 import { isBoxed, unionBoxedBounds, type Tab } from '@livediagram/document';
@@ -51,13 +52,11 @@ const FIT_SAFETY = 0.95;
 const MIN_FIT_ZOOM = 0.2;
 
 type EditorViewportApi = {
-  // Pan offset in canvas-coords. The canvas wrapper applies
-  // `translate(viewportOffset.x, viewportOffset.y) scale(zoom)`.
-  viewportOffset: { x: number; y: number };
-  setViewportOffset: React.Dispatch<React.SetStateAction<{ x: number; y: number }>>;
-  // Zoom multiplier on the canvas transform. 1 = 100%.
-  viewportZoom: number;
-  setViewportZoom: React.Dispatch<React.SetStateAction<number>>;
+  // The view (pan offset in canvas-coords, zoom multiplier; 1 = 100%), held in a store so a pan or a
+  // zoom renders the canvas, not the editor (docs/specs/008-canvas/blueprints/viewport-store.md).
+  viewport: ViewportStore;
+  setViewportOffset: ViewportStore['setOffset'];
+  setViewportZoom: ViewportStore['setZoom'];
   // Same value as `viewportZoom` but mirrored into a ref so the
   // pointer-move handlers in useEditorDrag can invert the zoom
   // without re-attaching their listeners every time zoom changes.
@@ -106,24 +105,28 @@ type EditorViewportApi = {
 };
 
 export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
-  const [viewportOffset, setViewportOffset] = useState({ x: 0, y: 0 });
-  const [viewportZoom, setViewportZoom] = useState<number>(() => {
-    if (typeof window === 'undefined') return DESKTOP_DEFAULT_ZOOM;
-    return window.innerWidth <= OVERVIEW_ZOOM_BREAKPOINT_PX
-      ? MOBILE_DEFAULT_ZOOM
-      : DESKTOP_DEFAULT_ZOOM;
-  });
+  const [viewport] = useState(() =>
+    createViewportStore(
+      typeof window !== 'undefined' && window.innerWidth <= OVERVIEW_ZOOM_BREAKPOINT_PX
+        ? MOBILE_DEFAULT_ZOOM
+        : DESKTOP_DEFAULT_ZOOM,
+    ),
+  );
+  const { setZoom: setViewportZoom, setOffset: setViewportOffset } = viewport;
+  // The view now, as read-only refs, for the readers that hold one (the drag hook, the glides).
+  const [{ zoomRef, viewportOffsetRef }] = useState(() => ({
+    zoomRef: {
+      get current() {
+        return viewport.get().zoom;
+      },
+    } as React.RefObject<number>,
+    viewportOffsetRef: {
+      get current() {
+        return viewport.get().offset;
+      },
+    } as React.RefObject<{ x: number; y: number }>,
+  }));
   const canvasMainRef = useRef<HTMLElement>(null);
-  const zoomRef = useRef(viewportZoom);
-  useEffect(() => {
-    zoomRef.current = viewportZoom;
-  }, [viewportZoom]);
-  // Latest pan offset in a ref so the scroll-into-view animation reads the
-  // current value without re-creating its stable callback.
-  const viewportOffsetRef = useRef(viewportOffset);
-  useEffect(() => {
-    viewportOffsetRef.current = viewportOffset;
-  }, [viewportOffset]);
   // depsRef means the helpers below can be stable across renders
   // (useCallback empty-dep) AND always read the latest activeTab.
   // The drag hook is the only consumer that holds a long-lived
@@ -134,8 +137,8 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
   const getViewportCenter = useCallback(() => {
     const rect = canvasMainRef.current?.getBoundingClientRect();
     if (!rect) return { x: 0, y: 0 };
-    return computeViewportCenter(rect, viewportOffset);
-  }, [viewportOffset]);
+    return computeViewportCenter(rect, viewport.get().offset);
+  }, [viewport]);
 
   // Smoothly bring an element (plus toolbar room) fully on-screen. If it
   // already fits the visible band, just pan the minimum to pull any
@@ -222,7 +225,7 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
         { zoom: setViewportZoom, offset: setViewportOffset },
       );
     },
-    [],
+    [setViewportOffset, setViewportZoom, viewportOffsetRef, zoomRef],
   );
 
   // Mobile: when a new element is added (the add handlers select it),
@@ -267,7 +270,7 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
     const { zoom, offset } = computeFitToScreen(rect, bbox);
     setViewportZoom(zoom);
     setViewportOffset(offset);
-  }, [depsRef]);
+  }, [depsRef, setViewportOffset, setViewportZoom]);
 
   // Frame an ARBITRARY rectangle, which is what presenting a slide needs
   // (docs/specs/012-collaboration/presentation-mode.md): the deck decides what is on screen, so the box to fit is the
@@ -277,19 +280,22 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
   // else's, so this cannot go through fitToBounds, which derives one; the
   // point of Bring Focus is that everyone ends up seeing the same amount of
   // canvas as the person who pressed.
-  const centreOn = useCallback((at: { x: number; y: number }, zoom: number) => {
-    const node = canvasMainRef.current;
-    if (!node) return;
-    // offsetWidth/Height rather than the transformed rect, for the reason
-    // fitToBounds gives below.
-    const rect = { width: node.offsetWidth, height: node.offsetHeight };
-    setViewportZoom(zoom);
-    // The offset is in CANVAS units, not screen ones: the zoom is applied
-    // separately about the viewport's own centre, which is why
-    // computeFitToScreen's offset has no zoom factor in it either. Multiplying
-    // by the zoom here put everyone in the top-left corner of the canvas.
-    setViewportOffset({ x: rect.width / 2 - at.x, y: rect.height / 2 - at.y });
-  }, []);
+  const centreOn = useCallback(
+    (at: { x: number; y: number }, zoom: number) => {
+      const node = canvasMainRef.current;
+      if (!node) return;
+      // offsetWidth/Height rather than the transformed rect, for the reason
+      // fitToBounds gives below.
+      const rect = { width: node.offsetWidth, height: node.offsetHeight };
+      setViewportZoom(zoom);
+      // The offset is in CANVAS units, not screen ones: the zoom is applied
+      // separately about the viewport's own centre, which is why
+      // computeFitToScreen's offset has no zoom factor in it either. Multiplying
+      // by the zoom here put everyone in the top-left corner of the canvas.
+      setViewportOffset({ x: rect.width / 2 - at.x, y: rect.height / 2 - at.y });
+    },
+    [setViewportOffset, setViewportZoom],
+  );
 
   // The inverse question: is this view ALREADY the one centreOn would give?
   // Bring Focus asks it before putting an invitation on screen, so a second
@@ -297,19 +303,22 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
   // (docs/specs/012-collaboration/bring-focus.md).
   // The rule itself is shared with the presser's side of the press, which asks
   // the same thing of everyone else's published viewport.
-  const isCentredOn = useCallback((at: { x: number; y: number }, zoom: number) => {
-    const node = canvasMainRef.current;
-    if (!node) return false;
-    return viewIsCentredOn(
-      {
-        size: { width: node.offsetWidth, height: node.offsetHeight },
-        pan: viewportOffsetRef.current,
-        zoom: zoomRef.current,
-      },
-      at,
-      zoom,
-    );
-  }, []);
+  const isCentredOn = useCallback(
+    (at: { x: number; y: number }, zoom: number) => {
+      const node = canvasMainRef.current;
+      if (!node) return false;
+      return viewIsCentredOn(
+        {
+          size: { width: node.offsetWidth, height: node.offsetHeight },
+          pan: viewportOffsetRef.current,
+          zoom: zoomRef.current,
+        },
+        at,
+        zoom,
+      );
+    },
+    [viewportOffsetRef, zoomRef],
+  );
 
   const fitToBounds = useCallback(
     (bbox: { x: number; y: number; w: number; h: number }, opts?: { maxZoom?: number }) => {
@@ -330,13 +339,12 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
       setViewportZoom(zoom);
       setViewportOffset(offset);
     },
-    [],
+    [setViewportOffset, setViewportZoom],
   );
 
   return {
-    viewportOffset,
+    viewport,
     setViewportOffset,
-    viewportZoom,
     setViewportZoom,
     zoomRef,
     viewportOffsetRef,
