@@ -23,6 +23,21 @@ function utcDay(at: number): string {
   return Number.isNaN(date.getTime()) ? '?' : date.toISOString().slice(0, 10);
 }
 
+type ThreadComment = Thread['comments'][number];
+
+export function readComment(c: object): ThreadComment {
+  return {
+    authorName: stringField(c, 'authorName') ?? '',
+    createdAt: numberField(c, 'createdAt') ?? 0,
+    text: stringField(c, 'text') ?? '',
+  };
+}
+
+// `Sam 2026-09-27: "text"`: a comment as the comments and show views print it.
+export function commentText(c: ThreadComment): string {
+  return `${attrValue(c.authorName)} ${utcDay(c.createdAt)}: ${jsonString(c.text)}`;
+}
+
 function threadOfElement(model: ViewModel, el: Element): Thread | null {
   const thread = threadOf(el);
   if (thread === null) return null;
@@ -31,11 +46,7 @@ function threadOfElement(model: ViewModel, el: Element): Thread | null {
     kind: model.kindOf(el),
     label: textField(el, 'label'),
     resolved: thread.resolved,
-    comments: thread.comments.map((c) => ({
-      authorName: stringField(c, 'authorName') ?? '',
-      createdAt: numberField(c, 'createdAt') ?? 0,
-      text: stringField(c, 'text') ?? '',
-    })),
+    comments: thread.comments.map(readComment),
   };
 }
 
@@ -48,7 +59,7 @@ function threadLines(thread: Thread): ViewLine[] {
       noun: THREAD,
     },
     ...thread.comments.map((c) => ({
-      text: `  ${attrValue(c.authorName)} ${utcDay(c.createdAt)}: ${jsonString(c.text)}`,
+      text: `  ${commentText(c)}`,
       noun: COMMENT,
     })),
   ];

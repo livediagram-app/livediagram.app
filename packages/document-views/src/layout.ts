@@ -16,9 +16,10 @@ const BOX = { one: 'box', many: 'boxes' };
 const ARROW = { one: 'arrow', many: 'arrows' };
 const ROW = { one: 'container', many: 'containers' };
 
-type Origin = { x: number; y: number };
+export type Origin = { x: number; y: number };
 
-function endText(end: Endpoint, model: ViewModel, origin: Origin): string {
+// An arrow end in content-origin terms: `ref.anchor`, `arrow:ref@t`, or `x,y` for a free end.
+export function layoutEndText(end: Endpoint, model: ViewModel, origin: Origin): string {
   switch (end.kind) {
     case 'pinned':
       return `${model.refs.refOf(end.elementId)}.${end.anchor}`;
@@ -101,8 +102,8 @@ function exactLayout(model: ViewModel, options: LayoutOptions, origin: Origin) {
   });
   const arrowJson = arrows.map((edge: ViewEdge) => ({
     ref: edge.ref,
-    from: endText(edge.arrow.from, model, origin),
-    to: endText(edge.arrow.to, model, origin),
+    from: layoutEndText(edge.arrow.from, model, origin),
+    to: layoutEndText(edge.arrow.to, model, origin),
     style: edge.arrow.arrowStyle ?? 'straight',
   }));
   const arrowLines = arrowJson.map((a): ViewLine => ({

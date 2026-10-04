@@ -29,13 +29,45 @@ export type ViewModel = {
   facts: HeaderFacts;
 };
 
+// Tab refs unique among the document's tabs; a tab outside them (no document context) takes the
+// ref it would have alone (VW4).
+export function tabRefsFor(
+  tabId: string,
+  tabIds: readonly string[] | undefined,
+): (id: string) => string {
+  const tabRefs = computeRefs(tabIds?.includes(tabId) ? tabIds : [tabId]);
+  const known = new Set(tabRefs.ids);
+  return (id) => (known.has(id) ? tabRefs.refOf(id) : computeRefs([id]).refOf(id));
+}
+
+function headerFacts(
+  tab: Tab,
+  printed: readonly Element[],
+  hidden: number,
+  tabRefOf: (id: string) => string,
+  rev: number | undefined,
+): HeaderFacts {
+  return {
+    tab: { id: tab.id, ref: tabRefOf(tab.id), name: tab.name, kind: tabKindOf(tab) },
+    elements: printed.length,
+    counts: countElements(printed),
+    hidden,
+    unknown: printed.filter((el) => !isKnownElement(el)).length,
+    threads: threadCounts(printed),
+    rev: rev ?? null,
+  };
+}
+
+// A tab's header facts alone, without its tree: what `overview` keeps of each tab body it reads.
+export function headerFactsOf(tab: Tab, context: ViewContext = {}): HeaderFacts {
+  const { printed, hidden } = partitionVisible(tab);
+  return headerFacts(tab, printed, hidden.length, tabRefsFor(tab.id, context.tabIds), context.rev);
+}
+
 export function buildViewModel(tab: Tab, context: ViewContext = {}): ViewModel {
   const { printed, hidden } = partitionVisible(tab);
   const refs = computeRefs(tab.elements.map((el) => el.id));
-  const tabRefs = computeRefs(context.tabIds?.includes(tab.id) ? context.tabIds : [tab.id]);
-  // A tab outside the known ids (no document context) takes the ref it would have alone (VW4).
-  const tabRefOf = (tabId: string) =>
-    tabRefs.ids.includes(tabId) ? tabRefs.refOf(tabId) : computeRefs([tabId]).refOf(tabId);
+  const tabRefOf = tabRefsFor(tab.id, context.tabIds);
   const kinds = new Map<Element, string>();
   const kindOf = (el: Element) => {
     const known = kinds.get(el);
@@ -46,14 +78,6 @@ export function buildViewModel(tab: Tab, context: ViewContext = {}): ViewModel {
   };
   const tree = buildViewTree(printed, new Set(printed.flatMap(pinnedIds)));
   const edges = edgesOf(printed, refs, new Set(tree.nodes.keys()));
-  const facts: HeaderFacts = {
-    tab: { id: tab.id, ref: tabRefOf(tab.id), name: tab.name, kind: tabKindOf(tab) },
-    elements: printed.length,
-    counts: countElements(printed),
-    hidden: hidden.length,
-    unknown: printed.filter((el) => !isKnownElement(el)).length,
-    threads: threadCounts(printed),
-    rev: context.rev ?? null,
-  };
+  const facts = headerFacts(tab, printed, hidden.length, tabRefOf, context.rev);
   return { tab, printed, hidden, refs, tabRefOf, kindOf, tree, edges, facts };
 }
