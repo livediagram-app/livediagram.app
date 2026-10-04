@@ -77,10 +77,14 @@ export function TemplateModeFilterControl({ filter }: { filter: TemplateModeFilt
         type="button"
         {...menu.triggerProps}
         // A press on a menu the hover opened keeps it open, as if the press had opened it.
+        // Read from the ref, not `menu.open`: a pointer that arrives and presses in one moment
+        // opens the menu by hover and presses before that open has rendered.
         onClick={() => {
-          if (menu.open && byHover.current) byHover.current = false;
-          else {
+          if (byHover.current) {
             byHover.current = false;
+            cancelLeave();
+            menu.openMenu();
+          } else {
             menu.toggle();
           }
         }}

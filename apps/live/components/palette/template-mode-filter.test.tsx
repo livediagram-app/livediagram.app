@@ -156,6 +156,17 @@ describe('the mode filter', () => {
     expect(screen.queryByText(/templates match/)).toBeNull();
   });
 
+  it('stays open when a pointer arrives and presses in one moment', () => {
+    render(<Step />);
+    const root = chip().parentElement!;
+    // Both in one batch, as when the open has not rendered before the press lands.
+    act(() => {
+      fireEvent.pointerEnter(root, { pointerType: 'mouse' });
+      fireEvent.click(chip());
+    });
+    expect(screen.getByRole('menu', { name: 'Show templates for' })).toBeTruthy();
+  });
+
   it('opens on a mouse hover without taking focus, and closes once the pointer leaves', () => {
     vi.useFakeTimers();
     try {
