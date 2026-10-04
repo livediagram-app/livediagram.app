@@ -846,8 +846,9 @@ reads the research's §4.1 render and compares it with `· rev 41` on the header
 abbreviates, and holds the outline at or under 400 estimated tokens (chars ÷ 3) and at most a tenth of the pretty
 JSON's estimate.
 
-`performance.test.ts` renders and fits a 10,000-element tab with 100 containers within a second; it takes tens of
-milliseconds, so the ceiling catches an accidental quadratic step without flaking on a loaded runner. Goldens are kept
+`performance.test.ts` times growth, not a ceiling: four times the elements in the same ten frames must cost under
+eight times as much (measured 3 to 5, under coverage too; a quadratic step costs 16), the fastest of five renders
+each. An absolute time depends on the machine and on coverage instrumentation, and flaked in CI. Goldens are kept
 out of Prettier (`.prettierignore`).
 
 ## Constants and configuration

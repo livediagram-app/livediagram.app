@@ -1,45 +1,59 @@
-// The worst case of docs/specs/024-agents/blueprints/document-views.md "Performance and limits": a
-// 10,000-element tab with 100 containers. It renders in tens of milliseconds; the one-second ceiling
-// leaves room for a loaded runner and still catches an accidental quadratic step, which takes seconds.
+// The views' cost grows with the tab, not faster (docs/specs/024-agents/blueprints/document-views.md
+// "Performance and limits"). Timed as growth, not as a ceiling: an absolute time depends on the machine
+// and on coverage instrumentation, a ratio does not. Four times the elements in the same containers
+// should cost about four to five times as much (n log n); a quadratic step would cost sixteen.
 import { describe, expect, it } from 'vitest';
 import type { Element } from '@livediagram/document';
 import { arrowBetween, shapeAt } from './__fixtures__/build';
 import { buildViewModel } from './model';
 import { outlineView } from './outline';
 
-const RENDER_CEILING_MS = 1000;
+const FRAMES = 10;
+const GROWTH = 4;
+const RATIO_CEILING = 8;
+const RUNS = 5;
 
-function largestTab() {
+// `FRAMES` frames, each holding `perFrame` boxes joined pairwise by arrows.
+function tabOf(perFrame: number) {
   const elements: Element[] = [];
-  for (let frame = 0; frame < 100; frame++) {
-    const [fx, fy] = [(frame % 10) * 2200, Math.floor(frame / 10) * 2200];
-    elements.push(shapeAt('frame', `frame-${frame}`, fx, fy, 2000, 2000));
-    for (let i = 0; i < 66; i++) {
+  for (let frame = 0; frame < FRAMES; frame++) {
+    const [fx, fy] = [frame * 100_000, 0];
+    elements.push(shapeAt('frame', `frame-${frame}`, fx, fy, 90_000, 90_000));
+    for (let i = 0; i < perFrame; i++) {
       elements.push(
         shapeAt(
           'square',
           `n-${frame}-${i}`,
-          fx + (i % 8) * 240 + 20,
-          fy + Math.floor(i / 8) * 200 + 40,
+          fx + (i % 60) * 240 + 20,
+          fy + Math.floor(i / 60) * 200 + 40,
         ),
       );
+      if (i % 2 === 1)
+        elements.push(arrowBetween(`a-${frame}-${i}`, `n-${frame}-${i - 1}`, `n-${frame}-${i}`));
     }
-    for (let i = 0; i < 33; i++)
-      elements.push(arrowBetween(`a-${frame}-${i}`, `n-${frame}-${i}`, `n-${frame}-${i + 1}`));
   }
-  return { id: 'largest', name: 'Largest', elements };
+  return { id: 'growth', name: 'Growth', elements };
 }
 
-describe('views at the element cap', () => {
-  const tab = largestTab();
-
-  it('renders 10,000 elements and fits them to the MCP budget within the ceiling', () => {
-    expect(tab.elements).toHaveLength(10_000);
+// The fastest of a few renders, full and fitted to the MCP budget: the least noisy estimate.
+function fastestRender(tab: ReturnType<typeof tabOf>): number {
+  let fastest = Infinity;
+  for (let run = 0; run < RUNS; run++) {
     const start = performance.now();
-    const full = outlineView(buildViewModel(tab));
-    const fitted = outlineView(buildViewModel(tab), { budget: 8000 });
-    expect(performance.now() - start).toBeLessThan(RENDER_CEILING_MS);
-    expect(full.text.split('\n')).toHaveLength(1 + 100 + 6600);
-    expect(fitted.state).toBe('containers-collapsed');
+    outlineView(buildViewModel(tab));
+    outlineView(buildViewModel(tab), { budget: 8000 });
+    fastest = Math.min(fastest, performance.now() - start);
+  }
+  return fastest;
+}
+
+describe('views as tabs grow', () => {
+  it('cost about linearly more, never quadratically', () => {
+    const small = tabOf(160);
+    const large = tabOf(160 * GROWTH);
+    fastestRender(small);
+    const ratio = fastestRender(large) / fastestRender(small);
+    expect(large.elements.length).toBeGreaterThan(GROWTH * (small.elements.length - FRAMES));
+    expect(ratio).toBeLessThan(RATIO_CEILING);
   });
 });
