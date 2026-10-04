@@ -15,6 +15,7 @@ import {
   SITE_TITLE,
 } from '@livediagram/ui';
 import { VIEW_TRANSITION_GUARD_SCRIPT } from '../lib/view-transition-guard';
+import { RETURNING_BOOT_SCRIPT } from '@livediagram/api-schema';
 
 // SEO and social-card metadata. See docs/specs/019-marketing/marketing-site.md
 // for the policy. metadataBase lets the per-page canonical and
@@ -144,6 +145,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <head>
         <style>{VIEW_TRANSITION_OPT_IN}</style>
         <script dangerouslySetInnerHTML={{ __html: VIEW_TRANSITION_GUARD_SCRIPT }} />
+        {/* A returning visitor before first paint (docs/specs/019-marketing/returning-visitor.md). */}
+        <script dangerouslySetInnerHTML={{ __html: RETURNING_BOOT_SCRIPT }} />
       </head>
       <body className="bg-slate-50 text-slate-800 antialiased dark:bg-slate-950 dark:text-slate-200">
         {/* Appearance before first paint (docs/specs/004-interface-design/appearance.md). */}

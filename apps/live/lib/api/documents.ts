@@ -2,6 +2,8 @@
 // copy-into-my-files flow, and the "Shared with you" list.
 import {
   DOCUMENT_CONVERSION_HEADER,
+  scalableSnapshotSvg,
+  svgBackgroundColor,
   type CreationIntent,
   type DocumentConversion,
   type SharedTabsSummary,
@@ -22,6 +24,7 @@ import {
   offlineSaveDocumentMeta,
 } from '../offline/offline-store';
 import { offlinePurgeExpiredTrash, offlineTrashDocument } from '../offline/offline-trash';
+import { rememberRecentDiagrams } from '../recent-diagrams-snapshot';
 import {
   API_BASE,
   apiDelete,
@@ -225,24 +228,18 @@ async function _apiListDocuments(ownerId: string): Promise<DocumentSummary[]> {
     // dispatch loads for that id — and dropping the twin keeps React keys
     // unique in every list.
     const offlineIds = new Set(offline.map((o) => o.id));
-    return [...offline, ...liveDocs.filter((d) => !offlineIds.has(d.id))];
+    const documents = [...offline, ...liveDocs.filter((d) => !offlineIds.has(d.id))];
+    // The landing page's Welcome back reads this (docs/specs/019-marketing/returning-visitor.md).
+    rememberRecentDiagrams(documents, (id, savedAt) =>
+      apiFetchDocumentThumbnailSvg(ownerId, id, { version: savedAt }),
+    );
+    return documents;
   } catch (e) {
     if (offline.length > 0) return offline;
     throw e;
   }
 }
 export const apiListDocuments = dedupeInFlight(_apiListDocuments, (ownerId) => ownerId);
-
-// Pull the snapshot's solid background colour out of the SVG text: it's
-// the first `<rect>`'s fill, since renderElementsToSvg (docs/specs/006-document/document-snapshots.md) draws a
-// full-viewBox background rect before any element, and the snapshot has no
-// backdrop pattern, so the fill is always a plain colour string. Lets a
-// card paint its letterbox to match the document instead of a generic
-// slate. Null when absent (an unexpected SVG shape) — the caller falls
-// back to its default box colour.
-function svgBackgroundColor(svg: string): string | null {
-  return /<rect[^>]*\bfill="([^"]+)"/.exec(svg)?.[1] ?? null;
-}
 
 // Fetch a document's cached SVG snapshot (docs/specs/006-document/document-snapshots.md) and return a blob URL
 // for an `<img src>` plus the document's background colour. Native `<img>`
@@ -258,6 +255,24 @@ export async function apiFetchDocumentThumbnailUrl(
   documentId: string,
   opts: { version?: number; shareCode?: string | null } = {},
 ): Promise<{ url: string; backgroundColor: string | null } | null> {
+  const svg = await apiFetchDocumentThumbnailSvg(ownerId, documentId, opts);
+  if (svg == null) return null;
+  // The letterbox matches the document's own background (svgBackgroundColor, the snapshot's first
+  // rect) instead of a generic slate.
+  const backgroundColor = svgBackgroundColor(svg);
+  const scalable = scalableSnapshotSvg(svg);
+  const blobUrl = URL.createObjectURL(new Blob([scalable], { type: 'image/svg+xml' }));
+  return { url: blobUrl, backgroundColor };
+}
+
+// The snapshot SVG's text, through the authenticated client; null on 404 / 403 / 503 (empty
+// document, no access, no R2). Behind the Explorer's thumbnails and the landing page's Welcome back
+// (docs/specs/019-marketing/returning-visitor.md).
+export async function apiFetchDocumentThumbnailSvg(
+  ownerId: string,
+  documentId: string,
+  opts: { version?: number; shareCode?: string | null } = {},
+): Promise<string | null> {
   const params = new URLSearchParams();
   if (opts.version != null) params.set('v', String(opts.version));
   const qs = params.toString();
@@ -265,16 +280,7 @@ export async function apiFetchDocumentThumbnailUrl(
   const headers = new Headers(await apiHeaders(ownerId, { share: opts.shareCode ?? null }));
   const res = await apiFetch(url, { headers });
   if (!res.ok) return null;
-  const svg = await res.text();
-  const backgroundColor = svgBackgroundColor(svg);
-  // Drop the snapshot's fixed width/height so the <img> renders the vector at
-  // the card's display size (crisp) instead of rasterising at the snapshot's
-  // intrinsic pixel size and upscaling it, which softens it in a large card.
-  // The viewBox stays, so aspect ratio + object-contain are unchanged, and the
-  // <img> sandbox (no script/font loading) is kept vs inlining the markup.
-  const scalable = svg.replace(/(<svg\b[^>]*?)\s+width="[^"]*"\s+height="[^"]*"/, '$1');
-  const blobUrl = URL.createObjectURL(new Blob([scalable], { type: 'image/svg+xml' }));
-  return { url: blobUrl, backgroundColor };
+  return res.text();
 }
 
 // ---------------------------------------------------------------------
