@@ -122,14 +122,14 @@
 @keyframes hm-cursor {
   from {
     opacity: 0;
-    transform: translate(330px, 120px);
+    transform: translate(var(--sx), var(--sy));
   }
   20% {
     opacity: 1;
   }
   to {
     opacity: 1;
-    transform: translate(258px, 172px);
+    transform: translate(var(--cx), var(--cy));
   }
 }
 
@@ -162,7 +162,7 @@
   .hm-cursor {
     animation: none;
     opacity: 1;
-    transform: translate(258px, 172px);
+    transform: translate(var(--cx), var(--cy));
   }
 }
 
@@ -361,5 +361,30 @@
   .hm-you,
   .hm-teammate {
     display: none;
+  }
+}
+
+/* --- The Article window (components/hero-article-page.tsx) --- */
+
+/* Where you are writing: a caret that blinks once it arrives. */
+.hm-caret {
+  opacity: 0;
+  animation: hm-caret 1s steps(1, end) var(--d, 0s) infinite;
+}
+@keyframes hm-caret {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+.hero-static .hm-caret {
+  display: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hm-caret {
+    animation: none;
+    opacity: 1;
   }
 }

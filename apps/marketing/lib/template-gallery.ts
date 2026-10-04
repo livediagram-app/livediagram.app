@@ -92,12 +92,44 @@ export function modeCounts(): Record<ModeChoice, number> {
   return out;
 }
 
-// Group in catalogue category order, dropping categories the filters emptied.
+// The order the cards sit in on each category shelf: the catalogue's order is the order templates
+// were added, so like ones bunch together; the gallery mixes them, with a fixed seed, so the order
+// is shuffled once and the same on every build and every visit (no layout shift, nothing to
+// hydrate differently). Change the seed to deal a new order.
+const SHUFFLE_SEED = 20261004;
+
+// mulberry32: a tiny seeded PRNG, enough to deal a stable order.
+function seeded(seed: number) {
+  let a = seed >>> 0;
+  return () => {
+    a = (a + 0x6d2b79f5) >>> 0;
+    let t = a;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+// Each template's place on its shelf, dealt once from the whole catalogue.
+const SHELF_RANK: ReadonlyMap<string, number> = (() => {
+  const kinds = TEMPLATES.map((t) => t.kind);
+  const random = seeded(SHUFFLE_SEED);
+  for (let i = kinds.length - 1; i > 0; i--) {
+    const j = Math.floor(random() * (i + 1));
+    [kinds[i], kinds[j]] = [kinds[j]!, kinds[i]!];
+  }
+  return new Map(kinds.map((k, i) => [k, i]));
+})();
+const byShelfRank = (a: GalleryTemplate, b: GalleryTemplate) =>
+  (SHELF_RANK.get(a.kind) ?? 0) - (SHELF_RANK.get(b.kind) ?? 0);
+
+// Group in catalogue category order, each shelf in its dealt order, dropping categories the
+// filters emptied.
 export function groupGallery(items: GalleryTemplate[]): GalleryShelf[] {
   return TEMPLATE_CATEGORIES.map((c) => ({
     id: c.id as ShelfId,
     label: c.label,
-    templates: items.filter((t) => t.category === c.id),
+    templates: items.filter((t) => t.category === c.id).sort(byShelfRank),
   })).filter((g) => g.templates.length > 0);
 }
 

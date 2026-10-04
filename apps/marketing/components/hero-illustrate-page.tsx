@@ -1,11 +1,12 @@
 import type { CSSProperties } from 'react';
 
-// The hero's Illustrate window (docs/specs/019-marketing/marketing-site.md "Hero"): an infographic
-// page laid out in Illustrate mode (docs/specs/007-editor/editor-modes.md "The pages"). A portrait
-// page sits on the canvas with the next page beside it in the row; a colour band and title land,
-// then a headline number, three stat chips, a bar chart whose bars grow and a donut that fills,
-// and finally the teammate selects the chart, handles and all. Each piece arrives at its own --d
-// delay (hero-mode-animations.css).
+// The hero's Infographic window (docs/specs/019-marketing/marketing-site.md "Hero"): a two-page
+// infographic laid out in Illustrate mode (docs/specs/007-editor/editor-modes.md "The pages"), the
+// pages side by side in a row. On page 1 a colour band and title land, then a headline number,
+// three stat chips, a bar chart whose bars grow and a donut that fills, and the teammate selects
+// the chart, handles and all; then page 2 fills in: its band and title, a roadmap whose line draws
+// through three milestones, and a pull quote. Each piece arrives at its own --d delay
+// (hero-mode-animations.css).
 
 const FONT = 'ui-sans-serif, system-ui, sans-serif';
 const BRAND = '#0ea5e9';
@@ -13,7 +14,9 @@ const DEEP = '#075985';
 const MUTED = '#64748b';
 
 // The page: A4 portrait at the mock's scale (210 x 297).
-const PAGE = { x: 150, y: -46, w: 210, h: 297 };
+const PAGE = { x: 85, y: -46, w: 210, h: 297 };
+// The gap between pages in the row.
+const PAGE_GAP = 30;
 
 const at = (d: number, extra?: Record<string, string | number>) =>
   ({ '--d': `${d}s`, ...extra }) as CSSProperties;
@@ -26,30 +29,13 @@ const STATS = [
 
 const BARS = [34, 48, 42, 62, 78];
 
-export function IllustratePage() {
-  const { x, y, w, h } = PAGE;
+export function InfographicPages() {
+  const { x, y, w } = PAGE;
   const left = x + 18;
   return (
     <>
-      {/* The next page in the row, peeking in, still blank. */}
-      <g className="opacity-60 dark:opacity-25">
-        <rect x={x + w + 34} y={y + 3} width={w} height={h} rx="2" fill="#0f172a" opacity="0.06" />
-        <rect
-          x={x + w + 32}
-          y={y}
-          width={w}
-          height={h}
-          rx="2"
-          className="fill-white dark:fill-slate-100"
-        />
-      </g>
-
       {/* The page itself, a white sheet with its shadow. */}
-      <rect x={x + 2} y={y + 3} width={w} height={h} rx="2" fill="#0f172a" opacity="0.08" />
-      <rect x={x} y={y} width={w} height={h} rx="2" className="fill-white dark:fill-slate-100" />
-      <text x={x} y={y - 8} fontFamily={FONT} fontSize="9" fontWeight="600" fill={MUTED}>
-        Page 1 · A4
-      </text>
+      <Sheet x={x} n={1} />
 
       {/* Header band and title. */}
       <g className="hm-wipe" style={at(0.3)}>
@@ -212,7 +198,16 @@ export function IllustratePage() {
           />
         ))}
       </g>
-      <g className="hm-cursor" style={at(5.6)} aria-hidden>
+      <g
+        className="hm-cursor"
+        style={at(5.6, {
+          '--sx': `${left + 162}px`,
+          '--sy': `${y + 166}px`,
+          '--cx': `${left + 90}px`,
+          '--cy': `${y + 218}px`,
+        })}
+        aria-hidden
+      >
         <path
           d="M0 0 L12 7 L7 8 L9.5 12.5 L7.5 13.5 L5 9 L1.5 12.5 Z"
           fill="#ec4899"
@@ -230,6 +225,133 @@ export function IllustratePage() {
           fill="white"
         >
           JR
+        </text>
+      </g>
+
+      <SecondPage x={x + w + PAGE_GAP} />
+    </>
+  );
+}
+
+// A page: a white sheet with its shadow and its name above it.
+function Sheet({ x, n }: { x: number; n: number }) {
+  const { y, w, h } = PAGE;
+  return (
+    <>
+      <rect x={x + 2} y={y + 3} width={w} height={h} rx="2" fill="#0f172a" opacity="0.08" />
+      <rect x={x} y={y} width={w} height={h} rx="2" className="fill-white dark:fill-slate-100" />
+      <text x={x} y={y - 8} fontFamily={FONT} fontSize="9" fontWeight="600" fill={MUTED}>
+        Page {n} · A4
+      </text>
+    </>
+  );
+}
+
+const VIOLET = '#8b5cf6';
+const MILESTONES = [
+  { when: 'Q1', what: 'Launch in EU' },
+  { when: 'Q2', what: 'Mobile app' },
+  { when: 'Q3', what: '1M people' },
+];
+
+// Page 2, "Looking ahead": a band and title, a roadmap whose line draws through three milestones,
+// and a pull quote.
+function SecondPage({ x }: { x: number }) {
+  const { y, w } = PAGE;
+  const left = x + 18;
+  const lineY = y + 128;
+  return (
+    <>
+      <Sheet x={x} n={2} />
+      <g className="hm-wipe" style={at(6.4)}>
+        <rect x={x} y={y} width={w} height="62" rx="2" fill={VIOLET} />
+        <rect x={x} y={y + 52} width={w} height="10" fill={VIOLET} />
+      </g>
+      <g className="hm-pop" style={at(6.8)}>
+        <text
+          x={left}
+          y={y + 26}
+          fontFamily={FONT}
+          fontSize="8"
+          fontWeight="700"
+          fill="#ede9fe"
+          letterSpacing="1.5"
+        >
+          2027 PLAN
+        </text>
+        <text x={left} y={y + 46} fontFamily={FONT} fontSize="17" fontWeight="800" fill="white">
+          Looking ahead
+        </text>
+        <text x={left} y={y + 92} fontFamily={FONT} fontSize="10" fontWeight="700" fill="#0f172a">
+          The roadmap
+        </text>
+      </g>
+      <path
+        className="hm-draw"
+        style={at(7.1, { '--dur': '0.9s', '--len': 160 })}
+        d={`M${left + 8} ${lineY} H${left + 168}`}
+        stroke="#ddd6fe"
+        strokeWidth="4"
+        strokeLinecap="round"
+        fill="none"
+      />
+      {MILESTONES.map((m, i) => {
+        const cx = left + 14 + i * 74;
+        return (
+          <g key={m.when} className="hm-pop" style={at(7.3 + i * 0.3)}>
+            <circle cx={cx} cy={lineY} r="9" fill={VIOLET} />
+            <text
+              x={cx}
+              y={lineY + 3}
+              textAnchor="middle"
+              fontFamily={FONT}
+              fontSize="7"
+              fontWeight="800"
+              fill="white"
+            >
+              {m.when}
+            </text>
+            <text
+              x={cx}
+              y={lineY + 24}
+              textAnchor="middle"
+              fontFamily={FONT}
+              fontSize="7.5"
+              fontWeight="600"
+              fill="#334155"
+            >
+              {m.what}
+            </text>
+          </g>
+        );
+      })}
+      <g className="hm-pop" style={at(8.5)}>
+        <rect x={left} y={y + 176} width="174" height="76" rx="8" fill={VIOLET} opacity="0.1" />
+        <text x={left + 10} y={y + 206} fontFamily="Georgia, serif" fontSize="30" fill={VIOLET}>
+          “
+        </text>
+        <text
+          x={left + 30}
+          y={y + 202}
+          fontFamily={FONT}
+          fontSize="11"
+          fontWeight="700"
+          fill="#0f172a"
+        >
+          Our best year yet,
+        </text>
+        <text
+          x={left + 30}
+          y={y + 217}
+          fontFamily={FONT}
+          fontSize="11"
+          fontWeight="700"
+          fill="#0f172a"
+        >
+          and we did it together.
+        </text>
+        <text x={left + 30} y={y + 236} fontFamily={FONT} fontSize="8" fill={MUTED}>
+          Maya Chen, CEO
         </text>
       </g>
     </>

@@ -113,3 +113,28 @@ describe('the shelves, as the template step lays them out', () => {
     expect(searchShelves('kanban', 'draw')).toEqual([]);
   });
 });
+
+describe('the shelf order', () => {
+  it('mixes each category once, the same way every time', () => {
+    const first = groupGallery(galleryTemplates());
+    const again = groupGallery(galleryTemplates());
+    expect(again.map((g) => g.templates.map((t) => t.kind))).toEqual(
+      first.map((g) => g.templates.map((t) => t.kind)),
+    );
+    // Every category keeps exactly its own templates...
+    for (const g of first) {
+      const catalogue = galleryTemplates().filter((t) => t.category === g.id);
+      expect(new Set(g.templates.map((t) => t.kind))).toEqual(
+        new Set(catalogue.map((t) => t.kind)),
+      );
+    }
+    // ...but not in the order they were added.
+    const shuffled = first.filter((g) => {
+      const catalogue = galleryTemplates()
+        .filter((t) => t.category === g.id)
+        .map((t) => t.kind);
+      return g.templates.map((t) => t.kind).join() !== catalogue.join();
+    });
+    expect(shuffled.length).toBeGreaterThan(first.length / 2);
+  });
+});

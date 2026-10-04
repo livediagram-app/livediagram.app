@@ -1,6 +1,6 @@
 'use client';
 
-// Animated hero: four editor windows on a sliding stage (docs/specs/019-marketing/marketing-site.md
+// Animated hero: five editor windows on a sliding stage (docs/specs/019-marketing/marketing-site.md
 // "Hero"), the launch window then one per editor mode, each showing its mode in action.
 //   1. Your canvas — the launch window (hero-launch.tsx): a fresh, empty,
 //      private document. While centred, a click grows it to fill the screen
@@ -10,9 +10,12 @@
 //      coloured, a sticky question and a database wired in (hero-diagram-board.tsx).
 //   3. Draw — a retro whiteboard: a title underlined in marker, stickies, the highlighter, a
 //      teammate's blue marker ringing the best note, and a doodle (hero-draw-board.tsx).
-//   4. Illustrate — an infographic page laid out: a band and title, a headline number, stat
-//      chips, a growing bar chart and a filling donut, then a teammate selects the chart
+//   4. Infographic (Illustrate mode) — two pages laid out side by side: stats, a growing bar
+//      chart and a filling donut on one, a roadmap and a pull quote on the next
 //      (hero-illustrate-page.tsx).
+//   5. Article (Illustrate mode) — an article page written line by line, with a header image, a
+//      heading and a pull quote, and a phrase set in bold from the rich-text toolbar
+//      (hero-article-page.tsx).
 // Every window is in the Toolbar panel layout, its strip wearing its mode: the mode switch and
 // the mode's tiles (hero-mode-palette.tsx), and the glyph on its tab. Below the stage, a label names the centred window and a row of dots
 // moves between them.
@@ -35,7 +38,8 @@ import {
 } from '@livediagram/ui';
 import { DiagramBoard } from './hero-diagram-board';
 import { DrawBoard } from './hero-draw-board';
-import { IllustratePage } from './hero-illustrate-page';
+import { ArticlePage } from './hero-article-page';
+import { InfographicPages } from './hero-illustrate-page';
 import type { HeroMode } from './hero-mode-palette';
 import { snapStage } from '@/lib/hero-stage';
 import { EditorWindow, type TabDef } from './hero-editor-window';
@@ -106,11 +110,19 @@ const CARDS: {
     shared: true,
   },
   {
-    key: 'illustrate',
+    key: 'infographic',
     title: 'Year in review',
-    label: 'Illustrate: lay out an infographic page, ready to print or share',
+    label: 'Infographic: lay out pages of numbers, charts and quotes, ready to print or share',
     mode: 'illustrate',
-    tabs: [{ name: 'Report', color: '#8b5cf6', active: true }],
+    tabs: [{ name: 'Infographic', color: '#8b5cf6', active: true }],
+    shared: true,
+  },
+  {
+    key: 'article',
+    title: 'Field notes',
+    label: 'Article: write long reads on pages, with images, headings and pull quotes',
+    mode: 'illustrate',
+    tabs: [{ name: 'Draft', color: '#0ea5e9', active: true }],
     shared: true,
   },
 ];
@@ -181,8 +193,10 @@ export function HeroIllustration() {
               const playing = i === active;
               const liveDoc = c.launch ? null : c.mode === 'draw' ? (
                 <DrawBoard />
-              ) : c.mode === 'illustrate' ? (
-                <IllustratePage />
+              ) : c.key === 'article' ? (
+                <ArticlePage />
+              ) : c.key === 'infographic' ? (
+                <InfographicPages />
               ) : (
                 <DiagramBoard />
               );
