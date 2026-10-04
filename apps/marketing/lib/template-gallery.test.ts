@@ -12,7 +12,9 @@ import {
   galleryTemplates,
   groupGallery,
   modeCounts,
+  popularFor,
   popularTemplates,
+  POPULAR_PER_MODE,
   searchShelves,
 } from './template-gallery';
 
@@ -136,5 +138,26 @@ describe('the shelf order', () => {
       return g.templates.map((t) => t.kind).join() !== catalogue.join();
     });
     expect(shuffled.length).toBeGreaterThan(first.length / 2);
+  });
+});
+
+describe('Popular under a mode', () => {
+  it('holds at least five of the mode, its blank first', () => {
+    const blanks = {
+      diagram: 'blank',
+      draw: 'whiteboard',
+      illustrate: 'blank-illustration',
+    } as const;
+    for (const mode of ['diagram', 'draw', 'illustrate'] as const) {
+      const kinds = popularFor(mode).map((t) => t.kind);
+      expect(kinds.length, mode).toBeGreaterThanOrEqual(POPULAR_PER_MODE);
+      expect(kinds[0], mode).toBe(blanks[mode]);
+      expect(new Set(kinds).size).toBe(kinds.length);
+      for (const t of popularFor(mode)) expect(t.mode, `${mode} ${t.kind}`).toBe(mode);
+    }
+  });
+
+  it('leaves Everything as the catalogue lists it', () => {
+    expect(popularFor('all').map((t) => t.kind)).toEqual([...POPULAR_TEMPLATE_KINDS]);
   });
 });
