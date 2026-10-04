@@ -217,6 +217,7 @@ packages/
   prettier-config/# shared Prettier config
   tailwind-config/# shared Tailwind theme (brand palette)
   vitest-config/  # shared Vitest defaults (extended per workspace)
+  next-config/    # shared Next.js settings
 docs/           # developer docs, indexed in docs/README.md
   specs/        # product specs — read these first
   instructions/ # repeatable processes (e.g. registering a help article)
