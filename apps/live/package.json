@@ -57,6 +57,7 @@
   "devDependencies": {
     "@livediagram/eslint-config": "workspace:*",
     "@livediagram/fake-google": "workspace:*",
+    "@livediagram/next-config": "workspace:*",
     "@livediagram/tailwind-config": "workspace:*",
     "@livediagram/vitest-config": "workspace:*",
     "@playwright/test": "^1.63.0",

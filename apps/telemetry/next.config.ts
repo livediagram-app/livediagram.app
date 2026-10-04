@@ -1,4 +1,5 @@
 import type { NextConfig } from 'next';
+import { typescriptConfig } from '@livediagram/next-config';
 
 // Static export fronted by Cloudflare Static Assets, served under
 // `/telemetry` by the router worker (which strips the prefix before
@@ -12,6 +13,8 @@ const distDir = process.env.NEXT_DISTDIR ?? '.next';
 const nextConfig: NextConfig = {
   output: 'export',
   distDir,
+  // Type-checked by CI's Checks; only E2E builds skip it here (@livediagram/next-config).
+  typescript: typescriptConfig(),
   basePath: '/telemetry',
   images: {
     unoptimized: true,

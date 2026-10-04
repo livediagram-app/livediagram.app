@@ -1,5 +1,6 @@
 import type { NextConfig } from 'next';
 import createMDX from '@next/mdx';
+import { typescriptConfig } from '@livediagram/next-config';
 
 // Static export fronted by Cloudflare Static Assets, served under
 // `/help` by the router worker (which strips the prefix before
@@ -18,6 +19,8 @@ const distDir = process.env.NEXT_DISTDIR ?? '.next';
 const nextConfig: NextConfig = {
   output: 'export',
   distDir,
+  // Type-checked by CI's Checks; only E2E builds skip it here (@livediagram/next-config).
+  typescript: typescriptConfig(),
   basePath: '/help',
   // Every route exports as `<route>/index.html` so trailing-slash links
   // (used across the help centre) resolve cleanly on Cloudflare static

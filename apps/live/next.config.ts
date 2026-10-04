@@ -1,4 +1,5 @@
 import type { NextConfig } from 'next';
+import { typescriptConfig } from '@livediagram/next-config';
 
 // `output: 'export'` is required for the production build (Cloudflare
 // Static Assets fronts a fully static export — no Node runtime). In
@@ -30,6 +31,8 @@ const isTurbopack = Boolean(process.env.TURBOPACK);
 const nextConfig: NextConfig = {
   ...(isProdBuild ? { output: 'export' } : {}),
   distDir,
+  // Type-checked by CI's Checks; only E2E builds skip it here (@livediagram/next-config).
+  typescript: typescriptConfig(),
   // Pages serve at clean root paths (/document, /explorer, /new, ...);
   // the router selects the live app by route (docs/specs/016-platform/router-app.md), so there's no
   // `/live` basePath in the URL any more. Only the bundled `_next`

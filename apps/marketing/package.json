@@ -28,6 +28,7 @@
     "@livediagram/document": "workspace:*",
     "@livediagram/eslint-config": "workspace:*",
     "@livediagram/licences": "workspace:*",
+    "@livediagram/next-config": "workspace:*",
     "@livediagram/tailwind-config": "workspace:*",
     "@livediagram/vitest-config": "workspace:*",
     "@tailwindcss/postcss": "^4.3.3",

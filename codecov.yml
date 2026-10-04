@@ -39,5 +39,7 @@ component_management:
 # change touches hundreds of them.
 comment:
   layout: 'header, diff, components'
+  # Codecov hides the project totals, and with them both tables, unless told otherwise.
+  hide_project_coverage: false
   after_n_builds: 4
   require_changes: false
