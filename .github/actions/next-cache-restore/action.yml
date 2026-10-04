@@ -1,0 +1,34 @@
+name: Next build cache, restore
+description: >-
+  Restores Turbopack's build cache for one set of Next builds from the latest run on main, so the
+  build compiles only what changed (docs/specs/003-system-architecture/e2e-smoke.md "Cost controls").
+
+inputs:
+  name:
+    description: The cache's name, one per distinct set of builds (e.g. live, live-clerk-stub, sites).
+    required: true
+  paths:
+    description: The `.next/cache` directories, one per line.
+    required: true
+
+runs:
+  using: composite
+  steps:
+    # Keyed by lockfile, then commit: main saves under its commit, and any run takes the newest cache
+    # for the same lockfile. A dependency bump starts cold; Turbopack itself re-checks every input,
+    # so a cache from an older commit only ever saves work.
+    - name: Restore Next build cache
+      id: restore
+      uses: actions/cache/restore@v6
+      with:
+        path: ${{ inputs.paths }}
+        key: next-${{ inputs.name }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
+        restore-keys: next-${{ inputs.name }}-${{ hashFiles('pnpm-lock.yaml') }}-
+
+    - name: Report the cache
+      shell: bash
+      env:
+        NAME: ${{ inputs.name }}
+        MATCHED: ${{ steps.restore.outputs.cache-matched-key }}
+      run: |
+        echo "[next-cache] ${NAME}: ${MATCHED:-miss, building cold}"

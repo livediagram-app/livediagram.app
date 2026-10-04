@@ -47,6 +47,12 @@ jobs:
       - name: Set up
         uses: ./.github/actions/e2e-setup
 
+      - name: Restore build cache
+        uses: ./.github/actions/next-cache-restore
+        with:
+          name: live
+          paths: apps/live/.next/cache
+
       # Built the way production builds it: a clean env with no NEXT_PUBLIC_API_BASE / Clerk keys,
       # so it calls same-origin `/api` (the e2e stack proxies it) and runs in guest mode. A build
       # id, so the stale build spec can make the server report a newer one
@@ -60,6 +66,14 @@ jobs:
       # serve). CI=1 makes it always start fresh.
       - name: Run smoke shard
         run: pnpm --filter @livediagram/live test:e2e:smoke --shard=${{ matrix.shard }}/${{ strategy.job-total }}
+
+      # Every shard builds the same thing: one of them saves it.
+      - name: Save build cache
+        if: matrix.shard == 1
+        uses: ./.github/actions/next-cache-save
+        with:
+          name: live
+          paths: apps/live/.next/cache
 
       # A failure, a flaky test that passed on retry, or a run cut off by the job timeout: each
       # leaves the trace of its failing attempt (retain-on-first-failure) in test-results, and a
@@ -88,6 +102,16 @@ jobs:
       - name: Set up
         uses: ./.github/actions/e2e-setup
 
+      - name: Restore build cache
+        uses: ./.github/actions/next-cache-restore
+        with:
+          name: sites
+          paths: |
+            apps/live/.next/cache
+            apps/help/.next/cache
+            apps/telemetry/.next/cache
+            apps/marketing/.next/cache
+
       # The optical audit of the other sites needs their exports, and the stack serves help and
       # telemetry on the live origin, so live is built beside them, all four at once.
       - name: Build live, help, telemetry and marketing
@@ -99,6 +123,16 @@ jobs:
 
       - name: Run sites audit
         run: pnpm --filter @livediagram/live test:e2e:sites
+
+      - name: Save build cache
+        uses: ./.github/actions/next-cache-save
+        with:
+          name: sites
+          paths: |
+            apps/live/.next/cache
+            apps/help/.next/cache
+            apps/telemetry/.next/cache
+            apps/marketing/.next/cache
 
       - name: Upload report with traces
         if: always() && hashFiles('apps/live/test-results/**/trace.zip', 'apps/live/playwright-report/data/*.zip') != ''
@@ -124,6 +158,14 @@ jobs:
       - name: Set up
         uses: ./.github/actions/e2e-setup
 
+      # The Clerk-stubbed build keeps its cache in the same directory as the guest build, under its
+      # own name, so each restores what it built.
+      - name: Restore build cache
+        uses: ./.github/actions/next-cache-restore
+        with:
+          name: live-clerk-stub
+          paths: apps/live/.next/cache
+
       # The signed-in specs (docs/specs/014-identity/blueprints/profile-picture.md) need Clerk ON, a
       # build-time switch, so they run against their own export with a stub key and a fake
       # window.Clerk; no Clerk account or secret is involved.
@@ -132,6 +174,12 @@ jobs:
 
       - name: Run signed-in specs
         run: pnpm --filter @livediagram/live test:e2e:clerk-stub
+
+      - name: Save build cache
+        uses: ./.github/actions/next-cache-save
+        with:
+          name: live-clerk-stub
+          paths: apps/live/.next/cache
 
       - name: Upload report with traces
         if: always() && hashFiles('apps/live/test-results-clerk-stub/**/trace.zip', 'apps/live/playwright-report-clerk-stub/data/*.zip') != ''
