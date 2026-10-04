@@ -342,3 +342,8 @@ export function outlineView(model: ViewModel, options: OutlineOptions = {}): Out
   };
   return { text, json, state, fullTokens };
 }
+
+// One element's outline line at full detail: what `find` prints for a match.
+export function outlineLine(model: ViewModel, node: ViewNode, depth: number): string {
+  return nodeLine(model, node, depth, 0, null);
+}

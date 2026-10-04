@@ -23,6 +23,8 @@ export type Edges = {
   ownLine: ViewEdge[];
   // Every printed arrow, in array order.
   all: ViewEdge[];
+  // Every printed arrow by its id.
+  byArrow: ReadonlyMap<string, ViewEdge>;
 };
 
 function endOf(end: Endpoint, refs: RefTable): ViewEnd {
@@ -75,7 +77,7 @@ export function edgesOf(
     if (source === null) ownLine.push(edge);
     else bySource.set(source, [...(bySource.get(source) ?? []), edge]);
   });
-  return { bySource, ownLine, all };
+  return { bySource, ownLine, all, byArrow: new Map(all.map((edge) => [edge.arrow.id, edge])) };
 }
 
 // ` "label" ~dashed ~both`, then any extra `key=value` text: what follows an end.
