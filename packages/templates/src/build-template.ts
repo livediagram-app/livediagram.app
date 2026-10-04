@@ -16,6 +16,10 @@ import { buildSlideDeck } from './template-builders-slides';
 import {
   buildComicStrip,
   buildDoodleWarmup,
+  buildIdeaGarden,
+  buildJourneyDoodle,
+  buildPaperPrototype,
+  buildPreMortem,
   buildRichPicture,
   buildSketchnote,
 } from './template-builders-sketch';
@@ -23,6 +27,10 @@ import { buildEventPoster } from './template-builders-poster';
 import { buildYearInReview } from './template-builders-year-review';
 import { buildResume } from './template-builders-resume';
 import { buildRecipeCard } from './template-builders-recipe';
+import { buildDataStory } from './template-builders-data-story';
+import { buildHowItWorks } from './template-builders-how-it-works';
+import { buildVersus } from './template-builders-versus';
+import { buildSocialCarousel } from './template-builders-social-carousel';
 import { buildStoryboard } from './template-builders-storyboard';
 import {
   buildKanban,
@@ -227,6 +235,14 @@ export function buildTemplate(kind: TemplateKind, cx: number, cy: number): Eleme
       return buildComicStrip(cx, cy);
     case 'doodle-warmup':
       return buildDoodleWarmup(cx, cy);
+    case 'paper-prototype':
+      return buildPaperPrototype(cx, cy);
+    case 'journey-doodle':
+      return buildJourneyDoodle(cx, cy);
+    case 'pre-mortem':
+      return buildPreMortem(cx, cy);
+    case 'idea-garden':
+      return buildIdeaGarden(cx, cy);
     // Built on their own pages (template-pages.ts), whatever the centre.
     case 'event-poster':
       return buildEventPoster();
@@ -236,9 +252,17 @@ export function buildTemplate(kind: TemplateKind, cx: number, cy: number): Eleme
       return buildResume();
     case 'recipe-card':
       return buildRecipeCard();
+    case 'data-story':
+      return buildDataStory();
+    case 'how-it-works':
+      return buildHowItWorks();
+    case 'versus':
+      return buildVersus();
+    case 'social-carousel':
+      return buildSocialCarousel();
   }
 }
 
-// The "Blank Diagram" template is truly blank — no seeded element. The user
+// The "Blank Diagram" template is truly blank: no seeded element. The user
 // starts from an empty canvas (with the empty-canvas hint banner, docs/specs/007-editor/new-document-route.md) and
 // adds their first element from the palette / Quick Start.

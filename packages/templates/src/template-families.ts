@@ -77,10 +77,18 @@ const TEMPLATE_FAMILY: Record<TemplateKind, TemplateFamily | null> = {
   'rich-picture': null,
   'comic-strip': null,
   'doodle-warmup': null,
+  'paper-prototype': null,
+  'journey-doodle': null,
+  'pre-mortem': null,
+  'idea-garden': null,
   'event-poster': null,
   'year-in-review': null,
   resume: null,
   'recipe-card': null,
+  'data-story': null,
+  'how-it-works': null,
+  versus: null,
+  'social-carousel': null,
 };
 
 /** The family a document made from this template belongs to; null for no template or no family. */

@@ -11,6 +11,10 @@ const TEMPLATE_MODES: Partial<Record<TemplateKind, EditorMode>> = {
   'rich-picture': 'draw',
   'comic-strip': 'draw',
   'doodle-warmup': 'draw',
+  'paper-prototype': 'draw',
+  'journey-doodle': 'draw',
+  'pre-mortem': 'draw',
+  'idea-garden': 'draw',
   'blank-illustration': 'illustrate',
   article: 'illustrate',
   'slide-deck': 'illustrate',
@@ -20,6 +24,10 @@ const TEMPLATE_MODES: Partial<Record<TemplateKind, EditorMode>> = {
   'year-in-review': 'illustrate',
   resume: 'illustrate',
   'recipe-card': 'illustrate',
+  'data-story': 'illustrate',
+  'how-it-works': 'illustrate',
+  versus: 'illustrate',
+  'social-carousel': 'illustrate',
 };
 
 /** The mode a template's tab opens in. */

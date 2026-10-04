@@ -2,46 +2,24 @@ import type { ReactElement } from 'react';
 import type { TemplateKind } from '@livediagram/templates';
 import { pv } from './motion';
 import { FILL_BOX } from './story-parts';
+import {
+  BLUE,
+  BOARD,
+  Board,
+  GREEN,
+  INK,
+  NOTE,
+  NOTE_EDGE,
+  ORANGE,
+  RED,
+  Stick,
+  VIOLET,
+  pen,
+} from './sketch-preview-parts';
 
 // Group 11: the Draw templates (docs/specs/007-editor/templates-by-mode.md "Draw templates"),
 // drawn as the whiteboard tile is: the off-white board with marker lines in its stock colours.
 // Static SVG preview tiles, one branch per TemplateKind; TemplatePreview chains the groups with ??.
-
-const BOARD = 'rgb(251 250 247)';
-const EDGE = 'rgb(148 163 184)';
-const INK = 'rgb(28 25 23)';
-const BLUE = 'rgb(37 99 235)';
-const RED = 'rgb(225 29 72)';
-const GREEN = 'rgb(22 163 74)';
-const VIOLET = 'rgb(124 58 237)';
-const ORANGE = 'rgb(234 88 12)';
-const NOTE = 'rgb(253 230 138)';
-const NOTE_EDGE = 'rgb(234 179 8)';
-
-// A marker line's look: round, unfilled, in `colour`.
-const pen = (colour: string, width = 1) =>
-  ({
-    fill: 'none',
-    stroke: colour,
-    strokeWidth: width,
-    strokeLinecap: 'round',
-    strokeLinejoin: 'round',
-  }) as const;
-
-// The board every Draw tile sits on.
-const Board = () => (
-  <rect x="3" y="3" width="74" height="38" rx="3" fill={BOARD} stroke={EDGE} strokeWidth="1" />
-);
-
-// A stick figure, its head centred on (x, y).
-const Stick = ({ x, y, c = INK }: { x: number; y: number; c?: string }) => (
-  <g {...pen(c, 0.8)}>
-    <circle cx={x} cy={y} r="1.6" />
-    <path
-      d={`M${x} ${y + 1.6} L${x} ${y + 6} M${x - 2.4} ${y + 4.4} L${x} ${y + 3} L${x + 2.4} ${y + 4.4} M${x - 2} ${y + 9} L${x} ${y + 6} L${x + 2} ${y + 9}`}
-    />
-  </g>
-);
 
 export function templatePreviewGroup11(kind: TemplateKind): ReactElement | null {
   switch (kind) {

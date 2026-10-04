@@ -8,3 +8,7 @@ export { buildSketchnote } from './template-sketchnote';
 export { buildRichPicture } from './template-rich-picture';
 export { buildComicStrip } from './template-comic-strip';
 export { buildDoodleWarmup } from './template-doodle-warmup';
+export { buildPaperPrototype } from './template-paper-prototype';
+export { buildJourneyDoodle } from './template-journey-doodle';
+export { buildPreMortem } from './template-pre-mortem';
+export { buildIdeaGarden } from './template-idea-garden';

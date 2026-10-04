@@ -10,6 +10,10 @@ import { eventPosterPages } from './template-builders-poster';
 import { yearInReviewPages } from './template-builders-year-review';
 import { resumePages } from './template-builders-resume';
 import { recipeCardPages } from './template-builders-recipe';
+import { dataStoryPages } from './template-builders-data-story';
+import { howItWorksPages } from './template-builders-how-it-works';
+import { versusPages } from './template-builders-versus';
+import { socialCarouselPages } from './template-builders-social-carousel';
 import type { TemplateKind } from './templates';
 
 /** The pages a template opens on, or undefined for a template drawn on the open canvas. */
@@ -29,6 +33,14 @@ export function templatePages(kind: TemplateKind): IllustratePage[] | undefined 
       return resumePages();
     case 'recipe-card':
       return recipeCardPages();
+    case 'data-story':
+      return dataStoryPages();
+    case 'how-it-works':
+      return howItWorksPages();
+    case 'versus':
+      return versusPages();
+    case 'social-carousel':
+      return socialCarouselPages();
     default:
       return undefined;
   }

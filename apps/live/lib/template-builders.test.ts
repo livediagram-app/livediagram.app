@@ -109,6 +109,14 @@ const ALL_KINDS = [
   'year-in-review',
   'resume',
   'recipe-card',
+  'data-story',
+  'how-it-works',
+  'versus',
+  'social-carousel',
+  'paper-prototype',
+  'journey-doodle',
+  'pre-mortem',
+  'idea-garden',
 ] as const satisfies readonly TemplateKind[];
 
 // Real exhaustiveness check: any TemplateKind missing from
@@ -146,6 +154,10 @@ const PAGED_KINDS = [
   'year-in-review',
   'resume',
   'recipe-card',
+  'data-story',
+  'how-it-works',
+  'versus',
+  'social-carousel',
 ] as const;
 
 // An element's centre, from its box or, for an arrow, its free endpoints' midpoint.

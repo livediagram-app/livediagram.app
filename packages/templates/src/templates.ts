@@ -180,12 +180,20 @@ export type TemplateKind =
   | 'rich-picture'
   | 'comic-strip'
   | 'doodle-warmup'
+  | 'paper-prototype'
+  | 'journey-doodle'
+  | 'pre-mortem'
+  | 'idea-garden'
   // Illustrate templates (docs/specs/007-editor/templates-by-mode.md "Illustrate templates"):
   // documents of pages, opening in Illustrate on pages of their own (template-pages.ts).
   | 'event-poster'
   | 'year-in-review'
   | 'resume'
-  | 'recipe-card';
+  | 'recipe-card'
+  | 'data-story'
+  | 'how-it-works'
+  | 'versus'
+  | 'social-carousel';
 
 export type TemplateDescriptor = {
   kind: TemplateKind;
@@ -663,6 +671,34 @@ export const TEMPLATES: TemplateDescriptor[] = [
     extra: true,
   },
   {
+    kind: 'paper-prototype',
+    title: 'Paper Prototype',
+    description:
+      'Sketch an app before anyone builds it: three hand-drawn phone screens, tap arrows between them and notes to test with users.',
+    extra: true,
+  },
+  {
+    kind: 'journey-doodle',
+    title: 'Journey Doodle',
+    description:
+      "A customer's day drawn as a winding road: each stop a doodle, a face for how it felt, and the dip where it goes wrong.",
+    extra: true,
+  },
+  {
+    kind: 'pre-mortem',
+    title: 'Pre-Mortem',
+    description:
+      'Imagine the project failed a year from now: a drawn wreck in the middle, the reasons on stickies round it, then what to do now.',
+    extra: true,
+  },
+  {
+    kind: 'idea-garden',
+    title: 'Idea Garden',
+    description:
+      'Grow ideas as a drawn tree: the question at the roots, themes as branches, ideas as leaves and the best ones as fruit.',
+    extra: true,
+  },
+  {
     kind: 'event-poster',
     title: 'Event Poster',
     description:
@@ -690,6 +726,34 @@ export const TEMPLATES: TemplateDescriptor[] = [
       'A recipe to share in two pages: the dish with serves and timings, then the ingredients and the method in steps.',
     extra: true,
   },
+  {
+    kind: 'data-story',
+    title: 'Data Story',
+    description:
+      'An A4 infographic that tells one story in numbers: a headline stat, pictograms, a then-and-now comparison and a source line.',
+    extra: true,
+  },
+  {
+    kind: 'how-it-works',
+    title: 'How It Works',
+    description:
+      'A tall explainer for a story or a phone screen: five illustrated steps down a winding path, from first tap to done.',
+    extra: true,
+  },
+  {
+    kind: 'versus',
+    title: 'Versus',
+    description:
+      'Two options side by side on a social post: a split page, matched rows of pros and cons, and a verdict at the foot.',
+    extra: true,
+  },
+  {
+    kind: 'social-carousel',
+    title: 'Social Carousel',
+    description:
+      'Five square slides for a LinkedIn or Instagram carousel: a hook, three tips and a call to action, swipe cues included.',
+    extra: true,
+  },
 ];
 
 // Picker grouping. Templates are organised into a handful of
@@ -713,8 +777,9 @@ export type TemplateCategory =
 export const TEMPLATE_CATEGORIES: { id: TemplateCategory; label: string; description: string }[] = [
   {
     id: 'mindmaps',
-    label: 'Mind maps',
-    description: 'Radial, tree and bubble brainstorming maps.',
+    // Id kept (links and telemetry name it); the label says what the shelf is for.
+    label: 'Brainstorm',
+    description: 'Mind maps and sketchnotes for getting ideas out of heads.',
   },
   {
     id: 'flowcharts',
@@ -842,11 +907,19 @@ const TEMPLATE_CATEGORY: Record<TemplateKind, TemplateCategory> = {
   'rich-picture': 'strategy',
   'comic-strip': 'design',
   'doodle-warmup': 'planning',
+  'paper-prototype': 'design',
+  'journey-doodle': 'strategy',
+  'pre-mortem': 'planning',
+  'idea-garden': 'mindmaps',
   // Illustrate templates.
   'event-poster': 'project-management',
   'year-in-review': 'strategy',
   resume: 'design',
   'recipe-card': 'design',
+  'data-story': 'strategy',
+  'how-it-works': 'flowcharts',
+  versus: 'strategy',
+  'social-carousel': 'design',
   'incident-postmortem': 'technical',
 };
 
@@ -1051,6 +1124,10 @@ const TEMPLATE_PATTERNS: Partial<Record<TemplateKind, BackgroundPattern>> = {
   'rich-picture': WHITEBOARD_DEFAULT_PATTERN,
   'comic-strip': WHITEBOARD_DEFAULT_PATTERN,
   'doodle-warmup': WHITEBOARD_DEFAULT_PATTERN,
+  'paper-prototype': WHITEBOARD_DEFAULT_PATTERN,
+  'journey-doodle': WHITEBOARD_DEFAULT_PATTERN,
+  'pre-mortem': WHITEBOARD_DEFAULT_PATTERN,
+  'idea-garden': WHITEBOARD_DEFAULT_PATTERN,
   // The twelve-starter batch follows the same split: the retro formats,
   // Crazy 8s, persona, agenda and objectives are sticky-note / workshop
   // boards on the dot grid, as is the postmortem (a dense written report,
@@ -1076,6 +1153,10 @@ const TEMPLATE_PATTERNS: Partial<Record<TemplateKind, BackgroundPattern>> = {
   'year-in-review': 'blank',
   resume: 'blank',
   'recipe-card': 'blank',
+  'data-story': 'blank',
+  'how-it-works': 'blank',
+  versus: 'blank',
+  'social-carousel': 'blank',
   // A personal planning sheet, read closely like a page: even dots behind
   // its cards read as noise, so it gets a clean canvas.
   'objectives-planner': 'blank',
