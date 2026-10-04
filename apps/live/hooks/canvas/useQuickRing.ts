@@ -8,14 +8,21 @@
 
 import { useEffect, useState } from 'react';
 import type { QuickConnectDirection } from '@/lib/canvas';
+import type { SelectionStore } from '@/lib/selection-store';
 
-export function useQuickRing(selectedId: string | null) {
+export function useQuickRing(selection: SelectionStore) {
   const [quickRingOpen, setQuickRingOpen] = useState<QuickConnectDirection | null>(null);
-  const [ringSelection, setRingSelection] = useState(selectedId);
-  if (selectedId !== ringSelection) {
-    setRingSelection(selectedId);
-    setQuickRingOpen(null);
-  }
+  // A change of the selected element closes the ring. Watched on the store, not read in render, so
+  // the canvas does not re-render for the selection; closing an already-closed ring is a no-op.
+  useEffect(() => {
+    let ringSelection = selection.get().selectedId;
+    return selection.subscribe(() => {
+      const { selectedId } = selection.get();
+      if (selectedId === ringSelection) return;
+      ringSelection = selectedId;
+      setQuickRingOpen(null);
+    });
+  }, [selection]);
   useEffect(() => {
     if (!quickRingOpen) return;
     const onDown = (e: PointerEvent) => {

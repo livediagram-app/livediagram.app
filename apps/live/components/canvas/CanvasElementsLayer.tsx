@@ -18,7 +18,6 @@ import {
   laneSeamCoordinates,
   layerOpacityOf,
   snapSeamCoordinate,
-  arrowRoutePoints,
   type CommentMention,
   createElementGridTracker,
   type ElementIndex,
@@ -26,28 +25,26 @@ import {
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import { type QuickConnectDirection } from '@/lib/canvas';
 import { ArrowDefs } from '@/components/canvas/arrow-defs';
-import { ArrowView } from '@/components/canvas/ArrowView';
 import type { ArrowLabelRender, ArrowLabels } from '@/hooks/canvas/useArrowLabelLayouts';
-import { FreeArrowSelection } from '@/components/canvas/FreeArrowSelection';
 import { DrawnArrowPreview } from '@/components/canvas/DrawnArrowPreview';
-import { BoxedElementView } from '@/components/canvas/BoxedElementView';
 import { LaserOverlay } from '@/components/canvas/LaserOverlay';
-import { UnionResizeHandles } from '@/components/canvas/element-parts';
-import { QuickConnectPluses } from '@/components/canvas/QuickConnectPluses';
 import {
-  BoxGripsPortal,
   SelectionGripsContext,
   SelectionGripsLayer,
   type SelectionGripHosts,
 } from '@/components/canvas/SelectionGripsLayer';
-import { NextNoteButtons } from '@/components/canvas/NextNoteButtons';
+import { LayerSelectionChrome } from '@/components/canvas/LayerSelectionChrome';
+import {
+  FreeArrowFrame,
+  SelectableArrowView,
+  SelectableBoxedView,
+} from '@/components/canvas/selection-aware-views';
+import type { CanvasSelectionInput } from '@/hooks/canvas/useCanvasSelectionView';
 import { usePhotoDraftView } from '@/lib/photo-draft-preview';
 import { RemoteCursor } from '@/components/canvas/RemoteCursor';
 import { useInsertShift } from '@/hooks/canvas/useInsertShift';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { InfographicPageClip } from '@/components/canvas/InfographicPageClip';
-
-type Bounds = { x: number; y: number; width: number; height: number };
 
 // Stable empty-array constant for the `remoteSelectors` prop on the
 // (very common) "no remote participants have this element selected"
@@ -66,14 +63,9 @@ type ElementsExtras = {
   hasArrows: boolean;
   // Every arrow label laid out once per element change (Canvas owns the pass).
   arrowLabels: ArrowLabels;
-  showHandles: (id: string) => boolean;
-  showAnchorsFor: (id: string) => boolean;
   badgeColor: string;
-  selectionBounds: Bounds | null;
-  showPlus: boolean;
-  showUnionResize: boolean;
-  unionResizeBounds: Bounds | null;
-  unionResizePrimaryId: string | null;
+  // What the selection chrome derives the selection from (it reads the selection from the store).
+  selectionInput: CanvasSelectionInput;
   isPaintMode: boolean;
   handleArrowSelect: (id: string, e: ReactPointerEvent, paired?: boolean) => void;
   handleElementClick: (id: string) => void;
@@ -109,7 +101,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     imageContext,
     isPaintMode,
     laserTrails,
-    multiSelectedIds,
     onBeginArrowCurveDrag,
     onBeginArrowCurvePointDrag,
     onBeginArrowBend,
@@ -186,19 +177,11 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onReactionBurstDone,
     remoteCursors,
     remoteSelectionsByElement,
-    selectedId,
-    selectionBounds,
     shiftDupGhostIds,
     voteReview,
-    showAnchorsFor,
-    showHandles,
-    showPlus,
-    showUnionResize,
     tabFont,
     tabLocked,
     tabSummaries,
-    unionResizeBounds,
-    unionResizePrimaryId,
     viewportZoom,
     quickRingOpen,
     setQuickRingOpen,
@@ -481,21 +464,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
           const draftFade = draftView && !isDraftNote ? 0.5 : 1;
           const effOpacity = ghostFactor * layerOpacity * draftFade;
           if (element.type === 'arrow') {
-            // A selected free arrow wears a box's selection: ring + scale handles
-            // (docs/specs/008-canvas/arrow-bending.md). HTML, beside its <svg>, so it is the same chrome.
-            const framed =
-              element.id === selectedId &&
-              multiSelectedIds.size === 0 &&
-              element.from.kind === 'free' &&
-              element.to.kind === 'free' &&
-              element.locked !== true &&
-              element.id !== editingId &&
-              // Not while a handle reshapes it: the frame grew with every bend and read as a
-              // selection box being dragged out (arrow-bending.md "Moving and scaling a free arrow").
-              element.id !== props.reshapingArrowId &&
-              !readOnly &&
-              !tabLocked &&
-              !isPaintMode;
             return (
               <Fragment key={element.id}>
                 <svg
@@ -522,7 +490,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
                       : {}),
                   }}
                 >
-                  <ArrowView
+                  <SelectableArrowView
                     arrow={element}
                     frame={
                       (preview?.geometry.get(element.id) ?? arrowGeometry.get(element.id)!).frame
@@ -534,7 +502,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
                       preview?.labels.get(element.id) ?? arrowLabels.renderOf(element.id)
                     }
                     draftLayout={arrowLabels.draftLayout}
-                    isSelected={element.id === selectedId || multiSelectedIds.has(element.id)}
                     isPaintMode={isPaintMode}
                     isEditing={element.id === editingId}
                     editCursorAtEnd={element.id === editingId && editCursorAtEnd === true}
@@ -555,24 +522,28 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
                     fontFamily={resolveFontStack(element.font) ?? tabFontStack}
                   />
                 </svg>
-                {framed ? (
-                  <BoxGripsPortal>
-                    <FreeArrowSelection
-                      arrowId={element.id}
-                      points={arrowRoutePoints(element, elements)}
-                      zoom={viewportZoom}
-                      onBeginMove={(e) => h.onBeginArrowTranslate(element.id, e)}
-                      onBeginScale={(handle, e) => h.onBeginArrowScale(element.id, handle, e)}
-                    />
-                  </BoxGripsPortal>
-                ) : null}
+                <FreeArrowFrame
+                  arrow={element}
+                  elements={elements}
+                  zoom={viewportZoom}
+                  standsDown={
+                    element.id === editingId ||
+                    element.id === props.reshapingArrowId ||
+                    readOnly ||
+                    tabLocked ||
+                    isPaintMode
+                  }
+                  onBeginArrowTranslate={h.onBeginArrowTranslate}
+                  onBeginArrowScale={h.onBeginArrowScale}
+                />
               </Fragment>
             );
           }
           if (!isBoxed(element)) return null;
           return (
-            <BoxedElementView
+            <SelectableBoxedView
               key={element.id}
+              editingId={editingId}
               element={element}
               // Paint index, used only by isometric mode to stagger each element
               // onto its own z-plane (globals.css --iso-z): coplanar layers
@@ -590,15 +561,11 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
               photoDraft={isDraftNote}
               photoMatched={draftView?.matchedIds.has(element.id) === true}
               photoReadAs={draftView?.differences.get(element.id)}
-              isSelected={element.id === selectedId || multiSelectedIds.has(element.id)}
-              isMultiSelected={multiSelectedIds.has(element.id)}
               onPlainClick={h.handleElementClick}
               remoteSelectors={remoteSelectionsByElement.get(element.id) ?? EMPTY_REMOTE_SELECTORS}
               isEditing={element.id === editingId}
               editCursorAtEnd={element.id === editingId && editCursorAtEnd === true}
               isPaintMode={isPaintMode}
-              showHandles={showHandles(element.id)}
-              showAnchors={showAnchorsFor(element.id)}
               badgeColor={badgeColor}
               tabLocked={tabLocked}
               tabSummaries={tabSummaries}
@@ -706,61 +673,34 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
       {/* The grips layer (docs/specs/008-canvas/canvas-and-palette.md "Resize"): above every element, so
           no grip is ever covered. The canvas's own grips go in here; each element's are portalled in. */}
       <SelectionGripsLayer onHosts={setGripHosts} isoDepth={ordered.length}>
-        {/* The next-note buttons on the note you are pointing at or have
-            selected (docs/specs/021-event-storming/event-storming.md Phase 7). They stand down while any drag is in
-            hand: the board is the drag's for the duration. */}
-        {props.esBoard && props.onAddNextNote ? (
-          <NextNoteButtons
-            elements={elements}
-            selectedId={selectedId}
-            editingId={editingId}
-            blocked={readOnly || tabLocked || props.createBlocked === true || insertShift.animates}
-            zoom={viewportZoom}
-            onAdd={props.onAddNextNote}
-          />
-        ) : null}
-
-        {showPlus && selectionBounds ? (
-          <QuickConnectPluses
-            selectedElement={selectedId ? elements.find((e) => e.id === selectedId) : undefined}
-            bounds={selectionBounds}
-            zoom={viewportZoom}
-            quickRingOpen={quickRingOpen}
-            setQuickRingOpen={setQuickRingOpen}
-            openOnHover={settings.quickAddOnHover === true}
-            onSpawnConnect={onSpawnConnect}
-            onStartArrow={onStartArrow}
-            onStartPencil={onStartPencil}
-            onAddRailPoint={onAddRailPoint}
-            onAddTableRow={onAddTableRow}
-            onAddTableColumn={onAddTableColumn}
-            onAppendWebRow={onAppendWebRow}
-          />
-        ) : null}
-
-        {/* Dotted border around the whole multi-selection / group, so it reads
-            as one unit. Outset a touch from the union bounds. */}
-        {showUnionResize && unionResizeBounds ? (
-          <div
-            aria-hidden
-            className="pointer-events-none absolute rounded-md border border-dashed border-brand-400/80 dark:border-brand-300/70"
-            style={{
-              left: unionResizeBounds.x - 6,
-              top: unionResizeBounds.y - 6,
-              width: unionResizeBounds.width + 12,
-              height: unionResizeBounds.height + 12,
-            }}
-          />
-        ) : null}
-
-        {showUnionResize && unionResizeBounds && unionResizePrimaryId ? (
-          <UnionResizeHandles
-            bounds={unionResizeBounds}
-            primaryId={unionResizePrimaryId}
-            zoom={viewportZoom}
-            onBeginDrag={onBeginDrag}
-          />
-        ) : null}
+        <LayerSelectionChrome
+          selectionInput={props.selectionInput}
+          elements={elements}
+          editingId={editingId}
+          zoom={viewportZoom}
+          nextNote={
+            props.esBoard && props.onAddNextNote
+              ? {
+                  blocked:
+                    readOnly || tabLocked || props.createBlocked === true || insertShift.animates,
+                  onAdd: props.onAddNextNote,
+                }
+              : null
+          }
+          pluses={{
+            quickRingOpen,
+            setQuickRingOpen,
+            openOnHover: settings.quickAddOnHover === true,
+            onSpawnConnect,
+            onStartArrow,
+            onStartPencil,
+            onAddRailPoint,
+            onAddTableRow,
+            onAddTableColumn,
+            onAppendWebRow,
+          }}
+          onBeginDrag={onBeginDrag}
+        />
       </SelectionGripsLayer>
     </SelectionGripsContext.Provider>
   );

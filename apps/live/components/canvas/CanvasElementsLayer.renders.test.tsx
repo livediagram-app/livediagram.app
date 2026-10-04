@@ -35,9 +35,24 @@ vi.mock('./ArrowView', async (importOriginal) => {
   };
 });
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
+// The grips layer is re-created on every layer render, so its count is the layer's.
+const layerRenders = { count: 0 };
+vi.mock('@/components/canvas/SelectionGripsLayer', async (importOriginal) => {
+  const real = await importOriginal<typeof import('@/components/canvas/SelectionGripsLayer')>();
+  return {
+    ...real,
+    SelectionGripsLayer: (props: Parameters<typeof real.SelectionGripsLayer>[0]) => {
+      layerRenders.count += 1;
+      return real.SelectionGripsLayer(props);
+    },
+  };
+});
 import { resetDragPreviewForTests, setLocalPreview } from '@/lib/drag-preview';
 
 const { CanvasElementsLayer } = await import('./CanvasElementsLayer');
+const { createSelectionStore } = await import('@/lib/selection-store');
+const { SelectionStoreProvider } = await import('@/hooks/canvas/useSelectionStore');
+let store = createSelectionStore();
 
 const a = createShape('square', 0, 0);
 const b = createShape('square', 400, 0);
@@ -55,21 +70,24 @@ const STABLE = {
   remoteCursors: [],
   remoteSelectionsByElement: new Map(),
   laserTrails: [],
+  selectionInput: {
+    elements: BOARD,
+    editingId: null,
+    isPaintMode: false,
+    tabLocked: false,
+    readOnly: false,
+  },
 };
 
 // What one editor render hands the layer: the same data, every handler a fresh closure, the panel
 // action bags fresh objects, as the editor mints them per render.
-function layerProps(
-  over: { elements?: Element[]; selectedId?: string | null; zoom?: number } = {},
-) {
+function layerProps(over: { elements?: Element[]; zoom?: number } = {}) {
   const fresh = () => vi.fn();
   return {
     ...STABLE,
     elements: over.elements ?? BOARD,
     activeTabId: 't',
-    selectedId: over.selectedId ?? null,
     viewportZoom: over.zoom ?? 1,
-    multiSelectedIds: new Set<string>(),
     editingId: null,
     hasArrows: true,
     readOnly: false,
@@ -77,13 +95,6 @@ function layerProps(
     isPaintMode: false,
     canvasTool: 'select',
     badgeColor: '#0ea5e9',
-    showHandles: () => false,
-    showAnchorsFor: () => false,
-    showPlus: false,
-    showUnionResize: false,
-    selectionBounds: null,
-    unionResizeBounds: null,
-    unionResizePrimaryId: null,
     drawDrag: null,
     quickRingOpen: null,
     setQuickRingOpen: fresh(),
@@ -118,9 +129,15 @@ const counts = () => ({
 });
 
 function mount(first = layerProps()) {
-  const view = render(<CanvasElementsLayer {...first} />);
+  store = createSelectionStore();
+  const view = render(<CanvasElementsLayer {...first} />, {
+    wrapper: ({ children }) => (
+      <SelectionStoreProvider store={store}>{children}</SelectionStoreProvider>
+    ),
+  });
   renders.boxed.clear();
   renders.arrow.clear();
+  layerRenders.count = 0;
   return view;
 }
 
@@ -143,12 +160,26 @@ describe('element views render only for their own changes', () => {
   });
 
   it('renders only the elements a selection change touches', () => {
-    const { rerender } = mount();
-    rerender(<CanvasElementsLayer {...layerProps({ selectedId: a.id })} />);
+    mount();
+    act(() => store.setSelectedId(a.id));
     expect([...renders.boxed.keys()]).toEqual([a.id]);
-    rerender(<CanvasElementsLayer {...layerProps({ selectedId: b.id })} />);
+    act(() => store.setSelectedId(b.id));
     expect([...renders.boxed.keys()].sort()).toEqual([a.id, b.id].sort());
     expect(counts().arrows).toBe(0);
+  });
+
+  it('does not render the layer itself for a selection change', () => {
+    mount();
+    act(() => store.setSelectedId(a.id));
+    act(() => store.setMultiSelectedIds(new Set([a.id, b.id])));
+    act(() => store.setSelection({ selectedId: null, multiSelectedIds: new Set() }));
+    expect(layerRenders.count).toBe(0);
+  });
+
+  it('renders an arrow view when the arrow itself is selected', () => {
+    mount();
+    act(() => store.setSelectedId(ab.id));
+    expect([...renders.arrow.keys()]).toEqual([ab.id]);
   });
 
   it('renders only the moved element among the boxed views', () => {

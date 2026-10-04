@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useRef, type PointerEvent as ReactPointerEvent } from 'react';
+import { useCallback, type PointerEvent as ReactPointerEvent } from 'react';
+import type { Selection } from '@/lib/selection-store';
 import { armPlainClick, isOnlySelected, plainClickOutcome } from '@/lib/selection-click';
 import { debugLog } from '@/lib/debug-log';
 
@@ -9,8 +10,7 @@ import { debugLog } from '@/lib/debug-log';
 export function useCanvasSelectHandlers({
   inertIds,
   isPaintMode,
-  selectedId,
-  multiSelectedIds,
+  readSelection,
   onSelect,
   onDeselect,
   onShiftSelect,
@@ -22,8 +22,9 @@ export function useCanvasSelectHandlers({
   inertIds: Set<string>;
   // The format painter is armed: every press paints, so none settles a click.
   isPaintMode: boolean;
-  selectedId: string | null;
-  multiSelectedIds: Set<string>;
+  // The selection as it is when a handler runs (docs/specs/008-canvas/blueprints/selection-store.md):
+  // read from the store, so the handlers stay stable and a release reads the selection it ends.
+  readSelection: () => Selection;
   onSelect: (id: string) => void;
   onDeselect: () => void;
   onShiftSelect: (id: string) => void;
@@ -42,6 +43,7 @@ export function useCanvasSelectHandlers({
       // Right-clicking a member of an active multi-selection keeps the whole
       // selection and opens a selection-wide menu. Otherwise it's a single
       // element.
+      const { multiSelectedIds } = readSelection();
       const inMarquee = multiSelectedIds.size > 1 && multiSelectedIds.has(id);
       if (inMarquee && onMultiContextMenu) {
         onMultiContextMenu(sx, sy);
@@ -50,15 +52,8 @@ export function useCanvasSelectHandlers({
       onSelect(id);
       onElementContextMenu?.(id, sx, sy);
     },
-    [onSelect, onElementContextMenu, onMultiContextMenu, multiSelectedIds, inertIds],
+    [onSelect, onElementContextMenu, onMultiContextMenu, readSelection, inertIds],
   );
-
-  // The latest selection through a ref, so the click callbacks below stay
-  // stable as the selection changes and a release reads the selection it ends.
-  const selectionRef = useRef({ selectedId, multiSelectedIds });
-  useEffect(() => {
-    selectionRef.current = { selectedId, multiSelectedIds };
-  }, [selectedId, multiSelectedIds]);
 
   // The click rules (docs/specs/008-canvas/canvas-and-palette.md "Selection", "Marquee
   // box-select"): a plain click deselects the only selected element and selects
@@ -66,12 +61,12 @@ export function useCanvasSelectHandlers({
   const handleElementClick = useCallback(
     (id: string) => {
       if (inertIds.has(id)) return;
-      const outcome = plainClickOutcome(selectionRef.current, id);
+      const outcome = plainClickOutcome(readSelection(), id);
       debugLog('[select-click]', id, outcome);
       if (outcome === 'deselect') onDeselect();
       else onSelect(id);
     },
-    [onSelect, onDeselect, inertIds],
+    [onSelect, onDeselect, readSelection, inertIds],
   );
 
   // Stable wrapper for the arrow press flow. Same rationale as
@@ -88,13 +83,13 @@ export function useCanvasSelectHandlers({
         onShiftSelect(id);
         return;
       }
-      if (!paired && !isPaintMode && isOnlySelected(selectionRef.current, id)) {
+      if (!paired && !isPaintMode && isOnlySelected(readSelection(), id)) {
         armPlainClick(e, () => handleElementClick(id));
         return;
       }
       onSelect(id);
     },
-    [onSelect, onShiftSelect, inertIds, isPaintMode, handleElementClick],
+    [onSelect, onShiftSelect, inertIds, isPaintMode, handleElementClick, readSelection],
   );
 
   return { handleElementContextSelect, handleArrowSelect, handleElementClick };

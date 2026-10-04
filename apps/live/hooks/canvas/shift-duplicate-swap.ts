@@ -49,7 +49,7 @@ export type ShiftDuplicateSwapArgs = {
   setDrag: (next: BoxedDragState) => void;
   selectedId: string | null;
   setSelectedId: (id: string | null) => void;
-  multiSelectedIds: Set<string>;
+  multiSelectedIds: ReadonlySet<string>;
   setMultiSelectedIds: (ids: Set<string>) => void;
   tick: (mapper: (els: Element[]) => Element[]) => void;
 };

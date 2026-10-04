@@ -1,6 +1,6 @@
 import { type Element, type ShapeElement } from '@livediagram/document';
 import { describe, expect, it } from 'vitest';
-import { deriveCanvasSelection } from './canvas-selection';
+import { deriveCanvasSelection, elementGrips } from './canvas-selection';
 
 const box = (id: string, overrides: Partial<ShapeElement> = {}): ShapeElement => ({
   id,
@@ -320,5 +320,52 @@ describe('deriveCanvasSelection — an arrow label is part of its arrow', () => 
       labelRectOf,
     });
     expect(s.multiToolbarBounds).toEqual({ x: 100, y: 150, width: 400, height: 210 });
+  });
+});
+
+// docs/specs/008-canvas/blueprints/selection-store.md: each element view decides its own grips, by the
+// same rule the whole-selection derivation uses.
+describe('elementGrips', () => {
+  const table = { ...box('t'), type: 'table' } as unknown as Element;
+  const fixed = box('f', { fixedSize: true } as Partial<ShapeElement>);
+  const locked = box('l', { locked: true });
+  const elements: Element[] = [box('a'), box('b'), table, fixed, locked, arrow('r')];
+  const flagsSets: { selectedId: string | null; multi: string[] }[] = [
+    { selectedId: null, multi: [] },
+    { selectedId: 'a', multi: [] },
+    { selectedId: 't', multi: [] },
+    { selectedId: 'f', multi: [] },
+    { selectedId: 'l', multi: [] },
+    { selectedId: 'r', multi: [] },
+    { selectedId: 'a', multi: ['a', 'b'] },
+  ];
+  const contexts = [
+    base,
+    { ...base, editingId: 'a' },
+    { ...base, isPaintMode: true },
+    { ...base, tabLocked: true },
+    { ...base, readOnly: true },
+  ];
+
+  it('agrees with deriveCanvasSelection for every element, selection and mode', () => {
+    for (const sel of flagsSets)
+      for (const ctx of contexts) {
+        const whole = derive({
+          elements,
+          selectedId: sel.selectedId,
+          multiSelectedIds: new Set(sel.multi),
+          ...ctx,
+        });
+        for (const el of elements) {
+          const single = sel.selectedId === el.id && sel.multi.length === 0;
+          expect(
+            elementGrips(el, single, ctx),
+            `${el.id} ${JSON.stringify(sel)} ${JSON.stringify(ctx)}`,
+          ).toEqual({
+            handles: whole.showHandlesFor(el.id),
+            anchors: whole.showAnchorsFor(el.id),
+          });
+        }
+      }
   });
 });

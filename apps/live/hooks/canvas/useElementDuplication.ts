@@ -39,7 +39,7 @@ const landCopies = (els: Element[], copies: Element[], lanes: boolean): Element[
 
 export function useElementDuplication(deps: {
   selectedId: string | null;
-  multiSelectedIds: Set<string>;
+  multiSelectedIds: ReadonlySet<string>;
   activeTab: Tab;
   commit: (mapElements: (els: Element[]) => Element[]) => void;
   setSelectedId: (id: string | null) => void;
