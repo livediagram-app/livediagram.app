@@ -11,7 +11,7 @@
 // The once-ever guard is NOT here: it's the synced `tourSeen` user
 // preference (docs/specs/007-editor/user-preferences.md), so answering the offer once covers every device
 // the user signs in from.
-const TOUR_PENDING_KEY = 'livediagram:v2:tour-pending';
+export const TOUR_PENDING_KEY = 'livediagram:v2:tour-pending';
 
 export function markTourPending() {
   try {
