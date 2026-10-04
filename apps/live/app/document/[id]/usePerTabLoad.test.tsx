@@ -4,7 +4,12 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Tab } from '@livediagram/document';
 
 const apiLoadTab = vi.fn();
-vi.mock('@/lib/api-client', () => ({ apiLoadTab: (...a: unknown[]) => apiLoadTab(...a) }));
+vi.mock('@/lib/api-client', () => ({
+  apiLoadTabRevisioned: async (...a: unknown[]) => {
+    const tab = await apiLoadTab(...a);
+    return tab ? { tab, rev: 3 } : null;
+  },
+}));
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
 import { usePerTabLoad } from './usePerTabLoad';
@@ -24,6 +29,7 @@ function setup() {
   const loadedTabIdsRef = { current: new Set<string>() };
   const tabsRef = { current: [] as Tab[] };
   const lastSavedTabsRef = { current: [] as Tab[] };
+  const noteChangesetSeen = vi.fn();
   const setLoadedTabIds = vi.fn();
   const setTabLoadErrors = vi.fn();
   const initial = { activeId: 't2', retryNonce: 0 };
@@ -44,6 +50,7 @@ function setup() {
         lastSavedTabsRef,
         // A fresh function every render, like the caller used to pass.
         resetTabs: () => {},
+        noteChangesetSeen,
       }),
     { initialProps: initial },
   );
@@ -148,6 +155,7 @@ describe('usePerTabLoad search sweep failing on the tab being viewed', () => {
           retryNonce: 0,
           lastSavedTabsRef: { current: [] },
           resetTabs: () => {},
+          noteChangesetSeen: vi.fn(),
         }),
       { initialProps: { activeId: 't1' } },
     );
@@ -192,6 +200,7 @@ describe('usePerTabLoad search sweep in a tab-scoped session', () => {
         retryNonce: 0,
         lastSavedTabsRef: { current: [] },
         resetTabs: () => {},
+        noteChangesetSeen: vi.fn(),
       }),
     );
     await act(async () => {
@@ -199,5 +208,36 @@ describe('usePerTabLoad search sweep in a tab-scoped session', () => {
     });
     const asked = apiLoadTab.mock.calls.map((c) => c[2]);
     expect(new Set(asked)).toEqual(new Set(['t2']));
+  });
+});
+
+// docs/specs/024-agents/agent-changesets.md "The editor": a tab put in place holds every changeset up
+// to the revision it was read at.
+describe('usePerTabLoad and changesets', () => {
+  beforeEach(() => apiLoadTab.mockReset());
+
+  it('records the revision of a tab it puts in place', async () => {
+    apiLoadTab.mockResolvedValue({ id: 't2', name: 't2', elements: [] });
+    const noteChangesetSeen = vi.fn();
+    renderHook(() =>
+      usePerTabLoad({
+        hydrated: true,
+        documentId: 'd1',
+        activeId: 't2',
+        selfId: 'me',
+        sessionShareCode: null,
+        sessionTabScope: null,
+        tabsRef: { current: [{ id: 't2', name: 't2', elements: [] }] as Tab[] },
+        loadedTabIdsRef: { current: new Set<string>() },
+        setLoadedTabIds: vi.fn(),
+        setTabLoadErrors: vi.fn(),
+        retryNonce: 0,
+        lastSavedTabsRef: { current: [] },
+        resetTabs: () => {},
+        noteChangesetSeen,
+      }),
+    );
+    await flush();
+    expect(noteChangesetSeen).toHaveBeenCalledWith('t2', 3);
   });
 });

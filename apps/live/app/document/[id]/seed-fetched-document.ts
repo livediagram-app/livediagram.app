@@ -1,7 +1,7 @@
 import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
 import type { Tab } from '@livediagram/document';
 import type { LiveDoc } from '@livediagram/api-schema';
-import { apiLoadTab } from '@/lib/api-client';
+import { apiLoadTabRevisioned } from '@/lib/api-client';
 import { track } from '@/lib/telemetry';
 import { firstTabToLoad, isTabOutOfScope } from '@/lib/tab-scope';
 import { placeholdersFromSummaries } from './editor-page-helpers';
@@ -24,6 +24,8 @@ export function makeSeedFetchedDocument(deps: {
   lastSavedTabsRef: MutableRefObject<Tab[]>;
   lastSavedNameRef: MutableRefObject<string>;
   loadedTabIdsRef: MutableRefObject<Set<string>>;
+  // Records what the first tab holds of the changesets (useChangesetSeen).
+  noteChangesetSeen: (tabId: string, rev: number) => void;
   setActiveId: SetState<string>;
   setDocumentName: SetState<string>;
   // The stored slide deck (docs/specs/012-collaboration/presentation-mode.md), handed on for useSlideDeck to parse.
@@ -44,6 +46,7 @@ export function makeSeedFetchedDocument(deps: {
     lastSavedTabsRef,
     lastSavedNameRef,
     loadedTabIdsRef,
+    noteChangesetSeen,
     setActiveId,
     setDocumentName,
     setDocumentPresentation,
@@ -76,9 +79,10 @@ export function makeSeedFetchedDocument(deps: {
     const firstId = firstTabToLoad(fetched.tabs, tabScope);
     const firstIndex = placeholderTabs.findIndex((t) => t.id === firstId);
     if (firstId && firstIndex >= 0) {
-      const first = await apiLoadTab(selfId, fetched.id, firstId, tabShareCode, {
+      const loaded = await apiLoadTabRevisioned(selfId, fetched.id, firstId, tabShareCode, {
         open: recordOpen,
       }).catch(() => null);
+      const first = loaded?.tab ?? null;
       // Only mark the tab loaded when the eager fetch actually
       // returned content. If it failed (e.g. a transient 403 from
       // a request that raced ahead of the Clerk token / session
@@ -89,6 +93,7 @@ export function makeSeedFetchedDocument(deps: {
       // effect after bootstrap — loaded fine.
       if (first) {
         placeholderTabs[firstIndex] = first;
+        noteChangesetSeen(firstId, loaded!.rev);
         loadedTabIdsRef.current.add(firstId);
         setLoadedTabIds((prev) => new Set(prev).add(firstId));
         // Telemetry (docs/specs/017-telemetry/telemetry.md): the first tab's content was fetched.

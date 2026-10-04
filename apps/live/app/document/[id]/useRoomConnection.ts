@@ -9,6 +9,7 @@ import {
 import type { QaNote, Tab } from '@livediagram/document';
 import {
   type AvatarPresence,
+  type ChangesetRoomOp,
   type FacilitatorReason,
   type LivePoll,
 } from '@livediagram/api-schema';
@@ -36,18 +37,20 @@ import {
 } from '@/hooks/collab/peer-drag-previews';
 import { joinRefusedBecauseTrashed } from './room-refusal';
 
-// Realtime room: one WebSocket per document, opened only while the
-// document is shared. Lifted out of editor-page.tsx verbatim — the
+// Realtime room: one WebSocket per document, opened for every document saved on
+// the server (docs/specs/024-agents/agent-changesets.md "Rooms for personal documents"). Lifted out of editor-page.tsx verbatim — the
 // presence reconciliation (unique-colour, idle seeding, leaver cleanup)
 // and the onOp application (tab / document-meta / select / cursor /
 // laser / tab-focus / log / share-revoked) are unchanged. All the state
 // it drives lives in the page and is passed in; the deps array stays
-// [hydrated, documentId, documentShareable] (a name/colour change must not
+// [hydrated, documentId, documentServerStored] (a name/colour change must not
 // reconnect), so the exhaustive-deps disable rides along.
 export function useRoomConnection(opts: {
   hydrated: boolean;
   documentId: string | null;
-  documentShareable: boolean;
+  // Saved on the server, so it has a room: every such document, personal ones included, since an
+  // agent writing through the api is a second writer even where nobody else can open it.
+  documentServerStored: boolean;
   // The document's team (docs/specs/013-workspace/team-shared-documents.md), null for a personal document. A team
   // document is a live room for its members even without a share link,
   // so presence opens for it the same way a shared document does.
@@ -89,7 +92,7 @@ export function useRoomConnection(opts: {
   setSelfParticipant: Dispatch<SetStateAction<Participant>>;
   // Live poll (docs/specs/012-collaboration/live-poll.md) inbound handlers, owned by useLivePoll. Stable
   // (useCallback with no changing deps) so they don't reopen the socket —
-  // the effect's dep list stays [hydrated, documentId, documentShareable].
+  // the effect's dep list stays [hydrated, documentId, documentServerStored].
   // Avatar mode (docs/specs/008-canvas/avatar-mode.md): somebody pushed our character. Stable, like the
   // poll handlers below, so it can't reopen the socket.
   receiveAvatarPush: (dx: number, dy: number) => void;
@@ -129,11 +132,14 @@ export function useRoomConnection(opts: {
   // (docs/specs/012-collaboration/resync-without-reload.md). Stable, like the poll handlers, so it can't reopen the
   // socket — the effect's dep list stays [hydrated, documentId, shareable].
   resyncFromServer: () => Promise<void>;
+  // An agent's changeset (docs/specs/024-agents/agent-changesets.md "In the editor"), relayed by the
+  // worker; useChangesetFeed decides what to do with it.
+  receiveChangeset: (op: ChangesetRoomOp) => void;
 }) {
   const {
     hydrated,
     documentId,
-    documentShareable,
+    documentServerStored,
     documentTeamId,
     selfParticipant,
     sessionShareCode,
@@ -166,6 +172,7 @@ export function useRoomConnection(opts: {
     receiveQa,
     receiveDocumentTrashed,
     resyncFromServer,
+    receiveChangeset,
   } = opts;
 
   // Who we connect as, read when the socket opens: the id is stable for the session, and a name or colour
@@ -316,10 +323,7 @@ export function useRoomConnection(opts: {
         op.kind === 'vote' ||
         op.kind === 'el-delta' ||
         op.kind === 'tab-meta' ||
-        op.kind === 'document-meta' ||
-        // An agent's changeset (docs/specs/024-agents/agent-changesets.md): system-only, like the
-        // share ops below, so only the worker's copy applies.
-        (op.kind === 'changeset' && from === 'system')
+        op.kind === 'document-meta'
       ) {
         // A document change from a peer: a whole tab, one element (docs/specs/012-collaboration/realtime-conflict-resolution.md),
         // one dot (docs/specs/012-collaboration/session-tools.md), one answer / idea / tick / comment (docs/specs/012-collaboration/collab-race-hardening.md),
@@ -430,6 +434,10 @@ export function useRoomConnection(opts: {
         const effect = shareLinkOpEffect(op, from, sessionShareCodeRef.current);
         if (effect === 'leave') window.location.assign('/explorer');
         else if (effect === 'reload') window.location.reload();
+      } else if (op.kind === 'changeset') {
+        // An agent's changeset, applied, outlined and toasted by useChangesetFeed. System-only, like
+        // the share ops: the room refuses one from a client socket.
+        if (from === 'system') receiveChangeset(op);
       } else if (op.kind === 'document-trashed') {
         // The document went to the Trash. System-only, like the share ops:
         // the room refuses it from a client socket.
@@ -478,10 +486,10 @@ export function useRoomConnection(opts: {
   });
 
   useEffect(() => {
-    // Open the realtime room for a shared document OR a team document
-    // (docs/specs/013-workspace/team-shared-documents.md): team members collaborate live on a team document with
-    // no share link, so presence must work there too.
-    if (!hydrated || !documentId || (!documentShareable && !documentTeamId)) {
+    // Open the realtime room for every server-stored document: shared and team documents for their
+    // people (docs/specs/013-workspace/team-shared-documents.md), and personal ones too, so an agent's
+    // changeset reaches the person working on it (docs/specs/024-agents/agent-changesets.md).
+    if (!hydrated || !documentId || !documentServerStored) {
       // Make sure any state from a previous shared session is cleared
       // when we transition back to private (revoke share / leave team).
       setLivePresence([]);
@@ -557,7 +565,7 @@ export function useRoomConnection(opts: {
   }, [
     hydrated,
     documentId,
-    documentShareable,
+    documentServerStored,
     documentTeamId,
     roomRef,
     setLivePresence,

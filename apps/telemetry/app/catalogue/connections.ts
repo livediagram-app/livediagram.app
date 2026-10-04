@@ -125,6 +125,55 @@ export const DRIVE_OPEN_WITH = chart(
   'A file opened with livediagram from Google Drive: opened, offered as a copy, or unreadable.',
 );
 
+// Agent changesets (docs/specs/024-agents/agent-changesets.md "Observability and telemetry"):
+// how agents change documents, how often they meet a person's work, and how often people undo it.
+export const AGENT_APPLIED = chart(
+  'Agent',
+  'Applied',
+  'Agent Changes Applied',
+  'An agent changed a tab with a changeset, through the MCP server, the CLI or the API.',
+);
+
+export const AGENT_CONFLICTED = chart(
+  'Agent',
+  'Conflicted',
+  'Agent Changes in Conflict',
+  'A changeset refused because something it touched changed since the agent read it.',
+  { rising: 'neutral' },
+);
+
+export const AGENT_HELD = chart(
+  'Agent',
+  'Held',
+  'Agent Changes Held',
+  'A changeset refused because a person had one of its elements selected.',
+  { rising: 'neutral' },
+);
+
+export const AGENT_REVERTED = chart(
+  'Agent',
+  'Reverted',
+  'Agent Changes Undone',
+  "An agent's changeset reverted, from the editor's Undo or another front door.",
+  { rising: 'bad' },
+);
+
+export const AGENT_TOAST_SHOW = chart(
+  'Agent',
+  'Opened',
+  'Agent Changes Shown',
+  "Somebody pressed Show on an agent's toast to see what it changed.",
+  { types: ['Toast'] },
+);
+
+export const AGENT_CHANGESETS: MetricStack = {
+  stack: true,
+  title: 'Agent changes',
+  blurb: 'Agents changing documents, meeting people’s work, and being undone.',
+  headline: AGENT_APPLIED,
+  members: [AGENT_APPLIED, AGENT_CONFLICTED, AGENT_HELD, AGENT_REVERTED, AGENT_TOAST_SHOW],
+};
+
 export const DRIVE_MIRROR: MetricStack = {
   stack: true,
   title: 'Google Drive',

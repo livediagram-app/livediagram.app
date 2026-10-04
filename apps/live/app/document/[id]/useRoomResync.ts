@@ -1,6 +1,6 @@
 import { useCallback, type Dispatch, type MutableRefObject, type SetStateAction } from 'react';
 import type { Tab } from '@livediagram/document';
-import { apiLoadTab } from '@/lib/api-client';
+import { apiLoadTabRevisioned } from '@/lib/api-client';
 import { track } from '@/lib/telemetry';
 
 // Re-hydrating a document in place after the room can't bridge our
@@ -27,6 +27,8 @@ export function useRoomResync(opts: {
   // the pre-resync tabs straight back over it.
   lastSavedTabsRef: MutableRefObject<Tab[]>;
   setTabLoadErrors: Dispatch<SetStateAction<Set<string>>>;
+  // Moves with the refetched content (useChangesetSeen). Stable.
+  noteChangesetSeen: (tabId: string, rev: number) => void;
 }) {
   const {
     documentId,
@@ -37,63 +39,79 @@ export function useRoomResync(opts: {
     applyRemoteTabs,
     lastSavedTabsRef,
     setTabLoadErrors,
+    noteChangesetSeen,
   } = opts;
 
-  return useCallback(async () => {
-    if (!documentId) return;
-    track('Error', 'Client', 'RealtimeResync');
-    // Only tabs we actually hold content for. An unvisited placeholder has
-    // nothing to correct, and usePerTabLoad will fetch it on first open
-    // anyway — refetching it here would just race that.
-    const targets = tabsRef.current
-      .map((t) => t.id)
-      .filter((id) => loadedTabIdsRef.current.has(id));
-    const fetched = await Promise.all(
-      targets.map(async (id) => {
-        try {
-          return await apiLoadTab(selfId, documentId, id, sessionShareCode);
-        } catch {
-          return null;
-        }
-      }),
-    );
-    const byId = new Map<string, Tab>();
-    for (const tab of fetched) if (tab) byId.set(tab.id, tab);
-    if (byId.size === 0) {
-      // Every fetch failed — almost certainly the same outage that broke
-      // the socket. Leave local state alone (it's the better copy right
-      // now) and let usePerTabLoad's retry path own the recovery.
-      return;
-    }
-    // Unlike usePerTabLoad's merge, this deliberately OVERWRITES tabs that
-    // already hold content. That's the entire job: we know we missed ops,
-    // so local content is the stale copy and the server's is authoritative.
-    const overwrite = (prev: Tab[]): Tab[] =>
-      prev.map((t) => {
-        const next = byId.get(t.id);
-        // Keep the local folder: per-document link metadata (docs/specs/006-document/tab-folders.md) owned
-        // by the meta path, not the content fetch.
-        return next ? { ...next, folder: t.folder } : t;
+  // `tabIds` narrows the refetch to the tabs a relayed changeset could not bring
+  // (docs/specs/024-agents/agent-changesets.md "What the room does"): an oversize relay, or one
+  // that missed an earlier changeset. That is no resync, so it is not counted as one.
+  return useCallback(
+    async (scope?: { tabIds?: string[] }) => {
+      if (!documentId) return;
+      if (!scope?.tabIds) track('Error', 'Client', 'RealtimeResync');
+      // Only tabs we actually hold content for. An unvisited placeholder has
+      // nothing to correct, and usePerTabLoad will fetch it on first open
+      // anyway — refetching it here would just race that.
+      const targets = tabsRef.current
+        .map((t) => t.id)
+        .filter((id) => loadedTabIdsRef.current.has(id))
+        .filter((id) => !scope?.tabIds || scope.tabIds.includes(id));
+      const fetched = await Promise.all(
+        targets.map(async (id) => {
+          try {
+            return await apiLoadTabRevisioned(selfId, documentId, id, sessionShareCode);
+          } catch {
+            return null;
+          }
+        }),
+      );
+      const byId = new Map<string, Tab>();
+      const revs = new Map<string, number>();
+      for (const loaded of fetched) {
+        if (!loaded) continue;
+        byId.set(loaded.tab.id, loaded.tab);
+        revs.set(loaded.tab.id, loaded.rev);
+      }
+      if (byId.size === 0) {
+        // Every fetch failed — almost certainly the same outage that broke
+        // the socket. Leave local state alone (it's the better copy right
+        // now) and let usePerTabLoad's retry path own the recovery.
+        return;
+      }
+      // Unlike usePerTabLoad's merge, this deliberately OVERWRITES tabs that
+      // already hold content. That's the entire job: we know we missed ops,
+      // so local content is the stale copy and the server's is authoritative.
+      const overwrite = (prev: Tab[]): Tab[] =>
+        prev.map((t) => {
+          const next = byId.get(t.id);
+          // Keep the local folder: per-document link metadata (docs/specs/006-document/tab-folders.md) owned
+          // by the meta path, not the content fetch.
+          return next ? { ...next, folder: t.folder } : t;
+        });
+      applyRemoteTabs(overwrite);
+      // In the same batch as the content it describes (useChangesetSeen).
+      for (const [tabId, rev] of revs) noteChangesetSeen(tabId, rev);
+      // Inbound, not a local edit: moving the baseline with it is what keeps
+      // the autosave from pushing the swap back up (docs/specs/012-collaboration/collab-race-hardening.md).
+      lastSavedTabsRef.current = overwrite(lastSavedTabsRef.current);
+      // Any tab we just refetched successfully is no longer in error.
+      setTabLoadErrors((prev) => {
+        if (prev.size === 0) return prev;
+        const next = new Set(prev);
+        for (const id of byId.keys()) next.delete(id);
+        return next.size === prev.size ? prev : next;
       });
-    applyRemoteTabs(overwrite);
-    // Inbound, not a local edit: moving the baseline with it is what keeps
-    // the autosave from pushing the swap back up (docs/specs/012-collaboration/collab-race-hardening.md).
-    lastSavedTabsRef.current = overwrite(lastSavedTabsRef.current);
-    // Any tab we just refetched successfully is no longer in error.
-    setTabLoadErrors((prev) => {
-      if (prev.size === 0) return prev;
-      const next = new Set(prev);
-      for (const id of byId.keys()) next.delete(id);
-      return next.size === prev.size ? prev : next;
-    });
-  }, [
-    documentId,
-    selfId,
-    sessionShareCode,
-    tabsRef,
-    loadedTabIdsRef,
-    applyRemoteTabs,
-    lastSavedTabsRef,
-    setTabLoadErrors,
-  ]);
+    },
+    [
+      documentId,
+      selfId,
+      sessionShareCode,
+      tabsRef,
+      loadedTabIdsRef,
+      applyRemoteTabs,
+      lastSavedTabsRef,
+      setTabLoadErrors,
+      noteChangesetSeen,
+    ],
+  );
 }

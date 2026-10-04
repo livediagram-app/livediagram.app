@@ -38,6 +38,12 @@ describe('selectionFromOp', () => {
   it('reads a cleared selection as null and drops what is not a string', () => {
     expect(selectionFromOp({ kind: 'select', elementId: null, tabId: 't1' })).toBeNull();
     expect(
+      selectionFromOp({ kind: 'select', elementId: null, tabId: 't1', elementIds: [] }),
+    ).toBeNull();
+    expect(
+      selectionFromOp({ kind: 'select', elementId: null, tabId: 't1', elementIds: ['a', 'b'] }),
+    ).toEqual({ tabId: 't1', elementIds: ['a', 'b'] });
+    expect(
       selectionFromOp({ kind: 'select', elementId: 'a', tabId: 't1', elementIds: ['a', 4, null] }),
     ).toEqual({ tabId: 't1', elementIds: ['a'] });
   });

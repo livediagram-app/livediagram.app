@@ -830,3 +830,35 @@ html[data-presenting][data-hide-pointer][data-pointer-idle] [data-presentation-s
 [data-path-cursor] * {
   cursor: inherit !important;
 }
+
+/*
+ * The outline a relayed changeset draws (docs/specs/024-agents/blueprints/agent-changesets.md,
+ * "Accessibility", CS37): it fades in, holds and fades out over its reveal time (set inline). Under
+ * reduced motion it does not animate at all, so it appears and goes; collapsing it to its last frame,
+ * as the rule above would, would hide it.
+ */
+@keyframes changeset-reveal {
+  0% {
+    opacity: 0;
+  }
+  10%,
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+.changeset-reveal {
+  animation-name: changeset-reveal;
+  animation-timing-function: ease-out;
+  animation-fill-mode: both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .changeset-reveal {
+    animation: none !important;
+  }
+}
+:root.reduce-motion .changeset-reveal {
+  animation: none !important;
+}

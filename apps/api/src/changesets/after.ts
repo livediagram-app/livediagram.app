@@ -15,8 +15,18 @@ import type { Author } from './write';
 
 type AgentAction = 'Applied' | 'Conflicted' | 'Held' | 'Reverted';
 
+// One literal emit per action, so the telemetry dashboard's emitter scan can see each event.
 function telemetry(env: Env, action: AgentAction, frontDoor: FrontDoor): Promise<void> {
-  return reportServerEvent(env, 'Agent', action, frontDoor);
+  switch (action) {
+    case 'Applied':
+      return reportServerEvent(env, 'Agent', 'Applied', frontDoor);
+    case 'Conflicted':
+      return reportServerEvent(env, 'Agent', 'Conflicted', frontDoor);
+    case 'Held':
+      return reportServerEvent(env, 'Agent', 'Held', frontDoor);
+    case 'Reverted':
+      return reportServerEvent(env, 'Agent', 'Reverted', frontDoor);
+  }
 }
 
 async function run(

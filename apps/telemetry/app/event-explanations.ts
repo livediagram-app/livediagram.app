@@ -450,6 +450,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Layer|Toggled|OthersHidden': 'Someone hid every layer except one.',
   'Layer|Toggled|Shown': 'A hidden layer was shown again.',
   'Layer|Toggled|Unlocked': 'A locked layer was unlocked.',
+  'Agent|Opened|Toast':
+    "Somebody pressed Show on the toast an agent's change raised, to see what it touched.",
   'Mcp|Used|AddTab': 'An AI tool connected over MCP added a new tab to a document.',
   'Mcp|Used|CreateDocument': 'An AI tool connected over MCP created a new document.',
   'Mcp|Used|FindDocuments':
@@ -1086,6 +1088,15 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Layer|Reordered': 'Someone dragged a layer to restack it.',
   'Layer|Selected': 'Someone switched which layer is active.',
   'Layer|Toggled': 'Someone switched something on a layer on or off, such as hiding or locking it.',
+  'Agent|Opened': "Somebody opened something an agent's change pointed them to.",
+  'Agent|Applied':
+    'An agent changed a tab with a changeset: through the MCP server, the CLI or the API.',
+  'Agent|Conflicted':
+    "An agent's changeset was refused because something it touched changed since the agent read it.",
+  'Agent|Held':
+    "An agent's changeset was refused because a person had one of its elements selected.",
+  'Agent|Reverted':
+    "An agent's changeset was undone, from the editor's toast or another front door.",
   'Mcp|Used': 'An AI tool connected to livediagram over MCP used one of its actions on a document.',
   'Note|Added': 'A note was added to an element (first non-empty save).',
   'Note|Changed': "An existing note's text was edited.",

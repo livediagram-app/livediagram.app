@@ -237,6 +237,18 @@ describe('applyRoomOpToTabs: changeset', () => {
     ]);
   });
 
+  it('appends a created tab even when its relay was too large to carry the elements', () => {
+    const tabs = [tab()];
+    const next = applyRoomOpToTabs(
+      tabs,
+      changeset({ tabId: 't2', tab: { id: 't2', name: 'Detail' }, refetch: true, touched: ['n'] }),
+    );
+    expect(next.map((t) => [t.id, t.elements.length])).toEqual([
+      ['t1', 2],
+      ['t2', 0],
+    ]);
+  });
+
   it('keeps identity for a refetch op or a tab we do not have', () => {
     const tabs = [tab()];
     expect(applyRoomOpToTabs(tabs, changeset({ refetch: true, touched: ['a'] }))).toBe(tabs);

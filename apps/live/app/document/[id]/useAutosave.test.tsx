@@ -55,7 +55,13 @@ function setup() {
   // Stable, as the real state setters are: a fresh function each render would re-run the save
   // effect on every render and hide whether it re-runs for the right reason.
   const setters = { setSaveStatus: vi.fn(), setSavedAt: vi.fn(), setDocumentList: vi.fn() };
-  const useSubject = (tabs: Tab[], opsApplied: number, onDocumentTrashed: () => void = () => {}) =>
+  const noneSeen: ReadonlyMap<string, number> = new Map();
+  const useSubject = (
+    tabs: Tab[],
+    opsApplied: number,
+    onDocumentTrashed: () => void = () => {},
+    changesetSeen: ReadonlyMap<string, number> = noneSeen,
+  ) =>
     useAutosave({
       hydrated: true,
       documentId: 'd1',
@@ -68,6 +74,7 @@ function setup() {
       ...refs,
       ...setters,
       onDocumentTrashed,
+      changesetSeen,
     });
   return { journal, useSubject };
 }
@@ -189,5 +196,36 @@ describe('hasUnsavedChanges', () => {
       initialProps: { tabs: [tab('saved')], n: 0 },
     });
     expect(result.current.hasUnsavedChanges()).toBe(false);
+  });
+});
+
+// docs/specs/024-agents/agent-changesets.md "The write path" step 8: each save says which
+// changesets its snapshot holds, from the same render as the snapshot.
+describe('useAutosave and changesets', () => {
+  it('sends the seen revision of the tab it saves, and none for a tab without one', () => {
+    const { useSubject } = setup();
+    const { rerender } = renderHook(({ tabs, seen }) => useSubject(tabs, 0, () => {}, seen), {
+      initialProps: {
+        tabs: [tab('mine')],
+        seen: new Map([['t1', 5]]) as ReadonlyMap<string, number>,
+      },
+    });
+    act(() => vi.advanceTimersByTime(600));
+    expect(apiSaveTab).toHaveBeenLastCalledWith(
+      'me',
+      'd1',
+      expect.anything(),
+      null,
+      expect.objectContaining({ changesetSeen: 5 }),
+    );
+    rerender({ tabs: [tab('again')], seen: new Map() });
+    act(() => vi.advanceTimersByTime(600));
+    expect(apiSaveTab).toHaveBeenLastCalledWith(
+      'me',
+      'd1',
+      expect.anything(),
+      null,
+      expect.not.objectContaining({ changesetSeen: expect.anything() }),
+    );
   });
 });

@@ -48,14 +48,14 @@ export function applyRoomOpToTabs(tabs: Tab[], op: RoomOp): Tab[] {
     case 'changeset': {
       // An agent's changeset (docs/specs/024-agents/agent-changesets.md "In the editor"): a tab it
       // created is appended first, then each element op applies exactly as case `el` does. An op
-      // relayed without its element ops (over the relay cap) changes nothing here: the editor
-      // re-fetches the tab instead.
+      // relayed without its element ops (over the relay cap) brings only a created tab here: the
+      // editor re-fetches the content.
       const ops = op.elementOps ?? [];
-      if (ops.length === 0) return tabs;
       const withTab =
         op.tab && !tabs.some((t) => t.id === op.tabId)
           ? [...tabs, { ...op.tab, id: op.tabId, elements: [] }]
           : tabs;
+      if (ops.length === 0) return withTab;
       return updateTab(withTab, op.tabId, (tab) => {
         let elements = tab.elements;
         for (const elOp of ops) {

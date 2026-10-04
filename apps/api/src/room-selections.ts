@@ -23,13 +23,17 @@ type SelectionStorage = {
   list(opts: { prefix: string }): Promise<Map<string, unknown>>;
 };
 
-// A `select` op as the store keeps it: every selected id (the multi-selection, or the single one
-// when a sender omits `elementIds`), clamped; null for a cleared selection. A sender without a tab
+// A `select` op as the store keeps it: every selected id (`elementIds`, the whole selection, or the
+// single `elementId` when a sender omits it), clamped; null for a cleared selection. A sender without a tab
 // (an editor older than tab-scoped selections) holds on every tab.
 export function selectionFromOp(op: unknown): StoredSelection | null {
   const o = (op ?? {}) as { elementId?: unknown; tabId?: unknown; elementIds?: unknown };
-  if (typeof o.elementId !== 'string') return null;
-  const listed = Array.isArray(o.elementIds) ? o.elementIds : [o.elementId];
+  const listed =
+    Array.isArray(o.elementIds) && o.elementIds.length > 0
+      ? o.elementIds
+      : typeof o.elementId === 'string'
+        ? [o.elementId]
+        : [];
   const elementIds = listed
     .filter((id): id is string => typeof id === 'string' && id.length <= MAX_ELEMENT_ID_LEN)
     .slice(0, MAX_SELECTION_IDS);

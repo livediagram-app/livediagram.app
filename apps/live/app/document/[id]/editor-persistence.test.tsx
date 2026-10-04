@@ -16,7 +16,13 @@ vi.mock('@/lib/api-client', () => ({
 import { useEditorPersistence } from './editor-persistence';
 
 function toastAfter(status: SaveStatus): string[] {
-  const toast = { error: vi.fn(), success: vi.fn(), info: vi.fn(), offer: vi.fn() };
+  const toast = {
+    error: vi.fn(),
+    success: vi.fn(),
+    info: vi.fn(),
+    offer: vi.fn(),
+    action: vi.fn(),
+  };
   const { result } = renderHook(() => useEditorPersistence({ toast }));
   act(() => result.current.setSaveStatus(status));
   return toast.error.mock.calls.map((c) => c[0] as string);

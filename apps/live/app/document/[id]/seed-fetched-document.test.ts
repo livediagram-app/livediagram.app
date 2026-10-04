@@ -3,7 +3,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { LiveDoc } from '@livediagram/api-schema';
 
 const apiLoadTab = vi.fn();
-vi.mock('@/lib/api-client', () => ({ apiLoadTab: (...a: unknown[]) => apiLoadTab(...a) }));
+vi.mock('@/lib/api-client', () => ({
+  apiLoadTabRevisioned: (...a: unknown[]) => apiLoadTab(...a),
+}));
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
 import { makeSeedFetchedDocument } from './seed-fetched-document';
@@ -31,7 +33,7 @@ const fetched = {
   templateFamily: null,
 } satisfies LiveDoc;
 
-function seed(recordOpen: boolean) {
+function seed(recordOpen: boolean, noteChangesetSeen = vi.fn()) {
   const noop = vi.fn();
   return makeSeedFetchedDocument({
     activeId: 't1',
@@ -40,6 +42,7 @@ function seed(recordOpen: boolean) {
     lastSavedTabsRef: { current: [] },
     lastSavedNameRef: { current: '' },
     loadedTabIdsRef: { current: new Set() },
+    noteChangesetSeen,
     setActiveId: noop,
     setDocumentName: noop,
     setDocumentPresentation: noop,
@@ -56,7 +59,7 @@ function seed(recordOpen: boolean) {
 
 beforeEach(() => {
   apiLoadTab.mockReset();
-  apiLoadTab.mockResolvedValue({ id: 't1', name: 'Tab 1', elements: [] });
+  apiLoadTab.mockResolvedValue({ tab: { id: 't1', name: 'Tab 1', elements: [] }, rev: 6 });
 });
 
 describe('seedFetchedDocument', () => {
@@ -68,5 +71,14 @@ describe('seedFetchedDocument', () => {
   it('declares nothing for an embed', async () => {
     await seed(false)('me', fetched, 'CODE', null);
     expect(apiLoadTab).toHaveBeenCalledWith('me', 'd1', 't1', 'CODE', { open: false });
+  });
+});
+
+// docs/specs/024-agents/agent-changesets.md "The editor": the first tab's load records what it holds.
+describe('seedFetchedDocument and changesets', () => {
+  it('records the first tab revision as seen', async () => {
+    const noteChangesetSeen = vi.fn();
+    await seed(true, noteChangesetSeen)('me', fetched, null, null);
+    expect(noteChangesetSeen).toHaveBeenCalledWith('t1', 6);
   });
 });

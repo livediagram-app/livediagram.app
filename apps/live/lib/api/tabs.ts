@@ -1,6 +1,11 @@
 // Per-tab calls: lazy load, upsert (the autosave path), comment append,
 // cross-document link, and delete.
-import { DOCUMENT_OPEN_HEADER, type TabResponse, type TabSummary } from '@livediagram/api-schema';
+import {
+  CHANGESET_SEEN_HEADER,
+  DOCUMENT_OPEN_HEADER,
+  type TabResponse,
+  type TabSummary,
+} from '@livediagram/api-schema';
 import { normalizeTable, type CommentMention, type Tab } from '@livediagram/document';
 import { dedupeInFlight } from '../dedupe';
 import {
@@ -34,18 +39,23 @@ import {
 // Home (docs/specs/013-workspace/explorer-home.md "Opens"): only the
 // editor's first-tab read sets it, never a resync, a duplicate, Take
 // Offline, the Drive mirror or an embed.
-async function _apiLoadTab(
+//
+// The tab's revision rides beside it (docs/specs/024-agents/agent-changesets.md "The tab revision",
+// CS41), never inside it: the editor's tabs hold content only, and the revision tells the changeset
+// feed what the loaded content already holds. An offline tab has no revision (0).
+async function _apiLoadTabRevisioned(
   ownerId: string,
   documentId: string,
   tabId: string,
   shareCode: string | null,
   opts: { open?: boolean } = {},
-): Promise<Tab | null> {
+): Promise<{ tab: Tab; rev: number } | null> {
   // Offline Mode (docs/specs/006-document/offline-mode.md): an offline document's tabs come from IndexedDB,
   // and this browser counts its opens, since the server never sees it (offline-opens.ts).
   if (await isOfflineId(documentId)) {
     if (opts.open) void offlineRecordOpen(documentId, Date.now());
-    return offlineLoadTab(documentId, tabId);
+    const tab = await offlineLoadTab(documentId, tabId);
+    return tab ? { tab, rev: 0 } : null;
   }
   const res = await apiFetch(`${API_BASE}/documents/${documentId}/tabs/${tabId}`, {
     headers: await apiHeaders(ownerId, {
@@ -56,7 +66,7 @@ async function _apiLoadTab(
   const body = await expectOkOrNull<TabResponse>(res, 'load tab');
   if (!body) return null;
   const { tab } = body;
-  const { documentId: _did, orderIndex: _oi, updatedAt: _ua, ...clientTab } = tab;
+  const { documentId: _did, orderIndex: _oi, updatedAt: _ua, rev, ...clientTab } = tab;
   void _did;
   void _oi;
   void _ua;
@@ -70,15 +80,26 @@ async function _apiLoadTab(
       el.type === 'table' ? normalizeTable(el) : el,
     );
   }
-  return clientTab;
+  // An api older than tab revisions answers none: nothing held, so every changeset is news.
+  return { tab: clientTab, rev: typeof rev === 'number' ? rev : 0 };
 }
-export const apiLoadTab = dedupeInFlight<Parameters<typeof _apiLoadTab>, Tab | null>(
-  _apiLoadTab,
+export const apiLoadTabRevisioned = dedupeInFlight<
+  Parameters<typeof _apiLoadTabRevisioned>,
+  { tab: Tab; rev: number } | null
+>(
+  _apiLoadTabRevisioned,
   // The open marker is part of the key: an unmarked load already in flight must not swallow the
   // editor's marked one, or the open would never be recorded.
   (ownerId, documentId, tabId, shareCode, opts) =>
     `${ownerId}␟${documentId}␟${tabId}␟${shareCode ?? ''}␟${opts?.open ? 'open' : ''}`,
 );
+
+// The tab alone, for callers that need no revision (a duplicate, Take Offline, the Drive mirror).
+export async function apiLoadTab(
+  ...args: Parameters<typeof _apiLoadTabRevisioned>
+): Promise<Tab | null> {
+  return (await apiLoadTabRevisioned(...args))?.tab ?? null;
+}
 
 // Upsert a single tab. The active edit path — autosave hits this
 // instead of shipping every tab on every keystroke.
@@ -97,13 +118,22 @@ export async function apiSaveTab(
   // `roomCursor`: where this client stood in the realtime room when it took
   // the snapshot, so the api merges only the room's answers it hadn't seen
   // (docs/specs/012-collaboration/collab-race-hardening.md phase 3).
-  opts: { allowEmpty?: boolean; roomCursor?: { epoch: string; seq: number } | null } = {},
+  // `changesetSeen`: the highest changeset revision applied to this tab here, so the api merges
+  // only the changesets this editor has not (docs/specs/024-agents/agent-changesets.md).
+  opts: {
+    allowEmpty?: boolean;
+    roomCursor?: { epoch: string; seq: number } | null;
+    changesetSeen?: number;
+  } = {},
 ): Promise<void> {
   if (await isOfflineId(documentId)) return offlineSaveTab(documentId, tab, Date.now());
   const headers = new Headers(await apiHeaders(ownerId, { share: shareCode, body: true }));
   if (opts.allowEmpty) headers.set('X-Allow-Empty', '1');
   if (opts.roomCursor) {
     headers.set('X-Room-Cursor', `${opts.roomCursor.epoch}:${opts.roomCursor.seq}`);
+  }
+  if (opts.changesetSeen !== undefined) {
+    headers.set(CHANGESET_SEEN_HEADER, String(opts.changesetSeen));
   }
   const res = await apiFetch(`${API_BASE}/documents/${documentId}/tabs/${tab.id}`, {
     method: 'PUT',
@@ -143,6 +173,8 @@ export function flushDocumentSavesBeacon(args: {
   nameChanged: boolean;
   name: string;
   tabs: Tab[];
+  // The seen changeset revision per tab, as the debounced save sends it.
+  changesetSeen?: ReadonlyMap<string, number>;
 }): void {
   // Offline Mode (docs/specs/006-document/offline-mode.md): best-effort flush to IndexedDB. A beforeunload
   // handler can't await, so these writes may not finish — the 600ms debounced
@@ -187,9 +219,12 @@ export function flushDocumentSavesBeacon(args: {
   if (sharePassword) base['X-Share-Password'] = sharePassword;
   const jsonHeaders = { ...base, 'Content-Type': 'application/json' };
   for (const t of args.changedTabs) {
-    const headers = args.loadedTabIds.has(t.id)
-      ? { ...jsonHeaders, 'X-Allow-Empty': '1' }
-      : jsonHeaders;
+    const seen = args.changesetSeen?.get(t.id);
+    const headers: Record<string, string> = {
+      ...jsonHeaders,
+      ...(args.loadedTabIds.has(t.id) ? { 'X-Allow-Empty': '1' } : {}),
+      ...(seen !== undefined ? { [CHANGESET_SEEN_HEADER]: String(seen) } : {}),
+    };
     void apiFetch(`${API_BASE}/documents/${args.documentId}/tabs/${t.id}`, {
       method: 'PUT',
       headers,
