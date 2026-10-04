@@ -5,8 +5,32 @@
 // and the flat search results without the JSX being copy-pasted.
 
 import type { TemplateDescriptor, TemplateKind } from '@livediagram/templates';
+import { templateEditorMode } from '@livediagram/templates';
+import { editorModeLabel, type EditorMode } from '@livediagram/document';
+import { Tooltip } from '@livediagram/ui';
 import { PickerCard } from '@/components/palette/PickerCard';
+import { EDITOR_MODE_ICON } from '@/components/chrome/editor-mode/editor-mode-copy';
 import { PreviewFan, TemplatePreview } from '@livediagram/template-previews';
+
+// The editor mode a template opens in, as the glyph left of its title
+// (docs/specs/007-editor/templates-by-mode.md "The mode on a card"): the mode switch's glyph,
+// muted, named "Opens in <Mode>" for a screen reader and in its tooltip.
+function TemplateModeGlyph({ mode }: { mode: EditorMode }) {
+  const Icon = EDITOR_MODE_ICON[mode];
+  const name = `Opens in ${editorModeLabel(mode)}`;
+  return (
+    <Tooltip label={name}>
+      <span
+        role="img"
+        aria-label={name}
+        data-template-mode={mode}
+        className="mt-px inline-flex shrink-0 text-slate-400 dark:text-slate-400"
+      >
+        <Icon size={14} aria-hidden />
+      </span>
+    </Tooltip>
+  );
+}
 
 // A single selectable template tile. Click selects; double-click is the
 // commit shortcut (select + Create in one gesture). `large` is the open
@@ -33,6 +57,7 @@ export function TemplateCard({
       description={template.description}
       clampDescription={false}
       className={large ? 'h-full w-full' : ''}
+      labelIcon={<TemplateModeGlyph mode={templateEditorMode(template.kind)} />}
     >
       {/* An illustrative mini-canvas drawn as light-canvas art. In dark
           chrome the whole tile is re-lit by `.preview-art-tile`

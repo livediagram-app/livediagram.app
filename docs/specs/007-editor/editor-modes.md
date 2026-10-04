@@ -350,8 +350,9 @@ The **Experimental** category is listed after **AI Tools**.
   Draw mode. Its elements, background and layers are unchanged.
 - Imports that landed on a whiteboard (Excalidraw, Microsoft Whiteboard) land
   on a general tab in Draw mode.
-- The **Whiteboard** template and Quick Start entry create a general tab that
-  opens in Draw mode.
+- The **Blank Whiteboard** template (kind id `whiteboard`) and Quick Start entry create a
+  general tab that opens in Draw mode, as the other Draw templates do
+  ([Templates by mode](templates-by-mode.md)).
 
 ## Telemetry ([Telemetry](../017-telemetry/telemetry.md))
 
@@ -378,8 +379,10 @@ The **Experimental** category is listed after **AI Tools**.
   **Editor › Draw** sub-category (Dock Position) as the switch names it, and
   **Draw mode** in prose: the help article (**Draw mode**, at a new address,
   the old one redirecting) and the command palette.
-- The template and Quick Start card stays **Whiteboard**: it names the
-  activity a person comes for, and creates a tab that opens in Draw mode.
+- The template and Quick Start card is **Blank Whiteboard**, one of three blanks (Blank Diagram,
+  Blank Whiteboard, Blank Illustration), one per mode, that lead Popular
+  ([Templates by mode](templates-by-mode.md)); the document it makes is named "Untitled
+  Whiteboard", for the activity a person comes for.
 - **Illustrate** was called **Infographic** while its pages were all
   infographics. Every stored trace of the old name reads as Illustrate:
   `opensIn: 'infographic'`, a remembered mode, a recorded creation intent and

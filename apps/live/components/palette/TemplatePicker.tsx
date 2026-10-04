@@ -27,6 +27,7 @@ import {
 import { TemplatePickerIdentityRow } from './TemplatePickerIdentityRow';
 import { type WizardStep } from './template-picker-wizard';
 import { TemplatePickerHeader } from './TemplatePickerHeader';
+import { useTemplateModeFilter } from '@/components/palette/useTemplateModeFilter';
 
 // Whether this render is past hydration, as a store with nothing to subscribe to: prerender and
 // hydration read the server snapshot, every later render the client one.
@@ -308,7 +309,9 @@ export function TemplatePicker({
   // (no hydration) shows the shuffle from its first render.
   const hydrated = useSyncExternalStore(noSubscription, isClient, isServer);
   const [shuffled] = useState(() => shufflePinned(LISTED_TEMPLATES, (t) => t.kind === 'blank'));
-  const templates = hydrated ? shuffled : LISTED_TEMPLATES;
+  // Every view of the step shows only the chosen mode's templates (docs/specs/007-editor/templates-by-mode.md).
+  const modeFilter = useTemplateModeFilter({ selected: templateKind, onSelect: setTemplateKind });
+  const templates = (hydrated ? shuffled : LISTED_TEMPLATES).filter(modeFilter.shows);
   const trimmedName = name.trim();
   const effectiveName = trimmedName || participant.name;
   // Keyword filter over the shuffled catalogue. Matches title /
@@ -324,12 +327,12 @@ export function TemplatePicker({
         );
       })
     : templates;
-  // The Popular shelf, in its curated order (Blank Canvas first, so Blank
+  // The Popular shelf, in its curated order (the three blanks first, so a blank
   // needs no card of its own); `categoryTemplates` returns a category's
   // templates with Blank excluded (it keeps the shuffled order so the
   // preview fans rotate on each open).
   const popularTemplates = POPULAR_TEMPLATE_KINDS.flatMap((kind) =>
-    TEMPLATES.filter((t) => t.kind === kind),
+    TEMPLATES.filter((t) => t.kind === kind && modeFilter.shows(t)),
   );
   const categoryTemplates = (category: TemplateCategory) =>
     templates.filter((t) => t.kind !== 'blank' && templateCategory(t.kind) === category);
@@ -436,6 +439,7 @@ export function TemplatePicker({
                 categoryTemplates={categoryTemplates}
                 templateKind={templateKind}
                 onTemplateCommit={onTemplateCommit}
+                modeFilter={modeFilter}
               />
             ) : null}
 

@@ -21,6 +21,7 @@ export function PickerCard({
   count,
   className = '',
   clampDescription = true,
+  labelIcon,
   children,
 }: {
   active: boolean;
@@ -43,6 +44,9 @@ export function PickerCard({
   // Two lines is plenty for a theme or category blurb; a template's description is what it
   // is picked by, so template cards show it whole (false).
   clampDescription?: boolean;
+  // A glyph before the label: a template card's editor mode
+  // (docs/specs/007-editor/templates-by-mode.md "The mode on a card").
+  labelIcon?: ReactNode;
   children: ReactNode;
 }) {
   return (
@@ -70,9 +74,16 @@ export function PickerCard({
           text, and grid rows stretch to a shared height either way. */}
       <div className="w-full min-w-0">
         {count === undefined ? (
-          <p className="line-clamp-2 break-words text-xs font-semibold text-slate-900 dark:text-slate-100">
-            {label}
-          </p>
+          labelIcon ? (
+            <p className="flex items-start gap-1 text-xs font-semibold text-slate-900 dark:text-slate-100">
+              {labelIcon}
+              <span className="line-clamp-2 min-w-0 break-words">{label}</span>
+            </p>
+          ) : (
+            <p className="line-clamp-2 break-words text-xs font-semibold text-slate-900 dark:text-slate-100">
+              {label}
+            </p>
+          )
         ) : (
           <div className="flex items-center justify-between gap-1">
             <p className="line-clamp-2 min-w-0 break-words text-xs font-semibold text-slate-900 dark:text-slate-100">

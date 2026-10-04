@@ -10,12 +10,13 @@ import {
   type TemplateCategory,
 } from '@livediagram/templates';
 import { TemplatePickerBrowse, type ShelfCategory } from './TemplatePickerBrowse';
+import type { TemplateModeFilter } from './useTemplateModeFilter';
 
 const trackMock = vi.hoisted(() => vi.fn());
 vi.mock('@/lib/telemetry', () => ({ track: trackMock }));
 
 // The template step's shelf (docs/specs/008-canvas/canvas-and-palette.md "Templates section"):
-// Popular open by default with Blank Canvas leading it, every category folded
+// Popular open by default with Blank Diagram leading it, every category folded
 // beneath as a "Browse <name> templates" tile, and a tile swapping its shelf in.
 
 // jsdom has neither; the carousel measures its track and the shelf scrolls
@@ -29,6 +30,13 @@ Element.prototype.scrollIntoView ??= () => {};
 Element.prototype.scrollTo ??= () => {};
 
 const byKind = (kind: string) => TEMPLATES.find((t) => t.kind === kind)!;
+// The mode filter at All: every template shows.
+const ALL_MODES: TemplateModeFilter = {
+  choice: 'all',
+  options: ['all', 'diagram', 'draw', 'illustrate'],
+  choose: () => {},
+  shows: () => true,
+};
 const popular = POPULAR_TEMPLATE_KINDS.map(byKind);
 const categoryTemplates = (c: TemplateCategory) =>
   TEMPLATES.filter((t) => t.kind !== 'blank' && templateCategory(t.kind) === c);
@@ -51,6 +59,7 @@ function Shelf({ initialExpanded = false }: { initialExpanded?: boolean }) {
       categoryTemplates={categoryTemplates}
       templateKind="blank"
       onTemplateCommit={vi.fn()}
+      modeFilter={ALL_MODES}
     />
   );
 }
@@ -59,12 +68,12 @@ function Shelf({ initialExpanded = false }: { initialExpanded?: boolean }) {
 const stage = () => screen.getAllByRole('heading', { level: 3 })[0]!;
 
 describe('the template shelf', () => {
-  it('opens on Popular, Blank Canvas first, with no separate blank tile', () => {
+  it('opens on Popular, Blank Diagram first, with no separate blank tile', () => {
     render(<Shelf />);
     expect(stage().textContent).toContain('Popular');
     expect(POPULAR_TEMPLATE_KINDS[0]).toBe('blank');
     const cards = screen.getAllByRole('button', { pressed: true });
-    expect(cards[0]!.textContent).toContain('Blank Canvas');
+    expect(cards[0]!.textContent).toContain('Blank Diagram');
     expect(screen.queryByRole('button', { name: 'Browse Popular templates' })).toBeNull();
     // Every real category is a folded tile the e2e helpers can find by name.
     for (const c of TEMPLATE_CATEGORIES) {

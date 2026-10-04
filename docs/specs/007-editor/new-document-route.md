@@ -295,7 +295,7 @@ The template and theme grids shuffle their order **once per open** of
 the picker, so returning users keep meeting options they have not
 explored instead of always seeing the same curated first rows.
 
-- **Pinned defaults stay first.** Blank Canvas (templates) and the
+- **Pinned defaults stay first.** Blank Diagram (templates) and the
   `brand` scheme, labelled "Default" (theme), are always pinned to index
   0 — they are the sensible starting points, so they never get
   shuffled away. Everything else is randomised.

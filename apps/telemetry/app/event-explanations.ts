@@ -985,6 +985,14 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Toggled|SlideShown':
     'Someone unhid a slide, putting it back into the presentation run, in the Slide Deck panel.',
   'UI|Toggled|System': "Someone set the editor's appearance to follow the system.",
+  'UI|Toggled|TemplateModeAll':
+    'Someone set the New Document template filter back to All, showing templates for every mode.',
+  'UI|Toggled|TemplateModeDiagram':
+    'Someone narrowed the New Document templates to the ones that open in Diagram mode.',
+  'UI|Toggled|TemplateModeDraw':
+    'Someone narrowed the New Document templates to the ones that open in Draw mode.',
+  'UI|Toggled|TemplateModeIllustrate':
+    'Someone narrowed the New Document templates to the ones that open in Illustrate mode.',
   'UI|Toggled|TemplateShelfCollapsed':
     'Someone put the New Document template shelf back to a carousel, with the other categories as a grid.',
   'UI|Toggled|TemplateShelfExpanded':

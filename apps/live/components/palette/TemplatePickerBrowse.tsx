@@ -4,12 +4,16 @@ import {
   TEMPLATE_CATEGORIES,
   TEMPLATE_COLLECTIONS,
   TEMPLATES,
+  isBlankTemplate,
   templateShelfTemplates,
 } from '@livediagram/templates';
 import { CloseIcon, SearchIcon } from '@livediagram/ui';
+import { editorModeLabel } from '@livediagram/document';
 import { AnimatedHeightBox } from '@/components/primitives/AnimatedHeightBox';
 import { BackBar } from '@/components/primitives/BackBar';
 import { TemplateCard } from '@/components/palette/template-picker-cards';
+import { TemplateModeFilterControl } from '@/components/palette/TemplateModeFilterControl';
+import type { TemplateModeFilter } from '@/components/palette/useTemplateModeFilter';
 import {
   TemplatePickerShelf,
   type Shelf,
@@ -18,9 +22,10 @@ import {
 
 export type { ShelfCategory };
 
-// Whiteboard is a different activity from the diagram templates, and not a category: never on a
-// category shelf or a tile of its own, only on Popular (third) (docs/specs/023-draw-mode/draw-mode.md "Creating one").
-const onShelf = (t: TemplateDescriptor) => t.kind !== 'whiteboard';
+// The three blanks are not in a category: never on a category shelf or a tile of their own, only
+// on Popular (docs/specs/007-editor/templates-by-mode.md "Three blanks", docs/specs/023-draw-mode/draw-mode.md
+// "Creating one").
+const onShelf = (t: TemplateDescriptor) => !isBlankTemplate(t.kind);
 
 // The template step's browse surface, lifted out of TemplatePicker: the
 // search input plus a two-way body (flat search results / the category
@@ -32,7 +37,7 @@ const onShelf = (t: TemplateDescriptor) => t.kind !== 'whiteboard';
 // The shelf mirrors the landing page's "What do you want to create?" gallery
 // (docs/specs/019-marketing/marketing-site.md): ONE shelf is open as a carousel of large
 // cards, and every other one sits folded underneath as a fanned tile that
-// opens it in the open one's place. Popular (Blank Canvas first, then the
+// opens it in the open one's place. Popular (the three blanks first, then the
 // starters most people reach for) is open until the user opens another.
 export function TemplatePickerBrowse({
   showIdentity,
@@ -48,6 +53,7 @@ export function TemplatePickerBrowse({
   categoryTemplates,
   templateKind,
   onTemplateCommit,
+  modeFilter,
 }: {
   // True when the identity row renders above (adds the separating margin).
   showIdentity: boolean;
@@ -69,6 +75,9 @@ export function TemplatePickerBrowse({
   // Single-click a template card: select it AND move on (the welcome wizard to Location, Quick Start applies it)
   // (docs/specs/006-document/offline-mode.md). The same handler backs double-click, so either gesture works.
   onTemplateCommit: (kind: TemplateKind) => void;
+  // The mode filter (docs/specs/007-editor/templates-by-mode.md): the lists above arrive already
+  // narrowed to it; a collection is narrowed here.
+  modeFilter: TemplateModeFilter;
 }) {
   const shelves: Shelf[] = [
     {
@@ -79,7 +88,7 @@ export function TemplatePickerBrowse({
     },
     ...TEMPLATE_COLLECTIONS.filter((c) => c.id === openCategory).map((c): Shelf => ({
       ...c,
-      items: templateShelfTemplates(c.id, TEMPLATES),
+      items: templateShelfTemplates(c.id, TEMPLATES).filter(modeFilter.shows),
     })),
     ...TEMPLATE_CATEGORIES.map((c): Shelf => ({
       ...c,
@@ -116,27 +125,34 @@ export function TemplatePickerBrowse({
           as the first way in rather than a small box beside a label. The
           dialog title already says Quick Start / New Document, so there is no
           section label above it. */}
-      <div className={`relative ${showIdentity ? 'mt-5' : ''}`}>
-        <SearchIcon className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-400" />
-        <input
-          type="search"
-          value={templateQuery}
-          onChange={(e) => setTemplateQuery(e.target.value)}
-          placeholder="Search for what you want to create..."
-          aria-label="Search templates"
-          autoComplete="off"
-          className="w-full rounded-lg border border-slate-200 bg-slate-50 py-2 pl-9 pr-9 text-sm text-slate-800 placeholder:text-slate-400 transition [&::-webkit-search-cancel-button]:hidden focus:border-brand-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-400/25 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-100 dark:placeholder:text-slate-400 dark:focus:bg-slate-800"
-        />
-        {templateQuery ? (
-          <button
-            type="button"
-            onClick={() => setTemplateQuery('')}
-            aria-label="Clear search"
-            className="absolute right-2 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-200/70 hover:text-slate-700 dark:hover:bg-slate-700 dark:hover:text-slate-200"
-          >
-            <CloseIcon />
-          </button>
-        ) : null}
+      <div
+        className={`flex flex-col gap-2 sm:flex-row sm:items-stretch ${showIdentity ? 'mt-5' : ''}`}
+      >
+        {/* The mode filter leads the search (docs/specs/007-editor/templates-by-mode.md); on a
+            phone it takes its own row so the search keeps its width. */}
+        <TemplateModeFilterControl filter={modeFilter} />
+        <div className="relative min-w-0 flex-1">
+          <SearchIcon className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-400" />
+          <input
+            type="search"
+            value={templateQuery}
+            onChange={(e) => setTemplateQuery(e.target.value)}
+            placeholder="Search templates..."
+            aria-label="Search templates"
+            autoComplete="off"
+            className="w-full rounded-lg border border-slate-200 bg-slate-50 py-2 pl-9 pr-9 text-sm text-slate-800 placeholder:text-slate-400 transition [&::-webkit-search-cancel-button]:hidden focus:border-brand-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-400/25 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-100 dark:placeholder:text-slate-400 dark:focus:bg-slate-800"
+          />
+          {templateQuery ? (
+            <button
+              type="button"
+              onClick={() => setTemplateQuery('')}
+              aria-label="Clear search"
+              className="absolute right-2 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-200/70 hover:text-slate-700 dark:hover:bg-slate-700 dark:hover:text-slate-200"
+            >
+              <CloseIcon />
+            </button>
+          ) : null}
+        </div>
       </div>
       {/* A non-empty search overrides the shelf and shows flat results across
           the whole catalogue. Blank is special-cased out of the category
@@ -149,7 +165,8 @@ export function TemplatePickerBrowse({
         {templateFilter ? (
           filteredTemplates.length === 0 ? (
             <p className="px-1 py-6 text-center text-xs text-slate-400 dark:text-slate-400">
-              No templates match “{templateQuery.trim()}”.
+              No {modeFilter.choice === 'all' ? '' : `${editorModeLabel(modeFilter.choice)} `}
+              templates match “{templateQuery.trim()}”.
             </p>
           ) : (
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
