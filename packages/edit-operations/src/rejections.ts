@@ -95,12 +95,17 @@ export function unknownField(
   kind: string,
   key: string,
   fields: readonly string[],
+  aliases: readonly string[] = [],
 ): EditRejection {
+  const stored = fields.filter((field) => !aliases.includes(field));
+  const listed = aliases.length
+    ? `${aliases.join(' ')}, then ${stored.join(' ')}`
+    : stored.join(' ');
   return {
     code: 'unknown_field',
     operation,
-    details: [`${kind} has no field "${key}"`, `fields: ${fields.join(' ')}`],
-    ...didYouMean(key, fields),
+    details: [`${kind} has no field "${key}"`, `fields: ${listed}`],
+    ...didYouMean(key, [...aliases, ...stored]),
   };
 }
 

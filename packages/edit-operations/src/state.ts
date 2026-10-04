@@ -5,7 +5,11 @@
 import type { EditRejection, EditWarning } from '@livediagram/api-schema';
 import {
   computeRefs,
+  DEFAULT_SCHEME_ID,
   deriveContainers,
+  getBuiltInTheme,
+  THEMES,
+  type ThemeDefinition,
   type Element,
   type ElementId,
   type RefTable,
@@ -13,12 +17,13 @@ import {
 } from '@livediagram/document';
 import { lockedIds } from './locks';
 import type { Naming } from './element-text';
+import type { Fit } from './labels';
 import { elementLocked, type LockReason } from './rejections';
 import type { ApplyOptions, EditLog, EditOperation } from './types';
 
 // The first operation that touched an element, and the fields operations wrote on it in the order
 // written: how its ~ line orders them.
-export type Touch = { operation: number; written: string[] };
+export type Touch = { operation: number; written: string[]; fit?: Fit };
 
 // Why an element left: named by an operation, or pinned to one that was.
 export type Removal = { pinnedTo?: ElementId };
@@ -41,9 +46,22 @@ export type EditState = {
   readonly log: EditLog;
   // The owner's selection; null when the room was not read.
   readonly selected: readonly ElementId[] | null;
+  // The tab's theme, which theme colour names and new elements' paint come from.
+  readonly theme: ThemeDefinition;
   // Refs, recomputed when an element is added or removed; holders, after any write.
   readonly memo: { refs: RefTable | null; holders: Map<ElementId, ElementId | null> | null };
 };
+
+// The tab's built-in theme; a custom one the caller did not resolve paints as the default (E11).
+function themeOf(tab: Tab, log: EditLog): ThemeDefinition {
+  if (
+    tab.theme !== undefined &&
+    tab.theme !== DEFAULT_SCHEME_ID &&
+    !THEMES.some((t) => t.id === tab.theme)
+  )
+    log('[edit-ops] theme-fallback', {});
+  return getBuiltInTheme(tab.theme);
+}
 
 export function createState(tab: Tab, options: ApplyOptions, log: EditLog): EditState {
   const before = new Map(tab.elements.map((el) => [el.id, el]));
@@ -61,6 +79,7 @@ export function createState(tab: Tab, options: ApplyOptions, log: EditLog): Edit
     makeId: options.makeId ?? (() => crypto.randomUUID()),
     log,
     selected: options.selected === undefined ? [] : options.selected,
+    theme: options.theme ?? themeOf(tab, log),
     memo: { refs: null, holders: null },
   };
 }
