@@ -3,9 +3,10 @@
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { PREFERS_REDUCED_MOTION, useMediaQuery } from '@livediagram/ui';
 import { HERO_WORDS, HeroWordCard } from './HeroWordCard';
+import { useHeroWordPin } from '@/lib/hero-word-pin';
 
 // The headline's first word cycles through what livediagram is for
-// (docs/specs/019-marketing/marketing-site.md): Diagram, Document, Facilitate, Whiteboard, Illustrate, Brainstorm ...
+// (docs/specs/019-marketing/marketing-site.md): Diagram, Document, Workshop, Whiteboard, Illustrate, Brainstorm ...
 // together, live. The headline stays on one line, and a change never moves anything in layout
 // (docs/specs/004-interface-design/layout-stability.md): every word sits in the same grid cell, so
 // the slot is as wide as the widest, and each word is right-aligned in it, snug against
@@ -38,6 +39,15 @@ export function HeroTitleLine({ children }: { children: ReactNode }) {
     index: 0,
     leaving: null,
   });
+  // While a mode window is centred on the stage its word is pinned (lib/hero-word-pin.ts): the line
+  // turns to it, with the same slide as the cycle, and holds there until the stage moves on.
+  const pin = useHeroWordPin();
+  const pinIndex = pin ? HERO_WORDS.findIndex((w) => w.word === pin) : -1;
+  const [lastPin, setLastPin] = useState(-1);
+  if (pinIndex !== lastPin) {
+    setLastPin(pinIndex);
+    if (pinIndex >= 0 && pinIndex !== index) setWords({ index: pinIndex, leaving: index });
+  }
   const reduceMotion = useMediaQuery(PREFERS_REDUCED_MOTION);
   const wordRefs = useRef<(HTMLSpanElement | null)[]>([]);
   const slotRef = useRef<HTMLSpanElement>(null);
@@ -70,13 +80,13 @@ export function HeroTitleLine({ children }: { children: ReactNode }) {
   }, [open]);
 
   useEffect(() => {
-    if (reduceMotion || open) return;
+    if (reduceMotion || open || pinIndex >= 0) return;
     const id = window.setInterval(
       () => setWords((w) => ({ index: (w.index + 1) % HERO_WORDS.length, leaving: w.index })),
       WORD_MS,
     );
     return () => window.clearInterval(id);
-  }, [reduceMotion, open]);
+  }, [reduceMotion, open, pinIndex]);
 
   // Each word's rendered width, re-read when the headline resizes (it scales with the viewport).
   useLayoutEffect(() => {
@@ -89,7 +99,7 @@ export function HeroTitleLine({ children }: { children: ReactNode }) {
     return () => observer.disconnect();
   }, []);
 
-  const shown = reduceMotion ? 0 : index;
+  const shown = reduceMotion ? (pinIndex >= 0 ? pinIndex : 0) : index;
   const shift = widths ? -Math.round((Math.max(...widths) - (widths[shown] ?? 0)) / 2) : 0;
   // Before the words are measured (the static HTML, and the first client render, which must match
   // it), "Diagram" is centred by its measured share of the slot: 0.7em in the house sans.

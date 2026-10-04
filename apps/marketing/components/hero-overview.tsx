@@ -6,13 +6,13 @@ import { DiagramBoard } from './hero-diagram-board';
 import { DrawBoard } from './hero-draw-board';
 import { InfographicPages } from './hero-illustrate-page';
 import { MindMapBoard } from './hero-mindmap-board';
+import { TownHallBoard } from './hero-townhall-board';
 import type { HeroMode } from './hero-mode-palette';
 
 // The hero's first window (docs/specs/019-marketing/marketing-site.md "Hero"): an overview of every
 // window that follows, a bare board (no editor chrome) with one named frame per scene. Each frame
 // draws its scene settled (the same components the windows play, under .hero-static), and pressing
-// one moves the stage to that window. Three over two on a wide window, the second row centred so it
-// clears the canvas cluster in the corner; two across on a phone.
+// one moves the stage to that window. Three over three on a wide window; two across on a phone.
 
 export type OverviewScene = {
   key: string;
@@ -26,6 +26,7 @@ const SCENES: Record<string, () => ReactNode> = {
   mindmap: () => <MindMapBoard />,
   infographic: () => <InfographicPages />,
   article: () => <ArticlePage />,
+  townhall: () => <TownHallBoard />,
 };
 
 export function HeroOverview({

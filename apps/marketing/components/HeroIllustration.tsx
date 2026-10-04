@@ -1,6 +1,6 @@
 'use client';
 
-// Animated hero: seven editor windows on a sliding stage (docs/specs/019-marketing/marketing-site.md
+// Animated hero: seven windows on a sliding stage (docs/specs/019-marketing/marketing-site.md
 // "Hero"): an overview first, then the modes in action.
 //   0. Overview — a bare board (no editor chrome), one named frame per mode window, each drawing
 //      its scene settled; pressing a frame moves the stage to that window (hero-overview.tsx).
@@ -18,6 +18,8 @@
 //   6. Article (Illustrate mode) — an article page written line by line, with a header image, a
 //      heading and a pull quote, and a phrase set in bold from the rich-text toolbar
 //      (hero-article-page.tsx).
+//   7. Town hall — an all-hands on a Q&A board: questions land, votes tick up, the most-voted
+//      rises and is answered, reactions float up (hero-townhall-board.tsx).
 // Every window is in the Toolbar panel layout, its strip wearing its mode: the mode switch and
 // the mode's tiles (hero-mode-palette.tsx), and the glyph on its tab. Below the stage, a label names the centred window and a row of dots
 // moves between them.
@@ -46,8 +48,10 @@ import { DrawBoard } from './hero-draw-board';
 import { ArticlePage } from './hero-article-page';
 import { InfographicPages } from './hero-illustrate-page';
 import { MindMapBoard } from './hero-mindmap-board';
+import { TownHallBoard } from './hero-townhall-board';
 import type { HeroMode } from './hero-mode-palette';
 import { snapStage } from '@/lib/hero-stage';
+import { pinHeroWord } from '@/lib/hero-word-pin';
 import { HeroOverview, type OverviewScene } from './hero-overview';
 import { EditorWindow, type TabDef } from './hero-editor-window';
 import { useStageBox } from './useStageBox';
@@ -74,6 +78,8 @@ const CARDS: {
   shared: boolean;
   // The name its frame carries on the overview (hero-overview.tsx).
   short?: string;
+  // The headline's word while this window is centred (lib/hero-word-pin.ts).
+  word?: string;
   // Where its Build yours button goes: the template step narrowed to this kind
   // (docs/specs/007-editor/new-document-route.md "?mode= and ?q=").
   build?: string;
@@ -91,6 +97,7 @@ const CARDS: {
   },
   {
     key: 'diagram',
+    word: 'Diagram',
     build: '/new?mode=diagram',
     short: 'Diagram',
     title: 'Onboarding',
@@ -105,6 +112,7 @@ const CARDS: {
   },
   {
     key: 'draw',
+    word: 'Whiteboard',
     build: '/new?mode=draw',
     short: 'Draw',
     title: 'Sprint retro',
@@ -118,6 +126,7 @@ const CARDS: {
   },
   {
     key: 'mindmap',
+    word: 'Brainstorm',
     build: '/new?mode=diagram&q=mind%20map',
     short: 'Mind map',
     title: 'Launch plan',
@@ -131,6 +140,7 @@ const CARDS: {
   },
   {
     key: 'infographic',
+    word: 'Illustrate',
     build: '/new?mode=illustrate',
     short: 'Infographic',
     title: 'Year in review',
@@ -141,12 +151,27 @@ const CARDS: {
   },
   {
     key: 'article',
+    word: 'Document',
     build: '/new?mode=illustrate&q=article',
     short: 'Article',
     title: 'Field notes',
     label: 'Article: write long reads on pages, with images, headings and pull quotes',
     mode: 'illustrate',
     tabs: [{ name: 'Draft', color: '#0ea5e9', active: true }],
+    shared: true,
+  },
+  {
+    key: 'townhall',
+    word: 'Workshop',
+    short: 'Town hall',
+    build: '/new?mode=diagram&q=town%20hall',
+    title: 'Q3 all-hands',
+    label: 'Town hall: questions in, votes up, answered live with the whole room',
+    mode: 'diagram',
+    tabs: [
+      { name: 'Q&A', color: '#ef4444', active: true },
+      { name: 'Agenda', color: '#0ea5e9' },
+    ],
     shared: true,
   },
 ];
@@ -175,6 +200,7 @@ const PORTRAIT_VIEWBOX: Record<string, string> = {
   mindmap: '0 -40 360 520',
   infographic: '10 -40 360 680',
   article: '10 -40 360 680',
+  townhall: '0 -40 360 520',
 };
 
 export function HeroIllustration() {
@@ -197,6 +223,12 @@ export function HeroIllustration() {
     const id = window.setTimeout(() => show((active + 1) % CARDS.length), dwell);
     return () => window.clearTimeout(id);
   }, [active, reduceMotion]);
+
+  // The headline holds the centred window's word; the overview lets it cycle.
+  useEffect(() => {
+    pinHeroWord(CARDS[active]?.word ?? null);
+  }, [active]);
+  useEffect(() => () => pinHeroWord(null), []);
 
   // Before measurement (the static HTML and the first paint) the window width comes from CSS, by
   // breakpoint (--hero-card on the stage: 92 on a phone, 68 from sm), so a phone paints its own
@@ -233,6 +265,8 @@ export function HeroIllustration() {
               const playing = i === active;
               const liveDoc = c.overview ? null : c.mode === 'draw' ? (
                 <DrawBoard portrait={portrait} />
+              ) : c.key === 'townhall' ? (
+                <TownHallBoard portrait={portrait} />
               ) : c.key === 'mindmap' ? (
                 <MindMapBoard portrait={portrait} />
               ) : c.key === 'article' ? (

@@ -388,6 +388,95 @@
   }
 }
 
+/* --- The Town Hall window (components/hero-townhall-board.tsx) --- */
+
+/* A value gives way to the next (a vote count ticking over). */
+.hm-out {
+  animation: hm-out 0.25s ease-in var(--d, 0s) both;
+}
+@keyframes hm-out {
+  to {
+    opacity: 0;
+  }
+}
+/* A question slides to its new place in the list (--dy). */
+.hm-move {
+  animation: hm-move 0.6s cubic-bezier(0.3, 0, 0.2, 1) var(--d, 0s) both;
+}
+@keyframes hm-move {
+  from {
+    transform: none;
+  }
+  to {
+    transform: translateY(var(--dy, 0));
+  }
+}
+/* A reaction floats up from the room and fades. */
+.hm-float {
+  opacity: 0;
+  animation: hm-float 1.8s ease-out var(--d, 0s) both;
+}
+@keyframes hm-float {
+  0% {
+    opacity: 0;
+    transform: translateY(0) scale(0.7);
+  }
+  15% {
+    opacity: 1;
+    transform: translateY(-12px) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-90px) scale(1.05);
+  }
+}
+/* The LIVE dot breathes: an ambient loop, so the shorthand carries `infinite`. */
+.hm-live {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .hm-live {
+    animation: hm-live 1.6s ease-in-out infinite;
+  }
+}
+@keyframes hm-live {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+.hero-static .hm-out {
+  animation: none;
+  opacity: 0;
+}
+.hero-static .hm-move {
+  animation: none;
+  transform: translateY(var(--dy, 0));
+}
+.hero-static .hm-float {
+  display: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hm-out {
+    animation: none;
+    opacity: 0;
+  }
+  .hm-move {
+    animation: none;
+    transform: translateY(var(--dy, 0));
+  }
+  .hm-float {
+    display: none;
+  }
+  .hm-live {
+    animation: none;
+  }
+}
+
 /* --- Build yours (components/HeroIllustration.tsx) --- */
 
 /* The call to action lands in the middle of the canvas once the scene has played out (11s into the

@@ -486,7 +486,7 @@ default document name) without walking the wizard:
   card (`visibility`, so nothing moves) until React has rendered the preset. Read by
   `wizardPresetMode` and `wizardPresetQuery` in `apps/live/lib/new-document-params.ts`. The
   marketing hero's **Build yours** buttons link here ([Marketing site](../019-marketing/marketing-site.md)).
-- **`/new?blank=1&welcome=1`**: The marketing hero's **launch
+- **`/new?blank=1&welcome=1`** (no longer linked: the marketing hero's launch window was removed; the route still works): The marketing hero's **launch
   window** ([Marketing site](../019-marketing/marketing-site.md)), which grows
   into a full-screen blank canvas before navigating here. It commits the blank
   document exactly as `?blank=1` does, with two differences:

@@ -36,9 +36,9 @@ export const HERO_WORDS: readonly {
     Icon: lucideGlyph(lucideFileText, 16),
   },
   {
-    word: 'Facilitate',
-    many: 'Facilitation',
-    what: 'Retros, workshops and town halls, run live with your team',
+    word: 'Workshop',
+    many: 'Workshops',
+    what: 'Retros, town halls and planning sessions, run live with your team',
     Icon: lucideGlyph(lucideUsers, 16),
   },
   {

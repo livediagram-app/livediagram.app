@@ -41,7 +41,7 @@ describe('the hero headline word', () => {
     vi.unstubAllGlobals();
   });
 
-  it('cycles Diagram, Document, Facilitate, Whiteboard, Illustrate, Brainstorm, 2.5s each, then wraps', () => {
+  it('cycles Diagram, Document, Workshop, Whiteboard, Illustrate, Brainstorm, 2.5s each, then wraps', () => {
     stubMotion(false);
     const { container } = render(<HeroTitleLine> together</HeroTitleLine>);
     const seen = [shownWord(container)];
@@ -54,7 +54,7 @@ describe('the hero headline word', () => {
     expect(seen).toEqual([
       'Diagram',
       'Document',
-      'Facilitate',
+      'Workshop',
       'Whiteboard',
       'Illustrate',
       'Brainstorm',
