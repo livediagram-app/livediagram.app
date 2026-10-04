@@ -36,3 +36,17 @@ export function buildViewTree(
   for (const node of nodes.values()) node.children = arrange(childrenOf.get(node.el.id) ?? []);
   return { roots: arrange(childrenOf.get(null) ?? []), nodes };
 }
+
+// Every node under `items`, depth-first in reading order, runs unfolded into their strokes.
+export function depthFirst(items: readonly ViewItem[]): ViewNode[] {
+  return items.flatMap((item) =>
+    isViewRun(item) ? item.strokes : [item, ...depthFirst(item.children)],
+  );
+}
+
+// The items a view starts from: the whole tree, or the subtree of `only`.
+export function subtreeItems(tree: ViewTree, only: string | undefined): ViewItem[] {
+  if (only === undefined) return tree.roots;
+  const node = tree.nodes.get(only);
+  return node === undefined ? [] : [node];
+}

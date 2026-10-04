@@ -1,0 +1,5 @@
+tab 0b34 "Checkout platform" · 30 elements: 16 boxes, 3 frames, 11 arrows · threads 1 open/2 · rev 41
+sticky 0c84 "Payment retries are not idempotent yet!" · open · 2
+  Sam 2026-09-27: "Retry storm last Friday double-charged 14 orders."
+  Webber 2026-09-27: "@Priya can we add an idempotency key per order?"
+… 1 resolved thread hidden: view --all

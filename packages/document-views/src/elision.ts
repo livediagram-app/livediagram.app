@@ -1,7 +1,6 @@
 // The one closing line naming what a view left out and how to see it, in the reading door's syntax
 // (docs/specs/024-agents/blueprints/document-views.md "Elision line", VW39, VW54).
 import type { Elision, ViewDoor } from '@livediagram/api-schema';
-import { CHARS_PER_TOKEN } from './constants';
 import { ELLIPSIS, plural } from './text';
 
 export type ElisionArguments = Record<string, string | number | boolean>;
@@ -19,7 +18,7 @@ export function buildElision(
   parts: {
     dropped?: ('notes' | 'attributes')[];
     collapsed?: { ref: string; kind: string; elements: number }[];
-    omitted?: { noun: string; count: number }[];
+    omitted: { noun: string; count: number }[];
   },
   args: ElisionArguments,
   door: ViewDoor,
@@ -27,7 +26,7 @@ export function buildElision(
   return {
     dropped: parts.dropped ?? [],
     collapsed: parts.collapsed ?? [],
-    omitted: parts.omitted ?? [],
+    omitted: parts.omitted,
     arguments: args,
     command: elisionCommand(args, door),
   };
@@ -43,10 +42,4 @@ export function elisionLine(elision: NonNullable<Elision>): string {
     ...elision.omitted.map((o) => `${o.count} ${o.noun} hidden`),
   ];
   return `${ELLIPSIS} ${parts.join('; ')}: ${elision.command}`;
-}
-
-// Tokens are UTF-16 length over CHARS_PER_TOKEN, rounded up (VW38).
-export function estimateTokens(text: string | number): number {
-  const length = typeof text === 'number' ? text : text.length;
-  return Math.ceil(length / CHARS_PER_TOKEN);
 }

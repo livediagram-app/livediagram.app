@@ -6,7 +6,8 @@ import { isKnownElement, type Element } from '@livediagram/document';
 import { attributesOf, isOpenCommentsAttribute } from './attributes';
 import { contentSummaryOf } from './content-summary';
 import { edgeJson, edgeText, ownLineText, type ViewEdge } from './edges';
-import { buildElision, elisionLine, estimateTokens, type ElisionArguments } from './elision';
+import { estimateTokens } from './budget';
+import { buildElision, elisionLine, type ElisionArguments } from './elision';
 import { textField } from './fields';
 import { headerLine, viewHeader } from './header';
 import type { ViewModel } from './model';
@@ -14,7 +15,13 @@ import { stateAttributeOf } from './state-attribute';
 import { styleAttributesOf, styleBaselines, type StyleBaselines } from './style-attributes';
 import { LABEL_CUT_CHARS } from './constants';
 import { jsonString } from './text';
-import { isViewRun, type FreehandRunItem, type ViewItem, type ViewNode } from './tree';
+import {
+  isViewRun,
+  subtreeItems,
+  type FreehandRunItem,
+  type ViewItem,
+  type ViewNode,
+} from './tree';
 import type { ViewAttribute } from './view-attribute';
 
 export type OutlineOptions = {
@@ -301,19 +308,11 @@ function nodeJson(
   };
 }
 
-function rootItems(
-  model: ViewModel,
-  only: string | undefined,
-): { items: ViewItem[]; ownLine: ViewEdge[] } {
-  if (only === undefined) return { items: model.tree.roots, ownLine: model.edges.ownLine };
-  const node = model.tree.nodes.get(only);
-  return { items: node === undefined ? [] : [node], ownLine: [] };
-}
-
 export function outlineView(model: ViewModel, options: OutlineOptions = {}): OutlineResult {
   const door = options.door ?? 'cli';
   const style = options.style ? styleBaselines() : null;
-  const { items, ownLine } = rootItems(model, options.only);
+  const items = subtreeItems(model.tree, options.only);
+  const ownLine = options.only === undefined ? model.edges.ownLine : [];
   const entries = buildEntries(model, items, ownLine, style);
   const header = headerLine(model.facts);
   const { fit, state, fullTokens } = fitOutline(model, entries, header, options.budget, door);
