@@ -283,7 +283,8 @@ Edit an existing tab. **Two modes** (the user asked for both):
   tab is cleaner than patching.
 - **`ops`** — for small adjustments. Input: an ordered list of
   `{ op: 'add' | 'update' | 'remove', element? , elementId? }` targeting existing
-  element ids or refs, compiled by the api with the rest of the edit operations. **Auto-layout is NOT run by default** in `ops` mode —
+  elements by id or by the ref `read_document` prints, sent as `set` / `rm` on the always-safe `id:"…"` ref and
+  compiled by the api's edit-operation engine. **Auto-layout is NOT run by default** in `ops` mode —
   the point of a granular edit is to preserve the user's existing positions;
   re-laying out would move everything. (A future `relayout: true` opt-in could be
   added if wanted.)

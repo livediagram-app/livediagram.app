@@ -1,6 +1,8 @@
 # Edit operations
 
-**Status: partly built.** `@livediagram/edit-operations` applies `add` (a whole element), `set` and `rm` addressed by element id, and `replace`, in the JSON form; the line form, selectors beyond ids, placement and the other operations are specified, not built.
+**Status: built.** `@livediagram/edit-operations` reads both forms and applies every operation below, by ref or
+selector, through the changeset route; the MCP's `ops` mode takes refs. A result's footer names the lint summary once
+the [lint](diagram-lint.md) is built (`lint unavailable` until then), and the [CLI](../015-api/cli.md) is not built.
 
 An **edit operation** is one step of a [changeset](agent-changesets.md): a small, closed vocabulary of
 intent-level verbs addressed by ref or selector, compiled by the api into element ops. Building from scratch and
@@ -74,8 +76,10 @@ match together.
 
 **Membership** is the smallest frame or lane holding an element's centre, the rule [views](document-views.md) nest
 by; it decides `in:`, what `wrap` would capture, what a moved frame carries and the membership lines of a result.
-The editor's drag carries by the same rule ([Canvas and palette](../008-canvas/canvas-and-palette.md)), so an
-agent's `move` and a person's drag take the same elements along.
+[Canvas and palette](../008-canvas/canvas-and-palette.md) gives the editor's drag the same rule, so an agent's `move`
+and a person's drag take the same elements along. The editor's drag is not moved onto it yet: it still carries by
+full containment, which was chosen for people because the centre rule took half-out neighbours along; which rule
+people's drags follow is an open decision.
 
 ## Placement
 
@@ -103,11 +107,12 @@ The layout an agent did not ask to change stays put:
 A changeset answers with what it did, one line per element, the same text for a dry run and a write:
 
 ```text
-~ n3  label "Login"→"Sign in" · shape square→stadium · widened 140→152
-+ verify  square "Verify email" @0,300 140×60
+~ n3  label "Login"→"Sign in" · shape square→stadium · widened 140→160
++ verify  square "Verify email" @45,300 131×120
+~ f2  taller 200→360
 ~ a3  to n4→verify
 + arrow  verify→n4 (style of a3)
-» n4 n5 n6  +0,+100 (make room)
+» n4 n5 n6 n7 n8  +0,+160 (make room)
 f2  +verify
 rev 41→42 · cs_8k2m4q7d1x · lint clean · revert: livediagram changeset revert cs_8k2m4q7d1x
 ```

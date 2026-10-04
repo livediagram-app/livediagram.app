@@ -1,9 +1,8 @@
 # Agent changesets
 
-**Status: built.** Closed livediagram-app/livediagram.app#343. Operations are taken in the JSON form of `add`
-(a whole element), `set` and `rm` addressed by element id, plus `replace`, until the rest of the
-[edit operations](edit-operations.md) land; the [lint](diagram-lint.md) and the [agent presence](agent-presence.md)
-refresh are not built yet, so an answer's lint is `null`.
+**Status: built.** Closed livediagram-app/livediagram.app#343. Operations are the full
+[edit operations](edit-operations.md), in the line form or JSON, plus `replace`; the [lint](diagram-lint.md) and the
+[agent presence](agent-presence.md) refresh are not built yet, so an answer's lint is `null`.
 
 Every agent write to a tab is a **changeset**: one atomic write, applied by the api, sequenced by the document's
 room, shown live to everyone with the tab open, credited to the person whose token wrote it, and revertable as one
