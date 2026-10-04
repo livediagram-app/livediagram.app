@@ -1,8 +1,9 @@
 name: E2E Smoke
 
 # Browser E2E (docs/specs/003-system-architecture/e2e-smoke.md "When it runs"): a per-PR merge gate.
-# Its gate job is a required check on main; it needs no secret, so fork PRs run it too. The suite is
-# spread over parallel jobs so the run stays within 5 minutes; the gate passes only when all did.
+# Every job is a required check on main; none needs a secret, so fork PRs run them too. The suite is
+# spread over parallel jobs so the run stays within 5 minutes. A job renamed or a shard added here
+# changes its check's name: update the main ruleset's required checks in the same change.
 on:
   pull_request:
   push:
@@ -136,26 +137,3 @@ jobs:
             apps/live/playwright-report-clerk-stub
             apps/live/test-results-clerk-stub
           retention-days: 7
-
-  # The required check on main. It stands for the whole suite, so the check's name never changes
-  # with the shard count. always(): a failed or cancelled job above still lands here and fails it,
-  # rather than leaving the check skipped, which GitHub would count as passing.
-  gate:
-    name: Chromium smoke
-    needs: [smoke, sites, signed-in]
-    if: always()
-    runs-on: ubuntu-latest
-    timeout-minutes: 2
-    steps:
-      - name: Every e2e job passed
-        env:
-          RESULTS: ${{ join(needs.*.result, ' ') }}
-        run: |
-          set -euo pipefail
-          echo "smoke, sites, signed-in: ${RESULTS}"
-          for result in ${RESULTS}; do
-            if [ "${result}" != "success" ]; then
-              echo "::error::An e2e job ended ${result}; see its log above."
-              exit 1
-            fi
-          done

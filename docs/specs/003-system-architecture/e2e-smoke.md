@@ -12,9 +12,11 @@ test lives here.
 
 ## When it runs
 
-The suite is a **per-PR merge gate**. Its gate job, **Chromium smoke**, is a required status check
+The suite is a **per-PR merge gate**. **Every one of its jobs** (below) is a required status check
 on `main` beside CI's Checks, Tests and Build, so a pull request whose change breaks a browser flow
-cannot merge. It passes only when every job of the run below passed. A post-merge-only run let regressions land unseen and kept `main` red for
+cannot merge. A check is named after its job, so renaming a job or changing the shard count
+updates the `main` ruleset's required checks in the same change; until then a pull request waits
+on a check that never reports, or merges without one. A post-merge-only run let regressions land unseen and kept `main` red for
 hours at a time while later pull requests inherited the failure.
 
 The repository is public, so GitHub-hosted runners cost nothing; the price of the gate is the
@@ -42,7 +44,6 @@ spread over parallel jobs so the wall time is the slowest job, not the sum:
 | **Smoke shard i/6** | live                                         | `test:e2e:smoke --shard=i/6`: one sixth of the `chromium` project's tests |
 | **Sites audit**     | live, help, telemetry, marketing             | `test:e2e:sites`: the `sites` project, `optical-audit-sites.spec.ts`      |
 | **Signed-in specs** | live with Clerk stubbed (`build:clerk-stub`) | the `clerk-stub` project ([Signed-in specs](#signed-in-specs-clerk-stub)) |
-| **Chromium smoke**  | nothing                                      | the gate: fails unless every job above succeeded                          |
 
 Only the sites audit opens help, telemetry and marketing, so only its job pays for their builds.
 Locally `test:e2e` runs the `chromium` and `sites` projects together, as one run.
@@ -229,7 +230,7 @@ tests where it's cheap.
 - `apps/live/e2e/fixtures/`: drawn wall photos for the photo import; `audit-screens.ts`, `contrast.ts`,
   `optical.ts` and `optical-discover.ts`: the screens and measurements the dark-mode audits share.
 - `scripts/e2e-stack.mjs`: the stack boot + static serve (live, help, telemetry, marketing).
-- `.github/workflows/e2e.yml`: the sharded workflow and its gate, run on every pull request;
+- `.github/workflows/e2e.yml`: the sharded workflow, run on every pull request;
   `.github/actions/e2e-setup/`: the setup its jobs share (pnpm, Node, install, image check).
 - `test:e2e`, `test:e2e:smoke`, `test:e2e:sites` and `test:e2e:clerk-stub` scripts in `apps/live/package.json`; `build:clerk-stub`
   (`apps/live/scripts/build-clerk-stub.mjs`) builds the export the latter runs against.

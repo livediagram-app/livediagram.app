@@ -145,7 +145,7 @@ runs the build and the staging config check. No CI change is needed to start run
 tests; adding a `test` script to a workspace is enough for Turborepo to pick
 it up.
 
-Checks, Tests and Build are required status checks on `main`, with E2E Smoke's Chromium smoke
+Checks, Tests and Build are required status checks on `main`, with every E2E Smoke job
 ([End-to-end tests](e2e-smoke.md#when-it-runs)). Only runs started by the pull request count: a
 `workflow_dispatch` run on the same commit is not attached to it.
 
