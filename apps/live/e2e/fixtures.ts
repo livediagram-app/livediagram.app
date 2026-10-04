@@ -6,6 +6,7 @@ import {
   type Page,
 } from '@playwright/test';
 import { DEBUG_STORAGE_KEY } from '../lib/debug-log';
+import { TOUR_PENDING_KEY } from '../lib/tour-pending';
 
 // Shared fixture (docs/specs/003-system-architecture/e2e-smoke.md): every smoke test fails on an uncaught
 // exception or unhandled rejection surfaced to the page — the class the
@@ -194,19 +195,22 @@ export async function startEventStormingRow(page: Page): Promise<void> {
   await notes.nth(2).waitFor();
 }
 
-// Dismiss the quick-tour dialog (docs/specs/008-canvas/layout-cleanup.md) if this profile is offered one.
-// It lands a BEAT AFTER the canvas does, and its modal overlay swallows
-// pointer events — so a test that merely checks whether it is showing YET
-// races it and then finds its drags going nowhere, silently. Wait for it,
-// but tolerate its absence: whether it is offered depends on what this
-// browser profile has already seen.
+// Dismiss the quick-tour offer (docs/specs/007-editor/editor-tour.md) when this page is owed one.
+// It lands a BEAT AFTER the canvas does, and its modal overlay swallows pointer events, so a test that
+// merely checks whether it is showing YET races it and then finds its drags going nowhere, silently.
+// The offer comes only while /new's handoff flag is in sessionStorage (lib/tour-pending.ts): without
+// the flag (a reload after declining it, a document opened by URL) nothing is owed, and this returns
+// at once instead of waiting out a timeout. With it, wait until the offer shows, or until the flag
+// clears without one (the tour already seen).
 export async function dismissQuickTour(page: Page): Promise<void> {
   const decline = page.getByRole('button', { name: /^no thanks$/i }).first();
-  try {
-    await decline.waitFor({ state: 'visible', timeout: 5_000 });
-  } catch {
-    return;
-  }
+  const owed = () => page.evaluate((key) => sessionStorage.getItem(key) === '1', TOUR_PENDING_KEY);
+  await expect
+    .poll(async () => (await decline.isVisible()) || !(await owed()), {
+      message: 'the owed tour offer never showed',
+    })
+    .toBe(true);
+  if (!(await decline.isVisible())) return;
   await decline.click();
   await decline.waitFor({ state: 'detached' });
 }
@@ -276,6 +280,10 @@ export async function seedTab(page: Page, elements: Seed): Promise<void> {
   await page.reload();
   await page.locator('[data-canvas-a11y-root]').waitFor();
   await dismissQuickTour(page);
+  // The seeded elements pop in (a short scale animation) after the canvas mounts: a test that
+  // measures or drags one before it settles works from a box that is still changing.
+  const first = elements.find((el) => typeof el.id === 'string');
+  if (first) await settledBox(page.locator(`[data-element-id="${String(first.id)}"]`).first());
 }
 
 // A guest as production makes one: minted and signed by the api worker

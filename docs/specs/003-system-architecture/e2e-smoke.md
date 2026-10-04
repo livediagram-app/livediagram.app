@@ -88,6 +88,11 @@ Cost controls, all in `e2e.yml` and `playwright.config.ts`:
   uploads them whenever any holds a trace, a timed-out run included, one artefact per job
   (`playwright-report-shard-i`, `playwright-report-sites`, `playwright-report-clerk-stub`). Locally a trace is kept for a
   retry only.
+- **No waiting on what is not coming.** A helper waits for a thing only when the app owes it:
+  `dismissQuickTour` returns at once unless /new's tour handoff flag is in sessionStorage
+  (`lib/tour-pending.ts`), rather than sitting out a 5-second timeout after every reload or
+  by-URL visit, which cost the suite minutes. `seedTab` returns once the seeded elements have
+  finished popping in (`settledBox`), so a test never measures or drags a box that is still changing.
 - **No model downloads.** The photo-import tests stub the handwriting reader
   and serve the boundary model's weights from the app itself; nothing pulls
   weights over the wire.
