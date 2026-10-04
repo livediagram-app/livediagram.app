@@ -29,10 +29,10 @@ function cases(samples: string[], prefix = ''): Case[] {
   });
 }
 
-// Best of three, so one scheduling hiccup does not read as growth.
-function timeOf(text: string, run: (text: string) => unknown): number {
+// Best of `tries`, so one scheduling hiccup does not read as growth.
+function timeOf(text: string, run: (text: string) => unknown, tries = 3): number {
   let best = Infinity;
-  for (let i = 0; i < 3; i += 1) {
+  for (let i = 0; i < tries; i += 1) {
     const start = performance.now();
     run(text);
     best = Math.min(best, performance.now() - start);
@@ -40,12 +40,15 @@ function timeOf(text: string, run: (text: string) => unknown): number {
   return best;
 }
 
+// The sweep only picks the three slowest cases, so one timing each will do; the two times compared
+// for growth are each best of three.
 function expectLinear(all: Case[], run: (text: string) => unknown): void {
-  const timed = all
-    .map((c) => ({ c, ms: timeOf(c.build(RUN), run) }))
+  const slowest = all
+    .map((c) => ({ c, ms: timeOf(c.build(RUN), run, 1) }))
     .sort((a, b) => b.ms - a.ms)
     .slice(0, 3);
-  for (const { c, ms } of timed) {
+  for (const { c } of slowest) {
+    const ms = timeOf(c.build(RUN), run);
     const grown = timeOf(c.build(RUN * 4), run);
     expect(grown, c.build(8)).toBeLessThan(ms * 8 + 5);
   }
