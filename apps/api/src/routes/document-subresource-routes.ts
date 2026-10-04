@@ -29,6 +29,7 @@ import { handleQaBoardRoute } from './qa-board-routes';
 import { handleCommentPicturesRoute } from './comment-pictures-routes';
 import { handleTabPut, refuseTokenTabPut } from './tab-put-route';
 import { handleTabRename } from './tab-name-route';
+import { handleChangesetRoutes } from './changesets';
 import {
   gateEdit,
   gateGrant,
@@ -45,6 +46,9 @@ import {
 // null to let the main dispatcher fall through to the remaining routes.
 export async function handleDocumentSubresources(ctx: RouteContext): Promise<Response | null> {
   const { request, env, segments } = ctx;
+  // Agent changesets (docs/specs/024-agents/agent-changesets.md).
+  const changesets = await handleChangesetRoutes(ctx);
+  if (changesets) return changesets;
   // /api/documents/<id>/tabs/<tabId>/qa — a Q&A board action (docs/specs/012-collaboration/qa-board.md).
   const qa = await handleQaBoardRoute(ctx);
   if (qa) return qa;

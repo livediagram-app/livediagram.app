@@ -22,31 +22,31 @@ Scope, by file:
 | `packages/document/src/element-fingerprint.ts`                                            | `canonicalElementJson`, `elementFingerprint`                                                               |
 | `packages/document/src/comments.ts`                                                       | Exports `LIVE_ELEMENT_FIELDS`; `opForTheWire` strips comment author ids from a `changeset` op              |
 | `packages/document/src/element-ops.ts`                                                    | `invertElementOps(before, ops)`, shared by the engine and the revert                                       |
-| `apps/api/migrations/0066_agent_changesets.sql` (planned)                                 | `tabs.rev`, the `tabs_rev_advances` trigger, `agent_changesets`, `agent_changeset_parts`                   |
+| `apps/api/migrations/0066_agent_changesets.sql`                                 | `tabs.rev`, the `tabs_rev_advances` trigger, `agent_changesets`, `agent_changeset_parts`                   |
 | `apps/api/src/tab-row.ts`                                                                 | `TabRow.rev`; `rowToTab` returns it                                                                        |
 | `apps/api/src/db/tabs.ts`                                                                 | `getTab` reads `rev`; `upsertTab`, `seedTabs`, `swapTabData` advance it; new `upsertTabAtRev`, `renameTab` |
 | `apps/api/src/db/documents.ts`                                                            | The copy's tab insert starts at `rev` 1                                                                    |
-| `apps/api/src/db/changesets.ts` (planned)                                                 | Record and part statements; reads for the merge, the list, one changeset, the revert; the sweep            |
+| `apps/api/src/db/changesets.ts`                                                 | Record and part statements; reads for the merge, the list, one changeset, the revert; the sweep            |
 | `apps/api/src/db/account.ts`, `account-owner-columns.test.ts`                             | `agent_changesets.author_id` on deletion and guest migration                                               |
-| `apps/api/src/changesets/changeset-id.ts` (planned)                                       | `mintChangesetId`                                                                                          |
-| `apps/api/src/changesets/base-check.ts` (planned)                                         | `checkBase`, pure                                                                                          |
-| `apps/api/src/changesets/held-check.ts` (planned)                                         | `heldTargets`, pure                                                                                        |
-| `apps/api/src/changesets/merge-on-save.ts` (planned)                                      | `mergeChangesetsIntoSave`, pure                                                                            |
-| `apps/api/src/changesets/revert-plan.ts` (planned)                                        | `planRevert`, pure                                                                                         |
-| `apps/api/src/changesets/room-op.ts` (planned)                                            | `changesetRoomOp`: the relay payload and its size rule                                                     |
-| `apps/api/src/changesets/submit.ts` (planned)                                             | `submitChangeset`: the pipeline, its attempt loop and the write                                            |
-| `apps/api/src/changesets/front-door.ts` (planned), `log.ts`                               | `frontDoorOf(request)`; `changesetLog` and the fingerprints                                                |
-| `apps/api/src/routes/changesets.ts` (planned)                                             | `handleChangesetRoutes`: submit, list, one, revert                                                         |
-| `apps/api/src/routes/tab-put-route.ts` (planned)                                          | `handleTabPut`, lifted out of `document-subresource-routes.ts`: token refusal, seen merge, CAS write       |
-| `apps/api/src/routes/tab-name-route.ts` (planned)                                         | `handleTabRename`: `PUT .../tabs/:tabId/name`, relayed as `document-meta`                                  |
+| `apps/api/src/changesets/changeset-id.ts`                                       | `mintChangesetId`                                                                                          |
+| `apps/api/src/changesets/base-check.ts`                                         | `checkBase`, pure                                                                                          |
+| `apps/api/src/changesets/held-check.ts`                                         | `heldTargets`, pure                                                                                        |
+| `apps/api/src/changesets/merge-on-save.ts`                                      | `mergeChangesetsIntoSave`, pure                                                                            |
+| `apps/api/src/changesets/revert-plan.ts`                                        | `planRevert`, pure                                                                                         |
+| `apps/api/src/changesets/room-op.ts`                                            | `changesetRoomOp`: the relay payload and its size rule                                                     |
+| `apps/api/src/changesets/submit.ts`                                             | `submitChangeset`: the pipeline, its attempt loop and the write                                            |
+| `apps/api/src/changesets/front-door.ts`, `log.ts`                               | `frontDoorOf(request)`; `changesetLog` and the fingerprints                                                |
+| `apps/api/src/routes/changesets.ts`                                             | `handleChangesetRoutes`: submit, list, one, revert                                                         |
+| `apps/api/src/routes/tab-put-route.ts`                                          | `handleTabPut`, lifted out of `document-subresource-routes.ts`: token refusal, seen merge, CAS write       |
+| `apps/api/src/routes/tab-name-route.ts`                                         | `handleTabRename`: `PUT .../tabs/:tabId/name`, relayed as `document-meta`                                  |
 | `apps/api/src/routes/document-subresource-routes.ts`                                      | Tab GET sets `ETag`; delegates the PUT, the rename and the changeset routes                                |
 | `apps/api/src/index.ts`                                                                   | The daily sweep                                                                                            |
 | `apps/api/src/room-client.ts`                                                             | `roomStubFor(env, documentId)` for every document; `relayChangeset`, `relayTabList`, `readRoomSelections`  |
-| `apps/api/src/room-selections.ts` (planned)                                               | `RoomSelectionStore`: each session's selection in DO storage                                               |
+| `apps/api/src/room-selections.ts`                                               | `RoomSelectionStore`: each session's selection in DO storage                                               |
 | `apps/api/src/document-room.ts`                                                           | `/mutation` accepts `changeset` and `document-meta`; `GET /selections`; `select` recorded; close prunes    |
 | `apps/api/src/responses.ts`                                                               | CORS allows `X-Changeset-Seen`, `X-Livediagram-Client`; exposes `ETag`                                     |
 | `apps/api/src/openapi/{manifest,document}.ts`, `scripts/gen-openapi-schemas`              | The five routes, `Tab.rev`, the header, the error bodies, the PUT's 405                                    |
-| `apps/mcp/src/changeset-client.ts` (planned)                                              | `submitChangeset`, `mcpOpsToEditOperations`, `changesetErrorText`                                          |
+| `apps/mcp/src/changeset-client.ts`                                              | `submitChangeset`, `mcpOpsToEditOperations`, `changesetErrorText`                                          |
 | `apps/mcp/src/tools.ts`, `schema.ts`, `output-schema.ts`, `api.ts`                        | `add_tab`, `update_document` on changesets; `rename_document` on the name route; `rev`; the client header  |
 | `apps/live/lib/api/tabs.ts`                                                               | `apiLoadTabRevisioned`; `apiSaveTab` and the unload beacon send `X-Changeset-Seen`                         |
 | `apps/live/lib/api/changesets.ts` (planned)                                               | `apiRevertChangeset`                                                                                       |
@@ -626,41 +626,41 @@ type `frontDoorOf(request)`: `Mcp`, `Cli`, `Api` or, for the toast's Undo, `Edit
 
 | Spec rule                                                                | Test                                                                                                                 |
 | ------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------- |
-| Id `cs_` + 10 base32, minted by the api                                  | `apps/api/src/changesets/changeset-id.test.ts` (planned)                                                             |
-| One tab per changeset; a new tab is a replace on a missing id            | `apps/api/src/routes/changesets.test.ts` (planned) "creates a tab", "refuses another document's tab"                 |
+| Id `cs_` + 10 base32, minted by the api                                  | `apps/api/src/changesets/changeset-id.test.ts`                                                             |
+| One tab per changeset; a new tab is a replace on a missing id            | `apps/api/src/routes/changesets.test.ts` "creates a tab", "refuses another document's tab"                 |
 | Agent = token; absent for a session                                      | `changesets.test.ts` "records the token", "records no token for a session"                                           |
 | Summary up to 80                                                         | `packages/api-schema/src/changesets.test.ts`; `changesets.test.ts` "refuses a long summary"                          |
 | Atomic; a rejection writes nothing and says why                          | `changesets.test.ts` "writes nothing on any refusal" (tab row, record, parts, relay all absent)                      |
-| Whole-tab PUT is the editor's; a token is refused 405                    | `apps/api/src/routes/tab-put-route.test.ts` (planned) "token PUT answers use_changesets"                             |
-| Tab rename route, relayed as `document-meta`                             | `apps/api/src/routes/tab-name-route.test.ts` (planned); `document-room.test.ts` "/mutation sequences document-meta"  |
+| Whole-tab PUT is the editor's; a token is refused 405                    | `apps/api/src/routes/tab-put-route.test.ts` "token PUT answers use_changesets"                             |
+| Tab rename route, relayed as `document-meta`                             | `apps/api/src/routes/tab-name-route.test.ts`; `document-room.test.ts` "/mutation sequences document-meta"  |
 | Every write advances `rev`                                               | `apps/api/src/db/tabs.test.ts` (real SQLite): upsert, at-rev, rename, seed, swap, copy, trigger aborts               |
 | Every tab read returns `rev` and `ETag`                                  | `document-subresource-routes` GET test; `tab-row.test.ts`                                                            |
 | Any edit identity may submit; dry run writes nothing                     | `changesets.test.ts` "share-link editor submits", "dry run answers the plan only"                                    |
-| Base table, each row (missing fingerprint conflicts)                     | `apps/api/src/changesets/base-check.test.ts` (planned), one case per row                                             |
+| Base table, each row (missing fingerprint conflicts)                     | `apps/api/src/changesets/base-check.test.ts`, one case per row                                             |
 | Shifts are not fingerprinted; live fields are ignored                    | `base-check.test.ts` "ignores make-room shifts"; `element-fingerprint.test.ts` "ignores live fields"                 |
 | Held: every selected element, any role, never the owner, agents only     | `held-check.test.ts`; `changesets.test.ts` "elements_held", "owner's own selection", "person's revert"               |
 | Unreachable room holds nothing and logs                                  | `changesets.test.ts` "room down logs and applies"                                                                    |
 | Compile through the engine and `isValidTab`                              | `changesets.test.ts` with the engine, "invalid_result"                                                               |
-| CAS; lost race repeats once then 409                                     | `apps/api/src/changesets/submit.test.ts` (planned) (real SQLite, injected interleaving)                              |
-| Record and parts                                                         | `apps/api/src/db/changesets.test.ts` (planned); "a part at the cap is refused too_large"                             |
+| CAS; lost race repeats once then 409                                     | `apps/api/src/changesets/submit.test.ts` (real SQLite, injected interleaving)                              |
+| Record and parts                                                         | `apps/api/src/db/changesets.test.ts`; "a part at the cap is refused too_large"                             |
 | One sequenced op to the submitting room; relay failure never fails       | `document-room.test.ts` "/mutation sequences a changeset"; `submit.test.ts` "relay throws, 200"                      |
-| Merge on save: each element rule, reorder, live-field graft, idempotence | `apps/api/src/changesets/merge-on-save.test.ts` (planned)                                                            |
+| Merge on save: each element rule, reorder, live-field graft, idempotence | `apps/api/src/changesets/merge-on-save.test.ts`                                                            |
 | Header absent: the window                                                | `tab-put-route.test.ts` "no header merges the last 10 minutes"                                                       |
 | Survives a dropped relay, a sleeping room, an offline editor             | `tab-put-route.test.ts` "merges a changeset no editor saw"; `useChangesetFeed.test.tsx` gap refetch; e2e             |
-| Op carries id, rev, name, colour, summary, element ops                   | `apps/api/src/changesets/room-op.test.ts` (planned)                                                                  |
+| Op carries id, rev, name, colour, summary, element ops                   | `apps/api/src/changesets/room-op.test.ts`                                                                  |
 | Oversize relay: no element ops, editors refetch                          | `room-op.test.ts`; `changeset-seen.test.ts` "refetch"                                                                |
-| `GET /selections`                                                        | `apps/api/src/room-selections.test.ts` (planned); `document-room.test.ts` "answers selections", "mine by person tag" |
+| `GET /selections`                                                        | `apps/api/src/room-selections.test.ts`; `document-room.test.ts` "answers selections", "mine by person tag" |
 | Rooms for every server-stored document, none offline                     | `room-client.test.ts` "stub for a personal document"; `useRoomConnection` gate test                                  |
-| Revert: inverse as a new changeset, kept list, twice, created tab        | `apps/api/src/changesets/revert-plan.test.ts` (planned); `changesets.test.ts` revert cases                           |
+| Revert: inverse as a new changeset, kept list, twice, created tab        | `apps/api/src/changesets/revert-plan.test.ts`; `changesets.test.ts` revert cases                           |
 | One changeset read                                                       | `changesets.test.ts` "GET one answers results and text"                                                              |
 | Toast Undo is the revert; Ctrl+Z never reverts                           | `useChangesetFeed.test.tsx`; `apps/live/e2e/agent-changesets.spec.ts` (planned) "Ctrl+Z leaves it"                   |
-| Revertable while the record exists                                       | `db/changesets.test.ts` (planned) sweep with cascade; `changesets.test.ts` "404 after the sweep"                     |
+| Revertable while the record exists                                       | `db/changesets.test.ts` sweep with cascade; `changesets.test.ts` "404 after the sweep"                     |
 | Anyone with edit may revert                                              | `changesets.test.ts` "team member reverts", "viewer refused"                                                         |
 | Applies as a peer's and folds into the baseline                          | `room-op-apply.test.ts` case `changeset`; `save-baseline.test.ts`                                                    |
 | Outline for 2000 ms; reduced motion                                      | `ChangesetRevealOverlay.test.tsx` (fake timers, both motion modes)                                                   |
 | Toast copy, Show, Undo newest first, coalescing per token, no timeout    | `changeset-toast.test.ts`; `useChangesetFeed.test.tsx`; `useToast.test.tsx` "action toast stays"                     |
 | Toast silenced by "Show notifications"                                   | `useToast.test.tsx` "action toast respects the preference"                                                           |
-| MCP tools submit changesets; ops with a base and `rev`; rename route     | `apps/mcp/src/tools.test.ts`; `apps/mcp/src/changeset-client.test.ts` (planned)                                      |
+| MCP tools submit changesets; ops with a base and `rev`; rename route     | `apps/mcp/src/tools.test.ts`; `apps/mcp/src/changeset-client.test.ts`                                      |
 | `CHANGESET_MAX_OPERATIONS`                                               | `changesets.test.ts` "501 operations"                                                                                |
 | Token write limit                                                        | `index.test.ts` "a changeset counts against the token's writes"                                                      |
 | Logs                                                                     | each api test above asserts its fingerprint on a spied `console`                                                     |

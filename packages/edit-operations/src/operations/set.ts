@@ -11,6 +11,7 @@ import {
   type Element,
 } from '@livediagram/document';
 import { kindOf } from '../element-text';
+import { sameValue } from '../equality';
 import { layerLockOf } from '../locks';
 import { invalidValue, unknownField } from '../rejections';
 import { type EditState, refuseLocked, resolveTarget, writeFields } from '../state';
@@ -64,6 +65,8 @@ export function applySet(
   const merged = mergeElementUpdate(el, patch);
   for (const key of unset) delete merged[key];
   const next = merged as Element;
+  // A set that changes nothing leaves the element untouched, so it is never normalised (E1, I2).
+  if (sameValue(next, el)) return null;
   const layerLock = layerLockOf(state.tab.layers, next.layerId);
   if (layerLock) return refuseLocked(state, 'set', operation, next, layerLock);
   writeFields(state, next, operation, Object.keys(fields));

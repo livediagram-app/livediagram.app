@@ -42,7 +42,8 @@ export type ApplyOptions = {
   log?: EditLog;
 };
 
-export type ReplaceOptions = ApplyOptions & { tabId: string; name: string };
+// `themeId` names a created tab's theme by id (custom themes included); it wins over `theme`.
+export type ReplaceOptions = ApplyOptions & { tabId: string; name: string; themeId?: string };
 
 export type ReplaceBody =
   | { graph: GraphInput }

@@ -141,7 +141,7 @@ export function applyReplace(
   }
   const source = sourceOf(body);
   if (typeof source !== 'string') return refuse(source);
-  const themeId = options.theme?.id ?? tab?.theme;
+  const themeId = options.themeId ?? options.theme?.id ?? tab?.theme;
   if (themeId !== undefined && !isBuiltInTheme(themeId)) log('[edit-ops] theme-fallback', {});
   const built = build(body, source, themeId);
   if ('code' in built) return refuse(built);

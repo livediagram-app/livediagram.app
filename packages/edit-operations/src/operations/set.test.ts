@@ -58,6 +58,19 @@ describe('set', () => {
     expect(elementOps).toEqual([]);
   });
 
+  it('leaves an element it does not change unnormalised, so it never changes (E1, I2)', () => {
+    const bare: Tab = {
+      id: 't',
+      name: 'T',
+      elements: [
+        { id: 'a', type: 'shape', shape: 'square', x: 0, y: 0, width: 120, height: 60, label: 'a' },
+      ],
+    };
+    const { results, elementOps } = applied(run([set('a', { label: 'a' })], bare));
+    expect(results).toEqual([]);
+    expect(elementOps).toEqual([]);
+  });
+
   it('writes named geometry as stored coordinates', () => {
     expect(lines(run([set('t1', { x: 300, width: 200 })]))).toEqual([
       '~ t1  @150,620→@300,620 · width 160→200',
