@@ -1,4 +1,4 @@
-// Further page layouts (docs/specs/007-editor/infographic-pages.md "Layouts"): a section divider, a
+// Further page layouts (docs/specs/007-editor/illustrate-pages.md "Layouts"): a section divider, a
 // poster, survey results, a progress report, a roadmap, an agenda, questions and answers, and a
 // profile. Same contract as page-layouts.ts: the page's content box in, uncoloured elements out, a
 // tall page stacking and a wide one setting side by side.

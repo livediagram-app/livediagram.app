@@ -682,6 +682,28 @@ describe('DocumentRoom op-role enforcement', () => {
     expect(received[0]).not.toHaveProperty('seq');
   });
 
+  // docs/specs/007-editor/article-pages.md "Collaboration": a writer's caret is presence. Sent at
+  // cursor rates while someone types, so a `seq` would flood the catch-up log with carets.
+  it("relays a writer's article caret unordered, and its null too", () => {
+    const { room } = newRoom();
+    const writer = connect(room, 'writer', 'edit');
+    const other = connect(room, 'other', 'edit');
+    other.ws.sent.length = 0;
+
+    sendFrame(room, writer.ws, {
+      kind: 'op',
+      op: { kind: 'article-caret', tabId: 't', flow: 'f', blockId: 'b', offset: 3 },
+    });
+    sendFrame(room, writer.ws, {
+      kind: 'op',
+      op: { kind: 'article-caret', tabId: 't', flow: null },
+    });
+
+    const received = opsReceived(other.ws);
+    expect(received).toHaveLength(2);
+    for (const msg of received) expect(msg).not.toHaveProperty('seq');
+  });
+
   // docs/specs/008-canvas/drag-preview.md: an editor's live drag relays unordered, and a viewer's never
   // relays at all — a viewer must not make others' elements appear to move.
   it("relays an editor's drag preview unordered, and drops a viewer's", () => {

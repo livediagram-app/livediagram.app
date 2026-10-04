@@ -728,7 +728,7 @@ export const SLIDES_ADDED = chart(
   'UI',
   'Added',
   'Slides Added',
-  'A slide added to a deck: from a selection, or an infographic page as a slide.',
+  'A slide added to a deck: from a selection, or an Illustrate page as a slide.',
   { types: ['Slide', 'PageSlide'] },
 );
 

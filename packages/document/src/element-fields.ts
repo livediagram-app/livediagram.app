@@ -443,6 +443,7 @@ export const ELEMENT_FIELD_NAMES = {
     'textUnderline',
     'textStrikethrough',
     'font',
+    'articleNote',
   ]),
   'link-card': fieldsOf<LinkCardElement>()([
     'id',

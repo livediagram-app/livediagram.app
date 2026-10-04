@@ -183,11 +183,16 @@ Measured 2026-10-03, on the runner unless stated.
 
 - **Zoom** (68-110 ms) is the browser re-rasterising every element at the new scale; script in the
   gesture is small once the board keeps its identity. Two compositor-only remedies, scoped to the
-  zoom gesture, each crashed the renderer mid-zoom on the 1,000-element board, every run, locally:
-  `will-change: transform` on the world (one layer the size of the board, the same failure as
-  lifting the arrows' canvas-sized SVGs) and `content-visibility: auto` on element wrappers. Neither
-  is safe to ship. What remains is the spec's Later list: level of detail at low zoom, and not
+  zoom gesture, measured on the runner (locally they crashed, but so did the unchanged build: swap
+  was exhausted, so those crashes said nothing about either):
+  - `will-change: transform` on the world: one layer the size of the board, re-rasterised whole;
+    zoom 4,463-4,475 ms at fit and 509-531 ms at 100%, against 68-110 ms.
+  - `content-visibility: auto` on element wrappers while zooming: the browser toggles rendering on
+    every wrapper mid-gesture; 244-311 ms against 68-110 ms.
+
+  Neither ships. What remains is the spec's Later list: level of detail at low zoom, and not
   mounting off-screen elements when zoomed in.
+
 - **Marquee** at fit (61-70 ms): the drag itself costs nothing; the whole task is the release. In a
   local unminified profile (4x): `Canvas`'s own body about 34 ms (two `...props` spreads into
   `CanvasElementsLayer` and `CanvasChrome` about 10 ms of it, the rest the compiler's cache checks),
@@ -205,6 +210,25 @@ Measured 2026-10-03, on the runner unless stated.
   kernel log when an allocation fails. With swap exhausted by other work, a 1,000-element page
   crashed at random points; a 200-element board serves for counts that do not depend on size
   (how often something re-runs), and the runner for timings.
+
+## The selection store
+
+Measured 2026-10-04. Moving the selection out of the canvas's props (a per-editor store, read per
+element) stopped the canvas and its element layer rendering for a selection change. Script time on
+the reference diagram, unthrottled, alternating `main` and the branch in three rounds of 12:
+
+| Moment   | `main`       | Store        |
+| -------- | ------------ | ------------ |
+| Select   | 14.2-16.4 ms | 9.1-11.0 ms  |
+| Deselect | 6.8-12.6 ms  | 3.5-4.1 ms   |
+| Marquee  | 30.3-36.4 ms | 25.1-31.6 ms |
+
+The runner could not show it. Four probe runs of the branch, two on the same commit, read drag at
+377-462 ms on three and 633-686 ms on one, against 638-685 ms on `main`. The traces put the
+difference in main-thread busy time outside script (about 16 s against 23 s per drag window), so it
+is the runner machine's compositor, which the CPU calibration does not model. Read a drag row only
+against runs on the same runner, and judge a change in script time by a local A/B, not by the nightly.
+What remains in a select's long task is mostly the editor root rendering above the canvas.
 
 ## Not tried
 

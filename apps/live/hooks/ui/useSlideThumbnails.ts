@@ -1,12 +1,15 @@
 'use client';
 
+import { pageRulingOf, pageWritingBars } from '@/lib/article/article-export';
+import { useArticleLaidOutSeq } from '@/lib/article/article-editor-store';
+import { articleOpsToSvg } from '@/lib/article/article-draw';
 import { useMemo } from 'react';
 import {
   r2,
   resolveSlide,
   slideFrame,
-  infographicPagesOf,
-  layOutInfographicPages,
+  illustratePagesOf,
+  layOutIllustratePages,
   arrowLabelFontStack,
   arrowLabelPass,
   svgArrow,
@@ -38,7 +41,11 @@ export type SlideThumb = { markup: string; viewBox: string };
 export function useSlideThumbnails(deck: Deck, tabs: Tab[]): Map<string, SlideThumb> {
   // Re-render once the async icon catalogues land so icon glyphs pop in.
   const iconsLoaded = useIconCatalogs();
+  // An article's writing laid out for the first time: its lines of text can be drawn now.
+  const laidOut = useArticleLaidOutSeq();
   return useMemo(() => {
+    // Read so the pictures redraw once the writing they draw has been laid out.
+    void laidOut;
     // The resolvers find nothing until the catalogues land; gating them on the
     // flag makes the rebuild on landing a real input of this memo.
     const art = iconsLoaded
@@ -58,10 +65,19 @@ export function useSlideThumbnails(deck: Deck, tabs: Tab[]): Map<string, SlideTh
       // connector never disappears under the box it points at.
       const parts: string[] = [];
       const page = slide.pageId
-        ? layOutInfographicPages(infographicPagesOf(tab)).find((p) => p.id === slide.pageId)
+        ? layOutIllustratePages(illustratePagesOf(tab)).find((p) => p.id === slide.pageId)
         : undefined;
-      if (page)
-        parts.push(pageExportFrame(page, { idPrefix: `lvd-slide-${slide.id}` }).backgroundSvg);
+      if (page) {
+        parts.push(
+          pageExportFrame(page, {
+            idPrefix: `lvd-slide-${slide.id}`,
+            ruling: pageRulingOf(tab, page),
+          }).backgroundSvg,
+        );
+        // An article page's writing, as lines of text.
+        const bars = pageWritingBars(page);
+        if (bars.length) parts.push(articleOpsToSvg(bars));
+      }
       for (const el of elements) {
         if (el.type !== 'arrow') {
           parts.push(
@@ -103,5 +119,5 @@ export function useSlideThumbnails(deck: Deck, tabs: Tab[]): Map<string, SlideTh
       });
     }
     return out;
-  }, [deck, tabs, iconsLoaded]);
+  }, [deck, tabs, iconsLoaded, laidOut]);
 }

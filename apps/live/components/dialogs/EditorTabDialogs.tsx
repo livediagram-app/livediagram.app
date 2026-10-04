@@ -7,6 +7,8 @@ import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
 import { saveOfflineToCloud } from '@/lib/offline/offline-convert';
 import { tabAsSeen } from '@/lib/export-as-seen';
 import { panelEnabled } from '@/lib/user-preferences';
+import { LeaveIllustrateDialog } from '@/components/dialogs/LeaveIllustrateDialog';
+import { LeaveIllustrateConfirm } from '@/components/dialogs/LeaveIllustrateConfirm';
 
 const ExportTabDialog = dynamic(
   () => import('@/components/dialogs/ExportTabDialog').then((m) => m.ExportTabDialog),
@@ -31,7 +33,7 @@ export function EditorTabDialogs() {
     userPreferences,
     exportOpen,
     exportScope,
-    infographicPages,
+    illustratePages,
     activeTab,
     tabs,
     multiSelectedIds,
@@ -57,6 +59,7 @@ export function EditorTabDialogs() {
     rescopeShareLink,
     setDocumentSharePassword,
     setShareDialogOpen,
+    leaveIllustrate,
   } = useEditorContext();
 
   // Offline documents (docs/specs/006-document/offline-mode.md) can't be shared until they're synced to the
@@ -71,6 +74,8 @@ export function EditorTabDialogs() {
 
   return (
     <>
+      <LeaveIllustrateDialog leave={leaveIllustrate} />
+      <LeaveIllustrateConfirm leave={leaveIllustrate} />
       {exportOpen ? (
         <ExportTabDialog
           // Export what the author is LOOKING at: a tab on the Default colour
@@ -85,9 +90,9 @@ export function EditorTabDialogs() {
               : {}),
           })}
           scope={exportScope}
-          // In Infographic mode the whole tab exports as its pages
-          // (docs/specs/007-editor/infographic-pages.md "Export").
-          pages={exportScope === 'tab' ? infographicPages?.pages : undefined}
+          // In Illustrate mode the whole tab exports as its pages
+          // (docs/specs/007-editor/illustrate-pages.md "Export").
+          pages={exportScope === 'tab' ? illustratePages?.pages : undefined}
           documentName={documentName}
           imageContext={imageContext}
           offerHiddenLayers={panelEnabled(userPreferences, 'layersPanelEnabled')}
@@ -99,6 +104,9 @@ export function EditorTabDialogs() {
           tabName={activeTab.name}
           onImportFile={importIntoActiveTab}
           onImportText={importTextIntoActiveTab}
+          // Illustrate mode imports a livediagram tab only: the other formats are diagrams
+          // (docs/specs/007-editor/illustrate-pages.md "Import").
+          formats={illustratePages ? ['json'] : undefined}
           onClose={() => setImportOpen(false)}
         />
       ) : null}

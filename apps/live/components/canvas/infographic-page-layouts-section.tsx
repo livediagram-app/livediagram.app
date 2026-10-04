@@ -1,6 +1,6 @@
 'use client';
 
-// The page panel's Layouts (docs/specs/007-editor/infographic-pages.md "Layouts"): the layouts by
+// The page panel's Layouts (docs/specs/007-editor/illustrate-pages.md "Layouts"): the layouts by
 // category, as /new browses templates: the categories first (each a card fronted by its first
 // layout, with a count), then one category's layouts, each previewed for this page, with a way
 // back. Onto an empty page a press places it at once; onto
@@ -18,20 +18,27 @@ import { ChevronLeftIcon } from '@livediagram/ui';
 import { CountBadge } from '@/components/primitives/CountBadge';
 import { Button } from '@livediagram/ui';
 import { LayoutThumb } from './infographic-layout-thumb';
-import { PanelSection } from './infographic-page-panel-sections';
+import { PanelSection } from './illustrate-page-panel-sections';
 
-export function LayoutsSection({
-  page,
-  contentCount,
-  onApply,
-  onPreview,
-}: {
+type LayoutBrowserProps = {
   page: LaidOutPage;
   contentCount: number;
   onApply: (layout: PageLayoutId) => void;
   // Shows a layout on the page while its tile is hovered or focused; null takes it away.
   onPreview: (layout: PageLayoutId | null) => void;
-}) {
+};
+
+export function LayoutsSection(props: LayoutBrowserProps) {
+  return (
+    <PanelSection title="Start from a layout">
+      <LayoutBrowser {...props} />
+    </PanelSection>
+  );
+}
+
+/** The layouts by category, then one category's layouts: the panel's Layouts section, and the
+ *  card an empty infographic page shows inside itself (EmptyPageLayouts). */
+export function LayoutBrowser({ page, contentCount, onApply, onPreview }: LayoutBrowserProps) {
   const [pending, setPending] = useState<PageLayoutId | null>(null);
   // The category open, or null for the overview of categories.
   const [category, setCategory] = useState<PageLayoutCategoryId | null>(null);
@@ -42,7 +49,7 @@ export function LayoutsSection({
   };
   const pendingLabel = PAGE_LAYOUTS.find((l) => l.id === pending)?.label;
   return (
-    <PanelSection title="Start from a layout">
+    <>
       {pending ? (
         <div
           role="alertdialog"
@@ -159,6 +166,6 @@ export function LayoutsSection({
           })}
         </div>
       )}
-    </PanelSection>
+    </>
   );
 }

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  layOutInfographicPages,
+  layOutIllustratePages,
   pageMargin,
   PAGE_ORIENTATIONS,
   PAGE_SIZE_IDS,
@@ -8,7 +8,7 @@ import {
 } from '@livediagram/document';
 import { PAGE_LAYOUT_CATEGORIES, PAGE_LAYOUTS } from '@livediagram/templates';
 
-// docs/specs/007-editor/infographic-pages.md "Layouts": every layout fits inside the page's
+// docs/specs/007-editor/illustrate-pages.md "Layouts": every layout fits inside the page's
 // margins at every size and orientation, and is a complete starting point.
 const boxes = (els: Element[]) =>
   els.flatMap((el) =>
@@ -16,7 +16,7 @@ const boxes = (els: Element[]) =>
   );
 
 describe('page layouts', () => {
-  it('are the twenty-one of the spec, each unique', () => {
+  it('are the thirty-one of the spec, each unique', () => {
     expect(PAGE_LAYOUTS.map((l) => l.id)).toEqual([
       'title',
       'big-number',
@@ -39,6 +39,16 @@ describe('page layouts', () => {
       'agenda',
       'questions',
       'profile',
+      'pros-cons',
+      'before-after',
+      'feature-matrix',
+      'announcement',
+      'did-you-know',
+      'save-the-date',
+      'pictogram',
+      'ranking',
+      'cycle',
+      'funnel',
     ]);
   });
 
@@ -52,7 +62,7 @@ describe('page layouts', () => {
 
   for (const size of PAGE_SIZE_IDS) {
     for (const orientation of PAGE_ORIENTATIONS) {
-      const [page] = layOutInfographicPages([{ id: 'p', orientation, size }]);
+      const [page] = layOutIllustratePages([{ id: 'p', orientation, size }]);
       const m = pageMargin(page!);
       const box = {
         x: page!.rect.x + m,

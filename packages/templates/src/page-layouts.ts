@@ -1,4 +1,4 @@
-// Page layouts (docs/specs/007-editor/infographic-pages.md "Layouts"): ready-made arrangements put
+// Page layouts (docs/specs/007-editor/illustrate-pages.md "Layouts"): ready-made arrangements put
 // onto ONE Infographic page, to start from and then edit. Pure builders: the page's content box (the
 // page less its margins) in, ordinary elements out, laid out in proportions of the box so a layout
 // fits every size and orientation. Elements carry no colours of their own: the tab's theme paints
@@ -24,6 +24,10 @@ import {
   buildSurveyResults,
 } from './page-layouts-more';
 
+import { buildBeforeAfter, buildFeatureMatrix, buildProsCons } from './page-layouts-compare';
+import { buildAnnouncement, buildDidYouKnow, buildSaveTheDate } from './page-layouts-social';
+import { buildCycle, buildFunnel, buildPictogram, buildRanking } from './page-layouts-figures';
+
 export type { LayoutBox } from './page-layout-kit';
 
 export type PageLayoutId =
@@ -47,16 +51,28 @@ export type PageLayoutId =
   | 'roadmap'
   | 'agenda'
   | 'questions'
-  | 'profile';
+  | 'profile'
+  | 'pros-cons'
+  | 'before-after'
+  | 'feature-matrix'
+  | 'announcement'
+  | 'did-you-know'
+  | 'save-the-date'
+  | 'pictogram'
+  | 'ranking'
+  | 'cycle'
+  | 'funnel';
 
-// The layout picker's categories (docs/specs/007-editor/infographic-pages.md "Layouts"), in order.
-export type PageLayoutCategoryId = 'covers' | 'data' | 'steps' | 'people';
+// The layout picker's categories (docs/specs/007-editor/illustrate-pages.md "Layouts"), in order.
+export type PageLayoutCategoryId = 'covers' | 'data' | 'steps' | 'compare' | 'people' | 'social';
 
 export const PAGE_LAYOUT_CATEGORIES: readonly { id: PageLayoutCategoryId; label: string }[] = [
   { id: 'covers', label: 'Covers' },
   { id: 'data', label: 'Data' },
   { id: 'steps', label: 'Steps and Time' },
+  { id: 'compare', label: 'Compare' },
   { id: 'people', label: 'People and Ideas' },
+  { id: 'social', label: 'Social' },
 ];
 
 function titlePage(k: Kit): Element[] {
@@ -446,7 +462,7 @@ export const PAGE_LAYOUTS: readonly PageLayout[] = [
   },
   {
     id: 'comparison',
-    category: 'people',
+    category: 'compare',
     label: 'Comparison',
     description: 'Two columns of three points, side by side',
     build: (b) => comparison(kit(b)),
@@ -555,6 +571,76 @@ export const PAGE_LAYOUTS: readonly PageLayout[] = [
     label: 'Profile',
     description: 'A photo, a name, a short bio and three facts',
     build: buildProfile,
+  },
+  {
+    id: 'pros-cons',
+    category: 'compare',
+    label: 'Pros and cons',
+    description: 'Four pros and four cons side by side, and a verdict',
+    build: buildProsCons,
+  },
+  {
+    id: 'before-after',
+    category: 'compare',
+    label: 'Before and after',
+    description: 'Two panels, an image and three points each, and the change in one figure',
+    build: buildBeforeAfter,
+  },
+  {
+    id: 'feature-matrix',
+    category: 'compare',
+    label: 'Feature matrix',
+    description: 'Three options against five features, ticks and dashes, one recommended',
+    build: buildFeatureMatrix,
+  },
+  {
+    id: 'announcement',
+    category: 'social',
+    label: 'Announcement',
+    description: 'A New badge, a big headline, an image and a call to action',
+    build: buildAnnouncement,
+  },
+  {
+    id: 'did-you-know',
+    category: 'social',
+    label: 'Did you know?',
+    description: 'One surprising fact, set large under an icon, with its source',
+    build: buildDidYouKnow,
+  },
+  {
+    id: 'save-the-date',
+    category: 'social',
+    label: 'Save the date',
+    description: 'The date in a calendar tile, the event and where',
+    build: buildSaveTheDate,
+  },
+  {
+    id: 'pictogram',
+    category: 'data',
+    label: 'Pictogram',
+    description: 'A figure like 7 in 10, shown as ten people, seven filled',
+    build: buildPictogram,
+  },
+  {
+    id: 'ranking',
+    category: 'data',
+    label: 'Ranking',
+    description: 'Five ranked rows, each with a bar sized to its value',
+    build: buildRanking,
+  },
+  {
+    id: 'cycle',
+    category: 'steps',
+    label: 'Cycle',
+    description: 'Four stages round a loop, each with an icon and a note',
+    build: buildCycle,
+  },
+  {
+    id: 'funnel',
+    category: 'steps',
+    label: 'Funnel',
+    description: 'Four narrowing stages and the conversion between them',
+    build: buildFunnel,
   },
 ];
 

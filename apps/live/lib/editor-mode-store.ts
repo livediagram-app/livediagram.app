@@ -12,7 +12,7 @@
 import {
   editorModeSwitchable,
   DEFAULT_EDITOR_MODE,
-  isEditorMode,
+  parseEditorMode,
   opensInOf,
   type EditorMode,
   type Tab,
@@ -51,7 +51,7 @@ const listeners = new Set<() => void>();
 export function readRememberedMode(tabId: string): EditorMode | null {
   if (cache.has(tabId)) return cache.get(tabId)!;
   const raw = readLocalStorageSafe(editorModeKey(tabId));
-  const mode = isEditorMode(raw) ? raw : null;
+  const mode = parseEditorMode(raw) ?? null;
   if (raw !== null && mode === null)
     console.warn('[editor-mode] remembered mode unreadable, ignored', { tabId });
   cache.set(tabId, mode);

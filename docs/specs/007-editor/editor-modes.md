@@ -1,27 +1,27 @@
 # Editor modes
 
 A general tab is drawn on in one of three **editor modes**: **Diagram**,
-**Draw** and **Infographic** (Infographic is an experiment under review). A mode decides which tools and rules are in focus; it never decides
+**Draw** and **Illustrate** (Illustrate is an experiment under review). A mode decides which tools and rules are in focus; it never decides
 what the tab is. Like a drawing tool that switches between a pixel mode and a
 vector mode over the same picture, switching mode keeps every element exactly
 where it is and changes only how the next mark is made.
 
 ## Domain language
 
-| Term                 | Means                                                                                                                  |
-| -------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| **tab kind**         | What a tab **is** ([Document](../006-document/document.md)). Reserved for specific uses.                               |
-| **editor mode**      | How a general tab is **worked on** right now: `diagram`, `draw` or `infographic` (`EditorMode`).                       |
-| **Diagram mode**     | Structured drawing: the palette, shapes, arrows, icons, templates, snapping and guides.                                |
-| **Draw mode**        | Freehand whiteboarding: the dock, preset pens, eraser, shape recognition ([Draw mode](../023-draw-mode/draw-mode.md)). |
-| **Infographic mode** | Visual pages: A4 pages on the canvas, the palette narrowed to icons, stickers, charts, components, devices and media.  |
-| **mode switch**      | The control beside the page switcher that changes the editor mode.                                                     |
+| Term                | Means                                                                                                                                 |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| **tab kind**        | What a tab **is** ([Document](../006-document/document.md)). Reserved for specific uses.                                              |
+| **editor mode**     | How a general tab is **worked on** right now: `diagram`, `draw` or `illustrate` (`EditorMode`).                                       |
+| **Diagram mode**    | Structured drawing: the palette, shapes, arrows, icons, templates, snapping and guides.                                               |
+| **Draw mode**       | Freehand whiteboarding: the dock, preset pens, eraser, shape recognition ([Draw mode](../023-draw-mode/draw-mode.md)).                |
+| **Illustrate mode** | Pages on the canvas, of two kinds: infographic pages to lay out and article pages to write ([Illustrate pages](illustrate-pages.md)). |
+| **mode switch**     | The control beside the page switcher that changes the editor mode.                                                                    |
 
 - "Whiteboard" names the activity and Draw mode's look, never a tab kind and
   never a type of document.
 - "Mode" on its own is ambiguous here (Zen mode, Presentation mode, Power user
   mode); in specs and code say **editor mode**. The interface says **Diagram**,
-  **Draw** and **Infographic**.
+  **Draw** and **Illustrate**.
 
 ## Kinds versus modes
 
@@ -62,7 +62,8 @@ where it is and changes only how the next mark is made.
     "Editor mode: Diagram", over a `menu` of `menuitemradio` rows; arrow keys
     open it and move within it, wrapping, Home and End jump.
   - The same for everyone, power user mode or not.
-- **Two options, one chosen:** Diagram and Draw. Exactly one is active.
+- **One mode chosen:** Diagram, Draw or Illustrate (while it is offered, "Experimental modes").
+  Exactly one is active.
 - **Switching is instant and lossless:** no dialog, no reload, no change to the
   document; the selection is kept, an in-progress gesture or text edit is
   finished first, and the canvas viewport does not move.
@@ -72,8 +73,7 @@ where it is and changes only how the next mark is made.
   notation, and shows no switch.
 - **Zero layout shift:** the switch has a fixed size, and nothing next to it
   moves when the mode changes.
-- **Shift+D** toggles between the two modes (with more modes, it moves to
-  the next), shown in the switch's menu, `aria-keyshortcuts` and Settings ›
+- **Shift+D** moves to the next offered mode, wrapping round, shown in the switch's menu, `aria-keyshortcuts` and Settings ›
   Keyboard; a switch by key is announced politely ("Draw mode"). It obeys
   the character-key shortcuts setting.
 - **Accessible:** reachable by keyboard, its state exposed to assistive
@@ -90,7 +90,11 @@ where it is and changes only how the next mark is made.
   Start entry and whiteboard imports set it to `draw`.
 - **A switch is remembered** for that person and tab, in this browser, and
   wins over the tab's opening mode from then on.
-- **Switching never changes the opening mode.**
+- **An editor's switch moves the opening mode with it**, so a tab's **Opens in** always matches
+  the mode its editors last worked in: on a general, unlocked tab, a switch by someone who may edit
+  also sets `Tab.opensIn` (a consequence of the switch, with no undo step of its own), synced to
+  everyone. Nobody else's current mode changes (each person's mode on the tab is pinned once it
+  opens). A visitor's switch, a locked tab and an event-storming board leave it be.
 - **New documents and new tabs open in Diagram.** Whatever mode its creator
   is in, a new document or a tab added from the tab bar (or Quick Start)
   opens in Diagram. Only the template chosen for it changes that: the
@@ -99,7 +103,7 @@ where it is and changes only how the next mark is made.
   Blank included, opens in Diagram. An import that sets its own opening
   mode wins.
 - **Opens in:** the tab menu holds an **Opens in** submenu for editors,
-  listing every editor mode (Diagram, Draw) as a radio choice with the
+  listing every offered editor mode (Diagram, Draw, Illustrate) as a radio choice with the
   current one checked. Choosing one sets `Tab.opensIn` for everyone and
   switches the chooser's own mode on that tab to it (remembered like any
   switch), so the choice visibly lands; nobody else's current mode changes.
@@ -178,8 +182,11 @@ element in the same colour.
     migrated whiteboard without it becomes `'wrap'`, as it hugged there.
 - **Entering Draw mode**, by opening a tab or by switching, puts the active
   pen in hand on an empty tab and Select on a tab with content.
-- **Infographic mode** is Diagram mode drawn as pages, with the palette
+- **Illustrate mode** is Diagram mode drawn as pages, with the palette
   narrowed (both below); every other rule, tool and shortcut is Diagram mode's.
+- **Each mode's mark**: Diagram a flowchart (two steps joined), Draw a marker,
+  Illustrate a page with a little chart above two lines of writing (its two
+  page kinds); the same glyph on the switch, Opens in and the tab pill.
 - **No further cue:** the dock (in place of the palette) and the switch's
   own label say which mode is on; no tint, accent or notice is added.
 - **Leaving a mode puts its tool down**, as leaving a whiteboard did: a pen,
@@ -215,30 +222,30 @@ holds.
   Diagram's layout.
 
 Today the two layouts differ as below. Within the shared categories,
-Infographic's **Write** leaves out **Page** (the page is the canvas there) and
+Illustrate's **Write** leaves out **Page** (the page is the canvas there) and
 **Annotation**, its **Build** leaves out **Mind node**, **Lane** and **Frame**
 (they organise a diagram, not a visual page), and its **Components** leaves
 out **Entity**; Diagram's
 **Media** leaves out the **Embed** group (YouTube, Vimeo, Loom, Figma, Google
 Docs, Website), keeping Image and Avatar.
 
-| Category       | Diagram | Infographic |
-| -------------- | ------- | ----------- |
-| Popular        | yes     | yes         |
-| Shapes         | yes     | yes         |
-| My shapes      | yes     | yes         |
-| Write          | yes     | yes         |
-| Draw           | yes     | no          |
-| Build          | yes     | yes         |
-| Components     | no      | yes         |
-| Devices        | no      | yes         |
-| Event Storming | board   | no          |
-| Icons          | yes     | yes         |
-| Stickers       | yes     | yes         |
-| Tech           | yes     | no          |
-| Media          | yes     | yes         |
-| Data           | no      | yes         |
-| Behaviours     | yes     | no          |
+| Category       | Diagram | Illustrate |
+| -------------- | ------- | ---------- |
+| Popular        | yes     | yes        |
+| Shapes         | yes     | yes        |
+| My shapes      | yes     | yes        |
+| Write          | yes     | yes        |
+| Draw           | yes     | no         |
+| Build          | yes     | yes        |
+| Components     | no      | yes        |
+| Devices        | no      | yes        |
+| Event Storming | board   | no         |
+| Icons          | yes     | yes        |
+| Stickers       | yes     | yes        |
+| Tech           | yes     | no         |
+| Media          | yes     | yes        |
+| Data           | no      | yes        |
+| Behaviours     | yes     | no         |
 
 - **The landing category** is the mode's **Popular**, and the notation on an
   event-storming board
@@ -251,7 +258,7 @@ Docs, Website), keeping Image and Avatar.
   - **Diagram**: Square, Circle, Diamond, Text, Arrow, Frame, Sticky note,
     Image, Shape pen, Table, Code block, Entity (what were the default
     Favourites).
-  - **Infographic**: Text, Square, Circle, Image, Speech bubble, Pie, Bar,
+  - **Illustrate**: Text, Square, Circle, Image, Speech bubble, Pie, Bar,
     Donut, Stat row, Process, Timeline, Callout, each also reachable from
     another category the mode offers.
 - Elements already on the canvas are untouched: narrowing the palette only
@@ -259,50 +266,52 @@ Docs, Website), keeping Image and Avatar.
 
 ## The pages
 
-Infographic mode draws **pages** on the canvas, in a row, like artboards in
+Illustrate mode draws **pages** on the canvas, in a row, like artboards in
 a design tool. What a page is and offers (sizes, backgrounds, layouts, page
 actions, snapping, export, laying content out into pages, page slides) is
-[Infographic pages](infographic-pages.md); this section is the basics.
+[Illustrate pages](illustrate-pages.md); this section is the basics.
 
 - **The pages** are sheets of paper (white in light chrome, slate-900 in dark)
   with a soft shadow, under every element. The first is centred on the canvas
-  origin; each further page sits **96** px (`INFOGRAPHIC_PAGE_GAP`) to the right
+  origin; each further page sits **96** px (`ILLUSTRATE_PAGE_GAP`) to the right
   of the one before, every page centred on the row's horizontal axis.
   - A page is **A4** unless it has a size of its own: at 96 px per inch,
     **794 x 1123** in portrait, **1123 x 794** in landscape (`A4_SHORT_SIDE`,
-    `A4_LONG_SIDE`, `packages/document/src/infographic-page.ts`); the other
-    sizes are in [Infographic pages](infographic-pages.md) "Sizes".
-  - The pages are the tab's (`Tab.pages`: `InfographicPage[]`, in row
+    `A4_LONG_SIDE`, `packages/document/src/illustrate-page.ts`); the other
+    sizes are in [Illustrate pages](illustrate-pages.md) "Sizes".
+  - The pages are the tab's (`Tab.pages`: `IllustratePage[]`, in row
     order), so everyone lays out on the same ones. A tab with no `pages` has one
     page, in its legacy `pageOrientation` (portrait when absent); the legacy
-    field is dropped the first time the pages change. At most **20** pages
-    (`MAX_INFOGRAPHIC_PAGES`).
+    field is dropped the first time the pages change. At most **100** pages
+    (`MAX_ILLUSTRATE_PAGES`).
 - **The surround** is the tab's own canvas: its colour and pattern, and every
   canvas setting, apply behind the pages exactly as in Diagram mode.
-- **Each page's label** sits above its top-left corner (**A4 · Portrait**, or
-  **Page 2 · A4 · Landscape** once there is more than one, or its name), and
+- **Each page's label** sits above its top-left corner (**A4 · Portrait · Infographic**, or
+  **Page 2 · A4 · Landscape · Article** once there is more than one, or its name), and
   **its settings cog** above its top-right, both held at one screen size at any
   zoom. The cog (tooltip **Page settings**, or **Page 2 settings**) opens the
-  **page panel** ([Infographic pages](infographic-pages.md) "The page panel").
+  **page panel** ([Illustrate pages](illustrate-pages.md) "The page panel").
   A viewer who cannot edit (a view role, a locked tab) gets no cog and no add
   button.
 - **Adding a page:** a round **+** (tooltip **Add page**) sits in the gap's
-  width to the right of the last page, on the row's axis. It adds a page after
-  the last, in the last page's size and orientation; it is gone at the limit,
+  width to the right of the last page, on the row's axis. It opens **Add a
+  page**, choosing the new page's kind ([Illustrate pages](illustrate-pages.md)
+  "Page kinds"); the page goes after the last; the + is gone at the limit,
   and the view then frames the new page.
 - **Content moves with its page.** Turning, resizing, moving or deleting a page
   moves the pages after it; every element whose centre lies on a page that
   moves (and an arrow's free ends) moves with it, re-centred on the page's
-  centre (`withInfographicPages`). A deleted page takes its content with it; a
+  centre (`withIllustratePages`); on an article page it keeps its place from
+  the page's top-left corner, where the writing starts. A deleted page takes its content with it; a
   turned or resized page re-fits its own content
-  ([Infographic pages](infographic-pages.md) "Sizes"). Elements on no page stay
+  ([Illustrate pages](illustrate-pages.md) "Sizes"). Elements on no page stay
   where they are. Each change is one tab edit (one undo step, synced to
   everyone).
 - **Turning, adding and deleting animate:** the sheets ease to their new places
   and shapes over 200 ms (none under reduced motion).
-- **Centred in the viewport:** entering Infographic mode or opening a tab in it
+- **Centred in the viewport:** entering Illustrate mode or opening a tab in it
   fits a square of the long side around the first page
-  (`infographicPageFitBox(page)`), so either orientation fits at the same zoom and
+  (`illustratePageFitBox(page)`), so either orientation fits at the same zoom and
   turning it never moves the view. Where the Toolbar layout's strip lies over
   the canvas's top edge, the page centres in the band below it
   (`computeFitBelow`).
@@ -311,29 +320,48 @@ actions, snapping, export, laying content out into pages, page slides) is
   the canvas still move freely, on or off the pages.
 - **Elements are cut off at the page edges.** Whatever part of an element hangs
   off a page is hidden and cannot be pressed, as if the pages were the only
-  paper (`InfographicPageClip`, a layer clipped to the pages that holds the
+  paper (`IllustratePageClip`, a layer clipped to the pages that holds the
   element views). The selection handles are drawn above it, so an element
   hanging off a page still shows all of them. Not in the isometric view, whose
   3D stack a clip would flatten.
 - **The sheets are a view, never elements.** They take no pointer events (a
   press on one is a press on the empty canvas). Thumbnails see the tab's own
-  backdrop and the elements whole; the Export dialog in Infographic mode exports
-  the pages ([Infographic pages](infographic-pages.md) "Export").
-- The sheets are `apps/live/components/canvas/InfographicPages.tsx`; the pages'
-  edits and the centring are `apps/live/hooks/editor/useInfographicPage.ts`.
+  backdrop and the elements whole; the Export dialog in Illustrate mode exports
+  the pages ([Illustrate pages](illustrate-pages.md) "Export").
+- The sheets are `apps/live/components/canvas/IllustratePages.tsx`; the pages'
+  edits and the centring are `apps/live/hooks/editor/useIllustratePages.ts`.
+
+## Leaving Illustrate
+
+Diagram and Draw show no pages, so an editor's switch away from Illustrate on a tab that has
+something on it asks first:
+
+- **A tab with articles** asks Turn Articles Into Pages? (Convert, Keep as Articles, Cancel;
+  [Article pages](article-pages.md#leaving-illustrate)).
+- **A tab with content but no articles** asks a lighter question: a small card hanging from the
+  mode switch that asked (the Palette header's chip or the Toolbar layout's), pointing at it, below
+  it or above when there is no room below. A warning glyph in an amber disc, the title "Switch to
+  <Mode>?" and one sentence: "<Mode> mode doesn't show pages. Changes you make there may not fit
+  back onto your pages when you return to Illustrate." Its buttons are **Cancel** and **Switch** (the
+  target mode's glyph on it, focused). Escape or a press outside stays.
+  With no switch on screen (zen, a Shift+D press), the card sits centred near the top of the
+  screen.
+- An empty tab, a visitor or a locked tab switches straight away.
+- Confirming sends `Editor` · `Changed` · `LeaveIllustrateConfirmed`, beside the switch's own
+  `ModeDiagram` / `ModeDraw`.
 
 ## Experimental modes
 
-Infographic mode is still new, so it keeps a switch in **Settings ›
-Experimental › Infographic Mode**: **on by default** (the
-`infographicModeEnabled` preference; only an explicit `false` turns it off).
+Illustrate mode is still new, so it keeps a switch in **Settings ›
+Experimental › Illustrate Mode**: **on by default** (the
+`illustrateModeEnabled` preference; only an explicit `false` turns it off).
 The **Experimental** category is listed after **AI Tools**.
 
-- While it is off, Infographic is offered nowhere: not on the mode switch, not
+- While it is off, Illustrate is offered nowhere: not on the mode switch, not
   in Opens in, and Shift+D skips it (`apps/live/lib/offered-editor-modes.ts`).
-- A tab stored as opening in Infographic, or remembered in it, opens in Diagram
+- A tab stored as opening in Illustrate, or remembered in it, opens in Diagram
   for a person who has it off. Nothing stored changes.
-- Turning it on fires `UI` · `Toggled` · `InfographicModeOn` (and `…Off`).
+- Turning it on fires `UI` · `Toggled` · `IllustrateModeOn` (and `…Off`).
 
 ## Existing whiteboards
 
@@ -341,23 +369,28 @@ The **Experimental** category is listed after **AI Tools**.
   Draw mode. Its elements, background and layers are unchanged.
 - Imports that landed on a whiteboard (Excalidraw, Microsoft Whiteboard) land
   on a general tab in Draw mode.
-- The **Whiteboard** template and Quick Start entry create a general tab that
-  opens in Draw mode.
+- The **Blank Whiteboard** template (kind id `whiteboard`) and Quick Start entry create a
+  general tab that opens in Draw mode, as the other Draw templates do
+  ([Templates by mode](templates-by-mode.md)).
 
 ## Telemetry ([Telemetry](../017-telemetry/telemetry.md))
 
-- `Editor` · `Changed` · `ModeDiagram` / `ModeDraw` / `ModeInfographic`, fired by
+- `Editor` · `Changed` · `ModeDiagram` / `ModeDraw` / `ModeIllustrate`, fired by
   the switch before the mode applies.
-- `Tab` · `Changed` · `OpensInDiagram` / `OpensInDraw` / `OpensInInfographic`, fired
+- `Tab` · `Changed` · `OpensInDiagram` / `OpensInDraw` / `OpensInIllustrate`, fired
   by Opens in.
 - `Tab` · `Changed` · `PagePortrait` / `PageLandscape`, fired by a page's
-  orientation in Infographic mode, and `PageAdded` / `PageRemoved` by its add
+  orientation in Illustrate mode, and `PageAdded` / `PageRemoved` by its add
   button and Delete Page.
 - Draw mode's own events are the **`Draw`** category (pens, shapes, eraser,
   recognition, background, snap colours,
   [Draw mode](../023-draw-mode/draw-mode.md#telemetry-telemetry--public-transparency-dashboard)).
   It was named `Whiteboard`; the stored history is rewritten to `Draw` so the
   dashboard's lines continue.
+- Illustrate mode's events were named for Infographic mode (`ModeInfographic`,
+  `OpensInInfographic`, `InfographicModeOn` / `Off`); migration
+  `0066_illustrate_telemetry.sql` rewrites the stored history to the Illustrate
+  names so the dashboard's lines continue.
 
 ## Naming in the interface
 
@@ -365,12 +398,24 @@ The **Experimental** category is listed after **AI Tools**.
   **Editor › Draw** sub-category (Dock Position) as the switch names it, and
   **Draw mode** in prose: the help article (**Draw mode**, at a new address,
   the old one redirecting) and the command palette.
-- The template and Quick Start card stays **Whiteboard**: it names the
-  activity a person comes for, and creates a tab that opens in Draw mode.
+- The template and Quick Start card is **Blank Whiteboard**, one of three blanks (Blank Diagram,
+  Blank Whiteboard, Blank Illustration), one per mode, that lead Popular
+  ([Templates by mode](templates-by-mode.md)); the document it makes is named "Untitled
+  Whiteboard", for the activity a person comes for.
+- **Illustrate** was called **Infographic** while its pages were all
+  infographics. Every stored trace of the old name reads as Illustrate:
+  `opensIn: 'infographic'`, a remembered mode, a recorded creation intent and
+  a create's intent (`parseEditorMode`), a default-folder key
+  `mode:infographic` (`parsePlacementDefaultKey`; clearing the default clears
+  both names) and the `infographicModeEnabled` preference
+  (`upgradeLegacyPreferences`). Nothing stored is rewritten. "Infographic" now
+  names a kind of page ([Illustrate pages](illustrate-pages.md) "Page kinds").
+  The help articles moved to `/help/canvas/illustrate/`, the old addresses
+  redirecting.
 
 ## Non-goals
 
-- Further editor modes beyond Infographic until use asks for one.
+- Further editor modes beyond Illustrate until use asks for one.
 - A mode per element or per layer.
 - Converting content between modes (a stroke into a shape on switching).
 

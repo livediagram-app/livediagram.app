@@ -5,7 +5,7 @@ import { Glyph, Prims } from '@livediagram/ui';
 // rather than ~180 lines of inline SVG. Each is the universal symbol
 // for its category, readable at tab size.
 
-// Popular (Infographic mode): sparkles, for the picks most reached for.
+// Popular (Illustrate mode): sparkles, for the picks most reached for.
 export function PopularTabIcon() {
   return (
     <Glyph size={18} units={24}>

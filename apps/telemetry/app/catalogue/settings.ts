@@ -290,13 +290,23 @@ export const EXPERIMENTAL_SETTINGS = settingsStack(
   [
     toggle(
       'UI',
-      'InfographicModeOn',
-      'InfographicModeOff',
-      'Infographic Mode',
-      'The Infographic editor mode, switched on or off.',
+      'IllustrateModeOn',
+      'IllustrateModeOff',
+      'Illustrate Mode',
+      'The Illustrate editor mode, switched on or off.',
     ),
   ],
 );
+
+export const DOCUMENTS_SETTINGS = settingsStack('Documents Settings', 'Where new documents go.', [
+  toggle(
+    'UI',
+    'SkipLocationStepOn',
+    'SkipLocationStepOff',
+    'Skip the Location Step',
+    "Saving every new document in one place without the wizard's Location step: turned on from that step, off in Settings.",
+  ),
+]);
 
 export const PRIVACY_SETTINGS = settingsStack(
   'Privacy Settings',
@@ -322,6 +332,7 @@ export const SETTINGS_STACKS: readonly MetricStack[] = [
   ACCESSIBILITY_SETTINGS,
   AI_SETTINGS,
   EXPERIMENTAL_SETTINGS,
+  DOCUMENTS_SETTINGS,
   PRIVACY_SETTINGS,
 ];
 

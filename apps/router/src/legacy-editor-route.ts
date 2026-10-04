@@ -16,7 +16,7 @@ export function legacyEditorRedirect(url: URL): Response | null {
 // Renamed help articles: the ones about the container moved when it became a document,
 // Whiteboards became Draw mode, the Highlighter went from a selection mode to a Draw tile, and
 // the Activity Panel category went when the panel was removed (Undo and Redo moved to Canvas;
-// its other articles land on Undo). The old addresses are links people have already shared
+// its other articles land on Undo), and Infographics became Illustrate mode. The old addresses are links people have already shared
 // (docs/specs/018-help/help-app.md, "Renamed articles").
 const LEGACY_HELP_ARTICLES: Readonly<Record<string, string>> = {
   'tabs/add-to-diagram': 'tabs/add-to-document',
@@ -26,6 +26,9 @@ const LEGACY_HELP_ARTICLES: Readonly<Record<string, string>> = {
   'getting-started/sharing-your-diagram': 'getting-started/sharing-your-document',
   'developers/working-with-diagrams': 'developers/working-with-documents',
   'canvas/whiteboards': 'canvas/draw-mode',
+  'canvas/infographics': 'canvas/illustrate',
+  'canvas/infographics/infographic-layouts': 'canvas/illustrate/infographic-layouts',
+  'canvas/infographics/exporting-infographics': 'canvas/illustrate/exporting-pages',
   'selection-modes/highlighter': 'palette/tools/highlighter',
   'activity-panel': 'canvas/undo',
   'activity-panel/what-it-is': 'canvas/undo',

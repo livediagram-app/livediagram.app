@@ -16,7 +16,7 @@ import type { CanvasTool } from '@/components/palette/CommandPalette';
 import { trimLaserBuffer, type LaserPoint } from '@/lib/laser-buffer';
 import type { LaserConfig } from '@/lib/laser-config';
 
-const BROADCAST_THROTTLE_MS = 33;
+export const BROADCAST_THROTTLE_MS = 33;
 // The viewport (docs/specs/012-collaboration/follow-me-viewport.md) publishes at ~10 Hz, a third of the cursor's rate: a
 // camera is not a pointer, 10 Hz is smooth for a pan, and an idle participant
 // sends nothing at all because this only fires on change.

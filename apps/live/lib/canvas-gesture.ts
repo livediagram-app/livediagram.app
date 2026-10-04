@@ -69,6 +69,9 @@ function subscribe(cb: () => void): () => void {
   };
 }
 
+/** Called whenever the reported gesture changes (a gesture opening or closing). */
+export const subscribeCanvasGesture = subscribe;
+
 const serverSnapshot = (): CanvasGestureState => 'idle';
 
 export function useCanvasGesture(): CanvasGestureState {

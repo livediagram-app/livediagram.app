@@ -10,9 +10,9 @@ import {
 import { tileById, tilesForCategory } from './palette-tile-defs';
 
 // The palette per mode (docs/specs/007-editor/editor-modes.md "The palette per mode").
-const ids = (mode: 'diagram' | 'infographic', esBoard = false) =>
+const ids = (mode: 'diagram' | 'illustrate', esBoard = false) =>
   paletteCategoriesFor(mode, { esBoard }).map((c) => c.id);
-const tileIds = (mode: 'diagram' | 'infographic', category: string) =>
+const tileIds = (mode: 'diagram' | 'illustrate', category: string) =>
   paletteCategoriesFor(mode)
     .find((c) => c.id === category)!
     .tiles!.map((t) => t.id);
@@ -53,8 +53,8 @@ describe('palette layouts', () => {
     expect(paletteCategoryOffered('diagram', 'event-storming')).toBe(false);
   });
 
-  it('narrows Infographic to the categories a visual page is made of', () => {
-    expect(ids('infographic')).toEqual([
+  it('narrows Illustrate to the categories a visual page is made of', () => {
+    expect(ids('illustrate')).toEqual([
       'popular',
       'shapes',
       'my-shapes',
@@ -71,18 +71,18 @@ describe('palette layouts', () => {
 
   it('lands every mode on its Popular, a board on its notation', () => {
     expect(paletteLandingCategory('diagram', false)).toBe('popular');
-    expect(paletteLandingCategory('infographic', false)).toBe('popular');
+    expect(paletteLandingCategory('illustrate', false)).toBe('popular');
     expect(paletteLandingCategory('diagram', true)).toBe('event-storming');
   });
 
   it('holds the same tile in different categories per mode: Page is in Write for Diagram only', () => {
     expect(tileIds('diagram', 'write')).toContain('tools:page');
-    expect(tileIds('infographic', 'write')).not.toContain('tools:page');
-    expect(tileIds('infographic', 'write')).toEqual(['tools:text', 'tools:sticky']);
+    expect(tileIds('illustrate', 'write')).not.toContain('tools:page');
+    expect(tileIds('illustrate', 'write')).toEqual(['tools:text', 'tools:sticky']);
   });
 
-  it('leaves mind nodes, lanes, frames, annotations and entities out of Infographic', () => {
-    const everywhere = paletteCategoriesFor('infographic').flatMap((c) =>
+  it('leaves mind nodes, lanes, frames, annotations and entities out of Illustrate', () => {
+    const everywhere = paletteCategoriesFor('illustrate').flatMap((c) =>
       (c.tiles ?? []).map((t) => t.id),
     );
     for (const id of [
@@ -94,14 +94,14 @@ describe('palette layouts', () => {
     ]) {
       expect(everywhere, id).not.toContain(id);
     }
-    expect(tileIds('infographic', 'build')).toEqual(['tools:table', 'tools:timeline']);
+    expect(tileIds('illustrate', 'build')).toEqual(['tools:table', 'tools:timeline']);
     expect(tileIds('diagram', 'build')).toContain('tools:mind-node');
     expect(tileIds('diagram', 'write')).toContain('tools:annotation');
   });
 
   it("leaves Media's embeds out of Diagram, keeping its own two", () => {
     expect(tileIds('diagram', 'media')).toEqual(['tools:image', 'tools:avatar']);
-    expect(tileIds('infographic', 'media')).toContain('media:embed-youtube');
+    expect(tileIds('illustrate', 'media')).toContain('media:embed-youtube');
   });
 
   it('defaults a category to its own tiles', () => {
@@ -125,11 +125,11 @@ describe('palette layouts', () => {
     ]);
   });
 
-  it('picks twelve Popular tiles, each reachable from another Infographic category', () => {
-    const popular = tileIds('infographic', 'popular');
+  it('picks twelve Popular tiles, each reachable from another Illustrate category', () => {
+    const popular = tileIds('illustrate', 'popular');
     expect(popular).toHaveLength(12);
     const reachable = new Set(
-      paletteCategoriesFor('infographic')
+      paletteCategoriesFor('illustrate')
         .filter((c) => c.id !== 'popular')
         .flatMap((c) => (c.tiles ?? []).map((t) => t.id)),
     );

@@ -79,7 +79,7 @@ export function resolveBoxedMove({
   // Cmd/Ctrl held: place freely — skip alignment + distribution snapping
   // and their guide lines for this gesture (docs/specs/008-canvas/snap-override.md).
   noSnap: boolean;
-  // Lines to snap to besides the elements' own (an Infographic page's edges and margins), as
+  // Lines to snap to besides the elements' own (an Illustrate page's edges and margins), as
   // stand-in boxes: aligned to and guided by, never spaced against.
   pageSnapBoxes?: Element[];
   // The user's alignment-guides preference (guides only; the snap still

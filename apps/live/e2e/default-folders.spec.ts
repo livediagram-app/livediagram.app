@@ -77,7 +77,7 @@ async function newWhiteboard(page: Page) {
   await untilHydrated(search);
   await search.fill('whiteboard');
   await page
-    .getByRole('button', { name: /^Whiteboard/ })
+    .getByRole('button', { name: /^Blank Whiteboard/ })
     .first()
     .click();
   const next = page.getByRole('button', { name: /^Next/ });
@@ -257,7 +257,7 @@ test.describe('default folders', () => {
     await untilHydrated(search);
     await search.fill('whiteboard');
     await page
-      .getByRole('button', { name: /^Whiteboard/ })
+      .getByRole('button', { name: /^Blank Whiteboard/ })
       .first()
       .click();
     const next = page.getByRole('button', { name: /^Next/ });

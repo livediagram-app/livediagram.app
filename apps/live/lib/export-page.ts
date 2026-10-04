@@ -1,4 +1,4 @@
-// Exporting one Infographic page (docs/specs/007-editor/infographic-pages.md "Export"): exactly its
+// Exporting one Illustrate page (docs/specs/007-editor/illustrate-pages.md "Export"): exactly its
 // sheet. The frame is the page's rect with no padding; the background is the page's own paint
 // (the paper exports white); the elements are those that reach onto the page, cut off at its edges
 // by the frame itself; and every element without colours of its own is inked for the page. The
@@ -12,7 +12,7 @@ import {
   type PageFill,
 } from '@livediagram/document';
 import { xmlEscape } from '@livediagram/icons';
-import { PAGE_PATTERN_PITCH, pagePatternInk } from './infographic-page-paint';
+import { PAGE_PATTERN_PITCH, pagePatternInk } from './illustrate-page-paint';
 
 // The paper's colour in an export: the page as printed.
 export const EXPORT_PAPER = '#ffffff';
@@ -56,6 +56,7 @@ export function pageExportFrame(
   {
     paper = EXPORT_PAPER,
     idPrefix = 'lvd-page',
+    ruling,
   }: {
     // The plain paper's colour: white in an export; the canvas's own paper where a page is drawn
     // as the canvas shows it (the Map).
@@ -63,6 +64,9 @@ export function pageExportFrame(
     // Prefixes the gradient and pattern ids: pages of different tabs share ids (every tab's first
     // page), so markup inlined beside other pages' (slide thumbnails, the Map) needs its own.
     idPrefix?: string;
+    // An article page's Lines, on its writing's baselines inside its margins
+    // (docs/specs/007-editor/article-pages.md "Article style").
+    ruling?: { pitch: number; inset: number; top: number };
   } = {},
 ): PageExportFrame {
   const r = page.rect;
@@ -82,7 +86,16 @@ export function pageExportFrame(
   } else {
     parts.push(rect(xmlEscape(fill?.color ?? paper)));
   }
-  if (pattern) {
+  if (pattern && ruling && pattern === 'lines') {
+    // Ruled inside the margins, one line under each line of body text.
+    const p = ruling.pitch;
+    const ink = xmlEscape(pagePatternInk(page.background));
+    parts.push(
+      `<defs><pattern id="${id}-pattern" patternUnits="userSpaceOnUse" x="${r2(r.x + ruling.inset)}" y="${r2(r.y + ruling.top)}" width="${r2(r.width - 2 * ruling.inset)}" height="${r2(p)}">` +
+        `<rect y="${r2(p - 1)}" width="${r2(r.width - 2 * ruling.inset)}" height="1" fill="${ink}"/></pattern></defs>`,
+      `<rect x="${r2(r.x + ruling.inset)}" y="${r2(r.y + ruling.top)}" width="${r2(r.width - 2 * ruling.inset)}" height="${r2(r.height - ruling.top - ruling.inset)}" fill="url(#${id}-pattern)"/>`,
+    );
+  } else if (pattern) {
     const p = PAGE_PATTERN_PITCH;
     parts.push(
       `<defs><pattern id="${id}-pattern" patternUnits="userSpaceOnUse" x="${r2(r.x)}" y="${r2(r.y)}" width="${p}" height="${p}">` +

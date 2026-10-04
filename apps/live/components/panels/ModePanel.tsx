@@ -64,7 +64,7 @@ export function ModePanel({
       helpArticle={helpArticle}
       stackBelowY={stackBelowY}
       {...dock}
-      // As a popover over a cluster button (the Slide Deck in Infographic mode).
+      // As a popover over a cluster button (the Slide Deck in Illustrate mode).
       popoverOpen={popoverOpen}
       popoverAnchor={popoverAnchor}
       asPopover={asPopover}

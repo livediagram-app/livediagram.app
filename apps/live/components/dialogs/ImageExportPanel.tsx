@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import { BackBar } from '@/components/primitives/BackBar';
 import { Button } from '@livediagram/ui';
 import { ToggleSwitch } from '@/components/palette/palette-controls';
@@ -21,6 +21,7 @@ export function ImageExportPanel({
   onExport,
   onBack,
   pageExport = false,
+  pagePicker,
 }: {
   // The picked format's display name, e.g. 'PNG'.
   label: string;
@@ -39,9 +40,11 @@ export function ImageExportPanel({
   // rasteriser + telemetry; this panel just collects the options.
   onExport: (opts: { isometric: boolean; pattern: boolean; hiddenLayers: boolean }) => void;
   onBack: () => void;
-  // An Infographic page export (docs/specs/007-editor/infographic-pages.md "Export"): the page is
+  // An Illustrate page export (docs/specs/007-editor/illustrate-pages.md "Export"): the page is
   // its own background and is never tilted, so neither the isometric nor the pattern toggle shows.
   pageExport?: boolean;
+  // The page choice (ExportPagePicker), under the back bar and above the preview.
+  pagePicker?: ReactNode;
 }) {
   // Isometric export (docs/specs/008-canvas/isometric-view.md / 48): tilt the rendered image into the editor's
   // isometric projection. Off by default — the standard export is flat top-down.
@@ -66,6 +69,7 @@ export function ImageExportPanel({
           uses — not a small text link buried in the footer beside the
           commit button, where the way back sat next to the way forward. */}
       <BackBar label="All formats" current={label} onClick={onBack} disabled={busy} />
+      {pagePicker ? <div className="mt-3">{pagePicker}</div> : null}
       {/* Live preview — exactly what Download produces under the current
           options. The injected SVG is our own export output (no external
           content); CSS fits it inside the frame. */}

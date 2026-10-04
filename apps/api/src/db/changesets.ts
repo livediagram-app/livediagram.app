@@ -1,4 +1,4 @@
-// agent_changesets and agent_changeset_parts (migration 0066): one row per changeset, its element
+// agent_changesets and agent_changeset_parts (migration 0067): one row per changeset, its element
 // ops, inverse and result lines beside it, one row per part
 // (docs/specs/024-agents/blueprints/agent-changesets.md "Data and persistence").
 

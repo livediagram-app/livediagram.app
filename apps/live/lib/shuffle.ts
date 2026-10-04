@@ -4,7 +4,7 @@
 // Used by the new-document / template picker to rotate which templates and
 // themes greet the user on each open, so they discover options beyond the
 // usual first rows, while always keeping the sensible default pinned first
-// (Blank Canvas for templates, Brand for themes). See
+// (Blank Diagram for templates, Brand for themes). See
 // components/TemplatePicker.tsx and docs/specs/007-editor/new-document-route.md.
 //
 // `rng` is injectable so tests can pin the order deterministically; it

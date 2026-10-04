@@ -35,7 +35,7 @@ type EditorSelectionActionsDeps = {
   // The single-selected element id (null in multi-select / none).
   selectedId: string | null;
   // The marquee multi-selection bag.
-  multiSelectedIds: Set<string>;
+  multiSelectedIds: ReadonlySet<string>;
   // The active tab — read for its element list.
   activeTab: Tab;
   // History-aware element mutator (snapshots + emits the log).
@@ -123,7 +123,7 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
 
   // The deletable subset of a selection: ids whose element isn't locked.
   // Locked elements are protected from deletion (docs/specs/008-canvas/canvas-and-palette.md Locking).
-  const deletableIds = (ids: Set<string>): Set<string> => {
+  const deletableIds = (ids: ReadonlySet<string>): Set<string> => {
     const lockedIds = new Set(
       activeTab.elements.filter((el) => el.locked === true).map((el) => el.id),
     );

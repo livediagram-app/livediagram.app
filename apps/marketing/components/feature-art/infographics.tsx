@@ -1,5 +1,5 @@
 // Feature art for the landing page's infographics section (docs/specs/019-marketing/marketing-site.md,
-// docs/specs/007-editor/infographic-pages.md). Small stills drawn from the same primitives as every
+// docs/specs/007-editor/illustrate-pages.md). Small stills drawn from the same primitives as every
 // other art block: pages in a row, a page built from a layout, backgrounds, a diagram laid out into
 // pages, and pages leaving as a PDF.
 
@@ -65,7 +65,7 @@ function Heading({ x, y, w }: { x: number; y: number; w: number }) {
 }
 
 /** Three pages in a row: A4 portrait, a landscape slide, a square post. */
-export function InfographicPagesArt() {
+export function IllustratePagesArt() {
   return (
     <Frame canvas>
       <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
@@ -190,7 +190,7 @@ export function InfographicLayoutArt() {
 }
 
 /** Pages painted three ways: a theme tint, a gradient with dots, a dark page with light ink. */
-export function InfographicBackgroundsArt() {
+export function IllustrateBackgroundsArt() {
   return (
     <Frame canvas>
       <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
@@ -227,7 +227,7 @@ export function InfographicBackgroundsArt() {
 }
 
 /** A diagram on the loose, laid out onto pages of its own. */
-export function InfographicIntoPagesArt() {
+export function IllustrateIntoPagesArt() {
   return (
     <Frame canvas>
       <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
@@ -274,7 +274,7 @@ export function InfographicIntoPagesArt() {
 }
 
 /** Pages leaving as one PDF, a page apiece. */
-export function InfographicExportArt() {
+export function IllustrateExportArt() {
   return (
     <Frame canvas>
       <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
@@ -317,6 +317,103 @@ export function InfographicExportArt() {
           PDF
         </text>
         <Heading x={153} y={23} w={30} />
+      </svg>
+    </Frame>
+  );
+}
+
+// A line of writing on a page: a soft bar, the given width.
+function Line({ x, y, w }: { x: number; y: number; w: number }) {
+  return (
+    <rect
+      className="fill-(--art-ink-fill)"
+      x={x}
+      y={y}
+      width={w}
+      height="2.5"
+      rx="1.25"
+      fill={SLATE_FILL}
+    />
+  );
+}
+
+/** Two article pages: writing flowing from one onto the next, a chart wrapped beside the text and a
+ *  comment marker in the margin, the toolbar on the first page. */
+export function ArticlePagesArt() {
+  return (
+    <Frame canvas>
+      <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
+        <Sheet x={46} y={6} w={60} h={84} />
+        {/* The toolbar, inside the page at its top. */}
+        <rect
+          className="fill-(--art-paper) stroke-(--art-ink-stroke)"
+          x="52"
+          y="10"
+          width="48"
+          height="7"
+          rx="2"
+          fill="#fff"
+          stroke={SLATE_STROKE}
+          strokeWidth="0.8"
+        />
+        <g className="fill-(--art-ink-stroke)" fill={INK_STROKE}>
+          <rect x="55" y="12.5" width="6" height="2" rx="1" />
+          <rect x="64" y="12.5" width="2" height="2" rx="0.5" />
+          <rect x="69" y="12.5" width="2" height="2" rx="0.5" />
+          <rect x="74" y="12.5" width="2" height="2" rx="0.5" />
+        </g>
+        <Heading x={53} y={23} w={44} />
+        <Line x={53} y={37} w={46} />
+        <Line x={53} y={42} w={46} />
+        {/* A chart wrapped left, the text running down beside it. */}
+        <rect
+          className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
+          x="53"
+          y="48"
+          width="20"
+          height="16"
+          rx="1.5"
+          fill={INK_FILL}
+          stroke={INK_STROKE}
+          strokeWidth="0.8"
+        />
+        <g className="fill-(--art-ink-stroke)" fill={INK_STROKE}>
+          <rect x="56" y="57" width="3" height="5" />
+          <rect x="61" y="53" width="3" height="9" />
+          <rect x="66" y="55" width="3" height="7" />
+        </g>
+        <Line x={76} y={49} w={23} />
+        <Line x={76} y={54} w={23} />
+        <Line x={76} y={59} w={18} />
+        {/* A comment on a stretch of text, its marker in the margin. */}
+        <rect x="53" y="68.5" width="22" height="3.5" rx="0.8" fill="#fde68a" />
+        <Line x={53} y={69} w={46} />
+        <rect x="99.5" y="66.5" width="6" height="6" rx="1.5" fill="#f59e0b" />
+        <Line x={53} y={75} w={40} />
+        <Line x={53} y={80} w={46} />
+        {/* The next page the writing flows onto. */}
+        <Sheet x={114} y={6} w={60} h={84} />
+        <Line x={121} y={12} w={46} />
+        <Line x={121} y={17} w={46} />
+        <Line x={121} y={22} w={30} />
+        <rect
+          className="fill-(--art-ink-stroke)"
+          x="121"
+          y="30"
+          width="22"
+          height="3.5"
+          rx="1.5"
+          fill={INK_STROKE}
+        />
+        <Line x={121} y={38} w={46} />
+        <Line x={121} y={43} w={38} />
+        <path
+          d="M108 48 L112 48"
+          stroke={BLUE_STROKE}
+          strokeWidth="1.4"
+          strokeLinecap="round"
+          strokeDasharray="1.5 2"
+        />
       </svg>
     </Frame>
   );

@@ -9,6 +9,7 @@ import {
   type TemplateCategory,
 } from '@livediagram/templates';
 import { TemplatePickerBrowse, type ShelfCategory } from './TemplatePickerBrowse';
+import type { TemplateModeFilter } from './useTemplateModeFilter';
 
 // The whiteboard tile and the `?browse=` collections on the template shelf
 // (docs/specs/023-draw-mode/draw-mode.md "Creating one", docs/specs/007-editor/new-document-route.md).
@@ -22,6 +23,15 @@ Element.prototype.scrollIntoView ??= () => {};
 Element.prototype.scrollTo ??= () => {};
 
 const byKind = (kind: string) => TEMPLATES.find((t) => t.kind === kind)!;
+// The mode filter at All: every template shows.
+const ALL_MODES: TemplateModeFilter = {
+  choice: 'all',
+  options: ['all', 'diagram', 'draw', 'illustrate'],
+  choose: () => {},
+  shows: () => true,
+  offered: () => true,
+  counts: { all: 0, diagram: 0, draw: 0, illustrate: 0 },
+};
 const popular = POPULAR_TEMPLATE_KINDS.map(byKind);
 const categoryTemplates = (c: TemplateCategory) =>
   TEMPLATES.filter((t) => t.kind !== 'blank' && templateCategory(t.kind) === c);
@@ -49,29 +59,34 @@ function Shelf({
       categoryTemplates={categoryTemplates}
       templateKind="blank"
       onTemplateCommit={onCommit}
+      modeFilter={ALL_MODES}
     />
   );
 }
 
 const stage = () => screen.getAllByRole('heading', { level: 3 })[0]!;
 
-// Whiteboard is not a category (docs/specs/023-draw-mode/draw-mode.md "Creating one"): it is a
-// Popular card, never a category tile or on a category shelf.
-describe('the whiteboard', () => {
-  it('is a card on Popular, not a category tile', () => {
+// The blanks are not in a category (docs/specs/007-editor/templates-by-mode.md "Three blanks",
+// docs/specs/023-draw-mode/draw-mode.md "Creating one"): Popular cards, never a category tile or on a
+// category shelf.
+describe('the blanks', () => {
+  it('are cards on Popular, not category tiles', () => {
     const commit = vi.fn();
     render(<Shelf onCommit={commit} />);
     const tiles = screen.getAllByRole('button', { name: /Browse .* templates/ })[0]!.closest('ul')!;
     expect(tiles.children).toHaveLength(8);
-    expect(tiles.textContent).not.toContain('Whiteboard');
     expect(stage().textContent).toContain('Popular');
-    expect(screen.getAllByText('Whiteboard')).toHaveLength(1);
+    for (const title of ['Blank Whiteboard', 'Blank Illustration']) {
+      expect(tiles.textContent).not.toContain(title);
+      expect(screen.getAllByText(title)).toHaveLength(1);
+    }
   });
 
-  it('is on no category shelf', () => {
+  it('are on no category shelf', () => {
     render(<Shelf initial="design" />);
     expect(stage().textContent).toContain('Design');
-    expect(screen.queryByText('Whiteboard')).toBeNull();
+    expect(screen.queryByText('Blank Whiteboard')).toBeNull();
+    expect(screen.queryByText('Blank Illustration')).toBeNull();
   });
 });
 
@@ -98,6 +113,8 @@ describe('a ?browse= collection', () => {
     render(<Shelf initial="brainstorm" />);
     fireEvent.click(screen.getByRole('button', { name: /All templates/ }));
     expect(stage().textContent).toContain('Popular');
-    expect(screen.queryByRole('button', { name: 'Browse Brainstorm templates' })).toBeNull();
+    // The collection's drilled-in view is gone (its back bar with it); the Brainstorm tile left is
+    // the category's, which shares the collection's name.
+    expect(screen.queryByRole('button', { name: /All templates/ })).toBeNull();
   });
 });

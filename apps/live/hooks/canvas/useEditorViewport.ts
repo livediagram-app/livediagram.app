@@ -13,6 +13,7 @@ import { isBoxed, unionBoxedBounds, type Tab } from '@livediagram/document';
 import { computeFitToScreen, computeViewportCenter } from '@/lib/viewport';
 import { viewIsCentredOn } from '@/lib/focus-audience';
 import { useLatest } from '@/hooks/ui/useLatest';
+import { glideViewport } from '@/lib/viewport-glide';
 
 // Breakpoint at which we initialise the viewport at 60% zoom rather
 // than 100%, so a mobile visitor lands on a usable overview instead
@@ -60,6 +61,8 @@ type EditorViewportApi = {
   // pointer-move handlers in useEditorDrag can invert the zoom
   // without re-attaching their listeners every time zoom changes.
   zoomRef: React.RefObject<number>;
+  // The view's offset now, for a move that starts from wherever the view is (a glide).
+  viewportOffsetRef: React.RefObject<{ x: number; y: number }>;
   // Wrapper element the canvas renders into. Its bounding-client
   // rect is the source of truth for "where is the viewport in
   // screen space?" and every helper here reads through it.
@@ -212,20 +215,11 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
           return;
       }
 
-      const startOff = off0;
-      const t0 = performance.now();
-      const DUR = 280;
-      const step = (now: number) => {
-        const k = Math.min(1, (now - t0) / DUR);
-        const e = 1 - Math.pow(1 - k, 3); // ease-out cubic
-        setViewportOffset({
-          x: startOff.x + (target.x - startOff.x) * e,
-          y: startOff.y + (target.y - startOff.y) * e,
-        });
-        if (z1 !== z0) setViewportZoom(z0 + (z1 - z0) * e);
-        if (k < 1) requestAnimationFrame(step);
-      };
-      requestAnimationFrame(step);
+      glideViewport(
+        { zoom: z0, offset: off0 },
+        { zoom: z1, offset: target },
+        { zoom: setViewportZoom, offset: setViewportOffset },
+      );
     },
     [],
   );
@@ -344,6 +338,7 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
     viewportZoom,
     setViewportZoom,
     zoomRef,
+    viewportOffsetRef,
     canvasMainRef,
     getViewportCenter,
     fitToScreen,

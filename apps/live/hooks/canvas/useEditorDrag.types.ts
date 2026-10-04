@@ -29,7 +29,7 @@ export type EditorDragDeps = {
   // truth).
   selectedId: string | null;
   setSelectedId: (id: string | null) => void;
-  multiSelectedIds: Set<string>;
+  multiSelectedIds: ReadonlySet<string>;
   // Written by the shift-duplicate identity swap (docs/specs/008-canvas/shift-drag-duplicate.md): the cursor-
   // following set becomes the fresh clones, so the selection must follow
   // them (and swing back if the duplicate is dissolved).
@@ -96,7 +96,7 @@ export type EditorDragDeps = {
   // unaffected). Tracked via ref so a mid-drag toggle takes effect on
   // the next pointermove without re-attaching listeners.
   alignmentGuidesRef: React.RefObject<boolean>;
-  // Infographic mode's page lines (infographicPageSnapBoxes): what a move or resize snaps to
+  // Illustrate mode's page lines (illustratePageSnapBoxes): what a move or resize snaps to
   // besides other elements. Null outside the mode.
   pageSnapBoxes?: Element[] | null;
   // Set to true while a 2-finger pinch is active. The move handler

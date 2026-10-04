@@ -50,8 +50,7 @@ export function usePathTool({
   viewportZoom,
   activeTabId,
   editingId,
-  selectedId,
-  multiSelectCount,
+  soleSelectedPathId,
   onCommitPath,
   onCommitPathEdit,
   onDressPath = identity,
@@ -68,8 +67,9 @@ export function usePathTool({
   viewportZoom: number;
   activeTabId?: string;
   editingId: string | null;
-  selectedId: string | null;
-  multiSelectCount: number;
+  // The path that is the one selected element, if any (Canvas reads it from the selection store,
+  // narrowed to paths, so selecting anything else does not re-render the canvas).
+  soleSelectedPathId: string | null;
   onCommitPath: (commit: PathCommit) => void;
   onCommitPathEdit: (
     id: string,
@@ -120,8 +120,7 @@ export function usePathTool({
   }, [stale, editing, editingId, onLeaveEdit]);
   const edit = usePathEditGesture({
     element: editing,
-    selectedPathId:
-      editingId === null && multiSelectCount === 0 ? (pathOf(selectedId)?.id ?? null) : null,
+    selectedPathId: editingId === null ? (pathOf(soleSelectedPathId)?.id ?? null) : null,
     wrapperRef,
     viewportZoom,
     onCommitPathEdit,

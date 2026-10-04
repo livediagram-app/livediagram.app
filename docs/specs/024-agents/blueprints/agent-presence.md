@@ -33,7 +33,7 @@ Scope, by file:
 | `packages/api-schema/src/index.ts`                                                                     | Re-exports the two new modules                                                                   |
 | `packages/api-schema/src/telemetry-schema.ts`, `server-emitted-events.ts`                              | Action `Present` (category `Agent`); `Agent·Present` is server-emitted                           |
 | `packages/document/src/comments.ts`                                                                    | `Comment.tokenId`; `withoutCommentAuthorId` strips it too                                        |
-| `apps/api/migrations/0066_agent_changesets.sql`                                                        | `ws_tickets.person_tag` (PR1), landed with agent changesets, whose held check reads it           |
+| `apps/api/migrations/0067_agent_changesets.sql`                                                        | `ws_tickets.person_tag` (PR1), landed with agent changesets, whose held check reads it           |
 | `apps/api/src/db/ws-tickets.ts`                                                                        | `WsAdmission.personTag`; written at mint, returned at consume                                    |
 | `apps/api/src/db/tabs.ts`                                                                              | `tabIdsWithComments(env, documentId)`                                                            |
 | `apps/api/src/person-tag.ts`                                                                           | `personTagFor(documentId, ownerId)`                                                              |
@@ -337,7 +337,7 @@ none, and the room pins it on the session attachment as `personTag`.
 `AgentPresenceRecord = { id, documentId, tokenId, tabId, personTag, shareCode, name, color, role, status, focus,
 setAt, expiresAt }`.
 
-- Migration 0066 (agent changesets) adds the nullable column; existing tickets expire within a minute; no backfill.
+- Migration 0067 (agent changesets) adds the nullable column; existing tickets expire within a minute; no backfill.
 - The room restores every entry in its constructor (`storage.list({ prefix: 'agent-presence:' })` inside
   `blockConcurrencyWhile`), drops the expired ones and arms the alarm. Nothing about presence reaches D1.
 - `Comment.tokenId` is optional: every stored comment without one parses, an Offline Mode copy keeps it unread,
@@ -499,7 +499,7 @@ Room and route tests run on the in-memory storage and SQLite fakes with a fixed 
 | `AGENT_PRESENCE_ROOM_MAX`   | 32     | Keeps `agents` under 96 KiB of a 256 KiB frame (PR12)     | 8 to 64         |
 | `COMMENT_TEXT_MAX`          | 2000   | The add route's existing literal, now named               | 500 to 5000     |
 
-No new environment variable or binding. Its one migration, the ticket column, landed in 0066.
+No new environment variable or binding. Its one migration, the ticket column, landed in 0067.
 
 ## Assets and external resources
 

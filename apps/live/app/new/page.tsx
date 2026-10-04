@@ -23,6 +23,8 @@ import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
 import { useCtaAttribution } from './useCtaAttribution';
 import { usePlacementOptions } from '@/hooks/persistence/usePlacementOptions';
 import { applyAlwaysSave, useWizardDefaults } from './useWizardDefaults';
+import { useSkipLocationStep } from './useSkipLocationStep';
+import { saveSkipLocationStep } from '@/lib/skip-location-step';
 import { apiCreateDocument, apiLoadSelf, apiSaveSelf } from '@/lib/api-client';
 import { createFailureCopy, type CreateFailure } from './create-failure';
 import { offlineCreateDocument } from '@/lib/offline/offline-store';
@@ -182,19 +184,32 @@ export default function NewDocumentPage() {
 
   // Where this document can be filed, and the inline New Folder the Settings
   // step offers — see usePlacementOptions.
-  const { folders, teams, teamFolders, createPickerFolder, createPickerTeam } = usePlacementOptions(
-    {
-      selfId: self.id,
-      clerkUserId,
-      // A bypass commits straight away and never shows the Settings step.
-      skip: isBypassUrl,
-    },
-  );
+  const {
+    folders,
+    teams,
+    teamFolders,
+    createPickerFolder,
+    createPickerTeam,
+    ready: placesReady,
+  } = usePlacementOptions({
+    selfId: self.id,
+    clerkUserId,
+    // A bypass commits straight away and never shows the Settings step.
+    skip: isBypassUrl,
+  });
   // The reader's default folders, per template, for the Location step.
   const wizardDefaults = useWizardDefaults(self.id === 'pending' ? null : self.id, {
     folders,
     teams,
     teamFolders,
+  });
+  // Where to save without the Location step, when the reader asked for that
+  // (docs/specs/013-workspace/default-folders.md "Skipping the Location step").
+  const skipLocation = useSkipLocationStep({
+    ownerId: self.id === 'pending' ? null : self.id,
+    context: initialPlacement,
+    lists: { folders, teams, teamFolders },
+    ready: placesReady,
   });
   // The hero launch window's landing (?blank=1&welcome=1) holds the quiet blank canvas the hero
   // grew into rather than the opening screen, so nothing else paints between the two.
@@ -322,7 +337,13 @@ export default function NewDocumentPage() {
     setSubmitting(true);
     // Save location (docs/specs/006-document/save-locations.md): only Local Browser takes the offline branch.
     const offline = isOfflineLocation(settings.saveLocation);
-    lastCreateArgs.current = { kind: templateKind, name, themeId, settings };
+    // A Retry re-runs the create, not the preference write below.
+    lastCreateArgs.current = {
+      kind: templateKind,
+      name,
+      themeId,
+      settings: { ...settings, skipLocationStep: undefined },
+    };
     // The Settings step's name field wins; fall back to the per-template
     // default when it's left blank (docs/specs/006-document/offline-mode.md).
     // docs/specs/006-document/name-length.md: the wizard's name field goes through the same cap.
@@ -339,6 +360,8 @@ export default function NewDocumentPage() {
       await apiSaveSelf(updated).catch(() => {});
     }
     markNameConfirmed();
+    // "Always save new documents in <place> and skip this step" (docs/specs/013-workspace/default-folders.md).
+    if (settings.skipLocationStep) saveSkipLocationStep(settings.skipLocationStep, who.id);
 
     const documentId = crypto.randomUUID();
     const tabId = crypto.randomUUID();
@@ -557,6 +580,7 @@ export default function NewDocumentPage() {
               teamFolders={teamFolders}
               initialPlacement={initialPlacement}
               defaults={wizardDefaults}
+              skipLocation={skipLocation}
               initialShelf={browseShelf}
               onCreateFolder={createPickerFolder}
               // Teams are Clerk-only (docs/specs/013-workspace/teams.md): a guest gets no New Team tile.

@@ -341,7 +341,7 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
     </Glyph>
   ),
   // A page with a title and a bar chart: the poster an infographic becomes.
-  infographics: (
+  illustrate: (
     <Glyph>
       <rect x="5" y="2.5" width="14" height="19" rx="1.5" />
       <path d="M8 6.5h8" />
@@ -358,8 +358,16 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M7.5 18h9" />
     </Glyph>
   ),
+  // A page of writing: a title over lines of text, a short last line where a paragraph ends.
+  articles: (
+    <Glyph>
+      <rect x="5" y="2.5" width="14" height="19" rx="1.5" />
+      <path d="M8 6.5h6" />
+      <path d="M8 10h8M8 13h8M8 16h5" />
+    </Glyph>
+  ),
   // Two pages, the front one heading out: every page as its own sheet.
-  'exporting-infographics': (
+  'exporting-pages': (
     <Glyph>
       <path d="M8 5.5V3.5a1 1 0 011-1h9.5a1 1 0 011 1v13a1 1 0 01-1 1H16" />
       <rect x="4.5" y="6" width="11.5" height="15.5" rx="1" />

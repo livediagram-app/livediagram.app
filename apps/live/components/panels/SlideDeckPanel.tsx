@@ -18,7 +18,9 @@
 // An empty deck stays empty. No seeded slides, no "one per tab" starter: a
 // generated deck is one you have to read and prune before you can trust it.
 
-import { useEffect, useRef, useState } from 'react';
+import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
+import { sameMembers, selectionIds, type Selection } from '@/lib/selection-store';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { slideName, type Slide } from '@livediagram/document';
 
@@ -69,7 +71,7 @@ function SlideRow({
   index: number;
   /** Absent when the slide's tab has been deleted. */
   tabName: string | undefined;
-  // A page slide's page, named (when its tab is the one in Infographic mode); else "Page".
+  // A page slide's page, named (when its tab is the one in Illustrate mode); else "Page".
   pageName?: string;
   isOpen: boolean;
   isDragging: boolean;
@@ -218,6 +220,8 @@ function SlideRow({
   );
 }
 
+const selectionSetOf = (s: Selection) => selectionIds(s.selectedId, s.multiSelectedIds);
+
 export function SlideDeckPanel({
   state,
   tabs,
@@ -232,7 +236,7 @@ export function SlideDeckPanel({
   tabs: { id: string; name: string }[];
   activeTabId: string;
   isReadOnly: boolean;
-  // The active tab's pages while it is shown in Infographic mode: slides are then added a page at
+  // The active tab's pages while it is shown in Illustrate mode: slides are then added a page at
   // a time (PageSlidePicker) rather than from a selection.
   pages?: readonly { id: string; label: string }[];
 } & ModePanelProps) {
@@ -240,8 +244,6 @@ export function SlideDeckPanel({
     deck,
     openSlideId,
     openSlideInEditor,
-    selectionCount,
-    currentSelectionIds,
     runnable,
     thumbs,
     newSlideFromSelection,
@@ -258,6 +260,11 @@ export function SlideDeckPanel({
     start,
     startingDeck,
   } = state;
+  // The selection the panel offers to slide, read from the store: a selection change re-renders this
+  // panel and not the canvas (docs/specs/008-canvas/blueprints/selection-store.md).
+  const selected = useSelectionOf(selectionSetOf, sameMembers);
+  const selectionCount = selected.size;
+  const currentSelectionIds = useMemo(() => [...selected], [selected]);
 
   const tabNames = new Map(tabs.map((t) => [t.id, t.name]));
   const [renamingId, setRenamingId] = useState<string | null>(null);

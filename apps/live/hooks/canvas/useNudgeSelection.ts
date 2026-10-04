@@ -37,7 +37,7 @@ import { track } from '@/lib/telemetry';
 
 type NudgeDeps = {
   isReadOnly: boolean;
-  multiSelectedIds: Set<string>;
+  multiSelectedIds: ReadonlySet<string>;
   selectedId: string | null;
   activeTab: Tab;
   // An event-storming board: up / down move a workshop note a whole lane
