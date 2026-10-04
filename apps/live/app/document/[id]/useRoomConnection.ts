@@ -316,7 +316,10 @@ export function useRoomConnection(opts: {
         op.kind === 'vote' ||
         op.kind === 'el-delta' ||
         op.kind === 'tab-meta' ||
-        op.kind === 'document-meta'
+        op.kind === 'document-meta' ||
+        // An agent's changeset (docs/specs/024-agents/agent-changesets.md): system-only, like the
+        // share ops below, so only the worker's copy applies.
+        (op.kind === 'changeset' && from === 'system')
       ) {
         // A document change from a peer: a whole tab, one element (docs/specs/012-collaboration/realtime-conflict-resolution.md),
         // one dot (docs/specs/012-collaboration/session-tools.md), one answer / idea / tick / comment (docs/specs/012-collaboration/collab-race-hardening.md),

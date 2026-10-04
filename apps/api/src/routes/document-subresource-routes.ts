@@ -166,12 +166,7 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
       // room, or a save with no room cursor.
       // In parallel with the stored tab it doesn't depend on.
       const [{ tab: body, commentAuthors }, existingTab] = await Promise.all([
-        mergeRoomLedger(
-          env,
-          existing,
-          { ...received, id: tabId },
-          request.headers.get('X-Room-Cursor'),
-        ),
+        mergeRoomLedger(env, id, { ...received, id: tabId }, request.headers.get('X-Room-Cursor')),
         getTab(env, id, tabId),
       ]);
       // The name cap (docs/specs/006-document/name-length.md): a tab rename rides
@@ -373,7 +368,7 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
     // author fields from D1 (rewriteCommentAuthors).
     const { authorId: _authorId, ...publicComment } = comment;
     ctx.waitUntil?.(
-      relayElementDelta(env, existing, tabId, elementId, {
+      relayElementDelta(env, id, tabId, elementId, {
         kind: 'comment-add',
         comment: publicComment,
       }),
@@ -446,7 +441,7 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
     }
     // Same as the add: without it, an editor's next save put it back.
     ctx.waitUntil?.(
-      relayElementDelta(env, existing, tabId, host.elementId, {
+      relayElementDelta(env, id, tabId, host.elementId, {
         kind: 'comment-remove',
         commentId,
       }),

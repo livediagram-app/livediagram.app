@@ -8,6 +8,7 @@ import {
 import { opForTheWire, stampCommentAuthor } from '@livediagram/document';
 import { RoomLedgerStore } from './room-ledger-store';
 import { RoomLivePoll } from './room-live-poll';
+import { RoomSelectionStore, selectionFromOp, type LiveSession } from './room-selections';
 import type { ClientMessage, Env, ParticipantPresence, ServerMessage } from './types';
 import { reportServerEvent } from './server-telemetry';
 import { multiplayerDecision } from './room-multiplayer';
@@ -152,7 +153,17 @@ type SessionAttachment = {
   //     (docs/specs/014-identity/profile-picture.md §6). Only such a session may put a picture on the
   //     roster, and only such a session receives the pictures on it.
   account?: boolean;
+  //   - `personTag`: the verified account's per-document person tag, from X-Verified-Person
+  //     (docs/specs/024-agents/agent-changesets.md "Held elements", CS39): how the room tells an
+  //     agent's owner's own sessions apart without holding an owner id. 64 hex characters.
+  personTag?: string | null;
 };
+
+// The room ops the worker originates through /mutation: a view-role visitor's comment, an agent
+// changeset, a tab rename (docs/specs/024-agents/agent-changesets.md).
+const WORKER_MUTATION_KINDS = new Set(['el-delta', 'changeset', 'document-meta']);
+// A person tag is a SHA-256 hex digest; the clamp keeps a forged header from bloating the attachment.
+const MAX_PERSON_TAG_LEN = 64;
 
 // Share-link ops that end the sessions their code admitted.
 const SHARE_LINK_OPS = new Set(['share-revoked', 'share-rescoped']);
@@ -207,6 +218,8 @@ export class DocumentRoom implements DurableObject {
   // (docs/specs/012-collaboration/collab-race-hardening.md), each in its own module; see room-ledger-store / room-live-poll.
   ledger: RoomLedgerStore;
   poll: RoomLivePoll;
+  // Each session's selection, for the api's held check (room-selections.ts).
+  selections: RoomSelectionStore;
 
   // The worker env, for the one server-side telemetry emit the room owns
   // (Document·Used·Multiplayer). Optional so unit tests can build a room
@@ -227,6 +240,7 @@ export class DocumentRoom implements DurableObject {
     this.env = env;
     this.ledger = new RoomLedgerStore(state.storage);
     this.poll = new RoomLivePoll(state.storage);
+    this.selections = new RoomSelectionStore(state.storage);
     // Restore before any request can observe `epoch`/`seq`. A wake re-runs
     // the constructor, so without this gate a socket could be handed the
     // freshly-minted field values above and defeat the whole point.
@@ -281,11 +295,13 @@ export class DocumentRoom implements DurableObject {
     // ordered stream like a peer's mutation: sequenced, logged for catch-up,
     // sent to everybody. A view-role visitor's comment is written by the api,
     // not by a client socket (the room refuses view-role mutations), so
-    // without this editors never saw it and their next save erased it. Only
-    // `el-delta` is accepted: the one kind the worker has to originate.
+    // without this editors never saw it and their next save erased it. An agent
+    // changeset and a tab rename the api applied (docs/specs/024-agents/agent-changesets.md)
+    // take the same path, one seq and one catch-up slot each whatever their size.
     if (request.method === 'POST' && url.pathname === '/mutation') {
       const op = (await readBody(request))?.op;
-      if ((op as { kind?: unknown } | undefined)?.kind !== 'el-delta') {
+      const kind = (op as { kind?: unknown } | undefined)?.kind;
+      if (typeof kind !== 'string' || !WORKER_MUTATION_KINDS.has(kind)) {
         return new Response('bad op', { status: 400 });
       }
       this.sequenceMutation('system', opForTheWire(op));
@@ -295,6 +311,19 @@ export class DocumentRoom implements DurableObject {
     // api merges into a save before writing D1 so a stale snapshot can't
     // erase an answer the room has seen. Same trust argument as /broadcast:
     // only the worker can reach it.
+    // Internal: every selection on a tab, for the api's held check
+    // (docs/specs/024-agents/agent-changesets.md "Held elements"). Same trust argument as
+    // /broadcast: only the worker can reach it.
+    if (request.method === 'GET' && url.pathname === '/selections') {
+      const tabId = url.searchParams.get('tab');
+      if (!tabId) return new Response('missing tab', { status: 400 });
+      const selections = await this.selections.read(
+        tabId,
+        this.liveSessions(),
+        url.searchParams.get('person') ?? '',
+      );
+      return Response.json({ selections });
+    }
     if (request.method === 'GET' && url.pathname === '/ledger') {
       const tabId = url.searchParams.get('tab');
       if (!tabId) return new Response('missing tab', { status: 400 });
@@ -331,7 +360,8 @@ export class DocumentRoom implements DurableObject {
     const tabScope = request.headers.get('X-Verified-Tab-Scope') || null;
     const shareCode = request.headers.get('X-Verified-Share-Code') || null;
     const account = request.headers.get('X-Verified-Account') === '1';
-    this.acceptSession(server, verifiedRole, isOwner, tabScope, shareCode, account);
+    const personTag = request.headers.get('X-Verified-Person') || null;
+    this.acceptSession(server, verifiedRole, isOwner, tabScope, shareCode, account, personTag);
     return new Response(null, { status: 101, webSocket: client });
   }
 
@@ -345,6 +375,7 @@ export class DocumentRoom implements DurableObject {
     tabScope: string | null = null,
     shareCode: string | null = null,
     account = false,
+    personTag: string | null = null,
   ): void {
     // Per-session ephemeral presence id (docs/specs/015-api/public-api-and-tokens.md §6): the broadcast presence /
     // cursor id is a fresh server-assigned random, NOT the connector's real
@@ -360,6 +391,7 @@ export class DocumentRoom implements DurableObject {
       tabScope,
       shareCode,
       account,
+      personTag: personTag?.slice(0, MAX_PERSON_TAG_LEN) ?? null,
     } satisfies SessionAttachment);
     // Hibernation-aware accept: the runtime owns the socket's event
     // delivery (webSocketMessage / webSocketClose / webSocketError) and
@@ -684,6 +716,12 @@ export class DocumentRoom implements DurableObject {
       // the next hibernation and mis-place peers for every later joiner.
       // The live relay below still drives real-time updates for peers
       // already connected.
+      // Every selection is noted for the api's held check, whatever the role
+      // (docs/specs/024-agents/agent-changesets.md "Held elements"). The DO's output gate holds
+      // what follows until the write lands.
+      if (opKind === 'select') {
+        void this.selections.note(sender.id, selectionFromOp(msg.op)).catch(() => {});
+      }
       if (opKind === 'tab-focus') {
         const tabId = (msg.op as { tabId?: unknown }).tabId;
         if (typeof tabId === 'string') {
@@ -945,11 +983,27 @@ export class DocumentRoom implements DurableObject {
   private dropSession(ws: WebSocket): void {
     this.opRates.delete(ws);
     const presenceId = this.readSession(ws)?.presence?.id;
-    if (presenceId) this.startFacilitatorGrace(presenceId);
+    if (presenceId) {
+      this.startFacilitatorGrace(presenceId);
+      void this.selections.drop(presenceId).catch(() => {});
+    }
     // Exclude the departing socket explicitly: depending on when the
     // runtime prunes it from getWebSockets(), it could otherwise still
     // appear in the roster of this very broadcast.
     this.broadcastPresence(ws);
+  }
+
+  // Every hello'd session with a live socket, by presence id: what the selection store answers
+  // against, so an entry whose socket is gone never holds anything.
+  private liveSessions(): Map<string, LiveSession> {
+    const live = new Map<string, LiveSession>();
+    for (const ws of this.state.getWebSockets()) {
+      const session = this.readSession(ws);
+      const p = session?.presence;
+      if (!p) continue;
+      live.set(p.id, { name: p.name, color: p.color, personTag: session.personTag ?? null });
+    }
+    return live;
   }
 
   // Count the room's multiplayer session once, from the one place that sees

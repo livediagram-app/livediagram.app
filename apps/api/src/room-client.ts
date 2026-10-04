@@ -5,19 +5,51 @@ import {
   type Tab,
   type TabLedger,
 } from '@livediagram/document';
+import {
+  ROOM_RELAY_TIMEOUT_MS,
+  ROOM_SELECTIONS_TIMEOUT_MS,
+  type ChangesetRoomOp,
+  type RoomOp,
+} from '@livediagram/api-schema';
 import type { Env } from './types';
 
 // The worker's calls into a document's realtime room (docs/specs/012-collaboration/collab-race-hardening.md): reading its
 // collaboration ledger to merge a save, and handing it a change the api made.
 
-// A document has a room when it is shared or in a team; anything else has one
-// writer, and asking would wake a Durable Object for nothing. Null then.
-function roomStubFor(
+// Every server-stored document has a room (docs/specs/024-agents/agent-changesets.md "Rooms for
+// personal documents"): an agent is a second writer even on a document nobody else can open.
+function roomStubFor(env: Env, documentId: string): DurableObjectStub {
+  return env.DOCUMENT_ROOM.get(env.DOCUMENT_ROOM.idFromName(documentId));
+}
+
+// A room call that gives up after `ms`: the api never waits on a room longer than that.
+async function roomFetch(
   env: Env,
-  liveDoc: { id: string; shareable: boolean; teamId: string | null },
-): DurableObjectStub | null {
-  if (!liveDoc.shareable && !liveDoc.teamId) return null;
-  return env.DOCUMENT_ROOM.get(env.DOCUMENT_ROOM.idFromName(liveDoc.id));
+  documentId: string,
+  path: string,
+  init: RequestInit | undefined,
+  ms: number,
+): Promise<Response> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => reject(new Error(`room timeout after ${ms} ms`)), ms);
+  });
+  try {
+    return await Promise.race([
+      roomStubFor(env, documentId).fetch(`https://room${path}`, init),
+      timeout,
+    ]);
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+function mutationInit(op: unknown): RequestInit {
+  return {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ op }),
+  };
 }
 
 // Merge the room's collaboration ledger into a tab a client is saving
@@ -31,12 +63,12 @@ function roomStubFor(
 //
 // Only what the saver had NOT seen is merged: the client sends the room
 // cursor its snapshot was taken at (`X-Room-Cursor: <epoch>:<seq>`), and a
-// save without one (no live socket, the unload beacon, an api token) isn't
-// merged at all. That is what keeps a change the saver made while its socket
-// was down from being overruled by the room's older copy of it.
+// save without one (no live socket, the unload beacon) isn't merged at all.
+// That is what keeps a change the saver made while its socket was down from
+// being overruled by the room's older copy of it.
 //
-// Only for a document with a room (see roomStubFor). Best-effort by design: if the room can't answer, the
-// save goes through as the client sent it, which is what happened before.
+// Best-effort by design: if the room can't answer, the save goes through as
+// the client sent it.
 //
 // Also returns who posted each comment the room has seen, so the save can
 // credit a comment that is new to D1 to its author rather than to the saver.
@@ -47,17 +79,16 @@ export type RoomMerge = {
 
 export async function mergeRoomLedger(
   env: Env,
-  liveDoc: { id: string; shareable: boolean; teamId: string | null },
+  documentId: string,
   tab: Tab,
   cursorHeader: string | null,
 ): Promise<RoomMerge> {
   const unmerged: RoomMerge = { tab, commentAuthors: new Map() };
-  const stub = roomStubFor(env, liveDoc);
   const cursor = parseRoomCursor(cursorHeader);
-  if (!stub || !cursor) return unmerged;
+  if (!cursor) return unmerged;
   try {
     const query = `tab=${encodeURIComponent(tab.id)}&epoch=${encodeURIComponent(cursor.epoch)}`;
-    const res = await stub.fetch(`https://room/ledger?${query}`);
+    const res = await roomStubFor(env, documentId).fetch(`https://room/ledger?${query}`);
     if (!res.ok) return unmerged;
     const ledger = (await res.json()) as TabLedger;
     if (!ledger || typeof ledger !== 'object' || !ledger.elements) return unmerged;
@@ -91,25 +122,109 @@ export function parseRoomCursor(header: string | null): { epoch: string; seq: nu
 // erased it. Relayed as the same `el-delta` an editor's own comment sends, so
 // receivers need nothing new.
 //
-// Only for a document with a room. Best-effort, like the share-revoked
-// broadcast: the D1 write is the record, this is the live copy.
+// Best-effort, like the share-revoked broadcast: the D1 write is the record,
+// this is the live copy.
 export async function relayElementDelta(
   env: Env,
-  liveDoc: { id: string; shareable: boolean; teamId: string | null },
+  documentId: string,
   tabId: string,
   elementId: string,
   delta: ElementDelta,
 ): Promise<void> {
-  const stub = roomStubFor(env, liveDoc);
-  if (!stub) return;
   try {
-    await stub.fetch('https://room/mutation', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ op: { kind: 'el-delta', tabId, elementId, delta } }),
-    });
+    await roomStubFor(env, documentId).fetch(
+      'https://room/mutation',
+      mutationInit({ kind: 'el-delta', tabId, elementId, delta }),
+    );
   } catch {
     // The comment is saved; the room just didn't hear about it.
+  }
+}
+
+// One changeset into the room's ordered stream (docs/specs/024-agents/agent-changesets.md "The
+// write path" step 7): sequenced in one log slot and sent to everyone. It never fails the write:
+// D1 already holds the changeset and the merge on save keeps it there, so a room that refuses or
+// cannot be reached within ROOM_RELAY_TIMEOUT_MS is logged and answers false.
+export async function relayChangeset(
+  env: Env,
+  documentId: string,
+  op: ChangesetRoomOp,
+): Promise<boolean> {
+  const fields = { documentId, tabId: op.tabId, changesetId: op.id };
+  try {
+    const res = await roomFetch(
+      env,
+      documentId,
+      '/mutation',
+      mutationInit(op),
+      ROOM_RELAY_TIMEOUT_MS,
+    );
+    if (res.ok) return true;
+    console.warn('[changeset] relay-failed', { ...fields, error: `status ${res.status}` });
+  } catch (err) {
+    console.warn('[changeset] relay-failed', { ...fields, error: String(err) });
+  }
+  return false;
+}
+
+// The document's tab list after the api renamed a tab (CS42), as the same document-meta op an
+// editor sends. Best-effort and logged, like the changeset relay.
+export async function relayTabList(
+  env: Env,
+  documentId: string,
+  op: Extract<RoomOp, { kind: 'document-meta' }>,
+): Promise<boolean> {
+  try {
+    const res = await roomFetch(
+      env,
+      documentId,
+      '/mutation',
+      mutationInit(op),
+      ROOM_RELAY_TIMEOUT_MS,
+    );
+    if (res.ok) return true;
+    console.warn('[room-mutation] document-meta did not reach the room', {
+      documentId,
+      error: `status ${res.status}`,
+    });
+  } catch (err) {
+    console.warn('[room-mutation] document-meta did not reach the room', {
+      documentId,
+      error: String(err),
+    });
+  }
+  return false;
+}
+
+// One open editor's selection on a tab, as the room answers it: every selected id, the session's
+// name and colour, and whether it is the agent owner's own session (matched by person tag).
+export type RoomSelection = { elementIds: string[]; name: string; color: string; mine: boolean };
+
+// Every selection on the tab (docs/specs/024-agents/agent-changesets.md "Held elements"). Null
+// when the room cannot answer within ROOM_SELECTIONS_TIMEOUT_MS: then nothing counts as held, and
+// the warning says so.
+export async function readRoomSelections(
+  env: Env,
+  documentId: string,
+  tabId: string,
+  personTag: string | null,
+): Promise<RoomSelection[] | null> {
+  const query = `tab=${encodeURIComponent(tabId)}&person=${encodeURIComponent(personTag ?? '')}`;
+  try {
+    const res = await roomFetch(
+      env,
+      documentId,
+      `/selections?${query}`,
+      undefined,
+      ROOM_SELECTIONS_TIMEOUT_MS,
+    );
+    if (!res.ok) throw new Error(`status ${res.status}`);
+    const body = (await res.json()) as { selections?: unknown };
+    if (!Array.isArray(body.selections)) throw new Error('no selections');
+    return body.selections as RoomSelection[];
+  } catch (err) {
+    console.warn('[changeset] selections-unreachable', { documentId, tabId, error: String(err) });
+    return null;
   }
 }
 
@@ -124,14 +239,7 @@ export async function broadcastShareOp(
   op: { kind: 'share-revoked' | 'share-rescoped'; code: string },
 ): Promise<void> {
   try {
-    await env.DOCUMENT_ROOM.get(env.DOCUMENT_ROOM.idFromName(documentId)).fetch(
-      'https://room/broadcast',
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ op }),
-      },
-    );
+    await roomStubFor(env, documentId).fetch('https://room/broadcast', mutationInit(op));
   } catch (err) {
     console.warn(`[room-broadcast] ${op.kind} did not reach the room`, documentId, err);
   }
@@ -139,22 +247,16 @@ export async function broadcastShareOp(
 
 // Tell a document's realtime room that the document was moved to the Trash
 // (docs/specs/013-workspace/trash.md): every open session hears the deleted
-// state, and the room closes every socket. Only for a document with a room.
-// Best-effort like the share-op broadcast: the D1 write is the change, and a
-// session the room misses still has every save refused with document_trashed.
-export async function broadcastDocumentTrashed(
-  env: Env,
-  liveDoc: { id: string; shareable: boolean; teamId: string | null },
-): Promise<void> {
+// state, and the room closes every socket. Best-effort like the share-op
+// broadcast: the D1 write is the change, and a session the room misses still
+// has every save refused with document_trashed.
+export async function broadcastDocumentTrashed(env: Env, documentId: string): Promise<void> {
   try {
-    const stub = roomStubFor(env, liveDoc);
-    if (!stub) return;
-    await stub.fetch('https://room/broadcast', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ op: { kind: 'document-trashed' } }),
-    });
+    await roomStubFor(env, documentId).fetch(
+      'https://room/broadcast',
+      mutationInit({ kind: 'document-trashed' }),
+    );
   } catch (err) {
-    console.warn('[room-broadcast] document-trashed did not reach the room', liveDoc.id, err);
+    console.warn('[room-broadcast] document-trashed did not reach the room', documentId, err);
   }
 }

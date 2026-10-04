@@ -1,7 +1,14 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { ShapeElement, Tab, TabLedger } from '@livediagram/document';
 import type { Env } from './types';
-import { broadcastShareOp, mergeRoomLedger, parseRoomCursor } from './room-client';
+import {
+  broadcastShareOp,
+  mergeRoomLedger,
+  parseRoomCursor,
+  readRoomSelections,
+  relayChangeset,
+  relayTabList,
+} from './room-client';
 
 const card: ShapeElement = {
   id: 'card',
@@ -30,30 +37,25 @@ function envWith(fetch: (url: string) => Promise<Response>) {
   return { env, stubFetch };
 }
 
-const shared = { id: 'd1', shareable: true, teamId: null };
-
 describe('mergeRoomLedger (docs/specs/012-collaboration/collab-race-hardening.md phase 3)', () => {
   it("merges the room's answers the saver hadn't seen", async () => {
     const { env, stubFetch } = envWith(async () => Response.json(ledger));
-    const { tab: merged } = await mergeRoomLedger(env, shared, tab, 'ep:4');
+    const { tab: merged } = await mergeRoomLedger(env, 'd1', tab, 'ep:4');
     expect((merged.elements[0] as ShapeElement).responses?.map((r) => r.participantId)).toEqual([
       'b',
     ]);
     expect(stubFetch.mock.calls[0]![0]).toBe('https://room/ledger?tab=t1&epoch=ep');
   });
 
-  it('leaves the save alone for a document with no room, or a save with no cursor', async () => {
+  it('leaves a save with no cursor alone', async () => {
     const { env, stubFetch } = envWith(async () => Response.json(ledger));
-    expect(
-      (await mergeRoomLedger(env, { id: 'd1', shareable: false, teamId: null }, tab, 'ep:4')).tab,
-    ).toBe(tab);
-    expect((await mergeRoomLedger(env, shared, tab, null)).tab).toBe(tab);
+    expect((await mergeRoomLedger(env, 'd1', tab, null)).tab).toBe(tab);
     expect(stubFetch).not.toHaveBeenCalled();
   });
 
-  it('asks the room for a team document too', async () => {
+  it('asks the room of a personal document too: every server-stored document has one', async () => {
     const { env, stubFetch } = envWith(async () => Response.json(ledger));
-    await mergeRoomLedger(env, { id: 'd1', shareable: false, teamId: 'team' }, tab, 'ep:4');
+    await mergeRoomLedger(env, 'personal', tab, 'ep:4');
     expect(stubFetch).toHaveBeenCalledOnce();
   });
 
@@ -61,7 +63,7 @@ describe('mergeRoomLedger (docs/specs/012-collaboration/collab-race-hardening.md
     const { env } = envWith(async () => {
       throw new Error('room down');
     });
-    expect((await mergeRoomLedger(env, shared, tab, 'ep:4')).tab).toBe(tab);
+    expect((await mergeRoomLedger(env, 'd1', tab, 'ep:4')).tab).toBe(tab);
   });
 });
 
@@ -104,6 +106,78 @@ describe('broadcastShareOp', () => {
       '[room-broadcast] share-revoked did not reach the room',
       'd1',
       expect.any(Error),
+    );
+    warn.mockRestore();
+  });
+});
+
+// The changeset relay and the held check's read (docs/specs/024-agents/agent-changesets.md "What
+// the room does").
+describe('relayChangeset', () => {
+  const op = {
+    kind: 'changeset' as const,
+    tabId: 't1',
+    id: 'cs_0000000001',
+    rev: 2,
+    prevRev: null,
+    author: { name: 'Webber', color: '#0ea5e9' },
+    counts: { added: 1, changed: 0, removed: 0 },
+  };
+
+  it("posts one changeset op to the document's room", async () => {
+    const { env, stubFetch } = envWith(async () => new Response(null, { status: 204 }));
+    expect(await relayChangeset(env, 'personal', op)).toBe(true);
+    const [url, init] = stubFetch.mock.calls[0] as unknown as [string, RequestInit];
+    expect(url).toBe('https://room/mutation');
+    expect(JSON.parse(init.body as string)).toEqual({ op });
+  });
+
+  it('logs and answers false when the room refuses or cannot be reached', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const refused = envWith(async () => new Response('bad op', { status: 400 }));
+    expect(await relayChangeset(refused.env, 'd1', op)).toBe(false);
+    const down = envWith(async () => {
+      throw new Error('room down');
+    });
+    expect(await relayChangeset(down.env, 'd1', op)).toBe(false);
+    expect(warn).toHaveBeenCalledWith(
+      '[changeset] relay-failed',
+      expect.objectContaining({ documentId: 'd1', tabId: 't1', changesetId: 'cs_0000000001' }),
+    );
+    warn.mockRestore();
+  });
+});
+
+describe('relayTabList', () => {
+  it('posts a document-meta op', async () => {
+    const { env, stubFetch } = envWith(async () => new Response(null, { status: 204 }));
+    const meta = {
+      kind: 'document-meta' as const,
+      name: 'Doc',
+      tabs: [{ id: 't1', name: 'A', orderIndex: 0 }],
+    };
+    await relayTabList(env, 'd1', meta);
+    const [url, init] = stubFetch.mock.calls[0] as unknown as [string, RequestInit];
+    expect(url).toBe('https://room/mutation');
+    expect(JSON.parse(init.body as string)).toEqual({ op: meta });
+  });
+});
+
+describe('readRoomSelections', () => {
+  it("asks for the tab's selections with the person tag", async () => {
+    const selections = [{ elementIds: ['a'], name: 'Bea', color: '#f00', mine: false }];
+    const { env, stubFetch } = envWith(async () => Response.json({ selections }));
+    expect(await readRoomSelections(env, 'd1', 't1', 'tag1')).toEqual(selections);
+    expect(stubFetch.mock.calls[0]![0]).toBe('https://room/selections?tab=t1&person=tag1');
+  });
+
+  it('answers null and logs when the room cannot answer', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const { env } = envWith(async () => new Response('no', { status: 500 }));
+    expect(await readRoomSelections(env, 'd1', 't1', null)).toBeNull();
+    expect(warn).toHaveBeenCalledWith(
+      '[changeset] selections-unreachable',
+      expect.objectContaining({ documentId: 'd1', tabId: 't1' }),
     );
     warn.mockRestore();
   });

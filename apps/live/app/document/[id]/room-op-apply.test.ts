@@ -186,3 +186,65 @@ describe('two people pressing one done check', () => {
     expect(marks(next)).toEqual(['a', 'b']);
   });
 });
+
+// An agent's changeset (docs/specs/024-agents/agent-changesets.md "In the editor"): its element ops
+// apply as a peer's would, a created tab is appended first, and an op with no element ops (an
+// oversize relay that asks for a refetch) changes nothing here.
+describe('applyRoomOpToTabs: changeset', () => {
+  const changeset = (over: Record<string, unknown>): RoomOp =>
+    ({
+      kind: 'changeset',
+      tabId: 't1',
+      id: 'cs_0000000001',
+      rev: 2,
+      prevRev: null,
+      author: { name: 'Webber', color: '#0ea5e9' },
+      counts: { added: 1, changed: 1, removed: 0 },
+      ...over,
+    }) as RoomOp;
+
+  it('applies every element op in order, merging over our copy', () => {
+    const tabs = [tab()];
+    const next = applyRoomOpToTabs(
+      tabs,
+      changeset({
+        elementOps: [
+          { kind: 'add', element: el('c', { x: 5 }), at: 2 },
+          { kind: 'update', element: el('a', { x: 9 }) },
+        ],
+      }),
+    );
+    expect(next[0]!.elements.map((e) => [e.id, 'x' in e ? e.x : null])).toEqual([
+      ['a', 9],
+      ['b', 0],
+      ['c', 5],
+    ]);
+  });
+
+  it('appends a tab the changeset created, then fills it', () => {
+    const tabs = [tab()];
+    const next = applyRoomOpToTabs(
+      tabs,
+      changeset({
+        tabId: 't2',
+        tab: { id: 't2', name: 'Detail' },
+        elementOps: [{ kind: 'add', element: el('n'), at: 0 }],
+      }),
+    );
+    expect(next.map((t) => [t.id, t.elements.map((e) => e.id)])).toEqual([
+      ['t1', ['a', 'b']],
+      ['t2', ['n']],
+    ]);
+  });
+
+  it('keeps identity for a refetch op or a tab we do not have', () => {
+    const tabs = [tab()];
+    expect(applyRoomOpToTabs(tabs, changeset({ refetch: true, touched: ['a'] }))).toBe(tabs);
+    expect(
+      applyRoomOpToTabs(
+        tabs,
+        changeset({ tabId: 'nope', elementOps: [{ kind: 'remove', id: 'a' }] }),
+      ),
+    ).toBe(tabs);
+  });
+});
