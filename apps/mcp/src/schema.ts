@@ -403,6 +403,15 @@ export const updateDocumentShape = {
   documentId: z.string().describe('The document to edit (from find_documents / read_document).'),
   tabId: z.string().optional().describe('Which tab to edit; defaults to the first.'),
   mode: z.enum(['replace', 'ops']).describe('"replace" the whole tab, or apply granular "ops".'),
+  rev: z
+    .number()
+    .int()
+    .min(0)
+    .optional()
+    .describe(
+      'ops mode: the tab revision read_document returned. An element a person changed since is then a ' +
+        'conflict, never silently overwritten; read again and redo the edit.',
+    ),
   graph: graphField,
   mermaid: mermaidField,
   elements: elementArray
