@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { useClickOutside, useEscape } from '@livediagram/ui';
-import type { Participant } from '@/lib/identity';
 import { shufflePinned } from '@/lib/shuffle';
-import type { TemplateCategory, TemplateCollection, TemplateKind } from '@livediagram/templates';
+import type { TemplateCategory, TemplateDescriptor, TemplateKind } from '@livediagram/templates';
 import {
   TEMPLATE_CATEGORIES,
   TEMPLATES,
@@ -16,7 +15,8 @@ import {
 } from '@/components/palette/TemplatePickerBrowse';
 import { useModalGuard } from '@/hooks/ui/useModalGuard';
 import { TemplatePickerFooter } from './TemplatePickerFooter';
-import { useWizardPlacement, type AlwaysSave, type WizardDefaults } from './useWizardPlacement';
+import { useWizardPlacement } from './useWizardPlacement';
+import type { NewDocumentSettings, TemplatePickerProps } from './template-picker-props';
 import { WizardDefaultFolder } from './WizardDefaultFolder';
 import { NewDocumentSettingsStep } from './template-picker-settings';
 import {
@@ -27,6 +27,10 @@ import {
 import { TemplatePickerIdentityRow } from './TemplatePickerIdentityRow';
 import { type WizardStep } from './template-picker-wizard';
 import { TemplatePickerHeader } from './TemplatePickerHeader';
+import { useTemplateModeFilter } from '@/components/palette/useTemplateModeFilter';
+import { placeNameOf, skipLocationStepFor, CONTEXT_PLACE_FALLBACK } from '@/lib/skip-location-step';
+import { useWizardSkipLocation } from './useWizardSkipLocation';
+import { WizardSavingIn, WizardSkipLocationCheckbox } from './WizardSkipLocation';
 
 // Whether this render is past hydration, as a store with nothing to subscribe to: prerender and
 // hydration read the server snapshot, every later render the client one.
@@ -34,100 +38,7 @@ const noSubscription = () => () => {};
 const isClient = () => true;
 const isServer = () => false;
 
-// What the welcome wizard's Settings step (docs/specs/006-document/offline-mode.md) hands back on Create.
-export type NewDocumentSettings = {
-  // Where the document is stored (docs/specs/006-document/save-locations.md): the api, or this browser only.
-  saveLocation: SaveLocationId;
-  documentName?: string;
-  // Placement (docs/specs/013-workspace/folders.md "Placement on create"): a team library, and a
-  // folder of the chosen space; a null folder is the space's root, chosen on purpose. Both absent
-  // when the person never saw the picker: no choice, where a default folder may answer
-  // (docs/specs/013-workspace/default-folders.md "Precedence").
-  folderId?: string | null;
-  teamId?: string | null;
-  // "Always save <these> here" (docs/specs/013-workspace/default-folders.md): the default to write
-  // before the create, a folder or null (the My documents root).
-  alwaysSave?: AlwaysSave;
-};
-
-type TemplatePickerProps = {
-  // 'welcome' — first-run modal: identity, template, theme, confirm.
-  // 'templates' — opened from the empty-state card's "Browse templates"
-  // button on an existing tab; just the template grid + Apply. Keeps the
-  // current participant name + current tab theme untouched.
-  // 'identity' — a participant has joined an existing document and hasn't
-  // confirmed their name yet. Identity section only (no templates, no
-  // theme grid); confirm becomes "Join".
-  mode: 'welcome' | 'templates' | 'identity';
-  // The user's current identity. Their name is editable inside the picker
-  // in welcome mode and hidden in templates-only mode.
-  participant: Participant;
-  // Theme currently applied to the active tab — used as the initial /
-  // only theme in templates-only mode. A string, not ThemeId, because it
-  // can be a custom `custom:<uuid>` id (docs/specs/011-theme/custom-themes.md).
-  currentThemeId: string;
-  // Name of the document being joined. Used by the 'identity' mode to
-  // greet visitors with the actual document name ("Welcome to 'API
-  // sketch'") instead of the generic "Welcome to this document".
-  documentName?: string;
-  // When provided, the visitor is signed in and their display name is
-  // dictated by their Clerk account — the input becomes read-only and
-  // the shuffle button hides so they can't masquerade under a
-  // different identity on someone else's document. Has no effect in
-  // 'welcome' / 'templates' modes (no identity row to lock).
-  lockedName?: string | null;
-  // The welcome wizard's Settings step (docs/specs/006-document/offline-mode.md) collects these alongside the
-  // participant name + theme. Other modes pass just the default location (the
-  // document already exists, so name/folder/team don't apply).
-  onPick: (
-    kind: TemplateKind,
-    name: string,
-    themeId: string,
-    settings: NewDocumentSettings,
-  ) => void;
-  // Personal folders + teams for the Settings step's placement picker (welcome
-  // mode). Empty when none / still loading.
-  folders?: { id: string; name: string; parentId: string | null }[];
-  teams?: { id: string; name: string }[];
-  // Per-team folder lists for the Settings step's placement browser.
-  teamFolders?: Record<string, { id: string; name: string; parentId: string | null }[]>;
-  // Pre-selected placement (the /new URL's folder / team context).
-  initialPlacement?: string;
-  // The reader's default folders (docs/specs/013-workspace/default-folders.md): the Location step
-  // pre-selects the template's default at the My documents root, and offers Always save.
-  defaults?: WizardDefaults;
-  // The collection the template step opens on (the /new URL's `?browse=`),
-  // or null for the category overview.
-  initialShelf?: TemplateCollection | null;
-  // Inline folder creation from the placement browser (name popover). Creates
-  // in the given scope and returns the new folder (null on failure).
-  onCreateFolder?: (
-    name: string,
-    parentId: string | null,
-    teamId: string | null,
-  ) => Promise<{ id: string; name: string; parentId: string | null } | null>;
-  // Inline team creation from the placement browser's space overview
-  // (signed-in only; the host omits it for guests).
-  onCreateTeam?: (name: string) => Promise<{ id: string; name: string } | null>;
-  // Dismiss the modal without picking a template or theme. The document
-  // gets a fresh blank canvas (no seeded rectangle, no theme override)
-  // and the empty-state card prompts the next step. Triggered by Skip
-  // (Blank + the Default theme), the Cancel button (non-welcome modes), and the X
-  // and Escape when there is no onBackOut.
-  onSkip: () => void;
-  // The X, and Escape on the first step of the /new wizard: back to the page that opened it,
-  // creating nothing (docs/specs/007-editor/new-document-route.md "Escape backs out"). Absent: both close
-  // as onSkip.
-  onBackOut?: () => void;
-  // True while the host is committing the pick (the new-document POST can
-  // take a moment). Drives the primary button's spinner + disabled state
-  // so the user gets feedback and can't double-submit.
-  busy?: boolean;
-  // When provided (welcome flow), a bottom-left "Open Existing Document"
-  // button navigates away to the Explorer, so this screen can stay focused
-  // on creating without rendering an Explorer panel of its own.
-  onOpenExisting?: () => void;
-};
+export type { NewDocumentSettings } from './template-picker-props';
 
 // The browsable catalogue: hidden templates (the guided tour, docs/specs/007-editor/guided-tour-sample.md) are
 // buildable but never listed, so they're filtered out before any grid /
@@ -155,6 +66,7 @@ export function TemplatePicker({
   teamFolders = {},
   initialPlacement,
   defaults,
+  skipLocation,
   initialShelf = null,
   onCreateFolder,
   onCreateTeam,
@@ -244,16 +156,25 @@ export function TemplatePicker({
   // template's default when the field is left blank. Parameterised on the
   // placement so a double-click commit can pass the just-picked value
   // before the pick has applied.
+  // Skipping the Location step: one step while the reader asked for it, and the checkbox that asks.
+  const skip = useWizardSkipLocation({ place: skipLocation, enabled: isWelcome });
+  // The selection as the reader sees it, for the checkbox ("Workshops · Design team").
+  const placeNameFor = (value: string) =>
+    placeNameOf(saveLocation, value, { folders, teams, teamFolders }) ?? CONTEXT_PLACE_FALLBACK;
   const settingsFor = (picked?: string): NewDocumentSettings => {
     const name = documentNameInput.trim() || templateDefaultName;
     // Always save belongs to the selection it was ticked for: a double-click elsewhere drops it.
     const sameSelection = picked === undefined || picked === where.selected;
     const alwaysSave = isOfflineLocation(saveLocation) || !sameSelection ? null : where.alwaysSave;
+    const value = picked ?? where.selected;
     return {
       saveLocation,
       documentName: name,
       ...(picked === undefined ? where.sent() : where.sent(picked, 'picked')),
       ...(alwaysSave ? { alwaysSave } : {}),
+      ...(skip.ticked
+        ? { skipLocationStep: skipLocationStepFor(saveLocation, value, placeNameFor(value)) }
+        : {}),
     };
   };
   const settings = () => settingsFor();
@@ -270,6 +191,7 @@ export function TemplatePicker({
     // The Settings step only exists on the welcome flow (an existing
     // document has no name / placement / offline choice to make).
     if (next === 'settings' && !isWelcome) return;
+    if (next === 'settings') skip.onLocationShown();
     setStepDir(STEP_ORDER.indexOf(next) >= STEP_ORDER.indexOf(step) ? 'forward' : 'backward');
     setStep(next);
   };
@@ -308,28 +230,35 @@ export function TemplatePicker({
   // (no hydration) shows the shuffle from its first render.
   const hydrated = useSyncExternalStore(noSubscription, isClient, isServer);
   const [shuffled] = useState(() => shufflePinned(LISTED_TEMPLATES, (t) => t.kind === 'blank'));
-  const templates = hydrated ? shuffled : LISTED_TEMPLATES;
+  // Every view of the step shows only the chosen mode's templates (docs/specs/007-editor/templates-by-mode.md).
+  const modeFilter = useTemplateModeFilter({ selected: templateKind, onSelect: setTemplateKind });
+  const templates = (hydrated ? shuffled : LISTED_TEMPLATES).filter(modeFilter.shows);
   const trimmedName = name.trim();
   const effectiveName = trimmedName || participant.name;
   // Keyword filter over the shuffled catalogue. Matches title /
   // description / kind / category label so "design", "uml", "wireframe"
   // etc. all narrow the grid; empty query passes everything through.
   const templateFilter = debouncedQuery.trim().toLowerCase();
-  const filteredTemplates = templateFilter
-    ? templates.filter((t) => {
-        const catLabel =
-          TEMPLATE_CATEGORIES.find((c) => c.id === templateCategory(t.kind))?.label ?? '';
-        return [t.title, t.description, t.kind, catLabel].some((field) =>
-          field.toLowerCase().includes(templateFilter),
-        );
-      })
-    : templates;
-  // The Popular shelf, in its curated order (Blank Canvas first, so Blank
+  const matchesQuery = (t: TemplateDescriptor) => {
+    const catLabel =
+      TEMPLATE_CATEGORIES.find((c) => c.id === templateCategory(t.kind))?.label ?? '';
+    return [t.title, t.description, t.kind, catLabel].some((field) =>
+      field.toLowerCase().includes(templateFilter),
+    );
+  };
+  const filteredTemplates = templateFilter ? templates.filter(matchesQuery) : templates;
+  // A search that finds nothing in the chosen mode: how many it finds in every mode, so the empty
+  // state can offer Everything (docs/specs/007-editor/templates-by-mode.md).
+  const matchesInEveryMode =
+    templateFilter && filteredTemplates.length === 0 && modeFilter.choice !== 'all'
+      ? LISTED_TEMPLATES.filter((t) => modeFilter.offered(t) && matchesQuery(t)).length
+      : 0;
+  // The Popular shelf, in its curated order (the three blanks first, so a blank
   // needs no card of its own); `categoryTemplates` returns a category's
   // templates with Blank excluded (it keeps the shuffled order so the
   // preview fans rotate on each open).
   const popularTemplates = POPULAR_TEMPLATE_KINDS.flatMap((kind) =>
-    TEMPLATES.filter((t) => t.kind === kind),
+    TEMPLATES.filter((t) => t.kind === kind && modeFilter.shows(t)),
   );
   const categoryTemplates = (category: TemplateCategory) =>
     templates.filter((t) => t.kind !== 'blank' && templateCategory(t.kind) === category);
@@ -342,18 +271,35 @@ export function TemplatePicker({
   // the URL context (/new?folder=…, ?team=…) the picker was pre-seeded with,
   // so skipping doesn't silently drop the document into personal Unsorted.
   const skipToDefaults = () =>
-    onPick('blank', effectiveName, 'brand', {
-      saveLocation,
-      // A pick or a /new context only: Skip never saw the Location step, so a default folder is
-      // the server's to apply.
-      ...(where.source === 'picked' || where.source === 'context' ? where.sent() : {}),
-    });
+    onPick(
+      'blank',
+      effectiveName,
+      'brand',
+      skip.place
+        ? skip.settingsFor(skip.place, 'blank')
+        : {
+            saveLocation,
+            // A pick or a /new context only: Skip never saw the Location step, so a default folder
+            // is the server's to apply.
+            ...(where.source === 'picked' || where.source === 'context' ? where.sent() : {}),
+          },
+    );
   // Picking a template: the welcome wizard moves on to where the document
   // lives; Quick Start applies it straight away.
+  // Without a Location step, picking a template creates it there and then, in the saved place.
   const onTemplateCommit = (kind: TemplateKind) => {
     setTemplateKind(kind);
-    if (isWizard) goToStep('settings');
+    if (isWizard && skip.place) {
+      if (!busy) onPick(kind, effectiveName, themeId, skip.settingsFor(skip.place, kind));
+    } else if (isWizard) goToStep('settings');
     else onPick(kind, effectiveName, themeId, { saveLocation });
+  };
+  // Change on the "Saving in" line: the Location step, on the saved place, for this one document.
+  const changeSkipPlace = () => {
+    if (!skip.place) return;
+    where.pick(skip.place.placement);
+    setSaveLocation(skip.place.saveLocation);
+    goToStep('settings');
   };
   // Double-clicking a destination card on the Settings step selects it AND
   // commits the wizard in one gesture (the template-card pattern). The value
@@ -379,7 +325,7 @@ export function TemplatePicker({
         <TemplatePickerHeader
           isWelcome={isWelcome}
           isIdentity={isIdentity}
-          isWizard={isWizard}
+          isWizard={isWizard && !skip.place}
           showTemplates={showTemplates}
           documentName={documentName}
           nameLocked={nameLocked}
@@ -428,6 +374,7 @@ export function TemplatePicker({
                 setTemplateQuery={setTemplateQuery}
                 templateFilter={templateFilter}
                 filteredTemplates={filteredTemplates}
+                matchesInEveryMode={matchesInEveryMode}
                 openCategory={openCategory}
                 setOpenCategory={setOpenCategory}
                 shelfExpanded={shelfExpanded}
@@ -436,6 +383,7 @@ export function TemplatePicker({
                 categoryTemplates={categoryTemplates}
                 templateKind={templateKind}
                 onTemplateCommit={onTemplateCommit}
+                modeFilter={modeFilter}
               />
             ) : null}
 
@@ -472,6 +420,13 @@ export function TemplatePicker({
                     onCreateFolder={onCreateFolder}
                   />
                 }
+                stepFooter={
+                  <WizardSkipLocationCheckbox
+                    placeName={placeNameFor(placement)}
+                    checked={skip.ticked}
+                    onChange={skip.setTicked}
+                  />
+                }
               />
             ) : null}
           </div>
@@ -487,7 +442,20 @@ export function TemplatePicker({
           onOpenExisting={onOpenExisting}
           skipToDefaults={skipToDefaults}
           goToStep={goToStep}
-          onCommit={() => onPick(templateKind, effectiveName, themeId, settings())}
+          oneStep={!!skip.place}
+          note={
+            skip.place && step === 'template' ? (
+              <WizardSavingIn placeName={skip.place.placeName} onChange={changeSkipPlace} />
+            ) : null
+          }
+          onCommit={() =>
+            onPick(
+              templateKind,
+              effectiveName,
+              themeId,
+              skip.place ? skip.settingsFor(skip.place, templateKind) : settings(),
+            )
+          }
         />
       </div>
     </div>

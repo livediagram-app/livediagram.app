@@ -3,6 +3,8 @@
 import { useCallback, useRef, useState, type CSSProperties } from 'react';
 import { lucidePanelsTopLeft, lucideSettings } from '@livediagram/icons/lucide';
 import { FirstPageChoice } from './FirstPageChoice';
+import { EMPTY_PAGE_LAYOUTS_WIDTH, EmptyPageLayouts } from './EmptyPageLayouts';
+import { track } from '@/lib/telemetry';
 import { PageNavigator } from './PageNavigator';
 import {
   articleBodyLinePx,
@@ -15,9 +17,8 @@ import {
   resolveArticleStyle,
   resolveFontStack,
   type LaidOutPage,
-  type PageKind,
 } from '@livediagram/document';
-import { HoverCard, lucideGlyph, PlusIcon, Tooltip } from '@livediagram/ui';
+import { HoverCard, lucideGlyph, Tooltip } from '@livediagram/ui';
 import type { IllustratePagesView } from '@/hooks/editor/useIllustratePages';
 import { InfographicLayoutPreview } from './InfographicLayoutPreview';
 import {
@@ -28,7 +29,7 @@ import {
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { pageSheetStyle } from '@/lib/illustrate-page-paint';
 import { IllustratePagePanel, type PagePanelTab } from './IllustratePagePanel';
-import { AddPagePopover } from './AddPagePopover';
+import { AddPageButton } from './AddPageButton';
 import { ArticleStyleSection } from './article/ArticleStyleSection';
 import { useStylePanelRequest } from '@/lib/article/article-editor-store';
 import {
@@ -46,6 +47,12 @@ const LABEL_MIN = 40;
 // The empty page's layout button beside the cog: with its words, or just its icon.
 const INVITE_WIDE = 150;
 const INVITE_ICON = 30;
+
+// Screen px an empty page needs round the in-page layout card (EmptyPageLayouts), and the least
+// height on screen that holds it.
+const LAYOUT_CARD_MARGIN = 16;
+// Six categories make three rows of cards.
+const LAYOUT_CARD_MIN_HEIGHT = 440;
 
 // Held at one screen size whatever the zoom: counter-scaled about the given corner.
 const steady = (zoom: number, origin: string): CSSProperties => ({
@@ -143,6 +150,25 @@ export function IllustratePages({
   }
   // The empty page's own invitation opens its panel on Layouts.
   const openLayouts = (id: string) => setOpened({ id, tab: 'layouts' });
+  // The pages whose in-page layout card was hidden, until the tab is next opened.
+  const [layoutsHidden, setLayoutsHidden] = useState<ReadonlySet<string>>(() => new Set());
+  // An empty infographic page shows its layouts inside itself (EmptyPageLayouts): never on the first
+  // page while it offers its kind, under its open panel, or on a page too small on screen to hold
+  // the card.
+  const showsLayoutCard = (page: LaidOutPage) =>
+    !!edit &&
+    !page.flow &&
+    page.kind !== 'article' &&
+    edit.contentCount(page.id) === 0 &&
+    !offersPageKindChoice(pages, page.id, 0) &&
+    openId !== page.id &&
+    !layoutsHidden.has(page.id) &&
+    page.rect.width * zoom >= EMPTY_PAGE_LAYOUTS_WIDTH + LAYOUT_CARD_MARGIN * 2 &&
+    page.rect.height * zoom >= LAYOUT_CARD_MIN_HEIGHT;
+  // The page a layout is previewed on: its panel's, or its in-page card's.
+  const previewed = view.layoutPreview
+    ? pages.find((p) => p.id === view.layoutPreview!.pageId)
+    : undefined;
   const anchorOf = useCallback((id: string) => cogs.current.get(id), []);
   return (
     <>
@@ -279,20 +305,39 @@ export function IllustratePages({
       })}
       {drag.reorder ? <ReorderMarker pages={pages} reorder={drag.reorder} zoom={zoom} /> : null}
       {edit?.addPage ? (
-        <AddPageButton
-          // Centred in a gap's width to the right of the last page, on the row's axis.
-          x={last.rect.x + last.rect.width + ILLUSTRATE_PAGE_GAP / 2}
-          zoom={zoom}
-          onAdd={edit.addPage}
-        />
+        <AddPageButton lastRight={last.rect.x + last.rect.width} zoom={zoom} onAdd={edit.addPage} />
       ) : null}
-      {open && view.layoutPreview?.pageId === open.id ? (
+      {previewed && view.layoutPreview ? (
         <InfographicLayoutPreview
-          page={open}
+          page={previewed}
           layout={view.layoutPreview.layout}
           tabFont={view.tabFont}
         />
       ) : null}
+      {edit
+        ? pages.filter(showsLayoutCard).map((page) => (
+            <div
+              key={page.id}
+              className="pointer-events-none absolute"
+              style={{
+                left: page.rect.x,
+                top: page.rect.y,
+                width: page.rect.width,
+                height: page.rect.height,
+              }}
+            >
+              <EmptyPageLayouts
+                page={page}
+                zoom={zoom}
+                onApply={(layout) => edit.applyLayout(page.id, layout)}
+                onHide={() => {
+                  track('UI', 'Closed', 'EmptyPageLayouts');
+                  setLayoutsHidden((hidden) => new Set(hidden).add(page.id));
+                }}
+              />
+            </div>
+          ))
+        : null}
       {open && opened && edit ? (
         <IllustratePagePanel
           // One panel per page: switching cogs starts the next page's panel afresh, its pending
@@ -325,59 +370,6 @@ export function IllustratePages({
         />
       ) : null}
     </>
-  );
-}
-
-// The + after the last page: opens "Add a page" (AddPagePopover) to choose the kind.
-function AddPageButton({
-  x,
-  zoom,
-  onAdd,
-}: {
-  x: number;
-  zoom: number;
-  onAdd: (kind: PageKind) => void;
-}) {
-  const [open, setOpen] = useState(false);
-  const button = useRef<HTMLButtonElement>(null);
-  const getAnchor = useCallback(() => button.current, []);
-  return (
-    <div
-      className="pointer-events-auto absolute transition-[left] duration-200 ease-out motion-reduce:transition-none"
-      style={{ left: x, top: 0, transform: `translate(-50%, -50%) scale(${1 / zoom})` }}
-      // A press here is the button's, never the canvas's (no marquee, no deselect, no draw).
-      onPointerDown={(e) => e.stopPropagation()}
-      onDoubleClick={(e) => e.stopPropagation()}
-    >
-      <Tooltip label="Add page">
-        <button
-          ref={button}
-          type="button"
-          aria-label="Add page"
-          aria-haspopup="dialog"
-          aria-expanded={open}
-          data-add-page-trigger
-          onClick={() => setOpen((o) => !o)}
-          className={`flex h-9 w-9 items-center justify-center rounded-full shadow-md ring-1 transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 ${
-            open
-              ? 'bg-brand-600 text-white ring-brand-600 dark:bg-brand-600'
-              : 'bg-white text-slate-600 ring-slate-200 hover:bg-slate-50 hover:text-slate-900 dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700 dark:hover:bg-slate-700 dark:hover:text-slate-100'
-          }`}
-        >
-          <PlusIcon />
-        </button>
-      </Tooltip>
-      {open ? (
-        <AddPagePopover
-          getAnchor={getAnchor}
-          onAdd={onAdd}
-          onClose={(restoreFocus) => {
-            setOpen(false);
-            if (restoreFocus) button.current?.focus();
-          }}
-        />
-      ) : null}
-    </div>
   );
 }
 

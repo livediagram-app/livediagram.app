@@ -41,6 +41,18 @@ export const TEMPLATE_SHELF_EXPANDED = chart(
   { types: ['TemplateShelfExpanded', 'TemplateShelfCollapsed'] },
 );
 
+// The template step's mode filter (docs/specs/007-editor/templates-by-mode.md): which modes people
+// narrow the catalogue to.
+export const TEMPLATE_MODE_FILTER = chart(
+  'UI',
+  'Toggled',
+  'Template Mode Filter',
+  'The mode filter in the New Document wizard changed: every template (Everything), or only the Diagram, Draw or Illustrate ones.',
+  {
+    types: ['TemplateModeAll', 'TemplateModeDiagram', 'TemplateModeDraw', 'TemplateModeIllustrate'],
+  },
+);
+
 export const TEMPLATE_LINKS = chart(
   'UI',
   'Used',
@@ -259,6 +271,7 @@ export const DOCUMENT_ACTIONS: MetricStack = {
     CREATED_OFFLINE,
     NEW_DOCUMENT_BACKED_OUT,
     TEMPLATE_SHELF_EXPANDED,
+    TEMPLATE_MODE_FILTER,
   ],
   headline: [DOCUMENTS_CREATED, DOCUMENTS_RENAMED, DOCUMENTS_DELETED, DOCUMENTS_DUPLICATED],
 };

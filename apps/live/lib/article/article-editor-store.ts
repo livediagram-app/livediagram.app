@@ -101,6 +101,31 @@ export function articleHandleOf(flow: string): ArticleEditorHandle | undefined {
   return handles.get(flow);
 }
 
+// The writing first laid out (an editor's first measure, or a re-measure once web fonts land):
+// the moments the pictures drawn from it (the Map, slide thumbnails) cannot learn of otherwise,
+// since the tab's articles have not changed. Their own edits redraw them as the articles change.
+let laidOutSeq = 0;
+const laidOutListeners = new Set<() => void>();
+
+export function noteArticleLaidOut(): void {
+  laidOutSeq += 1;
+  for (const l of laidOutListeners) l();
+}
+
+const subscribeLaidOut = (l: () => void) => {
+  laidOutListeners.add(l);
+  return () => laidOutListeners.delete(l);
+};
+
+/** Changes when an article's writing is first laid out, for the pictures drawn from it. */
+export function useArticleLaidOutSeq(): number {
+  return useSyncExternalStore(
+    subscribeLaidOut,
+    () => laidOutSeq,
+    () => 0,
+  );
+}
+
 export type ActiveArticle = {
   handle: ArticleEditorHandle;
   // The page the caret is on.

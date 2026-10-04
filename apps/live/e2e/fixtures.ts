@@ -224,7 +224,7 @@ export async function startBlankDocument(page: Page): Promise<void> {
   await page.getByText('New Document', { exact: false }).waitFor();
   // Step 1: pick the Blank template. Single-click advances to the Location
   // step (docs/specs/007-editor/new-document-route.md), so no explicit Next is needed here.
-  const blank = page.getByText('Blank Canvas', { exact: false }).first();
+  const blank = page.getByText('Blank Diagram', { exact: false }).first();
   await untilHydrated(blank);
   await blank.click();
   // Step 2 (Location): the footer's primary action finishes the wizard.

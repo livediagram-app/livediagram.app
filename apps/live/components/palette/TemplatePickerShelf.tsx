@@ -6,7 +6,7 @@ import type {
   TemplateDescriptor,
   TemplateKind,
 } from '@livediagram/templates';
-import { TEMPLATES, templateCategory } from '@livediagram/templates';
+import { TEMPLATES } from '@livediagram/templates';
 import { MaximizeIcon, MinimizeIcon, SnapCarousel, Tooltip, useMediaQuery } from '@livediagram/ui';
 import { CategoryTile, TemplateCard } from '@/components/palette/template-picker-cards';
 import { track } from '@/lib/telemetry';
@@ -33,18 +33,14 @@ const EXPAND_MEDIA_QUERY = '(min-width: 640px)';
 // A folded tile's fan, in catalogue order rather than the picker's shuffled
 // one: the page is prerendered in catalogue order and shuffles only once it
 // hydrates, so a fan drawn from the shuffle swapped its previews a moment after
-// load. Blank's dashed square makes a dull fan card, so Popular fans the
-// starters after it.
+// load. It fans only what the shelf holds, so a mode filter narrows the fan with the count
+// (docs/specs/007-editor/templates-by-mode.md). Blank's dashed square makes a dull fan card, so
+// Popular fans the starters after it.
 function fanKinds(shelf: Shelf): TemplateKind[] {
   if (shelf.id === 'popular')
     return shelf.items.filter((t) => t.kind !== 'blank').map((t) => t.kind);
-  return TEMPLATES.filter(
-    (t) =>
-      !t.hidden &&
-      t.kind !== 'blank' &&
-      t.kind !== 'whiteboard' &&
-      templateCategory(t.kind) === shelf.id,
-  ).map((t) => t.kind);
+  const held = new Set(shelf.items.map((t) => t.kind));
+  return TEMPLATES.filter((t) => held.has(t.kind)).map((t) => t.kind);
 }
 
 // The category shelf (docs/specs/008-canvas/canvas-and-palette.md "Templates section"): ONE

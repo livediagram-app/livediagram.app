@@ -35,6 +35,7 @@ import {
 import type { ArticlesView } from './useArticles';
 import { illustratePageEdits, type IllustratePageEdits } from './illustrate-page-edits';
 import type { PageLayoutId } from '@livediagram/templates';
+import { glideViewport, type ViewPose } from '@/lib/viewport-glide';
 
 export type { IllustratePageEdits };
 
@@ -85,6 +86,8 @@ export function useIllustratePages(deps: {
   canvasMainRef: RefObject<HTMLElement | null>;
   setViewportZoom: (zoom: number) => void;
   setViewportOffset: (offset: { x: number; y: number }) => void;
+  // The view now, for a page framed with a glide from wherever the view is.
+  getViewport: () => ViewPose;
   clearSelection: () => void;
   toastInfo: (message: string) => void;
   // A new document by its flow id, so its writing can take the caret.
@@ -97,7 +100,11 @@ export function useIllustratePages(deps: {
   // Frames a page (the first by default) below a top strip, seen whole, whatever its kind. The fit
   // box holds either orientation, so turning a page needs no refit. `read` frames an article page
   // to be written on a phone instead: its text column across the screen.
-  const frame = (page?: LaidOutPage, read = false) => {
+  // A page framed on request (its navigator, its label, a page just added) glides there; the frame
+  // on entering the mode lands at once. A glide under way gives way to the next.
+  const glide = useRef<(() => void) | null>(null);
+  useEffect(() => () => glide.current?.(), []);
+  const frame = (page?: LaidOutPage, read = false, glides = false) => {
     const canvas = deps.canvasMainRef.current;
     if (!canvas) return;
     const inset = topStripInset(canvas);
@@ -107,9 +114,19 @@ export function useIllustratePages(deps: {
       read && page && doc
         ? computeReadingFrame(size, page.rect, inset, articleMarginPx(doc.style))
         : computeFitBelow(size, illustratePageFitBox(page), inset);
-    deps.setViewportZoom(zoom);
-    deps.setViewportOffset(offset);
-    debugLog('[illustrate-page] framed', { tabId, page: page?.id ?? 'first', inset, zoom });
+    glide.current?.();
+    glide.current = null;
+    if (glides) {
+      glide.current = glideViewport(
+        deps.getViewport(),
+        { zoom, offset },
+        { zoom: deps.setViewportZoom, offset: deps.setViewportOffset },
+      );
+    } else {
+      deps.setViewportZoom(zoom);
+      deps.setViewportOffset(offset);
+    }
+    debugLog('[illustrate-page] framed', { tabId, page: page?.id ?? 'first', inset, zoom, glides });
   };
   // Centred on the first page after the tab's own first fit (a frame later), so the page wins.
   const centre = useEffectEvent(() =>
@@ -167,7 +184,7 @@ export function useIllustratePages(deps: {
     const page = layOutIllustratePages(illustratePagesOf(activeTab)).find((p) => p.id === goTo);
     if (!page) return;
     setGoTo(null);
-    frame(page);
+    frame(page, false, true);
   });
   const landed = goTo !== null && illustratePagesOf(activeTab).some((p) => p.id === goTo);
   useEffect(() => {
@@ -177,7 +194,12 @@ export function useIllustratePages(deps: {
   }, [landed]);
 
   if (!on) return null;
-  const focusPage = (pageId: string) => frame(pages.find((p) => p.id === pageId));
+  const focusPage = (pageId: string) =>
+    frame(
+      pages.find((p) => p.id === pageId),
+      false,
+      true,
+    );
   const readPage = (pageId: string) =>
     frame(
       pages.find((p) => p.id === pageId),

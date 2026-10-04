@@ -14,6 +14,8 @@
 // can send gets a real sentence, free of code names and jargon.
 
 export const EXACT: Readonly<Record<string, string>> = {
+  'Editor|Changed|LeaveIllustrateConfirmed':
+    'Someone confirmed leaving Illustrate on a tab with pages, after the warning that its pages do not show in Diagram or Draw.',
   'Editor|Changed|ModeDiagram':
     'Someone switched a tab to Diagram mode, for shapes, arrows and the palette.',
   'Editor|Changed|ModeDraw': 'Someone switched a tab to Draw mode, to draw freehand with pens.',
@@ -756,6 +758,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone put their whiteboard dock at the bottom of the canvas, in Settings > Editor.',
   'UI|Changed|WhiteboardDockPositionTop':
     'Someone put their whiteboard dock at the top of the canvas, in Settings > Editor.',
+  'UI|Closed|EmptyPageLayouts':
+    'Someone hid the Start From a Layout card on an empty infographic page.',
   'UI|Closed|NewDocument':
     'Someone pressed Escape or the X in the New Document wizard and went back to where they came from, creating nothing.',
   'UI|Closed|Presentation': 'Someone exited presentation mode.',
@@ -980,11 +984,23 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Toggled|ReduceMotionOn': 'Someone turned on reduced motion, in Settings > Accessibility.',
   'UI|Toggled|ShortcutsOff': 'Someone turned off keyboard shortcuts, in Settings > Keyboard.',
   'UI|Toggled|ShortcutsOn': 'Someone turned on keyboard shortcuts, in Settings > Keyboard.',
+  'UI|Toggled|SkipLocationStepOff':
+    'Someone turned off skipping the Location step, in Settings > Documents, so the New Document wizard asks where each document goes again.',
+  'UI|Toggled|SkipLocationStepOn':
+    'Someone ticked "Always save new documents in <place> and skip this step" on the New Document wizard\'s Location step.',
   'UI|Toggled|SlideHidden':
     'Someone hid a slide from the presentation run, without deleting it, in the Slide Deck panel.',
   'UI|Toggled|SlideShown':
     'Someone unhid a slide, putting it back into the presentation run, in the Slide Deck panel.',
   'UI|Toggled|System': "Someone set the editor's appearance to follow the system.",
+  'UI|Toggled|TemplateModeAll':
+    'Someone set the New Document template filter back to Everything, showing templates for every mode.',
+  'UI|Toggled|TemplateModeDiagram':
+    'Someone narrowed the New Document templates to the ones that open in Diagram mode.',
+  'UI|Toggled|TemplateModeDraw':
+    'Someone narrowed the New Document templates to the ones that open in Draw mode.',
+  'UI|Toggled|TemplateModeIllustrate':
+    'Someone narrowed the New Document templates to the ones that open in Illustrate mode.',
   'UI|Toggled|TemplateShelfCollapsed':
     'Someone put the New Document template shelf back to a carousel, with the other categories as a grid.',
   'UI|Toggled|TemplateShelfExpanded':

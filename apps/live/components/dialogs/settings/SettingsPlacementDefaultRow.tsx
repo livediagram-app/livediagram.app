@@ -26,7 +26,7 @@ import type { SettingsPlacementDefaultRowSpec } from './settings-catalogue';
 
 export type SettingsPlacementLists = ReturnType<typeof usePlacementOptions>;
 
-const BUTTON =
+export const PLACEMENT_ROW_BUTTON =
   'shrink-0 rounded-lg border border-slate-200 px-2.5 py-1 text-xs font-semibold text-slate-700 transition hover:border-brand-300 hover:bg-brand-50/40 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600 dark:text-slate-200 dark:hover:border-brand-500/60';
 
 /** Where new documents of this entry go, in words. */
@@ -109,7 +109,7 @@ export function SettingsPlacementDefaultRow({
               <>
                 <button
                   type="button"
-                  className={BUTTON}
+                  className={PLACEMENT_ROW_BUTTON}
                   aria-label={`Change default folder for ${entry.noun}`}
                   onClick={() => setChanging(true)}
                 >
@@ -118,7 +118,7 @@ export function SettingsPlacementDefaultRow({
                 {destination.kind !== 'root' ? (
                   <button
                     type="button"
-                    className={BUTTON}
+                    className={PLACEMENT_ROW_BUTTON}
                     aria-label={`Clear default folder for ${entry.noun}`}
                     onClick={() => void clearPlacementDefault(key, 'settings')}
                   >

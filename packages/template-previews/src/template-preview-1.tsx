@@ -1,6 +1,7 @@
 import type { ReactElement } from 'react';
 import type { TemplateKind } from '@livediagram/templates';
 import { pv } from './motion';
+
 import { popGroup } from './story-parts';
 
 // Group 1 of 3 (mind maps / flowcharts). Static SVG preview tiles (one branch per
@@ -10,26 +11,6 @@ import { popGroup } from './story-parts';
 // round its own box rather than the drawing's corner).
 export function templatePreviewGroup1(kind: TemplateKind): ReactElement | null {
   switch (kind) {
-    case 'blank':
-      // Truly blank now (no seeded box): show an empty dashed canvas with a
-      // faint centre "+" — "start from nothing, add your own".
-      return (
-        <svg width="60" height="36" viewBox="0 0 60 40" aria-hidden>
-          <rect
-            x="6"
-            y="4"
-            width="48"
-            height="32"
-            rx="3"
-            fill="none"
-            stroke="rgb(148 163 184)"
-            strokeWidth="1.5"
-            strokeDasharray="4 3"
-          />
-          <line x1="30" y1="14" x2="30" y2="26" stroke="rgb(148 163 184)" strokeWidth="1.5" />
-          <line x1="24" y1="20" x2="36" y2="20" stroke="rgb(148 163 184)" strokeWidth="1.5" />
-        </svg>
-      );
     case 'mindmap':
       // A bold round topic, five branches each in its own hue (card and
       // connector alike), two white leaves edged in the branch's hue.

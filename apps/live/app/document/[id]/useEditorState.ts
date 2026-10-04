@@ -1159,6 +1159,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     viewportZoom,
     setViewportZoom,
     zoomRef,
+    viewportOffsetRef,
     canvasMainRef,
     getViewportCenter,
     fitToScreen,
@@ -1603,6 +1604,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     canvasMainRef,
     setViewportZoom,
     setViewportOffset,
+    getViewport: () => ({ zoom: zoomRef.current, offset: viewportOffsetRef.current }),
     clearSelection: () => {
       setSelectedId(null);
       setMultiSelectedIds(new Set());

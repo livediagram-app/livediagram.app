@@ -232,6 +232,11 @@ export type SettingsPlacementDefaultRowSpec = RowBase & {
   placementKey: PlacementDefaultKey;
 };
 
+// Skip the Location step (docs/specs/013-workspace/default-folders.md "Skipping the Location
+// step"): where new documents go without asking, and Turn Off. Turned on from the wizard, where the
+// place is chosen, so the row reads and clears the preference rather than toggling it.
+export type SettingsSkipLocationRowSpec = RowBase & { kind: 'skipLocationStep' };
+
 export type SettingsRowSpec =
   | SettingsToggleRowSpec
   | SettingsChoiceRowSpec
@@ -247,7 +252,8 @@ export type SettingsRowSpec =
   | SettingsTrashRowSpec
   | SettingsPresetSummaryRowSpec
   | SettingsCloudSyncRowSpec
-  | SettingsPlacementDefaultRowSpec;
+  | SettingsPlacementDefaultRowSpec
+  | SettingsSkipLocationRowSpec;
 
 export type SettingsCategorySpec = {
   id: SettingsCategoryId;
@@ -795,18 +801,31 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
   {
     id: 'documents',
     label: 'Documents',
-    // One row per default folder entry, in list order: guests have defaults too.
-    rows: DEFAULT_KEY_ENTRIES.map((entry): SettingsPlacementDefaultRowSpec => ({
-      kind: 'placementDefault',
-      key: `placementDefault-${entry.key}`,
-      placementKey: entry.key,
-      section: 'Where New Documents Go',
-      label: titleCase(entry.label),
-      keywords:
-        'default folder where new documents go save location place file automatically always save placement',
-      description: `Where new ${entry.noun} go when you create one without choosing a place.`,
-      helpArticle: 'defaultFolders',
-    })),
+    rows: [
+      {
+        kind: 'skipLocationStep',
+        key: 'skipLocationStep',
+        section: 'Where New Documents Go',
+        label: 'Skip the Location Step',
+        keywords:
+          'skip location step new document wizard always save every new document same place folder ask where',
+        description:
+          'Saves every new document in one place without asking. Turn it on from the Location step of the New Document wizard.',
+        helpArticle: 'defaultFolders',
+      },
+      // One row per default folder entry, in list order: guests have defaults too.
+      ...DEFAULT_KEY_ENTRIES.map((entry): SettingsPlacementDefaultRowSpec => ({
+        kind: 'placementDefault',
+        key: `placementDefault-${entry.key}`,
+        placementKey: entry.key,
+        section: 'Where New Documents Go',
+        label: titleCase(entry.label),
+        keywords:
+          'default folder where new documents go save location place file automatically always save placement',
+        description: `Where new ${entry.noun} go when you create one without choosing a place.`,
+        helpArticle: 'defaultFolders',
+      })),
+    ],
   },
   {
     id: 'account',
