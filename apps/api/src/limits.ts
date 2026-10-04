@@ -45,7 +45,7 @@ export function logTabRefused(write: string, tabId: string, bytes: number): void
 }
 
 /** Runs a tab write; false when the storage layer refused it for size (the caller answers 413). */
-export async function storeTab(write: () => Promise<void>): Promise<boolean> {
+export async function storeTab(write: () => Promise<unknown>): Promise<boolean> {
   try {
     await write();
     return true;

@@ -1,6 +1,5 @@
 // The inline-PNG result helper for the MCP tools (docs/specs/015-api/mcp-server.md §5), split from
-// tool-helpers.ts for the same reason tab-builders.ts was: this file reaches
-// the resvg WASM renderer, which cannot load in the plain-node test
+// tool-helpers.ts: this file reaches the resvg WASM renderer, which cannot load in the plain-node test
 // environment, and importing it dragged the auth guard and the plain result
 // shapes down with it. They are render-free and unit-tested now; everything
 // that genuinely needs a rasteriser lives here.

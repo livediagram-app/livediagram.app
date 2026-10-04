@@ -13,55 +13,64 @@ where the spec is silent are ledgered in [DEFAULTS.md](DEFAULTS.md) and cited as
 
 Scope, by file:
 
-| File                                                                                      | Role                                                                                                       |
-| ----------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| `packages/api-schema/src/changesets.ts` (planned)                                         | Constants, header names, id pattern, error codes, wire types (CS35)                                        |
-| `packages/api-schema/src/index.ts`                                                        | `TabRecord.rev`; re-exports `changesets.ts`                                                                |
-| `packages/api-schema/src/room-messages.ts`                                                | `RoomOp` `changeset`; `select` gains `elementIds`; `SYSTEM_OP_KINDS` gains `changeset`                     |
-| `packages/api-schema/src/telemetry-schema.ts`                                             | Category `Agent`; actions `Conflicted`, `Held` (`Applied`, `Reverted`, `Opened` exist)                     |
-| `packages/document/src/element-fingerprint.ts` (planned)                                  | `canonicalElementJson`, `elementFingerprint`                                                               |
-| `packages/document/src/comments.ts`                                                       | Exports `LIVE_ELEMENT_FIELDS`; `opForTheWire` strips comment author ids from a `changeset` op              |
-| `packages/document/src/element-ops.ts`                                                    | `invertElementOps(before, ops)`, shared by the engine and the revert                                       |
-| `apps/api/migrations/0066_agent_changesets.sql` (planned)                                 | `tabs.rev`, the `tabs_rev_advances` trigger, `agent_changesets`, `agent_changeset_parts`                   |
-| `apps/api/src/tab-row.ts`                                                                 | `TabRow.rev`; `rowToTab` returns it                                                                        |
-| `apps/api/src/db/tabs.ts`                                                                 | `getTab` reads `rev`; `upsertTab`, `seedTabs`, `swapTabData` advance it; new `upsertTabAtRev`, `renameTab` |
-| `apps/api/src/db/documents.ts`                                                            | The copy's tab insert starts at `rev` 1                                                                    |
-| `apps/api/src/db/changesets.ts` (planned)                                                 | Record and part statements; reads for the merge, the list, one changeset, the revert; the sweep            |
-| `apps/api/src/db/account.ts`, `account-owner-columns.test.ts`                             | `agent_changesets.author_id` on deletion and guest migration                                               |
-| `apps/api/src/changesets/changeset-id.ts` (planned)                                       | `mintChangesetId`                                                                                          |
-| `apps/api/src/changesets/base-check.ts` (planned)                                         | `checkBase`, pure                                                                                          |
-| `apps/api/src/changesets/held-check.ts` (planned)                                         | `heldTargets`, pure                                                                                        |
-| `apps/api/src/changesets/merge-on-save.ts` (planned)                                      | `mergeChangesetsIntoSave`, pure                                                                            |
-| `apps/api/src/changesets/revert-plan.ts` (planned)                                        | `planRevert`, pure                                                                                         |
-| `apps/api/src/changesets/room-op.ts` (planned)                                            | `changesetRoomOp`: the relay payload and its size rule                                                     |
-| `apps/api/src/changesets/submit.ts` (planned)                                             | `submitChangeset`: the pipeline, its attempt loop and the write                                            |
-| `apps/api/src/changesets/front-door.ts` (planned), `log.ts`                               | `frontDoorOf(request)`; `changesetLog` and the fingerprints                                                |
-| `apps/api/src/routes/changesets.ts` (planned)                                             | `handleChangesetRoutes`: submit, list, one, revert                                                         |
-| `apps/api/src/routes/tab-put-route.ts` (planned)                                          | `handleTabPut`, lifted out of `document-subresource-routes.ts`: token refusal, seen merge, CAS write       |
-| `apps/api/src/routes/tab-name-route.ts` (planned)                                         | `handleTabRename`: `PUT .../tabs/:tabId/name`, relayed as `document-meta`                                  |
-| `apps/api/src/routes/document-subresource-routes.ts`                                      | Tab GET sets `ETag`; delegates the PUT, the rename and the changeset routes                                |
-| `apps/api/src/index.ts`                                                                   | The daily sweep                                                                                            |
-| `apps/api/src/room-client.ts`                                                             | `roomStubFor(env, documentId)` for every document; `relayChangeset`, `relayTabList`, `readRoomSelections`  |
-| `apps/api/src/room-selections.ts` (planned)                                               | `RoomSelectionStore`: each session's selection in DO storage                                               |
-| `apps/api/src/document-room.ts`                                                           | `/mutation` accepts `changeset` and `document-meta`; `GET /selections`; `select` recorded; close prunes    |
-| `apps/api/src/responses.ts`                                                               | CORS allows `X-Changeset-Seen`, `X-Livediagram-Client`; exposes `ETag`                                     |
-| `apps/api/src/openapi/{manifest,document}.ts`, `scripts/gen-openapi-schemas`              | The five routes, `Tab.rev`, the header, the error bodies, the PUT's 405                                    |
-| `apps/mcp/src/changeset-client.ts` (planned)                                              | `submitChangeset`, `mcpOpsToEditOperations`, `changesetErrorText`                                          |
-| `apps/mcp/src/tools.ts`, `schema.ts`, `output-schema.ts`, `api.ts`                        | `add_tab`, `update_document` on changesets; `rename_document` on the name route; `rev`; the client header  |
-| `apps/live/lib/api/tabs.ts`                                                               | `apiLoadTabRevisioned`; `apiSaveTab` and the unload beacon send `X-Changeset-Seen`                         |
-| `apps/live/lib/api/changesets.ts` (planned)                                               | `apiRevertChangeset`                                                                                       |
-| `apps/live/app/document/[id]/editor-realtime.ts`, `useIdentityBootstrap.ts`               | `documentServerStored`, the room gate                                                                      |
-| `apps/live/app/document/[id]/useRoomConnection.ts`                                        | Room for every server-stored document; the `changeset` branch                                              |
-| `apps/live/app/document/[id]/usePresenceBroadcast.ts`                                     | `select` (with `elementIds`) and `tab-focus` for every open room                                           |
-| `apps/live/app/document/[id]/room-op-apply.ts`                                            | `applyRoomOpToTabs` case `changeset`                                                                       |
-| `apps/live/app/document/[id]/changeset-seen.ts` (planned)                                 | `ChangesetSeen`, `noteLoadedRev`, `admitChangesetOp`, pure                                                 |
-| `apps/live/app/document/[id]/changeset-toast.ts` (planned)                                | `coalesceChangesetToast`, `changesetToastCopy`, pure                                                       |
-| `apps/live/app/document/[id]/useChangesetFeed.ts` (planned)                               | Seen map, gap refetch, reveal state, toast, Show, Undo                                                     |
-| `apps/live/app/document/[id]/{usePerTabLoad,useRoomResync,seed-fetched-...}`              | Record each loaded tab's `rev`; resync of named tabs                                                       |
-| `apps/live/app/document/[id]/useAutosave.ts`                                              | Passes the seen revision per tab                                                                           |
-| `apps/live/components/canvas/ChangesetRevealOverlay.tsx` (planned), `CanvasElementsLayer` | The outline in the author's colour                                                                         |
-| `apps/live/hooks/ui/useToast.tsx`                                                         | `toast.action`: a keyed info toast with buttons, upserted by key, no timeout                               |
-| `apps/telemetry/app/catalogue/collaboration.ts`                                           | The `Agent` stack                                                                                          |
+| File                                                                               | Role                                                                                                        |
+| ---------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `packages/api-schema/src/changesets.ts`                                            | Constants, header names, id pattern, error codes, wire types (CS35)                                         |
+| `packages/api-schema/src/index.ts`                                                 | `TabRecord.rev`; re-exports `changesets.ts`                                                                 |
+| `packages/api-schema/src/room-messages.ts`                                         | `RoomOp` `changeset`; `select` gains `elementIds`; `SYSTEM_OP_KINDS` gains `changeset`                      |
+| `packages/api-schema/src/telemetry-schema.ts`                                      | Category `Agent`; actions `Conflicted`, `Held` (`Applied`, `Reverted`, `Opened` exist)                      |
+| `packages/document/src/element-fingerprint.ts`                                     | `canonicalElementJson`, `elementFingerprint`                                                                |
+| `packages/document/src/comments.ts`                                                | Exports `LIVE_ELEMENT_FIELDS`; `opForTheWire` strips comment author ids from a `changeset` op               |
+| `packages/document/src/element-ops.ts`                                             | `invertElementOps(before, ops)`, shared by the engine and the revert                                        |
+| `apps/api/migrations/0067_agent_changesets.sql`                                    | `tabs.rev`, the `tabs_rev_advances` trigger, `agent_changesets`, `agent_changeset_parts`                    |
+| `apps/api/src/tab-row.ts`                                                          | `TabRow.rev`; `rowToTab` returns it                                                                         |
+| `apps/api/src/db/tabs.ts`                                                          | `getTab` reads `rev`; `upsertTab`, `seedTabs`, `swapTabData` advance it; new `upsertTabAtRev`, `renameTab`  |
+| `apps/api/src/db/documents.ts`                                                     | The copy's tab insert starts at `rev` 1                                                                     |
+| `apps/api/src/db/changesets.ts`                                                    | Record and part statements; reads for the merge, the list, one changeset, the revert; the sweep             |
+| `apps/api/src/db/account.ts`, `account-owner-columns.test.ts`                      | `agent_changesets.author_id` on deletion and guest migration                                                |
+| `apps/api/src/changesets/changeset-id.ts`                                          | `mintChangesetId`                                                                                           |
+| `apps/api/src/changesets/base-check.ts`                                            | `checkBase`, pure                                                                                           |
+| `apps/api/src/changesets/held-check.ts`                                            | `heldTargets`, pure                                                                                         |
+| `apps/api/src/changesets/merge-on-save.ts`                                         | `mergeChangesetsIntoSave`, pure                                                                             |
+| `apps/api/src/changesets/revert-plan.ts`                                           | `planRevert`, pure                                                                                          |
+| `apps/api/src/changesets/room-op.ts`                                               | `changesetRoomOp`: the relay payload and its size rule                                                      |
+| `apps/api/src/changesets/request.ts`                                               | `parseChangesetRequest`: the body checked member by member; engine codes to statuses (CS9)                  |
+| `apps/api/src/changesets/submit.ts`                                                | `submitChangeset`: the pipeline and its attempt loop                                                        |
+| `apps/api/src/changesets/write.ts`                                                 | `writeChangeset`: the tab at its revision, the record and parts in one batch, then the relay                |
+| `apps/api/src/changesets/stored-tab.ts`                                            | `readStoredTab`: a tab as a changeset reads it, its row fields apart                                        |
+| `apps/api/src/changesets/revert.ts`                                                | `revertChangeset`: `planRevert` written as a new changeset                                                  |
+| `apps/api/src/changesets/after.ts`                                                 | Timeline, comment email and the `Agent` telemetry, one literal emit per action                              |
+| `apps/api/src/changesets/front-door.ts`, `log.ts`                                  | `frontDoorOf(request)`; `changesetLog` and the fingerprints                                                 |
+| `apps/api/src/routes/changesets.ts`                                                | `handleChangesetRoutes`: submit, list, one, revert                                                          |
+| `apps/api/src/routes/tab-put-route.ts`                                             | `handleTabPut`, lifted out of `document-subresource-routes.ts`: token refusal, seen merge, CAS write        |
+| `apps/api/src/routes/tab-name-route.ts`                                            | `handleTabRename`: `PUT .../tabs/:tabId/name`, relayed as `tab-meta`                                        |
+| `apps/api/src/routes/document-subresource-routes.ts`                               | Tab GET sets `ETag`; delegates the PUT, the rename and the changeset routes                                 |
+| `apps/api/src/index.ts`                                                            | The daily sweep                                                                                             |
+| `apps/api/src/room-client.ts`                                                      | `roomStubFor(env, documentId)` for every document; `relayChangeset`, `relayTabRename`, `readRoomSelections` |
+| `apps/api/src/room-selections.ts`                                                  | `RoomSelectionStore`: each session's selection in DO storage                                                |
+| `apps/api/src/person-tag.ts`, `db/ws-tickets.ts`, `routes/document-room-routes.ts` | The person tag ([agent presence](agent-presence.md)): minted into the ticket, forwarded on the upgrade      |
+| `apps/api/src/document-room.ts`                                                    | `/mutation` accepts `changeset` and `tab-meta`; `GET /selections`; `select` recorded; close prunes          |
+| `apps/api/src/responses.ts`                                                        | CORS allows `X-Changeset-Seen`, `X-Livediagram-Client`; exposes `ETag`                                      |
+| `apps/api/src/openapi/{manifest,document}.ts`, `scripts/gen-openapi-schemas`       | The five routes, `Tab.rev`, the header, the error bodies, the PUT's 405                                     |
+| `apps/mcp/src/changeset-client.ts`                                                 | `submitChangeset`, `mcpOpsToEditOperations`, `changesetErrorText`                                           |
+| `apps/mcp/src/tools.ts`, `schema.ts`, `output-schema.ts`, `api.ts`                 | `add_tab`, `update_document` on changesets; `rename_document` on the name route; `rev`; the client header   |
+| `apps/live/lib/api/tabs.ts`                                                        | `apiLoadTabRevisioned`; `apiSaveTab` and the unload beacon send `X-Changeset-Seen`                          |
+| `apps/live/lib/api/changesets.ts`                                                  | `apiRevertChangeset`, `apiListChangesets` (the join check)                                                  |
+| `apps/live/app/document/[id]/editor-realtime.ts`, `useIdentityBootstrap.ts`        | `documentServerStored`, the room gate                                                                       |
+| `apps/live/app/document/[id]/useRoomConnection.ts`                                 | Room for every server-stored document; the `changeset` branch                                               |
+| `apps/live/app/document/[id]/usePresenceBroadcast.ts`                              | `select` (with `elementIds`) and `tab-focus` for every open room                                            |
+| `apps/live/app/document/[id]/room-op-apply.ts`                                     | `applyRoomOpToTabs` case `changeset`                                                                        |
+| `apps/live/app/document/[id]/changeset-seen.ts`                                    | `ChangesetSeen`, `noteLoadedRev`, `admitChangesetOp`, pure                                                  |
+| `apps/live/app/document/[id]/changeset-toast.ts`                                   | `coalesceChangesetToast`, `changesetToastCopy`, pure                                                        |
+| `apps/live/app/document/[id]/useChangesetSeen.ts`                                  | `seenRef` for admission, `seen` state committed with the content it describes, `noteSeen`                   |
+| `apps/live/app/document/[id]/useChangesetFeed.ts`                                  | Gap refetch, the join check, reveal state, toast, Show, Undo                                                |
+| `apps/live/lib/changeset-reveals.ts`                                               | `createRevealStore`: the outlines as an external store; `boundsOfElements` for Show                         |
+| `apps/live/app/document/[id]/{usePerTabLoad,useRoomResync,seed-fetched-...}`       | Record each loaded tab's `rev`; resync of named tabs                                                        |
+| `apps/live/app/document/[id]/useAutosave.ts`                                       | Passes the seen revision per tab                                                                            |
+| `apps/live/components/canvas/ChangesetRevealOverlay.tsx`, `CanvasElementsLayer`    | The outline in the author's colour; `ChangesetRevealContext` provided by `EditorView`                       |
+| `apps/live/e2e/clerk-stub/agent-changesets.spec.ts`                                | The end-to-end spec, signed in (only an account mints a token)                                              |
+| `apps/live/hooks/ui/useToast.tsx`                                                  | `toast.action`: a keyed info toast with buttons, upserted by key, no timeout                                |
+| `apps/telemetry/app/catalogue/collaboration.ts`                                    | The `Agent` stack                                                                                           |
 
 ## Domain and naming
 
@@ -107,11 +116,11 @@ Inputs: the document (`getDocument`), the tab id, the parsed `ChangesetRequest`,
 
 1. **Read.** In parallel: `getTab(env, documentId, tabId)` (null means create), `lastChangesetRev(env, tabId)`,
    and `readRoomSelections(env, documentId, tabId, personTagFor(documentId, author))`.
-2. **Compile.** Operations: `applyEditOperations(stored, operations, { selection, theme, makeId, log })`. Replace:
-   `applyReplace(stored ?? null, replace, { tabId, name, selection, theme, makeId, log })`. Both return
+2. **Compile.** Operations: `applyEditOperations(stored, operations, { selected, log })`. Replace:
+   `applyReplace(stored ?? null, replace, { tabId, name, themeId, selected, log })`. Both return
    `{ tab, results, elementOps, inverse, warnings, targets, createdIds } | { errors }`. The engine resolves
    selectors, normalises and coerces values, lands workshop notes on lanes, lays out what it touched and ends with
-   `isValidTab`. `selection` is the union of `elementIds` of the selections marked `mine`, or `null` when the room
+   `isValidTab`. `selected` is the union of `elementIds` of the selections marked `mine`, or `null` when the room
    did not answer.
 3. **Check the base** with `checkBase` (below). When the engine refused and the base's revision is behind, the base
    check runs over `base.elements` alone first; its conflict wins over the engine's errors (CS13).
@@ -130,8 +139,8 @@ Inputs: the document (`getDocument`), the tab id, the parsed `ChangesetRequest`,
     awaited with `ROOM_RELAY_TIMEOUT_MS`; a failure logs `[changeset] relay-failed` and the answer stays 200.
     Other documents linking the tab are protected by the merge on save.
 11. **After**, off the response path (`ctx.waitUntil`): `recordTabSave` and the new-comment email exactly as a
-    save does (CS29), the agent presence refresh of the [agent presence blueprint](agent-presence.md) for a token,
-    and the `Agent` telemetry.
+    save does (CS29), and the `Agent` telemetry. The agent presence refresh of the
+    [agent presence blueprint](agent-presence.md) joins here when agent presence is built.
 
 The write applies, before step 8, the server rules a save applies: `migrateIncomingTab` on a replace's elements,
 `capStoredName` on a created tab's name, `preferNewerQaAll` against the stored elements, and
@@ -140,7 +149,7 @@ The write applies, before step 8, the server rules a save applies: `migrateIncom
 
 ### `checkBase(base, stored, targetIds, createdIds, strict)`
 
-`targetIds` is the union of `targets[].ids`.
+`targetIds` is the engine's flat `targets`.
 
 | Case                                                                       | Outcome                                      |
 | -------------------------------------------------------------------------- | -------------------------------------------- |
@@ -194,12 +203,13 @@ holds a changeset's after-images is unchanged by it.
 
 `PUT /api/documents/:id/tabs/:tabId/name { name }`: `gateEdit` with the tab; `capStoredName(name, stored.name,
 'tab')`; `renameTab(env, tabId, name)` (`UPDATE tabs SET name = ?, rev = rev + 1`, CS42); then
-`relayTabList(env, documentId)`, a `document-meta` op built from the document's tab summaries, through `/mutation`.
+`relayTabRename(env, documentId, tabId, name)`, the `tab-meta { name }` an editor's own rename sends, through
+`/mutation` (CS42).
 Open to tokens and sessions alike. Answers `{ tab: TabSummary }` with the stored name.
 
 ### The room
 
-- `/mutation` accepts `changeset` and `document-meta` beside `el-delta`:
+- `/mutation` accepts `changeset` and `tab-meta` beside `el-delta`:
   `sequenceMutation('system', opForTheWire(op))`, one seq and one catch-up slot whatever its size.
   `ledger.record` skips both (`ledgerKey` returns null).
 - `changeset` joins `SYSTEM_OP_KINDS`: a client socket can never send one (CS24).
@@ -215,8 +225,8 @@ Open to tokens and sessions alike. Answers `{ tab: TabSummary }` with the stored
 ### Rooms for every server-stored document
 
 - `roomStubFor(env, documentId)` returns a stub for every document; the `shareable`/`teamId` gate goes. Its
-  callers (`mergeRoomLedger`, `relayElementDelta`, `broadcastDocumentTrashed`, `relayChangeset`, `relayTabList`,
-  `readRoomSelections`) take the document id.
+  callers (`mergeRoomLedger`, `relayElementDelta`, `broadcastDocumentTrashed`, `relayChangeset`,
+  `readRoomSelections`) take the document id; `relayTabRename` is a rename's.
 - The editor's room gate becomes `roomOpen = hydrated && documentId && documentServerStored`, where
   `documentServerStored = fetched.ownerId !== OFFLINE_OWNER_ID` (set in `useIdentityBootstrap`, false for a
   never-saved draft). `useRoomConnection` and `usePresenceBroadcast` use it. The presence streams
@@ -225,12 +235,22 @@ Open to tokens and sessions alike. Answers `{ tab: TabSummary }` with the stored
 
 ### The editor
 
-State, per document, in `useChangesetFeed`:
+State, per document, in `useChangesetSeen` (held by `useEditorRealtime`) and `useChangesetFeed`:
 
-- `seenRef: Map<tabId, number>` (`ChangesetSeen`): set by `noteLoadedRev(tabId, rev)` on every tab load
-  (`seed-fetched-document`, `usePerTabLoad`, `useRoomResync`), raised by an admitted op.
+- `seenRef: Map<tabId, number>` (`ChangesetSeen`), raised the moment content lands, read by `admitChangesetOp`.
+- `seen`, the same map as React state, set by `noteSeen(tabId, rev)` in the same synchronous block as the tab update
+  it describes, so React commits both together: every tab load (`seed-fetched-document`, `usePerTabLoad` when it puts
+  the tab in place, `useRoomResync`) and every applied op. `useAutosave` sends `seen` from the render whose `tabs`
+  it saves: a save must never claim a changeset its snapshot predates (the api would skip merging it), while
+  claiming less is harmless, since the merge is idempotent.
 - `reveals: { changesetId, color, ids, until }[]`, rendered by the overlay, pruned at `until`.
-- `toasts: Map<toastKey, { key, changesetIds, count, name, summary, lastAt }>`.
+- `toasts: Map<toastKey, { key, changesetIds, count, name, summary, lastAt, tabId, touched }>`.
+
+**The join check** (CS46): on the first presence list of each connection (`useRoomConnection`'s `onRoomJoined`),
+`checkSinceLoad` reads `apiListChangesets` (the newest `CHANGESET_LIST_DEFAULT`) and re-reads, through the resync
+with `tabIds`, every loaded tab whose newest changeset revision is above `seenRef`. A first join replays no room log,
+so a changeset relayed between the tab load and the join, or one whose relay failed, reaches the screen this way,
+without an outline or a toast. A failed read logs `[changeset] join-check-failed` and changes nothing.
 
 `admitChangesetOp(seen, op)` decides, in order:
 
@@ -297,7 +317,7 @@ type ChangesetResponse = {
   results: ResultLine[]; // the engine's result lines, structured
   text: string; // formatResultLines + formatResultFooter: the same for a dry run and a write
   warnings: string[]; // 'no_base', engine warnings
-  lint: LintReport | null; // lintTab on the result; null when the lint failed
+  lint: null; // the lint's report once it lands (LN25); null until then, the footer reading "lint unavailable"
 };
 type ChangesetConflict = {
   id: string;
@@ -321,7 +341,7 @@ type RevertResponse = {
   changeset: ChangesetResponse['changeset'];
   reverted: number;
   kept: { id: string; reason: 'changed' | 'gone' | 'present' | 'order' }[];
-  lint: LintReport | null;
+  lint: null;
 };
 ```
 
@@ -354,21 +374,25 @@ codes), `cap` (413), `message` (405, CS45). `now` elements pass `redactCommentAu
 `CHANGESET_RELAY_MAX_BYTES`; otherwise `refetch: true` and `touched` (every id the record touched). `prevRev` is
 `lastChangesetRev` read in step 1 (CS21). `agentKey` is the first 12 hex of SHA-256 of the token id, present only
 for an agent changeset (CS22). `tab` is present only when the changeset created the tab (CS23). The editor sends
-`elementIds` as every selected id (the multi-selection, or the single selection), capped at `MAX_SELECTION_IDS`.
+`elementIds` as every selected id (the multi-selection and the primary element), capped at `MAX_SELECTION_IDS`;
+the room records `elementIds` whenever it is non-empty, a multi-selection without a primary `elementId` included
+(CS47).
 
-Internal: `POST /mutation { op }` accepts `changeset` and `document-meta`; `GET /selections` above. The person tag
-on the attachment comes from the ticket ([agent presence](agent-presence.md), migration 0068); this file adds no
-ticket field.
+Internal: `POST /mutation { op }` accepts `changeset` and `tab-meta`; `GET /selections` above. The person tag
+on the attachment comes from the ticket as the [agent presence blueprint](agent-presence.md) describes it
+(`personTagFor`, the mint storing it for a verified account, the upgrade forwarding `X-Verified-Person`); it is built
+with this file, its column `ws_tickets.person_tag` in migration 0067, since the held check needs it.
 
 ### Shared functions
 
 - `elementFingerprint(element: Element): string` and `canonicalElementJson(element: Element): string`
-  (`@livediagram/document`): the JSON of the element without its `LIVE_ELEMENT_FIELDS`, object keys sorted at
+  (`@livediagram/document`): the JSON of the element without its `LIVE_ELEMENT_FIELDS` and without each checklist
+  item's `done` (the ticks the spec names as live), object keys sorted at
   every depth, array order kept, `undefined` dropped; hashed per CS6. The CLI, the MCP and the api call the same
   function.
-- `invertElementOps(before: Element[], ops: ElementOp[]): ElementOp[]`: `add` → `remove`; `update` → `update` with
-  the before element; `remove` → `add` of the before element at its before index; `reorder` → `reorder` with the
-  before ids; emitted in reverse order.
+- `invertElementOps(before: Element[], ops: ElementOp[]): ElementOp[]`: `diffToElementOps(applyElementOps(before, ops),
+before)`. Derived by diffing back rather than op by op, so removes, adds and a reorder in one changeset come back in
+  exactly their places (re-adding removals in reverse order misplaces adjacent ones).
 - `planRevert(current: Tab, record) → { elementOps, kept }`, per element of the record:
 
 | Record op     | Reverted when                                                                    | Kept reason        |
@@ -407,7 +431,7 @@ layout, theme, name } }`, no base; then reads the tab to render the PNG (CS36). 
 
 ## Data and persistence
 
-Migration `0066_agent_changesets.sql` (CS1):
+Migration `0067_agent_changesets.sql` (CS1):
 
 ```sql
 ALTER TABLE tabs ADD COLUMN rev INTEGER NOT NULL DEFAULT 0;
@@ -454,7 +478,7 @@ CREATE TABLE agent_changeset_parts (
 | `author_name`, `author_color`  | personal, snapshot | From `participants` at write; fallback CS16                              |
 | `token_id`                     | audit              | Null for a person; never on the wire except to the author                |
 | `summary`                      | content            | At most 80 characters                                                    |
-| `fingerprints`                 | derived            | JSON `{ before: Record<id, fp>, after: Record<id, fp> }` (CS17)          |
+| `fingerprints`                 | derived            | JSON `{ before, after, beforeOrder? }`: fingerprints by id, order (CS17) |
 | `added`, `changed`, `removed`  | derived            | Counts for the list and the toast                                        |
 | `created_tab`, `revert_of`     | state              | 1 when it created the tab; the reverted changeset's id                   |
 | `created_at`                   | state              | Epoch ms; the sweep and the merge window key on it                       |
@@ -516,7 +540,7 @@ rows wait with their document and go with its purge (cascade). A tab unlinked fr
 - **E23** The agent's owner has the targeted element selected: not held (their sessions are `mine`), and it is what
   `selected` resolves to.
 - **E24** Rename to the current name: the tab's revision still advances and the relay still goes; the editor's
-  `document-meta` apply keeps identity for an unchanged name.
+  `tab-meta` apply keeps the tab as it is.
 
 ## Security and trust
 
@@ -537,6 +561,10 @@ rows wait with their document and go with its purge (cascade). A tab unlinked fr
   `CHANGESET_MAX_OPERATIONS`, `MAX_BODY_BYTES` and `CHANGESET_PART_MAX_BYTES` bound the work; `MAX_SELECTION_IDS`
   bounds a hostile `select`.
 - A forged `X-Changeset-Seen` can only make its own save drop or keep changesets; it reaches no other tab.
+- A `replace` compiles graph and Mermaid text from any token holder inside the worker, so the label cap and the
+  Mermaid parser read it in linear time: no pattern that backtracks over a run of one character
+  (`packages/document/src/mermaid-scan.ts`; `graph-input-redos.test.ts` times growth and checks each scan
+  against the pattern it replaced).
 
 ## Performance and limits
 
@@ -612,9 +640,12 @@ Every api line carries `documentId`, `tabId`, `changesetId` (when one exists) an
 | `[changeset] whole-tab-refused` (token id)                    | api, tab PUT 405            | info  |
 | `[changeset] reverted` (`revertOf`, reverted, kept)           | api, revert                 | info  |
 | `[changeset] tab-renamed` (`rev`)                             | api, rename                 | info  |
+| `[changeset] after-work failed` (error)                       | api, step 11                | warn  |
 | `changesets sweep: deleted <n> rows older than <cutoff>`      | api, cron (`scheduleSweep`) | info  |
 | `[changeset] received` (`rev`, decision)                      | editor, `debugLog`          | trace |
 | `[changeset] gap-refetch` (`prevRev`, seen)                   | editor, `debugLog`          | trace |
+| `[changeset] join-refetch` (tabs)                             | editor, `debugLog`          | trace |
+| `[changeset] join-check-failed` (error)                       | editor                      | warn  |
 | `[changeset] undo-failed` (status)                            | editor                      | warn  |
 
 Telemetry, server-side through `reportServerEvent`, never for a dry run (CS12): `Agent` / `Applied`, `Conflicted`
@@ -624,59 +655,63 @@ type `frontDoorOf(request)`: `Mcp`, `Cli`, `Api` or, for the toast's Undo, `Edit
 
 ## Testing
 
-| Spec rule                                                                | Test                                                                                                                 |
-| ------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------- |
-| Id `cs_` + 10 base32, minted by the api                                  | `apps/api/src/changesets/changeset-id.test.ts` (planned)                                                             |
-| One tab per changeset; a new tab is a replace on a missing id            | `apps/api/src/routes/changesets.test.ts` (planned) "creates a tab", "refuses another document's tab"                 |
-| Agent = token; absent for a session                                      | `changesets.test.ts` "records the token", "records no token for a session"                                           |
-| Summary up to 80                                                         | `packages/api-schema/src/changesets.test.ts` (planned); `changesets.test.ts` "refuses a long summary"                |
-| Atomic; a rejection writes nothing and says why                          | `changesets.test.ts` "writes nothing on any refusal" (tab row, record, parts, relay all absent)                      |
-| Whole-tab PUT is the editor's; a token is refused 405                    | `apps/api/src/routes/tab-put-route.test.ts` (planned) "token PUT answers use_changesets"                             |
-| Tab rename route, relayed as `document-meta`                             | `apps/api/src/routes/tab-name-route.test.ts` (planned); `document-room.test.ts` "/mutation sequences document-meta"  |
-| Every write advances `rev`                                               | `apps/api/src/db/tabs.test.ts` (real SQLite): upsert, at-rev, rename, seed, swap, copy, trigger aborts               |
-| Every tab read returns `rev` and `ETag`                                  | `document-subresource-routes` GET test; `tab-row.test.ts`                                                            |
-| Any edit identity may submit; dry run writes nothing                     | `changesets.test.ts` "share-link editor submits", "dry run answers the plan only"                                    |
-| Base table, each row (missing fingerprint conflicts)                     | `apps/api/src/changesets/base-check.test.ts` (planned), one case per row                                             |
-| Shifts are not fingerprinted; live fields are ignored                    | `base-check.test.ts` "ignores make-room shifts"; `element-fingerprint.test.ts` "ignores live fields"                 |
-| Held: every selected element, any role, never the owner, agents only     | `held-check.test.ts`; `changesets.test.ts` "elements_held", "owner's own selection", "person's revert"               |
-| Unreachable room holds nothing and logs                                  | `changesets.test.ts` "room down logs and applies"                                                                    |
-| Compile through the engine and `isValidTab`                              | `changesets.test.ts` with the engine, "invalid_result"                                                               |
-| CAS; lost race repeats once then 409                                     | `apps/api/src/changesets/submit.test.ts` (planned) (real SQLite, injected interleaving)                              |
-| Record and parts                                                         | `apps/api/src/db/changesets.test.ts` (planned); "a part at the cap is refused too_large"                             |
-| One sequenced op to the submitting room; relay failure never fails       | `document-room.test.ts` "/mutation sequences a changeset"; `submit.test.ts` "relay throws, 200"                      |
-| Merge on save: each element rule, reorder, live-field graft, idempotence | `apps/api/src/changesets/merge-on-save.test.ts` (planned)                                                            |
-| Header absent: the window                                                | `tab-put-route.test.ts` "no header merges the last 10 minutes"                                                       |
-| Survives a dropped relay, a sleeping room, an offline editor             | `tab-put-route.test.ts` "merges a changeset no editor saw"; `useChangesetFeed.test.tsx` gap refetch; e2e             |
-| Op carries id, rev, name, colour, summary, element ops                   | `apps/api/src/changesets/room-op.test.ts` (planned)                                                                  |
-| Oversize relay: no element ops, editors refetch                          | `room-op.test.ts`; `changeset-seen.test.ts` "refetch"                                                                |
-| `GET /selections`                                                        | `apps/api/src/room-selections.test.ts` (planned); `document-room.test.ts` "answers selections", "mine by person tag" |
-| Rooms for every server-stored document, none offline                     | `room-client.test.ts` "stub for a personal document"; `useRoomConnection` gate test                                  |
-| Revert: inverse as a new changeset, kept list, twice, created tab        | `apps/api/src/changesets/revert-plan.test.ts` (planned); `changesets.test.ts` revert cases                           |
-| One changeset read                                                       | `changesets.test.ts` "GET one answers results and text"                                                              |
-| Toast Undo is the revert; Ctrl+Z never reverts                           | `useChangesetFeed.test.tsx`; `apps/live/e2e/agent-changesets.spec.ts` (planned) "Ctrl+Z leaves it"                   |
-| Revertable while the record exists                                       | `db/changesets.test.ts` (planned) sweep with cascade; `changesets.test.ts` "404 after the sweep"                     |
-| Anyone with edit may revert                                              | `changesets.test.ts` "team member reverts", "viewer refused"                                                         |
-| Applies as a peer's and folds into the baseline                          | `room-op-apply.test.ts` case `changeset`; `save-baseline.test.ts`                                                    |
-| Outline for 2000 ms; reduced motion                                      | `ChangesetRevealOverlay.test.tsx` (fake timers, both motion modes)                                                   |
-| Toast copy, Show, Undo newest first, coalescing per token, no timeout    | `changeset-toast.test.ts`; `useChangesetFeed.test.tsx`; `useToast.test.tsx` "action toast stays"                     |
-| Toast silenced by "Show notifications"                                   | `useToast.test.tsx` "action toast respects the preference"                                                           |
-| MCP tools submit changesets; ops with a base and `rev`; rename route     | `apps/mcp/src/tools.test.ts`; `apps/mcp/src/changeset-client.test.ts` (planned)                                      |
-| `CHANGESET_MAX_OPERATIONS`                                               | `changesets.test.ts` "501 operations"                                                                                |
-| Token write limit                                                        | `index.test.ts` "a changeset counts against the token's writes"                                                      |
-| Logs                                                                     | each api test above asserts its fingerprint on a spied `console`                                                     |
-| Telemetry, `Editor` type, Show tracked                                   | `changesets.test.ts` telemetry rows; `useChangesetFeed.test.tsx`; `apps/telemetry` catalogue suite                   |
-| Fingerprint stability across api, CLI and MCP                            | `packages/document/src/element-fingerprint.test.ts` (planned) (golden values, key order, live fields)                |
-| Room op vocabulary                                                       | `room-op-vocabulary.test.ts` stays green with the `changeset` branch                                                 |
-| OpenAPI parity                                                           | `apps/api/src/openapi/*.test.ts`                                                                                     |
-| Owner columns                                                            | `account-owner-columns.test.ts` entry for `agent_changesets.author_id`                                               |
+| Spec rule                                                                                                     | Test                                                                                                          |
+| ------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| Id `cs_` + 10 base32, minted by the api                                                                       | `apps/api/src/changesets/changeset-id.test.ts`                                                                |
+| #343 end to end at the route: no token PUT, relayed, kept by a stale save, a save between read and write kept | `apps/api/src/routes/agent-writes.test.ts`                                                                    |
+| One tab per changeset; a new tab is a replace on a missing id                                                 | `apps/api/src/routes/changesets.test.ts` "creates a tab", "refuses another document's tab"                    |
+| Agent = token; absent for a session                                                                           | `changesets.test.ts` "records the token", "records no token for a session"                                    |
+| Summary up to 80                                                                                              | `packages/api-schema/src/changesets.test.ts`; `changesets.test.ts` "refuses a long summary"                   |
+| Atomic; a rejection writes nothing and says why                                                               | `changesets.test.ts` "writes nothing on any refusal" (tab row, record, parts, relay all absent)               |
+| Whole-tab PUT is the editor's; a token is refused 405                                                         | `apps/api/src/routes/tab-put-route.test.ts` "token PUT answers use_changesets"                                |
+| Tab rename route, relayed as `tab-meta`                                                                       | `apps/api/src/routes/tab-name-route.test.ts`; `document-room.test.ts` "sequences the tab-meta of a rename"    |
+| Every write advances `rev`                                                                                    | `apps/api/src/db/tabs.test.ts` (real SQLite): upsert, at-rev, rename, seed, swap, copy, trigger aborts        |
+| Every tab read returns `rev` and `ETag`                                                                       | `document-subresource-routes` GET test; `tab-row.test.ts`                                                     |
+| Any edit identity may submit; dry run writes nothing                                                          | `changesets.test.ts` "share-link editor submits", "dry run answers the plan only"                             |
+| Base table, each row (missing fingerprint conflicts)                                                          | `apps/api/src/changesets/base-check.test.ts`, one case per row                                                |
+| Shifts are not fingerprinted; live fields are ignored                                                         | `base-check.test.ts` "ignores make-room shifts"; `element-fingerprint.test.ts` "ignores live fields"          |
+| Held: every selected element, any role, never the owner, agents only                                          | `held-check.test.ts`; `changesets.test.ts` "elements_held", "owner's own selection", "person's revert"        |
+| Unreachable room holds nothing and logs                                                                       | `changesets.test.ts` "room down logs and applies"                                                             |
+| Compile through the engine and `isValidTab`                                                                   | `changesets.test.ts` with the engine, "invalid_result"                                                        |
+| CAS; lost race repeats once then 409                                                                          | `apps/api/src/changesets/submit.test.ts` (real SQLite, injected interleaving)                                 |
+| Record and parts                                                                                              | `apps/api/src/db/changesets.test.ts`; "a part at the cap is refused too_large"                                |
+| One sequenced op to the submitting room; relay failure never fails                                            | `document-room.test.ts` "/mutation sequences a changeset"; `submit.test.ts` "relay throws, 200"               |
+| Merge on save: each element rule, reorder, live-field graft, idempotence                                      | `apps/api/src/changesets/merge-on-save.test.ts`                                                               |
+| Header absent: the window                                                                                     | `tab-put-route.test.ts` "no header merges the last 10 minutes"                                                |
+| Survives a dropped relay, a sleeping room, an offline editor                                                  | `tab-put-route.test.ts` "merges a changeset no editor saw"; `useChangesetFeed.test.tsx` gap refetch; e2e      |
+| Shown after a relay before the room join (the join check, CS46)                                               | `useChangesetFeed.test.tsx` "on joining the room"; e2e waits for the join, so the live path is what it proves |
+| A save never claims a changeset its snapshot predates                                                         | `useChangesetSeen.test.tsx`; `useAutosave.test.tsx` "and changesets"                                          |
+| Op carries id, rev, name, colour, summary, element ops                                                        | `apps/api/src/changesets/room-op.test.ts`                                                                     |
+| Oversize relay: no element ops, editors refetch                                                               | `room-op.test.ts`; `changeset-seen.test.ts` "refetch"                                                         |
+| `GET /selections`                                                                                             | `apps/api/src/room-selections.test.ts`; `document-room.test.ts` "answers selections", "mine by person tag"    |
+| Rooms for every server-stored document, none offline                                                          | `room-client.test.ts` "stub for a personal document"; `useRoomConnection` gate test                           |
+| Revert: inverse as a new changeset, kept list, twice, created tab                                             | `apps/api/src/changesets/revert-plan.test.ts`; `changesets.test.ts` revert cases                              |
+| One changeset read                                                                                            | `changesets.test.ts` "GET one answers results and text"                                                       |
+| Toast Undo is the revert; Ctrl+Z never reverts                                                                | `useChangesetFeed.test.tsx`; `apps/live/e2e/clerk-stub/agent-changesets.spec.ts` "Ctrl+Z leaves it"           |
+| Revertable while the record exists                                                                            | `db/changesets.test.ts` sweep with cascade; `changesets.test.ts` "404 after the sweep"                        |
+| Anyone with edit may revert                                                                                   | `changesets.test.ts` "team member reverts", "viewer refused"                                                  |
+| Applies as a peer's and folds into the baseline                                                               | `room-op-apply.test.ts` case `changeset`; `save-baseline.test.ts`                                             |
+| Outline for 2000 ms; reduced motion                                                                           | `ChangesetRevealOverlay.test.tsx` (fake timers, both motion modes)                                            |
+| Toast copy, Show, Undo newest first, coalescing per token, no timeout                                         | `changeset-toast.test.ts`; `useChangesetFeed.test.tsx`; `useToast.test.tsx` "action toast stays"              |
+| Toast silenced by "Show notifications"                                                                        | `useToast.test.tsx` "action toast respects the preference"                                                    |
+| MCP tools submit changesets; ops with a base and `rev`; rename route                                          | `apps/mcp/src/tools.test.ts`; `apps/mcp/src/changeset-client.test.ts`                                         |
+| `CHANGESET_MAX_OPERATIONS`                                                                                    | `changesets.test.ts` "501 operations"                                                                         |
+| Token write limit                                                                                             | `index.test.ts` "a changeset counts against the token's writes"                                               |
+| Logs                                                                                                          | each api test above asserts its fingerprint on a spied `console`                                              |
+| Telemetry, `Editor` type, Show tracked                                                                        | `changesets.test.ts` telemetry rows; `useChangesetFeed.test.tsx`; `apps/telemetry` catalogue suite            |
+| Fingerprint stability across api, CLI and MCP                                                                 | `packages/document/src/element-fingerprint.test.ts` (golden values, key order, live fields)                   |
+| Room op vocabulary                                                                                            | `room-op-vocabulary.test.ts` stays green with the `changeset` branch                                          |
+| OpenAPI parity                                                                                                | `apps/api/src/openapi/*.test.ts`                                                                              |
+| Owner columns                                                                                                 | `account-owner-columns.test.ts` entry for `agent_changesets.author_id`                                        |
 
-The end-to-end spec (`agent-changesets.spec.ts`, dark mode) opens a personal document, submits a changeset with an
+The end-to-end spec (`apps/live/e2e/clerk-stub/agent-changesets.spec.ts`, dark mode, signed in through the Clerk
+stub, since only an account mints tokens) opens a personal document, submits a changeset with an
 API token, and checks the element appears, the outline shows, the toast reads, Show frames it, the next autosave
 keeps it, and Undo reverts it.
 
 ## Constants and configuration
 
-In `packages/api-schema/src/changesets.ts` (planned) (CS35):
+In `packages/api-schema/src/changesets.ts` (CS35):
 
 | Constant                         | Value                  | Provenance                                           | Safe range        |
 | -------------------------------- | ---------------------- | ---------------------------------------------------- | ----------------- |
@@ -704,4 +739,4 @@ change.
 
 ## Defaults ledger
 
-CS1 to CS45 in [DEFAULTS.md](DEFAULTS.md).
+CS1 to CS48 in [DEFAULTS.md](DEFAULTS.md).

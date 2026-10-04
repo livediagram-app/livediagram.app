@@ -3,6 +3,7 @@ import type { ParticipantPresence } from './index';
 import type { AvatarConfig } from './avatar';
 import type { LivePoll } from './poll';
 import type { DragPreviewPatch } from './drag-preview';
+import type { ChangesetRoomOp } from './changesets';
 
 // ---------------------------------------------------------------------
 // Realtime room messages
@@ -164,11 +165,15 @@ export const MUTATION_OP_KINDS = [
 // `document-trashed` (docs/specs/013-workspace/trash.md): the document went to the
 // Trash, so every session ends with the deleted state. A forged one would end
 // everyone's session.
+//
+// `changeset` (docs/specs/024-agents/agent-changesets.md): one write the api applied and recorded,
+// sequenced through /mutation. A forged one would show people a change nobody made (CS24).
 export const SYSTEM_OP_KINDS = [
   'share-revoked',
   'share-rescoped',
   'qa',
   'document-trashed',
+  'changeset',
 ] as const;
 
 // The whole vocabulary. Every op the editor sends or handles is one of these
@@ -427,7 +432,12 @@ export type RoomOp =
   // on every other tab too. Optional for wire compatibility: a frame
   // without it is treated as tab-unknown and shown everywhere (the old
   // behaviour).
-  | { kind: 'select'; elementId: string | null; tabId?: string }
+  //
+  // `elementIds` is the whole selection (the multi-selection, or the single one), capped at
+  // MAX_SELECTION_IDS: the room records it so the api can refuse an agent changeset on an element a
+  // person holds (docs/specs/024-agents/agent-changesets.md "Held elements"). A sender that omits it
+  // holds `[elementId]`.
+  | { kind: 'select'; elementId: string | null; tabId?: string; elementIds?: string[] }
   // Cursor position in canvas coordinates. `null` means the cursor
   // left the canvas surface so peers can hide their indicator. The
   // active tab id is included so we only render cursors of
@@ -555,6 +565,9 @@ export type RoomOp =
   // A Q&A board's whole state after a server write (docs/specs/012-collaboration/qa-board.md). Replaces the
   // element's notes when `rev` is newer than the local `qaRev`.
   | { kind: 'qa'; tabId: string; elementId: string; notes: QaNote[]; rev: number }
+  // One changeset the api applied (docs/specs/024-agents/agent-changesets.md "What the room does").
+  // Worker-originated through /mutation.
+  | ChangesetRoomOp
   // The document went to the Trash (docs/specs/013-workspace/trash.md). Every
   // session shows the deleted state; the room then closes every socket (4004).
   // Worker-originated, like share-revoked.

@@ -451,7 +451,7 @@ export async function copyDocument(
     return [
       // Link remapping rewrites ids inside elements, never their number, so the count carries over.
       env.DB.prepare(
-        `INSERT INTO tabs (id, name, data, updated_at, element_count) VALUES (?, ?, ?, ?, ?)`,
+        `INSERT INTO tabs (id, name, data, updated_at, element_count, rev) VALUES (?, ?, ?, ?, ?, 1)`,
       ).bind(freshTabId, row.name, data, now, row.element_count ?? null),
       env.DB.prepare(
         `INSERT INTO document_tabs (document_id, tab_id, order_index, added_at)

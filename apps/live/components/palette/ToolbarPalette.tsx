@@ -451,7 +451,9 @@ export function ToolbarPalette(props: Props) {
                     )}
                   </>
                 ) : null}
-                {props.onAddPage ? (
+                {/* Not on a phone: the strip has no room to spare, and the row's own + (after the
+                    last page) adds one there. */}
+                {props.onAddPage && !isMobile ? (
                   <>
                     <Divider />
                     <AddPageStripButton onAdd={props.onAddPage} />

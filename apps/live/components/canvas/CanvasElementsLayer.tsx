@@ -33,6 +33,7 @@ import {
   SelectionGripsLayer,
   type SelectionGripHosts,
 } from '@/components/canvas/SelectionGripsLayer';
+import { ChangesetRevealOverlay } from '@/components/canvas/ChangesetRevealOverlay';
 import { LayerSelectionChrome } from '@/components/canvas/LayerSelectionChrome';
 import {
   FreeArrowFrame,
@@ -669,6 +670,10 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             elements. The overlay component owns its own RAF loop
             and only runs while there's at least one active trail. */}
       <LaserOverlay trails={laserTrails} zoom={viewportZoom} />
+
+      {/* What a relayed changeset touched (docs/specs/024-agents/agent-changesets.md "In the editor"):
+          above the elements, below the selection chrome. */}
+      <ChangesetRevealOverlay elements={elements} tabId={props.activeTabId ?? ''} />
 
       {/* The grips layer (docs/specs/008-canvas/canvas-and-palette.md "Resize"): above every element, so
           no grip is ever covered. The canvas's own grips go in here; each element's are portalled in. */}

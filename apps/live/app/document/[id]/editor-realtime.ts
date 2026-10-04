@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 
 import { connectRoom, type ShareLink, type ShareRole } from '@/lib/api-client';
+import { useChangesetSeen } from './useChangesetSeen';
 import { useLatest } from '@/hooks/ui/useLatest';
 
 // Sharing, session-permission and realtime-room infrastructure for the
@@ -18,6 +19,14 @@ export function useEditorRealtime() {
   // Single open room connection for the current document. Re-opens
   // whenever documentId changes.
   const roomRef = useRef<ReturnType<typeof connectRoom> | null>(null);
+  // Whether the document is saved on the server, so it has a room (docs/specs/024-agents/
+  // agent-changesets.md "Rooms for personal documents"): every server-stored document opens one,
+  // personal ones included, since an agent is a second writer. False for an Offline Mode document
+  // and until a load succeeds.
+  const [documentServerStored, setDocumentServerStored] = useState(false);
+  // The changeset revision each loaded tab holds (useChangesetSeen): set by every tab load, raised
+  // by every changeset applied, sent with every save.
+  const changesetSeen = useChangesetSeen();
   // Sharing state for the current document. Mirrors the API row's
   // `shareable` + `shareCode` columns; refreshed on hydration, and
   // after share / unshare. Drives whether realtime (WS room) is
@@ -91,6 +100,9 @@ export function useEditorRealtime() {
 
   return {
     roomRef,
+    documentServerStored,
+    setDocumentServerStored,
+    changesetSeen,
     documentShareable,
     setDocumentShareable,
     documentTeamId,

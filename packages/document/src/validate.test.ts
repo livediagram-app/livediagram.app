@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   coerceShapeKind,
+  elementValidationIssue,
   isValidElement,
   isValidTab,
   MAX_ELEMENTS_PER_TAB,
@@ -449,5 +450,96 @@ describe('text box validation', () => {
     expect(isValidElement({ ...text, textScale: Number.NaN })).toBe(false);
     expect(isValidElement({ ...text, sizing: 'grow' })).toBe(false);
     expect(isValidElement({ ...text, sizing: true })).toBe(false);
+  });
+});
+
+// docs/specs/024-agents/blueprints/edit-operations.md "invalid_result": a refusal names the field
+// and the rule it broke, so the caller can fix the one value rather than guess.
+describe('elementValidationIssue', () => {
+  it('finds nothing wrong with a valid element', () => {
+    expect(elementValidationIssue({ id: 'a', type: 'shape', shape: 'square', ...box })).toBeNull();
+  });
+
+  it('names a missing id', () => {
+    expect(elementValidationIssue({ type: 'shape', shape: 'square', ...box })).toEqual({
+      field: 'id',
+      rule: 'a non-empty string',
+    });
+  });
+
+  it('names a value that is not an element at all', () => {
+    expect(elementValidationIssue(null)).toEqual({ field: 'element', rule: 'an object' });
+  });
+
+  it('names an unknown type', () => {
+    expect(elementValidationIssue({ id: 'a', type: 'blob', ...box })?.field).toBe('type');
+  });
+
+  it('names the box field that is wrong', () => {
+    expect(
+      elementValidationIssue({ id: 'a', type: 'shape', shape: 'square', ...box, width: -1 }),
+    ).toEqual({ field: 'width', rule: 'a finite number, 0 or more' });
+  });
+
+  it('names a broken arrow end', () => {
+    const issue = elementValidationIssue({
+      id: 'a',
+      type: 'arrow',
+      from: { kind: 'pinned', elementId: 'b', anchor: 'e' },
+      to: { kind: 'pinned', elementId: 'c', anchor: 'middle' },
+    });
+    expect(issue?.field).toBe('to');
+    expect(issue?.rule).toContain('anchor');
+  });
+
+  it('names a closed-set field with its allowed values', () => {
+    const issue = elementValidationIssue({
+      id: 'a',
+      type: 'shape',
+      shape: 'code-block',
+      codeLanguage: 'cobol',
+      ...box,
+    });
+    expect(issue?.field).toBe('codeLanguage');
+    expect(issue?.rule).toContain('python');
+  });
+
+  it('names an over-cap array with its cap', () => {
+    const issue = elementValidationIssue({
+      id: 'a',
+      type: 'shape',
+      shape: 'pie-chart',
+      pieSlices: Array.from({ length: 5001 }, () => ({ label: 'x', value: 1 })),
+      ...box,
+    });
+    expect(issue).toEqual({ field: 'pieSlices', rule: 'an array of at most 5000 items' });
+  });
+
+  it('names a malformed table cell', () => {
+    const issue = elementValidationIssue({ id: 't', type: 'table', cells: [['a', 1]], ...box });
+    expect(issue?.field).toBe('cells');
+  });
+
+  it('names a freehand stroke that still carries its former points', () => {
+    const issue = elementValidationIssue({
+      id: 'f',
+      type: 'freehand',
+      closed: false,
+      packedPoints: encodeStrokePoints([{ nx: 0, ny: 0 }]),
+      points: [],
+      ...box,
+    });
+    expect(issue?.field).toBe('points');
+  });
+
+  it('agrees with isValidElement on every case above', () => {
+    const cases: unknown[] = [
+      null,
+      { id: 'a', type: 'shape', shape: 'square', ...box },
+      { id: 'a', type: 'shape', shape: '', ...box },
+      { id: 'a', type: 'text', sizing: 'grow', ...box },
+      { id: 'a', type: 'image', imageId: 3, ...box },
+    ];
+    for (const el of cases) expect(isValidElement(el)).toBe(elementValidationIssue(el) === null);
   });
 });

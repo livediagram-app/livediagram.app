@@ -43,6 +43,7 @@ design decision. The page model, the row, page kinds and page actions are
 | Leaving Illustrate       | `useLeaveIllustrate`, `LeaveIllustrate` (`hooks/editor/useLeaveIllustrate.ts`); `LeaveIllustrateDialog` (`components/dialogs/`)                                                                                                                                                                                                                                                                                                                                                                                                                                |
 | The writing (editor)     | `ArticleEditor` (lazy), `FlowLayout`, `FocusRequest`, `apps/live/components/canvas/article/ArticleEditor.tsx`                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | Every article on the tab | `ArticleFlows` (`ArticleFlows.tsx`): paper press layer, editors, `PageToolbar`, `ZoneBar`, `ZoneResizeGrips`, drop carets                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| A finger on a page       | `useTouchPagePan` (`useTouchPagePan.ts`), given `IllustratePagesView.panFrom`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | Editor schema            | `articleSchema` (nodes `doc paragraph list_item code_block divider page_break zone text hard_break`; marks `link bold italic underline strike code sup sub color note highlight`), `lib/article/article-schema.ts`                                                                                                                                                                                                                                                                                                                                             |
 | Blocks ↔ editor          | `blockToNode`, `blocksToDoc`, `nodeToBlock`, `docToBlocks`, `lib/article/article-convert.ts`                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 | Commands                 | `lib/article/article-commands.ts` (`setBlockStyle`, `toggleList`, `shiftLevel`, `setAlign`, `toggle*`, `setLink`, `setTextColor`, `setHighlight`, `clearFormatting`, `insertBlocksAfterCaret`, `enter`, `backspaceAtStart`, `deleteAtEnd`, `tab`, `shiftTab`, `lineBreak`, `selectAll`, `selectionStateOf`, `ArticleSelectionState`)                                                                                                                                                                                                                           |
@@ -105,7 +106,8 @@ is `break-after: column` (`article-pages.css`).
 | `ARTICLE_NOTE_SIZE`, `ARTICLE_NOTE_GAP` | 32 px, 6 px                            | `article-notes.ts`; spec "Comments and actions"                          |
 | Toolbar `MARGIN_PAD`                    | 4 screen px                            | `page-toolbar-placement.ts`; D41                                         |
 | `TOOLBAR_MIN_SCALE`                     | 0.55                                   | `page-toolbar-placement.ts`; spec "to 55%"                               |
-| `PHONE_GUTTER`, `PHONE_CONTROLS_ROOM`   | 8, 64 screen px                        | `page-toolbar-placement.ts`; D41                                         |
+| `PHONE_GUTTER`                          | 8 screen px                            | `page-toolbar-placement.ts`; D41                                         |
+| `TOUCH_PAN_SLOP`                        | 8 screen px                            | `useTouchPagePan.ts`; spec "A finger on a page", D41                     |
 | `PLACE_TRAILING_FRAMES`                 | 3 frames                               | `page-toolbar-placement.ts`; canvas-performance "At rest"                |
 | `LINK_CARD_GRACE_MS`                    | 250 ms                                 | `useArticleLinkHover.tsx`; as `HOVER_GRACE_MS`                           |
 | Zone grip `GRIP_KEY_STEP`               | 8 px (Shift x10)                       | `ZoneBar.tsx`; D41                                                       |
@@ -296,8 +298,19 @@ focused: true })`. On blur: an open slash menu closes; a tick later (one pending
   centred in the top margin (`topRoomOf(pageId)` = `articleTopMarginPx(style) * zoom`), scaled
   `clamp(TOOLBAR_MIN_SCALE, (room - 2 * MARGIN_PAD) / h, 1)`, kept inside the page and the canvas
   (`maxWidth`, scrolls sideways), hidden when its page's top is out of the canvas or under the
-  Toolbar strip; phone (`useIsMobileViewport`), a bar across the bottom: right above the keyboard
-  (`visualViewport`) when it is up, else `PHONE_CONTROLS_ROOM` above the canvas bottom.
+  Toolbar strip; phone (`useIsMobileViewport`), a bar across the top: `PHONE_GUTTER` below the
+  higher of the canvas top and the visible viewport's top (`visualViewport.offsetTop`, so a
+  keyboard that scrolls the layout viewport never carries it off), over the Toolbar strip's place.
+  While it shows, the root carries `data-article-toolbar-top` and `article-pages.css` hides
+  `[data-toolbar-palette]`; `topStripInset` reads a hidden strip as no inset, so the reading frame
+  gives its room to the page.
+- A finger on the writing or its paper (`useTouchPagePan`, given `IllustratePagesView.panFrom`):
+  primary touch only; past `TOUCH_PAN_SLOP` it begins `panFrom()` and a `'pan'` canvas gesture and
+  moves the view by the drag (one commit per frame); a release short of it is a tap (the paper's
+  `focusAt`, the writing's `onWritingPress` after the browser's caret); a cancel or a second
+  finger's pointerdown ends it with no tap, and so does `LONG_PRESS_MS` held short of the slop (the
+  browser's text selection). `.article-flow` restores `-webkit-touch-callout: default`. The writing and paper still stop the press reaching
+  the canvas (no marquee).
 - Buttons never take focus (`onMouseDown` preventDefault); `handle.run` refocuses the writing.
   ⌘K (`requestArticleLink`) opens the link field; ⌘⌥M (`requestArticleComment`) adds a comment
   when text is selected. A menu closes with the article (`!active`).
@@ -429,7 +442,9 @@ caret)`; `syncArticlePeople(participants)` names and colours carets and drops th
 - **Present** (`presentedPages`): the view narrowed to the page, `rowPages` the whole row (the
   writing lays out across all its pages), `articles.editable: false`.
 - **Phone framing**: `ArticleFlows` calls `view.readPage(pageId)` once each time the writing takes
-  focus on a phone (`computeReadingFrame` with the margin, so the column fills the width).
+  focus on a phone (`computeReadingFrame` with the margin, so the column fills the width), gliding
+  there (`glideViewport`, `VIEW_GLIDE_MS`; at once under reduced motion); a finger's pan
+  (`panFrom`) stops a glide under way.
 - **Isometric**: `ArticleFlows` is not mounted (`canvasTool !== 'isometric'`).
 
 ## Interfaces and contracts
@@ -626,6 +641,7 @@ ended`, `articles turned into pages`. Page-level edits log `[illustrate-page] �
 | `article-caret` on the wire                                                                                         | `packages/api-schema/src/article-caret.test.ts`; room relay `apps/api/src/document-room.test.ts` |
 | Into pages never takes an article's pages                                                                           | `packages/document/src/illustrate-paginate.test.ts` "into pages never loses an article"          |
 | Export cuts a drawing at its zone                                                                                   | `apps/live/lib/export-tab.test.ts` "an article page export cuts a drawing off at its zone"       |
+| A finger on a page: pans past the slop, a tap short of it, a second finger or a cancel no tap                       | `apps/live/components/canvas/article/useTouchPagePan.test.tsx`                                   |
 | Reading frame                                                                                                       | `apps/live/lib/viewport.test.ts` "computeReadingFrame"                                           |
 | Article edits through the page panel (add, turn, paint, move, delete)                                               | `apps/live/hooks/editor/illustrate-page-edits.test.ts` "documents"                               |
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { CommentThread, ShapeElement, Tab } from './index';
-import { activeCommentCount, graftLiveTabState } from './index';
+import { activeCommentCount, graftLiveTabState, opForTheWire } from './index';
 
 const shape = (id: string, thread?: CommentThread): ShapeElement => ({
   id,
@@ -145,5 +145,37 @@ describe('graftLiveTabState collaborative fields (docs/specs/012-collaboration/c
     };
     const restored = graftLiveTabState([tab('t1', [shape('card')])], [tab('t1', [snapshot])]);
     expect('responses' in restored[0]!.elements[0]!).toBe(false);
+  });
+});
+
+describe('opForTheWire on a changeset (docs/specs/024-agents/agent-changesets.md)', () => {
+  it('strips comment author ids from every element an add or update carries', () => {
+    const authored = shape('a', {
+      resolved: false,
+      comments: [
+        {
+          id: 'c1',
+          text: 'hi',
+          createdAt: 1,
+          authorName: 'Bea',
+          authorColor: '#f00',
+          authorId: 'user_bea',
+        },
+      ],
+    });
+    const op = {
+      kind: 'changeset',
+      tabId: 't1',
+      elementOps: [
+        { kind: 'add', element: authored, index: 0 },
+        { kind: 'update', element: authored },
+        { kind: 'remove', id: 'b' },
+      ],
+    };
+    const wire = opForTheWire(op) as { elementOps: { element?: ShapeElement }[] };
+    for (const elOp of wire.elementOps.slice(0, 2)) {
+      expect(elOp.element?.commentThread?.comments[0]).not.toHaveProperty('authorId');
+    }
+    expect(wire.elementOps[2]).toBe(op.elementOps[2]);
   });
 });

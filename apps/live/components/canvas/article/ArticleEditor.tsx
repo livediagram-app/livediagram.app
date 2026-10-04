@@ -8,7 +8,14 @@
 // an undo) is merged in block by block, so neither loses the other. After every change it measures
 // where the writing reaches (how many pages, where each zone landed) and reports it, so the host
 // can add or remove pages and move zones' elements (useArticles).
-import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type PointerEvent as ReactPointerEvent,
+} from 'react';
 import { EditorState, Selection, TextSelection, type Transaction } from 'prosemirror-state';
 import { EditorView } from 'prosemirror-view';
 import { gapCursor } from 'prosemirror-gapcursor';
@@ -116,6 +123,9 @@ export type ArticleEditorProps = {
   onInsert: (flow: string, what: ArticleInsert) => void;
   // A press on the writing: the canvas's selection goes.
   onWritingPress: () => void;
+  // A finger on the writing: pans the view when it travels, else calls back on its tap (the
+  // browser has put the caret by then). False for a mouse or a pen.
+  onTouchPress?: (e: ReactPointerEvent, onTap?: () => void) => boolean;
   focusRequest: FocusRequest;
   // The request was taken (it is spent).
   onFocusTaken?: (seq: number) => void;
@@ -614,7 +624,8 @@ export default function ArticleEditor(props: ArticleEditorProps) {
           if (!latest.current.interactive) return;
           if (!(e.target as HTMLElement).closest?.('.article-flow > *')) return;
           e.stopPropagation();
-          latest.current.onWritingPress();
+          const { onWritingPress, onTouchPress } = latest.current;
+          if (!onTouchPress?.(e, onWritingPress)) onWritingPress();
         }}
         onDoubleClick={(e) => e.stopPropagation()}
         onContextMenu={(e) => e.stopPropagation()}

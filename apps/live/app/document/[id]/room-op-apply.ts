@@ -50,6 +50,29 @@ export function applyRoomOpToTabs(tabs: Tab[], op: RoomOp): Tab[] {
       });
     case 'el-delta':
       return applyDeltaToTabs(tabs, op.tabId, op.elementId, op.delta);
+    case 'changeset': {
+      // An agent's changeset (docs/specs/024-agents/agent-changesets.md "In the editor"): a tab it
+      // created is appended first, then each element op applies exactly as case `el` does. An op
+      // relayed without its element ops (over the relay cap) brings only a created tab here: the
+      // editor re-fetches the content.
+      const ops = op.elementOps ?? [];
+      const withTab =
+        op.tab && !tabs.some((t) => t.id === op.tabId)
+          ? [...tabs, { ...op.tab, id: op.tabId, elements: [] }]
+          : tabs;
+      if (ops.length === 0) return withTab;
+      return updateTab(withTab, op.tabId, (tab) => {
+        let elements = tab.elements;
+        for (const elOp of ops) {
+          const merged =
+            elOp.kind === 'update' || elOp.kind === 'add'
+              ? mergeOpOverLocal({ ...tab, elements }, elOp)
+              : elOp;
+          elements = applyElementOp(elements, merged);
+        }
+        return elements === tab.elements ? tab : { ...tab, elements };
+      });
+    }
     case 'vote':
       // ONE dot, as a delta, so concurrent dots commute (docs/specs/012-collaboration/session-tools.md). Dropped
       // unless casting is open for the round it was cast in (docs/specs/012-collaboration/collab-race-hardening.md).

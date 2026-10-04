@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Tab } from '@livediagram/document';
-import { flushDocumentSavesBeacon } from './tabs';
+import { apiLoadTabRevisioned, apiSaveTab, flushDocumentSavesBeacon } from './tabs';
 import * as offlineStore from '../offline/offline-store';
 
 vi.mock('../offline/offline-store', async (importOriginal) => ({
@@ -140,5 +140,68 @@ describe('flushDocumentSavesBeacon', () => {
       tabs: [makeTab('t1')],
     });
     expect((calls[0]!.init.headers as Record<string, string>)['X-Share-Code']).toBe('abc');
+  });
+});
+
+// The changeset revision (docs/specs/024-agents/agent-changesets.md "The write path" step 8): every
+// save tells the api the highest changeset revision this editor has applied to the tab.
+describe('the changeset seen revision', () => {
+  let calls: FetchCall[];
+  beforeEach(() => {
+    calls = [];
+    vi.stubGlobal(
+      'fetch',
+      vi.fn((url: string, init: RequestInit) => {
+        calls.push({ url, init });
+        if (init?.method === undefined || init.method === 'GET') {
+          return Promise.resolve(
+            Response.json({
+              tab: {
+                id: 't1',
+                name: 'T',
+                elements: [],
+                rev: 7,
+                documentId: 'd',
+                orderIndex: 0,
+                updatedAt: 1,
+              },
+            }),
+          );
+        }
+        return Promise.resolve(new Response(null, { status: 204 }));
+      }),
+    );
+  });
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('the beacon sends it per tab, and nothing for a tab without one', () => {
+    flushDocumentSavesBeacon({
+      ownerId: 'owner-1',
+      documentId: 'diag-1',
+      shareCode: null,
+      loadedTabIds: new Set(),
+      orderChanged: false,
+      nameChanged: false,
+      name: 'D',
+      changedTabs: [makeTab('a'), makeTab('b')],
+      deletedIds: [],
+      tabs: [makeTab('a'), makeTab('b')],
+      changesetSeen: new Map([['a', 4]]),
+    });
+    const headersFor = (id: string) =>
+      calls.find((c) => c.url.endsWith(`/tabs/${id}`))!.init.headers as Record<string, string>;
+    expect(headersFor('a')['X-Changeset-Seen']).toBe('4');
+    expect(headersFor('b')['X-Changeset-Seen']).toBeUndefined();
+  });
+
+  it('a save sends it', async () => {
+    await apiSaveTab('owner-1', 'diag-1', makeTab('a'), null, { changesetSeen: 9 });
+    expect(new Headers(calls[0]!.init.headers).get('X-Changeset-Seen')).toBe('9');
+  });
+
+  it('a revisioned load answers the tab and its revision, the revision kept out of the tab', async () => {
+    const loaded = await apiLoadTabRevisioned('owner-1', 'diag-1', 't1', null);
+    expect(loaded?.rev).toBe(7);
+    expect(loaded?.tab).toEqual({ id: 't1', name: 'T', elements: [] });
   });
 });

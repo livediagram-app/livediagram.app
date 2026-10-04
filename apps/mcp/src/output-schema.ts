@@ -33,6 +33,7 @@ export const readDocumentOutput = {
     .object({
       id: tabId,
       name: z.string().describe('The tab name.'),
+      rev: z.number().describe('The tab revision: pass it as rev to update_document.'),
       elements: z
         .array(z.record(z.string(), z.unknown()))
         .describe('The tab elements, in the format of the livediagram://schema/elements resource.'),
@@ -77,17 +78,29 @@ export const createDocumentOutput = {
   url,
 };
 
+// What a changeset answered (docs/specs/024-agents/agent-changesets.md): its id (null when it
+// changed nothing), the revision it left the tab at, its result lines, and the lint (null until the
+// diagram lint exists).
+const changesetAnswer = {
+  changesetId: z.string().nullable().describe('The changeset written; null when nothing changed.'),
+  rev: z.number().describe('The tab revision now, to pass as rev on the next update_document.'),
+  text: z.string().describe('What the changeset did, one line per element, and how to revert it.'),
+  lint: z.null().describe('The diagram lint report; null while the lint is unavailable.'),
+};
+
 export const addTabOutput = {
   documentId,
   tabId: tabId.describe('The new tab id.'),
   name: z.string().describe('The stored tab name (shortened if it was over the cap).'),
   url,
+  ...changesetAnswer,
 };
 
 export const updateDocumentOutput = {
   id: documentId,
   tabId: tabId.describe('The tab that was edited.'),
   url,
+  ...changesetAnswer,
 };
 
 export const shareDocumentOutput = {

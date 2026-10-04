@@ -176,6 +176,11 @@ function operationFor(route: RouteSpec): Record<string, unknown> {
 
 const TAGS = [
   { name: 'Documents', description: 'Create, read, update, and delete documents and their tabs.' },
+  {
+    name: 'Changesets',
+    description:
+      'How scripts and agents change a tab: atomic, live for everyone with it open, credited and revertable.',
+  },
   { name: 'Sharing', description: 'Share links, passwords, and the documents shared with you.' },
   { name: 'Folders', description: 'Organise documents into a personal or team folder tree.' },
   {

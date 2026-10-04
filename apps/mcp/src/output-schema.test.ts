@@ -18,7 +18,16 @@ import * as outputs from './output-schema';
 // again after listTools, and the strict parse below catches the one drift
 // neither SDK side does, a result field the schema never declared.
 
-const TAB = { id: 't1', name: 'Tab 1', elements: [] };
+const TAB = { id: 't1', name: 'Tab 1', rev: 3, elements: [] };
+// What the changeset route answers (docs/specs/024-agents/agent-changesets.md).
+const CHANGESET = {
+  dryRun: false,
+  changeset: { id: 'cs_0000000001', tabId: 't1', rev: 4, previousRev: 3, rebasedOver: 0 },
+  results: [],
+  text: 'rev 3→4 · cs_0000000001',
+  warnings: [],
+  lint: null,
+};
 const LIVE_DOC = { id: 'd1', name: 'Roadmap', tabs: [{ id: 't1', name: 'Tab 1' }] };
 
 // A plausible api with non-empty lists, so the array item schemas are exercised.
@@ -38,6 +47,8 @@ async function api(request: Request): Promise<Response> {
   if (path.endsWith('/restore')) return json({ document: LIVE_DOC });
   if (path.endsWith('/share'))
     return json({ link: { code: 'abc', role: 'view', expiresAt: null } });
+  if (path.endsWith('/changesets')) return json(CHANGESET);
+  if (path.endsWith('/name')) return json({ tab: { id: 't1', name: 'Renamed', orderIndex: 0 } });
   if (/\/tabs\/[^/]+$/.test(path)) return json({ tab: TAB });
   return json({ document: LIVE_DOC });
 }

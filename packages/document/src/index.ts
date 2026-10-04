@@ -522,11 +522,20 @@ export * from './table';
 // the API uses to vet incoming tabs / documents). See validate.ts.
 export * from './validate';
 
+// Every stored field per element type (docs/specs/024-agents/blueprints/edit-operations.md).
+export * from './element-fields';
+
 // Deterministic auto-layout for AI-generated diagrams (docs/specs/007-editor/ai-assistance.md).
 export * from './auto-layout';
 
 // Cluster-aware graph layout (docs/specs/020-import-export/mermaid.md): Mermaid subgraphs as frames.
 export * from './auto-layout-clusters';
+
+// Authoring input shared by the MCP, the api and the CLI (docs/specs/015-api/mcp-server.md §4.7,
+// §4.7a): raw elements made safe, graph input capped and laid out, and finished tabs built.
+export * from './element-normalise';
+export * from './graph-input';
+export * from './tab-builders';
 
 // Shared by the editor's text export + import and reusable by the api / MCP.
 
@@ -591,6 +600,7 @@ export * from './layer-operations';
 // Element-level realtime ops (docs/specs/012-collaboration/realtime-conflict-resolution.md): the ElementOp type + the pure
 // diff/apply functions the realtime room uses to merge concurrent edits.
 export * from './element-ops';
+export * from './element-fingerprint';
 
 // Per-element deltas for the fields many participants write at once
 // (docs/specs/012-collaboration/collab-race-hardening.md): answers, ideas, checklist ticks, comments.

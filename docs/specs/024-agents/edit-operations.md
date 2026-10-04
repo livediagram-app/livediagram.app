@@ -1,6 +1,6 @@
 # Edit operations
 
-**Status: specified, not built.**
+**Status: partly built.** `@livediagram/edit-operations` applies `add` (a whole element), `set` and `rm` addressed by element id, and `replace`, in the JSON form; the line form, selectors beyond ids, placement and the other operations are specified, not built.
 
 An **edit operation** is one step of a [changeset](agent-changesets.md): a small, closed vocabulary of
 intent-level verbs addressed by ref or selector, compiled by the api into element ops. Building from scratch and

@@ -106,3 +106,10 @@ export function applyElementOp(elements: Element[], op: ElementOp): Element[] {
 export function applyElementOps(elements: Element[], ops: ElementOp[]): Element[] {
   return ops.reduce(applyElementOp, elements);
 }
+
+// The ops that undo `ops` applied to `before` (docs/specs/024-agents/agent-changesets.md "Revert"):
+// shared by the edit-operations engine and the changeset revert. Derived by diffing back from the
+// result, so removes, adds and a reorder in one changeset come back in exactly their places.
+export function invertElementOps(before: Element[], ops: ElementOp[]): ElementOp[] {
+  return diffToElementOps(applyElementOps(before, ops), before);
+}

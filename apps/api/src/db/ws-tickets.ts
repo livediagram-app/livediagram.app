@@ -25,6 +25,10 @@ export type WsAdmission = {
   tabScope: string | null;
   shareCode: string | null;
   account: boolean;
+  // The minting account's person tag (personTagFor), so the room can tell an agent's owner's own
+  // sessions apart (docs/specs/024-agents/agent-changesets.md "Held elements"). Null for a guest,
+  // a share-link visitor without an account, or an API token.
+  personTag: string | null;
 };
 
 export async function createWsTicket(
@@ -38,7 +42,7 @@ export async function createWsTicket(
   await env.DB.prepare('DELETE FROM ws_tickets WHERE expires_at <= ?').bind(now).run();
   const ticket = crypto.randomUUID();
   await env.DB.prepare(
-    'INSERT INTO ws_tickets (ticket, document_id, role, expires_at, tab_scope, share_code, account) VALUES (?, ?, ?, ?, ?, ?, ?)',
+    'INSERT INTO ws_tickets (ticket, document_id, role, expires_at, tab_scope, share_code, account, person_tag) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
   )
     .bind(
       ticket,
@@ -48,6 +52,7 @@ export async function createWsTicket(
       admission.tabScope,
       admission.shareCode,
       admission.account ? 1 : 0,
+      admission.personTag,
     )
     .run();
   return ticket;
@@ -64,7 +69,7 @@ export async function consumeWsTicket(
   now = Date.now(),
 ): Promise<WsAdmission | null> {
   const row = await env.DB.prepare(
-    'DELETE FROM ws_tickets WHERE ticket = ? AND document_id = ? AND expires_at > ? RETURNING role, tab_scope, share_code, account',
+    'DELETE FROM ws_tickets WHERE ticket = ? AND document_id = ? AND expires_at > ? RETURNING role, tab_scope, share_code, account, person_tag',
   )
     .bind(ticket, documentId, now)
     .first<{
@@ -72,6 +77,7 @@ export async function consumeWsTicket(
       tab_scope?: string | null;
       share_code?: string | null;
       account?: number | null;
+      person_tag?: string | null;
     }>();
   if (row?.role !== 'edit' && row?.role !== 'view') return null;
   return {
@@ -79,5 +85,6 @@ export async function consumeWsTicket(
     tabScope: row.tab_scope ?? null,
     shareCode: row.share_code ?? null,
     account: row.account === 1,
+    personTag: row.person_tag ?? null,
   };
 }

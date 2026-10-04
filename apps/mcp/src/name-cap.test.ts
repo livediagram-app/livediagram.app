@@ -26,9 +26,23 @@ async function connect() {
     const text = await request.text();
     sent.push({ method: request.method, path, body: text ? JSON.parse(text) : null });
     if (/\/tabs\/[^/]+$/.test(path) && request.method === 'GET') {
-      return Response.json({ tab: { id: 't1', name: 'Tab', elements: [] } });
+      return Response.json({ tab: { id: 't1', name: 'Tab', rev: 1, elements: [] } });
     }
-    if (/\/tabs\/[^/]+$/.test(path)) return Response.json({ tab: { id: 't1' } });
+    if (path.endsWith('/changesets')) {
+      return Response.json({
+        dryRun: false,
+        changeset: null,
+        results: [],
+        text: '',
+        warnings: [],
+        lint: null,
+      });
+    }
+    if (path.endsWith('/name')) {
+      return Response.json({
+        tab: { id: 't1', name: (JSON.parse(text) as { name: string }).name },
+      });
+    }
     return Response.json({ document: { id: 'd1', name: CAPPED, tabs: [{ id: 't1' }] } });
   });
   return { client, sent };
@@ -62,14 +76,17 @@ describe('document and tab names through the MCP SDK', () => {
       name: 'add_tab',
       arguments: { documentId: 'd1', name: LONG, elements: [], theme: 'brand' },
     });
-    const put = sent.find((s) => s.method === 'PUT' && s.path.startsWith('/documents/d1/tabs/'))!;
-    expect(put.body?.name).toBe(CAPPED);
+    // The tab arrives as a changeset that creates it (docs/specs/024-agents/agent-changesets.md).
+    const created = sent.find((s) => s.method === 'POST' && s.path.endsWith('/changesets'))!;
+    expect((created.body?.replace as { name: string }).name).toBe(CAPPED);
 
     const result = await client.callTool({
       name: 'rename_document',
       arguments: { documentId: 'd1', tabId: 't1', name: LONG },
     });
-    const renamed = sent.filter((s) => s.method === 'PUT' && s.path === '/documents/d1/tabs/t1');
+    const renamed = sent.filter(
+      (s) => s.method === 'PUT' && s.path === '/documents/d1/tabs/t1/name',
+    );
     expect(renamed.at(-1)?.body?.name).toBe(CAPPED);
     const text = (result.content as { type: string; text: string }[])[0]!.text;
     expect(JSON.parse(text).name).toBe(CAPPED);

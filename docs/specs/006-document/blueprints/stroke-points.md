@@ -207,7 +207,7 @@ fields from the type and compiling every workspace, plus the untyped entry point
 | Api writes          | `apps/api/src/routes/documents.ts`, `document-subresource-routes.ts`                 | `migrateStoredTab` before `isValidTab`                                              |
 | Api reads           | `apps/api/src/tab-row.ts`, `thumbnail.ts`                                            | unchanged (already migrate)                                                         |
 | Offline store       | `apps/live/lib/offline/offline-store.ts`                                             | unchanged (already migrates)                                                        |
-| MCP server          | `apps/mcp/src/element-normalise.ts`, `tools.ts`                                      | `normaliseElement` migrates; `mergeElementUpdate` lets new points replace the block |
+| MCP server          | `packages/document/src/element-normalise.ts`, `tools.ts`                             | `normaliseElement` migrates; `mergeElementUpdate` lets new points replace the block |
 | Drive mirror        | `apps/live/lib/drive/livediagram-port.ts`                                            | unchanged: copies create through the api                                            |
 | Templates           | `packages/templates/src/template-builders-sailboat.ts`, `template-sailboat-scene.ts` | unchanged: `createFreehand`                                                         |
 | Shape recognition   | `apps/live/lib/recognition-preview.ts`, `recogniseBoardStroke`                       | unchanged: reads the live stroke, not an element                                    |
@@ -305,8 +305,8 @@ The api's existing `invalid tab` 400 covers a block that fails validation.
 | Clipboard and tab import migrate                                                                                                | `apps/live/lib/clipboard-payload.test.ts`, `import-tab.test.ts`                     |
 | Room ops migrated on receipt                                                                                                    | `apps/live/app/document/[id]/room-op-migrate.test.ts`                               |
 | Untrusted tabs and elements: migrated or passed through                                                                         | `packages/document/src/legacy-stroke-points.test.ts`                                |
-| MCP packs a model's former-shape stroke; an update's points replace the block                                                   | `apps/mcp/src/element-normalise.test.ts`                                            |
-| Every template builds a valid tab with packed strokes (MCP and editor)                                                          | `apps/mcp/src/tab-builders.test.ts`                                                 |
+| MCP packs a model's former-shape stroke; an update's points replace the block                                                   | `packages/document/src/element-normalise.test.ts`                                   |
+| Every template builds a valid tab with packed strokes (MCP and editor)                                                          | `packages/templates/src/template-tab.test.ts`                                       |
 | Drive mirror round trip keeps packed strokes byte for byte                                                                      | `apps/live/lib/drive/open-with.test.ts`                                             |
 | End to end: draw, partial erase, undo, reload, former shape on the way in, a peer's stroke live, SVG and PNG export (dark mode) | `apps/live/e2e/whiteboard-stroke-points.spec.ts`                                    |
 | Live ink matches landed ink within the bound                                                                                    | `apps/live/components/canvas/whiteboard/WhiteboardPenPreview.test.tsx`              |

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { entityHeight, isValidTab } from '@livediagram/document';
+import { entityHeight, isValidTab } from './index';
 import {
   lanesToFront,
   mergeElementUpdate,
