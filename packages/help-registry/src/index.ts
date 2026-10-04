@@ -1482,7 +1482,7 @@ export const articles: Article[] = [
     title: 'Default Folders',
     description: 'Choose the folder new diagrams, whiteboards and boards land in automatically.',
     keywords:
-      'default folder where new documents go save location automatic always save here placement file whiteboards retrospectives kanban event storming diagrams use as default settings documents',
+      'default folder where new documents go save location automatic always save here placement file whiteboards retrospectives kanban event storming diagrams use as default settings documents skip location step wizard',
     category: 'Explorer',
     categorySlug: 'explorer/folders',
     parentSlug: 'folders',

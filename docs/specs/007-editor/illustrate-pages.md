@@ -29,7 +29,9 @@ afterwards (the one exception: the first page's own choice, below):
   of one article ([Article pages](article-pages.md)). This spec applies to it except where a
   rule names infographic pages; [Article pages](article-pages.md) adds the rest.
 
-**Adding a page**: the **+** after the last page opens a small popover, **Add a page**, offering
+**Adding a page**: the **+** after the last page (centred in the gap after it, or, zoomed out so
+far that the gap is narrower than the button, kept 12 screen px clear of the page) opens a small
+popover, **Add a page**, offering
 two cards, each a miniature of the kind and a line under its name:
 
 - **Infographic**: "A page to lay out: layouts, icons, charts and media."
@@ -165,7 +167,7 @@ a page slide of a deleted page stays empty rather than finding a new page under 
 
 A **layout** is placed onto one page from its panel's **Layouts** tab, by category.
 
-- **Twenty-one layouts**, each a complete, editable starting point in the tab's theme. Most open with
+- **Thirty-one layouts**, each a complete, editable starting point in the tab's theme. Most open with
   a title and a lead line. A **tall** page (not wider than 1.15 times its height) stacks; a
   **wide** one sets things side by side:
   1. **Title page**: an eyebrow line, a large title over a short accent rule, a subtitle, an image
@@ -205,11 +207,31 @@ A **layout** is placed onto one page from its panel's **Layouts** tab, by catego
       clearly taller than wide).
   20. **Questions and answers**: four questions in bold, each with its answer.
   21. **Profile**: a round photo, a name, a role, a short bio and a stat row of three facts.
+  22. **Pros and cons**: a heading, then Pros (ticks, green) and Cons (crosses, rose) side by side,
+      four each, and a "Weighing it up" callout.
+  23. **Before and after**: Before and After panels, each an image placeholder over three points,
+      an arrow between them (down the page when tall), and the change in one figure.
+  24. **Feature matrix**: three options across, five features down, a tick or a dash in each cell,
+      the recommended option's column highlighted.
+  25. **Announcement**: a "New" badge, a large headline, a line, an image placeholder and a call to
+      action button.
+  26. **Did you know?**: an icon in a large disc, "Did you know?", one surprising fact set large,
+      and a source line.
+  27. **Save the date**: "Save the date", the date in a calendar tile, the event's name, where, and
+      a "More soon" line.
+  28. **Pictogram**: a figure set large ("7 in 10") over a grid of ten person icons, seven filled,
+      and a caption.
+  29. **Ranking**: five ranked rows, each a number disc, a name and a bar sized to its value.
+  30. **Cycle**: four stages round a loop, each a disc with an icon, a name and a note, joined by
+      arrows that close the loop.
+  31. **Funnel**: four stages narrowing down the page, each a band with its name and count, and the
+      conversion between them.
 - **Categories**: the picker groups the layouts as /new groups templates, one category at a time:
   **Covers** (Title page, Quote, Event, Section divider, Poster), **Data** (Big number, Key stats,
-  Chart story, Facts grid, Survey results, Progress report), **Steps and Time** (Process,
-  Timeline, Checklist, Roadmap, Agenda) and **People and Ideas** (Comparison, Top tips, Team,
-  Questions and answers, Profile). The Layouts tab opens on the categories, each a card fronted
+  Chart story, Facts grid, Survey results, Progress report, Pictogram, Ranking), **Steps and
+  Time** (Process, Timeline, Checklist, Roadmap, Agenda, Cycle, Funnel), **Compare** (Comparison,
+  Pros and cons, Before and after, Feature matrix), **People and Ideas** (Top tips, Team,
+  Questions and answers, Profile) and **Social** (Announcement, Did you know?, Save the date). The Layouts tab opens on the categories, each a card fronted
   by its first two layouts fanned, with its count; a card opens its layouts, with an **All
   layouts / <category>** row to go back.
 - **Body type** is the page-sized medium and large text sizes, never the small one. Headlines
@@ -232,6 +254,17 @@ A **layout** is placed onto one page from its panel's **Layouts** tab, by catego
   beside the cog, only while the page is empty, and opens the panel on Layouts (the cog opens it on
   Page). It shows its words on a wide screen when the title bar has room, else just its icon (and
   its tooltip); when the page is too small on screen even for that, it hides, as the label does.
+- **An empty infographic page shows its layouts inside itself**: while an infographic page is
+  empty, on a tab the viewer can edit, a **Start From a Layout** card sits centred on the page,
+  held at one screen size like the first page's kind choice, with the panel's Layouts in it: the
+  categories (Covers, Data, Steps and Time, People and Ideas, each with its count), then a
+  category's layouts with a way back. Pressing a layout places it (the page is empty, so at once,
+  as one undo step); there is no hover preview here, since drawn over the page it would cover the
+  card's own tiles. The card goes as
+  soon as anything lands on the page, and **Hide** (in its corner) puts it away for that page until
+  the tab is next opened; the title bar's "Start from a layout" button still opens the panel. It
+  never shows while the first page offers its kind, while the page's panel is open, when presenting
+  or in zen, or when the page is too small on screen to hold it.
 - **Hover previews the layout on the page**: while a tile is hovered (or focused) the page shows
   that layout as it would land, drawn over the whole sheet in the page's background, and the
   page's own content is hidden meanwhile (left out of the page clip), so the two never mix. It is
@@ -282,8 +315,11 @@ article**, **Move article left / right**, **Delete article**.
   stay element to element).
 - **The page navigator**: under each page, while there are two pages or more, a small bar at one
   screen size: **Previous page**, the page's place ("2 of 5"), **Next page** (disabled at either
-  end). An arrow fits that neighbouring page in the view, as a press on its label does. For
-  everyone who can see the pages; not in zen or isometric view.
+  end). An arrow fits that neighbouring page in the view, as a press on its label does, gliding
+  there (an ease-out over `VIEW_GLIDE_MS`, 280ms, `apps/live/lib/viewport-glide.ts`) so the eye follows the
+  move; a page just added glides into view the same way, and under reduced motion each lands at
+  once. A second press mid-glide starts from where the view has got to. For everyone who can see
+  the pages; not in zen or isometric view.
 - **A page is something in view**: the canvas's "Nothing's in view" nudge counts every page, an
   empty one or an article's, as content, so it never shows while a page is on screen.
 

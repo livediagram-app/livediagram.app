@@ -47,7 +47,7 @@ export const TEMPLATE_MODE_FILTER = chart(
   'UI',
   'Toggled',
   'Template Mode Filter',
-  'The mode filter in the New Document wizard changed: every template (All), or only the Diagram, Draw or Illustrate ones.',
+  'The mode filter in the New Document wizard changed: every template (Everything), or only the Diagram, Draw or Illustrate ones.',
   {
     types: ['TemplateModeAll', 'TemplateModeDiagram', 'TemplateModeDraw', 'TemplateModeIllustrate'],
   },

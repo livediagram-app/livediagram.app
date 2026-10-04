@@ -331,6 +331,25 @@ actions, snapping, export, laying content out into pages, page slides) is
 - The sheets are `apps/live/components/canvas/IllustratePages.tsx`; the pages'
   edits and the centring are `apps/live/hooks/editor/useIllustratePages.ts`.
 
+## Leaving Illustrate
+
+Diagram and Draw show no pages, so an editor's switch away from Illustrate on a tab that has
+something on it asks first:
+
+- **A tab with articles** asks Turn Articles Into Pages? (Convert, Keep as Articles, Cancel;
+  [Article pages](article-pages.md#leaving-illustrate)).
+- **A tab with content but no articles** asks a lighter question: a small card hanging from the
+  mode switch that asked (the Palette header's chip or the Toolbar layout's), pointing at it, below
+  it or above when there is no room below. A warning glyph in an amber disc, the title "Switch to
+  <Mode>?" and one sentence: "<Mode> mode doesn't show pages. Changes you make there may not fit
+  back onto your pages when you return to Illustrate." Its buttons are **Cancel** and **Switch** (the
+  target mode's glyph on it, focused). Escape or a press outside stays.
+  With no switch on screen (zen, a Shift+D press), the card sits centred near the top of the
+  screen.
+- An empty tab, a visitor or a locked tab switches straight away.
+- Confirming sends `Editor` · `Changed` · `LeaveIllustrateConfirmed`, beside the switch's own
+  `ModeDiagram` / `ModeDraw`.
+
 ## Experimental modes
 
 Illustrate mode is still new, so it keeps a switch in **Settings ›

@@ -12,17 +12,24 @@ sees only what starts there.
 - `templateEditorMode(kind)` in `packages/templates` is the one place it is declared. The template's
   canvas overrides (`templateCanvasOverrides`) take `opensIn` from it, so the mode a card shows and
   the mode the tab opens in can never disagree.
-- Draw templates: Blank Whiteboard and the [Draw templates](#draw-templates) below.
+- Draw templates: Blank Whiteboard and the eight [Draw templates](#draw-templates) below.
 - Illustrate templates: Blank Illustration, Article, Slide deck, Logo design, Group card and the
-  [Illustrate templates](#illustrate-templates) below.
+  eight [Illustrate templates](#illustrate-templates) below.
 - Every other template is a Diagram template.
 
 ## The mode filter
 
-- A segmented control sits **to the left of the search box**, labelled "Show templates for":
-  **All**, **Diagram**, **Draw**, **Illustrate**, each but All with its mode's glyph
-  (`EDITOR_MODE_ICON`, the glyphs of the mode switch). **All** is the default and is chosen each
-  time the step opens; the choice is not remembered.
+- A **dropdown** sits **to the left of the search box**, as tall as it, named "Show templates for":
+  a chip showing the choice in force (its glyph, its name, a chevron) over a menu of
+  **Everything**, **Diagram**, **Draw** and **Illustrate**, each with its glyph (a grid for
+  Everything, `EDITOR_MODE_ICON` for the modes, the glyphs of the mode switch) and how many
+  templates it holds, in a count badge. A dropdown, not a row of buttons, so a mode added later is one more row.
+  **Everything** is the default and is chosen each time the step opens; the choice is not
+  remembered.
+- **Hovering the chip** with a mouse opens the menu without moving focus, so the choice is in plain
+  sight; it closes a moment (`HOVER_CLOSE_MS`, 200ms) after the pointer leaves the chip and menu. A
+  press or the keyboard opens it as a menu button does (focus on the checked row); opened that way
+  it stays until a choice, Escape or an outside press. A press on a menu the hover opened keeps it.
 - On a phone (below `sm`) the control takes its own full-width row above the search box, so the
   search keeps its width.
 - Only the modes offered on this device are options: with Illustrate switched off in Settings ›
@@ -35,14 +42,15 @@ sees only what starts there.
     each tile's count, fan and the "N more categories, M more templates" line counting only
     those templates.
   - **Search** results are the matches of that mode only; the empty state names the mode
-    ("No Draw templates match …").
+    ("No Draw templates match …"), and when the search does match in other modes it offers them:
+    a **Show N matches in Everything** button switches to Everything, the search kept.
   - A `?browse=` collection shows only its templates of that mode.
 - If the open shelf has none of the mode's templates, **Popular** opens instead.
 - If the selected template is not of the mode, the selection moves to the mode's blank (Blank
-  Diagram, Blank Whiteboard or Blank Illustration; Blank Diagram for All), so one card is always
+  Diagram, Blank Whiteboard or Blank Illustration; Everything keeps the selection), so one card is always
   selected and Next never starts something the person filtered away.
-- The control is a radio group (`role="radiogroup"`, each option `role="radio"`, arrow keys move
-  between them); the chosen option slides the brand pill used by the other segmented controls.
+- The control is a menu button (docs/specs/004-interface-design/menus.md): the chip says it opens a
+  menu and whether it is open, the rows are `menuitemradio` with the choice checked.
 - Each choice sends `UI` / `Toggled` / `TemplateModeAll`, `TemplateModeDiagram`, `TemplateModeDraw`
   or `TemplateModeIllustrate` ([Telemetry](../017-telemetry/telemetry.md)).
 
@@ -74,7 +82,7 @@ Drawn with the marks a person makes in Draw mode: freehand strokes (with a sligh
 the board reads as drawn, not ruled), sticky notes, text and stickers. Each is a real example to
 draw over, not an empty frame.
 
-- **Sketchnote** _(Mind maps)_: visual notes from a talk ("How we ship on Fridays"): a hand-lettered
+- **Sketchnote** _(Brainstorm)_: visual notes from a talk ("How we ship on Fridays"): a hand-lettered
   banner title, the speaker and date, a cloud holding the big idea at the centre, three framed
   areas (Key points, Quotes, Questions) joined to it by drawn arrows, a lightbulb doodle and a
   takeaway banner along the bottom.
@@ -87,6 +95,14 @@ draw over, not an empty frame.
 - **Doodle Warm-Up** _(Agile)_: a meeting icebreaker, "Draw your teammate in 60 seconds": six
   hand-drawn frames each named for a teammate, the rules on a sticky note, a timer and a
   "best likeness" vote with sticker stars.
+- **Paper Prototype** _(Design)_: three hand-drawn phone screens of a made-up app, lo-fi UI in
+  marker, tap arrows from one screen to the next, and stickies with what to test with users.
+- **Journey Doodle** _(Strategy)_: a customer's day as a winding drawn road, each stop a doodle with
+  a face for how it felt, the dip where it goes wrong ringed, and opportunities on stickies.
+- **Pre-Mortem** _(Agile)_: "It's a year from now and the project failed": a drawn wreck in the
+  middle, the reasons on stickies round it by theme, and what to do now with tick boxes.
+- **Idea Garden** _(Brainstorm)_: ideas grown as a drawn tree: the question at the roots, themes as
+  branches, ideas as leaves, the best ones as fruit, and a legend.
 
 ## Illustrate templates
 
@@ -102,6 +118,14 @@ already infographic pages, built with the page layouts' kit.
   skills and education in a side column.
 - **Recipe Card** _(Design)_: a Square page and a Portrait post page for sharing a recipe: the dish,
   serves and timings with icons, the ingredients, and the method in numbered steps.
+- **Data Story** _(Strategy)_: one A4 page telling one story in numbers: a headline stat set huge,
+  a pictogram row, a then-and-now comparison, a small chart and a source line.
+- **How It Works** _(Flowcharts)_: one Story (9:16) page: five illustrated steps down a winding
+  path, from first tap to done, under a title and over a call to action.
+- **Versus** _(Strategy)_: one Portrait post (4:5) page split between two options, a VS badge,
+  matched rows of pros and cons, and a verdict at the foot.
+- **Social Carousel** _(Design)_: five Square slides for a LinkedIn or Instagram carousel: a hook,
+  three tips and a call to action, with slide numbers and swipe cues.
 
 ## Testing
 

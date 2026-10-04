@@ -303,6 +303,26 @@ export const ILLUSTRATE_PAGE_BUILDING = chart(
   { types: ['PageLayout', 'PageDuplicated', 'PageMoved', 'PagesLaidOut'] },
 );
 
+// Leaving Illustrate past the pages warning (docs/specs/007-editor/editor-modes.md "Leaving
+// Illustrate"): how often people go on to Diagram or Draw once told their pages will not show.
+export const LEAVE_ILLUSTRATE_CONFIRMED = chart(
+  'Editor',
+  'Changed',
+  'Illustrate Left Past the Warning',
+  'Someone switched an Illustrate tab with pages to Diagram or Draw after the warning that its pages do not show there.',
+  { types: ['LeaveIllustrateConfirmed'] },
+);
+
+// An empty infographic page's in-page layout card hidden (docs/specs/007-editor/illustrate-pages.md
+// "Layouts"): set beside Page Layout to see whether the card helps or gets in the way.
+export const EMPTY_PAGE_LAYOUTS_HIDDEN = chart(
+  'UI',
+  'Closed',
+  'Empty Page Layouts Hidden',
+  'Someone hid the Start From a Layout card an empty infographic page shows inside itself.',
+  { types: ['EmptyPageLayouts'] },
+);
+
 // Writing articles (docs/specs/007-editor/article-pages.md "Telemetry").
 export const ARTICLE_INSERTS = chart(
   'Element',
@@ -373,11 +393,13 @@ export const WHITEBOARDS: MetricStack = {
   members: [
     WHITEBOARDS_CREATED,
     EDITOR_MODE_SWITCHES,
+    LEAVE_ILLUSTRATE_CONFIRMED,
     TAB_OPENS_IN,
     PAGE_ORIENTATION,
     ILLUSTRATE_PAGES,
     ILLUSTRATE_PAGE_SETUP,
     ILLUSTRATE_PAGE_BUILDING,
+    EMPTY_PAGE_LAYOUTS_HIDDEN,
     ARTICLE_INSERTS,
     ARTICLE_FORMATTING,
     ARTICLE_LOOKS,

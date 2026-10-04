@@ -328,6 +328,11 @@ The welcome screen is a **two-step wizard** rather than one long page:
   Footer: **Skip** and **Next**. Clicking a template card advances to step 2.
 - **Step 2: Location.** Where the document lives (the Settings step in code:
   name, save location, placement). Footer: **Create**.
+- **One step when the reader asked for it.** A reader who ticked "Always save new
+  documents in <place> and skip this step" gets no Location step: no step rail,
+  **Create** on the template step, a template card creates at once, and a
+  "Saving in <place>" line with **Change** for a one-off pick
+  ([Default folders](../013-workspace/default-folders.md#skipping-the-location-step)).
 - **There is no theme step.** A new document starts on the **Default** theme,
   and the Theme and canvas controls change it later; asking for a theme before
   anything is on the canvas was a decision most people could not yet make. (It
