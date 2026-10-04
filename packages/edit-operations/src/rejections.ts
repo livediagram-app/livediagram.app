@@ -67,6 +67,29 @@ export function parseError(operation: number, detail: string): EditRejection {
   return { code: 'parse_error', operation, details: [detail] };
 }
 
+// A line that does not parse: where, what was expected, and the line with a caret under the column.
+export function lineParseError(
+  operation: number,
+  line: number,
+  text: string,
+  column: number,
+  expected: string,
+): EditRejection & { line: number } {
+  const quoting = /key=value|closing|selector/.test(expected);
+  return {
+    code: 'parse_error',
+    operation,
+    line,
+    column,
+    details: [
+      `line ${line}, column ${column}: expected ${expected}`,
+      text,
+      `${' '.repeat(column - 1)}^`,
+    ],
+    hint: quoting ? 'quote values with spaces: label="Sign in"' : `write ${expected}`,
+  };
+}
+
 export function targetNotFound(
   selector: string,
   operation: number,

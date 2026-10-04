@@ -16,7 +16,7 @@ import { applyAdd } from './operations/add';
 import { applyRm } from './operations/rm';
 import { applySet } from './operations/set';
 import { buildResultLines } from './results';
-import { tabLocked, tooLarge } from './rejections';
+import { notAppliedOperation, tabLocked, tooLarge } from './rejections';
 import { createState, type EditState } from './state';
 import type { ApplyOptions, ApplyOutcome, EditLog, EditOperation } from './types';
 
@@ -29,11 +29,15 @@ function applyOperation(
 ): EditRejection | null {
   switch (operation.op) {
     case 'add':
-      return applyAdd(state, operation, index);
+      return 'element' in operation
+        ? applyAdd(state, operation, index)
+        : notAppliedOperation('add <kind>', index);
     case 'set':
       return applySet(state, operation, index);
     case 'rm':
       return applyRm(state, operation, index);
+    default:
+      return notAppliedOperation(operation.op, index);
   }
 }
 

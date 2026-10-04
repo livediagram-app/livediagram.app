@@ -530,6 +530,8 @@ export * from './auto-layout';
 
 // Cluster-aware graph layout (docs/specs/020-import-export/mermaid.md): Mermaid subgraphs as frames.
 export * from './auto-layout-clusters';
+// The layout engine's gaps, which edit operations place and make room by.
+export { LAYER_GAP, SIBLING_GAP } from './auto-layout-shared';
 
 // Authoring input shared by the MCP, the api and the CLI (docs/specs/015-api/mcp-server.md §4.7,
 // §4.7a): raw elements made safe, graph input capped and laid out, and finished tabs built.

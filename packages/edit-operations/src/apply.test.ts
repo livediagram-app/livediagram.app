@@ -287,3 +287,10 @@ describe('applyEditOperations', () => {
     });
   });
 });
+
+describe('operations not applied yet', () => {
+  it('refuses them by name', () => {
+    expect(refused(run([{ op: 'add', kind: 'square' }])).details[0]).toContain('"add <kind>"');
+    expect(refused(run([{ op: 'unwrap', target: 'f2' }])).details[0]).toContain('"unwrap"');
+  });
+});

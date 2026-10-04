@@ -22,8 +22,8 @@ import { isBoxed, type ArrowElement, type BoxedElement, type Element } from './i
 
 // Space between a frame's border and its members: the top band is deeper so
 // the frame's header label doesn't sit on a member node.
-const FRAME_PAD = 32;
-const FRAME_TOP = 64;
+export const FRAME_PAD = 32;
+export const FRAME_TOP = 64;
 
 export type ClusteredLayoutOptions = {
   direction?: LayoutDirection;
