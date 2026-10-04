@@ -203,18 +203,19 @@ export function withStableEventProps<P extends object>(Inner: ComponentType<P>):
 
 ## Testing
 
-| Rule                                                  | Test                                                                                |
-| ----------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| No-op sets notify nobody; real changes notify once    | `selection-store.test.ts`                                                           |
-| `setState`-shaped setters, updaters see the latest    | `selection-store.test.ts`                                                           |
-| Subscribers re-render only when their slice changes   | `useSelectionStore.test.tsx`                                                        |
-| Missing provider throws                               | `useSelectionStore.test.tsx`                                                        |
-| Event props stable, newest called, presence respected | `useStableEventProps.test.ts`                                                       |
-| An editor render re-renders nothing in the canvas     | `withStableEventProps.test.tsx`: same data, fresh handlers, inner view renders once |
-| Rebuilt objects stable until their data changes       | `useStableObject.test.ts`                                                           |
-| A selection change renders only the flipped views     | `CanvasElementsLayer.renders.test.tsx`: select one, then another; two views render  |
-| Selection behaviour unchanged                         | the existing selection unit tests and `e2e/select-clicks.spec.ts`, unchanged        |
-| The budget                                            | the probe on the branch, then nightly                                               |
+| Rule                                                  | Test                                                                                                    |
+| ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| No-op sets notify nobody; real changes notify once    | `selection-store.test.ts`                                                                               |
+| `setState`-shaped setters, updaters see the latest    | `selection-store.test.ts`                                                                               |
+| Subscribers re-render only when their slice changes   | `useSelectionStore.test.tsx`                                                                            |
+| Missing provider throws                               | `useSelectionStore.test.tsx`                                                                            |
+| Event props stable, newest called, presence respected | `useStableEventProps.test.ts`                                                                           |
+| An editor render re-renders nothing in the canvas     | `withStableEventProps.test.tsx`: same data, fresh handlers, inner view renders once                     |
+| Rebuilt objects stable until their data changes       | `useStableObject.test.ts`                                                                               |
+| A selection change renders only the flipped views     | `CanvasElementsLayer.renders.test.tsx`: select one, then another; two views render                      |
+| Selection behaviour unchanged                         | the existing selection unit tests and `e2e/select-clicks.spec.ts`, unchanged                            |
+| The chrome follows the selection                      | `e2e/selection-chrome.spec.ts`: pluses, grips, union box, free-arrow frame, delete and undo, tab switch |
+| The budget                                            | the probe on the branch, then nightly                                                                   |
 
 ## Constants and configuration
 
