@@ -1,4 +1,4 @@
-import type { Page } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
 import {
   CANVAS,
   darkVisitor,
@@ -43,6 +43,19 @@ async function expectCentred(page: Page, screen: string): Promise<void> {
     .toEqual([]);
 }
 
+// A seeded document open in the editor, its quick tour dismissed; returns the seeded Spinner shape.
+async function openSeededEditor(page: Page, baseURL: string): Promise<Locator> {
+  const owner = crypto.randomUUID();
+  const id = await seedDocument(page, owner, new URL(baseURL).origin);
+  await darkVisitor(page, owner);
+  await page.goto(`/document/${id}`);
+  await page.locator(CANVAS).waitFor();
+  await dismissQuickTour(page);
+  const spinner = page.getByRole('img', { name: /Spinner/ }).first();
+  await expect(spinner).toBeVisible();
+  return spinner;
+}
+
 test.describe('Optical alignment audit', () => {
   test('the New Document wizard', async ({ page, pageErrors }) => {
     await darkVisitor(page);
@@ -56,30 +69,34 @@ test.describe('Optical alignment audit', () => {
     expectNoPageErrors(pageErrors);
   });
 
-  test('the editor, its panels and dialogs', async ({ page, pageErrors, baseURL }) => {
-    const owner = crypto.randomUUID();
-    const id = await seedDocument(page, owner, new URL(baseURL!).origin);
-    await darkVisitor(page, owner);
-    await page.goto(`/document/${id}`);
-    await page.locator(CANVAS).waitFor();
-    await dismissQuickTour(page);
-    const spinner = page.getByRole('img', { name: /Spinner/ }).first();
-    await expect(spinner).toBeVisible();
+  // One editor screen per test: each 4x audit is CPU-bound, so four of them in one test left it at the
+  // mercy of whatever else the runner was doing within one 30-second budget.
+  test('the editor with its default panels', async ({ page, pageErrors, baseURL }) => {
+    await openSeededEditor(page, baseURL!);
     await expectCentred(page, 'editor with its default panels');
+    expectNoPageErrors(pageErrors);
+  });
 
+  test('the editor with a shape selected', async ({ page, pageErrors, baseURL }) => {
+    const spinner = await openSeededEditor(page, baseURL!);
     await spinner.click();
     await expectCentred(page, 'editor, a shape selected');
-    await page.keyboard.press('Escape');
+    expectNoPageErrors(pageErrors);
+  });
 
+  test('the Settings dialog', async ({ page, pageErrors, baseURL }) => {
+    await openSeededEditor(page, baseURL!);
     await page.getByRole('button', { name: 'Application settings' }).click();
     await page.getByRole('dialog').first().waitFor();
     await expectCentred(page, 'Settings dialog');
-    await page.keyboard.press('Escape');
+    expectNoPageErrors(pageErrors);
+  });
 
+  test('the Share dialog', async ({ page, pageErrors, baseURL }) => {
+    await openSeededEditor(page, baseURL!);
     await page.getByRole('button', { name: /^Share$/ }).click();
     await page.getByRole('dialog', { name: 'Share this document' }).waitFor();
     await expectCentred(page, 'Share dialog');
-    await page.keyboard.press('Escape');
     expectNoPageErrors(pageErrors);
   });
 
