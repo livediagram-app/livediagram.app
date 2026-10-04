@@ -2,9 +2,9 @@
 # gates: the enforced bar is the per-file thresholds in apps/api/vitest.config.ts, run by CI's Tests job.
 codecov:
   notify:
-    # CI uploads five reports per commit: Tests (every workspace but the editor) and the four Editor
-    # unit tests shards. Codecov waits for all five, so no status or comment shows a partial picture.
-    after_n_builds: 5
+    # CI uploads four reports per commit: Tests (every workspace but the editor) and the three Editor
+    # unit tests shards. Codecov waits for all four, so no status or comment shows a partial picture.
+    after_n_builds: 4
 
 coverage:
   status:
@@ -15,7 +15,29 @@ coverage:
       default:
         informational: true
 
+# One row per area of the repo in the pull request comment, matched by path, so the uploads carry no
+# flags. Every covered file falls in exactly one component.
+component_management:
+  individual_components:
+    - component_id: editor
+      name: Editor
+      paths: ['apps/live/**']
+    - component_id: api
+      name: API
+      paths: ['apps/api/**']
+    - component_id: mcp
+      name: MCP
+      paths: ['apps/mcp/**']
+    - component_id: sites
+      name: Help and marketing
+      paths: ['apps/help/**', 'apps/marketing/**']
+    - component_id: packages
+      name: Packages
+      paths: ['packages/**']
+
+# A summary and two tables (the coverage diff and the components), never a list of files: an editor
+# change touches hundreds of them.
 comment:
-  layout: 'condensed_header, diff, files'
-  after_n_builds: 5
+  layout: 'header, diff, components'
+  after_n_builds: 4
   require_changes: false

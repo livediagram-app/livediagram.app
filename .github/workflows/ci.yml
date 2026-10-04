@@ -106,8 +106,9 @@ jobs:
           fail_ci_if_error: false
 
   # The editor's suite (apps/live, about 800 files) is most of the repo's tests: on one 4-vCPU runner it
-  # took 7 minutes. Split four ways, each job runs a quarter of its files under coverage. Codecov
-  # merges the quarters into one report; the editor holds no thresholds, so nothing needs the merge
+  # took 7 minutes. Split three ways, each job runs a third of its files under coverage, finishing
+  # inside the Checks job's time (docs/specs/003-system-architecture/testing.md "Sizing the shards").
+  # Codecov merges the thirds into one report; the editor holds no thresholds, so nothing needs the merge
   # to pass.
   editor-tests:
     name: Editor unit tests ${{ matrix.shard }}/${{ strategy.job-total }}
@@ -120,7 +121,7 @@ jobs:
       # Every shard reports, so one failing shard never hides another's failures.
       fail-fast: false
       matrix:
-        shard: [1, 2, 3, 4]
+        shard: [1, 2, 3]
     steps:
       - name: Check out
         uses: actions/checkout@v7

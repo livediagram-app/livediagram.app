@@ -41,7 +41,7 @@ spread over parallel jobs so the wall time is the slowest job, not the sum:
 
 | Job                 | Builds                                       | Runs                                                                      |
 | ------------------- | -------------------------------------------- | ------------------------------------------------------------------------- |
-| **Smoke shard i/8** | live                                         | `test:e2e:smoke --shard=i/8`: an eighth of the `chromium` project's tests |
+| **Smoke shard i/6** | live                                         | `test:e2e:smoke --shard=i/6`: a sixth of the `chromium` project's tests   |
 | **Sites audit**     | live, help, telemetry, marketing             | `test:e2e:sites`: the `sites` project, `optical-audit-sites.spec.ts`      |
 | **Signed-in specs** | live with Clerk stubbed (`build:clerk-stub`) | the `clerk-stub` project ([Signed-in specs](#signed-in-specs-clerk-stub)) |
 
@@ -64,9 +64,14 @@ Cost controls, all in `e2e.yml` and `playwright.config.ts`:
 - **Parallel everywhere** (`fullyParallel`): 4 workers in CI, one per vCPU of the GitHub runner,
   and Playwright's default locally. Tests stay independent because each opens a fresh browser
   context, so a fresh guest owner whose documents no other test sees.
-- **Sharded** (`--shard=i/8`, the matrix in `e2e.yml`): Playwright splits the `chromium` project's
-  tests evenly by count across eight jobs; each boots its own stack, so shards share nothing. When
-  the suite grows past the 5-minute budget, the shard count grows with it.
+- **Sharded** (`--shard=i/6`, the matrix in `e2e.yml`): Playwright splits the `chromium` project's
+  tests evenly by count across six jobs; each boots its own stack, so shards share nothing.
+- **Shards sized to the floor, not beyond.** Every shard pays about two minutes before its first
+  test (container, install, the live build), and the Sites audit, which cannot be split, takes
+  about 4.5 minutes. The shard count is the smallest that keeps the slowest shard within that
+  floor: more shards finish no sooner, and each takes one of the account's 20 concurrent runner
+  slots that every other pull request's run waits on. When the suite grows past the floor, the
+  shard count grows with it.
 - **No dependency cache** in the e2e jobs: in the container its store path never matches a saved
   cache, so `setup-node`'s `cache: pnpm` only cost a 75-second save per job, while a cold
   `pnpm install` takes about 15 seconds.
