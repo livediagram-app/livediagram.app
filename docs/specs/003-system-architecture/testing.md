@@ -172,7 +172,9 @@ setup. The E2E suite sizes its shards the same way ([End-to-end tests](e2e-smoke
 
 Tests and each Editor unit tests job upload their `lcov` reports to
 [Codecov](https://app.codecov.io/gh/livediagram-app/livediagram.app), which merges the four uploads
-of a commit into one report and comments it on the pull request (`codecov.yml`). It informs; it never
+of a commit into one report and comments it on the pull request (`codecov.yml`): a summary, the
+coverage diff and one row per area (Editor, API, MCP, Help and marketing, Packages), never a list of
+files, which an editor change would fill with hundreds. It informs; it never
 gates: its statuses are informational, and the enforced bar stays the thresholds above. The upload
 authenticates with GitHub's OIDC token (`id-token: write`), so no Codecov secret exists; a pull
 request from a fork uploads tokenless. A failed upload logs its error and leaves the job green, so a

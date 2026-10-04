@@ -15,7 +15,29 @@ coverage:
       default:
         informational: true
 
+# One row per area of the repo in the pull request comment, matched by path, so the uploads carry no
+# flags. Every covered file falls in exactly one component.
+component_management:
+  individual_components:
+    - component_id: editor
+      name: Editor
+      paths: ['apps/live/**']
+    - component_id: api
+      name: API
+      paths: ['apps/api/**']
+    - component_id: mcp
+      name: MCP
+      paths: ['apps/mcp/**']
+    - component_id: sites
+      name: Help and marketing
+      paths: ['apps/help/**', 'apps/marketing/**']
+    - component_id: packages
+      name: Packages
+      paths: ['packages/**']
+
+# A summary and two tables (the coverage diff and the components), never a list of files: an editor
+# change touches hundreds of them.
 comment:
-  layout: 'condensed_header, diff, files'
+  layout: 'header, diff, components'
   after_n_builds: 4
   require_changes: false
