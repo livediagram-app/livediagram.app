@@ -149,7 +149,12 @@ const DEFAULT_LINES: Record<LayoutStyle, ArrowStyle> = {
 // Laid-out elements for a graph: capped, positioned in the chosen style and
 // direction, arrows routed. Groups force the flow style (the clustered layout
 // is layered).
-export function layoutGraph(input: GraphInput): Element[] {
+// `makeEdgeId` names the arrows the edges become; random ids when omitted.
+export function layoutGraph(
+  input: GraphInput,
+  options: { makeEdgeId?: () => string } = {},
+): Element[] {
+  const { makeEdgeId } = options;
   const g = conciseGraph(input);
   const direction =
     g.direction === 'right'
@@ -165,9 +170,9 @@ export function layoutGraph(input: GraphInput): Element[] {
   };
   const laid =
     style === 'flow'
-      ? layoutClusteredGraph(graph, { direction })
+      ? layoutClusteredGraph(graph, { direction, ...(makeEdgeId ? { makeEdgeId } : {}) })
       : sweepEdgelessNodes(
-          autoLayoutElements(graphToElements(graph), {
+          autoLayoutElements(graphToElements(graph, makeEdgeId), {
             direction,
             style,
             // Boxes keep their label-fitted sizes, as in the flow layout.

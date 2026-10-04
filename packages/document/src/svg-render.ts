@@ -27,19 +27,17 @@ import { DIAMOND_POINTS } from './shape-geometry';
 import { svgTableShape } from './svg-render-table';
 // Which body an element draws, and the list of kinds that have one (docs/specs/020-import-export/export-fidelity.md).
 import { shapeHasBespokeBody, svgElementBody } from './svg-render-body';
-import { BEHAVIOUR_FACE_SHAPES } from './svg-render-faces';
 import { svgPageFold } from './svg-render-page';
-import { isCollabPanelShape } from './collab-shapes';
-import { isSelfDrawingShape } from './data-shapes';
 import { svgHeroCaption } from './svg-render-web';
-import { isWebComponentShape } from './web-components';
 import { defaultTextColor, SELF_PAINTING_SHAPES } from './colors';
 // Text/number primitives shared with the per-element emitters — re-exported
 // below so existing importers of this module keep resolving.
 import { labelMeasure, r2, wrapLabel, xmlEscape } from './svg-render-primitives';
 
 export {
+  estimatedLabelMeasure,
   fontSizeFor,
+  LABEL_ESTIMATE_CHAR_EM,
   LABEL_LINE_HEIGHT,
   labelMaxWidth,
   labelMeasure,
@@ -75,6 +73,9 @@ import { shadowFilterId, supportsShadow, svgShadowFilterDef } from './shadow';
 // existing importers of this module keep resolving.
 export {
   describeBoxedExport,
+  drawsStandardLabel,
+  labelRoom,
+  selfLabelled,
   EXPORT_BG,
   EXPORT_IMAGE_FILL,
   EXPORT_IMAGE_LABEL,
@@ -93,6 +94,7 @@ export {
 } from './svg-render-describe';
 import {
   describeBoxedExport,
+  selfLabelled,
   EXPORT_BG,
   EXPORT_IMAGE_FILL,
   EXPORT_IMAGE_STROKE,
@@ -319,17 +321,7 @@ export function svgBoxed(source: BoxedElement, opts: BoxedExportOptions = {}): s
   // content is what it shows), so the export must not print one either: a
   // chart came out with "pie-chart" centred in the middle of it.
   const labelStr =
-    !label ||
-    (el.type === 'shape' && isSelfDrawingShape(el.shape) && el.shape !== 'legend') ||
-    // A Behaviour / Collaborate face writes its own title where its card puts
-    // it, so the generic centred label would print it a second time.
-    (el.type === 'shape' &&
-      (isCollabPanelShape(el.shape) ||
-        // A chair's face is furniture only; its label is the ordinary one,
-        // bottom-aligned under the seat, exactly as the canvas prints it.
-        (BEHAVIOUR_FACE_SHAPES.has(el.shape) && el.shape !== 'chair') ||
-        // A web component (docs/specs/009-elements/web-components-and-no-groups.md) writes its label in its own region.
-        isWebComponentShape(el.shape)))
+    !label || selfLabelled(el)
       ? ''
       : label.runs
         ? svgRichWrappedLabel(
