@@ -42,10 +42,12 @@ spread over parallel jobs so the wall time is the slowest job, not the sum:
 | Job                 | Builds                                       | Runs                                                                      |
 | ------------------- | -------------------------------------------- | ------------------------------------------------------------------------- |
 | **Smoke shard i/6** | live                                         | `test:e2e:smoke --shard=i/6`: a sixth of the `chromium` project's tests   |
-| **Sites audit**     | live, help, telemetry, marketing             | `test:e2e:sites`: the `sites` project, `optical-audit-sites.spec.ts`      |
+| **Sites audit**     | live, help, telemetry, then marketing        | `test:e2e:sites`: the `sites` project, `optical-audit-sites.spec.ts`      |
 | **Signed-in specs** | live with Clerk stubbed (`build:clerk-stub`) | the `clerk-stub` project ([Signed-in specs](#signed-in-specs-clerk-stub)) |
 
-Only the sites audit opens help, telemetry and marketing, so only its job pays for their builds.
+Only the sites audit opens help, telemetry and marketing, so only its job pays for their builds. Marketing builds after the
+others, as `turbo.json` orders it: its licences page runs Next's analyzer in each other app on that
+app's Turbopack cache, and beside the app's own build the two corrupt it.
 Locally `test:e2e` runs the `chromium` and `sites` projects together, as one run.
 
 Cost controls, all in `e2e.yml` and `playwright.config.ts`:
