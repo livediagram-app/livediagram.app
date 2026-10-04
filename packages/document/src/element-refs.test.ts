@@ -79,8 +79,8 @@ describe('computeRefs', () => {
     expect(computeRefs(['abcdef', 'abcdef']).refOf('abcdef')).toBe('abcdef');
   });
 
-  it('falls back to the id itself for an id it was not given', () => {
-    expect(computeRefs([UUID_A]).refOf('zzzz-unknown')).toBe('zzzz-unknown');
+  it('prints an id it was not given in the safe id: form', () => {
+    expect(computeRefs([UUID_A]).refOf('gone one')).toBe('id:"gone one"');
   });
 
   it('never lets a ref resolve to anything but its own element (I3)', () => {
