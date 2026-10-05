@@ -96,6 +96,15 @@ Other views answer other questions:
 - `view=show&ref=n1` prints one element with every field and its arrows both ways.
 - `view=find&q=api` lists the elements whose text contains `api`.
 
+`view=lint` checks how the tab is drawn: boxes that overlap, arrows that cross or run behind boxes, labels too long for their box. One summary line, then one finding a line, each ending with a fix you can send as a changeset:
+
+```text
+5 crossings · 2 behind · 0 overlaps · 1317×1196 → 3 warnings, 6 info
+W arrow-behind-box   orders→bus passes behind pay  fix: set orders->bus line=angled
+```
+
+Every changeset's answer ends with the same verdict, `lint clean` or `lint 1 warning`.
+
 Add `budget=2000` to fit a view to about 2,000 tokens. The view then leaves out detail in a fixed order, and its last line says what it left out and how to see it. Add `json=1` for the same view as JSON. To see every tab of a document at a glance, ask the document itself: `GET /documents/abc123?view=overview`.
 
 ## Create a document

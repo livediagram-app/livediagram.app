@@ -215,3 +215,20 @@ describe('review fixes (docs/specs/015-api/mcp-server.md §4.7)', () => {
     }
   });
 });
+
+describe('layoutGraph edge ids', () => {
+  it('names arrows with makeEdgeId in every layout style', () => {
+    const graph = {
+      nodes: [
+        { id: 'a', label: 'A' },
+        { id: 'b', label: 'B' },
+      ],
+      edges: [{ from: 'a', to: 'b' }],
+    };
+    let n = 0;
+    const flow = layoutGraph(graph, { makeEdgeId: () => `e${++n}` });
+    expect(flow.filter((el) => el.type === 'arrow').map((el) => el.id)).toEqual(['e1']);
+    const tree = layoutGraph({ ...graph, style: 'tree' }, { makeEdgeId: () => 'tree-edge' });
+    expect(tree.filter((el) => el.type === 'arrow').map((el) => el.id)).toEqual(['tree-edge']);
+  });
+});

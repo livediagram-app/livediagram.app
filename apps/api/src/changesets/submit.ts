@@ -1,4 +1,10 @@
-import type { ChangesetResponse, ChangesetWritten, EditRejection } from '@livediagram/api-schema';
+import type {
+  ChangesetResponse,
+  ChangesetWritten,
+  EditRejection,
+  LintReport,
+} from '@livediagram/api-schema';
+import { lintFooterPart } from '@livediagram/diagram-lint';
 import { migrateIncomingTab, preferNewerQaAll, type Tab } from '@livediagram/document';
 import {
   applyEditOperations,
@@ -17,6 +23,7 @@ import { afterChangeset } from './after';
 import { checkBase, type BaseOutcome } from './base-check';
 import type { FrontDoor } from './front-door';
 import { heldTargets } from './held-check';
+import { lintResult } from './lint';
 import { changesetLog, engineLog } from './log';
 import { engineRefusal, type ParsedChangeset } from './request';
 import { readStoredTab, withRev, type StoredTab } from './stored-tab';
@@ -27,8 +34,6 @@ import { writeChangeset, type Author } from './write';
 // race repeats once from the read, so the second attempt compiles against the winner's tab.
 
 export const SUBMIT_ATTEMPTS = 2;
-// The answer's footer stands in for the diagram lint until it exists (LN23).
-export const LINT_UNAVAILABLE = 'lint unavailable';
 // Longer than any id an editor or agent mints, short enough to keep keys sane (CS31).
 const TAB_ID_MAX = 128;
 
@@ -88,10 +93,11 @@ export async function submitChangeset(args: SubmitArgs): Promise<SubmitResult> {
     const lines = formatResultLines(compiled.results);
     if (args.dryRun) {
       changesetLog('info', '[changeset] dry-run', { ...where, targets: compiled.targets.length });
+      const lint = lintResult(compiled.tab, where);
       const footer = formatResultFooter({
         dryRun: true,
         rev: stored?.rev ?? 0,
-        lint: LINT_UNAVAILABLE,
+        lint: lintFooterPart(lint),
       });
       return answer({
         dryRun: true,
@@ -99,10 +105,11 @@ export async function submitChangeset(args: SubmitArgs): Promise<SubmitResult> {
         results: compiled.results,
         text: [...lines, footer].join('\n'),
         warnings,
-        lint: null,
+        lint,
       });
     }
     const next = withServerRules(compiled.tab, stored, args.author);
+    const lint = lintResult(next, where);
     const outcome = await writeChangeset(env, {
       documentId: document.id,
       tabId,
@@ -116,7 +123,7 @@ export async function submitChangeset(args: SubmitArgs): Promise<SubmitResult> {
       rebasedOver: base.rebasedOver,
       prevRev,
       results: compiled.results,
-      textFor: (written) => [...lines, writtenFooter(written)].join('\n'),
+      textFor: (written) => [...lines, writtenFooter(written, lint)].join('\n'),
       revertOf: null,
     });
     if (outcome.kind === 'stale') {
@@ -161,20 +168,20 @@ export async function submitChangeset(args: SubmitArgs): Promise<SubmitResult> {
       results: compiled.results,
       text: outcome.text,
       warnings,
-      lint: null,
+      lint,
     });
   }
   return refusal(409, 'tab_busy', 'the tab kept changing; read it again and resubmit');
 }
 
-export function writtenFooter(written: ChangesetWritten): string {
+export function writtenFooter(written: ChangesetWritten, lint: LintReport | null): string {
   return formatResultFooter({
     dryRun: false,
     previousRev: written.previousRev,
     rev: written.rev,
     rebasedOver: written.rebasedOver,
     changesetId: written.id,
-    lint: LINT_UNAVAILABLE,
+    lint: lintFooterPart(lint),
   });
 }
 

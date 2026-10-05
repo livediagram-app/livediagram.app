@@ -13,7 +13,7 @@
 // parameters are derived from the `{param}` placeholders in `path` by
 // document.ts, so they aren't repeated here.
 
-import { TAB_VIEW_NAMES } from '@livediagram/api-schema';
+import { LINT_VIEW_NAME, TAB_VIEW_NAMES } from '@livediagram/api-schema';
 import { NAME_MAX_LENGTH } from '@livediagram/document';
 import { FIND_QUERY_MAX_LENGTH, VIEW_BUDGET_MAX } from '@livediagram/document-views';
 import type { BodySchema } from './types';
@@ -99,7 +99,7 @@ const VIEW_COMMON_QUERY = [
 const TAB_VIEW_QUERY = [
   {
     ...VIEW_COMMON_QUERY[0]!,
-    description: `A view instead of the plain read: ${TAB_VIEW_NAMES.join(', ')}.`,
+    description: `A view instead of the plain read: ${[...TAB_VIEW_NAMES, LINT_VIEW_NAME].join(', ')}. \`lint\` (the diagram lint) takes only \`json\`.`,
   },
   ...VIEW_COMMON_QUERY.slice(1),
   {

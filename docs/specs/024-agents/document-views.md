@@ -1,7 +1,7 @@
 # Document views
 
-**Status: built, except the `lint` view (it arrives with the [diagram lint](diagram-lint.md)) and the CLI that
-reads views offline and computes `diff`.**
+**Status: built, the `lint` view answered by the [diagram lint](diagram-lint.md), except the CLI that reads views
+offline and computes `diff`.**
 
 A **view** is a read-only text projection of a tab, each answering one kind of question at the lowest token cost.
 Views are what an agent reads by default; JSON is what it asks for. The measurements behind every choice here are in

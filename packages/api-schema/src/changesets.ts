@@ -5,6 +5,7 @@
 // shapes live here too and the engine re-exports them.
 
 import type { Element, ElementOp, Tab } from '@livediagram/document';
+import type { LintReport } from './lint';
 import { MAX_TAB_BYTES } from './tab-size';
 import { TRASH_RETENTION_DAYS } from './trash';
 
@@ -209,8 +210,9 @@ export type ChangesetResponse = {
   // The result lines and the footer as text: the same for a dry run and a write.
   text: string;
   warnings: string[];
-  // The diagram lint's report; null while the lint is unavailable (docs/specs/024-agents/diagram-lint.md).
-  lint: null;
+  // The diagram lint's report of the result tab (docs/specs/024-agents/diagram-lint.md); null when nothing was
+  // written or the lint failed.
+  lint: LintReport | null;
 };
 
 export type ChangesetConflict = {
@@ -246,7 +248,7 @@ export type RevertResponse = {
   changeset: ChangesetWritten | null;
   reverted: number;
   kept: RevertKept[];
-  lint: null;
+  lint: LintReport | null;
 };
 
 // The route's refusal codes beside the engine's.

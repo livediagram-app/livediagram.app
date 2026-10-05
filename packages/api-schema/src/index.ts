@@ -601,6 +601,8 @@ export * from './within-reach';
 export * from './creation-use';
 // Document views and ref refusals (docs/specs/024-agents/document-views.md).
 export * from './document-views';
+// The diagram lint's report (docs/specs/024-agents/diagram-lint.md).
+export * from './lint';
 export * from './ref-errors';
 // Returning visitor (docs/specs/019-marketing/returning-visitor.md).
 export * from './recent-diagrams';

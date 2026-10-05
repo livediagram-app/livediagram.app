@@ -3,7 +3,8 @@
 // `@livediagram/document-views` (docs/specs/024-agents/blueprints/document-views.md, VW49).
 import type { TabKind } from '@livediagram/document';
 
-// Every view. `lint` joins when `@livediagram/diagram-lint` is built (plans: the lint step).
+// Every view. `lint` is answered by `@livediagram/diagram-lint` (docs/specs/024-agents/diagram-lint.md), not
+// by `renderView`; it takes only `json`.
 export const VIEW_NAMES = [
   'overview',
   'outline',
@@ -13,7 +14,9 @@ export const VIEW_NAMES = [
   'show',
   'find',
   'diff',
+  'lint',
 ] as const;
+export const LINT_VIEW_NAME = 'lint' satisfies ViewName;
 export type ViewName = (typeof VIEW_NAMES)[number];
 
 // What each api door serves. `diff` has no api door: the CLI computes it from its cache.

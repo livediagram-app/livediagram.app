@@ -5,6 +5,7 @@
 
 import type { EditRejection, EditWarning } from '@livediagram/api-schema';
 import {
+  BORDER_DASH_ARRAY,
   ELEMENT_FIELD_NAMES,
   LIVE_ELEMENT_FIELDS,
   coerceShapeKind,
@@ -21,11 +22,24 @@ import { invalidValue, unknownField } from './rejections';
 import type { FieldValue, Fields } from './types';
 import { PROTOTYPE_KEYS } from './vocabulary';
 
-export const FIELD_ALIASES = ['label', 'note', 'shape', 'fill', 'text', 'line'] as const;
+// The spec's names, then the style keys the views print (`STYLE_KEYS`), so a printed `key=value` writes back
+// unchanged; `font` is a stored field name already.
+export const FIELD_ALIASES = [
+  'label',
+  'note',
+  'shape',
+  'fill',
+  'stroke',
+  'text-color',
+  'border',
+  'text',
+  'line',
+] as const;
 type Alias = (typeof FIELD_ALIASES)[number];
 
 const TEXT_SIZES = ['sm', 'md', 'lg', 'scale'] as const;
 const ARROW_STYLES = ['straight', 'angled', 'curved'] as const;
+const BORDER_STYLES = Object.keys(BORDER_DASH_ARRAY);
 const LIVE_FIELDS: ReadonlySet<string> = new Set(LIVE_ELEMENT_FIELDS);
 const IDENTITY_FIELDS: ReadonlySet<string> = new Set(['id', 'type']);
 const RAW_COLOURS: ReadonlySet<string> = new Set(['fillColor', 'strokeColor', 'textColor']);
@@ -48,6 +62,12 @@ export function aliasesOf(el: Element): Alias[] {
         return el.type === 'shape';
       case 'fill':
         return el.type === 'sticky' || themeColourFields(el).some((f) => f.element === 'fillColor');
+      case 'stroke':
+        return hasField(el, 'strokeColor');
+      case 'text-color':
+        return hasField(el, 'textColor');
+      case 'border':
+        return hasField(el, 'strokeStyle');
       case 'text':
         return hasField(el, 'textSize');
       case 'line':
@@ -60,6 +80,9 @@ export function aliasesOf(el: Element): Alias[] {
 // the agent used.
 export const ALIAS_FIELDS: Readonly<Record<string, readonly string[]>> = {
   fill: ['fillColor', 'fillSwatch'],
+  stroke: ['strokeColor', 'strokeSwatch'],
+  'text-color': ['textColor'],
+  border: ['strokeStyle'],
   text: ['textSize'],
   line: ['arrowStyle'],
 };
@@ -202,6 +225,23 @@ function writeAlias(
       if (write.overridesTheme) warnings.push(overridesTheme(ref, 'fill', value));
       return null;
     }
+    case 'stroke':
+    case 'text-color': {
+      const field = alias === 'stroke' ? 'strokeColor' : 'textColor';
+      if (value !== null && typeof value !== 'string')
+        return text('a colour: a hex or a marker colour');
+      patch[field] = value;
+      // A stroke written by value is no longer bound to a quick-style swatch.
+      if (alias === 'stroke') patch.strokeSwatch = null;
+      if (isHexColour(value) && themeColourFields(el).some((f) => f.element === field))
+        warnings.push(overridesTheme(ref, alias, value));
+      return null;
+    }
+    case 'border':
+      if (value !== null && !oneOf(BORDER_STYLES, value))
+        return text(`one of ${BORDER_STYLES.join(' ')}`);
+      patch.strokeStyle = value;
+      return null;
     case 'text':
       if (value !== null && !oneOf(TEXT_SIZES, value))
         return { ...text(`one of ${TEXT_SIZES.join(' ')}`) };
