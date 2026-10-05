@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import { communityPostFixture } from '@livediagram/api-schema/testing';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { CommunityOwnPost } from '@livediagram/api-schema';
@@ -7,19 +8,7 @@ import { CommunitySection } from './CommunitySection';
 afterEach(cleanup);
 
 const post = (state: CommunityOwnPost['state']): CommunityOwnPost => ({
-  id: 'p1',
-  title: 'Payments platform',
-  description: 'How our payment services talk to each other.',
-  category: 'architecture',
-  tags: [],
-  likeCount: 3,
-  copyCount: 1,
-  publishedAt: 1,
-  updatedAt: 1,
-  shareCode: 'CODE1',
-  author: { name: 'Ada', color: '#f97316', picture: null },
-  anonymous: false,
-  liked: false,
+  ...communityPostFixture({ id: 'p1', title: 'Payments platform', likeCount: 3, copyCount: 1 }),
   state,
 });
 

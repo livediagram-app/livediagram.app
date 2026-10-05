@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
+import { communityPostFixture } from '@livediagram/api-schema/testing';
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { CommunityPost } from '@livediagram/api-schema';
 
 // The post page (docs/specs/025-community/community.md "Post"): it loads the post named in the address, says when
 // it is gone or failed, offers Make a Copy, Open Document, the heart and Report, and its report dialog sends a
@@ -34,21 +34,14 @@ vi.mock('@/lib/telemetry', () => ({ communityTelemetry: h.telemetry }));
 import { EmbedFrame } from './EmbedFrame';
 import { PostView } from './PostView';
 
-const post: CommunityPost = {
-  id: 'post1',
-  title: 'Payments Platform',
+const post = communityPostFixture({
   description: 'How our payment services talk.\n\nThe second paragraph.',
-  category: 'architecture',
   tags: ['aws', 'event-driven'],
   likeCount: 3,
   copyCount: 1,
   publishedAt: Date.UTC(2026, 8, 1),
   updatedAt: Date.UTC(2026, 8, 1),
-  shareCode: 'CODE1',
-  author: { name: 'Ada', color: '#f97316', picture: null },
-  anonymous: false,
-  liked: false,
-};
+});
 
 let answer: (url: string, init?: RequestInit) => Response | Promise<Response>;
 const calls: { url: string; init?: RequestInit }[] = [];

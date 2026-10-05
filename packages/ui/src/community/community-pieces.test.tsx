@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
+import { communityPostFixture } from '@livediagram/api-schema/testing';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
-import type { CommunityPost } from '@livediagram/api-schema';
 import { clerkPublishableKeyOrNull } from '../clerk-key';
 import { CommunityAuthorBadge, communityAuthorInitial } from './CommunityAuthorBadge';
 import { CommunityCopyCount, CommunityLikeCount } from './CommunityCounts';
@@ -15,21 +15,15 @@ import { formatCommunityCount } from './format-count';
 afterEach(cleanup);
 
 const NOW = Date.UTC(2026, 9, 5, 12);
-const post: CommunityPost = {
-  id: 'post1',
-  title: 'Payments Platform',
+const post = communityPostFixture({
   description: 'How payments flow.',
-  category: 'architecture',
   tags: ['aws', 'event-driven', 'payments', 'fourth'],
   likeCount: 1200,
   copyCount: 1,
   publishedAt: NOW - 2 * 24 * 60 * 60 * 1000,
   updatedAt: NOW,
-  shareCode: 'CODE1',
   author: { name: 'ada lovelace', color: '#f97316', picture: null },
-  anonymous: false,
-  liked: false,
-};
+});
 
 describe('CommunityPostTile', () => {
   it('opens its post from the whole card, with the image, category, three tags, author and when', () => {

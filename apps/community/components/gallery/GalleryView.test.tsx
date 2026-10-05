@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import { communityPostFixture } from '@livediagram/api-schema/testing';
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { useEffect, type ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -47,22 +48,18 @@ import { GalleryView } from './GalleryView';
 let n = 0;
 function post(patch: Partial<CommunityPost> = {}): CommunityPost {
   n += 1;
-  return {
+  return communityPostFixture({
     id: `post${n}`,
     title: `Post ${n}`,
     description: 'A document worth sharing.',
-    category: 'architecture',
     tags: ['aws'],
     likeCount: 2,
     copyCount: 1,
     publishedAt: Date.now() - 60_000,
     updatedAt: Date.now() - 60_000,
     shareCode: `CODE${n}`,
-    author: { name: 'Ada', color: '#f97316', picture: null },
-    anonymous: false,
-    liked: false,
     ...patch,
-  };
+  });
 }
 
 type Answer = Response | Promise<Response>;

@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import { communityPostFixture } from '@livediagram/api-schema/testing';
 import { cleanup, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { CommunityPost } from '@livediagram/api-schema';
@@ -7,21 +8,19 @@ import { CommunityShowcase } from './CommunityShowcase';
 
 // The landing page's Community section (docs/specs/025-community/community.md "Featured on the home page").
 
-const post = (n: number): CommunityPost => ({
-  id: `post${n}`,
-  title: `Featured ${n}`,
-  description: 'A document worth sharing.',
-  category: 'architecture',
-  tags: [],
-  likeCount: n,
-  copyCount: 1,
-  publishedAt: Date.now() - 60_000,
-  updatedAt: Date.now() - 60_000,
-  shareCode: `CODE${n}`,
-  author: { name: 'Anonymous', color: '#64748b', picture: null },
-  anonymous: true,
-  liked: false,
-});
+const post = (n: number): CommunityPost =>
+  communityPostFixture({
+    id: `post${n}`,
+    title: `Featured ${n}`,
+    description: 'A document worth sharing.',
+    likeCount: n,
+    copyCount: 1,
+    publishedAt: Date.now() - 60_000,
+    updatedAt: Date.now() - 60_000,
+    shareCode: `CODE${n}`,
+    author: { name: 'Anonymous', color: '#64748b', picture: null },
+    anonymous: true,
+  });
 
 let featured: () => Response;
 let capabilities: () => Response;
