@@ -5,7 +5,7 @@
 
 import { broadcastShareOp } from '../room-client';
 import { redactCommentAuthorIds } from '../comments';
-import { redactElementsForCommunity } from '../community-redact';
+import { redactTabForCommunity } from '../community-redact';
 import {
   deleteShareLinksForTab,
   deleteTabRow,
@@ -121,12 +121,9 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
       const safe =
         owner === existing.ownerId
           ? tab
-          : {
-              ...tab,
-              elements: communityVisit
-                ? redactElementsForCommunity(tab.elements)
-                : redactCommentAuthorIds(tab.elements, owner),
-            };
+          : communityVisit
+            ? redactTabForCommunity(tab)
+            : { ...tab, elements: redactCommentAuthorIds(tab.elements, owner) };
       if (view) return answerTabView(ctx, view, existing, safe);
       // docs/specs/013-workspace/timeline.md §4.3: somebody arrived through a SHARE LINK and opened this.
       // The tab read is the honest signal for "opened" — the document GET is hit

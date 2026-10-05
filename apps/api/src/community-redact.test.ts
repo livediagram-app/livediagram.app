@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import type { Element } from '@livediagram/document';
-import { redactElementsForCommunity, redactTabDataForCommunity } from './community-redact';
+import {
+  redactElementsForCommunity,
+  redactTabDataForCommunity,
+  redactTabForCommunity,
+} from './community-redact';
 
 // What a Community link sees of a tab and what a copy through it carries
 // (docs/specs/025-community/community.md "Viewing a post's document").
@@ -67,5 +71,58 @@ describe('redactTabDataForCommunity', () => {
 
   it('never copies data it cannot read', () => {
     expect(redactTabDataForCommunity('not json')).toBe('{"elements":[]}');
+  });
+});
+
+describe('the collaboration cards and the dot vote', () => {
+  const cards = [
+    {
+      id: 'est',
+      type: 'shape',
+      responses: [
+        { participantId: 'guest-credential-a', value: '5', at: 1 },
+        { participantId: 'guest-credential-b', value: '8', at: 2 },
+      ],
+    },
+    {
+      id: 'qa',
+      type: 'shape',
+      qaNotes: [
+        {
+          id: 'n1',
+          text: 'Why?',
+          at: 1,
+          author: { name: 'Priya', color: '#f00' },
+          voters: ['va', 'vb'],
+        },
+      ],
+    },
+    {
+      id: 'roll',
+      type: 'shape',
+      rollCall: [{ name: 'Aisha Khan', color: '#0f0', at: 1 }],
+    },
+  ] as unknown as Element[];
+
+  it('keeps the tallies and loses the people', () => {
+    const tab = redactTabForCommunity({
+      elements: cards,
+      vote: { votes: { qa: ['voter-1', 'voter-2', 'voter-3'] }, startedBy: 'user_sam' },
+    }) as unknown as {
+      elements: Record<string, unknown>[];
+      vote: { votes: Record<string, string[]>; startedBy?: string };
+    };
+    const json = JSON.stringify(tab);
+    for (const s of ['guest-credential', 'Priya', 'Aisha', 'voter-1', 'user_sam', '"va"']) {
+      expect(json).not.toContain(s);
+    }
+    expect(tab.elements[0]!.responses).toEqual([
+      { participantId: 'p1', value: '5', at: 1 },
+      { participantId: 'p2', value: '8', at: 2 },
+    ]);
+    expect((tab.elements[1]!.qaNotes as { voters: string[] }[])[0]!.voters).toHaveLength(2);
+    expect(tab.elements[2]!.rollCall).toEqual([{ name: 'Participant 1', color: '#0f0', at: 1 }]);
+    expect(tab.vote.votes.qa).toHaveLength(3);
+    expect(tab.vote).not.toHaveProperty('startedBy');
   });
 });

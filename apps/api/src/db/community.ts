@@ -51,6 +51,23 @@ export async function getCommunityPostByShareCode(
     .first<CommunityPostRow>();
 }
 
+// Whether a Community post's link is open to the public right now: 'public' when the post passes the public
+// rule (listed, its document not in the Trash nor a team library), 'closed' when the post exists but does
+// not, null when the code is no post's link. One rule for every door that reads through the link.
+export async function communityLinkAccess(
+  env: Env,
+  shareCode: string,
+): Promise<'public' | 'closed' | null> {
+  const row = await env.DB.prepare(
+    `SELECT (${PUBLIC_POST}) AS open FROM community_posts cp JOIN documents d ON d.id = cp.document_id
+      WHERE cp.share_code = ?`,
+  )
+    .bind(shareCode)
+    .first<{ open: number }>();
+  if (!row) return null;
+  return row.open ? 'public' : 'closed';
+}
+
 // One post as the public sees it: null when missing, hidden or trashed.
 export async function getPublicCommunityPost(
   env: Env,

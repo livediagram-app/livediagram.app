@@ -26,12 +26,12 @@ vi.mock('../db', () => ({
   getDocumentSharePassword: (env: Env, id: string) => getSharePasswordMock(env, id),
   getMembership: (env: Env, teamId: string, userId: string) =>
     getMembershipMock(env, teamId, userId),
-  getCommunityPostByShareCode: (env: Env, code: string) => getCommunityPostMock(env, code),
+  communityLinkAccess: (env: Env, code: string) => communityLinkAccessMock(env, code),
 }));
-// A Community post's state, for the community-link cases (docs/specs/025-community/community.md).
-const getCommunityPostMock = vi.fn<(env: Env, code: string) => Promise<{ state: string } | null>>(
-  async () => ({ state: 'listed' }),
-);
+// Whether a Community post's link is public, for the community-link cases (docs/specs/025-community/community.md).
+const communityLinkAccessMock = vi.fn<
+  (env: Env, code: string) => Promise<'public' | 'closed' | null>
+>(async () => 'public');
 
 // Import AFTER the mock declaration so the helpers pick up the
 // stubbed `getShareLink`. The helpers themselves don't care about
@@ -521,9 +521,9 @@ describe('resolveDocumentGrant', () => {
       tabId: null,
     };
     getShareLinkMock.mockResolvedValue(community);
-    getCommunityPostMock.mockResolvedValueOnce({ state: 'hidden' });
+    communityLinkAccessMock.mockResolvedValueOnce('closed');
     expect(await grant(null, 'POSTLINK')).toBeNull();
-    getCommunityPostMock.mockResolvedValueOnce({ state: 'hidden' });
+    communityLinkAccessMock.mockResolvedValueOnce('closed');
     const operatorEnv = { ...FAKE_ENV, COMMUNITY_OPERATOR_IDS: 'user_op' } as Env;
     expect(
       await resolveDocumentGrant(
@@ -537,7 +537,7 @@ describe('resolveDocumentGrant', () => {
         'user_op',
       ),
     ).toMatchObject({ community: true });
-    getCommunityPostMock.mockResolvedValueOnce(null);
+    communityLinkAccessMock.mockResolvedValueOnce(null);
     expect(await grant(null, 'POSTLINK')).toBeNull();
   });
 

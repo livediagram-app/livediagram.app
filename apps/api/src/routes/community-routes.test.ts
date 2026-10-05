@@ -335,6 +335,20 @@ describe('the community link', () => {
     expect(review.status).toBe(200);
   });
 
+  it('closes the link when its document moves into a team library or the Trash', async () => {
+    const post = await publish();
+    const visit = () =>
+      handleShare(makeTestRouteContext('GET', `/api/share/${post.shareCode}`, { env }));
+    const image = () =>
+      handleShare(makeTestRouteContext('GET', `/api/share/${post.shareCode}/image.svg`, { env }));
+    expect((await visit()).status).toBe(200);
+    db.sql.prepare("UPDATE documents SET team_id = 'team-1' WHERE id = 'd1'").run();
+    expect((await visit()).status).toBe(404);
+    expect((await image()).status).toBe(404);
+    db.sql.prepare("UPDATE documents SET team_id = NULL, trashed_at = 5 WHERE id = 'd1'").run();
+    expect((await image()).status).not.toBe(200);
+  });
+
   it("stops serving a hidden post's image, except to an operator", async () => {
     const post = await publish();
     const image = (clerk: string | null = null) =>

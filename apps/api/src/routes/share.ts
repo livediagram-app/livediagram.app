@@ -3,6 +3,7 @@
 import { rowAuthor } from '../community-row';
 import { isCommunityOperator } from '../auth/community-operators';
 import {
+  communityLinkAccess,
   getCommunityPostByShareCode,
   getDocument,
   getDocumentSharePassword,
@@ -52,12 +53,12 @@ export async function handleShare(ctx: RouteContext): Promise<Response> {
       if (gate) return gate;
       // A Community post's link (docs/specs/025-community/community.md "Viewing a post's document"): read-only for
       // everyone, never recorded in "Shared with you", never a join email to the author, and gone while the post is
-      // hidden, except to an operator reviewing it.
+      // hidden (or its document is in the Trash or a team library), except to an operator reviewing it.
       if (link.purpose === 'community') {
         const post = await getCommunityPostByShareCode(env, link.code);
         if (!post) return notFound();
-        if (post.state !== 'listed' && !isCommunityOperator(env, ctx.clerkUserId))
-          return notFound();
+        const access = await communityLinkAccess(env, link.code);
+        if (access !== 'public' && !isCommunityOperator(env, ctx.clerkUserId)) return notFound();
         return json({
           document: redactDocumentForReader(d, resolveOwner()),
           role: 'view',
@@ -139,8 +140,8 @@ async function handleShareImage(ctx: RouteContext, code: string): Promise<Respon
   // A hidden Community post's image is gone with it, except to an operator reviewing it
   // (docs/specs/025-community/community.md "Reports and moderation").
   if (link.purpose === 'community') {
-    const post = await getCommunityPostByShareCode(env, link.code);
-    if (!post || (post.state !== 'listed' && !isCommunityOperator(env, ctx.clerkUserId))) {
+    const access = await communityLinkAccess(env, link.code);
+    if (access === null || (access === 'closed' && !isCommunityOperator(env, ctx.clerkUserId))) {
       return notFound();
     }
   }
