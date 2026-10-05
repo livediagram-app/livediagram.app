@@ -6,8 +6,7 @@
 // press closes. On a phone it is a bottom sheet.
 import { useLayoutEffect, useRef, useState, type KeyboardEvent } from 'react';
 import type { PageKind } from '@livediagram/document';
-import { useClickOutside, useEscape } from '@livediagram/ui';
-import { Portal } from '@/components/primitives/Portal';
+import { useClickOutside, useEscape, Portal } from '@livediagram/ui';
 import { BottomSheet } from '@/components/primitives/BottomSheet';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { VIEWPORT_EDGE_MARGIN as EDGE } from '@/lib/clamp-to-viewport';

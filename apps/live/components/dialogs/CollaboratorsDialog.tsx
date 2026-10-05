@@ -2,10 +2,8 @@
 
 import { useEffect, useRef } from 'react';
 import type { Tab } from '@livediagram/document';
-import { Button } from '@livediagram/ui';
+import { Button, DialogHeader, DialogCloseButton } from '@livediagram/ui';
 import { Dialog } from '@/components/dialogs/Dialog';
-import { DialogCloseButton } from '@/components/dialogs/DialogCloseButton';
-import { DialogHeader } from '@/components/dialogs/DialogHeader';
 import { FacilitatorButton } from '@/components/dialogs/CollaboratorFacilitatorButton';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { ParticipantAvatar } from '@/components/primitives/ParticipantAvatar';

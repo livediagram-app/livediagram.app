@@ -1,13 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { Button, Glyph } from '@livediagram/ui';
+import { Button, Glyph, DialogCloseButton, DialogHeader } from '@livediagram/ui';
 import { Dialog } from '@/components/dialogs/Dialog';
-import { DialogCloseButton } from '@/components/dialogs/DialogCloseButton';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { useToast } from '@/hooks/ui/useToast';
 import { syncFailureMessage } from '@/lib/offline/offline-convert';
-import { DialogHeader } from './DialogHeader';
 import { DialogFooter } from '@/components/dialogs/DialogFooter';
 
 // The Share dialog's offline gate (docs/specs/006-document/offline-mode.md). An offline document is stored only

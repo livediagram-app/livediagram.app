@@ -1,6 +1,5 @@
 import { Dialog } from '@/components/dialogs/Dialog';
-import { DialogCloseButton } from '@/components/dialogs/DialogCloseButton';
-import { DialogHeader } from './DialogHeader';
+import { DialogCloseButton, DialogHeader } from '@livediagram/ui';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { MsWhiteboardImportPanel } from './MsWhiteboardImportPanel';
 import type { ImportScenes } from '@/hooks/persistence/useMsWhiteboardImport';

@@ -1,14 +1,19 @@
 'use client';
 
 import { type FormEvent, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
 import {
   COMMUNITY_REPORT_NOTE_MAX,
   COMMUNITY_REPORT_REASONS,
   communityReportReasonType,
   type CommunityReportReason,
 } from '@livediagram/api-schema';
-import { Button, CloseIcon, CommunityHelpLink, useEscape, useFocusTrap } from '@livediagram/ui';
+import {
+  Button,
+  CommunityHelpLink,
+  Dialog,
+  DialogCloseButton,
+  DialogHeader,
+} from '@livediagram/ui';
 import { CommunityApiError, reportPost } from '@/lib/api';
 import { communityTelemetry } from '@/lib/telemetry';
 
@@ -16,30 +21,30 @@ type Phase = 'editing' | 'sending' | 'sent' | 'failed' | 'gone';
 
 // Report This Document (docs/specs/025-community/community.md "Reports and moderation"; blueprint §9,
 // §10): a reason as radio rows, an optional note of up to 300 characters with a counter, Send Report,
-// then a thank-you that says what happens next (enough reports take a post down; nobody reviews by hand). A modal that traps focus, closes on Escape or the backdrop, and
-// hands focus back to Report when it closes.
+// then a thank-you that says what happens next (enough reports take a post down; nobody reviews by hand). The shared
+// Dialog shell: it traps focus, closes on Escape or a press on the backdrop, and hands focus back to Report; on a
+// phone it rises as a sheet.
 export function ReportDialog({ postId, onClose }: { postId: string; onClose: () => void }) {
-  const ref = useRef<HTMLDivElement>(null);
+  const bodyRef = useRef<HTMLDivElement>(null);
   const titleId = useId();
   const noteId = useId();
   const [reason, setReason] = useState<CommunityReportReason | null>(null);
   const [note, setNote] = useState('');
   const [phase, setPhase] = useState<Phase>('editing');
-  useFocusTrap(ref);
   // Sending disables the focused Send button, which drops focus out of the dialog; when a send fails, bring it back
-  // inside (the dialog itself), so the trap holds and the alert is read in place.
+  // inside (the dialog's body), so the trap holds and the alert is read in place.
   useEffect(() => {
-    if (phase === 'failed' || phase === 'gone') ref.current?.focus({ preventScroll: true });
+    if (phase === 'failed' || phase === 'gone') bodyRef.current?.focus({ preventScroll: true });
   }, [phase]);
-  // Escape is ignored only while a report is in flight. The listener stays bound and reads the phase from a ref
-  // updated at commit, so a key pressed the moment a failure shows is never lost to a listener still re-binding.
+  // Nothing closes the dialog while a report is in flight. The phase is read from a ref set at commit, so a close
+  // asked for the moment a failure shows (Escape, the backdrop) is never refused by a stale phase.
   const phaseRef = useRef(phase);
   useLayoutEffect(() => {
     phaseRef.current = phase;
   }, [phase]);
-  useEscape(() => {
+  const close = () => {
     if (phaseRef.current !== 'sending') onClose();
-  });
+  };
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
@@ -57,38 +62,12 @@ export function ReportDialog({ postId, onClose }: { postId: string; onClose: () 
       });
   };
 
-  // Portalled to the body: the post's sticky side column is its own stacking context, and a modal
-  // inside it would sit under the header and the cards below.
-  return createPortal(
-    <div className="fixed inset-0 z-(--z-modal) flex items-end justify-center p-4 sm:items-center">
-      <div
-        aria-hidden
-        className="absolute inset-0 animate-fade-in bg-slate-900/45 motion-reduce:animate-none dark:bg-slate-950/70"
-        onClick={phase === 'sending' ? undefined : onClose}
-      />
-      <div
-        ref={ref}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={titleId}
-        tabIndex={-1}
-        className="relative w-full max-w-md animate-fade-in rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl outline-none motion-reduce:animate-none dark:border-slate-800 dark:bg-slate-900"
-      >
-        <div className="mb-4 flex items-start justify-between gap-4">
-          <h2 id={titleId} className="text-lg font-semibold text-slate-900 dark:text-white">
-            Report This Document
-          </h2>
-          <button
-            type="button"
-            aria-label="Close"
-            onClick={onClose}
-            disabled={phase === 'sending'}
-            className="-mr-2 -mt-1 rounded-md p-1.5 text-slate-500 transition-colors duration-micro hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200"
-          >
-            <CloseIcon size={16} aria-hidden />
-          </button>
-        </div>
-
+  return (
+    <Dialog open onClose={close} titleId={titleId} phoneSheet>
+      <DialogHeader title={<span id={titleId}>Report This Document</span>}>
+        <DialogCloseButton onClick={close} />
+      </DialogHeader>
+      <div ref={bodyRef} tabIndex={-1} className="px-6 py-5 outline-none">
         {phase === 'sent' ? (
           <div className="flex flex-col gap-5">
             <p role="status" className="text-sm text-slate-600 dark:text-slate-300">
@@ -97,7 +76,7 @@ export function ReportDialog({ postId, onClose }: { postId: string; onClose: () 
             </p>
             <div className="flex justify-end">
               {/* The form it replaces held focus; keep it inside the dialog. */}
-              <Button size="md" onClick={onClose} autoFocus>
+              <Button size="md" onClick={close} autoFocus>
                 Done
               </Button>
             </div>
@@ -164,12 +143,7 @@ export function ReportDialog({ postId, onClose }: { postId: string; onClose: () 
               <CommunityHelpLink article="finding" className="mr-auto">
                 How Reports Work
               </CommunityHelpLink>
-              <Button
-                variant="secondary"
-                size="md"
-                onClick={onClose}
-                disabled={phase === 'sending'}
-              >
+              <Button variant="secondary" size="md" onClick={close} disabled={phase === 'sending'}>
                 Cancel
               </Button>
               <Button
@@ -184,7 +158,6 @@ export function ReportDialog({ postId, onClose }: { postId: string; onClose: () 
           </form>
         )}
       </div>
-    </div>,
-    document.body,
+    </Dialog>
   );
 }

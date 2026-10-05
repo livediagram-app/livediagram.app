@@ -2,16 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 
-import { Portal } from '@/components/primitives/Portal';
 import { useMenuItemProps } from '@/components/primitives/menu-item-props';
-import {
-  Glyph,
-  MenuTreeContext,
-  useControlMenu,
-  useMenu,
-  type MenuKind,
-  type MenuTree,
-} from '@livediagram/ui';
+import { Glyph, MenuTreeContext, useControlMenu, useMenu, type MenuKind, type MenuTree, Portal } from '@livediagram/ui';
 
 // A small `…` menu attached to an element's own face.
 //

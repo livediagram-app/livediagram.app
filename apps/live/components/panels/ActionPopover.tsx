@@ -3,18 +3,9 @@
 // The docs/specs/012-collaboration/assigned-actions.md clipboard-with-tick action glyph, shared with the context
 // menu's Assign Action tile so the two surfaces can't drift.
 import { ActionMenuIcon as ClipboardIcon } from '@/components/palette/context-menu-icons';
-import {
-  CloseIcon,
-  TrashIcon,
-  useClickOutside,
-  useEscape,
-  SOLID_BRAND_DARK,
-  Glyph,
-  GlyphDisc,
-} from '@livediagram/ui';
+import { CloseIcon, TrashIcon, useClickOutside, useEscape, SOLID_BRAND_DARK, Glyph, GlyphDisc, Portal } from '@livediagram/ui';
 import { useRef, useState, useCallback } from 'react';
 import type { ElementAction } from '@livediagram/document';
-import { Portal } from '@/components/primitives/Portal';
 import { useReposition } from '@/hooks/canvas/useReposition';
 import { initialsOf } from '@/lib/identity';
 import { formatRelativeTimeCompact, useRelativeNow } from '@/lib/relative-time';

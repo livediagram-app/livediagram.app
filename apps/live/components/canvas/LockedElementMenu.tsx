@@ -14,8 +14,7 @@
 // so a right-click near an edge does not open it off-screen.
 
 import { useCallback, useEffect, useId, useRef } from 'react';
-import { MENU_LABEL_ATTR, MenuTreeContext, useMenu } from '@livediagram/ui';
-import { Portal } from '@/components/primitives/Portal';
+import { MENU_LABEL_ATTR, MenuTreeContext, useMenu, Portal } from '@livediagram/ui';
 import { VIEWPORT_EDGE_MARGIN as EDGE } from '@/lib/clamp-to-viewport';
 
 const WIDTH = 236;

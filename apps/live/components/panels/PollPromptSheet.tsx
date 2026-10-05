@@ -21,9 +21,8 @@
 
 import { useEffect, useState } from 'react';
 import { POLL_TEXT_ANSWER_MAX, pollOptionTokens, type LivePoll } from '@livediagram/api-schema';
-import { Portal } from '@/components/primitives/Portal';
 import { anyModalOpen } from '@/lib/modal-guard';
-import { SOLID_BRAND_DARK_CONTROL } from '@livediagram/ui';
+import { SOLID_BRAND_DARK_CONTROL, Portal } from '@livediagram/ui';
 
 export function PollPromptSheet({
   poll,

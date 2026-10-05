@@ -1,8 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { Button, CloseIcon, TrashIcon, useClickOutside, useEscape } from '@livediagram/ui';
-import { Portal } from '@/components/primitives/Portal';
+import { Button, CloseIcon, TrashIcon, useClickOutside, useEscape, Portal } from '@livediagram/ui';
 import { useReposition } from '@/hooks/canvas/useReposition';
 import type { Comment, CommentMention, CommentThread } from '@livediagram/document';
 import { MentionMenu } from '@/components/primitives/MentionMenu';

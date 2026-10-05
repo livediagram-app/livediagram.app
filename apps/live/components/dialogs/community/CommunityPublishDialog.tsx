@@ -12,12 +12,10 @@ import {
   type CommunityOwnPost,
   type CommunityPostInput,
 } from '@livediagram/api-schema';
-import { Button, TextInput } from '@livediagram/ui';
+import { Button, TextInput, DialogHeader, DialogCloseButton } from '@livediagram/ui';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { SwitchRow } from '@/components/primitives/SwitchRow';
-import { DialogCloseButton } from '@/components/dialogs/DialogCloseButton';
 import { DialogFooter } from '@/components/dialogs/DialogFooter';
-import { DialogHeader } from '@/components/dialogs/DialogHeader';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { apiCommunityPopularTags } from '@/lib/api-client';
 import { ApiError } from '@/lib/api/core';

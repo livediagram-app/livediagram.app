@@ -1,9 +1,9 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { Portal } from '@livediagram/ui';
 import { createShape, isBoxed, type Element } from '@livediagram/document';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
-import { Portal } from '@/components/primitives/Portal';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import {
   clearTourPending,

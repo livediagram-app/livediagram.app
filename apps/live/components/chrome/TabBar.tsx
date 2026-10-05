@@ -1,5 +1,4 @@
 import dynamic from 'next/dynamic';
-import { safeInlinePadding, safeInset } from '@/lib/safe-area';
 import { MenuErrorBoundary } from '@/components/primitives/MenuErrorBoundary';
 import { useState, type ReactNode } from 'react';
 import {
@@ -12,7 +11,7 @@ import { useAppearance } from '@/hooks/ui/useAppearance';
 import type { AutoLayoutChoice } from '@/lib/auto-layout-choices';
 import type { CleanupKind } from '@/lib/tab-cleanup';
 import type { Participant } from '@/lib/identity';
-import { TabsLabelIcon } from '@livediagram/ui';
+import { TabsLabelIcon, safeInlinePadding, safeInset } from '@livediagram/ui';
 import { TabFolderChip } from '@/components/chrome/TabFolderChip';
 import { useTabReorderDrag } from './useTabReorderDrag';
 import { ChromeControls } from '@/components/chrome/ChromeControls';

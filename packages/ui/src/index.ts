@@ -79,3 +79,9 @@ export {
 export * from './appearance';
 export * from './optical';
 export * from './menu';
+export { Dialog, type DialogProps, type DialogSize } from './dialog/Dialog';
+export { DialogHeader } from './dialog/DialogHeader';
+export { DialogCloseButton } from './dialog/DialogCloseButton';
+export { Portal } from './Portal';
+export { useSwipeDownDismiss, DISMISS_PX } from './useSwipeDownDismiss';
+export { safeInset, atLeastInset, safeInlinePadding } from './safe-area';

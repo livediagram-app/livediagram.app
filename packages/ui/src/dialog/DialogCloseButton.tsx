@@ -1,4 +1,4 @@
-import { CloseIcon } from '@livediagram/ui';
+import { CloseIcon } from '../icons';
 
 // The dialog header's standard close (×) button. Two blessed shapes:
 // the default h-7 square that tucks into a title row's top-right corner

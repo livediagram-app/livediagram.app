@@ -7,18 +7,7 @@
 // panning or zooming under it (it would no longer sit by its cog).
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { PAGE_NAME_MAX, type LaidOutPage, type PageBackground } from '@livediagram/document';
-import {
-  ACTIVE_SEGMENT,
-  SEGMENT_TRACK,
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  DuplicateIcon,
-  Tooltip,
-  TrashIcon,
-  useClickOutside,
-  useEscape,
-} from '@livediagram/ui';
-import { Portal } from '@/components/primitives/Portal';
+import { ACTIVE_SEGMENT, SEGMENT_TRACK, ChevronLeftIcon, ChevronRightIcon, DuplicateIcon, Tooltip, TrashIcon, useClickOutside, useEscape, Portal } from '@livediagram/ui';
 import { SegmentSlider } from '@/components/primitives/SegmentSlider';
 import { BottomSheet } from '@/components/primitives/BottomSheet';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';

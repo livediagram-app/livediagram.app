@@ -11,12 +11,11 @@ import {
   type ReactNode,
   type RefObject,
 } from 'react';
-import { ChevronDownIcon, EllipsisIcon, HoverCard } from '@livediagram/ui';
+import { ChevronDownIcon, EllipsisIcon, HoverCard, safeInlinePadding } from '@livediagram/ui';
 import { track } from '@/lib/telemetry';
 import { SnapWidth } from '@/components/primitives/SnapWidth';
 import { PHONE_TOOLBAR_ITEMS } from '@/components/chrome/phone-toolbar-items';
 import { TOOLBAR_CARD } from '@/components/chrome/toolbar-surface';
-import { safeInlinePadding } from '@/lib/safe-area';
 import { PaletteTintProvider } from './palette-controls';
 import { PaletteGroupProvider } from './palette-group-state';
 import { PaletteDropdown, TOOLBAR_TRIGGER_TONE } from './PaletteDropdown';

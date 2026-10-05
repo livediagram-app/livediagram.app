@@ -12,19 +12,10 @@
 // keyboard / screen-reader users get the same modal semantics.
 
 import Link from 'next/link';
-import {
-  buttonClassName,
-  CloseIcon,
-  SparkleIcon,
-  useFocusTrap,
-  useEscape,
-  Glyph,
-  ButtonContent,
-} from '@livediagram/ui';
+import { buttonClassName, CloseIcon, SparkleIcon, useFocusTrap, useEscape, Glyph, ButtonContent, Portal } from '@livediagram/ui';
 import { SignInIcon } from '@/components/chrome/AuthControls';
 import { useRef } from 'react';
 import type { ReactNode } from 'react';
-import { Portal } from '@/components/primitives/Portal';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { useAuthHrefs } from '@/components/chrome/auth-shared';
 import { useModalGuard } from '@/hooks/ui/useModalGuard';

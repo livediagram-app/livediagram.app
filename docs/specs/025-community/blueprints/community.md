@@ -326,7 +326,7 @@ Community app (`apps/community`):
   `SESSION_LOAD_TIMEOUT_MS` and `signInHref`. `MineSummary` shows the **Your Shares** totals above the grid. Waiting
   past `SESSION_LOAD_TIMEOUT_MS` for the session, `GalleryView` shows `GalleryError` with a reload.
 - Post page (`apps/community/components/post/`): `PostView` over `usePost`, `EmbedFrame` (`/embed?s=<code>`, lazy,
-  titled, falling back to the card image after 15 s), `PostMeta`, `PostActions`, `ReportDialog`, `RelatedPosts`.
+  titled, falling back to the card image after 15 s), `PostMeta`, `PostActions`, `ReportDialog` (on the shared `Dialog` shell from `@livediagram/ui`, a phone sheet below `sm`), `RelatedPosts`.
   Links come from `apps/community/lib/links.ts`: Open Document `openDocumentHref` (`/document/shared?s=<code>`), Make
   a Copy `makeCopyHref` (`/document/shared?s=<code>&copy=1`). Once the post loads, `PostView` sets `document.title`
   and a `link rel="canonical"` to the post's own address (`apps/community/app/post/page.tsx` carries none).
