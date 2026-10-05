@@ -190,3 +190,40 @@ describe('read-only API token enforcement (docs/specs/015-api/mcp-server.md §4.
     expect(res.status).not.toBe(403);
   });
 });
+
+// An `lvd_` bearer is a claim to be a token; one that resolves to no live row (unknown, revoked or expired) is
+// refused at the front door with 401 `invalid_token`, never treated as a guest or as nobody
+// (docs/specs/015-api/public-api-and-tokens.md §3.3).
+describe('worker refusal of an unknown API token', () => {
+  const noEnforcement = () => ({}) as unknown as Env;
+  const TOKEN = `lvd_${'x'.repeat(43)}`;
+  beforeEach(() => resolveApiTokenMock.mockResolvedValue(null));
+
+  it('401s an lvd_ bearer that resolves to no live token, on owner-scoped and token routes alike', async () => {
+    for (const path of ['/api/documents', '/api/tokens/current', '/api/teams']) {
+      const res = await worker.fetch(
+        get(path, { Authorization: `Bearer ${TOKEN}` }),
+        noEnforcement(),
+      );
+      expect(res.status, path).toBe(401);
+      expect(await res.json(), path).toEqual({ error: 'invalid_token' });
+      expect(res.headers.get('WWW-Authenticate'), path).toBe('Bearer error="invalid_token"');
+    }
+  });
+
+  it('refuses it even beside a guest header, so a dead token never falls back to a guest', async () => {
+    const res = await worker.fetch(
+      get('/api/documents', { Authorization: `Bearer ${TOKEN}`, 'X-Owner-Id': 'guest-1' }),
+      noEnforcement(),
+    );
+    expect(res.status).toBe(401);
+  });
+
+  it('leaves a bearer that is not token-shaped to the Clerk path', async () => {
+    const res = await worker.fetch(
+      get('/api/documents', { Authorization: 'Bearer eyJ.jwt.sig' }),
+      noEnforcement(),
+    );
+    expect(res.status).not.toBe(401);
+  });
+});

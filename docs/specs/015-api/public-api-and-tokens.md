@@ -141,7 +141,11 @@ alongside Clerk + the guest header:
 1. A Clerk JWT in `Authorization: Bearer`, when it verifies.
 2. Else `Authorization: Bearer lvd_…` → hash → look up a non-revoked,
    non-expired row → the request's owner id is the row's `owner_id`; stamp
-   `last_used_at`. (A token and a JWT can't both be the bearer.)
+   `last_used_at`. (A token and a JWT can't both be the bearer.) An `lvd_`
+   bearer with no such row (unknown, revoked or expired) is refused there and
+   then with `401 invalid_token` and `WWW-Authenticate: Bearer
+error="invalid_token"`, on every route: it never falls through to the guest
+   path or to no owner, so a script holding a dead token is told so.
 3. Else the guest `X-Owner-Id` path — now requiring a valid HMAC signature on
    the header (see [§4](#4-x-owner-id-trust-change)). Tokens never resolve to a
    guest id, so this path is for the first-party app only; it grants no token.
@@ -294,7 +298,8 @@ out cleanly:
 
 - `GET /api/tokens/current`: the account id and display name, the token's name, its role and `expiresAt`.
 - `DELETE /api/tokens/current`: revokes the presenting token (204).
-- A session or guest has no token to describe and is refused `403 not_a_token`; a revoked token is not found.
+- A session or guest has no token to describe and is refused `403 not_a_token`; a revoked token is refused at the
+  front door like any dead token (§3.3).
 
 Every other `/api/tokens` route stays session-only.
 
