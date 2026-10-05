@@ -172,6 +172,29 @@ describe('the gallery', () => {
     expect(h.telemetry.searched).toHaveBeenCalledTimes(1);
   });
 
+  it('never rewrites what is being typed when the address catches up', async () => {
+    route(isPosts, () => Response.json({ posts: [post()], nextOffset: null }));
+    render(<GalleryView />);
+    await screen.findByText('Post 1');
+    fireEvent.change(search(), { target: { value: 'cloud ' } });
+    await waitFor(() => expect(window.location.search).toBe('?q=cloud'));
+    expect(search().value).toBe('cloud ');
+    fireEvent.change(search(), { target: { value: 'cloud sort:' } });
+    await new Promise((r) => setTimeout(r, 400));
+    expect(search().value).toBe('cloud sort:');
+  });
+
+  it('takes a change made elsewhere', async () => {
+    route(isPosts, () => Response.json({ posts: [post()], nextOffset: null }));
+    render(<GalleryView />);
+    await screen.findByText('Post 1');
+    act(() => {
+      window.history.replaceState(null, '', '/?q=%23aws');
+      window.dispatchEvent(new PopStateEvent('popstate'));
+    });
+    await waitFor(() => expect(search().value).toBe('#aws'));
+  });
+
   it('drops a slow answer for filters that are no longer shown', async () => {
     let releaseFirst: (r: Response) => void = () => {};
     route(isPosts, (url) =>

@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useState, type FormEvent } from 'react';
 import {
+  COMMUNITY_SEARCH_MAX,
   communitySearchCategory,
   communitySearchMine,
   communitySearchSort,
@@ -16,6 +17,7 @@ import {
 } from '@livediagram/api-schema';
 import { CloseIcon, SearchIcon } from '@livediagram/ui';
 import { SEARCH_DEBOUNCE_MS } from '@/lib/config';
+import { searchEcho } from '@/lib/query-state';
 import { MineIcon } from '../shared/icons';
 import { CategoryMenu } from './CategoryMenu';
 import { SearchControlButton } from './SearchControlButton';
@@ -59,13 +61,14 @@ export function SearchBox({
   const [synced, setSynced] = useState(value);
   if (value !== synced) {
     setSynced(value);
-    setDraft(value);
+    // Only a change made elsewhere replaces the draft; the echo of what is being typed leaves it as typed.
+    if (value !== searchEcho(draft)) setDraft(value);
   }
 
   // Debounce: commit the settled draft. An effect, because it schedules work against the clock.
   useEffect(() => {
     const q = draft.trim();
-    if (q === value) return;
+    if (searchEcho(q) === value) return;
     const timer = window.setTimeout(() => onSearch(q), SEARCH_DEBOUNCE_MS);
     return () => window.clearTimeout(timer);
   }, [draft, onSearch, value]);
@@ -125,6 +128,7 @@ export function SearchBox({
         onChange={(e) => setDraft(e.target.value)}
         placeholder="Search documents, or #tags..."
         autoComplete="off"
+        maxLength={COMMUNITY_SEARCH_MAX}
         spellCheck={false}
         enterKeyHint="search"
         className="w-full rounded-xl border border-slate-200 bg-white py-3 pl-11 pr-[31rem] text-[15px] max-sm:pr-44 text-slate-900 shadow-sm placeholder:text-slate-400 transition-colors duration-micro focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 [&::-webkit-search-cancel-button]:hidden"

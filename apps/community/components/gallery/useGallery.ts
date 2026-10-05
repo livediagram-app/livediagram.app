@@ -105,8 +105,9 @@ export function useGallery(session: CommunitySession | null): Gallery {
   );
 
   const [result, setResult] = useState<Result | null>(null);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [loadMoreFailed, setLoadMoreFailed] = useState(false);
+  // Load More's state belongs to the results it is paging: a page still loading (or failed) for filters no longer
+  // shown says nothing about the results that are.
+  const [more, setMore] = useState<{ key: string; state: 'loading' | 'failed' } | null>(null);
   const [facets, setFacets] = useState<CommunityFacetsResponse | null>(null);
 
   useEffect(() => {
@@ -144,7 +145,6 @@ export function useGallery(session: CommunitySession | null): Gallery {
       if (patch.q !== undefined && searchedWordsChanged(filters.q, patch.q)) {
         communityTelemetry.searched();
       }
-      setLoadMoreFailed(false);
       replaceSearch(writeQueryState({ ...filters, ...patch }));
     },
     [filters],
@@ -152,7 +152,6 @@ export function useGallery(session: CommunitySession | null): Gallery {
 
   const clearFilters = useCallback(() => {
     if (!filters) return;
-    setLoadMoreFailed(false);
     replaceSearch(
       writeQueryState({
         // Clearing filters keeps My Shares on: it is where you are, not a filter of it.
@@ -164,25 +163,26 @@ export function useGallery(session: CommunitySession | null): Gallery {
     );
   }, [filters, mine]);
 
+  const currentMore = current && more && more.key === current.key ? more.state : null;
+
   const loadMore = useCallback(() => {
-    if (!filters || !current || current.nextOffset === null || loadingMore) return;
+    if (!filters || !current || current.nextOffset === null || currentMore === 'loading') return;
     const answering = current.key;
-    setLoadingMore(true);
-    setLoadMoreFailed(false);
+    setMore({ key: answering, state: 'loading' });
     loadPage({ ...filters, offset: current.nextOffset })
-      .then((res) =>
+      .then((res) => {
         setResult((prev) =>
           prev && prev.key === answering
             ? { ...prev, posts: appendUnique(prev.posts, res.posts), nextOffset: res.nextOffset }
             : prev,
-        ),
-      )
+        );
+        setMore((prev) => (prev?.key === answering ? null : prev));
+      })
       .catch((err: unknown) => {
         console.warn('[community] load more failed', err);
-        setLoadMoreFailed(true);
-      })
-      .finally(() => setLoadingMore(false));
-  }, [current, filters, loadPage, loadingMore]);
+        setMore((prev) => (prev?.key === answering ? { key: answering, state: 'failed' } : prev));
+      });
+  }, [current, currentMore, filters, loadPage]);
 
   const retry = useCallback(() => setReload((n) => n + 1), []);
 
@@ -193,8 +193,8 @@ export function useGallery(session: CommunitySession | null): Gallery {
     mine,
     totals: current?.totals ?? null,
     hasMore: current?.nextOffset != null,
-    loadingMore,
-    loadMoreFailed,
+    loadingMore: currentMore === 'loading',
+    loadMoreFailed: currentMore === 'failed',
     facets,
     setFilters,
     clearFilters,

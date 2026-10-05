@@ -3,6 +3,7 @@ import {
   EMPTY_FILTERS,
   hasActiveFilters,
   readQueryState,
+  searchEcho,
   searchedWordsChanged,
   writeQueryState,
 } from './query-state';
@@ -104,5 +105,13 @@ describe('searchedWordsChanged', () => {
     expect(searchedWordsChanged('', 'is:mine')).toBe(false);
     // Clearing the words is not a search either.
     expect(searchedWordsChanged('retro', '')).toBe(false);
+  });
+});
+
+describe('searchEcho', () => {
+  it('is what the address hands back for a typed search', () => {
+    expect(searchEcho('cloud ')).toBe('cloud');
+    expect(searchEcho('retro sort:')).toBe('retro');
+    expect(searchEcho('#AWS sort:loved')).toBe('#AWS sort:loved');
   });
 });

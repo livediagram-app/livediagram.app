@@ -76,3 +76,10 @@ export function searchedWordsChanged(before: string, after: string): boolean {
   const next = communitySearchTerms(after);
   return next.length > 0 && next.join(' ') !== communitySearchTerms(before).join(' ');
 }
+
+// What the address hands back for a typed search: the same words, tidied the way the URL round trip tidies them
+// (trimmed, a half-typed `sort:` dropped, the default sort left out). The search box uses it to tell the echo of
+// its own typing from a change made elsewhere (Clear Filters, a tag link), so it never rewrites what is being typed.
+export function searchEcho(q: string): string {
+  return readQueryState(new URLSearchParams(writeQueryState({ ...EMPTY_FILTERS, q: q.trim() }))).q;
+}

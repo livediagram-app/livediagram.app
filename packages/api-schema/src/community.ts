@@ -134,6 +134,8 @@ export const COMMUNITY_COUNTED_PER_NETWORK = 5;
 export const COMMUNITY_POPULAR_TAGS = 24;
 export const COMMUNITY_RELATED_POSTS = 6;
 export const COMMUNITY_SEARCH_TERMS_MAX = 5;
+// The longest search a query keeps (the search box stops there too).
+export const COMMUNITY_SEARCH_MAX = 200;
 // The landing page's Community section (docs/specs/025-community/community.md "Featured on the home page"):
 // how many posts, and the window their likes are counted over.
 export const COMMUNITY_FEATURED_COUNT = 6;
@@ -399,7 +401,7 @@ export function setCommunitySearchMine(q: string, mine: boolean): string {
 export function parseCommunityListQuery(
   params: URLSearchParams,
 ): { ok: true; value: CommunityListQuery } | { ok: false } {
-  const q = (params.get('q') ?? '').trim().slice(0, 200);
+  const q = (params.get('q') ?? '').trim().slice(0, COMMUNITY_SEARCH_MAX);
   const rawCategory = params.get('category');
   if (rawCategory && !isCommunityCategory(rawCategory)) return { ok: false };
   const rawTag = params.get('tag');
