@@ -276,11 +276,14 @@ async function threadVerb(
         caller.owner,
       ),
     );
-  console.info(`[comments] ${verb}${written.change ? 'd' : ' unchanged'}`, {
-    documentId: id,
-    tabId,
-    agent: ctx.token !== null,
-  });
+  console.info(
+    `[comments] ${written.change ? (resolved ? 'resolved' : 'reopened') : `${verb} unchanged`}`,
+    {
+      documentId: id,
+      tabId,
+      agent: ctx.token !== null,
+    },
+  );
   return noContent();
 }
 
