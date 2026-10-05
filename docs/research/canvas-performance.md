@@ -290,6 +290,22 @@ Measured 2026-10-05 on the reference board, local, interleaved builds.
   its obstacles once per pass changed nothing beyond the noise over three rounds, so the cost is the
   panel's subtree mounting, not its placement.
 
+## A pen stroke on a diagram, and what was tried for select and marquee
+
+Measured 2026-10-05, reference board, calibrated 4x, interleaved builds.
+
+- A diagram stroke's release costs about double a whiteboard's: the new stroke is selected (the
+  selection toolbar mounts and forces a layout, about 54 ms) and the Map rebuilds its picture (85 ms).
+  In that rebuild `endpointPosition` took 36 ms: each arrow end was found by scanning the element
+  list. An array is now looked up through one index per list (`elementIndexFor`), as the element grid
+  is. Diagram stroke script 303-343 to 284-305 ms over three rounds; its longest task (the selecting
+  commit) stayed within the noise.
+- Tried and set aside for select and marquee, each over three rounds: deferring the Quick Style
+  panel's selection (`useDeferredValue`) made the marquee release's longest task 51-63 ms to 177-227
+  ms (its render became one non-yielding task); reading the canvas zoom from the viewport store
+  instead of a context made zoom script 29-34 to 44-51 ms and pan 7-10 to 12-13 ms (a thousand store
+  subscriptions cost more than one context walk).
+
 ## Not tried
 
 - `contain` on element wrappers, a raster snapshot of still elements during a gesture, and fewer
