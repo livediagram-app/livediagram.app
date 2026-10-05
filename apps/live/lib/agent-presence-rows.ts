@@ -10,6 +10,7 @@ import {
   type AgentPresence,
   type ParticipantPresence,
 } from '@livediagram/api-schema';
+import { debugLog } from './debug-log';
 import type { Participant } from './identity';
 
 // The longest id an entry carries: element ids, presence ids and the room's entry ids are all under it.
@@ -60,6 +61,11 @@ export function splitPresenceFrame(frame: {
 } {
   const raw = Array.isArray(frame.agents) ? frame.agents : [];
   const agents = raw.map(agentEntryOf).filter((entry): entry is AgentPresence => entry !== null);
+  if (agents.length < raw.length)
+    debugLog('[agent-presence] skipped entry', {
+      reason: 'invalid_shape',
+      count: raw.length - agents.length,
+    });
   return { participants: frame.participants, agents };
 }
 
@@ -88,7 +94,10 @@ export function foldAgentPresence(input: {
     { first: AgentPresence; last: AgentPresence; joins: Set<string> }
   >();
   for (const entry of agents) {
-    if (!known.has(entry.tabId)) continue;
+    if (!known.has(entry.tabId)) {
+      debugLog('[agent-presence] skipped entry', { reason: 'unknown_tab' });
+      continue;
+    }
     const key = `${entry.person}\u0000${entry.tabId}`;
     const group = groups.get(key);
     if (group) {

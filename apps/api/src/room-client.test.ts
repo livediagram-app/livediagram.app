@@ -3,6 +3,7 @@ import type { ShapeElement, Tab, TabLedger } from '@livediagram/document';
 import type { Env } from './types';
 import {
   broadcastShareOp,
+  relayElementDelta,
   deleteAgentPresence,
   putAgentPresence,
   refreshAgentPresence,
@@ -262,6 +263,42 @@ describe('agent presence in the room (docs/specs/024-agents/blueprints/agent-pre
     expect(warn.mock.calls.map((c) => c[0])).toEqual([
       '[agent-presence] refresh refused',
       '[agent-presence] refresh failed',
+    ]);
+    warn.mockRestore();
+  });
+});
+
+describe('relayElementDelta (agent-presence PR26)', () => {
+  it('relays the delta, and logs a room that refused it or could not be reached', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const delta = { kind: 'comment-resolve', resolved: true } as const;
+    const ok = envWith(async () => new Response(null, { status: 204 }));
+    expect(await relayElementDelta(ok.env, 'd1', 't1', 'a', delta)).toBe(true);
+    expect(JSON.parse(ok.stubFetch.mock.calls[0]![1]!.body as string)).toEqual({
+      op: { kind: 'el-delta', tabId: 't1', elementId: 'a', delta },
+    });
+    expect(
+      await relayElementDelta(
+        envWith(async () => new Response('bad op', { status: 400 })).env,
+        'd1',
+        't1',
+        'a',
+        delta,
+      ),
+    ).toBe(false);
+    const down = envWith(async () => {
+      throw new Error('gone');
+    });
+    expect(await relayElementDelta(down.env, 'd1', 't1', 'a', delta)).toBe(false);
+    expect(warn.mock.calls).toEqual([
+      [
+        '[room-mutation] el-delta did not reach the room',
+        { documentId: 'd1', tabId: 't1', delta: 'comment-resolve', error: 'status 400' },
+      ],
+      [
+        '[room-mutation] el-delta did not reach the room',
+        { documentId: 'd1', tabId: 't1', delta: 'comment-resolve', error: 'Error: gone' },
+      ],
     ]);
     warn.mockRestore();
   });

@@ -125,22 +125,36 @@ export function parseRoomCursor(header: string | null): { epoch: string; seq: nu
 // receivers need nothing new.
 //
 // Best-effort, like the share-revoked broadcast: the D1 write is the record,
-// this is the live copy.
+// this is the live copy; a relay the room refused or never received is logged.
 export async function relayElementDelta(
   env: Env,
   documentId: string,
   tabId: string,
   elementId: string,
   delta: ElementDelta,
-): Promise<void> {
+): Promise<boolean> {
+  // The comment is saved either way; a room that did not hear about it is logged (PR26).
+  const fields = { documentId, tabId, delta: delta.kind };
   try {
-    await roomStubFor(env, documentId).fetch(
-      'https://room/mutation',
+    const res = await roomFetch(
+      env,
+      documentId,
+      '/mutation',
       mutationInit({ kind: 'el-delta', tabId, elementId, delta }),
+      ROOM_RELAY_TIMEOUT_MS,
     );
-  } catch {
-    // The comment is saved; the room just didn't hear about it.
+    if (res.ok) return true;
+    console.warn('[room-mutation] el-delta did not reach the room', {
+      ...fields,
+      error: `status ${res.status}`,
+    });
+  } catch (err) {
+    console.warn('[room-mutation] el-delta did not reach the room', {
+      ...fields,
+      error: String(err),
+    });
   }
+  return false;
 }
 
 // One changeset into the room's ordered stream (docs/specs/024-agents/agent-changesets.md "The
