@@ -119,5 +119,10 @@ describe('BoxedElementView indicators', () => {
       note: 'n',
     } as BoxedElement;
     expect(draw(lane).container.querySelector('[data-indicators]')).not.toBeNull();
+    // Its own padding, or the lane's default when none is set.
+    const { padding: _set, ...defaulted } = lane;
+    expect(
+      draw(defaulted as BoxedElement).container.querySelector('[data-indicators]'),
+    ).not.toBeNull();
   });
 });
