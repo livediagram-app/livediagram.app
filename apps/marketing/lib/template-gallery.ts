@@ -14,7 +14,7 @@ import {
 // The landing page's template gallery (docs/specs/019-marketing/marketing-site.md): every template
 // the editor ships, each a link that creates that document straight away (/new?template=<kind>,
 // docs/specs/007-editor/new-document-route.md), laid out as the editor's template step lays them
-// out (docs/specs/008-canvas/canvas-and-palette.md "Templates"): Popular first (the three blanks,
+// out (docs/specs/008-canvas/canvas-and-palette.md "Templates"): Popular first (the four blanks,
 // then the starters most people reach for), then one shelf per category. The data half lives here
 // so the lists and the filters can be tested without rendering the section.
 
@@ -49,13 +49,13 @@ function toGallery(t: TemplateDescriptor): GalleryTemplate {
 }
 
 // Every listed template on a category shelf: hidden templates never appear in a listing, and the
-// three blanks are only ever on Popular, never on a category shelf
-// (docs/specs/007-editor/templates-by-mode.md "Three blanks").
+// four blanks are only ever on Popular, never on a category shelf
+// (docs/specs/007-editor/templates-by-mode.md "Four blanks").
 export function galleryTemplates(): GalleryTemplate[] {
   return TEMPLATES.filter((t) => !t.hidden && !isBlankTemplate(t.kind)).map(toGallery);
 }
 
-// Popular, in its fixed order, the three blanks first.
+// Popular, in its fixed order, the four blanks first.
 export function popularTemplates(): GalleryTemplate[] {
   return POPULAR_TEMPLATE_KINDS.flatMap((kind) => {
     const t = BY_KIND.get(kind);

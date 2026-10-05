@@ -4,7 +4,7 @@ Follow the references below only as needed; never upfront.
 
 - ./live-app.md - when working on Live app: The diagram editor app (clean routes, no `/live` prefix)
 - ./new-document-route.md - when working on Dedicated route for new-document creation: The welcome / create-new flow at `/new`, split from the editor
-- ./templates-by-mode.md - when working on which editor mode a template opens in, the template step's mode filter (All, Diagram, Draw, Illustrate), the mode glyph on template cards, the three blanks, or the Draw and Illustrate templates
+- ./templates-by-mode.md - when working on which editor mode a template opens in, the template step's mode filter (All, Diagram, Draw, Illustrate), the mode glyph on template cards, the four blanks, or the Draw and Illustrate templates
 - ./user-preferences.md - when working on User preferences: Per-user editor preference flags (footer settings dialog)
 - ./ai-assistance.md - when working on AI Assistance: Optional AI assistant (Build / Clean / Ask / Review) on the canvas
 - ./zen-mode.md - when working on Zen mode: Distraction-free focus mode: hide all chrome, keep canvas + zoom

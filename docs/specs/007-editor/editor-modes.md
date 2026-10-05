@@ -411,7 +411,7 @@ nowhere and a tab opening in Plan opens in Diagram. It fires `PlanModeOn` /
   **Editor › Draw** sub-category (Dock Position) as the switch names it, and
   **Draw mode** in prose: the help article (**Draw mode**, at a new address,
   the old one redirecting) and the command palette.
-- The template and Quick Start card is **Blank Whiteboard**, one of three blanks (Blank Diagram,
+- The template and Quick Start card is **Blank Whiteboard**, one of four blanks (Blank Diagram,
   Blank Whiteboard, Blank Illustration), one per mode, that lead Popular
   ([Templates by mode](templates-by-mode.md)); the document it makes is named "Untitled
   Whiteboard", for the activity a person comes for.

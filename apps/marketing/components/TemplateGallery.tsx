@@ -27,7 +27,7 @@ import {
 // "What do you want to create?" (docs/specs/019-marketing/marketing-site.md): every template the
 // editor ships, laid out as the editor's template step lays them out
 // (docs/specs/008-canvas/canvas-and-palette.md "Templates"). ONE shelf is open as a four-across
-// carousel (TemplateCarousel), Popular on load (the three blanks, then the starters most people
+// carousel (TemplateCarousel), Popular on load (the four blanks, then the starters most people
 // reach for); every other category sits folded underneath as a card (CategoryTiles) that opens it
 // in the open one's place, the shelf it replaces folding back (Popular leading the folds). Beside
 // the search box, the mode filter (the editor's own ModeFilterMenu) narrows every view to one

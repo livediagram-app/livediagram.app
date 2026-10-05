@@ -170,7 +170,7 @@ export type TemplateKind =
   // Article (docs/specs/007-editor/article-pages.md): a tab that opens in Illustrate mode on one
   // article page, written as a short project brief.
   | 'article'
-  // Blank Illustration (docs/specs/007-editor/templates-by-mode.md "Three blanks"): a tab that opens
+  // Blank Illustration (docs/specs/007-editor/templates-by-mode.md "Four blanks"): a tab that opens
   // in Illustrate on one empty page, which asks what it is for. A quick-pick beside the other two
   // blanks, never inside a category grid.
   | 'blank-illustration'
@@ -978,8 +978,8 @@ const TEMPLATE_CATEGORY: Record<TemplateKind, TemplateCategory> = {
 
 // The picker's "Popular" shelf (docs/specs/008-canvas/canvas-and-palette.md "Templates section"): where
 // most people start, open by default above the categories. Not a category of
-// its own (every kind here still lives in its real one); the three blanks lead it, one per editor
-// mode (docs/specs/007-editor/templates-by-mode.md "Three blanks"), so the picker needs no separate
+// its own (every kind here still lives in its real one); the four blanks lead it, one per editor
+// mode (docs/specs/007-editor/templates-by-mode.md "Four blanks"), so the picker needs no separate
 // blank card.
 export const POPULAR_TEMPLATE_KINDS: readonly TemplateKind[] = [
   'blank',

@@ -15,6 +15,7 @@ import {
   ChevronDownIcon,
   FlowchartIcon,
   IllustrateIcon,
+  PlanIcon,
   MarkerIcon,
   type IconProps,
 } from './icons';
@@ -51,6 +52,13 @@ const BLANKS: {
     href: '/new?template=blank-illustration',
     slot: 'HeaderIllustration',
     Icon: IllustrateIcon,
+  },
+  {
+    label: 'Blank Plan',
+    desc: 'A board of cards to move through columns',
+    href: '/new?template=blank-plan',
+    slot: 'HeaderPlan',
+    Icon: PlanIcon,
   },
 ];
 

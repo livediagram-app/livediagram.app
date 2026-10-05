@@ -58,6 +58,7 @@ const SLOT_LABELS: Record<CtaSlot, string> = {
   HeaderDraw: 'Header: Blank Diagram',
   HeaderWhiteboard: 'Header: Blank Whiteboard',
   HeaderIllustration: 'Header: Blank Illustration',
+  HeaderPlan: 'Header: Blank Plan',
   Hero: 'Hero: Diagram',
   HeroDraw: 'Hero: Drawing',
   HeroBrainstorm: 'Hero: Brainstorm',
