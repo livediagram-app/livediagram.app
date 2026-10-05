@@ -60,3 +60,38 @@ describe('the route', () => {
     expect(res.status).toBe(404);
   });
 });
+
+describe('the CLI fields (docs/specs/015-api/blueprints/cli.md "Capabilities")', () => {
+  it('names the api base, sign-in, the document format, and no issuer or floor by default', async () => {
+    const caps = await capabilities({});
+    expect(caps).toMatchObject({
+      apiBase: expect.stringMatching(/\/api$/),
+      authEnabled: false,
+      documentFormat: 2,
+    });
+    expect(caps).not.toHaveProperty('oauthIssuer');
+    expect(caps).not.toHaveProperty('cli');
+  });
+
+  it('reports sign-in, an https issuer as its origin, and a well-formed version floor', async () => {
+    const caps = await capabilities({
+      CLERK_JWKS_URL: 'https://clerk/jwks',
+      OAUTH_ISSUER: 'https://mcp.livediagram.app/',
+      CLI_MIN_VERSION: ' 1.2.3 ',
+    });
+    expect(caps).toMatchObject({
+      authEnabled: true,
+      oauthIssuer: 'https://mcp.livediagram.app',
+      cli: { minVersion: '1.2.3' },
+    });
+  });
+
+  it('leaves out an issuer that is not https, or not a URL, and a malformed floor', async () => {
+    for (const OAUTH_ISSUER of ['http://mcp.local', 'not a url']) {
+      expect(await capabilities({ OAUTH_ISSUER, CLI_MIN_VERSION: '1.2' })).not.toHaveProperty(
+        'oauthIssuer',
+      );
+    }
+    expect(await capabilities({ CLI_MIN_VERSION: 'v1' })).not.toHaveProperty('cli');
+  });
+});

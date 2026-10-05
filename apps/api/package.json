@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@livediagram/api-schema": "workspace:*",
+    "@livediagram/diagram-lint": "workspace:*",
     "@livediagram/document": "workspace:*",
     "@livediagram/document-views": "workspace:*",
     "@livediagram/edit-operations": "workspace:*",

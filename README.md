@@ -5,8 +5,8 @@ A collaborative diagram editor that works without signing in. Open a link, draw,
 **Live at [livediagram.app](https://livediagram.app).** MIT-licensed and self-hostable end-to-end.
 
 ```
-apps/        marketing site + editor + telemetry dashboard + help centre + api + mcp server + router
-packages/    shared document model, wire-format types, UI primitives, icon + template catalogues + template previews, help-article registry, the Explorer filter lens, the edit-operations engine, document views, sticky-note photo detection, telemetry client, test fakes, configs
+apps/        marketing site + editor + telemetry dashboard + help centre + api + mcp server + router + cli
+packages/    shared document model, wire-format types, UI primitives, icon + template catalogues + template previews, help-article registry, the Explorer filter lens, the api client and agent verbs, the edit-operations engine, document views, the diagram lint, sticky-note photo detection, telemetry client, test fakes, configs
 scripts/     repo-wide dev tooling (shared Next.js dev launcher)
 docs/        guides, product specs (docs/specs, read these before adding features) and instructions
 marketing/   off-site copy + media for listings and promotion (see docs/specs/019-marketing/marketing-assets.md)
@@ -32,6 +32,7 @@ marketing/   off-site copy + media for listings and promotion (see docs/specs/01
 - **Help** at `/help` is the static help centre (guides, feature docs, troubleshooting).
 - **MCP** at `mcp.livediagram.app` is a Cloudflare Worker that exposes the document tools to AI clients (Claude and other MCP hosts) over OAuth — its own host, not a router path.
 - **Router** stitches the five under one hostname.
+- **CLI** (`apps/cli`) is `livediagram`, the command line agents and scripts read, lint and change documents with; it runs from source for now ([CLI](docs/specs/015-api/cli.md)).
 
 The whole stack runs on Cloudflare Workers (Static Assets for the Next.js apps). There's no Node-hosted backend, no SSR, no Next.js API routes.
 

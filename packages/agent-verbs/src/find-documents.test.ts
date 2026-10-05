@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { DocumentSummary } from '@livediagram/api-schema';
-import { fetchTeamLibraries, matchDocuments } from './find-documents';
-import type { Env } from './env';
+import { fetchTeamLibraries, listAllDocuments, matchDocuments } from './find-documents';
+import { createApiClient, type ApiClient } from '@livediagram/api-client';
 
 function summary(overrides: Partial<DocumentSummary>): DocumentSummary {
   return {
@@ -23,26 +23,26 @@ function summary(overrides: Partial<DocumentSummary>): DocumentSummary {
   };
 }
 
-function envRouting(routes: Record<string, unknown | Error>): Env {
-  return {
-    API: {
-      fetch: vi.fn(async (req: Request) => {
-        const path = new URL(req.url).pathname.replace(/^\/api/, '');
-        const hit = routes[path];
-        if (hit === undefined) return new Response('not found', { status: 404 });
-        if (hit instanceof Error) return new Response(hit.message, { status: 500 });
-        return new Response(JSON.stringify(hit), {
-          headers: { 'Content-Type': 'application/json' },
-        });
-      }),
-    } as unknown as Fetcher,
-    OAUTH_KV: {} as KVNamespace,
-  };
+function apiRouting(routes: Record<string, unknown | Error>): ApiClient & { calls: string[] } {
+  const calls: string[] = [];
+  const api = createApiClient({
+    baseUrl: 'https://x/api',
+    headers: () => ({}),
+    fetch: vi.fn(async (req: Request) => {
+      const path = new URL(req.url).pathname.replace(/^\/api/, '');
+      calls.push(path);
+      const hit = routes[path];
+      if (hit === undefined) return new Response('not found', { status: 404 });
+      if (hit instanceof Error) return new Response(hit.message, { status: 500 });
+      return Response.json(hit);
+    }),
+  });
+  return Object.assign(api, { calls });
 }
 
 describe('fetchTeamLibraries', () => {
   it('returns each joined team’s shared library with its team name', async () => {
-    const env = envRouting({
+    const api = apiRouting({
       '/teams': {
         teams: [
           { id: 't1', name: 'Crew' },
@@ -52,7 +52,7 @@ describe('fetchTeamLibraries', () => {
       '/teams/t1/library': { folders: [], documents: [summary({ id: 'a', teamId: 't1' })] },
       '/teams/t2/library': { folders: [], documents: [] },
     });
-    const libs = await fetchTeamLibraries(env, 'lvd_x');
+    const libs = await fetchTeamLibraries(api);
     expect(libs).toEqual([
       { teamName: 'Crew', documents: [summary({ id: 'a', teamId: 't1' })] },
       { teamName: 'Ops', documents: [] },
@@ -60,12 +60,12 @@ describe('fetchTeamLibraries', () => {
   });
 
   it('collapses a failed teams listing to no team documents (personal search must survive)', async () => {
-    const env = envRouting({});
-    expect(await fetchTeamLibraries(env, 'lvd_x')).toEqual([]);
+    const api = apiRouting({});
+    expect(await fetchTeamLibraries(api)).toEqual([]);
   });
 
   it('collapses one failed library fetch without dropping the other teams', async () => {
-    const env = envRouting({
+    const api = apiRouting({
       '/teams': {
         teams: [
           { id: 't1', name: 'Crew' },
@@ -74,7 +74,7 @@ describe('fetchTeamLibraries', () => {
       },
       '/teams/t2/library': { folders: [], documents: [summary({ id: 'b', teamId: 't2' })] },
     });
-    const libs = await fetchTeamLibraries(env, 'lvd_x');
+    const libs = await fetchTeamLibraries(api);
     expect(libs).toEqual([
       { teamName: 'Crew', documents: [] },
       { teamName: 'Ops', documents: [summary({ id: 'b', teamId: 't2' })] },
@@ -107,5 +107,23 @@ describe('matchDocuments', () => {
   it('caps at the limit after ranking', () => {
     const hits = matchDocuments(personal, teamLibs, undefined, 2);
     expect(hits.map((h) => h.id)).toEqual(['p1', 'c1']);
+  });
+});
+
+describe('listAllDocuments', () => {
+  it('sweeps the personal library and every joined team, newest first', async () => {
+    const api = apiRouting({
+      '/documents': { documents: [summary({ id: 'p1', name: 'Mine', savedAt: 5 })] },
+      '/teams': { teams: [{ id: 't1', name: 'Crew' }] },
+      '/teams/t1/library': {
+        folders: [],
+        documents: [summary({ id: 'c1', name: 'Ours', savedAt: 9 })],
+      },
+    });
+    expect(await listAllDocuments(api)).toEqual([
+      { id: 'c1', name: 'Ours', updatedAt: 9, library: 'Crew' },
+      { id: 'p1', name: 'Mine', updatedAt: 5, library: 'personal' },
+    ]);
+    expect(api.calls).toContain('/teams/t1/library');
   });
 });

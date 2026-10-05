@@ -90,6 +90,7 @@ Run from the repo root:
 | `pnpm --filter @livediagram/live test:e2e`                              | Playwright end-to-end suite ([End-to-end tests](../specs/003-system-architecture/e2e-smoke.md)); reuses a running `pnpm dev` or boots its own stack. Set `E2E_WEBKIT=1` (after `npx playwright install webkit`) to also run the image import spec in WebKit.                                                                                                                          |
 | `pnpm --filter @livediagram/live test:e2e:clerk-stub`                   | The signed-in specs (`apps/live/e2e/clerk-stub/`) against `.next/out-clerk-stub/`; run `pnpm --filter @livediagram/live build:clerk-stub` first. Boots its own stack on `:3015` / `:8788` / `:3016`.                                                                                                                                                                                  |
 | `cd apps/live && bun scripts/ms-whiteboard-verify.mts <folder or .zip>` | Runs the [Microsoft Whiteboard import](../specs/020-import-export/whiteboard-import.md) over real board exports outside the repo and prints counts only (boards, replay stats, items per kind, report notes, timings, largest tab), never their content.                                                                                                                              |
+| `pnpm --filter @livediagram/cli build`                                  | Bundle the CLI into `apps/cli/dist/livediagram.mjs` (see [Running the CLI from source](#running-the-cli-from-source-optional)).                                                                                                                                                                                                                                                       |
 | `pnpm format`                                                           | Prettier write across the repo.                                                                                                                                                                                                                                                                                                                                                       |
 | `pnpm format:check`                                                     | Prettier check (this is what CI runs).                                                                                                                                                                                                                                                                                                                                                |
 | `pnpm staging:check`                                                    | Dry-run the `[env.staging]` wrangler configs and print the resolved bindings (CI runs it).                                                                                                                                                                                                                                                                                            |
@@ -131,6 +132,21 @@ It only takes effect when `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` is also set, and l
 With these set the editor's sign-in flow at `/sign-in` becomes functional. The api worker verifies the Bearer JWT and derives the owner id from the `sub` claim instead of falling back to the `X-Owner-Id` header.
 
 Without these set: the api worker silently treats every request as a guest (the `X-Owner-Id` header path), and the live frontend's ClerkProvider becomes a pass-through that renders the editor without any auth UI. This is the self-host default. See [Auth + guest access](../specs/014-identity/auth-and-guest-access.md) for the full hybrid model.
+
+## Running the CLI from source (optional)
+
+The [CLI](../specs/015-api/cli.md) acts only with an API token, so it needs a host with sign-in: enable Clerk as
+above, sign in, and create a token in Settings › API Tokens. Then build the bundle and point it at the local api:
+
+```bash
+pnpm --filter @livediagram/cli build
+export LIVEDIAGRAM_HOST=http://localhost:8787 LIVEDIAGRAM_TOKEN=lvd_...
+apps/cli/dist/livediagram.mjs document ls
+```
+
+`LIVEDIAGRAM_DEBUG=1` prints each decision and request as a `[cli]` line on stderr. The CLI keeps its files under
+`$XDG_CONFIG_HOME/livediagram` and `$XDG_CACHE_HOME/livediagram` (`~/.config` and `~/.cache` by default); point
+both at a scratch directory to keep a test run apart from your own sign-in.
 
 ## Enabling AI assistance locally (optional)
 

@@ -19,6 +19,10 @@ import { fontIdsUsed, resolveFontStack } from './fonts';
 import { hasRichFormatting } from './rich-text';
 import { iconCaptionBand } from './icon-size';
 import { fontSizeFor, labelMaxWidth } from './svg-render-primitives';
+import { BEHAVIOUR_FACE_SHAPES } from './svg-render-faces';
+import { isCollabPanelShape } from './collab-shapes';
+import { isSelfDrawingShape } from './data-shapes';
+import { isWebComponentShape } from './web-components';
 import type { ExportLabel, ExportRun } from './svg-render-labels';
 import { PADDING_PX } from './index';
 import { pageBodyTop } from './svg-render-page';
@@ -344,4 +348,37 @@ export function describeBoxedExport(
       }
     : null;
   return { opacity, shape, label };
+}
+
+// A shape that writes its own text, so no centred label is printed over it: a self-drawing shape
+// (charts; the legend is its own case), a Collaborate panel, a Behaviour face other than the chair, a
+// web component.
+export function selfLabelled(el: BoxedElement): boolean {
+  if (el.type !== 'shape') return false;
+  return (
+    (isSelfDrawingShape(el.shape) && el.shape !== 'legend') ||
+    isCollabPanelShape(el.shape) ||
+    (BEHAVIOUR_FACE_SHAPES.has(el.shape) && el.shape !== 'chair') ||
+    isWebComponentShape(el.shape)
+  );
+}
+
+// Whether an export prints the element's label as the ordinary centred, wrapped label: not a table,
+// stroke, path, code block, legend or checklist (each draws its own), nor a self-labelled shape.
+export function drawsStandardLabel(el: BoxedElement): boolean {
+  if (el.type === 'table' || el.type === 'freehand' || el.type === 'path') return false;
+  if (
+    el.type === 'shape' &&
+    (el.shape === 'code-block' || el.shape === 'legend' || el.shape === 'checklist')
+  )
+    return false;
+  return !selfLabelled(el);
+}
+
+// The room the ordinary label wraps in: the width it may run to and the height between its padding,
+// exactly as `describeBoxedExport` lays the label out (a page's body starts under its masthead).
+export function labelRoom(el: BoxedElement): { width: number; height: number } {
+  const pad = PADDING_PX[el.padding ?? defaultPadding(el)];
+  const bodyTop = el.type === 'shape' && el.shape === 'page' ? pageBodyTop(el, pad) : el.y;
+  return { width: labelMaxWidth(el, pad), height: el.y + el.height - pad - (bodyTop + pad) };
 }

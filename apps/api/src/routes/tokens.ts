@@ -6,16 +6,26 @@
 //   GET    /api/tokens        — list the caller's live tokens (metadata only)
 //   POST   /api/tokens        — mint one; returns the secret ONCE
 //   DELETE /api/tokens/<id>   — revoke one of the caller's tokens
+//   GET    /api/tokens/current — the token this request presented (the CLI's auth status)
+//   DELETE /api/tokens/current — that token revoking itself (the CLI's auth logout)
 
-import { badRequest, forbidden, json, noContent, notFound } from '../responses';
+import type { CurrentTokenResponse } from '@livediagram/api-schema';
+import { badRequest, forbidden, json, methodNotAllowed, noContent, notFound } from '../responses';
 import { type RouteContext } from './context';
-import { listApiTokensByOwner, mintApiToken, retractTimelineWarning, revokeApiToken } from '../db';
+import {
+  getParticipant,
+  listApiTokensByOwner,
+  mintApiToken,
+  retractTimelineWarning,
+  revokeApiToken,
+} from '../db';
 import { MAX_NAME_LEN } from '../limits';
 import { recordTokenCreated, recordTokenRevoked } from '../timeline';
 
 export async function handleTokens(ctx: RouteContext): Promise<Response> {
   const { request, env, segments, clerkUserId } = ctx;
   if (segments[1] !== 'tokens') return notFound();
+  if (segments[2] === 'current' && segments.length === 3) return handleCurrentToken(ctx);
   // Signed-in only: reject when there's no verified Clerk identity (a guest
   // with only X-Owner-Id, or auth not configured), mirroring routes/teams.ts.
   if (!clerkUserId) return forbidden();
@@ -64,4 +74,37 @@ export async function handleTokens(ctx: RouteContext): Promise<Response> {
   }
 
   return notFound();
+}
+
+// The token the request presented (docs/specs/015-api/blueprints/cli.md "Token self-service"). Only a token
+// has one: a signed-in session or a guest is refused `403 not_a_token`; a token since revoked is 404.
+async function handleCurrentToken(ctx: RouteContext): Promise<Response> {
+  const { request, env, token } = ctx;
+  if (request.method !== 'GET' && request.method !== 'DELETE') return methodNotAllowed();
+  const owner = ctx.resolveOwner();
+  if (!token || !owner) return json({ error: 'not_a_token' }, { status: 403 });
+  const current = (await listApiTokensByOwner(env, owner)).find((t) => t.id === token.id);
+  if (!current) return notFound();
+  if (request.method === 'GET') {
+    console.info('[tokens] current read', { tokenId: token.id });
+    const participant = await getParticipant(env, owner);
+    const body: CurrentTokenResponse = {
+      accountId: owner,
+      accountName: participant?.name ?? null,
+      tokenId: current.id,
+      tokenName: current.name,
+      role: token.readOnly ? 'read-only' : 'full',
+      expiresAt: current.expiresAt,
+    };
+    return json(body);
+  }
+  // DELETE: the token revokes itself.
+  await revokeApiToken(env, owner, token.id);
+  console.info('[tokens] current revoked', { tokenId: token.id });
+  ctx.waitUntil?.(
+    retractTimelineWarning(env, 'account', token.id, 'token_expiring').then(() =>
+      recordTokenRevoked(env, { id: token.id, name: current.name || 'API token' }, owner),
+    ),
+  );
+  return noContent();
 }

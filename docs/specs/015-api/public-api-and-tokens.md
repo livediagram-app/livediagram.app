@@ -294,6 +294,7 @@ out cleanly:
 
 - `GET /api/tokens/current`: the account id and display name, the token's name, its role and `expiresAt`.
 - `DELETE /api/tokens/current`: revokes the presenting token (204).
+- A session or guest has no token to describe and is refused `403 not_a_token`; a revoked token is not found.
 
 Every other `/api/tokens` route stays session-only.
 

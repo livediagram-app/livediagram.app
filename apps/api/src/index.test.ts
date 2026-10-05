@@ -162,6 +162,19 @@ describe('read-only API token enforcement (docs/specs/015-api/mcp-server.md §4.
     expect(await res.json()).toEqual({ error: 'read_only_token' });
   });
 
+  it('lets a read-only token revoke itself, and only itself', async () => {
+    const self = await worker.fetch(
+      new Request('https://api.test/api/tokens/current', { method: 'DELETE', headers: RO }),
+      env(),
+    );
+    expect(self.status).not.toBe(403);
+    const other = await worker.fetch(
+      new Request('https://api.test/api/tokens/tok-other', { method: 'DELETE', headers: RO }),
+      env(),
+    );
+    expect(other.status).toBe(403);
+  });
+
   it('lets a GET through (reads are allowed)', async () => {
     const res = await worker.fetch(req('GET'), env());
     expect(res.status).not.toBe(403);

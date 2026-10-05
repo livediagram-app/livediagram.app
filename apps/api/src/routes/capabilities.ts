@@ -1,8 +1,33 @@
+import { DOCUMENT_FORMAT } from '@livediagram/api-schema';
 import { aiConfigured } from '../ai-provider';
 import { emailEnabled } from '../email/client';
 import { driveMode } from '../drive/config';
 import { json, methodNotAllowed, notFound } from '../responses';
 import type { RouteContext } from './context';
+
+const VERSION = /^\d+\.\d+\.\d+$/;
+
+// What the CLI learns about a host (docs/specs/015-api/blueprints/cli.md "Capabilities", CLI9 to CLI13): where
+// the api answers, whether sign-in exists, the OAuth server when it is an https origin, the document format
+// stored, and the version floor when one is set.
+function cliCapabilities({ env, url }: RouteContext) {
+  const issuer = (() => {
+    try {
+      const parsed = env.OAUTH_ISSUER ? new URL(env.OAUTH_ISSUER) : null;
+      return parsed?.protocol === 'https:' ? parsed.origin : undefined;
+    } catch {
+      return undefined;
+    }
+  })();
+  const minVersion = env.CLI_MIN_VERSION?.trim();
+  return {
+    apiBase: `${url.origin}/api`,
+    authEnabled: Boolean(env.CLERK_JWKS_URL),
+    ...(issuer ? { oauthIssuer: issuer } : {}),
+    documentFormat: DOCUMENT_FORMAT,
+    ...(minVersion && VERSION.test(minVersion) ? { cli: { minVersion } } : {}),
+  };
+}
 
 // GET /api/capabilities — no auth required.
 // Returns which optional server-side features are configured so the
@@ -34,5 +59,6 @@ export function handleCapabilities(ctx: RouteContext): Response {
     // docs/specs/022-drive-mirror/drive-mirror.md: which Drive token path the app takes;
     // 'off' hides the Drive entry.
     driveMode: driveMode(env),
+    ...cliCapabilities(ctx),
   });
 }

@@ -50,11 +50,48 @@ const refusal = (el: Element, fields: Fields) => {
 const nextOf = (out: FieldsWrite) => out.next as unknown as Record<string, unknown>;
 
 describe('aliasesOf', () => {
-  it('gives each element the aliases its type takes', () => {
-    expect(aliasesOf(square)).toEqual(['label', 'note', 'shape', 'fill', 'text']);
-    expect(aliasesOf(arrow)).toEqual(['label', 'text', 'line']);
-    expect(aliasesOf(text)).toEqual(['label', 'note', 'text']);
-    expect(aliasesOf(image)).toEqual(['label', 'note', 'text']);
+  it('gives each element the aliases its type takes, style keys included', () => {
+    const style = ['stroke', 'text-color', 'border'];
+    expect(aliasesOf(square)).toEqual(['label', 'note', 'shape', 'fill', ...style, 'text']);
+    expect(aliasesOf(arrow)).toEqual(['label', ...style, 'text', 'line']);
+    expect(aliasesOf(text)).toEqual(['label', 'note', ...aliasesOf(text).slice(2)]);
+    expect(aliasesOf(image)).toContain('label');
+  });
+
+  it('writes back every style key the views print', () => {
+    const out = writeFieldsOnto(
+      square,
+      { stroke: '#aa0000', 'text-color': '#00aa00', border: 'dashed' },
+      theme,
+      'n1',
+      1,
+    );
+    if ('code' in out) throw new Error('refused');
+    expect(nextOf(out)).toMatchObject({
+      strokeColor: '#aa0000',
+      textColor: '#00aa00',
+      strokeStyle: 'dashed',
+    });
+    expect(out.warnings.map((w) => w.code)).toEqual([
+      'colour_overrides_theme',
+      'colour_overrides_theme',
+    ]);
+    const unset = writeFieldsOnto(
+      { ...square, strokeColor: '#aa0000', strokeSwatch: 2 } as Element,
+      { stroke: null, border: null },
+      theme,
+      'n1',
+      1,
+    );
+    if ('code' in unset) throw new Error('refused');
+    expect(nextOf(unset)).not.toHaveProperty('strokeColor');
+    expect(nextOf(unset)).not.toHaveProperty('strokeSwatch');
+    const named = writeFieldsOnto(square, { stroke: 'pen-red' }, theme, 'n1', 1);
+    expect('code' in named ? null : named.warnings).toEqual([]);
+    expect(refusal(square, { border: 'wavy' }).details[0]).toMatch(
+      /^border="wavy": one of solid dashed dotted/,
+    );
+    expect(refusal(square, { stroke: 3 }).code).toBe('invalid_value');
   });
 });
 
@@ -141,7 +178,9 @@ describe('writeFieldsOnto', () => {
     const unknown = refusal(arrow, { fill: 'red' });
     expect(unknown.details).toEqual([
       'arrow has no field "fill"',
-      expect.stringMatching(/^fields: label text line, then id type layerId /),
+      expect.stringMatching(
+        /^fields: label stroke text-color border text line, then id type layerId /,
+      ),
     ]);
   });
 

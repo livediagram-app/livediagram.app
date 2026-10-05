@@ -1,10 +1,8 @@
 import {
   arrowReferencesAny,
   createAnnotation,
-  createArrow,
   createShape,
   type ArrowElement,
-  type Element,
 } from '@livediagram/document';
 import { describe, expect, it } from 'vitest';
 import {
@@ -14,7 +12,6 @@ import {
   MIN_SIZE,
   nextBounds,
   unionResizeMember,
-  withFrameContents,
   type ShapeBounds,
 } from './canvas';
 
@@ -139,71 +136,6 @@ describe('inheritedSizeFor', () => {
   });
 });
 
-describe('withFrameContents', () => {
-  const frame: Element = { ...createShape('frame', 100, 100), width: 200, height: 200 };
-  // Box 130..170: fully inside the 100..300 frame box.
-  const inside: Element = { ...createShape('square', 130, 130), width: 40, height: 40 };
-  // Box 480..520: fully outside.
-  const outside: Element = { ...createShape('square', 480, 480), width: 40, height: 40 };
-  const elements = [frame, inside, outside];
-
-  it('expands a frame move set with the elements fully inside it', () => {
-    const out = withFrameContents(elements, new Set([frame.id]));
-    expect(out.has(frame.id)).toBe(true);
-    expect(out.has(inside.id)).toBe(true);
-    expect(out.has(outside.id)).toBe(false);
-  });
-
-  it('leaves a straddling element put: full containment, not centre or touch', () => {
-    // Box 280..320 crosses the frame's right edge (x = 300) with its centre
-    // (300,150) still on the boundary — under the old centre rule this was
-    // carried; the frame must now leave it behind.
-    const straddling: Element = { ...createShape('square', 280, 130), width: 40, height: 40 };
-    // Boundary-flush (260..300 ends exactly at the frame edge) IS fully
-    // inside, so it still travels.
-    const flush: Element = { ...createShape('square', 260, 130), width: 40, height: 40 };
-    const out = withFrameContents([frame, straddling, flush], new Set([frame.id]));
-    expect(out.has(straddling.id)).toBe(false);
-    expect(out.has(flush.id)).toBe(true);
-  });
-
-  it('pulls in a free arrow whose endpoints are inside, not one that spans out', () => {
-    // Both free ends inside the 100..300 frame box.
-    const arrowIn = createArrow(120, 120, 200, 200);
-    // One free end (480,480) outside.
-    const arrowOut = createArrow(150, 150, 480, 480);
-    const out = withFrameContents([frame, arrowIn, arrowOut], new Set([frame.id]));
-    expect(out.has(arrowIn.id)).toBe(true);
-    expect(out.has(arrowOut.id)).toBe(false);
-  });
-
-  it('returns the same set untouched when no id is a frame (cheap no-op)', () => {
-    const ids = new Set([inside.id]);
-    expect(withFrameContents(elements, ids)).toBe(ids);
-  });
-
-  it('does NOT carry a touching / overlapping frame as another frame’s content', () => {
-    // A second frame overlapping the first (its centre 250,250 sits inside the
-    // 100..300 first frame). Moving the first frame must leave the second put.
-    const frameB: Element = { ...createShape('frame', 150, 150), width: 200, height: 200 };
-    const out = withFrameContents([frame, frameB], new Set([frame.id]));
-    expect(out.has(frameB.id)).toBe(false);
-  });
-
-  it('an element in overlapping frames belongs to the BACKMOST frame only', () => {
-    // back (earlier in array) + front frames both fully contain the element.
-    const back: Element = { ...createShape('frame', 100, 100), width: 300, height: 300 };
-    const front: Element = { ...createShape('frame', 120, 120), width: 300, height: 300 };
-    // Box 180..220 sits fully inside both.
-    const el: Element = { ...createShape('square', 180, 180), width: 40, height: 40 };
-    const order = [back, front, el];
-    // Dragging the BACK frame carries it...
-    expect(withFrameContents(order, new Set([back.id])).has(el.id)).toBe(true);
-    // ...dragging the FRONT (overlapping) frame does not.
-    expect(withFrameContents(order, new Set([front.id])).has(el.id)).toBe(false);
-  });
-});
-
 describe('framesFirst', () => {
   it('moves frames ahead of everything else, preserving relative order', () => {
     const frameA = createShape('frame', 0, 0);
@@ -211,6 +143,12 @@ describe('framesFirst', () => {
     const frameB = createShape('frame', 9, 9);
     const ordered = framesFirst([box, frameA, frameB]);
     expect(ordered.map((e) => e.id)).toEqual([frameA.id, frameB.id, box.id]);
+  });
+
+  it('puts lanes first too, as containers', () => {
+    const box = createShape('square', 0, 0);
+    const lane = createShape('lane', 0, 0);
+    expect(framesFirst([box, lane]).map((e) => e.id)).toEqual([lane.id, box.id]);
   });
 
   it('returns the same array reference when there are no frames (no-op)', () => {

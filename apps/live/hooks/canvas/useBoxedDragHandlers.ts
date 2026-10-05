@@ -1,5 +1,6 @@
 import type { Dispatch, PointerEvent as ReactPointerEvent, RefObject, SetStateAction } from 'react';
 import {
+  containerContents,
   anchorOutward,
   anchorPosition,
   isBoxed,
@@ -10,7 +11,7 @@ import {
 } from '@livediagram/document';
 import { getTheme } from '@/lib/themes';
 import { track } from '@/lib/telemetry';
-import { withFrameContents, type DragMode, type DragState, type ShapeBounds } from '@/lib/canvas';
+import { type DragMode, type DragState, type ShapeBounds } from '@/lib/canvas';
 import type { EditorDragDeps } from './useEditorDrag.types';
 
 type BoxedDragHandlerDeps = {
@@ -79,17 +80,17 @@ export function useBoxedDragHandlers({
       ? multiSelectedIds
       : new Set<string>([elementId]);
 
-    // Frame sections (docs/specs/008-canvas/canvas-and-palette.md): MOVING a frame carries everything inside
-    // it. Expand the move set with every boxed element whose centre lies
-    // within a frame being moved (pinned arrows between them follow via
-    // the rebind pass). Resizing is deliberately excluded — a frame
+    // Frames and lanes (docs/specs/008-canvas/canvas-and-palette.md): MOVING one carries what it holds by
+    // the centre rule agents' `move` uses (`containerContents`): every element whose centre it holds,
+    // nested frames with their contents, and loose arrows whose free ends lie inside (pinned arrows
+    // follow via the rebind pass). Resizing is deliberately excluded — a frame
     // resize re-sizes the section outline and leaves its contents put.
     //
     // A mind node (docs/specs/009-elements/mind-node.md "Moving a branch") carries its whole subtree
     // the same way: a branch is one idea, and its points follow its heading.
     const ids =
       mode === 'move'
-        ? withMindSubtrees(d.activeTab.elements, withFrameContents(d.activeTab.elements, baseIds))
+        ? withMindSubtrees(d.activeTab.elements, containerContents(d.activeTab.elements, baseIds))
         : baseIds;
 
     const startBounds = new Map<string, ShapeBounds>();

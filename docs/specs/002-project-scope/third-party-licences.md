@@ -23,6 +23,10 @@ reach a deployed artefact, and nothing else.
 - **Versions.** A work's version is its installed `package.json` version, cross-checked against the
   pnpm store path it was bundled from; the store path is the lockfile's resolution, so the page
   always names the locked version.
+- **Distributed apps carry their own notices.** The CLI (`apps/cli`) is published as a package, not
+  deployed; its bundle ships its own `THIRD_PARTY_LICENSES` beside the code, generated from its
+  esbuild metafile ([CLI blueprint](../015-api/blueprints/cli.md)), so the page leaves it out.
+  `DISTRIBUTED_APPS` names it, so every directory in `apps/` is still accounted for.
 - **First-party code is not listed.** The `@livediagram/*` workspaces are this repo, under its MIT
   licence.
 - **Vendored works.** A directory inside a package that carries its own `package.json` name and its

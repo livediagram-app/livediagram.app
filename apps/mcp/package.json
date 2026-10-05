@@ -15,7 +15,10 @@
     "clean": "rm -rf dist .wrangler node_modules .turbo coverage"
   },
   "dependencies": {
+    "@livediagram/agent-verbs": "workspace:*",
+    "@livediagram/api-client": "workspace:*",
     "@livediagram/api-schema": "workspace:*",
+    "@livediagram/diagram-lint": "workspace:*",
     "@livediagram/document": "workspace:*",
     "@livediagram/icons": "workspace:*",
     "@livediagram/templates": "workspace:*",

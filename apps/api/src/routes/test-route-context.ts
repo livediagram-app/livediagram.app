@@ -26,7 +26,7 @@ export function makeTestRouteContext(
     verifiedUserId?: string | null;
     clerkEmail?: string | null;
     // The API token the request presented (docs/specs/024-agents/agent-changesets.md).
-    token?: { id: string } | null;
+    token?: { id: string; readOnly?: boolean } | null;
     // JSON-encoded into the request body when present.
     body?: unknown;
     headers?: Record<string, string>;

@@ -1,8 +1,8 @@
 # Edit operations
 
 **Status: built.** `@livediagram/edit-operations` reads both forms and applies every operation below, by ref or
-selector, through the changeset route; the MCP's `ops` mode takes refs. A result's footer names the lint summary once
-the [lint](diagram-lint.md) is built (`lint unavailable` until then), and the [CLI](../015-api/cli.md) is not built.
+selector, through the changeset route; the MCP's `ops` mode takes refs. A result's footer names the [lint](diagram-lint.md)
+verdict, and the [CLI](../015-api/cli.md) is not built.
 
 An **edit operation** is one step of a [changeset](agent-changesets.md): a small, closed vocabulary of
 intent-level verbs addressed by ref or selector, compiled by the api into element ops. Building from scratch and
@@ -41,7 +41,9 @@ editing an existing tab use the same operations; a full rebuild uses `replace`. 
   for that theme, which follow a theme change; a hex value is accepted with the warning `colour_overrides_theme`,
   a sticky's colours excepted, which take the sticky palette's names), `text=sm`, `note="…"`, `line=angled`. A shape's
   label over 40 characters keeps the heading and moves the full text into the note, as graph input does; an arrow's
-  label is cut; a sticky's or a text's label is its content and is kept whole.
+  label is cut; a sticky's or a text's label is its content and is kept whole. Every style key a
+  [view](document-views.md) prints (`stroke=`, `text-color=`, `border=`, `font=` beside `fill=`, `text=`, `line=`)
+  writes back unchanged.
 - **Locks.** A changeset on a locked tab is refused, and so is an operation that changes a locked element or an
   element on a locked layer (`element_locked`).
 
@@ -76,10 +78,8 @@ match together.
 
 **Membership** is the smallest frame or lane holding an element's centre, the rule [views](document-views.md) nest
 by; it decides `in:`, what `wrap` would capture, what a moved frame carries and the membership lines of a result.
-[Canvas and palette](../008-canvas/canvas-and-palette.md) gives the editor's drag the same rule, so an agent's `move`
-and a person's drag take the same elements along. The editor's drag is not moved onto it yet: it still carries by
-full containment, which was chosen for people because the centre rule took half-out neighbours along; which rule
-people's drags follow is an open decision.
+The editor's drag carries by the same rule ([Canvas and palette](../008-canvas/canvas-and-palette.md)), so an agent's
+`move` and a person's drag take the same elements along.
 
 ## Placement
 

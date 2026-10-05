@@ -65,7 +65,7 @@ Set() }`, frozen).
   `selectedId` / `multiSelectedIds` values. `EditorView` hands the store to
   `SelectionStoreProvider` around its tree.
 - `multiSelectedIds` is a `ReadonlySet<string>` everywhere it is read: every parameter that took a
-  `Set<string>` only reads it (`withFrameContents`, `duplicateElements`, `unionBoxedBounds`,
+  `Set<string>` only reads it (`containerContents`, `duplicateElements`, `unionBoxedBounds`,
   `deletableIds`, and the editor hooks' inputs), and nothing mutates the selection in place.
 
 ### Subscribing
