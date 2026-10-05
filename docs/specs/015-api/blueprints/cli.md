@@ -204,9 +204,9 @@ Changeset writes (`element *`, `changeset apply`, `tab add`, `push`) take the wr
 summary }`.
 4. On `409 elements_held` with `--wait-held <s>`: retry every `HELD_RETRY_INTERVAL_MS` until `s` seconds have
    passed since the first attempt, then exit 5 (CLI25).
-5. Print the result lines with `formatResultLines(response.results)`, then the footer with `formatResultFooter`,
-   carrying the revert command `livediagram changeset revert <doc-ref> <changeset-id>` (CLI26). A dry run prints the
-   engine's dry-run footer.
+5. Print the api's `text`: the result lines, then the footer `formatResultFooter` wrote, carrying the revert command
+   `livediagram changeset revert <documentId> <changeset-id>` (CLI26); a dry run carries the engine's dry-run footer.
+   Each of `warnings` prints to stderr.
 6. When the write landed with `rebasedOver` 0, read the plain tab and `recordCopy` it (CLI24); a rebased write keeps
    the older copy, so a later write over someone else's change conflicts rather than passes.
 

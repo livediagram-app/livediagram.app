@@ -591,7 +591,8 @@ Text, two spaces after the ref, `·` between changes:
 
 Footer (`formatResultFooter`), composed by the api or the CLI from what only they know:
 
-- Write: `rev 41→42 · cs_8k2m4q7d1x · <lint summary> · revert: livediagram changeset revert cs_8k2m4q7d1x`;
+- Write: `rev 41→42 · cs_8k2m4q7d1x · <lint summary> · revert: livediagram changeset revert <documentId> cs_8k2m4q7d1x`
+  (the document's full id, so the command resolves without a search);
   rebased: `rev 41→44 · rebased over 3 writes · cs_… · …`. The lint summary is the summary line of the api's
   `?view=lint` for the next tab.
 - Dry run: `dry run · rev 41 · <lint summary> · nothing written` (EO44).

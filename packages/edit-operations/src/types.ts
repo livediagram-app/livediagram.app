@@ -152,5 +152,7 @@ export type ResultFooter =
       rev: number;
       rebasedOver: number;
       changesetId: string;
+      // The document the changeset belongs to: the revert command names it (CLI26).
+      documentId: string;
       lint: string;
     };
