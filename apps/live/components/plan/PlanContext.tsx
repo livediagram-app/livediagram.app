@@ -1,0 +1,55 @@
+'use client';
+
+// What every Plan board and Plan card on the canvas reads (docs/specs/025-plan/blueprints/plan-board.md
+// "Editor components"): the document's items, who is looking, whether input works the Plan way, and
+// the actions a board takes. A context, like MindOutlineContext, because the consumers are element
+// bodies far below the editor state. Undefined outside the editor (share view, exports): a board
+// then draws read-only from nothing.
+import { createContext, useContext } from 'react';
+import type { Item, ItemMove, ItemPatch, ItemPerson, PlanBoardSetup } from '@livediagram/items';
+import type { PlanItemsStatus } from '@/hooks/plan/usePlanItems';
+
+// Someone else's hands on a card: dragging it or reading it.
+export type PlanCardPresence = { name: string; color: string; state: 'drag' | 'view' };
+
+export type PlanContextValue = {
+  items: ReadonlyMap<string, Item>;
+  status: PlanItemsStatus;
+  self: ItemPerson | null;
+  // People who could be assigned (the room, and the people already on items).
+  people: readonly ItemPerson[];
+  // Plan mode is on for this person: cards take the pointer.
+  planInput: boolean;
+  canEdit: boolean;
+  // Votes need only participate access (docs/specs/025-plan/items.md "Who may do what").
+  canVote: boolean;
+  presence: ReadonlyMap<string, PlanCardPresence>;
+  retry: () => void;
+  openItem: (itemId: string) => void;
+  openItemId: string | null;
+  addItem: (input: {
+    type: string;
+    fields: Item['fields'];
+    status: string;
+    after: string | null;
+  }) => void;
+  moveItem: (itemId: string, move: ItemMove) => void;
+  patchItem: (itemId: string, patch: ItemPatch) => void;
+  deleteItem: (itemId: string) => void;
+  vote: (itemId: string, delta: 1 | -1) => void;
+  updateBoard: (boardId: string, setup: PlanBoardSetup) => void;
+  openSetup: (boardId: string) => void;
+  // A card dragged off a board onto the canvas, at a canvas point: a Plan card is left there.
+  placeCardOut: (itemId: string, x: number, y: number) => void;
+  removeCard: (cardElementId: string) => void;
+  announce: (message: string) => void;
+  setDragging: (itemId: string | null) => void;
+};
+
+const PlanContext = createContext<PlanContextValue | undefined>(undefined);
+
+export const PlanProvider = PlanContext.Provider;
+
+export function usePlan(): PlanContextValue | undefined {
+  return useContext(PlanContext);
+}

@@ -752,6 +752,22 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
           }
         }
       }
+      // A Plan card released over a board's column files its item there (docs/specs/025-plan/
+      // plan-board.md): the column is read from the board's own DOM under the pointer.
+      if (drag?.kind === 'boxed' && drag.mode === 'move' && d.onPlanCardDroppedOnBoard) {
+        const moved = Math.hypot(e.clientX - drag.startClientX, e.clientY - drag.startClientY) > 4;
+        const dragged = d.activeTab.elements.find((el) => el.id === drag.primaryId);
+        if (moved && dragged?.type === 'shape' && dragged.shape === 'plan-card') {
+          const cell = document
+            .elementsFromPoint(e.clientX, e.clientY)
+            .find(
+              (el): el is HTMLElement =>
+                el instanceof HTMLElement && el.dataset.planStatus !== undefined,
+            );
+          if (cell?.dataset.planStatus)
+            d.onPlanCardDroppedOnBoard(dragged, cell.dataset.planStatus);
+        }
+      }
       // Insert between (docs/specs/021-event-storming/event-storming.md): the drop. The dragged note is already in
       // the slot (the move ticks put it there); this adds the ripple that
       // makes room for it. Both land inside the gesture's single checkpoint,

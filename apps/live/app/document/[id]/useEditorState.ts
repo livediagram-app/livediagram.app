@@ -1,5 +1,10 @@
 'use client';
 
+import { usePlanSlice } from '@/hooks/plan/usePlanSlice';
+import type { PlanCardPresence } from '@/components/plan/PlanContext';
+
+// Nobody's hands on a card yet: presence on cards arrives with the room's plan op.
+const NO_PLAN_PRESENCE: ReadonlyMap<string, PlanCardPresence> = new Map();
 import { newCardItemWrite } from '@/hooks/plan/plan-card-item';
 import { usePlanItems } from '@/hooks/plan/usePlanItems';
 import { useItemUndo } from '@/hooks/plan/useItemUndo';
@@ -1890,6 +1895,20 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     commit((existingEls) => mergeAiElements(existingEls, elements, mode));
   };
 
+  // Plan boards and cards (docs/specs/025-plan/): the item panel, board set-up and every action a board
+  // takes, handed to the canvas through PlanContext. See usePlanSlice.
+  const plan = usePlanSlice({
+    planItems,
+    editorMode: editorMode.mode,
+    canEdit: !isReadOnly,
+    canVote: hydrated,
+    participants: livePresence,
+    presence: NO_PLAN_PRESENCE,
+    commit,
+    select: setSelectedId,
+    announce,
+  });
+
   // Undo / redo handlers. See useEditorHistory.
   const { tick, undo, redo } = useEditorHistory({
     activeId,
@@ -2949,6 +2968,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     markCheckpoint,
     cancelToCheckpoint,
     onIconElementDroppedOnShape: editsBlocked ? undefined : dropIconElementOnShape,
+    onPlanCardDroppedOnBoard: editsBlocked ? undefined : plan.dropPlanCardOnBoard,
     // Click (not drag) on an annotation marker opens its note editor
     // (docs/specs/009-elements/annotations.md). Blocked alongside other edits on a locked / read-only tab.
     onAnnotationClicked: editsBlocked ? undefined : openNote,
@@ -3131,6 +3151,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     changesetReveals: changesetFeed.reveals,
     // What the agents present name in focus on the active tab, for the focus rings.
     agentFocusByElement,
+    plan,
     // The person's editor mode on the active tab, for the mode switch and the canvas.
     editorMode,
     leaveIllustrate,

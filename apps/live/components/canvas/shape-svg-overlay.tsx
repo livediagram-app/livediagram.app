@@ -86,7 +86,10 @@ export function isSvgRenderedShape(kind: ShapeKind): boolean {
     // self-painting, so the box path gives them a bare wrapper).
     !isWebComponentShape(kind) &&
     // A chair (docs/specs/009-elements/chair.md) draws its own furniture and wants no box behind it.
-    kind !== 'chair'
+    kind !== 'chair' &&
+    // The Plan board and card (docs/specs/025-plan/plan-board.md) paint their own surfaces.
+    kind !== 'plan-board' &&
+    kind !== 'plan-card'
   );
 }
 

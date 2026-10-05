@@ -163,6 +163,10 @@ export const TELEMETRY_CATEGORIES = [
   // see what changed; 'Viewed' for a document view the api answered, typed by the view. Never
   // content, never an id.
   'Agent',
+  // Plan mode (docs/specs/025-plan/plan-mode.md "Telemetry"): items made, moved, opened, voted on and
+  // deleted, and board set-up changed or revealed. `type` is the item type, the set-up part or the
+  // gesture ('Board', 'Keyboard', 'Card'), never item content.
+  'Plan',
 ] as const;
 export type TelemetryCategory = (typeof TELEMETRY_CATEGORIES)[number];
 

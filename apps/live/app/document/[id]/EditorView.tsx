@@ -17,6 +17,8 @@ import { AgentFocusContext } from '@/components/canvas/AgentFocusOverlay';
 import { SelectionStoreProvider } from '@/hooks/canvas/useSelectionStore';
 import { ViewportStoreProvider } from '@/hooks/canvas/useViewportStore';
 import { EditorCanvasHost } from '@/components/canvas/EditorCanvasHost';
+import { PlanProvider } from '@/components/plan/PlanContext';
+import { PlanSheetsHost } from '@/components/plan/PlanSheetsHost';
 import { PresentationHost } from '@/components/canvas/PresentationHost';
 import { EditorHeader } from '@/components/chrome/EditorHeader';
 import { EmbedChrome } from '@/components/chrome/EmbedChrome';
@@ -339,7 +341,13 @@ export function EditorView() {
                       <AgentFocusContext.Provider value={ctx.agentFocusByElement}>
                         <EditorCanvasHost />
                       </AgentFocusContext.Provider>
+                      {/* Plan boards and cards read the items and their actions here
+                          (docs/specs/025-plan/plan-board.md). */}
+                      <PlanProvider value={ctx.plan.context}>
+                        <EditorCanvasHost />
+                      </PlanProvider>
                     </ChangesetRevealContext.Provider>
+                    <PlanSheetsHost plan={ctx.plan} elements={activeTab.elements} />
                   </AreaErrorBoundary>
                   {/* Presenting (docs/specs/012-collaboration/presentation-mode.md) renders over everything and takes the keyboard.
           Nothing at all when no deck is running. */}

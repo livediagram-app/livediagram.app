@@ -30,6 +30,8 @@ import { PieChartView } from '@/components/canvas/PieChartView';
 import { CodeBlockView } from '@/components/canvas/CodeBlockView';
 import { LegendView } from '@/components/canvas/LegendView';
 import { ChecklistView } from '@/components/canvas/ChecklistView';
+import { PlanBoardView } from '@/components/plan/PlanBoardView';
+import { PlanCardView } from '@/components/plan/PlanCardView';
 import { BarChartView } from '@/components/canvas/BarChartView';
 import { LineChartView } from '@/components/canvas/LineChartView';
 import type { BoxedElementViewProps } from '@/components/canvas/BoxedElementView.types';
@@ -170,6 +172,13 @@ export function ShapeContentRouter({
       textColor={textColor}
       fontFamily={fontFamily}
     />
+  ) : element.type === 'shape' && element.shape === 'plan-board' ? (
+    // Plan board (docs/specs/025-plan/plan-board.md): columns of cards drawn from the document's
+    // items, through PlanContext.
+    <PlanBoardView element={element} />
+  ) : element.type === 'shape' && element.shape === 'plan-card' ? (
+    // Plan card (docs/specs/025-plan/plan-board.md "The Plan card"): one item's card face.
+    <PlanCardView element={element} />
   ) : element.type === 'shape' && isChecklistShape(element.shape) ? (
     // Checklist (docs/specs/009-elements/checklist.md): themed card of checkbox rows; boxes toggle
     // on-canvas for anyone with edit access (no select-first required).

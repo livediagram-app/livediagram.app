@@ -76,6 +76,10 @@ export type EditorDragDeps = {
     targetShapeId: string,
     position: IconPosition,
   ) => void;
+  // A Plan card was dragged and released over a Plan board's column (docs/specs/025-plan/plan-board.md
+  // "Working on a board"): its item files there and the card leaves the canvas. Omitted when edits
+  // are blocked.
+  onPlanCardDroppedOnBoard?: (card: Element, status: string) => void;
   // An annotation marker was pressed + released without moving (a click,
   // not a drag): open its note editor (docs/specs/009-elements/annotations.md). Distinguished from a drag
   // by the same DRAG_ENGAGE_PX travel test the icon-fold uses. Omitted when
