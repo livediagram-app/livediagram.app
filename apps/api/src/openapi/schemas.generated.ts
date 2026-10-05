@@ -1309,6 +1309,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         ],
         "type": "object"
       },
+      "communityEnabled": {
+        "type": "boolean"
+      },
       "documentFormat": {
         "type": "number"
       },
@@ -1938,12 +1941,20 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
-  "CommunityHiddenBy": {
-    "enum": [
-      "reports",
-      "operator"
+  "CommunityFeaturedResponse": {
+    "additionalProperties": false,
+    "properties": {
+      "posts": {
+        "items": {
+          "$ref": "#/components/schemas/CommunityPost"
+        },
+        "type": "array"
+      }
+    },
+    "required": [
+      "posts"
     ],
-    "type": "string"
+    "type": "object"
   },
   "CommunityLikeResponse": {
     "additionalProperties": false,
@@ -1983,9 +1994,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
-  "CommunityModerationItem": {
+  "CommunityMinePost": {
     "additionalProperties": false,
     "properties": {
+      "anonymous": {
+        "type": "boolean"
+      },
       "author": {
         "$ref": "#/components/schemas/CommunityAuthor"
       },
@@ -1998,15 +2012,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "description": {
         "type": "string"
       },
-      "hiddenBy": {
-        "anyOf": [
-          {
-            "$ref": "#/components/schemas/CommunityHiddenBy"
-          },
-          {
-            "type": "null"
-          }
-        ]
+      "documentId": {
+        "type": "string"
       },
       "id": {
         "type": "string"
@@ -2019,12 +2026,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "publishedAt": {
         "type": "number"
-      },
-      "reports": {
-        "items": {
-          "$ref": "#/components/schemas/CommunityReport"
-        },
-        "type": "array"
       },
       "shareCode": {
         "type": "string"
@@ -2046,16 +2047,16 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       }
     },
     "required": [
+      "anonymous",
       "author",
       "category",
       "copyCount",
       "description",
-      "hiddenBy",
+      "documentId",
       "id",
       "likeCount",
       "liked",
       "publishedAt",
-      "reports",
       "shareCode",
       "state",
       "tags",
@@ -2064,9 +2065,58 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "CommunityMineResponse": {
+    "additionalProperties": false,
+    "properties": {
+      "nextOffset": {
+        "type": [
+          "number",
+          "null"
+        ]
+      },
+      "posts": {
+        "items": {
+          "$ref": "#/components/schemas/CommunityMinePost"
+        },
+        "type": "array"
+      },
+      "totals": {
+        "$ref": "#/components/schemas/CommunityMineTotals"
+      }
+    },
+    "required": [
+      "posts",
+      "nextOffset",
+      "totals"
+    ],
+    "type": "object"
+  },
+  "CommunityMineTotals": {
+    "additionalProperties": false,
+    "properties": {
+      "copies": {
+        "type": "number"
+      },
+      "likes": {
+        "type": "number"
+      },
+      "posts": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "posts",
+      "likes",
+      "copies"
+    ],
+    "type": "object"
+  },
   "CommunityOwnPost": {
     "additionalProperties": false,
     "properties": {
+      "anonymous": {
+        "type": "boolean"
+      },
       "author": {
         "$ref": "#/components/schemas/CommunityAuthor"
       },
@@ -2111,6 +2161,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       }
     },
     "required": [
+      "anonymous",
       "author",
       "category",
       "copyCount",
@@ -2130,6 +2181,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "CommunityPost": {
     "additionalProperties": false,
     "properties": {
+      "anonymous": {
+        "type": "boolean"
+      },
       "author": {
         "$ref": "#/components/schemas/CommunityAuthor"
       },
@@ -2182,6 +2236,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "updatedAt",
       "shareCode",
       "author",
+      "anonymous",
       "liked"
     ],
     "type": "object"
@@ -2189,6 +2244,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "CommunityPostInput": {
     "additionalProperties": false,
     "properties": {
+      "anonymous": {
+        "type": "boolean"
+      },
       "category": {
         "$ref": "#/components/schemas/CommunityCategory"
       },
@@ -2209,7 +2267,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "title",
       "description",
       "category",
-      "tags"
+      "tags",
+      "anonymous"
     ],
     "type": "object"
   },
@@ -2238,29 +2297,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "hidden"
     ],
     "type": "string"
-  },
-  "CommunityReport": {
-    "additionalProperties": false,
-    "properties": {
-      "createdAt": {
-        "type": "number"
-      },
-      "note": {
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "reason": {
-        "$ref": "#/components/schemas/CommunityReportReason"
-      }
-    },
-    "required": [
-      "reason",
-      "note",
-      "createdAt"
-    ],
-    "type": "object"
   },
   "CommunityReportInput": {
     "additionalProperties": false,
@@ -3501,6 +3537,17 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "Document": {
     "additionalProperties": false,
     "properties": {
+      "communityState": {
+        "enum": [
+          "listed",
+          "hidden",
+          null
+        ],
+        "type": [
+          "string",
+          "null"
+        ]
+      },
       "createdAt": {
         "type": "number"
       },
@@ -9735,6 +9782,13 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
+  "TrashReason": {
+    "enum": [
+      "deleted",
+      "empty"
+    ],
+    "type": "string"
+  },
   "TrashedDocument": {
     "additionalProperties": false,
     "properties": {
@@ -9746,6 +9800,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "purgeAt": {
         "type": "number"
+      },
+      "reason": {
+        "$ref": "#/components/schemas/TrashReason"
       },
       "teamId": {
         "type": [
@@ -9769,7 +9826,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "teamId",
       "teamName",
       "trashedAt",
-      "purgeAt"
+      "purgeAt",
+      "reason"
     ],
     "type": "object"
   },
