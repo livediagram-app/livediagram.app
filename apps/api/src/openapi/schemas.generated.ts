@@ -1367,6 +1367,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       text: {
         type: 'string',
       },
+      tokenId: {
+        type: 'string',
+      },
     },
     required: ['id', 'text', 'createdAt', 'authorName', 'authorColor'],
     type: 'object',
@@ -2684,6 +2687,68 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       'teamId',
       'templateFamily',
     ],
+    type: 'object',
+  },
+  DocumentCommentThread: {
+    additionalProperties: false,
+    properties: {
+      comments: {
+        items: {
+          additionalProperties: false,
+          properties: {
+            authorColor: {
+              type: 'string',
+            },
+            authorId: {
+              type: 'string',
+            },
+            authorName: {
+              type: 'string',
+            },
+            createdAt: {
+              type: 'number',
+            },
+            id: {
+              type: 'string',
+            },
+            mentions: {
+              items: {
+                $ref: '#/components/schemas/CommentMention',
+              },
+              type: 'array',
+            },
+            text: {
+              type: 'string',
+            },
+            tokenId: {
+              type: 'string',
+            },
+          },
+          required: ['id', 'text', 'createdAt', 'authorName', 'authorColor'],
+          type: 'object',
+        },
+        type: 'array',
+      },
+      elementId: {
+        type: 'string',
+      },
+      label: {
+        type: ['string', 'null'],
+      },
+      ref: {
+        type: 'string',
+      },
+      resolved: {
+        type: 'boolean',
+      },
+      tabId: {
+        type: 'string',
+      },
+      tabName: {
+        type: 'string',
+      },
+    },
+    required: ['tabId', 'tabName', 'elementId', 'ref', 'label', 'resolved', 'comments'],
     type: 'object',
   },
   DocumentSource: {

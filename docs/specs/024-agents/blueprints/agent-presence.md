@@ -10,56 +10,57 @@ cited as `PRn`.
 
 It builds on the sibling blueprints and calls what they provide by these names:
 
-| Provided by      | Name used here                                                                      | What it is                                                                       |
-| ---------------- | ----------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
-| share-roles      | `ShareRole`, `TokenRole`                                                            | The levels on grants, tickets, room sessions and tokens; no member is named here |
-| share-roles      | `gateParticipate`, `gateEdit` `(ctx, id, ownerId, teamId, tabId?)`                  | True when the caller's grant and its token (if any) pass that gate               |
-| share-roles      | The write choke point's route-gate matcher                                          | Lets a token's write reach a route only when the token passes that route's gate  |
-| agent-changesets | `ctx.token: { id, ownerId, role } \| null` on `RouteContext`                        | The presenting API token, null for a session or a guest                          |
-| agent-changesets | `roomStubFor` returns a stub for every server-stored document                       | Rooms for personal documents                                                     |
-| agent-changesets | `upsertTabAtRev(env, documentId, tab, orderIndex, rev)`, `tabs.rev`                 | The compare-and-swap tab write; every write increments `rev`                     |
-| agent-changesets | `agentFrontDoor(request): 'Mcp' \| 'Cli' \| 'Api'`                                  | The telemetry type of an agent request                                           |
-| agent-changesets | The changeset route's success step                                                  | Calls `refreshAgentPresence` here                                                |
-| document         | `tabRefs(tab)`, `resolveRef(tab, input)` in `packages/document/src/element-refs.ts` | Refs and ref resolution                                                          |
-| document-views   | `viewLabel(el)`, `readingOrder(elements)`                                           | The view label, reading order                                                    |
+| Provided by      | Name used here                                                                      | What it is                                                                                                                                                                                                          |
+| ---------------- | ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| share-roles      | `ShareRole`, `TokenRole`                                                            | The levels on grants, tickets, room sessions and tokens; no member is named here                                                                                                                                    |
+| share-roles      | `gateParticipate`, `gateEdit` `(ctx, id, ownerId, teamId, tabId?)`                  | True when the caller's grant and its token (if any) pass that gate; until share roles land, `gateParticipate` is read access (`apps/api/src/routes/context.ts`), read-only tokens refused writes at the choke point |
+| share-roles      | The write choke point's route-gate matcher                                          | Lets a token's write reach a route only when the token passes that route's gate                                                                                                                                     |
+| agent-changesets | `ctx.token: { id, ownerId, role } \| null` on `RouteContext`                        | The presenting API token, null for a session or a guest                                                                                                                                                             |
+| agent-changesets | `roomStubFor` returns a stub for every server-stored document                       | Rooms for personal documents                                                                                                                                                                                        |
+| agent-changesets | `upsertTabAtRev(env, documentId, tab, orderIndex, rev)`, `tabs.rev`                 | The compare-and-swap tab write; every write increments `rev`                                                                                                                                                        |
+| agent-changesets | `agentFrontDoor(request): 'Mcp' \| 'Cli' \| 'Api'`                                  | The telemetry type of an agent request                                                                                                                                                                              |
+| agent-changesets | The changeset route's success step                                                  | Calls `refreshAgentPresence` here                                                                                                                                                                                   |
+| document         | `tabRefs(tab)`, `resolveRef(tab, input)` in `packages/document/src/element-refs.ts` | Refs and ref resolution                                                                                                                                                                                             |
+| document-views   | `viewLabel(el)`, `readingOrder(elements)`                                           | The view label, reading order                                                                                                                                                                                       |
 
 Scope, by file:
 
-| File                                                                                                   | Role                                                                                             |
-| ------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------ |
-| `packages/api-schema/src/agent-presence.ts` (planned)                                                  | Constants, `AgentPresence` (wire), `AgentPresenceRequest`, `parseAgentPresenceRequest`, codes    |
-| `packages/api-schema/src/comment-threads.ts` (planned)                                                 | `COMMENT_LIST_STATUSES`, `CommentListStatus`, `DocumentCommentThread`, `COMMENT_TEXT_MAX`        |
-| `packages/api-schema/src/room-messages.ts`                                                             | The `presence` frame gains `agents: AgentPresence[]`                                             |
-| `packages/api-schema/src/index.ts`                                                                     | Re-exports the two new modules                                                                   |
-| `packages/api-schema/src/telemetry-schema.ts`, `server-emitted-events.ts`                              | Action `Present` (category `Agent`); `Agent·Present` is server-emitted                           |
-| `packages/document/src/comments.ts`                                                                    | `Comment.tokenId`; `withoutCommentAuthorId` strips it too                                        |
-| `apps/api/migrations/0067_agent_changesets.sql`                                                        | `ws_tickets.person_tag` (PR1), landed with agent changesets, whose held check reads it           |
-| `apps/api/src/db/ws-tickets.ts`                                                                        | `WsAdmission.personTag`; written at mint, returned at consume                                    |
-| `apps/api/src/db/tabs.ts`                                                                              | `tabIdsWithComments(env, documentId)`                                                            |
-| `apps/api/src/person-tag.ts`                                                                           | `personTagFor(documentId, ownerId)`                                                              |
-| `apps/api/src/comments.ts`                                                                             | `tokenId` locked by `rewriteCommentAuthors`, blanked by `redactCommentAuthorIds`; `threadsOfTab` |
-| `apps/api/src/routes/comment-routes.ts` (planned)                                                      | `handleCommentRoutes`: add, delete-own (moved, PR28), reply, resolve, reopen, list               |
-| `apps/api/src/routes/agent-presence-routes.ts` (planned)                                               | `handleAgentPresenceRoute`: `PUT` / `DELETE .../tabs/:tabId/presence`                            |
-| `apps/api/src/routes/document-subresource-routes.ts`                                                   | Dispatches to the two handlers above; loses the inline add and delete-own                        |
-| `apps/api/src/routes/context.ts`                                                                       | `deniedOnTab` moves here from the subresource routes; `deniedParticipate`                        |
-| `apps/api/src/routes/document-room-routes.ts`                                                          | The mint stores the person tag; the upgrade sets `X-Verified-Person`                             |
-| `apps/api/src/room-client.ts`                                                                          | `putAgentPresence`, `deleteAgentPresence`, `refreshAgentPresence`; `relayElementDelta` logs      |
-| `apps/api/src/room-agent-presence.ts` (planned)                                                        | `RoomAgentPresence` (storage, set, refresh, clear, sweep) and the pure `agentRosterFor`          |
-| `apps/api/src/document-room.ts`                                                                        | `PUT` / `DELETE /presence`, restore, `armAlarm`, `alarm`, roster, clears on trash and revoke     |
-| `apps/api/src/index.ts`                                                                                | The comment routes and presence among the participation-class routes of the choke point matcher  |
-| `apps/api/src/openapi/manifest.ts`, `schemas.generated.ts`, `apps/api/scripts/gen-openapi-schemas.mjs` | Six new routes, `tokenUsable` on the comment routes, the new schemas                             |
-| `apps/live/lib/api/room.ts`                                                                            | `onPresence(participants, agents)`                                                               |
-| `apps/live/lib/api/tabs.ts`                                                                            | `apiResolveThread`, `apiReopenThread`                                                            |
-| `apps/live/lib/agent-presence-rows.ts` (planned)                                                       | `splitPresenceFrame`, `foldAgentPresence`, `buildAgentFocusByElement`                            |
-| `apps/live/lib/identity.ts`                                                                            | `Participant.statusLine`, `Participant.agent`                                                    |
-| `apps/live/lib/collaborator-roster.ts`                                                                 | `peopleCount` leaves agent rows out; `participantBadges` reads the agent's level                 |
-| `apps/live/app/document/[id]/usePresenceState.ts`, `useRoomConnection.ts`                              | `agentPresence` state, set from the frame                                                        |
-| `apps/live/app/document/[id]/usePresenceRows.ts`                                                       | Composes the fold and the focus map                                                              |
-| `apps/live/hooks/collab/useEditorComments.ts`                                                          | A non-edit session resolves and reopens through the endpoints                                    |
-| `apps/live/components/primitives/ParticipantAvatar.tsx`                                                | The status line in the hover card and the accessible name                                        |
-| `apps/live/components/dialogs/CollaboratorsDialog.tsx`                                                 | The status line on a row; no Follow on an agent row                                              |
-| `apps/live/components/canvas/AgentFocusRings.tsx` (planned), `CanvasElementsLayer.tsx`                 | Focus rings beside `LaserOverlay`                                                                |
-| `apps/telemetry/app/catalogue/`                                                                        | The `Present` series on the Agent stack the agent-changesets blueprint adds                      |
+| File                                                                                                   | Role                                                                                                                                         |
+| ------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `packages/api-schema/src/agent-presence.ts` (planned)                                                  | Constants, `AgentPresence` (wire), `AgentPresenceRequest`, `parseAgentPresenceRequest`, codes                                                |
+| `packages/api-schema/src/comment-threads.ts` (+ test)                                                  | `COMMENT_LIST_STATUSES`, `CommentListStatus`, `isCommentListStatus`, `DocumentCommentThread`, `DocumentCommentsResponse`, `COMMENT_TEXT_MAX` |
+| `packages/api-schema/src/room-messages.ts`                                                             | The `presence` frame gains `agents: AgentPresence[]`                                                                                         |
+| `packages/api-schema/src/index.ts`                                                                     | Re-exports the two new modules                                                                                                               |
+| `packages/api-schema/src/telemetry-schema.ts`, `server-emitted-events.ts`                              | Action `Present` (category `Agent`); `Agent·Present` is server-emitted                                                                       |
+| `packages/document/src/comments.ts`                                                                    | `Comment.tokenId`; `withoutCommentAuthorId` strips it too                                                                                    |
+| `apps/api/migrations/0067_agent_changesets.sql`                                                        | `ws_tickets.person_tag` (PR1), landed with agent changesets, whose held check reads it                                                       |
+| `apps/api/src/db/ws-tickets.ts`                                                                        | `WsAdmission.personTag`; written at mint, returned at consume                                                                                |
+| `apps/api/src/db/tabs.ts`                                                                              | `tabIdsWithComments(env, documentId)`                                                                                                        |
+| `apps/api/src/person-tag.ts`                                                                           | `personTagFor(documentId, ownerId)`                                                                                                          |
+| `apps/api/src/comments.ts`                                                                             | `tokenId` locked by `rewriteCommentAuthors`, blanked by `redactCommentAuthorIds`; `threadsOfTab`                                             |
+| `apps/api/src/routes/comment-routes.ts` (+ test)                                                       | `handleCommentRoutes`: add, delete-own (moved, PR28), reply, resolve, reopen, list                                                           |
+| `packages/document-views/src/comments.ts`                                                              | `commentHosts(model)`: the elements holding a thread in outline order, with ref and label                                                    |
+| `apps/api/src/routes/agent-presence-routes.ts` (planned)                                               | `handleAgentPresenceRoute`: `PUT` / `DELETE .../tabs/:tabId/presence`                                                                        |
+| `apps/api/src/routes/document-subresource-routes.ts`                                                   | Dispatches to the two handlers above; loses the inline add and delete-own                                                                    |
+| `apps/api/src/routes/context.ts`                                                                       | `deniedOnTab` moves here from the subresource routes; `deniedParticipate`                                                                    |
+| `apps/api/src/routes/document-room-routes.ts`                                                          | The mint stores the person tag; the upgrade sets `X-Verified-Person`                                                                         |
+| `apps/api/src/room-client.ts`                                                                          | `putAgentPresence`, `deleteAgentPresence`, `refreshAgentPresence`; `relayElementDelta` logs                                                  |
+| `apps/api/src/room-agent-presence.ts` (planned)                                                        | `RoomAgentPresence` (storage, set, refresh, clear, sweep) and the pure `agentRosterFor`                                                      |
+| `apps/api/src/document-room.ts`                                                                        | `PUT` / `DELETE /presence`, restore, `armAlarm`, `alarm`, roster, clears on trash and revoke                                                 |
+| `apps/api/src/index.ts`                                                                                | The comment routes and presence among the participation-class routes of the choke point matcher                                              |
+| `apps/api/src/openapi/manifest.ts`, `schemas.generated.ts`, `apps/api/scripts/gen-openapi-schemas.mjs` | Six new routes, `tokenUsable` on the comment routes, the new schemas                                                                         |
+| `apps/live/lib/api/room.ts`                                                                            | `onPresence(participants, agents)`                                                                                                           |
+| `apps/live/lib/api/tabs.ts`                                                                            | `apiResolveThread`, `apiReopenThread`                                                                                                        |
+| `apps/live/lib/agent-presence-rows.ts` (planned)                                                       | `splitPresenceFrame`, `foldAgentPresence`, `buildAgentFocusByElement`                                                                        |
+| `apps/live/lib/identity.ts`                                                                            | `Participant.statusLine`, `Participant.agent`                                                                                                |
+| `apps/live/lib/collaborator-roster.ts`                                                                 | `peopleCount` leaves agent rows out; `participantBadges` reads the agent's level                                                             |
+| `apps/live/app/document/[id]/usePresenceState.ts`, `useRoomConnection.ts`                              | `agentPresence` state, set from the frame                                                                                                    |
+| `apps/live/app/document/[id]/usePresenceRows.ts`                                                       | Composes the fold and the focus map                                                                                                          |
+| `apps/live/hooks/collab/useEditorComments.ts`                                                          | A non-edit session resolves and reopens through the endpoints                                                                                |
+| `apps/live/components/primitives/ParticipantAvatar.tsx`                                                | The status line in the hover card and the accessible name                                                                                    |
+| `apps/live/components/dialogs/CollaboratorsDialog.tsx`                                                 | The status line on a row; no Follow on an agent row                                                                                          |
+| `apps/live/components/canvas/AgentFocusRings.tsx` (planned), `CanvasElementsLayer.tsx`                 | Focus rings beside `LaserOverlay`                                                                                                            |
+| `apps/telemetry/app/catalogue/`                                                                        | The `Present` series on the Agent stack the agent-changesets blueprint adds                                                                  |
 
 ## Domain and naming
 
@@ -199,8 +200,8 @@ type DocumentCommentThread = {
   tabId: string;
   tabName: string;
   elementId: string;
-  ref: string; // tabRefs(tab).get(elementId)
-  label: string; // viewLabel(element)
+  ref: string; // the views' ref, from commentHosts(buildViewModel(tab))
+  label: string | null; // the element's label, null when it has none
   resolved: boolean;
   comments: {
     id: string;
@@ -228,7 +229,9 @@ SELECT dt.tab_id FROM document_tabs dt JOIN tabs t ON t.id = dt.tab_id
 ```
 
 then read one at a time with `getTab`, each passed to `threadsOfTab(tab, status, viewerId)` (in
-`apps/api/src/comments.ts`), which applies `redactCommentAuthorIds` and drops threads with no comments.
+`apps/api/src/comments.ts`), which applies `redactCommentAuthorIds`, orders by `commentHosts` (the comments view's
+own order, so a thread on a hidden layer is left out as the views leave its element out) and drops threads with
+no comments. A grant confined to one tab passes `gateRead` on that tab only, so it lists that tab alone.
 
 ### Comment stamping
 

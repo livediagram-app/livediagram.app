@@ -111,6 +111,19 @@ export function gateRead(
   );
 }
 
+// The participation gate (docs/specs/024-agents/agent-presence.md "Token levels"): comments, session answers and
+// agent presence. Until share roles are built it names today's rule, read access to the document or tab; a
+// read-only token is refused every write at the choke point. It becomes the Participant check when share roles land.
+export function gateParticipate(
+  ctx: RouteContext,
+  documentId: string,
+  documentOwnerId: string,
+  documentTeamId: string | null = null,
+  tabId?: string,
+): Promise<boolean> {
+  return gateRead(ctx, documentId, documentOwnerId, documentTeamId, tabId);
+}
+
 export function gateEdit(
   ctx: RouteContext,
   documentId: string,
@@ -253,4 +266,13 @@ export async function requireOwnedDocument(
   if (!existing) return missingDocument(ctx, documentId);
   if (!(await ownsDocument(ctx, existing))) return forbidden();
   return existing;
+}
+
+// A refused request on a tab: 404 when the caller's grant is confined to another tab, 403 otherwise.
+export async function deniedOnTab(
+  ctx: RouteContext,
+  liveDoc: { id: string; ownerId: string; teamId: string | null },
+): Promise<Response> {
+  const grant = await gateGrant(ctx, liveDoc.id, liveDoc.ownerId, liveDoc.teamId);
+  return grant ? notFound() : forbidden();
 }

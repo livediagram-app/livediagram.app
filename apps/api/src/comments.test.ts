@@ -291,3 +291,34 @@ describe('rewriteCommentAuthors: mentions (docs/specs/012-collaboration/comment-
     expect('mentions' in threadOf(out)[0]!).toBe(false);
   });
 });
+
+describe('a comment’s token id (docs/specs/024-agents/agent-presence.md I7)', () => {
+  const agentComment = { ...mkComment('c1', 'Webber', '#000', 't', 'owner'), tokenId: 'tok_1' };
+
+  it('is kept by every later save, and a client cannot set or change one', () => {
+    const prev = [mkShape('a', [agentComment])];
+    const tampered = [
+      mkShape('a', [
+        { ...agentComment, tokenId: 'tok_evil' },
+        { ...mkComment('c2', 'X', '#fff'), tokenId: 'tok_forged' },
+      ]),
+    ];
+    const [el] = rewriteCommentAuthors(tampered, prev, writer) as ShapeElement[];
+    expect(el!.commentThread!.comments[0]!.tokenId).toBe('tok_1');
+    expect(el!.commentThread!.comments[1]).not.toHaveProperty('tokenId');
+    const untouched = [mkShape('a', [mkComment('c1', 'Webber', '#000', 't', 'owner')])];
+    const [kept] = rewriteCommentAuthors(untouched, prev, writer) as ShapeElement[];
+    expect(kept!.commentThread!.comments[0]!.tokenId).toBe('tok_1');
+  });
+
+  it('is seen only by its author', () => {
+    const els = [mkShape('a', [agentComment])];
+    expect(
+      (redactCommentAuthorIds(els, 'owner')[0] as ShapeElement).commentThread!.comments[0]!.tokenId,
+    ).toBe('tok_1');
+    expect(
+      (redactCommentAuthorIds(els, 'someone')[0] as ShapeElement).commentThread!.comments[0]!
+        .tokenId,
+    ).toBeUndefined();
+  });
+});
