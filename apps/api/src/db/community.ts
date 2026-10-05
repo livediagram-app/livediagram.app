@@ -3,6 +3,8 @@
 // reports and moderation live in community-engagement.ts.
 
 import {
+  COMMUNITY_FEATURED_COUNT,
+  COMMUNITY_FEATURED_WINDOW_MS,
   COMMUNITY_PAGE_SIZE,
   COMMUNITY_POPULAR_TAGS,
   COMMUNITY_RELATED_POSTS,
@@ -267,4 +269,34 @@ export async function communityFacets(env: Env): Promise<CommunityFacetsResponse
     categories: categoryCounts,
     tags: (tags?.results ?? []).map((row) => ({ tag: row.key, count: row.n })),
   };
+}
+
+// The landing page's six (docs/specs/025-community/community.md "Featured on the home page"): the posts
+// most liked over the last COMMUNITY_FEATURED_WINDOW_MS, then, while there are fewer than six, the best of
+// all time (likes and copies together, newest first on a tie). Public posts only.
+export async function listFeaturedCommunityPosts(
+  env: Env,
+  now: number = Date.now(),
+): Promise<CommunityPostRow[]> {
+  const recent = await env.DB.prepare(
+    `SELECT ${COMMUNITY_POST_COLS},
+            (SELECT COUNT(*) FROM community_likes l WHERE l.post_id = cp.id AND l.created_at >= ?) AS recent_likes
+       FROM ${COMMUNITY_POST_FROM}
+      WHERE ${PUBLIC_POST} AND recent_likes > 0
+      ORDER BY recent_likes DESC, cp.like_count DESC, cp.published_at DESC
+      LIMIT ?`,
+  )
+    .bind(now - COMMUNITY_FEATURED_WINDOW_MS, COMMUNITY_FEATURED_COUNT)
+    .all<CommunityPostRow>();
+  const rows = recent.results ?? [];
+  if (rows.length >= COMMUNITY_FEATURED_COUNT) return rows;
+  const fill = await env.DB.prepare(
+    `SELECT ${COMMUNITY_POST_COLS} FROM ${COMMUNITY_POST_FROM}
+      WHERE ${PUBLIC_POST} AND cp.id NOT IN (SELECT value FROM json_each(?))
+      ORDER BY (cp.like_count + cp.copy_count) DESC, cp.published_at DESC
+      LIMIT ?`,
+  )
+    .bind(JSON.stringify(rows.map((r) => r.id)), COMMUNITY_FEATURED_COUNT - rows.length)
+    .all<CommunityPostRow>();
+  return [...rows, ...(fill.results ?? [])];
 }

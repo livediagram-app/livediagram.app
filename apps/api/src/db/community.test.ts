@@ -32,6 +32,7 @@ import {
 import { listShareLinks, getShareLink } from './share';
 import { copyDocument } from './documents';
 import { rowToCommunityPost } from '../community-row';
+import { listFeaturedCommunityPosts } from './community';
 
 let db: SqliteD1;
 
@@ -374,5 +375,33 @@ describe('a copy through a Community link', () => {
       )
       .get() as { data: string };
     expect(plain.data).toContain('private note');
+  });
+});
+
+describe('featured on the home page', () => {
+  const DAY = 24 * 60 * 60 * 1000;
+  const NOW = 400 * DAY;
+
+  it('ranks by likes in the last three months, then tops up with the best of all time', async () => {
+    const old = await publish('d1', { title: 'Old favourite' }, 1);
+    const fresh = await publish('d2', { title: 'Fresh hit' }, 2);
+    const quiet = await publish('d3', { title: 'Quiet' }, 3);
+    // Old favourite: many likes, all long ago.
+    for (const k of ['k1', 'k2', 'k3'])
+      await setCommunityLike(db.env, old, k, true, NOW - 200 * DAY);
+    // Fresh hit: two recent likes.
+    for (const k of ['k4', 'k5']) await setCommunityLike(db.env, fresh, k, true, NOW - 5 * DAY);
+    const titles = (await listFeaturedCommunityPosts(db.env, NOW)).map((r) => r.title);
+    expect(titles[0]).toBe('Fresh hit');
+    expect(titles).toEqual(['Fresh hit', 'Old favourite', 'Quiet']);
+    void quiet;
+  });
+
+  it('is at most six, and only public posts', async () => {
+    for (let i = 0; i < 8; i++) await publish(`d${i}`, { title: `P${i}` }, i);
+    db.sql.prepare("UPDATE community_posts SET state = 'hidden' WHERE title = 'P7'").run();
+    const rows = await listFeaturedCommunityPosts(db.env, NOW);
+    expect(rows).toHaveLength(6);
+    expect(rows.map((r) => r.title)).not.toContain('P7');
   });
 });

@@ -1208,6 +1208,17 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'GET',
+    path: '/community/featured',
+    segment: 'community',
+    tag: 'Community',
+    summary:
+      'The six posts the home page features: most liked in the last 3 months, topped up with the best of all time.',
+    auth: 'public',
+    responseSchema: ref('CommunityFeaturedResponse'),
+    statuses: [200],
+  },
+  {
+    method: 'GET',
     path: '/community/facets',
     segment: 'community',
     tag: 'Community',

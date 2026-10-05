@@ -131,6 +131,10 @@ export const COMMUNITY_AUTO_HIDE_REPORTERS = 3;
 export const COMMUNITY_POPULAR_TAGS = 24;
 export const COMMUNITY_RELATED_POSTS = 6;
 export const COMMUNITY_SEARCH_TERMS_MAX = 5;
+// The landing page's Community section (docs/specs/025-community/community.md "Featured on the home page"):
+// how many posts, and the window their likes are counted over.
+export const COMMUNITY_FEATURED_COUNT = 6;
+export const COMMUNITY_FEATURED_WINDOW_MS = 90 * 24 * 60 * 60 * 1000;
 export const COMMUNITY_SEARCH_TERM_MAX = 40;
 
 // The header and storage key the Community app's per-browser key travels under (spec "Likes"). Deliberately not
@@ -465,6 +469,7 @@ export type CommunityFacetsResponse = {
   tags: { tag: string; count: number }[];
 };
 export type CommunityPostResponse = { post: CommunityPost; related: CommunityPost[] };
+export type CommunityFeaturedResponse = { posts: CommunityPost[] };
 export type CommunityOwnPostResponse = { post: CommunityOwnPost | null };
 export type CommunityLikeResponse = { likeCount: number; liked: boolean };
 export type CommunityModerationResponse = { items: CommunityModerationItem[] };

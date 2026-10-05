@@ -185,6 +185,16 @@ unliking removes it.
 - An author is not told their post was hidden; the Community section in their Share dialog shows it as hidden.
 - With `COMMUNITY_OPERATOR_IDS` unset (a fresh self-host) automatic hiding still works and nobody can moderate by hand.
 
+## Featured on the home page
+
+The landing page carries a **From the Community** section under the template gallery: six documents, the
+most liked over the last three months, topped up (when fewer than six were liked in that time) with the best
+of all time by likes and copies, newest first on a tie. Public posts only, credited as they are in the
+gallery (Anonymous when the author chose it). The page is static, so the six load after it: placeholder cards
+hold their space, and with nothing to show the section says the Community is just getting started. **Explore
+the Community** leads to the gallery. The api answers `GET /api/community/featured`, cacheable for five
+minutes.
+
 ## Where Community is linked from
 
 - The shared apps menu in every header (Welcome, Editor, Explorer, **Community**, Help, Telemetry).

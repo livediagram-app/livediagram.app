@@ -22,6 +22,7 @@ import {
   likedPostIds,
   listCommunityModeration,
   listCommunityPosts,
+  listFeaturedCommunityPosts,
   listRelatedCommunityPosts,
   moderateCommunityPost,
   recordCommunityReport,
@@ -78,6 +79,16 @@ export async function handleCommunity(ctx: RouteContext): Promise<Response> {
     return json(
       { posts: await withLikes(env, key, rows), nextOffset },
       { headers: listCacheHeaders(key) },
+    );
+  }
+
+  // GET /api/community/featured: the landing page's six (docs/specs/025-community/community.md "Featured on
+  // the home page"). The same for everyone, so cacheable a little longer.
+  if (segments.length === 3 && segments[2] === 'featured' && method === 'GET') {
+    const rows = await listFeaturedCommunityPosts(env);
+    return json(
+      { posts: rows.map((row) => rowToCommunityPost(row, false)) },
+      { headers: { 'Cache-Control': 'public, max-age=300' } },
     );
   }
 
