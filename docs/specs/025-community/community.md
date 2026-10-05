@@ -47,6 +47,8 @@ A post shows every tab of the document. A document that is empty (its first tab 
   document at once give the second **This document is already in the Community.**
 - **In the editor**: while the post is listed, the visibility badge in the editor header reads **Public** (it wins over
   Private, Shared and Team; only Local only beats it), and the Share dialog's status line says the document is public.
+  A visitor who opens the document through the post's link sees **Public** too: that link only resolves while the post
+  is public.
 - **Something to show**: the document's first tab must have at least one element (counted, so a deploy without image
   storage can still publish).
 - **Where**: the Share dialog carries a **Community** section beneath the share links. Unpublished, it invites the owner

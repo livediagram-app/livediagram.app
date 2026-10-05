@@ -22,6 +22,7 @@ import { PresentationHost } from '@/components/canvas/PresentationHost';
 import { EditorHeader } from '@/components/chrome/EditorHeader';
 import { CommunityBar } from '@/components/chrome/CommunityBar';
 import { useAutoCopyParam } from '@/hooks/canvas/useAutoCopyParam';
+import { documentIsPublic } from '@/lib/community-public';
 import { useCommunityState } from '@/lib/community-state-store';
 import { useCommunityEnabled } from '@livediagram/ui';
 import { API_BASE } from '@/lib/api-client';
@@ -305,7 +306,11 @@ export function EditorView() {
                         hideTitle={anyWelcomeOpen}
                         showShare={isOwner && hydrated && !anyWelcomeOpen}
                         shareable={documentShareable}
-                        community={communityOn && communityState === 'listed'}
+                        community={documentIsPublic({
+                          communityOn,
+                          ownPostState: communityState,
+                          communitySession: sessionCommunity !== null,
+                        })}
                         teamDocument={!!documentTeamId}
                         offline={isOffline}
                         // Visitors see "Make a copy" instead of "Share": same slot,

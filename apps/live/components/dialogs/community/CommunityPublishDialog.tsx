@@ -263,7 +263,7 @@ export function CommunityPublishDialog({
               </span>
             </SwitchRow>
 
-            <div className="grid gap-4 border-t border-slate-100 pt-4 sm:grid-cols-[13rem_1fr] dark:border-slate-800">
+            <div className="grid gap-4 border-t border-slate-100 pt-4 sm:grid-cols-[15rem_1fr] dark:border-slate-800">
               <div className="flex flex-col gap-1.5">
                 <span className={LABEL}>Preview</span>
                 <CommunityCardPreview
