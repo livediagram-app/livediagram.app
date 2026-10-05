@@ -55,8 +55,10 @@ apps/live/components/palette/palette-plan-tiles.tsx   a tile per kind, section `
 
 ## Narrowing and feedback
 
-- `QuickFilter` gains `person` (`UNASSIGNED = '-'` for nobody), `type`, `dueBy` (YYYY-MM-DD, inclusive) and
-  `priority`; `quickFilterMatches` applies each. `toggle(quick, key, value)` sets one or clears it when equal.
+- `QuickFilter` gains `person` (`UNASSIGNED = '-'` for nobody), `type`, `due` (a `QuickDueWindow`
+  `{ from?, to, doneStatus? }`, YYYY-MM-DD, both ends inclusive, the done status excluded, so a Due Soon count
+  narrows to exactly the cards it counts) and `priority`; `quickFilterMatches` applies each.
+  `toggle(quick, key, value)` sets one or clears it when equal (compared by value).
 - Item Count while `narrowed(quick)`: a button "`shown` of `total` · Show all" that sets `{}`.
 - Completion with no `doneColumnId` and `canEdit`: "Set Done Column" sets the last column's id (`DoneColumn`).
 - Reorder captures the pointer only once a press passes `REORDER_THRESHOLD_PX`, so a still press is a click on
@@ -109,7 +111,8 @@ apps/live/components/palette/palette-plan-tiles.tsx   a tile per kind, section `
 
 ## Performance and limits
 
-- `boardItems` is memoised on the setup and items; widget stats are linear in the board's items (≤ the
+- `boardItems(projection)` reads the cards an unfiltered projection placed (so archived cards stay off an
+  ordinary board's counts and All Cards and Archive boards count what they show), memoised on the setup and items; widget stats are linear in the board's items (≤ the
   document's item cap). At most `BOARD_WIDGET_KINDS.length` (10) widgets per board.
 
 ## Testing

@@ -17,6 +17,7 @@ import {
   type ItemTypeDef,
   type PlanBoardSetup,
   type QuickFilter,
+  type QuickDueWindow,
 } from '@livediagram/items';
 import { PRIORITY_COLOURS, accentOn, type PlanPalette } from '../plan-palette';
 import { BoardWidgetArt } from '../plan-tile-art';
@@ -70,7 +71,7 @@ export type WidgetContext = {
 };
 
 // The quick filter with the widget narrowings cleared, the text and Only Mine kept.
-const WIDGET_KEYS = ['person', 'type', 'dueBy', 'priority'] as const;
+const WIDGET_KEYS = ['person', 'type', 'due', 'priority'] as const;
 function narrowed(quick: QuickFilter): boolean {
   return (
     WIDGET_KEYS.some((k) => quick[k] !== undefined) || !!quick.text || quick.mine !== undefined
@@ -89,7 +90,7 @@ function toggle<K extends (typeof WIDGET_KEYS)[number]>(
   value: NonNullable<QuickFilter[K]>,
 ): QuickFilter {
   const next: QuickFilter = { ...quick };
-  if (quick[key] === value) delete next[key];
+  if (JSON.stringify(quick[key]) === JSON.stringify(value)) delete next[key];
   else next[key] = value;
   return next;
 }
@@ -459,16 +460,19 @@ export function BoardWidgetView({ kind, ctx }: { kind: BoardWidgetKind; ctx: Wid
       yesterday.setDate(yesterday.getDate() - 1);
       const horizon = new Date(ctx.now);
       horizon.setDate(horizon.getDate() + DUE_SOON_DAYS);
-      // Each count narrows the board to those cards: overdue (due by yesterday), or due by a week out.
-      const tag = (n: number, color: string, label: string, by: string) => {
-        const on = ctx.quick.dueBy === by;
+      // Each count narrows the board to exactly the cards it counts, not done: overdue (due by
+      // yesterday), or due from today to a week out.
+      const doneStatus = setup.columns.find((c) => c.id === setup.doneColumnId)?.status;
+      const tag = (n: number, color: string, label: string, window: QuickDueWindow) => {
+        const value = doneStatus ? { ...window, doneStatus } : window;
+        const on = JSON.stringify(ctx.quick.due) === JSON.stringify(value);
         return (
           <button
             type="button"
             aria-pressed={on}
             className={PRESSABLE}
             style={{ backgroundColor: on ? `${color}1f` : undefined }}
-            onClick={() => ctx.onQuick(toggle(ctx.quick, 'dueBy', by))}
+            onClick={() => ctx.onQuick(toggle(ctx.quick, 'due', value))}
           >
             <CountBadge background={`${color}26`} color={color}>
               {n}
@@ -480,8 +484,10 @@ export function BoardWidgetView({ kind, ctx }: { kind: BoardWidgetKind; ctx: Wid
       return (
         <span className={`${WIDGET_PILL} gap-2`} style={pill}>
           <Lead kind="due" color={overdue > 0 ? OVERDUE_RED : SOON_AMBER} />
-          {overdue > 0 ? tag(overdue, OVERDUE_RED, 'overdue', isoDay(yesterday)) : null}
-          {soon > 0 ? tag(soon, SOON_AMBER, 'due soon', isoDay(horizon)) : null}
+          {overdue > 0 ? tag(overdue, OVERDUE_RED, 'overdue', { to: isoDay(yesterday) }) : null}
+          {soon > 0
+            ? tag(soon, SOON_AMBER, 'due soon', { from: isoDay(ctx.now), to: isoDay(horizon) })
+            : null}
         </span>
       );
     }

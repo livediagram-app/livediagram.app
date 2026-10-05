@@ -18,13 +18,11 @@ export const DUE_SOON_DAYS = 7;
 export const STALE_DAYS = 14;
 const DAY_MS = 86_400_000;
 
-export function boardItems(setup: PlanBoardSetup, items: Iterable<Item>): Item[] {
-  const statuses = new Set(setup.columns.map((c) => c.status));
+// The cards a board shows, as its projection placed them (so never archived on an ordinary board, every
+// archived one on an Archive board, every live one on an All Cards board): what its widgets count.
+export function boardItems(projection: BoardProjection): Item[] {
   const out: Item[] = [];
-  for (const it of items) {
-    const s = itemStatus(it);
-    if (s !== undefined && statuses.has(s)) out.push(it);
-  }
+  for (const c of projection.columns) for (const l of c.lanes) out.push(...l.items);
   return out;
 }
 

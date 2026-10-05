@@ -89,8 +89,8 @@ export function PlanBoardView({
   );
   // What the header's widgets count: the items the board shows, before the quick filter.
   const shownItems = useMemo(
-    () => (setup ? boardItems(setup, items.values()) : []),
-    [setup, items],
+    () => (setup ? boardItems(projectBoard(setup, items, undefined, types, statusNames)) : []),
+    [setup, items, types, statusNames],
   );
   const interactive = !!plan?.planInput;
   // Selected (alone or with others): the header shows its move handle.

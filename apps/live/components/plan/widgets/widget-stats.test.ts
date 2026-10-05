@@ -40,16 +40,23 @@ describe('widget stats', () => {
     item({ title: 'd', status: 'archived' }),
   ];
 
-  it('counts only the items whose status is a column', () => {
-    expect(boardItems(setup, items)).toHaveLength(3);
+  const shown = (s = setup, list = items) =>
+    boardItems(projectBoard(s, new Map(list.map((i) => [i.id, i]))));
+
+  it('counts only the items the board shows', () => {
+    expect(shown()).toHaveLength(3);
+    // Archived cards stay off an ordinary board's counts, and every card counts on All Cards.
+    const archived = item({ title: 'e', status: 'todo', archived: true });
+    expect(shown(setup, [...items, archived])).toHaveLength(3);
+    expect(shown(presetSetup('all-cards'), items)).toHaveLength(4);
   });
 
   it('lists people by how many cards they hold', () => {
-    expect(boardPeople(boardItems(setup, items)).map((p) => p.name)).toEqual(['Sam', 'Ali']);
+    expect(boardPeople(shown()).map((p) => p.name)).toEqual(['Sam', 'Ali']);
   });
 
   it('counts cards per type in the catalogue order', () => {
-    expect(boardTypeCounts(boardItems(setup, items), ['note', 'task'])).toEqual([
+    expect(boardTypeCounts(shown(), ['note', 'task'])).toEqual([
       { type: 'note', count: 1 },
       { type: 'task', count: 2 },
     ]);

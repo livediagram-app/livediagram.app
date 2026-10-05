@@ -57,9 +57,14 @@ describe('widget quick filters', () => {
     expect(quickFilterMatches({ person: SAM.id }, b)).toBe(false);
     expect(quickFilterMatches({ type: 'note' }, b)).toBe(true);
     expect(quickFilterMatches({ type: 'note' }, a)).toBe(false);
-    expect(quickFilterMatches({ dueBy: '2026-10-07' }, a)).toBe(true);
-    expect(quickFilterMatches({ dueBy: '2026-10-07' }, b)).toBe(false);
-    expect(quickFilterMatches({ dueBy: '2026-10-07' }, item({ title: 'c' }))).toBe(false);
+    expect(quickFilterMatches({ due: { to: '2026-10-07' } }, a)).toBe(true);
+    expect(quickFilterMatches({ due: { to: '2026-10-07' } }, b)).toBe(false);
+    expect(quickFilterMatches({ due: { to: '2026-10-07' } }, item({ title: 'c' }))).toBe(false);
+    // A window with a start, and the done status left out.
+    expect(quickFilterMatches({ due: { from: '2026-10-08', to: '2026-10-30' } }, a)).toBe(false);
+    expect(
+      quickFilterMatches({ due: { to: '2026-10-07', doneStatus: String(a.fields['status']) } }, a),
+    ).toBe(false);
   });
 });
 

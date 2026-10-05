@@ -130,7 +130,7 @@ export function PlanBoardHeader({
             if (!next.includes('filter')) delete kept.text;
             if (!next.includes('mine')) delete kept.mine;
             if (!next.includes('types')) delete kept.type;
-            if (!next.includes('due')) delete kept.dueBy;
+            if (!next.includes('due')) delete kept.due;
             if (!next.includes('priorities')) delete kept.priority;
             if (!next.includes('people') && !next.includes('unassigned')) delete kept.person;
             if (Object.keys(kept).length !== Object.keys(quick).length) onQuick(kept);

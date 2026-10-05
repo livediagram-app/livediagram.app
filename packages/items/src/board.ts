@@ -91,15 +91,23 @@ export interface PlanBoardSetup {
   hideWriting: boolean;
 }
 
+// The Due Soon widget's narrowing: due from `from` (absent: any earlier day) to `to`, not done.
+export interface QuickDueWindow {
+  from?: string;
+  to: string;
+  doneStatus?: string;
+}
+
 export interface QuickFilter {
   text?: string;
   // Only items assigned to this person id.
   mine?: string;
   // From the board's widgets (docs/specs/025-plan/board-widgets.md): only items assigned to this person
-  // id, only items of this type, only items due on or before this day (YYYY-MM-DD) and not done.
+  // id, only items of this type, only items due within a window of days (YYYY-MM-DD, both ends
+  // included) and not in the board's done status.
   person?: string;
   type?: string;
-  dueBy?: string;
+  due?: QuickDueWindow;
   // Only items of this priority.
   priority?: Priority;
 }
@@ -190,9 +198,11 @@ export function quickFilterMatches(quick: QuickFilter | undefined, item: Item): 
   if (quick.person && (itemAssignee(item)?.id ?? UNASSIGNED) !== quick.person) return false;
   if (quick.priority && item.fields['priority'] !== quick.priority) return false;
   if (quick.type && item.type !== quick.type) return false;
-  if (quick.dueBy) {
+  if (quick.due) {
     const due = item.fields['due'];
-    if (typeof due !== 'string' || due > quick.dueBy) return false;
+    if (typeof due !== 'string' || due > quick.due.to) return false;
+    if (quick.due.from && due < quick.due.from) return false;
+    if (quick.due.doneStatus && itemStatus(item) === quick.due.doneStatus) return false;
   }
   const text = quick.text?.trim().toLowerCase();
   if (text) {

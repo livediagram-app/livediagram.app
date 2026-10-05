@@ -137,9 +137,13 @@ describe('BoardWidgetView', () => {
     cleanup();
     draw('due', c);
     fireEvent.click(screen.getByRole('button', { name: /overdue/ }));
-    expect(c.onQuick).toHaveBeenLastCalledWith({ dueBy: '2026-10-04' });
+    expect(c.onQuick).toHaveBeenLastCalledWith({
+      due: expect.objectContaining({ to: '2026-10-04' }),
+    });
     fireEvent.click(screen.getByRole('button', { name: /due soon/ }));
-    expect(c.onQuick).toHaveBeenLastCalledWith({ dueBy: '2026-10-12' });
+    expect(c.onQuick).toHaveBeenLastCalledWith({
+      due: expect.objectContaining({ from: '2026-10-05', to: '2026-10-12' }),
+    });
   });
 
   it('reads "x of y" while narrowed, and shows all when pressed', () => {
