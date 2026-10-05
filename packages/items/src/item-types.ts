@@ -40,6 +40,13 @@ export interface CustomFieldDef {
   onCard?: boolean;
 }
 
+// A tab of an item type's panel (docs/specs/025-plan/item-types.md "An item type"): the fields it shows.
+export interface ItemTypeTab {
+  id: string;
+  label: string;
+  fields: readonly string[];
+}
+
 export interface ItemTypeDef {
   id: string;
   label: string;
@@ -51,6 +58,8 @@ export interface ItemTypeDef {
   // The fields its item panel offers, in order: built-in field ids and its custom fields' ids.
   fields: readonly string[];
   custom?: readonly CustomFieldDef[];
+  // The panel's tabs; absent is one Overview tab (tabsOf).
+  tabs?: readonly ItemTypeTab[];
 }
 
 const WORK: readonly ItemFieldId[] = [

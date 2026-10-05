@@ -11,14 +11,18 @@ import {
   PLAN_TYPE_COLOURS,
   defaultNewTitle,
   newItemTypeId,
+  tabsOf,
   validateItemTypeCatalogue,
   type ItemTypeDef,
+  type ItemTypeTab,
 } from '@livediagram/items';
 import { Button } from '@livediagram/ui';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { DialogFooter } from '@/components/dialogs/DialogFooter';
 import { FIELD_CLASS, SheetRow } from './PlanModal';
 import { ItemTypeFieldList, type FieldDraft } from './ItemTypeFieldList';
+import { ItemTypeTabsEditor } from './ItemTypeTabsEditor';
+import { fieldLabel } from './ItemFieldEditor';
 import { PlanTypeGlyph } from './plan-type-glyph';
 import { ACCENT_TEXT, accentVars } from './plan-palette';
 
@@ -76,6 +80,13 @@ export function ItemTypeEditor({
     fields: [...start.fields],
     custom: [...(start.custom ?? [])],
   });
+  // The panel's tabs, starting from the type's own or its one Overview tab, so they can be edited.
+  const [tabs, setTabs] = useState<ItemTypeTab[]>(() =>
+    tabsOf({ ...start, id: '', newTitle: '' } as ItemTypeDef).map((t) => ({
+      ...t,
+      fields: [...t.fields],
+    })),
+  );
   const [deleting, setDeleting] = useState(false);
   const others = types.filter((t) => t.id !== type?.id);
   const [moveTo, setMoveTo] = useState<DeleteTarget>(others[0]?.id ?? null);
@@ -92,8 +103,15 @@ export function ItemTypeEditor({
       glyph,
       fields: fields.fields,
       ...(fields.custom.length ? { custom: fields.custom } : {}),
+      tabs: tabs.map((t) => ({ ...t, label: t.label.trim() })),
     };
-  }, [type, types, label, color, glyph, fields]);
+  }, [type, types, label, color, glyph, fields, tabs]);
+  const tabNames = tabs.map((t) => t.label.trim().toLowerCase());
+  const tabProblem = tabNames.some((n) => !n)
+    ? 'Give every tab a name.'
+    : new Set(tabNames).size !== tabNames.length
+      ? 'Two tabs have the same name.'
+      : null;
   // The same check the api makes, on this type alone: a bad custom field never reaches a save.
   const check = useMemo(
     () => validateItemTypeCatalogue({ version: ITEM_TYPE_CATALOGUE_VERSION, types: [draft] }),
@@ -103,9 +121,11 @@ export function ItemTypeEditor({
     ? 'Give the type a name.'
     : clash
       ? 'Another type has this name.'
-      : !check.ok
-        ? 'A custom field needs a name, and a Choice field at least one option.'
-        : null;
+      : tabProblem
+        ? tabProblem
+        : !check.ok
+          ? 'A custom field needs a name, and a Choice field at least one option.'
+          : null;
 
   return (
     <Dialog
@@ -192,6 +212,17 @@ export function ItemTypeEditor({
             </SheetRow>
             <SheetRow label="Fields">
               <ItemTypeFieldList draft={fields} onChange={setFields} removedSome={removedSome} />
+            </SheetRow>
+            <SheetRow label="Tabs">
+              <p className="mb-2 text-[12px] text-slate-500 dark:text-slate-400">
+                The card’s tabs, and which fields show on each. Fields on no tab show in Details.
+              </p>
+              <ItemTypeTabsEditor
+                tabs={tabs}
+                fields={fields.fields}
+                labelOf={(f) => fieldLabel(draft, f)}
+                onChange={setTabs}
+              />
             </SheetRow>
           </>
         )}

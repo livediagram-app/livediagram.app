@@ -18,3 +18,4 @@ export * from './views';
 export * from './person';
 export * from './store';
 export * from './refs';
+export * from './rich-text-field';

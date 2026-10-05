@@ -23,3 +23,5 @@ One row per default applied where a spec is silent or qualitative.
 | D17 | board-widgets | Widget pill height                          | 28 px, the header's control height                                  |
 | D18 | board-widgets | Distance before a press becomes a reorder   | 4 px                                                                |
 | D19 | board-widgets | "Due soon" horizon                          | 7 days, today included                                              |
+| D20 | plan-board    | Wait before a description is saved          | 800 ms after the last keystroke, and at once on blur or close       |
+| D21 | item-types    | A new tab's name                            | "New Tab"                                                           |

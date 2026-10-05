@@ -1011,6 +1011,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     type: 'string',
   },
+  BoardWidgetKind: {
+    enum: [
+      'count',
+      'progress',
+      'filter',
+      'mine',
+      'people',
+      'unplaced',
+      'types',
+      'wip',
+      'due',
+      'votes',
+    ],
+    type: 'string',
+  },
   BorderRadius: {
     enum: ['none', 'sm', 'md', 'lg', 'full'],
     type: 'string',
@@ -1107,6 +1122,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       'votes',
       'checklist',
     ],
+    type: 'string',
+  },
+  CardSize: {
+    enum: ['minimal', 'compact', 'detailed'],
     type: 'string',
   },
   ChairFacing: {
@@ -4590,8 +4609,33 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       newTitle: {
         type: 'string',
       },
+      tabs: {
+        items: {
+          $ref: '#/components/schemas/ItemTypeTab',
+        },
+        type: 'array',
+      },
     },
     required: ['id', 'label', 'newTitle', 'glyph', 'color', 'fields'],
+    type: 'object',
+  },
+  ItemTypeTab: {
+    additionalProperties: false,
+    properties: {
+      fields: {
+        items: {
+          type: 'string',
+        },
+        type: 'array',
+      },
+      id: {
+        type: 'string',
+      },
+      label: {
+        type: 'string',
+      },
+    },
+    required: ['id', 'label', 'fields'],
     type: 'object',
   },
   ItemTypesRequest: {
@@ -5757,6 +5801,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         },
         type: 'array',
       },
+      cardSize: {
+        $ref: '#/components/schemas/CardSize',
+      },
       columns: {
         items: {
           $ref: '#/components/schemas/PlanColumn',
@@ -5787,6 +5834,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         },
         required: ['on'],
         type: 'object',
+      },
+      widgets: {
+        items: {
+          $ref: '#/components/schemas/BoardWidgetKind',
+        },
+        type: 'array',
       },
     },
     required: ['title', 'columns', 'swimlaneBy', 'cardFields', 'voting', 'hideWriting'],

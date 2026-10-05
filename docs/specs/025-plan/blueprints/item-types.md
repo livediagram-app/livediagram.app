@@ -75,6 +75,18 @@ src/type-catalogue.ts  ItemTypeCatalogue, limits, PLAN_TYPE_COLOURS, BUILT_IN_FI
   `size="lg"`, `phoneSheet`), rendered by `PlanSheetsHost`. Delete with items patches each to the chosen type
   first.
 
+## Tabs
+
+- `ItemTypeDef.tabs?: ItemTypeTab[]` (`{ id: /^t-[a-z0-9-]{1,30}$/, label ≤ ITEM_TYPE_TAB_LABEL_MAX (24), fields }`),
+  at most `ITEM_TYPE_TABS_MAX` (6). `readTabs` rejects a bad id, an empty or repeated label (ignoring case), or
+  non-array fields; it drops fields the type does not offer, `title`, `votes`, and any field an earlier tab holds.
+- `tabsOf(type)`: the tabs with unoffered fields filtered; absent, one `OVERVIEW_TAB_ID` tab "Overview" of
+  description, checklist and long-text custom fields. `detailFieldsOf(type)`: the type's fields in no tab, minus
+  title and votes. `newTabId(label, taken)`.
+- Editor: `ItemTypeTabsEditor` (rename, ↑↓ `moveTab`, ×, Add Tab "New Tab", a Shows In select per field via
+  `fileField`); the type editor starts from `tabsOf(type)` and saves `tabs` explicitly. Problems: "Give every tab a
+  name.", "Two tabs have the same name."
+
 ## Errors and edge cases
 
 | Case                               | Handling                                                     |

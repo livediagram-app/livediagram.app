@@ -27,6 +27,8 @@ export function DebouncedText({
   required,
   disabled,
   onSave,
+  className,
+  label,
 }: {
   id: string;
   value: string;
@@ -35,6 +37,10 @@ export function DebouncedText({
   required?: boolean;
   disabled: boolean;
   onSave: Save;
+  // Replaces the field look (the item panel's large title).
+  className?: string;
+  // An accessible name when no label element names it.
+  label?: string;
 }) {
   const [draft, setDraft] = useState(value);
   const savedRef = useRef(value);
@@ -65,7 +71,8 @@ export function DebouncedText({
     value: draft,
     placeholder,
     disabled,
-    className: `${FIELD_CLASS} ${multiline ? 'min-h-28 resize-y' : ''}`,
+    className: className ?? `${FIELD_CLASS} ${multiline ? 'min-h-28 resize-y' : ''}`,
+    'aria-label': label,
     onChange: (e: { target: { value: string } }) => {
       const text = e.target.value;
       setDraft(text);

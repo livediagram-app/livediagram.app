@@ -11,6 +11,7 @@ import {
   type CustomFieldKind,
   type ItemFieldId,
   type ItemTypeDef,
+  type ItemTypeTab,
 } from './item-types';
 import { ITEM_TYPE_PATTERN } from './limits';
 
@@ -24,6 +25,11 @@ export const CUSTOM_CHOICE_OPTION_MAX = 40;
 // The stored catalogue's JSON, at most (blueprint DEFAULTS: room for 32 full types).
 export const ITEM_TYPES_BYTES = 32_768;
 export const ITEM_TYPE_CATALOGUE_VERSION = 1;
+export const ITEM_TYPE_TABS_MAX = 6;
+export const ITEM_TYPE_TAB_LABEL_MAX = 24;
+export const ITEM_TYPE_TAB_ID_PATTERN = /^t-[a-z0-9-]{1,30}$/;
+// The one tab a type without its own shows.
+export const OVERVIEW_TAB_ID = 't-overview';
 
 // The colours a type is given from: the built-in types' five (Project, Task, Note, Idea, Action), then
 // seven more.
@@ -135,6 +141,74 @@ export function newCustomFieldId(label: string, taken: Iterable<string>): string
   return unique(base, new Set(taken), 32);
 }
 
+// The fields a panel never files under a tab: the title heads it, and votes live on the card.
+const NEVER_IN_A_TAB = new Set(['title', 'votes']);
+
+// A field the default Overview tab holds: the long-form ones.
+function overviewField(type: ItemTypeDef, f: string): boolean {
+  return f === 'description' || f === 'checklist' || customFieldOf(type, f)?.kind === 'longtext';
+}
+
+// A type's panel tabs (docs/specs/025-plan/item-types.md "An item type"): its own, or one Overview tab
+// of its long-form fields. Each tab lists only fields the type offers.
+export function tabsOf(type: ItemTypeDef): readonly ItemTypeTab[] {
+  const offered = new Set(type.fields);
+  if (type.tabs)
+    return type.tabs.map((t) => ({ ...t, fields: t.fields.filter((f) => offered.has(f)) }));
+  return [
+    {
+      id: OVERVIEW_TAB_ID,
+      label: 'Overview',
+      fields: type.fields.filter((f) => overviewField(type, f)),
+    },
+  ];
+}
+
+// The fields the panel's Details shows: the type's fields in no tab (never the title or votes).
+export function detailFieldsOf(type: ItemTypeDef): string[] {
+  const tabbed = new Set(tabsOf(type).flatMap((t) => t.fields));
+  return type.fields.filter((f) => !NEVER_IN_A_TAB.has(f) && !tabbed.has(f));
+}
+
+export function newTabId(label: string, taken: Iterable<string>): string {
+  return unique(`t-${slugOf(label, 30) || 'tab'}`, new Set(taken), 32);
+}
+
+function readTabs(input: unknown, fields: readonly string[], at: string): ItemTypeTab[] | string {
+  if (!Array.isArray(input) || input.length > ITEM_TYPE_TABS_MAX) return `${at}.tabs`;
+  const offered = new Set(fields.filter((f) => !NEVER_IN_A_TAB.has(f)));
+  const placed = new Set<string>();
+  const tabs: ItemTypeTab[] = [];
+  for (const [i, t] of input.entries()) {
+    if (!isObj(t)) return `${at}.tabs[${i}]`;
+    const id = t['id'];
+    if (
+      typeof id !== 'string' ||
+      !ITEM_TYPE_TAB_ID_PATTERN.test(id) ||
+      tabs.some((x) => x.id === id)
+    )
+      return `${at}.tabs[${i}].id`;
+    const label = typeof t['label'] === 'string' ? t['label'].trim() : '';
+    if (
+      !label ||
+      label.length > ITEM_TYPE_TAB_LABEL_MAX ||
+      tabs.some((x) => x.label.toLowerCase() === label.toLowerCase())
+    )
+      return `${at}.tabs[${i}].label`;
+    if (!Array.isArray(t['fields'])) return `${at}.tabs[${i}].fields`;
+    // A field the type no longer offers, or one an earlier tab holds, is left out.
+    const tabFields: string[] = [];
+    for (const f of t['fields']) {
+      if (typeof f === 'string' && offered.has(f) && !placed.has(f)) {
+        placed.add(f);
+        tabFields.push(f);
+      }
+    }
+    tabs.push({ id, label, fields: tabFields });
+  }
+  return tabs;
+}
+
 export const defaultNewTitle = (label: string) => `New ${label.toLowerCase()}`;
 
 type Result = { ok: true; catalogue: ItemTypeCatalogue } | { ok: false; reason: string };
@@ -201,6 +275,12 @@ function readType(input: unknown, at: string): ItemTypeDef | string {
     if (!fields.includes(f)) fields.push(f);
   }
   if (fields.length > ITEM_TYPE_FIELDS_MAX) return `${at}.fields`;
+  let tabs: ItemTypeTab[] | undefined;
+  if (input['tabs'] !== undefined) {
+    const read = readTabs(input['tabs'], fields, at);
+    if (typeof read === 'string') return read;
+    tabs = read;
+  }
   const newTitle =
     typeof input['newTitle'] === 'string' && input['newTitle'].trim()
       ? input['newTitle'].trim().slice(0, ITEM_TYPE_LABEL_MAX + 4)
@@ -213,6 +293,7 @@ function readType(input: unknown, at: string): ItemTypeDef | string {
     color: color.toLowerCase(),
     fields,
     ...(custom.length ? { custom } : {}),
+    ...(tabs ? { tabs } : {}),
   };
 }
 

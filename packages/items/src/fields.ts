@@ -4,6 +4,7 @@
 
 import type { ItemFields, ItemFieldValue } from './item';
 import type { ItemFieldId } from './item-types';
+import { DESCRIPTION_RICH_FIELD, normaliseRichRuns } from './rich-text-field';
 import {
   ITEM_CHECKLIST_MAX,
   ITEM_CHECKLIST_TEXT_MAX,
@@ -204,6 +205,12 @@ export function validateFields(input: unknown, mode: 'create' | 'patch'): Fields
       if (t.length === 0) return { ok: false, error: 'title_required', field: key };
       if (t.length > ITEM_TITLE_MAX) return { ok: false, error: 'title_too_long', field: key };
       fields[key] = t;
+      continue;
+    }
+    if (key === DESCRIPTION_RICH_FIELD) {
+      const runs = normaliseRichRuns(v);
+      if (!runs) return { ok: false, error: 'field_value_invalid', field: key };
+      fields[key] = runs;
       continue;
     }
     if (kind === 'long-text') {

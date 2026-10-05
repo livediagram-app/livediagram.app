@@ -23,7 +23,7 @@ import { safeInset } from '@/lib/safe-area';
 // Width scale covering the values the hand-rolled dialogs actually used
 // (26 / 30 / 34 / 36rem) so every dialog snaps to one rung instead of a
 // bespoke `w-[..]`.
-type DialogSize = 'sm' | 'md' | 'lg' | 'xl' | '2xl';
+type DialogSize = 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl';
 
 // The dialogs big enough to be worth the whole phone screen. Below sm: they
 // drop their inset, radius and border and fill the viewport — a 92%-wide card
@@ -33,7 +33,7 @@ type DialogSize = 'sm' | 'md' | 'lg' | 'xl' | '2xl';
 // rather than the quick question it is. `md` is in because everything using
 // it is a real panel (Settings, Shortcuts, the import / export panes), not a
 // question.
-const EDGE_TO_EDGE_SIZES = new Set<DialogSize>(['md', 'lg', 'xl', '2xl']);
+const EDGE_TO_EDGE_SIZES = new Set<DialogSize>(['md', 'lg', 'xl', '2xl', '3xl']);
 
 const WIDTHS: Record<DialogSize, string> = {
   sm: 'w-[26rem]',
@@ -42,6 +42,8 @@ const WIDTHS: Record<DialogSize, string> = {
   xl: 'w-[36rem]',
   // The image picker's two-column grid (640px = 40rem).
   '2xl': 'w-[40rem]',
+  // A Plan item's panel: a main column beside a details panel (docs/specs/025-plan/plan-board.md).
+  '3xl': 'w-[60rem]',
 };
 
 type DialogProps = {

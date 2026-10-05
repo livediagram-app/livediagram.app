@@ -56,11 +56,16 @@ AddCardPopover.tsx       Add a Card: the board's types as tiles, and a title fie
 PlanCardMenu.tsx         a card's right-click menu (Open, Duplicate, Move to, Delete) and PlanCardMenuHost
 PlanCardFace.tsx         a card face, its Show on card lines, and its vote control
 PlanCardView.tsx         the plan-card element body (themed; a lone card's fill is its face); "Item not found"
-PlanModal.tsx            the item panel's modal (through Dialog), SheetRow and FIELD_CLASS
+PlanModal.tsx            the Plan forms' modal (through Dialog), SheetRow and FIELD_CLASS
 plan-board-moves.ts      the move a drop makes (boardMoveFor)
 PlanSheetsHost.tsx       renders the open item panel or type editor
 ../palette/PlanBoardMenuSection.tsx  the board's element-menu Board (title, swimlanes) and Cards (fields) flyouts
-ItemPanel.tsx            item panel: type, title, the type's fields (custom ones through CustomFieldEditor)
+ItemPanel.tsx            item panel: Dialog size 3xl (60rem), header (type, key, Delete, close), main column
+                         (title, tabs from tabsOf, the tab's fields), Details aside (w-80: detailFieldsOf rows,
+                         then made/changed); phone: one column, a Details tab first, sheet 85dvh
+ItemFieldEditor.tsx      one field's editor by kind (FIELD_LABELS, fieldLabel, labelsItsControl)
+ItemDescription.tsx      the description: NoteRichTextEditor (note=false), saved DESCRIPTION_SAVE_MS (800 ms) after
+                         typing, on blur and on close as one patch of description + descriptionRich
 item-field-editors.tsx   editors for text (debounced), person, priority, labels, number, date, checklist
 plan-board-keys.ts       the board's keyboard as a pure function of the projection
 plan-palette.ts          re-exports planPalette from @livediagram/document (shared with the SVG export) and

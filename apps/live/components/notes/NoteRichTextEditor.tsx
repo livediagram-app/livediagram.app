@@ -20,13 +20,26 @@ export function NoteRichTextEditor({
   onChange,
   onSubmit,
   onCancel,
+  onBlur,
+  label = 'Note',
+  placeholder = 'Add a note for this element…',
+  surfaceClassName = 'max-h-96 min-h-44 resize-y',
+  note = true,
 }: {
   initialRuns: TextRun[];
   onChange: (plain: string, runs: TextRun[]) => void;
   // Cmd/Ctrl-Enter: commit and close.
-  onSubmit: () => void;
-  // Esc: discard and close.
-  onCancel: () => void;
+  onSubmit?: () => void;
+  // Esc: discard and close. Without it Escape is left to the host (the item panel closes).
+  onCancel?: () => void;
+  // Focus left the text (after the runs are read back from it).
+  onBlur?: () => void;
+  // The text box's name and empty hint, and its height; a Plan item's description sets its own.
+  label?: string;
+  placeholder?: string;
+  surfaceClassName?: string;
+  // A note: it opens focused and its formatting counts as note use. False for an item's description.
+  note?: boolean;
 }) {
   const {
     editorRef,
@@ -38,7 +51,7 @@ export function NoteRichTextEditor({
     applyList,
     applyHeading,
     applyLink,
-  } = useNoteRichTextSession({ initialRuns, onChange });
+  } = useNoteRichTextSession({ initialRuns, onChange, trackFormats: note, autoFocus: note });
 
   return (
     <div className="flex flex-col gap-1.5">
@@ -57,8 +70,8 @@ export function NoteRichTextEditor({
         suppressContentEditableWarning
         role="textbox"
         aria-multiline
-        aria-label="Note"
-        data-rt-placeholder="Add a note for this element…"
+        aria-label={label}
+        data-rt-placeholder={placeholder}
         style={{ fontSize: `${NOTE_BASE_PX}px` }}
         onInput={() => {
           if (composingRef.current) return;
@@ -67,12 +80,12 @@ export function NoteRichTextEditor({
         onKeyDown={(e) => {
           // Cmd/Ctrl-Enter commits + closes; checked before the plain-Enter
           // newline branch below.
-          if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+          if (onSubmit && (e.metaKey || e.ctrlKey) && e.key === 'Enter') {
             e.preventDefault();
             onSubmit();
             return;
           }
-          if (e.key === 'Escape') {
+          if (onCancel && e.key === 'Escape') {
             e.preventDefault();
             onCancel();
             return;
@@ -123,8 +136,9 @@ export function NoteRichTextEditor({
           // whenever focus leaves (clicking the link field, say) so a commit
           // from outside the editor can't miss the last keystroke.
           handleInput();
+          onBlur?.();
         }}
-        className="max-h-96 min-h-44 resize-y overflow-y-auto whitespace-pre-wrap break-words rounded-md border border-slate-200 bg-white px-2 py-1.5 leading-snug text-slate-800 outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+        className={`${surfaceClassName} overflow-y-auto whitespace-pre-wrap break-words rounded-md border border-slate-200 bg-white px-2 py-1.5 leading-snug text-slate-800 outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100`}
       />
     </div>
   );

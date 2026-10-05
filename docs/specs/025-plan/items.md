@@ -40,19 +40,20 @@ fields people usually want, and any item may carry other fields. The store never
 
 The fields the shipped types use. Each has a **field kind** that validates and draws it.
 
-| Field         | Kind      | Holds                                                                      |
-| ------------- | --------- | -------------------------------------------------------------------------- |
-| `title`       | text      | One line, required, up to 200 characters                                   |
-| `description` | long text | Plain text with line breaks, up to 10,000 characters                       |
-| `status`      | status    | A status value, matched against a board's columns                          |
-| `assignee`    | person    | `{ id, name, color }`: the person it is on, picked like an assigned action |
-| `priority`    | priority  | `urgent`, `high`, `medium` or `low`                                        |
-| `labels`      | labels    | Up to 12 short strings                                                     |
-| `estimate`    | number    | Points or hours, 0 to 999                                                  |
-| `due`         | date      | A calendar date, `YYYY-MM-DD`                                              |
-| `checklist`   | checklist | Up to 50 `{ text, done }` rows                                             |
-| `parent`      | item ref  | Another item's id (a Project), resolved within the same document           |
-| `votes`       | votes     | Per-person counts `{ [personId]: n }`, written only through voting         |
+| Field             | Kind      | Holds                                                                                                                                                             |
+| ----------------- | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `title`           | text      | One line, required, up to 200 characters                                                                                                                          |
+| `description`     | long text | Plain text with line breaks, up to 10,000 characters                                                                                                              |
+| `descriptionRich` | rich text | The description's formatting: runs of text with bold, italic, underline, strikethrough, size, colour, link and heading; `description` stays its plain-text mirror |
+| `status`          | status    | A status value, matched against a board's columns                                                                                                                 |
+| `assignee`        | person    | `{ id, name, color }`: the person it is on, picked like an assigned action                                                                                        |
+| `priority`        | priority  | `urgent`, `high`, `medium` or `low`                                                                                                                               |
+| `labels`          | labels    | Up to 12 short strings                                                                                                                                            |
+| `estimate`        | number    | Points or hours, 0 to 999                                                                                                                                         |
+| `due`             | date      | A calendar date, `YYYY-MM-DD`                                                                                                                                     |
+| `checklist`       | checklist | Up to 50 `{ text, done }` rows                                                                                                                                    |
+| `parent`          | item ref  | Another item's id (a Project), resolved within the same document                                                                                                  |
+| `votes`           | votes     | Per-person counts `{ [personId]: n }`, written only through voting                                                                                                |
 
 ## Item types
 

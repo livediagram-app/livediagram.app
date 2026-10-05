@@ -106,11 +106,17 @@ In Plan mode:
 - **Right-click a card** for its menu: **Open**, **Duplicate** (a copy right after it, without its votes),
   **Move to** another column of the board, and **Delete** (undo brings it back). Someone who may only view gets
   Open alone; a face-down card has no menu.
-- **Open an item**: clicking a card opens the **item panel**, a modal over the canvas (a sheet rising from the
-  bottom on a phone). Every field of the item's type
-  is edited in place and saved as it changes, except votes, which live on the card face only; the panel shows
-  who made the item and who last changed it. It
+- **Open an item**: clicking a card opens the **item panel**, a wide modal over the canvas. Every field of the
+  item's type is edited in place and saved as it changes, except votes, which live on the card face only. It
   closes with Escape or the close button, and follows the item if someone else moves it.
+  - **Header**: the type (a picker, with its glyph), the key, **Delete** and the close button.
+  - **Main column**: the title, large, then the type's tabs (see [Item types](item-types.md)) and the fields
+    of the chosen tab. The **Description** is rich text: bold, italic, underline, strikethrough, size, colour,
+    lists, headings and links, from a toolbar over it or the usual shortcuts.
+  - **Details panel** on the right: the fields in no tab, as label and value rows (Status first, as a coloured
+    picker), then who made the item and who last changed it.
+  - **On a phone** it is a sheet of one column, as tall as a sheet goes (85% of the screen): the title, then a tab bar whose first tab is
+    **Details** (the side panel's fields), then the type's tabs.
 - **Vote**: on a voting board each card has a vote control; a person sees their own votes and the total. With a
   vote budget the header shows the votes left.
 - **Reveal**: on a board hiding writing, anyone who may edit can press **Reveal**; every card turns face up for

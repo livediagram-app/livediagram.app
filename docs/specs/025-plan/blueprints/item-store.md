@@ -144,6 +144,13 @@ unplaced: Item[], doneCount, total }`. Items sorted by `compareRank`, then `key`
 Union of every `plan-card`'s `planCard.itemId` and every item any `plan-board` on the tab scopes (columns or
 unplaced). Structural input `{ shape?: string; planBoard?: PlanBoardSetup; planCard?: { itemId: string } }[]`.
 
+### Description formatting
+
+- `descriptionRich` (`DESCRIPTION_RICH_FIELD`): `normaliseRichRuns` keeps runs `{ text, bold?, italic?,
+underline?, strikethrough?, size? xs|sm|md|lg, color? #rrggbb, link? http(s)/mailto ≤ 2048, heading? 1|2|3 }`,
+  at most `ITEM_RICH_RUNS_MAX` (2000) runs and `ITEM_DESCRIPTION_MAX` characters in all; anything else is
+  `field_value_invalid`. `description` stays the plain-text mirror (search, card faces, agents).
+
 ## Data and persistence: D1
 
 Migration `apps/api/migrations/0068_items.sql`:

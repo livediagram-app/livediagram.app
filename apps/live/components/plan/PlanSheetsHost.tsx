@@ -86,6 +86,7 @@ export function PlanSheetsHost({
             value === undefined ? { clear: [field] } : { set: { [field]: value } },
           )
         }
+        onPatch={(patch) => ctx.patchItem(item.id, patch)}
         onType={(type) => ctx.patchItem(item.id, { type })}
         onDelete={() => ctx.deleteItem(item.id)}
         onClose={plan.closeItem}
