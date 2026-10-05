@@ -72,6 +72,9 @@ importers:
       '@livediagram/icons':
         specifier: workspace:*
         version: link:../../packages/icons
+      '@livediagram/templates':
+        specifier: workspace:*
+        version: link:../../packages/templates
       jose:
         specifier: ^6.2.12
         version: 6.2.12

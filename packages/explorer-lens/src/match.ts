@@ -1,6 +1,7 @@
 // Narrowing a list by a lens (docs/specs/013-workspace/explorer-filters.md "Dimensions", "Matching").
 // Rows are first reduced to subjects, so one rule serves documents, shared rows and, later, events.
 
+import { isMadeByAiSource } from '@livediagram/api-schema';
 import {
   KIND_VALUES,
   OPENS_IN_VALUES,
@@ -40,7 +41,7 @@ export function documentSubject(summary: LensDocumentSummary, viewerId: string):
     savedAt: summary.savedAt,
     space: summary.teamId === null ? 'mine' : `team:${summary.teamId}`,
     people: summary.ownerId === viewerId ? 'me' : 'others',
-    madeByAi: summary.source !== null,
+    madeByAi: isMadeByAiSource(summary.source),
     opensIn: known<OpensInValue>(OPENS_IN_VALUES, summary.opensIn),
     kind: known<KindValue>(KIND_VALUES, summary.tabKind),
     template: known<TemplateValue>(TEMPLATE_VALUES, summary.templateFamily),

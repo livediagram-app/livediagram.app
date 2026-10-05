@@ -12,6 +12,7 @@
 // The api worker re-exports some under its own aliases (`DocumentDTO` etc.);
 // new code should prefer the canonical names here.
 
+import type { DocumentSource } from './document-source';
 import type { DriveMode } from './drive';
 import type { BackgroundPattern, EditorMode, ShapeKind, Tab } from '@livediagram/document';
 import type { CreationTabKind, TemplateFamily } from './placement-defaults';
@@ -24,13 +25,6 @@ export type { AvatarClothing, AvatarConfig, AvatarGender, AvatarHair, AvatarSize
 
 // Full document payload returned by `GET /api/documents/:id`. After
 // per-tab storage (docs/specs/006-document/per-tab-storage.md), `tabs` is a list of `TabSummary`
-// How a document came to exist (docs/specs/013-workspace/folders.md, docs/specs/015-api/mcp-server.md).
-// null = authored by a person in the editor; 'mcp' = created by an
-// external AI tool via the MCP server; 'ai' = created by the in-editor
-// AI assistant (reserved — no producer today). The Explorer's Made by AI
-// filter and badge read it (source != null).
-export type DocumentSource = 'ai' | 'mcp';
-
 // (metadata only) — element content is fetched separately via
 // `GET /api/documents/:id/tabs/:tabId`.
 export type LiveDoc = {
@@ -626,3 +620,4 @@ export type CurrentTokenResponse = {
   expiresAt: number | null;
 };
 export * from './api-token-format';
+export * from './document-source';

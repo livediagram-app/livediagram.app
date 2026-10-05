@@ -2687,7 +2687,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     type: 'object',
   },
   DocumentSource: {
-    enum: ['ai', 'mcp'],
+    enum: ['ai', 'mcp', 'cli'],
     type: 'string',
   },
   DocumentSummary: {

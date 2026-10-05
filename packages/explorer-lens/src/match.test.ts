@@ -62,6 +62,10 @@ describe('documentSubject', () => {
     });
   });
 
+  it('reads a document the CLI made as made by a person, not by AI', () => {
+    expect(documentSubject({ ...summary, source: 'cli' }, 'me-id').madeByAi).toBe(false);
+  });
+
   it('reads the general diagram tab as no kind', () => {
     expect(documentSubject({ ...summary, tabKind: 'diagram' }, 'me-id').kind).toBeNull();
   });
