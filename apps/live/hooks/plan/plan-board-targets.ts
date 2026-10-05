@@ -3,6 +3,7 @@
 // another. The board under the pointer is read from the DOM (`data-plan-board`), as the drop slot
 // is, so the hit test can never disagree with what is drawn. Only the active tab's boards are on
 // screen, so the registry never holds a board the pointer could not reach.
+import type { BoardWidgetKind } from '@livediagram/items';
 import type { PlanDropSlot } from './usePlanCardDrag';
 
 // What a board under a dragged card shows: the slot it would land in, with the gap's height.
@@ -19,6 +20,11 @@ export type PlanBoardTarget = {
   // that type, and a new item of it made at the slot (its row's field set).
   acceptsType: (type: string) => boolean;
   addCard: (type: string, slot: PlanDropSlot) => void;
+  // A widget from the palette (docs/specs/025-plan/board-widgets.md): whether this viewer may arrange
+  // the board's widgets, the place a dragged one would land (null: none), and one placed there.
+  canEditWidgets: () => boolean;
+  widgetHover: (slot: number | null) => void;
+  placeWidget: (kind: BoardWidgetKind, slot: number) => void;
 };
 
 const targets = new Map<string, PlanBoardTarget>();
@@ -28,6 +34,11 @@ export function registerPlanBoardTarget(boardId: string, target: PlanBoardTarget
   return () => {
     if (targets.get(boardId) === target) targets.delete(boardId);
   };
+}
+
+// The boards on screen, by element id.
+export function planBoardIds(): string[] {
+  return [...targets.keys()];
 }
 
 export function planBoardTarget(boardId: string): PlanBoardTarget | undefined {

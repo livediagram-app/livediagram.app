@@ -1,13 +1,15 @@
 // The Plan category's tiles (docs/specs/025-plan/plan-mode.md "The palette"): a board per preset, a
-// card per item type. Made from the presets and the item-type catalogue, so a new preset or type is a
+// card per item type, and a widget per board widget kind. Made from the presets and the item-type catalogue, so a new preset or type is a
 // tile with no edit here. Spread into PALETTE_TILES.
 import {
+  BOARD_WIDGET_KINDS,
   ITEM_TYPES,
   PLAN_BOARD_PRESETS,
   type ItemTypeDef,
   type PlanBoardPresetId,
 } from '@livediagram/items';
-import { PlanBoardTileArt, PlanCardTileArt } from '@/components/plan/plan-tile-art';
+import { BoardWidgetArt, PlanBoardTileArt, PlanCardTileArt } from '@/components/plan/plan-tile-art';
+import { BOARD_WIDGET_INFO } from '@/components/plan/board-widget-catalogue';
 import type { PaletteTileDef } from './palette-tile-defs';
 
 const GLYPH_PX = 18;
@@ -62,6 +64,18 @@ export const PLAN_TILES: PaletteTileDef[] = [
     icon: <PlanBoardTileArt size={GLYPH_PX} preset={b.preset} />,
   })),
   ...ITEM_TYPES.map(planCardTile),
+  // The header widgets (docs/specs/025-plan/board-widgets.md): dragged into a board's header, or tapped
+  // to add to the selected board.
+  ...BOARD_WIDGET_KINDS.map((w): PaletteTileDef => ({
+    id: `plan:widget-${w}`,
+    section: 'plan-widgets',
+    label: `Add ${BOARD_WIDGET_INFO[w].label}`,
+    caption: BOARD_WIDGET_INFO[w].label,
+    description: BOARD_WIDGET_INFO[w].description,
+    noTint: true,
+    action: { type: 'plan-widget', widget: w },
+    icon: <BoardWidgetArt kind={w} size={GLYPH_PX} />,
+  })),
 ];
 
 // A card tile for an item type (docs/specs/025-plan/item-types.md "Where types show"): the built-in

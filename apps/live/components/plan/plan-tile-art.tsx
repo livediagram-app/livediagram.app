@@ -1,7 +1,7 @@
 // The Boards and Cards tiles' glyphs (docs/specs/025-plan/plan-mode.md "The palette"): a board drawn
 // as a picture of its kind, and a card drawn with its item type's colour stripe, at the tile size.
 import { Glyph } from '@livediagram/ui';
-import type { CardSize } from '@livediagram/items';
+import type { BoardWidgetKind, CardSize } from '@livediagram/items';
 import { accentVars } from './plan-palette';
 
 // One picture per board preset, so the Boards category reads at a glance (docs/specs/025-plan/
@@ -131,6 +131,61 @@ export function CardSizeArt({ size }: { size: CardSize }) {
   return (
     <Glyph size={18} units={22}>
       {SIZE_ART[size]}
+    </Glyph>
+  );
+}
+
+// A picture per board widget (docs/specs/025-plan/board-widgets.md), for the palette's Widgets tiles.
+const WIDGET_ART: Record<BoardWidgetKind, React.ReactNode> = {
+  count: <path d="M8.5 4.5 7 17.5M15 4.5l-1.5 13M4.5 8.5h14M3.5 13.5h14" />,
+  progress: (
+    <>
+      <rect x="2.5" y="8" width="17" height="6" rx="3" />
+      <path d="M5.5 11h6" />
+    </>
+  ),
+  filter: <path d="M3.5 5h15l-5.75 6.75v4.75l-3.5 1.75v-6.5z" />,
+  mine: (
+    <>
+      <circle cx="11" cy="7.5" r="3" />
+      <path d="M5 18.5a6 6 0 0 1 12 0" />
+    </>
+  ),
+  people: (
+    <>
+      <circle cx="8" cy="8" r="2.6" />
+      <path d="M3 17.5a5 5 0 0 1 10 0" />
+      <circle cx="15.5" cy="8.5" r="2.1" />
+      <path d="M14.5 13.2a4.3 4.3 0 0 1 5 4.3" />
+    </>
+  ),
+  unplaced: (
+    <>
+      <rect x="4" y="5" width="14" height="12" rx="2" strokeDasharray="2.6 2.2" />
+      <path d="M8 11h6" />
+    </>
+  ),
+  types: (
+    <>
+      <rect x="2.5" y="7" width="5" height="8" rx="1.2" />
+      <rect x="8.5" y="7" width="5" height="8" rx="1.2" />
+      <rect x="14.5" y="7" width="5" height="8" rx="1.2" />
+    </>
+  ),
+  wip: <path d="M11 3.5 19.5 18h-17zM11 9v4.25M11 15.75v.25" />,
+  due: (
+    <>
+      <circle cx="11" cy="11" r="7.5" />
+      <path d="M11 6.75V11l3 2" />
+    </>
+  ),
+  votes: <path d="M11 4.5 17.5 13h-4v5h-5v-5h-4z" />,
+};
+
+export function BoardWidgetArt({ kind, size = 18 }: { kind: BoardWidgetKind; size?: number }) {
+  return (
+    <Glyph size={size} units={22}>
+      {WIDGET_ART[kind]}
     </Glyph>
   );
 }

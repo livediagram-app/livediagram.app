@@ -11,6 +11,7 @@ export * from './rank';
 export * from './apply';
 export * from './quick-add';
 export * from './board';
+export * from './board-widgets';
 export * from './presets';
 export * from './tab-items';
 export * from './views';

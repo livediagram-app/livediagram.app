@@ -2,6 +2,7 @@
 // The board stores only its set-up; what it shows is computed here from the
 // item store, so every board (and the api's tab scoping) reads items the same way.
 
+import { readBoardWidgets, type BoardWidgetKind } from './board-widgets';
 import type { Item, ItemPerson } from './item';
 import { itemAssignee, itemLabels, itemStatus, itemTitle } from './item';
 import { ITEM_TYPES, type ItemTypeDef } from './item-types';
@@ -52,6 +53,8 @@ export interface PlanBoardSetup {
   swimlaneBy: SwimlaneBy;
   cardFields: CardField[];
   cardSize?: CardSize;
+  // The header's widgets in order (docs/specs/025-plan/board-widgets.md); absent is the default set.
+  widgets?: BoardWidgetKind[];
   voting: { on: boolean; budget?: number };
   hideWriting: boolean;
 }
@@ -298,6 +301,7 @@ export function normaliseBoardSetup(input: unknown): PlanBoardSetup | null {
     ...(doneColumnId ? { doneColumnId } : {}),
     swimlaneBy,
     cardFields,
+    ...(readBoardWidgets(input['widgets']) ? { widgets: readBoardWidgets(input['widgets']) } : {}),
     ...(input['cardSize'] === 'minimal' || input['cardSize'] === 'compact'
       ? { cardSize: input['cardSize'] }
       : {}),

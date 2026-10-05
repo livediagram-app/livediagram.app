@@ -6,11 +6,21 @@
 // leaves a Plan card there.
 import { useEffect, useState } from 'react';
 import type { ShapeElement } from '@livediagram/document';
-import { typeIn, type BoardProjection, type Item, type PlanBoardSetup } from '@livediagram/items';
+import {
+  placeWidget,
+  typeIn,
+  widgetsOf,
+  type BoardProjection,
+  type BoardWidgetKind,
+  type Item,
+  type PlanBoardSetup,
+} from '@livediagram/items';
 import type { PlanContextValue } from '@/components/plan/PlanContext';
 import { boardMoveFor, laneMove } from '@/components/plan/plan-board-moves';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { registerPlanBoardTarget, type PlanIncoming } from './plan-board-targets';
+import { BOARD_WIDGET_INFO } from '@/components/plan/board-widget-catalogue';
+import { trackSetup } from '@/components/plan/track-board-setup';
 import { usePlanCardDrag, type PlanDropSlot } from './usePlanCardDrag';
 
 export function usePlanBoardDrop(opts: {
@@ -84,7 +94,19 @@ export function usePlanBoardDrop(opts: {
       const column = setup.columns.find((c) => c.status === slot.status);
       plan.announce(`${def.label} added to ${column?.name ?? slot.status}`);
     },
+    canEditWidgets: () => !!setup && canEdit,
+    // A palette widget placed in the header (docs/specs/025-plan/board-widgets.md): one board edit.
+    placeWidget: (kind: BoardWidgetKind, slot: number) => {
+      if (!plan || !setup || !canEdit) return;
+      plan.updateBoard(element.id, {
+        ...setup,
+        widgets: placeWidget(widgetsOf(setup), kind, slot),
+      });
+      trackSetup('Widgets');
+      plan.announce(`${BOARD_WIDGET_INFO[kind].label} added to the board`);
+    },
   });
+  const [widgetSlot, setWidgetSlot] = useState<number | null>(null);
   useEffect(
     () =>
       registerPlanBoardTarget(element.id, {
@@ -94,9 +116,12 @@ export function usePlanBoardDrop(opts: {
         hover: setIncoming,
         acceptsType: (type) => target.current.acceptsType(type),
         addCard: (type, slot) => target.current.addCard(type, slot),
+        canEditWidgets: () => target.current.canEditWidgets(),
+        widgetHover: setWidgetSlot,
+        placeWidget: (kind, slot) => target.current.placeWidget(kind, slot),
       }),
     [element.id, target],
   );
 
-  return { drag, incoming, drop };
+  return { drag, incoming, drop, widgetSlot };
 }

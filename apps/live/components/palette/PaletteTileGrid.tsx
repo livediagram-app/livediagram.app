@@ -11,6 +11,7 @@ import type { PendingDraw } from '@/lib/draw-mode';
 import { IconButton } from '@/components/palette/palette-controls';
 import type { PaletteTileDef } from './palette-tile-defs';
 import { tileDragStart } from './palette-tile-drag';
+import { addPlanWidgetToBoard } from '@/hooks/plan/plan-widget-drop';
 
 // Renders palette tiles from the shared catalogue (palette-tile-defs): maps each tile's action
 // descriptor to the editor's add-handler bundle and derives the pending-draw highlight, so every
@@ -106,6 +107,8 @@ export function tileHandler(def: PaletteTileDef, actions: PaletteTileActions): (
       return () => actions.addIcon(a.iconId);
     case 'tech-icon':
       return () => actions.addTechIcon(a.iconId);
+    case 'plan-widget':
+      return () => addPlanWidgetToBoard(a.widget);
   }
 }
 
@@ -163,6 +166,7 @@ export function tileActive(
     case 'sticker':
     case 'icon':
     case 'tech-icon':
+    case 'plan-widget':
       return false;
     default:
       return pendingDraw.type === a.type;

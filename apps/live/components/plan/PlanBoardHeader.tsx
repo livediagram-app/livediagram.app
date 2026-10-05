@@ -1,11 +1,21 @@
 'use client';
 
-// A Plan board's header (docs/specs/025-plan/plan-board.md "What the board shows"): title, count and
-// progress, the quick filter, the unplaced count, votes left, Reveal and the set-up cog. The header's
+// A Plan board's header (docs/specs/025-plan/board-widgets.md "The header"): the title, the board's
+// widgets, then Reveal and Retry when they apply, and the list of items not on the board. The header's
 // own background is the board's handle: a press there moves the board, its controls do not.
 import { useState } from 'react';
-import type { BoardProjection, Item, PlanBoardSetup, QuickFilter } from '@livediagram/items';
-import { itemTitle } from '@livediagram/items';
+import {
+  itemTitle,
+  widgetsOf,
+  type BoardProjection,
+  type BoardWidgetKind,
+  type Item,
+  type ItemTypeDef,
+  type PlanBoardSetup,
+  type QuickFilter,
+} from '@livediagram/items';
+import { BoardWidgetView, type WidgetContext } from './widgets/BoardWidgetView';
+import { BoardWidgetZone } from './widgets/BoardWidgetZone';
 import type { PlanPalette } from './plan-palette';
 
 const stop = (e: { stopPropagation: () => void }) => e.stopPropagation();
@@ -13,6 +23,8 @@ const stop = (e: { stopPropagation: () => void }) => e.stopPropagation();
 export function PlanBoardHeader({
   setup,
   projection,
+  items,
+  types,
   palette,
   quick,
   onQuick,
@@ -20,12 +32,17 @@ export function PlanBoardHeader({
   canEdit,
   votesLeft,
   loadFailed,
+  widgetDropAt,
+  onWidgets,
   onRetry,
   onReveal,
   onMoveUnplaced,
 }: {
   setup: PlanBoardSetup;
   projection: BoardProjection;
+  // The items the board shows, unfiltered, for the widgets that count them.
+  items: readonly Item[];
+  types: readonly ItemTypeDef[];
   palette: PlanPalette;
   quick: QuickFilter;
   onQuick: (q: QuickFilter) => void;
@@ -33,106 +50,79 @@ export function PlanBoardHeader({
   canEdit: boolean;
   votesLeft: number | null;
   loadFailed: boolean;
+  // Where a widget dragged from the palette would land in the zone.
+  widgetDropAt: number | null;
+  onWidgets: (next: BoardWidgetKind[]) => void;
   onRetry: () => void;
   onReveal: () => void;
   onMoveUnplaced: (item: Item, status: string) => void;
 }) {
   const [trayOpen, setTrayOpen] = useState(false);
-  const done = setup.doneColumnId !== undefined;
-  const pct = projection.total ? Math.round((projection.doneCount / projection.total) * 100) : 0;
+  const widgets = widgetsOf(setup);
+  const ctx: WidgetContext = {
+    setup,
+    projection,
+    items,
+    types,
+    palette,
+    quick,
+    onQuick,
+    canFilterMine,
+    votesLeft,
+    trayOpen,
+    onToggleTray: () => setTrayOpen((o) => !o),
+    now: new Date(),
+  };
   const button =
-    'rounded-md border px-2 py-1 text-[12px] font-medium transition enabled:cursor-pointer disabled:opacity-50';
+    'h-7 shrink-0 rounded-md border px-2 text-[12px] font-medium transition enabled:cursor-pointer disabled:opacity-50';
   return (
     <div
+      data-board-header
       className="relative flex h-[52px] shrink-0 items-center gap-3 px-4"
       style={{ color: palette.text }}
     >
-      <div className="flex min-w-0 flex-col">
-        <div className="truncate text-[17px] font-bold leading-tight">{setup.title}</div>
-        <div className="flex items-center gap-2 text-[11px]" style={{ color: palette.muted }}>
-          <span>
-            {projection.total} {projection.total === 1 ? 'item' : 'items'}
-          </span>
-          {done && projection.total > 0 ? (
-            <span className="inline-flex items-center gap-1.5" aria-label={`${pct}% done`}>
-              <span
-                className="h-1.5 w-20 overflow-hidden rounded-full"
-                style={{ backgroundColor: palette.column }}
-              >
-                <span
-                  className="block h-full rounded-full"
-                  style={{ width: `${pct}%`, backgroundColor: '#16a34a' }}
-                />
-              </span>
-              {pct}% done
-            </span>
+      <div className="min-w-0 max-w-[40%] shrink-0 truncate text-[17px] font-bold leading-tight">
+        {setup.title}
+      </div>
+      <div className="flex min-w-0 flex-1 items-center" onPointerDown={stop}>
+        <BoardWidgetZone
+          widgets={widgets}
+          canEdit={canEdit}
+          palette={palette}
+          dropAt={widgetDropAt}
+          onChange={(next) => {
+            // Taking Filter or Only Mine off clears what it narrowed.
+            if (!next.includes('filter') && quick.text) onQuick({ ...quick, text: undefined });
+            if (!next.includes('mine') && quick.mine) onQuick({ text: quick.text });
+            onWidgets(next);
+          }}
+          render={(kind) => <BoardWidgetView kind={kind} ctx={ctx} />}
+        />
+      </div>
+      {loadFailed || (setup.hideWriting && canEdit) ? (
+        <div className="flex shrink-0 items-center gap-2" onPointerDown={stop}>
+          {loadFailed ? (
+            <button
+              type="button"
+              className={button}
+              style={{ borderColor: palette.warning, color: palette.warning }}
+              onClick={onRetry}
+            >
+              Couldn&rsquo;t load items · Retry
+            </button>
+          ) : null}
+          {setup.hideWriting && canEdit ? (
+            <button
+              type="button"
+              className={button}
+              style={{ borderColor: palette.focus, color: palette.focus }}
+              onClick={onReveal}
+            >
+              Reveal
+            </button>
           ) : null}
         </div>
-      </div>
-      <div className="ml-auto flex items-center gap-2" onPointerDown={stop}>
-        {loadFailed ? (
-          <button
-            type="button"
-            className={button}
-            style={{ borderColor: palette.warning, color: palette.warning }}
-            onClick={onRetry}
-          >
-            Couldn&rsquo;t load items · Retry
-          </button>
-        ) : null}
-        {projection.unplaced.length > 0 ? (
-          <button
-            type="button"
-            className={button}
-            style={{ borderColor: palette.border, color: palette.muted }}
-            aria-expanded={trayOpen}
-            onClick={() => setTrayOpen((o) => !o)}
-          >
-            {projection.unplaced.length} not on this board
-          </button>
-        ) : null}
-        {votesLeft !== null ? (
-          <span className="text-[12px] font-medium" style={{ color: palette.muted }}>
-            Votes left: {votesLeft}
-          </span>
-        ) : null}
-        <input
-          type="search"
-          value={quick.text ?? ''}
-          onChange={(e) => onQuick({ ...quick, text: e.target.value })}
-          onKeyDown={stop}
-          placeholder="Filter"
-          aria-label="Filter this board"
-          className="h-7 w-28 rounded-md border bg-transparent px-2 text-[12px] outline-none"
-          style={{ borderColor: palette.border, color: palette.text }}
-        />
-        {canFilterMine ? (
-          <button
-            type="button"
-            className={button}
-            aria-pressed={quick.mine !== undefined}
-            style={{
-              borderColor: quick.mine ? palette.focus : palette.border,
-              color: quick.mine ? palette.focus : palette.muted,
-            }}
-            onClick={() =>
-              onQuick(quick.mine ? { text: quick.text } : { ...quick, mine: canFilterMine })
-            }
-          >
-            Only mine
-          </button>
-        ) : null}
-        {setup.hideWriting && canEdit ? (
-          <button
-            type="button"
-            className={button}
-            style={{ borderColor: palette.focus, color: palette.focus }}
-            onClick={onReveal}
-          >
-            Reveal
-          </button>
-        ) : null}
-      </div>
+      ) : null}
       {trayOpen && projection.unplaced.length > 0 ? (
         <div
           className="absolute right-4 top-12 z-10 max-h-72 w-80 overflow-y-auto rounded-lg border p-2 shadow-lg"

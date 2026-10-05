@@ -140,11 +140,11 @@ const ILLUSTRATE: PaletteLayout = {
 // Plan mode (docs/specs/025-plan/plan-mode.md "The palette"): boards and cards first, then the words,
 // shapes, glyphs, stickers and pictures that sit round a board; nothing that organises a diagram.
 const PLAN: PaletteLayout = {
-  // Boards and cards only (docs/specs/025-plan/plan-mode.md "The palette"), opening on Cards: a Plan tab
+  // Cards, Boards and Widgets only (docs/specs/025-plan/plan-mode.md "The palette"), opening on Cards: a Plan tab
   // is worked by its boards, so the drawing, writing and decorating categories, and a Popular
   // drawn from them, stay with the other modes.
   landing: 'plan-cards',
-  categories: [{ id: 'plan-cards' }, { id: 'plan-boards' }],
+  categories: [{ id: 'plan-cards' }, { id: 'plan-boards' }, { id: 'plan-widgets' }],
 };
 
 export const PALETTE_LAYOUTS = { diagram: DIAGRAM, illustrate: ILLUSTRATE, plan: PLAN } as const;

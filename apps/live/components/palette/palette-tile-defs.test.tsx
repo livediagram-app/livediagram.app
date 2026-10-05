@@ -151,6 +151,8 @@ const TILES_PER_CATEGORY: Record<string, number> = {
   // card per item type.
   'plan-boards': 7,
   'plan-cards': 5,
+  // A board header's widgets (docs/specs/025-plan/board-widgets.md): one tile per widget kind.
+  'plan-widgets': 10,
 };
 
 describe('PALETTE_CATEGORIES', () => {

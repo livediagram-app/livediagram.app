@@ -7,6 +7,7 @@
 // layouts, the whiteboard dock's shape catalogue) can import it without pulling in the category
 // bodies, and without the import cycle an earlier dialog reached from inside a body once closed.
 
+import { BoardWidgetArt } from '@/components/plan/plan-tile-art';
 import {
   BehaviourTabIcon,
   BuildTabIcon,
@@ -75,6 +76,15 @@ export const PALETTE_CATEGORIES: {
     description:
       'Boards of items to drag through columns: Kanban, sprint, retro, roadmap and more.',
     icon: <PlanIcon size={18} />,
+  },
+  {
+    // A board header's widgets (docs/specs/025-plan/board-widgets.md), after Boards.
+    id: 'plan-widgets',
+    label: 'Widgets',
+    group: 4,
+    description:
+      'Read-outs and controls for a board’s header: completion, a filter, people and more.',
+    icon: <BoardWidgetArt kind="progress" size={18} />,
   },
   {
     id: 'shapes',

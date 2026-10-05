@@ -64,7 +64,7 @@ item store.
 
 ## The palette
 
-The Plan layout offers two categories, **Cards** then **Boards**, under their **Plan** heading in the category
+The Plan layout offers three categories, **Cards**, **Boards** then **Widgets**, under their **Plan** heading in the category
 picker, and opens on **Cards**. The Cards category ends with **Edit Cards**, which opens the Card Types panel
 ([Item types](item-types.md)); the Toolbar layout's strip ends with it while Cards is chosen. A Plan tab is worked by its boards, so there is no Popular and none of the
 drawing, writing or decorating categories (Write, Shapes, Icons, Stickers, Media and the rest stay with the other
@@ -74,6 +74,7 @@ modes):
 | -------- | ---------------------------------------------------------------------------------------------------------- |
 | Cards    | One per [item type](item-types.md) of the document, in its order: Project card, Task card... and any added |
 | Boards   | Kanban, Sprint, Retro, Roadmap, Bug triage, Week, Blank, each with its own picture                         |
+| Widgets  | One per [board widget](board-widgets.md) kind, placed in a board's header, never on the canvas             |
 
 - A **board tile** places a Plan board with that preset's set-up. It shows every item of the document whose
   status is one of its columns.

@@ -8,6 +8,7 @@ import { setPaletteDragPreview, suppressNativeDragImage } from '@/lib/palette-dr
 import { STICKER_DND_MIME } from '@/lib/stickers';
 import { TECH_ICON_DND_MIME } from '@/lib/tech-icons';
 import type { PaletteTileDef } from './palette-tile-defs';
+import { PLAN_WIDGET_MIME } from '@/components/plan/board-widget-catalogue';
 
 // The drag payload of a catalogue tile (docs/specs/010-palette/palette-drag-ghost.md), one definition for every
 // rendering of it: the grid tile, the Toolbar strip's tile, and the list row (category rows and search
@@ -43,6 +44,9 @@ export function tileDragStart(
       return (e) => copy(e, TECH_ICON_DND_MIME, action.iconId);
     case 'sticker':
       return (e) => copy(e, STICKER_DND_MIME, action.stickerId);
+    // A widget lands only in a board's header: no canvas ghost (docs/specs/025-plan/board-widgets.md).
+    case 'plan-widget':
+      return (e) => copy(e, PLAN_WIDGET_MIME, action.widget);
     default:
       return undefined;
   }

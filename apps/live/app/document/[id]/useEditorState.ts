@@ -3,6 +3,7 @@
 import { usePlanSlice } from '@/hooks/plan/usePlanSlice';
 import { usePlanPresence } from '@/hooks/plan/usePlanPresence';
 import { boardClientPoint, dropPlanCardAt, PLAN_CARD_MISSED } from '@/hooks/plan/plan-card-drop';
+import { setPlanWidgetEditor } from '@/hooks/plan/plan-widget-drop';
 import { debugLog } from '@/lib/debug-log';
 import { usePlanItems } from '@/hooks/plan/usePlanItems';
 import { useItemTypes } from '@/hooks/plan/useItemTypes';
@@ -1198,6 +1199,16 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     debugLog('[plan] palette card not placed', { outcome: result.outcome });
     toast.info(result.message);
   };
+  // A widget tile dropped off a board's header says so, and a tapped one finds the selected board
+  // (docs/specs/025-plan/board-widgets.md).
+  useEffect(
+    () =>
+      setPlanWidgetEditor({
+        notice: (m) => toast.info(m),
+        selectedId: () => selectionStore.get().selectedId,
+      }),
+    [toast, selectionStore],
+  );
   // Comment authors' pictures for the open tab (docs/specs/014-identity/profile-picture.md §5).
   useCommentPicturesLoader(documentId, activeTab?.id, activeTab?.elements, sessionShareCode);
 

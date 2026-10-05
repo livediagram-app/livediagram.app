@@ -23,6 +23,7 @@ import { laneMove } from './plan-board-moves';
 import { LaneRow, PlanBoardCard, PlanDragGhost } from './PlanBoardCells';
 import { PlanColumnHeader } from './PlanColumnHeader';
 import { boardRowTemplate } from './plan-board-rows';
+import { boardItems } from './widgets/widget-stats';
 import { trackSetup } from './track-board-setup';
 import { PlanCardMenuHost } from './PlanCardMenu';
 import { usePlan } from './PlanContext';
@@ -70,10 +71,15 @@ export function PlanBoardView({
     () => (setup ? projectBoard(setup, items, quick, types) : null),
     [setup, items, quick, types],
   );
+  // What the header's widgets count: the items the board shows, before the quick filter.
+  const shownItems = useMemo(
+    () => (setup ? boardItems(setup, items.values()) : []),
+    [setup, items],
+  );
   const interactive = !!plan?.planInput;
   const canEdit = !!plan?.canEdit;
 
-  const { drag, incoming } = usePlanBoardDrop({
+  const { drag, incoming, widgetSlot } = usePlanBoardDrop({
     element,
     boardRef,
     plan,
@@ -190,7 +196,14 @@ export function PlanBoardView({
       <PlanBoardHeader
         setup={setup}
         projection={projection}
+        items={shownItems}
+        types={types}
         palette={palette}
+        widgetDropAt={widgetSlot}
+        onWidgets={(next) => {
+          plan?.updateBoard(element.id, { ...setup, widgets: next });
+          trackSetup('Widgets');
+        }}
         quick={quick}
         onQuick={setQuick}
         canFilterMine={self?.id ?? null}

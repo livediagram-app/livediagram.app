@@ -1,3 +1,4 @@
+import type { BoardWidgetKind } from '@livediagram/items';
 import type { EmbedProvider, EventStormingNoteKind } from '@livediagram/document';
 import { EVENT_STORMING_NOTES, REACTION_EMOJI } from '@livediagram/document';
 
@@ -98,6 +99,7 @@ export type PaletteTileSection =
   // cards by item type.
   | 'plan-boards'
   | 'plan-cards'
+  | 'plan-widgets'
   | 'tools'
   | 'data'
   // 'collaborate' is GONE (docs/specs/010-palette/palette-top-level-categories.md). The collaboration family (docs/specs/012-collaboration/estimate-card.md to
@@ -160,7 +162,10 @@ type PaletteTileAction =
   // Dynamic icon tiles (palette-dynamic-tiles.tsx): a single line-art /
   // Technology catalogue entry as a tile.
   | { type: 'icon'; iconId: string }
-  | { type: 'tech-icon'; iconId: string };
+  | { type: 'tech-icon'; iconId: string }
+  // A Plan board's header widget (docs/specs/025-plan/board-widgets.md): placed in a board's header,
+  // never on the canvas.
+  | { type: 'plan-widget'; widget: BoardWidgetKind };
 
 // Themed sub-groups within the Tools section (docs/specs/008-canvas/canvas-and-palette.md "Sub-categories"):
 // the Tools tab renders one labelled grid per group instead of a flat

@@ -137,12 +137,13 @@ describe('palette layouts', () => {
   });
 
   // docs/specs/025-plan/plan-mode.md "The palette".
-  it('narrows Plan to boards and cards alone', () => {
-    expect(ids('plan')).toEqual(['plan-cards', 'plan-boards']);
+  it('narrows Plan to cards, boards and widgets alone', () => {
+    expect(ids('plan')).toEqual(['plan-cards', 'plan-boards', 'plan-widgets']);
     expect(paletteLandingCategory('plan', false)).toBe('plan-cards');
     for (const mode of ['diagram', 'illustrate'] as const) {
       expect(ids(mode)).not.toContain('plan-boards');
       expect(ids(mode)).not.toContain('plan-cards');
+      expect(ids(mode)).not.toContain('plan-widgets');
     }
   });
 
