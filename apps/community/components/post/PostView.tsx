@@ -55,12 +55,20 @@ export function PostView() {
         <>
           <article
             key={load.data.post.id}
-            className="grid items-start gap-10 lg:grid-cols-[minmax(0,1fr)_24rem]"
+            className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_24rem] lg:gap-10"
           >
-            <EmbedFrame shareCode={load.data.post.shareCode} title={load.data.post.title} />
-            <div className="flex flex-col gap-8 lg:sticky lg:top-24">
-              <PostMeta post={load.data.post} />
-              <PostActions post={load.data.post} />
+            {/* Below lg the side column dissolves into the page's single column, so the title reads first, then
+                the document, then what you can do with it; from lg the document sits beside a sticky column. */}
+            <div className="max-lg:order-2">
+              <EmbedFrame shareCode={load.data.post.shareCode} title={load.data.post.title} />
+            </div>
+            <div className="flex flex-col gap-8 max-lg:contents lg:sticky lg:top-24">
+              <div className="max-lg:order-1">
+                <PostMeta post={load.data.post} />
+              </div>
+              <div className="max-lg:order-3">
+                <PostActions post={load.data.post} />
+              </div>
             </div>
           </article>
           <div className="mt-8">

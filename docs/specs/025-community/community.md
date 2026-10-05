@@ -143,6 +143,9 @@ type) and on the worker (authoritative).
   documents in one step) and **Open Document** (the read-only viewer, full screen) side by side at equal size, Make a
   Copy leading in colour; beneath them one strip of equal chips, the **Like** toggle with its count ("3 likes"), the
   copy count ("1 copy") and **Report** at the end.
+- **Layout**: from the `lg` breakpoint, the preview on the left and a sticky column on the right holding the title block
+  above the actions. Narrower, one column: the title block first, then the preview, then the actions (on a phone the
+  two action buttons stack).
 - **More Like This**: up to six other posts in the same category, most loved first.
 - A post that does not exist, was removed or is hidden shows a friendly not-found with a way back to the gallery.
 - Once a post loads, its page names its own address as canonical (the static shell, shared by every post, carries
