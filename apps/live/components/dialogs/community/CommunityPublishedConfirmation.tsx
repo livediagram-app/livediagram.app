@@ -15,10 +15,13 @@ const LinkIcon = lucideGlyph(lucideLink, 14);
 export function CommunityPublishedConfirmation({
   postId,
   title,
+  titleId,
   onDone,
 }: {
   postId: string;
   title: string;
+  // The heading's id, which the dialog it sits in is labelled by.
+  titleId: string;
   onDone: () => void;
 }) {
   const toast = useToast();
@@ -42,10 +45,7 @@ export function CommunityPublishedConfirmation({
         <span className="flex h-16 w-16 animate-fade-in items-center justify-center rounded-full bg-brand-50 text-brand-500 dark:bg-brand-500/15 dark:text-brand-300">
           <SparklesIcon />
         </span>
-        <h2
-          id="community-publish-title"
-          className="text-lg font-semibold text-slate-900 dark:text-slate-50"
-        >
+        <h2 id={titleId} className="text-lg font-semibold text-slate-900 dark:text-slate-50">
           Shared to the Community
         </h2>
         <p className="max-w-sm text-sm text-slate-600 dark:text-slate-300">

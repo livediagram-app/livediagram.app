@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { communityCategoryLabel, type CommunityOwnPost } from '@livediagram/api-schema';
 import { Button, buttonClassName, lucideGlyph } from '@livediagram/ui';
@@ -52,6 +52,7 @@ export function CommunitySection({
   // Remove asks in place of the buttons, so the focused control goes away each time the row swaps: focus follows it
   // (into the question, back to Remove From Community, or to Share to Community once the post is gone) rather than
   // falling out of the dialog.
+  const headingId = useId();
   const sectionRef = useRef<HTMLElement>(null);
   const focusNext = useRef<'confirm' | 'actions' | 'share' | null>(null);
   useEffect(() => {
@@ -84,12 +85,13 @@ export function CommunitySection({
   return (
     <section
       ref={sectionRef}
-      aria-labelledby="share-community-heading"
+      aria-labelledby={headingId}
       className="flex flex-col gap-2.5 border-t border-slate-100 pt-4 dark:border-slate-800"
     >
-      <p id="share-community-heading" className={`${SECTION_LABEL} flex items-center gap-1.5`}>
+      <p className={`${SECTION_LABEL} flex items-center gap-1.5`}>
         <GlobeIcon />
-        Community
+        {/* The section is named by the word alone, not the help link beside it. */}
+        <span id={headingId}>Community</span>
         <HelpArticleLink article="community" className="ml-auto" />
       </p>
 

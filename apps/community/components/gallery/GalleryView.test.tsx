@@ -366,6 +366,22 @@ describe('My Shares', () => {
     expect(screen.getByRole('button', { name: 'Try Again' })).toBeTruthy();
   });
 
+  it('waits afresh each time My Shares is turned on again after a time-out', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    h.session = null;
+    window.history.replaceState(null, '', '/?q=is%3Amine');
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    render(<GalleryView />);
+    await act(async () => vi.advanceTimersByTime(10_000));
+    expect(screen.getByText("We couldn't load the Community.")).toBeTruthy();
+    const toggle = () => screen.getByRole('button', { name: /My Shares/ });
+    await act(async () => fireEvent.click(toggle()));
+    await act(async () => fireEvent.click(toggle()));
+    expect(screen.queryByText("We couldn't load the Community.")).toBeNull();
+    await act(async () => vi.advanceTimersByTime(10_000));
+    expect(screen.getByText("We couldn't load the Community.")).toBeTruthy();
+  });
+
   it('asks a signed-out visitor to sign in, coming back to the same view', async () => {
     h.session = { loaded: true, signedIn: false, userId: null, getToken: async () => null };
     window.history.replaceState(null, '', '/?q=is%3Amine');

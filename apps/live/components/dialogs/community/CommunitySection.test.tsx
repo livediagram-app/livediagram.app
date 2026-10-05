@@ -75,6 +75,8 @@ describe('CommunitySection, every face', () => {
 
   it('asks a guest to sign in, and tells a team document it cannot be shared', () => {
     render(<CommunitySection {...base({ signedIn: false })} />);
+    // Named by its heading word alone, not the help link beside it.
+    expect(screen.getByRole('region', { name: 'Community' })).toBeTruthy();
     expect(screen.getByRole('link', { name: 'Sign In to Share' }).getAttribute('href')).toBe(
       '/sign-in/?redirect_url=%2Fdocument%2Fd1',
     );

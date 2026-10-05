@@ -89,7 +89,14 @@ describe('CommunityPublishedConfirmation', () => {
     const writeText = vi.fn(async () => {});
     vi.stubGlobal('navigator', { ...navigator, clipboard: { writeText } });
     const onDone = vi.fn();
-    render(<CommunityPublishedConfirmation postId="post1" title="Payments" onDone={onDone} />);
+    render(
+      <CommunityPublishedConfirmation
+        postId="post1"
+        title="Payments"
+        titleId="t"
+        onDone={onDone}
+      />,
+    );
     expect(screen.getByRole('heading', { name: 'Shared to the Community' })).toBeTruthy();
     expect(screen.getByRole('status').textContent).toContain('is live');
     expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Done' }));
@@ -110,7 +117,14 @@ describe('CommunityPublishedConfirmation', () => {
       ...navigator,
       clipboard: { writeText: vi.fn(async () => Promise.reject(new Error('denied'))) },
     });
-    render(<CommunityPublishedConfirmation postId="post1" title="Payments" onDone={vi.fn()} />);
+    render(
+      <CommunityPublishedConfirmation
+        postId="post1"
+        title="Payments"
+        titleId="t"
+        onDone={vi.fn()}
+      />,
+    );
     await act(async () => {
       fireEvent.click(screen.getByRole('button', { name: /Copy Link/ }));
     });

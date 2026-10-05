@@ -27,13 +27,20 @@ export function PostView() {
   }, [title]);
   useEffect(() => {
     if (load.status !== 'ready' || !id) return;
-    let link = document.querySelector<HTMLLinkElement>('link[rel="canonical"]');
-    if (!link) {
-      link = document.createElement('link');
+    // Leaving the post (Back to Community is a client-side navigation) puts the head back as it was, so the
+    // gallery never carries the post's canonical.
+    const existing = document.querySelector<HTMLLinkElement>('link[rel="canonical"]');
+    const link = existing ?? document.createElement('link');
+    const previous = existing?.href ?? null;
+    if (!existing) {
       link.rel = 'canonical';
       document.head.appendChild(link);
     }
     link.href = new URL(communityPostPath(id), window.location.origin).href;
+    return () => {
+      if (previous === null) link.remove();
+      else link.href = previous;
+    };
   }, [load.status, id]);
 
   return (

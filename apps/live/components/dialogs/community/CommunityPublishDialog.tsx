@@ -131,7 +131,7 @@ export function CommunityPublishDialog({
     <Dialog
       open
       onClose={closeUnlessBusy}
-      titleId={published ? 'community-publish-title' : titleId}
+      titleId={titleId}
       size="xl"
       closeOnEscape={!busy}
       className="max-h-[calc(100%-2rem)]"
@@ -141,6 +141,7 @@ export function CommunityPublishDialog({
         <CommunityPublishedConfirmation
           postId={published.id}
           title={published.title}
+          titleId={titleId}
           onDone={onClose}
         />
       ) : (

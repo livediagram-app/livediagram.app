@@ -65,6 +65,9 @@ export function TagFilter({
   );
 }
 
+const GROUP_LABEL =
+  'px-2.5 pb-1 pt-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400';
+
 function TagOptions({
   rows,
   selected,
@@ -81,6 +84,30 @@ function TagOptions({
   onToggle: (tag: string) => void;
 }) {
   const { attach, surfaceProps } = useMenu({ onClose, trigger, initialFocus, label: 'Tags' });
+  const chosenOnly = rows.filter((r) => r.count === null);
+  const popular = rows.filter((r) => r.count !== null);
+  const row = ({ tag, count }: { tag: string; count: number | null }) => {
+    const checked = selected.includes(tag);
+    return (
+      <button
+        key={tag}
+        type="button"
+        role="menuitemcheckbox"
+        aria-checked={checked}
+        tabIndex={-1}
+        onClick={() => onToggle(tag)}
+        className={menuRadioRowClass(checked, { weight: 'checked' })}
+      >
+        <span className="flex-1 truncate">#{tag}</span>
+        {count !== null ? (
+          <span className="text-xs tabular-nums text-slate-500 dark:text-slate-400">{count}</span>
+        ) : null}
+        <span className="flex w-4 shrink-0 justify-end">
+          {checked ? <CheckIcon aria-hidden /> : null}
+        </span>
+      </button>
+    );
+  };
   return (
     <div
       ref={attach}
@@ -88,33 +115,12 @@ function TagOptions({
       className="absolute right-0 top-full z-(--z-popover) w-60 pt-2 outline-none"
     >
       <div className={`${MENU_PANEL} max-h-80 overflow-y-auto`}>
-        <p className="px-2.5 pb-1 pt-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-          Popular Tags
-        </p>
-        {rows.map(({ tag, count }) => {
-          const checked = selected.includes(tag);
-          return (
-            <button
-              key={tag}
-              type="button"
-              role="menuitemcheckbox"
-              aria-checked={checked}
-              tabIndex={-1}
-              onClick={() => onToggle(tag)}
-              className={menuRadioRowClass(checked, { weight: 'checked' })}
-            >
-              <span className="flex-1 truncate">#{tag}</span>
-              {count !== null ? (
-                <span className="text-xs tabular-nums text-slate-500 dark:text-slate-400">
-                  {count}
-                </span>
-              ) : null}
-              <span className="flex w-4 shrink-0 justify-end">
-                {checked ? <CheckIcon aria-hidden /> : null}
-              </span>
-            </button>
-          );
-        })}
+        {/* A chosen tag that is not among the popular ones has no count; it gets its own group, so it never sits
+            under a heading that says it is popular. */}
+        {chosenOnly.length > 0 ? <p className={GROUP_LABEL}>Chosen</p> : null}
+        {chosenOnly.map(row)}
+        {popular.length > 0 ? <p className={GROUP_LABEL}>Popular Tags</p> : null}
+        {popular.map(row)}
       </div>
     </div>
   );

@@ -64,8 +64,9 @@ export function TagInput({
     setRejected(next.rejected);
   };
 
-  const commitDraft = () => {
-    refocus.current = true;
+  // Enter and comma keep typing in the field; leaving it (blur) commits without pulling focus back.
+  const commitDraft = ({ keepFocus = true }: { keepFocus?: boolean } = {}) => {
+    refocus.current = keepFocus;
     const result = commitTag(tags, draft);
     apply(result);
     if (!result.rejected) setDraft('');
@@ -131,7 +132,7 @@ export function TagInput({
             }
           }}
           onBlur={() => {
-            if (draft.trim()) commitDraft();
+            if (draft.trim()) commitDraft({ keepFocus: false });
           }}
           placeholder={
             full ? 'That is all five' : tags.length ? 'Add another' : 'e.g. aws, onboarding'

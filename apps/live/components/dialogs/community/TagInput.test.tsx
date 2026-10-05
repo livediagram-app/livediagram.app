@@ -31,6 +31,22 @@ describe('TagInput', () => {
     expect(field().value).toBe('');
   });
 
+  it('commits on leaving the field, and lets focus go where it was going', () => {
+    render(
+      <>
+        <Harness />
+        <button type="button">Next</button>
+      </>,
+    );
+    field().focus();
+    fireEvent.change(field(), { target: { value: 'aws' } });
+    const next = screen.getByRole('button', { name: 'Next' });
+    next.focus();
+    fireEvent.blur(field());
+    expect(tags()).toBe('aws');
+    expect(document.activeElement).toBe(next);
+  });
+
   it('adds on a comma and keeps what follows it', () => {
     render(<Harness />);
     fireEvent.change(field(), { target: { value: 'aws,gc' } });

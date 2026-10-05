@@ -34,6 +34,13 @@ export function GalleryView() {
   // showing placeholders forever; Try Again reloads the page, which loads Clerk afresh.
   const waitingForSession = mine && signInAvailable && session?.loaded !== true;
   const [sessionTimedOut, setSessionTimedOut] = useState(false);
+  // Each wait gets its own 10 seconds: once My Shares stops waiting (sign-in arrived, or My Shares was turned off),
+  // an earlier time-out is forgotten, so turning it back on waits afresh.
+  const [wasWaiting, setWasWaiting] = useState(waitingForSession);
+  if (wasWaiting !== waitingForSession) {
+    setWasWaiting(waitingForSession);
+    if (!waitingForSession) setSessionTimedOut(false);
+  }
   useEffect(() => {
     if (!waitingForSession) return;
     const timer = window.setTimeout(() => {

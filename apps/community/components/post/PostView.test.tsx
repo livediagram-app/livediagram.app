@@ -119,6 +119,14 @@ describe('the post page', () => {
     expect(calls).toHaveLength(0);
   });
 
+  it('takes its canonical link away again when the page goes', async () => {
+    const view = render(<PostView />);
+    await screen.findByRole('heading', { name: 'Payments Platform' });
+    expect(document.querySelector('link[rel="canonical"]')).not.toBeNull();
+    view.unmount();
+    expect(document.querySelector('link[rel="canonical"]')).toBeNull();
+  });
+
   it('offers Try Again after a failure, which loads it again', async () => {
     let fail = true;
     answer = () =>
