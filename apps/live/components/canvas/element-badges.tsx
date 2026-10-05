@@ -10,8 +10,7 @@
 // deliberately NOT treated this way (element-parts.tsx): interaction
 // grips need a constant hit size.
 import { initialsOf } from '@/lib/identity';
-import { HoverCard, GlyphDisc } from '@livediagram/ui';
-import { IDENTITY_FILL, identityVars } from '@/lib/identity-fill';
+import { HoverCard, GlyphDisc, IDENTITY_FILL, identityVars } from '@livediagram/ui';
 import { useCanvasZoom } from '@/components/canvas/CanvasZoomContext';
 
 // Below this canvas zoom the on-element adornments (badge pill, lock

@@ -32,6 +32,7 @@ Specs live in numbered category folders: the reserved `001`–`005` first (visio
 - ./022-drive-mirror/README.md - when working on the Google Drive mirror of My documents
 - ./023-draw-mode/README.md - when working on Draw mode: its pens, dock, snap colours, text boxes and path tool
 - ./024-agents/README.md - when an agent reads, writes or comments on documents: changesets, presence, views, edit operations, lint
+- ./025-community/README.md - when working on Community: publishing documents to the public gallery, the Community app, likes, copies, and reports (moderation by reports alone)
 
 ## Workflow
 

@@ -1,6 +1,5 @@
 import { Fragment, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { ChevronDownIcon, HoverCard } from '@livediagram/ui';
-import { Portal } from '@/components/primitives/Portal';
+import { ChevronDownIcon, HoverCard, Portal } from '@livediagram/ui';
 import { VIEWPORT_EDGE_MARGIN as EDGE } from '@/lib/clamp-to-viewport';
 
 export type PaletteDropdownOption = {

@@ -37,11 +37,13 @@ import { CORS_HEADERS, forbidden, json, notFound, payloadTooLarge, rateLimited }
 import { insertTelemetryEvents } from './db/telemetry';
 import { deleteOldDocumentOpens } from './db/document-opens';
 import { clientIp } from './client-ip';
+import { communityNetwork } from './community-network';
 import { MAX_BODY_BYTES, MAX_IMAGE_BYTES } from './limits';
 import { handleAccount } from './routes/account';
 import { handleAiReadNotes } from './routes/ai-read-notes';
 import { handleAi } from './routes/ai';
 import { handleCatalogues } from './routes/catalogues';
+import { handleCommunity } from './routes/community';
 import { handleCapabilities } from './routes/capabilities';
 import { handleOpenapi } from './routes/openapi';
 import { handleCustomThemes } from './routes/custom-themes';
@@ -265,7 +267,17 @@ async function routeApiRequest(
   // Mint volume is one row per room join and the route does no
   // unbounded work, so it isn't a quota-exhaustion vector.
   const isRoomTicketMint = segments[1] === 'documents' && segments[3] === 'room-ticket';
-  if (isWrite && url.pathname !== '/api/events' && !isRoomTicketMint) {
+  // Community likes and reports (docs/specs/025-community/blueprints/community.md §7) are limited per
+  // network instead: their callers are anonymous, so the owner key would be 'anonymous' for everyone.
+  const isCommunityWrite = isWrite && segments[1] === 'community';
+  if (isCommunityWrite && env.COMMUNITY_RATE_LIMITER) {
+    // Keyed by address range, not address: rotating addresses inside one range buys no extra writes.
+    const ok = await env.COMMUNITY_RATE_LIMITER.limit({
+      key: `community:${communityNetwork(clientIp(request))}`,
+    });
+    if (!ok.success) return rateLimited();
+  }
+  if (isWrite && url.pathname !== '/api/events' && !isRoomTicketMint && !isCommunityWrite) {
     // A token request rate-limits on the TOKEN id (docs/specs/015-api/public-api-and-tokens.md §3.5), so a
     // runaway integration is throttled independently of the owner's
     // interactive app use; everything else keys on the resolved owner.
@@ -331,6 +343,8 @@ async function routeApiRequest(
         return await handleTelemetry(ctx);
       case 'share':
         return await handleShare(ctx);
+      case 'community':
+        return await handleCommunity(ctx);
       case 'shared':
         return await handleShared(ctx);
       case 'images':

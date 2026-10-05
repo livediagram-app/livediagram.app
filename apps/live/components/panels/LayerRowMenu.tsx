@@ -5,7 +5,6 @@ import { useCallback, useRef, useState } from 'react';
 import { isLayerLocked, layerOpacityOf, type Layer } from '@livediagram/document';
 import { EyeIcon, LockIcon } from '@/components/panels/layers-panel-icons';
 import { ClearIcon } from '@/components/chrome/tab-bar-icons';
-import { Portal } from '@/components/primitives/Portal';
 import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
 import { MenuAccordionSection, MenuGroupSeparator } from '@/components/primitives/PortalMenu';
 import {
@@ -21,7 +20,13 @@ import {
   LayerUpIcon,
   MENU_ICON_PX,
 } from '@/components/palette/context-menu-icons';
-import { lucideGlyph, MenuTreeContext, useClickOutside, useControlMenu } from '@livediagram/ui';
+import {
+  lucideGlyph,
+  MenuTreeContext,
+  useClickOutside,
+  useControlMenu,
+  Portal,
+} from '@livediagram/ui';
 import { lucideFileText, lucideMerge } from '@livediagram/icons/lucide';
 
 // Right-click menu for a Layers-panel row (docs/specs/006-document/layers.md), styled like the tab

@@ -98,6 +98,11 @@ export const HELP_PAGES = pagesOf(
 
 export const DASHBOARD_PAGES = pagesOf('Dashboard', 'This public telemetry dashboard.');
 
+export const COMMUNITY_PAGES = pagesOf(
+  'Community',
+  'The Community: its gallery of shared boards and every post page.',
+);
+
 // The returning-visitor split by sign-in state (All Visitors below):
 // Returning Visitors sums both.
 export const RETURNING_GUESTS: Metric = {
@@ -290,7 +295,7 @@ export const PAGE_VIEWS_BY_APP: MetricStack = {
   title: 'Page Views by App',
   blurb:
     'Every page viewed across the site, by full load or in-app navigation, split by the app that serves it.',
-  members: [MARKETING_PAGES, LIVE_PAGES, HELP_PAGES, DASHBOARD_PAGES],
+  members: [MARKETING_PAGES, LIVE_PAGES, HELP_PAGES, DASHBOARD_PAGES, COMMUNITY_PAGES],
   seeAlso: { view: 'pages', label: 'See Every Page on the Pages Tab' },
 };
 

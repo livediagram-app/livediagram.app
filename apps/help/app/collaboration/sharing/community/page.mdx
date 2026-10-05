@@ -1,0 +1,67 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Sharing to the Community',
+  description:
+    'Publish a document you are proud of to the Community, where anyone can find it, view it read-only and make their own copy.',
+  path: '/help/collaboration/sharing/community/',
+});
+
+<ArticleLayout title="Sharing to the Community" description="Put a document in the public gallery so others can find it, learn from it and make their own copy." categoryTitle="Collaboration" categorySlug="collaboration" parentArticle={{ title: "Sharing and Embeds", slug: "sharing" }} subArticles={getSubArticles("sharing").filter((a) => a.slug !== "community")}>
+
+The [Community](/community/) is a public gallery of documents people are proud of. Anyone can browse it, filter it by category and tag, open a document read-only, like it, and make their own copy to start from. Sharing a document there is a way to show your work and to help someone else get going.
+
+## Sharing a document
+
+You need to be signed in to share a document to the Community, so every document there has a real author. Browsing, liking and copying need no account.
+
+<Step n={1}>Open the **Share** dialog on your document.</Step>
+<Step n={2}>In the **Community** section at the bottom, choose **Share to Community**.</Step>
+<Step n={3}>
+  Give it a title, a description of what it shows and how someone could reuse it, a **category** and
+  up to five **tags**, then choose **Share to Community**.
+</Step>
+
+Good tags are the words someone would search for: the tools, the method, the subject. They help people find your document through the filters on the Community page.
+
+Your document is shared anonymously by default: it shows as Anonymous, with no name or picture. Turn off **Share Anonymously** in the same dialog to show your name instead.
+
+## What people see
+
+A Community document always shows your **latest saved version**, so your edits appear there too. Visitors see it read-only:
+
+- They can pan, zoom and switch tabs, and make their own copy with **Make a Copy**. Their copy is theirs; it never changes yours.
+- They do not join your document live, so you won't see strangers' cursors, and you won't get an email for each visitor.
+- **Comments stay private.** They are not shown to Community visitors.
+
+Each card shows how many people liked the document and how many made a copy.
+
+Opened from the Community, a document is read-only for you too, so you can see it exactly as visitors do and never change it by accident from the gallery. The bar across the top offers **Edit Your Document**, which opens your own document.
+
+## Editing or removing it
+
+Open the **Share** dialog again. The **Community** section shows your post with **Edit Listing**, to change the title, description, category or tags, and **Remove From Community**, which takes it out of the gallery straight away. Copies people already made stay theirs.
+
+<Tip>
+  A document in the Community can't also have a [share
+  password](/help/collaboration/sharing/share-passwords/), because a public document can't ask its
+  visitors for one. Remove it from the Community first if you want to set a password.
+</Tip>
+
+## If your post is hidden
+
+Anyone can report a post. When several people report yours, it is taken out of the Community automatically and for good: nobody reviews posts by hand, so the reports decide. The **Community** section of the **Share** dialog then says **Hidden after reports**, and it shows in [My Shares](/help/collaboration/sharing/finding-community-documents/#your-own-shares) marked **Hidden**. Only you can see it. A hidden post can't be edited or removed, so the same document can't be shared again, but your document itself is untouched and you can still set a share password on it.
+
+## Things that can't be shared
+
+- Documents in a **team library** belong to the team, so they can't be shared to the Community.
+- A document with nothing on it can't be shared until you add something.
+- A document in the **Trash** disappears from the Community until you restore it.
+
+## Finding documents
+
+Browsing the Community, searching it by tag and making your own copy are covered in [Finding Documents in the Community](/help/collaboration/sharing/finding-community-documents/), along with reporting a document that shouldn't be there.
+
+</ArticleLayout>

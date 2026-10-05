@@ -13,6 +13,21 @@
 // once per action. `event-explanation.test.ts` checks every event the code
 // can send gets a real sentence, free of code names and jargon.
 
+import { COMMUNITY_CATEGORIES, COMMUNITY_REPORT_REASONS } from '@livediagram/api-schema';
+
+// One sentence per Community category or report reason, read off the closed lists so a new one
+// reads by its own label the day it ships.
+const perCommunityCategory = (action: string, sentence: (label: string) => string) =>
+  Object.fromEntries(
+    COMMUNITY_CATEGORIES.map((c) => [`Community|${action}|${c.type}`, sentence(c.label)]),
+  );
+const perReportReason = Object.fromEntries(
+  COMMUNITY_REPORT_REASONS.map((r) => [
+    `Community|Reported|${r.type}`,
+    `Someone reported a post in the Community, giving ${r.label} as the reason.`,
+  ]),
+);
+
 export const EXACT: Readonly<Record<string, string>> = {
   'Editor|Changed|LeaveIllustrateConfirmed':
     'Someone confirmed leaving Illustrate on a tab with pages, after the warning that its pages do not show in Diagram or Draw.',
@@ -465,6 +480,30 @@ export const EXACT: Readonly<Record<string, string>> = {
     'An agent or a script checked how a tab is drawn: overlaps, crossings, hidden arrows.',
   'Agent|Opened|Toast':
     "Somebody pressed Show on the toast an agent's change raised, to see what it touched.",
+  ...perCommunityCategory(
+    'Shared',
+    (label) => `Someone shared a document to the Community, under ${label}.`,
+  ),
+  ...perCommunityCategory(
+    'Changed',
+    (label) => `Someone saved changes to their Community post, now listed under ${label}.`,
+  ),
+  'Community|Removed|Post':
+    'Someone took their own post down from the Community, with Remove From Community in the Share dialog.',
+  'Community|Opened|Post': "Someone opened a post's own page in the Community.",
+  'Community|Liked|Post': 'Someone liked a post in the Community.',
+  'Community|Unliked|Post': 'Someone took back a like they had given a post in the Community.',
+  'Community|Copied|Post':
+    'Someone pressed Make a Copy on a Community post, to start their own document from it.',
+  ...perReportReason,
+  'Community|Searched|Query':
+    'Someone searched the Community gallery. Counted once per search, never what they typed.',
+  'Community|Selected|Category': 'Someone filtered the Community gallery to one category.',
+  'Community|Selected|Tag': 'Someone filtered the Community gallery to one tag. Never which tag.',
+  'Community|Selected|Sort':
+    'Someone changed how the Community gallery is sorted: newest, most loved or most copied.',
+  'Community|Selected|Mine':
+    'Someone turned on My Shares, to see the documents they shared to the Community and how they are doing.',
   'Mcp|Used|AddTab': 'An AI tool connected over MCP added a new tab to a document.',
   'Mcp|Used|CreateDocument': 'An AI tool connected over MCP created a new document.',
   'Mcp|Used|FindDocuments':
@@ -1183,6 +1222,18 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
     'An agent showed itself on a tab, with what it is doing, through the MCP server, the CLI or the API.',
   'Agent|Reverted':
     "An agent's changeset was undone, from the editor's toast or another front door.",
+  'Community|Shared':
+    'Someone shared a document to the Community, the public gallery of documents.',
+  'Community|Changed': 'A Community post changed: its owner edited the listing.',
+  'Community|Removed': 'Someone took their own post down from the Community.',
+  'Community|Opened': "Someone opened a post's own page in the Community.",
+  'Community|Liked': 'Someone liked a post in the Community.',
+  'Community|Unliked': 'Someone took back a like they had given a post in the Community.',
+  'Community|Copied': 'Someone made their own copy of a Community post.',
+  'Community|Reported': 'Someone reported a post in the Community.',
+  'Community|Searched': 'Someone searched the Community gallery. Never what they typed.',
+  'Community|Selected':
+    'Someone picked a filter in the Community gallery: a category, a tag, a sort order or My Shares.',
   'Mcp|Used': 'An AI tool connected to livediagram over MCP used one of its actions on a document.',
   'Note|Added': 'A note was added to an element (first non-empty save).',
   'Cli|Used': 'Someone ran a livediagram command from the command line, and it succeeded.',

@@ -47,3 +47,16 @@ describe('SharedBadge', () => {
     expect(document.getElementById(id!)?.textContent).toBe('Only visible to you.');
   });
 });
+
+// docs/specs/025-community/community.md: listed in the Community, the document is public.
+describe('SharedBadge in the Community', () => {
+  it('reads Public while listed, over Shared, and Local only still wins', () => {
+    render(<SharedBadge shareable community />);
+    expect(screen.getByText('Public')).toBeTruthy();
+    expect(screen.queryByText('Shared')).toBeNull();
+    cleanup();
+    render(<SharedBadge shareable={false} offline community />);
+    expect(screen.getByText(LOCAL_ONLY_LABEL)).toBeTruthy();
+    expect(screen.queryByText('Public')).toBeNull();
+  });
+});

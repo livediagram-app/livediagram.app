@@ -12,6 +12,7 @@ import { useEffect, useRef, type ComponentType } from 'react';
 import { CountBadge } from './CountBadge';
 import { CheckIcon, ChevronDownIcon, type IconProps } from './icons';
 import type { MenuInitialFocus } from './menu';
+import { MENU_PANEL, menuRadioRowClass } from './menu/menu-classes';
 import { useMenu } from './menu/useMenu';
 import { useMenuButton } from './menu/useMenuButton';
 import { useClickOutside } from './useClickOutside';
@@ -148,7 +149,7 @@ function ModeMenu<T extends string>({
       // The gap under the chip is padding inside the menu, so the pointer crossing it never leaves.
       className="absolute left-0 top-full z-(--z-popover) w-full min-w-48 pt-1.5 outline-none sm:w-max"
     >
-      <div className="flex animate-fade-in flex-col gap-px rounded-lg border border-slate-200/80 bg-white p-1 shadow-xl shadow-slate-900/10 motion-reduce:animate-none dark:border-slate-700/80 dark:bg-slate-900 dark:shadow-slate-950/60">
+      <div className={MENU_PANEL}>
         {options.map(({ id, label: name, Icon, count }) => {
           const checked = id === value;
           return (
@@ -160,11 +161,7 @@ function ModeMenu<T extends string>({
               tabIndex={-1}
               data-mode-choice={id}
               onClick={() => onChoose(id)}
-              className={`flex items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-brand-600 ${
-                checked
-                  ? 'bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-100'
-                  : 'text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800'
-              }`}
+              className={menuRadioRowClass(checked)}
             >
               <Icon size={16} aria-hidden className="shrink-0" />
               <span className="flex-1">{name}</span>

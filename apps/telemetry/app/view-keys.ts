@@ -8,6 +8,7 @@ export type ViewKey =
   | 'lookfeel'
   | 'editing'
   | 'help'
+  | 'community'
   | 'settings'
   | 'exceptions'
   | 'search';

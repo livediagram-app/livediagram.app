@@ -19,9 +19,8 @@
 // drops the personal space entirely and opens straight inside the team.
 
 import { useState } from 'react';
-import { Button, useEscape } from '@livediagram/ui';
+import { Button, useEscape, DialogCloseButton } from '@livediagram/ui';
 import { Dialog } from '@/components/dialogs/Dialog';
-import { DialogCloseButton } from '@/components/dialogs/DialogCloseButton';
 import {
   PlacementBrowser,
   parsePlacement,

@@ -39,6 +39,8 @@ const db = vi.hoisted(() => ({
   documentsContainingTab: vi.fn(),
   linkTabToDocument: vi.fn(),
   tabLinkedToOwnedDocument: vi.fn(),
+  // Community link check on the tab read (docs/specs/025-community/community.md): an ordinary link here.
+  getShareLink: vi.fn(async () => null),
 }));
 vi.mock('../db', () => db);
 vi.mock('../db/timeline', () => ({ markTimelineEventsDeletedBySource: vi.fn(async () => {}) }));

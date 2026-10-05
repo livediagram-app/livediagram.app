@@ -513,6 +513,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   } = useEditorComments({
     applyElementDelta,
     selfParticipant,
+    // A Community visitor reads the board, never its conversation (docs/specs/025-community/community.md).
+    commentsOff: realtime.sessionCommunity !== null,
     // Bound below, once the teams the mention list comes from have loaded.
     onMentioned: (text, mentions) => mentionNotifyRef.current(text, mentions),
   });
@@ -843,6 +845,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
       setSelfParticipant,
       setSessionRole,
       setSessionShareCode,
+      setSessionCommunity: realtime.setSessionCommunity,
       setSessionTabScope,
       setSharedDocuments,
       setShareLinks,
@@ -988,6 +991,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     hydrated,
     documentId,
     documentServerStored: realtime.documentServerStored,
+    enabled: realtime.sessionCommunity === null,
     documentTeamId,
     selfParticipant,
     sessionShareCode,

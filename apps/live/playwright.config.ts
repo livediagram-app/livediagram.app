@@ -61,7 +61,7 @@ export default defineConfig({
         /optical-audit-sites\.spec\.ts/,
       ],
     },
-    // The optical audit of the help centre, telemetry dashboard and marketing site: the one suite
+    // The optical audit of the help centre, telemetry dashboard, Community and marketing site: the one suite
     // that needs their builds, so CI gives it its own job and the shards build only live
     // (docs/specs/003-system-architecture/e2e-smoke.md "When it runs").
     {

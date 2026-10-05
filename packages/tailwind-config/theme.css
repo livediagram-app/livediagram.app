@@ -54,6 +54,34 @@
    * EmptyState (live Explorer, telemetry dashboard) animates alike. */
   --animate-empty-float: empty-float 3.6s ease-in-out infinite;
   --animate-empty-ring: empty-ring 2.8s cubic-bezier(0, 0, 0.2, 1) infinite;
+
+  /* The shared Dialog shell's entrances (@livediagram/ui, used by the editor and the Community): a centred
+   * panel lifts 16px into place; a phone sheet rises its full height from the bottom edge, so it reads as
+   * arriving from off-screen. Dialogs are the long motion token (motion.md). */
+  --animate-fly-up-in: fly-up-in var(--transition-duration-long) cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-sheet-up: sheet-up var(--transition-duration-long) cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes fly-up-in {
+  from {
+    transform: translateY(16px) scale(0.96);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes sheet-up {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 /* A glyph centred in a circle, chip or badge centres its CAP BAND, not its line box

@@ -11,7 +11,7 @@ full load (typed URL, shared link, refresh) or as a client-side navigation
 inside a Next app (Explorer → a document, one help article → another).
 
 The dashboard gets a **Pages** tab of page views for the selected
-window, broken down by app (Marketing, Live, Help, Dashboard).
+window, broken down by app (Marketing, Live, Help, Dashboard, Community).
 
 ## Why
 
@@ -26,7 +26,7 @@ answer.
 The router ([Router app](../016-platform/router-app.md)) sees every request, so it looked like the cheap place to
 count. It is the wrong one, for two reasons:
 
-1. **It cannot see client-side navigations.** All four frontends are Next apps.
+1. **It cannot see client-side navigations.** All five frontends are Next apps.
    Moving between their pages fetches no HTML, so the router sees first loads
    and refreshes only; the Explorer → editor hop, the most interesting one, is
    invisible to it.
@@ -96,7 +96,7 @@ whether or not the document exists.
 - One view per **path change**, from the shared `PageViewTracker` component
   (`@livediagram/ui`), which reacts to Next's `usePathname`, mounted in each
   app's root layout through a client adapter that hands it a `track()`. The
-  public sites (marketing, help, the dashboard) all mount the shared
+  public sites (marketing, help, the dashboard, the Community) all mount the shared
   `PageViewBoot` from `@livediagram/ui`, wired to their one shared emitter
   (`siteTrack` in `@livediagram/telemetry-client`); the editor mounts its own
   `PageViewBoot` with its own emitter. A query-only change
@@ -110,12 +110,14 @@ whether or not the document exists.
 
 ## Who emits
 
-All four frontends, each through the shared engine with the same policy as the
+All five frontends, each through the shared engine with the same policy as the
 existing emitters: the build-time `NEXT_PUBLIC_TELEMETRY_ENABLED` gate plus the
 [User preferences](../007-editor/user-preferences.md) per-browser opt-out, which every app on the origin reads from the same
 preferences key.
 
 - **editor** (`apps/live`) and **help centre** (`apps/help`): already emitting.
+- **Community** (`apps/community`): page views through the shared `PageViewBoot`, alongside its own
+  [Community](../025-community/community.md) events.
 - **marketing** (`apps/marketing`) and **the dashboard** (`apps/telemetry`):
   new emitters. Their _only_ event is the page view: they mount the shared
   `PageViewBoot` and nothing else, and deliberately no error tracking (the
@@ -133,7 +135,7 @@ article say so.
 ## Dashboard
 
 A **Pages** tab (`PagesView`) reads page views **by app**: Marketing, Live
-(the editor app), Help and Dashboard. The app is derived from the path's first
+(the editor app), Help, Dashboard and Community. The app is derived from the path's first
 segment using the same live route-segment list the router routes by (shared
 from `@livediagram/api-schema`, so the dashboard and router can't disagree
 about which app serves a path). Top to bottom:

@@ -12,7 +12,14 @@ import {
 import { isValidTab, migrateIncomingTab, preferNewerQaAll, type Tab } from '@livediagram/document';
 import { mergeChangesetsIntoSave } from '../changesets/merge-on-save';
 import { hasNewComments, rewriteCommentAuthors } from '../comments';
-import { changesetMergePages, getParticipant, getTab, isTabRevStale, upsertTabAtRev } from '../db';
+import {
+  changesetMergePages,
+  getParticipant,
+  getTab,
+  isTabRevStale,
+  upsertTabAtRev,
+  tabBelongsElsewhere,
+} from '../db';
 import { emailEnabled } from '../email/client';
 import { notifyNewComment } from '../email/notifications';
 import { MAX_TAB_BYTES, bodyExceedsCap, storeTab } from '../limits';
@@ -76,6 +83,13 @@ export async function handleTabPut(
       getTab(env, id, tabId),
       mergeUnseenChangesets(ctx, incoming, seen),
     ]);
+    // A new tab id must be new: an id that already names another document's tab is refused, never overwritten
+    // (docs/specs/006-document/per-tab-storage.md). Checked only when this document has no such tab, so the
+    // common autosave pays nothing.
+    if (!existingTab && (await tabBelongsElsewhere(env, tabId, id))) {
+      console.warn("[tabs] refused a save onto another document's tab", { documentId: id, tabId });
+      return conflict('tab_id_taken');
+    }
     const ledger = await mergeRoomLedger(env, id, merge.tab, request.headers.get('X-Room-Cursor'));
     const commentAuthors = ledger.commentAuthors;
     // A copy: each attempt starts again from the save as sent.

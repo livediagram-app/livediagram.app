@@ -28,6 +28,7 @@
         "@livediagram/live#build",
         "@livediagram/help#build",
         "@livediagram/telemetry#build",
+        "@livediagram/community#build",
         "@livediagram/api#build",
         "@livediagram/mcp#build",
         "@livediagram/router#build"

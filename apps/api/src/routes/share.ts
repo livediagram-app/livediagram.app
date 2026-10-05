@@ -1,6 +1,10 @@
 // /api/share/<code> — resolve a share code to its document + role.
 
+import { documentImageSvg } from '../document-image';
+import { rowAuthor } from '../community-row';
 import {
+  communityLinkAccess,
+  getCommunityPostByShareCode,
   getDocument,
   getDocumentSharePassword,
   getParticipant,
@@ -12,8 +16,11 @@ import { notifyDocumentJoin } from '../email/notifications';
 import { documentTrashed, forbidden, json, notFound, svgImage } from '../responses';
 import { reportServerEvent } from '../server-telemetry';
 import { sharePasswordStatus } from '../auth/share-access';
-import { getDocumentTabImageSvg, getDocumentThumbnailSvg } from '../thumbnail';
-import { redactDocumentForReader, redactDocumentForScope } from '../redact-document';
+import {
+  redactDocumentForCommunity,
+  redactDocumentForReader,
+  redactDocumentForScope,
+} from '../redact-document';
 import { sharePasswordOf, type RouteContext } from './context';
 
 // Resolve a share code to its document + role. Used by visitors
@@ -35,6 +42,23 @@ export async function handleShare(ctx: RouteContext): Promise<Response> {
     // expiry and carries the code's real role (edit vs view) back to the
     // visitor. A null result = expired / revoked / unknown → 404 below.
     const link = await getShareLink(env, code);
+    // A Community post's link (docs/specs/025-community/community.md "Viewing a post's document"): read-only for
+    // everyone, never recorded in "Shared with you", never a join email to the author. While the post is not public
+    // (hidden, its document trashed or in a team library, the Community switched off) it answers 404 and nothing
+    // else, decided before the trashed and password answers below so a closed link reveals nothing about its
+    // document.
+    if (link?.purpose === 'community') {
+      const post = await getCommunityPostByShareCode(env, link.code);
+      if (!post || (await communityLinkAccess(env, link.code)) !== 'public') return notFound();
+      const d = await getDocument(env, link.documentId);
+      if (!d) return notFound();
+      return json({
+        document: redactDocumentForCommunity(redactDocumentForReader(d, resolveOwner())),
+        role: 'view',
+        tabId: null,
+        community: { postId: post.id, author: rowAuthor(post) },
+      });
+    }
     if (link) {
       const d = await getDocument(env, link.documentId);
       // The code is the credential: its holder hears the document was deleted
@@ -101,6 +125,13 @@ export async function handleShare(ctx: RouteContext): Promise<Response> {
   return notFound();
 }
 
+// Short, stale-while-revalidate cache so embeds stay close to live
+// without hammering the origin on every view (the bytes themselves come
+// from R2; the worker only re-renders when the document was saved since).
+const SHARE_IMAGE_CACHE = 'public, max-age=30, stale-while-revalidate=300';
+// A Community post's image has no stale window, so it cannot linger once the post is hidden.
+const COMMUNITY_IMAGE_CACHE = 'public, max-age=30';
+
 // Live image (docs/specs/013-workspace/live-image-share.md + docs/specs/006-document/document-snapshots.md): resolve the share code to its document
 // and stream the cached SVG snapshot. Public — the share code in the URL
 // is the only credential, matching a share link's "anyone with the URL"
@@ -111,13 +142,17 @@ export async function handleShare(ctx: RouteContext): Promise<Response> {
 //     supply the password, so serving one would bypass the gate. The
 //     Share dialog hides the live-image option while a password is set,
 //     and this is the matching server-side enforcement.
-// Short, stale-while-revalidate cache so embeds stay close to live
-// without hammering the origin on every view (the bytes themselves come
-// from R2; the worker only re-renders when the document was saved since).
 async function handleShareImage(ctx: RouteContext, code: string): Promise<Response> {
   const { env, request } = ctx;
   const link = await getShareLink(env, code);
   if (!link) return notFound();
+  let cacheControl = SHARE_IMAGE_CACHE;
+  // A hidden Community post's image is gone with it (docs/specs/025-community/community.md "Reports and
+  // moderation"), and with no stale window, so it cannot linger in a cache once the post is hidden.
+  if (link.purpose === 'community') {
+    if ((await communityLinkAccess(env, link.code)) !== 'public') return notFound();
+    cacheControl = COMMUNITY_IMAGE_CACHE;
+  }
   const d = await getDocument(env, link.documentId);
   if (!d) return missingSharedDocument(env, link.documentId);
   if (await getDocumentSharePassword(env, d.id)) return notFound();
@@ -131,10 +166,10 @@ async function handleShareImage(ctx: RouteContext, code: string): Promise<Respon
   const asked = new URL(request.url).searchParams.get('tab');
   if (link.tabId !== null && asked !== null && asked !== link.tabId) return notFound();
   const tabId = link.tabId ?? asked;
-  const svg = tabId
-    ? await getDocumentTabImageSvg(env, d, tabId)
-    : await getDocumentThumbnailSvg(env, d);
-  return svg == null ? notFound() : svgImage(svg, 'public, max-age=30, stale-while-revalidate=300');
+  // A Community card image is drawn from the redacted tab, never the owner's snapshot.
+  const community = link.purpose === 'community';
+  const svg = await documentImageSvg(env, d, { tabId, community });
+  return svg == null ? notFound() : svgImage(svg, cacheControl);
 }
 
 // Returns a 401/403 Response when the document is password-protected and

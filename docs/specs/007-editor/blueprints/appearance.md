@@ -8,24 +8,24 @@ Defaults applied where the spec is silent are ledgered in [DEFAULTS.md](DEFAULTS
 
 Scope, by file:
 
-| File                                                       | Role                                                                                                       |
-| ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| `packages/ui/src/appearance/appearance-storage.ts`         | Storage key, media query, `APPEARANCE_BOOT_SCRIPT`; a plain module                                         |
-| `packages/ui/src/appearance/appearance-store.ts`           | Setting, resolution, OS watch, write, the `.dark` class; no React                                          |
-| `packages/ui/src/appearance/appearance-cycle.ts`           | The cycle, the labels, the control's accessible name                                                       |
-| `packages/ui/src/appearance/useAppearance.ts`              | The subscription (`useSyncExternalStore`) and the cycle; optional `onSet`                                  |
-| `packages/ui/src/appearance/AppearanceIcon.tsx`            | Sun / moon / monitor glyph for the current setting                                                         |
-| `packages/ui/src/appearance/SiteAppearanceToggle.tsx`      | The public sites' control, on the ShareRail's Appearance rail at `xl`+, else in `SiteHeader`; no telemetry |
-| `packages/ui/src/site.ts`                                  | `PUBLIC_VIEWPORT` (`colorScheme: 'light dark'`) and `DARK_READER_LOCK`                                     |
-| `apps/*/app/layout.tsx` (live, marketing, help, telemetry) | Inline the boot script; declare the lock meta; dark body                                                   |
-| `apps/live/hooks/ui/useAppearance.ts`                      | The shared hook plus the editor's telemetry                                                                |
-| `apps/live/components/chrome/AppearanceToggle.tsx`         | The three-state control on the TabBar                                                                      |
-| `apps/live/components/chrome/ThemeModeBanner.tsx`          | The match nudge                                                                                            |
-| `apps/live/components/canvas/CanvasSurfaceContext.tsx`     | Carries the `CanvasSurface` past `React.memo` element views                                                |
-| `packages/document/src/colors.ts`                          | `CanvasSurface`, `canvasSurface`, `isLightColor`, the `default*Color` inks                                 |
-| `packages/document/src/canvas-colors.ts`                   | The Default scheme's light and dark canvas colours                                                         |
-| `packages/tailwind-config/theme.css`                       | The `dark:` class variant, the brand / slate tokens, `color-scheme`                                        |
-| `packages/template-previews/src/preview-art-tile.css`      | Re-lights light-canvas preview art onto the dark canvas colour under `.dark`                               |
+| File                                                                  | Role                                                                                                                                                   |
+| --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `packages/ui/src/appearance/appearance-storage.ts`                    | Storage key, media query, `APPEARANCE_BOOT_SCRIPT`; a plain module                                                                                     |
+| `packages/ui/src/appearance/appearance-store.ts`                      | Setting, resolution, OS watch, write, the `.dark` class; no React                                                                                      |
+| `packages/ui/src/appearance/appearance-cycle.ts`                      | The cycle, the labels, the control's accessible name                                                                                                   |
+| `packages/ui/src/appearance/useAppearance.ts`                         | The subscription (`useSyncExternalStore`) and the cycle; optional `onSet`                                                                              |
+| `packages/ui/src/appearance/AppearanceIcon.tsx`                       | Sun / moon / monitor glyph for the current setting                                                                                                     |
+| `packages/ui/src/appearance/SiteAppearanceToggle.tsx`                 | The public sites' control, on the ShareRail's Appearance rail at `xl`+ (`2xl`+ on wide surfaces: help, Community), never in `SiteHeader`; no telemetry |
+| `packages/ui/src/site.ts`                                             | `PUBLIC_VIEWPORT` (`colorScheme: 'light dark'`) and `DARK_READER_LOCK`                                                                                 |
+| `apps/*/app/layout.tsx` (live, marketing, help, telemetry, community) | Inline the boot script; declare the lock meta; dark body                                                                                               |
+| `apps/live/hooks/ui/useAppearance.ts`                                 | The shared hook plus the editor's telemetry                                                                                                            |
+| `apps/live/components/chrome/AppearanceToggle.tsx`                    | The three-state control on the TabBar                                                                                                                  |
+| `apps/live/components/chrome/ThemeModeBanner.tsx`                     | The match nudge                                                                                                                                        |
+| `apps/live/components/canvas/CanvasSurfaceContext.tsx`                | Carries the `CanvasSurface` past `React.memo` element views                                                                                            |
+| `packages/document/src/colors.ts`                                     | `CanvasSurface`, `canvasSurface`, `isLightColor`, the `default*Color` inks                                                                             |
+| `packages/document/src/canvas-colors.ts`                              | The Default scheme's light and dark canvas colours                                                                                                     |
+| `packages/tailwind-config/theme.css`                                  | The `dark:` class variant, the brand / slate tokens, `color-scheme`                                                                                    |
+| `packages/template-previews/src/preview-art-tile.css`                 | Re-lights light-canvas preview art onto the dark canvas colour under `.dark`                                                                           |
 
 ## Domain and naming
 
@@ -176,7 +176,7 @@ layout inlines the real string rather than a client-reference stub.
 | Key survives quoting; no client boundary            | `appearance-boot.test.ts`, "the inlined storage key"                   |
 | Every app inlines the script, dark body             | `appearance-boot.test.ts`, "the <app> root layout"                     |
 | Public toggle cycles, paints, persists              | `SiteAppearanceToggle.test.tsx`                                        |
-| SiteHeader carries the toggle                       | `SiteAppearanceToggle.test.tsx`, "SiteHeader"                          |
+| The toggle lives on the rail, never the header      | `SiteAppearanceToggle.test.tsx`, "SiteHeader"                          |
 | No light full-screen surface without a dark variant | `dark-mode-coverage.test.ts`                                           |
 | Preview tiles re-lit by one rule                    | `dark-mode-coverage.test.ts`, "tiles of light-canvas illustration art" |
 | Cycle, canvas and element ink follow (I3)           | `e2e/appearance.spec.ts`, "opens on the device setting, then cycles"   |

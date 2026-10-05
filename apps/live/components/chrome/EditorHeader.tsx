@@ -1,7 +1,14 @@
 import { useState, type ReactNode } from 'react';
-import { safeInlinePadding, safeInset } from '@/lib/safe-area';
 import { NameEditor } from '@/components/primitives/NameEditor';
-import { Brand, ProductNav, HoverCard, SOLID_BRAND_DARK_CONTROL, Glyph } from '@livediagram/ui';
+import {
+  Brand,
+  ProductNav,
+  HoverCard,
+  SOLID_BRAND_DARK_CONTROL,
+  Glyph,
+  safeInlinePadding,
+  safeInset,
+} from '@livediagram/ui';
 import { AuthControls } from '@/components/chrome/AuthControls';
 import { SharedBadge } from '@/components/chrome/SharedBadge';
 import { HEADER_ACTION_BTN, HeaderGlyph } from '@/components/chrome/header-action';
@@ -35,6 +42,8 @@ type EditorHeaderProps = {
   // Offline Mode (docs/specs/006-document/offline-mode.md): saved only in this browser. Flips the title badge
   // to "Local only" (superseding "Private"); the caller also hides Share.
   offline?: boolean;
+  // Listed in the public Community (docs/specs/025-community/community.md): the badge reads "Public".
+  community?: boolean;
   // Counterpart to showShare for visitors: when present we render a
   // "Make a copy" button that duplicates the document into the
   // visitor's own files (item #9 / docs/specs/015-api/api.md). Optional so the owner
@@ -69,6 +78,7 @@ export function EditorHeader({
   shareable,
   teamDocument = false,
   offline = false,
+  community = false,
   onMakeCopy,
   copying = false,
   readOnly = false,
@@ -139,7 +149,12 @@ export function EditorHeader({
               </HoverCard>
             )}
             <span className="hidden sm:contents">
-              <SharedBadge shareable={shareable} team={teamDocument} offline={offline} />
+              <SharedBadge
+                shareable={shareable}
+                team={teamDocument}
+                offline={offline}
+                community={community}
+              />
               {rolePill ? <span className="ml-1 inline-flex">{rolePill}</span> : null}
             </span>
           </div>

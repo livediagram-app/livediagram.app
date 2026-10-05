@@ -223,6 +223,21 @@ row. An empty write over an already-empty / brand-new row, and any
 non-empty write, are unaffected. This is intentionally independent of the
 client guard — belt and suspenders against the most destructive failure.
 
+### A save never adopts another document's tab
+
+The save upserts by tab id, so a tab id seen elsewhere (a share link, a
+Community post's document) could otherwise overwrite that tab and link it
+into the caller's own document. So when this document has no tab with the
+id, and the id already names a tab not linked to this document, the save
+is **refused with 409 `tab_id_taken`**, never overwritten or adopted, and
+the worker logs `[tabs] refused a save onto another document's tab`.
+Linking an existing tab into a document has its own route
+(`POST /api/documents/:id/tabs/:tabId/link`,
+[Tab ↔ document many-to-many](tab-document-many-to-many.md)). The check
+(`tabBelongsElsewhere` in `apps/api/src/db/tabs.ts`, called from
+`apps/api/src/routes/tab-put-route.ts`) runs only when the document has no
+such tab, so the common autosave pays nothing.
+
 ## Cutover (historical)
 
 How this rolled out, recorded here so future schema changes can repeat the pattern:

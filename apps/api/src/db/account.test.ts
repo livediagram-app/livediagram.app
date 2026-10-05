@@ -38,7 +38,7 @@ function fakeEnv(opts: {
 }
 
 describe('deleteAccount snapshot cleanup (docs/specs/006-document/document-snapshots.md)', () => {
-  it("bulk-deletes each document's thumb/<id> snapshot from R2", async () => {
+  it("bulk-deletes each document's snapshots (its own and the Community's) from R2", async () => {
     const del = vi.fn().mockResolvedValue(undefined);
     const env = fakeEnv({ documentIds: ['d1', 'd2'], imageIds: ['i1'], images: { delete: del } });
 
@@ -46,7 +46,12 @@ describe('deleteAccount snapshot cleanup (docs/specs/006-document/document-snaps
 
     // Image bytes AND document snapshots both leave R2.
     expect(del).toHaveBeenCalledWith(['i1']);
-    expect(del).toHaveBeenCalledWith(['thumb/d1', 'thumb/d2']);
+    expect(del).toHaveBeenCalledWith([
+      'thumb/d1',
+      'thumb-community/d1',
+      'thumb/d2',
+      'thumb-community/d2',
+    ]);
   });
 
   it('skips R2 cleanup when no bucket is bound (self-host) without throwing', async () => {

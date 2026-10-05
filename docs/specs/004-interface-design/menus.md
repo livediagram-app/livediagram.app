@@ -123,26 +123,26 @@ Each menu, how it opens, what it holds, and what the keyboard could do before th
 
 ### Command menus
 
-| Menu                  | Opens from                                                     | Holds                                                                    | Keyboard before                                     |
-| --------------------- | -------------------------------------------------------------- | ------------------------------------------------------------------------ | --------------------------------------------------- |
-| Document menu         | ⋯ on an Explorer row, card or tree row; right-click; Shift+F10 | Name header, verbs, Delete or Dismiss under a separator                  | Tab only; no Escape; buttons in a `menu`            |
-| Folder menu           | Same, on a folder; My documents in the sidebar and panel       | Name header, verbs, **Use as default for** ▸ (checkable entries), Delete | Tab only; submenu unreachable by arrows             |
-| Timeline card menu    | ⋯ on a Timeline card                                           | Verbs                                                                    | Tab only                                            |
-| Explorer More menu    | More in the Explorer panel header                              | Verbs in bands                                                           | Tab only                                            |
-| New menus             | + in the Explorer pane header and a team library header        | Document, Folder tiles                                                   | Tab only                                            |
-| Team menu             | ⋯ on a team in the Teams pane                                  | Tiles                                                                    | Tab only                                            |
-| Slide menu            | ⋯ on a presentation slide row                                  | Tool buttons, accordion groups of tiles                                  | Tab only, into collapsed rows too                   |
-| Embed copy menu       | Embed on a share pass                                          | Copy rows                                                                | Tab only                                            |
-| Selection filter menu | The filter button on a mixed selection                         | One tile per element type                                                | Tab only                                            |
-| Custom colour menu    | Right-click, long press or Shift+F10 on a custom Draw colour   | Remove                                                                   | Focus in, Escape                                    |
-| Editor mode menu      | The mode chip                                                  | One-of-a-set modes                                                       | Arrows, Home, End, Escape; no typeahead, Tab        |
-| Zoom menu             | Hovering or focusing the zoom percentage                       | One-of-a-set zoom levels, Fit to screen                                  | Opened on focus; Tab through; no arrows             |
-| Account menu          | The account pill                                               | Name header, Account, Sign out                                           | Tab only; trigger had no `aria-haspopup`; no Escape |
-| Embed tab menu        | The tab pill on an embedded document                           | One-of-a-set tabs                                                        | Tab, Escape                                         |
-| Element quick menus   | ⋯ on a Q&A board, Done check, Idea box, Quiz                   | Verbs, All settings… under a separator                                   | Tab only                                            |
-| Locked element menu   | Right-click on an element someone else holds                   | "In use" header, Release rows, a note                                    | Escape only                                         |
-| Product switcher      | The section name in the help, telemetry and marketing headers  | Section links                                                            | Tab only                                            |
-| Telemetry view picker | The view button on the sticky window bar                       | Views                                                                    | Tab only                                            |
+| Menu                  | Opens from                                                               | Holds                                                                    | Keyboard before                                     |
+| --------------------- | ------------------------------------------------------------------------ | ------------------------------------------------------------------------ | --------------------------------------------------- |
+| Document menu         | ⋯ on an Explorer row, card or tree row; right-click; Shift+F10           | Name header, verbs, Delete or Dismiss under a separator                  | Tab only; no Escape; buttons in a `menu`            |
+| Folder menu           | Same, on a folder; My documents in the sidebar and panel                 | Name header, verbs, **Use as default for** ▸ (checkable entries), Delete | Tab only; submenu unreachable by arrows             |
+| Timeline card menu    | ⋯ on a Timeline card                                                     | Verbs                                                                    | Tab only                                            |
+| Explorer More menu    | More in the Explorer panel header                                        | Verbs in bands                                                           | Tab only                                            |
+| New menus             | + in the Explorer pane header and a team library header                  | Document, Folder tiles                                                   | Tab only                                            |
+| Team menu             | ⋯ on a team in the Teams pane                                            | Tiles                                                                    | Tab only                                            |
+| Slide menu            | ⋯ on a presentation slide row                                            | Tool buttons, accordion groups of tiles                                  | Tab only, into collapsed rows too                   |
+| Embed copy menu       | Embed on a share pass                                                    | Copy rows                                                                | Tab only                                            |
+| Selection filter menu | The filter button on a mixed selection                                   | One tile per element type                                                | Tab only                                            |
+| Custom colour menu    | Right-click, long press or Shift+F10 on a custom Draw colour             | Remove                                                                   | Focus in, Escape                                    |
+| Editor mode menu      | The mode chip                                                            | One-of-a-set modes                                                       | Arrows, Home, End, Escape; no typeahead, Tab        |
+| Zoom menu             | Hovering or focusing the zoom percentage                                 | One-of-a-set zoom levels, Fit to screen                                  | Opened on focus; Tab through; no arrows             |
+| Account menu          | The account pill                                                         | Name header, Account, Sign out                                           | Tab only; trigger had no `aria-haspopup`; no Escape |
+| Embed tab menu        | The tab pill on an embedded document                                     | One-of-a-set tabs                                                        | Tab, Escape                                         |
+| Element quick menus   | ⋯ on a Q&A board, Done check, Idea box, Quiz                             | Verbs, All settings… under a separator                                   | Tab only                                            |
+| Locked element menu   | Right-click on an element someone else holds                             | "In use" header, Release rows, a note                                    | Escape only                                         |
+| Product switcher      | The section name in the help, Community, telemetry and marketing headers | Section links                                                            | Tab only                                            |
+| Telemetry view picker | The view button on the sticky window bar                                 | Views                                                                    | Tab only                                            |
 
 ### Control menus
 
@@ -172,8 +172,8 @@ None. Menus already count the verbs chosen in them; how focus moved is not an ac
 ## Where it lives
 
 - `@livediagram/ui` owns the keyboard model and the hooks every app's menus use (`useMenu`,
-  `useMenuButton`, `useControlMenu`), so the editor, help, telemetry and marketing menus behave as
-  one.
+  `useMenuButton`, `useControlMenu`), so the editor, help, telemetry, marketing and Community menus
+  behave as one.
 - The editor's menu primitives (`PortalMenu`, `ContextMenu`, `MenuFlyoutSection` and the row
   components) pick each row's role from the kind of menu they sit in.
 - The focus ring rules live in the shared Tailwind theme.

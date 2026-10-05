@@ -8,7 +8,7 @@
 import { TRASH_RETENTION_MS, trashPurgeDueAt, type TrashedDocument } from '@livediagram/api-schema';
 import type { Env } from '../types';
 import { documentRemovalStatements } from './document-removal';
-import { thumbnailKey } from './documents';
+import { snapshotKeys } from './documents';
 import { documentsTimelineSweepStatement } from './timeline';
 
 // Ids per purge batch: one json_each list bound into three statements, so the
@@ -180,7 +180,7 @@ export async function purgeDocuments(env: Env, ids: string[]): Promise<number> {
     // Best effort, like deleteDocument's: a snapshot left behind is an orphan
     // R2 object, never a reason to fail the purge that already landed.
     if (env.IMAGES) {
-      await env.IMAGES.delete(doomed.map(thumbnailKey)).catch((err: unknown) => {
+      await env.IMAGES.delete(doomed.flatMap(snapshotKeys)).catch((err: unknown) => {
         console.warn('[trash] snapshot delete failed', doomed.length, err);
       });
     }

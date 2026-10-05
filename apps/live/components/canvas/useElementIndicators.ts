@@ -12,6 +12,7 @@ import {
 } from '@livediagram/document';
 import { describeLink } from '@/lib/link-label';
 import { colorForKey, initialsOf } from '@/lib/identity';
+import { useCommentBadges } from '@/components/canvas/CommentBadgesContext';
 import { useMindOutlineBadge } from '@/components/canvas/MindOutlineContext';
 import { inlineIconGap, inlineIconMetrics } from '@/components/canvas/shape-inline-icon-layout';
 import { buildIndicatorItems, type IndicatorItem } from './indicator-items';
@@ -28,6 +29,9 @@ export function elementIndicatorItems(
   element: BoxedElement,
   handlers: Handlers,
   mindRoot?: { editOutline: () => void; tidy: () => void },
+  // False where the reader has no comments to open (a viewer in an embed, docs/specs/013-workspace/embeds.md; a
+  // Community visitor, docs/specs/025-community/community.md): no comment indicator.
+  showComments = true,
 ): IndicatorItem[] {
   // A margin note shows its count and action on its own face.
   if (element.type === 'annotation' && element.articleNote) return [];
@@ -63,7 +67,8 @@ export function elementIndicatorItems(
         }
       : undefined,
     comments: {
-      count: shape === 'comment-pin' ? 0 : activeCommentCount(element.commentThread),
+      count:
+        shape === 'comment-pin' || !showComments ? 0 : activeCommentCount(element.commentThread),
       onOpen: () => onOpenComments(element.id),
     },
   });
@@ -84,7 +89,12 @@ export function useElementIndicators(
   // The element's drawn corner radius.
   cornerPx: number,
 ): { items: IndicatorItem[]; layout: IndicatorLayout | null; cornerPx: number } {
-  const items = elementIndicatorItems(element, handlers, useMindOutlineBadge(element.id));
+  const items = elementIndicatorItems(
+    element,
+    handlers,
+    useMindOutlineBadge(element.id),
+    useCommentBadges(),
+  );
   const shape = element.type === 'shape' ? element.shape : undefined;
   // A circle or a pill is fully round however its corner preset reads.
   const indicatorCornerPx = shape === 'circle' || shape === 'stadium' ? Infinity : cornerPx;

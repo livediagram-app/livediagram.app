@@ -17,8 +17,8 @@ import {
   TrashIcon,
   useClickOutside,
   useEscape,
+  Portal,
 } from '@livediagram/ui';
-import { Portal } from '@/components/primitives/Portal';
 import { SegmentSlider } from '@/components/primitives/SegmentSlider';
 import { BottomSheet } from '@/components/primitives/BottomSheet';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';

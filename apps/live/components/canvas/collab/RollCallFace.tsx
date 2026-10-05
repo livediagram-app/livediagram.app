@@ -5,9 +5,8 @@
 
 import { useState } from 'react';
 import type { RollCallEntry, ShapeElement } from '@livediagram/document';
-import { GlyphDisc, Glyph } from '@livediagram/ui';
+import { GlyphDisc, Glyph, IDENTITY_FILL, identityVars } from '@livediagram/ui';
 import { initialsOf } from '@/lib/identity';
-import { IDENTITY_FILL, identityVars } from '@/lib/identity-fill';
 import { CollabPanel, tint } from './collab-chrome';
 import { CollabAccentScope } from './collab-accent';
 import { AccentBar, EmptyRows } from './qa/qa-parts';

@@ -1,6 +1,6 @@
 # Architecture
 
-A pnpm + Turborepo monorepo: seven Cloudflare-deployed apps, one distributed command-line app and twenty-three shared packages. Everything runs on Cloudflare Workers (Static Assets for the Next.js apps); there's no Node-hosted backend.
+A pnpm + Turborepo monorepo: eight Cloudflare-deployed apps, one distributed command-line app and twenty-three shared packages. Everything runs on Cloudflare Workers (Static Assets for the Next.js apps); there's no Node-hosted backend.
 
 ```
 apps/
@@ -8,6 +8,7 @@ apps/
   live/         the editor (Next.js export; clean routes)
   telemetry/    public anonymous-events dashboard (Next.js export, /telemetry)
   help/         help centre (Next.js export + MDX, /help)
+  community/    public gallery of shared documents (Next.js export, /community)
   api/          REST + WebSocket worker (D1 + Durable Objects + R2, /api)
   mcp/          MCP server for AI tools (OAuth + tools, mcp.livediagram.app)
   router/       service-binding router stitching the apps under one hostname
@@ -53,9 +54,10 @@ marketing/      off-site copy + media for listings and promotion (see docs/specs
 | `apps/live`      | The editor at clean routes (`/document/*`, `/explorer/*`, `/new`, `/join`, ...; only its `_next` assets keep a `/live` prefix). Next.js static export plus a tiny path-rewrite worker that maps every `/document/<id>` to the same statically-built page.                                                                                                                                                                                                                                       | `livediagram-live`      |
 | `apps/telemetry` | A read-only dashboard at `/telemetry` that renders aggregate anonymous events from the api's D1 table.                                                                                                                                                                                                                                                                                                                                                                                          | `livediagram-telemetry` |
 | `apps/help`      | The help centre at `/help`. Next.js static export with MDX article bodies plus a TypeScript article index. Hero search, category + feature grids, article pages with auto TOC. No third-party scripts.                                                                                                                                                                                                                                                                                          | `livediagram-help`      |
+| `apps/community` | The Community at `/community`: the public gallery of documents people share, each post's page with a read-only preview, likes, reports and Make a Copy ([Community](../specs/025-community/community.md)). Next.js static export, no worker code; the browser calls `/api/community/*`, and Clerk loads only for My Shares.                                                                                                                                                                     | `livediagram-community` |
 | `apps/api`       | The REST + WebSocket worker at `/api/*`. Holds the D1 + R2 (`IMAGES`) bindings and the per-document Durable Object realtime room. Plus the daily retention cron (sweeps old `timeline_events`, telemetry `events` and agent changesets past 30 days, reaps unused images older than 30 days from R2 + D1 by reading the `image_refs` index (which it also backfills for tabs saved before the index existed), and emits the Timeline's forward-dated expiry warnings).                          | `livediagram-api`       |
 | `apps/mcp`       | The MCP server at its own host `mcp.livediagram.app` ([MCP server](../specs/015-api/mcp-server.md)). Hono + the MCP SDK over Streamable HTTP; nine tools (find / read / list-templates / create / add-tab / update / share / rename / delete documents) that wrap the api worker via a service binding, reusing `packages/document` for validation / layout / SVG render (rasterised to PNG with resvg-wasm). OAuth 2.1 + PKCE mints an `lvd_` API token. Signed-in only; absent without Clerk. | `livediagram-mcp`       |
-| `apps/router`    | A worker that holds no business logic, only `MARKETING` / `LIVE` / `TELEMETRY` / `HELP` / `API` service bindings that forward by path prefix. In local dev the bindings are replaced by `*_ORIGIN` vars (`wrangler dev --env local`) so the same worker proxies the localhost dev servers on one port ([Router app](../specs/016-platform/router-app.md)).                                                                                                                                      | `livediagram-router`    |
+| `apps/router`    | A worker that holds no business logic, only `MARKETING` / `LIVE` / `TELEMETRY` / `HELP` / `COMMUNITY` / `API` service bindings that forward by path prefix. In local dev the bindings are replaced by `*_ORIGIN` vars (`wrangler dev --env local`) so the same worker proxies the localhost dev servers on one port ([Router app](../specs/016-platform/router-app.md)).                                                                                                                        | `livediagram-router`    |
 
 ## The editor's shape
 
@@ -124,7 +126,7 @@ Two equivalent identity paths: an `X-Owner-Id` header (a per-browser UUID from `
 
 ## Deployment
 
-GitHub Actions → Cloudflare Workers. Build artefacts get uploaded once, then five workers (marketing / live / telemetry / help / api) ship in parallel; the `mcp` worker deploys after `api` (it has a service binding to it), and the router deploys last because its service bindings need the others to exist.
+GitHub Actions → Cloudflare Workers. Build artefacts get uploaded once, then six workers (marketing / live / telemetry / help / community / api) ship in parallel; the `mcp` worker deploys after `api` (it has a service binding to it), and the router deploys last because its service bindings need the others to exist.
 
 Two environments run that same sequence, from one reusable workflow (`deploy-reusable.yml`) so they cannot drift:
 

@@ -8,6 +8,7 @@ import {
   useMenuButton,
   type MenuInitialFocus,
   EDITOR_MODE_ICONS,
+  MENU_PANEL,
 } from '@livediagram/ui';
 import { TOOLBAR_TRIGGER_TONE } from '@/components/palette/PaletteDropdown';
 import {
@@ -145,7 +146,7 @@ function ModeMenu({
       {...surfaceProps}
       data-tour-id="editor-mode-menu"
       style={hostZoom === 1 ? undefined : { zoom: 1 / hostZoom }}
-      className={`absolute top-full ${align === 'right' ? 'right-0' : 'left-0'} z-(--z-popover) mt-1.5 flex w-max min-w-36 animate-fade-in flex-col gap-px rounded-lg border border-slate-200/80 bg-white p-1 shadow-xl shadow-slate-900/10 outline-none motion-reduce:animate-none dark:border-slate-700/80 dark:bg-slate-900 dark:shadow-slate-950/60`}
+      className={`absolute top-full ${align === 'right' ? 'right-0' : 'left-0'} z-(--z-popover) mt-1.5 w-max min-w-36 outline-none ${MENU_PANEL}`}
     >
       {modes.map((option) => {
         const checked = option === mode;

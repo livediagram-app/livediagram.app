@@ -5,7 +5,13 @@
 import { pageViewApp, type PageViewApp, type TelemetryCount } from '@livediagram/api-schema';
 import { rank } from './rank';
 
-export const PAGE_VIEW_APPS: PageViewApp[] = ['Marketing', 'Live', 'Help', 'Dashboard'];
+export const PAGE_VIEW_APPS: PageViewApp[] = [
+  'Marketing',
+  'Live',
+  'Help',
+  'Dashboard',
+  'Community',
+];
 
 const isPageView = (r: TelemetryCount) =>
   r.category === 'Page' && r.action === 'View' && r.type !== null;

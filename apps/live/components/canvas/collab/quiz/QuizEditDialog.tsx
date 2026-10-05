@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Button, CloseIcon } from '@livediagram/ui';
+import { Button, CloseIcon, DialogHeader } from '@livediagram/ui';
 import {
   clampQuizSeconds,
   compactQuizOptions,
@@ -12,7 +12,6 @@ import {
   type ShapeElement,
 } from '@livediagram/document';
 import { Dialog } from '@/components/dialogs/Dialog';
-import { DialogHeader } from '@/components/dialogs/DialogHeader';
 import { DialogFooter } from '@/components/dialogs/DialogFooter';
 import type { QuizDraft } from '@/hooks/canvas/useQuizElements';
 

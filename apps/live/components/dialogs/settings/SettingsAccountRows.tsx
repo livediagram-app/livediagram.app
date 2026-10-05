@@ -2,11 +2,10 @@
 
 import dynamic from 'next/dynamic';
 import { useState } from 'react';
-import { Button, SOLID_BRAND_DARK } from '@livediagram/ui';
+import { Button, SOLID_BRAND_DARK, PictureDisc } from '@livediagram/ui';
 import { SettingsRowShell } from './SettingsRowShell';
 import { SettingsSignInLink } from './SettingsSignInLink';
 import { useDeferredAuth } from '@/components/providers/deferred-auth';
-import { PictureDisc } from '@/components/primitives/PictureDisc';
 import { accountInitial } from '@/lib/account-avatar';
 import type { SettingsDeleteAccountRowSpec, SettingsIdentityRowSpec } from './settings-catalogue';
 

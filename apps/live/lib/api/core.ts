@@ -5,13 +5,19 @@
 // import from here; callers go through the lib/api-client.ts barrel.
 import type {
   ApiToken,
+  CommunityShareInfo,
   CustomTheme,
   LiveDoc,
   Folder,
   ShareLink,
   ShareRole,
 } from '@livediagram/api-schema';
-import { BUILD_ID_HEADER, DOCUMENT_FORMAT_HEADER, isClerkIdShape } from '@livediagram/api-schema';
+import {
+  BUILD_ID_HEADER,
+  DOCUMENT_FORMAT_HEADER,
+  isClerkIdShape,
+  readErrorCode,
+} from '@livediagram/api-schema';
 import { noteServerBuild, noteServerDocumentFormat } from '../server-release';
 import { stampTabKind, type Tab } from '@livediagram/document';
 import { readLocalStorageSafe, writeLocalStorageSafe } from '../local-storage-safe';
@@ -136,7 +142,13 @@ export type ParticipantResponse = {
 // password was submitted (vs none yet), so the gate can show an error.
 export type SharedDocumentResolution =
   // `tabId`: the tab a tab-scoped link opens (docs/specs/013-workspace/tab-scoped-share-links.md); null = All tabs.
-  | { document: LiveDoc; role: ShareRole; tabId: string | null }
+  // `community`: set only when the code is a Community post's link (docs/specs/025-community/community.md).
+  | {
+      document: LiveDoc;
+      role: ShareRole;
+      tabId: string | null;
+      community: CommunityShareInfo | null;
+    }
   | { passwordRequired: true; invalid: boolean };
 
 // Hybrid identity (docs/specs/014-identity/auth-and-guest-access.md, docs/specs/015-api/api.md). When a token provider has been
@@ -345,20 +357,6 @@ export class ApiError extends Error {
     this.action = action;
     this.status = status;
     this.code = code;
-  }
-}
-
-// Pull the api worker's `error` token out of a failed response body
-// without disturbing the caller's own `res.json()` (we read a clone).
-// Tolerant of empty / non-JSON bodies (503 from a missing binding,
-// network-level failures) — returns null rather than throwing a second
-// error on top of the first.
-export async function readErrorCode(res: Response): Promise<string | null> {
-  try {
-    const body = (await res.clone().json()) as { error?: unknown };
-    return typeof body?.error === 'string' ? body.error : null;
-  } catch {
-    return null;
   }
 }
 

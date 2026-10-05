@@ -24,9 +24,11 @@ import {
   getThumbRenderedAt,
   markThumbRendered,
   stampTabElementCount,
+  communityThumbnailKey,
   thumbnailKey,
   type StoredTabBody,
 } from './db';
+import { redactTabForCommunity } from './community-redact';
 import type { DocumentDTO, Env } from './types';
 
 // Content type for the cached SVG snapshot. Local to this module — the
@@ -122,11 +124,45 @@ export async function getDocumentTabImageSvg(
   env: Env,
   liveDoc: ThumbnailSubject,
   tabId: string,
+  // A Community visitor's image: drawn from the redacted tab (no comments, no people).
+  community = false,
 ): Promise<string | null> {
   // Gate on the same optional R2 binding as the cached path, so the
   // whole live-image feature is uniformly off on a binding-less deploy.
   if (!env.IMAGES) return null;
-  return renderTabBodyToSvg(env, liveDoc, await getTabBody(env, liveDoc.id, tabId));
+  return renderTabBodyToSvg(env, liveDoc, await getTabBody(env, liveDoc.id, tabId), {}, community);
+}
+
+// The first-tab snapshot as a Community visitor sees it (docs/specs/025-community/community.md "Viewing a post's
+// document"): drawn from the redacted tab, so comment threads, their authors, action assignees, roll-call names and
+// Q&A authors never reach the public card image or a Community thumbnail. Cached under its own key, so the owner's
+// snapshot (`thumb/<id>`) is never served to the public; its freshness is the render time in the object's own
+// metadata, since the document row's stamp belongs to the owner's snapshot.
+export async function getCommunityThumbnailSvg(
+  env: Env,
+  liveDoc: ThumbnailSubject,
+  opts: ThumbnailOptions = {},
+): Promise<string | null> {
+  if (!env.IMAGES) return null;
+  const images = env.IMAGES;
+  const key = communityThumbnailKey(liveDoc.id);
+  const cached = await images.get(key);
+  if (cached && Number(cached.customMetadata?.renderedAt ?? 0) >= liveDoc.savedAt) {
+    return await cached.text();
+  }
+  const svg = await renderTabBodyToSvg(env, liveDoc, await getTabBody(env, liveDoc.id), opts, true);
+  if (svg == null) return null;
+  const write = images
+    .put(key, svg, {
+      httpMetadata: { contentType: THUMBNAIL_CONTENT_TYPE },
+      customMetadata: { renderedAt: String(Date.now()) },
+    })
+    .catch(() => {
+      // Best effort, like the owner's snapshot: the SVG is still returned below.
+    });
+  if (opts.defer) opts.defer(write);
+  else await write;
+  return svg;
 }
 
 // One tab drawn by the shared renderer, for `GET .../tabs/:tabId/render.svg` (docs/specs/015-api/api.md): the
@@ -183,6 +219,7 @@ async function renderTabBodyToSvg(
   liveDoc: ThumbnailSubject,
   body: StoredTabBody | null,
   opts: ThumbnailOptions = {},
+  community = false,
 ): Promise<string | null> {
   if (!body) return null;
   let parsed: Partial<Tab>;
@@ -199,7 +236,8 @@ async function renderTabBodyToSvg(
   // renderer only reads `elements` + `backgroundColor`, both already in
   // the parsed body.
   // Migrated like every other stored-tab read (docs/specs/011-theme/retired-schemes.md).
-  const tab = migrateStoredTab({ id: liveDoc.id, name: liveDoc.name, ...parsed } as Tab);
+  const stored = migrateStoredTab({ id: liveDoc.id, name: liveDoc.name, ...parsed } as Tab);
+  const tab = community ? redactTabForCommunity(stored) : stored;
   // Inline referenced image bitmaps (read from R2) so the preview / live
   // image renders the actual photos, matching the in-app PNG/SVG export.
   const images = await loadEmbeddedImages(env, tab);

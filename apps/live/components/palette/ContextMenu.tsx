@@ -1,8 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
-import { MenuTreeContext, useControlMenu } from '@livediagram/ui';
-import { Portal } from '@/components/primitives/Portal';
+import { MenuTreeContext, useControlMenu, Portal } from '@livediagram/ui';
 import { clampToViewport } from '@/lib/clamp-to-viewport';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { BottomSheet } from '@/components/primitives/BottomSheet';

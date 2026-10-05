@@ -1,7 +1,7 @@
 'use client';
 
 import type { ComponentProps } from 'react';
-import { PictureDisc } from '@/components/primitives/PictureDisc';
+import { PictureDisc } from '@livediagram/ui';
 import { useCommentAuthorPicture } from '@/lib/comment-pictures';
 
 // A comment author's disc (docs/specs/014-identity/profile-picture.md §5): their initials, with

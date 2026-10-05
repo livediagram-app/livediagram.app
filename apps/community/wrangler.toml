@@ -1,0 +1,22 @@
+name = "livediagram-community"
+compatibility_date = "2026-05-29"
+
+# Static assets only: Cloudflare Workers serves files from `./out` (the Next.js static export). No
+# worker code; the router worker forwards `/community/*` here after stripping the prefix (see
+# apps/router + docs/specs/016-platform/router-app.md). Same pattern as the help and telemetry apps.
+[assets]
+directory = "./out"
+not_found_handling = "404-page"
+
+# Staging (docs/specs/016-platform/staging-environment.md): `wrangler deploy --env staging` deploys
+# the same static `./out` as `livediagram-community-staging`. The build that fills `out/` is a
+# different one (staging bakes its own NEXT_PUBLIC_* values), so the two never share an artifact.
+#
+# `[assets]` is restated so this block reads as the complete description of the staging worker. The
+# name is explicit because the router's service bindings depend on this exact string.
+[env.staging]
+name = "livediagram-community-staging"
+
+[env.staging.assets]
+directory = "./out"
+not_found_handling = "404-page"

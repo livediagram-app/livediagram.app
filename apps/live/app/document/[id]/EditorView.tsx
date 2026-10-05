@@ -1,5 +1,6 @@
 'use client';
 
+import { CommentBadgesContext } from '@/components/canvas/CommentBadgesContext';
 import { EditorModeProvider } from '@/components/chrome/editor-mode/editor-mode-context';
 import { truncateName } from '@livediagram/document';
 import { track } from '@/lib/telemetry';
@@ -19,6 +20,12 @@ import { ViewportStoreProvider } from '@/hooks/canvas/useViewportStore';
 import { EditorCanvasHost } from '@/components/canvas/EditorCanvasHost';
 import { PresentationHost } from '@/components/canvas/PresentationHost';
 import { EditorHeader } from '@/components/chrome/EditorHeader';
+import { CommunityBar } from '@/components/chrome/CommunityBar';
+import { useAutoCopyParam } from '@/hooks/canvas/useAutoCopyParam';
+import { documentIsPublic } from '@/lib/community-public';
+import { useCommunityState } from '@/lib/community-state-store';
+import { useCommunityEnabled } from '@livediagram/ui';
+import { API_BASE } from '@/lib/api-client';
 import { EmbedChrome } from '@/components/chrome/EmbedChrome';
 import { TabBar } from '@/components/chrome/TabBar';
 import { SignInBanner, SIGNIN_BANNER_DISMISS_KEY } from '@/components/chrome/SignInBanner';
@@ -172,7 +179,21 @@ export function EditorView() {
     zenMode,
     openCollaborators,
     userPreferences,
+    sessionCommunity,
   } = ctx;
+  // The header badge follows the document's Community post (docs/specs/025-community/community.md).
+  const communityState = useCommunityState(documentId);
+  // The badge goes too while the Community is switched off (docs/specs/025-community/community.md).
+  // Asked only while there is a listed post to badge, and never in an embed, so other opens make no request.
+  const communityOn = useCommunityEnabled(API_BASE, communityState === 'listed' && !embedMode);
+  // `?copy=1` from the Community's Make a Copy (docs/specs/025-community/community.md).
+  useAutoCopyParam({
+    hydrated,
+    sessionShareCode,
+    // The author's own post copies nothing: their bar offers Edit Your Document instead.
+    community: sessionCommunity !== null && !sessionCommunity.ownDocumentId,
+    makeCopy,
+  });
   // Minimal chrome (docs/specs/007-editor/power-user-mode.md): one flag, read by every chrome surface.
   const minimalChrome = isMinimalChrome(userPreferences);
   // UI scale (docs/specs/007-editor/ui-scale.md): desktop only, so a phone resolves to 1.
@@ -285,15 +306,20 @@ export function EditorView() {
                         hideTitle={anyWelcomeOpen}
                         showShare={isOwner && hydrated && !anyWelcomeOpen}
                         shareable={documentShareable}
+                        community={documentIsPublic({
+                          communityOn,
+                          ownPostState: communityState,
+                          communitySession: sessionCommunity !== null,
+                        })}
                         teamDocument={!!documentTeamId}
                         offline={isOffline}
                         // Visitors see "Make a copy" instead of "Share": same slot,
                         // different action. Hidden during the welcome flow so the
                         // first-paint chrome stays minimal, and during hydration so
                         // we don't render the button before we know whether the user
-                        // is the owner.
+                        // is the owner. A Community visitor gets it from the Community bar instead.
                         onMakeCopy={
-                          !isOwner && hydrated && !anyWelcomeOpen && documentId
+                          !isOwner && hydrated && !anyWelcomeOpen && documentId && !sessionCommunity
                             ? makeCopy
                             : undefined
                         }
@@ -326,6 +352,13 @@ export function EditorView() {
                       />
                     </AreaErrorBoundary>
                   )}
+                  {sessionCommunity && !embedMode && hydrated ? (
+                    <CommunityBar
+                      community={sessionCommunity}
+                      onMakeCopy={makeCopy}
+                      copying={copying}
+                    />
+                  ) : null}
                   <AreaErrorBoundary area="TabDialogs">
                     <EditorTabDialogs />
                   </AreaErrorBoundary>
@@ -337,7 +370,12 @@ export function EditorView() {
                     <ChangesetRevealContext.Provider value={ctx.changesetReveals}>
                       {/* The focus rings of the agents present (docs/specs/024-agents/agent-presence.md). */}
                       <AgentFocusContext.Provider value={ctx.agentFocusByElement}>
-                        <EditorCanvasHost />
+                        {/* No comment badges for a viewer in an embed (docs/specs/013-workspace/embeds.md). */}
+                        <CommentBadgesContext.Provider
+                          value={!(embedMode && isReadOnly) && !sessionCommunity}
+                        >
+                          <EditorCanvasHost />
+                        </CommentBadgesContext.Provider>
                       </AgentFocusContext.Provider>
                     </ChangesetRevealContext.Provider>
                   </AreaErrorBoundary>

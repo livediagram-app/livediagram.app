@@ -1,4 +1,5 @@
 import type { View } from '@/lib/viewport-store';
+import { Portal } from '@livediagram/ui';
 import { useViewportOf, useViewportStore } from '@/hooks/canvas/useViewportStore';
 import { useByValue } from '@/hooks/ui/useByValue';
 import { sameSitters, sittersByChair } from '@/lib/chair-sitters';
@@ -81,7 +82,6 @@ import { reactionPose } from '@/lib/avatar-reactions';
 import type { Reaction } from '@livediagram/document';
 import { usePortalTravel } from '@/components/canvas/portal-travel';
 import { useOffscreenContent } from '@/hooks/canvas/useOffscreenContent';
-import { Portal } from '@/components/primitives/Portal';
 import { TabLoadOverlay } from '@/components/canvas/TabLoadOverlay';
 import { PaletteDragGhost } from '@/components/canvas/PaletteDragGhost';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';

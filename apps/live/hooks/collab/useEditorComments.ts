@@ -49,6 +49,9 @@ type EditorCommentsDeps = {
   // A comment with @-mentions just landed (docs/specs/012-collaboration/comment-mentions.md): count it and
   // ask the api to email the people named. Absent where nobody can be named.
   onMentioned?: (text: string, mentions: CommentMention[]) => void;
+  // No comments at all (a Community visitor, docs/specs/025-community/community.md "Viewing a post's document"):
+  // opening a thread and adding to one do nothing, since the api refuses a community link every comment door.
+  commentsOff?: boolean;
 };
 
 // A view-role write through the dedicated comment endpoints (docs/specs/015-api/api.md). The
@@ -88,6 +91,7 @@ export function useEditorComments(deps: EditorCommentsDeps): EditorCommentsApi {
   const [commentThreadOpenId, setCommentThreadOpenId] = useState<string | null>(null);
 
   const openComments = (elementId: string) => {
+    if (deps.commentsOff) return;
     // Closure read before the toggle so we emit only on the open
     // transition, never on close, and never double-fire under React
     // strict mode (which would re-run an updater-internal side
@@ -104,6 +108,7 @@ export function useEditorComments(deps: EditorCommentsDeps): EditorCommentsApi {
     persist?: PersistAdd,
     mentions?: CommentMention[],
   ): string => {
+    if (deps.commentsOff) return '';
     // Mint OUTSIDE the updater: state updaters must stay pure (strict
     // mode re-invokes them), and the caller needs the id.
     const comment = createComment(

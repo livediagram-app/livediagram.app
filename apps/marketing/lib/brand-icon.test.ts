@@ -5,11 +5,11 @@ import { brandMarkSvg } from '@livediagram/ui';
 
 // Each frontend ships its own app/icon.svg, because Next's icon file
 // convention wants one per app (and help's is served under its basePath).
-// So the mark exists as four static files plus the shared BRAND_MARK geometry
+// So the mark exists as five static files plus the shared BRAND_MARK geometry
 // in @livediagram/ui that the header logo and apple-icon.tsx render from.
 // Nothing at runtime notices one of them drifting; this does.
 
-const APPS = ['marketing', 'live', 'help', 'telemetry'] as const;
+const APPS = ['marketing', 'live', 'help', 'telemetry', 'community'] as const;
 
 const iconSvg = (app: (typeof APPS)[number]) =>
   readFileSync(fileURLToPath(new URL(`../../${app}/app/icon.svg`, import.meta.url)), 'utf8');

@@ -12,10 +12,15 @@ const db = vi.hoisted(() => ({
   getThumbRenderedAt: vi.fn(),
   markThumbRendered: vi.fn(),
   thumbnailKey: (id: string) => `thumb/${id}`,
+  communityThumbnailKey: (id: string) => `thumb-community/${id}`,
 }));
 vi.mock('./db', () => db);
 
-import { getDocumentThumbnailSvg } from './thumbnail';
+import {
+  getCommunityThumbnailSvg,
+  getDocumentTabImageSvg,
+  getDocumentThumbnailSvg,
+} from './thumbnail';
 
 function r2() {
   return { get: vi.fn(), put: vi.fn().mockResolvedValue(undefined), delete: vi.fn() };
@@ -324,5 +329,98 @@ describe('a thumbnail of named stock colours', () => {
     const out = await getDocumentThumbnailSvg({ IMAGES: images } as unknown as Env, liveDoc());
     expect(out).toContain(penColourHex('blue', 'light'));
     expect(out).toContain(PEN_INK.light);
+  });
+});
+
+// docs/specs/025-community/community.md "Viewing a post's document": the public card image is drawn from the redacted
+// tab, so a comment thread and its people never reach it, and it never reuses the owner's snapshot.
+describe('the Community snapshot', () => {
+  const COMMENTED = JSON.stringify({
+    elements: [
+      {
+        id: 'c1',
+        type: 'shape',
+        shape: 'comment-pin',
+        x: 0,
+        y: 0,
+        width: 260,
+        height: 200,
+        commentThread: {
+          comments: [
+            {
+              id: 'm1',
+              text: 'Secret launch plan',
+              authorId: 'user_jane',
+              authorName: 'Jane Doe',
+              authorColor: '#0ea5e9',
+              createdAt: 1,
+            },
+          ],
+        },
+      },
+      {
+        id: 'e1',
+        type: 'shape',
+        shape: 'square',
+        x: 300,
+        y: 0,
+        width: 100,
+        height: 80,
+        label: 'Public box',
+      },
+    ],
+  });
+
+  it("draws without the conversation the owner's snapshot shows", async () => {
+    db.getTabBody.mockResolvedValue(stored(COMMENTED, 2));
+    db.getThumbRenderedAt.mockResolvedValue(null);
+    const owner = await getDocumentThumbnailSvg({ IMAGES: r2() } as unknown as Env, liveDoc());
+    expect(owner).toContain('Secret launch plan');
+
+    const images = r2();
+    images.get.mockResolvedValue(null);
+    const community = await getCommunityThumbnailSvg(
+      { IMAGES: images } as unknown as Env,
+      liveDoc(),
+    );
+    // The rest of the board still draws (labels wrap, so one word of it).
+    expect(community).toContain('Public');
+    expect(community).not.toContain('Secret launch plan');
+    expect(community).not.toContain('Jane Doe');
+    // Cached under its own key, stamped with when it was drawn.
+    expect(images.put).toHaveBeenCalledWith(
+      'thumb-community/d1',
+      community,
+      expect.objectContaining({ customMetadata: { renderedAt: expect.any(String) } }),
+    );
+    expect(images.get).not.toHaveBeenCalledWith('thumb/d1');
+  });
+
+  it('serves its own cached copy while fresh, and redraws once the document is saved again', async () => {
+    const images = r2();
+    images.get.mockResolvedValue({
+      text: async () => '<svg>community cached</svg>',
+      customMetadata: { renderedAt: '1500' },
+    });
+    const env = { IMAGES: images } as unknown as Env;
+    expect(await getCommunityThumbnailSvg(env, liveDoc({ savedAt: 1000 }))).toBe(
+      '<svg>community cached</svg>',
+    );
+    expect(db.getTabBody).not.toHaveBeenCalled();
+
+    db.getTabBody.mockResolvedValue(stored(COMMENTED, 2));
+    const redrawn = await getCommunityThumbnailSvg(env, liveDoc({ savedAt: 2000 }));
+    expect(redrawn).not.toBe('<svg>community cached</svg>');
+    expect(redrawn).not.toContain('Secret launch plan');
+  });
+
+  it('redacts a single tab the same way, and draws nothing without storage', async () => {
+    db.getTabBody.mockResolvedValue(stored(COMMENTED, 2));
+    const env = { IMAGES: r2() } as unknown as Env;
+    expect(await getDocumentTabImageSvg(env, liveDoc(), 't1', true)).not.toContain(
+      'Secret launch plan',
+    );
+    expect(await getDocumentTabImageSvg(env, liveDoc(), 't1')).toContain('Secret launch plan');
+    expect(await getCommunityThumbnailSvg({} as Env, liveDoc())).toBeNull();
   });
 });

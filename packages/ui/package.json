@@ -7,7 +7,8 @@
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./clerk-key": "./src/clerk-key.ts"
   },
   "scripts": {
     "lint": "eslint .",
@@ -35,6 +36,8 @@
   },
   "dependencies": {
     "@livediagram/api-schema": "workspace:*",
+    "@livediagram/document": "workspace:*",
+    "@livediagram/help-registry": "workspace:*",
     "@livediagram/icons": "workspace:^",
     "@livediagram/tailwind-config": "workspace:*",
     "@livediagram/telemetry-client": "workspace:*"
