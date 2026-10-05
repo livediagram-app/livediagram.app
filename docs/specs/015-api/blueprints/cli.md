@@ -103,8 +103,8 @@ Scope, by file:
 | Api base            | `Capabilities.apiBase`                                                  | Where the api answers for that host                                      |
 | Capabilities        | `CapabilitiesResponse`, `loadCapabilities`                              | What a host offers, from `GET /api/capabilities`                         |
 | Credential          | `StoredCredential`, `CredentialSource` (`env`, `keychain`, `file`)      | The `lvd_` token the CLI presents, and where it came from                |
-| Version floor       | `cli.minVersion`, `assertWritable`                                      | The oldest CLI a host accepts writes from                                |
-| Read copy           | `ReadCopy`, `readCopy`, `recordCopy`, `latestCopy`                      | The plain tab as the CLI last read it at one revision                    |
+| Version floor       | `cli.minVersion`, `isBelow`                                             | The oldest CLI a host accepts writes from                                |
+| Read copy           | `ReadCopy`, `ReadCopies`, `recordCopy`, `baseFromCopy`                  | The plain tab as the CLI last read it at one revision                    |
 | Base                | `baseFromCopy(copy)` → `ChangesetBase`                                  | A read copy's revision and every element's fingerprint, sent with writes |
 | Source kind         | `SourceKind`: `graph`, `mermaid`, `elements`, `replace`, `operations`   | What a `-f` file holds                                                   |
 | Pull file           | `PullFile`, `<slug>.livediagram.json`                                   | One document on disk, with each tab's revision                           |
@@ -128,7 +128,7 @@ anything the CLI does.
 
 ### One command, start to end (`run`)
 
-1. **Route.** `resolveCommand(argv)` reads the first words: a resource (or alias) and a verb, or a top-level
+1. **Route.** `route(words)`, after `splitGlobals(argv)`, reads the first words: a resource (or alias) and a verb, or a top-level
    command (`wait`, `watch`, `pull`, `push`, `export`, `guide`, `api`, `edit`). Unknown words exit 2 with
    suggestions (CLI51). `--help` or `-h` anywhere prints the help of the deepest level routed and exits 0; `--version`
    prints `CLI_VERSION` and exits 0. Neither sends telemetry.
@@ -142,7 +142,7 @@ anything the CLI does.
 5. **Capabilities.** `loadCapabilities(profile)` from the cache or `GET {host}/api/capabilities` (CLI8). An absent
    `authEnabled` or `authEnabled: false` makes every api verb exit 4 with the "no sign-in" line: the CLI does not act
    as a guest.
-6. **Floor.** `assertWritable(verb, caps)`: a verb whose behaviour is `write` or `destructive` and that reaches the
+6. **Floor.** `isBelow(CLI_VERSION, caps.minVersion)` in `runOnline`: a verb whose behaviour is `write` or `destructive` and that reaches the
    api, below `cli.minVersion`, exits 1 (CLI13). Reads are never refused. A host `documentFormat` above the
    bundled `DOCUMENT_FORMAT` refuses the verbs that read or write local files (`pull`, `push`, `export`, `graph`,
    `tab diff`, reads of a pull file) with exit 1 and the version to install; online commands carry on.
