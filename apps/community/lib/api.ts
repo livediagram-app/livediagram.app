@@ -9,6 +9,7 @@ import {
   type CommunityMineResponse,
   type CommunityPostResponse,
   type CommunityReportInput,
+  readErrorCode,
 } from '@livediagram/api-schema';
 import { getCommunityKey } from './community-key';
 import { API_BASE } from './config';
@@ -39,10 +40,7 @@ async function request(path: string, init: RequestInit = {}): Promise<Response> 
     ...init,
     headers: headers(init.headers as Record<string, string> | undefined),
   });
-  if (!res.ok) {
-    const body = (await res.json().catch(() => null)) as { error?: unknown } | null;
-    throw new CommunityApiError(res.status, typeof body?.error === 'string' ? body.error : null);
-  }
+  if (!res.ok) throw new CommunityApiError(res.status, await readErrorCode(res));
   return res;
 }
 

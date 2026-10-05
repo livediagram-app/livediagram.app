@@ -644,3 +644,4 @@ export * from './agent-presence';
 export * from './community';
 export * from './community-query';
 export * from './document-paths';
+export * from './http-errors';

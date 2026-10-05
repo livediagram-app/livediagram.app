@@ -8,6 +8,7 @@ import {
   type CommunityFeaturedResponse,
   type CommunityPost,
   COMMUNITY_HOME_PATH,
+  isAbortError,
 } from '@livediagram/api-schema';
 import {
   buttonClassName,
@@ -46,7 +47,7 @@ function useFeatured(): State {
         setState({ status: 'ready', posts: body.posts ?? [] });
       })
       .catch((err: unknown) => {
-        if (err instanceof DOMException && err.name === 'AbortError') return;
+        if (isAbortError(err)) return;
         console.warn('[community] featured load failed', err);
         setState({ status: 'ready', posts: [] });
       });

@@ -1,5 +1,6 @@
 'use client';
 
+import { isAbortError } from '@livediagram/api-schema';
 import { useEffect, useState } from 'react';
 import type { CommunityPostResponse } from '@livediagram/api-schema';
 import { fetchPost } from '@/lib/api';
@@ -35,7 +36,7 @@ export function usePost(id: string | null): { load: PostLoad; retry: () => void 
         if (data) communityTelemetry.openedPost();
       })
       .catch((err: unknown) => {
-        if (err instanceof DOMException && err.name === 'AbortError') return;
+        if (isAbortError(err)) return;
         console.warn('[community] post load failed', err);
         setResult({ id, reload, load: { status: 'error' } });
       });

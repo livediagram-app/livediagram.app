@@ -8,6 +8,7 @@ import {
   type CommunityFacetsResponse,
   type CommunityListQuery,
   type CommunityMineTotals,
+  isAbortError,
 } from '@livediagram/api-schema';
 import { fetchFacets, fetchMine, fetchPosts } from '@/lib/api';
 import type { GalleryPost } from '@/lib/gallery-post';
@@ -68,8 +69,6 @@ function appendUnique(posts: GalleryPost[], more: GalleryPost[]): GalleryPost[] 
   return [...posts, ...more.filter((p) => !seen.has(p.id))];
 }
 
-const isAbort = (err: unknown) => err instanceof DOMException && err.name === 'AbortError';
-
 export function useGallery(session: CommunitySession | null): Gallery {
   const search = useSyncExternalStore(subscribeSearch, getSearchSnapshot, getServerSearchSnapshot);
   const filters = useMemo(
@@ -116,7 +115,7 @@ export function useGallery(session: CommunitySession | null): Gallery {
     loadPage({ ...filters, offset: 0 }, controller.signal)
       .then((page) => setResult({ key, status: 'ready', ...page }))
       .catch((err: unknown) => {
-        if (isAbort(err)) return;
+        if (isAbortError(err)) return;
         console.warn('[community] gallery load failed', err);
         setResult({ key, status: 'error', posts: [], nextOffset: null, totals: null });
       });
@@ -129,7 +128,7 @@ export function useGallery(session: CommunitySession | null): Gallery {
     fetchFacets(controller.signal)
       .then(setFacets)
       .catch((err: unknown) => {
-        if (!isAbort(err)) console.warn('[community] facets load failed', err);
+        if (!isAbortError(err)) console.warn('[community] facets load failed', err);
       });
     return () => controller.abort();
   }, []);

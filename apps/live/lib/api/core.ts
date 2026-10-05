@@ -12,7 +12,12 @@ import type {
   ShareLink,
   ShareRole,
 } from '@livediagram/api-schema';
-import { BUILD_ID_HEADER, DOCUMENT_FORMAT_HEADER, isClerkIdShape } from '@livediagram/api-schema';
+import {
+  BUILD_ID_HEADER,
+  DOCUMENT_FORMAT_HEADER,
+  isClerkIdShape,
+  readErrorCode,
+} from '@livediagram/api-schema';
 import { noteServerBuild, noteServerDocumentFormat } from '../server-release';
 import { stampTabKind, type Tab } from '@livediagram/document';
 import { readLocalStorageSafe, writeLocalStorageSafe } from '../local-storage-safe';
@@ -352,20 +357,6 @@ export class ApiError extends Error {
     this.action = action;
     this.status = status;
     this.code = code;
-  }
-}
-
-// Pull the api worker's `error` token out of a failed response body
-// without disturbing the caller's own `res.json()` (we read a clone).
-// Tolerant of empty / non-JSON bodies (503 from a missing binding,
-// network-level failures) — returns null rather than throwing a second
-// error on top of the first.
-export async function readErrorCode(res: Response): Promise<string | null> {
-  try {
-    const body = (await res.clone().json()) as { error?: unknown };
-    return typeof body?.error === 'string' ? body.error : null;
-  } catch {
-    return null;
   }
 }
 
