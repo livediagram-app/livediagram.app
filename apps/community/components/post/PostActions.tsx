@@ -26,7 +26,7 @@ export function PostActions({ post }: { post: CommunityPost }) {
   const copies = post.copyCount;
   return (
     <div className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-3 shadow-xs dark:border-slate-800 dark:bg-slate-900">
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid gap-2 sm:grid-cols-2">
         <a
           href={makeCopyHref(post.shareCode)}
           onClick={() => communityTelemetry.copiedPost()}
