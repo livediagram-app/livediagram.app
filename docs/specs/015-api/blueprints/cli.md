@@ -21,7 +21,7 @@ Scope, by file:
 | `packages/agent-verbs/{package.json,tsconfig.json,eslint.config.js,vitest.config.ts}`                  | New private package `@livediagram/agent-verbs`, laid out like `packages/explorer-lens`; depends on zod 4                                    |
 | `packages/agent-verbs/src/define.ts`                                                                   | `Verb`, `defineVerb`, `VerbBehaviour`, `VerbContext`, `CliProjection`                                                                       |
 | `packages/agent-verbs/src/catalogue.ts`                                                                | `VERBS`, `verbById`, `verbsOf`, `RESOURCES`, `RESOURCE_ALIASES`, `TOP_LEVEL`; `COMMAND_ALIASES` with `edit`                                 |
-| `packages/agent-verbs/src/verbs/{document,tab,element,changeset,comment,presence}.ts`                  | The CLI's api verbs: schemas, descriptions, behaviour, handlers, compact text, CLI projections                                              |
+| `packages/agent-verbs/src/verbs/{document,tab,edit,lifecycle,changeset,comment,presence}.ts`           | The CLI's api verbs: schemas, descriptions, behaviour, handlers, compact text, CLI projections                                              |
 | `packages/agent-verbs/src/verbs/shared.ts`                                                             | `columns`, `day`, `minute`, `documentOf`, `tabOf`, `tabPath`, the list limits                                                               |
 | `packages/agent-verbs/src/verbs/mcp-tools.ts` (planned)                                                | One verb per existing MCP tool, with today's schema and tool name                                                                           |
 | `packages/agent-verbs/src/verbs/catalogues.ts` (+ test)                                                | `template.ls`, `template.view`, `icon.search`, `schema.view`; an unknown name refused with the nearest                                      |
@@ -964,7 +964,7 @@ WebSocket) with a fixed clock; none waits on a real timer or the network.
 | `--wait-held` retries, then exit 5                                                            | `packages/agent-verbs/src/write.test.ts`, `apps/cli/src/writes.test.ts`                                                                                               |
 | `changeset apply` from a file and stdin; source kinds                                         | `packages/agent-verbs/src/verbs/edit.test.ts`; `packages/agent-verbs/src/source-kind.test.ts`; `apps/cli/src/input.test.ts`                                           |
 | `changeset ls`, `show` and `revert`                                                           | `packages/agent-verbs/src/verbs/verbs.test.ts`                                                                                                                        |
-| Comments by element ref; reply to the thread                                                  | `apps/cli/src/commands/comment.test.ts` (planned)                                                                                                                     |
+| Comments by element ref; reply to the thread                                                  | `packages/agent-verbs/src/verbs/comment.test.ts` (comment and presence verbs)                                                                                         |
 | `tab diff` from the read copy; missing copy exit 3                                            | `packages/agent-verbs/src/verbs/edit.test.ts`, `apps/cli/src/writes.test.ts`                                                                                          |
 | Env token before stored; no flag                                                              | `apps/cli/src/auth/credentials.test.ts`                                                                                                                               |
 | Loopback PKCE login against the OAuth server                                                  | `apps/cli/src/auth/loopback-login.test.ts` (planned) (in-process fake issuer)                                                                                         |
@@ -1061,4 +1061,4 @@ release needs a floor), in `[vars]` and `[env.staging.vars]` (staging `OAUTH_ISS
 
 ## Defaults ledger
 
-CLI1 to CLI80 in [DEFAULTS.md](DEFAULTS.md).
+CLI1 to CLI82 in [DEFAULTS.md](DEFAULTS.md).

@@ -4,8 +4,8 @@
 profiles, `LIVEDIAGRAM_TOKEN` and `auth login --with-token`, `status`, `logout`; the reads `document ls|view`,
 `tab ls|view|lint|diff`, `changeset ls|show`; the edits `edit` (`changeset apply`), `element add|set|rm|move|connect|insert|wrap`
 and `changeset revert`, based on read copies; `document create|rename|share|rm|restore`, `tab add|rename|rm`; the catalogues `template ls|view`, `icon search`,
-`schema`; `graph lint` (`--compare`), offline; `guide`, `skill` and `api`; the usage count and `telemetry on|off`. Not yet published to npm. Browser and
-device sign-in, pull and push, the room and the update check are ahead.
+`schema`; `graph lint` (`--compare`), offline; `comment ls|add|reply|resolve|reopen` and `presence set|clear`; `guide`, `skill` and `api`; the usage count and `telemetry on|off`. Not yet published to npm. Browser and
+device sign-in, pull and push, `wait` and `watch` (the room) and the update check are ahead.
 
 `livediagram` is a command-line front door to the api, built first for **agents** (a coding agent in a repo, a chat
 agent changing a diagram while a person talks to it) and second for people (scripts, syncing documents to files).

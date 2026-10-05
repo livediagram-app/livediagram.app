@@ -53,6 +53,27 @@ describe('the catalogue', () => {
     }
   });
 
+  // The CLI hands a verb its words and flag values as strings, and a trailing `...name` positional as a list of
+  // words: a field that takes a number must take its digits as text, and a rest field must take the list.
+  it('takes every value as the CLI hands it over', () => {
+    const wrong: string[] = [];
+    for (const verb of VERBS) {
+      const shape = verb.input.shape as Record<
+        string,
+        { safeParse: (v: unknown) => { success: boolean } }
+      >;
+      const rest = verb.cli?.positionals.find((p) => p.startsWith('...'))?.slice(3);
+      for (const [key, field] of Object.entries(shape)) {
+        if (key === rest) {
+          if (!field.safeParse(['two', 'words']).success) wrong.push(`${verb.id} ${key} as words`);
+        } else if (field.safeParse(5).success && !field.safeParse('5').success) {
+          wrong.push(`${verb.id} ${key} as digits`);
+        }
+      }
+    }
+    expect(wrong).toEqual([]);
+  });
+
   it('describes each verb as facts, never as instructions to the caller (MCP §4.15)', () => {
     const directive = /\b(you must|you should|do not|don't|never use|always use|make sure)\b/i;
     expect(

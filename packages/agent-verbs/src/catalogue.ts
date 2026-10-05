@@ -3,6 +3,14 @@
 
 import type { Verb } from './define';
 import { changesetLs, changesetRevert, changesetShow } from './verbs/changeset';
+import {
+  commentAdd,
+  commentLs,
+  commentReopen,
+  commentReply,
+  commentResolve,
+} from './verbs/comment';
+import { presenceClear, presenceSet } from './verbs/presence';
 import { documentLs, documentView } from './verbs/document';
 import {
   apiCall,
@@ -50,6 +58,13 @@ export const VERBS: readonly Verb[] = [
   changesetLs,
   changesetShow,
   changesetRevert,
+  commentLs,
+  commentAdd,
+  commentReply,
+  commentResolve,
+  commentReopen,
+  presenceSet,
+  presenceClear,
   graphLintVerb,
   templateLs,
   templateView,
@@ -75,6 +90,8 @@ export const RESOURCES: readonly { name: string; alias?: string; summary: string
   { name: 'tab', summary: 'Tabs: their views, their lint, and what changed' },
   { name: 'element', alias: 'el', summary: 'Elements: one edit operation a call' },
   { name: 'changeset', summary: 'Changesets: what changed, by whom, and undoing one' },
+  { name: 'comment', summary: 'Comment threads' },
+  { name: 'presence', summary: 'What the agent is doing, shown on a tab' },
   { name: 'graph', summary: 'Graph files: lint one before writing it' },
   { name: 'template', summary: 'Templates: the library, and one as an outline' },
   { name: 'icon', summary: 'Icons: find one for iconId=' },

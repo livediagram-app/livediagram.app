@@ -37,7 +37,7 @@ async function targetOf(ctx: VerbContext, doc: string, tab: string | undefined) 
 
 export const changesetApply = defineVerb({
   id: 'changeset.apply',
-  summary: 'Apply edit operations, a graph, Mermaid or elements from a file',
+  summary: 'Apply edit operations, or a graph, from a file',
   description:
     'Sends a file (or stdin, with -f -) as one changeset: edit operations in the line form or JSON, or a graph, Mermaid or elements that replace the tab. All or nothing; prints one result line per element, then the revision, the lint verdict and the revert command.',
   behaviour: 'write',

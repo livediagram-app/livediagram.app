@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { createSticky, type Element } from '@livediagram/document';
 import { CHECKOUT_REV, checkoutTab } from './__fixtures__/checkout-tab';
 import { golden } from './__fixtures__/golden-path';
-import { commentHosts, commentsView } from './comments';
+import { commentHosts, commentsView, threadListingLines } from './comments';
 import { buildViewModel } from './model';
 
 const checkout = () => buildViewModel(checkoutTab(), { rev: CHECKOUT_REV });
@@ -83,5 +83,27 @@ describe('commentHosts', () => {
     expect(hosts.map((h) => h.ref)).toEqual(view.map((t) => t.ref));
     expect(hosts.map((h) => h.label)).toEqual(view.map((t) => t.label));
     expect(hosts.every((h) => model.refs.refOf(h.el.id) === h.ref)).toBe(true);
+  });
+});
+
+describe('threadListingLines', () => {
+  it('prints a listed thread as the comments view does, with its tab', () => {
+    const lines = threadListingLines({
+      ref: 'api',
+      label: 'Payments API',
+      resolved: false,
+      tabName: 'Main',
+      comments: [{ authorName: 'Sam Lee', createdAt: Date.UTC(2026, 8, 27), text: 'Idempotent?' }],
+    });
+    expect(lines).toEqual([
+      'api "Payments API" · open · 1 · tab "Main"',
+      '  "Sam Lee" 2026-09-27: "Idempotent?"',
+    ]);
+  });
+
+  it('leaves out a missing label and says resolved', () => {
+    expect(
+      threadListingLines({ ref: 'x1', label: null, resolved: true, tabName: 'T', comments: [] }),
+    ).toEqual(['x1 · resolved · 0 · tab "T"']);
   });
 });

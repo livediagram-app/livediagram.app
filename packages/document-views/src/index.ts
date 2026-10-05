@@ -9,4 +9,4 @@ export { renderView, type RenderedView, type ViewRefusal, type ViewRequest } fro
 export { overviewView, editedAge, type OverviewDocument, type OverviewTabInput } from './overview';
 export { diffView, type DiffContext } from './diff';
 export { PERSON_ID_FIELDS } from './show';
-export { commentHosts } from './comments';
+export { commentHosts, threadListingLines } from './comments';
