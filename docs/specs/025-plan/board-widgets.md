@@ -19,29 +19,10 @@ and are placed by dragging them into a board's header.
 - The widget zone is one row. Widgets keep their order; when they do not fit, the zone scrolls sideways.
 - Widgets are drawn for the header: the same height (28 px), a quiet border, the board's own theme colours,
   each led by a picture of what it measures (its glyph, a ring, a split bar, column bars or pips).
-- A board with no widgets shows nothing in the zone; to someone who may edit, it says **Drag widgets here from
-  the palette** in muted type.
-
-## Widget kinds
-
-| Kind         | Label        | Shows                                                                                                                           |
-| ------------ | ------------ | ------------------------------------------------------------------------------------------------------------------------------- |
-| `count`      | Item Count   | Its glyph and how many items the board shows                                                                                    |
-| `progress`   | Completion   | A ring filled to the share of the board's items in its done column, the percent and `done · 9/14`; "No done column" without one |
-| `filter`     | Filter       | A search box with its glyph, narrowing the cards to those whose text matches (the quick filter)                                 |
-| `mine`       | Only Mine    | A toggle showing only the cards assigned to the viewer (signed-in or named viewers); tinted while on                            |
-| `people`     | People       | The avatars of the people assigned cards on the board, up to five and "+n", and how many people                                 |
-| `unplaced`   | Not on Board | How many items have a status no column shows, amber while there are any; pressing it opens their list                           |
-| `types`      | Card Types   | One bar split by type in each type's colour, then the three biggest types with their counts                                     |
-| `wip`        | WIP Alerts   | A small bar per column, its cards against its limit (warning colour when over), and how many columns are over                   |
-| `due`        | Due Soon     | Red and amber counts of cards overdue and due in the next 7 days; "Nothing due" with a green glyph otherwise                    |
-| `votes`      | Votes Left   | The viewer's votes left as pips (a number past ten), on a board with voting on; nothing on any other board                      |
-| `points`     | Points       | A bar and the estimate points in the done column out of all on the board (`12/30 pts`); "No estimates" without any              |
-| `priorities` | Priorities   | A dot and count per priority the board's cards have, most urgent first; pressing one shows only those                           |
-| `unassigned` | Unassigned   | How many cards nobody is assigned, amber while there are any; pressing it shows only those                                      |
-| `top-voted`  | Top Voted    | The card with the most votes and its count; pressing it opens the card; "No votes yet" before any                               |
-| `stale`      | Stale Cards  | How many cards not done nobody has changed in 14 days, amber while there are any                                                |
-
+- A board with no widgets shows nothing in the zone; to someone who may edit, it says **Drag Widgets here from
+  the palette** in muted type, with an info glyph.
+- The zone ends in a **+** (for someone who may edit) that switches the palette to its Widgets category.
+- A press on the zone's empty space selects (and moves) the board, as the rest of the header does.
 - A board holds each kind **at most once**: a filter is the board's filter, not one of several.
 - **Widgets that narrow the board**: pressing a person in People, a type in Card Types, the overdue or due-soon
   count in Due Soon, a priority in Priorities, or Unassigned shows only those cards; pressing it again shows all.

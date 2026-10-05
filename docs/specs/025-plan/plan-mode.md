@@ -69,6 +69,9 @@ Plan must cost nothing to a document that does not use it:
 
 ## Plan keeps its own tabs
 
+- A tab with Plan content is never added to another document: the tab menu's **Add to Document** is off for it,
+  as its cards are this document's items.
+
 - **A Plan tab with anything on it stays in Plan mode, and a tab in another mode with anything on it does not
   become a Plan tab.** Boards and cards are worked the Plan way on a tab of their own; a board in another mode is
   only a picture of them, and a diagram is not a board. The mode switch and **Shift+D** do not cross that line.

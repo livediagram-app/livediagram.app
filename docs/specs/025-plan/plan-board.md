@@ -103,6 +103,8 @@ Where each is set, so a setting lives with what it changes, never in one central
   archived, whatever its status, in its one column, a **swimlane per status**. A status row is named by the
   column that has it on a board of the tab (in board and column order), else by the status itself; every status
   a board names has a row, empty or not. Cards with no status sit under "No status".
+- With no cards and no statuses yet it shows a single "No status" row, never a nameless one; with every row shut,
+  the spare height goes to an empty row after them.
 - Dragging a card to another row gives it that row's status; Add Card in a row adds a card with that status.
 - It is the place to find cards no board shows (orphans) and give them a status a board has.
 
