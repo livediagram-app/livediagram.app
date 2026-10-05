@@ -27,6 +27,7 @@ import { handleTabRename } from './tab-name-route';
 import { handleChangesetRoutes } from './changesets';
 import { handleCommentRoutes } from './comment-routes';
 import { handleAgentPresenceRoute } from './agent-presence-routes';
+import { handleTabRender } from './tab-render-route';
 import {
   deniedOnTab,
   gateEdit,
@@ -168,6 +169,9 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
   // Agent presence (docs/specs/024-agents/agent-presence.md "Presence").
   const presence = await handleAgentPresenceRoute(ctx);
   if (presence) return presence;
+  // One tab drawn by the shared renderer (docs/specs/015-api/api.md).
+  const rendered = await handleTabRender(ctx);
+  if (rendered) return rendered;
 
   // /api/documents/<id>/tabs/<tabId>/link — owner only.
   //   POST — add an existing tab to this document (docs/specs/006-document/tab-document-many-to-many.md).

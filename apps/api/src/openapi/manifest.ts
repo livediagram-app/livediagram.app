@@ -592,6 +592,19 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     statuses: [204, 401, 403, 404, 405, 409, 410, 413],
   },
   {
+    method: 'GET',
+    path: '/documents/{id}/tabs/{tabId}/render.svg',
+    segment: 'documents',
+    tag: 'Documents',
+    summary:
+      'One tab drawn by the shared renderer (images inlined when the host stores them). Read-gated like the tab; never cached.',
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    responseSchema: { type: 'string' },
+    responseMediaType: 'image/svg+xml',
+    statuses: [200, 401, 403, 404, 410],
+  },
+  {
     method: 'PUT',
     path: '/documents/{id}/tabs/{tabId}/presence',
     segment: 'documents',
