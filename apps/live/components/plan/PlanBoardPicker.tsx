@@ -102,15 +102,13 @@ export function PlanBoardPicker({ onPick }: { onPick: (preset: string) => void }
           <h2 id="plan-board-picker-title" className="text-[17px] font-semibold">
             Start with a Board
           </h2>
-          <HelpArticleLink article="planMode" variant="icon" />
+          <HelpArticleLink article="planBoards" variant="icon" />
         </div>
         <p className="mt-1 text-[13px]" style={{ color: palette.muted }}>
           Pick the board that fits the work. More are in the palette&rsquo;s Boards whenever you
           need them.
         </p>
-        <div className="mt-1.5">
-          <HelpArticleLink article="planBoards" variant="text" />
-        </div>
+
         <div className="mt-5 grid grid-cols-1 gap-3 min-[480px]:grid-cols-2 md:grid-cols-3">
           {PLAN_BOARD_TILES.filter((t) => t.preset !== 'archive').map((t) => (
             <button

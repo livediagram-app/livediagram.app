@@ -256,6 +256,17 @@ const BULLET_PREFIX = '• ';
 // A leading list marker on a line: a bullet "• " or a number "12. ".
 const LINE_PREFIX_RE = /^(?:• |\d+\. )/;
 
+// What Enter types on a line, given the line's text up to the caret: a list item carries on the list (the
+// next bullet, or the next number), an empty item ends it (its marker is dropped and nothing is typed), any
+// other line just breaks.
+export function listEnter(lineBeforeCaret: string): { insert: string; drop: number } {
+  const m = LINE_PREFIX_RE.exec(lineBeforeCaret);
+  if (!m) return { insert: '\n', drop: 0 };
+  if (lineBeforeCaret === m[0]) return { insert: '', drop: m[0].length };
+  if (m[0] === BULLET_PREFIX) return { insert: `\n${BULLET_PREFIX}`, drop: 0 };
+  return { insert: `\n${Number.parseInt(m[0], 10) + 1}. `, drop: 0 };
+}
+
 type RunChar = { ch: string; attrs: Omit<TextRun, 'text'> };
 
 function toChars(runs: TextRun[]): RunChar[] {

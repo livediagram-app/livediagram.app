@@ -133,3 +133,12 @@ describe('add types', () => {
     ).toEqual(['task']);
   });
 });
+
+describe('board widths', () => {
+  it('fit every column side by side', async () => {
+    const { planBoardWidthFor, PLAN_COLUMN_MIN_PX } = await import('./board');
+    expect(planBoardWidthFor({ columns: [] })).toBe(760);
+    const six = presetSetup('kanban').columns.concat({ id: 'x', status: 'x', name: 'X', width: 2 });
+    expect(planBoardWidthFor({ columns: six })).toBeGreaterThanOrEqual(7 * PLAN_COLUMN_MIN_PX);
+  });
+});

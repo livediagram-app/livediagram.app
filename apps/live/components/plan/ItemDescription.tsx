@@ -1,10 +1,12 @@
 'use client';
 
-// An item's description in the item panel (docs/specs/025-plan/plan-board.md "Working on a board"): rich
-// text through the note editor (the same runs, toolbar and shortcuts), saved as `descriptionRich` with
-// `description` as its plain-text mirror, in one write. Saved a moment after typing stops, when focus
-// leaves, and when the panel closes. Read-only, it is painted from the runs.
-import { useCallback, useEffect, useRef } from 'react';
+// An item's description in the item panel (docs/specs/025-plan/plan-board.md "Working on a board"). It reads
+// as text until clicked (an empty one is a dashed invitation to add it); then it is the note editor (the
+// same runs, toolbar and shortcuts) on a raised surface, with shortcut hints and a Saving / Saved line,
+// until focus leaves it or Escape. Saved as `descriptionRich` with `description` as its plain-text mirror,
+// in one write: a moment after typing stops, when focus leaves, and when the panel closes.
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { PencilIcon } from '@livediagram/ui';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { runsFromPlainText, type TextRun } from '@livediagram/document';
 import { DESCRIPTION_RICH_FIELD, type Item, type ItemPatch } from '@livediagram/items';
@@ -44,41 +46,119 @@ export function ItemDescription({
   const pending = useRef<{ plain: string; runs: TextRun[] } | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const patch = useLatest(onPatch);
+  // Reading until it is clicked; then the editor, until focus leaves it.
+  const [editing, setEditing] = useState(false);
+  const [status, setStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
   const save = useCallback(() => {
     if (timer.current) clearTimeout(timer.current);
     timer.current = null;
     const next = pending.current;
     pending.current = null;
-    if (next) patch.current(descriptionPatch(next.plain, next.runs));
+    if (next) {
+      patch.current(descriptionPatch(next.plain, next.runs));
+      setStatus('saved');
+    }
   }, [patch]);
   // The panel closing (or the item changing) writes what was typed.
   useEffect(() => save, [save]);
 
+  const runs = descriptionRuns(item);
+  const empty = !runs.some((r) => r.text.trim());
+
   if (!canEdit) {
-    const runs = descriptionRuns(item);
-    return runs.some((r) => r.text.trim()) ? (
+    return empty ? (
+      <p className="text-[13px] text-slate-500 dark:text-slate-400">No description</p>
+    ) : (
       <NoteRichText
         note={undefined}
         noteRich={runs}
         className="text-slate-700 dark:text-slate-200"
       />
-    ) : (
-      <p className="text-[13px] text-slate-500 dark:text-slate-400">No description</p>
     );
   }
+
+  if (!editing) {
+    return (
+      <button
+        type="button"
+        onClick={() => setEditing(true)}
+        aria-label={empty ? 'Add a description' : 'Edit the description'}
+        className={`group relative block w-full rounded-xl text-left transition ${
+          empty
+            ? 'border-2 border-dashed border-slate-200 px-4 py-6 hover:border-brand-300 hover:bg-brand-50/40 dark:border-slate-700 dark:hover:border-brand-500/50 dark:hover:bg-brand-500/5'
+            : 'border border-transparent px-3 py-2.5 hover:border-slate-200 hover:bg-slate-50 dark:hover:border-slate-700 dark:hover:bg-slate-800/50'
+        }`}
+      >
+        {empty ? (
+          <span className="flex flex-col items-center gap-1.5 text-center">
+            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-50 text-brand-600 dark:bg-brand-500/15 dark:text-brand-300">
+              <PencilIcon size={16} />
+            </span>
+            <span className="text-[13px] font-medium text-slate-700 dark:text-slate-200">
+              Add a description
+            </span>
+            <span className="text-[12px] text-slate-500 dark:text-slate-400">
+              The why and the what. Lists, links and headings welcome.
+            </span>
+          </span>
+        ) : (
+          <>
+            <NoteRichText
+              note={undefined}
+              noteRich={runs}
+              className="text-slate-700 dark:text-slate-200"
+            />
+            <span className="absolute right-2 top-2 hidden items-center gap-1 rounded-md bg-white px-1.5 py-0.5 text-[11px] font-medium text-slate-500 shadow-sm group-hover:flex group-focus-visible:flex dark:bg-slate-900 dark:text-slate-400">
+              <PencilIcon size={11} />
+              Edit
+            </span>
+          </>
+        )}
+      </button>
+    );
+  }
+
   return (
-    <NoteRichTextEditor
-      initialRuns={descriptionRuns(item)}
-      note={false}
-      label="Description"
-      placeholder="Add a description…"
-      surfaceClassName="min-h-40 max-h-[28rem] resize-y sm:min-h-[18rem] sm:max-h-[36rem]"
-      onChange={(plain, runs) => {
-        pending.current = { plain, runs };
-        if (timer.current) clearTimeout(timer.current);
-        timer.current = setTimeout(save, DESCRIPTION_SAVE_MS);
+    <div
+      className="rounded-xl bg-slate-50 p-2 dark:bg-slate-800/40"
+      onBlur={(e) => {
+        // Focus moving within (the toolbar, the link field) keeps the editor open.
+        if (e.currentTarget.contains(e.relatedTarget as Node | null)) return;
+        save();
+        setEditing(false);
       }}
-      onBlur={save}
-    />
+      onKeyDown={(e) => {
+        if (e.key === 'Escape') {
+          e.stopPropagation();
+          save();
+          setEditing(false);
+        }
+      }}
+    >
+      <NoteRichTextEditor
+        initialRuns={runs}
+        note={false}
+        autoFocus
+        label="Description"
+        placeholder="Write the why and the what…"
+        surfaceClassName="min-h-40 max-h-[28rem] resize-y sm:min-h-[16rem] sm:max-h-[36rem]"
+        onChange={(plain, next) => {
+          pending.current = { plain, runs: next };
+          setStatus('saving');
+          if (timer.current) clearTimeout(timer.current);
+          timer.current = setTimeout(save, DESCRIPTION_SAVE_MS);
+        }}
+        onBlur={save}
+      />
+      <div className="mt-1.5 flex items-center justify-between gap-2 px-1 text-[11px] text-slate-500 dark:text-slate-400">
+        <span className="max-sm:hidden">
+          <kbd className="font-sans">⌘B</kbd> bold · <kbd className="font-sans">⌘I</kbd> italic ·
+          Esc to finish
+        </span>
+        <span aria-live="polite" className="ml-auto">
+          {status === 'saving' ? 'Saving…' : status === 'saved' ? 'Saved' : ''}
+        </span>
+      </div>
+    </div>
   );
 }

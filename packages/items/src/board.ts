@@ -148,6 +148,24 @@ export interface BoardProjection {
 
 export const NO_LANE = '';
 
+// A column's narrowest on screen, per slot, and the board's gaps and side padding around its columns.
+export const PLAN_COLUMN_MIN_PX = 220;
+const PLAN_COLUMN_GAP_PX = 12;
+const PLAN_BOARD_SIDE_PAD_PX = 12;
+// The default board width, for a board with few or no columns.
+const PLAN_BOARD_MIN_WIDTH_PX = 760;
+
+// How wide a board has to be for its columns to sit side by side without scrolling (docs/specs/025-plan/
+// plan-board.md "The board set-up"): what a board placed from the palette starts at, at least.
+export function planBoardWidthFor(setup: Pick<PlanBoardSetup, 'columns'>): number {
+  const slots = setup.columns.reduce((n, c) => n + (c.width ?? 1), 0);
+  const gaps = Math.max(0, setup.columns.length - 1) * PLAN_COLUMN_GAP_PX;
+  return Math.max(
+    PLAN_BOARD_MIN_WIDTH_PX,
+    slots * PLAN_COLUMN_MIN_PX + gaps + PLAN_BOARD_SIDE_PAD_PX * 2 + 8,
+  );
+}
+
 // The add types a board names: type ids, each once, at most 32.
 function readAddTypes(input: unknown): string[] | undefined {
   if (!Array.isArray(input)) return undefined;

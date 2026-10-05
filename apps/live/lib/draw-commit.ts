@@ -1,4 +1,4 @@
-import { freshBoardSetup, newItemId } from '@livediagram/items';
+import { freshBoardSetup, newItemId, planBoardWidthFor } from '@livediagram/items';
 import {
   defaultSessionConfig,
   eventStormingNote,
@@ -390,6 +390,10 @@ export function buildDrawnBoxed(
     // the item store as the card lands (docs/specs/025-plan/plan-mode.md "The palette").
     ...(intent.type === 'shape' && intent.kind === 'plan-board'
       ? { planBoard: freshBoardSetup(intent.plan) }
+      : {}),
+    // A tapped-in board starts wide enough for its columns; a board drawn to size keeps its size.
+    ...(intent.type === 'shape' && intent.kind === 'plan-board' && isTap
+      ? { width: planBoardWidthFor(freshBoardSetup(intent.plan)) }
       : {}),
     ...(intent.type === 'shape' && intent.kind === 'plan-card'
       ? { planCard: { itemId: newItemId() } }

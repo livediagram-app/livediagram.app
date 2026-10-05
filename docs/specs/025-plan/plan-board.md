@@ -62,7 +62,8 @@ Where each is set, so a setting lives with what it changes, never in one central
   status is one of its columns, and counts the rest as not on it.
 - **A board placed from the palette starts empty**: its columns get statuses of their own (the column's status
   and a short suffix, `todo~k3f9`), so no card the document already has lands on it. Boards from a template keep
-  the template's statuses and its example cards. Archive and All Cards boards show cards by what they are, not by
+  the template's statuses, and come with no cards. A board starts wide enough for every column side by side at
+  its narrowest (220px a slot, with the gaps between), never narrower than its default, so no new board scrolls. Archive and All Cards boards show cards by what they are, not by
   status, and keep their columns.
 - **Voting** and **Hide writing** come with a board's template (the Retro's are on); they have no menu control.
 
@@ -151,7 +152,10 @@ In Plan mode:
   - **Main column**: the title, large, then the type's tabs (see [Item types](item-types.md)) and the fields
     of the chosen tab. The **Description** is rich text: bold, italic, underline, strikethrough, size, colour,
     headings and links, and **bullet** and **numbered lists** from their own toolbar buttons, from a toolbar over
-    it or the usual shortcuts.
+    it or the usual shortcuts. Enter on a list item starts the next one; Enter on an empty item ends the list.
+    It reads as text until clicked (hovering shows **Edit**); an empty one is a dashed **Add a description**
+    invitation. Editing, it sits on a raised surface with the shortcuts beneath and **Saving…** then **Saved**;
+    focus leaving it, or Escape, returns it to reading.
   - **Details panel** on the right: the fields in no tab, as label and value rows (Status first, as a coloured
     picker), then who made the item and who last changed it.
   - **On a phone** it is a sheet of one column, as tall as a sheet goes (85% of the screen): the title, then a tab bar whose first tab is

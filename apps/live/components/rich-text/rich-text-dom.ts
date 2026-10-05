@@ -231,6 +231,19 @@ export function offsetsToDomRange(editorEl: HTMLElement, start: number, end: num
  * the plain-text-length invariant holds. Programmatic, so the caller must
  * re-sync runs afterwards (no input event fires).
  */
+// The editor's text on the caret's line, up to the caret ('' with no caret in it).
+export function lineBeforeCaret(root: HTMLElement | null): string {
+  const sel = window.getSelection();
+  if (!root || !sel || sel.rangeCount === 0) return '';
+  const caret = sel.getRangeAt(0);
+  if (!root.contains(caret.startContainer)) return '';
+  const before = document.createRange();
+  before.setStart(root, 0);
+  before.setEnd(caret.startContainer, caret.startOffset);
+  const text = before.toString();
+  return text.slice(text.lastIndexOf('\n') + 1);
+}
+
 export function insertTextAtCaret(text: string): void {
   const sel = window.getSelection();
   if (!sel || sel.rangeCount === 0) return;

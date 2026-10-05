@@ -41,7 +41,8 @@ import { planOwnColours, planPalette } from './plan-palette';
 const PLAN_BOARD_RADIUS_PX = 12;
 
 // Each column is at least this wide (blueprint DEFAULTS D7); a narrower board scrolls sideways.
-export const PLAN_COLUMN_MIN_PX = 220;
+export { PLAN_COLUMN_MIN_PX } from '@livediagram/items';
+import { PLAN_COLUMN_MIN_PX } from '@livediagram/items';
 
 const stop = (e: { stopPropagation: () => void }) => e.stopPropagation();
 

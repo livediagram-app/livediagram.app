@@ -32,9 +32,12 @@ export function PlanFirstColumn({
         className="flex w-full max-w-sm flex-col items-center gap-3 rounded-xl border-2 border-dashed px-5 py-6 text-center"
         style={{ borderColor: palette.border, color: palette.muted }}
       >
-        <p className="text-[14px] font-semibold" style={{ color: palette.text }}>
-          No columns yet
-        </p>
+        <div className="flex items-center gap-1.5" onPointerDown={stop}>
+          <p className="text-[14px] font-semibold" style={{ color: palette.text }}>
+            No columns yet
+          </p>
+          <HelpArticleLink article="planBoards" variant="icon" />
+        </div>
         {canEdit ? (
           <>
             <p className="text-[12px]">Name the first stage your cards move through.</p>
@@ -73,9 +76,6 @@ export function PlanFirstColumn({
         ) : (
           <p className="text-[12px]">Someone who can edit the board names its first column.</p>
         )}
-        <span onPointerDown={stop}>
-          <HelpArticleLink article="planBoards" variant="text" />
-        </span>
       </div>
     </div>
   );

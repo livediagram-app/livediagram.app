@@ -9,8 +9,8 @@
 // receives the current value through `onChange`.
 
 import { listStyleOfText } from '@/components/rich-text/block-type';
-import { insertTextAtCaret } from '@/components/rich-text/rich-text-dom';
-import { type RunBoolKey, type TextRun } from '@livediagram/document';
+import { insertTextAtCaret, lineBeforeCaret } from '@/components/rich-text/rich-text-dom';
+import { listEnter, type RunBoolKey, type TextRun } from '@livediagram/document';
 import { NOTE_BASE_PX } from './note-run-style';
 import { NoteFormatToolbar } from './NoteFormatToolbar';
 import { useNoteRichTextSession } from './useNoteRichTextSession';
@@ -25,6 +25,7 @@ export function NoteRichTextEditor({
   placeholder = 'Add a note for this element…',
   surfaceClassName = 'max-h-96 min-h-44 resize-y',
   note = true,
+  autoFocus,
 }: {
   initialRuns: TextRun[];
   onChange: (plain: string, runs: TextRun[]) => void;
@@ -40,6 +41,8 @@ export function NoteRichTextEditor({
   surfaceClassName?: string;
   // A note: it opens focused and its formatting counts as note use. False for an item's description.
   note?: boolean;
+  // Opens focused (a note always does; a description does once you choose to edit it).
+  autoFocus?: boolean;
 }) {
   const {
     editorRef,
@@ -51,7 +54,12 @@ export function NoteRichTextEditor({
     applyList,
     applyHeading,
     applyLink,
-  } = useNoteRichTextSession({ initialRuns, onChange, trackFormats: note, autoFocus: note });
+  } = useNoteRichTextSession({
+    initialRuns,
+    onChange,
+    trackFormats: note,
+    autoFocus: autoFocus ?? note,
+  });
 
   return (
     <div className="flex flex-col gap-1.5">
@@ -59,7 +67,17 @@ export function NoteRichTextEditor({
         active={active}
         listStyle={listStyleOfText(liveText)}
         onToggle={onToggle}
-        onApplyList={applyList}
+        onApplyList={(style) => {
+          applyList(style);
+          // The list applies to the line and leaves part of it selected; carry on typing at the end of the
+          // line rather than over the selection.
+          requestAnimationFrame(() => {
+            const sel = window.getSelection();
+            if (!sel || sel.rangeCount === 0) return;
+            sel.collapseToEnd();
+            sel.modify('move', 'forward', 'lineboundary');
+          });
+        }}
         onApplyHeading={applyHeading}
         onApplyLink={applyLink}
         listButtons={!note}
@@ -113,7 +131,11 @@ export function NoteRichTextEditor({
             // so it survives read-back and keeps plain-text length == DOM
             // textContent length.
             e.preventDefault();
-            insertTextAtCaret('\n');
+            // A list carries on (or ends on an empty item); anything else breaks the line.
+            const { insert, drop } = listEnter(lineBeforeCaret(editorRef.current));
+            const sel = window.getSelection();
+            for (let k = 0; k < drop; k++) sel?.modify('extend', 'backward', 'character');
+            insertTextAtCaret(insert);
             handleInput();
           }
         }}
