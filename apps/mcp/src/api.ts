@@ -1,107 +1,66 @@
-// Thin client for the api worker over the service binding (docs/specs/015-api/mcp-server.md §2). Every
-// call forwards the caller's Bearer lvd_ token; the api resolves it to the
-// owning account and applies the SAME authorization every route already
-// enforces, so the MCP needs no special privilege and adds no business logic.
+// Thin client for the api worker over the service binding (docs/specs/015-api/mcp-server.md §2), over the
+// shared `@livediagram/api-client`. Every call forwards the caller's Bearer lvd_ token; the api resolves it
+// to the owning account and applies the SAME authorization every route already enforces, so the MCP needs
+// no special privilege and adds no business logic.
+import { ApiError, createApiClient, postEvents, type ApiClient } from '@livediagram/api-client';
 import { errorTypeToken } from '@livediagram/api-schema';
 import type { Env } from './env';
 import { keepAlive } from './request-scope';
 import { currentTool } from './tool-scope';
 
-export class ApiError extends Error {
-  readonly status: number;
-  readonly body: string;
-  constructor(status: number, body: string) {
-    super(`api ${status}: ${body}`);
-    this.name = 'ApiError';
-    this.status = status;
-    this.body = body;
-  }
+export { ApiError };
+
+// Service-binding requests ignore the host; the path is what the api routes on (it dispatches on the
+// segment after `/api`). A stable internal host keeps logs readable.
+const API_BASE = 'https://livediagram-api/api';
+
+// The client for one caller: their token, and failures reported as the running tool's (docs/specs/015-api/mcp-server.md §4.12).
+export function clientFor(env: Env, token: string): ApiClient {
+  return createApiClient({
+    baseUrl: API_BASE,
+    fetch: (request) => env.API.fetch(request),
+    headers: () => ({ Authorization: `Bearer ${token}` }),
+    onFailure: (kind) => reportApiFailure(env, kind),
+  });
 }
 
-// Service-binding requests ignore the host; the path is what the api routes on
-// (it dispatches on the segment after `/api`). A stable internal host keeps
-// logs readable.
-function apiUrl(path: string): string {
-  return `https://livediagram-api/api${path}`;
-}
-
-export async function apiFetch(
+export function apiFetch(
   env: Env,
   token: string,
   path: string,
   init: RequestInit = {},
 ): Promise<Response> {
-  const headers = new Headers(init.headers);
-  headers.set('Authorization', `Bearer ${token}`);
-  if (init.body && !headers.has('Content-Type')) headers.set('Content-Type', 'application/json');
-  return env.API.fetch(new Request(apiUrl(path), { ...init, headers }));
+  return clientFor(env, token).fetch(path, init);
 }
 
-// Fire-and-forget anonymous telemetry to the api's public /api/events (docs/specs/017-telemetry/telemetry.md).
-// No token: the ingest endpoint is unauthenticated and only stores the closed
-// three-field vocabulary. Never awaited and never throws into the tool, but
-// handed to the request's waitUntil (request-scope.ts) so the runtime can't
-// cancel it when the response goes out; a worker-to-worker call sends no
-// Origin header, so the same-origin guard passes. Off unless the api has
-// TELEMETRY_ENABLED.
+// Fire-and-forget anonymous telemetry to the api's public /api/events (docs/specs/017-telemetry/telemetry.md),
+// handed to the request's waitUntil (request-scope.ts) so the runtime can't cancel it when the response
+// goes out. The internal key keeps the MCP out of the anonymous per-IP rate-limit bucket (issue #36): a
+// service binding carries no CF-Connecting-IP. Off unless the api has TELEMETRY_ENABLED.
 export function postTelemetry(env: Env, category: string, action: string, type: string): void {
-  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-  // Identifies us as an internal caller so the api worker doesn't put us in
-  // the anonymous per-IP rate-limit bucket (docs/specs/017-telemetry/telemetry.md, issue #36). A service
-  // binding carries no CF-Connecting-IP, so without this every MCP tool call
-  // in the world contended for one 120/min key and the overflow was dropped
-  // as a 204 we can't even see. Optional on both sides.
-  if (env.INTERNAL_EVENTS_KEY) headers['X-Internal-Events-Key'] = env.INTERNAL_EVENTS_KEY;
-  let post: Promise<unknown>;
-  try {
-    post = env.API.fetch(
-      new Request(apiUrl('/events'), {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({ events: [{ category, action, type }] }),
-      }),
-    ).catch(() => {});
-  } catch {
-    return;
-  }
-  keepAlive(post);
+  const headers: Record<string, string> = env.INTERNAL_EVENTS_KEY
+    ? { 'X-Internal-Events-Key': env.INTERNAL_EVENTS_KEY }
+    : {};
+  keepAlive(
+    postEvents(
+      API_BASE,
+      (request) => env.API.fetch(request),
+      [{ category, action, type }],
+      headers,
+    ),
+  );
 }
 
-// Fetch + parse JSON, throwing ApiError on a non-2xx so tools surface a clear,
-// model-correctable message. A genuine failure — the api worker 5xx'd, or the
-// request never completed — is reported to the Error telemetry category
-// (docs/specs/015-api/mcp-server.md §4.12) so the public Exceptions dashboard shows where the MCP
-// breaks. A 4xx is NOT reported: it's expected model-correctable input (a bad
-// id, malformed elements), not a fault, and would only flood the dashboard.
-async function apiOk(
-  env: Env,
-  token: string,
-  path: string,
-  init: RequestInit = {},
-): Promise<Response> {
-  let res: Response;
-  try {
-    res = await apiFetch(env, token, path, init);
-  } catch (err) {
-    // The request never completed (service binding down, network fault): a real
-    // failure, not model-correctable. Report as an internal error, then rethrow.
-    reportApiFailure(env, 'Internal');
-    throw err;
-  }
-  if (!res.ok) {
-    if (res.status >= 500) reportApiFailure(env, `Http${res.status}`);
-    throw new ApiError(res.status, (await res.text().catch(() => '')).slice(0, 500));
-  }
-  return res;
-}
-
-export async function apiJson<T>(
+// Fetch + parse JSON, throwing ApiError on a non-2xx so tools surface a clear, model-correctable message.
+// A 5xx or a request that never completed is reported to the Error category; a 4xx is model-correctable
+// input, never reported.
+export function apiJson<T>(
   env: Env,
   token: string,
   path: string,
   init: RequestInit = {},
 ): Promise<T> {
-  return (await (await apiOk(env, token, path, init)).json()) as T;
+  return clientFor(env, token).json<T>(path, init);
 }
 
 // A text answer (a document view, docs/specs/024-agents/document-views.md) with its ETag, failing exactly
@@ -111,13 +70,12 @@ export async function apiText(
   token: string,
   path: string,
 ): Promise<{ text: string; etag: string | null }> {
-  const res = await apiOk(env, token, path);
-  return { text: await res.text(), etag: res.headers.get('ETag') };
+  const { body, etag } = await clientFor(env, token).text(path);
+  return { text: body, etag };
 }
 
-// One MCP-side api failure to the Error category, labelled with the tool that
-// was running (`Http503.UpdateDocument`, `Internal.FindDocuments`; docs/specs/017-telemetry/telemetry.md), so
-// the Exceptions dashboard says which tool broke, not only that one did.
+// One MCP-side api failure to the Error category, labelled with the tool that was running
+// (`Http503.UpdateDocument`, `Internal.FindDocuments`; docs/specs/017-telemetry/telemetry.md).
 export function reportApiFailure(env: Env, kind: string): void {
   postTelemetry(env, 'Error', 'Api', errorTypeToken(kind, currentTool()));
 }

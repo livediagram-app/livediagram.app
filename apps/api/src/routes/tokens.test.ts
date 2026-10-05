@@ -11,6 +11,7 @@ const { db } = vi.hoisted(() => ({
     mintApiToken: vi.fn(),
     revokeApiToken: vi.fn(),
     retractTimelineWarning: vi.fn(),
+    getParticipant: vi.fn(),
   },
 }));
 vi.mock('../db', () => db);
@@ -204,5 +205,78 @@ describe('POST /api/tokens — the name the caller asks for', () => {
       { id: 'tok_x', name: 'API token' },
       'user_1',
     );
+  });
+});
+
+describe('/api/tokens/current (docs/specs/015-api/blueprints/cli.md "Token self-service")', () => {
+  const live = {
+    id: 'tok_1',
+    name: 'livediagram CLI',
+    expiresAt: 99,
+    createdAt: 1,
+    lastUsedAt: null,
+  };
+  const tokenCtx = (method: string, readOnly = false, waitUntil?: (p: Promise<unknown>) => void) =>
+    makeTestRouteContext(method, '/api/tokens/current', {
+      clerkUserId: null,
+      owner: 'user_1',
+      token: { id: 'tok_1', readOnly },
+      ...(waitUntil ? { waitUntil } : {}),
+    });
+
+  it('reads the token the request presented, its account and role', async () => {
+    db.listApiTokensByOwner.mockResolvedValue([live]);
+    db.getParticipant.mockResolvedValue({ id: 'user_1', name: 'Webber' });
+    const res = await handleTokens(tokenCtx('GET', true));
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({
+      accountId: 'user_1',
+      accountName: 'Webber',
+      tokenId: 'tok_1',
+      tokenName: 'livediagram CLI',
+      role: 'read-only',
+      expiresAt: 99,
+    });
+    db.getParticipant.mockResolvedValue(null);
+    expect(
+      (await (await handleTokens(tokenCtx('GET'))).json()) as { accountName: null; role: string },
+    ).toMatchObject({
+      accountName: null,
+      role: 'full',
+    });
+  });
+
+  it('revokes itself, recording it', async () => {
+    db.listApiTokensByOwner.mockResolvedValue([live]);
+    const work: Promise<unknown>[] = [];
+    const res = await handleTokens(tokenCtx('DELETE', false, (p) => void work.push(p)));
+    expect(res.status).toBe(204);
+    expect(db.revokeApiToken).toHaveBeenCalledWith(expect.anything(), 'user_1', 'tok_1');
+    await Promise.all(work);
+    expect(timeline.recordTokenRevoked).toHaveBeenCalled();
+    db.listApiTokensByOwner.mockResolvedValue([{ ...live, name: null }]);
+    await handleTokens(tokenCtx('DELETE', false, (p) => void work.push(p)));
+    await Promise.all(work);
+    expect(timeline.recordTokenRevoked).toHaveBeenLastCalledWith(
+      expect.anything(),
+      { id: 'tok_1', name: 'API token' },
+      'user_1',
+    );
+  });
+
+  it('answers not_a_token to a session, a guest, or a revoked token, and refuses other methods', async () => {
+    const session = await handleTokens(makeCtx('GET', '/api/tokens/current'));
+    expect(session.status).toBe(403);
+    expect(await session.json()).toEqual({ error: 'not_a_token' });
+    const guest = makeTestRouteContext('GET', '/api/tokens/current', {
+      clerkUserId: null,
+      owner: null,
+      token: { id: 'tok_1' },
+    });
+    expect((await handleTokens(guest)).status).toBe(403);
+    db.listApiTokensByOwner.mockResolvedValue([]);
+    expect((await handleTokens(tokenCtx('GET'))).status).toBe(404);
+    db.listApiTokensByOwner.mockResolvedValue([live]);
+    expect((await handleTokens(tokenCtx('POST'))).status).toBe(405);
   });
 });

@@ -530,6 +530,14 @@ export type AiRequest = {
 // Response body for GET /api/capabilities.
 export type CapabilitiesResponse = {
   aiEnabled: boolean;
+  // For the CLI (docs/specs/015-api/blueprints/cli.md "Capabilities"), each optional so an older worker parses:
+  // where the api answers, whether sign-in exists, the OAuth server, the stored document format, and the
+  // oldest CLI accepted for writes.
+  apiBase?: string;
+  authEnabled?: boolean;
+  oauthIssuer?: string;
+  documentFormat?: number;
+  cli?: { minVersion: string };
   // True only when the deployment has Resend configured (docs/specs/014-identity/transactional-email.md). The
   // live app hides the email-notification toggles (docs/specs/014-identity/profile-and-email-notifications.md) when false,
   // since they'd be inert without an email backend. Optional so an older
@@ -606,3 +614,15 @@ export * from './lint';
 export * from './ref-errors';
 // Returning visitor (docs/specs/019-marketing/returning-visitor.md).
 export * from './recent-diagrams';
+
+// GET /api/tokens/current (docs/specs/015-api/blueprints/cli.md "Token self-service"): the token a request
+// presented, for `livediagram auth status`. `role` is `full` or `read-only`.
+export type CurrentTokenResponse = {
+  accountId: string;
+  accountName: string | null;
+  tokenId: string;
+  tokenName: string | null;
+  role: 'full' | 'read-only';
+  expiresAt: number | null;
+};
+export * from './api-token-format';
