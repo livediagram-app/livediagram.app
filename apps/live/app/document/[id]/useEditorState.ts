@@ -1967,6 +1967,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     commit,
     select: setSelectedId,
     announce,
+    addItemSlide: slideDeck.newItemSlide,
   });
 
   // Undo / redo handlers. See useEditorHistory.

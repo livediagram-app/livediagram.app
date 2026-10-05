@@ -276,3 +276,27 @@ describe('page slides (docs/specs/007-editor/illustrate-pages.md "Slides")', () 
     expect(slideFrame({ ...slide, pageId: 'gone' }, tab)).toBeNull();
   });
 });
+
+// docs/specs/012-collaboration/presentation-mode.md "Item slides".
+describe('item slides', () => {
+  it('show no canvas elements and frame nothing', () => {
+    const t = tab('t1', [shape('a')]);
+    const s = slide({ itemId: 'it-1', elementIds: ['a'] });
+    expect(resolveSlide(s, t)).toEqual([]);
+    expect(slideFrame(s, t)).toBeNull();
+  });
+
+  it('read back with their item, and an empty item id is dropped', () => {
+    const stored = JSON.stringify({
+      decks: [
+        {
+          slides: [
+            { id: 'a', tabId: 't1', elementIds: [], itemId: 'it-1' },
+            { id: 'b', tabId: 't1', elementIds: [], itemId: '' },
+          ],
+        },
+      ],
+    });
+    expect(firstDeck(parseStoredPresentation(stored)).slides.map((s) => s.id)).toEqual(['a']);
+  });
+});

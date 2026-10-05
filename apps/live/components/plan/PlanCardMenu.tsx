@@ -1,12 +1,13 @@
 'use client';
 
 // A board card's right-click menu (docs/specs/025-plan/plan-board.md "Working on a board"): Open,
-// Duplicate, Move to another column, and Delete, at the click and clamped to the window. Someone who
+// Duplicate, Add to Slides, Move to another column, and Delete, at the click and clamped to the window. Someone who
 // may only view gets Open alone. Built on the shared command menu, so the keyboard, focus and Escape
 // behave as every other menu does.
 import { useCallback, useEffect, useRef } from 'react';
 import { DuplicateIcon, MenuTreeContext, PencilIcon, TrashIcon, useMenu } from '@livediagram/ui';
 import { MenuActionRow, MenuGroupSeparator, MenuHeader } from '@/components/primitives/PortalMenu';
+import { SlideDeckIcon } from '@/components/palette/palette-icons';
 import { itemTitle, type PlanBoardSetup } from '@livediagram/items';
 import { Portal } from '@/components/primitives/Portal';
 import type { PlanContextValue } from './PlanContext';
@@ -24,6 +25,7 @@ export function PlanCardMenu({
   onDuplicate,
   onMove,
   onDelete,
+  onAddSlide,
   onClose,
 }: {
   // Viewport coordinates of the right-click.
@@ -37,6 +39,8 @@ export function PlanCardMenu({
   onDuplicate: () => void;
   onMove: (status: string) => void;
   onDelete: () => void;
+  // The card as a slide of the deck; absent where there is no deck.
+  onAddSlide?: () => void;
   onClose: () => void;
 }) {
   const ref = useRef<HTMLDivElement | null>(null);
@@ -58,7 +62,7 @@ export function PlanCardMenu({
     return () => window.removeEventListener('pointerdown', onDown, true);
   }, [onClose]);
 
-  const rows = canEdit ? 5 + columns.length : 2;
+  const rows = canEdit ? 6 + columns.length : 2;
   const left = Math.max(EDGE, Math.min(at.x, window.innerWidth - WIDTH - EDGE));
   const top = Math.max(EDGE, Math.min(at.y, window.innerHeight - rows * ROW_PX - EDGE));
   const act = (fn: () => void) => () => {
@@ -93,6 +97,13 @@ export function PlanCardMenu({
                 icon={<DuplicateIcon />}
                 onClick={act(onDuplicate)}
               />
+              {onAddSlide ? (
+                <MenuActionRow
+                  label="Add to Slides"
+                  icon={<SlideDeckIcon />}
+                  onClick={act(onAddSlide)}
+                />
+              ) : null}
               {columns.length > 0 ? (
                 <>
                   <MenuGroupSeparator />
@@ -149,6 +160,14 @@ export function PlanCardMenuHost({
         .filter((c) => c.status !== status)
         .map((c) => ({ status: c.status, name: c.name, ...(c.color ? { color: c.color } : {}) }))}
       onOpen={() => plan.openItem(item.id)}
+      {...(plan.addItemSlide
+        ? {
+            onAddSlide: () => {
+              plan.addItemSlide?.(item.id);
+              plan.announce('Card added to the slides');
+            },
+          }
+        : {})}
       onDuplicate={() => {
         // A copy right after the card, without its votes: they were for the original.
         const { votes: _votes, ...fields } = item.fields;

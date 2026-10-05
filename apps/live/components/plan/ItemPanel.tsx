@@ -195,7 +195,7 @@ export function ItemPanel({
       ) : current.fields.length > 0 ? (
         current.fields.map(mainField)
       ) : (
-        <p className="py-6 text-center text-[13px] text-slate-400 dark:text-slate-500">
+        <p className="py-6 text-center text-[13px] text-slate-500 dark:text-slate-400">
           Nothing on this tab yet. Edit the card type to add fields to it.
         </p>
       )}

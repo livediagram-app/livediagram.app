@@ -63,7 +63,7 @@ export function ItemDescription({
         className="text-slate-700 dark:text-slate-200"
       />
     ) : (
-      <p className="text-[13px] text-slate-400 dark:text-slate-500">No description</p>
+      <p className="text-[13px] text-slate-500 dark:text-slate-400">No description</p>
     );
   }
   return (

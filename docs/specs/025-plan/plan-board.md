@@ -104,6 +104,7 @@ In Plan mode:
   `!medium`, `!low`) sets priority, `~3` estimates, and a leading `note:` (any type name) sets the type, each
   shown as a chip as it is recognised. Escape or an outside press closes it.
 - **Right-click a card** for its menu: **Open**, **Duplicate** (a copy right after it, without its votes),
+  **Add to Slides** (an item slide, [Presentation mode](../012-collaboration/presentation-mode.md#item-slides)),
   **Move to** another column of the board, and **Delete** (undo brings it back). Someone who may only view gets
   Open alone; a face-down card has no menu.
 - **Open an item**: clicking a card opens the **item panel**, a wide modal over the canvas. Every field of the

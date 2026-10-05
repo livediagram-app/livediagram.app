@@ -11,7 +11,12 @@
 
 import { useEffect, useRef, useState } from 'react';
 
+import { ITEM_TYPES } from '@livediagram/items';
 import { PresentationOverlay } from '@/components/canvas/PresentationOverlay';
+import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { usePlan } from '@/components/plan/PlanContext';
+import { ItemSlideView } from '@/components/plan/ItemSlideView';
+import { planPalette } from '@/components/plan/plan-palette';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { slideDurationMs } from '@/lib/presentation-config';
 import { useLatest } from '@/hooks/ui/useLatest';
@@ -24,6 +29,8 @@ const SURFACE_SELECTOR = '[data-canvas-a11y-root]';
 // moment the animation ends rather than being left on the node.
 export function PresentationHost() {
   const { slideDeck, canvasTool, setCanvasTool } = useEditorContext();
+  const plan = usePlan();
+  const surface = useCanvasSurface();
   const at = slideDeck?.presentingAt ?? null;
   const [direction, setDirection] = useState<'forward' | 'back'>('forward');
   const prevAt = useRef<number | null>(null);
@@ -98,17 +105,29 @@ export function PresentationHost() {
   );
 
   if (!slideDeck || at === null || !config) return null;
+  // An item slide is the card itself, drawn over the canvas (docs/specs/012-collaboration/presentation-mode.md
+  // "Item slides").
+  const itemId = slideDeck.runnable[at]?.slide.itemId;
   return (
-    <PresentationOverlay
-      canvasTool={canvasTool}
-      onSetCanvasTool={setCanvasTool}
-      steps={slideDeck.runnable}
-      at={at}
-      onGo={(next) => slideDeck.setPresentingAt(next)}
-      onExit={slideDeck.exitPresentation}
-      direction={direction}
-      config={config}
-      onChangeConfig={slideDeck.updateConfig}
-    />
+    <>
+      {itemId ? (
+        <ItemSlideView
+          item={plan?.items.get(itemId)}
+          types={plan?.types ?? ITEM_TYPES}
+          palette={planPalette(surface, {})}
+        />
+      ) : null}
+      <PresentationOverlay
+        canvasTool={canvasTool}
+        onSetCanvasTool={setCanvasTool}
+        steps={slideDeck.runnable}
+        at={at}
+        onGo={(next) => slideDeck.setPresentingAt(next)}
+        onExit={slideDeck.exitPresentation}
+        direction={direction}
+        config={config}
+        onChangeConfig={slideDeck.updateConfig}
+      />
+    </>
   );
 }

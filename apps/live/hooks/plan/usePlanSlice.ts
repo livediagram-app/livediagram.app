@@ -35,12 +35,13 @@ export function usePlanSlice(opts: {
   commit: (mapElements: (els: Element[]) => Element[]) => void;
   select: (elementId: string | null) => void;
   announce: (message: string) => void;
+  addItemSlide?: (itemId: string) => void;
   // Tells the room which card this person is dragging or reading (usePlanPresence).
   publishPresence?: (itemId: string | null, state: 'drag' | 'view') => void;
 }) {
   const { planItems, itemTypes, editorMode, canEdit, canVote, participants, presence } = opts;
   const { commit, select } = opts;
-  const { announce, publishPresence } = opts;
+  const { announce, publishPresence, addItemSlide } = opts;
   const [openItemId, setOpenItemId] = useState<string | null>(null);
   // The type the type editor is open on, or 'new' (docs/specs/025-plan/item-types.md "Editing a type").
   const [editingTypeId, setEditingTypeId] = useState<string | 'new' | null>(null);
@@ -228,6 +229,7 @@ export function usePlanSlice(opts: {
       removeCard,
       announce,
       setDragging,
+      ...(addItemSlide ? { addItemSlide } : {}),
     }),
     [
       planItems.items,
@@ -253,6 +255,7 @@ export function usePlanSlice(opts: {
       removeCard,
       announce,
       setDragging,
+      addItemSlide,
     ],
   );
 

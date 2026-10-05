@@ -61,6 +61,9 @@ export type PlanContextValue = {
   removeCard: (cardElementId: string) => void;
   announce: (message: string) => void;
   setDragging: (itemId: string | null) => void;
+  // A card as a slide of the deck (docs/specs/012-collaboration/presentation-mode.md "Item slides");
+  // absent where there is no deck to add to.
+  addItemSlide?: (itemId: string) => void;
 };
 
 const PlanContext = createContext<PlanContextValue | undefined>(undefined);

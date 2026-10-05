@@ -18,6 +18,8 @@
 
 import { useCallback, useEffect, useEffectEvent, useRef, useState } from 'react';
 import { announce } from '@/lib/announcer';
+import { itemTitle } from '@livediagram/items';
+import { usePlan } from '@/components/plan/PlanContext';
 
 import { slideName, type BoxedElement, type Slide, type Tab } from '@livediagram/document';
 
@@ -59,6 +61,8 @@ export function PresentationOverlay({
   config: PresentationConfig;
   onChangeConfig: (patch: Partial<PresentationConfig>) => void;
 }) {
+  // An item slide is named by its card (docs/specs/012-collaboration/presentation-mode.md "Item slides").
+  const plan = usePlan();
   const [notesOpen, setNotesOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [jumpOpen, setJumpOpen] = useState(false);
@@ -383,7 +387,12 @@ export function PresentationOverlay({
         <PresentationHud
           position={at + 1}
           total={steps.length}
-          name={slideName(step.slide, step.index)}
+          name={
+            step.slide.name ??
+            (step.slide.itemId && plan?.items.get(step.slide.itemId)
+              ? itemTitle(plan.items.get(step.slide.itemId)!)
+              : slideName(step.slide, step.index))
+          }
           notes={step.slide.notes}
           notesOpen={notesVisible}
           onToggleNotes={() => {

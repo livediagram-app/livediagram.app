@@ -174,6 +174,18 @@ export function useSlideDeck({
     [activeTabId, commitDeck, isReadOnly],
   );
 
+  // A Plan card as a slide (docs/specs/012-collaboration/presentation-mode.md "Item slides"): the slide
+  // is the item, presented as a card and resolved live. It belongs to the tab the card is on.
+  const newItemSlide = useCallback(
+    (itemId: string) => {
+      if (isReadOnly) return;
+      const slide: Slide = { id: crypto.randomUUID(), tabId: activeTabId, elementIds: [], itemId };
+      commitDeck((prev) => ({ slides: [...prev.slides, slide] }));
+      track('UI', 'Added', 'ItemSlide');
+    },
+    [activeTabId, commitDeck, isReadOnly],
+  );
+
   const addSelectionToSlide = useCallback(
     (slideId: string) => {
       const ids = idsOf(readSelection());
@@ -398,6 +410,7 @@ export function useSlideDeck({
     thumbs,
     newSlideFromSelection,
     newPageSlide,
+    newItemSlide,
     addSelectionToSlide,
     removeFromSlide,
     renameSlide,

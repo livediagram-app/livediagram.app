@@ -33,6 +33,12 @@ export type Slide = {
    * `elementIds` is empty and ignored. Added from the slide panel's page picker.
    */
   pageId?: string;
+  /**
+   * An item slide (docs/specs/012-collaboration/presentation-mode.md "Item slides"): the slide IS this Plan
+   * item, presented full screen as a card, resolved live. `elementIds` is empty and ignored; `tabId` is
+   * the tab the card was on. Added from a card's menu.
+   */
+  itemId?: string;
   /** What you mean to SAY over this slide. The slide's own, not any element's. */
   notes?: string;
   /**
@@ -86,7 +92,7 @@ export function slideName(slide: Slide, index: number): string {
  * restack the drawing.
  */
 export function resolveSlide(slide: Slide, tab: Tab | undefined): Element[] {
-  if (!tab) return [];
+  if (!tab || slide.itemId) return [];
   if (slide.pageId) {
     const pages = layOutIllustratePages(illustratePagesOf(tab));
     const on = elementIdsOnPage(tab.elements, pages, slide.pageId);
@@ -227,6 +233,9 @@ function isSlide(value: unknown): value is Slide {
   if (s.notes !== undefined && typeof s.notes !== 'string') return false;
   if (s.hidden !== undefined && typeof s.hidden !== 'boolean') return false;
   if (s.pageId !== undefined && (typeof s.pageId !== 'string' || s.pageId.length === 0)) {
+    return false;
+  }
+  if (s.itemId !== undefined && (typeof s.itemId !== 'string' || s.itemId.length === 0)) {
     return false;
   }
   return true;
