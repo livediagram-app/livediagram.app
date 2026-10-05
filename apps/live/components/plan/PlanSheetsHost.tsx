@@ -5,7 +5,7 @@
 // and the set-up its board.
 import { useMemo } from 'react';
 import type { Element } from '@livediagram/document';
-import { normaliseBoardSetup, type PlanBoardSetup } from '@livediagram/items';
+import { isArchived, normaliseBoardSetup, type PlanBoardSetup } from '@livediagram/items';
 import type { PlanSlice } from '@/hooks/plan/usePlanSlice';
 import { ItemPanel } from './ItemPanel';
 import { ItemTypeEditor } from './ItemTypeEditor';
@@ -89,6 +89,13 @@ export function PlanSheetsHost({
         onPatch={(patch) => ctx.patchItem(item.id, patch)}
         onType={(type) => ctx.patchItem(item.id, { type })}
         onDelete={() => ctx.deleteItem(item.id)}
+        onArchive={() => {
+          const was = isArchived(item);
+          ctx.patchItem(item.id, was ? { clear: ['archived'] } : { set: { archived: true } });
+          ctx.announce(was ? 'Card restored' : 'Card archived');
+          if (was) track('Plan', 'Restored', 'Card');
+          else track('Plan', 'Moved', 'Archive');
+        }}
         onClose={plan.closeItem}
       />
     );

@@ -84,6 +84,19 @@ Five built-in types, each with a glyph, an accent colour and the fields it offer
   and carry its votes; the key is honoured while it is free.
 - Every write answers with the item as stored.
 
+## Archive
+
+- **Archiving** an item keeps it but takes it off every board: it sets `archived: true` (a flag: set, or the
+  key removed). Its status stays, for when it comes back. It is undoable like any change.
+- It is done from a card's menu (**Archive**), the item panel's header (**Archive**), or by dragging a card onto
+  an **Archive board**. **Restore** (the same places on an archived card), or dragging the card off an Archive
+  board onto another, clears the flag; dragged, the card takes the column it lands in.
+- An ordinary board leaves archived items out altogether: not in its columns, its counts, its widgets or its
+  "not on this board" list.
+- An **Archive board** (the Boards category's Archive tile) shows only archived items, every one in its single
+  **Archived** column, in Compact cards. It takes no new cards (no Add Card, and palette cards are refused).
+- Archive and Restore send `Plan · Moved · Archive` and `Plan · Restored · Card`.
+
 ## Who may do what
 
 Items follow the document's access ([Auth and guest access](../014-identity/auth-and-guest-access.md)):

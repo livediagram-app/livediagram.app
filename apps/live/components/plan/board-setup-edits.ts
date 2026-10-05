@@ -38,6 +38,8 @@ export const CARD_FIELD_LABELS: Record<CardField, string> = {
   due: 'Due Date',
   votes: 'Votes',
   checklist: 'Checklist',
+  description: 'Description',
+  parent: 'Project',
 };
 
 export const COLUMN_NAME_MAX = 40;

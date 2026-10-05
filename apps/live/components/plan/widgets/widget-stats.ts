@@ -1,8 +1,11 @@
 // The numbers the board widgets read (docs/specs/025-plan/board-widgets.md "Widget kinds"), from the
 // items the board shows (their status is one of its columns). Pure, so each rule is tested on its own.
 import {
+  PRIORITIES,
   itemAssignee,
   itemStatus,
+  itemVoteTotal,
+  type Priority,
   type BoardProjection,
   type Item,
   type ItemPerson,
@@ -11,6 +14,9 @@ import {
 
 // Days ahead that count as "due soon".
 export const DUE_SOON_DAYS = 7;
+// Days without a change before a card not yet done is stale.
+export const STALE_DAYS = 14;
+const DAY_MS = 86_400_000;
 
 export function boardItems(setup: PlanBoardSetup, items: Iterable<Item>): Item[] {
   const statuses = new Set(setup.columns.map((c) => c.status));
@@ -82,4 +88,62 @@ export function dueCounts(
     else if (due <= last) soon += 1;
   }
   return { overdue, soon };
+}
+
+function doneStatusOf(setup: PlanBoardSetup): string | undefined {
+  return setup.columns.find((c) => c.id === setup.doneColumnId)?.status;
+}
+
+// Estimate points on the board, and those in its done column.
+export function boardPoints(
+  setup: PlanBoardSetup,
+  items: readonly Item[],
+): { done: number; total: number; estimated: number } {
+  const doneStatus = doneStatusOf(setup);
+  let done = 0;
+  let total = 0;
+  let estimated = 0;
+  for (const it of items) {
+    const e = it.fields['estimate'];
+    if (typeof e !== 'number') continue;
+    estimated += 1;
+    total += e;
+    if (doneStatus && itemStatus(it) === doneStatus) done += e;
+  }
+  return { done, total, estimated };
+}
+
+// Cards per priority, most urgent first, leaving out the priorities nothing has.
+export function priorityCounts(items: readonly Item[]): { priority: Priority; count: number }[] {
+  return PRIORITIES.map((priority) => ({
+    priority,
+    count: items.filter((it) => it.fields['priority'] === priority).length,
+  })).filter((r) => r.count > 0);
+}
+
+export function unassignedCount(items: readonly Item[]): number {
+  return items.filter((it) => !itemAssignee(it)).length;
+}
+
+// The card with the most votes (the earliest made among equals), or none before anyone votes.
+export function topVoted(items: readonly Item[]): { item: Item; votes: number } | null {
+  let best: { item: Item; votes: number } | null = null;
+  for (const it of items) {
+    const votes = itemVoteTotal(it);
+    if (
+      votes > 0 &&
+      (!best || votes > best.votes || (votes === best.votes && it.key < best.item.key))
+    )
+      best = { item: it, votes };
+  }
+  return best;
+}
+
+// Cards not yet done that nobody has changed in STALE_DAYS.
+export function staleCount(setup: PlanBoardSetup, items: readonly Item[], now: Date): number {
+  const doneStatus = doneStatusOf(setup);
+  const before = now.getTime() - STALE_DAYS * DAY_MS;
+  return items.filter(
+    (it) => it.updatedAt < before && !(doneStatus && itemStatus(it) === doneStatus),
+  ).length;
 }

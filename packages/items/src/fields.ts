@@ -36,7 +36,8 @@ export type ItemFieldKind =
   | 'date'
   | 'checklist'
   | 'item-ref'
-  | 'votes';
+  | 'votes'
+  | 'flag';
 
 export const KNOWN_FIELDS: Readonly<Record<ItemFieldId, ItemFieldKind>> = {
   title: 'text',
@@ -50,6 +51,7 @@ export const KNOWN_FIELDS: Readonly<Record<ItemFieldId, ItemFieldKind>> = {
   checklist: 'checklist',
   parent: 'item-ref',
   votes: 'votes',
+  archived: 'flag',
 };
 
 export const PRIORITIES = ['urgent', 'high', 'medium', 'low'] as const;
@@ -178,6 +180,9 @@ function normaliseKnown(kind: ItemFieldKind, v: unknown): ItemFieldValue | undef
     }
     case 'item-ref':
       return isValidItemId(v) ? v : undefined;
+    // A flag is set (true) or cleared (the key removed); false is not stored.
+    case 'flag':
+      return v === true ? true : undefined;
   }
 }
 

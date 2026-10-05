@@ -697,7 +697,15 @@ export const PLAN_ITEMS_MOVED = chart(
   'Plan',
   'Moved',
   'Cards Moved',
-  'A card moved to another column, row or place on a Plan board.',
+  'A card moved to another column, row or place on a Plan board, or to the archive (Archive).',
+);
+
+export const PLAN_ITEMS_RESTORED = chart(
+  'Plan',
+  'Restored',
+  'Cards Restored',
+  'An archived card brought back onto the boards.',
+  { rising: 'neutral' },
 );
 
 export const PLAN_ITEMS_OPENED = chart(
@@ -746,6 +754,7 @@ export const PLAN_BOARDS: MetricStack = {
     PLAN_ITEMS_OPENED,
     PLAN_VOTES,
     PLAN_ITEMS_DELETED,
+    PLAN_ITEMS_RESTORED,
     PLAN_SETUP_CHANGED,
     PLAN_REVEALED,
   ],

@@ -53,6 +53,22 @@ apps/live/components/palette/palette-plan-tiles.tsx   a tile per kind, section `
   registered board, else the notice; places at the end.
 - Taking Filter off clears `quick.text`; taking Only Mine off clears `quick.mine`.
 
+## Narrowing and feedback
+
+- `QuickFilter` gains `person` (`UNASSIGNED = '-'` for nobody), `type`, `dueBy` (YYYY-MM-DD, inclusive) and
+  `priority`; `quickFilterMatches` applies each. `toggle(quick, key, value)` sets one or clears it when equal.
+- Item Count while `narrowed(quick)`: a button "`shown` of `total` · Show all" that sets `{}`.
+- Completion with no `doneColumnId` and `canEdit`: "Set Done Column" sets the last column's id (`DoneColumn`).
+- Reorder captures the pointer only once a press passes `REORDER_THRESHOLD_PX`, so a still press is a click on
+  the widget's control.
+- `placeWidget(kind, slot, { tap })` returns `added | moved | already | refused`; a kind the board has sets
+  `flashWidget` for `WIDGET_FLASH_MS` (1400 ms): a 2 px `palette.focus` ring, pulsing (none with reduced motion).
+  A tap on one it has returns `already`, said as "<Label> is already on this board".
+- New kinds and their stats (`widget-stats.ts`): `points` (`boardPoints`), `priorities` (`priorityCounts`),
+  `unassigned` (`unassignedCount`), `top-voted` (`topVoted`), `stale` (`staleCount`, `STALE_DAYS` 14). Presets
+  carry their own `widgets` (presets.ts); Blank keeps the default set.
+- Counts render through `CountBadge` (an 18 px pill with `text-optical-centre`), shared with column heads.
+
 ## Interfaces and contracts
 
 - Stored shape: `widgets` is an array of kind strings. `readBoardWidgets` drops unknown kinds and repeats; a

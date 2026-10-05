@@ -1,14 +1,16 @@
 'use client';
 
 // A board card's right-click menu (docs/specs/025-plan/plan-board.md "Working on a board"): Open,
-// Duplicate, Add to Slides, Move to another column, and Delete, at the click and clamped to the window. Someone who
+// Duplicate, Add to Slides, Move to another column, Archive (or Restore), and Delete, at the click and clamped to the window. Someone who
 // may only view gets Open alone. Built on the shared command menu, so the keyboard, focus and Escape
 // behave as every other menu does.
 import { useCallback, useEffect, useRef } from 'react';
 import { DuplicateIcon, MenuTreeContext, PencilIcon, TrashIcon, useMenu } from '@livediagram/ui';
 import { MenuActionRow, MenuGroupSeparator, MenuHeader } from '@/components/primitives/PortalMenu';
 import { SlideDeckIcon } from '@/components/palette/palette-icons';
-import { itemTitle, type PlanBoardSetup } from '@livediagram/items';
+import { isArchived, itemTitle, type PlanBoardSetup } from '@livediagram/items';
+import { PlanBoardTileArt } from './plan-tile-art';
+import { track } from '@/lib/telemetry';
 import { Portal } from '@/components/primitives/Portal';
 import type { PlanContextValue } from './PlanContext';
 import { VIEWPORT_EDGE_MARGIN as EDGE } from '@/lib/clamp-to-viewport';
@@ -26,6 +28,8 @@ export function PlanCardMenu({
   onMove,
   onDelete,
   onAddSlide,
+  archived = false,
+  onArchive,
   onClose,
 }: {
   // Viewport coordinates of the right-click.
@@ -41,6 +45,9 @@ export function PlanCardMenu({
   onDelete: () => void;
   // The card as a slide of the deck; absent where there is no deck.
   onAddSlide?: () => void;
+  // Archive (or, for an archived card, Restore): kept, but off every board but an Archive board.
+  archived?: boolean;
+  onArchive: () => void;
   onClose: () => void;
 }) {
   const ref = useRef<HTMLDivElement | null>(null);
@@ -62,7 +69,7 @@ export function PlanCardMenu({
     return () => window.removeEventListener('pointerdown', onDown, true);
   }, [onClose]);
 
-  const rows = canEdit ? 6 + columns.length : 2;
+  const rows = canEdit ? 7 + columns.length : 2;
   const left = Math.max(EDGE, Math.min(at.x, window.innerWidth - WIDTH - EDGE));
   const top = Math.max(EDGE, Math.min(at.y, window.innerHeight - rows * ROW_PX - EDGE));
   const act = (fn: () => void) => () => {
@@ -125,6 +132,11 @@ export function PlanCardMenu({
                 </>
               ) : null}
               <MenuGroupSeparator />
+              <MenuActionRow
+                label={archived ? 'Restore' : 'Archive'}
+                icon={<PlanBoardTileArt preset="archive" size={16} />}
+                onClick={act(onArchive)}
+              />
               <MenuActionRow label="Delete" icon={<TrashIcon />} danger onClick={act(onDelete)} />
             </>
           ) : null}
@@ -182,6 +194,14 @@ export function PlanCardMenuHost({
       onDelete={() => {
         plan.deleteItem(item.id);
         plan.announce('Card deleted');
+      }}
+      archived={isArchived(item)}
+      onArchive={() => {
+        const was = isArchived(item);
+        plan.patchItem(item.id, was ? { clear: ['archived'] } : { set: { archived: true } });
+        plan.announce(was ? 'Card restored' : 'Card archived');
+        if (was) track('Plan', 'Restored', 'Card');
+        else track('Plan', 'Moved', 'Archive');
       }}
       onClose={onClose}
     />

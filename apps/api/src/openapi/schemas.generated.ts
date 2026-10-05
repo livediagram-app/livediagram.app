@@ -1023,6 +1023,11 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       'wip',
       'due',
       'votes',
+      'points',
+      'priorities',
+      'unassigned',
+      'top-voted',
+      'stale',
     ],
     type: 'string',
   },
@@ -1121,6 +1126,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       'due',
       'votes',
       'checklist',
+      'description',
+      'parent',
     ],
     type: 'string',
   },
@@ -5795,6 +5802,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   PlanBoardSetup: {
     additionalProperties: false,
     properties: {
+      archive: {
+        type: 'boolean',
+      },
       cardFields: {
         items: {
           $ref: '#/components/schemas/CardField',

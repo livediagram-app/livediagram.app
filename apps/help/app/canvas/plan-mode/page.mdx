@@ -41,7 +41,8 @@ Plan mode gives a tab over to boards. Its palette holds only **Cards** and **Boa
   - `~3` sets the estimate,
   - `note:` at the start makes it a note (any card type works: `idea:`, `action:`...).
 - **From the palette:** drag a card from the **Cards** category into a column. While you drag, the column opens a gap where it will land. Cards from the palette always go onto a board, never loose on the canvas.
-- **Right-click a card** to **Open**, **Duplicate** or **Delete** it, **Move to** another column, or **Add to Slides** to present it full screen from the [Slide Deck](/help/selection-modes/slide-deck/).
+- **Right-click a card** to **Open**, **Duplicate** or **Delete** it, **Move to** another column, **Archive** it, or **Add to Slides** to present it full screen from the [Slide Deck](/help/selection-modes/slide-deck/).
+- **Archive a card** to take it off your boards without deleting it. An **Archive** board (in the palette's Boards) shows every archived card; drag one back onto another board, or choose **Restore**, to bring it back.
 - **Move a card:** drag it to another column, or up and down its column. On a board with rows (by assignee, priority, type or parent), dropping it in a row also sets that field: drop it in Sam's row to give it to Sam.
 - **Open an item:** click a card. Its panel opens over the canvas: the title and the card's tabs on the left, and **Details** (status, assignee, priority and the rest) on the right, with who made it and who changed it last. The **description** is rich text: bold, italic, underline, headings, lists and links, from the toolbar over it or the usual shortcuts. Every change saves as you make it. On a phone the panel rises from the bottom, with Details as its first tab. A card type's tabs are set in [Card Types](/help/canvas/plan-mode/card-types/).
 - **Take a card off the board:** drag it out onto the canvas to leave a **Plan card** there, for example beside the part of a diagram it is about. The item stays on the board as well. Drag a Plan card onto a board to file it in the column you drop it in. Drag a card from one board onto another to move it there.
@@ -68,7 +69,7 @@ Screen readers hear every move ("#12 moved to In progress, position 2 of 4").
 **The board** is set up from its own menu: right-click the board (or select it and press **⋯**):
 
 - **Board:** its **Title**, and its **Swimlanes**: none, or one per assignee, card type, priority or project.
-- **Cards:** the **Card Size** (**Minimal** shows the title alone, **Compact** fits each card on one line, **Detailed** shows everything), and which fields each card face shows besides its title, a tile each to press on or off.
+- **Cards:** the **Card Size** (**Minimal** shows the title alone, **Compact** the title over a line of number, priority, due date, votes and assignee, **Detailed** everything, down to a description excerpt and checklist progress), and which fields each card face shows, a tile each to press on or off. Tiles the chosen size can't show are dimmed.
 
 Every board shows every card whose status is one of its columns. A **Team Retro** board comes with voting and hidden writing on: everyone else's cards show face down until someone presses **Reveal** in the header, so people write without reading each other.
 
@@ -76,14 +77,16 @@ Items whose status matches none of the board's columns are counted in the header
 
 ## Widgets in the header
 
-A board's header holds **widgets**: small read-outs and controls such as **Completion**, **Filter**, **People**, **Card Types**, **WIP Alerts** and **Due Soon**. Find them in the palette's **Widgets** category:
+A board's header holds **widgets**: small read-outs and controls such as **Completion**, **Filter**, **People**, **Card Types**, **WIP Alerts**, **Due Soon**, **Points**, **Priorities**, **Unassigned**, **Top Voted** and **Stale Cards**. Each board type starts with the ones that suit it (Points on a sprint, Priorities on a bug triage, Top Voted on a retro). Find them all in the palette's **Widgets** category:
 
 - **Drag a widget** into a board's header. A bar shows where it will go.
 - **Tap a widget** to add it to the end of the selected board's header.
 - **Reorder** widgets by dragging them left or right along the header, or focus one and press **Alt+←** or **Alt+→**.
 - **Remove** a widget with its **×**, or focus it and press **Delete**.
 
-A board holds each widget once. New boards start with Item Count, Completion, Not on Board, Filter and Only Mine.
+A board holds each widget once; adding one it already has makes it flash.
+
+**Widgets narrow the board**: press a person in People, a type in Card Types, a priority, Unassigned, or the overdue count in Due Soon to see only those cards, and press it again to see everything. While the board is narrowed, Item Count reads "3 of 14 · Show all". Top Voted opens the leading card, and a Completion widget on a board without a done column offers **Set Done Column**.
 
 ## Together
 

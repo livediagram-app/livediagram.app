@@ -79,7 +79,7 @@ export function PlanBoardView({
   const interactive = !!plan?.planInput;
   const canEdit = !!plan?.canEdit;
 
-  const { drag, incoming, widgetSlot } = usePlanBoardDrop({
+  const { drag, incoming, widgetSlot, flashWidget } = usePlanBoardDrop({
     element,
     boardRef,
     plan,
@@ -200,6 +200,12 @@ export function PlanBoardView({
         types={types}
         palette={palette}
         widgetDropAt={widgetSlot}
+        flashWidget={flashWidget}
+        onOpenItem={(id) => plan?.openItem(id)}
+        onSetup={(next, part) => {
+          plan?.updateBoard(element.id, next);
+          trackSetup(part);
+        }}
         onWidgets={(next) => {
           plan?.updateBoard(element.id, { ...setup, widgets: next });
           trackSetup('Widgets');
@@ -354,7 +360,7 @@ export function PlanBoardView({
                               aria-hidden
                             />
                           ) : null}
-                          {canEdit && !loading ? (
+                          {canEdit && !loading && !setup.archive ? (
                             <AddCardButton
                               palette={palette}
                               types={addTypes}

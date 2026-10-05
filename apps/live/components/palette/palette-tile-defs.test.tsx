@@ -147,12 +147,12 @@ const TILES_PER_CATEGORY: Record<string, number> = {
   behaviour: 34,
   // The Event Storming notation (docs/specs/021-event-storming/event-storming.md): one tile per note kind.
   'event-storming': 8,
-  // Plan mode's Boards and Cards (docs/specs/025-plan/plan-mode.md "The palette"): seven boards, one
+  // Plan mode's Boards and Cards (docs/specs/025-plan/plan-mode.md "The palette"): eight boards, one
   // card per item type.
-  'plan-boards': 7,
+  'plan-boards': 8,
   'plan-cards': 5,
   // A board header's widgets (docs/specs/025-plan/board-widgets.md): one tile per widget kind.
-  'plan-widgets': 10,
+  'plan-widgets': 15,
 };
 
 describe('PALETTE_CATEGORIES', () => {

@@ -14,6 +14,11 @@ export const BOARD_WIDGET_KINDS = [
   'wip',
   'due',
   'votes',
+  'points',
+  'priorities',
+  'unassigned',
+  'top-voted',
+  'stale',
 ] as const;
 export type BoardWidgetKind = (typeof BOARD_WIDGET_KINDS)[number];
 

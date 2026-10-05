@@ -47,6 +47,11 @@ const BOARDS: { preset: PlanBoardPresetId; caption: string; description: string 
     description: 'A column a day, Monday to Friday.',
   },
   {
+    preset: 'archive',
+    caption: 'Archive',
+    description: 'Every archived card, out of the way of the other boards, ready to restore.',
+  },
+  {
     preset: 'blank',
     caption: 'Board',
     description: 'A board of To do, In progress and Done, to make your own.',

@@ -4,6 +4,7 @@
 // The board under the pointer comes from the same registry and DOM read as a palette card's.
 import { isBoardWidgetKind, type BoardWidgetKind } from '@livediagram/items';
 import { otherPlanBoardAt, planBoardIds, planBoardTarget } from './plan-board-targets';
+import { BOARD_WIDGET_INFO } from '@/components/plan/board-widget-catalogue';
 
 export const PLAN_WIDGET_MISSED = 'Drop a widget into a board’s header';
 
@@ -58,7 +59,9 @@ export function addPlanWidgetToBoard(kind: BoardWidgetKind): void {
     editor.notice(PLAN_WIDGET_NO_BOARD);
     return;
   }
-  target.placeWidget(kind, Number.MAX_SAFE_INTEGER);
+  const placed = target.placeWidget(kind, Number.MAX_SAFE_INTEGER, { tap: true });
+  if (placed === 'already')
+    editor.notice(`${BOARD_WIDGET_INFO[kind].label} is already on this board`);
 }
 
 // The canvas's drop of a widget tile: placed, or the miss said.

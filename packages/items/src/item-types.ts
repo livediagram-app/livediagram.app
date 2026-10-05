@@ -15,7 +15,9 @@ export type ItemFieldId =
   | 'due'
   | 'checklist'
   | 'parent'
-  | 'votes';
+  | 'votes'
+  // Archived (docs/specs/025-plan/items.md "Archive"): kept, but off every board but an Archive board.
+  | 'archived';
 
 // A field a person adds to a type (docs/specs/025-plan/item-types.md "An item type"): its value is
 // an ordinary entry in the item's `fields`, under `id`.

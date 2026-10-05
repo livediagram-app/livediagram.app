@@ -6,7 +6,7 @@ import { readBoardWidgets, type BoardWidgetKind } from './board-widgets';
 import type { Item, ItemPerson } from './item';
 import { itemAssignee, itemLabels, itemStatus, itemTitle } from './item';
 import { ITEM_TYPES, type ItemTypeDef } from './item-types';
-import { PRIORITIES, PRIORITY_LABELS, isPriority } from './fields';
+import { PRIORITIES, PRIORITY_LABELS, isPriority, type Priority } from './fields';
 import { byRank } from './apply';
 import {
   ITEM_STATUS_MAX,
@@ -38,6 +38,9 @@ export const CARD_FIELDS = [
   'due',
   'votes',
   'checklist',
+  // A Detailed card's extras: two lines of its description, and the project it sits under.
+  'description',
+  'parent',
 ] as const;
 export type CardField = (typeof CARD_FIELDS)[number];
 
@@ -46,6 +49,23 @@ export type CardField = (typeof CARD_FIELDS)[number];
 export const CARD_SIZES = ['minimal', 'compact', 'detailed'] as const;
 export type CardSize = (typeof CARD_SIZES)[number];
 
+// The fields each card size can draw (docs/specs/025-plan/plan-board.md "The board set-up"): a field the
+// board shows outside its size's set is kept but not drawn, and its tile in the Cards menu says so.
+export const CARD_SIZE_FIELDS: Readonly<Record<CardSize, readonly CardField[]>> = {
+  minimal: [],
+  compact: ['key', 'type', 'assignee', 'priority', 'due', 'votes'],
+  detailed: CARD_FIELDS,
+};
+
+// What a card at this size draws of the fields its board shows.
+export function cardFieldsAt(
+  size: CardSize | undefined,
+  fields: readonly CardField[],
+): CardField[] {
+  const allowed = CARD_SIZE_FIELDS[size ?? 'detailed'];
+  return fields.filter((f) => allowed.includes(f));
+}
+
 export interface PlanBoardSetup {
   title: string;
   columns: PlanColumn[];
@@ -53,6 +73,8 @@ export interface PlanBoardSetup {
   swimlaneBy: SwimlaneBy;
   cardFields: CardField[];
   cardSize?: CardSize;
+  // An Archive board (docs/specs/025-plan/items.md "Archive"): it shows only archived items.
+  archive?: boolean;
   // The header's widgets in order (docs/specs/025-plan/board-widgets.md); absent is the default set.
   widgets?: BoardWidgetKind[];
   voting: { on: boolean; budget?: number };
@@ -63,6 +85,21 @@ export interface QuickFilter {
   text?: string;
   // Only items assigned to this person id.
   mine?: string;
+  // From the board's widgets (docs/specs/025-plan/board-widgets.md): only items assigned to this person
+  // id, only items of this type, only items due on or before this day (YYYY-MM-DD) and not done.
+  person?: string;
+  type?: string;
+  dueBy?: string;
+  // Only items of this priority.
+  priority?: Priority;
+}
+
+// `QuickFilter.person` for the cards nobody is assigned.
+export const UNASSIGNED = '-';
+
+// An archived item (docs/specs/025-plan/items.md "Archive"): off every board but an Archive board.
+export function isArchived(item: Item): boolean {
+  return item.fields['archived'] === true;
 }
 
 export interface LaneHead {
@@ -95,6 +132,13 @@ export const NO_LANE = '';
 export function quickFilterMatches(quick: QuickFilter | undefined, item: Item): boolean {
   if (!quick) return true;
   if (quick.mine && itemAssignee(item)?.id !== quick.mine) return false;
+  if (quick.person && (itemAssignee(item)?.id ?? UNASSIGNED) !== quick.person) return false;
+  if (quick.priority && item.fields['priority'] !== quick.priority) return false;
+  if (quick.type && item.type !== quick.type) return false;
+  if (quick.dueBy) {
+    const due = item.fields['due'];
+    if (typeof due !== 'string' || due > quick.dueBy) return false;
+  }
   const text = quick.text?.trim().toLowerCase();
   if (text) {
     const hay = [itemTitle(item), `#${item.key}`, ...itemLabels(item)].join(' ').toLowerCase();
@@ -176,7 +220,15 @@ export function projectBoard(
   const byStatus = new Map<string, PlanColumn>(setup.columns.map((c) => [c.status, c]));
   const scoped: Item[] = [];
   const unplaced: Item[] = [];
+  // An Archive board shows the archived items, every one in its first column; any other board leaves
+  // them out altogether.
+  const archiveBoard = setup.archive === true;
   for (const it of items.values()) {
+    if (isArchived(it) !== archiveBoard) continue;
+    if (archiveBoard) {
+      scoped.push(it);
+      continue;
+    }
     const status = itemStatus(it);
     if (status === undefined || !byStatus.has(status)) unplaced.push(it);
     else scoped.push(it);
@@ -201,7 +253,11 @@ export function projectBoard(
   let doneCount = 0;
   const doneStatus = setup.columns.find((c) => c.id === setup.doneColumnId)?.status;
   const columns: ProjectedColumn[] = setup.columns.map((column) => {
-    const all = scoped.filter((it) => itemStatus(it) === column.status);
+    const all = archiveBoard
+      ? column === setup.columns[0]
+        ? scoped
+        : []
+      : scoped.filter((it) => itemStatus(it) === column.status);
     if (column.status === doneStatus) doneCount = all.length;
     const shown = all.filter((it) => quickFilterMatches(quick, it));
     return {
@@ -302,6 +358,7 @@ export function normaliseBoardSetup(input: unknown): PlanBoardSetup | null {
     swimlaneBy,
     cardFields,
     ...(readBoardWidgets(input['widgets']) ? { widgets: readBoardWidgets(input['widgets']) } : {}),
+    ...(input['archive'] === true ? { archive: true } : {}),
     ...(input['cardSize'] === 'minimal' || input['cardSize'] === 'compact'
       ? { cardSize: input['cardSize'] }
       : {}),

@@ -47,11 +47,9 @@ Where each is set, so a setting lives with what it changes, never in one central
   It**); the board's last column cannot be removed. Each change applies as it is made.
 - **The board's own settings** sit in its element menu (right-click the board, or the selection's ⋯), in two
   flyouts: **Board** (**Title**; **Swimlanes**: No Swimlanes, By Assignee, By Card Type, By Priority, By Project) and
-  **Cards**: the **Card Size** (**Minimal**: the title alone; **Compact**: one line, the title between the type
-  and number and the priority, estimate, votes and assignee it shows; **Detailed**, the default: every field it
-  shows) and what each card face shows besides its title, a tile per field pressed on or off (inactive at
-  Minimal). New columns come
-  from a column's **+ Add Column After**.
+  **Cards**: the **Card Size** (Minimal, Compact or Detailed, below) and what each card face shows besides its
+  title, a tile per field pressed on or off. A field the chosen size cannot draw keeps its setting but its tile is
+  dimmed, so the tiles always say what the cards show. New columns come from a column's **+ Add Column After**.
 - **Every board shows every card**: there is no per-board filter by type or label; a board shows every item whose
   status is one of its columns, and counts the rest as not on it.
 - **Voting** and **Hide writing** come with a board's template (the Retro's are on); they have no menu control.
@@ -64,9 +62,17 @@ Where each is set, so a setting lives with what it changes, never in one central
   the column header says so; it never refuses a card.
 - **Columns fill the board**: a board resized taller runs its columns to its bottom edge (on a board with
   swimlanes, the last open swimlane takes the spare height); a board shorter than its cards scrolls.
-- **Cards** in rank order. A card face draws the item type's colour stripe and glyph, the key (`#12`), the title
-  (up to three lines), then the fields the set-up shows. A card being dragged or opened by someone else carries
-  their colour ring and name.
+- **Cards** in rank order, at the board's **card size**. Every card carries the item type's colour stripe; a card
+  being dragged or opened by someone else carries their colour ring and name. Of the fields the set-up shows:
+  - **Minimal**: the title (two lines at most) and nothing else, but the vote control on a voting board.
+  - **Compact**: the type's glyph beside the title (two lines at most), over one line of the number, the
+    priority (a dot), the due date, votes and the assignee's avatar.
+  - **Detailed** (the default): the type and number with a priority chip, the title (three lines), the project it
+    sits under, two lines of its description, custom fields shown on cards, up to four labels, a checklist
+    progress bar, then a footer of the due date (red once past, unless done), the estimate, votes and the
+    assignee's first name and avatar.
+  - The fields are Number, Type, Assignee, Priority, Labels, Estimate, Due Date, Votes, Checklist, Description and
+    Project; Compact draws Number, Type, Assignee, Priority, Due Date and Votes.
 - **Swimlanes**: a labelled row per group (an assignee's avatar and name, a type's glyph), "No assignee" last.
   Each swimlane collapses on its own, per person.
 - **Unplaced**: when items have a status no column shows, the header says "3 not on this board"; opening
@@ -104,6 +110,7 @@ In Plan mode:
   `!medium`, `!low`) sets priority, `~3` estimates, and a leading `note:` (any type name) sets the type, each
   shown as a chip as it is recognised. Escape or an outside press closes it.
 - **Right-click a card** for its menu: **Open**, **Duplicate** (a copy right after it, without its votes),
+  **Archive** (or **Restore**; [Items](items.md#archive)),
   **Add to Slides** (an item slide, [Presentation mode](../012-collaboration/presentation-mode.md#item-slides)),
   **Move to** another column of the board, and **Delete** (undo brings it back). Someone who may only view gets
   Open alone; a face-down card has no menu.

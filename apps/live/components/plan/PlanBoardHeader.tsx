@@ -33,7 +33,10 @@ export function PlanBoardHeader({
   votesLeft,
   loadFailed,
   widgetDropAt,
+  flashWidget,
   onWidgets,
+  onSetup,
+  onOpenItem,
   onRetry,
   onReveal,
   onMoveUnplaced,
@@ -52,7 +55,12 @@ export function PlanBoardHeader({
   loadFailed: boolean;
   // Where a widget dragged from the palette would land in the zone.
   widgetDropAt: number | null;
+  // A widget placed again that the board already had, flashed so it is found.
+  flashWidget: BoardWidgetKind | null;
   onWidgets: (next: BoardWidgetKind[]) => void;
+  // A set-up change a widget makes (Set Done Column), with its telemetry part.
+  onSetup: (next: PlanBoardSetup, part: string) => void;
+  onOpenItem: (itemId: string) => void;
   onRetry: () => void;
   onReveal: () => void;
   onMoveUnplaced: (item: Item, status: string) => void;
@@ -72,6 +80,9 @@ export function PlanBoardHeader({
     trayOpen,
     onToggleTray: () => setTrayOpen((o) => !o),
     now: new Date(),
+    canEdit,
+    onSetup,
+    onOpenItem,
   };
   const button =
     'h-7 shrink-0 rounded-md border px-2 text-[12px] font-medium transition enabled:cursor-pointer disabled:opacity-50';
@@ -90,10 +101,17 @@ export function PlanBoardHeader({
           canEdit={canEdit}
           palette={palette}
           dropAt={widgetDropAt}
+          flash={flashWidget}
           onChange={(next) => {
-            // Taking Filter or Only Mine off clears what it narrowed.
-            if (!next.includes('filter') && quick.text) onQuick({ ...quick, text: undefined });
-            if (!next.includes('mine') && quick.mine) onQuick({ text: quick.text });
+            // Taking a widget off clears what it narrowed.
+            const kept: QuickFilter = { ...quick };
+            if (!next.includes('filter')) delete kept.text;
+            if (!next.includes('mine')) delete kept.mine;
+            if (!next.includes('types')) delete kept.type;
+            if (!next.includes('due')) delete kept.dueBy;
+            if (!next.includes('priorities')) delete kept.priority;
+            if (!next.includes('people') && !next.includes('unassigned')) delete kept.person;
+            if (Object.keys(kept).length !== Object.keys(quick).length) onQuick(kept);
             onWidgets(next);
           }}
           render={(kind) => <BoardWidgetView kind={kind} ctx={ctx} />}

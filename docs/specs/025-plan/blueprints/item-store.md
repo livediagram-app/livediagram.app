@@ -151,6 +151,17 @@ underline?, strikethrough?, size? xs|sm|md|lg, color? #rrggbb, link? http(s)/mai
   at most `ITEM_RICH_RUNS_MAX` (2000) runs and `ITEM_DESCRIPTION_MAX` characters in all; anything else is
   `field_value_invalid`. `description` stays the plain-text mirror (search, card faces, agents).
 
+### Archive
+
+- `archived` is a known field of kind `flag`: `true` is stored, anything else is `field_value_invalid`; clearing
+  removes the key. `isArchived(item)`.
+- `projectBoard` skips archived items on an ordinary board (columns, unplaced, counts); with `setup.archive`
+  it takes only archived items, all into `columns[0]`. `normaliseBoardSetup` keeps `archive: true` only.
+- Preset `archive`: one column `archived` "Archived", Compact cards, widgets count, types, filter.
+- Board drop: onto an Archive board patches `{ set: { archived: true } }` (status kept; its own cards do not
+  reorder); off one onto another board moves, then patches `{ clear: ['archived'] }`. An Archive board refuses
+  palette cards and has no Add Card.
+
 ## Data and persistence: D1
 
 Migration `apps/api/migrations/0068_items.sql`:

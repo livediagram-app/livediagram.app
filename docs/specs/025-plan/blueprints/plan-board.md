@@ -83,6 +83,16 @@ under the pointer), `usePlanPresence` (the `plan-presence` op), `useItemUndo` (t
 `plan-card-drop.ts` (a palette card into the column under the pointer). `PlanProvider` wraps the editor view, so the export dialog reads
 the items too.
 
+## Card sizes
+
+- `CARD_SIZE_FIELDS`: minimal `[]`; compact key, type, assignee, priority, due, votes; detailed every field.
+  `cardFieldsAt(size, fields)` is what a face draws. `CARD_FIELDS` adds `description` (two lines) and `parent`
+  (the project's title). The Cards flyout dims a field tile outside the size's set (`disabled`), its setting kept.
+- `PlanCardFace`: Minimal py-2.5, title 13 px semibold, two lines; Compact title two lines over a 11 px meta row
+  (`DueTag` red when past and not done, `PriorityDot`, avatar right); Detailed header row with a priority chip,
+  title three lines, parent, description, custom fields, ≤ 4 labels, checklist bar (green when complete), and a
+  bordered footer (due, estimate, votes, first name and avatar).
+
 ## Behaviour and state
 
 - **Input routing**: `PlanBoardView` receives `interactive = editorMode === 'plan' && !readOnly`. Interactive:

@@ -1,9 +1,10 @@
 'use client';
 
 // One item's card face (docs/specs/025-plan/plan-board.md "What the board shows"), shared by the board's
-// cards and the Plan card element: the type stripe and glyph, the key, the title up to three lines,
-// then the fields the board shows. Face-down while its board hides writing; ringed in someone's
-// colour while they drag or read it.
+// cards and the Plan card element, at the board's card size: Minimal (the title), Compact (the title over
+// one line of number, priority, due, votes and assignee) or Detailed (type and priority, title, project,
+// description, custom fields, labels, checklist progress, then due, estimate, votes and who has it).
+// Face-down while its board hides writing; ringed in someone's colour while they drag or read it.
 import {
   PRIORITY_LABELS,
   isPriority,
@@ -14,8 +15,10 @@ import {
   itemVoteTotal,
   typeIn,
   itemVotes,
+  cardFieldsAt,
   type CardField,
   type CardSize,
+  type Priority,
   type Item,
 } from '@livediagram/items';
 import { usePlan, type PlanCardPresence } from './PlanContext';
@@ -58,6 +61,40 @@ function dueLabel(due: string): string {
     : d.toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
 }
 
+function today(): string {
+  const d = new Date();
+  const p = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+}
+
+// A due date in red once it has passed (unless the card is done), muted otherwise.
+function DueTag({ due, done, palette }: { due: string; done: boolean; palette: PlanPalette }) {
+  const late = !done && due < today();
+  return (
+    <span
+      className="inline-flex items-center gap-1"
+      style={{ color: late ? '#dc2626' : palette.muted, fontWeight: late ? 600 : undefined }}
+    >
+      <PlanTypeGlyph glyph="calendar" size={11} />
+      {dueLabel(due)}
+    </span>
+  );
+}
+
+function PriorityDot({ priority, label }: { priority: Priority; label?: boolean }) {
+  return (
+    <span className="inline-flex items-center gap-1">
+      <span
+        className="h-2 w-2 shrink-0 rounded-full"
+        style={{ backgroundColor: PRIORITY_COLOURS[priority] }}
+        aria-hidden={label}
+        aria-label={label ? undefined : `${PRIORITY_LABELS[priority]} priority`}
+      />
+      {label ? PRIORITY_LABELS[priority] : null}
+    </span>
+  );
+}
+
 export function PlanCardFace({
   item,
   palette,
@@ -68,15 +105,12 @@ export function PlanCardFace({
   presence,
   voting,
 }: PlanCardFaceProps) {
-  const type = typeIn(usePlan()?.types ?? ITEM_TYPES, item.type);
+  const plan = usePlan();
+  const type = typeIn(plan?.types ?? ITEM_TYPES, item.type);
   // Lifted on a dark card, so Project's black still shows.
   const accent = accentOn(type.color, palette);
-  // Custom fields marked Show on card, with a value (docs/specs/025-plan/item-types.md "An item type").
-  const onCard = (type.custom ?? []).flatMap((f) => {
-    const text = f.onCard ? customFieldText(f, item.fields[f.id]) : null;
-    return text ? [{ id: f.id, label: f.label, text }] : [];
-  });
-  const show = (f: CardField) => fields.includes(f);
+  const shown = cardFieldsAt(size, fields);
+  const show = (f: CardField) => shown.includes(f);
   const ring = presence ? `0 0 0 2px ${presence.color}` : undefined;
   if (faceDown) {
     return (
@@ -105,12 +139,16 @@ export function PlanCardFace({
   const labels = itemLabels(item);
   const estimate = item.fields['estimate'];
   const due = item.fields['due'];
+  const description = item.fields['description'];
+  const parentId = item.fields['parent'];
+  const parent = typeof parentId === 'string' ? plan?.items.get(parentId) : undefined;
   const progress = checklistProgress(item);
   const votes = itemVoteTotal(item);
+  const title = itemTitle(item) || 'Untitled';
   const frame = {
     backgroundColor: palette.card,
     borderColor: palette.cardBorder,
-    boxShadow: ring,
+    boxShadow: ring ?? '0 1px 2px rgba(15,23,42,0.06)',
     opacity: muted ? 0.7 : 1,
   };
   const stripe = (
@@ -120,18 +158,23 @@ export function PlanCardFace({
       aria-hidden
     />
   );
-  const title = itemTitle(item) || 'Untitled';
-  // Minimal: the title alone (and the vote control on a voting board).
+  const votesBit = voting ? (
+    <VoteControl palette={palette} total={votes} voting={voting} />
+  ) : show('votes') && votes > 0 ? (
+    <span className="shrink-0">▲ {votes}</span>
+  ) : null;
+
+  // Minimal: the title alone, room to breathe (and the vote control on a voting board).
   if (size === 'minimal') {
     return (
       <div
-        className="relative flex h-full items-center gap-2 overflow-hidden rounded-md border py-1.5 pl-3 pr-2"
+        className="relative flex h-full items-center gap-2 overflow-hidden rounded-lg border py-2.5 pl-3.5 pr-2.5"
         style={frame}
       >
         {stripe}
         {presence ? <PresenceTag name={presence.name} color={presence.color} /> : null}
         <span
-          className="line-clamp-2 min-w-0 flex-1 text-[13px] font-medium leading-snug"
+          className="line-clamp-2 min-w-0 flex-1 text-[13px] font-semibold leading-snug"
           style={{ color: palette.text }}
         >
           {title}
@@ -140,90 +183,113 @@ export function PlanCardFace({
       </div>
     );
   }
-  // Compact: one line, the title between the type and key and the shown fields that fit a glance.
+
+  // Compact: the title (two lines at most) over one line of what matters at a glance.
   if (size === 'compact') {
+    const meta =
+      show('key') ||
+      (show('priority') && isPriority(priority)) ||
+      (show('due') && typeof due === 'string') ||
+      votesBit ||
+      (show('assignee') && assignee);
     return (
       <div
-        className="relative flex h-full items-center gap-1.5 overflow-hidden rounded-md border py-1.5 pl-3 pr-2 text-[11px]"
-        style={{ ...frame, color: palette.muted }}
+        className="relative flex h-full flex-col gap-1 overflow-hidden rounded-lg border py-2 pl-3.5 pr-2.5"
+        style={frame}
       >
         {stripe}
         {presence ? <PresenceTag name={presence.name} color={presence.color} /> : null}
-        {show('type') ? <PlanTypeGlyph glyph={type.glyph} color={accent} /> : null}
-        {show('key') ? <span className="shrink-0 font-medium">#{item.key}</span> : null}
-        <span
-          className="min-w-0 flex-1 truncate text-[13px] font-medium"
-          style={{ color: palette.text }}
-        >
-          {title}
-        </span>
-        {show('priority') && isPriority(priority) ? (
+        <div className="flex items-start gap-1.5">
+          {show('type') ? (
+            <span className="mt-0.5 shrink-0">
+              <PlanTypeGlyph glyph={type.glyph} color={accent} />
+            </span>
+          ) : null}
           <span
-            className="h-2 w-2 shrink-0 rounded-full"
-            style={{ backgroundColor: PRIORITY_COLOURS[priority] }}
-            aria-label={`${PRIORITY_LABELS[priority]} priority`}
-          />
-        ) : null}
-        {show('estimate') && typeof estimate === 'number' ? (
-          <span
-            className="shrink-0 rounded-full border px-1.5"
-            style={{ borderColor: palette.cardBorder }}
+            className="line-clamp-2 min-w-0 flex-1 text-[13px] font-semibold leading-snug"
+            style={{ color: palette.text }}
           >
-            {estimate}
+            {title}
           </span>
-        ) : null}
-        {voting ? (
-          <VoteControl palette={palette} total={votes} voting={voting} />
-        ) : show('votes') && votes > 0 ? (
-          <span className="shrink-0">▲ {votes}</span>
-        ) : null}
-        {show('assignee') && assignee ? (
-          <PersonDisc person={assignee} label={`Assigned to ${assignee.name}`} />
+        </div>
+        {meta ? (
+          <div
+            className="flex items-center gap-2 text-[11px] font-medium"
+            style={{ color: palette.muted }}
+          >
+            {show('key') ? <span className="tabular-nums">#{item.key}</span> : null}
+            {show('priority') && isPriority(priority) ? <PriorityDot priority={priority} /> : null}
+            {show('due') && typeof due === 'string' ? (
+              <DueTag due={due} done={!!muted} palette={palette} />
+            ) : null}
+            {votesBit}
+            {show('assignee') && assignee ? (
+              <span className="ml-auto">
+                <PersonDisc person={assignee} label={`Assigned to ${assignee.name}`} />
+              </span>
+            ) : null}
+          </div>
         ) : null}
       </div>
     );
   }
-  const chips =
-    (show('priority') && isPriority(priority)) ||
-    (show('labels') && labels.length > 0) ||
-    (show('estimate') && typeof estimate === 'number') ||
+
+  // Detailed: everything the board shows, in reading order.
+  // Custom fields marked Show on card, with a value (docs/specs/025-plan/item-types.md "An item type").
+  const onCard = (type.custom ?? []).flatMap((f) => {
+    const text = f.onCard ? customFieldText(f, item.fields[f.id]) : null;
+    return text ? [{ id: f.id, label: f.label, text }] : [];
+  });
+  const footer =
     (show('due') && typeof due === 'string') ||
-    (show('checklist') && progress) ||
-    (show('assignee') && assignee) ||
-    voting ||
-    (show('votes') && votes > 0);
+    (show('estimate') && typeof estimate === 'number') ||
+    votesBit ||
+    (show('assignee') && assignee);
   return (
     <div
-      className="relative flex h-full flex-col gap-1.5 overflow-hidden rounded-lg border py-2 pl-3.5 pr-2.5 shadow-[0_1px_2px_rgba(15,23,42,0.06)]"
-      style={{
-        backgroundColor: palette.card,
-        borderColor: palette.cardBorder,
-        boxShadow: ring,
-        opacity: muted ? 0.7 : 1,
-      }}
+      className="relative flex h-full flex-col gap-2 overflow-hidden rounded-lg border py-2.5 pl-4 pr-3"
+      style={frame}
     >
-      <span
-        className="absolute inset-y-0 left-0 w-1"
-        style={{ backgroundColor: accent }}
-        aria-hidden
-      />
+      {stripe}
       {presence ? <PresenceTag name={presence.name} color={presence.color} /> : null}
-      {show('key') || show('type') ? (
+      {show('key') || show('type') || (show('priority') && isPriority(priority)) ? (
         <div
           className="flex items-center gap-1.5 text-[11px] font-medium"
           style={{ color: palette.muted }}
         >
           {show('type') ? <PlanTypeGlyph glyph={type.glyph} color={accent} /> : null}
-          {show('key') ? <span>#{item.key}</span> : null}
-          {show('type') ? <span>{type.label}</span> : null}
+          {show('type') ? <span style={{ color: accent }}>{type.label}</span> : null}
+          {show('key') ? <span className="tabular-nums">#{item.key}</span> : null}
+          {show('priority') && isPriority(priority) ? (
+            <span
+              className="ml-auto rounded-full px-1.5 py-px"
+              style={{ backgroundColor: `${PRIORITY_COLOURS[priority]}1f`, color: palette.text }}
+            >
+              <PriorityDot priority={priority} label />
+            </span>
+          ) : null}
         </div>
       ) : null}
       <div
         className="line-clamp-3 text-[14px] font-semibold leading-snug"
-        style={{ color: palette.text, textDecoration: muted ? 'none' : undefined }}
+        style={{ color: palette.text }}
       >
         {title}
       </div>
+      {show('parent') && parent ? (
+        <div
+          className="flex items-center gap-1 truncate text-[11px]"
+          style={{ color: palette.muted }}
+        >
+          <PlanTypeGlyph glyph="project" size={11} />
+          <span className="truncate">{itemTitle(parent)}</span>
+        </div>
+      ) : null}
+      {show('description') && typeof description === 'string' && description.trim() ? (
+        <p className="line-clamp-2 text-[12px] leading-snug" style={{ color: palette.muted }}>
+          {description}
+        </p>
+      ) : null}
       {onCard.length > 0 ? (
         <div className="flex flex-col gap-0.5 text-[11px]" style={{ color: palette.muted }}>
           {onCard.map((f) => (
@@ -234,53 +300,62 @@ export function PlanCardFace({
           ))}
         </div>
       ) : null}
-      {chips ? (
-        <div
-          className="mt-auto flex flex-wrap items-center gap-1.5 text-[11px]"
-          style={{ color: palette.muted }}
-        >
-          {show('priority') && isPriority(priority) ? (
-            <span className="inline-flex items-center gap-1">
-              <span
-                className="h-2 w-2 rounded-full"
-                style={{ backgroundColor: PRIORITY_COLOURS[priority] }}
-                aria-hidden
-              />
-              {PRIORITY_LABELS[priority]}
+      {show('labels') && labels.length > 0 ? (
+        <div className="flex flex-wrap gap-1 text-[11px]">
+          {labels.slice(0, 4).map((l) => (
+            <span
+              key={l}
+              className="rounded px-1.5 py-px"
+              style={{ backgroundColor: palette.column, color: palette.text }}
+            >
+              {l}
             </span>
+          ))}
+        </div>
+      ) : null}
+      {show('checklist') && progress ? (
+        <div className="flex items-center gap-2 text-[11px]" style={{ color: palette.muted }}>
+          <span
+            className="h-1.5 flex-1 overflow-hidden rounded-full"
+            style={{ backgroundColor: palette.column }}
+            aria-hidden
+          >
+            <span
+              className="block h-full rounded-full"
+              style={{
+                width: `${(progress.done / progress.total) * 100}%`,
+                backgroundColor: progress.done === progress.total ? '#16a34a' : accent,
+              }}
+            />
+          </span>
+          <span className="tabular-nums">
+            {progress.done}/{progress.total}
+          </span>
+        </div>
+      ) : null}
+      {footer ? (
+        <div
+          className="mt-auto flex items-center gap-2.5 border-t pt-2 text-[11px] font-medium"
+          style={{ color: palette.muted, borderColor: palette.cardBorder }}
+        >
+          {show('due') && typeof due === 'string' ? (
+            <DueTag due={due} done={!!muted} palette={palette} />
           ) : null}
-          {show('labels')
-            ? labels.slice(0, 3).map((l) => (
-                <span
-                  key={l}
-                  className="rounded px-1.5 py-px"
-                  style={{ backgroundColor: palette.column, color: palette.text }}
-                >
-                  {l}
-                </span>
-              ))
-            : null}
           {show('estimate') && typeof estimate === 'number' ? (
             <span
-              className="rounded-full border px-1.5"
+              className="rounded-full border px-1.5 tabular-nums"
               style={{ borderColor: palette.cardBorder }}
+              aria-label={`Estimate ${estimate}`}
             >
               {estimate}
             </span>
           ) : null}
-          {show('due') && typeof due === 'string' ? <span>Due {dueLabel(due)}</span> : null}
-          {show('checklist') && progress ? (
-            <span>
-              {progress.done}/{progress.total}
-            </span>
-          ) : null}
-          {voting ? (
-            <VoteControl palette={palette} total={votes} voting={voting} />
-          ) : show('votes') && votes > 0 ? (
-            <span>▲ {votes}</span>
-          ) : null}
+          {votesBit}
           {show('assignee') && assignee ? (
-            <span className="ml-auto">
+            <span className="ml-auto inline-flex min-w-0 items-center gap-1.5">
+              <span className="truncate" style={{ color: palette.text }}>
+                {assignee.name.split(' ')[0]}
+              </span>
               <PersonDisc person={assignee} label={`Assigned to ${assignee.name}`} />
             </span>
           ) : null}

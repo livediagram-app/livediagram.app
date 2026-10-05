@@ -7,6 +7,13 @@ import { accentVars } from './plan-palette';
 // One picture per board preset, so the Boards category reads at a glance (docs/specs/025-plan/
 // plan-mode.md "The palette"), on a 22-unit grid like the other palette glyphs.
 const BOARD_ART: Record<string, React.ReactNode> = {
+  // A box with its lid: the cards put away.
+  archive: (
+    <>
+      <rect x="2.5" y="4" width="17" height="4.5" rx="1" />
+      <path d="M4 8.5V17a1.5 1.5 0 0 0 1.5 1.5h11A1.5 1.5 0 0 0 18 17V8.5M9 12h4" />
+    </>
+  ),
   // Columns of stacked cards.
   kanban: (
     <>
@@ -180,6 +187,28 @@ const WIDGET_ART: Record<BoardWidgetKind, React.ReactNode> = {
     </>
   ),
   votes: <path d="M11 4.5 17.5 13h-4v5h-5v-5h-4z" />,
+  // A stack of points rising.
+  points: <path d="M3 18h16M5 18v-4M9.5 18V10M14 18v-6M18.5 18V5" />,
+  // Three flags, tallest first.
+  priorities: <path d="M5 18V5h7l-1.5 2.5L12 10H5M14 18V9" />,
+  // A person with a question: nobody yet.
+  unassigned: (
+    <>
+      <circle cx="11" cy="7.5" r="3" strokeDasharray="2.4 1.8" />
+      <path d="M5 18.5a6 6 0 0 1 12 0" strokeDasharray="2.4 1.8" />
+    </>
+  ),
+  // A trophy.
+  'top-voted': (
+    <>
+      <path d="M7 4h8v4a4 4 0 0 1-8 0zM7 6H4.5a2.5 2.5 0 0 0 2.6 3M15 6h2.5a2.5 2.5 0 0 1-2.6 3" />
+      <path d="M11 12v3M8 18h6M9 15h4" />
+    </>
+  ),
+  // An hourglass.
+  stale: (
+    <path d="M6 3.5h10M6 18.5h10M7 3.5c0 4 8 4 8 7.5S7 14.5 7 18.5M15 3.5c0 4-8 4-8 7.5s8 3.5 8 7.5" />
+  ),
 };
 
 export function BoardWidgetArt({ kind, size = 18 }: { kind: BoardWidgetKind; size?: number }) {

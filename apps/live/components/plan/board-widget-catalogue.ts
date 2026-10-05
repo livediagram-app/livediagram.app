@@ -22,6 +22,26 @@ export const BOARD_WIDGET_INFO: Record<BoardWidgetKind, { label: string; descrip
   wip: { label: 'WIP Alerts', description: 'How many columns are over their WIP limit.' },
   due: { label: 'Due Soon', description: 'Cards overdue, and cards due in the next 7 days.' },
   votes: { label: 'Votes Left', description: 'Your votes left, on a board with voting on.' },
+  points: {
+    label: 'Points',
+    description: 'Estimate points done out of all on the board: a sprint’s burn-up at a glance.',
+  },
+  priorities: {
+    label: 'Priorities',
+    description: 'How many cards are urgent, high, medium and low; press one to see those.',
+  },
+  unassigned: {
+    label: 'Unassigned',
+    description: 'Cards nobody has picked up yet; press it to see them.',
+  },
+  'top-voted': {
+    label: 'Top Voted',
+    description: 'The card with the most votes, for a retro’s first action; press it to open.',
+  },
+  stale: {
+    label: 'Stale Cards',
+    description: 'Cards not done that nobody has changed in two weeks.',
+  },
 };
 
 // The drag type a widget tile carries, so only a board's header takes it.

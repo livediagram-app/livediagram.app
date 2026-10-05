@@ -3,9 +3,14 @@ import { presetSetup, projectBoard, type Item } from '@livediagram/items';
 import {
   boardItems,
   boardPeople,
+  boardPoints,
   boardTypeCounts,
   dueCounts,
   overWipColumns,
+  priorityCounts,
+  staleCount,
+  topVoted,
+  unassignedCount,
 } from './widget-stats';
 
 let n = 0;
@@ -68,5 +73,36 @@ describe('widget stats', () => {
       item({ status: 'todo' }),
     ];
     expect(dueCounts(setup, due, now)).toEqual({ overdue: 1, soon: 2 });
+  });
+});
+
+describe('more widget stats', () => {
+  const setup = presetSetup('kanban');
+  const done = setup.columns.find((c) => c.id === setup.doneColumnId)!.status;
+  it('adds up points, done and in all', () => {
+    const items = [
+      item({ status: done, estimate: 3 }),
+      item({ status: 'todo', estimate: 5 }),
+      item({ status: 'todo' }),
+    ];
+    expect(boardPoints(setup, items)).toEqual({ done: 3, total: 8, estimated: 2 });
+  });
+
+  it('counts priorities, the unassigned, the top voted and the stale', () => {
+    const a = item({ priority: 'high', votes: { x: 2 } });
+    const b = item({ priority: 'urgent', assignee: SAM, votes: { x: 5, y: 1 } });
+    const c = item({ priority: 'high' });
+    expect(priorityCounts([a, b, c])).toEqual([
+      { priority: 'urgent', count: 1 },
+      { priority: 'high', count: 2 },
+    ]);
+    expect(unassignedCount([a, b, c])).toBe(2);
+    expect(topVoted([a, b, c])?.item).toBe(b);
+    expect(topVoted([c])).toBeNull();
+    const now = new Date(2026, 9, 30);
+    const old = { ...item({ status: 'todo' }), updatedAt: new Date(2026, 9, 1).getTime() };
+    const oldDone = { ...item({ status: done }), updatedAt: 0 };
+    const fresh = { ...item({ status: 'todo' }), updatedAt: new Date(2026, 9, 29).getTime() };
+    expect(staleCount(setup, [old, oldDone, fresh], now)).toBe(1);
   });
 });

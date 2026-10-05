@@ -8,6 +8,7 @@ import { useCallback, useRef, useState } from 'react';
 import type { PlanBoardSetup, ProjectedColumn } from '@livediagram/items';
 import { SettingsIcon } from '@livediagram/ui';
 import { PlanColumnPopover } from './PlanColumnPopover';
+import { CountBadge } from './CountBadge';
 import type { PlanPalette } from './plan-palette';
 
 export function PlanColumnHeader({
@@ -41,19 +42,18 @@ export function PlanColumnHeader({
       />
       <div className="flex items-center gap-2">
         <span className="truncate text-[13px] font-semibold">{column.name}</span>
-        <span
-          className="ml-auto rounded-full px-1.5 text-[11px] font-semibold tabular-nums"
-          style={{
-            color: col.overLimit ? palette.warning : palette.muted,
-            backgroundColor: col.overLimit ? palette.warningBg : 'transparent',
-          }}
-          aria-label={
-            column.wipLimit
-              ? `${col.count} of a WIP limit of ${column.wipLimit}${col.overLimit ? ', over the limit' : ''}`
-              : `${col.count} items`
-          }
-        >
-          {column.wipLimit ? `${col.count} / ${column.wipLimit}` : col.count}
+        <span className="ml-auto flex">
+          <CountBadge
+            background={col.overLimit ? palette.warningBg : palette.surface}
+            color={col.overLimit ? palette.warning : palette.muted}
+            label={
+              column.wipLimit
+                ? `${col.count} of a WIP limit of ${column.wipLimit}${col.overLimit ? ', over the limit' : ''}`
+                : `${col.count} items`
+            }
+          >
+            {column.wipLimit ? `${col.count} / ${column.wipLimit}` : col.count}
+          </CountBadge>
         </span>
         {canEdit ? (
           <button

@@ -9,6 +9,7 @@ import { useState } from 'react';
 import {
   BUILT_IN_FIELD_IDS,
   detailFieldsOf,
+  isArchived,
   itemTitle,
   tabsOf,
   typeIn,
@@ -23,6 +24,7 @@ import { Dialog } from '@/components/dialogs/Dialog';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { DebouncedText } from './item-field-editors';
 import { PlanTypeGlyph } from './plan-type-glyph';
+import { PlanBoardTileArt } from './plan-tile-art';
 import { ACCENT_TEXT, accentVars } from './plan-palette';
 import {
   ItemFieldEditor,
@@ -49,6 +51,7 @@ export function ItemPanel({
   onPatch,
   onType,
   onDelete,
+  onArchive,
   onClose,
 }: {
   item: Item;
@@ -65,6 +68,8 @@ export function ItemPanel({
   onPatch: (patch: ItemPatch) => void;
   onType: (type: string) => void;
   onDelete: () => void;
+  // Archive the item, or restore an archived one (docs/specs/025-plan/items.md "Archive").
+  onArchive: () => void;
   onClose: () => void;
 }) {
   const mobile = useIsMobileViewport();
@@ -120,6 +125,16 @@ export function ItemPanel({
       </select>
       <span className="text-[13px] text-slate-500 dark:text-slate-400">#{item.key}</span>
       <span className="flex-1" />
+      {canEdit ? (
+        <button
+          type="button"
+          onClick={onArchive}
+          className="flex h-8 items-center gap-1.5 rounded-md px-2 text-[12px] font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+        >
+          <PlanBoardTileArt preset="archive" size={14} />
+          {isArchived(item) ? 'Restore' : 'Archive'}
+        </button>
+      ) : null}
       {canEdit ? (
         <button
           type="button"

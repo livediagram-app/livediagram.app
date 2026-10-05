@@ -8,6 +8,7 @@ import { useState, type ComponentProps } from 'react';
 import type { ShapeElement } from '@livediagram/document';
 import {
   CARD_FIELDS,
+  CARD_SIZE_FIELDS,
   CARD_SIZES,
   SWIMLANE_BY,
   normaliseBoardSetup,
@@ -49,6 +50,8 @@ const FIELD_GLYPHS: Record<CardField, string> = {
   due: 'calendar',
   votes: 'star',
   checklist: 'action',
+  description: 'note',
+  parent: 'project',
 };
 
 const SIZE_LABELS: Record<CardSize, string> = {
@@ -127,6 +130,8 @@ export function PlanCardsMenuSection({
   const board = useBoard(element);
   if (!board) return null;
   const { setup, set } = board;
+  // The fields this card size can draw; the rest stay set but dimmed (docs/specs/025-plan/plan-board.md).
+  const sizeFields = CARD_SIZE_FIELDS[setup.cardSize ?? 'detailed'];
   const toggle = (f: CardField) =>
     set(
       {
@@ -158,7 +163,7 @@ export function PlanCardsMenuSection({
         {setup.cardSize === 'minimal'
           ? 'Minimal cards show their title only'
           : setup.cardSize === 'compact'
-            ? 'What each card shows, on one line'
+            ? 'What each card shows under its title (Detailed shows the rest)'
             : 'What each card shows, besides its title'}
       </p>
       <MenuTileGrid cols={3}>
@@ -173,8 +178,8 @@ export function PlanCardsMenuSection({
               )
             }
             label={CARD_FIELD_LABELS[f]}
-            active={setup.cardFields.includes(f)}
-            disabled={setup.cardSize === 'minimal'}
+            active={setup.cardFields.includes(f) && sizeFields.includes(f)}
+            disabled={!sizeFields.includes(f)}
             onClick={() => toggle(f)}
           />
         ))}

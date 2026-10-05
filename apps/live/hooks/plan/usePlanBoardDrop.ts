@@ -7,6 +7,7 @@
 import { useEffect, useState } from 'react';
 import type { ShapeElement } from '@livediagram/document';
 import {
+  isArchived,
   placeWidget,
   typeIn,
   widgetsOf,
@@ -18,9 +19,17 @@ import {
 import type { PlanContextValue } from '@/components/plan/PlanContext';
 import { boardMoveFor, laneMove } from '@/components/plan/plan-board-moves';
 import { useLatest } from '@/hooks/ui/useLatest';
-import { registerPlanBoardTarget, type PlanIncoming } from './plan-board-targets';
+import {
+  registerPlanBoardTarget,
+  type PlanIncoming,
+  type WidgetPlaced,
+} from './plan-board-targets';
+
+// How long a widget the board already has flashes when it is placed again.
+export const WIDGET_FLASH_MS = 1400;
 import { BOARD_WIDGET_INFO } from '@/components/plan/board-widget-catalogue';
 import { trackSetup } from '@/components/plan/track-board-setup';
+import { track } from '@/lib/telemetry';
 import { usePlanCardDrag, type PlanDropSlot } from './usePlanCardDrag';
 
 export function usePlanBoardDrop(opts: {
@@ -39,9 +48,24 @@ export function usePlanBoardDrop(opts: {
 
   const drop = (itemId: string, slot: PlanDropSlot) => {
     if (!plan || !setup || !projection) return;
-    const move = boardMoveFor(setup, projection, items.get(itemId), itemId, slot);
+    const item = items.get(itemId);
+    // An Archive board (docs/specs/025-plan/items.md "Archive"): a card dropped on it is archived, its
+    // status kept for when it comes back; its own cards stay in their order.
+    if (setup.archive) {
+      if (!item || isArchived(item)) return;
+      plan.patchItem(itemId, { set: { archived: true } });
+      plan.announce('Card archived');
+      track('Plan', 'Moved', 'Archive');
+      return;
+    }
+    const move = boardMoveFor(setup, projection, item, itemId, slot);
     if (!move) return;
     plan.moveItem(itemId, move);
+    // Off an Archive board onto another: it comes back.
+    if (item && isArchived(item)) {
+      plan.patchItem(itemId, { clear: ['archived'] });
+      track('Plan', 'Restored', 'Card');
+    }
     const column = setup.columns.find((c) => c.status === slot.status);
     plan.announce(`Moved to ${column?.name ?? slot.status}`);
   };
@@ -73,10 +97,12 @@ export function usePlanBoardDrop(opts: {
       const item = items.get(itemId);
       return !!setup && !!item && canEdit;
     },
-    refusal: () => 'This board can’t be changed',
+    refusal: () =>
+      setup?.archive ? 'An Archive board takes cards moved to it' : 'This board can’t be changed',
     drop,
     // Every board shows every card type (docs/specs/025-plan/plan-board.md).
-    acceptsType: (_type: string) => !!setup && canEdit,
+    // An Archive board takes cards moved to it, never a new one.
+    acceptsType: (_type: string) => !!setup && canEdit && !setup.archive,
     // A palette card: a new item of the type at the slot, its row's field set. Not opened: the card is
     // there to see, and a click opens it.
     addCard: (type: string, slot: PlanDropSlot) => {
@@ -96,17 +122,32 @@ export function usePlanBoardDrop(opts: {
     },
     canEditWidgets: () => !!setup && canEdit,
     // A palette widget placed in the header (docs/specs/025-plan/board-widgets.md): one board edit.
-    placeWidget: (kind: BoardWidgetKind, slot: number) => {
-      if (!plan || !setup || !canEdit) return;
-      plan.updateBoard(element.id, {
-        ...setup,
-        widgets: placeWidget(widgetsOf(setup), kind, slot),
-      });
+    placeWidget: (kind: BoardWidgetKind, slot: number, opts?: { tap?: boolean }): WidgetPlaced => {
+      if (!plan || !setup || !canEdit) return 'refused';
+      const label = BOARD_WIDGET_INFO[kind].label;
+      const before = widgetsOf(setup);
+      const had = before.includes(kind);
+      // A board holds each widget once: the one it has flashes, so it is found rather than missed.
+      if (had) setFlashWidget((prev) => ({ kind, at: (prev?.at ?? 0) + 1 }));
+      if (had && opts?.tap) return 'already';
+      const next = placeWidget(before, kind, slot);
+      if (next.join() === before.join()) return 'already';
+      plan.updateBoard(element.id, { ...setup, widgets: next });
       trackSetup('Widgets');
-      plan.announce(`${BOARD_WIDGET_INFO[kind].label} added to the board`);
+      plan.announce(had ? `${label} moved` : `${label} added to the board`);
+      return had ? 'moved' : 'added';
     },
   });
   const [widgetSlot, setWidgetSlot] = useState<number | null>(null);
+  // The widget a placement found already there, flashed for a moment.
+  const [flashWidget, setFlashWidget] = useState<{ kind: BoardWidgetKind; at: number } | null>(
+    null,
+  );
+  useEffect(() => {
+    if (!flashWidget) return;
+    const t = window.setTimeout(() => setFlashWidget(null), WIDGET_FLASH_MS);
+    return () => window.clearTimeout(t);
+  }, [flashWidget]);
   useEffect(
     () =>
       registerPlanBoardTarget(element.id, {
@@ -118,10 +159,10 @@ export function usePlanBoardDrop(opts: {
         addCard: (type, slot) => target.current.addCard(type, slot),
         canEditWidgets: () => target.current.canEditWidgets(),
         widgetHover: setWidgetSlot,
-        placeWidget: (kind, slot) => target.current.placeWidget(kind, slot),
+        placeWidget: (kind, slot, opts) => target.current.placeWidget(kind, slot, opts),
       }),
     [element.id, target],
   );
 
-  return { drag, incoming, drop, widgetSlot };
+  return { drag, incoming, drop, widgetSlot, flashWidget: flashWidget?.kind ?? null };
 }

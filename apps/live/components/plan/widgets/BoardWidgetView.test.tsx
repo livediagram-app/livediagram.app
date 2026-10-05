@@ -50,6 +50,9 @@ function ctx(over: Partial<WidgetContext> = {}): WidgetContext {
     trayOpen: false,
     onToggleTray: vi.fn(),
     now: new Date(2026, 9, 5),
+    canEdit: true,
+    onSetup: vi.fn(),
+    onOpenItem: vi.fn(),
     ...over,
   };
 }
@@ -77,7 +80,7 @@ describe('BoardWidgetView', () => {
     expect(screen.getByText('1 person')).toBeTruthy();
     cleanup();
     draw('types');
-    expect(screen.getByRole('img').getAttribute('aria-label')).toBe('1 Task, 1 Note');
+    expect(screen.getByRole('group').getAttribute('aria-label')).toBe('1 Task, 1 Note');
     cleanup();
     draw('due');
     expect(screen.getByText('overdue')).toBeTruthy();
@@ -113,5 +116,69 @@ describe('BoardWidgetView', () => {
     cleanup();
     draw('due', empty);
     expect(screen.getByText('Nothing due')).toBeTruthy();
+  });
+
+  it('narrows the board from People, Card Types and Due Soon, and toggles back', () => {
+    const c = ctx();
+    draw('people', c);
+    fireEvent.click(screen.getByRole('button', { name: "Only Sam's cards" }));
+    expect(c.onQuick).toHaveBeenLastCalledWith({ person: 'sam' });
+    cleanup();
+    draw('people', ctx({ ...c, quick: { person: 'sam' } }));
+    fireEvent.click(screen.getByRole('button', { name: "Only Sam's cards" }));
+    expect(c.onQuick).toHaveBeenLastCalledWith({});
+    cleanup();
+    draw('types', c);
+    fireEvent.click(screen.getByRole('button', { name: /Only Note cards/ }));
+    expect(c.onQuick).toHaveBeenLastCalledWith({ type: 'note' });
+    cleanup();
+    draw('due', c);
+    fireEvent.click(screen.getByRole('button', { name: /overdue/ }));
+    expect(c.onQuick).toHaveBeenLastCalledWith({ dueBy: '2026-10-04' });
+    fireEvent.click(screen.getByRole('button', { name: /due soon/ }));
+    expect(c.onQuick).toHaveBeenLastCalledWith({ dueBy: '2026-10-12' });
+  });
+
+  it('reads "x of y" while narrowed, and shows all when pressed', () => {
+    const c = ctx({ quick: { type: 'note' } });
+    draw('count', c);
+    fireEvent.click(screen.getByRole('button', { name: /Show all/ }));
+    expect(c.onQuick).toHaveBeenCalledWith({});
+  });
+
+  it('sets the last column as done from a board without one', () => {
+    const setup = { ...presetSetup('blank'), voting: { on: false } };
+    delete (setup as { doneColumnId?: string }).doneColumnId;
+    const c = ctx({ setup });
+    draw('progress', c);
+    fireEvent.click(screen.getByRole('button', { name: 'Set Done Column' }));
+    expect(c.onSetup).toHaveBeenCalledWith(
+      expect.objectContaining({ doneColumnId: setup.columns.at(-1)!.id }),
+      'DoneColumn',
+    );
+  });
+
+  it('filters by priority and the unassigned, and opens the top-voted card', () => {
+    const top = item({ title: 'Ship it', status: 'todo', priority: 'urgent', votes: { x: 3 } });
+    const c = ctx({ items: [top, item({ title: 'z', status: 'todo', assignee: SAM })] });
+    draw('priorities', c);
+    fireEvent.click(screen.getByRole('button', { name: /Only Urgent priority/ }));
+    expect(c.onQuick).toHaveBeenLastCalledWith({ priority: 'urgent' });
+    cleanup();
+    draw('unassigned', c);
+    fireEvent.click(screen.getByRole('button', { name: /unassigned/ }));
+    expect(c.onQuick).toHaveBeenLastCalledWith({ person: '-' });
+    cleanup();
+    draw('top-voted', c);
+    fireEvent.click(screen.getByRole('button', { name: /Top voted: Ship it/ }));
+    expect(c.onOpenItem).toHaveBeenCalledWith(top.id);
+    cleanup();
+    draw(
+      'points',
+      ctx({
+        items: [item({ status: 'done', estimate: 2 }), item({ status: 'todo', estimate: 3 })],
+      }),
+    );
+    expect(screen.getByRole('img').getAttribute('aria-label')).toBe('2 of 5 points done');
   });
 });

@@ -9,6 +9,8 @@ import type { PlanDropSlot } from './usePlanCardDrag';
 // What a board under a dragged card shows: the slot it would land in, with the gap's height.
 export type PlanIncoming = { itemId: string; slot: PlanDropSlot; height: number };
 
+export type WidgetPlaced = 'added' | 'moved' | 'already' | 'refused';
+
 export type PlanBoardTarget = {
   // Whether the board shows this item at all (its scope); a card it would hide is refused.
   accepts: (itemId: string) => boolean;
@@ -24,7 +26,8 @@ export type PlanBoardTarget = {
   // the board's widgets, the place a dragged one would land (null: none), and one placed there.
   canEditWidgets: () => boolean;
   widgetHover: (slot: number | null) => void;
-  placeWidget: (kind: BoardWidgetKind, slot: number) => void;
+  // What happened: added, moved (the board had it), or already there (a tap, which never moves one).
+  placeWidget: (kind: BoardWidgetKind, slot: number, opts?: { tap?: boolean }) => WidgetPlaced;
 };
 
 const targets = new Map<string, PlanBoardTarget>();

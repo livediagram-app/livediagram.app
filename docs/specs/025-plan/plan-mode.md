@@ -73,7 +73,7 @@ modes):
 | Category | Holds                                                                                                      |
 | -------- | ---------------------------------------------------------------------------------------------------------- |
 | Cards    | One per [item type](item-types.md) of the document, in its order: Project card, Task card... and any added |
-| Boards   | Kanban, Sprint, Retro, Roadmap, Bug triage, Week, Blank, each with its own picture                         |
+| Boards   | Kanban, Sprint, Retro, Roadmap, Bug triage, Week, Archive, Blank, each with its own picture                |
 | Widgets  | One per [board widget](board-widgets.md) kind, placed in a board's header, never on the canvas             |
 
 - A **board tile** places a Plan board with that preset's set-up. It shows every item of the document whose

@@ -22,6 +22,7 @@ export function BoardWidgetZone({
   canEdit,
   palette,
   dropAt,
+  flash = null,
   onChange,
   render,
 }: {
@@ -30,6 +31,7 @@ export function BoardWidgetZone({
   palette: PlanPalette;
   // Where a widget dragged from the palette would land, while one is over this zone.
   dropAt: number | null;
+  flash?: BoardWidgetKind | null;
   onChange: (next: BoardWidgetKind[]) => void;
   render: (kind: BoardWidgetKind) => ReactNode;
 }) {
@@ -43,13 +45,16 @@ export function BoardWidgetZone({
     // Typing in the Filter box is not a drag.
     if ((e.target as HTMLElement).closest('input, select, textarea')) return;
     setReorder({ kind, startX: e.clientX, dx: 0, slot: widgets.indexOf(kind), moved: false });
-    e.currentTarget.setPointerCapture(e.pointerId);
+    // No pointer capture yet: a press that stays put is a click on the widget's own control, and
+    // capturing here would hand that click to this wrapper instead.
   };
   const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
     if (!reorder || !zone.current) return;
     const dx = e.clientX - reorder.startX;
     const moved = reorder.moved || Math.abs(dx) > REORDER_THRESHOLD_PX;
     if (!moved) return;
+    // Past the threshold it is a drag: follow the pointer even off the widget.
+    if (!reorder.moved) e.currentTarget.setPointerCapture(e.pointerId);
     setReorder({
       ...reorder,
       dx,
@@ -114,10 +119,11 @@ export function BoardWidgetZone({
             aria-label={canEdit ? `${BOARD_WIDGET_INFO[kind].label} widget` : undefined}
             aria-keyshortcuts={canEdit ? 'Alt+ArrowLeft Alt+ArrowRight Delete' : undefined}
             className={`group/widget relative flex shrink-0 items-center rounded-md outline-none focus-visible:ring-2 ${
-              canEdit ? 'cursor-grab active:cursor-grabbing' : ''
-            }`}
+              flash === kind ? 'animate-pulse motion-reduce:animate-none' : ''
+            } ${canEdit ? 'cursor-grab active:cursor-grabbing' : ''}`}
             style={{
               transform: dragged ? `translateX(${reorder!.dx}px)` : undefined,
+              boxShadow: flash === kind ? `0 0 0 2px ${palette.focus}` : undefined,
               zIndex: dragged ? 2 : undefined,
               opacity: dragged ? 0.85 : 1,
               ['--tw-ring-color' as string]: palette.focus,
