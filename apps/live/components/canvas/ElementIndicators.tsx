@@ -4,9 +4,10 @@
 // row along the bottom), or as the pip on the outline when the element has no room for either.
 //
 // Glyphs take the element's own text colour (inherited `currentColor`) at rest opacity, so they
-// suit any fill, theme or preset; hover or selection raises them. Commands stay hidden until then,
-// with their space reserved so nothing moves. Like the other adornments they scale with the canvas
-// and hide below ADORNMENT_MIN_ZOOM.
+// suit any fill, theme or preset; hover raises them. Commands stay hidden until hover, with their
+// space reserved so nothing moves. Selecting the element fades the whole cluster away (its own
+// selection chrome takes those edges) until it is deselected. Like the other adornments they
+// scale with the canvas and hide below ADORNMENT_MIN_ZOOM.
 import {
   ActionIcon,
   CommentIcon,
@@ -37,9 +38,13 @@ const ROUND_PIP_FROM_PX = 10;
 // Resting glyphs are a cue, not text; hover or selection raises them, the pointer's glyph to 1.
 // Spelled out in full so Tailwind sees each class.
 const REST = 'opacity-50';
-const ACTIVE = 'opacity-85';
 const HOVER_ACTIVE = 'group-hover/el:opacity-85';
 const COMMAND_HIDDEN = 'invisible group-hover/el:visible';
+// While the element is selected its handles, "+" buttons and toolbar crowd the same edges, so the
+// whole cluster shrinks and fades out of the way (micro, docs/specs/004-interface-design/motion.md)
+// and comes back on deselect. `inert` takes the hidden buttons out of the tab order too.
+const SHOWN = 'transition';
+const SELECTED_HIDDEN = 'transition pointer-events-none scale-75 opacity-0';
 
 const GLYPHS: Record<IndicatorKind, typeof NoteIcon> = {
   outline: MindOutlineIcon,
@@ -73,7 +78,8 @@ export function ElementIndicators({
   const shape = element.type === 'shape' ? element.shape : undefined;
   if (items.length === 0 || zoom < ADORNMENT_MIN_ZOOM) return null;
 
-  const tone = selected ? ACTIVE : `${REST} ${HOVER_ACTIVE}`;
+  const tone = `${REST} ${HOVER_ACTIVE}`;
+  const shown = selected ? SELECTED_HIDDEN : SHOWN;
   const ordered =
     placed.form === 'footer' || placed.form === 'footer-compact'
       ? [...items.filter((i) => !i.command), ...items.filter((i) => i.command)]
@@ -83,7 +89,7 @@ export function ElementIndicators({
     const inset = placed.pip ?? badgeCornerInset(shape, element.width, element.height, cornerPx);
     // Glyph buttons only: the comment count inside one is already optically centred.
     const pipGlyphs = ordered.map((item) => (
-      <IndicatorButton key={item.kind} item={item} tone={tone} selected={selected} size={11} />
+      <IndicatorButton key={item.kind} item={item} tone={tone} size={11} />
     ));
     const round = shape === 'circle' || shape === 'stadium' || cornerPx >= ROUND_PIP_FROM_PX;
     return (
@@ -96,7 +102,8 @@ export function ElementIndicators({
           transform: 'translate(50%, -50%)',
           backgroundColor: fill,
         }}
-        className={`pointer-events-auto absolute flex h-[22px] items-center px-0.5 ring-1 ring-current/15 ${
+        inert={selected}
+        className={`pointer-events-auto absolute flex h-[22px] items-center px-0.5 ring-1 ring-current/15 ${shown} ${
           fill ? '' : 'bg-white dark:bg-slate-800'
         } ${round ? 'rounded-full' : 'rounded-md'}`}
       >
@@ -118,10 +125,11 @@ export function ElementIndicators({
           padding: TOP_BACKING_PAD_PX,
           backgroundColor: fill,
         }}
-        className="pointer-events-auto absolute flex items-center rounded"
+        inert={selected}
+        className={`pointer-events-auto absolute flex items-center rounded ${shown}`}
       >
         {ordered.map((item) => (
-          <IndicatorButton key={item.kind} item={item} tone={tone} selected={selected} size={14} />
+          <IndicatorButton key={item.kind} item={item} tone={tone} size={14} />
         ))}
       </div>
     );
@@ -139,14 +147,15 @@ export function ElementIndicators({
         paddingInline: FOOTER_PAD_PX,
         backgroundColor: fill,
       }}
-      className="pointer-events-auto absolute flex items-center gap-2.5 rounded text-[11px] font-medium leading-none"
+      inert={selected}
+      className={`pointer-events-auto absolute flex items-center gap-2.5 rounded text-[11px] font-medium leading-none ${shown}`}
     >
       {ordered.map((item) => (
         <IndicatorButton
           key={item.kind}
           item={item}
           tone={tone}
-          selected={selected}
+
           size={12}
           footer={compact ? 'compact' : 'labelled'}
         />
@@ -158,19 +167,17 @@ export function ElementIndicators({
 function IndicatorButton({
   item,
   tone,
-  selected,
   size,
   footer,
 }: {
   item: IndicatorItem;
   tone: string;
-  selected: boolean;
   size: number;
   footer?: 'labelled' | 'compact';
 }) {
   const Glyph = GLYPHS[item.kind];
   const extra = item.dataAttr ? { [item.dataAttr]: '' } : {};
-  const hidden = item.command && !selected ? COMMAND_HIDDEN : '';
+  const hidden = item.command ? COMMAND_HIDDEN : '';
   const lead =
     footer && item.assignee ? (
       <GlyphDisc

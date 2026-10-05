@@ -310,8 +310,7 @@ as a list is how people already think about an outline.
 
 **Where.** A map's **root** (the node `mindRootOf` names, so a node whose parent was deleted
 counts as a root too) with at least one child carries an **Edit Outline** command among its
-[element indicators](../008-canvas/element-indicators.md), shown while the root is hovered or
-selected (unless the person turned indicators off) (a command, not status, so hidden at rest): leading its link, note, action and comment
+[element indicators](../008-canvas/element-indicators.md), shown while the pointer is over the root (a command, not status, so hidden at rest, and not shown at all when the person turned indicators off): leading its link, note, action and comment
 indicators. One click opens the dialog. **Edit Outline** is also in a root's Mind Map menu section, under Tidy Map (the way
 in for a root with no children yet). Beside Edit Outline, a **Tidy Map** command lays the map out tidily again, exactly as the Mind Map
 menu's Tidy Map does (one undo step, `Element` · `Changed` · `MindTidy`). Not on other nodes: the

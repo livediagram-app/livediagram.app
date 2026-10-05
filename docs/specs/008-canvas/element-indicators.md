@@ -29,8 +29,8 @@ shape (circle, diamond, hexagon, cloud, triangle, trapezoid, star, actor) they a
 along the top, since that shape has no corner for them to sit in.
 
 - Each is a 14px line glyph in the element's own **text colour** at 50% opacity, so they suit any
-  fill, theme or style preset. While the element is hovered or selected they rise to 85%, and the
-  glyph under the pointer to 100%.
+  fill, theme or style preset. While the element is hovered they rise to 85%, and the glyph under
+  the pointer to 100%.
 - Order, left to right: link, note, action, comment. The comment glyph carries its count beside it
   in small bold digits. Comment sits last because it is the most frequent and most urgent: the
   far-right spot is the first one the eye finds.
@@ -45,7 +45,7 @@ shows its metadata, with words beside the glyphs:
 - **Link** (link glyph + "Link"), **Note** (note glyph + "Note"), the action as the assignee's
   initials on a small disc in their colour + "Action", and comments as the comment glyph + the
   count.
-- Same colour rules as Top: the element's text colour at 50%, 85% on hover or selection.
+- Same colour rules as Top: the element's text colour at 50%, 85% on hover.
 - When the labelled row does not fit, the words drop and the row shows glyphs, the disc and the
   count only (**compact**).
 - On box-like elements the row starts at the bottom-left; on the round or pointed shapes Top
@@ -96,13 +96,23 @@ in from the box's top-right corner meets the outline; on a round or pointed shap
 the outline down its middle (a circle's top, a diamond's or triangle's apex), never in the empty
 box corner beside it. Footer tries its compact row before falling back.
 
+## While selected
+
+Selecting an element puts its own chrome on the same edges: the selection box, its handles, the
+"+" buttons and the toolbar. So while it is **selected**, its indicators **shrink and fade out**
+(to 75% and transparent, over 150ms, the `micro` motion of
+[Motion](../004-interface-design/motion.md); instant under reduced motion), and they come back the
+same way when it is deselected. Hidden, they take no clicks and leave the tab order. Nothing else
+moves: content that moved out of their way stays put, so selecting never shifts the label.
+
 ## Commands
 
 A mind map root's **Edit Outline** and **Tidy Map** are commands, not status, so they are hidden
-at rest and appear only while that root is **hovered or selected**. In Top they lead the cluster
-(left of the indicators); in Footer they end the row; in the pip they lead it. Their space is
-reserved at rest, so nothing moves when they appear. Both stay in the root's Mind Map menu section
-too, which is the way in on a touch device without selecting first.
+at rest and appear only while the pointer is over that root (not while it is selected, when the
+whole cluster is out of the way). In Top they lead the cluster (left of the indicators); in Footer
+they end the row; in the pip they lead it. Their space is reserved at rest, so nothing moves when
+they appear. Both stay in the root's Mind Map menu section too, which is the way in on a touch
+device or from the keyboard.
 
 ## Unchanged
 
@@ -119,7 +129,8 @@ too, which is the way in on a touch device without selecting first.
 - Every glyph is a real `button` with an `aria-label` ("Follow link", "Open note", "Open action",
   "Open 2 comments", "Edit Outline", "Tidy Map") and a visible focus ring.
 - A hidden command is `visibility: hidden`, so it is out of the tab order and the accessibility
-  tree until the root is selected; selecting a root by keyboard reveals it.
+  tree until the root is hovered; from the keyboard, the root's Mind Map menu has both.
+- While the element is selected the cluster is `inert`: no focus, no clicks, not announced.
 - The 50% resting glyph is a status cue, not text; the action's assignee and the comment count are
   also in the button's label.
 

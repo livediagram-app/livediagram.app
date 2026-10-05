@@ -132,10 +132,13 @@ export function contentShift(
 - Style `'off'` (or no items) → `useIndicatorLayout` returns null: nothing drawn, no inset.
 - Placement is memoised on the shape, size, corner, border radius, stroke width, the items' kinds
   and counts, the style and every `ContentLayout` field (icon size, side and gap included).
-- Commands: `visibility: hidden` unless the element root (`group/el`) is hovered or the element is
-  selected; their width is always part of the size so nothing moves when they appear.
-- Hover / selection raises the glyphs from `opacity-50` (`REST`) to `opacity-85` (`ACTIVE`); the
-  glyph under the pointer reaches 1.
+- Commands: `visibility: hidden` unless the element root (`group/el`) is hovered; their width is
+  always part of the size so nothing moves when they appear.
+- Selected (`isSelected`): every container takes `pointer-events-none scale-75 opacity-0` and
+  `inert`; unselected, plain `transition` (Tailwind's default, `micro` 150ms, over opacity and
+  scale). The layout and the content inset do not change with selection.
+- Hover raises the glyphs from `opacity-50` (`REST`) to `group-hover/el:opacity-85`; the glyph
+  under the pointer reaches 1.
 
 ## Presentation and UX
 
@@ -156,6 +159,7 @@ export function contentShift(
 
 - Buttons with the labels in the spec; focus-visible ring 2px in the text colour.
 - Hidden commands use `visibility: hidden` (out of tab order and AX tree).
+- A selected element's cluster is `inert`.
 - Link and action keep their `HoverCard`s.
 
 ## Errors and edge cases
@@ -210,7 +214,8 @@ Placement is pure and deterministic; no logs. A style change is the telemetry ev
 | Content box counts an inline icon                              | same                                                     |
 | Content shift: twice for middle, refuses against the alignment | same                                                     |
 | Unknown style reads as Top; Footer and Off read back           | `apps/live/lib/element-indicator-style.test.ts`          |
-| Commands hidden at rest, shown when selected; labels; counts   | `apps/live/components/canvas/ElementIndicators.test.tsx` |
+| Commands hidden until hover; labels; counts                    | `apps/live/components/canvas/ElementIndicators.test.tsx` |
+| Selected: the cluster fades out and is inert; back on deselect | same                                                     |
 | Off draws nothing                                              | same                                                     |
 | Icon + label move down under Top; clear content stays          | same                                                     |
 | Scale label shrinks evenly; nothing moves for the pip          | same                                                     |

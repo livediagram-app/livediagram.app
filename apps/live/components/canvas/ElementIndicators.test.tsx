@@ -70,7 +70,7 @@ function Placed({
 }
 
 describe('ElementIndicators', () => {
-  it('prints the glyphs inside a roomy element’s corner, commands hidden at rest', () => {
+  it('prints the glyphs inside a roomy element’s corner, commands hidden until hover', () => {
     const { container } = draw(shape('mind-node', 260, 116));
     expect(container.querySelector('[data-indicators="top"]')).not.toBeNull();
     expect(screen.getByRole('button', { name: 'Open 2 comments' })).toBeTruthy();
@@ -80,12 +80,19 @@ describe('ElementIndicators', () => {
     expect(outline.className).toContain('group-hover/el:visible');
   });
 
-  it('shows the commands while the element is selected', () => {
-    draw(shape('mind-node', 260, 116), { selected: true });
-    expect(screen.getByRole('button', { name: 'Edit Outline' }).className).not.toContain(
-      'invisible',
-    );
-    expect(screen.getByRole('button', { name: 'Tidy Map' })).toBeTruthy();
+  it('fades the whole cluster out while the element is selected, and back on deselect', () => {
+    const el = shape('mind-node', 260, 116);
+    const { container, rerender } = render(<Placed el={el} list={items()} selected />, {
+      wrapper: ({ children }) => (
+        <ElementIndicatorStyleProvider style="top">{children}</ElementIndicatorStyleProvider>
+      ),
+    });
+    const cluster = container.querySelector<HTMLElement>('[data-indicators="top"]')!;
+    expect(cluster.className).toContain('opacity-0');
+    expect(cluster.hasAttribute('inert')).toBe(true);
+    rerender(<Placed el={el} list={items()} selected={false} />);
+    expect(cluster.className).not.toContain('opacity-0');
+    expect(cluster.hasAttribute('inert')).toBe(false);
   });
 
   it('opens what a glyph stands for', () => {
