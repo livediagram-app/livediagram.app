@@ -1,6 +1,6 @@
 'use client';
 
-import { useId, useRef, useState, type FormEvent } from 'react';
+import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
 import { createPortal } from 'react-dom';
 import {
   COMMUNITY_REPORT_NOTE_MAX,
@@ -26,6 +26,11 @@ export function ReportDialog({ postId, onClose }: { postId: string; onClose: () 
   const [note, setNote] = useState('');
   const [phase, setPhase] = useState<Phase>('editing');
   useFocusTrap(ref);
+  // Sending disables the focused Send button, which drops focus out of the dialog; when a send fails, bring it back
+  // inside (the dialog itself), so the trap holds and the alert is read in place.
+  useEffect(() => {
+    if (phase === 'failed' || phase === 'gone') ref.current?.focus({ preventScroll: true });
+  }, [phase]);
   useEscape(onClose, { enabled: phase !== 'sending' });
 
   const submit = (e: FormEvent) => {

@@ -162,6 +162,8 @@ describe('reporting', () => {
     fireEvent.click(within(dialog).getByRole('radio', { name: 'Offensive' }));
     fireEvent.click(within(dialog).getByRole('button', { name: 'Send Report' }));
     expect(await within(dialog).findByRole('alert')).toBeTruthy();
+    // Focus is back inside the dialog, not lost behind it.
+    expect(dialog.contains(document.activeElement)).toBe(true);
     expect(h.telemetry.reported).not.toHaveBeenCalled();
     fireEvent.keyDown(document, { key: 'Escape' });
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());

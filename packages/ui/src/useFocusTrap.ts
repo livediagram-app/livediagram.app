@@ -69,10 +69,14 @@ export function useFocusTrap(ref: RefObject<HTMLElement | null>, active = true):
     node.addEventListener('keydown', onKey);
     return () => {
       node.removeEventListener('keydown', onKey);
-      // Only restore if focus is still inside the (closing) modal, so we don't
-      // yank focus away from wherever the user has since clicked.
-      if (node.contains(document.activeElement)) {
-        previouslyFocused?.focus?.({ preventScroll: true });
+      // Restore when focus is still inside the (closing) modal, or has been lost
+      // to the page: React runs this cleanup after an unmounting modal has left
+      // the DOM, by when its focused control is gone and focus sits on <body>.
+      // Never yank focus away from somewhere the user has since clicked.
+      const now = document.activeElement;
+      const lost = now === null || now === document.body;
+      if ((lost || node.contains(now)) && previouslyFocused?.isConnected) {
+        previouslyFocused.focus?.({ preventScroll: true });
       }
     };
   }, [ref, active]);
