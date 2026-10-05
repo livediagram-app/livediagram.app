@@ -4,7 +4,7 @@
 // foot of the column that opens the Add a Card popover. The board's N key opens it for the focused
 // card's cell (`open`).
 import { useCallback, useRef, useState } from 'react';
-import type { ItemPerson, ItemTypeDef } from '@livediagram/items';
+import type { ItemTypeDef } from '@livediagram/items';
 import { PlusIcon } from '@livediagram/ui';
 import { AddCardPopover, type NewCard } from './AddCardPopover';
 import type { PlanPalette } from './plan-palette';
@@ -12,8 +12,6 @@ import type { PlanPalette } from './plan-palette';
 export function AddCardButton({
   palette,
   types,
-  people,
-  defaultType,
   label = 'Add card',
   open: openNow = false,
   onClosed,
@@ -21,8 +19,6 @@ export function AddCardButton({
 }: {
   palette: PlanPalette;
   types: readonly ItemTypeDef[];
-  people: readonly ItemPerson[];
-  defaultType: string;
   label?: string;
   // Asked to open from elsewhere (the N key); `onClosed` says it has closed.
   open?: boolean;
@@ -60,8 +56,6 @@ export function AddCardButton({
         <AddCardPopover
           getAnchor={getAnchor}
           types={types}
-          people={people}
-          defaultType={defaultType}
           onAdd={onAdd}
           onClose={(restoreFocus) => {
             setOpen(false);

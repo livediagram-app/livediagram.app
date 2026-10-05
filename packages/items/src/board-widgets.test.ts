@@ -75,7 +75,7 @@ describe('preset widgets', () => {
     expect(presetSetup('sprint').widgets).toContain('points');
     expect(presetSetup('bug-triage').widgets).toContain('priorities');
     expect(presetSetup('retro').widgets).toContain('top-voted');
-    expect(presetSetup('blank').widgets).toBeUndefined();
+    expect(presetSetup('blank').widgets).toEqual(['count', 'progress', 'people', 'filter', 'mine']);
   });
 
   it('narrow to the unassigned and to a priority', async () => {

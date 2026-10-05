@@ -7,6 +7,7 @@ import { setPlanWidgetEditor } from '@/hooks/plan/plan-widget-drop';
 import { debugLog } from '@/lib/debug-log';
 import { usePlanItems } from '@/hooks/plan/usePlanItems';
 import { usePlanNeeded } from '@/hooks/plan/usePlanNeeded';
+import { usePlanStatusNames } from '@/hooks/plan/usePlanStatusNames';
 import { useItemTypes } from '@/hooks/plan/useItemTypes';
 import { PLAN_LEFT_OUT_TOOLS, useModeDefaultTool } from '@/hooks/editor/useModeDefaultTool';
 import { useItemUndo } from '@/hooks/plan/useItemUndo';
@@ -1964,6 +1965,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
 
   // Plan boards and cards (docs/specs/025-plan/): the item panel, board set-up and every action a board
   // takes, handed to the canvas through PlanContext. See usePlanSlice.
+  // The tab's status names, read only where Plan is in play (docs/specs/025-plan/plan-mode.md "Cost").
+  const planStatusNames = usePlanStatusNames(activeTab.elements, planNeeded);
   const plan = usePlanSlice({
     planItems,
     itemTypes,
@@ -1977,6 +1980,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     select: setSelectedId,
     announce,
     addItemSlide: slideDeck.newItemSlide,
+    statusNames: planStatusNames,
   });
 
   // Undo / redo handlers. See useEditorHistory.

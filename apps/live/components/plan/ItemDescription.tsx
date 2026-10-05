@@ -72,7 +72,7 @@ export function ItemDescription({
       note={false}
       label="Description"
       placeholder="Add a description…"
-      surfaceClassName="min-h-40 max-h-[28rem] resize-y"
+      surfaceClassName="min-h-40 max-h-[28rem] resize-y sm:min-h-[18rem] sm:max-h-[36rem]"
       onChange={(plain, runs) => {
         pending.current = { plain, runs };
         if (timer.current) clearTimeout(timer.current);

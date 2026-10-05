@@ -17,7 +17,7 @@ import {
   type PlanBoardSetup,
 } from '@livediagram/items';
 import type { PlanContextValue } from '@/components/plan/PlanContext';
-import { boardMoveFor, laneMove } from '@/components/plan/plan-board-moves';
+import { boardMoveFor, cellStatus, laneMove } from '@/components/plan/plan-board-moves';
 import { useLatest } from '@/hooks/ui/useLatest';
 import {
   registerPlanBoardTarget,
@@ -113,7 +113,7 @@ export function usePlanBoardDrop(opts: {
       plan.addItem({
         type: def.id,
         fields: { title: def.newTitle, ...(set.set ?? {}) },
-        status: slot.status,
+        status: cellStatus(setup, slot.status, lane),
         after: null,
         before: slot.beforeId,
       });

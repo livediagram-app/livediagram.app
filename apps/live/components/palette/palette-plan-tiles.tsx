@@ -47,6 +47,11 @@ const BOARDS: { preset: PlanBoardPresetId; caption: string; description: string 
     description: 'A column a day, Monday to Friday.',
   },
   {
+    preset: 'all-cards',
+    caption: 'All Cards',
+    description: 'Every card in the document, a row per status: nothing lost between boards.',
+  },
+  {
     preset: 'archive',
     caption: 'Archive',
     description: 'Every archived card, out of the way of the other boards, ready to restore.',

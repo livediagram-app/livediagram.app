@@ -39,6 +39,7 @@ const ROW_GLYPHS: Record<SwimlaneBy, string> = {
   type: 'task',
   priority: 'flag',
   parent: 'project',
+  status: 'action',
 };
 const FIELD_GLYPHS: Record<CardField, string> = {
   key: 'bookmark',

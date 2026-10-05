@@ -62,3 +62,30 @@ describe('widget quick filters', () => {
     expect(quickFilterMatches({ dueBy: '2026-10-07' }, item({ title: 'c' }))).toBe(false);
   });
 });
+
+describe('fresh boards and All Cards', () => {
+  it('gives a placed board statuses of its own, so it starts empty', async () => {
+    const { freshBoardSetup } = await import('./presets');
+    const s = freshBoardSetup('kanban', () => 0.5);
+    expect(s.columns.every((c) => /~[a-z0-9]{4}$/.test(c.status))).toBe(true);
+    const p = projectBoard(s, map([item({ title: 'old', status: 'todo' })]));
+    expect(p.total).toBe(0);
+    expect(freshBoardSetup('archive').columns[0]!.status).toBe('archived');
+  });
+
+  it('shows every card on an All Cards board, a row per status named by the tab', async () => {
+    const { statusLabel } = await import('./board');
+    const a = item({ title: 'a', status: 'todo~x1y2' });
+    const b = item({ title: 'b', status: 'done' });
+    const c = item({ title: 'c', status: 'todo', archived: true });
+    const names = new Map([
+      ['todo~x1y2', 'To do'],
+      ['doing', 'In progress'],
+      ['done', 'Done'],
+    ]);
+    const p = projectBoard(presetSetup('all-cards'), map([a, b, c]), undefined, undefined, names);
+    expect(p.total).toBe(2);
+    expect(p.lanes.map((l) => l.label)).toEqual(['To do', 'In progress', 'Done']);
+    expect(statusLabel('in-review~ab12')).toBe('In review');
+  });
+});

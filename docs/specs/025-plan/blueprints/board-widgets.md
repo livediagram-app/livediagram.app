@@ -93,7 +93,7 @@ apps/live/components/palette/palette-plan-tiles.tsx   a tile per kind, section `
 - Pill: `h-7 rounded-md border px-2 text-[12px] font-medium`, border `palette.border`, text `palette.muted`,
   figures `palette.text`; WIP over: `palette.warning` on `palette.warningBg`.
 - Drop / reorder bar: 2 × 24 px, `palette.focus`. A zone under a palette drag: 1.5 px dashed `palette.focus`.
-- Empty zone copy for an editor: "Drag widgets here from the palette".
+- Empty zone copy for an editor: "Drag Widgets here from the palette".
 - × : 16 px disc at the wrapper's top right, shown on hover and focus-within, always on a coarse pointer.
 
 ## Accessibility

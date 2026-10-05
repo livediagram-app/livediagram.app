@@ -11,8 +11,21 @@ import {
 import type { PlanDropSlot } from '@/hooks/plan/usePlanCardDrag';
 
 // The fields a row stands for, set on a card dropped into it.
+// The status a card in a cell has (docs/specs/025-plan/plan-board.md "All Cards"): its column's, or on an
+// All Cards board, its status row's.
+export function cellStatus(
+  setup: PlanBoardSetup,
+  columnStatus: string,
+  lane: LaneHead | undefined,
+): string {
+  return setup.allCards && lane?.field === 'status' && typeof lane.value === 'string'
+    ? lane.value
+    : columnStatus;
+}
+
 export function laneMove(lane: LaneHead | undefined): Pick<ItemMove, 'set' | 'clear' | 'type'> {
-  if (!lane || !lane.field) return {};
+  // A status row moves the card by its status, which the move itself carries.
+  if (!lane || !lane.field || lane.field === 'status') return {};
   if (lane.field === 'type') return typeof lane.value === 'string' ? { type: lane.value } : {};
   return lane.value === null ? { clear: [lane.field] } : { set: { [lane.field]: lane.value } };
 }
@@ -47,11 +60,16 @@ export function boardMoveFor(
   const lane = projection.lanes.find((l) => l.key === slot.laneKey);
   const currentLane = laneOfItem(projection, itemId);
   const shown = currentLane !== undefined;
+  const status = cellStatus(setup, slot.status, lane);
   const sameCell =
-    shown && item?.fields['status'] === slot.status && (!withLanes || currentLane === slot.laneKey);
+    shown && item?.fields['status'] === status && (!withLanes || currentLane === slot.laneKey);
   if (sameCell && slot.beforeId === nextInCell(projection, itemId)) return null;
+  // An All Cards board with no status row under the drop leaves the card's status as it is.
+  if (setup.allCards && status === slot.status && typeof item?.fields['status'] === 'string') {
+    return { status: item.fields['status'], before: slot.beforeId };
+  }
   return {
-    status: slot.status,
+    status,
     before: slot.beforeId,
     ...(withLanes && currentLane !== slot.laneKey ? laneMove(lane) : {}),
   };

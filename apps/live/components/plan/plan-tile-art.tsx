@@ -7,6 +7,17 @@ import { accentVars } from './plan-palette';
 // One picture per board preset, so the Boards category reads at a glance (docs/specs/025-plan/
 // plan-mode.md "The palette"), on a 22-unit grid like the other palette glyphs.
 const BOARD_ART: Record<string, React.ReactNode> = {
+  // A board of rows, each led by a status dot: every card, by status.
+  'all-cards': (
+    <>
+      <rect x="1.5" y="3" width="19" height="16" rx="2" />
+      <path d="M1.5 8.5h19M1.5 13.5h19" />
+      <circle cx="4.5" cy="5.75" r="1" />
+      <circle cx="4.5" cy="11" r="1" />
+      <circle cx="4.5" cy="16.25" r="1" />
+      <path d="M7.5 5.75h4M7.5 11h7M7.5 16.25h3" />
+    </>
+  ),
   // A box with its lid: the cards put away.
   archive: (
     <>
@@ -215,6 +226,16 @@ export function BoardWidgetArt({ kind, size = 18 }: { kind: BoardWidgetKind; siz
   return (
     <Glyph size={size} units={22}>
       {WIDGET_ART[kind]}
+    </Glyph>
+  );
+}
+
+// An "i" in a circle: the hint a board's empty widget zone gives.
+export function InfoArt({ size = 14 }: { size?: number }) {
+  return (
+    <Glyph size={size} units={22}>
+      <circle cx="11" cy="11" r="8" />
+      <path d="M11 10v5.5M11 7v.25" />
     </Glyph>
   );
 }

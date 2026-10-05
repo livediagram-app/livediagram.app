@@ -3,16 +3,10 @@
 // "Add a card" (docs/specs/025-plan/plan-board.md "Working on a board"): a cell's Add card button
 // opens this popover, as Illustrate's + opens "Add a page". It offers the card types the board shows,
 // each a tile with its glyph on its colour; choosing one adds a card of it (titled "New task"...) at
-// the end of the cell. Under the tiles, a title can be typed instead: Enter adds it, and `@name`,
-// `#label`, `!high`, `~3` and a leading `note:` fill it in. Arrow keys move between tiles; Escape or
+// the end of the cell, to be titled in place or in its panel. Arrow keys move between tiles; Escape or
 // an outside press closes. On a phone it is a bottom sheet.
 import { useLayoutEffect, useRef, useState, type KeyboardEvent } from 'react';
-import {
-  parseQuickAdd,
-  type ItemFields,
-  type ItemPerson,
-  type ItemTypeDef,
-} from '@livediagram/items';
+import { type ItemFields, type ItemTypeDef } from '@livediagram/items';
 import { useClickOutside, useEscape } from '@livediagram/ui';
 import { Portal } from '@/components/primitives/Portal';
 import { BottomSheet } from '@/components/primitives/BottomSheet';
@@ -30,8 +24,6 @@ export type NewCard = { type: string; fields: ItemFields };
 export function AddCardPopover({
   getAnchor,
   types,
-  people,
-  defaultType,
   onAdd,
   onClose,
 }: {
@@ -39,9 +31,6 @@ export function AddCardPopover({
   getAnchor: () => HTMLElement | null;
   // The types this board shows, in the document's order.
   types: readonly ItemTypeDef[];
-  people: readonly ItemPerson[];
-  // The type a typed title takes when it names none.
-  defaultType: string;
   onAdd: (card: NewCard) => void;
   onClose: (restoreFocus: boolean) => void;
 }) {
@@ -49,8 +38,6 @@ export function AddCardPopover({
   const box = useRef<HTMLDivElement>(null);
   const tiles = useRef<(HTMLButtonElement | null)[]>([]);
   const [pos, setPos] = useState<{ left: number; top: number } | null>(null);
-  const [text, setText] = useState('');
-  const parsed = parseQuickAdd(text, people, types);
 
   useLayoutEffect(() => {
     const a = getAnchor()?.getBoundingClientRect();
@@ -69,14 +56,6 @@ export function AddCardPopover({
   const choose = (type: ItemTypeDef) => {
     onClose(false);
     onAdd({ type: type.id, fields: { title: type.newTitle } });
-  };
-  const submit = () => {
-    if (!parsed.title) return;
-    onAdd({
-      type: parsed.type ?? defaultType,
-      fields: { ...parsed.fields, title: parsed.title },
-    });
-    setText('');
   };
   const onTilesKey = (e: KeyboardEvent<HTMLDivElement>) => {
     const step =
@@ -129,41 +108,6 @@ export function AddCardPopover({
             <span className="max-w-full truncate">{t.label}</span>
           </button>
         ))}
-      </div>
-      <div>
-        <input
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              e.preventDefault();
-              submit();
-            }
-          }}
-          placeholder="Or type a title and press Enter"
-          aria-label="New card title. @name assigns, #label labels, !high sets priority, ~3 estimates, note: sets the type"
-          className="w-full rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-[13px] text-slate-800 outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
-        />
-        {parsed.tokens.length > 0 ? (
-          <div className="mt-1.5 flex flex-wrap gap-1 text-[11px]" aria-live="polite">
-            {parsed.tokens.map((t, i) => (
-              <span
-                key={i}
-                className="rounded bg-slate-100 px-1.5 py-px text-slate-700 dark:bg-slate-800 dark:text-slate-200"
-              >
-                {t.kind === 'type'
-                  ? (types.find((x) => x.id === t.type)?.label ?? t.type)
-                  : t.kind === 'assignee'
-                    ? t.person.name
-                    : t.kind === 'label'
-                      ? `#${t.label}`
-                      : t.kind === 'priority'
-                        ? `${t.priority} priority`
-                        : `${t.estimate} pts`}
-              </span>
-            ))}
-          </div>
-        ) : null}
       </div>
     </div>
   );

@@ -72,18 +72,19 @@ and are placed by dragging them into a board's header.
 
 - A new board starts with widgets that suit its kind:
 
-  | Board      | Widgets                                                                          |
-  | ---------- | -------------------------------------------------------------------------------- |
-  | Kanban     | Item Count, Completion, WIP Alerts, Stale Cards, Not on Board, Filter, Only Mine |
-  | Sprint     | Item Count, Points, Completion, People, Filter, Only Mine                        |
-  | Bug Triage | Item Count, Priorities, Unassigned, Filter, Only Mine                            |
-  | Retro      | Item Count, Votes Left, Top Voted, People, Filter                                |
-  | Roadmap    | Item Count, Completion, Due Soon, Filter                                         |
-  | Week       | Item Count, Due Soon, People, Filter, Only Mine                                  |
-  | Archive    | Item Count, Card Types, Filter                                                   |
-  | Blank      | the default set below                                                            |
+  | Board      | Widgets                                                                          | Why                                     |
+  | ---------- | -------------------------------------------------------------------------------- | --------------------------------------- |
+  | Kanban     | Item Count, Completion, WIP Alerts, Stale Cards, Not on Board, Filter, Only Mine | Flow: limits, and work that has stalled |
+  | Sprint     | Points, Completion, People, Unassigned, Filter, Only Mine                        | Burn-up, and who has what               |
+  | Bug Triage | Item Count, Priorities, Unassigned, Stale Cards, Filter                          | Severity, ownership, forgotten bugs     |
+  | Retro      | Votes Left, Top Voted, Card Types, People                                        | Voting, and the shape of the notes      |
+  | Roadmap    | Item Count, Completion, Due Soon, People, Filter                                 | Dates and progress                      |
+  | Week       | Due Soon, Item Count, People, Only Mine, Filter                                  | What is due this week                   |
+  | All Cards  | Item Count, Card Types, Priorities, Unassigned, Filter                           | Sweeping every card, finding orphans    |
+  | Archive    | Item Count, Card Types, Filter                                                   | Finding a card to restore               |
+  | Blank      | Item Count, Completion, People, Filter, Only Mine                                | A start to build on                     |
 
-- The default set, for a Blank board: **Item Count, Completion, Not on Board, Filter, Only Mine**, plus
+- A board saved before widgets existed (and so naming none) shows the default set: **Item Count, Completion, Not on Board, Filter, Only Mine**, plus
   **Votes Left** on a board with voting on.
 - A board saved before widgets existed shows that same default set, so it looks as it did.
 

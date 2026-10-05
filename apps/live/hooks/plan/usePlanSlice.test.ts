@@ -17,6 +17,7 @@ describe('usePlanSlice', () => {
   const itemTypes = { types: ITEM_TYPES } as never;
   const presence = new Map();
   const participants: never[] = [];
+  const statusNames = new Map<string, string>();
 
   it('keeps the context while the editor hands over fresh callbacks', () => {
     const { result, rerender } = renderHook(() =>
@@ -28,6 +29,7 @@ describe('usePlanSlice', () => {
         canVote: true,
         participants,
         presence,
+        statusNames,
         // Fresh every render, as the editor's are.
         commit: () => {},
         select: () => {},
@@ -54,6 +56,7 @@ describe('usePlanSlice', () => {
         canVote: true,
         participants,
         presence,
+        statusNames,
         commit: () => commits.push(tag),
         select: () => {},
         announce: () => {},

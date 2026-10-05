@@ -12,6 +12,7 @@ export const PLAN_BOARD_PRESET_IDS = [
   'roadmap',
   'weekly',
   'archive',
+  'all-cards',
 ] as const;
 export type PlanBoardPresetId = (typeof PLAN_BOARD_PRESET_IDS)[number];
 
@@ -33,6 +34,7 @@ export const PLAN_BOARD_PRESETS: Readonly<
       swimlaneBy: 'none',
       cardFields: WORK_FIELDS,
       voting: { on: false },
+      widgets: ['count', 'progress', 'people', 'filter', 'mine'],
       hideWriting: false,
     },
   },
@@ -69,7 +71,7 @@ export const PLAN_BOARD_PRESETS: Readonly<
       swimlaneBy: 'assignee',
       cardFields: ['key', 'type', 'priority', 'labels', 'estimate', 'checklist'],
       voting: { on: false },
-      widgets: ['count', 'points', 'progress', 'people', 'filter', 'mine'],
+      widgets: ['points', 'progress', 'people', 'unassigned', 'filter', 'mine'],
       hideWriting: false,
     },
   },
@@ -88,7 +90,7 @@ export const PLAN_BOARD_PRESETS: Readonly<
       swimlaneBy: 'priority',
       cardFields: ['key', 'assignee', 'labels', 'due'],
       voting: { on: false },
-      widgets: ['count', 'priorities', 'unassigned', 'filter', 'mine'],
+      widgets: ['count', 'priorities', 'unassigned', 'stale', 'filter'],
       hideWriting: false,
     },
   },
@@ -105,7 +107,7 @@ export const PLAN_BOARD_PRESETS: Readonly<
       swimlaneBy: 'none',
       cardFields: ['assignee', 'votes'],
       voting: { on: true, budget: 5 },
-      widgets: ['count', 'votes', 'top-voted', 'people', 'filter'],
+      widgets: ['votes', 'top-voted', 'types', 'people'],
       hideWriting: true,
     },
   },
@@ -117,7 +119,7 @@ export const PLAN_BOARD_PRESETS: Readonly<
       swimlaneBy: 'none',
       cardFields: ['key', 'assignee', 'labels'],
       voting: { on: false },
-      widgets: ['count', 'progress', 'due', 'filter'],
+      widgets: ['count', 'progress', 'due', 'people', 'filter'],
       hideWriting: false,
     },
   },
@@ -135,7 +137,22 @@ export const PLAN_BOARD_PRESETS: Readonly<
       swimlaneBy: 'none',
       cardFields: ['type', 'due', 'checklist'],
       voting: { on: false },
-      widgets: ['count', 'due', 'people', 'filter', 'mine'],
+      widgets: ['due', 'count', 'people', 'mine', 'filter'],
+      hideWriting: false,
+    },
+  },
+  // Every card that is not archived, a row per status (docs/specs/025-plan/plan-board.md "All Cards").
+  'all-cards': {
+    label: 'All Cards',
+    setup: {
+      title: 'All Cards',
+      columns: [col('all', 'All Cards')],
+      swimlaneBy: 'status',
+      cardFields: ['key', 'type', 'assignee', 'priority', 'due'],
+      cardSize: 'compact',
+      allCards: true,
+      widgets: ['count', 'types', 'priorities', 'unassigned', 'filter'],
+      voting: { on: false },
       hideWriting: false,
     },
   },
@@ -168,4 +185,17 @@ export function isPlanBoardPresetId(id: unknown): id is PlanBoardPresetId {
 // A palette tile's preset, or the blank board for anything else.
 export function presetSetupOrBlank(id: unknown): PlanBoardSetup {
   return presetSetup(isPlanBoardPresetId(id) ? id : 'blank');
+}
+
+// A board placed on the canvas starts empty (docs/specs/025-plan/plan-mode.md "The palette"): its columns
+// get statuses of their own (`todo~k3f9`), so no card the document already has lands on it. An Archive
+// or All Cards board shows cards by what they are, not by status, so it keeps its columns as they are.
+export function freshBoardSetup(id: unknown, random: () => number = Math.random): PlanBoardSetup {
+  const setup = presetSetupOrBlank(id);
+  if (setup.archive || setup.allCards) return setup;
+  const suffix = Array.from({ length: 4 }, () => Math.floor(random() * 36).toString(36)).join('');
+  return {
+    ...setup,
+    columns: setup.columns.map((c) => ({ ...c, status: `${c.status}~${suffix}` })),
+  };
 }

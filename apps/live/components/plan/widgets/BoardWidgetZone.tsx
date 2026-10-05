@@ -10,6 +10,7 @@ import { placeWidget, removeWidget, nudgeWidget, type BoardWidgetKind } from '@l
 import { CloseIcon } from '@livediagram/ui';
 import type { PlanPalette } from '../plan-palette';
 import { BOARD_WIDGET_INFO } from '../board-widget-catalogue';
+import { InfoArt } from '../plan-tile-art';
 import { widgetSlotAt } from '@/hooks/plan/plan-widget-drop';
 
 // Pixels a press travels before it is a reorder rather than a click.
@@ -93,7 +94,14 @@ export function BoardWidgetZone({
           outline: dropAt !== null ? `1.5px dashed ${palette.focus}` : undefined,
         }}
       >
-        {dropAt !== null ? bar('drop') : canEdit ? 'Drag widgets here from the palette' : null}
+        {dropAt !== null ? (
+          bar('drop')
+        ) : canEdit ? (
+          <span className="inline-flex items-center gap-1.5">
+            <InfoArt />
+            Drag Widgets here from the palette
+          </span>
+        ) : null}
       </div>
     );
   }

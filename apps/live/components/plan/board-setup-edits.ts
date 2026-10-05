@@ -26,6 +26,7 @@ export const SWIMLANE_LABELS: Record<SwimlaneBy, string> = {
   type: 'By Card Type',
   priority: 'By Priority',
   parent: 'By Project',
+  status: 'By Status',
 };
 
 export const CARD_FIELD_LABELS: Record<CardField, string> = {

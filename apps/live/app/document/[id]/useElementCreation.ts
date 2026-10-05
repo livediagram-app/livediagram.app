@@ -1,4 +1,4 @@
-import { presetSetupOrBlank } from '@livediagram/items';
+import { freshBoardSetup } from '@livediagram/items';
 import type { Selection } from '@/lib/selection-store';
 import { type Dispatch, type SetStateAction } from 'react';
 import {
@@ -404,7 +404,7 @@ export function useElementCreation(opts: {
               ...(art?.choice && kind === 'estimate'
                 ? { estimateScale: art.choice as EstimateScale }
                 : {}),
-              ...(kind === 'plan-board' ? { planBoard: presetSetupOrBlank(art?.choice) } : {}),
+              ...(kind === 'plan-board' ? { planBoard: freshBoardSetup(art?.choice) } : {}),
             },
       // Shapes and icons open for typing too; takesTypedLabel filters out the
       // kinds whose face isn't text (stickers, session buttons, ...).

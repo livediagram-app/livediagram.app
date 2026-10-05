@@ -25,7 +25,7 @@ export interface PlanColumn {
   color?: string;
 }
 
-export const SWIMLANE_BY = ['none', 'assignee', 'type', 'priority', 'parent'] as const;
+export const SWIMLANE_BY = ['none', 'assignee', 'type', 'priority', 'parent', 'status'] as const;
 export type SwimlaneBy = (typeof SWIMLANE_BY)[number];
 
 export const CARD_FIELDS = [
@@ -75,6 +75,8 @@ export interface PlanBoardSetup {
   cardSize?: CardSize;
   // An Archive board (docs/specs/025-plan/items.md "Archive"): it shows only archived items.
   archive?: boolean;
+  // An All Cards board (docs/specs/025-plan/plan-board.md "All Cards"): every card, whatever its status.
+  allCards?: boolean;
   // The header's widgets in order (docs/specs/025-plan/board-widgets.md); absent is the default set.
   widgets?: BoardWidgetKind[];
   voting: { on: boolean; budget?: number };
@@ -106,7 +108,7 @@ export interface LaneHead {
   key: string;
   label: string;
   // What a drop into this lane sets (null clears the field).
-  field: 'assignee' | 'type' | 'priority' | 'parent' | null;
+  field: 'assignee' | 'type' | 'priority' | 'parent' | 'status' | null;
   value: Item['fields'][string] | null;
   person?: ItemPerson;
 }
@@ -147,13 +149,29 @@ export function quickFilterMatches(quick: QuickFilter | undefined, item: Item): 
   return true;
 }
 
+// A status as people read it (docs/specs/025-plan/plan-board.md "All Cards"): the name a column gives it,
+// else the status itself without a new board's suffix, words capitalised.
+export function statusLabel(status: string, names?: ReadonlyMap<string, string>): string {
+  const named = names?.get(status);
+  if (named) return named;
+  const words = status.split('~')[0]!.replace(/[-_]+/g, ' ').trim();
+  return words ? `${words[0]!.toUpperCase()}${words.slice(1)}` : status;
+}
+
 function laneOf(
   by: SwimlaneBy,
   item: Item,
   items: ReadonlyMap<string, Item>,
   types: readonly ItemTypeDef[],
+  statusNames?: ReadonlyMap<string, string>,
 ): LaneHead {
   switch (by) {
+    case 'status': {
+      const s = itemStatus(item);
+      return s
+        ? { key: `s:${s}`, label: statusLabel(s, statusNames), field: 'status', value: s }
+        : { key: NO_LANE, label: 'No status', field: 'status', value: null };
+    }
     case 'none':
       return { key: NO_LANE, label: '', field: null, value: null };
     case 'assignee': {
@@ -191,10 +209,18 @@ function laneSort(
   by: SwimlaneBy,
   items: ReadonlyMap<string, Item>,
   types: readonly ItemTypeDef[],
+  statusNames?: ReadonlyMap<string, string>,
 ): (a: LaneHead, b: LaneHead) => number {
+  const order = [...(statusNames?.keys() ?? [])];
   return (a, b) => {
     if (a.key === NO_LANE) return b.key === NO_LANE ? 0 : 1;
     if (b.key === NO_LANE) return -1;
+    // Statuses in the order the tab's boards name them, then any other by name.
+    if (by === 'status') {
+      const ia = order.indexOf(a.value as string);
+      const ib = order.indexOf(b.value as string);
+      return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib) || a.label.localeCompare(b.label);
+    }
     if (by === 'type') {
       const ia = types.findIndex((t) => `t:${t.id}` === a.key);
       const ib = types.findIndex((t) => `t:${t.id}` === b.key);
@@ -216,6 +242,8 @@ export function projectBoard(
   quick?: QuickFilter,
   // The document's type catalogue (docs/specs/025-plan/item-types.md): the order and names of type rows.
   types: readonly ItemTypeDef[] = ITEM_TYPES,
+  // Status names from the tab's boards' columns, in order: an All Cards board's status rows.
+  statusNames?: ReadonlyMap<string, string>,
 ): BoardProjection {
   const byStatus = new Map<string, PlanColumn>(setup.columns.map((c) => [c.status, c]));
   const scoped: Item[] = [];
@@ -223,9 +251,12 @@ export function projectBoard(
   // An Archive board shows the archived items, every one in its first column; any other board leaves
   // them out altogether.
   const archiveBoard = setup.archive === true;
+  // An All Cards board (docs/specs/025-plan/plan-board.md "All Cards") shows every card that is not
+  // archived, whatever its status, in its one column.
+  const allBoard = setup.allCards === true && !archiveBoard;
   for (const it of items.values()) {
     if (isArchived(it) !== archiveBoard) continue;
-    if (archiveBoard) {
+    if (archiveBoard || allBoard) {
       scoped.push(it);
       continue;
     }
@@ -239,25 +270,46 @@ export function projectBoard(
   const laneMap = new Map<string, LaneHead>();
   const laneOfItem = new Map<string, string>();
   for (const it of scoped) {
-    const lane = laneOf(setup.swimlaneBy, it, items, types);
+    const lane = laneOf(setup.swimlaneBy, it, items, types, statusNames);
     if (!laneMap.has(lane.key)) laneMap.set(lane.key, lane);
     laneOfItem.set(it.id, lane.key);
   }
   // A board with swimlanes always offers the empty group as a drop target.
-  if (setup.swimlaneBy !== 'none' && setup.swimlaneBy !== 'type' && !laneMap.has(NO_LANE)) {
-    laneMap.set(NO_LANE, laneOf(setup.swimlaneBy, { fields: {} } as Item, items, types));
+  if (
+    setup.swimlaneBy !== 'none' &&
+    setup.swimlaneBy !== 'type' &&
+    setup.swimlaneBy !== 'status' &&
+    !laneMap.has(NO_LANE)
+  ) {
+    laneMap.set(
+      NO_LANE,
+      laneOf(setup.swimlaneBy, { fields: {} } as Item, items, types, statusNames),
+    );
+  }
+  // Status rows include every status the tab's boards name, so a card can be dropped into an empty one.
+  if (setup.swimlaneBy === 'status') {
+    for (const [status, name] of statusNames ?? []) {
+      if (!laneMap.has(`s:${status}`))
+        laneMap.set(`s:${status}`, {
+          key: `s:${status}`,
+          label: name,
+          field: 'status',
+          value: status,
+        });
+    }
   }
   if (laneMap.size === 0) laneMap.set(NO_LANE, laneOf('none', scoped[0]!, items, types));
-  const lanes = [...laneMap.values()].sort(laneSort(setup.swimlaneBy, items, types));
+  const lanes = [...laneMap.values()].sort(laneSort(setup.swimlaneBy, items, types, statusNames));
 
   let doneCount = 0;
   const doneStatus = setup.columns.find((c) => c.id === setup.doneColumnId)?.status;
   const columns: ProjectedColumn[] = setup.columns.map((column) => {
-    const all = archiveBoard
-      ? column === setup.columns[0]
-        ? scoped
-        : []
-      : scoped.filter((it) => itemStatus(it) === column.status);
+    const all =
+      archiveBoard || allBoard
+        ? column === setup.columns[0]
+          ? scoped
+          : []
+        : scoped.filter((it) => itemStatus(it) === column.status);
     if (column.status === doneStatus) doneCount = all.length;
     const shown = all.filter((it) => quickFilterMatches(quick, it));
     return {
@@ -359,6 +411,7 @@ export function normaliseBoardSetup(input: unknown): PlanBoardSetup | null {
     cardFields,
     ...(readBoardWidgets(input['widgets']) ? { widgets: readBoardWidgets(input['widgets']) } : {}),
     ...(input['archive'] === true ? { archive: true } : {}),
+    ...(input['allCards'] === true ? { allCards: true } : {}),
     ...(input['cardSize'] === 'minimal' || input['cardSize'] === 'compact'
       ? { cardSize: input['cardSize'] }
       : {}),

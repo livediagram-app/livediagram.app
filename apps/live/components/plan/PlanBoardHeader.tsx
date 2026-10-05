@@ -95,7 +95,9 @@ export function PlanBoardHeader({
       <div className="min-w-0 max-w-[40%] shrink-0 truncate text-[17px] font-bold leading-tight">
         {setup.title}
       </div>
-      <div className="flex min-w-0 flex-1 items-center" onPointerDown={stop}>
+      {/* No press guard here: a press on the zone's empty space selects and moves the board like the
+          rest of the header; each widget keeps its own presses. */}
+      <div className="flex min-w-0 flex-1 items-center">
         <BoardWidgetZone
           widgets={widgets}
           canEdit={canEdit}

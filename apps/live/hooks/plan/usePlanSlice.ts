@@ -37,6 +37,7 @@ export function usePlanSlice(opts: {
   select: (elementId: string | null) => void;
   announce: (message: string) => void;
   addItemSlide?: (itemId: string) => void;
+  statusNames: ReadonlyMap<string, string>;
   // Tells the room which card this person is dragging or reading (usePlanPresence).
   publishPresence?: (itemId: string | null, state: 'drag' | 'view') => void;
 }) {
@@ -247,6 +248,7 @@ export function usePlanSlice(opts: {
       removeCard,
       announce,
       setDragging,
+      statusNames: opts.statusNames,
       ...(hasSlides ? { addItemSlide } : {}),
     }),
     [
@@ -275,6 +277,7 @@ export function usePlanSlice(opts: {
       setDragging,
       addItemSlide,
       hasSlides,
+      opts.statusNames,
     ],
   );
 

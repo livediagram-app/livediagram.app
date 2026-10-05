@@ -46,12 +46,16 @@ Where each is set, so a setting lives with what it changes, never in one central
   **Remove Column**. Removing a column with cards first asks where they go (**Move and Remove**, or **Keep
   It**); the board's last column cannot be removed. Each change applies as it is made.
 - **The board's own settings** sit in its element menu (right-click the board, or the selection's ⋯), in two
-  flyouts: **Board** (**Title**; **Swimlanes**: No Swimlanes, By Assignee, By Card Type, By Priority, By Project) and
+  flyouts: **Board** (**Title**; **Swimlanes**: No Swimlanes, By Assignee, By Card Type, By Priority, By Project, By Status) and
   **Cards**: the **Card Size** (Minimal, Compact or Detailed, below) and what each card face shows besides its
   title, a tile per field pressed on or off. A field the chosen size cannot draw keeps its setting but its tile is
   dimmed, so the tiles always say what the cards show. New columns come from a column's **+ Add Column After**.
 - **Every board shows every card**: there is no per-board filter by type or label; a board shows every item whose
   status is one of its columns, and counts the rest as not on it.
+- **A board placed from the palette starts empty**: its columns get statuses of their own (the column's status
+  and a short suffix, `todo~k3f9`), so no card the document already has lands on it. Boards from a template keep
+  the template's statuses and its example cards. Archive and All Cards boards show cards by what they are, not by
+  status, and keep their columns.
 - **Voting** and **Hide writing** come with a board's template (the Retro's are on); they have no menu control.
 
 ## What the board shows
@@ -81,6 +85,15 @@ Where each is set, so a setting lives with what it changes, never in one central
   for anyone who can edit.
 - **Too many**: a column scrolls inside itself past the board's height; the board never grows on its own.
 
+## All Cards
+
+- An **All Cards** board (the Boards category's All Cards tile) shows every card in the document that is not
+  archived, whatever its status, in its one column, a **swimlane per status**. A status row is named by the
+  column that has it on a board of the tab (in board and column order), else by the status itself; every status
+  a board names has a row, empty or not. Cards with no status sit under "No status".
+- Dragging a card to another row gives it that row's status; Add Card in a row adds a card with that status.
+- It is the place to find cards no board shows (orphans) and give them a status a board has.
+
 ## Working on a board
 
 Input follows the person's editor mode (the [Editor modes](../007-editor/editor-modes.md) rule):
@@ -105,10 +118,8 @@ In Plan mode:
   the **Add a Card** popover (a bottom sheet on a phone), as Illustrate's + opens "Add a page": a tile per card
   type the board shows, each its glyph on a tint of its colour and its name; choosing one adds a card of it
   ("New task"...) at the end of the cell, in the cell's row (taking the row's field). Arrow keys move between the
-  tiles. Under them, **Or type a title and press Enter** adds a card with that title and keeps the field for the
-  next; the title may carry **quick tokens**: `@name` assigns, `#label` labels, `!high` (or `!urgent`,
-  `!medium`, `!low`) sets priority, `~3` estimates, and a leading `note:` (any type name) sets the type, each
-  shown as a chip as it is recognised. Escape or an outside press closes it.
+  tiles; Escape or an outside press closes it. There is no typed title: the card is titled in place or in its
+  panel.
 - **Right-click a card** for its menu: **Open**, **Duplicate** (a copy right after it, without its votes),
   **Archive** (or **Restore**; [Items](items.md#archive)),
   **Add to Slides** (an item slide, [Presentation mode](../012-collaboration/presentation-mode.md#item-slides)),

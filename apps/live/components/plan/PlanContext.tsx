@@ -64,6 +64,8 @@ export type PlanContextValue = {
   // A card as a slide of the deck (docs/specs/012-collaboration/presentation-mode.md "Item slides");
   // absent where there is no deck to add to.
   addItemSlide?: (itemId: string) => void;
+  // The names the tab's boards give their statuses, in order (an All Cards board's rows).
+  statusNames: ReadonlyMap<string, string>;
 };
 
 const PlanContext = createContext<PlanContextValue | undefined>(undefined);

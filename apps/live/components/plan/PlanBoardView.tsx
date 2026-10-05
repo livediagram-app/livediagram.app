@@ -19,7 +19,7 @@ import {
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { track } from '@/lib/telemetry';
 import { usePlanBoardDrop } from '@/hooks/plan/usePlanBoardDrop';
-import { laneMove } from './plan-board-moves';
+import { cellStatus, laneMove } from './plan-board-moves';
 import { LaneRow, PlanBoardCard, PlanDragGhost } from './PlanBoardCells';
 import { PlanColumnHeader } from './PlanColumnHeader';
 import { boardRowTemplate } from './plan-board-rows';
@@ -67,9 +67,10 @@ export function PlanBoardView({
   const bodyRef = useRef<HTMLDivElement>(null);
   const focusNextRef = useRef<string | null>(null);
   const items = plan?.items ?? NO_ITEMS;
+  const statusNames = plan?.statusNames;
   const projection = useMemo(
-    () => (setup ? projectBoard(setup, items, quick, types) : null),
-    [setup, items, quick, types],
+    () => (setup ? projectBoard(setup, items, quick, types, statusNames) : null),
+    [setup, items, quick, types, statusNames],
   );
   // What the header's widgets count: the items the board shows, before the quick filter.
   const shownItems = useMemo(
@@ -148,7 +149,6 @@ export function PlanBoardView({
       : null;
   const loading = plan?.status === 'loading';
   const empty = !loading && projection.total === 0;
-  const defaultType = 'task';
   // Every board shows, and Add card offers, every card type (docs/specs/025-plan/plan-board.md).
   const addTypes = types;
 
@@ -364,8 +364,6 @@ export function PlanBoardView({
                             <AddCardButton
                               palette={palette}
                               types={addTypes}
-                              people={plan?.people ?? []}
-                              defaultType={defaultType}
                               label={firstEmpty ? 'Add your first card' : 'Add card'}
                               open={isAdding}
                               onClosed={closeAdding}
@@ -376,7 +374,7 @@ export function PlanBoardView({
                                     ...fields,
                                     ...(withLanes ? laneMove(lane).set : {}),
                                   } as Item['fields'],
-                                  status: col.column.status,
+                                  status: cellStatus(setup, col.column.status, lane),
                                   after: cell[cell.length - 1]?.id ?? null,
                                 })
                               }
