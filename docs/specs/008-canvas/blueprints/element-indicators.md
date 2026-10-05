@@ -33,7 +33,8 @@ Derived from [Element indicators](../element-indicators.md). Defaults in [DEFAUL
 | `apps/live/components/canvas/ElementFaceRouter.tsx`                                    | `contentInset`: wraps the inline-icon layout and the plain label in `InsetContent`                                                                    |
 | `apps/live/components/canvas/shape-inline-icon-layout.tsx`                             | exports `inlineIconMetrics`, `inlineIconGap` (shared with the content estimate)                                                                       |
 | `apps/live/components/canvas/element-badges.tsx`                                       | keeps `RemoteSelectorsStrip` + `ADORNMENT_MIN_ZOOM`; `BadgeStrip` is removed                                                                          |
-| `apps/live/components/canvas/BoxedElementView.tsx`                                     | builds items and the content layout, renders `ElementIndicators`; root gains the `group/el` name                                                      |
+| `apps/live/components/canvas/useElementIndicators.ts`                                  | `elementIndicatorItems` (which indicators an element carries), `useElementIndicators` (items + layout)                                                |
+| `apps/live/components/canvas/BoxedElementView.tsx`                                     | calls `useElementIndicators`, renders `ElementIndicators`; root gains the `group/el` name                                                             |
 | `apps/live/lib/user-preferences.ts`                                                    | `elementIndicatorStyle?: 'top' \| 'footer' \| 'off'`                                                                                                  |
 | `apps/live/components/dialogs/settings/settings-catalogue.ts`                          | the Editor › Element Indicators choice row (Top / Footer / Off)                                                                                       |
 | `apps/telemetry/app/event-explanations.ts`, `apps/telemetry/app/catalogue/settings.ts` | the three `UI\|Changed\|ElementIndicators*` explanations and the chart                                                                                |
@@ -201,23 +202,27 @@ Placement is pure and deterministic; no logs. A style change is the telemetry ev
 
 ## Testing
 
-| Rule                                                           | Test                                                     |
-| -------------------------------------------------------------- | -------------------------------------------------------- |
-| Rounded rect: Top fits tight, clear of the outline             | `packages/document/src/indicator-placement.test.ts`      |
-| Circle: slides along the diagonal, stays inside                | same                                                     |
-| Diamond / small pill / thin bar: no fit → `null`               | same                                                     |
-| Never crosses the middle band                                  | same                                                     |
-| A short fixed label frees the corner; a long one does not      | same                                                     |
-| Centred shapes anchor top-centre / bottom-centre; boxes do not | same                                                     |
-| A centred cluster sits inside a circle's and a hexagon's top   | same                                                     |
-| Pip: hexagon's edge, rounded box's curve, diamond's apex       | same                                                     |
-| Content box counts an inline icon                              | same                                                     |
-| Content shift: twice for middle, refuses against the alignment | same                                                     |
-| Unknown style reads as Top; Footer and Off read back           | `apps/live/lib/element-indicator-style.test.ts`          |
-| Commands hidden until hover; labels; counts                    | `apps/live/components/canvas/ElementIndicators.test.tsx` |
-| Selected: the cluster fades out and is inert; back on deselect | same                                                     |
-| Off draws nothing                                              | same                                                     |
-| Icon + label move down under Top; clear content stays          | same                                                     |
-| Scale label shrinks evenly; nothing moves for the pip          | same                                                     |
-| Footer uses words, falls back to compact and to the pip        | same                                                     |
-| Settings row writes the style and fires the choice event       | `settings-catalogue.test.ts` (existing per-row rules)    |
+| Rule                                                           | Test                                                               |
+| -------------------------------------------------------------- | ------------------------------------------------------------------ |
+| Rounded rect: Top fits tight, clear of the outline             | `packages/document/src/indicator-placement.test.ts`                |
+| Circle: slides along the diagonal, stays inside                | same                                                               |
+| Diamond / small pill / thin bar: no fit → `null`               | same                                                               |
+| Never crosses the middle band                                  | same                                                               |
+| A short fixed label frees the corner; a long one does not      | same                                                               |
+| Centred shapes anchor top-centre / bottom-centre; boxes do not | same                                                               |
+| A centred cluster sits inside a circle's and a hexagon's top   | same                                                               |
+| Pip: hexagon's edge, rounded box's curve, diamond's apex       | same                                                               |
+| Content box counts an inline icon                              | same                                                               |
+| Content shift: twice for middle, refuses against the alignment | same                                                               |
+| Unknown style reads as Top; Footer and Off read back           | `apps/live/lib/element-indicator-style.test.ts`                    |
+| Commands hidden until hover; labels; counts                    | `apps/live/components/canvas/ElementIndicators.test.tsx`           |
+| Selected: the cluster fades out and is inert; back on deselect | same                                                               |
+| Off draws nothing                                              | same                                                               |
+| Icon + label move down under Top; clear content stays          | same                                                               |
+| Scale label shrinks evenly; nothing moves for the pip          | same                                                               |
+| Footer uses words, falls back to compact and to the pip        | same                                                               |
+| Which elements carry which indicators; what each opens         | `apps/live/components/canvas/useElementIndicators.test.ts`         |
+| Item order, names, cluster size estimate, backing              | `apps/live/components/canvas/indicator-items.test.ts`              |
+| The content area moves; no box when nothing moves              | `apps/live/components/canvas/InsetContent.test.tsx`                |
+| Through the real element view: draw, move, fade, Off           | `apps/live/components/canvas/BoxedElementView.indicators.test.tsx` |
+| Settings row writes the style and fires the choice event       | `settings-catalogue.test.ts` (existing per-row rules)              |

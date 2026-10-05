@@ -10,14 +10,12 @@ import {
   DEFAULT_BORDER_STROKE,
   DEFAULT_BORDER_STYLE,
   PADDING_PX,
-  activeCommentCount,
   defaultPadding,
   defaultFillColor,
   defaultStrokeColor,
   defaultTextAlign,
   defaultTextColor,
   ownColours,
-  isOpenAction,
   isSelfDrawingShape,
   isUprightTitle,
   uprightTitleStrip,
@@ -45,17 +43,13 @@ import { describeVariant, editingLook } from '@/components/canvas/element-varian
 import { useElementSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { RemoteSelectorsStrip } from '@/components/canvas/element-badges';
 import { ElementIndicators } from '@/components/canvas/ElementIndicators';
-import { buildIndicatorItems, indicatorBacking } from '@/components/canvas/indicator-items';
-import { useIndicatorLayout } from '@/components/canvas/useIndicatorLayout';
-import { inlineIconGap, inlineIconMetrics } from '@/components/canvas/shape-inline-icon-layout';
-import { colorForKey, initialsOf } from '@/lib/identity';
-import { useMindOutlineBadge } from '@/components/canvas/MindOutlineContext';
+import { indicatorBacking } from '@/components/canvas/indicator-items';
+import { useElementIndicators } from '@/components/canvas/useElementIndicators';
 import { AnnotationHoverNote } from '@/components/canvas/AnnotationMarker';
 import { useBoxedElementGestures } from '@/components/canvas/useBoxedElementGestures';
 import { useBoxedElementAnimation } from '@/components/canvas/useBoxedElementAnimation';
 import { IconDropPreview, useIconDropTarget } from '@/components/canvas/useIconDropTarget';
 import { ElementVoteOverlay } from '@/components/canvas/ElementVoteOverlay';
-import { describeLink } from '@/lib/link-label';
 import { ShapeContentRouter } from '@/components/canvas/ShapeContentRouter';
 import { BrowserChrome } from '@/components/canvas/boxed-element-overlays';
 
@@ -287,13 +281,6 @@ function BoxedElementViewImpl({
   const onWhiteboard = useCanvasPicksByOutline();
   const shapeHit = outlineHit(element, { onWhiteboard, selected: isSelected || isMultiSelected });
 
-  // A comment pin (docs/specs/012-collaboration/comment-pin.md) shows its own count on its face, so the generic
-  // badge is suppressed: the pin IS the badge, and two counts on one 40px
-  // marker is one too many.
-  const isCommentPin = element.type === 'shape' && element.shape === 'comment-pin';
-  const commentCount = isCommentPin ? 0 : activeCommentCount(element.commentThread);
-  // A mind map root's Edit Outline and Tidy Map badges (MindOutlineContext).
-  const mapBadges = useMindOutlineBadge(element.id);
   // The element's drawn corner, which its border overlay and its indicators both follow.
   const shapeKind = element.type === 'shape' ? element.shape : undefined;
   const cornerPx = cornerRadiusPx(
@@ -303,26 +290,6 @@ function BoxedElementViewImpl({
     // A mind node's default corner (docs/specs/009-elements/mind-node.md "Round nodes").
     shapeKind === 'mind-node' ? MIND_NODE_RADIUS_PX : DEFAULT_BOX_RADIUS_PX,
   );
-  // Assigned action (docs/specs/012-collaboration/assigned-actions.md): the badge shows only while the action is
-  // open; a done action stays on the element but stops shouting. An action
-  // panel (docs/specs/012-collaboration/action-panel.md) shows its action on its face, so it is the badge.
-  const isActionPanel = element.type === 'shape' && element.shape === 'action-card';
-  const hasOpenAction = !isActionPanel && isOpenAction(element.action);
-  // Who it is assigned to, for the action indicator's disc and hover card.
-  const actionAssignee = element.action?.assignee;
-  const actionAssigneeName = actionAssignee?.name?.trim() || 'a teammate';
-  // Both 'tab' and 'document' kinds get the "linked" badge; the
-  // follow-handler dispatches off the kind via the parent's
-  // onFollowLink callback. 'element' kind is the spec'd
-  // jump-and-focus that isn't surfaced in the UI yet. A link-card is
-  // EXCLUDED: the card itself is the link (its bottom half follows it),
-  // so the corner badge would be redundant.
-  const linked =
-    element.type !== 'link-card' &&
-    element.link !== undefined &&
-    (element.link.kind === 'tab' ||
-      element.link.kind === 'document' ||
-      element.link.kind === 'url');
 
   // An inline icon sits beside the label on a regular shape (the
   // dedicated 'icon' shape kind has its own glyph-above-caption render
@@ -359,62 +326,17 @@ function BoxedElementViewImpl({
   // A whiteboard text box hugs its text, growing with it while typed (useTextHug).
   const textHug = useTextHug(element, isEditing, fontFamily);
 
-  // The element's indicators (docs/specs/008-canvas/element-indicators.md), placed before the
-  // label so a scale-to-fit label can leave room for them. A margin note shows its own.
-  const indicatorItems = articleNote
-    ? []
-    : buildIndicatorItems({
-        outline: mapBadges?.editOutline,
-        tidy: mapBadges?.tidy,
-        link: linked
-          ? {
-              onFollow: () => {
-                if (element.link) onFollowLink(element.link);
-              },
-              destination: element.link ? describeLink(element.link, tabSummaries) : undefined,
-            }
-          : undefined,
-        note:
-          element.note && onOpenNote && !isAnnotation ? () => onOpenNote(element.id) : undefined,
-        action:
-          hasOpenAction && actionAssignee
-            ? {
-                onOpen: () => onOpenAction(element.id),
-                assigneeName: actionAssigneeName,
-                initials: initialsOf(actionAssigneeName),
-                color: colorForKey(
-                  actionAssignee.userId ?? actionAssignee.memberId ?? actionAssigneeName,
-                ),
-              }
-            : undefined,
-        comments: { count: commentCount, onOpen: () => onOpenComments(element.id) },
-      });
-  const indicatorCornerPx = shapeKind === 'circle' || shapeKind === 'stadium' ? Infinity : cornerPx;
   const labelPadding = uprightStrip
     ? // A one-line strip has no room for a roomy padding across it.
       Math.min(PADDING_PX.sm, PADDING_PX[element.padding ?? defaultPadding(element)])
     : PADDING_PX[element.padding ?? defaultPadding(element)];
-  const iconMetrics = inlineIcon ? inlineIconMetrics(element, label, textSize) : null;
-  const indicatorLayout = useIndicatorLayout(element, indicatorCornerPx, indicatorItems, {
-    label,
-    textSize,
-    padding: labelPadding,
-    alignX,
-    alignY,
-    ...(iconMetrics && element.type === 'shape'
-      ? {
-          fontPx: iconMetrics.fontSize,
-          icon: {
-            size: iconMetrics.iconSize,
-            position: element.iconPosition ?? 'left',
-            gap: inlineIconGap(
-              iconMetrics.iconSize,
-              (element.iconPosition ?? 'left') === 'left' || element.iconPosition === 'right',
-            ),
-          },
-        }
-      : {}),
-  });
+  // The element's indicators, placed before the label so the content can move out of their way.
+  const indicators = useElementIndicators(
+    element,
+    { onFollowLink, onOpenComments, onOpenAction, onOpenNote, tabSummaries },
+    { text: label, textSize, padding: labelPadding, alignX, alignY, inlineIcon: !!inlineIcon },
+    cornerPx,
+  );
 
   // The text label, computed once so the freehand branch, the plain
   // shape branch, and the inline-icon layout below all share it.
@@ -676,7 +598,7 @@ function BoxedElementViewImpl({
         onToggleReveal={onToggleReveal}
         label={label}
         labelNode={labelNode}
-        contentInset={indicatorLayout?.inset}
+        contentInset={indicators.layout?.inset}
         textColor={textColor}
         textSize={textSize}
         alignX={alignX}
@@ -721,14 +643,14 @@ function BoxedElementViewImpl({
       {/* The annotation marker IS the note affordance, so it suppresses
           the generic note badge (it would be redundant). */}
       {/* A margin note shows its count on its own face (ArticleNoteFace). */}
-      {indicatorLayout ? (
+      {indicators.layout ? (
         <ElementIndicators
           element={element}
-          cornerPx={indicatorCornerPx}
+          cornerPx={indicators.cornerPx}
           fill={indicatorBacking(own.fill ?? defaultFillColor(element, surface))}
           selected={isSelected}
-          items={indicatorItems}
-          placed={indicatorLayout}
+          items={indicators.items}
+          placed={indicators.layout}
         />
       ) : null}
 

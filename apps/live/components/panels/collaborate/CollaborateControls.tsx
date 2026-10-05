@@ -92,7 +92,7 @@ export function KindChips({
             key={k.id}
             type="button"
             aria-pressed={active}
-            aria-label={k.icon ? `${k.label} ${counts[k.id]}` : undefined}
+            aria-label={`${k.label} ${counts[k.id]}`}
             onClick={() => onChange(k.id)}
             className={`inline-flex h-7 min-w-0 items-center justify-center gap-1 rounded-full px-2 text-[11px] font-semibold transition-colors ${
               active
