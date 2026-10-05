@@ -16,62 +16,69 @@ precision. Defaults applied where the spec is silent are ledgered in [DEFAULTS.m
 
 Scope, by file:
 
-| File                                                                                                   | Role                                                                                                                                            |
-| ------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| `packages/agent-verbs/{package.json,tsconfig.json,eslint.config.js,vitest.config.ts}`                  | New private package `@livediagram/agent-verbs`, laid out like `packages/explorer-lens`; depends on zod 4                                        |
-| `packages/agent-verbs/src/define.ts` (planned)                                                         | `Verb`, `defineVerb`, `VerbBehaviour`, `VerbContext`, `CliProjection`, `McpProjection`                                                          |
-| `packages/agent-verbs/src/catalogue.ts` (planned)                                                      | `VERBS`, `verbById`, `RESOURCES`, `RESOURCE_ALIASES`, `COMMAND_ALIASES`                                                                         |
-| `packages/agent-verbs/src/verbs/{document,tab,element,changeset,comment,presence}.ts`                  | The CLI's api verbs: schemas, descriptions, behaviour, handlers, CLI projections                                                                |
-| `packages/agent-verbs/src/verbs/mcp-tools.ts` (planned)                                                | One verb per existing MCP tool, with today's schema and tool name                                                                               |
-| `packages/agent-verbs/src/verbs/catalogues.ts` (planned)                                               | `template.ls`, `template.view`, `icon.search`, `schema.view`                                                                                    |
-| `packages/agent-verbs/src/verbs/local.ts` (planned)                                                    | The CLI-only verbs, declared without `run` (CLI55)                                                                                              |
-| `packages/agent-verbs/src/addressing.ts` (planned)                                                     | `parseDocumentUrl`, `resolveDocument`, `resolveTab`, `shortestUniquePrefixes`                                                                   |
-| `packages/agent-verbs/src/source-kind.ts` (planned)                                                    | `classifySource(text)`: what a `-f` file holds (CLI71)                                                                                          |
-| `packages/agent-verbs/src/find-documents.ts` (planned) (+ test)                                        | `git mv` of `apps/mcp/src/find-documents.ts`; gains `listAllDocuments(api)`                                                                     |
-| `packages/agent-verbs/src/text/*.ts`                                                                   | The compact text renderer of each verb's output                                                                                                 |
-| `packages/agent-verbs/src/guides/{build,edit,views,comments,collaborate}.ts`                           | `GUIDE_TOPICS`: each topic's text                                                                                                               |
-| `packages/agent-verbs/src/skill.ts` (planned)                                                          | `SKILL_NAME`, `SKILL_DESCRIPTION`, `SKILL_DIRECTORIES`, `renderSkill()`                                                                         |
-| `packages/api-client/{package.json,...}`, `src/client.ts` (planned), `src/index.ts`                    | New package `@livediagram/api-client`: `createApiClient`, `ApiError`, `postEvents`, from `apps/mcp/src/api.ts`                                  |
-| `packages/api-client/src/client.test.ts` (planned)                                                     | `git mv` of `apps/mcp/src/api.test.ts`, rewritten against the injected fetch                                                                    |
-| `packages/render-png/{package.json,...}`, `src/index.ts` (+ test)                                      | New package `@livediagram/render-png`: `createPngRenderer`, from `apps/mcp/src/render.ts`                                                       |
-| `packages/render-png/fonts/{Inter-Regular.ttf,Inter-OFL.txt}`                                          | `git mv` of `apps/mcp/fonts/*`                                                                                                                  |
-| `packages/api-schema/src/index.ts`                                                                     | `CapabilitiesResponse` gains five fields; `CurrentTokenResponse`; the catalogue route bodies                                                    |
-| `packages/api-schema/src/oauth-clients.ts` (planned) (+ test)                                          | `CLI_CLIENT_ID`, `CLI_CLIENT_NAME`, `CLI_REDIRECT_URIS`, `DEVICE_CODE_GRANT`, user-code helpers                                                 |
-| `packages/api-schema/src/api-token-format.ts` (planned) (+ test)                                       | `isApiTokenFormat`, moved from `apps/api/src/auth/api-token.ts` (CLI63)                                                                         |
-| `packages/api-schema/src/telemetry-schema.ts`                                                          | Category `Cli`                                                                                                                                  |
-| `packages/document/src/document-envelope.ts` (planned), `export-tab-text.ts` (+ tests)                 | `git mv` of `apps/live/lib/export-document-text.ts` and `export-tab-text.ts` (CLI64)                                                            |
-| `packages/document/src/element-format.ts` (planned) (+ test)                                           | `elementSchemaDoc()` moved from `apps/mcp/src/schema.ts`; `elementFormatText(kind?)` (CLI73)                                                    |
-| `packages/icons/src/search.ts` (planned) (+ test)                                                      | `paletteRank` and `matches` moved from `apps/live/lib/search.ts`; `searchIcons(query, limit)` (CLI74)                                           |
-| `apps/cli/{package.json,tsconfig.json,eslint.config.js,vitest.config.ts,README.md}`                    | New app `@livediagram/cli`, published as `livediagram` (CLI1)                                                                                   |
-| `apps/cli/scripts/build.mjs` (planned)                                                                 | esbuild bundle, assets, `dist/package.json` (CLI2)                                                                                              |
-| `apps/cli/src/bin.ts` (planned), `main.ts`, `io.ts`                                                    | Process wiring; `run(argv, io): Promise<ExitCode>`; `CliIo`                                                                                     |
-| `apps/cli/src/dispatch/{route,parse-flags,global-flags,did-you-mean}.ts`                               | Resource and verb routing, `parseArgs` options from the catalogue, aliases, suggestions                                                         |
-| `apps/cli/src/help/{top-help,resource-help,verb-help}.ts`                                              | The three help levels                                                                                                                           |
-| `apps/cli/src/output/{exit-codes,cli-error,print,json-fields,list-footer}.ts`                          | `EXIT`, `exitCodeForApiError`, `CliError`, `formatError`, printing, `--json` fields                                                             |
-| `apps/cli/src/config/{paths,config-file,profiles,capabilities,version}.ts`                             | Directories, `config.toml`, profile choice, the capabilities cache, `CLI_VERSION`, the version floor                                            |
-| `apps/cli/src/auth/{credential-store,resolve-credential}.ts`                                           | Keychain or file store; env before stored                                                                                                       |
-| `apps/cli/src/auth/{oauth-client,loopback-login,device-login,token-login}.ts`                          | The three ways in                                                                                                                               |
-| `apps/cli/src/auth/{open-browser,callback-page}.ts`                                                    | Browser opener; the loopback page's HTML                                                                                                        |
-| `apps/cli/src/commands/*.ts`                                                                           | Handlers of the local verbs: `auth`, `pull`, `push`, `export`, `render`, `graph`, `diff`, `wait`, `watch`, `guide`, `skill`, `api`, `telemetry` |
-| `apps/cli/src/sync/{pull-file,read-copies}.ts`                                                         | The pull file; the read copies that give the base and the diff                                                                                  |
-| `apps/cli/src/room/{room-stream,room-events}.ts`                                                       | Ticket, socket, reconnect; op classification and lines                                                                                          |
-| `apps/cli/src/render/png.ts` (planned)                                                                 | The Node loaders for `@livediagram/render-png`                                                                                                  |
-| `apps/cli/src/{telemetry,update-check}.ts`                                                             | `Cli·Used`, `Error·Api`, opt-outs, notice; the npm check                                                                                        |
-| `apps/api/src/routes/capabilities.ts`, `types.ts`, `wrangler.toml`                                     | `apiBase`, `authEnabled`, `oauthIssuer`, `documentFormat`, `cli`; vars `OAUTH_ISSUER`, `CLI_MIN_VERSION` (CLI10)                                |
-| `apps/api/src/routes/tokens.ts`, `db/api-tokens.ts`                                                    | `GET` and `DELETE /api/tokens/current`; `getApiTokenById`                                                                                       |
-| `apps/api/src/routes/catalogues.ts` (planned), `index.ts`                                              | `GET /api/templates[/:kind]`, `/api/icons`, `/api/schema[/:kind]`; dispatch of the three segments                                               |
-| `apps/api/src/index.ts`                                                                                | The token write choke point admits `DELETE /api/tokens/current` and the room-ticket mint                                                        |
-| `apps/api/src/openapi/{manifest,document}.ts`                                                          | The capabilities fields; `tokens/current`; the catalogue routes                                                                                 |
-| `apps/mcp/src/api.ts`, `render.ts`, `image-result.ts`, `schema.ts`                                     | Wiring of the extracted packages; the schema resource reads `elementSchemaDoc` from `@livediagram/document`                                     |
-| `apps/mcp/src/oauth.ts`, `oauth-clients.ts`, `oauth-device.ts` (+ tests)                               | Port-agnostic loopback, the built-in CLI client, the device grant; the session lookup returns `clientId`                                        |
-| `apps/mcp/src/tools.ts`, `tool-annotations.ts`, `verb-parity.test.ts`                                  | Each tool registered from its verb in `mcp-tools.ts`; the parity test                                                                           |
-| `apps/live/app/oauth/oauth-shell.tsx` (planned), `apps/live/app/oauth/consent/page.tsx`                | `OauthShell` and `OauthHelpLink` lifted out of the consent page; `Token·Created·Cli` for the CLI client                                         |
-| `apps/live/lib/mcp-consent-session.ts`                                                                 | `McpConsentSession` gains `clientId`                                                                                                            |
-| `apps/live/app/oauth/device/page.tsx` (planned), `lib/mcp-device-session.ts` (planned) (+ test)        | The `/oauth/device` page and its trust boundary                                                                                                 |
-| `apps/live/lib/export-tab.ts`, `export-document-text.ts` callers, `lib/search.ts`                      | Import the moved modules from `@livediagram/document` and `@livediagram/icons`                                                                  |
-| `apps/telemetry/app/catalogue/connections.ts`, `computed-emitters.ts`, `event-explanations.ts`         | The `CLI Commands` stack, `CLI Sign-Ins` in API Token Activity, the computed sites, the sentences (CLI56)                                       |
-| `.github/workflows/ci.yml`, `.github/workflows/cli-publish.yml`                                        | Pack dry run on every PR; publish with provenance (CLI3)                                                                                        |
-| `README.md`, `docs/development/{architecture,local-development}.md`, `docs/operations/self-hosting.md` | The app, the packages, the two api vars, the CLI on a self-host, the env token's host; `AGENTS.md`'s layout needs the operator's permission     |
+| File                                                                                                   | Role                                                                                                                                        |
+| ------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `packages/agent-verbs/{package.json,tsconfig.json,eslint.config.js,vitest.config.ts}`                  | New private package `@livediagram/agent-verbs`, laid out like `packages/explorer-lens`; depends on zod 4                                    |
+| `packages/agent-verbs/src/define.ts`                                                                   | `Verb`, `defineVerb`, `VerbBehaviour`, `VerbContext`, `CliProjection`                                                                       |
+| `packages/agent-verbs/src/catalogue.ts`                                                                | `VERBS`, `verbById`, `verbsOf`, `RESOURCES`, `RESOURCE_ALIASES`, `TOP_LEVEL`; `COMMAND_ALIASES` with `edit`                                 |
+| `packages/agent-verbs/src/verbs/{document,tab,element,changeset,comment,presence}.ts`                  | The CLI's api verbs: schemas, descriptions, behaviour, handlers, compact text, CLI projections                                              |
+| `packages/agent-verbs/src/verbs/shared.ts`                                                             | `columns`, `day`, `minute`, `documentOf`, `tabOf`, `tabPath`, the list limits                                                               |
+| `packages/agent-verbs/src/verbs/mcp-tools.ts` (planned)                                                | One verb per existing MCP tool, with today's schema and tool name                                                                           |
+| `packages/agent-verbs/src/verbs/catalogues.ts` (planned)                                               | `template.ls`, `template.view`, `icon.search`, `schema.view`                                                                                |
+| `packages/agent-verbs/src/verbs/local.ts`                                                              | The CLI-only verbs, declared without `run` (CLI55)                                                                                          |
+| `packages/agent-verbs/src/addressing.ts`                                                               | `parseDocumentUrl`, `resolveDocument`, `resolveTab`, `AddressError`, `AddressLog`                                                           |
+| `packages/agent-verbs/src/refs.ts`                                                                     | `REF_MIN_PREFIX`, `shortestUniquePrefixes`                                                                                                  |
+| `packages/agent-verbs/src/source-kind.ts` (planned)                                                    | `classifySource(text)`: what a `-f` file holds (CLI71)                                                                                      |
+| `packages/agent-verbs/src/find-documents.ts` (+ test)                                                  | Moved from `apps/mcp`; gains `listAllDocuments(api)`                                                                                        |
+| `packages/agent-verbs/src/guides/index.ts`                                                             | `GUIDE_TOPICS`, `GUIDE_TOPIC_NAMES`, `isGuideTopic`: build, edit, views, comments, collaborate                                              |
+| `packages/agent-verbs/src/skill.ts`                                                                    | `SKILL_NAME`, `SKILL_DESCRIPTION`, `SKILL_DIRECTORIES`, `renderSkill()`                                                                     |
+| `packages/agent-verbs/src/testing/fake-api.ts`                                                         | `fakeApi`, `contextOf` and the library fixtures the verb suites share                                                                       |
+| `packages/api-client/{package.json,...}`, `src/client.ts` (planned), `src/index.ts`                    | New package `@livediagram/api-client`: `createApiClient`, `ApiError`, `postEvents`, from `apps/mcp/src/api.ts`                              |
+| `packages/api-client/src/client.test.ts`                                                               | Moved from the MCP's api suite, rewritten against the injected fetch                                                                        |
+| `packages/render-png/{package.json,...}`, `src/index.ts` (+ test)                                      | New package `@livediagram/render-png`: `createPngRenderer`, from `apps/mcp/src/render.ts`                                                   |
+| `packages/render-png/fonts/{Inter-Regular.ttf,Inter-OFL.txt}`                                          | `git mv` of `apps/mcp/fonts/*`                                                                                                              |
+| `packages/api-schema/src/index.ts`                                                                     | `CapabilitiesResponse` gains five fields; `CurrentTokenResponse`; the catalogue route bodies                                                |
+| `packages/api-schema/src/oauth-clients.ts` (planned) (+ test)                                          | `CLI_CLIENT_ID`, `CLI_CLIENT_NAME`, `CLI_REDIRECT_URIS`, `DEVICE_CODE_GRANT`, user-code helpers                                             |
+| `packages/api-schema/src/api-token-format.ts` (+ test)                                                 | `API_TOKEN_PREFIX`, `isApiTokenFormat`, moved from `apps/api/src/auth/api-token.ts` (CLI63)                                                 |
+| `packages/api-schema/src/telemetry-schema.ts`                                                          | Category `Cli`                                                                                                                              |
+| `packages/licences/src/apps.ts`                                                                        | `DISTRIBUTED_APPS` names `cli`: its package carries its own notices                                                                         |
+| `packages/document/src/document-envelope.ts` (planned), `export-tab-text.ts` (+ tests)                 | `git mv` of `apps/live/lib/export-document-text.ts` and `export-tab-text.ts` (CLI64)                                                        |
+| `packages/document/src/element-format.ts` (planned) (+ test)                                           | `elementSchemaDoc()` moved from `apps/mcp/src/schema.ts`; `elementFormatText(kind?)` (CLI73)                                                |
+| `packages/icons/src/search.ts` (planned) (+ test)                                                      | `paletteRank` and `matches` moved from `apps/live/lib/search.ts`; `searchIcons(query, limit)` (CLI74)                                       |
+| `apps/cli/{package.json,tsconfig.json,eslint.config.js,vitest.config.ts,README.md}`                    | New app `@livediagram/cli`, published as `livediagram` (CLI1)                                                                               |
+| `apps/cli/scripts/build.mjs`                                                                           | esbuild bundle `dist/livediagram.mjs`; assets and `dist/package.json` (CLI2)                                                                |
+| `apps/cli/src/bin.ts`, `main.ts`, `io.ts`, `node-io.ts`                                                | Process wiring; `run(argv, io): Promise<ExitCode>`; `CliIo`; the real `nodeIo()`                                                            |
+| `apps/cli/src/{debug,transport}.ts`                                                                    | `debugLog` (CLI44); the api client per token with the CLI's headers and share code (CLI45)                                                  |
+| `apps/cli/src/testing/fake-io.ts`                                                                      | `fakeIo`, the in-memory `CliIo` every suite runs on                                                                                         |
+| `apps/cli/src/dispatch/{route,parse-flags,globals,fields,did-you-mean}.ts`                             | Resource and verb routing, `parseArgs` options from each verb's input (`fieldsOf`, `flagOf`), global flags, suggestions                     |
+| `apps/cli/src/help/help.ts`                                                                            | `topHelp`, `resourceHelp`, `verbHelp` and their token budgets                                                                               |
+| `apps/cli/src/output/{exit-codes,cli-error,failure-of,print}.ts`                                       | `EXIT`, `exitCodeForStatus`, `CliError`, `formatError`, `failureOf`, `render` with `--json` fields                                          |
+| `apps/cli/src/config/{paths,config-file,profiles,capabilities,version}.ts`                             | Directories, `config.toml`, profile choice, the capabilities cache, `CLI_VERSION`, the version floor                                        |
+| `apps/cli/src/auth/credentials.ts`                                                                     | The 0600 file store; env before stored (`resolveCredential`, `storedCredential`)                                                            |
+| `apps/cli/src/auth/keychain.ts` (planned)                                                              | The OS keychain store, tried before the file (CLI32)                                                                                        |
+| `apps/cli/src/auth/{oauth-client,loopback-login,device-login,token-login}.ts`                          | The three ways in                                                                                                                           |
+| `apps/cli/src/auth/{open-browser,callback-page}.ts`                                                    | Browser opener; the loopback page's HTML                                                                                                    |
+| `apps/cli/src/commands/local.ts`                                                                       | Handlers of the local verbs `guide`, `skill`, `api` and `auth`                                                                              |
+| `apps/cli/src/commands/*.ts`                                                                           | Handlers of `pull`, `push`, `export`, `render`, `graph`, `diff`, `wait`, `watch`, `telemetry`                                               |
+| `apps/cli/src/sync/{pull-file,read-copies}.ts`                                                         | The pull file; the read copies that give the base and the diff                                                                              |
+| `apps/cli/src/room/{room-stream,room-events}.ts`                                                       | Ticket, socket, reconnect; op classification and lines                                                                                      |
+| `apps/cli/src/render/png.ts` (planned)                                                                 | The Node loaders for `@livediagram/render-png`                                                                                              |
+| `apps/cli/src/{telemetry,update-check}.ts`                                                             | `Cli·Used`, `Error·Api`, opt-outs, notice; the npm check                                                                                    |
+| `apps/api/src/routes/capabilities.ts`, `types.ts`, `wrangler.toml`                                     | `apiBase`, `authEnabled`, `oauthIssuer`, `documentFormat`, `cli`; vars `OAUTH_ISSUER`, `CLI_MIN_VERSION` (CLI10)                            |
+| `apps/api/src/routes/tokens.ts`                                                                        | `GET` and `DELETE /api/tokens/current`, reading the token's row from `listApiTokensByOwner`                                                 |
+| `apps/api/src/routes/catalogues.ts` (planned), `index.ts`                                              | `GET /api/templates[/:kind]`, `/api/icons`, `/api/schema[/:kind]`; dispatch of the three segments                                           |
+| `apps/api/src/index.ts`                                                                                | The token write choke point admits `DELETE /api/tokens/current` and the room-ticket mint                                                    |
+| `apps/api/src/openapi/{manifest,document}.ts`                                                          | The capabilities fields; `tokens/current`; the catalogue routes                                                                             |
+| `apps/mcp/src/api.ts`, `render.ts`, `image-result.ts`, `schema.ts`                                     | Wiring of the extracted packages; the schema resource reads `elementSchemaDoc` from `@livediagram/document`                                 |
+| `apps/mcp/src/oauth.ts`, `oauth-clients.ts`, `oauth-device.ts` (+ tests)                               | Port-agnostic loopback, the built-in CLI client, the device grant; the session lookup returns `clientId`                                    |
+| `apps/mcp/src/tools.ts`, `tool-annotations.ts`, `verb-parity.test.ts`                                  | Each tool registered from its verb in `mcp-tools.ts`; the parity test                                                                       |
+| `apps/live/app/oauth/oauth-shell.tsx` (planned), `apps/live/app/oauth/consent/page.tsx`                | `OauthShell` and `OauthHelpLink` lifted out of the consent page; `Token·Created·Cli` for the CLI client                                     |
+| `apps/live/lib/mcp-consent-session.ts`                                                                 | `McpConsentSession` gains `clientId`                                                                                                        |
+| `apps/live/app/oauth/device/page.tsx` (planned), `lib/mcp-device-session.ts` (planned) (+ test)        | The `/oauth/device` page and its trust boundary                                                                                             |
+| `apps/live/lib/export-tab.ts`, `export-document-text.ts` callers, `lib/search.ts`                      | Import the moved modules from `@livediagram/document` and `@livediagram/icons`                                                              |
+| `apps/telemetry/app/catalogue/connections.ts`, `computed-emitters.ts`, `event-explanations.ts`         | The `CLI Commands` stack, `CLI Sign-Ins` in API Token Activity, the computed sites, the sentences (CLI56)                                   |
+| `.github/workflows/ci.yml`, `.github/workflows/cli-publish.yml`                                        | Pack dry run on every PR; publish with provenance (CLI3)                                                                                    |
+| `README.md`, `docs/development/{architecture,local-development}.md`, `docs/operations/self-hosting.md` | The app, the packages, the two api vars, the CLI on a self-host, the env token's host; `AGENTS.md`'s layout needs the operator's permission |
 
 ## Domain and naming
 
@@ -155,7 +162,8 @@ Invariants:
 
 ### Addressing
 
-`resolveDocument(api, input, { includeTrash })`, in order, the union of matches deciding:
+`resolveDocument(api, input, host, log)`, in order, the union of matches deciding (`document restore` adds the
+Trash):
 
 | Input                                            | Resolves to                                                                                                                          |
 | ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------ |
@@ -292,8 +300,8 @@ summary }`.
 ```ts
 type VerbBehaviour = 'read' | 'write' | 'destructive';
 
-type Verb<I extends z.ZodType = z.ZodType, O extends z.ZodType = z.ZodType> = {
-  id: `${string}.${string}`; // 'tab.view'
+type Verb<I extends z.ZodObject = z.ZodObject, O extends z.ZodType = z.ZodType> = {
+  id: `${string}.${string}` | string; // 'tab.view', or a top-level verb: 'guide', 'api'
   summary: string; // one line, a fact; the resource help's line
   description: string; // facts only (MCP §4.15); the verb help's first paragraph
   behaviour: VerbBehaviour;
@@ -302,10 +310,12 @@ type Verb<I extends z.ZodType = z.ZodType, O extends z.ZodType = z.ZodType> = {
   local?: true; // handler supplied by apps/cli (CLI55)
   run?: (ctx: VerbContext, input: z.infer<I>) => Promise<z.infer<O>>;
   text?: (output: z.infer<O>) => string[]; // compact lines; absent prints JSON
+  json?: (output: z.infer<O>) => unknown; // what --json prints when not the output itself (a view's JSON)
   quiet?: (output: z.infer<O>) => string[]; // -q: refs or ids
+  exitCode?: (output: z.infer<O>) => number; // a non-zero exit that is no error: the lint's errors exit 1
   listKey?: string; // the array a list verb returns, for --json fields and the footer
   cli?: CliProjection;
-  mcp?: McpProjection;
+  mcp?: { tool: string }; // the tool name the MCP keeps
 };
 
 type CliProjection = {
@@ -315,9 +325,12 @@ type CliProjection = {
   prints: string; // one line: what stdout holds
 };
 
-type McpProjection = { tool: string }; // the tool name the MCP keeps
-
-type VerbContext = { api: ApiClient; host: string; signal: AbortSignal; now: () => number };
+type VerbContext = {
+  api: ApiClient;
+  host: string; // the profile's host, for links and messages
+  useShareCode: (code: string) => void; // a pasted share link's code rides every later request
+  log: (line: string) => void; // a debug line, printed under LIVEDIAGRAM_DEBUG=1
+};
 ```
 
 Verbs and tools: each MCP tool is its own verb in `mcp-tools.ts`, holding today's tool name, input and output
@@ -344,7 +357,7 @@ There is no `--token` flag; `parseArgs` refuses it as unknown (exit 2).
 
 Positionals in `<>`, optional in `[]`. `<doc>` and `--tab` resolve as above. "Write flags" are `--dry-run`,
 `--summary <text>`, `--base <rev>`, `--strict`, `--wait-held <seconds>`. Exit codes beyond 0 and 2 follow
-`exitCodeForApiError` (CLI14).
+`exitCodeForStatus` (CLI14).
 
 | Command                                                                                                                                 | Verb               | Api                                                                                                                                        | stdout                                                                                              |
 | --------------------------------------------------------------------------------------------------------------------------------------- | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------- |
@@ -402,7 +415,7 @@ Positionals in `<>`, optional in `[]`. `<doc>` and `--tab` resolve as above. "Wr
 ### Exit codes
 
 `EXIT = { done: 0, rejected: 1, usage: 2, notFound: 3, auth: 4, conflict: 5, rateLimited: 6, failure: 7 }`.
-`exitCodeForApiError(err)` (CLI14):
+`exitCodeForStatus(status)` (CLI14); `failureOf(err, host)` adds the message, the candidates and the hint:
 
 | Answer                                                                       | Exit |
 | ---------------------------------------------------------------------------- | ---- |
@@ -523,10 +536,11 @@ false, an absent `documentFormat` as equal to its own.
 
 ### Token self-service (api)
 
-- `GET /api/tokens/current` (token callers only; a session or guest gets 404 `not_a_token`, CLI39) →
+- `GET /api/tokens/current` (token callers only: another method is 405 first; a session or guest gets 403
+  `not_a_token`; a token whose row is gone or revoked gets 404, CLI39) →
   200 `CurrentTokenResponse = { accountId, accountName, tokenId, tokenName, role, expiresAt }`; `role` is
   `ctx.token.role`, printed as the api names it. `accountName` is the owner's participant name, `null` when none.
-- `DELETE /api/tokens/current` → 204 after `revokeApiToken(env, ctx.token.ownerId, ctx.token.id)` and the
+- `DELETE /api/tokens/current` → 204 after `revokeApiToken(env, owner, ctx.token.id)` and the
   `recordTokenRevoked` Timeline entry `/api/tokens/:id` writes.
 - Both are reached before the session-only gate in `handleTokens`, through `ctx.token`. The token write choke point
   admits `DELETE /api/tokens/current` for a token of any role, as revoking itself escalates nothing.
@@ -866,28 +880,28 @@ interaction is a form submit and two fetches to the MCP origin, so INP stays a s
 
 CLI lines print to stderr only under `LIVEDIAGRAM_DEBUG=1` (CLI44); server lines go to the worker logs.
 
-| Fingerprint                                                                       | Where                 |
-| --------------------------------------------------------------------------------- | --------------------- |
-| `[cli] command <verb.id>` / `[cli] exit <code> <errorName?>`                      | cli, start and end    |
-| `[cli] profile <name> host <host> source <flag\|env\|config\|default>`            | cli, profile choice   |
-| `[cli] credential <env\|keychain\|file\|none>`                                    | cli, credential       |
-| `[cli] keychain unavailable <reason>`                                             | cli, store            |
-| `[cli] capabilities <hit\|miss\|stale>`                                           | cli, capabilities     |
-| `[cli] floor refused <current> < <min>`                                           | cli, floor            |
-| `[cli] format refused <host format> > <bundled format>`                           | cli, floor            |
-| `[cli] request <METHOD> <path> <status> <ms>`                                     | cli, every api call   |
-| `[cli] address <document\|tab\|ref> <file\|url\|exact\|prefix\|name> <n> matches` | cli, addressing       |
-| `[cli] source <graph\|mermaid\|elements\|replace\|operations\|unknown>`           | cli, `-f`             |
-| `[cli] copy <hit\|miss\|recorded\|evicted> <documentId>/<tabId> rev <n>`          | cli, read copies      |
-| `[cli] held retry <attempt>`                                                      | cli, `--wait-held`    |
-| `[cli] room <connecting\|open\|closed <code>\|reconnecting <ms>>`                 | cli, room stream      |
-| `[cli] telemetry <sent\|skipped <reason>\|timeout>`                               | cli, telemetry        |
-| `[cli] update-check <skipped <reason>\|latest <v>\|failed>`                       | cli, update check     |
-| `[oauth] loopback redirect matched <host> any port`                               | mcp, authorize        |
-| `[oauth] device <started\|authorised\|denied\|expired\|slow_down>`                | mcp, device grant     |
-| `[oauth] device <authorization\|lookup> rate-limited`                             | mcp, warn             |
-| `[tokens] current <read\|revoked> <tokenId>`                                      | api, `tokens/current` |
-| `[catalogues] <templates\|icons\|schema> <status>`                                | api, catalogue routes |
+| Fingerprint                                                                              | Where                 |
+| ---------------------------------------------------------------------------------------- | --------------------- |
+| `[cli] command <verb.id>` / `[cli] exit <code> <errorName?>`                             | cli, start and end    |
+| `[cli] profile <name> host <host> source <flag\|env\|config\|default>`                   | cli, profile choice   |
+| `[cli] credential <env\|keychain\|file\|none>`                                           | cli, credential       |
+| `[cli] keychain unavailable <reason>`                                                    | cli, store            |
+| `[cli] capabilities <hit\|miss\|stale>`                                                  | cli, capabilities     |
+| `[cli] floor refused <current> < <min>`                                                  | cli, floor            |
+| `[cli] format refused <host format> > <bundled format>`                                  | cli, floor            |
+| `[cli] request <METHOD> <path> <status> <ms>`                                            | cli, every api call   |
+| `[cli] address <document\|tab\|ref> <file\|url\|exact\|prefix\|name\|first> <n> matches` | cli, addressing       |
+| `[cli] source <graph\|mermaid\|elements\|replace\|operations\|unknown>`                  | cli, `-f`             |
+| `[cli] copy <hit\|miss\|recorded\|evicted> <documentId>/<tabId> rev <n>`                 | cli, read copies      |
+| `[cli] held retry <attempt>`                                                             | cli, `--wait-held`    |
+| `[cli] room <connecting\|open\|closed <code>\|reconnecting <ms>>`                        | cli, room stream      |
+| `[cli] telemetry <sent\|skipped <reason>\|timeout>`                                      | cli, telemetry        |
+| `[cli] update-check <skipped <reason>\|latest <v>\|failed>`                              | cli, update check     |
+| `[oauth] loopback redirect matched <host> any port`                                      | mcp, authorize        |
+| `[oauth] device <started\|authorised\|denied\|expired\|slow_down>`                       | mcp, device grant     |
+| `[oauth] device <authorization\|lookup> rate-limited`                                    | mcp, warn             |
+| `[tokens] current <read\|revoked> <tokenId>`                                             | api, `tokens/current` |
+| `[catalogues] <templates\|icons\|schema> <status>`                                       | api, catalogue routes |
 
 Requests carry `X-Livediagram-Client: cli` and `User-Agent: livediagram-cli/<version> node/<version> <platform>`
 (CLI45), so the api's own logs and the changeset front door (`Agent·*·Cli`) name the CLI.
@@ -899,46 +913,46 @@ WebSocket) with a fixed clock; none waits on a real timer or the network.
 
 | Spec rule                                                                                     | Test                                                                                                                                                                  |
 | --------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Resource then verb; `doc`, `el`, `edit` aliases                                               | `apps/cli/src/dispatch/route.test.ts` (planned)                                                                                                                       |
-| Unknown verb or flag exits 2 with a suggestion; no `--token`                                  | `apps/cli/src/dispatch/parse-flags.test.ts` (planned)                                                                                                                 |
+| Resource then verb; the `doc` alias; `el` and `edit` with their verbs                         | `apps/cli/src/dispatch/dispatch.test.ts`                                                                                                                              |
+| Unknown verb or flag exits 2 with a suggestion; no `--token`                                  | `apps/cli/src/dispatch/dispatch.test.ts`                                                                                                                              |
 | Every command in the spec's table exists with its flags                                       | `apps/cli/src/dispatch/commands-table.test.ts` (planned) (the table as data, against `VERBS`)                                                                         |
-| Addressing: name, prefix, URL, share URL, pull file; ambiguity refused with candidates        | `packages/agent-verbs/src/addressing.test.ts` (planned)                                                                                                               |
-| `--tab` defaults to the first tab                                                             | `packages/agent-verbs/src/addressing.test.ts` (planned)                                                                                                               |
-| Help within `HELP_TOP/RESOURCE/VERB_MAX_TOKENS`, every verb                                   | `apps/cli/src/help/help-budget.test.ts` (planned) (o200k, CLI48)                                                                                                      |
-| Top help lists resources, addressing, output rules, four commands                             | `apps/cli/src/help/top-help.test.ts` (planned) (golden)                                                                                                               |
-| Verb help: usage, flags, two examples, what it prints                                         | `apps/cli/src/help/verb-help.test.ts` (planned)                                                                                                                       |
-| Guide and skill within budget, from the catalogue                                             | `packages/agent-verbs/src/guides/guides.test.ts` (planned), `skill.test.ts`                                                                                           |
+| Addressing: name, prefix, URL, share URL, pull file; ambiguity refused with candidates        | `packages/agent-verbs/src/addressing.test.ts`                                                                                                                         |
+| `--tab` defaults to the first tab                                                             | `packages/agent-verbs/src/addressing.test.ts`                                                                                                                         |
+| Help within `HELP_TOP/RESOURCE/VERB_MAX_TOKENS`, every verb                                   | `apps/cli/src/help/help.test.ts` (`estimateTokens`, CLI48)                                                                                                            |
+| Top help lists resources, addressing, output rules, four commands                             | `apps/cli/src/help/help.test.ts`                                                                                                                                      |
+| Verb help: usage, flags, two examples, what it prints                                         | `apps/cli/src/help/help.test.ts`                                                                                                                                      |
+| Guide and skill name only commands that exist; their edit operations parse                    | `packages/agent-verbs/src/catalogue.test.ts`                                                                                                                          |
 | Schema from the api, each kind within budget                                                  | `packages/document/src/element-format.test.ts` (planned); `apps/api/src/routes/catalogues.test.ts` (planned)                                                          |
 | Templates and icons from the api                                                              | `apps/api/src/routes/catalogues.test.ts` (planned); `packages/icons/src/search.test.ts` (planned)                                                                     |
-| `skill install` requires `--to`, listing the directories                                      | `apps/cli/src/commands/skill.test.ts` (planned)                                                                                                                       |
+| `skill install` requires `--to`, listing the directories                                      | `apps/cli/src/main.test.ts`                                                                                                                                           |
 | Help never sends telemetry                                                                    | `apps/cli/src/telemetry.test.ts` (planned)                                                                                                                            |
-| stdout data only; hints on stderr                                                             | `apps/cli/src/output/print.test.ts` (planned) (each verb's fixture, stderr and stdout split)                                                                          |
-| `--json`, `--json <fields>`, unknown field, `-q`                                              | `apps/cli/src/output/json-fields.test.ts` (planned)                                                                                                                   |
-| Lists end with what was left out                                                              | `apps/cli/src/output/list-footer.test.ts` (planned)                                                                                                                   |
-| Errors name what, candidates, one runnable fix                                                | `apps/cli/src/output/cli-error.test.ts` (planned)                                                                                                                     |
-| Exit codes 0 to 7 by answer                                                                   | `apps/cli/src/output/exit-codes.test.ts` (planned)                                                                                                                    |
-| Never interactive when piped                                                                  | `apps/cli/src/main.test.ts` (planned) (stdin never read outside the three readers; TTY off)                                                                           |
-| Never a whole-tab save                                                                        | `apps/cli/src/main.test.ts` (planned) (no tab `PUT` across every command's fixture); `apps/cli/src/commands/api.test.ts` (planned)                                    |
+| stdout data only; hints on stderr                                                             | `apps/cli/src/main.test.ts`, `apps/cli/src/output/output.test.ts`                                                                                                     |
+| `--json`, `--json <fields>`, unknown field, `-q`                                              | `apps/cli/src/output/output.test.ts`                                                                                                                                  |
+| Lists end with what was left out                                                              | `packages/agent-verbs/src/verbs/verbs.test.ts`                                                                                                                        |
+| Errors name what, candidates, one runnable fix                                                | `apps/cli/src/output/output.test.ts`                                                                                                                                  |
+| Exit codes 0 to 7 by answer                                                                   | `apps/cli/src/output/output.test.ts`                                                                                                                                  |
+| Never interactive when piped                                                                  | `apps/cli/src/main.test.ts` (stdin read only by `--with-token` and `--body -`; a terminal refused)                                                                    |
+| Never a whole-tab save                                                                        | `apps/cli/src/main.test.ts` (`api PUT` on a tab refused)                                                                                                              |
 | `document create` compiles on the api with `source: 'cli'`                                    | `apps/cli/src/commands/document.test.ts` (planned)                                                                                                                    |
 | `tab rename` through the name route                                                           | `apps/cli/src/commands/tab.test.ts` (planned)                                                                                                                         |
 | Writes print result lines, revision, changeset, lint, revert                                  | `apps/cli/src/commands/element.test.ts` (planned)                                                                                                                     |
 | `--dry-run`, `--summary`, `--base` from the read copy with fingerprints, `--strict`           | `apps/cli/src/commands/element.test.ts` (planned), `apps/cli/src/sync/read-copies.test.ts` (planned)                                                                  |
 | `--wait-held` retries, then exit 5                                                            | `apps/cli/src/commands/element.test.ts` (planned)                                                                                                                     |
 | `changeset apply` from a file and stdin; source kinds                                         | `apps/cli/src/commands/changeset.test.ts` (planned); `packages/agent-verbs/src/source-kind.test.ts` (planned)                                                         |
-| `changeset show`                                                                              | `apps/cli/src/commands/changeset.test.ts` (planned)                                                                                                                   |
+| `changeset ls`, `show` and `revert`                                                           | `packages/agent-verbs/src/verbs/verbs.test.ts`                                                                                                                        |
 | Comments by element ref; reply to the thread                                                  | `apps/cli/src/commands/comment.test.ts` (planned)                                                                                                                     |
 | `tab diff` from the read copy; missing copy exit 3                                            | `apps/cli/src/commands/diff.test.ts` (planned)                                                                                                                        |
-| Env token before stored; no flag                                                              | `apps/cli/src/auth/resolve-credential.test.ts` (planned)                                                                                                              |
+| Env token before stored; no flag                                                              | `apps/cli/src/auth/credentials.test.ts`                                                                                                                               |
 | Loopback PKCE login against the OAuth server                                                  | `apps/cli/src/auth/loopback-login.test.ts` (planned) (in-process fake issuer)                                                                                         |
 | Device login, `slow_down`, denial, expiry                                                     | `apps/cli/src/auth/device-login.test.ts` (planned)                                                                                                                    |
-| `--with-token` from stdin; a terminal refused                                                 | `apps/cli/src/auth/token-login.test.ts` (planned)                                                                                                                     |
-| A new login revokes the replaced token                                                        | `apps/cli/src/commands/auth.test.ts` (planned)                                                                                                                        |
-| Keychain when available, else the 0600 file                                                   | `apps/cli/src/auth/credential-store.test.ts` (planned)                                                                                                                |
-| Status: host, account, name, role, expiry; never the secret; 14 days                          | `apps/cli/src/commands/auth.test.ts` (planned)                                                                                                                        |
-| Logout revokes and forgets                                                                    | `apps/cli/src/commands/auth.test.ts` (planned)                                                                                                                        |
-| A host without sign-in says so in one line                                                    | `apps/cli/src/main.test.ts` (planned)                                                                                                                                 |
-| Profiles, flags, env, default host                                                            | `apps/cli/src/config/profiles.test.ts` (planned)                                                                                                                      |
-| Capabilities fields; floor refuses writes, names the version; newer format                    | `apps/api/src/routes/capabilities.test.ts`, `apps/cli/src/config/version.test.ts` (planned)                                                                           |
+| `--with-token` from stdin; a terminal refused                                                 | `apps/cli/src/main.test.ts`                                                                                                                                           |
+| A new login revokes the replaced token                                                        | `apps/cli/src/main.test.ts`                                                                                                                                           |
+| Keychain when available, else the 0600 file                                                   | `apps/cli/src/auth/credentials.test.ts` (the file); `apps/cli/src/auth/keychain.test.ts` (planned)                                                                    |
+| Status: host, account, name, role, expiry; never the secret; 14 days                          | `apps/cli/src/main.test.ts`                                                                                                                                           |
+| Logout revokes and forgets                                                                    | `apps/cli/src/main.test.ts`                                                                                                                                           |
+| A host without sign-in says so in one line                                                    | `apps/cli/src/main.test.ts`                                                                                                                                           |
+| Profiles, flags, env, default host                                                            | `apps/cli/src/config/config.test.ts`                                                                                                                                  |
+| Capabilities fields; floor refuses writes, names the version; newer format                    | `apps/api/src/routes/capabilities.test.ts`, `apps/cli/src/config/config.test.ts`, `apps/cli/src/main.test.ts`                                                         |
 | A self-host profile never contacts livediagram.app                                            | `apps/cli/src/main.test.ts` (planned) (every request across a session of commands, telemetry included)                                                                |
 | Pull file: document, tabs, revisions; `--svg`                                                 | `apps/cli/src/sync/pull-file.test.ts` (planned), `apps/cli/src/commands/pull.test.ts` (planned)                                                                       |
 | Push: changed tabs as based changesets; conflict names the tab; elements only                 | `apps/cli/src/commands/push.test.ts` (planned)                                                                                                                        |
@@ -947,8 +961,8 @@ WebSocket) with a fixed clock; none waits on a real timer or the network.
 | `graph lint` and `graph render` write nothing                                                 | `apps/cli/src/commands/graph.test.ts` (planned) (fetch never called)                                                                                                  |
 | `wait` blocks, prints, exits, settles a burst, times out; `watch` streams                     | `apps/cli/src/room/room-stream.test.ts` (planned), `apps/cli/src/commands/wait.test.ts` (planned), `watch.test.ts`                                                    |
 | Any token role mints a room ticket                                                            | `apps/api/src/index.test.ts` (choke point)                                                                                                                            |
-| One catalogue: parity of verbs and tools                                                      | `packages/agent-verbs/src/catalogue.test.ts` (planned); `apps/mcp/src/verb-parity.test.ts` (planned)                                                                  |
-| Descriptions are facts                                                                        | `packages/agent-verbs/src/catalogue.test.ts` (planned) (the MCP's §4.15 checks over every verb)                                                                       |
+| One catalogue: parity of verbs and tools                                                      | `packages/agent-verbs/src/catalogue.test.ts`; `apps/mcp/src/verb-parity.test.ts` (planned)                                                                            |
+| Descriptions are facts                                                                        | `packages/agent-verbs/src/catalogue.test.ts` (the MCP's §4.15 checks over every verb)                                                                                 |
 | Bundle: one ESM file, wasm, font, Node 22, size                                               | `apps/cli/scripts/build.test.ts` (planned); CI `npm pack --dry-run`                                                                                                   |
 | Update check: once a day, stderr, skipped in CI, non-TTY, opt-out                             | `apps/cli/src/update-check.test.ts` (planned)                                                                                                                         |
 | Telemetry: after success only, profile's api, opt-outs, flip first, notice once, no arguments | `apps/cli/src/telemetry.test.ts` (planned)                                                                                                                            |
@@ -957,7 +971,7 @@ WebSocket) with a fixed clock; none waits on a real timer or the network.
 | Device grant endpoints and polling answers                                                    | `apps/mcp/src/oauth-device.test.ts` (planned)                                                                                                                         |
 | The device page trusts only the server's client name                                          | `apps/live/lib/mcp-device-session.test.ts` (planned); `apps/live/e2e/oauth-device.spec.ts` (planned) (dark scheme)                                                    |
 | `tokens/current` read and revoke; session refused; any role revokes                           | `apps/api/src/routes/tokens.test.ts`                                                                                                                                  |
-| api-client and render-png extractions keep the MCP's behaviour                                | `packages/api-client/src/client.test.ts` (planned); existing `apps/mcp` suites stay green                                                                             |
+| api-client and render-png extractions keep the MCP's behaviour                                | `packages/api-client/src/client.test.ts`; existing `apps/mcp` suites stay green                                                                                       |
 
 ## Constants and configuration
 

@@ -42,6 +42,13 @@ describe('the catalogue', () => {
     }
   });
 
+  it('describes each verb as facts, never as instructions to the caller (MCP §4.15)', () => {
+    const directive = /\b(you must|you should|do not|don't|never use|always use|make sure)\b/i;
+    expect(
+      VERBS.filter((v) => directive.test(`${v.summary} ${v.description}`)).map((v) => v.id),
+    ).toEqual([]);
+  });
+
   it('groups verbs under their resource and finds them by id', () => {
     expect(verbsOf('tab').map((v) => v.id)).toEqual(['tab.ls', 'tab.view', 'tab.lint']);
     expect(verbById('nope')).toBeUndefined();

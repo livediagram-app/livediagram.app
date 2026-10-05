@@ -1,6 +1,6 @@
 # Architecture
 
-A pnpm + Turborepo monorepo: seven Cloudflare-deployed apps and eighteen shared packages. Everything runs on Cloudflare Workers (Static Assets for the Next.js apps); there's no Node-hosted backend.
+A pnpm + Turborepo monorepo: seven Cloudflare-deployed apps, one distributed command-line app and twenty-three shared packages. Everything runs on Cloudflare Workers (Static Assets for the Next.js apps); there's no Node-hosted backend.
 
 ```
 apps/
@@ -11,6 +11,7 @@ apps/
   api/          REST + WebSocket worker (D1 + Durable Objects + R2, /api)
   mcp/          MCP server for AI tools (OAuth + tools, mcp.livediagram.app)
   router/       service-binding router stitching the apps under one hostname
+  cli/          the livediagram command line for agents and scripts (Node, one esbuild bundle)
 packages/
   ui/             shared UI primitives + chrome icons (Brand, Timeline, CloseIcon, etc.)
   document/       document data model (Tab, Element types + helpers)
@@ -19,6 +20,8 @@ packages/
   template-previews/ per-template preview SVGs (editor picker + marketing template gallery)
   help-registry/  help-centre article/category registry + search keywords (help app + editor search)
   api-schema/     wire-format DTOs the api worker emits + the live editor consumes
+  api-client/     the api client the MCP and the CLI share (fetch, timeouts, ApiError)
+  agent-verbs/    the verbs the CLI routes to: schemas, handlers, compact text, addressing, guides, the skill
   explorer-lens/  the Explorer's filter lens: token grammar, matching, autocomplete, chip view models
   edit-operations/ the engine agent changesets run on: edit operations and replace into element ops
   document-views/ read-only text views of a tab (outline, graph, layout, ...) for agents and scripts
