@@ -266,7 +266,7 @@ async function routeApiRequest(
   // Mint volume is one row per room join and the route does no
   // unbounded work, so it isn't a quota-exhaustion vector.
   const isRoomTicketMint = segments[1] === 'documents' && segments[3] === 'room-ticket';
-  // Community likes, reports and moderation (docs/specs/025-community/blueprints/community.md §7) are limited per
+  // Community likes and reports (docs/specs/025-community/blueprints/community.md §7) are limited per
   // network instead: their callers are anonymous, so the owner key would be 'anonymous' for everyone.
   const isCommunityWrite = isWrite && segments[1] === 'community';
   if (isCommunityWrite && env.COMMUNITY_RATE_LIMITER) {

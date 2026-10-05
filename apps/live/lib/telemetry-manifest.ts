@@ -41,7 +41,7 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Comment·Resolved',
   'Comment·Unresolved',
   // Community (docs/specs/025-community/community.md "Telemetry"): publish, Edit Listing and Remove
-  // From Community in the Share dialog; Hide / Restore on the Moderation page.
+  // From Community in the Share dialog.
   'Community·Changed',
   'Community·Removed',
   'Community·Shared',

@@ -1,14 +1,8 @@
 // What people do to Community posts (docs/specs/025-community/community.md "Likes", "Reports and moderation";
-// blueprint §3 and §5): likes keyed by the community key, distinct copiers, reports with automatic hiding, and the
-// operator's queue. Counts are recomputed in the same batch as the row that changes them, so they cannot drift.
+// blueprint §3 and §5): likes keyed by the community key, distinct copiers, and reports with automatic hiding, the
+// only moderation there is. Counts are recomputed in the same batch as the row that changes them, so they cannot drift.
 
-import {
-  COMMUNITY_AUTO_HIDE_REPORTERS,
-  type CommunityPostState,
-  type CommunityReport,
-  type CommunityReportReason,
-} from '@livediagram/api-schema';
-import { COMMUNITY_POST_COLS, COMMUNITY_POST_FROM, type CommunityPostRow } from '../community-row';
+import { COMMUNITY_AUTO_HIDE_REPORTERS, type CommunityReportReason } from '@livediagram/api-schema';
 import type { Env } from '../types';
 
 const RECOUNT_LIKES =
@@ -104,88 +98,4 @@ export async function communityNetworkHash(postId: string, ip: string): Promise<
   const bytes = new TextEncoder().encode(`${postId}:${ip}`);
   const digest = new Uint8Array(await crypto.subtle.digest('SHA-256', bytes));
   return Array.from(digest.slice(0, 16), (b) => b.toString(16).padStart(2, '0')).join('');
-}
-
-export type ModerationRow = CommunityPostRow & { reports: CommunityReport[] };
-
-// The operator's queue: every post that is hidden or has a report, most reported first. Trashed documents are left
-// out: nobody can see them, so there is nothing to decide.
-export async function listCommunityModeration(env: Env): Promise<ModerationRow[]> {
-  const posts = await env.DB.prepare(
-    `SELECT ${COMMUNITY_POST_COLS}, (SELECT COUNT(*) FROM community_reports r WHERE r.post_id = cp.id) AS report_count
-       FROM ${COMMUNITY_POST_FROM}
-      WHERE d.trashed_at IS NULL
-        AND (cp.state = 'hidden' OR EXISTS (SELECT 1 FROM community_reports r WHERE r.post_id = cp.id))
-      ORDER BY report_count DESC, cp.published_at DESC
-      LIMIT 200`,
-  ).all<CommunityPostRow>();
-  const rows = posts.results ?? [];
-  if (rows.length === 0) return [];
-  const reports = await env.DB.prepare(
-    `SELECT post_id, reason, note, created_at FROM community_reports
-      WHERE post_id IN (SELECT value FROM json_each(?)) ORDER BY created_at DESC`,
-  )
-    .bind(JSON.stringify(rows.map((r) => r.id)))
-    .all<{
-      post_id: string;
-      reason: CommunityReportReason;
-      note: string | null;
-      created_at: number;
-    }>();
-  const byPost = new Map<string, CommunityReport[]>();
-  for (const r of reports.results ?? []) {
-    const list = byPost.get(r.post_id) ?? [];
-    list.push({ reason: r.reason, note: r.note, createdAt: r.created_at });
-    byPost.set(r.post_id, list);
-  }
-  return rows.map((row) => ({ ...row, reports: byPost.get(row.id) ?? [] }));
-}
-
-// An operator's decision. Restoring clears the reports, so only three new ones can hide the post again; hiding
-// marks it as the operator's call. False when the post does not exist.
-export async function moderateCommunityPost(
-  env: Env,
-  postId: string,
-  state: CommunityPostState,
-): Promise<boolean> {
-  const update =
-    state === 'listed'
-      ? env.DB.prepare(
-          "UPDATE community_posts SET state = 'listed', hidden_by = NULL WHERE id = ?",
-        ).bind(postId)
-      : env.DB.prepare(
-          "UPDATE community_posts SET state = 'hidden', hidden_by = 'operator' WHERE id = ?",
-        ).bind(postId);
-  const statements = [update];
-  if (state === 'listed') {
-    statements.push(env.DB.prepare('DELETE FROM community_reports WHERE post_id = ?').bind(postId));
-  }
-  const [result] = await env.DB.batch(statements);
-  return (result?.meta?.changes ?? 0) > 0;
-}
-
-// The one moderation item, after a decision, for the response.
-export async function getCommunityModerationRow(
-  env: Env,
-  postId: string,
-): Promise<ModerationRow | null> {
-  const row = await env.DB.prepare(
-    `SELECT ${COMMUNITY_POST_COLS} FROM ${COMMUNITY_POST_FROM} WHERE cp.id = ?`,
-  )
-    .bind(postId)
-    .first<CommunityPostRow>();
-  if (!row) return null;
-  const reports = await env.DB.prepare(
-    'SELECT reason, note, created_at FROM community_reports WHERE post_id = ? ORDER BY created_at DESC',
-  )
-    .bind(postId)
-    .all<{ reason: CommunityReportReason; note: string | null; created_at: number }>();
-  return {
-    ...row,
-    reports: (reports.results ?? []).map((r) => ({
-      reason: r.reason,
-      note: r.note,
-      createdAt: r.created_at,
-    })),
-  };
 }

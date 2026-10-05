@@ -131,8 +131,10 @@ export function CommunitySection({
               </span>
             </p>
             {state === 'hidden' ? (
-              <p className="mt-1 text-xs font-medium text-amber-700 dark:text-amber-300">
-                Hidden from the Community after reports.
+              <p className="mt-1 text-xs text-amber-800 dark:text-amber-200">
+                <span className="font-medium">Hidden after reports.</span> Several people reported
+                it, so it was taken out of the Community for good. Only you can see it, and it can
+                no longer be changed or removed.
               </p>
             ) : null}
           </div>
@@ -154,7 +156,7 @@ export function CommunitySection({
                 {removing ? 'Removing' : 'Remove'}
               </Button>
             </div>
-          ) : (
+          ) : state === 'hidden' ? null : (
             <div className="flex flex-wrap items-center gap-2">
               {state === 'published' ? (
                 <a

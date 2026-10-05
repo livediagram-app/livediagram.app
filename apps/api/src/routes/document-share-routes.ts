@@ -113,11 +113,11 @@ export async function handleDocumentShareRoutes(ctx: RouteContext): Promise<Resp
       if (password !== null && password.length > MAX_PASSWORD_LEN) {
         return badRequest('password too long');
       }
-      // A share password and a Community post exclude each other (docs/specs/025-community/community.md): a public
-      // post cannot ask its visitors for a password.
-      if (password?.trim() && (await getCommunityPostForDocument(env, id))) {
-        return conflict('community_published');
-      }
+      // A share password and a listed Community post exclude each other (docs/specs/025-community/community.md): a
+      // public post cannot ask its visitors for a password. A post hidden by reports is closed for good, so it
+      // does not stand in the way.
+      const post = password?.trim() ? await getCommunityPostForDocument(env, id) : null;
+      if (post && post.state !== 'hidden') return conflict('community_published');
       await setDocumentSharePassword(env, id, password);
       // Echo back the stored value (normalised: whitespace-only ->
       // null) so the dialog reflects exactly what gates access.

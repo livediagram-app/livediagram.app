@@ -23,9 +23,7 @@ better start than a blank canvas).
 - **Category**: exactly one per post, from a closed set (below). The coarse filter.
 - **Tag**: zero to five per post, free-form but normalised (below). The fine filter.
 - **Like**: one per browser per post. **Copy count**: distinct people who copied the post's document.
-- **Report**: a visitor flags a post. **Hidden**: a post taken out of Community by reports or by an operator.
-- **Operator**: a person whose user id is listed in the api worker's `COMMUNITY_OPERATOR_IDS`; may hide and restore
-  posts. Not a team role and not a product tier.
+- **Report**: a visitor flags a post. **Hidden**: a post taken out of Community by reports, for good.
 
 ## What a post shows
 
@@ -143,7 +141,7 @@ ordinary view link in exactly these ways:
   history, not the Q&A board, and not any door added later (it fails closed). Comment threads are left out of the
   tabs it reads, and assigned actions keep their text and status but not who they are assigned to or by.
 - Visits and copies through it are not recorded in the author's timeline (the copy count stands in for copies).
-- While the post is hidden the link grants nothing, its image included, except to an operator reviewing it.
+- While the post is hidden the link grants nothing to anyone, its image included.
 - The viewer shows a slim **Community bar**: "Shared to the Community by <author>", **Back to Community** and **Make a
   Copy**.
 - It is read-only for **everyone, the author included**: the post page's preview and Open Document never open the document
@@ -180,14 +178,17 @@ unliking removes it.
 - A post is **hidden automatically** once reports have come from three distinct browsers on three distinct networks.
   The network is recorded only as a one-way hash of the address salted with the post id, so it cannot be compared across
   posts.
-- Operators see a **Moderation** page in the editor (`/moderation`, signed in, operator only) listing reported and hidden
-  posts with their reports, can open a hidden post's document to review it, and can **Hide** or **Restore** a post. Restoring clears its reports. An operator's decision
-  sticks: a restored post is hidden automatically again only by three new reports.
-- An author is not told their post was hidden; the Community section in their Share dialog shows it as hidden.
-- With `COMMUNITY_OPERATOR_IDS` unset (a fresh self-host) automatic hiding still works and nobody can moderate by hand.
+- **Moderation is self-serve: nobody reviews posts by hand.** Reports are the only moderation, there is no operator
+  role and no moderation page, so the hosted service and a self-host work the same way with nothing to configure.
+- **Hidden is final.** Nobody can restore a hidden post, and its author can neither edit nor remove it (removing would
+  clear its reports and let the same document be published again). It stays visible to its author alone: marked
+  **Hidden after reports** in the Share dialog, with no Edit Listing or Remove, and marked **Hidden** in My Shares.
+  It still counts toward the author's post limit. Deleting the document deletes the post.
+- A hidden post no longer stands in the way of a share password: its link is closed for good.
+- An author is not told their post was hidden beyond what the Share dialog and My Shares show.
 
 Hiding takes effect at once at the api. What browsers and caches may still hold is short: a post, a list or a card
-image for at most 30 seconds, the home page's six for a minute. An operator's view of a hidden post is never stored.
+image for at most 30 seconds, the home page's six for a minute.
 
 ## My Shares
 
@@ -237,10 +238,9 @@ only `Liked`, `Unliked` and `Reported`. Types are preset values, never post cont
 - Community app: `Community·Opened·Post`, `Community·Liked·Post`, `Community·Unliked·Post`, `Community·Copied·Post`,
   `Community·Reported·<Reason>`, `Community·Searched·Query`, `Community·Selected·<Category|Tag|Sort>` (Tag and
   Sort from the controls inside the search box).
-- Operators: `Community·Changed·<Hidden|Listed>`.
 - Page views for the Community app as for any other app, under app `Community`.
 - The [telemetry dashboard](../017-telemetry/telemetry.md) has a **Community** tab and a Community group of cards
-  (publishing, engagement, discovery, moderation).
+  (publishing, engagement, discovery, reports).
 
 `<Category>` is the category id in PascalCase (`Architecture`, `Flows`, ...); `<Reason>` is `Spam`, `Offensive`,
 `PersonalInfo`, `Copyright` or `Other`.

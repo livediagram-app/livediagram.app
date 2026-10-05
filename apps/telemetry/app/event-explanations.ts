@@ -488,10 +488,6 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Changed',
     (label) => `Someone saved changes to their Community post, now listed under ${label}.`,
   ),
-  'Community|Changed|Hidden':
-    'An operator hid a reported post from the Community, on the Moderation page.',
-  'Community|Changed|Listed':
-    'An operator put a reported post back in the Community, on the Moderation page.',
   'Community|Removed|Post':
     'Someone took their own post down from the Community, with Remove From Community in the Share dialog.',
   'Community|Opened|Post': "Someone opened a post's own page in the Community.",
@@ -1227,7 +1223,7 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Community|Shared':
     'Someone shared a document to the Community, the public gallery of documents.',
   'Community|Changed':
-    'A Community post changed: its owner edited the listing, or an operator hid it or listed it again.',
+    'A Community post changed: its owner edited the listing.',
   'Community|Removed': 'Someone took their own post down from the Community.',
   'Community|Opened': "Someone opened a post's own page in the Community.",
   'Community|Liked': 'Someone liked a post in the Community.',

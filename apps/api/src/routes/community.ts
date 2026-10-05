@@ -1,6 +1,6 @@
-// /api/community/*: the public Community api (docs/specs/025-community/community.md; blueprint §4 and §5) and the
-// operators' moderation. The public routes need no identity; likes and reports carry the browser's community key,
-// which is never an owner id. Moderation needs a verified Clerk id listed in COMMUNITY_OPERATOR_IDS.
+// /api/community/*: the public Community api (docs/specs/025-community/community.md; blueprint §4 and §5). The public
+// routes need no identity; likes and reports carry the browser's community key, which is never an owner id. Only My
+// Shares needs a signed-in author. Nobody moderates by hand: enough reports hide a post.
 
 import {
   COMMUNITY_KEY_HEADER,
@@ -9,29 +9,23 @@ import {
   isCommunityReportReason,
   parseCommunityListQuery,
   type CommunityMinePost,
-  type CommunityModerationItem,
   type CommunityPost,
 } from '@livediagram/api-schema';
-import { isCommunityOperator } from '../auth/community-operators';
 import { clientIp } from '../client-ip';
-import { rowHiddenBy, rowState, rowToCommunityPost, type CommunityPostRow } from '../community-row';
+import { rowState, rowToCommunityPost, type CommunityPostRow } from '../community-row';
 import {
   communityFacets,
   communityMineTotals,
   communityNetworkHash,
-  getCommunityModerationRow,
   getPublicCommunityPost,
   likedPostIds,
-  listCommunityModeration,
   listCommunityPosts,
   listFeaturedCommunityPosts,
   listRelatedCommunityPosts,
-  moderateCommunityPost,
   recordCommunityReport,
   setCommunityLike,
-  type ModerationRow,
 } from '../db';
-import { forbidden, json, noContent, notFound } from '../responses';
+import { json, noContent, notFound } from '../responses';
 import type { Env } from '../types';
 import type { RouteContext } from './context';
 
@@ -57,15 +51,6 @@ async function withLikes(
 // answer carries that browser's likes and must not be shared.
 function listCacheHeaders(key: string | null): HeadersInit {
   return { 'Cache-Control': key ? 'private, no-store' : 'public, max-age=30' };
-}
-
-function moderationItem(row: ModerationRow): CommunityModerationItem {
-  return {
-    ...rowToCommunityPost(row, false),
-    state: rowState(row),
-    hiddenBy: rowHiddenBy(row),
-    reports: row.reports,
-  };
 }
 
 export async function handleCommunity(ctx: RouteContext): Promise<Response> {
@@ -123,13 +108,6 @@ export async function handleCommunity(ctx: RouteContext): Promise<Response> {
     return json(await communityFacets(env), { headers: listCacheHeaders(null) });
   }
 
-  // GET /api/community/moderation
-  if (segments.length === 3 && segments[2] === 'moderation' && method === 'GET') {
-    if (!isCommunityOperator(env, ctx.clerkUserId)) return forbidden('operator_only');
-    const rows = await listCommunityModeration(env);
-    return json({ items: rows.map(moderationItem) }, { headers: listCacheHeaders('operator') });
-  }
-
   if (segments[2] !== 'posts' || segments.length < 4) return notFound();
   const postId = segments[3]!;
 
@@ -144,21 +122,6 @@ export async function handleCommunity(ctx: RouteContext): Promise<Response> {
     );
     const [post, ...rest] = await withLikes(env, key, [row, ...related]);
     return json({ post, related: rest }, { headers: listCacheHeaders(key) });
-  }
-
-  // PUT /api/community/posts/<id>/moderation
-  if (segments.length === 5 && segments[4] === 'moderation' && method === 'PUT') {
-    if (!isCommunityOperator(env, ctx.clerkUserId)) return forbidden('operator_only');
-    const body = (await request.json().catch(() => ({}))) as { state?: unknown };
-    if (body.state !== 'listed' && body.state !== 'hidden') {
-      return json({ error: 'invalid_state' }, { status: 400 });
-    }
-    if (!(await moderateCommunityPost(env, postId, body.state))) return notFound();
-    // Telemetry for the decision is the moderation page's (Community·Changed·Hidden|Listed), like every other
-    // Community event a person causes.
-    console.log('[community] moderated', { postId, state: body.state });
-    const row = await getCommunityModerationRow(env, postId);
-    return row ? json({ item: moderationItem(row) }) : notFound();
   }
 
   // Likes and reports: a community key, on a post the public can see.

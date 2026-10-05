@@ -16,8 +16,6 @@ export const LIVE_ROUTE_SEGMENTS: ReadonlySet<string> = new Set([
   'explorer',
   'get-started',
   'join',
-  // The operator Moderation page (docs/specs/025-community/community.md).
-  'moderation',
   'new',
   'oauth',
   'sign-in',

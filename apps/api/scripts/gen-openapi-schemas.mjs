@@ -59,7 +59,6 @@ export const ROOT_TYPES = [
   'SharePurpose',
   'CommunityPost',
   'CommunityOwnPost',
-  'CommunityModerationItem',
   'CommunityPostInput',
   'CommunityReportInput',
   'CommunityListResponse',

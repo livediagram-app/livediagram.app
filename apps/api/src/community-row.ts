@@ -6,7 +6,6 @@ import {
   COMMUNITY_UNKNOWN_AUTHOR,
   isCommunityCategory,
   type CommunityAuthor,
-  type CommunityHiddenBy,
   type CommunityPost,
   type CommunityPostState,
 } from '@livediagram/api-schema';
@@ -85,10 +84,6 @@ export function rowToCommunityPost(row: CommunityPostRow, liked: boolean): Commu
 
 export function rowState(row: CommunityPostRow): CommunityPostState {
   return row.state === 'hidden' ? 'hidden' : 'listed';
-}
-
-export function rowHiddenBy(row: CommunityPostRow): CommunityHiddenBy | null {
-  return row.hidden_by === 'reports' || row.hidden_by === 'operator' ? row.hidden_by : null;
 }
 
 // What search matches against (blueprint §3): lowercased title, description and tags.

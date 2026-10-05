@@ -1,7 +1,6 @@
 // /api/share/<code> — resolve a share code to its document + role.
 
 import { rowAuthor } from '../community-row';
-import { isCommunityOperator } from '../auth/community-operators';
 import {
   communityLinkAccess,
   getCommunityPostByShareCode,
@@ -53,12 +52,12 @@ export async function handleShare(ctx: RouteContext): Promise<Response> {
       if (gate) return gate;
       // A Community post's link (docs/specs/025-community/community.md "Viewing a post's document"): read-only for
       // everyone, never recorded in "Shared with you", never a join email to the author, and gone while the post is
-      // hidden (or its document is in the Trash or a team library), except to an operator reviewing it.
+      // hidden (or its document is in the Trash or a team library).
       if (link.purpose === 'community') {
         const post = await getCommunityPostByShareCode(env, link.code);
         if (!post) return notFound();
         const access = await communityLinkAccess(env, link.code);
-        if (access !== 'public' && !isCommunityOperator(env, ctx.clerkUserId)) return notFound();
+        if (access !== 'public') return notFound();
         return json({
           document: redactDocumentForReader(d, resolveOwner()),
           role: 'view',
@@ -141,15 +140,11 @@ async function handleShareImage(ctx: RouteContext, code: string): Promise<Respon
   const link = await getShareLink(env, code);
   if (!link) return notFound();
   let cacheControl = SHARE_IMAGE_CACHE;
-  // A hidden Community post's image is gone with it, except to an operator reviewing it
-  // (docs/specs/025-community/community.md "Reports and moderation"). So a hidden post's image cannot
-  // linger: no stale window on a public one, and an operator's view of a closed one is never stored.
+  // A hidden Community post's image is gone with it (docs/specs/025-community/community.md "Reports and
+  // moderation"), and with no stale window, so it cannot linger in a cache once the post is hidden.
   if (link.purpose === 'community') {
-    const access = await communityLinkAccess(env, link.code);
-    if (access === null || (access === 'closed' && !isCommunityOperator(env, ctx.clerkUserId))) {
-      return notFound();
-    }
-    cacheControl = access === 'closed' ? 'private, no-store' : COMMUNITY_IMAGE_CACHE;
+    if ((await communityLinkAccess(env, link.code)) !== 'public') return notFound();
+    cacheControl = COMMUNITY_IMAGE_CACHE;
   }
   const d = await getDocument(env, link.documentId);
   if (!d) return missingSharedDocument(env, link.documentId);

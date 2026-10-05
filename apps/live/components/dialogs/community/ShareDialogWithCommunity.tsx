@@ -54,7 +54,9 @@ export function ShareDialogWithCommunity({
   return (
     <ShareDialog
       {...share}
-      passwordLockedReason={community.post ? communityCodeMessage('community_published') : null}
+      passwordLockedReason={
+        community.post?.state === 'listed' ? communityCodeMessage('community_published') : null
+      }
       communityListed={community.post?.state === 'listed'}
       community={
         documentId ? (

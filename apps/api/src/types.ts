@@ -99,9 +99,6 @@ export type Env = {
   // keyed `community:<ip>`. These callers are anonymous, so the owner-keyed write limiter would lump them all onto
   // its 'anonymous' key. Optional: absent (self-host) → "allow".
   COMMUNITY_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
-  // Community operators (docs/specs/025-community/community.md "Reports and moderation"): comma-separated Clerk
-  // user ids allowed to hide and restore posts. Unset = nobody; automatic hiding still works.
-  COMMUNITY_OPERATOR_IDS?: string;
   // Telemetry on/off switch (docs/specs/017-telemetry/telemetry.md). Authoritative: gates both
   // POST /api/events and GET /api/telemetry/summary. A plain
   // wrangler.toml [vars] string; only the literal "true" enables it.

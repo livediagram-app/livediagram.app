@@ -439,7 +439,6 @@ export function communityQueryParams(
 // ---------------------------------------------------------------------
 
 export type CommunityPostState = 'listed' | 'hidden';
-export type CommunityHiddenBy = 'reports' | 'operator';
 
 export type CommunityAuthor = { name: string; color: string; picture: string | null };
 
@@ -465,18 +464,6 @@ export type CommunityPost = {
 
 export type CommunityOwnPost = CommunityPost & { state: CommunityPostState };
 
-export type CommunityReport = {
-  reason: CommunityReportReason;
-  note: string | null;
-  createdAt: number;
-};
-
-export type CommunityModerationItem = CommunityPost & {
-  state: CommunityPostState;
-  hiddenBy: CommunityHiddenBy | null;
-  reports: CommunityReport[];
-};
-
 export type CommunityListResponse = { posts: CommunityPost[]; nextOffset: number | null };
 // My Shares (`GET /api/community/mine`): the caller's own posts, hidden ones included, with what only the
 // author may see (the state, the document to open), and how popular they are altogether.
@@ -496,7 +483,6 @@ export type CommunityPostResponse = { post: CommunityPost; related: CommunityPos
 export type CommunityFeaturedResponse = { posts: CommunityPost[] };
 export type CommunityOwnPostResponse = { post: CommunityOwnPost | null };
 export type CommunityLikeResponse = { likeCount: number; liked: boolean };
-export type CommunityModerationResponse = { items: CommunityModerationItem[] };
 export type CommunityReportInput = { reason: CommunityReportReason; note?: string | null };
 
 // What the share resolve adds for a community link (spec "Viewing a post's document").

@@ -9,7 +9,7 @@ import type { CommunityOwnPost } from '@livediagram/api-schema';
 //   3. loading:     the owner's post is being read.
 //   4. error:       it couldn't be read; the section says so rather than offering to publish over a post
 //                   that may exist.
-//   5. hidden:      published, but taken out of the Community (reports or an operator).
+//   5. hidden:      published, but taken out of the Community by reports, for good.
 //   6. published:   published and listed.
 //   7. unpublished: the invitation to share.
 export type CommunitySectionState =

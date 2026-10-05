@@ -165,7 +165,7 @@ export const TELEMETRY_CATEGORIES = [
   'Agent',
   // Community (docs/specs/025-community/community.md): publishing, Edit Listing and removal from the editor
   // ('Shared'/'Changed' typed by category, 'Removed'·'Post'); opens, likes, copies, reports, search and filters in
-  // the Community app; an operator's 'Changed'·'Hidden'/'Listed'. Never a title, tag or id.
+  // the Community app. Never a title, tag or id.
   'Community',
 ] as const;
 export type TelemetryCategory = (typeof TELEMETRY_CATEGORIES)[number];

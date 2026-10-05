@@ -27,7 +27,6 @@
 //   regardless of role).
 
 import { communityLinkAccess, getMembership } from '../db';
-import { isCommunityOperator } from './community-operators';
 import type { Env, ShareRole } from '../types';
 import { isPersonalOwner, shareLinkForDocument, sharePasswordOk } from './share-access';
 
@@ -95,8 +94,8 @@ export async function resolveDocumentGrant(
   if (!(await sharePasswordOk(env, documentId, sharePassword))) return null;
   // A Community post's link opens its document only while the post is public
   // (docs/specs/025-community/community.md "Reports and moderation"): hiding the post, or moving its document
-  // into the Trash or a team library, revokes the link for everyone but an operator reviewing it.
-  if (link.purpose === 'community' && !(await communityLinkOpen(env, link.code, callerId))) {
+  // into the Trash or a team library, revokes the link for everyone.
+  if (link.purpose === 'community' && (await communityLinkAccess(env, link.code)) !== 'public') {
     return null;
   }
   return {
@@ -105,16 +104,6 @@ export async function resolveDocumentGrant(
     shareCode: link.code,
     community: link.purpose === 'community',
   };
-}
-
-async function communityLinkOpen(
-  env: Env,
-  shareCode: string,
-  callerId: string | null,
-): Promise<boolean> {
-  const access = await communityLinkAccess(env, shareCode);
-  if (access === null) return false;
-  return access === 'public' || isCommunityOperator(env, callerId);
 }
 
 const FULL_EDIT: DocumentGrant = {

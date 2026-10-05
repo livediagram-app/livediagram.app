@@ -5,10 +5,9 @@ import { COMMUNITY_CATEGORIES } from '@livediagram/api-schema';
 import type { MetricStack } from '../metric-series';
 import { chart } from './helpers';
 
-// The category types a published or edited post sends (`Community·Shared|Changed·<Category>`).
-// `Community·Changed` also carries the Moderation page's `Hidden` / `Listed`, so the edit chart
-// counts only the category types and the moderation charts only their own. Not exported: every
-// export here is a chart (the catalogue is read as a list of them).
+// The category types a published or edited post sends (`Community·Shared|Changed·<Category>`). The
+// edit chart counts only these. Not exported: every export here is a chart (the catalogue is read as
+// a list of them).
 const COMMUNITY_CATEGORY_TYPES: readonly string[] = COMMUNITY_CATEGORIES.map((c) => c.type);
 
 // Publishing, from the editor's Share dialog.
@@ -80,7 +79,7 @@ export const COMMUNITY_FILTERS = chart(
   'Someone narrowed or reordered the gallery: picked a category, a tag or a sort order.',
 );
 
-// Moderation: reports in, and the operator's decisions on the Moderation page.
+// Moderation is reports alone: enough of them hide a post (docs/specs/025-community/community.md).
 export const COMMUNITY_REPORTS = chart(
   'Community',
   'Reported',
@@ -89,21 +88,7 @@ export const COMMUNITY_REPORTS = chart(
   { rising: 'bad' },
 );
 
-export const COMMUNITY_HIDDEN = chart(
-  'Community',
-  'Changed',
-  'Posts Hidden',
-  'An operator hid a reported post from the Community on the Moderation page.',
-  { types: ['Hidden'], rising: 'neutral' },
-);
 
-export const COMMUNITY_RELISTED = chart(
-  'Community',
-  'Changed',
-  'Posts Listed Again',
-  'An operator put a reported post back in the Community on the Moderation page.',
-  { types: ['Listed'], rising: 'neutral' },
-);
 
 export const COMMUNITY_PUBLISHING: MetricStack = {
   stack: true,
@@ -134,9 +119,9 @@ export const COMMUNITY_DISCOVERY: MetricStack = {
 export const COMMUNITY_MODERATION: MetricStack = {
   stack: true,
   rising: 'bad',
-  title: 'Community Moderation',
-  blurb: 'Posts reported, and what an operator decided: hidden, or listed again.',
+  title: 'Community Reports',
+  blurb: 'Posts reported. Enough reports hide a post; nobody moderates by hand.',
   headline: COMMUNITY_REPORTS,
-  members: [COMMUNITY_REPORTS, COMMUNITY_HIDDEN, COMMUNITY_RELISTED],
+  members: [COMMUNITY_REPORTS],
   seeAlso: { view: 'community', label: 'See Each Reason on the Community Tab' },
 };

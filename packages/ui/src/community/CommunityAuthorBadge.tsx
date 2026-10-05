@@ -1,4 +1,5 @@
 import type { CommunityAuthor } from '@livediagram/api-schema';
+import { IDENTITY_FILL, identityVars } from '../identity-fill';
 import { GlyphDisc } from '../optical/GlyphDisc';
 
 // The one initial shown for an author with no picture (docs/specs/025-community/community.md).
@@ -39,8 +40,9 @@ export function CommunityAuthorBadge({
         <GlyphDisc
           size={size}
           aria-hidden
-          className="font-semibold text-white ring-2 ring-white dark:ring-slate-900"
-          style={{ backgroundColor: author.color, fontSize: Math.round(size * 0.48) }}
+          // The author's colour, deepened in dark mode so the white initial stays readable.
+          className={`${IDENTITY_FILL} font-semibold text-white ring-2 ring-white dark:ring-slate-900`}
+          style={{ ...identityVars(author.color), fontSize: Math.round(size * 0.48) }}
         >
           {communityAuthorInitial(author.name)}
         </GlyphDisc>

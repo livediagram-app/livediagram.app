@@ -1,17 +1,13 @@
 // Community calls from the editor (docs/specs/025-community/community.md; blueprint
 // docs/specs/025-community/blueprints/community.md §4): the owner's post on a document (read,
-// publish / Edit Listing, remove) and the operator Moderation page. The public gallery reads live in
+// publish / Edit Listing, remove). The public gallery reads live in
 // apps/community; nothing here is called without an owner identity.
 import type {
   CommunityFacetsResponse,
-  CommunityModerationItem,
-  CommunityModerationResponse,
   CommunityOwnPost,
   CommunityOwnPostResponse,
   CommunityPostInput,
-  CommunityPostState,
 } from '@livediagram/api-schema';
-import { communityImagePath } from '@livediagram/api-schema';
 import { API_BASE, apiDelete, apiFetch, apiHeaders, expectOk } from './core';
 
 function documentCommunityUrl(documentId: string): string {
@@ -67,43 +63,4 @@ export async function apiCommunityPopularTags(): Promise<string[]> {
   } catch {
     return [];
   }
-}
-
-// Reported and hidden posts for the Moderation page. 403 `operator_only` for everyone but an operator.
-export async function apiListModeration(ownerId: string): Promise<CommunityModerationItem[]> {
-  const res = await apiFetch(`${API_BASE}/community/moderation`, {
-    headers: await apiHeaders(ownerId),
-  });
-  const { items } = await expectOk<CommunityModerationResponse>(res, 'list moderation');
-  return items;
-}
-
-// Hide or Restore a post (operator only). Restoring clears its reports server-side.
-export async function apiModeratePost(
-  ownerId: string,
-  postId: string,
-  state: CommunityPostState,
-): Promise<CommunityModerationItem> {
-  const res = await apiFetch(
-    `${API_BASE}/community/posts/${encodeURIComponent(postId)}/moderation`,
-    {
-      method: 'PUT',
-      headers: await apiHeaders(ownerId, { body: true }),
-      body: JSON.stringify({ state }),
-    },
-  );
-  const { item } = await expectOk<{ item: CommunityModerationItem }>(res, 'moderate post');
-  return item;
-}
-
-// A post's card image for the Moderation page. An <img> sends no session token, and a hidden post's image is
-// served only to an operator, so the page fetches it with one and shows the bytes. Null when there is none.
-export async function apiFetchCommunityImage(
-  ownerId: string,
-  shareCode: string,
-): Promise<Blob | null> {
-  const res = await apiFetch(`${API_BASE}${communityImagePath(shareCode)}`, {
-    headers: await apiHeaders(ownerId),
-  });
-  return res.ok ? res.blob() : null;
 }

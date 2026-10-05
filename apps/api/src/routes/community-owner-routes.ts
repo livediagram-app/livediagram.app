@@ -38,8 +38,14 @@ export async function handleCommunityOwnerRoutes(ctx: RouteContext): Promise<Res
 
   if (method === 'GET') return json({ post: existing ? ownPost(existing) : null });
 
+  // A post hidden by reports is final (docs/specs/025-community/community.md "Reports and moderation"): nobody
+  // reviews it, so its author can neither edit it nor remove it, which would clear its reports and let the same
+  // document be published again. It stays visible to them alone.
+  const hidden = existing !== null && rowState(existing) === 'hidden';
+
   if (method === 'DELETE') {
     if (!existing) return notFound();
+    if (hidden) return reject(conflict('post_hidden'), 'post_hidden');
     await deleteCommunityPost(env, existing.share_code);
     console.log('[community] removed', { postId: existing.id });
     return noContent();
@@ -58,6 +64,7 @@ export async function handleCommunityOwnerRoutes(ctx: RouteContext): Promise<Res
     return reject(conflict('share_password_set'), 'share_password_set');
 
   if (existing) {
+    if (hidden) return reject(conflict('post_hidden'), 'post_hidden');
     await updateCommunityPost(env, existing.id, parsed.value);
     console.log('[community] updated', { postId: existing.id });
     const row = await getCommunityPostForDocument(env, id);

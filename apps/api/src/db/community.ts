@@ -1,6 +1,6 @@
 // Community posts (docs/specs/025-community/community.md; blueprint docs/specs/025-community/blueprints/community.md
 // §3 and §5): publish, Edit Listing, remove, and the public reads (list, facets, one post, related). Likes, copies,
-// reports and moderation live in community-engagement.ts.
+// reports (and the automatic hiding they cause) live in community-engagement.ts.
 
 import {
   type CommunityMineTotals,

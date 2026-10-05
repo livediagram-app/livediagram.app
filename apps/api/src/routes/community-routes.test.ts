@@ -17,7 +17,6 @@ vi.mock('../thumbnail', () => ({
 import { makeTestRouteContext } from './test-route-context';
 import { handleCommunityOwnerRoutes } from './community-owner-routes';
 import { handleCommunity } from './community';
-import { isCommunityOperator } from '../auth/community-operators';
 import { handleShare } from './share';
 import { handleDocumentShareRoutes } from './document-share-routes';
 
@@ -72,7 +71,7 @@ async function publish(docId = 'd1'): Promise<{ id: string; shareCode: string }>
 }
 
 beforeEach(() => {
-  db = sqliteD1({ COMMUNITY_OPERATOR_IDS: ' user_op , ,user_op2' } as Partial<Env>);
+  db = sqliteD1();
   env = db.env;
   thumbnail.svg = '<svg/>';
   db.sql
@@ -297,50 +296,45 @@ describe('public routes', () => {
   });
 });
 
-describe('moderation', () => {
-  it('parses the operator list', () => {
-    expect(isCommunityOperator(env, 'user_op')).toBe(true);
-    expect(isCommunityOperator(env, 'user_op2')).toBe(true);
-    expect(isCommunityOperator(env, '')).toBe(false);
-    expect(isCommunityOperator(env, null)).toBe(false);
-    expect(isCommunityOperator({} as Env, 'user_op')).toBe(false);
+describe('a hidden post', () => {
+  const hide = () =>
+    db.sql.prepare("UPDATE community_posts SET state = 'hidden', hidden_by = 'reports'").run();
+
+  it('is final: its author sees it, but can neither edit nor remove it', async () => {
+    const post = await publish();
+    hide();
+    const read = await handleCommunityOwnerRoutes(owner('GET', '/api/documents/d1/community'));
+    expect(await read!.json()).toMatchObject({ post: { id: post.id, state: 'hidden' } });
+    const edit = await handleCommunityOwnerRoutes(
+      owner('PUT', '/api/documents/d1/community', { body: { ...body, title: 'Something else' } }),
+    );
+    expect(edit!.status).toBe(409);
+    expect(await edit!.json()).toEqual({ error: 'post_hidden' });
+    const remove = await handleCommunityOwnerRoutes(owner('DELETE', '/api/documents/d1/community'));
+    expect(remove!.status).toBe(409);
+    // Still there, still hidden, so the document cannot be published afresh.
+    expect(db.sql.prepare('SELECT state, title FROM community_posts').get()).toEqual({
+      state: 'hidden',
+      title: 'Payments platform',
+    });
   });
 
-  it('is operator only, hides and restores', async () => {
+  it('has no way back: there are no moderation routes', async () => {
     const post = await publish();
-    expect(
-      (await handleCommunity(publicCtx('GET', '/api/community/moderation', { clerk: AUTHOR })))
-        .status,
-    ).toBe(403);
-    const hide = await handleCommunity(
-      publicCtx('PUT', `/api/community/posts/${post.id}/moderation`, {
-        clerk: 'user_op',
-        body: { state: 'hidden' },
-      }),
-    );
-    expect(await hide.json()).toMatchObject({
-      item: { id: post.id, state: 'hidden', hiddenBy: 'operator' },
-    });
-    const queue = await (
-      await handleCommunity(publicCtx('GET', '/api/community/moderation', { clerk: 'user_op' }))
-    ).json();
-    expect(queue).toMatchObject({ items: [{ id: post.id }] });
-    const restore = await handleCommunity(
-      publicCtx('PUT', `/api/community/posts/${post.id}/moderation`, {
-        clerk: 'user_op',
-        body: { state: 'listed' },
-      }),
-    );
-    expect(await restore.json()).toMatchObject({
-      item: { state: 'listed', hiddenBy: null, reports: [] },
-    });
-    const invalid = await handleCommunity(
-      publicCtx('PUT', `/api/community/posts/${post.id}/moderation`, {
-        clerk: 'user_op',
-        body: { state: 'gone' },
-      }),
-    );
-    expect(invalid.status).toBe(400);
+    hide();
+    for (const [method, path] of [
+      ['GET', '/api/community/moderation'],
+      ['PUT', `/api/community/posts/${post.id}/moderation`],
+    ] as const) {
+      const res = await handleCommunity(
+        publicCtx(method, path, {
+          clerk: AUTHOR,
+          body: method === 'PUT' ? { state: 'listed' } : undefined,
+        }),
+      );
+      expect(res.status).toBe(404);
+    }
+    expect(db.sql.prepare('SELECT state FROM community_posts').get()).toEqual({ state: 'hidden' });
   });
 });
 
@@ -363,15 +357,6 @@ describe('the community link', () => {
     expect(db.sql.prepare('SELECT COUNT(*) AS n FROM shared_with').get()).toEqual({ n: 0 });
     db.sql.prepare("UPDATE community_posts SET state = 'hidden'").run();
     expect((await visit()).status).toBe(404);
-    // An operator reviewing the hidden post can still open it.
-    const review = await handleShare(
-      makeTestRouteContext('GET', `/api/share/${post.shareCode}`, {
-        env,
-        owner: 'user_op',
-        clerkUserId: 'user_op',
-      }),
-    );
-    expect(review.status).toBe(200);
   });
 
   it('closes the link when its document moves into a team library or the Trash', async () => {
@@ -388,7 +373,7 @@ describe('the community link', () => {
     expect((await image()).status).not.toBe(200);
   });
 
-  it("stops serving a hidden post's image, except to an operator", async () => {
+  it("stops serving a hidden post's image", async () => {
     const post = await publish();
     const image = (clerk: string | null = null) =>
       handleShare(
@@ -403,10 +388,8 @@ describe('the community link', () => {
     expect(listed.headers.get('Cache-Control')).toBe('public, max-age=30');
     db.sql.prepare("UPDATE community_posts SET state = 'hidden'").run();
     expect((await image()).status).toBe(404);
-    const review = await image('user_op');
-    expect(review.status).toBe(200);
-    // What an operator sees of a hidden post is never stored for anyone else.
-    expect(review.headers.get('Cache-Control')).toBe('private, no-store');
+    // Signed in or not, nobody gets it back.
+    expect((await image(AUTHOR)).status).toBe(404);
   });
 
   it('is not listed for the owner, survives revoke-all, and cannot be revoked by code', async () => {
@@ -435,5 +418,14 @@ describe('the community link', () => {
       owner('PUT', '/api/documents/d1/share-password', { body: { password: null } }),
     ))!;
     expect(clear.status).toBe(200);
+  });
+
+  it('allows a share password once the post is hidden, since its link is closed for good', async () => {
+    await publish();
+    db.sql.prepare("UPDATE community_posts SET state = 'hidden', hidden_by = 'reports'").run();
+    const res = (await handleDocumentShareRoutes(
+      owner('PUT', '/api/documents/d1/share-password', { body: { password: 'secret' } }),
+    ))!;
+    expect(res.status).toBe(200);
   });
 });

@@ -77,6 +77,5 @@ The words for the public gallery of published documents ([Community](../025-comm
 | **tag**            | A normalised free-form word on a post, up to five                                           | label, keyword, topic                 |
 | **community link** | The view-role share link a post owns: never listed, never expires, no room, no comments     | public link, gallery link             |
 | **community key**  | The random per-browser key the Community app sends for likes and reports; never an owner id | voter id, device id                   |
-| **operator**       | A person listed in `COMMUNITY_OPERATOR_IDS` who may hide and restore posts                  | admin, moderator (in code), staff     |
 
 - **Edit Listing** names the act of changing a post's details in copy; the thing is still a post.

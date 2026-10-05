@@ -1324,6 +1324,9 @@ importers:
       '@livediagram/api-schema':
         specifier: workspace:*
         version: link:../api-schema
+      '@livediagram/document':
+        specifier: workspace:*
+        version: link:../document
       '@livediagram/icons':
         specifier: workspace:^
         version: link:../icons

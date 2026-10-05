@@ -23,8 +23,6 @@ import {
 import {
   communityNetworkHash,
   likedPostIds,
-  listCommunityModeration,
-  moderateCommunityPost,
   recordCommunityCopy,
   recordCommunityReport,
   setCommunityLike,
@@ -156,7 +154,7 @@ describe('anonymous posts', () => {
 });
 
 describe('public reads', () => {
-  it('hide trashed documents and hidden posts, and show them again on restore', async () => {
+  it('hide trashed documents and hidden posts, and show a document again on restore', async () => {
     const postId = await publish('d1');
     db.sql.prepare("UPDATE documents SET trashed_at = 5 WHERE id = 'd1'").run();
     expect(await getPublicCommunityPost(db.env, postId)).toBeNull();
@@ -164,7 +162,7 @@ describe('public reads', () => {
     expect((await communityFacets(db.env)).total).toBe(0);
     db.sql.prepare("UPDATE documents SET trashed_at = NULL WHERE id = 'd1'").run();
     expect(await list()).toEqual(['Payments platform']);
-    await moderateCommunityPost(db.env, postId, 'hidden');
+    db.sql.prepare("UPDATE community_posts SET state = 'hidden' WHERE id = ?").run(postId);
     expect(await getPublicCommunityPost(db.env, postId)).toBeNull();
     expect(
       await getCommunityPostByShareCode(
@@ -274,7 +272,7 @@ describe('likes and copies', () => {
   });
 });
 
-describe('reports and moderation', () => {
+describe('reports', () => {
   it('hides a post after three distinct reporters on three distinct networks', async () => {
     const postId = await publish('d1');
     expect(await recordCommunityReport(db.env, postId, 'k1', 'n1', 'spam', null)).toBe(false);
@@ -288,27 +286,6 @@ describe('reports and moderation', () => {
     expect(await recordCommunityReport(db.env, postId, 'k4', 'n3', 'other', null)).toBe(true);
     expect(await getPublicCommunityPost(db.env, postId)).toBeNull();
     expect((await getCommunityPostForDocument(db.env, 'd1'))!.hidden_by).toBe('reports');
-  });
-
-  it('lists reported and hidden posts for operators, and restoring clears the reports', async () => {
-    const reported = await publish('d1', { title: 'Reported' });
-    const hidden = await publish('d2', { title: 'Hidden' });
-    await publish('d3', { title: 'Fine' });
-    await recordCommunityReport(db.env, reported, 'k1', 'n1', 'spam', 'buy now');
-    await moderateCommunityPost(db.env, hidden, 'hidden');
-    const queue = await listCommunityModeration(db.env);
-    expect(queue.map((r) => [r.title, r.state, r.reports.length])).toEqual([
-      ['Reported', 'listed', 1],
-      ['Hidden', 'hidden', 0],
-    ]);
-    expect(queue[0]!.reports[0]).toEqual({
-      reason: 'spam',
-      note: 'buy now',
-      createdAt: expect.any(Number),
-    });
-    expect(await moderateCommunityPost(db.env, reported, 'listed')).toBe(true);
-    expect(db.sql.prepare('SELECT COUNT(*) AS n FROM community_reports').get()).toEqual({ n: 0 });
-    expect(await moderateCommunityPost(db.env, 'missing', 'hidden')).toBe(false);
   });
 
   it('hashes a network per post', async () => {

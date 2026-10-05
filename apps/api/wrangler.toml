@@ -208,7 +208,7 @@ type = "ratelimit"
 namespace_id = "1008"
 simple = { limit = 60, period = 60 }
 
-# Per-network limiter for Community likes, reports and moderation (docs/specs/025-community/blueprints/community.md
+# Per-network limiter for Community likes and reports (docs/specs/025-community/blueprints/community.md
 # §7, D7), keyed community:<ip>. These callers are anonymous, so the owner-keyed write limiter would put them all on
 # one key. 30 / 60s is far above a person liking cards. Separate namespace. Absent binding → allow (self-host).
 [[unsafe.bindings]]

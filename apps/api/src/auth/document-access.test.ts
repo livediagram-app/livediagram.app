@@ -523,20 +523,20 @@ describe('resolveDocumentGrant', () => {
     getShareLinkMock.mockResolvedValue(community);
     communityLinkAccessMock.mockResolvedValueOnce('closed');
     expect(await grant(null, 'POSTLINK')).toBeNull();
+    // Closed for everyone, signed in or not: nobody reviews a hidden post.
     communityLinkAccessMock.mockResolvedValueOnce('closed');
-    const operatorEnv = { ...FAKE_ENV, COMMUNITY_OPERATOR_IDS: 'user_op' } as Env;
     expect(
       await resolveDocumentGrant(
-        operatorEnv,
+        FAKE_ENV,
         'diag-1',
         null,
         'POSTLINK',
         'owner-a',
         null,
         null,
-        'user_op',
+        'user_x',
       ),
-    ).toMatchObject({ community: true });
+    ).toBeNull();
     communityLinkAccessMock.mockResolvedValueOnce(null);
     expect(await grant(null, 'POSTLINK')).toBeNull();
   });

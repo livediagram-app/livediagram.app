@@ -13,10 +13,9 @@ Derived from [Community](../community.md). Implementation detail only; design de
 | like           | table `community_likes`, column `like_count`                                                          |
 | copy count     | table `community_copies`, column `copy_count`                                                         |
 | report         | `CommunityReportReason`, `COMMUNITY_REPORT_REASONS`, table `community_reports`                        |
-| hidden         | `CommunityPostState = 'listed' \| 'hidden'`, `CommunityHiddenBy = 'reports' \| 'operator'`            |
+| hidden         | `CommunityPostState = 'listed' \| 'hidden'`, column `hidden_by = 'reports'`                           |
 | community link | `share_links.purpose = 'community'` (`SharePurpose = 'share' \| 'community'`)                         |
 | community key  | header `X-Community-Key`, localStorage `livediagram:v2:community-key`                                 |
-| operator       | env `COMMUNITY_OPERATOR_IDS`, `isCommunityOperator(env, userId)`                                      |
 | sort           | `CommunitySort = 'new' \| 'loved' \| 'copied'`                                                        |
 | Edit Listing   | the same `PUT /api/documents/:id/community` as publishing; the editor names the act, the api does not |
 
@@ -46,8 +45,7 @@ All in `packages/api-schema/src/community.ts`.
 | `COMMUNITY_KEY_PATTERN`            | UUID v4 regex | C6                    | fixed      |
 
 Worker binding `COMMUNITY_RATE_LIMITER` (ratelimit, 30 per 60 s, keyed `community:<ip>`), production and staging.
-Worker var `COMMUNITY_OPERATOR_IDS` (comma-separated Clerk user ids; unset = no operators), documented in
-`apps/api/.env.example` / `.dev.vars` notes.
+No worker var: moderation is reports alone, so there is nothing to configure.
 
 ## 3. Data and persistence
 
@@ -70,7 +68,7 @@ CREATE TABLE community_posts (
   like_count   INTEGER NOT NULL DEFAULT 0,
   copy_count   INTEGER NOT NULL DEFAULT 0,
   state        TEXT NOT NULL DEFAULT 'listed' CHECK (state IN ('listed', 'hidden')),
-  hidden_by    TEXT NULL CHECK (hidden_by IN ('reports', 'operator')),
+  hidden_by    TEXT NULL CHECK (hidden_by IN ('reports', 'operator')), -- 'operator' is retired; nothing writes it
   published_at INTEGER NOT NULL,
   updated_at   INTEGER NOT NULL
 );
@@ -96,7 +94,7 @@ wire); everything else is public post content.
 - Trash: posts are excluded wherever `documents.trashed_at IS NOT NULL` (join), never modified. Restore needs nothing.
 - Permanent delete: `documents` row deletion cascades to `share_links` and `community_posts` (and its children).
 - Unpublish: `DELETE FROM share_links WHERE code = ? AND purpose = 'community'` cascades the post and its children.
-- Restoring a post (operator) deletes its reports in the same batch.
+- A hidden post is final: nothing restores it, edits it or deletes it except deleting its document.
 - Account deletion (`apps/api/src/db/account.ts`): the account's posts go with its documents; its
   `community_copies` rows are deleted and those posts' `copy_count` decremented in one batch.
 - Snapshot/restore and the Drive mirror carry no Community state; a copy is never published (copyDocument skips
@@ -127,11 +125,6 @@ type CommunityPost = {
   liked: boolean;
 };
 type CommunityOwnPost = CommunityPost & { state: CommunityPostState };
-type CommunityModerationItem = CommunityPost & {
-  state: CommunityPostState;
-  hiddenBy: CommunityHiddenBy | null;
-  reports: { reason: CommunityReportReason; note: string | null; createdAt: number }[];
-};
 type CommunityPostInput = { title: string; description: string; category: string; tags: string[] };
 type CommunityListQuery = {
   q: string;
@@ -155,8 +148,6 @@ Routes (all JSON; errors `{ error: <code> }`):
 | `PUT /api/community/posts/:id/like`                   | community key    | `{ likeCount, liked: true }`                                 | 400 `community_key_required`, 404, 429                                                                                                         |
 | `DELETE /api/community/posts/:id/like`                | community key    | `{ likeCount, liked: false }`                                | as above                                                                                                                                       |
 | `POST /api/community/posts/:id/report`                | community key    | 204 (also for a repeat)                                      | 400 `community_key_required` / `invalid_reason` / `invalid_note`, 404, 429                                                                     |
-| `GET /api/community/moderation`                       | operator         | `{ items: CommunityModerationItem[] }`                       | 403 `operator_only`                                                                                                                            |
-| `PUT /api/community/posts/:id/moderation`             | operator         | `{ item }`                                                   | 403 `operator_only`, 404, 400 `invalid_state`                                                                                                  |
 
 - `liked` is filled from `X-Community-Key` when present and valid, else false.
 - List responses without a community key send `Cache-Control: public, max-age=30`; with one, `private, no-store`.
@@ -167,15 +158,16 @@ Routes (all JSON; errors `{ error: <code> }`):
 - Share resolve (`GET /api/share/:code`) for a community link answers
   `{ document, role: 'view', tabId: null, community: { postId, author: CommunityAuthor } }`; a hidden post's community
   link answers 404. `ShareResolveResponse.community` is optional on the DTO.
-- Owner-side share routes: `PUT /api/documents/:id/share-password` with a non-empty password on a published document
-  answers 409 `community_published`.
+- Owner-side share routes: `PUT /api/documents/:id/share-password` with a non-empty password on a document whose post
+  is listed answers 409 `community_published`; a hidden post does not block it.
+- `PUT` and `DELETE /api/documents/:id/community` on a hidden post answer 409 `post_hidden`.
 
 Live share links: the live `ShareLink` type gains `purpose` but the owner list never contains community links.
 
 ## 5. Behaviour and state
 
-Post state machine: (none) → `listed` (publish) → `hidden` (auto: reports, or operator) → `listed` (operator restore,
-reports cleared) → (none) (unpublish or document delete, from either state). Trash is orthogonal: a trashed document's
+Post state machine: (none) → `listed` (publish) → `hidden` (auto: reports; final). `listed` → (none) on unpublish;
+either state → (none) only when the document is deleted. Trash is orthogonal: a trashed document's
 post is invisible in every public read whatever its state.
 
 Guards:
@@ -186,36 +178,37 @@ Guards:
 - G4 public reads: `state = 'listed' AND trashed_at IS NULL AND team_id IS NULL` (`PUBLIC_POST`,
   `apps/api/src/db/community.ts`).
 - G5 like/report: valid community key, post passes G4.
-- G6 operator: `clerkUserId` in `COMMUNITY_OPERATOR_IDS` (trimmed, empty entries dropped),
-  `isCommunityOperator` in `apps/api/src/auth/community-operators.ts`.
+- G6 hidden is final: owner `PUT` / `DELETE` on a hidden post answer 409 `post_hidden`.
 - Auto-hide (after each new report row): if `state = 'listed'` and `COUNT(DISTINCT reporter_key) >= 3` and
   `COUNT(DISTINCT network_hash) >= 3` then `state = 'hidden', hidden_by = 'reports'`.
 
 Community link behaviour (keyed off `link.purpose === 'community'`):
 
 - `apps/api/src/routes/share.ts`: skip `recordSharedAccess`, `Document·Joined` and `notifyDocumentJoin`; add
-  `community`. A hidden post's link answers 404 except to an operator (G6), who may open it to review.
+  `community`. A hidden post's link answers 404 to everyone.
 - `routes/document-room-routes.ts`: ticket mint and WebSocket upgrade refuse with 403 `community_link`.
-- `DocumentGrant` gains `community: boolean` (the room's ticket mint reads it). The tab GET and the comment thread
-  listing ask `viaCommunityLink(ctx)` (`apps/api/src/routes/context.ts`) on a non-owner read: the tab GET drops every
-  element's `commentThread` (`stripCommentThreads`, `apps/api/src/comments.ts`), and the listing refuses with 403
-  `community_link`.
+- `DocumentGrant` gains `community: boolean` (the room's ticket mint reads it). A community grant is refused by every
+  door that has not opted in with `COMMUNITY_CONTENT` (`apps/api/src/routes/context.ts`), the comment listing
+  included. The tab GET opts in through `gateGrant` and reads the grant's `community` flag on a non-owner read, with
+  no second share-link lookup, to redact the tab (`redactTabForCommunity`, `apps/api/src/community-redact.ts`).
 - `routes/documents.ts` copy: when `scope.community` (grant from a community code), after the copy succeeds
   `INSERT OR IGNORE community_copies` for the caller and recompute `copy_count` (waitUntil).
-- Visitor-opened timeline events for the author are kept (they are about the author's own document).
+- Visitor-opened and visitor-copied timeline events are not recorded for a community visit or copy (strangers' names
+  do not belong in the author's feed).
 
 Editor (`apps/live`):
 
-- `apps/live/lib/api/community.ts`: `apiGetCommunityPost`, `apiPublishCommunityPost`, `apiRemoveCommunityPost`,
-  `apiListModeration`, `apiModeratePost`; error codes map to copy in `apps/live/lib/community-errors.ts`.
+- `apps/live/lib/api/community.ts`: `apiGetCommunityPost`, `apiPublishCommunityPost`, `apiRemoveCommunityPost`;
+  error codes map to copy in `apps/live/lib/community-errors.ts`.
 - `apps/live/hooks/persistence/useCommunityPost.ts`: loads the owner's post when the Share dialog opens; exposes
   `{ post, loading, error, publish(input), remove() }`.
 - `apps/live/components/dialogs/community/`: `ShareDialogWithCommunity.tsx` composes the Share dialog with
   `CommunitySection.tsx` (its state chosen by the pure `community-section-state.ts`); `CommunityPublishDialog.tsx`
   (title, description with counter, `CategoryPicker.tsx`, `TagInput.tsx` over the pure `tag-draft.ts`,
   `CommunityCardPreview.tsx`, the consequences list) replaces the Share dialog while open, and a first publish ends on
-  `CommunityPublishedConfirmation.tsx`. The share password control is locked while published, and Share to Community
-  while a password is set.
+  `CommunityPublishedConfirmation.tsx`. The share password control is locked while the post is listed, and Share to
+  Community while a password is set. A hidden post's card says **Hidden after reports.** and offers no Edit Listing or
+  Remove.
 - `resolveDocumentSession` (`apps/live/app/document/[id]/editor-page-helpers.ts`) takes `community`: a community
   link resolves to a non-owner view session for everyone, the author included, so neither the post page's embed nor
   Open Document can edit the document; `CommunitySession.ownDocumentId` gives the author Edit Your Document in the bar.
@@ -225,9 +218,7 @@ Editor (`apps/live`):
   (`apps/live/components/primitives/CommunityAuthorDisc.tsx`).
 - `?copy=1` on `/document/shared` (`apps/live/hooks/canvas/useAutoCopyParam.ts`): once the document hydrates with a
   session share code, `makeCopy` runs once and the param is stripped.
-- `/moderation` (`apps/live/app/moderation/page.tsx`, `apps/live/components/moderation/`): requires sign-in; 403
-  renders "Only operators can moderate Community." Lists items with reports and Hide / Restore buttons.
-  `LIVE_ROUTE_SEGMENTS` gains `moderation`.
+- There is no moderation page and no operator route.
 
 Community app (`apps/community`):
 
@@ -281,8 +272,7 @@ Community app (`apps/community`):
   to the tab GET for a community visit and to `copyDocument(..., redactForCommunity)`, which rebuilds the copy's
   activity index from the redacted data instead of copying the source's rows.
 - No `recordVisitorOpened` / `recordVisitorCopied` for a community visit or copy.
-- A hidden post's link: `resolveDocumentGrant` and the live image route answer nothing unless the caller is an
-  operator.
+- A hidden post's link: `resolveDocumentGrant` and the live image route answer nothing to anyone.
 - `?copy=1` (`useAutoCopyParam`) copies only when the session came in through a community link.
 
 - Trust boundary: the Community app is a public, unauthenticated surface. It never sends `X-Owner-Id`; the community
@@ -292,10 +282,9 @@ Community app (`apps/community`):
 - The community link is read-only (view role), cannot open the room, and cannot read comments.
 - Abuse: `COMMUNITY_RATE_LIMITER` per IP for all `/api/community/*` writes (the owner-keyed write limiter is skipped
   for these paths, because anonymous callers would all share its `anonymous` key); auto-hide needs three distinct
-  networks; reports cleared only by an operator.
+  networks; reports are never cleared and a hidden post cannot be removed to clear them.
 - `network_hash` = first 32 hex of SHA-256(`<postId>:<ip>`): not comparable across posts.
 - LIKE patterns escape `%`, `_` and `\` with `ESCAPE '\'`.
-- Operator ids come only from the worker env, compared against the verified Clerk id.
 
 ## 8. Performance and limits
 
@@ -349,7 +338,7 @@ Community cards (`apps/telemetry/app/catalogue/community.ts`); its emitter scan 
 Community app's events are covered by the completeness tests.
 
 Worker logs with fingerprints: `[community] published`, `[community] updated`, `[community] removed`,
-`[community] auto-hidden`, `[community] moderated`, `[community] rejected <code>`. Telemetry per the spec.
+`[community] auto-hidden`, `[community] rejected <code>` (including `post_hidden`). Telemetry per the spec.
 
 ## 13. Testing
 
@@ -358,7 +347,7 @@ Worker logs with fingerprints: `[community] published`, `[community] updated`, `
 | Tag normalisation, input validation, query | `packages/api-schema/src/community.test.ts`                                         |
 | Publish guards, update, unpublish          | `apps/api/src/routes/community-routes.test.ts` (sqlite D1)                          |
 | List filters, sorts, search, paging, trash | `apps/api/src/db/community.test.ts` (sqlite D1)                                     |
-| Likes, reports, auto-hide, moderation      | `apps/api/src/db/community.test.ts`, `apps/api/src/routes/community-routes.test.ts` |
+| Likes, reports, auto-hide, hidden is final | `apps/api/src/db/community.test.ts`, `apps/api/src/routes/community-routes.test.ts` |
 | Community link: unlisted, no join, no pw   | `apps/api/src/routes/community-routes.test.ts`                                      |
 | Community link: no room                    | `apps/api/src/routes/document-room-routes.test.ts`                                  |
 | Community grant                            | `apps/api/src/auth/document-access.test.ts`                                         |

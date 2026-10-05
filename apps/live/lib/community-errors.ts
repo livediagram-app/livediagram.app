@@ -20,13 +20,13 @@ const MESSAGES: Record<string, string> = {
   share_password_set:
     'This document has a share password. Remove the password to share it to the Community.',
   empty_document: 'Add something to your document before sharing it.',
-  post_limit: `You have ${COMMUNITY_POSTS_PER_AUTHOR} documents in the Community already. Remove one to share another.`,
+  post_limit: `You have ${COMMUNITY_POSTS_PER_AUTHOR} documents in the Community already, counting any hidden after reports. Remove a listed one to share another.`,
+  post_hidden: 'This post was hidden after reports, so it can no longer be changed or removed.',
   invalid_title: `The title needs ${COMMUNITY_TITLE_MIN} to ${COMMUNITY_TITLE_MAX} characters.`,
   invalid_description: `The description needs ${COMMUNITY_DESCRIPTION_MIN} to ${COMMUNITY_DESCRIPTION_MAX} characters.`,
   invalid_category: 'Choose a category.',
   invalid_tags: `Tags are ${COMMUNITY_TAG_MIN} to ${COMMUNITY_TAG_MAX} letters, numbers or hyphens, up to ${COMMUNITY_TAGS_MAX} of them.`,
   community_published: 'Remove it from the Community to set a password.',
-  operator_only: 'Only operators can moderate Community.',
 };
 
 const RATE_LIMITED = 'That was a lot at once. Try again in a minute.';

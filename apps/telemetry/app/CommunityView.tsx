@@ -50,7 +50,7 @@ const labelFrom =
 const categoryLabel = labelFrom(COMMUNITY_CATEGORIES);
 const reasonLabel = labelFrom(COMMUNITY_REPORT_REASONS);
 
-// `Community·Changed` also carries the Moderation page's Hidden / Listed; the edits are the category types.
+// The edits are `Community·Changed` typed by category.
 const CATEGORY_TYPES: ReadonlySet<string> = new Set(COMMUNITY_CATEGORIES.map((c) => c.type));
 
 export function CommunityView({
