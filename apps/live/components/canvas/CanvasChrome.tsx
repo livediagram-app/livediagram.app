@@ -30,6 +30,7 @@ import { ToolbarExplorerButton } from '@/components/chrome/ToolbarExplorerButton
 import { SlidesClusterButton } from '@/components/canvas/SlidesClusterButton';
 import { CardTypesClusterButton } from '@/components/canvas/CardTypesClusterButton';
 import { TrashClusterButton } from '@/components/canvas/TrashClusterButton';
+import { CardFinderClusterButton } from '@/components/canvas/CardFinderClusterButton';
 import { useCardTypesOpener } from '@/hooks/plan/useCardTypesOpener';
 import { LayersClusterButton } from '@/components/canvas/LayersClusterButton';
 import { UndoRedoClusterStrip } from '@/components/canvas/UndoRedoClusterStrip';
@@ -348,6 +349,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
     slidesPopoverEl,
     cardTypesPopoverEl,
     trashPopoverEl,
+    cardFinderPopoverEl,
     clusterPopovers,
     paletteTint,
   } = useCanvasChromePanels({
@@ -511,6 +513,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
       {zenMode ? null : slidesPopoverEl}
       {zenMode ? null : cardTypesPopoverEl}
       {zenMode ? null : trashPopoverEl}
+      {zenMode ? null : cardFinderPopoverEl}
       {toolbarActive && !readOnly && !whiteboard ? (
         <ToolbarPalette
           key={props.esBoard ? 'es-board' : 'standard'}
@@ -614,6 +617,13 @@ export function CanvasChrome(props: CanvasChromeProps) {
               <SlidesClusterButton
                 popoverOpen={activeDockPanel === 'slides'}
                 onTogglePopover={(button) => handleDockButtonClick('slides', button, true)}
+              />
+            ) : null}
+            {/* Cards (docs/specs/025-plan/items.md "Finding a card"): in Plan mode, before Card Types. */}
+            {!zenMode && props.editorMode === 'plan' ? (
+              <CardFinderClusterButton
+                popoverOpen={activeDockPanel === 'plan-cards'}
+                onTogglePopover={(button) => handleDockButtonClick('plan-cards', button, true)}
               />
             ) : null}
             {/* Card Types (docs/specs/025-plan/item-types.md): in Plan mode, where Layers would be. */}
