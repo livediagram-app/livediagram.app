@@ -44,17 +44,19 @@ describe('graphOfSource', () => {
 });
 
 describe('graphLint', () => {
-  it('lints the laid-out graph, counting its errors', () => {
-    const out = graphLint(arch, 'a.json', undefined);
+  it('lints the laid-out graph, counting its errors, its own lines kept out of the output', () => {
+    const logs: string[] = [];
+    const out = graphLint(arch, 'a.json', undefined, (line) => void logs.push(line));
     expect(out.text).toMatch(/^0 crossings · 0 behind · 0 overlaps · \d+×\d+ → /);
     expect(out.errors).toBe(0);
+    expect(logs[0]).toMatch(/^\[lint\] run \{/);
     expect(graphLintVerb.exitCode!(out)).toBe(0);
     expect(graphLintVerb.exitCode!({ ...out, errors: 2 })).toBe(1);
     expect(graphLintVerb.text!(out)).toEqual([out.text]);
   });
 
   it('compares layout variants, and refuses a dimension it does not know', () => {
-    const out = graphLint(arch, 'a.json', 'direction');
+    const out = graphLint(arch, 'a.json', 'direction', () => {});
     expect(out.text.split('\n')[0]).toMatch(/^variant/);
     expect(
       out.text
@@ -62,6 +64,8 @@ describe('graphLint', () => {
         .slice(1)
         .map((line) => line.split(/\s+/)[0]),
     ).toEqual(['down', 'right']);
-    expect(() => graphLint(arch, 'a.json', 'colour')).toThrow('unknown dimension "colour"');
+    expect(() => graphLint(arch, 'a.json', 'colour', () => {})).toThrow(
+      'unknown dimension "colour"',
+    );
   });
 });

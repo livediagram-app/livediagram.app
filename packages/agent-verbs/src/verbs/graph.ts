@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { graphFromMermaid, type GraphInput } from '@livediagram/document';
 import {
   compareGraphLayouts,
+  type LintLogger,
   formatCompareTable,
   formatLintReport,
   lintGraph,
@@ -33,20 +34,27 @@ export function graphOfSource(text: string, named: string): GraphInput {
   return replace.graph as GraphInput;
 }
 
-// The lint of a graph file's text, or its comparison across layout variants.
+// The lint of a graph file's text, or its comparison across layout variants. `log` takes the lint's own lines
+// (`[lint] run`), which must not reach the output: the CLI sends them to its debug channel.
 export function graphLint(
   text: string,
   named: string,
   compare: string | undefined,
+  log: (line: string) => void,
 ): { text: string; errors: number } {
+  const lintLog: LintLogger = (fingerprint, fields) =>
+    log(`${fingerprint} ${JSON.stringify(fields)}`);
   const graph = graphOfSource(text, named);
   if (compare === undefined) {
-    const { report } = lintGraph(graph);
+    const { report } = lintGraph(graph, { log: lintLog });
     return { text: formatLintReport(report), errors: report.counts.error };
   }
   const dims = parseCompareDimensions(compare);
   if ('error' in dims) throw refuse(dims.error, 'livediagram graph lint --help');
-  return { text: formatCompareTable(compareGraphLayouts(graph, dims)), errors: 0 };
+  return {
+    text: formatCompareTable(compareGraphLayouts(graph, dims, { log: lintLog })),
+    errors: 0,
+  };
 }
 
 export const graphLintVerb = defineVerb({

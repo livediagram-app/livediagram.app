@@ -29,14 +29,14 @@ import { transport } from './transport';
 type Input = Record<string, unknown>;
 
 // The verbs that read no profile, no credential and no api.
-function runOffline(io: CliIo, verb: Verb, input: Input): Promise<unknown> | null {
+function runOffline(io: CliIo, verb: Verb, input: Input, log: DebugLog): Promise<unknown> | null {
   if (verb.id === 'guide') return Promise.resolve(guideOf(input.topic as string | undefined));
   if (verb.id === 'skill.print') return Promise.resolve({ text: renderSkill() });
   if (verb.id === 'skill.install') return installSkill(io, input.to as string | undefined);
   if (verb.id === 'graph.lint') {
     const file = input.file as string;
     return inputReader(io)(file).then((text) =>
-      graphLint(text, file === '-' ? 'stdin' : file, input.compare as string | undefined),
+      graphLint(text, file === '-' ? 'stdin' : file, input.compare as string | undefined, log),
     );
   }
   return null;
@@ -161,7 +161,7 @@ export async function run(argv: readonly string[], io: CliIo): Promise<ExitCode>
     verbId = verb.id;
     log(`command ${verb.id}`);
     const input = inputOf(verb, routed.rest, globals);
-    let pending = runOffline(io, verb, input);
+    let pending = runOffline(io, verb, input, log);
     if (!pending) {
       const config = await readConfig(io);
       const profile = resolveProfile(globals, io, config);
