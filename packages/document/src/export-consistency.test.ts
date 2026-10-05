@@ -129,7 +129,7 @@ describe('a self-painting element gets no box drawn round it', () => {
   // are rects too.
   // The element's box: its border is inset by half the 2px stroke, as the
   // canvas's CSS border sits inside the box (svg-render-border).
-  const elementRect = /<rect[^>]*width="198"[^>]*height="158"/;
+  const elementRect = /<rect[^<>]*width="198"[^<>]*height="158"/;
 
   it('leaves a chart unframed, the way the canvas does', () => {
     const svg = renderElementsToSvg(
