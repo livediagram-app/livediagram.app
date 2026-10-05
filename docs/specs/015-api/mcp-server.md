@@ -295,7 +295,8 @@ keeps it through their next save. `ops` mode sends its ops as
 [edit operations](../024-agents/edit-operations.md) based on the revision
 `read_document` returned, so nothing a person saved in between is overwritten: a
 touched element that changed is a conflict, an element a person has selected is
-refused as held. Both return the changeset's result lines, its lint summary and
+refused as held. Both return the changeset's result lines, its [lint](../024-agents/diagram-lint.md) summary line
+(also as its own text block; `create_document` carries one per created tab) and
 the rendered PNG of the result. The model picks the mode: rebuild → `replace`;
 tweak → `ops`.
 

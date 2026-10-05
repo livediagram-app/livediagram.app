@@ -1,6 +1,8 @@
 # Diagram lint
 
-**Status: specified, not built.**
+**Status: built, except the CLI's `tab lint` and `graph lint`, which arrive with the [CLI](../015-api/cli.md).**
+`@livediagram/diagram-lint` checks a tab; the api serves `?view=lint`, every changeset, dry run and revert carries
+the verdict, and the MCP's write tools carry the summary line.
 
 The **diagram lint** reports what is wrong with how a tab is drawn, as text an agent can act on without looking at
 an image: about 100 tokens where a preview costs about 1,000, and usable by models that cannot see. On a measured
