@@ -18,10 +18,10 @@ It builds on the sibling blueprints and calls what they provide by these names:
 | agent-changesets | `ctx.token: { id, ownerId, role } \| null` on `RouteContext`                        | The presenting API token, null for a session or a guest                                                                                                                                                             |
 | agent-changesets | `roomStubFor` returns a stub for every server-stored document                       | Rooms for personal documents                                                                                                                                                                                        |
 | agent-changesets | `upsertTabAtRev(env, documentId, tab, orderIndex, rev)`, `tabs.rev`                 | The compare-and-swap tab write; every write increments `rev`                                                                                                                                                        |
-| agent-changesets | `agentFrontDoor(request): 'Mcp' \| 'Cli' \| 'Api'`                                  | The telemetry type of an agent request                                                                                                                                                                              |
+| agent-changesets | `frontDoorOf(request): 'Mcp' \| 'Cli' \| 'Editor' \| 'Api'`                         | The telemetry type of an agent request                                                                                                                                                                              |
 | agent-changesets | The changeset route's success step                                                  | Calls `refreshAgentPresence` here                                                                                                                                                                                   |
 | document         | `tabRefs(tab)`, `resolveRef(tab, input)` in `packages/document/src/element-refs.ts` | Refs and ref resolution                                                                                                                                                                                             |
-| document-views   | `viewLabel(el)`, `readingOrder(elements)`                                           | The view label, reading order                                                                                                                                                                                       |
+| document-views   | `buildViewModel(tab)`, `commentHosts(model)`                                        | The refs and labels of the elements holding a thread, in outline order                                                                                                                                              |
 
 Scope, by file:
 
@@ -40,7 +40,7 @@ Scope, by file:
 | `apps/api/src/comments.ts`                                                                                                | `tokenId` locked by `rewriteCommentAuthors`, blanked by `redactCommentAuthorIds`; `threadsOfTab`                                                        |
 | `apps/api/src/routes/comment-routes.ts` (+ test)                                                                          | `handleCommentRoutes`: add, delete-own (moved, PR28), reply, resolve, reopen, list                                                                      |
 | `packages/document-views/src/comments.ts`                                                                                 | `commentHosts(model)`: the elements holding a thread in outline order, with ref and label                                                               |
-| `apps/api/src/routes/agent-presence-routes.ts` (+ test)                                                                   | `handleAgentPresenceRoute`: `PUT` / `DELETE .../tabs/:tabId/presence`                                                                                   |
+| `apps/api/src/routes/agent-presence-routes.ts` (+ test), `refusal-log.ts` (+ test)                                        | `handleAgentPresenceRoute`: `PUT` / `DELETE .../tabs/:tabId/presence`; `logRefusal` for both route families                                             |
 | `apps/api/src/routes/document-subresource-routes.ts`                                                                      | Dispatches to the two handlers above; loses the inline add and delete-own                                                                               |
 | `apps/api/src/routes/context.ts`                                                                                          | `deniedOnTab` moves here from the subresource routes; `gateParticipate`                                                                                 |
 | `apps/api/src/routes/document-room-routes.ts`                                                                             | The mint stores the person tag; the upgrade sets `X-Verified-Person`                                                                                    |
@@ -158,8 +158,8 @@ tools share-roles owns (live polls, the Q&A board, dots, answers, the idea box).
 passes `gateParticipate` but not `gateEdit` reach those routes and no other write; a token that fails
 `gateParticipate` reaches none of them. Every other write keeps `gateEdit`.
 
-`deniedParticipate(ctx, liveDoc, tabId)` answers a refused participation-class request: 404 when the caller's grant is
-confined to another tab (`deniedOnTab`), 403 when the grant or the token fails `gateParticipate`, 403 with no grant.
+`deniedOnTab(ctx, liveDoc)` answers a refused participation-class request: 404 when the caller holds a grant (to
+another tab, or a tab the document does not have), 403 when it holds none.
 `DELETE .../presence` skips the tab-existence check, so an entry on a deleted tab can still be cleared (PR34).
 
 `AgentPresenceRequest` (PUT body, JSON object; unknown fields ignored):
@@ -444,23 +444,26 @@ the tab pill.
 
 ## Observability
 
-| Fingerprint                                       | Where         | Fields (never text)                                                          |
-| ------------------------------------------------- | ------------- | ---------------------------------------------------------------------------- |
-| `[agent-presence] set`                            | api           | documentId, tabId, tokenId, via (`put`, `changeset`), created                |
-| `[agent-presence] cleared`                        | api, room     | documentId, tabId, tokenId, via (`delete`, `document-trashed`, `share-link`) |
-| `[agent-presence] expired`                        | room          | documentId, tabId, tokenId                                                   |
-| `[agent-presence] refused`                        | api, room     | documentId, tabId, tokenId?, reason (the error code)                         |
-| `[agent-presence] room-unreachable`               | api, warn     | documentId, tabId, tokenId, mode                                             |
-| `[comment] added` / `replied`                     | api           | documentId, tabId, elementId, commentId, tokenId?                            |
-| `[comment] resolved` / `reopened`                 | api           | documentId, tabId, elementId, changed                                        |
-| `[comment] deleted`                               | api           | documentId, tabId, commentId                                                 |
-| `[comment] refused`                               | api           | documentId, tabId, verb, reason                                              |
-| `[comment] listed`                                | api           | documentId, status, tabsRead, threads                                        |
-| `[comment] list skipped tab`                      | api, warn     | documentId, tabId                                                            |
-| `[room-mutation] el-delta did not reach the room` | api, warn     | documentId, tabId, delta kind                                                |
-| `[agent-presence] skipped entry`                  | editor, debug | reason (`unknown_tab`, `invalid_shape`)                                      |
+| Fingerprint                                             | Where         | Fields (never text)                                |
+| ------------------------------------------------------- | ------------- | -------------------------------------------------- |
+| `[agent-presence] set`                                  | api           | documentId, tabId, tokenId, created                |
+| `[agent-presence] set` / `cleared` / `expired`          | room          | tabId, tokenId                                     |
+| `[agent-presence] refused`                              | api, warn     | documentId, tabId, method, tokenId, status, code   |
+| `[agent-presence] room unavailable` / `room full`       | api, warn     | documentId, tabId, error or tokenId                |
+| `[agent-presence] refresh refused` / `refresh failed`   | api, warn     | documentId, tabId, error                           |
+| `[comments] added` / `replied` / `deleted`              | api           | documentId, tabId, agent                           |
+| `[comments] resolved` / `reopened` / `<verb> unchanged` | api           | documentId, tabId, agent                           |
+| `[comments] lost race`                                  | api           | documentId, tabId, attempt                         |
+| `[comments] refused`                                    | api, warn     | documentId, tabId, route, agent, status, code      |
+| `[comments] listed`                                     | api           | documentId, status, tabsRead, threads              |
+| `[comments] list skipped tab`                           | api, warn     | documentId, tabId, error                           |
+| `[room-mutation] el-delta did not reach the room`       | api, warn     | documentId, tabId, delta (its kind), error         |
+| `[agent-presence] skipped entry`                        | editor, debug | reason (`invalid_shape` with count, `unknown_tab`) |
 
-Telemetry: `Agent·Present`, type `agentFrontDoor(request)`, written with `reportServerEvent` in `waitUntil` when a
+Refusals are logged once each, at the route family's entry (`logRefusal` in `apps/api/src/routes/refusal-log.ts`), from the
+answer's status and error code.
+
+Telemetry: `Agent·Present`, type `frontDoorOf(request)`, written with `reportServerEvent` in `waitUntil` when a
 `PUT` creates an entry, as the spec says. `Agent·Present` joins `SERVER_EMITTED_EVENT_PAIRS`, so `/api/events` drops a
 client's copy.
 

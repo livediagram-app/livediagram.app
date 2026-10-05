@@ -232,7 +232,7 @@ rename sends (tabs in order, with their folders), through `/mutation`; a failure
 - `roomStubFor(env, documentId)` returns a stub for every document; the `shareable`/`teamId` gate goes. Its
   callers (`mergeRoomLedger`, `relayElementDelta`, `broadcastDocumentTrashed`, `relayChangeset`,
   `readRoomSelections`) take the document id; `relayTabRename` is a rename's.
-- The editor's room gate becomes `roomOpen = hydrated && documentId && documentServerStored`, where
+- The editor opens its room when `hydrated && documentId && documentServerStored`, where
   `documentServerStored = fetched.ownerId !== OFFLINE_OWNER_ID` (set in `useIdentityBootstrap`, false for a
   never-saved draft). `useRoomConnection` and `usePresenceBroadcast` use it. The presence streams
   (`useEditorBroadcast`, `useDragPreviewBroadcast`), the presence rows and the poll audience keep the audience gate
@@ -249,7 +249,8 @@ State, per document, in `useChangesetSeen` (held by `useEditorRealtime`) and `us
   it saves: a save must never claim a changeset its snapshot predates (the api would skip merging it), while
   claiming less is harmless, since the merge is idempotent.
 - `reveals: { changesetId, color, ids, until }[]`, rendered by the overlay, pruned at `until`.
-- `toasts: Map<toastKey, { key, changesetIds, count, name, summary, lastAt, tabId, touched }>`.
+- `toasts: Map<string, ChangesetToast>`, keyed by `op.agentKey ?? op.id` (one toast per token at a time), each
+  `{ key, changesetIds, count, name, summary, lastAt, tabId, touched }`.
 
 **The join check** (CS46): on the first presence list of each connection (`useRoomConnection`'s `onRoomJoined`),
 `checkSinceLoad` reads `apiListChangesets` (the newest `CHANGESET_LIST_DEFAULT`) and re-reads, through the resync

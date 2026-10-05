@@ -3,6 +3,7 @@
 // endpoints, gated by participation; every write goes through the tab's revision (I8), retried once on a lost
 // race, and reaches the room as an `el-delta` without author or token ids.
 
+import { logRefusal } from './refusal-log';
 import {
   COMMENT_TEXT_MAX,
   isCommentListStatus,
@@ -138,6 +139,9 @@ async function newComment(
     ...(mentions ? { mentions } : {}),
   };
 }
+
+// Which comment route a path of this many segments is; a thread verb names itself (its last segment).
+const COMMENT_ROUTE_NAMES: Record<number, string> = { 4: 'list', 6: 'add', 7: 'delete' };
 
 // Appends `comment` to the thread of `elementId`, as the editor does (it unresolves a resolved thread).
 function appended(tab: TabDTO, elementId: string, comment: Comment): Mutation {
@@ -298,20 +302,39 @@ async function listThreads(ctx: RouteContext, id: string): Promise<Response> {
   const viewer = ctx.resolveOwner();
   const threads: DocumentCommentThread[] = [];
   let readable = whole;
+  let tabsRead = 0;
   for (const tabId of await tabIdsWithComments(ctx.env, id)) {
     if (!whole && !(await gateRead(ctx, id, doc.ownerId, doc.teamId, tabId))) continue;
     readable = true;
-    const tab = await getTab(ctx.env, id, tabId);
-    if (tab) threads.push(...threadsOfTab(tab, status, viewer));
+    // A tab whose body does not parse is left out of the list, not the whole list refused (E21).
+    try {
+      const tab = await getTab(ctx.env, id, tabId);
+      if (tab) threads.push(...threadsOfTab(tab, status, viewer));
+      tabsRead++;
+    } catch (err) {
+      console.warn('[comments] list skipped tab', { documentId: id, tabId, error: String(err) });
+    }
   }
   if (!readable) return deniedOnTab(ctx, doc);
-  console.info('[comments] listed', { documentId: id, status, threads: threads.length });
+  console.info('[comments] listed', { documentId: id, status, tabsRead, threads: threads.length });
   const body: DocumentCommentsResponse = { threads };
   return json(body);
 }
 
-// The comment routes, or null for a path that is not theirs.
+// The comment routes, or null for a path that is not theirs. Every refusal is logged here, once, with its code.
 export async function handleCommentRoutes(ctx: RouteContext): Promise<Response | null> {
+  const res = await commentRoute(ctx);
+  if (res && res.status >= 400)
+    await logRefusal('[comments] refused', res, {
+      documentId: ctx.segments[2],
+      tabId: ctx.segments[4] ?? null,
+      route: COMMENT_ROUTE_NAMES[ctx.segments.length] ?? ctx.segments[7] ?? 'comments',
+      agent: ctx.token !== null,
+    });
+  return res;
+}
+
+async function commentRoute(ctx: RouteContext): Promise<Response | null> {
   const { segments, request } = ctx;
   const id = segments[2]!;
   if (segments.length === 4 && segments[3] === 'comments')

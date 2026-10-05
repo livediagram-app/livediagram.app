@@ -108,6 +108,25 @@ describe('PUT presence', () => {
     expect(await (await call({ body: { ttl: 5 } })).json()).toEqual({ error: 'ttl_out_of_range' });
   });
 
+  it('logs each refusal once, with its code', async () => {
+    await call({ body: {}, token: null });
+    expect(
+      vi
+        .mocked(console.warn)
+        .mock.calls.filter((c) => c[0] === '[agent-presence] refused')
+        .map((c) => c[1]),
+    ).toEqual([
+      {
+        documentId: 'd1',
+        tabId: 't1',
+        method: 'PUT',
+        tokenId: null,
+        status: 403,
+        code: 'presence_requires_token',
+      },
+    ]);
+  });
+
   it('refuses focus that matches nothing or several, naming them', async () => {
     expect(await (await call({ body: { focus: ['nope', 'web-app'] } })).json()).toEqual({
       error: 'focus_not_found',

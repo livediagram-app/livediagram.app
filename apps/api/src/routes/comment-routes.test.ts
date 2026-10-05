@@ -290,6 +290,47 @@ describe('the thread listing', () => {
     });
   });
 
+  it('leaves out a tab whose body does not parse, and says so', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    sql.sql.exec(
+      `UPDATE tabs SET data = '{"commentThread": broken', rev = rev + 1 WHERE id = 't2'`,
+    );
+    const { status, body } = await list();
+    expect(status).toBe(200);
+    expect(body.threads.map((t) => t.elementId)).toEqual(['a']);
+    expect(warn.mock.calls[0]![0]).toBe('[comments] list skipped tab');
+    expect(console.info).toHaveBeenCalledWith('[comments] listed', {
+      documentId: 'd1',
+      status: 'open',
+      tabsRead: 1,
+      threads: 1,
+    });
+  });
+
+  it('logs each refusal once, with its route and code', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    await list('?status=closed');
+    await call({ path: '/tabs/t1/comments/nope/resolve', token: 'tok_1' });
+    expect(warn.mock.calls.filter((c) => c[0] === '[comments] refused').map((c) => c[1])).toEqual([
+      {
+        documentId: 'd1',
+        tabId: null,
+        route: 'list',
+        agent: false,
+        status: 400,
+        code: 'invalid_status',
+      },
+      {
+        documentId: 'd1',
+        tabId: 't1',
+        route: 'resolve',
+        agent: true,
+        status: 404,
+        code: 'not_found',
+      },
+    ]);
+  });
+
   it('keeps a tab-scoped link to its tab, hides others’ ids from a visitor, and refuses a stranger', async () => {
     expect((await list('', 'guest', 'TAB2')).body.threads.map((t) => t.elementId)).toEqual(['d']);
     const visitor = (await list('', 'guest', 'VIEW')).body.threads[0]!.comments[0]!;

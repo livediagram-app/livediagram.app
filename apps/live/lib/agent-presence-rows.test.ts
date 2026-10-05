@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import type { AgentPresence } from '@livediagram/api-schema';
 import type { Participant } from './identity';
 import {
@@ -64,6 +64,7 @@ describe('splitPresenceFrame', () => {
   });
 
   it('drops malformed entries and clamps long strings', () => {
+    const info = vi.spyOn(console, 'info').mockImplementation(() => undefined);
     const long = 'x'.repeat(200);
     const { agents } = splitPresenceFrame({
       participants: [],
@@ -92,6 +93,11 @@ describe('splitPresenceFrame', () => {
     expect(agents[0]!.focus).toHaveLength(20);
     expect(agents[1]).toMatchObject({ self: true });
     expect(agents[1]).not.toHaveProperty('status');
+    expect(info).toHaveBeenCalledWith('[agent-presence] skipped entry', {
+      reason: 'invalid_shape',
+      count: 8,
+    });
+    info.mockRestore();
   });
 
   it('ignores an agents field that is not a list', () => {
@@ -152,11 +158,14 @@ describe('foldAgentPresence', () => {
   });
 
   it('skips entries on tabs it does not know, and leaves the input untouched', () => {
+    const info = vi.spyOn(console, 'info').mockImplementation(() => undefined);
     const input = new Map([['t1', [self]]]);
     const out = fold(input, [agent({ tabId: 'gone' }), agent({ self: true })]);
     expect(out.has('gone')).toBe(false);
     expect(input.get('t1')).toEqual([self]);
     expect(out.get('t1')![0]!.statusLine).toBe('adding payment');
+    expect(info).toHaveBeenCalledWith('[agent-presence] skipped entry', { reason: 'unknown_tab' });
+    info.mockRestore();
   });
 
   it('leaves the owner’s row as it is when their agent set no status', () => {

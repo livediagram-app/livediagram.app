@@ -16,6 +16,7 @@ import { json, noContent, notFound } from '../responses';
 import { deleteAgentPresence, putAgentPresence, RoomUnavailableError } from '../room-client';
 import { reportServerEvent } from '../server-telemetry';
 import type { TabDTO } from '../types';
+import { logRefusal } from './refusal-log';
 import {
   deniedOnTab,
   gateEdit,
@@ -52,7 +53,20 @@ function resolveFocus(tab: TabDTO, refs: readonly string[]): string[] | Response
   return missing.length > 0 ? refuse(400, { error: 'focus_not_found', refs: missing }) : ids;
 }
 
+// Every refusal of a presence request is logged here, once, with its code.
 export async function handleAgentPresenceRoute(ctx: RouteContext): Promise<Response | null> {
+  const res = await presenceRoute(ctx);
+  if (res && res.status >= 400)
+    await logRefusal('[agent-presence] refused', res, {
+      documentId: ctx.segments[2],
+      tabId: ctx.segments[4],
+      method: ctx.request.method,
+      tokenId: ctx.token?.id ?? null,
+    });
+  return res;
+}
+
+async function presenceRoute(ctx: RouteContext): Promise<Response | null> {
   const { segments, request, env } = ctx;
   if (segments.length !== 6 || segments[3] !== 'tabs' || segments[5] !== 'presence') return null;
   if (request.method !== 'PUT' && request.method !== 'DELETE') return null;
