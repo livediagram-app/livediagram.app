@@ -164,7 +164,7 @@ underline?, strikethrough?, size? xs|sm|md|lg, color? #rrggbb, link? http(s)/mai
 
 ## Data and persistence: D1
 
-Migration `apps/api/migrations/0068_items.sql`:
+Migration `apps/api/migrations/0071_items.sql`:
 
 ```sql
 CREATE TABLE items (

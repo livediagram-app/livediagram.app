@@ -37,7 +37,7 @@ src/type-catalogue.ts  ItemTypeCatalogue, limits, PLAN_TYPE_COLOURS, BUILT_IN_FI
 
 ## Data and persistence
 
-- Migration `0069_item_types.sql`: `documents.item_types TEXT NULL`.
+- Migration `0072_item_types.sql`: `documents.item_types TEXT NULL`.
 - `db/documents.ts`: `DocumentDTO.itemTypes` read through `readItemTypeCatalogue`; written by the create's
   INSERT (copy, sync, Drive) and by `setDocumentItemTypes(env, id, catalogue | null)`; `copyDocument` copies the
   column. Never in a meta upsert's UPDATE.
