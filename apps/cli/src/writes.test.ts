@@ -175,3 +175,39 @@ describe('writing from the CLI', () => {
     expect(diff.out).toContain('"B"');
   });
 });
+
+describe('creating from the CLI', () => {
+  it("creates a document from a file with a fresh id, as the CLI's", async () => {
+    const posted: unknown[] = [];
+    const create: Route = async (request, url) => {
+      if (url.pathname !== '/api/documents' || request.method !== 'POST') return undefined;
+      const body = JSON.parse(await request.text()) as {
+        id: string;
+        name: string;
+        tabs: unknown[];
+      };
+      posted.push(body);
+      return Response.json(
+        { document: { id: body.id, name: body.name, tabs: body.tabs } },
+        { status: 201 },
+      );
+    };
+    const io = session(create, { files: { '/work/flow.mmd': 'flowchart LR\n  a --> b\n' } });
+    const result = await cli(io, ['document', 'create', 'Shop', '-f', 'flow.mmd']);
+    expect(result.code).toBe(0);
+    const [body] = posted as {
+      id: string;
+      source: string;
+      tabs: { id: string; mermaid: string }[];
+    }[];
+    expect(body!.id).toMatch(/^[0-9a-f-]{36}$/);
+    expect(body!.tabs[0]!.id).not.toBe(body!.id);
+    expect(body).toMatchObject({
+      source: 'cli',
+      tabs: [{ name: 'Shop', mermaid: 'flowchart LR\n  a --> b\n' }],
+    });
+    expect(result.out).toBe(
+      `+ document ${body!.id.slice(0, 8)} "Shop" · 1 tab · https://livediagram.app/document/${body!.id}\n`,
+    );
+  });
+});

@@ -21,6 +21,7 @@ export type ApiClient = {
 };
 
 // How much of a failing answer's body an error carries.
+// The most of an error body its message quotes; `body` keeps it whole, so its code and text still parse.
 export const API_ERROR_BODY_MAX = 500;
 
 export class ApiError extends Error {
@@ -29,7 +30,9 @@ export class ApiError extends Error {
   // The body's `error`, when it is JSON naming one.
   readonly code: string | null;
   constructor(status: number, body: string) {
-    super(`api ${status}: ${body}`);
+    super(
+      `api ${status}: ${body.length > API_ERROR_BODY_MAX ? `${body.slice(0, API_ERROR_BODY_MAX)}…` : body}`,
+    );
     this.name = 'ApiError';
     this.status = status;
     this.body = body;
@@ -69,7 +72,7 @@ export function createApiClient(options: ApiClientOptions): ApiClient {
     if (!res.ok) {
       if (res.status >= 500) options.onFailure?.(`Http${res.status}`);
       const body = await res.text().catch(() => '');
-      throw new ApiError(res.status, body.slice(0, API_ERROR_BODY_MAX));
+      throw new ApiError(res.status, body);
     }
     return res;
   };

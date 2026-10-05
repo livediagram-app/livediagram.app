@@ -42,6 +42,7 @@ export function contextOf(
   const notices: string[] = [];
   const slept: number[] = [];
   const clock = { now: Date.UTC(2026, 9, 5, 8) };
+  let ids = 0;
   return {
     log: (line) => void logs.push(line),
     api,
@@ -49,6 +50,7 @@ export function contextOf(
     useShareCode: (code) => void shareCodes.push(code),
     notice: (line) => void notices.push(line),
     now: () => clock.now,
+    newId: () => `new-${++ids}`,
     sleep: async (ms) => {
       slept.push(ms);
       clock.now += ms;

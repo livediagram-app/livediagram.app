@@ -14,15 +14,33 @@ import {
   skillPrint,
 } from './verbs/local';
 import { changesetApply, elementVerbs, tabDiff } from './verbs/edit';
+import {
+  documentCreate,
+  documentRename,
+  documentRestore,
+  documentRm,
+  documentShare,
+  tabAdd,
+  tabRename,
+  tabRm,
+} from './verbs/lifecycle';
 import { tabLint, tabLs, tabView } from './verbs/tab';
 
 export const VERBS: readonly Verb[] = [
   documentLs,
   documentView,
+  documentCreate,
+  documentRename,
+  documentShare,
+  documentRm,
+  documentRestore,
   tabLs,
   tabView,
   tabLint,
   tabDiff,
+  tabAdd,
+  tabRename,
+  tabRm,
   ...elementVerbs,
   changesetApply,
   changesetLs,
@@ -38,7 +56,11 @@ export const VERBS: readonly Verb[] = [
 ] as Verb[];
 
 export const RESOURCES: readonly { name: string; alias?: string; summary: string }[] = [
-  { name: 'document', alias: 'doc', summary: 'Documents: find them and read them' },
+  {
+    name: 'document',
+    alias: 'doc',
+    summary: 'Documents: find, read, create, rename, share and remove them',
+  },
   { name: 'tab', summary: 'Tabs: their views, their lint, and what changed' },
   { name: 'element', alias: 'el', summary: 'Elements: one edit operation a call' },
   { name: 'changeset', summary: 'Changesets: what changed, by whom, and undoing one' },

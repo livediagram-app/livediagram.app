@@ -149,7 +149,7 @@ export function changesetErrorText(err: ApiError): string {
     }
     return [body.error, body.message].filter(Boolean).join(': ') || `api ${err.status}`;
   } catch {
-    return `api ${err.status}: ${err.body}`;
+    return err.message;
   }
 }
 
