@@ -25,7 +25,6 @@ import {
 import {} from '../comments';
 import {
   copyDocument,
-  getCommunityPostByShareCode,
   getDocument,
   getDocumentThumbMeta,
   getTrashedDocumentMeta,
@@ -38,8 +37,6 @@ import {
   setDocumentPresentation,
   tabIdsHeldElsewhere,
   upsertDocumentMeta,
-  communityNetworkHash,
-  recordCommunityCopy,
 } from '../db';
 import {
   badRequest,
@@ -52,6 +49,7 @@ import {
 } from '../responses';
 import { documentDates, isDocumentSource } from '@livediagram/api-schema';
 import { clientIp } from '../client-ip';
+import { countCommunityCopy } from '../community-copy';
 import {
   getCommunityThumbnailSvg,
   getDocumentTabImageSvg,
@@ -491,21 +489,7 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
       // A copy through a Community post's link counts toward its copy count, once per person
       // (docs/specs/025-community/community.md).
       if (scope.community && scope.shareCode && owner !== source.ownerId) {
-        const code = scope.shareCode;
-        ctx.waitUntil?.(
-          getCommunityPostByShareCode(env, code)
-            .then(async (post) =>
-              post
-                ? recordCommunityCopy(
-                    env,
-                    post.id,
-                    owner,
-                    await communityNetworkHash(post.id, clientIp(request)),
-                  )
-                : undefined,
-            )
-            .catch((err) => console.warn('[community] copy count failed', err)),
-        );
+        ctx.waitUntil?.(countCommunityCopy(env, scope.shareCode, owner, clientIp(request)));
       }
       // A copy is one document made on purpose: always a use (docs/specs/015-api/api.md "Marking a
       // document used").
