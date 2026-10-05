@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { TRASH_RETENTION_MS, type TrashedDocument } from '@livediagram/api-schema';
-import { daysLeftLabel, trashGroups, trashedCardLead, trashedOnLabel } from './trash-groups';
+import {
+  daysLeftLabel,
+  trashGroups,
+  trashedCardHeading,
+  trashedCardLead,
+  trashedOnLabel,
+} from './trash-groups';
 
 // How the Trash view groups what it lists (docs/specs/013-workspace/trash.md,
 // "The Trash view"): the personal Trash, one group per team, then this
@@ -82,5 +88,19 @@ describe('trashedCardLead', () => {
     expect(trashedCardLead({ trashedAt: T0, reason: 'empty' }, T0 + 29 * DAY + 1)).toBe(
       'It was empty for 30 days, so it moved to the Trash (1 day left).',
     );
+  });
+});
+
+describe('trashedCardHeading', () => {
+  it('says a swept document is in the Trash, since no one deleted it', () => {
+    expect(trashedCardHeading({ reason: 'empty' })).toEqual({
+      label: 'In the Trash',
+      title: 'This document is in the Trash',
+    });
+  });
+
+  it('says deleted for a deleted document, and to anyone who learns no reason', () => {
+    expect(trashedCardHeading({ reason: 'deleted' }).title).toBe('This document was deleted');
+    expect(trashedCardHeading(null).title).toBe('This document was deleted');
   });
 });

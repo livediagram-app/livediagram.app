@@ -70,6 +70,18 @@ export function trashedOnLabel(row: Pick<TrashedDocument, 'trashedAt' | 'reason'
   return row.reason === 'empty' ? `Moved here ${on} because it was empty` : `Deleted ${on}`;
 }
 
+// The deleted card's label and heading. A document the clean-up moved was not
+// deleted by anyone, so someone who may restore it reads that it is in the
+// Trash; anyone else, who learns no reason, reads that it was deleted.
+export function trashedCardHeading(row: Pick<TrashedDocument, 'reason'> | null): {
+  label: string;
+  title: string;
+} {
+  return row?.reason === 'empty'
+    ? { label: 'In the Trash', title: 'This document is in the Trash' }
+    : { label: 'Deleted', title: 'This document was deleted' };
+}
+
 // The deleted card's lead for someone who may restore it, with the days left.
 export function trashedCardLead(row: Pick<TrashedDocument, 'trashedAt' | 'reason'>, now: number) {
   const where =

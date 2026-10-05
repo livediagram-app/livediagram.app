@@ -7,19 +7,19 @@ file only adds engineering precision. Defaults applied where the spec is silent 
 
 Scope, by file:
 
-| File                                                                      | Role                                                                              |
-| ------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| `packages/api-schema/src/trash.ts`                                        | `TrashReason`, `TrashedDocument.reason`, `EMPTY_DOCUMENT_STALE_DAYS` / `_MS`      |
-| `apps/api/migrations/0056_document_trash_reason.sql`                      | `documents.trash_reason`                                                          |
-| `apps/api/src/db/empty-document-sweep.ts`                                 | `trashEmptyDocuments`: the set-based move, capped                                 |
-| `apps/api/src/db/trash.ts`                                                | `listTrash` reads the reason; `restoreDocument` clears it and restarts stale      |
-| `apps/api/src/index.ts`                                                   | The 03:00 cron calls the sweep beside the purge                                   |
-| `apps/api/src/openapi/schemas.generated.ts`                               | Regenerated: `TrashedDocument.reason`                                             |
-| `apps/mcp/src/{tools,output-schema}.ts`                                   | `list_trash` rows carry `reason`                                                  |
-| `apps/live/lib/offline/offline-trash.ts`                                  | Local rows are `reason: 'deleted'`                                                |
-| `apps/live/lib/trash-groups.ts`                                           | `trashedOnLabel(row)`, `trashedCardLead(row, now)`: the reason copy, in one place |
-| `apps/live/components/{panels/TrashPane,chrome/DocumentTrashedCard}.tsx`  | The row and the deleted card copy                                                 |
-| `apps/help/app/account-and-data/trash/page.mdx`, `packages/help-registry` | The help article's section and keywords                                           |
+| File                                                                      | Role                                                                                                         |
+| ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `packages/api-schema/src/trash.ts`                                        | `TrashReason`, `TrashedDocument.reason`, `EMPTY_DOCUMENT_STALE_DAYS` / `_MS`                                 |
+| `apps/api/migrations/0056_document_trash_reason.sql`                      | `documents.trash_reason`                                                                                     |
+| `apps/api/src/db/empty-document-sweep.ts`                                 | `trashEmptyDocuments`: the set-based move, capped                                                            |
+| `apps/api/src/db/trash.ts`                                                | `listTrash` reads the reason; `restoreDocument` clears it and restarts stale                                 |
+| `apps/api/src/index.ts`                                                   | The 03:00 cron calls the sweep beside the purge                                                              |
+| `apps/api/src/openapi/schemas.generated.ts`                               | Regenerated: `TrashedDocument.reason`                                                                        |
+| `apps/mcp/src/{tools,output-schema}.ts`                                   | `list_trash` rows carry `reason`                                                                             |
+| `apps/live/lib/offline/offline-trash.ts`                                  | Local rows are `reason: 'deleted'`                                                                           |
+| `apps/live/lib/trash-groups.ts`                                           | `trashedOnLabel(row)`, `trashedCardHeading(row)`, `trashedCardLead(row, now)`: the reason copy, in one place |
+| `apps/live/components/{panels/TrashPane,chrome/DocumentTrashedCard}.tsx`  | The row and the deleted card copy                                                                            |
+| `apps/help/app/account-and-data/trash/page.mdx`, `packages/help-registry` | The help article's section and keywords                                                                      |
 
 ## Domain and naming
 
@@ -159,8 +159,10 @@ limits; the cap bounds the writes at 2,000 per run, the same order as the Trash 
 
 - Trash row lead: `row.reason === 'empty'` → "Moved here {d MMM} because it was empty"; else
   "Deleted {d MMM}"; then " · {days left}" as today.
-- Deleted card, restorable and `reason === 'empty'`: "It was empty for 30 days, so it moved to the Trash
-  ({n} days left). Restore it to put it back where it was." Otherwise unchanged.
+- Deleted card, restorable and `reason === 'empty'`: label "In the Trash", heading "This document is in
+  the Trash" (`trashedCardHeading`), then "It was empty for 30 days, so it moved to the Trash ({n} days
+  left). Restore it to put it back where it was." Otherwise unchanged ("Deleted", "This document was
+  deleted").
 - Help article, section "Empty documents": a document with nothing on any of its tabs, not changed for 30
   days, moves to the Trash on its own and says so there; it can be restored like any other for 30 days; a
   restore gives it another 30 days; offline documents are never moved. Keywords gain "empty",
