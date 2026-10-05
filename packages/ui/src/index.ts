@@ -48,6 +48,7 @@ export { CommunityCopyCount, CommunityLikeCount } from './community/CommunityCou
 export { CommunityPostTileSkeleton } from './community/CommunityPostTileSkeleton';
 export { formatCommunityCount } from './community/format-count';
 export { COMMUNITY_DOT_GRID, COMMUNITY_SKELETON_BAR } from './community/surfaces';
+export { CommunityHelpLink } from './community/CommunityHelpLink';
 export {
   fetchCommunityEnabled,
   resetCommunityEnabledForTests,

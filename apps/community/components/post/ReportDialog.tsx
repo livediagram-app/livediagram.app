@@ -8,7 +8,7 @@ import {
   communityReportReasonType,
   type CommunityReportReason,
 } from '@livediagram/api-schema';
-import { Button, CloseIcon, useEscape, useFocusTrap } from '@livediagram/ui';
+import { Button, CloseIcon, CommunityHelpLink, useEscape, useFocusTrap } from '@livediagram/ui';
 import { CommunityApiError, reportPost } from '@/lib/api';
 import { communityTelemetry } from '@/lib/telemetry';
 
@@ -152,7 +152,10 @@ export function ReportDialog({ postId, onClose }: { postId: string; onClose: () 
                   : "We couldn't send your report. Please try again."}
               </p>
             ) : null}
-            <div className="flex justify-end gap-2">
+            <div className="flex flex-wrap items-center justify-end gap-2">
+              <CommunityHelpLink article="finding" className="mr-auto">
+                How Reports Work
+              </CommunityHelpLink>
               <Button
                 variant="secondary"
                 size="md"

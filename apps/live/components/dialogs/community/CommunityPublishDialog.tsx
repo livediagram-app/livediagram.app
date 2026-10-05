@@ -18,6 +18,7 @@ import { SwitchRow } from '@/components/primitives/SwitchRow';
 import { DialogCloseButton } from '@/components/dialogs/DialogCloseButton';
 import { DialogFooter } from '@/components/dialogs/DialogFooter';
 import { DialogHeader } from '@/components/dialogs/DialogHeader';
+import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { apiCommunityPopularTags } from '@/lib/api-client';
 import { ApiError } from '@/lib/api/core';
 import { communityErrorMessage } from '@/lib/community-errors';
@@ -157,6 +158,7 @@ export function CommunityPublishDialog({
             title={<span id={titleId}>{editing ? 'Edit Listing' : 'Share to Community'}</span>}
             subtitle="Show what you made. Others can find it, learn from it and make their own copy."
           >
+            <HelpArticleLink article="community" size="md" />
             <DialogCloseButton onClick={closeUnlessBusy} />
           </DialogHeader>
 

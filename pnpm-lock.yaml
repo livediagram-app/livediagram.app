@@ -170,6 +170,9 @@ importers:
       '@livediagram/api-schema':
         specifier: workspace:*
         version: link:../../packages/api-schema
+      '@livediagram/help-registry':
+        specifier: workspace:*
+        version: link:../../packages/help-registry
       '@livediagram/icons':
         specifier: workspace:*
         version: link:../../packages/icons
@@ -476,6 +479,9 @@ importers:
       '@livediagram/api-schema':
         specifier: workspace:*
         version: link:../../packages/api-schema
+      '@livediagram/help-registry':
+        specifier: workspace:*
+        version: link:../../packages/help-registry
       '@livediagram/icons':
         specifier: workspace:*
         version: link:../../packages/icons
@@ -1330,6 +1336,9 @@ importers:
       '@livediagram/document':
         specifier: workspace:*
         version: link:../document
+      '@livediagram/help-registry':
+        specifier: workspace:*
+        version: link:../help-registry
       '@livediagram/icons':
         specifier: workspace:^
         version: link:../icons

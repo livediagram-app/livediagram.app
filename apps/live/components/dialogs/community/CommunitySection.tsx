@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { communityCategoryLabel, type CommunityOwnPost } from '@livediagram/api-schema';
 import { Button, buttonClassName, lucideGlyph } from '@livediagram/ui';
 import { lucideExternalLink, lucideGlobe } from '@livediagram/icons/lucide';
@@ -89,6 +90,7 @@ export function CommunitySection({
       <p id="share-community-heading" className={`${SECTION_LABEL} flex items-center gap-1.5`}>
         <GlobeIcon />
         Community
+        <HelpArticleLink article="community" className="ml-auto" />
       </p>
 
       {state === 'guest' ? (

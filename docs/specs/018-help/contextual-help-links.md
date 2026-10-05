@@ -108,6 +108,7 @@ Grouped by priority; each links the keyed article.
   not picked a format yet. A format carries its own footnote (`note` on the
   `FORMATS` entry), so any other format can grow one the same way.
 - Team form / invite -> `team-roles-and-invites`
+- Share dialog - Community section label, and the Share to Community dialog header -> `community`
 
 **Medium priority**
 
@@ -128,6 +129,19 @@ Grouped by priority; each links the keyed article.
 
 The set can grow; new placements reuse `HelpArticleLink` + a `HELP_ARTICLES`
 key and never introduce a second linking pattern.
+
+### Outside the editor: the Community
+
+The public sites link the Community's two articles through one shared component, `CommunityHelpLink`
+(`packages/ui/src/community/CommunityHelpLink.tsx`), keyed by `COMMUNITY_HELP`
+(`packages/help-registry/src/community.ts`, checked against the registry by `apps/help/lib/community-help.test.ts`).
+A click sends the same `UI·Opened·<article id>` as an editor help link.
+
+- Community gallery hero -> `finding-community-documents` ("How the Community Works") and, under Share Your Own,
+  `community` ("How Sharing Works")
+- My Shares summary -> `community` ("Managing Your Shares")
+- Report dialog -> `finding-community-documents` ("How Reports Work")
+- Landing page Community section, beside Explore the Community -> `finding-community-documents`
 
 ## Non-goals
 

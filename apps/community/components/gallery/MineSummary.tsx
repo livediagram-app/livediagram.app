@@ -1,5 +1,5 @@
 import type { CommunityMineTotals } from '@livediagram/api-schema';
-import { CopyIcon } from '@livediagram/ui';
+import { CommunityHelpLink, CopyIcon } from '@livediagram/ui';
 import { formatCount } from '@/lib/format';
 import { HeartIcon, MineIcon } from '../shared/icons';
 
@@ -36,6 +36,9 @@ export function MineSummary({ totals }: { totals: CommunityMineTotals }) {
           </div>
         ))}
       </dl>
+      <CommunityHelpLink article="sharing" className="sm:ml-auto">
+        Managing Your Shares
+      </CommunityHelpLink>
     </section>
   );
 }

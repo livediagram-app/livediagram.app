@@ -1,4 +1,4 @@
-import { ButtonContent, buttonClassName } from '@livediagram/ui';
+import { buttonClassName, ButtonContent, CommunityHelpLink } from '@livediagram/ui';
 import { SHARE_YOUR_OWN_HREF } from '@/lib/links';
 import { SparklesIcon } from '../shared/icons';
 
@@ -18,13 +18,19 @@ export function CommunityHero() {
         <p className="mt-3 text-lg leading-relaxed text-slate-600 dark:text-slate-300">
           Documents people are proud of. Find inspiration, then make it your own.
         </p>
+        <CommunityHelpLink article="finding" className="mt-4">
+          How the Community Works
+        </CommunityHelpLink>
       </div>
-      <a
-        href={SHARE_YOUR_OWN_HREF}
-        className={buttonClassName({ size: 'cta', className: 'shrink-0 shadow-sm' })}
-      >
-        <ButtonContent>Share Your Own</ButtonContent>
-      </a>
+      <div className="flex shrink-0 flex-col items-start gap-3 md:items-end">
+        <a
+          href={SHARE_YOUR_OWN_HREF}
+          className={buttonClassName({ size: 'cta', className: 'shadow-sm' })}
+        >
+          <ButtonContent>Share Your Own</ButtonContent>
+        </a>
+        <CommunityHelpLink article="sharing">How Sharing Works</CommunityHelpLink>
+      </div>
     </div>
   );
 }
