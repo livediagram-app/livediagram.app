@@ -56,6 +56,7 @@ export const CATEGORY_DESCRIPTIONS: Record<TelemetryCategory, string> = {
     'The Google Drive mirror: connected, disconnected, needing reconnection, finishing its first copy, changes coming back from Drive, and files opened from Drive.',
   Mcp: 'MCP server tool calls made by connected AI assistants.',
   Cli: 'Commands agents and scripts ran with the livediagram command line, by command.',
+  Plan: 'Plan boards: items made, moved, opened, voted on and deleted, and board set-up and reveal.',
   Agent:
     "Agents changing documents through changesets: applied, refused because something changed since the agent read it or a person had it selected, and reverted, by where they came from (MCP, CLI, API, or the editor's Undo). Never what changed.",
   Email:
@@ -119,6 +120,7 @@ const CATEGORY_COLORS: Record<TelemetryCategory, string> = {
   Cli: '#1e293b',
   // Burnt orange: the agents' changesets, apart from MCP's rose and Activity's amber.
   Agent: '#c2410c',
+  Plan: '#2563eb',
   Email: '#0d9488',
   Error: '#dc2626',
   // Warm stone, the marker on a whiteboard: apart from every blue and green.

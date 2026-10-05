@@ -683,3 +683,70 @@ export const EXPORT_AND_IMPORT: MetricStack = {
   members: [EXPORTS, EXPORT_OPTIONS, TAB_IMPORTS, PASTES_FROM_EXCALIDRAW],
   seeAlso: { view: 'editing', label: 'See Each Export Format on the Editing Tab' },
 };
+
+// Plan mode (docs/specs/025-plan/plan-mode.md "Telemetry"): items made, moved, opened, voted on and
+// deleted, and boards set up and revealed. Whether boards are used for work, not just drawn.
+export const PLAN_ITEMS_ADDED = chart(
+  'Plan',
+  'Added',
+  'Items Added',
+  'An item made on a Plan board, or a Plan card placed from the palette or dragged off a board.',
+);
+
+export const PLAN_ITEMS_MOVED = chart(
+  'Plan',
+  'Moved',
+  'Cards Moved',
+  'A card moved to another column, row or place on a Plan board.',
+);
+
+export const PLAN_ITEMS_OPENED = chart(
+  'Plan',
+  'Opened',
+  'Items Opened',
+  'An item opened in the item panel, from a board or a Plan card.',
+);
+
+export const PLAN_VOTES = chart(
+  'Plan',
+  'Voted',
+  'Votes Cast',
+  'A vote added (Up) or taken back (Down) on a voting board.',
+);
+
+export const PLAN_ITEMS_DELETED = chart(
+  'Plan',
+  'Deleted',
+  'Items Deleted',
+  'An item deleted from the item panel or with the keyboard.',
+  { rising: 'neutral' },
+);
+
+export const PLAN_SETUP_CHANGED = chart(
+  'Plan',
+  'Changed',
+  'Boards Set Up',
+  "A Plan board's set-up changed: columns, WIP limits, rows, scope, card fields, voting or hide writing.",
+);
+
+export const PLAN_REVEALED = chart(
+  'Plan',
+  'Revealed',
+  'Boards Revealed',
+  'Reveal pressed on a board hiding writing, turning every card face up.',
+);
+
+export const PLAN_BOARDS: MetricStack = {
+  stack: true,
+  title: 'Plan boards',
+  blurb: 'Work on Plan boards: items made, moved, opened, voted on and deleted, and boards set up.',
+  members: [
+    PLAN_ITEMS_ADDED,
+    PLAN_ITEMS_MOVED,
+    PLAN_ITEMS_OPENED,
+    PLAN_VOTES,
+    PLAN_ITEMS_DELETED,
+    PLAN_SETUP_CHANGED,
+    PLAN_REVEALED,
+  ],
+};

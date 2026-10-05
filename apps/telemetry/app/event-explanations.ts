@@ -1280,6 +1280,15 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Trash|Opened': 'Someone opened the Trash, where deleted documents wait for 30 days.',
   'Explorer|Selected':
     'Someone narrowed an Explorer list with a filter: a chip, a suggestion or a typed token. The type names which kind of filter, never what was picked.',
+  'Plan|Added':
+    'Someone made an item on a Plan board (its type is the value), or placed a Plan card (Card).',
+  'Plan|Moved': 'Someone moved a card on a Plan board to another column, row or place.',
+  'Plan|Opened': 'Someone opened an item in the item panel.',
+  'Plan|Voted': 'Someone voted for a card on a voting Plan board (Up), or took a vote back (Down).',
+  'Plan|Deleted': 'Someone deleted an item (its type is the value).',
+  'Plan|Changed':
+    "Someone changed a Plan board's set-up: the value names the part (columns, WIP limits, rows, scope, card fields, voting or hide writing).",
+  'Plan|Revealed': 'Someone pressed Reveal on a board hiding writing, turning every card face up.',
   'Trash|Cleared':
     'Someone emptied one group of their Trash (their own documents, a team, or this browser), deleting everything in it for good.',
   'Trash|Deleted': 'Someone deleted a document in the Trash for good, before its 30 days were up.',

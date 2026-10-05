@@ -19,6 +19,7 @@ import {
   type QuickFilter,
 } from '@livediagram/items';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { track } from '@/lib/telemetry';
 import { usePlanCardDrag, type PlanDropSlot } from '@/hooks/plan/usePlanCardDrag';
 import { usePlan } from './PlanContext';
 import { PlanBoardHeader } from './PlanBoardHeader';
@@ -216,6 +217,7 @@ export function PlanBoardView({ element }: { element: ShapeElement }) {
         onReveal={() => {
           plan?.updateBoard(element.id, { ...setup, hideWriting: false });
           plan?.announce('Every card turned face up');
+          track('Plan', 'Revealed', 'Board');
         }}
         onSetup={() => plan?.openSetup(element.id)}
         onMoveUnplaced={(item, status) => plan?.moveItem(item.id, { status, before: null })}
