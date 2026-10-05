@@ -1,4 +1,4 @@
-import { clerkPublishableKeyOrNull } from '@livediagram/ui';
+import { clerkPublishableKeyOrNull } from '@livediagram/ui/clerk-key';
 
 // Single source of truth for "is Clerk enabled on this deployment".
 //

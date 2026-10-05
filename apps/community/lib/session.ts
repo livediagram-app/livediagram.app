@@ -1,4 +1,4 @@
-import { clerkPublishableKeyOrNull } from '@livediagram/ui';
+import { clerkPublishableKeyOrNull } from '@livediagram/ui/clerk-key';
 
 // Who is signed in, for My Shares only (docs/specs/025-community/community.md "My Shares"). The rest of the
 // Community needs no identity, so Clerk is loaded only once My Shares is chosen (components/auth), and on a

@@ -93,7 +93,8 @@ describe('the post page', () => {
     );
     expect(screen.getByRole('button', { name: 'Like (3 likes)' })).toBeTruthy();
     expect(screen.getByText('copy')).toBeTruthy();
-    expect(screen.getByText('Related One')).toBeTruthy();
+    // More Like This loads by its own request, after the post.
+    expect(await screen.findByText('Related One')).toBeTruthy();
     expect(document.title).toBe('Payments Platform | livediagram Community');
     expect(document.querySelector('link[rel="canonical"]')?.getAttribute('href')).toBe(
       'http://localhost:3000/community/post/?id=post1',
