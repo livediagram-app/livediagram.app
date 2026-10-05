@@ -110,7 +110,6 @@ function layerProps(over: { elements?: Element[]; zoom?: number } = {}) {
     tabLocked: false,
     isPaintMode: false,
     canvasTool: 'select',
-    badgeColor: '#0ea5e9',
     drawDrag: null,
     quickRingOpen: null,
     setQuickRingOpen: fresh(),

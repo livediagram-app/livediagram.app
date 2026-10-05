@@ -75,25 +75,7 @@ export function ShapeInlineIconLayout({
 }) {
   const isRow = position === 'left' || position === 'right';
   const iconFirst = position === 'left' || position === 'above';
-  // Fixed sizes reuse element-labels' FIXED_FONT_PX; 'scale' has no fixed px,
-  // so derive a reasonable size from the box for the inline icon+label case.
-  const fontSize =
-    textSize === 'scale'
-      ? Math.max(12, Math.min(element.height * 0.26, 26))
-      : FIXED_FONT_PX[textSize];
-  // Element-proportional size: a fraction of the shorter side, clamped so
-  // it's neither a speck nor dominant. Used as the ceiling (and as the
-  // size itself for an icon with no label — nothing to scale against).
-  const elementIconSize = Math.max(
-    16,
-    Math.min(Math.min(element.width, element.height) * 0.32, 48),
-  );
-  // With a label, tie the glyph to the label's font size so small text
-  // gets a small icon instead of a 48px glyph dwarfing it; still capped by
-  // the element-proportional size so it can't overflow a small shape.
-  const iconSize = label.trim()
-    ? Math.max(16, Math.min(fontSize * 1.6, elementIconSize))
-    : elementIconSize;
+  const { fontSize, iconSize, elementIconSize } = inlineIconMetrics(element, label, textSize);
 
   const iconGlyph = (
     <div
@@ -197,7 +179,7 @@ export function ShapeInlineIconLayout({
         padding,
         // Side-by-side icon + text wants more breathing room than the
         // stacked layout, so the glyph doesn't crowd the first letter.
-        gap: isRow ? Math.max(8, Math.round(iconSize * 0.32)) : Math.round(iconSize * 0.2),
+        gap: inlineIconGap(iconSize, isRow),
       }}
     >
       {showIcon ? (iconFirst ? iconBox : content) : content}
@@ -221,3 +203,39 @@ const X_ALIGN_FLEX: Record<TextAlignX, 'flex-start' | 'center' | 'flex-end'> = {
   center: 'center',
   right: 'flex-end',
 };
+
+/**
+ * The inline icon layout's sizes, shared with the element indicators' content estimate
+ * (docs/specs/008-canvas/element-indicators.md) so the two agree on where the icon is.
+ */
+export function inlineIconMetrics(
+  element: { width: number; height: number },
+  label: string,
+  textSize: TextSize,
+): { fontSize: number; iconSize: number; elementIconSize: number } {
+  // Fixed sizes reuse element-labels' FIXED_FONT_PX; 'scale' has no fixed px,
+  // so derive a reasonable size from the box for the inline icon+label case.
+  const fontSize =
+    textSize === 'scale'
+      ? Math.max(12, Math.min(element.height * 0.26, 26))
+      : FIXED_FONT_PX[textSize];
+  // Element-proportional size: a fraction of the shorter side, clamped so
+  // it's neither a speck nor dominant. Used as the ceiling (and as the
+  // size itself for an icon with no label — nothing to scale against).
+  const elementIconSize = Math.max(
+    16,
+    Math.min(Math.min(element.width, element.height) * 0.32, 48),
+  );
+  // With a label, tie the glyph to the label's font size so small text
+  // gets a small icon instead of a 48px glyph dwarfing it; still capped by
+  // the element-proportional size so it can't overflow a small shape.
+  const iconSize = label.trim()
+    ? Math.max(16, Math.min(fontSize * 1.6, elementIconSize))
+    : elementIconSize;
+  return { fontSize, iconSize, elementIconSize };
+}
+
+/** The gap between the inline icon and its label. */
+export function inlineIconGap(iconSize: number, row: boolean): number {
+  return row ? Math.max(8, Math.round(iconSize * 0.32)) : Math.round(iconSize * 0.2);
+}

@@ -3,7 +3,7 @@
 // The Collaborate panel's two controls (docs/specs/012-collaboration/assigned-actions.md §5): the Open / Resolved
 // segmented control on the shared sliding pill, and the kind chips under it.
 
-import { ACTIVE_SEGMENT, SEGMENT_TRACK, ActionIcon, CommentIcon } from '@livediagram/ui';
+import { ACTIVE_SEGMENT, SEGMENT_TRACK, ActionIcon, CommentIcon, Tooltip } from '@livediagram/ui';
 import { SegmentSlider } from '@/components/primitives/SegmentSlider';
 import type { CollaborateKind, CollaborateSide } from './collaborate-model';
 
@@ -66,12 +66,14 @@ export function SideTabs({
 
 const KINDS: { id: CollaborateKind; label: string; icon?: React.ReactNode }[] = [
   { id: 'all', label: 'All' },
-  { id: 'comments', label: 'Comments', icon: <CommentIcon size={11} /> },
-  { id: 'actions', label: 'Actions', icon: <ActionIcon size={11} /> },
+  { id: 'comments', label: 'Comments', icon: <CommentIcon size={13} /> },
+  { id: 'actions', label: 'Actions', icon: <ActionIcon size={13} /> },
 ];
 
-// Three labelled chips rather than one button cycling through hidden states:
-// what the list is narrowed to is always on screen.
+// Three chips rather than one button cycling through hidden states: what the
+// list is narrowed to is always on screen. Comments and Actions show their
+// glyph and count only (the words ran off a narrow panel); the name is the
+// button's accessible name and its tooltip.
 export function KindChips({
   value,
   counts,
@@ -82,21 +84,15 @@ export function KindChips({
   onChange: (next: CollaborateKind) => void;
 }) {
   return (
-    // A grid rather than a free row: All keeps its natural width and the other
-    // two share the rest, so "Comments 2" and "Actions 2" always fit the
-    // panel instead of the last chip running off its right edge.
-    <div
-      role="group"
-      aria-label="Filter by kind"
-      className="grid grid-cols-[auto_1fr_1fr] items-center gap-1"
-    >
+    <div role="group" aria-label="Filter by kind" className="flex items-center gap-1">
       {KINDS.map((k) => {
         const active = k.id === value;
-        return (
+        const chip = (
           <button
             key={k.id}
             type="button"
             aria-pressed={active}
+            aria-label={`${k.label} ${counts[k.id]}`}
             onClick={() => onChange(k.id)}
             className={`inline-flex h-7 min-w-0 items-center justify-center gap-1 rounded-full px-2 text-[11px] font-semibold transition-colors ${
               active
@@ -104,10 +100,20 @@ export function KindChips({
                 : 'text-slate-500 hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200'
             }`}
           >
-            {k.icon ? <span aria-hidden>{k.icon}</span> : null}
-            <span className="text-optical-centre">{k.label}</span>
+            {k.icon ? (
+              <span aria-hidden>{k.icon}</span>
+            ) : (
+              <span className="text-optical-centre">{k.label}</span>
+            )}
             <span className="text-optical-centre tabular-nums opacity-70">{counts[k.id]}</span>
           </button>
+        );
+        return k.icon ? (
+          <Tooltip key={k.id} label={k.label}>
+            {chip}
+          </Tooltip>
+        ) : (
+          chip
         );
       })}
     </div>

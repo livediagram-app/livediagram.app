@@ -10,13 +10,12 @@ import {
   DEFAULT_BORDER_STROKE,
   DEFAULT_BORDER_STYLE,
   PADDING_PX,
-  activeCommentCount,
   defaultPadding,
+  defaultFillColor,
   defaultStrokeColor,
   defaultTextAlign,
   defaultTextColor,
   ownColours,
-  isOpenAction,
   isSelfDrawingShape,
   isUprightTitle,
   uprightTitleStrip,
@@ -42,15 +41,15 @@ import { ChairView } from '@/components/canvas/collab/ChairView';
 import { isCssNativeBorderStyle } from '@/components/canvas/border-css';
 import { describeVariant, editingLook } from '@/components/canvas/element-variant';
 import { useElementSurface } from '@/components/canvas/CanvasSurfaceContext';
-import { BadgeStrip, RemoteSelectorsStrip } from '@/components/canvas/element-badges';
-import { useMindOutlineBadge } from '@/components/canvas/MindOutlineContext';
-import { badgeCornerInset } from '@/lib/badge-anchor';
+import { RemoteSelectorsStrip } from '@/components/canvas/element-badges';
+import { ElementIndicators } from '@/components/canvas/ElementIndicators';
+import { indicatorBacking } from '@/components/canvas/indicator-items';
+import { useElementIndicators } from '@/components/canvas/useElementIndicators';
 import { AnnotationHoverNote } from '@/components/canvas/AnnotationMarker';
 import { useBoxedElementGestures } from '@/components/canvas/useBoxedElementGestures';
 import { useBoxedElementAnimation } from '@/components/canvas/useBoxedElementAnimation';
 import { IconDropPreview, useIconDropTarget } from '@/components/canvas/useIconDropTarget';
 import { ElementVoteOverlay } from '@/components/canvas/ElementVoteOverlay';
-import { describeLink } from '@/lib/link-label';
 import { ShapeContentRouter } from '@/components/canvas/ShapeContentRouter';
 import { BrowserChrome } from '@/components/canvas/boxed-element-overlays';
 
@@ -144,7 +143,6 @@ function BoxedElementViewImpl({
   imageContext,
   onContextSelect,
   remoteSelectors,
-  badgeColor,
   tabLocked,
   tabSummaries,
   readOnly,
@@ -283,14 +281,7 @@ function BoxedElementViewImpl({
   const onWhiteboard = useCanvasPicksByOutline();
   const shapeHit = outlineHit(element, { onWhiteboard, selected: isSelected || isMultiSelected });
 
-  // A comment pin (docs/specs/012-collaboration/comment-pin.md) shows its own count on its face, so the generic
-  // badge is suppressed: the pin IS the badge, and two counts on one 40px
-  // marker is one too many.
-  const isCommentPin = element.type === 'shape' && element.shape === 'comment-pin';
-  const commentCount = isCommentPin ? 0 : activeCommentCount(element.commentThread);
-  // A mind map root's Edit Outline and Tidy Map badges (MindOutlineContext).
-  const mapBadges = useMindOutlineBadge(element.id);
-  // The element's drawn corner, which its border overlay and its badge chip both follow.
+  // The element's drawn corner, which its border overlay and its indicators both follow.
   const shapeKind = element.type === 'shape' ? element.shape : undefined;
   const cornerPx = cornerRadiusPx(
     element.type === 'shape' ? element.borderRadius : undefined,
@@ -299,23 +290,6 @@ function BoxedElementViewImpl({
     // A mind node's default corner (docs/specs/009-elements/mind-node.md "Round nodes").
     shapeKind === 'mind-node' ? MIND_NODE_RADIUS_PX : DEFAULT_BOX_RADIUS_PX,
   );
-  // Assigned action (docs/specs/012-collaboration/assigned-actions.md): the badge shows only while the action is
-  // open; a done action stays on the element but stops shouting. An action
-  // panel (docs/specs/012-collaboration/action-panel.md) shows its action on its face, so it is the badge.
-  const isActionPanel = element.type === 'shape' && element.shape === 'action-card';
-  const hasOpenAction = !isActionPanel && isOpenAction(element.action);
-  // Both 'tab' and 'document' kinds get the "linked" badge; the
-  // follow-handler dispatches off the kind via the parent's
-  // onFollowLink callback. 'element' kind is the spec'd
-  // jump-and-focus that isn't surfaced in the UI yet. A link-card is
-  // EXCLUDED: the card itself is the link (its bottom half follows it),
-  // so the corner badge would be redundant.
-  const linked =
-    element.type !== 'link-card' &&
-    element.link !== undefined &&
-    (element.link.kind === 'tab' ||
-      element.link.kind === 'document' ||
-      element.link.kind === 'url');
 
   // An inline icon sits beside the label on a regular shape (the
   // dedicated 'icon' shape kind has its own glyph-above-caption render
@@ -352,6 +326,18 @@ function BoxedElementViewImpl({
   // A whiteboard text box hugs its text, growing with it while typed (useTextHug).
   const textHug = useTextHug(element, isEditing, fontFamily);
 
+  const labelPadding = uprightStrip
+    ? // A one-line strip has no room for a roomy padding across it.
+      Math.min(PADDING_PX.sm, PADDING_PX[element.padding ?? defaultPadding(element)])
+    : PADDING_PX[element.padding ?? defaultPadding(element)];
+  // The element's indicators, placed before the label so the content can move out of their way.
+  const indicators = useElementIndicators(
+    element,
+    { onFollowLink, onOpenComments, onOpenAction, onOpenNote, tabSummaries },
+    { text: label, textSize, padding: labelPadding, alignX, alignY, inlineIcon: !!inlineIcon },
+    cornerPx,
+  );
+
   // The text label, computed once so the freehand branch, the plain
   // shape branch, and the inline-icon layout below all share it.
   const labelNode = renderLabel(
@@ -360,10 +346,7 @@ function BoxedElementViewImpl({
     textSize,
     uprightStrip ? uprightStrip.alongAlign : alignX,
     uprightStrip ? 'middle' : iconCaptionBand ? captionBandAlignY(alignX, alignY) : alignY,
-    // A one-line strip has no room for a roomy padding across it.
-    uprightStrip
-      ? Math.min(PADDING_PX.sm, PADDING_PX[element.padding ?? defaultPadding(element)])
-      : PADDING_PX[element.padding ?? defaultPadding(element)],
+    labelPadding,
     isEditing,
     (next, runs) => onCommitLabel(element.id, next, runs),
     onCancelEdit,
@@ -439,7 +422,7 @@ function BoxedElementViewImpl({
       onDrop={acceptsIconDrop ? handleIconDrop : undefined}
       // `group` so the vote stepper inside can fade up on element hover
       // (docs/specs/012-collaboration/session-tools.md) without threading a hover state through props.
-      className={`group absolute origin-center touch-none select-none ${
+      className={`group group/el absolute origin-center touch-none select-none ${
         // A looping animation (docs/specs/008-canvas/canvas-and-palette.md) replaces the one-shot pop-in entry
         // class (both drive the `animation` property, so they can't co-exist).
         wrapperAnimClass
@@ -615,6 +598,7 @@ function BoxedElementViewImpl({
         onToggleReveal={onToggleReveal}
         label={label}
         labelNode={labelNode}
+        contentInset={indicators.layout?.inset}
         textColor={textColor}
         textSize={textSize}
         alignX={alignX}
@@ -659,34 +643,14 @@ function BoxedElementViewImpl({
       {/* The annotation marker IS the note affordance, so it suppresses
           the generic note badge (it would be redundant). */}
       {/* A margin note shows its count on its own face (ArticleNoteFace). */}
-      {!articleNote &&
-      (linked ||
-        mapBadges ||
-        commentCount > 0 ||
-        hasOpenAction ||
-        (element.note && onOpenNote && !isAnnotation)) ? (
-        <BadgeStrip
-          linked={linked}
-          linkLabel={element.link ? describeLink(element.link, tabSummaries) : undefined}
-          commentCount={commentCount}
-          hasNote={!!element.note && !!onOpenNote && !isAnnotation}
-          hasOpenAction={hasOpenAction}
-          actionLabel={
-            hasOpenAction
-              ? `Assigned to ${element.action?.assignee.name?.trim() || 'a teammate'}`
-              : undefined
-          }
-          badgeColor={badgeColor}
-          onFollowLink={() => {
-            if (element.link) onFollowLink(element.link);
-          }}
-          onOpenComments={() => onOpenComments(element.id)}
-          onOpenNote={onOpenNote ? () => onOpenNote(element.id) : undefined}
-          onEditOutline={mapBadges?.editOutline}
-          onTidyMap={mapBadges?.tidy}
-          cornerPx={shapeKind === 'circle' || shapeKind === 'stadium' ? Infinity : cornerPx}
-          inset={badgeCornerInset(shapeKind, element.width, element.height, cornerPx)}
-          onOpenAction={() => onOpenAction(element.id)}
+      {indicators.layout ? (
+        <ElementIndicators
+          element={element}
+          cornerPx={indicators.cornerPx}
+          fill={indicatorBacking(own.fill ?? defaultFillColor(element, surface))}
+          selected={isSelected}
+          items={indicators.items}
+          placed={indicators.layout}
         />
       ) : null}
 

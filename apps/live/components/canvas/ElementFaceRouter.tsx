@@ -41,6 +41,8 @@ import { RevealFace } from '@/components/canvas/RevealFace';
 import { SessionButtonFace } from '@/components/canvas/SessionButtonFace';
 import { SessionTimerFace } from '@/components/canvas/SessionTimerFace';
 import { ShapeInlineIconLayout } from '@/components/canvas/shape-inline-icon-layout';
+import { InsetContent } from '@/components/canvas/InsetContent';
+import type { ContentInset } from '@/components/canvas/useIndicatorLayout';
 import { TableView } from '@/components/canvas/TableView';
 import { VideoView } from '@/components/canvas/VideoView';
 import { HeroCaptionCard } from '@/components/canvas/web/HeroCaptionCard';
@@ -102,6 +104,9 @@ type ElementFaceRouterProps = Pick<
   // recomputed per branch: several of them render the same label node.
   label: string;
   labelNode: ReactNode;
+  // Where the label (and an inline icon) moves to clear the element's indicators
+  // (docs/specs/008-canvas/element-indicators.md); absent or zero leaves it in place.
+  contentInset?: ContentInset;
   textColor: string;
   textSize: TextSize;
   alignX: TextAlignX;
@@ -154,6 +159,7 @@ export function ElementFaceRouter({
   onToggleReveal,
   label,
   labelNode,
+  contentInset,
   textColor,
   textSize,
   alignX,
@@ -458,23 +464,25 @@ export function ElementFaceRouter({
           onSetHeading={(field, value) => onSetPageHeading(element.id, field, value)}
         />
       ) : element.type === 'shape' && (inlineIcon || marker) ? (
-        <ShapeInlineIconLayout
-          element={element}
-          showIcon={!!inlineIcon}
-          marker={marker}
-          markerSize={element.markerSize ?? 'scale'}
-          position={element.iconPosition ?? 'left'}
-          iconStroke={textColor}
-          isEditing={isEditing}
-          editor={labelNode}
-          label={label}
-          textColor={textColor}
-          textSize={textSize}
-          alignX={alignX}
-          alignY={alignY}
-          padding={PADDING_PX[element.padding ?? defaultPadding(element)]}
-          fontFamily={fontFamily}
-        />
+        <InsetContent inset={contentInset}>
+          <ShapeInlineIconLayout
+            element={element}
+            showIcon={!!inlineIcon}
+            marker={marker}
+            markerSize={element.markerSize ?? 'scale'}
+            position={element.iconPosition ?? 'left'}
+            iconStroke={textColor}
+            isEditing={isEditing}
+            editor={labelNode}
+            label={label}
+            textColor={textColor}
+            textSize={textSize}
+            alignX={alignX}
+            alignY={alignY}
+            padding={PADDING_PX[element.padding ?? defaultPadding(element)]}
+            fontFamily={fontFamily}
+          />
+        </InsetContent>
       ) : element.type === 'shape' && isSelfDrawingShape(element.shape) ? (
         // Progress / rail / rating / chart elements draw their own content, so
         // they render no standard editable label.
@@ -514,7 +522,7 @@ export function ElementFaceRouter({
         // so the caption stays clear of the glyph in every alignment combo.
         <div className={`absolute ${iconCaptionBand}`}>{labelNode}</div>
       ) : (
-        labelNode
+        <InsetContent inset={contentInset}>{labelNode}</InsetContent>
       )}
     </>
   );

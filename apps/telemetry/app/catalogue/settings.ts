@@ -55,6 +55,7 @@ export const EDITOR_SETTINGS = settingsStack(
       'Quick-Add on Hover',
       'Hover handles that add a connected shape.',
     ),
+    changed('ElementIndicators', 'Element Indicators', 'Top icons, a Footer row, or Off.'),
     toggle(
       'UI',
       'AlignmentGuidesOn',

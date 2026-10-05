@@ -280,6 +280,7 @@ describe('settings sub-categories', () => {
     const keys = SETTINGS_CATEGORIES.find((c) => c.id === 'editor')!.rows.map((r) => r.key);
     expect(keys).toEqual([
       'quickAddOnHover',
+      'elementIndicatorStyle',
       'alignmentGuides',
       'autoRebindArrows',
       'middleMousePan',

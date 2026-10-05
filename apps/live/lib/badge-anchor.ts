@@ -1,5 +1,6 @@
-// Where an element's badge chip sits (docs/specs/008-canvas/canvas-and-palette.md, the
-// BadgeStrip): on the element's own outline, not its bounding box. The point is where a 45° line
+// Where an element's indicator pip sits when its outline rings give no point
+// (docs/specs/008-canvas/element-indicators.md, `pipInset` first): on the element's own
+// outline, not its bounding box. The point is where a 45° line
 // from the box's top-right corner meets the outline, given as an inset from the top and right
 // edges, so on a round, stadium, rounded or diamond element the chip touches the shape instead of
 // floating in the empty corner beside it. Pure geometry.
