@@ -317,6 +317,11 @@ inputs (`turbo.json`), so a docs-only change never replays a cached pass of thos
     article telemetry, the schema.org JSON-LD builders, and the docs guards: every repo path quoted in
     `docs/` exists, and every blueprint DEFAULTS.md ledger id, COMPLETENESS.md section and README.md
     index entry is unique, so a merge that keeps both sides of one fails a test.
+  - `apps/community`: component tests for the gallery (search words, the
+    controls, My Shares, Load More), the post page and the like button's
+    optimistic rollback, the switched-off gate and the lazy Clerk session; the
+    pure helpers (query state, the community key, telemetry); and the app's
+    optical-guard and motion-budget tests.
 
 - **Hooks and components** in `apps/live` and `packages/ui` render in tests, and the
   environment is opted into **per file** rather than per workspace. A test

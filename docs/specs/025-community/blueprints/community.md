@@ -19,9 +19,11 @@ Derived from [Community](../community.md). Implementation detail only; design de
 | sort           | `CommunitySort = 'new' \| 'loved' \| 'copied'`                                                        |
 | Edit Listing   | the same `PUT /api/documents/:id/community` as publishing; the editor names the act, the api does not |
 
-Shared vocabulary (categories, reasons, limits, `normaliseCommunityTag`, `validateCommunityPostInput`, DTOs, sorts,
-query parsing) lives in `packages/api-schema/src/community.ts`, exported from the package index, so the worker, the
-editor and the Community app cannot disagree.
+Shared vocabulary lives in `packages/api-schema`, exported from the package index, so the worker, the editor and the
+Community app cannot disagree: `packages/api-schema/src/community.ts` holds the post (categories, reasons, limits, `normaliseCommunityTag`,
+`validateCommunityPostInput`, DTOs, `communityPostPath`, `communityImagePath`), and `packages/api-schema/src/community-query.ts` the search
+grammar and list query (sorts, the `#tag` / `category:` / `sort:` / `is:mine` words, `parseCommunityListQuery`,
+`communityQueryParams`).
 
 ## 2. Constants and configuration
 
@@ -42,9 +44,14 @@ All in `packages/api-schema/src/community.ts`.
 | `COMMUNITY_RELATED_POSTS`          | 6             | spec "More Like This" | 3..12      |
 | `COMMUNITY_SEARCH_TERMS_MAX`       | 5             | C5                    | 1..10      |
 | `COMMUNITY_SEARCH_TERM_MAX`        | 40            | C5                    | 10..80     |
+| `COMMUNITY_SEARCH_MAX`             | 200           | C5 (whole query)      | 80..500    |
+| `COMMUNITY_COUNTED_PER_NETWORK`    | 5             | spec "Likes"          | 1..20      |
+| `COMMUNITY_FEATURED_COUNT`         | 6             | spec "Featured"       | fixed      |
+| `COMMUNITY_FEATURED_WINDOW_MS`     | 90 days       | spec "Featured"       | 30..365 d  |
 | `COMMUNITY_KEY_PATTERN`            | UUID v4 regex | C6                    | fixed      |
 
-Worker binding `COMMUNITY_RATE_LIMITER` (ratelimit, 30 per 60 s, keyed `community:<ip>`), production and staging.
+Worker binding `COMMUNITY_RATE_LIMITER` (ratelimit, 30 per 60 s, keyed `community:<network>` from `communityNetwork`),
+production and staging.
 Worker var `COMMUNITY_ENABLED` (optional; `false`, `0` or `off` switches the Community off, anything else or unset
 leaves it on), read per request by `communityEnabled(env)` (`apps/api/src/community-enabled.ts`) and reported as
 `communityEnabled` by `GET /api/capabilities`. Moderation needs no var: it is reports alone.
@@ -92,6 +99,14 @@ CREATE TABLE community_reports (post_id → posts CASCADE, reporter_key TEXT, ne
                                 (reason IN (...)), note TEXT NULL, created_at INTEGER, PK (post_id, reporter_key))
 ```
 
+Migration `apps/api/migrations/0069_community_anonymous.sql`: `community_posts.anonymous INTEGER NOT NULL DEFAULT 0`
+(posts published before it stay named, C10).
+
+Migration `apps/api/migrations/0070_community_networks.sql`: `network_hash TEXT` (nullable) on `community_likes` and
+`community_copies` (rows from before it count on their own); indexes `idx_community_likes_created` on
+`community_likes (created_at)` (the featured window) and `idx_community_copies_copier` on
+`community_copies (copier_id)` (a guest's copies migrating to an account, and account deletion).
+
 Field classification: `author_id`, `copier_id` are owner credentials for guests (never on the wire); `liker_key`,
 `reporter_key` are worthless random keys (never on the wire); `network_hash` is a one-way per-post hash (never on the
 wire); everything else is public post content.
@@ -132,11 +147,26 @@ type CommunityPost = {
   publishedAt: number;
   updatedAt: number;
   shareCode: string;
-  author: CommunityAuthor;
+  author: CommunityAuthor; // "Anonymous" when anonymous
+  anonymous: boolean;
   liked: boolean;
 };
 type CommunityOwnPost = CommunityPost & { state: CommunityPostState };
-type CommunityPostInput = { title: string; description: string; category: string; tags: string[] };
+type CommunityMinePost = CommunityOwnPost & { documentId: string };
+type CommunityMineTotals = { posts: number; likes: number; copies: number };
+type CommunityMineResponse = {
+  posts: CommunityMinePost[];
+  nextOffset: number | null;
+  totals: CommunityMineTotals;
+};
+type CommunityFeaturedResponse = { posts: CommunityPost[] };
+type CommunityPostInput = {
+  title: string;
+  description: string;
+  category: CommunityCategory;
+  tags: string[];
+  anonymous: boolean; // a missing value publishes anonymously
+};
 type CommunityListQuery = {
   q: string;
   category: CommunityCategory | null;
@@ -154,6 +184,8 @@ Routes (all JSON; errors `{ error: <code> }`):
 | `PUT /api/documents/:id/community`                    | owner, signed in | 201 new / 200 update `{ post }`                              | 401 `sign_in_required`, 403, 404, 409 `team_document`, 409 `share_password_set`, 409 `empty_document`, 409 `post_limit`, 400 `invalid_<field>` |
 | `DELETE /api/documents/:id/community`                 | owner            | 204                                                          | 404 (also when not published), 403                                                                                                             |
 | `GET /api/community/posts?q&category&tag&sort&offset` | anyone           | `{ posts, nextOffset: number \| null }`                      | 400 `invalid_query`                                                                                                                            |
+| `GET /api/community/mine?q&offset`                    | signed in        | 200 `CommunityMineResponse` (hidden included)                | 400 `invalid_query`, 401                                                                                                                       |
+| `GET /api/community/featured`                         | anyone           | 200 `CommunityFeaturedResponse` (up to six)                  | none                                                                                                                                           |
 | `GET /api/community/facets`                           | anyone           | `{ categories: Record<id, n>, tags: {tag, count}[], total }` | none                                                                                                                                           |
 | `GET /api/community/posts/:id`                        | anyone           | `{ post, related: CommunityPost[] }`                         | 404 missing, hidden, trashed                                                                                                                   |
 | `PUT /api/community/posts/:id/like`                   | community key    | `{ likeCount, liked: true }`                                 | 400 `community_key_required`, 404, 429                                                                                                         |
@@ -161,6 +193,8 @@ Routes (all JSON; errors `{ error: <code> }`):
 | `POST /api/community/posts/:id/report`                | community key    | 204 (also for a repeat)                                      | 400 `community_key_required` / `invalid_reason` / `invalid_note`, 404, 429                                                                     |
 
 - `liked` is filled from `X-Community-Key` when present and valid, else false.
+- `mine` reads the same search words as the list (the public list ignores `is:mine`) and sends
+  `Cache-Control: private, no-store`; `featured` sends `public, max-age=60`. Both answer 404 while the Community is off.
 - List responses without a community key send `Cache-Control: public, max-age=30`; with one, `private, no-store`.
 - Query parsing is `parseCommunityListQuery(URLSearchParams)` (api-schema): unknown sort → `new`, unknown category or
   bad tag → `invalid_query`, offset clamped to `[0, COMMUNITY_MAX_OFFSET]` and to multiples of nothing (any int).
@@ -207,6 +241,16 @@ Community link behaviour (keyed off `link.purpose === 'community'`):
 - Visitor-opened and visitor-copied timeline events are not recorded for a community visit or copy (strangers' names
   do not belong in the author's feed).
 
+Shared UI (`packages/ui/src/community/`): `CommunityPostTile` (the card, used by the Community app and the landing
+page's `CommunityShowcase`), `CommunityAuthorBadge`, `communitySharedAgo` (the shared-ago line), `useCommunityEnabled`
+/ `fetchCommunityEnabled`, and `CommunityFooterLink` (the shared footer's link, hidden while switched off).
+
+Snapshot and redaction (api): `getCommunityThumbnailSvg` (`apps/api/src/thumbnail.ts`) renders the first tab from the
+redacted board and caches it under `thumb-community/<documentId>`, apart from the owner's `thumb/<id>`;
+`redactDocumentForCommunity` (`apps/api/src/redact-document.ts`) strips owner name, colour, folder and origin from the
+document a community grant reads. `communityNetwork` (`apps/api/src/community-network.ts`) maps an address to its
+IPv4 /24 or IPv6 /56 for the limiter, report and count hashes.
+
 Editor (`apps/live`):
 
 - `apps/live/lib/api/community.ts`: `apiGetCommunityPost`, `apiPublishCommunityPost`, `apiRemoveCommunityPost`;
@@ -220,13 +264,16 @@ Editor (`apps/live`):
   `CommunityPublishedConfirmation.tsx`. The share password control is locked while the post is listed, and Share to
   Community while a password is set. A hidden post's card says **Hidden after reports.** and offers no Edit Listing or
   Remove.
+- Public badge: `apps/live/lib/community-state-store.ts` (an external store, seeded from the document fetch and
+  updated by the Community section on publish or remove) feeds `SharedBadge`'s `community` state, labelled **Public**,
+  which wins over Private, Shared and Team (only Local only beats it).
 - `resolveDocumentSession` (`apps/live/app/document/[id]/editor-page-helpers.ts`) takes `community`: a community
   link resolves to a non-owner view session for everyone, the author included, so neither the post page's embed nor
   Open Document can edit the document; `CommunitySession.ownDocumentId` gives the author Edit Your Document in the bar.
 - Share-view mode: `useIdentityBootstrap` stores `sessionCommunity` (in `editor-realtime.ts`) from the share resolve;
   when set, `useRoomConnection` gets `enabled: false`, the identity prompt is not opened, the visit is not recorded,
   and `apps/live/components/chrome/CommunityBar.tsx` renders under the header with the author
-  (`apps/live/components/primitives/CommunityAuthorDisc.tsx`).
+  (the shared `CommunityAuthorBadge`).
 - `?copy=1` on `/document/shared` (`apps/live/hooks/canvas/useAutoCopyParam.ts`): once the document hydrates with a
   session share code, `makeCopy` runs once and the param is stripped.
 - There is no moderation page and no operator route.
@@ -237,8 +284,8 @@ Community app (`apps/community`):
   back to an in-memory key for the page's life. Never reads the guest owner id.
 - `apps/community/lib/query-state.ts`: the URL query to and from the gallery's filters (pure, tested), via
   `parseCommunityListQuery` / `communityQueryParams`.
-- `apps/community/lib/api.ts`: `fetchPosts`, `fetchFacets`, `fetchPost`, `likePost`, `unlikePost`, `reportPost`, with
-  `NEXT_PUBLIC_API_BASE ?? '/api'`; `apps/community/lib/useLike.ts` is the optimistic like with rollback.
+- `apps/community/lib/api.ts`: `fetchPosts`, `fetchMine`, `fetchFacets`, `fetchPost`, `likePost`, `unlikePost`,
+  `reportPost`, with `NEXT_PUBLIC_API_BASE ?? '/api'`; `apps/community/lib/useLike.ts` is the optimistic like with rollback.
 - Gallery (`apps/community/components/gallery/`): `GalleryView` over `useGallery`; `CommunityHero`, `SearchBox`
   (debounced 300 ms, Enter commits) holding `CategoryMenu`, `TagFilter` and `SortMenu` in its right edge, each over
   the shared `SearchControlButton` (icon only below `sm`), then `PostGrid` of `PostCard`, `LoadMore`,
@@ -247,6 +294,10 @@ Community app (`apps/community`):
   `parseCommunityListQuery` (a word wins over the old parameter) and `listCommunityPosts` (each `#tag` an `EXISTS`);
   a legacy `?tag=`, `?category=` or `?sort=` folds into `q` in `readQueryState`. The search form sits on the
   toolbar layer (`--z-toolbar`): above the grid, below the sticky header and its menus.
+- My Shares: `is:mine` (`COMMUNITY_MINE_TOKEN`) in `q` switches `useGallery` to `fetchMine`, with the Clerk session
+  from `LazyClerkSession` (a `next/dynamic` import of `ClerkSession`, so Clerk loads only when My Shares is on);
+  `apps/community/lib/session.ts` holds the publishable key (`signInAvailable` false without one hides the toggle),
+  `SESSION_LOAD_TIMEOUT_MS` and `signInHref`. `MineSummary` shows the **Your Shares** totals above the grid.
 - Post page (`apps/community/components/post/`): `PostView` over `usePost`, `EmbedFrame` (`/embed?s=<code>`, lazy,
   titled, falling back to the card image after 15 s), `PostMeta`, `PostActions`, `ReportDialog`, `RelatedPosts`. Make
   a Copy → `/document/shared?s=<code>&copy=1`.
@@ -291,10 +342,12 @@ Community app (`apps/community`):
 - Publishing requires a verified Clerk identity (G1), so every public post is tied to an account.
 - No owner id leaves the worker in any Community DTO; authors are participant display identities only.
 - The community link is read-only (view role), cannot open the room, and cannot read comments.
-- Abuse: `COMMUNITY_RATE_LIMITER` per IP for all `/api/community/*` writes (the owner-keyed write limiter is skipped
-  for these paths, because anonymous callers would all share its `anonymous` key); auto-hide needs three distinct
-  networks; reports are never cleared and a hidden post cannot be removed to clear them.
-- `network_hash` = first 32 hex of SHA-256(`<postId>:<ip>`): not comparable across posts.
+- Abuse: `COMMUNITY_RATE_LIMITER` per network (`communityNetwork`) for all `/api/community/*` writes (the
+  owner-keyed write limiter is skipped for these paths, because anonymous callers would all share its `anonymous` key;
+  publishing, under `/api/documents/:id/community`, stays on the per-owner limiter); auto-hide needs three distinct
+  networks; like and copy counts take at most `COMMUNITY_COUNTED_PER_NETWORK` rows per `network_hash`; reports are
+  never cleared and a hidden post cannot be removed to clear them.
+- `network_hash` = first 32 hex of SHA-256(`<postId>:<network>`): not comparable across posts.
 - LIKE patterns escape `%`, `_` and `\` with `ESCAPE '\'`.
 
 ## 8. Performance and limits
@@ -314,7 +367,8 @@ Final copy:
   learn from it and make their own copy." Button: **Share to Community**. Guest: "Sign in to share your document with the
   Community." Button: **Sign In to Share**. Team document: "Team library documents can't be shared to the Community."
 - Published: post title, category, "♥ n · Copied n times", **View Post**, **Edit Listing**, **Remove From Community**;
-  hidden: "Hidden from the Community after reports."
+  hidden: "**Hidden after reports.** Several people reported it, so it was taken out of the Community for good. Only you
+  can see it, and it can no longer be changed or removed."
 - Publish dialog title: **Share to Community** / **Edit Listing**. Consequences: "Anyone can view this document and make
   their own copy." "Your later edits show in the Community too." "Comments stay private." "You can remove it at any
   time." Primary button: **Share to Community** / **Save Changes**.
@@ -377,4 +431,10 @@ Worker logs with fingerprints: `[community] published`, `[community] updated`, `
 
 ## 14. Defaults ledger
 
-See [DEFAULTS.md](DEFAULTS.md), rows C1 to C9.
+See [DEFAULTS.md](DEFAULTS.md), rows C1 to C10.
+
+## 15. Assets and external resources
+
+- App icon: `apps/community/app/icon.svg`, hand-authored in this repo (MIT).
+- Glyphs: `apps/community/components/shared/icons.tsx` draws Lucide-derived primitives (`lucide*`) from the shared
+  `@livediagram/icons` catalogue, under Lucide's ISC licence, credited on the generated `/licences` page.

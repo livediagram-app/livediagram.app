@@ -61,7 +61,7 @@ A remote api works too, and there are now two of them: `https://staging.livediag
 reaches [staging](../specs/016-platform/staging-environment.md), which has its own database and is
 the one to reach for; the production api reads and writes real people's documents.
 
-Without it the editor loads, the canvas works, and the first save fails with **“Couldn’t create the document”** — which reads like a broken api worker rather than a missing variable, so it is worth setting up front. `apps/telemetry` and `apps/help` read the same variable: the dashboard needs it to show anything on `:3003`, and the help centre only loses its telemetry posts without it. To work on the dashboard against real numbers without seeding a local database, point it at production's summary instead: `NEXT_PUBLIC_API_BASE=https://www.livediagram.app/api` in `apps/telemetry/.env.local`. `GET /api/telemetry/summary` is public, read-only and allows any origin, and the dashboard only sends events itself when `NEXT_PUBLIC_TELEMETRY_ENABLED=true`, which local builds leave unset.
+Without it the editor loads, the canvas works, and the first save fails with **“Couldn’t create the document”** — which reads like a broken api worker rather than a missing variable, so it is worth setting up front. `apps/telemetry`, `apps/help` and `apps/community` read the same variable: the dashboard needs it to show anything on `:3003`, the Community needs it to list any posts on `:3005`, and the help centre only loses its telemetry posts without it. To work on the dashboard against real numbers without seeding a local database, point it at production's summary instead: `NEXT_PUBLIC_API_BASE=https://www.livediagram.app/api` in `apps/telemetry/.env.local`. `GET /api/telemetry/summary` is public, read-only and allows any origin, and the dashboard only sends events itself when `NEXT_PUBLIC_TELEMETRY_ENABLED=true`, which local builds leave unset.
 
 The editor works in pure-guest mode without any auth setup: `pnpm dev` and open `http://localhost:3000/new`. Documents persist to the local D1 file the api worker creates on first start. (On `http://localhost:3002/new` instead, set `NEXT_PUBLIC_API_BASE` first — see the note above.)
 
@@ -114,6 +114,9 @@ The editor works without Clerk. To exercise the signed-in code paths:
 
    ```sh
    # apps/live/.env.local (gitignored)
+   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
+
+   # apps/community/.env.local (gitignored), optional: turns on My Shares
    NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
 
    # apps/api/.dev.vars (gitignored)

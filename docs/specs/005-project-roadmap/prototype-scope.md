@@ -4,15 +4,16 @@ The frontend-only prototype phase ended once the API app landed. This spec captu
 
 ## Where we are now
 
-Seven apps, all deployable to Cloudflare Workers (with Static Assets for the four Next.js apps):
+Eight apps, all deployable to Cloudflare Workers (with Static Assets for the five Next.js apps):
 
 - **marketing**: static landing site at `/`.
 - **live**: the diagram editor (clean routes, no `/live` prefix). Statically exported Next.js.
 - **telemetry**: public anonymous-events dashboard at `/telemetry`. Statically exported Next.js. Reads aggregate counts from the api worker's D1 events table. See [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md).
 - **help**: the help centre at `/help`. Statically exported Next.js with MDX articles.
+- **community**: the public gallery of shared documents at `/community`. Statically exported Next.js. See [Community](../025-community/community.md).
 - **api**: Cloudflare Worker holding the REST endpoints + Durable Object realtime room. D1 is the durable store.
 - **mcp**: Cloudflare Worker at its own host, `mcp.livediagram.app`, that connects the editor to AI tools ([MCP server](../015-api/mcp-server.md)).
-- **router**: Worker that stitches marketing, live, telemetry, help and api under one hostname.
+- **router**: Worker that stitches marketing, live, telemetry, help, community and api under one hostname.
 
 The editor is real:
 
@@ -59,9 +60,9 @@ The editor is real:
   views, lint and diff, `changeset ls`, `show`), the edits (`edit -f`, `element …`, `changeset revert`) based on
   read copies, `document create|rename|share|rm|restore`, `tab add|rename|rm`, the catalogues (`template`,
   `icon search`, `schema`), guides, the agent skill and the `api` escape hatch.
-- **Community** ([Community](../025-community/community.md)): a public gallery at `/community` of boards people are
-  proud of. Signed-in owners publish a document from the Share dialog with a title, description, category and tags;
-  anyone can search and filter it, open a board read-only (no room, no comments), like it and make their own copy in
+- **Community** ([Community](../025-community/community.md)): a public gallery at `/community` of documents people
+  are proud of. Signed-in owners publish a document from the Share dialog with a title, description, category and tags;
+  anyone can search and filter it, open a document read-only (no room, no comments), like it and make their own copy in
   one click. Posts stay live with the document, and moderation is self-serve: enough reports hide a post for
   good, with nobody reviewing by hand.
 - **AI assistance** (optional): an in-editor panel with two modes: Ask answers questions about the active tab, Clean fixes label typos and normalises sizes, positions, and styles. Hidden entirely unless the api worker has a model key set; per-user opt-in via Settings. This is the in-editor panel only; driving documents from an outside assistant is the MCP server. See [AI Assistance](../007-editor/ai-assistance.md).

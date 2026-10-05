@@ -15,7 +15,9 @@ better start than a blank canvas).
 
 ## Terms
 
-- **Community**: the gallery as a whole; the app at `/community`. Never "gallery", "showcase" or "explore" in copy or code.
+- **Community**: the feature as a whole; the app at `/community`. Its name in copy is always Community. Words that
+  describe it stay plain descriptions, not second names: the **gallery** is its browsing page (`GalleryView`), the
+  landing page **showcases** it (`CommunityShowcase`) and invites people to **Explore the Community**.
 - **Post** (`CommunityPost`): one document published to Community. A document has at most one post.
 - **Author**: the signed-in owner who published the post. Shown by their participant name, colour and picture
   ([Profile picture](../014-identity/profile-picture.md)); their owner id is never exposed.
@@ -95,7 +97,7 @@ type) and on the worker (authoritative).
 ## The Community app
 
 `apps/community` is a static export (`basePath: '/community'`) like Help and Telemetry. It talks to the api at
-`/api/community/*` from the browser; it carries no sign-in. Pages:
+`/api/community/*` from the browser. Browsing needs no sign-in: the app loads Clerk only for My Shares (below). Pages:
 
 ### Gallery (`/community/`)
 
@@ -115,7 +117,7 @@ type) and on the worker (authoritative).
 - A responsive grid of **cards**, which cascade in (each rises and fades in one beat after the last, within the motion
   budget; not under reduced motion) whenever a new set of results arrives: the post's live image, title, category, up to three tags, the author (picture or
   initial in their colour, and name) with when it was shared beneath ("2 days ago", whole months after the first
-  month, whole years after the first year; the full date on hover), likes and copies. The card opens the post page; the heart likes it in place.
+  month, whole years after the first year), likes and copies. The card opens the post page; the heart likes it in place.
 - **Load More** pages through results (24 per page).
 - The whole query lives in the URL as `q` (with its `#tag`, `category:` and `sort:` words), so a filtered view can be
   shared and survives a reload. Older `tag`, `category` and `sort` parameters are read into the search.
@@ -155,7 +157,7 @@ ordinary view link in exactly these ways:
   team library; its document now owned by someone other than the post's author (a teammate moved it out of a team into
   their own library); a share password set on its document; or the Community switched off.
 - What it shows is redacted for strangers: the document carries no owner name, colour, folder or origin, and every card
-  image, thumbnail and per-tab image is drawn from the redacted board (no comment threads or their authors, no action
+  image, thumbnail and per-tab image is drawn from the redacted document (no comment threads or their authors, no action
   assignees, no roll-call or Q&A names), cached apart from the owner's own snapshot. The document overview counts no
   comment threads.
 - The viewer shows a slim **Community bar**: "Shared to the Community by <author>", **Back to Community** and **Make a
@@ -208,6 +210,8 @@ too.
   It still counts toward the author's post limit. Deleting the document deletes the post.
 - A hidden post no longer stands in the way of a share password: its link is closed for good.
 - An author is not told their post was hidden beyond what the Share dialog and My Shares show.
+- **Legal takedowns**: with no moderation tooling, a post that must come down for legal reasons is removed directly in
+  the database by whoever runs the service.
 
 Hiding takes effect at once at the api. What browsers and caches may still hold is short: a post, a list or a card
 image for at most 30 seconds, the home page's six for a minute.
@@ -242,13 +246,15 @@ minute.
 
 - The shared apps menu in every header (Welcome, Editor, Explorer, **Community**, Help, Telemetry).
 - The shared site footer, and the marketing sitemap (`/community/`).
-- The Share dialog's **Community** section, and the [help article](../018-help/help-app.md) Sharing to the Community
-  under Collaboration, Sharing and Embeds.
+- The Share dialog's **Community** section, and the [help articles](../018-help/help-app.md) **Sharing to the
+  Community** and **Finding Documents in the Community** under Collaboration, Sharing and Embeds.
 
 ## Abuse limits
 
-Publishing, liking and reporting are rate limited per network by the worker's existing limit bindings. Bodies are capped
-at the sizes above. Public list responses are cacheable for a short time.
+Liking and reporting are rate limited per network (the caller's address range) by the dedicated
+`COMMUNITY_RATE_LIMITER` binding, since their callers are anonymous. Publishing is an owner's document write and goes
+through the ordinary per-owner write limiter. Bodies are capped at the sizes above. Public list responses are
+cacheable for a short time.
 
 ## Telemetry
 
@@ -258,8 +264,8 @@ only `Liked`, `Unliked` and `Reported`. Types are preset values, never post cont
 - Editor: `Community·Shared·<Category>` on publish, `Community·Changed·<Category>` on Edit Listing,
   `Community·Removed·Post` on Remove From Community.
 - Community app: `Community·Opened·Post`, `Community·Liked·Post`, `Community·Unliked·Post`, `Community·Copied·Post`,
-  `Community·Reported·<Reason>`, `Community·Searched·Query`, `Community·Selected·<Category|Tag|Sort>` (Tag and
-  Sort from the controls inside the search box).
+  `Community·Reported·<Reason>`, `Community·Searched·Query`, `Community·Selected·<Category|Tag|Sort|Mine>`
+  (Tag, Sort and Mine from the controls inside the search box). There are no operator or moderation events.
 - Page views for the Community app as for any other app, under app `Community`.
 - The [telemetry dashboard](../017-telemetry/telemetry.md) has a **Community** tab and a Community group of cards
   (publishing, engagement, discovery, reports).
@@ -295,6 +301,6 @@ the editor.
 
 ## Out of scope
 
-- Featured posts and staff picks; author profile pages; comments on posts; following authors.
+- Hand-picked featured posts (staff picks); author profile pages; comments on posts; following authors.
 - Publishing a single tab; frozen snapshots.
 - Sign-in inside the Community app.

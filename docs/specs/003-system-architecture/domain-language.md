@@ -70,7 +70,7 @@ The words for the public gallery of published documents ([Community](../025-comm
 
 | Term               | Means                                                                                       | Never called                          |
 | ------------------ | ------------------------------------------------------------------------------------------- | ------------------------------------- |
-| **Community**      | The public gallery of published documents; the app at `/community`                          | gallery, showcase, explore, feed      |
+| **Community**      | The public gallery of published documents; the app at `/community`                          | Gallery, Showcase or Feed as its name |
 | **post**           | One document published to Community (`CommunityPost`); a document has at most one           | listing (in code), entry, submission  |
 | **author**         | The signed-in owner who published a post, shown by their display identity                   | creator, poster, publisher            |
 | **category**       | The one coarse subject of a post, from a closed set (`architecture`, `flows`, ...)          | type, kind (that is a tab's), section |

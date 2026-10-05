@@ -44,6 +44,11 @@ is the team, not the individual.
 - Export / import the active tab to Markdown / PDF / PNG / JSON.
 - Hybrid auth: guests get the full feature set keyed to a per-browser id;
   signed-in users (Clerk) add cross-device sync and account self-delete.
+- The Community at `/community`: a public gallery of documents people share.
+  Signed-in owners publish a document with a title, description, category and
+  tags (anonymously by default); anyone can search it, open a document
+  read-only, like it and make their own copy. Posts stay in step with later
+  edits, and enough reports from different people take a post down for good.
 - Anonymous first-party telemetry with a public dashboard at `/telemetry`. No
   third-party analytics, no identifiers on the wire. Off in self-hosted forks
   unless configured.

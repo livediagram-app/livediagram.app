@@ -20,6 +20,7 @@ The product is split into focused apps, each deployed as a named Cloudflare Work
 - **marketing** serves the public landing site at the root.
 - **live** is the diagram editor itself, served at clean routes such as `/new` and `/explorer`.
 - **telemetry** is the public, read-only analytics dashboard at `/telemetry`.
+- **community** is the Community, the public gallery of documents people share, at `/community`.
 - **api** is the Worker that holds the REST and WebSocket layer, backed by the D1 database and the per-document Durable Object.
 - **router** sits in front and forwards each request to the right app by URL path. It holds no business logic, only routing.
 
@@ -27,7 +28,7 @@ There is also a **help** app (the site you are reading now), which is another st
 
 ## How a request is routed
 
-The router Worker inspects the path and forwards accordingly: `/api/*` to the api Worker, `/telemetry` to the dashboard, the editor's known route segments to the live app, and everything else to marketing. Because the router has service bindings to the other apps, those apps must exist before the router can be deployed.
+The router Worker inspects the path and forwards accordingly: `/api/*` to the api Worker, `/telemetry` to the dashboard, `/community` to the Community, the editor's known route segments to the live app, and everything else to marketing. Because the router has service bindings to the other apps, those apps must exist before the router can be deployed.
 
 <Figure caption="The router forwards each request to an app by matching the URL path.">
   <RequestRouting />
@@ -39,12 +40,12 @@ Deployments run through **GitHub Actions to Cloudflare Workers**. In broad strok
 
 1. Continuous integration runs lint, format, typecheck, test, and build on every push.
 2. A separate, manually triggered deploy workflow builds everything, then deploys the apps.
-3. The marketing, live, telemetry, and api Workers deploy in parallel; the router deploys last because its bindings depend on the others already existing.
+3. The marketing, live, telemetry, help, community, and api Workers deploy in parallel; the router deploys last because its bindings depend on the others already existing.
 4. Database migrations are applied to D1 as part of the api deploy, before the new Worker code goes live.
 
 Deploying needs a Cloudflare API token and account id, supplied as repository secrets, never committed to source.
 
-<Figure caption="GitHub Actions deploys the four apps in parallel, then the router last because its bindings depend on them.">
+<Figure caption="GitHub Actions deploys the six apps in parallel, then the router last because its bindings depend on them.">
   <DeployFlow />
 </Figure>
 

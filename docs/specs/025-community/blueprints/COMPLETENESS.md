@@ -15,4 +15,5 @@
 - [x] Observability
 - [x] Testing
 - [x] Constants and configuration
+- [x] Assets and external resources
 - [x] Defaults ledger

@@ -324,20 +324,20 @@ logging, because motion isn't a decision point.
 
 ## Testing
 
-| Rule                                         | Test                                                                                        |
-| -------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| Tokens match their constants                 | `packages/tailwind-config/src/motion.test.ts`                                               |
-| `cascadeDelayMs` caps and clamps             | `packages/tailwind-config/src/motion.test.ts`                                               |
-| Bounds for literals, `var`, `min`, `calc`    | `packages/tailwind-config/src/motion-budget.test.ts`                                        |
-| Stylesheet: ceiling, hover, ambient, delay   | `packages/tailwind-config/src/motion-budget.test.ts`                                        |
-| Source: classes, hover, inline, templates    | `packages/tailwind-config/src/motion-budget.test.ts`                                        |
-| The shared theme is within budget            | `packages/tailwind-config/src/theme-budget.test.ts`                                         |
-| Each workspace is within budget              | `motion-budget.test.ts` in live, help, marketing, telemetry, ui and template-previews       |
-| Timeline cascades use the shared cap         | `packages/ui/src/timeline/ExpandedStack.test.tsx`                                           |
-| Exit holds equal their tokens                | `ToolbarStripRail.test.tsx`, `TabPresenceStack.test.tsx`                                    |
-| Reduced motion creates no transitions        | `apps/live/app/reduced-motion.test.ts`                                                      |
-| Canvas entry keeps 360ms                     | `apps/live/app/canvas-motion.test.ts`, `apps/live/components/canvas/canvas-motion.test.tsx` |
-| Chrome animations settle in 250ms at runtime | `apps/live/e2e/motion-budget.spec.ts`                                                       |
+| Rule                                         | Test                                                                                             |
+| -------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| Tokens match their constants                 | `packages/tailwind-config/src/motion.test.ts`                                                    |
+| `cascadeDelayMs` caps and clamps             | `packages/tailwind-config/src/motion.test.ts`                                                    |
+| Bounds for literals, `var`, `min`, `calc`    | `packages/tailwind-config/src/motion-budget.test.ts`                                             |
+| Stylesheet: ceiling, hover, ambient, delay   | `packages/tailwind-config/src/motion-budget.test.ts`                                             |
+| Source: classes, hover, inline, templates    | `packages/tailwind-config/src/motion-budget.test.ts`                                             |
+| The shared theme is within budget            | `packages/tailwind-config/src/theme-budget.test.ts`                                              |
+| Each workspace is within budget              | `motion-budget.test.ts` in live, help, marketing, telemetry, community, ui and template-previews |
+| Timeline cascades use the shared cap         | `packages/ui/src/timeline/ExpandedStack.test.tsx`                                                |
+| Exit holds equal their tokens                | `ToolbarStripRail.test.tsx`, `TabPresenceStack.test.tsx`                                         |
+| Reduced motion creates no transitions        | `apps/live/app/reduced-motion.test.ts`                                                           |
+| Canvas entry keeps 360ms                     | `apps/live/app/canvas-motion.test.ts`, `apps/live/components/canvas/canvas-motion.test.tsx`      |
+| Chrome animations settle in 250ms at runtime | `apps/live/e2e/motion-budget.spec.ts`                                                            |
 
 ### The runtime guard
 

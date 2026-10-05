@@ -30,8 +30,9 @@ marketing/   off-site copy + media for listings and promotion (see docs/specs/01
 - **API** at `/api/*` is a Cloudflare Worker (REST + WebSocket realtime room per document, backed by D1).
 - **Telemetry** at `/telemetry` is the public anonymous-events dashboard (off in OSS forks by default).
 - **Help** at `/help` is the static help centre (guides, feature docs, troubleshooting).
+- **Community** at `/community` is the public gallery of shared documents: browse, like and copy what people publish ([Community](docs/specs/025-community/community.md)).
 - **MCP** at `mcp.livediagram.app` is a Cloudflare Worker that exposes the document tools to AI clients (Claude and other MCP hosts) over OAuth — its own host, not a router path.
-- **Router** stitches the five under one hostname.
+- **Router** stitches the six under one hostname.
 - **CLI** (`apps/cli`) is `livediagram`, the command line agents and scripts read, lint and change documents with; it runs from source for now ([CLI](docs/specs/015-api/cli.md)).
 
 The whole stack runs on Cloudflare Workers (Static Assets for the Next.js apps). There's no Node-hosted backend, no SSR, no Next.js API routes.
