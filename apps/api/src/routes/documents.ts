@@ -4,6 +4,7 @@
 // under a document id lives here.
 
 import { readSeedItems, seedItems } from './item-routes';
+import { validateItemTypeCatalogue, type ItemTypeCatalogue } from '@livediagram/items';
 import type { Tab } from '@livediagram/document';
 import { isValidTab, migrateIncomingTab } from '@livediagram/document';
 import { capStoredName } from '../names';
@@ -204,6 +205,15 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
       if (typeof body.presentation === 'string' && body.presentation.length > MAX_DECK_LEN) {
         return badRequest('presentation too large');
       }
+      // A type catalogue a copy, a sync or a Drive import carries (docs/specs/025-plan/item-types.md
+      // "Storage and sync"), validated as the item-types route does; a bad one refuses the create.
+      let itemTypes: ItemTypeCatalogue | null = null;
+      if (body.itemTypes !== undefined && body.itemTypes !== null) {
+        const checked = validateItemTypeCatalogue(body.itemTypes);
+        if (!checked.ok)
+          return json({ error: 'item_types_invalid', reason: checked.reason }, { status: 400 });
+        itemTypes = checked.catalogue;
+      }
       // Where the document is filed, decided before the write and written by it
       // (docs/specs/013-workspace/folders.md "Placement on create"). An invalid placement refuses
       // the create by name; it never files the document somewhere else. A re-commit of the
@@ -258,6 +268,7 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
         presentation:
           seeded?.presentation ??
           (typeof body.presentation === 'string' ? body.presentation : null),
+        itemTypes,
         // Provenance (docs/specs/013-workspace/folders.md): only the closed set of generated sources
         // is accepted; anything else (or absent) is a user-made document.
         source: isDocumentSource(body.source) ? body.source : null,

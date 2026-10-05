@@ -8,26 +8,26 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import type { ShapeElement } from '@livediagram/document';
 import {
+  ITEM_TYPES,
   cardIsFaceDown,
-  itemAccessibleName,
   normaliseBoardSetup,
   projectBoard,
   votesSpent,
   type Item,
-  type ItemMove,
-  type LaneHead,
   type QuickFilter,
+  type BoardScope,
 } from '@livediagram/items';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { track } from '@/lib/telemetry';
-import { usePlanCardDrag, type PlanDropSlot } from '@/hooks/plan/usePlanCardDrag';
+import { usePlanBoardDrop } from '@/hooks/plan/usePlanBoardDrop';
+import { laneMove } from './plan-board-moves';
+import { LaneRow, PlanBoardCard } from './PlanBoardCells';
 import { usePlan } from './PlanContext';
 import { PlanBoardHeader } from './PlanBoardHeader';
 import { PlanCardFace, myVotes } from './PlanCardFace';
 import { PlanQuickAdd } from './PlanQuickAdd';
 import { planBoardKey } from './plan-board-keys';
-import { planPalette, type PlanPalette } from './plan-palette';
-import { PersonDisc } from './PersonDisc';
+import { planPalette } from './plan-palette';
 
 // Each column is at least this wide (blueprint DEFAULTS D7); a narrower board scrolls sideways.
 export const PLAN_COLUMN_MIN_PX = 220;
@@ -35,17 +35,24 @@ export const PLAN_COLUMN_MIN_PX = 220;
 const stop = (e: { stopPropagation: () => void }) => e.stopPropagation();
 const NO_ITEMS: ReadonlyMap<string, Item> = new Map();
 
-function laneMove(lane: LaneHead | undefined): Pick<ItemMove, 'set' | 'clear' | 'type'> {
-  if (!lane || !lane.field) return {};
-  if (lane.field === 'type') return typeof lane.value === 'string' ? { type: lane.value } : {};
-  return lane.value === null ? { clear: [lane.field] } : { set: { [lane.field]: lane.value } };
-}
-
 export function PlanBoardView({ element }: { element: ShapeElement }) {
   const plan = usePlan();
   const surface = useCanvasSurface();
   const palette = planPalette(surface);
-  const setup = useMemo(() => normaliseBoardSetup(element.planBoard), [element.planBoard]);
+  const types = plan?.types ?? ITEM_TYPES;
+  // A scope naming a type the catalogue no longer has drops it (docs/specs/025-plan/item-types.md
+  // "Editing a type"); a scope left with none shows every type.
+  const setup = useMemo(() => {
+    const read = normaliseBoardSetup(element.planBoard);
+    const scoped = read?.scope.types?.filter((t) => types.some((x) => x.id === t));
+    if (!read || !read.scope.types || scoped?.length === read.scope.types.length) return read;
+    const scope: BoardScope = scoped?.length
+      ? { ...read.scope, types: scoped }
+      : read.scope.label
+        ? { label: read.scope.label }
+        : {};
+    return { ...read, scope };
+  }, [element.planBoard, types]);
   const [quick, setQuick] = useState<QuickFilter>({});
   const [adding, setAdding] = useState<{ status: string; laneKey: string } | null>(null);
   const [collapsed, setCollapsed] = useState<ReadonlySet<string>>(new Set());
@@ -54,29 +61,21 @@ export function PlanBoardView({ element }: { element: ShapeElement }) {
   const focusNextRef = useRef<string | null>(null);
   const items = plan?.items ?? NO_ITEMS;
   const projection = useMemo(
-    () => (setup ? projectBoard(setup, items, quick) : null),
-    [setup, items, quick],
+    () => (setup ? projectBoard(setup, items, quick, types) : null),
+    [setup, items, quick, types],
   );
   const interactive = !!plan?.planInput;
   const canEdit = !!plan?.canEdit;
 
-  const drag = usePlanCardDrag({
+  const { drag, incoming } = usePlanBoardDrop({
+    element,
     boardRef,
-    enabled: interactive && canEdit,
-    onClick: (id) => plan?.openItem(id),
-    onDrop: (id, slot) => drop(id, slot),
-    onDropOutside: (id, clientX, clientY) => {
-      const rect = boardRef.current?.getBoundingClientRect();
-      if (!rect || !plan) return;
-      const scale = element.width / rect.width;
-      plan.placeCardOut(
-        id,
-        element.x + (clientX - rect.left) * scale,
-        element.y + (clientY - rect.top) * scale,
-      );
-      plan.announce('Card placed on the canvas');
-    },
-    onDragging: (id) => plan?.setDragging(id),
+    plan,
+    setup,
+    projection,
+    items,
+    interactive,
+    canEdit,
   });
 
   // A press on a card in Plan mode without edit rights still opens it.
@@ -139,38 +138,6 @@ export function PlanBoardView({ element }: { element: ShapeElement }) {
   const empty = !loading && projection.total === 0;
   const defaultType = setup.scope.types?.[0] ?? 'task';
 
-  function drop(itemId: string, slot: PlanDropSlot) {
-    if (!plan) return;
-    const item = items.get(itemId);
-    const lane = lanes.find((l) => l.key === slot.laneKey);
-    const sameCell =
-      item?.fields['status'] === slot.status &&
-      (!withLanes || lanesOfItem(itemId) === slot.laneKey);
-    if (sameCell && slot.beforeId === nextInCell(itemId)) return;
-    plan.moveItem(itemId, {
-      status: slot.status,
-      before: slot.beforeId,
-      ...(withLanes && lanesOfItem(itemId) !== slot.laneKey ? laneMove(lane) : {}),
-    });
-    const column = setup!.columns.find((c) => c.status === slot.status);
-    plan.announce(`Moved to ${column?.name ?? slot.status}`);
-  }
-
-  function lanesOfItem(itemId: string): string | undefined {
-    for (const c of projection!.columns)
-      for (const l of c.lanes) if (l.items.some((i) => i.id === itemId)) return l.laneKey;
-    return undefined;
-  }
-
-  function nextInCell(itemId: string): string | null {
-    for (const c of projection!.columns)
-      for (const l of c.lanes) {
-        const i = l.items.findIndex((x) => x.id === itemId);
-        if (i >= 0) return l.items[i + 1]?.id ?? null;
-      }
-    return null;
-  }
-
   const onCardKey = (item: Item, e: React.KeyboardEvent<HTMLElement>) => {
     if (!plan) return;
     const action = planBoardKey(projection, item.id, e.key, e.shiftKey, canEdit);
@@ -199,6 +166,7 @@ export function PlanBoardView({ element }: { element: ShapeElement }) {
   return (
     <div
       ref={boardRef}
+      data-plan-board={element.id}
       role="region"
       aria-label={setup.title}
       className="absolute inset-0 flex flex-col overflow-hidden rounded-xl border"
@@ -287,11 +255,21 @@ export function PlanBoardView({ element }: { element: ShapeElement }) {
                   ? null
                   : projection.columns.map((col) => {
                       const cell = col.lanes.find((l) => l.laneKey === lane.key)?.items ?? [];
+                      // The gap a card would land in: one dragged on this board, or one held
+                      // over it from another board.
+                      const held =
+                        dragging && !dragging.outside && dragging.slot
+                          ? {
+                              slot: dragging.slot,
+                              height: dragging.height,
+                              itemId: dragging.itemId,
+                            }
+                          : incoming;
                       const slotHere =
-                        dragging?.slot &&
-                        dragging.slot.status === col.column.status &&
-                        dragging.slot.laneKey === lane.key
-                          ? dragging.slot
+                        held &&
+                        held.slot.status === col.column.status &&
+                        held.slot.laneKey === lane.key
+                          ? held.slot
                           : null;
                       const isAdding =
                         adding?.status === col.column.status && adding.laneKey === lane.key;
@@ -323,8 +301,8 @@ export function PlanBoardView({ element }: { element: ShapeElement }) {
                               item={item}
                               palette={palette}
                               placeholderBefore={
-                                slotHere?.beforeId === item.id && dragging?.itemId !== item.id
-                                  ? dragging?.height
+                                slotHere?.beforeId === item.id && held?.itemId !== item.id
+                                  ? held?.height
                                   : undefined
                               }
                               lifted={dragging?.itemId === item.id}
@@ -351,7 +329,7 @@ export function PlanBoardView({ element }: { element: ShapeElement }) {
                           {slotHere && slotHere.beforeId === null ? (
                             <div
                               className="rounded-lg border-2 border-dashed"
-                              style={{ height: dragging!.height, borderColor: palette.focus }}
+                              style={{ height: held!.height, borderColor: palette.focus }}
                               aria-hidden
                             />
                           ) : null}
@@ -422,114 +400,5 @@ export function PlanBoardView({ element }: { element: ShapeElement }) {
           )
         : null}
     </div>
-  );
-}
-
-// A row of the board: with swimlanes, a labelled, collapsible band over its cells.
-function LaneRow({
-  lane,
-  withLanes,
-  span,
-  palette,
-  shut,
-  onToggle,
-  children,
-}: {
-  lane: LaneHead;
-  withLanes: boolean;
-  span: number;
-  palette: PlanPalette;
-  shut: boolean;
-  onToggle: () => void;
-  children: React.ReactNode;
-}) {
-  if (!withLanes) return <>{children}</>;
-  return (
-    <>
-      <button
-        type="button"
-        className="flex items-center gap-2 rounded-md px-1 pt-2 text-left text-[12px] font-semibold enabled:cursor-pointer"
-        style={{ gridColumn: `span ${span}`, color: palette.muted }}
-        aria-expanded={!shut}
-        onPointerDown={stop}
-        onClick={onToggle}
-      >
-        <span aria-hidden>{shut ? '▸' : '▾'}</span>
-        {lane.person ? <PersonDisc person={lane.person} /> : null}
-        <span style={{ color: palette.text }}>{lane.label}</span>
-      </button>
-      {children}
-    </>
-  );
-}
-
-// One card in a cell: a focusable list item that the pointer picks up in Plan mode.
-function PlanBoardCard({
-  item,
-  palette,
-  placeholderBefore,
-  lifted,
-  done,
-  setupFields,
-  faceDown,
-  voting,
-  presence,
-  interactive,
-  onPress,
-  onOpen,
-  onKey,
-}: {
-  item: Item;
-  palette: PlanPalette;
-  placeholderBefore: number | undefined;
-  lifted: boolean;
-  done: boolean;
-  setupFields: Parameters<typeof PlanCardFace>[0]['fields'];
-  faceDown: boolean;
-  voting: Parameters<typeof PlanCardFace>[0]['voting'];
-  presence: Parameters<typeof PlanCardFace>[0]['presence'];
-  interactive: boolean;
-  onPress: (id: string, e: React.PointerEvent<HTMLElement>) => void;
-  onOpen: () => void;
-  onKey: (item: Item, e: React.KeyboardEvent<HTMLElement>) => void;
-}) {
-  return (
-    <>
-      {placeholderBefore !== undefined ? (
-        <div
-          className="rounded-lg border-2 border-dashed"
-          style={{ height: placeholderBefore, borderColor: palette.focus }}
-          aria-hidden
-        />
-      ) : null}
-      <div
-        role="listitem"
-        tabIndex={0}
-        data-plan-card={item.id}
-        aria-label={faceDown ? 'Hidden card' : itemAccessibleName(item)}
-        className="rounded-lg outline-none transition-opacity focus-visible:ring-2"
-        style={{
-          opacity: lifted ? 0.35 : 1,
-          cursor: interactive ? 'grab' : undefined,
-          ['--tw-ring-color' as string]: palette.focus,
-        }}
-        onPointerDown={(e) => onPress(item.id, e)}
-        onDoubleClick={(e) => {
-          e.stopPropagation();
-          onOpen();
-        }}
-        onKeyDown={(e) => onKey(item, e)}
-      >
-        <PlanCardFace
-          item={item}
-          palette={palette}
-          fields={setupFields}
-          faceDown={faceDown}
-          muted={done}
-          presence={presence}
-          voting={faceDown ? undefined : voting}
-        />
-      </div>
-    </>
   );
 }

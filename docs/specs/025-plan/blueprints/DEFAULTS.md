@@ -13,3 +13,6 @@ One row per default applied where a spec is silent or qualitative.
 | D7  | plan-board | Column minimum width                       | 220 px; narrower boards scroll columns sideways                     |
 | D8  | plan-board | How item panel edits group for undo        | One step per field per 400 ms pause                                 |
 | D9  | plan-mode  | Where Boards and Cards sit                 | Directly after Popular, under a Plan band heading                   |
+| D10 | item-types | A new type's starting look and fields      | Cyan, star glyph; Title, Status, Description, Assignee              |
+| D11 | item-types | Longest Choice option                      | 40 characters                                                       |
+| D12 | item-types | Field reordering in the type editor        | ↑ and ↓ buttons per row (drag is for the panel's type rows)         |

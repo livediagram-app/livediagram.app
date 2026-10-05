@@ -6,14 +6,28 @@
 // bodies far below the editor state. Undefined outside the editor (share view, exports): a board
 // then draws read-only from nothing.
 import { createContext, useContext } from 'react';
-import type { Item, ItemMove, ItemPatch, ItemPerson, PlanBoardSetup } from '@livediagram/items';
+import type {
+  Item,
+  ItemMove,
+  ItemPatch,
+  ItemPerson,
+  ItemTypeDef,
+  PlanBoardSetup,
+} from '@livediagram/items';
 import type { PlanItemsStatus } from '@/hooks/plan/usePlanItems';
+import type { ItemTypesSlice } from '@/hooks/plan/useItemTypes';
 
 // Someone else's hands on a card: dragging it or reading it.
 export type PlanCardPresence = { name: string; color: string; state: 'drag' | 'view' };
 
 export type PlanContextValue = {
   items: ReadonlyMap<string, Item>;
+  // The document's item types, in order (docs/specs/025-plan/item-types.md).
+  types: readonly ItemTypeDef[];
+  // Their changes (the Card Types panel and the type editor).
+  itemTypes: ItemTypesSlice;
+  // Opens the type editor on a type, or on a new one.
+  editType: (typeId: string | 'new') => void;
   status: PlanItemsStatus;
   self: ItemPerson | null;
   // People who could be assigned (the room, and the people already on items).

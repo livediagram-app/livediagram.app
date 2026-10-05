@@ -1,6 +1,8 @@
 // The built-in item types (docs/specs/025-plan/items.md "Item types"). A type
 // names the fields its item panel offers; any item may still carry others.
-// `icon` is an id from the line-art icon catalogue (@livediagram/icons).
+// `glyph` is an id from the Plan glyph set (glyphs.ts). A document may replace this
+// catalogue with its own (type-catalogue.ts, docs/specs/025-plan/item-types.md).
+import type { PlanGlyphId } from './glyphs';
 
 export type ItemFieldId =
   | 'title'
@@ -15,15 +17,40 @@ export type ItemFieldId =
   | 'parent'
   | 'votes';
 
+// A field a person adds to a type (docs/specs/025-plan/item-types.md "An item type"): its value is
+// an ordinary entry in the item's `fields`, under `id`.
+export const CUSTOM_FIELD_KINDS = [
+  'text',
+  'longtext',
+  'number',
+  'date',
+  'checkbox',
+  'link',
+  'choice',
+] as const;
+export type CustomFieldKind = (typeof CUSTOM_FIELD_KINDS)[number];
+
+export interface CustomFieldDef {
+  id: string;
+  label: string;
+  kind: CustomFieldKind;
+  // Choice's options, in order.
+  options?: readonly string[];
+  // Drawn on the card face, after the board's card fields.
+  onCard?: boolean;
+}
+
 export interface ItemTypeDef {
   id: string;
   label: string;
   // The title a new item of this type gets from a palette tile.
   newTitle: string;
-  icon: string;
+  glyph: PlanGlyphId | string;
   // The stripe and glyph colour on a card face.
   color: string;
-  fields: readonly ItemFieldId[];
+  // The fields its item panel offers, in order: built-in field ids and its custom fields' ids.
+  fields: readonly string[];
+  custom?: readonly CustomFieldDef[];
 }
 
 const WORK: readonly ItemFieldId[] = [
@@ -44,7 +71,7 @@ export const ITEM_TYPES = [
     id: 'task',
     label: 'Task',
     newTitle: 'New task',
-    icon: 'check-circle',
+    glyph: 'task',
     color: '#2563eb',
     fields: WORK,
   },
@@ -52,7 +79,7 @@ export const ITEM_TYPES = [
     id: 'story',
     label: 'Story',
     newTitle: 'New story',
-    icon: 'book',
+    glyph: 'story',
     color: '#16a34a',
     fields: WORK,
   },
@@ -60,7 +87,7 @@ export const ITEM_TYPES = [
     id: 'bug',
     label: 'Bug',
     newTitle: 'New bug',
-    icon: 'alert-octagon',
+    glyph: 'bug',
     color: '#dc2626',
     fields: WORK,
   },
@@ -68,7 +95,7 @@ export const ITEM_TYPES = [
     id: 'epic',
     label: 'Epic',
     newTitle: 'New epic',
-    icon: 'layers',
+    glyph: 'epic',
     color: '#7c3aed',
     fields: ['title', 'description', 'status', 'assignee', 'priority', 'due', 'labels'],
   },
@@ -76,7 +103,7 @@ export const ITEM_TYPES = [
     id: 'note',
     label: 'Note',
     newTitle: 'New note',
-    icon: 'message',
+    glyph: 'note',
     color: '#d97706',
     fields: ['title', 'description', 'status', 'votes'],
   },
@@ -84,7 +111,7 @@ export const ITEM_TYPES = [
     id: 'idea',
     label: 'Idea',
     newTitle: 'New idea',
-    icon: 'zap',
+    glyph: 'idea',
     color: '#0d9488',
     fields: ['title', 'description', 'status', 'votes', 'labels'],
   },
@@ -92,7 +119,7 @@ export const ITEM_TYPES = [
     id: 'action',
     label: 'Action',
     newTitle: 'New action',
-    icon: 'target',
+    glyph: 'action',
     color: '#db2777',
     fields: ['title', 'status', 'assignee', 'due'],
   },
@@ -100,7 +127,7 @@ export const ITEM_TYPES = [
     id: 'risk',
     label: 'Risk',
     newTitle: 'New risk',
-    icon: 'alert-triangle',
+    glyph: 'risk',
     color: '#ea580c',
     fields: ['title', 'description', 'status', 'priority', 'assignee'],
   },
@@ -115,7 +142,7 @@ export const FALLBACK_ITEM_TYPE: ItemTypeDef = {
   id: 'item',
   label: 'Item',
   newTitle: 'New item',
-  icon: 'file',
+  glyph: 'item',
   color: '#64748b',
   fields: ['title', 'description', 'status', 'assignee', 'labels'],
 };

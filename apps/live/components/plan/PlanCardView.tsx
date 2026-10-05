@@ -52,7 +52,7 @@ export function PlanCardView({ element }: { element: ShapeElement }) {
       className="absolute inset-0"
       role="button"
       tabIndex={-1}
-      aria-label={itemAccessibleName(item)}
+      aria-label={itemAccessibleName(item, plan?.types)}
       onClick={(e) => {
         if (!plan?.planInput) return;
         e.stopPropagation();

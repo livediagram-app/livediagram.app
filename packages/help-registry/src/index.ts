@@ -1256,6 +1256,16 @@ export const articles: Article[] = [
     parentSlug: 'plan-mode',
   },
   {
+    slug: 'card-types',
+    title: 'Card types',
+    description: 'Your own kinds of card on Plan boards: name, colour, glyph and custom fields.',
+    keywords:
+      'card type types item type types custom type kind kinds category ticket type issue type template fields custom field fields property properties attribute column choice dropdown select option options checkbox tick link url number date text long text show on card colour color glyph icon reorder delete restore built-in',
+    category: 'Canvas',
+    categorySlug: 'canvas/plan-mode',
+    parentSlug: 'plan-mode',
+  },
+  {
     slug: 'illustrate',
     title: 'Illustrate Mode',
     description:

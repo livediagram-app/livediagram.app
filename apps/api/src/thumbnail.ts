@@ -14,6 +14,7 @@
 
 import { embedTabImages } from '@livediagram/api-schema';
 import { migrateStoredTab, renderElementsToSvg, type Tab } from '@livediagram/document';
+import { typesOf } from '@livediagram/items';
 // Static-import icon resolver (bundle size is fine in a Worker) so icon
 // elements render their real glyph in the snapshot / live image instead of
 // the renderer's box-with-label fallback.
@@ -48,7 +49,7 @@ const IMAGE_EMBED_BUDGET_BYTES = 3 * 1024 * 1024;
 // caller that already read it alongside the document row (the Explorer
 // thumbnail route, via getDocumentThumbMeta) passes it and saves a query;
 // one that didn't leaves it out and it is read here.
-export type ThumbnailSubject = Pick<DocumentDTO, 'id' | 'name' | 'savedAt'> & {
+export type ThumbnailSubject = Pick<DocumentDTO, 'id' | 'name' | 'savedAt' | 'itemTypes'> & {
   thumbRenderedAt?: number | null;
 };
 
@@ -216,6 +217,8 @@ async function renderTabBodyToSvg(
     resolveIconArt: resolveIconExportArt,
     resolveStickerArt,
     items,
+    // Custom types keep their colours (docs/specs/025-plan/item-types.md).
+    itemTypes: plan ? typesOf(liveDoc.itemTypes) : undefined,
   });
 }
 

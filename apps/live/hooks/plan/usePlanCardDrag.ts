@@ -5,8 +5,10 @@
 // (open the item). While dragging, a copy follows the pointer and the slot it would land in is
 // read from the board's own DOM under the pointer: the column (`data-plan-status`), the row
 // (`data-plan-lane`) and the cards there (`data-plan-card`), so the hit test can never disagree
-// with what is drawn. A drop off the board leaves a Plan card on the canvas.
+// with what is drawn. A drop on another board moves the item there (its column, and its row when
+// that board has rows); a drop on the canvas leaves a Plan card there.
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { otherPlanBoardAt, planBoardTarget } from './plan-board-targets';
 
 // A press that moves this far (screen px) is a drag, not a click: the canvas's own threshold.
 export const PLAN_DRAG_SLOP_PX = 4;
@@ -29,6 +31,8 @@ export type PlanDragState = {
   height: number;
   slot: PlanDropSlot | null;
   outside: boolean;
+  // Another board under the pointer: its element id, and whether it shows this item.
+  target: { boardId: string; accepts: boolean } | null;
 };
 
 type Pressed = {
@@ -66,10 +70,14 @@ export function dropSlotAt(
 
 export function usePlanCardDrag(opts: {
   boardRef: React.RefObject<HTMLElement | null>;
+  // This board's element id, so another board under the pointer can be told apart from it.
+  boardId: string;
   enabled: boolean;
   onClick: (itemId: string) => void;
   onDrop: (itemId: string, slot: PlanDropSlot) => void;
   onDropOutside: (itemId: string, clientX: number, clientY: number) => void;
+  // A drop on a board that does not show the item: nothing moves; the reason is announced.
+  onRefused: (message: string) => void;
   onDragging: (itemId: string | null) => void;
 }) {
   const { boardRef, enabled } = opts;
@@ -81,12 +89,19 @@ export function usePlanCardDrag(opts: {
   const [drag, setDrag] = useState<PlanDragState | null>(null);
   const dragRef = useRef<PlanDragState | null>(null);
 
+  // Tells the board last hovered that the card has left it.
+  const leaveTarget = useCallback(() => {
+    const boardId = dragRef.current?.target?.boardId;
+    if (boardId) planBoardTarget(boardId)?.hover(null);
+  }, []);
+
   const end = useCallback(() => {
+    leaveTarget();
     pressedRef.current = null;
     dragRef.current = null;
     setDrag(null);
     optsRef.current.onDragging(null);
-  }, []);
+  }, [leaveTarget]);
 
   useEffect(() => {
     const onMove = (e: PointerEvent) => {
@@ -99,6 +114,20 @@ export function usePlanCardDrag(opts: {
       const b = board.getBoundingClientRect();
       const outside =
         e.clientX < b.left || e.clientX > b.right || e.clientY < b.top || e.clientY > b.bottom;
+      const other = outside
+        ? otherPlanBoardAt(e.clientX, e.clientY, optsRef.current.boardId)
+        : null;
+      const accepts = !!other && !!planBoardTarget(other.id)?.accepts(p.itemId);
+      const otherSlot =
+        other && accepts ? dropSlotAt(other.el, e.clientX, e.clientY, p.itemId) : null;
+      if (dragRef.current?.target && dragRef.current.target.boardId !== other?.id) leaveTarget();
+      if (other && otherSlot) {
+        planBoardTarget(other.id)?.hover({
+          itemId: p.itemId,
+          slot: otherSlot,
+          height: p.rect.height,
+        });
+      } else if (other) planBoardTarget(other.id)?.hover(null);
       const next: PlanDragState = {
         itemId: p.itemId,
         clientX: e.clientX,
@@ -107,8 +136,9 @@ export function usePlanCardDrag(opts: {
         offsetY: p.startY - p.rect.top,
         width: p.rect.width,
         height: p.rect.height,
-        slot: outside ? null : dropSlotAt(board, e.clientX, e.clientY, p.itemId),
+        slot: outside ? otherSlot : dropSlotAt(board, e.clientX, e.clientY, p.itemId),
         outside,
+        target: other ? { boardId: other.id, accepts } : null,
       };
       dragRef.current = next;
       setDrag(next);
@@ -117,8 +147,12 @@ export function usePlanCardDrag(opts: {
       const p = pressedRef.current;
       if (!p || e.pointerId !== p.pointerId) return;
       const d = dragRef.current;
+      const target = d?.target ? planBoardTarget(d.target.boardId) : undefined;
       if (!d) optsRef.current.onClick(p.itemId);
-      else if (d.outside) optsRef.current.onDropOutside(d.itemId, e.clientX, e.clientY);
+      else if (d.target && target) {
+        if (!d.target.accepts) optsRef.current.onRefused(target.refusal());
+        else if (d.slot) target.drop(d.itemId, d.slot);
+      } else if (d.outside) optsRef.current.onDropOutside(d.itemId, e.clientX, e.clientY);
       else if (d.slot) optsRef.current.onDrop(d.itemId, d.slot);
       end();
     };
@@ -138,7 +172,7 @@ export function usePlanCardDrag(opts: {
       window.removeEventListener('pointercancel', end);
       window.removeEventListener('keydown', onKey, true);
     };
-  }, [boardRef, end]);
+  }, [boardRef, end, leaveTarget]);
 
   // A press on a card: taken from the canvas (no board drag, no selection change).
   const onCardPointerDown = useCallback(

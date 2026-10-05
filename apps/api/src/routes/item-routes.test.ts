@@ -405,3 +405,90 @@ describe('documents and items', () => {
     expect(await db.listItems(sql.env, 'd1')).toEqual([]);
   });
 });
+
+// docs/specs/025-plan/item-types.md "Storage and sync".
+describe('the type catalogue', () => {
+  const catalogue = {
+    version: 1,
+    types: [
+      {
+        id: 'customer-call',
+        label: 'Customer call',
+        color: '#0891b2',
+        glyph: 'chat',
+        fields: ['description', 'f-outcome'],
+        custom: [{ id: 'f-outcome', label: 'Outcome', kind: 'choice', options: ['Won', 'Lost'] }],
+      },
+    ],
+  };
+  const put = (itemTypes: unknown, extra: Partial<Call> = {}) =>
+    call<{ itemTypes: unknown }>({
+      method: 'PUT',
+      path: '/item-types',
+      body: { itemTypes },
+      ...extra,
+    });
+
+  it('stores a catalogue normalised, relays it, and the document carries it', async () => {
+    const res = await put(catalogue);
+    expect(res.status).toBe(200);
+    const stored = (res.body.itemTypes as { types: { fields: string[]; newTitle: string }[] })
+      .types[0]!;
+    expect(stored.fields).toEqual(['title', 'status', 'description', 'f-outcome']);
+    expect(stored.newTitle).toBe('New customer call');
+    expect(relayed).toEqual([
+      { op: { kind: 'item-types', itemTypes: res.body.itemTypes }, ordered: true },
+    ]);
+    expect((await db.getDocument(sql.env, 'd1'))?.itemTypes).toEqual(res.body.itemTypes);
+  });
+
+  it('goes back to the built-in types on null', async () => {
+    await put(catalogue);
+    expect((await put(null)).body).toEqual({ itemTypes: null });
+    expect((await db.getDocument(sql.env, 'd1'))?.itemTypes).toBeNull();
+  });
+
+  it('refuses a catalogue by name and keeps the last good one', async () => {
+    await put(catalogue);
+    const bad = await put({ ...catalogue, types: [{ ...catalogue.types[0], glyph: 'unicorn' }] });
+    expect(bad.status).toBe(400);
+    expect(bad.body).toEqual({ error: 'item_types_invalid', reason: 'types[0].glyph' });
+    expect((await put(undefined)).status).toBe(400);
+    expect((await db.getDocument(sql.env, 'd1'))?.itemTypes?.types[0]?.id).toBe('customer-call');
+  });
+
+  it('needs edit access to the whole document', async () => {
+    expect((await put(catalogue, { owner: 'v', code: 'VIEW' })).status).toBe(403);
+    expect((await put(catalogue, { owner: 'v', code: 'TAB1' })).status).toBe(403);
+    expect((await put(catalogue, { owner: 'v', code: 'EDIT' })).status).toBe(200);
+    expect((await call({ method: 'GET', path: '/item-types' })).status).toBe(405);
+  });
+
+  it('travels with a copy', async () => {
+    await put(catalogue);
+    await db.copyDocument(sql.env, 'd1', 'd5', 'owner', 'Copy');
+    expect((await db.getDocument(sql.env, 'd5'))?.itemTypes?.types[0]?.id).toBe('customer-call');
+  });
+});
+
+describe('a create carrying a type catalogue', () => {
+  const create = (itemTypes: unknown) =>
+    makeTestRouteContext('POST', '/api/documents', {
+      env: sql.env,
+      owner: 'owner',
+      body: { id: 'd9', name: 'Synced', tabs: [], itemTypes },
+    });
+  const types = {
+    version: 1,
+    types: [{ id: 'risk', label: 'Risk', color: '#ea580c', glyph: 'risk', fields: [] }],
+  };
+
+  it('keeps a valid one and refuses a bad one by name', async () => {
+    expect((await handleDocuments(create({ ...types, version: 9 }))).status).toBe(400);
+    expect((await handleDocuments(create(types))).status).toBeLessThan(300);
+    expect((await db.getDocument(sql.env, 'd9'))?.itemTypes?.types[0]?.fields).toEqual([
+      'title',
+      'status',
+    ]);
+  });
+});

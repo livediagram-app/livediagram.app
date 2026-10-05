@@ -16,6 +16,7 @@ import type { DocumentSource } from './document-source';
 import type { DriveMode } from './drive';
 import type { BackgroundPattern, EditorMode, ShapeKind, Tab } from '@livediagram/document';
 import type { CreationTabKind, TemplateFamily } from './placement-defaults';
+import type { ItemTypeCatalogue } from '@livediagram/items';
 
 export type { AvatarClothing, AvatarConfig, AvatarGender, AvatarHair, AvatarSize } from './avatar';
 
@@ -55,6 +56,10 @@ export type LiveDoc = {
   // has no use for their decks, and a deck is the one metadata field that can
   // grow with the document.
   presentation: string | null;
+  // The document's type catalogue (docs/specs/025-plan/item-types.md): its own item types, or null
+  // (or absent, from an older client or record) for the built-in ones. Written only by
+  // PUT /documents/:id/item-types.
+  itemTypes?: ItemTypeCatalogue | null;
   savedAt: number;
   createdAt: number;
   // Owner's display name + avatar colour, joined server-side from the

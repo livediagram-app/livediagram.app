@@ -7,7 +7,7 @@
 
 import type { Tab } from './index';
 import type { Tab } from '@livediagram/document';
-import type { Item } from '@livediagram/items';
+import { readItemTypeCatalogue, type Item, type ItemTypeCatalogue } from '@livediagram/items';
 
 export const DOCUMENT_ENVELOPE_KIND = 'livediagram.document';
 export const DOCUMENT_SCHEMA_VERSION = 1;
@@ -26,6 +26,8 @@ export type DocumentEnvelope = {
     // The item store (docs/specs/025-plan/items.md "Copies and exports"). Optional and additive,
     // so a file written before items, or read by a build before them, stays version 1.
     items?: Item[];
+    // The type catalogue (docs/specs/025-plan/item-types.md), the same way: optional and additive.
+    itemTypes?: ItemTypeCatalogue;
   };
 };
 
@@ -37,6 +39,7 @@ export function documentToEnvelopeText(
   tabs: EnvelopeTab[],
   exportedAt: number,
   items: Item[] = [],
+  itemTypes: ItemTypeCatalogue | null = null,
 ): string {
   const envelope: DocumentEnvelope = {
     kind: DOCUMENT_ENVELOPE_KIND,
@@ -48,6 +51,7 @@ export function documentToEnvelopeText(
       presentation: liveDoc.presentation,
       tabs,
       ...(items.length ? { items } : {}),
+      ...(itemTypes ? { itemTypes } : {}),
     },
   };
   return JSON.stringify(envelope, null, 2);
@@ -106,6 +110,7 @@ export function parseDocumentEnvelope(
   ) {
     return { ok: false, failure: 'malformed' };
   }
+  const itemTypes = readItemTypeCatalogue(d.itemTypes);
   return {
     ok: true,
     envelope: {
@@ -119,6 +124,8 @@ export function parseDocumentEnvelope(
         tabs: d.tabs,
         // Items that do not look like items are left behind; the api validates the rest.
         ...(Array.isArray(d.items) ? { items: d.items.filter(isItemLike) } : {}),
+        // A catalogue that does not read back is left behind: the built-in types stand.
+        ...(itemTypes ? { itemTypes } : {}),
       },
     },
   };

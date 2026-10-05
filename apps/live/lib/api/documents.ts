@@ -1,6 +1,6 @@
 // Document-level calls: load / create / save-meta / delete / list, the
 // copy-into-my-files flow, and the "Shared with you" list.
-import type { ItemCreate } from '@livediagram/items';
+import type { ItemCreate, ItemTypeCatalogue } from '@livediagram/items';
 import {
   DOCUMENT_CONVERSION_HEADER,
   scalableSnapshotSvg,
@@ -171,6 +171,8 @@ export async function apiCreateDocument(
     markUsed?: boolean;
     // Seed items (docs/specs/025-plan/items.md): a Plan template's, or an offline document's on sync.
     items?: ItemCreate[];
+    // The type catalogue (docs/specs/025-plan/item-types.md): a copy's, a sync's or a Drive file's.
+    itemTypes?: ItemTypeCatalogue | null;
   },
   // Set by the Offline Mode sync path (docs/specs/006-document/offline-mode.md). A sync is a plain POST, so
   // without this the worker records it as a brand-new document being created.

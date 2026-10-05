@@ -9,6 +9,8 @@ import { normaliseBoardSetup, itemStatus, type PlanBoardSetup } from '@livediagr
 import type { PlanSlice } from '@/hooks/plan/usePlanSlice';
 import { BoardSetupPanel, trackSetup } from './BoardSetupPanel';
 import { ItemPanel } from './ItemPanel';
+import { ItemTypeEditor } from './ItemTypeEditor';
+import { track } from '@/lib/telemetry';
 
 function boardsOf(elements: readonly Element[]): { id: string; setup: PlanBoardSetup }[] {
   return elements.flatMap((el) => {
@@ -38,12 +40,44 @@ export function PlanSheetsHost({
     [ctx.items],
   );
   const item = plan.openItemId ? ctx.items.get(plan.openItemId) : undefined;
+  // The type editor (docs/specs/025-plan/item-types.md "Editing a type").
+  if (plan.editingTypeId && ctx.canEdit) {
+    const editing =
+      plan.editingTypeId === 'new' ? null : ctx.types.find((t) => t.id === plan.editingTypeId);
+    if (plan.editingTypeId === 'new' || editing) {
+      const ofType = editing ? [...ctx.items.values()].filter((i) => i.type === editing.id) : [];
+      return (
+        <ItemTypeEditor
+          key={plan.editingTypeId}
+          type={editing ?? null}
+          types={ctx.types}
+          itemCount={ofType.length}
+          canDelete={ctx.types.length > 1}
+          onSave={(next) => {
+            ctx.itemTypes.saveType(next);
+            track('Plan', editing ? 'Changed' : 'Added', 'CardType');
+            plan.closeTypeEditor();
+          }}
+          onDelete={(moveTo) => {
+            if (!editing) return;
+            if (moveTo) for (const it of ofType) ctx.patchItem(it.id, { type: moveTo });
+            ctx.itemTypes.deleteType(editing.id);
+            track('Plan', 'Deleted', 'CardType');
+            ctx.announce(`${editing.label} deleted`);
+            plan.closeTypeEditor();
+          }}
+          onClose={plan.closeTypeEditor}
+        />
+      );
+    }
+  }
   const board = plan.setupBoardId ? boards.find((b) => b.id === plan.setupBoardId) : undefined;
   if (item) {
     return (
       <ItemPanel
         key={item.id}
         item={item}
+        types={ctx.types}
         statuses={statuses}
         epics={epics}
         people={ctx.people}
@@ -65,6 +99,7 @@ export function PlanSheetsHost({
       <BoardSetupPanel
         key={board.id}
         setup={board.setup}
+        types={ctx.types}
         items={ctx.items}
         onChange={(next, part) => {
           ctx.updateBoard(board.id, next);

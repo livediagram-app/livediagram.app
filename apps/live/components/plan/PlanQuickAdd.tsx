@@ -4,7 +4,8 @@
 // press Enter; the field stays open for the next one. `@sam`, `#label`, `!high`, `~3` and a leading
 // `bug:` fill the item in, each shown as a chip as it is recognised. Escape closes it.
 import { useEffect, useRef, useState } from 'react';
-import { itemTypeOf, parseQuickAdd, type ItemPerson } from '@livediagram/items';
+import { ITEM_TYPES, parseQuickAdd, typeIn, type ItemPerson } from '@livediagram/items';
+import { usePlan } from './PlanContext';
 import type { PlanPalette } from './plan-palette';
 
 export function PlanQuickAdd({
@@ -26,7 +27,8 @@ export function PlanQuickAdd({
 }) {
   const [text, setText] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
-  const parsed = parseQuickAdd(text, people);
+  const types = usePlan()?.types ?? ITEM_TYPES;
+  const parsed = parseQuickAdd(text, people, types);
   useEffect(() => {
     if (autoFocus) inputRef.current?.focus({ preventScroll: true });
   }, [autoFocus]);
@@ -73,7 +75,7 @@ export function PlanQuickAdd({
               style={{ backgroundColor: palette.column, color: palette.text }}
             >
               {t.kind === 'type'
-                ? itemTypeOf(t.type).label
+                ? typeIn(types, t.type).label
                 : t.kind === 'assignee'
                   ? t.person.name
                   : t.kind === 'label'

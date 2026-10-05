@@ -54,6 +54,8 @@ export async function saveOfflineToCloud(offlineId: string, ownerId: string): Pr
         presentation: rec.presentation ?? null,
         // The item store, in each column's order (docs/specs/025-plan/items.md "Offline documents").
         items: storeAsCreates(rec.items ?? []),
+        // And its type catalogue (docs/specs/025-plan/item-types.md "Storage and sync").
+        itemTypes: rec.itemTypes ?? null,
       },
       { conversion: 'sync' },
     );
@@ -142,6 +144,7 @@ export async function takeCloudOffline(
     tabs,
     ...(liveDoc.presentation ? { presentation: liveDoc.presentation } : {}),
     ...(starred ? { favourite: true } : {}),
+    ...(liveDoc.itemTypes ? { itemTypes: liveDoc.itemTypes } : {}),
     ...(itemStore.items.length
       ? { items: itemStore.items, itemsRev: itemStore.rev, itemsNextKey: itemStore.nextKey }
       : {}),

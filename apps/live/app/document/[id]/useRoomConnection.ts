@@ -13,6 +13,7 @@ import {
   type AvatarPresence,
   type ChangesetRoomOp,
   type ItemsRoomOp,
+  type ItemTypesRoomOp,
   type FacilitatorReason,
   type LivePoll,
 } from '@livediagram/api-schema';
@@ -146,6 +147,8 @@ export function useRoomConnection(opts: {
   receiveChangeset: (op: ChangesetRoomOp) => void;
   // Item writes the api made (docs/specs/025-plan/items.md "Live for everyone"). System-only.
   receiveItems: (op: ItemsRoomOp) => void;
+  // A stored type catalogue (docs/specs/025-plan/item-types.md "Storage and sync"). System-only.
+  receiveItemTypes: (op: ItemTypesRoomOp) => void;
   // A peer's hands on a Plan card (docs/specs/025-plan/plan-board.md). Presence.
   receivePlanPresence: (
     from: string,
@@ -194,6 +197,7 @@ export function useRoomConnection(opts: {
     resyncFromServer,
     receiveChangeset,
     receiveItems,
+    receiveItemTypes,
     receivePlanPresence,
     onRoomJoined,
   } = opts;
@@ -487,6 +491,10 @@ export function useRoomConnection(opts: {
         // Item writes (docs/specs/025-plan/items.md). System-only: items change only through the api,
         // and the room refuses this op from a client socket.
         if (from === 'system') receiveItems(op);
+      } else if (op.kind === 'item-types') {
+        // The type catalogue (docs/specs/025-plan/item-types.md). System-only: it changes only through
+        // the api.
+        if (from === 'system') receiveItemTypes(op);
       } else if (op.kind === 'document-trashed') {
         // The document went to the Trash. System-only, like the share ops:
         // the room refuses it from a client socket.

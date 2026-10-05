@@ -7,7 +7,6 @@
 import { useState } from 'react';
 import {
   CARD_FIELDS,
-  ITEM_TYPES,
   PLAN_COLUMNS_MAX,
   SWIMLANE_BY,
   itemStatus,
@@ -16,6 +15,7 @@ import {
   type PlanBoardSetup,
   type PlanColumn,
   type SwimlaneBy,
+  type ItemTypeDef,
 } from '@livediagram/items';
 import { track } from '@/lib/telemetry';
 import { FIELD_CLASS, PlanSheet, SheetRow } from './PlanSheet';
@@ -67,12 +67,15 @@ export function newColumnStatus(name: string, taken: readonly string[]): string 
 
 export function BoardSetupPanel({
   setup,
+  types,
   items,
   onChange,
   onMoveItems,
   onClose,
 }: {
   setup: PlanBoardSetup;
+  // The document's item types (docs/specs/025-plan/item-types.md), for the scope's checkboxes.
+  types: readonly ItemTypeDef[];
   items: ReadonlyMap<string, Item>;
   onChange: (next: PlanBoardSetup, part: string) => void;
   onMoveItems: (fromStatus: string, toStatus: string) => void;
@@ -319,7 +322,7 @@ export function BoardSetupPanel({
       </SheetRow>
       <SheetRow label="Shows">
         <div className="flex flex-wrap gap-x-3 gap-y-1.5 text-[12px]">
-          {ITEM_TYPES.map((t) => {
+          {types.map((t) => {
             const on = !setup.scope.types || setup.scope.types.includes(t.id);
             return (
               <label key={t.id} className="flex items-center gap-1.5">
@@ -327,11 +330,18 @@ export function BoardSetupPanel({
                   type="checkbox"
                   checked={on}
                   onChange={() => {
-                    const current = setup.scope.types ?? ITEM_TYPES.map((x) => x.id);
-                    const types = on ? current.filter((x) => x !== t.id) : [...current, t.id];
-                    const all = types.length === ITEM_TYPES.length;
+                    const current = (setup.scope.types ?? types.map((x) => x.id)).filter((x) =>
+                      types.some((y) => y.id === x),
+                    );
+                    const shown = on ? current.filter((x) => x !== t.id) : [...current, t.id];
+                    const all = shown.length === types.length;
                     set(
-                      { scope: { ...setup.scope, ...(all ? { types: undefined } : { types }) } },
+                      {
+                        scope: {
+                          ...setup.scope,
+                          ...(all ? { types: undefined } : { types: shown }),
+                        },
+                      },
                       'Scope',
                     );
                   }}

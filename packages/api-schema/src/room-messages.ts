@@ -5,7 +5,7 @@ import type { AvatarConfig } from './avatar';
 import type { LivePoll } from './poll';
 import type { DragPreviewPatch } from './drag-preview';
 import type { ChangesetRoomOp } from './changesets';
-import type { ItemsRoomOp } from './items';
+import type { ItemsRoomOp, ItemTypesRoomOp } from './items';
 
 // ---------------------------------------------------------------------
 // Realtime room messages
@@ -176,7 +176,8 @@ export const MUTATION_OP_KINDS = [
 // sequenced through /mutation. A forged one would show people a change nobody made (CS24).
 //
 // `items` (docs/specs/025-plan/items.md "Live for everyone"): item writes the api made. Items change
-// only through the api, so a forged one would show people items nobody wrote.
+// only through the api, so a forged one would show people items nobody wrote. `item-types` likewise
+// (docs/specs/025-plan/item-types.md): the catalogue changes only through the api.
 export const SYSTEM_OP_KINDS = [
   'share-revoked',
   'share-rescoped',
@@ -184,6 +185,7 @@ export const SYSTEM_OP_KINDS = [
   'document-trashed',
   'changeset',
   'items',
+  'item-types',
 ] as const;
 
 // The whole vocabulary. Every op the editor sends or handles is one of these
@@ -585,6 +587,8 @@ export type RoomOp =
   // Item writes the api made (docs/specs/025-plan/items.md "Live for everyone"). Worker-originated
   // through an ordered /broadcast; a session scoped to one tab hears it without its items.
   | ItemsRoomOp
+  // A document's type catalogue the api stored (docs/specs/025-plan/item-types.md "Storage and sync").
+  | ItemTypesRoomOp
   // The document went to the Trash (docs/specs/013-workspace/trash.md). Every
   // session shows the deleted state; the room then closes every socket (4004).
   // Worker-originated, like share-revoked.

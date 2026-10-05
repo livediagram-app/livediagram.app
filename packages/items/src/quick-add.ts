@@ -4,7 +4,8 @@
 // resolve (an unknown person) stays in the title as typed.
 
 import type { ItemFields, ItemPerson } from './item';
-import { itemTypeByName } from './item-types';
+import { ITEM_TYPES, type ItemTypeDef } from './item-types';
+import { typeByNameIn } from './type-catalogue';
 import { isPriority, type Priority } from './fields';
 import { ITEM_LABELS_MAX, ITEM_LABEL_MAX, ITEM_NUMBER_MAX } from './limits';
 
@@ -31,15 +32,21 @@ function findPerson(name: string, people: readonly ItemPerson[]): ItemPerson | u
   );
 }
 
-export function parseQuickAdd(text: string, people: readonly ItemPerson[] = []): QuickAdd {
+export function parseQuickAdd(
+  text: string,
+  people: readonly ItemPerson[] = [],
+  // The document's item types (docs/specs/025-plan/item-types.md), for a leading `name:`.
+  types: readonly ItemTypeDef[] = ITEM_TYPES,
+): QuickAdd {
   const tokens: QuickToken[] = [];
   const fields: ItemFields = {};
   let rest = text.trim();
   let type: string | undefined;
 
-  const lead = /^([A-Za-z]+):\s*/.exec(rest);
+  // A type's name may have spaces ("customer call:"); the prefix counts only when it names a type.
+  const lead = /^([A-Za-z][A-Za-z0-9 -]{0,31}):\s*/.exec(rest);
   if (lead) {
-    const def = itemTypeByName(lead[1]!);
+    const def = typeByNameIn(types, lead[1]!);
     if (def) {
       type = def.id;
       tokens.push({ kind: 'type', text: lead[0].trim(), type: def.id });

@@ -71,6 +71,11 @@ In Plan mode:
 - **Drag a card** to another column, swimlane or place in a column. A placeholder opens where it will land; the
   move is one item write when it is dropped. Dropping on a swimlane also sets that swimlane's field (moving a
   card into Sam's row assigns it to Sam).
+- **Drag a card onto another board** to move its item into that board's column (and row, setting the row's
+  field) where it lands, with the same placeholder. The item now has that column's status, so a board without
+  that column lists it under "Not on this board". A board whose scope leaves the item out (it shows Bug items
+  only, or one label) refuses it: no placeholder opens, nothing moves, and the reason is announced ("This board
+  shows Bug items only").
 - **Drag a card off the board** onto the canvas to leave a Plan card there; the item stays on the board too.
   **Drag a Plan card onto a board** to move its item to the end of the column it lands on; the Plan card goes
   away.
@@ -78,7 +83,8 @@ In Plan mode:
   field open for the next one; Escape closes it. The title may carry **quick tokens**: `@name` assigns,
   `#label` labels, `!high` (or `!urgent`, `!medium`, `!low`) sets priority, `~3` estimates, and a leading
   `bug:` (any type name) sets the type. Each token turns into a chip as it is recognised.
-- **Open an item**: clicking a card opens the **item panel** beside the canvas. Every field of the item's type
+- **Open an item**: clicking a card opens the **item panel**, a modal over the canvas (a sheet rising from the
+  bottom on a phone). Every field of the item's type
   is edited in place and saved as it changes; the panel shows who made the item and who last changed it. It
   closes with Escape or the close button, and follows the item if someone else moves it.
 - **Vote**: on a voting board each card has a vote control; a person sees their own votes and the total. With a

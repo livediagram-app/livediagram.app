@@ -105,14 +105,20 @@ export async function duplicateDocument(
         { id: newId, name: `${src.name} copy`, tabs: remappedTabs },
         Date.now(),
       );
-      if (itemStore?.items.length) {
+      if (itemStore?.items.length || src.itemTypes) {
         const rec = await offlineGetRecord(newId);
         if (rec) {
           await offlinePutRecord({
             ...rec,
-            items: itemStore.items,
-            itemsRev: itemStore.rev,
-            itemsNextKey: itemStore.nextKey,
+            ...(itemStore?.items.length
+              ? {
+                  items: itemStore.items,
+                  itemsRev: itemStore.rev,
+                  itemsNextKey: itemStore.nextKey,
+                }
+              : {}),
+            // The type catalogue comes with it (docs/specs/025-plan/item-types.md).
+            ...(src.itemTypes ? { itemTypes: src.itemTypes } : {}),
           });
         }
       }
@@ -134,6 +140,7 @@ export async function duplicateDocument(
       folderId: place.folderId,
       ...(intent ? { intent } : {}),
       ...(itemStore?.items.length ? { items: storeAsCreates(itemStore.items) } : {}),
+      ...(src.itemTypes ? { itemTypes: src.itemTypes } : {}),
     });
   try {
     await create(placement ?? { teamId: src.teamId, folderId: src.folderId });

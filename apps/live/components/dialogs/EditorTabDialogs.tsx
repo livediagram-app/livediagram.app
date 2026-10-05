@@ -10,6 +10,7 @@ import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
 import { saveOfflineToCloud } from '@/lib/offline/offline-convert';
 import { tabAsSeen } from '@/lib/export-as-seen';
 import { panelEnabled } from '@/lib/user-preferences';
+import { LeavePlanDialog } from '@/components/dialogs/LeavePlanDialog';
 import { LeaveIllustrateDialog } from '@/components/dialogs/LeaveIllustrateDialog';
 import { LeaveIllustrateConfirm } from '@/components/dialogs/LeaveIllustrateConfirm';
 
@@ -62,6 +63,7 @@ export function EditorTabDialogs() {
     setDocumentSharePassword,
     setShareDialogOpen,
     leaveIllustrate,
+    leavePlan,
   } = useEditorContext();
   // The selection the export covers, read from the store while a selection export is open
   // (docs/specs/008-canvas/blueprints/selection-store.md).
@@ -88,6 +90,7 @@ export function EditorTabDialogs() {
     <>
       <LeaveIllustrateDialog leave={leaveIllustrate} />
       <LeaveIllustrateConfirm leave={leaveIllustrate} />
+      <LeavePlanDialog leave={leavePlan} />
       {exportOpen ? (
         <ExportTabDialog
           // Export what the author is LOOKING at: a tab on the Default colour

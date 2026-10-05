@@ -1,3 +1,4 @@
+import type { ItemTypeCatalogue } from '@livediagram/items';
 import {
   useLayoutEffect,
   type Dispatch,
@@ -64,6 +65,7 @@ export function useIdentityBootstrap(opts: {
     setDocumentId: SetState<string | null>;
     setDocumentName: SetState<string>;
     setDocumentPresentation: SetState<string | null>;
+    setDocumentItemTypes: SetState<ItemTypeCatalogue | null>;
     setDocumentNotFound: SetState<boolean>;
     setLoadError: SetState<boolean>;
     // The document is in the Trash (docs/specs/013-workspace/trash.md).
@@ -120,6 +122,7 @@ export function useIdentityBootstrap(opts: {
     setDocumentId,
     setDocumentName,
     setDocumentPresentation,
+    setDocumentItemTypes,
     setDocumentNotFound,
     setLoadError,
     setDocumentTrashed,
@@ -161,6 +164,7 @@ export function useIdentityBootstrap(opts: {
     setActiveId,
     setDocumentName,
     setDocumentPresentation,
+    setDocumentItemTypes,
     setDocumentOwnerColor,
     setDocumentOwnerId,
     setDocumentOwnerName,

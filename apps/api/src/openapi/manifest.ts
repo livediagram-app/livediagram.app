@@ -654,6 +654,20 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     responseSchema: listOf('threads', 'DocumentCommentThread'),
     statuses: [200, 400, 401, 403, 404, 405, 410],
   },
+  // The document's type catalogue (docs/specs/025-plan/item-types.md).
+  {
+    method: 'PUT',
+    path: '/documents/{id}/item-types',
+    segment: 'documents',
+    tag: 'Items',
+    summary:
+      "Store the document's item types, whole: up to 32 types, each with its fields and custom fields. null goes back to the built-in types. Needs edit access to the whole document.",
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    requestSchema: 'ItemTypesRequest',
+    responseSchema: 'ItemTypesResponse',
+    statuses: [200, 400, 401, 403, 404, 405, 410],
+  },
   // The item store (docs/specs/025-plan/items.md). A caller on a tab-scoped link adds ?tabId=.
   {
     method: 'GET',

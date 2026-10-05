@@ -2,7 +2,12 @@
 // timestamps) plus the copy operation. Tab content lives in tabs.ts;
 // the read DTO joins owner display info from participants.
 
-import { itemIdsShownOnTab, type TabItemElement } from '@livediagram/items';
+import {
+  itemIdsShownOnTab,
+  readItemTypeCatalogue,
+  type ItemTypeCatalogue,
+  type TabItemElement,
+} from '@livediagram/items';
 import { copyItemsStatements, listItems } from './items';
 import { remapTabLinks, type Element } from '@livediagram/document';
 import { rowToTabSummary, type TabRow } from '../tab-row';
@@ -27,6 +32,8 @@ type DocumentRow = {
   source: string | null;
   // Slide deck (docs/specs/012-collaboration/presentation-mode.md): serialised StoredPresentation, or null for no deck.
   presentation: string | null;
+  // The type catalogue (docs/specs/025-plan/item-types.md), JSON, or null for the built-in types.
+  item_types: string | null;
   saved_at: number;
   created_at: number;
   // Derived via subquery in the SELECT; first (oldest) share_links
@@ -78,6 +85,7 @@ async function rowToDocument(env: Env, row: DocumentRow): Promise<DocumentDTO> {
     teamId: row.team_id ?? null,
     source: (row.source as DocumentDTO['source']) ?? null,
     presentation: row.presentation ?? null,
+    itemTypes: readItemTypeCatalogue(row.item_types ?? null),
     savedAt: row.saved_at,
     createdAt: row.created_at,
     ownerName: ownerParticipant?.name ?? null,
@@ -94,7 +102,7 @@ const SHARE_CODE_EXPR =
   '(SELECT code FROM share_links WHERE share_links.document_id = documents.id ORDER BY created_at ASC LIMIT 1) AS share_code';
 // `opens_in`, `tab_kind`, `template_family`: the recorded creation intent (migration 0062).
 const INTENT_COLS = 'opens_in, tab_kind, template_family';
-const DOCUMENT_COLS = `id, owner_id, name, shareable, folder_id, team_id, source, ${INTENT_COLS}, presentation, saved_at, created_at, ${SHARE_CODE_EXPR}`;
+const DOCUMENT_COLS = `id, owner_id, name, shareable, folder_id, team_id, source, ${INTENT_COLS}, presentation, item_types, saved_at, created_at, ${SHARE_CODE_EXPR}`;
 // The list projection deliberately omits `presentation`: listing 100 documents
 // has no use for 100 decks, and a deck is the one metadata field whose size
 // grows with the document.
@@ -236,15 +244,17 @@ export async function upsertDocumentMeta(
   // never rewritten by a later metadata upsert (rename / autosave / move).
   // `presentation` likewise: a create carries the deck an Offline Mode sync
   // built (docs/specs/006-document/offline-mode.md); after that only
-  // setDocumentPresentation writes it.
+  // setDocumentPresentation writes it. `item_types` the same: a create carries the catalogue a copy,
+  // a sync or a Drive import brings (docs/specs/025-plan/item-types.md); after that only
+  // setDocumentItemTypes writes it.
   // `folder_id` and `team_id` are the placement, written by the INSERT that creates the row
   // (docs/specs/013-workspace/folders.md "Placement on create") and never by the DO UPDATE: a
   // re-commit keeps its place, and moving is setDocumentFolder's job.
   // `opens_in`, `tab_kind` and `template_family` are the recorded creation intent, written here once
   // and never by the DO UPDATE, so nothing after the create re-derives or rewrites them.
   await env.DB.prepare(
-    `INSERT INTO documents (id, owner_id, name, shareable, folder_id, team_id, source, presentation, saved_at, created_at, opens_in, tab_kind, template_family)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `INSERT INTO documents (id, owner_id, name, shareable, folder_id, team_id, source, presentation, item_types, saved_at, created_at, opens_in, tab_kind, template_family)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
      ON CONFLICT(id) DO UPDATE SET
        owner_id = excluded.owner_id,
        name = excluded.name,
@@ -259,6 +269,7 @@ export async function upsertDocumentMeta(
       d.teamId ?? null,
       d.source ?? null,
       d.presentation ?? null,
+      d.itemTypes ? JSON.stringify(d.itemTypes) : null,
       d.savedAt,
       d.createdAt,
       d.opensIn ?? null,
@@ -280,6 +291,19 @@ export async function setDocumentPresentation(
 ): Promise<void> {
   await env.DB.prepare(`UPDATE documents SET presentation = ?, saved_at = ? WHERE id = ?`)
     .bind(presentation, Date.now(), id)
+    .run();
+}
+
+// Type catalogue write (docs/specs/025-plan/item-types.md "Storage and sync"): its own statement, as
+// the deck's, so no meta save can rewrite it. `itemTypes` is already validated; null restores the
+// built-in types.
+export async function setDocumentItemTypes(
+  env: Env,
+  id: string,
+  itemTypes: ItemTypeCatalogue | null,
+): Promise<void> {
+  await env.DB.prepare(`UPDATE documents SET item_types = ?, saved_at = ? WHERE id = ?`)
+    .bind(itemTypes ? JSON.stringify(itemTypes) : null, Date.now(), id)
     .run();
 }
 
@@ -411,8 +435,8 @@ export async function copyDocument(
   // The copy carries the source's recorded creation intent, read in the same statement, never
   // re-derived (docs/specs/013-workspace/default-folders.md "Recorded intent").
   await env.DB.prepare(
-    `INSERT INTO documents (id, owner_id, name, shareable, folder_id, saved_at, created_at, ${INTENT_COLS})
-     SELECT ?, ?, ?, 0, NULL, ?, ?, ${INTENT_COLS} FROM documents WHERE id = ?`,
+    `INSERT INTO documents (id, owner_id, name, shareable, folder_id, saved_at, created_at, item_types, ${INTENT_COLS})
+     SELECT ?, ?, ?, 0, NULL, ?, ?, item_types, ${INTENT_COLS} FROM documents WHERE id = ?`,
   )
     .bind(newId, newOwnerId, newName, now, now, sourceId)
     .run();

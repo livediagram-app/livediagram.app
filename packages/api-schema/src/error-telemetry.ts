@@ -172,6 +172,7 @@ const API_ROUTE_WORDS: ReadonlySet<string> = new Set([
   'connect',
   'connection',
   'items',
+  'item-types',
   'lease',
 ]);
 

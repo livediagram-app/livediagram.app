@@ -14,6 +14,7 @@ import {
 import type { PlanCardPresence, PlanContextValue } from '@/components/plan/PlanContext';
 import { titleCaseType, track } from '@/lib/telemetry';
 import type { PlanItems } from './usePlanItems';
+import type { ItemTypesSlice } from './useItemTypes';
 
 type Participant = { id: string; name: string; color: string };
 
@@ -23,6 +24,8 @@ type Participant = { id: string; name: string; color: string };
 // changed through `commit` on the active tab.
 export function usePlanSlice(opts: {
   planItems: PlanItems;
+  // The document's item types (docs/specs/025-plan/item-types.md).
+  itemTypes: ItemTypesSlice;
   editorMode: EditorMode;
   canEdit: boolean;
   // Participate access: anyone who may read may vote.
@@ -35,10 +38,14 @@ export function usePlanSlice(opts: {
   // Tells the room which card this person is dragging or reading (usePlanPresence).
   publishPresence?: (itemId: string | null, state: 'drag' | 'view') => void;
 }) {
-  const { planItems, editorMode, canEdit, canVote, participants, presence, commit, select } = opts;
+  const { planItems, itemTypes, editorMode, canEdit, canVote, participants, presence } = opts;
+  const { commit, select } = opts;
   const { announce, publishPresence } = opts;
   const [openItemId, setOpenItemId] = useState<string | null>(null);
   const [setupBoardId, setSetupBoardId] = useState<string | null>(null);
+  // The type the type editor is open on, or 'new' (docs/specs/025-plan/item-types.md "Editing a type").
+  const [editingTypeId, setEditingTypeId] = useState<string | 'new' | null>(null);
+  const editType = useCallback((typeId: string | 'new') => setEditingTypeId(typeId), []);
 
   // The room's people as items name them (hashed ids, docs/specs/025-plan/blueprints/item-store.md
   // "Security and trust"), so an assignee picked here is the same person the api signs writes as.
@@ -189,6 +196,9 @@ export function usePlanSlice(opts: {
   const context = useMemo<PlanContextValue>(
     () => ({
       items: planItems.items,
+      types: itemTypes.types,
+      itemTypes,
+      editType,
       status: planItems.status,
       self: planItems.self,
       people,
@@ -213,6 +223,8 @@ export function usePlanSlice(opts: {
     }),
     [
       planItems.items,
+      itemTypes,
+      editType,
       planItems.status,
       planItems.self,
       planItems.refetch,
@@ -243,6 +255,8 @@ export function usePlanSlice(opts: {
     closeItem: () => setOpenItemId(null),
     setupBoardId,
     closeSetup: () => setSetupBoardId(null),
+    editingTypeId,
+    closeTypeEditor: () => setEditingTypeId(null),
     dropPlanCardOnBoard,
   };
 }

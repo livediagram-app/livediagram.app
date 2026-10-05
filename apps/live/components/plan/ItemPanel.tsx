@@ -5,17 +5,20 @@
 // the item wherever someone moves it, and closes if someone deletes it.
 import { useState } from 'react';
 import {
-  ITEM_TYPES,
+  BUILT_IN_FIELD_IDS,
+  customFieldOf,
+  isBuiltInFieldId,
   itemTitle,
-  itemTypeOf,
   itemVoteTotal,
+  typeIn,
   type Item,
   type ItemFieldId,
   type ItemFieldValue,
   type ItemPerson,
+  type ItemTypeDef,
 } from '@livediagram/items';
 import { relativeSince } from '@livediagram/ui';
-import { PlanSheet, SheetRow, FIELD_CLASS } from './PlanSheet';
+import { PlanModal, SheetRow, FIELD_CLASS } from './PlanSheet';
 import {
   ChecklistEditor,
   DateField,
@@ -26,6 +29,7 @@ import {
   PriorityPicker,
 } from './item-field-editors';
 import { PlanTypeGlyph } from './plan-type-glyph';
+import { CustomFieldEditor } from './CustomFieldEditor';
 
 const LABELS: Partial<Record<ItemFieldId, string>> = {
   status: 'Status',
@@ -39,21 +43,12 @@ const LABELS: Partial<Record<ItemFieldId, string>> = {
   description: 'Description',
 };
 
-// Fields drawn in this order below the title.
-const ORDER: ItemFieldId[] = [
-  'status',
-  'assignee',
-  'priority',
-  'labels',
-  'estimate',
-  'due',
-  'parent',
-  'checklist',
-  'description',
-];
+// Drawn on their own: the title above the rows, votes below them.
+const NOT_A_ROW = new Set<string>(['title', 'votes']);
 
 export function ItemPanel({
   item,
+  types,
   statuses,
   epics,
   people,
@@ -64,6 +59,8 @@ export function ItemPanel({
   onClose,
 }: {
   item: Item;
+  // The document's item types (docs/specs/025-plan/item-types.md).
+  types: readonly ItemTypeDef[];
   // The statuses this tab's boards use, by name, for the status picker.
   statuses: readonly { status: string; name: string }[];
   epics: readonly Item[];
@@ -76,8 +73,16 @@ export function ItemPanel({
 }) {
   // When the panel opened: the footer says how long ago the last change was from here.
   const [now] = useState(() => Date.now());
-  const type = itemTypeOf(item.type);
-  const offered = new Set<ItemFieldId>(type.fields);
+  const type = typeIn(types, item.type);
+  const offered = new Set<string>(type.fields);
+  // The type's fields in its order, then any built-in field the item holds a value in that its type
+  // does not offer. A custom field's value its type no longer offers stays stored, unshown.
+  const rows = [
+    ...type.fields.filter((f) => !NOT_A_ROW.has(f)),
+    ...BUILT_IN_FIELD_IDS.filter(
+      (f) => !NOT_A_ROW.has(f) && !offered.has(f) && item.fields[f] !== undefined,
+    ),
+  ];
   const id = (f: string) => `item-${item.id}-${f}`;
   const disabled = !canEdit;
   const status = typeof item.fields['status'] === 'string' ? item.fields['status'] : '';
@@ -85,8 +90,21 @@ export function ItemPanel({
     status && !statuses.some((s) => s.status === status)
       ? [{ status, name: status }, ...statuses]
       : statuses;
-  const field = (f: ItemFieldId) => {
+  const field = (f: string) => {
     const value = item.fields[f];
+    const custom = customFieldOf(type, f);
+    if (custom) {
+      return (
+        <CustomFieldEditor
+          id={id(f)}
+          field={custom}
+          value={value}
+          disabled={disabled}
+          onSave={(v) => onSave(f, v)}
+        />
+      );
+    }
+    if (!isBuiltInFieldId(f)) return null;
     switch (f) {
       case 'status':
         return (
@@ -174,12 +192,12 @@ export function ItemPanel({
   };
   const votes = itemVoteTotal(item);
   return (
-    <PlanSheet
+    <PlanModal
       label={`Item #${item.key}`}
       onClose={onClose}
       header={
         <div className="flex items-center gap-2">
-          <PlanTypeGlyph type={item.type} color={type.color} size={16} />
+          <PlanTypeGlyph glyph={type.glyph} color={type.color} size={16} />
           <select
             aria-label="Item type"
             className="rounded-md border border-transparent bg-transparent py-0.5 text-[13px] font-semibold enabled:cursor-pointer hover:border-slate-200 dark:hover:border-slate-700"
@@ -187,10 +205,10 @@ export function ItemPanel({
             value={item.type}
             onChange={(e) => onType(e.target.value)}
           >
-            {!ITEM_TYPES.some((t) => t.id === item.type) ? (
+            {!types.some((t) => t.id === item.type) ? (
               <option value={item.type}>{type.label}</option>
             ) : null}
-            {ITEM_TYPES.map((t) => (
+            {types.map((t) => (
               <option key={t.id} value={t.id}>
                 {t.label}
               </option>
@@ -227,8 +245,12 @@ export function ItemPanel({
           onSave={(v) => onSave('title', v)}
         />
       </div>
-      {ORDER.filter((f) => offered.has(f) || item.fields[f] !== undefined).map((f) => (
-        <SheetRow key={f} label={LABELS[f] ?? f} htmlFor={f === 'checklist' ? undefined : id(f)}>
+      {rows.map((f) => (
+        <SheetRow
+          key={f}
+          label={customFieldOf(type, f)?.label ?? LABELS[f as ItemFieldId] ?? f}
+          htmlFor={f === 'checklist' ? undefined : id(f)}
+        >
           {field(f)}
         </SheetRow>
       ))}
@@ -237,6 +259,6 @@ export function ItemPanel({
           <span className="text-[13px]">{votes}</span>
         </SheetRow>
       ) : null}
-    </PlanSheet>
+    </PlanModal>
   );
 }

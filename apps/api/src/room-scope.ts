@@ -14,6 +14,9 @@ const TAB_LESS_DELIVERED = new Set([
   'share-revoked',
   'share-rescoped',
   'document-trashed',
+  // The type catalogue holds no content and every tab's cards need it
+  // (docs/specs/025-plan/item-types.md "Storage and sync").
+  'item-types',
 ]);
 
 // The tab-less ops a scoped session may itself send.

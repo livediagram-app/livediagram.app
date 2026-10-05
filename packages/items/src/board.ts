@@ -4,7 +4,7 @@
 
 import type { Item, ItemPerson } from './item';
 import { itemAssignee, itemLabels, itemStatus, itemTitle } from './item';
-import { ITEM_TYPES } from './item-types';
+import { ITEM_TYPES, type ItemTypeDef } from './item-types';
 import { PRIORITIES, PRIORITY_LABELS, isPriority } from './fields';
 import { byRank } from './apply';
 import {
@@ -106,7 +106,12 @@ export function quickFilterMatches(quick: QuickFilter | undefined, item: Item): 
   return true;
 }
 
-function laneOf(by: SwimlaneBy, item: Item, items: ReadonlyMap<string, Item>): LaneHead {
+function laneOf(
+  by: SwimlaneBy,
+  item: Item,
+  items: ReadonlyMap<string, Item>,
+  types: readonly ItemTypeDef[],
+): LaneHead {
   switch (by) {
     case 'none':
       return { key: NO_LANE, label: '', field: null, value: null };
@@ -117,7 +122,7 @@ function laneOf(by: SwimlaneBy, item: Item, items: ReadonlyMap<string, Item>): L
         : { key: NO_LANE, label: 'No assignee', field: 'assignee', value: null };
     }
     case 'type': {
-      const def = ITEM_TYPES.find((t) => t.id === item.type);
+      const def = types.find((t) => t.id === item.type);
       return {
         key: `t:${item.type}`,
         label: def?.label ?? item.type,
@@ -144,13 +149,14 @@ function laneOf(by: SwimlaneBy, item: Item, items: ReadonlyMap<string, Item>): L
 function laneSort(
   by: SwimlaneBy,
   items: ReadonlyMap<string, Item>,
+  types: readonly ItemTypeDef[],
 ): (a: LaneHead, b: LaneHead) => number {
   return (a, b) => {
     if (a.key === NO_LANE) return b.key === NO_LANE ? 0 : 1;
     if (b.key === NO_LANE) return -1;
     if (by === 'type') {
-      const ia = ITEM_TYPES.findIndex((t) => `t:${t.id}` === a.key);
-      const ib = ITEM_TYPES.findIndex((t) => `t:${t.id}` === b.key);
+      const ia = types.findIndex((t) => `t:${t.id}` === a.key);
+      const ib = types.findIndex((t) => `t:${t.id}` === b.key);
       return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib) || a.label.localeCompare(b.label);
     }
     if (by === 'priority') {
@@ -167,6 +173,8 @@ export function projectBoard(
   setup: PlanBoardSetup,
   items: ReadonlyMap<string, Item>,
   quick?: QuickFilter,
+  // The document's type catalogue (docs/specs/025-plan/item-types.md): the order and names of type rows.
+  types: readonly ItemTypeDef[] = ITEM_TYPES,
 ): BoardProjection {
   const byStatus = new Map<string, PlanColumn>(setup.columns.map((c) => [c.status, c]));
   const scoped: Item[] = [];
@@ -183,16 +191,16 @@ export function projectBoard(
   const laneMap = new Map<string, LaneHead>();
   const laneOfItem = new Map<string, string>();
   for (const it of scoped) {
-    const lane = laneOf(setup.swimlaneBy, it, items);
+    const lane = laneOf(setup.swimlaneBy, it, items, types);
     if (!laneMap.has(lane.key)) laneMap.set(lane.key, lane);
     laneOfItem.set(it.id, lane.key);
   }
   // A board with swimlanes always offers the empty group as a drop target.
   if (setup.swimlaneBy !== 'none' && setup.swimlaneBy !== 'type' && !laneMap.has(NO_LANE)) {
-    laneMap.set(NO_LANE, laneOf(setup.swimlaneBy, { fields: {} } as Item, items));
+    laneMap.set(NO_LANE, laneOf(setup.swimlaneBy, { fields: {} } as Item, items, types));
   }
-  if (laneMap.size === 0) laneMap.set(NO_LANE, laneOf('none', scoped[0]!, items));
-  const lanes = [...laneMap.values()].sort(laneSort(setup.swimlaneBy, items));
+  if (laneMap.size === 0) laneMap.set(NO_LANE, laneOf('none', scoped[0]!, items, types));
+  const lanes = [...laneMap.values()].sort(laneSort(setup.swimlaneBy, items, types));
 
   let doneCount = 0;
   const doneStatus = setup.columns.find((c) => c.id === setup.doneColumnId)?.status;

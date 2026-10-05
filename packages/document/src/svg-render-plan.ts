@@ -7,12 +7,14 @@
 import {
   itemAssignee,
   itemTitle,
-  itemTypeOf,
+  ITEM_TYPES,
+  typeIn,
   itemVoteTotal,
   isPriority,
   normaliseBoardSetup,
   projectBoard,
   type Item,
+  type ItemTypeDef,
 } from '@livediagram/items';
 import type { BoxedElement } from './index';
 import type { CanvasSurface } from './colors';
@@ -91,6 +93,7 @@ export function svgCardFace(
   w: number,
   h: number,
   p: Palette,
+  types: readonly ItemTypeDef[] = ITEM_TYPES,
 ): string {
   const parts = [
     `<rect x="${r2(x)}" y="${r2(y)}" width="${r2(w)}" height="${r2(h)}" rx="8" fill="${p.card}" stroke="${p.border}" stroke-width="1"/>`,
@@ -99,7 +102,7 @@ export function svgCardFace(
     parts.push(text(x + 12, y + h / 2 + 4, 12, p.muted, 'Item not found'));
     return parts.join('');
   }
-  const type = itemTypeOf(item.type);
+  const type = typeIn(types, item.type);
   parts.push(
     `<rect x="${r2(x)}" y="${r2(y)}" width="4" height="${r2(h)}" rx="2" fill="${type.color}"/>`,
   );
@@ -140,6 +143,7 @@ export function svgPlanBoard(
   el: Shape,
   items: ReadonlyMap<string, Item> | undefined,
   surface: CanvasSurface,
+  types: readonly ItemTypeDef[] = ITEM_TYPES,
 ): string {
   const p = palette(surface);
   const setup = normaliseBoardSetup(el.planBoard);
@@ -147,7 +151,7 @@ export function svgPlanBoard(
     `<rect x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}" rx="12" fill="${p.surface}" stroke="${p.border}" stroke-width="1.5"/>`,
   ];
   if (!setup) return parts.join('');
-  const projection = projectBoard(setup, items ?? new Map());
+  const projection = projectBoard(setup, items ?? new Map(), undefined, types);
   parts.push(
     text(
       el.x + PAD + 4,
@@ -209,7 +213,7 @@ export function svgPlanBoard(
     const cards = col.lanes.flatMap((l) => l.items);
     for (const item of cards) {
       if (y + CARD_H > top + colH - 6) break;
-      parts.push(svgCardFace(item, cx + 8, y, colW - 16, CARD_H, p));
+      parts.push(svgCardFace(item, cx + 8, y, colW - 16, CARD_H, p, types));
       y += CARD_H + CARD_GAP;
     }
   });
@@ -220,6 +224,7 @@ export function svgPlanCard(
   el: Shape,
   items: ReadonlyMap<string, Item> | undefined,
   surface: CanvasSurface,
+  types: readonly ItemTypeDef[] = ITEM_TYPES,
 ): string {
   const id = el.planCard?.itemId ?? '';
   // Without the store in hand, a neutral placeholder rather than "not found".
@@ -231,5 +236,5 @@ export function svgPlanCard(
       text(el.x + 12, el.y + el.height / 2 + 4, 12, p.muted, 'Item')
     );
   }
-  return svgCardFace(item, el.x, el.y, el.width, el.height, palette(surface));
+  return svgCardFace(item, el.x, el.y, el.width, el.height, palette(surface), types);
 }

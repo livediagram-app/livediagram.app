@@ -9,7 +9,7 @@
 // omitted in the visual ones (PNG, PDF) where they have no natural
 // rendering.
 
-import type { Item } from '@livediagram/items';
+import type { Item, ItemTypeDef } from '@livediagram/items';
 import {
   arrowLabelFontStack,
   arrowLabelPass,
@@ -91,6 +91,8 @@ export type ImageExportOpts = {
   // The document's items, so Plan boards and cards export with their cards
   // (docs/specs/025-plan/plan-board.md "Both elements everywhere").
   items?: ReadonlyMap<string, Item>;
+  // And its item types (docs/specs/025-plan/item-types.md), so custom types keep their colour.
+  itemTypes?: readonly ItemTypeDef[];
 };
 
 // Re-export so callers (the export dialog) get the loader from the same
@@ -325,6 +327,7 @@ export async function renderTabToCanvas(
         tabFont,
         surface,
         items: opts.items,
+        itemTypes: opts.itemTypes,
       })}</svg>`;
     try {
       rasterImages.set(el.id, { image: await svgToImage(svg), pad });
@@ -559,6 +562,7 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
               tabFont: tab.font,
               surface,
               items: opts.items,
+              itemTypes: opts.itemTypes,
             }),
             clips,
           ),

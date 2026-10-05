@@ -25,6 +25,7 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'draw-mode': '#78716c',
   'plan-mode': '#2563eb',
   items: '#7c3aed',
+  'card-types': '#0891b2',
   illustrate: '#e11d48',
   'infographic-layouts': '#db2777',
   articles: '#0d9488',

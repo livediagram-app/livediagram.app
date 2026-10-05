@@ -67,6 +67,8 @@ export const HELP_ARTICLES = {
   customThemes: 'canvas/themes/custom-themes',
   choosingFonts: 'canvas/text-and-fonts/choosing-fonts',
   // Links / activity / comments
+  // Plan mode's card types (docs/specs/025-plan/item-types.md).
+  planCardTypes: 'canvas/plan-mode/card-types',
   links: 'canvas/links',
   comments: 'collaboration/comments',
   livePresence: 'collaboration/live-presence',
@@ -111,6 +113,10 @@ export type HelpArticleKey = keyof typeof HELP_ARTICLES;
 // the same article say the same thing, and a `?` never falls back to a bare
 // "Learn more" that tells the reader nothing about where it goes.
 export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description: string }> = {
+  planCardTypes: {
+    title: 'Learn about card types',
+    description: 'Add your own kinds of card, with the fields each one holds.',
+  },
   sharing: {
     title: 'Learn about sharing',
     description: 'Roles, live collaboration, and how share links work.',

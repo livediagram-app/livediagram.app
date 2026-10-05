@@ -5,7 +5,13 @@
 // that genuinely needs a rasteriser lives here.
 
 import type { ItemsResponse } from '@livediagram/api-schema';
-import type { Item } from '@livediagram/items';
+import {
+  readItemTypeCatalogue,
+  typesOf,
+  type Item,
+  type ItemTypeCatalogue,
+  type ItemTypeDef,
+} from '@livediagram/items';
 import { embedTabImages } from '@livediagram/api-schema';
 import { renderElementsToSvg, type Tab } from '@livediagram/document';
 // Static-import icon resolver (Worker bundle, size not user-facing) so icon
@@ -54,24 +60,29 @@ export type ImageBlock = { type: 'image'; data: string; mimeType: string };
 
 // A Plan board's or card's items (docs/specs/025-plan/plan-board.md), so a preview draws their cards;
 // none when the tab has no Plan shape, or the document is not named.
-async function planItemsFor(
+async function planContentFor(
   tab: Tab,
   auth: { env: Env; token: string; documentId?: string } | undefined,
-): Promise<ReadonlyMap<string, Item> | undefined> {
+): Promise<{ items?: ReadonlyMap<string, Item>; itemTypes?: readonly ItemTypeDef[] }> {
   const plan = tab.elements.some(
     (el) => el.type === 'shape' && (el.shape === 'plan-board' || el.shape === 'plan-card'),
   );
-  if (!plan || !auth?.documentId) return undefined;
-  try {
-    const { items } = await apiJson<ItemsResponse>(
+  if (!plan || !auth?.documentId) return {};
+  const path = `/documents/${encodeURIComponent(auth.documentId)}`;
+  // The items, and the document's item types so custom types keep their colours
+  // (docs/specs/025-plan/item-types.md). Each is best-effort: a preview without them still draws.
+  const [items, doc] = await Promise.all([
+    apiJson<ItemsResponse>(auth.env, auth.token, `${path}/items`).catch(() => null),
+    apiJson<{ document?: { itemTypes?: ItemTypeCatalogue | null } }>(
       auth.env,
       auth.token,
-      `/documents/${encodeURIComponent(auth.documentId)}/items`,
-    );
-    return new Map(items.map((i) => [i.id, i]));
-  } catch {
-    return undefined;
-  }
+      path,
+    ).catch(() => null),
+  ]);
+  return {
+    ...(items ? { items: new Map(items.items.map((i) => [i.id, i])) } : {}),
+    itemTypes: typesOf(readItemTypeCatalogue(doc?.document?.itemTypes ?? null)),
+  };
 }
 
 // A PNG preview of the tab, its images and icons resolved as the editor draws them.
@@ -85,7 +96,7 @@ export async function tabPreview(
       resolveImageHref,
       resolveIconArt: resolveIconExportArt,
       resolveStickerArt,
-      items: await planItemsFor(tab, auth),
+      ...(await planContentFor(tab, auth)),
     }),
   );
   return { type: 'image', data: png, mimeType: 'image/png' };

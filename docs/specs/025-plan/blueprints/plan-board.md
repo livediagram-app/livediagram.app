@@ -48,7 +48,10 @@ PlanBoardHeader.tsx      title, count, progress, unplaced chip and its tray, vot
 PlanCardFace.tsx         a card face, and its vote control (board cards and the Plan card element)
 PlanQuickAdd.tsx         add field with token chips
 PlanCardView.tsx         the plan-card element body; "Item not found" with Remove card
-PlanSheet.tsx            the side sheet (bottom sheet on a phone) the panels open in
+PlanSheet.tsx            the panels' shells: PlanSheet (set-up's side sheet, bottom sheet on a phone) and
+                         PlanModal (the item panel's modal, through Dialog)
+PlanBoardCells.tsx       a row's band and one card in a cell
+plan-board-moves.ts      the move a drop makes (boardMoveFor), and a refusing board's reason (scopeRefusal)
 PlanSheetsHost.tsx       renders the open item panel or set-up from the slice and the active tab's boards
 ItemPanel.tsx            item panel: type, title, the type's fields, made by / changed by, Delete
 item-field-editors.tsx   editors for text (debounced), person, priority, labels, number, date, checklist
@@ -61,8 +64,10 @@ plan-tile-art.tsx        the Boards and Cards tiles' glyphs
 ```
 
 Hooks (`apps/live/hooks/plan/`): `usePlanItems` (store), `usePlanSlice` (composed into `useEditorState`; provides
-the `PlanContext` value, the open item and set-up, and `dropPlanCardOnBoard`), `usePlanCardDrag` (pointer drag
-within and out of a board; the drop slot is read from `data-plan-status` / `data-plan-lane` / `data-plan-card`
+the `PlanContext` value, the open item and set-up, and `dropPlanCardOnBoard`), `usePlanBoardDrop` (the board's drag and
+drop, and the board as a target for cards from other boards through `plan-board-targets.ts`, a registry of the
+boards on screen by element id), `usePlanCardDrag` (pointer drag
+within, between and out of boards; the drop slot is read from `data-plan-status` / `data-plan-lane` / `data-plan-card`
 under the pointer), `usePlanPresence` (the `plan-presence` op), `useItemUndo` (the undo journal), and
 `plan-card-item.ts` (the item a card tile makes). `PlanProvider` wraps the editor view, so the export dialog reads
 the items too.
@@ -107,7 +112,8 @@ cancelled` (Escape, pointercancel). `pressed → idle` on pointerup without movi
 - Empty board: first column shows the open add field with "Add your first item".
 - Copy: "Add item", "Not on this board", "Move to", "Hidden until reveal", "Reveal", "Votes left: 3",
   "Item not found", "Remove card", "Board set-up", "Only mine".
-- Item panel: right side sheet 380 px (phone: bottom sheet, 85% height), header with type picker + key, title
+- Item panel: a modal through the shared `Dialog` (`size="lg"`, `phoneSheet`: a sheet from the bottom with a grab
+  handle below `sm`), max height 44rem, header with type picker + key, title
   input, field rows in the type's order, description textarea, checklist, footer "Made by X · Changed by Y, 2m".
 
 ## Accessibility
@@ -148,6 +154,7 @@ cancelled` (Escape, pointercancel). `pressed → idle` on pointerup without movi
 | Factory, validation, size, labels           | `packages/document/src/plan-shapes.test.ts`                   |
 | SVG render with and without items           | `plan-shapes.test.ts`, `svg-render-coverage.test.ts`          |
 | Projection: columns, rows, unplaced, filter | `packages/items/src/board.test.ts`                            |
+| Drop moves, between boards, refusals        | `apps/live/components/plan/plan-board-moves.test.ts`          |
 | Keyboard moves and their announcement       | `apps/live/components/plan/plan-board-keys.test.ts`           |
 | Quick add tokens                            | `packages/items/src/quick-add.test.ts`                        |
 | Face-down and votes spent                   | `packages/items/src/board.test.ts`                            |

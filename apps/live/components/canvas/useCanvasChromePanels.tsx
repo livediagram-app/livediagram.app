@@ -6,6 +6,7 @@ import { useStableCallbacks } from '@/hooks/ui/useStableCallbacks';
 import type { useCornerDocking } from '@/hooks/ui/useCornerDocking';
 import type { PanelId } from '@/lib/panel-layout';
 import { LayersPanel } from '@/components/panels/LayersPanel';
+import { CardTypesPanel } from '@/components/plan/CardTypesPanel';
 import { visibleLayerElements } from '@livediagram/document';
 import { CanvasAiPanel } from './CanvasAiPanel';
 import { CommandPalette } from '@/components/palette/CommandPalette';
@@ -80,6 +81,8 @@ export function useCanvasChromePanels({
   toolbarClusterEls: ReactNode;
   collaborateEl: ReactNode;
   slidesPopoverEl: ReactNode;
+  // The Card Types panel over its cluster button, in Plan mode (docs/specs/025-plan/item-types.md).
+  cardTypesPopoverEl: ReactNode;
   // True when Layers opens as a popover over its cluster button
   // (Toolbar, and zen).
   clusterPopovers: boolean;
@@ -267,6 +270,12 @@ export function useCanvasChromePanels({
   useEffect(() => {
     if (activeDockPanel === 'slides' && !props.illustratePages) closeDockPanel();
   }, [activeDockPanel, props.illustratePages, closeDockPanel]);
+  // The Card Types popover, likewise, belongs to Plan mode's button.
+  const planMode = props.editorMode === 'plan';
+  const cardTypesOpen = activeDockPanel === 'card-types' && planMode;
+  useEffect(() => {
+    if (activeDockPanel === 'card-types' && !planMode) closeDockPanel();
+  }, [activeDockPanel, planMode, closeDockPanel]);
   const { avatarEl, laserEl, spotlightEl, eraserEl, formatEl, slideDeckEl } = useCanvasToolPanels({
     props,
     chromeHidden,
@@ -549,6 +558,13 @@ export function useCanvasChromePanels({
     // in it (see panelEls).
     collaborateEl,
     slidesPopoverEl: slidesOpen ? slideDeckEl : null,
+    cardTypesPopoverEl: cardTypesOpen ? (
+      <CardTypesPanel
+        popoverOpen
+        popoverAnchor={activeDockAnchor ?? undefined}
+        onPopoverClose={closeDockPanel}
+      />
+    ) : null,
     toolbarClusterEls: toolbarActive ? layersEl : null,
     clusterPopovers,
     paletteTint,

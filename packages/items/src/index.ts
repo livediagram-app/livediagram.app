@@ -3,6 +3,8 @@
 
 export * from './item';
 export * from './item-types';
+export * from './glyphs';
+export * from './type-catalogue';
 export * from './fields';
 export * from './limits';
 export * from './rank';

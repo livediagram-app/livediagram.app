@@ -176,6 +176,7 @@ export function createApiLivediagramPort(ownerId: string): LivediagramPort {
           tabs,
           liveDoc.savedAt,
           itemStore.items,
+          liveDoc.itemTypes ?? null,
         ),
         savedAt: liveDoc.savedAt,
       };
@@ -220,6 +221,7 @@ export function createApiLivediagramPort(ownerId: string): LivediagramPort {
         tabs,
         presentation,
         items: storeAsCreates(envelope.document.items ?? []),
+        itemTypes: envelope.document.itemTypes ?? null,
         // Import a copy is an import (docs/specs/013-workspace/default-folders.md): no place chosen
         // and its intent, so it lands in the person's default folder. A copy the mirror placed keeps
         // the mirror's place, chosen explicitly (its root included), and is never routed.

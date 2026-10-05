@@ -288,7 +288,12 @@ export function ExportTabDialog({
         : imageContext
           ? await loadTabImages(tab, imageContext)
           : undefined;
-      const renderOpts = { ...opts, images, page, ...(plan ? { items: plan.items } : {}) };
+      const renderOpts = {
+        ...opts,
+        images,
+        page,
+        ...(plan ? { items: plan.items, itemTypes: plan.types } : {}),
+      };
       if (pages && page) {
         const pageScope = scopeOf(format);
         const { blob, ext } = await exportPages({

@@ -28,6 +28,7 @@ import { ToolbarPalette } from '@/components/palette/ToolbarPalette';
 import { pickPaletteAddHandlers } from '@/components/palette/palette-add-handlers';
 import { ToolbarExplorerButton } from '@/components/chrome/ToolbarExplorerButton';
 import { SlidesClusterButton } from '@/components/canvas/SlidesClusterButton';
+import { CardTypesClusterButton } from '@/components/canvas/CardTypesClusterButton';
 import { LayersClusterButton } from '@/components/canvas/LayersClusterButton';
 import { UndoRedoClusterStrip } from '@/components/canvas/UndoRedoClusterStrip';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
@@ -253,8 +254,12 @@ export function CanvasChrome(props: CanvasChromeProps) {
   // useCanvasChromePanels, so a button and its panel share one value.
   const panelsOn = {
     // Not in Illustrate mode: a page is laid out by its pages, not layers
-    // (docs/specs/007-editor/illustrate-pages.md).
-    layers: panelEnabled(settings, 'layersPanelEnabled') && !props.illustratePages,
+    // (docs/specs/007-editor/illustrate-pages.md). Not in Plan mode either: a board is worked by its
+    // columns and cards, not a stacking order (docs/specs/025-plan/plan-mode.md).
+    layers:
+      panelEnabled(settings, 'layersPanelEnabled') &&
+      !props.illustratePages &&
+      props.editorMode !== 'plan',
     collaborate: panelEnabled(settings, 'collaboratePanelEnabled'),
   };
 
@@ -334,6 +339,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
     toolbarClusterEls,
     collaborateEl,
     slidesPopoverEl,
+    cardTypesPopoverEl,
     clusterPopovers,
     paletteTint,
   } = useCanvasChromePanels({
@@ -495,6 +501,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
           layer, as Toolbar's cluster popovers do. */}
       {zenMode ? null : collaborateEl}
       {zenMode ? null : slidesPopoverEl}
+      {zenMode ? null : cardTypesPopoverEl}
       {toolbarActive && !readOnly && !whiteboard ? (
         <ToolbarPalette
           key={props.esBoard ? 'es-board' : 'standard'}
@@ -591,6 +598,13 @@ export function CanvasChrome(props: CanvasChromeProps) {
               <SlidesClusterButton
                 popoverOpen={activeDockPanel === 'slides'}
                 onTogglePopover={(button) => handleDockButtonClick('slides', button, true)}
+              />
+            ) : null}
+            {/* Card Types (docs/specs/025-plan/item-types.md): in Plan mode, where Layers would be. */}
+            {!zenMode && props.editorMode === 'plan' ? (
+              <CardTypesClusterButton
+                popoverOpen={activeDockPanel === 'card-types'}
+                onTogglePopover={(button) => handleDockButtonClick('card-types', button, true)}
               />
             ) : null}
             {/* Layers (docs/specs/006-document/layers.md): see LayersClusterButton. */}

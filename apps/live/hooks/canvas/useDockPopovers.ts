@@ -15,8 +15,9 @@ import { useUiScale } from '@/components/providers/ui-scale';
 // scaled width or a scaled popover runs off the right edge.
 const POPOVER_WIDTH = 256;
 
-// 'slides': the Slide Deck panel over its cluster button in Illustrate mode.
-export type DockPanel = 'explorer' | 'layers' | 'collaborate' | 'slides';
+// 'slides': the Slide Deck panel over its cluster button in Illustrate mode. 'card-types': the Card
+// Types panel over its cluster button in Plan mode (docs/specs/025-plan/item-types.md).
+export type DockPanel = 'explorer' | 'layers' | 'collaborate' | 'slides' | 'card-types';
 
 export type { DockAnchor };
 
@@ -31,6 +32,7 @@ function trackDockPanelOpened(id: DockPanel): void {
   if (id === 'layers') track('Layer', 'Opened', 'Panel');
   else if (id === 'collaborate') track('UI', 'Opened', 'Collaborate');
   else if (id === 'slides') track('UI', 'Opened', 'SlideDeck');
+  else if (id === 'card-types') track('Plan', 'Opened', 'CardTypes');
 }
 
 export function useDockPopovers(mainRef: Ref<HTMLElement>) {

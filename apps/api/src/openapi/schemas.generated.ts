@@ -1522,6 +1522,35 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     required: ['accountId', 'accountName', 'tokenId', 'tokenName', 'role', 'expiresAt'],
     type: 'object',
   },
+  CustomFieldDef: {
+    additionalProperties: false,
+    properties: {
+      id: {
+        type: 'string',
+      },
+      kind: {
+        $ref: '#/components/schemas/CustomFieldKind',
+      },
+      label: {
+        type: 'string',
+      },
+      onCard: {
+        type: 'boolean',
+      },
+      options: {
+        items: {
+          type: 'string',
+        },
+        type: 'array',
+      },
+    },
+    required: ['id', 'label', 'kind'],
+    type: 'object',
+  },
+  CustomFieldKind: {
+    enum: ['text', 'longtext', 'number', 'date', 'checkbox', 'link', 'choice'],
+    type: 'string',
+  },
   CustomTheme: {
     additionalProperties: false,
     properties: {
@@ -2652,6 +2681,16 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       id: {
         type: 'string',
+      },
+      itemTypes: {
+        anyOf: [
+          {
+            $ref: '#/components/schemas/ItemTypeCatalogue',
+          },
+          {
+            type: 'null',
+          },
+        ],
       },
       name: {
         type: 'string',
@@ -4491,6 +4530,97 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     required: ['item', 'rev'],
     type: 'object',
   },
+  ItemTypeCatalogue: {
+    additionalProperties: false,
+    properties: {
+      types: {
+        items: {
+          $ref: '#/components/schemas/ItemTypeDef',
+        },
+        type: 'array',
+      },
+      version: {
+        type: 'number',
+      },
+    },
+    required: ['version', 'types'],
+    type: 'object',
+  },
+  ItemTypeDef: {
+    additionalProperties: false,
+    properties: {
+      color: {
+        type: 'string',
+      },
+      custom: {
+        items: {
+          $ref: '#/components/schemas/CustomFieldDef',
+        },
+        type: 'array',
+      },
+      fields: {
+        items: {
+          type: 'string',
+        },
+        type: 'array',
+      },
+      glyph: {
+        anyOf: [
+          {
+            $ref: '#/components/schemas/PlanGlyphId',
+          },
+          {
+            type: 'string',
+          },
+        ],
+      },
+      id: {
+        type: 'string',
+      },
+      label: {
+        type: 'string',
+      },
+      newTitle: {
+        type: 'string',
+      },
+    },
+    required: ['id', 'label', 'newTitle', 'glyph', 'color', 'fields'],
+    type: 'object',
+  },
+  ItemTypesRequest: {
+    additionalProperties: false,
+    properties: {
+      itemTypes: {
+        anyOf: [
+          {
+            $ref: '#/components/schemas/ItemTypeCatalogue',
+          },
+          {
+            type: 'null',
+          },
+        ],
+      },
+    },
+    required: ['itemTypes'],
+    type: 'object',
+  },
+  ItemTypesResponse: {
+    additionalProperties: false,
+    properties: {
+      itemTypes: {
+        anyOf: [
+          {
+            $ref: '#/components/schemas/ItemTypeCatalogue',
+          },
+          {
+            type: 'null',
+          },
+        ],
+      },
+    },
+    required: ['itemTypes'],
+    type: 'object',
+  },
   ItemVoteRequest: {
     additionalProperties: false,
     properties: {
@@ -5689,6 +5819,27 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     },
     required: ['id', 'status', 'name'],
     type: 'object',
+  },
+  PlanGlyphId: {
+    enum: [
+      'task',
+      'story',
+      'bug',
+      'epic',
+      'note',
+      'idea',
+      'action',
+      'risk',
+      'star',
+      'flag',
+      'heart',
+      'bookmark',
+      'person',
+      'calendar',
+      'chat',
+      'cube',
+    ],
+    type: 'string',
   },
   PollStyle: {
     enum: ['yesNo', 'yesNoAbstain', 'choice', 'collaborators', 'rating', 'text'],

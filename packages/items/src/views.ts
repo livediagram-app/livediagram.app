@@ -3,7 +3,8 @@
 
 import type { Item } from './item';
 import { itemAssignee, itemTitle } from './item';
-import { itemTypeOf } from './item-types';
+import { ITEM_TYPES, type ItemTypeDef } from './item-types';
+import { typeIn } from './type-catalogue';
 import { PRIORITY_LABELS, isPriority } from './fields';
 
 export function itemKeyLabel(item: Pick<Item, 'key'>): string {
@@ -11,8 +12,8 @@ export function itemKeyLabel(item: Pick<Item, 'key'>): string {
 }
 
 // "#12 Fix login, Bug, assigned to Sam, high priority"
-export function itemAccessibleName(item: Item): string {
-  const parts = [`${itemKeyLabel(item)} ${itemTitle(item)}`, itemTypeOf(item.type).label];
+export function itemAccessibleName(item: Item, types: readonly ItemTypeDef[] = ITEM_TYPES): string {
+  const parts = [`${itemKeyLabel(item)} ${itemTitle(item)}`, typeIn(types, item.type).label];
   const who = itemAssignee(item);
   if (who) parts.push(`assigned to ${who.name}`);
   const p = item.fields['priority'];

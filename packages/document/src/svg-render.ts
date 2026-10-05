@@ -8,7 +8,7 @@
 // Text measurement degrades to a char-width estimate when there's no DOM
 // (Workers / jsdom), so wrapping still works headless.
 
-import type { Item } from '@livediagram/items';
+import type { Item, ItemTypeDef } from '@livediagram/items';
 import { svgPlanBoard, svgPlanCard } from './svg-render-plan';
 import {
   hasShapeSilhouette,
@@ -207,8 +207,8 @@ export function svgBoxed(source: BoxedElement, opts: BoxedExportOptions = {}): s
     // Columns of cards, or one card, drawn from the document's items (docs/specs/025-plan/plan-board.md).
     const body =
       el.shape === 'plan-board'
-        ? svgPlanBoard(el, opts.items, surface)
-        : svgPlanCard(el, opts.items, surface);
+        ? svgPlanBoard(el, opts.items, surface, opts.itemTypes)
+        : svgPlanCard(el, opts.items, surface, opts.itemTypes);
     return `<g${opAttr}${rotAttr}${shadowAttr}>${body}</g>`;
   }
   if (el.type === 'shape' && el.shape === 'checklist' && shape.kind === 'rect') {
@@ -453,6 +453,8 @@ export function renderElementsToSvg(
     resolveStickerArt?: ResolveStickerArt;
     // The document's items, so Plan boards and cards draw their cards (docs/specs/025-plan/plan-board.md).
     items?: ReadonlyMap<string, Item>;
+    // The document's item types (docs/specs/025-plan/item-types.md).
+    itemTypes?: readonly ItemTypeDef[];
   } = {},
 ): string {
   const padding = opts.padding ?? EXPORT_PADDING;
@@ -504,6 +506,7 @@ export function renderElementsToSvg(
             paper: bg,
             chartPalette,
             items: opts.items,
+            itemTypes: opts.itemTypes,
           }),
     );
     const opacity = layerOpacityOf(band.layer);

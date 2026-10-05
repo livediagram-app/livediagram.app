@@ -372,6 +372,14 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M10 10h6M10 14h4" />
     </Glyph>
   ),
+  // Two cards, one behind the other, each with its type stripe: kinds of card.
+  'card-types': (
+    <Glyph>
+      <path d="M7 5.5V4.5a1.5 1.5 0 0 1 1.5-1.5h11A1.5 1.5 0 0 1 21 4.5v9a1.5 1.5 0 0 1-1.5 1.5H18" />
+      <rect x="3" y="8" width="15" height="12" rx="1.5" />
+      <path d="M6 8v12M9 12h6M9 15.5h4" />
+    </Glyph>
+  ),
   // A page with a title and a bar chart: the poster an infographic becomes.
   illustrate: (
     <Glyph>

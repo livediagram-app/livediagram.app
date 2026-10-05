@@ -1,7 +1,12 @@
 // The Plan category's tiles (docs/specs/025-plan/plan-mode.md "The palette"): a board per preset, a
 // card per item type. Made from the presets and the item-type catalogue, so a new preset or type is a
 // tile with no edit here. Spread into PALETTE_TILES.
-import { ITEM_TYPES, PLAN_BOARD_PRESETS, type PlanBoardPresetId } from '@livediagram/items';
+import {
+  ITEM_TYPES,
+  PLAN_BOARD_PRESETS,
+  type ItemTypeDef,
+  type PlanBoardPresetId,
+} from '@livediagram/items';
 import { PlanBoardTileArt, PlanCardTileArt } from '@/components/plan/plan-tile-art';
 import type { PaletteTileDef } from './palette-tile-defs';
 
@@ -61,7 +66,13 @@ export const PLAN_TILES: PaletteTileDef[] = [
       />
     ),
   })),
-  ...ITEM_TYPES.map((t): PaletteTileDef => ({
+  ...ITEM_TYPES.map(planCardTile),
+];
+
+// A card tile for an item type (docs/specs/025-plan/item-types.md "Where types show"): the built-in
+// ones above, and the Cards category's tiles for a document's own catalogue.
+export function planCardTile(t: ItemTypeDef): PaletteTileDef {
+  return {
     id: `plan:card-${t.id}`,
     section: 'plan-cards',
     label: `Add ${t.label.toLowerCase()} card`,
@@ -70,5 +81,18 @@ export const PLAN_TILES: PaletteTileDef[] = [
     noTint: true,
     action: { type: 'shape', kind: 'plan-card', plan: t.id },
     icon: <PlanCardTileArt size={GLYPH_PX} color={t.color} />,
-  })),
-];
+  };
+}
+
+// A list of tiles with its card tiles drawn from the document's types: each `plan:card-<id>` tile
+// takes its type's current name and colour, and goes when the type is gone (Popular's card tiles).
+export function withDocumentCardTiles(
+  tiles: readonly PaletteTileDef[],
+  types: readonly ItemTypeDef[],
+): PaletteTileDef[] {
+  return tiles.flatMap((tile) => {
+    if (!tile.id.startsWith('plan:card-')) return [tile];
+    const type = types.find((t) => `plan:card-${t.id}` === tile.id);
+    return type ? [planCardTile(type)] : [];
+  });
+}

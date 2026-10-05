@@ -30,10 +30,24 @@ item store.
 
 - **The palette** narrows to the board's needs (below).
 - **Plan boards and Plan cards take input** as [Plan board](plan-board.md#working-on-a-board) describes.
-- **The item panel** opens beside the canvas when an item is opened.
+- **The item panel** opens as a modal over the canvas when an item is opened (a sheet that rises from the
+  bottom on a phone).
+- **The Layers panel is gone**, with its button: a board is worked by its columns and cards, not a stacking
+  order. It returns with any other mode.
 - **Everything else is Diagram mode's**: selection, arrows, text, stickies, frames, snapping, history and
   shortcuts, so notes and arrows around a board work as they always do.
 - **The canvas pattern and colours are the tab's**, as in Diagram mode.
+
+## Leaving Plan
+
+- **A Plan tab with anything on it stays in Plan mode.** Its boards and cards are worked the Plan way, and a
+  board in another mode is only a picture of them, so the mode switch and **Shift+D** do not move it.
+- Asking for another mode there opens **This Tab Stays in Plan Mode**, which says why and offers **Create a
+  New Tab**: a new tab, opening in the mode asked for, becomes the active tab (with its template picker, as any
+  new tab). **Cancel** stays. Shift+D announces nothing it did not do; the dialog speaks for itself.
+- An empty Plan tab switches freely, as every tab does. So does every other mode.
+- A visitor who cannot edit has no switch, so meets none of this.
+- Telemetry: a tab made from the dialog is an ordinary new tab, `Tab` · `Created`.
 
 ## The palette
 
@@ -44,7 +58,7 @@ The Plan layout offers eight categories, landing on Popular. Boards and Cards si
 | -------- | ------------------------------------------------------------------------------------------------------------------ |
 | Popular  | Kanban board, Retro board, Task card, Bug card, Note card, Sticky note, Text, Frame, Arrow, Image, Checklist, Link |
 | Boards   | Kanban, Sprint, Retro, Roadmap, Bug triage, Week, Blank                                                            |
-| Cards    | One per item type: Task card, Story card, Bug card, Epic card, Note card, Idea card, Action card, Risk card        |
+| Cards    | One per [item type](item-types.md) of the document, in its order: Task card, Story card... and any added           |
 | Write    | Diagram's Write, without Page and Annotation, with Checklist and Link                                              |
 | Shapes   | Diagram's Shapes, with Arrow, Line and Frame                                                                       |
 | Icons    | The icon catalogue                                                                                                 |

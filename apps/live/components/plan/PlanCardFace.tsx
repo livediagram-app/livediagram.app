@@ -10,13 +10,15 @@ import {
   itemAssignee,
   itemLabels,
   itemTitle,
-  itemTypeOf,
+  ITEM_TYPES,
   itemVoteTotal,
+  typeIn,
   itemVotes,
   type CardField,
   type Item,
 } from '@livediagram/items';
-import type { PlanCardPresence } from './PlanContext';
+import { usePlan, type PlanCardPresence } from './PlanContext';
+import { customFieldText } from './custom-field-text';
 import { PRIORITY_COLOURS, type PlanPalette } from './plan-palette';
 import { PersonDisc, PresenceTag } from './PersonDisc';
 import { PlanTypeGlyph } from './plan-type-glyph';
@@ -62,7 +64,12 @@ export function PlanCardFace({
   presence,
   voting,
 }: PlanCardFaceProps) {
-  const type = itemTypeOf(item.type);
+  const type = typeIn(usePlan()?.types ?? ITEM_TYPES, item.type);
+  // Custom fields marked Show on card, with a value (docs/specs/025-plan/item-types.md "An item type").
+  const onCard = (type.custom ?? []).flatMap((f) => {
+    const text = f.onCard ? customFieldText(f, item.fields[f.id]) : null;
+    return text ? [{ id: f.id, label: f.label, text }] : [];
+  });
   const show = (f: CardField) => fields.includes(f);
   const ring = presence ? `0 0 0 2px ${presence.color}` : undefined;
   if (faceDown) {
@@ -124,7 +131,7 @@ export function PlanCardFace({
           className="flex items-center gap-1.5 text-[11px] font-medium"
           style={{ color: palette.muted }}
         >
-          {show('type') ? <PlanTypeGlyph type={item.type} color={type.color} /> : null}
+          {show('type') ? <PlanTypeGlyph glyph={type.glyph} color={type.color} /> : null}
           {show('key') ? <span>#{item.key}</span> : null}
           {show('type') ? <span>{type.label}</span> : null}
         </div>
@@ -135,6 +142,16 @@ export function PlanCardFace({
       >
         {itemTitle(item) || 'Untitled'}
       </div>
+      {onCard.length > 0 ? (
+        <div className="flex flex-col gap-0.5 text-[11px]" style={{ color: palette.muted }}>
+          {onCard.map((f) => (
+            <div key={f.id} className="truncate">
+              <span className="font-medium">{f.label}:</span>{' '}
+              <span style={{ color: palette.text }}>{f.text}</span>
+            </div>
+          ))}
+        </div>
+      ) : null}
       {chips ? (
         <div
           className="mt-auto flex flex-wrap items-center gap-1.5 text-[11px]"

@@ -5,14 +5,14 @@ and its templates.
 
 ## Domain and naming
 
-| Spec term        | Identifier                                                  |
-| ---------------- | ----------------------------------------------------------- |
-| Plan mode        | `EditorMode` `'plan'` (`EDITOR_MODE_CATALOGUE`, 4th entry)  |
-| Plan Mode switch | preference `planModeEnabled`; `EXPERIMENTAL_EDITOR_MODES`   |
-| Plan palette     | `PLAN` layout in `palette-layouts.ts`; category id `plan`   |
-| Plan mark        | `PlanModeIcon` in `packages/ui/src/icons/drawing-kinds.tsx` |
-| Blank Plan       | `TemplateKind` `'blank-plan'`                               |
-| seed items       | `TemplateBuild.items?: ItemCreate[]`                        |
+| Spec term        | Identifier                                                                             |
+| ---------------- | -------------------------------------------------------------------------------------- |
+| Plan mode        | `EditorMode` `'plan'` (`EDITOR_MODE_CATALOGUE`, 4th entry)                             |
+| Plan Mode switch | preference `planModeEnabled`; `EXPERIMENTAL_EDITOR_MODES`                              |
+| Plan palette     | `PLAN` layout in `palette-layouts.ts`; categories `plan-boards`, `plan-cards` (band 4) |
+| Plan mark        | `PlanModeIcon` in `packages/ui/src/icons/drawing-kinds.tsx`                            |
+| Blank Plan       | `TemplateKind` `'blank-plan'`                                                          |
+| seed items       | `TemplateBuild.items?: ItemCreate[]`                                                   |
 
 ## Mode wiring
 

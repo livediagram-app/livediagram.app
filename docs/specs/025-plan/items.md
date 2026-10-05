@@ -69,7 +69,7 @@ A small built-in catalogue, each with a glyph, a colour and the fields it offers
 | Action | Something agreed to do                 | title, status, assignee, due                                                             |
 | Risk   | Something that could go wrong          | title, description, status, priority, assignee                                           |
 
-- Custom item types are a later step; the open field bag already holds their data.
+- A document can change these and add its own, with custom fields: see [Item types](item-types.md).
 
 ## Changing items
 

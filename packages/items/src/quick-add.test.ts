@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { parseQuickAdd } from './quick-add';
+import { ITEM_TYPES } from './item-types';
 import { ALI, SAM } from './test-items';
 
 describe('parseQuickAdd', () => {
@@ -43,5 +44,27 @@ describe('parseQuickAdd', () => {
     expect(r.type).toBe('idea');
     expect(r.fields['estimate']).toBe(999);
     expect(r.title).toBe('more');
+  });
+});
+
+// docs/specs/025-plan/item-types.md "Where types show".
+describe('quick add with a document type', () => {
+  it('reads a leading name with spaces as a type, and leaves other colons alone', () => {
+    const types = [
+      ...ITEM_TYPES,
+      {
+        id: 'customer-call',
+        label: 'Customer call',
+        newTitle: 'x',
+        glyph: 'chat',
+        color: '#000000',
+        fields: [],
+      },
+    ];
+    expect(parseQuickAdd('Customer call: Acme renewal', [], types)).toMatchObject({
+      type: 'customer-call',
+      title: 'Acme renewal',
+    });
+    expect(parseQuickAdd('Fix login: on Safari', [], types).type).toBeUndefined();
   });
 });
