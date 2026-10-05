@@ -56,7 +56,8 @@ A gesture's cost scales with what it changes and what is on screen, never with t
   (bounds, offset, zoom) and a measurement taken outside the gesture.
 - **The Map redraws its content when a gesture ends**, not on every frame of it. During a drag,
   pan or stroke it keeps its last drawing and moves only its viewport rectangle; a remote edit
-  redraws it at most once every 250 ms.
+  redraws it at most once every 250 ms. Opening a board draws the board first; the Map's picture
+  follows in a later render.
 - **The Map is one image.** It draws the board as a picture, not as a second copy of the board's
   elements in the page, which every style pass, layout, hit test and collection would otherwise
   walk.

@@ -100,6 +100,7 @@ const PAD_FRACTION = 0.12;
 const PAD_MIN = 48;
 // What the catalogue resolvers find before the catalogue chunk lands.
 const NO_ART = () => undefined;
+const NO_ELEMENTS: Element[] = [];
 // An element as the Map draws it: its label left out (docs/specs/008-canvas/minimap.md "What it shows").
 function withoutLabel(el: Element): Element {
   if (!('label' in el) && !('richText' in el)) return el;
@@ -148,7 +149,9 @@ export function Minimap({
   // Drawn as the elements settle, not per frame of a gesture (docs/specs/008-canvas/canvas-performance.md),
   // and deferred: the change that settles them (a drag's release) commits first, and the Map's picture,
   // rebuilt and re-parsed for the whole board, follows as its own render.
-  const elements = useDeferredValue(useSettledElements(liveElements));
+  // On mount the picture is deferred too: the first render draws none (NO_ELEMENTS), so opening a
+  // board mounts it first and the Map's whole-board picture follows in a background render.
+  const elements = useDeferredValue(useSettledElements(liveElements), NO_ELEMENTS);
   const draggingRef = useRef(false);
 
   // Which paper the canvas is (light / dark), from the SAME context the canvas

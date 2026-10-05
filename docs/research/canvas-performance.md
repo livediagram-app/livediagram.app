@@ -266,6 +266,30 @@ Measured 2026-10-04 on the reference board, local, interleaved builds.
   Mounting React element views is the expensive step, so unmounting to save drawing loses. Set aside
   in the spec's Later list until an element can be shown without a mount.
 
+## Level of detail, and opening a board
+
+Measured 2026-10-05 on the reference board, local, interleaved builds.
+
+- **Level of detail at fit** (zoom 0.23, labels about 5 px tall), its ceiling measured by hiding
+  detail in the page:
+  - hiding label text: zoom 117/92 to 127/91 ms (whiteboard), 59/76 to 51/72 ms (diagram), drag
+    about 10% lower: within the noise;
+  - hiding text and every SVG inside elements: zoom often under 50 ms and diagram drag 316-333 to
+    246-251 ms, but cylinders, diamonds, pen strokes and polygons vanish and readable labels go.
+
+  Not built: the only variant that wins is a visual regression at that zoom.
+
+- **Opening a board** at 4x is one 1.1-1.7 s mount, then a train of 100-1,750 ms tasks for 2-4 s.
+  Two costs moved out of the first task: the Map's picture (about 100-120 ms, now built after the
+  board) and a second render of every element view about 2.6 s in (a new `chairSitters` function as
+  presence arrived, 174 ms). First task: diagram 975-1,071 to 660-889 ms, whiteboard 947-1,769 to
+  729-1,291 ms (medians of five, three rounds). Time to interactive is set by the train after it and
+  stayed within the noise.
+- **Select and marquee**: mounting the Quick Style panel is the largest single share of a select
+  (diagram select script 48-49 to 28-34 ms without it). Placing it in the next frame and querying
+  its obstacles once per pass changed nothing beyond the noise over three rounds, so the cost is the
+  panel's subtree mounting, not its placement.
+
 ## Not tried
 
 - `contain` on element wrappers, a raster snapshot of still elements during a gesture, and fewer
