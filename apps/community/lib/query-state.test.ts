@@ -12,7 +12,7 @@ describe('readQueryState', () => {
 
   it('reads every filter', () => {
     expect(read('?q=cloud+map&category=architecture&tag=aws&sort=loved')).toEqual({
-      q: 'cloud map #aws sort:loved',
+      q: 'cloud map #aws category:architecture sort:loved',
       category: 'architecture',
       tag: null,
       sort: 'loved',
@@ -58,15 +58,16 @@ describe('writeQueryState', () => {
     expect(read('?q=retro+sort%3Acopied').sort).toBe('copied');
   });
 
-  it('omits the default sort and writes the rest', () => {
-    expect(writeQueryState({ ...EMPTY_FILTERS, q: 'retro', category: 'workshops' })).toBe(
-      '?q=retro&category=workshops',
-    );
+  it('writes everything inside q, defaults omitted', () => {
+    expect(
+      writeQueryState({ ...EMPTY_FILTERS, q: 'retro category:workshops', category: 'workshops' }),
+    ).toBe('?q=retro+category%3Aworkshops');
+    expect(writeQueryState(EMPTY_FILTERS)).toBe('');
   });
 
   it('round trips through the URL', () => {
     const filters = {
-      q: 'user journey #ux sort:copied',
+      q: 'user journey #ux category:flows sort:copied',
       category: 'flows',
       tag: null,
       sort: 'copied',

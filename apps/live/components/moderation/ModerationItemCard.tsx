@@ -31,7 +31,7 @@ function formatDate(ms: number): string {
 }
 
 // One reported or hidden post on the Moderation page (docs/specs/025-community/community.md "Reports
-// and moderation"): the card image, title, author, state, every report, Open Board, and Hide or
+// and moderation"): the card image, title, author, state, every report, Open Document, and Hide or
 // Restore.
 export function ModerationItemCard({
   item,
@@ -122,7 +122,7 @@ export function ModerationItemCard({
             rel="noopener"
             className={buttonClassName({ variant: 'secondary', size: 'xs' })}
           >
-            Open Board
+            Open Document
           </a>
           {hidden ? (
             <Button size="xs" onClick={() => act('listed')} disabled={busy}>

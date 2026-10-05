@@ -218,7 +218,7 @@ Editor (`apps/live`):
   while a password is set.
 - `resolveDocumentSession` (`apps/live/app/document/[id]/editor-page-helpers.ts`) takes `community`: a community
   link resolves to a non-owner view session for everyone, the author included, so neither the post page's embed nor
-  Open Board can edit the board; `CommunitySession.ownDocumentId` gives the author Edit Your Board in the bar.
+  Open Document can edit the document; `CommunitySession.ownDocumentId` gives the author Edit Your Document in the bar.
 - Share-view mode: `useIdentityBootstrap` stores `sessionCommunity` (in `editor-realtime.ts`) from the share resolve;
   when set, `useRoomConnection` gets `enabled: false`, the identity prompt is not opened, the visit is not recorded,
   and `apps/live/components/chrome/CommunityBar.tsx` renders under the header with the author
@@ -238,11 +238,13 @@ Community app (`apps/community`):
 - `apps/community/lib/api.ts`: `fetchPosts`, `fetchFacets`, `fetchPost`, `likePost`, `unlikePost`, `reportPost`, with
   `NEXT_PUBLIC_API_BASE ?? '/api'`; `apps/community/lib/useLike.ts` is the optimistic like with rollback.
 - Gallery (`apps/community/components/gallery/`): `GalleryView` over `useGallery`; `CommunityHero`, `SearchBox`
-  (debounced 300 ms, Enter commits) holding `TagFilter` and `SortMenu` in its right edge, `CategoryChips`, `PostGrid`
-  of `PostCard`, `LoadMore`, `GalleryStates`. Tags and the sort are words in `q`: `communitySearchTags`,
-  `communitySearchSort`, `toggleCommunitySearchTag` and `setCommunitySearchSort` (api-schema) read and write them, the
-  worker's list reads them through `parseCommunityListQuery` and `listCommunityPosts` (each `#tag` an `EXISTS`), and a
-  legacy `?tag=` / `?sort=` folds into `q` in `readQueryState`.
+  (debounced 300 ms, Enter commits) holding `CategoryMenu`, `TagFilter` and `SortMenu` in its right edge, each over
+  the shared `SearchControlButton` (icon only below `sm`), then `PostGrid` of `PostCard`, `LoadMore`,
+  `GalleryStates`. Category, tags and sort are words in `q`: `communitySearchCategory`, `communitySearchTags`,
+  `communitySearchSort` and their setters (api-schema) read and write them; the worker's list reads them through
+  `parseCommunityListQuery` (a word wins over the old parameter) and `listCommunityPosts` (each `#tag` an `EXISTS`);
+  a legacy `?tag=`, `?category=` or `?sort=` folds into `q` in `readQueryState`. The search form sits on the
+  toolbar layer (`--z-toolbar`): above the grid, below the sticky header and its menus.
 - Post page (`apps/community/components/post/`): `PostView` over `usePost`, `EmbedFrame` (`/embed?s=<code>`, lazy,
   titled, falling back to the card image after 15 s), `PostMeta`, `PostActions`, `ReportDialog`, `RelatedPosts`. Make
   a Copy → `/document/shared?s=<code>&copy=1`.
@@ -253,7 +255,7 @@ Community app (`apps/community`):
 | --------------------------------------- | --------------------------------------------------------------------------- |
 | Publish on a document with a password   | 409 `share_password_set`; dialog explains and links to Share settings       |
 | Password set on a published document    | 409 `community_published`; Share dialog explains                            |
-| Empty document                          | 409 `empty_document`; "Add something to your board before sharing it."      |
+| Empty document                          | 409 `empty_document`; "Add something to your document before sharing it."   |
 | 51st post                               | 409 `post_limit`                                                            |
 | Owner revokes all share links           | Community link untouched (filtered)                                         |
 | Document trashed                        | Hidden everywhere; post page 404; restore lists it again                    |
@@ -261,7 +263,7 @@ Community app (`apps/community`):
 | Like twice / unlike twice               | Idempotent; counts recomputed                                               |
 | Report twice from one browser           | 204, row unchanged                                                          |
 | Storage blocked in the Community app    | In-memory key; likes work for the page's life                               |
-| Embed frame fails                       | Falls back to the card image with Open Board                                |
+| Embed frame fails                       | Falls back to the card image with Open Document                             |
 | Author has no participant row           | Author `{ name: 'Someone', color: '#64748b', picture: null }`               |
 | Search with only stop characters        | Treated as no search                                                        |
 | Offset past the end                     | Empty `posts`, `nextOffset: null`                                           |
@@ -294,20 +296,20 @@ Community app (`apps/community`):
 
 Final copy:
 
-- Share dialog section heading: **Community**. Unpublished: "Share this board with the Community so others can find it,
-  learn from it and make their own copy." Button: **Share to Community**. Guest: "Sign in to share your board with the
+- Share dialog section heading: **Community**. Unpublished: "Share this document with the Community so others can find it,
+  learn from it and make their own copy." Button: **Share to Community**. Guest: "Sign in to share your document with the
   Community." Button: **Sign In to Share**. Team document: "Team library documents can't be shared to the Community."
 - Published: post title, category, "♥ n · Copied n times", **View Post**, **Edit Listing**, **Remove From Community**;
   hidden: "Hidden from the Community after reports."
-- Publish dialog title: **Share to Community** / **Edit Listing**. Consequences: "Anyone can view this board and make
+- Publish dialog title: **Share to Community** / **Edit Listing**. Consequences: "Anyone can view this document and make
   their own copy." "Your later edits show in the Community too." "Comments stay private." "You can remove it at any
   time." Primary button: **Share to Community** / **Save Changes**.
-- Gallery heading: **Community**; lead: "Boards people are proud of. Find inspiration, then make it your own."
-- Empty (no posts): "Nothing here yet. Be the first to share a board." Empty (filters): "No boards match these
+- Gallery heading: **Community**; lead: "Documents people are proud of. Find inspiration, then make it your own."
+- Empty (no posts): "Nothing here yet. Be the first to share a document." Empty (filters): "No documents match these
   filters." Button **Clear Filters**. Error: "We couldn't load the Community." Button **Try Again**.
-- Post not found: "This board isn't in the Community any more." Link **Back to Community**.
+- Post not found: "This document isn't in the Community any more." Link **Back to Community**.
 - Community bar: "Shared to the Community by <name>" · **Back to Community** · **Make a Copy**.
-- Report dialog: title **Report This Board**, reasons as radio rows, note optional, button **Send Report**,
+- Report dialog: title **Report This Document**, reasons as radio rows, note optional, button **Send Report**,
   confirmation "Thanks. We'll take a look."
 
 Layout: gallery grid 1 / 2 / 3 / 4 columns at <640 / 640 / 1024 / 1280 px; cards with a 4:3 image area on a subtle

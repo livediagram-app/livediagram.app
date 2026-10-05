@@ -52,7 +52,7 @@ const ICONS: Record<ProductNavKey, () => ReactNode> = {
       <path d="M2 4.5A1.5 1.5 0 0 1 3.5 3h2.2l1.3 1.5h5.5A1.5 1.5 0 0 1 14 6v6a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1z" />
     </NavSvg>
   ),
-  // Two overlapping people: boards shared by others (docs/specs/025-community/community.md).
+  // Two overlapping people: documents shared by others (docs/specs/025-community/community.md).
   community: () => (
     <NavSvg>
       <circle cx="6" cy="5.5" r="2.2" />
@@ -80,7 +80,12 @@ const ITEMS: { key: ProductNavKey; label: string; href: string; desc: string }[]
   { key: 'home', label: 'Welcome', href: '/', desc: 'Learn about our features' },
   { key: 'editor', label: 'Editor', href: '/new', desc: 'Start or edit a document' },
   { key: 'explorer', label: 'Explorer', href: '/explorer', desc: 'Your documents & folders' },
-  { key: 'community', label: 'Community', href: '/community/', desc: 'Boards people are proud of' },
+  {
+    key: 'community',
+    label: 'Community',
+    href: '/community/',
+    desc: 'Documents people are proud of',
+  },
   { key: 'help', label: 'Help', href: '/help/', desc: 'Guides, tutorials & answers' },
   {
     key: 'telemetry',

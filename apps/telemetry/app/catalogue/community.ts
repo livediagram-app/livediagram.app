@@ -65,7 +65,7 @@ export const COMMUNITY_COPIES = chart(
   'Someone pressed Make a Copy on a post to start their own document from it.',
 );
 
-// Discovery: how people look for boards. Only the kind of filter, never what was typed or picked.
+// Discovery: how people look for documents. Only the kind of filter, never what was typed or picked.
 export const COMMUNITY_SEARCHES = chart(
   'Community',
   'Searched',
@@ -117,7 +117,7 @@ export const COMMUNITY_PUBLISHING: MetricStack = {
 export const COMMUNITY_ENGAGEMENT: MetricStack = {
   stack: true,
   title: 'Community Engagement',
-  blurb: 'Posts opened, liked and copied: whether shared boards get read and reused.',
+  blurb: 'Posts opened, liked and copied: whether shared documents get read and reused.',
   headline: COMMUNITY_POSTS_OPENED,
   members: [COMMUNITY_POSTS_OPENED, COMMUNITY_LIKES, COMMUNITY_UNLIKES, COMMUNITY_COPIES],
   seeAlso: { view: 'community', label: 'See the Community Tab' },
@@ -126,7 +126,7 @@ export const COMMUNITY_ENGAGEMENT: MetricStack = {
 export const COMMUNITY_DISCOVERY: MetricStack = {
   stack: true,
   title: 'Community Discovery',
-  blurb: 'How people look for boards in the gallery: searching, and picking filters.',
+  blurb: 'How people look for documents in the gallery: searching, and picking filters.',
   members: [COMMUNITY_SEARCHES, COMMUNITY_FILTERS],
   seeAlso: { view: 'community', label: 'See Each Filter on the Community Tab' },
 };

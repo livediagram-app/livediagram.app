@@ -65,7 +65,7 @@ describe('CommunityPublishDialog validation', () => {
     fireEvent.change(description(), { target: { value: 'Too short.' } });
     submit();
     fireEvent.change(description(), {
-      target: { value: 'Long enough to describe the board well.' },
+      target: { value: 'Long enough to describe the document well.' },
     });
     expect(screen.queryByText(/more characters/)).toBeNull();
     expect(description().getAttribute('aria-invalid')).toBeNull();
@@ -78,7 +78,7 @@ describe('CommunityPublishDialog validation', () => {
       .mockRejectedValueOnce(new ApiError('PublishCommunity', 409, 'empty_document'));
     open(onPublish);
     fireEvent.change(description(), {
-      target: { value: 'Long enough to describe the board well.' },
+      target: { value: 'Long enough to describe the document well.' },
     });
     fireEvent.click(screen.getByRole('radio', { name: /Infographics/ }));
     submit();
@@ -86,7 +86,7 @@ describe('CommunityPublishDialog validation', () => {
     submit();
     expect(await screen.findByRole('alert')).toHaveProperty(
       'textContent',
-      'Add something to your board before sharing it.',
+      'Add something to your document before sharing it.',
     );
   });
 });

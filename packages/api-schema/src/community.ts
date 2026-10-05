@@ -288,19 +288,22 @@ export const EMPTY_COMMUNITY_QUERY: CommunityListQuery = {
 };
 
 // A search string carries every filter in words (docs/specs/025-community/community.md "Gallery"): `#tag`
-// tokens, each a tag the post must have; one `sort:<id>` token (`sort:loved`, `sort:copied`; Newest
-// needs none); and plain terms matched against the title, description and tags.
+// tokens, each a tag the post must have; one `category:<id>` token; one `sort:<id>` token (`sort:loved`,
+// `sort:copied`; Newest needs none); and plain terms matched against the title, description and tags.
 
 const isTagToken = (word: string) => word.startsWith('#');
 const SORT_PREFIX = 'sort:';
 const isSortToken = (word: string) => word.toLowerCase().startsWith(SORT_PREFIX);
+const CATEGORY_PREFIX = 'category:';
+const isCategoryToken = (word: string) => word.toLowerCase().startsWith(CATEGORY_PREFIX);
 
-// The plain search terms (blueprint C5): lowercased, whitespace-split, `#tag` and `sort:` tokens left out,
+// The plain search terms (blueprint C5): lowercased, whitespace-split, `#tag`, `category:` and `sort:` tokens
+// left out,
 // de-duplicated, each cut to COMMUNITY_SEARCH_TERM_MAX, at most COMMUNITY_SEARCH_TERMS_MAX of them.
 export function communitySearchTerms(q: string): string[] {
   const terms: string[] = [];
   for (const raw of q.toLowerCase().split(/\s+/)) {
-    if (isTagToken(raw) || isSortToken(raw)) continue;
+    if (isTagToken(raw) || isSortToken(raw) || isCategoryToken(raw)) continue;
     const term = raw.slice(0, COMMUNITY_SEARCH_TERM_MAX);
     if (term && !terms.includes(term)) terms.push(term);
     if (terms.length === COMMUNITY_SEARCH_TERMS_MAX) break;
@@ -347,6 +350,24 @@ export function setCommunitySearchSort(q: string, sort: CommunitySort): string {
   return (sort === 'new' ? words : [...words, `${SORT_PREFIX}${sort}`]).join(' ');
 }
 
+// The category a search string asks for: its last valid `category:<id>` token, or null.
+export function communitySearchCategory(q: string): CommunityCategory | null {
+  let category: CommunityCategory | null = null;
+  for (const raw of q.split(/\s+/)) {
+    if (!isCategoryToken(raw)) continue;
+    const id = raw.slice(CATEGORY_PREFIX.length).toLowerCase();
+    if (isCommunityCategory(id)) category = id;
+  }
+  return category;
+}
+
+// The search string with its category set (null for All): any `category:` token removed, and one added
+// at the end for a category, leaving the rest of what was typed alone.
+export function setCommunitySearchCategory(q: string, category: CommunityCategory | null): string {
+  const words = q.split(/\s+/).filter((w) => w && !isCategoryToken(w));
+  return (category ? [...words, `${CATEGORY_PREFIX}${category}`] : words).join(' ');
+}
+
 // Parse a list query from URL parameters. Lenient where a stale or hand-edited link should still show something
 // (unknown sort, bad offset), strict where it would silently show the wrong thing (unknown category, bad tag).
 export function parseCommunityListQuery(
@@ -368,7 +389,7 @@ export function parseCommunityListQuery(
     ok: true,
     value: {
       q,
-      category: (rawCategory as CommunityCategory | null) ?? null,
+      category: communitySearchCategory(q) ?? (rawCategory as CommunityCategory | null) ?? null,
       tag,
       sort,
       offset,

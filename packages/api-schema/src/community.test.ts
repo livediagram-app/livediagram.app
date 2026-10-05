@@ -6,7 +6,9 @@ import {
   COMMUNITY_TAGS_MAX,
   COMMUNITY_TITLE_MAX,
   communityQueryParams,
+  communitySearchCategory,
   communitySearchSort,
+  setCommunitySearchCategory,
   communitySearchTags,
   communitySearchTerms,
   setCommunitySearchSort,
@@ -199,6 +201,29 @@ describe('search sort', () => {
   it('wins over the sort parameter', () => {
     const parsed = parseCommunityListQuery(new URLSearchParams('q=retro+sort%3Acopied&sort=loved'));
     expect(parsed.ok && parsed.value.sort).toBe('copied');
+  });
+});
+
+describe('search category', () => {
+  it('reads the last valid category token, and keeps it out of the terms', () => {
+    expect(communitySearchCategory('retro category:workshops')).toBe('workshops');
+    expect(communitySearchCategory('category:nope retro')).toBeNull();
+    expect(communitySearchTerms('retro category:workshops')).toEqual(['retro']);
+  });
+
+  it('sets the category, or clears it for All', () => {
+    expect(setCommunitySearchCategory('retro', 'planning')).toBe('retro category:planning');
+    expect(setCommunitySearchCategory('category:art retro', 'design')).toBe(
+      'retro category:design',
+    );
+    expect(setCommunitySearchCategory('retro category:art', null)).toBe('retro');
+  });
+
+  it('wins over the category parameter', () => {
+    const parsed = parseCommunityListQuery(
+      new URLSearchParams('q=category%3Adata&category=planning'),
+    );
+    expect(parsed.ok && parsed.value.category).toBe('data');
   });
 });
 

@@ -92,21 +92,23 @@ type) and on the worker (authoritative).
 ### Gallery (`/community/`)
 
 - A welcoming header: the heading, one line on what Community is, and a **Share Your Own** call to action into
-  Explorer Home (`/explorer/home`), where the person's boards are: sharing starts from a board they already have.
+  Explorer Home (`/explorer/home`), where the person's documents are: sharing starts from a document they already have.
 - **One search box holds the whole query in words.** Plain words search titles, descriptions and tags; each
-  `#tag` is a tag the board must have (all of them); one `sort:loved` or `sort:copied` orders the results (Newest,
-  the default, needs none). Anything can be typed; two controls inside the box's right edge write the same words:
-  - **Tags**: the most used tags with their counts. Choosing one adds its `#tag` to the search and applies it at
-    once; choosing it again takes it out. The button shows how many tags the search holds.
+  `#tag` is a tag the document must have (all of them); one `category:<id>` keeps to one category; one `sort:loved`
+  or `sort:copied` orders the results (All and Newest, the defaults, need none). Anything can be typed; three
+  controls inside the box's right edge write the same words, each applied at once:
+  - **Category**: All Categories, then each category with its count of documents. A category with none is left out
+    unless it is the one chosen. Choosing one writes its `category:` word (All removes it).
+  - **Tags**: the most used tags with their counts. Choosing one adds its `#tag`; choosing it again takes it out.
+    The button shows how many tags the search holds.
   - **Sort**: Newest, Most Loved (likes), Most Copied. Choosing one writes its `sort:` word (or removes it for
     Newest).
-- **Category chips** with a post count each, plus All. A category with no posts hides its chip unless it is the one
-  selected. On phones the chips scroll in one row.
+  - Each control shows an icon and its current value; on phones only the icon, so all three fit beside the text.
 - A responsive grid of **cards**: the post's live image, title, category, up to three tags, the author (picture or
   initial in their colour, and name), likes and copies. The card opens the post page; the heart likes it in place.
 - **Load More** pages through results (24 per page).
-- Filters live in the URL query (`q` with its `#tag` and `sort:` words, and `category`) so a filtered view can be
-  shared and survives a reload. Older `tag` and `sort` parameters are read into the search.
+- The whole query lives in the URL as `q` (with its `#tag`, `category:` and `sort:` words), so a filtered view can be
+  shared and survives a reload. Older `tag`, `category` and `sort` parameters are read into the search.
 - States: a skeleton grid while loading; an empty state per cause (nothing published yet, inviting the person to share one from Explorer Home; no match for these filters
   with a Clear Filters button); an error state with Try Again.
 
@@ -117,7 +119,7 @@ type) and on the worker (authoritative).
 - Title, author, publish date, category, tags (each opens the gallery with its `#tag` in the search), and the full
   description.
 - **Like** (toggles), **Make a Copy** (opens the document in the editor and copies it into the visitor's own documents in
-  one step), **Open Board** (the read-only viewer, full screen) and **Report**.
+  one step), **Open Document** (the read-only viewer, full screen) and **Report**.
 - **More Like This**: up to six other posts in the same category, most loved first.
 - A post that does not exist, was removed or is hidden shows a friendly not-found with a way back to the gallery.
 
@@ -127,15 +129,15 @@ Opening a post's document uses a dedicated **community link**: a view-role share
 ordinary view link in exactly these ways:
 
 - It never expires, covers all tabs, and is not listed among the owner's share links (the Community section manages it).
-- Visitors never join the document's realtime room: no presence, no cursors on the author's board, no live stream. They
+- Visitors never join the document's realtime room: no presence, no cursors on the author's document, no live stream. They
   see the latest saved state on load.
 - Visitors are not asked their name, are not added to "Shared with you", and the author is not emailed that someone
   joined.
 - Comments are not readable through it.
 - The viewer shows a slim **Community bar**: "Shared to the Community by <author>", **Back to Community** and **Make a
   Copy**.
-- It is read-only for **everyone, the author included**: the post page's preview and Open Board never open the board
-  for editing. The author's Community bar offers **Edit Your Board** (their own document) in place of Make a Copy.
+- It is read-only for **everyone, the author included**: the post page's preview and Open Document never open the document
+  for editing. The author's Community bar offers **Edit Your Document** (their own document) in place of Make a Copy.
 
 Making a copy works as for any view link ([Auth + guest access](../014-identity/auth-and-guest-access.md)), signed in or
 not. Each distinct person who copies a post's document counts once toward its copy count.
@@ -167,7 +169,7 @@ unliking removes it.
   The network is recorded only as a one-way hash of the address salted with the post id, so it cannot be compared across
   posts.
 - Operators see a **Moderation** page in the editor (`/moderation`, signed in, operator only) listing reported and hidden
-  posts with their reports, can open a hidden post's board to review it, and can **Hide** or **Restore** a post. Restoring clears its reports. An operator's decision
+  posts with their reports, can open a hidden post's document to review it, and can **Hide** or **Restore** a post. Restoring clears its reports. An operator's decision
   sticks: a restored post is hidden automatically again only by three new reports.
 - An author is not told their post was hidden; the Community section in their Share dialog shows it as hidden.
 - With `COMMUNITY_OPERATOR_IDS` unset (a fresh self-host) automatic hiding still works and nobody can moderate by hand.

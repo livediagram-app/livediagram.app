@@ -11,7 +11,7 @@ import { LikeButton } from '../shared/LikeButton';
 import { ReportDialog } from './ReportDialog';
 
 // The post's actions (docs/specs/025-community/community.md "Post"): Like, Make a Copy (the editor
-// opens the board and copies it into the visitor's own documents in one step), Open Board (the
+// opens the document and copies it into the visitor's own documents in one step), Open Document (the
 // read-only viewer, full screen) and Report.
 export function PostActions({ post }: { post: CommunityPost }) {
   const like = useLike(post);
@@ -32,7 +32,7 @@ export function PostActions({ post }: { post: CommunityPost }) {
           className={buttonClassName({ variant: 'secondary', size: 'md' })}
         >
           <FullScreenIcon aria-hidden />
-          <ButtonContent>Open Board</ButtonContent>
+          <ButtonContent>Open Document</ButtonContent>
         </a>
         <LikeButton like={like} size="lg" />
       </div>

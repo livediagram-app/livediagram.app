@@ -31,7 +31,7 @@ import { usePublishForm } from './usePublishForm';
 // The plain-words consequences of publishing (docs/specs/025-community/community.md "Publishing";
 // final copy in the blueprint §9).
 const CONSEQUENCES = [
-  'Anyone can view this board and make their own copy.',
+  'Anyone can view this document and make their own copy.',
   'Your later edits show in the Community too.',
   'Comments stay private.',
   'You can remove it at any time.',

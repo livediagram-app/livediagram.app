@@ -15,12 +15,12 @@ import { ApiError } from './api/core';
 // (`validateCommunityPostInput`'s codes) and the worker's answers, so the two never word the same rule
 // differently.
 const MESSAGES: Record<string, string> = {
-  sign_in_required: 'Sign in to share your board with the Community.',
+  sign_in_required: 'Sign in to share your document with the Community.',
   team_document: "Team library documents can't be shared to the Community.",
   share_password_set:
-    'This board has a share password. Remove the password to share it to the Community.',
-  empty_document: 'Add something to your board before sharing it.',
-  post_limit: `You have ${COMMUNITY_POSTS_PER_AUTHOR} boards in the Community already. Remove one to share another.`,
+    'This document has a share password. Remove the password to share it to the Community.',
+  empty_document: 'Add something to your document before sharing it.',
+  post_limit: `You have ${COMMUNITY_POSTS_PER_AUTHOR} documents in the Community already. Remove one to share another.`,
   invalid_title: `The title needs ${COMMUNITY_TITLE_MIN} to ${COMMUNITY_TITLE_MAX} characters.`,
   invalid_description: `The description needs ${COMMUNITY_DESCRIPTION_MIN} to ${COMMUNITY_DESCRIPTION_MAX} characters.`,
   invalid_category: 'Choose a category.',

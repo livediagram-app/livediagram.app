@@ -1224,7 +1224,8 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
     'An agent showed itself on a tab, with what it is doing, through the MCP server, the CLI or the API.',
   'Agent|Reverted':
     "An agent's changeset was undone, from the editor's toast or another front door.",
-  'Community|Shared': 'Someone shared a document to the Community, the public gallery of boards.',
+  'Community|Shared':
+    'Someone shared a document to the Community, the public gallery of documents.',
   'Community|Changed':
     'A Community post changed: its owner edited the listing, or an operator hid it or listed it again.',
   'Community|Removed': 'Someone took their own post down from the Community.',

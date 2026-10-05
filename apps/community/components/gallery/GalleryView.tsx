@@ -4,7 +4,6 @@ import { useCallback } from 'react';
 import { hasActiveFilters } from '@/lib/query-state';
 import { communityTelemetry } from '@/lib/telemetry';
 import { PostGrid } from '../shared/PostGrid';
-import { CategoryChips } from './CategoryChips';
 import { GalleryEmpty, GalleryError, GalleryNoMatches } from './GalleryStates';
 import { LoadMore } from './LoadMore';
 import { SearchBox } from './SearchBox';
@@ -25,6 +24,7 @@ export function GalleryView() {
   const onSearch = useCallback((q: string) => setFilters({ q }), [setFilters]);
   const onTagChosen = useCallback(() => communityTelemetry.selected('Tag'), []);
   const onSortChosen = useCallback(() => communityTelemetry.selected('Sort'), []);
+  const onCategoryChosen = useCallback(() => communityTelemetry.selected('Category'), []);
 
   return (
     <div className="flex flex-col gap-8">
@@ -36,16 +36,12 @@ export function GalleryView() {
             facets={facets}
             onTagChosen={onTagChosen}
             onSortChosen={onSortChosen}
+            onCategoryChosen={onCategoryChosen}
           />
         </div>
-        <CategoryChips
-          value={filters?.category ?? null}
-          facets={facets}
-          onChange={(category) => setFilters({ category }, 'Category')}
-        />
       </div>
 
-      <section aria-label="Boards">
+      <section aria-label="Documents">
         {status === 'error' ? (
           <GalleryError onRetry={gallery.retry} />
         ) : status === 'ready' && posts.length === 0 ? (

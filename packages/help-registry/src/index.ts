@@ -2204,9 +2204,10 @@ export const articles: Article[] = [
 
   // ---- Sub-articles: Sharing ----
   {
-    slug: 'finding-community-boards',
-    title: 'Finding Boards in the Community',
-    description: 'Search the Community by words, #tags and sort, then make a board your own.',
+    slug: 'finding-community-documents',
+    title: 'Finding Documents in the Community',
+    description:
+      'Search the Community by words, #tags, category and sort, then make a document your own.',
     keywords:
       'community gallery browse search find filter hashtag tag tags sort most loved most copied newest category inspiration examples like heart copy duplicate report flag',
     category: 'Collaboration',

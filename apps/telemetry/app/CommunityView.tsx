@@ -80,7 +80,7 @@ export function CommunityView({
     <div className="mt-8">
       <p className="text-sm text-slate-500 dark:text-slate-400">
         How the Community is doing, for <span className="font-medium">{windowLabel(active)}</span>:
-        boards shared into it, what people do with them, and why posts get reported.
+        documents shared into it, what people do with them, and why posts get reported.
       </p>
       <MetricGroups groups={GROUPS} summary={summary} active={active} />
 
@@ -89,13 +89,13 @@ export function CommunityView({
           <RankCard
             trend={trend}
             title="Shared by Category"
-            subtitle="Which categories people share their boards into, most to least"
+            subtitle="Which categories people share their documents into, most to least"
             category="Community"
             action="Shared"
             items={shared}
             label={categoryLabel}
             daily={summary.daily}
-            emptyLabel="No boards were shared to the Community in this window yet."
+            emptyLabel="No documents were shared to the Community in this window yet."
           />
           <RankCard
             trend={trend}

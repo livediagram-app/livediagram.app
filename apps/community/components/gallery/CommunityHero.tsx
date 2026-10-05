@@ -16,7 +16,7 @@ export function CommunityHero() {
           Community
         </h1>
         <p className="mt-3 text-lg leading-relaxed text-slate-600 dark:text-slate-300">
-          Boards people are proud of. Find inspiration, then make it your own.
+          Documents people are proud of. Find inspiration, then make it your own.
         </p>
       </div>
       <a

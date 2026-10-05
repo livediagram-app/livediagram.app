@@ -7,7 +7,7 @@ import { PostSkeleton } from '@/components/post/PostStates';
 // one static shell; the id is read on the client (useSearchParams, inside Suspense as the static
 // export requires) and the post loads from the api.
 export const metadata: Metadata = {
-  title: 'Community Board',
+  title: 'Community Document',
   alternates: { canonical: '/community/post/' },
 };
 

@@ -24,7 +24,7 @@ export function LoadMore({
       </Button>
       {failed ? (
         <p role="status" className="text-sm text-slate-500 dark:text-slate-400">
-          We couldn&apos;t load more boards.
+          We couldn&apos;t load more documents.
         </p>
       ) : null}
     </div>

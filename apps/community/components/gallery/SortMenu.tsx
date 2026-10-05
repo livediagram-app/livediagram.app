@@ -4,12 +4,13 @@ import { useRef } from 'react';
 import { COMMUNITY_SORTS, type CommunitySort } from '@livediagram/api-schema';
 import {
   CheckIcon,
-  ChevronDownIcon,
   useClickOutside,
   useMenu,
   useMenuButton,
   type MenuInitialFocus,
 } from '@livediagram/ui';
+import { SortIcon } from '../shared/icons';
+import { SearchControlButton } from './SearchControlButton';
 
 // The sort control inside the search box's right edge (docs/specs/025-community/community.md
 // "Gallery": Newest, Most Loved, Most Copied). The choice is written into the search as a `sort:` token
@@ -28,27 +29,15 @@ export function SortMenu({
   useClickOutside(root, menu.close, menu.open);
   const current = COMMUNITY_SORTS.find((s) => s.id === value) ?? COMMUNITY_SORTS[0];
   return (
-    <div ref={root} className="relative shrink-0">
-      <button
-        type="button"
+    <div ref={root} className="relative">
+      <SearchControlButton
         {...menu.triggerProps}
         aria-label={`Sort: ${current.label}`}
-        className={`inline-flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-sm font-medium transition-colors duration-micro focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-brand-600 ${
-          value === 'new'
-            ? 'text-slate-500 hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200'
-            : 'bg-brand-50 text-brand-700 hover:bg-brand-100 dark:bg-brand-500/15 dark:text-brand-200 dark:hover:bg-brand-500/25'
-        }`}
-      >
-        <span className="max-sm:sr-only">{current.label}</span>
-        <span className="sm:hidden" aria-hidden>
-          Sort
-        </span>
-        <ChevronDownIcon
-          size={12}
-          aria-hidden
-          className={`text-slate-400 transition-transform duration-micro motion-reduce:transition-none ${menu.open ? 'rotate-180' : ''}`}
-        />
-      </button>
+        icon={<SortIcon />}
+        label={current.label}
+        active={value !== 'new'}
+        open={menu.open}
+      />
       {menu.open ? (
         <SortOptions
           value={value}

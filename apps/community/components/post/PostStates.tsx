@@ -9,7 +9,7 @@ export function PostNotFound() {
   return (
     <EmptyState
       icon={<PeopleIcon aria-hidden />}
-      title="This board isn't in the Community any more."
+      title="This document isn't in the Community any more."
       description="It may have been removed by its author. There's plenty more to explore."
     >
       <Link href="/" className={buttonClassName({ size: 'md' })}>
@@ -27,7 +27,7 @@ export function PostError({ onRetry }: { onRetry: () => void }) {
     <div role="alert">
       <EmptyState
         icon={<AlertIcon aria-hidden />}
-        title="We couldn't load this board."
+        title="We couldn't load this document."
         description="Check your connection, then try again."
       >
         <Button size="md" onClick={onRetry}>

@@ -2,10 +2,12 @@ import {
   communityQueryParams,
   EMPTY_COMMUNITY_QUERY,
   isCommunityCategory,
+  communitySearchCategory,
   communitySearchSort,
   communitySearchTags,
   communitySearchTerms,
   normaliseCommunityTag,
+  setCommunitySearchCategory,
   setCommunitySearchSort,
   parseCommunityListQuery,
   type CommunityListQuery,
@@ -42,14 +44,18 @@ export function readQueryState(params: URLSearchParams): GalleryFilters {
   // `?tag=` or `?sort=` link (an older page) folds into it, so the box shows it and it can be changed
   // like any other.
   const withTag = t && !communitySearchTags(q).includes(t) ? `${q} #${t}`.trim() : q;
-  const search = communitySearchSort(withTag) ? withTag : setCommunitySearchSort(withTag, sort);
+  const withCategory =
+    c && !communitySearchCategory(withTag) ? setCommunitySearchCategory(withTag, c) : withTag;
+  const search = communitySearchSort(withCategory)
+    ? withCategory
+    : setCommunitySearchSort(withCategory, sort);
   return { q: search, category: c, tag: null, sort };
 }
 
 // The search string for these filters, defaults omitted: '' when nothing is set, else `?q=...`.
 export function writeQueryState(filters: GalleryFilters): string {
-  // The sort travels in `q` as a token, never as its own parameter.
-  const search = communityQueryParams({ ...filters, sort: 'new' }).toString();
+  // The category and sort travel in `q` as words, never as their own parameters.
+  const search = communityQueryParams({ ...filters, category: null, sort: 'new' }).toString();
   return search ? `?${search}` : '';
 }
 
@@ -59,6 +65,7 @@ export function hasActiveFilters(filters: GalleryFilters): boolean {
   return (
     communitySearchTerms(filters.q).length > 0 ||
     communitySearchTags(filters.q).length > 0 ||
+    communitySearchCategory(filters.q) !== null ||
     filters.category !== null ||
     filters.tag !== null
   );

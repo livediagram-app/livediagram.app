@@ -10,10 +10,10 @@ const BackIcon = lucideGlyph(lucideArrowLeft, 14);
 const CopyIcon = lucideGlyph(lucideCopyPlus, 14);
 const EditIcon = lucideGlyph(lucidePencil, 14);
 
-// The slim bar under the header when a board was opened from the Community
+// The slim bar under the header when a document was opened from the Community
 // (docs/specs/025-community/community.md "Viewing a post's document"; copy in the blueprint §9): who
 // shared it, the way back to its post, and Make a Copy, the one thing a visitor can do with it here.
-// The board is read-only here for its author too; they get Edit Your Board, which opens their own
+// The document is read-only here for its author too; they get Edit Your Document, which opens their own
 // document, in place of copying it.
 export function CommunityBar({
   community,
@@ -53,7 +53,7 @@ export function CommunityBar({
             className={buttonClassName({ size: 'xs' })}
           >
             <EditIcon />
-            Edit Your Board
+            Edit Your Document
           </a>
         ) : (
           <Button size="xs" onClick={onMakeCopy} disabled={copying}>

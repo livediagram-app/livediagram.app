@@ -67,7 +67,7 @@ describe('community api client', () => {
     expect(err).toBeInstanceOf(ApiError);
     expect((err as ApiError).code).toBe('share_password_set');
     expect(communityErrorMessage(err)).toBe(
-      'This board has a share password. Remove the password to share it to the Community.',
+      'This document has a share password. Remove the password to share it to the Community.',
     );
   });
 
@@ -101,7 +101,7 @@ describe('community api client', () => {
 describe('community error wording', () => {
   it('words every known code and falls back for the rest', () => {
     expect(communityCodeMessage('empty_document')).toBe(
-      'Add something to your board before sharing it.',
+      'Add something to your document before sharing it.',
     );
     expect(communityCodeMessage('invalid_title')).toBe('The title needs 3 to 80 characters.');
     expect(communityCodeMessage('something_new')).toBe(

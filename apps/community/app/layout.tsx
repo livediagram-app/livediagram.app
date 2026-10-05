@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     template: '%s | livediagram',
   },
   description:
-    'Boards people are proud of. Browse diagrams, plans and drawings made with livediagram, then make your own copy.',
+    'Documents people are proud of. Browse diagrams, plans and drawings made with livediagram, then make your own copy.',
   alternates: { canonical: '/community/' },
   openGraph: {
     type: 'website',

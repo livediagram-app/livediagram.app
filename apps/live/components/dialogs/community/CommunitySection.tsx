@@ -76,7 +76,7 @@ export function CommunitySection({
 
       {state === 'guest' ? (
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <p className={NOTE}>Sign in to share your board with the Community.</p>
+          <p className={NOTE}>Sign in to share your document with the Community.</p>
           <a href={signInHref} className={buttonClassName({ variant: 'secondary', size: 'xs' })}>
             Sign In to Share
           </a>
@@ -100,8 +100,8 @@ export function CommunitySection({
       {state === 'unpublished' ? (
         <div className="flex flex-col gap-2">
           <p className={NOTE}>
-            Share this board with the Community so others can find it, learn from it and make their
-            own copy.
+            Share this document with the Community so others can find it, learn from it and make
+            their own copy.
           </p>
           <div className="flex flex-wrap items-center gap-2">
             <Button size="xs" onClick={onPublish} disabled={sharePassword !== null}>

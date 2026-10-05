@@ -4,12 +4,13 @@ import { useRef } from 'react';
 import type { CommunityFacetsResponse } from '@livediagram/api-schema';
 import {
   CheckIcon,
-  ChevronDownIcon,
   useClickOutside,
   useMenu,
   useMenuButton,
   type MenuInitialFocus,
 } from '@livediagram/ui';
+import { HashIcon } from '../shared/icons';
+import { SearchControlButton } from './SearchControlButton';
 
 // The tag filter inside the search box's right edge (docs/specs/025-community/community.md "Gallery"):
 // the most used tags, each a checkable row. Choosing one adds its `#tag` to the search and choosing it
@@ -39,31 +40,15 @@ export function TagFilter({
   if (rows.length === 0) return null;
   return (
     <div ref={root} className="relative">
-      <button
-        type="button"
+      <SearchControlButton
         {...menu.triggerProps}
         aria-label={selected.length ? `Tags, ${selected.length} chosen` : 'Filter by tag'}
-        className={`inline-flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-sm font-medium transition-colors duration-micro focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-brand-600 ${
-          selected.length
-            ? 'bg-brand-50 text-brand-700 hover:bg-brand-100 dark:bg-brand-500/15 dark:text-brand-200 dark:hover:bg-brand-500/25'
-            : 'text-slate-500 hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200'
-        }`}
-      >
-        <span aria-hidden className="font-semibold">
-          #
-        </span>
-        <span>Tags</span>
-        {selected.length ? (
-          <span className="rounded-full bg-brand-500 px-1.5 text-[11px] font-semibold leading-4 text-white">
-            {selected.length}
-          </span>
-        ) : null}
-        <ChevronDownIcon
-          aria-hidden
-          size={12}
-          className={`transition-transform duration-micro motion-reduce:transition-none ${menu.open ? 'rotate-180' : ''}`}
-        />
-      </button>
+        icon={<HashIcon />}
+        label="Tags"
+        active={selected.length > 0}
+        badge={selected.length}
+        open={menu.open}
+      />
       {menu.open ? (
         <TagOptions
           rows={rows}

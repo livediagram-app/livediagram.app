@@ -26,7 +26,7 @@ export type PublishDraft = {
 
 function titleMessage(title: string): string {
   const length = title.trim().replace(/\s+/g, ' ').length;
-  if (length === 0) return 'Give your board a title.';
+  if (length === 0) return 'Give your document a title.';
   if (length < COMMUNITY_TITLE_MIN) return `Use at least ${COMMUNITY_TITLE_MIN} characters.`;
   return `Keep it to ${COMMUNITY_TITLE_MAX} characters.`;
 }
@@ -34,7 +34,7 @@ function titleMessage(title: string): string {
 function descriptionMessage(description: string): string {
   const length = description.trim().length;
   if (length === 0) {
-    return `Describe your board in at least ${COMMUNITY_DESCRIPTION_MIN} characters.`;
+    return `Describe your document in at least ${COMMUNITY_DESCRIPTION_MIN} characters.`;
   }
   if (length < COMMUNITY_DESCRIPTION_MIN) {
     const more = COMMUNITY_DESCRIPTION_MIN - length;

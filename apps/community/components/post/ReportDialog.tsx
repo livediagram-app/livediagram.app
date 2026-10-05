@@ -14,7 +14,7 @@ import { communityTelemetry } from '@/lib/telemetry';
 
 type Phase = 'editing' | 'sending' | 'sent' | 'failed' | 'gone';
 
-// Report This Board (docs/specs/025-community/community.md "Reports and moderation"; blueprint §9,
+// Report This Document (docs/specs/025-community/community.md "Reports and moderation"; blueprint §9,
 // §10): a reason as radio rows, an optional note of up to 300 characters with a counter, Send Report,
 // then "Thanks. We'll take a look." A modal that traps focus, closes on Escape or the backdrop, and
 // hands focus back to Report when it closes.
@@ -63,7 +63,7 @@ export function ReportDialog({ postId, onClose }: { postId: string; onClose: () 
       >
         <div className="mb-4 flex items-start justify-between gap-4">
           <h2 id={titleId} className="text-lg font-semibold text-slate-900 dark:text-white">
-            Report This Board
+            Report This Document
           </h2>
           <button
             type="button"
@@ -92,7 +92,7 @@ export function ReportDialog({ postId, onClose }: { postId: string; onClose: () 
           <form onSubmit={submit} className="flex flex-col gap-5">
             <fieldset className="flex flex-col gap-1.5">
               <legend className="mb-2 text-sm text-slate-600 dark:text-slate-300">
-                What&apos;s wrong with this board?
+                What&apos;s wrong with this document?
               </legend>
               {COMMUNITY_REPORT_REASONS.map((r) => (
                 <label

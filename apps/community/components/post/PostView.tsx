@@ -19,7 +19,7 @@ export function PostView() {
   const { load, retry } = usePost(id);
   const title = load.status === 'ready' ? load.data.post.title : null;
 
-  // The tab names the board once it is known (the static shell carries a generic title).
+  // The tab names the document once it is known (the static shell carries a generic title).
   useEffect(() => {
     if (title) document.title = `${title} | livediagram Community`;
   }, [title]);

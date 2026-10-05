@@ -11,7 +11,7 @@ export function GalleryEmpty() {
     <EmptyState
       icon={<PeopleIcon aria-hidden />}
       title="Nothing here yet."
-      description="Be the first to share a board."
+      description="Be the first to share a document."
     >
       <a href={EMPTY_INVITE_HREF} className={buttonClassName({ size: 'md' })}>
         <ButtonContent>Share Your Own</ButtonContent>
@@ -25,7 +25,7 @@ export function GalleryNoMatches({ onClear }: { onClear: () => void }) {
   return (
     <EmptyState
       icon={<SearchIcon aria-hidden />}
-      title="No boards match these filters."
+      title="No documents match these filters."
       description="Try a different search, or browse everything."
     >
       <Button variant="secondary" size="md" onClick={onClear}>

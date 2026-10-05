@@ -2,30 +2,36 @@
 
 import { useEffect, useId, useState, type FormEvent } from 'react';
 import {
+  communitySearchCategory,
   communitySearchSort,
+  setCommunitySearchCategory,
   communitySearchTags,
   setCommunitySearchSort,
   toggleCommunitySearchTag,
+  type CommunityCategory,
   type CommunityFacetsResponse,
   type CommunitySort,
 } from '@livediagram/api-schema';
 import { CloseIcon, SearchIcon } from '@livediagram/ui';
 import { SEARCH_DEBOUNCE_MS } from '@/lib/config';
+import { CategoryMenu } from './CategoryMenu';
 import { SortMenu } from './SortMenu';
 import { TagFilter } from './TagFilter';
 
 // Search across titles, descriptions and tags (docs/specs/025-community/community.md "Gallery";
 // blueprint §5, §10): a `role="search"` form with a visually hidden label. Typing filters 300 ms after
 // the last keystroke; Enter filters at once. The draft follows `value` when it changes from outside
-// (Clear Filters, a tag link). The tag filter and the sort sit inside the box's right edge: a chosen tag
-// is written into the search as `#tag` and a chosen sort as `sort:<id>` (Newest needs none), each
-// applied at once, so the box always reads as the whole query.
+// (Clear Filters, a tag link). The category, tag and sort controls sit inside the box's right edge: a
+// chosen category is written into the search as `category:<id>`, a tag as `#tag` and a sort as
+// `sort:<id>` (All and Newest need none), each applied at once, so the box always reads as the whole
+// query. On phones the controls show their icons only.
 export function SearchBox({
   value,
   onSearch,
   facets,
   onTagChosen,
   onSortChosen,
+  onCategoryChosen,
 }: {
   value: string;
   onSearch: (q: string) => void;
@@ -34,6 +40,8 @@ export function SearchBox({
   onTagChosen?: () => void;
   // Told when a sort is chosen, for telemetry.
   onSortChosen?: () => void;
+  // Told when a category is chosen, for telemetry.
+  onCategoryChosen?: () => void;
 }) {
   const id = useId();
   const [draft, setDraft] = useState(value);
@@ -59,6 +67,13 @@ export function SearchBox({
     if (adding) onTagChosen?.();
   };
 
+  const chooseCategory = (category: CommunityCategory | null) => {
+    const next = setCommunitySearchCategory(draft, category);
+    setDraft(next);
+    onSearch(next.trim());
+    if (category) onCategoryChosen?.();
+  };
+
   const chooseSort = (sort: CommunitySort) => {
     const next = setCommunitySearchSort(draft, sort);
     setDraft(next);
@@ -73,9 +88,9 @@ export function SearchBox({
   };
 
   return (
-    // Lifted above the grid: the controls inside sit in a transformed (stacking) wrapper, so without
-    // this the tag menu would open behind the cards.
-    <form role="search" onSubmit={submit} className="relative z-(--z-popover) w-full">
+    // Lifted above the grid, below the sticky header: the controls inside sit in a transformed (stacking)
+    // wrapper, so without this their menus would open behind the cards.
+    <form role="search" onSubmit={submit} className="relative z-(--z-toolbar) w-full">
       <label htmlFor={id} className="sr-only">
         Search the Community
       </label>
@@ -89,11 +104,11 @@ export function SearchBox({
         type="search"
         value={draft}
         onChange={(e) => setDraft(e.target.value)}
-        placeholder="Search boards, or #tags..."
+        placeholder="Search documents, or #tags..."
         autoComplete="off"
         spellCheck={false}
         enterKeyHint="search"
-        className="w-full rounded-xl border border-slate-200 bg-white py-3 pl-11 pr-60 text-[15px] max-sm:pr-40 text-slate-900 shadow-sm placeholder:text-slate-400 transition-colors duration-micro focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 [&::-webkit-search-cancel-button]:hidden"
+        className="w-full rounded-xl border border-slate-200 bg-white py-3 pl-11 pr-96 text-[15px] max-sm:pr-36 text-slate-900 shadow-sm placeholder:text-slate-400 transition-colors duration-micro focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 [&::-webkit-search-cancel-button]:hidden"
       />
       <div className="absolute right-2 top-1/2 flex -translate-y-1/2 items-center gap-1">
         {draft ? (
@@ -109,8 +124,12 @@ export function SearchBox({
             <CloseIcon size={14} aria-hidden />
           </button>
         ) : null}
+        <CategoryMenu
+          value={communitySearchCategory(draft)}
+          facets={facets}
+          onChange={chooseCategory}
+        />
         <TagFilter facets={facets} selected={communitySearchTags(draft)} onToggle={toggleTag} />
-        <span aria-hidden className="h-5 w-px bg-slate-200 dark:bg-slate-700" />
         <SortMenu value={communitySearchSort(draft) ?? 'new'} onChange={chooseSort} />
       </div>
     </form>

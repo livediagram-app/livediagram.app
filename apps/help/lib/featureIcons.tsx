@@ -569,7 +569,7 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
     </Glyph>
   ),
   // A search glass over a hashtag: finding boards by their tags.
-  'finding-community-boards': (
+  'finding-community-documents': (
     <Glyph>
       <circle cx="10.5" cy="10.5" r="6.5" />
       <path d="M15.5 15.5 21 21" />

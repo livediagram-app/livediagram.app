@@ -21,15 +21,15 @@ describe('publishFieldErrors', () => {
       'Add 1 more character (at least 20).',
     );
     expect(publishFieldErrors({ ...valid, description: '   ' }).description).toBe(
-      'Describe your board in at least 20 characters.',
+      'Describe your document in at least 20 characters.',
     );
   });
 
   it('marks every failing field at once', () => {
     expect(publishFieldErrors({ title: '', description: '', category: null, tags: ['!'] })).toEqual(
       {
-        title: 'Give your board a title.',
-        description: 'Describe your board in at least 20 characters.',
+        title: 'Give your document a title.',
+        description: 'Describe your document in at least 20 characters.',
         category: 'Choose the category that fits best.',
         tags: 'Tags are 2 to 24 letters, numbers or hyphens, up to 5 of them.',
       },

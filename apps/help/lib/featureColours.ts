@@ -110,7 +110,7 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'assigned-actions': '#22c55e',
   // Collaboration → Sharing guides
   community: '#ec4899',
-  'finding-community-boards': '#8b5cf6',
+  'finding-community-documents': '#8b5cf6',
   'share-passwords': '#475569',
   'share-link-expiry': '#f59e0b',
   'one-tab': '#14b8a6',
