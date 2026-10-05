@@ -8,22 +8,23 @@ Derived from [Community](../community.md). Implementation detail only; design de
 | -------------- | ----------------------------------------------------------------------------------------------------- |
 | post           | `CommunityPost` (DTO), table `community_posts`, id column `id`                                        |
 | author         | `CommunityAuthor` (`{ name, color, picture }`), column `author_id`                                    |
-| category       | `CommunityCategory` (union of ids), `COMMUNITY_CATEGORIES` (ordered `{ id, label, blurb }[]`)         |
+| category       | `CommunityCategory` (union of ids), `COMMUNITY_CATEGORIES` (ordered `{ id, label, blurb, type }[]`)   |
 | tag            | `string` after `normaliseCommunityTag`; table `community_post_tags`                                   |
 | like           | table `community_likes`, column `like_count`                                                          |
 | copy count     | table `community_copies`, column `copy_count`                                                         |
-| report         | `CommunityReportReason`, `COMMUNITY_REPORT_REASONS`, table `community_reports`                        |
+| report         | `CommunityReportReason`, `COMMUNITY_REPORT_REASONS` (`{ id, label, type }[]`), `community_reports`    |
 | hidden         | `CommunityPostState = 'listed' \| 'hidden'`, column `hidden_by = 'reports'`                           |
 | community link | `share_links.purpose = 'community'` (`SharePurpose = 'share' \| 'community'`)                         |
 | community key  | header `X-Community-Key`, localStorage `livediagram:v2:community-key`                                 |
-| sort           | `CommunitySort = 'new' \| 'loved' \| 'copied'`                                                        |
+| sort           | `CommunitySort = 'new' \| 'loved' \| 'copied'`, `COMMUNITY_SORTS` (`{ id, label, type }[]`)           |
 | Edit Listing   | the same `PUT /api/documents/:id/community` as publishing; the editor names the act, the api does not |
 
 Shared vocabulary lives in `packages/api-schema`, exported from the package index, so the worker, the editor and the
 Community app cannot disagree: `packages/api-schema/src/community.ts` holds the post (categories, reasons, limits, `normaliseCommunityTag`,
 `validateCommunityPostInput`, DTOs, `communityPostPath`, `communityImagePath`), and `packages/api-schema/src/community-query.ts` the search
 grammar and list query (sorts, the `#tag` / `category:` / `sort:` / `is:mine` words, `parseCommunityListQuery`,
-`communityQueryParams`).
+`communityQueryParams`). Each category, report reason and sort carries `type`, its PascalCase telemetry value
+(`Architecture`, `PersonalInfo`, `Loved`, ...), so no caller derives one.
 
 ## 2. Constants and configuration
 
@@ -60,8 +61,9 @@ Switched off: `handleCommunity` and the owner routes answer 404 before anything 
 answers `'closed'`, which closes the grant, the share resolve and the card image in one place; the share-password
 guard skips the post check. The apps ask through `useCommunityEnabled(apiBase)` / `fetchCommunityEnabled`
 (`packages/ui/src/community/useCommunityEnabled.ts`; one request per api base per page, on unless an explicit
-`false`): `ProductNav` filters its Community item, `CommunityFooterLink` renders nothing,
-`ShareDialogWithCommunity` falls back to the plain `ShareDialog`, `EditorView` drops the Public badge,
+`false`; `useCommunityEnabled(apiBase, ask)` skips the request and answers on while `ask` is false): `ProductNav`
+filters its Community item, `CommunityFooterLink` renders nothing, `ShareDialogWithCommunity` falls back to the plain
+`ShareDialog`, `EditorView` drops the Public badge (it asks only while a post is listed and not in an embed),
 `CommunityShowcase` renders nothing (also on a 404 from `featured`), and the Community app's `CommunityGate`
 replaces the location with `/`.
 
@@ -114,15 +116,22 @@ wire); everything else is public post content.
 - `tags` holds the display array (JSON); `community_post_tags` holds the same set for filtering. Both are rewritten in
   one batch on publish/update.
 - `search_text` = lowercased `title + '\n' + description + '\n' + tags.join(' ')`.
-- `like_count` / `copy_count` are recomputed with `(SELECT COUNT(*) ...)` in the same batch as the insert/delete that
-  changes them, so they cannot drift.
+- `like_count` / `copy_count` are recomputed with `LIKE_COUNT_SQL` / `COPY_COUNT_SQL`
+  (`apps/api/src/db/community-engagement.ts`: `SUM(MIN(n, COMMUNITY_COUNTED_PER_NETWORK))` over the rows grouped by
+  `COALESCE(network_hash, liker_key | copier_id)`) in the same batch as the insert/delete that changes them, so they
+  cannot drift.
 - Post ids: `generateShareCode(10)` (same alphabet), re-minted once on a primary-key collision.
 - Trash: posts are excluded wherever `documents.trashed_at IS NOT NULL` (join), never modified. Restore needs nothing.
 - Permanent delete: `documents` row deletion cascades to `share_links` and `community_posts` (and its children).
 - Unpublish: `DELETE FROM share_links WHERE code = ? AND purpose = 'community'` cascades the post and its children.
 - A hidden post is final: nothing restores it, edits it or deletes it except deleting its document.
-- Account deletion (`apps/api/src/db/account.ts`): the account's posts go with its documents; its
-  `community_copies` rows are deleted and those posts' `copy_count` decremented in one batch.
+- Account deletion (`deleteAccount`, `apps/api/src/db/account.ts`): the author's posts are deleted through their
+  community `share_links` (the cascade takes tags, likes, copies and reports); its `community_copies` rows are deleted
+  and those posts' `copy_count` recounted with `COPY_COUNT_SQL`, in one batch.
+- Guest to account (`migrateOwnerId`, same file): the guest's `community_copies` rows (with their `network_hash`) move
+  to the account, and the posts they touch are recounted with `COPY_COUNT_SQL`.
+- Snapshots: `snapshotKeys(documentId)` (`apps/api/src/db/documents.ts`) is `thumb/<id>` and `thumb-community/<id>`;
+  both are deleted on document delete, Trash purge and account deletion.
 - Snapshot/restore and the Drive mirror carry no Community state; a copy is never published (copyDocument skips
   share links already).
 
@@ -178,20 +187,21 @@ type CommunityListQuery = {
 
 Routes (all JSON; errors `{ error: <code> }`):
 
-| Method + path                                         | Who              | Success                                                      | Rejections                                                                                                                                     |
-| ----------------------------------------------------- | ---------------- | ------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| `GET /api/documents/:id/community`                    | owner            | `{ post: CommunityOwnPost \| null }`                         | 404 missing, 403 not owner                                                                                                                     |
-| `PUT /api/documents/:id/community`                    | owner, signed in | 201 new / 200 update `{ post }`                              | 401 `sign_in_required`, 403, 404, 409 `team_document`, 409 `share_password_set`, 409 `empty_document`, 409 `post_limit`, 400 `invalid_<field>` |
-| `DELETE /api/documents/:id/community`                 | owner            | 204                                                          | 404 (also when not published), 403                                                                                                             |
-| `GET /api/community/posts?q&category&tag&sort&offset` | anyone           | `{ posts, nextOffset: number \| null }`                      | 400 `invalid_query`                                                                                                                            |
-| `GET /api/community/mine?q&offset`                    | signed in        | 200 `CommunityMineResponse` (hidden included)                | 400 `invalid_query`, 401                                                                                                                       |
-| `GET /api/community/featured`                         | anyone           | 200 `CommunityFeaturedResponse` (up to six)                  | none                                                                                                                                           |
-| `GET /api/community/facets`                           | anyone           | `{ categories: Record<id, n>, tags: {tag, count}[], total }` | none                                                                                                                                           |
-| `GET /api/community/posts/:id`                        | anyone           | `{ post, related: CommunityPost[] }`                         | 404 missing, hidden, trashed                                                                                                                   |
-| `PUT /api/community/posts/:id/like`                   | community key    | `{ likeCount, liked: true }`                                 | 400 `community_key_required`, 404, 429                                                                                                         |
-| `DELETE /api/community/posts/:id/like`                | community key    | `{ likeCount, liked: false }`                                | as above                                                                                                                                       |
-| `POST /api/community/posts/:id/report`                | community key    | 204 (also for a repeat)                                      | 400 `community_key_required` / `invalid_reason` / `invalid_note`, 404, 429                                                                     |
+| Method + path                                         | Who              | Success                                                                 | Rejections                                                                                                                                                                                                  |
+| ----------------------------------------------------- | ---------------- | ----------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /api/documents/:id/community`                    | owner            | `{ post: CommunityOwnPost \| null }` (null for a previous owner's post) | 400 no identity, 404 missing, 403 not owner                                                                                                                                                                 |
+| `PUT /api/documents/:id/community`                    | owner, signed in | 201 new / 200 update `{ post }`                                         | 400 no identity, 401 `sign_in_required`, 403, 404, 409 `team_document`, 409 `share_password_set`, 409 `empty_document`, 409 `post_limit`, 409 `already_published`, 409 `post_hidden`, 400 `invalid_<field>` |
+| `DELETE /api/documents/:id/community`                 | owner            | 204                                                                     | 400 no identity, 404 (also when not published, or a previous owner's post), 403, 409 `post_hidden`                                                                                                          |
+| `GET /api/community/posts?q&category&tag&sort&offset` | anyone           | `{ posts, nextOffset: number \| null }`                                 | 400 `invalid_query`                                                                                                                                                                                         |
+| `GET /api/community/mine?q&offset`                    | signed in        | 200 `CommunityMineResponse` (hidden included)                           | 400 `invalid_query`, 401                                                                                                                                                                                    |
+| `GET /api/community/featured`                         | anyone           | 200 `CommunityFeaturedResponse` (up to six)                             | none                                                                                                                                                                                                        |
+| `GET /api/community/facets`                           | anyone           | `{ categories: Record<id, n>, tags: {tag, count}[], total }`            | none                                                                                                                                                                                                        |
+| `GET /api/community/posts/:id`                        | anyone           | `{ post, related: CommunityPost[] }`                                    | 404 missing or not public (hidden, trashed, team, owner changed, password set)                                                                                                                              |
+| `PUT /api/community/posts/:id/like`                   | community key    | `{ likeCount, liked: true }`                                            | 400 `community_key_required`, 404, 429                                                                                                                                                                      |
+| `DELETE /api/community/posts/:id/like`                | community key    | `{ likeCount, liked: false }`                                           | as above                                                                                                                                                                                                    |
+| `POST /api/community/posts/:id/report`                | community key    | 204 (also for a repeat)                                                 | 400 `community_key_required` / `invalid_reason` / `invalid_note`, 404, 429                                                                                                                                  |
 
+- Every `/api/community/*` route, and the owner routes above, answer 404 while the Community is switched off.
 - `liked` is filled from `X-Community-Key` when present and valid, else false.
 - `mine` reads the same search words as the list (the public list ignores `is:mine`) and sends
   `Cache-Control: private, no-store`; `featured` sends `public, max-age=60`. Both answer 404 while the Community is off.
@@ -219,11 +229,15 @@ Guards:
 
 - G1 publish: `ctx.clerkUserId` non-null and `ownsDocument` and `teamId === null`.
 - G2 publish: `getDocumentSharePassword` empty.
-- G3 publish (new post only): `getDocumentThumbnailSvg` non-null; author has fewer than `COMMUNITY_POSTS_PER_AUTHOR`.
-- G4 public reads: `state = 'listed' AND trashed_at IS NULL AND team_id IS NULL` (`PUBLIC_POST`,
-  `apps/api/src/db/community.ts`).
+- G3 publish (new post only): `firstTabElementCount > 0` (`apps/api/src/db/tabs.ts`: counted, not rendered); author
+  has fewer than `COMMUNITY_POSTS_PER_AUTHOR`.
+- G4 public reads: `state = 'listed' AND trashed_at IS NULL AND team_id IS NULL AND d.owner_id = cp.author_id AND
+d.share_password IS NULL` (`PUBLIC_POST`, `apps/api/src/db/community.ts`).
 - G5 like/report: valid community key, post passes G4.
 - G6 hidden is final: owner `PUT` / `DELETE` on a hidden post answer 409 `post_hidden`.
+- G7 previous owner (`apps/api/src/routes/community-owner-routes.ts`): a post whose `author_id` is not the document's
+  owner (it came with the document from a team library) reads as none; `PUT` deletes it, logging
+  `[community] replaced a previous owner post`, and publishes afresh; `DELETE` answers 404.
 - Auto-hide (after each new report row): if `state = 'listed'` and `COUNT(DISTINCT reporter_key) >= 3` and
   `COUNT(DISTINCT network_hash) >= 3` then `state = 'hidden', hidden_by = 'reports'`.
 
@@ -243,10 +257,16 @@ Community link behaviour (keyed off `link.purpose === 'community'`):
 
 Shared UI (`packages/ui/src/community/`): `CommunityPostTile` (the card, used by the Community app and the landing
 page's `CommunityShowcase`), `CommunityAuthorBadge`, `communitySharedAgo` (the shared-ago line), `useCommunityEnabled`
-/ `fetchCommunityEnabled`, and `CommunityFooterLink` (the shared footer's link, hidden while switched off).
+/ `fetchCommunityEnabled`, `CommunityFooterLink` (the shared footer's link, hidden while switched off),
+`CommunityCounts` (`CommunityLikeCount`, `CommunityCopyCount`), and `surfaces.ts` (`COMMUNITY_DOT_GRID`,
+`COMMUNITY_SKELETON_BAR`: the dot grid behind a post's image and the pulsing loading bar, used by the card, its
+skeleton, `EmbedFrame` and `PostStates`), and `CommunityHelpLink` (`packages/ui/src/community/CommunityHelpLink.tsx`:
+a help-glyph link keyed by `COMMUNITY_HELP` in `packages/help-registry/src/community.ts`, `sharing` or `finding`,
+each an article href and its telemetry id, sent as `UI·Opened·<id>`).
 
 Snapshot and redaction (api): `getCommunityThumbnailSvg` (`apps/api/src/thumbnail.ts`) renders the first tab from the
-redacted board and caches it under `thumb-community/<documentId>`, apart from the owner's `thumb/<id>`;
+redacted board and caches it under `thumb-community/<documentId>`, apart from the owner's `thumb/<id>`, fresh while
+its R2 `customMetadata.renderedAt >= savedAt`;
 `redactDocumentForCommunity` (`apps/api/src/redact-document.ts`) strips owner name, colour, folder and origin from the
 document a community grant reads. `communityNetwork` (`apps/api/src/community-network.ts`) maps an address to its
 IPv4 /24 or IPv6 /56 for the limiter, report and count hashes.
@@ -260,9 +280,13 @@ Editor (`apps/live`):
 - `apps/live/components/dialogs/community/`: `ShareDialogWithCommunity.tsx` composes the Share dialog with
   `CommunitySection.tsx` (its state chosen by the pure `community-section-state.ts`); `CommunityPublishDialog.tsx`
   (title, description with counter, `CategoryPicker.tsx`, `TagInput.tsx` over the pure `tag-draft.ts`,
-  `CommunityCardPreview.tsx`, the consequences list) replaces the Share dialog while open, and a first publish ends on
-  `CommunityPublishedConfirmation.tsx`. The share password control is locked while the post is listed, and Share to
-  Community while a password is set. A hidden post's card says **Hidden after reports.** and offers no Edit Listing or
+  `CommunityCardPreview.tsx`, the consequences list) replaces the Share dialog while open, its draft and submit in
+  `usePublishForm.ts`, per-field error copy in the pure `publish-field-errors.ts` drawn by `FieldError.tsx`; a first
+  publish ends on `CommunityPublishedConfirmation.tsx`. `CommunityCardPreview` is the shared `CommunityPostTile` as a
+  still preview (no `href`), its `image` slot holding the owner's own snapshot and `categoryLabel` asking for a
+  category until one is chosen. The share password control is locked while the post is listed; with a share
+  password set the section disables Share to Community and says "Remove the share password to share it to the
+  Community." A hidden post's card says **Hidden after reports.** and offers no Edit Listing or
   Remove.
 - Public badge: `apps/live/lib/community-state-store.ts` (an external store, seeded from the document fetch and
   updated by the Community section on publish or remove) feeds `SharedBadge`'s `community` state, labelled **Public**,
@@ -287,9 +311,11 @@ Community app (`apps/community`):
 - `apps/community/lib/api.ts`: `fetchPosts`, `fetchMine`, `fetchFacets`, `fetchPost`, `likePost`, `unlikePost`,
   `reportPost`, with `NEXT_PUBLIC_API_BASE ?? '/api'`; `apps/community/lib/useLike.ts` is the optimistic like with rollback.
 - Gallery (`apps/community/components/gallery/`): `GalleryView` over `useGallery`; `CommunityHero`, `SearchBox`
-  (debounced 300 ms, Enter commits) holding `CategoryMenu`, `TagFilter` and `SortMenu` in its right edge, each over
-  the shared `SearchControlButton` (icon only below `sm`), then `PostGrid` of `PostCard`, `LoadMore`,
-  `GalleryStates`. Category, tags and sort are words in `q`: `communitySearchCategory`, `communitySearchTags`,
+  (debounced `SEARCH_DEBOUNCE_MS`, Enter commits; the input and the controls in one flex row, so typed text never
+  runs under them) holding Clear Search, the My Shares toggle (`aria-pressed`, where sign-in exists), `CategoryMenu`,
+  `TagFilter` and `SortMenu` in its right edge, each over the shared `SearchControlButton` (icon only below `lg`),
+  the menus sharing `SEARCH_MENU_PANEL` and `searchMenuRow` (`search-menu.ts`); then `PostGrid` of `PostCard`,
+  `LoadMore`, `GalleryStates`. Clear Search keeps the sort and `is:mine`. Category, tags and sort are words in `q`: `communitySearchCategory`, `communitySearchTags`,
   `communitySearchSort` and their setters (api-schema) read and write them; the worker's list reads them through
   `parseCommunityListQuery` (a word wins over the old parameter) and `listCommunityPosts` (each `#tag` an `EXISTS`);
   a legacy `?tag=`, `?category=` or `?sort=` folds into `q` in `readQueryState`. The search form sits on the
@@ -297,30 +323,37 @@ Community app (`apps/community`):
 - My Shares: `is:mine` (`COMMUNITY_MINE_TOKEN`) in `q` switches `useGallery` to `fetchMine`, with the Clerk session
   from `LazyClerkSession` (a `next/dynamic` import of `ClerkSession`, so Clerk loads only when My Shares is on);
   `apps/community/lib/session.ts` holds the publishable key (`signInAvailable` false without one hides the toggle),
-  `SESSION_LOAD_TIMEOUT_MS` and `signInHref`. `MineSummary` shows the **Your Shares** totals above the grid.
+  `SESSION_LOAD_TIMEOUT_MS` and `signInHref`. `MineSummary` shows the **Your Shares** totals above the grid. Waiting
+  past `SESSION_LOAD_TIMEOUT_MS` for the session, `GalleryView` shows `GalleryError` with a reload.
 - Post page (`apps/community/components/post/`): `PostView` over `usePost`, `EmbedFrame` (`/embed?s=<code>`, lazy,
-  titled, falling back to the card image after 15 s), `PostMeta`, `PostActions`, `ReportDialog`, `RelatedPosts`. Make
-  a Copy → `/document/shared?s=<code>&copy=1`.
+  titled, falling back to the card image after 15 s), `PostMeta`, `PostActions`, `ReportDialog`, `RelatedPosts`.
+  Links come from `apps/community/lib/links.ts`: Open Document `openDocumentHref` (`/document/shared?s=<code>`), Make
+  a Copy `makeCopyHref` (`/document/shared?s=<code>&copy=1`). Once the post loads, `PostView` sets `document.title`
+  and a `link rel="canonical"` to the post's own address (`apps/community/app/post/page.tsx` carries none).
 
 ## 6. Errors and edge cases
 
-| Case                                    | Handling                                                                    |
-| --------------------------------------- | --------------------------------------------------------------------------- |
-| Publish on a document with a password   | 409 `share_password_set`; dialog explains and links to Share settings       |
-| Password set on a published document    | 409 `community_published`; Share dialog explains                            |
-| Empty document                          | 409 `empty_document`; "Add something to your document before sharing it."   |
-| 51st post                               | 409 `post_limit`                                                            |
-| Owner revokes all share links           | Community link untouched (filtered)                                         |
-| Document trashed                        | Hidden everywhere; post page 404; restore lists it again                    |
-| Post hidden while a visitor has it open | Likes/reports 404; the UI shows "This post is no longer available."         |
-| Like twice / unlike twice               | Idempotent; counts recomputed                                               |
-| Report twice from one browser           | 204, row unchanged                                                          |
-| Storage blocked in the Community app    | In-memory key; likes work for the page's life                               |
-| Embed frame fails                       | Falls back to the card image with Open Document                             |
-| Author has no participant row           | Author `{ name: 'Someone', color: '#64748b', picture: null }`               |
-| Search with only stop characters        | Treated as no search                                                        |
-| Offset past the end                     | Empty `posts`, `nextOffset: null`                                           |
-| Copy by the author of their own post    | Counted only if a share code was presented and the caller is not the author |
+| Case                                    | Handling                                                                             |
+| --------------------------------------- | ------------------------------------------------------------------------------------ |
+| Publish on a document with a password   | 409 `share_password_set`; the section disables Share to Community and says why       |
+| Password set on a published document    | 409 `community_published`; Share dialog explains                                     |
+| Empty document                          | 409 `empty_document`; "Add something to your document before sharing it."            |
+| 51st post                               | 409 `post_limit`                                                                     |
+| Two first publishes at once             | 409 `already_published` (the one-post-per-document `UNIQUE`)                         |
+| A previous owner's post                 | Reads as none; `PUT` replaces it, `DELETE` 404 (G7)                                  |
+| My Shares, sign-in never loads          | After `SESSION_LOAD_TIMEOUT_MS`: "We couldn't load the Community." Try Again reloads |
+| My Shares on a build without sign-in    | "My Shares needs an account."                                                        |
+| Owner revokes all share links           | Community link untouched (filtered)                                                  |
+| Document trashed                        | Hidden everywhere; post page 404; restore lists it again                             |
+| Post hidden while a visitor has it open | Likes/reports 404; the UI shows "This post is no longer available."                  |
+| Like twice / unlike twice               | Idempotent; counts recomputed                                                        |
+| Report twice from one browser           | 204, row unchanged                                                                   |
+| Storage blocked in the Community app    | In-memory key; likes work for the page's life                                        |
+| Embed frame fails                       | Falls back to the card image with Open Document                                      |
+| Author has no participant row           | Author `{ name: 'Someone', color: '#64748b', picture: null }`                        |
+| Search with only stop characters        | Treated as no search                                                                 |
+| Offset past the end                     | Empty `posts`, `nextOffset: null`                                                    |
+| Copy by the author of their own post    | Counted only if a share code was presented and the caller is not the author          |
 
 ## 7. Security and trust
 
@@ -356,46 +389,65 @@ Community app (`apps/community`):
   `participants` (PK). Search adds up to five `LIKE` predicates on `search_text`, acceptable at expected sizes (well
   under 100k posts); revisit with FTS5 beyond that.
 - Facets: two aggregate queries over listed, untrashed posts.
-- Card images reuse `/api/share/:code/image.svg` (R2-cached, `max-age=30, stale-while-revalidate=300`).
+- Card images reuse `/api/share/:code/image.svg` (R2-cached under `thumb-community/<id>`); a community link's image
+  sends `public, max-age=30` with no stale window (`COMMUNITY_IMAGE_CACHE`, `apps/api/src/routes/share.ts`), so a
+  hidden post's image goes within 30 seconds.
 - Bodies are capped by the worker's existing `MAX_BODY_BYTES`; inputs by the constants above.
 
 ## 9. Presentation and UX
 
 Final copy:
 
-- Share dialog section heading: **Community**. Unpublished: "Share this document with the Community so others can find it,
-  learn from it and make their own copy." Button: **Share to Community**. Guest: "Sign in to share your document with the
+- Share dialog section heading: **Community**. Unpublished: "The Community is public: anyone, with or without an
+  account, can find this document there, view it and make their own copy." Button: **Share to Community**. With a
+  share password set, the button is disabled beside "Remove the share password to share it to the Community." Guest: "Sign in to share your document with the
   Community." Button: **Sign In to Share**. Team document: "Team library documents can't be shared to the Community."
 - Published: post title, category, "♥ n · Copied n times", **View Post**, **Edit Listing**, **Remove From Community**;
   hidden: "**Hidden after reports.** Several people reported it, so it was taken out of the Community for good. Only you
-  can see it, and it can no longer be changed or removed."
+  can see it, and it can no longer be changed or removed." Remove asks in place: "Remove it from the Community? Its
+  likes and copy count go too; copies people made stay theirs." **Keep It** / **Remove**.
 - Publish dialog title: **Share to Community** / **Edit Listing**. Consequences: "Anyone can view this document and make
   their own copy." "Your later edits show in the Community too." "Comments stay private." "You can remove it at any
   time." Primary button: **Share to Community** / **Save Changes**.
 - Gallery heading: **Community**; lead: "Documents people are proud of. Find inspiration, then make it your own."
 - Empty (no posts): "Nothing here yet. Be the first to share a document." Empty (filters): "No documents match these
   filters." Button **Clear Filters**. Error: "We couldn't load the Community." Button **Try Again**.
+- My Shares: signed out "Sign in to see your shares." with **Sign In**; nothing shared "You haven't shared anything
+  yet." with **Share Your Own**; a build without sign-in "My Shares needs an account."; totals headed **Your Shares**.
 - Post not found: "This document isn't in the Community any more." Link **Back to Community**.
 - Community bar: "Shared to the Community by <name>" · **Back to Community** · **Make a Copy**.
 - Report dialog: title **Report This Document**, reasons as radio rows, note optional, button **Send Report**,
   confirmation "Thanks for letting us know. When enough people report a document, it is taken out of the
   Community." (no promise of a human review)
+- Help links (`CommunityHelpLink`): `CommunityHero` **How the Community Works** (`finding`) under the lead and **How
+  Sharing Works** (`sharing`) under Share Your Own; `MineSummary` **Managing Your Shares** (`sharing`);
+  `ReportDialog` **How Reports Work** (`finding`); the landing page's `CommunityShowcase` **How the Community Works**
+  (`finding`). In the editor, `HelpArticleLink` with the `HELP_ARTICLES` key `community` sits on
+  `CommunitySection`'s label and in `CommunityPublishDialog`'s header.
 
 Layout: gallery grid 1 / 2 / 3 / 4 columns at <640 / 640 / 1024 / 1280 px; cards with a 4:3 image area on a subtle
-dot-grid background; skeleton cards of the same size while loading.
+dot-grid background (`COMMUNITY_DOT_GRID`); skeleton cards of the same size while loading. The search box's controls
+show icons only below `lg`. The page-edge rail carries Appearance only (sharing off) and, the Community being a wide
+surface (`SiteHeader wide`, `ShareRail wide`), shows from `2xl`.
 
 ## 10. Accessibility
 
-Chips are `button`s with `aria-pressed`; the sort menu uses the shared menu keyboard; the like button has
-`aria-pressed` and an `aria-label` with the count; card images carry `alt` = title; the embed frame has a `title`; the
-report dialog traps focus and returns it; search has a visible label (sr-only) and `role="search"`. Colours from the
+Category and Sort are `menuitemradio` menus and Tags a `menuitemcheckbox` menu, on the shared menu keyboard
+(`useMenuButton` / `useMenu`); My Shares is a toggle with `aria-pressed`; the publish dialog's category picker is a
+`radiogroup`. Focus follows controls that leave: the Community section moves it by `data-focus` (into the remove
+question, back to Remove From Community, or to Share to Community), `TagInput` refocuses the input or the last chip,
+and the shared `useFocusTrap` restores focus after an unmounting modal and leaves an `autoFocus` control focused.
+The first-publish confirmation is `role="status"` with focus on Done. Counts carry sr-only words
+(`CommunityCounts`). The like button has `aria-pressed` and an `aria-label` with the count; card images carry `alt`
+= title; the embed frame has a `title`; the report dialog traps focus and returns it; search has a visible label
+(sr-only) and `role="search"`. Colours from the
 shared Tailwind theme meet AA in light and dark. Reduced motion disables card lift and heart animation.
 
 ## 11. Web Experience
 
 The gallery shell, hero and filters render statically (no layout shift: the grid reserves skeleton cards); posts load
 client-side. Card images are `loading="lazy"` with fixed aspect boxes (CLS 0). LCP is the hero heading. Interactions
-(chip toggles, likes) update optimistically (INP).
+(search controls, likes) update optimistically (INP). Each post page names its own canonical address once it loads.
 
 ## 12. Observability
 
@@ -404,7 +456,15 @@ Community cards (`apps/telemetry/app/catalogue/community.ts`); its emitter scan 
 Community app's events are covered by the completeness tests.
 
 Worker logs with fingerprints: `[community] published`, `[community] updated`, `[community] removed`,
-`[community] auto-hidden`, `[community] rejected <code>` (including `post_hidden`). Telemetry per the spec.
+`[community] replaced a previous owner post`, `[community] auto-hidden`, `[community] rejected <code>` (including
+`post_hidden`), `[community] publish retried after an id collision`, `[community] copy count failed`, and
+`[tabs] refused a save onto another document's tab` (the tab id guard).
+
+Browser warnings: `[community] capabilities unavailable; assuming on` (`useCommunityEnabled`), `[community] featured
+load failed` (`CommunityShowcase`), `[community] switched off; leaving for the home page` (`CommunityGate`),
+`[community] sign-in did not load; My Shares gives up`, `[community] gallery load failed`, `[community] facets load
+failed`, `[community] load more failed`, `[community] post load failed`, `[community] report failed`; the Community
+app's api errors read `[community] api <status> <code>`. Telemetry per the spec.
 
 ## 13. Testing
 
@@ -428,10 +488,27 @@ Worker logs with fingerprints: `[community] published`, `[community] updated`, `
 | Copy once from `?copy=1`                   | `apps/live/hooks/canvas/useAutoCopyParam.test.tsx`                                       |
 | Community section state, tag input         | `apps/live/components/dialogs/community/*.test.ts(x)`                                    |
 | Editor api client and error copy           | `apps/live/lib/api/community.test.ts`                                                    |
+| Network ranges (IPv4 /24, IPv6 /56)        | `apps/api/src/community-network.test.ts`                                                 |
+| Redaction for strangers                    | `apps/api/src/community-redact.test.ts`                                                  |
+| Community snapshot cache                   | `apps/api/src/thumbnail.test.ts`                                                         |
+| Post row mapping (Anonymous, state)        | `apps/api/src/community-row.test.ts`                                                     |
+| Tab id guard (`tab_id_taken`)              | `apps/api/src/routes/tab-put-route.test.ts`                                              |
+| Public badge                               | `apps/live/components/chrome/SharedBadge.test.tsx`                                       |
+| Community bar                              | `apps/live/components/chrome/CommunityBar.test.tsx`                                      |
+| Share dialog with Community, switched off  | `apps/live/components/dialogs/community/ShareDialogWithCommunity.test.tsx`               |
+| Community section, focus follows           | `apps/live/components/dialogs/community/CommunitySection.test.tsx`                       |
+| Publish dialog pieces                      | `apps/live/components/dialogs/community/publish-pieces.test.tsx`                         |
+| Owner post hook                            | `apps/live/hooks/persistence/useCommunityPost.test.tsx`                                  |
+| Gallery states, My Shares, sign-in wait    | `apps/community/components/gallery/GalleryView.test.tsx`                                 |
+| Post page, canonical                       | `apps/community/components/post/PostView.test.tsx`                                       |
+| Sign-in session and switched-off gate      | `apps/community/components/auth-and-gate.test.tsx`                                       |
+| Home page showcase                         | `apps/marketing/components/CommunityShowcase.test.tsx`                                   |
+| Shared card, counts, author                | `packages/ui/src/community/community-pieces.test.tsx`                                    |
+| Focus restore after an unmounting modal    | `packages/ui/src/useFocusTrap.test.tsx`                                                  |
 
 ## 14. Defaults ledger
 
-See [DEFAULTS.md](DEFAULTS.md), rows C1 to C10.
+See [DEFAULTS.md](DEFAULTS.md), rows C1 to C17.
 
 ## 15. Assets and external resources
 

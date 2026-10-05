@@ -172,8 +172,8 @@ None. Menus already count the verbs chosen in them; how focus moved is not an ac
 ## Where it lives
 
 - `@livediagram/ui` owns the keyboard model and the hooks every app's menus use (`useMenu`,
-  `useMenuButton`, `useControlMenu`), so the editor, help, telemetry and marketing menus behave as
-  one.
+  `useMenuButton`, `useControlMenu`), so the editor, help, telemetry, marketing and Community menus
+  behave as one.
 - The editor's menu primitives (`PortalMenu`, `ContextMenu`, `MenuFlyoutSection` and the row
   components) pick each row's role from the kind of menu they sit in.
 - The focus ring rules live in the shared Tailwind theme.

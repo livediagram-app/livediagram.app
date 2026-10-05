@@ -23,7 +23,8 @@ the one switch, and it goes further: it collapses all motion to instant.
 
 Chrome is everything that isn't the canvas. That includes panels, menus, popovers, flyouts,
 dropdowns, tooltips, dialogs, sheets, drawers, toasts, banners, tab bars, the tour, the Explorer,
-the help centre, the telemetry dashboard and the marketing site's own navigation and cards.
+the help centre, the telemetry dashboard, the Community and the marketing site's own navigation
+and cards.
 
 ## Motion tokens
 

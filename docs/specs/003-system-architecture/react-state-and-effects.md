@@ -67,4 +67,4 @@ that keeps them and leaves the rest as plain React.
 
 ## Out of scope
 
-- The React Compiler in the other Next.js apps (marketing, help, telemetry).
+- The React Compiler in the other Next.js apps (marketing, help, telemetry, community).

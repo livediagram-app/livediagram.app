@@ -34,7 +34,7 @@ document after publishing changes what Community shows, on the next load (cards 
 [document snapshot](../006-document/document-snapshots.md) cache; an open viewer does not stream changes). The publish
 dialog says so plainly.
 
-A post shows every tab of the document. A document that is empty (no snapshot renders) cannot be published.
+A post shows every tab of the document. A document that is empty (its first tab has no elements, counted rather than rendered) cannot be published.
 
 ## Publishing
 
@@ -63,6 +63,9 @@ A post shows every tab of the document. A document that is empty (no snapshot re
     can switch it either way. Posts published before this option existed stay named.
   - A preview of the card as it will appear, and the consequences in plain words: anyone can view and copy it, it
     stays in step with your edits, comments are not shown, you can remove it at any time.
+- **Focus follows the controls that leave.** Remove From Community asks in place (**Keep It** and **Remove**), focus
+  moving into the question, back to Remove From Community, or to Share to Community once the post is gone; after a
+  first publish the confirmation is announced as it appears, with focus on **Done**.
 - Publishing again on a published document (**Edit Listing**) updates the title, description, category and tags; the
   likes, copies and publish date stay.
 - **Remove From Community** deletes the post, its likes, copies and reports. Copies people already made are theirs and
@@ -105,15 +108,19 @@ type) and on the worker (authoritative).
   Explorer Home (`/explorer/home`), where the person's documents are: sharing starts from a document they already have.
 - **One search box holds the whole query in words.** Plain words search titles, descriptions and tags; each
   `#tag` is a tag the document must have (all of them); one `category:<id>` keeps to one category; one `sort:loved`
-  or `sort:copied` orders the results (All and Newest, the defaults, need none). Anything can be typed; three
-  controls inside the box's right edge write the same words, each applied at once:
+  or `sort:copied` orders the results (All and Newest, the defaults, need none). Anything can be typed; the controls
+  inside the box's right edge write the same words, each applied at once (and **My Shares**, below, where sign-in
+  exists):
   - **Category**: All Categories, then each category with its count of documents. A category with none is left out
     unless it is the one chosen. Choosing one writes its `category:` word (All removes it).
   - **Tags**: the most used tags with their counts. Choosing one adds its `#tag`; choosing it again takes it out.
     The button shows how many tags the search holds.
   - **Sort**: Newest, Most Loved (likes), Most Copied. Choosing one writes its `sort:` word (or removes it for
     Newest).
-  - Each control shows an icon and its current value; on phones only the icon, so all three fit beside the text.
+  - Each control shows an icon and its current value; below the `lg` breakpoint (1024px) only the icon, so they all
+    fit beside the text. The text and the controls sit side by side in one row, so typed text never runs under them.
+  - **Clear Search** (shown while the box holds anything) clears what was searched for (words, tags, category) and
+    keeps the sort and My Shares, like Clear Filters.
 - A responsive grid of **cards**, which cascade in (each rises and fades in one beat after the last, within the motion
   budget; not under reduced motion) whenever a new set of results arrives: the post's live image, title, category, up to three tags, the author (picture or
   initial in their colour, and name) with when it was shared beneath ("2 days ago", whole months after the first
@@ -136,6 +143,8 @@ type) and on the worker (authoritative).
   copy count ("1 copy") and **Report** at the end.
 - **More Like This**: up to six other posts in the same category, most loved first.
 - A post that does not exist, was removed or is hidden shows a friendly not-found with a way back to the gallery.
+- Once a post loads, its page names its own address as canonical (the static shell, shared by every post, carries
+  none).
 
 ## Viewing a post's document
 
@@ -219,7 +228,7 @@ image for at most 30 seconds, the home page's six for a minute.
 ## My Shares
 
 A signed-in author can narrow the gallery to their own posts, to review them and see how they are doing.
-**My Shares**, a toggle inside the search box (beside Category, Tags and Sort; an icon only on phones), writes
+**My Shares**, a toggle inside the search box (beside Category, Tags and Sort; an icon only below `lg`), writes
 `is:mine` into the search, so it combines with every other search word and stays in the address like them.
 
 - It lists the author's own posts, **hidden ones included** (marked **Hidden**; a hidden post's card opens the
@@ -227,6 +236,9 @@ A signed-in author can narrow the gallery to their own posts, to review them and
 - Above the grid, **Your Shares** totals all their posts, likes and copies, whatever the search narrows to.
 - Signed out, it says **Sign in to see your shares.** with a Sign In button that returns to the same view; with
   nothing shared yet, **You haven't shared anything yet.** with Share Your Own.
+- If sign-in has not loaded after 10 seconds (a blocked script, a network failure), it says **We couldn't load the
+  Community.** with **Try Again**, which reloads the page. A build without sign-in given `is:mine` says **My Shares
+  needs an account.**
 - The rest of the Community needs no identity, so the Community app loads Clerk only once My Shares is on, and a
   build without a Clerk key does not offer it. The api answers `GET /api/community/mine` (Clerk session
   required, never cached); the public list ignores `is:mine`.
@@ -249,6 +261,21 @@ minute.
 - The Share dialog's **Community** section, and the [help articles](../018-help/help-app.md) **Sharing to the
   Community** and **Finding Documents in the Community** under Collaboration, Sharing and Embeds.
 
+## Help
+
+Community surfaces deep link those two help articles, each a quiet link with the help glyph (the full placement list
+is in [Contextual help links](../018-help/contextual-help-links.md)):
+
+- The gallery's header: **How the Community Works** (Finding Documents in the Community) under the lead, and **How
+  Sharing Works** (Sharing to the Community) under Share Your Own.
+- My Shares' **Your Shares** summary: **Managing Your Shares** (Sharing to the Community).
+- The report dialog: **How Reports Work** (Finding Documents in the Community).
+- The landing page's From the Community section: **How the Community Works** beside Explore the Community.
+- In the editor, the Share dialog's **Community** section label and the **Share to Community** dialog's header carry
+  the editor's help link to Sharing to the Community.
+
+A click is tracked as every help deep link is (`UI·Opened·<article id>`).
+
 ## Abuse limits
 
 Liking and reporting are rate limited per network (the caller's address range) by the dedicated
@@ -265,7 +292,7 @@ only `Liked`, `Unliked` and `Reported`. Types are preset values, never post cont
   `Community·Removed·Post` on Remove From Community.
 - Community app: `Community·Opened·Post`, `Community·Liked·Post`, `Community·Unliked·Post`, `Community·Copied·Post`,
   `Community·Reported·<Reason>`, `Community·Searched·Query`, `Community·Selected·<Category|Tag|Sort|Mine>`
-  (Tag, Sort and Mine from the controls inside the search box). There are no operator or moderation events.
+  (Category, Tag, Sort and Mine from the four controls inside the search box). There are no operator or moderation events.
 - Page views for the Community app as for any other app, under app `Community`.
 - The [telemetry dashboard](../017-telemetry/telemetry.md) has a **Community** tab and a Community group of cards
   (publishing, engagement, discovery, reports).
@@ -303,4 +330,4 @@ the editor.
 
 - Hand-picked featured posts (staff picks); author profile pages; comments on posts; following authors.
 - Publishing a single tab; frozen snapshots.
-- Sign-in inside the Community app.
+- A sign-in form inside the Community app (My Shares links to the editor's `/sign-in/`).
