@@ -5,7 +5,7 @@
 // document with every tab, each tab's per-document folder, and the slide deck.
 // Images stay references to livediagram's image store; no bytes are embedded.
 
-import type { Tab } from '@livediagram/document';
+import type { Tab } from './index';
 
 export const DOCUMENT_ENVELOPE_KIND = 'livediagram.document';
 export const DOCUMENT_SCHEMA_VERSION = 1;

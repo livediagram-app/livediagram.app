@@ -4,7 +4,7 @@ import {
   documentToEnvelopeText,
   parseDocumentEnvelope,
   type EnvelopeTab,
-} from './export-document-text';
+} from './document-envelope';
 
 // The `.livediagram` file's contents (docs/specs/022-drive-mirror/drive-mirror.md, "The file").
 

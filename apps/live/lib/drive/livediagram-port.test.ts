@@ -1,5 +1,5 @@
+import { DOCUMENT_ENVELOPE_KIND, type DocumentEnvelope } from '@livediagram/document';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { DOCUMENT_ENVELOPE_KIND, type DocumentEnvelope } from '../export-document-text';
 import { createApiLivediagramPort } from './livediagram-port';
 
 // The Drive port's copy into the account (docs/specs/013-workspace/default-folders.md "Creation

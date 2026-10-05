@@ -1,7 +1,7 @@
+import { documentToEnvelopeText } from '@livediagram/document';
 import { describe, expect, it, vi } from 'vitest';
 import { DRIVE_FILE_MIME } from '@livediagram/api-schema';
 import { DRIVE_WRITE_IDLE_MS, DRIVE_WRITE_MIN_INTERVAL_MS } from './cadence';
-import { documentToEnvelopeText } from '../export-document-text';
 import { createDriveRestClient } from './drive-rest-client';
 import {
   importOpenWithCopy,

@@ -29,7 +29,7 @@ Scope, by file:
 | `apps/live/components/canvas/useBoxedElementGestures.ts` | Double-click opens the note [QD9]                                   |
 | `apps/live/components/canvas/element-parts.tsx`          | `SelectionChromeLayer`: resize handles for a selected marker [QD8]  |
 | `apps/live/components/palette/EditorContextMenu.tsx`     | Size section shown, Rotation hidden for an annotation [QD8]         |
-| `apps/live/lib/export-tab-text.ts`                       | Markdown outline [QD11]                                             |
+| `packages/document/src/export-tab-text.ts`               | Markdown outline [QD11]                                             |
 
 ## Domain and naming
 

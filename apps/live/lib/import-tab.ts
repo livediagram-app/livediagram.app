@@ -33,10 +33,15 @@ export type ImportOutcome =
 // when we bump the schema we add a `migrate(version, tab)` branch in
 // parseImportedTab that walks old shapes forward.
 
-import { isValidElement, migrateIncomingElements, type Tab } from '@livediagram/document';
+import {
+  isValidElement,
+  migrateIncomingElements,
+  type Tab,
+  TAB_SCHEMA_VERSION,
+  type ExportedTabEnvelope,
+} from '@livediagram/document';
 import type { ImportImageReport } from './import-images';
 import type { BoardSceneReport } from './board-scene/report';
-import { TAB_SCHEMA_VERSION, type ExportedTabEnvelope } from './export-tab';
 
 type ImportResult = { ok: true; tab: Tab } | { ok: false; error: string };
 

@@ -1,12 +1,7 @@
-// Text serialisation of a Tab — the non-visual export formats (JSON
-// snapshot + Markdown outline). Split out of export-tab.ts so the
-// image-rendering concern (canvas / SVG / PDF) lives on its own; these
-// two share nothing with the rasteriser beyond the Tab data model.
-//
-// Re-exported from export-tab.ts so existing `@/lib/export-tab` import
-// paths keep resolving unchanged.
+// Text serialisation of a Tab: the non-visual export formats (JSON snapshot and Markdown outline), shared by the
+// editor's Export dialog and the CLI's export. They share nothing with a rasteriser beyond the Tab data model.
 
-import { isBoxed, type ArrowElement, type BoxedElement, type Tab } from '@livediagram/document';
+import { isBoxed, type ArrowElement, type BoxedElement, type Tab } from './index';
 
 // ---------------------------------------------------------------------
 // File (JSON)

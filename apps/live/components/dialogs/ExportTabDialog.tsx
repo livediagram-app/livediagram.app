@@ -11,6 +11,8 @@ import {
   mermaidFromTab,
   type LaidOutPage,
   type Tab,
+  tabToJsonText,
+  tabToMarkdownText,
 } from '@livediagram/document';
 import {
   downloadBlob,
@@ -18,8 +20,6 @@ import {
   exportTabAsSvg,
   loadTabImages,
   renderTabToSvg,
-  tabToJsonText,
-  tabToMarkdownText,
 } from '@/lib/export-tab';
 import { exportTabAsPdf } from '@/lib/export-tab-pdf';
 import {

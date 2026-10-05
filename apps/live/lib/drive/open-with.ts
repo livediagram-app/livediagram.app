@@ -4,6 +4,7 @@
 // **Import a copy** or, for a copy of a mirrored file, **Import as new
 // document**, or say the file cannot be opened.
 
+import { parseDocumentEnvelope } from '@livediagram/document';
 import {
   DRIVE_FILE_EXTENSION,
   DRIVE_FILE_MIME,
@@ -11,7 +12,6 @@ import {
   DRIVE_PROP_ORIGIN,
   isDriveFileId,
 } from '@livediagram/api-schema';
-import { parseDocumentEnvelope } from '../export-document-text';
 import { DriveApiError, type DriveClient } from './drive-client';
 import type { LivediagramPort } from './livediagram-port';
 import { driveLog, driveWarn } from './log';

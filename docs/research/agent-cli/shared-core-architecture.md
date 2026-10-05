@@ -38,7 +38,7 @@ Specs read: [MCP server](../../specs/015-api/mcp-server.md), [Public API and API
 - `@livediagram/document` is already the isomorphic core: types, `isValidTab`, `autoLayoutElements`, `graphToElements` (`graph-authoring.ts`, whose header already says "the public API can adopt it"), `parseMermaid`, `mermaid-serialise.ts` (elements to Mermaid), `renderElementsToSvg`, `element-ops.ts` (`diffToElementOps`, `applyElementOp`), `element-deltas.ts`, `comments.ts`, `element-display-label.ts`, `element-kind-label.ts`. Nothing in it touches the DOM. It is the right home for the moved MCP logic.
 - `@livediagram/api-schema` holds the wire DTOs, `DOCUMENT_FORMAT` (2) and its header `X-Livediagram-Format`, `BUILD_ID_HEADER`, telemetry enums, `embedTabImages`, `bearerTokenOf`, `isLoopbackHostname`. The CLI consumes it unchanged.
 - `@livediagram/templates` and `@livediagram/icons` (`/resolve`) are pure and Worker-safe; both bundle into Node as is.
-- **One piece lives in the wrong app:** `tabToMarkdownText` (the Markdown outline) is in `apps/live/lib/export-tab-text.ts`. It is the seed of the outline view and must move to `document-views`.
+- **One piece lived in the wrong app:** `tabToMarkdownText` (the Markdown outline) was in the editor app. It is the seed of the outline view; it now lives in `packages/document/src/export-tab-text.ts`, and the outline view itself in `document-views`.
 - **Packaging fact that shapes distribution:** every internal package is `private` and exports raw TypeScript (`"main": "./src/index.ts"`). Nothing can be published as is; the CLI must be **bundled** (esbuild / tsdown) so internal packages are inlined. Source size: `document` 2.8 MB, `templates` 800 KB, `icons` 280 KB of TS, tree-shaken in the bundle.
 
 ### 2.3 `apps/api` facts that matter
@@ -374,7 +374,7 @@ Still open:
 
 ## 13. Sources
 
-- livediagram code at `efaee7d29`: `apps/mcp/src/*`, `apps/api/src/routes/document-subresource-routes.ts`, `apps/api/src/room-client.ts`, `apps/api/src/openapi/manifest.ts`, `packages/api-schema/src/document-format.ts`, `apps/live/lib/export-tab-text.ts`.
+- livediagram code at `efaee7d29`: `apps/mcp/src/*`, `apps/api/src/routes/document-subresource-routes.ts`, `apps/api/src/room-client.ts`, `apps/api/src/openapi/manifest.ts`, `packages/api-schema/src/document-format.ts`, and the editor's `export-tab-text.ts` (now `packages/document/src/export-tab-text.ts`).
 - GitHub CLI login and credential storage: <https://cli.github.com/manual/gh_auth_login>; GitHub MCP server: <https://github.com/github/github-mcp-server>
 - Stripe MCP: <https://docs.stripe.com/mcp>; agent toolkit: <https://github.com/stripe/ai>
 - Cloudflare Code Mode: <https://blog.cloudflare.com/code-mode/> and <https://blog.cloudflare.com/code-mode-mcp/>; wrangler login: <https://developers.cloudflare.com/workers/wrangler/commands/#login>

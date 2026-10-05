@@ -205,7 +205,7 @@ this spec does not restate it.
 - **MIME type:** `application/vnd.livediagram+json`, registered as the app's
   default type for "Open with".
 - **Contents:** a whole-document envelope, the sibling of the per-tab export's
-  `livediagram.tab` envelope (`apps/live/lib/export-tab-text.ts`):
+  `livediagram.tab` envelope (`packages/document/src/export-tab-text.ts`):
   `{ kind: 'livediagram.document', schemaVersion, exportedAt, document }`, where
   `diagram` holds the id, name and every tab with its folders and slide
   deck. Images stay references to livediagram's image store; the file does
