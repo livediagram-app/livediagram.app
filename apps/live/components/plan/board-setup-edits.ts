@@ -21,7 +21,7 @@ export const COLUMN_COLOURS = [
 ] as const;
 
 export const SWIMLANE_LABELS: Record<SwimlaneBy, string> = {
-  none: 'No Rows',
+  none: 'No Swimlanes',
   assignee: 'By Assignee',
   type: 'By Card Type',
   priority: 'By Priority',

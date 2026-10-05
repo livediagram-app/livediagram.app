@@ -46,7 +46,7 @@ Where each is set, so a setting lives with what it changes, never in one central
   **Remove Column**. Removing a column with cards first asks where they go (**Move and Remove**, or **Keep
   It**); the board's last column cannot be removed. Each change applies as it is made.
 - **The board's own settings** sit in its element menu (right-click the board, or the selection's ⋯), in two
-  flyouts: **Board** (**Title**; **Rows**: No Rows, By Assignee, By Card Type, By Priority, By Project) and
+  flyouts: **Board** (**Title**; **Swimlanes**: No Swimlanes, By Assignee, By Card Type, By Priority, By Project) and
   **Cards** (what each card face shows besides its title, a tile per field pressed on or off). New columns come
   from a column's **+ Add Column After**.
 - **Every board shows every card**: there is no per-board filter by type or label; a board shows every item whose

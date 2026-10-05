@@ -92,7 +92,7 @@ export function PlanBoardMenuSection({
           />
         </label>
       </div>
-      <p className={captionClass}>Rows</p>
+      <p className={captionClass}>Swimlanes</p>
       <MenuTileGrid cols={3}>
         {SWIMLANE_BY.map((s) => (
           <MenuTile
@@ -100,7 +100,7 @@ export function PlanBoardMenuSection({
             icon={<PlanTypeGlyph glyph={ROW_GLYPHS[s]} size={16} />}
             label={SWIMLANE_LABELS[s]}
             active={setup.swimlaneBy === s}
-            onClick={() => set({ ...setup, swimlaneBy: s }, 'Rows')}
+            onClick={() => set({ ...setup, swimlaneBy: s }, 'Swimlanes')}
           />
         ))}
       </MenuTileGrid>

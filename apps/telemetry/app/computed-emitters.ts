@@ -155,7 +155,7 @@ const PLAN_SETUP_PARTS = [
   'ColumnColour',
   'WipLimit',
   'DoneColumn',
-  'Rows',
+  'Swimlanes',
   'Scope',
   'CardFields',
   'Voting',

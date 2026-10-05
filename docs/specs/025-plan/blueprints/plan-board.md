@@ -58,7 +58,7 @@ PlanCardView.tsx         the plan-card element body (themed; a lone card's fill 
 PlanModal.tsx            the item panel's modal (through Dialog), SheetRow and FIELD_CLASS
 plan-board-moves.ts      the move a drop makes (boardMoveFor)
 PlanSheetsHost.tsx       renders the open item panel or type editor
-../palette/PlanBoardMenuSection.tsx  the board's element-menu Board (title, rows) and Cards (fields) flyouts
+../palette/PlanBoardMenuSection.tsx  the board's element-menu Board (title, swimlanes) and Cards (fields) flyouts
 ItemPanel.tsx            item panel: type, title, the type's fields (custom ones through CustomFieldEditor)
 item-field-editors.tsx   editors for text (debounced), person, priority, labels, number, date, checklist
 plan-board-keys.ts       the board's keyboard as a pure function of the projection
