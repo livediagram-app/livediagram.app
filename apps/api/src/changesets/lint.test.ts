@@ -12,7 +12,13 @@ describe('lintResult', () => {
   it('lints the whole tab, logging with where it ran', () => {
     const infos: unknown[][] = [];
     vi.spyOn(console, 'info').mockImplementation((...args: unknown[]) => void infos.push(args));
-    const report = lintResult({ elements: [box('a', 0), box('b', 60)] }, where);
+    const joined = {
+      id: 'x',
+      type: 'arrow',
+      from: { kind: 'pinned', elementId: 'a', anchor: 'e' },
+      to: { kind: 'pinned', elementId: 'b', anchor: 'w' },
+    } as Element;
+    const report = lintResult({ elements: [box('a', 0), box('b', 60), joined] }, where);
     expect(report?.counts.error).toBe(1);
     expect(infos[0]).toEqual([
       '[lint] run',

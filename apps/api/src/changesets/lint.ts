@@ -9,7 +9,7 @@ import type { Tab } from '@livediagram/document';
 type Where = { documentId: string; tabId: string };
 
 // The lint's own lines, prefixed with where they happened, at the level each names.
-function lintLog(where: Where): LintLogger {
+export function lintLog(where: Where): LintLogger {
   return (fingerprint, fields) => {
     const line = { ...where, ...fields };
     if (fingerprint === '[lint] crossings skipped') console.warn(fingerprint, line);

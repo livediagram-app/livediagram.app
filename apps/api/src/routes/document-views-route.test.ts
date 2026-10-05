@@ -196,7 +196,12 @@ describe('the lint over REST', () => {
     expect(res.headers.get('ETag')).toBe('W/"1"');
     const text = await res.text();
     expect(text.split('\n')[0]).toMatch(/^0 crossings · 0 behind · 0 overlaps · \d+×\d+ → /);
-    expect(logged('[lint] run')).toMatchObject({ source: 'tab', elements: 6 });
+    expect(logged('[lint] run')).toMatchObject({
+      documentId: 'D',
+      tabId: 't1',
+      source: 'tab',
+      elements: 6,
+    });
     await settled();
     expect(viewed(db)).toEqual(['Lint']);
   });

@@ -19,6 +19,7 @@ import {
   type ViewQueryParameter,
 } from '@livediagram/api-schema';
 import { formatLintReport, lintTab } from '@livediagram/diagram-lint';
+import { lintLog } from '../changesets/lint';
 import { isKnownElement } from '@livediagram/document';
 import {
   FIND_QUERY_MAX_LENGTH,
@@ -206,10 +207,15 @@ function logUnknownKinds(tab: TabDTO): void {
 
 // The lint of a tab (docs/specs/024-agents/diagram-lint.md "Where it runs"), as text or (`json=1`) the
 // report. A lint that throws answers 500 with `lint unavailable` and logs `[lint] failed` (LN23).
-function answerLintView(ctx: RouteContext, parsed: ParsedLintView, tab: TabDTO): Response {
+function answerLintView(
+  ctx: RouteContext,
+  parsed: ParsedLintView,
+  document: DocumentDTO,
+  tab: TabDTO,
+): Response {
   let report;
   try {
-    report = lintTab(tab);
+    report = lintTab(tab, { log: lintLog({ documentId: document.id, tabId: tab.id }) });
   } catch (err) {
     console.error('[lint] failed', { where: 'view', tab: tab.id, error: String(err) });
     return json({ error: 'lint_failed', message: 'lint unavailable' }, { status: 500 });
@@ -226,7 +232,7 @@ export function answerTabView(
   document: DocumentDTO,
   tab: TabDTO,
 ): Response {
-  if ('lint' in parsed) return answerLintView(ctx, parsed, tab);
+  if ('lint' in parsed) return answerLintView(ctx, parsed, document, tab);
   const started = Date.now();
   const rendered = renderView(parsed.request, tab, {
     rev: tab.rev,
