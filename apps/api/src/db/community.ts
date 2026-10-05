@@ -114,7 +114,7 @@ function tagStatements(env: Env, postId: string, tags: string[]): D1PreparedStat
 }
 
 // Publish: the community link (view role, never expiring, all tabs) and the post in one batch, so a post never
-// exists without its link nor a link without its post. Ids come from the share-code alphabet (D2); a collision on
+// exists without its link nor a link without its post. Ids come from the share-code alphabet (C2); a collision on
 // either primary key fails the batch whole and is retried once with fresh ids.
 export async function createCommunityPost(
   env: Env,
@@ -266,7 +266,7 @@ export async function listCommunityPosts(
   };
 }
 
-// More Like This (D8): the same category, most liked first, the post itself left out.
+// More Like This (C8): the same category, most liked first, the post itself left out.
 export async function listRelatedCommunityPosts(
   env: Env,
   postId: string,

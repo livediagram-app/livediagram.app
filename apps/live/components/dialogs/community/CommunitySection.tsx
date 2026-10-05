@@ -181,17 +181,15 @@ export function CommunitySection({
             </div>
           ) : state === 'hidden' ? null : (
             <div className="flex flex-wrap items-center gap-2">
-              {state === 'published' ? (
-                <a
-                  href={communityPostPath(post.id)}
-                  target="_blank"
-                  rel="noopener"
-                  className={buttonClassName({ variant: 'secondary', size: 'xs' })}
-                >
-                  <OpenIcon />
-                  View Post
-                </a>
-              ) : null}
+              <a
+                href={communityPostPath(post.id)}
+                target="_blank"
+                rel="noopener"
+                className={buttonClassName({ variant: 'secondary', size: 'xs' })}
+              >
+                <OpenIcon />
+                View Post
+              </a>
               <Button variant="secondary" size="xs" onClick={onEdit}>
                 Edit Listing
               </Button>

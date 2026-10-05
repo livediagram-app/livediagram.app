@@ -4,7 +4,7 @@ import { useState } from 'react';
 import type { CommunityPost } from '@livediagram/api-schema';
 import { ButtonContent, CopyIcon, buttonClassName } from '@livediagram/ui';
 import { formatCount } from '@/lib/format';
-import { makeCopyHref, openBoardHref } from '@/lib/links';
+import { makeCopyHref, openDocumentHref } from '@/lib/links';
 import { communityTelemetry } from '@/lib/telemetry';
 import { useLike } from '@/lib/useLike';
 import { FlagIcon, FullScreenIcon } from '../shared/icons';
@@ -13,7 +13,7 @@ import { ReportDialog } from './ReportDialog';
 
 // One chip in the panel's footer: the heart, the copy count and Report share its height and padding, so the row
 // reads as one strip.
-export const POST_CHIP =
+const POST_CHIP =
   'inline-flex h-9 items-center gap-1.5 rounded-lg px-2.5 text-sm font-medium tabular-nums';
 
 // The post's actions (docs/specs/025-community/community.md "Post"), as one panel: the two ways into the document
@@ -36,7 +36,7 @@ export function PostActions({ post }: { post: CommunityPost }) {
           <ButtonContent>Make a Copy</ButtonContent>
         </a>
         <a
-          href={openBoardHref(post.shareCode)}
+          href={openDocumentHref(post.shareCode)}
           className={buttonClassName({
             variant: 'secondary',
             size: 'md',

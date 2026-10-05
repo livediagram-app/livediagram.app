@@ -10,6 +10,7 @@ import {
   type MenuInitialFocus,
 } from '@livediagram/ui';
 import { HashIcon } from '../shared/icons';
+import { SEARCH_MENU_PANEL, searchMenuRow } from './search-menu';
 import { SearchControlButton } from './SearchControlButton';
 
 // The tag filter inside the search box's right edge (docs/specs/025-community/community.md "Gallery"):
@@ -85,7 +86,7 @@ function TagOptions({
       {...surfaceProps}
       className="absolute right-0 top-full z-(--z-popover) w-60 pt-2 outline-none"
     >
-      <div className="flex max-h-80 animate-fade-in flex-col gap-px overflow-y-auto rounded-lg border border-slate-200/80 bg-white p-1 shadow-xl shadow-slate-900/10 motion-reduce:animate-none dark:border-slate-700/80 dark:bg-slate-900 dark:shadow-slate-950/60">
+      <div className={`${SEARCH_MENU_PANEL} max-h-80 overflow-y-auto`}>
         <p className="px-2.5 pb-1 pt-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
           Popular Tags
         </p>
@@ -99,11 +100,7 @@ function TagOptions({
               aria-checked={checked}
               tabIndex={-1}
               onClick={() => onToggle(tag)}
-              className={`flex items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-sm transition-colors duration-micro focus-visible:outline-2 focus-visible:outline-brand-600 ${
-                checked
-                  ? 'bg-brand-100 font-medium text-brand-700 dark:bg-brand-500/20 dark:text-brand-100'
-                  : 'text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800'
-              }`}
+              className={searchMenuRow(checked)}
             >
               <span className="flex-1 truncate">#{tag}</span>
               {count !== null ? (

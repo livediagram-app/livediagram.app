@@ -536,7 +536,7 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
     if (placementResp) return placementResp;
   }
 
-  // /api/documents/<id>/community — publish to, edit in or remove from Community
+  // /api/documents/<id>/community: publish to, edit in or remove from Community
   // (docs/specs/025-community/community.md).
   {
     const communityResp = await handleCommunityOwnerRoutes(ctx);

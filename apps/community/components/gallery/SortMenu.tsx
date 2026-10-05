@@ -10,6 +10,7 @@ import {
   type MenuInitialFocus,
 } from '@livediagram/ui';
 import { SortIcon } from '../shared/icons';
+import { SEARCH_MENU_PANEL, searchMenuRow } from './search-menu';
 import { SearchControlButton } from './SearchControlButton';
 
 // The sort control inside the search box's right edge (docs/specs/025-community/community.md
@@ -74,7 +75,7 @@ function SortOptions({
       {...surfaceProps}
       className="absolute right-0 top-full z-(--z-popover) min-w-44 pt-2 outline-none"
     >
-      <div className="flex animate-fade-in flex-col gap-px rounded-lg border border-slate-200/80 bg-white p-1 shadow-xl shadow-slate-900/10 motion-reduce:animate-none dark:border-slate-700/80 dark:bg-slate-900 dark:shadow-slate-950/60">
+      <div className={SEARCH_MENU_PANEL}>
         {COMMUNITY_SORTS.map((sort) => {
           const checked = sort.id === value;
           return (
@@ -85,11 +86,7 @@ function SortOptions({
               aria-checked={checked}
               tabIndex={-1}
               onClick={() => onChoose(sort.id)}
-              className={`flex items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-sm font-medium transition-colors duration-micro focus-visible:outline-2 focus-visible:outline-brand-600 ${
-                checked
-                  ? 'bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-100'
-                  : 'text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800'
-              }`}
+              className={searchMenuRow(checked)}
             >
               <span className="flex-1">{sort.label}</span>
               <span className="flex w-4 shrink-0 justify-end">

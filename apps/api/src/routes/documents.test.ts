@@ -42,6 +42,7 @@ const { db, canReadDocument, canEditDocument, resolveDocumentGrant } = vi.hoiste
     // event: it reads the outgoing team's name for the bubble.
     getTeam: vi.fn(async () => ({ id: 'team-1', name: 'Design' })),
     getTab: vi.fn(),
+    tabBelongsElsewhere: vi.fn(async () => false),
     upsertTab: vi.fn(),
     // The tab PUT writes at the revision it read and merges unseen changesets
     // (docs/specs/024-agents/agent-changesets.md); none are recorded here.

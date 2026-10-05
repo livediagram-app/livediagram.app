@@ -1,6 +1,6 @@
 // Community posts against a real schema (docs/specs/025-community/blueprints/community.md §13): publish and Edit
 // Listing, what the public reads can and cannot see, filters, sorts, search, paging, facets, the cascades, likes,
-// copies, reports with automatic hiding, and the operator's decisions.
+// copies, reports with automatic hiding,.
 import { COMMUNITY_COUNTED_PER_NETWORK } from '@livediagram/api-schema';
 import { beforeEach, describe, expect, it } from 'vitest';
 import {
@@ -346,7 +346,7 @@ describe('reports', () => {
 });
 
 describe('a copy through a Community link', () => {
-  it('carries the board without its comments or the people on its actions', async () => {
+  it('carries the document without its comments or the people on its actions', async () => {
     addDocument('d1');
     const tab = {
       elements: [

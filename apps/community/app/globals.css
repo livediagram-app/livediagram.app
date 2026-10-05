@@ -18,7 +18,7 @@ body {
   color: var(--color-slate-200);
 }
 
-/* The hero's soft brand wash and the canvas dot grid behind it: the editor's own surface, quietly. */
+/* The hero's soft brand wash, quietly. */
 .community-hero {
   background:
     radial-gradient(60rem 22rem at 15% -10%, rgb(14 165 233 / 0.14), transparent 70%),
@@ -28,17 +28,6 @@ body {
   background:
     radial-gradient(60rem 22rem at 15% -10%, rgb(14 165 233 / 0.16), transparent 70%),
     radial-gradient(40rem 18rem at 95% 0%, rgb(244 63 94 / 0.07), transparent 70%);
-}
-
-/* A card's image area (blueprint §9): a subtle dot grid, like the editor's canvas. */
-.dot-grid {
-  background-color: #f8fafc;
-  background-image: radial-gradient(circle, rgb(148 163 184 / 0.35) 1px, transparent 1.2px);
-  background-size: 14px 14px;
-}
-.dark .dot-grid {
-  background-color: var(--color-slate-950);
-  background-image: radial-gradient(circle, rgb(100 116 139 / 0.3) 1px, transparent 1.2px);
 }
 
 /* The heart's pop on liking. */
@@ -57,29 +46,8 @@ body {
   animation: heart-pop var(--transition-duration-long) ease-out;
 }
 
-/* Skeleton bars breathe while posts load. */
-@keyframes skeleton-breathe {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.55;
-  }
-}
-.skeleton-bar {
-  background-color: var(--color-slate-200);
-  animation: skeleton-breathe 1.6s ease-in-out infinite;
-}
-.dark .skeleton-bar {
-  background-color: var(--color-slate-800);
-}
-
 @media (prefers-reduced-motion: reduce) {
   .heart-pop {
-    animation: none;
-  }
-  .skeleton-bar {
     animation: none;
   }
 }

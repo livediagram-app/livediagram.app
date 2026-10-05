@@ -1,8 +1,9 @@
 'use client';
 
+import { COMMUNITY_DOT_GRID } from '@livediagram/ui';
 import { useEffect, useState } from 'react';
 import { postImageUrl } from '@/lib/api';
-import { embedHref, openBoardHref } from '@/lib/links';
+import { embedHref, openDocumentHref } from '@/lib/links';
 import { FullScreenIcon } from '../shared/icons';
 
 // How long the embed may take to load before the page settles for the still image (ms).
@@ -24,7 +25,9 @@ export function EmbedFrame({ shareCode, title }: { shareCode: string; title: str
   }, []);
 
   return (
-    <div className="dot-grid relative aspect-[4/3] w-full overflow-hidden rounded-2xl border border-slate-200 shadow-sm sm:aspect-[16/10] dark:border-slate-800">
+    <div
+      className={`relative aspect-[4/3] w-full overflow-hidden rounded-2xl border border-slate-200 shadow-sm sm:aspect-[16/10] dark:border-slate-800 ${COMMUNITY_DOT_GRID}`}
+    >
       <img
         src={postImageUrl(shareCode)}
         alt={title}
@@ -43,7 +46,7 @@ export function EmbedFrame({ shareCode, title }: { shareCode: string; title: str
         />
       ) : (
         <a
-          href={openBoardHref(shareCode)}
+          href={openDocumentHref(shareCode)}
           className="absolute bottom-4 right-4 inline-flex items-center gap-1.5 rounded-lg bg-white/95 px-3 py-2 text-sm font-semibold text-slate-700 shadow-md ring-1 ring-slate-900/5 transition-colors duration-micro hover:text-brand-700 dark:bg-slate-900/95 dark:text-slate-200 dark:ring-white/10 dark:hover:text-brand-300"
         >
           <FullScreenIcon aria-hidden />

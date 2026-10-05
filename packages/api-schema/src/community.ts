@@ -336,12 +336,12 @@ export const COMMUNITY_UNKNOWN_AUTHOR: CommunityAuthor = {
   picture: null,
 };
 
-// The live image a card shows, relative to the api base.
 // A post's own page on the site (the Community app is served at /community).
 export function communityPostPath(postId: string): string {
   return `/community/post/?id=${encodeURIComponent(postId)}`;
 }
 
+// The live image a card shows, relative to the api base.
 export function communityImagePath(shareCode: string): string {
   return `/share/${encodeURIComponent(shareCode)}/image.svg`;
 }

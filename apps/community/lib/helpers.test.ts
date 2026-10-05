@@ -5,7 +5,7 @@ import {
   editDocumentHref,
   embedHref,
   makeCopyHref,
-  openBoardHref,
+  openDocumentHref,
   postHref,
   tagHref,
 } from './links';
@@ -16,7 +16,7 @@ import { signInHref } from './session';
 
 describe('links', () => {
   it('encodes codes, ids and tags into their parameter', () => {
-    expect(openBoardHref('AB c&d')).toBe('/document/shared?s=AB%20c%26d');
+    expect(openDocumentHref('AB c&d')).toBe('/document/shared?s=AB%20c%26d');
     expect(makeCopyHref('CODE1')).toBe('/document/shared?s=CODE1&copy=1');
     expect(embedHref('CODE1')).toBe('/embed?s=CODE1');
     expect(postHref('a/b?c')).toBe('/post/?id=a%2Fb%3Fc');

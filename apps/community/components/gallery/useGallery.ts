@@ -18,7 +18,7 @@ import {
   writeQueryState,
   type GalleryFilters,
 } from '@/lib/query-state';
-import { communityTelemetry, type CommunitySelection } from '@/lib/telemetry';
+import { communityTelemetry } from '@/lib/telemetry';
 import {
   getSearchSnapshot,
   getServerSearchSnapshot,
@@ -26,7 +26,7 @@ import {
   subscribeSearch,
 } from '@/lib/url-search';
 
-// The gallery's state (blueprint §5 "Gallery: GalleryView owns state"). Filters are read from the URL
+// The gallery's state (blueprint §5). Filters are read from the URL
 // and written back to it; the first page of posts loads whenever they change; Load More appends the
 // next page in memory. A result remembers which filters it answered, so "loading" is derived (the
 // result is for other filters) rather than set by hand, and a slow answer for stale filters is
@@ -57,7 +57,7 @@ export type Gallery = {
   loadingMore: boolean;
   loadMoreFailed: boolean;
   facets: CommunityFacetsResponse | null;
-  setFilters: (patch: Partial<GalleryFilters>, selection?: CommunitySelection) => void;
+  setFilters: (patch: Partial<GalleryFilters>) => void;
   clearFilters: () => void;
   loadMore: () => void;
   retry: () => void;
@@ -137,9 +137,8 @@ export function useGallery(session: CommunitySession | null): Gallery {
   const current = result && result.key === key ? result : null;
 
   const setFilters = useCallback(
-    (patch: Partial<GalleryFilters>, selection?: CommunitySelection) => {
+    (patch: Partial<GalleryFilters>) => {
       if (!filters) return;
-      if (selection) communityTelemetry.selected(selection);
       // A search is the typed words changing; a control writing its own word (`#tag`, `category:`, `sort:`,
       // `is:mine`) is that control's selection, counted once above, not a search as well.
       if (patch.q !== undefined && searchedWordsChanged(filters.q, patch.q)) {

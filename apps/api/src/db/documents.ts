@@ -424,7 +424,7 @@ export async function copyDocument(
   newName: string,
   // A tab-scoped visitor's copy (docs/specs/013-workspace/tab-scoped-share-links.md) takes their tab only.
   onlyTabId: string | null = null,
-  // A copy through a Community post's link (docs/specs/025-community/community.md) carries the board
+  // A copy through a Community post's link (docs/specs/025-community/community.md) carries the document
   // without its comments or the people on its actions, and so none of their index rows.
   redactForCommunity = false,
 ): Promise<DocumentDTO | null> {

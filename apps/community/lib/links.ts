@@ -5,7 +5,7 @@
 const shareQuery = (shareCode: string) => `s=${encodeURIComponent(shareCode)}`;
 
 // The read-only viewer, full screen.
-export const openBoardHref = (shareCode: string) => `/document/shared?${shareQuery(shareCode)}`;
+export const openDocumentHref = (shareCode: string) => `/document/shared?${shareQuery(shareCode)}`;
 
 // The viewer, which copies the document into the visitor's own documents in one step.
 export const makeCopyHref = (shareCode: string) =>

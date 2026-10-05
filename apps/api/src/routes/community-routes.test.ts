@@ -1,6 +1,6 @@
 // The Community routes end to end against a real schema (docs/specs/025-community/blueprints/community.md §13):
 // the owner's publish guards and Edit Listing, the public reads and their caching, likes and reports with the
-// community key, the operator gate, and how a community link behaves on the share resolve, the share list, the
+// community key, the off switch, and how a community link behaves on the share resolve, the share list, the
 // password route and the copy route.
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';

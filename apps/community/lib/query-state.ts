@@ -13,8 +13,9 @@ import {
   type CommunityListQuery,
 } from '@livediagram/api-schema';
 
-// The gallery's filters as they live in the URL (docs/specs/025-community/community.md "Gallery":
-// `q` with its `#tag` tokens, `category`, `sort`; `tag` is read for older links), so a filtered view can be shared and survives a reload. Pure, so
+// The gallery's filters as they live in the URL (docs/specs/025-community/community.md "Gallery"): `q`
+// carries every filter as words (`#tag`, `category:`, `sort:`, `is:mine`), and older `tag`, `category` and `sort`
+// parameters fold into it, so a filtered view can be shared and survives a reload. Pure, so
 // the round trip is tested (lib/query-state.test.ts). Offsets never reach the URL: Load More pages in
 // memory and a fresh load starts at the top.
 
@@ -40,8 +41,8 @@ export function readQueryState(params: URLSearchParams): GalleryFilters {
   const parsed = parseCommunityListQuery(clean);
   if (!parsed.ok) return EMPTY_FILTERS;
   const { q, category: c, tag: t, sort } = parsed.value;
-  // Tags and the sort live in the search (`#tag`, `sort:<id>`: the controls inside the search box); a
-  // `?tag=` or `?sort=` link (an older page) folds into it, so the box shows it and it can be changed
+  // Tags, the category and the sort live in the search (`#tag`, `category:<id>`, `sort:<id>`: the controls
+  // inside the search box); a `?tag=`, `?category=` or `?sort=` link (an older page) folds into it, so the box shows it and it can be changed
   // like any other.
   const withTag = t && !communitySearchTags(q).includes(t) ? `${q} #${t}`.trim() : q;
   const withCategory =

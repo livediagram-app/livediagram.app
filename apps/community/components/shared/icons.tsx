@@ -1,7 +1,6 @@
 import type { IconPrim } from '@livediagram/icons';
 import {
   lucideArrowLeft,
-  lucideExternalLink,
   lucideEyeOff,
   lucideLayoutGrid,
   lucideMaximize2,
@@ -42,7 +41,6 @@ export const SortIcon = lucideGlyph(ARROW_UP_DOWN, 15);
 export const CategoryIcon = lucideGlyph(lucideLayoutGrid, 15);
 export const FlagIcon = lucideGlyph(FLAG, 14);
 export const BackIcon = lucideGlyph(lucideArrowLeft, 16);
-export const OpenIcon = lucideGlyph(lucideExternalLink, 14);
 export const FullScreenIcon = lucideGlyph(lucideMaximize2, 14);
 export const SparklesIcon = lucideGlyph(lucideSparkles, 16);
 export const PeopleIcon = lucideGlyph(lucideUsers, 16);

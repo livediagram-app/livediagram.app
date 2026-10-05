@@ -2,6 +2,7 @@ import type { ComponentType, ReactNode } from 'react';
 import { communityCategoryLabel, type CommunityPost } from '@livediagram/api-schema';
 import { CommunityAuthorBadge } from './CommunityAuthorBadge';
 import { communitySharedAgo } from './shared-ago';
+import { COMMUNITY_DOT_GRID } from './surfaces';
 
 // How many tags a card shows (docs/specs/025-community/community.md "Gallery").
 const TILE_TAGS = 3;
@@ -53,7 +54,9 @@ export function CommunityPostTile({
     <article
       className={`group relative flex flex-1 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm shadow-slate-900/5 dark:border-slate-800 dark:bg-slate-900 dark:shadow-black/20 ${href ? LIVE : ''}`}
     >
-      <div className="relative aspect-[4/3] overflow-hidden border-b border-slate-100 bg-slate-50 bg-[radial-gradient(circle,rgb(148_163_184/0.35)_1px,transparent_1.2px)] bg-[length:14px_14px] dark:border-slate-800 dark:bg-slate-950 dark:bg-[radial-gradient(circle,rgb(100_116_139/0.3)_1px,transparent_1.2px)]">
+      <div
+        className={`relative aspect-[4/3] overflow-hidden border-b border-slate-100 dark:border-slate-800 ${COMMUNITY_DOT_GRID}`}
+      >
         {image ??
           (imageUrl ? (
             <img

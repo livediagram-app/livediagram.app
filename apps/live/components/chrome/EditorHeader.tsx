@@ -35,7 +35,7 @@ type EditorHeaderProps = {
   // Offline Mode (docs/specs/006-document/offline-mode.md): saved only in this browser. Flips the title badge
   // to "Local only" (superseding "Private"); the caller also hides Share.
   offline?: boolean;
-  // Listed in the public Community (docs/specs/025-community/community.md): the badge reads "Community".
+  // Listed in the public Community (docs/specs/025-community/community.md): the badge reads "Public".
   community?: boolean;
   // Counterpart to showShare for visitors: when present we render a
   // "Make a copy" button that duplicates the document into the

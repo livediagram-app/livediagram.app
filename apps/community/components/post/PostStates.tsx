@@ -1,5 +1,12 @@
 import Link from 'next/link';
-import { Button, ButtonContent, EmptyState, buttonClassName } from '@livediagram/ui';
+import {
+  Button,
+  ButtonContent,
+  COMMUNITY_DOT_GRID,
+  COMMUNITY_SKELETON_BAR,
+  EmptyState,
+  buttonClassName,
+} from '@livediagram/ui';
 import { AlertIcon, BackIcon, PeopleIcon } from '../shared/icons';
 
 // The post page's not-found, error and loading states (docs/specs/025-community/community.md "Post";
@@ -42,13 +49,15 @@ export function PostError({ onRetry }: { onRetry: () => void }) {
 export function PostSkeleton() {
   return (
     <div aria-hidden className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_24rem]">
-      <div className="dot-grid aspect-[4/3] w-full rounded-2xl border border-slate-200 sm:aspect-[16/10] dark:border-slate-800" />
+      <div
+        className={`aspect-[4/3] w-full rounded-2xl border border-slate-200 sm:aspect-[16/10] dark:border-slate-800 ${COMMUNITY_DOT_GRID}`}
+      />
       <div className="flex flex-col gap-4">
-        <div className="skeleton-bar h-5 w-24 rounded" />
-        <div className="skeleton-bar h-9 w-4/5 rounded" />
-        <div className="skeleton-bar h-6 w-1/2 rounded" />
-        <div className="skeleton-bar mt-2 h-24 w-full rounded" />
-        <div className="skeleton-bar h-10 w-full rounded-lg" />
+        <div className={`h-5 w-24 rounded ${COMMUNITY_SKELETON_BAR}`} />
+        <div className={`h-9 w-4/5 rounded ${COMMUNITY_SKELETON_BAR}`} />
+        <div className={`h-6 w-1/2 rounded ${COMMUNITY_SKELETON_BAR}`} />
+        <div className={`mt-2 h-24 w-full rounded ${COMMUNITY_SKELETON_BAR}`} />
+        <div className={`h-10 w-full rounded-lg ${COMMUNITY_SKELETON_BAR}`} />
       </div>
     </div>
   );
