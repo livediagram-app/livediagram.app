@@ -1179,6 +1179,8 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
     "An agent's changeset was refused because something it touched changed since the agent read it.",
   'Agent|Held':
     "An agent's changeset was refused because a person had one of its elements selected.",
+  'Agent|Present':
+    'An agent showed itself on a tab, with what it is doing, through the MCP server, the CLI or the API.',
   'Agent|Reverted':
     "An agent's changeset was undone, from the editor's toast or another front door.",
   'Mcp|Used': 'An AI tool connected to livediagram over MCP used one of its actions on a document.',

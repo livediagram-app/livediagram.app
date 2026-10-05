@@ -6,11 +6,13 @@ import {
   type TabLedger,
 } from '@livediagram/document';
 import {
+  AGENT_PRESENCE_TTL_MS,
   ROOM_RELAY_TIMEOUT_MS,
   ROOM_SELECTIONS_TIMEOUT_MS,
   type ChangesetRoomOp,
   type RoomOp,
 } from '@livediagram/api-schema';
+import type { AgentPresenceWrite } from './room-agent-presence';
 import type { Env } from './types';
 
 // The worker's calls into a document's realtime room (docs/specs/012-collaboration/collab-race-hardening.md): reading its
@@ -261,5 +263,95 @@ export async function broadcastDocumentTrashed(env: Env, documentId: string): Pr
     );
   } catch (err) {
     console.warn('[room-broadcast] document-trashed did not reach the room', documentId, err);
+  }
+}
+
+// Agent presence in the room (docs/specs/024-agents/blueprints/agent-presence.md "Room"). The room is its only store,
+// so a set or clear that cannot reach it throws `RoomUnavailableError` (the route answers 503, PR11).
+export const ROOM_AGENT_PRESENCE_TIMEOUT_MS = 3_000;
+
+export class RoomUnavailableError extends Error {
+  constructor(cause: unknown) {
+    super(`room unavailable: ${String(cause)}`);
+    this.name = 'RoomUnavailableError';
+  }
+}
+
+export type AgentPresenceRoomWrite = AgentPresenceWrite & { documentId: string };
+
+export async function putAgentPresence(
+  env: Env,
+  write: AgentPresenceRoomWrite,
+): Promise<
+  { ok: true; expiresAt: number; created: boolean } | { ok: false; error: 'agent_presence_full' }
+> {
+  const { documentId, ...body } = write;
+  let res: Response;
+  try {
+    res = await roomFetch(
+      env,
+      documentId,
+      '/presence',
+      { method: 'PUT', body: JSON.stringify(body) },
+      ROOM_AGENT_PRESENCE_TIMEOUT_MS,
+    );
+  } catch (err) {
+    throw new RoomUnavailableError(err);
+  }
+  if (res.status === 409) return { ok: false, error: 'agent_presence_full' };
+  if (!res.ok) throw new RoomUnavailableError(`status ${res.status}`);
+  const answer = (await res.json()) as { expiresAt: number; created: boolean };
+  return { ok: true, expiresAt: answer.expiresAt, created: answer.created };
+}
+
+export async function deleteAgentPresence(
+  env: Env,
+  documentId: string,
+  tokenId: string,
+  tabId: string,
+): Promise<boolean> {
+  const query = `token=${encodeURIComponent(tokenId)}&tab=${encodeURIComponent(tabId)}`;
+  let res: Response;
+  try {
+    res = await roomFetch(
+      env,
+      documentId,
+      `/presence?${query}`,
+      { method: 'DELETE' },
+      ROOM_AGENT_PRESENCE_TIMEOUT_MS,
+    );
+  } catch (err) {
+    throw new RoomUnavailableError(err);
+  }
+  if (!res.ok) throw new RoomUnavailableError(`status ${res.status}`);
+  return ((await res.json()) as { cleared: boolean }).cleared;
+}
+
+// A token's changeset refreshes its presence on the tab (spec "Presence"); a refresh that fails is logged and the
+// changeset stands (E7).
+export async function refreshAgentPresence(
+  env: Env,
+  write: Omit<AgentPresenceRoomWrite, 'mode' | 'status' | 'focus' | 'ttlMs'>,
+): Promise<void> {
+  try {
+    const answer = await putAgentPresence(env, {
+      ...write,
+      status: null,
+      focus: [],
+      ttlMs: AGENT_PRESENCE_TTL_MS,
+      mode: 'refresh',
+    });
+    if (!answer.ok)
+      console.warn('[agent-presence] refresh refused', {
+        documentId: write.documentId,
+        tabId: write.tabId,
+        error: answer.error,
+      });
+  } catch (err) {
+    console.warn('[agent-presence] refresh failed', {
+      documentId: write.documentId,
+      tabId: write.tabId,
+      error: String(err),
+    });
   }
 }

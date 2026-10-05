@@ -29,6 +29,8 @@ export function makeTestRouteContext(
     token?: { id: string; readOnly?: boolean } | null;
     // JSON-encoded into the request body when present.
     body?: unknown;
+    // Sent as is, for a body that does not parse.
+    rawBody?: string;
     headers?: Record<string, string>;
     // Per-test bindings (e.g. the images tests' IMAGES stub); an empty
     // Env otherwise.
@@ -43,7 +45,7 @@ export function makeTestRouteContext(
   const request = new Request(url, {
     method,
     headers: { 'Content-Type': 'application/json', ...opts.headers },
-    body: opts.body === undefined ? undefined : JSON.stringify(opts.body),
+    body: opts.rawBody ?? (opts.body === undefined ? undefined : JSON.stringify(opts.body)),
   });
   const clerkUserId = opts.clerkUserId ?? null;
   const verifiedUserId = opts.verifiedUserId === undefined ? clerkUserId : opts.verifiedUserId;

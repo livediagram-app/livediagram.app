@@ -243,6 +243,8 @@ export const TELEMETRY_ACTIONS = [
   // Agent changesets (docs/specs/024-agents/agent-changesets.md): a changeset refused because an
   // element it targets changed since the agent read it, or because a person holds one.
   'Conflicted',
+  // An agent's presence on a tab created by an explicit set (docs/specs/024-agents/agent-presence.md "Observability").
+  'Present',
   'Held',
   // Document views (docs/specs/024-agents/document-views.md): a view the api answered, typed by the
   // view ('Overview' | 'Outline' | 'Graph' | 'Layout' | 'Comments' | 'Show' | 'Find' | 'Lint').

@@ -1,7 +1,8 @@
 # Agent presence
 
-**Status: in progress.** Built: the comment endpoints (add, delete-own, reply, resolve, reopen; the thread listing)
-and comment token ids. Presence in the room and the editor is ahead.
+**Status: in progress.** Built: the comment endpoints (add, delete-own, reply, resolve, reopen; the thread listing),
+comment token ids, and agent presence in the api and the room (`PUT` / `DELETE .../presence`, the refresh on every
+token changeset, the frame's `agents`, expiry). Showing it in the editor is ahead.
 
 An agent acts as the person whose token it holds. People see its work, its presence and its comments as that
 person's, and comments are how people and agents talk on the canvas when nobody is chatting.

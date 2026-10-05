@@ -150,6 +150,14 @@ export const AGENT_HELD = chart(
   { rising: 'neutral' },
 );
 
+export const AGENT_PRESENT = chart(
+  'Agent',
+  'Present',
+  'Agents Present',
+  'An agent showed itself on a tab, with a status line, for the people there to see.',
+  { rising: 'neutral' },
+);
+
 export const AGENT_REVERTED = chart(
   'Agent',
   'Reverted',
@@ -179,7 +187,14 @@ export const AGENT_CHANGESETS: MetricStack = {
   title: 'Agent changes',
   blurb: 'Agents changing documents, meeting people’s work, and being undone.',
   headline: AGENT_APPLIED,
-  members: [AGENT_APPLIED, AGENT_CONFLICTED, AGENT_HELD, AGENT_REVERTED, AGENT_TOAST_SHOW],
+  members: [
+    AGENT_APPLIED,
+    AGENT_CONFLICTED,
+    AGENT_HELD,
+    AGENT_REVERTED,
+    AGENT_TOAST_SHOW,
+    AGENT_PRESENT,
+  ],
 };
 
 export const DRIVE_MIRROR: MetricStack = {

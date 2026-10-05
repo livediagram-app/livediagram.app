@@ -16,6 +16,8 @@ import { redactCommentAuthorIds } from '../comments';
 import { getChangeset, getChangesetPart, getDocument, getParticipant, listChangesets } from '../db';
 import type { ChangesetRecord } from '../db';
 import { forbidden, json, notFound } from '../responses';
+import { personTagFor } from '../person-tag';
+import { refreshAgentPresence } from '../room-client';
 import { frontDoorOf } from '../changesets/front-door';
 import { engineLog } from '../changesets/log';
 import { parseChangesetRequest } from '../changesets/request';
@@ -29,6 +31,7 @@ import {
   gateRead,
   missingDocument,
   requireOwner,
+  shareCodeOf,
   type RouteContext,
 } from './context';
 
@@ -77,17 +80,19 @@ async function handleSubmit(
   const raw = await ctx.request.json().catch(() => undefined);
   const parsed = parseChangesetRequest(raw, engineLog({ documentId: document.id, tabId }));
   if (!parsed.ok) return json(parsed.refusal.body, { status: parsed.refusal.status });
+  const author = await authorOf(ctx, owner);
   const result = await submitChangeset({
     env: ctx.env,
     document,
     tabId,
     request: parsed.value,
     dryRun: ctx.url.searchParams.get('dryRun') === '1',
-    author: await authorOf(ctx, owner),
+    author,
     tokenId: ctx.token?.id ?? null,
     frontDoor: frontDoorOf(ctx.request),
     ...(ctx.waitUntil ? { waitUntil: ctx.waitUntil } : {}),
   });
+  refreshAfterWrite(ctx, document.id, tabId, author, result);
   return respond(redactConflicts(result, document, owner));
 }
 
@@ -143,16 +148,47 @@ async function handleRevert(
   if (!(await gateEdit(ctx, document.id, document.ownerId, document.teamId, record.tabId))) {
     return forbidden();
   }
+  const author = await authorOf(ctx, owner);
   const result = await revertChangeset({
     env: ctx.env,
     document,
     record,
-    author: await authorOf(ctx, owner),
+    author,
     tokenId: ctx.token?.id ?? null,
     frontDoor: frontDoorOf(ctx.request),
     ...(ctx.waitUntil ? { waitUntil: ctx.waitUntil } : {}),
   });
+  refreshAfterWrite(ctx, document.id, record.tabId, author, result);
   return respond(result);
+}
+
+// A token's written changeset or revert keeps its presence on the tab (docs/specs/024-agents/agent-presence.md
+// "Presence"); a dry run, a refusal and a session's write leave presence alone. Off the response path.
+function refreshAfterWrite(
+  ctx: RouteContext,
+  documentId: string,
+  tabId: string,
+  author: Author,
+  result: { status: number; body: unknown },
+): void {
+  const written = (result.body as { changeset?: unknown } | null)?.changeset;
+  if (!ctx.token || result.status !== 200 || !written) return;
+  const tokenId = ctx.token.id;
+  ctx.waitUntil?.(
+    personTagFor(documentId, author.id).then((personTag) =>
+      refreshAgentPresence(ctx.env, {
+        documentId,
+        tokenId,
+        tabId,
+        personTag,
+        shareCode: shareCodeOf(ctx.request),
+        name: author.name,
+        color: author.color,
+        // A changeset passed the edit gate.
+        role: 'edit',
+      }),
+    ),
+  );
 }
 
 // The resolved owner of the request: the token's owner for an agent. Nothing in the body names an
