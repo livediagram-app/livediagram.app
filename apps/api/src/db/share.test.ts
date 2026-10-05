@@ -190,6 +190,21 @@ describe('createShareLink (docs/specs/013-workspace/share-link-expiry.md)', () =
     await createShareLink(db.env, 'diag-1', 'ABCD2345', 'edit');
     expect(db.one('UPDATE documents SET shareable = 1').bindings).toEqual(['diag-1']);
   });
+
+  it('leaves the flag alone for a Community link, which opens no room (docs/specs/025-community/community.md)', async () => {
+    const db = fakeD1();
+    const link = await createShareLink(
+      db.env,
+      'diag-1',
+      'ABCD2345',
+      'view',
+      'never',
+      null,
+      'community',
+    );
+    expect(link.purpose).toBe('community');
+    expect(db.matching('UPDATE documents SET shareable')).toHaveLength(0);
+  });
 });
 
 describe('extendShareLink (docs/specs/013-workspace/share-link-expiry.md)', () => {
