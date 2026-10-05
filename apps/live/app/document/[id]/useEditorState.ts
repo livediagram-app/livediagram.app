@@ -154,6 +154,7 @@ import { useElementHelpers } from './useElementHelpers';
 import { usePruneInertSelection } from '@/hooks/canvas/usePruneInertSelection';
 import { useElementCreation } from './useElementCreation';
 import { useMindGrowth } from './useMindGrowth';
+import { useMindOutline } from './useMindOutline';
 import { useLayersState } from './useLayersState';
 import { useInlineIconMutators } from './useInlineIconMutators';
 import { usePresenceBroadcast } from './usePresenceBroadcast';
@@ -2358,6 +2359,14 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     scrollIntoView,
   });
 
+  // Edit Outline (docs/specs/009-elements/mind-node.md "Edit Outline"). See useMindOutline.
+  const mindOutline = useMindOutline({
+    editsBlocked: createBlocked,
+    activeId,
+    activeTab,
+    commitTabs,
+  });
+
   // Palette element-creation handlers. See useElementCreation.
   const {
     addShape,
@@ -2542,6 +2551,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     setLegendItemsSelected,
     setMindFlowSelected,
     tidyMindMapSelected,
+    tidyMindMap,
     setPageHeading,
     setWebRows,
     appendWebRowTo,
@@ -2596,6 +2606,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     commitActiveTab,
     tickTabs: rememberingTickTabs,
     checkpointBurst,
+    notify: (tone, message) => toast[tone](message),
   });
 
   // The quick style panel (docs/specs/008-canvas/quick-style-panel.md): its view of the selection and one
@@ -3484,6 +3495,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     setLegendItemsSelected,
     setMindFlowSelected,
     tidyMindMapSelected,
+    tidyMindMap,
     toggleChecklistItem,
     setPageHeading,
     setWebRows,
@@ -3493,6 +3505,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     setHeroCaptionSelected,
     growMindNode,
     abandonMindNode,
+    mindOutline,
     setChecklistItemsSelected,
     setEntityFieldsSelected,
     setEstimateScaleSelected,

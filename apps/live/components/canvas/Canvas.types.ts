@@ -645,6 +645,12 @@ export type CanvasProps = {
   // fields, so they commit through here rather than the label editor.
   // Mind map (docs/specs/009-elements/mind-node.md): grows the next node from the label editor.
   onGrowMindNode: (id: string, kind: 'child' | 'sibling') => void;
+  // Edit Outline (docs/specs/009-elements/mind-node.md): whether `id` is a root whose outline may be
+  // edited, and opening it.
+  canEditMindOutline?: (id: string) => boolean;
+  onEditMindOutline?: (id: string) => void;
+  // Tidy Map on the map `id` belongs to (the badge on a map's root).
+  onTidyMindMap?: (id: string) => void;
   // Escape on the empty node a Tab made one time too many removes it.
   onAbandonMindNode: (id: string) => boolean;
   onSetPageHeading: (elementId: string, field: 'pageTitle' | 'pageSubtitle', value: string) => void;

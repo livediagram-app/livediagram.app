@@ -10,6 +10,7 @@ import {
   type TextAlignX,
   type TextAlignY,
 } from './index';
+import type { BorderRadius } from './border-style';
 import { ACCENT_BAR_TEXT, isAccentBarShape } from './web-components';
 import { PEN_INK } from './pen-colours';
 import { MODE_BUTTON_SKIN } from './selection-mode';
@@ -591,6 +592,9 @@ export function acceptsInlineIcon(element: Element): element is ShapeElement {
 //
 // The web components with a rectangular surface (docs/specs/009-elements/web-components-and-no-groups.md) take it too: the
 // banner and header bar, the callout card, and each of a stat row's cards.
+//
+// So does a mind node (docs/specs/009-elements/mind-node.md "Round nodes"): a CSS box like the
+// square, whose corner the canvas and the export both read from `borderRadius`.
 export function supportsBorderRadius(element: Element): element is ShapeElement {
   return element.type === 'shape' && RADIUS_SHAPES.has(element.shape);
 }
@@ -601,7 +605,15 @@ const RADIUS_SHAPES = new Set<string>([
   'callout',
   'site-header',
   'stat-row',
+  'mind-node',
 ]);
+
+// The corner preset the Radius control highlights: the element's own, else the preset nearest
+// its kind's default corner (docs/specs/008-canvas/corner-radius.md). A mind node's 12 px default
+// is Medium; every other kind shows Small, as before.
+export function shownBorderRadius(element: ShapeElement): BorderRadius {
+  return element.borderRadius ?? (element.shape === 'mind-node' ? 'md' : 'sm');
+}
 
 // Default arrow stroke colour when the element has no explicit one set.
 // Picked out as a helper so the Selected Element controls can show the

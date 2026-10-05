@@ -10,7 +10,10 @@ from the keyboard.
 
 The same two actions are one click away, for anyone who doesn't know the keys:
 **Add child** and **Add sibling** buttons on the node's selection toolbar (after
-Edit text), and the same two options on its quick-connect "+" ring. Each names
+Edit text), and the same two options on its quick-connect "+" ring. On a mind
+node the ring holds only those two and Duplicate: a free arrow, a freehand
+sketch or a loose text label is not how a map grows, so Arrow, Pencil and Text
+are left off it (they stay on every other element's ring). Each names
 its shortcut in its hover card. The toolbar buttons are not offered on a locked
 node (growing re-lays the map) or to a view-role visitor.
 
@@ -294,12 +297,151 @@ sibling order as drawn, and re-anchors its connectors. Other trees in the way
 slide down, as they do for growth. It is the way back to a tidy map after
 dragging nodes around, and from then on growth keeps it tidy.
 
+Tidy Map always says what it did, in a notification at the foot of the screen: **Map tidied**
+when nodes moved, or **Map already tidy** when the map was already laid out and nothing changed
+(so a click that seems to do nothing is never a mystery). The notifications follow the "Show
+notifications" preference, like every other confirmation.
+
+## Edit Outline
+
+A whole map can be written as text: an indented outline, edited in a dialog and applied back to
+the map in one go. Restructuring a map by dragging node by node is slow; reading and rewriting it
+as a list is how people already think about an outline.
+
+**Where.** A map's **root** (the node `mindRootOf` names, so a node whose parent was deleted
+counts as a root too) with at least one child carries an **Edit Outline** badge at its top-right,
+always shown (not only when selected), in the same chip as its link, note, action and comment
+badges: the first segment, left of the others, so a map announces it can be edited as a list. One click opens
+the dialog. **Edit Outline** is also in a root's Mind Map menu section, under Tidy Map (the way
+in for a root with no children yet). Beside the Edit Outline badge, a **Tidy Map** badge lays the map out tidily again, exactly as the Mind Map
+menu's Tidy Map does (one undo step, `Element` · `Changed` · `MindTidy`). Not on other nodes: the
+outline is the whole map, and the root is where a map begins. Not for a viewer, a locked node or a
+node on a hidden or locked layer.
+
+**The dialog**, titled **Edit Outline**, is an outline editor: the map as a list of rows, one
+row per node, the way a list is edited in a document. Structure is never typed as spaces: a row's
+level is a property of the row, changed with keys or buttons, so it cannot be misaligned.
+
+```
+Team offsite
+ • Venue
+ │  • Lake District
+ • Agenda
+ │  • Day 1: planning
+ │  • Day 2
+ │    Workshops and the walk
+```
+
+- **Rows.** The first row is the root, a size larger, with no bullet; it cannot be indented, moved or
+  removed. Every other row has a bullet and sits one step in per level under its parent, siblings
+  in the map's order (as the layout reads it). Each level has its own colour from a ring of five
+  (violet, sky, emerald, amber, rose, then round again): the bullet and the text are in it, and a
+  thin guide line in the parent's colour runs down beside a parent's children, so the nesting
+  reads as a tree at a glance. Every colour meets 4.5:1 in light and dark.
+- **A node with several lines of text** is one row whose text wraps onto further lines inside it,
+  under the one bullet. **Shift+Enter** starts a new line in the row (on a phone, the **Line
+  Break** button). A long line also wraps; the row grows to fit.
+- **Formatting.** Bold, italic and underline, on the selected text of a row: ⌘/Ctrl+B, I and
+  U, or the toolbar's **Bold**, **Italic** and **Underline** buttons (on when the selection is
+  already so). A row shows its node's bold, italic and underline as they are on the canvas,
+  including a whole node made bold from its style; other formatting (colour, size, links) is not
+  shown or edited here, and is kept.
+- **Keys**, on the row being edited:
+  - **Enter** starts a new node after it, at the same level, carrying the text after the caret.
+    Enter on the root starts its first child. Enter on an empty row at a level below the first
+    steps it out a level instead.
+  - **Tab** / **Shift+Tab** move the row a level in or out, its children with it. A row can be at
+    most one level below the row above it; a row on the first level cannot go out further.
+  - **Backspace** at the start of a row: an empty row is removed (its children move up a level
+    under the row above); a row with text joins onto the end of the row above.
+  - **Delete** at the end of a row joins the next row onto it.
+  - **↑** / **↓** on a row's first or last line move to the row above or below.
+  - **Alt+↑** / **Alt+↓** move the row, children and all, past its neighbour at the same level.
+- **Toolbar** above the rows, each button with a hover card naming its key: **Bold**,
+  **Italic**, **Underline**, then **Outdent**, **Indent**, **Move Up**, **Move Down**, **Line
+  Break**. They act on the row being edited (the
+  last one focused) and keep the focus there; one that cannot act there is disabled.
+- **Pasting** several lines into a row reads them as an outline, so a Markdown or plain indented
+  list from elsewhere comes in as rows (the rules under "What it reads"):
+  their nodes become rows from the pasted row on, the first in the pasted row's place when it is
+  empty, nested from the pasted row's level.
+- **Header**: beside the close button, a **Help** button opens the Edit Outline help article in a
+  new tab.
+- **Footer**: **Cancel** and **Save**. Escape cancels. ⌘/Ctrl+Enter saves. Beside the buttons a
+  quiet line counts what Save will do: "3 added, 1 renamed, 2 removed", or "No changes".
+- **On a phone** the dialog rises as a sheet (see live-app.md "Working dialogs rise as sheets on a
+  phone"), and the toolbar is the way to indent, outdent and break a line.
+
+**What it reads.** Pasted text, and the outline the rows are saved through (the root on the
+first line, every other node a `- ` bullet two spaces deeper than its parent, a node's further
+lines lined up under its text, its formatting as `**bold**`, `*italic*` and `<u>underline</u>`),
+is read forgivingly, so a list pasted from elsewhere works:
+
+- Blank lines are skipped. The first non-blank line is the root, whatever marks it (`- `, `# `,
+  `1. ` or nothing).
+- Bullets `- `, `* `, `+ ` and numbered items `1. ` / `1) ` nest by indentation (a tab counts as
+  two spaces); a line with no marker counts as a bullet at its indentation, except a line
+  directly under the root or a marked item (a bullet, number or heading) lined up with that line's
+  text, which is a further line of its text.
+- Headings nest by their `#` count: under a `#` root, `##` lines are its children, `###` lines
+  theirs, and bullets under a heading nest one level below it.
+- An indentation deeper than one level below the line above is read as one level below it, so a
+  line can never skip a level. A second line at the root's level is read as a child of the root
+  (a map has one root).
+- Bold (`**bold**` or `__bold__`), italic (`_italic_` or `*italic*`) and underline
+  (`<u>underline</u>`) become the node's formatting. Other inline Markdown is stripped, keeping
+  its text: `` `code` ``, links and task boxes (`[ ]`, `[x]`).
+- An outline whose root row is empty can't be saved: Save is disabled, with "Write the root first".
+
+**Saving** applies the whole outline to the map, as one change (one undo step):
+
+- **Lines keep their nodes.** Each line is matched to an existing node, so its colour, size,
+  icon, comments, actions and links stay with it:
+  1. a child line whose text equals an existing child's text, under the same parent;
+  2. else any existing node of the map with that text, which then **moves** to its new parent;
+  3. else, among the parent's still unmatched children, the one in the same place, which is then
+     **renamed**.
+     Text is compared line by line, each trimmed, case-sensitively. The root line always keeps
+     the root.
+- **New lines become new nodes**, looking like their level (the same rule as a node added from
+  the keyboard: a sibling's look, else a cousin's at the same depth, else the parent's), joined
+  to their parent by a connector that looks like their siblings'.
+- **A node whose line is gone is removed**, with the connectors pinned to it. If any node would be
+  removed, Save first asks, inside the dialog: "Remove N nodes?" ("Remove 1 node?"), naming up to
+  three of them, with **Keep Editing** and **Remove** (destructive). Remove saves; Keep Editing
+  goes back to the text.
+- A renamed node takes the row's text with its bold, italic and underline. A node whose text is
+  unchanged keeps its formatting; if only its bold, italic or underline changed, those change and
+  everything else (colour, size, links) stays. Text is compared without formatting, so a
+  formatting change is never a rename: the count line reads it as "1 restyled".
+- A moved node's old connector goes and a new one joins it to its new parent, in its new
+  siblings' connector look.
+- **When the structure changes** (a node added, removed or moved, or siblings reordered), **the
+  map is laid out again** in its flow, in the outline's order (the order is the outline's,
+  never the old drawing's), with the root where it was, its connectors re-anchored and other trees
+  in the way moved aside, exactly as Tidy Map does. A balanced map deals its branches to the side
+  with less, in order.
+- A save that only changes text or formatting leaves every node where it is: no layout runs, so
+  a hand-arranged map keeps its arrangement.
+- Nothing changes and nothing is committed when the outline matches the map.
+- The save keeps every surviving node's id, so collaborators receive the changes as ordinary
+  element edits.
+
+**Telemetry**: `UI` · `Opened` · `MindOutline` when the dialog opens (as the other dialogs), and `Element` ·
+`Changed` · `MindOutline` on a save that changes the map.
+
 ## Round nodes
 
 A mind node honours its **corner radius** setting; with none it is a soft
 12 px box. A square node with a full radius is a circle, which is
 how the bubble map template draws its bubbles while staying a live map. The
 exported SVG uses the same radius.
+
+The corner radius is **settable like a rectangle's**
+([Corner radius](../008-canvas/corner-radius.md)): the context menu's Border
+category offers the Radius grid (None, Small, Medium, Large, Full) on a mind
+node, and a whiteboard's quick style panel offers its Corners row. An unset
+node's grid highlights **Medium**, the preset that matches its 12 px default.
 
 ## Templates
 

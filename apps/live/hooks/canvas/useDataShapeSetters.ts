@@ -44,6 +44,9 @@ const MASTHEAD_SHAPES = new Set<string>(['page', 'banner', 'callout']);
 type DataShapeSetterDeps = {
   currentSelectionIds: () => Set<string>;
   commit: (mapElements: (els: Element[]) => Element[]) => void;
+  // For Tidy Map's notification (useMindMapSetters).
+  elements: () => Element[];
+  notify: (tone: 'success' | 'info', message: string) => void;
 };
 
 // The selection-wide setters for the data-bearing shapes: progress bars,
@@ -51,7 +54,12 @@ type DataShapeSetterDeps = {
 // looping animation + chart legend). Each kind has a private field setter the
 // public ones delegate to; all resolve the selection and commit through the
 // two shared handles, so they live together off useElementStyle.
-export function useDataShapeSetters({ currentSelectionIds, commit }: DataShapeSetterDeps) {
+export function useDataShapeSetters({
+  currentSelectionIds,
+  commit,
+  elements,
+  notify,
+}: DataShapeSetterDeps) {
   // Progress elements (docs/specs/009-elements/progress.md): the percentage + how its fill animates, all
   // gated to progress shapes. The four setters differ only in the patched
   // field + telemetry type, so they share one body.
@@ -329,7 +337,7 @@ export function useDataShapeSetters({ currentSelectionIds, commit }: DataShapeSe
   // Rating (docs/specs/009-elements/rating.md) + the charts (docs/specs/009-elements/pie-chart.md) — see useChartSetters.
   const chartSetters = useChartSetters({ currentSelectionIds, commit });
   // Mind map flow + Tidy Map (docs/specs/009-elements/mind-node.md) — see useMindMapSetters.
-  const mindSetters = useMindMapSetters({ currentSelectionIds, commit });
+  const mindSetters = useMindMapSetters({ currentSelectionIds, commit, elements, notify });
   // The web components (docs/specs/009-elements/web-components-and-no-groups.md) — see useWebComponentSetters.
   const webSetters = useWebComponentSetters({ currentSelectionIds, commit });
 

@@ -52,6 +52,7 @@ import type { CanvasSelectionInput } from '@/hooks/canvas/useCanvasSelectionView
 import type { Selection } from '@/lib/selection-store';
 import { withStableEventProps } from '@/components/primitives/withStableEventProps';
 import { MindGrowProvider } from '@/components/canvas/MindGrowContext';
+import { MindOutlineProvider, useMindOutlineBadges } from '@/components/canvas/MindOutlineContext';
 import { CanvasStillProvider } from '@/components/canvas/CanvasStillContext';
 import { CanvasLiveRegion } from '@/components/canvas/CanvasLiveRegion';
 import { IsometricDepthLayer } from '@/components/canvas/IsometricDepthLayer';
@@ -628,6 +629,13 @@ function CanvasView(props: CanvasProps) {
     () => ({ grow: onGrowMindNode, abandon: onAbandonMindNode }),
     [onGrowMindNode, onAbandonMindNode],
   );
+  // The Edit Outline badge on each map root (MindOutlineContext).
+  const mindOutlineBadges = useMindOutlineBadges(
+    elements,
+    props.canEditMindOutline,
+    props.onEditMindOutline,
+    props.onTidyMindMap,
+  );
   return (
     <main
       ref={mainRef}
@@ -801,36 +809,38 @@ function CanvasView(props: CanvasProps) {
               (docs/specs/008-canvas/canvas-performance.md). */}
           <CanvasZoomProvider zoom={viewportZoom}>
             <MindGrowProvider value={mindGrow}>
-              <CanvasElementsLayer
-                {...props}
-                elements={pathTool.elements}
-                // Portal travel is resolved HERE (Canvas owns the viewport + the avatar),
-                // so the prop from the host is overridden with the local resolver.
-                onEnterPortal={resolvePortal}
-                onFireReaction={props.onFireReaction}
-                reactionBursts={props.reactionBursts}
-                onReactionBurstDone={props.onReactionBurstDone}
-                // Chair (docs/specs/009-elements/chair.md): occupancy resolved here, where peer presence
-                // lives, rather than threaded from the page.
-                chairSitters={sittersOf}
-                // Pressing a Selection Mode button that hands out Avatar mode drops
-                // the character at THAT button (see avatarSpawn), not the viewport
-                // centre: you pressed a thing on the canvas, so the character should
-                // appear where you pressed it.
-                onPressModeButton={pressModeButton}
-                onPressFocusButton={props.onPressFocusButton}
-                hasArrows={hasArrows}
-                arrowLabels={arrowLabels}
-                badgeColor={badgeColor}
-                selectionInput={selectionInput}
-                isPaintMode={isPaintMode}
-                handleArrowSelect={handleArrowSelect}
-                handleElementClick={handleElementClick}
-                handleElementContextSelect={handleElementContextSelect}
-                quickRingOpen={quickRingOpen}
-                setQuickRingOpen={setQuickRingOpen}
-                drawDrag={drawDrag}
-              />
+              <MindOutlineProvider value={mindOutlineBadges}>
+                <CanvasElementsLayer
+                  {...props}
+                  elements={pathTool.elements}
+                  // Portal travel is resolved HERE (Canvas owns the viewport + the avatar),
+                  // so the prop from the host is overridden with the local resolver.
+                  onEnterPortal={resolvePortal}
+                  onFireReaction={props.onFireReaction}
+                  reactionBursts={props.reactionBursts}
+                  onReactionBurstDone={props.onReactionBurstDone}
+                  // Chair (docs/specs/009-elements/chair.md): occupancy resolved here, where peer presence
+                  // lives, rather than threaded from the page.
+                  chairSitters={sittersOf}
+                  // Pressing a Selection Mode button that hands out Avatar mode drops
+                  // the character at THAT button (see avatarSpawn), not the viewport
+                  // centre: you pressed a thing on the canvas, so the character should
+                  // appear where you pressed it.
+                  onPressModeButton={pressModeButton}
+                  onPressFocusButton={props.onPressFocusButton}
+                  hasArrows={hasArrows}
+                  arrowLabels={arrowLabels}
+                  badgeColor={badgeColor}
+                  selectionInput={selectionInput}
+                  isPaintMode={isPaintMode}
+                  handleArrowSelect={handleArrowSelect}
+                  handleElementClick={handleElementClick}
+                  handleElementContextSelect={handleElementContextSelect}
+                  quickRingOpen={quickRingOpen}
+                  setQuickRingOpen={setQuickRingOpen}
+                  drawDrag={drawDrag}
+                />
+              </MindOutlineProvider>
             </MindGrowProvider>
           </CanvasZoomProvider>
         </CanvasStillProvider>

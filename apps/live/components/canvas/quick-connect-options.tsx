@@ -195,3 +195,5 @@ function MindSiblingIcon() {
     </Glyph>
   );
 }
+
+// A root line with two indented bullet lines under it: the map as an outline.

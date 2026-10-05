@@ -8,6 +8,8 @@ import {
   EMBED_PROVIDER_HINT,
   EMBED_PROVIDER_LABEL,
   embedTargetFor,
+  parseMindOutline,
+  summariseMindOutline,
 } from '@livediagram/document';
 
 import { track } from '@/lib/telemetry';
@@ -19,6 +21,10 @@ const LinkPickerDialog = dynamic(
 );
 const LineDataDialog = dynamic(
   () => import('@/components/dialogs/LineDataDialog').then((m) => m.LineDataDialog),
+  { ssr: false },
+);
+const MindOutlineDialog = dynamic(
+  () => import('@/components/dialogs/MindOutlineDialog').then((m) => m.MindOutlineDialog),
   { ssr: false },
 );
 const CodeEditDialog = dynamic(
@@ -56,6 +62,7 @@ export function EditorElementDialogs() {
     codeEditOpenForId,
     setCodeSelected,
     setCodeEditOpenForId,
+    mindOutline,
     imagePickerOpenFor,
     selfParticipant,
     removeImageFromElement,
@@ -179,6 +186,21 @@ export function EditorElementDialogs() {
             );
           })()
         : null}
+      {/* Edit Outline (docs/specs/009-elements/mind-node.md "Edit Outline"): the open root's map as text. */}
+      {mindOutline.openForId !== null && !isReadOnly ? (
+        <MindOutlineDialog
+          key={mindOutline.openForId}
+          initialText={mindOutline.text()}
+          summarise={(text) => {
+            const outline = parseMindOutline(text);
+            return outline
+              ? summariseMindOutline(activeTab.elements, mindOutline.openForId!, outline)
+              : null;
+          }}
+          onSave={mindOutline.save}
+          onClose={mindOutline.close}
+        />
+      ) : null}
       {/* Code block edit modal (docs/specs/009-elements/code-block.md): edits the block whose id is open. */}
       {codeEditOpenForId !== null && !isReadOnly
         ? (() => {

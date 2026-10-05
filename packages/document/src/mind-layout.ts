@@ -206,6 +206,27 @@ function orderKeyFor(
 }
 
 /**
+ * The map rooted at `rootId`, depth first, each node with its depth (the root's is 0), siblings in
+ * the order the layout reads them in the map's flow: the order an outline of the map lists them.
+ */
+export function mindNodesInOrder(
+  elements: Element[],
+  rootId: ElementId,
+  flow: MindFlow,
+): { node: ShapeElement; depth: number }[] {
+  const root = elements.find((el) => el.id === rootId);
+  if (!root || !isMindNode(root)) return [];
+  const tree = buildTree(elements, root, orderKeyFor(flow, root));
+  const out: { node: ShapeElement; depth: number }[] = [];
+  const walk = (node: ShapeElement, depth: number) => {
+    out.push({ node, depth });
+    for (const kid of kidsOf(tree, node.id)) walk(kid, depth + 1);
+  };
+  walk(root, 0);
+  return out;
+}
+
+/**
  * Lay out the map rooted at `rootId` in `flow`. The root stays put; every
  * other node of the map gets a rounded top-left position. Nodes that are not
  * part of the map are not in the result.
@@ -223,17 +244,23 @@ export function layoutMindTree(
   // Differs from `flow` only when switching flows: a tree's branches read top
   // to bottom, and that is the order the new arrangement should keep.
   orderFlow: MindFlow = flow,
+  // An order to lay siblings out in instead of the drawn one (an outline save, mind-outline.ts):
+  // a rank per node, lower first. A balanced map then deals its branches out afresh.
+  order?: ReadonlyMap<ElementId, number>,
 ): MindLayout {
   const out: MindLayout = new Map();
   const root = elements.find((el) => el.id === rootId);
   if (!root || !isMindNode(root)) return out;
-  const tree = buildTree(elements, root, orderKeyFor(orderFlow, root), hint);
+  const key = order
+    ? (n: ShapeElement) => order.get(n.id) ?? Number.MAX_SAFE_INTEGER
+    : orderKeyFor(orderFlow, root);
+  const tree = buildTree(elements, root, key, hint);
   out.set(root.id, { x: root.x, y: root.y });
   if (flow === 'bubble') bubbleLayout(tree, out, root);
   else if (flow === 'downward') stackLayout(tree, out, root, kidsOf(tree, root.id), 'y', 1);
   else if (flow === 'tree') stackLayout(tree, out, root, kidsOf(tree, root.id), 'x', 1);
   else {
-    const { left, right } = balancedSides(tree, root, hint, orderFlow !== 'balanced');
+    const { left, right } = balancedSides(tree, root, hint, !!order || orderFlow !== 'balanced');
     stackLayout(tree, out, root, right, 'x', 1);
     stackLayout(tree, out, root, left, 'x', -1);
   }

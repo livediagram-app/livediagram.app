@@ -112,6 +112,7 @@ export function EditorContextMenuHost() {
     setLegendItemsSelected,
     setMindFlowSelected,
     tidyMindMapSelected,
+    mindOutline,
     setChecklistItemsSelected,
     toggleChecklistItem,
     setEntityFieldsSelected,
@@ -333,6 +334,11 @@ export function EditorContextMenuHost() {
       mindFlow={menuMindFlow}
       onSetMindFlow={setMindFlowSelected}
       onTidyMindMap={tidyMindMapSelected}
+      onEditMindOutline={
+        ctxSelectedEl && mindOutline.canEdit(ctxSelectedEl.id)
+          ? () => mindOutline.open(ctxSelectedEl.id)
+          : undefined
+      }
       onSetChecklistItems={setChecklistItemsSelected}
       onToggleChecklistItem={toggleChecklistItem}
       onSetEntityFields={setEntityFieldsSelected}

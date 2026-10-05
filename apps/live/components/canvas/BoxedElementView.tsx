@@ -43,6 +43,8 @@ import { isCssNativeBorderStyle } from '@/components/canvas/border-css';
 import { describeVariant, editingLook } from '@/components/canvas/element-variant';
 import { useElementSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { BadgeStrip, RemoteSelectorsStrip } from '@/components/canvas/element-badges';
+import { useMindOutlineBadge } from '@/components/canvas/MindOutlineContext';
+import { badgeCornerInset } from '@/lib/badge-anchor';
 import { AnnotationHoverNote } from '@/components/canvas/AnnotationMarker';
 import { useBoxedElementGestures } from '@/components/canvas/useBoxedElementGestures';
 import { useBoxedElementAnimation } from '@/components/canvas/useBoxedElementAnimation';
@@ -286,6 +288,17 @@ function BoxedElementViewImpl({
   // marker is one too many.
   const isCommentPin = element.type === 'shape' && element.shape === 'comment-pin';
   const commentCount = isCommentPin ? 0 : activeCommentCount(element.commentThread);
+  // A mind map root's Edit Outline and Tidy Map badges (MindOutlineContext).
+  const mapBadges = useMindOutlineBadge(element.id);
+  // The element's drawn corner, which its border overlay and its badge chip both follow.
+  const shapeKind = element.type === 'shape' ? element.shape : undefined;
+  const cornerPx = cornerRadiusPx(
+    element.type === 'shape' ? element.borderRadius : undefined,
+    element.width,
+    element.height,
+    // A mind node's default corner (docs/specs/009-elements/mind-node.md "Round nodes").
+    shapeKind === 'mind-node' ? MIND_NODE_RADIUS_PX : DEFAULT_BOX_RADIUS_PX,
+  );
   // Assigned action (docs/specs/012-collaboration/assigned-actions.md): the badge shows only while the action is
   // open; a done action stays on the element but stops shouting. An action
   // panel (docs/specs/012-collaboration/action-panel.md) shows its action on its face, so it is the badge.
@@ -509,13 +522,7 @@ function BoxedElementViewImpl({
           stroke={own.stroke ?? defaultStrokeColor(element, surface)}
           strokeWidth={BORDER_STROKE_PX[element.strokeWidth ?? DEFAULT_BORDER_STROKE]}
           dasharray={BORDER_DASH_ARRAY[element.strokeStyle ?? DEFAULT_BORDER_STYLE] ?? ''}
-          radiusPx={cornerRadiusPx(
-            element.borderRadius,
-            element.width,
-            element.height,
-            // A mind node's default corner (docs/specs/009-elements/mind-node.md "Round nodes").
-            element.shape === 'mind-node' ? MIND_NODE_RADIUS_PX : DEFAULT_BOX_RADIUS_PX,
-          )}
+          radiusPx={cornerPx}
         />
       ) : null}
       {/* A Record's rows (docs/specs/009-elements/entity.md), under its title label. */}
@@ -654,6 +661,7 @@ function BoxedElementViewImpl({
       {/* A margin note shows its count on its own face (ArticleNoteFace). */}
       {!articleNote &&
       (linked ||
+        mapBadges ||
         commentCount > 0 ||
         hasOpenAction ||
         (element.note && onOpenNote && !isAnnotation)) ? (
@@ -674,6 +682,10 @@ function BoxedElementViewImpl({
           }}
           onOpenComments={() => onOpenComments(element.id)}
           onOpenNote={onOpenNote ? () => onOpenNote(element.id) : undefined}
+          onEditOutline={mapBadges?.editOutline}
+          onTidyMap={mapBadges?.tidy}
+          cornerPx={shapeKind === 'circle' || shapeKind === 'stadium' ? Infinity : cornerPx}
+          inset={badgeCornerInset(shapeKind, element.width, element.height, cornerPx)}
           onOpenAction={() => onOpenAction(element.id)}
         />
       ) : null}

@@ -990,10 +990,20 @@ export const articles: Article[] = [
     title: 'Mind Maps',
     description: 'Tab adds a child, Enter a sibling — build a branch from the keyboard.',
     keywords:
-      'mind map mindmap node branch child sibling tab enter keyboard tree hierarchy brainstorm outline',
+      'mind map mindmap node branch child sibling tab enter keyboard tree hierarchy brainstorm outline edit outline markdown list indent bullets',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Elements',
+  },
+  {
+    slug: 'edit-outline',
+    title: 'Edit a Mind Map as an Outline',
+    description: 'Rewrite a whole mind map as an indented list, then save it back in one go.',
+    keywords:
+      'mind map mindmap outline edit outline list bullets indent outdent restructure rearrange reorder text markdown paste bold italic underline rows tree hierarchy bulk',
+    category: 'Palette',
+    categorySlug: 'palette/mind-maps',
+    parentSlug: 'mind-maps',
   },
   {
     slug: 'collaborate',
