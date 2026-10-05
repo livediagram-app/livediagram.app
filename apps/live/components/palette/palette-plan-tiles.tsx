@@ -65,7 +65,7 @@ export const PLAN_TILES: PaletteTileDef[] = [
     id: `plan:card-${t.id}`,
     section: 'plan',
     label: `Add ${t.label.toLowerCase()} card`,
-    caption: t.label,
+    caption: `${t.label} card`,
     description: `A new ${t.label.toLowerCase()} on its own card, anywhere on the canvas. Drag it onto a board to file it.`,
     noTint: true,
     action: { type: 'shape', kind: 'plan-card', plan: t.id },
