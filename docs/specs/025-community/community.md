@@ -49,7 +49,7 @@ A post shows every tab of the document. A document that is empty (no snapshot re
   - **Title**: 3 to 80 characters, prefilled with the document name.
   - **Description**: 20 to 500 characters, with a live counter. A prompt suggests what makes a description useful
     ("what it shows, how you made it, how someone could reuse it").
-  - **Category**: one, chosen from tiles.
+  - **Category**: one, chosen from compact chips that wrap; the chosen category's description shows once beneath them.
   - **Tags**: up to five, typed as chips, with suggestions from the most used tags.
   - A preview of the card as it will appear, and the consequences in plain words: anyone can view and copy it, it
     stays in step with your edits, comments are not shown, you can remove it at any time.
