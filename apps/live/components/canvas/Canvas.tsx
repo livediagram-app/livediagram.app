@@ -1,5 +1,7 @@
 import type { View } from '@/lib/viewport-store';
 import { useViewportOf, useViewportStore } from '@/hooks/canvas/useViewportStore';
+import { useByValue } from '@/hooks/ui/useByValue';
+import { sameSitters, sittersByChair } from '@/lib/chair-sitters';
 import { useCallback, useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
 import {
   DEFAULT_BUTTON_MODE,
@@ -399,21 +401,24 @@ function CanvasView(props: CanvasProps) {
   // Who is sitting in each chair, from PRESENCE — never from the document. Our
   // own character plus every peer's, keyed by chair id, so a chair empties by
   // itself the moment its occupant leaves the mode, changes tab or drops off.
-  const chairSitters = useMemo(() => {
-    const byChair = new Map<string, { name: string; color: string }[]>();
-    const add = (chairId: string, sitter: { name: string; color: string }) => {
-      const list = byChair.get(chairId);
-      if (list) list.push(sitter);
-      else byChair.set(chairId, [sitter]);
-    };
-    if (avatar.seatedOn) {
-      add(avatar.seatedOn, { name: 'You', color: props.selfParticipant.color });
-    }
-    for (const peer of props.remoteAvatars) {
-      if (peer.avatar.seatedOn) add(peer.avatar.seatedOn, { name: peer.name, color: peer.color });
-    }
-    return byChair;
-  }, [avatar.seatedOn, props.remoteAvatars, props.selfParticipant.color]);
+  // Kept by value: presence rebuilds the peers' list often (a join, a colour), and a new map would
+  // render every element view for chairs nobody sits in.
+  const chairSitters = useByValue(
+    useMemo(
+      () =>
+        sittersByChair(
+          avatar.seatedOn,
+          props.selfParticipant.color,
+          props.remoteAvatars.map((peer) => ({
+            name: peer.name,
+            color: peer.color,
+            seatedOn: peer.avatar.seatedOn,
+          })),
+        ),
+      [avatar.seatedOn, props.remoteAvatars, props.selfParticipant.color],
+    ),
+    sameSitters,
+  );
   // Stable while nobody sits or stands, so the element views' memo holds
   // (docs/specs/008-canvas/canvas-performance.md); it changes exactly when a chair must re-render.
   const sittersOf = useCallback(
