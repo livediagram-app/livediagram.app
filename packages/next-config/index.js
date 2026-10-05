@@ -1,5 +1,5 @@
 /**
- * Shared Next.js settings for every Next app in the monorepo (live, help, telemetry, marketing).
+ * Shared Next.js settings for every Next app in the monorepo (live, help, telemetry, community, marketing).
  * See docs/specs/003-system-architecture/e2e-smoke.md "Cost controls".
  */
 

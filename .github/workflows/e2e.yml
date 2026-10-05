@@ -107,18 +107,19 @@ jobs:
             apps/live/.next/cache
             apps/help/.next/cache
             apps/telemetry/.next/cache
+            apps/community/.next/cache
             apps/marketing/.next/cache
 
-      # The optical audit of the other sites needs their exports, and the stack serves help and
-      # telemetry on the live origin, so live is built beside them. Marketing comes last, as turbo.json
+      # The optical audit of the other sites needs their exports, and the stack serves help,
+      # telemetry and the Community on the live origin, so live is built beside them. Marketing comes last, as turbo.json
       # orders it: its licences page runs Next's analyzer in every other app, on that app's Turbopack
       # cache, and beside the app's own build the two corrupt it (a SIGBUS mid-build).
-      - name: Build live, help and telemetry
+      - name: Build live, help, telemetry and community
         env:
           NEXT_PUBLIC_BUILD_ID: e2e-build
         run: >-
           bash scripts/next-build-cold-retry.sh pnpm --filter @livediagram/live --filter @livediagram/help
-          --filter @livediagram/telemetry build
+          --filter @livediagram/telemetry --filter @livediagram/community build
 
       - name: Build marketing
         run: bash scripts/next-build-cold-retry.sh pnpm --filter @livediagram/marketing build

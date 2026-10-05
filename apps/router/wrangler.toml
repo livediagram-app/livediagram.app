@@ -53,10 +53,10 @@ COMMUNITY_ORIGIN = "http://127.0.0.1:3005"
 # production).
 #
 # EVERY `service` below carries the `-staging` suffix. Service bindings are
-# non-inheritable, so these five are the staging router's only downstreams —
+# non-inheritable, so these six are the staging router's only downstreams —
 # but a suffix dropped from one of them is the worst failure this repo can
 # produce: a staging frontend writing to the PRODUCTION database, with
-# nothing in the UI to say so. Read them against the five above before
+# nothing in the UI to say so. Read them against the six above before
 # changing anything here; `pnpm staging:check` prints the resolved binding table.
 # ---------------------------------------------------------------------------
 

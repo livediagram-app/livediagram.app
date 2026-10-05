@@ -86,11 +86,12 @@ function assetsOutOfCacheFor(req) {
 const LIVE_PORT = Number(process.env.E2E_LIVE_PORT ?? 3002);
 const API_PORT = Number(process.env.E2E_API_PORT ?? 8787);
 // The other sites, for the audits that open them (docs/specs/004-interface-design/blueprints/
-// optical-alignment.md, "Ink audit"). Help and telemetry sit under their basePath on the live
-// origin, as the router mounts them; marketing owns "/" in production, so it gets its own port.
+// optical-alignment.md, "Ink audit"). Help, telemetry and the Community sit under their basePath on the
+// live origin, as the router mounts them; marketing owns "/" in production, so it gets its own port.
 const SITES = [
   { prefix: '/help', dir: path.join(ROOT, 'apps', 'help', 'out') },
   { prefix: '/telemetry', dir: path.join(ROOT, 'apps', 'telemetry', 'out') },
+  { prefix: '/community', dir: path.join(ROOT, 'apps', 'community', 'out') },
 ];
 const MARKETING_DIR = path.join(ROOT, 'apps', 'marketing', 'out');
 const MARKETING_PORT = Number(process.env.E2E_MARKETING_PORT ?? 3013);

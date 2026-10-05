@@ -272,8 +272,9 @@ describe('the caching rules', () => {
       LIVE: answering('<html></html>', html),
       HELP: answering('<html></html>', html),
       TELEMETRY: answering('<html></html>', html),
+      COMMUNITY: answering('<html></html>', html),
     };
-    for (const page of ['/', '/explorer/unsorted', '/help/canvas/', '/telemetry']) {
+    for (const page of ['/', '/explorer/unsorted', '/help/canvas/', '/telemetry', '/community']) {
       expect((await dispatch(page, env)).headers.get('Cache-Control'), page).toBe('no-store');
     }
     const assets: Env = {

@@ -5,7 +5,7 @@ import { pageMetadata, REPO_URL } from '@livediagram/ui';
 
 const STATUS_TITLE = 'Status · livediagram';
 const STATUS_DESCRIPTION =
-  'Operational status of the livediagram services: editor, API, realtime room, marketing site, telemetry dashboard, help centre, and database.';
+  'Operational status of the livediagram services: editor, API, realtime room, marketing site, telemetry dashboard, help centre, Community, and database.';
 
 export const metadata = pageMetadata({
   title: STATUS_TITLE,

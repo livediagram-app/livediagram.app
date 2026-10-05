@@ -630,8 +630,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     # The router is what makes the hostname serve the new code, so it is the
-    # one job that records the GitHub deployment. Putting it on all seven
-    # would file seven deployments per run for one release. No protection
+    # one job that records the GitHub deployment. Putting it on all eight
+    # would file eight deployments per run for one release. No protection
     # rules are implied — an environment with none behaves exactly as before;
     # it just gives the run a "View deployment" link, and somewhere to add an
     # approval gate later without touching this file.

@@ -2,7 +2,7 @@
 
 // The wordmark subtitle ("Explorer" / "Help" next to the logo) turned into a
 // quick-navigation dropdown shared by the Explorer (apps/live), Help
-// (apps/help) and Telemetry headers. It reads as a plain label until hovered,
+// (apps/help), Community (apps/community) and Telemetry headers. It reads as a plain label until hovered,
 // when a chevron fades in and a menu drops down to jump between the product's
 // main surfaces. Helps a visitor build a mental model of where things live.
 //

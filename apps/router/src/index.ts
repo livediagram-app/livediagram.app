@@ -97,7 +97,7 @@ function hasPrefix(pathname: string, prefix: string): boolean {
 // files and the router presents `/<prefix>/foo` to them as `/foo`.
 //
 // Local dev (origin): swap the origin and keep the path UNstripped — the
-// Next dev servers serve their own prefixes (basePath for telemetry/help,
+// Next dev servers serve their own prefixes (basePath for telemetry/help/community,
 // the live app's `/live` assetPrefix, which applies in dev too).
 function forward(
   request: Request,
@@ -131,7 +131,7 @@ function forward(
 // Staging is deliberately public — no auth wall, so a change can be shared
 // with someone before it ships — which makes keeping it out of search results
 // this header's job. Done once here rather than as a build flag threaded into
-// four static apps: every app on the hostname passes through the router, the
+// five static apps: every app on the hostname passes through the router, the
 // api's JSON included.
 //
 // A 101 is returned UNTOUCHED. The realtime room answers
