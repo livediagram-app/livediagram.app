@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   COMMUNITY_INPUT_FIELDS,
   COMMUNITY_TITLE_MAX,
@@ -70,13 +70,23 @@ export function usePublishForm(post: CommunityOwnPost | null, documentName: stri
   };
 
   // A worker refusal: a field one goes on its field (and is focused); returns false for anything else.
+  // The focus waits for the render that re-enables the form (every control is disabled while saving, and a disabled
+  // control cannot take focus), so it is an effect on the pending field, not a call here.
+  const [pendingFocus, setPendingFocus] = useState<{ field: CommunityInputField } | null>(null);
   const showServerError = (code: string | null | undefined): boolean => {
     const fieldError = publishServerFieldError(code, draft);
     if (!fieldError) return false;
     setServerError(fieldError);
-    focusField(fieldError.field);
+    setPendingFocus({ field: fieldError.field });
     return true;
   };
+  const focusRef = useRef(focusField);
+  useEffect(() => {
+    focusRef.current = focusField;
+  });
+  useEffect(() => {
+    if (pendingFocus) focusRef.current(pendingFocus.field);
+  }, [pendingFocus]);
 
   const register = (field: CommunityInputField) => (el: HTMLElement | null) => {
     fieldRefs.current[field] = el;

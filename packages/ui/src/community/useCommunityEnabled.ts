@@ -28,9 +28,12 @@ export function fetchCommunityEnabled(apiBase: string = DEFAULT_API_BASE): Promi
   return answer;
 }
 
-export function useCommunityEnabled(apiBase: string = DEFAULT_API_BASE): boolean {
+// `ask` false skips the request (and answers on): a caller that only needs the answer in some states (the editor's
+// badge, while a post is listed) does not cost every page load a request.
+export function useCommunityEnabled(apiBase: string = DEFAULT_API_BASE, ask = true): boolean {
   const [enabled, setEnabled] = useState(true);
   useEffect(() => {
+    if (!ask) return;
     let live = true;
     void fetchCommunityEnabled(apiBase).then((on) => {
       if (live) setEnabled(on);
@@ -38,8 +41,8 @@ export function useCommunityEnabled(apiBase: string = DEFAULT_API_BASE): boolean
     return () => {
       live = false;
     };
-  }, [apiBase]);
-  return enabled;
+  }, [apiBase, ask]);
+  return ask ? enabled : true;
 }
 
 // Tests only: forget cached answers.

@@ -184,11 +184,13 @@ export function EditorView() {
   // The header badge follows the document's Community post (docs/specs/025-community/community.md).
   const communityState = useCommunityState(documentId);
   // The badge goes too while the Community is switched off (docs/specs/025-community/community.md).
-  const communityOn = useCommunityEnabled(API_BASE);
+  // Asked only while there is a listed post to badge, and never in an embed, so other opens make no request.
+  const communityOn = useCommunityEnabled(API_BASE, communityState === 'listed' && !embedMode);
   useAutoCopyParam({
     hydrated,
     sessionShareCode,
-    community: sessionCommunity !== null,
+    // The author's own post copies nothing: their bar offers Edit Your Document instead.
+    community: sessionCommunity !== null && !sessionCommunity.ownDocumentId,
     makeCopy,
   });
   // Minimal chrome (docs/specs/007-editor/power-user-mode.md): one flag, read by every chrome surface.
@@ -364,7 +366,9 @@ export function EditorView() {
                       {/* The focus rings of the agents present (docs/specs/024-agents/agent-presence.md). */}
                       <AgentFocusContext.Provider value={ctx.agentFocusByElement}>
                         {/* No comment badges for a viewer in an embed (docs/specs/013-workspace/embeds.md). */}
-                        <CommentBadgesContext.Provider value={!(embedMode && isReadOnly)}>
+                        <CommentBadgesContext.Provider
+                          value={!(embedMode && isReadOnly) && !sessionCommunity}
+                        >
                           <EditorCanvasHost />
                         </CommentBadgesContext.Provider>
                       </AgentFocusContext.Provider>

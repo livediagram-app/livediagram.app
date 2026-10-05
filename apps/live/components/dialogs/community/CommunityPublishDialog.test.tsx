@@ -83,6 +83,9 @@ describe('CommunityPublishDialog validation', () => {
     fireEvent.click(screen.getByRole('radio', { name: /Infographics/ }));
     submit();
     await waitFor(() => expect(description().getAttribute('aria-invalid')).toBe('true'));
+    // Focus lands on it once the form is enabled again (it was disabled while saving).
+    await waitFor(() => expect(document.activeElement).toBe(description()));
+    expect((description() as HTMLTextAreaElement).disabled).toBe(false);
     submit();
     expect(await screen.findByRole('alert')).toHaveProperty(
       'textContent',

@@ -3,7 +3,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { ProductNav } from '../ProductNav';
 import { SiteFooter } from '../SiteFooter';
-import { fetchCommunityEnabled, resetCommunityEnabledForTests } from './useCommunityEnabled';
+import { renderHook } from '@testing-library/react';
+import {
+  fetchCommunityEnabled,
+  resetCommunityEnabledForTests,
+  useCommunityEnabled,
+} from './useCommunityEnabled';
 
 // docs/specs/025-community/community.md "Turning the Community off".
 
@@ -70,5 +75,19 @@ describe('the apps menu and footer', () => {
     await renderOpened(stubCapabilities(async () => Response.json({ communityEnabled: true })));
     expect(screen.getAllByRole('menuitem', { name: /Community/ })).toHaveLength(1);
     expect(screen.getAllByRole('link', { name: 'Community' })).toHaveLength(1);
+  });
+});
+
+describe('useCommunityEnabled', () => {
+  it('asks nothing, and answers on, while told not to ask', async () => {
+    const fetchMock = stubCapabilities(async () => Response.json({ communityEnabled: false }));
+    const { result, rerender } = renderHook(({ ask }) => useCommunityEnabled('/api', ask), {
+      initialProps: { ask: false },
+    });
+    expect(result.current).toBe(true);
+    expect(fetchMock).not.toHaveBeenCalled();
+    rerender({ ask: true });
+    await waitFor(() => expect(result.current).toBe(false));
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 });

@@ -25,9 +25,10 @@ export function useAutoCopyParam(opts: {
   hydrated: boolean;
   // The code the visitor came in on; null for an owner.
   sessionShareCode: string | null;
-  // Whether that code is a Community post's link. Only the Community's Make a Copy carries `?copy=1`,
-  // so on any other share link the parameter is dropped without copying: a crafted link must not be able
-  // to copy someone else's document into a visitor's account the moment they open it.
+  // Whether that code is a Community post's link, opened by someone other than its author. Only the Community's
+  // Make a Copy carries `?copy=1`, so on any other share link the parameter is dropped without copying: a crafted
+  // link must not be able to copy someone else's document into a visitor's account the moment they open it. The
+  // author's own post copies nothing either (they get Edit Your Document).
   community: boolean;
   makeCopy: () => void | Promise<void>;
 }): void {

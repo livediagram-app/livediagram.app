@@ -121,10 +121,17 @@ export function CommunityPublishDialog({
     }
   };
 
+  // Not while saving: closing mid-save would lose the answer (a refusal to show, or the published confirmation).
+  const titleFieldId = useId();
+  const descriptionFieldId = useId();
+  const closeUnlessBusy = () => {
+    if (!busy) onClose();
+  };
+
   return (
     <Dialog
       open
-      onClose={onClose}
+      onClose={closeUnlessBusy}
       titleId={published ? 'community-publish-title' : titleId}
       size="xl"
       closeOnEscape={!busy}
@@ -150,13 +157,18 @@ export function CommunityPublishDialog({
             title={<span id={titleId}>{editing ? 'Edit Listing' : 'Share to Community'}</span>}
             subtitle="Show what you made. Others can find it, learn from it and make their own copy."
           >
-            <DialogCloseButton onClick={onClose} />
+            <DialogCloseButton onClick={closeUnlessBusy} />
           </DialogHeader>
 
           <div className="flex flex-col gap-4 overflow-y-auto px-6 py-5">
-            <label ref={form.register('title')} className="flex flex-col gap-1">
-              <span className={LABEL}>Title</span>
+            {/* Each field: a label naming it alone, then its message and hint, which the control points to with
+                aria-describedby rather than carrying in its name. */}
+            <div ref={form.register('title')} className="flex flex-col gap-1">
+              <label htmlFor={titleFieldId} className={LABEL}>
+                Title
+              </label>
               <TextInput
+                id={titleFieldId}
                 value={title}
                 onChange={(e) => form.setTitle(e.target.value)}
                 maxLength={COMMUNITY_TITLE_MAX}
@@ -167,22 +179,25 @@ export function CommunityPublishDialog({
                 className={errors.title ? INVALID : undefined}
               />
               <FieldError id={fieldErrorId('title')} message={errors.title} />
-            </label>
+            </div>
 
-            <label ref={form.register('description')} className="flex flex-col gap-1">
+            <div ref={form.register('description')} className="flex flex-col gap-1">
               <span className="flex items-baseline justify-between gap-2">
-                <span className={LABEL}>Description</span>
+                <label htmlFor={descriptionFieldId} className={LABEL}>
+                  Description
+                </label>
                 <span
                   className={`text-xs tabular-nums ${
                     errors.description
                       ? 'font-medium text-rose-600 dark:text-rose-300'
-                      : 'text-slate-400'
+                      : 'text-slate-500 dark:text-slate-400'
                   }`}
                 >
                   {descriptionLength} / {COMMUNITY_DESCRIPTION_MAX}
                 </span>
               </span>
               <textarea
+                id={descriptionFieldId}
                 value={description}
                 onChange={(e) => form.setDescription(e.target.value)}
                 maxLength={COMMUNITY_DESCRIPTION_MAX}
@@ -203,7 +218,7 @@ export function CommunityPublishDialog({
                 What it shows, how you made it, how someone could reuse it. At least{' '}
                 {COMMUNITY_DESCRIPTION_MIN} characters.
               </span>
-            </label>
+            </div>
 
             <div ref={form.register('category')} className="flex flex-col gap-1.5">
               <span id={categoryLabelId} className={LABEL}>

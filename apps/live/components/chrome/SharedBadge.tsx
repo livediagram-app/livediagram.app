@@ -15,8 +15,8 @@ import {
 // lie (every joined member can open it); "Local only" (docs/specs/006-document/offline-mode.md)
 // supersedes "Private" for browser-only documents, matching the Explorer's Local only pill. Hovering (or focusing) the pill opens a
 // legend popover explaining every badge, with the current one highlighted, so
-// the states can be compared in place instead of hunting each hover card. "Community"
-// (docs/specs/025-community/community.md) wins over the rest but Local only: a document listed in the public
+// the states can be compared in place instead of hunting each hover card. "Public" (listed in the Community,
+// docs/specs/025-community/community.md) wins over the rest but Local only: a document listed in the public
 // Community is the widest audience there is, so "Private" or "Shared" would understate it.
 
 type ShareState = 'private' | 'shared' | 'team' | 'community' | 'offline';
@@ -50,7 +50,7 @@ const SHARE_STATE_META: Record<
     dot: 'text-brand-500 dark:text-brand-400',
   },
   community: {
-    label: 'Community',
+    label: 'Public',
     description: 'In the public Community: anyone can find it, view it and make their own copy.',
     badge:
       'bg-pink-50 px-2 text-[10px] font-semibold text-pink-700 ring-1 ring-pink-200 dark:bg-pink-500/10 dark:text-pink-300 dark:ring-pink-500/30',

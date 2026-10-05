@@ -54,7 +54,7 @@ answers `'closed'`, which closes the grant, the share resolve and the card image
 guard skips the post check. The apps ask through `useCommunityEnabled(apiBase)` / `fetchCommunityEnabled`
 (`packages/ui/src/community/useCommunityEnabled.ts`; one request per api base per page, on unless an explicit
 `false`): `ProductNav` filters its Community item, `CommunityFooterLink` renders nothing,
-`ShareDialogWithCommunity` falls back to the plain `ShareDialog`, `EditorView` drops the Community badge,
+`ShareDialogWithCommunity` falls back to the plain `ShareDialog`, `EditorView` drops the Public badge,
 `CommunityShowcase` renders nothing (also on a 404 from `featured`), and the Community app's `CommunityGate`
 replaces the location with `/`.
 

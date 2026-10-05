@@ -513,6 +513,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   } = useEditorComments({
     applyElementDelta,
     selfParticipant,
+    // A Community visitor reads the board, never its conversation (docs/specs/025-community/community.md).
+    commentsOff: realtime.sessionCommunity !== null,
     // Bound below, once the teams the mention list comes from have loaded.
     onMentioned: (text, mentions) => mentionNotifyRef.current(text, mentions),
   });

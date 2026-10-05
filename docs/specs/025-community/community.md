@@ -43,6 +43,8 @@ A post shows every tab of the document. A document that is empty (no snapshot re
   give away. A post its document's current owner did not make (it came with the document from a team library) is not
   theirs: their Share dialog shows none, and publishing replaces it with their own. Two first publishes of one
   document at once give the second **This document is already in the Community.**
+- **In the editor**: while the post is listed, the visibility badge in the editor header reads **Public** (it wins over
+  Private, Shared and Team; only Local only beats it), and the Share dialog's status line says the document is public.
 - **Something to show**: the document's first tab must have at least one element (counted, so a deploy without image
   storage can still publish).
 - **Where**: the Share dialog carries a **Community** section beneath the share links. Unpublished, it invites the owner
@@ -277,7 +279,7 @@ While it is off:
   every community link is closed: its document, card image and copy all answer as missing. Nothing is deleted;
   turning it back on restores everything as it was.
 - It disappears from every interface: the **Community** entry in the apps menu and the site footer, the landing page's
-  section, the Community section of the Share dialog and the editor's Community badge. Visiting `/community` sends
+  section, the Community section of the Share dialog and the editor's Public badge. Visiting `/community` sends
   you to the home page. A listed post no longer stands in the way of a share password.
 - The apps learn it from the capabilities endpoint after they load, so a Community link can show for a moment before
   it goes. Until the endpoint answers (or if it cannot be reached) they assume the Community is on: only an explicit
