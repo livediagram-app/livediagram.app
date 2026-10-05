@@ -16,20 +16,22 @@ export function CommunityHero() {
           Community
         </h1>
         <p className="mt-3 text-lg leading-relaxed text-slate-600 dark:text-slate-300">
-          Documents people are proud of. Find inspiration, then make it your own.
+          Documents people are proud of. Find inspiration, then make it your own.{' '}
+          <CommunityHelpLink article="finding" variant="inline">
+            How the Community Works
+          </CommunityHelpLink>
         </p>
-        <CommunityHelpLink article="finding" className="mt-4">
-          How the Community Works
-        </CommunityHelpLink>
       </div>
-      <div className="flex shrink-0 flex-col items-start gap-3 md:items-end">
+      <div className="flex shrink-0 flex-wrap-reverse items-center gap-3">
+        <CommunityHelpLink article="sharing" variant="button">
+          How Sharing Works
+        </CommunityHelpLink>
         <a
           href={SHARE_YOUR_OWN_HREF}
           className={buttonClassName({ size: 'cta', className: 'shadow-sm' })}
         >
           <ButtonContent>Share Your Own</ButtonContent>
         </a>
-        <CommunityHelpLink article="sharing">How Sharing Works</CommunityHelpLink>
       </div>
     </div>
   );

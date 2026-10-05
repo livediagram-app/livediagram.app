@@ -268,8 +268,9 @@ minute.
 Community surfaces deep link those two help articles, each a quiet link with the help glyph (the full placement list
 is in [Contextual help links](../018-help/contextual-help-links.md)):
 
-- The gallery's header: **How the Community Works** (Finding Documents in the Community) under the lead, and **How
-  Sharing Works** (Sharing to the Community) under Share Your Own.
+- The gallery's header: **How the Community Works** (Finding Documents in the Community) as a link ending the lead,
+  and **How Sharing Works** (Sharing to the Community) as a secondary button to the left of Share Your Own (on a
+  phone, below it).
 - My Shares' **Your Shares** summary: **Managing Your Shares** (Sharing to the Community).
 - The report dialog: **How Reports Work** (Finding Documents in the Community).
 - The landing page's From the Community section: **How the Community Works** beside Explore the Community.

@@ -23,6 +23,30 @@ describe('CommunityHelpLink', () => {
     expect(siteTrack).toHaveBeenCalledWith('UI', 'Opened', 'finding-community-documents');
   });
 
+  it('reads on in a sentence, or stands as a secondary button, with the same link and event', () => {
+    render(
+      <p>
+        Lead.{' '}
+        <CommunityHelpLink article="finding" variant="inline">
+          How the Community Works
+        </CommunityHelpLink>
+      </p>,
+    );
+    const inline = screen.getByRole('link', { name: 'How the Community Works' });
+    expect(inline.querySelector('svg')).toBeNull();
+    expect(inline.className).not.toContain('text-sm');
+    render(
+      <CommunityHelpLink article="sharing" variant="button">
+        How Sharing Works
+      </CommunityHelpLink>,
+    );
+    const button = screen.getByRole('link', { name: 'How Sharing Works' });
+    expect(button.querySelector('svg')).not.toBeNull();
+    expect(button.getAttribute('href')).toBe('/help/collaboration/sharing/community/');
+    fireEvent.click(button);
+    expect(siteTrack).toHaveBeenCalledWith('UI', 'Opened', 'community');
+  });
+
   it('links the sharing article', () => {
     render(<CommunityHelpLink article="sharing">How Sharing Works</CommunityHelpLink>);
     expect(screen.getByRole('link', { name: 'How Sharing Works' }).getAttribute('href')).toBe(

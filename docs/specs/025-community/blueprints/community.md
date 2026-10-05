@@ -398,6 +398,7 @@ Community app (`apps/community`):
 
 Final copy:
 
+- Gallery search box: placeholder "Search..."; its label (visually hidden) "Search the Community".
 - Share dialog section heading: **Community**. Unpublished: "The Community is public: anyone, with or without an
   account, can find this document there, view it and make their own copy." Button: **Share to Community**. With a
   share password set, the button is disabled beside "Remove the share password to share it to the Community." Guest: "Sign in to share your document with the
@@ -419,8 +420,9 @@ Final copy:
 - Report dialog: title **Report This Document**, reasons as radio rows, note optional, button **Send Report**,
   confirmation "Thanks for letting us know. When enough people report a document, it is taken out of the
   Community." (no promise of a human review)
-- Help links (`CommunityHelpLink`): `CommunityHero` **How the Community Works** (`finding`) under the lead and **How
-  Sharing Works** (`sharing`) under Share Your Own; `MineSummary` **Managing Your Shares** (`sharing`);
+- Help links (`CommunityHelpLink`): `CommunityHero` **How the Community Works** (`finding`, `variant="inline"`, ending the
+  lead) and **How Sharing Works** (`sharing`, `variant="button"`, a secondary button left of Share Your Own; the
+  pair wraps with Share Your Own first, `flex-wrap-reverse`); `MineSummary` **Managing Your Shares** (`sharing`);
   `ReportDialog` **How Reports Work** (`finding`); the landing page's `CommunityShowcase` **How the Community Works**
   (`finding`). In the editor, `HelpArticleLink` with the `HELP_ARTICLES` key `community` sits on
   `CommunitySection`'s label and in `CommunityPublishDialog`'s header.
