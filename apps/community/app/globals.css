@@ -41,33 +41,6 @@ body {
   background-image: radial-gradient(circle, rgb(100 116 139 / 0.3) 1px, transparent 1.2px);
 }
 
-/* Card hover: a small lift and a brand edge (blueprint §10: no lift under reduced motion). */
-.card-lift {
-  transition:
-    transform var(--transition-duration-micro) ease-out,
-    box-shadow var(--transition-duration-micro) ease-out,
-    border-color var(--transition-duration-micro) ease-out;
-}
-.card-lift:hover {
-  transform: translateY(-3px);
-  border-color: rgb(14 165 233 / 0.45);
-  box-shadow:
-    0 14px 28px -14px rgb(14 165 233 / 0.35),
-    0 4px 10px -6px rgb(15 23 42 / 0.12);
-}
-.dark .card-lift:hover {
-  border-color: color-mix(in oklab, var(--color-brand-500) 55%, transparent);
-  box-shadow:
-    0 14px 28px -14px rgb(0 0 0 / 0.7),
-    0 0 0 1px color-mix(in oklab, var(--color-brand-500) 20%, transparent);
-}
-.card-image {
-  transition: transform var(--transition-duration-micro) ease-out;
-}
-.card-lift:hover .card-image {
-  transform: scale(1.03);
-}
-
 /* The heart's pop on liking. */
 @keyframes heart-pop {
   0% {
@@ -103,14 +76,6 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .card-lift,
-  .card-image {
-    transition: none;
-  }
-  .card-lift:hover,
-  .card-lift:hover .card-image {
-    transform: none;
-  }
   .heart-pop {
     animation: none;
   }

@@ -48,6 +48,8 @@ export type ShareDialogProps = {
   // The Community band (docs/specs/025-community/community.md "Publishing"), drawn beneath the
   // password; absent where publishing doesn't apply.
   community?: ReactNode;
+  // Listed in the public Community: the status line says Public (docs/specs/025-community/community.md).
+  communityListed?: boolean;
   // Why the password can't be set right now (a published document: a post and a password exclude each
   // other), shown in place of the switch's effect; null or absent when it can.
   passwordLockedReason?: string | null;

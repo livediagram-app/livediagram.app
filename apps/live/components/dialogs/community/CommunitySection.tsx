@@ -100,8 +100,8 @@ export function CommunitySection({
       {state === 'unpublished' ? (
         <div className="flex flex-col gap-2">
           <p className={NOTE}>
-            Share this document with the Community so others can find it, learn from it and make
-            their own copy.
+            The Community is <strong className="font-semibold">public</strong>: anyone, with or
+            without an account, can find this document there, view it and make their own copy.
           </p>
           <div className="flex flex-wrap items-center gap-2">
             <Button size="xs" onClick={onPublish} disabled={sharePassword !== null}>

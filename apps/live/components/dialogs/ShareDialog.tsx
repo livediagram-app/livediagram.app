@@ -48,6 +48,7 @@ export function ShareDialog({
   offline,
   onSyncToCloud,
   community,
+  communityListed = false,
   passwordLockedReason,
   onClose,
 }: ShareDialogProps) {
@@ -159,7 +160,13 @@ export function ShareDialog({
     >
       <DialogHeader
         title="Share this document"
-        subtitle={<ShareStatus passes={activeLinks.length} password={sharePassword !== null} />}
+        subtitle={
+          <ShareStatus
+            passes={activeLinks.length}
+            password={sharePassword !== null}
+            community={communityListed}
+          />
+        }
       >
         <HelpArticleLink article="sharing" size="md" />
         <DialogCloseButton onClick={close} />

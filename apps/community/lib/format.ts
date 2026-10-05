@@ -21,8 +21,3 @@ export function paragraphs(text: string): string[] {
     .filter(Boolean);
 }
 
-// The author's initial for the coloured disc when they have no picture.
-export function initialOf(name: string): string {
-  const first = name.trim().charAt(0);
-  return first ? first.toUpperCase() : '?';
-}

@@ -41,6 +41,8 @@ export {
 } from './brand-classes';
 export * from './timeline';
 export * from './icons';
+export { CommunityPostTile } from './community/CommunityPostTile';
+export { CommunityAuthorBadge, communityAuthorInitial } from './community/CommunityAuthorBadge';
 export {
   SITE_URL,
   SITE_NAME,

@@ -172,6 +172,14 @@ describe('ShareDialog passes', () => {
     await vi.waitFor(() => expect(row.className).toContain('animate-row-open'));
   });
 
+  it('says the document is public while it is listed in the Community', () => {
+    renderDialog({ communityListed: true });
+    expect(screen.getByRole('status').textContent).toMatch(/^Public: in the Community/);
+    cleanup();
+    renderDialog({ links: [link()], communityListed: true });
+    expect(screen.getByRole('status').textContent).toMatch(/^Public: in the Community/);
+  });
+
   it('says the document is private until a pass is live', () => {
     renderDialog();
     expect(screen.getByRole('status').textContent).toMatch(/Private: only you can open it/);
