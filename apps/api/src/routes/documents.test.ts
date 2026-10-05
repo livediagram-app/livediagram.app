@@ -720,7 +720,7 @@ describe('a tab-scoped visitor', () => {
   beforeEach(() => {
     db.getDocument.mockResolvedValue(scopedDocument());
     db.getDocumentThumbMeta.mockResolvedValue(scopedDocument());
-    resolveDocumentGrant.mockResolvedValue({ role: 'edit', tabScope: 't2' });
+    resolveDocumentGrant.mockResolvedValue({ role: 'edit', tabScope: 't2', community: false });
   });
 
   it('gets the document with every other tab locked and no deck', async () => {
@@ -734,7 +734,12 @@ describe('a tab-scoped visitor', () => {
     getDocumentTabImageSvg.mockResolvedValue('<svg>t2</svg>');
     const res = await handleDocuments(makeCtx('GET', '/api/documents/d1/thumbnail', visitor));
     expect(await res.text()).toBe('<svg>t2</svg>');
-    expect(getDocumentTabImageSvg).toHaveBeenCalledWith(expect.anything(), expect.anything(), 't2');
+    expect(getDocumentTabImageSvg).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.anything(),
+      't2',
+      false,
+    );
     expect(getDocumentThumbnailSvg).not.toHaveBeenCalled();
   });
 

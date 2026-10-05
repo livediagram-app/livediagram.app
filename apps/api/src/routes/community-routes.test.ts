@@ -12,6 +12,7 @@ const { thumbnail } = vi.hoisted(() => ({
 vi.mock('../thumbnail', () => ({
   getDocumentThumbnailSvg: vi.fn(async () => thumbnail.svg),
   getDocumentTabImageSvg: vi.fn(async () => thumbnail.svg),
+  getCommunityThumbnailSvg: vi.fn(async () => thumbnail.svg),
 }));
 
 import { makeTestRouteContext } from './test-route-context';
@@ -20,6 +21,7 @@ import { handleCommunity } from './community';
 import { handleShare } from './share';
 import { handleDocumentShareRoutes } from './document-share-routes';
 import { handleCapabilities } from './capabilities';
+import { handleDocuments } from './documents';
 
 const KEY = '3f2b8c1e-9a4d-4e7f-8b21-0c5d6e7f8a9b';
 const KEY2 = '4a2b8c1e-9a4d-4e7f-8b21-0c5d6e7f8a9b';
@@ -86,8 +88,27 @@ beforeEach(() => {
         'INSERT INTO documents (id, owner_id, name, shareable, saved_at, created_at) VALUES (?, ?, ?, 0, 1, 1)',
       )
       .run(id, AUTHOR, `Doc ${id}`);
+    setFirstTab(id, 1);
   }
 });
+
+// The document's first tab, holding `count` elements (publishing refuses an empty document).
+function setFirstTab(documentId: string, count: number) {
+  const tabId = `tab-${documentId}`;
+  db.sql.prepare('DELETE FROM document_tabs WHERE document_id = ?').run(documentId);
+  db.sql.prepare('DELETE FROM tabs WHERE id = ?').run(tabId);
+  const elements = Array.from({ length: count }, (_, i) => ({ id: `e${i}`, type: 'shape' }));
+  db.sql
+    .prepare(
+      "INSERT INTO tabs (id, name, data, updated_at, element_count, rev) VALUES (?, 'Tab', ?, 1, ?, 1)",
+    )
+    .run(tabId, JSON.stringify({ elements }), count);
+  db.sql
+    .prepare(
+      'INSERT INTO document_tabs (document_id, tab_id, order_index, added_at) VALUES (?, ?, 0, 1)',
+    )
+    .run(documentId, tabId);
+}
 
 describe('owner routes', () => {
   it('publishes, reads back, edits the listing and removes', async () => {
@@ -150,7 +171,7 @@ describe('owner routes', () => {
     ))!;
     expect([bad.status, await bad.json()]).toEqual([400, { error: 'invalid_category' }]);
 
-    thumbnail.svg = null;
+    setFirstTab('d1', 0);
     const empty = (await handleCommunityOwnerRoutes(
       owner('PUT', '/api/documents/d1/community', { body }),
     ))!;
@@ -471,5 +492,115 @@ describe('switched off', () => {
     expect(
       (await handleCommunity(publicCtx('GET', `/api/community/posts/${post.id}`))).status,
     ).toBe(200);
+  });
+});
+
+// Round-one review fixes (docs/specs/025-community/community.md "Viewing a post's document", "Publishing").
+describe('what a community link reveals', () => {
+  const share = (path: string) =>
+    handleShare(makeTestRouteContext('GET', path, { env, owner: 'guest-visitor' }));
+  const readDocument = (code: string, query = '') =>
+    handleDocuments(
+      makeTestRouteContext('GET', `/api/documents/d1${query}`, {
+        env,
+        owner: 'guest-visitor',
+        headers: { 'X-Share-Code': code },
+      }),
+    );
+
+  it("names nobody: not the owner's name or colour, nor where the document sits", async () => {
+    db.sql.prepare("UPDATE documents SET folder_id = NULL WHERE id = 'd1'").run();
+    const post = (await (await handleCommunityOwnerRoutes(
+      owner('PUT', '/api/documents/d1/community', { body: { ...body, anonymous: true } }),
+    ))!.json()) as { post: { shareCode: string } };
+    const resolved = (await (await share(`/api/share/${post.post.shareCode}`)).json()) as {
+      document: Record<string, unknown>;
+      community: { author: { name: string } };
+    };
+    expect(resolved.community.author.name).toBe('Anonymous');
+    expect(resolved.document).toMatchObject({ ownerName: null, ownerColor: null, ownerId: '' });
+    const read = (await (await readDocument(post.post.shareCode)).json()) as {
+      document: Record<string, unknown>;
+    };
+    expect(read.document).toMatchObject({
+      ownerName: null,
+      ownerColor: null,
+      folderId: null,
+      source: null,
+    });
+  });
+
+  it('answers a closed link with 404 alone: not trashed, not a password prompt', async () => {
+    const post = await publish();
+    db.sql.prepare("UPDATE documents SET trashed_at = 5 WHERE id = 'd1'").run();
+    expect((await share(`/api/share/${post.shareCode}`)).status).toBe(404);
+    db.sql
+      .prepare("UPDATE documents SET trashed_at = NULL, share_password = 'pw' WHERE id = 'd1'")
+      .run();
+    expect((await share(`/api/share/${post.shareCode}`)).status).toBe(404);
+    expect((await share(`/api/share/${post.shareCode}/image.svg`)).status).toBe(404);
+    expect(
+      (await handleCommunity(publicCtx('GET', `/api/community/posts/${post.id}`))).status,
+    ).toBe(404);
+  });
+
+  it('counts no comment threads in the overview a Community visitor reads', async () => {
+    const post = await publish();
+    const tab = JSON.stringify({
+      elements: [
+        {
+          id: 'c1',
+          type: 'shape',
+          shape: 'comment-pin',
+          commentThread: {
+            comments: [{ id: 'm1', text: 'secret', authorId: AUTHOR, authorName: 'Ada' }],
+          },
+        },
+      ],
+    });
+    db.sql
+      .prepare("UPDATE tabs SET data = ?, element_count = 1, rev = rev + 1 WHERE id = 'tab-d1'")
+      .run(tab);
+    const overview = await (await readDocument(post.shareCode, '?view=overview')).text();
+    expect(overview).not.toContain('threads');
+  });
+});
+
+describe('a document that changes hands', () => {
+  it("closes its previous owner's post, and lets the new owner publish their own", async () => {
+    const post = await publish();
+    db.sql
+      .prepare(
+        "INSERT INTO participants (id, name, color, created_at) VALUES ('user_bob', 'Bob', '#000', 1)",
+      )
+      .run();
+    db.sql.prepare("UPDATE documents SET owner_id = 'user_bob' WHERE id = 'd1'").run();
+
+    expect(
+      (await handleShare(makeTestRouteContext('GET', `/api/share/${post.shareCode}`, { env })))
+        .status,
+    ).toBe(404);
+    expect((await handleCommunity(publicCtx('GET', '/api/community/posts'))).status).toBe(200);
+    const listed = (await (
+      await handleCommunity(publicCtx('GET', '/api/community/posts'))
+    ).json()) as {
+      posts: unknown[];
+    };
+    expect(listed.posts).toEqual([]);
+    const mine = (await (
+      await handleCommunity(publicCtx('GET', '/api/community/mine', { clerk: AUTHOR }))
+    ).json()) as { posts: unknown[] };
+    expect(mine.posts).toEqual([]);
+
+    const bob = (method: string, opts: { body?: unknown } = {}) =>
+      handleCommunityOwnerRoutes(
+        owner(method, '/api/documents/d1/community', { ...opts, clerk: 'user_bob' }),
+      );
+    expect(await (await bob('GET'))!.json()).toEqual({ post: null });
+    const published = (await bob('PUT', { body }))!;
+    expect(published.status).toBe(201);
+    expect(db.sql.prepare('SELECT author_id FROM community_posts').all()).toEqual([
+      { author_id: 'user_bob' },
+    ]);
   });
 });

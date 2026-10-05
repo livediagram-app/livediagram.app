@@ -37,10 +37,14 @@ A post shows every tab of the document. A document that is empty (no snapshot re
 ## Publishing
 
 - **Who**: the document's owner, signed in. A guest sees the Community option with a one-line explanation and a
-  **Sign in to share** button ([Auth + guest access](../014-identity/auth-and-guest-access.md): the editor itself never
+  **Sign In to Share** button ([Auth + guest access](../014-identity/auth-and-guest-access.md): the editor itself never
   asks anyone to sign in; only publishing does). Team-library documents
   ([Team shared documents](../013-workspace/team-shared-documents.md)) cannot be published: they are not one person's to
-  give away.
+  give away. A post its document's current owner did not make (it came with the document from a team library) is not
+  theirs: their Share dialog shows none, and publishing replaces it with their own. Two first publishes of one
+  document at once give the second **This document is already in the Community.**
+- **Something to show**: the document's first tab must have at least one element (counted, so a deploy without image
+  storage can still publish).
 - **Where**: the Share dialog carries a **Community** section beneath the share links. Unpublished, it invites the owner
   to share the document with the Community; published, it shows the post (title, category, likes, copies), a link to it,
   **Edit Listing** and **Remove From Community**.
@@ -144,7 +148,14 @@ ordinary view link in exactly these ways:
   history, not the Q&A board, and not any door added later (it fails closed). Comment threads are left out of the
   tabs it reads, and assigned actions keep their text and status but not who they are assigned to or by.
 - Visits and copies through it are not recorded in the author's timeline (the copy count stands in for copies).
-- While the post is hidden the link grants nothing to anyone, its image included.
+- While the post is not public the link grants nothing to anyone, its image included, and answers only "not found"
+  (never that the document is trashed or asks for a password). Not public means: hidden; its document in the Trash or a
+  team library; its document now owned by someone other than the post's author (a teammate moved it out of a team into
+  their own library); a share password set on its document; or the Community switched off.
+- What it shows is redacted for strangers: the document carries no owner name, colour, folder or origin, and every card
+  image, thumbnail and per-tab image is drawn from the redacted board (no comment threads or their authors, no action
+  assignees, no roll-call or Q&A names), cached apart from the owner's own snapshot. The document overview counts no
+  comment threads.
 - The viewer shows a slim **Community bar**: "Shared to the Community by <author>", **Back to Community** and **Make a
   Copy**.
 - It is read-only for **everyone, the author included**: the post page's preview and Open Document never open the document
@@ -174,13 +185,19 @@ One like per browser per post, keyed by a random **community key** the Community
 guest owner id: liking must never put an owner credential on the wire from a public page. Liking again is idempotent;
 unliking removes it.
 
+A **network** is the caller's address range (IPv4 /24, IPv6 /56), so one person cannot pass for many by rotating
+addresses inside what they hold. It is only ever stored as a one-way hash salted with the post id, so it cannot be
+compared across posts. Every like and every copy is remembered (a browser still sees its own heart), but a post's like
+count and copy count each take **at most five from any one network**: enough for an office sharing one address range,
+too few for one person to move the counts or the home page's six. The write limit on likes and reports is per network
+too.
+
 ## Reports and moderation
 
 - Anyone can report a post with a reason (Spam, Offensive, Personal Information, Copyright, Something Else) and an
   optional note of up to 300 characters. One report per browser per post.
-- A post is **hidden automatically** once reports have come from three distinct browsers on three distinct networks.
-  The network is recorded only as a one-way hash of the address salted with the post id, so it cannot be compared across
-  posts.
+- A post is **hidden automatically** once reports have come from three distinct browsers on three distinct networks
+  (address ranges, as for likes), so rotating addresses inside one range counts once.
 - **Moderation is self-serve: nobody reviews posts by hand.** Reports are the only moderation, there is no operator
   role and no moderation page, so the hosted service and a self-host work the same way with nothing to configure.
 - **Hidden is final.** Nobody can restore a hidden post, and its author can neither edit nor remove it (removing would

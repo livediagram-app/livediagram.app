@@ -13,12 +13,12 @@ import {
   countCommunityPostsByAuthor,
   createCommunityPost,
   deleteCommunityPost,
+  firstTabElementCount,
   getCommunityPostForDocument,
   getDocumentSharePassword,
   updateCommunityPost,
 } from '../db';
 import { conflict, json, noContent, notFound, signInRequired } from '../responses';
-import { getDocumentThumbnailSvg } from '../thumbnail';
 import { requireOwnedDocument, type RouteContext } from './context';
 
 function ownPost(row: CommunityPostRow): CommunityOwnPost {
@@ -37,7 +37,11 @@ export async function handleCommunityOwnerRoutes(ctx: RouteContext): Promise<Res
 
   const doc = await requireOwnedDocument(ctx, id);
   if (doc instanceof Response) return doc;
-  const existing = await getCommunityPostForDocument(env, id);
+  const found = await getCommunityPostForDocument(env, id);
+  // A post made by a previous owner (the document left a team library for another member's) is not this owner's:
+  // it reads as none, and publishing replaces it (docs/specs/025-community/community.md "Publishing").
+  const stale = found !== null && found.author_id !== doc.ownerId ? found : null;
+  const existing = stale ? null : found;
 
   if (method === 'GET') return json({ post: existing ? ownPost(existing) : null });
 
@@ -75,13 +79,26 @@ export async function handleCommunityOwnerRoutes(ctx: RouteContext): Promise<Res
   }
 
   // G3: something to show, and room under the per-author cap.
-  if ((await getDocumentThumbnailSvg(env, doc)) == null) {
+  // Counted, not rendered: a deploy without the snapshot store can still publish.
+  if ((await firstTabElementCount(env, id)) === 0) {
     return reject(conflict('empty_document'), 'empty_document');
   }
   if ((await countCommunityPostsByAuthor(env, ctx.clerkUserId)) >= COMMUNITY_POSTS_PER_AUTHOR) {
     return reject(conflict('post_limit'), 'post_limit');
   }
-  const postId = await createCommunityPost(env, id, ctx.clerkUserId, parsed.value);
+  if (stale) {
+    await deleteCommunityPost(env, stale.share_code);
+    console.log('[community] replaced a previous owner post', { postId: stale.id });
+  }
+  let postId: string;
+  try {
+    postId = await createCommunityPost(env, id, ctx.clerkUserId, parsed.value);
+  } catch (err) {
+    // Two first publishes of one document at once: the second meets the one-post-per-document rule.
+    if (String(err).includes('UNIQUE'))
+      return reject(conflict('already_published'), 'already_published');
+    throw err;
+  }
   console.log('[community] published', { postId, category: parsed.value.category });
   const row = await getCommunityPostForDocument(env, id);
   return json({ post: ownPost(row!) }, { status: 201 });

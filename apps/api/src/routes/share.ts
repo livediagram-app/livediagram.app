@@ -15,8 +15,16 @@ import { notifyDocumentJoin } from '../email/notifications';
 import { documentTrashed, forbidden, json, notFound, svgImage } from '../responses';
 import { reportServerEvent } from '../server-telemetry';
 import { sharePasswordStatus } from '../auth/share-access';
-import { getDocumentTabImageSvg, getDocumentThumbnailSvg } from '../thumbnail';
-import { redactDocumentForReader, redactDocumentForScope } from '../redact-document';
+import {
+  getCommunityThumbnailSvg,
+  getDocumentTabImageSvg,
+  getDocumentThumbnailSvg,
+} from '../thumbnail';
+import {
+  redactDocumentForCommunity,
+  redactDocumentForReader,
+  redactDocumentForScope,
+} from '../redact-document';
 import { sharePasswordOf, type RouteContext } from './context';
 
 // Resolve a share code to its document + role. Used by visitors
@@ -38,6 +46,23 @@ export async function handleShare(ctx: RouteContext): Promise<Response> {
     // expiry and carries the code's real role (edit vs view) back to the
     // visitor. A null result = expired / revoked / unknown → 404 below.
     const link = await getShareLink(env, code);
+    // A Community post's link (docs/specs/025-community/community.md "Viewing a post's document"): read-only for
+    // everyone, never recorded in "Shared with you", never a join email to the author. While the post is not public
+    // (hidden, its document trashed or in a team library, the Community switched off) it answers 404 and nothing
+    // else, decided before the trashed and password answers below so a closed link reveals nothing about its
+    // document.
+    if (link?.purpose === 'community') {
+      const post = await getCommunityPostByShareCode(env, link.code);
+      if (!post || (await communityLinkAccess(env, link.code)) !== 'public') return notFound();
+      const d = await getDocument(env, link.documentId);
+      if (!d) return notFound();
+      return json({
+        document: redactDocumentForCommunity(redactDocumentForReader(d, resolveOwner())),
+        role: 'view',
+        tabId: null,
+        community: { postId: post.id, author: rowAuthor(post) },
+      });
+    }
     if (link) {
       const d = await getDocument(env, link.documentId);
       // The code is the credential: its holder hears the document was deleted
@@ -50,21 +75,6 @@ export async function handleShare(ctx: RouteContext): Promise<Response> {
       // gate doesn't seed the "Shared with you" list.
       const gate = await passwordGate(env, d.id, sharePasswordOf(request));
       if (gate) return gate;
-      // A Community post's link (docs/specs/025-community/community.md "Viewing a post's document"): read-only for
-      // everyone, never recorded in "Shared with you", never a join email to the author, and gone while the post is
-      // hidden (or its document is in the Trash or a team library).
-      if (link.purpose === 'community') {
-        const post = await getCommunityPostByShareCode(env, link.code);
-        if (!post) return notFound();
-        const access = await communityLinkAccess(env, link.code);
-        if (access !== 'public') return notFound();
-        return json({
-          document: redactDocumentForReader(d, resolveOwner()),
-          role: 'view',
-          tabId: null,
-          community: { postId: post.id, author: rowAuthor(post) },
-        });
-      }
       // Track the visit in shared_with so a "Shared with you"
       // list (#8) can surface this document later. Only record
       // when (a) the visitor identifies (Bearer or
@@ -159,9 +169,13 @@ async function handleShareImage(ctx: RouteContext, code: string): Promise<Respon
   const asked = new URL(request.url).searchParams.get('tab');
   if (link.tabId !== null && asked !== null && asked !== link.tabId) return notFound();
   const tabId = link.tabId ?? asked;
+  // A Community card image is drawn from the redacted tab, never the owner's snapshot.
+  const community = link.purpose === 'community';
   const svg = tabId
-    ? await getDocumentTabImageSvg(env, d, tabId)
-    : await getDocumentThumbnailSvg(env, d);
+    ? await getDocumentTabImageSvg(env, d, tabId, community)
+    : community
+      ? await getCommunityThumbnailSvg(env, d)
+      : await getDocumentThumbnailSvg(env, d);
   return svg == null ? notFound() : svgImage(svg, cacheControl);
 }
 

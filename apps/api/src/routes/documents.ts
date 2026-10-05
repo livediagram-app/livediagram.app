@@ -38,6 +38,7 @@ import {
   setDocumentPresentation,
   tabIdsHeldElsewhere,
   upsertDocumentMeta,
+  communityNetworkHash,
   recordCommunityCopy,
 } from '../db';
 import {
@@ -50,8 +51,17 @@ import {
   svgImage,
 } from '../responses';
 import { documentDates, isDocumentSource } from '@livediagram/api-schema';
-import { getDocumentTabImageSvg, getDocumentThumbnailSvg } from '../thumbnail';
-import { redactDocumentForReader, redactDocumentForScope } from '../redact-document';
+import { clientIp } from '../client-ip';
+import {
+  getCommunityThumbnailSvg,
+  getDocumentTabImageSvg,
+  getDocumentThumbnailSvg,
+} from '../thumbnail';
+import {
+  redactDocumentForCommunity,
+  redactDocumentForReader,
+  redactDocumentForScope,
+} from '../redact-document';
 import { answerOverview, parseViewQuery } from './document-views-route';
 import { emailEnabled } from '../email/client';
 import { notifyMilestone } from '../email/notifications';
@@ -327,12 +337,13 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
       // share door blanked it. See redact-document.ts.
       // A tab-scoped visitor (docs/specs/013-workspace/tab-scoped-share-links.md) sees the other tabs locked.
       if (!grant) return notFound();
+      const reader = redactDocumentForReader(d, ctx.resolveOwner());
       const liveDoc = redactDocumentForScope(
-        redactDocumentForReader(d, ctx.resolveOwner()),
+        grant.community ? redactDocumentForCommunity(reader) : reader,
         grant.tabScope,
       );
       // The overview view (docs/specs/024-agents/document-views.md), after the same gate and scope.
-      if (view) return answerOverview(ctx, view, liveDoc, grant.tabScope);
+      if (view) return answerOverview(ctx, view, liveDoc, grant.tabScope, grant.community);
       return json({ document: liveDoc });
     }
     if (request.method === 'PUT') {
@@ -483,7 +494,16 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
         const code = scope.shareCode;
         ctx.waitUntil?.(
           getCommunityPostByShareCode(env, code)
-            .then((post) => (post ? recordCommunityCopy(env, post.id, owner) : undefined))
+            .then(async (post) =>
+              post
+                ? recordCommunityCopy(
+                    env,
+                    post.id,
+                    owner,
+                    await communityNetworkHash(post.id, clientIp(request)),
+                  )
+                : undefined,
+            )
             .catch((err) => console.warn('[community] copy count failed', err)),
         );
       }
@@ -548,9 +568,12 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
       if (!grant) return notFound();
       // A tab-scoped visitor (docs/specs/013-workspace/tab-scoped-share-links.md) gets their tab, never the
       // first-tab snapshot.
+      // A Community visitor's thumbnail is drawn from the redacted tab, never the owner's snapshot.
       const svg = grant.tabScope
-        ? await getDocumentTabImageSvg(env, d, grant.tabScope)
-        : await getDocumentThumbnailSvg(env, d, { defer: ctx.waitUntil });
+        ? await getDocumentTabImageSvg(env, d, grant.tabScope, grant.community)
+        : grant.community
+          ? await getCommunityThumbnailSvg(env, d, { defer: ctx.waitUntil })
+          : await getDocumentThumbnailSvg(env, d, { defer: ctx.waitUntil });
       // Nothing drawn (or no snapshot store). Past the gate, so this says
       // nothing about access, and the URL carries `?v=<savedAt>`: the answer
       // cannot change until the document does, so let the browser keep it

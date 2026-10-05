@@ -324,7 +324,8 @@ Final copy:
 - Post not found: "This document isn't in the Community any more." Link **Back to Community**.
 - Community bar: "Shared to the Community by <name>" · **Back to Community** · **Make a Copy**.
 - Report dialog: title **Report This Document**, reasons as radio rows, note optional, button **Send Report**,
-  confirmation "Thanks. We'll take a look."
+  confirmation "Thanks for letting us know. When enough people report a document, it is taken out of the
+  Community." (no promise of a human review)
 
 Layout: gallery grid 1 / 2 / 3 / 4 columns at <640 / 640 / 1024 / 1280 px; cards with a 4:3 image area on a subtle
 dot-grid background; skeleton cards of the same size while loading.

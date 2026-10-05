@@ -145,6 +145,21 @@ const wrap = (key: string, name: string): BodySchema => ({
   required: [key],
 });
 
+// The gallery's search parameters, shared by the public list and My Shares (docs/specs/025-community/community.md
+// "Gallery"): every filter can also be a word in `q` (`#tag`, `category:`, `sort:`, `is:mine`).
+const COMMUNITY_QUERY = [
+  {
+    name: 'q',
+    required: false,
+    description:
+      'Search words: plain terms (title, description, tags), `#tag`, `category:<id>`, `sort:loved|copied`.',
+  },
+  { name: 'category', required: false, description: 'One category id.' },
+  { name: 'tag', required: false, description: 'One tag.' },
+  { name: 'sort', required: false, description: '`new` (default), `loved` or `copied`.' },
+  { name: 'offset', required: false, description: 'From `nextOffset`.' },
+] as const;
+
 export const ROUTE_MANIFEST: RouteSpec[] = [
   // ---- Meta ----
   {
@@ -837,7 +852,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     tag: 'Community',
     summary: 'Remove the document from Community (owner only).',
     auth: 'guest-or-clerk',
-    statuses: [204, 401, 403, 404, 410],
+    statuses: [204, 401, 403, 404, 409, 410],
   },
   {
     method: 'GET',
@@ -1196,13 +1211,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     tag: 'Community',
     summary: 'List Community posts. Send X-Community-Key to learn which you like.',
     auth: 'public',
-    query: [
-      { name: 'q', required: false, description: 'Search terms (title, description, tags).' },
-      { name: 'category', required: false, description: 'One category id.' },
-      { name: 'tag', required: false, description: 'One tag.' },
-      { name: 'sort', required: false, description: '`new` (default), `loved` or `copied`.' },
-      { name: 'offset', required: false, description: 'From `nextOffset`.' },
-    ],
+    query: [...COMMUNITY_QUERY],
     responseSchema: ref('CommunityListResponse'),
     statuses: [200, 400],
   },
@@ -1214,6 +1223,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     summary:
       "My Shares: the signed-in author's own posts (hidden ones included) under the same search words, with their totals.",
     auth: 'clerk',
+    query: [...COMMUNITY_QUERY],
     responseSchema: ref('CommunityMineResponse'),
     statuses: [200, 400, 401],
   },

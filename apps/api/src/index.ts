@@ -37,6 +37,7 @@ import { CORS_HEADERS, forbidden, json, notFound, payloadTooLarge, rateLimited }
 import { insertTelemetryEvents } from './db/telemetry';
 import { deleteOldDocumentOpens } from './db/document-opens';
 import { clientIp } from './client-ip';
+import { communityNetwork } from './community-network';
 import { MAX_BODY_BYTES, MAX_IMAGE_BYTES } from './limits';
 import { handleAccount } from './routes/account';
 import { handleAiReadNotes } from './routes/ai-read-notes';
@@ -270,7 +271,10 @@ async function routeApiRequest(
   // network instead: their callers are anonymous, so the owner key would be 'anonymous' for everyone.
   const isCommunityWrite = isWrite && segments[1] === 'community';
   if (isCommunityWrite && env.COMMUNITY_RATE_LIMITER) {
-    const ok = await env.COMMUNITY_RATE_LIMITER.limit({ key: `community:${clientIp(request)}` });
+    // Keyed by address range, not address: rotating addresses inside one range buys no extra writes.
+    const ok = await env.COMMUNITY_RATE_LIMITER.limit({
+      key: `community:${communityNetwork(clientIp(request))}`,
+    });
     if (!ok.success) return rateLimited();
   }
   if (isWrite && url.pathname !== '/api/events' && !isRoomTicketMint && !isCommunityWrite) {

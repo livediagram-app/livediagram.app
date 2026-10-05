@@ -1,8 +1,10 @@
 // Community posts against a real schema (docs/specs/025-community/blueprints/community.md §13): publish and Edit
 // Listing, what the public reads can and cannot see, filters, sorts, search, paging, facets, the cascades, likes,
 // copies, reports with automatic hiding, and the operator's decisions.
+import { COMMUNITY_COUNTED_PER_NETWORK } from '@livediagram/api-schema';
 import { beforeEach, describe, expect, it } from 'vitest';
 import {
+  COMMUNITY_MAX_OFFSET,
   COMMUNITY_PAGE_SIZE,
   EMPTY_COMMUNITY_QUERY,
   type CommunityListQuery,
@@ -98,7 +100,7 @@ describe('publishing', () => {
 
   it('updates the details and tags but keeps counts and the publish date', async () => {
     const postId = await publish('d1');
-    await setCommunityLike(db.env, postId, 'k1', true);
+    await setCommunityLike(db.env, postId, 'k1', true, null);
     await updateCommunityPost(db.env, postId, input({ title: 'Renamed', tags: ['gcp'] }), 5000);
     const row = await getCommunityPostForDocument(db.env, 'd1');
     expect(row).toMatchObject({
@@ -114,8 +116,8 @@ describe('publishing', () => {
 
   it('removing the post cascades its link, tags, likes, copies and reports', async () => {
     const postId = await publish('d1');
-    await setCommunityLike(db.env, postId, 'k1', true);
-    await recordCommunityCopy(db.env, postId, 'copier');
+    await setCommunityLike(db.env, postId, 'k1', true, null);
+    await recordCommunityCopy(db.env, postId, 'copier', null);
     await recordCommunityReport(db.env, postId, 'k1', 'n1', 'spam', null);
     const row = await getCommunityPostForDocument(db.env, 'd1');
     await deleteCommunityPost(db.env, row!.share_code);
@@ -203,10 +205,10 @@ describe('public reads', () => {
     const a = await publish('d1', { title: 'A' }, 1);
     const b = await publish('d2', { title: 'B' }, 2);
     await publish('d3', { title: 'C' }, 3);
-    await setCommunityLike(db.env, a, 'k1', true);
-    await setCommunityLike(db.env, a, 'k2', true);
-    await setCommunityLike(db.env, b, 'k1', true);
-    await recordCommunityCopy(db.env, b, 'p1');
+    await setCommunityLike(db.env, a, 'k1', true, null);
+    await setCommunityLike(db.env, a, 'k2', true, null);
+    await setCommunityLike(db.env, b, 'k1', true, null);
+    await recordCommunityCopy(db.env, b, 'p1', null);
     expect(await list()).toEqual(['C', 'B', 'A']);
     expect(await list({ sort: 'loved' })).toEqual(['A', 'B', 'C']);
     expect(await list({ sort: 'copied' })).toEqual(['B', 'C', 'A']);
@@ -224,6 +226,37 @@ describe('public reads', () => {
     });
     expect(second.rows).toHaveLength(2);
     expect(second.nextOffset).toBeNull();
+  });
+
+  it('stops paging at the deepest offset, rather than repeating the last page', async () => {
+    // More posts than COMMUNITY_MAX_OFFSET + a page, written straight to the tables.
+    const total = COMMUNITY_MAX_OFFSET + COMMUNITY_PAGE_SIZE + 5;
+    const doc = db.sql.prepare(
+      "INSERT INTO documents (id, owner_id, name, shareable, saved_at, created_at) VALUES (?, 'user_author', 'D', 0, 1, 1)",
+    );
+    const link = db.sql.prepare(
+      "INSERT INTO share_links (code, document_id, role, created_at, purpose) VALUES (?, ?, 'view', 1, 'community')",
+    );
+    const post = db.sql.prepare(
+      `INSERT INTO community_posts (id, document_id, share_code, author_id, title, description, category, search_text,
+         published_at, updated_at) VALUES (?, ?, ?, 'user_author', 'P', 'A post.', 'other', 'p', ?, ?)`,
+    );
+    for (let i = 0; i < total; i++) {
+      doc.run(`bulk${i}`);
+      link.run(`code${i}`, `bulk${i}`);
+      post.run(`post${i}`, `bulk${i}`, `code${i}`, i, i);
+    }
+    const deepest = await listCommunityPosts(db.env, {
+      ...EMPTY_COMMUNITY_QUERY,
+      offset: COMMUNITY_MAX_OFFSET,
+    });
+    expect(deepest.rows).toHaveLength(COMMUNITY_PAGE_SIZE);
+    expect(deepest.nextOffset).toBeNull();
+    const before = await listCommunityPosts(db.env, {
+      ...EMPTY_COMMUNITY_QUERY,
+      offset: COMMUNITY_MAX_OFFSET - COMMUNITY_PAGE_SIZE,
+    });
+    expect(before.nextOffset).toBe(COMMUNITY_MAX_OFFSET);
   });
 
   it('counts categories and popular tags', async () => {
@@ -245,7 +278,7 @@ describe('public reads', () => {
     const b = await publish('d2', { title: 'B' });
     const c = await publish('d3', { title: 'C' });
     await publish('d4', { title: 'D', category: 'art' });
-    await setCommunityLike(db.env, c, 'k1', true);
+    await setCommunityLike(db.env, c, 'k1', true, null);
     const related = await listRelatedCommunityPosts(db.env, a, 'architecture');
     expect(related.map((r) => r.id)).toEqual([c, b]);
   });
@@ -254,16 +287,32 @@ describe('public reads', () => {
 describe('likes and copies', () => {
   it('are idempotent per key and per copier', async () => {
     const postId = await publish('d1');
-    expect(await setCommunityLike(db.env, postId, 'k1', true)).toBe(1);
-    expect(await setCommunityLike(db.env, postId, 'k1', true)).toBe(1);
-    expect(await setCommunityLike(db.env, postId, 'k2', true)).toBe(2);
+    expect(await setCommunityLike(db.env, postId, 'k1', true, null)).toBe(1);
+    expect(await setCommunityLike(db.env, postId, 'k1', true, null)).toBe(1);
+    expect(await setCommunityLike(db.env, postId, 'k2', true, null)).toBe(2);
     expect([...(await likedPostIds(db.env, 'k1', [postId, 'other']))]).toEqual([postId]);
-    expect(await setCommunityLike(db.env, postId, 'k1', false)).toBe(1);
-    expect(await setCommunityLike(db.env, postId, 'k1', false)).toBe(1);
-    await recordCommunityCopy(db.env, postId, 'p1');
-    await recordCommunityCopy(db.env, postId, 'p1');
-    await recordCommunityCopy(db.env, postId, 'p2');
+    expect(await setCommunityLike(db.env, postId, 'k1', false, null)).toBe(1);
+    expect(await setCommunityLike(db.env, postId, 'k1', false, null)).toBe(1);
+    await recordCommunityCopy(db.env, postId, 'p1', null);
+    await recordCommunityCopy(db.env, postId, 'p1', null);
+    await recordCommunityCopy(db.env, postId, 'p2', null);
     expect((await getCommunityPostForDocument(db.env, 'd1'))!.copy_count).toBe(2);
+  });
+
+  it('count at most five from any one network, every like still remembered', async () => {
+    const postId = await publish('d1');
+    let count = 0;
+    for (let i = 0; i < 8; i++) {
+      count = await setCommunityLike(db.env, postId, `office${i}`, true, 'net-office');
+    }
+    expect(count).toBe(COMMUNITY_COUNTED_PER_NETWORK);
+    expect(await setCommunityLike(db.env, postId, 'home', true, 'net-home')).toBe(6);
+    // The eighth office browser still sees its own heart.
+    expect([...(await likedPostIds(db.env, 'office7', [postId]))]).toEqual([postId]);
+    for (let i = 0; i < 7; i++)
+      await recordCommunityCopy(db.env, postId, `copier${i}`, 'net-office');
+    await recordCommunityCopy(db.env, postId, 'solo', null);
+    expect((await getCommunityPostForDocument(db.env, 'd1'))!.copy_count).toBe(6);
   });
 
   it('likedPostIds is empty without a key', async () => {
@@ -365,13 +414,27 @@ describe('featured on the home page', () => {
     const quiet = await publish('d3', { title: 'Quiet' }, 3);
     // Old favourite: many likes, all long ago.
     for (const k of ['k1', 'k2', 'k3'])
-      await setCommunityLike(db.env, old, k, true, NOW - 200 * DAY);
+      await setCommunityLike(db.env, old, k, true, null, NOW - 200 * DAY);
     // Fresh hit: two recent likes.
-    for (const k of ['k4', 'k5']) await setCommunityLike(db.env, fresh, k, true, NOW - 5 * DAY);
+    for (const k of ['k4', 'k5'])
+      await setCommunityLike(db.env, fresh, k, true, null, NOW - 5 * DAY);
     const titles = (await listFeaturedCommunityPosts(db.env, NOW)).map((r) => r.title);
     expect(titles[0]).toBe('Fresh hit');
     expect(titles).toEqual(['Fresh hit', 'Old favourite', 'Quiet']);
     void quiet;
+  });
+
+  it('counts no more than five likes from one network toward the ranking', async () => {
+    const crowd = await publish('d1', { title: 'One network' }, 1);
+    const spread = await publish('d2', { title: 'Many networks' }, 2);
+    for (let i = 0; i < 20; i++) {
+      await setCommunityLike(db.env, crowd, `k${i}`, true, 'net-one', NOW - DAY);
+    }
+    for (let i = 0; i < 6; i++) {
+      await setCommunityLike(db.env, spread, `s${i}`, true, `net-${i}`, NOW - DAY);
+    }
+    const titles = (await listFeaturedCommunityPosts(db.env, NOW)).map((r) => r.title);
+    expect(titles.slice(0, 2)).toEqual(['Many networks', 'One network']);
   });
 
   it('is at most six, and only public posts', async () => {

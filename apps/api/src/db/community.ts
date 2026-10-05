@@ -4,8 +4,10 @@
 
 import {
   type CommunityMineTotals,
+  COMMUNITY_COUNTED_PER_NETWORK,
   COMMUNITY_FEATURED_COUNT,
   COMMUNITY_FEATURED_WINDOW_MS,
+  COMMUNITY_MAX_OFFSET,
   COMMUNITY_PAGE_SIZE,
   COMMUNITY_POPULAR_TAGS,
   COMMUNITY_RELATED_POSTS,
@@ -27,9 +29,13 @@ import {
 import type { Env } from '../types';
 import { generateShareCode } from './share';
 
-// G4: what every public read sees. A hidden post, a post whose document sits in the Trash, and one whose document
-// has since moved into a team library (team documents cannot be published) are all invisible.
-export const PUBLIC_POST = "cp.state = 'listed' AND d.trashed_at IS NULL AND d.team_id IS NULL";
+// G4: what every public read sees, and the one test every community link passes through (communityLinkAccess).
+// Invisible, and the link closed, for: a hidden post; a document in the Trash; one moved into a team library (team
+// documents cannot be published); one that now belongs to someone other than the post's author (moved out of a team
+// by another member), whose post that person never published; and one with a share password (a public post cannot
+// ask for one, and a password set while the Community was switched off must not come back public).
+export const PUBLIC_POST = `cp.state = 'listed' AND d.trashed_at IS NULL AND d.team_id IS NULL
+  AND d.owner_id = cp.author_id AND d.share_password IS NULL`;
 
 // The post a document has, in any state, trashed or not: the owner's view of it.
 export async function getCommunityPostForDocument(
@@ -194,8 +200,9 @@ const ORDER_BY: Record<CommunityListQuery['sort'], string> = {
   copied: 'cp.copy_count DESC, cp.published_at DESC, cp.id',
 };
 
-// An author's own posts, whatever their state (My Shares).
-const OWN_POST = 'cp.author_id = ? AND d.trashed_at IS NULL';
+// An author's own posts, whatever their state (My Shares): not a trashed document's, and not one whose document now
+// belongs to someone else.
+const OWN_POST = 'cp.author_id = ? AND d.owner_id = cp.author_id AND d.trashed_at IS NULL';
 
 // How popular an author's posts are altogether (My Shares), over every post they have, whatever the filter.
 export async function communityMineTotals(
@@ -250,7 +257,12 @@ export async function listCommunityPosts(
   const more = rows.length > COMMUNITY_PAGE_SIZE;
   return {
     rows: more ? rows.slice(0, COMMUNITY_PAGE_SIZE) : rows,
-    nextOffset: more ? query.offset + COMMUNITY_PAGE_SIZE : null,
+    // No page past the deepest offset a query may ask for: it would be clamped back to this one, and Load More
+    // would append the same page forever.
+    nextOffset:
+      more && query.offset + COMMUNITY_PAGE_SIZE <= COMMUNITY_MAX_OFFSET
+        ? query.offset + COMMUNITY_PAGE_SIZE
+        : null,
   };
 }
 
@@ -304,15 +316,26 @@ export async function listFeaturedCommunityPosts(
   env: Env,
   now: number = Date.now(),
 ): Promise<CommunityPostRow[]> {
+  // The window's likes in one pass over the created_at index (migration 0070), grouped by post and network and
+  // capped per network like the like count itself, so one network cannot buy a place on the home page.
   const recent = await env.DB.prepare(
-    `SELECT ${COMMUNITY_POST_COLS},
-            (SELECT COUNT(*) FROM community_likes l WHERE l.post_id = cp.id AND l.created_at >= ?) AS recent_likes
-       FROM ${COMMUNITY_POST_FROM}
-      WHERE ${PUBLIC_POST} AND recent_likes > 0
-      ORDER BY recent_likes DESC, cp.like_count DESC, cp.published_at DESC
+    `WITH recent AS (
+       SELECT post_id, SUM(MIN(n, ?)) AS recent_likes FROM (
+         SELECT post_id, COUNT(*) AS n FROM community_likes
+          WHERE created_at >= ?
+          GROUP BY post_id, COALESCE(network_hash, liker_key))
+        GROUP BY post_id)
+     SELECT ${COMMUNITY_POST_COLS}
+       FROM recent JOIN ${COMMUNITY_POST_FROM.replace('community_posts cp', 'community_posts cp ON cp.id = recent.post_id')}
+      WHERE ${PUBLIC_POST}
+      ORDER BY recent.recent_likes DESC, cp.like_count DESC, cp.published_at DESC
       LIMIT ?`,
   )
-    .bind(now - COMMUNITY_FEATURED_WINDOW_MS, COMMUNITY_FEATURED_COUNT)
+    .bind(
+      COMMUNITY_COUNTED_PER_NETWORK,
+      now - COMMUNITY_FEATURED_WINDOW_MS,
+      COMMUNITY_FEATURED_COUNT,
+    )
     .all<CommunityPostRow>();
   const rows = recent.results ?? [];
   if (rows.length >= COMMUNITY_FEATURED_COUNT) return rows;

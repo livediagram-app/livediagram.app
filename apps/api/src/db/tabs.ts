@@ -119,6 +119,20 @@ export async function getTabBody(
   return row ? { id: row.id, data: row.data, elementCount: row.element_count ?? null } : null;
 }
 
+// How many elements the document's first tab holds: its stored count, or a parse of its body while the count is
+// not yet known (migration 0059). Zero with no tab or an unreadable body. Needs no snapshot store, unlike a render.
+export async function firstTabElementCount(env: Env, documentId: string): Promise<number> {
+  const body = await getTabBody(env, documentId);
+  if (!body) return 0;
+  if (body.elementCount !== null) return body.elementCount;
+  try {
+    const parsed = JSON.parse(body.data) as { elements?: unknown };
+    return Array.isArray(parsed.elements) ? parsed.elements.length : 0;
+  } catch {
+    return 0;
+  }
+}
+
 // The lazy backfill (migration 0059): a reader that has parsed a body whose count is still unknown
 // records it. Only ever fills a null, so it can never undo a write's own count.
 export async function stampTabElementCount(env: Env, tabId: string, count: number): Promise<void> {

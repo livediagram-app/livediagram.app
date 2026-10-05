@@ -128,6 +128,9 @@ export const COMMUNITY_POSTS_PER_AUTHOR = 50;
 export const COMMUNITY_PAGE_SIZE = 24;
 export const COMMUNITY_MAX_OFFSET = 2400;
 export const COMMUNITY_AUTO_HIDE_REPORTERS = 3;
+// The most likes, and copies, one network adds to a post's counts (blueprint §7): enough for an office sharing one
+// address range, too few for one person rotating addresses to move the featured six.
+export const COMMUNITY_COUNTED_PER_NETWORK = 5;
 export const COMMUNITY_POPULAR_TAGS = 24;
 export const COMMUNITY_RELATED_POSTS = 6;
 export const COMMUNITY_SEARCH_TERMS_MAX = 5;

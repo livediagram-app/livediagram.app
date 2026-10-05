@@ -2,13 +2,34 @@
 // blueprint §3 and §5): likes keyed by the community key, distinct copiers, and reports with automatic hiding, the
 // only moderation there is. Counts are recomputed in the same batch as the row that changes them, so they cannot drift.
 
-import { COMMUNITY_AUTO_HIDE_REPORTERS, type CommunityReportReason } from '@livediagram/api-schema';
+import {
+  COMMUNITY_AUTO_HIDE_REPORTERS,
+  COMMUNITY_COUNTED_PER_NETWORK,
+  type CommunityReportReason,
+} from '@livediagram/api-schema';
+import { communityNetwork } from '../community-network';
 import type { Env } from '../types';
 
-const RECOUNT_LIKES =
-  'UPDATE community_posts SET like_count = (SELECT COUNT(*) FROM community_likes WHERE post_id = ?1) WHERE id = ?1';
-const RECOUNT_COPIES =
-  'UPDATE community_posts SET copy_count = (SELECT COUNT(*) FROM community_copies WHERE post_id = ?1) WHERE id = ?1';
+// A post's like or copy count (blueprint §7): every row counts, but no network adds more than
+// COMMUNITY_COUNTED_PER_NETWORK. A row from before networks were recorded (migration 0070) is its own network.
+// `postIdSql` is the post id to count for: a bound parameter, or a column of the row being updated.
+function cappedCountSql(
+  table: 'community_likes' | 'community_copies',
+  who: string,
+  postIdSql: string,
+): string {
+  return `(SELECT COALESCE(SUM(MIN(n, ${COMMUNITY_COUNTED_PER_NETWORK})), 0) FROM (
+            SELECT COUNT(*) AS n FROM ${table} WHERE post_id = ${postIdSql}
+             GROUP BY COALESCE(network_hash, ${who})))`;
+}
+
+export const LIKE_COUNT_SQL = (postIdSql: string) =>
+  cappedCountSql('community_likes', 'liker_key', postIdSql);
+export const COPY_COUNT_SQL = (postIdSql: string) =>
+  cappedCountSql('community_copies', 'copier_id', postIdSql);
+
+const RECOUNT_LIKES = `UPDATE community_posts SET like_count = ${LIKE_COUNT_SQL('?1')} WHERE id = ?1`;
+const RECOUNT_COPIES = `UPDATE community_posts SET copy_count = ${COPY_COUNT_SQL('?1')} WHERE id = ?1`;
 
 // Which of `postIds` this community key likes. One query for a whole page of cards.
 export async function likedPostIds(
@@ -25,18 +46,20 @@ export async function likedPostIds(
   return new Set((result.results ?? []).map((r) => r.post_id));
 }
 
-// Like or unlike, idempotently. Returns the post's like count after the change.
+// Like or unlike, idempotently, from the network `networkHash` names (communityNetworkHash). Returns the post's
+// like count after the change.
 export async function setCommunityLike(
   env: Env,
   postId: string,
   likerKey: string,
   liked: boolean,
+  networkHash: string | null,
   now: number = Date.now(),
 ): Promise<number> {
   const change = liked
     ? env.DB.prepare(
-        'INSERT OR IGNORE INTO community_likes (post_id, liker_key, created_at) VALUES (?, ?, ?)',
-      ).bind(postId, likerKey, now)
+        'INSERT OR IGNORE INTO community_likes (post_id, liker_key, created_at, network_hash) VALUES (?, ?, ?, ?)',
+      ).bind(postId, likerKey, now, networkHash)
     : env.DB.prepare('DELETE FROM community_likes WHERE post_id = ? AND liker_key = ?').bind(
         postId,
         likerKey,
@@ -48,17 +71,19 @@ export async function setCommunityLike(
   return row?.like_count ?? 0;
 }
 
-// A copy taken through a community link. Each person counts once however often they copy.
+// A copy taken through a community link, from the network `networkHash` names. Each person counts once however
+// often they copy, and one network adds at most COMMUNITY_COUNTED_PER_NETWORK.
 export async function recordCommunityCopy(
   env: Env,
   postId: string,
   copierId: string,
+  networkHash: string | null,
   now: number = Date.now(),
 ): Promise<void> {
   await env.DB.batch([
     env.DB.prepare(
-      'INSERT OR IGNORE INTO community_copies (post_id, copier_id, created_at) VALUES (?, ?, ?)',
-    ).bind(postId, copierId, now),
+      'INSERT OR IGNORE INTO community_copies (post_id, copier_id, created_at, network_hash) VALUES (?, ?, ?, ?)',
+    ).bind(postId, copierId, now, networkHash),
     env.DB.prepare(RECOUNT_COPIES).bind(postId),
   ]);
 }
@@ -92,10 +117,11 @@ export async function recordCommunityReport(
   return (hidden.meta?.changes ?? 0) > 0;
 }
 
-// The network a report came from, as a one-way hash salted with the post id (blueprint §7): distinct networks can
-// be counted per post, and nothing can be compared across posts.
+// The network a like, copy or report came from, as a one-way hash of its address range (communityNetwork) salted
+// with the post id (blueprint §7): distinct networks can be counted per post, and nothing can be compared across
+// posts.
 export async function communityNetworkHash(postId: string, ip: string): Promise<string> {
-  const bytes = new TextEncoder().encode(`${postId}:${ip}`);
+  const bytes = new TextEncoder().encode(`${postId}:${communityNetwork(ip)}`);
   const digest = new Uint8Array(await crypto.subtle.digest('SHA-256', bytes));
   return Array.from(digest.slice(0, 16), (b) => b.toString(16).padStart(2, '0')).join('');
 }

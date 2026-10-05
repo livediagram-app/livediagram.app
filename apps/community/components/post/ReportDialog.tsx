@@ -16,7 +16,7 @@ type Phase = 'editing' | 'sending' | 'sent' | 'failed' | 'gone';
 
 // Report This Document (docs/specs/025-community/community.md "Reports and moderation"; blueprint §9,
 // §10): a reason as radio rows, an optional note of up to 300 characters with a counter, Send Report,
-// then "Thanks. We'll take a look." A modal that traps focus, closes on Escape or the backdrop, and
+// then a thank-you that says what happens next (enough reports take a post down; nobody reviews by hand). A modal that traps focus, closes on Escape or the backdrop, and
 // hands focus back to Report when it closes.
 export function ReportDialog({ postId, onClose }: { postId: string; onClose: () => void }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -79,7 +79,8 @@ export function ReportDialog({ postId, onClose }: { postId: string; onClose: () 
         {phase === 'sent' ? (
           <div className="flex flex-col gap-5">
             <p role="status" className="text-sm text-slate-600 dark:text-slate-300">
-              Thanks. We&apos;ll take a look.
+              Thanks for letting us know. When enough people report a document, it is taken out of
+              the Community.
             </p>
             <div className="flex justify-end">
               {/* The form it replaces held focus; keep it inside the dialog. */}

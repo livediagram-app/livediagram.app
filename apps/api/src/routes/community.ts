@@ -137,7 +137,8 @@ export async function handleCommunity(ctx: RouteContext): Promise<Response> {
 
     if (isLike) {
       const liked = method === 'PUT';
-      const likeCount = await setCommunityLike(env, row.id, key, liked);
+      const networkHash = await communityNetworkHash(row.id, clientIp(request));
+      const likeCount = await setCommunityLike(env, row.id, key, liked, networkHash);
       return json({ likeCount, liked });
     }
 

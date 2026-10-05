@@ -365,7 +365,7 @@ export async function deleteDocument(env: Env, id: string): Promise<void> {
   // deleted document doesn't leave an orphaned R2 object behind. Best
   // effort: a missing binding or a missing object is a no-op, and a
   // failure here must never fail the delete itself.
-  if (env.IMAGES) await env.IMAGES.delete(thumbnailKey(id)).catch(() => {});
+  if (env.IMAGES) await env.IMAGES.delete(snapshotKeys(id)).catch(() => {});
 }
 
 // R2 object key for a document's cached SVG snapshot (docs/specs/006-document/document-snapshots.md). Shared by
@@ -373,6 +373,17 @@ export async function deleteDocument(env: Env, id: string): Promise<void> {
 // so the key shape lives in exactly one place.
 export function thumbnailKey(documentId: string): string {
   return `thumb/${documentId}`;
+}
+
+// The Community's own snapshot (docs/specs/025-community/community.md "Viewing a post's document"): drawn from the
+// redacted tab (no comments, no people), so the public card image never serves the owner's snapshot.
+export function communityThumbnailKey(documentId: string): string {
+  return `thumb-community/${documentId}`;
+}
+
+// Every cached snapshot a document can have, for the paths that delete it.
+export function snapshotKeys(documentId: string): string[] {
+  return [thumbnailKey(documentId), communityThumbnailKey(documentId)];
 }
 
 // When the cached snapshot was last rendered (docs/specs/006-document/document-snapshots.md), or null when it

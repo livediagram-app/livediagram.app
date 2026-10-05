@@ -56,7 +56,7 @@ export function GalleryView() {
         </div>
       </div>
 
-      <section aria-label={mine ? 'Your Shares' : 'Documents'}>
+      <section aria-label={mine ? 'My Shares' : 'Documents'}>
         {mine && gallery.totals && gallery.totals.posts > 0 ? (
           <MineSummary totals={gallery.totals} />
         ) : null}
