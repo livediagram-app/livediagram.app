@@ -4,7 +4,8 @@
 // under a document id lives here.
 
 import { broadcastShareOp } from '../room-client';
-import { redactCommentAuthorIds, stripCommentThreads } from '../comments';
+import { redactCommentAuthorIds } from '../comments';
+import { redactElementsForCommunity } from '../community-redact';
 import {
   deleteShareLinksForTab,
   deleteTabRow,
@@ -37,6 +38,7 @@ import {
   ownsDocument,
   requireOwner,
   shareCodeOf,
+  COMMUNITY_CONTENT,
   type RouteContext,
   viaCommunityLink,
 } from './context';
@@ -96,7 +98,14 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
       // Naming the tab confines a tab-scoped link to its own tab
       // (docs/specs/013-workspace/tab-scoped-share-links.md). Every other tab reads as missing: 404, no
       // existence leak.
-      const allowed = await gateRead(ctx, id, existing.ownerId, existing.teamId, tabId);
+      const allowed = await gateRead(
+        ctx,
+        id,
+        existing.ownerId,
+        existing.teamId,
+        tabId,
+        COMMUNITY_CONTENT,
+      );
       if (!allowed) return deniedOnTab(ctx, existing);
       const tab = await getTab(env, id, tabId);
       if (!tab) return notFound();
@@ -106,14 +115,16 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
       // id. The document owner sees everything (viewerId === ownerId is a
       // no-op). Same anti-claim posture as redactOwner on the document.
       //
-      // A Community visitor gets no comments at all (docs/specs/025-community/community.md).
+      // A Community visitor gets the board without its conversation or its people
+      // (docs/specs/025-community/community.md, community-redact.ts).
+      const communityVisit = owner !== existing.ownerId && (await viaCommunityLink(ctx));
       const safe =
         owner === existing.ownerId
           ? tab
           : {
               ...tab,
-              elements: (await viaCommunityLink(ctx))
-                ? stripCommentThreads(tab.elements)
+              elements: communityVisit
+                ? redactElementsForCommunity(tab.elements)
                 : redactCommentAuthorIds(tab.elements, owner),
             };
       if (view) return answerTabView(ctx, view, existing, safe);
@@ -131,7 +142,10 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
       // "opened by a visitor · Someone with the share link" and files under the
       // sharing filter, so an owner saw that for a document they had never
       // shared a link for, once per teammate per day.
-      if (owner !== existing.ownerId && shareCodeOf(request) !== null) {
+      //
+      // Not for a Community visit (docs/specs/025-community/community.md): a public post is opened by
+      // strangers, whose names do not belong in the author's feed.
+      if (owner !== existing.ownerId && shareCodeOf(request) !== null && !communityVisit) {
         ctx.waitUntil?.(
           getParticipant(env, owner).then((p) =>
             recordVisitorOpened(env, existing, owner, p?.name ?? null),

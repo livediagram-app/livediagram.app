@@ -179,16 +179,6 @@ export function redactCommentAuthorIds(elements: Element[], viewerId: string | n
   });
 }
 
-// A Community visitor reads the board, not its conversation (docs/specs/025-community/community.md): every
-// element's comment thread is dropped before the tab leaves the worker.
-export function stripCommentThreads(elements: Element[]): Element[] {
-  return elements.map((el) => {
-    if (!(el as { commentThread?: unknown }).commentThread) return el;
-    const { commentThread: _dropped, ...rest } = el as Element & { commentThread?: unknown };
-    return rest as Element;
-  });
-}
-
 // docs/specs/014-identity/transactional-email.md (#1): true when `nextElements` adds at least one comment id not in
 // `prevElements`. Used by the tab-autosave handler to fire the "someone
 // commented on your document" notification only when a genuinely new comment

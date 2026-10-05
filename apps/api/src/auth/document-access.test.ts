@@ -26,7 +26,12 @@ vi.mock('../db', () => ({
   getDocumentSharePassword: (env: Env, id: string) => getSharePasswordMock(env, id),
   getMembership: (env: Env, teamId: string, userId: string) =>
     getMembershipMock(env, teamId, userId),
+  getCommunityPostByShareCode: (env: Env, code: string) => getCommunityPostMock(env, code),
 }));
+// A Community post's state, for the community-link cases (docs/specs/025-community/community.md).
+const getCommunityPostMock = vi.fn<(env: Env, code: string) => Promise<{ state: string } | null>>(
+  async () => ({ state: 'listed' }),
+);
 
 // Import AFTER the mock declaration so the helpers pick up the
 // stubbed `getShareLink`. The helpers themselves don't care about
@@ -502,6 +507,66 @@ describe('resolveDocumentGrant', () => {
       shareCode: 'SCOPED23',
       community: false,
     });
+  });
+
+  it("opens a hidden post's link to nobody but an operator", async () => {
+    const community = {
+      code: 'POSTLINK',
+      role: 'view' as const,
+      documentId: 'diag-1',
+      createdAt: 0,
+      expiry: 'never' as const,
+      expiresAt: null,
+      purpose: 'community' as const,
+      tabId: null,
+    };
+    getShareLinkMock.mockResolvedValue(community);
+    getCommunityPostMock.mockResolvedValueOnce({ state: 'hidden' });
+    expect(await grant(null, 'POSTLINK')).toBeNull();
+    getCommunityPostMock.mockResolvedValueOnce({ state: 'hidden' });
+    const operatorEnv = { ...FAKE_ENV, COMMUNITY_OPERATOR_IDS: 'user_op' } as Env;
+    expect(
+      await resolveDocumentGrant(
+        operatorEnv,
+        'diag-1',
+        null,
+        'POSTLINK',
+        'owner-a',
+        null,
+        null,
+        'user_op',
+      ),
+    ).toMatchObject({ community: true });
+    getCommunityPostMock.mockResolvedValueOnce(null);
+    expect(await grant(null, 'POSTLINK')).toBeNull();
+  });
+
+  it('lets a Community link read only through a door that serves one', async () => {
+    getShareLinkMock.mockResolvedValue({
+      code: 'POSTLINK',
+      role: 'view',
+      documentId: 'diag-1',
+      createdAt: 0,
+      expiry: 'never',
+      expiresAt: null,
+      purpose: 'community',
+      tabId: null,
+    });
+    expect(await canReadDocument(FAKE_ENV, 'diag-1', null, 'POSTLINK', 'owner-a')).toBe(false);
+    expect(
+      await canReadDocument(
+        FAKE_ENV,
+        'diag-1',
+        null,
+        'POSTLINK',
+        'owner-a',
+        null,
+        null,
+        null,
+        undefined,
+        true,
+      ),
+    ).toBe(true);
   });
 
   it("marks a Community post's link as a community grant (docs/specs/025-community/community.md)", async () => {

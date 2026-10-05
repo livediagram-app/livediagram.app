@@ -30,6 +30,7 @@ import {
   setCommunityLike,
 } from './community-engagement';
 import { listShareLinks, getShareLink } from './share';
+import { copyDocument } from './documents';
 
 let db: SqliteD1;
 
@@ -297,5 +298,64 @@ describe('reports and moderation', () => {
     expect(a).toMatch(/^[0-9a-f]{32}$/);
     expect(await communityNetworkHash('p1', '203.0.113.7')).toBe(a);
     expect(await communityNetworkHash('p2', '203.0.113.7')).not.toBe(a);
+  });
+});
+
+describe('a copy through a Community link', () => {
+  it('carries the board without its comments or the people on its actions', async () => {
+    addDocument('d1');
+    const tab = {
+      elements: [
+        {
+          id: 'e1',
+          type: 'shape',
+          commentThread: {
+            comments: [{ id: 'c1', text: 'private note', authorId: 'user_author' }],
+          },
+          action: {
+            id: 'a1',
+            name: 'Follow up',
+            description: '',
+            assignee: { userId: 'user_jane', name: 'Jane' },
+            teamId: null,
+            assignerId: 'user_author',
+            assignerName: 'Ada',
+            status: 'open',
+            createdAt: 1,
+            updatedAt: 1,
+          },
+        },
+      ],
+    };
+    db.sql
+      .prepare("INSERT INTO tabs (id, name, data, updated_at) VALUES ('t1', 'Tab', ?, 1)")
+      .run(JSON.stringify(tab));
+    db.sql
+      .prepare(
+        "INSERT INTO document_tabs (document_id, tab_id, order_index, added_at) VALUES ('d1', 't1', 0, 1)",
+      )
+      .run();
+
+    await copyDocument(db.env, 'd1', 'copy-1', 'guest-copier', 'Copy', null, true);
+    const copied = db.sql
+      .prepare(
+        "SELECT t.data FROM document_tabs dt JOIN tabs t ON t.id = dt.tab_id WHERE dt.document_id = 'copy-1'",
+      )
+      .get() as { data: string };
+    expect(copied.data).toContain('Follow up');
+    for (const s of ['private note', 'user_jane', 'Jane', 'Ada', 'commentThread']) {
+      expect(copied.data).not.toContain(s);
+    }
+    // Nothing private reaches the copier's activity index either.
+    expect(db.sql.prepare('SELECT COUNT(*) AS n FROM collab_threads').get()).toEqual({ n: 0 });
+
+    // An ordinary copy is unchanged.
+    await copyDocument(db.env, 'd1', 'copy-2', 'user_author', 'Copy', null);
+    const plain = db.sql
+      .prepare(
+        "SELECT t.data FROM document_tabs dt JOIN tabs t ON t.id = dt.tab_id WHERE dt.document_id = 'copy-2'",
+      )
+      .get() as { data: string };
+    expect(plain.data).toContain('private note');
   });
 });

@@ -334,6 +334,21 @@ describe('the community link', () => {
     expect(review.status).toBe(200);
   });
 
+  it("stops serving a hidden post's image, except to an operator", async () => {
+    const post = await publish();
+    const image = (clerk: string | null = null) =>
+      handleShare(
+        makeTestRouteContext('GET', `/api/share/${post.shareCode}/image.svg`, {
+          env,
+          clerkUserId: clerk,
+        }),
+      );
+    expect((await image()).status).toBe(200);
+    db.sql.prepare("UPDATE community_posts SET state = 'hidden'").run();
+    expect((await image()).status).toBe(404);
+    expect((await image('user_op')).status).toBe(200);
+  });
+
   it('is not listed for the owner, survives revoke-all, and cannot be revoked by code', async () => {
     const post = await publish();
     const list = await (await handleDocumentShareRoutes(

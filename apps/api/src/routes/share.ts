@@ -136,6 +136,14 @@ async function handleShareImage(ctx: RouteContext, code: string): Promise<Respon
   const { env, request } = ctx;
   const link = await getShareLink(env, code);
   if (!link) return notFound();
+  // A hidden Community post's image is gone with it, except to an operator reviewing it
+  // (docs/specs/025-community/community.md "Reports and moderation").
+  if (link.purpose === 'community') {
+    const post = await getCommunityPostByShareCode(env, link.code);
+    if (!post || (post.state !== 'listed' && !isCommunityOperator(env, ctx.clerkUserId))) {
+      return notFound();
+    }
+  }
   const d = await getDocument(env, link.documentId);
   if (!d) return missingSharedDocument(env, link.documentId);
   if (await getDocumentSharePassword(env, d.id)) return notFound();

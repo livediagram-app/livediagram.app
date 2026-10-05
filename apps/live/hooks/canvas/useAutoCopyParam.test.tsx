@@ -28,24 +28,31 @@ describe('useAutoCopyParam', () => {
     window.history.replaceState(null, '', '/document/shared?s=abc&copy=1');
     const makeCopy = vi.fn();
     const { rerender } = renderHook((props) => useAutoCopyParam(props), {
-      initialProps: { hydrated: false, sessionShareCode: null as string | null, makeCopy },
+      initialProps: {
+        hydrated: false,
+        sessionShareCode: null as string | null,
+        community: true,
+        makeCopy,
+      },
     });
     expect(makeCopy).not.toHaveBeenCalled();
     expect(window.location.search).toBe('?s=abc&copy=1');
 
-    rerender({ hydrated: true, sessionShareCode: 'abc', makeCopy });
+    rerender({ hydrated: true, sessionShareCode: 'abc', community: true, makeCopy });
     expect(makeCopy).toHaveBeenCalledTimes(1);
     expect(window.location.search).toBe('?s=abc');
 
     // A later render (a new makeCopy identity, say) never copies again.
-    rerender({ hydrated: true, sessionShareCode: 'abc', makeCopy: vi.fn() });
+    rerender({ hydrated: true, sessionShareCode: 'abc', community: true, makeCopy: vi.fn() });
     expect(makeCopy).toHaveBeenCalledTimes(1);
   });
 
   it('only strips the parameter for an owner, who has nothing to copy', () => {
     window.history.replaceState(null, '', '/document/shared?s=abc&copy=1');
     const makeCopy = vi.fn();
-    renderHook(() => useAutoCopyParam({ hydrated: true, sessionShareCode: null, makeCopy }));
+    renderHook(() =>
+      useAutoCopyParam({ hydrated: true, sessionShareCode: null, community: true, makeCopy }),
+    );
     expect(makeCopy).not.toHaveBeenCalled();
     expect(window.location.search).toBe('?s=abc');
   });
@@ -53,7 +60,19 @@ describe('useAutoCopyParam', () => {
   it('does nothing without the parameter', () => {
     window.history.replaceState(null, '', '/document/shared?s=abc');
     const makeCopy = vi.fn();
-    renderHook(() => useAutoCopyParam({ hydrated: true, sessionShareCode: 'abc', makeCopy }));
+    renderHook(() =>
+      useAutoCopyParam({ hydrated: true, sessionShareCode: 'abc', community: true, makeCopy }),
+    );
     expect(makeCopy).not.toHaveBeenCalled();
+  });
+
+  it('never copies through a share link that is not a Community post (a crafted ?copy=1)', () => {
+    window.history.replaceState(null, '', '/document/shared?s=abc&copy=1');
+    const makeCopy = vi.fn();
+    renderHook(() =>
+      useAutoCopyParam({ hydrated: true, sessionShareCode: 'abc', community: false, makeCopy }),
+    );
+    expect(makeCopy).not.toHaveBeenCalled();
+    expect(window.location.search).toBe('?s=abc');
   });
 });

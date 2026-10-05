@@ -49,7 +49,6 @@ import {
   missingDocument,
   requireOwner,
   type RouteContext,
-  viaCommunityLink,
 } from './context';
 
 type ThreadVerb = 'reply' | 'resolve' | 'reopen';
@@ -299,10 +298,6 @@ async function listThreads(ctx: RouteContext, id: string): Promise<Response> {
   if (!isCommentListStatus(status)) return json({ error: 'invalid_status' }, { status: 400 });
   const doc = await getDocument(ctx.env, id);
   if (!doc) return missingDocument(ctx, id);
-  // A Community post's link reads the board, never its conversation (docs/specs/025-community/community.md).
-  if (ctx.resolveOwner() !== doc.ownerId && (await viaCommunityLink(ctx))) {
-    return forbidden('community_link');
-  }
   const whole = await gateRead(ctx, id, doc.ownerId, doc.teamId);
   const viewer = ctx.resolveOwner();
   const threads: DocumentCommentThread[] = [];

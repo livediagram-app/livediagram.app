@@ -271,6 +271,20 @@ Community app (`apps/community`):
 
 ## 7. Security and trust
 
+- Content-only pass: `resolveDocumentGrant` marks a community grant; `canReadDocument` and `gateGrant`
+  (`apps/api/src/routes/context.ts`) refuse it unless the door passes `COMMUNITY_CONTENT`. Doors that pass it: the
+  document GET (and its views), the tab GET (and its views), the thumbnail, images, copy and the room ticket (which
+  then refuses with 403 `community_link`). Every other door (comments, comment pictures, changesets, timeline, Q&A
+  board, and any new one) refuses by default.
+- `redactElementsForCommunity` / `redactTabDataForCommunity` (`apps/api/src/community-redact.ts`): comment threads
+  dropped; each action keeps its text and status, its assignee, team, assigner id and assigner name blanked. Applied
+  to the tab GET for a community visit and to `copyDocument(..., redactForCommunity)`, which rebuilds the copy's
+  activity index from the redacted data instead of copying the source's rows.
+- No `recordVisitorOpened` / `recordVisitorCopied` for a community visit or copy.
+- A hidden post's link: `resolveDocumentGrant` and the live image route answer nothing unless the caller is an
+  operator.
+- `?copy=1` (`useAutoCopyParam`) copies only when the session came in through a community link.
+
 - Trust boundary: the Community app is a public, unauthenticated surface. It never sends `X-Owner-Id`; the community
   key grants nothing but a like and a report.
 - Publishing requires a verified Clerk identity (G1), so every public post is tied to an account.

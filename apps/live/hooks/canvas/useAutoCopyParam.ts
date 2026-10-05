@@ -25,9 +25,13 @@ export function useAutoCopyParam(opts: {
   hydrated: boolean;
   // The code the visitor came in on; null for an owner.
   sessionShareCode: string | null;
+  // Whether that code is a Community post's link. Only the Community's Make a Copy carries `?copy=1`,
+  // so on any other share link the parameter is dropped without copying: a crafted link must not be able
+  // to copy someone else's document into a visitor's account the moment they open it.
+  community: boolean;
   makeCopy: () => void | Promise<void>;
 }): void {
-  const { hydrated, sessionShareCode, makeCopy } = opts;
+  const { hydrated, sessionShareCode, community, makeCopy } = opts;
   const done = useRef(false);
   const copy = useEffectEvent(() => void makeCopy());
 
@@ -40,6 +44,6 @@ export function useAutoCopyParam(opts: {
       '',
       withoutAutoCopyParam(window.location.href),
     );
-    if (sessionShareCode) copy();
-  }, [hydrated, sessionShareCode]);
+    if (sessionShareCode && community) copy();
+  }, [hydrated, sessionShareCode, community]);
 }

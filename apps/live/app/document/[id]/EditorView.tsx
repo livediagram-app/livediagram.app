@@ -177,7 +177,12 @@ export function EditorView() {
     sessionCommunity,
   } = ctx;
   // `?copy=1` from the Community's Make a Copy (docs/specs/025-community/community.md).
-  useAutoCopyParam({ hydrated, sessionShareCode, makeCopy });
+  useAutoCopyParam({
+    hydrated,
+    sessionShareCode,
+    community: sessionCommunity !== null,
+    makeCopy,
+  });
   // Minimal chrome (docs/specs/007-editor/power-user-mode.md): one flag, read by every chrome surface.
   const minimalChrome = isMinimalChrome(userPreferences);
   // UI scale (docs/specs/007-editor/ui-scale.md): desktop only, so a phone resolves to 1.

@@ -133,14 +133,21 @@ ordinary view link in exactly these ways:
   see the latest saved state on load.
 - Visitors are not asked their name, are not added to "Shared with you", and the author is not emailed that someone
   joined.
-- Comments are not readable through it.
+- It is a **content-only pass**: it reads the document, its tabs and images, and copies it. Nothing else a view link
+  can reach answers it: not comments or their authors' pictures, not the document's timeline, not agent changeset
+  history, not the Q&A board, and not any door added later (it fails closed). Comment threads are left out of the
+  tabs it reads, and assigned actions keep their text and status but not who they are assigned to or by.
+- Visits and copies through it are not recorded in the author's timeline (the copy count stands in for copies).
+- While the post is hidden the link grants nothing, its image included, except to an operator reviewing it.
 - The viewer shows a slim **Community bar**: "Shared to the Community by <author>", **Back to Community** and **Make a
   Copy**.
 - It is read-only for **everyone, the author included**: the post page's preview and Open Document never open the document
   for editing. The author's Community bar offers **Edit Your Document** (their own document) in place of Make a Copy.
 
 Making a copy works as for any view link ([Auth + guest access](../014-identity/auth-and-guest-access.md)), signed in or
-not. Each distinct person who copies a post's document counts once toward its copy count.
+not, and the copy carries exactly what the viewer shows: no comments, no people on its actions. Each distinct person
+who copies a post's document counts once toward its copy count. The post page's Make a Copy opens the viewer with
+`?copy=1`; that parameter copies only through a Community link, never through any other share link.
 
 A share password ([Share password](../013-workspace/share-password.md)) and a post exclude each other: a document with a
 password cannot be published, and a published document cannot be given a password (the Share dialog explains why).

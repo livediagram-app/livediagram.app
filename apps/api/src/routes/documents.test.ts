@@ -742,7 +742,7 @@ describe('a tab-scoped visitor', () => {
     canReadDocument.mockResolvedValue(true);
     db.getTab.mockResolvedValue({ id: 't2', name: 'Roadmap', elements: [] });
     await handleDocuments(makeCtx('GET', '/api/documents/d1/tabs/t2', visitor));
-    expect(canReadDocument.mock.calls.at(-1)?.at(-1)).toBe('t2');
+    expect(canReadDocument.mock.calls.at(-1)?.at(8)).toBe('t2');
     canEditDocument.mockResolvedValue(true);
     await handleDocuments(makeCtx('PUT', '/api/documents/d1/tabs/t2', { ...visitor, body: {} }));
     expect(canEditDocument.mock.calls.at(-1)?.at(-1)).toBe('t2');
@@ -761,7 +761,7 @@ describe('a tab-scoped visitor', () => {
       makeCtx('POST', '/api/documents/d1/copy', { ...visitor, body: {} }),
     );
     expect(res.status).toBe(201);
-    expect(db.copyDocument.mock.calls[0]?.at(-1)).toBe('t2');
+    expect(db.copyDocument.mock.calls[0]?.at(5)).toBe('t2');
   });
 
   it('copies its tab only through its Shared-with-you row too', async () => {
@@ -772,7 +772,7 @@ describe('a tab-scoped visitor', () => {
       makeCtx('POST', '/api/documents/d1/copy', { owner: 'visitor-1', body: {} }),
     );
     expect(res.status).toBe(201);
-    expect(db.copyDocument.mock.calls[0]?.at(-1)).toBe('t2');
+    expect(db.copyDocument.mock.calls[0]?.at(5)).toBe('t2');
   });
 });
 

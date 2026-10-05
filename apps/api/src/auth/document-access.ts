@@ -26,7 +26,8 @@
 //   the image route applies (a share code for the document,
 //   regardless of role).
 
-import { getMembership } from '../db';
+import { getCommunityPostByShareCode, getMembership } from '../db';
+import { isCommunityOperator } from './community-operators';
 import type { Env, ShareRole } from '../types';
 import { isPersonalOwner, shareLinkForDocument, sharePasswordOk } from './share-access';
 
@@ -92,12 +93,28 @@ export async function resolveDocumentGrant(
   // short call sites fail CLOSED on a protected document rather than silently
   // bypassing the gate.
   if (!(await sharePasswordOk(env, documentId, sharePassword))) return null;
+  // A Community post's link opens its document only while the post is listed
+  // (docs/specs/025-community/community.md "Reports and moderation"): hiding a post revokes the link
+  // for everyone but an operator reviewing it.
+  if (link.purpose === 'community' && !(await communityLinkOpen(env, link.code, callerId))) {
+    return null;
+  }
   return {
     role: link.role,
     tabScope: link.tabId,
     shareCode: link.code,
     community: link.purpose === 'community',
   };
+}
+
+async function communityLinkOpen(
+  env: Env,
+  shareCode: string,
+  callerId: string | null,
+): Promise<boolean> {
+  const post = await getCommunityPostByShareCode(env, shareCode);
+  if (!post) return false;
+  return post.state === 'listed' || isCommunityOperator(env, callerId);
 }
 
 const FULL_EDIT: DocumentGrant = {
@@ -122,6 +139,7 @@ async function canAccessDocument(
   teamId: string | null,
   callerId: string | null,
   targetTabId: string | undefined,
+  allowCommunity = false,
 ): Promise<boolean> {
   const grant = await resolveDocumentGrant(
     env,
@@ -134,6 +152,9 @@ async function canAccessDocument(
     callerId,
   );
   if (!grant) return false;
+  // A Community link is a content-only pass (docs/specs/025-community/community.md "Viewing a post's
+  // document"): refused by every door that has not said it serves one.
+  if (grant.community && !allowCommunity) return false;
   if (needsEdit && grant.role !== 'edit') return false;
   return grant.tabScope === null || grant.tabScope === targetTabId;
 }
@@ -173,6 +194,7 @@ export async function canReadDocument(
   teamId: string | null = null,
   callerId: string | null = null,
   targetTabId?: string,
+  allowCommunity = false,
 ): Promise<boolean> {
   return canAccessDocument(
     false,
@@ -185,5 +207,6 @@ export async function canReadDocument(
     teamId,
     callerId,
     targetTabId,
+    allowCommunity,
   );
 }

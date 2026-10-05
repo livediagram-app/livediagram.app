@@ -83,6 +83,7 @@ import { intentRejected, placementRejected } from '../placement/placement-respon
 import type { DocumentDTO } from '../types';
 import {
   gateEdit,
+  COMMUNITY_CONTENT,
   gateGrant,
   missingDocument,
   requireOwner,
@@ -318,7 +319,7 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
       if (view instanceof Response) return view;
       const d = await getDocument(env, id);
       if (!d) return missingDocument(ctx, id);
-      const grant = await gateGrant(ctx, id, d.ownerId, d.teamId);
+      const grant = await gateGrant(ctx, id, d.ownerId, d.teamId, COMMUNITY_CONTENT);
       // Redacted for every non-owner, exactly as the share-code resolver
       // does (docs/specs/014-identity/auth-and-guest-access.md): the gate above admits any valid share code, view
       // or edit, so this is the same audience — and a guest owner's id IS
@@ -451,7 +452,7 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
         tabScope: string | null;
         community?: boolean;
         shareCode?: string | null;
-      } | null = await gateGrant(ctx, id, source.ownerId, source.teamId);
+      } | null = await gateGrant(ctx, id, source.ownerId, source.teamId, COMMUNITY_CONTENT);
       if (!scope) {
         const sharedRow = (await listSharedWith(env, owner)).find((s) => s.id === id);
         if (sharedRow) scope = { tabScope: sharedRow.tabId };
@@ -466,7 +467,15 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
       const requested =
         typeof body.name === 'string' ? capStoredName(body.name, null, 'document') : '';
       const newName = requested || capStoredName(`Copy of ${source.name}`, null, 'document');
-      const copy = await copyDocument(env, id, newId, owner, newName, scope.tabScope);
+      const copy = await copyDocument(
+        env,
+        id,
+        newId,
+        owner,
+        newName,
+        scope.tabScope,
+        scope.community === true,
+      );
       if (!copy) return notFound();
       // A copy through a Community post's link counts toward its copy count, once per person
       // (docs/specs/025-community/community.md).
@@ -488,7 +497,8 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
       // route's read check admits joined team members, who present no share
       // code, and telling an owner that a teammate duplicating a team-library
       // document was "copied by a visitor" is simply untrue.
-      if (owner !== source.ownerId && shareCodeOf(request) !== null) {
+      // Not for a Community copy: the copier is a stranger to the author (their copy is counted instead).
+      if (owner !== source.ownerId && shareCodeOf(request) !== null && !scope.community) {
         ctx.waitUntil?.(
           getParticipant(env, owner).then((p) =>
             recordVisitorCopied(env, source, owner, p?.name ?? null),
@@ -534,7 +544,7 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
       // floor on how fast a card can paint.
       const d = await getDocumentThumbMeta(env, id);
       if (!d) return notFound();
-      const grant = await gateGrant(ctx, id, d.ownerId, d.teamId);
+      const grant = await gateGrant(ctx, id, d.ownerId, d.teamId, COMMUNITY_CONTENT);
       if (!grant) return notFound();
       // A tab-scoped visitor (docs/specs/013-workspace/tab-scoped-share-links.md) gets their tab, never the
       // first-tab snapshot.
