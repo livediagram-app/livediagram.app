@@ -22,6 +22,7 @@ import { usePlanBoardDrop } from '@/hooks/plan/usePlanBoardDrop';
 import { laneMove } from './plan-board-moves';
 import { LaneRow, PlanBoardCard, PlanDragGhost } from './PlanBoardCells';
 import { PlanColumnHeader } from './PlanColumnHeader';
+import { boardRowTemplate } from './plan-board-rows';
 import { trackSetup } from './track-board-setup';
 import { PlanCardMenuHost } from './PlanCardMenu';
 import { usePlan } from './PlanContext';
@@ -209,7 +210,17 @@ export function PlanBoardView({
         className="min-h-0 flex-1 overflow-auto px-3 pb-3"
         onPointerDown={interactive ? stop : undefined}
       >
-        <div className="grid gap-3" style={{ gridTemplateColumns: columnTemplate }}>
+        <div
+          className="grid min-h-full gap-3"
+          style={{
+            gridTemplateColumns: columnTemplate,
+            gridTemplateRows: boardRowTemplate(
+              lanes.map((l) => l.key),
+              withLanes,
+              collapsed,
+            ),
+          }}
+        >
           {projection.columns.map((col) => (
             <PlanColumnHeader
               key={col.column.id}

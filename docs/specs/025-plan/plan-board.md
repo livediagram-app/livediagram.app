@@ -59,6 +59,8 @@ Where each is set, so a setting lives with what it changes, never in one central
   avatars of people on the board and the quick filter.
 - **Columns**: name, count, and the WIP limit as `3 / 4`. Over the limit, the count turns to a warning colour and
   the column header says so; it never refuses a card.
+- **Columns fill the board**: a board resized taller runs its columns to its bottom edge (on a board with
+  swimlanes, the last open swimlane takes the spare height); a board shorter than its cards scrolls.
 - **Cards** in rank order. A card face draws the item type's colour stripe and glyph, the key (`#12`), the title
   (up to three lines), then the fields the set-up shows. A card being dragged or opened by someone else carries
   their colour ring and name.
