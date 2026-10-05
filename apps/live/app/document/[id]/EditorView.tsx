@@ -19,6 +19,8 @@ import { ViewportStoreProvider } from '@/hooks/canvas/useViewportStore';
 import { EditorCanvasHost } from '@/components/canvas/EditorCanvasHost';
 import { PresentationHost } from '@/components/canvas/PresentationHost';
 import { EditorHeader } from '@/components/chrome/EditorHeader';
+import { CommunityBar } from '@/components/chrome/CommunityBar';
+import { useAutoCopyParam } from '@/hooks/canvas/useAutoCopyParam';
 import { EmbedChrome } from '@/components/chrome/EmbedChrome';
 import { TabBar } from '@/components/chrome/TabBar';
 import { SignInBanner, SIGNIN_BANNER_DISMISS_KEY } from '@/components/chrome/SignInBanner';
@@ -172,7 +174,10 @@ export function EditorView() {
     zenMode,
     openCollaborators,
     userPreferences,
+    sessionCommunity,
   } = ctx;
+  // `?copy=1` from the Community's Make a Copy (docs/specs/025-community/community.md).
+  useAutoCopyParam({ hydrated, sessionShareCode, makeCopy });
   // Minimal chrome (docs/specs/007-editor/power-user-mode.md): one flag, read by every chrome surface.
   const minimalChrome = isMinimalChrome(userPreferences);
   // UI scale (docs/specs/007-editor/ui-scale.md): desktop only, so a phone resolves to 1.
@@ -291,9 +296,9 @@ export function EditorView() {
                         // different action. Hidden during the welcome flow so the
                         // first-paint chrome stays minimal, and during hydration so
                         // we don't render the button before we know whether the user
-                        // is the owner.
+                        // is the owner. A Community visitor gets it from the Community bar instead.
                         onMakeCopy={
-                          !isOwner && hydrated && !anyWelcomeOpen && documentId
+                          !isOwner && hydrated && !anyWelcomeOpen && documentId && !sessionCommunity
                             ? makeCopy
                             : undefined
                         }
@@ -326,6 +331,13 @@ export function EditorView() {
                       />
                     </AreaErrorBoundary>
                   )}
+                  {sessionCommunity && !embedMode && hydrated ? (
+                    <CommunityBar
+                      community={sessionCommunity}
+                      onMakeCopy={makeCopy}
+                      copying={copying}
+                    />
+                  ) : null}
                   <AreaErrorBoundary area="TabDialogs">
                     <EditorTabDialogs />
                   </AreaErrorBoundary>

@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import type { ShareLink, ShareLinkExpiry, ShareRole } from '@/lib/api-client';
 import type { Participant } from '@/lib/identity';
 
@@ -44,5 +45,11 @@ export type ShareDialogProps = {
   // conversion (offline -> cloud), after which the real share options apply.
   offline?: boolean;
   onSyncToCloud?: () => Promise<void>;
+  // The Community band (docs/specs/025-community/community.md "Publishing"), drawn beneath the
+  // password; absent where publishing doesn't apply.
+  community?: ReactNode;
+  // Why the password can't be set right now (a published document: a post and a password exclude each
+  // other), shown in place of the switch's effect; null or absent when it can.
+  passwordLockedReason?: string | null;
   onClose: () => void;
 };

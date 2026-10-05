@@ -7,6 +7,7 @@ import {
 } from 'react';
 import { documentIdFromPath } from '@/lib/legacy-editor-path';
 import type { Tab } from '@livediagram/document';
+import type { CommunityShareInfo } from '@livediagram/api-schema';
 import {
   apiListShareLinks,
   apiLoadDocument,
@@ -84,6 +85,8 @@ export function useIdentityBootstrap(opts: {
     setSelfParticipant: SetState<Participant>;
     setSessionRole: SetState<ShareRole>;
     setSessionShareCode: SetState<string | null>;
+    // The Community post a community link opened (docs/specs/025-community/community.md).
+    setSessionCommunity: SetState<CommunityShareInfo | null>;
     // The one tab a tab-scoped link opens (docs/specs/013-workspace/tab-scoped-share-links.md); null = all.
     setSessionTabScope: (scope: string | null) => void;
     setSharedDocuments: SetState<SharedWithItem[]>;
@@ -139,6 +142,7 @@ export function useIdentityBootstrap(opts: {
     setSelfParticipant,
     setSessionRole,
     setSessionShareCode,
+    setSessionCommunity,
     setSessionTabScope,
     setSharedDocuments,
     setShareLinks,
@@ -365,7 +369,7 @@ export function useIdentityBootstrap(opts: {
         const accepted = getSessionSharePassword();
         if (accepted) writeCachedSharePassword(shareCodeParam, accepted);
         {
-          const { document: fetched, role, tabId: scopeTabId } = resolution;
+          const { document: fetched, role, tabId: scopeTabId, community } = resolution;
           const session = resolveDocumentSession({
             documentOwnerId: fetched.ownerId,
             selfId: self.id,
@@ -391,6 +395,10 @@ export function useIdentityBootstrap(opts: {
           // writes can present it as authorisation. Owner accessing
           // via a share URL keeps null.
           setSessionShareCode(session.sessionShareCode);
+          // A Community post's link (docs/specs/025-community/community.md "Viewing a post's
+          // document"): no room, no name prompt, not added to Shared with you.
+          const viaCommunity = community !== null && !session.isOwner;
+          setSessionCommunity(viaCommunity ? community : null);
           // Signed-in user opening their own document via a share URL
           // already has a confirmed identity — never prompt. Visitors
           // (signed in or not) still see the welcome card so they get
@@ -398,7 +406,7 @@ export function useIdentityBootstrap(opts: {
           // is locked downstream when they have a Clerk identity so
           // they can't pretend to be someone else.
           const isOwnerVisit = fetched.ownerId === self.id;
-          if (!isOwnerVisit && !hasConfirmedName()) {
+          if (!isOwnerVisit && !viaCommunity && !hasConfirmedName()) {
             setTemplatePickerMode('identity');
           }
           // Optimistically add the current document to the shared-with
@@ -406,7 +414,7 @@ export function useIdentityBootstrap(opts: {
           // refreshSharedList network round-trip completes. The server
           // fetch will replace this with the full list; deduplicate so
           // returning visitors don't see a duplicate row.
-          if (!isOwnerVisit) {
+          if (!isOwnerVisit && !viaCommunity) {
             setSharedDocuments((prev) =>
               prev.some((d) => d.id === fetched.id)
                 ? prev

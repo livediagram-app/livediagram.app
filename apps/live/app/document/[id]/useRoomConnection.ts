@@ -58,6 +58,9 @@ export function useRoomConnection(opts: {
   // Saved on the server, so it has a room: every such document, personal ones included, since an
   // agent writing through the api is a second writer even where nobody else can open it.
   documentServerStored: boolean;
+  // False keeps the room closed whatever else holds: a Community viewer never joins the author's room
+  // (docs/specs/025-community/community.md "Viewing a post's document"). Defaults to true.
+  enabled?: boolean;
   // The document's team (docs/specs/013-workspace/team-shared-documents.md), null for a personal document. A team
   // document is a live room for its members even without a share link,
   // so presence opens for it the same way a shared document does.
@@ -151,6 +154,7 @@ export function useRoomConnection(opts: {
     hydrated,
     documentId,
     documentServerStored,
+    enabled = true,
     documentTeamId,
     selfParticipant,
     sessionShareCode,
@@ -522,7 +526,7 @@ export function useRoomConnection(opts: {
     // Open the realtime room for every server-stored document: shared and team documents for their
     // people (docs/specs/013-workspace/team-shared-documents.md), and personal ones too, so an agent's
     // changeset reaches the person working on it (docs/specs/024-agents/agent-changesets.md).
-    if (!hydrated || !documentId || !documentServerStored) {
+    if (!enabled || !hydrated || !documentId || !documentServerStored) {
       // Make sure any state from a previous shared session is cleared
       // when we transition back to private (revoke share / leave team).
       setLivePresence([]);
@@ -600,6 +604,7 @@ export function useRoomConnection(opts: {
       roomRef.current = null;
     };
   }, [
+    enabled,
     hydrated,
     documentId,
     documentServerStored,

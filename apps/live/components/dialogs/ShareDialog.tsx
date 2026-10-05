@@ -47,6 +47,8 @@ export function ShareDialog({
   onSetPassword,
   offline,
   onSyncToCloud,
+  community,
+  passwordLockedReason,
   onClose,
 }: ShareDialogProps) {
   // When a Clerk display name is supplied, the name is the account's and the
@@ -238,7 +240,10 @@ export function ShareDialog({
           onSetPassword={onSetPassword}
           busy={busy}
           setBusy={setBusy}
+          lockedReason={passwordLockedReason ?? null}
         />
+
+        {community}
       </div>
 
       <DialogFooter>

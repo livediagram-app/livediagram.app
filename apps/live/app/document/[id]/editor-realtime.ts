@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 
+import type { CommunityShareInfo } from '@livediagram/api-schema';
 import { connectRoom, type ShareLink, type ShareRole } from '@/lib/api-client';
 import { useChangesetSeen } from './useChangesetSeen';
 import { useLatest } from '@/hooks/ui/useLatest';
@@ -97,8 +98,14 @@ export function useEditorRealtime() {
   // up-to-date sessionShareCode rather than the value captured at
   // mount.
   const sessionShareCodeRef = useLatest(sessionShareCode);
+  // Set when the session came in on a Community post's link (docs/specs/025-community/community.md
+  // "Viewing a post's document"): the post and its author. Such a visitor never joins the room and
+  // sees the Community bar instead of the identity prompt. Null for every other session.
+  const [sessionCommunity, setSessionCommunity] = useState<CommunityShareInfo | null>(null);
 
   return {
+    sessionCommunity,
+    setSessionCommunity,
     roomRef,
     documentServerStored,
     setDocumentServerStored,
