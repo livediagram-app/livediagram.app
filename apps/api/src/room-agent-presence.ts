@@ -187,3 +187,86 @@ export function agentRosterFor(
       };
     });
 }
+
+const ROLES: readonly ShareRole[] = ['edit', 'view'];
+const isString = (v: unknown): v is string => typeof v === 'string';
+const isNullableString = (v: unknown): v is string | null => v === null || typeof v === 'string';
+
+// The api's `PUT /presence` body, checked at the room's door; null for anything else. The api has already applied
+// the request rule (parseAgentPresenceRequest) and resolved focus to element ids.
+export function agentPresenceWriteOf(body: unknown): AgentPresenceWrite | null {
+  if (typeof body !== 'object' || body === null) return null;
+  const b = body as Record<string, unknown>;
+  const ok =
+    isString(b.tokenId) &&
+    isString(b.tabId) &&
+    isNullableString(b.personTag) &&
+    isNullableString(b.shareCode) &&
+    isString(b.name) &&
+    isString(b.color) &&
+    ROLES.some((r) => r === b.role) &&
+    isNullableString(b.status) &&
+    Array.isArray(b.focus) &&
+    b.focus.every(isString) &&
+    typeof b.ttlMs === 'number' &&
+    Number.isFinite(b.ttlMs) &&
+    b.ttlMs > 0 &&
+    (b.mode === 'set' || b.mode === 'refresh');
+  return ok ? (b as AgentPresenceWrite) : null;
+}
+
+// `[agent-presence] <event>` with the tab and token (blueprint "Observability"); the room knows no document id.
+export function agentPresenceLog(
+  event: 'set' | 'cleared' | 'expired',
+  r: { tabId: string; tokenId: string },
+): void {
+  console.info(`[agent-presence] ${event}`, { tabId: r.tabId, tokenId: r.tokenId });
+}
+
+// `PUT /presence` sets or refreshes one entry, `DELETE /presence?token=&tab=` clears it (blueprint "Room");
+// `changed` runs when the frame must go out again.
+export async function answerAgentPresence(
+  store: RoomAgentPresence,
+  request: Request,
+  url: URL,
+  changed: () => void,
+): Promise<Response> {
+  if (request.method === 'DELETE') {
+    const tokenId = url.searchParams.get('token');
+    const tabId = url.searchParams.get('tab');
+    if (!tokenId || !tabId) return new Response('missing token or tab', { status: 400 });
+    const cleared = await store.clear(tokenId, tabId);
+    if (cleared) {
+      agentPresenceLog('cleared', { tabId, tokenId });
+      changed();
+    }
+    return Response.json({ cleared });
+  }
+  const body: unknown = await request.json().catch(() => null);
+  const w = agentPresenceWriteOf(body);
+  if (!w) return new Response('bad presence', { status: 400 });
+  const result = await store.write(w);
+  if (!result.ok) return Response.json({ error: result.error }, { status: 409 });
+  agentPresenceLog('set', w);
+  if (result.broadcast) changed();
+  return Response.json({ expiresAt: result.expiresAt, created: result.created });
+}
+
+// A trashed document clears every entry; a revoked or rescoped link those its code admitted (PR15).
+export async function clearAgentsForOp(
+  store: RoomAgentPresence,
+  op: unknown,
+  changed: () => void,
+): Promise<void> {
+  const { kind, code } = (op ?? {}) as { kind?: unknown; code?: unknown };
+  const match =
+    kind === 'document-trashed'
+      ? () => true
+      : (kind === 'share-revoked' || kind === 'share-rescoped') && typeof code === 'string'
+        ? (r: AgentPresenceRecord) => r.shareCode === code
+        : null;
+  if (!match) return;
+  const gone = await store.clearWhere(match);
+  for (const r of gone) agentPresenceLog('cleared', r);
+  if (gone.length > 0) changed();
+}
