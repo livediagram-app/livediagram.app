@@ -1,9 +1,10 @@
-name: Coverage comment
+name: Coverage report
 
-# The pull request's coverage report as one comment (docs/specs/003-system-architecture/testing.md
-# "Coverage report"): the coverage diff against its base and a row per area, from Codecov's public
-# API. It runs after CI, from main's copy of this workflow and its script, so it can comment on a
-# pull request from a fork too, and it never checks out or runs the pull request's code.
+# The pull request's coverage report, in its description below a separator, where an edit notifies no
+# one (docs/specs/003-system-architecture/testing.md "Coverage report"): the coverage diff against its
+# base and a row per area, from Codecov's public API. It runs after CI, from main's copy of this
+# workflow and its script, so it can write to a pull request from a fork too, and it never checks out
+# or runs the pull request's code.
 on:
   workflow_run:
     workflows: [CI]
@@ -20,12 +21,12 @@ permissions:
   pull-requests: write
 
 concurrency:
-  group: coverage-comment-${{ github.event.workflow_run.head_sha || inputs.pr }}
+  group: coverage-report-${{ github.event.workflow_run.head_sha || inputs.pr }}
   cancel-in-progress: true
 
 jobs:
-  comment:
-    name: Coverage comment
+  report:
+    name: Coverage report
     # Only a successful CI run has uploaded every report the comparison needs.
     if: >-
       github.event_name == 'workflow_dispatch' ||
@@ -63,15 +64,15 @@ jobs:
             number="$(gh pr list --repo "${GITHUB_REPOSITORY}" --state open --search "${sha}" --json number --jq '.[0].number // empty')"
           fi
           if [ -z "${number}" ]; then
-            echo "[coverage-comment] no open pull request for ${sha}; nothing to comment on"
+            echo "[coverage-report] no open pull request for ${sha}; nothing to report on"
           fi
           echo "number=${number}" >> "${GITHUB_OUTPUT}"
           echo "sha=${sha}" >> "${GITHUB_OUTPUT}"
 
-      - name: Post the coverage comment
+      - name: Write the coverage report
         if: steps.pr.outputs.number != ''
         env:
           GITHUB_TOKEN: ${{ github.token }}
           PR: ${{ steps.pr.outputs.number }}
           SHA: ${{ steps.pr.outputs.sha }}
-        run: node scripts/coverage-comment.mjs "${PR}" "${SHA}"
+        run: node scripts/coverage-report.mjs "${PR}" "${SHA}"
