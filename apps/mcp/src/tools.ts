@@ -49,6 +49,7 @@ import {
   textResult,
   type Extra,
 } from './tool-helpers';
+import { lintLineOf, lintLinesOf } from './lint-summary';
 import { imageResult } from './image-result';
 import {
   baseFor,
@@ -259,17 +260,21 @@ export function registerTools(server: McpServer, env: Env): void {
           }),
         },
       );
+      const tabIds = tabs.map((t) => t.id);
+      const lint = await lintLinesOf(env, token, id, tabIds);
       return imageResult(
         {
           id,
           name: args.name,
           tabCount: tabs.length,
-          tabIds: tabs.map((t) => t.id),
+          tabIds,
           folder: await createdFolderLabel(env, token, created),
           url: deepLink(id),
+          lint,
         },
         tabs[0]!,
         { env, token },
+        lint,
       );
     },
   );
@@ -351,10 +356,11 @@ export function registerTools(server: McpServer, env: Env): void {
           changesetId: answer.changeset?.id ?? null,
           rev: tab.rev,
           text: answer.text,
-          lint: answer.lint,
+          lint: lintLineOf(answer.lint),
         },
         tab,
         { env, token },
+        [lintLineOf(answer.lint)],
       );
     },
   );
@@ -424,10 +430,11 @@ export function registerTools(server: McpServer, env: Env): void {
           changesetId: answer.changeset?.id ?? null,
           rev: next.rev,
           text: answer.text,
-          lint: answer.lint,
+          lint: lintLineOf(answer.lint),
         },
         next,
         { env, token },
+        [lintLineOf(answer.lint)],
       );
     },
   );

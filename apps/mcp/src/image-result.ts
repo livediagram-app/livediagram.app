@@ -66,12 +66,15 @@ export async function tabPreview(
   return { type: 'image', data: png, mimeType: 'image/png' };
 }
 
+// `notes` are short text blocks after the structured result, such as the lint summary line.
 export async function imageResult(
   value: StructuredValue,
   tab: Tab,
   auth?: { env: Env; token: string },
+  notes: readonly string[] = [],
 ): Promise<ToolResult> {
-  // The structured result (and its text form) first, then the preview.
+  // The structured result (and its text form) first, then the notes, then the preview.
   const result = textResult(value);
-  return { ...result, content: [...result.content, await tabPreview(tab, auth)] };
+  const texts = notes.map((text) => ({ type: 'text' as const, text }));
+  return { ...result, content: [...result.content, ...texts, await tabPreview(tab, auth)] };
 }

@@ -16,7 +16,7 @@ import { registerTools } from './tools';
 
 type Created = { folderId: string | null; teamId: string | null } | undefined;
 
-function harness(created: Created, lookups: Record<string, unknown> = {}) {
+function harness(created: Created, lookups: Record<string, unknown> = {}, lint?: unknown) {
   const posted: Record<string, unknown>[] = [];
   const requested: string[] = [];
   let handler: ((args: unknown, extra: unknown) => Promise<unknown>) | undefined;
@@ -35,6 +35,9 @@ function harness(created: Created, lookups: Record<string, unknown> = {}) {
           posted.push((await request.json()) as Record<string, unknown>);
           return Response.json(created ? { document: { id: 'd', ...created } } : {});
         }
+        // The lint summary of each created tab (docs/specs/024-agents/diagram-lint.md LN24).
+        if (new URL(request.url).searchParams.get('view') === 'lint')
+          return lint ? Response.json(lint) : new Response('down', { status: 503 });
         const answer = lookups[path];
         if (answer === undefined) return new Response('nope', { status: 503 });
         return Response.json(answer);
@@ -44,7 +47,7 @@ function harness(created: Created, lookups: Record<string, unknown> = {}) {
   registerTools(server, env);
   const run = async (tabs: unknown[], extra: Record<string, unknown> = {}) =>
     (await handler!({ name: 'Doc', tabs, ...extra }, { authInfo: { token: 'tok' } })) as {
-      structuredContent: { folder: string };
+      structuredContent: { folder: string; lint: string[] };
     };
   return { run, posted, requested };
 }
@@ -100,7 +103,7 @@ describe('create_document folder', () => {
   it('reports My documents when the document landed at the root', async () => {
     const { run, requested } = harness({ folderId: null, teamId: null });
     expect((await run([elements])).structuredContent.folder).toBe('My documents');
-    expect(requested.filter((r) => r.startsWith('GET'))).toEqual([]);
+    expect(requested.filter((r) => r.startsWith('GET') && !r.includes('/tabs/'))).toEqual([]);
   });
 
   it('names the personal default folder it landed in', async () => {
@@ -125,5 +128,39 @@ describe('create_document folder', () => {
     expect((await run([elements])).structuredContent.folder).toBe('your default folder');
     expect(warn).toHaveBeenCalledWith('[mcp] create_document folder lookup failed status=503');
     warn.mockRestore();
+  });
+});
+
+describe('create_document lint', () => {
+  const report = {
+    measures: {
+      crossings: 0,
+      behind: 0,
+      overlaps: 0,
+      extent: { width: 120, height: 60 },
+      arrows: 0,
+      boxes: 1,
+    },
+    findings: [],
+    counts: { error: 0, warning: 0, info: 0 },
+    skipped: { crossings: false },
+  };
+
+  it('carries one summary line per created tab', async () => {
+    const { run } = harness(undefined, {}, report);
+    const result = await run([elements, elements]);
+    expect(result.structuredContent.lint).toEqual([
+      '0 crossings · 0 behind · 0 overlaps · 120×60 → clean',
+      '0 crossings · 0 behind · 0 overlaps · 120×60 → clean',
+    ]);
+  });
+
+  it('says lint unavailable when the view fails, and logs it', async () => {
+    const errors: unknown[][] = [];
+    vi.spyOn(console, 'error').mockImplementation((...args: unknown[]) => void errors.push(args));
+    const { run } = harness(undefined);
+    expect((await run([elements])).structuredContent.lint).toEqual(['lint unavailable']);
+    expect(errors[0]?.[0]).toBe('[lint] failed');
+    vi.restoreAllMocks();
   });
 });

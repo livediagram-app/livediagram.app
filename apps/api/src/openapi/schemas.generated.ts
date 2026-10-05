@@ -1435,7 +1435,14 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "type": "boolean"
       },
       "lint": {
-        "type": "null"
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/LintReport"
+          },
+          {
+            "type": "null"
+          }
+        ]
       },
       "results": {
         "items": {
@@ -5237,6 +5244,171 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "LintCode": {
+    "enum": [
+      "box-overlap",
+      "arrow-dangling",
+      "arrow-behind-box",
+      "edge-crossings",
+      "label-collision",
+      "label-overflow",
+      "node-isolated",
+      "group-escape",
+      "group-split-edges",
+      "duplicate-label",
+      "flow-backwards",
+      "aspect-extreme",
+      "colour-on-themed"
+    ],
+    "type": "string"
+  },
+  "LintFinding": {
+    "additionalProperties": false,
+    "properties": {
+      "code": {
+        "$ref": "#/components/schemas/LintCode"
+      },
+      "fix": {
+        "type": "string"
+      },
+      "message": {
+        "type": "string"
+      },
+      "refs": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "severity": {
+        "$ref": "#/components/schemas/LintSeverity"
+      }
+    },
+    "required": [
+      "code",
+      "severity",
+      "refs",
+      "message",
+      "fix"
+    ],
+    "type": "object"
+  },
+  "LintMeasures": {
+    "additionalProperties": false,
+    "properties": {
+      "arrows": {
+        "type": "number"
+      },
+      "behind": {
+        "type": "number"
+      },
+      "boxes": {
+        "type": "number"
+      },
+      "crossings": {
+        "type": [
+          "number",
+          "null"
+        ]
+      },
+      "extent": {
+        "anyOf": [
+          {
+            "additionalProperties": false,
+            "properties": {
+              "height": {
+                "type": "number"
+              },
+              "width": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "width",
+              "height"
+            ],
+            "type": "object"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "overlaps": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "crossings",
+      "behind",
+      "overlaps",
+      "extent",
+      "arrows",
+      "boxes"
+    ],
+    "type": "object"
+  },
+  "LintReport": {
+    "additionalProperties": false,
+    "properties": {
+      "counts": {
+        "additionalProperties": false,
+        "properties": {
+          "error": {
+            "type": "number"
+          },
+          "info": {
+            "type": "number"
+          },
+          "warning": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "error",
+          "warning",
+          "info"
+        ],
+        "type": "object"
+      },
+      "findings": {
+        "items": {
+          "$ref": "#/components/schemas/LintFinding"
+        },
+        "type": "array"
+      },
+      "measures": {
+        "$ref": "#/components/schemas/LintMeasures"
+      },
+      "skipped": {
+        "additionalProperties": false,
+        "properties": {
+          "crossings": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "crossings"
+        ],
+        "type": "object"
+      }
+    },
+    "required": [
+      "measures",
+      "findings",
+      "counts",
+      "skipped"
+    ],
+    "type": "object"
+  },
+  "LintSeverity": {
+    "enum": [
+      "error",
+      "warning",
+      "info"
+    ],
+    "type": "string"
+  },
   "MindFlow": {
     "enum": [
       "tree",
@@ -6413,7 +6585,14 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "type": "array"
       },
       "lint": {
-        "type": "null"
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/LintReport"
+          },
+          {
+            "type": "null"
+          }
+        ]
       },
       "reverted": {
         "type": "number"
@@ -9183,7 +9362,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "comments",
       "show",
       "find",
-      "diff"
+      "diff",
+      "lint"
     ],
     "type": "string"
   }

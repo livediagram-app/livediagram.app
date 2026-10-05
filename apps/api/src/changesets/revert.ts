@@ -8,6 +8,7 @@ import type { DocumentDTO, Env } from '../types';
 import { afterChangeset } from './after';
 import type { FrontDoor } from './front-door';
 import { heldTargets } from './held-check';
+import { lintResult } from './lint';
 import { changesetLog } from './log';
 import { planRevert } from './revert-plan';
 import { readStoredTab } from './stored-tab';
@@ -59,11 +60,13 @@ export async function revertChangeset(args: RevertArgs): Promise<SubmitResult> {
         return { status: 409, body: { error: 'elements_held', held } };
       }
     }
+    const next = { ...stored.tab, elements: plan.elements };
+    const lint = lintResult(next, where);
     const outcome = await writeChangeset(env, {
       documentId: document.id,
       tabId: record.tabId,
       stored,
-      next: { ...stored.tab, elements: plan.elements },
+      next,
       orderIndex: stored.orderIndex,
       author: args.author,
       tokenId: args.tokenId,
@@ -72,7 +75,7 @@ export async function revertChangeset(args: RevertArgs): Promise<SubmitResult> {
       rebasedOver: 0,
       prevRev,
       results: [],
-      textFor: (written) => [...formatResultLines([]), writtenFooter(written)].join('\n'),
+      textFor: (written) => [...formatResultLines([]), writtenFooter(written, lint)].join('\n'),
       revertOf: record.id,
     });
     if (outcome.kind === 'stale') {
@@ -105,7 +108,7 @@ export async function revertChangeset(args: RevertArgs): Promise<SubmitResult> {
       changeset,
       reverted: plan.reverted,
       kept: plan.kept,
-      lint: null,
+      lint: changeset ? lint : null,
     };
     return { status: 200, body };
   }

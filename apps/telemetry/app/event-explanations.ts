@@ -459,6 +459,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Agent|Viewed|Comments': 'An agent or a script read the open comment threads on a tab.',
   'Agent|Viewed|Show': 'An agent or a script read one element in full.',
   'Agent|Viewed|Find': 'An agent or a script searched a tab for some text.',
+  'Agent|Viewed|Lint':
+    'An agent or a script checked how a tab is drawn: overlaps, crossings, hidden arrows.',
   'Agent|Opened|Toast':
     "Somebody pressed Show on the toast an agent's change raised, to see what it touched.",
   'Mcp|Used|AddTab': 'An AI tool connected over MCP added a new tab to a document.',
