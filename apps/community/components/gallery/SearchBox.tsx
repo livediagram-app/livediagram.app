@@ -127,7 +127,7 @@ export function SearchBox({
         type="search"
         value={draft}
         onChange={(e) => setDraft(e.target.value)}
-        placeholder="Search documents, or #tags..."
+        placeholder="Search..."
         autoComplete="off"
         maxLength={COMMUNITY_SEARCH_MAX}
         spellCheck={false}
