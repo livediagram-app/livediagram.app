@@ -46,7 +46,7 @@ async function api(request: Request): Promise<Response> {
   if (path === '/teams') return json({ teams: [] });
   if (path === '/trash') {
     return json({
-      trash: [{ id: 'd2', name: 'Old', teamId: null, trashedAt: 1, purgeAt: 2 }],
+      trash: [{ id: 'd2', name: 'Old', teamId: null, trashedAt: 1, purgeAt: 2, reason: 'empty' }],
     });
   }
   if (path.endsWith('/restore')) return json({ document: LIVE_DOC });

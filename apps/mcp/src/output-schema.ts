@@ -3,6 +3,7 @@
 // The SDK validates every successful result against these on the way out, so a
 // shape here that stops matching tools.ts fails the call rather than shipping a
 // wrong contract. Error results are exempt and carry text only.
+import { EMPTY_DOCUMENT_STALE_DAYS, TRASH_REASONS } from '@livediagram/api-schema';
 import { z } from 'zod';
 
 const url = z.string().describe('Link that opens the document in the livediagram editor.');
@@ -154,6 +155,11 @@ export const listTrashOutput = {
         library: z
           .string()
           .describe('Whose Trash: "personal", or the name of the team (or "team").'),
+        reason: z
+          .enum(TRASH_REASONS)
+          .describe(
+            `Why it is in the Trash: "deleted" by someone, or "empty" (moved automatically after ${EMPTY_DOCUMENT_STALE_DAYS} days with no content).`,
+          ),
         deletedAt: z.string().describe('When it was deleted, as an ISO timestamp.'),
         purgeAt: z.string().describe('When it is purged for good, as an ISO timestamp.'),
       }),

@@ -8,7 +8,7 @@
 import { useState } from 'react';
 import { Button, TrashIcon, buttonClassName } from '@livediagram/ui';
 import type { TrashedDocument } from '@livediagram/api-schema';
-import { daysLeftLabel } from '@/lib/trash-groups';
+import { trashedCardHeading, trashedCardLead } from '@/lib/trash-groups';
 
 export function DocumentTrashedCard({
   restorable,
@@ -21,6 +21,7 @@ export function DocumentTrashedCard({
   const [failed, setFailed] = useState(false);
   // One clock per mount keeps render pure.
   const [now] = useState(() => Date.now());
+  const heading = trashedCardHeading(restorable);
 
   return (
     <div className="pointer-events-none absolute inset-0 flex items-center justify-center p-6">
@@ -32,14 +33,14 @@ export function DocumentTrashedCard({
           <TrashIcon size={26} />
         </div>
         <p className="mt-4 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-          Deleted
+          {heading.label}
         </p>
         <h1 className="mt-1 text-xl font-semibold text-slate-900 dark:text-slate-100">
-          This document was deleted
+          {heading.title}
         </h1>
         <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
           {restorable
-            ? `It is in the Trash (${daysLeftLabel(restorable.trashedAt, now).toLowerCase()}). Restore it to put it back where it was.`
+            ? `${trashedCardLead(restorable, now)} Restore it to put it back where it was.`
             : 'It is no longer available. If it is restored, this link works again.'}
         </p>
         {failed ? (

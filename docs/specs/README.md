@@ -20,7 +20,7 @@ Specs live in numbered category folders: the reserved `001`–`005` first (visio
 - ./010-palette/README.md - when working on the palette: categories, per-mode layouts and Popular, icon and sticker catalogues, presets
 - ./011-theme/README.md - when working on tab themes: built-in, multi-colour and custom themes
 - ./012-collaboration/README.md - when working on realtime, sessions, facilitation, comments, actions or room tools
-- ./013-workspace/README.md - when working on the Explorer, its filters, folders, default folders, teams, favourites, shape libraries, share links or the Trash
+- ./013-workspace/README.md - when working on the Explorer, its filters, folders, default folders, teams, favourites, shape libraries, share links, the Trash or the empty document clean-up
 - ./014-identity/README.md - when working on auth, guest access, profiles or account email
 - ./015-api/README.md - when working on the api worker, its OpenAPI document, tokens, the MCP server or the CLI
 - ./016-platform/README.md - when working on routing, deployment or the staging environment, or the new version prompt and stale builds
