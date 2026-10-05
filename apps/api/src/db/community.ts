@@ -22,6 +22,8 @@ import { communityEnabled } from '../community-enabled';
 import {
   COMMUNITY_POST_COLS,
   COMMUNITY_POST_FROM,
+  POST_AUTHOR_JOIN,
+  POST_DOCUMENT_JOIN,
   communitySearchText,
   likePattern,
   type CommunityPostRow,
@@ -72,7 +74,7 @@ export async function communityLinkAccess(
   // This is the one gate the grant, the share resolve and the card image all pass through.
   if (!communityEnabled(env)) return 'closed';
   const row = await env.DB.prepare(
-    `SELECT (${PUBLIC_POST}) AS open FROM community_posts cp JOIN documents d ON d.id = cp.document_id
+    `SELECT (${PUBLIC_POST}) AS open FROM community_posts cp ${POST_DOCUMENT_JOIN}
       WHERE cp.share_code = ?`,
   )
     .bind(shareCode)
@@ -211,7 +213,7 @@ export async function communityMineTotals(
 ): Promise<CommunityMineTotals> {
   const row = await env.DB.prepare(
     `SELECT COUNT(*) AS posts, COALESCE(SUM(cp.like_count), 0) AS likes, COALESCE(SUM(cp.copy_count), 0) AS copies
-       FROM community_posts cp JOIN documents d ON d.id = cp.document_id
+       FROM community_posts cp ${POST_DOCUMENT_JOIN}
       WHERE ${OWN_POST}`,
   )
     .bind(authorId)
@@ -287,12 +289,12 @@ export async function listRelatedCommunityPosts(
 export async function communityFacets(env: Env): Promise<CommunityFacetsResponse> {
   const [categories, tags] = await env.DB.batch<{ key: string; n: number }>([
     env.DB.prepare(
-      `SELECT cp.category AS key, COUNT(*) AS n FROM community_posts cp JOIN documents d ON d.id = cp.document_id
+      `SELECT cp.category AS key, COUNT(*) AS n FROM community_posts cp ${POST_DOCUMENT_JOIN}
         WHERE ${PUBLIC_POST} GROUP BY cp.category`,
     ),
     env.DB.prepare(
       `SELECT t.tag AS key, COUNT(*) AS n FROM community_post_tags t
-         JOIN community_posts cp ON cp.id = t.post_id JOIN documents d ON d.id = cp.document_id
+         JOIN community_posts cp ON cp.id = t.post_id ${POST_DOCUMENT_JOIN}
         WHERE ${PUBLIC_POST} GROUP BY t.tag ORDER BY n DESC, t.tag LIMIT ?`,
     ).bind(COMMUNITY_POPULAR_TAGS),
   ]);
@@ -326,7 +328,7 @@ export async function listFeaturedCommunityPosts(
           GROUP BY post_id, COALESCE(network_hash, liker_key))
         GROUP BY post_id)
      SELECT ${COMMUNITY_POST_COLS}
-       FROM recent JOIN ${COMMUNITY_POST_FROM.replace('community_posts cp', 'community_posts cp ON cp.id = recent.post_id')}
+       FROM recent JOIN community_posts cp ON cp.id = recent.post_id ${POST_DOCUMENT_JOIN} ${POST_AUTHOR_JOIN}
       WHERE ${PUBLIC_POST}
       ORDER BY recent.recent_likes DESC, cp.like_count DESC, cp.published_at DESC
       LIMIT ?`,

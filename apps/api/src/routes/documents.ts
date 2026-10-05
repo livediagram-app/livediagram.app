@@ -49,12 +49,8 @@ import {
 } from '../responses';
 import { documentDates, isDocumentSource } from '@livediagram/api-schema';
 import { clientIp } from '../client-ip';
+import { documentImageSvg } from '../document-image';
 import { countCommunityCopy } from '../community-copy';
-import {
-  getCommunityThumbnailSvg,
-  getDocumentTabImageSvg,
-  getDocumentThumbnailSvg,
-} from '../thumbnail';
 import {
   redactDocumentForCommunity,
   redactDocumentForReader,
@@ -553,11 +549,12 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
       // A tab-scoped visitor (docs/specs/013-workspace/tab-scoped-share-links.md) gets their tab, never the
       // first-tab snapshot.
       // A Community visitor's thumbnail is drawn from the redacted tab, never the owner's snapshot.
-      const svg = grant.tabScope
-        ? await getDocumentTabImageSvg(env, d, grant.tabScope, grant.community)
-        : grant.community
-          ? await getCommunityThumbnailSvg(env, d, { defer: ctx.waitUntil })
-          : await getDocumentThumbnailSvg(env, d, { defer: ctx.waitUntil });
+      const svg = await documentImageSvg(
+        env,
+        d,
+        { tabId: grant.tabScope, community: grant.community === true },
+        { defer: ctx.waitUntil },
+      );
       // Nothing drawn (or no snapshot store). Past the gate, so this says
       // nothing about access, and the URL carries `?v=<savedAt>`: the answer
       // cannot change until the document does, so let the browser keep it

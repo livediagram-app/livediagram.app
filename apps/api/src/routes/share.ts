@@ -1,5 +1,6 @@
 // /api/share/<code> — resolve a share code to its document + role.
 
+import { documentImageSvg } from '../document-image';
 import { rowAuthor } from '../community-row';
 import {
   communityLinkAccess,
@@ -15,11 +16,6 @@ import { notifyDocumentJoin } from '../email/notifications';
 import { documentTrashed, forbidden, json, notFound, svgImage } from '../responses';
 import { reportServerEvent } from '../server-telemetry';
 import { sharePasswordStatus } from '../auth/share-access';
-import {
-  getCommunityThumbnailSvg,
-  getDocumentTabImageSvg,
-  getDocumentThumbnailSvg,
-} from '../thumbnail';
 import {
   redactDocumentForCommunity,
   redactDocumentForReader,
@@ -172,11 +168,7 @@ async function handleShareImage(ctx: RouteContext, code: string): Promise<Respon
   const tabId = link.tabId ?? asked;
   // A Community card image is drawn from the redacted tab, never the owner's snapshot.
   const community = link.purpose === 'community';
-  const svg = tabId
-    ? await getDocumentTabImageSvg(env, d, tabId, community)
-    : community
-      ? await getCommunityThumbnailSvg(env, d)
-      : await getDocumentThumbnailSvg(env, d);
+  const svg = await documentImageSvg(env, d, { tabId, community });
   return svg == null ? notFound() : svgImage(svg, cacheControl);
 }
 

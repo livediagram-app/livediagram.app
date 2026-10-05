@@ -38,9 +38,10 @@ export const COMMUNITY_POST_COLS = `cp.id, cp.document_id, cp.share_code, cp.aut
   cp.anonymous,
   pa.name AS author_name, pa.color AS author_color, pa.picture_url AS author_picture`;
 
-export const COMMUNITY_POST_FROM = `community_posts cp
-  JOIN documents d ON d.id = cp.document_id
-  LEFT JOIN participants pa ON pa.id = cp.author_id`;
+// A post's document (every public-post rule reads it) and its author's participant row.
+export const POST_DOCUMENT_JOIN = 'JOIN documents d ON d.id = cp.document_id';
+export const POST_AUTHOR_JOIN = 'LEFT JOIN participants pa ON pa.id = cp.author_id';
+export const COMMUNITY_POST_FROM = `community_posts cp ${POST_DOCUMENT_JOIN} ${POST_AUTHOR_JOIN}`;
 
 // A tags column that isn't a JSON array of strings reads as no tags rather than failing the whole list.
 export function parseTags(raw: string): string[] {

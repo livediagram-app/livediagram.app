@@ -1,15 +1,13 @@
 import {
   COMMUNITY_DESCRIPTION_MAX,
   COMMUNITY_DESCRIPTION_MIN,
-  COMMUNITY_TAG_MAX,
-  COMMUNITY_TAG_MIN,
-  COMMUNITY_TAGS_MAX,
   COMMUNITY_TITLE_MAX,
   COMMUNITY_TITLE_MIN,
   communityInputErrorField,
   communityPostInputErrors,
   type CommunityInputField,
 } from '@livediagram/api-schema';
+import { communityCodeMessage } from '@/lib/community-errors';
 
 // The publish dialog's per-field messages (docs/specs/025-community/blueprints/community.md §9): what is
 // wrong with each field, said where the field is and specific enough to fix it ("Add 7 more
@@ -43,8 +41,9 @@ function descriptionMessage(description: string): string {
   return `Keep it to ${COMMUNITY_DESCRIPTION_MAX} characters.`;
 }
 
-const CATEGORY_MESSAGE = 'Choose the category that fits best.';
-const TAGS_MESSAGE = `Tags are ${COMMUNITY_TAG_MIN} to ${COMMUNITY_TAG_MAX} letters, numbers or hyphens, up to ${COMMUNITY_TAGS_MAX} of them.`;
+// The same words as the worker's refusal codes, so the field and a server answer agree.
+const CATEGORY_MESSAGE = communityCodeMessage('invalid_category');
+const TAGS_MESSAGE = communityCodeMessage('invalid_tags');
 
 // Every failing field's message, keyed by field; empty when the draft is valid.
 export function publishFieldErrors(draft: PublishDraft): PublishFieldErrors {

@@ -25,7 +25,7 @@ const MESSAGES: Record<string, string> = {
   post_hidden: 'This post was hidden after reports, so it can no longer be changed or removed.',
   invalid_title: `The title needs ${COMMUNITY_TITLE_MIN} to ${COMMUNITY_TITLE_MAX} characters.`,
   invalid_description: `The description needs ${COMMUNITY_DESCRIPTION_MIN} to ${COMMUNITY_DESCRIPTION_MAX} characters.`,
-  invalid_category: 'Choose a category.',
+  invalid_category: 'Choose the category that fits best.',
   invalid_tags: `Tags are ${COMMUNITY_TAG_MIN} to ${COMMUNITY_TAG_MAX} letters, numbers or hyphens, up to ${COMMUNITY_TAGS_MAX} of them.`,
   community_published: 'Remove it from the Community to set a password.',
 };
