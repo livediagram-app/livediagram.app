@@ -32,6 +32,9 @@ service = "livediagram-help"
 # environment defines none and sets plain HTTP origins instead. The worker
 # falls back to proxying these when a binding is absent. See docs/specs/016-platform/router-app.md.
 [env.local.vars]
+# Tells the router it fronts `next dev`, whose chunks are not content-hashed, so their own
+# no-cache header passes through (docs/specs/016-platform/stale-builds.md "Caching rules").
+DEPLOY_ENV = "local"
 MARKETING_ORIGIN = "http://127.0.0.1:3001"
 LIVE_ORIGIN = "http://127.0.0.1:3002"
 API_ORIGIN = "http://127.0.0.1:8787"

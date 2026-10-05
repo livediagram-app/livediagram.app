@@ -150,7 +150,9 @@ function markNoIndex(response: Response): Response {
 async function withCachePolicy(request: Request, env: Env): Promise<Response> {
   const { pathname } = new URL(request.url);
   const response = await route(request, env);
-  return hasPrefix(pathname, API_PATH) ? response : applyCachePolicy(response, pathname);
+  if (hasPrefix(pathname, API_PATH)) return response;
+  // Locally the router fronts `next dev`, whose chunks are not content-hashed (cache-policy.ts).
+  return applyCachePolicy(response, pathname, { hashedAssets: env.DEPLOY_ENV !== 'local' });
 }
 
 export default {
