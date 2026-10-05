@@ -230,6 +230,11 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     values: ['Uncaught.Document.TypeError', 'UnhandledRejection.Explorer.Error'],
     open: 'a kind, the page it happened on, and the error name',
   },
+  // The Community's help deep links (docs/specs/018-help/contextual-help-links.md): COMMUNITY_HELP's two ids.
+  'packages/ui/src/community/CommunityHelpLink.tsx UI·Opened': {
+    values: ['community', 'finding-community-documents'],
+    open: SLUG_WHY,
+  },
   'packages/ui/src/PageViewTracker.tsx Page·View': {
     values: ['/', '/document', '/explorer/timeline', '/help/canvas/links', '/telemetry'],
     open: 'the page path, ids and query strings stripped',
