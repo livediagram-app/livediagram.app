@@ -273,6 +273,25 @@ describe('the caching rules', () => {
     ).toBe('public, max-age=31536000, immutable');
   });
 
+  it('locally passes next dev’s own chunk caching, so a reload runs the edited code', async () => {
+    // `next dev` keeps a chunk's name while its content changes, and marks it no-cache for that.
+    const devChunk = answering('x', {
+      headers: { 'Content-Type': 'text/javascript', 'Cache-Control': 'no-cache, must-revalidate' },
+    });
+    const local: Env = { DEPLOY_ENV: 'local', LIVE: devChunk };
+    expect(
+      (await dispatch('/live/_next/static/chunks/a.js', local)).headers.get('Cache-Control'),
+    ).toBe('no-cache, must-revalidate');
+    // Pages stay out of the cache locally too.
+    const page: Env = {
+      DEPLOY_ENV: 'local',
+      LIVE: answering('<html></html>', { headers: { 'Content-Type': 'text/html' } }),
+    };
+    expect((await dispatch('/explorer/unsorted', page)).headers.get('Cache-Control')).toBe(
+      'no-store',
+    );
+  });
+
   it('answers a missing build asset with plain text, not the HTML 404 page', async () => {
     const env: Env = {
       LIVE: answering('<html>404</html>', {
