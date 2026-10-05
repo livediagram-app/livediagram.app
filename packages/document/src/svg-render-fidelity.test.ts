@@ -23,8 +23,10 @@ describe('Behaviour face export', () => {
     expect(svg).toContain('>TIMER<');
     expect(svg).toContain('>10:00<');
     // 24 ticks, the quarters taller.
-    expect(svg.match(/<rect[^>]*height="7" fill="[^"]+" fill-opacity="0.3"\/>/g)).toHaveLength(4);
-    expect(svg.match(/<rect[^>]*height="4" fill="[^"]+" fill-opacity="0.16"\/>/g)).toHaveLength(20);
+    expect(svg.match(/<rect[^<>]*height="7" fill="[^"]+" fill-opacity="0.3"\/>/g)).toHaveLength(4);
+    expect(svg.match(/<rect[^<>]*height="4" fill="[^"]+" fill-opacity="0.16"\/>/g)).toHaveLength(
+      20,
+    );
   });
 
   it('names an unlabelled Mode button by its destination', () => {
@@ -77,7 +79,7 @@ describe('Behaviour face export', () => {
   it('starts a page label under the masthead, and turns back its corner', () => {
     const el = shape('page', { label: 'Body', pageTitle: 'Doc', pageSubtitle: 'Sub' });
     const svg = svgOf(el, '#0d121a');
-    const bodyY = Number(/<text x="[\d.]+" y="([\d.]+)"[^>]*font-size="14"/.exec(svg)?.[1]);
+    const bodyY = Number(/<text x="[\d.]+" y="([\d.]+)"[^<>]*font-size="14"/.exec(svg)?.[1]);
     const ruleY = Number(/<path d="M 26 ([\d.]+) L/.exec(svg)?.[1]);
     expect(bodyY).toBeGreaterThan(ruleY);
     // The cut corner shows the paper under the page.

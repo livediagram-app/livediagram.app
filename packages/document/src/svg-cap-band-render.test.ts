@@ -13,7 +13,7 @@ const svgOf = (elements: unknown[]) =>
 // Every <circle> immediately followed by a <text>: the glyph drawn in that disc.
 function discGlyphs(svg: string) {
   const re =
-    /<circle cx="([\d.-]+)" cy="([\d.-]+)" r="[\d.]+"[^>]*\/>(<text [^>]*>)([^<]*)<\/text>/g;
+    /<circle cx="([\d.-]+)" cy="([\d.-]+)" r="[\d.]+"[^<>]*\/>(<text [^<>]*>)([^<]*)<\/text>/g;
   return [...svg.matchAll(re)].map(([, , cy, open, glyph]) => ({
     cy: Number(cy),
     y: Number(/ y="([\d.-]+)"/.exec(open!)![1]),
@@ -43,11 +43,11 @@ describe('SVG progress label', () => {
     (kind) => {
       const el = createShape(kind, 0, 0);
       const svg = svgOf([el]);
-      const open = /<text [^>]*>(?=\d+%<\/text>)/.exec(svg)?.[0] ?? '';
+      const open = /<text [^<>]*>(?=\d+%<\/text>)/.exec(svg)?.[0] ?? '';
       expect(open, 'the label').not.toBe('');
       expect(open).not.toMatch(/dominant-baseline="central"/);
       const y = Number(/ y="([\d.-]+)"/.exec(open)![1]);
-      const top = Number(/<svg[^>]* viewBox="([\d.-]+) ([\d.-]+)/.exec(svg)![2]);
+      const top = Number(/<svg[^<>]* viewBox="([\d.-]+) ([\d.-]+)/.exec(svg)![2]);
       expect(y - top).toBeCloseTo(capBandBaselineY(el.height / 2, 14), 1);
     },
   );
