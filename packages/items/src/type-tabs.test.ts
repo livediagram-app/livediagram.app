@@ -27,6 +27,7 @@ describe('item type tabs', () => {
       'assignee',
       'priority',
       'estimate',
+      'start',
       'due',
       'labels',
       'parent',

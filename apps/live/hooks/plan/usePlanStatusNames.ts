@@ -5,7 +5,7 @@
 // a signature of the columns, so the map (and the Plan context) changes only when a column does.
 import { useMemo } from 'react';
 import type { Element } from '@livediagram/document';
-import { normaliseBoardSetup } from '@livediagram/items';
+import { normaliseBoardSetup, statusPhasesOf, type StatusPhase } from '@livediagram/items';
 
 export function statusColumnsOf(elements: readonly Element[]): [string, string][] {
   const out: [string, string][] = [];
@@ -29,4 +29,22 @@ export function usePlanStatusNames(
 ): ReadonlyMap<string, string> {
   const signature = enabled ? JSON.stringify(statusColumnsOf(elements)) : '[]';
   return useMemo(() => new Map(JSON.parse(signature) as [string, string][]), [signature]);
+}
+
+// The phase the tab's boards give each status (docs/specs/025-plan/plan-views.md "What a plan view reads"):
+// what the plan views count as Not Started, In Progress and Done. Keyed by a signature, like the names.
+export function usePlanStatusPhases(
+  elements: readonly Element[],
+  enabled: boolean,
+): ReadonlyMap<string, StatusPhase> {
+  const signature = enabled
+    ? JSON.stringify([
+        ...statusPhasesOf(
+          elements.flatMap((el) =>
+            el.type === 'shape' && el.shape === 'plan-board' ? [el.planBoard] : [],
+          ),
+        ),
+      ])
+    : '[]';
+  return useMemo(() => new Map(JSON.parse(signature) as [string, StatusPhase][]), [signature]);
 }

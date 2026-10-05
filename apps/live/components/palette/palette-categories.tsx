@@ -8,6 +8,7 @@
 // bodies, and without the import cycle an earlier dialog reached from inside a body once closed.
 
 import { BoardWidgetArt } from '@/components/plan/plan-tile-art';
+import { PlanViewArt } from '@/components/plan/plan-view-art';
 import {
   BehaviourTabIcon,
   BuildTabIcon,
@@ -85,6 +86,42 @@ export const PALETTE_CATEGORIES: {
     description:
       'Read-outs and controls for a board’s header: completion, a filter, people and more.',
     icon: <BoardWidgetArt kind="progress" size={18} />,
+  },
+  {
+    // Plan views (docs/specs/025-plan/plan-views.md): the read-out widgets free on the canvas, then charts
+    // of every card.
+    id: 'plan-metrics',
+    label: 'Metrics',
+    group: 4,
+    description:
+      'Live metrics over every card, placed anywhere on the canvas: completion, due soon and more.',
+    icon: <BoardWidgetArt kind="count" size={18} />,
+  },
+  {
+    id: 'plan-visualisations',
+    label: 'Visualisations',
+    group: 4,
+    description:
+      'Charts of every card: a project Gantt chart, a due calendar, workload by person and more.',
+    icon: <PlanViewArt view="gantt" size={18} />,
+  },
+  {
+    // The other elements a team plans beside its boards (docs/specs/025-plan/plan-mode.md "The palette"),
+    // the same tiles as their home categories. Offered in Plan mode only, and not card-backed, so they sit
+    // under the Common and Dynamic headings rather than Plan's.
+    id: 'plan-content',
+    label: 'Content',
+    group: 0,
+    description: 'Sticky notes, text, images and pages to sit beside the boards.',
+    icon: <WriteTabIcon />,
+  },
+  {
+    id: 'plan-tools',
+    label: 'Tools',
+    group: 3,
+    description:
+      'Facilitation for the team: temperature, estimates, an idea box, a picker and timers.',
+    icon: <BehaviourTabIcon />,
   },
   {
     id: 'shapes',

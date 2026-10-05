@@ -17,7 +17,7 @@ export const metadata = helpMetadata({
 
 **Plan mode** is a way of working on a tab, made for running work on boards: a Kanban board, a sprint, a bug triage, a retro or a roadmap. A **Plan board** shows your work as columns of cards. Each card is an **item**, a task, a bug, a note or an idea, stored with the document rather than drawn on the tab, so moving a card changes the item for everyone at once, and the same item can sit on two boards (a sprint board and a roadmap) and move on both. See [Items](/help/canvas/plan-mode/items/).
 
-Plan mode gives a tab over to boards. Its palette holds only **Cards** and **Boards**, it starts on the **Hand** tool (cards take the pointer themselves; pick **Select** to move or resize a board), and Layers, the Eraser and Format stay with the other modes.
+Plan mode gives a tab over to boards. Its palette holds **Cards**, **Boards**, **Widgets**, **Metrics** and **Visualisations**, then **Content** (sticky notes, text, images and pages) and **Tools** (Temperature, Estimate, Idea Box, Picker, Timer and Stopwatch), it starts on the **Hand** tool (cards take the pointer themselves; pick **Select** to move or resize a board), and Layers, the Eraser and Format stay with the other modes.
 
 ## Switching modes
 
@@ -85,6 +85,20 @@ A board's header holds **widgets**: small read-outs and controls such as **Compl
 A board holds each widget once; adding one it already has makes it flash.
 
 **Widgets narrow the board**: press a person in People, a type in Card Types, a priority, Unassigned, or the overdue count in Due Soon to see only those cards, and press it again to see everything. While the board is narrowed, Item Count reads "3 of 14 · Show all". Top Voted opens the leading card, and a Completion widget on a board without a done column offers **Set Done Column**.
+
+## Metrics and Visualisations
+
+**Metrics** are the read-out widgets, free on the canvas: place **Completion**, **Due Soon**, **People** or any other beside your boards, and each counts every card in the document, whatever board it is on. Archived cards and the Trash are left out.
+
+**Visualisations** chart every card:
+
+- **Project Gantt Chart**: a row per Project card, a bar from its **Start** to its **Due** date, filled to the share of its cards done, with a line for today. A project with only a due date is a diamond; press **Add a start date** to open it and set one.
+- **Due Calendar**: this month, each day listing the cards due then. Step through months with the arrows.
+- **Workload by Person**: a bar per person, split Not Started, In Progress and Done.
+- **Status Breakdown**: a donut of the cards by status.
+- **Priority by Status**: how many cards of each priority are not started, in progress and done.
+
+A card counts as done when its status is a board's done column. In Plan mode, press a row or entry to open its card; in other modes, double-click it. Resize a visualisation like any element.
 
 ## Together
 

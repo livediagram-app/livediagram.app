@@ -11,6 +11,7 @@ import {
 import { BoardWidgetArt, PlanBoardTileArt, PlanCardTileArt } from '@/components/plan/plan-tile-art';
 import { BOARD_WIDGET_INFO } from '@/components/plan/board-widget-catalogue';
 import type { PaletteTileDef } from './palette-tile-defs';
+import { PLAN_VIEW_TILES } from './palette-plan-view-tiles';
 
 const GLYPH_PX = 18;
 
@@ -90,6 +91,8 @@ export const PLAN_TILES: PaletteTileDef[] = [
     action: { type: 'plan-widget', widget: w },
     icon: <BoardWidgetArt kind={w} size={GLYPH_PX} />,
   })),
+  // Metrics and visualisations (docs/specs/025-plan/plan-views.md): plan views placed on the canvas.
+  ...PLAN_VIEW_TILES,
 ];
 
 // A card tile for an item type (docs/specs/025-plan/item-types.md "Where types show"): the built-in

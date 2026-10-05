@@ -26,3 +26,10 @@ describe('usePlanNeeded', () => {
     expect(result.current).toBe(true);
   });
 });
+
+describe('usePlanNeeded on a Plan tab', () => {
+  it('fetches for a tab that opens in Plan, board or not', () => {
+    const { result } = renderHook(() => usePlanNeeded([], null, true));
+    expect(result.current).toBe(true);
+  });
+});

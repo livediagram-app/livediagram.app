@@ -379,7 +379,8 @@ export function drawsStandardLabel(el: BoxedElement): boolean {
       el.shape === 'legend' ||
       el.shape === 'checklist' ||
       el.shape === 'plan-board' ||
-      el.shape === 'plan-card')
+      el.shape === 'plan-card' ||
+      el.shape === 'plan-view')
   )
     return false;
   return !selfLabelled(el);

@@ -14,6 +14,9 @@ import {
   isPriority,
   normaliseBoardSetup,
   projectBoard,
+  planViewMetric,
+  PLAN_VISUALISATION_LABELS,
+  type PlanVisualisation,
   type Item,
   type ItemTypeDef,
 } from '@livediagram/items';
@@ -225,5 +228,26 @@ export function svgPlanCard(
     el.height,
     planPalette(surface, ownColours(el)),
     types,
+  );
+}
+
+// A plan view (docs/specs/025-plan/plan-views.md "On the canvas") in an export: a labelled box, its view's
+// name, not the live chart.
+export function svgPlanView(el: Shape, surface: CanvasSurface): string {
+  const p = planPalette(surface, ownColours(el));
+  const view = el.planView?.view;
+  const label =
+    view && !planViewMetric(view) ? PLAN_VISUALISATION_LABELS[view as PlanVisualisation] : 'Metric';
+  const size = Math.min(14, Math.max(10, el.height / 4));
+  return (
+    `<rect x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}" rx="10" fill="${p.surface}" stroke="${p.border}" stroke-width="1"/>` +
+    text(
+      el.x + PAD,
+      el.y + Math.min(el.height / 2 + 4, PAD + size),
+      size,
+      p.text,
+      fit(label, el.width - PAD * 2, size),
+      ' font-weight="600"',
+    )
   );
 }

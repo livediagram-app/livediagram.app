@@ -1,4 +1,10 @@
-import { freshBoardSetup, newItemId, planBoardWidthFor } from '@livediagram/items';
+import {
+  freshBoardSetup,
+  isPlanViewId,
+  newItemId,
+  planBoardWidthFor,
+  planViewSize,
+} from '@livediagram/items';
 import {
   defaultSessionConfig,
   eventStormingNote,
@@ -397,6 +403,13 @@ export function buildDrawnBoxed(
       : {}),
     ...(intent.type === 'shape' && intent.kind === 'plan-card'
       ? { planCard: { itemId: newItemId() } }
+      : {}),
+    // A plan view takes its tile's view (docs/specs/025-plan/plan-views.md), tapped in at that view's size.
+    ...(intent.type === 'shape' && intent.kind === 'plan-view' && isPlanViewId(intent.plan)
+      ? { planView: { view: intent.plan } }
+      : {}),
+    ...(intent.type === 'shape' && intent.kind === 'plan-view' && isTap
+      ? planViewSize(intent.plan)
       : {}),
     ...(intent.type === 'shape' && intent.kind === 'mode-button' && intent.mode
       ? { mode: intent.mode }

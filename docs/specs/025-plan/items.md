@@ -68,6 +68,10 @@ Five built-in types, each with a glyph, an accent colour and the fields it offer
 | Idea    | Yellow | A proposal to weigh                    | title, description, status, votes, labels                                                       |
 | Action  | Red    | Something agreed to do                 | title, status, assignee, due                                                                    |
 
+- **Start** sits right before Due, on Projects (so they map onto the [Gantt chart](plan-views.md#project-gantt-chart))
+  and Tasks, edited with the same date picker as Due. A start after the due date is kept, and the item panel
+  says **Starts after it is due** under it, gently. Start is a card field like Due; the Roadmap board and the
+  Project Overview template show it on their cards.
 - A bug is a Task labelled `bug`.
 - A document can change these and add its own, with custom fields: see [Item types](item-types.md).
 

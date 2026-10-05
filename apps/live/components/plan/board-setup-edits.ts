@@ -37,6 +37,7 @@ export const CARD_FIELD_LABELS: Record<CardField, string> = {
   priority: 'Priority',
   labels: 'Labels',
   estimate: 'Estimate',
+  start: 'Start Date',
   due: 'Due Date',
   votes: 'Votes',
   checklist: 'Checklist',

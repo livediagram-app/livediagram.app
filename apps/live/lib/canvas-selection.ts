@@ -166,7 +166,9 @@ export function deriveCanvasSelection(input: {
     // (docs/specs/025-plan/plan-board.md).
     !(
       selected.type === 'shape' &&
-      (selected.shape === 'plan-board' || selected.shape === 'plan-card')
+      (selected.shape === 'plan-board' ||
+        selected.shape === 'plan-card' ||
+        selected.shape === 'plan-view')
     ) &&
     editingId !== selected.id &&
     !isPaintMode &&

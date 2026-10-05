@@ -11,11 +11,14 @@ describe('statusColumnsOf', () => {
     const names = statusColumnsOf([
       board('blank'),
       board('kanban'),
+      board('kanban'),
       board('all-cards'),
       board('archive'),
     ]);
-    expect(names[0]).toEqual(['todo', 'To do']);
-    expect(names.filter(([s]) => s === 'todo')).toHaveLength(1);
+    // Blank has no columns; the Kanban's come first, each status once though two boards name it.
+    const first = presetSetup('kanban').columns[0]!;
+    expect(names[0]).toEqual([first.status, first.name]);
+    expect(names.filter(([s]) => s === first.status)).toHaveLength(1);
     expect(names.some(([s]) => s === 'all' || s === 'archived')).toBe(false);
   });
 });

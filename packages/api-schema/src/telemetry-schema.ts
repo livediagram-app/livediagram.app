@@ -421,6 +421,7 @@ export const PALETTE_TELEMETRY_TYPES = {
     // Plan board and Plan card (docs/specs/025-plan/plan-mode.md "Telemetry").
     'PlanBoard',
     'PlanCard',
+    'PlanView',
     'ModeButton',
     'Portal',
     'SessionButton',

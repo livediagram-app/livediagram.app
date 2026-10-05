@@ -42,6 +42,10 @@ const PlanCardView = dynamic(
   () => import('@/components/plan/PlanCardView').then((m) => m.PlanCardView),
   { ssr: false },
 );
+const PlanViewView = dynamic(
+  () => import('@/components/plan/views/PlanViewView').then((m) => m.PlanViewView),
+  { ssr: false },
+);
 
 // Plan's UI loads only when it is drawn (docs/specs/025-plan/plan-mode.md "Cost"), so a document without
 // Plan pays nothing for it.
@@ -192,6 +196,9 @@ export function ShapeContentRouter({
   ) : element.type === 'shape' && element.shape === 'plan-card' ? (
     // Plan card (docs/specs/025-plan/plan-board.md "The Plan card"): one item's card face.
     <PlanCardView element={element} fontFamily={fontFamily} />
+  ) : element.type === 'shape' && element.shape === 'plan-view' ? (
+    // Plan view (docs/specs/025-plan/plan-views.md): a metric or a visualisation of every card.
+    <PlanViewView element={element} fontFamily={fontFamily} />
   ) : element.type === 'shape' && isChecklistShape(element.shape) ? (
     // Checklist (docs/specs/009-elements/checklist.md): themed card of checkbox rows; boxes toggle
     // on-canvas for anyone with edit access (no select-first required).

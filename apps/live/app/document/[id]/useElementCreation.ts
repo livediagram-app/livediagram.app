@@ -1,4 +1,4 @@
-import { freshBoardSetup, planBoardWidthFor } from '@livediagram/items';
+import { freshBoardSetup, isPlanViewId, planBoardWidthFor, planViewSize } from '@livediagram/items';
 import { SHAPE_DEFAULT_SIZE } from '@livediagram/document';
 import type { Selection } from '@/lib/selection-store';
 import { type Dispatch, type SetStateAction } from 'react';
@@ -45,6 +45,14 @@ function planBoardPlacement(preset: string | undefined) {
   return {
     planBoard,
     width: Math.max(SHAPE_DEFAULT_SIZE['plan-board'].width, planBoardWidthFor(planBoard)),
+  };
+}
+
+// A plan view placed from the palette (docs/specs/025-plan/plan-views.md): its tile's view, at its size.
+function planViewPlacement(view: string | undefined) {
+  return {
+    ...(isPlanViewId(view) ? { planView: { view } } : {}),
+    ...planViewSize(view),
   };
 }
 
@@ -416,6 +424,7 @@ export function useElementCreation(opts: {
                 : {}),
               // A board wide enough for its columns (docs/specs/025-plan/plan-board.md).
               ...(kind === 'plan-board' ? planBoardPlacement(art?.choice) : {}),
+              ...(kind === 'plan-view' ? planViewPlacement(art?.choice) : {}),
             },
       // Shapes and icons open for typing too; takesTypedLabel filters out the
       // kinds whose face isn't text (stickers, session buttons, ...).

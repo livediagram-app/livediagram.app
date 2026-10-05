@@ -12,6 +12,8 @@ export type ItemFieldId =
   | 'priority'
   | 'labels'
   | 'estimate'
+  // When the work begins (docs/specs/025-plan/items.md "Fields"): a Project's bar on the Gantt chart.
+  | 'start'
   | 'due'
   | 'checklist'
   | 'parent'
@@ -71,6 +73,7 @@ const WORK: readonly ItemFieldId[] = [
   'assignee',
   'priority',
   'estimate',
+  'start',
   'due',
   'checklist',
   'labels',
@@ -84,7 +87,7 @@ export const ITEM_TYPES = [
     newTitle: 'New project',
     glyph: 'project',
     color: '#18181b',
-    fields: ['title', 'description', 'status', 'assignee', 'priority', 'due', 'labels'],
+    fields: ['title', 'description', 'status', 'assignee', 'priority', 'start', 'due', 'labels'],
   },
   {
     id: 'task',

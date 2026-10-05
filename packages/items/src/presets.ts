@@ -121,7 +121,7 @@ export const PLAN_BOARD_PRESETS: Readonly<
       title: 'Roadmap',
       columns: [col('now', 'Now'), col('next', 'Next'), col('later', 'Later')],
       swimlaneBy: 'none',
-      cardFields: ['key', 'assignee', 'labels'],
+      cardFields: ['key', 'assignee', 'labels', 'start', 'due'],
       voting: { on: false },
       widgets: ['count', 'progress', 'due', 'people', 'filter'],
       addTypes: ['project'],

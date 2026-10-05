@@ -133,6 +133,8 @@ export const SHAPE_KIND_FIELDS: Readonly<Record<string, readonly string[]>> = {
   // the item verbs, never through element fields.
   'plan-board': ['planBoard'],
   'plan-card': ['planCard'],
+  // docs/specs/025-plan/plan-views.md: which view of the cards it shows.
+  'plan-view': ['planView'],
 };
 
 function storedFieldsOf(kind: string, el: Element): readonly string[] {

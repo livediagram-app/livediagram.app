@@ -81,6 +81,15 @@ function DueTag({ due, done, palette }: { due: string; done: boolean; palette: P
   );
 }
 
+// When the work begins, muted: only a due date turns red.
+function StartTag({ start, palette }: { start: string; palette: PlanPalette }) {
+  return (
+    <span className="inline-flex items-center gap-1" style={{ color: palette.muted }}>
+      From {dueLabel(start)}
+    </span>
+  );
+}
+
 function PriorityDot({ priority, label }: { priority: Priority; label?: boolean }) {
   return (
     <span className="inline-flex items-center gap-1">
@@ -139,6 +148,7 @@ export function PlanCardFace({
   const labels = itemLabels(item);
   const estimate = item.fields['estimate'];
   const due = item.fields['due'];
+  const start = item.fields['start'];
   const description = item.fields['description'];
   const parentId = item.fields['parent'];
   const parent = typeof parentId === 'string' ? plan?.items.get(parentId) : undefined;
@@ -190,6 +200,7 @@ export function PlanCardFace({
       show('key') ||
       (show('priority') && isPriority(priority)) ||
       (show('due') && typeof due === 'string') ||
+      (show('start') && typeof start === 'string') ||
       votesBit ||
       (show('assignee') && assignee);
     return (
@@ -219,6 +230,9 @@ export function PlanCardFace({
           >
             {show('key') ? <span className="tabular-nums">#{item.key}</span> : null}
             {show('priority') && isPriority(priority) ? <PriorityDot priority={priority} /> : null}
+            {show('start') && typeof start === 'string' ? (
+              <StartTag start={start} palette={palette} />
+            ) : null}
             {show('due') && typeof due === 'string' ? (
               <DueTag due={due} done={!!muted} palette={palette} />
             ) : null}
@@ -242,6 +256,7 @@ export function PlanCardFace({
   });
   const footer =
     (show('due') && typeof due === 'string') ||
+    (show('start') && typeof start === 'string') ||
     (show('estimate') && typeof estimate === 'number') ||
     votesBit ||
     (show('assignee') && assignee);
@@ -338,6 +353,9 @@ export function PlanCardFace({
           className="mt-auto flex items-center gap-2.5 border-t pt-2 text-[11px] font-medium"
           style={{ color: palette.muted, borderColor: palette.cardBorder }}
         >
+          {show('start') && typeof start === 'string' ? (
+            <StartTag start={start} palette={palette} />
+          ) : null}
           {show('due') && typeof due === 'string' ? (
             <DueTag due={due} done={!!muted} palette={palette} />
           ) : null}

@@ -7,7 +7,7 @@ import { setPlanWidgetEditor } from '@/hooks/plan/plan-widget-drop';
 import { debugLog } from '@/lib/debug-log';
 import { usePlanItems } from '@/hooks/plan/usePlanItems';
 import { usePlanNeeded } from '@/hooks/plan/usePlanNeeded';
-import { usePlanStatusNames } from '@/hooks/plan/usePlanStatusNames';
+import { usePlanStatusNames, usePlanStatusPhases } from '@/hooks/plan/usePlanStatusNames';
 import { useTeamPeople } from '@/hooks/plan/useTeamPeople';
 import { useItemTypes } from '@/hooks/plan/useItemTypes';
 import { PLAN_LEFT_OUT_TOOLS, useModeDefaultTool } from '@/hooks/editor/useModeDefaultTool';
@@ -60,7 +60,7 @@ import { useStyleMemory } from '@/hooks/canvas/useStyleMemory';
 import type { QuickStyleDeps } from '@/hooks/canvas/useQuickStyle';
 import { useSwatchOverrides } from '@/hooks/canvas/useSwatchOverrides';
 import { getTheme } from '@/lib/themes';
-import { DEFAULT_SCHEME_ID } from '@livediagram/document';
+import { DEFAULT_SCHEME_ID, opensInOf } from '@livediagram/document';
 import { useEditorMode, usePinTabOpening } from '@/hooks/editor/useEditorMode';
 import { useArticles } from '@/hooks/editor/useArticles';
 import { useIllustratePages } from '@/hooks/editor/useIllustratePages';
@@ -1025,9 +1025,11 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
 
   // The document's items (docs/specs/025-plan/items.md): what Plan boards and Plan cards draw.
   // Items load only for a document with Plan content (docs/specs/025-plan/plan-mode.md "Cost").
+  const planOpenTab = tabs.find((t) => t.id === activeId) ?? tabs[0];
   const planNeeded = usePlanNeeded(
-    (tabs.find((t) => t.id === activeId) ?? tabs[0])?.elements ?? NO_ELEMENTS,
+    planOpenTab?.elements ?? NO_ELEMENTS,
     documentPresentation,
+    opensInOf(planOpenTab) === 'plan',
   );
   const planItems = usePlanItems({
     documentId,
@@ -1968,6 +1970,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // takes, handed to the canvas through PlanContext. See usePlanSlice.
   // The tab's status names, read only where Plan is in play (docs/specs/025-plan/plan-mode.md "Cost").
   const planStatusNames = usePlanStatusNames(activeTab.elements, planNeeded);
+  const planStatusPhases = usePlanStatusPhases(activeTab.elements, planNeeded);
   // Assignees: the members of your teams (docs/specs/025-plan/items.md "Who may do what").
   const teamPeople = useTeamPeople(selfParticipant.id, planNeeded);
   const plan = usePlanSlice({
@@ -1984,6 +1987,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     announce,
     addItemSlide: slideDeck.newItemSlide,
     statusNames: planStatusNames,
+    statusPhases: planStatusPhases,
   });
 
   // Undo / redo handlers. See useEditorHistory.

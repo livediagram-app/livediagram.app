@@ -66,6 +66,10 @@ describe('contentSummaryOf (R14)', () => {
     expect(contentSummaryOf(shape('plan-card', { planCard: { itemId: 'i1' } }))).toBe('item=i1');
     expect(contentSummaryOf(shape('plan-card', { planCard: { itemId: '' } }))).toBe('item=none');
     expect(contentSummaryOf(shape('plan-card', { planCard: undefined }))).toBe('item=none');
+    expect(contentSummaryOf(shape('plan-view', { planView: { view: 'gantt' } }))).toBe(
+      'view=gantt',
+    );
+    expect(contentSummaryOf(shape('plan-view', { planView: undefined }))).toBe('view=none');
   });
 
   it('has nothing to say about other kinds', () => {

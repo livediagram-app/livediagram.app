@@ -65,6 +65,7 @@ describe('plan templates', () => {
       'type',
       'assignee',
       'priority',
+      'start',
       'due',
       'checklist',
       'parent',

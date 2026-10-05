@@ -47,6 +47,7 @@ export const KNOWN_FIELDS: Readonly<Record<ItemFieldId, ItemFieldKind>> = {
   priority: 'priority',
   labels: 'labels',
   estimate: 'number',
+  start: 'date',
   due: 'date',
   checklist: 'checklist',
   parent: 'item-ref',

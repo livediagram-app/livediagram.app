@@ -1123,6 +1123,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       'priority',
       'labels',
       'estimate',
+      'start',
       'due',
       'votes',
       'checklist',
@@ -2261,6 +2262,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             type: 'object',
           },
           'plan-card': {
+            additionalProperties: false,
+            properties: {
+              fill: {
+                type: 'string',
+              },
+              stroke: {
+                type: 'string',
+              },
+              text: {
+                type: 'string',
+              },
+            },
+            type: 'object',
+          },
+          'plan-view': {
             additionalProperties: false,
             properties: {
               fill: {
@@ -5924,6 +5940,67 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     type: 'string',
   },
+  PlanViewId: {
+    anyOf: [
+      {
+        const: 'metric:count',
+        type: 'string',
+      },
+      {
+        const: 'metric:progress',
+        type: 'string',
+      },
+      {
+        const: 'metric:people',
+        type: 'string',
+      },
+      {
+        const: 'metric:types',
+        type: 'string',
+      },
+      {
+        const: 'metric:priorities',
+        type: 'string',
+      },
+      {
+        const: 'metric:due',
+        type: 'string',
+      },
+      {
+        const: 'metric:unassigned',
+        type: 'string',
+      },
+      {
+        const: 'metric:points',
+        type: 'string',
+      },
+      {
+        const: 'metric:top-voted',
+        type: 'string',
+      },
+      {
+        const: 'metric:stale',
+        type: 'string',
+      },
+      {
+        $ref: '#/components/schemas/PlanVisualisation',
+      },
+    ],
+  },
+  PlanViewRef: {
+    additionalProperties: false,
+    properties: {
+      view: {
+        $ref: '#/components/schemas/PlanViewId',
+      },
+    },
+    required: ['view'],
+    type: 'object',
+  },
+  PlanVisualisation: {
+    enum: ['gantt', 'calendar', 'workload', 'status-mix', 'priority-matrix'],
+    type: 'string',
+  },
   PollStyle: {
     enum: ['yesNo', 'yesNoAbstain', 'choice', 'collaborators', 'rating', 'text'],
     type: 'string',
@@ -6618,6 +6695,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       planCard: {
         $ref: '#/components/schemas/PlanCardRef',
       },
+      planView: {
+        $ref: '#/components/schemas/PlanViewRef',
+      },
       portalTarget: {
         $ref: '#/components/schemas/ElementId',
       },
@@ -6864,6 +6944,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       'sticker',
       'plan-board',
       'plan-card',
+      'plan-view',
     ],
     type: 'string',
   },

@@ -132,3 +132,40 @@ describe('plan shapes in exports', () => {
     expect(renderElementsToSvg(tab, { items })).toContain('Fix &lt;login&gt;');
   });
 });
+
+// The plan view (docs/specs/025-plan/blueprints/plan-views.md "Element model").
+describe('plan view shape', () => {
+  it('is made with a view, named, self-drawing and self-painting', () => {
+    const view = createShape('plan-view', 0, 0);
+    expect(view).toMatchObject({ width: 720, height: 400, planView: { view: 'status-mix' } });
+    expect(elementKindLabel(view)).toBe('Plan View');
+    expect(isPlanShape('plan-view')).toBe(true);
+    expect(isSelfDrawingShape('plan-view')).toBe(true);
+    expect(SELF_PAINTING_SHAPES.has('plan-view')).toBe(true);
+  });
+
+  it('validates its view', () => {
+    const view = createShape('plan-view', 0, 0);
+    expect(elementValidationIssue({ ...view, planView: { view: 'gantt' } })).toBeNull();
+    expect(elementValidationIssue({ ...view, planView: { view: 'metric:due' } })).toBeNull();
+    expect(elementValidationIssue({ ...view, planView: { view: 'metric:filter' } })).toMatchObject({
+      field: 'planView',
+    });
+    expect(elementValidationIssue({ ...view, planView: 'gantt' })).toMatchObject({
+      field: 'planView',
+    });
+  });
+
+  it('exports as a labelled box', () => {
+    const gantt = {
+      ...createShape('plan-view', 0, 0),
+      planView: { view: 'gantt' },
+    } as BoxedElement;
+    expect(svgBoxed(gantt)).toContain('Project Gantt Chart');
+    const widget = {
+      ...createShape('plan-view', 0, 0),
+      planView: { view: 'metric:count' },
+    } as BoxedElement;
+    expect(svgBoxed(widget)).toContain('Metric');
+  });
+});

@@ -178,4 +178,7 @@ export type ShapeKind =
   | 'plan-board'
   // Plan card (docs/specs/025-plan/plan-board.md "The Plan card"): one item placed on the canvas,
   // named by `planCard.itemId`.
-  | 'plan-card';
+  | 'plan-card'
+  // Plan view (docs/specs/025-plan/plan-views.md): a metric or a visualisation of every card,
+  // named by `planView.view`.
+  | 'plan-view';

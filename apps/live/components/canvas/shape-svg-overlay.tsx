@@ -87,9 +87,10 @@ export function isSvgRenderedShape(kind: ShapeKind): boolean {
     !isWebComponentShape(kind) &&
     // A chair (docs/specs/009-elements/chair.md) draws its own furniture and wants no box behind it.
     kind !== 'chair' &&
-    // The Plan board and card (docs/specs/025-plan/plan-board.md) paint their own surfaces.
+    // The Plan board, card and view (docs/specs/025-plan/plan-board.md, plan-views.md) paint their own surfaces.
     kind !== 'plan-board' &&
-    kind !== 'plan-card'
+    kind !== 'plan-card' &&
+    kind !== 'plan-view'
   );
 }
 

@@ -88,8 +88,9 @@ Where each is set, so a setting lives with what it changes, never in one central
     sits under, two lines of its description, custom fields shown on cards, up to four labels, a checklist
     progress bar, then a footer of the due date (red once past, unless done), the estimate, votes and the
     assignee's first name and avatar.
-  - The fields are Number, Type, Assignee, Priority, Labels, Estimate, Due Date, Votes, Checklist, Description and
-    Project; Compact draws Number, Type, Assignee, Priority, Due Date and Votes.
+  - The fields are Number, Type, Assignee, Priority, Labels, Estimate, Start Date, Due Date, Votes, Checklist,
+    Description and Project; Compact draws Number, Type, Assignee, Priority, Start Date, Due Date and Votes. A
+    start date reads "From 1 Oct", muted.
 - **Swimlanes**: a labelled row per group (an assignee's avatar and name, a type's glyph), "No assignee" last.
   Each swimlane collapses on its own, per person.
 - **Unplaced**: when items have a status no column shows, the header says "3 not on this board"; opening

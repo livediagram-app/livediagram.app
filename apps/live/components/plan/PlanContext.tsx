@@ -13,6 +13,7 @@ import type {
   ItemPerson,
   ItemTypeDef,
   PlanBoardSetup,
+  StatusPhase,
 } from '@livediagram/items';
 import type { PlanItemsStatus } from '@/hooks/plan/usePlanItems';
 import type { ItemTypesSlice } from '@/hooks/plan/useItemTypes';
@@ -72,6 +73,9 @@ export type PlanContextValue = {
   addItemSlide?: (itemId: string) => void;
   // The names the tab's boards give their statuses, in order (an All Cards board's rows).
   statusNames: ReadonlyMap<string, string>;
+  // The phase the tab's boards give each status: what the plan views count as done
+  // (docs/specs/025-plan/plan-views.md "What a plan view reads").
+  statusPhases: ReadonlyMap<string, StatusPhase>;
 };
 
 const PlanContext = createContext<PlanContextValue | undefined>(undefined);

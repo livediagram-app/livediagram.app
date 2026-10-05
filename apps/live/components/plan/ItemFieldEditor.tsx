@@ -32,6 +32,7 @@ export const FIELD_LABELS: Partial<Record<ItemFieldId, string>> = {
   priority: 'Priority',
   labels: 'Labels',
   estimate: 'Estimate',
+  start: 'Start',
   due: 'Due',
   checklist: 'Checklist',
   parent: 'Parent',
@@ -133,6 +134,21 @@ export function ItemFieldEditor({ f, ctx }: { f: string; ctx: ItemFieldContext }
       );
     case 'estimate':
       return <NumberField id={id} value={value} disabled={disabled} onSave={(v) => onSave(f, v)} />;
+    case 'start': {
+      // A start after its due date is kept, and said gently (docs/specs/025-plan/items.md "Fields").
+      const due = item.fields['due'];
+      const late = typeof value === 'string' && typeof due === 'string' && value > due;
+      return (
+        <div className="flex flex-col gap-1">
+          <DateField id={id} value={value} disabled={disabled} onSave={(v) => onSave(f, v)} />
+          {late ? (
+            <span className="text-[12px] text-amber-700 dark:text-amber-300" role="note">
+              Starts after it is due
+            </span>
+          ) : null}
+        </div>
+      );
+    }
     case 'due':
       return <DateField id={id} value={value} disabled={disabled} onSave={(v) => onSave(f, v)} />;
     case 'checklist':

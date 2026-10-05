@@ -135,6 +135,7 @@ export const ELEMENT_FIELD_NAMES = {
     'checklistItems',
     'planBoard',
     'planCard',
+    'planView',
     'marker',
     'markerSize',
     'aspectLocked',

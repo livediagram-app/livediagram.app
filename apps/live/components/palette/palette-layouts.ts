@@ -137,14 +137,32 @@ const ILLUSTRATE: PaletteLayout = {
   ],
 };
 
-// Plan mode (docs/specs/025-plan/plan-mode.md "The palette"): boards and cards first, then the words,
-// shapes, glyphs, stickers and pictures that sit round a board; nothing that organises a diagram.
+// Plan mode (docs/specs/025-plan/plan-mode.md "The palette"): cards, boards and their widgets first, then the
+// plan views that read every card (docs/specs/025-plan/plan-views.md), then the few other elements a team
+// plans beside its boards, borrowed from Write, Media and Behaviours; nothing that organises a diagram.
 const PLAN: PaletteLayout = {
-  // Cards, Boards and Widgets only (docs/specs/025-plan/plan-mode.md "The palette"), opening on Cards: a Plan tab
-  // is worked by its boards, so the drawing, writing and decorating categories, and a Popular
-  // drawn from them, stay with the other modes.
+  // Opening on Cards: a Plan tab is worked by its boards, so the drawing and decorating categories, and a
+  // Popular drawn from them, stay with the other modes.
   landing: 'plan-cards',
-  categories: [{ id: 'plan-cards' }, { id: 'plan-boards' }, { id: 'plan-widgets' }],
+  categories: [
+    { id: 'plan-cards' },
+    { id: 'plan-boards' },
+    { id: 'plan-widgets' },
+    { id: 'plan-metrics' },
+    { id: 'plan-visualisations' },
+    { id: 'plan-content', tiles: ['tools:sticky', 'tools:text', 'tools:image', 'tools:page'] },
+    {
+      id: 'plan-tools',
+      tiles: [
+        'collab:temperature',
+        'collab:estimate',
+        'collab:idea-box',
+        'tools:picker',
+        'tools:session-timer',
+        'tools:session-stopwatch',
+      ],
+    },
+  ],
 };
 
 export const PALETTE_LAYOUTS = { diagram: DIAGRAM, illustrate: ILLUSTRATE, plan: PLAN } as const;

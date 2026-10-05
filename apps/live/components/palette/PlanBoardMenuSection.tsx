@@ -49,6 +49,7 @@ const FIELD_GLYPHS: Record<CardField, string> = {
   priority: 'flag',
   labels: 'bookmark',
   estimate: 'cube',
+  start: 'calendar',
   due: 'calendar',
   votes: 'star',
   checklist: 'action',

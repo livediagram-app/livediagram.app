@@ -212,9 +212,10 @@ export function isSelfDrawingShape(kind: ShapeKind): boolean {
   );
 }
 
-// The Plan board and Plan card (docs/specs/025-plan/plan-board.md): they draw items, not a label.
+// The Plan board, Plan card and plan view (docs/specs/025-plan/plan-board.md, plan-views.md): they draw
+// items, not a label.
 export function isPlanShape(kind: ShapeKind): boolean {
-  return kind === 'plan-board' || kind === 'plan-card';
+  return kind === 'plan-board' || kind === 'plan-card' || kind === 'plan-view';
 }
 
 // Round to a whole number and clamp into [0, max]. The fiddly half of the

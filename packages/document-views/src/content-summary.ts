@@ -68,6 +68,10 @@ export function contentSummaryOf(el: Element): string | null {
       const card = (el as { planCard?: { itemId?: unknown } }).planCard;
       return `item=${typeof card?.itemId === 'string' && card.itemId ? card.itemId : 'none'}`;
     }
+    case 'plan-view': {
+      const view = (el as { planView?: { view?: unknown } }).planView?.view;
+      return `view=${typeof view === 'string' ? view : 'none'}`;
+    }
     default:
       return null;
   }

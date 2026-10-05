@@ -100,6 +100,9 @@ export type PaletteTileSection =
   | 'plan-boards'
   | 'plan-cards'
   | 'plan-widgets'
+  // Plan views (docs/specs/025-plan/plan-views.md): metrics and visualisations.
+  | 'plan-metrics'
+  | 'plan-visualisations'
   | 'tools'
   | 'data'
   // 'collaborate' is GONE (docs/specs/010-palette/palette-top-level-categories.md). The collaboration family (docs/specs/012-collaboration/estimate-card.md to

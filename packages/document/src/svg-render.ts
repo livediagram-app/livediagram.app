@@ -9,7 +9,7 @@
 // (Workers / jsdom), so wrapping still works headless.
 
 import type { Item, ItemTypeDef } from '@livediagram/items';
-import { svgPlanBoard, svgPlanCard } from './svg-render-plan';
+import { svgPlanBoard, svgPlanCard, svgPlanView } from './svg-render-plan';
 import {
   hasShapeSilhouette,
   scaledPolygonPoints,
@@ -203,12 +203,18 @@ export function svgBoxed(source: BoxedElement, opts: BoxedExportOptions = {}): s
       el.textColor ?? '#1e293b',
     )}</g>`;
   }
-  if (el.type === 'shape' && (el.shape === 'plan-board' || el.shape === 'plan-card')) {
-    // Columns of cards, or one card, drawn from the document's items (docs/specs/025-plan/plan-board.md).
+  if (
+    el.type === 'shape' &&
+    (el.shape === 'plan-board' || el.shape === 'plan-card' || el.shape === 'plan-view')
+  ) {
+    // Columns of cards, or one card, drawn from the document's items (docs/specs/025-plan/plan-board.md);
+    // a plan view as its labelled box (plan-views.md).
     const body =
       el.shape === 'plan-board'
         ? svgPlanBoard(el, opts.items, surface, opts.itemTypes)
-        : svgPlanCard(el, opts.items, surface, opts.itemTypes);
+        : el.shape === 'plan-card'
+          ? svgPlanCard(el, opts.items, surface, opts.itemTypes)
+          : svgPlanView(el, surface);
     return `<g${opAttr}${rotAttr}${shadowAttr}>${body}</g>`;
   }
   if (el.type === 'shape' && el.shape === 'checklist' && shape.kind === 'rect') {

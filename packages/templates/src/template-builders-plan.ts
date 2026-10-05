@@ -75,7 +75,7 @@ export const BOARDS: Record<PlanTemplateKind, BoardSpec> = {
       doneColumnId: 'done',
       swimlaneBy: 'parent',
       cardSize: 'detailed',
-      cardFields: ['key', 'type', 'assignee', 'priority', 'due', 'checklist', 'parent'],
+      cardFields: ['key', 'type', 'assignee', 'priority', 'start', 'due', 'checklist', 'parent'],
       addTypes: ['project', 'task'],
       widgets: ['progress', 'due', 'people', 'priorities', 'stale', 'filter'],
     },

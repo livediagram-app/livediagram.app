@@ -89,6 +89,8 @@ export const SHAPE_KEYWORDS: Partial<Record<ShapeKind, string>> = {
   'plan-board':
     'board kanban scrum sprint retro retrospective roadmap backlog columns swimlanes wip jira trello triage week planner',
   'plan-card': 'card ticket task story bug epic issue item todo note idea action risk jira trello',
+  'plan-view':
+    'gantt timeline calendar due dates workload capacity status breakdown donut chart dashboard report widget priority matrix',
 };
 
 // The shape-placing tiles, in palette order. Derived from the shared

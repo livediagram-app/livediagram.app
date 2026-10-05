@@ -46,7 +46,8 @@ item store.
 Plan must cost nothing to a document that does not use it:
 
 - **No item requests without Plan content**: a document fetches its items only once the open tab has a Plan
-  board or card, or its deck has a card slide; from then on it keeps them for the session. A room join or resync
+  board, card or view, opens in Plan (so its Cards and Trash panels list strays before it has a board), or its
+  deck has a card slide; from then on it keeps them for the session. A room join or resync
   refetches only items already loaded.
 - **Plan's UI loads when drawn**: boards, cards, the item panel, the type editor, the Card Types panel, the board
   menu, the Cards category and card slides are separate chunks, fetched the first time one appears.
@@ -93,17 +94,22 @@ Plan must cost nothing to a document that does not use it:
 
 ## The palette
 
-The Plan layout offers three categories, **Cards**, **Boards** then **Widgets**, under their **Plan** heading in the category
-picker, and opens on **Cards**. The Cards category ends with **Edit Cards**, which opens the Card Types panel
+The Plan layout offers seven categories and opens on **Cards**. The card-backed five, **Cards**, **Boards**,
+**Widgets**, **Metrics** and **Visualisations**, sit under the **Plan** heading of the category picker, first; then
+**Content** under **Common** and **Tools** under **Dynamic**, the headings their elements belong to elsewhere. The Cards category ends with **Edit Cards**, which opens the Card Types panel
 ([Item types](item-types.md)); the Toolbar layout's strip ends with it while Cards is chosen. A Plan tab is worked by its boards, so there is no Popular and none of the
-drawing, writing or decorating categories (Write, Shapes, Icons, Stickers, Media and the rest stay with the other
-modes):
+drawing or decorating categories (Shapes, Icons, Stickers and the rest stay with the other modes); the few other
+elements a team plans beside its boards come in Content and Tools:
 
-| Category | Holds                                                                                                      |
-| -------- | ---------------------------------------------------------------------------------------------------------- |
-| Cards    | One per [item type](item-types.md) of the document, in its order: Project card, Task card... and any added |
-| Boards   | Kanban, Sprint, Retro, Roadmap, Bug triage, Week, All Cards, Archive, Blank, each with its own picture     |
-| Widgets  | One per [board widget](board-widgets.md) kind, placed in a board's header, never on the canvas             |
+| Category       | Holds                                                                                                                                    |
+| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| Cards          | One per [item type](item-types.md) of the document, in its order: Project card, Task card... and any added                               |
+| Boards         | Kanban, Sprint, Retro, Roadmap, Bug triage, Week, All Cards, Archive, Blank, each with its own picture                                   |
+| Widgets        | One per [board widget](board-widgets.md) kind, placed in a board's header, never on the canvas                                           |
+| Metrics        | The read-out widgets free on the canvas, over every card ([Plan views](plan-views.md#metrics))                                           |
+| Visualisations | Project Gantt Chart, Due Calendar, Workload by Person, Status Breakdown, Priority by Status ([Plan views](plan-views.md#visualisations)) |
+| Content        | Sticky Note, Text, Image, Page                                                                                                           |
+| Tools          | Temperature, Estimate, Idea Box, Picker, Timer, Stopwatch                                                                                |
 
 - A **board tile** places a Plan board with that preset's set-up, empty: its columns have statuses of their own
   ([Plan board](plan-board.md#the-board-set-up)).
@@ -115,26 +121,28 @@ modes):
   column, or over a board that does not show the type, nothing is made and the reason is said ("Drop a card into a
   column on a board", "This board shows Bug items only"). A Plan card on the canvas comes only from dragging a
   board's card off it.
-- Draw mode's shape dock leaves Boards and Cards out: they frame items, not ink.
+- Content and Tools hold the same tiles as their home categories (Write, Media, Behaviours), placing
+  the same elements.
+- Draw mode's shape dock leaves the Plan categories out: they frame items, not ink.
 
 ## Templates
 
 Templates that open in Plan mode are boards set up for their use, and come with **no cards**: the columns,
 swimlanes, card fields, card types and widgets are ready, and the team adds its own work.
 
-| Template         | Board                                                                                      |
-| ---------------- | ------------------------------------------------------------------------------------------ |
-| Blank Plan       | One board with no columns yet: it asks for its first                                       |
-| Kanban Board     | Backlog, To do, In progress (WIP 3), Review (WIP 2), Done                                  |
-| Sprint Board     | Sprint backlog, In progress, In review, Done; swimlanes by assignee; estimates shown       |
-| Bug Triage       | New, Confirmed, Fixing, Fixed, Won't fix; Tasks; swimlanes by priority                     |
-| Team Retro       | Went well, To improve, Ideas, Actions; voting with 5 votes; hide writing on; how to run it |
-| Roadmap          | Now, Next, Later; Projects; labels shown                                                   |
-| Weekly Planner   | Monday to Friday; due dates shown                                                          |
-| Project Overview | Not Started, In Progress, At Risk (amber), Done; a row per project; Detailed cards         |
-| Daily Standup    | Yesterday, Today, Blocked (red); a row per person; Compact cards; how to run it            |
-| Content Calendar | Ideas, Drafting, In Review, Scheduled, Published; Ideas and Tasks; due dates and labels    |
-| Hiring Pipeline  | Applied, Screen, Interview, Offer, Hired, Not Progressing; Tasks and Notes; stale cards    |
+| Template         | Board                                                                                                       |
+| ---------------- | ----------------------------------------------------------------------------------------------------------- |
+| Blank Plan       | One board with no columns yet: it asks for its first                                                        |
+| Kanban Board     | Backlog, To do, In progress (WIP 3), Review (WIP 2), Done                                                   |
+| Sprint Board     | Sprint backlog, In progress, In review, Done; swimlanes by assignee; estimates shown                        |
+| Bug Triage       | New, Confirmed, Fixing, Fixed, Won't fix; Tasks; swimlanes by priority                                      |
+| Team Retro       | Went well, To improve, Ideas, Actions; voting with 5 votes; hide writing on; how to run it                  |
+| Roadmap          | Now, Next, Later; Projects; labels, start and due dates shown                                               |
+| Weekly Planner   | Monday to Friday; due dates shown                                                                           |
+| Project Overview | Not Started, In Progress, At Risk (amber), Done; a row per project; Detailed cards with start and due dates |
+| Daily Standup    | Yesterday, Today, Blocked (red); a row per person; Compact cards; how to run it                             |
+| Content Calendar | Ideas, Drafting, In Review, Scheduled, Published; Ideas and Tasks; due dates and labels                     |
+| Hiring Pipeline  | Applied, Screen, Interview, Offer, Hired, Not Progressing; Tasks and Notes; stale cards                     |
 
 - Each template's board is wide enough that every column fits at its narrowest without scrolling sideways.
 - "How to run it" is a sticky beside the board with the session's steps.
@@ -166,7 +174,7 @@ swimlanes, card fields, card types and widgets are ready, and the team adds its 
   `OpensInPlan` and `TemplateModePlan`.
 - The `Plan` category: `Added` (the item type, or `Card` for a Plan card), `Moved` (`Board`), `Opened` (`Item`),
   `Voted` (`Up` / `Down`), `Deleted` (the item type), `Changed` (the set-up part) and `Revealed` (`Board`), never
-  content. A board placed from the palette counts as `Element` · `Added` · `PlanBoard`.
+  content. A board placed from the palette counts as `Element` · `Added` · `PlanBoard`, a plan view as `PlanView`.
 - The header's Start Blank menu offers Blank Plan, with its own funnel slot (`HeaderPlan`).
 
 ## Help

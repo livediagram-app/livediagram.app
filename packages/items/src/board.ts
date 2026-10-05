@@ -41,6 +41,8 @@ export const CARD_FIELDS = [
   'priority',
   'labels',
   'estimate',
+  // When the work begins (docs/specs/025-plan/items.md "Fields").
+  'start',
   'due',
   'votes',
   'checklist',
@@ -59,7 +61,7 @@ export type CardSize = (typeof CARD_SIZES)[number];
 // board shows outside its size's set is kept but not drawn, and its tile in the Cards menu says so.
 export const CARD_SIZE_FIELDS: Readonly<Record<CardSize, readonly CardField[]>> = {
   minimal: [],
-  compact: ['key', 'type', 'assignee', 'priority', 'due', 'votes'],
+  compact: ['key', 'type', 'assignee', 'priority', 'start', 'due', 'votes'],
   detailed: CARD_FIELDS,
 };
 
