@@ -163,6 +163,10 @@ export const TELEMETRY_CATEGORIES = [
   // see what changed; 'Viewed' for a document view the api answered, typed by the view. Never
   // content, never an id.
   'Agent',
+  // Community (docs/specs/025-community/community.md): publishing, Edit Listing and removal from the editor
+  // ('Shared'/'Changed' typed by category, 'Removed'·'Post'); opens, likes, copies, reports, search and filters in
+  // the Community app; an operator's 'Changed'·'Hidden'/'Listed'. Never a title, tag or id.
+  'Community',
 ] as const;
 export type TelemetryCategory = (typeof TELEMETRY_CATEGORIES)[number];
 
@@ -259,6 +263,10 @@ export const TELEMETRY_ACTIONS = [
   'Api',
   'Client',
   'Warning',
+  // Community (docs/specs/025-community/community.md): a post liked or unliked, and a post reported (typed by reason).
+  'Liked',
+  'Unliked',
+  'Reported',
 ] as const;
 export type TelemetryAction = (typeof TELEMETRY_ACTIONS)[number];
 

@@ -350,6 +350,10 @@ export type TeamInviteLinkJoin = {
 
 export type ShareRole = 'edit' | 'view';
 
+// What a share link is for (docs/specs/025-community/community.md): an ordinary link the owner manages in the Share
+// dialog, or the community link a Community post owns (never listed, never expires, no room, no comments).
+export type SharePurpose = 'share' | 'community';
+
 // Lifetime chosen at link creation (docs/specs/013-workspace/share-link-expiry.md). 'never' is the default
 // and the pre-expiry behaviour: the link works until revoked.
 export type ShareLinkExpiry = 'never' | 'week' | 'month' | 'sixMonths';
@@ -380,6 +384,8 @@ export type ShareLink = {
   // Tab scope (docs/specs/013-workspace/tab-scoped-share-links.md): the one tab this link opens, or null
   // for All tabs.
   tabId: string | null;
+  // 'community' only on a Community post's own link; the owner's list never carries one.
+  purpose: SharePurpose;
 };
 
 // ---------------------------------------------------------------------
@@ -629,3 +635,4 @@ export * from './document-source';
 export * from './catalogues';
 export * from './comment-threads';
 export * from './agent-presence';
+export * from './community';

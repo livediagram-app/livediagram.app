@@ -77,6 +77,7 @@ ingest drops.
 | `Status`    | `/status`                          | `Header`, `HeaderDraw`, `HeaderWhiteboard`, `HeaderIllustration`                                                                                                       |
 | `Dashboard` | `/telemetry`                       | `Header`, `HeaderDraw`, `HeaderWhiteboard`, `HeaderIllustration`                                                                                                       |
 | `Help`      | `/help`, `/help/*`                 | `Header`                                                                                                                                                               |
+| `Community` | `/community`, `/community/*`       | `Header`, `HeaderDraw`, `HeaderWhiteboard`, `HeaderIllustration`, `Hero`, `Empty`                                                                                    |
 
 The slots:
 
@@ -86,6 +87,8 @@ The slots:
   Whiteboard (`/new?template=whiteboard`) and Blank Illustration
   (`/new?template=blank-illustration`). The help centre's header has one
   Start drawing button, its `Header`.
+- `Hero` / `Empty` on `Community` ([Community](../025-community/community.md)): the gallery hero's Share Your Own
+  and the empty gallery's invitation, both into `/new`.
 - `Hero` / `HeroDraw` / `HeroBrainstorm` (**retired**: the landing hero no longer has buttons; the slots stay in the table so their stored history still reads on the dashboard, and no link carries them any more): the landing hero's three, Diagram
   (`/new`), Drawing (`/new?template=whiteboard`) and Brainstorm
   (`/new?browse=brainstorm`, a collection since removed). `HeroDraw` kept its slot when Start Blank's blank
