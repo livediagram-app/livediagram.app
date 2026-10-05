@@ -9,7 +9,6 @@ import {
   customFieldOf,
   isBuiltInFieldId,
   itemTitle,
-  itemVoteTotal,
   typeIn,
   type Item,
   type ItemFieldId,
@@ -44,7 +43,7 @@ const LABELS: Partial<Record<ItemFieldId, string>> = {
   description: 'Description',
 };
 
-// Drawn on their own: the title above the rows, votes below them.
+// Not rows: the title is drawn above them, and votes live on the card face only.
 const NOT_A_ROW = new Set<string>(['title', 'votes']);
 
 export function ItemPanel({
@@ -192,7 +191,6 @@ export function ItemPanel({
         return null;
     }
   };
-  const votes = itemVoteTotal(item);
   return (
     <PlanModal
       label={`Item #${item.key}`}
@@ -258,11 +256,6 @@ export function ItemPanel({
           {field(f)}
         </SheetRow>
       ))}
-      {offered.has('votes') || votes > 0 ? (
-        <SheetRow label="Votes">
-          <span className="text-[13px]">{votes}</span>
-        </SheetRow>
-      ) : null}
     </PlanModal>
   );
 }

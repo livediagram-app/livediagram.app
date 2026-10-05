@@ -103,7 +103,8 @@ In Plan mode:
   Open alone; a face-down card has no menu.
 - **Open an item**: clicking a card opens the **item panel**, a modal over the canvas (a sheet rising from the
   bottom on a phone). Every field of the item's type
-  is edited in place and saved as it changes; the panel shows who made the item and who last changed it. It
+  is edited in place and saved as it changes, except votes, which live on the card face only; the panel shows
+  who made the item and who last changed it. It
   closes with Escape or the close button, and follows the item if someone else moves it.
 - **Vote**: on a voting board each card has a vote control; a person sees their own votes and the total. With a
   vote budget the header shows the votes left.
