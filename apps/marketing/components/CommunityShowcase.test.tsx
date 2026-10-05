@@ -72,12 +72,14 @@ describe('CommunityShowcase', () => {
     featured = () => new Response(null, { status: 404 });
     const { container } = render(<CommunityShowcase />);
     await waitFor(() => expect(container.firstChild).toBeNull());
+  });
 
-    cleanup();
-    resetCommunityEnabledForTests();
-    capabilities = () => Response.json({ communityEnabled: false });
-    featured = () => Response.json({ posts: [post(1)] });
-    const second = render(<CommunityShowcase />);
-    await waitFor(() => expect(second.container.firstChild).toBeNull());
+  it('asks only for the featured posts, never the capabilities (a 404 already says it is off)', async () => {
+    render(<CommunityShowcase />);
+    const urls = () => vi.mocked(fetch).mock.calls.map(([url]) => String(url));
+    await waitFor(() =>
+      expect(urls().some((url) => url.endsWith('/community/featured'))).toBe(true),
+    );
+    expect(urls().some((url) => url.endsWith('/capabilities'))).toBe(false);
   });
 });

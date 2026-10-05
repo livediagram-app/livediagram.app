@@ -61,11 +61,14 @@ Switched off: `handleCommunity` and the owner routes answer 404 before anything 
 answers `'closed'`, which closes the grant, the share resolve and the card image in one place; the share-password
 guard skips the post check. The apps ask through `useCommunityEnabled(apiBase)` / `fetchCommunityEnabled`
 (`packages/ui/src/community/useCommunityEnabled.ts`; one request per api base per page, on unless an explicit
-`false`; `useCommunityEnabled(apiBase, ask)` skips the request and answers on while `ask` is false): `ProductNav`
-filters its Community item, `CommunityFooterLink` renders nothing, `ShareDialogWithCommunity` falls back to the plain
-`ShareDialog`, `EditorView` drops the Public badge (it asks only while a post is listed and not in an embed),
-`CommunityShowcase` renders nothing (also on a 404 from `featured`), and the Community app's `CommunityGate`
-replaces the location with `/`.
+`false`; `useCommunityEnabled(apiBase, ask)` skips the request and answers on while `ask` is false). Each asks only
+when its answer can matter, so a page view that never reaches them makes no request: `ProductNav` filters its
+Community item, asking once someone reaches for the menu (pointer, focus or open); `CommunityFooterLink` renders
+nothing, asking once the footer comes near the viewport (`useNearViewport`); `ShareDialogWithCommunity` falls back to
+the plain `ShareDialog`; `EditorView` drops the Public badge (it asks only while a post is listed and not in an embed);
+`CommunityShowcase` never asks: it renders nothing on a 404 from `featured`, which the worker answers while the
+Community is off, and it fetches `featured` only once the section comes near the viewport; the Community app's
+`CommunityGate` replaces the location with `/`.
 
 ## 3. Data and persistence
 
@@ -393,6 +396,19 @@ Community app (`apps/community`):
   sends `public, max-age=30` with no stale window (`COMMUNITY_IMAGE_CACHE`, `apps/api/src/routes/share.ts`), so a
   hidden post's image goes within 30 seconds.
 - Bodies are capped by the worker's existing `MAX_BODY_BYTES`; inputs by the constants above.
+- Featured: the window's likes come off `idx_community_likes_created`, named with `INDEXED BY` because the planner
+  otherwise walks the whole likes table in primary-key order to suit the `GROUP BY`.
+- Tag and text filters walk the listed posts newest first (by `idx_community_posts_new`), checking each; fine at the
+  expected sizes, with FTS5 the next step (as for search).
+- Hot paths outside the Community: the full document read adds one indexed subquery (`community_posts` by
+  `document_id`); the tab save adds one indexed lookup (`document_tabs_by_tab`) only for a tab new to the document;
+  the read gate adds the post check only for a Community link.
+- Bundles (measured against main at merge time, gzipped first load): the editor about +4 KB (+0.3%), the Explorer
+  about +7 KB (+0.5%), the landing page +5.7 KB (the section itself), help +0.9 KB, the status page +0.6 KB. Kept
+  small by keeping the Community vocabulary off other pages: the authors and paths have their own modules
+  (`community-authors.ts`, `community-paths.ts`), and the editor loads its Community message table only for the
+  rare `community_published` answer. The Community bar stays in the editor's main chunk on purpose: splitting it out
+  made the bundler duplicate two Explorer modules (+11 KB there for 1.5 KB saved).
 
 ## 9. Presentation and UX
 
@@ -448,7 +464,9 @@ shared Tailwind theme meet AA in light and dark. Reduced motion disables card li
 ## 11. Web Experience
 
 The gallery shell, hero and filters render statically (no layout shift: the grid reserves skeleton cards); posts load
-client-side. Card images are `loading="lazy"` with fixed aspect boxes (CLS 0). LCP is the hero heading. Interactions
+client-side. Card images are `loading="lazy"` with fixed aspect boxes (CLS 0). LCP is the hero heading. The landing
+page's section is below the fold and makes its one request only once it comes near, so it never competes with the
+page's first paint, and a visit that does not scroll there costs nothing. Interactions
 (search controls, likes) update optimistically (INP). Each post page names its own canonical address once it loads.
 
 ## 12. Observability

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import {
   COMMUNITY_FEATURED_COUNT,
   communityImagePath,
@@ -18,7 +18,7 @@ import {
   CommunityLikeCount,
   CommunityPostTile,
   CommunityPostTileSkeleton,
-  useCommunityEnabled,
+  useNearViewport,
 } from '@livediagram/ui';
 import { BAND_EYEBROW, BAND_LEAD, BAND_TITLE } from '@/components/band-classes';
 
@@ -36,9 +36,10 @@ type State =
   // The api answered 404: the Community is switched off, so the section is not shown at all.
   | { status: 'off' };
 
-function useFeatured(): State {
+function useFeatured(near: boolean): State {
   const [state, setState] = useState<State>({ status: 'loading' });
   useEffect(() => {
+    if (!near) return;
     const controller = new AbortController();
     fetch(`${API_BASE}/community/featured`, { signal: controller.signal })
       .then(async (res) => {
@@ -52,21 +53,27 @@ function useFeatured(): State {
         setState({ status: 'ready', posts: [] });
       });
     return () => controller.abort();
-  }, []);
+  }, [near]);
   return state;
 }
 
 export function CommunityShowcase() {
-  const featured = useFeatured();
+  // Below the fold: its one request (the featured posts) waits until the section comes near, so a visit that never
+  // scrolls there costs nothing, and it never competes with the page's first paint.
+  const sectionRef = useRef<HTMLElement>(null);
+  const featured = useFeatured(useNearViewport(sectionRef));
   // One clock reading for the six, so their "2 days ago" agree.
   const [now] = useState(Date.now);
-  // Switched off (docs/specs/025-community/community.md "Turning the Community off"), the section is not there.
-  const communityOn = useCommunityEnabled(API_BASE);
-  if (!communityOn || featured.status === 'off') return null;
+  // Switched off (docs/specs/025-community/community.md "Turning the Community off"), the featured answer is a 404
+  // and the section is not there.
+  if (featured.status === 'off') return null;
   const posts = featured.status === 'ready' ? featured.posts : [];
   const empty = featured.status === 'ready' && posts.length === 0;
   return (
-    <section className="border-t border-slate-200/70 bg-white dark:border-slate-800/70 dark:bg-slate-900">
+    <section
+      ref={sectionRef}
+      className="border-t border-slate-200/70 bg-white dark:border-slate-800/70 dark:bg-slate-900"
+    >
       <div className="mx-auto max-w-6xl px-6 py-20 sm:py-24">
         <div className="mx-auto max-w-2xl text-center">
           <p className={BAND_EYEBROW}>From the Community</p>

@@ -318,12 +318,13 @@ export async function listFeaturedCommunityPosts(
   env: Env,
   now: number = Date.now(),
 ): Promise<CommunityPostRow[]> {
-  // The window's likes in one pass over the created_at index (migration 0070), grouped by post and network and
+  // The window's likes in one pass over the created_at index (migration 0070; named, since the planner otherwise
+  // walks the whole table in primary-key order to suit the GROUP BY), grouped by post and network and
   // capped per network like the like count itself, so one network cannot buy a place on the home page.
   const recent = await env.DB.prepare(
     `WITH recent AS (
        SELECT post_id, SUM(MIN(n, ?)) AS recent_likes FROM (
-         SELECT post_id, COUNT(*) AS n FROM community_likes
+         SELECT post_id, COUNT(*) AS n FROM community_likes INDEXED BY idx_community_likes_created
           WHERE created_at >= ?
           GROUP BY post_id, COALESCE(network_hash, liker_key))
         GROUP BY post_id)

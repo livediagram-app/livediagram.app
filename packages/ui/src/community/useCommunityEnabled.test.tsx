@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { ProductNav } from '../ProductNav';
 import { SiteFooter } from '../SiteFooter';
 import { renderHook } from '@testing-library/react';
@@ -67,7 +67,10 @@ describe('the apps menu and footer', () => {
   it('drop their Community links while it is switched off', async () => {
     await renderOpened(stubCapabilities(async () => Response.json({ communityEnabled: false })));
     expect(screen.getByRole('menuitem', { name: /Explorer/ })).toBeTruthy();
-    expect(screen.queryAllByRole('menuitem', { name: /Community/ })).toHaveLength(0);
+    // The menu asks once opened; its answer lands a moment later.
+    await waitFor(() =>
+      expect(screen.queryAllByRole('menuitem', { name: /Community/ })).toHaveLength(0),
+    );
     expect(screen.queryAllByRole('link', { name: 'Community' })).toHaveLength(0);
   });
 
@@ -75,6 +78,43 @@ describe('the apps menu and footer', () => {
     await renderOpened(stubCapabilities(async () => Response.json({ communityEnabled: true })));
     expect(screen.getAllByRole('menuitem', { name: /Community/ })).toHaveLength(1);
     expect(screen.getAllByRole('link', { name: 'Community' })).toHaveLength(1);
+  });
+});
+
+describe('asking only when it matters', () => {
+  it('leaves the apps menu unasked until someone reaches for it', async () => {
+    const fetchMock = stubCapabilities(async () => Response.json({ communityEnabled: true }));
+    render(<ProductNav current="home" />);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(fetchMock).not.toHaveBeenCalled();
+    fireEvent.pointerEnter(screen.getByRole('button', { name: /Welcome/ }).parentElement!);
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+  });
+
+  it('leaves the footer link unasked until the footer comes near', async () => {
+    const observers: { callback: IntersectionObserverCallback }[] = [];
+    vi.stubGlobal(
+      'IntersectionObserver',
+      class {
+        constructor(callback: IntersectionObserverCallback) {
+          observers.push({ callback });
+        }
+        observe() {}
+        disconnect() {}
+      },
+    );
+    const fetchMock = stubCapabilities(async () => Response.json({ communityEnabled: true }));
+    render(<SiteFooter />);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(fetchMock).not.toHaveBeenCalled();
+    act(() =>
+      observers[0]!.callback(
+        [{ isIntersecting: true } as IntersectionObserverEntry],
+        {} as IntersectionObserver,
+      ),
+    );
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    vi.unstubAllGlobals();
   });
 });
 

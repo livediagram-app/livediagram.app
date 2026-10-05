@@ -13,7 +13,7 @@
 // the router, so client-side nav wouldn't cross them.
 
 import { COMMUNITY_HOME_PATH } from '@livediagram/api-schema';
-import { useRef, type ReactNode } from 'react';
+import { useRef, type ReactNode, useState } from 'react';
 import { useCommunityEnabled } from './community/useCommunityEnabled';
 import { useClickOutside } from './useClickOutside';
 import { useMenu } from './menu/useMenu';
@@ -109,15 +109,17 @@ export function ProductNav({
   showOnMobile?: boolean;
 }) {
   // The Community entry goes while the Community is switched off (docs/specs/025-community/community.md "Turning
-  // the Community off").
-  const communityOn = useCommunityEnabled();
-  const items = communityOn ? ITEMS : ITEMS.filter((i) => i.key !== 'community');
-  const active = items.find((i) => i.key === current) ?? items[0]!;
+  // the Community off"). Asked once someone reaches for the menu (pointer, focus, or opening it), so a page view
+  // that never touches it costs no request.
+  const [reached, setReached] = useState(false);
   // Explicit open state: a click, Enter, Space or an arrow key opens it with focus inside and the
   // menu keyboard (docs/specs/004-interface-design/menus.md). Desktop hover still shows it through
   // CSS without taking focus; focusing the trigger alone no longer opens it (D56).
   const { open, close, toggle, trigger, setTrigger, initialFocus, onTriggerKeyDown } =
     useMenuButton();
+  const communityOn = useCommunityEnabled(undefined, reached || open);
+  const items = communityOn ? ITEMS : ITEMS.filter((i) => i.key !== 'community');
+  const active = items.find((i) => i.key === current) ?? items[0]!;
   const ref = useRef<HTMLDivElement>(null);
   const { attach, surfaceProps } = useMenu({ open, onClose: close, trigger, initialFocus });
 
@@ -129,6 +131,8 @@ export function ProductNav({
   return (
     <div
       ref={ref}
+      onPointerEnter={() => setReached(true)}
+      onFocus={() => setReached(true)}
       className={`group relative ml-1.5 sm:ml-3 ${showOnMobile ? 'block' : 'hidden sm:block'}`}
     >
       <button

@@ -642,6 +642,8 @@ export * from './catalogues';
 export * from './comment-threads';
 export * from './agent-presence';
 export * from './community';
+export * from './community-authors';
+export * from './community-paths';
 export * from './community-query';
 export * from './document-paths';
 export * from './http-errors';

@@ -1,3 +1,5 @@
+import type { CommunityAuthor } from './community-authors';
+
 // Community (docs/specs/025-community/community.md; blueprint docs/specs/025-community/blueprints/community.md):
 // the vocabulary, limits, validation and wire shapes shared by the api worker, the editor's publish dialog and the
 // Community app, so the three cannot disagree on what a valid post, tag or query is.
@@ -277,8 +279,6 @@ export function validateCommunityPostInput(input: unknown): CommunityInputResult
 
 export type CommunityPostState = 'listed' | 'hidden';
 
-export type CommunityAuthor = { name: string; color: string; picture: string | null };
-
 export type CommunityPost = {
   id: string;
   title: string;
@@ -324,30 +324,3 @@ export type CommunityReportInput = { reason: CommunityReportReason; note?: strin
 
 // What the share resolve adds for a community link (spec "Viewing a post's document").
 export type CommunityShareInfo = { postId: string; author: CommunityAuthor };
-
-// The author shown on an anonymous post.
-export const COMMUNITY_ANONYMOUS_AUTHOR: CommunityAuthor = {
-  name: 'Anonymous',
-  color: '#64748b',
-  picture: null,
-};
-
-// The author shown when a post's author has no participant row (blueprint §6).
-export const COMMUNITY_UNKNOWN_AUTHOR: CommunityAuthor = {
-  name: 'Someone',
-  color: '#64748b',
-  picture: null,
-};
-
-// The Community's own address on the site (the router serves the Community app there).
-export const COMMUNITY_HOME_PATH = '/community/';
-
-// A post's own page on the site (the Community app is served at /community).
-export function communityPostPath(postId: string): string {
-  return `/community/post/?id=${encodeURIComponent(postId)}`;
-}
-
-// The live image a card shows, relative to the api base.
-export function communityImagePath(shareCode: string): string {
-  return `/share/${encodeURIComponent(shareCode)}/image.svg`;
-}
