@@ -41,7 +41,11 @@ function changesetEvent(op: Record<string, unknown>, tabId: string): RoomEvent[]
       id,
       author: author ?? 'someone',
       summary: str(op, 'summary'),
-      counts: { added: num(counts, 'added'), changed: num(counts, 'changed'), removed: num(counts, 'removed') },
+      counts: {
+        added: num(counts, 'added'),
+        changed: num(counts, 'changed'),
+        removed: num(counts, 'removed'),
+      },
     },
   ];
 }
@@ -53,8 +57,11 @@ function elementEvent(op: unknown, tabId: string): RoomEvent[] {
   const kind = str(op, 'kind');
   if (kind === 'reorder') return [{ kind: 'tab', tabId }];
   if (kind !== 'add' && kind !== 'update' && kind !== 'remove') return [];
-  const elementId = kind === 'remove' ? str(op, 'id') : isRecord(op.element) ? str(op.element, 'id') : null;
-  return elementId === null ? [] : [{ kind: 'element', tabId, elementId, change: ELEMENT_CHANGES[kind] }];
+  const elementId =
+    kind === 'remove' ? str(op, 'id') : isRecord(op.element) ? str(op.element, 'id') : null;
+  return elementId === null
+    ? []
+    : [{ kind: 'element', tabId, elementId, change: ELEMENT_CHANGES[kind] }];
 }
 
 // One comment change, an answer, an idea or a tick on one element. Only a new comment is a comment event; a comment
@@ -154,7 +161,9 @@ export function watchLines(event: RoomEvent, names: Names): string[] {
     case 'changeset': {
       const { added, changed, removed } = event.counts;
       const summary = event.summary ? ` ${quoted(event.summary)}` : '';
-      return [`changeset ${event.id} by ${event.author}:${summary} (+${added} ~${changed} -${removed})`];
+      return [
+        `changeset ${event.id} by ${event.author}:${summary} (+${added} ~${changed} -${removed})`,
+      ];
     }
     case 'comment':
       return [
