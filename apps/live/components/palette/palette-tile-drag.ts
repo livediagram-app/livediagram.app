@@ -17,7 +17,8 @@ export function tileDragStart(
 ): ((e: React.DragEvent) => void) | undefined {
   switch (action.type) {
     case 'shape': {
-      const choice = action.session ?? action.reaction ?? action.mode ?? action.estimateScale;
+      const choice =
+        action.session ?? action.reaction ?? action.mode ?? action.estimateScale ?? action.plan;
       return (e) => {
         // `kind` or `kind|choice`, so a dragged Poll drops a poll, not a timer.
         copy(e, PALETTE_DND_MIME, choice ? `${action.kind}|${choice}` : action.kind);

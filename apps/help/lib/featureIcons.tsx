@@ -354,6 +354,24 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M9 15.5 7.5 21M15 15.5l1.5 5.5" />
     </Glyph>
   ),
+  // A board of three columns, a card raised in the middle one: work on the move.
+  'plan-mode': (
+    <Glyph>
+      <rect x="2.5" y="4" width="19" height="16" rx="1.5" />
+      <path d="M8.8 4v16M15.2 4v16" />
+      <rect x="4.2" y="7" width="3" height="3" rx="0.6" />
+      <rect x="10.2" y="6" width="3.6" height="5" rx="0.8" />
+      <rect x="16.6" y="7" width="3" height="3" rx="0.6" />
+    </Glyph>
+  ),
+  // A card with a number and a type stripe: one item.
+  items: (
+    <Glyph>
+      <rect x="4" y="6" width="16" height="12" rx="1.5" />
+      <path d="M7 6v12" />
+      <path d="M10 10h6M10 14h4" />
+    </Glyph>
+  ),
   // A page with a title and a bar chart: the poster an infographic becomes.
   illustrate: (
     <Glyph>

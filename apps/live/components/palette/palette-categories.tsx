@@ -24,6 +24,7 @@ import {
   WriteTabIcon,
   EventStormingTabIcon,
 } from './palette-tab-icons';
+import { PlanIcon } from '@livediagram/ui';
 
 /**
  * The category catalogue's IDENTITY: which categories exist, in band order,
@@ -56,6 +57,15 @@ export const PALETTE_CATEGORIES: {
     fullWidth: true,
     description: 'The tiles most reached for in this mode, from across its categories.',
     icon: <PopularTabIcon />,
+  },
+  {
+    // Plan (docs/specs/025-plan/plan-mode.md "The palette"): boards and cards, offered in Plan mode
+    // only, straight after Popular.
+    id: 'plan',
+    label: 'Plan',
+    group: 0,
+    description: 'Boards of items to drag through columns, and cards for one item each.',
+    icon: <PlanIcon size={18} />,
   },
   {
     id: 'shapes',

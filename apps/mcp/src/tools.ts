@@ -21,6 +21,7 @@ import {
 } from '@livediagram/document';
 import {
   buildTemplateTab,
+  planTemplateSeedItems,
   resolveTemplate,
   templateCatalogue,
   templateFamilyOf,
@@ -183,6 +184,7 @@ export function registerTools(server: McpServer, env: Env): void {
         return errorResult('Provide "tabs": an array of { name, elements } (or a single "tab").');
       }
       const tabs: Tab[] = [];
+      const seedItems: ReturnType<typeof planTemplateSeedItems> = [];
       // The template the first tab is made from, for the creation intent.
       let firstTemplate: TemplateKind | null = null;
       for (const t of inputTabs) {
@@ -199,6 +201,8 @@ export function registerTools(server: McpServer, env: Env): void {
           }
           if (tabs.length === 0) firstTemplate = kind;
           tabs.push(buildTemplateTab(tabId, t.name, kind, args.theme));
+          // A Plan template's board comes with its cards (docs/specs/025-plan/plan-mode.md "Templates").
+          seedItems.push(...planTemplateSeedItems(kind));
           continue;
         }
         // Graph-first (docs/specs/015-api/mcp-server.md §4.7): the server builds + lays out the boxes
@@ -243,6 +247,7 @@ export function registerTools(server: McpServer, env: Env): void {
             tabs,
             source: 'mcp',
             intent,
+            ...(seedItems.length ? { items: seedItems } : {}),
             ...(args.markUsed !== undefined ? { markUsed: args.markUsed } : {}),
           }),
         },

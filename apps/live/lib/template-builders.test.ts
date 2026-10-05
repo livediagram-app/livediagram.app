@@ -4,7 +4,6 @@ import {
   laneIndexAt,
   laneCentre,
   layOutIllustratePages,
-  runsPlainText,
   type Element,
 } from '@livediagram/document';
 import { templateCanvasOverrides, type TemplateKind } from '@livediagram/templates';
@@ -117,6 +116,12 @@ const ALL_KINDS = [
   'journey-doodle',
   'pre-mortem',
   'idea-garden',
+  'blank-plan',
+  'sprint-board',
+  'bug-triage',
+  'team-retro',
+  'roadmap-board',
+  'weekly-planner',
 ] as const satisfies readonly TemplateKind[];
 
 // Real exhaustiveness check: any TemplateKind missing from
@@ -424,40 +429,6 @@ describe('system architecture is a vendor-neutral tiered diagram', () => {
       expect(a.from.kind).toBe('pinned');
       expect(a.to.kind).toBe('pinned');
       expect(a.label?.length).toBeGreaterThan(0);
-    }
-  });
-});
-
-describe('board templates seed per-range rich text', () => {
-  // The label is the plain-text mirror of its runs (docs/specs/008-canvas/canvas-and-palette.md); every
-  // richText-carrying element must keep `label === runsPlainText(richText)`
-  // or legacy readers (search / export / auto-rename) drift from what
-  // renders. Asserted across every board element that opts into runs.
-  const labelMirrorsRuns = (kind: TemplateKind) => {
-    const withRuns = buildTemplate(kind, 0, 0).filter(
-      (el): el is Extract<Element, { richText?: unknown }> & { richText: NonNullable<unknown> } =>
-        Array.isArray((el as { richText?: unknown }).richText),
-    );
-    expect(withRuns.length).toBeGreaterThan(0);
-    for (const el of withRuns) {
-      const runs = (el as { richText: Parameters<typeof runsPlainText>[0] }).richText;
-      expect((el as { label?: string }).label).toBe(runsPlainText(runs));
-    }
-  };
-
-  it('kanban ticket cards bold the id lead-in, leaving the summary plain', () => {
-    labelMirrorsRuns('kanban');
-    const cards = buildTemplate('kanban', 0, 0).filter((el) =>
-      Array.isArray((el as { richText?: unknown }).richText),
-    );
-    // Realistic mid-sprint board: varied card counts per lane (4 + 3 + 3 + 1 + 4).
-    expect(cards.length).toBe(15);
-    for (const card of cards) {
-      const runs = (card as { richText: { text: string; bold?: boolean }[] }).richText;
-      // Bold ticket id lead-in (e.g. "CHK-241:") + a plain summary run.
-      expect(runs[0]?.bold).toBe(true);
-      expect(runs[0]?.text).toMatch(/^CHK-\d+:$/);
-      expect(runs[1]?.bold).toBeUndefined();
     }
   });
 });

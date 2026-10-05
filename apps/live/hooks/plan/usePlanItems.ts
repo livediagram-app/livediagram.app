@@ -1,5 +1,6 @@
 'use client';
 
+import { debugLog } from '@/lib/debug-log';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ItemsRoomOp } from '@livediagram/api-schema';
 import {
@@ -132,7 +133,7 @@ export function usePlanItems(opts: {
       setStore((prev) => mergeItemChanges(prev, op.upserts, op.removed, op.rev));
       // A tab-scoped session hears the rev without the items; anyone may have missed one.
       if (gap || (op.upserts.length === 0 && op.removed.length === 0)) {
-        console.info('[items] items.refetch.gap', { rev: op.rev });
+        debugLog('[items] items.refetch.gap', { rev: op.rev });
         refetch();
       }
     },

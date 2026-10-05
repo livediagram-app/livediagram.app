@@ -1,0 +1,78 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Plan mode',
+  description:
+    'Switch a tab into Plan mode to run work on boards: Kanban, sprints, bug triage, retros and roadmaps, with cards you drag from column to column, live for everyone.',
+  path: '/help/canvas/plan-mode/',
+});
+
+<ArticleLayout
+  title="Plan mode"
+  description="Boards of items: drag cards through columns, together."
+  categoryTitle="Canvas"
+  categorySlug="canvas"
+>
+
+**Plan mode** is a way of working on a tab, made for running work on boards: a Kanban board, a sprint, a bug triage, a retro or a roadmap. A **Plan board** shows your work as columns of cards. Each card is an **item**, a task, a bug, a note or an idea, stored with the document rather than drawn on the tab, so moving a card changes the item for everyone at once, and the same item can sit on two boards (a sprint board and a roadmap) and move on both. See [Items](/help/canvas/plan-mode/items/).
+
+Like the other modes, Plan mode never changes what the tab is. Boards and cards are on the tab in every mode; Plan mode is how you work them. Notes, arrows, frames and pictures around a board work as they always do.
+
+## Switching modes
+
+- Press the mode switch and choose **Plan**, or press **Shift+D** until you reach it. The switch sits in the **Palette** panel's title row, or beside the menu button with the Toolbar layout.
+- Your mode is yours: someone else on the tab can be in Diagram mode while you are in Plan mode. They see the cards move as you move them.
+- To have a tab open in Plan mode for everyone, open the tab menu, choose **Opens in**, then **Plan**.
+- Plan mode is new, so it has a switch in **Settings**, **Experimental**, **Plan Mode**. It is on unless you turn it off.
+
+## Starting a board
+
+- **A new document:** in the New Document wizard, pick **Blank Plan** on the **Popular** shelf, or choose **Plan** beside the search box to see the Plan templates: **Kanban Board**, **Sprint Board**, **Bug Triage**, **Team Retro**, **Roadmap Board** and **Weekly Planner**. Each starts with real cards, so you can see how it works and change them, or delete them and start your own.
+- **On any tab:** in Plan mode, open the palette's **Plan** category and press a board (Kanban, Sprint, Retro, Roadmap, Bug triage, Week or a blank board), then click the canvas, or drag it out to the size you want.
+
+## Working on a board
+
+- **Add an item:** every column ends in **Add item**. Type a title and press **Enter**; the field stays open for the next one. A few words in the title fill in the rest as you type:
+  - `@sam` assigns it to Sam,
+  - `#design` adds the label design,
+  - `!high` sets the priority (`!urgent`, `!high`, `!medium` or `!low`),
+  - `~3` sets the estimate,
+  - `bug:` at the start makes it a bug (any item type works: `story:`, `idea:`, `risk:`...).
+- **Move a card:** drag it to another column, or up and down its column. On a board with rows (by assignee, priority, type or parent), dropping it in a row also sets that field: drop it in Sam's row to give it to Sam.
+- **Open an item:** click a card. The item panel opens beside the canvas with every field of its type: title, description, status, assignee, priority, labels, estimate, due date, checklist and parent. Changes save as you make them.
+- **Take a card off the board:** drag it out onto the canvas to leave a **Plan card** there, for example beside the part of a diagram it is about. The item stays on the board as well. Drag a Plan card onto a board to file it in the column you drop it in.
+- **Undo:** **Ctrl+Z** (**Cmd+Z** on a Mac) undoes your item changes in the same order as your canvas edits: a moved card goes back, a deleted item comes back with its number.
+
+In Diagram and Draw modes a board is an element like any other: pressing it selects and moves the whole board. Double-click a card to open its item.
+
+### With the keyboard
+
+Tab to a card, then:
+
+- **Arrow keys** move between cards.
+- **Enter** opens the item.
+- **Shift+Left** and **Shift+Right** move the card to the previous or next column; **Shift+Up** and **Shift+Down** move it within its column.
+- **N** adds an item to the card's column.
+- **Delete** deletes the item (you can undo it).
+
+Screen readers hear every move ("#12 moved to In progress, position 2 of 4").
+
+## Setting up a board
+
+Press the cog in a board's header to open its set-up:
+
+- **Columns:** add, rename, recolour and reorder columns. Give a column a **WIP limit** and its count turns amber when it holds more than that; mark one column as **Done** to show a progress bar in the header. Removing a column with cards asks where they should go.
+- **Rows:** none, or one per assignee, item type, priority or parent (an epic).
+- **Shows:** all items, only some item types, or only items with a label.
+- **Card shows:** which fields each card face shows.
+- **Voting:** on or off, with an optional number of votes each person may spend on the board.
+- **Hide writing:** while it is on, everyone else's cards on this board show face down, so people write without reading each other. Press **Reveal** in the header to turn every card face up for everyone. It hides cards on the board, not the items themselves.
+
+Items whose status matches none of the board's columns are counted in the header ("3 not on this board"); open the count to move them to a column.
+
+## Together
+
+Everyone with the document open sees cards move, appear and change as they happen. A card someone is dragging or has open shows their colour and name. Voting and hiding writing are in the board itself, so a retro needs no other tools: write, reveal, vote, then turn the top votes into actions.
+
+</ArticleLayout>

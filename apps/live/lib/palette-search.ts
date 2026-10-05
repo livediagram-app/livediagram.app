@@ -85,6 +85,10 @@ export const SHAPE_KEYWORDS: Partial<Record<ShapeKind, string>> = {
   'line-chart': 'trend series graph chart plot',
   'code-block': 'code snippet syntax monospace program',
   checklist: 'todo tasks tick checkbox list',
+  // Plan (docs/specs/025-plan/plan-mode.md): the words people bring from Jira, Trello and retros.
+  'plan-board':
+    'board kanban scrum sprint retro retrospective roadmap backlog columns swimlanes wip jira trello triage week planner',
+  'plan-card': 'card ticket task story bug epic issue item todo note idea action risk jira trello',
 };
 
 // The shape-placing tiles, in palette order. Derived from the shared
@@ -107,13 +111,15 @@ export function shapeTileSearchItem(tile: PaletteTileDef) {
     reaction?: string;
     mode?: string;
     estimateScale?: string;
+    plan?: string;
   };
   const kind = action.kind;
   // Keyed on the CHOICE where there is one, not just the kind: the five
   // reaction tiles and the three session tiles all place the same shape,
   // so keying on kind alone gave eight results three distinct ids and the
   // panel silently dropped the duplicates.
-  const choice = action.session ?? action.reaction ?? action.mode ?? action.estimateScale;
+  const choice =
+    action.session ?? action.reaction ?? action.mode ?? action.estimateScale ?? action.plan;
   return {
     id: choice ? `shape:${kind}:${choice}` : `shape:${kind}`,
     name: tileDisplayName(tile),
@@ -128,6 +134,7 @@ export function shapeTileSearchItem(tile: PaletteTileDef) {
       ...(action.reaction ? { reaction: action.reaction as never } : {}),
       ...(action.mode ? { mode: action.mode as never } : {}),
       ...(action.estimateScale ? { estimateScale: action.estimateScale as never } : {}),
+      ...(action.plan ? { plan: action.plan } : {}),
     },
   } satisfies PaletteSearchItem;
 }

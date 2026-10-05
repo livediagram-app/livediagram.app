@@ -3074,7 +3074,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     type: 'string',
   },
   EditorMode: {
-    enum: ['diagram', 'draw', 'illustrate'],
+    enum: ['diagram', 'draw', 'illustrate', 'plan'],
     type: 'string',
   },
   Element: {

@@ -246,7 +246,7 @@ export const EDITOR_MODE_SWITCHES = chart(
   'Changed',
   'Editor Mode Switches',
   'A tab switched to Diagram, Draw or Illustrate mode by the person working on it.',
-  { types: ['ModeDiagram', 'ModeDraw', 'ModeIllustrate'] },
+  { types: ['ModeDiagram', 'ModeDraw', 'ModeIllustrate', 'ModePlan'] },
 );
 
 // The mode a tab opens in, set from the tab menu's Opens in (docs/specs/007-editor/editor-modes.md).
@@ -255,7 +255,7 @@ export const TAB_OPENS_IN = chart(
   'Changed',
   'Opening Modes Set',
   'A tab set to open in Diagram, Draw or Illustrate mode for everyone, from the tab menu.',
-  { types: ['OpensInDiagram', 'OpensInDraw', 'OpensInIllustrate'] },
+  { types: ['OpensInDiagram', 'OpensInDraw', 'OpensInIllustrate', 'OpensInPlan'] },
 );
 
 // Illustrate mode's A4 page turned portrait or landscape (docs/specs/007-editor/editor-modes.md "The page").

@@ -34,6 +34,20 @@ export function IllustrateIcon({ size = 16, ...rest }: IconProps) {
   );
 }
 
+// Plan mode's mark (docs/specs/025-plan/plan-mode.md): a board of three columns, the middle one
+// holding a raised card, on the 24-unit grid.
+export function PlanIcon({ size = 16, ...rest }: IconProps) {
+  return (
+    <Glyph size={size} units={24} {...rest}>
+      <rect x="2.5" y="4" width="19" height="16" rx="2" />
+      <path d="M8.83 4V20M15.17 4V20" />
+      <rect x="4.5" y="7" width="2.5" height="3" rx="0.6" />
+      <rect x="10.2" y="6" width="3.6" height="5" rx="0.8" fill="currentColor" />
+      <rect x="17" y="7" width="2.5" height="3" rx="0.6" />
+    </Glyph>
+  );
+}
+
 // A hub with four branches, on a 16-unit grid.
 export function MindmapIcon({ size = 16, ...rest }: IconProps) {
   return (
@@ -52,11 +66,12 @@ export function MindmapIcon({ size = 16, ...rest }: IconProps) {
 // mode's id: the same glyph on the mode switch, Opens in, the tab pill, the template mode filter
 // and the marketing site's mode pictures.
 export const EDITOR_MODE_ICONS: Readonly<
-  Record<'diagram' | 'draw' | 'illustrate', ComponentType<IconProps>>
+  Record<'diagram' | 'draw' | 'illustrate' | 'plan', ComponentType<IconProps>>
 > = {
   diagram: FlowchartIcon,
   draw: MarkerIcon,
   illustrate: IllustrateIcon,
+  plan: PlanIcon,
 };
 
 // "Everything", every mode at once, in the template mode filter: a grid.

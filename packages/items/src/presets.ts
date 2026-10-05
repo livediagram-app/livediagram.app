@@ -145,3 +145,12 @@ export const PLAN_BOARD_PRESETS: Readonly<
 export function presetSetup(id: PlanBoardPresetId): PlanBoardSetup {
   return structuredClone(PLAN_BOARD_PRESETS[id].setup);
 }
+
+export function isPlanBoardPresetId(id: unknown): id is PlanBoardPresetId {
+  return typeof id === 'string' && (PLAN_BOARD_PRESET_IDS as readonly string[]).includes(id);
+}
+
+// A palette tile's preset, or the blank board for anything else.
+export function presetSetupOrBlank(id: unknown): PlanBoardSetup {
+  return presetSetup(isPlanBoardPresetId(id) ? id : 'blank');
+}

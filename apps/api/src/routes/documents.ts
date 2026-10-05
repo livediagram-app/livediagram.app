@@ -124,11 +124,13 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
       // Seeded tabs given as a graph, Mermaid or a template are compiled first (docs/specs/015-api/api.md);
       // with no intent given, the first compiled tab supplies it, as the MCP derives it.
       let derivedIntent: CreationIntent | null = null;
+      let templateItems: unknown[] = [];
       if (Array.isArray(body.tabs)) {
         const seed = compileSeededTabs(body.tabs, body.id);
         if ('refusal' in seed) return json(seed.refusal.body, { status: seed.refusal.status });
         body.tabs = seed.tabs as Tab[];
         derivedIntent = seed.intent;
+        templateItems = seed.items;
       }
       // The creation intent (docs/specs/013-workspace/default-folders.md): which default folder a
       // create at the root of My documents lands in. Malformed, it refuses the create.
@@ -166,7 +168,10 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
       }
       // Seed items (docs/specs/025-plan/items.md): a Plan template's, or an offline document's on
       // sync. Validated whole before anything is written.
-      const seedItemCreates = readSeedItems(body.items);
+      // A create that names its items keeps them; otherwise a Plan template tab brings its own.
+      const seedItemCreates = readSeedItems(
+        body.items ?? (templateItems.length ? templateItems : undefined),
+      );
       if (seedItemCreates instanceof Response) return seedItemCreates;
       // Ownership guard (security): upsertDocumentMeta is INSERT ... ON
       // CONFLICT(id) DO UPDATE owner_id = excluded.owner_id, so a POST with an

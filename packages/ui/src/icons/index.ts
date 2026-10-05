@@ -42,6 +42,7 @@ export {
   EverythingIcon,
   FlowchartIcon,
   IllustrateIcon,
+  PlanIcon,
   MarkerIcon,
   MindmapIcon,
 } from './drawing-kinds';

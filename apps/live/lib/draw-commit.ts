@@ -1,3 +1,4 @@
+import { newItemId, presetSetupOrBlank } from '@livediagram/items';
 import {
   defaultSessionConfig,
   eventStormingNote,
@@ -384,6 +385,14 @@ export function buildDrawnBoxed(
       : {}),
     ...(intent.type === 'shape' && intent.kind === 'estimate' && intent.estimateScale
       ? { estimateScale: intent.estimateScale }
+      : {}),
+    // A Plan board takes its tile's preset; a Plan card names a new item, which the editor makes in
+    // the item store as the card lands (docs/specs/025-plan/plan-mode.md "The palette").
+    ...(intent.type === 'shape' && intent.kind === 'plan-board'
+      ? { planBoard: presetSetupOrBlank(intent.plan) }
+      : {}),
+    ...(intent.type === 'shape' && intent.kind === 'plan-card'
+      ? { planCard: { itemId: newItemId() } }
       : {}),
     ...(intent.type === 'shape' && intent.kind === 'mode-button' && intent.mode
       ? { mode: intent.mode }

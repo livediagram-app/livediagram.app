@@ -48,6 +48,7 @@ import {
   lucideType,
 } from '@livediagram/icons/lucide';
 import { Glyph, Prims } from '@livediagram/ui';
+import { PLAN_TILES } from './palette-plan-tiles';
 
 import {
   CodeBlockTileArt,
@@ -93,6 +94,8 @@ export type PaletteTileSection =
   // eight workshop note kinds, each an ordinary sticky in its semantic
   // colour.
   | 'event-storming'
+  // Plan (docs/specs/025-plan/plan-mode.md "The palette"): boards by preset and cards by item type.
+  | 'plan'
   | 'tools'
   | 'data'
   // 'collaborate' is GONE (docs/specs/010-palette/palette-top-level-categories.md). The collaboration family (docs/specs/012-collaboration/estimate-card.md to
@@ -125,6 +128,8 @@ type PaletteTileAction =
       reaction?: Reaction;
       mode?: SelectionMode;
       estimateScale?: EstimateScale;
+      // Plan board preset, or a Plan card's item type (docs/specs/025-plan/plan-mode.md "The palette").
+      plan?: string;
     }
   | { type: 'text' }
   | { type: 'freehand' }
@@ -1802,6 +1807,8 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     // the actor — so the row's picture says the shape before the blurb does.
     icon: <NoteTileArt size={note.size} fill={note.fill} />,
   })),
+  // Plan (docs/specs/025-plan/plan-mode.md): boards by preset, cards by item type.
+  ...PLAN_TILES,
 ];
 
 export function tilesInSection(section: PaletteTileSection): PaletteTileDef[] {

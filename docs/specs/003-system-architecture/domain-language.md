@@ -47,13 +47,13 @@ interchangeable. These are design decisions, taken before any feature that uses 
 
 The words for the work a Plan board frames ([Items](../025-plan/items.md), [Plan board](../025-plan/plan-board.md)).
 
-| Term           | Means                                                                       | Never called                     |
-| -------------- | --------------------------------------------------------------------------- | -------------------------------- |
-| **item**       | One record in a document's item store: a type and an open bag of fields      | ticket, task, issue, card        |
-| **item type**  | What an item is: Task, Story, Bug, Epic, Note, Idea, Action, Risk            | kind (that is a tab's)           |
-| **item store** | Every item of one document, stored apart from its tabs                       | backlog, database                |
-| **Plan board** | The element that draws items as columns of cards from a stored set-up        | Kanban element, board tab        |
-| **card**       | How an item is drawn, on a Plan board or alone as a Plan card                 | item (the data is the item)      |
+| Term           | Means                                                                   | Never called                |
+| -------------- | ----------------------------------------------------------------------- | --------------------------- |
+| **item**       | One record in a document's item store: a type and an open bag of fields | ticket, task, issue, card   |
+| **item type**  | What an item is: Task, Story, Bug, Epic, Note, Idea, Action, Risk       | kind (that is a tab's)      |
+| **item store** | Every item of one document, stored apart from its tabs                  | backlog, database           |
+| **Plan board** | The element that draws items as columns of cards from a stored set-up   | Kanban element, board tab   |
+| **card**       | How an item is drawn, on a Plan board or alone as a Plan card           | item (the data is the item) |
 
 - **Plan** is an editor mode, never a kind: a Plan board is an element on a general tab.
 - A **column** belongs to a Plan board and stands for a status; a **lane** is the Lane element.

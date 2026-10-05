@@ -39,15 +39,15 @@ item store.
 
 The Plan layout offers six categories, landing on Popular:
 
-| Category | Holds                                                                                                                 |
-| -------- | --------------------------------------------------------------------------------------------------------------------- |
-| Popular  | Kanban board, Retro board, Task card, Bug card, Note card, Sticky note, Text, Heading, Frame, Arrow, Image, Checklist |
-| Plan     | Boards: Kanban board, Sprint board, Retro board, Roadmap, Blank board. Cards: one per item type                       |
-| Write    | Diagram's Write, without Page and Annotation                                                                          |
-| Shapes   | Diagram's Shapes                                                                                                      |
-| Icons    | The icon catalogue                                                                                                    |
-| Stickers | The sticker catalogue                                                                                                 |
-| Media    | Image and Avatar                                                                                                      |
+| Category | Holds                                                                                                              |
+| -------- | ------------------------------------------------------------------------------------------------------------------ |
+| Popular  | Kanban board, Retro board, Task card, Bug card, Note card, Sticky note, Text, Frame, Arrow, Image, Checklist, Link |
+| Plan     | Boards: Kanban board, Sprint board, Retro board, Roadmap, Blank board. Cards: one per item type                    |
+| Write    | Diagram's Write, without Page and Annotation                                                                       |
+| Shapes   | Diagram's Shapes                                                                                                   |
+| Icons    | The icon catalogue                                                                                                 |
+| Stickers | The sticker catalogue                                                                                              |
+| Media    | Image and Avatar                                                                                                   |
 
 - A **board tile** places a Plan board with that preset's set-up. The board starts empty unless the tab already
   has items its scope matches.

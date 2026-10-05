@@ -112,6 +112,7 @@ export function usePaletteCatalogue({
       reaction?: import('@livediagram/document').Reaction;
       mode?: import('@livediagram/document').SelectionMode;
       estimateScale?: import('@livediagram/document').EstimateScale;
+      plan?: string;
     },
   ) => armed(() => onAddShape(kind, opts))();
   // Icons, stickers and tech icons arm the draw gesture too (they ride the

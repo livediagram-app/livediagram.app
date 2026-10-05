@@ -1,0 +1,46 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Items',
+  description:
+    'The tasks, bugs, notes and ideas Plan boards show: stored with the document, numbered, typed, live for everyone, kept in offline documents and copies, and open to your scripts and AI tools.',
+  path: '/help/canvas/plan-mode/items/',
+});
+
+<ArticleLayout
+  title="Items"
+  description="The work your boards show, kept with the document."
+  categoryTitle="Canvas"
+  categorySlug="canvas/plan-mode"
+>
+
+An **item** is one piece of work or one thought: a task, a bug, a retro note, an idea. Items belong to the document and are stored apart from its tabs; a [Plan board](/help/canvas/plan-mode/) and a Plan card only show them. That is why the same item can appear on two boards, and why moving a card moves it everywhere.
+
+## What an item has
+
+- **A number**, such as **#12**: given once when the item is made and never reused, so you can say "#12" in a meeting.
+- **A type**: **Task**, **Story**, **Bug**, **Epic**, **Note**, **Idea**, **Action** or **Risk**. Each has its own colour stripe and glyph, and offers the fields that suit it. Change the type at the top of the item panel.
+- **Fields**: title, description, status, assignee, priority, labels, estimate, due date, checklist, parent (an epic) and votes, as the type offers them. The **status** is what places an item in a board's column.
+- Who made it and who last changed it, shown at the foot of the item panel.
+
+## Always up to date
+
+Every change reaches everyone with the document open at once, whichever tab or board they are looking at. Two people changing different fields of one item never undo each other's work.
+
+## Offline, copies and exports
+
+- An [offline document](/help/privacy-and-security/offline-mode/) keeps its items in your browser with everything else. **Sync Document** takes them to your account; **Take Offline** brings them back down.
+- **Duplicate** copies the items with the document, numbers and all.
+- The `.livediagram` file in Google Drive carries the items, and a document imported from it gets them back.
+- Exported images and PDFs draw boards and cards as they are.
+
+## Limits
+
+A document holds up to 2,000 items, and each item's fields up to 16 KB.
+
+## Scripts and AI tools
+
+Items have their own API, so your scripts and AI tools connected over MCP can list, add, change, move and delete items, as you, with an [API token](/help/developers/). An agent's change shows on everyone's boards the moment it is made.
+
+</ArticleLayout>

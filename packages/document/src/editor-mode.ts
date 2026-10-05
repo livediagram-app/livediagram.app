@@ -1,5 +1,5 @@
 // Editor modes (docs/specs/007-editor/editor-modes.md): how a general tab is worked on, Diagram,
-// Draw or Illustrate. A mode tunes tools and rules; it never decides what the tab is (that is its kind). The
+// Draw, Illustrate or Plan. A mode tunes tools and rules; it never decides what the tab is (that is its kind). The
 // mode a person works in is theirs (the editor remembers it per tab, device-locally); the tab only
 // says which mode it OPENS in (`Tab.opensIn`, Diagram when absent).
 import type { Layer } from './layers';
@@ -14,6 +14,11 @@ export const EDITOR_MODE_CATALOGUE = [
     id: 'illustrate',
     label: 'Illustrate',
     description: 'Pages: infographics to lay out, and articles to write.',
+  },
+  {
+    id: 'plan',
+    label: 'Plan',
+    description: 'Boards of items: columns, cards and the work moving through them.',
   },
 ] as const satisfies readonly { id: string; label: string; description: string }[];
 
@@ -91,4 +96,10 @@ export function hasBoardLook(mode: EditorMode): boolean {
 // "The pages"); a view of the tab, like the board look, never stored.
 export function hasPageLook(mode: EditorMode): boolean {
   return mode === 'illustrate';
+}
+
+// Plan mode works Plan boards as a planning tool (docs/specs/025-plan/plan-mode.md): pressing a card
+// picks the card up, not the board. A rule about input, so it follows the person's mode.
+export function hasPlanInput(mode: EditorMode): boolean {
+  return mode === 'plan';
 }

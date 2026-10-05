@@ -59,6 +59,9 @@ type ShapeDrawingDeps = {
   // Style memory (docs/specs/008-canvas/quick-style-panel.md): dresses every user-drawn shape and arrow in
   // the remembered style of its kind. Identity for anything memory does not know.
   styleNewElement: <T extends Element>(el: T) => T;
+  // A Plan card landed naming a new item (docs/specs/025-plan/plan-mode.md "The palette"): the item
+  // store makes the item, of the tile's type.
+  onPlanCardPlaced?: (itemId: string, itemType: string | undefined) => void;
 };
 
 export function useShapeDrawing(deps: ShapeDrawingDeps) {
@@ -76,6 +79,7 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
     openImagePickerFor,
     zoomRef,
     styleNewElement,
+    onPlanCardPlaced,
   } = deps;
 
   // Pending draw-to-size intent. Picking a palette element stashes it here;
@@ -200,6 +204,9 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
     // behind its contents regardless of array position (docs/specs/008-canvas/canvas-and-palette.md).
     commit((els) => [...els, sized]);
     setSelectedId(sized.id);
+    if (sized.type === 'shape' && sized.shape === 'plan-card' && sized.planCard?.itemId) {
+      onPlanCardPlaced?.(sized.planCard.itemId, intent.type === 'shape' ? intent.plan : undefined);
+    }
     // A freshly added text element drops straight into typing mode
     // (matches the double-click-to-add-text path in useElementCreation):
     // an empty text box is only useful once you type into it, so save the

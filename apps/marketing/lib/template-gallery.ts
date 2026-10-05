@@ -82,7 +82,13 @@ export function byMode(items: GalleryTemplate[], choice: ModeChoice): GalleryTem
 
 // How many templates each choice holds, across Popular and every category (each counted once).
 export function modeCounts(): Record<ModeChoice, number> {
-  const out: Record<ModeChoice, number> = { all: 0, diagram: 0, draw: 0, illustrate: 0 };
+  const out: Record<ModeChoice, number> = {
+    all: 0,
+    diagram: 0,
+    draw: 0,
+    illustrate: 0,
+    plan: 0,
+  };
   const seen = new Set<string>();
   for (const t of [...popularTemplates(), ...galleryTemplates()]) {
     if (seen.has(t.kind)) continue;
@@ -139,9 +145,10 @@ export function groupGallery(items: GalleryTemplate[]): GalleryShelf[] {
 // the catalogue lists it.
 export const POPULAR_PER_MODE = 5;
 const MODE_BEST: Readonly<Record<EditorMode, readonly TemplateKind[]>> = {
-  diagram: ['kanban', 'swot', 'timeline'],
+  diagram: ['swot', 'timeline', 'flowchart'],
   draw: ['journey-doodle', 'comic-strip', 'idea-garden', 'rich-picture'],
   illustrate: ['event-poster', 'year-in-review', 'social-carousel', 'data-story'],
+  plan: ['kanban', 'team-retro', 'sprint-board', 'roadmap-board'],
 };
 
 export function popularFor(choice: ModeChoice): GalleryTemplate[] {

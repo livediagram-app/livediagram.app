@@ -1,5 +1,5 @@
 // Board templates lifted out of template-builders.ts. The SWOT lives here;
-// the retrospective, Kanban and prioritization matrix each outgrew the shared
+// the retrospective and prioritization matrix each outgrew the shared
 // file and live in their own modules, re-exported below so build-template
 // keeps importing every board from one place.
 //
@@ -10,7 +10,6 @@ import { createShape, createSticky, createText, type Element } from '@livediagra
 import { TEMPLATE_CONTENT_LAYER_ID, TEMPLATE_SCAFFOLD_LAYER_ID } from './template-layers';
 
 export { buildRetrospective } from './template-builders-retrospective';
-export { buildKanban } from './template-builders-kanban';
 export { buildPrioritizationMatrix } from './template-builders-prioritization';
 
 // SWOT for one named decision, not "our business" in the abstract: Brightside

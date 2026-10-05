@@ -2,6 +2,7 @@
 // live in the document's own record, and every write is the same pure transition the api applies
 // (@livediagram/items applyItemWrite), serialised with the record's other writes.
 
+import { debugLog } from '@/lib/debug-log';
 import {
   EMPTY_ITEM_STORE,
   applyItemWrite,
@@ -41,7 +42,7 @@ export async function offlineWriteItem(
     if (!result.ok) throw new ApiError('item write', STATUS[result.error], result.error);
     const { items, rev, nextKey } = result.state;
     await offlinePutRecord({ ...rec, items, itemsRev: rev, itemsNextKey: nextKey });
-    console.info('[items] items.offline.write', { kind: write.kind });
+    debugLog('[items] items.offline.write', { kind: write.kind });
     return { upserts: result.upserts, removed: result.removed, rev };
   });
 }

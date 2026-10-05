@@ -13,6 +13,7 @@ import {
   buildMobileWireframe,
 } from './template-builders-wireframes';
 import { buildSlideDeck } from './template-builders-slides';
+import { buildPlanTemplate } from './template-builders-plan';
 import {
   buildComicStrip,
   buildDoodleWarmup,
@@ -33,7 +34,6 @@ import { buildVersus } from './template-builders-versus';
 import { buildSocialCarousel } from './template-builders-social-carousel';
 import { buildStoryboard } from './template-builders-storyboard';
 import {
-  buildKanban,
   buildPrioritizationMatrix,
   buildRetrospective,
   buildSwot,
@@ -116,8 +116,15 @@ export function buildTemplate(kind: TemplateKind, cx: number, cy: number): Eleme
       return buildApprovalWorkflow(cx, cy);
     case 'data-flow':
       return buildDataFlow(cx, cy);
+    // Plan templates (docs/specs/025-plan/plan-mode.md "Templates").
     case 'kanban':
-      return buildKanban(cx, cy);
+    case 'blank-plan':
+    case 'sprint-board':
+    case 'bug-triage':
+    case 'team-retro':
+    case 'roadmap-board':
+    case 'weekly-planner':
+      return buildPlanTemplate(kind, cx, cy);
     case 'swot':
       return buildSwot(cx, cy);
     case 'timeline':

@@ -1,5 +1,6 @@
 'use client';
 
+import { newCardItemWrite } from '@/hooks/plan/plan-card-item';
 import { usePlanItems } from '@/hooks/plan/usePlanItems';
 import { useItemUndo } from '@/hooks/plan/useItemUndo';
 import type { View } from '@/lib/viewport-store';
@@ -1014,6 +1015,10 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     pushUndo: itemUndo.push,
     onError: (message) => toast.error(message),
   });
+
+  // A palette card tile's Plan card landed: its item is made in the store (docs/specs/025-plan/plan-mode.md).
+  const placePlanCardItem = (itemId: string, itemType: string | undefined) =>
+    void planItems.write(newCardItemWrite(itemId, itemType));
 
   useRoomConnection({
     hydrated,
@@ -2386,6 +2391,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     openImagePickerFor,
     zoomRef,
     styleNewElement: styleMemory.styleNewElement,
+    onPlanCardPlaced: placePlanCardItem,
   });
   // The Path tool (docs/specs/023-draw-mode/path-tool.md): a drawn path, a continued one, an edit.
   const { commitPath, commitPathEdit } = usePathCommits({
@@ -2454,6 +2460,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     addBoxedAt,
     beginDraw,
     styleNewElement: styleMemory.styleNewElement,
+    onPlanCardPlaced: placePlanCardItem,
   });
   useAssignRef(placeIntentAtRef, placeIntentAt);
 

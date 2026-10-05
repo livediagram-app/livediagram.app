@@ -116,24 +116,30 @@ describe('TEMPLATES catalogue', () => {
     'journey-doodle',
     'pre-mortem',
     'idea-garden',
+    'blank-plan',
+    'sprint-board',
+    'bug-triage',
+    'team-retro',
+    'roadmap-board',
+    'weekly-planner',
   ];
 
   // Hidden templates are buildable but never listed, so every user-facing
-  // count (docs/specs/019-marketing/marketing-site.md's "81 templates", the picker grids, the MCP catalogue)
+  // count (docs/specs/019-marketing/marketing-site.md's "87 templates", the picker grids, the MCP catalogue)
   // is over the listed subset. The mechanism is generic; nothing ships
   // hidden today (the docs/specs/007-editor/guided-tour-sample.md guided-tour sample used it until the
   // interactive tour, docs/specs/007-editor/editor-tour.md, superseded it).
   const listed = TEMPLATES.filter((t) => !t.hidden);
 
-  it('lists exactly 81 templates (11 default + 70 extra, matches docs/specs/019-marketing/marketing-site.md and docs/specs/008-canvas/canvas-and-palette.md)', () => {
-    expect(listed).toHaveLength(81);
+  it('lists exactly 87 templates (11 default + 76 extra, matches docs/specs/019-marketing/marketing-site.md and docs/specs/008-canvas/canvas-and-palette.md)', () => {
+    expect(listed).toHaveLength(87);
   });
 
-  it('splits cleanly into 11 default + 70 extra (`extra` is catalogue metadata; the picker browses by category)', () => {
+  it('splits cleanly into 11 default + 76 extra (`extra` is catalogue metadata; the picker browses by category)', () => {
     const defaults = listed.filter((t) => !t.extra);
     const extras = listed.filter((t) => t.extra);
     expect(defaults).toHaveLength(11);
-    expect(extras).toHaveLength(70);
+    expect(extras).toHaveLength(76);
   });
 
   it('ships no hidden templates (the flag is generic; docs/specs/007-editor/guided-tour-sample.md was retired by docs/specs/007-editor/editor-tour.md)', () => {
@@ -312,14 +318,10 @@ describe('templateCanvasOverrides', () => {
     expect(templateCanvasOverrides('blank')).toEqual({});
   });
 
-  it('ships the kanban board with its Board / Cards layers (docs/specs/006-document/layers.md)', () => {
+  it('opens the Kanban board in Plan mode on the quiet dot grid (docs/specs/025-plan/plan-mode.md)', () => {
     expect(templateCanvasOverrides('kanban')).toEqual({
-      backgroundPattern: 'graph',
-      backgroundOpacity: 0.4,
-      layers: [
-        { id: TEMPLATE_SCAFFOLD_LAYER_ID, name: 'Board' },
-        { id: TEMPLATE_CONTENT_LAYER_ID, name: 'Cards' },
-      ],
+      backgroundPattern: 'grid',
+      opensIn: 'plan',
     });
   });
 });
@@ -350,24 +352,6 @@ describe('layered templates (docs/specs/006-document/layers.md)', () => {
     }
   });
 
-  it('kanban splits the stationary board from the tickets, cards on top', () => {
-    const layers = templateLayers('kanban')!;
-    // Cards LAST (top): the default active layer, so new elements land
-    // with the content, never under the scaffold (docs/specs/006-document/layers.md).
-    expect(layers.map((l) => l.name)).toEqual(['Board', 'Cards']);
-    const elements = buildTemplate('kanban', 0, 0);
-    const board = elements.filter((el) => el.layerId === TEMPLATE_SCAFFOLD_LAYER_ID);
-    const cards = elements.filter((el) => el.layerId === TEMPLATE_CONTENT_LAYER_ID);
-    // The split is by role, not accident: every lane header is on the
-    // board, every ticket line on the cards.
-    const labelsOn = (els: typeof elements) =>
-      els.map((el) => ('label' in el ? el.label : undefined)).filter(Boolean) as string[];
-    for (const lane of ['Backlog', 'To do', 'In progress', 'Review', 'Done']) {
-      expect(labelsOn(board)).toContain(lane);
-    }
-    expect(labelsOn(cards).filter((l) => l.startsWith('CHK-'))).toHaveLength(15);
-  });
-
   // Band membership per layered template: scaffold count / content count,
   // plus the pair of display names (scaffold first, content on top). The
   // counts pin the ROLE split — a new element silently landing on the
@@ -376,11 +360,6 @@ describe('layered templates (docs/specs/006-document/layers.md)', () => {
   const LAYERED_BANDS: Partial<
     Record<TemplateKind, { names: [string, string]; scaffold: number; content: number }>
   > = {
-    // Board: the how-to plus five lanes of container, glyph, header, count
-    // chip and rule. Cards: title, goal and progress bar, then 15 tickets of
-    // card, text and tag, 11 priority chips, 11 owner discs, the BLOCKED
-    // badge, and the Done lane's trophy and count.
-    kanban: { names: ['Board', 'Cards'], scaffold: 26, content: 73 },
     // Board: 4 column containers, 4 headers, 4 hints, 4 glyphs, the
     // subtitle, the rail hint and the Shout-outs heading. Stickies: the
     // title, 9 notes, the mood check, 2 session buttons, the actions
@@ -576,8 +555,8 @@ describe('layered templates (docs/specs/006-document/layers.md)', () => {
   });
 
   it('buildTemplatedTab lands the layers on the tab and theming keeps the stamps', () => {
-    const tab = buildTemplatedTab('kanban', 'slate', 'tab-1', 'kanban');
-    expect(tab.layers).toEqual(templateLayers('kanban'));
+    const tab = buildTemplatedTab('retrospective', 'slate', 'tab-1', 'retrospective');
+    expect(tab.layers).toEqual(templateLayers('retrospective'));
     for (const el of tab.elements) {
       expect([TEMPLATE_SCAFFOLD_LAYER_ID, TEMPLATE_CONTENT_LAYER_ID]).toContain(el.layerId);
     }
@@ -790,25 +769,8 @@ describe('board templates', () => {
     expect(new Set(stickies.map((el) => el.fillColor)).size).toBe(4);
   });
 
-  // The full structure pins live in template-boards.test.ts; these two check
+  // The full structure pins live in template-boards.test.ts; this checks
   // the themed path (buildTemplatedTab) keeps what carries meaning.
-  it('kanban keeps its tag and owner colours under a non-brand theme', () => {
-    const tab = buildTemplatedTab('kanban', 'slate', 'tab-1', 'kanban');
-    // The 11 owner discs lock their fills, so five people stay apart.
-    const owners = tab.elements.filter(
-      (el) => (el as { themeLockFill?: boolean }).themeLockFill === true,
-    ) as Array<{ fillColor?: string }>;
-    expect(owners).toHaveLength(11);
-    expect(new Set(owners.map((el) => el.fillColor)).size).toBe(5);
-    // The 15 tag chips re-derive their theme-independent preset, so the five
-    // tags keep five colours rather than collapsing to the theme's fill.
-    const tags = tab.elements.filter(
-      (el) => el.type === 'shape' && el.shape === 'stadium' && el.colorPreset,
-    ) as Array<{ fillColor?: string }>;
-    expect(tags).toHaveLength(15);
-    expect(new Set(tags.map((el) => el.fillColor)).size).toBe(5);
-  });
-
   it('swot keeps each quadrant’s sticky hue under a non-brand theme', () => {
     const tab = buildTemplatedTab('swot', 'slate', 'tab-1', 'swot');
     const notes = tab.elements.filter((el) => el.type === 'sticky') as Array<{

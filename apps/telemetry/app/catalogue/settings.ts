@@ -296,6 +296,13 @@ export const EXPERIMENTAL_SETTINGS = settingsStack(
       'Illustrate Mode',
       'The Illustrate editor mode, switched on or off.',
     ),
+    toggle(
+      'UI',
+      'PlanModeOn',
+      'PlanModeOff',
+      'Plan Mode',
+      'The Plan editor mode, switched on or off.',
+    ),
   ],
 );
 

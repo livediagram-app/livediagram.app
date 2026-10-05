@@ -10,9 +10,9 @@ import {
 import { tileById, tilesForCategory } from './palette-tile-defs';
 
 // The palette per mode (docs/specs/007-editor/editor-modes.md "The palette per mode").
-const ids = (mode: 'diagram' | 'illustrate', esBoard = false) =>
+const ids = (mode: 'diagram' | 'illustrate' | 'plan', esBoard = false) =>
   paletteCategoriesFor(mode, { esBoard }).map((c) => c.id);
-const tileIds = (mode: 'diagram' | 'illustrate', category: string) =>
+const tileIds = (mode: 'diagram' | 'illustrate' | 'plan', category: string) =>
   paletteCategoriesFor(mode)
     .find((c) => c.id === category)!
     .tiles!.map((t) => t.id);
@@ -134,5 +134,37 @@ describe('palette layouts', () => {
         .flatMap((c) => (c.tiles ?? []).map((t) => t.id)),
     );
     for (const id of popular) expect(reachable.has(id), id).toBe(true);
+  });
+
+  // docs/specs/025-plan/plan-mode.md "The palette".
+  it('narrows Plan to boards, cards and what sits round a board', () => {
+    expect(ids('plan')).toEqual([
+      'popular',
+      'plan',
+      'write',
+      'shapes',
+      'icons',
+      'stickers',
+      'media',
+    ]);
+    expect(ids('diagram')).not.toContain('plan');
+    expect(ids('illustrate')).not.toContain('plan');
+    expect(tileIds('plan', 'write')).not.toContain('tools:page');
+    expect(tileIds('plan', 'media')).not.toContain('media:embed-youtube');
+  });
+
+  it('offers a board per preset and a card per item type, twelve Popular tiles all reachable', () => {
+    const plan = tileIds('plan', 'plan');
+    expect(plan.filter((id) => id.startsWith('plan:board-'))).toHaveLength(7);
+    expect(plan.filter((id) => id.startsWith('plan:card-'))).toHaveLength(8);
+    const popular = tileIds('plan', 'popular');
+    expect(popular).toHaveLength(12);
+    const reachable = new Set(
+      paletteCategoriesFor('plan')
+        .filter((c) => c.id !== 'popular')
+        .flatMap((c) => (c.tiles ?? []).map((t) => t.id)),
+    );
+    for (const id of popular) expect(reachable.has(id), id).toBe(true);
+    expect(paletteLandingCategory('plan', false)).toBe('popular');
   });
 });

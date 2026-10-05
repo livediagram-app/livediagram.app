@@ -1,3 +1,4 @@
+import { newItemId, presetSetupOrBlank } from '@livediagram/items';
 import type { Selection } from '@/lib/selection-store';
 import { type Dispatch, type SetStateAction } from 'react';
 import {
@@ -66,6 +67,8 @@ export function useElementCreation(opts: {
   // Style memory (docs/specs/008-canvas/quick-style-panel.md) for the user-drawn adds made here: a palette
   // drop and a click-to-connect arrow.
   styleNewElement: <T extends Element>(el: T) => T;
+  // A dropped Plan card names a new item, which the item store makes (docs/specs/025-plan/plan-mode.md).
+  onPlanCardPlaced?: (itemId: string, itemType: string | undefined) => void;
 }) {
   const {
     editsBlocked,
@@ -80,6 +83,7 @@ export function useElementCreation(opts: {
     addBoxedAt,
     beginDraw,
     styleNewElement,
+    onPlanCardPlaced,
   } = opts;
 
   // Telemetry for these arming handlers fires on commit (see
@@ -96,12 +100,14 @@ export function useElementCreation(opts: {
       reaction?: Reaction;
       mode?: SelectionMode;
       estimateScale?: EstimateScale;
+      plan?: string;
     },
   ) => {
     if (editsBlocked) return;
     beginDraw({
       type: 'shape',
       kind,
+      ...(opts?.plan ? { plan: opts.plan } : {}),
       ...(opts?.session ? { session: opts.session } : {}),
       ...(opts?.reaction ? { reaction: opts.reaction } : {}),
       ...(opts?.mode ? { mode: opts.mode } : {}),
@@ -303,6 +309,8 @@ export function useElementCreation(opts: {
     if (insertion) track('Canvas', 'Used', 'InsertBetween');
     const iconId = art?.iconId;
     const stickerId = art?.stickerId;
+    // A dropped Plan card names a new item, made in the store once the card lands.
+    const planCardItemId = kind === 'plan-card' ? newItemId() : null;
     if (kind === 'sticky') {
       // A dragged sticky lands exactly like a tapped one — the drop point is
       // the only difference — so it goes through the same builder: fill +
@@ -393,11 +401,14 @@ export function useElementCreation(opts: {
               ...(art?.choice && kind === 'estimate'
                 ? { estimateScale: art.choice as EstimateScale }
                 : {}),
+              ...(kind === 'plan-board' ? { planBoard: presetSetupOrBlank(art?.choice) } : {}),
+              ...(planCardItemId ? { planCard: { itemId: planCardItemId } } : {}),
             },
       // Shapes and icons open for typing too; takesTypedLabel filters out the
       // kinds whose face isn't text (stickers, session buttons, ...).
       { edit: true, insertion, style: styleNewElement },
     );
+    if (planCardItemId) onPlanCardPlaced?.(planCardItemId, art?.choice);
     // A tech-icon id maps to its own telemetry type (see addTechIcon);
     // line-art icons + shapes use the kind.
     track(

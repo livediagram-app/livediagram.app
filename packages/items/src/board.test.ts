@@ -7,7 +7,12 @@ import {
   votesSpent,
   type PlanBoardSetup,
 } from './board';
-import { presetSetup, PLAN_BOARD_PRESET_IDS } from './presets';
+import {
+  isPlanBoardPresetId,
+  presetSetup,
+  presetSetupOrBlank,
+  PLAN_BOARD_PRESET_IDS,
+} from './presets';
 import { itemIdsShownOnTab } from './tab-items';
 import { itemAccessibleName, itemSummary } from './views';
 import { ALI, SAM, item } from './test-items';
@@ -185,5 +190,14 @@ describe('item text', () => {
     expect(itemAccessibleName(a)).toBe('#12 Fix login, Bug, assigned to Sam Lee, high priority');
     expect(itemSummary(a)).toBe('#12 [bug] Fix login (@Sam Lee, !high)');
     expect(itemSummary(item({ title: 'x' }, { key: 3 }))).toBe('#3 [task] x');
+  });
+});
+
+describe('presets', () => {
+  it('reads a tile preset, falling back to the blank board', () => {
+    expect(presetSetupOrBlank('retro').title).toBe('Retro');
+    expect(presetSetupOrBlank('nope')).toEqual(presetSetup('blank'));
+    expect(presetSetupOrBlank(undefined)).toEqual(presetSetup('blank'));
+    expect(isPlanBoardPresetId('kanban')).toBe(true);
   });
 });

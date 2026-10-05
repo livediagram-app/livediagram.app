@@ -27,6 +27,7 @@ export type PaletteTileActions = {
       reaction?: Reaction;
       mode?: SelectionMode;
       estimateScale?: EstimateScale;
+      plan?: string;
     },
   ) => void;
   addText: () => void;
@@ -68,6 +69,7 @@ export function tileHandler(def: PaletteTileDef, actions: PaletteTileActions): (
           reaction: a.reaction,
           mode: a.mode,
           estimateScale: a.estimateScale,
+          plan: a.plan,
         });
     case 'text':
       return actions.addText;
@@ -126,7 +128,8 @@ export function tileActive(
         pendingDraw.session === a.session &&
         pendingDraw.reaction === a.reaction &&
         pendingDraw.mode === a.mode &&
-        pendingDraw.estimateScale === a.estimateScale
+        pendingDraw.estimateScale === a.estimateScale &&
+        pendingDraw.plan === a.plan
       );
     case 'component':
       return pendingDraw.type === 'component' && pendingDraw.kind === a.kind;
@@ -198,7 +201,9 @@ export function PaletteTile({
       onClick={onClick}
       dragKind={a.type === 'shape' ? a.kind : undefined}
       dragChoice={
-        a.type === 'shape' ? (a.session ?? a.reaction ?? a.mode ?? a.estimateScale) : undefined
+        a.type === 'shape'
+          ? (a.session ?? a.reaction ?? a.mode ?? a.estimateScale ?? a.plan)
+          : undefined
       }
       draggable={otherDrag !== undefined || undefined}
       onDragStart={otherDrag}

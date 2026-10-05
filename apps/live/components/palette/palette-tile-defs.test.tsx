@@ -147,6 +147,8 @@ const TILES_PER_CATEGORY: Record<string, number> = {
   behaviour: 34,
   // The Event Storming notation (docs/specs/021-event-storming/event-storming.md): one tile per note kind.
   'event-storming': 8,
+  // Plan (docs/specs/025-plan/plan-mode.md "The palette"): seven boards, one card per item type.
+  plan: 15,
 };
 
 describe('PALETTE_CATEGORIES', () => {

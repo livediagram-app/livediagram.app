@@ -21,6 +21,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Editor|Changed|ModeDraw': 'Someone switched a tab to Draw mode, to draw freehand with pens.',
   'Editor|Changed|ModeIllustrate':
     'Someone switched a tab to Illustrate mode, to lay out a page of icons, stickers, components and media.',
+  'Editor|Changed|ModePlan':
+    'Someone switched a tab to Plan mode, to work on boards of items: drag cards through columns, add and open items.',
   'Draw|Created|Template':
     'Someone started a new document as a whiteboard, a plain board drawn on with pens, from the New Document wizard.',
   'Draw|Created|NewTab':
@@ -585,6 +587,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Tab|Changed|PageLayout': 'Someone put a ready-made layout onto an Illustrate page.',
   'Tab|Changed|OpensInIllustrate':
     'Someone set a tab to open in Illustrate mode for everyone, from the tab menu.',
+  'Tab|Changed|OpensInPlan':
+    'Someone set a tab to open in Plan mode for everyone, from the tab menu.',
   'Tab|Changed|DefaultTextSize':
     "Someone changed a tab's default text size, used for new elements added to it.",
   'Tab|Changed|Font':
@@ -1000,6 +1004,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone turned on quick-add on hover in the palette, in Settings > Editor.',
   'UI|Toggled|IllustrateModeOff': 'Someone turned off Illustrate mode, in Settings > Experimental.',
   'UI|Toggled|IllustrateModeOn': 'Someone turned on Illustrate mode, in Settings > Experimental.',
+  'UI|Toggled|PlanModeOff': 'Someone turned off Plan mode, in Settings > Experimental.',
+  'UI|Toggled|PlanModeOn': 'Someone turned on Plan mode, in Settings > Experimental.',
   'UI|Toggled|ReduceMotionOff': 'Someone turned off reduced motion, in Settings > Accessibility.',
   'UI|Toggled|ReduceMotionOn': 'Someone turned on reduced motion, in Settings > Accessibility.',
   'UI|Toggled|ShortcutsOff': 'Someone turned off keyboard shortcuts, in Settings > Keyboard.',
@@ -1021,6 +1027,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone narrowed the New Document templates to the ones that open in Draw mode.',
   'UI|Toggled|TemplateModeIllustrate':
     'Someone narrowed the New Document templates to the ones that open in Illustrate mode.',
+  'UI|Toggled|TemplateModePlan':
+    'Someone narrowed the New Document templates to the ones that open in Plan mode.',
   'UI|Toggled|TemplateShelfCollapsed':
     'Someone put the New Document template shelf back to a carousel, with the other categories as a grid.',
   'UI|Toggled|TemplateShelfExpanded':

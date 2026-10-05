@@ -15,7 +15,7 @@ where it is and changes only how the next mark is made.
 | **Diagram mode**    | Structured drawing: the palette, shapes, arrows, icons, templates, snapping and guides.                                               |
 | **Draw mode**       | Freehand whiteboarding: the dock, preset pens, eraser, shape recognition ([Draw mode](../023-draw-mode/draw-mode.md)).                |
 | **Illustrate mode** | Pages on the canvas, of two kinds: infographic pages to lay out and article pages to write ([Illustrate pages](illustrate-pages.md)). |
-| **Plan mode**       | Boards of items: Plan boards, cards, the item panel ([Plan mode](../025-plan/plan-mode.md)).                                         |
+| **Plan mode**       | Boards of items: Plan boards, cards, the item panel ([Plan mode](../025-plan/plan-mode.md)).                                          |
 | **mode switch**     | The control beside the page switcher that changes the editor mode.                                                                    |
 
 - "Whiteboard" names the activity and Draw mode's look, never a tab kind and

@@ -197,7 +197,7 @@ export const categories: Category[] = [
     title: 'Canvas',
     description:
       'Master the infinite canvas where diagrams come together: placing, selecting, linking, annotating, noting, layering, rotating, animating, shadowing, locking, undoing, theming, and templating.',
-    articleCount: 25,
+    articleCount: 26,
     kind: 'feature',
   },
   {
@@ -1233,6 +1233,27 @@ export const articles: Article[] = [
       'draw mode drawing mode diagram mode editor mode switch modes mode switch toggle shift+d shift d opens in open in default mode per tab whiteboards whiteboard white board chalkboard blackboard sketch draw drawing freehand hand drawn ink pen pens marker stylus apple pencil surface pen touch finger palm rejection pinch zoom dock toolbar eraser rubber partial erase stroke erase sticky text shapes shape recognition recognise recognize snap clean up background plain dots dotted grid graph microsoft whiteboard dark mode chalk colour color width thickness path tool vector pen tool bezier curve curves anchor point points node nodes handle handles edit points corner smooth mirrored aligned illustrator figma undo redo settings cog more shapes shape search find a shape flowchart pin pinned unpin favourite shapes frequent most used simple mode dock mode colour picker color picker custom colour hex eyedropper eye dropper your colours remove colour contrast dock position top bottom move the dock tablet ipad snap colours snap to stock colours stock colors custom colors convert colours adaptive nearest colour',
     category: 'Canvas',
     categorySlug: 'canvas',
+  },
+  {
+    slug: 'plan-mode',
+    title: 'Plan mode',
+    description:
+      'Boards of items on any tab: Kanban, sprints, triage, retros and roadmaps, with cards you drag together.',
+    keywords:
+      'plan mode planning board boards kanban scrum sprint agile retro retrospective roadmap now next later bug triage weekly planner jira trello asana linear backlog to do in progress done column columns swimlane swimlanes rows wip limit work in progress card cards ticket tickets task tasks story stories issue issues drag drop move card quick add @ mention assign label priority estimate story points vote voting dot vote hide writing private reveal facilitator set up board settings plan card keyboard shift arrow undo editor mode switch shift+d opens in',
+    category: 'Canvas',
+    categorySlug: 'canvas',
+  },
+  {
+    slug: 'items',
+    title: 'Items',
+    description:
+      'The tasks, bugs, notes and ideas boards show: numbered, typed, live, kept offline and in copies.',
+    keywords:
+      'item items ticket tickets task story bug epic note idea action risk issue record records field fields custom field status assignee owner priority label labels tag tags estimate points due date deadline checklist subtasks parent epic votes number key id #12 database store offline sync duplicate copy export drive api mcp agent automation script limit 2000',
+    category: 'Canvas',
+    categorySlug: 'canvas/plan-mode',
+    parentSlug: 'plan-mode',
   },
   {
     slug: 'illustrate',

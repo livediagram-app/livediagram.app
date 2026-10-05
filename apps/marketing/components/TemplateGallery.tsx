@@ -38,7 +38,7 @@ import {
 // (@livediagram/template-previews), so a template looks the same here as it does in the app.
 
 const COUNTS = modeCounts();
-const CHOICES: readonly ModeChoice[] = ['all', 'diagram', 'draw', 'illustrate'];
+const CHOICES: readonly ModeChoice[] = ['all', 'diagram', 'draw', 'illustrate', 'plan'];
 const choiceLabel = (c: ModeChoice) => (c === 'all' ? 'Everything' : editorModeLabel(c));
 
 export function TemplateGallery() {

@@ -16,13 +16,14 @@ import {
 import { useEditorMode, type EditorModeState } from '@/hooks/editor/useEditorMode';
 import { EditorModeProvider } from './editor-mode-context';
 import { EditorModeSwitch } from './EditorModeSwitch';
-import { setIllustrateModeEnabled } from '@/lib/offered-editor-modes';
+import { setIllustrateModeEnabled, setPlanModeEnabled } from '@/lib/offered-editor-modes';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
 beforeEach(() => {
-  // Every mode offered, the experimental one included (Settings › Experimental).
+  // Every mode offered, the experimental ones included (Settings › Experimental).
   setIllustrateModeEnabled(true);
+  setPlanModeEnabled(true);
   localStorage.clear();
   vi.spyOn(console, 'info').mockImplementation(() => {});
 });
@@ -30,12 +31,14 @@ afterEach(() => {
   cleanup();
   vi.restoreAllMocks();
   setIllustrateModeEnabled(false);
+  setPlanModeEnabled(false);
 });
 
 // Settings › Experimental (docs/specs/007-editor/editor-modes.md "Experimental modes").
-describe('EditorModeSwitch with Illustrate mode switched off', () => {
+describe('EditorModeSwitch with the experimental modes switched off', () => {
   it('offers only Diagram and Draw', () => {
     setIllustrateModeEnabled(false);
+    setPlanModeEnabled(false);
     renderSwitch('diagram');
     fireEvent.click(chip());
     expect(screen.getAllByRole('menuitemradio').map((row) => row.textContent)).toEqual([
@@ -86,8 +89,14 @@ describe('EditorModeSwitch chip', () => {
       expect.stringMatching(/^Diagram/),
       expect.stringMatching(/^Draw/),
       expect.stringMatching(/^Illustrate/),
+      expect.stringMatching(/^Plan/),
     ]);
-    expect(rows.map((row) => row.getAttribute('aria-checked'))).toEqual(['false', 'true', 'false']);
+    expect(rows.map((row) => row.getAttribute('aria-checked'))).toEqual([
+      'false',
+      'true',
+      'false',
+      'false',
+    ]);
     expect(document.activeElement).toBe(rows[1]);
   });
 
@@ -99,6 +108,7 @@ describe('EditorModeSwitch chip', () => {
       'Diagram',
       'Draw⇧D',
       'Illustrate',
+      'Plan',
     ]);
   });
 
@@ -120,19 +130,21 @@ describe('EditorModeSwitch chip', () => {
     renderSwitch('diagram');
     fireEvent.click(chip());
     const menu = screen.getByRole('menu');
-    const [diagram, draw, illustrate] = screen.getAllByRole('menuitemradio');
+    const [diagram, draw, illustrate, plan] = screen.getAllByRole('menuitemradio');
     fireEvent.keyDown(menu, { key: 'ArrowDown' });
     expect(document.activeElement).toBe(draw);
     fireEvent.keyDown(menu, { key: 'ArrowDown' });
     expect(document.activeElement).toBe(illustrate);
     fireEvent.keyDown(menu, { key: 'ArrowDown' });
+    expect(document.activeElement).toBe(plan);
+    fireEvent.keyDown(menu, { key: 'ArrowDown' });
     expect(document.activeElement).toBe(diagram);
     fireEvent.keyDown(menu, { key: 'ArrowUp' });
-    expect(document.activeElement).toBe(illustrate);
+    expect(document.activeElement).toBe(plan);
     fireEvent.keyDown(menu, { key: 'Home' });
     expect(document.activeElement).toBe(diagram);
     fireEvent.keyDown(menu, { key: 'End' });
-    expect(document.activeElement).toBe(illustrate);
+    expect(document.activeElement).toBe(plan);
   });
 
   it.each([
