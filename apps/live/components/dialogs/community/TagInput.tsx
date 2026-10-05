@@ -3,6 +3,7 @@
 import { useId, useState } from 'react';
 import { COMMUNITY_TAG_MAX, COMMUNITY_TAG_MIN, COMMUNITY_TAGS_MAX } from '@livediagram/api-schema';
 import { CloseIcon } from '@livediagram/ui';
+import { FieldError } from './FieldError';
 import { commitTag, commitTagInput, tagPreview, type TagRejection } from './tag-draft';
 
 // The publish dialog's tag field (docs/specs/025-community/community.md "Tags"): chips typed into one
@@ -22,17 +23,21 @@ export function TagInput({
   onChange,
   suggestions = [],
   disabled = false,
+  error,
 }: {
   tags: string[];
   onChange: (tags: string[]) => void;
   // Popular tags to offer; the ones already chosen are left out.
   suggestions?: string[];
   disabled?: boolean;
+  // The field's validation message from the dialog's submit, shown under the field.
+  error?: string;
 }) {
   const [draft, setDraft] = useState('');
   const [rejected, setRejected] = useState<TagRejection | null>(null);
   const inputId = useId();
   const hintId = useId();
+  const errorId = useId();
   const full = tags.length >= COMMUNITY_TAGS_MAX;
   const preview = tagPreview(draft);
   const offered = suggestions.filter((s) => !tags.includes(s)).slice(0, 8);
@@ -52,8 +57,8 @@ export function TagInput({
     <div className="flex flex-col gap-1.5">
       <div
         className={`flex flex-wrap items-center gap-1.5 rounded-md border bg-white px-2 py-1.5 transition focus-within:border-brand-400 focus-within:ring-2 focus-within:ring-brand-100 dark:bg-slate-900 ${
-          rejected
-            ? 'border-rose-300 dark:border-rose-500/60'
+          rejected || error
+            ? 'border-rose-400 ring-2 ring-rose-100 dark:border-rose-400/70 dark:ring-rose-500/20'
             : 'border-slate-200 dark:border-slate-700'
         }`}
       >
@@ -110,8 +115,8 @@ export function TagInput({
             full ? 'That is all five' : tags.length ? 'Add another' : 'e.g. aws, onboarding'
           }
           aria-label="Tags"
-          aria-describedby={hintId}
-          aria-invalid={rejected !== null}
+          aria-describedby={error ? `${errorId} ${hintId}` : hintId}
+          aria-invalid={rejected !== null || !!error}
           autoComplete="off"
           spellCheck={false}
           className="min-w-[8rem] flex-1 bg-transparent px-1 py-0.5 text-sm text-slate-900 outline-none placeholder:text-slate-400 disabled:cursor-not-allowed dark:text-slate-100"
@@ -128,6 +133,7 @@ export function TagInput({
             ? `Adds as #${preview}`
             : `Up to ${COMMUNITY_TAGS_MAX}. Press Enter or a comma to add one.`}
       </p>
+      <FieldError id={errorId} message={error} />
       {offered.length > 0 && !full ? (
         <div className="flex flex-wrap items-center gap-1.5">
           <span className="text-xs text-slate-500 dark:text-slate-400">Popular:</span>

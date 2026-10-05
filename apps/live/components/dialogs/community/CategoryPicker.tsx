@@ -10,12 +10,18 @@ export function CategoryPicker({
   value,
   onChange,
   labelledBy,
+  describedBy,
+  invalid = false,
   disabled = false,
 }: {
   value: CommunityCategory | null;
   onChange: (category: CommunityCategory) => void;
   // The id of the visible "Category" label.
   labelledBy: string;
+  // The id of the field's validation message, when it has one.
+  describedBy?: string;
+  // No category chosen on a submit: every tile takes the error border until one is picked.
+  invalid?: boolean;
   disabled?: boolean;
 }) {
   const tiles = useRef<(HTMLButtonElement | null)[]>([]);
@@ -42,6 +48,8 @@ export function CategoryPicker({
     <div
       role="radiogroup"
       aria-labelledby={labelledBy}
+      aria-describedby={describedBy}
+      aria-invalid={invalid || undefined}
       className="grid grid-cols-2 gap-2 sm:grid-cols-3"
     >
       {COMMUNITY_CATEGORIES.map((category, index) => {
@@ -62,7 +70,9 @@ export function CategoryPicker({
             className={`flex flex-col items-start gap-0.5 rounded-lg border px-3 py-2 text-left transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 ${
               checked
                 ? 'border-brand-400 bg-brand-50 ring-1 ring-brand-400 dark:border-brand-400/70 dark:bg-brand-500/15 dark:ring-brand-400/70'
-                : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:hover:border-slate-600 dark:hover:bg-slate-800'
+                : invalid
+                  ? 'border-rose-300 bg-white hover:border-rose-400 hover:bg-rose-50/50 dark:border-rose-500/50 dark:bg-slate-900 dark:hover:bg-rose-500/10'
+                  : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:hover:border-slate-600 dark:hover:bg-slate-800'
             }`}
           >
             <span

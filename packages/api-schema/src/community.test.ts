@@ -11,6 +11,8 @@ import {
   normaliseCommunityTag,
   parseCommunityListQuery,
   validateCommunityPostInput,
+  communityInputErrorField,
+  communityPostInputErrors,
 } from './community';
 
 const valid = {
@@ -82,6 +84,29 @@ describe('validateCommunityPostInput', () => {
 
   it('rejects a missing body', () => {
     expect(validateCommunityPostInput(null)).toEqual({ ok: false, error: 'invalid_title' });
+  });
+});
+
+describe('communityPostInputErrors', () => {
+  it('is empty for a valid post', () => {
+    expect(communityPostInputErrors(valid)).toEqual([]);
+  });
+
+  it('reports every failing field at once, in field order', () => {
+    expect(
+      communityPostInputErrors({ title: 'x', description: 'short', category: null, tags: ['!'] }),
+    ).toEqual(['invalid_title', 'invalid_description', 'invalid_category', 'invalid_tags']);
+    expect(communityPostInputErrors({ ...valid, description: 'short', category: 'nope' })).toEqual([
+      'invalid_description',
+      'invalid_category',
+    ]);
+  });
+
+  it('maps a code to its field, and a non-field refusal to none', () => {
+    expect(communityInputErrorField('invalid_description')).toBe('description');
+    expect(communityInputErrorField('invalid_tags')).toBe('tags');
+    expect(communityInputErrorField('empty_document')).toBeNull();
+    expect(communityInputErrorField(null)).toBeNull();
   });
 });
 

@@ -8,7 +8,6 @@ import {
   communityCategoryType,
   validateCommunityPostInput,
   type CommunityAuthor,
-  type CommunityCategory,
   type CommunityOwnPost,
   type CommunityPostInput,
 } from '@livediagram/api-schema';
@@ -18,13 +17,16 @@ import { DialogCloseButton } from '@/components/dialogs/DialogCloseButton';
 import { DialogFooter } from '@/components/dialogs/DialogFooter';
 import { DialogHeader } from '@/components/dialogs/DialogHeader';
 import { apiCommunityPopularTags } from '@/lib/api-client';
-import { communityCodeMessage, communityErrorMessage } from '@/lib/community-errors';
+import { ApiError } from '@/lib/api/core';
+import { communityErrorMessage } from '@/lib/community-errors';
 import { track } from '@/lib/telemetry';
 import { useToast } from '@/hooks/ui/useToast';
 import { CategoryPicker } from './CategoryPicker';
 import { CommunityCardPreview } from './CommunityCardPreview';
 import { CommunityPublishedConfirmation } from './CommunityPublishedConfirmation';
+import { FieldError } from './FieldError';
 import { TagInput } from './TagInput';
+import { usePublishForm } from './usePublishForm';
 
 // The plain-words consequences of publishing (docs/specs/025-community/community.md "Publishing";
 // final copy in the blueprint §9).
@@ -36,11 +38,16 @@ const CONSEQUENCES = [
 ];
 
 const LABEL = 'text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400';
+// A field with a problem: a rose border and ring, so it is easy to spot.
+const INVALID =
+  'border-rose-400 ring-2 ring-rose-100 dark:border-rose-400/70 dark:ring-rose-500/20';
 
 // Share to Community and Edit Listing (docs/specs/025-community/community.md "Publishing"): title,
 // description, category, tags, a preview of the card and what publishing means. The input is checked
-// with the same validator the worker runs before it is sent, and the worker's refusals are worded by
-// the same table. A first publish ends on a celebration with the post's link; an edit just closes.
+// with the same validator the worker runs before it is sent. A problem with a field is shown under that
+// field, and a failed submit takes the person to the first one (usePublishForm); a refusal that is not
+// about a field sits in the footer beside the button. A first publish ends on a celebration with the
+// post's link; an edit just closes.
 export function CommunityPublishDialog({
   post,
   documentName,
@@ -64,12 +71,10 @@ export function CommunityPublishDialog({
   const titleId = useId();
   const categoryLabelId = useId();
   const descriptionHintId = useId();
-  const [title, setTitle] = useState(() =>
-    (post?.title ?? documentName).slice(0, COMMUNITY_TITLE_MAX),
-  );
-  const [description, setDescription] = useState(post?.description ?? '');
-  const [category, setCategory] = useState<CommunityCategory | null>(post?.category ?? null);
-  const [tags, setTags] = useState<string[]>(post?.tags ?? []);
+  const errorId = useId();
+  const form = usePublishForm(post, documentName);
+  const { title, description, category, tags } = form.draft;
+  const { errors } = form;
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [published, setPublished] = useState<CommunityOwnPost | null>(null);
@@ -86,14 +91,12 @@ export function CommunityPublishDialog({
   }, []);
 
   const descriptionLength = description.trim().length;
-  const descriptionShort = descriptionLength < COMMUNITY_DESCRIPTION_MIN;
+  const fieldErrorId = (field: string) => `${errorId}-${field}`;
 
   const submit = async () => {
-    const checked = validateCommunityPostInput({ title, description, category, tags });
-    if (!checked.ok) {
-      setError(communityCodeMessage(checked.error));
-      return;
-    }
+    setError(null);
+    const checked = validateCommunityPostInput(form.draft);
+    if (!form.check() || !checked.ok) return;
     setBusy(true);
     setError(null);
     try {
@@ -108,7 +111,9 @@ export function CommunityPublishDialog({
         setPublished(saved);
       }
     } catch (err) {
-      setError(communityErrorMessage(err));
+      if (!(err instanceof ApiError && form.showServerError(err.code))) {
+        setError(communityErrorMessage(err));
+      }
     } finally {
       setBusy(false);
     }
@@ -133,6 +138,7 @@ export function CommunityPublishDialog({
       ) : (
         <form
           className="flex min-h-0 flex-col"
+          noValidate
           onSubmit={(e) => {
             e.preventDefault();
             void submit();
@@ -146,24 +152,28 @@ export function CommunityPublishDialog({
           </DialogHeader>
 
           <div className="flex flex-col gap-4 overflow-y-auto px-6 py-5">
-            <label className="flex flex-col gap-1">
+            <label ref={form.register('title')} className="flex flex-col gap-1">
               <span className={LABEL}>Title</span>
               <TextInput
                 value={title}
-                onChange={(e) => setTitle(e.target.value)}
+                onChange={(e) => form.setTitle(e.target.value)}
                 maxLength={COMMUNITY_TITLE_MAX}
                 disabled={busy}
                 autoFocus
+                aria-invalid={errors.title ? true : undefined}
+                aria-describedby={errors.title ? fieldErrorId('title') : undefined}
+                className={errors.title ? INVALID : undefined}
               />
+              <FieldError id={fieldErrorId('title')} message={errors.title} />
             </label>
 
-            <label className="flex flex-col gap-1">
+            <label ref={form.register('description')} className="flex flex-col gap-1">
               <span className="flex items-baseline justify-between gap-2">
                 <span className={LABEL}>Description</span>
                 <span
                   className={`text-xs tabular-nums ${
-                    descriptionLength > 0 && descriptionShort
-                      ? 'text-amber-700 dark:text-amber-300'
+                    errors.description
+                      ? 'font-medium text-rose-600 dark:text-rose-300'
                       : 'text-slate-400'
                   }`}
                 >
@@ -172,34 +182,51 @@ export function CommunityPublishDialog({
               </span>
               <textarea
                 value={description}
-                onChange={(e) => setDescription(e.target.value)}
+                onChange={(e) => form.setDescription(e.target.value)}
                 maxLength={COMMUNITY_DESCRIPTION_MAX}
                 rows={4}
                 disabled={busy}
-                aria-describedby={descriptionHintId}
-                className="w-full resize-y rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-brand-400 focus:ring-2 focus:ring-brand-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                aria-invalid={errors.description ? true : undefined}
+                aria-describedby={
+                  errors.description
+                    ? `${fieldErrorId('description')} ${descriptionHintId}`
+                    : descriptionHintId
+                }
+                className={`w-full resize-y rounded-md border bg-white px-3 py-2 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-brand-400 focus:ring-2 focus:ring-brand-100 dark:bg-slate-900 dark:text-slate-100 ${
+                  errors.description ? INVALID : 'border-slate-200 dark:border-slate-700'
+                }`}
               />
+              <FieldError id={fieldErrorId('description')} message={errors.description} />
               <span id={descriptionHintId} className="text-xs text-slate-500 dark:text-slate-400">
-                What it shows, how you made it, how someone could reuse it.
-                {descriptionShort ? ` At least ${COMMUNITY_DESCRIPTION_MIN} characters.` : ''}
+                What it shows, how you made it, how someone could reuse it. At least{' '}
+                {COMMUNITY_DESCRIPTION_MIN} characters.
               </span>
             </label>
 
-            <div className="flex flex-col gap-1.5">
+            <div ref={form.register('category')} className="flex flex-col gap-1.5">
               <span id={categoryLabelId} className={LABEL}>
                 Category
               </span>
               <CategoryPicker
                 value={category}
-                onChange={setCategory}
+                onChange={form.setCategory}
                 labelledBy={categoryLabelId}
+                describedBy={errors.category ? fieldErrorId('category') : undefined}
+                invalid={!!errors.category}
                 disabled={busy}
               />
+              <FieldError id={fieldErrorId('category')} message={errors.category} />
             </div>
 
-            <div className="flex flex-col gap-1.5">
+            <div ref={form.register('tags')} className="flex flex-col gap-1.5">
               <span className={LABEL}>Tags</span>
-              <TagInput tags={tags} onChange={setTags} suggestions={suggestions} disabled={busy} />
+              <TagInput
+                tags={tags}
+                onChange={form.setTags}
+                suggestions={suggestions}
+                disabled={busy}
+                error={errors.tags}
+              />
             </div>
 
             <div className="grid gap-4 border-t border-slate-100 pt-4 sm:grid-cols-[13rem_1fr] dark:border-slate-800">
@@ -231,18 +258,17 @@ export function CommunityPublishDialog({
                 </ul>
               </div>
             </div>
+          </div>
 
+          <DialogFooter>
             {error ? (
               <p
                 role="alert"
-                className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700 dark:border-rose-500/40 dark:bg-rose-500/10 dark:text-rose-200"
+                className="mr-auto text-sm font-medium text-rose-600 dark:text-rose-300"
               >
                 {error}
               </p>
             ) : null}
-          </div>
-
-          <DialogFooter>
             <Button variant="secondary" size="xs" onClick={onClose} disabled={busy}>
               Cancel
             </Button>

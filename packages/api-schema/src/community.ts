@@ -178,14 +178,43 @@ export type CommunityInputError =
 export type CommunityInputResult =
   { ok: true; value: CommunityPostInput } | { ok: false; error: CommunityInputError };
 
-// What publish and Edit Listing accept (blueprint §4). Trims the title and description and collapses runs of three
-// or more newlines to two; tags are normalised and de-duplicated, and any tag that does not survive normalisation
-// rejects the whole input rather than vanishing silently.
-export function validateCommunityPostInput(input: unknown): CommunityInputResult {
+// The four fields a post's input has, in the order the publish dialog shows them.
+export const COMMUNITY_INPUT_FIELDS = ['title', 'description', 'category', 'tags'] as const;
+export type CommunityInputField = (typeof COMMUNITY_INPUT_FIELDS)[number];
+
+const FIELD_ERROR: Record<CommunityInputField, CommunityInputError> = {
+  title: 'invalid_title',
+  description: 'invalid_description',
+  category: 'invalid_category',
+  tags: 'invalid_tags',
+};
+
+// The field a refusal code is about, or null for one that is not about a field (a worker refusal like
+// `empty_document`). Lets the dialog put a worker's field refusal under its field too.
+export function communityInputErrorField(
+  code: string | null | undefined,
+): CommunityInputField | null {
+  return COMMUNITY_INPUT_FIELDS.find((f) => FIELD_ERROR[f] === code) ?? null;
+}
+
+type Checked = {
+  title: string;
+  description: string;
+  category: CommunityCategory | null;
+  tags: string[];
+  errors: CommunityInputError[];
+};
+
+// Every field checked, every failure kept (in field order), so a form can mark all of them at once.
+// Trims the title and description and collapses runs of three or more newlines to two; tags are
+// normalised and de-duplicated, and any tag that does not survive normalisation fails the tags field
+// rather than vanishing silently.
+function checkCommunityPostInput(input: unknown): Checked {
   const body = (input ?? {}) as Record<string, unknown>;
+  const errors: CommunityInputError[] = [];
   const title = typeof body.title === 'string' ? body.title.trim().replace(/\s+/g, ' ') : '';
   if (title.length < COMMUNITY_TITLE_MIN || title.length > COMMUNITY_TITLE_MAX) {
-    return { ok: false, error: 'invalid_title' };
+    errors.push('invalid_title');
   }
   const description =
     typeof body.description === 'string'
@@ -198,19 +227,32 @@ export function validateCommunityPostInput(input: unknown): CommunityInputResult
     description.length < COMMUNITY_DESCRIPTION_MIN ||
     description.length > COMMUNITY_DESCRIPTION_MAX
   ) {
-    return { ok: false, error: 'invalid_description' };
+    errors.push('invalid_description');
   }
-  if (!isCommunityCategory(body.category)) return { ok: false, error: 'invalid_category' };
-  if (!Array.isArray(body.tags)) return { ok: false, error: 'invalid_tags' };
+  const category = isCommunityCategory(body.category) ? body.category : null;
+  if (!category) errors.push('invalid_category');
   const tags: string[] = [];
-  for (const raw of body.tags) {
-    if (typeof raw !== 'string') return { ok: false, error: 'invalid_tags' };
-    const tag = normaliseCommunityTag(raw);
-    if (!tag) return { ok: false, error: 'invalid_tags' };
-    if (!tags.includes(tag)) tags.push(tag);
+  let tagsOk = Array.isArray(body.tags);
+  for (const raw of Array.isArray(body.tags) ? body.tags : []) {
+    const tag = typeof raw === 'string' ? normaliseCommunityTag(raw) : null;
+    if (!tag) tagsOk = false;
+    else if (!tags.includes(tag)) tags.push(tag);
   }
-  if (tags.length > COMMUNITY_TAGS_MAX) return { ok: false, error: 'invalid_tags' };
-  return { ok: true, value: { title, description, category: body.category, tags } };
+  if (!tagsOk || tags.length > COMMUNITY_TAGS_MAX) errors.push('invalid_tags');
+  return { title, description, category, tags, errors };
+}
+
+// Every failing field's code, in field order; empty when the input is valid.
+export function communityPostInputErrors(input: unknown): CommunityInputError[] {
+  return checkCommunityPostInput(input).errors;
+}
+
+// What publish and Edit Listing accept (blueprint §4): the normalised input, or the first failing
+// field's code (the worker answers one code per request).
+export function validateCommunityPostInput(input: unknown): CommunityInputResult {
+  const { title, description, category, tags, errors } = checkCommunityPostInput(input);
+  if (errors.length > 0 || !category) return { ok: false, error: errors[0] ?? 'invalid_category' };
+  return { ok: true, value: { title, description, category, tags } };
 }
 
 // ---------------------------------------------------------------------
