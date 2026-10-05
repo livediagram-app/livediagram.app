@@ -93,13 +93,17 @@ export function redactTabForCommunity<T extends TabPeople>(tab: T): T {
 }
 
 // The same rule over a tab's stored `data` JSON, for the copy route. Data that does not parse, or has
-// no elements, is returned as an empty tab rather than copied unredacted.
-export function redactTabDataForCommunity(data: string): string {
+// no elements, is returned as an empty tab rather than copied unredacted. The redacted elements come back
+// too, so the copy can index them without parsing the data a second time.
+export function redactTabDataForCommunity(data: string): { data: string; elements: Element[] } {
   try {
     const parsed = JSON.parse(data) as TabPeople;
-    if (!Array.isArray(parsed.elements)) return JSON.stringify({ ...parsed, elements: [] });
-    return JSON.stringify(redactTabForCommunity(parsed));
+    if (!Array.isArray(parsed.elements)) {
+      return { data: JSON.stringify({ ...parsed, elements: [] }), elements: [] };
+    }
+    const redacted = redactTabForCommunity(parsed);
+    return { data: JSON.stringify(redacted), elements: redacted.elements ?? [] };
   } catch {
-    return JSON.stringify({ elements: [] });
+    return { data: JSON.stringify({ elements: [] }), elements: [] };
   }
 }

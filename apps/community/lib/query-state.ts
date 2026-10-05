@@ -70,3 +70,9 @@ export function hasActiveFilters(filters: GalleryFilters): boolean {
     filters.tag !== null
   );
 }
+
+// Whether the plain search words differ (and there are some), ignoring the controls' words.
+export function searchedWordsChanged(before: string, after: string): boolean {
+  const next = communitySearchTerms(after);
+  return next.length > 0 && next.join(' ') !== communitySearchTerms(before).join(' ');
+}

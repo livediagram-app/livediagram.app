@@ -462,7 +462,10 @@ export async function copyDocument(
   const inserts = rows.flatMap((row) => {
     const freshTabId = tabIdMap.get(row.id)!;
     const remapped = remapTabDataLinks(row.data, tabIdMap);
-    const data = redactForCommunity ? redactTabDataForCommunity(remapped) : remapped;
+    // A Community copy is redacted, and its index rebuilt from the redacted elements (the source's rows
+    // would name the people redaction removed).
+    const redacted = redactForCommunity ? redactTabDataForCommunity(remapped) : null;
+    const data = redacted ? redacted.data : remapped;
     return [
       // Link remapping rewrites ids inside elements, never their number, so the count carries over.
       env.DB.prepare(
@@ -475,8 +478,8 @@ export async function copyDocument(
       // The copy carries the source's actions + threads inside its
       // data, so its index rows are copied the same way, without a
       // parse (docs/specs/013-workspace/activity-page.md §2.1).
-      ...(redactForCommunity
-        ? collabIndexStatements(env, freshTabId, elementsOfData(data))
+      ...(redacted
+        ? collabIndexStatements(env, freshTabId, redacted.elements)
         : collabIndexCopyStatements(env, row.id, freshTabId)),
       // Image references from the copied body itself, not the source rows, so
       // a copy is indexed even if its source never was.
@@ -490,16 +493,6 @@ export async function copyDocument(
 // Re-point the tab / element links inside one tab's stored `data` JSON at
 // the copy's tab ids. The data is only parsed when it mentions a tab id, so
 // the common link-free tab is copied byte for byte as before.
-// The elements of a tab's stored `data` JSON, or none when it does not parse.
-function elementsOfData(data: string): Element[] {
-  try {
-    const parsed = JSON.parse(data) as { elements?: Element[] };
-    return Array.isArray(parsed.elements) ? parsed.elements : [];
-  } catch {
-    return [];
-  }
-}
-
 export function remapTabDataLinks(data: string, tabIdMap: Map<string, string>): string {
   if (!data.includes('"tabId"')) return data;
   try {

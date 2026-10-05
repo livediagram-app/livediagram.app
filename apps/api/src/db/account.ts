@@ -135,6 +135,9 @@ export async function deleteAccount(
       'UPDATE community_posts SET copy_count = copy_count - 1 WHERE id IN (SELECT post_id FROM community_copies WHERE copier_id = ?)',
     ).bind(ownerId),
     env.DB.prepare('DELETE FROM community_copies WHERE copier_id = ?').bind(ownerId),
+    // Their own posts went with their documents; this catches one whose document outlives them (moved
+    // to a team), so nothing stays published under a deleted account.
+    env.DB.prepare('DELETE FROM community_posts WHERE author_id = ?').bind(ownerId),
   ]);
   // timeline (docs/specs/013-workspace/timeline.md §3.5): the feed, the events this owner authored,
   // and the scope-state row. Hard, not soft — soft delete is a
@@ -251,6 +254,27 @@ export async function migrateOwnerId(
     .bind(toOwnerId, fromOwnerId)
     .run();
   await env.DB.prepare('DELETE FROM placement_defaults WHERE owner_id = ?').bind(fromOwnerId).run();
+  // community_copies (docs/specs/025-community/community.md "Likes"): a post counts each copier
+  // once, so the guest's copies become the account's. The primary key is (post_id, copier_id), so
+  // INSERT OR IGNORE then DELETE: where both identities copied one post it is one copier, and those
+  // posts' counts are recounted to match. (Likes are keyed by the browser's community key, never an
+  // owner id, and a post's author is always signed in, so neither needs moving.)
+  await env.DB.prepare(
+    `INSERT OR IGNORE INTO community_copies (post_id, copier_id, created_at)
+     SELECT post_id, ?, created_at
+     FROM community_copies
+     WHERE copier_id = ?`,
+  )
+    .bind(toOwnerId, fromOwnerId)
+    .run();
+  await env.DB.prepare('DELETE FROM community_copies WHERE copier_id = ?').bind(fromOwnerId).run();
+  await env.DB.prepare(
+    `UPDATE community_posts
+     SET copy_count = (SELECT COUNT(*) FROM community_copies c WHERE c.post_id = community_posts.id)
+     WHERE id IN (SELECT post_id FROM community_copies WHERE copier_id = ?)`,
+  )
+    .bind(toOwnerId)
+    .run();
   // participants: the guest's name and colour. The id IS the owner id, so an
   // account that already has a row keeps it (a signed-in name comes from Clerk
   // anyway); the guest row goes, since nothing reads a retired guest id.

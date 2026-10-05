@@ -64,13 +64,16 @@ describe('redactElementsForCommunity', () => {
 describe('redactTabDataForCommunity', () => {
   it('redacts stored tab data, keeping its other fields', () => {
     const data = JSON.stringify({ elements, background: 'dots' });
-    const parsed = JSON.parse(redactTabDataForCommunity(data));
+    const parsed = JSON.parse(redactTabDataForCommunity(data).data);
     expect(parsed.background).toBe('dots');
     expect(JSON.stringify(parsed)).not.toContain('secret');
   });
 
   it('never copies data it cannot read', () => {
-    expect(redactTabDataForCommunity('not json')).toBe('{"elements":[]}');
+    expect(redactTabDataForCommunity('not json')).toEqual({
+      data: '{"elements":[]}',
+      elements: [],
+    });
   });
 });
 

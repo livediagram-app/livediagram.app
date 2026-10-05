@@ -12,7 +12,12 @@ import {
 import { fetchFacets, fetchMine, fetchPosts } from '@/lib/api';
 import type { GalleryPost } from '@/lib/gallery-post';
 import type { CommunitySession } from '@/lib/session';
-import { readQueryState, writeQueryState, type GalleryFilters } from '@/lib/query-state';
+import {
+  readQueryState,
+  searchedWordsChanged,
+  writeQueryState,
+  type GalleryFilters,
+} from '@/lib/query-state';
 import { communityTelemetry, type CommunitySelection } from '@/lib/telemetry';
 import {
   getSearchSnapshot,
@@ -134,7 +139,11 @@ export function useGallery(session: CommunitySession | null): Gallery {
     (patch: Partial<GalleryFilters>, selection?: CommunitySelection) => {
       if (!filters) return;
       if (selection) communityTelemetry.selected(selection);
-      if (patch.q && patch.q !== filters.q) communityTelemetry.searched();
+      // A search is the typed words changing; a control writing its own word (`#tag`, `category:`, `sort:`,
+      // `is:mine`) is that control's selection, counted once above, not a search as well.
+      if (patch.q !== undefined && searchedWordsChanged(filters.q, patch.q)) {
+        communityTelemetry.searched();
+      }
       setLoadMoreFailed(false);
       replaceSearch(writeQueryState({ ...filters, ...patch }));
     },

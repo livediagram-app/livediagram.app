@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { EMPTY_FILTERS, hasActiveFilters, readQueryState, writeQueryState } from './query-state';
+import {
+  EMPTY_FILTERS,
+  hasActiveFilters,
+  readQueryState,
+  searchedWordsChanged,
+  writeQueryState,
+} from './query-state';
 
 // Query state round trip (blueprint §13): the gallery's filters survive the URL both ways, defaults
 // stay out of it, and a stale or hand-edited link still shows something.
@@ -85,5 +91,18 @@ describe('hasActiveFilters', () => {
     expect(hasActiveFilters({ ...EMPTY_FILTERS, q: 'x' })).toBe(true);
     expect(hasActiveFilters({ ...EMPTY_FILTERS, category: 'art' })).toBe(true);
     expect(hasActiveFilters({ ...EMPTY_FILTERS, tag: 'aws' })).toBe(true);
+  });
+});
+
+describe('searchedWordsChanged', () => {
+  it('is a search only when the typed words change', () => {
+    expect(searchedWordsChanged('', 'retro')).toBe(true);
+    expect(searchedWordsChanged('retro', 'retro board')).toBe(true);
+    // A control writing its own word is not a search.
+    expect(searchedWordsChanged('retro', 'retro #agile')).toBe(false);
+    expect(searchedWordsChanged('retro', 'retro category:planning sort:loved')).toBe(false);
+    expect(searchedWordsChanged('', 'is:mine')).toBe(false);
+    // Clearing the words is not a search either.
+    expect(searchedWordsChanged('retro', '')).toBe(false);
   });
 });
