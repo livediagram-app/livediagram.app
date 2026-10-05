@@ -1,6 +1,6 @@
 'use client';
 
-import { useId, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { COMMUNITY_TAG_MAX, COMMUNITY_TAG_MIN, COMMUNITY_TAGS_MAX } from '@livediagram/api-schema';
 import { CloseIcon } from '@livediagram/ui';
 import { FieldError } from './FieldError';
@@ -35,6 +35,23 @@ export function TagInput({
 }) {
   const [draft, setDraft] = useState('');
   const [rejected, setRejected] = useState<TagRejection | null>(null);
+  // A chip's own remove button, a Popular suggestion and the input itself (disabled once five tags are in) can all
+  // leave the page under the focus that used them: after each, focus comes back to the input, or to the last chip's
+  // remove button while the input is full, rather than falling out of the dialog.
+  const inputRef = useRef<HTMLInputElement>(null);
+  const boxRef = useRef<HTMLDivElement>(null);
+  const refocus = useRef(false);
+  useEffect(() => {
+    if (!refocus.current) return;
+    refocus.current = false;
+    const input = inputRef.current;
+    if (input && !input.disabled) {
+      input.focus();
+      return;
+    }
+    const removers = boxRef.current?.querySelectorAll<HTMLButtonElement>('button[data-remove-tag]');
+    removers?.[removers.length - 1]?.focus();
+  });
   const inputId = useId();
   const hintId = useId();
   const errorId = useId();
@@ -48,6 +65,7 @@ export function TagInput({
   };
 
   const commitDraft = () => {
+    refocus.current = true;
     const result = commitTag(tags, draft);
     apply(result);
     if (!result.rejected) setDraft('');
@@ -56,6 +74,7 @@ export function TagInput({
   return (
     <div className="flex flex-col gap-1.5">
       <div
+        ref={boxRef}
         className={`flex flex-wrap items-center gap-1.5 rounded-md border bg-white px-2 py-1.5 transition focus-within:border-brand-400 focus-within:ring-2 focus-within:ring-brand-100 dark:bg-slate-900 ${
           rejected || error
             ? 'border-rose-400 ring-2 ring-rose-100 dark:border-rose-400/70 dark:ring-rose-500/20'
@@ -71,10 +90,12 @@ export function TagInput({
             <button
               type="button"
               onClick={() => {
+                refocus.current = true;
                 onChange(tags.filter((t) => t !== tag));
                 setRejected(null);
               }}
               disabled={disabled}
+              data-remove-tag
               aria-label={`Remove tag ${tag}`}
               className="flex h-4 w-4 items-center justify-center rounded-full text-brand-500 transition hover:bg-brand-100 hover:text-brand-700 dark:text-brand-300 dark:hover:bg-brand-500/25 dark:hover:text-brand-100"
             >
@@ -83,6 +104,7 @@ export function TagInput({
           </span>
         ))}
         <input
+          ref={inputRef}
           id={inputId}
           value={draft}
           disabled={disabled || full}
@@ -142,7 +164,10 @@ export function TagInput({
               key={tag}
               type="button"
               disabled={disabled}
-              onClick={() => apply(commitTag(tags, tag))}
+              onClick={() => {
+                refocus.current = true;
+                apply(commitTag(tags, tag));
+              }}
               className="rounded-full border border-slate-200 px-2 py-0.5 text-xs text-slate-600 transition hover:border-brand-300 hover:bg-brand-50 hover:text-brand-700 dark:border-slate-700 dark:text-slate-300 dark:hover:border-brand-500/50 dark:hover:bg-brand-500/15 dark:hover:text-brand-200"
             >
               #{tag}

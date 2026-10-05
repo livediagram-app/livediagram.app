@@ -143,7 +143,12 @@ export async function deleteAccount(
     ).bind(JSON.stringify((copied.results ?? []).map((r) => r.post_id))),
     // Their own posts went with their documents; this catches one whose document outlives them (moved
     // to a team), so nothing stays published under a deleted account.
-    env.DB.prepare('DELETE FROM community_posts WHERE author_id = ?').bind(ownerId),
+    // Deleted through its community link, so the link goes too and the post's tags, likes, copies and reports
+    // follow by cascade.
+    env.DB.prepare(
+      `DELETE FROM share_links WHERE purpose = 'community'
+         AND code IN (SELECT share_code FROM community_posts WHERE author_id = ?)`,
+    ).bind(ownerId),
   ]);
   // timeline (docs/specs/013-workspace/timeline.md §3.5): the feed, the events this owner authored,
   // and the scope-state row. Hard, not soft — soft delete is a

@@ -62,9 +62,12 @@ describe('useFocusTrap', () => {
 
   it('leaves focus where the user has since put it', () => {
     function Closer() {
-      const [open, setOpen] = useState(true);
+      const [open, setOpen] = useState(false);
       return (
         <>
+          <button type="button" onClick={() => setOpen(true)}>
+            Open
+          </button>
           <button type="button">Elsewhere</button>
           <button type="button" onClick={() => setOpen(false)}>
             Shut
@@ -74,10 +77,29 @@ describe('useFocusTrap', () => {
       );
     }
     render(<Closer />);
+    const opener = screen.getByRole('button', { name: 'Open' });
+    opener.focus();
+    fireEvent.click(opener);
     const elsewhere = screen.getByRole('button', { name: 'Elsewhere' });
     elsewhere.focus();
     fireEvent.click(screen.getByRole('button', { name: 'Shut' }));
     expect(screen.queryByRole('dialog')).toBeNull();
-    expect(document.activeElement).not.toBe(document.body);
+    // Not pulled back to Open: the user had moved on.
+    expect(document.activeElement).toBe(elsewhere);
+  });
+
+  it('keeps a field that took focus as the modal opened (autoFocus)', () => {
+    function AutoModal() {
+      const ref = useRef<HTMLDivElement>(null);
+      useFocusTrap(ref);
+      return (
+        <div ref={ref} role="dialog" tabIndex={-1}>
+          <button type="button">Close</button>
+          <input aria-label="Title" autoFocus />
+        </div>
+      );
+    }
+    render(<AutoModal />);
+    expect(document.activeElement).toBe(screen.getByRole('textbox', { name: 'Title' }));
   });
 });

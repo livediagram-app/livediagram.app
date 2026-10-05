@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { communityCategoryLabel, type CommunityOwnPost } from '@livediagram/api-schema';
 import { Button, buttonClassName, lucideGlyph } from '@livediagram/ui';
 import { lucideExternalLink, lucideGlobe } from '@livediagram/icons/lucide';
@@ -48,6 +48,21 @@ export function CommunitySection({
   const toast = useToast();
   const [confirming, setConfirming] = useState(false);
   const [removing, setRemoving] = useState(false);
+  // Remove asks in place of the buttons, so the focused control goes away each time the row swaps: focus follows it
+  // (into the question, back to Remove From Community, or to Share to Community once the post is gone) rather than
+  // falling out of the dialog.
+  const sectionRef = useRef<HTMLElement>(null);
+  const focusNext = useRef<'confirm' | 'actions' | 'share' | null>(null);
+  useEffect(() => {
+    const target = focusNext.current;
+    if (!target) return;
+    focusNext.current = null;
+    sectionRef.current?.querySelector<HTMLElement>(`[data-focus="${target}"]`)?.focus();
+  });
+  const ask = (next: boolean, then: 'confirm' | 'actions') => {
+    focusNext.current = then;
+    setConfirming(next);
+  };
   const state = communitySectionState({ signedIn, teamDocument, loading, error, post });
 
   const remove = async () => {
@@ -56,6 +71,7 @@ export function CommunitySection({
       await onRemove();
       track('Community', 'Removed', 'Post');
       toast.success('Removed from the Community');
+      focusNext.current = 'share';
       setConfirming(false);
     } catch (err) {
       toast.error(communityErrorMessage(err));
@@ -66,6 +82,7 @@ export function CommunitySection({
 
   return (
     <section
+      ref={sectionRef}
       aria-labelledby="share-community-heading"
       className="flex flex-col gap-2.5 border-t border-slate-100 pt-4 dark:border-slate-800"
     >
@@ -104,7 +121,12 @@ export function CommunitySection({
             without an account, can find this document there, view it and make their own copy.
           </p>
           <div className="flex flex-wrap items-center gap-2">
-            <Button size="xs" onClick={onPublish} disabled={sharePassword !== null}>
+            <Button
+              size="xs"
+              data-focus="share"
+              onClick={onPublish}
+              disabled={sharePassword !== null}
+            >
               Share to Community
             </Button>
             {sharePassword !== null ? (
@@ -147,7 +169,8 @@ export function CommunitySection({
               <Button
                 variant="secondary"
                 size="xs"
-                onClick={() => setConfirming(false)}
+                data-focus="confirm"
+                onClick={() => ask(false, 'actions')}
                 disabled={removing}
               >
                 Keep It
@@ -172,7 +195,12 @@ export function CommunitySection({
               <Button variant="secondary" size="xs" onClick={onEdit}>
                 Edit Listing
               </Button>
-              <Button variant="caution" size="xs" onClick={() => setConfirming(true)}>
+              <Button
+                variant="caution"
+                size="xs"
+                data-focus="actions"
+                onClick={() => ask(true, 'confirm')}
+              >
                 Remove From Community
               </Button>
             </div>

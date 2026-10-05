@@ -42,7 +42,10 @@ export function useFocusTrap(ref: RefObject<HTMLElement | null>, active = true):
         (el) => el.offsetParent !== null,
       );
 
-    (focusables()[0] ?? node).focus({ preventScroll: true });
+    // A control that already took focus as the modal opened (an `autoFocus` field) keeps it; otherwise the first.
+    if (!node.contains(document.activeElement)) {
+      (focusables()[0] ?? node).focus({ preventScroll: true });
+    }
 
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== 'Tab') return;

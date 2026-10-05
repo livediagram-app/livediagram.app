@@ -139,9 +139,15 @@ export function SearchBox({
           <button
             type="button"
             aria-label="Clear Search"
+            // Clears what was searched for (words, tags, category), like Clear Filters: the sort and My Shares are
+            // where you are, not what you looked for, so they stay.
             onClick={() => {
-              setDraft('');
-              onSearch('');
+              const kept = setCommunitySearchMine(
+                setCommunitySearchSort('', communitySearchSort(draft) ?? 'new'),
+                communitySearchMine(draft),
+              );
+              setDraft(kept);
+              onSearch(kept);
             }}
             className="rounded-md p-1.5 text-slate-500 transition-colors duration-micro hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200"
           >

@@ -37,7 +37,8 @@ export function CommunityPublishedConfirmation({
 
   return (
     <>
-      <div className="flex flex-col items-center gap-3 px-6 pt-8 pb-6 text-center">
+      {/* It replaces the form the person just submitted: announced as it appears, with focus on Done. */}
+      <div role="status" className="flex flex-col items-center gap-3 px-6 pt-8 pb-6 text-center">
         <span className="flex h-16 w-16 animate-fade-in items-center justify-center rounded-full bg-brand-50 text-brand-500 dark:bg-brand-500/15 dark:text-brand-300">
           <SparklesIcon />
         </span>
@@ -66,7 +67,7 @@ export function CommunityPublishedConfirmation({
           <OpenIcon />
           View Post
         </a>
-        <Button size="xs" onClick={onDone}>
+        <Button size="xs" onClick={onDone} autoFocus>
           Done
         </Button>
       </DialogFooter>

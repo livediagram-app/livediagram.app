@@ -24,6 +24,24 @@ import {
   imageRefReplaceStatements,
 } from './image-refs';
 
+// Whether `tabId` is a tab that exists but is not one of `documentId`'s: a save must never adopt it. A save
+// upserts by tab id, so without this a tab id seen elsewhere (a share link, a Community post's document) could
+// overwrite that tab and link it into the caller's own document. Linking an existing tab has its own route.
+export async function tabBelongsElsewhere(
+  env: Env,
+  tabId: string,
+  documentId: string,
+): Promise<boolean> {
+  const row = await env.DB.prepare(
+    `SELECT 1 AS found FROM tabs t
+      WHERE t.id = ?
+        AND NOT EXISTS (SELECT 1 FROM document_tabs dt WHERE dt.tab_id = t.id AND dt.document_id = ?)`,
+  )
+    .bind(tabId, documentId)
+    .first<{ found: number }>();
+  return row !== null;
+}
+
 export async function getTab(env: Env, documentId: string, tabId: string): Promise<TabDTO | null> {
   // Resolve via the document_tabs link table (docs/specs/006-document/tab-document-many-to-many.md) so a
   // linked tab surfaces from every document that contains it. The link

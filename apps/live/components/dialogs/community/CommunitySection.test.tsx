@@ -118,7 +118,12 @@ describe('CommunitySection, every face', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Edit Listing' }));
     expect(onEdit).toHaveBeenCalledTimes(1);
     fireEvent.click(screen.getByRole('button', { name: 'Remove From Community' }));
+    // Focus follows the swap: into the question, and back to Remove From Community on Keep It.
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Keep It' }));
     fireEvent.click(screen.getByRole('button', { name: 'Keep It' }));
+    expect(document.activeElement).toBe(
+      screen.getByRole('button', { name: 'Remove From Community' }),
+    );
     expect(onRemove).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole('button', { name: 'Remove From Community' }));
     fireEvent.click(screen.getByRole('button', { name: 'Remove' }));

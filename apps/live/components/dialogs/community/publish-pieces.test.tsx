@@ -91,6 +91,8 @@ describe('CommunityPublishedConfirmation', () => {
     const onDone = vi.fn();
     render(<CommunityPublishedConfirmation postId="post1" title="Payments" onDone={onDone} />);
     expect(screen.getByRole('heading', { name: 'Shared to the Community' })).toBeTruthy();
+    expect(screen.getByRole('status').textContent).toContain('is live');
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Done' }));
     expect(screen.getByRole('link', { name: /View Post/ }).getAttribute('href')).toBe(
       '/community/post/?id=post1',
     );

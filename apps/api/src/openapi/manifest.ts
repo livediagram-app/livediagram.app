@@ -831,7 +831,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
       properties: { post: { anyOf: [ref('CommunityOwnPost'), { type: 'null' }] } },
       required: ['post'],
     },
-    statuses: [200, 401, 403, 404, 410],
+    statuses: [200, 400, 401, 403, 404, 410],
   },
   {
     method: 'PUT',
@@ -843,7 +843,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     auth: 'clerk',
     requestSchema: ref('CommunityPostInput'),
     responseSchema: wrap('post', 'CommunityOwnPost'),
-    statuses: [201, 200, 400, 401, 403, 404, 409, 410],
+    statuses: [200, 201, 400, 401, 403, 404, 409, 410],
   },
   {
     method: 'DELETE',
@@ -852,7 +852,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     tag: 'Community',
     summary: 'Remove the document from Community (owner only).',
     auth: 'guest-or-clerk',
-    statuses: [204, 401, 403, 404, 409, 410],
+    statuses: [204, 400, 401, 403, 404, 409, 410],
   },
   {
     method: 'GET',
@@ -1213,7 +1213,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     auth: 'public',
     query: [...COMMUNITY_QUERY],
     responseSchema: ref('CommunityListResponse'),
-    statuses: [200, 400],
+    statuses: [200, 400, 404],
   },
   {
     method: 'GET',
@@ -1225,7 +1225,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     auth: 'clerk',
     query: [...COMMUNITY_QUERY],
     responseSchema: ref('CommunityMineResponse'),
-    statuses: [200, 400, 401],
+    statuses: [200, 400, 401, 404],
   },
   {
     method: 'GET',
@@ -1236,7 +1236,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
       'The six posts the home page features: most liked in the last 3 months, topped up with the best of all time.',
     auth: 'public',
     responseSchema: ref('CommunityFeaturedResponse'),
-    statuses: [200],
+    statuses: [200, 404],
   },
   {
     method: 'GET',
@@ -1246,7 +1246,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     summary: 'Post counts per category and the most used tags.',
     auth: 'public',
     responseSchema: ref('CommunityFacetsResponse'),
-    statuses: [200],
+    statuses: [200, 404],
   },
   {
     method: 'GET',

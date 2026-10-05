@@ -197,6 +197,15 @@ describe('the gallery', () => {
     await waitFor(() => expect(search().value).toBe('#aws'));
   });
 
+  it('clears what was searched for, keeping the sort', async () => {
+    window.history.replaceState(null, '', '/?q=retro%20%23aws%20sort%3Aloved');
+    route(isPosts, () => Response.json({ posts: [post()], nextOffset: null }));
+    render(<GalleryView />);
+    await screen.findByText('Post 1');
+    fireEvent.click(screen.getByRole('button', { name: 'Clear Search' }));
+    await waitFor(() => expect(search().value).toBe('sort:loved'));
+  });
+
   it('drops a slow answer for filters that are no longer shown', async () => {
     let releaseFirst: (r: Response) => void = () => {};
     route(isPosts, (url) =>

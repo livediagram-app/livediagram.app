@@ -59,3 +59,21 @@ describe('TagInput', () => {
     expect(tags()).toBe('retro');
   });
 });
+
+describe('TagInput focus', () => {
+  it('comes back to the field after a chip goes, and to the last chip while the field is full', () => {
+    render(<Harness initial={['aws', 'retro']} />);
+    const remove = screen.getByRole('button', { name: 'Remove tag aws' });
+    remove.focus();
+    fireEvent.click(remove);
+    expect(document.activeElement).toBe(field());
+
+    cleanup();
+    render(<Harness initial={['a1', 'a2', 'a3', 'a4']} />);
+    field().focus();
+    fireEvent.change(field(), { target: { value: 'fifth' } });
+    fireEvent.keyDown(field(), { key: 'Enter' });
+    expect(field().disabled).toBe(true);
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Remove tag fifth' }));
+  });
+});
