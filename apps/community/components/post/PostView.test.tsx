@@ -157,6 +157,24 @@ describe('reporting', () => {
     expect(h.telemetry.reported).toHaveBeenCalledWith('Spam');
   });
 
+  it('ignores Escape while a report is in flight, and honours it once the send settles', async () => {
+    const dialog = await openReport();
+    let release!: (res: Response) => void;
+    answer = (url) =>
+      url.endsWith('/report')
+        ? new Promise<Response>((resolve) => (release = resolve))
+        : Response.json({ post, related: [] });
+    fireEvent.click(within(dialog).getByRole('radio', { name: 'Spam' }));
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Send Report' }));
+    expect(await within(dialog).findByRole('button', { name: 'Sending...' })).toBeTruthy();
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(screen.getByRole('dialog', { name: 'Report This Document' })).toBeTruthy();
+    release(new Response(null, { status: 204 }));
+    expect(await within(dialog).findByText(/When enough people report a document/)).toBeTruthy();
+    fireEvent.keyDown(document, { key: 'Escape' });
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+  });
+
   it('says so when sending fails, and closes on Escape', async () => {
     const dialog = await openReport();
     answer = (url) =>

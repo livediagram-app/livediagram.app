@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
+import { type FormEvent, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import {
   COMMUNITY_REPORT_NOTE_MAX,
@@ -31,7 +31,15 @@ export function ReportDialog({ postId, onClose }: { postId: string; onClose: () 
   useEffect(() => {
     if (phase === 'failed' || phase === 'gone') ref.current?.focus({ preventScroll: true });
   }, [phase]);
-  useEscape(onClose, { enabled: phase !== 'sending' });
+  // Escape is ignored only while a report is in flight. The listener stays bound and reads the phase from a ref
+  // updated at commit, so a key pressed the moment a failure shows is never lost to a listener still re-binding.
+  const phaseRef = useRef(phase);
+  useLayoutEffect(() => {
+    phaseRef.current = phase;
+  }, [phase]);
+  useEscape(() => {
+    if (phaseRef.current !== 'sending') onClose();
+  });
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
