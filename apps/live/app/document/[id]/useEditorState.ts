@@ -6,6 +6,7 @@ import { boardClientPoint, dropPlanCardAt, PLAN_CARD_MISSED } from '@/hooks/plan
 import { setPlanWidgetEditor } from '@/hooks/plan/plan-widget-drop';
 import { debugLog } from '@/lib/debug-log';
 import { usePlanItems } from '@/hooks/plan/usePlanItems';
+import { usePlanNeeded } from '@/hooks/plan/usePlanNeeded';
 import { useItemTypes } from '@/hooks/plan/useItemTypes';
 import { PLAN_LEFT_OUT_TOOLS, useModeDefaultTool } from '@/hooks/editor/useModeDefaultTool';
 import { useItemUndo } from '@/hooks/plan/useItemUndo';
@@ -184,6 +185,9 @@ import { boundsOfElements } from '@/lib/changeset-reveals';
 import { useChangesetFeed } from './useChangesetFeed';
 import { useDragPreviewBroadcast } from '@/hooks/collab/useDragPreviewBroadcast';
 import { useArticleCaretBroadcast } from '@/hooks/collab/useArticleCaretBroadcast';
+
+// The open tab's elements before the tabs load.
+const NO_ELEMENTS: readonly Element[] = [];
 
 export function useEditorState(opts: { embed?: boolean } = {}) {
   // Read-only embed view (docs/specs/013-workspace/embeds.md). The flag forces view behaviour
@@ -1018,9 +1022,14 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   });
 
   // The document's items (docs/specs/025-plan/items.md): what Plan boards and Plan cards draw.
+  // Items load only for a document with Plan content (docs/specs/025-plan/plan-mode.md "Cost").
+  const planNeeded = usePlanNeeded(
+    (tabs.find((t) => t.id === activeId) ?? tabs[0])?.elements ?? NO_ELEMENTS,
+    documentPresentation,
+  );
   const planItems = usePlanItems({
     documentId,
-    ready: hydrated,
+    ready: hydrated && planNeeded,
     ownerId: selfParticipant.id,
     name: selfParticipant.name,
     color: selfParticipant.color,

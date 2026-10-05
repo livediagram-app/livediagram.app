@@ -18,6 +18,7 @@ import {
   isRailShape,
   isRatingShape,
 } from '@livediagram/document';
+import dynamic from 'next/dynamic';
 import { isSvgRenderedShape, ShapeSvgOverlay } from '@/components/canvas/shape-svg-overlay';
 import { isTechIconId } from '@/lib/tech-icons';
 import { TechIconGlyph } from '@/components/primitives/tech-icon-glyph';
@@ -30,12 +31,24 @@ import { PieChartView } from '@/components/canvas/PieChartView';
 import { CodeBlockView } from '@/components/canvas/CodeBlockView';
 import { LegendView } from '@/components/canvas/LegendView';
 import { ChecklistView } from '@/components/canvas/ChecklistView';
-import { PlanBoardView } from '@/components/plan/PlanBoardView';
-import { PlanCardView } from '@/components/plan/PlanCardView';
 import { BarChartView } from '@/components/canvas/BarChartView';
 import { LineChartView } from '@/components/canvas/LineChartView';
 import type { BoxedElementViewProps } from '@/components/canvas/BoxedElementView.types';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
+
+// Plan's UI loads only when it is drawn (docs/specs/025-plan/plan-mode.md "Cost"), so a document without
+// Plan pays nothing for it.
+const PlanCardView = dynamic(
+  () => import('@/components/plan/PlanCardView').then((m) => m.PlanCardView),
+  { ssr: false },
+);
+
+// Plan's UI loads only when it is drawn (docs/specs/025-plan/plan-mode.md "Cost"), so a document without
+// Plan pays nothing for it.
+const PlanBoardView = dynamic(
+  () => import('@/components/plan/PlanBoardView').then((m) => m.PlanBoardView),
+  { ssr: false },
+);
 
 type ShapeContentRouterProps = Pick<
   BoxedElementViewProps,

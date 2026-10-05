@@ -1,5 +1,6 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import { EditorModeProvider } from '@/components/chrome/editor-mode/editor-mode-context';
 import { truncateName } from '@livediagram/document';
 import { track } from '@/lib/telemetry';
@@ -18,7 +19,6 @@ import { SelectionStoreProvider } from '@/hooks/canvas/useSelectionStore';
 import { ViewportStoreProvider } from '@/hooks/canvas/useViewportStore';
 import { EditorCanvasHost } from '@/components/canvas/EditorCanvasHost';
 import { PlanProvider } from '@/components/plan/PlanContext';
-import { PlanSheetsHost } from '@/components/plan/PlanSheetsHost';
 import { PresentationHost } from '@/components/canvas/PresentationHost';
 import { EditorHeader } from '@/components/chrome/EditorHeader';
 import { EmbedChrome } from '@/components/chrome/EmbedChrome';
@@ -63,6 +63,13 @@ import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { AreaErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
 import { QuickStyleHost } from '@/components/canvas/QuickStyleHost';
 import { panelEnabled, resolvePanelLayout } from '@/lib/user-preferences';
+
+// Plan's UI loads only when it is drawn (docs/specs/025-plan/plan-mode.md "Cost"), so a document without
+// Plan pays nothing for it.
+const PlanSheetsHost = dynamic(
+  () => import('@/components/plan/PlanSheetsHost').then((m) => m.PlanSheetsHost),
+  { ssr: false },
+);
 
 // How long a guest edits before the sign-in nudge appears (docs/specs/014-identity/sign-in-encouragement.md).
 // Long enough that it never greets someone the instant they open a
@@ -350,7 +357,9 @@ export function EditorView() {
                           <EditorCanvasHost />
                         </AgentFocusContext.Provider>
                       </ChangesetRevealContext.Provider>
-                      <PlanSheetsHost plan={ctx.plan} elements={activeTab.elements} />
+                      {ctx.plan.openItemId || ctx.plan.editingTypeId ? (
+                        <PlanSheetsHost plan={ctx.plan} elements={activeTab.elements} />
+                      ) : null}
                     </AreaErrorBoundary>
                     {/* Presenting (docs/specs/012-collaboration/presentation-mode.md) renders over everything and takes the keyboard.
           Nothing at all when no deck is running. */}

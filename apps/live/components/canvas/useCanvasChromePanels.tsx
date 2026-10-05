@@ -6,7 +6,6 @@ import { useStableCallbacks } from '@/hooks/ui/useStableCallbacks';
 import type { useCornerDocking } from '@/hooks/ui/useCornerDocking';
 import type { PanelId } from '@/lib/panel-layout';
 import { LayersPanel } from '@/components/panels/LayersPanel';
-import { CardTypesPanel } from '@/components/plan/CardTypesPanel';
 import { visibleLayerElements } from '@livediagram/document';
 import { CanvasAiPanel } from './CanvasAiPanel';
 import { CommandPalette } from '@/components/palette/CommandPalette';
@@ -17,6 +16,13 @@ import type { CanvasChromeProps } from './CanvasChrome';
 import { usePaletteChrome } from './usePaletteChrome';
 import { useCanvasToolPanels } from './useCanvasToolPanels';
 import { WhiteboardDock } from './whiteboard/WhiteboardDock';
+
+// Plan's UI loads only when it is drawn (docs/specs/025-plan/plan-mode.md "Cost"), so a document without
+// Plan pays nothing for it.
+const CardTypesPanel = dynamic(
+  () => import('@/components/plan/CardTypesPanel').then((m) => m.CardTypesPanel),
+  { ssr: false },
+);
 
 // Lazy-load CommentsPanel: only mounts when the active tab has at
 // least one element with comments. It stacks below the Palette (the

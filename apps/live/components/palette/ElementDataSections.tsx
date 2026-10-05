@@ -13,7 +13,7 @@
 // inline version used). The page owns the open/closed state + the
 // handlers; this component only decides which items to show.
 
-import { PlanBoardMenuSection, PlanCardsMenuSection } from './PlanBoardMenuSection';
+import dynamic from 'next/dynamic';
 import {
   animLoops,
   DEFAULT_ANIMATION_SPEED,
@@ -101,6 +101,20 @@ import {
 } from '@/components/palette/context-menu-rows';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
 import { useContextMenuScaffold } from './useContextMenuScaffold';
+
+// Plan's UI loads only when it is drawn (docs/specs/025-plan/plan-mode.md "Cost"), so a document without
+// Plan pays nothing for it.
+const PlanCardsMenuSection = dynamic(
+  () => import('./PlanBoardMenuSection').then((m) => m.PlanCardsMenuSection),
+  { ssr: false },
+);
+
+// Plan's UI loads only when it is drawn (docs/specs/025-plan/plan-mode.md "Cost"), so a document without
+// Plan pays nothing for it.
+const PlanBoardMenuSection = dynamic(
+  () => import('./PlanBoardMenuSection').then((m) => m.PlanBoardMenuSection),
+  { ssr: false },
+);
 
 type Scaffold = ReturnType<typeof useContextMenuScaffold>;
 

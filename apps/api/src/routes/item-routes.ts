@@ -37,6 +37,7 @@ import {
   deleteItemRow,
   getDocument,
   getItemStoreHead,
+  getItemsRev,
   getParticipant,
   getTab,
   insertItems,
@@ -65,6 +66,8 @@ type Caller = {
   owner: string;
   // The item ids the caller may touch, when their grant is confined to one tab.
   scope: Set<string> | null;
+  // The store as read to work out that scope, so a list does not read it twice.
+  items?: Item[];
 };
 
 const GATES = { read: gateRead, participate: gateParticipate, edit: gateEdit } as const;
@@ -111,6 +114,7 @@ async function itemCaller(
     documentId,
     owner,
     scope: itemIdsShownOnTab(tab.elements as unknown as TabItemElement[], items),
+    items,
   };
 }
 
@@ -190,12 +194,12 @@ function relay(
 async function list(ctx: RouteContext, documentId: string): Promise<Response> {
   const caller = await itemCaller(ctx, documentId, 'read');
   if (caller instanceof Response) return caller;
-  const [items, head] = await Promise.all([
-    listItems(ctx.env, documentId),
-    getItemStoreHead(ctx.env, documentId),
+  const [items, rev] = await Promise.all([
+    caller.items ?? listItems(ctx.env, documentId),
+    getItemsRev(ctx.env, documentId),
   ]);
   const shown = caller.scope ? items.filter((i) => caller.scope!.has(i.id)) : items;
-  const body: ItemsResponse = { items: shown, rev: head.rev };
+  const body: ItemsResponse = { items: shown, rev };
   return json(body);
 }
 

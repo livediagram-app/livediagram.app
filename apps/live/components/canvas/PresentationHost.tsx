@@ -9,17 +9,24 @@
 // "there is a presentation happening" in one place, and it renders nothing at
 // all when there is not.
 
+import dynamic from 'next/dynamic';
 import { useEffect, useRef, useState } from 'react';
 
 import { ITEM_TYPES } from '@livediagram/items';
 import { PresentationOverlay } from '@/components/canvas/PresentationOverlay';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { usePlan } from '@/components/plan/PlanContext';
-import { ItemSlideView } from '@/components/plan/ItemSlideView';
 import { planPalette } from '@/components/plan/plan-palette';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { slideDurationMs } from '@/lib/presentation-config';
 import { useLatest } from '@/hooks/ui/useLatest';
+
+// Plan's UI loads only when it is drawn (docs/specs/025-plan/plan-mode.md "Cost"), so a document without
+// Plan pays nothing for it.
+const ItemSlideView = dynamic(
+  () => import('@/components/plan/ItemSlideView').then((m) => m.ItemSlideView),
+  { ssr: false },
+);
 
 // The node the transition animates: the canvas surface. Kept here so the
 // cleanup can listen for ITS animationend rather than guessing a duration.

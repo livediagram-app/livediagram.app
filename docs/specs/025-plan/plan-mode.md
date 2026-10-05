@@ -41,6 +41,22 @@ item store.
   shortcuts, so notes and arrows around a board work as they always do.
 - **The canvas pattern and colours are the tab's**, as in Diagram mode.
 
+## Cost
+
+Plan must cost nothing to a document that does not use it:
+
+- **No item requests without Plan content**: a document fetches its items only once the open tab has a Plan
+  board or card, or its deck has a card slide; from then on it keeps them for the session. A room join or resync
+  refetches only items already loaded.
+- **Plan's UI loads when drawn**: boards, cards, the item panel, the type editor, the Card Types panel, the board
+  menu, the Cards category and card slides are separate chunks, fetched the first time one appears.
+- **No re-render churn**: the Plan context keeps its identity across editor renders that change nothing Plan
+  holds, so boards and cards re-render only when items, types, presence or the board change.
+- **No presence chatter**: a card held (opened or dragged) is said to the room, and its release; nothing is sent
+  by a person who never holds one.
+- **Server**: a tab-scoped list reads the store once and the revision without a count; a document copy carries
+  its items in the same batch as its tabs.
+
 ## Plan keeps its own tabs
 
 - **A Plan tab with anything on it stays in Plan mode, and a tab in another mode with anything on it does not

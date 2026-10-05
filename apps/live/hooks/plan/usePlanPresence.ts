@@ -6,6 +6,7 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
 import type { RoomOp } from '@livediagram/api-schema';
 import type { PlanCardPresence } from '@/components/plan/PlanContext';
+import { useLatest } from '@/hooks/ui/useLatest';
 
 type Peer = { id: string; name: string; color: string };
 type Hold = { tabId: string; itemId: string; state: 'drag' | 'view' };
@@ -15,7 +16,12 @@ export function usePlanPresence(opts: {
   peers: readonly Peer[];
   send: (op: RoomOp) => void;
 }) {
-  const { activeTabId, peers, send } = opts;
+  const { activeTabId, peers } = opts;
+  // Read at send time, so the publisher keeps one identity across renders.
+  const send = useLatest(opts.send);
+  // Whether the last thing said held an item: a release is only worth sending after a hold, so a
+  // document that never opens or drags a card sends nothing at all.
+  const holding = useRef(false);
   const [holds, setHolds] = useState<ReadonlyMap<string, Hold>>(new Map());
   const lastSent = useRef<string>('');
 
@@ -34,10 +40,17 @@ export function usePlanPresence(opts: {
 
   const publish = useCallback(
     (itemId: string | null, state: 'drag' | 'view') => {
+      if (!itemId && !holding.current) return;
       const key = `${activeTabId}|${itemId}|${state}`;
       if (key === lastSent.current) return;
       lastSent.current = key;
-      send({ kind: 'plan-presence', tabId: activeTabId, itemId, ...(itemId ? { state } : {}) });
+      holding.current = !!itemId;
+      send.current({
+        kind: 'plan-presence',
+        tabId: activeTabId,
+        itemId,
+        ...(itemId ? { state } : {}),
+      });
     },
     [activeTabId, send],
   );

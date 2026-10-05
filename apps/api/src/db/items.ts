@@ -71,6 +71,14 @@ export async function getItemStoreHead(env: Env, documentId: string): Promise<It
   return { rev: row?.rev ?? 0, nextKey: row?.next_key ?? 1, count: row?.count ?? 0 };
 }
 
+// The store's revision alone: what a read needs, without the head's count.
+export async function getItemsRev(env: Env, documentId: string): Promise<number> {
+  const row = await env.DB.prepare(`SELECT items_rev AS rev FROM documents WHERE id = ?`)
+    .bind(documentId)
+    .first<{ rev: number }>();
+  return row?.rev ?? 0;
+}
+
 export async function listItems(env: Env, documentId: string): Promise<Item[]> {
   const res = await env.DB.prepare(`SELECT ${COLUMNS} FROM items WHERE document_id = ?`)
     .bind(documentId)

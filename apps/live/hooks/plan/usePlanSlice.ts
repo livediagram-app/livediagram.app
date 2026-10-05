@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useLatest } from '@/hooks/ui/useLatest';
 import { createShape, hasPlanInput, type EditorMode, type Element } from '@livediagram/document';
 import {
   itemAssignee,
@@ -40,8 +41,25 @@ export function usePlanSlice(opts: {
   publishPresence?: (itemId: string | null, state: 'drag' | 'view') => void;
 }) {
   const { planItems, itemTypes, editorMode, canEdit, canVote, participants, presence } = opts;
-  const { commit, select } = opts;
-  const { announce, publishPresence, addItemSlide } = opts;
+  // The editor hands these over fresh each render; read through refs, so the callbacks built on them,
+  // and the context value, keep their identity and boards re-render only when Plan state changes.
+  const commitRef = useLatest(opts.commit);
+  const selectRef = useLatest(opts.select);
+  const announceRef = useLatest(opts.announce);
+  const publishRef = useLatest(opts.publishPresence);
+  const slideRef = useLatest(opts.addItemSlide);
+  const commit = useCallback(
+    (mapElements: (els: Element[]) => Element[]) => commitRef.current(mapElements),
+    [commitRef],
+  );
+  const select = useCallback((id: string | null) => selectRef.current(id), [selectRef]);
+  const announce = useCallback((message: string) => announceRef.current(message), [announceRef]);
+  const publishPresence = useCallback(
+    (itemId: string | null, state: 'drag' | 'view') => publishRef.current?.(itemId, state),
+    [publishRef],
+  );
+  const hasSlides = !!opts.addItemSlide;
+  const addItemSlide = useCallback((itemId: string) => slideRef.current?.(itemId), [slideRef]);
   const [openItemId, setOpenItemId] = useState<string | null>(null);
   // The type the type editor is open on, or 'new' (docs/specs/025-plan/item-types.md "Editing a type").
   const [editingTypeId, setEditingTypeId] = useState<string | 'new' | null>(null);
@@ -229,7 +247,7 @@ export function usePlanSlice(opts: {
       removeCard,
       announce,
       setDragging,
-      ...(addItemSlide ? { addItemSlide } : {}),
+      ...(hasSlides ? { addItemSlide } : {}),
     }),
     [
       planItems.items,
@@ -256,6 +274,7 @@ export function usePlanSlice(opts: {
       announce,
       setDragging,
       addItemSlide,
+      hasSlides,
     ],
   );
 

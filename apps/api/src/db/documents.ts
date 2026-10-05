@@ -492,10 +492,15 @@ export async function copyDocument(
       ...imageRefAddStatements(env, freshTabId, imageRefIdsFromData(data)),
     ];
   });
-  if (inserts.length > 0) await env.DB.batch(inserts);
-  await env.DB.batch(
-    copyItemsStatements(env, sourceId, newId, await copiedItemIds(env, sourceId, rows, onlyTabId)),
+  // The items go in the same batch as the tabs (two statements that copy nothing from a store without
+  // items), so a copy pays no extra round trip for them; a tab-scoped copy first works out which.
+  const itemCopies = copyItemsStatements(
+    env,
+    sourceId,
+    newId,
+    await copiedItemIds(env, sourceId, rows, onlyTabId),
   );
+  await env.DB.batch([...inserts, ...itemCopies]);
   return await getDocument(env, newId);
 }
 

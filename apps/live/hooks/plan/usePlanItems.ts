@@ -52,7 +52,9 @@ export function usePlanItems(opts: {
   pushUndo: (step: ItemUndoStep) => void;
   onError: (message: string) => void;
 }): PlanItems {
-  const { documentId, ready, ownerId, name, color, shareCode, tabScope, pushUndo, onError } = opts;
+  const { documentId, ready, ownerId, name, color, shareCode, tabScope } = opts;
+  // Handed over fresh each render: read at call time, so `send` and `write` keep their identity.
+  const callbacks = useLatest({ pushUndo: opts.pushUndo, onError: opts.onError });
   const [store, setStore] = useState<ItemStoreState>(EMPTY_ITEM_STORE);
   const [status, setStatus] = useState<PlanItemsStatus>('loading');
   const [personId, setPersonId] = useState<string | null>(null);
@@ -84,17 +86,21 @@ export function usePlanItems(opts: {
   );
   const scopeRef = useLatest(scope);
 
+  // Whether the items have been asked for at all this session.
+  const loadedRef = useRef(false);
   const load = useCallback(async () => {
     const s = scopeRef.current;
     if (!s) return;
+    loadedRef.current = true;
     try {
       const fetched = await fetchItems(s);
+      const fetchedIds = new Set(fetched.items.map((f) => f.id));
       serverRevRef.current = fetched.rev;
       // Keep anything newer that arrived while the fetch was in flight.
       setStore((prev) =>
         mergeItemChanges(
           fetched,
-          prev.items.filter((i) => fetched.items.some((f) => f.id === i.id)),
+          prev.items.filter((i) => fetchedIds.has(i.id)),
           [],
           fetched.rev,
         ),
@@ -112,6 +118,8 @@ export function usePlanItems(opts: {
   }, [ready, scope, load]);
 
   const refetch = useCallback(() => {
+    // Never loaded (a document without Plan content): there is nothing to bring up to date.
+    if (!loadedRef.current) return;
     if (refetchTimerRef.current) clearTimeout(refetchTimerRef.current);
     refetchTimerRef.current = setTimeout(() => {
       refetchTimerRef.current = null;
@@ -160,7 +168,7 @@ export function usePlanItems(opts: {
         return { ok: true, made: answer.upserts };
       } catch (err) {
         console.warn('[items] items.write.failed', { kind: write.kind, error: String(err) });
-        onError(
+        callbacks.current.onError(
           (err as { code?: string }).code === 'items_full'
             ? 'This document already holds the most items it can'
             : "Couldn't save that change",
@@ -169,7 +177,7 @@ export function usePlanItems(opts: {
         return { ok: false, made: [] };
       }
     },
-    [load, onError, scopeRef, selfRef],
+    [load, callbacks, scopeRef, selfRef],
   );
 
   const write = useCallback(
@@ -190,7 +198,7 @@ export function usePlanItems(opts: {
               })),
             }
           : w;
-      pushUndo({
+      callbacks.current.pushUndo({
         undo: () => {
           for (const back of inverse) void send(back);
         },
@@ -198,7 +206,7 @@ export function usePlanItems(opts: {
       });
       return true;
     },
-    [send, pushUndo],
+    [send, callbacks],
   );
 
   const items = useMemo(() => new Map(store.items.map((i) => [i.id, i])), [store.items]);
