@@ -13,7 +13,7 @@ import {
   itemTitle,
   type CardFinderShow,
 } from '@livediagram/items';
-import { SearchIcon } from '@livediagram/ui';
+import { SearchIcon, Tooltip, TrashIcon } from '@livediagram/ui';
 import type { DockAnchor } from '@/lib/canvas-chrome';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
 import { usePlan } from './PlanContext';
@@ -126,16 +126,15 @@ export function CardFinderPanel({
             {found.slice(0, CARD_FINDER_ROWS_MAX).map((it) => {
               const type = typeIn(plan.types, it.type);
               const status = typeof it.fields['status'] === 'string' ? it.fields['status'] : null;
-              const off = isOffBoard(it, boardStatuses);
               return (
-                <li key={it.id}>
+                <li key={it.id} className="group/row flex items-center gap-1">
                   <button
                     type="button"
                     onClick={() => {
                       onPopoverClose();
                       plan.openItem(it.id);
                     }}
-                    className="flex w-full items-center gap-2.5 rounded-lg px-2 py-1.5 text-left transition hover:bg-slate-100 focus-visible:bg-slate-100 focus-visible:outline-none dark:hover:bg-slate-800 dark:focus-visible:bg-slate-800"
+                    className="flex min-w-0 flex-1 items-center gap-2.5 rounded-lg px-2 py-1.5 text-left transition hover:bg-slate-100 focus-visible:bg-slate-100 focus-visible:outline-none dark:hover:bg-slate-800 dark:focus-visible:bg-slate-800"
                   >
                     <span
                       aria-hidden
@@ -153,12 +152,22 @@ export function CardFinderPanel({
                         {status ? ` · ${statusLabel(status, plan.statusNames)}` : ''}
                       </span>
                     </span>
-                    {off ? (
-                      <span className="shrink-0 rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-800 dark:bg-amber-500/15 dark:text-amber-300">
-                        Not on a Board
-                      </span>
-                    ) : null}
                   </button>
+                  {plan.canEdit ? (
+                    <Tooltip label="Move to Trash">
+                      <button
+                        type="button"
+                        aria-label={`Move #${it.key} to the Trash`}
+                        onClick={() => {
+                          plan.trashItem(it.id);
+                          plan.announce(`#${it.key} moved to the Trash`);
+                        }}
+                        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-slate-400 transition hover:bg-rose-50 hover:text-rose-600 focus-visible:text-rose-600 dark:text-slate-400 dark:hover:bg-rose-500/15 dark:hover:text-rose-300 sm:opacity-0 sm:focus-visible:opacity-100 sm:group-hover/row:opacity-100"
+                      >
+                        <TrashIcon size={14} />
+                      </button>
+                    </Tooltip>
+                  ) : null}
                 </li>
               );
             })}

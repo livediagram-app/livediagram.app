@@ -119,10 +119,12 @@ Five built-in types, each with a glyph, an accent colour and the fields it offer
 - A search field (focused on open with a mouse, not on a phone) matches a card's number (`12` or `#12`), title or description, ignoring case.
 - **All Cards** and **Not on a Board** switch between every card and the cards whose status no column of this
   tab's boards holds (or that have no status): the strays a renamed or removed column, or another tab, left
-  behind. Each carries a count; a stray is marked **Not on a Board** in the list too.
+  behind. Each carries a count.
 - At most 200 rows are drawn, with "Showing 200 of N. Search to narrow them down." beneath.
 - Each row shows the type's glyph, the title, and the type, number and status. Choosing one closes the popover and
   opens the card in the item panel.
+- Someone who can edit sees a bin beside each row (on hover with a mouse, always on a phone): **Move to Trash**
+  puts that card in the Trash (restorable from there) without leaving the list.
 - Empty: "No cards yet" with how to add one; no match: "No cards match that search"; no strays: "Every card is
   on a board here".
 - Opening it is tracked as `Plan · Opened · CardFinder`.
