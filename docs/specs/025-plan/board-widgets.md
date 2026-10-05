@@ -17,24 +17,25 @@ and are placed by dragging them into a board's header.
 - The header holds, left to right: the board's **title**, the **widget zone**, then the controls a board needs
   whatever its widgets are (**Reveal** on a hide-writing board, **Retry** when items failed to load).
 - The widget zone is one row. Widgets keep their order; when they do not fit, the zone scrolls sideways.
-- Widgets are drawn for the header: the same height (28 px), a quiet border, the board's own theme colours.
+- Widgets are drawn for the header: the same height (28 px), a quiet border, the board's own theme colours,
+  each led by a picture of what it measures (its glyph, a ring, a split bar, column bars or pips).
 - A board with no widgets shows nothing in the zone; to someone who may edit, it says **Drag widgets here from
   the palette** in muted type.
 
 ## Widget kinds
 
-| Kind       | Label        | Shows                                                                                       |
-| ---------- | ------------ | ------------------------------------------------------------------------------------------- |
-| `count`    | Item Count   | How many items the board shows                                                              |
-| `progress` | Completion   | A bar and the percent of the board's items in its done column; "No done column" without one |
-| `filter`   | Filter       | A search box narrowing the cards to those whose text matches (the quick filter)             |
-| `mine`     | Only Mine    | A toggle showing only the cards assigned to the viewer (signed-in or named viewers)         |
-| `people`   | People       | The avatars of the people assigned cards on the board, up to five and "+n"                  |
-| `unplaced` | Not on Board | How many items have a status no column shows; pressing it opens their list                  |
-| `types`    | Card Types   | A chip per card type on the board, in its accent colour, with its count                     |
-| `wip`      | WIP Alerts   | How many columns are over their WIP limit, in the warning colour; "Within WIP" otherwise    |
-| `due`      | Due Soon     | How many cards are overdue and how many are due in the next 7 days                          |
-| `votes`    | Votes Left   | The viewer's votes left, on a board with voting on; nothing on any other board              |
+| Kind       | Label        | Shows                                                                                                                           |
+| ---------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------- |
+| `count`    | Item Count   | Its glyph and how many items the board shows                                                                                    |
+| `progress` | Completion   | A ring filled to the share of the board's items in its done column, the percent and `done · 9/14`; "No done column" without one |
+| `filter`   | Filter       | A search box with its glyph, narrowing the cards to those whose text matches (the quick filter)                                 |
+| `mine`     | Only Mine    | A toggle showing only the cards assigned to the viewer (signed-in or named viewers); tinted while on                            |
+| `people`   | People       | The avatars of the people assigned cards on the board, up to five and "+n", and how many people                                 |
+| `unplaced` | Not on Board | How many items have a status no column shows, amber while there are any; pressing it opens their list                           |
+| `types`    | Card Types   | One bar split by type in each type's colour, then the three biggest types with their counts                                     |
+| `wip`      | WIP Alerts   | A small bar per column, its cards against its limit (warning colour when over), and how many columns are over                   |
+| `due`      | Due Soon     | Red and amber counts of cards overdue and due in the next 7 days; "Nothing due" with a green glyph otherwise                    |
+| `votes`    | Votes Left   | The viewer's votes left as pips (a number past ten), on a board with voting on; nothing on any other board                      |
 
 - A board holds each kind **at most once**: a filter is the board's filter, not one of several.
 - The Filter and Only Mine widgets are each viewer's own and unsaved (the quick filter, see plan-board.md); taking
