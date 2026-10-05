@@ -121,6 +121,10 @@ export const PRESENCE_OP_KINDS = [
   // their caret, as a block id and a character offset, at cursor rates, writing nothing. From any
   // session, like the cursor: a viewer's writing takes no caret, so a viewer never sends one.
   'article-caret',
+  // Whose hands are on a Plan board's card (docs/specs/025-plan/plan-board.md "What the board shows"):
+  // the card someone is dragging or reading, so peers ring it in their colour. Ephemeral, never
+  // logged, from any session (a viewer reads items too).
+  'plan-presence',
 ] as const;
 
 // Room op kinds that DO change the document: they get a monotonic `seq` within
@@ -509,6 +513,9 @@ export type RoomOp =
   // element; `end` says the preview is over, `landed` that it was written (the real change follows as
   // element ops, after the autosave's wait), so receivers keep drawing it until then.
   | { kind: 'drag-preview'; tabId: string; patches?: DragPreviewPatch[]; end?: true; landed?: true }
+  // The card the sender is dragging or reading on a Plan board (docs/specs/025-plan/plan-board.md), or
+  // none (itemId null). Presence: relayed as is, never stored.
+  | { kind: 'plan-presence'; tabId: string; itemId: string | null; state?: 'drag' | 'view' }
   // The sender's VIEWPORT (docs/specs/012-collaboration/follow-me-viewport.md): where they are looking, so anyone who
   // has chosen to follow them can mirror it. Ephemeral presence exactly like
   // cursor / laser / avatar: throttled, never logged, never ordered (no

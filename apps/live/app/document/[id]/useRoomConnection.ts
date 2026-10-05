@@ -146,6 +146,11 @@ export function useRoomConnection(opts: {
   receiveChangeset: (op: ChangesetRoomOp) => void;
   // Item writes the api made (docs/specs/025-plan/items.md "Live for everyone"). System-only.
   receiveItems: (op: ItemsRoomOp) => void;
+  // A peer's hands on a Plan card (docs/specs/025-plan/plan-board.md). Presence.
+  receivePlanPresence: (
+    from: string,
+    op: { tabId: string; itemId: string | null; state?: 'drag' | 'view' },
+  ) => void;
   // The room has greeted this connection (its first presence list): what was relayed before it
   // joined is caught up through the api (useChangesetFeed's checkSinceLoad).
   onRoomJoined: () => void;
@@ -189,6 +194,7 @@ export function useRoomConnection(opts: {
     resyncFromServer,
     receiveChangeset,
     receiveItems,
+    receivePlanPresence,
     onRoomJoined,
   } = opts;
 
@@ -475,6 +481,8 @@ export function useRoomConnection(opts: {
         // An agent's changeset, applied, outlined and toasted by useChangesetFeed. System-only, like
         // the share ops: the room refuses one from a client socket.
         if (from === 'system') receiveChangeset(op);
+      } else if (op.kind === 'plan-presence') {
+        receivePlanPresence(from, op);
       } else if (op.kind === 'items') {
         // Item writes (docs/specs/025-plan/items.md). System-only: items change only through the api,
         // and the room refuses this op from a client socket.

@@ -32,10 +32,11 @@ export function usePlanSlice(opts: {
   commit: (mapElements: (els: Element[]) => Element[]) => void;
   select: (elementId: string | null) => void;
   announce: (message: string) => void;
-  onDragging?: (itemId: string | null) => void;
+  // Tells the room which card this person is dragging or reading (usePlanPresence).
+  publishPresence?: (itemId: string | null, state: 'drag' | 'view') => void;
 }) {
   const { planItems, editorMode, canEdit, canVote, participants, presence, commit, select } = opts;
-  const { announce, onDragging } = opts;
+  const { announce, publishPresence } = opts;
   const [openItemId, setOpenItemId] = useState<string | null>(null);
   const [setupBoardId, setSetupBoardId] = useState<string | null>(null);
 
@@ -175,7 +176,15 @@ export function usePlanSlice(opts: {
     [planItems.items, moveItem, removeCard, announce],
   );
 
-  const setDragging = useCallback((itemId: string | null) => onDragging?.(itemId), [onDragging]);
+  // Dragging outranks reading; letting go goes back to the open item, if any.
+  const setDragging = useCallback(
+    (itemId: string | null) =>
+      itemId ? publishPresence?.(itemId, 'drag') : publishPresence?.(openItemId, 'view'),
+    [publishPresence, openItemId],
+  );
+  useEffect(() => {
+    publishPresence?.(openItemId, 'view');
+  }, [openItemId, publishPresence]);
 
   const context = useMemo<PlanContextValue>(
     () => ({

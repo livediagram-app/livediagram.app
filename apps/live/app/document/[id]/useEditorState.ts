@@ -1,10 +1,7 @@
 'use client';
 
 import { usePlanSlice } from '@/hooks/plan/usePlanSlice';
-import type { PlanCardPresence } from '@/components/plan/PlanContext';
-
-// Nobody's hands on a card yet: presence on cards arrives with the room's plan op.
-const NO_PLAN_PRESENCE: ReadonlyMap<string, PlanCardPresence> = new Map();
+import { usePlanPresence } from '@/hooks/plan/usePlanPresence';
 import { newCardItemWrite } from '@/hooks/plan/plan-card-item';
 import { usePlanItems } from '@/hooks/plan/usePlanItems';
 import { useItemUndo } from '@/hooks/plan/useItemUndo';
@@ -1021,6 +1018,13 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     onError: (message) => toast.error(message),
   });
 
+  // Whose hands are on which Plan card (docs/specs/025-plan/plan-board.md): sent and heard through the room.
+  const planPresence = usePlanPresence({
+    activeTabId: activeId,
+    peers: livePresence,
+    send: (op) => roomRef.current?.send({ kind: 'op', op }),
+  });
+
   // A palette card tile's Plan card landed: its item is made in the store (docs/specs/025-plan/plan-mode.md).
   const placePlanCardItem = (itemId: string, itemType: string | undefined) =>
     void planItems.write(newCardItemWrite(itemId, itemType));
@@ -1070,6 +1074,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     },
     receiveChangeset: changesetFeed.receiveChangeset,
     receiveItems: planItems.receive,
+    receivePlanPresence: planPresence.receive,
     onRoomJoined: () => {
       void changesetFeed.checkSinceLoad();
       planItems.refetch();
@@ -1903,7 +1908,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     canEdit: !isReadOnly,
     canVote: hydrated,
     participants: livePresence,
-    presence: NO_PLAN_PRESENCE,
+    presence: planPresence.presence,
+    publishPresence: planPresence.publish,
     commit,
     select: setSelectedId,
     announce,
