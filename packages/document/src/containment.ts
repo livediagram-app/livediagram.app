@@ -1,6 +1,5 @@
 // Derived containment and the content origin (docs/specs/024-agents/document-views.md "The outline"):
-// the one rule views, edit-operation membership reports and the lint read. The editor's frame drag keeps
-// its own full-box rule (`withFrameContents`).
+// the one rule views, edit-operation membership reports, the lint and the editor's frame drag read.
 import type { Element, ElementId } from './index';
 import type { Point } from './geometry-primitives';
 import { isMindNode } from './mind-map';

@@ -1,5 +1,6 @@
 import {
   isBoxed,
+  isContainer,
   isFixedSizeShape,
   type Anchor,
   type ArrowElement,
@@ -8,7 +9,6 @@ import {
   type BoxedElement,
   type Element,
   type IconPosition,
-  type ShapeElement,
 } from '@livediagram/document';
 
 // Which side of a boxed element a screen point sits nearest, normalised by
@@ -81,88 +81,6 @@ export function inheritedSizeFor(
   return { width, height };
 }
 
-// Frame "section" membership (docs/specs/008-canvas/canvas-and-palette.md): the ids in `ids` plus every element
-// OWNED by a frame in `ids`. Used to expand a frame's move set so dragging the
-// frame carries everything sitting inside it. Pinned arrows between two members
-// follow via the post-move rebind regardless; this also catches a FREE-floating
-// arrow (or the free end of a half-pinned one) drawn inside the frame, so it
-// translates with the section instead of being left behind. A no-op (returns
-// `ids` unchanged) when none of the ids are frames, so a normal drag pays
-// nothing. FULL-BOUNDS containment: a boxed element travels only when its
-// whole box sits inside the frame. A shape straddling or just touching the
-// frame edge stays put (it used to be centre-point containment, which
-// dragged half-out elements along and read as the frame "grabbing"
-// neighbours it merely touched). Arrow free endpoints are points, so
-// point containment is exact for them.
-//
-// Two rules make overlapping / touching frames behave:
-//   1. Frames are NEVER carried as another frame's contents — moving one frame
-//      must not drag a frame it touches or overlaps. (Nest visually all you
-//      like; each frame still moves independently.)
-//   2. An element inside MORE THAN ONE frame belongs to exactly one: the frame
-//      closest to the BACK of the canvas (lowest z-order = earliest in the
-//      `elements` array). So it travels only when that backmost owner is the
-//      one being dragged, not when some other overlapping frame is.
-// A CONTAINER shape: the frame section (docs/specs/008-canvas/canvas-and-palette.md) and the lane (docs/specs/009-elements/lane.md).
-// Both carry their contents when moved, and both resolve overlap the same way,
-// so they share one predicate — the check recurs across the containment logic
-// below, and two copies would drift.
-const isFrameEl = (el: Element): boolean =>
-  el.type === 'shape' && (el.shape === 'frame' || el.shape === 'lane');
-
-export function withFrameContents(
-  elements: Element[],
-  ids: ReadonlySet<string>,
-): ReadonlySet<string> {
-  const draggedFrameIds = new Set(
-    elements.filter((el) => ids.has(el.id) && isFrameEl(el)).map((el) => el.id),
-  );
-  if (draggedFrameIds.size === 0) return ids;
-  // Every frame, in array order (lower index = further back). Ownership of an
-  // overlapped element resolves against ALL frames, not just the dragged ones.
-  const allFrames = elements.filter((el): el is ShapeElement => isFrameEl(el));
-  const contains = (f: ShapeElement, x: number, y: number) =>
-    x >= f.x && x <= f.x + f.width && y >= f.y && y <= f.y + f.height;
-  // The whole rect inside the frame (boundary-flush counts as inside).
-  const containsRect = (
-    f: ShapeElement,
-    r: { x: number; y: number; width: number; height: number },
-  ) =>
-    r.x >= f.x && r.y >= f.y && r.x + r.width <= f.x + f.width && r.y + r.height <= f.y + f.height;
-  // The backmost frame (first in array order) whose bounds contain (x, y).
-  const owningFrame = (x: number, y: number): ShapeElement | null =>
-    allFrames.find((f) => contains(f, x, y)) ?? null;
-  // Boxed-element ownership: the backmost frame FULLY containing the box.
-  const rectOwnedByDragged = (r: { x: number; y: number; width: number; height: number }) => {
-    const owner = allFrames.find((f) => containsRect(f, r)) ?? null;
-    return owner !== null && draggedFrameIds.has(owner.id);
-  };
-  const expanded = new Set(ids);
-  for (const el of elements) {
-    if (expanded.has(el.id)) continue;
-    // Rule 1: a frame never travels as another frame's content.
-    if (isFrameEl(el)) continue;
-    if (isBoxed(el)) {
-      if (rectOwnedByDragged(el)) expanded.add(el.id);
-    } else if (el.type === 'arrow') {
-      // Only the arrow's FREE endpoints have fixed coordinates; pinned ends
-      // follow their element. Move the arrow with the frame when it has a free
-      // end and every free end is owned by the SAME dragged frame (a free end
-      // outside, or owned by a different/backmost frame, means leave it put).
-      const freePts: Array<{ x: number; y: number }> = [];
-      if (el.from.kind === 'free') freePts.push({ x: el.from.x, y: el.from.y });
-      if (el.to.kind === 'free') freePts.push({ x: el.to.x, y: el.to.y });
-      if (freePts.length === 0) continue;
-      const owners = freePts.map((p) => owningFrame(p.x, p.y));
-      const first = owners[0];
-      if (first && draggedFrameIds.has(first.id) && owners.every((o) => o?.id === first.id)) {
-        expanded.add(el.id);
-      }
-    }
-  }
-  return expanded;
-}
-
 // Stable reorder that puts frames FIRST (lowest paint / z-order): a frame
 // is a section backdrop that must sit behind its contents so they stay
 // visible + clickable (docs/specs/008-canvas/canvas-and-palette.md). Both the on-canvas render layer and the
@@ -170,8 +88,8 @@ export function withFrameContents(
 // rule in one place and never depends on array position. Returns the input
 // array unchanged when there are no frames (cheap no-op).
 export function framesFirst<T extends Element>(elements: T[]): T[] {
-  if (!elements.some(isFrameEl)) return elements;
-  return [...elements.filter(isFrameEl), ...elements.filter((el) => !isFrameEl(el))];
+  if (!elements.some(isContainer)) return elements;
+  return [...elements.filter(isContainer), ...elements.filter((el) => !isContainer(el))];
 }
 
 // One of the gestures a `BoxedElementView` can be in mid-drag. `move`
