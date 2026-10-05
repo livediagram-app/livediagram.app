@@ -508,6 +508,62 @@ describe('what a community link reveals', () => {
       }),
     );
 
+  it('sends exactly the public fields of a post, and nothing of an anonymous author', async () => {
+    for (const id of ['d1', 'd2']) {
+      expect(
+        (await handleCommunityOwnerRoutes(
+          owner('PUT', `/api/documents/${id}/community`, { body: { ...body, anonymous: true } }),
+        ))!.status,
+      ).toBe(201);
+    }
+    const read = async (path: string) => {
+      const res = (await handleCommunity(publicCtx('GET', path)))!;
+      expect(res.status).toBe(200);
+      return res.text();
+    };
+    const list = await read('/api/community/posts');
+    const { posts } = JSON.parse(list) as { posts: Record<string, unknown>[] };
+    const one = await read(`/api/community/posts/${posts[0]!.id as string}`);
+    const featured = await read('/api/community/featured');
+    const parsed = JSON.parse(one) as { post: Record<string, unknown>; related: unknown[] };
+    const all = [
+      ...posts,
+      parsed.post,
+      ...(parsed.related as Record<string, unknown>[]),
+      ...(JSON.parse(featured) as { posts: Record<string, unknown>[] }).posts,
+    ];
+    expect(all.length).toBeGreaterThanOrEqual(5);
+    // An allowlist, so a column added to the row later fails here rather than reaching every visitor.
+    for (const post of all) {
+      expect(Object.keys(post).sort()).toEqual(
+        [
+          'anonymous',
+          'author',
+          'category',
+          'copyCount',
+          'description',
+          'id',
+          'likeCount',
+          'liked',
+          'publishedAt',
+          'shareCode',
+          'tags',
+          'title',
+          'updatedAt',
+        ].sort(),
+      );
+      expect(post.author).toEqual({ name: 'Anonymous', color: '#64748b', picture: null });
+    }
+    for (const text of [list, one, featured]) {
+      expect(text).not.toContain(AUTHOR);
+      expect(text).not.toContain('Ada');
+      expect(text).not.toContain('#f97316');
+      expect(text).not.toMatch(
+        /"(documentId|ownerId|authorId|author_id|document_id|networkHash|reportCount|hiddenBy|state)"/,
+      );
+    }
+  });
+
   it("names nobody: not the owner's name or colour, nor where the document sits", async () => {
     db.sql.prepare("UPDATE documents SET folder_id = NULL WHERE id = 'd1'").run();
     const post = (await (await handleCommunityOwnerRoutes(
