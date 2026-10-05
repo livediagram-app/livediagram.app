@@ -19,7 +19,7 @@ import { useMenuButton } from './menu/useMenuButton';
 import { ChevronDownIcon } from './icons';
 import { Glyph } from '@livediagram/ui';
 
-type ProductNavKey = 'home' | 'explorer' | 'editor' | 'help' | 'telemetry';
+type ProductNavKey = 'home' | 'explorer' | 'editor' | 'community' | 'help' | 'telemetry';
 
 // Per-surface glyphs (16px, 1.6 stroke) for the menu rows. The closed
 // trigger deliberately keeps the hamburger instead of the current page's
@@ -52,6 +52,15 @@ const ICONS: Record<ProductNavKey, () => ReactNode> = {
       <path d="M2 4.5A1.5 1.5 0 0 1 3.5 3h2.2l1.3 1.5h5.5A1.5 1.5 0 0 1 14 6v6a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1z" />
     </NavSvg>
   ),
+  // Two overlapping people: boards shared by others (docs/specs/025-community/community.md).
+  community: () => (
+    <NavSvg>
+      <circle cx="6" cy="5.5" r="2.2" />
+      <path d="M2 13c.4-2.3 2-3.6 4-3.6s3.6 1.3 4 3.6" />
+      <circle cx="11" cy="6" r="1.8" />
+      <path d="M10.6 9.5c1.7.1 3 1.2 3.4 3.1" />
+    </NavSvg>
+  ),
   help: () => (
     <NavSvg>
       <circle cx="8" cy="8" r="6" />
@@ -71,6 +80,7 @@ const ITEMS: { key: ProductNavKey; label: string; href: string; desc: string }[]
   { key: 'home', label: 'Welcome', href: '/', desc: 'Learn about our features' },
   { key: 'editor', label: 'Editor', href: '/new', desc: 'Start or edit a document' },
   { key: 'explorer', label: 'Explorer', href: '/explorer', desc: 'Your documents & folders' },
+  { key: 'community', label: 'Community', href: '/community/', desc: 'Boards people are proud of' },
   { key: 'help', label: 'Help', href: '/help/', desc: 'Guides, tutorials & answers' },
   {
     key: 'telemetry',

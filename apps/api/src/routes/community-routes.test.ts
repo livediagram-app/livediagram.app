@@ -16,7 +16,8 @@ vi.mock('../thumbnail', () => ({
 
 import { makeTestRouteContext } from './test-route-context';
 import { handleCommunityOwnerRoutes } from './community-owner-routes';
-import { handleCommunity, isCommunityOperator } from './community';
+import { handleCommunity } from './community';
+import { isCommunityOperator } from '../auth/community-operators';
 import { handleShare } from './share';
 import { handleDocumentShareRoutes } from './document-share-routes';
 
@@ -322,6 +323,15 @@ describe('the community link', () => {
     expect(db.sql.prepare('SELECT COUNT(*) AS n FROM shared_with').get()).toEqual({ n: 0 });
     db.sql.prepare("UPDATE community_posts SET state = 'hidden'").run();
     expect((await visit()).status).toBe(404);
+    // An operator reviewing the hidden post can still open it.
+    const review = await handleShare(
+      makeTestRouteContext('GET', `/api/share/${post.shareCode}`, {
+        env,
+        owner: 'user_op',
+        clerkUserId: 'user_op',
+      }),
+    );
+    expect(review.status).toBe(200);
   });
 
   it('is not listed for the owner, survives revoke-all, and cannot be revoked by code', async () => {

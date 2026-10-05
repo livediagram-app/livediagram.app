@@ -4,21 +4,21 @@ Derived from [Community](../community.md). Implementation detail only; design de
 
 ## 1. Domain and naming
 
-| Spec term      | Identifier                                                                                                |
-| -------------- | --------------------------------------------------------------------------------------------------------- |
-| post           | `CommunityPost` (DTO), table `community_posts`, id column `id`                                            |
-| author         | `CommunityAuthor` (`{ name, color, picture }`), column `author_id`                                        |
-| category       | `CommunityCategory` (union of ids), `COMMUNITY_CATEGORIES` (ordered `{ id, label, blurb }[]`)             |
-| tag            | `string` after `normaliseCommunityTag`; table `community_post_tags`                                       |
-| like           | table `community_likes`, column `like_count`                                                              |
-| copy count     | table `community_copies`, column `copy_count`                                                             |
-| report         | `CommunityReportReason`, `COMMUNITY_REPORT_REASONS`, table `community_reports`                            |
-| hidden         | `CommunityPostState = 'listed' \| 'hidden'`, `CommunityHiddenBy = 'reports' \| 'operator'`                |
-| community link | `share_links.purpose = 'community'` (`SharePurpose = 'share' \| 'community'`)                             |
-| community key  | header `X-Community-Key`, localStorage `livediagram:v2:community-key`                                     |
-| operator       | env `COMMUNITY_OPERATOR_IDS`, `isCommunityOperator(env, userId)`                                          |
-| sort           | `CommunitySort = 'new' \| 'loved' \| 'copied'`                                                            |
-| Edit Listing   | the same `PUT /api/documents/:id/community` as publishing; the editor names the act, the api does not     |
+| Spec term      | Identifier                                                                                            |
+| -------------- | ----------------------------------------------------------------------------------------------------- |
+| post           | `CommunityPost` (DTO), table `community_posts`, id column `id`                                        |
+| author         | `CommunityAuthor` (`{ name, color, picture }`), column `author_id`                                    |
+| category       | `CommunityCategory` (union of ids), `COMMUNITY_CATEGORIES` (ordered `{ id, label, blurb }[]`)         |
+| tag            | `string` after `normaliseCommunityTag`; table `community_post_tags`                                   |
+| like           | table `community_likes`, column `like_count`                                                          |
+| copy count     | table `community_copies`, column `copy_count`                                                         |
+| report         | `CommunityReportReason`, `COMMUNITY_REPORT_REASONS`, table `community_reports`                        |
+| hidden         | `CommunityPostState = 'listed' \| 'hidden'`, `CommunityHiddenBy = 'reports' \| 'operator'`            |
+| community link | `share_links.purpose = 'community'` (`SharePurpose = 'share' \| 'community'`)                         |
+| community key  | header `X-Community-Key`, localStorage `livediagram:v2:community-key`                                 |
+| operator       | env `COMMUNITY_OPERATOR_IDS`, `isCommunityOperator(env, userId)`                                      |
+| sort           | `CommunitySort = 'new' \| 'loved' \| 'copied'`                                                        |
+| Edit Listing   | the same `PUT /api/documents/:id/community` as publishing; the editor names the act, the api does not |
 
 Shared vocabulary (categories, reasons, limits, `normaliseCommunityTag`, `validateCommunityPostInput`, DTOs, sorts,
 query parsing) lives in `packages/api-schema/src/community.ts`, exported from the package index, so the worker, the
@@ -28,22 +28,22 @@ editor and the Community app cannot disagree.
 
 All in `packages/api-schema/src/community.ts`.
 
-| Constant                           | Value | Provenance                                     | Safe range |
-| ---------------------------------- | ----- | ---------------------------------------------- | ---------- |
-| `COMMUNITY_TITLE_MIN` / `_MAX`     | 3/80  | spec "Title"                                   | fixed      |
-| `COMMUNITY_DESCRIPTION_MIN`/`_MAX` | 20/500| spec "Description"                             | fixed      |
-| `COMMUNITY_TAGS_MAX`               | 5     | spec "Tags"                                    | 1..10      |
-| `COMMUNITY_TAG_MIN` / `_MAX`       | 2/24  | spec "Tags"                                    | fixed      |
-| `COMMUNITY_REPORT_NOTE_MAX`        | 300   | spec "Reports"                                 | fixed      |
-| `COMMUNITY_POSTS_PER_AUTHOR`       | 50    | spec "Publishing"                              | 10..500    |
-| `COMMUNITY_PAGE_SIZE`              | 24    | spec "Gallery"                                 | 12..48     |
-| `COMMUNITY_MAX_OFFSET`             | 2400  | D3 (100 pages)                                 | 480..10000 |
-| `COMMUNITY_AUTO_HIDE_REPORTERS`    | 3     | spec "Reports"                                 | 2..10      |
-| `COMMUNITY_POPULAR_TAGS`           | 24    | D4                                             | 8..48      |
-| `COMMUNITY_RELATED_POSTS`          | 6     | spec "More Like This"                          | 3..12      |
-| `COMMUNITY_SEARCH_TERMS_MAX`       | 5     | D5                                             | 1..10      |
-| `COMMUNITY_SEARCH_TERM_MAX`        | 40    | D5                                             | 10..80     |
-| `COMMUNITY_KEY_PATTERN`            | UUID v4 regex | D6                                     | fixed      |
+| Constant                           | Value         | Provenance            | Safe range |
+| ---------------------------------- | ------------- | --------------------- | ---------- |
+| `COMMUNITY_TITLE_MIN` / `_MAX`     | 3/80          | spec "Title"          | fixed      |
+| `COMMUNITY_DESCRIPTION_MIN`/`_MAX` | 20/500        | spec "Description"    | fixed      |
+| `COMMUNITY_TAGS_MAX`               | 5             | spec "Tags"           | 1..10      |
+| `COMMUNITY_TAG_MIN` / `_MAX`       | 2/24          | spec "Tags"           | fixed      |
+| `COMMUNITY_REPORT_NOTE_MAX`        | 300           | spec "Reports"        | fixed      |
+| `COMMUNITY_POSTS_PER_AUTHOR`       | 50            | spec "Publishing"     | 10..500    |
+| `COMMUNITY_PAGE_SIZE`              | 24            | spec "Gallery"        | 12..48     |
+| `COMMUNITY_MAX_OFFSET`             | 2400          | C3 (100 pages)        | 480..10000 |
+| `COMMUNITY_AUTO_HIDE_REPORTERS`    | 3             | spec "Reports"        | 2..10      |
+| `COMMUNITY_POPULAR_TAGS`           | 24            | C4                    | 8..48      |
+| `COMMUNITY_RELATED_POSTS`          | 6             | spec "More Like This" | 3..12      |
+| `COMMUNITY_SEARCH_TERMS_MAX`       | 5             | C5                    | 1..10      |
+| `COMMUNITY_SEARCH_TERM_MAX`        | 40            | C5                    | 10..80     |
+| `COMMUNITY_KEY_PATTERN`            | UUID v4 regex | C6                    | fixed      |
 
 Worker binding `COMMUNITY_RATE_LIMITER` (ratelimit, 30 per 60 s, keyed `community:<ip>`), production and staging.
 Worker var `COMMUNITY_OPERATOR_IDS` (comma-separated Clerk user ids; unset = no operators), documented in
@@ -111,34 +111,50 @@ DTOs (api-schema):
 ```ts
 type CommunityAuthor = { name: string; color: string; picture: string | null };
 type CommunityPost = {
-  id: string; title: string; description: string; category: CommunityCategory; tags: string[];
-  likeCount: number; copyCount: number; publishedAt: number; updatedAt: number;
-  shareCode: string; author: CommunityAuthor; liked: boolean;
+  id: string;
+  title: string;
+  description: string;
+  category: CommunityCategory;
+  tags: string[];
+  likeCount: number;
+  copyCount: number;
+  publishedAt: number;
+  updatedAt: number;
+  shareCode: string;
+  author: CommunityAuthor;
+  liked: boolean;
 };
 type CommunityOwnPost = CommunityPost & { state: CommunityPostState };
 type CommunityModerationItem = CommunityPost & {
-  state: CommunityPostState; hiddenBy: CommunityHiddenBy | null;
+  state: CommunityPostState;
+  hiddenBy: CommunityHiddenBy | null;
   reports: { reason: CommunityReportReason; note: string | null; createdAt: number }[];
 };
 type CommunityPostInput = { title: string; description: string; category: string; tags: string[] };
-type CommunityListQuery = { q: string; category: CommunityCategory | null; tag: string | null; sort: CommunitySort; offset: number };
+type CommunityListQuery = {
+  q: string;
+  category: CommunityCategory | null;
+  tag: string | null;
+  sort: CommunitySort;
+  offset: number;
+};
 ```
 
 Routes (all JSON; errors `{ error: <code> }`):
 
-| Method + path                                  | Who                      | Success                                   | Rejections                                                                                                                                         |
-| ---------------------------------------------- | ------------------------ | ----------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `GET /api/documents/:id/community`             | owner                    | `{ post: CommunityOwnPost \| null }`      | 404 missing, 403 not owner                                                                                                                         |
-| `PUT /api/documents/:id/community`             | owner, signed in         | 201 new / 200 update `{ post }`           | 401 `sign_in_required`, 403, 404, 409 `team_document`, 409 `share_password_set`, 409 `empty_document`, 409 `post_limit`, 400 `invalid_<field>`     |
-| `DELETE /api/documents/:id/community`          | owner                    | 204                                       | 404 (also when not published), 403                                                                                                                 |
-| `GET /api/community/posts?q&category&tag&sort&offset` | anyone            | `{ posts, nextOffset: number \| null }`   | 400 `invalid_query`                                                                                                                                |
-| `GET /api/community/facets`                    | anyone                   | `{ categories: Record<id, n>, tags: {tag, count}[], total }` | none                                                                                                             |
-| `GET /api/community/posts/:id`                 | anyone                   | `{ post, related: CommunityPost[] }`      | 404 missing, hidden, trashed                                                                                                                       |
-| `PUT /api/community/posts/:id/like`            | community key            | `{ likeCount, liked: true }`              | 400 `community_key_required`, 404, 429                                                                                                             |
-| `DELETE /api/community/posts/:id/like`         | community key            | `{ likeCount, liked: false }`             | as above                                                                                                                                           |
-| `POST /api/community/posts/:id/report`         | community key            | 204 (also for a repeat)                   | 400 `community_key_required` / `invalid_reason` / `invalid_note`, 404, 429                                                                         |
-| `GET /api/community/moderation`                | operator                 | `{ items: CommunityModerationItem[] }`    | 403 `operator_only`                                                                                                                                |
-| `PUT /api/community/posts/:id/moderation`      | operator                 | `{ item }`                                | 403 `operator_only`, 404, 400 `invalid_state`                                                                                                      |
+| Method + path                                         | Who              | Success                                                      | Rejections                                                                                                                                     |
+| ----------------------------------------------------- | ---------------- | ------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /api/documents/:id/community`                    | owner            | `{ post: CommunityOwnPost \| null }`                         | 404 missing, 403 not owner                                                                                                                     |
+| `PUT /api/documents/:id/community`                    | owner, signed in | 201 new / 200 update `{ post }`                              | 401 `sign_in_required`, 403, 404, 409 `team_document`, 409 `share_password_set`, 409 `empty_document`, 409 `post_limit`, 400 `invalid_<field>` |
+| `DELETE /api/documents/:id/community`                 | owner            | 204                                                          | 404 (also when not published), 403                                                                                                             |
+| `GET /api/community/posts?q&category&tag&sort&offset` | anyone           | `{ posts, nextOffset: number \| null }`                      | 400 `invalid_query`                                                                                                                            |
+| `GET /api/community/facets`                           | anyone           | `{ categories: Record<id, n>, tags: {tag, count}[], total }` | none                                                                                                                                           |
+| `GET /api/community/posts/:id`                        | anyone           | `{ post, related: CommunityPost[] }`                         | 404 missing, hidden, trashed                                                                                                                   |
+| `PUT /api/community/posts/:id/like`                   | community key    | `{ likeCount, liked: true }`                                 | 400 `community_key_required`, 404, 429                                                                                                         |
+| `DELETE /api/community/posts/:id/like`                | community key    | `{ likeCount, liked: false }`                                | as above                                                                                                                                       |
+| `POST /api/community/posts/:id/report`                | community key    | 204 (also for a repeat)                                      | 400 `community_key_required` / `invalid_reason` / `invalid_note`, 404, 429                                                                     |
+| `GET /api/community/moderation`                       | operator         | `{ items: CommunityModerationItem[] }`                       | 403 `operator_only`                                                                                                                            |
+| `PUT /api/community/posts/:id/moderation`             | operator         | `{ item }`                                                   | 403 `operator_only`, 404, 400 `invalid_state`                                                                                                  |
 
 - `liked` is filled from `X-Community-Key` when present and valid, else false.
 - List responses without a community key send `Cache-Control: public, max-age=30`; with one, `private, no-store`.
@@ -175,60 +191,70 @@ Community link behaviour (keyed off `link.purpose === 'community'`):
 
 - `routes/share.ts`: skip `recordSharedAccess`, `Document·Joined` and `notifyDocumentJoin`; add `community`.
 - `routes/document-room-routes.ts`: ticket mint and WebSocket upgrade refuse with 403 `community_link`.
-- `DocumentGrant` gains `community: boolean`; the tab GET strips comment elements and comment threads for such a
-  grant (`stripCommentsForCommunity`), and the comment thread listing refuses it (403).
+- `DocumentGrant` gains `community: boolean` (the room's ticket mint reads it). The tab GET and the comment thread
+  listing ask `viaCommunityLink(ctx)` (`apps/api/src/routes/context.ts`) on a non-owner read: the tab GET drops every
+  element's `commentThread` (`stripCommentThreads`, `apps/api/src/comments.ts`), and the listing refuses with 403
+  `community_link`.
 - `routes/documents.ts` copy: when `scope.community` (grant from a community code), after the copy succeeds
   `INSERT OR IGNORE community_copies` for the caller and recompute `copy_count` (waitUntil).
 - Visitor-opened timeline events for the author are kept (they are about the author's own document).
 
-Editor:
+Editor (`apps/live`):
 
-- `lib/api/community.ts`: `apiGetCommunityPost`, `apiPublishCommunityPost`, `apiRemoveCommunityPost`,
-  `apiListModeration`, `apiModeratePost`.
-- `hooks/persistence/useCommunityPost.ts`: loads the owner's post when the Share dialog opens; exposes
+- `apps/live/lib/api/community.ts`: `apiGetCommunityPost`, `apiPublishCommunityPost`, `apiRemoveCommunityPost`,
+  `apiListModeration`, `apiModeratePost`; error codes map to copy in `apps/live/lib/community-errors.ts`.
+- `apps/live/hooks/persistence/useCommunityPost.ts`: loads the owner's post when the Share dialog opens; exposes
   `{ post, loading, error, publish(input), remove() }`.
-- `components/dialogs/community/CommunitySection.tsx` inside the Share dialog; `CommunityPublishDialog.tsx`
-  (title, description with counter, `CategoryTiles`, `TagInput`, card preview, consequences list).
-- Share-view mode: `useIdentityBootstrap` stores `sessionCommunity` from the share resolve; when set,
-  `useRoomConnection` gets `enabled: false`, the identity prompt is not opened, and `CommunityBar` renders under the
-  header.
-- `?copy=1` on `/document/shared`: once the document hydrates with a session share code, `makeCopy` runs once and the
-  param is stripped.
-- `/moderation` page (`apps/live/app/moderation/page.tsx`): requires sign-in; 403 renders "Only operators can moderate
-  Community." Lists items with reports and Hide / Restore buttons. `LIVE_ROUTE_SEGMENTS` gains `moderation`.
+- `apps/live/components/dialogs/community/`: `ShareDialogWithCommunity.tsx` composes the Share dialog with
+  `CommunitySection.tsx` (its state chosen by the pure `community-section-state.ts`); `CommunityPublishDialog.tsx`
+  (title, description with counter, `CategoryPicker.tsx`, `TagInput.tsx` over the pure `tag-draft.ts`,
+  `CommunityCardPreview.tsx`, the consequences list) replaces the Share dialog while open, and a first publish ends on
+  `CommunityPublishedConfirmation.tsx`. The share password control is locked while published, and Share to Community
+  while a password is set.
+- Share-view mode: `useIdentityBootstrap` stores `sessionCommunity` (in `editor-realtime.ts`) from the share resolve;
+  when set, `useRoomConnection` gets `enabled: false`, the identity prompt is not opened, the visit is not recorded,
+  and `apps/live/components/chrome/CommunityBar.tsx` renders under the header with the author
+  (`apps/live/components/primitives/CommunityAuthorDisc.tsx`).
+- `?copy=1` on `/document/shared` (`apps/live/hooks/canvas/useAutoCopyParam.ts`): once the document hydrates with a
+  session share code, `makeCopy` runs once and the param is stripped.
+- `/moderation` (`apps/live/app/moderation/page.tsx`, `apps/live/components/moderation/`): requires sign-in; 403
+  renders "Only operators can moderate Community." Lists items with reports and Hide / Restore buttons.
+  `LIVE_ROUTE_SEGMENTS` gains `moderation`.
 
-Community app:
+Community app (`apps/community`):
 
-- `lib/community-key.ts`: `getCommunityKey()` reads or mints (crypto.randomUUID) the key; SSR-safe; storage failures
-  fall back to an in-memory key for the page's life.
-- `lib/query-state.ts`: `readQueryState(URLSearchParams)` / `writeQueryState(state)` (pure, tested), via
-  `parseCommunityListQuery`.
-- `lib/api.ts`: `fetchPosts`, `fetchFacets`, `fetchPost`, `likePost`, `unlikePost`, `reportPost`, with
-  `NEXT_PUBLIC_API_BASE ?? '/api'`.
-- Gallery: `GalleryView` owns state; `CommunityHero`, `SearchBox` (debounced 300 ms, Enter commits), `CategoryChips`,
-  `SortMenu`, `TagCloud`, `PostGrid` of `PostCard`, `LoadMore`. Optimistic like with rollback on failure.
-- Post page: `PostView` with `EmbedFrame` (`/embed?s=<code>`, `loading="lazy"`, title attribute), `PostMeta`,
-  `LikeButton`, `ReportDialog`, `RelatedPosts`. Make a Copy → `/document/shared?s=<code>&copy=1`.
+- `apps/community/lib/community-key.ts`: reads or mints (`crypto.randomUUID`) the key; SSR-safe; storage failures fall
+  back to an in-memory key for the page's life. Never reads the guest owner id.
+- `apps/community/lib/query-state.ts`: the URL query to and from the gallery's filters (pure, tested), via
+  `parseCommunityListQuery` / `communityQueryParams`.
+- `apps/community/lib/api.ts`: `fetchPosts`, `fetchFacets`, `fetchPost`, `likePost`, `unlikePost`, `reportPost`, with
+  `NEXT_PUBLIC_API_BASE ?? '/api'`; `apps/community/lib/useLike.ts` is the optimistic like with rollback.
+- Gallery (`apps/community/components/gallery/`): `GalleryView` over `useGallery`; `CommunityHero`, `SearchBox`
+  (debounced 300 ms, Enter commits), `CategoryChips`, `SortMenu`, `TagCloud`, `PostGrid` of `PostCard`, `LoadMore`,
+  `GalleryStates`.
+- Post page (`apps/community/components/post/`): `PostView` over `usePost`, `EmbedFrame` (`/embed?s=<code>`, lazy,
+  titled, falling back to the card image after 15 s), `PostMeta`, `PostActions`, `ReportDialog`, `RelatedPosts`. Make
+  a Copy → `/document/shared?s=<code>&copy=1`.
 
 ## 6. Errors and edge cases
 
-| Case                                              | Handling                                                                                    |
-| ------------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| Publish on a document with a password             | 409 `share_password_set`; dialog explains and links to Share settings                       |
-| Password set on a published document              | 409 `community_published`; Share dialog explains                                            |
-| Empty document                                    | 409 `empty_document`; "Add something to your board before sharing it."                       |
-| 51st post                                         | 409 `post_limit`                                                                            |
-| Owner revokes all share links                     | Community link untouched (filtered)                                                         |
-| Document trashed                                  | Hidden everywhere; post page 404; restore lists it again                                    |
-| Post hidden while a visitor has it open           | Likes/reports 404; the UI shows "This post is no longer available."                         |
-| Like twice / unlike twice                         | Idempotent; counts recomputed                                                               |
-| Report twice from one browser                     | 204, row unchanged                                                                          |
-| Storage blocked in the Community app              | In-memory key; likes work for the page's life                                               |
-| Embed frame fails                                 | Falls back to the card image with Open Board                                                |
-| Author has no participant row                     | Author `{ name: 'Someone', color: '#64748b', picture: null }`                               |
-| Search with only stop characters                  | Treated as no search                                                                        |
-| Offset past the end                               | Empty `posts`, `nextOffset: null`                                                           |
-| Copy by the author of their own post              | Counted only if a share code was presented and the caller is not the author                 |
+| Case                                    | Handling                                                                    |
+| --------------------------------------- | --------------------------------------------------------------------------- |
+| Publish on a document with a password   | 409 `share_password_set`; dialog explains and links to Share settings       |
+| Password set on a published document    | 409 `community_published`; Share dialog explains                            |
+| Empty document                          | 409 `empty_document`; "Add something to your board before sharing it."      |
+| 51st post                               | 409 `post_limit`                                                            |
+| Owner revokes all share links           | Community link untouched (filtered)                                         |
+| Document trashed                        | Hidden everywhere; post page 404; restore lists it again                    |
+| Post hidden while a visitor has it open | Likes/reports 404; the UI shows "This post is no longer available."         |
+| Like twice / unlike twice               | Idempotent; counts recomputed                                               |
+| Report twice from one browser           | 204, row unchanged                                                          |
+| Storage blocked in the Community app    | In-memory key; likes work for the page's life                               |
+| Embed frame fails                       | Falls back to the card image with Open Board                                |
+| Author has no participant row           | Author `{ name: 'Someone', color: '#64748b', picture: null }`               |
+| Search with only stop characters        | Treated as no search                                                        |
+| Offset past the end                     | Empty `posts`, `nextOffset: null`                                           |
+| Copy by the author of their own post    | Counted only if a share code was presented and the caller is not the author |
 
 ## 7. Security and trust
 
@@ -296,17 +322,23 @@ Worker logs with fingerprints: `[community] published`, `[community] updated`, `
 
 ## 13. Testing
 
-| Spec rule                                    | Test                                                                     |
-| -------------------------------------------- | ------------------------------------------------------------------------ |
-| Tag normalisation, input validation, query   | `packages/api-schema/src/community.test.ts`                              |
-| Publish guards, update, unpublish, cap       | `apps/api/src/routes/community-owner-routes.test.ts` (sqlite D1)         |
-| List filters, sorts, search, paging, trash   | `apps/api/src/db/community.test.ts` (sqlite D1)                          |
-| Likes, reports, auto-hide, moderation        | `apps/api/src/db/community.test.ts`, `routes/community-routes.test.ts`   |
-| Community link: unlisted, no room, no join   | `apps/api/src/routes/community-link.test.ts`                             |
-| Copy counting                                | `apps/api/src/db/community.test.ts`                                      |
-| Query state round trip                       | `apps/community/lib/query-state.test.ts`                                 |
-| Community key fallback                       | `apps/community/lib/community-key.test.ts`                               |
-| Router forwards `/community`                 | `apps/router/src/index.test.ts`                                          |
+| Spec rule                                  | Test                                                                                |
+| ------------------------------------------ | ----------------------------------------------------------------------------------- |
+| Tag normalisation, input validation, query | `packages/api-schema/src/community.test.ts`                                         |
+| Publish guards, update, unpublish          | `apps/api/src/routes/community-routes.test.ts` (sqlite D1)                          |
+| List filters, sorts, search, paging, trash | `apps/api/src/db/community.test.ts` (sqlite D1)                                     |
+| Likes, reports, auto-hide, moderation      | `apps/api/src/db/community.test.ts`, `apps/api/src/routes/community-routes.test.ts` |
+| Community link: unlisted, no join, no pw   | `apps/api/src/routes/community-routes.test.ts`                                      |
+| Community link: no room                    | `apps/api/src/routes/document-room-routes.test.ts`                                  |
+| Community grant                            | `apps/api/src/auth/document-access.test.ts`                                         |
+| Copy counting                              | `apps/api/src/db/community.test.ts`                                                 |
+| Query state round trip                     | `apps/community/lib/query-state.test.ts`                                            |
+| Community key fallback                     | `apps/community/lib/community-key.test.ts`                                          |
+| Router forwards `/community`               | `apps/router/src/index.test.ts`                                                     |
+| Optimistic like and rollback               | `apps/community/components/shared/LikeButton.test.tsx`                              |
+| Copy once from `?copy=1`                   | `apps/live/hooks/canvas/useAutoCopyParam.test.tsx`                                  |
+| Community section state, tag input         | `apps/live/components/dialogs/community/*.test.ts(x)`                               |
+| Editor api client and error copy           | `apps/live/lib/api/community.test.ts`                                               |
 
 ## 14. Defaults ledger
 

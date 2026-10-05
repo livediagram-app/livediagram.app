@@ -50,6 +50,7 @@ export const SURFACE_LABELS: Record<CtaSurface, string> = {
   Status: 'Status Page',
   Dashboard: 'Telemetry Dashboard',
   Help: 'Help Centre',
+  Community: 'Community',
 };
 
 // What each slot's button says, so a row reads as the thing on the page.
@@ -67,12 +68,14 @@ const SLOT_LABELS: Record<CtaSlot, string> = {
   GalleryDraw: 'Gallery: Blank Canvas Link',
   Closing: 'Closing Band: Start Drawing',
   Card: 'Footer Card: Start Drawing',
+  Empty: 'Empty Gallery: Share Yours',
 };
 
 // Where one surface words a slot differently from the rest.
 const SOURCE_LABELS: Partial<Record<CtaSource, string>> = {
   'Feature.Hero': 'Hero: Start Drawing',
   'Help.Header': 'Header: Start Drawing',
+  'Community.Hero': 'Hero: Share Your Own',
 };
 
 export function ctaSourceLabel(source: CtaSource): string {

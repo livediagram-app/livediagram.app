@@ -109,6 +109,7 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'team-shared-documents': '#0ea5e9',
   'assigned-actions': '#22c55e',
   // Collaboration → Sharing guides
+  community: '#ec4899',
   'share-passwords': '#475569',
   'share-link-expiry': '#f59e0b',
   'one-tab': '#14b8a6',

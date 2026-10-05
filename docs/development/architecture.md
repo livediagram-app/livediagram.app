@@ -1,6 +1,6 @@
 # Architecture
 
-A pnpm + Turborepo monorepo: seven Cloudflare-deployed apps, one distributed command-line app and twenty-three shared packages. Everything runs on Cloudflare Workers (Static Assets for the Next.js apps); there's no Node-hosted backend.
+A pnpm + Turborepo monorepo: eight Cloudflare-deployed apps, one distributed command-line app and twenty-three shared packages. Everything runs on Cloudflare Workers (Static Assets for the Next.js apps); there's no Node-hosted backend.
 
 ```
 apps/
@@ -8,6 +8,7 @@ apps/
   live/         the editor (Next.js export; clean routes)
   telemetry/    public anonymous-events dashboard (Next.js export, /telemetry)
   help/         help centre (Next.js export + MDX, /help)
+  community/    public gallery of shared boards (Next.js export, /community)
   api/          REST + WebSocket worker (D1 + Durable Objects + R2, /api)
   mcp/          MCP server for AI tools (OAuth + tools, mcp.livediagram.app)
   router/       service-binding router stitching the apps under one hostname
@@ -124,7 +125,7 @@ Two equivalent identity paths: an `X-Owner-Id` header (a per-browser UUID from `
 
 ## Deployment
 
-GitHub Actions → Cloudflare Workers. Build artefacts get uploaded once, then five workers (marketing / live / telemetry / help / api) ship in parallel; the `mcp` worker deploys after `api` (it has a service binding to it), and the router deploys last because its service bindings need the others to exist.
+GitHub Actions → Cloudflare Workers. Build artefacts get uploaded once, then six workers (marketing / live / telemetry / help / community / api) ship in parallel; the `mcp` worker deploys after `api` (it has a service binding to it), and the router deploys last because its service bindings need the others to exist.
 
 Two environments run that same sequence, from one reusable workflow (`deploy-reusable.yml`) so they cannot drift:
 

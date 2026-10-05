@@ -64,7 +64,12 @@ export const COMMUNITY_CATEGORIES = [
     type: 'Infographics',
   },
   { id: 'art', label: 'Drawing & Art', blurb: 'Sketches, illustrations, Draw mode', type: 'Art' },
-  { id: 'other', label: 'Something Else', blurb: 'Anything that fits nowhere above', type: 'Other' },
+  {
+    id: 'other',
+    label: 'Something Else',
+    blurb: 'Anything that fits nowhere above',
+    type: 'Other',
+  },
 ] as const;
 
 export type CommunityCategory = (typeof COMMUNITY_CATEGORIES)[number]['id'];
@@ -132,7 +137,8 @@ export const COMMUNITY_SEARCH_TERM_MAX = 40;
 // the guest owner id: a like must never put an owner credential on the wire.
 export const COMMUNITY_KEY_HEADER = 'X-Community-Key';
 export const COMMUNITY_KEY_STORAGE = 'livediagram:v2:community-key';
-const COMMUNITY_KEY_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
+const COMMUNITY_KEY_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 
 export function isCommunityKey(value: unknown): value is string {
   return typeof value === 'string' && COMMUNITY_KEY_PATTERN.test(value);
@@ -167,14 +173,10 @@ export type CommunityPostInput = {
 };
 
 export type CommunityInputError =
-  | 'invalid_title'
-  | 'invalid_description'
-  | 'invalid_category'
-  | 'invalid_tags';
+  'invalid_title' | 'invalid_description' | 'invalid_category' | 'invalid_tags';
 
 export type CommunityInputResult =
-  | { ok: true; value: CommunityPostInput }
-  | { ok: false; error: CommunityInputError };
+  { ok: true; value: CommunityPostInput } | { ok: false; error: CommunityInputError };
 
 // What publish and Edit Listing accept (blueprint §4). Trims the title and description and collapses runs of three
 // or more newlines to two; tags are normalised and de-duplicated, and any tag that does not survive normalisation

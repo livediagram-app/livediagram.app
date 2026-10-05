@@ -11,6 +11,7 @@ import {
   type CommunityModerationItem,
   type CommunityPost,
 } from '@livediagram/api-schema';
+import { isCommunityOperator } from '../auth/community-operators';
 import { clientIp } from '../client-ip';
 import { rowHiddenBy, rowState, rowToCommunityPost, type CommunityPostRow } from '../community-row';
 import {
@@ -30,15 +31,6 @@ import {
 import { forbidden, json, noContent, notFound } from '../responses';
 import type { Env } from '../types';
 import type { RouteContext } from './context';
-
-// G6: operators are the Clerk ids the worker env lists. Unset or empty means nobody.
-export function isCommunityOperator(env: Env, userId: string | null): boolean {
-  if (!userId || !env.COMMUNITY_OPERATOR_IDS) return false;
-  return env.COMMUNITY_OPERATOR_IDS.split(',')
-    .map((id) => id.trim())
-    .filter(Boolean)
-    .includes(userId);
-}
 
 function communityKeyOf(request: Request): string | null {
   const key = request.headers.get(COMMUNITY_KEY_HEADER);

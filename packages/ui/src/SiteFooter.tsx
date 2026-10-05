@@ -25,6 +25,10 @@ export function SiteFooter() {
           <a href="/faq" className="hover:text-slate-900 dark:hover:text-slate-100">
             FAQ
           </a>
+          {/* The public gallery of shared boards (docs/specs/025-community/community.md). */}
+          <a href="/community/" className="hover:text-slate-900 dark:hover:text-slate-100">
+            Community
+          </a>
           <a
             href="/help/policies/terms/"
             className="hover:text-slate-900 dark:hover:text-slate-100"

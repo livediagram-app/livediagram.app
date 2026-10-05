@@ -1,6 +1,7 @@
 // /api/share/<code> — resolve a share code to its document + role.
 
 import { rowAuthor } from '../community-row';
+import { isCommunityOperator } from '../auth/community-operators';
 import {
   getCommunityPostByShareCode,
   getDocument,
@@ -51,10 +52,12 @@ export async function handleShare(ctx: RouteContext): Promise<Response> {
       if (gate) return gate;
       // A Community post's link (docs/specs/025-community/community.md "Viewing a post's document"): read-only for
       // everyone, never recorded in "Shared with you", never a join email to the author, and gone while the post is
-      // hidden.
+      // hidden, except to an operator reviewing it.
       if (link.purpose === 'community') {
         const post = await getCommunityPostByShareCode(env, link.code);
-        if (!post || post.state !== 'listed') return notFound();
+        if (!post) return notFound();
+        if (post.state !== 'listed' && !isCommunityOperator(env, ctx.clerkUserId))
+          return notFound();
         return json({
           document: redactDocumentForReader(d, resolveOwner()),
           role: 'view',

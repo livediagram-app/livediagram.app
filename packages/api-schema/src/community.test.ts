@@ -103,7 +103,10 @@ describe('parseCommunityListQuery', () => {
   });
 
   it('is lenient on sort and offset', () => {
-    expect(parse('sort=hot&offset=-5')).toMatchObject({ ok: true, value: { sort: 'new', offset: 0 } });
+    expect(parse('sort=hot&offset=-5')).toMatchObject({
+      ok: true,
+      value: { sort: 'new', offset: 0 },
+    });
     expect(parse('offset=999999')).toMatchObject({ value: { offset: COMMUNITY_MAX_OFFSET } });
     expect(parse('offset=abc')).toMatchObject({ value: { offset: 0 } });
   });

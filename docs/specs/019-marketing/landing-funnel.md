@@ -77,7 +77,7 @@ ingest drops.
 | `Status`    | `/status`                          | `Header`, `HeaderDraw`, `HeaderWhiteboard`, `HeaderIllustration`                                                                                                       |
 | `Dashboard` | `/telemetry`                       | `Header`, `HeaderDraw`, `HeaderWhiteboard`, `HeaderIllustration`                                                                                                       |
 | `Help`      | `/help`, `/help/*`                 | `Header`                                                                                                                                                               |
-| `Community` | `/community`, `/community/*`       | `Header`, `HeaderDraw`, `HeaderWhiteboard`, `HeaderIllustration`, `Hero`, `Empty`                                                                                    |
+| `Community` | `/community`, `/community/*`       | `Header`, `HeaderDraw`, `HeaderWhiteboard`, `HeaderIllustration`, `Hero`, `Empty`                                                                                      |
 
 The slots:
 

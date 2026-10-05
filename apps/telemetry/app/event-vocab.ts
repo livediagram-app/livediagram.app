@@ -58,6 +58,8 @@ export const CATEGORY_DESCRIPTIONS: Record<TelemetryCategory, string> = {
   Cli: 'Commands agents and scripts ran with the livediagram command line, by command.',
   Agent:
     "Agents changing documents through changesets: applied, refused because something changed since the agent read it or a person had it selected, and reverted, by where they came from (MCP, CLI, API, or the editor's Undo). Never what changed.",
+  Community:
+    'The public gallery of shared boards: publishing, editing and removing a post, and people opening, liking, copying, reporting and filtering them. Never a title, tag or who.',
   Email:
     'Emails the product sends (welcome, onboarding, team invites, notifications). Which email only, never who received it.',
   Editor:
@@ -119,6 +121,8 @@ const CATEGORY_COLORS: Record<TelemetryCategory, string> = {
   Cli: '#1e293b',
   // Burnt orange: the agents' changesets, apart from MCP's rose and Activity's amber.
   Agent: '#c2410c',
+  // Pink, the heart on a Community card.
+  Community: '#db2777',
   Email: '#0d9488',
   Error: '#dc2626',
   // Warm stone, the marker on a whiteboard: apart from every blue and green.

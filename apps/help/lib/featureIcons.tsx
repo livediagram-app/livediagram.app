@@ -559,6 +559,15 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <Prims prims={lucidePanelsTopLeft} />
     </Glyph>
   ),
+  // A gallery wall: three framed boards, one with a heart on it.
+  community: (
+    <Glyph>
+      <rect x="2.5" y="4" width="8" height="7" rx="1.5" />
+      <rect x="13.5" y="4" width="8" height="7" rx="1.5" />
+      <rect x="2.5" y="14" width="8" height="6" rx="1.5" />
+      <path d="M17.5 20.5l-2.6-2.5a1.6 1.6 0 012.6-1.9 1.6 1.6 0 012.6 1.9z" />
+    </Glyph>
+  ),
   // A chain whose far ring is a clock: the link, and the deadline on it.
   'share-link-expiry': (
     <Glyph>

@@ -155,7 +155,7 @@ unliking removes it.
   The network is recorded only as a one-way hash of the address salted with the post id, so it cannot be compared across
   posts.
 - Operators see a **Moderation** page in the editor (`/moderation`, signed in, operator only) listing reported and hidden
-  posts with their reports, and can **Hide** or **Restore** a post. Restoring clears its reports. An operator's decision
+  posts with their reports, can open a hidden post's board to review it, and can **Hide** or **Restore** a post. Restoring clears its reports. An operator's decision
   sticks: a restored post is hidden automatically again only by three new reports.
 - An author is not told their post was hidden; the Community section in their Share dialog shows it as hidden.
 - With `COMMUNITY_OPERATOR_IDS` unset (a fresh self-host) automatic hiding still works and nobody can moderate by hand.

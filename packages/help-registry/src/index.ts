@@ -2204,6 +2204,16 @@ export const articles: Article[] = [
 
   // ---- Sub-articles: Sharing ----
   {
+    slug: 'community',
+    title: 'Sharing to the Community',
+    description: 'Publish a board to the public gallery for others to view and copy.',
+    keywords:
+      'community gallery public publish showcase inspiration examples share board proud like likes copy copies tags category report moderation discover browse',
+    category: 'Collaboration',
+    categorySlug: 'collaboration/sharing',
+    parentSlug: 'sharing',
+  },
+  {
     slug: 'share-passwords',
     title: 'Share Passwords',
     description: 'Gate view or edit access behind a password.',

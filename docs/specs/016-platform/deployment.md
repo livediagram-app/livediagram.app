@@ -12,6 +12,7 @@ There is a second environment, **staging**, which does deploy on its own: every 
 | `apps/live`      | `livediagram-live`      | Static assets + a tiny path-rewrite worker.                                                                        |
 | `apps/telemetry` | `livediagram-telemetry` | Static assets only (public dashboard, [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)). |
 | `apps/help`      | `livediagram-help`      | Static assets only (help centre, [Help app](../018-help/help-app.md)).                                             |
+| `apps/community` | `livediagram-community` | Static assets only (public gallery, [Community](../025-community/community.md)).                                   |
 | `apps/api`       | `livediagram-api`       | Worker (D1 binding + Durable Object).                                                                              |
 | `apps/mcp`       | `livediagram-mcp`       | Worker (OAuth + MCP tools; own host, [MCP server](../015-api/mcp-server.md)).                                      |
 | `apps/router`    | `livediagram-router`    | Worker (service bindings to the other five).                                                                       |
@@ -64,7 +65,7 @@ Every `wrangler` invocation in the reusable workflow ends in `${WRANGLER_ENV:+--
 
 Jobs:
 
-1. **build** — installs deps, runs `pnpm build`, uploads `apps/marketing/out`, `apps/live/out`, `apps/telemetry/out`, and `apps/help/out` as workflow artifacts.
+1. **build** — installs deps, runs `pnpm build`, uploads `apps/marketing/out`, `apps/live/out`, `apps/telemetry/out`, `apps/help/out` and `apps/community/out` as workflow artifacts.
 2. **deploy-marketing** — downloads `marketing-out`, runs `pnpm exec wrangler deploy` from `apps/marketing/`.
 3. **deploy-live** — downloads `live-out`, runs `pnpm exec wrangler deploy` from `apps/live/`.
 4. **deploy-api** — runs:
@@ -72,11 +73,11 @@ Jobs:
    - `pnpm exec wrangler d1 migrations apply DB --remote` applies any pending migrations BEFORE the worker deploy (after the secret syncs, straight before it) so the new code never briefly runs against an older schema; see Renaming migrations below for the non-additive case. If this step fails the job halts and surfaces a precise error pointing at the missing token scopes. (Wrangler 4 dropped the `--yes` flag; the command is non-interactive by default in CI.)
    - `pnpm exec wrangler deploy` from `apps/api/`, plus the hosted profile's `--var` flags on livediagram.app's own repository (see "Hosted profile" below), then `node scripts/hosted-vars.mjs verify` against the live version.
 5. **deploy-telemetry** — downloads `telemetry-out`, runs `pnpm exec wrangler deploy` from `apps/telemetry/` (in parallel with marketing/live/api).
-6. **deploy-help** — downloads `help-out`, runs `pnpm exec wrangler deploy` from `apps/help/` (in parallel with the others).
+6. **deploy-help** — downloads `help-out`, runs `pnpm exec wrangler deploy` from `apps/help/` (in parallel with the others). **deploy-community** does the same for `community-out` from `apps/community/`.
 7. **deploy-mcp** — depends on **deploy-api** (the MCP worker has a service binding to the api worker, [MCP server](../015-api/mcp-server.md), so api must exist first). Runs `pnpm exec wrangler deploy` from `apps/mcp/` — no static artifact to download, the worker bundles from source. NOT a `deploy-router` dependency: `mcp.livediagram.app` is its own host, not a path under the main hostname.
-8. **deploy-router** — depends on **deploy-marketing**, **deploy-live**, **deploy-api**, **deploy-telemetry**, and **deploy-help**. Runs `pnpm exec wrangler deploy` from `apps/router/`. The router's service bindings target the five workers above, so it must deploy after they exist. This is the one job carrying a GitHub `environment`, so a run files a single deployment record with the public URL rather than seven.
+8. **deploy-router** — depends on **deploy-marketing**, **deploy-live**, **deploy-api**, **deploy-telemetry**, **deploy-help** and **deploy-community**. Runs `pnpm exec wrangler deploy` from `apps/router/`. The router's service bindings target the six workers above, so it must deploy after they exist. This is the one job carrying a GitHub `environment`, so a run files a single deployment record with the public URL rather than seven.
 
-`deploy-marketing`, `deploy-api`, `deploy-telemetry`, and `deploy-help` run in parallel off `build`, and `deploy-live` follows `deploy-api`; `deploy-mcp` runs once `deploy-api` is up (parallel to the rest); `deploy-router` waits for the five it binds (not mcp, which is a separate host).
+`deploy-marketing`, `deploy-api`, `deploy-telemetry`, `deploy-help` and `deploy-community` run in parallel off `build`, and `deploy-live` follows `deploy-api`; `deploy-mcp` runs once `deploy-api` is up (parallel to the rest); `deploy-router` waits for the six it binds (not mcp, which is a separate host).
 
 All seven deploy jobs use raw `pnpm exec wrangler` rather than `cloudflare/wrangler-action` — wrangler 4 ships sensible defaults and the explicit invocation makes the workflow log read 1:1 against a local run.
 
@@ -152,7 +153,7 @@ Cloudflare dashboard → any zone → right sidebar → **Account ID** (copy).
 
 ## First deploy
 
-On the first run, none of the workers exist yet. The job ordering handles this: `deploy-marketing`, `deploy-live`, `deploy-api`, `deploy-telemetry`, and `deploy-help` run first and create those workers, then `deploy-router` runs, by which point its five service-binding targets already exist, so wrangler accepts the bindings.
+On the first run, none of the workers exist yet. The job ordering handles this: `deploy-marketing`, `deploy-live`, `deploy-api`, `deploy-telemetry`, `deploy-help` and `deploy-community` run first and create those workers, then `deploy-router` runs, by which point its six service-binding targets already exist, so wrangler accepts the bindings.
 
 Subsequent deploys are idempotent updates.
 
@@ -162,7 +163,7 @@ Production lives at **`https://livediagram.app`**. The apex routes to the router
 
 - `https://livediagram.app/api/*` → api worker (REST + WebSocket).
 - `https://livediagram.app/live` and `https://livediagram.app/live/<anything>` → live editor (the router strips the `/live` prefix before forwarding).
-- `https://livediagram.app/telemetry` → telemetry dashboard; `https://livediagram.app/help` → help centre (both prefix-stripped).
+- `https://livediagram.app/telemetry` → telemetry dashboard; `https://livediagram.app/help` → help centre; `https://livediagram.app/community` → Community (all prefix-stripped).
 - Everything else → marketing.
 
 The workers themselves remain reachable at their default `*.workers.dev` URLs for direct testing.

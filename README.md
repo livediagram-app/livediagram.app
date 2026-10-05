@@ -5,7 +5,7 @@ A collaborative diagram editor that works without signing in. Open a link, draw,
 **Live at [livediagram.app](https://livediagram.app).** MIT-licensed and self-hostable end-to-end.
 
 ```
-apps/        marketing site + editor + telemetry dashboard + help centre + api + mcp server + router + cli
+apps/        marketing site + editor + telemetry dashboard + help centre + community + api + mcp server + router + cli
 packages/    shared document model, wire-format types, UI primitives, icon + template catalogues + template previews, help-article registry, the Explorer filter lens, the api client and agent verbs, the edit-operations engine, document views, the diagram lint, sticky-note photo detection, telemetry client, test fakes, configs
 scripts/     repo-wide dev tooling (shared Next.js dev launcher)
 docs/        guides, product specs (docs/specs, read these before adding features) and instructions
