@@ -36,6 +36,10 @@ const TEMPLATE_MODES: Partial<Record<TemplateKind, EditorMode>> = {
   'team-retro': 'plan',
   'roadmap-board': 'plan',
   'weekly-planner': 'plan',
+  'project-overview': 'plan',
+  'daily-standup': 'plan',
+  'content-calendar': 'plan',
+  'hiring-pipeline': 'plan',
 };
 
 /** The mode a template's tab opens in. */

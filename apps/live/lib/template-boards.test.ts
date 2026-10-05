@@ -1,16 +1,5 @@
-import {
-  EMPTY_ITEM_STORE,
-  applyItemWrite,
-  normaliseBoardSetup,
-  projectBoard,
-  validateFields,
-  type PlanBoardSetup,
-} from '@livediagram/items';
-import {
-  PLAN_TEMPLATE_KINDS,
-  planTemplateSeedItems,
-  templateEditorMode,
-} from '@livediagram/templates';
+import { normaliseBoardSetup, type PlanBoardSetup } from '@livediagram/items';
+import { PLAN_TEMPLATE_KINDS, templateEditorMode } from '@livediagram/templates';
 import { describe, expect, it } from 'vitest';
 import type { Element } from '@livediagram/document';
 import { buildTemplate } from './template-builders';
@@ -57,32 +46,7 @@ describe('plan templates', () => {
     }
   });
 
-  it("seed items that are valid and sit in their board's columns", () => {
-    for (const kind of kinds) {
-      const board = buildTemplate(kind, 0, 0).find(
-        (el) => el.type === 'shape' && el.shape === 'plan-board',
-      ) as { planBoard: PlanBoardSetup };
-      const seeds = planTemplateSeedItems(kind);
-      const made = applyItemWrite(
-        EMPTY_ITEM_STORE,
-        { kind: 'create', creates: seeds },
-        { now: 0, by: { id: 'p', name: 'P', color: '#000000' } },
-      );
-      expect(made.ok, kind).toBe(true);
-      if (!made.ok) continue;
-      for (const create of seeds)
-        expect(validateFields(create.fields, 'create').ok, kind).toBe(true);
-      const projection = projectBoard(
-        board.planBoard,
-        new Map(made.state.items.map((i) => [i.id, i])),
-      );
-      expect(projection.unplaced, kind).toEqual([]);
-      expect(projection.total, kind).toBe(seeds.length);
-    }
-  });
-
-  it('starts the Kanban mid-week over its WIP limit nowhere, and the retro face-down with votes', () => {
-    expect(planTemplateSeedItems('kanban').length).toBeGreaterThanOrEqual(10);
+  it('starts the retro face-down with votes', () => {
     const retro = buildTemplate('team-retro', 0, 0);
     const board = retro.find((el) => el.type === 'shape' && el.shape === 'plan-board') as {
       planBoard: PlanBoardSetup;
@@ -90,8 +54,6 @@ describe('plan templates', () => {
     expect(board.planBoard.hideWriting).toBe(true);
     expect(board.planBoard.voting).toEqual({ on: true, budget: 5 });
     expect(retro.some((el) => el.type === 'sticky')).toBe(true);
-    expect(planTemplateSeedItems('blank-plan')).toEqual([]);
-    expect(planTemplateSeedItems('swot')).toEqual([]);
   });
 });
 

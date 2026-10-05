@@ -1210,7 +1210,7 @@ export const articles: Article[] = [
     title: 'Templates',
     description: 'Start from a themed template instead of a blank canvas.',
     keywords:
-      'starter kanban flowchart swot gantt wireframe prebuilt scaffold quick start retro sailboat postmortem risk stakeholder persona agenda objectives crazy 8s opportunity tree article brief document write writing',
+      'starter kanban flowchart swot gantt wireframe prebuilt scaffold quick start retro sailboat postmortem risk stakeholder persona agenda objectives crazy 8s opportunity tree article brief document write writing standup stand-up hiring pipeline recruiting content calendar editorial project overview',
     category: 'Canvas',
     categorySlug: 'canvas',
   },

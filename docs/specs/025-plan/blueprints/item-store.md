@@ -215,7 +215,7 @@ All under `/documents/:id/items`, auth `guest-or-clerk`, token-usable, registere
 - Rejections: `400 { error: ItemRejection }`, `404 item_not_found`, `409 item_exists` (create with a taken id),
   `409 item_key_taken`, `409 item_busy`, `413 items_full`, plus the document gates' 403/404/410.
 - `ItemCreate.key` is honoured only when `< items_next_key` and free; otherwise the store assigns one.
-- `POST /documents` create body accepts `items?: ItemCreate[]` (sync to cloud, template seeds), written in the
+- `POST /documents` create body accepts `items?: ItemCreate[]` (sync to cloud), written in the
   same request after the tabs.
 - The patch is a POST: the api's CORS admits GET, POST, PUT and DELETE only.
 - Routes live in `apps/api/src/routes/item-routes.ts`, dispatched from `document-subresource-routes.ts`.
@@ -312,17 +312,17 @@ Log fingerprints (console, `[items]`): `items.write.retry`, `items.write.busy`, 
 
 ## Constants and configuration
 
-| Constant                   | Value                     | Provenance / safe range                                    |
-| -------------------------- | ------------------------- | ---------------------------------------------------------- |
-| `ITEMS_MAX`                | 2000                      | Spec; a board past a few hundred cards stops being read    |
-| `ITEM_FIELDS_BYTES`        | 16384                     | Spec; 4 KB–64 KB                                           |
-| `ITEM_FIELDS_MAX`          | 64                        | Spec                                                       |
-| `ITEM_TITLE_MAX`           | 200                       | Spec                                                       |
-| `ITEM_DESCRIPTION_MAX`     | 10000                     | Spec                                                       |
-| `ITEM_LABELS_MAX`          | 12                        | Spec                                                       |
-| `ITEM_CHECKLIST_MAX`       | 50                        | Spec                                                       |
-| `ITEM_BULK_MAX`            | 200                       | Template seeds are ≤ 40; sync of a big offline doc batches |
-| `ITEM_WRITE_RETRIES`       | 3                         | As changesets' retry                                       |
-| `ITEM_REFETCH_DEBOUNCE_MS` | 400                       | Coalesces a burst of gaps                                  |
-| `ITEM_ID_PATTERN`          | `/^[A-Za-z0-9_-]{6,32}$/` | Client ids are 12-char nanoid-style                        |
-| `ITEM_FIELD_KEY_PATTERN`   | `/^[A-Za-z0-9_-]{1,40}$/` | Spec                                                       |
+| Constant                   | Value                     | Provenance / safe range                                 |
+| -------------------------- | ------------------------- | ------------------------------------------------------- |
+| `ITEMS_MAX`                | 2000                      | Spec; a board past a few hundred cards stops being read |
+| `ITEM_FIELDS_BYTES`        | 16384                     | Spec; 4 KB–64 KB                                        |
+| `ITEM_FIELDS_MAX`          | 64                        | Spec                                                    |
+| `ITEM_TITLE_MAX`           | 200                       | Spec                                                    |
+| `ITEM_DESCRIPTION_MAX`     | 10000                     | Spec                                                    |
+| `ITEM_LABELS_MAX`          | 12                        | Spec                                                    |
+| `ITEM_CHECKLIST_MAX`       | 50                        | Spec                                                    |
+| `ITEM_BULK_MAX`            | 200                       | A sync of a big offline doc batches                     |
+| `ITEM_WRITE_RETRIES`       | 3                         | As changesets' retry                                    |
+| `ITEM_REFETCH_DEBOUNCE_MS` | 400                       | Coalesces a burst of gaps                               |
+| `ITEM_ID_PATTERN`          | `/^[A-Za-z0-9_-]{6,32}$/` | Client ids are 12-char nanoid-style                     |
+| `ITEM_FIELD_KEY_PATTERN`   | `/^[A-Za-z0-9_-]{1,40}$/` | Spec                                                    |

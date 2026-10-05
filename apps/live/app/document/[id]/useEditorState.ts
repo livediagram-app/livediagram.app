@@ -2280,7 +2280,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     setSelfParticipant,
     setTemplatePickerMode,
     requestFit,
-    seedItems: (creates) => void planItems.write({ kind: 'create', creates }),
   });
 
   // One undo step per burst of a continuous control: the background

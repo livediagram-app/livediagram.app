@@ -148,6 +148,6 @@ src/type-catalogue.ts  ItemTypeCatalogue, limits, PLAN_TYPE_COLOURS, BUILT_IN_FI
 ## Built-in types
 
 `ITEM_TYPES`: `project` (#18181b), `task` (#71717a), `note` (#2563eb), `idea` (#eab308), `action` (#dc2626).
-Presets seed Sprint with Tasks, Bug triage with Tasks labelled `bug`, Roadmap with Projects; the item panel's
+Presets set the types a board adds (Sprint: Tasks and Actions, Bug triage: Tasks, Roadmap: Projects); the item panel's
 Parent lists Projects. `CardTypesPanel` rows are cards (stripe, tinted glyph tile, "N fields", count pill,
 pencil; the row opens the editor), with a dashed Add Type tile.

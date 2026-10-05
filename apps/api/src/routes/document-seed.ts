@@ -6,8 +6,7 @@
 import { creationIntentOf, type CreationIntent } from '@livediagram/api-schema';
 import type { Tab } from '@livediagram/document';
 import { applyReplace, type ReplaceBody } from '@livediagram/edit-operations';
-import type { ItemCreate } from '@livediagram/items';
-import { isTemplateKind, planTemplateSeedItems, templateFamilyOf } from '@livediagram/templates';
+import { isTemplateKind, templateFamilyOf } from '@livediagram/templates';
 import { engineLog } from '../changesets/log';
 import { engineRefusal } from '../changesets/request';
 
@@ -15,10 +14,8 @@ const SOURCES = ['graph', 'mermaid', 'template'] as const;
 
 type Refusal = { status: number; body: Record<string, unknown> };
 
-// `items`: the seed items of every Plan template a tab is made from (docs/specs/025-plan/plan-mode.md
-// "Templates"), so a board made by an agent starts with its cards as one made in the editor does.
 export type CompiledSeed =
-  { tabs: unknown[]; intent: CreationIntent | null; items: ItemCreate[] } | { refusal: Refusal };
+  { tabs: unknown[]; intent: CreationIntent | null } | { refusal: Refusal };
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -33,7 +30,6 @@ function sourceOf(tab: Record<string, unknown>): ReplaceBody | null {
 
 export function compileSeededTabs(tabs: readonly unknown[], documentId: string): CompiledSeed {
   const out: unknown[] = [];
-  const items: ItemCreate[] = [];
   let first: { tab: Tab; template: string | null } | null = null;
   for (const [index, raw] of tabs.entries()) {
     const body = isRecord(raw) && typeof raw.id === 'string' ? sourceOf(raw) : null;
@@ -64,11 +60,10 @@ export function compileSeededTabs(tabs: readonly unknown[], documentId: string):
       source: Object.keys(body)[0],
     });
     out.push({ ...rest, ...compiled.tab });
-    if (typeof template === 'string') items.push(...planTemplateSeedItems(template));
     if (index === 0)
       first = { tab: compiled.tab, template: typeof template === 'string' ? template : null };
   }
   const family =
     first?.template && isTemplateKind(first.template) ? templateFamilyOf(first.template) : null;
-  return { tabs: out, intent: first ? creationIntentOf(first.tab, family) : null, items };
+  return { tabs: out, intent: first ? creationIntentOf(first.tab, family) : null };
 }

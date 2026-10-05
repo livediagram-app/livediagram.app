@@ -122,6 +122,10 @@ const ALL_KINDS = [
   'team-retro',
   'roadmap-board',
   'weekly-planner',
+  'project-overview',
+  'daily-standup',
+  'content-calendar',
+  'hiring-pipeline',
 ] as const satisfies readonly TemplateKind[];
 
 // Real exhaustiveness check: any TemplateKind missing from

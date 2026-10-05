@@ -124,6 +124,10 @@ export function buildTemplate(kind: TemplateKind, cx: number, cy: number): Eleme
     case 'team-retro':
     case 'roadmap-board':
     case 'weekly-planner':
+    case 'project-overview':
+    case 'daily-standup':
+    case 'content-calendar':
+    case 'hiring-pipeline':
       return buildPlanTemplate(kind, cx, cy);
     case 'swot':
       return buildSwot(cx, cy);

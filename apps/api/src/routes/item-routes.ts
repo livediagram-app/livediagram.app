@@ -433,7 +433,7 @@ export async function handleItemRoutes(ctx: RouteContext): Promise<Response | nu
   return null;
 }
 
-// A document create's seed items (a template's, or an offline document's on sync), validated
+// A document create's seed items (an offline document's, on sync), validated
 // before anything is written: the items, or the refusal.
 export function readSeedItems(raw: unknown): ItemCreate[] | Response {
   if (raw === undefined) return [];

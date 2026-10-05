@@ -120,6 +120,7 @@ export function templatePreviewGroup15(kind: TemplateKind): ReactElement | null 
   const step = (72 - 1.6 * 2) / 3 + 1.6;
   const w4 = (72 - 1.6 * 3) / 4 + 1.6;
   const w5 = (72 - 1.6 * 4) / 5 + 1.6;
+  const w6 = (72 - 1.6 * 5) / 6 + 1.6;
   switch (kind) {
     case 'blank-plan':
       // Three empty-ish columns; the story drops a first card into To do.
@@ -205,6 +206,50 @@ export function templatePreviewGroup15(kind: TemplateKind): ReactElement | null 
           { cards: [{ stripe: ACTION }] },
           { cards: [{ stripe: TASK }, { stripe: TASK }] },
           { cards: [{ stripe: TASK }] },
+        ],
+      });
+    case 'project-overview':
+      // A row per project, At Risk in amber; the story brings a task back on track.
+      return board({
+        rows: 2,
+        columns: [
+          { cards: [{ stripe: TASK }, { stripe: TASK }] },
+          { cards: [{ stripe: TASK }] },
+          { head: NOTE, cards: [{ stripe: TASK, moveTo: { dx: -w4, dy: 0, at: 900 } }] },
+          { head: STORY, cards: [{ stripe: TASK }, { stripe: TASK }] },
+        ],
+      });
+    case 'daily-standup':
+      // A row per person, Blocked in red; the story unblocks a task into Today.
+      return board({
+        rows: 2,
+        columns: [
+          { cards: [{ stripe: TASK }, { stripe: TASK }] },
+          { cards: [{ stripe: TASK }, { stripe: ACTION }] },
+          { head: BUG, cards: [{ stripe: TASK, moveTo: { dx: -step, dy: 0, at: 900 } }] },
+        ],
+      });
+    case 'content-calendar':
+      // Ideas to Published; the story schedules a reviewed piece.
+      return board({
+        columns: [
+          { cards: [{ stripe: IDEA }, { stripe: IDEA }, { stripe: IDEA }] },
+          { cards: [{ stripe: TASK }, { stripe: TASK }] },
+          { cards: [{ stripe: TASK, moveTo: { dx: w5, dy: 0, at: 900 } }] },
+          { cards: [{ stripe: TASK }] },
+          { head: STORY, cards: [{ stripe: TASK }, { stripe: TASK }] },
+        ],
+      });
+    case 'hiring-pipeline':
+      // Applied to Hired; the story moves a candidate from Interview to Offer.
+      return board({
+        columns: [
+          { cards: [{ stripe: TASK }, { stripe: TASK }, { stripe: TASK }] },
+          { cards: [{ stripe: TASK }, { stripe: TASK }] },
+          { cards: [{ stripe: TASK, moveTo: { dx: w6, dy: 0, at: 900 } }, { stripe: TASK }] },
+          { cards: [] },
+          { head: STORY, cards: [{ stripe: TASK }] },
+          { cards: [{ stripe: NOTE }] },
         ],
       });
     default:

@@ -119,19 +119,25 @@ modes):
 
 ## Templates
 
-Templates that open in Plan mode carry **seed items** with their boards. The items are made in the new
-document's item store when the document is made; afterwards they are ordinary items.
+Templates that open in Plan mode are boards set up for their use, and come with **no cards**: the columns,
+swimlanes, card fields, card types and widgets are ready, and the team adds its own work.
 
-| Template       | Board                                                                                |
-| -------------- | ------------------------------------------------------------------------------------ |
-| Blank Plan     | One Kanban board: To do, In progress, Done; no items                                 |
-| Kanban Board   | Backlog, To do, In progress (WIP 3), Review (WIP 2), Done; a team mid-week           |
-| Sprint Board   | Sprint backlog, In progress, In review, Done; swimlanes by assignee; estimates shown |
-| Bug Triage     | New, Confirmed, Fixing, Fixed, Won't fix; Tasks labelled bug; swimlanes by priority  |
-| Team Retro     | Went well, To improve, Ideas, Actions; voting with 5 votes; hide writing on          |
-| Roadmap        | Now, Next, Later; Projects; labels shown                                             |
-| Weekly Planner | Monday to Friday; due dates shown                                                    |
+| Template         | Board                                                                                      |
+| ---------------- | ------------------------------------------------------------------------------------------ |
+| Blank Plan       | One board with no columns yet: it asks for its first                                       |
+| Kanban Board     | Backlog, To do, In progress (WIP 3), Review (WIP 2), Done                                  |
+| Sprint Board     | Sprint backlog, In progress, In review, Done; swimlanes by assignee; estimates shown       |
+| Bug Triage       | New, Confirmed, Fixing, Fixed, Won't fix; Tasks; swimlanes by priority                     |
+| Team Retro       | Went well, To improve, Ideas, Actions; voting with 5 votes; hide writing on; how to run it |
+| Roadmap          | Now, Next, Later; Projects; labels shown                                                   |
+| Weekly Planner   | Monday to Friday; due dates shown                                                          |
+| Project Overview | Not Started, In Progress, At Risk (amber), Done; a row per project; Detailed cards         |
+| Daily Standup    | Yesterday, Today, Blocked (red); a row per person; Compact cards; how to run it            |
+| Content Calendar | Ideas, Drafting, In Review, Scheduled, Published; Ideas and Tasks; due dates and labels    |
+| Hiring Pipeline  | Applied, Screen, Interview, Offer, Hired, Not Progressing; Tasks and Notes; stale cards    |
 
+- Each template's board is wide enough that every column fits at its narrowest without scrolling sideways.
+- "How to run it" is a sticky beside the board with the session's steps.
 - The Kanban Board template is rebuilt as a Plan board; it opens in Plan. It stays in the Kanban boards family.
 - Team Retro joins the Retrospectives family beside the sticky-note formats, which stay Diagram templates.
 - Blank Plan is the mode's blank, as Blank Diagram is Diagram's.
@@ -151,7 +157,7 @@ document's item store when the document is made; afterwards they are ordinary it
   `item ls|add|set|move|rm`, and the MCP's `list_items` and `change_items`. Items are named by number (`#12`) or
   id prefix.
 - A document made from a Plan template by an agent (the CLI's `--template`, the MCP's `create_document`) gets the
-  template's seed items too.
+  same boards, with no cards, as one made in the editor.
 - A text `board` view of a tab's Plan boards for agents is a later step; `list_items` reads the same items.
 
 ## Telemetry

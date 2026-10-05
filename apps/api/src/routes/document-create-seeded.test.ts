@@ -1,4 +1,3 @@
-import { planTemplateSeedItems } from '@livediagram/templates';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import { getDocument, getTab, listDocumentsByOwner, listItems } from '../db';
@@ -70,11 +69,9 @@ describe('seeded tabs compiled on create', () => {
     });
   });
 
-  it('makes a Plan template tab with its seed items, opening in Plan', async () => {
+  it('makes a Plan template tab with no cards, opening in Plan', async () => {
     expect((await create([{ id: 't1', name: 'Board', template: 'kanban' }])).status).toBe(201);
-    const items = await listItems(db.env, 'd1');
-    expect(items.length).toBe(planTemplateSeedItems('kanban').length);
-    expect(new Set(items.map((i) => i.key)).size).toBe(items.length);
+    expect(await listItems(db.env, 'd1')).toEqual([]);
     const summary = (await listDocumentsByOwner(db.env, 'user_alice')).find((d) => d.id === 'd1');
     expect(summary).toMatchObject({ opensIn: 'plan', templateFamily: 'kanban' });
   });
@@ -113,7 +110,7 @@ describe('compileSeededTabs', () => {
       { name: 'C', template: 'kanban' },
       'not a tab',
     ];
-    expect(compileSeededTabs(tabs, 'd1')).toEqual({ tabs, intent: null, items: [] });
+    expect(compileSeededTabs(tabs, 'd1')).toEqual({ tabs, intent: null });
   });
 
   it('names an unnamed compiled tab, keeps its other fields, and themes it', () => {

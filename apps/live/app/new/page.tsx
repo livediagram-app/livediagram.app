@@ -1,8 +1,5 @@
 'use client';
 
-import { planTemplateSeedItems } from '@livediagram/templates';
-import { itemPersonId } from '@livediagram/items';
-import { offlineWriteItem } from '@/lib/offline/offline-items';
 import { truncateName } from '@livediagram/document';
 import dynamic from 'next/dynamic';
 import {
@@ -375,8 +372,6 @@ export default function NewDocumentPage() {
             : {}),
           templateChosen: true,
         };
-    // A Plan template's board starts with its cards (docs/specs/025-plan/plan-mode.md "Templates").
-    const seedItems = templateKind ? planTemplateSeedItems(templateKind) : [];
     try {
       if (offline) {
         // Offline Mode (docs/specs/006-document/offline-mode.md): create the document in IndexedDB only. This
@@ -385,13 +380,6 @@ export default function NewDocumentPage() {
           { id: documentId, name: documentName, tabs: [tab] },
           Date.now(),
         );
-        if (seedItems.length) {
-          await offlineWriteItem(
-            documentId,
-            { kind: 'create', creates: seedItems },
-            { id: await itemPersonId(who.id), name: who.name, color: who.color },
-          );
-        }
       } else {
         // "Always save <these> here" first (docs/specs/013-workspace/default-folders.md).
         await applyAlwaysSave(settings.alwaysSave);
@@ -410,7 +398,6 @@ export default function NewDocumentPage() {
           // (docs/specs/013-workspace/default-folders.md): with no place chosen, the server files it
           // in the person's default folder for it.
           intent: creationIntentOf(tab, templateFamilyOf(templateKind)),
-          ...(seedItems.length ? { items: seedItems } : {}),
         });
       }
     } catch (err) {

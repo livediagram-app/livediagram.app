@@ -12,7 +12,6 @@ and its templates.
 | Plan palette     | `PLAN` layout in `palette-layouts.ts`; categories `plan-boards`, `plan-cards` (band 4) |
 | Plan mark        | `PlanModeIcon` in `packages/ui/src/icons/drawing-kinds.tsx`                            |
 | Blank Plan       | `TemplateKind` `'blank-plan'`                                                          |
-| seed items       | `TemplateBuild.items?: ItemCreate[]`                                                   |
 
 ## Mode wiring
 
@@ -56,23 +55,28 @@ boolean }`; `setExperimentalModeEnabled(mode, on)`. `EXPERIMENTAL_EDITOR_MODES =
 
 ## Templates
 
-- Builders stay element-only (`template-builders-plan.ts`); seeds are `planTemplateSeedItems(kind)`
-  (`template-plan-items.ts`), placed by status, so no element names an item.
-- Seeds are written by the document create: the api's `compileSeededTabs` adds them for a `template` tab (CLI,
-  api), the MCP's `create_document` sends them, and the editor's `/new` sends them in `apiCreateDocument`'s
-  `items`.
-- Kinds: `blank-plan`, `kanban` (rebuilt), `sprint-board`, `bug-triage`, `team-retro`, `roadmap`,
-  `weekly-planner`; `TEMPLATE_MODES` maps each to `'plan'`; previews in `packages/template-previews`.
+- Builders are element-only (`template-builders-plan.ts`) and make no items: a template comes with no cards.
+- `BOARDS: Record<PlanTemplateKind, BoardSpec>`; `BoardSpec = { preset, setup?, width, height, title }`.
+  `planTemplateSetup(kind)` is `presetSetup(preset)` with `setup` laid over it and the title set, so a template
+  made for one use (Project Overview, Daily Standup, Content Calendar, Hiring Pipeline) carries its columns
+  here over the `blank` preset rather than as a palette preset.
+- Board width fits every column at `PLAN_COLUMN_MIN_PX` (220) plus the 12px gaps and 12px side padding.
+- `HOW_WE_RUN_IT` holds the "How we run it" sticky for `team-retro` and `daily-standup`, placed 40px right of
+  the board.
+- Kinds: `blank-plan`, `kanban` (rebuilt), `sprint-board`, `bug-triage`, `team-retro`, `roadmap-board`,
+  `weekly-planner`, `project-overview`, `daily-standup`, `content-calendar`, `hiring-pipeline`;
+  `TEMPLATE_MODES` maps each to `'plan'`; previews in `packages/template-previews` (group 15).
 
 ## Testing
 
-| Rule                         | Test                                             |
-| ---------------------------- | ------------------------------------------------ |
-| Mode catalogue order, cycle  | `editor-mode.test.ts`                            |
-| Gate per mode                | `offered-editor-modes.test.ts`                   |
-| Plan palette layout          | `palette-layouts.test.ts`                        |
-| Templates open in Plan, seed | `template-modes.test.ts`, `template-tab.test.ts` |
-| Shift+D wraps over four      | `e2e/editor-modes.spec.ts`                       |
+| Rule                           | Test                                             |
+| ------------------------------ | ------------------------------------------------ |
+| Mode catalogue order, cycle    | `editor-mode.test.ts`                            |
+| Gate per mode                  | `offered-editor-modes.test.ts`                   |
+| Plan palette layout            | `palette-layouts.test.ts`                        |
+| Templates open in Plan         | `template-modes.test.ts`, `template-tab.test.ts` |
+| Template set-ups validate, fit | `template-builders-plan.test.ts`                 |
+| Shift+D wraps over four        | `e2e/editor-modes.spec.ts`                       |
 
 ## Tabs and tools
 

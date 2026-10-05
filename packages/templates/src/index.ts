@@ -8,7 +8,6 @@ export { isUntitledDocumentName } from './legacy-untitled';
 export * from './template-layers';
 export { buildTemplate } from './build-template';
 export { templateFamilyOf } from './template-families';
-export { planTemplateSeedItems } from './template-plan-items';
 export {
   PLAN_TEMPLATE_KINDS,
   isPlanTemplateKind,

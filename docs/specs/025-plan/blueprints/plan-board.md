@@ -183,7 +183,7 @@ cancelled` (Escape, pointercancel). `pressed → idle` on pointerup without movi
 | Quick add tokens                            | `packages/items/src/quick-add.test.ts`                        |
 | Face-down and votes spent                   | `packages/items/src/board.test.ts`                            |
 | A palette card lands only in a column       | `apps/live/hooks/plan/plan-card-drop.test.ts`                 |
-| Plan templates' boards and seeds            | `apps/live/lib/template-boards.test.ts`                       |
+| Plan templates' boards                      | `apps/live/lib/template-boards.test.ts`                       |
 | Drag, Add card, card menu, item panel       | checked by hand against the dev stack (screenshots in the PR) |
 
 ## Constants and configuration

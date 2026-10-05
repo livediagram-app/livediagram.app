@@ -195,14 +195,18 @@ export type TemplateKind =
   | 'versus'
   | 'social-carousel'
   // Plan templates (docs/specs/025-plan/plan-mode.md "Templates"): a Plan board with the set-up its
-  // use wants, opening in Plan mode, with seed items (template-plan-items.ts). The Kanban board
+  // use wants, opening in Plan mode, with no cards. The Kanban board
   // ('kanban', above) is one of them; Blank Plan is the mode's blank.
   | 'blank-plan'
   | 'sprint-board'
   | 'bug-triage'
   | 'team-retro'
   | 'roadmap-board'
-  | 'weekly-planner';
+  | 'weekly-planner'
+  | 'project-overview'
+  | 'daily-standup'
+  | 'content-calendar'
+  | 'hiring-pipeline';
 
 export type TemplateDescriptor = {
   kind: TemplateKind;
@@ -340,6 +344,31 @@ export const TEMPLATES: TemplateDescriptor[] = [
     kind: 'weekly-planner',
     title: 'Weekly Planner',
     description: 'A column a day, Monday to Friday, for the things you mean to get done.',
+    extra: true,
+  },
+  {
+    kind: 'project-overview',
+    title: 'Project Overview',
+    description:
+      'A row per project, its tasks from Not Started to Done, with what is at risk in amber.',
+    extra: true,
+  },
+  {
+    kind: 'daily-standup',
+    title: 'Daily Standup',
+    description: 'A row per person: yesterday, today and what is blocked, two minutes each.',
+    extra: true,
+  },
+  {
+    kind: 'content-calendar',
+    title: 'Content Calendar',
+    description: 'Ideas through drafting and review to scheduled and published, with due dates.',
+    extra: true,
+  },
+  {
+    kind: 'hiring-pipeline',
+    title: 'Hiring Pipeline',
+    description: 'Candidates from applied through screen, interview and offer to hired.',
     extra: true,
   },
   {
@@ -897,6 +926,10 @@ const TEMPLATE_CATEGORY: Record<TemplateKind, TemplateCategory> = {
   'team-retro': 'planning',
   'roadmap-board': 'project-management',
   'weekly-planner': 'project-management',
+  'project-overview': 'project-management',
+  'daily-standup': 'planning',
+  'content-calendar': 'project-management',
+  'hiring-pipeline': 'project-management',
   retrospective: 'planning',
   'start-stop-continue': 'planning',
   'mad-sad-glad': 'planning',
@@ -1059,6 +1092,10 @@ const TEMPLATE_PATTERNS: Partial<Record<TemplateKind, BackgroundPattern>> = {
   'team-retro': 'grid',
   'roadmap-board': 'grid',
   'weekly-planner': 'grid',
+  'project-overview': 'grid',
+  'daily-standup': 'grid',
+  'content-calendar': 'grid',
+  'hiring-pipeline': 'grid',
   'mobile-wireframe': 'graph',
   'laptop-wireframe': 'graph',
   venn: 'blank',
