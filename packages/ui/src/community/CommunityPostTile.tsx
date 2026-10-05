@@ -1,14 +1,23 @@
 import type { ComponentType, ReactNode } from 'react';
 import { communityCategoryLabel, type CommunityPost } from '@livediagram/api-schema';
 import { CommunityAuthorBadge } from './CommunityAuthorBadge';
+import { communitySharedAgo } from './shared-ago';
 
 // How many tags a card shows (docs/specs/025-community/community.md "Gallery").
 const TILE_TAGS = 3;
 
+// The full date behind "2 days ago", on hover.
+const SHARED_DATE = new Intl.DateTimeFormat('en-GB', {
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+});
+
 type LinkProps = { href: string; className?: string; children: ReactNode };
 
 // One Community post as a card (docs/specs/025-community/community.md "Gallery"; blueprint §9-§11): the live
-// image in a fixed 4:3 box on a dot grid (no layout shift), category, title, up to three tags, the author,
+// image in a fixed 4:3 box on a dot grid (no layout shift), category, title, up to three tags, the author
+// with when they shared it ("2 days ago"),
 // and whatever the surface puts in the corner (the gallery's live heart, the landing page's counts). The
 // whole card opens the post through the title's stretched link; anything in `stats` sits above it. Lifts
 // on hover, unless motion is reduced. Shared by the Community app and the landing page, so a post looks
@@ -19,6 +28,7 @@ export function CommunityPostTile({
   imageUrl,
   stats,
   LinkComponent,
+  now = Date.now(),
 }: {
   post: CommunityPost;
   href: string;
@@ -26,6 +36,9 @@ export function CommunityPostTile({
   stats?: ReactNode;
   // A router link where the surface has one (next/link in the Community app); a plain anchor otherwise.
   LinkComponent?: ComponentType<LinkProps>;
+  // The instant "2 days ago" is measured from; one value per list keeps every card agreeing. The cards are
+  // only drawn after their posts load in the browser, so reading the clock here cannot mismatch a server render.
+  now?: number;
 }) {
   const Anchor: ComponentType<LinkProps> = LinkComponent ?? PlainLink;
   const tags = post.tags.slice(0, TILE_TAGS);
@@ -60,7 +73,20 @@ export function CommunityPostTile({
           </ul>
         ) : null}
         <div className="mt-auto flex items-center justify-between gap-3 pt-2 text-xs text-slate-600 dark:text-slate-300">
-          <CommunityAuthorBadge author={post.author} />
+          {/* Who, with when beneath, like a post on a feed: side by side, a narrow card cut the name short. */}
+          <span className="flex min-w-0 items-center gap-2">
+            <CommunityAuthorBadge author={post.author} size={28} showName={false} />
+            <span className="flex min-w-0 flex-col leading-tight">
+              <span className="truncate font-medium">{post.author.name}</span>
+              <time
+                dateTime={new Date(post.publishedAt).toISOString()}
+                title={`Shared ${SHARED_DATE.format(post.publishedAt)}`}
+                className="truncate text-[11px] text-slate-500 dark:text-slate-400"
+              >
+                {communitySharedAgo(post.publishedAt, now)}
+              </time>
+            </span>
+          </span>
           {stats ? <div className="relative flex shrink-0 items-center gap-1">{stats}</div> : null}
         </div>
       </div>

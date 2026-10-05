@@ -86,7 +86,7 @@ export function CommunityShowcase() {
   const posts = featured.status === 'ready' ? featured.posts : [];
   const empty = featured.status === 'ready' && posts.length === 0;
   return (
-    <section className="border-t border-slate-200/70 bg-white dark:border-slate-800/70 dark:bg-slate-900/40">
+    <section className="border-t border-slate-200/70 bg-white dark:border-slate-800/70 dark:bg-slate-900">
       <div className="mx-auto max-w-6xl px-6 py-20 sm:py-24">
         <div className="mx-auto max-w-2xl text-center">
           <p className={BAND_EYEBROW}>From the Community</p>
@@ -104,7 +104,7 @@ export function CommunityShowcase() {
             </p>
           </div>
         ) : (
-          <ul className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <ul className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {featured.status === 'loading'
               ? Array.from({ length: COMMUNITY_FEATURED_COUNT }, (_, i) => (
                   <li key={i} className="flex">

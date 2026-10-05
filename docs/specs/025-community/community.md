@@ -109,7 +109,8 @@ type) and on the worker (authoritative).
     Newest).
   - Each control shows an icon and its current value; on phones only the icon, so all three fit beside the text.
 - A responsive grid of **cards**: the post's live image, title, category, up to three tags, the author (picture or
-  initial in their colour, and name), likes and copies. The card opens the post page; the heart likes it in place.
+  initial in their colour, and name) with when it was shared beneath ("2 days ago", whole months after the first
+  month, whole years after the first year; the full date on hover), likes and copies. The card opens the post page; the heart likes it in place.
 - **Load More** pages through results (24 per page).
 - The whole query lives in the URL as `q` (with its `#tag`, `category:` and `sort:` words), so a filtered view can be
   shared and survives a reload. Older `tag`, `category` and `sort` parameters are read into the search.
