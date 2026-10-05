@@ -179,7 +179,7 @@ function DayCell({
               : { color: palette.muted }
           }
         >
-          {cell.date}
+          <span className="text-optical-centre">{cell.date}</span>
         </span>
       </span>
       <div className="flex min-h-0 flex-col overflow-hidden">

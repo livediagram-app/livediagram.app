@@ -66,10 +66,10 @@ export function StatusMixView({ plan, items, palette, fontFamily, width, height 
             style={{ width: size * 0.62, height: size * 0.62, backgroundColor: palette.surface }}
           >
             <strong className="text-[22px] font-semibold tabular-nums leading-none">
-              {model.total}
+              <span className="text-optical-centre">{model.total}</span>
             </strong>
             <span className="mt-1 text-[11px]" style={{ color: palette.muted }}>
-              {model.total === 1 ? 'card' : 'cards'}
+              <span className="text-optical-centre">{model.total === 1 ? 'card' : 'cards'}</span>
             </span>
           </span>
         </div>
