@@ -21,16 +21,19 @@ export function columns(rows: readonly (readonly string[])[]): string[] {
   );
 }
 
-export type DocumentWithTabs = ResolvedDocument & { tabs: TabSummary[] };
+export type DocumentWithTabs = ResolvedDocument & {
+  tabs: TabSummary[];
+  presentation: string | null;
+};
 
 // The document a command names, its share code applied, with its tabs.
 export async function documentOf(ctx: VerbContext, doc: string): Promise<DocumentWithTabs> {
   const resolved = await resolveDocument(ctx.api, doc, ctx.host, ctx.log);
   if (resolved.shareCode) ctx.useShareCode(resolved.shareCode);
-  const { document } = await ctx.api.json<{ document: { tabs: TabSummary[] } }>(
-    `/documents/${encodeURIComponent(resolved.id)}`,
-  );
-  return { ...resolved, tabs: document.tabs };
+  const { document } = await ctx.api.json<{
+    document: { tabs: TabSummary[]; presentation?: string | null };
+  }>(`/documents/${encodeURIComponent(resolved.id)}`);
+  return { ...resolved, tabs: document.tabs, presentation: document.presentation ?? null };
 }
 
 export async function tabOf(ctx: VerbContext, doc: string, tab: string | undefined) {

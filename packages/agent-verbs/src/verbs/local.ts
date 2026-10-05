@@ -4,6 +4,7 @@
 import { z } from 'zod';
 import { GUIDE_TOPIC_NAMES } from '../guides';
 import { defineVerb } from '../define';
+import { writeFlags } from '../write';
 import { columns } from './shared';
 
 export const guide = defineVerb({
@@ -231,4 +232,56 @@ export const watch = defineVerb({
   },
   // Each event went out as it came; nothing is left to print at the end.
   json: () => undefined,
+});
+
+// One document to a file and back (blueprint "Pull and push"): they read and write files, so the CLI runs them.
+export const pull = defineVerb({
+  id: 'pull',
+  files: true,
+  summary: 'Write a document to a file, to edit and push back',
+  description:
+    'Writes <slug>.livediagram.json: the document, every tab and each tab\u2019s revision, in the format the editor imports. --svg adds a drawing per tab. Prints the paths written.',
+  behaviour: 'read',
+  local: true,
+  input: z.object({
+    doc: z.string().describe('A name, id prefix or livediagram URL'),
+    to: z.string().optional().describe('The directory to write to; the current one by default'),
+    svg: z.boolean().optional().describe('Also write each tab as an SVG drawing'),
+  }),
+  output: z.object({ paths: z.array(z.string()) }),
+  text: ({ paths }) => paths,
+  quiet: ({ paths }) => paths,
+  cli: {
+    positionals: ['doc'],
+    examples: ['livediagram pull "Shop"', 'livediagram pull 3f9c --to docs --svg'],
+    prints: 'the paths written',
+  },
+});
+
+export const push = defineVerb({
+  id: 'push',
+  files: true,
+  summary: 'Send the tabs changed in a pull file back',
+  description:
+    'Sends each tab whose elements changed in a pull file as a changeset based on its pulled revision; a tab changed on the server since is refused as stale and named. Only elements travel: a changed name, theme or background, and a tab gone from the file, are named as not pushed. Updates the file\u2019s revisions for the tabs that landed.',
+  behaviour: 'write',
+  local: true,
+  input: z.object({
+    file: z.string().describe('A file written by livediagram pull'),
+    dryRun: writeFlags.dryRun,
+    summary: writeFlags.summary,
+    waitHeld: writeFlags.waitHeld,
+  }),
+  output: z.object({ lines: z.array(z.string()), exit: z.number() }),
+  text: ({ lines }) => lines,
+  json: ({ lines }) => ({ lines }),
+  exitCode: ({ exit }) => exit,
+  cli: {
+    positionals: ['file'],
+    examples: [
+      'livediagram push shop.livediagram.json',
+      'livediagram push shop.livediagram.json --dry-run',
+    ],
+    prints: 'each changed tab\u2019s result lines, or ! stale <tab>',
+  },
 });

@@ -41,7 +41,13 @@ export {
 export { argvToOperationLine } from './argv-line';
 export { baseFromCopy, readPlainTab, recordCopy, type ReadCopies, type ReadCopy } from './copies';
 export { classifySource, type ClassifiedSource, type SourceKind } from './source-kind';
-export { HELD_RETRY_INTERVAL_MS, submitChangeset, WAIT_HELD_MAX_S, type WriteFlags } from './write';
+export {
+  HELD_RETRY_INTERVAL_MS,
+  submitChangeset,
+  WAIT_HELD_MAX_S,
+  type WriteFlags,
+  type WriteTarget,
+} from './write';
 export { GUIDE_TOPIC_NAMES, GUIDE_TOPICS, isGuideTopic, type GuideTopic } from './guides';
 export { renderSkill, SKILL_DESCRIPTION, SKILL_DIRECTORIES, SKILL_NAME } from './skill';
 export {

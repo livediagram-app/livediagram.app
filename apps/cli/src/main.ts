@@ -3,8 +3,11 @@
 // exit code is one of eight; stdout carries data only.
 
 import { graphLint, renderSkill, type Verb, type VerbContext } from '@livediagram/agent-verbs';
+import { DOCUMENT_FORMAT } from '@livediagram/api-schema';
 import { resolveCredential } from './auth/credentials';
 import { callApi, guideOf, installSkill, login, logout, status } from './commands/local';
+import { pullDocument, type PullInput } from './commands/pull';
+import { pushFile, type PushInput } from './commands/push';
 import { waitFor, type WaitInput } from './commands/wait';
 import { watch, type WatchInput } from './commands/watch';
 import { loadCapabilities } from './config/capabilities';
@@ -75,6 +78,17 @@ async function runOnline(
       code: 'auth',
       message: `${profile.host} has no sign-in, so the CLI cannot act there`,
     });
+  // A verb that works on document files reads and writes them in the bundled format; a host storing a newer one
+  // would hand it documents it cannot keep (step 6).
+  if (verb.files && caps.documentFormat !== undefined && caps.documentFormat > DOCUMENT_FORMAT) {
+    log(`format refused ${caps.documentFormat} > ${DOCUMENT_FORMAT}`);
+    throw new CliError({
+      exit: EXIT.rejected,
+      code: 'version',
+      message: `${profile.host} stores documents in format ${caps.documentFormat}; this livediagram reads format ${DOCUMENT_FORMAT}`,
+      hint: 'npm install -g livediagram@latest, or npx livediagram@latest',
+    });
+  }
   const http = transport(io, caps.apiBase, log);
   if (verb.id === 'auth.login')
     return login(io, profile, http.forToken, input.withToken as boolean | undefined);
@@ -116,6 +130,8 @@ async function runOnline(
     readInput: inputReader(io),
     copies: fileReadCopies(io, profile.name, log),
   };
+  if (verb.id === 'pull') return pullDocument(io, ctx, input as PullInput);
+  if (verb.id === 'push') return pushFile(io, ctx, profile.host, input as PushInput);
   if (verb.id === 'wait') return waitFor(io, ctx, caps.apiBase, input as WaitInput);
   if (verb.id === 'watch') return watch(io, ctx, caps.apiBase, input as WatchInput, json);
   return verb.run!(ctx, input);
