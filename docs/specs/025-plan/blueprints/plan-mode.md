@@ -34,22 +34,25 @@ boolean }`; `setExperimentalModeEnabled(mode, on)`. `EXPERIMENTAL_EDITOR_MODES =
 ## Palette
 
 - New category `plan` in `PALETTE_CATEGORIES` (label "Plan", glyph the Plan mark, band after Popular).
-- Tiles (`palette-tile-defs.tsx`), action `{ type: 'plan-board', preset }` or `{ type: 'plan-card', itemType }`:
-  `plan:board-kanban`, `plan:board-sprint`, `plan:board-retro`, `plan:board-roadmap`, `plan:board-blank`,
-  `plan:card-<type>` for each of the 8 item types.
+- Tiles (`palette-plan-tiles.tsx`, spread into `PALETTE_TILES`), a `shape` action whose creation-time choice
+  `plan` is the preset or the item type (threaded like `estimateScale` through the tile grid, drag payload, search,
+  draw intent and drop): `plan:board-<preset>` for the 7 presets, `plan:card-<type>` (caption "<Type> card") for the
+  8 item types.
 - `PLAN` layout: Popular (`plan:board-kanban`, `plan:board-retro`, `plan:card-task`, `plan:card-bug`,
-  `plan:card-note`, `tools:sticky`, `tools:text`, `write:heading`, `tools:frame`, `tools:arrow`, `media:image`,
-  `tools:checklist`; ids reconciled to the catalogue at build), `plan`, `write` (minus page, annotation),
-  `shapes`, `icons`, `stickers`, `media` (image, avatar).
-- Placing a board tile: `createShape('plan-board')` + preset set-up; a card tile: `createItem` then a
-  `plan-card` element, title in edit (the item panel opens on the title).
+  `plan:card-note`, `tools:sticky`, `tools:text`, `tools:frame`, `tools:arrow`, `tools:image`,
+  `tools:checklist`, `tools:link-card`), `plan`, `write` (minus page, annotation; plus checklist, link card),
+  `shapes` (plus arrow, line, frame), `icons`, `stickers`, `media` (image, avatar). Draw's shape dock excludes the
+  `plan` category.
+- Placing a board tile: `buildDrawnBoxed` / the drop path set `planBoard: presetSetupOrBlank(plan)`; a card tile
+  mints the item id (`newItemId`) on the element and `onPlanCardPlaced` writes the item (`newCardItemWrite`).
 
 ## Templates
 
-- `TemplateBuild` (what builders return) gains `items?: ItemCreate[]` (ids pre-made by the builder so cards and
-  boards reference them).
-- New document path: `apiCreateDocument` body `items`; template into an existing document (Quick Start new tab):
-  `createItems` bulk after the tab is added.
+- Builders stay element-only (`template-builders-plan.ts`); seeds are `planTemplateSeedItems(kind)`
+  (`template-plan-items.ts`), placed by status, so no element names an item.
+- Seeds are written by the document create: the api's `compileSeededTabs` adds them for a `template` tab (CLI,
+  api), the MCP's `create_document` sends them, and the editor's `/new` sends them in `apiCreateDocument`'s
+  `items`.
 - Kinds: `blank-plan`, `kanban` (rebuilt), `sprint-board`, `bug-triage`, `team-retro`, `roadmap`,
   `weekly-planner`; `TEMPLATE_MODES` maps each to `'plan'`; previews in `packages/template-previews`.
 

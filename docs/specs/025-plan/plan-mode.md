@@ -37,22 +37,23 @@ item store.
 
 ## The palette
 
-The Plan layout offers six categories, landing on Popular:
+The Plan layout offers seven categories, landing on Popular:
 
 | Category | Holds                                                                                                              |
 | -------- | ------------------------------------------------------------------------------------------------------------------ |
 | Popular  | Kanban board, Retro board, Task card, Bug card, Note card, Sticky note, Text, Frame, Arrow, Image, Checklist, Link |
-| Plan     | Boards: Kanban board, Sprint board, Retro board, Roadmap, Blank board. Cards: one per item type                    |
-| Write    | Diagram's Write, without Page and Annotation                                                                       |
-| Shapes   | Diagram's Shapes                                                                                                   |
+| Plan     | Boards: Kanban, Sprint, Retro, Roadmap, Bug triage, Week, Blank. Cards: one per item type (Task card...)           |
+| Write    | Diagram's Write, without Page and Annotation, with Checklist and Link                                              |
+| Shapes   | Diagram's Shapes, with Arrow, Line and Frame                                                                       |
 | Icons    | The icon catalogue                                                                                                 |
 | Stickers | The sticker catalogue                                                                                              |
 | Media    | Image and Avatar                                                                                                   |
 
 - A **board tile** places a Plan board with that preset's set-up. The board starts empty unless the tab already
   has items its scope matches.
-- A **card tile** makes a new item of that type (titled "New task", "New bug"...) and places its Plan card,
-  with the title ready to type.
+- A **card tile** places a Plan card and makes a new item of that type in the store (titled "New task", "New
+  bug"...), opened from the card to write it.
+- Draw mode's shape dock leaves the Plan tiles out: boards and cards frame items, not ink.
 - Build, Components, Devices, Data, Tech, Behaviours, Draw and My shapes are left out.
 
 ## Templates
@@ -77,24 +78,31 @@ document's item store when the document is made; afterwards they are ordinary it
 ## Collaboration
 
 - Everyone in the room sees item changes as they happen, in order (items' [Live for everyone](items.md#live-for-everyone)).
-- Presence shows on cards: a card someone is dragging or has open carries their colour ring and first name.
+- Presence shows on cards: a card someone is dragging or has open carries their colour ring and first name, sent
+  as an ephemeral `plan-presence` room op that is never stored.
 - Two people may work on one tab in different modes; someone in Diagram mode sees the boards move as items change.
 - Facilitation on a board (voting, a vote budget, hide writing and reveal) lives in the board's set-up, so a retro
   needs no separate session tool.
 
 ## Agents
 
-- Agents read and write items through the api, the CLI and MCP with item verbs: list, get, add, set, move and
-  remove ([Agents](../024-agents/README.md)).
-- The **board** view prints a tab's Plan boards as text: each column with its items' keys, titles and fields.
+- Agents read and write items through the api, the CLI and MCP ([Agents](../024-agents/README.md)): the CLI's
+  `item ls|add|set|move|rm`, and the MCP's `list_items` and `change_items`. Items are named by number (`#12`) or
+  id prefix.
+- A document made from a Plan template by an agent (the CLI's `--template`, the MCP's `create_document`) gets the
+  template's seed items too.
+- A text `board` view of a tab's Plan boards for agents is a later step; `list_items` reads the same items.
 
 ## Telemetry
 
 - Switching to Plan, Opens in Plan and the template filter fire the existing mode events with `ModePlan`,
   `OpensInPlan` and `TemplateModePlan`.
-- Item created, moved, opened, voted and deleted, board added, set-up changed and revealed each fire one event
-  with the item type or set-up part as its type, never content.
+- The `Plan` category: `Added` (the item type, or `Card` for a Plan card), `Moved` (`Board`), `Opened` (`Item`),
+  `Voted` (`Up` / `Down`), `Deleted` (the item type), `Changed` (the set-up part) and `Revealed` (`Board`), never
+  content. A board placed from the palette counts as `Element` · `Added` · `PlanBoard`.
+- The header's Start Blank menu offers Blank Plan, with its own funnel slot (`HeaderPlan`).
 
 ## Help
 
-- A help article for Plan mode, one for Plan boards and one for items, registered with the help centre.
+- A help article for Plan mode (the mode, boards, set-up and keyboard) and one for items, registered with the help
+  centre.

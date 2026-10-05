@@ -72,7 +72,8 @@ In Plan mode:
   move is one item write when it is dropped. Dropping on a swimlane also sets that swimlane's field (moving a
   card into Sam's row assigns it to Sam).
 - **Drag a card off the board** onto the canvas to leave a Plan card there; the item stays on the board too.
-  **Drag a Plan card onto a board** to move its item into the column it lands on; the Plan card goes away.
+  **Drag a Plan card onto a board** to move its item to the end of the column it lands on; the Plan card goes
+  away.
 - **Add an item**: each column ends in "Add item". Typing a title and pressing Enter makes the item and keeps the
   field open for the next one; Escape closes it. The title may carry **quick tokens**: `@name` assigns,
   `#label` labels, `!high` (or `!urgent`, `!medium`, `!low`) sets priority, `~3` estimates, and a leading

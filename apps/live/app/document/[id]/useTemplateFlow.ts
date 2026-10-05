@@ -4,7 +4,12 @@ import { releaseOpening } from '@/lib/editor-mode-store';
 import { track, titleCaseType } from '@/lib/telemetry';
 import { getTheme, recolourElementsForTheme, switchThemeBackdrop } from '@/lib/themes';
 import { themeTelemetryLabel } from '@/lib/custom-theme-registry';
-import { templateCanvasOverrides, type TemplateKind } from '@livediagram/templates';
+import {
+  planTemplateSeedItems,
+  templateCanvasOverrides,
+  type TemplateKind,
+} from '@livediagram/templates';
+import type { ItemCreate } from '@livediagram/items';
 import type { Participant } from '@/lib/identity';
 import { patchTab } from './editor-page-helpers';
 
@@ -58,6 +63,8 @@ export function useTemplateFlow(opts: {
   setTemplatePickerMode: SetState<TemplatePickerMode>;
   // Frames the tab once the template's elements have rendered (useTabEntryEffects).
   requestFit: () => void;
+  // Writes a Plan template's seed items into the document's store (docs/specs/025-plan/plan-mode.md).
+  seedItems?: (creates: ItemCreate[]) => void;
 }) {
   const {
     activeId,
@@ -72,6 +79,7 @@ export function useTemplateFlow(opts: {
     setSelfParticipant,
     setTemplatePickerMode,
     requestFit,
+    seedItems,
   } = opts;
 
   // Quick Start belongs to the tab it was opened on. Both entry points
@@ -199,6 +207,9 @@ export function useTemplateFlow(opts: {
         };
       }),
     );
+    // A Plan template's board arrives with its cards, made in the document's item store.
+    const seeds = planTemplateSeedItems(kind);
+    if (seeds.length) seedItems?.(seeds);
     // ...and decides it afresh for its maker too: the mode pinned when the empty tab opened is
     // released, so the canvas follows the template's.
     if (opensIn) releaseOpening(activeId);

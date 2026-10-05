@@ -32,7 +32,8 @@ fields people usually want, and any item may carry other fields. The store never
 - **`rank`**: a fractional ordering key. Moving one item writes one item; nothing else is renumbered.
 - **`key`**: the item's number in its document, assigned by the store when the item is made (1, 2, 3...).
 - **Who and when**: `createdBy` and `updatedBy` (the display identity of the person or agent), `createdAt` and
-  `updatedAt`.
+  `updatedAt`. A person's id on an item is a one-way hash of their identity, never the identity itself: a guest's
+  id is their credential, so items never carry it.
 - **`rev`**: the item's revision, raised by one on every write.
 
 ## Fields
@@ -80,6 +81,8 @@ A small built-in catalogue, each with a glyph, a colour and the fields it offers
 - **Vote**: plus or minus one for the caller; a person's count never drops below zero. Votes are written only this
   way, so two people voting at once never lose a vote.
 - **Delete**: removes the item. Its key is not reused.
+- **Restore** (an undo of a delete, or an offline document's sync): a create may name the item's old id and key
+  and carry its votes; the key is honoured while it is free.
 - Every write answers with the item as stored.
 
 ## Who may do what
@@ -95,15 +98,18 @@ Items follow the document's access ([Auth and guest access](../014-identity/auth
 ## Live for everyone
 
 - Every write is pushed to everyone in the document's room at once, in order, with the store's revision.
+- A session on a tab-scoped link hears only that the store moved on, and fetches the items its tab shows.
 - A client that sees a gap in revisions, or reconnects, fetches the whole store again.
 - Nothing a browser sends over the room changes an item: items change only through the api.
 
 ## Undo
 
 - A person can undo their own item changes with the canvas's Undo, in the order they made them, mixed with their
-  canvas edits: undoing a card's move puts it back; undoing a delete brings the item back with its id and key.
+  canvas edits: undoing a card's move puts it back; undoing a delete brings the item back with its id, key and
+  votes.
 - Votes are not undoable (a vote is taken back by voting minus), matching comments and assigned actions.
-- Someone else's later change to the same field wins; the undo then changes nothing for that field.
+- An undo writes the old value back, even over a later change someone else made to that field, as canvas undo
+  does.
 
 ## Offline documents
 
@@ -115,7 +121,8 @@ Items follow the document's access ([Auth and guest access](../014-identity/auth
 
 - **Duplicate** copies the item store with the document (same ids, same keys). A copied tab linked into another
   document finds its items only if that document has them; a Plan card whose item is not in the store says so.
-- **JSON export** carries the items; importing it restores them.
+- **The `.livediagram` file** (the Google Drive mirror's document file) carries the items, and a copy imported
+  from it gets them back. The field is additive, so the file stays version 1.
 - Images, thumbnails and api or MCP renders draw boards and cards from the document's items.
 
 ## Limits

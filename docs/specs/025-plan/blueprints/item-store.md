@@ -28,7 +28,11 @@ src/apply.ts         makeItem, applyPatch, applyMove, applyVote (shared by api a
 src/quick-add.ts     parseQuickAdd(text, types) -> { title, type?, fields, tokens }
 src/board.ts         PlanBoardSetup, PlanColumn, SwimlaneBy, projectBoard, boardScopeMatches
 src/tab-items.ts     itemIdsShownOnTab(elements, items)
-src/views.ts         itemSummary(item) one-line text for views and announcements
+src/views.ts         itemSummary, itemAccessibleName: one-line text for agents and announcements
+src/store.ts         ItemStoreState, applyItemWrite, mergeItemChanges, inverseItemWrites, storeAsCreates
+src/presets.ts       PLAN_BOARD_PRESETS, presetSetup, presetSetupOrBlank
+src/person.ts        itemPersonId(ownerId): the hashed person id
+src/refs.ts          resolveItemRef(items, ref): #12, 12 or an id prefix
 src/index.ts
 ```
 
@@ -61,6 +65,7 @@ interface ItemCreate {
   fields: ItemFields;
   place?: ItemPlace;
   key?: number;
+  votes?: Record<string, number>;
 }
 interface ItemPlace {
   status?: string;
@@ -74,11 +79,15 @@ interface ItemPatch {
 }
 interface ItemMove extends ItemPlace {
   set?: ItemFields;
-} // set: a swimlane's field on a lane drop
+  clear?: string[];
+  type?: string;
+} // a swimlane drop
 ```
 
-- `ItemCreate.key` is accepted only to restore a deleted item (undo); see the api rules.
-- `ItemMove.set` may hold only `assignee`, `priority`, `parent` or `type`-less fields named by `SWIMLANE_FIELDS`.
+- `ItemCreate.key` and `votes` are accepted only to restore an item (undo, sync); `validateVotes` bounds the votes
+  (`ITEM_VOTERS_MAX`, `ITEM_VOTES_PER_PERSON_MAX`).
+- `ItemMove.set` / `clear` may name only `SWIMLANE_FIELDS` (`assignee`, `priority`, `parent`); `type` moves a
+  type swimlane.
 
 ### Validation (`validateFields(fields, mode)`)
 
@@ -198,29 +207,39 @@ All under `/documents/:id/items`, auth `guest-or-clerk`, token-usable, registere
 `packages/api-schema/src/room-messages.ts` adds
 `{ kind: 'items'; upserts: Item[]; removed: string[]; rev: number }`, a system kind (dropped from client sockets).
 Sent by `relayItems(env, docId, op)` in `room-client.ts` through `/broadcast` with `ordered: true` after each
-successful write.
+successful write. `room-scope.ts` hands a tab-scoped session the op with empty `upserts` and `removed`; its client
+refetches. Presence on cards is a separate ephemeral op, `plan-presence` (`{ tabId, itemId | null, state }`), in
+`PRESENCE_OP_KINDS`.
 
 ## Editor slice
 
-- `apps/live/lib/api/items.ts`: `fetchItems`, `createItem`, `createItems`, `patchItem`, `moveItem`, `voteItem`,
-  `deleteItem`; each dispatches `isOfflineId(docId)` to `lib/offline/offline-items.ts`, which applies the same
-  `apply.ts` functions to the record's `items` array inside one IndexedDB transaction.
-- `apps/live/hooks/plan/usePlanItems.ts`: `{ items: Map<string, Item>, rev, ready, actions }`.
-  - Optimistic: an action applies `apply.ts` locally with a client-made id, sends, then replaces with the
-    answer. A failed write reverts that item and toasts "Couldn't save that change".
-  - Room op `items`: per item, keep the higher `rev`; `removed` deletes; `rev > known + 1` schedules a refetch
-    (`ITEM_REFETCH_DEBOUNCE_MS`). Room resync and reconnect refetch.
-- Offline record: `OfflineDocumentRecord.items?: Item[]`, `items_next_key` kept as `itemsNextKey?`.
-- Sync to cloud sends `items`; Take offline fetches them first; client duplicate of an offline document copies
-  them; JSON export `DocumentEnvelope.document.items` (schema version bump, absent = none).
+- `apps/live/lib/api/items.ts`: `fetchItems(scope)` and `writeItem(scope, write, by)` (one `ItemWrite`: create,
+  patch, move, vote, delete; a create of many goes to `/items/bulk` in batches); each dispatches
+  `isOfflineId(docId)` to `lib/offline/offline-items.ts`, which applies `applyItemWrite` to the record's store
+  inside `serializeOfflineWrite`.
+- `apps/live/hooks/plan/usePlanItems.ts`: `{ store, items, status, self, write, receive, refetch }`. `self` is the
+  person with the hashed id (`itemPersonId` of the editor's self id, the id the api resolves as owner).
+  - Optimistic: a write applies `applyItemWrite` locally (creates carry client-made ids, `withCreateIds`), sends,
+    then merges the answer. A failed write refetches the store and toasts "Couldn't save that change".
+  - Room op `items`: `mergeItemChanges` keeps the higher `rev` per item; `removed` deletes; a rev past
+    `serverRev + 1`, or an op with no items (a tab-scoped session), refetches (`ITEM_REFETCH_DEBOUNCE_MS`). Room
+    resync and reconnect (`onRoomJoined`) refetch.
+- `apps/live/hooks/plan/usePlanSlice.ts` composes the board actions into `PlanContext`; `usePlanPresence` sends
+  and hears `plan-presence`.
+- Offline record: `OfflineDocumentRecord.items?`, `itemsRev?`, `itemsNextKey?`.
+- Sync to cloud sends `storeAsCreates(items)` (column order kept, votes carried); Take offline fetches the store
+  first and aborts without it; Duplicate copies it (cloud: the create body; offline: the new record); the Drive
+  mirror's `DocumentEnvelope.document.items` (optional, so the file stays version 1).
 
 ## Undo
 
-`useDocumentHistory` steps become `{ tabs: Tab[]; external?: ExternalStep }`. `pushExternal(step)` pushes a step
-whose tabs are the present; undoing an external step keeps the present tabs and runs `step.undo()`; redo runs
-`step.redo()`. Item actions push `{ undo, redo }` closures that issue the inverse writes (patch back the old
-values of the changed keys; move back to the old status and between the old neighbours; delete ↔ create with
-the same id and key). Votes push nothing.
+`useDocumentHistory` keeps two counters beside its snapshots: `depth` (steps behind the present, uncapped) and
+`branch` (raised by every new step, which clears redo). `useItemUndo` wraps the history's undo and redo with a
+journal (`hooks/plan/item-undo-journal.ts`, pure): each item step records the depth it was made at; undo runs the
+item step when the depth still matches (no canvas step since), else the canvas's; redo mirrors it by the redo
+side's length and branch. An item step's closures send the inverse writes (`inverseItemWrites`: the old values of
+the touched keys, the old status and neighbour, a delete for a create, a restoring create for a delete), and redo
+replays the write with the keys the first write was given. Votes push nothing.
 
 ## Errors and edge cases
 
@@ -240,6 +259,8 @@ the same id and key). Votes push nothing.
 - Items never change from a client socket; `items` is a system op.
 - Field values are validated and bounded; text is drawn as text, never HTML.
 - Vote budget is a facilitation aid enforced in the editor only (stated, not a trust boundary).
+- People on items (authors, voters) are keyed by `itemPersonId`, a one-way hash: a guest's owner id is their
+  credential and never reaches an item.
 - Hide writing hides faces only; the api returns full items to anyone who may read.
 
 ## Performance and limits
@@ -256,18 +277,20 @@ Log fingerprints (console, `[items]`): `items.write.retry`, `items.write.busy`, 
 
 ## Testing
 
-| Rule                                           | Test                                            |
-| ---------------------------------------------- | ----------------------------------------------- |
-| Validation per kind, every rejection           | `packages/items/src/fields.test.ts`             |
-| Rank always between, stable under repeats      | `rank.test.ts` (property: 1,000 random inserts) |
-| apply functions                                | `apply.test.ts`                                 |
-| Quick add tokens                               | `quick-add.test.ts`                             |
-| Projection: columns, lanes, unplaced, quick    | `board.test.ts`                                 |
-| Tab-scoped set                                 | `tab-items.test.ts`                             |
-| Routes: gates, rejections, keys, cascade, copy | `apps/api/src/routes/item-routes.test.ts`       |
-| Room op system-only                            | `document-room.test.ts` addition                |
-| History external steps                         | `useDocumentHistory.test.ts` addition           |
-| Offline store                                  | `apps/live/lib/offline/offline-items.test.ts`   |
+| Rule                                           | Test                                                                       |
+| ---------------------------------------------- | -------------------------------------------------------------------------- |
+| Validation per kind, every rejection           | `packages/items/src/fields.test.ts`                                        |
+| Rank always between, stable under repeats      | `rank.test.ts` (property: 1,000 random inserts)                            |
+| apply functions                                | `apply.test.ts`                                                            |
+| Quick add tokens                               | `quick-add.test.ts`                                                        |
+| Projection: columns, lanes, unplaced, quick    | `board.test.ts`                                                            |
+| Tab-scoped set                                 | `tab-items.test.ts`                                                        |
+| Routes: gates, rejections, keys, cascade, copy | `apps/api/src/routes/item-routes.test.ts`                                  |
+| Room op redacted for a tab-scoped session      | `apps/api/src/room-scope.test.ts`                                          |
+| Store transitions, inverses, sync order        | `packages/items/src/store.test.ts`                                         |
+| Undo interleaving                              | `apps/live/hooks/plan/item-undo-journal.test.ts`                           |
+| Agent verbs and tools                          | `agent-verbs/src/verbs/item.test.ts`, `apps/mcp/src/output-schema.test.ts` |
+| Offline store                                  | `apps/live/lib/offline/offline-items.test.ts`                              |
 
 ## Constants and configuration
 

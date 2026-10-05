@@ -40,22 +40,32 @@ editor views.
 ## Editor components (`apps/live/components/plan/`)
 
 ```
-PlanContext.tsx          context: items map, actions, viewer, readOnly, editorMode, presence, openItem
-PlanBoardView.tsx        board body (ShapeContentRouter branch); projection memo; header + columns
-PlanBoardHeader.tsx      title, count, progress, avatars, quick filter, unplaced chip, Reveal, set-up button
-PlanColumnView.tsx       one column: head (name, count, WIP), lanes, cards, add field
-PlanCardFace.tsx         a card face (shared by board cards and the Plan card element)
+PlanContext.tsx          context: items, status, self, people, planInput, canEdit, canVote, presence, actions
+PlanBoardView.tsx        board body (ShapeContentRouter branch): projection, columns and rows grid, cards, drag
+                         ghost, keyboard, quick add per cell
+PlanBoardHeader.tsx      title, count, progress, unplaced chip and its tray, votes left, quick filter, Only
+                         mine, Reveal, set-up button
+PlanCardFace.tsx         a card face, and its vote control (board cards and the Plan card element)
 PlanQuickAdd.tsx         add field with token chips
-PlanCardView.tsx         the plan-card element body
-ItemPanel.tsx            item panel (side sheet), field editors per kind
-item-field-editors.tsx   editors for person, priority, labels, date, checklist, number, text
-BoardSetupPanel.tsx      set-up sheet: columns list, swimlanes, scope, card fields, voting, hide writing
-UnplacedTray.tsx         popover listing unplaced items with Move to
+PlanCardView.tsx         the plan-card element body; "Item not found" with Remove card
+PlanSheet.tsx            the side sheet (bottom sheet on a phone) the panels open in
+PlanSheetsHost.tsx       renders the open item panel or set-up from the slice and the active tab's boards
+ItemPanel.tsx            item panel: type, title, the type's fields, made by / changed by, Delete
+item-field-editors.tsx   editors for text (debounced), person, priority, labels, number, date, checklist
+BoardSetupPanel.tsx      set-up: title, columns (rename, reorder, WIP, done, colour, remove with a move), rows,
+                         scope, card fields, voting and budget, hide writing
+plan-board-keys.ts       the board's keyboard as a pure function of the projection
+plan-palette.ts          the board's colours per canvas surface (the SVG export's values)
+plan-type-glyph.tsx      a glyph per item type, inline
+plan-tile-art.tsx        the Plan category's tile glyphs
 ```
 
-Hooks (`apps/live/hooks/plan/`): `usePlanItems` (store), `usePlanCardDrag` (pointer drag within and out of a
-board), `usePlanBoardKeyboard`, `usePlanPresence` (who drags / views which item), `usePlanSlice` (composes
-into `useEditorState` with one call; provides `PlanContext` value).
+Hooks (`apps/live/hooks/plan/`): `usePlanItems` (store), `usePlanSlice` (composed into `useEditorState`; provides
+the `PlanContext` value, the open item and set-up, and `dropPlanCardOnBoard`), `usePlanCardDrag` (pointer drag
+within and out of a board; the drop slot is read from `data-plan-status` / `data-plan-lane` / `data-plan-card`
+under the pointer), `usePlanPresence` (the `plan-presence` op), `useItemUndo` (the undo journal), and
+`plan-card-item.ts` (the item a card tile makes). `PlanProvider` wraps the editor view, so the export dialog reads
+the items too.
 
 ## Behaviour and state
 
@@ -70,10 +80,9 @@ cancelled` (Escape, pointercancel). `pressed → idle` on pointerup without movi
   - Drop inside the board: `moveItem(id, { status, after|before, set: laneField })`, pushed to undo.
   - Drop outside the board's rect: `onCardOut(itemId, canvasPoint)` adds a `plan-card` element there (one
     commit), item unchanged.
-- **Plan card onto a board**: in the drag-end of `useBoxedDragHandlers`, a single moved `plan-card` whose centre
-  lies in a `plan-board` → `planDropOnBoard(cardEl, boardEl, point)`: compute the column (and lane) at the point
-  from the board's last layout (`planBoardHitTest`), move the item there, delete the card element; both in one
-  undo group (external step + tabs commit).
+- **Plan card onto a board**: in `useEditorDrag`'s drag end, a moved `plan-card` released over a board cell
+  (`data-plan-status` under the pointer) → `onPlanCardDroppedOnBoard(card, status)`: the item moves to the end of
+  that column and the card element is removed (two undo steps: the removal, then the move).
 - **Quick add**: Enter → `parseQuickAdd` → `createItem({ type, fields, place: { status, after: lastId } })`;
   the field stays open and empties. Escape closes. Type defaults to the board scope's first type, else `task`.
 - **Item panel**: `openItemId` in `usePlanSlice`; opening broadcasts presence `viewing`; edits debounce 400 ms
@@ -83,8 +92,9 @@ cancelled` (Escape, pointercancel). `pressed → idle` on pointerup without movi
   N items to …" (another column) before the commit, the moves pushed with it.
 - **Face-down**: `setup.hideWriting && item.createdBy.id !== viewerId` → face shows the author's colour and
   "Hidden until reveal".
-- **Presence**: room presence op `plan` `{ itemId | null, state: 'drag' | 'view' }`, ephemeral, throttled to
-  one per 100 ms; peers render a ring and first name on that card.
+- **Presence**: room presence op `plan-presence` `{ tabId, itemId | null, state: 'drag' | 'view' }`, sent on a
+  change of what is held (drag start and end, the item panel opening or closing), never stored; peers render a
+  ring and first name on that card, a drag outranking a read.
 
 ## Presentation and UX
 
@@ -133,16 +143,17 @@ cancelled` (Escape, pointercancel). `pressed → idle` on pointerup without movi
 
 ## Testing
 
-| Rule                              | Test                                            |
-| --------------------------------- | ----------------------------------------------- |
-| Factory, validation, size, labels | `packages/document/src/plan-shapes.test.ts`     |
-| SVG render with and without items | `svg-render-plan.test.ts` + coverage test kinds |
-| Projection drives the board       | `PlanBoardView.test.tsx`                        |
-| Keyboard moves + announcement     | `usePlanBoardKeyboard.test.tsx`                 |
-| Drag slot computation             | `plan-drop-slot.test.ts`                        |
-| Card onto board                   | `plan-drop-on-board.test.ts`                    |
-| Quick add creates and keeps field | `PlanQuickAdd.test.tsx`                         |
-| Face-down                         | `face-down.test.ts`                             |
+| Rule                                        | Test                                                          |
+| ------------------------------------------- | ------------------------------------------------------------- |
+| Factory, validation, size, labels           | `packages/document/src/plan-shapes.test.ts`                   |
+| SVG render with and without items           | `plan-shapes.test.ts`, `svg-render-coverage.test.ts`          |
+| Projection: columns, rows, unplaced, filter | `packages/items/src/board.test.ts`                            |
+| Keyboard moves and their announcement       | `apps/live/components/plan/plan-board-keys.test.ts`           |
+| Quick add tokens                            | `packages/items/src/quick-add.test.ts`                        |
+| Face-down and votes spent                   | `packages/items/src/board.test.ts`                            |
+| A card tile's item                          | `apps/live/hooks/plan/plan-card-item.test.ts`                 |
+| Plan templates' boards and seeds            | `apps/live/lib/template-boards.test.ts`                       |
+| Drag, quick add, item panel in a browser    | checked by hand against the dev stack (screenshots in the PR) |
 
 ## Constants and configuration
 
@@ -152,4 +163,3 @@ cancelled` (Escape, pointercancel). `pressed → idle` on pointerup without movi
 | `PLAN_COLUMN_MIN_PX`    | 220   | A card's title reads in 3 lines; 180–320 |
 | `PLAN_COLUMNS_MAX`      | 12    | Spec                                     |
 | `ITEM_EDIT_DEBOUNCE_MS` | 400   | One undo step per pause in typing        |
-| `PLAN_PRESENCE_MS`      | 100   | Presence throttle as cursors             |
