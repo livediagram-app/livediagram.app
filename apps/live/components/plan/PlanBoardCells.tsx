@@ -3,6 +3,7 @@
 // A Plan board's rows and cards (docs/specs/025-plan/plan-board.md "What the board shows"), drawn by
 // PlanBoardView: a row's collapsible band when the board has swimlanes, one card in a cell, and the
 // card under the pointer while it is dragged.
+import { usePlanDragPointer, type PlanDragPointerStore } from '@/hooks/plan/usePlanCardDrag';
 import { createPortal } from 'react-dom';
 import { ITEM_TYPES, itemAccessibleName, type Item, type LaneHead } from '@livediagram/items';
 import { usePlan } from './PlanContext';
@@ -143,6 +144,7 @@ export function PlanBoardCard({
 // The card under the pointer while it is dragged, over everything (portalled to the body).
 export function PlanDragGhost({
   drag,
+  pointer,
   item,
   palette,
   fields,
@@ -156,17 +158,20 @@ export function PlanDragGhost({
     width: number;
     height: number;
   };
+  // The pointer's place each frame; the drag state above changes only with the slot.
+  pointer: PlanDragPointerStore;
   item: Item;
   palette: PlanPalette;
   fields: Parameters<typeof PlanCardFace>[0]['fields'];
   size: Parameters<typeof PlanCardFace>[0]['size'];
 }) {
+  const at = usePlanDragPointer(pointer) ?? drag;
   return createPortal(
     <div
       className="pointer-events-none fixed z-[1000] rotate-2 opacity-90 shadow-xl motion-reduce:rotate-0"
       style={{
-        left: drag.clientX - drag.offsetX,
-        top: drag.clientY - drag.offsetY,
+        left: at.clientX - drag.offsetX,
+        top: at.clientY - drag.offsetY,
         width: drag.width,
         height: drag.height,
       }}

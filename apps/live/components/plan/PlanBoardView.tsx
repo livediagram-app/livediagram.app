@@ -439,6 +439,7 @@ export function PlanBoardView({
       {dragging && items.get(dragging.itemId) ? (
         <PlanDragGhost
           drag={dragging}
+          pointer={drag.pointer}
           size={setup.cardSize}
           item={items.get(dragging.itemId)!}
           palette={palette}

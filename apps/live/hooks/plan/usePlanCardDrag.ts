@@ -7,7 +7,7 @@
 // (`data-plan-lane`) and the cards there (`data-plan-card`), so the hit test can never disagree
 // with what is drawn. A drop on another board moves the item there (its column, and its row when
 // that board has rows); a drop on the canvas leaves a Plan card there.
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { otherPlanBoardAt, planBoardTarget } from './plan-board-targets';
 
 // A press that moves this far (screen px) is a drag, not a click: the canvas's own threshold.
@@ -42,6 +42,50 @@ export function trashAt(clientX: number, clientY: number): boolean {
   return document
     .elementsFromPoint(clientX, clientY)
     .some((el) => el instanceof HTMLElement && el.closest('[data-plan-trash]'));
+}
+
+// The pointer's place while a card is dragged, apart from the drag state: the floating copy follows it
+// every frame, while the board re-renders only when the slot (or target) under the pointer changes.
+export type PlanDragPointer = { clientX: number; clientY: number };
+export type PlanDragPointerStore = {
+  get: () => PlanDragPointer | null;
+  subscribe: (listener: () => void) => () => void;
+};
+
+function createPointerStore(): PlanDragPointerStore & { set: (p: PlanDragPointer | null) => void } {
+  let current: PlanDragPointer | null = null;
+  const listeners = new Set<() => void>();
+  return {
+    get: () => current,
+    set: (p) => {
+      current = p;
+      for (const l of listeners) l();
+    },
+    subscribe: (listener) => {
+      listeners.add(listener);
+      return () => listeners.delete(listener);
+    },
+  };
+}
+
+export function usePlanDragPointer(store: PlanDragPointerStore): PlanDragPointer | null {
+  return useSyncExternalStore(store.subscribe, store.get, store.get);
+}
+
+// Whether the drag state differs from the last one in anything but the pointer's place.
+export function samePlanDragTarget(a: PlanDragState | null, b: PlanDragState): boolean {
+  if (!a) return false;
+  return (
+    a.itemId === b.itemId &&
+    a.outside === b.outside &&
+    !!a.overTrash === !!b.overTrash &&
+    a.slot?.status === b.slot?.status &&
+    a.slot?.laneKey === b.slot?.laneKey &&
+    a.slot?.beforeId === b.slot?.beforeId &&
+    (a.slot === null) === (b.slot === null) &&
+    a.target?.boardId === b.target?.boardId &&
+    a.target?.accepts === b.target?.accepts
+  );
 }
 
 type Pressed = {
@@ -99,6 +143,10 @@ export function usePlanCardDrag(opts: {
   const pressedRef = useRef<Pressed | null>(null);
   const [drag, setDrag] = useState<PlanDragState | null>(null);
   const dragRef = useRef<PlanDragState | null>(null);
+  const [pointer] = useState(createPointerStore);
+  // One hit test per animation frame, on the latest move.
+  const frameRef = useRef<number | null>(null);
+  const latestMoveRef = useRef<PointerEvent | null>(null);
 
   // Tells the board last hovered that the card has left it.
   const leaveTarget = useCallback(() => {
@@ -107,15 +155,19 @@ export function usePlanCardDrag(opts: {
   }, []);
 
   const end = useCallback(() => {
+    if (frameRef.current !== null) cancelAnimationFrame(frameRef.current);
+    frameRef.current = null;
+    latestMoveRef.current = null;
+    pointer.set(null);
     leaveTarget();
     pressedRef.current = null;
     dragRef.current = null;
     setDrag(null);
     optsRef.current.onDragging(null);
-  }, [leaveTarget]);
+  }, [leaveTarget, pointer]);
 
   useEffect(() => {
-    const onMove = (e: PointerEvent) => {
+    const step = (e: PointerEvent) => {
       const p = pressedRef.current;
       const board = boardRef.current;
       if (!p || e.pointerId !== p.pointerId || !board) return;
@@ -152,12 +204,33 @@ export function usePlanCardDrag(opts: {
         target: other ? { boardId: other.id, accepts } : null,
         ...(outside && trashAt(e.clientX, e.clientY) ? { overTrash: true } : {}),
       };
+      pointer.set({ clientX: e.clientX, clientY: e.clientY });
+      const changed = !samePlanDragTarget(dragRef.current, next);
       dragRef.current = next;
-      setDrag(next);
+      if (changed) setDrag(next);
+    };
+    const onMove = (e: PointerEvent) => {
+      const p = pressedRef.current;
+      if (!p || e.pointerId !== p.pointerId) return;
+      latestMoveRef.current = e;
+      if (frameRef.current !== null) return;
+      frameRef.current = requestAnimationFrame(() => {
+        frameRef.current = null;
+        const latest = latestMoveRef.current;
+        latestMoveRef.current = null;
+        if (latest) step(latest);
+      });
     };
     const onUp = (e: PointerEvent) => {
       const p = pressedRef.current;
       if (!p || e.pointerId !== p.pointerId) return;
+      // The last move not yet stepped is stepped now, so the drop lands where the pointer let go.
+      if (latestMoveRef.current) {
+        if (frameRef.current !== null) cancelAnimationFrame(frameRef.current);
+        frameRef.current = null;
+        step(latestMoveRef.current);
+        latestMoveRef.current = null;
+      }
       const d = dragRef.current;
       const target = d?.target ? planBoardTarget(d.target.boardId) : undefined;
       if (!d) optsRef.current.onClick(p.itemId);
@@ -185,7 +258,7 @@ export function usePlanCardDrag(opts: {
       window.removeEventListener('pointercancel', end);
       window.removeEventListener('keydown', onKey, true);
     };
-  }, [boardRef, end, leaveTarget]);
+  }, [boardRef, end, leaveTarget, pointer]);
 
   // A press on a card: taken from the canvas (no board drag, no selection change).
   const onCardPointerDown = useCallback(
@@ -203,5 +276,5 @@ export function usePlanCardDrag(opts: {
     [enabled],
   );
 
-  return { drag, onCardPointerDown };
+  return { drag, pointer, onCardPointerDown };
 }
