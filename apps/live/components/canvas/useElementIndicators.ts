@@ -67,7 +67,8 @@ export function elementIndicatorItems(
         }
       : undefined,
     comments: {
-      count: shape === 'comment-pin' || !showComments ? 0 : activeCommentCount(element.commentThread),
+      count:
+        shape === 'comment-pin' || !showComments ? 0 : activeCommentCount(element.commentThread),
       onOpen: () => onOpenComments(element.id),
     },
   });
