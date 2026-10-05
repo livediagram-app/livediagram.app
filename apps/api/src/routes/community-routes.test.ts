@@ -13,6 +13,7 @@ vi.mock('../thumbnail', () => ({
   getDocumentThumbnailSvg: vi.fn(async () => thumbnail.svg),
   getDocumentTabImageSvg: vi.fn(async () => thumbnail.svg),
   getCommunityThumbnailSvg: vi.fn(async () => thumbnail.svg),
+  renderTabSvg: vi.fn(async () => thumbnail.svg),
 }));
 
 import { makeTestRouteContext } from './test-route-context';
@@ -22,6 +23,7 @@ import { handleShare } from './share';
 import { handleDocumentShareRoutes } from './document-share-routes';
 import { handleCapabilities } from './capabilities';
 import { handleDocuments } from './documents';
+import { handleTabRender } from './tab-render-route';
 
 const KEY = '3f2b8c1e-9a4d-4e7f-8b21-0c5d6e7f8a9b';
 const KEY2 = '4a2b8c1e-9a4d-4e7f-8b21-0c5d6e7f8a9b';
@@ -584,6 +586,21 @@ describe('what a community link reveals', () => {
       folderId: null,
       source: null,
     });
+  });
+
+  it('draws nothing through render.svg: that drawing is unredacted, so it never opts in', async () => {
+    const { shareCode } = await publish();
+    const res = (await handleTabRender(
+      makeTestRouteContext('GET', '/api/documents/d1/tabs/tab-d1/render.svg', {
+        env,
+        owner: 'guest-visitor',
+        headers: { 'X-Share-Code': shareCode },
+      }),
+    ))!;
+    expect(res.status).toBe(403);
+    // The same tab draws for its owner, so the refusal is the link's, not the route's.
+    const own = (await handleTabRender(owner('GET', '/api/documents/d1/tabs/tab-d1/render.svg')))!;
+    expect(own.status).toBe(200);
   });
 
   it('answers a closed link with 404 alone: not trashed, not a password prompt', async () => {
