@@ -6,7 +6,7 @@ import { TAB_VIEW_NAMES, type LintReport } from '@livediagram/api-schema';
 import { formatLintReport } from '@livediagram/diagram-lint';
 import { defineVerb } from '../define';
 import { shortestUniquePrefixes } from '../refs';
-import { documentOf, tabOf, tabPath } from './shared';
+import { columns, documentOf, tabOf, tabPath } from './shared';
 
 const tabFlag = z
   .string()
@@ -34,7 +34,9 @@ export const tabLs = defineVerb({
     };
   },
   text: ({ tabs }) =>
-    tabs.length ? tabs.map((t) => `${t.index}  ${t.ref}  ${JSON.stringify(t.name)}`) : ['no tabs'],
+    tabs.length
+      ? columns(tabs.map((t) => [String(t.index), t.ref, JSON.stringify(t.name)]))
+      : ['no tabs'],
   quiet: ({ tabs }) => tabs.map((t) => t.ref),
   cli: {
     positionals: ['doc'],
@@ -99,6 +101,7 @@ export const tabView = defineVerb({
       : { text: (await ctx.api.text(path)).body };
   },
   text: ({ text }) => [text ?? ''],
+  json: (output) => output.json ?? { text: output.text },
   cli: {
     positionals: ['doc'],
     examples: [

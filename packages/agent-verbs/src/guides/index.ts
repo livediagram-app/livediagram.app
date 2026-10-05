@@ -5,47 +5,42 @@ export const GUIDE_TOPICS = {
     summary: 'build a diagram from scratch',
     text: `Build a diagram
 
-Write the structure, not the coordinates: a graph of nodes and edges, or Mermaid.
+Create a document with one empty tab through the api escape hatch; you choose its id:
 
-  {"nodes": [{"id": "web", "label": "Web app"}, {"id": "api", "label": "API"}],
-   "edges": [{"from": "web", "to": "api"}], "direction": "right"}
+  printf '{"id":"%s","name":"Shop","tabs":[{"id":"main","name":"Main","elements":[]}]}' \\
+    "$(node -p 'crypto.randomUUID()')" | livediagram api POST /documents --body -
 
-Labels are headings (40 characters); longer text moves into the node's note.
-Group nodes with "group" and a "groups" list only when the groups own their arrows:
-tier groups (all databases together) route arrows through other groups.
+Then add to the tab with edit operations (livediagram guide edit):
+boxes by label, placed beside each other, and the arrows between them. Write the structure,
+not the coordinates: add places a box clear of the others.
 
-Create a document from it, then check how it is drawn:
+  add square id=web label="Web app"
+  add square id=api label=API right-of:web
+  connect web -> api
 
-  livediagram document create "Shop" -f arch.json
-  livediagram tab lint Shop
+Check how it is drawn; each finding ends with a fix written as edit operations:
 
-Each finding ends with a fix you can send as edit operations (livediagram guide edit).`,
+  livediagram tab lint Shop`,
   },
   edit: {
     summary: 'change a tab with edit operations',
     text: `Edit a tab
 
-Read it first; refs in the view name elements in edits:
+Read it first; the refs in a view (n3, f2) name elements in edits:
 
   livediagram tab view "Auth flow"
+  livediagram tab ls "Auth flow" --json       the document and tab ids
 
-Send edit operations, one a line, as one changeset (all or nothing):
+Send edit operations as one changeset, all or nothing, as the "operations" string:
 
-  livediagram edit "Auth flow" -f - <<'OPS'
-  set n3 label="Sign in" shape=stadium
-  insert square id=verify label="Verify email" between n3 n4
-  connect verify -> n7 label=retry
-  OPS
+  printf %s '{"operations":"set n3 label=\\"Sign in\\"\\nconnect n3 -> n7"}' \\
+    | livediagram api POST /documents/<id>/tabs/<tab-id>/changesets --body -
 
 Operations: add set rm move connect rewire insert wrap unwrap order layout test.
 Select by ref (n3), "label", type:sticky, in:f2, n3->n4, downstream:n3.
 Values with spaces are quoted: label="Sign in". key= unsets a field.
-
-In a shell, -> unquoted redirects output: quote the line, or use
-livediagram element connect <doc> <a> <b>, which takes the two ends as words.
-
-Every write prints what changed, the revision, the lint verdict and the revert command.
-Add --dry-run to see the plan without writing.`,
+"dryRun": true plans without writing. The answer says what changed, the new revision, the
+lint verdict, and how to revert it.`,
   },
   views: {
     summary: 'read a tab as text, cheaply',
@@ -74,7 +69,7 @@ Threads sit on elements. Read the open ones as a view:
 
   livediagram tab view "Auth flow" --view comments
 
-Answering and resolving threads from the CLI arrives with agent presence; until then, reply in the editor.`,
+Reply to and resolve threads in the editor.`,
   },
   collaborate: {
     summary: 'work beside people on the same document',

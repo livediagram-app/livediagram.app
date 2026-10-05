@@ -20,10 +20,10 @@
     "@livediagram/api-client": "workspace:*",
     "@livediagram/api-schema": "workspace:*",
     "@livediagram/diagram-lint": "workspace:*",
-    "@livediagram/document": "workspace:*",
     "zod": "^4.6.5"
   },
   "devDependencies": {
+    "@livediagram/edit-operations": "workspace:*",
     "@livediagram/eslint-config": "workspace:*",
     "@livediagram/vitest-config": "workspace:*",
     "@typescript/native": "npm:typescript@^7.0.2",

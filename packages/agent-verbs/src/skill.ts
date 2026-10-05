@@ -29,7 +29,7 @@ export function renderSkill(): string {
     '',
     '- `livediagram document ls <query>`: find a document',
     '- `livediagram tab view <doc>`: its first tab, as an outline',
-    '- `livediagram edit <doc> -f -`: edit operations from stdin',
+    '- `livediagram changeset ls <doc>`: what changed, by whom',
     '- `livediagram tab lint <doc>`: what is wrong with how it is drawn',
     '',
     'Guides, each a command:',

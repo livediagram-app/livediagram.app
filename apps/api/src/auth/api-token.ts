@@ -5,9 +5,9 @@
 // no low-entropy value to time-attack, unlike a password). Tokens authenticate
 // signed-in (Clerk) accounts only; see docs/specs/015-api/public-api-and-tokens.md.
 
-import { bytesToBase64Url, sha256Hex } from '@livediagram/api-schema';
+import { API_TOKEN_PREFIX, bytesToBase64Url, sha256Hex } from '@livediagram/api-schema';
 
-const TOKEN_PREFIX = 'lvd_';
+const TOKEN_PREFIX = API_TOKEN_PREFIX;
 const TOKEN_RANDOM_BYTES = 32; // 256 bits
 
 // `lvd_<base64url(32 random bytes)>`. The prefix is greppable for leak
@@ -17,12 +17,6 @@ export function generateApiToken(): string {
   const bytes = new Uint8Array(TOKEN_RANDOM_BYTES);
   crypto.getRandomValues(bytes);
   return TOKEN_PREFIX + bytesToBase64Url(bytes);
-}
-
-// True for a string shaped like one of our tokens — lets the request resolver
-// route a `Bearer lvd_…` to the token path and a `Bearer <jwt>` to Clerk.
-export function isApiTokenFormat(value: string): boolean {
-  return value.startsWith(TOKEN_PREFIX) && value.length > TOKEN_PREFIX.length + 20;
 }
 
 // SHA-256 hex of the token — what we store and look up by.

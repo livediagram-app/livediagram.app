@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { generateApiToken, isApiTokenFormat, hashApiToken, apiTokenExpiry } from './api-token';
+import { isApiTokenFormat } from '@livediagram/api-schema';
+import { generateApiToken, hashApiToken, apiTokenExpiry } from './api-token';
 
 describe('generateApiToken', () => {
   it('mints an lvd_-prefixed token that passes the format check', () => {
@@ -11,15 +12,6 @@ describe('generateApiToken', () => {
   it('is unique across calls', () => {
     const set = new Set(Array.from({ length: 100 }, () => generateApiToken()));
     expect(set.size).toBe(100);
-  });
-});
-
-describe('isApiTokenFormat', () => {
-  it('rejects a Clerk-style JWT (no lvd_ prefix)', () => {
-    expect(isApiTokenFormat('eyJhbGciOi.payload.sig')).toBe(false);
-  });
-  it('rejects a too-short lvd_ string', () => {
-    expect(isApiTokenFormat('lvd_short')).toBe(false);
   });
 });
 

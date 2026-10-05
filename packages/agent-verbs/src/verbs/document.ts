@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { defineVerb } from '../define';
 import { listAllDocuments } from '../find-documents';
 import { shortestUniquePrefixes } from '../refs';
-import { day, documentOf, LIST_DEFAULT_LIMIT, LIST_MAX_LIMIT } from './shared';
+import { columns, day, documentOf, LIST_DEFAULT_LIMIT, LIST_MAX_LIMIT } from './shared';
 
 const listed = z.object({
   ref: z.string(),
@@ -51,7 +51,7 @@ export const documentLs = defineVerb({
   },
   text: ({ documents, more, query }) => [
     ...(documents.length === 0 ? [query ? `no documents match "${query}"` : 'no documents'] : []),
-    ...documents.map((d) => `${d.ref}  ${JSON.stringify(d.name)}  ${d.library}  ${d.updated}`),
+    ...columns(documents.map((d) => [d.ref, JSON.stringify(d.name), d.library, d.updated])),
     ...(more > 0
       ? [`… ${more} more; --limit ${documents.length + more}, or narrow with a query`]
       : []),

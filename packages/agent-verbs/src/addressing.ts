@@ -28,6 +28,11 @@ export class AddressError extends Error {
 
 const refuse = (failure: AddressFailure) => new AddressError(failure);
 
+// A debug line naming how an address resolved (blueprint "Observability": `address <what> <how> <n> matches`).
+export type AddressLog = (line: string) => void;
+
+const silent: AddressLog = () => {};
+
 export type DocumentUrl = { id: string } | { shareCode: string };
 
 const FULL_ID_LENGTH = 36;
@@ -93,9 +98,11 @@ export async function resolveDocument(
   api: ApiClient,
   input: string,
   host: string,
+  log: AddressLog = silent,
 ): Promise<ResolvedDocument> {
   const url = parseDocumentUrl(input, host);
   if (url && 'shareCode' in url) {
+    log('address document url 1 matches');
     const shared = await api.json<{ document: { id: string; name: string } }>(
       `/share/${encodeURIComponent(url.shareCode)}`,
     );
@@ -103,6 +110,7 @@ export async function resolveDocument(
   }
   const id = url?.id ?? (input.length === FULL_ID_LENGTH ? input : null);
   if (id) {
+    log(`address document ${url ? 'url' : 'exact'} 1 matches`);
     const { document } = await api.json<{ document: { id: string; name: string } }>(
       `/documents/${encodeURIComponent(id)}`,
     );
@@ -114,6 +122,9 @@ export async function resolveDocument(
     (d) =>
       (input.length >= REF_MIN_PREFIX && d.id.startsWith(input)) || d.name.toLowerCase() === lower,
   );
+  // Every address is tried as a name; `prefix` only when an id prefix is what matched.
+  const how = matches.some((d) => d.name.toLowerCase() !== lower) ? 'prefix' : 'name';
+  log(`address document ${how} ${matches.length} matches`);
   const refs = shortestUniquePrefixes(all.map((d) => d.id));
   const candidate = (d: FoundDocument) => ({
     ref: refs.get(d.id)!,
@@ -148,6 +159,7 @@ export function resolveTab(
   tabs: readonly TabSummary[],
   input: string | undefined,
   doc: string,
+  log: AddressLog = silent,
 ): TabSummary {
   const ordered = [...tabs].sort((a, b) => a.orderIndex - b.orderIndex);
   const refs = shortestUniquePrefixes(ordered.map((t) => t.id));
@@ -157,6 +169,7 @@ export function resolveTab(
     detail: `tab ${ordered.indexOf(t) + 1}`,
   }));
   if (input === undefined) {
+    log(`address tab first ${ordered.length ? 1 : 0} matches`);
     if (ordered[0]) return ordered[0];
     throw refuse({
       kind: 'not-found',
@@ -171,6 +184,9 @@ export function resolveTab(
   const matches = ordered.filter(
     (t) =>
       t.name.toLowerCase() === lower || (input.length >= REF_MIN_PREFIX && t.id.startsWith(input)),
+  );
+  log(
+    `address tab ${matches.some((t) => t.name.toLowerCase() !== lower) ? 'prefix' : 'name'} ${matches.length} matches`,
   );
   if (matches.length === 1) return matches[0]!;
   const kind = matches.length === 0 ? 'not-found' : 'ambiguous';

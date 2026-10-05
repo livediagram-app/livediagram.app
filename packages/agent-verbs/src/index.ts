@@ -21,6 +21,7 @@ export {
   resolveDocument,
   resolveTab,
   type AddressCandidate,
+  type AddressLog,
   type AddressFailure,
   type DocumentUrl,
   type ResolvedDocument,

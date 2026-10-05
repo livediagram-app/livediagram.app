@@ -9,8 +9,9 @@ function shared(a: string, b: string): number {
   return i;
 }
 
+// Ids are unique, so the order never meets a tie.
 export function shortestUniquePrefixes(ids: readonly string[]): Map<string, string> {
-  const sorted = [...ids].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
+  const sorted = [...ids].sort((a, b) => (a < b ? -1 : 1));
   return new Map(
     sorted.map((id, i) => {
       const longest = Math.max(

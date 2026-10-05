@@ -26,7 +26,7 @@ import {
   isClerkIdShape,
   TIMELINE_RETENTION_MS,
 } from '@livediagram/api-schema';
-import { isApiTokenFormat } from './auth/api-token';
+import { isApiTokenFormat } from '@livediagram/api-schema';
 import { verifyOwnerId } from './auth/owner-signature';
 import { guestSignatureEnforced, OWNER_SCOPED_SEGMENTS } from './auth/guest-rest';
 import { handleTokens } from './routes/tokens';

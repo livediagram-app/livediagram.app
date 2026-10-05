@@ -4,6 +4,7 @@
 import { z } from 'zod';
 import { GUIDE_TOPIC_NAMES } from '../guides';
 import { defineVerb } from '../define';
+import { columns } from './shared';
 
 export const guide = defineVerb({
   id: 'guide',
@@ -73,7 +74,7 @@ export const apiCall = defineVerb({
     path: z.string().describe('A path under /api, such as /documents'),
     body: z.string().optional().describe('A file with the request body, or - for stdin'),
   }),
-  output: z.object({ text: z.string() }),
+  output: z.object({ text: z.string(), status: z.number() }),
   text: ({ text }) => [text],
   cli: {
     positionals: ['method', 'path'],
@@ -118,14 +119,15 @@ export const authStatus = defineVerb({
     expires: z.string(),
     source: z.string(),
   }),
-  text: (s) => [
-    `host  ${s.host}`,
-    `account  ${s.account}`,
-    `token  ${s.token}`,
-    `role  ${s.role}`,
-    `expires  ${s.expires}`,
-    `source  ${s.source}`,
-  ],
+  text: (s) =>
+    columns([
+      ['host', s.host],
+      ['account', s.account],
+      ['token', s.token],
+      ['role', s.role],
+      ['expires', s.expires],
+      ['source', s.source],
+    ]),
   cli: {
     positionals: [],
     examples: ['livediagram auth status', 'livediagram auth status --json'],

@@ -11,11 +11,21 @@ export const LIST_MAX_LIMIT = 200;
 export const day = (ms: number) => new Date(ms).toISOString().slice(0, 10);
 export const minute = (ms: number) => new Date(ms).toISOString().slice(0, 16).replace('T', ' ');
 
+// Rows as aligned columns, two spaces apart; the last column is not padded.
+export function columns(rows: readonly (readonly string[])[]): string[] {
+  const widths: number[] = [];
+  for (const row of rows)
+    row.forEach((cell, i) => (widths[i] = Math.max(widths[i] ?? 0, cell.length)));
+  return rows.map((row) =>
+    row.map((cell, i) => (i === row.length - 1 ? cell : cell.padEnd(widths[i]!))).join('  '),
+  );
+}
+
 export type DocumentWithTabs = ResolvedDocument & { tabs: TabSummary[] };
 
 // The document a command names, its share code applied, with its tabs.
 export async function documentOf(ctx: VerbContext, doc: string): Promise<DocumentWithTabs> {
-  const resolved = await resolveDocument(ctx.api, doc, ctx.host);
+  const resolved = await resolveDocument(ctx.api, doc, ctx.host, ctx.log);
   if (resolved.shareCode) ctx.useShareCode(resolved.shareCode);
   const { document } = await ctx.api.json<{ document: { tabs: TabSummary[] } }>(
     `/documents/${encodeURIComponent(resolved.id)}`,
@@ -25,7 +35,7 @@ export async function documentOf(ctx: VerbContext, doc: string): Promise<Documen
 
 export async function tabOf(ctx: VerbContext, doc: string, tab: string | undefined) {
   const document = await documentOf(ctx, doc);
-  return { document, tab: resolveTab(document.tabs, tab, doc) };
+  return { document, tab: resolveTab(document.tabs, tab, doc, ctx.log) };
 }
 
 export const tabPath = (documentId: string, tabId: string) =>

@@ -2,7 +2,7 @@
 // resources they group under, and the aliases.
 
 import type { Verb } from './define';
-import { changesetLs, changesetShow } from './verbs/changeset';
+import { changesetLs, changesetRevert, changesetShow } from './verbs/changeset';
 import { documentLs, documentView } from './verbs/document';
 import {
   apiCall,
@@ -23,6 +23,7 @@ export const VERBS: readonly Verb[] = [
   tabLint,
   changesetLs,
   changesetShow,
+  changesetRevert,
   guide,
   skillPrint,
   skillInstall,
@@ -35,7 +36,7 @@ export const VERBS: readonly Verb[] = [
 export const RESOURCES: readonly { name: string; alias?: string; summary: string }[] = [
   { name: 'document', alias: 'doc', summary: 'Documents: find them and read them' },
   { name: 'tab', summary: 'Tabs: their views and their lint' },
-  { name: 'changeset', summary: 'Changesets: what changed, by whom' },
+  { name: 'changeset', summary: 'Changesets: what changed, by whom, and undoing one' },
   { name: 'skill', summary: 'The agent skill file' },
   { name: 'auth', summary: 'Credentials' },
 ];
@@ -45,7 +46,6 @@ export const TOP_LEVEL = ['guide', 'api'] as const;
 
 export const RESOURCE_ALIASES: Readonly<Record<string, string>> = {
   doc: 'document',
-  el: 'element',
 };
 
 export function verbById(id: string): Verb | undefined {
