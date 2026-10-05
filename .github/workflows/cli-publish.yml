@@ -1,0 +1,77 @@
+name: CLI publish
+
+# Publishes the CLI to npm as `livediagram` with provenance (docs/specs/015-api/blueprints/cli.md CLI3), through npm
+# trusted publishing: npm trusts this workflow by its OIDC identity, so no npm token is stored anywhere. Runs when
+# apps/cli/package.json changes on main (a version bump) and by hand; a version already on npm is skipped, so a
+# change that keeps the version publishes nothing.
+#
+# Before the first run, on npmjs.com: create the `livediagram` package's trusted publisher for this repository and
+# this workflow file (Settings > Trusted publishing). Publishing cannot be undone.
+
+on:
+  push:
+    branches: [main]
+    paths: [apps/cli/package.json]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cli-publish
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Publish livediagram
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      # The OIDC token npm trusted publishing and provenance both read.
+      id-token: write
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: 9.15.0
+
+      - name: Set up Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
+
+      # Trusted publishing needs npm 11.5 or later.
+      - name: Update npm
+        run: npm install -g npm@latest
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Test the CLI
+        run: pnpm --filter @livediagram/cli test
+
+      - name: Build the package
+        run: pnpm --filter @livediagram/cli build
+
+      - name: Is this version on npm already?
+        id: published
+        run: |
+          version=$(node -p "require('./apps/cli/dist/package.json').version")
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          if npm view "livediagram@$version" version > /dev/null 2>&1; then
+            echo "already=true" >> "$GITHUB_OUTPUT"
+            echo "livediagram $version is already on npm: nothing to publish"
+          else
+            echo "already=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Publish with provenance
+        if: steps.published.outputs.already == 'false'
+        working-directory: apps/cli/dist
+        run: npm publish --provenance --access public
