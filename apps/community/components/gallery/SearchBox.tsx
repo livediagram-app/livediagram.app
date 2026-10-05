@@ -30,8 +30,8 @@ import { TagFilter } from './TagFilter';
 // (Clear Filters, a tag link). The category, tag and sort controls sit inside the box's right edge: a
 // chosen category is written into the search as `category:<id>`, a tag as `#tag` and a sort as
 // `sort:<id>` (All and Newest need none), each applied at once, so the box always reads as the whole
-// query. My Shares, where sign-in exists, toggles `is:mine`: only your own posts. On phones the controls
-// show their icons only.
+// query. My Shares, where sign-in exists, toggles `is:mine`: only your own posts. Below the lg breakpoint the
+// controls show their icons only, so the text keeps room to be read.
 export function SearchBox({
   value,
   onSearch,
@@ -110,17 +110,18 @@ export function SearchBox({
   };
 
   return (
-    // Lifted above the grid, below the sticky header: the controls inside sit in a transformed (stacking)
-    // wrapper, so without this their menus would open behind the cards.
-    <form role="search" onSubmit={submit} className="relative z-(--z-toolbar) w-full">
+    // The form is the box, and the input and the controls sit side by side in it, so the text always has exactly the
+    // room the controls leave (it never runs under them, however long a chosen category or sort reads). Lifted above
+    // the grid, below the sticky header, so the controls' menus open over the cards.
+    <form
+      role="search"
+      onSubmit={submit}
+      className="relative z-(--z-toolbar) flex w-full items-center gap-1 rounded-xl border border-slate-200 bg-white pl-3.5 pr-2 shadow-sm transition-colors duration-micro focus-within:border-brand-500 focus-within:ring-2 focus-within:ring-brand-500/30 dark:border-slate-800 dark:bg-slate-900"
+    >
       <label htmlFor={id} className="sr-only">
         Search the Community
       </label>
-      <SearchIcon
-        size={18}
-        aria-hidden
-        className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
-      />
+      <SearchIcon size={18} aria-hidden className="shrink-0 text-slate-500 dark:text-slate-400" />
       <input
         id={id}
         type="search"
@@ -131,9 +132,9 @@ export function SearchBox({
         maxLength={COMMUNITY_SEARCH_MAX}
         spellCheck={false}
         enterKeyHint="search"
-        className="w-full rounded-xl border border-slate-200 bg-white py-3 pl-11 pr-[31rem] text-[15px] max-sm:pr-44 text-slate-900 shadow-sm placeholder:text-slate-400 transition-colors duration-micro focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 [&::-webkit-search-cancel-button]:hidden"
+        className="min-w-0 flex-1 bg-transparent py-3 pl-2 text-[15px] text-slate-900 outline-none placeholder:text-slate-500 dark:text-slate-100 dark:placeholder:text-slate-400 [&::-webkit-search-cancel-button]:hidden"
       />
-      <div className="absolute right-2 top-1/2 flex -translate-y-1/2 items-center gap-1">
+      <div className="flex shrink-0 items-center gap-1">
         {draft ? (
           <button
             type="button"

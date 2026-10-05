@@ -2,8 +2,8 @@ import type { ComponentProps, ReactNode } from 'react';
 import { ChevronDownIcon } from '@livediagram/ui';
 
 // One of the controls inside the search box (My Shares, Category, Tags, Sort; docs/specs/025-community/
-// community.md "Gallery"): an icon and a label, the label dropped on phones so they fit beside the
-// text (the accessible name stays). Tinted while it narrows or orders the results. A menu's trigger carries a
+// community.md "Gallery"): an icon and a label, the label dropped below the lg breakpoint so they fit beside
+// the text (the accessible name stays). Tinted while it narrows or orders the results. A menu's trigger carries a
 // chevron; a plain toggle (My Shares) does not.
 export function SearchControlButton({
   icon,
@@ -35,7 +35,7 @@ export function SearchControlButton({
       <span aria-hidden className="flex">
         {icon}
       </span>
-      <span className="max-w-32 truncate max-sm:hidden">{label}</span>
+      <span className="max-w-32 truncate max-lg:hidden">{label}</span>
       {badge ? (
         <span className="rounded-full bg-brand-500 px-1.5 text-[11px] font-semibold leading-4 text-white">
           {badge}
@@ -45,7 +45,7 @@ export function SearchControlButton({
         <ChevronDownIcon
           aria-hidden
           size={12}
-          className={`transition-transform duration-micro motion-reduce:transition-none max-sm:hidden ${open ? 'rotate-180' : ''}`}
+          className={`transition-transform duration-micro motion-reduce:transition-none max-lg:hidden ${open ? 'rotate-180' : ''}`}
         />
       ) : null}
     </button>
