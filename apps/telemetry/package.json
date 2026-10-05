@@ -21,6 +21,7 @@
     "react-dom": "^19.3.0"
   },
   "devDependencies": {
+    "@livediagram/agent-verbs": "workspace:*",
     "@livediagram/eslint-config": "workspace:*",
     "@livediagram/next-config": "workspace:*",
     "@livediagram/tailwind-config": "workspace:*",

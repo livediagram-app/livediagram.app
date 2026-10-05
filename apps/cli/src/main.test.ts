@@ -207,6 +207,7 @@ describe('run', () => {
       '[cli] address document name 1 matches',
       `[cli] request GET /api/documents/${DOC} 200 0`,
       '[cli] exit 0',
+      '[cli] telemetry skipped env',
     ]);
     const failing = signedIn({ env: { LIVEDIAGRAM_TOKEN: TOKEN, LIVEDIAGRAM_DEBUG: '1' } });
     await cli(['tab', 'ls', 'nope'], failing);

@@ -604,6 +604,9 @@ importers:
         specifier: ^19.3.0
         version: 19.3.0(react@19.3.0)
     devDependencies:
+      '@livediagram/agent-verbs':
+        specifier: workspace:*
+        version: link:../../packages/agent-verbs
       '@livediagram/eslint-config':
         specifier: workspace:*
         version: link:../../packages/eslint-config

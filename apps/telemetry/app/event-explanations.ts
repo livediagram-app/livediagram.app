@@ -1177,6 +1177,7 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
     "An agent's changeset was undone, from the editor's toast or another front door.",
   'Mcp|Used': 'An AI tool connected to livediagram over MCP used one of its actions on a document.',
   'Note|Added': 'A note was added to an element (first non-empty save).',
+  'Cli|Used': 'Someone ran a livediagram command from the command line, and it succeeded.',
   'Note|Changed': "An existing note's text was edited.",
   'Note|Deleted': 'A note was cleared from an element.',
   'Note|Opened': 'Someone opened the note popover on an element.',

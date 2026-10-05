@@ -12,6 +12,8 @@ import {
   guide,
   skillInstall,
   skillPrint,
+  telemetryOff,
+  telemetryOn,
 } from './verbs/local';
 import { iconSearch, schemaView, templateLs, templateView } from './verbs/catalogues';
 import { changesetApply, elementVerbs, tabDiff } from './verbs/edit';
@@ -58,6 +60,8 @@ export const VERBS: readonly Verb[] = [
   authLogin,
   authStatus,
   authLogout,
+  telemetryOn,
+  telemetryOff,
 ] as Verb[];
 
 export const RESOURCES: readonly { name: string; alias?: string; summary: string }[] = [
@@ -73,6 +77,7 @@ export const RESOURCES: readonly { name: string; alias?: string; summary: string
   { name: 'icon', summary: 'Icons: find one for iconId=' },
   { name: 'skill', summary: 'The agent skill file' },
   { name: 'auth', summary: 'Credentials' },
+  { name: 'telemetry', summary: 'The usage count: on or off' },
 ];
 
 // Top-level commands that are verbs without a resource word.
@@ -96,4 +101,10 @@ export function verbById(id: string): Verb | undefined {
 // The verbs of a resource, in catalogue order.
 export function verbsOf(resource: string): Verb[] {
   return VERBS.filter((v) => v.id.startsWith(`${resource}.`));
+}
+
+// The verbs a front door counts in its usage telemetry (`Cli·Used`): every one that reaches a host, except
+// turning the count itself on or off.
+export function countedVerbs(): Verb[] {
+  return VERBS.filter((v) => !v.offline && !v.id.startsWith('telemetry.'));
 }

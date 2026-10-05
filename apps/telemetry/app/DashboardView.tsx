@@ -24,6 +24,7 @@ import {
   LIVE_TOGETHER,
   LOOK_AND_FEEL,
   MCP_TOOL_CALLS,
+  CLI_COMMANDS_STACK,
   DRIVE_MIRROR,
   AGENT_CHANGESETS,
   AGENT_VIEWED,
@@ -126,7 +127,14 @@ export const GROUPS: MetricGroup[] = [
   },
   {
     title: 'Connections',
-    metrics: [API_TOKEN_ACTIVITY, MCP_TOOL_CALLS, AGENT_CHANGESETS, AGENT_VIEWED, DRIVE_MIRROR],
+    metrics: [
+      API_TOKEN_ACTIVITY,
+      MCP_TOOL_CALLS,
+      CLI_COMMANDS_STACK,
+      AGENT_CHANGESETS,
+      AGENT_VIEWED,
+      DRIVE_MIRROR,
+    ],
   },
   {
     title: 'Health & support',

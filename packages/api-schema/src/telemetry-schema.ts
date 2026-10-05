@@ -71,6 +71,9 @@ export const TELEMETRY_CATEGORIES = [
   // third app that reports telemetry, so usage shows up distinctly from the
   // in-editor AI panel.
   'Mcp',
+  // CLI commands (apps/cli, docs/specs/015-api/cli.md "Telemetry"): 'Used' with `type` the verb (TabView, ElementSet), sent
+  // to the active profile's api after a command succeeds, never for help; the CLI's counterpart of `Mcp`.
+  'Cli',
   // Transactional + lifecycle email (apps/api, docs/specs/014-identity/transactional-email.md): 'Sent' with `type`
   // the template kind ('Welcome', 'TeamInvite', ...). Written server-side by
   // the api worker, which is the only place that knows a send happened —

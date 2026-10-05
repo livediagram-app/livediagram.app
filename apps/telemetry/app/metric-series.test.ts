@@ -96,6 +96,16 @@ describe('the MCP Tool Calls stack', () => {
   });
 });
 
+describe('the CLI Commands stack', () => {
+  it('has one chart per verb the CLI counts', async () => {
+    const { CLI_COMMAND_METRICS } = await import('./metric-catalogue');
+    const { pascalToken } = await import('@livediagram/api-schema');
+    const { countedVerbs } = await import('@livediagram/agent-verbs');
+    const counted = countedVerbs().map((v) => pascalToken(v.id));
+    expect(CLI_COMMAND_METRICS.map((m) => m.type).sort()).toEqual(counted.sort());
+  });
+});
+
 describe('previousCount (trend arrows)', () => {
   const window = (count: number) => ({
     total: count,

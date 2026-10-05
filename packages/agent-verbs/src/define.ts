@@ -71,6 +71,8 @@ export type Verb<I extends z.ZodObject = z.ZodObject, O extends z.ZodType = z.Zo
   output: O;
   // A handler the CLI supplies, needing Node (CLI55).
   local?: true;
+  // Needs no host: no profile, credential or api (guides, the skill); never counted.
+  offline?: true;
   run?: (ctx: VerbContext, input: z.infer<I>) => Promise<z.infer<O>>;
   // Compact lines; absent prints JSON.
   text?: (output: z.infer<O>) => string[];

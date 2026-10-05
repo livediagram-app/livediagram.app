@@ -1,5 +1,6 @@
 import { ctaSurfaceOf, isCtaSource } from '@livediagram/api-schema';
 import { SURFACE_LABELS, ctaSourceLabel } from './cta-funnel';
+import { cliCommandSentence } from './cli-commands';
 import { API_OPERATIONS, BY_ACTION, EXACT } from './event-explanations';
 import { articleTitle, CANVAS_CONTROLS, eventLabel, typeLabel } from './event-vocab';
 
@@ -26,6 +27,8 @@ const PANEL_PREFIX = 'ExplorerPanel.';
 
 function pattern(category: string, action: string, type: string): string | null {
   switch (`${category}|${action}`) {
+    case 'Cli|Used':
+      return cliCommandSentence(type);
     case 'Page|View':
       return `Someone viewed the page ${type}, by loading it or following a link to it within the site.`;
     // The landing funnel (docs/specs/019-marketing/landing-funnel.md): which public-page button it was.
