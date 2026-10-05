@@ -2,7 +2,7 @@
 // most six of the whiteboard's shape catalogue, ranked the way the palette search ranks (exact
 // name, name prefix, name substring, keyword), best match first; an empty field finds nothing (the
 // flyout shows its slots). Never the full list. Plus the grid's arrow-key movement. Pure.
-import { paletteRank } from './search';
+import { paletteRank } from '@livediagram/icons';
 import {
   WHITEBOARD_SHAPE_CATALOGUE,
   type WhiteboardShapeEntry,

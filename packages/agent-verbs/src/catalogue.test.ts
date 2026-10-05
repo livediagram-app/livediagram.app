@@ -43,7 +43,8 @@ describe('the catalogue', () => {
       const [resource] = verb.id.split('.');
       expect(
         verb.id.includes('.')
-          ? RESOURCES.some((r) => r.name === resource)
+          ? RESOURCES.some((r) => r.name === resource) ||
+              Object.values(COMMAND_ALIASES).includes(verb.id)
           : TOP_LEVEL.some((t) => t === verb.id),
       ).toBe(true);
       expect(verb.cli?.examples.every((e) => routes(e))).toBe(true);

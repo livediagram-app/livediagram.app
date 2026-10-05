@@ -168,6 +168,70 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     statuses: [200],
   },
 
+  // ---- Catalogues (docs/specs/015-api/blueprints/cli.md "Catalogue routes") ----
+  {
+    method: 'GET',
+    path: '/templates',
+    segment: 'templates',
+    tag: 'Catalogues',
+    summary:
+      'The template library: its categories and one entry a template, as list_templates gives them.',
+    auth: 'public',
+    responseSchema: 'TemplateCatalogueResponse',
+    statuses: [200, 405],
+  },
+  {
+    method: 'GET',
+    path: '/templates/{kind}',
+    segment: 'templates',
+    tag: 'Catalogues',
+    summary:
+      'One template, built and read as an outline view; json=1 for the view as JSON. Unknown: 404 unknown_template with the kinds.',
+    auth: 'public',
+    query: [{ name: 'json', required: false, description: '1 for the outline as JSON.' }],
+    responseMediaType: 'text/plain',
+    responseSchema: { type: 'string' },
+    statuses: [200, 404, 405],
+  },
+  {
+    method: 'GET',
+    path: '/icons',
+    segment: 'icons',
+    tag: 'Catalogues',
+    summary:
+      'Icons from the line-art and Technology catalogues for a query, best first, as the palette ranks them.',
+    auth: 'public',
+    query: [
+      { name: 'query', required: true, description: '1 to 60 characters.' },
+      { name: 'limit', required: false, description: '1 to 50; 20 by default.' },
+    ],
+    responseSchema: 'IconSearchResponse',
+    statuses: [200, 400, 405],
+  },
+  {
+    method: 'GET',
+    path: '/schema',
+    segment: 'schema',
+    tag: 'Catalogues',
+    summary: 'The element kinds edit operations make, one line each.',
+    auth: 'public',
+    responseMediaType: 'text/plain',
+    responseSchema: { type: 'string' },
+    statuses: [200, 405],
+  },
+  {
+    method: 'GET',
+    path: '/schema/{kind}',
+    segment: 'schema',
+    tag: 'Catalogues',
+    summary:
+      'One kind: its first size, the aliases set takes with their values, and its stored fields. Unknown: 404 unknown_kind with the kinds.',
+    auth: 'public',
+    responseMediaType: 'text/plain',
+    responseSchema: { type: 'string' },
+    statuses: [200, 404, 405],
+  },
+
   // ---- Documents ----
   {
     method: 'GET',

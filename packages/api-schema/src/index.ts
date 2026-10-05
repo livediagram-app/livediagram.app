@@ -621,3 +621,4 @@ export type CurrentTokenResponse = {
 };
 export * from './api-token-format';
 export * from './document-source';
+export * from './catalogues';
