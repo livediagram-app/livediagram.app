@@ -1,7 +1,7 @@
 # Templates by mode
 
-Every template opens in one [editor mode](editor-modes.md): **Diagram**, **Draw** or
-**Illustrate**. The template step of the New Document wizard and Quick Start
+Every template opens in one [editor mode](editor-modes.md): **Diagram**, **Draw**,
+**Illustrate** or **Plan**. The template step of the New Document wizard and Quick Start
 ([Templates](../008-canvas/canvas-and-palette.md#templates)) says which on every card, and lets a
 person narrow the whole catalogue to one mode, so someone who came to sketch or to make a poster
 sees only what starts there.
@@ -15,13 +15,15 @@ sees only what starts there.
 - Draw templates: Blank Whiteboard and the eight [Draw templates](#draw-templates) below.
 - Illustrate templates: Blank Illustration, Article, Slide deck, Logo design, Group card and the
   eight [Illustrate templates](#illustrate-templates) below.
+- Plan templates: Blank Plan and the six board templates of [Plan mode](../025-plan/plan-mode.md#templates),
+  Kanban Board among them. Plan templates also carry seed items.
 - Every other template is a Diagram template.
 
 ## The mode filter
 
 - A **dropdown** sits **to the left of the search box**, as tall as it, named "Show templates for":
   a chip showing the choice in force (its glyph, its name, a chevron) over a menu of
-  **Everything**, **Diagram**, **Draw** and **Illustrate**, each with its glyph (a grid for
+  **Everything**, **Diagram**, **Draw**, **Illustrate** and **Plan**, each with its glyph (a grid for
   Everything, `EDITOR_MODE_ICON` for the modes, the glyphs of the mode switch) and how many
   templates it holds, in a count badge. A dropdown, not a row of buttons, so a mode added later is one more row.
   **Everything** is the default and is chosen each time the step opens; the choice is not
@@ -47,12 +49,12 @@ sees only what starts there.
     a **Show N matches in Everything** button switches to Everything, the search kept.
 - If the open shelf has none of the mode's templates, **Popular** opens instead.
 - If the selected template is not of the mode, the selection moves to the mode's blank (Blank
-  Diagram, Blank Whiteboard or Blank Illustration; Everything keeps the selection), so one card is always
+  Diagram, Blank Whiteboard, Blank Illustration or Blank Plan; Everything keeps the selection), so one card is always
   selected and Next never starts something the person filtered away.
 - The control is a menu button (docs/specs/004-interface-design/menus.md): the chip says it opens a
   menu and whether it is open, the rows are `menuitemradio` with the choice checked.
-- Each choice sends `UI` / `Toggled` / `TemplateModeAll`, `TemplateModeDiagram`, `TemplateModeDraw`
-  or `TemplateModeIllustrate` ([Telemetry](../017-telemetry/telemetry.md)).
+- Each choice sends `UI` / `Toggled` / `TemplateModeAll`, `TemplateModeDiagram`, `TemplateModeDraw`,
+  `TemplateModeIllustrate` or `TemplateModePlan` ([Telemetry](../017-telemetry/telemetry.md)).
 
 ## The mode on a card
 
@@ -61,7 +63,7 @@ sees only what starts there.
   title (", Opens in Draw"), so a card's accessible name still starts with its title.
 - Category tiles carry no glyph: a category can hold templates of several modes.
 
-## Three blanks
+## Four blanks
 
 Popular opens with one blank per mode, in mode order:
 
@@ -70,11 +72,12 @@ Popular opens with one blank per mode, in mode order:
 | Blank Diagram      | `blank`              | Diagram    | An empty canvas (was "Blank Canvas").                             |
 | Blank Whiteboard   | `whiteboard`         | Draw       | An empty board to draw on (was "Whiteboard").                     |
 | Blank Illustration | `blank-illustration` | Illustrate | One empty page that asks what it is for (Infographic or Article). |
+| Blank Plan         | `blank-plan`         | Plan       | One Kanban board (To do, In progress, Done), ready for items.     |
 
 - The kind ids of the first two are unchanged, so `/new?template=blank` and
   `/new?template=whiteboard` links keep working.
-- None of the three is on a category shelf or a category tile.
-- Popular, in order: Blank Diagram, Blank Whiteboard, Blank Illustration, Mind map, Sketchnote,
+- None of the four is on a category shelf or a category tile.
+- Popular, in order: Blank Diagram, Blank Whiteboard, Blank Illustration, Blank Plan, Mind map, Sketchnote,
   Sailboat retrospective, Flowchart, Org chart, Article.
 
 ## Draw templates
