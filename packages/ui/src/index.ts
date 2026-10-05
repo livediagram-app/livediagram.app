@@ -49,6 +49,8 @@ export { CommunityPostTileSkeleton } from './community/CommunityPostTileSkeleton
 export { formatCommunityCount } from './community/format-count';
 export { COMMUNITY_DOT_GRID, COMMUNITY_SKELETON_BAR } from './community/surfaces';
 export { CommunityHelpLink } from './community/CommunityHelpLink';
+export { PictureDisc } from './PictureDisc';
+export { PICTURE_SIZES_PX, pictureHost, pictureSrc, pictureSrcSet } from './profile-picture';
 export {
   fetchCommunityEnabled,
   resetCommunityEnabledForTests,

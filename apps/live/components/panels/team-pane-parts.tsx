@@ -1,5 +1,4 @@
-import { CloseIcon, Select, HoverCard, Glyph } from '@livediagram/ui';
-import { PictureDisc } from '@/components/primitives/PictureDisc';
+import { CloseIcon, Select, HoverCard, Glyph, PictureDisc } from '@livediagram/ui';
 import { useDeferredAuth } from '@/components/providers/deferred-auth';
 import type { TeamMember, TeamRole } from '@/lib/api-client';
 import { colorForKey, initialsOf } from '@/lib/identity';

@@ -86,7 +86,9 @@ describe('CommunityAuthorBadge', () => {
       />,
     );
     const img = container.querySelector('img')!;
-    expect(img.getAttribute('src')).toBe('https://img.clerk.com/a.png');
+    // Asked for at the disc's size, as every profile picture is; the initial holds the box meanwhile.
+    expect(img.getAttribute('src')).toBe('https://img.clerk.com/a.png?width=96&height=96');
+    expect(screen.getByText('A')).toBeTruthy();
     expect(screen.queryByText('ada lovelace')).toBeNull();
     fireEvent.error(img);
     expect(container.querySelector('img')).toBeNull();
