@@ -34,4 +34,17 @@ describe('card finder', () => {
     expect(cardMatches(onBoard, 'nothing like it')).toBe(false);
     expect(cardMatches(noStatus, '   ')).toBe(true);
   });
+
+  it('searches a full store of long descriptions within a keystroke budget', () => {
+    const many = Array.from({ length: 2000 }, (_, n) =>
+      item({ title: `Card ${n}`, status: 'todo', description: 'x'.repeat(10_000) }),
+    );
+    findCards(many, { query: 'warm', show: 'all', boardStatuses });
+    const start = performance.now();
+    for (const q of ['c', 'ca', 'car', 'card', 'card 1', 'card 19']) {
+      findCards(many, { query: q, show: 'all', boardStatuses });
+    }
+    // Six keystrokes over the cached text (17ms locally); the budget leaves room for a slow CI runner.
+    expect(performance.now() - start).toBeLessThan(600);
+  });
 });

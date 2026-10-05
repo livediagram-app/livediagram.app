@@ -21,6 +21,9 @@ import { PlanTypeGlyph } from './plan-type-glyph';
 import { ACCENT_TEXT, ACCENT_TINT, accentVars } from './plan-palette';
 import { CountBadge } from './CountBadge';
 
+// The most rows drawn at once; a search narrows the rest.
+const CARD_FINDER_ROWS_MAX = 200;
+
 const SHOWS: { id: CardFinderShow; label: string }[] = [
   { id: 'all', label: 'All Cards' },
   { id: 'off-board', label: 'Not on a Board' },
@@ -120,7 +123,7 @@ export function CardFinderPanel({
           </p>
         ) : (
           <ul aria-label="Cards" className="flex max-h-80 flex-col gap-0.5 overflow-y-auto">
-            {found.map((it) => {
+            {found.slice(0, CARD_FINDER_ROWS_MAX).map((it) => {
               const type = typeIn(plan.types, it.type);
               const status = typeof it.fields['status'] === 'string' ? it.fields['status'] : null;
               const off = isOffBoard(it, boardStatuses);
@@ -159,6 +162,11 @@ export function CardFinderPanel({
                 </li>
               );
             })}
+            {found.length > CARD_FINDER_ROWS_MAX ? (
+              <li className="px-2 py-2 text-center text-[11px] text-slate-500 dark:text-slate-400">
+                Showing {CARD_FINDER_ROWS_MAX} of {found.length}. Search to narrow them down.
+              </li>
+            ) : null}
           </ul>
         )}
       </div>

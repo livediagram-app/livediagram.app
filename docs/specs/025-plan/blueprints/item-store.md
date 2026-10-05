@@ -213,7 +213,7 @@ All under `/documents/:id/items`, auth `guest-or-clerk`, token-usable, registere
   stored elements; writes require `tabId` (query) and the target id in that set (create: always allowed into the
   tab's scope).
 - Rejections: `400 { error: ItemRejection }`, `404 item_not_found`, `409 item_exists` (create with a taken id),
-  `409 item_key_taken`, `409 item_busy`, `413 items_full`, plus the document gates' 403/404/410.
+  `409 item_busy`, `413 items_full`, plus the document gates' 403/404/410.
 - `ItemCreate.key` is honoured only when `< items_next_key` and free; otherwise the store assigns one.
 - `POST /documents` create body accepts `items?: ItemCreate[]` (sync to cloud), written in the
   same request after the tabs.

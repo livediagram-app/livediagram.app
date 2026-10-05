@@ -9,7 +9,13 @@
 // receives the current value through `onChange`.
 
 import { listStyleOfText } from '@/components/rich-text/block-type';
-import { insertTextAtCaret, lineBeforeCaret } from '@/components/rich-text/rich-text-dom';
+import {
+  insertTextAtCaret,
+  lineBeforeCaret,
+  offsetsToDomRange,
+  paragraphEndOffset,
+  selectRange,
+} from '@/components/rich-text/rich-text-dom';
 import { listEnter, type RunBoolKey, type TextRun } from '@livediagram/document';
 import { NOTE_BASE_PX } from './note-run-style';
 import { NoteFormatToolbar } from './NoteFormatToolbar';
@@ -69,13 +75,12 @@ export function NoteRichTextEditor({
         onToggle={onToggle}
         onApplyList={(style) => {
           applyList(style);
-          // The list applies to the line and leaves part of it selected; carry on typing at the end of the
-          // line rather than over the selection.
+          // The list applies to the paragraph and leaves part of it selected; carry on typing at the end
+          // of the paragraph rather than over the selection.
           requestAnimationFrame(() => {
-            const sel = window.getSelection();
-            if (!sel || sel.rangeCount === 0) return;
-            sel.collapseToEnd();
-            sel.modify('move', 'forward', 'lineboundary');
+            const root = editorRef.current;
+            const end = root ? paragraphEndOffset(root) : null;
+            if (root && end !== null) selectRange(offsetsToDomRange(root, end, end));
           });
         }}
         onApplyHeading={applyHeading}

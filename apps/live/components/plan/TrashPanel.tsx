@@ -123,6 +123,7 @@ export function TrashPanel({
                         </button>
                         <button
                           type="button"
+                          aria-label={`Restore #${it.key}`}
                           className="flex h-7 items-center rounded-md border border-slate-200 px-2.5 text-[12px] font-semibold text-slate-700 transition hover:border-brand-300 hover:bg-brand-50 hover:text-brand-700 dark:border-slate-600 dark:text-slate-100 dark:hover:border-brand-500/50 dark:hover:bg-brand-500/10 dark:hover:text-brand-300"
                           onClick={() => {
                             plan.restoreItem(it.id);

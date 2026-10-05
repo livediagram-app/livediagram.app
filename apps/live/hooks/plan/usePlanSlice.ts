@@ -13,7 +13,10 @@ import {
   type ItemPatch,
   type ItemPerson,
   type PlanBoardSetup,
+  type StatusPhase,
 } from '@livediagram/items';
+
+const NO_PHASES: ReadonlyMap<string, StatusPhase> = new Map();
 import type { PlanCardPresence, PlanContextValue } from '@/components/plan/PlanContext';
 import { titleCaseType, track } from '@/lib/telemetry';
 import type { PlanItems } from './usePlanItems';
@@ -23,6 +26,9 @@ import type { ItemTypesSlice } from './useItemTypes';
 // open item panel and board set-up, and the actions boards and cards take, composed into the value
 // PlanContext hands every board. Items change through `planItems`; boards and cards are elements,
 // changed through `commit` on the active tab.
+// Deletes in flight at once while the Trash empties (the store holds at most ITEMS_MAX).
+const EMPTY_TRASH_BATCH = 8;
+
 export function usePlanSlice(opts: {
   planItems: PlanItems;
   // The document's item types (docs/specs/025-plan/item-types.md).
@@ -39,6 +45,8 @@ export function usePlanSlice(opts: {
   announce: (message: string) => void;
   addItemSlide?: (itemId: string) => void;
   statusNames: ReadonlyMap<string, string>;
+  // The phase the tab's boards give each status (the plan views).
+  statusPhases?: ReadonlyMap<string, StatusPhase>;
   // Tells the room which card this person is dragging or reading (usePlanPresence).
   publishPresence?: (itemId: string | null, state: 'drag' | 'view') => void;
 }) {
@@ -166,10 +174,19 @@ export function usePlanSlice(opts: {
     },
     [write, planItems.items],
   );
-  // Every trashed item deleted for good.
+  // Every trashed item deleted for good: a few requests at a time (never hundreds at once), one event.
   const emptyTrash = useCallback(() => {
-    for (const it of planItems.items.values()) if (isTrashed(it)) deleteItem(it.id);
-  }, [planItems.items, deleteItem]);
+    const ids = [...planItems.items.values()].filter(isTrashed).map((it) => it.id);
+    if (ids.length === 0) return;
+    setOpenItemId((open) => (open && ids.includes(open) ? null : open));
+    track('Plan', 'Deleted', 'Trash');
+    void (async () => {
+      for (let i = 0; i < ids.length; i += EMPTY_TRASH_BATCH)
+        await Promise.all(
+          ids.slice(i, i + EMPTY_TRASH_BATCH).map((id) => write({ kind: 'delete', id })),
+        );
+    })();
+  }, [planItems.items, write]);
 
   const vote = useCallback(
     (itemId: string, delta: 1 | -1) => {
@@ -277,6 +294,7 @@ export function usePlanSlice(opts: {
       restoreItem,
       emptyTrash,
       statusNames: opts.statusNames,
+      statusPhases: opts.statusPhases ?? NO_PHASES,
       ...(hasSlides ? { addItemSlide } : {}),
     }),
     [
@@ -310,6 +328,7 @@ export function usePlanSlice(opts: {
       addItemSlide,
       hasSlides,
       opts.statusNames,
+      opts.statusPhases,
     ],
   );
 

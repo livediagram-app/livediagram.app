@@ -223,14 +223,16 @@ export function offsetsToDomRange(editorEl: HTMLElement, start: number, end: num
   return range;
 }
 
-/**
- * Insert plain text at the caret as a real text node (splitting the current
- * text node in place), instead of `execCommand('insertText')` which inserts
- * a <br>/<div> for newlines that `textContent` then drops on read-back. Used
- * for Enter ('\n') and paste so newlines survive as literal characters and
- * the plain-text-length invariant holds. Programmatic, so the caller must
- * re-sync runs afterwards (no input event fires).
- */
+// The editor's offset of the end of the caret's paragraph (the next '\n', or the end of the text), or
+// null with no caret in it. Paragraphs, not drawn lines: a wrapped item ends where its text does.
+export function paragraphEndOffset(root: HTMLElement): number | null {
+  const at = domSelectionToOffsets(root);
+  if (!at) return null;
+  const text = root.textContent ?? '';
+  const next = text.indexOf('\n', at.end);
+  return next < 0 ? text.length : next;
+}
+
 // The editor's text on the caret's line, up to the caret ('' with no caret in it).
 export function lineBeforeCaret(root: HTMLElement | null): string {
   const sel = window.getSelection();
@@ -244,6 +246,14 @@ export function lineBeforeCaret(root: HTMLElement | null): string {
   return text.slice(text.lastIndexOf('\n') + 1);
 }
 
+/**
+ * Insert plain text at the caret as a real text node (splitting the current
+ * text node in place), instead of `execCommand('insertText')` which inserts
+ * a <br>/<div> for newlines that `textContent` then drops on read-back. Used
+ * for Enter ('\n') and paste so newlines survive as literal characters and
+ * the plain-text-length invariant holds. Programmatic, so the caller must
+ * re-sync runs afterwards (no input event fires).
+ */
 export function insertTextAtCaret(text: string): void {
   const sel = window.getSelection();
   if (!sel || sel.rangeCount === 0) return;

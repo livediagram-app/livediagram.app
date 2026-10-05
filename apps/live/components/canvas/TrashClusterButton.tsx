@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { isTrashed } from '@livediagram/items';
 import { TrashIcon } from '@livediagram/ui';
 import { usePlan } from '@/components/plan/PlanContext';
 import { CountBadge } from '@/components/plan/CountBadge';
@@ -17,19 +18,36 @@ export function TrashClusterButton(props: {
   const plan = usePlan();
   const dragging = !!plan?.draggingItemId;
   const [over, setOver] = useState(false);
+  const targetRef = useRef<HTMLSpanElement>(null);
   // The drop ends the drag before the pointer leaves: the next drag starts plain.
   if (!dragging && over) setOver(false);
+  // Over it or not, from the pointer's place: a touch pointer stays captured by the card it pressed, so
+  // the target never hears pointerenter or pointerleave. Captured moves still reach the window.
+  useEffect(() => {
+    if (!dragging) return;
+    const onMove = (e: PointerEvent) => {
+      const r = targetRef.current?.getBoundingClientRect();
+      setOver(
+        !!r &&
+          e.clientX >= r.left &&
+          e.clientX <= r.right &&
+          e.clientY >= r.top &&
+          e.clientY <= r.bottom,
+      );
+    };
+    window.addEventListener('pointermove', onMove, { passive: true });
+    return () => window.removeEventListener('pointermove', onMove);
+  }, [dragging]);
   let count = 0;
-  for (const it of plan?.items.values() ?? []) if (it.fields['status'] === 'trash') count += 1;
+  for (const it of plan?.items.values() ?? []) if (isTrashed(it)) count += 1;
 
   if (dragging) {
     return (
       <span
+        ref={targetRef}
         data-plan-trash
         role="status"
         aria-live="polite"
-        onPointerEnter={() => setOver(true)}
-        onPointerLeave={() => setOver(false)}
         className={`pointer-events-auto flex h-12 items-center gap-2 rounded-xl border-2 px-4 text-[13px] font-semibold shadow-lg transition-all duration-200 ease-out animate-fade-in motion-reduce:transition-none ${
           over
             ? 'scale-105 border-rose-600 bg-rose-600 text-white shadow-rose-500/30 motion-reduce:scale-100'

@@ -77,44 +77,52 @@ export function ItemDescription({
     );
   }
 
-  if (!editing) {
+  if (!editing && empty) {
     return (
       <button
         type="button"
         onClick={() => setEditing(true)}
-        aria-label={empty ? 'Add a description' : 'Edit the description'}
-        className={`group relative block w-full rounded-xl text-left transition ${
-          empty
-            ? 'border-2 border-dashed border-slate-200 px-4 py-6 hover:border-brand-300 hover:bg-brand-50/40 dark:border-slate-700 dark:hover:border-brand-500/50 dark:hover:bg-brand-500/5'
-            : 'border border-transparent px-3 py-2.5 hover:border-slate-200 hover:bg-slate-50 dark:hover:border-slate-700 dark:hover:bg-slate-800/50'
-        }`}
+        className="block w-full rounded-xl border-2 border-dashed border-slate-200 px-4 py-6 text-left transition hover:border-brand-300 hover:bg-brand-50/40 dark:border-slate-700 dark:hover:border-brand-500/50 dark:hover:bg-brand-500/5"
       >
-        {empty ? (
-          <span className="flex flex-col items-center gap-1.5 text-center">
-            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-50 text-brand-600 dark:bg-brand-500/15 dark:text-brand-300">
-              <PencilIcon size={16} />
-            </span>
-            <span className="text-[13px] font-medium text-slate-700 dark:text-slate-200">
-              Add a description
-            </span>
-            <span className="text-[12px] text-slate-500 dark:text-slate-400">
-              The why and the what. Lists, links and headings welcome.
-            </span>
+        <span className="flex flex-col items-center gap-1.5 text-center">
+          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-50 text-brand-600 dark:bg-brand-500/15 dark:text-brand-300">
+            <PencilIcon size={16} />
           </span>
-        ) : (
-          <>
-            <NoteRichText
-              note={undefined}
-              noteRich={runs}
-              className="text-slate-700 dark:text-slate-200"
-            />
-            <span className="absolute right-2 top-2 hidden items-center gap-1 rounded-md bg-white px-1.5 py-0.5 text-[11px] font-medium text-slate-500 shadow-sm group-hover:flex group-focus-visible:flex dark:bg-slate-900 dark:text-slate-400">
-              <PencilIcon size={11} />
-              Edit
-            </span>
-          </>
-        )}
+          <span className="text-[13px] font-medium text-slate-700 dark:text-slate-200">
+            Add a description
+          </span>
+          <span className="text-[12px] text-slate-500 dark:text-slate-400">
+            The why and the what. Lists, links and headings welcome.
+          </span>
+        </span>
       </button>
+    );
+  }
+
+  if (!editing) {
+    // The text, its links live, and an Edit button; a click on the text (not a link) edits it too.
+    return (
+      <div
+        className="group relative rounded-xl border border-transparent px-3 py-2.5 transition hover:border-slate-200 hover:bg-slate-50 dark:hover:border-slate-700 dark:hover:bg-slate-800/50"
+        onClick={(e) => {
+          if (!(e.target as HTMLElement).closest('a, button')) setEditing(true);
+        }}
+      >
+        <NoteRichText
+          note={undefined}
+          noteRich={runs}
+          className="text-slate-700 dark:text-slate-200"
+        />
+        <button
+          type="button"
+          onClick={() => setEditing(true)}
+          aria-label="Edit the description"
+          className="absolute right-2 top-2 flex items-center gap-1 rounded-md bg-white px-1.5 py-0.5 text-[11px] font-medium text-slate-500 opacity-0 shadow-sm transition focus-visible:opacity-100 group-hover:opacity-100 max-sm:opacity-100 dark:bg-slate-900 dark:text-slate-400"
+        >
+          <PencilIcon size={11} />
+          Edit
+        </button>
+      </div>
     );
   }
 

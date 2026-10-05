@@ -184,6 +184,8 @@ position 2 of 4").
 
 - A finger on a board's empty space (between and below cards, column backgrounds) pans the canvas, as it does
   anywhere else; a finger on a card picks the card up, and buttons and fields work as they do with a mouse.
+- A board's body does not scroll under a finger (a native scroll would cancel a card's drag); a board with more
+  cards than fit is made taller, or scrolled with a mouse or trackpad.
 
 ## Theme and style
 

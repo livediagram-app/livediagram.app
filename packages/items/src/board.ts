@@ -2,6 +2,7 @@
 // The board stores only its set-up; what it shows is computed here from the
 // item store, so every board (and the api's tab scoping) reads items the same way.
 
+import { ITEM_TYPE_PATTERN } from './limits';
 import { readBoardWidgets, type BoardWidgetKind } from './board-widgets';
 import type { Item, ItemPerson } from './item';
 import { itemAssignee, itemLabels, itemStatus, itemTitle } from './item';
@@ -179,7 +180,7 @@ function readAddTypes(input: unknown): string[] | undefined {
   if (!Array.isArray(input)) return undefined;
   const out: string[] = [];
   for (const t of input)
-    if (typeof t === 'string' && /^[a-z][a-z0-9-]{0,31}$/.test(t) && !out.includes(t)) out.push(t);
+    if (typeof t === 'string' && ITEM_TYPE_PATTERN.test(t) && !out.includes(t)) out.push(t);
   return out.slice(0, 32);
 }
 

@@ -278,7 +278,7 @@ async function create(ctx: RouteContext, documentId: string): Promise<Response> 
 async function bulk(ctx: RouteContext, documentId: string): Promise<Response> {
   const caller = await itemCaller(ctx, documentId, 'edit');
   if (caller instanceof Response) return caller;
-  // Bulk writes (template seeds, an offline document's items) are whole-document writes.
+  // Bulk writes (an offline document's items, on sync) are whole-document writes.
   if (caller.scope) return forbidden();
   const body = await readBody(ctx);
   if (body instanceof Response) return body;

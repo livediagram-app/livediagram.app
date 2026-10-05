@@ -50,6 +50,7 @@ The fields the shipped types use. Each has a **field kind** that validates and d
 | `priority`        | priority  | `urgent`, `high`, `medium` or `low`                                                                                                                               |
 | `labels`          | labels    | Up to 12 short strings                                                                                                                                            |
 | `estimate`        | number    | Points or hours, 0 to 999                                                                                                                                         |
+| `start`           | date      | A calendar date, `YYYY-MM-DD`: when the work begins (a Project's bar on the [Gantt chart](plan-views.md#project-gantt-chart))                                     |
 | `due`             | date      | A calendar date, `YYYY-MM-DD`                                                                                                                                     |
 | `checklist`       | checklist | Up to 50 `{ text, done }` rows                                                                                                                                    |
 | `parent`          | item ref  | Another item's id (a Project), resolved within the same document                                                                                                  |
@@ -59,13 +60,13 @@ The fields the shipped types use. Each has a **field kind** that validates and d
 
 Five built-in types, each with a glyph, an accent colour and the fields it offers in the item panel:
 
-| Type    | Accent | For                                    | Offers                                                                                   |
-| ------- | ------ | -------------------------------------- | ---------------------------------------------------------------------------------------- |
-| Project | Black  | A larger body of work others sit under | title, description, status, assignee, priority, due, labels                              |
-| Task    | Gray   | A piece of work                        | title, description, status, assignee, priority, estimate, due, checklist, labels, parent |
-| Note    | Blue   | A thought, a retro note                | title, description, status, votes                                                        |
-| Idea    | Yellow | A proposal to weigh                    | title, description, status, votes, labels                                                |
-| Action  | Red    | Something agreed to do                 | title, status, assignee, due                                                             |
+| Type    | Accent | For                                    | Offers                                                                                          |
+| ------- | ------ | -------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| Project | Black  | A larger body of work others sit under | title, description, status, assignee, priority, start, due, labels                              |
+| Task    | Gray   | A piece of work                        | title, description, status, assignee, priority, estimate, start, due, checklist, labels, parent |
+| Note    | Blue   | A thought, a retro note                | title, description, status, votes                                                               |
+| Idea    | Yellow | A proposal to weigh                    | title, description, status, votes, labels                                                       |
+| Action  | Red    | Something agreed to do                 | title, status, assignee, due                                                                    |
 
 - A bug is a Task labelled `bug`.
 - A document can change these and add its own, with custom fields: see [Item types](item-types.md).
@@ -119,6 +120,7 @@ Five built-in types, each with a glyph, an accent colour and the fields it offer
 - **All Cards** and **Not on a Board** switch between every card and the cards whose status no column of this
   tab's boards holds (or that have no status): the strays a renamed or removed column, or another tab, left
   behind. Each carries a count; a stray is marked **Not on a Board** in the list too.
+- At most 200 rows are drawn, with "Showing 200 of N. Search to narrow them down." beneath.
 - Each row shows the type's glyph, the title, and the type, number and status. Choosing one closes the popover and
   opens the card in the item panel.
 - Empty: "No cards yet" with how to add one; no match: "No cards match that search"; no strays: "Every card is

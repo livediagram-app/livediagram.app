@@ -249,7 +249,9 @@ export function PlanBoardView({
       />
       <div
         ref={bodyRef}
-        className="min-h-0 flex-1 overflow-auto px-3 pb-3"
+        // A scroll container resets touch-action, so without touch-none a finger on a card starts a native
+        // scroll and the browser cancels the drag; the canvas pans across empty board instead.
+        className={`min-h-0 flex-1 overflow-auto px-3 pb-3 ${interactive ? 'touch-none' : ''}`}
         onPointerDown={interactive ? keepBoardPress : undefined}
       >
         {setup.columns.length === 0 ? (
