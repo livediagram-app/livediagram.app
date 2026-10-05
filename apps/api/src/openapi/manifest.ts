@@ -936,6 +936,29 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     statuses: [201, 400, 401, 409],
   },
   {
+    method: 'GET',
+    path: '/tokens/current',
+    segment: 'tokens',
+    tag: 'API tokens',
+    summary:
+      "The token this request presented: its account, name, role and expiry (the CLI's auth status).",
+    auth: 'clerk',
+    tokenUsable: true,
+    responseSchema: ref('CurrentTokenResponse'),
+    statuses: [200, 401, 403, 404],
+  },
+  {
+    method: 'DELETE',
+    path: '/tokens/current',
+    segment: 'tokens',
+    tag: 'API tokens',
+    summary:
+      "Revoke the token this request presented; any token may revoke itself (the CLI's auth logout).",
+    auth: 'clerk',
+    tokenUsable: true,
+    statuses: [204, 401, 403, 404],
+  },
+  {
     method: 'DELETE',
     path: '/tokens/{id}',
     segment: 'tokens',

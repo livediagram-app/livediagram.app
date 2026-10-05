@@ -217,7 +217,10 @@ async function routeApiRequest(
   // — so no write route can be reached, present or future, with no per-route
   // changes. Clerk sessions and full tokens are unaffected (tokenAuth is null
   // or readOnly false). Guest header requests carry no tokenAuth either.
-  if (tokenAuth?.readOnly && isWrite) {
+  // A token revoking itself escalates nothing, so any token may (docs/specs/015-api/blueprints/cli.md).
+  const isSelfRevoke =
+    request.method === 'DELETE' && segments[1] === 'tokens' && segments[2] === 'current';
+  if (tokenAuth?.readOnly && isWrite && !isSelfRevoke) {
     return forbidden('read_only_token');
   }
   // One read is a credential, not content: the share-link list carries every
@@ -287,7 +290,7 @@ async function routeApiRequest(
     verifiedUserId,
     clerkEmail,
     resolveOwner,
-    token: tokenAuth ? { id: tokenAuth.tokenId } : null,
+    token: tokenAuth ? { id: tokenAuth.tokenId, readOnly: tokenAuth.readOnly } : null,
     waitUntil: (promise) => executionCtx?.waitUntil(promise),
   };
   try {

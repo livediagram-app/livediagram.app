@@ -19,6 +19,7 @@
   "dependencies": {
     "@livediagram/api-client": "workspace:*",
     "@livediagram/api-schema": "workspace:*",
+    "@livediagram/diagram-lint": "workspace:*",
     "@livediagram/document": "workspace:*",
     "zod": "^4.6.5"
   },

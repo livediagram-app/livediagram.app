@@ -77,6 +77,7 @@ export const ROOT_TYPES = [
   'ReadNotesRequest',
   'ReadNotesResponse',
   'CapabilitiesResponse',
+  'CurrentTokenResponse',
   'UnfurlResult',
   'DriveConnection',
   'DriveItem',

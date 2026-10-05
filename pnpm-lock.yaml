@@ -603,6 +603,9 @@ importers:
       '@livediagram/api-schema':
         specifier: workspace:*
         version: link:../api-schema
+      '@livediagram/diagram-lint':
+        specifier: workspace:*
+        version: link:../diagram-lint
       '@livediagram/document':
         specifier: workspace:*
         version: link:../document
