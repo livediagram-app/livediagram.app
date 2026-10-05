@@ -8,6 +8,7 @@ import { debugLog } from '@/lib/debug-log';
 import { usePlanItems } from '@/hooks/plan/usePlanItems';
 import { usePlanNeeded } from '@/hooks/plan/usePlanNeeded';
 import { usePlanStatusNames } from '@/hooks/plan/usePlanStatusNames';
+import { useTeamPeople } from '@/hooks/plan/useTeamPeople';
 import { useItemTypes } from '@/hooks/plan/useItemTypes';
 import { PLAN_LEFT_OUT_TOOLS, useModeDefaultTool } from '@/hooks/editor/useModeDefaultTool';
 import { useItemUndo } from '@/hooks/plan/useItemUndo';
@@ -1967,13 +1968,15 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // takes, handed to the canvas through PlanContext. See usePlanSlice.
   // The tab's status names, read only where Plan is in play (docs/specs/025-plan/plan-mode.md "Cost").
   const planStatusNames = usePlanStatusNames(activeTab.elements, planNeeded);
+  // Assignees: the members of your teams (docs/specs/025-plan/items.md "Who may do what").
+  const teamPeople = useTeamPeople(selfParticipant.id, planNeeded);
   const plan = usePlanSlice({
     planItems,
     itemTypes,
     editorMode: editorMode.mode,
     canEdit: !isReadOnly,
     canVote: hydrated,
-    participants: livePresence,
+    teamPeople,
     presence: planPresence.presence,
     publishPresence: planPresence.publish,
     commit,

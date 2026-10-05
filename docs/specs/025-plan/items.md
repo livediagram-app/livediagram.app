@@ -104,6 +104,10 @@ Items follow the document's access ([Auth and guest access](../014-identity/auth
 - **Read** with any access to the document. A visitor on a **tab-scoped** link sees only the items that tab shows:
   the items its boards show and its Plan cards point at.
 - **Create, update, move, delete** with edit access.
+- **Who a card can be assigned to**: you and the joined members of the teams you are part of (by their profile
+  name, else their invite address's local part), fetched once a document has Plan content. A guest, who has no
+  teams, can assign only themselves. A card already assigned to someone outside that list keeps them, shown in its
+  picker.
 - **Vote** with participate access, as comments.
 - An agent token acts as its person, and a read-only token reads only.
 

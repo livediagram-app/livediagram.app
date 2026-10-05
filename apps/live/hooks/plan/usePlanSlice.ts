@@ -4,8 +4,6 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { createShape, hasPlanInput, type EditorMode, type Element } from '@livediagram/document';
 import {
-  itemAssignee,
-  itemPersonId,
   type Item,
   type ItemMove,
   type ItemPatch,
@@ -16,8 +14,6 @@ import type { PlanCardPresence, PlanContextValue } from '@/components/plan/PlanC
 import { titleCaseType, track } from '@/lib/telemetry';
 import type { PlanItems } from './usePlanItems';
 import type { ItemTypesSlice } from './useItemTypes';
-
-type Participant = { id: string; name: string; color: string };
 
 // The editor's Plan slice (docs/specs/025-plan/blueprints/plan-board.md "Editor components"): the
 // open item panel and board set-up, and the actions boards and cards take, composed into the value
@@ -31,7 +27,8 @@ export function usePlanSlice(opts: {
   canEdit: boolean;
   // Participate access: anyone who may read may vote.
   canVote: boolean;
-  participants: readonly Participant[];
+  // The members of the teams this person is part of, as items name people (useTeamPeople).
+  teamPeople: readonly ItemPerson[];
   presence: ReadonlyMap<string, PlanCardPresence>;
   commit: (mapElements: (els: Element[]) => Element[]) => void;
   select: (elementId: string | null) => void;
@@ -41,7 +38,7 @@ export function usePlanSlice(opts: {
   // Tells the room which card this person is dragging or reading (usePlanPresence).
   publishPresence?: (itemId: string | null, state: 'drag' | 'view') => void;
 }) {
-  const { planItems, itemTypes, editorMode, canEdit, canVote, participants, presence } = opts;
+  const { planItems, itemTypes, editorMode, canEdit, canVote, presence } = opts;
   // The editor hands these over fresh each render; read through refs, so the callbacks built on them,
   // and the context value, keep their identity and boards re-render only when Plan state changes.
   const commitRef = useLatest(opts.commit);
@@ -66,37 +63,15 @@ export function usePlanSlice(opts: {
   const [editingTypeId, setEditingTypeId] = useState<string | 'new' | null>(null);
   const editType = useCallback((typeId: string | 'new') => setEditingTypeId(typeId), []);
 
-  // The room's people as items name them (hashed ids, docs/specs/025-plan/blueprints/item-store.md
-  // "Security and trust"), so an assignee picked here is the same person the api signs writes as.
-  const [roomPeople, setRoomPeople] = useState<ItemPerson[]>([]);
-  const roster = participants.map((p) => `${p.id}|${p.name}|${p.color}`).join(',');
-  useEffect(() => {
-    let live = true;
-    void Promise.all(
-      participants.map(async (p) => ({
-        id: await itemPersonId(p.id),
-        name: p.name,
-        color: p.color,
-      })),
-    ).then((people) => live && setRoomPeople(people));
-    return () => {
-      live = false;
-    };
-    // The roster string is the dependency: a new array with the same people changes nothing.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [roster]);
-
   const people = useMemo(() => {
     const byId = new Map<string, ItemPerson>();
     const self = planItems.self;
     if (self) byId.set(self.id, self);
-    for (const p of roomPeople) byId.set(p.id, p);
-    for (const item of planItems.items.values()) {
-      const a = itemAssignee(item);
-      if (a && !byId.has(a.id)) byId.set(a.id, a);
-    }
+    // Your teams' members only (docs/specs/025-plan/items.md "Who may do what"); a card's current assignee
+    // who is not among them still shows in its own picker.
+    for (const p of opts.teamPeople) if (!byId.has(p.id)) byId.set(p.id, p);
     return [...byId.values()].sort((a, b) => a.name.localeCompare(b.name));
-  }, [planItems.self, planItems.items, roomPeople]);
+  }, [planItems.self, opts.teamPeople]);
 
   const write = planItems.write;
 

@@ -27,7 +27,7 @@ describe('usePlanSlice', () => {
         editorMode: 'plan',
         canEdit: true,
         canVote: true,
-        participants,
+        teamPeople: participants,
         presence,
         statusNames,
         // Fresh every render, as the editor's are.
@@ -54,7 +54,7 @@ describe('usePlanSlice', () => {
         editorMode: 'plan',
         canEdit: true,
         canVote: true,
-        participants,
+        teamPeople: participants,
         presence,
         statusNames,
         commit: () => commits.push(tag),
