@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { cpuMsOf } from '@livediagram/vitest-config/cpu-time';
 import { capLabel } from './graph-input';
 import { parseMermaid } from './mermaid';
 import { decodeLabel } from './mermaid-shared';
@@ -29,14 +30,15 @@ function cases(samples: string[], prefix = ''): Case[] {
   });
 }
 
-// Best of `tries`, so one scheduling hiccup does not read as growth.
+// CPU time, best of `tries`: wall-clock time also counts waiting for a core while other suites run, which read
+// as growth under CI coverage (cpu-time.js).
 function timeOf(text: string, run: (text: string) => unknown, tries = 3): number {
   let best = Infinity;
-  for (let i = 0; i < tries; i += 1) {
-    const start = performance.now();
-    run(text);
-    best = Math.min(best, performance.now() - start);
-  }
+  for (let i = 0; i < tries; i += 1)
+    best = Math.min(
+      best,
+      cpuMsOf(() => void run(text)),
+    );
   return best;
 }
 
