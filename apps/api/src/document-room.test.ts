@@ -70,14 +70,16 @@ type FakeState = {
   // instances built from the same FakeState, which is exactly what a
   // hibernation wake looks like: same storage, fresh instance.
   store: Map<string, unknown>;
-  // The facilitator grace period (docs/specs/012-collaboration/facilitator.md) is the room's only alarm.
-  alarms: number[];
+  // The room's one alarm: the facilitator grace period (docs/specs/012-collaboration/facilitator.md) and agent
+  // presence expiries; a cleared alarm records null.
+  alarms: (number | null)[];
   storage: {
     get: (key: string) => Promise<unknown>;
     put: (key: string, value: unknown) => Promise<void>;
     delete: (key: string) => Promise<boolean>;
     list: (opts: { prefix: string }) => Promise<Map<string, unknown>>;
     setAlarm: (when: number) => Promise<void>;
+    deleteAlarm: () => Promise<void>;
   };
   blockConcurrencyWhile: (fn: () => Promise<void>) => Promise<void>;
   waitUntil: (promise: Promise<unknown>) => void;
@@ -122,6 +124,10 @@ function makeState(store: Map<string, unknown> = new Map()): FakeState {
         Promise.resolve(new Map([...store].filter(([key]) => key.startsWith(prefix)))),
       setAlarm: (when) => {
         state.alarms.push(when);
+        return Promise.resolve();
+      },
+      deleteAlarm: () => {
+        state.alarms.push(null);
         return Promise.resolve();
       },
     },
@@ -2120,5 +2126,136 @@ describe('DocumentRoom and agent changesets', () => {
       participant: { id: 'o', name: 'O', color: '#000', personTag: 'forged' },
     });
     expect((ws.attachment as { personTag?: string }).personTag).toBe('tag-owner');
+  });
+});
+
+describe('DocumentRoom agent presence (docs/specs/024-agents/agent-presence.md)', () => {
+  const body = (over: Record<string, unknown> = {}) => ({
+    tokenId: 'tok_1',
+    tabId: 't1',
+    personTag: 'p-webber',
+    shareCode: null,
+    name: 'Webber',
+    color: '#3b82f6',
+    role: 'edit',
+    status: 'adding payment service',
+    focus: ['n3'],
+    ttlMs: 30_000,
+    mode: 'set',
+    ...over,
+  });
+  const put = (room: DocumentRoom, b: unknown) =>
+    room.fetch(new Request('https://room/presence', { method: 'PUT', body: JSON.stringify(b) }));
+  const del = (room: DocumentRoom, query: string) =>
+    room.fetch(new Request(`https://room/presence${query}`, { method: 'DELETE' }));
+  const lastAgents = (ws: FakeSocket) => {
+    const frames = ws.sent
+      .map((s) => JSON.parse(s) as { kind: string; agents?: unknown[] })
+      .filter((f) => f.kind === 'presence');
+    return frames.at(-1)?.agents;
+  };
+
+  it('sends each session the agent with joins and self, apart from participants', async () => {
+    const { room, state } = newRoom();
+    const owner = makeSocket();
+    const ada = makeSocket();
+    seedSession(state, owner, presence('p-owner', 'edit'));
+    (owner.attachment as { personTag?: string }).personTag = 'p-webber';
+    seedSession(state, ada, presence('p-ada', 'edit'));
+    const res = await put(room, body());
+    expect(res.status).toBe(200);
+    expect(await res.json()).toMatchObject({ created: true });
+    expect(lastAgents(ada)).toEqual([
+      expect.objectContaining({
+        name: 'Webber',
+        status: 'adding payment service',
+        focus: ['n3'],
+        joins: ['p-owner'],
+        person: 0,
+      }),
+    ]);
+    expect(lastAgents(owner)).toEqual([expect.objectContaining({ joins: [], self: true })]);
+    const frame = JSON.parse(ada.sent.at(-1)!) as { participants: { id: string }[] };
+    expect(frame.participants.map((p) => p.id)).toEqual(['p-owner']);
+    expect(ada.sent.at(-1)).not.toMatch(/tok_1|p-webber/);
+  });
+
+  it('refreshes without a frame, refuses a bad body, and clears with a frame', async () => {
+    const { room, state } = newRoom();
+    const ada = makeSocket();
+    seedSession(state, ada, presence('p-ada', 'edit'));
+    await put(room, body());
+    const sent = ada.sent.length;
+    expect((await put(room, body({ mode: 'refresh' }))).status).toBe(200);
+    expect(ada.sent.length).toBe(sent);
+    expect((await put(room, { tokenId: 'x' })).status).toBe(400);
+    expect((await del(room, '?tab=t1')).status).toBe(400);
+    expect(await (await del(room, '?token=tok_1&tab=t1')).json()).toEqual({ cleared: true });
+    expect(lastAgents(ada)).toEqual([]);
+    expect(await (await del(room, '?token=tok_1&tab=t1')).json()).toEqual({ cleared: false });
+  });
+
+  it('refuses a new entry past the room’s cap', async () => {
+    const { room } = newRoom();
+    for (let i = 0; i < 32; i += 1) await put(room, body({ tokenId: `tok_${i}` }));
+    const full = await put(room, body({ tokenId: 'tok_over' }));
+    expect(full.status).toBe(409);
+    expect(await full.json()).toEqual({ error: 'agent_presence_full' });
+  });
+
+  it('arms the alarm at the earliest expiry, sweeps on it, and clears the alarm when nothing is left', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date(1_000_000));
+    const { room, state } = newRoom();
+    const ada = makeSocket();
+    seedSession(state, ada, presence('p-ada', 'edit'));
+    await put(room, body({ ttlMs: 5_000 }));
+    expect(state.alarms.at(-1)).toBe(1_005_000);
+    vi.setSystemTime(new Date(1_006_000));
+    await room.alarm();
+    expect(lastAgents(ada)).toEqual([]);
+    expect(state.alarms.at(-1)).toBeNull();
+    vi.useRealTimers();
+  });
+
+  it('leaves an expired entry out of a frame before the alarm fires', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date(2_000_000));
+    const { room, state } = newRoom();
+    const ada = makeSocket();
+    seedSession(state, ada, presence('p-ada', 'edit'));
+    await put(room, body({ ttlMs: 1_000 }));
+    vi.setSystemTime(new Date(2_002_000));
+    room.broadcastPresence();
+    expect(lastAgents(ada)).toEqual([]);
+    vi.useRealTimers();
+  });
+
+  it('clears every entry when the document is trashed, and a link’s entries when it is revoked', async () => {
+    const { room, state } = newRoom();
+    const ada = makeSocket();
+    seedSession(state, ada, presence('p-ada', 'edit'), true);
+    await put(room, body({ tokenId: 'tok_a', shareCode: 'CODE' }));
+    await put(room, body({ tokenId: 'tok_b' }));
+    const broadcast = (op: unknown) =>
+      room.fetch(
+        new Request('https://room/broadcast', { method: 'POST', body: JSON.stringify({ op }) }),
+      );
+    await broadcast({ kind: 'share-revoked', code: 'CODE' });
+    expect(room.agents.live().map((r) => r.tokenId)).toEqual(['tok_b']);
+    await broadcast({ kind: 'share-rescoped', code: 'OTHER' });
+    expect(room.agents.live()).toHaveLength(1);
+    await broadcast({ kind: 'document-trashed' });
+    expect(room.agents.live()).toEqual([]);
+  });
+
+  it('restores entries after a wake', async () => {
+    const state = makeState();
+    const room = new DocumentRoom(state as unknown as DurableObjectState);
+    await put(room, body());
+    const woken = new DocumentRoom(state as unknown as DurableObjectState);
+    await Promise.resolve();
+    await new Promise((r) => setTimeout(r, 0));
+    expect(woken.agents.live().map((r) => r.tokenId)).toEqual(['tok_1']);
   });
 });

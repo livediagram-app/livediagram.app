@@ -592,6 +592,36 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     statuses: [204, 401, 403, 404, 405, 409, 410, 413],
   },
   {
+    method: 'PUT',
+    path: '/documents/{id}/tabs/{tabId}/presence',
+    segment: 'documents',
+    tag: 'Documents',
+    summary:
+      "An agent's presence on a tab: a status line (up to 80 characters), focus (up to 20 refs) and a ttl (1 to 120 seconds; 30 by default). API tokens only; shown as the token's owner.",
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    requestSchema: {
+      type: 'object',
+      properties: {
+        status: { type: 'string' },
+        focus: { type: 'array', items: { type: 'string' } },
+        ttl: { type: 'integer' },
+      },
+    },
+    responseSchema: wrap('presence', 'AgentPresenceResult'),
+    statuses: [200, 400, 401, 403, 404, 409, 410, 503],
+  },
+  {
+    method: 'DELETE',
+    path: '/documents/{id}/tabs/{tabId}/presence',
+    segment: 'documents',
+    tag: 'Documents',
+    summary: "Clear an agent's presence on a tab; 204 whether or not it was there.",
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    statuses: [204, 401, 403, 404, 410, 503],
+  },
+  {
     method: 'GET',
     path: '/documents/{id}/comments',
     segment: 'documents',

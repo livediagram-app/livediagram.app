@@ -9,6 +9,14 @@ import { opForTheWire, stampCommentAuthor } from '@livediagram/document';
 import { RoomLedgerStore } from './room-ledger-store';
 import { RoomLivePoll } from './room-live-poll';
 import { RoomSelectionStore, selectionFromOp, type LiveSession } from './room-selections';
+import {
+  agentPresenceLog,
+  agentRosterFor,
+  answerAgentPresence,
+  clearAgentsForOp,
+  RoomAgentPresence,
+  type RosterSession,
+} from './room-agent-presence';
 import type { ClientMessage, Env, ParticipantPresence, ServerMessage } from './types';
 import { reportServerEvent } from './server-telemetry';
 import { multiplayerDecision } from './room-multiplayer';
@@ -220,6 +228,8 @@ export class DocumentRoom implements DurableObject {
   poll: RoomLivePoll;
   // Each session's selection, for the api's held check (room-selections.ts).
   selections: RoomSelectionStore;
+  // Agent presence entries (docs/specs/024-agents/agent-presence.md "Presence").
+  agents: RoomAgentPresence;
 
   // The worker env, for the one server-side telemetry emit the room owns
   // (Document·Used·Multiplayer). Optional so unit tests can build a room
@@ -241,6 +251,11 @@ export class DocumentRoom implements DurableObject {
     this.ledger = new RoomLedgerStore(state.storage);
     this.poll = new RoomLivePoll(state.storage);
     this.selections = new RoomSelectionStore(state.storage);
+    this.agents = new RoomAgentPresence(
+      state.storage,
+      () => Date.now(),
+      () => crypto.randomUUID(),
+    );
     // Restore before any request can observe `epoch`/`seq`. A wake re-runs
     // the constructor, so without this gate a socket could be handed the
     // freshly-minted field values above and defeat the whole point.
@@ -255,6 +270,8 @@ export class DocumentRoom implements DurableObject {
       }
       this.facilitator = (await state.storage.get<FacilitatorState>(FACILITATOR_KEY)) ?? FREE_BATON;
       await this.poll.restore();
+      for (const r of await this.agents.restore()) agentPresenceLog('expired', r);
+      this.armAlarm();
     });
   }
 
@@ -286,7 +303,11 @@ export class DocumentRoom implements DurableObject {
       else this.broadcastSystemOp(op);
       this.closeSessionsOfChangedLink(op);
       this.closeAllIfTrashed(op);
+      await this.clearAgentsFor(op);
       return new Response(null, { status: 204 });
+    }
+    if (url.pathname === '/presence' && (request.method === 'PUT' || request.method === 'DELETE')) {
+      return this.handleAgentPresence(request, url);
     }
     if (request.method === 'POST' && url.pathname === '/qa') {
       return this.handleQaWrite(request);
@@ -960,13 +981,43 @@ export class DocumentRoom implements DurableObject {
     // The alarm is what turns "away" into "gone" without anybody having to be
     // connected to notice. A reclaim clears the deadline, so a fired alarm
     // whose deadline has moved simply does nothing.
-    void this.state.storage.setAlarm(next.graceUntil!);
+    this.armAlarm();
   }
 
-  /** The grace clock ran out (or did not, if they came back). */
+  // The room's one alarm, at the earliest of the facilitator grace deadline and every agent presence expiry, or
+  // none when there is neither (agent-presence I5, PR29).
+  private armAlarm(): void {
+    const deadlines = [
+      this.facilitator.holder !== null ? this.facilitator.graceUntil : undefined,
+      this.agents.nextExpiry() ?? undefined,
+    ].filter((d): d is number => d !== undefined);
+    if (deadlines.length === 0) void this.state.storage.deleteAlarm();
+    else void this.state.storage.setAlarm(Math.min(...deadlines));
+  }
+
+  /** Agent entries past their expiry go; then the grace clock ran out (or did not, if they came back). */
   async alarm(): Promise<void> {
-    if (!graceExpired(this.facilitator, Date.now())) return;
-    this.setFacilitator(FREE_BATON, { reason: 'left', by: this.facilitator.holder ?? undefined });
+    const expired = await this.agents.sweep();
+    for (const r of expired) agentPresenceLog('expired', r);
+    if (expired.length > 0) this.broadcastPresence();
+    if (graceExpired(this.facilitator, Date.now()))
+      this.setFacilitator(FREE_BATON, { reason: 'left', by: this.facilitator.holder ?? undefined });
+    this.armAlarm();
+  }
+
+  // Internal: an agent presence write from the worker (room-agent-presence.ts). Same trust argument as /broadcast.
+  private async handleAgentPresence(request: Request, url: URL): Promise<Response> {
+    const res = await answerAgentPresence(this.agents, request, url, () =>
+      this.broadcastPresence(),
+    );
+    this.armAlarm();
+    return res;
+  }
+
+  // A trashed document or a changed link clears agent entries (room-agent-presence.ts, PR15).
+  private async clearAgentsFor(op: unknown): Promise<void> {
+    await clearAgentsForOp(this.agents, op, () => this.broadcastPresence());
+    this.armAlarm();
   }
 
   // Hibernation event handlers for a session ending. The runtime removes
@@ -1049,13 +1100,31 @@ export class DocumentRoom implements DurableObject {
     // Profile pictures go only to account sessions (docs/specs/014-identity/profile-picture.md §5): an
     // anonymous share-link visitor gets the same roster with every picture removed, so the URL
     // never reaches them.
-    const entries: [WebSocket, ParticipantPresence | null, boolean][] = [];
+    const entries: [WebSocket, ParticipantPresence | null, boolean, string | null][] = [];
     for (const ws of this.state.getWebSockets()) {
       if (ws === except) continue;
       const session = this.readSession(ws);
-      entries.push([ws, session?.presence ?? null, session?.account === true]);
+      entries.push([
+        ws,
+        session?.presence ?? null,
+        session?.account === true,
+        session?.personTag ?? null,
+      ]);
     }
-    for (const [ws, , account] of entries) {
+    // Agent entries past their expiry never reach a frame; the store drops them on its next sweep (PR30).
+    const now = Date.now();
+    const agentEntries = this.agents.live().filter((r) => r.expiresAt > now);
+    if (agentEntries.length < this.agents.live().length)
+      void this.agents.sweep().then(() => this.armAlarm());
+    const sessions: RosterSession[] = entries.flatMap(([, presence, , personTag]) =>
+      presence ? [{ presenceId: presence.id, personTag }] : [],
+    );
+    for (const [ws, self, account, personTag] of entries) {
+      const agents = agentRosterFor(
+        self ? { presenceId: self.id, personTag } : null,
+        sessions,
+        agentEntries,
+      );
       const others: ParticipantPresence[] = [];
       for (const [peer, presence] of entries) {
         if (peer === ws || !presence) continue;
@@ -1067,7 +1136,13 @@ export class DocumentRoom implements DurableObject {
         others.push(withoutPicture);
       }
       try {
-        ws.send(JSON.stringify({ kind: 'presence', participants: others } satisfies ServerMessage));
+        ws.send(
+          JSON.stringify({
+            kind: 'presence',
+            participants: others,
+            agents,
+          } satisfies ServerMessage),
+        );
       } catch {
         // Dead socket: the runtime reaps it from getWebSockets(); we only
         // shed the in-memory rate entry so the map can't leak.

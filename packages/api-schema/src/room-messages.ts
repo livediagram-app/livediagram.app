@@ -1,3 +1,4 @@
+import type { AgentPresence } from './agent-presence';
 import type { ArticleOp, ElementDelta, ElementOp, QaNote, Tab } from '@livediagram/document';
 import type { ParticipantPresence } from './index';
 import type { AvatarConfig } from './avatar';
@@ -248,7 +249,8 @@ export type FacilitatorAction =
 // of the client's op union — clients narrow it via their own
 // `RoomOp` type and ignore frames they don't recognise.
 export type ServerMessage =
-  | { kind: 'presence'; participants: ParticipantPresence[] }
+  // `agents`: agent presence, apart from `participants` so no session reader counts one (agent-presence PR14).
+  | { kind: 'presence'; participants: ParticipantPresence[]; agents: AgentPresence[] }
   // `seq`/`epoch` ride mutation ops only (docs/specs/012-collaboration/realtime-conflict-resolution.md, Level 1): the room
   // assigns each mutation a monotonic sequence within an `epoch` (a random
   // id minted per DO instantiation) so a reconnecting client can ask what
@@ -585,7 +587,7 @@ export type RoomOutgoing =
   | ({ kind: 'facilitator' } & FacilitatorAction);
 
 export type RoomIncoming =
-  | { kind: 'presence'; participants: ParticipantPresence[] }
+  | { kind: 'presence'; participants: ParticipantPresence[]; agents?: AgentPresence[] }
   | { kind: 'op'; from: string; op: RoomOp; seq?: number; epoch?: string }
   | {
       kind: 'catchup';

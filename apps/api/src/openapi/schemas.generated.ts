@@ -247,6 +247,36 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "AgentPresenceResult": {
+    "additionalProperties": false,
+    "properties": {
+      "expiresAt": {
+        "type": "number"
+      },
+      "focus": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "status": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "tabId": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "tabId",
+      "status",
+      "focus",
+      "expiresAt"
+    ],
+    "type": "object"
+  },
   "AiConversationTurn": {
     "additionalProperties": false,
     "properties": {
@@ -8638,6 +8668,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "Restored",
       "Applied",
       "Conflicted",
+      "Present",
       "Held",
       "Viewed",
       "Sent",

@@ -525,3 +525,51 @@ describe('reverting', () => {
     ).toBe(404);
   });
 });
+
+describe('agent presence after a changeset (docs/specs/024-agents/agent-presence.md "Presence")', () => {
+  const presenceCalls = (r: { calls: { url: string; body: unknown }[] }) =>
+    r.calls.filter((c) => c.url.includes('/presence'));
+
+  it('refreshes the token’s presence after a write, not after a dry run or a session’s write', async () => {
+    quiet();
+    const { db, room: r } = await setUp();
+    await submit(db, { operations: 'set a label=A1' }, { token: true }, '?dryRun=1');
+    await submit(db, { operations: 'set a label=A2' }, { token: false });
+    await settled();
+    expect(presenceCalls(r)).toEqual([]);
+    await submit(db, { operations: 'set a label=A3' });
+    await settled();
+    expect(presenceCalls(r)).toEqual([
+      {
+        url: 'https://room/presence',
+        body: expect.objectContaining({
+          tokenId: 'tok_1',
+          tabId: 't1',
+          name: 'Webber',
+          mode: 'refresh',
+          role: 'edit',
+        }),
+      },
+    ]);
+  });
+
+  it('refreshes after a token’s revert too', async () => {
+    quiet();
+    const { db, room: r } = await setUp();
+    const written = (await (await submit(db, { operations: 'set a label=A1' })).json()) as {
+      changeset: { id: string };
+    };
+    await settled();
+    r.calls.splice(0);
+    const res = await call(
+      db,
+      'POST',
+      `/api/documents/D/changesets/${written.changeset.id}/revert`,
+      undefined,
+      { token: true },
+    );
+    expect(res.status).toBe(200);
+    await settled();
+    expect(presenceCalls(r)).toHaveLength(1);
+  });
+});

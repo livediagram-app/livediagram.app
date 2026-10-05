@@ -26,6 +26,7 @@ import { handleTabPut, refuseTokenTabPut } from './tab-put-route';
 import { handleTabRename } from './tab-name-route';
 import { handleChangesetRoutes } from './changesets';
 import { handleCommentRoutes } from './comment-routes';
+import { handleAgentPresenceRoute } from './agent-presence-routes';
 import {
   deniedOnTab,
   gateEdit,
@@ -164,6 +165,9 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
   // The comment endpoints (docs/specs/024-agents/agent-presence.md "Comments").
   const comments = await handleCommentRoutes(ctx);
   if (comments) return comments;
+  // Agent presence (docs/specs/024-agents/agent-presence.md "Presence").
+  const presence = await handleAgentPresenceRoute(ctx);
+  if (presence) return presence;
 
   // /api/documents/<id>/tabs/<tabId>/link — owner only.
   //   POST — add an existing tab to this document (docs/specs/006-document/tab-document-many-to-many.md).
