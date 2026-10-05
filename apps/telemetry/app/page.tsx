@@ -8,6 +8,7 @@ import {
   AlertGlyph,
   BrushGlyph,
   FileGlyph,
+  HeartGlyph,
   SettingsGlyph,
   LayersGlyph,
   PaletteGlyph,
@@ -27,6 +28,7 @@ import { SettingsView } from './SettingsView';
 import { LookAndFeelView } from './LookAndFeelView';
 import { PaletteView } from './PaletteView';
 import { HelpView } from './HelpView';
+import { CommunityView } from './CommunityView';
 import { EditingView } from './EditingView';
 import { ExceptionsView } from './ExceptionsView';
 import { MetricSearch } from './MetricSearch';
@@ -43,7 +45,7 @@ const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
 // Tab order follows the product funnel: who arrives, signs up, opens and
 // makes things (Dashboard), which pages they read (Pages), what they build
 // (Palette / Look & Feel), how they organise it (Editing), how they get
-// unstuck (Help), error health (Exceptions), then the power-user lens
+// unstuck (Help), what they share with everyone (Community), error health (Exceptions), then the power-user lens
 // (Search).
 const VIEWS: { key: ViewKey; label: string; icon: ReactNode }[] = [
   { key: 'dashboard', label: 'Dashboard', icon: <SparkGlyph /> },
@@ -53,6 +55,7 @@ const VIEWS: { key: ViewKey; label: string; icon: ReactNode }[] = [
   { key: 'lookfeel', label: 'Look & Feel', icon: <BrushGlyph /> },
   { key: 'editing', label: 'Editing', icon: <LayersGlyph /> },
   { key: 'help', label: 'Help', icon: <FileGlyph /> },
+  { key: 'community', label: 'Community', icon: <HeartGlyph /> },
   { key: 'settings', label: 'Settings', icon: <SettingsGlyph /> },
   { key: 'exceptions', label: 'Exceptions', icon: <AlertGlyph /> },
   { key: 'search', label: 'Search', icon: <SearchGlyph /> },
@@ -177,6 +180,8 @@ export default function TelemetryDashboard() {
               <EditingView summary={summary} active={active} />
             ) : view === 'help' ? (
               <HelpView summary={summary} active={active} />
+            ) : view === 'community' ? (
+              <CommunityView summary={summary} active={active} />
             ) : view === 'modes' ? (
               <ModesView summary={summary} active={active} />
             ) : view === 'settings' ? (
