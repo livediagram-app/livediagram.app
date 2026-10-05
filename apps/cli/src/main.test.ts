@@ -214,6 +214,36 @@ describe('run', () => {
   });
 });
 
+describe('a self-hosted profile', () => {
+  it('never contacts livediagram.app across a session of commands', async () => {
+    const SELF = 'https://diagrams.example';
+    const config = '/home/agent/.config/livediagram/config.toml';
+    const selfHost: Route = (request, url) => {
+      if (url.origin !== SELF) return undefined;
+      const path = url.pathname;
+      if (path === '/api/capabilities')
+        return Response.json({ aiEnabled: false, apiBase: `${SELF}/api`, authEnabled: true });
+      return (
+        library(request, new URL(`https://livediagram.app${path}${url.search}`)) ??
+        tokens(request, url)
+      );
+    };
+    const files = {
+      [config]: 'default_profile = "self"\n[profiles.self]\nhost = "https://diagrams.example"',
+    };
+    const io = fakeIo({ env: { LIVEDIAGRAM_TOKEN: TOKEN }, routes: [selfHost], files });
+    for (const argv of [
+      ['document', 'ls'],
+      ['tab', 'ls', 'Auth flow'],
+      ['tab', 'lint', 'Auth flow'],
+      ['auth', 'status'],
+    ])
+      await run(argv, io);
+    expect(io.requests.length).toBeGreaterThan(5);
+    expect(new Set(io.requests.map((r) => new URL(r.url).origin))).toEqual(new Set([SELF]));
+  });
+});
+
 describe('the local verbs', () => {
   it('print the guides and the skill without a host', async () => {
     expect((await cli(['guide'], fakeIo())).out).toContain('Guides: livediagram guide <topic>');
