@@ -32,6 +32,8 @@ item store.
 - **Plan boards and Plan cards take input** as [Plan board](plan-board.md#working-on-a-board) describes.
 - **The item panel** opens as a modal over the canvas when an item is opened (a sheet that rises from the
   bottom on a phone).
+- **No Quick Style panel**: a board's look comes from the tab's theme; its colours are still in its element
+  menu's Style.
 - **The Layers panel is gone**, with its button: a board is worked by its columns and cards, not a stacking
   order. The **Card Types** button stands where it was ([Item types](item-types.md)). Layers returns with any
   other mode.

@@ -12,6 +12,7 @@ import { useConfirm } from '@/hooks/ui/useConfirm';
 import { usePlan } from './PlanContext';
 import { PencilIcon, PlusIcon } from '@livediagram/ui';
 import { PlanTypeGlyph } from './plan-type-glyph';
+import { ACCENT_BG, ACCENT_TEXT, ACCENT_TINT, accentVars } from './plan-palette';
 
 export function CardTypesPanel({
   popoverOpen,
@@ -100,16 +101,16 @@ export function CardTypesPanel({
                 } ${dragging === t.id ? 'opacity-40' : ''}`}
               >
                 <span
-                  className="absolute inset-y-0 left-0 w-1"
-                  style={{ backgroundColor: t.color }}
+                  className={`absolute inset-y-0 left-0 w-1 ${ACCENT_BG}`}
+                  style={accentVars(t.color)}
                   aria-hidden
                 />
                 <span
-                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md"
-                  style={{ backgroundColor: `${t.color}1f` }}
+                  className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-md ${ACCENT_TINT} ${ACCENT_TEXT}`}
+                  style={accentVars(t.color)}
                   aria-hidden
                 >
-                  <PlanTypeGlyph glyph={t.glyph} color={t.color} size={16} />
+                  <PlanTypeGlyph glyph={t.glyph} size={16} />
                 </span>
                 <span className="flex min-w-0 flex-1 flex-col">
                   <span className="truncate text-[13px] font-semibold text-slate-800 dark:text-slate-100">

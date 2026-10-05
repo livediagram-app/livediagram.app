@@ -282,7 +282,7 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     values: PLAN_ITEM_TYPES,
     open: PLAN_TYPE_WHY,
   },
-  'apps/live/components/plan/BoardSetupPanel.tsx Plan·Changed': { values: PLAN_SETUP_PARTS },
+  'apps/live/components/plan/track-board-setup.ts Plan·Changed': { values: PLAN_SETUP_PARTS },
   // Default folders (docs/specs/013-workspace/default-folders.md "Telemetry"): one value per key.
   'apps/live/lib/placement-defaults/placement-defaults-store.ts Folder·Changed': {
     values: DEFAULT_FOLDER_TYPES,

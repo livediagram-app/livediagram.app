@@ -15,7 +15,7 @@ describe('card tiles from the document', () => {
     };
     expect(planCardTile(call)).toMatchObject({
       id: 'plan:card-customer-call',
-      caption: 'Customer call card',
+      caption: 'Customer call Card',
       section: 'plan-cards',
       action: { type: 'shape', kind: 'plan-card', plan: 'customer-call' },
     });

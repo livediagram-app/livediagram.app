@@ -8,6 +8,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { cornerRadiusPx, type ShapeElement } from '@livediagram/document';
 import {
   ITEM_TYPES,
+  itemStatus,
   cardIsFaceDown,
   normaliseBoardSetup,
   projectBoard,
@@ -21,6 +22,8 @@ import { track } from '@/lib/telemetry';
 import { usePlanBoardDrop } from '@/hooks/plan/usePlanBoardDrop';
 import { laneMove } from './plan-board-moves';
 import { LaneRow, PlanBoardCard, PlanDragGhost } from './PlanBoardCells';
+import { PlanColumnHeader } from './PlanColumnHeader';
+import { trackSetup } from './track-board-setup';
 import { PlanCardMenuHost } from './PlanCardMenu';
 import { usePlan } from './PlanContext';
 import { PlanBoardHeader } from './PlanBoardHeader';
@@ -213,7 +216,6 @@ export function PlanBoardView({
           plan?.announce('Every card turned face up');
           track('Plan', 'Revealed', 'Board');
         }}
-        onSetup={() => plan?.openSetup(element.id)}
         onMoveUnplaced={(item, status) => plan?.moveItem(item.id, { status, before: null })}
       />
       <div
@@ -223,39 +225,21 @@ export function PlanBoardView({
       >
         <div className="grid gap-3" style={{ gridTemplateColumns: columnTemplate }}>
           {projection.columns.map((col) => (
-            <div
+            <PlanColumnHeader
               key={col.column.id}
-              className="sticky top-0 z-[1] rounded-t-lg px-3 pb-1.5 pt-2"
-              style={{ backgroundColor: palette.column }}
-            >
-              <div
-                className="mb-1.5 h-1 rounded-full"
-                style={{ backgroundColor: col.column.color ?? palette.border }}
-                aria-hidden
-              />
-              <div className="flex items-center gap-2">
-                <span className="truncate text-[13px] font-semibold">{col.column.name}</span>
-                <span
-                  className="ml-auto rounded-full px-1.5 text-[11px] font-semibold tabular-nums"
-                  style={{
-                    color: col.overLimit ? palette.warning : palette.muted,
-                    backgroundColor: col.overLimit ? palette.warningBg : 'transparent',
-                  }}
-                  aria-label={
-                    col.column.wipLimit
-                      ? `${col.count} of a WIP limit of ${col.column.wipLimit}${col.overLimit ? ', over the limit' : ''}`
-                      : `${col.count} items`
-                  }
-                >
-                  {col.column.wipLimit ? `${col.count} / ${col.column.wipLimit}` : col.count}
-                </span>
-              </div>
-              {col.overLimit ? (
-                <div className="text-[10px] font-medium" style={{ color: palette.warning }}>
-                  Over WIP limit
-                </div>
-              ) : null}
-            </div>
+              col={col}
+              setup={setup}
+              palette={palette}
+              canEdit={canEdit}
+              onChange={(next, part) => {
+                plan?.updateBoard(element.id, next);
+                trackSetup(part);
+              }}
+              onMoveCards={(from, to) => {
+                for (const it of items.values())
+                  if (itemStatus(it) === from) plan?.moveItem(it.id, { status: to, before: null });
+              }}
+            />
           ))}
           {lanes.map((lane, laneIndex) => {
             const shut = collapsed.has(lane.key);

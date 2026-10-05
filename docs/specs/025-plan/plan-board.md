@@ -40,10 +40,22 @@ Stored on the element, shared by everyone, undone like any element edit:
 - **Hide writing**: off, or on: each person's cards on this board are face-down to everyone else until the board
   is revealed. It hides the face, not the data; it is a facilitation aid, not a privacy boundary.
 
+Where each is set, so a setting lives with what it changes, never in one central panel:
+
+- **A column's own settings** sit on the column: a cog at the far right of its head (shown on hover and focus,
+  always on a touch screen) opens a small popover (a sheet on a phone) with its **name**, **colour** (none or
+  one of eight), **WIP limit**, **Counts as done**, **Move Left** / **Move Right**, **+ Add Column After** and
+  **Remove Column**. Removing a column with cards first asks where they go (**Move and Remove**, or **Keep
+  It**); the board's last column cannot be removed. Each change applies as it is made.
+- **The board's own settings** sit in its element menu (right-click the board, or the selection's ⋯), in a
+  **Board** flyout: **Title**; **Rows** (No Rows, By Assignee, By Card Type, By Priority, By Project);
+  **Shows** (a toggle per card type); **Cards Show** (a toggle per card field); **Voting**; **Hide Writing**;
+  and **Add Column**.
+
 ## What the board shows
 
 - **Header**: title, the count of items shown, a progress bar (done of all, when a done column is set), the
-  avatars of people on the board, the quick filter and the set-up button.
+  avatars of people on the board and the quick filter.
 - **Columns**: name, count, and the WIP limit as `3 / 4`. Over the limit, the count turns to a warning colour and
   the column header says so; it never refuses a card.
 - **Cards** in rank order. A card face draws the item type's colour stripe and glyph, the key (`#12`), the title
@@ -98,9 +110,7 @@ In Plan mode:
   vote budget the header shows the votes left.
 - **Reveal**: on a board hiding writing, anyone who may edit can press **Reveal**; every card turns face up for
   everyone, and the set-up's Hide writing turns off.
-- **Set-up**: the set-up button opens the board panel: title, columns (add, rename, recolour, reorder, set WIP,
-  mark done, remove), swimlanes, scope, card fields, voting and hide writing. Removing a column with cards asks
-  where they go.
+- **Set-up**: a column's cog, and the board's element menu (above, "The board set-up").
 
 ### Keyboard
 

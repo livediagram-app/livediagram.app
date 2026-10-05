@@ -42,7 +42,6 @@ export function usePlanSlice(opts: {
   const { commit, select } = opts;
   const { announce, publishPresence } = opts;
   const [openItemId, setOpenItemId] = useState<string | null>(null);
-  const [setupBoardId, setSetupBoardId] = useState<string | null>(null);
   // The type the type editor is open on, or 'new' (docs/specs/025-plan/item-types.md "Editing a type").
   const [editingTypeId, setEditingTypeId] = useState<string | 'new' | null>(null);
   const editType = useCallback((typeId: string | 'new') => setEditingTypeId(typeId), []);
@@ -180,8 +179,6 @@ export function usePlanSlice(opts: {
     track('Plan', 'Opened', 'Item');
   }, []);
 
-  const openSetup = useCallback((boardId: string) => setSetupBoardId(boardId), []);
-
   // A Plan card dropped on a board: its item moves into the column under the drop, and the card,
   // now on the board, leaves the canvas (docs/specs/025-plan/plan-board.md "Working on a board").
   const dropPlanCardOnBoard = useCallback(
@@ -227,7 +224,6 @@ export function usePlanSlice(opts: {
       deleteItem,
       vote,
       updateBoard,
-      openSetup,
       placeCardOut,
       removeCard,
       announce,
@@ -253,7 +249,6 @@ export function usePlanSlice(opts: {
       deleteItem,
       vote,
       updateBoard,
-      openSetup,
       placeCardOut,
       removeCard,
       announce,
@@ -265,8 +260,6 @@ export function usePlanSlice(opts: {
     context,
     openItemId,
     closeItem: () => setOpenItemId(null),
-    setupBoardId,
-    closeSetup: () => setSetupBoardId(null),
     editingTypeId,
     closeTypeEditor: () => setEditingTypeId(null),
     dropPlanCardOnBoard,

@@ -17,9 +17,10 @@ import {
 import { Button } from '@livediagram/ui';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { DialogFooter } from '@/components/dialogs/DialogFooter';
-import { FIELD_CLASS, SheetRow } from './PlanSheet';
+import { FIELD_CLASS, SheetRow } from './PlanModal';
 import { ItemTypeFieldList, type FieldDraft } from './ItemTypeFieldList';
 import { PlanTypeGlyph } from './plan-type-glyph';
+import { ACCENT_TEXT, accentVars } from './plan-palette';
 
 // Where a deleted type's items go: another type's id, or null to keep them (drawn as "Item").
 export type DeleteTarget = string | null;
@@ -120,7 +121,9 @@ export function ItemTypeEditor({
           id={titleId}
           className="flex items-center gap-2 text-lg font-semibold text-slate-900 dark:text-slate-50"
         >
-          <PlanTypeGlyph glyph={glyph} color={color} size={18} />
+          <span className={ACCENT_TEXT} style={accentVars(color)}>
+            <PlanTypeGlyph glyph={glyph} size={18} />
+          </span>
           {type ? 'Edit Card Type' : 'New Card Type'}
         </h2>
       </div>
@@ -180,7 +183,9 @@ export function ItemTypeEditor({
                     }`}
                     onClick={() => setGlyph(g)}
                   >
-                    <PlanTypeGlyph glyph={g} color={color} size={18} />
+                    <span className={ACCENT_TEXT} style={accentVars(color)}>
+                      <PlanTypeGlyph glyph={g} size={18} />
+                    </span>
                   </button>
                 ))}
               </div>

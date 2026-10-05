@@ -509,6 +509,8 @@ export function EditorView() {
                         hidden={
                           zenMode ||
                           embedMode ||
+                          // Not in Plan mode (docs/specs/025-plan/plan-mode.md): a board's look is its theme's.
+                          ctx.editorMode.mode === 'plan' ||
                           // Off in Settings (docs/specs/007-editor/user-preferences.md); style memory stays.
                           !panelEnabled(userPreferences, 'quickStylePanelEnabled') ||
                           (contextMenu !== null && contextMenu.mode !== 'canvas')

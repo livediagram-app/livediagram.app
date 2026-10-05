@@ -4,7 +4,6 @@
 // progress, the quick filter, the unplaced count, votes left, Reveal and the set-up cog. The header's
 // own background is the board's handle: a press there moves the board, its controls do not.
 import { useState } from 'react';
-import { SettingsIcon } from '@livediagram/ui';
 import type { BoardProjection, Item, PlanBoardSetup, QuickFilter } from '@livediagram/items';
 import { itemTitle } from '@livediagram/items';
 import type { PlanPalette } from './plan-palette';
@@ -23,7 +22,6 @@ export function PlanBoardHeader({
   loadFailed,
   onRetry,
   onReveal,
-  onSetup,
   onMoveUnplaced,
 }: {
   setup: PlanBoardSetup;
@@ -37,7 +35,6 @@ export function PlanBoardHeader({
   loadFailed: boolean;
   onRetry: () => void;
   onReveal: () => void;
-  onSetup: () => void;
   onMoveUnplaced: (item: Item, status: string) => void;
 }) {
   const [trayOpen, setTrayOpen] = useState(false);
@@ -133,17 +130,6 @@ export function PlanBoardHeader({
             onClick={onReveal}
           >
             Reveal
-          </button>
-        ) : null}
-        {canEdit ? (
-          <button
-            type="button"
-            className="flex h-7 w-7 items-center justify-center rounded-md border transition enabled:cursor-pointer"
-            style={{ borderColor: palette.border, color: palette.muted }}
-            aria-label="Board set-up"
-            onClick={onSetup}
-          >
-            <SettingsIcon size={14} />
           </button>
         ) : null}
       </div>

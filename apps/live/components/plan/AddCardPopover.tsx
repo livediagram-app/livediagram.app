@@ -19,6 +19,7 @@ import { BottomSheet } from '@/components/primitives/BottomSheet';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { VIEWPORT_EDGE_MARGIN as EDGE } from '@/lib/clamp-to-viewport';
 import { PlanTypeGlyph } from './plan-type-glyph';
+import { ACCENT_TEXT, ACCENT_TINT, accentVars } from './plan-palette';
 
 const WIDTH = 300;
 const GAP = 8;
@@ -119,11 +120,11 @@ export function AddCardPopover({
             className="flex flex-col items-center gap-1.5 rounded-lg border border-slate-200 px-1.5 py-2.5 text-[12px] font-medium text-slate-700 outline-none transition hover:border-slate-300 hover:bg-slate-50 focus-visible:ring-2 focus-visible:ring-brand-400 dark:border-slate-700 dark:text-slate-200 dark:hover:border-slate-600 dark:hover:bg-slate-800"
           >
             <span
-              className="flex h-8 w-8 items-center justify-center rounded-md"
-              style={{ backgroundColor: `${t.color}1f` }}
+              className={`flex h-8 w-8 items-center justify-center rounded-md ${ACCENT_TINT} ${ACCENT_TEXT}`}
+              style={accentVars(t.color)}
               aria-hidden
             >
-              <PlanTypeGlyph glyph={t.glyph} color={t.color} size={16} />
+              <PlanTypeGlyph glyph={t.glyph} size={16} />
             </span>
             <span className="max-w-full truncate">{t.label}</span>
           </button>

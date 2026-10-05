@@ -44,22 +44,24 @@ PlanContext.tsx          context: items, types, item types slice, status, self, 
                          canVote, presence, actions
 PlanBoardView.tsx        board body (ShapeContentRouter branch): projection, themed palette, radius and font,
                          columns and rows grid, cards, keyboard, Add card per cell, the card menu
+PlanColumnHeader.tsx     a column's head: colour bar, name, count, and the cog (PlanColumnPopover)
+PlanColumnPopover.tsx    a column's settings popover
+board-setup-edits.ts     the set-up's edits as pure functions (rename, recolour, WIP, done, move, add, remove)
+track-board-setup.ts     Plan · Changed · <part>
 PlanBoardCells.tsx       a row's band, one card in a cell (right-click → onMenu), and the drag ghost
 PlanBoardHeader.tsx      title, count, progress, unplaced chip and its tray, votes left, quick filter, Only
-                         mine, Reveal, set-up button
+                         mine, Reveal
 AddCardButton.tsx        a cell's + Add card; opens AddCardPopover (or when the N key asks)
 AddCardPopover.tsx       Add a Card: the board's types as tiles, and a title field with quick tokens
 PlanCardMenu.tsx         a card's right-click menu (Open, Duplicate, Move to, Delete) and PlanCardMenuHost
 PlanCardFace.tsx         a card face, its Show on card lines, and its vote control
 PlanCardView.tsx         the plan-card element body (themed; a lone card's fill is its face); "Item not found"
-PlanSheet.tsx            the panels' shells: PlanSheet (set-up's side sheet, bottom sheet on a phone) and
-                         PlanModal (the item panel's modal, through Dialog)
+PlanModal.tsx            the item panel's modal (through Dialog), SheetRow and FIELD_CLASS
 plan-board-moves.ts      the move a drop makes (boardMoveFor), and a refusing board's reason (scopeRefusal)
-PlanSheetsHost.tsx       renders the open item panel, set-up or type editor
+PlanSheetsHost.tsx       renders the open item panel or type editor
+../palette/PlanBoardMenuSection.tsx  the board's element-menu Board flyout
 ItemPanel.tsx            item panel: type, title, the type's fields (custom ones through CustomFieldEditor)
 item-field-editors.tsx   editors for text (debounced), person, priority, labels, number, date, checklist
-BoardSetupPanel.tsx      set-up: title, columns (rename, reorder, WIP, done, colour, remove with a move), rows,
-                         scope, card fields, voting and budget, hide writing
 plan-board-keys.ts       the board's keyboard as a pure function of the projection
 plan-palette.ts          re-exports planPalette from @livediagram/document (shared with the SVG export) and
                          planOwnColours(element)
@@ -116,7 +118,8 @@ cancelled` (Escape, pointercancel). `pressed → idle` on pointerup without movi
 - Empty board: first column shows the open add field with "Add your first item".
 - Copy: "Add card", "Add your first card", "Add a Card", "Or type a title and press Enter", "Open",
   "Duplicate", "Delete", "Card duplicated", "Card deleted", "Not on this board", "Move to", "Hidden until reveal", "Reveal", "Votes left: 3",
-  "Item not found", "Remove card", "Board set-up", "Only mine".
+  "Item not found", "Remove card", "Only mine", "Column", "WIP Limit", "Counts as done",
+  "Move Left", "Move Right", "+ Add Column After", "Remove Column", "Move and Remove", "Keep It".
 - Item panel: a modal through the shared `Dialog` (`size="lg"`, `phoneSheet`: a sheet from the bottom with a grab
   handle below `sm`), max height 44rem, header with type picker + key, title
   input, field rows in the type's order, description textarea, checklist, footer "Made by X · Changed by Y, 2m".
@@ -156,6 +159,7 @@ cancelled` (Escape, pointercancel). `pressed → idle` on pointerup without movi
 
 | Rule                                        | Test                                                          |
 | ------------------------------------------- | ------------------------------------------------------------- |
+| Set-up edits                                | `apps/live/components/plan/board-setup-edits.test.ts`         |
 | Factory, validation, size, labels           | `packages/document/src/plan-shapes.test.ts`                   |
 | SVG render with and without items           | `plan-shapes.test.ts`, `svg-render-coverage.test.ts`          |
 | Projection: columns, rows, unplaced, filter | `packages/items/src/board.test.ts`                            |

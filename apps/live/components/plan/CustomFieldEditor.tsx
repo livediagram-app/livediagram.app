@@ -5,7 +5,7 @@
 // field removes its value. A value of the wrong kind (the field's kind changed) shows empty and is
 // replaced by the next edit.
 import type { CustomFieldDef, ItemFieldValue } from '@livediagram/items';
-import { FIELD_CLASS } from './PlanSheet';
+import { FIELD_CLASS } from './PlanModal';
 import { DateField, DebouncedText } from './item-field-editors';
 
 type Save = (value: ItemFieldValue | undefined) => void;

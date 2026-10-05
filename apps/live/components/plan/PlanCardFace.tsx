@@ -19,7 +19,7 @@ import {
 } from '@livediagram/items';
 import { usePlan, type PlanCardPresence } from './PlanContext';
 import { customFieldText } from './custom-field-text';
-import { PRIORITY_COLOURS, type PlanPalette } from './plan-palette';
+import { PRIORITY_COLOURS, accentOn, type PlanPalette } from './plan-palette';
 import { PersonDisc, PresenceTag } from './PersonDisc';
 import { PlanTypeGlyph } from './plan-type-glyph';
 
@@ -65,6 +65,8 @@ export function PlanCardFace({
   voting,
 }: PlanCardFaceProps) {
   const type = typeIn(usePlan()?.types ?? ITEM_TYPES, item.type);
+  // Lifted on a dark card, so Project's black still shows.
+  const accent = accentOn(type.color, palette);
   // Custom fields marked Show on card, with a value (docs/specs/025-plan/item-types.md "An item type").
   const onCard = (type.custom ?? []).flatMap((f) => {
     const text = f.onCard ? customFieldText(f, item.fields[f.id]) : null;
@@ -122,7 +124,7 @@ export function PlanCardFace({
     >
       <span
         className="absolute inset-y-0 left-0 w-1"
-        style={{ backgroundColor: type.color }}
+        style={{ backgroundColor: accent }}
         aria-hidden
       />
       {presence ? <PresenceTag name={presence.name} color={presence.color} /> : null}
@@ -131,7 +133,7 @@ export function PlanCardFace({
           className="flex items-center gap-1.5 text-[11px] font-medium"
           style={{ color: palette.muted }}
         >
-          {show('type') ? <PlanTypeGlyph glyph={type.glyph} color={type.color} /> : null}
+          {show('type') ? <PlanTypeGlyph glyph={type.glyph} color={accent} /> : null}
           {show('key') ? <span>#{item.key}</span> : null}
           {show('type') ? <span>{type.label}</span> : null}
         </div>

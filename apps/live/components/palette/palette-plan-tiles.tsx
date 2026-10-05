@@ -17,27 +17,27 @@ const BOARDS: { preset: PlanBoardPresetId; caption: string; description: string 
   {
     preset: 'kanban',
     caption: 'Kanban',
-    description: 'A Kanban board: Backlog to Done, with WIP limits on the busy columns.',
+    description: 'A Kanban Board: Backlog to Done, with WIP limits on the busy columns.',
   },
   {
     preset: 'sprint',
     caption: 'Sprint',
-    description: 'A sprint board with a row per person and estimates on every card.',
+    description: 'A Sprint Board of Tasks, a row per person and estimates on every card.',
   },
   {
     preset: 'retro',
     caption: 'Retro',
-    description: 'A retro: notes stay hidden until you reveal them, then everyone votes.',
+    description: 'A Retro Board: Notes stay hidden until you reveal them, then everyone votes.',
   },
   {
     preset: 'roadmap',
     caption: 'Roadmap',
-    description: 'Epics on Now, Next and Later.',
+    description: 'Projects on Now, Next and Later.',
   },
   {
     preset: 'bug-triage',
-    caption: 'Bug triage',
-    description: 'Bugs from New to Fixed, a row per priority.',
+    caption: 'Bug Triage',
+    description: 'Tasks labelled bug, from New to Fixed, a row per priority.',
   },
   {
     preset: 'weekly',
@@ -55,7 +55,7 @@ export const PLAN_TILES: PaletteTileDef[] = [
   ...BOARDS.map((b): PaletteTileDef => ({
     id: `plan:board-${b.preset}`,
     section: 'plan-boards',
-    label: `Add ${PLAN_BOARD_PRESETS[b.preset].label.toLowerCase()}`,
+    label: `Add ${PLAN_BOARD_PRESETS[b.preset].label}`,
     caption: b.caption,
     description: b.description,
     action: { type: 'shape', kind: 'plan-board', plan: b.preset },
@@ -70,9 +70,9 @@ export function planCardTile(t: ItemTypeDef): PaletteTileDef {
   return {
     id: `plan:card-${t.id}`,
     section: 'plan-cards',
-    label: `Add ${t.label.toLowerCase()} card`,
-    caption: `${t.label} card`,
-    description: `A new ${t.label.toLowerCase()} on its own card, anywhere on the canvas. Drag it onto a board to file it.`,
+    label: `Add ${t.label} Card`,
+    caption: `${t.label} Card`,
+    description: `A new ${t.label}, dragged into a column on a board.`,
     noTint: true,
     action: { type: 'shape', kind: 'plan-card', plan: t.id },
     icon: <PlanCardTileArt size={GLYPH_PX} color={t.color} />,

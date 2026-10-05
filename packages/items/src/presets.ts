@@ -24,7 +24,7 @@ export const PLAN_BOARD_PRESETS: Readonly<
   Record<PlanBoardPresetId, { label: string; setup: PlanBoardSetup }>
 > = {
   blank: {
-    label: 'Blank board',
+    label: 'Blank Board',
     setup: {
       title: 'Board',
       columns: [col('todo', 'To do'), col('doing', 'In progress'), col('done', 'Done')],
@@ -37,7 +37,7 @@ export const PLAN_BOARD_PRESETS: Readonly<
     },
   },
   kanban: {
-    label: 'Kanban board',
+    label: 'Kanban Board',
     setup: {
       title: 'Kanban',
       columns: [
@@ -56,7 +56,7 @@ export const PLAN_BOARD_PRESETS: Readonly<
     },
   },
   sprint: {
-    label: 'Sprint board',
+    label: 'Sprint Board',
     setup: {
       title: 'Sprint',
       columns: [
@@ -74,7 +74,7 @@ export const PLAN_BOARD_PRESETS: Readonly<
     },
   },
   'bug-triage': {
-    label: 'Bug triage',
+    label: 'Bug Triage',
     setup: {
       title: 'Bug triage',
       columns: [
@@ -94,7 +94,7 @@ export const PLAN_BOARD_PRESETS: Readonly<
     },
   },
   retro: {
-    label: 'Retro board',
+    label: 'Retro Board',
     setup: {
       title: 'Retro',
       columns: [
@@ -123,7 +123,7 @@ export const PLAN_BOARD_PRESETS: Readonly<
     },
   },
   weekly: {
-    label: 'Weekly planner',
+    label: 'Weekly Planner',
     setup: {
       title: 'This week',
       columns: [

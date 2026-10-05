@@ -20,7 +20,7 @@ import {
   type ItemFieldId,
 } from '@livediagram/items';
 import { Button, CloseIcon } from '@livediagram/ui';
-import { FIELD_CLASS } from './PlanSheet';
+import { FIELD_CLASS } from './PlanModal';
 
 export const BUILT_IN_FIELD_LABELS: Record<ItemFieldId, string> = {
   title: 'Title',

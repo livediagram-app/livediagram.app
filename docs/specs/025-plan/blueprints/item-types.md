@@ -66,7 +66,7 @@ src/type-catalogue.ts  ItemTypeCatalogue, limits, PLAN_TYPE_COLOURS, BUILT_IN_FI
   and pushed as one undo step (undo and redo replay a save without a step).
 - `PlanContext`: `types`, `itemTypes`, `editType(id | 'new')`; `usePlanSlice` holds `editingTypeId`.
 - Consumers: `PlanCardFace` (stripe, glyph, Show on card lines via `custom-field-text.ts`), `ItemPanel` (the
-  type's field order, `CustomFieldEditor`), `PlanQuickAdd`, `BoardSetupPanel` scope, `PlanBoardView`
+  type's field order, `CustomFieldEditor`), `AddCardPopover`, `PlanBoardMenuSection` scope, `PlanBoardView`
   (projection; a scope's unknown types dropped), `PlanBoardCells`/`PlanCardView` names, `newCardItemWrite`,
   the palette's Cards (`PalettePlanCardsTab`) and Popular (`PlanAwareTileGrid`, `withDocumentCardTiles`),
   SVG export and thumbnails (`itemTypes` render option), the MCP's previews.

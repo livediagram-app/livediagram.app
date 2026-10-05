@@ -1,6 +1,7 @@
 // The Boards and Cards tiles' glyphs (docs/specs/025-plan/plan-mode.md "The palette"): a board drawn
 // as a picture of its kind, and a card drawn with its item type's colour stripe, at the tile size.
 import { Glyph } from '@livediagram/ui';
+import { accentVars } from './plan-palette';
 
 // One picture per board preset, so the Boards category reads at a glance (docs/specs/025-plan/
 // plan-mode.md "The palette"), on a 22-unit grid like the other palette glyphs.
@@ -86,7 +87,16 @@ export function PlanCardTileArt({ size, color }: { size: number; color: string }
   return (
     <Glyph size={size} units={22}>
       <rect x="3" y="5" width="16" height="12" rx="2" />
-      <rect x="3" y="5" width="3" height="12" rx="1.2" fill={color} stroke="none" />
+      <rect
+        x="3"
+        y="5"
+        width="3"
+        height="12"
+        rx="1.2"
+        stroke="none"
+        className="fill-[var(--accent)] dark:fill-[var(--accent-lift)]"
+        style={accentVars(color)}
+      />
       <path d="M9 9H16M9 13H14" />
     </Glyph>
   );

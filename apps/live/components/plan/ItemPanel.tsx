@@ -18,7 +18,7 @@ import {
   type ItemTypeDef,
 } from '@livediagram/items';
 import { relativeSince } from '@livediagram/ui';
-import { PlanModal, SheetRow, FIELD_CLASS } from './PlanSheet';
+import { PlanModal, SheetRow, FIELD_CLASS } from './PlanModal';
 import {
   ChecklistEditor,
   DateField,
@@ -29,6 +29,7 @@ import {
   PriorityPicker,
 } from './item-field-editors';
 import { PlanTypeGlyph } from './plan-type-glyph';
+import { ACCENT_TEXT, accentVars } from './plan-palette';
 import { CustomFieldEditor } from './CustomFieldEditor';
 
 const LABELS: Partial<Record<ItemFieldId, string>> = {
@@ -198,7 +199,9 @@ export function ItemPanel({
       onClose={onClose}
       header={
         <div className="flex items-center gap-2">
-          <PlanTypeGlyph glyph={type.glyph} color={type.color} size={16} />
+          <span className={ACCENT_TEXT} style={accentVars(type.color)}>
+            <PlanTypeGlyph glyph={type.glyph} size={16} />
+          </span>
           <select
             aria-label="Item type"
             className="rounded-md border border-transparent bg-transparent py-0.5 text-[13px] font-semibold enabled:cursor-pointer hover:border-slate-200 dark:hover:border-slate-700"

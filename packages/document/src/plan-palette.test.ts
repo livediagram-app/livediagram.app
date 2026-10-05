@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { contrastRatio } from './colors';
-import { planPalette } from './plan-palette';
+import { accentOn, liftAccent, planPalette } from './plan-palette';
 
 // docs/specs/025-plan/plan-board.md "Theme and style".
 describe('planPalette', () => {
@@ -27,5 +27,14 @@ describe('planPalette', () => {
 
   it('ignores a colour it cannot read', () => {
     expect(planPalette('light', { fill: 'transparent' })).toEqual(planPalette('light'));
+  });
+});
+
+describe('type accents on dark surfaces', () => {
+  it('lifts an accent too dark to see, and leaves the rest', () => {
+    expect(contrastRatio(liftAccent('#18181b'), '#0f172a')).toBeGreaterThanOrEqual(3);
+    expect(liftAccent('#eab308')).toBe('#eab308');
+    expect(accentOn('#18181b', planPalette('light'))).toBe('#18181b');
+    expect(accentOn('#18181b', planPalette('dark'))).toBe(liftAccent('#18181b'));
   });
 });

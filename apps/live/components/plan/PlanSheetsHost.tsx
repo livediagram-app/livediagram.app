@@ -5,9 +5,8 @@
 // and the set-up its board.
 import { useMemo } from 'react';
 import type { Element } from '@livediagram/document';
-import { normaliseBoardSetup, itemStatus, type PlanBoardSetup } from '@livediagram/items';
+import { normaliseBoardSetup, type PlanBoardSetup } from '@livediagram/items';
 import type { PlanSlice } from '@/hooks/plan/usePlanSlice';
-import { BoardSetupPanel, trackSetup } from './BoardSetupPanel';
 import { ItemPanel } from './ItemPanel';
 import { ItemTypeEditor } from './ItemTypeEditor';
 import { track } from '@/lib/telemetry';
@@ -71,7 +70,6 @@ export function PlanSheetsHost({
       );
     }
   }
-  const board = plan.setupBoardId ? boards.find((b) => b.id === plan.setupBoardId) : undefined;
   if (item) {
     return (
       <ItemPanel
@@ -91,25 +89,6 @@ export function PlanSheetsHost({
         onType={(type) => ctx.patchItem(item.id, { type })}
         onDelete={() => ctx.deleteItem(item.id)}
         onClose={plan.closeItem}
-      />
-    );
-  }
-  if (board && ctx.canEdit) {
-    return (
-      <BoardSetupPanel
-        key={board.id}
-        setup={board.setup}
-        types={ctx.types}
-        items={ctx.items}
-        onChange={(next, part) => {
-          ctx.updateBoard(board.id, next);
-          trackSetup(part);
-        }}
-        onMoveItems={(from, to) => {
-          for (const it of ctx.items.values())
-            if (itemStatus(it) === from) ctx.moveItem(it.id, { status: to, before: null });
-        }}
-        onClose={plan.closeSetup}
       />
     );
   }

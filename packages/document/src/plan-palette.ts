@@ -84,3 +84,24 @@ export function planPalette(surface: CanvasSurface, own: PlanOwnColours = {}): P
     focus: stroke ?? base.focus,
   };
 }
+
+// A type accent on a dark surface (docs/specs/025-plan/item-types.md "An item type"): one too dark to
+// see (Project's black) is lifted toward white until it reaches 3:1 against the dark card; a
+// light surface keeps the accent as chosen.
+const DARK_CARD = DARK.card;
+const ACCENT_CONTRAST = 3;
+const LIFT_STEP = 0.1;
+
+export function liftAccent(color: string): string {
+  if (!hexToRgb(color) || contrastRatio(color, DARK_CARD) >= ACCENT_CONTRAST) return color;
+  for (let share = LIFT_STEP; share <= 1; share += LIFT_STEP) {
+    const lifted = mixHex('#ffffff', color, share);
+    if (contrastRatio(lifted, DARK_CARD) >= ACCENT_CONTRAST) return lifted;
+  }
+  return '#ffffff';
+}
+
+// The accent a card face draws on its palette: lifted on a dark card.
+export function accentOn(color: string, palette: Pick<PlanPalette, 'card'>): string {
+  return isLightColor(palette.card) ? color : liftAccent(color);
+}

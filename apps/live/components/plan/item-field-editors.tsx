@@ -11,7 +11,7 @@ import {
   type ItemFieldValue,
   type ItemPerson,
 } from '@livediagram/items';
-import { FIELD_CLASS } from './PlanSheet';
+import { FIELD_CLASS } from './PlanModal';
 
 // One undo step per pause in typing (blueprint DEFAULTS D8).
 export const ITEM_EDIT_DEBOUNCE_MS = 400;

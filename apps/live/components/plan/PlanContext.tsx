@@ -56,7 +56,6 @@ export type PlanContextValue = {
   deleteItem: (itemId: string) => void;
   vote: (itemId: string, delta: 1 | -1) => void;
   updateBoard: (boardId: string, setup: PlanBoardSetup) => void;
-  openSetup: (boardId: string) => void;
   // A card dragged off a board onto the canvas, at a canvas point: a Plan card is left there.
   placeCardOut: (itemId: string, x: number, y: number) => void;
   removeCard: (cardElementId: string) => void;
