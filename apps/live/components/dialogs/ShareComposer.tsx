@@ -145,7 +145,7 @@ export function ShareComposer({
         <div
           role="radiogroup"
           aria-label="Link lifetime"
-          className="relative grid h-8 grid-cols-4 rounded-lg border border-slate-200 bg-white p-0.5 dark:border-slate-700 dark:bg-slate-900"
+          className="relative grid h-9 grid-cols-4 rounded-lg border border-slate-200 bg-white p-0.5 dark:border-slate-700 dark:bg-slate-900"
         >
           {/* The selection slides to the picked lifetime, like the Explorer tabs. */}
           <SegmentSlider
@@ -179,7 +179,8 @@ export function ShareComposer({
         <Button
           onClick={() => onIssue(role, expiry, multiTab && scope ? scope : null)}
           disabled={busy}
-          className="shadow-sm whitespace-nowrap"
+          // The same height as the Valid control beside it, so the row reads as one line.
+          className="h-9 shadow-sm whitespace-nowrap"
         >
           Create Pass
         </Button>

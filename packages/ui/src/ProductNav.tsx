@@ -84,7 +84,7 @@ const ITEMS: { key: ProductNavKey; label: string; href: string; desc: string }[]
     key: 'community',
     label: 'Community',
     href: '/community/',
-    desc: 'Documents people are proud of',
+    desc: 'Work people are proud of',
   },
   { key: 'help', label: 'Help', href: '/help/', desc: 'Guides, tutorials & answers' },
   {
