@@ -81,3 +81,4 @@ One row per default applied where a spec is silent or qualitative.
 | D76 | element-indicators | How the cluster's size is known before it is drawn                       | Estimated from fixed glyph, gap and per-character widths (`clusterSize`), never measured from the DOM               |
 | D77 | element-indicators | Which kinds get the bottom-left footer                                   | Boxes: non-shapes, square, mind node, stadium, page, browser and every kind not traced by outline                   |
 | D78 | element-indicators | What a pip looks like                                                    | 22px tall, element fill, 1px ring in text colour at 15%, round on rounded elements, 11px glyphs, no dividers        |
+| D79 | element-indicators | How a fixed-size label's text box is known before it is drawn            | Estimated: 0.58 em per character, 1.3 em per line, wrapped to the padded width, never measured                      |

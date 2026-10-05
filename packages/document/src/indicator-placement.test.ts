@@ -5,6 +5,7 @@ import {
   INDICATOR_OUTLINE_CLEARANCE_PX,
   footerAnchor,
   indicatorRings,
+  labelTextBox,
   pipCornerInset,
   placeIndicators,
 } from './indicator-placement';
@@ -94,5 +95,51 @@ describe('placeIndicators', () => {
     const inset = pipCornerInset(indicatorRings(shape('mind-node', 250, 116), 14), 250, 116)!;
     expect(inset.x).toBeGreaterThan(2);
     expect(inset.x).toBeLessThan(6);
+  });
+
+  it('fits a short node whose fixed-size label leaves the corner free', () => {
+    const el = shape('mind-node', 220, 76);
+    const rings = indicatorRings(el, 12);
+    const one = { width: 24, height: 24 };
+    expect(placeIndicators(rings, 220, 76, one, 'top-right')).toBeNull();
+    const text = labelTextBox({
+      width: 220,
+      height: 76,
+      label: 'HTML',
+      textSize: 'md',
+      padding: 14,
+      alignX: 'center',
+      alignY: 'middle',
+    });
+    expect(placeIndicators(rings, 220, 76, one, 'top-right', text)).not.toBeNull();
+  });
+
+  it('keeps clear of a fixed-size label that reaches the corner', () => {
+    const el = shape('mind-node', 220, 76);
+    const text = labelTextBox({
+      width: 220,
+      height: 76,
+      label: 'A much longer heading that wraps',
+      textSize: 'md',
+      padding: 14,
+      alignX: 'center',
+      alignY: 'middle',
+    });
+    const box = placeIndicators(indicatorRings(el, 12), 220, 76, CLUSTER, 'top-right', text);
+    expect(box).toBeNull();
+  });
+
+  it('estimates no text box for a scale-to-fit or empty label', () => {
+    const base = {
+      width: 200,
+      height: 100,
+      padding: 14,
+      alignX: 'center',
+      alignY: 'middle',
+    } as const;
+    expect(labelTextBox({ ...base, label: 'Hi', textSize: 'scale' })).toBeNull();
+    expect(labelTextBox({ ...base, label: '  ', textSize: 'md' })).toBeNull();
+    const top = labelTextBox({ ...base, label: 'Hi', textSize: 'md', alignY: 'top' })!;
+    expect(top.y).toBe(14);
   });
 });

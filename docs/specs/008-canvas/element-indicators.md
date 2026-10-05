@@ -63,9 +63,12 @@ Both styles sit **inside the element's outline**, never across it, on every shap
   fits, so on a rounded rectangle it sits about 9px in, and on a circle inside the curve of its
   top-right, still reading as "top-right". A diamond's corner only has room on a large diamond.
 - Footer starts on the bottom edge and slides **up** until it fits.
-- Neither may reach the element's **middle band**, where the label is: Corner stays above, and
-  Footer below, a line 14px short of the element's vertical centre. A cluster that would have to
-  cross it does not fit.
+- Neither passes the element's vertical centre, and each keeps out of its **middle band**, where
+  the label is: Corner stays above, and Footer below, a line 14px short of the centre. A
+  **fixed-size label** relaxes that: the cluster may enter the band as long as it keeps 6px clear
+  of the label's text, estimated from its length, size, padding and alignment. So a short node
+  with a short label ("HTML") still gets corner icons, while a long label that runs under the
+  corner sends them to the pip.
 - A **scale-to-fit label** (the default text size, which grows to fill its element) pulls in from
   its top and bottom by the band the cluster takes, so it shrinks to clear the indicators and
   stays centred. A fixed-size label never moves; the middle band keeps it clear.

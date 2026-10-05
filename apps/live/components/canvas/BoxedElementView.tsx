@@ -389,11 +389,17 @@ function BoxedElementViewImpl({
         comments: { count: commentCount, onOpen: () => onOpenComments(element.id) },
       });
   const indicatorCornerPx = shapeKind === 'circle' || shapeKind === 'stadium' ? Infinity : cornerPx;
-  const indicatorLayout = useIndicatorLayout(element, indicatorCornerPx, indicatorItems);
   const labelPadding = uprightStrip
     ? // A one-line strip has no room for a roomy padding across it.
       Math.min(PADDING_PX.sm, PADDING_PX[element.padding ?? defaultPadding(element)])
     : PADDING_PX[element.padding ?? defaultPadding(element)];
+  const indicatorLayout = useIndicatorLayout(element, indicatorCornerPx, indicatorItems, {
+    label,
+    textSize,
+    padding: labelPadding,
+    alignX,
+    alignY,
+  });
 
   // The text label, computed once so the freehand branch, the plain
   // shape branch, and the inline-icon layout below all share it.

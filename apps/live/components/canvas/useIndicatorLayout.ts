@@ -5,6 +5,7 @@ import { useMemo } from 'react';
 import {
   footerAnchor,
   indicatorRings,
+  labelTextBox,
   pipCornerInset,
   placeIndicators,
   type BoxedElement,
@@ -13,6 +14,9 @@ import {
 import { useElementIndicatorStyle } from '@/components/canvas/ElementIndicatorStyleContext';
 import type { ElementIndicatorStyle } from '@/lib/element-indicator-style';
 import { clusterSize, type IndicatorForm, type IndicatorItem } from './indicator-items';
+
+// What the cluster needs to know about the label to keep clear of a fixed-size one's text.
+export type LabelLayout = Omit<Parameters<typeof labelTextBox>[0], 'width' | 'height'>;
 
 export type IndicatorLayout = {
   form: IndicatorForm;
@@ -27,14 +31,18 @@ export function placeCluster(
   cornerPx: number,
   items: readonly IndicatorItem[],
   style: ElementIndicatorStyle,
+  label: LabelLayout | null = null,
 ): IndicatorLayout {
+  const text = label
+    ? labelTextBox({ width: element.width, height: element.height, ...label })
+    : null;
   const rings = indicatorRings(element, cornerPx);
   const forms: Exclude<IndicatorForm, 'pip'>[] =
     style === 'corner' ? ['corner'] : ['footer', 'footer-compact'];
   const anchor = style === 'corner' ? 'top-right' : footerAnchor(element);
   for (const form of forms) {
     const size = clusterSize(items, form);
-    const box = placeIndicators(rings, element.width, element.height, size, anchor);
+    const box = placeIndicators(rings, element.width, element.height, size, anchor, text);
     if (box) return { form, box, pip: null };
   }
   return { form: 'pip', box: null, pip: pipCornerInset(rings, element.width, element.height) };
@@ -56,6 +64,7 @@ export function useIndicatorLayout(
   element: BoxedElement,
   cornerPx: number,
   items: readonly IndicatorItem[],
+  label: LabelLayout | null = null,
 ): IndicatorLayout | null {
   const style = useElementIndicatorStyle();
   const shape = element.type === 'shape' ? element.shape : undefined;
@@ -63,9 +72,23 @@ export function useIndicatorLayout(
   const strokeWidth = element.type === 'shape' ? element.strokeWidth : undefined;
   const layoutKey = items.map((i) => `${i.kind}${i.count ?? ''}`).join(' ');
   return useMemo(
-    () => (items.length === 0 ? null : placeCluster(element, cornerPx, items, style)),
-    // The outline's inputs and what the cluster holds; not the handlers.
+    () => (items.length === 0 ? null : placeCluster(element, cornerPx, items, style, label)),
+    // The outline's inputs, the label's and what the cluster holds; not the handlers.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [shape, element.width, element.height, cornerPx, borderRadius, strokeWidth, layoutKey, style],
+    [
+      shape,
+      element.width,
+      element.height,
+      cornerPx,
+      borderRadius,
+      strokeWidth,
+      layoutKey,
+      style,
+      label?.label,
+      label?.textSize,
+      label?.padding,
+      label?.alignX,
+      label?.alignY,
+    ],
   );
 }

@@ -50,6 +50,11 @@ export function footerAnchor(el: BoxedElement): IndicatorAnchor; // 'bottom-left
 export function pipCornerInset(rings, width, height): { x: number; y: number } | null;
 ```
 
+- `labelTextBox({ width, height, label, textSize, padding, alignX, alignY })`: null for `'scale'`
+  or blank text; else per line of the label a width of `chars × LABEL_FONT_PX[size] × LABEL_CHAR_EM`,
+  lines = Σ ceil(width / (w − 2·padding)), box width = min(room, widest), height =
+  min(h − 2·padding, lines × px × LABEL_LINE_EM), placed by the alignment inside the padding.
+  `BoxedElementView` passes its label, size, padding and alignment to `useIndicatorLayout`.
 - `pipCornerInset`: walks `d` from 0 in 0.5px steps up to `min(width, height) / 2` and returns
   `{ x: d, y: d }` for the first `(width - d, d)` inside a ring; null with no rings or no hit. The pip
   falls back to `badgeCornerInset` when it is null.
@@ -65,6 +70,9 @@ export function pipCornerInset(rings, width, height): { x: number; y: number } |
   - top-right: `{ x: width - s - size.width, y: s }`; stop once `y + size.height > height / 2 - INDICATOR_MIDDLE_CLEARANCE_PX`.
   - bottom-left: `{ x: s, y: height - s - size.height }`; stop once `y < height / 2 + INDICATOR_MIDDLE_CLEARANCE_PX`.
   - bottom-centre: `{ x: (width - size.width) / 2, y: height - s - size.height }`; same stop.
+  - Every anchor stops once the box passes the vertical centre. A box inside the middle band
+    (`INDICATOR_MIDDLE_CLEARANCE_PX` of the centre) is accepted only when a `label` box was given
+    and the box keeps `INDICATOR_OUTLINE_CLEARANCE_PX` clear of it.
   - **Fits** = all four corners and four edge midpoints inside some ring (`insidePolygon`), no ring
     vertex inside the box, and every ring segment at least `INDICATOR_OUTLINE_CLEARANCE_PX` from
     every box edge (`segmentDistance`). Segments whose bounding box is farther than the clearance
@@ -123,14 +131,16 @@ style context.
 
 ## Constants and configuration
 
-| Constant                         | Value | Safe range | Provenance                                   |
-| -------------------------------- | ----- | ---------- | -------------------------------------------- |
-| `INDICATOR_OUTLINE_CLEARANCE_PX` | 6     | 4 to 10    | spec: "at least 6px clear of the outline"    |
-| `INDICATOR_MIDDLE_CLEARANCE_PX`  | 14    | 8 to 24    | spec: middle band "14px short of the centre" |
-| `INDICATOR_START_INSET_PX`       | 3     | 0 to 6     | D-row: start tight, the slide finds the fit  |
-| `INDICATOR_STEP_PX`              | 1     | 1 to 2     | D-row                                        |
-| `INDICATOR_REST_OPACITY`         | 0.5   | 0.4 to 0.6 | spec                                         |
-| `INDICATOR_ACTIVE_OPACITY`       | 0.85  | 0.75 to 1  | spec                                         |
+| Constant                         | Value | Safe range  | Provenance                                   |
+| -------------------------------- | ----- | ----------- | -------------------------------------------- |
+| `INDICATOR_OUTLINE_CLEARANCE_PX` | 6     | 4 to 10     | spec: "at least 6px clear of the outline"    |
+| `INDICATOR_MIDDLE_CLEARANCE_PX`  | 14    | 8 to 24     | spec: middle band "14px short of the centre" |
+| `INDICATOR_START_INSET_PX`       | 3     | 0 to 6      | D-row: start tight, the slide finds the fit  |
+| `INDICATOR_STEP_PX`              | 1     | 1 to 2      | D-row                                        |
+| `LABEL_CHAR_EM`                  | 0.58  | 0.5 to 0.65 | D79: a generous average advance              |
+| `LABEL_LINE_EM`                  | 1.3   | 1.2 to 1.5  | D79                                          |
+| `INDICATOR_REST_OPACITY`         | 0.5   | 0.4 to 0.6  | spec                                         |
+| `INDICATOR_ACTIVE_OPACITY`       | 0.85  | 0.75 to 1   | spec                                         |
 
 ## Observability
 
@@ -144,6 +154,7 @@ Placement is pure and deterministic; no logs. A style change is the telemetry ev
 | Circle: corner slides along the diagonal, stays inside       | same                                                     |
 | Diamond / small pill / thin bar: no fit → `null`             | same                                                     |
 | Never crosses the middle band                                | same                                                     |
+| A short fixed label frees the corner; a long one does not    | same                                                     |
 | Footer: bottom-left on boxes, bottom-centre on a circle      | same                                                     |
 | Unknown style reads as corner                                | `apps/live/lib/element-indicator-style.test.ts`          |
 | Pip on a hexagon's edge and a rounded box's corner curve     | `packages/document/src/indicator-placement.test.ts`      |

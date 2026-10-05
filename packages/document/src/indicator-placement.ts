@@ -5,7 +5,8 @@
 // that it cannot (the caller then draws the pip on the outline). Pure; no DOM.
 
 import type { Point } from './geometry-primitives';
-import type { BoxedElement } from './index';
+import type { BoxedElement, TextAlignX, TextAlignY, TextSize } from './index';
+import { LABEL_FONT_PX } from './label-font';
 import { pickedByOutline, roundedRectRing, shapeHitOutline } from './shape-hit';
 import type { ShapeKind } from './shape-kind';
 import { insidePolygon, segmentDistance } from './whiteboard-stroke';
@@ -20,6 +21,11 @@ export const INDICATOR_MIDDLE_CLEARANCE_PX = 14;
 // Where the slide starts, and its step: the first inset that fits is the tightest one.
 export const INDICATOR_START_INSET_PX = 3;
 export const INDICATOR_STEP_PX = 1;
+
+// A fixed-size label's estimated box: an average advance per character and a line height, both
+// per font px, a little generous so the estimate errs toward avoiding the text.
+const LABEL_CHAR_EM = 0.58;
+const LABEL_LINE_EM = 1.3;
 
 // The outline-traced kinds whose footer still reads as a box: it starts at the bottom-left.
 const BOX_FOOTER_KINDS: ReadonlySet<ShapeKind> = new Set<ShapeKind>([
@@ -47,8 +53,39 @@ export function footerAnchor(el: BoxedElement): IndicatorAnchor {
 }
 
 /**
+ * Where a FIXED-size label's text sits, estimated from its length, size, padding and alignment,
+ * so a cluster can avoid the text itself rather than the whole middle band. Null for a
+ * scale-to-fit label (it grows to fill its element and makes room instead) or no text.
+ */
+export function labelTextBox(input: {
+  width: number;
+  height: number;
+  label: string;
+  textSize: TextSize;
+  padding: number;
+  alignX: TextAlignX;
+  alignY: TextAlignY;
+}): IndicatorBox | null {
+  const { width, height, label, textSize, padding, alignX, alignY } = input;
+  if (textSize === 'scale' || label.trim() === '') return null;
+  const px = LABEL_FONT_PX[textSize];
+  const room = Math.max(1, width - 2 * padding);
+  const paragraphs = label.split('\n').map((line) => line.length * px * LABEL_CHAR_EM);
+  const lines = paragraphs.reduce((n, w) => n + Math.max(1, Math.ceil(w / room)), 0);
+  const w = Math.min(room, Math.max(...paragraphs));
+  const h = Math.min(height - 2 * padding, lines * px * LABEL_LINE_EM);
+  const x =
+    alignX === 'left' ? padding : alignX === 'right' ? width - padding - w : (width - w) / 2;
+  const y =
+    alignY === 'top' ? padding : alignY === 'bottom' ? height - padding - h : (height - h) / 2;
+  return { x, y, width: w, height: h };
+}
+
+/**
  * The first box of `size` that fits inside `rings`, sliding in from `anchor`'s corner, or null
- * when none does before the cluster would reach the element's middle band.
+ * when none does. It stays in its own half of the element and out of the middle band, where a
+ * label sits; with `label` (a fixed-size label's estimated text box) it may enter the band as long
+ * as it keeps the outline clearance from that text.
  */
 export function placeIndicators(
   rings: readonly (readonly Point[])[],
@@ -56,6 +93,7 @@ export function placeIndicators(
   height: number,
   size: { width: number; height: number },
   anchor: IndicatorAnchor,
+  label: IndicatorBox | null = null,
 ): IndicatorBox | null {
   if (rings.length === 0 || size.width <= 0 || size.height <= 0) return null;
   const top = anchor === 'top-right';
@@ -71,11 +109,17 @@ export function placeIndicators(
       width: size.width,
       height: size.height,
     };
-    const crossesMiddle = top
+    // Past the centre is always too far; inside the middle band is fine only when the cluster
+    // clears a fixed-size label's estimated text.
+    const pastCentre = top ? box.y + box.height > height / 2 : box.y < height / 2;
+    if (pastCentre || box.x < 0) return null;
+    const inBand = top
       ? box.y + box.height > height / 2 - INDICATOR_MIDDLE_CLEARANCE_PX
       : box.y < height / 2 + INDICATOR_MIDDLE_CLEARANCE_PX;
-    if (crossesMiddle || box.x < 0) return null;
-    if (fits(box, rings)) return box;
+    const clearOfLabel = inBand
+      ? label !== null && !overlaps(box, label, INDICATOR_OUTLINE_CLEARANCE_PX)
+      : true;
+    if (clearOfLabel && fits(box, rings)) return box;
   }
 }
 
@@ -96,6 +140,15 @@ export function pipCornerInset(
     if (rings.some((ring) => insidePolygon({ x: width - d, y: d }, ring))) return { x: d, y: d };
   }
   return null;
+}
+
+function overlaps(a: IndicatorBox, b: IndicatorBox, margin: number): boolean {
+  return (
+    a.x < b.x + b.width + margin &&
+    b.x < a.x + a.width + margin &&
+    a.y < b.y + b.height + margin &&
+    b.y < a.y + a.height + margin
+  );
 }
 
 function fits(box: IndicatorBox, rings: readonly (readonly Point[])[]): boolean {
