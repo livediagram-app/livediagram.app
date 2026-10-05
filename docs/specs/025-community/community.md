@@ -106,7 +106,8 @@ type) and on the worker (authoritative).
   - **Sort**: Newest, Most Loved (likes), Most Copied. Choosing one writes its `sort:` word (or removes it for
     Newest).
   - Each control shows an icon and its current value; on phones only the icon, so all three fit beside the text.
-- A responsive grid of **cards**: the post's live image, title, category, up to three tags, the author (picture or
+- A responsive grid of **cards**, which cascade in (each rises and fades in one beat after the last, within the motion
+  budget; not under reduced motion) whenever a new set of results arrives: the post's live image, title, category, up to three tags, the author (picture or
   initial in their colour, and name) with when it was shared beneath ("2 days ago", whole months after the first
   month, whole years after the first year; the full date on hover), likes and copies. The card opens the post page; the heart likes it in place.
 - **Load More** pages through results (24 per page).
@@ -121,8 +122,10 @@ type) and on the worker (authoritative).
   zooms and switches tabs). If the frame has not loaded after 15 seconds, the card image shows instead.
 - Title, author, publish date, category, tags (each opens the gallery with its `#tag` in the search), and the full
   description.
-- **Like** (toggles), **Make a Copy** (opens the document in the editor and copies it into the visitor's own documents in
-  one step), **Open Document** (the read-only viewer, full screen) and **Report**.
+- The actions, in one panel: **Make a Copy** (opens the document in the editor and copies it into the visitor's own
+  documents in one step) and **Open Document** (the read-only viewer, full screen) side by side at equal size, Make a
+  Copy leading in colour; beneath them one strip of equal chips, the **Like** toggle with its count ("3 likes"), the
+  copy count ("1 copy") and **Report** at the end.
 - **More Like This**: up to six other posts in the same category, most loved first.
 - A post that does not exist, was removed or is hidden shows a friendly not-found with a way back to the gallery.
 
