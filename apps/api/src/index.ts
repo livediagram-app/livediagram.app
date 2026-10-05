@@ -40,6 +40,7 @@ import { MAX_BODY_BYTES, MAX_IMAGE_BYTES } from './limits';
 import { handleAccount } from './routes/account';
 import { handleAiReadNotes } from './routes/ai-read-notes';
 import { handleAi } from './routes/ai';
+import { handleCatalogues } from './routes/catalogues';
 import { handleCapabilities } from './routes/capabilities';
 import { handleOpenapi } from './routes/openapi';
 import { handleCustomThemes } from './routes/custom-themes';
@@ -308,6 +309,10 @@ async function routeApiRequest(
     switch (segments[1]) {
       case 'capabilities':
         return handleCapabilities(ctx);
+      case 'templates':
+      case 'icons':
+      case 'schema':
+        return handleCatalogues(ctx);
       case 'openapi.json':
         return handleOpenapi(ctx);
       case 'unfurl':

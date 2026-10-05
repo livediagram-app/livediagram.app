@@ -863,6 +863,9 @@ importers:
         specifier: workspace:*
         version: link:../templates
     devDependencies:
+      '@livediagram/document-views':
+        specifier: workspace:*
+        version: link:../document-views
       '@livediagram/eslint-config':
         specifier: workspace:*
         version: link:../eslint-config

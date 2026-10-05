@@ -20,12 +20,10 @@ import {
   type Tab,
 } from '@livediagram/document';
 import {
-  TEMPLATES,
-  TEMPLATE_CATEGORIES,
   buildTemplateTab,
   resolveTemplate,
+  templateCatalogue,
   templateFamilyOf,
-  templateCategory,
   validTemplateKinds,
   type TemplateKind,
 } from '@livediagram/templates';
@@ -153,18 +151,7 @@ export function registerTools(server: McpServer, env: Env): void {
     },
     async (_args, extra) => {
       requireToken(extra as Extra);
-      return textResult({
-        categories: TEMPLATE_CATEGORIES,
-        // A hidden template is an editor-onboarding artefact, not a scaffold
-        // an AI caller should list or build from. None ships today; docs/specs/007-editor/guided-tour-sample.md's
-        // guided-tour sample was the last, retired by docs/specs/007-editor/editor-tour.md.
-        templates: TEMPLATES.filter((t) => !t.hidden).map((t) => ({
-          kind: t.kind,
-          title: t.title,
-          description: t.description,
-          category: templateCategory(t.kind),
-        })),
-      });
+      return textResult(templateCatalogue());
     },
   );
 

@@ -10,3 +10,4 @@ export { buildTemplate } from './build-template';
 export { templateFamilyOf } from './template-families';
 export * from './page-layouts';
 export * from './template-tab';
+export { templateCatalogue, type TemplateCatalogue } from './template-catalogue';

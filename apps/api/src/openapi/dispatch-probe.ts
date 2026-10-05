@@ -16,8 +16,9 @@
 //     TRAPS: touching one records the fact and throws.
 //
 // Each probe lands in one of three outcomes:
-//   - `not-routed`: a clean 404 / 405 without touching storage. Nothing serves
-//     this (method, path).
+//   - `not-routed`: a clean 404 (`not_found`) / 405 without touching storage. Nothing serves
+//     this (method, path). A 404 naming another error (`unknown_template`) is a route that
+//     answered about its parameter.
 //   - `routed`: answered without touching storage (200, 400, 401, 503, ...).
 //     This exact (method, path) is served.
 //   - `storage`: a handler reached storage. The PATH is served; the method is
@@ -34,6 +35,17 @@ export type ProbeMethod = (typeof PROBE_METHODS)[number];
 
 /** Stands in for every path parameter. Matches no literal the dispatch compares against. */
 export const PARAM = 'probe-param';
+
+// The `error` a JSON answer names; null for any other body.
+async function errorOf(res: Response): Promise<string | null> {
+  try {
+    const body: unknown = await res.clone().json();
+    const error = typeof body === 'object' && body !== null ? Reflect.get(body, 'error') : null;
+    return typeof error === 'string' ? error : null;
+  } catch {
+    return null;
+  }
+}
 
 export type ProbeOutcome = 'not-routed' | 'routed' | 'storage';
 
@@ -197,11 +209,9 @@ export async function probeDispatch(
           executionCtx,
         );
         await Promise.all(pending.splice(0));
-        const outcome: ProbeOutcome = state.touched
-          ? 'storage'
-          : res.status === 404 || res.status === 405
-            ? 'not-routed'
-            : 'routed';
+        const clean =
+          res.status === 405 || (res.status === 404 && (await errorOf(res)) === 'not_found');
+        const outcome: ProbeOutcome = state.touched ? 'storage' : clean ? 'not-routed' : 'routed';
         results.push({ method, path: [...path], outcome, status: res.status });
       }
     }
