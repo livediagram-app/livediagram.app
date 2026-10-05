@@ -270,6 +270,7 @@ inputs (`turbo.json`), so a docs-only change never replays a cached pass of thos
     vocabulary + type-pattern gate, request auth, image limits, trash and poll
     shapes, error telemetry and page views.
   - `packages/explorer-lens`: the Explorer filter lens, at 100 % coverage
+  - `packages/items`: items and the Plan board projection, at 95 % lines
     enforced by its config: the token grammar and every rejection, canonical
     form and chip writes, matching per dimension, suggestions and their marks,
     view-model copy, `?q=` and carry-over, the telemetry facets.
