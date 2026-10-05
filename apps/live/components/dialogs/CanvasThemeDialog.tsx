@@ -16,7 +16,14 @@
 import { lucideGrid3x3 } from '@livediagram/icons/lucide';
 import { useRef } from 'react';
 import type { BackgroundPattern } from '@livediagram/document';
-import { Glyph, lucideGlyph, useEscape, useFocusTrap, Portal, DialogCloseButton } from '@livediagram/ui';
+import {
+  Glyph,
+  lucideGlyph,
+  useEscape,
+  useFocusTrap,
+  Portal,
+  DialogCloseButton,
+} from '@livediagram/ui';
 import { CanvasStyleControls } from '@/components/canvas/CanvasStyleControls';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { CustomThemePicker } from '@/components/palette/CustomThemePicker';

@@ -1,6 +1,14 @@
 import { useState, type ReactNode } from 'react';
 import { NameEditor } from '@/components/primitives/NameEditor';
-import { Brand, ProductNav, HoverCard, SOLID_BRAND_DARK_CONTROL, Glyph, safeInlinePadding, safeInset } from '@livediagram/ui';
+import {
+  Brand,
+  ProductNav,
+  HoverCard,
+  SOLID_BRAND_DARK_CONTROL,
+  Glyph,
+  safeInlinePadding,
+  safeInset,
+} from '@livediagram/ui';
 import { AuthControls } from '@/components/chrome/AuthControls';
 import { SharedBadge } from '@/components/chrome/SharedBadge';
 import { HEADER_ACTION_BTN, HeaderGlyph } from '@/components/chrome/header-action';

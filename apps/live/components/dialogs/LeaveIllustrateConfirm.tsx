@@ -9,7 +9,14 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { editorModeLabel, type EditorMode } from '@livediagram/document';
 import { lucideTriangleAlert } from '@livediagram/icons/lucide';
-import { Button, lucideGlyph, useClickOutside, useEscape, EDITOR_MODE_ICONS, Portal } from '@livediagram/ui';
+import {
+  Button,
+  lucideGlyph,
+  useClickOutside,
+  useEscape,
+  EDITOR_MODE_ICONS,
+  Portal,
+} from '@livediagram/ui';
 import { VIEWPORT_EDGE_MARGIN as EDGE } from '@/lib/clamp-to-viewport';
 import type { LeaveIllustrate } from '@/hooks/editor/useLeaveIllustrate';
 

@@ -20,7 +20,13 @@ import {
   LayerUpIcon,
   MENU_ICON_PX,
 } from '@/components/palette/context-menu-icons';
-import { lucideGlyph, MenuTreeContext, useClickOutside, useControlMenu, Portal } from '@livediagram/ui';
+import {
+  lucideGlyph,
+  MenuTreeContext,
+  useClickOutside,
+  useControlMenu,
+  Portal,
+} from '@livediagram/ui';
 import { lucideFileText, lucideMerge } from '@livediagram/icons/lucide';
 
 // Right-click menu for a Layers-panel row (docs/specs/006-document/layers.md), styled like the tab

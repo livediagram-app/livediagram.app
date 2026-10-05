@@ -1,7 +1,18 @@
 'use client';
 
 import { useId, type PointerEventHandler, type ReactNode } from 'react';
-import { ChevronDownIcon, MENU_LABEL_ATTR, MenuTreeContext, useControlMenu, useMenu, useMenuKind, type MenuInitialFocus, type MenuKind, type MenuTree, Portal } from '@livediagram/ui';
+import {
+  ChevronDownIcon,
+  MENU_LABEL_ATTR,
+  MenuTreeContext,
+  useControlMenu,
+  useMenu,
+  useMenuKind,
+  type MenuInitialFocus,
+  type MenuKind,
+  type MenuTree,
+  Portal,
+} from '@livediagram/ui';
 import { useMenuItemProps } from './menu-item-props';
 import {
   PLACEMENT_TRANSFORM,
