@@ -8,6 +8,7 @@ import {
   apiRemoveCommunityPost,
 } from '@/lib/api-client';
 import { communityErrorMessage } from '@/lib/community-errors';
+import { setCommunityState } from '@/lib/community-state-store';
 
 // The owner's Community post on the open document (docs/specs/025-community/community.md
 // "Publishing"), read when the Share dialog opens so its Community section shows the post as it is now
@@ -40,7 +41,9 @@ export function useCommunityPost(opts: {
     let cancelled = false;
     apiGetCommunityPost(ownerId, documentId).then(
       (post) => {
-        if (!cancelled) setLoaded({ key, post, error: null });
+        if (cancelled) return;
+        setLoaded({ key, post, error: null });
+        setCommunityState(documentId, post?.state ?? null);
       },
       (err: unknown) => {
         if (!cancelled) setLoaded({ key, post: null, error: communityErrorMessage(err) });
@@ -56,6 +59,7 @@ export function useCommunityPost(opts: {
       if (!ownerId || !documentId) throw new Error('no document');
       const post = await apiPublishCommunityPost(ownerId, documentId, input);
       setLoaded({ key: `${ownerId}|${documentId}`, post, error: null });
+      setCommunityState(documentId, post.state);
       return post;
     },
     [ownerId, documentId],
@@ -65,6 +69,7 @@ export function useCommunityPost(opts: {
     if (!ownerId || !documentId) return;
     await apiRemoveCommunityPost(ownerId, documentId);
     setLoaded({ key: `${ownerId}|${documentId}`, post: null, error: null });
+    setCommunityState(documentId, null);
   }, [ownerId, documentId]);
 
   // A result for another document (or none yet) is loading; a reopen shows the last result for this

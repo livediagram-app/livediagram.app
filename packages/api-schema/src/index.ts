@@ -38,6 +38,9 @@ export type LiveDoc = {
   // rotated when re-shared after a revoke.
   shareable: boolean;
   shareCode: string | null;
+  // The document's Community post (docs/specs/025-community/community.md): 'listed', 'hidden', or
+  // null / absent when it has none. Owner-only: every other reader gets null.
+  communityState?: 'listed' | 'hidden' | null;
   // Folder placement. null means the document sits at the root of its
   // space. See docs/specs/013-workspace/folders.md.
   folderId: string | null;

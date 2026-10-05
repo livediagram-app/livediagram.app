@@ -1,3 +1,4 @@
+import { setCommunityState } from '@/lib/community-state-store';
 import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
 import type { Tab } from '@livediagram/document';
 import type { LiveDoc } from '@livediagram/api-schema';
@@ -126,6 +127,7 @@ export function makeSeedFetchedDocument(deps: {
     }
     setLoadedExistingDocument(true);
     setDocumentShareable(fetched.shareable);
+    setCommunityState(fetched.id, fetched.communityState ?? null);
     setDocumentTeamId(fetched.teamId ?? null);
     setDocumentShareCode(fetched.shareCode);
     setDocumentOwnerId(fetched.ownerId);

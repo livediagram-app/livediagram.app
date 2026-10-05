@@ -42,7 +42,7 @@ import type { DocumentDTO } from './types';
 export function redactDocumentForReader(liveDoc: DocumentDTO, caller: string | null): DocumentDTO {
   return caller && caller === liveDoc.ownerId
     ? liveDoc
-    : { ...liveDoc, ownerId: '', shareCode: null };
+    : { ...liveDoc, ownerId: '', shareCode: null, communityState: null };
 }
 
 // A tab-scoped visitor's copy (docs/specs/013-workspace/tab-scoped-share-links.md). Every other tab keeps

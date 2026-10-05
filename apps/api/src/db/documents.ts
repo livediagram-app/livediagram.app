@@ -32,6 +32,9 @@ type DocumentRow = {
   // row for this document, or NULL when no share links exist. Replaces
   // the legacy diagrams.share_code column dropped in migration 0008.
   share_code: string | null;
+  // The document's Community post state (docs/specs/025-community/community.md); only the full
+  // document read selects it.
+  community_state?: string | null;
 } & RecordedIntentRow;
 
 type SummaryRow = DocumentRow & { first_tab_count: number | null };
@@ -73,6 +76,10 @@ async function rowToDocument(env: Env, row: DocumentRow): Promise<DocumentDTO> {
     tabs,
     shareable: row.shareable === 1,
     shareCode: row.share_code,
+    communityState:
+      row.community_state === 'listed' || row.community_state === 'hidden'
+        ? row.community_state
+        : null,
     folderId: row.folder_id,
     teamId: row.team_id ?? null,
     source: (row.source as DocumentDTO['source']) ?? null,
@@ -93,7 +100,10 @@ const SHARE_CODE_EXPR =
   "(SELECT code FROM share_links WHERE share_links.document_id = documents.id AND share_links.purpose = 'share' ORDER BY created_at ASC LIMIT 1) AS share_code";
 // `opens_in`, `tab_kind`, `template_family`: the recorded creation intent (migration 0062).
 const INTENT_COLS = 'opens_in, tab_kind, template_family';
-const DOCUMENT_COLS = `id, owner_id, name, shareable, folder_id, team_id, source, ${INTENT_COLS}, presentation, saved_at, created_at, ${SHARE_CODE_EXPR}`;
+// The document's Community post state, for the owner's header badge (docs/specs/025-community/community.md).
+const COMMUNITY_STATE_EXPR =
+  '(SELECT state FROM community_posts WHERE community_posts.document_id = documents.id) AS community_state';
+const DOCUMENT_COLS = `id, owner_id, name, shareable, folder_id, team_id, source, ${INTENT_COLS}, presentation, saved_at, created_at, ${SHARE_CODE_EXPR}, ${COMMUNITY_STATE_EXPR}`;
 // The list projection deliberately omits `presentation`: listing 100 documents
 // has no use for 100 decks, and a deck is the one metadata field whose size
 // grows with the document.
