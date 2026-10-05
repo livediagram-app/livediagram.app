@@ -187,4 +187,108 @@ describe('ElementIndicators', () => {
     expect(pip.form).toBe('pip');
     expect(pip.inset).toEqual({ top: 0, bottom: 0 });
   });
+
+  it('draws a squared pip on a sharp element, on a white chip when there is no fill', () => {
+    const el = { ...shape('square', 60, 30), borderRadius: 'none' } as BoxedElement;
+    const placed = { form: 'pip', box: null, pip: null, inset: { top: 0, bottom: 0 } } as const;
+    const { container } = render(
+      <ElementIndicators
+        element={el}
+        items={items()}
+        placed={placed}
+        cornerPx={0}
+        selected={false}
+      />,
+    );
+    const pip = container.querySelector<HTMLElement>('[data-indicators="pip"]')!;
+    expect(pip.className).toContain('rounded-md');
+    expect(pip.className).toContain('bg-white');
+    // No outline point given: the box-corner rule places it.
+    expect(pip.style.right).toBe('0px');
+  });
+
+  it('keeps a press on the cluster from reaching the element', () => {
+    const onDown = vi.fn();
+    const { container } = render(
+      <div onPointerDown={onDown}>
+        <Placed el={shape('mind-node', 260, 116)} list={items()} selected={false} />
+      </div>,
+      {
+        wrapper: ({ children }) => (
+          <ElementIndicatorStyleProvider style="top">{children}</ElementIndicatorStyleProvider>
+        ),
+      },
+    );
+    fireEvent.pointerDown(container.querySelector('[data-indicators]')!);
+    expect(onDown).not.toHaveBeenCalled();
+  });
+
+  it('places indicators on an element that is not a shape', () => {
+    const text = {
+      id: 't',
+      type: 'text',
+      x: 0,
+      y: 0,
+      width: 300,
+      height: 120,
+      label: 'Notes',
+      textSize: 'sm',
+    } as BoxedElement;
+    const layout = placeCluster(text, 0, items({ outline: undefined, tidy: undefined }), 'top');
+    expect(layout.form).toBe('top');
+  });
+
+  it('falls back to the pip when the content cannot move against its alignment', () => {
+    const content = {
+      label: 'Bottom heavy label',
+      textSize: 'lg',
+      padding: 14,
+      alignX: 'center',
+      alignY: 'bottom',
+    } as const;
+    const layout = placeCluster(shape('mind-node', 200, 90), 12, items(), 'top', content);
+    expect(layout.form).toBe('pip');
+  });
+
+  it('falls back to the pip when the content is too tall to move', () => {
+    const content = {
+      label: 'A long label that wraps across several lines and fills the node',
+      textSize: 'md',
+      padding: 14,
+      alignX: 'center',
+      alignY: 'middle',
+    } as const;
+    expect(placeCluster(shape('mind-node', 200, 116), 12, items(), 'top', content).form).toBe(
+      'pip',
+    );
+  });
+
+  it('draws the pip on an element that is not a shape', () => {
+    const text = {
+      id: 't',
+      type: 'text',
+      x: 0,
+      y: 0,
+      width: 40,
+      height: 20,
+      label: 'x',
+    } as BoxedElement;
+    const placed = {
+      form: 'pip',
+      box: null,
+      pip: { x: 2, y: 2 },
+      inset: { top: 0, bottom: 0 },
+    } as const;
+    const { container } = render(
+      <ElementIndicators
+        element={text}
+        items={items()}
+        placed={placed}
+        cornerPx={0}
+        fill="#fff"
+        selected={false}
+      />,
+    );
+    expect(container.querySelector('[data-indicators="pip"]')!.className).toContain('rounded-md');
+  });
 });

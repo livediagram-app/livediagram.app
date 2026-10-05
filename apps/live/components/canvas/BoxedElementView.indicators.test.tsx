@@ -92,4 +92,32 @@ describe('BoxedElementView indicators', () => {
     const plain = { ...createShape('square', 0, 0), label: 'Plain' } as BoxedElement;
     expect(draw(plain).container.querySelector('[data-indicators]')).toBeNull();
   });
+
+  it('reads an icon with no side set as left of its label', () => {
+    const box = {
+      ...createShape('square', 0, 0),
+      width: 260,
+      height: 120,
+      label: 'Box',
+      textSize: 'md',
+      iconId: 'star',
+      note: 'n',
+    } as BoxedElement;
+    const { container, getByText } = draw(box);
+    expect(container.querySelector('[data-indicators]')).not.toBeNull();
+    expect(getByText('Box')).toBeTruthy();
+  });
+
+  it('draws indicators on a lane with an upright title', () => {
+    const lane = {
+      ...createShape('lane', 0, 0),
+      width: 600,
+      height: 200,
+      label: 'Lane',
+      titleOrientation: 'upright',
+      padding: 'lg',
+      note: 'n',
+    } as BoxedElement;
+    expect(draw(lane).container.querySelector('[data-indicators]')).not.toBeNull();
+  });
 });

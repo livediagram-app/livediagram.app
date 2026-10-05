@@ -94,6 +94,21 @@ describe('elementIndicatorItems', () => {
     expect(item.assignee?.color).toMatch(/^#|^hsl|^rgb/);
   });
 
+  it('colours an invited member by their member id, and a nameless one by the name', () => {
+    const invited = {
+      ...createShape('square', 0, 0),
+      action: { ...action('open', 'Ada'), assignee: { userId: null, memberId: 'm1', name: 'Ada' } },
+    } as BoxedElement;
+    const unclaimed = {
+      ...createShape('square', 0, 0),
+      action: { ...action('open', 'Ada'), assignee: { userId: null, name: 'Ada' } },
+    } as BoxedElement;
+    const a = elementIndicatorItems(invited, handlers())[0]!.assignee!.color;
+    const b = elementIndicatorItems(unclaimed, handlers())[0]!.assignee!.color;
+    expect(a).toBeTruthy();
+    expect(b).toBeTruthy();
+  });
+
   it('skips what an element already shows on its own face', () => {
     const pin = { ...createShape('comment-pin', 0, 0), commentThread: thread(2) } as BoxedElement;
     expect(kinds(pin)).toEqual([]);
@@ -183,6 +198,24 @@ describe('useElementIndicators', () => {
     const { result } = renderHook(() =>
       useElementIndicators(el, handlers(), { ...label, text: 'Box', inlineIcon: true }, 8),
     );
+    expect(result.current.layout?.form).toBe('top');
+  });
+
+  it('lays out indicators on an element that is not a shape', () => {
+    const text = {
+      id: 't',
+      type: 'text',
+      x: 0,
+      y: 0,
+      width: 300,
+      height: 120,
+      label: 'Notes',
+      note: 'n',
+    } as unknown as BoxedElement;
+    const { result } = renderHook(() =>
+      useElementIndicators(text, handlers(), { ...label, text: 'Notes', inlineIcon: false }, 0),
+    );
+    expect(result.current.cornerPx).toBe(0);
     expect(result.current.layout?.form).toBe('top');
   });
 });
