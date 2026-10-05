@@ -12,6 +12,15 @@ export type CliFiles = {
   remove(path: string): Promise<void>;
 };
 
+// The room socket `wait` and `watch` listen on (blueprint "The room stream"): text frames in, a close code out.
+export type RoomSocket = {
+  onOpen(handler: () => void): void;
+  onMessage(handler: (data: string) => void): void;
+  // Fires once, with the close code (1006 for an error).
+  onClose(handler: (code: number) => void): void;
+  close(code: number): void;
+};
+
 export type CliIo = {
   env: Readonly<Record<string, string | undefined>>;
   stdout: (text: string) => void;
@@ -26,4 +35,9 @@ export type CliIo = {
   cwd: string;
   // `node/<version> <platform>`, for the User-Agent.
   runtime: string;
+  openSocket: (url: string) => RoomSocket;
+  // Runs `handler` after `ms`; the returned function cancels it.
+  timer: (ms: number, handler: () => void) => () => void;
+  // Runs `handler` on SIGINT instead of the default exit; the returned function stops listening.
+  onInterrupt: (handler: () => void) => () => void;
 };

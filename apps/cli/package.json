@@ -18,10 +18,11 @@
     "@livediagram/agent-verbs": "workspace:*",
     "@livediagram/api-client": "workspace:*",
     "@livediagram/api-schema": "workspace:*",
+    "@livediagram/document": "workspace:*",
+    "@livediagram/document-views": "workspace:*",
     "zod": "^4.6.5"
   },
   "devDependencies": {
-    "@livediagram/document-views": "workspace:*",
     "@livediagram/eslint-config": "workspace:*",
     "@livediagram/vitest-config": "workspace:*",
     "@types/node": "^26.6.3",

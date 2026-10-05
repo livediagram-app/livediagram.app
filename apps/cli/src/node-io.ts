@@ -3,7 +3,30 @@
 import { chmod, mkdir, readFile, rename, rm, stat, writeFile } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import { dirname } from 'node:path';
-import type { CliIo } from './io';
+import type { CliIo, RoomSocket } from './io';
+
+// The runtime's WebSocket (Node 22 and later), as the room stream uses it.
+function openSocket(url: string): RoomSocket {
+  const ws = new WebSocket(url);
+  let closed = false;
+  return {
+    onOpen: (handler) => ws.addEventListener('open', () => handler()),
+    onMessage: (handler) =>
+      ws.addEventListener('message', (e) => {
+        if (typeof e.data === 'string') handler(e.data);
+      }),
+    onClose: (handler) => {
+      const once = (code: number) => {
+        if (closed) return;
+        closed = true;
+        handler(code);
+      };
+      ws.addEventListener('close', (e) => once(e.code));
+      ws.addEventListener('error', () => once(1006));
+    },
+    close: (code) => ws.close(code),
+  };
+}
 
 async function readStdin(): Promise<string> {
   const chunks: Buffer[] = [];
@@ -24,6 +47,15 @@ export function nodeIo(): CliIo {
     homedir: homedir(),
     cwd: process.cwd(),
     runtime: `node/${process.versions.node} ${process.platform}`,
+    openSocket,
+    timer: (ms, handler) => {
+      const id = setTimeout(handler, ms);
+      return () => clearTimeout(id);
+    },
+    onInterrupt: (handler) => {
+      process.once('SIGINT', handler);
+      return () => void process.off('SIGINT', handler);
+    },
     files: {
       read: (path) => readFile(path, 'utf8').catch(() => null),
       write: async (path, data, mode) => {

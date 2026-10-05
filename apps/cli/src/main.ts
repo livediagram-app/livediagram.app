@@ -5,6 +5,8 @@
 import { graphLint, renderSkill, type Verb, type VerbContext } from '@livediagram/agent-verbs';
 import { resolveCredential } from './auth/credentials';
 import { callApi, guideOf, installSkill, login, logout, status } from './commands/local';
+import { waitFor, type WaitInput } from './commands/wait';
+import { watch, type WatchInput } from './commands/watch';
 import { loadCapabilities } from './config/capabilities';
 import { withTelemetry, type ConfigFile } from './config/config-file';
 import { configDir } from './config/paths';
@@ -58,6 +60,7 @@ async function runOnline(
   profile: Profile,
   log: DebugLog,
   reporting: (sink: TelemetrySink) => void,
+  json: boolean,
 ) {
   const caps = await loadCapabilities(io, profile, log);
   const sink: TelemetrySink = { io, apiBase: caps.apiBase, log };
@@ -113,6 +116,8 @@ async function runOnline(
     readInput: inputReader(io),
     copies: fileReadCopies(io, profile.name, log),
   };
+  if (verb.id === 'wait') return waitFor(io, ctx, caps.apiBase, input as WaitInput);
+  if (verb.id === 'watch') return watch(io, ctx, caps.apiBase, input as WatchInput, json);
   return verb.run!(ctx, input);
 }
 
@@ -167,9 +172,17 @@ export async function run(argv: readonly string[], io: CliIo): Promise<ExitCode>
       const profile = resolveProfile(globals, io, config);
       host = profile.host;
       log(`profile ${profile.name} host ${profile.host} source ${profile.source}`);
-      pending = runOnline(io, verb, input, profile, log, (sink) => {
-        reported.current = { sink, config, host: profile.host };
-      });
+      pending = runOnline(
+        io,
+        verb,
+        input,
+        profile,
+        log,
+        (sink) => {
+          reported.current = { sink, config, host: profile.host };
+        },
+        globals.mode.json,
+      );
     }
     const value = await pending;
     io.stdout(render(verb, value, globals.mode));

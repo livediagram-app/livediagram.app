@@ -21,6 +21,8 @@ import {
   skillPrint,
   apiCall,
   telemetryOn,
+  waitFor,
+  watch,
 } from './verbs/local';
 
 // The command a `livediagram …` line names: a top-level verb, or a resource (or alias) and a verb.
@@ -148,6 +150,18 @@ describe('the verbs the CLI handles', () => {
     ]);
     expect(authLogout.text!({ host: 'https://h' })).toEqual(['signed out of https://h']);
     expect(telemetryOn.text!({ telemetry: 'on' })).toEqual(['telemetry on']);
+    // The room stream: wait prints its lines (JSON keeps them) and exits as it ended; watch printed as it went.
+    const ended = { lines: ['nothing new in 5 s'], exit: 1 };
+    expect([waitFor.text!(ended), waitFor.json!(ended), waitFor.exitCode!(ended)]).toEqual([
+      ended.lines,
+      { lines: ended.lines },
+      1,
+    ]);
+    expect([watch.text!(ended), watch.json!(ended), watch.exitCode!(ended)]).toEqual([
+      ended.lines,
+      undefined,
+      1,
+    ]);
     expect(
       authStatus.text!({
         host: 'https://h',

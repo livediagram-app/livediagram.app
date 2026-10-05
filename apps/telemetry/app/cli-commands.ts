@@ -39,6 +39,8 @@ export const CLI_COMMANDS: readonly { type: string; command: string; what: strin
   { type: 'CommentReopen', command: 'comment reopen', what: 'reopening a thread' },
   { type: 'PresenceSet', command: 'presence set', what: 'showing what an agent is doing' },
   { type: 'PresenceClear', command: 'presence clear', what: 'taking an agent off a tab' },
+  { type: 'Wait', command: 'wait', what: 'waiting for a comment or a change' },
+  { type: 'Watch', command: 'watch', what: 'streaming comments and changes' },
   { type: 'TemplateLs', command: 'template ls', what: 'listing templates' },
   { type: 'TemplateView', command: 'template view', what: 'reading a template as an outline' },
   { type: 'IconSearch', command: 'icon search', what: 'finding an icon' },

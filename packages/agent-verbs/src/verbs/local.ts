@@ -179,3 +179,56 @@ const telemetryVerb = (on: boolean) =>
 
 export const telemetryOn = telemetryVerb(true);
 export const telemetryOff = telemetryVerb(false);
+
+// The room stream's verbs (blueprint "The room stream"): they hold a socket and a clock, so the CLI runs them.
+const streamOutput = z.object({ lines: z.array(z.string()), exit: z.number() });
+
+export const waitFor = defineVerb({
+  id: 'wait',
+  summary: 'Block until a comment or a change arrives, then print it',
+  description:
+    'Listens on the document\u2019s room until a comment is added, or until something changes and settles (a burst of edits is one change); prints it and exits 0. --timeout exits 0 with a line saying nothing came; Ctrl-C exits 1.',
+  behaviour: 'read',
+  local: true,
+  input: z.object({
+    doc: z.string().describe('A name, id prefix or livediagram URL'),
+    for: z.enum(['comment', 'change']).describe('What to wait for: a comment, or a change'),
+    tab: z.string().optional().describe('A tab name or id prefix; every tab when omitted'),
+    timeout: z.coerce.number().positive().optional().describe('Seconds to wait at most'),
+  }),
+  output: streamOutput,
+  text: ({ lines }) => lines,
+  json: ({ lines }) => ({ lines }),
+  exitCode: ({ exit }) => exit,
+  cli: {
+    positionals: ['doc'],
+    examples: [
+      'livediagram wait "Shop" --for comment',
+      'livediagram wait 3f9c --for change --timeout 600',
+    ],
+    prints: 'the comment\u2019s thread, the change, or that nothing came',
+  },
+});
+
+export const watch = defineVerb({
+  id: 'watch',
+  summary: 'Stream comments and changes as they happen',
+  description:
+    'Listens on the document\u2019s room and prints a line for each changeset, element change, comment and tab or document change, until Ctrl-C (exit 0).',
+  behaviour: 'read',
+  local: true,
+  input: z.object({
+    doc: z.string().describe('A name, id prefix or livediagram URL'),
+    tab: z.string().optional().describe('A tab name or id prefix; every tab when omitted'),
+  }),
+  output: streamOutput,
+  text: ({ lines }) => lines,
+  exitCode: ({ exit }) => exit,
+  cli: {
+    positionals: ['doc'],
+    examples: ['livediagram watch "Shop"', 'livediagram watch 3f9c --tab Flow --json'],
+    prints: 'one line per event; --json one object a line',
+  },
+  // Each event went out as it came; nothing is left to print at the end.
+  json: () => undefined,
+});
