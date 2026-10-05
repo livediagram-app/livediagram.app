@@ -24,7 +24,11 @@ describe('createApiClient', () => {
     expect(seen[0]!.url).toBe(`${base}/documents`);
     expect(seen[0]!.headers.get('Authorization')).toBe('Bearer lvd_x');
     expect(seen[0]!.headers.get('Content-Type')).toBe('application/json');
-    await api.fetch('/plain', { method: 'PUT', body: 'x', headers: { 'Content-Type': 'text/plain' } });
+    await api.fetch('/plain', {
+      method: 'PUT',
+      body: 'x',
+      headers: { 'Content-Type': 'text/plain' },
+    });
     expect(seen[1]!.headers.get('Content-Type')).toBe('text/plain');
     await api.fetch('/nobody');
     expect(seen[2]!.headers.has('Content-Type')).toBe(false);
