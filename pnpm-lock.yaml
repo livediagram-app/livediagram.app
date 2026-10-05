@@ -72,6 +72,9 @@ importers:
       '@livediagram/icons':
         specifier: workspace:*
         version: link:../../packages/icons
+      '@livediagram/items':
+        specifier: workspace:*
+        version: link:../../packages/items
       '@livediagram/templates':
         specifier: workspace:*
         version: link:../../packages/templates
@@ -729,6 +732,9 @@ importers:
       '@livediagram/document':
         specifier: workspace:*
         version: link:../document
+      '@livediagram/items':
+        specifier: workspace:*
+        version: link:../items
     devDependencies:
       '@livediagram/eslint-config':
         specifier: workspace:*

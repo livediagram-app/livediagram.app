@@ -12,3 +12,4 @@ export * from './board';
 export * from './presets';
 export * from './tab-items';
 export * from './views';
+export * from './person';

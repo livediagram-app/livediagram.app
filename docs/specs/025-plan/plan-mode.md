@@ -9,9 +9,9 @@ item store.
 
 ## Domain language
 
-| Term          | Means                                                                       |
-| ------------- | --------------------------------------------------------------------------- |
-| **Plan mode** | The editor mode `plan`, shown as **Plan**                                   |
+| Term          | Means                                                                        |
+| ------------- | ---------------------------------------------------------------------------- |
+| **Plan mode** | The editor mode `plan`, shown as **Plan**                                    |
 | **Plan**      | In the interface, the mode's name and its palette category; never a tab kind |
 
 - "Board" alone keeps its old meanings elsewhere in the specs; in this folder it is always a **Plan board**.
@@ -39,15 +39,15 @@ item store.
 
 The Plan layout offers six categories, landing on Popular:
 
-| Category | Holds                                                                                                   |
-| -------- | ------------------------------------------------------------------------------------------------------- |
+| Category | Holds                                                                                                                 |
+| -------- | --------------------------------------------------------------------------------------------------------------------- |
 | Popular  | Kanban board, Retro board, Task card, Bug card, Note card, Sticky note, Text, Heading, Frame, Arrow, Image, Checklist |
-| Plan     | Boards: Kanban board, Sprint board, Retro board, Roadmap, Blank board. Cards: one per item type          |
-| Write    | Diagram's Write, without Page and Annotation                                                            |
-| Shapes   | Diagram's Shapes                                                                                        |
-| Icons    | The icon catalogue                                                                                      |
-| Stickers | The sticker catalogue                                                                                   |
-| Media    | Image and Avatar                                                                                        |
+| Plan     | Boards: Kanban board, Sprint board, Retro board, Roadmap, Blank board. Cards: one per item type                       |
+| Write    | Diagram's Write, without Page and Annotation                                                                          |
+| Shapes   | Diagram's Shapes                                                                                                      |
+| Icons    | The icon catalogue                                                                                                    |
+| Stickers | The sticker catalogue                                                                                                 |
+| Media    | Image and Avatar                                                                                                      |
 
 - A **board tile** places a Plan board with that preset's set-up. The board starts empty unless the tab already
   has items its scope matches.
@@ -60,15 +60,15 @@ The Plan layout offers six categories, landing on Popular:
 Templates that open in Plan mode carry **seed items** with their boards. The items are made in the new
 document's item store when the document is made; afterwards they are ordinary items.
 
-| Template        | Board                                                                                   |
-| --------------- | --------------------------------------------------------------------------------------- |
-| Blank Plan      | One Kanban board: To do, In progress, Done; no items                                    |
-| Kanban Board    | Backlog, To do, In progress (WIP 3), Review (WIP 2), Done; a team mid-week              |
-| Sprint Board    | Sprint backlog, In progress, In review, Done; swimlanes by assignee; estimates shown    |
-| Bug Triage      | New, Confirmed, Fixing, Fixed, Won't fix; Bug scope; swimlanes by priority              |
-| Team Retro      | Went well, To improve, Ideas, Actions; voting with 5 votes; hide writing on             |
-| Roadmap         | Now, Next, Later; Epic scope; labels shown                                              |
-| Weekly Planner  | Monday to Friday; due dates shown                                                       |
+| Template       | Board                                                                                |
+| -------------- | ------------------------------------------------------------------------------------ |
+| Blank Plan     | One Kanban board: To do, In progress, Done; no items                                 |
+| Kanban Board   | Backlog, To do, In progress (WIP 3), Review (WIP 2), Done; a team mid-week           |
+| Sprint Board   | Sprint backlog, In progress, In review, Done; swimlanes by assignee; estimates shown |
+| Bug Triage     | New, Confirmed, Fixing, Fixed, Won't fix; Bug scope; swimlanes by priority           |
+| Team Retro     | Went well, To improve, Ideas, Actions; voting with 5 votes; hide writing on          |
+| Roadmap        | Now, Next, Later; Epic scope; labels shown                                           |
+| Weekly Planner | Monday to Friday; due dates shown                                                    |
 
 - The Kanban Board template is rebuilt as a Plan board; it opens in Plan. It stays in the Kanban boards family.
 - Team Retro joins the Retrospectives family beside the sticky-note formats, which stay Diagram templates.

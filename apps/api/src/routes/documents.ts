@@ -3,6 +3,7 @@
 // upgrade. The largest resource: every sub-path
 // under a document id lives here.
 
+import { readSeedItems, seedItems } from './item-routes';
 import type { Tab } from '@livediagram/document';
 import { isValidTab, migrateIncomingTab } from '@livediagram/document';
 import { capStoredName } from '../names';
@@ -102,6 +103,7 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
         tabs?: Tab[];
         intent?: unknown;
         markUsed?: unknown;
+        items?: unknown;
       };
       const owner = requireOwner(ctx);
       if (owner instanceof Response) return owner;
@@ -162,6 +164,10 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
           }
         }
       }
+      // Seed items (docs/specs/025-plan/items.md): a Plan template's, or an offline document's on
+      // sync. Validated whole before anything is written.
+      const seedItemCreates = readSeedItems(body.items);
+      if (seedItemCreates instanceof Response) return seedItemCreates;
       // Ownership guard (security): upsertDocumentMeta is INSERT ... ON
       // CONFLICT(id) DO UPDATE owner_id = excluded.owner_id, so a POST with an
       // id that already exists under a DIFFERENT owner would silently transfer
@@ -269,6 +275,11 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
           if (error instanceof TabTooLargeError) return payloadTooLarge();
           throw error;
         }
+      }
+      // Items only on a genuine create: a re-commit of an id never re-seeds its store.
+      if (!clash && seedItemCreates.length > 0) {
+        const refused = await seedItems(ctx, body.id, owner, seedItemCreates);
+        if (refused) return refused;
       }
       const liveDoc = await getDocument(env, body.id);
       // docs/specs/013-workspace/timeline.md §4.2: only a GENUINE create earns a timeline event. A

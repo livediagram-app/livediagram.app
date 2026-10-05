@@ -10,16 +10,16 @@ fields people usually want, and any item may carry other fields. The store never
 
 ## Domain language
 
-| Term           | Means                                                                                                    | Never called                     |
-| -------------- | -------------------------------------------------------------------------------------------------------- | -------------------------------- |
-| **item**       | One record in a document's item store: `id`, `type`, `fields`, `rank`, `key`                             | ticket, task, issue, card, entry |
-| **item type**  | What an item is (Task, Bug, Note...): a name, a glyph, a colour and the fields it offers                 | kind (that is a tab's), category |
-| **field**      | One named value in an item's `fields` bag (`title`, `status`, `assignee`...)                             | column, property, attribute      |
-| **item store** | Every item of one document                                                                               | backlog, database, table         |
-| **item key**   | The short number people say out loud, `#12`: assigned once, per document, never reused                   | id (the id is internal)          |
-| **rank**       | The ordering key that places an item among others in a column                                            | position, index, order           |
-| **status**     | The `status` field: the value a board's columns are made of                                              | state, column, stage             |
-| **card**       | How an item is drawn: on a board, or alone as a Plan card. A card is a view; the item is the data        | item (the data is the item)      |
+| Term           | Means                                                                                             | Never called                     |
+| -------------- | ------------------------------------------------------------------------------------------------- | -------------------------------- |
+| **item**       | One record in a document's item store: `id`, `type`, `fields`, `rank`, `key`                      | ticket, task, issue, card, entry |
+| **item type**  | What an item is (Task, Bug, Note...): a name, a glyph, a colour and the fields it offers          | kind (that is a tab's), category |
+| **field**      | One named value in an item's `fields` bag (`title`, `status`, `assignee`...)                      | column, property, attribute      |
+| **item store** | Every item of one document                                                                        | backlog, database, table         |
+| **item key**   | The short number people say out loud, `#12`: assigned once, per document, never reused            | id (the id is internal)          |
+| **rank**       | The ordering key that places an item among others in a column                                     | position, index, order           |
+| **status**     | The `status` field: the value a board's columns are made of                                       | state, column, stage             |
+| **card**       | How an item is drawn: on a board, or alone as a Plan card. A card is a view; the item is the data | item (the data is the item)      |
 
 ## What an item is
 
@@ -39,34 +39,34 @@ fields people usually want, and any item may carry other fields. The store never
 
 The fields the shipped types use. Each has a **field kind** that validates and draws it.
 
-| Field         | Kind      | Holds                                                                       |
-| ------------- | --------- | --------------------------------------------------------------------------- |
-| `title`       | text      | One line, required, up to 200 characters                                    |
-| `description` | long text | Plain text with line breaks, up to 10,000 characters                        |
-| `status`      | status    | A status value, matched against a board's columns                           |
-| `assignee`    | person    | `{ id, name, color }`: the person it is on, picked like an assigned action  |
-| `priority`    | priority  | `urgent`, `high`, `medium` or `low`                                         |
-| `labels`      | labels    | Up to 12 short strings                                                      |
-| `estimate`    | number    | Points or hours, 0 to 999                                                   |
-| `due`         | date      | A calendar date, `YYYY-MM-DD`                                               |
-| `checklist`   | checklist | Up to 50 `{ text, done }` rows                                              |
-| `parent`      | item ref  | Another item's id (an epic), resolved within the same document              |
-| `votes`       | votes     | Per-person counts `{ [personId]: n }`, written only through voting          |
+| Field         | Kind      | Holds                                                                      |
+| ------------- | --------- | -------------------------------------------------------------------------- |
+| `title`       | text      | One line, required, up to 200 characters                                   |
+| `description` | long text | Plain text with line breaks, up to 10,000 characters                       |
+| `status`      | status    | A status value, matched against a board's columns                          |
+| `assignee`    | person    | `{ id, name, color }`: the person it is on, picked like an assigned action |
+| `priority`    | priority  | `urgent`, `high`, `medium` or `low`                                        |
+| `labels`      | labels    | Up to 12 short strings                                                     |
+| `estimate`    | number    | Points or hours, 0 to 999                                                  |
+| `due`         | date      | A calendar date, `YYYY-MM-DD`                                              |
+| `checklist`   | checklist | Up to 50 `{ text, done }` rows                                             |
+| `parent`      | item ref  | Another item's id (an epic), resolved within the same document             |
+| `votes`       | votes     | Per-person counts `{ [personId]: n }`, written only through voting         |
 
 ## Item types
 
 A small built-in catalogue, each with a glyph, a colour and the fields it offers in the item panel:
 
-| Type      | For                                  | Offers                                                          |
-| --------- | ------------------------------------ | --------------------------------------------------------------- |
-| Task      | A piece of work                      | title, description, status, assignee, priority, estimate, due, checklist, labels, parent |
-| Story     | Work told from someone's need        | as Task                                                         |
-| Bug       | Something broken                     | as Task                                                         |
-| Epic      | A larger body of work others belong to | title, description, status, assignee, priority, due, labels   |
-| Note      | A thought, a retro note              | title, description, status, votes                               |
-| Idea      | A proposal to weigh                  | title, description, status, votes, labels                       |
-| Action    | Something agreed to do               | title, status, assignee, due                                    |
-| Risk      | Something that could go wrong        | title, description, status, priority, assignee                  |
+| Type   | For                                    | Offers                                                                                   |
+| ------ | -------------------------------------- | ---------------------------------------------------------------------------------------- |
+| Task   | A piece of work                        | title, description, status, assignee, priority, estimate, due, checklist, labels, parent |
+| Story  | Work told from someone's need          | as Task                                                                                  |
+| Bug    | Something broken                       | as Task                                                                                  |
+| Epic   | A larger body of work others belong to | title, description, status, assignee, priority, due, labels                              |
+| Note   | A thought, a retro note                | title, description, status, votes                                                        |
+| Idea   | A proposal to weigh                    | title, description, status, votes, labels                                                |
+| Action | Something agreed to do                 | title, status, assignee, due                                                             |
+| Risk   | Something that could go wrong          | title, description, status, priority, assignee                                           |
 
 - Custom item types are a later step; the open field bag already holds their data.
 

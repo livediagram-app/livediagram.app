@@ -106,9 +106,11 @@ export function applyMove(
 ): Item {
   const status = move.status ?? itemStatus(item);
   const fields: ItemFields = { ...item.fields, ...move.set };
+  for (const k of move.clear ?? []) delete fields[k];
   if (status !== undefined) fields['status'] = status;
   return {
     ...item,
+    type: move.type ?? item.type,
     fields,
     rank: rankForPlace(items, { status, after: move.after, before: move.before }, item.id),
     rev: item.rev + 1,

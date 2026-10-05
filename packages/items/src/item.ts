@@ -55,10 +55,16 @@ export interface ItemPatch {
   type?: string;
 }
 
-// A move may also set a swimlane's field (dropping into Sam's row assigns Sam).
+// A move may also set a swimlane's field (dropping into Sam's row assigns Sam), clear it (the
+// "No assignee" row) or change the type (a type swimlane).
 export interface ItemMove extends ItemPlace {
   set?: ItemFields;
+  clear?: string[];
+  type?: string;
 }
+
+// The fields a swimlane drop may set or clear.
+export const SWIMLANE_FIELDS = ['assignee', 'priority', 'parent'] as const;
 
 export function itemTitle(item: Pick<Item, 'fields'>): string {
   const title = item.fields['title'];

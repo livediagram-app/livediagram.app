@@ -13,6 +13,7 @@ import {
   type RoomOp,
 } from '@livediagram/api-schema';
 import type { AgentPresenceWrite } from './room-agent-presence';
+import type { ItemsRoomOp } from '@livediagram/api-schema';
 import type { Env } from './types';
 
 // The worker's calls into a document's realtime room (docs/specs/012-collaboration/collab-race-hardening.md): reading its
@@ -408,5 +409,20 @@ export async function refreshAgentPresence(
       tabId: write.tabId,
       error: String(err),
     });
+  }
+}
+
+// Tell a document's room about item writes (docs/specs/025-plan/items.md "Live for everyone"): an
+// ordered system op, so a peer whose socket blipped catches it up. Best-effort like the other
+// broadcasts: the D1 write is the change, and a client that missed it refetches on a rev gap.
+export async function relayItems(env: Env, documentId: string, op: ItemsRoomOp): Promise<void> {
+  try {
+    await roomStubFor(env, documentId).fetch('https://room/broadcast', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ op, ordered: true }),
+    });
+  } catch (err) {
+    console.warn('[room-broadcast] items did not reach the room', documentId, err);
   }
 }

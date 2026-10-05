@@ -10,18 +10,18 @@ is about.
 
 ## Domain language
 
-| Term             | Means                                                                                          | Never called              |
-| ---------------- | ---------------------------------------------------------------------------------------------- | ------------------------- |
-| **Plan board**   | The `plan-board` shape: a board set-up drawn with the items it matches                         | Kanban element, board tab |
-| **Plan card**    | The `plan-card` shape: one item on the canvas                                                  | ticket element            |
-| **board set-up** | The board's stored configuration (`planBoard` on the element)                                  | board config, settings    |
-| **column**       | One status the board shows, left to right                                                      | lane (lanes are elements) |
-| **swimlane**     | One row of the board, grouping its cards by a field (assignee, type, priority, parent)         | lane, row                 |
-| **WIP limit**    | The most cards a column should hold                                                            | cap, max                  |
-| **unplaced**     | Items the board's scope matches whose status is none of its columns                            | orphans, hidden           |
-| **scope**        | Which items a board shows: by type, by label, or all                                           | filter (that is a view's) |
-| **quick filter** | A person's own, unsaved narrowing of what a board shows ("Only mine", a search)               | scope                     |
-| **face-down**    | A card drawn as its colour and author only, while its board hides writing                      | hidden, private           |
+| Term             | Means                                                                                  | Never called              |
+| ---------------- | -------------------------------------------------------------------------------------- | ------------------------- |
+| **Plan board**   | The `plan-board` shape: a board set-up drawn with the items it matches                 | Kanban element, board tab |
+| **Plan card**    | The `plan-card` shape: one item on the canvas                                          | ticket element            |
+| **board set-up** | The board's stored configuration (`planBoard` on the element)                          | board config, settings    |
+| **column**       | One status the board shows, left to right                                              | lane (lanes are elements) |
+| **swimlane**     | One row of the board, grouping its cards by a field (assignee, type, priority, parent) | lane, row                 |
+| **WIP limit**    | The most cards a column should hold                                                    | cap, max                  |
+| **unplaced**     | Items the board's scope matches whose status is none of its columns                    | orphans, hidden           |
+| **scope**        | Which items a board shows: by type, by label, or all                                   | filter (that is a view's) |
+| **quick filter** | A person's own, unsaved narrowing of what a board shows ("Only mine", a search)        | scope                     |
+| **face-down**    | A card drawn as its colour and author only, while its board hides writing              | hidden, private           |
 
 ## The board set-up
 

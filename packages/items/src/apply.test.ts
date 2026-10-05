@@ -92,6 +92,9 @@ describe('item writes', () => {
     expect(placeOf(a, [a, b])).toEqual({ status: 'todo', before: null });
     const c = item({ title: 'c', status: 'todo' }, { rank: 'r' });
     expect(placeOf(a, [a, c])).toEqual({ status: 'todo', before: c.id });
+    const cleared = applyMove(moved, { clear: ['assignee'], type: 'bug' }, [moved, b], ctx);
+    expect(cleared.fields['assignee']).toBeUndefined();
+    expect(cleared.type).toBe('bug');
     // Status kept when the move only reorders.
     expect(applyMove(a, { after: null }, [a, c], ctx).fields['status']).toBe('todo');
   });

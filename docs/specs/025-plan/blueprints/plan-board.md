@@ -5,19 +5,19 @@ editor views.
 
 ## Domain and naming
 
-| Spec term     | Identifier                                                                   |
-| ------------- | ---------------------------------------------------------------------------- |
-| Plan board    | `ShapeKind` `'plan-board'`; set-up field `ShapeElement.planBoard: PlanBoardSetup` |
-| Plan card     | `ShapeKind` `'plan-card'`; field `ShapeElement.planCard: { itemId: string }` |
-| board set-up  | `PlanBoardSetup` (`@livediagram/items` `board.ts`)                           |
-| column        | `PlanColumn`                                                                 |
-| swimlane      | `SwimlaneBy` + projected `lanes`                                             |
-| WIP limit     | `PlanColumn.wipLimit`                                                        |
-| unplaced      | projection `unplaced`                                                        |
-| scope         | `PlanBoardSetup.scope: BoardScope`                                           |
-| quick filter  | `QuickFilter` (per person, React state, never stored)                       |
-| face-down     | `cardIsFaceDown(item, setup, viewerId)`                                      |
-| board preset  | `PLAN_BOARD_PRESETS` (`@livediagram/items` `presets.ts`), id `PlanBoardPresetId` |
+| Spec term    | Identifier                                                                        |
+| ------------ | --------------------------------------------------------------------------------- |
+| Plan board   | `ShapeKind` `'plan-board'`; set-up field `ShapeElement.planBoard: PlanBoardSetup` |
+| Plan card    | `ShapeKind` `'plan-card'`; field `ShapeElement.planCard: { itemId: string }`      |
+| board set-up | `PlanBoardSetup` (`@livediagram/items` `board.ts`)                                |
+| column       | `PlanColumn`                                                                      |
+| swimlane     | `SwimlaneBy` + projected `lanes`                                                  |
+| WIP limit    | `PlanColumn.wipLimit`                                                             |
+| unplaced     | projection `unplaced`                                                             |
+| scope        | `PlanBoardSetup.scope: BoardScope`                                                |
+| quick filter | `QuickFilter` (per person, React state, never stored)                             |
+| face-down    | `cardIsFaceDown(item, setup, viewerId)`                                           |
+| board preset | `PLAN_BOARD_PRESETS` (`@livediagram/items` `presets.ts`), id `PlanBoardPresetId`  |
 
 ## Element model (`packages/document`)
 
@@ -63,7 +63,7 @@ into `useEditorState` with one call; provides `PlanContext` value).
   card pointerdown stops propagation and starts `usePlanCardDrag`; header/border do not stop propagation (the
   generic box drag moves the board). Not interactive: nothing stops propagation; double-click on a card opens it.
 - **Card drag states**: `idle → pressed` (pointerdown) `→ dragging` (moved ≥ `PLAN_DRAG_SLOP_PX`) `→ dropped |
-  cancelled` (Escape, pointercancel). `pressed → idle` on pointerup without moving = open the item.
+cancelled` (Escape, pointercancel). `pressed → idle` on pointerup without moving = open the item.
   - While dragging: a floating copy follows the pointer (screen space, transform only), a placeholder of the
     card's height marks the drop slot: column under the pointer, lane under the pointer, slot by the midpoint of
     the cards under it.
@@ -117,14 +117,14 @@ into `useEditorState` with one call; provides `PlanContext` value).
 
 ## Errors and edge cases
 
-| Case                                         | Handling                                           |
-| -------------------------------------------- | -------------------------------------------------- |
-| Items not loaded yet                         | Columns draw with skeleton cards (3 per column)    |
-| Item store failed to load                    | Header shows "Couldn't load items" + Retry         |
-| Drop on the same slot                        | No write                                           |
-| Column statuses duplicated by an agent       | Validation rejects; normalise keeps the first      |
-| Board narrower than columns × 220            | Columns scroll horizontally inside the board       |
-| Item moved by someone else during my drag    | My drop still applies (last write wins)            |
+| Case                                      | Handling                                        |
+| ----------------------------------------- | ----------------------------------------------- |
+| Items not loaded yet                      | Columns draw with skeleton cards (3 per column) |
+| Item store failed to load                 | Header shows "Couldn't load items" + Retry      |
+| Drop on the same slot                     | No write                                        |
+| Column statuses duplicated by an agent    | Validation rejects; normalise keeps the first   |
+| Board narrower than columns × 220         | Columns scroll horizontally inside the board    |
+| Item moved by someone else during my drag | My drop still applies (last write wins)         |
 
 ## Observability
 
@@ -133,23 +133,23 @@ into `useEditorState` with one call; provides `PlanContext` value).
 
 ## Testing
 
-| Rule                                     | Test                                                  |
-| ---------------------------------------- | ----------------------------------------------------- |
-| Factory, validation, size, labels        | `packages/document/src/plan-shapes.test.ts`           |
-| SVG render with and without items        | `svg-render-plan.test.ts` + coverage test kinds       |
-| Projection drives the board              | `PlanBoardView.test.tsx`                              |
-| Keyboard moves + announcement            | `usePlanBoardKeyboard.test.tsx`                       |
-| Drag slot computation                    | `plan-drop-slot.test.ts`                              |
-| Card onto board                          | `plan-drop-on-board.test.ts`                          |
-| Quick add creates and keeps field        | `PlanQuickAdd.test.tsx`                               |
-| Face-down                                | `face-down.test.ts`                                   |
+| Rule                              | Test                                            |
+| --------------------------------- | ----------------------------------------------- |
+| Factory, validation, size, labels | `packages/document/src/plan-shapes.test.ts`     |
+| SVG render with and without items | `svg-render-plan.test.ts` + coverage test kinds |
+| Projection drives the board       | `PlanBoardView.test.tsx`                        |
+| Keyboard moves + announcement     | `usePlanBoardKeyboard.test.tsx`                 |
+| Drag slot computation             | `plan-drop-slot.test.ts`                        |
+| Card onto board                   | `plan-drop-on-board.test.ts`                    |
+| Quick add creates and keeps field | `PlanQuickAdd.test.tsx`                         |
+| Face-down                         | `face-down.test.ts`                             |
 
 ## Constants and configuration
 
-| Constant               | Value | Provenance / safe range                   |
-| ---------------------- | ----- | ----------------------------------------- |
-| `PLAN_DRAG_SLOP_PX`    | 4     | Matches the canvas drag threshold         |
-| `PLAN_COLUMN_MIN_PX`   | 220   | A card's title reads in 3 lines; 180–320  |
-| `PLAN_COLUMNS_MAX`     | 12    | Spec                                      |
-| `ITEM_EDIT_DEBOUNCE_MS`| 400   | One undo step per pause in typing         |
-| `PLAN_PRESENCE_MS`     | 100   | Presence throttle as cursors              |
+| Constant                | Value | Provenance / safe range                  |
+| ----------------------- | ----- | ---------------------------------------- |
+| `PLAN_DRAG_SLOP_PX`     | 4     | Matches the canvas drag threshold        |
+| `PLAN_COLUMN_MIN_PX`    | 220   | A card's title reads in 3 lines; 180–320 |
+| `PLAN_COLUMNS_MAX`      | 12    | Spec                                     |
+| `ITEM_EDIT_DEBOUNCE_MS` | 400   | One undo step per pause in typing        |
+| `PLAN_PRESENCE_MS`      | 100   | Presence throttle as cursors             |

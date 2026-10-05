@@ -5,19 +5,19 @@ and its templates.
 
 ## Domain and naming
 
-| Spec term        | Identifier                                                        |
-| ---------------- | ----------------------------------------------------------------- |
-| Plan mode        | `EditorMode` `'plan'` (`EDITOR_MODE_CATALOGUE`, 4th entry)        |
-| Plan Mode switch | preference `planModeEnabled`; `EXPERIMENTAL_EDITOR_MODES`          |
-| Plan palette     | `PLAN` layout in `palette-layouts.ts`; category id `plan`         |
-| Plan mark        | `PlanModeIcon` in `packages/ui/src/icons/drawing-kinds.tsx`       |
-| Blank Plan       | `TemplateKind` `'blank-plan'`                                     |
-| seed items       | `TemplateBuild.items?: ItemCreate[]`                              |
+| Spec term        | Identifier                                                  |
+| ---------------- | ----------------------------------------------------------- |
+| Plan mode        | `EditorMode` `'plan'` (`EDITOR_MODE_CATALOGUE`, 4th entry)  |
+| Plan Mode switch | preference `planModeEnabled`; `EXPERIMENTAL_EDITOR_MODES`   |
+| Plan palette     | `PLAN` layout in `palette-layouts.ts`; category id `plan`   |
+| Plan mark        | `PlanModeIcon` in `packages/ui/src/icons/drawing-kinds.tsx` |
+| Blank Plan       | `TemplateKind` `'blank-plan'`                               |
+| seed items       | `TemplateBuild.items?: ItemCreate[]`                        |
 
 ## Mode wiring
 
 - `packages/document/src/editor-mode.ts`: catalogue entry `{ id: 'plan', label: 'Plan', description: 'Boards of
-  items: columns, cards and the work moving through them' }`; `hasPlanLook(mode)`.
+items: columns, cards and the work moving through them' }`; `hasPlanLook(mode)`.
 - Every `Record<EditorMode, …>` the compiler flags: `MODE_EVENT` (`ModePlan`), `OPENS_IN_EVENT` (`OpensInPlan`),
   template filter (`TemplateModePlan`), `BLANK_TEMPLATE_FOR_MODE` (`blank-plan`), `MODE_WORDS` (Plan, "Plan
   boards"), marketing `MODE_BEST`, `EDITOR_MODE_ICONS` (widened to `Record<EditorMode, …>`).
@@ -27,7 +27,7 @@ and its templates.
 ## Gate
 
 - `offeredModesFor(enabled: ExperimentalModeFlags)` with `ExperimentalModeFlags = { illustrate: boolean; plan:
-  boolean }`; `setExperimentalModeEnabled(mode, on)`. `EXPERIMENTAL_EDITOR_MODES = ['illustrate', 'plan']`.
+boolean }`; `setExperimentalModeEnabled(mode, on)`. `EXPERIMENTAL_EDITOR_MODES = ['illustrate', 'plan']`.
 - `planModeEnabled` preference read as `!== false`; Settings › Experimental row "Plan Mode", telemetry
   `PlanModeOn` / `PlanModeOff` fired before persisting.
 

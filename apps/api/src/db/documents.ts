@@ -2,6 +2,8 @@
 // timestamps) plus the copy operation. Tab content lives in tabs.ts;
 // the read DTO joins owner display info from participants.
 
+import { itemIdsShownOnTab, type TabItemElement } from '@livediagram/items';
+import { copyItemsStatements, listItems } from './items';
 import { remapTabLinks, type Element } from '@livediagram/document';
 import { rowToTabSummary, type TabRow } from '../tab-row';
 import type { DocumentDTO, DocumentSummary, Env, TabSummaryDTO } from '../types';
@@ -467,7 +469,29 @@ export async function copyDocument(
     ];
   });
   if (inserts.length > 0) await env.DB.batch(inserts);
+  await env.DB.batch(
+    copyItemsStatements(env, sourceId, newId, await copiedItemIds(env, sourceId, rows, onlyTabId)),
+  );
   return await getDocument(env, newId);
+}
+
+// The items a copy takes: all of them, or for a tab-scoped copy the items its one tab shows.
+async function copiedItemIds(
+  env: Env,
+  sourceId: string,
+  rows: { data: string }[],
+  onlyTabId: string | null,
+): Promise<string[] | null> {
+  if (onlyTabId === null) return null;
+  const elements = rows.flatMap((row) => {
+    try {
+      const parsed = JSON.parse(row.data) as { elements?: unknown };
+      return Array.isArray(parsed.elements) ? (parsed.elements as TabItemElement[]) : [];
+    } catch {
+      return [];
+    }
+  });
+  return [...itemIdsShownOnTab(elements, await listItems(env, sourceId))];
 }
 
 // Re-point the tab / element links inside one tab's stored `data` JSON at

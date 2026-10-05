@@ -28,6 +28,7 @@ import { handleChangesetRoutes } from './changesets';
 import { handleCommentRoutes } from './comment-routes';
 import { handleAgentPresenceRoute } from './agent-presence-routes';
 import { handleTabRender } from './tab-render-route';
+import { handleItemRoutes } from './item-routes';
 import {
   deniedOnTab,
   gateEdit,
@@ -172,6 +173,10 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
   // One tab drawn by the shared renderer (docs/specs/015-api/api.md).
   const rendered = await handleTabRender(ctx);
   if (rendered) return rendered;
+
+  // The item store (docs/specs/025-plan/items.md).
+  const items = await handleItemRoutes(ctx);
+  if (items) return items;
 
   // /api/documents/<id>/tabs/<tabId>/link — owner only.
   //   POST — add an existing tab to this document (docs/specs/006-document/tab-document-many-to-many.md).

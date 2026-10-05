@@ -56,6 +56,13 @@ describe('opForScope (what a scoped session receives)', () => {
     });
   });
 
+  it('delivers item writes to a scoped session without their items', () => {
+    const op = { kind: 'items', upserts: [{ id: 'i1' }], removed: ['i2'], rev: 7 };
+    expect(opForScope(op, null)).toBe(op);
+    expect(opForScope(op, SCOPE)).toEqual({ kind: 'items', upserts: [], removed: [], rev: 7 });
+    expect(scopedSenderMayRelay(op, SCOPE)).toBe(false);
+  });
+
   it('delivers the tab-less session ops', () => {
     for (const kind of [
       'poll-start',
