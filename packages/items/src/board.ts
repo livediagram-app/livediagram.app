@@ -40,17 +40,11 @@ export const CARD_FIELDS = [
 ] as const;
 export type CardField = (typeof CARD_FIELDS)[number];
 
-export interface BoardScope {
-  types?: string[];
-  label?: string;
-}
-
 export interface PlanBoardSetup {
   title: string;
   columns: PlanColumn[];
   doneColumnId?: string;
   swimlaneBy: SwimlaneBy;
-  scope: BoardScope;
   cardFields: CardField[];
   voting: { on: boolean; budget?: number };
   hideWriting: boolean;
@@ -88,12 +82,6 @@ export interface BoardProjection {
 }
 
 export const NO_LANE = '';
-
-export function boardScopeMatches(scope: BoardScope, item: Item): boolean {
-  if (scope.types && scope.types.length > 0 && !scope.types.includes(item.type)) return false;
-  if (scope.label && !itemLabels(item).includes(scope.label)) return false;
-  return true;
-}
 
 export function quickFilterMatches(quick: QuickFilter | undefined, item: Item): boolean {
   if (!quick) return true;
@@ -180,7 +168,6 @@ export function projectBoard(
   const scoped: Item[] = [];
   const unplaced: Item[] = [];
   for (const it of items.values()) {
-    if (!boardScopeMatches(setup.scope, it)) continue;
     const status = itemStatus(it);
     if (status === undefined || !byStatus.has(status)) unplaced.push(it);
     else scoped.push(it);
@@ -285,14 +272,8 @@ export function normaliseBoardSetup(input: unknown): PlanBoardSetup | null {
     columns.push(col);
   }
   if (columns.length === 0) return null;
-  const scopeIn = isObj(input['scope']) ? input['scope'] : {};
-  const scope: BoardScope = {};
-  if (Array.isArray(scopeIn['types'])) {
-    const types = scopeIn['types'].filter((t): t is string => typeof t === 'string').slice(0, 16);
-    if (types.length) scope.types = types;
-  }
-  if (typeof scopeIn['label'] === 'string' && scopeIn['label'].trim())
-    scope.label = scopeIn['label'].slice(0, 32);
+  // Every board shows every card (docs/specs/025-plan/plan-board.md): a `scope` an older board stored is
+  // read past.
   const votingIn = isObj(input['voting']) ? input['voting'] : {};
   const budget = votingIn['budget'];
   const swimlaneBy = (SWIMLANE_BY as readonly unknown[]).includes(input['swimlaneBy'])
@@ -310,7 +291,6 @@ export function normaliseBoardSetup(input: unknown): PlanBoardSetup | null {
     columns,
     ...(doneColumnId ? { doneColumnId } : {}),
     swimlaneBy,
-    scope,
     cardFields,
     voting: {
       on: votingIn['on'] === true,

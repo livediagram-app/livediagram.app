@@ -1,14 +1,10 @@
 // What a card dropped on a Plan board does (docs/specs/025-plan/plan-board.md "Moving cards"), as
 // pure functions of the board: the move a drop makes (its column, its place, and its row's field when
-// the board has rows), and why a board refuses a card from another board.
+// the board has rows).
 import {
-  ITEM_TYPES,
-  typeIn,
   type BoardProjection,
-  type BoardScope,
   type Item,
   type ItemMove,
-  type ItemTypeDef,
   type LaneHead,
   type PlanBoardSetup,
 } from '@livediagram/items';
@@ -59,19 +55,4 @@ export function boardMoveFor(
     before: slot.beforeId,
     ...(withLanes && currentLane !== slot.laneKey ? laneMove(lane) : {}),
   };
-}
-
-// Why a board will not take a card from another board: it shows only some types, or one label.
-export function scopeRefusal(
-  scope: BoardScope,
-  types: readonly ItemTypeDef[] = ITEM_TYPES,
-): string {
-  if (scope.types && scope.types.length > 0) {
-    const names = scope.types.map((t) => typeIn(types, t).label);
-    const list =
-      names.length > 1 ? `${names.slice(0, -1).join(', ')} and ${names.at(-1)}` : names[0];
-    return `This board shows ${list} items only`;
-  }
-  if (scope.label) return `This board shows items labelled “${scope.label}” only`;
-  return 'This board can’t take that card';
 }

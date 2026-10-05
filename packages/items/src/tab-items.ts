@@ -1,9 +1,9 @@
 // Which items a tab shows (docs/specs/025-plan/items.md "Who may do what"):
-// a visitor on a tab-scoped link sees only these. Its Plan cards' items, and
-// every item a Plan board on it scopes (in its columns or unplaced).
+// a visitor on a tab-scoped link sees only these. Its Plan cards' items, and,
+// with a Plan board on it, every item (a board shows every card).
 
 import type { Item } from './item';
-import { boardScopeMatches, normaliseBoardSetup } from './board';
+import { normaliseBoardSetup } from './board';
 
 export interface TabItemElement {
   shape?: string;
@@ -16,17 +16,12 @@ export function itemIdsShownOnTab(
   items: Iterable<Item>,
 ): Set<string> {
   const ids = new Set<string>();
-  const scopes = [];
+  let board = false;
   for (const el of elements) {
     if (el.shape === 'plan-card' && typeof el.planCard?.itemId === 'string')
       ids.add(el.planCard.itemId);
-    if (el.shape === 'plan-board') {
-      const setup = normaliseBoardSetup(el.planBoard);
-      if (setup) scopes.push(setup.scope);
-    }
+    if (el.shape === 'plan-board' && normaliseBoardSetup(el.planBoard)) board = true;
   }
-  if (scopes.length) {
-    for (const it of items) if (scopes.some((s) => boardScopeMatches(s, it))) ids.add(it.id);
-  }
+  if (board) for (const it of items) ids.add(it.id);
   return ids;
 }

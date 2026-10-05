@@ -26,7 +26,7 @@ src/limits.ts        named constants (Constants table)
 src/rank.ts          rankBetween(a, b), rankAfter(a), rankBefore(b), compareRank
 src/apply.ts         makeItem, applyPatch, applyMove, applyVote (shared by api and offline store)
 src/quick-add.ts     parseQuickAdd(text, types) -> { title, type?, fields, tokens }
-src/board.ts         PlanBoardSetup, PlanColumn, SwimlaneBy, projectBoard, boardScopeMatches
+src/board.ts         PlanBoardSetup, PlanColumn, SwimlaneBy, projectBoard
 src/tab-items.ts     itemIdsShownOnTab(elements, items)
 src/views.ts         itemSummary, itemAccessibleName: one-line text for agents and announcements
 src/store.ts         ItemStoreState, applyItemWrite, mergeItemChanges, inverseItemWrites, storeAsCreates
@@ -130,10 +130,10 @@ key between always exists. Ties (equal ranks after concurrent inserts) order by 
 
 ### Board projection (`projectBoard(setup, items, quick?)`)
 
-- `PlanBoardSetup = { title; columns: PlanColumn[]; doneColumnId?; swimlaneBy: SwimlaneBy; scope: BoardScope;
+- `PlanBoardSetup = { title; columns: PlanColumn[]; doneColumnId?; swimlaneBy: SwimlaneBy;
 cardFields: CardField[]; voting: { on: boolean; budget?: number }; hideWriting: boolean }`.
 - `PlanColumn = { id; status; name; wipLimit?; color? }`; `SwimlaneBy = 'none' | 'assignee' | 'type' | 'priority' | 'parent'`.
-- `BoardScope = { types?: string[]; label?: string }` (absent = all).
+- No scope: every board shows every item; a `scope` an older board stored is read past.
 - Output: `{ columns: { column, count, overLimit, lanes: { laneKey, items[] }[] }[], lanes: LaneHead[],
 unplaced: Item[], doneCount, total }`. Items sorted by `compareRank`, then `key`. Lanes ordered: assignee by
   name, type by catalogue order, priority by `PRIORITIES`, parent by key; the empty group last.

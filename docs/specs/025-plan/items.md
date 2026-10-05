@@ -66,7 +66,7 @@ Five built-in types, each with a glyph, an accent colour and the fields it offer
 | Idea    | Yellow | A proposal to weigh                    | title, description, status, votes, labels                                                |
 | Action  | Red    | Something agreed to do                 | title, status, assignee, due                                                             |
 
-- A bug is a Task labelled `bug`: the Bug triage board shows Tasks with that label.
+- A bug is a Task labelled `bug`.
 - A document can change these and add its own, with custom fields: see [Item types](item-types.md).
 
 ## Changing items

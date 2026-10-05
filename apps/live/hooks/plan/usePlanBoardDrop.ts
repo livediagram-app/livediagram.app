@@ -6,15 +6,9 @@
 // leaves a Plan card there.
 import { useEffect, useState } from 'react';
 import type { ShapeElement } from '@livediagram/document';
-import {
-  boardScopeMatches,
-  typeIn,
-  type BoardProjection,
-  type Item,
-  type PlanBoardSetup,
-} from '@livediagram/items';
+import { typeIn, type BoardProjection, type Item, type PlanBoardSetup } from '@livediagram/items';
 import type { PlanContextValue } from '@/components/plan/PlanContext';
-import { boardMoveFor, laneMove, scopeRefusal } from '@/components/plan/plan-board-moves';
+import { boardMoveFor, laneMove } from '@/components/plan/plan-board-moves';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { registerPlanBoardTarget, type PlanIncoming } from './plan-board-targets';
 import { usePlanCardDrag, type PlanDropSlot } from './usePlanCardDrag';
@@ -67,13 +61,12 @@ export function usePlanBoardDrop(opts: {
   const target = useLatest({
     accepts: (itemId: string) => {
       const item = items.get(itemId);
-      return !!setup && !!item && canEdit && boardScopeMatches(setup.scope, item);
+      return !!setup && !!item && canEdit;
     },
-    refusal: () =>
-      setup ? scopeRefusal(setup.scope, plan?.types) : 'This board can’t take that card',
+    refusal: () => 'This board can’t be changed',
     drop,
-    acceptsType: (type: string) =>
-      !!setup && canEdit && (!setup.scope.types?.length || setup.scope.types.includes(type)),
+    // Every board shows every card type (docs/specs/025-plan/plan-board.md).
+    acceptsType: (_type: string) => !!setup && canEdit,
     // A palette card: a new item of the type at the slot, its row's field set. Not opened: the card is
     // there to see, and a click opens it.
     addCard: (type: string, slot: PlanDropSlot) => {

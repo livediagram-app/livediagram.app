@@ -14,7 +14,6 @@ editor views.
 | swimlane     | `SwimlaneBy` + projected `lanes`                                                  |
 | WIP limit    | `PlanColumn.wipLimit`                                                             |
 | unplaced     | projection `unplaced`                                                             |
-| scope        | `PlanBoardSetup.scope: BoardScope`                                                |
 | quick filter | `QuickFilter` (per person, React state, never stored)                             |
 | face-down    | `cardIsFaceDown(item, setup, viewerId)`                                           |
 | board preset | `PLAN_BOARD_PRESETS` (`@livediagram/items` `presets.ts`), id `PlanBoardPresetId`  |
@@ -57,9 +56,9 @@ PlanCardMenu.tsx         a card's right-click menu (Open, Duplicate, Move to, De
 PlanCardFace.tsx         a card face, its Show on card lines, and its vote control
 PlanCardView.tsx         the plan-card element body (themed; a lone card's fill is its face); "Item not found"
 PlanModal.tsx            the item panel's modal (through Dialog), SheetRow and FIELD_CLASS
-plan-board-moves.ts      the move a drop makes (boardMoveFor), and a refusing board's reason (scopeRefusal)
+plan-board-moves.ts      the move a drop makes (boardMoveFor)
 PlanSheetsHost.tsx       renders the open item panel or type editor
-../palette/PlanBoardMenuSection.tsx  the board's element-menu Board flyout
+../palette/PlanBoardMenuSection.tsx  the board's element-menu Board (title, rows) and Cards (fields) flyouts
 ItemPanel.tsx            item panel: type, title, the type's fields (custom ones through CustomFieldEditor)
 item-field-editors.tsx   editors for text (debounced), person, priority, labels, number, date, checklist
 plan-board-keys.ts       the board's keyboard as a pure function of the projection
@@ -95,7 +94,7 @@ cancelled` (Escape, pointercancel). `pressed → idle` on pointerup without movi
   (`data-plan-status` under the pointer) → `onPlanCardDroppedOnBoard(card, status)`: the item moves to the end of
   that column and the card element is removed (two undo steps: the removal, then the move).
 - **Quick add**: Enter → `parseQuickAdd` → `createItem({ type, fields, place: { status, after: lastId } })`;
-  the field stays open and empties. Escape closes. Type defaults to the board scope's first type, else `task`.
+  the field stays open and empties. Escape closes. Type defaults to `task`.
 - **Item panel**: `openItemId` in `usePlanSlice`; opening broadcasts presence `viewing`; edits debounce 400 ms
   per field (`ITEM_EDIT_DEBOUNCE_MS`), flushed on close; each flush is one undo step.
 - **Reveal**: sets `planBoard.hideWriting = false` (element commit).

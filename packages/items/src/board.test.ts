@@ -42,7 +42,7 @@ describe('projectBoard', () => {
     expect(p.total).toBe(5);
   });
 
-  it('applies scope and the quick filter (counts ignore the quick filter)', () => {
+  it('shows every card, and applies the quick filter (counts ignore it)', () => {
     const items = [
       item(
         { title: 'Login bug', status: 'todo', assignee: SAM, labels: ['auth'] },
@@ -50,10 +50,7 @@ describe('projectBoard', () => {
       ),
       item({ title: 'Docs', status: 'todo', assignee: ALI }, { type: 'task' }),
     ];
-    const scoped = projectBoard({ ...setup, scope: { types: ['bug'] } }, map(items));
-    expect(scoped.total).toBe(1);
-    const labelled = projectBoard({ ...setup, scope: { label: 'auth' } }, map(items));
-    expect(labelled.total).toBe(1);
+    expect(projectBoard(setup, map(items)).total).toBe(2);
     const mine = projectBoard(setup, map(items), { mine: ALI.id });
     const todo = mine.columns.find((c) => c.column.status === 'todo')!;
     expect(todo.count).toBe(2);
@@ -137,6 +134,7 @@ describe('normaliseBoardSetup', () => {
       doneColumnId: 'zzz',
       hideWriting: 'yes',
     });
+    // A scope an older board stored is read past: every board shows every card.
     expect(s).toEqual({
       title: 'Board',
       columns: [
@@ -144,7 +142,6 @@ describe('normaliseBoardSetup', () => {
         { id: 'c', status: 'done', name: 'done', wipLimit: 4, color: '#00ff00' },
       ],
       swimlaneBy: 'none',
-      scope: { types: ['bug'], label: 'ux' },
       cardFields: ['key'],
       voting: { on: true },
       hideWriting: false,
@@ -163,8 +160,7 @@ describe('normaliseBoardSetup', () => {
 });
 
 describe('itemIdsShownOnTab', () => {
-  it('collects card items and board-scoped items', () => {
-    // Bug triage shows tasks labelled bug (docs/specs/025-plan/items.md "Item types").
+  it("collects a card's item, and every item once a board is on the tab", () => {
     const bug = item({ title: 'b', status: 'new', labels: ['bug'] }, { type: 'task' });
     const task = item({ title: 't', status: 'todo' }, { type: 'task' });
     const loose = item({ title: 'l' }, { type: 'note' });
@@ -177,7 +173,10 @@ describe('itemIdsShownOnTab', () => {
       ],
       [bug, task, loose],
     );
-    expect([...ids].sort()).toEqual([bug.id, loose.id].sort());
+    expect([...ids].sort()).toEqual([bug.id, task.id, loose.id].sort());
+    expect([
+      ...itemIdsShownOnTab([{ shape: 'plan-card', planCard: { itemId: loose.id } }], [bug, loose]),
+    ]).toEqual([loose.id]);
     expect(itemIdsShownOnTab([], [bug]).size).toBe(0);
   });
 });

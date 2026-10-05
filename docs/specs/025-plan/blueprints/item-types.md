@@ -66,8 +66,8 @@ src/type-catalogue.ts  ItemTypeCatalogue, limits, PLAN_TYPE_COLOURS, BUILT_IN_FI
   and pushed as one undo step (undo and redo replay a save without a step).
 - `PlanContext`: `types`, `itemTypes`, `editType(id | 'new')`; `usePlanSlice` holds `editingTypeId`.
 - Consumers: `PlanCardFace` (stripe, glyph, Show on card lines via `custom-field-text.ts`), `ItemPanel` (the
-  type's field order, `CustomFieldEditor`), `AddCardPopover`, `PlanBoardMenuSection` scope, `PlanBoardView`
-  (projection; a scope's unknown types dropped), `PlanBoardCells`/`PlanCardView` names, `newCardItemWrite`,
+  type's field order, `CustomFieldEditor`), `AddCardPopover`, `PlanBoardView`
+  (projection), `PlanBoardCells`/`PlanCardView` names, `newCardItemWrite`,
   the palette's Cards (`PalettePlanCardsTab`) and Popular (`PlanAwareTileGrid`, `withDocumentCardTiles`),
   SVG export and thumbnails (`itemTypes` render option), the MCP's previews.
 - `CardTypesClusterButton` (on `ClusterPopoverButton`, shared with Slides) opens dock panel `card-types`;
@@ -84,7 +84,6 @@ src/type-catalogue.ts  ItemTypeCatalogue, limits, PLAN_TYPE_COLOURS, BUILT_IN_FI
 | Custom value of the wrong kind     | Shown empty; replaced by the next edit                       |
 | Field taken off a type             | Values kept in `fields`; shown again if it returns           |
 | Deleting the last type             | Not offered (`canDelete`); `deleteType` refuses              |
-| Board scope naming a deleted type  | Dropped at read; empty scope shows every type                |
 | Save fails                         | Previous catalogue back, toast                               |
 
 ## Security and trust
@@ -137,6 +136,6 @@ src/type-catalogue.ts  ItemTypeCatalogue, limits, PLAN_TYPE_COLOURS, BUILT_IN_FI
 ## Built-in types
 
 `ITEM_TYPES`: `project` (#18181b), `task` (#71717a), `note` (#2563eb), `idea` (#eab308), `action` (#dc2626).
-Presets scope Sprint to `task`, Bug triage to `task` labelled `bug`, Roadmap to `project`; the item panel's
+Presets seed Sprint with Tasks, Bug triage with Tasks labelled `bug`, Roadmap with Projects; the item panel's
 Parent lists Projects. `CardTypesPanel` rows are cards (stripe, tinted glyph tile, "N fields", count pill,
 pencil; the row opens the editor), with a dashed Add Type tile.

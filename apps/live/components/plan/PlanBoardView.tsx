@@ -15,7 +15,6 @@ import {
   votesSpent,
   type Item,
   type QuickFilter,
-  type BoardScope,
 } from '@livediagram/items';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { track } from '@/lib/telemetry';
@@ -55,19 +54,7 @@ export function PlanBoardView({
   const palette = planPalette(surface, planOwnColours(element));
   const radius = `${cornerRadiusPx(element.borderRadius, element.width, element.height, PLAN_BOARD_RADIUS_PX)}px`;
   const types = plan?.types ?? ITEM_TYPES;
-  // A scope naming a type the catalogue no longer has drops it (docs/specs/025-plan/item-types.md
-  // "Editing a type"); a scope left with none shows every type.
-  const setup = useMemo(() => {
-    const read = normaliseBoardSetup(element.planBoard);
-    const scoped = read?.scope.types?.filter((t) => types.some((x) => x.id === t));
-    if (!read || !read.scope.types || scoped?.length === read.scope.types.length) return read;
-    const scope: BoardScope = scoped?.length
-      ? { ...read.scope, types: scoped }
-      : read.scope.label
-        ? { label: read.scope.label }
-        : {};
-    return { ...read, scope };
-  }, [element.planBoard, types]);
+  const setup = useMemo(() => normaliseBoardSetup(element.planBoard), [element.planBoard]);
   const [quick, setQuick] = useState<QuickFilter>({});
   const [adding, setAdding] = useState<{ status: string; laneKey: string } | null>(null);
   const closeAdding = useCallback(() => setAdding(null), []);
@@ -154,10 +141,9 @@ export function PlanBoardView({
       : null;
   const loading = plan?.status === 'loading';
   const empty = !loading && projection.total === 0;
-  const defaultType = setup.scope.types?.[0] ?? 'task';
-  // The types Add card offers: the ones this board shows (docs/specs/025-plan/plan-board.md).
-  const scopeTypes = setup.scope.types;
-  const addTypes = scopeTypes?.length ? types.filter((t) => scopeTypes.includes(t.id)) : types;
+  const defaultType = 'task';
+  // Every board shows, and Add card offers, every card type (docs/specs/025-plan/plan-board.md).
+  const addTypes = types;
 
   const onCardKey = (item: Item, e: React.KeyboardEvent<HTMLElement>) => {
     if (!plan) return;

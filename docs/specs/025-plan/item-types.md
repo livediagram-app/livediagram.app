@@ -80,7 +80,6 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
   again if the field returns. The type editor says so under the field list once a field is removed.
 - **Deleting a type with items** asks where they go: another type (picked from the catalogue) or **Keep as
   Item** (they keep the old type id and draw as the fallback "Item"). Without items it deletes at once.
-- A board whose scope names a deleted type drops it from the scope.
 
 ## Where types show
 
@@ -89,7 +88,7 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
 - **Cards** draw a type's colour stripe and glyph; the item panel's type picker lists the catalogue; the Add a
   Card popover offers the types the board shows, and its title field's `name:` prefix matches a type's name
   (`customer call:` too).
-- **Board set-up's scope** lists the catalogue's types.
+- **A board's rows By Card Type** follow the catalogue's order and names.
 - **Agents** see the type ids on items, as before; an item made by an agent with a type the catalogue lacks
   draws as "Item".
 

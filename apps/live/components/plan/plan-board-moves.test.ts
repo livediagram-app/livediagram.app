@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { presetSetup, projectBoard, type Item } from '@livediagram/items';
-import { boardMoveFor, scopeRefusal } from './plan-board-moves';
+import { boardMoveFor } from './plan-board-moves';
 
 let n = 0;
 const item = (status: string, rank: string, extra: Item['fields'] = {}, type = 'task'): Item => {
@@ -36,9 +36,9 @@ describe('boardMoveFor', () => {
     ).toEqual({ status: 'done', before: null });
   });
 
-  it('moves a card from another board even into the column of its own status', () => {
-    const away = item('todo', 'a', {}, 'bug');
-    const setup = { ...presetSetup('blank'), scope: { types: ['task'] } };
+  it('moves a card from another board, whose status this board has no column for', () => {
+    const away = item('sprint-backlog', 'a', {}, 'note');
+    const setup = presetSetup('blank');
     const p = projectBoard(setup, mapOf(away));
     expect(
       boardMoveFor(setup, p, away, away.id, { status: 'todo', laneKey: '', beforeId: null }),
@@ -57,16 +57,5 @@ describe('boardMoveFor', () => {
       before: null,
       set: { assignee: sam },
     });
-  });
-});
-
-describe('scopeRefusal', () => {
-  it('names the types or the label a board shows', () => {
-    expect(scopeRefusal({ types: ['note'] })).toBe('This board shows Note items only');
-    expect(scopeRefusal({ types: ['project', 'task', 'idea'] })).toBe(
-      'This board shows Project, Task and Idea items only',
-    );
-    expect(scopeRefusal({ label: 'ops' })).toBe('This board shows items labelled “ops” only');
-    expect(scopeRefusal({})).toBe('This board can’t take that card');
   });
 });

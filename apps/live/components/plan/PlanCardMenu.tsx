@@ -5,17 +5,15 @@
 // may only view gets Open alone. Built on the shared command menu, so the keyboard, focus and Escape
 // behave as every other menu does.
 import { useCallback, useEffect, useRef } from 'react';
-import { MENU_LABEL_ATTR, MenuTreeContext, TrashIcon, useMenu } from '@livediagram/ui';
+import { DuplicateIcon, MenuTreeContext, PencilIcon, TrashIcon, useMenu } from '@livediagram/ui';
+import { MenuActionRow, MenuGroupSeparator, MenuHeader } from '@/components/primitives/PortalMenu';
 import { itemTitle, type PlanBoardSetup } from '@livediagram/items';
 import { Portal } from '@/components/primitives/Portal';
 import type { PlanContextValue } from './PlanContext';
 import { VIEWPORT_EDGE_MARGIN as EDGE } from '@/lib/clamp-to-viewport';
 
-const WIDTH = 220;
-const ROW_PX = 30;
-
-const ROW =
-  'flex w-full cursor-pointer items-center gap-2 px-3 py-1.5 text-left text-xs text-slate-700 transition hover:bg-slate-100 focus:bg-slate-100 focus:outline-none dark:text-slate-200 dark:hover:bg-slate-800 dark:focus:bg-slate-800';
+const WIDTH = 224;
+const ROW_PX = 36;
 
 export function PlanCardMenu({
   at,
@@ -34,7 +32,7 @@ export function PlanCardMenu({
   title: string;
   canEdit: boolean;
   // The board's other columns, to move the card to.
-  columns: readonly { status: string; name: string }[];
+  columns: readonly { status: string; name: string; color?: string }[];
   onOpen: () => void;
   onDuplicate: () => void;
   onMove: (status: string) => void;
@@ -60,9 +58,9 @@ export function PlanCardMenu({
     return () => window.removeEventListener('pointerdown', onDown, true);
   }, [onClose]);
 
-  const rows = canEdit ? 4 + columns.length : 1;
+  const rows = canEdit ? 5 + columns.length : 2;
   const left = Math.max(EDGE, Math.min(at.x, window.innerWidth - WIDTH - EDGE));
-  const top = Math.max(EDGE, Math.min(at.y, window.innerHeight - rows * ROW_PX - 48 - EDGE));
+  const top = Math.max(EDGE, Math.min(at.y, window.innerHeight - rows * ROW_PX - EDGE));
   const act = (fn: () => void) => () => {
     fn();
     onClose();
@@ -83,59 +81,40 @@ export function PlanCardMenu({
             e.stopPropagation();
           }}
           style={{ left, top, width: WIDTH }}
-          className="fixed z-[var(--z-overlay,50)] rounded-lg border border-slate-200 bg-white py-1.5 shadow-lg outline-none dark:border-slate-700 dark:bg-slate-900"
+          // The element menu's frame (EditorContextMenu), so a card's menu reads as one of the family.
+          className="fixed z-[var(--z-popover)] flex animate-fade-in flex-col rounded-md border border-slate-200 bg-white/90 py-1 text-sm shadow-lg outline-none backdrop-blur-sm dark:border-slate-700 dark:bg-slate-900/90 dark:shadow-slate-950/40"
         >
-          <p
-            {...{ [MENU_LABEL_ATTR]: '' }}
-            className="truncate px-3 pb-1 text-[10px] font-semibold uppercase tracking-wide text-slate-400"
-          >
-            {title}
-          </p>
-          <button type="button" role="menuitem" tabIndex={-1} className={ROW} onClick={act(onOpen)}>
-            Open
-          </button>
+          <MenuHeader title={title} />
+          <MenuActionRow label="Open" icon={<PencilIcon />} onClick={act(onOpen)} />
           {canEdit ? (
             <>
-              <button
-                type="button"
-                role="menuitem"
-                tabIndex={-1}
-                className={ROW}
+              <MenuActionRow
+                label="Duplicate"
+                icon={<DuplicateIcon />}
                 onClick={act(onDuplicate)}
-              >
-                Duplicate
-              </button>
+              />
               {columns.length > 0 ? (
                 <>
-                  <div className="my-1 border-t border-slate-100 dark:border-slate-800" />
-                  <p className="px-3 pb-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-400">
-                    Move to
-                  </p>
+                  <MenuGroupSeparator />
                   {columns.map((c) => (
-                    <button
+                    <MenuActionRow
                       key={c.status}
-                      type="button"
-                      role="menuitem"
-                      tabIndex={-1}
-                      className={ROW}
+                      label={`Move to ${c.name}`}
+                      icon={
+                        <span
+                          className="h-2.5 w-2.5 rounded-full border border-slate-300 dark:border-slate-600"
+                          style={
+                            c.color ? { backgroundColor: c.color, borderColor: c.color } : undefined
+                          }
+                        />
+                      }
                       onClick={act(() => onMove(c.status))}
-                    >
-                      {c.name}
-                    </button>
+                    />
                   ))}
                 </>
               ) : null}
-              <div className="my-1 border-t border-slate-100 dark:border-slate-800" />
-              <button
-                type="button"
-                role="menuitem"
-                tabIndex={-1}
-                className={`${ROW} text-rose-600 dark:text-rose-400`}
-                onClick={act(onDelete)}
-              >
-                <TrashIcon />
-                Delete
-              </button>
+              <MenuGroupSeparator />
+              <MenuActionRow label="Delete" icon={<TrashIcon />} danger onClick={act(onDelete)} />
             </>
           ) : null}
         </div>
@@ -168,7 +147,7 @@ export function PlanCardMenuHost({
       canEdit={canEdit}
       columns={setup.columns
         .filter((c) => c.status !== status)
-        .map((c) => ({ status: c.status, name: c.name }))}
+        .map((c) => ({ status: c.status, name: c.name, ...(c.color ? { color: c.color } : {}) }))}
       onOpen={() => plan.openItem(item.id)}
       onDuplicate={() => {
         // A copy right after the card, without its votes: they were for the original.

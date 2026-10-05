@@ -75,8 +75,8 @@ modes):
 | Cards    | One per [item type](item-types.md) of the document, in its order: Project card, Task card... and any added |
 | Boards   | Kanban, Sprint, Retro, Roadmap, Bug triage, Week, Blank, each with its own picture                         |
 
-- A **board tile** places a Plan board with that preset's set-up. The board starts empty unless the tab already
-  has items its scope matches.
+- A **board tile** places a Plan board with that preset's set-up. It shows every item of the document whose
+  status is one of its columns.
 - A **card tile** never puts anything on the canvas. Dragged and dropped (or pressed, then placed) into a board's
   column, it makes a new item of that type there (titled "New task", "New bug"...), at the drop point between
   cards and in the row it lands in (taking the row's field, its type kept); it is not opened, a click opens it.
@@ -97,9 +97,9 @@ document's item store when the document is made; afterwards they are ordinary it
 | Blank Plan     | One Kanban board: To do, In progress, Done; no items                                 |
 | Kanban Board   | Backlog, To do, In progress (WIP 3), Review (WIP 2), Done; a team mid-week           |
 | Sprint Board   | Sprint backlog, In progress, In review, Done; swimlanes by assignee; estimates shown |
-| Bug Triage     | New, Confirmed, Fixing, Fixed, Won't fix; Bug scope; swimlanes by priority           |
+| Bug Triage     | New, Confirmed, Fixing, Fixed, Won't fix; Tasks labelled bug; swimlanes by priority  |
 | Team Retro     | Went well, To improve, Ideas, Actions; voting with 5 votes; hide writing on          |
-| Roadmap        | Now, Next, Later; Epic scope; labels shown                                           |
+| Roadmap        | Now, Next, Later; Projects; labels shown                                             |
 | Weekly Planner | Monday to Friday; due dates shown                                                    |
 
 - The Kanban Board template is rebuilt as a Plan board; it opens in Plan. It stays in the Kanban boards family.

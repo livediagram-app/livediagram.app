@@ -318,6 +318,23 @@ describe('who may do what', () => {
       })
     ).body.item;
     const task = (await add({ title: 'Task' })).body.item;
+    // A tab with a board shows every item; this one holds only a Plan card for the bug.
+    sql.sql.prepare(`UPDATE tabs SET data = ?, rev = rev + 1 WHERE id = 't1'`).run(
+      JSON.stringify({
+        elements: [
+          {
+            id: 'c1',
+            type: 'shape',
+            shape: 'plan-card',
+            x: 0,
+            y: 0,
+            width: 240,
+            height: 120,
+            planCard: { itemId: bug.id },
+          },
+        ],
+      }),
+    );
     expect((await call({ method: 'GET', path: '/items', owner: 'v', code: 'TAB1' })).status).toBe(
       404,
     );
@@ -403,7 +420,11 @@ describe('documents and items', () => {
     expect(copied.map((i) => i.key).sort()).toEqual([1, 2]);
     expect((await db.getItemStoreHead(sql.env, 'd3')).nextKey).toBe(3);
     await db.copyDocument(sql.env, 'd1', 'd4', 'owner', 'Tab copy', 't1');
-    expect((await db.listItems(sql.env, 'd4')).map((i) => i.fields['title'])).toEqual(['B']);
+    // The tab has a board, so it shows (and its copy takes) every item.
+    expect((await db.listItems(sql.env, 'd4')).map((i) => i.fields['title']).sort()).toEqual([
+      'A',
+      'B',
+    ]);
     sql.sql.exec("DELETE FROM documents WHERE id = 'd1'");
     expect(await db.listItems(sql.env, 'd1')).toEqual([]);
   });

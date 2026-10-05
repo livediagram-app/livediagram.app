@@ -13,7 +13,7 @@
 // inline version used). The page owns the open/closed state + the
 // handlers; this component only decides which items to show.
 
-import { PlanBoardMenuSection } from './PlanBoardMenuSection';
+import { PlanBoardMenuSection, PlanCardsMenuSection } from './PlanBoardMenuSection';
 import {
   animLoops,
   DEFAULT_ANIMATION_SPEED,
@@ -225,7 +225,10 @@ export function ElementDataSections({
       {/* A Plan board's own settings (docs/specs/025-plan/plan-board.md "The board set-up"): its own
           flyout, ahead of Tools, as every board-wide choice lives here. */}
       {shapeTarget?.shape === 'plan-board' ? (
-        <PlanBoardMenuSection element={shapeTarget} flyoutProps={flyoutProps('plan-board')} />
+        <>
+          <PlanBoardMenuSection element={shapeTarget} flyoutProps={flyoutProps('plan-board')} />
+          <PlanCardsMenuSection element={shapeTarget} flyoutProps={flyoutProps('plan-cards')} />
+        </>
       ) : null}
       {showTools ? (
         <MenuFlyoutSection title="Tools" icon={<ToolsMenuGlyph />} {...flyoutProps('tools')}>

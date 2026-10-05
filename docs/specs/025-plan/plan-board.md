@@ -18,9 +18,8 @@ is about.
 | **column**       | One status the board shows, left to right                                              | lane (lanes are elements) |
 | **swimlane**     | One row of the board, grouping its cards by a field (assignee, type, priority, parent) | lane, row                 |
 | **WIP limit**    | The most cards a column should hold                                                    | cap, max                  |
-| **unplaced**     | Items the board's scope matches whose status is none of its columns                    | orphans, hidden           |
-| **scope**        | Which items a board shows: by type, by label, or all                                   | filter (that is a view's) |
-| **quick filter** | A person's own, unsaved narrowing of what a board shows ("Only mine", a search)        | scope                     |
+| **unplaced**     | Items whose status is none of the board's columns                                      | orphans, hidden           |
+| **quick filter** | A person's own, unsaved narrowing of what a board shows ("Only mine", a search)        | filter setting            |
 | **face-down**    | A card drawn as its colour and author only, while its board hides writing              | hidden, private           |
 
 ## The board set-up
@@ -33,7 +32,6 @@ Stored on the element, shared by everyone, undone like any element edit:
 - **Done column**: optionally one column is marked done: its cards draw muted and count as finished in the
   header's progress.
 - **Swimlanes**: none, or grouped by assignee, type, priority or parent.
-- **Scope**: all items, or only these types, or only items carrying a label.
 - **Card shows**: which fields a card face draws (key, type, assignee, priority, labels, estimate, due, votes,
   checklist progress). Title always shows.
 - **Voting**: off, or on with an optional number of votes each person may spend on this board.
@@ -47,10 +45,13 @@ Where each is set, so a setting lives with what it changes, never in one central
   one of eight), **WIP limit**, **Counts as done**, **Move Left** / **Move Right**, **+ Add Column After** and
   **Remove Column**. Removing a column with cards first asks where they go (**Move and Remove**, or **Keep
   It**); the board's last column cannot be removed. Each change applies as it is made.
-- **The board's own settings** sit in its element menu (right-click the board, or the selection's ⋯), in a
-  **Board** flyout: **Title**; **Rows** (No Rows, By Assignee, By Card Type, By Priority, By Project);
-  **Shows** (a toggle per card type); **Cards Show** (a toggle per card field); **Voting**; **Hide Writing**;
-  and **Add Column**.
+- **The board's own settings** sit in its element menu (right-click the board, or the selection's ⋯), in two
+  flyouts: **Board** (**Title**; **Rows**: No Rows, By Assignee, By Card Type, By Priority, By Project) and
+  **Cards** (what each card face shows besides its title, a tile per field pressed on or off). New columns come
+  from a column's **+ Add Column After**.
+- **Every board shows every card**: there is no per-board filter by type or label; a board shows every item whose
+  status is one of its columns, and counts the rest as not on it.
+- **Voting** and **Hide writing** come with a board's template (the Retro's are on); they have no menu control.
 
 ## What the board shows
 
@@ -63,7 +64,7 @@ Where each is set, so a setting lives with what it changes, never in one central
   their colour ring and name.
 - **Swimlanes**: a labelled row per group (an assignee's avatar and name, a type's glyph), "No assignee" last.
   Each swimlane collapses on its own, per person.
-- **Unplaced**: when items in scope have a status no column shows, the header says "3 not on this board"; opening
+- **Unplaced**: when items have a status no column shows, the header says "3 not on this board"; opening
   it lists them, each with "Move to" a column.
 - **Empty**: a board with no items shows, in its first column, "Add your first item" with the add field open
   for anyone who can edit.
@@ -85,9 +86,7 @@ In Plan mode:
   card into Sam's row assigns it to Sam).
 - **Drag a card onto another board** to move its item into that board's column (and row, setting the row's
   field) where it lands, with the same placeholder. The item now has that column's status, so a board without
-  that column lists it under "Not on this board". A board whose scope leaves the item out (it shows Task items
-  only, or one label) refuses it: no placeholder opens, nothing moves, and the reason is announced ("This board
-  shows Task items only").
+  that column lists it under "Not on this board".
 - **Drag a card off the board** onto the canvas to leave a Plan card there; the item stays on the board too.
   **Drag a Plan card onto a board** to move its item to the end of the column it lands on; the Plan card goes
   away.

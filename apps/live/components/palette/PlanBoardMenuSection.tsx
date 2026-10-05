@@ -1,66 +1,75 @@
 'use client';
 
-// A Plan board's settings in its element menu (docs/specs/025-plan/plan-board.md "The board set-up"): the
-// board-wide choices, where every element keeps its own. Title; rows; which card types and label it
-// shows; what its cards show; voting and its budget; hidden writing; and Add Column. A column's own
-// settings sit on the column, behind its cog. Each change is one element edit, through PlanContext.
+// A Plan board's settings in its element menu (docs/specs/025-plan/plan-board.md "The board set-up"):
+// two flyouts beside Style. **Board**: its title and its rows. **Cards**: what each card face shows, a
+// tile per field, pressed on or off. A column's own settings sit on the column, behind its cog. Each
+// change is one element edit, through PlanContext.
 import { useState, type ComponentProps } from 'react';
 import type { ShapeElement } from '@livediagram/document';
 import {
   CARD_FIELDS,
   SWIMLANE_BY,
   normaliseBoardSetup,
+  type CardField,
   type PlanBoardSetup,
+  type SwimlaneBy,
 } from '@livediagram/items';
-import { PlanIcon } from '@livediagram/ui';
+import { PlanCardsIcon, PlanIcon } from '@livediagram/ui';
 import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
 import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
-import { MenuActionRow } from '@/components/primitives/PortalMenu';
 import { usePlan } from '@/components/plan/PlanContext';
-import {
-  CARD_FIELD_LABELS,
-  SWIMLANE_LABELS,
-  addColumnAfter,
-} from '@/components/plan/board-setup-edits';
+import { PlanTypeGlyph } from '@/components/plan/plan-type-glyph';
+import { CARD_FIELD_LABELS, SWIMLANE_LABELS } from '@/components/plan/board-setup-edits';
 import { trackSetup } from '@/components/plan/track-board-setup';
-import { MenuToggleRow } from './context-menu-input-rows';
+
+type FlyoutProps = Omit<ComponentProps<typeof MenuFlyoutSection>, 'title' | 'icon' | 'children'>;
 
 const fieldClass =
   'w-full rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] text-slate-700 outline-none placeholder:text-slate-400 focus:border-brand-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200';
 const captionClass = 'px-3 pt-2 text-[10px] font-medium text-slate-500 dark:text-slate-400';
+
+// A glyph per row grouping and per card field, from the Plan glyph set.
+const ROW_GLYPHS: Record<SwimlaneBy, string> = {
+  none: 'item',
+  assignee: 'person',
+  type: 'task',
+  priority: 'flag',
+  parent: 'project',
+};
+const FIELD_GLYPHS: Record<CardField, string> = {
+  key: 'bookmark',
+  type: 'task',
+  assignee: 'person',
+  priority: 'flag',
+  labels: 'bookmark',
+  estimate: 'cube',
+  due: 'calendar',
+  votes: 'star',
+  checklist: 'action',
+};
+
+function useBoard(element: ShapeElement) {
+  const plan = usePlan();
+  const setup = normaliseBoardSetup(element.planBoard);
+  if (!plan || !setup || !plan.canEdit) return null;
+  const set = (next: PlanBoardSetup, part: string) => {
+    plan.updateBoard(element.id, next);
+    trackSetup(part);
+  };
+  return { setup, set };
+}
 
 export function PlanBoardMenuSection({
   element,
   flyoutProps,
 }: {
   element: ShapeElement;
-  // The menu's flyout wiring for this section (useContextMenuScaffold's flyoutProps('plan-board')).
-  flyoutProps: Omit<ComponentProps<typeof MenuFlyoutSection>, 'title' | 'icon' | 'children'>;
+  flyoutProps: FlyoutProps;
 }) {
-  const plan = usePlan();
-  const setup = normaliseBoardSetup(element.planBoard);
-  const [title, setTitle] = useState(setup?.title ?? '');
-  if (!plan || !setup || !plan.canEdit) return null;
-  const set = (next: PlanBoardSetup, part: string) => {
-    plan.updateBoard(element.id, next);
-    trackSetup(part);
-  };
-  const shown = setup.scope.types;
-  const toggleType = (id: string) => {
-    const all = plan.types.map((t) => t.id);
-    const current = (shown ?? all).filter((t) => all.includes(t));
-    const next = current.includes(id) ? current.filter((t) => t !== id) : [...current, id];
-    const { types: _old, ...scope } = setup.scope;
-    void _old;
-    set(
-      {
-        ...setup,
-        scope: next.length === all.length || next.length === 0 ? scope : { ...scope, types: next },
-      },
-      'Scope',
-    );
-  };
-
+  const board = useBoard(element);
+  const [title, setTitle] = useState(board?.setup.title ?? '');
+  if (!board) return null;
+  const { setup, set } = board;
   return (
     <MenuFlyoutSection title="Board" icon={<PlanIcon size={16} />} {...flyoutProps}>
       <div className="px-3 pt-1">
@@ -88,65 +97,57 @@ export function PlanBoardMenuSection({
         {SWIMLANE_BY.map((s) => (
           <MenuTile
             key={s}
-            icon={<PlanIcon size={16} />}
+            icon={<PlanTypeGlyph glyph={ROW_GLYPHS[s]} size={16} />}
             label={SWIMLANE_LABELS[s]}
             active={setup.swimlaneBy === s}
             onClick={() => set({ ...setup, swimlaneBy: s }, 'Rows')}
           />
         ))}
       </MenuTileGrid>
-      <p className={captionClass}>Shows</p>
-      {plan.types.map((t) => (
-        <MenuToggleRow
-          key={t.id}
-          label={`${t.label} Cards`}
-          checked={!shown?.length || shown.includes(t.id)}
-          onToggle={() => toggleType(t.id)}
-        />
-      ))}
-      <p className={captionClass}>Cards Show</p>
-      {CARD_FIELDS.map((f) => (
-        <MenuToggleRow
-          key={f}
-          label={CARD_FIELD_LABELS[f]}
-          checked={setup.cardFields.includes(f)}
-          onToggle={() =>
-            set(
-              {
-                ...setup,
-                cardFields: setup.cardFields.includes(f)
-                  ? setup.cardFields.filter((x) => x !== f)
-                  : CARD_FIELDS.filter((x) => x === f || setup.cardFields.includes(x)),
-              },
-              'CardFields',
-            )
-          }
-        />
-      ))}
-      <p className={captionClass}>Together</p>
-      <MenuToggleRow
-        label="Voting"
-        description="Everyone can vote on cards"
-        checked={setup.voting.on}
-        onToggle={() =>
-          set({ ...setup, voting: { ...setup.voting, on: !setup.voting.on } }, 'Voting')
-        }
-      />
-      <MenuToggleRow
-        label="Hide Writing"
-        description="Cards stay face down until Reveal"
-        checked={setup.hideWriting}
-        onToggle={() => set({ ...setup, hideWriting: !setup.hideWriting }, 'HideWriting')}
-      />
-      <MenuActionRow
-        label="Add Column"
-        icon={<PlanIcon size={16} />}
-        disabled={!addColumnAfter(setup, null)}
-        onClick={() => {
-          const added = addColumnAfter(setup, null);
-          if (added) set(added.setup, 'ColumnAdded');
-        }}
-      />
+    </MenuFlyoutSection>
+  );
+}
+
+export function PlanCardsMenuSection({
+  element,
+  flyoutProps,
+}: {
+  element: ShapeElement;
+  flyoutProps: FlyoutProps;
+}) {
+  const board = useBoard(element);
+  if (!board) return null;
+  const { setup, set } = board;
+  const toggle = (f: CardField) =>
+    set(
+      {
+        ...setup,
+        cardFields: setup.cardFields.includes(f)
+          ? setup.cardFields.filter((x) => x !== f)
+          : CARD_FIELDS.filter((x) => x === f || setup.cardFields.includes(x)),
+      },
+      'CardFields',
+    );
+  return (
+    <MenuFlyoutSection title="Cards" icon={<PlanCardsIcon size={16} />} {...flyoutProps}>
+      <p className={captionClass}>What each card shows, besides its title</p>
+      <MenuTileGrid cols={3}>
+        {CARD_FIELDS.map((f) => (
+          <MenuTile
+            key={f}
+            icon={
+              f === 'key' ? (
+                <span className="text-[13px] font-semibold leading-none">#</span>
+              ) : (
+                <PlanTypeGlyph glyph={FIELD_GLYPHS[f]} size={16} />
+              )
+            }
+            label={CARD_FIELD_LABELS[f]}
+            active={setup.cardFields.includes(f)}
+            onClick={() => toggle(f)}
+          />
+        ))}
+      </MenuTileGrid>
     </MenuFlyoutSection>
   );
 }

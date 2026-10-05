@@ -989,21 +989,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     type: 'string',
   },
-  BoardScope: {
-    additionalProperties: false,
-    properties: {
-      label: {
-        type: 'string',
-      },
-      types: {
-        items: {
-          type: 'string',
-        },
-        type: 'array',
-      },
-    },
-    type: 'object',
-  },
   BorderRadius: {
     enum: ['none', 'sm', 'md', 'lg', 'full'],
     type: 'string',
@@ -5762,9 +5747,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       hideWriting: {
         type: 'boolean',
       },
-      scope: {
-        $ref: '#/components/schemas/BoardScope',
-      },
       swimlaneBy: {
         $ref: '#/components/schemas/SwimlaneBy',
       },
@@ -5785,7 +5767,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         type: 'object',
       },
     },
-    required: ['title', 'columns', 'swimlaneBy', 'scope', 'cardFields', 'voting', 'hideWriting'],
+    required: ['title', 'columns', 'swimlaneBy', 'cardFields', 'voting', 'hideWriting'],
     type: 'object',
   },
   PlanCardRef: {
