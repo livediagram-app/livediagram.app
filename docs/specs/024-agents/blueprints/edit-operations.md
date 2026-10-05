@@ -63,40 +63,40 @@ Scope, by file:
 
 ## Domain and naming
 
-| Term               | Identifier                                          | Meaning                                                                                |
-| ------------------ | --------------------------------------------------- | -------------------------------------------------------------------------------------- |
-| Edit operation     | `EditOperation` (union on `op`)                     | One step of a changeset, in its JSON form                                              |
-| Operation name     | `EditOperationName`, `EDIT_OPERATION_NAMES`         | `add set rm move connect rewire insert wrap unwrap order layout test`                  |
-| Line form          | `parseEditOperations`, `formatOperation`            | One operation a line, words and quoted values                                          |
-| JSON form          | `validateEditOperation`                             | One object a line                                                                      |
-| Operation number   | `operation` (1-based) on rejections                 | Position among the operations, comments and blank lines not counted                    |
-| Selector           | `Selector` (a string), `parseSelector`              | A ref, a quoted label, or `key:value` terms, all of which must match                   |
-| Selector term      | `SelectorTerm` (union on `kind`)                    | One word of a selector                                                                 |
-| Ref                | `computeRefs`, `RefTable`, `resolveRef` (shared)    | An element's short name, as views print it                                             |
-| Slug id            | `isSlugId`, `SLUG_ID_PATTERN`, `slugIdFor` (shared) | The id an agent names or the engine mints from a label or kind token                   |
-| Kind word          | `kindWordOf` (shared)                               | The shape for shapes, else the element type: what `type:` and results print            |
-| Placement          | `Placement` (union on `rel`)                        | Where `add` and `move` put an element                                                  |
-| Content origin     | `contentOrigin(tab)` (shared)                       | The point coordinates shown and taken are relative to                                  |
-| Field              | `fields` member, `FieldValue`                       | A key and its value; `null` unsets                                                     |
-| Field alias        | `FIELD_ALIASES`                                     | A spec-named key (`label`, `note`, `shape`, `fill`, `text`, `line`)                    |
-| Live field         | `LIVE_ELEMENT_FIELDS` (`@livediagram/document`)     | A multi-writer field that travels as a delta; never written by an operation            |
-| Theme slot         | `fillSlotNames`, `resolveColourValue`               | `theme` or one of the theme's six quick-swatch hues, written as a binding              |
-| Container          | `isContainer` (frame or lane)                       | A shape whose box holds members                                                        |
-| Member, membership | `deriveContainers` (shared) over `smallestHolder`   | An element and the smallest frame or lane holding its centre                           |
-| Carried            | `containerContents(elements, ids)`                  | What a moved container takes with it, in the editor's drag and in `move` alike         |
-| Lock               | `lockedIds(state)`, `element_locked`                | A locked tab, a locked element, or an element on a locked layer                        |
-| Make room          | `makeRoom`                                          | The insert's shift of what lies beyond the new node                                    |
-| Capture            | `frame_captures`, `bystanders`                      | A non-member a new frame or lane would hold                                            |
-| Working state      | `EditState`                                         | The tab as the operations have left it so far                                          |
-| Touched            | `EditState.touched`                                 | Elements an operation created or changed; only these are normalised                    |
-| Moved              | `Touch.moved` (`MoveReason`), `moveElement`         | Elements shifted, carried, laid out or landed without an operation writing them        |
-| Targets            | `targets: ElementId[]`                              | Existing elements the operations resolved; fingerprinted and checked for holds         |
-| Created ids        | `createdIds: ElementId[]`                           | Elements the changeset created that are in the next tab                                |
-| Outcome            | `ApplyOutcome` = `ApplySuccess \| ApplyRejection`   | `{ tab, results, elementOps, inverse, warnings, targets, createdIds }` or `{ errors }` |
-| Result line        | `ResultLine` (union on `mark`)                      | One line of a changeset's answer: `+ ~ - »`, a container line, `!`                     |
-| Warning            | `EditWarning`, `EDIT_WARNING_CODES`                 | A named note that does not reject                                                      |
-| Rejection          | `EditRejection`, `EDIT_REJECTION_CODES`             | A named refusal; the spec's code table                                                 |
-| Replace            | `ReplaceBody`, `applyReplace`                       | The other changeset body: a whole tab from graph, Mermaid, template, elements          |
+| Term               | Identifier                                          | Meaning                                                                                                                      |
+| ------------------ | --------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| Edit operation     | `EditOperation` (union on `op`)                     | One step of a changeset, in its JSON form                                                                                    |
+| Operation name     | `EditOperationName`, `EDIT_OPERATION_NAMES`         | `add set rm move connect rewire insert wrap unwrap order layout test`                                                        |
+| Line form          | `parseEditOperations`, `formatOperation`            | One operation a line, words and quoted values                                                                                |
+| JSON form          | `validateEditOperation`                             | One object a line                                                                                                            |
+| Operation number   | `operation` (1-based) on rejections                 | Position among the operations, comments and blank lines not counted                                                          |
+| Selector           | `Selector` (a string), `parseSelector`              | A ref, a quoted label, or `key:value` terms, all of which must match                                                         |
+| Selector term      | `SelectorTerm` (union on `kind`)                    | One word of a selector                                                                                                       |
+| Ref                | `computeRefs`, `RefTable`, `resolveRef` (shared)    | An element's short name, as views print it                                                                                   |
+| Slug id            | `isSlugId`, `SLUG_ID_PATTERN`, `slugIdFor` (shared) | The id an agent names or the engine mints from a label or kind token                                                         |
+| Kind word          | `kindWordOf` (shared)                               | The shape for shapes, else the element type: what `type:` and results print                                                  |
+| Placement          | `Placement` (union on `rel`)                        | Where `add` and `move` put an element                                                                                        |
+| Content origin     | `contentOrigin(tab)` (shared)                       | The point coordinates shown and taken are relative to                                                                        |
+| Field              | `fields` member, `FieldValue`                       | A key and its value; `null` unsets                                                                                           |
+| Field alias        | `FIELD_ALIASES`                                     | A spec-named key (`label`, `note`, `shape`, `fill`, `text`, `line`) or a view's style key (`stroke`, `text-color`, `border`) |
+| Live field         | `LIVE_ELEMENT_FIELDS` (`@livediagram/document`)     | A multi-writer field that travels as a delta; never written by an operation                                                  |
+| Theme slot         | `fillSlotNames`, `resolveColourValue`               | `theme` or one of the theme's six quick-swatch hues, written as a binding                                                    |
+| Container          | `isContainer` (frame or lane)                       | A shape whose box holds members                                                                                              |
+| Member, membership | `deriveContainers` (shared) over `smallestHolder`   | An element and the smallest frame or lane holding its centre                                                                 |
+| Carried            | `containerContents(elements, ids)`                  | What a moved container takes with it, in the editor's drag and in `move` alike                                               |
+| Lock               | `lockedIds(state)`, `element_locked`                | A locked tab, a locked element, or an element on a locked layer                                                              |
+| Make room          | `makeRoom`                                          | The insert's shift of what lies beyond the new node                                                                          |
+| Capture            | `frame_captures`, `bystanders`                      | A non-member a new frame or lane would hold                                                                                  |
+| Working state      | `EditState`                                         | The tab as the operations have left it so far                                                                                |
+| Touched            | `EditState.touched`                                 | Elements an operation created or changed; only these are normalised                                                          |
+| Moved              | `Touch.moved` (`MoveReason`), `moveElement`         | Elements shifted, carried, laid out or landed without an operation writing them                                              |
+| Targets            | `targets: ElementId[]`                              | Existing elements the operations resolved; fingerprinted and checked for holds                                               |
+| Created ids        | `createdIds: ElementId[]`                           | Elements the changeset created that are in the next tab                                                                      |
+| Outcome            | `ApplyOutcome` = `ApplySuccess \| ApplyRejection`   | `{ tab, results, elementOps, inverse, warnings, targets, createdIds }` or `{ errors }`                                       |
+| Result line        | `ResultLine` (union on `mark`)                      | One line of a changeset's answer: `+ ~ - »`, a container line, `!`                                                           |
+| Warning            | `EditWarning`, `EDIT_WARNING_CODES`                 | A named note that does not reject                                                                                            |
+| Rejection          | `EditRejection`, `EDIT_REJECTION_CODES`             | A named refusal; the spec's code table                                                                                       |
+| Replace            | `ReplaceBody`, `applyReplace`                       | The other changeset body: a whole tab from graph, Mermaid, template, elements                                                |
 
 Banned: "op" for an edit operation (that is a room `ElementOp`), "action", "command" (a CLI command is a front
 door), "batch", "patch", "query" or "filter" for a selector, "handle" or "alias" for a ref, "group" for a frame
@@ -193,16 +193,20 @@ word     := ref | label          (one element)
 
 ### Fields and values
 
-A field key is an alias or a stored field name of the element's type.
+A field key is an alias or a stored field name of the element's type. The aliases include every style key the views
+print (`STYLE_KEYS`; `font` is a stored name already), so a printed `key=value` writes back unchanged.
 
-| Alias   | Element types                                                     | Writes                                             | Values                                                                                 |
-| ------- | ----------------------------------------------------------------- | -------------------------------------------------- | -------------------------------------------------------------------------------------- |
-| `label` | every type with a `label` field                                   | `label`                                            | text; on a shape over `GRAPH_LABEL_MAX`, capped into the note; on an arrow, cut (EO18) |
-| `note`  | every type with a `note` field                                    | `note`                                             | text                                                                                   |
-| `shape` | `shape`                                                           | `shape`                                            | a shape kind; off-vocabulary coerced by `coerceShapeKind`, warning `shape_coerced`     |
-| `fill`  | types whose `themeColourFields` include `fillColor`, and `sticky` | `fillColor` + `fillSwatch` (sticky: + `textColor`) | a theme slot, or `#rgb` / `#rrggbb`, or on a sticky a sticky preset name               |
-| `text`  | every type with a `textSize` field                                | `textSize`                                         | `sm md lg scale`                                                                       |
-| `line`  | `arrow`                                                           | `arrowStyle`                                       | `straight angled curved`                                                               |
+| Alias        | Element types                                                     | Writes                                             | Values                                                                                              |
+| ------------ | ----------------------------------------------------------------- | -------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| `label`      | every type with a `label` field                                   | `label`                                            | text; on a shape over `GRAPH_LABEL_MAX`, capped into the note; on an arrow, cut (EO18)              |
+| `note`       | every type with a `note` field                                    | `note`                                             | text                                                                                                |
+| `shape`      | `shape`                                                           | `shape`                                            | a shape kind; off-vocabulary coerced by `coerceShapeKind`, warning `shape_coerced`                  |
+| `fill`       | types whose `themeColourFields` include `fillColor`, and `sticky` | `fillColor` + `fillSwatch` (sticky: + `textColor`) | a theme slot, or `#rgb` / `#rrggbb`, or on a sticky a sticky preset name                            |
+| `stroke`     | every type with a `strokeColor` field                             | `strokeColor`; clears `strokeSwatch`               | a colour: hex (warning `colour_overrides_theme` where the theme colours it) or a marker colour name |
+| `text-color` | every type with a `textColor` field                               | `textColor`                                        | a colour, as `stroke`                                                                               |
+| `border`     | every type with a `strokeStyle` field                             | `strokeStyle`                                      | `solid dashed dotted long-dash dash-dot dash-dot-dot`                                               |
+| `text`       | every type with a `textSize` field                                | `textSize`                                         | `sm md lg scale`                                                                                    |
+| `line`       | `arrow`                                                           | `arrowStyle`                                       | `straight angled curved`                                                                            |
 
 - **Stored field names** are `ELEMENT_FIELD_NAMES[el.type]`. `id` and `type` are refused (`invalid_value`,
   "cannot be changed"). `__proto__`, `constructor` and `prototype` are always `unknown_field`.

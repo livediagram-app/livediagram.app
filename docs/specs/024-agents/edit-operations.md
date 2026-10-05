@@ -41,7 +41,9 @@ editing an existing tab use the same operations; a full rebuild uses `replace`. 
   for that theme, which follow a theme change; a hex value is accepted with the warning `colour_overrides_theme`,
   a sticky's colours excepted, which take the sticky palette's names), `text=sm`, `note="…"`, `line=angled`. A shape's
   label over 40 characters keeps the heading and moves the full text into the note, as graph input does; an arrow's
-  label is cut; a sticky's or a text's label is its content and is kept whole.
+  label is cut; a sticky's or a text's label is its content and is kept whole. Every style key a
+  [view](document-views.md) prints (`stroke=`, `text-color=`, `border=`, `font=` beside `fill=`, `text=`, `line=`)
+  writes back unchanged.
 - **Locks.** A changeset on a locked tab is refused, and so is an operation that changes a locked element or an
   element on a locked layer (`element_locked`).
 
