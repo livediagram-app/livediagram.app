@@ -11,7 +11,8 @@ import { useDeferredAuth } from '@/components/providers/deferred-auth';
 import type { PresenceClock } from './usePresenceState';
 import type { LaserPoint } from '@/lib/laser-buffer';
 import type { LaserConfig } from '@/lib/laser-config';
-import type { AvatarPresence } from '@livediagram/api-schema';
+import type { AgentPresence, AvatarPresence } from '@livediagram/api-schema';
+import { buildAgentFocusByElement, foldAgentPresence } from '@/lib/agent-presence-rows';
 import {
   buildLaserTrailRows,
   buildParticipantsByTab,
@@ -33,6 +34,8 @@ type PresenceRowsDeps = {
   tabs: Tab[];
   // Everything below comes from usePresenceState / useEditorBroadcast.
   livePresence: Participant[];
+  // Agents present in the room (docs/specs/024-agents/agent-presence.md), folded into the tab rows.
+  liveAgents: AgentPresence[];
   presenceClock: PresenceClock;
   remoteTabFocus: Map<string, string>;
   remoteCursors: Map<string, { tabId: string; x: number; y: number } | null>;
@@ -60,6 +63,7 @@ export function usePresenceRows(deps: PresenceRowsDeps) {
     selfParticipant,
     tabs,
     livePresence,
+    liveAgents,
     presenceClock,
     remoteTabFocus,
     remoteCursors,
@@ -101,16 +105,27 @@ export function usePresenceRows(deps: PresenceRowsDeps) {
   // Our own entry shows our picture to us whatever the switch says: it is our screen
   // (docs/specs/014-identity/profile-picture.md §4).
   const ownPicture = useDeferredAuth().user?.pictureUrl ?? null;
-  const participantsByTab = buildParticipantsByTab({
-    documentShareable,
-    documentTeamId,
+  // Agents fold in after (docs/specs/024-agents/agent-presence.md "In the editor"): their status lines on their
+  // owners' rows, or rows of their own; a personal document's stack shows while one is present.
+  const shownSelf = ownPicture ? { ...selfParticipant, picture: ownPicture } : selfParticipant;
+  const participantsByTab = foldAgentPresence({
+    participantsByTab: buildParticipantsByTab({
+      documentShareable,
+      documentTeamId,
+      agentsPresent: liveAgents.length > 0,
+      activeId,
+      selfParticipant: shownSelf,
+      tabs,
+      remoteTabFocus,
+      livePresence,
+      livePresenceById,
+      lastSeen: presenceClock.lastSeen,
+      now: presenceClock.now,
+    }),
+    agents: liveAgents,
+    selfParticipant: shownSelf,
     activeId,
-    selfParticipant: ownPicture ? { ...selfParticipant, picture: ownPicture } : selfParticipant,
-    tabs,
-    remoteTabFocus,
-    livePresence,
-    livePresenceById,
-    lastSeen: presenceClock.lastSeen,
+    tabIds: tabs.map((tab) => tab.id),
     now: presenceClock.now,
   });
   // Cursor rows joined with presence so we get a fresh colour + name on
@@ -173,6 +188,18 @@ export function usePresenceRows(deps: PresenceRowsDeps) {
       ),
     [remoteSelections, livePresenceById, selfParticipant.id, activeId],
   );
+  // What each agent names in focus on the active tab, for the focus rings. Never part of the lock below: an agent
+  // holds nothing.
+  const activeTab = tabs.find((tab) => tab.id === activeId);
+  const agentFocusByElement = useMemo(
+    () =>
+      buildAgentFocusByElement(
+        liveAgents,
+        activeId,
+        new Set((activeTab?.elements ?? []).map((element) => element.id)),
+      ),
+    [liveAgents, activeId, activeTab],
+  );
   // Concurrent-selection lock (docs/specs/007-editor/live-app.md): an element another participant
   // has selected is off-limits to the local user. buildRemoteSelections-
   // ByElement already filters out our own selection, so a hit here always
@@ -191,6 +218,7 @@ export function usePresenceRows(deps: PresenceRowsDeps) {
     remoteAvatarRows,
     laserTrailRows,
     remoteSelectionsByElement,
+    agentFocusByElement,
     lockedByOther,
   };
 }

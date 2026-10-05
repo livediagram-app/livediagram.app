@@ -4,6 +4,7 @@ import {
   OFFLINE_AFTER_MS,
   initialsOf,
   nextFreeColor,
+  participantAccessibleName,
   randomColor,
   randomName,
   statusFromIdleMs,
@@ -132,5 +133,15 @@ describe('randomName / randomColor', () => {
     for (let i = 0; i < 20; i++) {
       expect(randomColor()).toMatch(/^#[0-9a-f]{6}$/);
     }
+  });
+});
+
+describe('participantAccessibleName', () => {
+  it('names the person and their status, then their agent’s status line', () => {
+    const webber = { id: 'me', name: 'Webber', color: '#000', status: 'online' as const };
+    expect(participantAccessibleName(webber)).toBe('Webber (Online)');
+    expect(participantAccessibleName({ ...webber, statusLine: 'adding payment service' })).toBe(
+      'Webber (Online), adding payment service',
+    );
   });
 });

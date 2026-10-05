@@ -91,4 +91,24 @@ describe('useEditorComments telemetry', () => {
     });
     expect(trackMock).not.toHaveBeenCalled();
   });
+
+  // docs/specs/024-agents/agent-presence.md "Comments": a session that may comment but not edit resolves and
+  // reopens through the comment endpoints.
+  it('counts a persisted resolve once the server took it, and puts a refused one back', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const { result } = setup();
+    act(() => {
+      result.current.resolveThread('el', () => Promise.resolve());
+      result.current.unresolveThread('el', () => Promise.reject(new Error('403')));
+    });
+    expect(trackMock).not.toHaveBeenCalled();
+    await act(flush);
+    expect(trackMock.mock.calls).toEqual([['Comment', 'Resolved']]);
+    expect(applyElementDelta.mock.calls.map((c) => c[1].resolved)).toEqual([true, false, true]);
+    expect(warn).toHaveBeenCalledWith('[comments] thread state not saved', {
+      resolved: false,
+      error: 'Error: 403',
+    });
+    warn.mockRestore();
+  });
 });

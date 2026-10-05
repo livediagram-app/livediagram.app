@@ -33,6 +33,7 @@ import {
   type SelectionGripHosts,
 } from '@/components/canvas/SelectionGripsLayer';
 import { ChangesetRevealOverlay } from '@/components/canvas/ChangesetRevealOverlay';
+import { AgentFocusOverlay } from '@/components/canvas/AgentFocusOverlay';
 import { LayerSelectionChrome } from '@/components/canvas/LayerSelectionChrome';
 import {
   FreeArrowFrame,
@@ -654,6 +655,10 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
           withDefs={!hasArrows}
         />
       ) : null}
+
+      {/* What the agents present name in focus (docs/specs/024-agents/agent-presence.md "In the editor"):
+          above the elements, beneath the remote cursors. */}
+      <AgentFocusOverlay elements={elements} />
 
       {remoteCursors.map((c) => (
         <ZoomedRemoteCursor key={c.id} cursor={c} />

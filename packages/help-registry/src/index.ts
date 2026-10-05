@@ -1373,7 +1373,7 @@ export const articles: Article[] = [
     title: 'Live Presence',
     description: 'Live cursors, names, selections, and who is on which tab, in real time.',
     keywords:
-      'cursors online who viewing realtime collaborators avatars multiplayer people participants roster room',
+      'cursors online who viewing realtime collaborators avatars multiplayer people participants roster room agent agents ai status working focus',
     category: 'Collaboration',
     categorySlug: 'collaboration',
   },

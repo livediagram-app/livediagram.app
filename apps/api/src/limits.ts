@@ -82,9 +82,6 @@ export const MAX_DECK_LEN = 256 * 1024;
 // A custom theme's JSON definition (palette + per-shape colours).
 export const MAX_THEME_DEF_BYTES = 256 * 1024;
 
-// Realtime presence identity, broadcast to every connected peer.
-export const MAX_PARTICIPANT_NAME_LEN = 120;
-export const MAX_COLOR_LEN = 64;
 // The client-claimed document-write key relayed on presence (docs/specs/012-collaboration/participant-responses.md). Real
 // ones are UUIDs; the clamp only stops a hostile hello pushing an oversize
 // string into the socket attachment, which has a small hard budget.
