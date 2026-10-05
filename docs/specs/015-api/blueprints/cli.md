@@ -24,7 +24,7 @@ Scope, by file:
 | `packages/agent-verbs/src/verbs/{document,tab,element,changeset,comment,presence}.ts`                  | The CLI's api verbs: schemas, descriptions, behaviour, handlers, compact text, CLI projections                                              |
 | `packages/agent-verbs/src/verbs/shared.ts`                                                             | `columns`, `day`, `minute`, `documentOf`, `tabOf`, `tabPath`, the list limits                                                               |
 | `packages/agent-verbs/src/verbs/mcp-tools.ts` (planned)                                                | One verb per existing MCP tool, with today's schema and tool name                                                                           |
-| `packages/agent-verbs/src/verbs/catalogues.ts` (planned)                                               | `template.ls`, `template.view`, `icon.search`, `schema.view`                                                                                |
+| `packages/agent-verbs/src/verbs/catalogues.ts` (+ test)                                                | `template.ls`, `template.view`, `icon.search`, `schema.view`; an unknown name refused with the nearest                                      |
 | `packages/agent-verbs/src/verbs/local.ts`                                                              | The CLI-only verbs, declared without `run` (CLI55)                                                                                          |
 | `packages/agent-verbs/src/addressing.ts`                                                               | `parseDocumentUrl`, `resolveDocument`, `resolveTab`, `AddressError`, `AddressLog`                                                           |
 | `packages/agent-verbs/src/refs.ts`                                                                     | `REF_MIN_PREFIX`, `shortestUniquePrefixes`                                                                                                  |
@@ -48,8 +48,9 @@ Scope, by file:
 | `packages/api-schema/src/telemetry-schema.ts`                                                          | Category `Cli`                                                                                                                              |
 | `packages/licences/src/apps.ts`                                                                        | `DISTRIBUTED_APPS` names `cli`: its package carries its own notices                                                                         |
 | `packages/document/src/document-envelope.ts` (planned), `export-tab-text.ts` (+ tests)                 | `git mv` of `apps/live/lib/export-document-text.ts` and `export-tab-text.ts` (CLI64)                                                        |
-| `packages/document/src/element-format.ts` (planned) (+ test)                                           | `elementSchemaDoc()` moved from `apps/mcp/src/schema.ts`; `elementFormatText(kind?)` (CLI73)                                                |
-| `packages/icons/src/search.ts` (planned) (+ test)                                                      | `paletteRank` and `matches` moved from `apps/live/lib/search.ts`; `searchIcons(query, limit)` (CLI74)                                       |
+| `packages/edit-operations/src/element-format.ts` (+ test)                                              | `elementKindsText()`, `elementFormatText(kind)`, `addableKinds()`, `SHAPE_COMMON_FIELDS`, `SHAPE_KIND_FIELDS` (CLI73)                       |
+| `packages/icons/src/{search-rank,search}.ts` (+ test)                                                  | `matches`, `paletteRank` moved from `apps/live/lib/search.ts`; `searchIcons(query, limit)` on the `./search` subpath (CLI74)                |
+| `packages/templates/src/template-catalogue.ts` (+ test)                                                | `templateCatalogue()`, shared by the MCP's `list_templates` and `GET /api/templates`                                                        |
 | `apps/cli/{package.json,tsconfig.json,eslint.config.js,vitest.config.ts,README.md}`                    | New app `@livediagram/cli`, published as `livediagram` (CLI1)                                                                               |
 | `apps/cli/scripts/build.mjs`                                                                           | esbuild bundle `dist/livediagram.mjs`; assets and `dist/package.json` (CLI2)                                                                |
 | `apps/cli/src/bin.ts`, `main.ts`, `io.ts`, `node-io.ts`                                                | Process wiring; `run(argv, io): Promise<ExitCode>`; `CliIo`; the real `nodeIo()`                                                            |
@@ -71,7 +72,7 @@ Scope, by file:
 | `apps/cli/src/{telemetry,update-check}.ts`                                                             | `Cli·Used`, `Error·Api`, opt-outs, notice; the npm check                                                                                    |
 | `apps/api/src/routes/capabilities.ts`, `types.ts`, `wrangler.toml`                                     | `apiBase`, `authEnabled`, `oauthIssuer`, `documentFormat`, `cli`; vars `OAUTH_ISSUER`, `CLI_MIN_VERSION` (CLI10)                            |
 | `apps/api/src/routes/tokens.ts`                                                                        | `GET` and `DELETE /api/tokens/current`, reading the token's row from `listApiTokensByOwner`                                                 |
-| `apps/api/src/routes/catalogues.ts` (planned), `index.ts`                                              | `GET /api/templates[/:kind]`, `/api/icons`, `/api/schema[/:kind]`; dispatch of the three segments                                           |
+| `apps/api/src/routes/catalogues.ts` (+ test), `index.ts`                                               | `GET /api/templates[/:kind]`, `/api/icons`, `/api/schema[/:kind]`; dispatch of the three segments                                           |
 | `apps/api/src/index.ts`                                                                                | The token write choke point admits `DELETE /api/tokens/current` and the room-ticket mint                                                    |
 | `apps/api/src/openapi/{manifest,document}.ts`                                                          | The capabilities fields; `tokens/current`; the catalogue routes                                                                             |
 | `apps/mcp/src/api.ts`, `render.ts`, `image-result.ts`, `schema.ts`                                     | Wiring of the extracted packages; the schema resource reads `elementSchemaDoc` from `@livediagram/document`                                 |
@@ -565,7 +566,7 @@ false, an absent `documentFormat` as equal to its own.
 
 ### Catalogue routes (api)
 
-`handleCatalogues(ctx)` in `apps/api/src/routes/catalogues.ts` (planned), for the segments `templates`, `icons` and `schema`;
+`handleCatalogues(ctx)` in `apps/api/src/routes/catalogues.ts`, for the segments `templates`, `icons` and `schema`;
 no identity needed (public catalogues, like `capabilities`); `GET` only (405 otherwise); `Cache-Control: public,
 max-age=300` (CLI72).
 
@@ -579,10 +580,11 @@ max-age=300` (CLI72).
 
 - `searchIcons(query, limit)` (`@livediagram/icons`) ranks the line-art and Technology catalogues by `paletteRank`
   over each icon's label and keywords, ties in catalogue order (CLI74).
-- `elementFormatText(kind?)` (`@livediagram/document`) is generated from `ELEMENT_FIELD_NAMES` and the
-  vocabularies the MCP's schema text reads (`SHAPE_KINDS`, `ANCHORS`, `STICKY_PRESETS`, `CODE_LANGUAGES`), each kind
-  within `SCHEMA_KIND_MAX_TOKENS`; `elementSchemaDoc()` moves beside it and the MCP's schema resource imports it, so
-  the two never drift (CLI73).
+- `elementKindsText()` and `elementFormatText(kind)` (`@livediagram/edit-operations`) are read off the engine itself:
+  the kinds `add` makes (`buildKind`'s factories), each kind's first size, the aliases `set` takes for it (`aliasesOf`)
+  with their values (theme slots, sticky presets, border styles, text sizes, line styles), and its stored fields; a
+  shape names `SHAPE_COMMON_FIELDS` and its kind's `SHAPE_KIND_FIELDS`, as the shape type's fields span every kind.
+  Each kind is within `SCHEMA_KIND_MAX_TOKENS`. The MCP's schema resource keeps its own prose (CLI73).
 - The catalogue owns only these commands' help; their content is the api's.
 
 ### OAuth server (apps/mcp)
@@ -940,8 +942,8 @@ WebSocket) with a fixed clock; none waits on a real timer or the network.
 | Top help lists resources, addressing, output rules, four commands                             | `apps/cli/src/help/help.test.ts`                                                                                                                                      |
 | Verb help: usage, flags, two examples, what it prints                                         | `apps/cli/src/help/help.test.ts`                                                                                                                                      |
 | Guide and skill name only commands that exist; their edit operations parse                    | `packages/agent-verbs/src/catalogue.test.ts`                                                                                                                          |
-| Schema from the api, each kind within budget                                                  | `packages/document/src/element-format.test.ts` (planned); `apps/api/src/routes/catalogues.test.ts` (planned)                                                          |
-| Templates and icons from the api                                                              | `apps/api/src/routes/catalogues.test.ts` (planned); `packages/icons/src/search.test.ts` (planned)                                                                     |
+| Schema from the api, each kind within budget                                                  | `packages/edit-operations/src/element-format.test.ts`; `apps/api/src/routes/catalogues.test.ts`                                                                       |
+| Templates and icons from the api                                                              | `apps/api/src/routes/catalogues.test.ts`; `packages/icons/src/search.test.ts`; `packages/agent-verbs/src/verbs/catalogues.test.ts`                                    |
 | `skill install` requires `--to`, listing the directories                                      | `apps/cli/src/main.test.ts`                                                                                                                                           |
 | Help never sends telemetry                                                                    | `apps/cli/src/telemetry.test.ts` (planned)                                                                                                                            |
 | stdout data only; hints on stderr                                                             | `apps/cli/src/main.test.ts`, `apps/cli/src/output/output.test.ts`                                                                                                     |
