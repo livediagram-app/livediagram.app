@@ -8,9 +8,10 @@ import {
   useMenu,
   useMenuButton,
   type MenuInitialFocus,
+  MENU_PANEL,
+  menuRadioRowClass,
 } from '@livediagram/ui';
 import { SortIcon } from '../shared/icons';
-import { SEARCH_MENU_PANEL, searchMenuRow } from './search-menu';
 import { SearchControlButton } from './SearchControlButton';
 
 // The sort control inside the search box's right edge (docs/specs/025-community/community.md
@@ -75,7 +76,7 @@ function SortOptions({
       {...surfaceProps}
       className="absolute right-0 top-full z-(--z-popover) min-w-44 pt-2 outline-none"
     >
-      <div className={SEARCH_MENU_PANEL}>
+      <div className={MENU_PANEL}>
         {COMMUNITY_SORTS.map((sort) => {
           const checked = sort.id === value;
           return (
@@ -86,7 +87,7 @@ function SortOptions({
               aria-checked={checked}
               tabIndex={-1}
               onClick={() => onChoose(sort.id)}
-              className={searchMenuRow(checked)}
+              className={menuRadioRowClass(checked, { weight: 'checked' })}
             >
               <span className="flex-1">{sort.label}</span>
               <span className="flex w-4 shrink-0 justify-end">

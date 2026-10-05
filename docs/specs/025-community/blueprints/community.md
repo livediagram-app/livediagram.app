@@ -314,7 +314,7 @@ Community app (`apps/community`):
   (debounced `SEARCH_DEBOUNCE_MS`, Enter commits; the input and the controls in one flex row, so typed text never
   runs under them) holding Clear Search, the My Shares toggle (`aria-pressed`, where sign-in exists), `CategoryMenu`,
   `TagFilter` and `SortMenu` in its right edge, each over the shared `SearchControlButton` (icon only below `lg`),
-  the menus sharing `SEARCH_MENU_PANEL` and `searchMenuRow` (`search-menu.ts`); then `PostGrid` of `PostCard`,
+  the menus sharing `MENU_PANEL` and `menuRadioRowClass` (`packages/ui/src/menu/menu-classes.ts`, also used by the editor mode menus); then `PostGrid` of `PostCard`,
   `LoadMore`, `GalleryStates`. Clear Search keeps the sort and `is:mine`. Category, tags and sort are words in `q`: `communitySearchCategory`, `communitySearchTags`,
   `communitySearchSort` and their setters (api-schema) read and write them; the worker's list reads them through
   `parseCommunityListQuery` (a word wins over the old parameter) and `listCommunityPosts` (each `#tag` an `EXISTS`);

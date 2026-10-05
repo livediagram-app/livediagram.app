@@ -8,9 +8,10 @@ import {
   useMenu,
   useMenuButton,
   type MenuInitialFocus,
+  MENU_PANEL,
+  menuRadioRowClass,
 } from '@livediagram/ui';
 import { HashIcon } from '../shared/icons';
-import { SEARCH_MENU_PANEL, searchMenuRow } from './search-menu';
 import { SearchControlButton } from './SearchControlButton';
 
 // The tag filter inside the search box's right edge (docs/specs/025-community/community.md "Gallery"):
@@ -86,7 +87,7 @@ function TagOptions({
       {...surfaceProps}
       className="absolute right-0 top-full z-(--z-popover) w-60 pt-2 outline-none"
     >
-      <div className={`${SEARCH_MENU_PANEL} max-h-80 overflow-y-auto`}>
+      <div className={`${MENU_PANEL} max-h-80 overflow-y-auto`}>
         <p className="px-2.5 pb-1 pt-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
           Popular Tags
         </p>
@@ -100,7 +101,7 @@ function TagOptions({
               aria-checked={checked}
               tabIndex={-1}
               onClick={() => onToggle(tag)}
-              className={searchMenuRow(checked)}
+              className={menuRadioRowClass(checked, { weight: 'checked' })}
             >
               <span className="flex-1 truncate">#{tag}</span>
               {count !== null ? (

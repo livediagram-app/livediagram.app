@@ -13,9 +13,10 @@ import {
   useMenu,
   useMenuButton,
   type MenuInitialFocus,
+  MENU_PANEL,
+  menuRadioRowClass,
 } from '@livediagram/ui';
 import { CategoryIcon } from '../shared/icons';
-import { SEARCH_MENU_PANEL, searchMenuRow } from './search-menu';
 import { SearchControlButton } from './SearchControlButton';
 
 // The category control inside the search box (docs/specs/025-community/community.md "Gallery"): All,
@@ -91,7 +92,7 @@ function CategoryOptions({
       {...surfaceProps}
       className="absolute right-0 top-full z-(--z-popover) w-64 pt-2 outline-none"
     >
-      <div className={`${SEARCH_MENU_PANEL} max-h-80 overflow-y-auto`}>
+      <div className={`${MENU_PANEL} max-h-80 overflow-y-auto`}>
         {rows.map((row) => {
           const checked = row.id === value;
           return (
@@ -102,7 +103,7 @@ function CategoryOptions({
               aria-checked={checked}
               tabIndex={-1}
               onClick={() => onChoose(row.id)}
-              className={searchMenuRow(checked)}
+              className={menuRadioRowClass(checked, { weight: 'checked' })}
             >
               <span className="flex-1 truncate">{row.label}</span>
               {row.count !== undefined ? (
