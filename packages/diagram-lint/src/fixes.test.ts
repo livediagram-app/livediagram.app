@@ -6,7 +6,7 @@ import { arrow, box, frame, lint } from './fixtures/build';
 
 // One drawing per code, each drawing that code's fault.
 const DRAWINGS: Element[][] = [
-  [box('a', 0, 0), box('b', 60, 20)],
+  [box('a', 0, 0), box('b', 60, 20), arrow('j', 'a', 'b')],
   [box('a', 0, 0), arrow('gone', 'a', 'missing')],
   [box('a', 0, 0), box('m', 200, 0), box('b', 400, 0), arrow('x', 'a', 'b')],
   (() => {

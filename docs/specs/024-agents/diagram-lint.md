@@ -13,8 +13,8 @@ Each **lint finding** has a code, a severity, the refs involved and a fix phrase
 
 | Code                | Severity | Finding                                                                                                                             |
 | ------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| `box-overlap`       | error    | Two boxes that are not containers partly overlap; one wholly inside another does not count                                          |
-| `arrow-dangling`    | error    | An arrow pinned to a missing element, or free at both ends                                                                          |
+| `box-overlap`       | error    | Two boxes that arrows connect partly overlap; one wholly inside another does not count                                              |
+| `arrow-dangling`    | error    | An arrow pinned to a missing element                                                                                                |
 | `arrow-behind-box`  | warning  | An arrow passes through a box it does not connect                                                                                   |
 | `edge-crossings`    | warning  | More crossing arrow pairs than `LINT_CROSSINGS_PER_ARROW` × arrows                                                                  |
 | `label-collision`   | warning  | An arrow label overlaps a box                                                                                                       |
@@ -27,6 +27,9 @@ Each **lint finding** has a code, a severity, the refs involved and a fix phrase
 | `aspect-extreme`    | info     | The drawing is more than `LINT_MAX_ASPECT` times wider than tall, or the reverse                                                    |
 | `colour-on-themed`  | info     | A fill or stroke the tab's theme would not paint, on an element the theme colours, bound to no preset or swatch (stickies excepted) |
 
+- The error codes judge the diagram's graph. Boxes no arrow connects are decoration (an icon on a card, a sticker,
+  a Venn circle) and may overlap by design; a line with both ends free is a drawing, not a broken arrow. The
+  editor's templates use both and lint without errors.
 - The group codes judge frames, not lanes. An element belongs to the smallest frame or lane holding its centre,
   the containment the views use.
 - Whether the story reads is not linted; that is what the preview is for.

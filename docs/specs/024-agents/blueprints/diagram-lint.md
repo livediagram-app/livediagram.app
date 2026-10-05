@@ -113,8 +113,8 @@ over the four separating axes of their edges, so rotated boxes are exact and tou
 
 | Code                | Fires when                                                                                                                                                                                                                                                                                                                                              | One finding per         | Refs                            |
 | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------- | ------------------------------- |
-| `box-overlap`       | Boxes `a` and `b` (a earlier in paint order) overlap and neither holds the other wholly. Candidates come from `queryElementGrid` over `a`'s bounds, so each pair is tested once                                                                                                                                                                         | Pair                    | `a`, `b`                        |
-| `arrow-dangling`    | An end is `pinned` to an id absent from `index` or not boxed, or `on-arrow` to an id absent or not an arrow; or both ends are `free`                                                                                                                                                                                                                    | Arrow                   | Arrow                           |
+| `box-overlap`       | Boxes `a` and `b` (a earlier in paint order), both the pinned end of a drawable arrow, overlap and neither holds the other wholly. Candidates come from `queryElementGrid` over `a`'s bounds, so each pair is tested once                                                                                                                               | Pair                    | `a`, `b`                        |
+| `arrow-dangling`    | An end is `pinned` to an id absent from `index` or not boxed, or `on-arrow` to an id absent or not an arrow. A line with both ends free is a drawing and is never dangling                                                                                                                                                                              | Arrow                   | Arrow                           |
 | `arrow-behind-box`  | `pathPassesThrough(polyline, box)` for a box from the grid over the polyline's bounds that is neither end's `pinnedBoxedElement` (LN8)                                                                                                                                                                                                                  | Arrow, every box listed | Arrow, boxes in paint order     |
 | `edge-crossings`    | `crossingPairs > LINT_CROSSINGS_PER_ARROW × drawable.length`. A pair counts once when `pathsCross(p, q)`; pairs whose polyline bounds do not intersect are not tested. Skipped above `LINT_MAX_ARROWS`                                                                                                                                                  | Tab                     | Arrows by crossings, most first |
 | `label-collision`   | An arrow's label plate (`labels.layouts`: `center` ± half `width`, `height`) overlaps a box, the arrow's own ends included                                                                                                                                                                                                                              | Arrow, every box listed | Arrow, boxes                    |
@@ -392,21 +392,21 @@ The lint has no web surface; its text output is its interface (CLI, MCP text, ch
 Messages, with `{a}` a box ref, `{x→y}` an arrow named by its ends (`arrowName`, the arrow's ref when an end is not a
 box), `{label}` a `quoteLabel`:
 
-| Code                | Message                                                                |
-| ------------------- | ---------------------------------------------------------------------- |
-| `box-overlap`       | `{a} overlaps {b}`                                                     |
-| `arrow-dangling`    | `{arrow} points at a missing element` / `{arrow} is free at both ends` |
-| `arrow-behind-box`  | `{x→y} passes behind {a}[, {b}…]`                                      |
-| `edge-crossings`    | `{x→y}, {x→y}, {x→y} +{k}: {n} crossings among {m} arrows, limit {l}`  |
-| `label-collision`   | `{x→y} label overlaps {a}[, {b}…]`                                     |
-| `label-overflow`    | `{a} needs {n} lines, holds {h}`                                       |
-| `node-isolated`     | `{a} has no arrows`                                                    |
-| `group-escape`      | `{a} sticks out of {frame}`                                            |
-| `group-split-edges` | `{frame}: {c} of {t} arrows cross its border`                          |
-| `duplicate-label`   | `{a}, {b}[, …] share {label}`                                          |
-| `flow-backwards`    | `{x→y} points {dir}, against the flow {flow}`                          |
-| `aspect-extreme`    | `drawing: {w}×{h}, {r} times {wider than tall \| taller than wide}`    |
-| `colour-on-themed`  | `{a} sets its {fill \| stroke \| fill and stroke} on a themed tab`     |
+| Code                | Message                                                               |
+| ------------------- | --------------------------------------------------------------------- |
+| `box-overlap`       | `{a} overlaps {b}`                                                    |
+| `arrow-dangling`    | `{arrow} points at a missing element`                                 |
+| `arrow-behind-box`  | `{x→y} passes behind {a}[, {b}…]`                                     |
+| `edge-crossings`    | `{x→y}, {x→y}, {x→y} +{k}: {n} crossings among {m} arrows, limit {l}` |
+| `label-collision`   | `{x→y} label overlaps {a}[, {b}…]`                                    |
+| `label-overflow`    | `{a} needs {n} lines, holds {h}`                                      |
+| `node-isolated`     | `{a} has no arrows`                                                   |
+| `group-escape`      | `{a} sticks out of {frame}`                                           |
+| `group-split-edges` | `{frame}: {c} of {t} arrows cross its border`                         |
+| `duplicate-label`   | `{a}, {b}[, …] share {label}`                                         |
+| `flow-backwards`    | `{x→y} points {dir}, against the flow {flow}`                         |
+| `aspect-extreme`    | `drawing: {w}×{h}, {r} times {wider than tall \| taller than wide}`   |
+| `colour-on-themed`  | `{a} sets its {fill \| stroke \| fill and stroke} on a themed tab`    |
 
 Fixes (LN29), tab source first, graph source second. A tab fix is edit operations in line form: `; ` runs them in
 order, `, or ` separates alternatives, and `<ref>` and `<text>` are placeholders an agent fills in. A graph fix is a

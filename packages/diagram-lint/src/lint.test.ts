@@ -11,6 +11,7 @@ const messy = () =>
     box('b', 600, 80, { label: 'a' }),
     box('alone', 600, 400),
     arrow('x', 'a', 'b'),
+    arrow('y', '7f3a2c91-0000-4000-8000-000000000001', 'b'),
     arrow('gone', 'a', 'missing'),
   );
 
@@ -48,7 +49,7 @@ describe('lintTab', () => {
     );
     expect(report.measures.extent).toEqual({ width: 720, height: 460 });
     expect(report.measures.boxes).toBe(4);
-    expect(report.measures.arrows).toBe(1);
+    expect(report.measures.arrows).toBe(2);
   });
 
   it('lints only visible layers, and skips boxes without a usable rect (N1, N6)', () => {

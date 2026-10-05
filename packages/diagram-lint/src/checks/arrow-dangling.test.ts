@@ -3,7 +3,7 @@ import type { Element } from '@livediagram/document';
 import { arrow, box, lint, of, tabOf } from '../fixtures/build';
 
 describe('arrow-dangling', () => {
-  it('fires on an arrow pinned to a missing element, and one free at both ends', () => {
+  it('fires on an arrow pinned to a missing element, never on a line free at both ends', () => {
     const free = {
       id: 'loose',
       type: 'arrow',
@@ -12,7 +12,6 @@ describe('arrow-dangling', () => {
     } as Element;
     const report = lint(tabOf(box('a', 0, 0), arrow('gone', 'a', 'missing'), free));
     expect(of(report, 'arrow-dangling').map((f) => [f.message, f.fix])).toEqual([
-      ['loose is free at both ends', 'rm loose'],
       ['gone points at a missing element', 'rm gone'],
     ]);
   });

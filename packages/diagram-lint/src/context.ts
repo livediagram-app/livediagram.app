@@ -59,6 +59,8 @@ export type LintContext = {
   drawable: DrawableArrow[];
   // Drawable arrows pinned at both ends to two different boxes.
   connecting: DrawableArrow[];
+  // Boxes at the pinned end of a drawable arrow: the diagram's graph, which the error codes judge.
+  connected: ReadonlySet<ElementId>;
   grid: ElementGrid;
   // Half the largest diagonal of any rotated box: grows every grid query (LN34).
   rotationPad: number;
@@ -66,7 +68,8 @@ export type LintContext = {
   flow: 'down' | 'right' | undefined;
 };
 
-// Why an arrow cannot be drawn: an end on a missing element, or both ends free (`arrow-dangling`).
+// Why an arrow cannot be drawn: an end on a missing element (`arrow-dangling`). A line with both ends free
+// is a drawing, not a broken arrow.
 export function isDangling(arrow: ArrowElement, index: ElementIndex): boolean {
   const missing = (end: Endpoint) => {
     if (end.kind === 'pinned') {
@@ -76,11 +79,7 @@ export function isDangling(arrow: ArrowElement, index: ElementIndex): boolean {
     if (end.kind === 'on-arrow') return index.get(end.arrowId)?.type !== 'arrow';
     return false;
   };
-  return (
-    missing(arrow.from) ||
-    missing(arrow.to) ||
-    (arrow.from.kind === 'free' && arrow.to.kind === 'free')
-  );
+  return missing(arrow.from) || missing(arrow.to);
 }
 
 export function prepareLintContext(
@@ -136,6 +135,11 @@ export function prepareLintContext(
     dangling,
     drawable,
     connecting,
+    connected: new Set(
+      drawable
+        .flatMap((d) => [d.from?.id, d.to?.id])
+        .filter((id): id is ElementId => id !== undefined),
+    ),
     grid: buildElementGrid(boxes),
     rotationPad,
     labels: arrowLabelPass(visible, {
