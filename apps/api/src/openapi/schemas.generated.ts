@@ -7283,6 +7283,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       'Help',
       'Token',
       'Mcp',
+      'Cli',
       'Email',
       'Error',
       'Timeline',

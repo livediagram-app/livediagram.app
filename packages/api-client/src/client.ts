@@ -92,6 +92,8 @@ export async function postEvents(
   fetch: ApiClientOptions['fetch'],
   events: readonly { category: string; action: string; type: string }[],
   extraHeaders: Record<string, string> = {},
+  // Abandons the send, as the CLI does after TELEMETRY_FLUSH_TIMEOUT_MS.
+  signal?: AbortSignal,
 ): Promise<void> {
   try {
     await fetch(
@@ -99,6 +101,7 @@ export async function postEvents(
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...extraHeaders },
         body: JSON.stringify({ events }),
+        ...(signal ? { signal } : {}),
       }),
     );
   } catch {

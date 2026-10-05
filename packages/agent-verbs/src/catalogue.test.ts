@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { parseEditOperations } from '@livediagram/edit-operations';
 import {
   COMMAND_ALIASES,
+  countedVerbs,
   RESOURCE_ALIASES,
   RESOURCES,
   TOP_LEVEL,
@@ -19,6 +20,7 @@ import {
   skillInstall,
   skillPrint,
   apiCall,
+  telemetryOn,
 } from './verbs/local';
 
 // The command a `livediagram …` line names: a top-level verb, or a resource (or alias) and a verb.
@@ -56,6 +58,18 @@ describe('the catalogue', () => {
     expect(
       VERBS.filter((v) => directive.test(`${v.summary} ${v.description}`)).map((v) => v.id),
     ).toEqual([]);
+  });
+
+  it('counts every verb that reaches a host, except the count itself', () => {
+    const counted = countedVerbs().map((v) => v.id);
+    expect(counted).not.toContain('guide');
+    expect(counted).not.toContain('telemetry.off');
+    expect(counted).toContain('tab.view');
+    expect(VERBS.filter((v) => v.offline).map((v) => v.id)).toEqual([
+      'guide',
+      'skill.print',
+      'skill.install',
+    ]);
   });
 
   it('groups verbs under their resource and finds them by id', () => {
@@ -111,6 +125,7 @@ describe('the verbs the CLI handles', () => {
       'signed in to https://h as Ada',
     ]);
     expect(authLogout.text!({ host: 'https://h' })).toEqual(['signed out of https://h']);
+    expect(telemetryOn.text!({ telemetry: 'on' })).toEqual(['telemetry on']);
     expect(
       authStatus.text!({
         host: 'https://h',

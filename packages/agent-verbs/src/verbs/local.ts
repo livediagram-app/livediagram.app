@@ -8,6 +8,7 @@ import { columns } from './shared';
 
 export const guide = defineVerb({
   id: 'guide',
+  offline: true,
   summary: 'How-tos: build, edit, views, comments, collaborate',
   description: 'Prints the list of guide topics, or one topic.',
   behaviour: 'read',
@@ -29,6 +30,7 @@ export const guide = defineVerb({
 
 export const skillPrint = defineVerb({
   id: 'skill.print',
+  offline: true,
   summary: 'Print the agent skill file',
   description: 'Prints SKILL.md, the agent skill that says when and how to use this CLI.',
   behaviour: 'read',
@@ -45,6 +47,7 @@ export const skillPrint = defineVerb({
 
 export const skillInstall = defineVerb({
   id: 'skill.install',
+  offline: true,
   summary: "Write the skill into an agent's skills directory",
   description: 'Writes <dir>/livediagram/SKILL.md, overwriting only a livediagram skill.',
   behaviour: 'write',
@@ -151,3 +154,28 @@ export const authLogout = defineVerb({
     prints: 'the host signed out of',
   },
 });
+
+const telemetryVerb = (on: boolean) =>
+  defineVerb({
+    id: on ? 'telemetry.on' : 'telemetry.off',
+    summary: on ? 'Count which commands succeed again' : 'Stop counting which commands succeed',
+    description: on
+      ? 'Turns the usage count back on for this machine: the name of each command that succeeds, sent to the active host.'
+      : 'Turns the usage count off for this machine, after telling the host it was turned off.',
+    behaviour: 'write',
+    local: true,
+    input: z.object({}),
+    output: z.object({ telemetry: z.enum(['on', 'off']) }),
+    text: ({ telemetry }) => [`telemetry ${telemetry}`],
+    cli: {
+      positionals: [],
+      examples: [
+        `livediagram telemetry ${on ? 'on' : 'off'}`,
+        `LIVEDIAGRAM_TELEMETRY=0 livediagram document ls`,
+      ],
+      prints: `telemetry ${on ? 'on' : 'off'}`,
+    },
+  });
+
+export const telemetryOn = telemetryVerb(true);
+export const telemetryOff = telemetryVerb(false);

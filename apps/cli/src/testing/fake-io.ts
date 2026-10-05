@@ -36,7 +36,8 @@ export function fakeIo(
   const slept: number[] = [];
   let clock = NOW;
   return {
-    env: options.env ?? {},
+    // Quiet by default: a suite about the usage count turns it on with LIVEDIAGRAM_TELEMETRY: '1'.
+    env: { LIVEDIAGRAM_TELEMETRY: '0', ...options.env },
     stdout: (text) => void (out += text),
     stderr: (text) => void (err += text),
     readStdin: async () => options.stdin ?? '',

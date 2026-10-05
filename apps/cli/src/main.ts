@@ -6,6 +6,8 @@ import { renderSkill, type Verb, type VerbContext } from '@livediagram/agent-ver
 import { resolveCredential } from './auth/credentials';
 import { callApi, guideOf, installSkill, login, logout, status } from './commands/local';
 import { loadCapabilities } from './config/capabilities';
+import { withTelemetry, type ConfigFile } from './config/config-file';
+import { configDir } from './config/paths';
 import { readConfig, resolveProfile, type Profile } from './config/profiles';
 import { CLI_VERSION, isBelow } from './config/version';
 import { debugLog, type DebugLog } from './debug';
@@ -21,6 +23,7 @@ import { failureOf } from './output/failure-of';
 import { render } from './output/print';
 import { inputReader } from './input';
 import { fileReadCopies } from './sync/read-copies';
+import { reportApiFailure, sendCliUsed, setTelemetry, type TelemetrySink } from './telemetry';
 import { transport } from './transport';
 
 type Input = Record<string, unknown>;
@@ -33,8 +36,30 @@ function runOffline(io: CliIo, verb: Verb, input: Input): Promise<unknown> | nul
   return null;
 }
 
-async function runOnline(io: CliIo, verb: Verb, input: Input, profile: Profile, log: DebugLog) {
+// What a command reported to once it knew the host: the telemetry sink and the config that may turn it off.
+type Reporting = { sink: TelemetrySink; config: ConfigFile; host: string };
+
+async function writeTelemetrySetting(io: CliIo, on: boolean): Promise<void> {
+  const path = `${configDir(io)}/config.toml`;
+  await io.files.mkdir(configDir(io), 0o700);
+  await io.files.write(path, withTelemetry((await io.files.read(path)) ?? '', on));
+}
+
+async function runOnline(
+  io: CliIo,
+  verb: Verb,
+  input: Input,
+  profile: Profile,
+  log: DebugLog,
+  reporting: (sink: TelemetrySink) => void,
+) {
   const caps = await loadCapabilities(io, profile, log);
+  const sink: TelemetrySink = { io, apiBase: caps.apiBase, log };
+  reporting(sink);
+  if (verb.id === 'telemetry.on' || verb.id === 'telemetry.off') {
+    const on = verb.id === 'telemetry.on';
+    return setTelemetry(on, sink, () => writeTelemetrySetting(io, on));
+  }
   if (!caps.authEnabled)
     throw new CliError({
       exit: EXIT.auth,
@@ -105,6 +130,9 @@ export async function run(argv: readonly string[], io: CliIo): Promise<ExitCode>
   const log = debugLog(io);
   let host = 'the host';
   let json = false;
+  // Set once the host is known, from inside runOnline.
+  const reported: { current: Reporting | null } = { current: null };
+  let verbId: string | null = null;
   try {
     const { globals, words } = splitGlobals(argv);
     json = globals.mode.json;
@@ -124,21 +152,30 @@ export async function run(argv: readonly string[], io: CliIo): Promise<ExitCode>
       return EXIT.done;
     }
     const { verb } = routed;
+    verbId = verb.id;
     log(`command ${verb.id}`);
     const input = inputOf(verb, routed.rest, globals);
     let pending = runOffline(io, verb, input);
     if (!pending) {
-      const profile = resolveProfile(globals, io, await readConfig(io));
+      const config = await readConfig(io);
+      const profile = resolveProfile(globals, io, config);
       host = profile.host;
       log(`profile ${profile.name} host ${profile.host} source ${profile.source}`);
-      pending = runOnline(io, verb, input, profile, log);
+      pending = runOnline(io, verb, input, profile, log, (sink) => {
+        reported.current = { sink, config, host: profile.host };
+      });
     }
     const value = await pending;
     io.stdout(render(verb, value, globals.mode));
     const code = exitOf(verb, value);
     log(`exit ${code}`);
+    const reporting = reported.current;
+    if (code === EXIT.done && reporting && !verb.id.startsWith('telemetry.'))
+      await sendCliUsed(verb.id, reporting.sink, reporting.config, reporting.host);
     return code;
   } catch (err) {
+    const reporting = reported.current;
+    if (reporting && verbId) await reportApiFailure(err, verbId, reporting.sink, reporting.config);
     const failure = failureOf(err, host);
     log(`exit ${failure.exit} ${failure.code}`);
     io.stderr(formatError(failure, json));

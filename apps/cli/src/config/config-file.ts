@@ -44,3 +44,15 @@ export function parseConfig(text: string, path: string): ConfigFile {
   });
   return config;
 }
+
+// The config text with `telemetry` set at the top level, kept beside every other line (CLI5).
+export function withTelemetry(text: string, on: boolean): string {
+  const lines = text === '' ? [] : text.split(/\r?\n/);
+  const firstTable = lines.findIndex((line) => line.trim().startsWith('['));
+  const topEnd = firstTable === -1 ? lines.length : firstTable;
+  const at = lines.slice(0, topEnd).findIndex((line) => /^\s*telemetry\s*=/.test(line));
+  const line = `telemetry = ${on}`;
+  if (at !== -1) lines[at] = line;
+  else lines.splice(0, 0, line);
+  return `${lines.join('\n').replace(/\n*$/, '')}\n`;
+}

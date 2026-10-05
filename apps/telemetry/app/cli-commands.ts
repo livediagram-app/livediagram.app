@@ -1,0 +1,49 @@
+// The CLI's commands as the dashboard names them (docs/specs/015-api/blueprints/cli.md CLI56): one row per verb the
+// CLI counts as `Cli·Used·<Verb>`, its command words and what it does. The CLI Commands stack and each event's
+// sentence read it; `metric-series.test` fails when a counted verb has no row. `telemetry on|off` is not counted.
+
+export const CLI_COMMANDS: readonly { type: string; command: string; what: string }[] = [
+  { type: 'DocumentLs', command: 'document ls', what: 'listing documents' },
+  { type: 'DocumentView', command: 'document view', what: 'reading a document’s overview' },
+  { type: 'DocumentCreate', command: 'document create', what: 'creating a document' },
+  { type: 'DocumentRename', command: 'document rename', what: 'renaming a document' },
+  { type: 'DocumentShare', command: 'document share', what: 'making a share link' },
+  { type: 'DocumentRm', command: 'document rm', what: 'moving a document to the Trash' },
+  {
+    type: 'DocumentRestore',
+    command: 'document restore',
+    what: 'restoring a document from the Trash',
+  },
+  { type: 'TabLs', command: 'tab ls', what: 'listing a document’s tabs' },
+  { type: 'TabView', command: 'tab view', what: 'reading a view of a tab' },
+  { type: 'TabLint', command: 'tab lint', what: 'checking how a tab is drawn' },
+  { type: 'TabDiff', command: 'tab diff', what: 'comparing a tab with an earlier read' },
+  { type: 'TabAdd', command: 'tab add', what: 'adding a tab' },
+  { type: 'TabRename', command: 'tab rename', what: 'renaming a tab' },
+  { type: 'TabRm', command: 'tab rm', what: 'deleting a tab' },
+  { type: 'ElementAdd', command: 'element add', what: 'adding an element' },
+  { type: 'ElementSet', command: 'element set', what: 'changing elements' },
+  { type: 'ElementRm', command: 'element rm', what: 'removing elements' },
+  { type: 'ElementMove', command: 'element move', what: 'moving elements' },
+  { type: 'ElementConnect', command: 'element connect', what: 'drawing an arrow' },
+  { type: 'ElementInsert', command: 'element insert', what: 'putting an element on an arrow' },
+  { type: 'ElementWrap', command: 'element wrap', what: 'framing elements' },
+  { type: 'ChangesetApply', command: 'edit', what: 'applying edit operations from a file' },
+  { type: 'ChangesetLs', command: 'changeset ls', what: 'listing changesets' },
+  { type: 'ChangesetShow', command: 'changeset show', what: 'reading one changeset' },
+  { type: 'ChangesetRevert', command: 'changeset revert', what: 'undoing a changeset' },
+  { type: 'TemplateLs', command: 'template ls', what: 'listing templates' },
+  { type: 'TemplateView', command: 'template view', what: 'reading a template as an outline' },
+  { type: 'IconSearch', command: 'icon search', what: 'finding an icon' },
+  { type: 'SchemaView', command: 'schema', what: 'reading the element format' },
+  { type: 'Api', command: 'api', what: 'calling an api route directly' },
+  { type: 'AuthLogin', command: 'auth login', what: 'signing in' },
+  { type: 'AuthStatus', command: 'auth status', what: 'checking who is signed in' },
+  { type: 'AuthLogout', command: 'auth logout', what: 'signing out' },
+];
+
+// `Cli·Used·<type>` as a sentence, for the event log.
+export function cliCommandSentence(type: string): string | null {
+  const row = CLI_COMMANDS.find((c) => c.type === type);
+  return row ? `Someone ran livediagram ${row.command} from the command line: ${row.what}.` : null;
+}

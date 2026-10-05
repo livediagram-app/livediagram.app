@@ -136,4 +136,12 @@ describe('postEvents', () => {
     await postEvents(base, fetch, []);
     expect(seen[1]!.headers.get('Content-Type')).toBe('application/json');
   });
+
+  it('carries an abort signal, so a caller can bound the send', async () => {
+    const { seen, fetch } = recorder(() => new Response(null, { status: 204 }));
+    const controller = new AbortController();
+    await postEvents(base, fetch, [], {}, controller.signal);
+    controller.abort();
+    expect(seen[0]!.signal.aborted).toBe(true);
+  });
 });

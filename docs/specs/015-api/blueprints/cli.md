@@ -69,7 +69,9 @@ Scope, by file:
 | `apps/cli/src/sync/{pull-file,read-copies}.ts`                                                         | The pull file; the read copies that give the base and the diff                                                                              |
 | `apps/cli/src/room/{room-stream,room-events}.ts`                                                       | Ticket, socket, reconnect; op classification and lines                                                                                      |
 | `apps/cli/src/render/png.ts` (planned)                                                                 | The Node loaders for `@livediagram/render-png`                                                                                              |
-| `apps/cli/src/{telemetry,update-check}.ts`                                                             | `Cli·Used`, `Error·Api`, opt-outs, notice; the npm check                                                                                    |
+| `apps/cli/src/telemetry.ts` (+ test)                                                                   | `sendCliUsed`, `reportApiFailure`, `telemetryOffReason`, `setTelemetry`, the notice once (`state.json`)                                     |
+| `apps/cli/src/update-check.ts` (planned)                                                               | The npm check                                                                                                                               |
+| `apps/telemetry/app/cli-commands.ts`, `apps/telemetry/app/catalogue/cli-commands.ts`                   | `CLI_COMMANDS` (one row a counted verb), `cliCommandSentence`; the CLI Commands stack (CLI56)                                               |
 | `apps/api/src/routes/capabilities.ts`, `types.ts`, `wrangler.toml`                                     | `apiBase`, `authEnabled`, `oauthIssuer`, `documentFormat`, `cli`; vars `OAUTH_ISSUER`, `CLI_MIN_VERSION` (CLI10)                            |
 | `apps/api/src/routes/tokens.ts`                                                                        | `GET` and `DELETE /api/tokens/current`, reading the token's row from `listApiTokensByOwner`                                                 |
 | `apps/api/src/routes/catalogues.ts` (+ test), `index.ts`                                               | `GET /api/templates[/:kind]`, `/api/icons`, `/api/schema[/:kind]`; dispatch of the three segments                                           |
@@ -101,8 +103,8 @@ Scope, by file:
 | Api base            | `Capabilities.apiBase`                                                  | Where the api answers for that host                                      |
 | Capabilities        | `CapabilitiesResponse`, `loadCapabilities`                              | What a host offers, from `GET /api/capabilities`                         |
 | Credential          | `StoredCredential`, `CredentialSource` (`env`, `keychain`, `file`)      | The `lvd_` token the CLI presents, and where it came from                |
-| Version floor       | `cli.minVersion`, `assertWritable`                                      | The oldest CLI a host accepts writes from                                |
-| Read copy           | `ReadCopy`, `readCopy`, `recordCopy`, `latestCopy`                      | The plain tab as the CLI last read it at one revision                    |
+| Version floor       | `cli.minVersion`, `isBelow`                                             | The oldest CLI a host accepts writes from                                |
+| Read copy           | `ReadCopy`, `ReadCopies`, `recordCopy`, `baseFromCopy`                  | The plain tab as the CLI last read it at one revision                    |
 | Base                | `baseFromCopy(copy)` → `ChangesetBase`                                  | A read copy's revision and every element's fingerprint, sent with writes |
 | Source kind         | `SourceKind`: `graph`, `mermaid`, `elements`, `replace`, `operations`   | What a `-f` file holds                                                   |
 | Pull file           | `PullFile`, `<slug>.livediagram.json`                                   | One document on disk, with each tab's revision                           |
@@ -126,7 +128,7 @@ anything the CLI does.
 
 ### One command, start to end (`run`)
 
-1. **Route.** `resolveCommand(argv)` reads the first words: a resource (or alias) and a verb, or a top-level
+1. **Route.** `route(words)`, after `splitGlobals(argv)`, reads the first words: a resource (or alias) and a verb, or a top-level
    command (`wait`, `watch`, `pull`, `push`, `export`, `guide`, `api`, `edit`). Unknown words exit 2 with
    suggestions (CLI51). `--help` or `-h` anywhere prints the help of the deepest level routed and exits 0; `--version`
    prints `CLI_VERSION` and exits 0. Neither sends telemetry.
@@ -140,7 +142,7 @@ anything the CLI does.
 5. **Capabilities.** `loadCapabilities(profile)` from the cache or `GET {host}/api/capabilities` (CLI8). An absent
    `authEnabled` or `authEnabled: false` makes every api verb exit 4 with the "no sign-in" line: the CLI does not act
    as a guest.
-6. **Floor.** `assertWritable(verb, caps)`: a verb whose behaviour is `write` or `destructive` and that reaches the
+6. **Floor.** `isBelow(CLI_VERSION, caps.minVersion)` in `runOnline`: a verb whose behaviour is `write` or `destructive` and that reaches the
    api, below `cli.minVersion`, exits 1 (CLI13). Reads are never refused. A host `documentFormat` above the
    bundled `DOCUMENT_FORMAT` refuses the verbs that read or write local files (`pull`, `push`, `export`, `graph`,
    `tab diff`, reads of a pull file) with exit 1 and the version to install; online commands carry on.
@@ -695,7 +697,8 @@ type PullFile = DocumentEnvelope & { livediagramSync: PullSync };
 
 ### Telemetry
 
-- `Cli·Used·<pascalToken(verb.id)>` (`TabView`, `ElementSet`); `Error·Api·Http<status>.<Verb>` on a 5xx and
+- `Cli·Used·<pascalToken(verb.id)>` (`TabView`, `ElementSet`) for each of `countedVerbs()`: every verb that reaches a
+  host (not the `offline` guides and skill), except `telemetry on|off`; `Error·Api·Http<status>.<Verb>` on a 5xx and
   `Error·Api·Internal.<Verb>` on a network failure; never a 4xx (CLI41).
 - `POST {apiBase}/events` `{ events: [one] }`, no `Authorization`, no `Origin`, awaited at most
   `TELEMETRY_FLUSH_TIMEOUT_MS`.
@@ -945,7 +948,7 @@ WebSocket) with a fixed clock; none waits on a real timer or the network.
 | Schema from the api, each kind within budget                                                  | `packages/edit-operations/src/element-format.test.ts`; `apps/api/src/routes/catalogues.test.ts`                                                                       |
 | Templates and icons from the api                                                              | `apps/api/src/routes/catalogues.test.ts`; `packages/icons/src/search.test.ts`; `packages/agent-verbs/src/verbs/catalogues.test.ts`                                    |
 | `skill install` requires `--to`, listing the directories                                      | `apps/cli/src/main.test.ts`                                                                                                                                           |
-| Help never sends telemetry                                                                    | `apps/cli/src/telemetry.test.ts` (planned)                                                                                                                            |
+| Help never sends telemetry                                                                    | `apps/cli/src/telemetry.test.ts`                                                                                                                                      |
 | stdout data only; hints on stderr                                                             | `apps/cli/src/main.test.ts`, `apps/cli/src/output/output.test.ts`                                                                                                     |
 | `--json`, `--json <fields>`, unknown field, `-q`                                              | `apps/cli/src/output/output.test.ts`                                                                                                                                  |
 | Lists end with what was left out                                                              | `packages/agent-verbs/src/verbs/verbs.test.ts`                                                                                                                        |
@@ -985,7 +988,7 @@ WebSocket) with a fixed clock; none waits on a real timer or the network.
 | Descriptions are facts                                                                        | `packages/agent-verbs/src/catalogue.test.ts` (the MCP's §4.15 checks over every verb)                                                                                 |
 | Bundle: one ESM file, wasm, font, Node 22, size                                               | `apps/cli/scripts/build.test.ts` (planned); CI `npm pack --dry-run`                                                                                                   |
 | Update check: once a day, stderr, skipped in CI, non-TTY, opt-out                             | `apps/cli/src/update-check.test.ts` (planned)                                                                                                                         |
-| Telemetry: after success only, profile's api, opt-outs, flip first, notice once, no arguments | `apps/cli/src/telemetry.test.ts` (planned)                                                                                                                            |
+| Telemetry: after success only, profile's api, opt-outs, flip first, notice once, no arguments | `apps/cli/src/telemetry.test.ts`                                                                                                                                      |
 | Every emitted event has a chart and a sentence; `Token·Created·Cli`                           | `apps/telemetry` `metric-emitters.test.ts`, `event-explanation.test.ts`; `apps/live/lib/mcp-consent-session.test.ts`                                                  |
 | Port-agnostic loopback; built-in client; `clientId` on the session                            | `apps/mcp/src/oauth.test.ts`, `oauth-clients.test.ts`                                                                                                                 |
 | Device grant endpoints and polling answers                                                    | `apps/mcp/src/oauth-device.test.ts` (planned)                                                                                                                         |

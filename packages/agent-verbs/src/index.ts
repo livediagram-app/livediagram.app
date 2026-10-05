@@ -30,6 +30,7 @@ export {
 } from './addressing';
 export {
   COMMAND_ALIASES,
+  countedVerbs,
   RESOURCE_ALIASES,
   RESOURCES,
   TOP_LEVEL,
