@@ -5,7 +5,12 @@
 // and the set-up its board.
 import { useMemo } from 'react';
 import type { Element } from '@livediagram/document';
-import { isArchived, normaliseBoardSetup, type PlanBoardSetup } from '@livediagram/items';
+import {
+  isArchived,
+  itemLabels,
+  normaliseBoardSetup,
+  type PlanBoardSetup,
+} from '@livediagram/items';
 import type { PlanSlice } from '@/hooks/plan/usePlanSlice';
 import { ItemPanel } from './ItemPanel';
 import { ItemTypeEditor } from './ItemTypeEditor';
@@ -70,6 +75,8 @@ export function PlanSheetsHost({
       );
     }
   }
+  // Every label in use, for the labels field's suggestions.
+  const allLabels = [...new Set([...ctx.items.values()].flatMap((it) => itemLabels(it)))].sort();
   if (item) {
     return (
       <ItemPanel
@@ -79,6 +86,7 @@ export function PlanSheetsHost({
         statuses={statuses}
         projects={projects}
         people={ctx.people}
+        labels={allLabels}
         canEdit={ctx.canEdit}
         onSave={(field, value) =>
           ctx.patchItem(
@@ -88,6 +96,7 @@ export function PlanSheetsHost({
         }
         onPatch={(patch) => ctx.patchItem(item.id, patch)}
         onType={(type) => ctx.patchItem(item.id, { type })}
+        onOpenItem={(id) => ctx.openItem(id)}
         onDelete={() => ctx.deleteItem(item.id)}
         onArchive={() => {
           const was = isArchived(item);

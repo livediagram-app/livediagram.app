@@ -75,3 +75,15 @@ describe('board set-up edits', () => {
     expect(removeColumn(one, first.id)).toBe(one);
   });
 });
+
+describe('setColumnWidth', () => {
+  it('sets two or three slots, and stores one as absent', async () => {
+    const { setColumnWidth } = await import('./board-setup-edits');
+    const { presetSetup } = await import('@livediagram/items');
+    const s = presetSetup('blank');
+    const id = s.columns[0]!.id;
+    const wide = setColumnWidth(s, id, 3);
+    expect(wide.columns[0]!.width).toBe(3);
+    expect(setColumnWidth(wide, id, 1).columns[0]).not.toHaveProperty('width');
+  });
+});

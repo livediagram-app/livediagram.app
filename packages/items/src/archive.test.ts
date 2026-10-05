@@ -89,3 +89,16 @@ describe('fresh boards and All Cards', () => {
     expect(statusLabel('in-review~ab12')).toBe('In review');
   });
 });
+
+describe('column widths', () => {
+  it('keep two or three slots, and read anything else as one', () => {
+    const s = normaliseBoardSetup({
+      columns: [
+        { id: 'a', status: 'a', name: 'A', width: 3 },
+        { id: 'b', status: 'b', name: 'B', width: 9 },
+      ],
+    });
+    expect(s?.columns[0]!.width).toBe(3);
+    expect(s?.columns[1]).not.toHaveProperty('width');
+  });
+});

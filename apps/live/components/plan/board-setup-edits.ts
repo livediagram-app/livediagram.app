@@ -4,6 +4,7 @@
 import {
   PLAN_COLUMNS_MAX,
   type CardField,
+  type ColumnWidth,
   type PlanBoardSetup,
   type PlanColumn,
   type SwimlaneBy,
@@ -142,4 +143,20 @@ export function removeColumn(setup: PlanBoardSetup, id: string): PlanBoardSetup 
   if (setup.columns.length <= 1) return setup;
   const next = { ...setup, columns: setup.columns.filter((c) => c.id !== id) };
   return setup.doneColumnId === id ? setDoneColumn(next, id, false) : next;
+}
+
+// A column one, two or three slots wide; one is stored as absent.
+export function setColumnWidth(
+  setup: PlanBoardSetup,
+  columnId: string,
+  width: ColumnWidth,
+): PlanBoardSetup {
+  return {
+    ...setup,
+    columns: setup.columns.map((c) => {
+      if (c.id !== columnId) return c;
+      const { width: _drop, ...rest } = c;
+      return width === 1 ? rest : { ...rest, width };
+    }),
+  };
 }

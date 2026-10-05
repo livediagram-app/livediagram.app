@@ -154,6 +154,7 @@ const PLAN_SETUP_PARTS = [
   'ColumnRemoved',
   'ColumnColour',
   'WipLimit',
+  'ColumnWidth',
   'DoneColumn',
   'Swimlanes',
   'Scope',

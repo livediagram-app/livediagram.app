@@ -19,7 +19,7 @@ import {
   type ItemPerson,
   type ItemTypeDef,
 } from '@livediagram/items';
-import { CloseIcon, TrashIcon, relativeSince } from '@livediagram/ui';
+import { CloseIcon, TrashIcon, relativeSince, Select } from '@livediagram/ui';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { DebouncedText } from './item-field-editors';
@@ -46,10 +46,12 @@ export function ItemPanel({
   statuses,
   projects,
   people,
+  labels,
   canEdit,
   onSave,
   onPatch,
   onType,
+  onOpenItem,
   onDelete,
   onArchive,
   onClose,
@@ -62,11 +64,15 @@ export function ItemPanel({
   // The projects an item can sit under (its Parent).
   projects: readonly Item[];
   people: readonly ItemPerson[];
+  // Every label the document's items carry (the labels field's suggestions).
+  labels: readonly string[];
   canEdit: boolean;
   onSave: (field: string, value: ItemFieldValue | undefined) => void;
   // Several fields in one write (the description and its formatting).
   onPatch: (patch: ItemPatch) => void;
   onType: (type: string) => void;
+  // Switches the panel to another item (a card's parent).
+  onOpenItem: (itemId: string) => void;
   onDelete: () => void;
   // Archive the item, or restore an archived one (docs/specs/025-plan/items.md "Archive").
   onArchive: () => void;
@@ -97,9 +103,11 @@ export function ItemPanel({
     statuses,
     projects,
     people,
+    labels,
     canEdit,
     onSave,
     onPatch,
+    onOpenItem,
   };
 
   const header = (
@@ -107,9 +115,10 @@ export function ItemPanel({
       <span className={ACCENT_TEXT} style={accentVars(type.color)}>
         <PlanTypeGlyph glyph={type.glyph} size={16} />
       </span>
-      <select
+      <Select
         aria-label="Item type"
-        className="rounded-md border border-transparent bg-transparent py-0.5 text-[13px] font-semibold enabled:cursor-pointer hover:border-slate-200 dark:hover:border-slate-700"
+        variant="ghost"
+        selectClassName="text-[13px] font-semibold"
         disabled={!canEdit}
         value={item.type}
         onChange={(e) => onType(e.target.value)}
@@ -122,7 +131,7 @@ export function ItemPanel({
             {t.label}
           </option>
         ))}
-      </select>
+      </Select>
       <span className="text-[13px] text-slate-500 dark:text-slate-400">#{item.key}</span>
       <span className="flex-1" />
       {canEdit ? (
@@ -169,7 +178,7 @@ export function ItemPanel({
   const detailRow = (f: string) => (
     <div
       key={f}
-      className="grid grid-cols-[6.5rem_1fr] items-start gap-2 py-1.5 max-sm:grid-cols-1"
+      className="grid grid-cols-[6.5rem_1fr] items-start gap-2 py-2.5 max-sm:grid-cols-1 max-sm:gap-1.5"
     >
       <label
         htmlFor={labelsItsControl(type, f) ? fieldId(item, f) : undefined}
@@ -185,7 +194,7 @@ export function ItemPanel({
 
   // A main-column field: its name over its editor.
   const mainField = (f: string) => (
-    <section key={f} className="mb-5">
+    <section key={f} className="mb-7">
       <label
         htmlFor={labelsItsControl(type, f) ? fieldId(item, f) : undefined}
         className="mb-1.5 block text-[12px] font-semibold text-slate-700 dark:text-slate-200"

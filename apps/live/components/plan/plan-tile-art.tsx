@@ -239,3 +239,17 @@ export function InfoArt({ size = 14 }: { size?: number }) {
     </Glyph>
   );
 }
+
+// Six dots in two columns: a board's move handle.
+export function GripArt({ size = 16 }: { size?: number }) {
+  return (
+    <Glyph size={size} units={22} filled>
+      <circle cx="8" cy="5.5" r="1.6" />
+      <circle cx="14" cy="5.5" r="1.6" />
+      <circle cx="8" cy="11" r="1.6" />
+      <circle cx="14" cy="11" r="1.6" />
+      <circle cx="8" cy="16.5" r="1.6" />
+      <circle cx="14" cy="16.5" r="1.6" />
+    </Glyph>
+  );
+}

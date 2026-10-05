@@ -76,9 +76,11 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     the type lacks as chips, and **New Custom Field**: a name and a kind (and the options, one a line, for
     Choice).
   - A custom field's **Edit** opens its name, its options and **Show on card** in its row.
-  - **Tabs**: the type's tabs in order, each renamed in place, moved with ↑ and ↓, and taken off with × (its
-    fields go to Details); **Add Tab** adds one named "New Tab". Each field row has a **Shows in** picker:
-    **Details** or one of the tabs.
+  - **Where each field shows** is set on its own row in Fields: a picker of **Details**, the type's tabs, and
+    **New Tab…**, which becomes a name field (Enter makes the tab and puts the field on it; a name a tab already
+    has puts it there).
+  - **Tabs**, under Fields: the type's tabs in order, each renamed in place, moved with ↑ and ↓, and taken off
+    with × (its fields go to Details). A tab with no fields is dropped when the type is saved.
   - A problem is named beside Save, which waits for it: no name, a name another type has, or a custom field
     without a name or a Choice without options, a tab without a name, or two tabs with one name.
   - **Delete Type**, at the foot, for a type that is not the catalogue's last.

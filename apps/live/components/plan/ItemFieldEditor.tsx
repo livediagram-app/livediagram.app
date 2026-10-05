@@ -3,6 +3,7 @@
 // One field of an item, as the item panel edits it (docs/specs/025-plan/plan-board.md "Working on a
 // board"): a built-in field by its kind, a custom field by its kind, and the description as rich text.
 // Each saves as it changes.
+import { ChevronRightIcon, Select } from '@livediagram/ui';
 import {
   customFieldOf,
   isBuiltInFieldId,
@@ -14,7 +15,6 @@ import {
   type ItemPerson,
   type ItemTypeDef,
 } from '@livediagram/items';
-import { FIELD_CLASS } from './PlanModal';
 import {
   ChecklistEditor,
   DateField,
@@ -54,8 +54,12 @@ export type ItemFieldContext = {
   projects: readonly Item[];
   people: readonly ItemPerson[];
   canEdit: boolean;
+  // Every label the document's items carry, offered while a label is typed.
+  labels: readonly string[];
   onSave: (field: string, value: ItemFieldValue | undefined) => void;
   onPatch: (patch: ItemPatch) => void;
+  // Opens another item in the panel (the parent).
+  onOpenItem: (itemId: string) => void;
 };
 
 export const fieldId = (item: Item, f: string) => `item-${item.id}-${f}`;
@@ -86,9 +90,10 @@ export function ItemFieldEditor({ f, ctx }: { f: string; ctx: ItemFieldContext }
           ? [{ status, name: status }, ...ctx.statuses]
           : ctx.statuses;
       return (
-        <select
+        <Select
           id={id}
-          className={FIELD_CLASS}
+          className="w-full"
+          selectClassName="text-[13px]"
           disabled={disabled}
           value={status}
           onChange={(e) => onSave('status', e.target.value || undefined)}
@@ -99,7 +104,7 @@ export function ItemFieldEditor({ f, ctx }: { f: string; ctx: ItemFieldContext }
               {s.name}
             </option>
           ))}
-        </select>
+        </Select>
       );
     }
     case 'assignee':
@@ -118,7 +123,13 @@ export function ItemFieldEditor({ f, ctx }: { f: string; ctx: ItemFieldContext }
       );
     case 'labels':
       return (
-        <LabelsEditor id={id} value={value} disabled={disabled} onSave={(v) => onSave(f, v)} />
+        <LabelsEditor
+          id={id}
+          value={value}
+          disabled={disabled}
+          suggestions={ctx.labels}
+          onSave={(v) => onSave(f, v)}
+        />
       );
     case 'estimate':
       return <NumberField id={id} value={value} disabled={disabled} onSave={(v) => onSave(f, v)} />;
@@ -126,25 +137,43 @@ export function ItemFieldEditor({ f, ctx }: { f: string; ctx: ItemFieldContext }
       return <DateField id={id} value={value} disabled={disabled} onSave={(v) => onSave(f, v)} />;
     case 'checklist':
       return <ChecklistEditor value={value} disabled={disabled} onSave={(v) => onSave(f, v)} />;
-    case 'parent':
+    case 'parent': {
+      const parentId = typeof value === 'string' ? value : '';
+      const parent = parentId ? ctx.projects.find((p) => p.id === parentId) : undefined;
       return (
-        <select
-          id={id}
-          className={FIELD_CLASS}
-          disabled={disabled}
-          value={typeof value === 'string' ? value : ''}
-          onChange={(e) => onSave(f, e.target.value || undefined)}
-        >
-          <option value="">None</option>
-          {ctx.projects
-            .filter((e) => e.id !== item.id)
-            .map((e) => (
-              <option key={e.id} value={e.id}>
-                #{e.key} {itemTitle(e)}
-              </option>
-            ))}
-        </select>
+        <div className="flex items-center gap-1.5">
+          <Select
+            id={id}
+            className="min-w-0 flex-1"
+            selectClassName="text-[13px]"
+            disabled={disabled}
+            value={parentId}
+            onChange={(e) => onSave(f, e.target.value || undefined)}
+          >
+            <option value="">None</option>
+            {ctx.projects
+              .filter((e) => e.id !== item.id)
+              .map((e) => (
+                <option key={e.id} value={e.id}>
+                  #{e.key} {itemTitle(e)}
+                </option>
+              ))}
+          </Select>
+          {/* The parent opens in this panel, so it can be read or changed and come back from. */}
+          {parent ? (
+            <button
+              type="button"
+              aria-label={`Open #${parent.key} ${itemTitle(parent)}`}
+              className="flex h-[34px] shrink-0 items-center gap-1 rounded-md border border-slate-200 px-2 text-[12px] font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
+              onClick={() => ctx.onOpenItem(parent.id)}
+            >
+              Open
+              <ChevronRightIcon size={12} />
+            </button>
+          ) : null}
+        </div>
       );
+    }
     case 'description':
       return <ItemDescription item={item} canEdit={canEdit} onPatch={ctx.onPatch} />;
     default:

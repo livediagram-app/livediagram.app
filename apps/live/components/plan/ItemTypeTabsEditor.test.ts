@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { fileField, moveTab } from './ItemTypeTabsEditor';
+import { fileField, fileOnNamedTab, moveTab, withoutEmptyTabs } from './ItemTypeTabsEditor';
 
 const tabs = [
   { id: 't-a', label: 'A', fields: ['description'] },
@@ -18,5 +18,23 @@ describe('tab edits', () => {
       ['checklist', 'description'],
     ]);
     expect(fileField(tabs, 'checklist', null).map((t) => t.fields)).toEqual([['description'], []]);
+  });
+
+  it('makes a named tab for a field, or files it on the tab of that name', () => {
+    expect(fileOnNamedTab(tabs, 'Plan', 'due').at(-1)).toEqual({
+      id: 't-plan',
+      label: 'Plan',
+      fields: ['due'],
+    });
+    expect(fileOnNamedTab(tabs, 'b', 'description').map((t) => t.fields)).toEqual([
+      [],
+      ['checklist', 'description'],
+    ]);
+  });
+
+  it('drops tabs with no fields', () => {
+    expect(withoutEmptyTabs(fileField(tabs, 'description', null)).map((t) => t.id)).toEqual([
+      't-b',
+    ]);
   });
 });

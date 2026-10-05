@@ -16,6 +16,7 @@ import {
 } from '@livediagram/items';
 import { BoardWidgetView, type WidgetContext } from './widgets/BoardWidgetView';
 import { BoardWidgetZone } from './widgets/BoardWidgetZone';
+import { GripArt } from './plan-tile-art';
 import type { PlanPalette } from './plan-palette';
 
 const stop = (e: { stopPropagation: () => void }) => e.stopPropagation();
@@ -34,6 +35,7 @@ export function PlanBoardHeader({
   loadFailed,
   widgetDropAt,
   flashWidget,
+  selected = false,
   onWidgets,
   onSetup,
   onOpenItem,
@@ -57,6 +59,8 @@ export function PlanBoardHeader({
   widgetDropAt: number | null;
   // A widget placed again that the board already had, flashed so it is found.
   flashWidget: BoardWidgetKind | null;
+  // The board is selected: the header shows its move handle.
+  selected?: boolean;
   onWidgets: (next: BoardWidgetKind[]) => void;
   // A set-up change a widget makes (Set Done Column), with its telemetry part.
   onSetup: (next: PlanBoardSetup, part: string) => void;
@@ -92,7 +96,23 @@ export function PlanBoardHeader({
       className="relative flex h-[52px] shrink-0 items-center gap-3 px-4"
       style={{ color: palette.text }}
     >
-      <div className="min-w-0 max-w-[40%] shrink-0 truncate text-[17px] font-bold leading-tight">
+      {/* While the board is selected, a grip before the title says where to take hold of it: the
+          header moves the board, its columns and cards do not. */}
+      {selected ? (
+        <span
+          data-board-grip
+          className="-ml-2 flex h-7 w-5 shrink-0 cursor-move items-center justify-center rounded"
+          style={{ color: palette.muted }}
+          aria-hidden
+        >
+          <GripArt size={16} />
+        </span>
+      ) : null}
+      <div
+        className={`min-w-0 max-w-[40%] shrink-0 truncate text-[17px] font-bold leading-tight ${
+          selected ? 'cursor-move' : ''
+        }`}
+      >
         {setup.title}
       </div>
       {/* No press guard here: a press on the zone's empty space selects and moves the board like the

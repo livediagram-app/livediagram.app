@@ -3,6 +3,7 @@
 // The item panel's field editors (docs/specs/025-plan/plan-board.md "Working on a board"), one per field
 // kind: text that saves on a pause in typing, and pickers that save at once. Each calls `onSave` with
 // the field's new value, or `undefined` to clear it.
+import { CheckIcon, CloseIcon, PlusIcon, Select } from '@livediagram/ui';
 import { useEffect, useRef, useState } from 'react';
 import {
   PRIORITIES,
@@ -101,9 +102,10 @@ export function PersonPicker({
   const options =
     current && !people.some((p) => p.id === current.id) ? [current, ...people] : people;
   return (
-    <select
+    <Select
       id={id}
-      className={FIELD_CLASS}
+      className="w-full"
+      selectClassName="text-[13px]"
       disabled={disabled}
       value={current?.id ?? ''}
       onChange={(e) => {
@@ -117,7 +119,7 @@ export function PersonPicker({
           {p.name}
         </option>
       ))}
-    </select>
+    </Select>
   );
 }
 
@@ -133,9 +135,10 @@ export function PriorityPicker({
   onSave: Save;
 }) {
   return (
-    <select
+    <Select
       id={id}
-      className={FIELD_CLASS}
+      className="w-full"
+      selectClassName="text-[13px]"
       disabled={disabled}
       value={typeof value === 'string' ? value : ''}
       onChange={(e) => onSave(e.target.value || undefined)}
@@ -146,19 +149,39 @@ export function PriorityPicker({
           {PRIORITY_LABELS[p]}
         </option>
       ))}
-    </select>
+    </Select>
   );
+}
+
+// A label's colour: one of the Plan swatches, the same for the same label everywhere.
+const LABEL_COLOURS = [
+  '#2563eb',
+  '#16a34a',
+  '#7c3aed',
+  '#d97706',
+  '#0d9488',
+  '#db2777',
+  '#ea580c',
+  '#0891b2',
+];
+export function labelColour(label: string): string {
+  let h = 0;
+  for (const ch of label) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  return LABEL_COLOURS[h % LABEL_COLOURS.length]!;
 }
 
 export function LabelsEditor({
   id,
   value,
   disabled,
+  suggestions = [],
   onSave,
 }: {
   id: string;
   value: ItemFieldValue | undefined;
   disabled: boolean;
+  // Labels other items of the document carry, offered as the field is typed in.
+  suggestions?: readonly string[];
   onSave: Save;
 }) {
   const labels = Array.isArray(value)
@@ -171,44 +194,67 @@ export function LabelsEditor({
     onSave([...labels, l]);
     setDraft('');
   };
+  const remove = (l: string) => {
+    const next = labels.filter((x) => x !== l);
+    onSave(next.length ? next : undefined);
+  };
+  const offered = suggestions.filter((s) => !labels.includes(s));
   return (
-    <div className="flex flex-wrap items-center gap-1.5">
-      {labels.map((l) => (
-        <span
-          key={l}
-          className="inline-flex items-center gap-1 rounded bg-slate-100 px-1.5 py-0.5 text-[12px] dark:bg-slate-800"
-        >
-          {l}
-          {disabled ? null : (
-            <button
-              type="button"
-              aria-label={`Remove label ${l}`}
-              className="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
-              onClick={() => {
-                const next = labels.filter((x) => x !== l);
-                onSave(next.length ? next : undefined);
-              }}
-            >
-              ×
-            </button>
-          )}
-        </span>
-      ))}
-      {disabled ? null : (
-        <input
-          id={id}
-          value={draft}
-          placeholder="Add a label"
-          className="min-w-24 flex-1 bg-transparent text-[13px] outline-none"
-          onChange={(e) => setDraft(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ',') {
-              e.preventDefault();
-              add();
-            }
-          }}
-          onBlur={add}
-        />
+    <div className="flex min-h-[34px] flex-wrap items-center gap-1.5 rounded-md border border-slate-200 bg-white px-1.5 py-1 transition focus-within:border-brand-400 focus-within:ring-2 focus-within:ring-brand-100 dark:border-slate-700 dark:bg-slate-800">
+      {labels.map((l) => {
+        const c = labelColour(l);
+        return (
+          <span
+            key={l}
+            className="inline-flex items-center gap-1 rounded-full py-0.5 pl-2 pr-1 text-[12px] font-medium"
+            style={{ backgroundColor: `${c}1f`, color: c }}
+          >
+            {l}
+            {disabled ? null : (
+              <button
+                type="button"
+                aria-label={`Remove label ${l}`}
+                className="flex h-4 w-4 items-center justify-center rounded-full transition hover:bg-black/10 dark:hover:bg-white/15"
+                onClick={() => remove(l)}
+              >
+                <CloseIcon size={9} />
+              </button>
+            )}
+          </span>
+        );
+      })}
+      {disabled ? (
+        labels.length === 0 ? (
+          <span className="px-1 text-[13px] text-slate-500 dark:text-slate-400">None</span>
+        ) : null
+      ) : (
+        <>
+          <input
+            id={id}
+            value={draft}
+            list={offered.length ? `${id}-labels` : undefined}
+            placeholder={labels.length ? 'Add…' : 'Add a label'}
+            className="min-w-20 flex-1 bg-transparent px-1 text-[13px] text-slate-800 outline-none placeholder:text-slate-400 dark:text-slate-100"
+            onChange={(e) => setDraft(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ',') {
+                e.preventDefault();
+                add();
+              } else if (e.key === 'Backspace' && !draft && labels.length) {
+                // Backspace on an empty field takes the last label off.
+                remove(labels[labels.length - 1]!);
+              }
+            }}
+            onBlur={add}
+          />
+          {offered.length ? (
+            <datalist id={`${id}-labels`}>
+              {offered.map((s) => (
+                <option key={s} value={s} />
+              ))}
+            </datalist>
+          ) : null}
+        </>
       )}
     </div>
   );
@@ -289,44 +335,107 @@ export function ChecklistEditor({
     : [];
   const [draft, setDraft] = useState('');
   const save = (next: Row[]) => onSave(next.length ? next : undefined);
+  const done = rows.filter((r) => r.done).length;
   return (
-    <div className="flex flex-col gap-1">
-      {rows.map((r, i) => (
-        <div key={i} className="group flex items-center gap-2 text-[13px]">
-          <input
-            type="checkbox"
-            checked={r.done}
-            disabled={disabled}
-            aria-label={r.text}
-            onChange={() => save(rows.map((x, j) => (j === i ? { ...x, done: !x.done } : x)))}
-          />
-          <span className={r.done ? 'flex-1 text-slate-400 line-through' : 'flex-1'}>{r.text}</span>
-          {disabled ? null : (
+    <div className="flex flex-col gap-1.5">
+      {rows.length > 0 ? (
+        <div className="mb-1 flex items-center gap-2.5">
+          <span
+            className="h-1.5 flex-1 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700"
+            aria-hidden
+          >
+            <span
+              className={`block h-full rounded-full transition-all ${done === rows.length ? 'bg-green-600' : 'bg-brand-500'}`}
+              style={{ width: `${(done / rows.length) * 100}%` }}
+            />
+          </span>
+          <span className="text-[12px] tabular-nums text-slate-500 dark:text-slate-400">
+            {done} of {rows.length}
+          </span>
+        </div>
+      ) : null}
+      <ul className="flex flex-col">
+        {rows.map((r, i) => (
+          <li
+            key={i}
+            className="group -mx-1.5 flex items-center gap-2.5 rounded-md px-1.5 py-1 transition hover:bg-slate-50 dark:hover:bg-slate-800/60"
+          >
             <button
               type="button"
-              aria-label={`Remove ${r.text}`}
-              className="text-slate-400 opacity-0 transition group-hover:opacity-100 hover:text-slate-700 focus:opacity-100"
-              onClick={() => save(rows.filter((_, j) => j !== i))}
+              role="checkbox"
+              aria-checked={r.done}
+              aria-label={r.text}
+              disabled={disabled}
+              onClick={() => save(rows.map((x, j) => (j === i ? { ...x, done: !x.done } : x)))}
+              className={`flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-[5px] border-2 transition enabled:cursor-pointer ${
+                r.done
+                  ? 'border-brand-600 bg-brand-600 text-white dark:border-brand-500 dark:bg-brand-500'
+                  : 'border-slate-300 hover:border-brand-500 dark:border-slate-600'
+              }`}
             >
-              ×
+              {r.done ? <CheckIcon size={11} /> : null}
             </button>
-          )}
-        </div>
-      ))}
-      {disabled ? null : (
-        <input
-          value={draft}
-          placeholder="Add a step"
-          className="bg-transparent text-[13px] outline-none"
-          onChange={(e) => setDraft(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' && draft.trim()) {
-              e.preventDefault();
-              save([...rows, { text: draft.trim().slice(0, 200), done: false }]);
-              setDraft('');
-            }
-          }}
-        />
+            {disabled ? (
+              <span className={`flex-1 text-[13px] ${r.done ? 'text-slate-400 line-through' : ''}`}>
+                {r.text}
+              </span>
+            ) : (
+              <input
+                aria-label={`Step ${i + 1}`}
+                defaultValue={r.text}
+                key={r.text}
+                maxLength={200}
+                className={`min-w-0 flex-1 rounded bg-transparent px-1 py-0.5 text-[13px] outline-none focus:bg-white focus:ring-1 focus:ring-brand-300 dark:focus:bg-slate-900 ${
+                  r.done ? 'text-slate-400 line-through' : 'text-slate-800 dark:text-slate-100'
+                }`}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') e.currentTarget.blur();
+                }}
+                onBlur={(e) => {
+                  const text = e.target.value.trim();
+                  if (!text) save(rows.filter((_, j) => j !== i));
+                  else if (text !== r.text)
+                    save(rows.map((x, j) => (j === i ? { ...x, text } : x)));
+                }}
+              />
+            )}
+            {disabled ? null : (
+              <button
+                type="button"
+                aria-label={`Remove ${r.text}`}
+                className="flex h-6 w-6 shrink-0 items-center justify-center rounded text-slate-400 opacity-0 transition hover:bg-slate-200 hover:text-slate-700 focus:opacity-100 group-hover:opacity-100 dark:hover:bg-slate-700 dark:hover:text-slate-200 [@media(pointer:coarse)]:opacity-100"
+                onClick={() => save(rows.filter((_, j) => j !== i))}
+              >
+                <CloseIcon size={10} />
+              </button>
+            )}
+          </li>
+        ))}
+      </ul>
+      {disabled ? (
+        rows.length === 0 ? (
+          <span className="text-[13px] text-slate-500 dark:text-slate-400">No steps</span>
+        ) : null
+      ) : (
+        <label className="-mx-1.5 flex items-center gap-2.5 rounded-md px-1.5 py-1 text-slate-500 focus-within:bg-slate-50 dark:text-slate-400 dark:focus-within:bg-slate-800/60">
+          <span className="flex h-[18px] w-[18px] shrink-0 items-center justify-center" aria-hidden>
+            <PlusIcon size={14} />
+          </span>
+          <input
+            value={draft}
+            placeholder="Add a step"
+            aria-label="Add a step"
+            className="min-w-0 flex-1 bg-transparent px-1 py-0.5 text-[13px] text-slate-800 outline-none placeholder:text-slate-500 dark:text-slate-100 dark:placeholder:text-slate-400"
+            onChange={(e) => setDraft(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && draft.trim()) {
+                e.preventDefault();
+                save([...rows, { text: draft.trim().slice(0, 200), done: false }]);
+                setDraft('');
+              }
+            }}
+          />
+        </label>
       )}
     </div>
   );

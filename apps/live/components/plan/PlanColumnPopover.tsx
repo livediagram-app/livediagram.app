@@ -6,7 +6,7 @@
 // column after it; remove it, first asking where its cards go when it has any. Each change is one
 // element edit, made as it happens. Escape or an outside press closes it; on a phone it is a sheet.
 import { useLayoutEffect, useRef, useState } from 'react';
-import { type PlanBoardSetup, type PlanColumn } from '@livediagram/items';
+import { COLUMN_WIDTHS, type PlanBoardSetup, type PlanColumn } from '@livediagram/items';
 import {
   Button,
   CheckIcon,
@@ -16,6 +16,7 @@ import {
   TrashIcon,
   useClickOutside,
   useEscape,
+  Select,
 } from '@livediagram/ui';
 import { SwitchRow } from '@/components/primitives/SwitchRow';
 import { Portal } from '@/components/primitives/Portal';
@@ -32,9 +33,9 @@ import {
   removeColumn,
   renameColumn,
   setDoneColumn,
+  setColumnWidth,
   setWipLimit,
 } from './board-setup-edits';
-import { FIELD_CLASS } from './PlanModal';
 
 const WIDTH = 280;
 const GAP = 6;
@@ -224,6 +225,40 @@ export function PlanColumnPopover({
             </button>
           </div>
         </div>
+        <div className="flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <span className="block text-[13px] text-slate-700 dark:text-slate-200">Width</span>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400">Slots across the board</p>
+          </div>
+          <div
+            role="radiogroup"
+            aria-label="Column width"
+            className="flex h-8 shrink-0 overflow-hidden rounded-md border border-slate-200 dark:border-slate-700"
+          >
+            {COLUMN_WIDTHS.map((w) => {
+              const on = (column.width ?? 1) === w;
+              return (
+                <button
+                  key={w}
+                  type="button"
+                  role="radio"
+                  aria-checked={on}
+                  aria-label={`${w} ${w === 1 ? 'slot' : 'slots'}`}
+                  className={`flex w-10 items-center justify-center gap-[2px] border-r border-slate-200 transition last:border-r-0 dark:border-slate-700 ${
+                    on
+                      ? 'bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-300'
+                      : 'text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'
+                  }`}
+                  onClick={() => onChange(setColumnWidth(setup, column.id, w), 'ColumnWidth')}
+                >
+                  {Array.from({ length: w }, (_, i) => (
+                    <span key={i} aria-hidden className="h-3.5 w-1.5 rounded-sm bg-current" />
+                  ))}
+                </button>
+              );
+            })}
+          </div>
+        </div>
         <SwitchRow
           checked={done}
           onChange={(on) => onChange(setDoneColumn(setup, column.id, on), 'DoneColumn')}
@@ -293,9 +328,10 @@ export function PlanColumnPopover({
             <p>
               Move {cardCount === 1 ? 'its card' : `its ${cardCount} cards`} to another column first
             </p>
-            <select
+            <Select
               aria-label="Move cards to"
-              className={FIELD_CLASS}
+              className="w-full"
+              selectClassName="text-[13px]"
               value={target}
               onChange={(e) => setTarget(e.target.value)}
             >
@@ -304,7 +340,7 @@ export function PlanColumnPopover({
                   {c.name}
                 </option>
               ))}
-            </select>
+            </Select>
             <div className="flex justify-end gap-2">
               <Button variant="secondary" size="xs" onClick={() => setRemoving(false)}>
                 Keep It

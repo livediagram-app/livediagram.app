@@ -1,20 +1,23 @@
 'use client';
 
-// The type editor's Tabs (docs/specs/025-plan/item-types.md "Editing a type"): the item panel's tabs in
-// order, each renamed in place, moved with ↑ and ↓, and taken off with × (its fields go to Details), with
-// Add Tab; then every field of the type with a Shows In picker, Details or one of the tabs. Edits a
-// draft; the type editor saves it.
+// The type editor's tabs (docs/specs/025-plan/item-types.md "Editing a type"). Each field row of Fields
+// carries a TabPicker: Details, one of the tabs, or New Tab… (a name field: Enter makes the tab and files the
+// field on it). TabsList, under Fields, renames, moves (↑ ↓) and removes tabs (their fields go to Details).
+// A tab left with no fields is dropped when the type is saved (withoutEmptyTabs). Edits a draft; the type
+// editor saves it.
+import { useState } from 'react';
 import {
-  ITEM_TYPE_TABS_MAX,
   ITEM_TYPE_TAB_LABEL_MAX,
+  ITEM_TYPE_TABS_MAX,
   newTabId,
   type ItemTypeTab,
 } from '@livediagram/items';
-import { ArrowDownIcon, ArrowUpIcon, CloseIcon, PlusIcon } from '@livediagram/ui';
+import { ArrowDownIcon, ArrowUpIcon, CloseIcon, Select } from '@livediagram/ui';
 import { FIELD_CLASS } from './PlanModal';
 
 // The fields a tab can hold: never the title (it heads the panel) or votes (they live on the card).
-const NOT_TABBABLE = new Set(['title', 'votes']);
+export const NOT_TABBABLE = new Set(['title', 'votes']);
+const NEW_TAB = '__new__';
 
 const ICON_BUTTON =
   'flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-slate-500 transition enabled:hover:bg-slate-100 enabled:hover:text-slate-800 disabled:opacity-30 dark:text-slate-400 dark:enabled:hover:bg-slate-800 dark:enabled:hover:text-slate-100';
@@ -39,117 +42,152 @@ export function fileField(
   });
 }
 
-export function ItemTypeTabsEditor({
+// The field filed on the tab named `label` (ignoring case), made at the end when there is none.
+export function fileOnNamedTab(
+  tabs: readonly ItemTypeTab[],
+  label: string,
+  field: string,
+): ItemTypeTab[] {
+  const have = tabs.find((t) => t.label.trim().toLowerCase() === label.toLowerCase());
+  if (have) return fileField(tabs, field, have.id);
+  const id = newTabId(
+    label,
+    tabs.map((t) => t.id),
+  );
+  return [...fileField(tabs, field, null), { id, label, fields: [field] }];
+}
+
+// What is saved: the tabs that hold a field.
+export function withoutEmptyTabs(tabs: readonly ItemTypeTab[]): ItemTypeTab[] {
+  return tabs.filter((t) => t.fields.length > 0);
+}
+
+export function TabPicker({
+  field,
+  label,
   tabs,
-  fields,
-  labelOf,
+  onChange,
+}: {
+  field: string;
+  label: string;
+  tabs: readonly ItemTypeTab[];
+  onChange: (tabs: ItemTypeTab[]) => void;
+}) {
+  const [naming, setNaming] = useState(false);
+  const [name, setName] = useState('');
+  const current = tabs.find((t) => t.fields.includes(field))?.id ?? '';
+  if (naming) {
+    const done = (commit: boolean) => {
+      const n = name.trim();
+      if (commit && n) onChange(fileOnNamedTab(tabs, n, field));
+      setNaming(false);
+      setName('');
+    };
+    return (
+      <input
+        autoFocus
+        aria-label={`New tab for ${label}`}
+        placeholder="Tab name, then Enter"
+        maxLength={ITEM_TYPE_TAB_LABEL_MAX}
+        value={name}
+        className={`${FIELD_CLASS} w-32 shrink-0 py-1 text-[12px]`}
+        onChange={(e) => setName(e.target.value)}
+        onKeyDown={(e) => {
+          e.stopPropagation();
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            done(true);
+          } else if (e.key === 'Escape') {
+            done(false);
+          }
+        }}
+        onBlur={() => done(true)}
+      />
+    );
+  }
+  return (
+    <Select
+      aria-label={`Where ${label} shows`}
+      className="w-32 shrink-0"
+      size="sm"
+      selectClassName="text-[12px]"
+      value={current}
+      onChange={(e) => {
+        if (e.target.value === NEW_TAB) setNaming(true);
+        else onChange(fileField(tabs, field, e.target.value || null));
+      }}
+    >
+      <option value="">Details</option>
+      {tabs.map((t) => (
+        <option key={t.id} value={t.id}>
+          {t.label || 'Untitled tab'}
+        </option>
+      ))}
+      {tabs.length < ITEM_TYPE_TABS_MAX ? <option value={NEW_TAB}>New Tab…</option> : null}
+    </Select>
+  );
+}
+
+export function TabsList({
+  tabs,
   onChange,
 }: {
   tabs: readonly ItemTypeTab[];
-  // The type's fields, in order.
-  fields: readonly string[];
-  labelOf: (field: string) => string;
   onChange: (tabs: ItemTypeTab[]) => void;
 }) {
-  const tabbable = fields.filter((f) => !NOT_TABBABLE.has(f));
-  const tabOf = (f: string) => tabs.find((t) => t.fields.includes(f))?.id ?? '';
+  if (tabs.length === 0)
+    return (
+      <p className="text-[12px] text-slate-500 dark:text-slate-400">
+        No tabs: every field shows in Details. Choose New Tab… beside a field to make one.
+      </p>
+    );
   return (
-    <div className="flex flex-col gap-3">
-      <ul className="flex flex-col gap-1.5" aria-label="Tabs">
-        {tabs.map((t, i) => (
-          <li key={t.id} className="flex items-center gap-1.5">
-            <input
-              aria-label={`Tab ${i + 1} name`}
-              className={FIELD_CLASS}
-              value={t.label}
-              maxLength={ITEM_TYPE_TAB_LABEL_MAX}
-              placeholder="Tab name"
-              onChange={(e) =>
-                onChange(tabs.map((x) => (x.id === t.id ? { ...x, label: e.target.value } : x)))
-              }
-            />
-            <span className="w-14 shrink-0 text-right text-[11px] text-slate-500 dark:text-slate-400">
-              {t.fields.length} {t.fields.length === 1 ? 'field' : 'fields'}
-            </span>
-            <button
-              type="button"
-              className={ICON_BUTTON}
-              aria-label={`Move ${t.label || 'tab'} up`}
-              disabled={i === 0}
-              onClick={() => onChange(moveTab(tabs, i, -1))}
-            >
-              <ArrowUpIcon size={14} />
-            </button>
-            <button
-              type="button"
-              className={ICON_BUTTON}
-              aria-label={`Move ${t.label || 'tab'} down`}
-              disabled={i === tabs.length - 1}
-              onClick={() => onChange(moveTab(tabs, i, 1))}
-            >
-              <ArrowDownIcon size={14} />
-            </button>
-            <button
-              type="button"
-              className={ICON_BUTTON}
-              aria-label={`Remove ${t.label || 'tab'}`}
-              onClick={() => onChange(tabs.filter((x) => x.id !== t.id))}
-            >
-              <CloseIcon size={12} />
-            </button>
-          </li>
-        ))}
-      </ul>
-      <button
-        type="button"
-        disabled={tabs.length >= ITEM_TYPE_TABS_MAX}
-        className="flex items-center justify-center gap-1.5 rounded-md border border-dashed border-slate-300 py-1.5 text-[12px] font-medium text-slate-600 transition enabled:hover:border-brand-400 enabled:hover:text-brand-700 disabled:opacity-40 dark:border-slate-600 dark:text-slate-300 dark:enabled:hover:text-brand-300"
-        onClick={() =>
-          onChange([
-            ...tabs,
-            {
-              id: newTabId(
-                'New Tab',
-                tabs.map((t) => t.id),
-              ),
-              label: 'New Tab',
-              fields: [],
-            },
-          ])
-        }
-      >
-        <PlusIcon size={14} />
-        Add Tab
-      </button>
-      {tabbable.length > 0 ? (
-        <div className="rounded-lg border border-slate-200 dark:border-slate-700">
-          <div className="grid grid-cols-[1fr_10rem] border-b border-slate-200 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:border-slate-700 dark:text-slate-400">
-            <span>Field</span>
-            <span>Shows In</span>
-          </div>
-          {tabbable.map((f) => (
-            <div
-              key={f}
-              className="grid grid-cols-[1fr_10rem] items-center gap-2 border-b border-slate-100 px-3 py-1.5 last:border-0 dark:border-slate-800"
-            >
-              <span className="truncate text-[13px]">{labelOf(f)}</span>
-              <select
-                aria-label={`Where ${labelOf(f)} shows`}
-                className={FIELD_CLASS}
-                value={tabOf(f)}
-                onChange={(e) => onChange(fileField(tabs, f, e.target.value || null))}
-              >
-                <option value="">Details</option>
-                {tabs.map((t) => (
-                  <option key={t.id} value={t.id}>
-                    {t.label || 'Untitled tab'}
-                  </option>
-                ))}
-              </select>
-            </div>
-          ))}
-        </div>
-      ) : null}
-    </div>
+    <ul className="flex flex-col gap-1.5" aria-label="Tabs">
+      {tabs.map((t, i) => (
+        <li key={t.id} className="flex items-center gap-1.5">
+          <input
+            aria-label={`Tab ${i + 1} name`}
+            className={FIELD_CLASS}
+            value={t.label}
+            maxLength={ITEM_TYPE_TAB_LABEL_MAX}
+            placeholder="Tab name"
+            onChange={(e) =>
+              onChange(tabs.map((x) => (x.id === t.id ? { ...x, label: e.target.value } : x)))
+            }
+          />
+          <span className="w-16 shrink-0 text-right text-[11px] text-slate-500 dark:text-slate-400">
+            {t.fields.length === 0
+              ? 'Empty'
+              : `${t.fields.length} ${t.fields.length === 1 ? 'field' : 'fields'}`}
+          </span>
+          <button
+            type="button"
+            className={ICON_BUTTON}
+            aria-label={`Move ${t.label || 'tab'} up`}
+            disabled={i === 0}
+            onClick={() => onChange(moveTab(tabs, i, -1))}
+          >
+            <ArrowUpIcon size={14} />
+          </button>
+          <button
+            type="button"
+            className={ICON_BUTTON}
+            aria-label={`Move ${t.label || 'tab'} down`}
+            disabled={i === tabs.length - 1}
+            onClick={() => onChange(moveTab(tabs, i, 1))}
+          >
+            <ArrowDownIcon size={14} />
+          </button>
+          <button
+            type="button"
+            className={ICON_BUTTON}
+            aria-label={`Remove ${t.label || 'tab'}`}
+            onClick={() => onChange(tabs.filter((x) => x.id !== t.id))}
+          >
+            <CloseIcon size={12} />
+          </button>
+        </li>
+      ))}
+    </ul>
   );
 }

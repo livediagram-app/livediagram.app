@@ -62,8 +62,12 @@ Where each is set, so a setting lives with what it changes, never in one central
 
 - **Header**: title, the count of items shown, a progress bar (done of all, when a done column is set), the
   avatars of people on the board and the quick filter.
+- **Move handle**: while a board is selected, a grip before its title shows where to take hold of it: the
+  header (and the empty part of its widget row) moves the board; columns and cards do not.
 - **Columns**: name, count, and the WIP limit as `3 / 4`. Over the limit, the count turns to a warning colour and
   the column header says so; it never refuses a card.
+- **Column width**: a column is one slot wide, or two or three (its cog's **Width**); the slots share the board's
+  width, so a wide column suits a busy stage.
 - **Columns fill the board**: a board resized taller runs its columns to its bottom edge (on a board with
   swimlanes, the last open swimlane takes the spare height); a board shorter than its cards scrolls.
 - **Cards** in rank order, at the board's **card size**. Every card carries the item type's colour stripe; a card
@@ -128,7 +132,12 @@ In Plan mode:
 - **Open an item**: clicking a card opens the **item panel**, a wide modal over the canvas. Every field of the
   item's type is edited in place and saved as it changes, except votes, which live on the card face only. It
   closes with Escape or the close button, and follows the item if someone else moves it.
-  - **Header**: the type (a picker, with its glyph), the key, **Delete** and the close button.
+  - **Header**: the type (a picker, with its glyph), the key, **Archive**, **Delete** and the close button.
+  - **Parent**: once set, an **Open** button beside it opens the parent in the panel.
+  - **Labels** are coloured chips in one field (each label keeps its colour everywhere), with the document's
+    other labels offered as it is typed in; Backspace in an empty field takes the last one off.
+  - **Checklist**: a progress bar and "2 of 5" over its steps; each step's text is edited in place, ticked with
+    a rounded box, and taken off with ×; **Add a step** keeps its place for the next.
   - **Main column**: the title, large, then the type's tabs (see [Item types](item-types.md)) and the fields
     of the chosen tab. The **Description** is rich text: bold, italic, underline, strikethrough, size, colour,
     lists, headings and links, from a toolbar over it or the usual shortcuts.

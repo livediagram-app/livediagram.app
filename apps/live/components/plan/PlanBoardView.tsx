@@ -4,6 +4,7 @@
 // its set-up projected over the document's items into columns, rows and cards. In Plan mode cards
 // take the pointer and the keyboard; in the other modes the board is an element like any other and a
 // double-click opens a card. Everything the board changes goes through PlanContext.
+import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { cornerRadiusPx, type ShapeElement } from '@livediagram/document';
 import {
@@ -78,6 +79,10 @@ export function PlanBoardView({
     [setup, items],
   );
   const interactive = !!plan?.planInput;
+  // Selected (alone or with others): the header shows its move handle.
+  const selected = useSelectionOf(
+    (s) => s.selectedId === element.id || s.multiSelectedIds.has(element.id),
+  );
   const canEdit = !!plan?.canEdit;
 
   const { drag, incoming, widgetSlot, flashWidget } = usePlanBoardDrop({
@@ -175,7 +180,10 @@ export function PlanBoardView({
   };
 
   const dragging = drag.drag;
-  const columnTemplate = `repeat(${setup.columns.length}, minmax(${PLAN_COLUMN_MIN_PX}px, 1fr))`;
+  // A slot per column, two or three for a wider one (docs/specs/025-plan/plan-board.md "The board set-up").
+  const columnTemplate = setup.columns
+    .map((c) => `minmax(${PLAN_COLUMN_MIN_PX * (c.width ?? 1)}px, ${c.width ?? 1}fr)`)
+    .join(' ');
 
   return (
     <div
@@ -201,6 +209,7 @@ export function PlanBoardView({
         palette={palette}
         widgetDropAt={widgetSlot}
         flashWidget={flashWidget}
+        selected={selected}
         onOpenItem={(id) => plan?.openItem(id)}
         onSetup={(next, part) => {
           plan?.updateBoard(element.id, next);

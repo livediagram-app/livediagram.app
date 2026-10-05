@@ -16,13 +16,12 @@ import {
   type ItemTypeDef,
   type ItemTypeTab,
 } from '@livediagram/items';
-import { Button } from '@livediagram/ui';
+import { Button, Select } from '@livediagram/ui';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { DialogFooter } from '@/components/dialogs/DialogFooter';
 import { FIELD_CLASS, SheetRow } from './PlanModal';
 import { ItemTypeFieldList, type FieldDraft } from './ItemTypeFieldList';
-import { ItemTypeTabsEditor } from './ItemTypeTabsEditor';
-import { fieldLabel } from './ItemFieldEditor';
+import { NOT_TABBABLE, TabPicker, TabsList, withoutEmptyTabs } from './ItemTypeTabsEditor';
 import { PlanTypeGlyph } from './plan-type-glyph';
 import { ACCENT_TEXT, accentVars } from './plan-palette';
 
@@ -103,10 +102,10 @@ export function ItemTypeEditor({
       glyph,
       fields: fields.fields,
       ...(fields.custom.length ? { custom: fields.custom } : {}),
-      tabs: tabs.map((t) => ({ ...t, label: t.label.trim() })),
+      tabs: withoutEmptyTabs(tabs).map((t) => ({ ...t, label: t.label.trim() })),
     };
   }, [type, types, label, color, glyph, fields, tabs]);
-  const tabNames = tabs.map((t) => t.label.trim().toLowerCase());
+  const tabNames = withoutEmptyTabs(tabs).map((t) => t.label.trim().toLowerCase());
   const tabProblem = tabNames.some((n) => !n)
     ? 'Give every tab a name.'
     : new Set(tabNames).size !== tabNames.length
@@ -211,18 +210,23 @@ export function ItemTypeEditor({
               </div>
             </SheetRow>
             <SheetRow label="Fields">
-              <ItemTypeFieldList draft={fields} onChange={setFields} removedSome={removedSome} />
+              <ItemTypeFieldList
+                draft={fields}
+                onChange={setFields}
+                removedSome={removedSome}
+                tabSlot={(f, label) =>
+                  NOT_TABBABLE.has(f) ? null : (
+                    <TabPicker field={f} label={label} tabs={tabs} onChange={setTabs} />
+                  )
+                }
+              />
             </SheetRow>
             <SheetRow label="Tabs">
               <p className="mb-2 text-[12px] text-slate-500 dark:text-slate-400">
-                The card’s tabs, and which fields show on each. Fields on no tab show in Details.
+                Choose where each field shows beside it above: Details, a tab, or New Tab…. A tab
+                with no fields is dropped when you save.
               </p>
-              <ItemTypeTabsEditor
-                tabs={tabs}
-                fields={fields.fields}
-                labelOf={(f) => fieldLabel(draft, f)}
-                onChange={setTabs}
-              />
+              <TabsList tabs={tabs} onChange={setTabs} />
             </SheetRow>
           </>
         )}
@@ -290,9 +294,10 @@ function DeleteStep({
         {itemCount === 1 ? 'One item is' : `${itemCount} items are`} a {label}. Where should{' '}
         {itemCount === 1 ? 'it' : 'they'} go?
       </p>
-      <select
+      <Select
         aria-label="Move the items to"
-        className={FIELD_CLASS}
+        className="w-full"
+        selectClassName="text-[13px]"
         value={moveTo ?? ''}
         onChange={(e) => onMoveTo(e.target.value || null)}
       >
@@ -303,7 +308,7 @@ function DeleteStep({
           </option>
         ))}
         <option value="">Keep as Item</option>
-      </select>
+      </Select>
       <p className="text-[12px] text-slate-500 dark:text-slate-400">
         Kept items keep their fields and show as a plain Item card.
       </p>

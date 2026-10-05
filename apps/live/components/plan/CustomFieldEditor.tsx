@@ -4,6 +4,7 @@
 // its kind. Every value is a plain string, number or true/false under the field's id; clearing a
 // field removes its value. A value of the wrong kind (the field's kind changed) shows empty and is
 // replaced by the next edit.
+import { Select } from '@livediagram/ui';
 import type { CustomFieldDef, ItemFieldValue } from '@livediagram/items';
 import { FIELD_CLASS } from './PlanModal';
 import { DateField, DebouncedText } from './item-field-editors';
@@ -93,9 +94,10 @@ export function CustomFieldEditor({
     case 'choice': {
       const options = field.options ?? [];
       return (
-        <select
+        <Select
           id={id}
-          className={FIELD_CLASS}
+          className="w-full"
+          selectClassName="text-[13px]"
           disabled={disabled}
           value={options.includes(text) ? text : ''}
           onChange={(e) => onSave(e.target.value || undefined)}
@@ -106,7 +108,7 @@ export function CustomFieldEditor({
               {o}
             </option>
           ))}
-        </select>
+        </Select>
       );
     }
   }

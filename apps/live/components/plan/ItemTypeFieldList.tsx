@@ -19,7 +19,7 @@ import {
   type CustomFieldKind,
   type ItemFieldId,
 } from '@livediagram/items';
-import { Button, CloseIcon } from '@livediagram/ui';
+import { Button, CloseIcon, Select } from '@livediagram/ui';
 import { FIELD_CLASS } from './PlanModal';
 
 export const BUILT_IN_FIELD_LABELS: Record<ItemFieldId, string> = {
@@ -70,9 +70,12 @@ export function ItemTypeFieldList({
   draft,
   onChange,
   removedSome,
+  tabSlot,
 }: {
   draft: FieldDraft;
   onChange: (next: FieldDraft) => void;
+  // Where a field shows in the item panel (the type editor's TabPicker), beside its name.
+  tabSlot?: (fieldId: string, label: string) => React.ReactNode;
   // A field has come off since the editor opened: say what happens to its values.
   removedSome: boolean;
 }) {
@@ -126,6 +129,7 @@ export function ItemTypeFieldList({
                 <span className="text-[11px] text-slate-500 dark:text-slate-400">
                   {fixed ? 'Always' : kindOf(id)}
                 </span>
+                {tabSlot?.(id, labelOf(id))}
                 {c ? (
                   <button
                     type="button"
@@ -310,9 +314,10 @@ function NewFieldForm({
               maxLength={CUSTOM_FIELD_LABEL_MAX}
               onChange={(e) => setCustom({ ...custom, label: e.target.value })}
             />
-            <select
+            <Select
               aria-label="New field's kind"
-              className={`${FIELD_CLASS} w-36 shrink-0`}
+              className="w-36 shrink-0"
+              selectClassName="text-[13px]"
               value={custom.kind}
               onChange={(e) => setCustom({ ...custom, kind: e.target.value as CustomFieldKind })}
             >
@@ -321,7 +326,7 @@ function NewFieldForm({
                   {CUSTOM_KIND_LABELS[k]}
                 </option>
               ))}
-            </select>
+            </Select>
           </div>
           {custom.kind === 'choice' ? (
             <textarea

@@ -23,7 +23,12 @@ export interface PlanColumn {
   name: string;
   wipLimit?: number;
   color?: string;
+  // How many slots wide it is (docs/specs/025-plan/plan-board.md "The board set-up"); absent is 1.
+  width?: ColumnWidth;
 }
+
+export const COLUMN_WIDTHS = [1, 2, 3] as const;
+export type ColumnWidth = (typeof COLUMN_WIDTHS)[number];
 
 export const SWIMLANE_BY = ['none', 'assignee', 'type', 'priority', 'parent', 'status'] as const;
 export type SwimlaneBy = (typeof SWIMLANE_BY)[number];
@@ -386,6 +391,8 @@ export function normaliseBoardSetup(input: unknown): PlanBoardSetup | null {
       col.wipLimit = wipLimit;
     }
     if (typeof color === 'string' && HEX.test(color)) col.color = color;
+    const width = (c as { width?: unknown }).width;
+    if (width === 2 || width === 3) col.width = width;
     columns.push(col);
   }
   if (columns.length === 0) return null;
