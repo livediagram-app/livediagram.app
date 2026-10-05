@@ -35,7 +35,15 @@ const ICON_NAME = /(icon|glyph|svg)/i;
 function sources(dir: string): string[] {
   return readdirSync(dir).flatMap((name) => {
     const path = join(dir, name);
-    if (statSync(path).isDirectory()) return SKIP_DIRS.has(name) ? [] : sources(path);
+    // A file can vanish between the listing and the stat while other tasks run (a bundler's timestamped
+    // config, a dev server's output); it was never source, so skip it rather than fail the walk.
+    let isDir: boolean;
+    try {
+      isDir = statSync(path).isDirectory();
+    } catch {
+      return [];
+    }
+    if (isDir) return SKIP_DIRS.has(name) ? [] : sources(path);
     if (!name.endsWith('.tsx') || /\.test\.tsx$/.test(name) || path.includes(PRIMITIVES_DIR))
       return [];
     return [path];
