@@ -103,6 +103,10 @@ drag previews stay for documents with an audience.
 - A tab is renamed with `PUT /api/documents/:id/tabs/:tabId/name { name }`, which advances the tab's `rev` and is
   relayed to the room as the `tab-meta` an editor's own rename sends. (A `document-meta` keeps every open editor's
   tab names, so a peer's stale tab list can never revert a rename.) The CLI's and the MCP's tab renames use it.
+- A document renamed with an API token (`PUT /api/documents/:id { name }`) is relayed to the room as the
+  `document-meta` an editor's own rename sends, with the tabs in order: open editors show the new name at once, and
+  their next tab reorder carries it rather than writing the old name back. An editor's rename is not relayed again;
+  the editor sends it to the room itself.
 
 ## Conflicts
 

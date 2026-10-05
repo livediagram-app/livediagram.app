@@ -2072,6 +2072,19 @@ describe('DocumentRoom and agent changesets', () => {
     expect(JSON.parse(peer.sent.at(-1)!)).toMatchObject({ from: 'system', op: meta });
   });
 
+  it('sequences the document-meta of a document rename the api made, and refuses other kinds', async () => {
+    const { room } = newRoom();
+    const peer = join(room, 'p');
+    const meta = {
+      kind: 'document-meta',
+      name: 'Shop v2',
+      tabs: [{ id: 't1', name: 'Main', orderIndex: 0 }],
+    };
+    expect((await room.fetch(mutation(meta))).status).toBe(204);
+    expect(JSON.parse(peer.sent.at(-1)!)).toMatchObject({ from: 'system', op: meta });
+    expect((await room.fetch(mutation({ kind: 'tab', tabId: 't1' }))).status).toBe(400);
+  });
+
   it('never relays a changeset from a client socket', () => {
     const { room } = newRoom();
     const sender = join(room, 's');
