@@ -1,9 +1,10 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
   anchorPosition,
   bringManyToFront,
   bringToFront,
   elementBounds,
+  elementIndexFor,
   endpointPosition,
   isBoxed,
   sendManyToBack,
@@ -16,6 +17,7 @@ import {
   type Element,
   type ShapeElement,
 } from './index';
+import { createShape } from './shape-factory';
 
 const shape = (id: string, overrides: Partial<ShapeElement> = {}): ShapeElement => ({
   id,
@@ -324,5 +326,35 @@ describe('type predicates', () => {
     expect(supportsBorder({ ...shape('d'), type: 'text' } as Element)).toBe(false);
     expect(supportsBorder({ ...shape('e'), type: 'image', imageId: null } as Element)).toBe(false);
     expect(supportsBorder(arrow)).toBe(false);
+  });
+});
+
+// docs/specs/008-canvas/canvas-performance.md "Whole-board passes stay linear": resolving many arrows'
+// ends over the same board looks each id up in one index per element list, not by scanning the list.
+describe('elementIndexFor', () => {
+  it('builds one index per element list and reuses it', () => {
+    const a = createShape('square', 0, 0);
+    const list = [a];
+    const first = elementIndexFor(list);
+    expect(first.get(a.id)).toBe(a);
+    expect(elementIndexFor(list)).toBe(first);
+    expect(elementIndexFor([a])).not.toBe(first);
+  });
+
+  it('resolves an endpoint through a list as through its index', () => {
+    const a = createShape('square', 0, 0);
+    const b = createShape('square', 300, 0);
+    const list = [a, b];
+    const end = { kind: 'pinned', elementId: b.id, anchor: 'w' } as const;
+    expect(endpointPosition(end, list)).toEqual(endpointPosition(end, elementIndexFor(list)));
+  });
+
+  it('looks ids up in the index, without scanning the list', () => {
+    const a = createShape('square', 0, 0);
+    const list = [a];
+    const find = vi.spyOn(list, 'find');
+    endpointPosition({ kind: 'pinned', elementId: a.id, anchor: 'n' }, list);
+    endpointPosition({ kind: 'pinned', elementId: a.id, anchor: 's' }, list);
+    expect(find).not.toHaveBeenCalled();
   });
 });
