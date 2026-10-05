@@ -197,7 +197,33 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
       properties: {
         id: { type: 'string' },
         name: nameField,
-        tabs: { type: 'array', items: ref('Tab') },
+        tabs: {
+          type: 'array',
+          description:
+            'The tabs to seed. A tab may give `graph`, `mermaid` or `template` in place of `elements`, compiled ' +
+            'by the edit-operations engine; a tab it refuses refuses the create (422, with `tabId`).',
+          items: {
+            anyOf: [
+              ref('Tab'),
+              {
+                type: 'object',
+                properties: {
+                  id: { type: 'string' },
+                  name: { type: 'string' },
+                  theme: { type: 'string' },
+                  graph: { type: 'object' },
+                  mermaid: { type: 'string' },
+                  template: { type: 'string' },
+                },
+                required: ['id'],
+              },
+            ],
+          },
+        },
+        source: {
+          anyOf: [ref('DocumentSource'), { type: 'null' }],
+          description: 'The agent front door that made it; `ai` and `mcp` count as Made by AI.',
+        },
         // Placement (docs/specs/013-workspace/folders.md "Placement on create").
         teamId: {
           type: ['string', 'null'],
@@ -242,7 +268,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
       required: ['id', 'name'],
     },
     responseSchema: wrap('document', 'Document'),
-    statuses: [201, 400, 401, 403, 404, 410, 413],
+    statuses: [201, 400, 401, 403, 404, 410, 413, 422],
   },
   {
     method: 'GET',

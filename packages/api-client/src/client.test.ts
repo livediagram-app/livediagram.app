@@ -61,7 +61,15 @@ describe('createApiClient', () => {
     status.body = 'x'.repeat(API_ERROR_BODY_MAX + 10);
     const down = (await api.text('/x').catch((e: unknown) => e)) as ApiError;
     expect(down.code).toBeNull();
-    expect(down.body).toHaveLength(API_ERROR_BODY_MAX);
+    expect(down.body).toHaveLength(API_ERROR_BODY_MAX + 10);
+    expect(down.message).toBe(`api 503: ${'x'.repeat(API_ERROR_BODY_MAX)}…`);
+    status.value = 422;
+    const long = JSON.stringify({ error: 'invalid_value', text: 'y'.repeat(API_ERROR_BODY_MAX) });
+    status.body = long;
+    const refused = (await api.json('/x').catch((e: unknown) => e)) as ApiError;
+    expect(refused.code).toBe('invalid_value');
+    expect(refused.body).toBe(long);
+    status.value = 503;
     expect(failures).toEqual(['Http503']);
     status.body = 'null';
     expect(((await api.json('/x').catch((e: unknown) => e)) as ApiError).code).toBeNull();

@@ -5,17 +5,14 @@ export const GUIDE_TOPICS = {
     summary: 'build a diagram from scratch',
     text: `Build a diagram
 
-Create a document with one empty tab through the api escape hatch; you choose its id:
+Write the structure, not the coordinates: a graph or Mermaid is laid out for you.
 
-  printf '{"id":"%s","name":"Shop","tabs":[{"id":"main","name":"Main","elements":[]}]}' \\
-    "$(node -p 'crypto.randomUUID()')" | livediagram api POST /documents --body -
+  livediagram document create Shop -f arch.json   {"nodes": [...], "edges": [...], "direction": "right"}
+  livediagram tab add Shop Flow -f flow.mmd       flowchart LR ...
 
-Then write the structure, not the coordinates, as one changeset: a graph or Mermaid replaces
-the tab and is laid out for you; edit operations place each box beside the one they name.
+Or start empty and add with edit operations, each box placed beside the one it names:
 
-  livediagram edit Shop -f arch.json        {"nodes": [...], "edges": [...], "direction": "right"}
-  livediagram edit Shop -f flow.mmd         flowchart LR ...
-
+  livediagram document create Shop
   livediagram edit Shop -f - <<'OPS'
   add square id=web label="Web app"
   add square id=api label=API right-of:web

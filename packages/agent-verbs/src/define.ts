@@ -19,6 +19,8 @@ export type VerbContext = {
   // A line for the person or agent running the command, beside the output (stderr in the CLI).
   notice: (line: string) => void;
   now: () => number;
+  // A new document or tab id (crypto.randomUUID in the CLI).
+  newId: () => string;
   sleep: (ms: number) => Promise<void>;
   // A file's text, or stdin's for `-`.
   readInput: (path: string) => Promise<string>;

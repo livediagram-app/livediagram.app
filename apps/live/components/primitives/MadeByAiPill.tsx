@@ -1,5 +1,6 @@
 'use client';
 
+import { isMadeByAiSource } from '@livediagram/api-schema';
 import { HoverCard } from '@livediagram/ui';
 import { SparkleIcon } from '@/components/primitives/explorer-icons';
 
@@ -15,9 +16,9 @@ export const MADE_BY_AI_DESCRIPTION =
 const PILL =
   'optical-edges inline-flex shrink-0 items-center gap-1 rounded-full px-1.5 py-px text-[10px] font-semibold leading-4 bg-violet-50 text-violet-800 ring-1 ring-violet-600 dark:bg-violet-500/15 dark:text-violet-200 dark:ring-violet-400';
 
-/** Whether a listed document was made by AI: its provenance is set. */
+/** Whether a listed document was made by AI: the AI assistant or the MCP made it (a CLI document is not). */
 export function isMadeByAi(doc: { source?: string | null }): boolean {
-  return doc.source !== undefined && doc.source !== null;
+  return isMadeByAiSource(doc.source);
 }
 
 /** `compact` (the floating panel's narrow rows): the sparkle alone, its words kept for assistive

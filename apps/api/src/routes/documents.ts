@@ -20,6 +20,7 @@ import {
   readCreationIntent,
   readDocumentConversion,
   readMarkUsed,
+  type CreationIntent,
 } from '@livediagram/api-schema';
 import {} from '../comments';
 import {
@@ -46,7 +47,7 @@ import {
   payloadTooLarge,
   svgImage,
 } from '../responses';
-import { documentDates } from '@livediagram/api-schema';
+import { documentDates, isDocumentSource } from '@livediagram/api-schema';
 import { getDocumentTabImageSvg, getDocumentThumbnailSvg } from '../thumbnail';
 import { redactDocumentForReader, redactDocumentForScope } from '../redact-document';
 import { answerOverview, parseViewQuery } from './document-views-route';
@@ -64,6 +65,7 @@ import { handleDocumentSharedTabs } from './document-shared-tabs-route';
 import { forkTakenTabIds } from '../tab-id-fork';
 import { handleDocumentRoomRoutes } from './document-room-routes';
 import { handleDocumentSubresources } from './document-subresource-routes';
+import { compileSeededTabs } from './document-seed';
 import { parsePlacement, resolvePlacement } from '../placement/resolve-placement';
 import { placementLookups } from '../placement/placement-lookups';
 import {
@@ -116,9 +118,21 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
         logPlacementRejected('placement_invalid', placementScope(body.teamId));
         return placementRejected('placement_invalid');
       }
+      // Seeded tabs given as a graph, Mermaid or a template are compiled first (docs/specs/015-api/api.md);
+      // with no intent given, the first compiled tab supplies it, as the MCP derives it.
+      let derivedIntent: CreationIntent | null = null;
+      if (Array.isArray(body.tabs)) {
+        const seed = compileSeededTabs(body.tabs, body.id);
+        if ('refusal' in seed) return json(seed.refusal.body, { status: seed.refusal.status });
+        body.tabs = seed.tabs as Tab[];
+        derivedIntent = seed.intent;
+      }
       // The creation intent (docs/specs/013-workspace/default-folders.md): which default folder a
       // create at the root of My documents lands in. Malformed, it refuses the create.
-      const intent = readCreationIntent(body.intent);
+      const intent =
+        body.intent === undefined && derivedIntent
+          ? { ok: true as const, intent: derivedIntent }
+          : readCreationIntent(body.intent);
       if (!intent.ok) {
         logPlacementRejected(INTENT_INVALID, placementScope(body.teamId));
         return intentRejected();
@@ -234,7 +248,7 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
           (typeof body.presentation === 'string' ? body.presentation : null),
         // Provenance (docs/specs/013-workspace/folders.md): only the closed set of generated sources
         // is accepted; anything else (or absent) is a user-made document.
-        source: body.source === 'ai' || body.source === 'mcp' ? body.source : null,
+        source: isDocumentSource(body.source) ? body.source : null,
         savedAt,
         createdAt: dates.createdAt,
         // The creation intent, recorded once (docs/specs/013-workspace/default-folders.md

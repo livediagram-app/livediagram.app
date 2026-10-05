@@ -58,7 +58,15 @@ describe('the catalogue', () => {
   });
 
   it('groups verbs under their resource and finds them by id', () => {
-    expect(verbsOf('tab').map((v) => v.id)).toEqual(['tab.ls', 'tab.view', 'tab.lint', 'tab.diff']);
+    expect(verbsOf('tab').map((v) => v.id)).toEqual([
+      'tab.ls',
+      'tab.view',
+      'tab.lint',
+      'tab.diff',
+      'tab.add',
+      'tab.rename',
+      'tab.rm',
+    ]);
     expect(Object.values(COMMAND_ALIASES).every((id) => verbById(id))).toBe(true);
     expect(verbById('nope')).toBeUndefined();
     expect(Object.values(RESOURCE_ALIASES).every((r) => RESOURCES.some((x) => x.name === r))).toBe(

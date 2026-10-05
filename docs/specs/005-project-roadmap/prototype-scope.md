@@ -57,7 +57,7 @@ The editor is real:
 - **The CLI, first part** ([CLI](../015-api/cli.md)): `livediagram` runs from source with a token: help within token
   budgets, eight exit codes, profiles, `auth login --with-token`, `status` and `logout`, the reads (`document`, `tab`
   views, lint and diff, `changeset ls`, `show`), the edits (`edit -f`, `element …`, `changeset revert`) based on
-  read copies, guides, the agent skill and the `api` escape hatch.
+  read copies, `document create|rename|share|rm|restore`, `tab add|rename|rm`, guides, the agent skill and the `api` escape hatch.
 - **AI assistance** (optional): an in-editor panel with two modes: Ask answers questions about the active tab, Clean fixes label typos and normalises sizes, positions, and styles. Hidden entirely unless the api worker has a model key set; per-user opt-in via Settings. This is the in-editor panel only; driving documents from an outside assistant is the MCP server. See [AI Assistance](../007-editor/ai-assistance.md).
 - **Anonymous first-party telemetry** + the public `/telemetry` dashboard. The editor emits a closed-vocabulary `{category, action, type}` event for every meaningful interaction (shapes added, themes changed, comments posted, etc.) via batched POSTs to `/api/events`; the dashboard renders aggregate counts read from the api worker's D1 summary. No third-party analytics; no identifiers crossing the wire. Off by default for self-hosters (the api's `TELEMETRY_ENABLED` flag + the live build's `NEXT_PUBLIC_TELEMETRY_ENABLED` both need to be on for events to flow end-to-end), and a per-user opt-out ([User preferences](../007-editor/user-preferences.md)) overrides both when off. See [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md).
 - **Google Drive mirror** (optional, signed-in): My documents mirrored to the user's own Google Drive as `.livediagram` files in a matching folder tree, names, folders and the bin kept in step both ways while a tab is open, and "Open with" from Drive. Off until a Google OAuth client id is set. See [Google Drive mirror](../022-drive-mirror/drive-mirror.md).
@@ -77,7 +77,7 @@ The editor is real:
 
 ## Next
 
-- **Agents as collaborators** ([Agents](../024-agents/README.md)): with changesets, views, edit operations, the [lint](../024-agents/diagram-lint.md) and the CLI's reads and edits built, the [CLI](../015-api/cli.md)'s document and tab lifecycle, sign-in, sync and
+- **Agents as collaborators** ([Agents](../024-agents/README.md)): with changesets, views, edit operations, the [lint](../024-agents/diagram-lint.md) and the CLI's reads, edits and lifecycle built, the [CLI](../015-api/cli.md)'s catalogues, sign-in, sync and
   distribution next.
 - **Access levels** ([Share roles](../013-workspace/share-roles.md)): Viewer, Participant and Editor for share links and API tokens, with ownership as separate powers, replacing view/edit and the read-only flag.
 
