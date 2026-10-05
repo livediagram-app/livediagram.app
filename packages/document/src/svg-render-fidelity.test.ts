@@ -24,7 +24,9 @@ describe('Behaviour face export', () => {
     expect(svg).toContain('>10:00<');
     // 24 ticks, the quarters taller.
     expect(svg.match(/<rect[^<>]*height="7" fill="[^"]+" fill-opacity="0.3"\/>/g)).toHaveLength(4);
-    expect(svg.match(/<rect[^<>]*height="4" fill="[^"]+" fill-opacity="0.16"\/>/g)).toHaveLength(20);
+    expect(svg.match(/<rect[^<>]*height="4" fill="[^"]+" fill-opacity="0.16"\/>/g)).toHaveLength(
+      20,
+    );
   });
 
   it('names an unlabelled Mode button by its destination', () => {
