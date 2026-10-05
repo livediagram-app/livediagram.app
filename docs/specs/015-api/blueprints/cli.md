@@ -480,7 +480,7 @@ refusal prints the api's message.
 - **Top** (`livediagram`, `livediagram --help`), final copy, within `HELP_TOP_MAX_TOKENS`:
 
 ```text
-livediagram: read, build, edit and discuss livediagram documents.
+livediagram: read, build, edit and discuss documents.
 
 Usage: livediagram <resource> <verb> [args] [flags]
 
@@ -488,6 +488,7 @@ Resources
   document (doc)  ls, view, create, rename, share, rm, restore
   tab             ls, view, add, rename, rm, diff, render, lint
   element (el)    add, set, rm, move, connect, insert, wrap
+  item            ls, add, set, move, rm
   changeset       apply (edit), ls, show, revert
   comment         ls, add, reply, resolve, reopen
   presence        set, clear

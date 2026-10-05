@@ -509,6 +509,9 @@ importers:
       '@livediagram/icons':
         specifier: workspace:*
         version: link:../../packages/icons
+      '@livediagram/items':
+        specifier: workspace:*
+        version: link:../../packages/items
       '@livediagram/templates':
         specifier: workspace:*
         version: link:../../packages/templates
@@ -676,6 +679,9 @@ importers:
       '@livediagram/edit-operations':
         specifier: workspace:*
         version: link:../edit-operations
+      '@livediagram/items':
+        specifier: workspace:*
+        version: link:../items
       zod:
         specifier: ^4.6.5
         version: 4.6.5

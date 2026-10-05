@@ -43,6 +43,7 @@ Resource, then verb. `doc` and `el` are accepted for `document` and `element`.
 | `tab render <doc> [--tab <t>] --png <file>\|--svg <file>`              | A preview image; prints the path and its size, never image bytes                     |
 | `tab lint <doc> [--tab <t>]`                                           | The [diagram lint](../024-agents/diagram-lint.md), served as a view                  |
 | `element add\|set\|rm\|move\|connect\|insert\|wrap <doc> ...`          | One [edit operation](../024-agents/edit-operations.md) as a changeset                |
+| `item ls\|add\|set\|move\|rm <doc> ...`                                | [Items](../025-plan/items.md) by number (`#12`) or id prefix; fields as `key=value`  |
 | `changeset apply <doc> [--tab <t>] -f <file>\|-` (`edit`)              | Many edit operations, or a `replace`, as one changeset                               |
 | `changeset ls\|show\|revert <doc> [<changeset>]`                       | Recent changesets and their revert                                                   |
 | `comment ls\|add\|reply\|resolve\|reopen <doc> ...`                    | Threads ([Agent presence](../024-agents/agent-presence.md#comments)), by element ref |

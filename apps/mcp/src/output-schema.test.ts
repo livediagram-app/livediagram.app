@@ -28,6 +28,18 @@ const CHANGESET = {
   warnings: [],
   lint: null,
 };
+const ITEM = {
+  id: 'item123abc',
+  type: 'bug',
+  key: 12,
+  rank: 'i',
+  fields: { title: 'Fix login', status: 'todo' },
+  rev: 1,
+  createdAt: 1,
+  updatedAt: 1,
+  createdBy: { id: 'p', name: 'P', color: '#000000' },
+  updatedBy: { id: 'p', name: 'P', color: '#000000' },
+};
 const LIVE_DOC = { id: 'd1', name: 'Roadmap', tabs: [{ id: 't1', name: 'Tab 1' }] };
 
 // A plausible api with non-empty lists, so the array item schemas are exercised.
@@ -49,6 +61,8 @@ async function api(request: Request): Promise<Response> {
       trash: [{ id: 'd2', name: 'Old', teamId: null, trashedAt: 1, purgeAt: 2, reason: 'empty' }],
     });
   }
+  if (path.endsWith('/items') && request.method === 'GET') return json({ items: [ITEM], rev: 1 });
+  if (/\/items(\/[^/]+(\/move)?)?$/.test(path)) return json({ item: ITEM, rev: 2 });
   if (path.endsWith('/restore')) return json({ document: LIVE_DOC });
   if (path.endsWith('/share'))
     return json({ link: { code: 'abc', role: 'view', expiresAt: null } });
@@ -102,6 +116,20 @@ const CALLS: { tool: string; output: keyof typeof outputs; args: Record<string, 
   },
   { tool: 'list_trash', output: 'listTrashOutput', args: {} },
   { tool: 'restore_document', output: 'restoreDocumentOutput', args: { documentId: 'd2' } },
+  { tool: 'list_items', output: 'listItemsOutput', args: { documentId: 'd1' } },
+  {
+    tool: 'change_items',
+    output: 'changeItemsOutput',
+    args: {
+      documentId: 'd1',
+      changes: [
+        { op: 'add', title: 'New' },
+        { op: 'move', item: '#12', status: 'done' },
+        { op: 'set', item: '12', fields: { priority: 'high' } },
+        { op: 'delete', item: 'item123' },
+      ],
+    },
+  },
 ];
 
 describe('tool output schemas', () => {

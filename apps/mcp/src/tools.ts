@@ -59,6 +59,7 @@ import {
   submitChangeset,
 } from './changeset-client';
 import { registerTool } from './tool-annotations';
+import { registerItemTools } from './item-tools';
 import {
   addTabOutput,
   createDocumentOutput,
@@ -86,6 +87,8 @@ import {
 } from './schema';
 
 export function registerTools(server: McpServer, env: Env): void {
+  // The items Plan boards show (docs/specs/025-plan/plan-mode.md "Agents").
+  registerItemTools(server, env);
   registerTool(
     server,
     env,

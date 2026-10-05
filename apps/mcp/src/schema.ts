@@ -546,3 +546,57 @@ export const renameDocumentShape = {
     .optional()
     .describe('Rename this tab within the document instead of the document itself.'),
 };
+
+// The item tools (docs/specs/025-plan/plan-mode.md "Agents"): list_items and change_items.
+const itemDocumentId = z.string().describe('The document (from find_documents).');
+const itemRef = z.string().describe('The item, by its number ("#12") or an id prefix.');
+const fieldsArg = z
+  .record(z.string(), z.unknown())
+  .describe(
+    'Fields to set: title, description, status, assignee {id,name,color}, priority (urgent|high|medium|low), ' +
+      'labels [..], estimate (0-999), due (YYYY-MM-DD), checklist [{text,done}], parent (an item id), or any other key.',
+  );
+
+export const listItemsShape = {
+  documentId: itemDocumentId,
+  type: z
+    .string()
+    .optional()
+    .describe('Only items of this type: task, story, bug, epic, note, idea, action, risk.'),
+  status: z.string().optional().describe("Only items with this status (a board's column)."),
+};
+
+const change = z.discriminatedUnion('op', [
+  z.object({
+    op: z.literal('add'),
+    title: z.string().min(1),
+    type: z.string().default('task'),
+    status: z.string().optional().describe('The column it starts in, at the end.'),
+    fields: fieldsArg.optional(),
+  }),
+  z.object({
+    op: z.literal('set'),
+    item: itemRef,
+    fields: fieldsArg.optional(),
+    clear: z.array(z.string()).optional().describe('Fields to clear, by name (never title).'),
+    type: z.string().optional(),
+  }),
+  z.object({
+    op: z.literal('move'),
+    item: itemRef,
+    status: z.string().describe('The status (column) it moves to.'),
+    before: itemRef
+      .optional()
+      .describe('The item it lands before; the end of the column when absent.'),
+  }),
+  z.object({ op: z.literal('delete'), item: itemRef }),
+]);
+
+export const changeItemsShape = {
+  documentId: itemDocumentId,
+  changes: z
+    .array(change)
+    .min(1)
+    .max(50)
+    .describe('Applied in order; each sees the ones before it.'),
+};
