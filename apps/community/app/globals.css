@@ -1,0 +1,120 @@
+@import 'tailwindcss';
+@import '@livediagram/tailwind-config';
+
+/* Scan the shared UI package so utility classes used only inside its components (the <Brand> mark,
+ * the site header and footer) are generated here too. Tailwind v4 skips node_modules, where the
+ * workspace package is symlinked. */
+@source '../../../packages/ui/src';
+
+html,
+body {
+  background-color: #f8fafc; /* slate-50 */
+  color: #0f172a; /* slate-900 */
+  overflow-x: hidden;
+}
+.dark,
+.dark body {
+  background-color: var(--color-slate-950);
+  color: var(--color-slate-200);
+}
+
+/* The hero's soft brand wash and the canvas dot grid behind it: the editor's own surface, quietly. */
+.community-hero {
+  background:
+    radial-gradient(60rem 22rem at 15% -10%, rgb(14 165 233 / 0.14), transparent 70%),
+    radial-gradient(40rem 18rem at 95% 0%, rgb(244 63 94 / 0.08), transparent 70%);
+}
+.dark .community-hero {
+  background:
+    radial-gradient(60rem 22rem at 15% -10%, rgb(14 165 233 / 0.16), transparent 70%),
+    radial-gradient(40rem 18rem at 95% 0%, rgb(244 63 94 / 0.07), transparent 70%);
+}
+
+/* A card's image area (blueprint §9): a subtle dot grid, like the editor's canvas. */
+.dot-grid {
+  background-color: #f8fafc;
+  background-image: radial-gradient(circle, rgb(148 163 184 / 0.35) 1px, transparent 1.2px);
+  background-size: 14px 14px;
+}
+.dark .dot-grid {
+  background-color: var(--color-slate-950);
+  background-image: radial-gradient(circle, rgb(100 116 139 / 0.3) 1px, transparent 1.2px);
+}
+
+/* Card hover: a small lift and a brand edge (blueprint §10: no lift under reduced motion). */
+.card-lift {
+  transition:
+    transform var(--transition-duration-micro) ease-out,
+    box-shadow var(--transition-duration-micro) ease-out,
+    border-color var(--transition-duration-micro) ease-out;
+}
+.card-lift:hover {
+  transform: translateY(-3px);
+  border-color: rgb(14 165 233 / 0.45);
+  box-shadow:
+    0 14px 28px -14px rgb(14 165 233 / 0.35),
+    0 4px 10px -6px rgb(15 23 42 / 0.12);
+}
+.dark .card-lift:hover {
+  border-color: color-mix(in oklab, var(--color-brand-500) 55%, transparent);
+  box-shadow:
+    0 14px 28px -14px rgb(0 0 0 / 0.7),
+    0 0 0 1px color-mix(in oklab, var(--color-brand-500) 20%, transparent);
+}
+.card-image {
+  transition: transform var(--transition-duration-micro) ease-out;
+}
+.card-lift:hover .card-image {
+  transform: scale(1.03);
+}
+
+/* The heart's pop on liking. */
+@keyframes heart-pop {
+  0% {
+    transform: scale(1);
+  }
+  45% {
+    transform: scale(1.3);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+.heart-pop {
+  animation: heart-pop var(--transition-duration-long) ease-out;
+}
+
+/* Skeleton bars breathe while posts load. */
+@keyframes skeleton-breathe {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
+}
+.skeleton-bar {
+  background-color: var(--color-slate-200);
+  animation: skeleton-breathe 1.6s ease-in-out infinite;
+}
+.dark .skeleton-bar {
+  background-color: var(--color-slate-800);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card-lift,
+  .card-image {
+    transition: none;
+  }
+  .card-lift:hover,
+  .card-lift:hover .card-image {
+    transform: none;
+  }
+  .heart-pop {
+    animation: none;
+  }
+  .skeleton-bar {
+    animation: none;
+  }
+}
