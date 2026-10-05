@@ -42,6 +42,7 @@ export {
   EverythingIcon,
   FlowchartIcon,
   IllustrateIcon,
+  PlanCardsIcon,
   PlanIcon,
   MarkerIcon,
   MindmapIcon,

@@ -161,7 +161,8 @@ const PLAN: PaletteLayout = {
         'tools:link-card',
       ],
     },
-    { id: 'plan' },
+    { id: 'plan-boards' },
+    { id: 'plan-cards' },
     // Words round a board, with the checklist and link a board's notes are often made of.
     {
       id: 'write',

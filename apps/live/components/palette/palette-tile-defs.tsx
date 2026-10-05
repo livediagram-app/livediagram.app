@@ -94,8 +94,10 @@ export type PaletteTileSection =
   // eight workshop note kinds, each an ordinary sticky in its semantic
   // colour.
   | 'event-storming'
-  // Plan (docs/specs/025-plan/plan-mode.md "The palette"): boards by preset and cards by item type.
-  | 'plan'
+  // Plan mode's Boards and Cards (docs/specs/025-plan/plan-mode.md "The palette"): boards by preset,
+  // cards by item type.
+  | 'plan-boards'
+  | 'plan-cards'
   | 'tools'
   | 'data'
   // 'collaborate' is GONE (docs/specs/010-palette/palette-top-level-categories.md). The collaboration family (docs/specs/012-collaboration/estimate-card.md to

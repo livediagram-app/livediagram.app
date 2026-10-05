@@ -12,4 +12,4 @@ One row per default applied where a spec is silent or qualitative.
 | D6  | plan-board | Default item type for quick add            | The scope's first type, else Task                                   |
 | D7  | plan-board | Column minimum width                       | 220 px; narrower boards scroll columns sideways                     |
 | D8  | plan-board | How item panel edits group for undo        | One step per field per 400 ms pause                                 |
-| D9  | plan-mode  | Where the Plan category sits               | Directly after Popular                                              |
+| D9  | plan-mode  | Where Boards and Cards sit                 | Directly after Popular, under a Plan band heading                   |

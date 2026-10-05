@@ -48,6 +48,19 @@ export function PlanIcon({ size = 16, ...rest }: IconProps) {
   );
 }
 
+// Plan mode's Cards category (docs/specs/025-plan/plan-mode.md "The palette"): two item cards, one
+// behind the other, each with its type stripe, on the 24-unit grid.
+export function PlanCardsIcon({ size = 16, ...rest }: IconProps) {
+  return (
+    <Glyph size={size} units={24} {...rest}>
+      <path d="M7 5.5V4.5a1.5 1.5 0 0 1 1.5-1.5h11A1.5 1.5 0 0 1 21 4.5v9a1.5 1.5 0 0 1-1.5 1.5H18" />
+      <rect x="3" y="8" width="15" height="12" rx="1.5" />
+      <path d="M6 8v12" />
+      <path d="M9 12h6M9 15.5h4" />
+    </Glyph>
+  );
+}
+
 // A hub with four branches, on a 16-unit grid.
 export function MindmapIcon({ size = 16, ...rest }: IconProps) {
   return (

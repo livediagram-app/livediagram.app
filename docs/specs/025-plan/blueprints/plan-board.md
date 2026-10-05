@@ -57,7 +57,7 @@ BoardSetupPanel.tsx      set-up: title, columns (rename, reorder, WIP, done, col
 plan-board-keys.ts       the board's keyboard as a pure function of the projection
 plan-palette.ts          the board's colours per canvas surface (the SVG export's values)
 plan-type-glyph.tsx      a glyph per item type, inline
-plan-tile-art.tsx        the Plan category's tile glyphs
+plan-tile-art.tsx        the Boards and Cards tiles' glyphs
 ```
 
 Hooks (`apps/live/hooks/plan/`): `usePlanItems` (store), `usePlanSlice` (composed into `useEditorState`; provides

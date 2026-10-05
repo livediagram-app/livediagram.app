@@ -24,7 +24,7 @@ import {
   WriteTabIcon,
   EventStormingTabIcon,
 } from './palette-tab-icons';
-import { PlanIcon } from '@livediagram/ui';
+import { PlanCardsIcon, PlanIcon } from '@livediagram/ui';
 
 /**
  * The category catalogue's IDENTITY: which categories exist, in band order,
@@ -37,7 +37,7 @@ import { PlanIcon } from '@livediagram/ui';
  *
  * Order IS layout: PaletteTabBar renders the dropdown straight from this
  * array, grouping by `group` under the CATEGORY_BANDS headings (0 Common,
- * 1 Structure, 2 Decorate, 3 Dynamic).
+ * 1 Structure, 2 Decorate, 3 Dynamic, 4 Plan; Plan mode lists its band first).
  */
 export const PALETTE_CATEGORIES: {
   id: string;
@@ -59,13 +59,22 @@ export const PALETTE_CATEGORIES: {
     icon: <PopularTabIcon />,
   },
   {
-    // Plan (docs/specs/025-plan/plan-mode.md "The palette"): boards and cards, offered in Plan mode
-    // only, straight after Popular.
-    id: 'plan',
-    label: 'Plan',
-    group: 0,
-    description: 'Boards of items to drag through columns, and cards for one item each.',
+    // Boards and Cards (docs/specs/025-plan/plan-mode.md "The palette"): Plan mode's own band,
+    // offered in Plan mode only, straight after Popular.
+    id: 'plan-boards',
+    label: 'Boards',
+    group: 4,
+    description:
+      'Boards of items to drag through columns: Kanban, sprint, retro, roadmap and more.',
     icon: <PlanIcon size={18} />,
+  },
+  {
+    id: 'plan-cards',
+    label: 'Cards',
+    group: 4,
+    description:
+      'A card for one item, by type: task, story, bug, epic, note, idea, action or risk.',
+    icon: <PlanCardsIcon size={18} />,
   },
   {
     id: 'shapes',

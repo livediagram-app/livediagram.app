@@ -37,12 +37,14 @@ item store.
 
 ## The palette
 
-The Plan layout offers seven categories, landing on Popular:
+The Plan layout offers eight categories, landing on Popular. Boards and Cards sit together under their own
+**Plan** heading in the category picker, straight after Popular; the rest keep their usual bands:
 
 | Category | Holds                                                                                                              |
 | -------- | ------------------------------------------------------------------------------------------------------------------ |
 | Popular  | Kanban board, Retro board, Task card, Bug card, Note card, Sticky note, Text, Frame, Arrow, Image, Checklist, Link |
-| Plan     | Boards: Kanban, Sprint, Retro, Roadmap, Bug triage, Week, Blank. Cards: one per item type (Task card...)           |
+| Boards   | Kanban, Sprint, Retro, Roadmap, Bug triage, Week, Blank                                                            |
+| Cards    | One per item type: Task card, Story card, Bug card, Epic card, Note card, Idea card, Action card, Risk card        |
 | Write    | Diagram's Write, without Page and Annotation, with Checklist and Link                                              |
 | Shapes   | Diagram's Shapes, with Arrow, Line and Frame                                                                       |
 | Icons    | The icon catalogue                                                                                                 |
@@ -53,7 +55,7 @@ The Plan layout offers seven categories, landing on Popular:
   has items its scope matches.
 - A **card tile** places a Plan card and makes a new item of that type in the store (titled "New task", "New
   bug"...), opened from the card to write it.
-- Draw mode's shape dock leaves the Plan tiles out: boards and cards frame items, not ink.
+- Draw mode's shape dock leaves Boards and Cards out: they frame items, not ink.
 - Build, Components, Devices, Data, Tech, Behaviours, Draw and My shapes are left out.
 
 ## Templates

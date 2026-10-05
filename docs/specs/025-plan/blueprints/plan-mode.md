@@ -33,16 +33,18 @@ boolean }`; `setExperimentalModeEnabled(mode, on)`. `EXPERIMENTAL_EDITOR_MODES =
 
 ## Palette
 
-- New category `plan` in `PALETTE_CATEGORIES` (label "Plan", glyph the Plan mark, band after Popular).
+- Two categories in `PALETTE_CATEGORIES`, both in band 4 (`CATEGORY_BANDS[4] = 'Plan'`), listed straight after
+  Popular: `plan-boards` (label "Boards", glyph `PlanIcon`) and `plan-cards` (label "Cards", glyph
+  `PlanCardsIcon`). Tile sections of the same ids.
 - Tiles (`palette-plan-tiles.tsx`, spread into `PALETTE_TILES`), a `shape` action whose creation-time choice
   `plan` is the preset or the item type (threaded like `estimateScale` through the tile grid, drag payload, search,
   draw intent and drop): `plan:board-<preset>` for the 7 presets, `plan:card-<type>` (caption "<Type> card") for the
-  8 item types.
+  8 item types, in `plan-cards`; boards in `plan-boards`.
 - `PLAN` layout: Popular (`plan:board-kanban`, `plan:board-retro`, `plan:card-task`, `plan:card-bug`,
   `plan:card-note`, `tools:sticky`, `tools:text`, `tools:frame`, `tools:arrow`, `tools:image`,
-  `tools:checklist`, `tools:link-card`), `plan`, `write` (minus page, annotation; plus checklist, link card),
-  `shapes` (plus arrow, line, frame), `icons`, `stickers`, `media` (image, avatar). Draw's shape dock excludes the
-  `plan` category.
+  `tools:checklist`, `tools:link-card`), `plan-boards`, `plan-cards`, `write` (minus page, annotation; plus checklist, link card),
+  `shapes` (plus arrow, line, frame), `icons`, `stickers`, `media` (image, avatar). Draw's shape dock excludes both
+  categories.
 - Placing a board tile: `buildDrawnBoxed` / the drop path set `planBoard: presetSetupOrBlank(plan)`; a card tile
   mints the item id (`newItemId`) on the element and `onPlanCardPlaced` writes the item (`newCardItemWrite`).
 

@@ -49,7 +49,7 @@ const BOARDS: { preset: PlanBoardPresetId; caption: string; description: string 
 export const PLAN_TILES: PaletteTileDef[] = [
   ...BOARDS.map((b): PaletteTileDef => ({
     id: `plan:board-${b.preset}`,
-    section: 'plan',
+    section: 'plan-boards',
     label: `Add ${PLAN_BOARD_PRESETS[b.preset].label.toLowerCase()}`,
     caption: b.caption,
     description: b.description,
@@ -63,7 +63,7 @@ export const PLAN_TILES: PaletteTileDef[] = [
   })),
   ...ITEM_TYPES.map((t): PaletteTileDef => ({
     id: `plan:card-${t.id}`,
-    section: 'plan',
+    section: 'plan-cards',
     label: `Add ${t.label.toLowerCase()} card`,
     caption: `${t.label} card`,
     description: `A new ${t.label.toLowerCase()} on its own card, anywhere on the canvas. Drag it onto a board to file it.`,

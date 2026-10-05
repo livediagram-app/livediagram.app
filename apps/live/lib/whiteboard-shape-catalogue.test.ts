@@ -25,7 +25,7 @@ describe('the whiteboard shape catalogue', () => {
   it('offers every palette shape tile except the Components and Plan categories', () => {
     const keys = new Set(WHITEBOARD_SHAPE_CATALOGUE.map((e) => e.key));
     for (const tile of SHAPE_TILES) {
-      if (tile.section === 'components' || tile.section === 'plan') continue;
+      if (tile.section === 'components' || tile.section.startsWith('plan-')) continue;
       const kind = (tile.action as { kind: string }).kind;
       const found = [...keys].some((k) => k === kind || k.startsWith(`${kind}:`));
       const docked = kind === 'square' || kind === 'circle';
