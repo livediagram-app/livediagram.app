@@ -109,7 +109,10 @@ describe('BoardWidgetView', () => {
   it('reads plainly when there is nothing to show', () => {
     const empty = ctx({ items: [], setup: { ...presetSetup('blank'), voting: { on: false } } });
     draw('people', empty);
-    expect(screen.getByText('No one assigned')).toBeTruthy();
+    expect(screen.getByText('No people yet')).toBeTruthy();
+    cleanup();
+    draw('unassigned', empty);
+    expect(screen.getByText('Nothing to assign')).toBeTruthy();
     cleanup();
     draw('types', empty);
     expect(screen.getByText('No cards')).toBeTruthy();

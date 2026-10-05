@@ -259,7 +259,7 @@ export function BoardWidgetView({ kind, ctx }: { kind: BoardWidgetKind; ctx: Wid
         return (
           <span className={WIDGET_PILL} style={pill}>
             <Lead kind="people" color={palette.muted} />
-            No one assigned
+            {ctx.items.length === 0 ? 'No people yet' : 'No one assigned'}
           </span>
         );
       const extra = people.length - PEOPLE_SHOWN;
@@ -614,8 +614,13 @@ export function BoardWidgetView({ kind, ctx }: { kind: BoardWidgetKind; ctx: Wid
           }}
           onClick={() => ctx.onQuick(toggle(ctx.quick, 'person', UNASSIGNED))}
         >
-          <Lead kind="unassigned" color={n > 0 ? SOON_AMBER : DONE_GREEN} />
-          {n === 0 ? (
+          <Lead
+            kind="unassigned"
+            color={n > 0 ? SOON_AMBER : ctx.items.length === 0 ? palette.muted : DONE_GREEN}
+          />
+          {ctx.items.length === 0 ? (
+            'Nothing to assign'
+          ) : n === 0 ? (
             'All assigned'
           ) : (
             <>

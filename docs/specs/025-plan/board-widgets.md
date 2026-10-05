@@ -26,6 +26,8 @@ and are placed by dragging them into a board's header.
 - A board holds each kind **at most once**: a filter is the board's filter, not one of several.
 - **Widgets that narrow the board**: pressing a person in People, a type in Card Types, the overdue or due-soon
   count in Due Soon, a priority in Priorities, or Unassigned shows only those cards; pressing it again shows all.
+- **An empty board reads plainly**: People says "No people yet" and Unassigned "Nothing to assign" until the
+  board has a card, so the two never contradict each other.
   One narrowing of each kind at a time, pressed while it is on. While anything narrows the board, Item Count reads
   `3 of 14 · Show all`, and pressing it clears every narrowing (the Filter text and Only Mine too).
 - **Completion without a done column** offers **Set Done Column** to someone who may edit: it makes the board's
