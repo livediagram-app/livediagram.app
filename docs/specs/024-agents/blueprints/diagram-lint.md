@@ -370,8 +370,10 @@ Worst cases, per run:
 | `label-overflow`               | One `wrapLabel` per labelled box                                 | Linear in label characters                       |
 | Group, flow, duplicate, colour | One pass over arrows or boxes; `deriveContainers` once           | Linear, containment `O(n × containers)`          |
 
-- Budget: a tab of 300 boxes and 300 arrows lints within `LINT_BUDGET_CPU_MS` of CPU (`cpuMsOf`), the spec's "a few
-  milliseconds" for the pair checks with room for the label pass (LN35).
+- Budget: a tab of 300 boxes and 300 arrows lints within `LINT_BUDGET_CPU_MS` of CPU, the spec's "a few
+  milliseconds" for the pair checks with room for the label pass (LN35): measured at about 10 ms (16 ms under
+  coverage). The gate is growth: four times the tab costs under eight times as much, since coverage on a CI runner
+  pushed the absolute figure past 50 ms.
 - Changesets: one lint per changeset in the api worker, inside the request it already handles; no extra subrequest.
   The view lints the tab it read; MCP `create_document` adds one view request per created tab.
 - Bundle: the api and MCP workers already bundle `@livediagram/document`; `diagram-lint` adds only its own sources.
@@ -465,7 +467,7 @@ added: the front doors already count the verbs (`Cli·Used·TabLint`, `Cli·Used
 | Deterministic: same tab, same report, same order                                                        | `packages/diagram-lint/src/lint.test.ts` › "is deterministic", `packages/diagram-lint/src/order.test.ts`                                                |
 | Every tab fix parses and applies as edit operations (placeholders filled), and every code has a fixture | `packages/diagram-lint/src/fixes.test.ts` › "cover every code"                                                                                          |
 | Bounded: above `LINT_MAX_ARROWS` only crossings skip, summary says so                                   | `packages/diagram-lint/src/checks/edge-crossings.test.ts` › "skips the pair check"                                                                      |
-| Pair checks stay within budget                                                                          | `packages/diagram-lint/src/performance.test.ts`: 300 boxes, 300 arrows under `LINT_BUDGET_CPU_MS` via `cpuMsOf`                                         |
+| Pair checks stay within budget                                                                          | `packages/diagram-lint/src/performance.test.ts`: 75 to 300 boxes and arrows under 8× the CPU (`cpuMsOf`)                                                |
 | Logs `[lint] run` with counts, never content                                                            | `packages/diagram-lint/src/lint.test.ts` › "logs one run with counts, never content"                                                                    |
 | Summary line, plurals, verdict, footer part, `empty`, `clean`                                           | `packages/diagram-lint/src/format.test.ts`                                                                                                              |
 | One finding a line, refs first, fix last, columns, elision; the spec's example byte for byte            | `packages/diagram-lint/src/format.test.ts`                                                                                                              |
@@ -504,7 +506,7 @@ added: the front doors already count the verbs (`Cli·Used·TabLint`, `Cli·Used
 | `LINT_REFS_PER_FINDING_MAX`   | 3     | Arrows named in the `edge-crossings` message; JSON lists all (LN9)           | 1 to 10     |
 | `LINT_LABEL_QUOTE_MAX`        | 40    | `GRAPH_LABEL_MAX`: a heading's length (LN21)                                 | 20 to 80    |
 | `LINT_MESSAGE_COLUMN_MAX`     | 48    | The fix column stays inside a 100-column terminal (LN19)                     | 32 to 64    |
-| `LINT_BUDGET_CPU_MS`          | 50    | 300 × 300 with the label pass; catches a quadratic regression (LN35)         | 20 to 200   |
+| `LINT_BUDGET_CPU_MS`          | 50    | 300 × 300 with the label pass; a measured aim, the gate is growth (LN35)     | 20 to 200   |
 
 No environment variable, binding or migration; self-hosting needs nothing.
 
