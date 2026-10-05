@@ -44,6 +44,7 @@ export * from './icons';
 export { CommunityPostTile } from './community/CommunityPostTile';
 export { CommunityAuthorBadge, communityAuthorInitial } from './community/CommunityAuthorBadge';
 export { communitySharedAgo } from './community/shared-ago';
+export { clerkPublishableKeyOrNull } from './clerk-key';
 export {
   SITE_URL,
   SITE_NAME,

@@ -6,13 +6,6 @@ import { communitySharedAgo } from './shared-ago';
 // How many tags a card shows (docs/specs/025-community/community.md "Gallery").
 const TILE_TAGS = 3;
 
-// The full date behind "2 days ago", on hover.
-const SHARED_DATE = new Intl.DateTimeFormat('en-GB', {
-  day: 'numeric',
-  month: 'long',
-  year: 'numeric',
-});
-
 type LinkProps = { href: string; className?: string; children: ReactNode };
 
 // One Community post as a card (docs/specs/025-community/community.md "Gallery"; blueprint §9-§11): the live
@@ -27,18 +20,21 @@ export function CommunityPostTile({
   href,
   imageUrl,
   stats,
+  badge,
   LinkComponent,
-  now = Date.now(),
+  now,
 }: {
   post: CommunityPost;
   href: string;
   imageUrl: string;
   stats?: ReactNode;
+  // A note pinned to the image's top-right corner (My Shares' "Hidden").
+  badge?: ReactNode;
   // A router link where the surface has one (next/link in the Community app); a plain anchor otherwise.
   LinkComponent?: ComponentType<LinkProps>;
-  // The instant "2 days ago" is measured from; one value per list keeps every card agreeing. The cards are
-  // only drawn after their posts load in the browser, so reading the clock here cannot mismatch a server render.
-  now?: number;
+  // The instant "2 days ago" is measured from, read once by the list (useState(Date.now)) so every card agrees
+  // and render stays pure.
+  now: number;
 }) {
   const Anchor: ComponentType<LinkProps> = LinkComponent ?? PlainLink;
   const tags = post.tags.slice(0, TILE_TAGS);
@@ -55,6 +51,7 @@ export function CommunityPostTile({
         <span className="absolute left-3 top-3 rounded-md bg-white/90 px-2 py-0.5 text-[11px] font-semibold text-slate-600 shadow-sm ring-1 ring-slate-900/5 backdrop-blur dark:bg-slate-900/85 dark:text-slate-300 dark:ring-white/10">
           {communityCategoryLabel(post.category)}
         </span>
+        {badge ? <span className="absolute right-3 top-3">{badge}</span> : null}
       </div>
       <div className="flex flex-1 flex-col gap-2 p-4">
         <h3 className="line-clamp-2 text-[15px] font-semibold leading-snug text-slate-900 dark:text-slate-100">
@@ -80,7 +77,6 @@ export function CommunityPostTile({
               <span className="truncate font-medium">{post.author.name}</span>
               <time
                 dateTime={new Date(post.publishedAt).toISOString()}
-                title={`Shared ${SHARED_DATE.format(post.publishedAt)}`}
                 className="truncate text-[11px] text-slate-500 dark:text-slate-400"
               >
                 {communitySharedAgo(post.publishedAt, now)}

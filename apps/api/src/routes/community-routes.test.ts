@@ -190,6 +190,45 @@ describe('public routes', () => {
     ).toBe(400);
   });
 
+  it('lists My Shares for the signed-in author only, hidden ones included, with totals', async () => {
+    const shown = await publish('d1');
+    const hidden = await publish('d2');
+    await handleCommunity(publicCtx('PUT', `/api/community/posts/${shown.id}/like`));
+    db.sql.prepare("UPDATE community_posts SET state = 'hidden' WHERE id = ?").run(hidden.id);
+
+    expect((await handleCommunity(publicCtx('GET', '/api/community/mine'))).status).toBe(401);
+
+    const res = await handleCommunity(publicCtx('GET', '/api/community/mine', { clerk: AUTHOR }));
+    expect(res.status).toBe(200);
+    expect(res.headers.get('Cache-Control')).toBe('private, no-store');
+    const body = (await res.json()) as {
+      posts: { id: string; state: string; documentId: string; liked: boolean }[];
+      totals: { posts: number; likes: number; copies: number };
+    };
+    expect(body.posts.map((p) => [p.id, p.state, p.documentId]).sort()).toEqual(
+      [
+        [shown.id, 'listed', 'd1'],
+        [hidden.id, 'hidden', 'd2'],
+      ].sort(),
+    );
+    expect(body.totals).toEqual({ posts: 2, likes: 1, copies: 0 });
+
+    // Someone else signed in has none; the public list never shows the hidden one.
+    const other = await handleCommunity(
+      publicCtx('GET', '/api/community/mine', { clerk: 'user_x' }),
+    );
+    expect(await other.json()).toMatchObject({
+      posts: [],
+      totals: { posts: 0, likes: 0, copies: 0 },
+    });
+    const pub = (await (
+      await handleCommunity(publicCtx('GET', '/api/community/posts'))
+    ).json()) as {
+      posts: { id: string }[];
+    };
+    expect(pub.posts.map((p) => p.id)).toEqual([shown.id]);
+  });
+
   it('serves one post with related posts, and facets', async () => {
     const a = await publish('d1');
     const b = await publish('d2');

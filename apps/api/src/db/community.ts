@@ -3,6 +3,7 @@
 // reports and moderation live in community-engagement.ts.
 
 import {
+  type CommunityMineTotals,
   COMMUNITY_FEATURED_COUNT,
   COMMUNITY_FEATURED_WINDOW_MS,
   COMMUNITY_PAGE_SIZE,
@@ -189,13 +190,34 @@ const ORDER_BY: Record<CommunityListQuery['sort'], string> = {
   copied: 'cp.copy_count DESC, cp.published_at DESC, cp.id',
 };
 
+// An author's own posts, whatever their state (My Shares).
+const OWN_POST = 'cp.author_id = ? AND d.trashed_at IS NULL';
+
+// How popular an author's posts are altogether (My Shares), over every post they have, whatever the filter.
+export async function communityMineTotals(
+  env: Env,
+  authorId: string,
+): Promise<CommunityMineTotals> {
+  const row = await env.DB.prepare(
+    `SELECT COUNT(*) AS posts, COALESCE(SUM(cp.like_count), 0) AS likes, COALESCE(SUM(cp.copy_count), 0) AS copies
+       FROM community_posts cp JOIN documents d ON d.id = cp.document_id
+      WHERE ${OWN_POST}`,
+  )
+    .bind(authorId)
+    .first<CommunityMineTotals>();
+  return row ?? { posts: 0, likes: 0, copies: 0 };
+}
+
 // The gallery page (blueprint §8): one indexed query, one extra row to decide whether there is a next page.
 export async function listCommunityPosts(
   env: Env,
   query: CommunityListQuery,
+  // My Shares: only this author's posts, hidden ones included (not trashed ones: those are gone for the
+  // author too), instead of what the public can see.
+  authorId: string | null = null,
 ): Promise<{ rows: CommunityPostRow[]; nextOffset: number | null }> {
-  const where = [PUBLIC_POST];
-  const binds: (string | number)[] = [];
+  const where = authorId ? [OWN_POST] : [PUBLIC_POST];
+  const binds: (string | number)[] = authorId ? [authorId] : [];
   if (query.category) {
     where.push('cp.category = ?');
     binds.push(query.category);

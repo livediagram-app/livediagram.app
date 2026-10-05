@@ -70,7 +70,7 @@ The hosted version uses Clerk for sign-in. To enable on your self-host:
 1. Create a Clerk application in the [Clerk dashboard](https://dashboard.clerk.com).
 2. Copy the publishable key and the JWKS URL.
 3. Set them on the two workers / apps:
-   - **Live (build-time, browser-side)**: set `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` in your CI build env, or in `apps/live/.env.production`.
+   - **Live and Community (build-time, browser-side)**: set `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` in your CI build env, or in `apps/live/.env.production` and `apps/community/.env.production` (Community uses it only for My Shares).
    - **API (worker secret)**:
 
      ```sh

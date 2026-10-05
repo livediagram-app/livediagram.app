@@ -7,6 +7,8 @@ import {
   COMMUNITY_TITLE_MAX,
   communityQueryParams,
   communitySearchCategory,
+  communitySearchMine,
+  setCommunitySearchMine,
   communitySearchSort,
   setCommunitySearchCategory,
   communitySearchTags,
@@ -252,5 +254,20 @@ describe('COMMUNITY_CATEGORIES', () => {
     const ids = COMMUNITY_CATEGORIES.map((c) => c.id);
     expect(new Set(ids).size).toBe(ids.length);
     for (const c of COMMUNITY_CATEGORIES) expect(c.type).toMatch(/^[A-Z][A-Za-z]+$/);
+  });
+});
+
+describe('My Shares in the search', () => {
+  it('reads and writes is:mine without touching the rest', () => {
+    expect(communitySearchMine('retro is:mine')).toBe(true);
+    expect(communitySearchMine('IS:MINE')).toBe(true);
+    expect(communitySearchMine('mine')).toBe(false);
+    expect(setCommunitySearchMine('retro #agile', true)).toBe('is:mine retro #agile');
+    expect(setCommunitySearchMine('is:mine retro', true)).toBe('is:mine retro');
+    expect(setCommunitySearchMine('is:mine retro sort:loved', false)).toBe('retro sort:loved');
+  });
+
+  it('is never a search term', () => {
+    expect(communitySearchTerms('is:mine retro')).toEqual(['retro']);
   });
 });

@@ -1208,6 +1208,17 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'GET',
+    path: '/community/mine',
+    segment: 'community',
+    tag: 'Community',
+    summary:
+      "My Shares: the signed-in author's own posts (hidden ones included) under the same search words, with their totals.",
+    auth: 'clerk',
+    responseSchema: ref('CommunityMineResponse'),
+    statuses: [200, 400, 401],
+  },
+  {
+    method: 'GET',
     path: '/community/featured',
     segment: 'community',
     tag: 'Community',

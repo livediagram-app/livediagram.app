@@ -20,4 +20,3 @@ export function paragraphs(text: string): string[] {
     .map((p) => p.trim())
     .filter(Boolean);
 }
-

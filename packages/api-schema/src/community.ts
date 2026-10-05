@@ -297,13 +297,16 @@ export const EMPTY_COMMUNITY_QUERY: CommunityListQuery = {
 
 // A search string carries every filter in words (docs/specs/025-community/community.md "Gallery"): `#tag`
 // tokens, each a tag the post must have; one `category:<id>` token; one `sort:<id>` token (`sort:loved`,
-// `sort:copied`; Newest needs none); and plain terms matched against the title, description and tags.
+// `sort:copied`; Newest needs none); `is:mine`, for only the caller's own posts (My Shares, signed in); and
+// plain terms matched against the title, description and tags.
 
 const isTagToken = (word: string) => word.startsWith('#');
 const SORT_PREFIX = 'sort:';
 const isSortToken = (word: string) => word.toLowerCase().startsWith(SORT_PREFIX);
 const CATEGORY_PREFIX = 'category:';
 const isCategoryToken = (word: string) => word.toLowerCase().startsWith(CATEGORY_PREFIX);
+export const COMMUNITY_MINE_TOKEN = 'is:mine';
+const isMineToken = (word: string) => word.toLowerCase() === COMMUNITY_MINE_TOKEN;
 
 // The plain search terms (blueprint C5): lowercased, whitespace-split, `#tag`, `category:` and `sort:` tokens
 // left out,
@@ -311,7 +314,7 @@ const isCategoryToken = (word: string) => word.toLowerCase().startsWith(CATEGORY
 export function communitySearchTerms(q: string): string[] {
   const terms: string[] = [];
   for (const raw of q.toLowerCase().split(/\s+/)) {
-    if (isTagToken(raw) || isSortToken(raw) || isCategoryToken(raw)) continue;
+    if (isTagToken(raw) || isSortToken(raw) || isCategoryToken(raw) || isMineToken(raw)) continue;
     const term = raw.slice(0, COMMUNITY_SEARCH_TERM_MAX);
     if (term && !terms.includes(term)) terms.push(term);
     if (terms.length === COMMUNITY_SEARCH_TERMS_MAX) break;
@@ -374,6 +377,18 @@ export function communitySearchCategory(q: string): CommunityCategory | null {
 export function setCommunitySearchCategory(q: string, category: CommunityCategory | null): string {
   const words = q.split(/\s+/).filter((w) => w && !isCategoryToken(w));
   return (category ? [...words, `${CATEGORY_PREFIX}${category}`] : words).join(' ');
+}
+
+// Whether a search string asks for the caller's own posts (My Shares).
+export function communitySearchMine(q: string): boolean {
+  return q.split(/\s+/).some(isMineToken);
+}
+
+// The search string with My Shares on or off: `is:mine` removed, and put first when on, leaving the rest of
+// what was typed alone.
+export function setCommunitySearchMine(q: string, mine: boolean): string {
+  const words = q.split(/\s+/).filter((w) => w && !isMineToken(w));
+  return (mine ? [COMMUNITY_MINE_TOKEN, ...words] : words).join(' ');
 }
 
 // Parse a list query from URL parameters. Lenient where a stale or hand-edited link should still show something
@@ -463,6 +478,15 @@ export type CommunityModerationItem = CommunityPost & {
 };
 
 export type CommunityListResponse = { posts: CommunityPost[]; nextOffset: number | null };
+// My Shares (`GET /api/community/mine`): the caller's own posts, hidden ones included, with what only the
+// author may see (the state, the document to open), and how popular they are altogether.
+export type CommunityMinePost = CommunityOwnPost & { documentId: string };
+export type CommunityMineTotals = { posts: number; likes: number; copies: number };
+export type CommunityMineResponse = {
+  posts: CommunityMinePost[];
+  nextOffset: number | null;
+  totals: CommunityMineTotals;
+};
 export type CommunityFacetsResponse = {
   total: number;
   categories: Partial<Record<CommunityCategory, number>>;

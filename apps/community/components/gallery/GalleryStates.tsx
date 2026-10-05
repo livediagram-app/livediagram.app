@@ -1,6 +1,7 @@
 import { Button, ButtonContent, EmptyState, SearchIcon, buttonClassName } from '@livediagram/ui';
 import { EMPTY_INVITE_HREF } from '@/lib/links';
-import { AlertIcon, PeopleIcon } from '../shared/icons';
+import { signInHref } from '@/lib/session';
+import { AlertIcon, MineIcon, PeopleIcon } from '../shared/icons';
 
 // The gallery's empty and error states (docs/specs/025-community/community.md "Gallery"; blueprint
 // §9 final copy), one per cause.
@@ -48,5 +49,47 @@ export function GalleryError({ onRetry }: { onRetry: () => void }) {
         </Button>
       </EmptyState>
     </div>
+  );
+}
+
+// My Shares, signed out: it needs to know who you are. On a build without sign-in (self-hosted, guest only)
+// there is nobody to be, so it says so instead of offering a sign-in that does not exist.
+export function GallerySignedOut({ available }: { available: boolean }) {
+  if (!available) {
+    return (
+      <EmptyState
+        icon={<MineIcon aria-hidden />}
+        title="My Shares needs an account."
+        description="This site has no sign-in, so there are no shares to list."
+      />
+    );
+  }
+  // Back to this very view after signing in; the gallery only renders this in the browser.
+  const here = `${window.location.pathname}${window.location.search}`;
+  return (
+    <EmptyState
+      icon={<MineIcon aria-hidden />}
+      title="Sign in to see your shares."
+      description="My Shares lists the documents you have shared to the Community, with how many likes and copies each has."
+    >
+      <a href={signInHref(here)} className={buttonClassName({ size: 'md' })}>
+        <ButtonContent>Sign In</ButtonContent>
+      </a>
+    </EmptyState>
+  );
+}
+
+// My Shares, signed in, nothing shared yet.
+export function GalleryMineEmpty() {
+  return (
+    <EmptyState
+      icon={<MineIcon aria-hidden />}
+      title="You haven't shared anything yet."
+      description="Share a document you are proud of, and see how it does here."
+    >
+      <a href={EMPTY_INVITE_HREF} className={buttonClassName({ size: 'md' })}>
+        <ButtonContent>Share Your Own</ButtonContent>
+      </a>
+    </EmptyState>
   );
 }

@@ -1,3 +1,5 @@
+import { clerkPublishableKeyOrNull } from '@livediagram/ui';
+
 // Single source of truth for "is Clerk enabled on this deployment".
 //
 // Self-hosters (per docs/specs/002-project-scope/open-source-and-business-model.md + docs/specs/014-identity/auth-and-guest-access.md) can ship livediagram without
@@ -13,12 +15,11 @@
 // pages' content entirely on a no-key build via dead-code elimination
 // once tree-shaking gets aggressive.
 
-const key = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ?? '';
+export const clerkPublishableKey = clerkPublishableKeyOrNull(
+  process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
+);
 
-export const clerkEnabled =
-  key.length > 0 && (key.startsWith('pk_test_') || key.startsWith('pk_live_'));
-
-export const clerkPublishableKey = clerkEnabled ? key : null;
+export const clerkEnabled = clerkPublishableKey !== null;
 
 // Test builds only: the opt-in Google Drive e2e
 // (docs/specs/022-drive-mirror/blueprints/drive-mirror.md, "Testing") signs in without

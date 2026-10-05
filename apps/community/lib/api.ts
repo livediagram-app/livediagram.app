@@ -6,6 +6,7 @@ import {
   type CommunityLikeResponse,
   type CommunityListQuery,
   type CommunityListResponse,
+  type CommunityMineResponse,
   type CommunityPostResponse,
   type CommunityReportInput,
 } from '@livediagram/api-schema';
@@ -14,7 +15,7 @@ import { API_BASE } from './config';
 
 // The Community app's api client (blueprint §4 routes, §5 "Community app"), typed with the shared
 // api-schema DTOs. Every request carries the community key so lists and posts come back with `liked`
-// filled in; nothing here ever sends `X-Owner-Id` or a session token (blueprint §7).
+// filled in. Nothing here ever sends `X-Owner-Id`, and only My Shares sends a session token (blueprint §7).
 
 export class CommunityApiError extends Error {
   readonly status: number;
@@ -57,6 +58,19 @@ export function fetchPosts(
 ): Promise<CommunityListResponse> {
   const search = communityQueryParams(query).toString();
   return json(`/community/posts${search ? `?${search}` : ''}`, { signal });
+}
+
+// My Shares: the signed-in author's own posts under the same search words, with their totals.
+export function fetchMine(
+  query: CommunityListQuery,
+  token: string,
+  signal?: AbortSignal,
+): Promise<CommunityMineResponse> {
+  const search = communityQueryParams(query).toString();
+  return json(`/community/mine${search ? `?${search}` : ''}`, {
+    signal,
+    headers: { Authorization: `Bearer ${token}` },
+  });
 }
 
 export function fetchFacets(signal?: AbortSignal): Promise<CommunityFacetsResponse> {

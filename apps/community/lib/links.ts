@@ -14,6 +14,10 @@ export const makeCopyHref = (shareCode: string) =>
 // The interactive read-only embed the post page frames.
 export const embedHref = (shareCode: string) => `/embed?${shareQuery(shareCode)}`;
 
+// Your own document in the editor (My Shares, for a post that is hidden).
+export const editDocumentHref = (documentId: string) =>
+  `/document/${encodeURIComponent(documentId)}`;
+
 // In-app (next/link adds `/community`).
 export const postHref = (id: string) => `/post/?id=${encodeURIComponent(id)}`;
 // A tag link filters the gallery by writing `#tag` into its search.

@@ -164,6 +164,9 @@ importers:
 
   apps/community:
     dependencies:
+      '@clerk/react':
+        specifier: ^6.17.4
+        version: 6.17.4(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       '@livediagram/api-schema':
         specifier: workspace:*
         version: link:../../packages/api-schema

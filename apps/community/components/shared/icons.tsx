@@ -2,10 +2,12 @@ import type { IconPrim } from '@livediagram/icons';
 import {
   lucideArrowLeft,
   lucideExternalLink,
+  lucideEyeOff,
   lucideLayoutGrid,
   lucideMaximize2,
   lucideSparkles,
   lucideTriangleAlert,
+  lucideUser,
   lucideUsers,
 } from '@livediagram/icons/lucide';
 import { lucideGlyph } from '@livediagram/ui';
@@ -51,3 +53,5 @@ export const FullScreenIcon = lucideGlyph(lucideMaximize2, 14);
 export const SparklesIcon = lucideGlyph(lucideSparkles, 16);
 export const PeopleIcon = lucideGlyph(lucideUsers, 16);
 export const AlertIcon = lucideGlyph(lucideTriangleAlert, 16);
+export const MineIcon = lucideGlyph(lucideUser, 15);
+export const HiddenIcon = lucideGlyph(lucideEyeOff, 12);

@@ -8,6 +8,7 @@ import {
   isCommunityKey,
   isCommunityReportReason,
   parseCommunityListQuery,
+  type CommunityMinePost,
   type CommunityModerationItem,
   type CommunityPost,
 } from '@livediagram/api-schema';
@@ -16,6 +17,7 @@ import { clientIp } from '../client-ip';
 import { rowHiddenBy, rowState, rowToCommunityPost, type CommunityPostRow } from '../community-row';
 import {
   communityFacets,
+  communityMineTotals,
   communityNetworkHash,
   getCommunityModerationRow,
   getPublicCommunityPost,
@@ -79,6 +81,29 @@ export async function handleCommunity(ctx: RouteContext): Promise<Response> {
     return json(
       { posts: await withLikes(env, key, rows), nextOffset },
       { headers: listCacheHeaders(key) },
+    );
+  }
+
+  // GET /api/community/mine: My Shares (docs/specs/025-community/community.md "My Shares"). The signed-in
+  // author's own posts under the same search words, hidden ones included, with their totals. Personal, so
+  // never cached.
+  if (segments.length === 3 && segments[2] === 'mine' && method === 'GET') {
+    if (!ctx.clerkUserId) return json({ error: 'sign_in_required' }, { status: 401 });
+    const query = parseCommunityListQuery(url.searchParams);
+    if (!query.ok) return json({ error: 'invalid_query' }, { status: 400 });
+    const [{ rows, nextOffset }, totals] = await Promise.all([
+      listCommunityPosts(env, query.value, ctx.clerkUserId),
+      communityMineTotals(env, ctx.clerkUserId),
+    ]);
+    const liked = await withLikes(env, key, rows);
+    const posts: CommunityMinePost[] = rows.map((row, i) => ({
+      ...liked[i]!,
+      state: rowState(row),
+      documentId: row.document_id,
+    }));
+    return json(
+      { posts, nextOffset, totals },
+      { headers: { 'Cache-Control': 'private, no-store' } },
     );
   }
 

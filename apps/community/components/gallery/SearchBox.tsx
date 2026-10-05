@@ -3,7 +3,9 @@
 import { useEffect, useId, useState, type FormEvent } from 'react';
 import {
   communitySearchCategory,
+  communitySearchMine,
   communitySearchSort,
+  setCommunitySearchMine,
   setCommunitySearchCategory,
   communitySearchTags,
   setCommunitySearchSort,
@@ -14,7 +16,9 @@ import {
 } from '@livediagram/api-schema';
 import { CloseIcon, SearchIcon } from '@livediagram/ui';
 import { SEARCH_DEBOUNCE_MS } from '@/lib/config';
+import { MineIcon } from '../shared/icons';
 import { CategoryMenu } from './CategoryMenu';
+import { SearchControlButton } from './SearchControlButton';
 import { SortMenu } from './SortMenu';
 import { TagFilter } from './TagFilter';
 
@@ -24,7 +28,8 @@ import { TagFilter } from './TagFilter';
 // (Clear Filters, a tag link). The category, tag and sort controls sit inside the box's right edge: a
 // chosen category is written into the search as `category:<id>`, a tag as `#tag` and a sort as
 // `sort:<id>` (All and Newest need none), each applied at once, so the box always reads as the whole
-// query. On phones the controls show their icons only.
+// query. My Shares, where sign-in exists, toggles `is:mine`: only your own posts. On phones the controls
+// show their icons only.
 export function SearchBox({
   value,
   onSearch,
@@ -32,6 +37,8 @@ export function SearchBox({
   onTagChosen,
   onSortChosen,
   onCategoryChosen,
+  mineAvailable = false,
+  onMineChosen,
 }: {
   value: string;
   onSearch: (q: string) => void;
@@ -42,6 +49,10 @@ export function SearchBox({
   onSortChosen?: () => void;
   // Told when a category is chosen, for telemetry.
   onCategoryChosen?: () => void;
+  // Whether this build has sign-in, so My Shares can be offered.
+  mineAvailable?: boolean;
+  // Told when My Shares is turned on, for telemetry.
+  onMineChosen?: () => void;
 }) {
   const id = useId();
   const [draft, setDraft] = useState(value);
@@ -81,6 +92,14 @@ export function SearchBox({
     onSortChosen?.();
   };
 
+  const mine = communitySearchMine(draft);
+  const toggleMine = () => {
+    const next = setCommunitySearchMine(draft, !mine);
+    setDraft(next);
+    onSearch(next.trim());
+    if (!mine) onMineChosen?.();
+  };
+
   const submit = (e: FormEvent) => {
     e.preventDefault();
     const q = draft.trim();
@@ -108,7 +127,7 @@ export function SearchBox({
         autoComplete="off"
         spellCheck={false}
         enterKeyHint="search"
-        className="w-full rounded-xl border border-slate-200 bg-white py-3 pl-11 pr-96 text-[15px] max-sm:pr-36 text-slate-900 shadow-sm placeholder:text-slate-400 transition-colors duration-micro focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 [&::-webkit-search-cancel-button]:hidden"
+        className="w-full rounded-xl border border-slate-200 bg-white py-3 pl-11 pr-[31rem] text-[15px] max-sm:pr-44 text-slate-900 shadow-sm placeholder:text-slate-400 transition-colors duration-micro focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 [&::-webkit-search-cancel-button]:hidden"
       />
       <div className="absolute right-2 top-1/2 flex -translate-y-1/2 items-center gap-1">
         {draft ? (
@@ -123,6 +142,17 @@ export function SearchBox({
           >
             <CloseIcon size={14} aria-hidden />
           </button>
+        ) : null}
+        {mineAvailable || mine ? (
+          <SearchControlButton
+            icon={<MineIcon />}
+            label="My Shares"
+            aria-label="My Shares"
+            aria-pressed={mine}
+            active={mine}
+            chevron={false}
+            onClick={toggleMine}
+          />
         ) : null}
         <CategoryMenu
           value={communitySearchCategory(draft)}

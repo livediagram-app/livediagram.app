@@ -83,6 +83,8 @@ function Placeholder() {
 
 export function CommunityShowcase() {
   const featured = useFeatured();
+  // One clock reading for the six, so their "2 days ago" agree.
+  const [now] = useState(Date.now);
   const posts = featured.status === 'ready' ? featured.posts : [];
   const empty = featured.status === 'ready' && posts.length === 0;
   return (
@@ -118,6 +120,7 @@ export function CommunityShowcase() {
                       href={`/community/post/?id=${encodeURIComponent(post.id)}`}
                       imageUrl={`${API_BASE}${communityImagePath(post.shareCode)}`}
                       stats={<Counts post={post} />}
+                      now={now}
                     />
                   </li>
                 ))}

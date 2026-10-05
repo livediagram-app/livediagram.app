@@ -1,15 +1,17 @@
 import type { ComponentProps, ReactNode } from 'react';
 import { ChevronDownIcon } from '@livediagram/ui';
 
-// The trigger of one of the controls inside the search box (Category, Tags, Sort; docs/specs/025-community/
-// community.md "Gallery"): an icon and a label, the label dropped on phones so the three fit beside the
-// text (the accessible name stays). Tinted while it narrows or orders the results.
+// One of the controls inside the search box (My Shares, Category, Tags, Sort; docs/specs/025-community/
+// community.md "Gallery"): an icon and a label, the label dropped on phones so they fit beside the
+// text (the accessible name stays). Tinted while it narrows or orders the results. A menu's trigger carries a
+// chevron; a plain toggle (My Shares) does not.
 export function SearchControlButton({
   icon,
   label,
   active,
   badge,
-  open,
+  open = false,
+  chevron = true,
   ...props
 }: {
   icon: ReactNode;
@@ -17,7 +19,8 @@ export function SearchControlButton({
   active: boolean;
   // A count shown beside the label (chosen tags).
   badge?: number;
-  open: boolean;
+  open?: boolean;
+  chevron?: boolean;
 } & Omit<ComponentProps<'button'>, 'children'>) {
   return (
     <button
@@ -38,11 +41,13 @@ export function SearchControlButton({
           {badge}
         </span>
       ) : null}
-      <ChevronDownIcon
-        aria-hidden
-        size={12}
-        className={`transition-transform duration-micro motion-reduce:transition-none max-sm:hidden ${open ? 'rotate-180' : ''}`}
-      />
+      {chevron ? (
+        <ChevronDownIcon
+          aria-hidden
+          size={12}
+          className={`transition-transform duration-micro motion-reduce:transition-none max-sm:hidden ${open ? 'rotate-180' : ''}`}
+        />
+      ) : null}
     </button>
   );
 }

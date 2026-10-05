@@ -186,6 +186,22 @@ unliking removes it.
 - An author is not told their post was hidden; the Community section in their Share dialog shows it as hidden.
 - With `COMMUNITY_OPERATOR_IDS` unset (a fresh self-host) automatic hiding still works and nobody can moderate by hand.
 
+## My Shares
+
+A signed-in author can narrow the gallery to their own posts, to review them and see how they are doing.
+**My Shares**, a toggle inside the search box (beside Category, Tags and Sort; an icon only on phones), writes
+`is:mine` into the search, so it combines with every other search word and stays in the address like them.
+
+- It lists the author's own posts, **hidden ones included** (marked **Hidden**; a hidden post's card opens the
+  document in the editor, since its public page is gone). Trashed documents' posts are not listed.
+- Above the grid, **Your Shares** totals all their posts, likes and copies, whatever the search narrows to.
+- Signed out, it says **Sign in to see your shares.** with a Sign In button that returns to the same view; with
+  nothing shared yet, **You haven't shared anything yet.** with Share Your Own.
+- The rest of the Community needs no identity, so the Community app loads Clerk only once My Shares is on, and a
+  build without a Clerk key does not offer it. The api answers `GET /api/community/mine` (Clerk session
+  required, never cached); the public list ignores `is:mine`.
+- Turning it on is tracked as `Community·Selected·Mine`.
+
 ## Featured on the home page
 
 The landing page carries a **From the Community** section under the template gallery: six documents, the
@@ -229,7 +245,9 @@ only `Liked`, `Unliked` and `Reported`. Types are preset values, never post cont
 ## Self-hosting
 
 Community works with zero external services: D1 holds posts, the snapshot cache renders images, the app is static. A
-self-host can leave it as is; nothing is published until someone publishes.
+self-host can leave it as is; nothing is published until someone publishes. Publishing and My Shares need sign-in, so
+a build without a Clerk key offers neither; the Community app reads the same `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` as
+the editor.
 
 ## Out of scope
 

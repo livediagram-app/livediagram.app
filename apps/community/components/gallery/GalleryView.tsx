@@ -1,10 +1,19 @@
 'use client';
 
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { hasActiveFilters } from '@/lib/query-state';
+import { signInAvailable, type CommunitySession } from '@/lib/session';
 import { communityTelemetry } from '@/lib/telemetry';
+import { LazyClerkSession } from '../auth/LazyClerkSession';
 import { PostGrid } from '../shared/PostGrid';
-import { GalleryEmpty, GalleryError, GalleryNoMatches } from './GalleryStates';
+import {
+  GalleryEmpty,
+  GalleryError,
+  GalleryMineEmpty,
+  GalleryNoMatches,
+  GallerySignedOut,
+} from './GalleryStates';
+import { MineSummary } from './MineSummary';
 import { LoadMore } from './LoadMore';
 import { SearchBox } from './SearchBox';
 import { useGallery } from './useGallery';
@@ -17,14 +26,17 @@ const SKELETON_MORE = 4;
 // The gallery below the hero (docs/specs/025-community/community.md "Gallery"; blueprint §5): the
 // filters, then the grid in whichever state it is in.
 export function GalleryView() {
-  const gallery = useGallery();
-  const { filters, facets, status, posts, setFilters } = gallery;
+  // Who is signed in, known only once My Shares has loaded Clerk.
+  const [session, setSession] = useState<CommunitySession | null>(null);
+  const gallery = useGallery(session);
+  const { filters, facets, status, posts, setFilters, mine } = gallery;
   const ready = filters !== null;
   // Stable, so a re-render (facets arriving) never restarts the search box's debounce.
   const onSearch = useCallback((q: string) => setFilters({ q }), [setFilters]);
   const onTagChosen = useCallback(() => communityTelemetry.selected('Tag'), []);
   const onSortChosen = useCallback(() => communityTelemetry.selected('Sort'), []);
   const onCategoryChosen = useCallback(() => communityTelemetry.selected('Category'), []);
+  const onMineChosen = useCallback(() => communityTelemetry.selected('Mine'), []);
 
   return (
     <div className="flex flex-col gap-8">
@@ -37,16 +49,26 @@ export function GalleryView() {
             onTagChosen={onTagChosen}
             onSortChosen={onSortChosen}
             onCategoryChosen={onCategoryChosen}
+            mineAvailable={signInAvailable}
+            onMineChosen={onMineChosen}
           />
+          {mine && signInAvailable ? <LazyClerkSession onSession={setSession} /> : null}
         </div>
       </div>
 
-      <section aria-label="Documents">
-        {status === 'error' ? (
+      <section aria-label={mine ? 'Your Shares' : 'Documents'}>
+        {mine && gallery.totals && gallery.totals.posts > 0 ? (
+          <MineSummary totals={gallery.totals} />
+        ) : null}
+        {status === 'signed-out' || (mine && !signInAvailable) ? (
+          <GallerySignedOut available={signInAvailable} />
+        ) : status === 'error' ? (
           <GalleryError onRetry={gallery.retry} />
         ) : status === 'ready' && posts.length === 0 ? (
           ready && hasActiveFilters(filters) ? (
             <GalleryNoMatches onClear={gallery.clearFilters} />
+          ) : mine ? (
+            <GalleryMineEmpty />
           ) : (
             <GalleryEmpty />
           )

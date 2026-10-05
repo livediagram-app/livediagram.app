@@ -1,4 +1,5 @@
-import type { CommunityPost } from '@livediagram/api-schema';
+import type { GalleryPost } from '@/lib/gallery-post';
+import { useState } from 'react';
 import { PostCard } from './PostCard';
 import { PostCardSkeleton } from './PostCardSkeleton';
 
@@ -10,16 +11,18 @@ export function PostGrid({
   skeletons = 0,
   label,
 }: {
-  posts: readonly CommunityPost[];
+  posts: readonly GalleryPost[];
   // Placeholder cards after the posts (the first load, or the next page loading).
   skeletons?: number;
   label?: string;
 }) {
+  // One clock reading for the whole grid, so every card's "2 days ago" agrees.
+  const [now] = useState(Date.now);
   return (
     <ul className={POST_GRID} aria-label={label} aria-busy={skeletons > 0 || undefined}>
       {posts.map((post) => (
         <li key={post.id} className="flex flex-col">
-          <PostCard post={post} />
+          <PostCard post={post} now={now} />
         </li>
       ))}
       {Array.from({ length: skeletons }, (_, i) => (

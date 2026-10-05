@@ -6,7 +6,7 @@ import { siteTrack } from '@livediagram/telemetry-client';
 // category `Community`; `type` is always a preset value, never post content (no titles, no tags, no
 // search text).
 
-export type CommunitySelection = 'Category' | 'Tag' | 'Sort';
+export type CommunitySelection = 'Category' | 'Tag' | 'Sort' | 'Mine';
 
 export const communityTelemetry = {
   openedPost: () => siteTrack('Community', 'Opened', 'Post'),
