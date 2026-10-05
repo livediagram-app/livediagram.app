@@ -135,7 +135,7 @@ describe('getTrashedDocumentMeta', () => {
       id: 'A',
       ownerId: 'owner',
       teamId: 'team',
-      name: 'Diagram A',
+      name: 'Document A',
       trashedAt: T0,
     });
     expect(await getTrashedDocumentMeta(env, 'live')).toBeNull();
@@ -252,7 +252,7 @@ describe('listTrash', () => {
     expect(await listTrash(env, { owner: 'user_me', verifiedUserId: 'user_me' })).toEqual([
       {
         id: 'teammate',
-        name: 'Diagram teammate',
+        name: 'Document teammate',
         teamId: 'joined',
         teamName: 'Team joined',
         trashedAt: T0 + 1,
@@ -261,7 +261,7 @@ describe('listTrash', () => {
       },
       {
         id: 'mine',
-        name: 'Diagram mine',
+        name: 'Document mine',
         teamId: null,
         teamName: null,
         trashedAt: T0,

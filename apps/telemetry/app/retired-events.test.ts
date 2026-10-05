@@ -17,6 +17,19 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('Help', 'Helpful', 'activity-panel')).toBe(true);
   });
 
+  it('retires the palette Favourites events', () => {
+    expect(isRetiredEvent('UI', 'Added', 'PaletteFavourite')).toBe(true);
+    expect(isRetiredEvent('UI', 'Removed', 'PaletteFavourite')).toBe(true);
+    expect(isRetiredEvent('UI', 'Changed', 'PaletteFavourite')).toBe(true);
+    expect(isRetiredEvent('UI', 'Toggled', 'PaletteFavouritesEdit')).toBe(true);
+    expect(isRetiredEvent('UI', 'Searched', 'PaletteSearch')).toBe(true);
+    expect(isRetiredEvent('Help', 'View', 'favourites')).toBe(true);
+    expect(isRetiredEvent('UI', 'Opened', 'favourites')).toBe(true);
+    // The palette's other searches, and the Explorer's document favourites, carry on.
+    expect(isRetiredEvent('UI', 'Searched', 'IconSearch')).toBe(false);
+    expect(isRetiredEvent('Help', 'View', 'popular')).toBe(false);
+  });
+
   it('keeps everything that still exists', () => {
     expect(isRetiredEvent('Document', 'Undone', null)).toBe(false);
     expect(isRetiredEvent('Help', 'View', 'undo')).toBe(false);

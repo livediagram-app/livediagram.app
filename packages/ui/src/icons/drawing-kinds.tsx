@@ -1,4 +1,5 @@
-import { lucideWorkflow } from '@livediagram/icons/lucide';
+import { lucideLayoutGrid, lucideWorkflow } from '@livediagram/icons/lucide';
+import type { ComponentType } from 'react';
 
 import { Glyph, type IconProps } from './Glyph';
 import { lucideGlyph } from './lucide-glyph';
@@ -21,6 +22,18 @@ export function MarkerIcon({ size = 16, ...rest }: IconProps) {
 // Two steps joined by a connector.
 export const FlowchartIcon = lucideGlyph(lucideWorkflow, 16);
 
+// A page with a little chart above two lines of writing, on its 24-unit grid: Illustrate mode's mark
+// (docs/specs/007-editor/editor-modes.md), for the pages it lays out, infographics and articles.
+export function IllustrateIcon({ size = 16, ...rest }: IconProps) {
+  return (
+    <Glyph size={size} units={24} {...rest}>
+      <rect x="4.5" y="2.5" width="15" height="19" rx="2" />
+      <path d="M8.5 11V8.5M12 11V6M15.5 11V9" />
+      <path d="M8.5 15H15.5M8.5 18H13" />
+    </Glyph>
+  );
+}
+
 // A hub with four branches, on a 16-unit grid.
 export function MindmapIcon({ size = 16, ...rest }: IconProps) {
   return (
@@ -34,3 +47,17 @@ export function MindmapIcon({ size = 16, ...rest }: IconProps) {
     </Glyph>
   );
 }
+
+// Each editor mode's mark (docs/specs/007-editor/editor-modes.md "Each mode's mark"), keyed by the
+// mode's id: the same glyph on the mode switch, Opens in, the tab pill, the template mode filter
+// and the marketing site's mode pictures.
+export const EDITOR_MODE_ICONS: Readonly<
+  Record<'diagram' | 'draw' | 'illustrate', ComponentType<IconProps>>
+> = {
+  diagram: FlowchartIcon,
+  draw: MarkerIcon,
+  illustrate: IllustrateIcon,
+};
+
+// "Everything", every mode at once, in the template mode filter: a grid.
+export const EverythingIcon = lucideGlyph(lucideLayoutGrid, 16);

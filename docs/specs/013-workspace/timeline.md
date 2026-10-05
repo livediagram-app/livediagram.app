@@ -910,7 +910,6 @@ CREATE TABLE timeline_scope_state (
   scope_id         TEXT NOT NULL,
   backfilled_at    INTEGER,               -- NULL until the one-shot backfill has run
   last_refreshed_at INTEGER,
-  frecency_seeded_at INTEGER,             -- user scope only: Explorer Home seeded Jump back in (migration 0063)
   PRIMARY KEY (scope_type, scope_id)
 );
 ```
@@ -1131,7 +1130,7 @@ everything else even with stacking.
 
 **A person's own opens are recorded here but are not part of this feed.** [Explorer Home](explorer-home.md#opens)
 keeps a coalesced `document_opened` row per person per document per UTC day, in that person's `user` scope only
-(opens are private), so its Timeline column reads one table for created, updated and opened. It is outside the
+(opens are private); Jump back in counts them as use days. It is outside the
 feed's vocabulary: `readTimeline` and `countUnseen` leave it out the way they leave out legacy renames, and no
 renderer, tone or chip knows it. Deletion, retention, the document sweep and sign-up migration treat it like every
 other row.
@@ -1315,7 +1314,9 @@ documents is a broken-looking feature. On the first read of a scope
 (`timeline_scope_state.backfilled_at IS NULL`), the worker seeds it:
 
 - For the caller's 200 most recently updated documents: a
-  `document_created` event at `documents.created_at`, and a
+  `document_created` event at `documents.created_at`, which never
+  overwrites a creation already recorded (whose snapshot may say the
+  making counts as a use, [Explorer Home](explorer-home.md#making-a-document)), and a
   `document_edited` event at `updated_at` with the matching
   `<actorId>:<date>` dedupe key. The worker cannot know who made that
   last save, so the edit is a reconstruction: its snapshot carries

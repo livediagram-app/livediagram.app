@@ -25,9 +25,9 @@ describe('TopCenterStack', () => {
     expect(cls).not.toContain('sm:top-3');
   });
 
-  it('starts beneath a whiteboard dock at the top, on every viewport', () => {
+  it('starts beneath a whiteboard dock at the top as beneath the strip, on every viewport', () => {
     const cls = classesOf('dock');
-    expect(cls).toContain('top-[4.75rem]');
+    expect(cls).toContain('top-[4.25rem]');
     expect(cls).not.toContain('sm:top-3');
   });
 });

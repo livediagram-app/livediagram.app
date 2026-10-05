@@ -31,3 +31,4 @@ export * from './collab-index';
 export * from './ws-tickets';
 export * from './trash';
 export * from './empty-document-sweep';
+export * from './changesets';

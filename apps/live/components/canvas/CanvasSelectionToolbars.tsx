@@ -1,3 +1,6 @@
+import { useCallback } from 'react';
+import { useViewportOf } from '@/hooks/canvas/useViewportStore';
+import type { View } from '@/lib/viewport-store';
 import {
   elementHasText,
   elementKindLabel,
@@ -5,7 +8,12 @@ import {
   isMindNode,
 } from '@livediagram/document';
 import { elementMenuAnchor } from '@/lib/context-menu-anchor';
-import type { deriveCanvasSelection } from '@/lib/canvas-selection';
+import {
+  useCanvasSelectionView,
+  type CanvasSelectionInput,
+} from '@/hooks/canvas/useCanvasSelectionView';
+import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
+import type { Selection } from '@/lib/selection-store';
 import { selectionMoving, useCanvasGesture } from '@/lib/canvas-gesture';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { FloatingToolbar } from '@/components/chrome/FloatingToolbar';
@@ -17,14 +25,19 @@ import { useInsertionSlot } from '@/lib/insertion-preview';
 // and the marquee multi-selection toolbar, each riding a sibling wrapper
 // that mirrors the canvas transform so they counter-scale with zoom and
 // float over the selection. Extracted from Canvas as one cohesive layer —
-// Canvas passes its props plus the derived selection view-model through.
+// What the toolbars read while nothing is selected: never drawn, so any fixed view will do.
+const RESTING_VIEW: View = { zoom: 1, offset: { x: 0, y: 0 } };
+const multiOf = (s: Selection) => s.multiSelectedIds;
+
+// Canvas passes its props and what the selection is derived from; the toolbars read the selection
+// from the store, so a selection change re-renders them and not the canvas.
 export function CanvasSelectionToolbars({
   props,
-  selection,
+  selectionInput,
   quickRingOpen,
 }: {
   props: CanvasProps;
-  selection: ReturnType<typeof deriveCanvasSelection>;
+  selectionInput: CanvasSelectionInput;
   // A quick-connect ring owns the space around the element while open; the
   // popover fades out (kept mounted) so it animates away and back.
   quickRingOpen: boolean;
@@ -36,7 +49,14 @@ export function CanvasSelectionToolbars({
     showPopover,
     multiToolbarBounds,
     showMultiToolbar,
-  } = selection;
+  } = useCanvasSelectionView(selectionInput);
+  const multiSelectedIds = useSelectionOf(multiOf);
+  // The toolbars mirror the canvas transform, so they follow the view, but only while they show:
+  // with nothing selected a zoom renders none of this (docs/specs/008-canvas/blueprints/viewport-store.md).
+  const showing = selected !== null || showMultiToolbar;
+  const { zoom: viewportZoom, offset: viewportOffset } = useViewportOf(
+    useCallback((v: View) => (showing ? v : RESTING_VIEW), [showing]),
+  );
   // Insert-between preview (docs/specs/021-event-storming/event-storming.md): the toolbars anchor to element BOUNDS,
   // and the preview slides elements by a render-time transform their bounds
   // know nothing about — so while a slot is open they would float over empty
@@ -52,9 +72,6 @@ export function CanvasSelectionToolbars({
     elements,
     readOnly,
     canvasTool,
-    viewportZoom,
-    viewportOffset,
-    multiSelectedIds,
     onDuplicateSelected,
     onToggleLockSelected,
     onDeleteSelected,

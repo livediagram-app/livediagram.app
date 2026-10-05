@@ -5,6 +5,7 @@
 // layout effect ran before <main>'s ref attached, so opening a document left it unmeasured and the window
 // vanished. The size now comes in from the Canvas; these pin that the window draws from it.
 
+import { renderToStaticMarkup } from 'react-dom/server';
 import { act, cleanup, render } from '@testing-library/react';
 import { beginCanvasGesture, resetCanvasGesturesForTests } from '@/lib/canvas-gesture';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
@@ -158,5 +159,36 @@ describe('Minimap labels', () => {
     expect(doc).not.toMatch(/Checkout|Pay|A note|next/);
     expect(doc.match(/<rect /g)?.length ?? 0).toBeGreaterThanOrEqual(3);
     expect(doc).toContain('<path');
+  });
+});
+
+// docs/specs/008-canvas/canvas-performance.md "The Map redraws when a gesture ends": opening a board
+// mounts it first; the Map's picture follows in a later render, so the board's first task does not
+// pay for it. A server render shows that first render.
+describe('Minimap first render', () => {
+  it('draws no picture in its first render, leaving it to a later one', () => {
+    const html = renderToStaticMarkup(
+      <Minimap
+        elements={elements}
+        viewportOffset={{ x: 0, y: 0 }}
+        viewportZoom={1}
+        setViewportOffset={vi.fn()}
+        setViewportZoom={vi.fn()}
+        mainSize={{ width: 1200, height: 800 }}
+        paperColor="#ffffff"
+        accentColor={ACCENT}
+        position={null}
+        onMove={vi.fn()}
+        onResetPosition={vi.fn()}
+        dimOutside
+        size="medium"
+      />,
+    );
+    expect(html).not.toContain('<image');
+  });
+
+  it('draws the picture once mounted', () => {
+    const { container } = mount({ width: 1200, height: 800 });
+    expect(container.querySelector('svg[role="img"] > image')).not.toBeNull();
   });
 });

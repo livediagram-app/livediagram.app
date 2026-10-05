@@ -1,11 +1,14 @@
+import { EDITOR_MODE_ICONS } from '@livediagram/ui';
 import { EDITOR_MODE_CATALOGUE, type EditorMode } from '@livediagram/document';
+import type { ReactNode } from 'react';
 import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
-import { EDITOR_MODE_ICON } from './editor-mode/editor-mode-copy';
+import { useMenuItemProps } from '@/components/primitives/menu-item-props';
+import { useOfferedEditorModes } from '@/lib/offered-editor-modes';
 
 // "Opens in" (docs/specs/007-editor/editor-modes.md "Where the mode lives"): the tab menu's choice
-// of the editor mode a general tab opens in, for everyone. Every mode of the catalogue is a radio
-// choice, so a further mode joins here without a change to this file. Choosing one switches
-// nobody's current mode. The host leaves `choice` out where it is not offered (an event-storming
+// of the editor mode a general tab opens in, for everyone. Every mode of the catalogue is a one-of-a-set
+// choice, so a further mode joins here without a change to this file. Choosing one also switches
+// the chooser's own mode, so the already-checked choice still passes through (it switches back). The host leaves `choice` out where it is not offered (an event-storming
 // board, a visitor who cannot edit).
 
 export type OpensInChoice = {
@@ -24,7 +27,9 @@ export function OpensInMenuSection({
   open: boolean;
   onToggle: () => void;
 }) {
-  const Current = EDITOR_MODE_ICON[choice.mode];
+  const Current = EDITOR_MODE_ICONS[choice.mode];
+  // An experimental mode switched off in Settings is not offered (offered-editor-modes).
+  const offered = useOfferedEditorModes();
   return (
     <MenuAccordionSection
       title="Opens in"
@@ -34,45 +39,75 @@ export function OpensInMenuSection({
       flush
     >
       <div role="group" aria-label="Opens in" className="flex flex-col">
-        {EDITOR_MODE_CATALOGUE.map(({ id, label, description }) => {
-          const Icon = EDITOR_MODE_ICON[id];
-          const checked = id === choice.mode;
-          return (
-            <button
-              key={id}
-              type="button"
-              role="menuitemradio"
-              aria-checked={checked}
-              aria-disabled={choice.disabled || undefined}
-              onClick={() => {
-                if (choice.disabled || checked) return;
-                choice.onChange(id);
-              }}
-              className={`flex w-full items-start gap-2.5 px-3 py-1.5 text-left transition ${
-                choice.disabled
-                  ? 'cursor-not-allowed text-slate-300 dark:text-slate-600'
-                  : 'cursor-pointer text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800'
-              }`}
-            >
-              <span className="mt-0.5 flex w-4 shrink-0 items-center justify-center">
-                <Icon className="h-4 w-4" />
-              </span>
-              <span className="flex min-w-0 flex-1 flex-col">
-                <span className="text-[13px] font-medium">{label}</span>
-                <span className="text-[11px] text-slate-500 dark:text-slate-400">
-                  {description}
-                </span>
-              </span>
-              <span
-                aria-hidden
-                className={`mt-1 h-2 w-2 shrink-0 rounded-full ${
-                  checked ? 'bg-brand-600 dark:bg-brand-400' : 'bg-transparent'
+        {EDITOR_MODE_CATALOGUE.filter((m) => offered.includes(m.id)).map(
+          ({ id, label, description }) => {
+            const Icon = EDITOR_MODE_ICONS[id];
+            const checked = id === choice.mode;
+            return (
+              <OpensInChoiceRow
+                key={id}
+                checked={checked}
+                disabled={choice.disabled}
+                onClick={() => {
+                  if (choice.disabled) return;
+                  choice.onChange(id);
+                }}
+                className={`flex w-full items-start gap-2.5 px-3 py-1.5 text-left transition ${
+                  choice.disabled
+                    ? 'cursor-not-allowed text-slate-300 dark:text-slate-600'
+                    : 'cursor-pointer text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800'
                 }`}
-              />
-            </button>
-          );
-        })}
+              >
+                <span className="mt-0.5 flex w-4 shrink-0 items-center justify-center">
+                  <Icon className="h-4 w-4" />
+                </span>
+                <span className="flex min-w-0 flex-1 flex-col">
+                  <span className="text-[13px] font-medium">{label}</span>
+                  <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                    {description}
+                  </span>
+                </span>
+                <span
+                  aria-hidden
+                  className={`mt-1 h-2 w-2 shrink-0 rounded-full ${
+                    checked ? 'bg-brand-600 dark:bg-brand-400' : 'bg-transparent'
+                  }`}
+                />
+              </OpensInChoiceRow>
+            );
+          },
+        )}
       </div>
     </MenuAccordionSection>
+  );
+}
+
+// One mode: inside the Tab control menu a toggle button (aria-pressed, D55), as every one-of-a-set
+// tile there is; inside a command menu it would be a menuitemradio.
+function OpensInChoiceRow({
+  checked,
+  disabled,
+  onClick,
+  className,
+  children,
+}: {
+  checked: boolean;
+  disabled: boolean;
+  onClick: () => void;
+  className: string;
+  children: ReactNode;
+}) {
+  const { inCommandMenu, itemProps } = useMenuItemProps({ checked, radio: true, disabled });
+  return (
+    <button
+      type="button"
+      {...itemProps}
+      aria-pressed={inCommandMenu ? undefined : checked}
+      aria-disabled={disabled || undefined}
+      onClick={onClick}
+      className={className}
+    >
+      {children}
+    </button>
   );
 }

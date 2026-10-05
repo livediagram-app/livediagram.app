@@ -1,5 +1,6 @@
 import { useCallback, useState, type MutableRefObject, type SetStateAction } from 'react';
 import { useToast } from '@/hooks/ui/useToast';
+import { createSelectionStore } from '@/lib/selection-store';
 import { OUT_OF_SCOPE_MESSAGE, isTabOutOfScope } from '@/lib/tab-scope';
 
 // Ephemeral, in-the-moment editing UI for the canvas: which tab is
@@ -34,7 +35,12 @@ export function useEditorUiState(
     },
     [tabScopeRef, toast],
   );
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  // The selection lives in a store (docs/specs/008-canvas/blueprints/selection-store.md). The editor
+  // root holds it but never subscribes: handlers read it with readSelection() when they run, effects
+  // subscribe in their effect, and only the views that show the selection render for a change.
+  const [selectionStore] = useState(createSelectionStore);
+  const readSelection = selectionStore.get;
+  const { setSelectedId, setMultiSelectedIds } = selectionStore;
   const [editingId, setEditingId] = useState<string | null>(null);
   // True when the active label edit began via type-to-edit (docs/specs/008-canvas/canvas-and-palette.md): the
   // editor places the caret at the END instead of select-all, so the
@@ -45,7 +51,6 @@ export function useEditorUiState(
   // single `selectedId` above: when `multiSelectedIds.size > 0`, single
   // selection / its popover / its accordion controls are suppressed. Both
   // are cleared together by `onDeselect` and by clicking any single element.
-  const [multiSelectedIds, setMultiSelectedIds] = useState<Set<string>>(new Set());
   // Template picker mode. Welcome / "New Document" lives on /live/new
   // (docs/specs/007-editor/new-document-route.md); the 'welcome' value here is only a benign reset target.
   // 'templates' opens the per-tab Quick Start grid; 'identity' is the
@@ -62,9 +67,10 @@ export function useEditorUiState(
   const [codeEditOpenForId, setCodeEditOpenForId] = useState<string | null>(null);
 
   return {
+    selectionStore,
     activeId,
     setActiveId,
-    selectedId,
+    readSelection,
     setSelectedId,
     editingId,
     setEditingId,
@@ -72,7 +78,6 @@ export function useEditorUiState(
     setEditCursorAtEnd,
     formatSourceId,
     setFormatSourceId,
-    multiSelectedIds,
     setMultiSelectedIds,
     templatePickerMode,
     setTemplatePickerMode,

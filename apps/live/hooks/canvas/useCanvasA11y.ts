@@ -12,13 +12,14 @@
 //   live region (lib/announcer), named by the same helpers the change
 //   log prints (lib/element-names).
 
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { isBoxed, type Element } from '@livediagram/document';
 import { anyModalOpen } from '@/lib/modal-guard';
 import { announce } from '@/lib/announcer';
 import { describeMany, describeOne } from '@/lib/element-names';
 import { track } from '@/lib/telemetry';
 import { useLatest } from '@/hooks/ui/useLatest';
+import type { Selection, SelectionStore } from '@/lib/selection-store';
 
 // The traversal step, pure so it's unit-testable: which element index a
 // Tab (dir 1) / Shift+Tab (dir -1) press should select, or null when the
@@ -44,8 +45,9 @@ type CanvasA11yDeps = {
   // surface, so it honours the same switch.
   enabled: boolean;
   elements: Element[];
-  selectedId: string | null;
-  multiSelectedIds: Set<string>;
+  // Read when a key is pressed and followed for announcements; never a render input, so the editor
+  // root does not render for a selection (docs/specs/008-canvas/blueprints/selection-store.md).
+  selection: SelectionStore;
   editingId: string | null;
   selectElement: (id: string) => void;
   lockedByOther: (id: string) => boolean;
@@ -80,18 +82,19 @@ export function useCanvasA11y(deps: CanvasA11yDeps): void {
       if (!(active instanceof HTMLElement) || active.dataset.canvasA11yRoot === undefined) return;
       // Shift+Tab still walks backwards through the elements: only plain
       // Tab is the growth key, so reverse traversal never had a rival.
+      const { selectedId, multiSelectedIds } = live.selection.get();
       if (
         !e.shiftKey &&
-        live.selectedId !== null &&
-        live.multiSelectedIds.size === 0 &&
-        live.ownsTabKey(live.selectedId)
+        selectedId !== null &&
+        multiSelectedIds.size === 0 &&
+        live.ownsTabKey(selectedId)
       )
         return;
       const els = live.elements;
       const dir = e.shiftKey ? -1 : 1;
       const i = nextTraversalIndex(
         els,
-        live.selectedId,
+        selectedId,
         dir,
         (id) => live.lockedByOther(id) || live.layerInertIds.has(id),
       );
@@ -110,27 +113,41 @@ export function useCanvasA11y(deps: CanvasA11yDeps): void {
 
   // Announce selection changes: single ("Selected 'Login'"), multi (a
   // counted summary), and clearing. Keyed on a stable string so
-  // reorderings of the same multi-selection don't re-announce.
-  const selectionKey =
-    deps.multiSelectedIds.size > 0
-      ? [...deps.multiSelectedIds].sort().join(',')
-      : (deps.selectedId ?? '');
-  const prevKeyRef = useRef(selectionKey);
+  // reorderings of the same multi-selection don't re-announce. Spoken on the next frame, once React has
+  // committed the change that came with it: an element created and selected in one event is then on the
+  // board this reads. Changes within a frame are spoken once, as they ended.
+  const { selection } = deps;
   useEffect(() => {
-    if (selectionKey === prevKeyRef.current) return;
-    const hadSelection = prevKeyRef.current !== '';
-    prevKeyRef.current = selectionKey;
-    const live = ref.current;
-    if (live.multiSelectedIds.size > 0) {
-      const members = live.elements.filter((el) => live.multiSelectedIds.has(el.id));
-      if (members.length > 0) announce(`Selected ${describeMany(members)}`);
-      return;
-    }
-    if (live.selectedId) {
-      const el = live.elements.find((x) => x.id === live.selectedId);
-      if (el) announce(`Selected ${describeOne(el)}`);
-      return;
-    }
-    if (hadSelection) announce('Selection cleared');
-  }, [selectionKey, ref]);
+    const keyOf = (s: Selection) =>
+      s.multiSelectedIds.size > 0 ? [...s.multiSelectedIds].sort().join(',') : (s.selectedId ?? '');
+    let prevKey = keyOf(selection.get());
+    let frame = 0;
+    const speak = () => {
+      frame = 0;
+      const s = selection.get();
+      const key = keyOf(s);
+      if (key === prevKey) return;
+      const hadSelection = prevKey !== '';
+      prevKey = key;
+      const { elements } = ref.current;
+      if (s.multiSelectedIds.size > 0) {
+        const members = elements.filter((el) => s.multiSelectedIds.has(el.id));
+        if (members.length > 0) announce(`Selected ${describeMany(members)}`);
+        return;
+      }
+      if (s.selectedId) {
+        const el = elements.find((x) => x.id === s.selectedId);
+        if (el) announce(`Selected ${describeOne(el)}`);
+        return;
+      }
+      if (hadSelection) announce('Selection cleared');
+    };
+    const unsubscribe = selection.subscribe(() => {
+      if (!frame) frame = requestAnimationFrame(speak);
+    });
+    return () => {
+      unsubscribe();
+      if (frame) cancelAnimationFrame(frame);
+    };
+  }, [selection, ref]);
 }

@@ -2,8 +2,8 @@
 // error result shapes, the deep links, the bearer-token guard every tool
 // uses, and the load-a-tab sequence the read and edit tools share.
 // Deliberately render-free, so it can be unit-tested: the inline-PNG
-// result lives in image-result.ts and the pure tab builders in
-// tab-builders.ts, for the same reason. tools.ts keeps the registrations.
+// result lives in image-result.ts and the pure tab builders in @livediagram/document
+// and @livediagram/templates. tools.ts keeps the registrations.
 
 import type { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js';
 import type { LiveDoc, DocumentResponse, TabRecord, TabResponse } from '@livediagram/api-schema';
@@ -40,6 +40,29 @@ export function textResult(value: StructuredValue): ToolResult {
   return {
     content: [{ type: 'text', text: JSON.stringify(value, null, 2) }],
     structuredContent: value,
+  };
+}
+
+// A document view (docs/specs/024-agents/document-views.md): the view's text first, then one line of
+// JSON naming the document, the tab, its revision and its link (VW55).
+export function viewResult(
+  text: string,
+  meta: {
+    id: string;
+    name: string;
+    tab: { id: string; name: string; rev: number; view: string };
+    url: string;
+  },
+): ToolResult {
+  const line = {
+    id: meta.id,
+    name: meta.name,
+    tab: { id: meta.tab.id, name: meta.tab.name, rev: meta.tab.rev },
+    url: meta.url,
+  };
+  return {
+    content: [{ type: 'text', text: `${text}\n${JSON.stringify(line)}` }],
+    structuredContent: { ...meta, tab: { ...meta.tab, text } },
   };
 }
 

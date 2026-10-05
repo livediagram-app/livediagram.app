@@ -16,7 +16,8 @@ import {
   type PieSlice,
 } from '@livediagram/document';
 import { hexish } from '@/components/palette/palette-controls';
-import { MenuActionButton, MenuTile, MenuTileGrid } from '@/components/primitives/PortalMenu';
+import { MenuActionButton } from '@/components/primitives/PortalMenu';
+import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
 import { MenuToggleRow } from '@/components/palette/context-menu-input-rows';
 import { useFollowingDraft } from '@/hooks/ui/useFollowingDraft';
 
@@ -444,10 +445,13 @@ export function MindFlowTiles({
   current,
   onSet,
   onTidy,
+  onEditOutline,
 }: {
   current: MindFlow;
   onSet: (flow: MindFlow) => void;
   onTidy: () => void;
+  // A root only (docs/specs/009-elements/mind-node.md "Edit Outline").
+  onEditOutline?: () => void;
 }) {
   return (
     <>
@@ -472,6 +476,11 @@ export function MindFlowTiles({
       <div className="px-2 pb-1.5 pt-1">
         <MenuActionButton label="Tidy Map" onClick={onTidy} />
       </div>
+      {onEditOutline ? (
+        <div className="px-2 pb-1.5">
+          <MenuActionButton label="Edit Outline" onClick={onEditOutline} />
+        </div>
+      ) : null}
     </>
   );
 }

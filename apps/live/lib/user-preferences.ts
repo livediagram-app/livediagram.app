@@ -18,6 +18,7 @@ export type MapSize = 'short' | 'medium' | 'tall';
 // in-memory gate cache) still refresh promptly.
 
 import { upgradeLegacyPreferences } from '@livediagram/api-schema';
+import type { SkipLocationStep } from './skip-location-step';
 import type { SwatchOverrideStore } from './swatch-overrides';
 import type { WhiteboardShapeKey } from './whiteboard-shape-catalogue';
 import type { ShapePicks } from './whiteboard-shape-slots';
@@ -127,6 +128,9 @@ export type UserPreferences = {
   // syncs across their devices. Missing / undefined / false === full
   // motion (subject to the OS setting), the default.
   reduceMotion?: boolean;
+  // Illustrate mode (Settings › Experimental, docs/specs/007-editor/editor-modes.md "Experimental
+  // modes"). Missing / undefined / true === offered, the default; `false` hides Illustrate mode.
+  illustrateModeEnabled?: boolean;
   // Toast notifications (docs/specs/007-editor/user-preferences.md). When `false`, the editor suppresses
   // the confirmation / status toasts (success + info tones) it shows
   // for consequential, otherwise-silent actions (a document moved to a
@@ -229,6 +233,10 @@ export type UserPreferences = {
   // Draw mode's pattern, the person's own (docs/specs/007-editor/editor-modes.md "One look"):
   // Plain, Dots or Grid. Read through lib/whiteboard-dock-prefs. Missing === Grid.
   drawPattern?: 'blank' | 'grid' | 'graph';
+  // Skip the New Document wizard's Location step (docs/specs/013-workspace/default-folders.md
+  // "Skipping the Location step"): where every new document is saved. Read through
+  // lib/skip-location-step, which parses it. Missing or null === off; Turn Off writes null.
+  skipLocationStep?: SkipLocationStep | null;
 };
 
 // How many excluded ids we keep. A document id is a 36-char UUID, so 200

@@ -1,9 +1,5 @@
-import {
-  isTemplateCollection,
-  isTemplateKind,
-  type TemplateCollection,
-  type TemplateKind,
-} from '@livediagram/templates';
+import { isEditorMode, type EditorMode } from '@livediagram/document';
+import { isTemplateKind, type TemplateKind } from '@livediagram/templates';
 
 // The /new query params that skip the wizard (docs/specs/007-editor/new-document-route.md): `?blank=1` commits
 // a blank document, `?template=<kind>` (built by the templates package's
@@ -12,13 +8,9 @@ import {
 // One reader for both so the page, its bfcache-restore cleanup and the
 // pre-hydration guard agree on what counts.
 
-// Rides the blank bypass: the marketing hero's launch window (/new?blank=1&welcome=1). The
-// document opens on the blank canvas the hero grew into, with the tour's welcome offer.
-export const WELCOME_PARAM = 'welcome';
-
 // The params the bypass reads; the bfcache restore strips exactly these so
 // Back from the editor lands on the plain wizard with placement intact.
-export const WIZARD_BYPASS_PARAMS = ['blank', 'template', WELCOME_PARAM] as const;
+export const WIZARD_BYPASS_PARAMS = ['blank', 'template'] as const;
 
 // Which template the query asks to commit without the wizard, or null for
 // the wizard itself. `blank` wins when both are present (it is the older,
@@ -31,18 +23,19 @@ export function wizardBypassKind(search: string): TemplateKind | null {
   return isTemplateKind(template) ? template : null;
 }
 
-// Which template collection the wizard opens on (`?browse=<id>`,
-// docs/specs/007-editor/new-document-route.md), or null for the category overview. Not a bypass:
-// nothing is committed until the author picks. Unknown ids are ignored.
-export function wizardBrowseCollection(search: string): TemplateCollection | null {
-  const browse = new URLSearchParams(search).get('browse');
-  return isTemplateCollection(browse) ? browse : null;
+// The template step's presets (`?mode=`, `?q=`; docs/specs/007-editor/new-document-route.md): the
+// mode filter to open on, and words to open the search with. Not a bypass: the author still picks.
+// An unknown mode, or empty words, is ignored.
+export const SEARCH_PRESET_MAX = 60;
+
+export function wizardPresetMode(search: string): EditorMode | null {
+  const mode = new URLSearchParams(search).get('mode');
+  return isEditorMode(mode) ? mode : null;
 }
 
-// Whether the bypass is the hero's welcome landing. Only the blank bypass carries it: the hero
-// grows a blank canvas, so only a blank document can land on it.
-export function wantsWelcome(search: string): boolean {
-  return wizardBypassKind(search) === 'blank' && new URLSearchParams(search).has(WELCOME_PARAM);
+export function wizardPresetQuery(search: string): string | null {
+  const q = new URLSearchParams(search).get('q')?.trim().slice(0, SEARCH_PRESET_MAX);
+  return q ? q : null;
 }
 
 // The placement context params (/new?folder=<id>, /new?team=<id>), pre-seeding the Settings

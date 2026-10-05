@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, type ReactNode } from 'react';
+import { createContext, useContext, useMemo, type ReactNode } from 'react';
 import type { CanvasSurface } from '@livediagram/document';
 
 // Which paper the active tab's canvas is: light or dark. Every element that
@@ -32,4 +32,29 @@ export function CanvasSurfaceProvider({
 
 export function useCanvasSurface(): CanvasSurface {
   return useContext(CanvasSurfaceContext);
+}
+
+// Illustrate pages with a fill of their own (docs/specs/007-editor/illustrate-pages.md "A dark page
+// has light ink"): the surface of each element on one, by id, over the canvas's own.
+const PageSurfacesContext = createContext<ReadonlyMap<string, CanvasSurface> | null>(null);
+
+/** Provides the per-element page surfaces. Its identity holds while the entries do, so a drag that
+ *  keeps every element on its page re-renders no element view through it. */
+export function PageSurfacesProvider({
+  surfaces,
+  children,
+}: {
+  surfaces: ReadonlyMap<string, CanvasSurface> | null;
+  children: ReactNode;
+}) {
+  const key = surfaces && surfaces.size ? [...surfaces].map(([id, s]) => `${id}:${s}`).join() : '';
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- keyed on the entries, not the map
+  const stable = useMemo(() => (key ? surfaces : null), [key]);
+  return <PageSurfacesContext.Provider value={stable}>{children}</PageSurfacesContext.Provider>;
+}
+
+/** The paper one element sits on: its page's, where its page has a fill, else the canvas's. */
+export function useElementSurface(elementId: string): CanvasSurface {
+  const canvas = useContext(CanvasSurfaceContext);
+  return useContext(PageSurfacesContext)?.get(elementId) ?? canvas;
 }

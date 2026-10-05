@@ -9,7 +9,6 @@ import { requestDriveFlush } from '@/lib/drive/tab-election';
 import { EditorHeader } from '@/components/chrome/EditorHeader';
 import { Explorer } from '@/components/panels/Explorer';
 import { OpeningScreen } from '@/components/chrome/OpeningScreen';
-import { clearQuietLanding } from '@/lib/quiet-landing';
 import { CustomThemeProvider } from '@/components/primitives/CustomThemeProvider';
 import { ShapeLibraryProvider } from '@/components/primitives/ShapeLibraryProvider';
 import { EditorContext } from './EditorContext';
@@ -95,12 +94,6 @@ export default function LivePage({ embed = false }: { embed?: boolean } = {}) {
     setLoadingDocument,
     setPasswordRetry,
   } = state;
-  // The hero launch window's quiet landing (lib/quiet-landing.ts) ends once the document is in:
-  // a later load in this tab shows the usual opening screen.
-  useEffect(() => {
-    if (!loadingDocument) clearQuietLanding();
-  }, [loadingDocument]);
-
   // The full Explorer panel that sits behind the error / not-found status
   // screens (identical in both), built once from state. Just a React
   // element until a branch returns it, so building it on every render is

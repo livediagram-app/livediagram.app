@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { ApiError, apiFetch, apiJson } from './api';
+import { ApiError, apiFetch, apiJson, apiText, postTelemetry } from './api';
 import type { Env } from './env';
 import { runInTool } from './tool-scope';
 
@@ -101,5 +101,48 @@ describe('apiJson error telemetry (docs/specs/015-api/mcp-server.md §4.12)', ()
     };
     await expect(apiJson(env, 't', '/documents')).rejects.toThrow('network down');
     expect(calls.some((r) => new URL(r.url).pathname === '/api/events')).toBe(true);
+  });
+});
+
+describe('postTelemetry', () => {
+  it('never throws into the tool, even when the binding throws at once', () => {
+    const env = {
+      API: {
+        fetch: () => {
+          throw new Error('binding gone');
+        },
+      } as unknown as Fetcher,
+      OAUTH_KV: {} as KVNamespace,
+    };
+    expect(() => postTelemetry(env, 'Mcp', 'Used', 'ReadDocument')).not.toThrow();
+  });
+
+  it('names itself as internal when the key is set, and swallows a failed post', async () => {
+    const calls: Request[] = [];
+    const env = {
+      API: {
+        fetch: async (req: Request) => {
+          calls.push(req);
+          throw new Error('post failed');
+        },
+      } as unknown as Fetcher,
+      OAUTH_KV: {} as KVNamespace,
+      INTERNAL_EVENTS_KEY: 'k',
+    };
+    postTelemetry(env, 'Mcp', 'Used', 'ReadDocument');
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(calls[0]!.headers.get('X-Internal-Events-Key')).toBe('k');
+  });
+});
+
+describe('apiText', () => {
+  it('returns the body and the ETag, and fails like apiJson', async () => {
+    const ok = envWith(() => new Response('tab t1', { headers: { ETag: 'W/"2"' } }));
+    expect(await apiText(ok.env, 't', '/documents/d/tabs/t?view=outline')).toEqual({
+      text: 'tab t1',
+      etag: 'W/"2"',
+    });
+    const bad = envWith(() => new Response('nope', { status: 404 }));
+    await expect(apiText(bad.env, 't', '/x')).rejects.toBeInstanceOf(ApiError);
   });
 });

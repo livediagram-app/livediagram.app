@@ -1,0 +1,464 @@
+{
+  "header": {
+    "view": "outline",
+    "tab": {
+      "id": "0b3481f3-59fb-4bd0-a21a-152f1ba9bba5",
+      "ref": "0b34",
+      "name": "Checkout platform",
+      "kind": "diagram"
+    },
+    "elements": 30,
+    "counts": {
+      "boxes": 16,
+      "frames": 3,
+      "lanes": 0,
+      "arrows": 11
+    },
+    "hidden": 0,
+    "unknown": 0,
+    "threads": {
+      "open": 1,
+      "total": 2
+    },
+    "rev": 41
+  },
+  "nodes": [
+    {
+      "ref": "98eb",
+      "id": "98eb0000-0000-4000-8000-000000000001",
+      "kind": "text",
+      "unknown": false,
+      "label": "Checkout platform: production",
+      "summary": null,
+      "attributes": [],
+      "edges": [],
+      "children": [],
+      "collapsed": 0
+    },
+    {
+      "ref": "048c",
+      "id": "048c0000-0000-4000-8000-000000000002",
+      "kind": "frame",
+      "unknown": false,
+      "label": "Edge",
+      "summary": null,
+      "attributes": [],
+      "edges": [],
+      "children": [
+        {
+          "ref": "b811",
+          "id": "b8110000-0000-4000-8000-000000000005",
+          "kind": "actor",
+          "unknown": false,
+          "label": "Customer",
+          "summary": null,
+          "attributes": [],
+          "edges": [
+            {
+              "ref": "c74b",
+              "id": "c74b0000-0000-4000-8000-000000000014",
+              "from": {
+                "ref": "b811"
+              },
+              "to": {
+                "ref": "a3cf"
+              },
+              "label": null,
+              "style": []
+            }
+          ],
+          "children": [],
+          "collapsed": 0
+        },
+        {
+          "ref": "a3cf",
+          "id": "a3cf0000-0000-4000-8000-000000000006",
+          "kind": "square",
+          "unknown": false,
+          "label": "Web app",
+          "summary": null,
+          "attributes": [
+            {
+              "key": "icon",
+              "value": "nextjs"
+            }
+          ],
+          "edges": [
+            {
+              "ref": "6e71",
+              "id": "6e710000-0000-4000-8000-000000000015",
+              "from": {
+                "ref": "a3cf"
+              },
+              "to": {
+                "ref": "649c"
+              },
+              "label": null,
+              "style": []
+            }
+          ],
+          "children": [],
+          "collapsed": 0
+        },
+        {
+          "ref": "649c",
+          "id": "649c0000-0000-4000-8000-000000000007",
+          "kind": "hexagon",
+          "unknown": false,
+          "label": "API gateway",
+          "summary": null,
+          "attributes": [
+            {
+              "key": "note",
+              "value": "Kong. Terminates TLS, rate-limits per API key, forwards to the services."
+            }
+          ],
+          "edges": [
+            {
+              "ref": "9c5e",
+              "id": "9c5e0000-0000-4000-8000-000000000016",
+              "from": {
+                "ref": "649c"
+              },
+              "to": {
+                "ref": "202b"
+              },
+              "label": "JWT",
+              "style": []
+            },
+            {
+              "ref": "111e",
+              "id": "111e0000-0000-4000-8000-000000000017",
+              "from": {
+                "ref": "649c"
+              },
+              "to": {
+                "ref": "146b"
+              },
+              "label": null,
+              "style": []
+            }
+          ],
+          "children": [],
+          "collapsed": 0
+        }
+      ],
+      "collapsed": 0
+    },
+    {
+      "ref": "c991",
+      "id": "c9910000-0000-4000-8000-000000000003",
+      "kind": "frame",
+      "unknown": false,
+      "label": "Services",
+      "summary": null,
+      "attributes": [],
+      "edges": [],
+      "children": [
+        {
+          "ref": "202b",
+          "id": "202b0000-0000-4000-8000-000000000008",
+          "kind": "square",
+          "unknown": false,
+          "label": "Auth service",
+          "summary": null,
+          "attributes": [
+            {
+              "key": "icon",
+              "value": "shield"
+            }
+          ],
+          "edges": [],
+          "children": [],
+          "collapsed": 0
+        },
+        {
+          "ref": "146b",
+          "id": "146b0000-0000-4000-8000-000000000009",
+          "kind": "square",
+          "unknown": false,
+          "label": "Orders service",
+          "summary": null,
+          "attributes": [
+            {
+              "key": "icon",
+              "value": "server"
+            },
+            {
+              "key": "note",
+              "value": "Owns the order lifecycle and is the source of truth for order state. Calls Payments synchronously; publishes OrderPlaced."
+            }
+          ],
+          "edges": [
+            {
+              "ref": "c41d",
+              "id": "c41d0000-0000-4000-8000-000000000018",
+              "from": {
+                "ref": "146b"
+              },
+              "to": {
+                "ref": "e4a8"
+              },
+              "label": "charge",
+              "style": []
+            },
+            {
+              "ref": "892e",
+              "id": "892e0000-0000-4000-8000-00000000001a",
+              "from": {
+                "ref": "146b"
+              },
+              "to": {
+                "ref": "d41e"
+              },
+              "label": null,
+              "style": []
+            },
+            {
+              "ref": "3462",
+              "id": "34620000-0000-4000-8000-00000000001b",
+              "from": {
+                "ref": "146b"
+              },
+              "to": {
+                "ref": "6406"
+              },
+              "label": "OrderPlaced",
+              "style": []
+            }
+          ],
+          "children": [],
+          "collapsed": 0
+        },
+        {
+          "ref": "6406",
+          "id": "64060000-0000-4000-8000-00000000000b",
+          "kind": "stadium",
+          "unknown": false,
+          "label": "Event bus",
+          "summary": null,
+          "attributes": [
+            {
+              "key": "note",
+              "value": "Kafka, 3 brokers, 7-day retention."
+            }
+          ],
+          "edges": [
+            {
+              "ref": "1434",
+              "id": "14340000-0000-4000-8000-00000000001c",
+              "from": {
+                "ref": "6406"
+              },
+              "to": {
+                "ref": "12de"
+              },
+              "label": null,
+              "style": []
+            },
+            {
+              "ref": "0cee",
+              "id": "0cee0000-0000-4000-8000-00000000001d",
+              "from": {
+                "ref": "6406"
+              },
+              "to": {
+                "ref": "0556"
+              },
+              "label": null,
+              "style": []
+            }
+          ],
+          "children": [],
+          "collapsed": 0
+        },
+        {
+          "ref": "e4a8",
+          "id": "e4a80000-0000-4000-8000-00000000000a",
+          "kind": "square",
+          "unknown": false,
+          "label": "Payments service",
+          "summary": null,
+          "attributes": [
+            {
+              "key": "icon",
+              "value": "credit-card"
+            },
+            {
+              "key": "comments",
+              "value": "1 resolved"
+            }
+          ],
+          "edges": [
+            {
+              "ref": "8e70",
+              "id": "8e700000-0000-4000-8000-000000000019",
+              "from": {
+                "ref": "e4a8"
+              },
+              "to": {
+                "ref": "e6d7"
+              },
+              "label": "HTTPS",
+              "style": [
+                "dashed"
+              ]
+            }
+          ],
+          "children": [],
+          "collapsed": 0
+        },
+        {
+          "ref": "12de",
+          "id": "12de0000-0000-4000-8000-00000000000c",
+          "kind": "square",
+          "unknown": false,
+          "label": "Inventory service",
+          "summary": null,
+          "attributes": [
+            {
+              "key": "icon",
+              "value": "package"
+            }
+          ],
+          "edges": [
+            {
+              "ref": "1fc0",
+              "id": "1fc00000-0000-4000-8000-00000000001e",
+              "from": {
+                "ref": "12de"
+              },
+              "to": {
+                "ref": "822f"
+              },
+              "label": null,
+              "style": []
+            }
+          ],
+          "children": [],
+          "collapsed": 0
+        },
+        {
+          "ref": "0556",
+          "id": "05560000-0000-4000-8000-00000000000d",
+          "kind": "square",
+          "unknown": false,
+          "label": "Notification worker",
+          "summary": null,
+          "attributes": [
+            {
+              "key": "icon",
+              "value": "mail"
+            }
+          ],
+          "edges": [],
+          "children": [],
+          "collapsed": 0
+        }
+      ],
+      "collapsed": 0
+    },
+    {
+      "ref": "ca76",
+      "id": "ca760000-0000-4000-8000-000000000004",
+      "kind": "frame",
+      "unknown": false,
+      "label": "Data",
+      "summary": null,
+      "attributes": [],
+      "edges": [],
+      "children": [
+        {
+          "ref": "d41e",
+          "id": "d41e0000-0000-4000-8000-00000000000e",
+          "kind": "cylinder",
+          "unknown": false,
+          "label": "Orders DB",
+          "summary": null,
+          "attributes": [
+            {
+              "key": "note",
+              "value": "Postgres 16, primary + 1 replica."
+            }
+          ],
+          "edges": [],
+          "children": [],
+          "collapsed": 0
+        },
+        {
+          "ref": "822f",
+          "id": "822f0000-0000-4000-8000-00000000000f",
+          "kind": "cylinder",
+          "unknown": false,
+          "label": "Inventory DB",
+          "summary": null,
+          "attributes": [],
+          "edges": [],
+          "children": [],
+          "collapsed": 0
+        }
+      ],
+      "collapsed": 0
+    },
+    {
+      "ref": "e6d7",
+      "id": "e6d70000-0000-4000-8000-000000000010",
+      "kind": "cloud",
+      "unknown": false,
+      "label": "Stripe",
+      "summary": null,
+      "attributes": [
+        {
+          "key": "link",
+          "value": "https://stripe.com/docs/api"
+        }
+      ],
+      "edges": [],
+      "children": [],
+      "collapsed": 0
+    },
+    {
+      "ref": "cb02",
+      "id": "cb020000-0000-4000-8000-000000000011",
+      "kind": "entity",
+      "unknown": false,
+      "label": "Order",
+      "summary": "{id uuid PK; customer_id uuid FK; status text; total_cents int}",
+      "attributes": [],
+      "edges": [],
+      "children": [],
+      "collapsed": 0
+    },
+    {
+      "ref": "480a",
+      "id": "480a0000-0000-4000-8000-000000000012",
+      "kind": "table",
+      "unknown": false,
+      "label": null,
+      "summary": "4x3 Service | p99 latency | Availability",
+      "attributes": [],
+      "edges": [],
+      "children": [],
+      "collapsed": 0
+    },
+    {
+      "ref": "0c84",
+      "id": "0c840000-0000-4000-8000-000000000013",
+      "kind": "sticky",
+      "unknown": false,
+      "label": "Payment retries are not idempotent yet!",
+      "summary": null,
+      "attributes": [
+        {
+          "key": "comments",
+          "value": "2 open"
+        }
+      ],
+      "edges": [],
+      "children": [],
+      "collapsed": 0
+    }
+  ],
+  "ownLineArrows": [],
+  "elision": null
+}

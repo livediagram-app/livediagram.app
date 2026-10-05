@@ -20,6 +20,7 @@ import { useEffect } from 'react';
 import { clerkPublishableKey } from '@/lib/clerk-config';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { resolveProfilePicture } from '@/lib/account-avatar';
+import { forgetRecentDiagrams } from '@/lib/recent-diagrams-snapshot';
 import type { DeferredAuthState } from './deferred-auth';
 
 export function ClerkBridge({ onState }: { onState: (state: DeferredAuthState) => void }) {
@@ -68,8 +69,18 @@ function Publisher({ onState }: { onState: (state: DeferredAuthState) => void })
           }
         : null,
       getToken: async (opts) => (await getToken(opts)) ?? null,
-      signOut: (opts) => signOut(opts),
-      deleteAccount: isSignedIn ? () => deleteUserRef.current() : null,
+      // The landing page sign-out returns to must not show the account's recent diagrams
+      // (docs/specs/019-marketing/returning-visitor.md); nor may it after the account is deleted.
+      signOut: async (opts) => {
+        await forgetRecentDiagrams();
+        return signOut(opts);
+      },
+      deleteAccount: isSignedIn
+        ? async () => {
+            await deleteUserRef.current();
+            await forgetRecentDiagrams();
+          }
+        : null,
     });
   }, [isLoaded, isSignedIn, userId, user, getToken, signOut, onState, deleteUserRef]);
 

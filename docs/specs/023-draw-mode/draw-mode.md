@@ -35,14 +35,16 @@ pen widths, dock spacing) are named constants, tuned in place.
 
 ## Creating one
 
-- **New Document wizard:** a **Whiteboard** template (a `TemplateKind` with a
+- **New Document wizard:** a **Blank Whiteboard** template (kind id `whiteboard`, a
   blank builder and a preview tile, `packages/templates`), producing a document
-  with one tab that opens in Draw mode. It is a card on the **Popular** shelf, third (after Blank Canvas and
-  Mind map), described **"Free drawing without distractions"**. It is not a category: a
+  with one tab that opens in Draw mode. It is a card on the **Popular** shelf, second (after
+  Blank Diagram), described **"Free drawing without distractions"**. It is not a category: a
   different activity from the diagram templates, so it is never a category tile or on a
-  category shelf.
+  category shelf. Draw has templates of its own too (Sketchnote, Rich Picture, Comic Strip,
+  Doodle Warm-Up), and the template step's **Draw** filter shows just them
+  ([Templates by mode](../007-editor/templates-by-mode.md)).
 - **New tab:** the tab bar's new-tab action opens Quick Start as on any
-  document, and Quick Start offers **Whiteboard** on its Popular shelf, so a whiteboard can be added to any document in the same two
+  document, and Quick Start offers **Blank Whiteboard** on its Popular shelf, so a whiteboard can be added to any document in the same two
   clicks as an ordinary tab.
 - **No theme step.** Like every template now, picking the Whiteboard
   template goes straight to the settings step in the New Document wizard and
@@ -51,17 +53,51 @@ pen widths, dock spacing) are named constants, tuned in place.
 - **Import:** a Microsoft Whiteboard import makes each board its own new
   document with one tab that opens in Draw mode, named and dated after the board, and Excalidraw pasted onto a whiteboard lands as its own
   marks (see [Imported and pasted content](#imported-and-pasted-content)).
-- **Any tab:** the mode switch beside the page switcher turns any general
+- **Any tab:** the mode switch (the Palette's title row, or beside the Toolbar layout's menu button) turns any general
   tab into a whiteboard and back ([Editor modes](../007-editor/editor-modes.md)).
 
 ## What a whiteboard shows
 
-A whiteboard trades the editor's full chrome for one **floating dock**,
-centred across the **top** of the canvas by default (see
-[Where the dock sits](#where-the-dock-sits)), like Microsoft Whiteboard's.
+A whiteboard trades the palette for Draw's own tools, in the place the
+palette holds in the layout in force:
 
-- **Hidden in Draw mode:** the palette (floating and the Toolbar
-  layout's strip), the format painter, the Highlighter tile with the palette (a whiteboard's pens are its markers), the Theme &
+- **Floating layout: the Palette panel.** The same floating **Palette**
+  panel stays, where it was, with its title row (the editor mode switch,
+  help, minimise) and its drag, docking and collapse. Its body swaps the
+  palette's pickers and catalogue for Draw's groups, **in the palette's own
+  look**, so the panel reads the same in both modes:
+  - **Drawing tools** and **Shapes** are sections with the palette's small
+    capitals headings, each a **three-column grid of tiles**: the glyph over
+    a short caption (Select; Marker 1, 2, 3; Text; Path; Eraser; each shape
+    by name), the tool in hand
+    tinted as the palette tints its chosen tile. No separators; keys show in
+    the tooltips, not on the tiles.
+  - **Settings** is the panel's **footer**: one full-width row, the cog and
+    "Settings", set off by a rule, as the palette's Reorder / Edit row is.
+  - **No Shapes menu:** the Shapes section shows the pinned shapes followed
+    by the items the dock's Shapes menu holds (its Recent and Most used
+    shapes), each a tile that arms its shape. Pinning stays the dock's (a
+    pinned tile's menu still offers Unpin).
+  - A flyout (a pen's settings, the eraser, a shape slot's menu, Settings)
+    opens **beside the panel**, on the side with room, level with its tile,
+    so the panel never moves. The dock position setting does not apply.
+- **Toolbar layout: the dock.** One **floating dock**, centred across the
+  **top** of the canvas by default (see
+  [Where the dock sits](#where-the-dock-sits)), like Microsoft Whiteboard's.
+  It is the strip's twin: the **same height** as the Diagram strip (its
+  buttons the strip's tile size) and drawn at the **toolbar UI scale**
+  ([UI scale](../007-editor/ui-scale.md)), so switching modes never changes
+  the size of the bar at the top. Its flyouts are not scaled: they open at
+  their design size, like every menu opened from a scaled surface.
+
+The groups, their buttons, flyouts, keys and behaviour below are the same
+in both; "the dock" below means either form unless it says otherwise. Every flyout has a
+**tip** pointing at the button that opened it: on the dock, on the edge facing
+the dock, over its button; beside the panel, on the edge facing the panel,
+level with its tile.
+
+- **Hidden in Draw mode:** the palette's catalogue (the floating
+  Palette shows Draw's groups instead) and the Toolbar layout's strip, the format painter, the Highlighter tile with the palette's catalogue (a whiteboard's pens are its markers), the Theme &
   canvas brush and the theme-mode banner, the tool panels (the eraser's
   settings live in the dock's flyout instead) and the empty-canvas banner (the dock is the hint). The header,
   tab bar, Explorer (its menu button keeps its corner on a phone),
@@ -98,15 +134,14 @@ centred across the **top** of the canvas by default (see
   "Marker stroke", "3 marker strokes"); power user mode leaves it out.
 - **Read-only:** a view-role visitor sees the board without the dock; there
   is nothing on it they could use.
-- **One dock, no modes.** Every user sees the same four groups; the shapes
+- **One dock, no modes.** Every user sees the same three groups; the shapes
   bar stays small by starting with just two pinned shapes, so there is no
   simpler mode to switch to.
-- **The dock is four groups side by side**, centred together at the top
+- **The dock is three groups side by side**, centred together at the top
   (or bottom) of the canvas with a clear gap between them, left to right: **drawing
-  tools**, **shapes**, **history** (Undo, Redo) and **settings** (the cog on
-  its own). Each group is its own pill, and its own toolbar for assistive
-  technology ("Drawing tools", "Shapes", "History", "Settings"), each one Tab
-  stop with arrow keys moving within it.
+  tools**, **shapes** and **settings** (the cog on its own). Each group is its
+  own pill, and its own toolbar for assistive technology ("Drawing tools",
+  "Shapes", "Settings"), each one Tab stop with arrow keys moving within it.
 - **Drawing tools, left to right:**
   1. **Select** (marquee and move; the ordinary select tool). A board with content opens on
      Select; an empty one puts the active pen in hand.
@@ -144,8 +179,8 @@ centred across the **top** of the canvas by default (see
        picks one, which arms it like a dock shape (plain ink, the tool style
        of its kind, drawn with a drag or dropped with a click) and closes the
        flyout; **Escape** closes it without picking.
-- **History:** **Undo** and **Redo**, the same actions as the bottom-right
-  cluster and the keyboard; disabled when there is nothing to undo or redo.
+- **No Undo or Redo in the dock:** the bottom-right cluster and the keyboard
+  already carry them in every mode, so the dock does not repeat them.
 - **The sticky note is a shape here, not a drawing tool.** It has no button
   in the drawing tools bar; it is one of the shapes: found in the Shapes
   flyout's search ("sticky", "note", "post-it"), shown in its slots once
@@ -176,6 +211,9 @@ centred across the **top** of the canvas by default (see
 
 ## Where the dock sits
 
+The Toolbar layout's dock only; the Floating layout's Draw tools live in
+the Palette panel, wherever the user put it.
+
 - **Top by default**, centred across the top of the canvas, where the
   Toolbar layout's strip sits in Diagram mode
   ([Toolbar layout](../007-editor/toolbar-layout.md)), so a whiteboard's tools
@@ -193,7 +231,8 @@ centred across the **top** of the canvas by default (see
 - **At the top:**
   - it keeps clear of the Explorer's menu button in the top-left corner: on
     a phone or a tablet it starts to the button's right, so a tablet in
-    portrait still shows the whole dock; from 1024 px wide it is centred with
+    portrait still shows the whole dock, and when it scrolls sideways its tools
+    stay clear of the menu card rather than sliding under it; from 1024 px wide it is centred with
     the same clearance on both sides;
   - its flyouts and the "Seven shapes are pinned" hint open **below** it;
   - the top-centre banners (follow-me, mode banners, timer, vote) sit
@@ -209,7 +248,9 @@ centred across the **top** of the canvas by default (see
 
 ## Shape slots
 
-The shapes group learns and keeps the shapes a user reaches for.
+The shapes group learns and keeps the shapes a user reaches for. Its six slots are a
+[Within reach](../004-interface-design/within-reach.md) set (N = 3, a use is a pick), the same rule as
+Explorer Home's Jump back in.
 
 - **The six slots** live in the **Shapes** flyout, not on the bar, in two
   rows of three with **no labels**: they are meant to become obvious after a
@@ -264,6 +305,13 @@ The shapes group learns and keeps the shapes a user reaches for.
   kinds are dropped on read.
 - **Telemetry:** `Draw` · `Changed` · `ShapePinned` / `ShapeUnpinned`
   (never the kind).
+- **On a phone** (below `sm`, the dock only; `splitPhonePins`), the bar keeps **only the first
+  pinned shape** (Arrow, by default) and the rest move into the **Shapes** flyout as a **Pinned**
+  row above the six slots (Rectangle, by default), so the bar fits the width. They are still
+  pinned and still count as such: none shows twice, and their shape keys work as before. The
+  flyout grows by that row (it stays fixed while typing). Shapes do not drag on or off the bar
+  there; pinning and unpinning go through the slot's menu (long-press). A pinned shape in the
+  flyout has no menu: it is already pinned.
 
 ## Pens
 
@@ -300,6 +348,9 @@ The shapes group learns and keeps the shapes a user reaches for.
   freehand renderer honours; choosing a border width from an element's menu
   afterwards replaces it. A pen stores its width as the preset's name, not its
   px, so retuning the px never reinterprets a stored choice.
+  - **Each width is pictured the same wherever it is chosen** (the marker's popover and the quick
+    style panel's Marker width row, `PenWidthIcon`): as the thin, medium and thick border-width
+    previews, not to scale. Drawn to scale, 1 and 1.5 px looked identical in the popover.
 - **Right-clicking a pen resets it** to how it started (its starting colour
   and Medium), without picking it up; a pen already as it started is left
   alone. The context-menu key and Shift+F10 on the focused button do the same.

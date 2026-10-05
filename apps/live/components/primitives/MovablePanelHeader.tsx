@@ -98,7 +98,7 @@ export function MovablePanelHeader({
               onPointerDown={(e) => e.stopPropagation()}
               onClick={onReset}
               aria-label={`Reset ${title.toLowerCase()} position`}
-              className="hidden h-5 w-5 items-center justify-center rounded text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 sm:flex dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+              className="relative hidden h-5 w-5 touch-target items-center justify-center rounded text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 sm:flex dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100"
             >
               {/* className="" so the glyph inherits the button's
                   currentColor (and its hover), not the fixed slate. */}
@@ -139,7 +139,7 @@ export function MovablePanelHeader({
                   : `Collapse ${title.toLowerCase()}`
                 : `Minimize ${title.toLowerCase()}`
             }
-            className="flex h-5 w-5 items-center justify-center rounded text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+            className="relative flex h-5 w-5 touch-target items-center justify-center rounded text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100"
           >
             {collapsible && effectiveCollapsed ? (
               // Plus glyph: expand the body. Same 12 x 12 grid as

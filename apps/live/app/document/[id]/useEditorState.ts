@@ -1,5 +1,7 @@
 'use client';
 
+import type { View } from '@/lib/viewport-store';
+import { useKeyboardAvoidance } from '@/hooks/canvas/useKeyboardAvoidance';
 import {
   useCallback,
   useEffect,
@@ -10,15 +12,18 @@ import {
   useEffectEvent,
 } from 'react';
 import {
+  illustratePagesOf,
+  layOutIllustratePages,
   isEventStormingTab,
   onlyDraftNotesChanged,
   stampTabKind,
   isBoxed,
   resolveSlide,
-  slideBounds,
+  slideFrame,
   stampNewElementLayers,
   voteHidesCursors,
   elementActions,
+  illustratePageSnapBoxes,
   type BoxedElement,
   type CommentMention,
   type Element,
@@ -39,14 +44,17 @@ import { useLaserConfig } from '@/hooks/canvas/useLaserConfig';
 import { useEraserConfig } from '@/hooks/canvas/useEraserConfig';
 import { useFormatConfig } from '@/hooks/canvas/useFormatConfig';
 import { useStyleMemory } from '@/hooks/canvas/useStyleMemory';
-import { useQuickStyle } from '@/hooks/canvas/useQuickStyle';
+import type { QuickStyleDeps } from '@/hooks/canvas/useQuickStyle';
 import { useSwatchOverrides } from '@/hooks/canvas/useSwatchOverrides';
 import { getTheme } from '@/lib/themes';
 import { DEFAULT_SCHEME_ID } from '@livediagram/document';
 import { useEditorMode, usePinTabOpening } from '@/hooks/editor/useEditorMode';
+import { useArticles } from '@/hooks/editor/useArticles';
+import { useIllustratePages } from '@/hooks/editor/useIllustratePages';
 import { editorModeShortcut } from '@/hooks/editor/editor-mode-shortcut';
 import { announce } from '@/lib/announcer';
-import { useTabOpensIn } from '@/hooks/editor/useTabOpensIn';
+import { useSwitchSetsOpensIn, useTabOpensIn } from '@/hooks/editor/useTabOpensIn';
+import { useLeaveIllustrate } from '@/hooks/editor/useLeaveIllustrate';
 import { usePortalSetters } from '@/hooks/canvas/usePortalSetters';
 import { useBehaviourElements } from '@/hooks/canvas/useBehaviourElements';
 import { useCollabElements } from '@/hooks/canvas/useCollabElements';
@@ -142,9 +150,11 @@ import { usePanelLayout } from './usePanelLayout';
 import { usePresenceRows } from './usePresenceRows';
 import { usePresenceState } from './usePresenceState';
 import { useEditorDialogs } from './useEditorDialogs';
-import { useElementHelpers, selectionIds } from './useElementHelpers';
+import { useElementHelpers } from './useElementHelpers';
+import { usePruneInertSelection } from '@/hooks/canvas/usePruneInertSelection';
 import { useElementCreation } from './useElementCreation';
 import { useMindGrowth } from './useMindGrowth';
+import { useMindOutline } from './useMindOutline';
 import { useLayersState } from './useLayersState';
 import { useInlineIconMutators } from './useInlineIconMutators';
 import { usePresenceBroadcast } from './usePresenceBroadcast';
@@ -158,7 +168,10 @@ import { useTabScope } from './useTabScope';
 import { useEditorPersistence } from './editor-persistence';
 import { useEditorRealtime } from './editor-realtime';
 import { useAssignRef, useLatest } from '@/hooks/ui/useLatest';
+import { boundsOfElements } from '@/lib/changeset-reveals';
+import { useChangesetFeed } from './useChangesetFeed';
 import { useDragPreviewBroadcast } from '@/hooks/collab/useDragPreviewBroadcast';
+import { useArticleCaretBroadcast } from '@/hooks/collab/useArticleCaretBroadcast';
 
 export function useEditorState(opts: { embed?: boolean } = {}) {
   // Read-only embed view (docs/specs/013-workspace/embeds.md). The flag forces view behaviour
@@ -194,7 +207,11 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     redo: redoHistory,
   } = useDocumentHistory(initialTabs);
 
+  // Counts this person's own edits (never a remote op, an undo or a tick): what lets the documents
+  // take in what was just added to a page (useArticleIntake) without taking a peer's.
+  const localEditSeqRef = useRef(0);
   const commitTabs = (mapTabs: (ts: Tab[]) => Tab[]) => {
+    localEditSeqRef.current += 1;
     // Layer stamping (docs/specs/006-document/layers.md): elements APPEARING in this commit without
     // a valid layerId land on the active layer. One choke point, so no
     // individual creation path (draw, paste, AI, template, Mermaid
@@ -292,14 +309,14 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   const {
     activeId,
     setActiveId,
-    selectedId,
+    readSelection,
+    selectionStore,
     setSelectedId,
     editingId,
     setEditingId,
     setEditCursorAtEnd,
     formatSourceId,
     setFormatSourceId,
-    multiSelectedIds,
     setMultiSelectedIds,
     templatePickerMode,
     setTemplatePickerMode,
@@ -767,6 +784,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     setSavedAt,
     setDocumentList,
     onDocumentTrashed: () => documentTrashed.setDocumentTrashed(true),
+    changesetSeen: realtime.changesetSeen.seen,
   });
 
   // Persist self only when name or color actually changed. Without
@@ -791,7 +809,13 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     refreshDocumentList,
     refreshSharedList,
     resetTabs,
-    refs: { lastPersistedSelfRef, lastSavedTabsRef, lastSavedNameRef, loadedTabIdsRef },
+    refs: {
+      lastPersistedSelfRef,
+      lastSavedTabsRef,
+      lastSavedNameRef,
+      loadedTabIdsRef,
+      noteChangesetSeen: realtime.changesetSeen.noteSeen,
+    },
     set: {
       setActiveId,
       setDocumentId,
@@ -806,6 +830,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
       setDocumentShareable,
       setDocumentShareCode,
       setDocumentTeamId,
+      setDocumentServerStored: realtime.setDocumentServerStored,
       setHydrated,
       setIsOwner,
       setLoadedExistingDocument,
@@ -868,6 +893,25 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     applyRemoteTabs,
     lastSavedTabsRef,
     setTabLoadErrors,
+    noteChangesetSeen: realtime.changesetSeen.noteSeen,
+  });
+  // Agent changesets relayed through the room (docs/specs/024-agents/agent-changesets.md "In the
+  // editor"): applied, outlined, toasted. See useChangesetFeed.
+  const changesetFeed = useChangesetFeed({
+    documentId,
+    selfId: selfParticipant.id,
+    sessionShareCodeRef,
+    seenRef: realtime.changesetSeen.seenRef,
+    noteSeen: realtime.changesetSeen.noteSeen,
+    loadedTabIdsRef,
+    markTabLoaded,
+    applyRemoteTabs,
+    saveBaseline: { tabs: lastSavedTabsRef, name: lastSavedNameRef, journal: remoteOpJournalRef },
+    countAppliedOp,
+    refetchTabs: resyncFromServer,
+    // Declared with the viewport, further down.
+    revealInView: (tabId, ids) => revealChangesetRef.current?.(tabId, ids),
+    toast,
   });
   // Realtime room: WebSocket per shared document (presence + ops). See
   // useRoomConnection.
@@ -940,7 +984,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   useRoomConnection({
     hydrated,
     documentId,
-    documentShareable,
+    documentServerStored: realtime.documentServerStored,
     documentTeamId,
     selfParticipant,
     sessionShareCode,
@@ -976,6 +1020,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     receiveQa: qaBoard.receiveQa,
     receiveDocumentTrashed: () => documentTrashed.setDocumentTrashed(true),
     resyncFromServer,
+    receiveChangeset: changesetFeed.receiveChangeset,
+    onRoomJoined: () => void changesetFeed.checkSinceLoad(),
   });
 
   // Broadcast local selection + active-tab focus to peers (presence
@@ -983,9 +1029,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   usePresenceBroadcast({
     hydrated,
     documentId,
-    documentShareable,
-    documentTeamId,
-    selectedId,
+    documentServerStored: realtime.documentServerStored,
+    selection: selectionStore,
     activeId,
     roomRef,
   });
@@ -1006,6 +1051,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     retryNonce: tabLoadRetryNonce,
     lastSavedTabsRef,
     resetTabs,
+    noteChangesetSeen: realtime.changesetSeen.noteSeen,
   });
 
   // Teams the signed-in user belongs to (docs/specs/013-workspace/teams.md), surfaced in the
@@ -1043,7 +1089,15 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   const activeTab = tabs.find((t) => t.id === activeId) ?? tabs[0]!;
   // The editor mode this person works on the tab in (docs/specs/007-editor/editor-modes.md): every
   // tool and rule gate keys on it, never on what the tab is.
-  const editorMode = useEditorMode(activeTab, { canEdit });
+  const rawEditorMode = useEditorMode(activeTab, { canEdit });
+  // An editor's switch also moves the tab's Opens in, so the two never disagree.
+  const switchedMode = useSwitchSetsOpensIn(rawEditorMode, { tab: activeTab, canEdit, tickTabs });
+  // Leaving Illustrate on a tab with articles asks first (turn them into Page elements, or keep).
+  const { editorMode, leave: leaveIllustrate } = useLeaveIllustrate(switchedMode, {
+    tab: activeTab,
+    canEdit,
+    commitTabs,
+  });
   const drawMode = editorMode.mode === 'draw';
   // Comment authors' pictures for the open tab (docs/specs/014-identity/profile-picture.md §5).
   useCommentPicturesLoader(documentId, activeTab?.id, activeTab?.elements, sessionShareCode);
@@ -1082,6 +1136,13 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     roomRef,
     live: hydrated && !!documentId && (documentShareable || !!documentTeamId),
     activeId,
+  });
+  // Where we are writing in an article, live for collaborators (docs/specs/007-editor/article-pages.md).
+  useArticleCaretBroadcast({
+    roomRef,
+    live: hydrated && !!documentId && (documentShareable || !!documentTeamId),
+    activeId,
+    hidden: voteCursorsHidden,
   });
   // Viewport state (pan offset, zoom, the canvas wrapper ref the
   // measurements read through, and a parallel zoomRef the drag hook
@@ -1126,11 +1187,11 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   }, [tabs, activeId, setActiveId]);
 
   const {
-    viewportOffset,
+    viewport,
     setViewportOffset,
-    viewportZoom,
     setViewportZoom,
     zoomRef,
+    viewportOffsetRef,
     canvasMainRef,
     getViewportCenter,
     fitToScreen,
@@ -1138,7 +1199,9 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     centreOn,
     isCentredOn,
     scrollIntoView,
-  } = useEditorViewport({ activeTab, selectedId });
+  } = useEditorViewport({ activeTab, readSelection });
+  // A phone's keyboard never hides the caret on the canvas (useKeyboardAvoidance).
+  useKeyboardAvoidance({ canvasMainRef, zoomRef, setViewportOffset });
 
   // Bring Focus (docs/specs/012-collaboration/bring-focus.md): ask everyone else to come and look at this
   // element, at our zoom, on our tab.
@@ -1181,8 +1244,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     tabs,
     activeTabId: activeId,
     setActiveId,
-    selectedId,
-    multiSelectedIds,
+    readSelection,
     setSelectedId,
     setMultiSelectedIds,
     isReadOnly,
@@ -1222,11 +1284,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // Where the editor was looking before the deck took over, so exiting puts it
   // back. Without this you left a presentation zoomed to whatever the last
   // slide needed — often 250% on one box — and had to hunt around the canvas.
-  const [preShowView, setPreShowView] = useState<{
-    tabId: string;
-    zoom: number;
-    offset: { x: number; y: number };
-  } | null>(null);
+  const [preShowView, setPreShowView] = useState<{ tabId: string } | null>(null);
   const presenting = slideDeck.presentingAt !== null;
   // Captured on the way in, restored on the way out: state adjusted during render on the transition
   // (docs/specs/003-system-architecture/react-state-and-effects.md), so the restore lands in the same
@@ -1235,14 +1293,27 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   if (presenting !== wasPresenting) {
     setWasPresenting(presenting);
     if (presenting) {
-      setPreShowView({ tabId: activeId, zoom: viewportZoom, offset: viewportOffset });
+      setPreShowView({ tabId: activeId });
     } else if (preShowView) {
       setPreShowView(null);
       setActiveId(preShowView.tabId);
-      setViewportZoom(preShowView.zoom);
-      setViewportOffset(preShowView.offset);
     }
   }
+  // The view itself (it lives in the viewport store, docs/specs/008-canvas/blueprints/viewport-store.md,
+  // never written during render) is captured as a deck starts and put back as it ends, in a layout
+  // effect: before the exit paints, and declared before the slide fit below, so the capture is the
+  // view from before the first slide was framed.
+  const viewBeforeShow = useRef<View | null>(null);
+  useLayoutEffect(() => {
+    if (presenting) {
+      viewBeforeShow.current = viewport.get();
+      return;
+    }
+    if (viewBeforeShow.current) {
+      viewport.setView(viewBeforeShow.current);
+      viewBeforeShow.current = null;
+    }
+  }, [presenting, viewport]);
   // Every editor keyboard surface is off while a deck is running (docs/specs/012-collaboration/presentation-mode.md).
   // The overlay owns the keyboard then — it consumes the keys it uses, but
   // everything else fell straight through to the editor, so pressing G in
@@ -1269,13 +1340,15 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // because a sparse canvas blown up looks broken in a workspace; a slide is
   // the only thing on a projector, so a one-box slide SHOULD be a big box —
   // unless the presenter has picked "Actual size" from the cog.
-  const frameSlide = useEffectEvent((elements: NonNullable<typeof presentingElements>) => {
-    const bounds = slideBounds(elements);
+  // A page slide frames to its page; any other to what it shows (slideFrame).
+  const frameSlide = useEffectEvent(() => {
+    if (!presentingStep) return;
+    const bounds = slideFrame(presentingStep.slide, presentingStep.tab);
     if (bounds) fitToBounds(bounds, { maxZoom: slideMaxZoom(slideDeck.config) });
   });
   const slideZoom = slideDeck.config.zoom;
   useLayoutEffect(() => {
-    if (presentingElements) frameSlide(presentingElements);
+    if (presentingElements) frameSlide();
   }, [presentingSlideId, presentingElements, slideZoom]);
 
   // ...and fit again whenever the canvas CHANGES SIZE while presenting.
@@ -1293,7 +1366,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // an ordinary resize, and a phone rotating.
   const refitSlide = useEffectEvent(() => {
     if (!presentingStep) return;
-    const bounds = slideBounds(resolveSlide(presentingStep.slide, presentingStep.tab));
+    const bounds = slideFrame(presentingStep.slide, presentingStep.tab);
     if (bounds) fitToBounds(bounds, { maxZoom: slideMaxZoom(slideDeck.config) });
   });
   useEffect(() => {
@@ -1307,12 +1380,16 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // Publish where WE are looking, on change (docs/specs/012-collaboration/follow-me-viewport.md). Unsolicited by design
   // — see the RoomOp comment — and throttled to ~10 Hz inside the broadcaster,
   // so an idle participant sends nothing at all.
-  // `broadcastViewport` is re-created every render, so it is called through an effect event; the viewport
-  // (and the tab) are the trigger.
-  const publishViewport = useEffectEvent(() => broadcastViewport(viewportOffset, viewportZoom));
+  // `broadcastViewport` is re-created every render, so it is called through an effect event. It follows
+  // the viewport store (a pan or zoom renders no part of the editor) and sends again on a tab switch.
+  const publishViewport = useEffectEvent(() => {
+    const view = viewport.get();
+    broadcastViewport(view.offset, view.zoom);
+  });
   useEffect(() => {
     publishViewport();
-  }, [viewportOffset, viewportZoom, activeId]);
+    return viewport.subscribe(publishViewport);
+  }, [viewport, activeId]);
 
   // Follow-me viewport (docs/specs/012-collaboration/follow-me-viewport.md): pin our pan / zoom / tab to a peer's until
   // we take the canvas back. View-role visitors can both follow and be
@@ -1322,10 +1399,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     remoteViewports,
     livePresenceIds: livePresence.map((p) => p.id),
     activeId,
-    viewportOffset,
-    viewportZoom,
-    setViewportOffset,
-    setZoom: setViewportZoom,
+    viewport,
     onFollowTab: setActiveId,
     onNotice: (message) => toast.info(message),
   });
@@ -1346,6 +1420,18 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     onCentreOn: centreOn,
     isAlreadyThere: (tabId, at, zoom) => tabId === activeId && isCentredOn(at, zoom),
   });
+  // The toast's Show (docs/specs/024-agents/agent-changesets.md "In the editor", CS34): the tab, then
+  // every element the changeset touched that is still there, framed no closer than 100%.
+  const revealChangesetRef = useLatest((tabId: string, ids: readonly string[]) => {
+    const tab = tabsRef.current.find((t) => t.id === tabId);
+    const bounds = tab ? boundsOfElements(tab.elements, ids) : null;
+    if (!bounds) return;
+    if (tabId !== activeId) {
+      skipTabFitRef.current = tabId;
+      setActiveId(tabId);
+    }
+    fitToBounds(bounds, { maxZoom: 1 });
+  });
   const receiveFocusRef = useLatest<
     ((from: string, tabId: string, at: { x: number; y: number }, zoom: number) => void) | null
   >(focusInvite.receiveFocusHere);
@@ -1357,10 +1443,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // Pinch-to-zoom on touch screens + trackpad pinch (Ctrl+wheel).
   const { isPinchingRef } = useCanvasPinchZoom({
     canvasMainRef,
-    viewportZoom,
-    setViewportZoom,
-    viewportOffset,
-    setViewportOffset,
+    viewport,
   });
 
   // Capture an Activity-page element deep link BEFORE the tab-entry
@@ -1550,8 +1633,35 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   const anyWelcomeOpen = identityOnlyScreenOpen;
   // --- Element-scoped history helpers (active-tab aware) -------------------
 
-  // The tab menu's Opens in (docs/specs/007-editor/editor-modes.md): the mode a tab opens in.
-  const tabOpensIn = useTabOpensIn({ tabs, canEdit: !isReadOnly, commitTabs });
+  // The tab menu's Opens in (docs/specs/007-editor/editor-modes.md): the mode a tab opens in, which
+  // also switches the chooser's own mode on the active tab.
+  const tabOpensIn = useTabOpensIn({
+    tabs,
+    canEdit: !isReadOnly,
+    commitTabs,
+    activeId,
+    switchMode: rawEditorMode.setMode,
+  });
+  // Illustrate mode's pages: their edits, and the view centred on them.
+  // Set once the documents' hook exists (below): a new document's title takes the caret.
+  const articleFocusRef = useRef<((flow: string) => void) | null>(null);
+  const illustratePages = useIllustratePages({
+    activeTab,
+    mode: editorMode.mode,
+    canEdit: !isReadOnly,
+    tabLoaded: loadedTabIds.has(activeId),
+    commitTabs,
+    canvasMainRef,
+    setViewportZoom,
+    setViewportOffset,
+    getViewport: () => ({ zoom: zoomRef.current, offset: viewportOffsetRef.current }),
+    clearSelection: () => {
+      setSelectedId(null);
+      setMultiSelectedIds(new Set());
+    },
+    toastInfo: toast.info,
+    onArticleCreated: (flow) => articleFocusRef.current?.(flow),
+  });
 
   // A locked tab refuses every element mutation. Commit /
   // tick / element-add helpers all consult this early-return guard
@@ -1578,7 +1688,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     elementsLength: activeTab.elements.length,
     templateChosen: activeTab.templateChosen === true,
   });
-  // The active tab keeps the mode it opened in once loaded: an Opens in change moves nobody.
+  // The active tab keeps the mode it opened in once loaded: an Opens in change moves nobody but the chooser.
   usePinTabOpening(activeTab, activeTabLoadState === 'ready');
   // A view-only session (a 'view' share role) is read-only in exactly
   // the same way a locked tab is: no element or tab mutation may land.
@@ -1714,17 +1824,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     toastInfo: toast.info,
   });
 
-  // A layer turning hidden or locked (locally or by a peer) drops its
-  // elements from any live selection — the same guarantee delete gives. Adjusted during render when the
-  // inert set changes (it is memoised), so a hidden element is never shown selected for a frame.
-  const [prunedForInertIds, setPrunedForInertIds] = useState(layerInertIds);
-  if (layerInertIds !== prunedForInertIds) {
-    setPrunedForInertIds(layerInertIds);
-    if (selectedId && layerInertIds.has(selectedId)) setSelectedId(null);
-    if ([...multiSelectedIds].some((id) => layerInertIds.has(id))) {
-      setMultiSelectedIds(new Set([...multiSelectedIds].filter((id) => !layerInertIds.has(id))));
-    }
-  }
+  // A layer turning hidden or locked drops its elements from the live selection (layers.md).
+  usePruneInertSelection(layerInertIds, selectionStore);
 
   // Apply AI-returned elements as a single undo block (docs/specs/007-editor/ai-assistance.md).
   // Generate handles both modifications and additions in one pass:
@@ -1748,6 +1849,47 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     redoHistory,
     set: { setSelectedId, setEditingId, setFormatSourceId },
   });
+  // The writing of the active tab's article pages (docs/specs/007-editor/article-pages.md): in
+  // Illustrate mode, and while a page slide presents in any mode (read only, then: nothing is
+  // edited while presenting).
+  const presentingPage = presentingStep?.slide.pageId ?? null;
+  const presentPages = useMemo(
+    () =>
+      !illustratePages && presentingPage
+        ? layOutIllustratePages(illustratePagesOf(activeTab))
+        : null,
+    [illustratePages, presentingPage, activeTab],
+  );
+  const articles = useArticles({
+    activeTab,
+    on: illustratePages !== null || presentingPage !== null,
+    pages: illustratePages?.pages ?? presentPages,
+    localEditSeq: localEditSeqRef,
+    placeAt: (intent, x, y) => placeIntentAtRef.current?.(intent, x, y),
+    canEdit: !isReadOnly,
+    commitTabs,
+    tickTabs,
+    undo,
+    redo,
+    clearSelection: () => {
+      setSelectedId(null);
+      setMultiSelectedIds(new Set());
+    },
+    openNote: (id, kind) => {
+      if (kind === 'comment') return openComments(id);
+      // An action already assigned shows in its popover; a new one opens the dialog to assign it.
+      const el = activeTab.elements.find((e) => e.id === id);
+      if (el && isBoxed(el) && elementActions(el).length > 0) openActionPopover(id);
+      else openAssignActionDialog(id);
+    },
+  });
+  useAssignRef(articleFocusRef, (flow: string) => articles?.requestFocus(flow, 'start'));
+  // Set once element creation exists (below): an Insert at the caret places through it.
+  const placeIntentAtRef = useRef<
+    ((intent: Parameters<typeof placeIntentAt>[0], x: number, y: number) => void) | null
+  >(null);
+  const illustrateView =
+    illustratePages && articles ? { ...illustratePages, articles } : illustratePages;
   // --- Placement helpers ---------------------------------------------------
 
   // When a boxed element is selected, new elements inherit its size so a
@@ -1761,13 +1903,12 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     exitFormatPainter,
     applyFormatFromSource,
   } = useElementHelpers({
-    selectedId,
+    readSelection,
     activeId,
     activeTab,
     // Creation-only helpers: additionally blocked while the active layer
     // is hidden / locked (docs/specs/006-document/layers.md).
     editsBlocked: createBlocked,
-    multiSelectedIds,
     formatSourceId,
     formatConfig: formatSettings.config,
     getViewportCenter,
@@ -2186,7 +2327,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     highlighter,
   } = useShapeDrawing({
     editsBlocked: createBlocked,
-    selectedId,
+    readSelection,
     canvasTool,
     setCanvasTool,
     activeTab,
@@ -2218,6 +2359,14 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     scrollIntoView,
   });
 
+  // Edit Outline (docs/specs/009-elements/mind-node.md "Edit Outline"). See useMindOutline.
+  const mindOutline = useMindOutline({
+    editsBlocked: createBlocked,
+    activeId,
+    activeTab,
+    commitTabs,
+  });
+
   // Palette element-creation handlers. See useElementCreation.
   const {
     addShape,
@@ -2237,6 +2386,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     addProcess,
     addAvatar,
     dropPaletteItem,
+    placeIntentAt,
     addText,
     addSticky,
     addArrow,
@@ -2249,7 +2399,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     imagesBlocked: embedMode,
     activeId,
     activeTab,
-    selectedId,
+    readSelection,
     commitTabs,
     setSelectedId,
     setEditingId,
@@ -2258,12 +2408,12 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     beginDraw,
     styleNewElement: styleMemory.styleNewElement,
   });
+  useAssignRef(placeIntentAtRef, placeIntentAt);
 
   // Inline-icon attach/detach mutators (a shape's single inline icon).
-  // Cohesive slice extracted to useInlineIconMutators — closes over only
-  // editsBlocked + commit.
+  // Cohesive slice extracted to useInlineIconMutators: editsBlocked, commit and the elements.
   const { dropIconOnElement, removeIconFromElement, dropIconElementOnShape } =
-    useInlineIconMutators({ editsBlocked, commit });
+    useInlineIconMutators({ editsBlocked, commit, tick, elements: activeTab.elements });
 
   // Per-cell table links (docs/specs/008-canvas/canvas-and-palette.md). Which cell's link picker is open +
   // the history-committed write into that cell's style. See
@@ -2289,8 +2439,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     spawnConnectSelected,
   } = useElementSelectionActions({
     currentSelectionIds,
-    selectedId,
-    multiSelectedIds,
+    readSelection,
     activeTab,
     commit,
     setSelectedId,
@@ -2402,6 +2551,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     setLegendItemsSelected,
     setMindFlowSelected,
     tidyMindMapSelected,
+    tidyMindMap,
     setPageHeading,
     setWebRows,
     appendWebRowTo,
@@ -2447,7 +2597,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   } = useElementStyle({
     currentSelectionIds,
     selectionPrimary,
-    selectedId,
+    readSelection,
     activeTab,
     activeId,
     editsBlocked,
@@ -2456,14 +2606,11 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     commitActiveTab,
     tickTabs: rememberingTickTabs,
     checkpointBurst,
+    notify: (tone, message) => toast[tone](message),
   });
 
   // The quick style panel (docs/specs/008-canvas/quick-style-panel.md): its view of the selection and one
   // action per choice. The panel itself decides where and whether it shows.
-  const quickSelectionIds = useMemo(
-    () => selectionIds(selectedId, multiSelectedIds),
-    [selectedId, multiSelectedIds],
-  );
   const swatchOverrides = useSwatchOverrides({
     themeId: activeTab.theme ?? DEFAULT_SCHEME_ID,
     userPreferences,
@@ -2471,11 +2618,11 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     writeUserPreferences,
     ownerId: selfParticipant.id,
   });
-  const quickStyle = useQuickStyle({
+  // Every input of the Quick Style view but the selection, which QuickStyleHost reads from the store.
+  const quickStyleDeps: QuickStyleDeps = {
     activeTab,
     drawMode,
     theme: activeTheme,
-    selectionIds: quickSelectionIds,
     editsBlocked,
     liveElements: liveActiveElements,
     commit,
@@ -2488,7 +2635,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     },
     highlighter,
     toolIntent: pendingDraw,
-  });
+  };
 
   // Portal links (docs/specs/009-elements/portal-element.md) live off the style hook: a link can point at a
   // portal on ANOTHER tab, so these setters need the whole tab list and a
@@ -2630,13 +2777,12 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     selectElement,
     toggleInMultiSelect,
   } = useSelectionEditing({
-    selectedId,
+    readSelection,
     isReadOnly,
     layerInertIds,
     adoptLayerName: layersState.adoptLayerNameFromLabel,
     formatSourceId,
     formatToolActive,
-    multiSelectedIds,
     documentName,
     tabs,
     activeTab,
@@ -2662,8 +2808,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   useCanvasA11y({
     enabled: keyboardEnabled,
     elements: activeTab.elements,
-    selectedId,
-    multiSelectedIds,
+    selection: selectionStore,
     editingId,
     selectElement,
     lockedByOther,
@@ -2696,8 +2841,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // didn't have.
   const nudgeSelection = useNudgeSelection({
     isReadOnly,
-    multiSelectedIds,
-    selectedId,
+    readSelection,
     activeTab,
     laneBoard: esBoard,
     markCheckpoint,
@@ -2735,9 +2879,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     activeTab,
     layerInertIds,
     zoomRef,
-    selectedId,
+    readSelection,
     setSelectedId,
-    multiSelectedIds,
     setMultiSelectedIds,
     editingId,
     isReadOnly,
@@ -2758,6 +2901,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     autoRebindArrowsRef,
     styleNewElement: styleMemory.styleNewElement,
     alignmentGuidesRef,
+    pageSnapBoxes: illustratePages ? illustratePageSnapBoxes(illustratePages.pages) : null,
     isPinchingRef,
     // Insert between (docs/specs/021-event-storming/event-storming.md): dragging a note already on the board into a
     // gap, while Alt is held. Same gate the palette drag uses, so both entry
@@ -2781,8 +2925,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   const { copySelection, pasteFromClipboard, dropBoardFile, hasClipboard } = useClipboard({
     isReadOnly,
     embedMode,
-    selectedId,
-    multiSelectedIds,
+    readSelection,
     editingId,
     setEditingId,
     activeTab,
@@ -2841,8 +2984,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   useEditorKeyboardShortcuts({
     formatSourceId,
     setFormatSourceId,
-    selectedId,
-    multiSelectedIds,
+    readSelection,
     editingId,
     isReadOnly,
     deleteSelected,
@@ -2867,7 +3009,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     pendingDraw,
     onCancelDraw: cancelDrawShape,
     onToggleLock: () => {
-      if (multiSelectedIds.size > 0) {
+      if (readSelection().multiSelectedIds.size > 0) {
         toggleLockMultiSelected();
       } else {
         toggleLockSelected();
@@ -2883,7 +3025,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
       setMultiSelectedIds(allIds);
     },
     onDuplicate: () => {
-      if (multiSelectedIds.size > 0) {
+      if (readSelection().multiSelectedIds.size > 0) {
         duplicateMultiSelected();
       } else {
         duplicateSelected();
@@ -2893,7 +3035,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
       // Copy to the in-app clipboard, then delete: the two halves the
       // editor already exposes, composed into one undo-friendly action.
       copySelection();
-      if (multiSelectedIds.size > 0) {
+      if (readSelection().multiSelectedIds.size > 0) {
         deleteMultiSelected();
       } else {
         deleteSelected();
@@ -2931,8 +3073,14 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   });
 
   return {
+    // The outlines relayed changesets draw (useChangesetFeed), for the canvas overlay.
+    changesetReveals: changesetFeed.reveals,
     // The person's editor mode on the active tab, for the mode switch and the canvas.
     editorMode,
+    leaveIllustrate,
+    illustratePages: illustrateView,
+    // A page slide presenting outside Illustrate draws its article's writing from these.
+    presentArticles: articles,
     // The tab menu's Opens in choice for a tab, absent where it is not offered.
     opensInFor: tabOpensIn.choiceFor,
     whiteboardDock,
@@ -2985,7 +3133,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     // insert-between preview (docs/specs/021-event-storming/event-storming.md) never offers a slot the drop
     // would refuse.
     createBlocked,
-    quickStyle,
+    quickStyleDeps,
     // Note acts on an event-storming board (docs/specs/021-event-storming/event-storming.md).
     ...noteActions,
     // Photo import (docs/specs/021-event-storming/event-storming.md Phase 8): the draft run, whether the entry
@@ -3195,6 +3343,9 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     // instead of the tab's elements while it is non-null, which is what makes
     // a slide a slide.
     presentingElements,
+    // The page a page slide is presenting (docs/specs/007-editor/illustrate-pages.md "Slides"):
+    // the canvas then shows that sheet alone, as it shows the slide's elements alone.
+    presentingPageId: presentingStep?.slide.pageId ?? null,
     livePresence,
     // Live poll (docs/specs/012-collaboration/live-poll.md) — the whole ephemeral surface in one object
     // rather than a dozen flattened keys, since nothing else reads into it.
@@ -3344,6 +3495,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     setLegendItemsSelected,
     setMindFlowSelected,
     tidyMindMapSelected,
+    tidyMindMap,
     toggleChecklistItem,
     setPageHeading,
     setWebRows,
@@ -3353,6 +3505,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     setHeroCaptionSelected,
     growMindNode,
     abandonMindNode,
+    mindOutline,
     setChecklistItemsSelected,
     setEntityFieldsSelected,
     setEstimateScaleSelected,
@@ -3483,8 +3636,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     toggleRecentExclusion,
     favouriteIds,
     toggleFavourite,
-    viewportOffset,
-    viewportZoom,
+    viewport,
     writeUserPreferences,
   };
 }

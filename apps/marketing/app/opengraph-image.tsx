@@ -1,3 +1,4 @@
+import { SITE_NAME, SITE_PITCH, sentencePitch } from '@livediagram/ui';
 import { ImageResponse } from 'next/og';
 
 // Open Graph + Twitter social card (1200x630). Rendered to a static
@@ -16,7 +17,7 @@ import { ImageResponse } from 'next/og';
 // sitemap.ts use.
 
 export const dynamic = 'force-static';
-export const alt = 'livediagram: a real-time multiplayer canvas for diagrams and mindmaps';
+export const alt = `${SITE_NAME}: ${SITE_PITCH}`;
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
@@ -139,7 +140,7 @@ export function renderSocialCard(opts?: { kicker?: string; title?: string; subti
               maxWidth: 880,
             }}
           >
-            {opts?.subtitle ?? 'A real-time multiplayer canvas for diagrams and mindmaps.'}
+            {opts?.subtitle ?? sentencePitch()}
           </div>
         </div>
 

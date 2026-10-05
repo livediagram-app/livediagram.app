@@ -12,6 +12,7 @@
 
 import { upgradeStores } from './legacy-offline-store';
 import type { LiveDoc, DocumentSummary, RecordedIntent, TabSummary } from '@livediagram/api-schema';
+import { utcDay } from '@livediagram/api-schema';
 import { migrateStoredTab, stampTabKind } from '@livediagram/document';
 import type { Tab } from '@livediagram/document';
 import { DocumentTrashedError } from '../document-trashed';
@@ -50,17 +51,18 @@ export type OfflineDocumentRecord = {
   trashedAt?: number;
   // This browser's opens of the document (docs/specs/013-workspace/explorer-home.md "Opens"),
   // for Home's Jump back in; see ./offline-opens.ts. Optional: a record never opened has none.
-  opens?: LocalOpens;
+  opens?: StoredLocalOpens;
 };
 
-// A local document's opens, counted like the server's (once per UTC day, the same frecency key).
-export type LocalOpens = {
-  openDays: number;
-  // `YYYY-MM-DD`, UTC: the day the last counted open fell on.
-  lastOpenDay: string;
-  lastOpenedAt: number;
-  frecencyKey: number;
-};
+// A local document's opens, counted like the server's (docs/specs/013-workspace/explorer-home.md
+// "Opens"): the UTC days (`YYYY-MM-DD`, newest first) with an open inside the 90-day use window,
+// and the last open.
+export type LocalOpens = { days: string[]; lastOpenedAt: number };
+
+// What a record may hold: the current shape, or the one records were written in before Within
+// reach. Read through `localOpensOf` (offline-opens.ts); the next open rewrites it.
+export type StoredLocalOpens =
+  LocalOpens | { openDays: number; lastOpenDay: string; lastOpenedAt: number; frecencyKey: number };
 
 // ---------------------------------------------------------------------------
 // Pure transforms (unit-tested — no IndexedDB involved)
@@ -353,10 +355,18 @@ export async function offlineLoadTab(id: string, tabId: string): Promise<Tab | n
 
 // `extra`: a document's own created and last-modified dates (an imported board,
 // docs/specs/015-api/api.md "Document dates"), absent now; the personal folder it is filed in.
+// Making a document here is a use of it, unless it came in a bulk import (`markUsed: false`): its
+// record of uses starts with the day and the moment it was made, as a first open would
+// (docs/specs/013-workspace/explorer-home.md "Making a document"; offline-opens.ts).
 export async function offlineCreateDocument(
   d: { id: string; name: string; tabs?: Tab[] },
   now: number,
-  extra: { createdAt?: number; savedAt?: number; folderId?: string | null } = {},
+  extra: {
+    createdAt?: number;
+    savedAt?: number;
+    folderId?: string | null;
+    markUsed?: boolean;
+  } = {},
 ): Promise<LiveDoc> {
   const rec: OfflineDocumentRecord = {
     id: d.id,
@@ -365,6 +375,7 @@ export async function offlineCreateDocument(
     createdAt: extra.createdAt ?? now,
     savedAt: extra.savedAt ?? now,
     tabs: d.tabs ?? [],
+    ...(extra.markUsed === false ? {} : { opens: { days: [utcDay(now)], lastOpenedAt: now } }),
   };
   await backend.put(rec);
   rememberId(rec.id);

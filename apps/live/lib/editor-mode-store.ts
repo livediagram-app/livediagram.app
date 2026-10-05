@@ -11,7 +11,8 @@
 //   never written onto the tab: switching changes nothing for anyone else.
 import {
   editorModeSwitchable,
-  isEditorMode,
+  DEFAULT_EDITOR_MODE,
+  parseEditorMode,
   opensInOf,
   type EditorMode,
   type Tab,
@@ -28,12 +29,16 @@ export function resolveEditorMode(input: {
   // The mode the tab opened in for this page (pinOpening), if it has been pinned.
   opened: EditorMode | null;
   canEdit: boolean;
+  // The modes offered on this device (offered-editor-modes); every mode when absent. A mode not
+  // offered (an experimental one switched off) resolves to Diagram.
+  offered?: readonly EditorMode[];
 }): ResolvedEditorMode {
-  const { tab, remembered, opened, canEdit } = input;
+  const { tab, remembered, opened, canEdit, offered } = input;
   const switchable = !!tab && editorModeSwitchable(tab);
   const opening = (switchable ? opened : null) ?? opensInOf(tab);
   const canSwitch = switchable && canEdit;
-  return { mode: canSwitch ? (remembered ?? opening) : opening, canSwitch };
+  const mode = canSwitch ? (remembered ?? opening) : opening;
+  return { mode: !offered || offered.includes(mode) ? mode : DEFAULT_EDITOR_MODE, canSwitch };
 }
 
 const STORAGE_PREFIX = 'livediagram:v2:editor-mode:';
@@ -46,7 +51,7 @@ const listeners = new Set<() => void>();
 export function readRememberedMode(tabId: string): EditorMode | null {
   if (cache.has(tabId)) return cache.get(tabId)!;
   const raw = readLocalStorageSafe(editorModeKey(tabId));
-  const mode = isEditorMode(raw) ? raw : null;
+  const mode = parseEditorMode(raw) ?? null;
   if (raw !== null && mode === null)
     console.warn('[editor-mode] remembered mode unreadable, ignored', { tabId });
   cache.set(tabId, mode);

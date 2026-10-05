@@ -9,8 +9,13 @@
 // isValidTab in the document package stays the runtime guard, so
 // the structure still lives in one authoritative place (this string is guidance,
 // not a second validator).
-import { GRAPH_LABEL_MAX } from './graph-input';
 import { z } from 'zod';
+import {
+  FIND_QUERY_MAX_LENGTH,
+  REF_INPUT_MAX_LENGTH,
+  TAB_VIEW_NAMES,
+  VIEW_BUDGET_MAX,
+} from '@livediagram/api-schema';
 import {
   ANCHORS,
   CODE_LANGUAGES,
@@ -18,6 +23,7 @@ import {
   CODE_THEMES,
   ELEMENT_TYPES,
   ENTITY_MAX_FIELDS,
+  GRAPH_LABEL_MAX,
   NAME_MAX_LENGTH,
   SHAPE_KINDS,
   STICKY_PRESETS,
@@ -334,9 +340,62 @@ export const findDocumentsShape = {
   limit: z.number().int().min(1).max(50).optional().describe('Max results (default 20).'),
 };
 
+// What read_document fits every view to unless told otherwise (docs/specs/024-agents/document-views.md
+// "Budgets", VW45).
+export const READ_DOCUMENT_DEFAULT_BUDGET = 8000;
+
 export const readDocumentShape = {
   documentId: z.string().describe('The document id (from find_documents).'),
   tabId: z.string().optional().describe('Which tab to read; defaults to the first.'),
+  view: z
+    .enum(TAB_VIEW_NAMES)
+    .optional()
+    .describe(
+      'How to read the tab. outline (default): one line per element with its ref, label and arrows, ' +
+        'nested by frame. graph: what connects to what. layout: where things sit. comments: open threads ' +
+        'in full. show: one element in full (needs ref). find: elements holding some text (needs q).',
+    ),
+  budget: z
+    .number()
+    .int()
+    .min(1)
+    .max(VIEW_BUDGET_MAX)
+    .optional()
+    .describe(
+      `Fit the view to about this many tokens (default ${READ_DOCUMENT_DEFAULT_BUDGET}); the last line says what was left out and how to see it.`,
+    ),
+  only: z
+    .string()
+    .min(1)
+    .max(REF_INPUT_MAX_LENGTH)
+    .optional()
+    .describe('outline, layout: one element (a ref from a view) and what nests under it.'),
+  ref: z
+    .string()
+    .min(1)
+    .max(REF_INPUT_MAX_LENGTH)
+    .optional()
+    .describe('show: the element, by the ref a view printed, any unique prefix, or its id.'),
+  q: z
+    .string()
+    .min(1)
+    .max(FIND_QUERY_MAX_LENGTH)
+    .optional()
+    .describe('find: the text to look for, case-insensitive.'),
+  coarse: z.boolean().optional().describe('layout: rows per frame instead of coordinates.'),
+  all: z.boolean().optional().describe('comments: include resolved threads.'),
+  style: z
+    .boolean()
+    .optional()
+    .describe('outline: add the colours and line styles that differ from the defaults.'),
+  format: z
+    .enum(['view', 'json'])
+    .optional()
+    .describe("view (default) returns the text view; json returns the tab's elements as stored."),
+  image: z
+    .boolean()
+    .optional()
+    .describe('Also attach a PNG preview of the tab (costs about a thousand tokens).'),
 };
 
 // A document or tab name (docs/specs/006-document/name-length.md). Shortened with
@@ -375,6 +434,15 @@ export const createDocumentShape = {
   tab: tabShape.optional().describe('A single tab — accepted as an alias for tabs: [tab].'),
   layout: layoutField,
   theme: themeField,
+  // Making a document is a use (docs/specs/015-api/mcp-server.md §4.3).
+  markUsed: z
+    .boolean()
+    .optional()
+    .describe(
+      "Whether this document joins the user's Jump back in (their most used and recent documents) " +
+        'at once. Default true. Pass false when making many documents in one go, so a batch ' +
+        "never pushes the user's own work out of reach.",
+    ),
 };
 
 export const addTabShape = {
@@ -394,6 +462,15 @@ export const updateDocumentShape = {
   documentId: z.string().describe('The document to edit (from find_documents / read_document).'),
   tabId: z.string().optional().describe('Which tab to edit; defaults to the first.'),
   mode: z.enum(['replace', 'ops']).describe('"replace" the whole tab, or apply granular "ops".'),
+  rev: z
+    .number()
+    .int()
+    .min(0)
+    .optional()
+    .describe(
+      'ops mode: the tab revision read_document returned. An element a person changed since is then a ' +
+        'conflict, never silently overwritten; read again and redo the edit.',
+    ),
   graph: graphField,
   mermaid: mermaidField,
   elements: elementArray
@@ -416,11 +493,13 @@ export const updateDocumentShape = {
         elementId: z
           .string()
           .optional()
-          .describe('update / remove: the id of the existing element to change.'),
+          .describe(
+            'update / remove: the existing element to change, by its id or the ref read_document prints.',
+          ),
       }),
     )
     .optional()
-    .describe('ops mode: ordered add / update / remove against existing element ids.'),
+    .describe('ops mode: ordered add / update / remove against existing elements, by id or ref.'),
 };
 
 export const shareDocumentShape = {

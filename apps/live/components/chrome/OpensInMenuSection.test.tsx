@@ -1,15 +1,20 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { OpensInMenuSection } from './OpensInMenuSection';
+import { setIllustrateModeEnabled } from '@/lib/offered-editor-modes';
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  setIllustrateModeEnabled(false);
+});
 
 function setup(over: Partial<Parameters<typeof OpensInMenuSection>[0]['choice']> = {}) {
   const onChange = vi.fn();
   const onToggle = vi.fn();
   render(
-    <div role="menu">
+    // As the Tab control menu holds it (docs/specs/004-interface-design/menus.md).
+    <div role="dialog" aria-label="Tab menu">
       <OpensInMenuSection
         choice={{ mode: 'draw', onChange, disabled: false, ...over }}
         open
@@ -20,35 +25,49 @@ function setup(over: Partial<Parameters<typeof OpensInMenuSection>[0]['choice']>
   return { onChange, onToggle };
 }
 
-// docs/specs/007-editor/editor-modes.md "Opens in": every editor mode as a radio choice.
+const choices = () =>
+  within(screen.getByRole('group', { name: 'Opens in' })).getAllByRole('button');
+
+// docs/specs/007-editor/editor-modes.md "Opens in": every editor mode as a one-of-a-set choice, a
+// toggle button in the Tab control menu (docs/specs/004-interface-design/menus.md, D55).
 describe('OpensInMenuSection', () => {
-  it('lists every editor mode from the catalogue, the opening one checked', () => {
+  it('lists every offered editor mode from the catalogue, the opening one checked', () => {
+    setIllustrateModeEnabled(true);
     setup();
     const group = screen.getByRole('group', { name: 'Opens in' });
     expect(group).toBeTruthy();
-    const items = screen.getAllByRole('menuitemradio');
+    const items = choices();
     expect(items.map((i) => i.textContent)).toEqual([
       expect.stringContaining('Diagram'),
       expect.stringContaining('Draw'),
+      expect.stringContaining('Illustrate'),
     ]);
-    expect(items.map((i) => i.getAttribute('aria-checked'))).toEqual(['false', 'true']);
+    expect(items.map((i) => i.getAttribute('aria-pressed'))).toEqual(['false', 'true', 'false']);
+  });
+
+  it('leaves out Illustrate while it is switched off in Settings', () => {
+    setup();
+    expect(choices().map((i) => i.textContent)).toEqual([
+      expect.stringContaining('Diagram'),
+      expect.stringContaining('Draw'),
+    ]);
   });
 
   it('sets the opening mode on a choice', () => {
     const { onChange } = setup();
-    fireEvent.click(screen.getByRole('menuitemradio', { name: /Diagram/ }));
+    fireEvent.click(screen.getByRole('button', { name: /Diagram/ }));
     expect(onChange).toHaveBeenCalledWith('diagram');
   });
 
-  it('does nothing for the mode already chosen', () => {
+  it('passes the mode already chosen through, so it can switch the chooser back to it', () => {
     const { onChange } = setup();
-    fireEvent.click(screen.getByRole('menuitemradio', { name: /Draw/ }));
-    expect(onChange).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: /^Draw/ }));
+    expect(onChange).toHaveBeenCalledWith('draw');
   });
 
   it('greys every choice out on a locked tab', () => {
     const { onChange } = setup({ disabled: true });
-    const diagram = screen.getByRole('menuitemradio', { name: /Diagram/ });
+    const diagram = screen.getByRole('button', { name: /Diagram/ });
     expect(diagram.getAttribute('aria-disabled')).toBe('true');
     fireEvent.click(diagram);
     expect(onChange).not.toHaveBeenCalled();

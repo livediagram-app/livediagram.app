@@ -1,9 +1,11 @@
 // @vitest-environment jsdom
-import { act, fireEvent, screen, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { DEFAULT_WHITEBOARD_PREFS } from '@/lib/whiteboard-prefs';
 import { dockModel as model, renderDock } from './dock-test-utils';
+import { PenWidthIcon } from './PenWidthIcon';
 import { WhiteboardDock } from './WhiteboardDock';
+import { besidePanel, offDock } from './WhiteboardFlyout';
 
 const itemsOf = (group: string) =>
   [
@@ -13,15 +15,16 @@ const itemsOf = (group: string) =>
   ].map((el) => el.dataset.dockItem ?? '|');
 
 describe('WhiteboardDock groups', () => {
-  it('is four labelled horizontal toolbars, each one tab stop', () => {
+  it('is three labelled horizontal toolbars, each one tab stop, with no Undo or Redo', () => {
     renderDock();
     const bars = screen.getAllByRole('toolbar');
     expect(bars.map((b) => b.getAttribute('aria-label'))).toEqual([
       'Drawing tools',
       'Shapes',
-      'History',
       'Settings',
     ]);
+    expect(screen.queryByRole('button', { name: 'Undo' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Redo' })).toBeNull();
     for (const bar of bars) {
       expect(bar.getAttribute('aria-orientation')).toBe('horizontal');
       expect(bar.querySelectorAll('[data-dock-item][tabindex="0"]')).toHaveLength(1);
@@ -78,7 +81,7 @@ describe('WhiteboardDock groups', () => {
     expect(screen.getByRole('button', { name: 'Text' }).getAttribute('tabindex')).toBe('-1');
     // The other groups keep their own stops.
     expect(screen.getByRole('button', { name: 'Select' }).getAttribute('tabindex')).toBe('-1');
-    expect(screen.getByRole('button', { name: 'Undo' }).getAttribute('tabindex')).toBe('0');
+    expect(screen.getByRole('button', { name: 'Settings' }).getAttribute('tabindex')).toBe('0');
   });
 });
 
@@ -112,24 +115,6 @@ describe('WhiteboardDock scrolling', () => {
     } finally {
       spy.mockRestore();
     }
-  });
-});
-
-describe('WhiteboardDock history', () => {
-  it('offers Undo and Redo in its own group, on every layout', () => {
-    const { onUndo } = renderDock();
-    const history = screen.getByRole('toolbar', { name: 'History' });
-    fireEvent.click(within(history).getByRole('button', { name: 'Undo' }));
-    expect(onUndo).toHaveBeenCalled();
-  });
-
-  it('marks Undo and Redo unavailable with nothing to do, and ignores a press', () => {
-    const { onRedo } = renderDock(model(), { canUndo: false, canRedo: false });
-    const redo = screen.getByRole('button', { name: 'Redo' });
-    expect(redo.getAttribute('aria-disabled')).toBe('true');
-    expect(screen.getByRole('button', { name: 'Undo' }).getAttribute('aria-disabled')).toBe('true');
-    fireEvent.click(redo);
-    expect(onRedo).not.toHaveBeenCalled();
   });
 });
 
@@ -185,6 +170,19 @@ describe('WhiteboardDock drawing tools', () => {
     expect(m.updatePen).toHaveBeenCalledWith('second', { colour: 'violet' });
     fireEvent.click(screen.getByRole('button', { name: 'Fine' }));
     expect(m.updatePen).toHaveBeenCalledWith('second', { width: 1 });
+  });
+
+  // docs/specs/023-draw-mode/draw-mode.md "Pens": each width reads apart, drawn as the quick style
+  // panel draws it (PenWidthIcon), not to scale, where 1 and 1.5 px looked the same.
+  it('draws the three widths apart in the flyout, as the quick style panel does', () => {
+    renderDock();
+    fireEvent.click(screen.getByRole('button', { name: 'Marker 1, medium' }));
+    const pictures = ['Fine', 'Medium', 'Bold'].map(
+      (name) => screen.getByRole('button', { name }).querySelector('svg')!.outerHTML,
+    );
+    expect(new Set(pictures).size).toBe(3);
+    const { container } = render(<PenWidthIcon width="fine" />);
+    expect(container.querySelector('svg')!.outerHTML).toBe(pictures[0]);
   });
 
   it('closes a flyout on Escape and hands focus back to its opener', () => {
@@ -265,6 +263,31 @@ describe('WhiteboardDock settings', () => {
     fireEvent.click(cog);
     expect(screen.getByRole('group', { name: 'Settings' })).toBeTruthy();
     expect(cog.getAttribute('aria-expanded')).toBe('true');
+  });
+
+  it('takes the focus on a press once it is shown, and Escape hands it back', () => {
+    renderDock();
+    // A browser will not focus a hidden element (jsdom will): record whether the flyout was shown
+    // each time something inside it was focused.
+    const shownAtFocus: boolean[] = [];
+    const focus = HTMLElement.prototype.focus;
+    const spy = vi.spyOn(HTMLElement.prototype, 'focus').mockImplementation(function (
+      this: HTMLElement,
+      options?: FocusOptions,
+    ) {
+      const card = this.closest<HTMLElement>('#whiteboard-flyout-settings');
+      if (card) shownAtFocus.push(card.style.visibility !== 'hidden');
+      focus.call(this, options);
+    });
+    const cog = screen.getByRole('button', { name: 'Settings' });
+    fireEvent.click(cog);
+    spy.mockRestore();
+    const settings = screen.getByRole('group', { name: 'Settings' });
+    expect(shownAtFocus).toEqual([true]);
+    expect(document.activeElement).toBe(within(settings).getByRole('button', { name: 'Plain' }));
+    fireEvent.keyDown(document.activeElement!, { key: 'Escape' });
+    expect(screen.queryByRole('group', { name: 'Settings' })).toBeNull();
+    expect(document.activeElement).toBe(cog);
   });
 
   it('heads Background, Cursor and Drawing, not a title of its own', () => {
@@ -358,7 +381,11 @@ describe('WhiteboardDock position', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Settings' }));
     const flyout = screen.getByRole('group', { name: 'Settings' });
     expect(flyout.dataset.side).toBe('below');
-    expect(flyout.className).toContain('top-full');
+    // Portalled and fixed, so the toolbar UI scale never zooms it.
+    expect(flyout.className).toContain('fixed');
+    expect(dock().contains(flyout)).toBe(false);
+    // Its tip points up at the button that opened it.
+    expect(flyout.querySelector('[data-flyout-tip]')?.getAttribute('data-flyout-tip')).toBe('top');
     fireEvent.click(screen.getByRole('button', { name: 'Settings' }));
     expect(refusePin().dataset.side).toBe('below');
   });
@@ -370,21 +397,21 @@ describe('WhiteboardDock position', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Settings' }));
     const flyout = screen.getByRole('group', { name: 'Settings' });
     expect(flyout.dataset.side).toBe('above');
-    expect(flyout.className).toContain('bottom-full');
+    expect(flyout.className).toContain('fixed');
     fireEvent.click(screen.getByRole('button', { name: 'Settings' }));
     expect(refusePin().dataset.side).toBe('above');
   });
 
-  it('keeps clear of the Explorer menu button at the top: beside it below lg, centred from lg', () => {
+  it('keeps clear of the Explorer menu card (button + mode switch) at the top: beside it below lg, centred from lg', () => {
     renderDock();
     const cls = dock().className.split(' ');
     expect(cls).toEqual(
       expect.arrayContaining([
-        'left-[4.25rem]',
-        'max-w-[calc(100%-5rem)]',
+        'left-[8.25rem]',
+        'max-w-[calc(100%-9rem)]',
         'lg:left-1/2',
         'lg:-translate-x-1/2',
-        'lg:max-w-[calc(100%-8.5rem)]',
+        'lg:max-w-[calc(100%-15rem)]',
       ]),
     );
   });
@@ -392,16 +419,7 @@ describe('WhiteboardDock position', () => {
   it('moves between top and bottom in place, keeping its groups', () => {
     const { view } = renderDock();
     const before = screen.getByRole('button', { name: 'Select' });
-    view.rerender(
-      <WhiteboardDock
-        model={model('pen', { position: 'bottom' })}
-        ink="#1c1917"
-        canUndo
-        canRedo={false}
-        onUndo={vi.fn()}
-        onRedo={vi.fn()}
-      />,
-    );
+    view.rerender(<WhiteboardDock model={model('pen', { position: 'bottom' })} ink="#1c1917" />);
     expect(dock().dataset.dockPosition).toBe('bottom');
     expect(screen.getByRole('button', { name: 'Select' })).toBe(before);
   });
@@ -413,17 +431,143 @@ describe('WhiteboardDock position log', () => {
     const { view } = renderDock();
     expect(debug).toHaveBeenCalledWith('[whiteboard-dock] position', 'top');
     debug.mockClear();
-    view.rerender(
-      <WhiteboardDock
-        model={model('pen', { position: 'bottom' })}
-        ink="#1c1917"
-        canUndo
-        canRedo={false}
-        onUndo={vi.fn()}
-        onRedo={vi.fn()}
-      />,
-    );
+    view.rerender(<WhiteboardDock model={model('pen', { position: 'bottom' })} ink="#1c1917" />);
     expect(debug).toHaveBeenCalledWith('[whiteboard-dock] position', 'bottom');
     debug.mockRestore();
+  });
+});
+
+// docs/specs/023-draw-mode/draw-mode.md "What a whiteboard shows": the Floating layout's form.
+describe('WhiteboardDock in the Palette panel', () => {
+  const renderPanel = () =>
+    render(<WhiteboardDock variant="panel" model={model()} ink="#1c1917" />);
+
+  it('lays the same three groups out as the panel body, with no dock placement', () => {
+    renderPanel();
+    expect(screen.getAllByRole('toolbar').map((b) => b.getAttribute('aria-label'))).toEqual([
+      'Drawing tools',
+      'Shapes',
+      'Settings',
+    ]);
+    const body = document.querySelector<HTMLElement>('[data-whiteboard-dock]')!;
+    expect(body.dataset.dockVariant).toBe('panel');
+    expect(body.dataset.dockPosition).toBeUndefined();
+    expect(body.className).not.toContain('absolute');
+    // Sections wrap to the panel's width rather than sitting in pills of their own.
+    // The palette's own three-column tile grid, each tile captioned.
+    const drawing = screen.getByRole('toolbar', { name: 'Drawing tools' });
+    expect(drawing.className).toContain('grid-cols-3');
+    expect(within(drawing).getByRole('button', { name: /^Marker 1/ }).textContent).toBe('Marker 1');
+  });
+
+  it('captions each tile without its key letter (the key is in the tooltip)', () => {
+    renderPanel();
+    const drawing = screen.getByRole('toolbar', { name: 'Drawing tools' });
+    expect(within(drawing).getByRole('button', { name: 'Path tool' }).textContent).toBe('Path');
+    expect(within(drawing).getByRole('button', { name: 'Select' }).textContent).toBe('Select');
+  });
+
+  it('walks a tile grid by rows with ArrowUp and ArrowDown', () => {
+    renderPanel();
+    const drawing = screen.getByRole('toolbar', { name: 'Drawing tools' });
+    const select = within(drawing).getByRole('button', { name: 'Select' });
+    act(() => select.focus());
+    // Select, Marker 1, Marker 2 / Marker 3, ...: three columns.
+    fireEvent.keyDown(select, { key: 'ArrowDown' });
+    expect(document.activeElement?.getAttribute('aria-label')).toMatch(/^Marker 3/);
+    fireEvent.keyDown(document.activeElement!, { key: 'ArrowUp' });
+    expect(document.activeElement).toBe(select);
+  });
+
+  it('draws no separators, and the cog as the footer row', () => {
+    renderPanel();
+    expect(document.querySelectorAll('.bg-slate-200.w-px')).toHaveLength(0);
+    const footer = screen.getByRole('toolbar', { name: 'Settings' });
+    expect(footer.className).toContain('border-t');
+    expect(within(footer).getByRole('button', { name: 'Settings' }).textContent).toBe('Settings');
+  });
+
+  it('opens a flyout beside the panel, out of its scroll clip', () => {
+    renderPanel();
+    fireEvent.click(screen.getByRole('button', { name: 'Settings' }));
+    const flyout = document.getElementById('whiteboard-flyout-settings')!;
+    expect(flyout.dataset.side).toBe('beside');
+    expect(flyout.className).toContain('fixed');
+    // Portalled to the body, not inside the panel.
+    expect(document.querySelector('[data-whiteboard-dock]')!.contains(flyout)).toBe(false);
+    // Its tip faces the panel.
+    expect(flyout.querySelector('[data-flyout-tip]')?.getAttribute('data-flyout-tip')).toMatch(
+      /^(left|right)$/,
+    );
+  });
+
+  it('shows the Shapes menu items on the panel, with no Shapes menu', () => {
+    renderPanel();
+    const shapes = screen.getByRole('toolbar', { name: 'Shapes' });
+    expect(within(shapes).queryByRole('button', { name: 'Shapes' })).toBeNull();
+    expect(shapes.querySelectorAll('[data-dock-item^="menu:"]').length).toBeGreaterThan(0);
+  });
+});
+
+describe('offDock', () => {
+  const flyout = { offsetWidth: 200, offsetHeight: 120 };
+  const dockBox = { top: 12, bottom: 58 };
+
+  it('opens on the board side of the dock, centred on its opener, the tip over it', () => {
+    expect(offDock(dockBox, { left: 500, width: 36 }, flyout, true, { width: 1280 })).toEqual({
+      left: 418,
+      top: 66,
+      tipLeft: 100,
+    });
+    // A dock at the bottom: above it.
+    expect(
+      offDock({ top: 700, bottom: 746 }, { left: 500, width: 36 }, flyout, false, { width: 1280 })
+        .top,
+    ).toBe(700 - 8 - 120);
+  });
+
+  it('stays in the viewport near an edge, its tip still over the opener', () => {
+    const at = offDock(dockBox, { left: 10, width: 36 }, flyout, true, { width: 1280 });
+    expect(at.left).toBe(12);
+    expect(at.tipLeft).toBe(28 - 12);
+  });
+});
+
+describe('besidePanel', () => {
+  const viewport = { width: 1280, height: 800 };
+  const flyout = { offsetWidth: 280, offsetHeight: 200 };
+
+  it('opens on the side with more room, level with the opener', () => {
+    // A panel at the right: the flyout opens to its left.
+    expect(besidePanel({ left: 1000, right: 1260 }, { top: 120 }, flyout, viewport)).toMatchObject({
+      left: 1000 - 22 - 280,
+      top: 120,
+      side: 'left',
+    });
+    // A panel at the left: to its right.
+    expect(besidePanel({ left: 20, right: 280 }, { top: 120 }, flyout, viewport)).toMatchObject({
+      left: 280 + 22,
+      top: 120,
+      side: 'right',
+    });
+  });
+
+  it('puts the tip level with the opener, clear of the corners', () => {
+    const at = (top: number, height = 36) =>
+      besidePanel({ left: 1000, right: 1260 }, { top, height }, flyout, viewport).tipTop;
+    expect(at(120)).toBe(18);
+    // The card is pushed up from the bottom edge: the tip still finds the opener, within the card.
+    expect(at(700)).toBe(700 + 18 - (800 - 12 - 200));
+    expect(at(790)).toBe(200 - 14);
+  });
+
+  it('keeps the flyout inside the viewport', () => {
+    expect(besidePanel({ left: 1000, right: 1260 }, { top: 700 }, flyout, viewport).top).toBe(
+      800 - 12 - 200,
+    );
+    expect(besidePanel({ left: 100, right: 1200 }, { top: 0 }, flyout, viewport)).toMatchObject({
+      left: 12,
+      top: 12,
+    });
   });
 });

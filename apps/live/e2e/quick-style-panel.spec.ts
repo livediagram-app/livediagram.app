@@ -265,7 +265,7 @@ test.describe('quick style panel', () => {
       .locator(CANVAS)
       .getByRole('img', { name: 'Circle', exact: true })
       .click({ button: 'right' });
-    await expect(page.getByRole('menu').first()).toBeVisible();
+    await expect(page.getByRole('dialog', { name: 'Element menu' })).toBeVisible();
     await expect(panel(page)).toBeHidden();
     expectNoPageErrors(pageErrors);
   });

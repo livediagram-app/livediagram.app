@@ -4,10 +4,12 @@
 // Durable Object WebSocket upgrade with its role / password trust
 // boundary.
 
+import { isClerkIdShape } from '@livediagram/api-schema';
 import { isPersonalOwner, shareLinkForDocument, sharePasswordOk } from '../auth/share-access';
 import { consumeWsTicket, createWsTicket, getDocumentMeta } from '../db';
 import { forbidden, json, notFound } from '../responses';
 import { gateGrant, missingDocument, type RouteContext } from './context';
+import { personTagFor } from '../person-tag';
 
 // Returns null when the request isn't a room route.
 export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Response | null> {
@@ -46,6 +48,10 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
       tabScope: grant.tabScope,
       shareCode: grant.shareCode,
       account: ctx.clerkUserId !== null,
+      // The same verified session carries its person tag, so the room can tell this owner's
+      // sessions from everyone else's without holding the owner id
+      // (docs/specs/024-agents/agent-changesets.md "Held elements").
+      personTag: ctx.clerkUserId === null ? null : await personTagFor(id, ctx.clerkUserId),
     });
     return json({ ticket });
   }
@@ -66,6 +72,8 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
     let shareCode: string | null = null;
     // Only a ticket can say the session is a verified account; every other leg is anonymous.
     let account = false;
+    // Only a ticket carries a person tag; every other leg has none.
+    let personTag: string | null = null;
     const claimedOwnerId = url.searchParams.get('o');
     // Gate-only projection — the upgrade uses only ownerId/teamId. A document
     // in the Trash (docs/specs/013-workspace/trash.md) reads as missing, so no
@@ -88,10 +96,18 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
     // removed member could present it here — the exact hole the ticket
     // closed for the membership leg. Team owners come in via the ticket
     // (its mint admits them through the verified callerId === ownerId
-    // leg); a personal guest owner's id stays an unguessable UUID.
-    const isOwnerUpgrade = isPersonalOwner(claimedOwnerId, liveDoc.ownerId, liveDoc.teamId);
+    // leg); a personal guest owner's id stays an unguessable UUID. An ACCOUNT id is
+    // refused here outright for the same reason REST refuses it as `X-Owner-Id`
+    // (docs/specs/015-api/public-api-and-tokens.md §4.1): teammates can read it, so
+    // it proves nothing. A signed-in owner of a personal document comes in through
+    // the ticket like a team owner.
+    const accountIdClaimed = !!claimedOwnerId && isClerkIdShape(claimedOwnerId);
+    if (accountIdClaimed)
+      console.warn('[room-upgrade] account id refused as ?o=', { documentId: id });
+    const isOwnerUpgrade =
+      !accountIdClaimed && isPersonalOwner(claimedOwnerId, liveDoc.ownerId, liveDoc.teamId);
     if (admission) {
-      ({ role, tabScope, shareCode, account } = admission);
+      ({ role, tabScope, shareCode, account, personTag } = admission);
     } else if (isOwnerUpgrade) {
       role = 'edit';
     } else {
@@ -147,6 +163,9 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
     // Whether a verified account holds this session (docs/specs/014-identity/profile-picture.md §6),
     // set on every path for the same reason as the headers above.
     forwarded.headers.set('X-Verified-Account', account ? '1' : '0');
+    // The person tag (docs/specs/024-agents/agent-changesets.md, CS39), set on every path for the
+    // same reason as the headers above. Empty = none.
+    forwarded.headers.set('X-Verified-Person', personTag ?? '');
     return stub.fetch(forwarded);
   }
 

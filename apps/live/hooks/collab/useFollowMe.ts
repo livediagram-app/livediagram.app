@@ -7,6 +7,7 @@
 // use to somebody scrolled elsewhere. Following is the missing half: instead
 // of moving the pointer to the audience, move the audience to the pointer.
 
+import type { ViewportStore } from '@/lib/viewport-store';
 import { useCallback, useEffect, useEffectEvent, useRef, useState } from 'react';
 import { track } from '@/lib/telemetry';
 
@@ -20,10 +21,7 @@ export function useFollowMe({
   remoteViewports,
   livePresenceIds,
   activeId,
-  viewportOffset,
-  viewportZoom,
-  setViewportOffset,
-  setZoom,
+  viewport,
   onFollowTab,
   onNotice,
 }: {
@@ -31,11 +29,9 @@ export function useFollowMe({
   // Who is still in the room, so a follow ends by itself when they leave.
   livePresenceIds: string[];
   activeId: string;
-  // The LOCAL viewport, watched so any move of our own breaks the follow.
-  viewportOffset: Pan;
-  viewportZoom: number;
-  setViewportOffset: (pan: Pan) => void;
-  setZoom: (zoom: number) => void;
+  // The LOCAL view: written when following, watched so any move of our own breaks the follow
+  // (docs/specs/008-canvas/blueprints/viewport-store.md).
+  viewport: ViewportStore;
   // Switch to the tab the presenter is on: "look at this" has to work when
   // the this is on tab 3.
   onFollowTab: (tabId: string) => void;
@@ -43,8 +39,8 @@ export function useFollowMe({
   onNotice: (message: string) => void;
 }) {
   const [followingId, setFollowingId] = useState<string | null>(null);
-  // The last viewport WE wrote while following. Anything else appearing in
-  // `viewportOffset` / `viewportZoom` is the user moving the canvas.
+  // The last view WE wrote while following. Any other view appearing in the store is the user moving
+  // the canvas.
   const appliedRef = useRef<{ pan: Pan; zoom: number } | null>(null);
 
   const stopFollowing = useCallback(() => {
@@ -89,18 +85,19 @@ export function useFollowMe({
   // what makes that list exhaustive: every route ends in these two values, so
   // none of them can be forgotten here or added later without being covered.
   //
-  // Declared BEFORE the apply effect, so it compares this render's viewport
-  // with the one applied in an earlier commit. After it, it would see the
-  // apply of this very commit against a viewport that has not caught up
-  // yet, and end every follow the moment it started.
+  // Watched only while following, through the store: our own apply writes the whole view at once
+  // (setView) after recording it, so the listener never sees a half-applied view.
   useEffect(() => {
     if (!followingId) return;
-    const applied = appliedRef.current;
-    if (!applied) return;
-    if (samePan(applied.pan, viewportOffset) && applied.zoom === viewportZoom) return;
-    appliedRef.current = null;
-    setFollowingId(null);
-  }, [followingId, viewportOffset, viewportZoom]);
+    return viewport.subscribe(() => {
+      const applied = appliedRef.current;
+      if (!applied) return;
+      const { offset, zoom } = viewport.get();
+      if (samePan(applied.pan, offset) && applied.zoom === zoom) return;
+      appliedRef.current = null;
+      setFollowingId(null);
+    });
+  }, [followingId, viewport]);
 
   // Apply the followed peer's viewport.
   //
@@ -116,9 +113,8 @@ export function useFollowMe({
     if (!seen) return;
     if (seen.tabId !== activeId) onFollowTab(seen.tabId);
     appliedRef.current = { pan: seen.pan, zoom: seen.zoom };
-    setViewportOffset(seen.pan);
-    setZoom(seen.zoom);
-  }, [followingId, remoteViewports, activeId, onFollowTab, setViewportOffset, setZoom]);
+    viewport.setView({ zoom: seen.zoom, offset: seen.pan });
+  }, [followingId, remoteViewports, activeId, onFollowTab, viewport]);
 
   return { followingId, startFollowing, stopFollowing };
 }

@@ -25,7 +25,7 @@ const CATEGORY_BANDS: [string, string[]][] = [
   ['COMMON', ['Shapes', 'Write', 'Draw']],
   ['STRUCTURE', ['Build', 'Components', 'Devices']],
   ['DECORATE', ['Icons', 'Stickers', 'Tech', 'Media']],
-  ['DYNAMIC', ['Data', 'Behaviour', 'Collaborate']],
+  ['DYNAMIC', ['Data', 'Collaborate']],
 ];
 
 /** One category chip: the picker's tile, reduced to its label. The real tile
@@ -67,7 +67,7 @@ function CategoryChip({
   );
 }
 
-/** The palette's category picker: Favourites across the top, then the four
+/** The palette's category picker: Popular across the top, then the four
  *  bands the thirteen categories fall into. */
 export function CategoryPicker() {
   const px = 48;
@@ -105,7 +105,7 @@ export function CategoryPicker() {
           strokeWidth={1.4}
         />
         <Label x={px + 102} y={61} anchor="middle" size={9} weight={600} tone="accent">
-          ★ Favourites
+          ⚡ Popular
         </Label>
         {rows}
       </Panel>

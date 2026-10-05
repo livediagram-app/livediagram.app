@@ -75,6 +75,7 @@ type FakeState = {
   storage: {
     get: (key: string) => Promise<unknown>;
     put: (key: string, value: unknown) => Promise<void>;
+    delete: (key: string) => Promise<boolean>;
     list: (opts: { prefix: string }) => Promise<Map<string, unknown>>;
     setAlarm: (when: number) => Promise<void>;
   };
@@ -116,6 +117,7 @@ function makeState(store: Map<string, unknown> = new Map()): FakeState {
         store.set(key, value);
         return Promise.resolve();
       },
+      delete: (key) => Promise.resolve(store.delete(key)),
       list: ({ prefix }) =>
         Promise.resolve(new Map([...store].filter(([key]) => key.startsWith(prefix)))),
       setAlarm: (when) => {
@@ -678,6 +680,28 @@ describe('DocumentRoom op-role enforcement', () => {
     // half a minute of somebody scrolling, forcing the next reconnecting peer
     // into a full D1 re-hydrate.
     expect(received[0]).not.toHaveProperty('seq');
+  });
+
+  // docs/specs/007-editor/article-pages.md "Collaboration": a writer's caret is presence. Sent at
+  // cursor rates while someone types, so a `seq` would flood the catch-up log with carets.
+  it("relays a writer's article caret unordered, and its null too", () => {
+    const { room } = newRoom();
+    const writer = connect(room, 'writer', 'edit');
+    const other = connect(room, 'other', 'edit');
+    other.ws.sent.length = 0;
+
+    sendFrame(room, writer.ws, {
+      kind: 'op',
+      op: { kind: 'article-caret', tabId: 't', flow: 'f', blockId: 'b', offset: 3 },
+    });
+    sendFrame(room, writer.ws, {
+      kind: 'op',
+      op: { kind: 'article-caret', tabId: 't', flow: null },
+    });
+
+    const received = opsReceived(other.ws);
+    expect(received).toHaveLength(2);
+    for (const msg of received) expect(msg).not.toHaveProperty('seq');
   });
 
   // docs/specs/008-canvas/drag-preview.md: an editor's live drag relays unordered, and a viewer's never
@@ -1979,5 +2003,122 @@ describe('DocumentRoom identity updates', () => {
     });
     sendFrame(room, ws, { kind: 'identity', participant: { id: 'x', name: 'Ann', color: '#f00' } });
     expect(storedPresence(ws)?.tabId).toBe('t2');
+  });
+});
+
+// Agent changesets (docs/specs/024-agents/agent-changesets.md "What the room does").
+describe('DocumentRoom and agent changesets', () => {
+  const changeset = {
+    kind: 'changeset',
+    tabId: 't1',
+    id: 'cs_0000000001',
+    rev: 2,
+    prevRev: null,
+    author: { name: 'Webber', color: '#0ea5e9' },
+    counts: { added: 1, changed: 0, removed: 0 },
+    elementOps: [
+      {
+        kind: 'add',
+        at: 0,
+        element: { id: 'b', type: 'shape', shape: 'square', x: 0, y: 0, width: 1, height: 1 },
+      },
+    ],
+  };
+  function join(
+    room: DocumentRoom,
+    id: string,
+    personTag: string | null = null,
+    role: 'edit' | 'view' = 'edit',
+  ) {
+    const ws = makeSocket();
+    room.acceptSession(asWs(ws), role, false, null, null, personTag !== null, personTag);
+    sendFrame(room, ws, { kind: 'hello', participant: { id, name: `Name ${id}`, color: '#abc' } });
+    ws.sent.length = 0;
+    return ws;
+  }
+  const presenceIdOf = (ws: FakeSocket) => (ws.attachment as { presenceId: string }).presenceId;
+  const mutation = (op: unknown) =>
+    new Request('https://room/mutation', { method: 'POST', body: JSON.stringify({ op }) });
+  const selections = async (room: DocumentRoom, query: string) =>
+    (await (await room.fetch(new Request(`https://room/selections?${query}`))).json()) as {
+      selections: unknown[];
+    };
+
+  it('sequences a changeset in one slot for everybody, outside the ledger', async () => {
+    const { room, state } = newRoom();
+    const peer = join(room, 'p');
+    expect((await room.fetch(mutation(changeset))).status).toBe(204);
+    expect(JSON.parse(peer.sent.at(-1)!)).toMatchObject({
+      kind: 'op',
+      from: 'system',
+      op: changeset,
+      seq: 1,
+    });
+    expect(room.opLog).toHaveLength(1);
+    expect([...state.store.keys()].some((k) => k.startsWith('ledger:'))).toBe(false);
+  });
+
+  it('sequences the tab-meta of a tab rename the api made', async () => {
+    const { room } = newRoom();
+    const peer = join(room, 'p');
+    const meta = { kind: 'tab-meta', tabId: 't1', patch: { name: 'Renamed' } };
+    expect((await room.fetch(mutation(meta))).status).toBe(204);
+    expect(JSON.parse(peer.sent.at(-1)!)).toMatchObject({ from: 'system', op: meta });
+  });
+
+  it('never relays a changeset from a client socket', () => {
+    const { room } = newRoom();
+    const sender = join(room, 's');
+    const peer = join(room, 'p');
+    sendFrame(room, sender, { kind: 'op', op: changeset });
+    expect(peer.sent).toEqual([]);
+  });
+
+  it("answers every selection on the tab, any role, marking the agent owner's own", async () => {
+    const { room } = newRoom();
+    const owner = join(room, 'o', 'tag-owner');
+    const viewer = join(room, 'v', null, 'view');
+    join(room, 'idle');
+    sendFrame(room, owner, {
+      kind: 'op',
+      op: { kind: 'select', elementId: 'a', tabId: 't1', elementIds: ['a', 'b'] },
+    });
+    sendFrame(room, viewer, { kind: 'op', op: { kind: 'select', elementId: 'c', tabId: 't1' } });
+    await Promise.resolve();
+    expect((await selections(room, 'tab=t1&person=tag-owner')).selections).toEqual([
+      { elementIds: ['a', 'b'], name: 'Name o', color: '#abc', mine: true },
+      { elementIds: ['c'], name: 'Name v', color: '#abc', mine: false },
+    ]);
+    expect((await selections(room, 'tab=t2&person=tag-owner')).selections).toEqual([]);
+  });
+
+  it('forgets a selection when it clears or its socket closes', async () => {
+    const { room, state } = newRoom();
+    const a = join(room, 'a');
+    const b = join(room, 'b');
+    sendFrame(room, a, { kind: 'op', op: { kind: 'select', elementId: 'x', tabId: 't1' } });
+    sendFrame(room, b, { kind: 'op', op: { kind: 'select', elementId: 'y', tabId: 't1' } });
+    await Promise.resolve();
+    sendFrame(room, a, { kind: 'op', op: { kind: 'select', elementId: null, tabId: 't1' } });
+    room.webSocketClose(asWs(b));
+    await Promise.resolve();
+    expect(state.store.has(`selection:${presenceIdOf(a)}`)).toBe(false);
+    expect(state.store.has(`selection:${presenceIdOf(b)}`)).toBe(false);
+  });
+
+  it('refuses a selections query without a tab', async () => {
+    const { room } = newRoom();
+    expect((await room.fetch(new Request('https://room/selections'))).status).toBe(400);
+  });
+
+  it('pins the verified person tag on the session from the upgrade, never from a client', () => {
+    const { room } = newRoom();
+    const ws = join(room, 'o', 'tag-owner');
+    expect((ws.attachment as { personTag?: string }).personTag).toBe('tag-owner');
+    sendFrame(room, ws, {
+      kind: 'hello',
+      participant: { id: 'o', name: 'O', color: '#000', personTag: 'forged' },
+    });
+    expect((ws.attachment as { personTag?: string }).personTag).toBe('tag-owner');
   });
 });

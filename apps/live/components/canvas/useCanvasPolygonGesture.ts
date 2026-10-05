@@ -24,7 +24,8 @@ export function useCanvasPolygonGesture({
   wrapperRef,
   viewportZoom,
   onCommitPolygon,
-}: Pick<CanvasProps, 'pendingDraw' | 'elements' | 'viewportZoom' | 'onCommitPolygon'> & {
+}: Pick<CanvasProps, 'pendingDraw' | 'elements' | 'onCommitPolygon'> & {
+  viewportZoom: number;
   wrapperRef: RefObject<HTMLDivElement | null>;
 }) {
   const [polygonVertices, setPolygonVertices] = useState<{ x: number; y: number }[]>([]);

@@ -20,7 +20,7 @@ test('the new-document wizard renders', async ({ page, pageErrors }) => {
   // The template shelf is the client-rendered heart of the wizard; its
   // Popular heading proves the picker mounted, not just the shell.
   await expect(page.getByRole('heading', { name: 'Popular' })).toBeVisible();
-  await expect(page.getByText('Blank Canvas', { exact: false })).toBeVisible();
+  await expect(page.getByText('Blank Diagram', { exact: false })).toBeVisible();
   expectNoPageErrors(pageErrors);
 });
 
@@ -29,7 +29,7 @@ test('the new-document wizard renders', async ({ page, pageErrors }) => {
 // open invisibly behind it.
 test('the apps menu opens in front of the new-document wizard', async ({ page, pageErrors }) => {
   await page.goto('/new');
-  await expect(page.getByText('Blank Canvas', { exact: false })).toBeVisible();
+  await expect(page.getByText('Blank Diagram', { exact: false })).toBeVisible();
 
   const switcher = page.getByRole('button', { name: /^switch section/i });
   await untilHydrated(switcher);
@@ -61,6 +61,9 @@ test('create a blank document, add a shape, and it survives a reload', async ({
   await startBlankDocument(page);
   // The wizard created a real document and routed to it.
   await expect(page).toHaveURL(/\/document\/[0-9a-f-]{36}/);
+  // The tour offer opens 800 ms after the editor is ready and its backdrop takes every click
+  // (TourHost): answer it first, or a slow runner's canvas click lands on the backdrop.
+  await dismissQuickTour(page);
 
   // The palette is open by default on desktop; its shape tiles are
   // aria-labelled ("Add square"). Arm the Square, then drop it on the

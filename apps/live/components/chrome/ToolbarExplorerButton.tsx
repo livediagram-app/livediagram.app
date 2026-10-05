@@ -4,6 +4,7 @@ import { track } from '@/lib/telemetry';
 import { HoverCard, Glyph } from '@livediagram/ui';
 import { useUiScale } from '@/components/providers/ui-scale';
 import { toSurfacePx, uiScaleStyle } from '@/lib/ui-scale';
+import { EditorModeSwitch } from './editor-mode/EditorModeSwitch';
 
 // The Toolbar layout's menu button (docs/specs/007-editor/toolbar-layout.md), top-left of the canvas where
 // the Explorer panel would float. It toggles that same Explorer panel open as
@@ -15,8 +16,12 @@ import { toSurfacePx, uiScaleStyle } from '@/lib/ui-scale';
 // pressing this button while the Explorer is open closes it via the toggle
 // rather than closing it on pointer-down and reopening it on click.
 //
-// `inline` drops the corner card so the button can sit at the far left of
-// the Palette strip instead, which is where a phone puts it.
+// `inline` drops the corner positioning so the strip's row can hold it in its
+// own card at the far left, beside the strip, which is where a phone puts it.
+//
+// The editor mode switch (docs/specs/007-editor/editor-modes.md "The mode switch") rides beside the
+// button, in the corner card or inline, so it goes wherever the menu goes; it renders nothing where
+// no switch is offered.
 export function ToolbarExplorerButton({
   open,
   onToggle,
@@ -54,6 +59,10 @@ export function ToolbarExplorerButton({
   return (
     <div
       data-dock-button=""
+      // Chrome, not canvas: the canvas's capture-phase gestures skip a press inside a floating
+      // panel. Without it, a press here (the menu button, the mode switch's menu) with a Draw pen
+      // in hand started a stroke instead, and the switch back to Diagram never landed.
+      data-floating-panel=""
       data-tour-id="dock-explorer"
       data-toolbar-menu=""
       style={
@@ -63,8 +72,8 @@ export function ToolbarExplorerButton({
       }
       className={
         inline
-          ? 'flex'
-          : 'pointer-events-auto absolute left-3 top-3 z-[var(--z-toolbar)] rounded-xl border border-slate-200 bg-white p-1 shadow-md shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40'
+          ? 'flex items-center gap-1'
+          : 'pointer-events-auto absolute left-3 top-3 z-[var(--z-toolbar)] flex items-center gap-1 rounded-xl border border-slate-200 bg-white p-1 shadow-md shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40'
       }
       onPointerDown={(e) => e.stopPropagation()}
       onContextMenu={(e) => {
@@ -80,6 +89,7 @@ export function ToolbarExplorerButton({
           {button}
         </HoverCard>
       )}
+      <EditorModeSwitch />
     </div>
   );
 }

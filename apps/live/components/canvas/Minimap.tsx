@@ -1,5 +1,8 @@
 'use client';
 
+import { pageWritingBars } from '@/lib/article/article-export';
+import { useArticleLaidOutSeq } from '@/lib/article/article-editor-store';
+import { articleOpsToSvg } from '@/lib/article/article-draw';
 import { useDeferredValue, useMemo, useRef } from 'react';
 import {
   boundsOfPoints,
@@ -10,9 +13,12 @@ import {
   svgArrow,
   svgBoxed,
   svgShadowDefs,
+  elementPageSurfaces,
   type Element,
+  type LaidOutPage,
   type Point,
 } from '@livediagram/document';
+import { pageExportFrame } from '@/lib/export-page';
 import { framesFirst, ZOOM_MAX, ZOOM_MIN } from '@/lib/canvas';
 import { resolveIconArtLoaded, resolveStickerArtLoaded } from '@/lib/icon-registry';
 import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
@@ -49,6 +55,11 @@ const MAP_HEIGHT: Record<MapSize, string> = {
 
 type MinimapProps = {
   elements: Element[];
+  // Illustrate mode's pages (docs/specs/007-editor/illustrate-pages.md "Getting around the
+  // pages"): drawn under the content as their sheets, each outlined, and counted in the bounds.
+  pages?: readonly LaidOutPage[];
+  // The articles' writing, by identity: the picture redraws a page's lines of text as it changes.
+  writing?: unknown;
   // The tab default face (docs/specs/004-interface-design/fonts.md): the miniature paints what the canvas
   // paints, so a canvas set in the marker face looks that way in the map too.
   tabFont?: string;
@@ -89,6 +100,7 @@ const PAD_FRACTION = 0.12;
 const PAD_MIN = 48;
 // What the catalogue resolvers find before the catalogue chunk lands.
 const NO_ART = () => undefined;
+const NO_ELEMENTS: Element[] = [];
 // An element as the Map draws it: its label left out (docs/specs/008-canvas/minimap.md "What it shows").
 function withoutLabel(el: Element): Element {
   if (!('label' in el) && !('richText' in el)) return el;
@@ -116,6 +128,8 @@ const MAP_RATIO: Record<MapSize, number> = {
 
 export function Minimap({
   elements: liveElements,
+  pages,
+  writing,
   tabFont,
   viewportOffset,
   viewportZoom,
@@ -135,7 +149,9 @@ export function Minimap({
   // Drawn as the elements settle, not per frame of a gesture (docs/specs/008-canvas/canvas-performance.md),
   // and deferred: the change that settles them (a drag's release) commits first, and the Map's picture,
   // rebuilt and re-parsed for the whole board, follows as its own render.
-  const elements = useDeferredValue(useSettledElements(liveElements));
+  // On mount the picture is deferred too: the first render draws none (NO_ELEMENTS), so opening a
+  // board mounts it first and the Map's whole-board picture follows in a background render.
+  const elements = useDeferredValue(useSettledElements(liveElements), NO_ELEMENTS);
   const draggingRef = useRef(false);
 
   // Which paper the canvas is (light / dark), from the SAME context the canvas
@@ -146,6 +162,8 @@ export function Minimap({
   const viewColors = selectionBoxColors(accentColor, surface);
   // Re-render once the async icon catalogues land so Technology marks pop in.
   const iconsLoaded = useIconCatalogs();
+  // An article's writing laid out for the first time: its lines of text can be drawn now.
+  const laidOut = useArticleLaidOutSeq();
   // One pass builds the full-fidelity markup (the SAME headless renderer the
   // exports / live image use — real colours, silhouettes, tables, freehand,
   // icon glyphs, rotation, curved arrows) plus the content bounds; recomputed
@@ -159,6 +177,22 @@ export function Minimap({
     const drawn = elements.map(withoutLabel);
     const corners: Point[] = [];
     const parts: string[] = [];
+    // The pages first, under everything: each sheet in its own paint with a crisp outline, so
+    // even an empty page shows where it is.
+    const paper = surface === 'dark' ? '#0f172a' : '#ffffff';
+    const outline = surface === 'dark' ? '#94a3b8' : '#64748b';
+    for (const page of pages ?? []) {
+      const { x, y, width, height } = page.rect;
+      parts.push(
+        pageExportFrame(page, { paper, idPrefix: 'lvd-minimap-page' }).backgroundSvg +
+          // An article page's writing, as soft lines of text.
+          (page.flow ? articleOpsToSvg(pageWritingBars(page, outline)) : '') +
+          `<rect x="${x}" y="${y}" width="${width}" height="${height}" fill="none" stroke="${outline}" stroke-width="${Math.max(width, height) / 160}"/>`,
+      );
+      corners.push({ x, y }, { x: x + width, y: y + height });
+    }
+    // Each element inked for the page it is on, as the canvas inks it.
+    const pageSurfaces = pages ? elementPageSurfaces(drawn, pages) : null;
     // The resolvers find nothing until the catalogue chunk lands, which
     // re-runs the build with the glyphs.
     const resolveIconArt = iconsLoaded ? resolveIconArtLoaded : NO_ART;
@@ -176,14 +210,23 @@ export function Minimap({
           resolveIconArt,
           resolveStickerArt,
           tabFont,
-          surface,
+          surface: pageSurfaces?.get(el.id) ?? surface,
         }),
       );
       corners.push({ x: el.x, y: el.y }, { x: el.x + el.width, y: el.y + el.height });
     }
     for (const el of drawn) {
       if (el.type !== 'arrow') continue;
-      parts.push(svgArrow(el, drawn, surface, tabFont, labels, 'lvd-minimap-ko-'));
+      parts.push(
+        svgArrow(
+          el,
+          drawn,
+          pageSurfaces?.get(el.id) ?? surface,
+          tabFont,
+          labels,
+          'lvd-minimap-ko-',
+        ),
+      );
       corners.push(endpointPosition(el.from, drawn), endpointPosition(el.to, drawn));
     }
     const content = boundsOfPoints(corners);
@@ -205,7 +248,9 @@ export function Minimap({
       picture: { ...box, href: `data:image/svg+xml;charset=utf-8,${encodeURIComponent(doc)}` },
       bounds: content,
     };
-  }, [elements, tabFont, iconsLoaded, surface]);
+    // `writing` changes with the documents' text, which the bars read off the editors.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [elements, pages, tabFont, iconsLoaded, surface, writing, laidOut]);
 
   const recentreToClient = (clientX: number, clientY: number) => {
     const svg = svgRef.current;

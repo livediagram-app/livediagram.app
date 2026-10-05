@@ -52,7 +52,8 @@ import {
   ProgressMenuGlyph,
   ToolsMenuGlyph,
 } from '@/components/palette/context-menu-icons';
-import { MenuAccordionSection, MenuTile, MenuTileGrid } from '@/components/primitives/PortalMenu';
+import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
+import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
 import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
 import { LegendTextSize } from '@/components/palette/TypographySections';
 import { PortalMenuSection } from '@/components/palette/PortalMenuSection';
@@ -429,6 +430,7 @@ export function ElementDataSections({
                 current={props.mindFlow}
                 onSet={props.onSetMindFlow}
                 onTidy={props.onTidyMindMap}
+                onEditOutline={props.onEditMindOutline}
               />
             </MenuAccordionSection>
           ) : null}

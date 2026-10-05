@@ -4,6 +4,8 @@ import { useRef, type ReactNode } from 'react';
 import { Portal } from '@/components/primitives/Portal';
 import { useEscape, useFocusTrap } from '@livediagram/ui';
 import { useModalGuard } from '@/hooks/ui/useModalGuard';
+import { useSwipeDownDismiss } from '@/hooks/ui/useSwipeDownDismiss';
+import { safeInset } from '@/lib/safe-area';
 
 // The shared modal shell. Every editor dialog (ConfirmDialog,
 // TeamFormModal, ShareDialog, Import/Export, Settings, …) re-built the
@@ -21,7 +23,7 @@ import { useModalGuard } from '@/hooks/ui/useModalGuard';
 // Width scale covering the values the hand-rolled dialogs actually used
 // (26 / 30 / 34 / 36rem) so every dialog snaps to one rung instead of a
 // bespoke `w-[..]`.
-type DialogSize = 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl';
+type DialogSize = 'sm' | 'md' | 'lg' | 'xl' | '2xl';
 
 // The dialogs big enough to be worth the whole phone screen. Below sm: they
 // drop their inset, radius and border and fill the viewport — a 92%-wide card
@@ -31,7 +33,7 @@ type DialogSize = 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl';
 // rather than the quick question it is. `md` is in because everything using
 // it is a real panel (Settings, Shortcuts, the import / export panes), not a
 // question.
-const EDGE_TO_EDGE_SIZES = new Set<DialogSize>(['md', 'lg', 'xl', '2xl', '3xl']);
+const EDGE_TO_EDGE_SIZES = new Set<DialogSize>(['md', 'lg', 'xl', '2xl']);
 
 const WIDTHS: Record<DialogSize, string> = {
   sm: 'w-[26rem]',
@@ -40,10 +42,6 @@ const WIDTHS: Record<DialogSize, string> = {
   xl: 'w-[36rem]',
   // The image picker's two-column grid (640px = 40rem).
   '2xl': 'w-[40rem]',
-  // Wide tile-grid dialogs (the Edit Favourites picker): long catalogues
-  // (Icons, Technology) trade vertical scroll for horizontal room on
-  // desktop. max-w-[92%] still bounds it on smaller screens.
-  '3xl': 'w-[56rem]',
 };
 
 type DialogProps = {
@@ -60,14 +58,21 @@ type DialogProps = {
   // Extra classes appended to the panel (e.g. `max-h-[90vh]` for a dialog
   // with its own scrolling body).
   className?: string;
-  // 'desktop-light' keeps the page visible behind the modal on desktop (a
-  // faint tint, no blur) so live effects show through — the edit-favourites
-  // dialog uses it so the palette grid updates in view (docs/specs/010-palette/palette-favourites.md). Mobile
-  // (below sm) always keeps the full dim: the centred panel covers most of
-  // the viewport there anyway, and the dim signals modality.
+  // 'desktop-light' keeps the page visible behind the modal on desktop (a faint tint, no blur) so
+  // live effects show through (Settings uses it, so a changed preference shows in the editor
+  // behind it). Mobile (below sm) always keeps the full dim: the centred panel covers most of the
+  // viewport there anyway, and the dim signals modality.
   backdrop?: 'dim' | 'desktop-light';
+  // On a phone (below sm), rise as a sheet docked to the bottom edge, with a grab handle that drags
+  // it down to close, instead of filling the screen (docs/specs/007-editor/live-app.md "Working
+  // dialogs rise as sheets on a phone"). A centred card from sm up either way.
+  phoneSheet?: boolean;
   children: ReactNode;
 };
+
+// A phone sheet's panel below sm: the BottomSheet's shape, taller (a dialog holds a form).
+const PHONE_SHEET =
+  ' max-sm:max-h-[85dvh] max-sm:w-full max-sm:max-w-none max-sm:animate-sheet-up max-sm:rounded-b-none max-sm:rounded-t-2xl max-sm:border-b-0';
 
 const BACKDROPS: Record<NonNullable<DialogProps['backdrop']>, string> = {
   dim: 'bg-slate-900/40 backdrop-blur-sm dark:bg-slate-950/60',
@@ -84,9 +89,13 @@ export function Dialog({
   closeOnEscape = true,
   className,
   backdrop = 'dim',
+  phoneSheet = false,
   children,
 }: DialogProps) {
   const panelRef = useRef<HTMLDivElement>(null);
+  const swipe = useSwipeDownDismiss(onClose);
+  // Whether the press now under way began on the backdrop itself.
+  const pressedBackdrop = useRef(false);
   // Register with the modal guard so the editor's window-level shortcut
   // and paste listeners go quiet while any dialog is up (they otherwise
   // mutate the canvas behind the modal — see lib/modal-guard).
@@ -102,7 +111,10 @@ export function Dialog({
   return (
     <Portal>
       <div
-        onPointerDown={(e) => e.stopPropagation()}
+        onPointerDown={(e) => {
+          e.stopPropagation();
+          pressedBackdrop.current = e.target === e.currentTarget;
+        }}
         // Swallow right-click on the backdrop so neither the browser menu nor
         // the editor's canvas context menu fires behind the modal (several
         // dialogs open-coded this guard before adopting the shell).
@@ -110,9 +122,14 @@ export function Dialog({
           e.preventDefault();
           e.stopPropagation();
         }}
-        className={`fixed inset-0 z-[var(--z-modal)] flex items-center justify-center ${BACKDROPS[backdrop]}`}
+        className={`fixed inset-0 z-[var(--z-modal)] flex items-center justify-center ${
+          phoneSheet ? 'max-sm:items-end ' : ''
+        }${BACKDROPS[backdrop]}`}
         onClick={(e) => {
-          if (e.target === e.currentTarget) onClose();
+          // Only a press that began on the backdrop closes: a text selection dragged out of the
+          // panel and released over the backdrop clicks there too, and must not lose the edit.
+          if (e.target === e.currentTarget && pressedBackdrop.current) onClose();
+          pressedBackdrop.current = false;
         }}
       >
         <div
@@ -122,18 +139,42 @@ export function Dialog({
           aria-labelledby={titleId}
           aria-label={ariaLabel}
           tabIndex={-1}
+          style={
+            phoneSheet
+              ? {
+                  paddingBottom: safeInset('bottom'),
+                  transform: swipe.offset > 0 ? `translateY(${swipe.offset}px)` : undefined,
+                  transition: swipe.dragging
+                    ? 'none'
+                    : 'transform var(--transition-duration-micro) ease',
+                }
+              : undefined
+          }
           // Default to a viewport-bounded, scrollable panel so a tall dialog on
           // a short/landscape screen never pushes its footer off the bottom.
           // Dialogs that set their own max-h (e.g. ShareDialog, Export) opt out
           // of the default and manage their own scroll region.
           className={`flex ${WIDTHS[size]} max-w-[92%] animate-fly-up-in flex-col rounded-xl border border-slate-200 bg-white shadow-2xl shadow-slate-900/10 outline-none dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40${
-            EDGE_TO_EDGE_SIZES.has(size)
-              ? ' max-sm:h-full max-sm:max-h-none max-sm:w-full max-sm:max-w-none max-sm:rounded-none max-sm:border-0'
-              : ''
+            phoneSheet
+              ? PHONE_SHEET
+              : EDGE_TO_EDGE_SIZES.has(size)
+                ? ' max-sm:h-full max-sm:max-h-none max-sm:w-full max-sm:max-w-none max-sm:rounded-none max-sm:border-0'
+                : ''
           }${
             className?.includes('max-h') ? '' : ' max-h-[calc(100dvh-2rem)] overflow-y-auto'
           }${className ? ` ${className}` : ''}`}
         >
+          {phoneSheet ? (
+            // The grab handle, phone only: the full width of the sheet, 24px tall (BottomSheet's).
+            <div
+              aria-hidden
+              data-sheet-handle=""
+              {...swipe.handleProps}
+              className="flex h-6 shrink-0 cursor-grab touch-none items-center justify-center sm:hidden"
+            >
+              <span className="h-1 w-10 rounded-full bg-slate-300 dark:bg-slate-600" />
+            </div>
+          ) : null}
           {children}
         </div>
       </div>

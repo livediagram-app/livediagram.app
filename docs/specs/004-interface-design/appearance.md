@@ -17,7 +17,7 @@ Every app's root layout inlines the same tiny script, before first paint, that a
 
 - One button that **cycles Light → Dark → System**, showing the CURRENT setting (sun / moon / monitor); its accessible name says where the next click goes.
 - In the editor it sits in the tab bar's controls ([Live app](../007-editor/live-app.md)). In [Power user mode](../007-editor/power-user-mode.md#quick-appearance-switch) a click switches between Light and Dark, and a right-click sets System. The public sites, the home page included, have no power user mode and always cycle.
-- On the public sites it sits in the shared `SiteHeader`, icon-only, just left of the header's call-to-action buttons, on every page of marketing, help and the dashboard. It is quiet (a ghost icon button), so the header keeps its simplicity.
+- On the public sites, wherever the [share rail](../019-marketing/marketing-site.md#social-sharing) shows (`xl` and up, on marketing and the dashboard), it sits on **its own small rail directly under the share rail**, pinned to the right edge, an icon button in the rail's style, with the toolbar name "Appearance"; the header then holds only the call-to-action buttons. Below `xl`, and on the help centre (which has no share rail), it stays in the shared `SiteHeader`, icon-only, just left of the call-to-action buttons, from `sm` up: a phone's header has no room for it, so there it is left out and the appearance follows its saved choice or the device (System). It is quiet (a ghost icon button) in both places.
 - The public-site control emits **no telemetry**: those sites report page views only ([Page view telemetry](../017-telemetry/page-view-telemetry.md)). The editor's control keeps its `UI / Toggled / <setting>` event.
 
 ## What goes dark

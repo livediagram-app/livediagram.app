@@ -232,6 +232,11 @@ export type SettingsPlacementDefaultRowSpec = RowBase & {
   placementKey: PlacementDefaultKey;
 };
 
+// Skip the Location step (docs/specs/013-workspace/default-folders.md "Skipping the Location
+// step"): where new documents go without asking, and Turn Off. Turned on from the wizard, where the
+// place is chosen, so the row reads and clears the preference rather than toggling it.
+export type SettingsSkipLocationRowSpec = RowBase & { kind: 'skipLocationStep' };
+
 export type SettingsRowSpec =
   | SettingsToggleRowSpec
   | SettingsChoiceRowSpec
@@ -247,13 +252,15 @@ export type SettingsRowSpec =
   | SettingsTrashRowSpec
   | SettingsPresetSummaryRowSpec
   | SettingsCloudSyncRowSpec
-  | SettingsPlacementDefaultRowSpec;
+  | SettingsPlacementDefaultRowSpec
+  | SettingsSkipLocationRowSpec;
 
 export type SettingsCategorySpec = {
   id: SettingsCategoryId;
   label: string;
   // The top-level category this is a sub-category of (Panels holds one per
-  // panel, Editor one per mode with settings of its own). The list nests it, untiled and indented, beneath its
+  // panel, Editor one per mode with settings of its own, Account its
+  // Notifications and API Tokens). The list nests it, untiled and indented, beneath its
   // parent; it is still its own pane. A parent's sub-categories follow it
   // directly, like a section's rows.
   parent?: SettingsIconId;
@@ -694,8 +701,198 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
     ],
   },
   {
+    id: 'accessibility',
+    label: 'Accessibility',
+    rows: [
+      {
+        kind: 'toggle',
+        key: 'reduceMotion',
+        keywords: 'animation transitions accessibility motion sickness vestibular',
+        label: 'Reduce Motion',
+        description:
+          "Turns off the editor's decorative animations and transitions (panels, popovers, the snap guides, etc.) so the interface appears instantly instead of sliding or popping. Your device's own 'reduce motion' setting is always respected; this lets you force it on here too, and it syncs across your devices.",
+        read: (p) => p.reduceMotion === true,
+        write: (p, v) => ({ ...p, reduceMotion: v }),
+        event: { category: 'UI', on: 'ReduceMotionOn', off: 'ReduceMotionOff' },
+      },
+      {
+        kind: 'toggle',
+        key: 'tourSeen',
+        keywords: 'walkthrough onboarding intro show me around getting started',
+        label: 'Show Welcome Tour',
+        description:
+          'Offers the Show me around tour the next time you open a document. It switches itself off once you have taken or dismissed the tour, so it only ever offers itself once. Turn it back on and close Settings to run the tour again straight away.',
+        helpArticle: 'welcomeTour',
+        // INVERTED against the stored preference: the row asks "show me the
+        // tour?", `tourSeen` records "already seen". Switch on === not seen.
+        read: (p) => p.tourSeen !== true,
+        write: (p, v) => ({ ...p, tourSeen: !v }),
+        // The tokens still track the PREFERENCE, not the switch, so the
+        // dashboard series keeps meaning what it has always meant: turning
+        // the row ON sets tourSeen=false, which is 'TourSeenOff'.
+        event: { category: 'UI', on: 'TourSeenOff', off: 'TourSeenOn' },
+      },
+    ],
+  },
+  {
+    id: 'ai',
+    label: 'AI Tools',
+    requiresAi: true,
+    rows: [
+      {
+        kind: 'toggle',
+        key: 'aiAssistanceEnabled',
+        keywords: 'assistant chat ask clean llm',
+        section: 'Assistant',
+        label: 'AI Assistant',
+        description:
+          'Shows an AI panel in the editor with two modes: Ask questions about the active tab, and Clean to tidy up labels, sizes, and styles. Off by default.',
+        helpArticle: 'aiTools',
+        read: (p) => p.aiAssistanceEnabled === true,
+        write: (p, v) => ({ ...p, aiAssistanceEnabled: v }),
+        event: { category: 'AI', on: 'AiOn', off: 'AiOff' },
+      },
+      {
+        kind: 'toggle',
+        key: 'aiSuggestedPrompts',
+        keywords: 'starter questions prompts suggestions ai',
+        section: 'Assistant',
+        label: 'Suggested Prompts',
+        description:
+          'Offers a few starter questions in the AI panel when you have not typed anything yet.',
+        read: (p) => p.aiSuggestedPrompts !== false,
+        write: (p, v) => ({ ...p, aiSuggestedPrompts: v }),
+        event: { category: 'AI', on: 'AiSuggestedPromptsOn', off: 'AiSuggestedPromptsOff' },
+      },
+      {
+        kind: 'link',
+        key: 'apiTokensLink',
+        keywords: 'api token key mcp integration script developer access',
+        section: 'API Access',
+        label: 'API Tokens',
+        cta: 'Manage API Tokens',
+        target: 'tokens',
+        description:
+          'Tokens let your own scripts, and AI tools connected over MCP, call the livediagram API as you. They have their own category in Settings.',
+        available: (ctx) => ctx.authEnabled === true,
+      },
+    ],
+  },
+  {
+    // Experimental (docs/specs/007-editor/editor-modes.md "Experimental modes"): ideas being
+    // tried out, each off until switched on here. Listed after AI Tools.
+    id: 'experimental',
+    label: 'Experimental',
+    rows: [
+      {
+        kind: 'toggle',
+        key: 'illustrateModeEnabled',
+        keywords:
+          'illustrate infographic article page pages a4 poster writing word document editor mode experiment labs beta',
+        label: 'Illustrate Mode',
+        description:
+          'Illustrate mode in the editor mode switch: pages to lay out as infographics or write as articles, then export and present. Still new, so it may change. On by default.',
+        read: (p) => p.illustrateModeEnabled !== false,
+        write: (p, v) => ({ ...p, illustrateModeEnabled: v }),
+        event: { category: 'UI', on: 'IllustrateModeOn', off: 'IllustrateModeOff' },
+      },
+    ],
+  },
+  {
+    id: 'documents',
+    label: 'Documents',
+    rows: [
+      {
+        kind: 'skipLocationStep',
+        key: 'skipLocationStep',
+        section: 'Where New Documents Go',
+        label: 'Skip the Location Step',
+        keywords:
+          'skip location step new document wizard always save every new document same place folder ask where',
+        description:
+          'Saves every new document in one place without asking. Turn it on from the Location step of the New Document wizard.',
+        helpArticle: 'defaultFolders',
+      },
+      // One row per default folder entry, in list order: guests have defaults too.
+      ...DEFAULT_KEY_ENTRIES.map((entry): SettingsPlacementDefaultRowSpec => ({
+        kind: 'placementDefault',
+        key: `placementDefault-${entry.key}`,
+        placementKey: entry.key,
+        section: 'Where New Documents Go',
+        label: titleCase(entry.label),
+        keywords:
+          'default folder where new documents go save location place file automatically always save placement',
+        description: `Where new ${entry.noun} go when you create one without choosing a place.`,
+        helpArticle: 'defaultFolders',
+      })),
+    ],
+  },
+  {
+    id: 'account',
+    label: 'Account',
+    rows: [
+      {
+        kind: 'identity',
+        key: 'identity',
+        section: 'You',
+        label: 'Guest',
+        keywords:
+          'account profile identity name email signed in sign in avatar picture photo google joined',
+        description:
+          'Your name, email and picture come from your account and are changed there, not here. Signing in keeps your documents across browsers and devices; without it they belong to this browser alone.',
+        helpArticle: 'guestVsAccount',
+      },
+      {
+        kind: 'toggle',
+        key: 'showProfilePicture',
+        keywords: 'profile picture photo avatar google show hide privacy collaborators',
+        section: 'You',
+        label: 'Show My Profile Picture',
+        description:
+          'Signed-in collaborators see your picture on presence, cursors, comments and teams. People who open your share links without signing in always see your initials. You always see it yourself.',
+        available: (ctx) => ctx.signedIn,
+        read: (p) => showProfilePictureEnabled(p),
+        write: (p, v) => ({ ...p, showProfilePicture: v }),
+        event: { category: 'UI', on: 'ShowProfilePictureOn', off: 'ShowProfilePictureOff' },
+      },
+      {
+        kind: 'trash',
+        key: 'trash',
+        section: 'Your Data',
+        label: 'Trash',
+        keywords:
+          'trash bin recycle deleted undo undelete restore recover get back document diagram permanently empty',
+        description:
+          'Deleted documents wait here for 30 days before they are removed for good. Restore one to put it back where it was.',
+        helpArticle: 'trash',
+      },
+      // One row per provider, from the Cloud Sync catalogue.
+      ...CLOUD_SYNC_PROVIDERS.map((p): SettingsCloudSyncRowSpec => ({
+        kind: 'cloudSync',
+        key: `cloudSync-${p.id}`,
+        provider: p.id,
+        section: CLOUD_SYNC_SECTION,
+        label: p.label,
+        keywords: p.keywords,
+        description: p.description,
+        helpArticle: p.helpArticle,
+        available: (ctx) => ctx.cloudProviders?.includes(p.id) ?? false,
+      })),
+      {
+        kind: 'deleteAccount',
+        key: 'deleteAccount',
+        section: 'Danger Zone',
+        label: 'Delete Account',
+        keywords: 'delete account remove wipe erase close cancel data gdpr',
+        description:
+          'Removes your documents, folders, and the account itself, everywhere. There is no undo and no recovery, so you are asked to type your email to confirm.',
+      },
+    ],
+  },
+  {
     id: 'notifications',
     label: 'Notifications',
+    parent: 'account',
     rows: [
       {
         kind: 'toggle',
@@ -815,164 +1012,9 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
     ],
   },
   {
-    id: 'accessibility',
-    label: 'Accessibility',
-    rows: [
-      {
-        kind: 'toggle',
-        key: 'reduceMotion',
-        keywords: 'animation transitions accessibility motion sickness vestibular',
-        label: 'Reduce Motion',
-        description:
-          "Turns off the editor's decorative animations and transitions (panels, popovers, the snap guides, etc.) so the interface appears instantly instead of sliding or popping. Your device's own 'reduce motion' setting is always respected; this lets you force it on here too, and it syncs across your devices.",
-        read: (p) => p.reduceMotion === true,
-        write: (p, v) => ({ ...p, reduceMotion: v }),
-        event: { category: 'UI', on: 'ReduceMotionOn', off: 'ReduceMotionOff' },
-      },
-      {
-        kind: 'toggle',
-        key: 'tourSeen',
-        keywords: 'walkthrough onboarding intro show me around getting started',
-        label: 'Show Welcome Tour',
-        description:
-          'Offers the Show me around tour the next time you open a document. It switches itself off once you have taken or dismissed the tour, so it only ever offers itself once. Turn it back on and close Settings to run the tour again straight away.',
-        helpArticle: 'welcomeTour',
-        // INVERTED against the stored preference: the row asks "show me the
-        // tour?", `tourSeen` records "already seen". Switch on === not seen.
-        read: (p) => p.tourSeen !== true,
-        write: (p, v) => ({ ...p, tourSeen: !v }),
-        // The tokens still track the PREFERENCE, not the switch, so the
-        // dashboard series keeps meaning what it has always meant: turning
-        // the row ON sets tourSeen=false, which is 'TourSeenOff'.
-        event: { category: 'UI', on: 'TourSeenOff', off: 'TourSeenOn' },
-      },
-    ],
-  },
-  {
-    id: 'ai',
-    label: 'AI Tools',
-    requiresAi: true,
-    rows: [
-      {
-        kind: 'toggle',
-        key: 'aiAssistanceEnabled',
-        keywords: 'assistant chat ask clean llm',
-        section: 'Assistant',
-        label: 'AI Assistant',
-        description:
-          'Shows an AI panel in the editor with two modes: Ask questions about the active tab, and Clean to tidy up labels, sizes, and styles. Off by default.',
-        helpArticle: 'aiTools',
-        read: (p) => p.aiAssistanceEnabled === true,
-        write: (p, v) => ({ ...p, aiAssistanceEnabled: v }),
-        event: { category: 'AI', on: 'AiOn', off: 'AiOff' },
-      },
-      {
-        kind: 'toggle',
-        key: 'aiSuggestedPrompts',
-        keywords: 'starter questions prompts suggestions ai',
-        section: 'Assistant',
-        label: 'Suggested Prompts',
-        description:
-          'Offers a few starter questions in the AI panel when you have not typed anything yet.',
-        read: (p) => p.aiSuggestedPrompts !== false,
-        write: (p, v) => ({ ...p, aiSuggestedPrompts: v }),
-        event: { category: 'AI', on: 'AiSuggestedPromptsOn', off: 'AiSuggestedPromptsOff' },
-      },
-      {
-        kind: 'link',
-        key: 'apiTokensLink',
-        keywords: 'api token key mcp integration script developer access',
-        section: 'API Access',
-        label: 'API Tokens',
-        cta: 'Manage API Tokens',
-        target: 'tokens',
-        description:
-          'Tokens let your own scripts, and AI tools connected over MCP, call the livediagram API as you. They have their own category in Settings.',
-        available: (ctx) => ctx.authEnabled === true,
-      },
-    ],
-  },
-  {
-    id: 'documents',
-    label: 'Documents',
-    // One row per default folder entry, in list order: guests have defaults too.
-    rows: DEFAULT_KEY_ENTRIES.map((entry): SettingsPlacementDefaultRowSpec => ({
-      kind: 'placementDefault',
-      key: `placementDefault-${entry.key}`,
-      placementKey: entry.key,
-      section: 'Where New Documents Go',
-      label: titleCase(entry.label),
-      keywords:
-        'default folder where new documents go save location place file automatically always save placement',
-      description: `Where new ${entry.noun} go when you create one without choosing a place.`,
-      helpArticle: 'defaultFolders',
-    })),
-  },
-  {
-    id: 'account',
-    label: 'Account',
-    rows: [
-      {
-        kind: 'identity',
-        key: 'identity',
-        section: 'You',
-        label: 'Guest',
-        keywords:
-          'account profile identity name email signed in sign in avatar picture photo google joined',
-        description:
-          'Your name, email and picture come from your account and are changed there, not here. Signing in keeps your documents across browsers and devices; without it they belong to this browser alone.',
-        helpArticle: 'guestVsAccount',
-      },
-      {
-        kind: 'toggle',
-        key: 'showProfilePicture',
-        keywords: 'profile picture photo avatar google show hide privacy collaborators',
-        section: 'You',
-        label: 'Show My Profile Picture',
-        description:
-          'Signed-in collaborators see your picture on presence, cursors, comments and teams. People who open your share links without signing in always see your initials. You always see it yourself.',
-        available: (ctx) => ctx.signedIn,
-        read: (p) => showProfilePictureEnabled(p),
-        write: (p, v) => ({ ...p, showProfilePicture: v }),
-        event: { category: 'UI', on: 'ShowProfilePictureOn', off: 'ShowProfilePictureOff' },
-      },
-      {
-        kind: 'trash',
-        key: 'trash',
-        section: 'Your Data',
-        label: 'Trash',
-        keywords:
-          'trash bin recycle deleted undo undelete restore recover get back document diagram permanently empty',
-        description:
-          'Deleted documents wait here for 30 days before they are removed for good. Restore one to put it back where it was.',
-        helpArticle: 'trash',
-      },
-      // One row per provider, from the Cloud Sync catalogue.
-      ...CLOUD_SYNC_PROVIDERS.map((p): SettingsCloudSyncRowSpec => ({
-        kind: 'cloudSync',
-        key: `cloudSync-${p.id}`,
-        provider: p.id,
-        section: CLOUD_SYNC_SECTION,
-        label: p.label,
-        keywords: p.keywords,
-        description: p.description,
-        helpArticle: p.helpArticle,
-        available: (ctx) => ctx.cloudProviders?.includes(p.id) ?? false,
-      })),
-      {
-        kind: 'deleteAccount',
-        key: 'deleteAccount',
-        section: 'Danger Zone',
-        label: 'Delete Account',
-        keywords: 'delete account remove wipe erase close cancel data gdpr',
-        description:
-          'Removes your documents, folders, and the account itself, everywhere. There is no undo and no recovery, so you are asked to type your email to confirm.',
-      },
-    ],
-  },
-  {
     id: 'tokens',
     label: 'API Tokens',
+    parent: 'account',
     rows: [
       {
         kind: 'tokens',

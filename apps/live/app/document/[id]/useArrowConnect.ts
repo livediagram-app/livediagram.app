@@ -1,3 +1,4 @@
+import type { Selection } from '@/lib/selection-store';
 import { useState } from 'react';
 import {
   bestAnchorTowards,
@@ -27,7 +28,7 @@ export function useArrowConnect({
   editsBlocked,
   activeId,
   activeTab,
-  selectedId,
+  readSelection,
   setSelectedId,
   beginDraw,
   commitTabs,
@@ -36,7 +37,8 @@ export function useArrowConnect({
   editsBlocked: boolean;
   activeId: string;
   activeTab: Tab;
-  selectedId: string | null;
+  // Read when an arrow is armed (docs/specs/008-canvas/blueprints/selection-store.md).
+  readSelection: () => Selection;
   setSelectedId: (id: string | null) => void;
   beginDraw: (intent: { type: 'arrow'; ends?: ArrowEnds }) => void;
   commitTabs: (fn: (tabs: Tab[]) => Tab[]) => void;
@@ -61,6 +63,7 @@ export function useArrowConnect({
   const addArrow = (ends?: ArrowEnds) => {
     if (editsBlocked) return;
     const heads: ArrowEnds = typeof ends === 'string' ? ends : 'to';
+    const { selectedId } = readSelection();
     const sel = selectedId ? activeTab.elements.find((e) => e.id === selectedId) : null;
     if (sel && isBoxed(sel)) {
       setConnectSourceId(sel.id);

@@ -193,6 +193,8 @@ export type EditorContextMenuProps = {
   onSetMindFlow: (flow: MindFlow) => void;
   // Lay the selected node's whole map out tidily in its flow (docs/specs/009-elements/mind-node.md "Tidy Map").
   onTidyMindMap: () => void;
+  // Edit Outline (docs/specs/009-elements/mind-node.md): only on a map's root, absent elsewhere.
+  onEditMindOutline?: () => void;
   // Checklist (docs/specs/009-elements/checklist.md): replace the selected checklist's rows.
   onSetChecklistItems: (items: ChecklistItem[]) => void;
   // Tick one row, as the on-canvas checkbox does: a delta the room merges,

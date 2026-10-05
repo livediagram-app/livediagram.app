@@ -13,7 +13,6 @@ import {
 import { EditorHeader } from '@/components/chrome/EditorHeader';
 import { ApiErrorPage } from '@/components/chrome/ApiErrorPage';
 import { TemplatePicker, type NewDocumentSettings } from '@/components/palette/TemplatePicker';
-import { BlankCanvasScreen } from '@/components/chrome/BlankCanvasScreen';
 import { DocumentLoading } from '@/components/chrome/DocumentLoading';
 import { OpeningScreen } from '@/components/chrome/OpeningScreen';
 import { RecentDocumentsCard } from './RecentDocumentsCard';
@@ -23,6 +22,8 @@ import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
 import { useCtaAttribution } from './useCtaAttribution';
 import { usePlacementOptions } from '@/hooks/persistence/usePlacementOptions';
 import { applyAlwaysSave, useWizardDefaults } from './useWizardDefaults';
+import { useSkipLocationStep } from './useSkipLocationStep';
+import { saveSkipLocationStep } from '@/lib/skip-location-step';
 import { apiCreateDocument, apiLoadSelf, apiSaveSelf } from '@/lib/api-client';
 import { createFailureCopy, type CreateFailure } from './create-failure';
 import { offlineCreateDocument } from '@/lib/offline/offline-store';
@@ -47,14 +48,11 @@ import { creationIntentOf } from '@livediagram/api-schema';
 import {
   WIZARD_BYPASS_PARAMS,
   choosePlacementAgainUrl,
-  wantsWelcome,
-  wizardBrowseCollection,
   wizardBypassKind,
+  wizardPresetMode,
+  wizardPresetQuery,
 } from '@/lib/new-document-params';
-import { markQuietLanding } from '@/lib/quiet-landing';
 import { backOutTarget } from '@/lib/back-out';
-import { QUIET_LANDING_ATTR, QUIET_LANDING_LOADER_CLASS } from '@/lib/quiet-landing-boot';
-import { CanvasLoader } from '@livediagram/ui';
 import { getTheme } from '@/lib/themes';
 import { themeTelemetryLabel } from '@/lib/custom-theme-registry';
 import { useLatest } from '@/hooks/ui/useLatest';
@@ -74,13 +72,12 @@ const EditorPage = dynamic(loadEditor, {
 // not change under the page, so nothing needs to subscribe.
 const subscribeNever = () => () => {};
 const bypassKindFromUrl = () => wizardBypassKind(window.location.search);
+// The template step's presets (`?mode=`, `?q=`), read the same way.
+const presetModeFromUrl = () => wizardPresetMode(window.location.search);
+const presetQueryFromUrl = () => wizardPresetQuery(window.location.search);
+const noPreset = () => null;
 const noBypass = () => null;
-// The collection the wizard opens on (`?browse=`), read the same way.
-const browseFromUrl = () => wizardBrowseCollection(window.location.search);
-const noBrowse = () => null;
 const isBypassUrl = () => bypassKindFromUrl() !== null;
-const welcomeFromUrl = () => wantsWelcome(window.location.search);
-const noWelcome = () => false;
 
 // Folder shape the Settings step's placement browser consumes.
 // Dedicated welcome / create-new flow, see docs/specs/007-editor/new-document-route.md.
@@ -182,40 +179,47 @@ export default function NewDocumentPage() {
 
   // Where this document can be filed, and the inline New Folder the Settings
   // step offers — see usePlacementOptions.
-  const { folders, teams, teamFolders, createPickerFolder, createPickerTeam } = usePlacementOptions(
-    {
-      selfId: self.id,
-      clerkUserId,
-      // A bypass commits straight away and never shows the Settings step.
-      skip: isBypassUrl,
-    },
-  );
+  const {
+    folders,
+    teams,
+    teamFolders,
+    createPickerFolder,
+    createPickerTeam,
+    ready: placesReady,
+  } = usePlacementOptions({
+    selfId: self.id,
+    clerkUserId,
+    // A bypass commits straight away and never shows the Settings step.
+    skip: isBypassUrl,
+  });
   // The reader's default folders, per template, for the Location step.
   const wizardDefaults = useWizardDefaults(self.id === 'pending' ? null : self.id, {
     folders,
     teams,
     teamFolders,
   });
-  // The hero launch window's landing (?blank=1&welcome=1) holds the quiet blank canvas the hero
-  // grew into rather than the opening screen, so nothing else paints between the two.
-  const quietLanding = useSyncExternalStore(subscribeNever, welcomeFromUrl, noWelcome);
-  // BlankCanvasScreen now paints the canvas the guard painted; lift the guard so the body shows.
-  useLayoutEffect(() => {
-    if (quietLanding) document.documentElement.removeAttribute(QUIET_LANDING_ATTR);
-  }, [quietLanding]);
+  // Where to save without the Location step, when the reader asked for that
+  // (docs/specs/013-workspace/default-folders.md "Skipping the Location step").
+  const skipLocation = useSkipLocationStep({
+    ownerId: self.id === 'pending' ? null : self.id,
+    context: initialPlacement,
+    lists: { folders, teams, teamFolders },
+    ready: placesReady,
+  });
   useLayoutEffect(() => {
     if (!bypassKindFromUrl()) document.documentElement.removeAttribute('data-just-draw');
   }, []);
-  // `?browse=<collection>` (docs/specs/007-editor/new-document-route.md): the same external-store read,
-  // and the same guard: the prerendered step is the category overview, so the
-  // wizard card stays hidden until the render that shows the collection (or,
-  // for an unknown one, at once), so the author never sees it swap.
-  const browseShelf = useSyncExternalStore(subscribeNever, browseFromUrl, noBrowse);
+
+  // `?mode=` / `?q=` (docs/specs/007-editor/new-document-route.md): the template step opens
+  // narrowed. The prerendered step is unfiltered, so the wizard card stays hidden (the pre-paint
+  // `data-wizard-preset` flag) until the render that shows the preset.
+  const presetMode = useSyncExternalStore(subscribeNever, presetModeFromUrl, noPreset);
+  const presetQuery = useSyncExternalStore(subscribeNever, presetQueryFromUrl, noPreset);
   useLayoutEffect(() => {
-    if (browseFromUrl() === browseShelf) {
-      document.documentElement.removeAttribute('data-wizard-browse');
+    if (presetModeFromUrl() === presetMode && presetQueryFromUrl() === presetQuery) {
+      document.documentElement.removeAttribute('data-wizard-preset');
     }
-  }, [browseShelf]);
+  }, [presetMode, presetQuery]);
 
   const backOut = () => {
     if (submitting) return;
@@ -322,7 +326,13 @@ export default function NewDocumentPage() {
     setSubmitting(true);
     // Save location (docs/specs/006-document/save-locations.md): only Local Browser takes the offline branch.
     const offline = isOfflineLocation(settings.saveLocation);
-    lastCreateArgs.current = { kind: templateKind, name, themeId, settings };
+    // A Retry re-runs the create, not the preference write below.
+    lastCreateArgs.current = {
+      kind: templateKind,
+      name,
+      themeId,
+      settings: { ...settings, skipLocationStep: undefined },
+    };
     // The Settings step's name field wins; fall back to the per-template
     // default when it's left blank (docs/specs/006-document/offline-mode.md).
     // docs/specs/006-document/name-length.md: the wizard's name field goes through the same cap.
@@ -339,6 +349,8 @@ export default function NewDocumentPage() {
       await apiSaveSelf(updated).catch(() => {});
     }
     markNameConfirmed();
+    // "Always save new documents in <place> and skip this step" (docs/specs/013-workspace/default-folders.md).
+    if (settings.skipLocationStep) saveSkipLocationStep(settings.skipLocationStep, who.id);
 
     const documentId = crypto.randomUUID();
     const tabId = crypto.randomUUID();
@@ -416,19 +428,13 @@ export default function NewDocumentPage() {
     // first document gets the tour's welcome offer once the editor opens —
     // handed across the hard navigation via a sessionStorage flag. The
     // editor gates the offer on the synced `tourSeen` preference.
-    // The hero's launch window (/new?blank=1&welcome=1) queues the offer too: its create fires
-    // before the count is known, and the synced tourSeen gate keeps it to people who haven't
-    // answered it. It also lands on the blank canvas the hero grew into (lib/quiet-landing.ts).
-    const welcome = templateKind === 'blank' && wantsWelcome(window.location.search);
-    if (documentCount === 0 || welcome) {
+    if (documentCount === 0) {
       markTourPending();
     }
-    if (welcome) markQuietLanding();
     // Hand off in place: the editor URL takes /new's history entry, and the editor mounts here,
     // reading the id from the rewritten path exactly as a direct visit would.
     handedOff.current = true;
     document.documentElement.removeAttribute('data-just-draw');
-    document.documentElement.removeAttribute(QUIET_LANDING_ATTR);
     window.history.replaceState(null, '', `/document/${documentId}`);
     setOpenedId(documentId);
   };
@@ -500,7 +506,6 @@ export default function NewDocumentPage() {
   // from mount to the handoff (docs/specs/007-editor/new-document-route.md). The editor's own load
   // renders the same screen, so create → open reads as one moment. Create failures fall through to
   // the retryable error card branch before this one.
-  if (quietLanding) return <BlankCanvasScreen />;
   if (bypassKind) return <DocumentLoading stage="creating" />;
 
   return (
@@ -515,15 +520,10 @@ export default function NewDocumentPage() {
       <script
         dangerouslySetInnerHTML={{
           __html:
-            "try{var p=new URLSearchParams(location.search);if(p.has('blank')||p.has('template'))document.documentElement.setAttribute('data-just-draw','');if(p.has('browse'))document.documentElement.setAttribute('data-wizard-browse','')}catch(e){}",
+            "try{var p=new URLSearchParams(location.search);if(p.has('blank')||p.has('template'))document.documentElement.setAttribute('data-just-draw','');if(p.has('mode')||p.has('q'))document.documentElement.setAttribute('data-wizard-preset','')}catch(e){}",
         }}
       />
-      <style>{`html[data-just-draw] [data-wizard-only],html[data-wizard-browse] [data-wizard-only]{visibility:hidden}`}</style>
-      {/* The quiet landing's loader, prerendered so it paints from the first frame on the
-          hero's canvas (lib/quiet-landing-boot.ts); hidden everywhere else. */}
-      <div className={QUIET_LANDING_LOADER_CLASS} aria-hidden="true">
-        <CanvasLoader />
-      </div>
+      <style>{`html[data-just-draw] [data-wizard-only],html[data-wizard-preset] [data-wizard-only]{visibility:hidden}`}</style>
       <EditorHeader
         documentName="New document"
         hideTitle
@@ -556,8 +556,10 @@ export default function NewDocumentPage() {
               teams={teams}
               teamFolders={teamFolders}
               initialPlacement={initialPlacement}
+              initialModeChoice={presetMode}
+              initialQuery={presetQuery}
               defaults={wizardDefaults}
-              initialShelf={browseShelf}
+              skipLocation={skipLocation}
               onCreateFolder={createPickerFolder}
               // Teams are Clerk-only (docs/specs/013-workspace/teams.md): a guest gets no New Team tile.
               onCreateTeam={clerkUserId ? createPickerTeam : undefined}

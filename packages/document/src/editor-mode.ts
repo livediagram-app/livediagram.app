@@ -1,5 +1,5 @@
-// Editor modes (docs/specs/007-editor/editor-modes.md): how a general tab is worked on, Diagram or
-// Draw. A mode tunes tools and rules; it never decides what the tab is (that is its kind). The
+// Editor modes (docs/specs/007-editor/editor-modes.md): how a general tab is worked on, Diagram,
+// Draw or Illustrate. A mode tunes tools and rules; it never decides what the tab is (that is its kind). The
 // mode a person works in is theirs (the editor remembers it per tab, device-locally); the tab only
 // says which mode it OPENS in (`Tab.opensIn`, Diagram when absent).
 import type { Layer } from './layers';
@@ -10,6 +10,11 @@ import { isEventStormingTab } from './event-storming';
 export const EDITOR_MODE_CATALOGUE = [
   { id: 'diagram', label: 'Diagram', description: 'Shapes, arrows, the palette and snapping.' },
   { id: 'draw', label: 'Draw', description: 'Pens, the eraser and shape recognition.' },
+  {
+    id: 'illustrate',
+    label: 'Illustrate',
+    description: 'Pages: infographics to lay out, and articles to write.',
+  },
 ] as const satisfies readonly { id: string; label: string; description: string }[];
 
 export type EditorMode = (typeof EDITOR_MODE_CATALOGUE)[number]['id'];
@@ -28,14 +33,30 @@ export function editorModeDescription(mode: EditorMode): string {
 
 export const DEFAULT_EDITOR_MODE: EditorMode = 'diagram';
 
-/** The mode `step` places along the catalogue from `mode`, wrapping at either end. */
-export function nextEditorMode(mode: EditorMode, step: 1 | -1 = 1): EditorMode {
-  const count = EDITOR_MODES.length;
-  return EDITOR_MODES[(EDITOR_MODES.indexOf(mode) + step + count) % count]!;
+/** The mode `step` places along `modes` (the catalogue unless narrowed) from `mode`, wrapping at
+ *  either end. A mode not in `modes` steps as if just before the first. */
+export function nextEditorMode(
+  mode: EditorMode,
+  step: 1 | -1 = 1,
+  modes: readonly EditorMode[] = EDITOR_MODES,
+): EditorMode {
+  const count = modes.length;
+  return modes[(modes.indexOf(mode) + step + count) % count]!;
 }
 
 export function isEditorMode(v: unknown): v is EditorMode {
   return EDITOR_MODES.includes(v as EditorMode);
+}
+
+// Illustrate mode was called Infographic mode, and stored as `infographic` wherever a mode is kept
+// (a tab's opensIn, a remembered mode, a placement-default key).
+const LEGACY_EDITOR_MODES: Readonly<Record<string, EditorMode>> = { infographic: 'illustrate' };
+
+/** A stored mode as today's id: a current id as it is, a legacy one renamed, anything else
+ *  undefined. Read every stored mode through this. */
+export function parseEditorMode(v: unknown): EditorMode | undefined {
+  if (isEditorMode(v)) return v;
+  return typeof v === 'string' ? LEGACY_EDITOR_MODES[v] : undefined;
 }
 
 type ModeTab = { kind?: string; opensIn?: string; layers?: Layer[] };
@@ -49,7 +70,7 @@ export function editorModeSwitchable(tab: ModeTab | undefined): boolean {
 /** The mode a person who has not switched on this tab sees it in. */
 export function opensInOf(tab: ModeTab | undefined): EditorMode {
   if (!editorModeSwitchable(tab)) return DEFAULT_EDITOR_MODE;
-  return isEditorMode(tab?.opensIn) ? tab.opensIn : DEFAULT_EDITOR_MODE;
+  return parseEditorMode(tab?.opensIn) ?? DEFAULT_EDITOR_MODE;
 }
 
 // "Opens in" (docs/specs/007-editor/editor-modes.md): the mode a general tab opens in, for
@@ -64,4 +85,10 @@ export function setTabOpensIn<T extends ModeTab & { id: string }>(tab: T, mode: 
 // canvas pattern is the person's own (resolveViewBackdrop); everything else looks the same in both.
 export function hasBoardLook(mode: EditorMode): boolean {
   return mode === 'draw';
+}
+
+// Illustrate mode draws the canvas as pages on a surround (docs/specs/007-editor/editor-modes.md
+// "The pages"); a view of the tab, like the board look, never stored.
+export function hasPageLook(mode: EditorMode): boolean {
+  return mode === 'illustrate';
 }

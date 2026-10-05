@@ -7,10 +7,21 @@ import { SiteHeader } from './SiteHeader';
 describe('SiteHeader', () => {
   const html = renderToStaticMarkup(<SiteHeader ctaSurface="Home" shareRail={false} />);
 
-  it('offers Start Blank straight to a blank canvas, counted as the header draw slot', () => {
-    expect(html).toMatch(
-      /<a href="\/new\?blank=1&amp;via=Home\.HeaderDraw"[^>]*><span[^>]*>Start Blank<\/span><\/a>/,
+  it('makes Start Blank a menu button, not a link', () => {
+    expect(html).toMatch(/<button[^>]*aria-haspopup="menu"[^>]*>.*Start Blank/);
+    expect(html).not.toMatch(/<a [^>]*>(<span[^>]*>)?Start Blank/);
+  });
+
+  it('offers one blank per editor mode, each with its own funnel slot', () => {
+    expect(html).toContain('href="/new?blank=1&amp;via=Home.HeaderDraw"');
+    expect(html).toContain('href="/new?template=whiteboard&amp;via=Home.HeaderWhiteboard"');
+    expect(html).toContain(
+      'href="/new?template=blank-illustration&amp;via=Home.HeaderIllustration"',
     );
+    const rows = [...html.matchAll(/role="menuitem"[^>]*>.*?font-semibold[^>]*>([^<]+)</g)].map(
+      (m) => m[1],
+    );
+    expect(rows).toEqual(['Blank Diagram', 'Blank Whiteboard', 'Blank Illustration']);
   });
 
   it('keeps Choose Template the primary beside it', () => {

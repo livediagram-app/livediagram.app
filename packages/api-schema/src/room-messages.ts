@@ -1,8 +1,9 @@
-import type { ElementDelta, ElementOp, QaNote, Tab } from '@livediagram/document';
+import type { ArticleOp, ElementDelta, ElementOp, QaNote, Tab } from '@livediagram/document';
 import type { ParticipantPresence } from './index';
 import type { AvatarConfig } from './avatar';
 import type { LivePoll } from './poll';
 import type { DragPreviewPatch } from './drag-preview';
+import type { ChangesetRoomOp } from './changesets';
 
 // ---------------------------------------------------------------------
 // Realtime room messages
@@ -114,6 +115,10 @@ export const PRESENCE_OP_KINDS = [
   // The room relays it only from an editor (receivers check too): a viewer must never make others'
   // elements appear to move.
   'drag-preview',
+  // Where someone is writing in an article (docs/specs/007-editor/article-pages.md "Collaboration"):
+  // their caret, as a block id and a character offset, at cursor rates, writing nothing. From any
+  // session, like the cursor: a viewer's writing takes no caret, so a viewer never sends one.
+  'article-caret',
 ] as const;
 
 // Room op kinds that DO change the document: they get a monotonic `seq` within
@@ -135,6 +140,9 @@ export const MUTATION_OP_KINDS = [
   // (docs/specs/012-collaboration/collab-race-hardening.md). A mutation for the same reasons as a dot.
   'el-delta',
   'document-meta',
+  // One article's writing changing, block by block (docs/specs/007-editor/article-pages.md
+  // "Collaboration"): two people writing different paragraphs merge, as `el` does for elements.
+  'article',
   'poll-start',
   'poll-end',
 ] as const;
@@ -157,11 +165,15 @@ export const MUTATION_OP_KINDS = [
 // `document-trashed` (docs/specs/013-workspace/trash.md): the document went to the
 // Trash, so every session ends with the deleted state. A forged one would end
 // everyone's session.
+//
+// `changeset` (docs/specs/024-agents/agent-changesets.md): one write the api applied and recorded,
+// sequenced through /mutation. A forged one would show people a change nobody made (CS24).
 export const SYSTEM_OP_KINDS = [
   'share-revoked',
   'share-rescoped',
   'qa',
   'document-trashed',
+  'changeset',
 ] as const;
 
 // The whole vocabulary. Every op the editor sends or handles is one of these
@@ -385,6 +397,13 @@ export type RoomOp =
   // element fields: a whole-element `el` update replaced a peer's copy with the
   // sender's snapshot, so two people pressing the same done check lost a mark.
   | { kind: 'el-delta'; tabId: string; elementId: string; delta: ElementDelta }
+  // An article's writing on a tab changed (docs/specs/007-editor/article-pages.md
+  // "Collaboration"): its block ops, applied by block id, or the whole document gone (`removed`).
+  // `Tab.articles` never rides a `tab-meta` patch, which would replace every document wholesale.
+  // `created`: the article is new (its first frames): a receiver without it takes it, where puts
+  // for an article it no longer has (removed meanwhile) are dropped.
+  | { kind: 'article'; tabId: string; flow: string; ops: ArticleOp[]; created?: true }
+  | { kind: 'article'; tabId: string; flow: string; removed: true }
   | {
       kind: 'vote';
       tabId: string;
@@ -413,12 +432,24 @@ export type RoomOp =
   // on every other tab too. Optional for wire compatibility: a frame
   // without it is treated as tab-unknown and shown everywhere (the old
   // behaviour).
-  | { kind: 'select'; elementId: string | null; tabId?: string }
+  //
+  // `elementIds` is the whole selection (the multi-selection, or the single one), capped at
+  // MAX_SELECTION_IDS: the room records it so the api can refuse an agent changeset on an element a
+  // person holds (docs/specs/024-agents/agent-changesets.md "Held elements"). A sender that omits it
+  // holds `[elementId]`.
+  | { kind: 'select'; elementId: string | null; tabId?: string; elementIds?: string[] }
   // Cursor position in canvas coordinates. `null` means the cursor
   // left the canvas surface so peers can hide their indicator. The
   // active tab id is included so we only render cursors of
   // participants who are looking at the same tab as us.
   | { kind: 'cursor'; tabId: string; x: number | null; y: number | null }
+  // The sender's caret in an article's writing (docs/specs/007-editor/article-pages.md
+  // "Collaboration"): the top-level block it is in, by id, and how many characters into that
+  // block's text it sits, so a receiver places it in their own copy of the writing whatever they
+  // typed elsewhere. `flow: null` means the sender's writing lost the caret, so peers drop it.
+  // Throttled like the cursor; parsed with parseArticleCaret.
+  | { kind: 'article-caret'; tabId: string; flow: string; blockId: string; offset: number }
+  | { kind: 'article-caret'; tabId: string; flow: null }
   // One sample of the sender's laser-pointer trail (canvas-coords).
   // Sent on every pointer move while the sender is in laser tool
   // mode, throttled like cursor. Receivers append to a per-
@@ -534,6 +565,9 @@ export type RoomOp =
   // A Q&A board's whole state after a server write (docs/specs/012-collaboration/qa-board.md). Replaces the
   // element's notes when `rev` is newer than the local `qaRev`.
   | { kind: 'qa'; tabId: string; elementId: string; notes: QaNote[]; rev: number }
+  // One changeset the api applied (docs/specs/024-agents/agent-changesets.md "What the room does").
+  // Worker-originated through /mutation.
+  | ChangesetRoomOp
   // The document went to the Trash (docs/specs/013-workspace/trash.md). Every
   // session shows the deleted state; the room then closes every socket (4004).
   // Worker-originated, like share-revoked.

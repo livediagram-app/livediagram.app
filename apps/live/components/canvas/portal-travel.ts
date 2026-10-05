@@ -1,3 +1,5 @@
+import { useCallback } from 'react';
+import { useLatest } from '@/hooks/ui/useLatest';
 import type { Ref } from 'react';
 import type { Element, ShapeElement, Tab } from '@livediagram/document';
 import {
@@ -36,7 +38,8 @@ export type PortalTravelDeps = {
    * `current` to read — hence the `'current' in mainRef` guard below.
    */
   mainRef?: Ref<HTMLElement> | null;
-  viewportZoom: number;
+  /** The zoom now, read when a portal is entered (docs/specs/008-canvas/blueprints/viewport-store.md). */
+  readZoom: () => number;
   setViewportOffset: (offset: { x: number; y: number }) => void;
   /** Places the walking character, and names the portal to ignore on arrival. */
   teleportTo: (point: { x: number; y: number }, ignorePortalId: string) => void;
@@ -48,7 +51,7 @@ export function usePortalTravel({
   activeTabId,
   onFollowLink,
   mainRef,
-  viewportZoom,
+  readZoom,
   setViewportOffset,
   teleportTo,
 }: PortalTravelDeps) {
@@ -68,11 +71,7 @@ export function usePortalTravel({
     const rect = node?.getBoundingClientRect();
     if (rect) {
       setViewportOffset(
-        viewportOffsetCentredOn(
-          to.portal,
-          { width: rect.width, height: rect.height },
-          viewportZoom,
-        ),
+        viewportOffsetCentredOn(to.portal, { width: rect.width, height: rect.height }, readZoom()),
       );
     }
     // Step out of the far portal, and tell the walk hook to ignore that portal until
@@ -83,13 +82,19 @@ export function usePortalTravel({
   // What the portal face needs: the far portal's name for the hover card, and the
   // travel action — absent when the portal is unlinked, which is what makes the
   // face render inert and say so.
-  const resolvePortal = (element: ShapeElement) => {
-    const to = destination(element);
-    return {
-      targetName: to ? portalName(to.elements, to.portal) : null,
-      travel: to ? () => enterPortal(element) : undefined,
-    };
-  };
+  // Element views take it as a prop: it changes only with the board it resolves against, and travel
+  // calls the newest enterPortal, so a canvas render (a zoom, a pan) hands every portal the same one.
+  const enterLatest = useLatest(enterPortal);
+  const resolvePortal = useCallback(
+    (element: ShapeElement) => {
+      const to = resolvePortalDestination(element, { elements, tabs, activeTabId });
+      return {
+        targetName: to ? portalName(to.elements, to.portal) : null,
+        travel: to ? () => enterLatest.current(element) : undefined,
+      };
+    },
+    [elements, tabs, activeTabId, enterLatest],
+  );
 
   return { enterPortal, resolvePortal };
 }

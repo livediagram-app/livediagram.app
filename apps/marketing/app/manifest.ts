@@ -1,3 +1,4 @@
+import { SITE_DESCRIPTION } from '@livediagram/ui';
 import type { MetadataRoute } from 'next';
 
 // Required for `output: 'export'`: route handlers must declare
@@ -34,8 +35,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: 'livediagram',
     short_name: 'livediagram',
-    description:
-      'A real-time multiplayer canvas for diagrams and mindmaps. Built for teams who think visually.',
+    description: SITE_DESCRIPTION,
     start_url: '/',
     display: 'standalone',
     theme_color: '#0EA5E9',

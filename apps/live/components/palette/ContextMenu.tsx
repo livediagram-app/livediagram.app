@@ -1,8 +1,11 @@
 'use client';
 
-import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
+import { MenuTreeContext, useControlMenu } from '@livediagram/ui';
 import { Portal } from '@/components/primitives/Portal';
 import { clampToViewport } from '@/lib/clamp-to-viewport';
+import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
+import { BottomSheet } from '@/components/primitives/BottomSheet';
 
 // Right-click context menu portal. Mirrors PortalMenu's portal +
 // outside-click-close behaviour but anchors at a screen-space (x, y)
@@ -11,9 +14,16 @@ import { clampToViewport } from '@/lib/clamp-to-viewport';
 //
 // Auto-clamps to the viewport so a click in the bottom-right corner
 // still surfaces a usable menu instead of clipping off-screen.
+//
+// On a phone it is a BottomSheet instead (docs/specs/007-editor/live-app.md "Menus are bottom
+// sheets on a phone"): a card hung off a long-press point covered the element it was about and ran
+// under the tab bar. Outside taps, Escape and the long-press grace work the same either way.
 
 type ContextMenuProps = {
   position: { x: number; y: number };
+  // Its name to assistive technology: a control menu is a named non-modal dialog
+  // (docs/specs/004-interface-design/menus.md), e.g. "Element menu".
+  label: string;
   onClose: () => void;
   children: ReactNode;
   // Drop the menu's vertical padding (and clip children to the rounded
@@ -27,17 +37,29 @@ type ContextMenuProps = {
 
 export function ContextMenu({
   position,
+  label,
   onClose,
   children,
   flush = false,
   anchorBottom = false,
 }: ContextMenuProps) {
-  const ref = useRef<HTMLDivElement>(null);
+  const ref = useRef<HTMLDivElement | null>(null);
+  // Escape, focus in when the keyboard opened it, focus back on close (useControlMenu).
+  const { attach, tree, surfaceProps } = useControlMenu({ onClose, label });
+  const setRef = useCallback(
+    (el: HTMLDivElement | null) => {
+      ref.current = el;
+      attach(el);
+    },
+    [attach],
+  );
   const [adjust, setAdjust] = useState({ x: 0, y: 0 });
+  const sheet = useIsMobileViewport();
 
   useLayoutEffect(() => {
     const node = ref.current;
-    if (!node) return;
+    // A sheet is docked, not placed: nothing to clamp.
+    if (!node || sheet) return;
     // Re-clamp on mount, on a new anchor, AND whenever the menu's size
     // changes — expanding a collapsible category grows it downward and would
     // otherwise spill past the viewport bottom (the clamp shifts it up to
@@ -54,7 +76,7 @@ export function ContextMenu({
     const ro = new ResizeObserver(recompute);
     ro.observe(node);
     return () => ro.disconnect();
-  }, [position.x, position.y]);
+  }, [position.x, position.y, sheet]);
 
   // Stamped on mount, not during render (performance.now() is impure, and a
   // re-render must not restamp it); see the grace window below.
@@ -107,9 +129,6 @@ export function ContextMenu({
         return;
       onClose();
     };
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
     // Only the primary button dismisses. A right-click elsewhere doesn't
     // need to close this menu: there is ONE menu state, so whatever the
     // release opens replaces it — nothing can stack. Listening for
@@ -124,38 +143,56 @@ export function ContextMenu({
     // before it ever reached document — capture runs first, so the click
     // that selects is also the click that dismisses.
     document.addEventListener('pointerdown', onPointer, true);
-    document.addEventListener('keydown', onKey);
-    return () => {
-      document.removeEventListener('pointerdown', onPointer, true);
-      document.removeEventListener('keydown', onKey);
-    };
+    return () => document.removeEventListener('pointerdown', onPointer, true);
   }, [onClose]);
+
+  if (sheet) {
+    return (
+      <MenuTreeContext.Provider value={tree}>
+        <BottomSheet
+          ref={setRef}
+          {...surfaceProps}
+          data-tour-id="context-menu"
+          data-context-menu=""
+          onPointerDown={(e) => e.stopPropagation()}
+          onContextMenu={(e) => e.preventDefault()}
+          onClose={onClose}
+          zClassName="z-[var(--z-overlay)]"
+          flush={flush}
+        >
+          {children}
+        </BottomSheet>
+      </MenuTreeContext.Provider>
+    );
+  }
 
   return (
     <Portal>
-      <div
-        ref={ref}
-        role="menu"
-        data-tour-id="context-menu"
-        // Marks the menu for the rich-text editor's focus-preservation
-        // capture listener (docs/specs/008-canvas/canvas-and-palette.md): mousedown inside is preventDefaulted
-        // while editing so menu clicks never blur the editor.
-        data-context-menu=""
-        onPointerDown={(e) => e.stopPropagation()}
-        onContextMenu={(e) => e.preventDefault()}
-        // lvd-menu-stagger cascades the direct children (categories / items)
-        // in one at a time for a falling-stack entrance (see globals.css).
-        className={`lvd-menu-stagger fixed z-[var(--z-overlay)] flex w-56 animate-fade-in flex-col rounded-md border border-slate-200 bg-white/90 text-sm shadow-lg backdrop-blur-sm dark:border-slate-700 dark:bg-slate-900/90 dark:shadow-slate-950/40 ${
-          flush ? 'overflow-hidden' : 'py-1'
-        }`}
-        style={{
-          left: position.x + adjust.x,
-          top: position.y + adjust.y,
-          transform: anchorBottom ? 'translateY(-100%)' : undefined,
-        }}
-      >
-        {children}
-      </div>
+      <MenuTreeContext.Provider value={tree}>
+        <div
+          ref={setRef}
+          {...surfaceProps}
+          data-tour-id="context-menu"
+          // Marks the menu for the rich-text editor's focus-preservation
+          // capture listener (docs/specs/008-canvas/canvas-and-palette.md): mousedown inside is preventDefaulted
+          // while editing so menu clicks never blur the editor.
+          data-context-menu=""
+          onPointerDown={(e) => e.stopPropagation()}
+          onContextMenu={(e) => e.preventDefault()}
+          // lvd-menu-stagger cascades the direct children (categories / items)
+          // in one at a time for a falling-stack entrance (see globals.css).
+          className={`lvd-menu-stagger fixed z-[var(--z-overlay)] flex w-56 outline-none animate-fade-in flex-col rounded-md border border-slate-200 bg-white/90 text-sm shadow-lg backdrop-blur-sm dark:border-slate-700 dark:bg-slate-900/90 dark:shadow-slate-950/40 ${
+            flush ? 'overflow-hidden' : 'py-1'
+          }`}
+          style={{
+            left: position.x + adjust.x,
+            top: position.y + adjust.y,
+            transform: anchorBottom ? 'translateY(-100%)' : undefined,
+          }}
+        >
+          {children}
+        </div>
+      </MenuTreeContext.Provider>
     </Portal>
   );
 }

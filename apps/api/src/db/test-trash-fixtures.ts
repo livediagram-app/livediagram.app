@@ -26,7 +26,7 @@ export function liveDoc(
   insert(sql, 'documents', {
     id,
     owner_id: opts.owner ?? 'owner',
-    name: `Diagram ${id}`,
+    name: `Document ${id}`,
     shareable: 0,
     team_id: opts.team ?? null,
     folder_id: opts.folder ?? null,

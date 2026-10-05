@@ -1,3 +1,4 @@
+import type { Selection } from '@/lib/selection-store';
 import type { Dispatch, SetStateAction } from 'react';
 import { isUntitledDocumentName } from '@livediagram/templates';
 import {
@@ -27,7 +28,8 @@ type SetState<T> = Dispatch<SetStateAction<T>>;
 // shift-click multi-select toggling. applyFormatFromSource comes from
 // useElementHelpers and is passed in.
 export function useSelectionEditing(opts: {
-  selectedId: string | null;
+  // Read when an edit runs (docs/specs/008-canvas/blueprints/selection-store.md).
+  readSelection: () => Selection;
   isReadOnly: boolean;
   // Elements on a hidden or locked layer (docs/specs/006-document/layers.md): never selectable.
   layerInertIds: Set<string>;
@@ -40,7 +42,6 @@ export function useSelectionEditing(opts: {
   // no drag entry for it (their clicks land here via selectElement), so
   // selectElement owns the arm-then-paint cycle for them.
   formatToolActive: boolean;
-  multiSelectedIds: Set<string>;
   documentName: string;
   tabs: Tab[];
   activeTab: Tab;
@@ -79,13 +80,12 @@ export function useSelectionEditing(opts: {
   };
 }) {
   const {
-    selectedId,
+    readSelection,
     isReadOnly,
     layerInertIds,
     adoptLayerName,
     formatSourceId,
     formatToolActive,
-    multiSelectedIds,
     documentName,
     tabs,
     activeTab,
@@ -106,6 +106,7 @@ export function useSelectionEditing(opts: {
   } = set;
 
   const beginFormatPainter = () => {
+    const { selectedId } = readSelection();
     if (!selectedId) return;
     setFormatSourceId(selectedId);
   };
@@ -313,6 +314,7 @@ export function useSelectionEditing(opts: {
     // Don't let a shift-click pull a remotely-held element — or a
     // hidden / locked-layer one (docs/specs/006-document/layers.md) — into the set.
     if (lockedByOther(id) || layerInertIds.has(id)) return;
+    const { selectedId, multiSelectedIds } = readSelection();
     const next = new Set(multiSelectedIds);
     if (selectedId && !next.has(selectedId)) next.add(selectedId);
     if (next.has(id)) next.delete(id);

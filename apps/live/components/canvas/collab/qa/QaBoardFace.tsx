@@ -6,7 +6,7 @@
 // wears "Most wanted" and every row carries a heat bar against it, and the
 // note being discussed lifts into a lit card with a breathing live dot.
 
-import { CountBadge } from '@/components/primitives/CountBadge';
+import { CountBadge } from '@livediagram/ui';
 import { useEffect, useState } from 'react';
 import { qaView, qaVoterId, type QaNote, type ShapeElement } from '@livediagram/document';
 import { CollabPanel } from '../collab-chrome';
@@ -87,7 +87,7 @@ export function QaBoardFace({
 
   const menu =
     actions.clear || onOpenSettings ? (
-      <ElementEllipsisMenu label="Q&A board options" color={textColor} align="left">
+      <ElementEllipsisMenu kind="command" label="Q&A board options" color={textColor} align="left">
         {(close) => (
           <>
             {discussing && actions.discuss ? (

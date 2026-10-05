@@ -1,20 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import type {
-  HomeGroup,
-  HomeJumpBackInItem,
-  HomeTimelineEntry,
-  HomeTimelineKind,
-} from '@livediagram/api-schema';
-import { dateKey } from '@livediagram/ui';
+import type { HomeGroup, HomeJumpBackInItem } from '@livediagram/api-schema';
 import type { LocalOpenDocument } from '@/lib/offline/offline-opens';
 import {
   dayHeading,
-  foldTimeline,
   groupsByDay,
   homeDocumentHref,
-  mergeJumpBackIn,
+  jumpBackInSet,
+  phoneOrder,
   stripFade,
-  timelineRows,
+  type JumpBackInSet,
 } from './home-model';
 
 // Home's pure view model (docs/specs/013-workspace/blueprints/explorer-home-view.md).
@@ -37,17 +31,19 @@ const place = {
   empty: false,
 };
 
-const server = (documentId: string, frecencyKey: number, over: Partial<HomeJumpBackInItem> = {}) =>
-  ({
-    ...place,
-    documentId,
-    lastOpenedAt: 1,
-    openDays: 1,
-    frecencyKey,
-    ...over,
-  }) as HomeJumpBackInItem;
+const server = (
+  documentId: string,
+  useDays: number,
+  lastUsedAt: number,
+  over: Partial<HomeJumpBackInItem> = {},
+) => ({ ...place, documentId, useDays, lastUsedAt, ...over }) as HomeJumpBackInItem;
 
-const local = (id: string, frecencyKey: number): LocalOpenDocument => ({
+const local = (
+  id: string,
+  days: string[],
+  lastOpenedAt: number,
+  savedAt = 7,
+): LocalOpenDocument => ({
   document: {
     id,
     ownerId: 'offline',
@@ -60,19 +56,17 @@ const local = (id: string, frecencyKey: number): LocalOpenDocument => ({
     opensIn: null,
     tabKind: null,
     templateFamily: null,
-    savedAt: 7,
+    savedAt,
     createdAt: 1,
     empty: true,
   },
-  opens: { openDays: 1, lastOpenDay: '2026-08-30', lastOpenedAt: 1, frecencyKey },
+  opens: { days, lastOpenedAt },
 });
 
-const entry = (
-  id: string,
-  documentId: string,
-  kind: HomeTimelineKind,
-  occurredAt: number,
-): HomeTimelineEntry => ({ ...place, id, documentId, kind, occurredAt });
+const ids = (set: JumpBackInSet) => ({
+  mostUsed: set.mostUsed.map((d) => d.documentId),
+  recent: set.recent.map((d) => d.documentId),
+});
 
 describe('homeDocumentHref', () => {
   it('opens own and team documents on their path', () => {
@@ -91,62 +85,97 @@ describe('homeDocumentHref', () => {
   });
 });
 
-describe('mergeJumpBackIn', () => {
-  it('ranks local documents among the server ones by frecency key', () => {
-    const merged = mergeJumpBackIn([server('s1', 300), server('s2', 100)], [local('l1', 200)]);
-    expect(merged.map((d) => [d.documentId, d.localOnly])).toEqual([
-      ['s1', false],
-      ['l1', true],
-      ['s2', false],
-    ]);
-    expect(merged[1]).toMatchObject({
+describe('jumpBackInSet', () => {
+  it('places local documents among the server ones by the same rule', () => {
+    const set = jumpBackInSet(
+      [server('s1', 9, 10), server('s2', 1, 50), server('s3', 0, 40)],
+      [local('l1', ['2026-08-30', '2026-08-29'], 30)],
+      NOW,
+      2,
+    );
+    expect(ids(set)).toEqual({ mostUsed: ['s1', 'l1'], recent: ['s2', 's3'] });
+    expect(set.mostUsed[1]).toMatchObject({
       name: 'Local l1',
       href: '/document/l1',
       savedAt: 7,
       empty: true,
       shareCode: null,
+      localOnly: true,
+      useDays: 2,
     });
+    expect(set.mostUsed[0]!.localOnly).toBe(false);
   });
 
-  it('breaks ties by document id and keeps the strongest twelve', () => {
-    const many = Array.from({ length: 13 }, (_, i) => server(`s${String(i).padStart(2, '0')}`, 5));
-    const merged = mergeJumpBackIn(many, [local('a', 5)]);
-    expect(merged).toHaveLength(12);
-    expect(merged[0]!.documentId).toBe('a');
-    expect(merged[11]!.documentId).toBe('s10');
+  it("counts a local document's days inside the window only, and its save as its last use", () => {
+    const set = jumpBackInSet(
+      [],
+      [local('l1', ['2026-08-30', '2026-06-01'], at(30, 9), at(30, 14))],
+      NOW,
+    );
+    // The window to 30 Aug starts 2 Jun: 1 Jun has fallen out.
+    expect(set.mostUsed[0]).toMatchObject({ useDays: 1, lastUsedAt: at(30, 14) });
+  });
+
+  it('shows a document that is both most used and recent once, under most used', () => {
+    const set = jumpBackInSet(
+      [server('a', 5, 100), server('b', 1, 90), server('c', 0, 80)],
+      [],
+      NOW,
+      1,
+    );
+    expect(ids(set)).toEqual({ mostUsed: ['a'], recent: ['b'] });
+  });
+
+  it('breaks ties by document id, wherever the documents come from', () => {
+    const set = jumpBackInSet(
+      [server('s2', 1, 5), server('s1', 1, 5)],
+      [local('a', ['2026-08-30'], 5, 0)],
+      NOW,
+    );
+    expect(ids(set).mostUsed).toEqual(['a', 's1', 's2']);
   });
 
   it('carries a shared document’s link and code', () => {
-    const [d] = mergeJumpBackIn([server('s1', 1, { via: 'shared', shareCode: 'C' })], []);
-    expect(d).toMatchObject({ href: '/document/s1?s=C', shareCode: 'C' });
+    const set = jumpBackInSet([server('s1', 1, 1, { via: 'shared', shareCode: 'C' })], [], NOW);
+    expect(set.mostUsed[0]).toMatchObject({ href: '/document/s1?s=C', shareCode: 'C' });
   });
 });
 
-describe('foldTimeline', () => {
-  it('keeps one entry per document per day, the strongest kind at its time', () => {
-    const folded = foldTimeline(
+describe('phoneOrder', () => {
+  const set = (mostUsed: string[], recent: string[]) =>
+    jumpBackInSet(
       [
-        entry('e4', 'd1', 'opened', at(30, 14)),
-        entry('e3', 'd1', 'updated', at(30, 11)),
-        entry('e2', 'd2', 'opened', at(30, 10)),
-        entry('e1', 'd1', 'created', at(30, 9)),
-        entry('e0', 'd1', 'opened', at(29, 9)),
+        ...mostUsed.map((id, i) => server(id, 10 - i, 1)),
+        ...recent.map((id, i) => server(id, 0, 100 - i)),
       ],
-      dateKey,
+      [],
+      NOW,
     );
-    expect(folded.map((e) => [e.id, e.kind])).toEqual([
-      ['e2', 'opened'],
-      ['e1', 'created'],
-      ['e0', 'opened'],
+  const order = (s: JumpBackInSet) =>
+    phoneOrder(s).map(({ item, group }) => `${item.documentId}:${group}`);
+
+  it('alternates most used and recent, at most eight', () => {
+    expect(order(set(['m1', 'm2', 'm3', 'm4'], ['r1', 'r2', 'r3', 'r4']))).toEqual([
+      'm1:mostUsed',
+      'r1:recent',
+      'm2:mostUsed',
+      'r2:recent',
+      'm3:mostUsed',
+      'r3:recent',
+      'm4:mostUsed',
+      'r4:recent',
     ]);
   });
 
-  it('keeps the newest of equal strength, across pages', () => {
-    const folded = foldTimeline(
-      [entry('e2', 'd1', 'updated', at(30, 12)), entry('e1', 'd1', 'updated', at(30, 8))],
-      dateKey,
-    );
-    expect(folded.map((e) => e.id)).toEqual(['e2']);
+  it('lets the rest of the longer group follow when one runs out', () => {
+    expect(order(set(['m1'], ['r1', 'r2', 'r3']))).toEqual([
+      'm1:mostUsed',
+      'r1:recent',
+      'r2:recent',
+      'r3:recent',
+    ]);
+    expect(order(set([], ['r1', 'r2']))).toEqual(['r1:recent', 'r2:recent']);
+    expect(order(set([], []))).toEqual([]);
   });
 });
 
@@ -156,26 +185,6 @@ describe('dayHeading', () => {
     expect(dayHeading('2026-08-29', NOW)).toBe('Yesterday');
     expect(dayHeading('2026-08-24', NOW)).toBe('Mon, 24 Aug');
     expect(dayHeading('2025-12-31', NOW)).toBe('Wed, 31 Dec 2025');
-  });
-});
-
-describe('timelineRows', () => {
-  it('puts a day row before each day and alternates sides across days', () => {
-    const rows = timelineRows(
-      [
-        entry('a', 'd1', 'opened', at(30, 14)),
-        entry('b', 'd2', 'created', at(29, 14)),
-        entry('c', 'd3', 'updated', at(29, 9)),
-      ],
-      NOW,
-    );
-    expect(rows.map((r) => (r.type === 'day' ? r.label : `${r.entry.id}:${r.side}`))).toEqual([
-      'Today',
-      'a:start',
-      'Yesterday',
-      'b:end',
-      'c:start',
-    ]);
   });
 });
 

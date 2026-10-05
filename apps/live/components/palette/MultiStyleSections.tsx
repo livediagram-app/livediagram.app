@@ -12,9 +12,9 @@ import {
   DEFAULT_ICON_WEIGHT,
   defaultTextColor,
   isChartShape,
+  shownBorderRadius,
   PIE_LOOPING_ANIMS,
   type ArrowElement,
-  type BorderRadius,
   type BorderStroke,
   type BorderStyle,
   type BoxedElement,
@@ -86,7 +86,7 @@ export function MultiStyleSections({
   borderSrc: { strokeWidth?: BorderStroke; strokeStyle?: BorderStyle; type: string } | undefined;
   // First member whose kind rounds corners — gates + feeds the Radius
   // grid, mirroring the single menu's supportsBorderRadius branch.
-  radiusSrc: { borderRadius?: BorderRadius } | undefined;
+  radiusSrc: ShapeElement | undefined;
   // First shadow-supporting member (docs/specs/008-canvas/element-shadows.md) — gates + feeds the Shadow
   // section, mirroring the single menu's supportsShadow branch.
   shadowSrc: { shadow?: ElementShadow } | undefined;
@@ -257,7 +257,7 @@ export function MultiStyleSections({
           <BorderControls
             strokeWidth={borderSrc?.strokeWidth ?? 'medium'}
             strokeStyle={borderSrc?.strokeStyle ?? 'solid'}
-            radius={radiusSrc ? (radiusSrc.borderRadius ?? 'sm') : null}
+            radius={radiusSrc ? shownBorderRadius(radiusSrc) : null}
             onCommitBorderStroke={props.onCommitBorderStroke}
             onPreviewBorderStroke={props.onPreviewBorderStroke}
             onCommitBorderStyle={props.onCommitBorderStyle}

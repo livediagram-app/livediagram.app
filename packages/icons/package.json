@@ -15,7 +15,8 @@
     "./sticker-catalog": "./src/sticker-catalog.ts",
     "./centring": "./src/centring.ts",
     "./lucide": "./src/lucide.generated.ts",
-    "./mode-glyphs": "./src/mode-glyphs.ts"
+    "./mode-glyphs": "./src/mode-glyphs.ts",
+    "./search": "./src/search.ts"
   },
   "scripts": {
     "lint": "eslint .",
@@ -28,13 +29,13 @@
   "devDependencies": {
     "@livediagram/eslint-config": "workspace:*",
     "@livediagram/vitest-config": "workspace:*",
-    "@types/node": "^26.6.2",
+    "@types/node": "^26.6.3",
     "@typescript/native": "npm:typescript@^7.0.2",
-    "@vitest/coverage-v8": "^5.0.1",
+    "@vitest/coverage-v8": "^5.0.3",
     "eslint": "^10.11.0",
-    "lucide-static": "1.48.0",
+    "lucide-static": "1.49.0",
     "typescript": "npm:@typescript/typescript6@^6.0.2",
-    "vitest": "^5.0.1"
+    "vitest": "^5.0.3"
   },
   "dependencies": {
     "svg-path-bbox": "2.1.0"

@@ -641,7 +641,7 @@ export const ACTIVITY_THREADS = chart(
 );
 
 // Explorer Home (docs/specs/013-workspace/explorer-home.md): arrivals by type, documents opened
-// from each part of Home, summaries expanded, and further Timeline pages.
+// from each part of Home, summaries expanded, and failed reads retried.
 export const HOME_LANDINGS = chart(
   'Home',
   'Opened',
@@ -662,7 +662,7 @@ export const HOME_DOCUMENTS_OPENED = chart(
   'Home',
   'Selected',
   'Documents Opened from Home',
-  'A document opened from Jump back in, What happened or the Timeline column.',
+  'A document opened from Jump back in (most used or recent) or What happened, or See more followed.',
 );
 
 export const HOME_GROUPS_EXPANDED = chart(
@@ -673,12 +673,7 @@ export const HOME_GROUPS_EXPANDED = chart(
   { types: ['Group'] },
 );
 
-export const HOME_LOADS = chart(
-  'Home',
-  'Loaded',
-  'Home Loads',
-  "More of Home's Timeline loaded, or a failed read retried.",
-);
+export const HOME_LOADS = chart('Home', 'Loaded', 'Home Retries', 'A failed read of Home retried.');
 
 export const TIMELINE_AND_ACTIVITY: MetricStack = {
   stack: true,
@@ -729,9 +724,13 @@ export const PRESENTATIONS_CLOSED = chart(
   { types: ['Presentation'] },
 );
 
-export const SLIDES_ADDED = chart('UI', 'Added', 'Slides Added', 'A slide added to a deck.', {
-  types: ['Slide'],
-});
+export const SLIDES_ADDED = chart(
+  'UI',
+  'Added',
+  'Slides Added',
+  'A slide added to a deck: from a selection, or an Illustrate page as a slide.',
+  { types: ['Slide', 'PageSlide'] },
+);
 
 export const SLIDES_REMOVED = chart(
   'UI',

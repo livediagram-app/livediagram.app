@@ -6,14 +6,13 @@ import {
   type TemplateFamily,
 } from '@livediagram/api-schema';
 import type { EditorMode } from '@livediagram/document';
-import { lucideGlyph, type IconProps } from '@livediagram/ui';
+import { lucideGlyph, type IconProps, EDITOR_MODE_ICONS } from '@livediagram/ui';
 import {
   lucideFolderCheck,
   lucideHistory,
   lucideSquareKanban,
   lucideStickyNote,
 } from '@livediagram/icons/lucide';
-import { EDITOR_MODE_ICON } from '@/components/chrome/editor-mode/editor-mode-copy';
 
 // Each default key's icon (docs/specs/013-workspace/default-folders.md "Entry names", blueprint D110):
 // a mode keeps the icon its mode switch shows; the kind and the families each draw what they are.
@@ -31,7 +30,7 @@ const FAMILY_ICON: Record<TemplateFamily, ComponentType<IconProps>> = {
 
 function iconOf(key: PlacementDefaultKey): ComponentType<IconProps> {
   const [dimension, value] = key.split(':') as [string, string];
-  if (dimension === 'mode') return EDITOR_MODE_ICON[value as EditorMode];
+  if (dimension === 'mode') return EDITOR_MODE_ICONS[value as EditorMode];
   if (dimension === 'kind') return KIND_ICON[value as SpecificTabKind];
   return FAMILY_ICON[value as TemplateFamily];
 }

@@ -484,7 +484,8 @@ dark:text-slate-400`, then `+N` at 10px semibold; after the count badge; in a tr
 
 ### Accessibility (surfaces)
 
-- The submenu trigger is a `button` with `aria-haspopup="menu"` and `aria-expanded`; its items are
+- The submenu trigger is a `menuitem` with `aria-haspopup="menu"`, `aria-expanded` and, while open,
+  `aria-controls` ([Menus](../../004-interface-design/menus.md)); its items are
   `menuitemcheckbox` with `aria-checked`; a disabled root entry has `aria-disabled="true"` and keeps
   focusability for discovery.
 - The marker's icons are `aria-hidden`; its words are a visually hidden span: in a tree row they are
@@ -563,3 +564,55 @@ dark:text-slate-400`, then `+N` at 10px semibold; after the count badge; in a tr
 | Retrospectives        | Lucide `history`              | ISC     | same                                                               |
 | Kanban boards         | Lucide `square-kanban`        | ISC     | same, vendored by `pnpm --filter @livediagram/icons vendor:lucide` |
 | Use as default for    | Lucide `folder-check`         | ISC     | same                                                               |
+
+## Skipping the Location step (live)
+
+Derived from [Default folders → Skipping the Location step](../default-folders.md#skipping-the-location-step)
+and its Settings row. A user preference, not a default folder: nothing here touches
+`/api/placement-defaults`, and the api stores it inside the opaque preferences blob (no schema change;
+the 4 KB cap holds, the value is under 250 bytes).
+
+| File                                                                          | Role                                                                                                                                |
+| ----------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `apps/live/lib/skip-location-step.ts`                                         | `SkipLocationStep`, `readSkipLocationStep`, `placeNameOf`, `resolveSkipLocation`, `saveSkipLocationStep`, `turnOffSkipLocationStep` |
+| `apps/live/lib/user-preferences.ts`                                           | `skipLocationStep?: SkipLocationStep \| null`                                                                                       |
+| `apps/live/app/new/useSkipLocationStep.ts`                                    | The cached preference (plus one server merge), resolved against the context and the loaded lists; logs the fallback                 |
+| `apps/live/app/new/page.tsx`                                                  | Passes `skipLocation`; `commitNewDocument` saves a ticked preference before the create, never on a Retry                            |
+| `apps/live/components/palette/useWizardSkipLocation.ts`                       | One step while `place` is set and the Location step has not shown; the checkbox state; what a one-step create sends                 |
+| `apps/live/components/palette/WizardSkipLocation.tsx`                         | `WizardSkipLocationCheckbox` (the step's last row), `WizardSavingIn` (the footer's first row)                                       |
+| `apps/live/components/palette/TemplatePicker.tsx`, `template-picker-props.ts` | Wiring; the props and `NewDocumentSettings` (gains `skipLocationStep?`) in their own file                                           |
+| `apps/live/components/palette/TemplatePickerFooter.tsx`                       | `oneStep` (Create on the template step), `note` above the buttons inside the footer rule                                            |
+| `apps/live/components/palette/template-picker-settings.tsx`                   | `stepFooter`, rendered last whatever the save location                                                                              |
+| `apps/live/components/dialogs/settings/SettingsSkipLocationRow.tsx`           | The Settings row (`kind: 'skipLocationStep'`), first in Where New Documents Go                                                      |
+
+**Behaviour and state**
+
+- `readSkipLocationStep(prefs)`: off (null) unless `saveLocation` is a catalogue id, `placement` matches
+  `unsorted | folder:<id> | team:<id>(:folder:<id>)?` and `placeName` is non-blank; `browser` reads at
+  `unsorted`; `placeName` capped at `SKIP_PLACE_NAME_MAX` (160).
+- `resolveSkipLocation({ pref, context, lists, ready })`: no pref → null; a context → that placement in
+  livediagram, named from the lists else "this folder"; `ready` and the lists lacking the place (a
+  personal folder, the team, or the team's folder) → null with `unavailable: 'personal' | 'team'`;
+  else the pref. Local Browser and the root are never checked.
+- `useWizardSkipLocation`: `locationShown` latches on any move to the Location step (Change, the rail,
+  Escape back is after it), so a preference that lands mid-visit never removes a step under the reader;
+  `ticked` resets on each showing.
+- One-step create: `{ saveLocation, documentName: untitledNameForTemplate(kind), ...parsePlacement(placement) }`
+  (nothing for Local Browser); Skip and a template card use it too.
+- Change: `where.pick(place.placement)`, the save location set, then the Location step.
+
+**Telemetry and observability**: `UI·Toggled·SkipLocationStepOn` (before the write, from
+`saveSkipLocationStep`), `SkipLocationStepOff` (Turn Off, before `onChange`); charted in the telemetry
+app's Documents Settings stack. Logs `[skip-location] saved location=<id> scope=<root|personal|team>`,
+`[skip-location] cleared`, `[skip-location] place-unavailable scope=<personal|team>, showing the Location step`.
+
+**Errors and edge cases**: a saved place refused by the server before the lists load takes the
+existing `choose` create-failure path; a guest whose saved team is gone (signed out) falls back.
+
+**Testing**
+
+| Rule                                                              | Test                                                                     |
+| ----------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| Parse, names, context wins, fallback, writes with telemetry first | `apps/live/lib/skip-location-step.test.ts`                               |
+| Checkbox, one step, Create / card / Skip, Change                  | `apps/live/components/palette/template-picker-skip-location.test.tsx`    |
+| Settings row on / off, Turn Off                                   | `apps/live/components/dialogs/settings/SettingsSkipLocationRow.test.tsx` |

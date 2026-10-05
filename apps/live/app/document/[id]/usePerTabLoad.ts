@@ -7,7 +7,7 @@ import {
   type SetStateAction,
 } from 'react';
 import type { Tab } from '@livediagram/document';
-import { apiLoadTab } from '@/lib/api-client';
+import { apiLoadTabRevisioned } from '@/lib/api-client';
 import { isTabOutOfScope } from '@/lib/tab-scope';
 import { track } from '@/lib/telemetry';
 import { useLatest } from '@/hooks/ui/useLatest';
@@ -54,6 +54,9 @@ export function usePerTabLoad(opts: {
   // tab back as if we had just drawn it (docs/specs/012-collaboration/collab-race-hardening.md).
   lastSavedTabsRef: MutableRefObject<Tab[]>;
   resetTabs: (updater: (prev: Tab[]) => Tab[]) => void;
+  // Records what a tab put in place holds of the changesets (useChangesetSeen): every changeset
+  // up to the revision it was read at. Stable.
+  noteChangesetSeen: (tabId: string, rev: number) => void;
 }) {
   const {
     hydrated,
@@ -69,6 +72,7 @@ export function usePerTabLoad(opts: {
     retryNonce,
     lastSavedTabsRef,
     resetTabs,
+    noteChangesetSeen,
   } = opts;
 
   // resetTabs is read through a ref, not listed as an effect dep. The load
@@ -91,18 +95,19 @@ export function usePerTabLoad(opts: {
   // the state updater, which React may run late or twice.
   // Reads only refs, so it is stable and both loaders below can list it.
   const adoptLoadedTab = useCallback(
-    (tab: Tab) => {
+    ({ tab, rev }: { tab: Tab; rev: number }) => {
       const onScreen = tabsRef.current.find((t) => t.id === tab.id);
       if (onScreen && !userHasEdited(onScreen)) {
         lastSavedTabsRef.current = lastSavedTabsRef.current.map((t) =>
           t.id === tab.id ? { ...tab, folder: t.folder } : t,
         );
+        noteChangesetSeen(tab.id, rev);
       }
       resetTabsRef.current((prev) =>
         prev.map((t) => (t.id !== tab.id || userHasEdited(t) ? t : { ...tab, folder: t.folder })),
       );
     },
-    [tabsRef, lastSavedTabsRef, resetTabsRef],
+    [tabsRef, lastSavedTabsRef, resetTabsRef, noteChangesetSeen],
   );
 
   // The attempt that last failed, keyed on everything that makes a fetch
@@ -146,10 +151,10 @@ export function usePerTabLoad(opts: {
         next.delete(targetId);
         return next;
       });
-    apiLoadTab(selfId, documentId, targetId, sessionShareCode)
-      .then((tab) => {
+    apiLoadTabRevisioned(selfId, documentId, targetId, sessionShareCode)
+      .then((loaded) => {
         if (cancelled) return;
-        if (!tab) {
+        if (!loaded) {
           // A null result is a 404 — the tab ROW is missing. We used to
           // treat that as "genuinely empty", mark the tab loaded, and drop
           // the loader. That was a data-loss trap: a *legitimately* empty
@@ -176,7 +181,7 @@ export function usePerTabLoad(opts: {
         // The search prefetch (loadAllTabs below) deliberately doesn't
         // emit: it's a background sweep, not a user viewing a tab.
         track('Tab', 'Loaded');
-        adoptLoadedTab(tab);
+        adoptLoadedTab(loaded);
         // Either way the load is now committed — local state has been
         // consulted. Keep the id in the loaded-set so subsequent
         // tab switches don't refetch.
@@ -254,8 +259,8 @@ export function usePerTabLoad(opts: {
     await Promise.all(
       pending.map(async (targetId) => {
         try {
-          const tab = await apiLoadTab(selfId, documentId, targetId, sessionShareCode);
-          if (!tab) {
+          const loaded = await apiLoadTabRevisioned(selfId, documentId, targetId, sessionShareCode);
+          if (!loaded) {
             // A 404 is anomalous here for the same reason as the visit-time
             // path above: the tab id came from the document summary, so a
             // missing row is a transient / auth edge, NOT proof the tab is
@@ -266,7 +271,7 @@ export function usePerTabLoad(opts: {
             failed(targetId);
             return;
           }
-          adoptLoadedTab(tab);
+          adoptLoadedTab(loaded);
           setLoadedTabIds((prev) => (prev.has(targetId) ? prev : new Set(prev).add(targetId)));
         } catch {
           failed(targetId);

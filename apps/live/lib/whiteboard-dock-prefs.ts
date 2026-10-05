@@ -80,11 +80,10 @@ export function withWhiteboardDockPosition(
   return { ...prefs, whiteboardDockPosition: position };
 }
 
-// The dock's wrapper, as wide as its groups: what the top corners are measured against.
-export const WHITEBOARD_DOCK_SELECTOR = '[data-whiteboard-dock]';
-// Where the top corner panel stacks start when a dock at the top reaches into them: its 12 px inset,
-// its 54 px height (44 px buttons, 4 px padding, 1 px border), and a 10 px gap (D34).
-export const WHITEBOARD_DOCK_TOP_CLEARANCE_PX = 12 + 54 + 10;
+// The dock's wrapper, as wide as its groups: what the top corners are measured against. The
+// Toolbar layout's dock only: the Floating layout's Palette panel carries the same tools
+// (data-dock-variant="panel") and is a corner panel itself.
+export const WHITEBOARD_DOCK_SELECTOR = '[data-whiteboard-dock][data-dock-variant="dock"]';
 
 // Draw mode's pattern (docs/specs/007-editor/editor-modes.md "One look"): the person's own Plain,
 // Dots or Grid, as they last chose it in Draw mode, never stored on a tab. Grid until chosen.

@@ -1,14 +1,22 @@
 // Explorer Home's data (docs/specs/013-workspace/explorer-home.md; blueprint
-// docs/specs/013-workspace/blueprints/explorer-home.md): Jump back in, the person's own Timeline,
-// and What happened. The api builds these from D1 and the editor renders them, so the shapes,
-// the verbs, the limits and the refusals live here once.
+// docs/specs/013-workspace/blueprints/explorer-home.md): Jump back in and What happened. The api
+// builds these from D1 and the editor renders them, so the shapes, the verbs, the limits and the
+// refusals live here once.
 
-/** The most documents Jump back in holds (spec). */
-export const HOME_JUMP_BACK_IN_MAX = 12;
-/** Timeline entries per page by default (spec: "30 entries at a time"). */
-export const HOME_TIMELINE_PAGE_SIZE = 30;
-/** The largest Timeline page a caller may ask for. */
-export const HOME_TIMELINE_PAGE_MAX = 100;
+import { utcDay } from './within-reach';
+
+/** N of Jump back in's Within reach set: 4 most used and 4 recent (spec). */
+export const HOME_WITHIN_REACH_PER_ROW = 4;
+/** How many UTC days back, today included, a use day counts towards most used (spec). */
+export const WITHIN_REACH_USE_WINDOW_DAYS = 90;
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+/** UTC midnight of the use window's first day: 89 days before today. */
+export function windowStartOf(now: number): number {
+  return Date.parse(`${utcDay(now - (WITHIN_REACH_USE_WINDOW_DAYS - 1) * DAY_MS)}T00:00:00.000Z`);
+}
+
 /** How many days back What happened reaches (spec). */
 export const HOME_WHAT_HAPPENED_DAYS = 14;
 /** The most actions one What happened read holds, newest first. */
@@ -16,8 +24,9 @@ export const HOME_WHAT_HAPPENED_ACTION_MAX = 200;
 /** The longest time zone name accepted; the longest IANA name is 32 characters. */
 export const HOME_TZ_MAX_LENGTH = 64;
 
-/** The event type of a person's own coalesced open. Recorded in their `user` scope only, and
- *  deliberately outside the Timeline feed's vocabulary (docs/specs/013-workspace/timeline.md §4.2). */
+/** The event type of a person's own coalesced open: the open-day record Jump back in counts.
+ *  Recorded in their `user` scope only, and deliberately outside the Timeline feed's vocabulary
+ *  (docs/specs/013-workspace/timeline.md §4.2). */
 export const HOME_OPENED_EVENT_TYPE = 'document_opened';
 
 /** The editor's declaration that a tab read is an open (docs/specs/013-workspace/explorer-home.md
@@ -44,7 +53,7 @@ export const HOME_VERBS = [
 export type HomeVerb = (typeof HOME_VERBS)[number];
 
 /** Every refusal of a Home read, as the response's `error` token (status 400). */
-export const HOME_REJECTIONS = ['tz_invalid', 'limit_invalid', 'cursor_invalid'] as const;
+export const HOME_REJECTIONS = ['tz_invalid'] as const;
 
 export type HomeRejection = (typeof HOME_REJECTIONS)[number];
 
@@ -80,31 +89,12 @@ export type HomeDocument = {
   empty: boolean;
 };
 
-/** One document of Jump back in. */
+/** One document of Jump back in, with the two measures Within reach places it by. */
 export type HomeJumpBackInItem = HomeDocument & {
-  lastOpenedAt: number;
-  /** UTC days on which the person opened it. */
-  openDays: number;
-  /** The rank: the instant the decayed score falls to one (see ./frecency.ts). Sent so the view
-   *  can place this browser's own local documents among these. */
-  frecencyKey: number;
-};
-
-export type HomeTimelineKind = 'created' | 'updated' | 'opened';
-
-/** One of the person's own events. Raw: the one-per-day fold is the view's, where the local
- *  day is known across loaded pages. */
-export type HomeTimelineEntry = HomeDocument & {
-  /** The event's id; with `occurredAt`, the keyset position. */
-  id: string;
-  kind: HomeTimelineKind;
-  occurredAt: number;
-};
-
-export type HomeTimelinePage = {
-  items: HomeTimelineEntry[];
-  /** `<occurredAt>:<id>` of the last item when another page exists, else null. */
-  nextCursor: string | null;
+  /** UTC days in the use window on which the person opened or edited it: most used. */
+  useDays: number;
+  /** The later of the person's last open and last real edit: recent. */
+  lastUsedAt: number;
 };
 
 /** Somebody who acted. */
@@ -148,10 +138,10 @@ export type HomeGroup = HomeDocument & {
 
 /** `GET /api/home`. */
 export type HomeResponse = {
+  /** The server's Within reach set: the most used, then the recent; at most twice the per-row N. */
   jumpBackIn: HomeJumpBackInItem[];
-  timeline: HomeTimelinePage;
   whatHappened: HomeGroup[];
-  /** The Timeline's unread mark as it stood before this read (the read moves it, once per visit);
+  /** The Timeline feed's unread mark as it stood before this read (the read moves it, once per visit);
    *  null when the person had never looked. What happened after it is new to them. */
   lastSeenAt: number | null;
 };

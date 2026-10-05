@@ -16,8 +16,7 @@ function harness(selectedId: string | null, multi: string[] = [], isPaintMode = 
     useCanvasSelectHandlers({
       inertIds: new Set(['inert']),
       isPaintMode,
-      selectedId,
-      multiSelectedIds: new Set(multi),
+      readSelection: () => ({ selectedId, multiSelectedIds: new Set(multi) }),
       onSelect,
       onDeselect,
       onShiftSelect,
@@ -136,5 +135,29 @@ describe('handleArrowSelect', () => {
     releaseAt(10);
     expect(t.onSelect).toHaveBeenCalledWith('arrow');
     expect(t.onDeselect).not.toHaveBeenCalled();
+  });
+});
+
+describe('useCanvasSelectHandlers reading the selection', () => {
+  it('reads the selection when a click runs, not when the hook last rendered', () => {
+    const onSelect = vi.fn();
+    const onDeselect = vi.fn();
+    let current = { selectedId: null as string | null, multiSelectedIds: new Set<string>() };
+    const { result } = renderHook(() =>
+      useCanvasSelectHandlers({
+        inertIds: new Set<string>(),
+        isPaintMode: false,
+        readSelection: () => current,
+        onSelect,
+        onDeselect,
+        onShiftSelect: vi.fn(),
+      }),
+    );
+
+    current = { selectedId: 'a', multiSelectedIds: new Set() };
+    act(() => result.current.handleElementClick('a'));
+
+    expect(onDeselect).toHaveBeenCalledTimes(1);
+    expect(onSelect).not.toHaveBeenCalled();
   });
 });

@@ -6,6 +6,8 @@
 
 import {
   BUILD_ID_HEADER,
+  CHANGESET_SEEN_HEADER,
+  CLIENT_HEADER,
   DOCUMENT_CONVERSION_HEADER,
   DOCUMENT_FORMAT_HEADER,
   DOCUMENT_OPEN_HEADER,
@@ -30,11 +32,12 @@ export const CORS_HEADERS = {
   // in this list, which surfaces as "Failed to fetch" with no other
   // signal, so each new header has to land here too. Take Offline and Sync
   // Diagram declare themselves with DOCUMENT_CONVERSION_HEADER.
-  'Access-Control-Allow-Headers': `Authorization, Content-Type, X-Owner-Id, X-Owner-Sig, X-Share-Code, X-Share-Password, X-Allow-Empty, X-Room-Cursor, X-Image-Sha256, X-Image-Width, X-Image-Height, X-Image-Original-Name, ${DOCUMENT_CONVERSION_HEADER}, ${DOCUMENT_OPEN_HEADER}`,
+  'Access-Control-Allow-Headers': `Authorization, Content-Type, X-Owner-Id, X-Owner-Sig, X-Share-Code, X-Share-Password, X-Allow-Empty, X-Room-Cursor, X-Image-Sha256, X-Image-Width, X-Image-Height, X-Image-Original-Name, ${DOCUMENT_CONVERSION_HEADER}, ${DOCUMENT_OPEN_HEADER}, ${CHANGESET_SEEN_HEADER}, ${CLIENT_HEADER}`,
   'Access-Control-Max-Age': '86400',
   // The server release signal (docs/specs/016-platform/new-version-prompt.md, stale-builds.md), readable
   // by an editor on another origin (local dev, a self-host with a separate api host).
-  'Access-Control-Expose-Headers': `${DOCUMENT_FORMAT_HEADER}, ${BUILD_ID_HEADER}`,
+  // The tab revision as an ETag (docs/specs/024-agents/agent-changesets.md).
+  'Access-Control-Expose-Headers': `${DOCUMENT_FORMAT_HEADER}, ${BUILD_ID_HEADER}, ETag`,
 };
 
 // An answer is the caller's live state, so a browser asks again before reusing it unless the route
@@ -47,6 +50,16 @@ export function json(body: unknown, init: ResponseInit = {}): Response {
   if (!headers.has('Cache-Control')) headers.set('Cache-Control', 'no-cache');
   for (const [k, v] of Object.entries(CORS_HEADERS)) headers.set(k, v);
   return new Response(JSON.stringify(body), { ...init, headers });
+}
+
+// A text body with the JSON helper's CORS and caching (docs/specs/024-agents/document-views.md): a
+// document view, which an agent reads as plain text.
+export function textPlain(body: string, init: ResponseInit = {}): Response {
+  const headers = new Headers(init.headers);
+  headers.set('Content-Type', 'text/plain; charset=utf-8');
+  if (!headers.has('Cache-Control')) headers.set('Cache-Control', 'no-cache');
+  for (const [k, v] of Object.entries(CORS_HEADERS)) headers.set(k, v);
+  return new Response(body, { ...init, headers });
 }
 
 export function notFound(): Response {

@@ -18,11 +18,14 @@
 // An empty deck stays empty. No seeded slides, no "one per tab" starter: a
 // generated deck is one you have to read and prune before you can trust it.
 
-import { useEffect, useRef, useState } from 'react';
+import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
+import { sameMembers, selectionIds, type Selection } from '@/lib/selection-store';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { slideName, type Slide } from '@livediagram/document';
 
 import { ModePanel, type ModePanelProps } from '@/components/panels/ModePanel';
+import { PageSlidePicker } from '@/components/panels/PageSlidePicker';
 import { SlideRowMenu } from '@/components/panels/SlideRowMenu';
 import { SlideDeckSettingsPopover } from '@/components/panels/SlideDeckSettingsPopover';
 import { EyeOffIcon } from '@/components/panels/layers-panel-icons';
@@ -51,6 +54,7 @@ function SlideRow({
   slide,
   index,
   tabName,
+  pageName,
   isOpen,
   isDragging,
   renaming,
@@ -67,6 +71,8 @@ function SlideRow({
   index: number;
   /** Absent when the slide's tab has been deleted. */
   tabName: string | undefined;
+  // A page slide's page, named (when its tab is the one in Illustrate mode); else "Page".
+  pageName?: string;
   isOpen: boolean;
   isDragging: boolean;
   renaming: boolean;
@@ -199,7 +205,11 @@ function SlideRow({
                 own does not say which tab they are on. A slide whose tab has
                 been deleted says so rather than showing a blank. */}
             {tabName ?? 'Tab deleted'} ·{' '}
-            {slide.elementIds.length === 1 ? '1 element' : `${slide.elementIds.length} elements`}
+            {slide.pageId
+              ? (pageName ?? 'Page')
+              : slide.elementIds.length === 1
+                ? '1 element'
+                : `${slide.elementIds.length} elements`}
             {slide.notes ? ' · notes' : ''}
             {slide.hidden ? ' · hidden' : ''}
           </span>
@@ -210,11 +220,14 @@ function SlideRow({
   );
 }
 
+const selectionSetOf = (s: Selection) => selectionIds(s.selectedId, s.multiSelectedIds);
+
 export function SlideDeckPanel({
   state,
   tabs,
   activeTabId,
   isReadOnly,
+  pages,
   ...placement
 }: {
   state: SlideDeckState;
@@ -223,16 +236,18 @@ export function SlideDeckPanel({
   tabs: { id: string; name: string }[];
   activeTabId: string;
   isReadOnly: boolean;
+  // The active tab's pages while it is shown in Illustrate mode: slides are then added a page at
+  // a time (PageSlidePicker) rather than from a selection.
+  pages?: readonly { id: string; label: string }[];
 } & ModePanelProps) {
   const {
     deck,
     openSlideId,
     openSlideInEditor,
-    selectionCount,
-    currentSelectionIds,
     runnable,
     thumbs,
     newSlideFromSelection,
+    newPageSlide,
     addSelectionToSlide,
     removeFromSlide,
     renameSlide,
@@ -245,6 +260,11 @@ export function SlideDeckPanel({
     start,
     startingDeck,
   } = state;
+  // The selection the panel offers to slide, read from the store: a selection change re-renders this
+  // panel and not the canvas (docs/specs/008-canvas/blueprints/selection-store.md).
+  const selected = useSelectionOf(selectionSetOf, sameMembers);
+  const selectionCount = selected.size;
+  const currentSelectionIds = useMemo(() => [...selected], [selected]);
 
   const tabNames = new Map(tabs.map((t) => [t.id, t.name]));
   const [renamingId, setRenamingId] = useState<string | null>(null);
@@ -381,6 +401,11 @@ export function SlideDeckPanel({
                   slide={slide}
                   index={i}
                   tabName={tabNames.get(slide.tabId)}
+                  pageName={
+                    slide.pageId && slide.tabId === activeTabId
+                      ? pages?.find((p) => p.id === slide.pageId)?.label
+                      : undefined
+                  }
                   isOpen={slide.id === openSlideId}
                   isDragging={draggingId === slide.id && moving}
                   renaming={renamingId === slide.id}
@@ -482,7 +507,9 @@ export function SlideDeckPanel({
           </label>
         ) : null}
 
-        {!isReadOnly ? (
+        {!isReadOnly && pages ? (
+          <PageSlidePicker pages={pages} onAdd={newPageSlide} />
+        ) : !isReadOnly ? (
           <button
             type="button"
             onClick={newSlideFromSelection}

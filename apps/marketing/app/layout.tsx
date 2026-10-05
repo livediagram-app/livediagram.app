@@ -11,8 +11,11 @@ import {
   REPO_URL,
   SITE_NAME,
   SITE_URL,
+  SITE_DESCRIPTION,
+  SITE_TITLE,
 } from '@livediagram/ui';
 import { VIEW_TRANSITION_GUARD_SCRIPT } from '../lib/view-transition-guard';
+import { RETURNING_BOOT_SCRIPT } from '@livediagram/api-schema';
 
 // SEO and social-card metadata. See docs/specs/019-marketing/marketing-site.md
 // for the policy. metadataBase lets the per-page canonical and
@@ -20,9 +23,9 @@ import { VIEW_TRANSITION_GUARD_SCRIPT } from '../lib/view-transition-guard';
 // against the production origin; without it Next logs a warning
 // and falls back to localhost in dev (which would otherwise leak
 // into preview builds).
-const TITLE = 'livediagram: Diagrams your team builds together';
-const DESCRIPTION =
-  'A real-time multiplayer canvas for diagrams and mindmaps. Built for teams who think visually.';
+// The shared words for what livediagram is (packages/ui site.ts).
+const TITLE = SITE_TITLE;
+const DESCRIPTION = SITE_DESCRIPTION;
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -142,6 +145,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <head>
         <style>{VIEW_TRANSITION_OPT_IN}</style>
         <script dangerouslySetInnerHTML={{ __html: VIEW_TRANSITION_GUARD_SCRIPT }} />
+        {/* A returning visitor before first paint (docs/specs/019-marketing/returning-visitor.md). */}
+        <script dangerouslySetInnerHTML={{ __html: RETURNING_BOOT_SCRIPT }} />
       </head>
       <body className="bg-slate-50 text-slate-800 antialiased dark:bg-slate-950 dark:text-slate-200">
         {/* Appearance before first paint (docs/specs/004-interface-design/appearance.md). */}

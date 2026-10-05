@@ -54,6 +54,27 @@ export function computeFitToScreen(
   return { zoom, offset };
 }
 
+// Fit to the part of the canvas below `insetTop` screen px (a toolbar laid over the canvas's top
+// edge): the zoom fits the box into the remaining height, and the box centres in that band rather
+// than in the whole canvas. With the centred `scale(z) translate(offset)` transform a canvas y `c`
+// lands at screen `h/2 + z(c + offset.y - h/2)`, so centring on the band adds `insetTop / 2z`.
+export function computeFitBelow(
+  rect: Rect,
+  bbox: BBox,
+  insetTop: number,
+  maxZoom: number = FIT_TO_SCREEN_MAX_AT_FIT,
+): { zoom: number; offset: Offset } {
+  const inset = Math.max(0, Math.min(insetTop, rect.height / 2));
+  const { zoom } = computeFitToScreen({ ...rect, height: rect.height - inset }, bbox, maxZoom);
+  return {
+    zoom,
+    offset: {
+      x: rect.width / 2 - (bbox.x + bbox.width / 2),
+      y: rect.height / 2 - (bbox.y + bbox.height / 2) + inset / (2 * zoom),
+    },
+  };
+}
+
 // Canvas-coord position of the viewport centre. With transform
 // `scale(z) translate(offset)` centred on the wrapper, the canvas-
 // coord at viewport centre is just (canvasCentre - offset), because
@@ -81,4 +102,37 @@ export function isContentOffScreen(rect: Rect, bbox: BBox, offset: Offset, zoom:
   const top = rect.height / 2 + zoom * (bbox.y - centre.y);
   const bottom = rect.height / 2 + zoom * (bbox.y + bbox.height - centre.y);
   return right <= 0 || left >= rect.width || bottom <= 0 || top >= rect.height;
+}
+
+// Screen px left clear above an article page for its page toolbar and title bar, and either side.
+export const READING_TOP_ROOM = 104;
+const READING_SIDE_ROOM = 32;
+
+/**
+ * The view that reads an article page (docs/specs/007-editor/article-pages.md "Getting around"):
+ * its width filling the canvas (never past 100%), room above it for the page toolbar; a page that
+ * fits sits in the middle of the room below, a taller one shows its top.
+ */
+export function computeReadingFrame(
+  rect: Rect,
+  page: BBox,
+  insetTop: number,
+  // The page's side margin: given, the text column (the page less its margins) fills the width,
+  // the margins off screen, so the text reads larger on a narrow screen.
+  margin = 0,
+): { zoom: number; offset: Offset } {
+  const top = Math.min(rect.height / 2, insetTop + READING_TOP_ROOM);
+  const zoom = Math.max(
+    0.1,
+    Math.min(1, (rect.width - 2 * READING_SIDE_ROOM) / Math.max(1, page.width - 2 * margin)),
+  );
+  const room = rect.height - top - 16;
+  const screenTop = page.height * zoom <= room ? top + (room - page.height * zoom) / 2 : top;
+  return {
+    zoom,
+    offset: {
+      x: rect.width / 2 - (page.x + page.width / 2),
+      y: (screenTop - rect.height / 2) / zoom + rect.height / 2 - page.y,
+    },
+  };
 }

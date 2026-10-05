@@ -5,7 +5,7 @@
 // pickers, More, dividers, padding: whatever they measure today, in whatever
 // category), one tile's pitch, and the room the centred strip may take (the
 // window less the Explorer menu button on both sides; on a phone, the window
-// less its gutters). Nothing is assumed about how wide a picker is, so a
+// less its gutters and the menu card beside the strip). Nothing is assumed about how wide a picker is, so a
 // longer category name or a new control keeps fitting.
 //
 // The rail of tiles animates its width when the category changes, so the
@@ -25,8 +25,13 @@ export function useStripTileLimit(
     fallback,
     isMobile,
     scale,
+    leadingRef,
   }: {
     fallback: number;
+    // The card the strip sits beside on a phone (the menu button and mode
+    // switch). When it is there, the strip's room runs from its own left edge
+    // to the right gutter.
+    leadingRef?: RefObject<HTMLElement | null>;
     isMobile: boolean;
     // The UI scale (docs/specs/007-editor/ui-scale.md). Everything here is
     // measured in screen px, so a scaled strip fits itself; the scale is only
@@ -53,10 +58,21 @@ export function useStripTileLimit(
       if (tileWidth <= 0 || cardWidth <= 0) return;
       const gap = parseFloat(getComputedStyle(tile.parentElement!).columnGap) || 0;
       const pitch = tileWidth + gap;
-      const chrome = cardWidth - rail.getBoundingClientRect().width;
+      // The rail's share of the card is its width plus its (negative) side
+      // margins, which give its pressed rings room inside the clip.
+      const railStyle = getComputedStyle(rail);
+      const railShare =
+        rail.getBoundingClientRect().width +
+        (parseFloat(railStyle.marginLeft) || 0) +
+        (parseFloat(railStyle.marginRight) || 0);
+      const chrome = cardWidth - railShare;
       const vw = window.innerWidth;
       let available = vw - PHONE_GUTTERS_PX;
-      if (!isMobile) {
+      if (isMobile) {
+        // Beside the menu card: from where the strip starts to the right gutter.
+        if (leadingRef?.current)
+          available = vw - PHONE_GUTTERS_PX / 2 - card.getBoundingClientRect().left;
+      } else {
         const menu = document.querySelector<HTMLElement>('[data-toolbar-menu]');
         const clear = menu ? menu.getBoundingClientRect().right + MENU_GAP_PX : 0;
         available = vw - 2 * clear;
@@ -71,7 +87,7 @@ export function useStripTileLimit(
       observer.disconnect();
       window.removeEventListener('resize', measure);
     };
-  }, [cardRef, isMobile, scale]);
+  }, [cardRef, leadingRef, isMobile, scale]);
 
   return measured ?? fallback;
 }

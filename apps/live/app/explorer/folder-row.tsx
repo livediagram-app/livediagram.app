@@ -1,6 +1,6 @@
 import { FolderSolidIcon } from '@/components/primitives/explorer-icons';
 import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerButton';
-import { CountBadge } from '@/components/primitives/CountBadge';
+import { CountBadge } from '@livediagram/ui';
 import { useRowMenu } from '@/components/primitives/useRowMenu';
 import type { Folder } from '@/lib/api-client';
 import { InlineRenameInput } from '@/components/primitives/InlineRenameInput';

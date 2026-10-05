@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { templatePickerTabAction } from './useTemplateFlow';
+import { templateCanvasOverrides } from '@livediagram/templates';
+import { templateOpensIn, templatePickerTabAction } from './useTemplateFlow';
 
 // The Quick Start picker is scoped to the tab it opened on (docs/specs/007-editor/new-document-route.md).
 // Applying a template REPLACES that tab's elements, so a picker that
@@ -31,5 +32,21 @@ describe('templatePickerTabAction', () => {
     // RECORD the new tab rather than read as a switch away from the old one.
     expect(templatePickerTabAction('templates', null, 'tab-2')).toBe('record');
     expect(templatePickerTabAction('templates', 'tab-2', 'tab-2')).toBe('keep');
+  });
+});
+
+// docs/specs/007-editor/editor-modes.md "Where the mode lives": a template decides the mode.
+describe('templateOpensIn', () => {
+  it('opens every template but the Whiteboard in Diagram, Blank included', () => {
+    expect(templateOpensIn(templateCanvasOverrides('mindmap'))).toBe('diagram');
+    expect(templateOpensIn(templateCanvasOverrides('blank'))).toBe('diagram');
+  });
+
+  it('opens the Whiteboard in Draw', () => {
+    expect(templateOpensIn(templateCanvasOverrides('whiteboard'))).toBe('draw');
+  });
+
+  it('gives an event-storming board no mode (it is always Diagram)', () => {
+    expect(templateOpensIn(templateCanvasOverrides('event-storming'))).toBeUndefined();
   });
 });

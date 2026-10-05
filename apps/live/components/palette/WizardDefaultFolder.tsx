@@ -1,8 +1,9 @@
 'use client';
 
-import { useId, useState } from 'react';
+import { useState } from 'react';
 import { DefaultFolderPickerDialog } from '@/components/placement/DefaultFolderPickerDialog';
 import type { PickerFolder } from '@/components/placement/PlacementBrowser';
+import { SwitchRow } from '@/components/primitives/SwitchRow';
 import { defaultKeyEntry } from '@/lib/placement-defaults/default-key-entries';
 import type { AlwaysSave, WizardDefault, WizardDefaults } from './useWizardPlacement';
 
@@ -40,7 +41,6 @@ export function WizardDefaultFolder({
     teamId: string | null,
   ) => Promise<PickerFolder | null>;
 }) {
-  const checkboxId = useId();
   const [changing, setChanging] = useState(false);
   return (
     <div className="flex min-h-6 items-center text-xs text-slate-600 dark:text-slate-300">
@@ -63,16 +63,9 @@ export function WizardDefaultFolder({
           </button>
         </p>
       ) : offer ? (
-        <label htmlFor={checkboxId} className="flex cursor-pointer items-center gap-2 text-sm">
-          <input
-            id={checkboxId}
-            type="checkbox"
-            checked={alwaysSave}
-            onChange={(e) => onAlwaysSave(e.target.checked)}
-            className="h-4 w-4 accent-brand-600"
-          />
+        <SwitchRow checked={alwaysSave} onChange={onAlwaysSave} className="text-sm">
           Always save {defaultKeyEntry(offer.key).noun} here
-        </label>
+        </SwitchRow>
       ) : null}
       {changing && shown && defaults ? (
         <DefaultFolderPickerDialog

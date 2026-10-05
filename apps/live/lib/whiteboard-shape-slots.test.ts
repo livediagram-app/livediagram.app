@@ -9,6 +9,7 @@ import {
   SHAPE_PICKS_KEPT,
   shapeSlots,
   slotDropTarget,
+  splitPhonePins,
   unpinShape,
   type ShapePicks,
   type SlotLayout,
@@ -299,5 +300,19 @@ describe('dropIndicatorX', () => {
     expect(dropIndicatorX(layout, { key: 'star', from: 'pinned' }, { zone: 'past' })).toBe(91);
     expect(dropIndicatorX(layout, slot, { zone: 'past' })).toBeNull();
     expect(dropIndicatorX(layout, { key: 'star', from: 'pinned' }, { zone: 'off' })).toBeNull();
+  });
+});
+
+describe('splitPhonePins', () => {
+  it("keeps the first pin on a phone's bar and moves the rest to the flyout", () => {
+    expect(splitPhonePins(DEFAULT_PINNED_SHAPES)).toEqual({
+      onBar: ['arrow'],
+      inMenu: ['rectangle'],
+    });
+  });
+
+  it('copes with one pin or none', () => {
+    expect(splitPhonePins(['diamond'])).toEqual({ onBar: ['diamond'], inMenu: [] });
+    expect(splitPhonePins([])).toEqual({ onBar: [], inMenu: [] });
   });
 });

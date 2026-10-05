@@ -3,7 +3,11 @@
 // per-template element builders. Shared by the editor's picker and the
 // MCP worker so the two can't drift.
 export * from './templates';
+export * from './template-modes';
 export { isUntitledDocumentName } from './legacy-untitled';
 export * from './template-layers';
 export { buildTemplate } from './build-template';
 export { templateFamilyOf } from './template-families';
+export * from './page-layouts';
+export * from './template-tab';
+export { templateCatalogue, type TemplateCatalogue } from './template-catalogue';

@@ -40,7 +40,6 @@ export function CanvasAiPanel({
     >
       <AiPanelContent
         contextElements={aiPanel.contextElements}
-        focusIds={aiPanel.focusIds}
         tabId={aiPanel.tabId}
         tabName={tabName}
         ownerId={aiPanel.ownerId}

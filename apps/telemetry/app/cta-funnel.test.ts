@@ -52,9 +52,12 @@ describe('landingFunnel', () => {
       'Home.Gallery',
       'Home.Header',
       'Home.HeaderDraw',
+      'Home.HeaderWhiteboard',
+      'Home.HeaderIllustration',
       'Home.HeroDraw',
       'Home.HeroBrainstorm',
       'Home.HeroCanvas',
+      'Home.HeroBuild',
       'Home.GalleryDraw',
       'Home.Closing',
     ]);

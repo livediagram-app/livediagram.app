@@ -24,7 +24,7 @@ export type PaletteDropdownOption = {
   group?: number;
   // Grid layout only: span the whole row instead of taking one column. For an
   // option that belongs above the bands rather than inside one (docs/specs/010-palette/palette-top-level-categories.md —
-  // Favourites is every category at once, so it has no band of its own).
+  // Popular is every category at once, so it has no band of its own).
   fullWidth?: boolean;
 };
 
@@ -336,7 +336,7 @@ export function PaletteDropdown({
                   const prev = visible[i - 1];
                   // Compared against `prev?.group` rather than requiring both
                   // to be defined, so an UNGROUPED option sitting above the
-                  // first band (Favourites) still lets that band open with its
+                  // first band (Popular) still lets that band open with its
                   // own heading.
                   const divide = i > 0 && opt.group !== prev?.group;
                   // A header opens each band, including the first — which has

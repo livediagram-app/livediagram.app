@@ -12,6 +12,7 @@
 // The api worker re-exports some under its own aliases (`DocumentDTO` etc.);
 // new code should prefer the canonical names here.
 
+import type { DocumentSource } from './document-source';
 import type { DriveMode } from './drive';
 import type { BackgroundPattern, EditorMode, ShapeKind, Tab } from '@livediagram/document';
 import type { CreationTabKind, TemplateFamily } from './placement-defaults';
@@ -24,13 +25,6 @@ export type { AvatarClothing, AvatarConfig, AvatarGender, AvatarHair, AvatarSize
 
 // Full document payload returned by `GET /api/documents/:id`. After
 // per-tab storage (docs/specs/006-document/per-tab-storage.md), `tabs` is a list of `TabSummary`
-// How a document came to exist (docs/specs/013-workspace/folders.md, docs/specs/015-api/mcp-server.md).
-// null = authored by a person in the editor; 'mcp' = created by an
-// external AI tool via the MCP server; 'ai' = created by the in-editor
-// AI assistant (reserved — no producer today). The Explorer's Made by AI
-// filter and badge read it (source != null).
-export type DocumentSource = 'ai' | 'mcp';
-
 // (metadata only) — element content is fetched separately via
 // `GET /api/documents/:id/tabs/:tabId`.
 export type LiveDoc = {
@@ -172,7 +166,11 @@ export type TabSummary = {
 // row's audit metadata. `folder` here is the per-document membership
 // from the document_tabs link (docs/specs/006-document/tab-folders.md), distinct from anything in the
 // tab body — it is never stored in the `tabs.data` blob.
+//
+// `rev` (docs/specs/024-agents/agent-changesets.md "The tab revision") advances with every write
+// of the tab: an editor save, a changeset, a revert, a rename. The read also carries it as a weak ETag.
 export type TabRecord = Tab & {
+  rev: number;
   documentId: string;
   orderIndex: number;
   updatedAt: number;
@@ -526,6 +524,14 @@ export type AiRequest = {
 // Response body for GET /api/capabilities.
 export type CapabilitiesResponse = {
   aiEnabled: boolean;
+  // For the CLI (docs/specs/015-api/blueprints/cli.md "Capabilities"), each optional so an older worker parses:
+  // where the api answers, whether sign-in exists, the OAuth server, the stored document format, and the
+  // oldest CLI accepted for writes.
+  apiBase?: string;
+  authEnabled?: boolean;
+  oauthIssuer?: string;
+  documentFormat?: number;
+  cli?: { minVersion: string };
   // True only when the deployment has Resend configured (docs/specs/014-identity/transactional-email.md). The
   // live app hides the email-notification toggles (docs/specs/014-identity/profile-and-email-notifications.md) when false,
   // since they'd be inert without an email backend. Optional so an older
@@ -557,6 +563,7 @@ export * from './page-views';
 export * from './read-notes';
 export * from './poll';
 export * from './room-messages';
+export * from './changesets';
 export * from './telemetry-schema';
 export * from './server-emitted-events';
 export * from './error-telemetry';
@@ -586,8 +593,33 @@ export {
 // Default folders: the keys in force and the creation intent a create carries
 // (docs/specs/013-workspace/default-folders.md).
 export * from './placement-defaults';
-// Explorer Home: opens, Jump back in, the own Timeline and What happened
-// (docs/specs/013-workspace/explorer-home.md).
+// Explorer Home: opens, Jump back in and What happened (docs/specs/013-workspace/explorer-home.md).
 export * from './home';
 export * from './drag-preview';
-export * from './frecency';
+export * from './article-caret';
+// Within reach: N most used plus N recent (docs/specs/004-interface-design/within-reach.md).
+export * from './within-reach';
+// Making a document is a use, a bulk import is not (docs/specs/013-workspace/explorer-home.md).
+export * from './creation-use';
+// Document views and ref refusals (docs/specs/024-agents/document-views.md).
+export * from './document-views';
+// The diagram lint's report (docs/specs/024-agents/diagram-lint.md).
+export * from './lint';
+export * from './ref-errors';
+// Returning visitor (docs/specs/019-marketing/returning-visitor.md).
+export * from './recent-diagrams';
+
+// GET /api/tokens/current (docs/specs/015-api/blueprints/cli.md "Token self-service"): the token a request
+// presented, for `livediagram auth status`. `role` is `full` or `read-only`.
+export type CurrentTokenResponse = {
+  accountId: string;
+  accountName: string | null;
+  tokenId: string;
+  tokenName: string | null;
+  role: 'full' | 'read-only';
+  expiresAt: number | null;
+};
+export * from './api-token-format';
+export * from './document-source';
+export * from './catalogues';
+export * from './comment-threads';

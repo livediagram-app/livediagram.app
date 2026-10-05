@@ -3,6 +3,7 @@
 // duplicate and the marquee-cluster duplicate (duplicateElements). The host mounts this and
 // folds the two handlers into its return, so callers are unchanged.
 
+import type { Selection } from '@/lib/selection-store';
 import {
   duplicateElements,
   freshCopyFields,
@@ -38,15 +39,14 @@ const landCopies = (els: Element[], copies: Element[], lanes: boolean): Element[
     : [...els, ...copies];
 
 export function useElementDuplication(deps: {
-  selectedId: string | null;
-  multiSelectedIds: Set<string>;
+  // Read when a duplicate runs (docs/specs/008-canvas/blueprints/selection-store.md).
+  readSelection: () => Selection;
   activeTab: Tab;
   commit: (mapElements: (els: Element[]) => Element[]) => void;
   setSelectedId: (id: string | null) => void;
   setMultiSelectedIds: (ids: Set<string>) => void;
 }) {
-  const { selectedId, multiSelectedIds, activeTab, commit, setSelectedId, setMultiSelectedIds } =
-    deps;
+  const { readSelection, activeTab, commit, setSelectedId, setMultiSelectedIds } = deps;
 
   // Multi-select duplicate (Cmd+D on a marquee, the command palette): the same
   // duplicateElements paste and quick-add use, offset diagonally. It used to be
@@ -56,6 +56,7 @@ export function useElementDuplication(deps: {
   // copied arrow stayed on the original line, and a connector between two
   // copied boxes was left behind unless it was in the marquee too.
   const duplicateMultiSelected = () => {
+    const { multiSelectedIds } = readSelection();
     if (multiSelectedIds.size === 0) return;
     const { dx, dy, lanes } = duplicateOffset(activeTab, multiSelectedIds);
     const { newElements: copies } = duplicateElements(activeTab.elements, multiSelectedIds, dx, dy);
@@ -66,6 +67,7 @@ export function useElementDuplication(deps: {
   };
 
   const duplicateSelected = () => {
+    const { selectedId } = readSelection();
     if (!selectedId) return;
     const source = activeTab.elements.find((el) => el.id === selectedId);
     if (!source) return;

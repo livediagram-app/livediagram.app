@@ -15,7 +15,9 @@ export const EMPTY_SWEEP_MAX_BATCHES = 4;
 
 // Select and move in one statement, so a document saved a moment before it runs
 // is judged on that save. A tab whose data is not valid JSON counts as content:
-// the sweep fails safe. A tab shared with another document counts in both.
+// the sweep fails safe. So does a tab with any article: an article's writing
+// lives in `articles`, not in `elements`. A tab shared with another document
+// counts in both.
 const MOVE_EMPTY_STALE = `
   UPDATE documents SET trashed_at = ?1, trash_reason = 'empty'
    WHERE id IN (
@@ -25,7 +27,8 @@ const MOVE_EMPTY_STALE = `
           SELECT 1 FROM document_tabs dt JOIN tabs t ON t.id = dt.tab_id
            WHERE dt.document_id = d.id
              AND (NOT json_valid(t.data)
-                  OR COALESCE(json_array_length(t.data, '$.elements'), 0) > 0))
+                  OR COALESCE(json_array_length(t.data, '$.elements'), 0) > 0
+                  OR EXISTS (SELECT 1 FROM json_each(t.data, '$.articles'))))
       ORDER BY d.saved_at ASC, d.id ASC
       LIMIT ?3)`;
 

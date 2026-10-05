@@ -41,7 +41,7 @@ test.describe('Multi-colour themes', () => {
     // owns their colours. (The radial Mind map template authors a hue per
     // branch, which a switch rightly keeps as a customisation, per
     // docs/specs/011-theme/multicolour-themes.md.)
-    await startTemplateDocument(page, /Browse Mind maps templates/, /^Tree mind map/i);
+    await startTemplateDocument(page, /Browse Brainstorm templates/, /^Tree mind map/i);
     await dismissQuickTour(page);
     // The template's own theme carries none of Rainbow's hues, so any found
     // afterwards came from the switch.

@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import type { ShapeLibraryItem } from '@livediagram/api-schema';
 import type { EmbedProvider, EventStormingNoteKind } from '@livediagram/document';
 import type { ShapeKind } from '@livediagram/document';
@@ -25,6 +26,9 @@ export type CanvasTool =
   | 'slide-deck';
 
 export type CommandPaletteProps = {
+  // Draw mode's tools (WhiteboardDock, variant 'panel'): shown in place of the pickers and the
+  // catalogue, in the same panel (docs/specs/023-draw-mode/draw-mode.md "What a whiteboard shows").
+  drawTools?: ReactNode;
   position: { x: number; y: number } | null;
   canvasTool: CanvasTool;
   onSetCanvasTool: (tool: CanvasTool) => void;
@@ -79,7 +83,7 @@ export type CommandPaletteProps = {
   onAddSticky: (fill?: string, esKind?: EventStormingNoteKind) => void;
   // True when the active tab is an event-storming board (docs/specs/021-event-storming/event-storming.md): the
   // palette then opens on the Event Storming category instead of
-  // Favourites — the notation is what the board is for.
+  // Popular — the notation is what the board is for.
   esBoard?: boolean;
   // Board-level switches shown above the notation on one of those boards
   // (docs/specs/021-event-storming/event-storming.md Phase 6: timeline lanes). Omitted everywhere else.

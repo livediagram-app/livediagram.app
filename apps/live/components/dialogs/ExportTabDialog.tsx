@@ -5,7 +5,13 @@ import { FormatCard } from './FormatCard';
 import { FormatIcon } from './export-format-icons';
 import { TextExportPanel } from './TextExportPanel';
 import { ImageExportPanel } from './ImageExportPanel';
-import { isLayerVisible, tabLayers, mermaidFromTab, type Tab } from '@livediagram/document';
+import {
+  isLayerVisible,
+  tabLayers,
+  mermaidFromTab,
+  type LaidOutPage,
+  type Tab,
+} from '@livediagram/document';
 import {
   downloadBlob,
   exportTabAsPng,
@@ -16,6 +22,14 @@ import {
   tabToMarkdownText,
 } from '@/lib/export-tab';
 import { exportTabAsPdf } from '@/lib/export-tab-pdf';
+import {
+  DEFAULT_PAGE_SCOPE,
+  exportPageLabel,
+  exportPages,
+  sanitizeFilename,
+  type PageScope,
+} from '@/lib/export-pages';
+import { ExportPagePicker } from './ExportPagePicker';
 import { tabToExcalidrawText } from '@/lib/excalidraw-export';
 import { ensureIconCatalogs } from '@/lib/icon-registry';
 import { track } from '@/lib/telemetry';
@@ -32,6 +46,29 @@ const EXPORT_LABEL: Record<Format, string> = {
   png: 'PNG',
   svg: 'SVG',
   pdf: 'PDF',
+};
+
+// An Illustrate tab's pages exported (docs/specs/007-editor/illustrate-pages.md "Telemetry"): one
+// page, or all of them.
+const ILLUSTRATE_EXPORT_LABEL: Record<ImageFormat, string> = {
+  png: 'IllustratePNG',
+  svg: 'IllustrateSVG',
+  pdf: 'IllustratePDF',
+};
+const ILLUSTRATE_PAGES_EXPORT_LABEL: Record<ImageFormat, string> = {
+  png: 'IllustratePNGPages',
+  svg: 'IllustrateSVGPages',
+  pdf: 'IllustratePDFPages',
+};
+
+// The formats Illustrate mode exports to (docs/specs/007-editor/illustrate-pages.md "Export"):
+// its pages, and the tab itself as JSON. Diagram-tool formats are not offered.
+const ILLUSTRATE_FORMATS: readonly Format[] = ['pdf', 'png', 'svg', 'file'];
+// The page formats' card copy in Illustrate mode, which speaks of pages rather than the tab.
+const ILLUSTRATE_CARD_COPY: Partial<Record<Format, string>> = {
+  pdf: 'Every page in one PDF, or a single page, ready to print or share.',
+  png: 'A high-resolution image of a page, or a .zip with one per page.',
+  svg: 'A scalable vector image of a page, or a .zip with one per page.',
 };
 
 type ExportTabDialogProps = {
@@ -53,6 +90,9 @@ type ExportTabDialogProps = {
   // image options then leave out "Hidden layers", and hidden layers stay out
   // of the export as they stay off the canvas.
   offerHiddenLayers?: boolean;
+  // Illustrate mode's pages (docs/specs/007-editor/illustrate-pages.md "Export"): PDF, PNG and
+  // SVG export all pages or one chosen page, each exactly its sheet. Absent elsewhere.
+  pages?: LaidOutPage[];
 };
 
 export type Format = 'markdown' | 'mermaid' | 'excalidraw' | 'pdf' | 'png' | 'svg' | 'file';
@@ -157,6 +197,7 @@ export function ExportTabDialog({
   scope = 'tab',
   imageContext,
   offerHiddenLayers = true,
+  pages,
 }: ExportTabDialogProps) {
   // null = the format grid; otherwise the picked format's sub-panel.
   const [active, setActive] = useState<Format | null>(null);
@@ -170,6 +211,18 @@ export function ExportTabDialog({
     Awaited<ReturnType<typeof loadTabImages>> | undefined
   >(undefined);
   const [previewReady, setPreviewReady] = useState(false);
+  // The page One page exports (and every preview shows), by its place in the row.
+  const [pageIndex, setPageIndex] = useState(0);
+  const page = pages?.[Math.min(pageIndex, pages.length - 1)];
+  // All pages or One page, per format: each starts where DEFAULT_PAGE_SCOPE puts it.
+  const [scopes, setScopes] = useState<Partial<Record<ImageFormat, PageScope>>>({});
+  const scopeOf = (format: ImageFormat) => scopes[format] ?? DEFAULT_PAGE_SCOPE[format];
+  const cards = pages
+    ? ILLUSTRATE_FORMATS.map((kind) => {
+        const card = CARDS.find((c) => c.kind === kind)!;
+        return { ...card, description: ILLUSTRATE_CARD_COPY[kind] ?? card.description };
+      })
+    : CARDS;
 
   const isSelection = scope === 'selection';
   const suffix = isSelection ? ' - selection' : '';
@@ -211,8 +264,8 @@ export function ExportTabDialog({
   // three. Stable across renders so the panel can memoise on the toggles.
   const renderPreview = useCallback(
     (opts: { isometric: boolean; pattern: boolean; hiddenLayers: boolean }) =>
-      renderTabToSvg(tab, { ...opts, images: previewImages }),
-    [tab, previewImages],
+      renderTabToSvg(tab, { ...opts, images: previewImages, page }),
+    [tab, previewImages, page],
   );
 
   // Render + download an image format with the chosen options (docs/specs/010-palette/style-presets.md).
@@ -232,7 +285,32 @@ export function ExportTabDialog({
         : imageContext
           ? await loadTabImages(tab, imageContext)
           : undefined;
-      const renderOpts = { ...opts, images };
+      const renderOpts = { ...opts, images, page };
+      if (pages && page) {
+        const pageScope = scopeOf(format);
+        const { blob, ext } = await exportPages({
+          tab,
+          pages,
+          page,
+          scope: pageScope,
+          format,
+          opts: renderOpts,
+        });
+        const name =
+          pageScope === 'all'
+            ? baseName
+            : `${baseName} - ${sanitizeFilename(exportPageLabel(page, pages.length))}`;
+        downloadBlob(blob, `${name}.${ext}`);
+        track(
+          'Document',
+          'Exported',
+          pageScope === 'all'
+            ? ILLUSTRATE_PAGES_EXPORT_LABEL[format]
+            : ILLUSTRATE_EXPORT_LABEL[format],
+        );
+        onClose();
+        return;
+      }
       if (format === 'png') {
         downloadBlob(await exportTabAsPng(tab, renderOpts), `${baseName}.png`);
       } else if (format === 'svg') {
@@ -255,7 +333,9 @@ export function ExportTabDialog({
       : `Set the image options for ${activeCard.title}, then download.`
     : isSelection
       ? 'Pick a format to export the selected elements.'
-      : 'Pick a format to export the current tab.';
+      : pages
+        ? 'Pick a format to export the pages.'
+        : 'Pick a format to export the current tab.';
 
   return (
     <Dialog
@@ -286,7 +366,20 @@ export function ExportTabDialog({
           />
         ) : active ? (
           <ImageExportPanel
+            pagePicker={
+              pages && page ? (
+                <ExportPagePicker
+                  pages={pages}
+                  page={page}
+                  scope={scopeOf(active as ImageFormat)}
+                  format={active as ImageFormat}
+                  onScope={(next) => setScopes((s) => ({ ...s, [active as ImageFormat]: next }))}
+                  onPick={setPageIndex}
+                />
+              ) : undefined
+            }
             label={activeCard!.title}
+            pageExport={!!pages}
             busy={busy}
             error={error}
             hasHiddenLayers={
@@ -302,7 +395,7 @@ export function ExportTabDialog({
           />
         ) : (
           <div className="grid grid-cols-3 gap-3">
-            {CARDS.map((c) => (
+            {cards.map((c) => (
               <FormatCard
                 key={c.kind}
                 title={c.title}
@@ -320,16 +413,4 @@ export function ExportTabDialog({
       </div>
     </Dialog>
   );
-}
-
-// Filesystem-safe filename: replace anything that isn't alphanumeric,
-// dot, dash, underscore, or space with a dash. Collapses runs of
-// dashes and trims trailing whitespace so the resulting name is OS-
-// friendly across Windows / macOS / Linux.
-function sanitizeFilename(name: string): string {
-  return name
-    .replace(/[^A-Za-z0-9._\- ]+/g, '-')
-    .replace(/-+/g, '-')
-    .replace(/\s+/g, ' ')
-    .trim();
 }

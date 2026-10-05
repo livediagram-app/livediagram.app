@@ -38,3 +38,23 @@ describe('useEditorUiState active tab', () => {
     expect(result.current.activeId).toBe('t2');
   });
 });
+
+// docs/specs/008-canvas/canvas-performance.md "A selection change re-renders what it touches": the editor
+// root holds the selection store but never renders for a change to it.
+describe('useEditorUiState selection', () => {
+  it('does not render its host for a selection change, and reads the newest selection', () => {
+    let renders = 0;
+    const { result } = renderHook(() => {
+      renders += 1;
+      return useEditorUiState('t1', { current: null });
+    });
+    const before = renders;
+
+    act(() => result.current.setSelectedId('a'));
+    act(() => result.current.setMultiSelectedIds(new Set(['a', 'b'])));
+
+    expect(renders).toBe(before);
+    expect(result.current.readSelection().selectedId).toBe('a');
+    expect([...result.current.readSelection().multiSelectedIds]).toEqual(['a', 'b']);
+  });
+});

@@ -13,6 +13,7 @@ import { applyPaint, paintableArrowFields, paintableBoxedFields } from '@/lib/fo
 import { filterPaintedFields, formatPaintsAnything, type FormatConfig } from '@/lib/format-config';
 import { track } from '@/lib/telemetry';
 import { patchTab } from './editor-page-helpers';
+import { selectionIds, type Selection } from '@/lib/selection-store';
 
 type SetState<T> = Dispatch<SetStateAction<T>>;
 
@@ -22,21 +23,12 @@ type SetState<T> = Dispatch<SetStateAction<T>>;
 // currentSelectionIds / selectionPrimary resolve the working set;
 // applyFormatFromSource runs the format painter). Returned so the
 // still-inline handlers and the Canvas consume them.
-// The selection as one set: the multi-selection when there is one, else the single selected id.
-export function selectionIds(
-  selectedId: string | null,
-  multiSelectedIds: ReadonlySet<string>,
-): Set<string> {
-  if (multiSelectedIds.size > 0) return new Set(multiSelectedIds);
-  return selectedId ? new Set([selectedId]) : new Set();
-}
-
 export function useElementHelpers(opts: {
-  selectedId: string | null;
+  // The selection, read where a helper acts (docs/specs/008-canvas/blueprints/selection-store.md).
+  readSelection: () => Selection;
   activeId: string;
   activeTab: Tab;
   editsBlocked: boolean;
-  multiSelectedIds: Set<string>;
   formatSourceId: string | null;
   // The Format Panel's settings (docs/specs/008-canvas/format-panel.md): which parts of a copied style
   // travel, and whether the brush stays loaded.
@@ -49,11 +41,10 @@ export function useElementHelpers(opts: {
   setFormatSourceId: SetState<string | null>;
 }) {
   const {
-    selectedId,
+    readSelection,
     activeId,
     activeTab,
     editsBlocked,
-    multiSelectedIds,
     formatSourceId,
     formatConfig,
     getViewportCenter,
@@ -113,6 +104,7 @@ export function useElementHelpers(opts: {
     // gesture's tap branch via inheritedSizeFor); circles + diamonds stay
     // square so an inherited non-square size doesn't squash them. A
     // drag-drop (inheritSize=false) keeps the element's own default size.
+    const { selectedId } = readSelection();
     const sel =
       inheritSize && selectedId ? activeTab.elements.find((el) => el.id === selectedId) : null;
     const { width, height } = inheritSize
@@ -172,7 +164,10 @@ export function useElementHelpers(opts: {
   // marquee multi-selection, else the single selection. Every editor
   // setter resolves through this so shared controls bulk-apply across a
   // multi-selection exactly as they apply to one element.
-  const currentSelectionIds = (): Set<string> => selectionIds(selectedId, multiSelectedIds);
+  const currentSelectionIds = (): Set<string> => {
+    const { selectedId, multiSelectedIds } = readSelection();
+    return selectionIds(selectedId, multiSelectedIds);
+  };
 
   // First element in `activeTab.elements` (DOM/z-order) that's in
   // the current selection. Used as the "primary" for toggle setters

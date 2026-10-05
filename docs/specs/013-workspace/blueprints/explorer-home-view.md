@@ -1,70 +1,74 @@
 # Explorer Home, view: blueprint
 
-Derived from [Explorer Home](../explorer-home.md) (Route, Layout, Recent, Timeline, Opens, States, Telemetry,
-Accessibility), with the page-title rules of [Explorer structure](../explorer-structure.md) and the landing of
-[Timeline](../timeline.md) §8. The data, its wire and its reads are [Explorer Home, data](explorer-home.md); this file
-is the view that renders them, the browser's own opens of local documents, and the route. Defaults applied where the
-spec is silent are ledgered in [DEFAULTS.md](DEFAULTS.md) and cited as `Dn`.
+Derived from [Explorer Home](../explorer-home.md) (Route, Layout, Jump back in, What happened, Opens, States,
+Telemetry, Accessibility), with the allocation of [Within reach](../../004-interface-design/within-reach.md), the
+principle of [Design principles](../../004-interface-design/design-principles.md) (Calm by default), the page-title
+rules of [Explorer structure](../explorer-structure.md) and the landing of [Timeline](../timeline.md) §8. The data,
+its wire and its reads are [Explorer Home, data](explorer-home.md); this file is the view that renders them, the
+browser's own opens of local documents, and the route. Defaults applied where the spec is silent are ledgered in
+[DEFAULTS.md](DEFAULTS.md) and cited as `Dn`.
 
 Scope, by file:
 
-| File                                                                    | Role                                                                              |
-| ----------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| `packages/api-schema/src/frecency.ts`                                   | The half-life and the key maths, shared by the api and the browser                |
-| `packages/api-schema/src/home.ts`                                       | `HomeJumpBackInItem.frecencyKey` on the wire                                      |
-| `apps/api/src/db/home.ts`                                               | `readJumpBackIn` returns the key                                                  |
-| `apps/live/lib/offline/offline-opens.ts`                                | `LocalOpens`, `nextLocalOpens`, `offlineRecordOpen`, `offlineListOpens`           |
-| `apps/live/lib/offline/offline-store.ts`                                | `OfflineDocumentRecord.opens`                                                     |
-| `apps/live/lib/api/tabs.ts`                                             | A marked load of a local document records a local open                            |
-| `apps/live/app/explorer/home/page.tsx`                                  | The `/explorer/home` route stub and its title                                     |
-| `apps/live/app/explorer/home/home-model.ts`                             | Pure: merge, fold, sides, hrefs, days, the strip's fade                           |
-| `apps/live/app/explorer/home/home-copy.ts`                              | Pure: every sentence, label and state copy                                        |
-| `apps/live/app/explorer/home/useHome.ts`                                | The read, the local merge, paging, retry, the unread clear                        |
-| `apps/live/app/explorer/entry-path.ts`                                  | `ENTRY_PATH`, `ARRIVED_ON_HOME`, `ARRIVED_ON_TIMELINE`: where the page load began |
-| `apps/live/lib/explorer-landing.ts`                                     | `EXPLORER_LANDING_PATH`, the one landing path                                     |
-| `apps/live/components/panels/home/HomePane.tsx`                         | Columns or the phone switch; landmarks; the error state; the landing telemetry    |
-| `apps/live/components/panels/home/HomeSwitch.tsx`                       | The phone's Recent / Timeline tabs                                                |
-| `apps/live/components/panels/home/JumpBackIn.tsx`                       | The strip, its fade, its empty state                                              |
-| `apps/live/components/panels/home/WhatHappened.tsx`                     | Day headings, See all activity, the entries                                       |
-| `apps/live/components/panels/home/WhatHappenedEntry.tsx`                | `ActionEntry` (one person) and `SummaryEntry` (the disclosure)                    |
-| `apps/live/components/panels/home/HomeTimeline.tsx`                     | The centre line, day markers, alternating entries, the paging slot                |
-| `apps/live/components/panels/home/HomeAvatar.tsx`                       | `HomeAvatar`, `AvatarStack`: people without presence rings                        |
-| `apps/live/components/panels/home/home-icons.tsx`                       | The kind markers and the verb icons                                               |
-| `apps/live/components/panels/home/HomeSkeletons.tsx`                    | The three skeletons, sized as what replaces them                                  |
-| `apps/live/components/panels/home/home-styles.ts`                       | The shared classes, and the Timeline entry box the skeletons share                |
-| `apps/live/components/panels/home/home-test-utils.ts`                   | Test fixtures: a document, a person, an action, a group, an entry                 |
-| `apps/live/app/explorer/{views.tsx,routes.ts,view-titles.ts}`           | `{ kind: 'home' }`, `/explorer/home`, the default, the titles                     |
-| `apps/live/app/explorer/{useExplorerPane.ts,ExplorerPane.tsx}`          | Crumbs (`Home › All activity`), the dispatch, the header                          |
-| `apps/live/app/explorer/page.tsx`, `apps/live/src/worker.ts`            | The landing goes to `EXPLORER_LANDING_PATH`                                       |
-| `scripts/e2e-stack.mjs`                                                 | The e2e stack's `/explorer` redirect reads the same constant                      |
-| `apps/live/app/explorer/sidebar/OverviewGroup.tsx`                      | The Home row selects and opens Home                                               |
-| `apps/live/components/panels/explorer-tree/PanelOverviewGroup.tsx`      | The panel's Home row opens Home                                                   |
-| `apps/live/app/explorer/useTimelineFeed.ts`                             | `Timeline·Opened·Landing` only for a load that started on `/explorer/timeline`    |
-| `apps/live/app/explorer/useTimelineUnread.ts`                           | A clear outlives a count still in flight                                          |
-| `packages/ui/src/timeline/useTimelineGrouping.ts`                       | `formatDay` exported, shared by the day headings                                  |
-| `packages/api-schema/src/telemetry-schema.ts`                           | The `Home` category                                                               |
-| `apps/telemetry/app/{catalogue/collaboration.ts,event-explanations.ts}` | Home's charts and sentences                                                       |
-| `apps/telemetry/app/event-vocab.ts`                                     | The `Home` category's description and colour                                      |
-| `apps/help/app/explorer/timeline/page.mdx`, `packages/help-registry`    | The Home article: Home, then All activity                                         |
-| `apps/live/e2e/home-seed.ts`                                            | e2e seeding through the api: drawn documents, opens, edits through a link         |
+| File                                                                    | Role                                                                                    |
+| ----------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| `packages/api-schema/src/within-reach.ts`                               | `withinReach`, `utcDay`: the allocation shared with the api and the Shapes flyout       |
+| `packages/api-schema/src/home.ts`                                       | `HOME_WITHIN_REACH_PER_ROW`, `WITHIN_REACH_USE_WINDOW_DAYS`, `windowStartOf`            |
+| `apps/live/lib/offline/offline-opens.ts`                                | `LocalOpens`, `nextLocalOpens`, `localOpensOf`, `offlineRecordOpen`, `offlineListOpens` |
+| `apps/live/lib/offline/offline-store.ts`                                | `OfflineDocumentRecord.opens`; `offlineCreateDocument(..., { markUsed })` starts them   |
+| `apps/live/lib/api/tabs.ts`                                             | A marked load of a local document records a local open                                  |
+| `apps/live/app/explorer/home/page.tsx`                                  | The `/explorer/home` route stub and its title                                           |
+| `apps/live/app/explorer/home/home-model.ts`                             | Pure: Jump back in's set, the phone order, hrefs, What happened's days, the fade        |
+| `apps/live/app/explorer/home/home-copy.ts`                              | Pure: every sentence, label and state copy                                              |
+| `apps/live/app/explorer/home/useHome.ts`                                | The read, the local merge, retry, the unread clear                                      |
+| `apps/live/app/explorer/entry-path.ts`                                  | `ENTRY_PATH`, `ARRIVED_ON_HOME`, `ARRIVED_ON_TIMELINE`: where the page load began       |
+| `apps/live/lib/explorer-landing.ts`                                     | `EXPLORER_LANDING_PATH`, the one landing path                                           |
+| `apps/live/components/panels/home/HomePane.tsx`                         | One column of two sections; the error state; the landing telemetry                      |
+| `apps/live/components/panels/home/JumpBackIn.tsx`                       | The section: heading row, See more, the grid or the strip, the empty line               |
+| `apps/live/components/panels/home/JumpBackInStrip.tsx`                  | The phone's strip, its fade and its See more tile                                       |
+| `apps/live/components/panels/home/JumpBackInTile.tsx`                   | One document's tile (grid and strip) and the See more tile                              |
+| `apps/live/components/panels/home/HomeSection.tsx`                      | `HomeSection` (wrapper, heading row, rule, quiet link) and `InAppLink`                  |
+| `apps/live/components/panels/home/WhatHappened.tsx`                     | The section: day headings, See all activity, the entries                                |
+| `apps/live/components/panels/home/WhatHappenedEntry.tsx`                | `ActionEntry` (one person) and `SummaryEntry` (the disclosure)                          |
+| `apps/live/components/panels/home/HomeAvatar.tsx`                       | `HomeAvatar`, `AvatarStack`: people without presence rings                              |
+| `apps/live/components/panels/home/home-icons.tsx`                       | The verb icons                                                                          |
+| `apps/live/components/panels/home/HomeSkeletons.tsx`                    | The skeletons, sized as what replaces them                                              |
+| `apps/live/components/panels/home/home-styles.ts`                       | The shared classes                                                                      |
+| `apps/live/components/panels/home/home-test-utils.ts`                   | Test fixtures: a document, a person, an action, a group, a Jump back in item            |
+| `apps/live/app/explorer/{views.tsx,routes.ts,view-titles.ts}`           | `{ kind: 'home' }`, `/explorer/home`, the default, the titles                           |
+| `apps/live/app/explorer/{useExplorerPane.ts,ExplorerPane.tsx}`          | Crumbs (`Home › All activity`, `Home › Recent`), the dispatch, the header               |
+| `apps/live/app/explorer/page.tsx`, `apps/live/src/worker.ts`            | The landing goes to `EXPLORER_LANDING_PATH`                                             |
+| `scripts/e2e-stack.mjs`                                                 | The e2e stack's `/explorer` redirect reads the same constant                            |
+| `apps/live/app/explorer/sidebar/OverviewGroup.tsx`                      | The Home row selects and opens Home                                                     |
+| `apps/live/components/panels/explorer-tree/PanelOverviewGroup.tsx`      | The panel's Home row opens Home                                                         |
+| `apps/live/app/explorer/useTimelineFeed.ts`                             | `Timeline·Opened·Landing` only for a load that started on `/explorer/timeline`          |
+| `apps/live/app/explorer/useTimelineUnread.ts`                           | A clear outlives a count still in flight                                                |
+| `packages/ui/src/timeline/useTimelineGrouping.ts`                       | `formatDay` exported, shared by the day headings                                        |
+| `packages/api-schema/src/telemetry-schema.ts`                           | The `Home` category                                                                     |
+| `apps/telemetry/app/{catalogue/collaboration.ts,event-explanations.ts}` | Home's charts and sentences                                                             |
+| `apps/telemetry/app/event-vocab.ts`                                     | The `Home` category's description and colour                                            |
+| `apps/help/app/explorer/timeline/page.mdx`, `packages/help-registry`    | The Home article: Home, then All activity                                               |
+| `apps/live/e2e/home-seed.ts`                                            | e2e seeding through the api: drawn documents, opens, edits through a link               |
 
 ## Domain and naming
 
-| Term            | Identifier                                          | Meaning                                                        |
-| --------------- | --------------------------------------------------- | -------------------------------------------------------------- |
-| Home            | `{ kind: 'home' }`, `/explorer/home`, `HomePane`    | The landing view                                               |
-| All activity    | `{ kind: 'timeline' }`, `/explorer/timeline`        | The Timeline feed's page title; the kind keeps its name        |
-| Strip           | `JumpBackIn`, `JumpBackInItem` (view)               | Jump back in's row of thumbnails                               |
-| Local open      | `LocalOpens`, `OfflineDocumentRecord.opens`         | This browser's count of opens of a document stored only here   |
-| Timeline column | `HomeTimeline`, `TimelineRow` (view)                | Home's own Timeline, folded one per document per local day     |
-| Side            | `'start' \| 'end'`                                  | Which side of the centre line an entry's thumbnail sits        |
-| Action entry    | `ActionEntry`                                       | One action of a one-person group, a link                       |
-| Summary entry   | `SummaryEntry`                                      | A group of several people, a disclosure                        |
-| Switch          | `HomeSwitch`, `HomeColumn = 'recent' \| 'timeline'` | The phone's tabs                                               |
-| Paging slot     | `PagingSlot`                                        | The Timeline's reserved foot: sentinel, loading row, Try again |
+| Term          | Identifier                                       | Meaning                                                       |
+| ------------- | ------------------------------------------------ | ------------------------------------------------------------- |
+| Home          | `{ kind: 'home' }`, `/explorer/home`, `HomePane` | The landing view                                              |
+| All activity  | `{ kind: 'timeline' }`, `/explorer/timeline`     | The Timeline feed's page title; the kind keeps its name       |
+| Jump back in  | `JumpBackIn`, `JumpBackInSet`, `JumpBackInItem`  | The section and its within-reach set of documents             |
+| Group         | `JumpBackInGroup = 'mostUsed' \| 'recent'`       | Which half of the set an item belongs to; never shown         |
+| Grid          | `JumpBackIn` wide branch                         | Desktop and tablet: 4 by 2, most used on top                  |
+| Strip         | `JumpBackInStrip`                                | The phone's sideways row, alternating, ending in See more     |
+| Phone order   | `phoneOrder(set)`                                | Most used, recent, alternating, then the rest                 |
+| Tile          | `JumpBackInTile`, `SeeMoreTile`                  | One document's thumbnail and name; the strip's last tile      |
+| See more      | `HOME_COPY.seeMore`, `recentHref`, `onSeeMore`   | The way to the Recent page                                    |
+| Local open    | `LocalOpens`, `OfflineDocumentRecord.opens`      | This browser's record of opens of a document stored only here |
+| Action entry  | `ActionEntry`                                    | One action of a one-person group, a link                      |
+| Summary entry | `SummaryEntry`                                   | A group of several people, a disclosure                       |
 
-Banned: "feed" for Home's Timeline column (it is the column; the feed is All activity), "recent" for the frecency
-strip in code (it is `jumpBackIn`), "notification" for an action.
+Banned: "Most used" and "Recent" as visible copy or labels on Home (the groups carry no titles), "frecency",
+"timeline" for anything on Home, "notification" for an action.
 
 ## Behaviour and state
 
@@ -74,30 +78,27 @@ strip in code (it is `jumpBackIn`), "notification" for an action.
   → `{ kind: 'home' }`. `explorerPathFor({ kind: 'home' })` → `/explorer/home`.
 - `/explorer` → 302 `/explorer/home` (worker), `router.replace('/explorer/home')` (dev fallback).
 - `VIEW_TITLES.home = 'Home'` (`SIDEBAR_LABELS.home`); `VIEW_TITLES.timeline = 'All activity'` (`D94`).
-- Crumbs: `timeline` → `[{ Home, go home }, { All activity }]`; `home` → `[{ Home }]` (one crumb, not shown).
+- Crumbs: `timeline` → `[{ Home, go home }, { All activity }]`; `recent` → `[{ Home, go home }, { Recent }]`
+  (`D130`); `home` → `[{ Home }]` (one crumb, not shown).
 - The sidebar Home row: `selected = kind === 'home'`; activation tracks `Sidebar.Home`, clears the unread badge, goes
   home. The panel's Home row opens `/explorer/home`.
 - `SECTION_HELP.home = 'timeline'` (the Home article). `newDocument` applies to `home` (navigates to `/new`); no
   folder, no import toolbar, no view toggle.
 - A team left (`onLeftTeam`) goes home.
 
-### `useHome(ownerId, enabled)`
+### `useHome(ownerId, onSeen)`
 
-State: `{ status: 'loading' | 'ready' | 'error', jumpBackIn, whatHappened, timeline, hasMore, paging: 'idle' |
-'loading' | 'error', lastSeenAt }`.
+State: `{ status: 'loading' | 'ready' | 'error', jumpBackIn: JumpBackInSet, whatHappened, lastSeenAt }`.
 
-1. When `enabled` and `ownerId`: `status = 'loading'`; `Promise.all([apiReadHome(owner, { tz }), offlineListOpens()])`
-   with `tz = Intl.DateTimeFormat().resolvedOptions().timeZone` (`D95`). A request id guards a stale response (owner
+1. When `ownerId`: `status = 'loading'`; `Promise.all([apiReadHome(owner, { tz }), offlineListOpens()])` with
+   `tz = Intl.DateTimeFormat().resolvedOptions().timeZone` (`D95`). A request id guards a stale response (owner
    change, retry).
-2. Home `null` → `status = 'error'`. Otherwise `ready`; `jumpBackIn = mergeJumpBackIn(home.jumpBackIn, local)`;
-   `whatHappened` as sent; `timeline = home.timeline`; call `onSeen()` (the unread clear: the read moved the mark).
+2. Home `null` → `status = 'error'`. Otherwise `ready`; `jumpBackIn = jumpBackInSet(home.jumpBackIn, local,
+Date.now())`; `whatHappened` as sent; call `onSeen()` (the unread clear: the read moved the mark).
 3. `offlineListOpens` failing (no IndexedDB) resolves to `[]` and logs `[home] local-opens-unavailable`; it never
    fails the page.
-4. `loadMore()`: only when `ready`, `nextCursor` set and `paging !== 'loading'`; `paging = 'loading'`;
-   `apiReadHomeTimeline(owner, { cursor })`; success appends `items` (deduplicated by event id), sets `nextCursor`,
-   `paging = 'idle'`, tracks `Home·Loaded·More`; `null` → `paging = 'error'`.
-5. `retry()`: tracks `Home·Loaded·Retry`, re-runs 1. `retryMore()`: tracks `Home·Loaded·Retry`, re-runs 4.
-6. Once per `HomePane` mount: `Home·Opened·Landing` when the page load started on `/explorer` or `/explorer/home`
+4. `retry()`: tracks `Home·Loaded·Retry`, re-runs 1.
+5. Once per `HomePane` mount: `Home·Opened·Landing` when the page load started on `/explorer` or `/explorer/home`
    (`ARRIVED_ON_HOME`, `entry-path.ts`, captured at module evaluation in the eager Explorer chunk), else
    `Home·Opened·Nav`.
 
@@ -109,87 +110,87 @@ never replaces it. `isNewEvent(at, lastSeenAt)` (`@livediagram/ui`, the Timeline
 `bg-brand-600` (`SOLID_BRAND_DARK` in dark), white 9 px semibold caps, "New", first in the entry's meta line, inside
 the link or button so it is part of the accessible name.
 
-### Merge (`mergeJumpBackIn(server, local, max = HOME_JUMP_BACK_IN_MAX)`)
+### Jump back in
 
-`local` is `{ document: DocumentSummary, opens: LocalOpens }[]` for live local records with `opens`. Each becomes a
-`JumpBackInItem` `{ documentId, name, href: /document/<id>, savedAt, empty, frecencyKey, localOnly: true }`; each
-server item `{ ..., href: homeDocumentHref(item), localOnly: false }`. Concatenate, sort by `frecencyKey` descending,
-ties by `documentId` ascending (`D77`), keep the first `max`.
+`jumpBackInSet(server, local, now, n = HOME_WITHIN_REACH_PER_ROW)` → `JumpBackInSet = { mostUsed, recent }`:
+
+1. Each server item becomes a `JumpBackInItem` `{ documentId, name, href: homeDocumentHref(item), savedAt, empty,
+shareCode (shared only), useDays, lastUsedAt, localOnly: false }`.
+2. Each local document becomes one with `href: /document/<id>`, `shareCode: null`, `localOnly: true`,
+   `useDays = opens.days.filter(d => d >= utcDay(windowStartOf(now))).length`,
+   `lastUsedAt = max(opens.lastOpenedAt, document.savedAt)` (the record's save is its last edit; only the person
+   edits a document stored here).
+3. Concatenate, sort by `documentId` ascending (the stable order the merge property needs), then
+   `withinReach(items, n, ({ useDays, lastUsedAt }) => ({ uses: useDays, lastUsedAt }))`.
+
+`phoneOrder({ mostUsed, recent })` → `mostUsed[0], recent[0], mostUsed[1], recent[1], ...`, skipping a group once
+it runs out; at most `2n` (8) items, each with the half it came from (`group`), for telemetry only.
 
 ### Local opens (`offline-opens.ts`)
 
-- `LocalOpens = { openDays: number; lastOpenDay: string; lastOpenedAt: number; frecencyKey: number }`.
-- `nextLocalOpens(prev, now)`: `day = utcDay(now)`; `prev?.lastOpenDay === day` → `null` (same day); else
-  `{ openDays: (prev?.openDays ?? 0) + 1, lastOpenDay: day, lastOpenedAt: now, frecencyKey: nextFrecencyKey(prev?.frecencyKey ?? null, now) }`.
-- `offlineRecordOpen(id, now)`: inside `serializeOfflineWrite`, read the record; absent or trashed → skip; next null
-  → trace (`debugLog`) `[home] local-open-skipped reason=same-day`; else put `{ ...rec, opens }` (no `savedAt` change: an open is not
-  an edit) and trace `[home] local-open-recorded days=<n>`. A thrown error logs `[home] local-open-failed` and resolves.
+- `LocalOpens = { days: string[]; lastOpenedAt: number }`: the UTC days (newest first) with an open, inside the use
+  window, and the last open.
+- `localOpensOf(raw)`: the stored value as `LocalOpens`. A record written before this shape
+  (`{ openDays, lastOpenDay, lastOpenedAt, frecencyKey }`) reads as `{ days: [lastOpenDay], lastOpenedAt }`, the one
+  day it can still vouch for (`D129`); anything unreadable reads as never opened.
+- `nextLocalOpens(prev, now)`: `day = utcDay(now)`; `days` = `day` then `prev.days` without `day`, dropping days
+  before `utcDay(windowStartOf(now))`; `lastOpenedAt = max(prev.lastOpenedAt, now)`. Always a value: every open moves
+  the last open.
+- `offlineRecordOpen(id, now)`: inside `serializeOfflineWrite`, read the record; absent or trashed → skip; put
+  `{ ...rec, opens: nextLocalOpens(localOpensOf(rec.opens), now) }` (no `savedAt` change: an open is not an edit)
+  and trace (`debugLog`) `[home] local-open-recorded days=<n>`. A thrown error logs `[home] local-open-failed` and
+  resolves.
 - `_apiLoadTab`: for a local id with `opts.open`, `void offlineRecordOpen(documentId, Date.now())` before reading the
   tab. The editor's first-tab read is the only marked one (data blueprint `D66`), so embeds never count.
-- `offlineListOpens()`: live records (no `trashedAt`) with `opens`, as `{ document: recordToSummary(rec), opens }`.
+- `offlineCreateDocument(d, now, { markUsed = true })`: a making (spec Making a document) writes the new record with
+  `opens: { days: [utcDay(now)], lastOpenedAt: now }`, what `nextLocalOpens(undefined, now)` gives, unless
+  `markUsed` is `false` (`D140`). Its callers are the makings only: the wizard, a local duplicate, the new-document
+  import (`markUsed: importMarksUse(sources.length)`); Take Offline writes through `offlinePutRecord`, no making.
+- `offlineListOpens()`: live records (no `trashedAt`) with readable `opens`, as
+  `{ document: recordToSummary(rec), opens }`.
 
-### Fold (`foldTimeline(items, dayOf)`)
+### Grid (desktop and tablet)
 
-Items arrive newest first across loaded pages. Key `<documentId>:<dayOf(occurredAt)>`. Within a key the strongest
-kind wins (`created` > `updated` > `opened`), at that event's time; equal strength keeps the newest. Output keeps the
-order of each key's first appearance, re-sorted by the kept event's `occurredAt` descending, then id descending.
-`dayOf` is `dateKey` (the browser's local day, the `tz` sent).
+`JumpBackIn` reads `useMediaQuery(HOME_WIDE_QUERY)`. Wide: one `ul`, `grid grid-cols-4`, the most used then the
+recent. The first recent item carries `col-start-1` when there is any most used item, so it opens the second row
+whatever the first row's length. The list's minimum height is two tile rows (2 × 100 px + the 12 px gap), so the
+grid keeps two rows' height with fewer items (`D131`).
 
-### Timeline rows
+### Strip (phone)
 
-`timelineRows(folded, today)` → a flat list of `{ type: 'day', key, label }` and `{ type: 'entry', entry, side }`:
-a day row before the first entry of each local day; `side` alternates `start`, `end`, `start`, ... over entries only,
-continuing across days (`D96`). Day labels: `Today`, `Yesterday`, else `formatDay(key).label` (`Tue, 29 Sep`), with
-the year appended when it is not the current year.
-
-### What happened by day
-
-`groupsByDay(groups)` → `[{ day, label, groups }]` in the order sent (newest group first), label as the Timeline's.
-A group with `summary: false` renders one `ActionEntry` per action (newest first); `summary: true` one `SummaryEntry`.
-
-### Strip fade
-
+Narrow: a sideways scroller holding the `ul` of `phoneOrder(set)` tiles, then the See more tile outside the list.
 `stripFade({ scrollLeft, clientWidth, scrollWidth })` → `true` while `scrollLeft + clientWidth < scrollWidth - 1`.
 Read on mount, on `scroll` (passive) and on `ResizeObserver`; the fade is an overlay whose opacity toggles, so the
 layout never changes.
 
-### Paging slot
+### See more
 
-While `nextCursor` is set, the column ends in a reserved slot of one entry's height. An `IntersectionObserver`
-(`rootMargin: 400px`) on it calls `loadMore()` when it nears the viewport and `paging === 'idle'`. `paging === 'loading'`
-shows a skeleton entry in the slot; `'error'` shows "Could not load more." and **Try again**. No cursor → no slot.
+The heading row's link (wide) and the strip's tile (narrow) are anchors to `recentHref` (`/explorer/recent`); a
+plain click (no modifier, primary button) is prevented and calls `onSeeMore()`, which navigates in the app, so a new
+tab or a copied link still work. Both track `Home·Selected·JumpBackIn.SeeMore`.
+
+### What happened by day
+
+`groupsByDay(groups, now)` → `[{ day, label, groups }]` in the order sent (newest group first), label `Today`,
+`Yesterday`, else `formatDay(key).label` (`Tue, 29 Sep`), with the year appended when it is not the current year.
+A group with `summary: false` renders one `ActionEntry` per action (newest first); `summary: true` one
+`SummaryEntry`.
 
 ### Disclosure
 
 `SummaryEntry` holds `expanded` (initially false, never persisted). Expanding tracks `Home·Opened·Group`; collapsing
 tracks nothing. The list is rendered only while expanded.
 
-### Phone switch
-
-`HomePane` reads `useMediaQuery('(min-width: 768px)')`. Wide: two `section`s side by side. Narrow: `HomeSwitch` and
-one `tabpanel`. `column` state starts `'recent'` on every mount (`D97`).
-
 ## Interfaces and contracts
 
 ```ts
-// packages/api-schema/src/frecency.ts
-export const FRECENCY_HALF_LIFE_MS: number; // 14 days
-export function frecencyScore(key: number, at: number, halfLifeMs?: number): number;
-export function nextFrecencyKey(
-  previousKey: number | null,
-  at: number,
-  halfLifeMs?: number,
-): number;
-export function mergeFrecencyKeys(a: number, b: number, at: number, halfLifeMs?: number): number;
-
-// packages/api-schema/src/home.ts (addition)
-type HomeJumpBackInItem = HomeDocument & {
-  lastOpenedAt: number;
-  openDays: number;
-  frecencyKey: number;
-};
+// packages/api-schema/src/home.ts (additions)
+export const HOME_WITHIN_REACH_PER_ROW = 4;
+export const WITHIN_REACH_USE_WINDOW_DAYS = 90;
+export function windowStartOf(now: number): number; // UTC midnight, 89 days before today
 
 // apps/live/app/explorer/home/home-model.ts
+export type JumpBackInGroup = 'mostUsed' | 'recent';
 export type JumpBackInItem = {
   documentId: string;
   name: string;
@@ -197,25 +198,21 @@ export type JumpBackInItem = {
   savedAt: number;
   empty: boolean;
   shareCode: string | null;
-  frecencyKey: number;
+  useDays: number;
+  lastUsedAt: number;
   localOnly: boolean;
 };
+export type JumpBackInSet = WithinReach<JumpBackInItem>;
 export function homeDocumentHref(
   doc: Pick<HomeDocument, 'documentId' | 'via' | 'shareCode'>,
 ): string;
-export function mergeJumpBackIn(
-  server: HomeJumpBackInItem[],
-  local: LocalOpenDocument[],
-  max?: number,
-): JumpBackInItem[];
-export function foldTimeline(
-  items: HomeTimelineEntry[],
-  dayOf: (at: number) => string,
-): HomeTimelineEntry[];
-export type TimelineRow =
-  | { type: 'day'; key: string; label: string }
-  | { type: 'entry'; entry: HomeTimelineEntry; side: 'start' | 'end' };
-export function timelineRows(entries: HomeTimelineEntry[], now: number): TimelineRow[];
+export function jumpBackInSet(
+  server: readonly HomeJumpBackInItem[],
+  local: readonly LocalOpenDocument[],
+  now: number,
+  n?: number,
+): JumpBackInSet;
+export function phoneOrder(set: JumpBackInSet): { item: JumpBackInItem; group: JumpBackInGroup }[];
 export function dayHeading(day: string, now: number): string;
 export function groupsByDay(
   groups: HomeGroup[],
@@ -229,77 +226,64 @@ export function stripFade(box: {
 
 // apps/live/app/explorer/home/home-copy.ts
 export const HOME_COPY: {
-  recent: 'Recent';
-  timeline: 'Timeline';
   jumpBackIn: 'Jump back in';
   whatHappened: 'What happened';
+  seeMore: 'See more';
   seeAllActivity: 'See all activity';
-  jumpBackInEmpty: string;
+  jumpBackInEmpty: 'The documents you use most and last will gather here.';
   whatHappenedEmpty: string;
-  timelineEmpty: string;
   readFailed: string;
-  pageFailed: string;
   tryAgain: 'Try again';
-  switchLabel: 'Home sections';
 };
-export const VERB_PHRASES: Record<HomeVerb, string>;
-export const KIND_LABELS: Record<HomeTimelineKind, string>; // 'Created', 'Updated', 'Opened'
-export function personName(person: HomePerson | undefined): string; // name ?? 'Someone'
-export function peopleList(people: HomePerson[]): string; // 'Priya', 'Priya and Sam', 'Priya, Sam and Lee', 'Priya, Sam, Lee and 2 others'
-export function verbList(verbs: HomeVerbCount[]): string; // 'commented, edited and assigned you an action'
-export function summarySentence(group: HomeGroup): {
-  people: string;
-  verbs: string;
-  preposition: 'in' | null; // null when every verb takes the document directly (edited, shared)
-  document: string;
-};
-export function actionPhrase(verb: HomeVerb): string; // one person's entry: 'commented on', 'edited', 'resolved a thread in'
-export function updatesLabel(total: number): string; // '1 update', '5 updates'
-export function locationLabel(doc: HomeDocument): string; // team name (any via) or 'My documents', ' › folder'; shared: 'Shared by <owner>'
-export function clockTime(at: number): string; // timeLabel from @livediagram/ui
-export function timelineEntryLabel(entry: HomeTimelineEntry): string; // 'Payments architecture, created at 14:05'
-export function actionDetail(action: HomeAction): string | null;
+// VERB_PHRASES, personName, peopleList, verbList, summarySentence, actionPhrase, updatesLabel, locationLabel,
+// clockTime, actionDetail: unchanged.
 ```
 
 Component props:
 
-- `HomePane({ ownerId, onSeen, allActivityHref, onSeeAll })`: owns `useHome`; `onSeen` is the unread badge's
-  `clear`.
-- `JumpBackIn({ ownerId, items, loading })`.
-- `WhatHappened({ groups, loading, lastSeenAt, allActivityHref, onSeeAll })`: the link keeps its href (new tab, copy link); a plain
-  click navigates in the app.
+- `HomePane({ ownerId, onSeen, allActivityHref, onSeeAll, recentHref, onSeeMore })`: owns `useHome`; `onSeen` is the
+  unread badge's `clear`.
+- `JumpBackIn({ ownerId, set, loading, recentHref, onSeeMore })`.
+- `JumpBackInStrip({ ownerId, set, recentHref, onSeeMore, labelledBy })`.
+- `JumpBackInTile({ ownerId, item, group, thumbClassName })`, `SeeMoreTile({ href, onSeeMore })`.
+- `HomeSection({ id, title, link?, busy, children })`: the `section` (`aria-labelledby`, `aria-busy`,
+  `data-home-section`), the heading row and its rule; `link` is `{ href, label, onNavigate, onActivate? }`.
+- `InAppLink({ href, onNavigate, onActivate?, className, children })`: `onActivate` runs on every click
+  (telemetry); a plain click is prevented and calls `onNavigate`.
+- `WhatHappened({ groups, loading, lastSeenAt, allActivityHref, onSeeAll })`: the link keeps its href (new tab, copy
+  link); a plain click navigates in the app.
 - `ActionEntry({ group, action, isNew })`, `SummaryEntry({ group, isNew })`.
-- `HomeTimeline({ ownerId, entries, loading, hasMore, paging, onLoadMore, onRetryMore, labelledBy })`.
-- `HomeSwitch({ column, onChange })`; `homeTabId(column)`, `HOME_PANEL_ID`.
 - Today and Yesterday are taken at mount (`useNow(false)`): a page left open past midnight keeps its headings.
 
 ## Data and persistence
 
-- `OfflineDocumentRecord.opens?: LocalOpens`, optional: records written before it read as never opened. It lives and
-  goes with the record (local Trash, purge, Sync Document, Take Offline's new record starts without it). Never sent.
-- No new server storage. The wire gains `frecencyKey` (already stored as `document_opens.frecency_key`).
-- View state (switch, disclosures, loaded pages) is per mount, never stored.
+- `OfflineDocumentRecord.opens?: LocalOpens`, optional: records written before it read as never opened, records of
+  the earlier shape read through `localOpensOf`, and the next open writes the new shape. It lives and goes with the
+  record (local Trash, purge, Sync Document, Take Offline's new record starts without it). Never sent.
+- No new server storage on the view's side.
+- View state (disclosures) is per mount, never stored.
 
 ## Errors and edge cases
 
-| Case                                                  | Handling                                                                                          |
-| ----------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| Home read fails                                       | The error state with Try again in place of both columns                                           |
-| A further page fails                                  | `paging = 'error'`: "Could not load more." and Try again in the slot                              |
-| No IndexedDB                                          | No local items; logged; Home renders the server's                                                 |
-| Local document trashed or synced to the cloud         | Not listed (trashed skipped; the record is gone after Sync)                                       |
-| Owner id changes mid-read (a guest signs in)          | The request id drops the stale answer; the read re-runs for the new id                            |
-| Same document twice in one local day across two pages | Folded into one entry, the strongest kind                                                         |
-| A page repeats an event already loaded                | Deduplicated by event id                                                                          |
-| Group whose actor has no name                         | "Someone"                                                                                         |
-| Group of more than three people                       | "Priya, Sam, Lee and 2 others"                                                                    |
-| Shared document                                       | Opens through `?s=<code>`; location "Shared by <owner>" ("Shared with you" without an owner name) |
-| Document name longer than the thumbnail               | Truncated with an ellipsis; the full name is the accessible name and a `Tooltip`                  |
-| A team document the person owns (`via: 'own'`)        | Its location is the team: `locationLabel` reads `teamName` whatever the via                       |
-| Nothing drawn (`empty`)                               | The thumbnail shows the undrawn sketch and sends no request                                       |
-| Strip narrower than its items / wider                 | Fade only while more lies to the right                                                            |
-| Viewport crosses 768 px                               | Columns ↔ switch; the switch starts on Recent when it appears                                     |
-| Event in a future local day (clock skew)              | Labelled by its date; ordered as sent                                                             |
+| Case                                           | Handling                                                                                          |
+| ---------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| Home read fails                                | The error state with Try again in place of the body                                               |
+| No IndexedDB                                   | No local items; logged; Home renders the server's                                                 |
+| Local document trashed or synced to the cloud  | Not listed (trashed skipped; the record is gone after Sync)                                       |
+| Local record in the earlier `opens` shape      | Read as its last open day; rewritten in the new shape on its next open                            |
+| Owner id changes mid-read (a guest signs in)   | The request id drops the stale answer; the read re-runs for the new id                            |
+| A document in both groups                      | Most used only (`withinReach`)                                                                    |
+| No most used document, some recent             | The recent take the grid's top row; the phone's strip is the recent alone                         |
+| Fewer than 8 documents                         | Only what exists; the grid's minimum height keeps two rows                                        |
+| No document at all                             | The empty line; on a phone the strip still ends in See more                                       |
+| Group whose actor has no name                  | "Someone"                                                                                         |
+| Group of more than three people                | "Priya, Sam, Lee and 2 others"                                                                    |
+| Shared document                                | Opens through `?s=<code>`; location "Shared by <owner>" ("Shared with you" without an owner name) |
+| Document name longer than the tile             | Truncated with an ellipsis; the full name is the accessible name and a `Tooltip`                  |
+| A team document the person owns (`via: 'own'`) | Its location is the team: `locationLabel` reads `teamName` whatever the via                       |
+| Nothing drawn (`empty`)                        | The thumbnail shows the undrawn sketch and sends no request                                       |
+| Viewport crosses 768 px                        | Grid ↔ strip                                                                                      |
+| Strip narrower than its items / wider          | Fade only while more lies to the right                                                            |
 
 ## Security and trust
 
@@ -310,125 +294,110 @@ Component props:
 ## Performance and limits
 
 - One request draws the first screen (`GET /api/home`); `offlineListOpens` reads IndexedDB in parallel.
-- Thumbnails: at most 12 in the strip and 30 per Timeline page, each lazily fetched on intersection by
-  `DocumentThumbnail`, cached page-wide.
-- The fold is O(n) over loaded entries (at most a few hundred); rows recomputed with `useMemo` on entries.
-- Paging is keyset, 30 per page; the observer fires at most one request at a time.
+- Thumbnails: at most 8 in Jump back in, each lazily fetched on intersection by `DocumentThumbnail`, cached
+  page-wide.
+- `jumpBackInSet` is `O(k log k)` over at most 8 server items plus this browser's opened local documents.
 
 ## Presentation and UX
 
-- Body (wide): `grid grid-cols-[minmax(0,1fr)_15rem] gap-6 lg:grid-cols-[minmax(0,1fr)_20rem] lg:gap-8`. Recent left,
-  Timeline right; neither column has a background or border.
-- Section heading (`h2`): `text-sm font-semibold text-slate-900 dark:text-slate-100`, 8 px below. Sub-heading (`h3`,
-  Jump back in / What happened) `text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400`.
-- Strip: `ul` flex, `gap-3`, `overflow-x-auto`, `scrollbar-slim`, `snap-x`, padding 4 px for focus rings. Item: a
-  link 128 × 80 thumbnail (`h-20 w-32 rounded-md`, slate border) and the name below (`mt-1 w-32 truncate text-xs`).
-  Local only: `LocalOnlyPill asLabel` absolutely in the thumbnail's bottom-left corner (4 px inset). Fade: 48 px
-  `bg-gradient-to-l from-slate-50 dark:from-slate-900` (the page), `pointer-events-none`, opacity transition. The
-  strip, its skeleton and its empty line share one height (`h-28`).
-- What happened: day heading (`h4`, `text-xs font-medium text-slate-500`), entries in a `ul` with 4 px between.
+- Body: one column, `flex flex-col gap-7` (28 px between sections); each section a `section` wrapper
+  (`data-home-section="jump-back-in"` / `"what-happened"`), with no background or card.
+- Heading row (`SECTION_HEADER`): `flex items-baseline justify-between gap-4 border-b border-slate-200 pb-2
+dark:border-slate-700` (the page's line colour), 12 px above the section's body. The heading (`h2`,
+  `SECTION_HEADING`): `text-base font-semibold text-slate-900 dark:text-slate-100`. The quiet link at the end (See
+  more, See all activity): `text-sm font-medium text-brand-700 dark:text-brand-300 hover:underline`.
+- Grid: `ul grid min-h-[13.25rem] grid-cols-4 gap-3`, the section's full width (`D128`). Tile: a link, the
+  thumbnail `h-20 w-full rounded-md` (slate border), the name below (`mt-1 block h-4 truncate text-xs leading-4`). Local only: `LocalOnlyPill asLabel`
+  absolutely in the thumbnail's bottom-left corner (4 px inset).
+- Strip: a scroller `scrollbar-slim -mx-1 flex h-28 snap-x gap-3 overflow-x-auto px-1 pb-2 pt-1`; the `ul` inside it
+  `flex gap-3`; tiles `w-32 shrink-0 snap-start` with a 128 × 80 thumbnail. See more tile: the same 128 × 80 box,
+  dashed slate border, a chevron-right icon over "See more" (`text-xs font-medium`), the label also as its name.
+  Fade: 48 px `bg-gradient-to-l from-slate-50 dark:from-slate-900` (the page), `pointer-events-none`, opacity
+  transition.
+- Empty line: `text-sm text-slate-500 dark:text-slate-400`, at the top of the grid's reserved box; on a phone in the
+  strip, before the See more tile.
+- What happened: day heading (`h3`, `text-xs font-medium text-slate-500`), entries in a `ul` with 4 px between.
   `ActionEntry`: a link row, 28 px avatar, text column: "**Priya** commented on **Payments architecture**"
   (`text-sm`), the detail in quotes (`text-xs`, muted, truncated), then "location · time" (`text-xs`, muted,
   wrapping). `SummaryEntry`: a full-width button, overlapped 24 px avatars (`-ml-2`, a 2 px ring in the page colour,
   at most 3 plus a `+N` disc), the sentence, then "location · N updates · time" (wrapping), and a 16 px chevron at the
-  end rotating 180° when open (`motion-safe:transition-transform`). The times sit in the text column so a narrow
-  tablet column keeps its words. Expanded list indented under the sentence: each a link row with a 20 px avatar,
-  "**Sam** edited", the verb icon (14 px), the time. Rows hover `bg-slate-100 dark:bg-slate-800/70`, `rounded-lg`,
-  padding 8 px.
-- See all activity: in the What happened heading row, right, `text-xs font-medium text-brand-700
-dark:text-brand-300 hover:underline`.
-- Timeline column: `ol`, `relative`; centre line `absolute left-1/2 top-0 bottom-0 w-px -translate-x-1/2
-bg-slate-200 dark:bg-slate-700`. Row grid `grid-cols-[1fr_1.5rem_1fr]`, 16 px between rows. Day marker: a centred
-  pill `rounded-full px-2 text-[11px] font-semibold bg-slate-50 dark:bg-slate-900 ring-1 ring-slate-200
-dark:ring-slate-700`. Entry: the link (thumbnail `h-20 w-32 md:h-16 md:w-24 lg:h-20 lg:w-32 rounded-md`, the name
-  below `text-[11px] leading-4 truncate` at the thumbnail's width) in its side's cell, aligned towards the line; each
-  entry is one box high (`ENTRY_HEIGHT`, `home-styles.ts`), which the paging slot reserves; the 20 px marker
-  in the middle cell (`rounded-full ring-2` in the kind's tone, a 12 px glyph); the time (`text-[11px]
-tabular-nums text-slate-500`) in the other cell, aligned towards the line.
-- Kind tones (with a glyph, never alone): created `emerald-600 / emerald-400` plus, updated `sky-600 / sky-400`
-  pencil, opened `slate-500 / slate-400` eye.
-- Phone switch: a two-tab segmented control, full width, `rounded-lg bg-slate-100 dark:bg-slate-800 p-0.5`; the
-  selected tab `bg-white dark:bg-slate-900 shadow-sm`; height 36 px.
-- Skeletons: strip 6 boxes `h-20 w-32` with name bars `h-3 w-24`; What happened 3 rows of 56 px; Timeline 4 entries
-  at the entry's size, alternating; `motion-safe:animate-pulse`, `bg-slate-200/70 dark:bg-slate-800`.
+  end rotating 180° when open (`motion-safe:transition-transform`). Expanded list indented under the sentence: each a
+  link row with a 20 px avatar, "**Sam** edited", the verb icon (14 px), the time. Rows hover
+  `bg-slate-100 dark:bg-slate-800/70`, `rounded-lg`, padding 8 px.
+- Skeletons: the grid's 2 rows of 4 tile boxes (the phone's strip: 4 boxes `h-20 w-32` with name bars); What happened
+  3 rows of 56 px; `motion-safe:animate-pulse`, `bg-slate-200/70 dark:bg-slate-800`.
 - Error state: a centred block, `text-sm`, copy plus a secondary Try again button.
-- Copy is final as in the spec's States table.
+- Copy is final as in the spec's States table and Jump back in.
 
 ## Accessibility
 
-- Wide: `section aria-labelledby` (Recent, Timeline) with visible `h2`s: two region landmarks.
-- Narrow: `div role="tablist" aria-label="Home sections"`, two `button role="tab"` with `aria-selected`,
-  `aria-controls`, `id`; roving `tabIndex` (0 on the selected); Left / Right move and select (wrapping), Home / End
-  first / last. One `div role="tabpanel" aria-labelledby=<tab id> tabIndex=0`; the `h2`s stay as `sr-only`.
-- Strip: `ul aria-labelledby` (Jump back in); each link's accessible name is the document name ("Payments
-  architecture", plus ", Local only" for a local one, from the pill label); a `Tooltip` shows the full name.
+- Each section is a `section aria-labelledby` its `h2` (**Jump back in**, **What happened**): two region landmarks.
+- Jump back in: one `ul aria-labelledby` the heading, grid or strip; each `li` one link whose accessible name is the
+  document name ("Payments architecture", plus ", Local only" for a local one, from the pill label); a `Tooltip`
+  shows the full name. No row, group or sub-label is exposed (Calm by default). The heading rule is a border,
+  never content.
+- See more: a link named "See more" in the heading row (wide) or as the tile after the list (narrow), never both.
 - Summary: `button aria-expanded aria-controls=<list id>`; the list `ul id` follows it. Avatars `aria-hidden`; the
   sentence names everyone.
-- Timeline: `ol aria-labelledby` (Timeline); day markers are `li` with `h3`-level text (`role="presentation"` not
-  used: they are list items carrying the day); each entry link `aria-label` = `timelineEntryLabel`, its `Tooltip` the
-  name. Markers and times `aria-hidden` (the label carries both).
 - Focus: `focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500` on every link and
-  button. Targets ≥ 24 × 24 px (the smallest is the 36 px switch tab; links are larger).
+  button. Targets ≥ 24 × 24 px (the See more link's line box is padded to 24 px; tiles are larger).
 - Contrast: body text slate-900 / slate-100; muted slate-500 on the slate-50 page (4.5:1) and slate-400 on the
-  slate-900 page (6.9:1).
+  slate-900 page (6.9:1); the See more link brand-700 / brand-300.
 - Reduced motion: `motion-safe:` on the pulse, the chevron and the fade's transition; `scroll-behavior` untouched.
 
 ## Web Experience
 
 - LCP: the first screen is one api read; the largest element is a heading or the skeleton, both painted at once.
-- CLS 0: headings render with the skeletons; each skeleton has its section's real box (strip height fixed; What
-  happened is last in its column; the Timeline column has a reserved paging slot); thumbnails keep their box
-  (`DocumentThumbnail`); the fade and the disclosure chevron change opacity / transform only. Expanding a group is
-  a user-initiated change.
-- INP: handlers are one state set each; the fold runs on data change, not on input.
+- CLS 0: headings and their rules render with the skeletons; the grid, its skeleton and its empty state share one
+  fixed height at every width (`min-h-[13.25rem]`; tiles are a fixed 100 px high); the strip, its skeleton and its empty state share `h-28`; What
+  happened is last on the page; thumbnails keep their box (`DocumentThumbnail`); the fade and the chevron change
+  opacity / transform only. Expanding a group is a user-initiated change.
+- INP: handlers are one state set or one navigation each.
 - The pane is lazy-loaded (`next/dynamic`, `ssr: false`) like the other panes.
 
 ## Observability
 
-| Fingerprint                                                                                 | Where                                   |
-| ------------------------------------------------------------------------------------------- | --------------------------------------- |
-| `[home] read failed status=<n/thrown/unparseable>`                                          | editor, warn                            |
-| `[home] local-open-recorded days=<n>`                                                       | editor, `debugLog` trace (scope `home`) |
-| `[home] local-open-skipped reason=same-day`                                                 | editor, `debugLog` trace (scope `home`) |
-| `[home] local-open-failed` + error                                                          | editor, warn                            |
-| `[home] local-opens-unavailable` + error                                                    | editor, warn                            |
-| `[home] page failed`                                                                        | editor, warn                            |
-| `Home·Opened·Landing/Nav`, `Home·Selected·*`, `Home·Opened·Group`, `Home·Loaded·More/Retry` | telemetry                               |
+| Fingerprint                                                                                                    | Where                                   |
+| -------------------------------------------------------------------------------------------------------------- | --------------------------------------- |
+| `[home] read failed status=<n/thrown/unparseable>`                                                             | editor, warn                            |
+| `[home] local-open-recorded days=<n>`                                                                          | editor, `debugLog` trace (scope `home`) |
+| `[home] local-open-failed` + error                                                                             | editor, warn                            |
+| `[home] local-opens-unavailable` + error                                                                       | editor, warn                            |
+| `Home·Opened·Landing/Nav`, `Home·Selected·JumpBackIn.*/WhatHappened`, `Home·Opened·Group`, `Home·Loaded·Retry` | telemetry                               |
 
 ## Testing
 
-| Rule                                                                     | Test                                                                                    |
-| ------------------------------------------------------------------------ | --------------------------------------------------------------------------------------- |
-| Frecency maths in the shared package                                     | `packages/api-schema/src/frecency.test.ts`                                              |
-| The api returns the key                                                  | `apps/api/src/routes/home.test.ts`                                                      |
-| Local opens: first, same day, next day, trashed, absent, failure         | `apps/live/lib/offline/offline-opens.test.ts`                                           |
-| A marked local load records; an unmarked one does not                    | `apps/live/lib/api/tabs-local-open.test.ts`                                             |
-| Merge order, cap, ties, local flag, hrefs                                | `apps/live/app/explorer/home/home-model.test.ts`                                        |
-| Fold strength, day keys, order; rows, sides, day labels; fade            | `apps/live/app/explorer/home/home-model.test.ts`                                        |
-| Sentences, people, verbs, updates, location, entry labels                | `apps/live/app/explorer/home/home-copy.test.ts`                                         |
-| Read, error, retry, paging, dedupe, stale owner, unread clear, mark kept | `apps/live/app/explorer/home/useHome.test.tsx`                                          |
-| A clear outlives an unread count still in flight                         | `apps/live/app/explorer/useTimelineUnread.test.tsx`                                     |
-| Strip: names, pill, fade, telemetry                                      | `apps/live/components/panels/home/JumpBackIn.test.tsx`                                  |
-| Entries: one-person links, summary disclosure, telemetry, See all        | `apps/live/components/panels/home/WhatHappened.test.tsx`                                |
-| Timeline: sides, markers, labels, paging slot states                     | `apps/live/components/panels/home/HomeTimeline.test.tsx`                                |
-| Switch keys and ARIA; columns on wide                                    | `apps/live/components/panels/home/HomePane.test.tsx`                                    |
-| Routes, titles, crumbs, the landing 302                                  | `routes.test.ts`, `view-titles.test.ts`, `apps/live/src/worker.test.ts`                 |
-| Telemetry charted and explained                                          | `apps/telemetry` `metric-emitters.test.ts`, `event-explanation.test.ts`                 |
-| Real browser: guest and signed in, desktop and phone, dark               | `apps/live/e2e/explorer-home.spec.ts`, `apps/live/e2e/clerk-stub/explorer-home.spec.ts` |
+| Rule                                                                               | Test                                                                                    |
+| ---------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| The allocation                                                                     | `packages/api-schema/src/within-reach.test.ts`                                          |
+| The use window                                                                     | `packages/api-schema/src/home.test.ts`                                                  |
+| Local opens: first, same day, next day, window, legacy shape, trashed, failure     | `apps/live/lib/offline/offline-opens.test.ts`                                           |
+| A local making starts the record; one with `markUsed: false` has none              | `apps/live/lib/offline/offline-store.test.ts`                                           |
+| A marked local load records; an unmarked one does not                              | `apps/live/lib/api/tabs-local-open.test.ts`                                             |
+| Set: merge, dedupe, local measures, ties; phone order; hrefs; days; fade           | `apps/live/app/explorer/home/home-model.test.ts`                                        |
+| Sentences, people, verbs, updates, location                                        | `apps/live/app/explorer/home/home-copy.test.ts`                                         |
+| Read, error, retry, stale owner, unread clear, mark kept                           | `apps/live/app/explorer/home/useHome.test.tsx`                                          |
+| A clear outlives an unread count still in flight                                   | `apps/live/app/explorer/useTimelineUnread.test.tsx`                                     |
+| Grid and strip: names, no group labels, row break, pill, fade, See more, telemetry | `apps/live/components/panels/home/JumpBackIn.test.tsx`                                  |
+| Headings with a rule: the heading row and its link, per section                    | `apps/live/components/panels/home/HomePane.test.tsx`                                    |
+| Entries: one-person links, summary disclosure, telemetry, See all                  | `apps/live/components/panels/home/WhatHappened.test.tsx`                                |
+| One column, two sections, no Timeline, the error state                             | `apps/live/components/panels/home/HomePane.test.tsx`                                    |
+| Routes, titles, crumbs (Recent and All activity under Home), the landing 302       | `routes.test.ts`, `view-titles.test.ts`, `apps/live/src/worker.test.ts`                 |
+| Telemetry charted and explained                                                    | `apps/telemetry` `metric-emitters.test.ts`, `event-explanation.test.ts`                 |
+| Real browser: guest and signed in, desktop and phone, dark                         | `apps/live/e2e/explorer-home.spec.ts`, `apps/live/e2e/clerk-stub/explorer-home.spec.ts` |
 
 ## Constants and configuration
 
-| Constant                | Value                   | Where              | Provenance                               | Safe range      |
-| ----------------------- | ----------------------- | ------------------ | ---------------------------------------- | --------------- |
-| `HOME_WIDE_QUERY`       | `(min-width: 768px)`    | `HomePane.tsx`     | Spec (`md:`)                             | fixed           |
-| `PAGING_ROOT_MARGIN`    | `400px`                 | `HomeTimeline.tsx` | `D98`: a page lands before it is reached | 200 to 800 px   |
-| `STRIP_FADE_EPSILON_PX` | 1                       | `home-model.ts`    | Sub-pixel scroll widths                  | 1 to 2          |
-| `SUMMARY_NAMES_MAX`     | 3                       | `home-copy.ts`     | Spec ("Priya, Sam and Lee")              | 2 to 4          |
-| `AVATAR_STACK_MAX`      | 3                       | `HomeAvatar.tsx`   | `D99`                                    | 2 to 5          |
-| Strip thumbnail         | 128 × 80 px             | `JumpBackIn.tsx`   | `D100`: "small", 16:10                   | 96 to 160 wide  |
-| Timeline thumbnail      | 96 × 64, `lg:` 128 × 80 | `HomeTimeline.tsx` | `D100`: half the column less the gutter  | fixed by column |
-| Timeline column         | 15 rem, `lg:` 20 rem    | `HomePane.tsx`     | `D101`                                   | 15 to 24 rem    |
+| Constant                | Value                | Where            | Provenance                          | Safe range     |
+| ----------------------- | -------------------- | ---------------- | ----------------------------------- | -------------- |
+| `HOME_WIDE_QUERY`       | `(min-width: 768px)` | `JumpBackIn.tsx` | Spec (`md:`: desktop and tablet)    | fixed          |
+| `STRIP_FADE_EPSILON_PX` | 1                    | `home-model.ts`  | Sub-pixel scroll widths             | 1 to 2         |
+| `SUMMARY_NAMES_MAX`     | 3                    | `home-copy.ts`   | Spec ("Priya, Sam and Lee")         | 2 to 4         |
+| `AVATAR_STACK_MAX`      | 3                    | `HomeAvatar.tsx` | `D99`                               | 2 to 5         |
+| Grid tile height        | 100 px (80 + 4 + 16) | `home-styles.ts` | `D128`: the strip's 80 px thumbnail | 64 to 120 px   |
+| Section gap             | 28 px (`gap-7`)      | `HomePane.tsx`   | Spec ("about 28 px")                | 24 to 40 px    |
+| Strip thumbnail         | 128 × 80 px          | `home-styles.ts` | `D100`: "small", 16:10              | 96 to 160 wide |
 
 ## Defaults ledger
 
-D94 to D104 in [DEFAULTS.md](DEFAULTS.md).
+D94 to D104, D128 to D132 and D140 in [DEFAULTS.md](DEFAULTS.md); D96, D97, D98 and D101 are retired there.

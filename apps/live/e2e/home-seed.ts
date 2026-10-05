@@ -146,3 +146,69 @@ export async function seedBusyHome(
   await visitorSaves(request, sam, code, payments, [thread, box('b', 'Ledger', 320, 160)]);
   return { owner, payments: payments.id, onboarding: onboarding.id, roadmap: roadmap.id };
 }
+
+/** A document stored only in this browser, written as the editor writes it. */
+export type LocalSeed = {
+  name: string;
+  /** Days before today (UTC) the document was opened on. */
+  daysAgo: number[];
+  /** Its last open, ms after now (negative: before). */
+  lastOpenedIn: number;
+};
+
+/** Writes local documents into this browser's store; the page must be on the app's origin. */
+export async function seedLocalDocuments(page: Page, docs: LocalSeed[]): Promise<void> {
+  await page.evaluate(async (seeds) => {
+    const now = Date.now();
+    const day = (ago: number) => new Date(now - ago * 86_400_000).toISOString().slice(0, 10);
+    await new Promise<void>((resolve, reject) => {
+      const open = indexedDB.open('livediagram-offline', 2);
+      open.onerror = () => reject(open.error);
+      open.onsuccess = () => {
+        const tx = open.result.transaction('documents', 'readwrite');
+        for (const seed of seeds) {
+          tx.objectStore('documents').put({
+            id: crypto.randomUUID(),
+            name: seed.name,
+            folderId: null,
+            createdAt: now - 60 * 86_400_000,
+            savedAt: now - 30 * 86_400_000,
+            tabs: [{ id: 't1', name: 'Tab 1', elements: [] }],
+            opens: { days: seed.daysAgo.map(day), lastOpenedAt: now + seed.lastOpenedIn },
+          });
+        }
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      };
+    });
+  }, docs);
+}
+
+const DAY_MS = 86_400_000;
+
+/**
+ * Ten documents, so Within reach has to choose: four used on many days (the first also the newest
+ * of all, so it is both most used and recent), two opened today on the server, four opened once a
+ * few days ago. Expect most used [Atlas, Beacon, Compass, Delta], recent [Server two, Server one,
+ * Echo, Foxtrot]; Golf and Hotel stay out.
+ */
+export async function seedWithinReach(page: Page, origin: string, owner: string) {
+  const one = await seedHomeDocument(page.request, owner, origin, 'Server one');
+  const two = await seedHomeDocument(page.request, owner, origin, 'Server two');
+  await openDocument(page.request, owner, one);
+  await openDocument(page.request, owner, two);
+  await page.goto('/explorer/home');
+  // Home has read this browser's store by now, so the store exists and is not being opened.
+  await expect(page.getByRole('list', { name: 'Jump back in' })).toBeVisible();
+  await seedLocalDocuments(page, [
+    { name: 'Atlas', daysAgo: [0, 1, 2, 3, 4, 5], lastOpenedIn: 60_000 },
+    { name: 'Beacon', daysAgo: [1, 2, 3, 4, 5], lastOpenedIn: -1 * DAY_MS },
+    { name: 'Compass', daysAgo: [2, 3, 4, 5], lastOpenedIn: -2 * DAY_MS },
+    { name: 'Delta', daysAgo: [3, 4, 5], lastOpenedIn: -3 * DAY_MS },
+    { name: 'Echo', daysAgo: [4], lastOpenedIn: -4 * DAY_MS },
+    { name: 'Foxtrot', daysAgo: [5], lastOpenedIn: -5 * DAY_MS },
+    { name: 'Golf', daysAgo: [6], lastOpenedIn: -6 * DAY_MS },
+    { name: 'Hotel', daysAgo: [7], lastOpenedIn: -7 * DAY_MS },
+  ]);
+  await page.reload();
+}

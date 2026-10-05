@@ -41,7 +41,7 @@ export function TemplatePickerHeader({
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-300">
             {!isIdentity
               ? step === 'template'
-                ? 'Choose a template to start from.'
+                ? 'Build anything, start from scratch or find inspiration in a template.'
                 : 'Name your document and choose where it lives.'
               : nameLocked
                 ? 'This is the name from your account; others will see it on this document.'

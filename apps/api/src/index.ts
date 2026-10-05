@@ -12,6 +12,7 @@ import { runTimelineExpirySweep } from './timeline';
 import { runImageRetention } from './image-refs/retention';
 import {
   deleteOldEvents,
+  deleteOldChangesets,
   deleteOldSessionSightings,
   deleteOldTimelineEvents,
   purgeExpiredTrash,
@@ -20,12 +21,13 @@ import {
 } from './db';
 import {
   apiRouteLabel,
+  CHANGESET_RETENTION_MS,
   bearerTokenOf,
   errorTypeToken,
   isClerkIdShape,
   TIMELINE_RETENTION_MS,
 } from '@livediagram/api-schema';
-import { isApiTokenFormat } from './auth/api-token';
+import { isApiTokenFormat } from '@livediagram/api-schema';
 import { verifyOwnerId } from './auth/owner-signature';
 import { guestSignatureEnforced, OWNER_SCOPED_SEGMENTS } from './auth/guest-rest';
 import { handleTokens } from './routes/tokens';
@@ -39,6 +41,7 @@ import { MAX_BODY_BYTES, MAX_IMAGE_BYTES } from './limits';
 import { handleAccount } from './routes/account';
 import { handleAiReadNotes } from './routes/ai-read-notes';
 import { handleAi } from './routes/ai';
+import { handleCatalogues } from './routes/catalogues';
 import { handleCapabilities } from './routes/capabilities';
 import { handleOpenapi } from './routes/openapi';
 import { handleCustomThemes } from './routes/custom-themes';
@@ -148,7 +151,18 @@ async function routeApiRequest(
   let tokenAuth: { ownerId: string; tokenId: string; readOnly: boolean } | null = null;
   if (!clerkUserId) {
     const bearer = bearerTokenOf(request.headers.get('Authorization'));
-    if (bearer && isApiTokenFormat(bearer)) tokenAuth = await resolveApiToken(env, bearer);
+    if (bearer && isApiTokenFormat(bearer)) {
+      tokenAuth = await resolveApiToken(env, bearer);
+      // A token-shaped bearer claims to be a token: unknown, revoked or expired, it is refused here, never
+      // read as a guest or as nobody (docs/specs/015-api/public-api-and-tokens.md §3.3).
+      if (!tokenAuth) {
+        console.warn('[tokens] invalid bearer refused', { path: url.pathname });
+        return json(
+          { error: 'invalid_token' },
+          { status: 401, headers: { 'WWW-Authenticate': 'Bearer error="invalid_token"' } },
+        );
+      }
+    }
   }
   const resolveOwner = (): string | null =>
     clerkUserId ?? tokenAuth?.ownerId ?? request.headers.get('X-Owner-Id');
@@ -216,7 +230,19 @@ async function routeApiRequest(
   // — so no write route can be reached, present or future, with no per-route
   // changes. Clerk sessions and full tokens are unaffected (tokenAuth is null
   // or readOnly false). Guest header requests carry no tokenAuth either.
-  if (tokenAuth?.readOnly && isWrite) {
+  // A token revoking itself escalates nothing, so any token may (docs/specs/015-api/blueprints/cli.md).
+  const isSelfRevoke =
+    request.method === 'DELETE' && segments[1] === 'tokens' && segments[2] === 'current';
+  if (tokenAuth?.readOnly && isWrite && !isSelfRevoke) {
+    return forbidden('read_only_token');
+  }
+  // One read is a credential, not content: the share-link list carries every
+  // code (edit links included) and the share password, so a read-only token
+  // that could list it could promote itself to edit by opening a link.
+  const isShareLinkList =
+    segments[1] === 'documents' && segments.length === 4 && segments[3] === 'share';
+  if (tokenAuth?.readOnly && isShareLinkList) {
+    console.warn('[read-only-token] share-link list refused', { tokenId: tokenAuth.tokenId });
     return forbidden('read_only_token');
   }
   // Reject oversized bodies up front (cheap Content-Length gate) so a hostile
@@ -277,12 +303,17 @@ async function routeApiRequest(
     verifiedUserId,
     clerkEmail,
     resolveOwner,
+    token: tokenAuth ? { id: tokenAuth.tokenId, readOnly: tokenAuth.readOnly } : null,
     waitUntil: (promise) => executionCtx?.waitUntil(promise),
   };
   try {
     switch (segments[1]) {
       case 'capabilities':
         return handleCapabilities(ctx);
+      case 'templates':
+      case 'icons':
+      case 'schema':
+        return handleCatalogues(ctx);
       case 'openapi.json':
         return handleOpenapi(ctx);
       case 'unfurl':
@@ -420,6 +451,16 @@ const worker = {
         'rows',
         now - TIMELINE_RETENTION_MS,
         deleteOldDocumentOpens,
+      );
+      // docs/specs/024-agents/agent-changesets.md "Revert": a changeset can be reverted while its
+      // record exists, as long as the Trash keeps a document (CS28).
+      scheduleSweep(
+        ctx,
+        env,
+        'changesets',
+        'rows',
+        now - CHANGESET_RETENTION_MS,
+        deleteOldChangesets,
       );
       // docs/specs/014-identity/transactional-email.md: send any due onboarding emails (welcome catch-up + week 1 / 2).
       // No-op when RESEND_API_KEY is unset.

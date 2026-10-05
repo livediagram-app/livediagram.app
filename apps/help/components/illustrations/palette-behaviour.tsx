@@ -112,7 +112,7 @@ function AvatarGlyph() {
 
 // --- Scenes ----------------------------------------------------------------
 
-/** The Behaviours tab of the palette: a search box over the six group tiles
+/** The Collaborate tab of the palette (id `behaviour`): a search box over the six group tiles
  *  you click into. Ordered room-first, matching BEHAVIOUR_GROUPS. */
 export function BehaviourGroups() {
   const px = 52;

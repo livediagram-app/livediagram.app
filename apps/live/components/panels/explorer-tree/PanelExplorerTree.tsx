@@ -68,7 +68,9 @@ export function PanelExplorerTree({
         aria-label="Explorer"
         aria-busy={busy || undefined}
         {...keyboard}
-        className="scrollbar-slim max-h-[60vh] overflow-y-auto"
+        // Down only: a row's ⋯ tap area (touch-target) reaches past the right edge, and a free x
+        // axis made the tree scroll sideways by it.
+        className="scrollbar-slim max-h-[60vh] overflow-y-auto overflow-x-hidden"
       >
         {groups.map(({ id, rows }, i) => {
           const first = i === 0;

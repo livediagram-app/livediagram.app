@@ -7,9 +7,8 @@ import { Glyph } from '@livediagram/ui';
 // itself does, so they sit above the notation with a rule under them rather
 // than pretending to be a ninth sticky.
 //
-// Only rendered on an event-storming board: the category still exists
-// elsewhere (a note kind can be favourited, docs/specs/010-palette/palette-favourites.md), and a board switch shown
-// on an ordinary diagram would be a switch for nothing.
+// Only rendered on an event-storming board: the category body can render
+// elsewhere, and a board switch shown on an ordinary diagram would be a switch for nothing.
 
 export type EsBoardControls = {
   // Photo import (docs/specs/021-event-storming/event-storming.md Phase 8). Absent when the deployment has no model
@@ -55,8 +54,9 @@ export function EventStormingBoardRows({ controls }: { controls: EsBoardControls
   );
 }
 
-// A camera: the act is "photograph the wall", not "upload a file".
-function CameraIcon() {
+// A camera: the act is "photograph the wall", not "upload a file". Shared with the Toolbar
+// layout's strip button (EsPhotoStripButton).
+export function CameraIcon() {
   return (
     <Glyph size={16} units={24} strokeLinecap="butt">
       <path d="M3 8.5A1.5 1.5 0 0 1 4.5 7h2.2l1.1-1.8A1 1 0 0 1 8.7 4.7h6.6a1 1 0 0 1 .9.5L17.3 7h2.2A1.5 1.5 0 0 1 21 8.5v9A1.5 1.5 0 0 1 19.5 19h-15A1.5 1.5 0 0 1 3 17.5z" />

@@ -1,32 +1,43 @@
-import type { EditorModeSwitchProps } from './editor-mode-copy';
-import { ModeIconPill } from './ModeIconPill';
+import { useEditorModeState } from './editor-mode-context';
 import { ModeMenuChip } from './ModeMenuChip';
 
-// The mode switch (docs/specs/007-editor/editor-modes.md "The mode switch"): the tab bar's control
-// for the editor mode, beside the page switcher. A dropdown chip for everyone; in power user mode
-// (`compact`) an icon-only segmented pill (docs/specs/007-editor/power-user-mode.md "Quick mode
-// switch").
+// The mode switch (docs/specs/007-editor/editor-modes.md "The mode switch"): a dropdown chip
+// (ModeMenuChip). Toolbar layout: icon-only, beside the menu button (which stays up in Draw mode).
+// Floating layout: labelled, in the Palette panel's title row, which stays up in Draw mode too
+// (the panel then shows Draw's tools). It reads the editor's own resolved mode
+// (EditorModeProvider), so wherever it is placed it shows the mode the canvas is in.
 //
-// Zero layout shift: both forms sit in one slot whose width is fixed per breakpoint, whatever the
-// mode and whichever the form, so nothing beside it moves when the mode changes or power user mode
-// is switched. `hidden` (a tab that offers no switch) keeps the slot but empties it, so the tab
-// pills do not jump when moving between tabs.
+// Renders nothing where no switch is offered: outside an editor, for a visitor who cannot edit,
+// or on a tab that offers none (an event-storming board).
+//
+// Zero layout shift: a fixed width per form, whatever the mode.
+const SLOT = 'flex shrink-0';
+const SLOT_WIDTH = { icon: 'w-12', labelled: 'w-[6.5rem]' } as const;
 
-// Phone: room for the pill's two 36px segments (the chip shows glyph + chevron). `sm` and up: the
-// chip's glyph, longest mode name and chevron.
-const SLOT = 'flex shrink-0 w-[76px] sm:w-[116px]';
-
-type Props = EditorModeSwitchProps & {
-  compact?: boolean;
-  hidden?: boolean;
-};
-
-export function EditorModeSwitch({ compact = false, hidden = false, mode, onChange }: Props) {
-  if (hidden) return <div data-editor-mode-switch aria-hidden className={SLOT} />;
-  const Form = compact ? ModeIconPill : ModeMenuChip;
+export function EditorModeSwitch({
+  className = '',
+  align = 'left',
+  labelled = false,
+}: {
+  className?: string;
+  // The edge the menu hangs from: right where the switch sits at the right of its host.
+  align?: 'left' | 'right';
+  // The mode's name beside its icon (the Floating layout, which has the room).
+  labelled?: boolean;
+}) {
+  const editorMode = useEditorModeState();
+  if (!editorMode?.canEdit || !editorMode.canSwitch) return null;
   return (
-    <div data-editor-mode-switch className={SLOT}>
-      <Form mode={mode} onChange={onChange} />
+    <div
+      data-editor-mode-switch
+      className={`${SLOT} ${SLOT_WIDTH[labelled ? 'labelled' : 'icon']} ${className}`}
+    >
+      <ModeMenuChip
+        mode={editorMode.mode}
+        onChange={editorMode.setMode}
+        align={align}
+        labelled={labelled}
+      />
     </div>
   );
 }

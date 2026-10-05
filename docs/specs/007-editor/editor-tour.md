@@ -58,10 +58,11 @@ flag, so a mid-rerun reload re-offers the same way.
 
 ## The steps
 
-A welcome offer card, then seven steps in palette → explorer → canvas →
-tabs → theme order (six on mobile, where the theme-canvas step is skipped;
-five on an **event-storming board**, which hides the palette header and so
-drops the two dropdown steps; four when it is both), and a closing "you're ready" card. The bookend
+A welcome offer card, then eight steps in palette → mode → explorer →
+canvas → tabs → theme order (seven on mobile, where the theme-canvas step is
+skipped; five on an **event-storming board**, which hides the palette header
+and offers no mode switch, and so drops the two dropdown steps and the mode
+step; four when it is both), and a closing "you're ready" card. The bookend
 cards sit outside the step count. Copy is one or two
 short sentences per step ("concise" is the spec constraint; the exact strings
 live in `apps/live/components/tour/tour-steps.ts`):
@@ -72,26 +73,33 @@ live in `apps/live/components/tour/tour-steps.ts`):
 2. **Selection modes**: opens the canvas-tool dropdown (Select / Hand /
    Eraser / ...) and explains mode switching. No "default" claim in the
    copy — desktop defaults to Select but mobile to Hand.
-3. **Shape categories**: opens the palette-category dropdown (Favourites /
+3. **Shape categories**: opens the palette-category dropdown (Popular /
    Shapes / Tools / Components / Devices / Icons / Technology). A
    dedicated "Tools category" step existed briefly and was cut — the
    category dropdown already tells that story.
-4. **The Explorer**: the in-editor document/folder browser.
-5. **Element context menu**: selects an element (adding a theme-coloured
+4. **Diagram & Draw**: opens the editor mode switch's menu
+   ([Editor modes](editor-modes.md#the-mode-switch)) and highlights the switch
+   and its menu as one region, wherever the layout puts it (the Palette's
+   title row, or beside the Toolbar layout's menu button). The copy says
+   what each mode is for and that Shift+D flips between them; the step
+   switches nobody's mode. Skipped on an event-storming board, which offers
+   no switch.
+5. **The Explorer**: the in-editor document/folder browser.
+6. **Element context menu**: selects an element (adding a theme-coloured
    square at the viewport centre first if the tab is empty) and opens its
    right-click menu programmatically.
-6. **Tabs**: highlights the active tab pill and the "+" add button as one
+7. **Tabs**: highlights the active tab pill and the "+" add button as one
    region (an `alsoHighlight` union, like the dropdown steps), with the
    tab menu covered in the copy. A separate open-the-⋯-menu step existed
    briefly and was folded in here.
-7. **Theme & Canvas** (desktop only): highlights the paintbrush dock
+8. **Theme & Canvas** (desktop only): highlights the paintbrush dock
    button ([Canvas + Theme dialog](../011-theme/canvas-and-theme-dialog.md)) that opens the tab's theme + canvas background
    dialog. No prepare needed: the button is always in the desktop chrome
    for an editable session. Mobile reaches the same dialog through the
    canvas menu, so the step is skipped there. A **Search** step (opening
    the Cmd/Ctrl+K panel) followed it until it was cut to keep the tour
    short; the search panel has its own help article.
-8. **Outro** (card): "You're ready to go" — a help-article illustration,
+9. **Outro** (card): "You're ready to go" — a help-article illustration,
    a help-centre link (new tab), and a "Start creating" button that
    completes the tour.
 
@@ -153,7 +161,7 @@ Existing enums only, covering the whole funnel:
 - **Start**: `'UI'/'Started'/'Tour'` on accept.
 - **Stage views**: `'UI'/'View'/'TourStep<Id>'` once per step entry
   (`TourStepPalette`, `TourStepSelectionModes`, `TourStepCategories`,
-  `TourStepExplorer`, `TourStepContextMenu`, `TourStepTabs`,
+  `TourStepEditorMode`, `TourStepExplorer`, `TourStepContextMenu`, `TourStepTabs`,
   `TourStepThemeCanvas`, `TourStepOutro` — derived from
   the fixed step ids,
   never content; a Back re-entry counts as a view). The last View before

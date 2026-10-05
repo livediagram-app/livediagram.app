@@ -8,7 +8,7 @@ import { QuickConnectRing } from './QuickConnectRing';
 // The ring's menu (docs/specs/008-canvas/canvas-and-palette.md) unfolds out of the plus on open and folds
 // back before it unmounts, so both transitions actually run.
 
-function ring(open: boolean) {
+function ring(open: boolean, extra: Partial<Parameters<typeof QuickConnectRing>[0]> = {}) {
   return (
     <QuickConnectRing
       x={0}
@@ -22,6 +22,7 @@ function ring(open: boolean) {
       onSpawn={vi.fn()}
       onArrowPointerDown={vi.fn()}
       onPencil={vi.fn()}
+      {...extra}
     />
   );
 }
@@ -77,5 +78,13 @@ describe('QuickConnectRing menu', () => {
       vi.advanceTimersByTime(MOTION_MS.short);
     });
     expect(menu(container)?.style.opacity).toBe('1');
+  });
+
+  it('offers a mind node only its growth actions and Duplicate', () => {
+    const { container } = render(ring(true, { onGrowMind: vi.fn() }));
+    const labels = [...container.querySelectorAll('button[aria-label]')]
+      .map((b) => b.getAttribute('aria-label'))
+      .filter((l) => l !== 'Quick add and connect');
+    expect(labels).toEqual(['Add child', 'Add sibling', 'Duplicate']);
   });
 });

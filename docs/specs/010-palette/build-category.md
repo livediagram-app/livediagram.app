@@ -41,8 +41,8 @@ the reader is actually choosing between.
 ## Notes
 
 - Tile **ids are unchanged** (`tools:frame`, `tools:table`, …). Only the
-  `section` moved, so saved Favourites keep working — `tools:frame` is a
-  default favourite and must not break.
+  `section` moved, so anything addressing a tile by id keeps working
+  (`tools:frame` is in Diagram mode's Popular).
 - Write, Draw, Data and Components each lost exactly the tiles listed above
   and are otherwise untouched.
 - See [Palette top-level categories and bands](palette-top-level-categories.md) for the band taxonomy this joins.

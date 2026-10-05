@@ -1,4 +1,5 @@
 import { memo, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
+import { useZoneClip } from '@/lib/article/zone-clip-store';
 import {
   arrowheadShapeOf,
   arrowheadSizeOf,
@@ -25,7 +26,7 @@ import { ArrowGripsPortal } from './SelectionGripsLayer';
 import { ArrowFlowOverlays, useArrowFlow } from './arrow-flow';
 import { BRAND_600 } from './arrow-handle-style';
 import { useLongPress } from '@/hooks/ui/useLongPress';
-import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { useElementSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { pressLedger } from '@/lib/double-press';
 
 // The mask region + backdrop for route-behind (docs/specs/008-canvas/arrow-route-behind.md) and label
@@ -136,7 +137,7 @@ function ArrowViewImpl({
   fontFamily,
 }: ArrowViewProps) {
   // An arrow with no stroke of its own takes the canvas's ink (docs/specs/007-editor/live-app.md).
-  const surface = useCanvasSurface();
+  const surface = useElementSurface(arrow.id);
   const isLocked = arrow.locked === true || tabLocked;
   // Open the context menu beside the arrow rather than under the cursor /
   // finger, mirroring boxed elements: `elementMenuAnchor` owns the top-right
@@ -263,10 +264,22 @@ function ArrowViewImpl({
   // currentColor) means context-stroke gets the real colour rather
   // than a chained `currentColor` keyword that ends up resolving on
   // the marker's own colour property.
+  const zoneClip = useZoneClip(arrow.id);
   return (
     // Screen-reader name (docs/specs/004-interface-design/canvas-accessibility.md): arrows are SVG, so the group carries
     // the same kind-plus-label name a boxed element's wrapper does.
-    <g style={{ opacity }} role="img" aria-label={elementAriaLabel(arrow)}>
+    <g
+      style={{ opacity }}
+      role="img"
+      aria-label={elementAriaLabel(arrow)}
+      clipPath={zoneClip ? `url(#zone-clip-${arrow.id})` : undefined}
+    >
+      {zoneClip ? (
+        // In an article's drawing zone: cut off at the zone's edge (docs/specs/007-editor/article-pages.md).
+        <clipPath id={`zone-clip-${arrow.id}`} clipPathUnits="userSpaceOnUse">
+          <rect x={zoneClip.x} y={zoneClip.y} width={zoneClip.width} height={zoneClip.height} />
+        </clipPath>
+      ) : null}
       {ownMarkerId && ownHeadColor ? (
         <ArrowHeadMarker id={ownMarkerId} shape={headShape} size={headSize} color={ownHeadColor} />
       ) : null}

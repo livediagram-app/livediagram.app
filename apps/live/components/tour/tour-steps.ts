@@ -1,5 +1,5 @@
 // The steps of the interactive editor tour (docs/specs/007-editor/editor-tour.md), in palette →
-// explorer → canvas → tabs order. Each step names its anchor (`target`, a
+// mode → explorer → canvas → tabs order. Each step names its anchor (`target`, a
 // data-tour-id) and drives the real chrome in `prepare` (opening the panel
 // / dropdown / menu it explains) through the TourApi facade TourHost
 // builds. `cleanup` undoes whatever prepare opened, and runs on every exit
@@ -123,7 +123,7 @@ export const TOUR_STEPS: TourStep[] = [
   {
     id: 'categories',
     title: 'Shape categories',
-    body: 'The palette is organised into categories: Favourites keeps your go-to tiles, then the other categories provide unique opportunities to personalise your diagram.',
+    body: 'The palette is organised into categories: Popular holds the tiles most reached for, then the other categories provide unique opportunities to personalise your diagram.',
     target: 'palette-category-menu',
     alsoHighlight: 'palette-category',
     boardSkip: true,
@@ -133,6 +133,25 @@ export const TOUR_STEPS: TourStep[] = [
       if (!findTour('palette-category-menu')) clickTour('palette-category');
     },
     cleanup: () => closeDropdown('palette-category-menu', 'palette-category'),
+  },
+  {
+    // The editor mode switch (docs/specs/007-editor/editor-modes.md "The mode switch"): in the
+    // Palette's title row, or beside the Toolbar layout's menu button. Opens its menu, switches
+    // nobody's mode.
+    id: 'editor-mode',
+    title: 'Diagram & Draw',
+    body: 'Each tab works in one of two modes: Diagram for shapes, arrows and the palette, Draw for pens, the eraser and sketching by hand. Switch here, or press Shift+D.',
+    target: 'editor-mode-menu',
+    alsoHighlight: 'editor-mode',
+    // An event-storming board offers no switch.
+    boardSkip: true,
+    prepare: async (api) => {
+      if (!api.toolbar) await ensurePaletteOpen();
+      closeDropdown('palette-category-menu', 'palette-category');
+      await waitForSelector('[data-tour-id="editor-mode"]');
+      if (!findTour('editor-mode-menu')) clickTour('editor-mode');
+    },
+    cleanup: () => closeDropdown('editor-mode-menu', 'editor-mode'),
   },
   {
     id: 'explorer',

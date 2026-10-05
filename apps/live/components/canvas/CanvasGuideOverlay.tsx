@@ -1,3 +1,4 @@
+import { useCanvasViewKey } from '@/hooks/canvas/useViewportStore';
 import type { RefObject } from 'react';
 import {
   deriveTextColorForBg,
@@ -21,10 +22,10 @@ type CanvasGuideOverlayProps = {
   // The active tab's theme id, so the guides / marquee tint to the tab's
   // accent (same derivation the rest of the chrome uses).
   tabThemeId: ThemeId;
-  viewportZoom: number;
   wrapperRef: RefObject<HTMLDivElement | null>;
-  // The view the wrapper sits in (useCanvasClientOrigin).
-  viewKey: string;
+  // The canvas size. With the view, read from the viewport store here, it is what the wrapper's
+  // origin follows (useCanvasViewKey), so the chrome around this takes no view.
+  mainSize: { width: number; height: number };
 };
 
 // The in-canvas snap overlays drawn during a drag: alignment guides, arrow
@@ -38,10 +39,10 @@ export function CanvasGuideOverlay({
   drawHover,
   marquee,
   tabThemeId,
-  viewportZoom,
   wrapperRef,
-  viewKey,
+  mainSize,
 }: CanvasGuideOverlayProps) {
+  const { viewportZoom, viewKey } = useCanvasViewKey(mainSize);
   const surface = useCanvasSurface();
   const marqueeColors = selectionBoxColors(getTheme(tabThemeId).elementStroke, surface);
   // Where canvas (0, 0) sits on screen, measured only while a canvas-space guide shows (the marquee is

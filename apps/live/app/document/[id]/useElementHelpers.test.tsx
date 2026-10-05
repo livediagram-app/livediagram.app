@@ -26,11 +26,10 @@ function harness(elements: Element[] = ROW) {
   const commitTabs = vi.fn();
   const { result } = renderHook(() =>
     useElementHelpers({
-      selectedId: null,
+      readSelection: () => ({ selectedId: null, multiSelectedIds: new Set<string>() }),
       activeId: 't1',
       activeTab: tab,
       editsBlocked: false,
-      multiSelectedIds: new Set<string>(),
       formatSourceId: null,
       formatConfig: { mode: 'keep', groups: {} } as never,
       getViewportCenter: () => ({ x: 0, y: 0 }),
@@ -94,11 +93,10 @@ describe('addBoxedAt with an insertion slot (docs/specs/021-event-storming/event
     const commitTabs = vi.fn();
     const { result } = renderHook(() =>
       useElementHelpers({
-        selectedId: null,
+        readSelection: () => ({ selectedId: null, multiSelectedIds: new Set<string>() }),
         activeId: 't1',
         activeTab: tab,
         editsBlocked: true,
-        multiSelectedIds: new Set<string>(),
         formatSourceId: null,
         formatConfig: { mode: 'keep', groups: {} } as never,
         getViewportCenter: () => ({ x: 0, y: 0 }),

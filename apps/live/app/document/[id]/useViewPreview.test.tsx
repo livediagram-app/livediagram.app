@@ -35,7 +35,7 @@ describe('useViewPreview', () => {
     expect(onEnter).not.toHaveBeenCalled();
   });
 
-  // One answer to "may this person edit?", read by the editor and the tab bar's mode switch alike
+  // One answer to "may this person edit?", read by the editor and the mode switch alike
   // (docs/specs/007-editor/editor-modes.md "The mode switch").
   it('says whether the person may edit: an edit session not previewing', () => {
     vi.spyOn(console, 'info').mockImplementation(() => {});

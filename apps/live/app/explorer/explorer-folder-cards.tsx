@@ -8,7 +8,7 @@
 import type { ReactNode } from 'react';
 import { CARD_PREVIEW as previewArea, CARD_SHELL as cardShell } from '@livediagram/ui';
 import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerButton';
-import { CountBadge } from '@/components/primitives/CountBadge';
+import { CountBadge } from '@livediagram/ui';
 import { useRowMenu } from '@/components/primitives/useRowMenu';
 import { InlineRenameInput } from '@/components/primitives/InlineRenameInput';
 import { FolderActionsMenu } from './folder-actions-menu';

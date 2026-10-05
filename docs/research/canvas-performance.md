@@ -129,6 +129,13 @@ spec's "Later".
   waiting, most likely on software compositing in a container without a GPU, which the CPU
   calibration does not model. The same empty-task shape showed locally at fit before the Map became
   an image, so part of it is the board's own paint cost.
+- The drag row follows the calibrated throttle, not the commit: across five runs the runner's
+  benchmark ranged 18-32 ms, so the throttle ranged 1.7-3.0x, and drag read 543-570 ms at 1.68x and
+  626-698 ms at 1.9-2.2x. A 100 ms step in drag between two nights is the runner, until a run at a
+  similar throttle says otherwise; `calibration.json` in the run's artefact holds the rate.
+- Any branch can be measured on the runner by hand (`gh workflow run canvas-perf.yml --ref
+<branch>`); the run writes its job summary and leaves the budget issue alone. Runs queue one at a
+  time, about 40 minutes each.
 
 ## After the drag preview
 
@@ -157,7 +164,153 @@ longest task fell 111 → 77 ms (whiteboard) and 210 → 151 ms (diagram), and t
 266 ms and 753 → 519 ms; the machine was busier for the first run, so part of that is noise. The
 Map now draws no labels.
 
+## The board lost its identity on whiteboards
+
+Measured 2026-10-03 on the reference board. `createStockColourProjector` returned a fresh array on
+every render whenever the board held a colour stored by name, as a whiteboard's pens and stickies
+do. Every render (each zoom tick, each marquee frame) then handed a "new" board to everything
+downstream: across five zooms the whiteboard's Map redrew 79 to 80 times, and across five marquees 6
+times; the diagram board, with no named colours, 0. The arrow frames and the endpoint spread
+recomputed with it, which is why they showed in the whiteboard's zoom profile and not the diagram's.
+Returning the same array for the same board took the redraws to 0 and the zoom's total long-task
+time from 1,702 to 1,630 ms at fit and 2,042 to 1,800 ms at 100% (machine under load, so read the
+redraw counts, not the milliseconds). The zoom's longest task did not move: it is the browser
+redrawing the board, not script.
+
+## Zoom, marquee and stroke after the Map fixes
+
+Measured 2026-10-03, on the runner unless stated.
+
+- **Zoom** (68-110 ms) is the browser re-rasterising every element at the new scale; script in the
+  gesture is small once the board keeps its identity. Two compositor-only remedies, scoped to the
+  zoom gesture, measured on the runner (locally they crashed, but so did the unchanged build: swap
+  was exhausted, so those crashes said nothing about either):
+  - `will-change: transform` on the world: one layer the size of the board, re-rasterised whole;
+    zoom 4,463-4,475 ms at fit and 509-531 ms at 100%, against 68-110 ms.
+  - `content-visibility: auto` on element wrappers while zooming: the browser toggles rendering on
+    every wrapper mid-gesture; 244-311 ms against 68-110 ms.
+
+  Neither ships. What remains is the spec's Later list: level of detail at low zoom, and not
+  mounting off-screen elements when zoomed in.
+
+- **Marquee** at fit (61-70 ms): the drag itself costs nothing; the whole task is the release. In a
+  local unminified profile (4x): `Canvas`'s own body about 34 ms (two `...props` spreads into
+  `CanvasElementsLayer` and `CanvasChrome` about 10 ms of it, the rest the compiler's cache checks),
+  the selection toolbar's placement forcing the page's layout about 27 ms, the Quick Style panel's
+  one placement a few ms, and reconciling the memoised element views about 12 ms. Placing the
+  toolbar and the Quick Style panel in the next frame's `requestAnimationFrame` instead of the
+  layout effect moved the layout out of the task: marquee 70 / 61 ms and select 61-68 ms at 2.17x,
+  against 67 / 68 ms and 65-73 ms at 1.92x, about 10% once normalised. Not shipped: it does not
+  meet the budget, and an edge nudge would land a frame late. The lever left is a selection change
+  that does not re-render the editor root.
+- **Stroke** (114-130 ms): the release commits the stroke and re-renders the element layer; the Map's
+  rebuild follows in its own deferred render. Rendering the Map without `useDeferredValue` read
+  142-173 ms, so deferring it stays.
+- **Local measuring under memory pressure**: Chromium renderers abort with an `int3` trap in the
+  kernel log when an allocation fails. With swap exhausted by other work, a 1,000-element page
+  crashed at random points; a 200-element board serves for counts that do not depend on size
+  (how often something re-runs), and the runner for timings.
+
+## The selection store
+
+Measured 2026-10-04. Moving the selection out of the canvas's props (a per-editor store, read per
+element) stopped the canvas and its element layer rendering for a selection change. Script time on
+the reference diagram, unthrottled, alternating `main` and the branch in three rounds of 12:
+
+| Moment   | `main`       | Store        |
+| -------- | ------------ | ------------ |
+| Select   | 14.2-16.4 ms | 9.1-11.0 ms  |
+| Deselect | 6.8-12.6 ms  | 3.5-4.1 ms   |
+| Marquee  | 30.3-36.4 ms | 25.1-31.6 ms |
+
+The runner could not show it. Four probe runs of the branch, two on the same commit, read drag at
+377-462 ms on three and 633-686 ms on one, against 638-685 ms on `main`. The traces put the
+difference in main-thread busy time outside script (about 16 s against 23 s per drag window), so it
+is the runner machine's compositor, which the CPU calibration does not model. Read a drag row only
+against runs on the same runner, and judge a change in script time by a local A/B, not by the nightly.
+What remains in a select's long task is mostly the editor root rendering above the canvas.
+
+## The editor root and the selection
+
+Measured 2026-10-04. With the selection read only where it shows (handlers `readSelection()`,
+effects subscribing, panels gated on being open) and the root reading the gesture store only as
+"is an element gesture open", the editor root renders 0 times for a deselect, a select-all and a
+marquee (it rendered on each, and on every pan and zoom start and end, through `useArticleIntake`).
+Script time on the reference diagram, three interleaved rounds of 12 against `main`:
+
+| Moment   | `main`       | Branch       |
+| -------- | ------------ | ------------ |
+| Select   | 12.1-15.5 ms | 12.5-16.2 ms |
+| Deselect | 4.7-5.3 ms   | 2.3-2.7 ms   |
+| Marquee  | 35.0-37.6 ms | 29.8-30.8 ms |
+
+A click-select is unchanged: the press opens a pending drag in the root's state and the release
+closes it, two root renders that are drag state, not selection.
+
+## The viewport store, and culling off-screen elements
+
+Measured 2026-10-04 on the reference board, local, interleaved builds.
+
+- Moving the pan and zoom into a viewport store (#378, #382) stopped the editor root, the element
+  layer, the corner chrome, the panels and the command palette rendering for a zoom or pan tick: only
+  the canvas and the parts that show the view render. Script time against the previous `main`: zoom
+  (8 ticks) 48-51 ms to 26-34 ms, pan 31-35 ms to 9-10 ms.
+- Not mounting off-screen elements was tried as an experiment on top (arrows kept, elements outside
+  the screen plus a margin unmounted, the visible set from the element grid):
+  - culling on every tick: zoom script at 100% 24-30 ms to 157-176 ms, pan 7-9 ms to 72-88 ms;
+  - culling to 1,500 px canvas cells, so the set changes only crossing a cell: longest zoom task at
+    100% 58-91 ms to 170-196 ms, from fit 61-82 ms to 203-454 ms (zooming in mounts hundreds of
+    views at once). Total long-task time once settled fell (486-998 ms to 267-470 ms), but the budget
+    judges the longest task.
+
+  Mounting React element views is the expensive step, so unmounting to save drawing loses. Set aside
+  in the spec's Later list until an element can be shown without a mount.
+
+## Level of detail, and opening a board
+
+Measured 2026-10-05 on the reference board, local, interleaved builds.
+
+- **Level of detail at fit** (zoom 0.23, labels about 5 px tall), its ceiling measured by hiding
+  detail in the page:
+  - hiding label text: zoom 117/92 to 127/91 ms (whiteboard), 59/76 to 51/72 ms (diagram), drag
+    about 10% lower: within the noise;
+  - hiding text and every SVG inside elements: zoom often under 50 ms and diagram drag 316-333 to
+    246-251 ms, but cylinders, diamonds, pen strokes and polygons vanish and readable labels go.
+
+  Not built: the only variant that wins is a visual regression at that zoom.
+
+- **Opening a board** at 4x is one 1.1-1.7 s mount, then a train of 100-1,750 ms tasks for 2-4 s.
+  Two costs moved out of the first task: the Map's picture (about 100-120 ms, now built after the
+  board) and a second render of every element view about 2.6 s in (a new `chairSitters` function as
+  presence arrived, 174 ms). First task: diagram 975-1,071 to 660-889 ms, whiteboard 947-1,769 to
+  729-1,291 ms (medians of five, three rounds). Time to interactive is set by the train after it and
+  stayed within the noise.
+- **Select and marquee**: mounting the Quick Style panel is the largest single share of a select
+  (diagram select script 48-49 to 28-34 ms without it). Placing it in the next frame and querying
+  its obstacles once per pass changed nothing beyond the noise over three rounds, so the cost is the
+  panel's subtree mounting, not its placement.
+
+## A pen stroke on a diagram, and what was tried for select and marquee
+
+Measured 2026-10-05, reference board, calibrated 4x, interleaved builds.
+
+- A diagram stroke's release costs about double a whiteboard's: the new stroke is selected (the
+  selection toolbar mounts and forces a layout, about 54 ms) and the Map rebuilds its picture (85 ms).
+  In that rebuild `endpointPosition` took 36 ms: each arrow end was found by scanning the element
+  list. An array is now looked up through one index per list (`elementIndexFor`), as the element grid
+  is. Diagram stroke script 303-343 to 284-305 ms over three rounds; its longest task (the selecting
+  commit) stayed within the noise.
+- Tried and set aside for select and marquee, each over three rounds: deferring the Quick Style
+  panel's selection (`useDeferredValue`) made the marquee release's longest task 51-63 ms to 177-227
+  ms (its render became one non-yielding task); reading the canvas zoom from the viewport store
+  instead of a context made zoom script 29-34 to 44-51 ms and pan 7-10 to 12-13 ms (a thousand store
+  subscriptions cost more than one context walk).
+- Also set aside: keeping the Quick Style panel mounted (hidden) after a deselect, so a select
+  updates it instead of mounting it: no gain once the calibrated rates are allowed for; and placing
+  the selection toolbar in the next frame instead of its layout effect: a diagram stroke's longest
+  task 118 to 183 ms (it lays out twice).
+
 ## Not tried
 
-- `contain` / `content-visibility` on element wrappers, level of detail at low zoom, a raster
-  snapshot of still elements during a gesture, and fewer SVG roots. Each is weighed in the spec.
+- `contain` on element wrappers, a raster snapshot of still elements during a gesture, and fewer
+  SVG roots. Each is weighed in the spec.

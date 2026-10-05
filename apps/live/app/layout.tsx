@@ -9,7 +9,6 @@ import { ConfirmProvider } from '@/hooks/ui/useConfirm';
 import { DriveMirrorProvider } from '@/components/drive/DriveMirrorProvider';
 import { ToastProvider } from '@/hooks/ui/useToast';
 import { googleFontsHref } from '@livediagram/document';
-import { QUIET_LANDING_BOOT_SCRIPT, QUIET_LANDING_CSS } from '@/lib/quiet-landing-boot';
 import { APPEARANCE_BOOT_SCRIPT, BRAND_ICONS, DARK_READER_LOCK } from '@livediagram/ui';
 import { REDUCE_MOTION_BOOT_SCRIPT } from './pre-hydration-scripts';
 import { EDITOR_BUILD_ID } from '@/lib/server-release';
@@ -24,7 +23,7 @@ import './globals.css';
 // nested page in the static export. See docs/specs/007-editor/live-app.md "SEO and indexing".
 export const metadata: Metadata = {
   title: 'livediagram',
-  description: 'Build diagrams and mindmaps. Multiplayer canvas.',
+  description: 'Diagrams, whiteboards, illustrations and documents. Multiplayer canvas.',
   // PWA install affordances. The editor is what users add to their home
   // screen, but only its app/icon.svg favicon was linked, so an installed
   // editor PWA showed no icon. livediagram.app is one origin (the router
@@ -95,11 +94,6 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           {...STALE_HTML_GUARD_ATTRIBUTES}
           dangerouslySetInnerHTML={{ __html: STALE_HTML_GUARD_SCRIPT }}
         />
-        {/* The hero launch window's landing paints its blank canvas from the first frame
-            (lib/quiet-landing-boot.ts). In the head, not the body: the body can paint before a
-            script inside it has run. */}
-        <script dangerouslySetInnerHTML={{ __html: QUIET_LANDING_BOOT_SCRIPT }} />
-        <style>{QUIET_LANDING_CSS}</style>
         {/* The build this export was made from (docs/specs/016-platform/stale-builds.md), for
             developers, support and the e2e suite; the app itself compares EDITOR_BUILD_ID. */}
         {EDITOR_BUILD_ID ? <meta name="livediagram-build" content={EDITOR_BUILD_ID} /> : null}

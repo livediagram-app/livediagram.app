@@ -1,6 +1,9 @@
 import type { ReactNode } from 'react';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
-import type { MovablePanelPlacementProps } from '@/components/primitives/MovablePanel.types';
+import type {
+  MovablePanelPlacementProps,
+  MovablePanelPopoverProps,
+} from '@/components/primitives/MovablePanel.types';
 import type { HelpArticleKey } from '@/lib/help-articles';
 
 // The chrome every MODE panel wears: Avatar, Eraser, Format, Laser, Spotlight.
@@ -19,9 +22,10 @@ import type { HelpArticleKey } from '@/lib/help-articles';
 // `stackBelowY` and re-typing the forwarding block underneath.
 
 /** Everything a mode panel forwards to its MovablePanel. */
-export type ModePanelProps = MovablePanelPlacementProps & {
-  stackBelowY?: number;
-};
+export type ModePanelProps = MovablePanelPlacementProps &
+  MovablePanelPopoverProps & {
+    stackBelowY?: number;
+  };
 
 /** Extras a mode panel may put in its header: a settings gear, a help link. */
 type ModePanelExtras = {
@@ -40,6 +44,11 @@ export function ModePanel({
   stackBelowY,
   headerActions,
   helpArticle,
+  popoverOpen,
+  popoverAnchor,
+  asPopover,
+  dismissOnOutside,
+  onPopoverClose,
 }: ModePanelProps & ModePanelExtras & { title: string; children: ReactNode }) {
   return (
     <MovablePanel
@@ -55,6 +64,12 @@ export function ModePanel({
       helpArticle={helpArticle}
       stackBelowY={stackBelowY}
       {...dock}
+      // As a popover over a cluster button (the Slide Deck in Illustrate mode).
+      popoverOpen={popoverOpen}
+      popoverAnchor={popoverAnchor}
+      asPopover={asPopover}
+      dismissOnOutside={dismissOnOutside}
+      onPopoverClose={onPopoverClose}
       collapsible
     >
       {children}

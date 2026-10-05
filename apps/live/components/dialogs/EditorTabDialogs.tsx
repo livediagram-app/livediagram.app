@@ -1,5 +1,8 @@
 'use client';
 
+import { useCallback } from 'react';
+import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
+import { EMPTY_SELECTION, type Selection } from '@/lib/selection-store';
 import dynamic from 'next/dynamic';
 
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
@@ -7,6 +10,8 @@ import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
 import { saveOfflineToCloud } from '@/lib/offline/offline-convert';
 import { tabAsSeen } from '@/lib/export-as-seen';
 import { panelEnabled } from '@/lib/user-preferences';
+import { LeaveIllustrateDialog } from '@/components/dialogs/LeaveIllustrateDialog';
+import { LeaveIllustrateConfirm } from '@/components/dialogs/LeaveIllustrateConfirm';
 
 const ExportTabDialog = dynamic(
   () => import('@/components/dialogs/ExportTabDialog').then((m) => m.ExportTabDialog),
@@ -31,9 +36,9 @@ export function EditorTabDialogs() {
     userPreferences,
     exportOpen,
     exportScope,
+    illustratePages,
     activeTab,
     tabs,
-    multiSelectedIds,
     documentName,
     imageContext,
     setExportOpen,
@@ -56,7 +61,18 @@ export function EditorTabDialogs() {
     rescopeShareLink,
     setDocumentSharePassword,
     setShareDialogOpen,
+    leaveIllustrate,
   } = useEditorContext();
+  // The selection the export covers, read from the store while a selection export is open
+  // (docs/specs/008-canvas/blueprints/selection-store.md).
+  const exportingSelection = exportOpen && exportScope === 'selection';
+  const multiSelectedIds = useSelectionOf(
+    useCallback(
+      (sel: Selection) =>
+        exportingSelection ? sel.multiSelectedIds : EMPTY_SELECTION.multiSelectedIds,
+      [exportingSelection],
+    ),
+  );
 
   // Offline documents (docs/specs/006-document/offline-mode.md) can't be shared until they're synced to the
   // owner's account; the Share dialog shows a gate that runs this conversion,
@@ -70,6 +86,8 @@ export function EditorTabDialogs() {
 
   return (
     <>
+      <LeaveIllustrateDialog leave={leaveIllustrate} />
+      <LeaveIllustrateConfirm leave={leaveIllustrate} />
       {exportOpen ? (
         <ExportTabDialog
           // Export what the author is LOOKING at: a tab on the Default colour
@@ -84,6 +102,9 @@ export function EditorTabDialogs() {
               : {}),
           })}
           scope={exportScope}
+          // In Illustrate mode the whole tab exports as its pages
+          // (docs/specs/007-editor/illustrate-pages.md "Export").
+          pages={exportScope === 'tab' ? illustratePages?.pages : undefined}
           documentName={documentName}
           imageContext={imageContext}
           offerHiddenLayers={panelEnabled(userPreferences, 'layersPanelEnabled')}
@@ -95,6 +116,9 @@ export function EditorTabDialogs() {
           tabName={activeTab.name}
           onImportFile={importIntoActiveTab}
           onImportText={importTextIntoActiveTab}
+          // Illustrate mode imports a livediagram tab only: the other formats are diagrams
+          // (docs/specs/007-editor/illustrate-pages.md "Import").
+          formats={illustratePages ? ['json'] : undefined}
           onClose={() => setImportOpen(false)}
         />
       ) : null}

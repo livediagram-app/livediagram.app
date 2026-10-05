@@ -9,7 +9,10 @@ import {
 } from '@/lib/canvas-gesture';
 import { CanvasSelectionToolbars } from './CanvasSelectionToolbars';
 import type { CanvasProps } from './Canvas.types';
-import type { deriveCanvasSelection } from '@/lib/canvas-selection';
+import { createSelectionStore } from '@/lib/selection-store';
+import { SelectionStoreProvider } from '@/hooks/canvas/useSelectionStore';
+import { ViewportStoreProvider } from '@/hooks/canvas/useViewportStore';
+import { createViewportStore } from '@/lib/viewport-store';
 
 // docs/specs/008-canvas/canvas-performance.md: the selection chrome is hidden while a selection is
 // moved, resized or reshaped, and comes back when the gesture ends.
@@ -17,32 +20,40 @@ import type { deriveCanvasSelection } from '@/lib/canvas-selection';
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
 const shape = createShape('square', 100, 100);
-const bounds = { x: 100, y: 100, width: 100, height: 100 };
+const other = createShape('square', 300, 100);
 
 function renderToolbars(multi: boolean) {
+  const elements = [shape, other];
   const props = {
-    elements: [shape],
+    elements,
     readOnly: false,
     canvasTool: 'select',
-    viewportZoom: 1,
-    viewportOffset: { x: 0, y: 0 },
-    multiSelectedIds: new Set(multi ? [shape.id] : []),
     onDuplicateSelected: vi.fn(),
     onToggleLockSelected: vi.fn(),
     onDeleteSelected: vi.fn(),
     onOpenComments: vi.fn(),
     onBeginEdit: vi.fn(),
   } as unknown as CanvasProps;
-  const selection = {
-    selected: multi ? null : shape,
-    selectionBounds: bounds,
-    selectedLocked: false,
-    showPopover: !multi,
-    multiToolbarBounds: multi ? bounds : null,
-    showMultiToolbar: multi,
-  } as unknown as ReturnType<typeof deriveCanvasSelection>;
+  const store = createSelectionStore();
+  if (multi) store.setMultiSelectedIds(new Set([shape.id, other.id]));
+  else store.setSelectedId(shape.id);
+  const selectionInput = {
+    elements,
+    editingId: null,
+    isPaintMode: false,
+    tabLocked: false,
+    readOnly: false,
+  };
   return render(
-    <CanvasSelectionToolbars props={props} selection={selection} quickRingOpen={false} />,
+    <SelectionStoreProvider store={store}>
+      <ViewportStoreProvider store={createViewportStore(1)}>
+        <CanvasSelectionToolbars
+          props={props}
+          selectionInput={selectionInput}
+          quickRingOpen={false}
+        />
+      </ViewportStoreProvider>
+    </SelectionStoreProvider>,
   );
 }
 

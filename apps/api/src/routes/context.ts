@@ -44,6 +44,10 @@ export type RouteContext = {
   // Hybrid identity (docs/specs/014-identity/auth-and-guest-access.md): the verified Clerk userId, else the
   // legacy X-Owner-Id header, else null. Resolved once in `fetch`.
   resolveOwner: () => string | null;
+  // The API token the request presented, or null for a Clerk session or a guest. Only a token
+  // makes a changeset an agent's, and a token may never do a whole-tab save
+  // (docs/specs/024-agents/agent-changesets.md). Optional so unit tests can leave it out.
+  token?: { id: string; readOnly?: boolean } | null;
   // Schedule background work that may outlive the response (docs/specs/014-identity/transactional-email.md email
   // sends). Forwards to the fetch handler's ExecutionContext.waitUntil.
   // Optional so unit tests can build a RouteContext without a real
@@ -105,6 +109,19 @@ export function gateRead(
     ctx.verifiedUserId,
     tabId,
   );
+}
+
+// The participation gate (docs/specs/024-agents/agent-presence.md "Token levels"): comments, session answers and
+// agent presence. Until share roles are built it names today's rule, read access to the document or tab; a
+// read-only token is refused every write at the choke point. It becomes the Participant check when share roles land.
+export function gateParticipate(
+  ctx: RouteContext,
+  documentId: string,
+  documentOwnerId: string,
+  documentTeamId: string | null = null,
+  tabId?: string,
+): Promise<boolean> {
+  return gateRead(ctx, documentId, documentOwnerId, documentTeamId, tabId);
 }
 
 export function gateEdit(
@@ -249,4 +266,13 @@ export async function requireOwnedDocument(
   if (!existing) return missingDocument(ctx, documentId);
   if (!(await ownsDocument(ctx, existing))) return forbidden();
   return existing;
+}
+
+// A refused request on a tab: 404 when the caller's grant is confined to another tab, 403 otherwise.
+export async function deniedOnTab(
+  ctx: RouteContext,
+  liveDoc: { id: string; ownerId: string; teamId: string | null },
+): Promise<Response> {
+  const grant = await gateGrant(ctx, liveDoc.id, liveDoc.ownerId, liveDoc.teamId);
+  return grant ? notFound() : forbidden();
 }

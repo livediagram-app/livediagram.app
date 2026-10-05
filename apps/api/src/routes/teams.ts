@@ -234,8 +234,10 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
     if (request.method === 'GET') {
       const members = await listTeamMembers(env, teamId);
       // The invite link is an admin-only management surface (docs/specs/013-workspace/teams.md),
-      // so only admins get its token in the detail payload.
-      const inviteLink = isAdmin ? await getTeamInviteLink(env, teamId) : null;
+      // so only admins get its token in the detail payload, and only in an interactive
+      // session: the token lets any account join and edit the library, and team
+      // administration is session-only (docs/specs/015-api/public-api-and-tokens.md §3.4).
+      const inviteLink = isAdmin && clerkUserId ? await getTeamInviteLink(env, teamId) : null;
       return json({ team, members, myRole: me.role, inviteLink });
     }
     if (request.method === 'PUT') {

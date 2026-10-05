@@ -6,7 +6,7 @@
 // reads at a glance instead of from a sentence.
 import { Button } from '@livediagram/ui';
 import { PlusIcon } from '@/components/primitives/explorer-icons';
-import { CATEGORY_GLYPHS } from './settings-icons';
+import { TokensGlyph } from './settings-icons';
 
 // Brand while there is room, amber from here, rose at the cap.
 const METER_WARN_AT = 8;
@@ -40,7 +40,7 @@ export function SettingsTokenOverview({
           aria-hidden
           className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-slate-600 to-slate-800 text-white shadow-sm shadow-slate-900/20 dark:from-slate-500 dark:to-slate-700"
         >
-          {CATEGORY_GLYPHS.tokens}
+          {TokensGlyph}
         </span>
         <span className="min-w-0 flex-1">
           <span className="block text-sm font-semibold text-slate-800 dark:text-slate-100">

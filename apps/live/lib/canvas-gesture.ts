@@ -69,10 +69,24 @@ function subscribe(cb: () => void): () => void {
   };
 }
 
+/** Called whenever the reported gesture changes (a gesture opening or closing). */
+export const subscribeCanvasGesture = subscribe;
+
 const serverSnapshot = (): CanvasGestureState => 'idle';
 
 export function useCanvasGesture(): CanvasGestureState {
   return useSyncExternalStore(subscribe, canvasGestureNow, serverSnapshot);
+}
+
+// Whether an element gesture (move, resize, reshape, stroke, erase) is open. For readers that only ask
+// that, such as the editor root: they render when the answer flips, never for a pan, zoom or marquee.
+const elementGestureNow = (): boolean => {
+  const g = canvasGestureNow();
+  return g !== 'idle' && ELEMENT_GESTURES.has(g);
+};
+const notElementGesture = () => false;
+export function useElementGestureActive(): boolean {
+  return useSyncExternalStore(subscribe, elementGestureNow, notElementGesture);
 }
 
 export function resetCanvasGesturesForTests(): void {

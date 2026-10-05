@@ -77,7 +77,7 @@ async function newWhiteboard(page: Page) {
   await untilHydrated(search);
   await search.fill('whiteboard');
   await page
-    .getByRole('button', { name: /^Whiteboard/ })
+    .getByRole('button', { name: /^Blank Whiteboard/ })
     .first()
     .click();
   const next = page.getByRole('button', { name: /^Next/ });
@@ -117,7 +117,7 @@ test.describe('default folders', () => {
     await expect(row).toBeVisible({ timeout: 30_000 });
 
     await row.locator('[data-tree-row]').first().click({ button: 'right' });
-    await page.getByRole('button', { name: 'Use as default for' }).click();
+    await page.getByRole('menuitem', { name: 'Use as default for' }).click();
     await expect(page.getByText('New documents that open as')).toBeVisible();
     await page.getByRole('menuitemcheckbox', { name: 'Retrospectives' }).click();
     await expect(page.getByRole('menuitemcheckbox', { name: 'Retrospectives' })).toHaveAttribute(
@@ -138,7 +138,7 @@ test.describe('default folders', () => {
       .locator('[data-tree-row]')
       .first()
       .click({ button: 'right' });
-    await page.getByRole('button', { name: 'Use as default for' }).click();
+    await page.getByRole('menuitem', { name: 'Use as default for' }).click();
     await expect(page.getByRole('menuitemcheckbox', { name: 'Diagrams' })).toHaveAttribute(
       'aria-disabled',
       'true',
@@ -195,9 +195,10 @@ test.describe('default folders', () => {
       .first()
       .click();
     await page.getByRole('radio', { name: /Retros/ }).click();
-    const box = page.getByRole('checkbox', { name: 'Always save whiteboards here' });
-    await expect(box).not.toBeChecked();
-    await box.check();
+    const toggle = page.getByRole('switch', { name: 'Always save whiteboards here' });
+    await expect(toggle).toHaveAttribute('aria-checked', 'false');
+    await toggle.click();
+    await expect(toggle).toHaveAttribute('aria-checked', 'true');
     const id = await create(page);
     expect(await documentFolder(page, s, id)).toBe(retros);
     expect(await defaults(page, s)).toEqual({ 'mode:draw': retros });
@@ -220,7 +221,7 @@ test.describe('default folders', () => {
     const menu = page.getByRole('button', { name: /^Menu for (folder )?Workshops$/ }).last();
     await expect(menu).toBeVisible({ timeout: 30_000 });
     await menu.click();
-    await page.getByRole('button', { name: 'Delete', exact: true }).click();
+    await page.getByRole('menuitem', { name: 'Delete', exact: true }).click();
     const confirm = page.getByRole('dialog').filter({ hasText: 'Delete "Workshops"?' });
     await expect(confirm).toContainText('Its documents and subfolders move to "Projects".');
     await expect(confirm).toContainText('New whiteboards are saved here by default.');
@@ -257,7 +258,7 @@ test.describe('default folders', () => {
     await untilHydrated(search);
     await search.fill('whiteboard');
     await page
-      .getByRole('button', { name: /^Whiteboard/ })
+      .getByRole('button', { name: /^Blank Whiteboard/ })
       .first()
       .click();
     const next = page.getByRole('button', { name: /^Next/ });

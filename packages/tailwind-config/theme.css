@@ -83,6 +83,31 @@
   }
 }
 
+/* On a touch screen, a tap area of at least 44px (Apple's 44pt; WCAG 2.5.5) without growing the
+ * control: an invisible ::before reaches past a smaller box, and never shrinks a bigger one
+ * (`50% - 22px` of the box's own size, capped at 0). The host must be positioned (`relative`).
+ * `touch-target-y` reaches vertically only, for a packed row whose neighbours sit closer than
+ * 44px apart (the palette strip), so two pads never fight over one tap. */
+@utility touch-target {
+  @media (pointer: coarse) {
+    &::before {
+      content: '';
+      position: absolute;
+      inset: min(0px, calc(50% - 22px));
+    }
+  }
+}
+@utility touch-target-y {
+  @media (pointer: coarse) {
+    &::before {
+      content: '';
+      position: absolute;
+      inset-inline: 0;
+      inset-block: min(0px, calc(50% - 22px));
+    }
+  }
+}
+
 /* An icon at a control's first or last edge is drawn inside its box with blank space around it, so
  * padding measured to the box reads lopsided. Pull the icon in by its own blank margin, which its Glyph
  * reports from its geometry (optical-alignment.md); an svg without the variables moves by nothing. */
@@ -360,11 +385,42 @@
  * their own (one with a hardcoded hex). :focus-visible keeps pointer clicks
  * from showing it; form fields keep their own focus:ring / focus:border, and
  * a control that sets its own focus-visible:outline-* utility still wins
- * (this sits in the base layer). */
+ * (this sits in the base layer). Brand 600 in light (4.1:1 on white; brand 500
+ * was 2.77:1, under WCAG 1.4.11's 3:1), brand 500 in dark (4.4:1 or more on the
+ * dark surfaces). docs/specs/004-interface-design/menus.md "Focus ring".
+ *
+ * Inside a menu of either kind the ring sits INSIDE the row (inset 2px), so a
+ * full-width row in a clipped menu never loses half of it: brand 600 in light
+ * (3.57:1 or more on white, slate 100 and the checked brand 100), brand 400 in
+ * dark (5.6:1 or more on slate 900, slate 800 and the checked tint). */
 @layer base {
   :is(button, a, summary, [role='button']):focus-visible {
-    outline: 2px solid var(--color-brand-500);
+    outline: 2px solid var(--color-brand-600);
     outline-offset: 2px;
+  }
+  .dark :is(button, a, summary, [role='button']):focus-visible {
+    outline-color: var(--color-brand-500);
+  }
+  [data-menu-surface] :is(button, a, summary, [role='button'], [role^='menuitem']):focus-visible {
+    outline: 2px solid var(--color-brand-600);
+    outline-offset: -2px;
+  }
+  .dark
+    [data-menu-surface]
+    :is(button, a, summary, [role='button'], [role^='menuitem']):focus-visible {
+    outline-color: var(--color-brand-400);
+  }
+}
+
+/*
+ * Every enabled button shows the pointer, in every app (Tailwind's preflight resets a button's
+ * cursor to the default arrow). In the base layer, so a utility such as `cursor-not-allowed`
+ * still wins.
+ */
+@layer base {
+  button:not(:disabled),
+  [role='button']:not([aria-disabled='true']) {
+    cursor: pointer;
   }
 }
 

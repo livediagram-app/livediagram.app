@@ -261,8 +261,36 @@ describe('buildOpenApiDocument', () => {
       const ok = doc.paths[route.path]![route.method.toLowerCase()]!.responses['200']!;
       expect(Object.keys(ok.content ?? {})).toEqual(['image/svg+xml']);
     }
-    const json = doc.paths['/documents/{id}']!.get!.responses['200']!;
+    const json = doc.paths['/documents']!.get!.responses['200']!;
     expect(Object.keys(json.content ?? {})).toEqual(['application/json']);
+  });
+
+  it('offers text beside JSON exactly where a document view can answer, with the view query', () => {
+    const doc = buildOpenApiDocument() as {
+      paths: Record<
+        string,
+        Record<
+          string,
+          { parameters: { name: string }[]; responses: Record<string, { content?: object }> }
+        >
+      >;
+    };
+    const text = ROUTE_MANIFEST.filter((r) => r.textResponse).map((r) => `${r.method} ${r.path}`);
+    expect(text.sort()).toEqual(['GET /documents/{id}', 'GET /documents/{id}/tabs/{tabId}']);
+    for (const path of ['/documents/{id}', '/documents/{id}/tabs/{tabId}']) {
+      const get = doc.paths[path]!.get!;
+      expect(Object.keys(get.responses['200']!.content ?? {})).toEqual([
+        'application/json',
+        'text/plain',
+      ]);
+      expect(get.parameters.map((p) => p.name)).toEqual(
+        expect.arrayContaining(['view', 'json', 'budget', 'door']),
+      );
+    }
+    const tabQuery = doc.paths['/documents/{id}/tabs/{tabId}']!.get!.parameters.map((p) => p.name);
+    expect(tabQuery).toEqual(
+      expect.arrayContaining(['only', 'coarse', 'style', 'ref', 'q', 'all']),
+    );
   });
 });
 

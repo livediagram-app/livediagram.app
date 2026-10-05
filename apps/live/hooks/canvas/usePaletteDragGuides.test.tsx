@@ -73,7 +73,7 @@ function render(opts: {
   const view = renderHook(() =>
     usePaletteDragGuides({
       elements: opts.elements ?? ROW,
-      viewportZoom: opts.zoom ?? 1,
+      readZoom: () => opts.zoom ?? 1,
       wrapperRef,
       insertGate: {
         esBoard: opts.esBoard,

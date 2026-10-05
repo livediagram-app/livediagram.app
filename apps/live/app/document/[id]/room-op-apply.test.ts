@@ -186,3 +186,115 @@ describe('two people pressing one done check', () => {
     expect(marks(next)).toEqual(['a', 'b']);
   });
 });
+
+// An agent's changeset (docs/specs/024-agents/agent-changesets.md "In the editor"): its element ops
+// apply as a peer's would, a created tab is appended first, and an op with no element ops (an
+// oversize relay that asks for a refetch) changes nothing here.
+describe('applyRoomOpToTabs: changeset', () => {
+  const changeset = (over: Record<string, unknown>): RoomOp =>
+    ({
+      kind: 'changeset',
+      tabId: 't1',
+      id: 'cs_0000000001',
+      rev: 2,
+      prevRev: null,
+      author: { name: 'Webber', color: '#0ea5e9' },
+      counts: { added: 1, changed: 1, removed: 0 },
+      ...over,
+    }) as RoomOp;
+
+  it('applies every element op in order, merging over our copy', () => {
+    const tabs = [tab()];
+    const next = applyRoomOpToTabs(
+      tabs,
+      changeset({
+        elementOps: [
+          { kind: 'add', element: el('c', { x: 5 }), at: 2 },
+          { kind: 'update', element: el('a', { x: 9 }) },
+        ],
+      }),
+    );
+    expect(next[0]!.elements.map((e) => [e.id, 'x' in e ? e.x : null])).toEqual([
+      ['a', 9],
+      ['b', 0],
+      ['c', 5],
+    ]);
+  });
+
+  it('appends a tab the changeset created, then fills it', () => {
+    const tabs = [tab()];
+    const next = applyRoomOpToTabs(
+      tabs,
+      changeset({
+        tabId: 't2',
+        tab: { id: 't2', name: 'Detail' },
+        elementOps: [{ kind: 'add', element: el('n'), at: 0 }],
+      }),
+    );
+    expect(next.map((t) => [t.id, t.elements.map((e) => e.id)])).toEqual([
+      ['t1', ['a', 'b']],
+      ['t2', ['n']],
+    ]);
+  });
+
+  it('appends a created tab even when its relay was too large to carry the elements', () => {
+    const tabs = [tab()];
+    const next = applyRoomOpToTabs(
+      tabs,
+      changeset({ tabId: 't2', tab: { id: 't2', name: 'Detail' }, refetch: true, touched: ['n'] }),
+    );
+    expect(next.map((t) => [t.id, t.elements.length])).toEqual([
+      ['t1', 2],
+      ['t2', 0],
+    ]);
+  });
+
+  it('keeps identity for a refetch op or a tab we do not have', () => {
+    const tabs = [tab()];
+    expect(applyRoomOpToTabs(tabs, changeset({ refetch: true, touched: ['a'] }))).toBe(tabs);
+    expect(
+      applyRoomOpToTabs(
+        tabs,
+        changeset({ tabId: 'nope', elementOps: [{ kind: 'remove', id: 'a' }] }),
+      ),
+    ).toBe(tabs);
+  });
+});
+
+describe('applyRoomOpToTabs: documents', () => {
+  const P = (id: string, text = id) => ({ id, type: 'paragraph' as const, runs: [{ text }] });
+
+  it("applies a peer's block ops, merging with ours", () => {
+    const base = tab({ articles: { f: { blocks: [P('a'), P('b')] } } });
+    const mine = tab({ articles: { f: { blocks: [P('a', 'mine'), P('b')] } } });
+    const theirs = tab({ articles: { f: { blocks: [P('a'), P('b', 'theirs')] } } });
+    let tabs = [mine];
+    for (const op of tabBroadcastOps(base, theirs)) tabs = applyRoomOpToTabs(tabs, op);
+    expect(tabs[0]!.articles!.f!.blocks).toEqual([P('a', 'mine'), P('b', 'theirs')]);
+  });
+
+  it('drops writing for an article this tab no longer has, unless it is new', () => {
+    const tabs = [tab()];
+    const late: RoomOp = {
+      kind: 'article',
+      tabId: 't1',
+      flow: 'f',
+      ops: [{ kind: 'put', block: P('a') }],
+    };
+    expect(applyRoomOpToTabs(tabs, late)[0]!.articles).toBeUndefined();
+    const created: RoomOp = { ...late, created: true };
+    expect(applyRoomOpToTabs(tabs, created)[0]!.articles!.f!.blocks).toEqual([P('a')]);
+  });
+
+  it('ignores a malformed article frame', () => {
+    const tabs = [tab({ articles: { f: { blocks: [P('a')] } } })];
+    const bad = { kind: 'article', tabId: 't1', flow: 'f', ops: 'x' } as unknown as RoomOp;
+    expect(applyRoomOpToTabs(tabs, bad)).toBe(tabs);
+  });
+
+  it('removes an article, and drops the field with the last one', () => {
+    const tabs = [tab({ articles: { f: { blocks: [P('a')] } } })];
+    const op: RoomOp = { kind: 'article', tabId: 't1', flow: 'f', removed: true };
+    expect(applyRoomOpToTabs(tabs, op)[0]!.articles).toBeUndefined();
+  });
+});

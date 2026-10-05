@@ -41,6 +41,11 @@ const { db, canReadDocument, canEditDocument, resolveDocumentGrant } = vi.hoiste
     getTeam: vi.fn(async () => ({ id: 'team-1', name: 'Design' })),
     getTab: vi.fn(),
     upsertTab: vi.fn(),
+    // The tab PUT writes at the revision it read and merges unseen changesets
+    // (docs/specs/024-agents/agent-changesets.md); none are recorded here.
+    upsertTabAtRev: vi.fn(),
+    isTabRevStale: vi.fn(),
+    changesetMergePages: vi.fn(),
     getParticipant: vi.fn(),
     // Share-link create / extend surface (docs/specs/013-workspace/share-link-expiry.md).
     createShareLink: vi.fn(),
@@ -527,7 +532,8 @@ describe('handleDocuments tab-content data-loss backstop (PUT /documents/:id/tab
     db.getDocument.mockResolvedValue(fakeDocument('owner-1'));
     canEditDocument.mockResolvedValue(true);
     db.getParticipant.mockResolvedValue(null); // skip comment-author rewrite
-    db.upsertTab.mockResolvedValue(undefined);
+    db.upsertTabAtRev.mockResolvedValue(1);
+    db.changesetMergePages.mockImplementation(async function* () {});
   });
 
   it('413s an oversized tab that arrives without a Content-Length header', async () => {
@@ -549,7 +555,7 @@ describe('handleDocuments tab-content data-loss backstop (PUT /documents/:id/tab
     const res = await handleDocuments(makeCtx('PUT', '/api/documents/d1/tabs/t1', { body: huge }));
     expect(res.status).toBe(413);
     expect(await res.json()).toEqual({ error: 'payload_too_large' });
-    expect(db.upsertTab).not.toHaveBeenCalled();
+    expect(db.upsertTabAtRev).not.toHaveBeenCalled();
   });
 
   it('413s using the declared Content-Length without re-stringifying', async () => {
@@ -564,7 +570,7 @@ describe('handleDocuments tab-content data-loss backstop (PUT /documents/:id/tab
       }),
     );
     expect(res.status).toBe(413);
-    expect(db.upsertTab).not.toHaveBeenCalled();
+    expect(db.upsertTabAtRev).not.toHaveBeenCalled();
   });
 
   it('writes an ordinary tab that declares no Content-Length', async () => {
@@ -575,7 +581,7 @@ describe('handleDocuments tab-content data-loss backstop (PUT /documents/:id/tab
       makeCtx('PUT', '/api/documents/d1/tabs/t1', { body: tabBody([{ id: 'e1' }]) }),
     );
     expect(res.status).toBe(200);
-    expect(db.upsertTab).toHaveBeenCalled();
+    expect(db.upsertTabAtRev).toHaveBeenCalled();
   });
 
   it('409s and does NOT write when an empty body would blank a tab that has content', async () => {
@@ -586,7 +592,7 @@ describe('handleDocuments tab-content data-loss backstop (PUT /documents/:id/tab
       makeCtx('PUT', '/api/documents/d1/tabs/t1', { body: tabBody([]) }),
     );
     expect(res.status).toBe(409);
-    expect(db.upsertTab).not.toHaveBeenCalled();
+    expect(db.upsertTabAtRev).not.toHaveBeenCalled();
   });
 
   it('allows the empty write when the client marks it intentional (X-Allow-Empty: 1)', async () => {
@@ -599,7 +605,7 @@ describe('handleDocuments tab-content data-loss backstop (PUT /documents/:id/tab
       }),
     );
     expect(res.status).toBe(200);
-    expect(db.upsertTab).toHaveBeenCalled();
+    expect(db.upsertTabAtRev).toHaveBeenCalled();
   });
 
   it('allows an empty write over an already-empty (or new) row — nothing to lose', async () => {
@@ -608,7 +614,7 @@ describe('handleDocuments tab-content data-loss backstop (PUT /documents/:id/tab
       makeCtx('PUT', '/api/documents/d1/tabs/t1', { body: tabBody([]) }),
     );
     expect(res.status).toBe(200);
-    expect(db.upsertTab).toHaveBeenCalled();
+    expect(db.upsertTabAtRev).toHaveBeenCalled();
   });
 
   it('allows a non-empty write over a tab with content (the normal save path)', async () => {
@@ -617,7 +623,7 @@ describe('handleDocuments tab-content data-loss backstop (PUT /documents/:id/tab
       makeCtx('PUT', '/api/documents/d1/tabs/t1', { body: tabBody([{ id: 'e2' }]) }),
     );
     expect(res.status).toBe(200);
-    expect(db.upsertTab).toHaveBeenCalled();
+    expect(db.upsertTabAtRev).toHaveBeenCalled();
   });
 });
 

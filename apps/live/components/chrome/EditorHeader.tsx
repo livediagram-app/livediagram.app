@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from 'react';
+import { safeInlinePadding, safeInset } from '@/lib/safe-area';
 import { NameEditor } from '@/components/primitives/NameEditor';
 import { Brand, ProductNav, HoverCard, SOLID_BRAND_DARK_CONTROL, Glyph } from '@livediagram/ui';
 import { AuthControls } from '@/components/chrome/AuthControls';
@@ -96,7 +97,15 @@ export function EditorHeader({
     // overflows the header bounds downward) was getting hidden
     // behind the canvas — siblings without explicit z-index stack in
     // document order and the canvas wins.
-    <header className="relative z-[var(--z-modal)] flex h-14 shrink-0 items-center justify-between gap-2 border-y border-slate-200 bg-white px-4 sm:gap-4 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100">
+    <header
+      // Below the status bar / notch and past a landscape notch's sides (lib/safe-area).
+      style={{
+        height: `calc(3.5rem + ${safeInset('top')})`,
+        paddingTop: safeInset('top'),
+        ...safeInlinePadding('1rem'),
+      }}
+      className="relative z-[var(--z-modal)] flex shrink-0 items-center justify-between gap-2 border-y border-slate-200 bg-white sm:gap-4 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
+    >
       <div className="flex w-auto items-center gap-2.5">
         <Brand href="/" size="md" accentColor={brandAccent} wordmarkClassName="hidden sm:inline" />
         <ProductNav current="editor" />

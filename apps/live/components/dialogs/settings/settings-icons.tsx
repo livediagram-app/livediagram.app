@@ -9,13 +9,13 @@
 // sized for a 28px tile and stroked to read at that size.
 
 import type { ReactNode } from 'react';
-import { Glyph, lucideGlyph } from '@livediagram/ui';
+import { Glyph, lucideGlyph, EDITOR_MODE_ICONS } from '@livediagram/ui';
 import { lucideLayers, lucideMap, lucidePalette } from '@livediagram/icons/lucide';
 import { CollaborateGlyph } from '@/components/panels/collaborate/CollaborateGlyph';
-import { EDITOR_MODE_ICON } from '@/components/chrome/editor-mode/editor-mode-copy';
 
 // The categories that carry a tile: every top-level one. A sub-category
-// (one per panel under Panels, one per mode under Editor) draws none of its own.
+// (one per panel under Panels, one per mode under Editor, Notifications and
+// API Tokens under Account) draws none of its own.
 export type SettingsIconId =
   | 'account'
   | 'documents'
@@ -23,14 +23,14 @@ export type SettingsIconId =
   | 'appearance'
   | 'keyboard'
   | 'panels'
-  | 'notifications'
   | 'accessibility'
   | 'ai'
-  | 'tokens'
+  | 'experimental'
   | 'privacy';
 
-// The sub-categories, nested under a top-level category (Editor, Panels).
-export type SettingsSubcategoryId = 'draw' | 'layers' | 'map' | 'collaborate' | 'quickStyle';
+// The sub-categories, nested under a top-level category (Editor, Panels, Account).
+export type SettingsSubcategoryId =
+  'draw' | 'layers' | 'map' | 'collaborate' | 'quickStyle' | 'notifications' | 'tokens';
 
 // Every category, top-level and sub-category alike: each opens its own pane.
 export type SettingsCategoryId = SettingsIconId | SettingsSubcategoryId;
@@ -46,10 +46,9 @@ const TILE: Record<SettingsIconId, string> = {
   appearance: 'bg-sky-600',
   keyboard: 'bg-orange-500',
   panels: 'bg-amber-500',
-  notifications: 'bg-rose-500',
   accessibility: 'bg-indigo-500',
   ai: 'bg-violet-500',
-  tokens: 'bg-slate-500',
+  experimental: 'bg-fuchsia-600',
   privacy: 'bg-emerald-600',
 };
 
@@ -95,6 +94,14 @@ const KeyboardGlyph = (
 const DocumentsGlyph = (
   <Svg>
     <path d="M3 6.5a1.5 1.5 0 0 1 1.5-1.5h3.2l1.6 1.8h6.2A1.5 1.5 0 0 1 17 8.3v6.2a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 3 14.5Z" />
+  </Svg>
+);
+
+// Experimental: a flask, for ideas still being tried out.
+const ExperimentalGlyph = (
+  <Svg>
+    <path d="M8 2.5h4M8.5 2.5v5L3.8 15a1.5 1.5 0 0 0 1.3 2.3h9.8a1.5 1.5 0 0 0 1.3-2.3L11.5 7.5v-5" />
+    <path d="M6 12.5h8" />
   </Svg>
 );
 
@@ -151,7 +158,7 @@ const AiGlyph = (
 );
 
 // API Tokens: a key, the mark the tokens have always carried.
-const TokensGlyph = (
+export const TokensGlyph = (
   <Svg>
     <circle cx="7" cy="7" r="3.8" />
     <path d="M9.7 9.7 17 17M14.5 14.5l2-2M12.5 16.5l2-2" />
@@ -173,10 +180,9 @@ export const CATEGORY_GLYPHS: Record<SettingsIconId, ReactNode> = {
   appearance: AppearanceGlyph,
   keyboard: KeyboardGlyph,
   panels: PanelsGlyph,
-  notifications: NotificationsGlyph,
   accessibility: AccessibilityGlyph,
   ai: AiGlyph,
-  tokens: TokensGlyph,
+  experimental: ExperimentalGlyph,
   privacy: PrivacyGlyph,
 };
 
@@ -186,19 +192,22 @@ export const CATEGORY_GLYPHS: Record<SettingsIconId, ReactNode> = {
 // button's glyph), at 16px. The Map and Quick Style
 // have no toolbar button, so they take Lucide's map and palette from the
 // same family. Draw is the marker the editor mode switch shows for Draw
-// mode, so the row reads as that mode's settings. Plain and untinted, not a tile: the tile belongs to
+// mode, so the row reads as that mode's settings. Notifications and API
+// Tokens keep the bell and key they carried as top-level tiles. Plain and untinted, not a tile: the tile belongs to
 // the top-level category above, and a second column of tiles would read as
 // more top-level categories.
 const LayersSubGlyph = lucideGlyph(lucideLayers, 16);
 const MapSubGlyph = lucideGlyph(lucideMap, 16);
 const QuickStyleSubGlyph = lucideGlyph(lucidePalette, 16);
-const DrawSubGlyph = EDITOR_MODE_ICON.draw;
+const DrawSubGlyph = EDITOR_MODE_ICONS.draw;
 const SUBCATEGORY_GLYPHS: Record<SettingsSubcategoryId, () => ReactNode> = {
   draw: () => <DrawSubGlyph size={16} />,
   layers: () => <LayersSubGlyph />,
   map: () => <MapSubGlyph />,
   collaborate: () => <CollaborateGlyph size={16} />,
   quickStyle: () => <QuickStyleSubGlyph />,
+  notifications: () => NotificationsGlyph,
+  tokens: () => TokensGlyph,
 };
 
 export function SettingsSubcategoryIcon({ id }: { id: SettingsSubcategoryId }) {

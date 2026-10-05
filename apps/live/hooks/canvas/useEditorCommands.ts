@@ -9,6 +9,8 @@
 // get the view-safe subset only (zen / fit / export, docs/specs/007-editor/command-palette.md), with every
 // mutating command withheld inside the pure builder.
 
+import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
+import { EMPTY_SELECTION, type Selection } from '@/lib/selection-store';
 import { useCallback, useMemo } from 'react';
 import { isBoxed } from '@livediagram/document';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
@@ -61,21 +63,24 @@ const INERT_HANDLERS: CommandHandlers = {
   openPhotoImport: noop,
 };
 
-export function useEditorCommands(): {
+// `open`: the search is showing. Only then does the catalogue follow the selection, so a closed search
+// never renders for a selection change (docs/specs/008-canvas/blueprints/selection-store.md).
+export function useEditorCommands(open: boolean): {
   // Undefined (not []) when there are no commands, so the SearchPanel can omit
   // the prop the same way it omits palette items for read-only sessions.
   commandItems: CommandSearchItem[] | undefined;
   runCommand: (id: string) => void;
 } {
   const ctx = useEditorContext();
+  const { selectedId, multiSelectedIds } = useSelectionOf(
+    useCallback((s: Selection) => (open ? s : EMPTY_SELECTION), [open]),
+  );
   // Draw mode (docs/specs/007-editor/editor-modes.md) has no format painter.
   const whiteboard = ctx.editorMode.mode === 'draw';
   const {
     isReadOnly,
     isOwner,
     documentId,
-    selectedId,
-    multiSelectedIds,
     activeTab,
     deleteSelected,
     deleteMultiSelected,

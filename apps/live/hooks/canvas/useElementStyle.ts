@@ -17,6 +17,7 @@
 // burst through `checkpointBurst`.
 // Keeping that policy in one file makes it auditable.
 
+import type { Selection } from '@/lib/selection-store';
 import {
   bringElementsToFrontLayer,
   isBoxed,
@@ -49,7 +50,8 @@ type EditorElementStyleDeps = {
   // The single-selected element id (null in multi-select / none).
   // Shape-only setters (shape kind, border presets) target it
   // directly.
-  selectedId: string | null;
+  // Read when a setter runs (docs/specs/008-canvas/blueprints/selection-store.md).
+  readSelection: () => Selection;
   // The active tab — read for its theme (resetColors) and id.
   activeTab: Tab;
   activeId: string;
@@ -68,13 +70,15 @@ type EditorElementStyleDeps = {
   // single drag). Keyed by field name.
   tickTabs: (mapTabs: (ts: Tab[]) => Tab[]) => void;
   checkpointBurst: (key: string) => void;
+  // An in-page notification (the editor's toast), for actions that say what they did.
+  notify: (tone: 'success' | 'info', message: string) => void;
 };
 
 export function useElementStyle(deps: EditorElementStyleDeps) {
   const {
     currentSelectionIds,
     selectionPrimary,
-    selectedId,
+    readSelection,
     activeTab,
     activeId,
     editsBlocked,
@@ -82,6 +86,7 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     commitActiveTab,
     tickTabs,
     checkpointBurst,
+    notify,
   } = deps;
 
   const {
@@ -114,6 +119,7 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     setLegendItemsSelected,
     setMindFlowSelected,
     tidyMindMapSelected,
+    tidyMindMap,
     setPageHeading,
     setWebRows,
     appendWebRowTo,
@@ -140,7 +146,12 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     setChartLegendSelected,
     setChartLegendPositionSelected,
     setLineDataSelected,
-  } = useDataShapeSetters({ currentSelectionIds, commit });
+  } = useDataShapeSetters({
+    currentSelectionIds,
+    commit,
+    elements: () => activeTab.elements,
+    notify,
+  });
 
   const {
     setShapeKindSelected,
@@ -154,7 +165,7 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     setMarkerSizeSelected,
     applyShapeColorPresetSelected,
     resetShapeStyleSelected,
-  } = useShapeStyleSetters({ currentSelectionIds, commit, activeTab, selectedId });
+  } = useShapeStyleSetters({ currentSelectionIds, commit, activeTab, readSelection });
 
   const {
     setTextSizeSelected,
@@ -188,6 +199,7 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
   });
 
   const toggleLockSelected = () => {
+    const { selectedId } = readSelection();
     if (!selectedId) return;
     const source = selectionPrimary();
     if (!source) return;
@@ -198,6 +210,7 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
   };
 
   const toggleAspectLockSelected = () => {
+    const { selectedId } = readSelection();
     if (!selectedId) return;
     const source = selectionPrimary();
     if (!source || !isBoxed(source)) return;
@@ -392,6 +405,7 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     setLegendItemsSelected,
     setMindFlowSelected,
     tidyMindMapSelected,
+    tidyMindMap,
     setPageHeading,
     setWebRows,
     appendWebRowTo,

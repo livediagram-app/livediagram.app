@@ -1,6 +1,12 @@
 import { describe, it, expect } from 'vitest';
 import { createShape, type Element } from './index';
-import { applyElementOp, applyElementOps, diffToElementOps } from './element-ops';
+import {
+  applyElementOp,
+  applyElementOps,
+  diffToElementOps,
+  invertElementOps,
+  type ElementOp,
+} from './element-ops';
 
 const el = (id: string, over: Partial<Element> = {}): Element =>
   ({ id, type: 'shape', shape: 'square', x: 0, y: 0, width: 10, height: 10, ...over }) as Element;
@@ -119,5 +125,69 @@ describe('applyElementOp on a Q&A board', () => {
       element: board(6, ['a', 'z']),
     }) as ReturnType<typeof board>[];
     expect(out!.qaNotes[0]!.voters).toEqual(['a', 'z']);
+  });
+});
+
+describe('invertElementOps (docs/specs/024-agents/agent-changesets.md "Revert")', () => {
+  const at = (id: string, x = 0) => el(id, { x });
+  const ids = (els: Element[]) => els.map((e) => e.id);
+
+  const cases: [string, Element[], Element[]][] = [
+    ['removes from the front', [at('a'), at('b'), at('c')], [at('c')]],
+    ['removes in the middle and the end', [at('a'), at('b'), at('c'), at('d')], [at('a'), at('c')]],
+    ['adds and updates', [at('a'), at('b')], [at('n'), at('a', 5), at('b'), at('m')]],
+    [
+      'reorders beside an add and a remove',
+      [at('a'), at('b'), at('c')],
+      [at('c'), at('x'), at('a')],
+    ],
+    ['empties the tab', [at('a'), at('b')], []],
+  ];
+
+  for (const [name, before, after] of cases) {
+    it(`undoes exactly: ${name}`, () => {
+      const ops = diffToElementOps(before, after);
+      const inverse = invertElementOps(before, ops);
+      const there = applyElementOps(before, ops);
+      expect(ids(there)).toEqual(ids(after));
+      const back = applyElementOps(there, inverse);
+      expect(back).toEqual(before);
+    });
+  }
+});
+
+describe('applyElementOps, batched', () => {
+  const box = (id: string, x = 0): Element =>
+    ({ id, type: 'shape', shape: 'square', x, y: 0, width: 10, height: 10 }) as Element;
+  const sequential = (elements: Element[], ops: ElementOp[]) =>
+    ops.reduce(applyElementOp, elements);
+
+  it('equals applying each op in turn, through updates, adds, removes and reorders', () => {
+    const elements = [box('a'), box('b'), box('c')];
+    const ops: ElementOp[] = [
+      { kind: 'update', element: box('a', 1) },
+      { kind: 'update', element: box('gone', 1) },
+      { kind: 'add', element: box('d'), at: 1 },
+      { kind: 'update', element: box('d', 2) },
+      { kind: 'update', element: box('a', 3) },
+      { kind: 'remove', id: 'b' },
+      { kind: 'update', element: box('c', 4) },
+      { kind: 'reorder', ids: ['c', 'a', 'd'] },
+      { kind: 'update', element: box('c', 5) },
+    ];
+    expect(applyElementOps(elements, ops)).toEqual(sequential(elements, ops));
+    expect(elements.map((el) => Reflect.get(el, 'x'))).toEqual([0, 0, 0]);
+  });
+
+  it('writes every place of an id held twice, as the single op does', () => {
+    const elements = [box('a'), box('a'), box('b')];
+    const ops: ElementOp[] = [{ kind: 'update', element: box('a', 7) }];
+    expect(applyElementOps(elements, ops)).toEqual(sequential(elements, ops));
+  });
+
+  it('returns the input itself when nothing applies', () => {
+    const elements = [box('a')];
+    expect(applyElementOps(elements, [{ kind: 'update', element: box('gone') }])).toBe(elements);
+    expect(applyElementOps(elements, [])).toBe(elements);
   });
 });

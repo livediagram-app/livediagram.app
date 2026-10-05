@@ -7,7 +7,8 @@ on:
 
 # Least privilege: this workflow only checks out and verifies. It never writes
 # to the repo, so the default token stays read-only rather than inheriting
-# whatever the repository-wide default happens to be.
+# whatever the repository-wide default happens to be. The jobs that upload
+# coverage add id-token: write, the OIDC token Codecov accepts in place of a secret.
 permissions:
   contents: read
 
@@ -15,7 +16,7 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
-# Three parallel jobs, so a PR waits for the slowest one rather than the sum.
+# Parallel jobs, so a PR waits for the slowest one rather than the sum.
 # None needs another: only the apps build, and nothing depends on an app.
 jobs:
   checks:
@@ -53,6 +54,9 @@ jobs:
     name: Tests
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - name: Check out
         uses: actions/checkout@v7
@@ -88,8 +92,68 @@ jobs:
       # thresholds are a local-only opinion, and the coverage tooling itself
       # goes unexercised in CI — which is how a v4 coverage provider once sat
       # against a v5 runner with every check green.
+      # The editor's suite is the one exception: it runs in the Editor unit tests jobs below.
       - name: Coverage thresholds
-        run: pnpm turbo run test:coverage --concurrency=2
+        run: pnpm turbo run test:coverage --concurrency=2 --filter=!@livediagram/live
+
+      # Every workspace's lcov above, reported on Codecov; see the upload in Editor unit tests.
+      - name: Upload coverage
+        uses: codecov/codecov-action@v7
+        with:
+          use_oidc: true
+          files: apps/*/coverage/lcov.info,packages/*/coverage/lcov.info
+          disable_search: true
+          fail_ci_if_error: false
+
+  # The editor's suite (apps/live, about 800 files) is most of the repo's tests: on one 4-vCPU runner it
+  # took 7 minutes. Split three ways, each job runs a third of its files under coverage, finishing
+  # inside the Checks job's time (docs/specs/003-system-architecture/testing.md "Sizing the shards").
+  # Codecov merges the thirds into one report; the editor holds no thresholds, so nothing needs the merge
+  # to pass.
+  editor-tests:
+    name: Editor unit tests ${{ matrix.shard }}/${{ strategy.job-total }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      id-token: write
+    strategy:
+      # Every shard reports, so one failing shard never hides another's failures.
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3]
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: 9.15.0
+
+      - name: Set up Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Test
+        run: >-
+          pnpm --filter @livediagram/live exec vitest run --coverage
+          --shard=${{ matrix.shard }}/${{ strategy.job-total }}
+
+      # OIDC, so no Codecov secret; a pull request from a fork uploads tokenless instead. A Codecov
+      # outage must not hold back a merge: the upload logs its error and the job still passes.
+      - name: Upload coverage
+        uses: codecov/codecov-action@v7
+        with:
+          use_oidc: true
+          files: apps/live/coverage/lcov.info
+          disable_search: true
+          fail_ci_if_error: false
 
   build:
     name: Build

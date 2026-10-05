@@ -295,7 +295,7 @@ The template and theme grids shuffle their order **once per open** of
 the picker, so returning users keep meeting options they have not
 explored instead of always seeing the same curated first rows.
 
-- **Pinned defaults stay first.** Blank Canvas (templates) and the
+- **Pinned defaults stay first.** Blank Diagram (templates) and the
   `brand` scheme, labelled "Default" (theme), are always pinned to index
   0 — they are the sensible starting points, so they never get
   shuffled away. Everything else is randomised.
@@ -328,6 +328,11 @@ The welcome screen is a **two-step wizard** rather than one long page:
   Footer: **Skip** and **Next**. Clicking a template card advances to step 2.
 - **Step 2: Location.** Where the document lives (the Settings step in code:
   name, save location, placement). Footer: **Create**.
+- **One step when the reader asked for it.** A reader who ticked "Always save new
+  documents in <place> and skip this step" gets no Location step: no step rail,
+  **Create** on the template step, a template card creates at once, and a
+  "Saving in <place>" line with **Change** for a one-off pick
+  ([Default folders](../013-workspace/default-folders.md#skipping-the-location-step)).
 - **There is no theme step.** A new document starts on the **Default** theme,
   and the Theme and canvas controls change it later; asking for a theme before
   anything is on the canvas was a decision most people could not yet make. (It
@@ -399,8 +404,11 @@ shown while the active tab has no elements — not the old centre-of-canvas card
 which read as a half-finished modal. It is **not dismissible** (it simply goes
 away once the canvas has content). It shares the bottom-banner slot with the
 sign-in / theme banners (yielding to the sign-in one) and hides while a draw
-tool is armed or Quick Start is open. Editors get a **Quick Start** button on
-it; viewers get a passive "nothing here yet" line.
+tool is armed or Quick Start is open, and in Illustrate mode (an empty page
+invites a layout in its own title bar, [Infographic pages](illustrate-pages.md)). Editors get a **Quick Start** button on
+it; viewers get a passive "nothing here yet" line. **On a phone** (below `sm`) it is a slim
+one-line chip, "Tab 1 is empty" and Quick Start, with no blurb or Help button, riding above the
+bottom-right cluster rather than over it.
 
 A soft, decorative **animated backdrop** (`AnimatedLinesBackdrop`) sits behind
 the card: thick multi-colour curved lines that slowly flow along their paths via
@@ -428,8 +436,9 @@ default document name) without walking the wizard:
   (`/new?blank=1&folder=<id>`, `/new?blank=1&team=<id>`), so a caller can
   Start Blank straight into a folder or team library. A failed create shows
   the same retryable error card as the wizard path. This is the URL that
-  outside surfaces link to (the site header's "Start Blank" button on
-  marketing and the telemetry dashboard, see [Marketing site](../019-marketing/marketing-site.md)).
+  outside surfaces link to (the Blank Diagram row of the site header's "Start Blank" menu on
+  marketing and the telemetry dashboard, see [Marketing site](../019-marketing/marketing-site.md#the-start-blank-menu);
+  its other rows are `?template=whiteboard` and `?template=blank-illustration`).
   - The handoff replaces the `/new?blank=1` history entry with
     `/document/<id>`, so Back from the editor returns to the page before
     `/new` (usually the marketing site), never to a page that would mint
@@ -440,8 +449,7 @@ default document name) without walking the wizard:
     navigates forward again.
   - The interactive tour's welcome offer ([Interactive editor tour ("Show me around")](editor-tour.md)) is not queued on
     this path: the create fires before the document count resolves, and a
-    Start Blank user has asked to get straight to the canvas. The hero's
-    `?welcome=1` variant (below) is the one exception.
+    Start Blank user has asked to get straight to the canvas.
   - **The wizard must never paint on this path, not even for a frame.**
     `/new` is a static export, so its prerendered HTML is the wizard and
     the query param is only knowable in the browser. A React-side check
@@ -466,67 +474,22 @@ default document name) without walking the wizard:
   page, its restore cleanup and the guard agree on what counts. This is
   the URL the marketing site's template gallery links every card to
   ([Marketing site](../019-marketing/marketing-site.md)); it fires `UI / Used / TemplateLink`.
-- **`/new?browse=<collection>`**: opens the wizard on a template
-  **collection** instead of the category overview: the template step opens
-  **drilled in** on the collection: every one of its cards at once in a grid
-  under a `← All templates` back bar, and nothing else (no shelf, no other
-  category tiles). The back bar returns to the shelf with Popular open; the
-  collection has no tile of its own. Collections are cross-category shortlists
-  (`TEMPLATE_COLLECTIONS` in `packages/templates`); today there is one,
-  **Brainstorm** (`brainstorm`): Mind map, Tree mind map, Bubble map,
-  Affinity map, Fishbone and Event storming, in that order. It is not a
-  bypass: nothing is committed until the author picks. Placement params
-  compose with it. An unknown collection is ignored and the overview shows.
-  The static page's HTML is the overview, so the same pre-paint guard as the
-  bypass hides the wizard card (`visibility`, so nothing moves) until React
-  has rendered the collection. Read by `wizardBrowseCollection` in
-  `apps/live/lib/new-document-params.ts`. The marketing hero's Brainstorm
-  button links here.
-- **`/new?blank=1&welcome=1`**: The marketing hero's **launch
-  window** ([Marketing site](../019-marketing/marketing-site.md)), which grows
-  into a full-screen blank canvas before navigating here. It commits the blank
-  document exactly as `?blank=1` does, with two differences:
-  - **A quiet landing.** Nothing but that blank canvas shows from the page's
-    first frame until the editor has loaded over it: the Default scheme's
-    paper and dots, in place of the opening screen below. A pre-paint guard in
-    the root layout's `<head>` (`lib/quiet-landing-boot.ts`, in the head
-    because the body can paint before a script inside it has run) flags
-    `<html>`, hides the body and paints the canvas on `<html>` itself; `/new`
-    then renders the same canvas (`BlankCanvasScreen`) and lifts the flag.
-    Across the handoff a `sessionStorage` flag (`lib/quiet-landing.ts`,
-    written just before it, as the tour flag is) makes the editor's own waits
-    (the editor chunk loading, then the document) hold that canvas too
-    (`OpeningScreen`); the editor clears the flag once the document has
-    loaded, so a later load in the tab shows the usual opening screen.
-  - **One loader on that canvas.** The canvas carries a single loader
-    (`CanvasLoader` in `@livediagram/ui`: the opening screen's drawing loop,
-    "Creating your document" and its progress sweep), centred in the
-    viewport, from `/new`'s first frame until the editor appears. `/new`
-    prerenders it (hidden unless the pre-paint flag is set, and a
-    `visibility: visible` child still paints inside the hidden body), then
-    `BlankCanvasScreen` and the editor's `OpeningScreen` draw it in the same
-    place. The drawing loop (`DiagramBuildAnimation`) keeps its phase across
-    those remounts, reading the phase of the prerendered copy's running
-    animation on first mount, so it never jumps back to the start. The
-    marketing page's grown canvas draws no loader of its own: it only shows
-    for the moment of the navigation, and a copy there flashed and then
-    restarted on this page, reading as a second loader.
-  - **No wasted requests.** The bypass never shows the Settings step, so
-    `/new` does not fetch its placement options (folders, teams) on a bypass
-    (read from the URL when the fetch would start). The participant `/new`
-    loads and saves is remembered for the in-place handoff
-    (`lib/api/self.ts`, 30 seconds), so the editor's identity bootstrap does
-    not ask for it again, and the editor's favourites wait for the real
-    owner id rather than fetching for the `self` placeholder first. Opening
-    a document from the hero makes each request once.
-  - **The welcome offer.** The tour's welcome offer
-    ([Interactive editor tour ("Show me around")](editor-tour.md)) is queued,
-    though the create fires before the document count is known: whoever
-    clicks the hero's canvas is most likely new, and the synced `tourSeen`
-    gate keeps the offer from anyone who has already answered it.
-    Quick Start does not open; the visitor asked for a canvas. `welcome` alone
-    (no `blank`) does nothing, and the bfcache restore strips it with the bypass
-    params.
+- **`/new?mode=<mode>` and `/new?q=<words>`**: open the wizard on the template step **already
+  narrowed**: `mode` (`diagram`, `draw` or `illustrate`) sets the [mode filter](templates-by-mode.md)
+  in place of Everything, and selects that mode's blank so Create never starts something filtered
+  away (a mode that is switched off is ignored, as the filter ignores it: Everything, and the
+  plain blank); `q` fills the search box (trimmed, at most 60 characters), so the step opens on
+  its matches at once (only typing is debounced, so the guard never lifts on the unfiltered
+  step). They compose with each other and with the placement params, and are not a bypass:
+  nothing is committed until the author picks. An unknown mode, or an empty `q`, is ignored. The
+  author can change either at once, as if they had chosen it. The static page's HTML is the
+  unfiltered step, so a pre-paint guard (`data-wizard-preset`, like the bypass's) hides the wizard
+  card (`visibility`, so nothing moves) until React has rendered the preset. Read by
+  `wizardPresetMode` and `wizardPresetQuery` in `apps/live/lib/new-document-params.ts`. The
+  marketing hero's **Build yours** buttons link here ([Marketing site](../019-marketing/marketing-site.md)).
+- **`?welcome=1`** is no longer read. It marked the marketing hero's launch window, which grew
+  into a blank canvas the editor then held through its load; the launch window and that quiet
+  landing were removed together, so an old `/new?blank=1&welcome=1` link opens as `?blank=1` does.
 - **`/new?via=<Surface>.<Slot>`**: the landing funnel's source
   ([Landing funnel](../019-marketing/landing-funnel.md)), added by a public page's CTA and
   combinable with every param above. `useCtaAttribution` reads it once,
@@ -677,9 +640,11 @@ theme for a new tab.
 - `/new?template=not-a-kind` → the plain wizard.
 - `/new?template=whiteboard` → no wizard; a document created whose tab opens
   in Draw mode ([Editor modes](editor-modes.md)), the Ink pen in hand.
-- `/new?browse=brainstorm` → the wizard, its template step showing the
-  Brainstorm collection.
-- `/new?browse=not-a-collection` → the plain wizard.
+- `/new?mode=draw` → the wizard, its mode filter on Draw and Blank Whiteboard selected.
+- `/new?mode=illustrate&q=article` → the wizard on Illustrate, the search reading "article".
+- `/new?mode=sideways` → the plain wizard, on Everything.
+- `/new?browse=brainstorm` → the plain wizard: the Brainstorm collection (and `?browse=`) was
+  removed with the landing hero's Brainstorm button, its only link; the Brainstorm category remains.
 
 ## Out of scope for V1
 

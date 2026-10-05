@@ -21,6 +21,7 @@ import {
   pascalToken,
   placementDefaultTelemetryType,
 } from '@livediagram/api-schema';
+import { countedVerbs } from '@livediagram/agent-verbs';
 import { CANVAS_CONTROLS } from './event-vocab';
 
 export type ComputedValues = {
@@ -56,6 +57,9 @@ const DRIVE_OPEN_WITH_TYPES = tokensAfter(
 const EMAIL_KINDS = tokensAfter(read('api/src/email/templates.ts'), 'export type EmailKind', ';');
 
 // Each tool the MCP server registers, as pascalToken(name).
+// The verbs the CLI counts (packages/agent-verbs), as their `Cli·Used` types.
+const CLI_VERBS = countedVerbs().map((v) => pascalToken(v.id));
+
 const MCP_TOOLS = [
   ...read('mcp/src/tools.ts').matchAll(/registerTool\(\s*server,\s*env,\s*'([a-z_]+)'/g),
 ].map((m) => pascalToken(m[1]!));
@@ -156,6 +160,13 @@ const API_ERRORS = [
 ];
 const API_ERROR_WHY = 'a status or kind plus the request that failed, and the worker error token';
 
+// Where a changeset came from, read off the front door's own type so the list cannot drift.
+const AGENT_FRONT_DOORS = tokensAfter(
+  read('api/src/changesets/front-door.ts'),
+  'export type FrontDoor =',
+  ';',
+);
+
 export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   // The api worker.
   'apps/api/src/email/client.ts Email·Sent': { values: EMAIL_KINDS },
@@ -163,9 +174,24 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     values: ['Http500.SendEmail', 'Http429.SendEmail'],
     open: 'Http<status>.SendEmail, any status Resend answers',
   },
+  // Agent changesets (docs/specs/024-agents/agent-changesets.md), typed by the front door
+  // (apps/api/src/changesets/front-door.ts).
+  ...Object.fromEntries(
+    ['Applied', 'Conflicted', 'Held', 'Reverted'].map((action) => [
+      `apps/api/src/changesets/after.ts Agent·${action}`,
+      { values: AGENT_FRONT_DOORS },
+    ]),
+  ),
   'apps/api/src/index.ts Error·Api': {
     values: ['Internal.Put.Documents.Tabs', 'Internal.Get.Documents'],
     open: 'Internal.<Method>.<Route>, the route the worker was serving',
+  },
+
+  // The CLI (apps/cli).
+  'apps/cli/src/telemetry.ts Cli·Used': { values: CLI_VERBS },
+  'apps/cli/src/telemetry.ts Error·Api': {
+    values: ['Http503.TabView', 'Internal.DocumentLs'],
+    open: 'a status or Internal, plus the command that failed',
   },
 
   // The MCP worker.

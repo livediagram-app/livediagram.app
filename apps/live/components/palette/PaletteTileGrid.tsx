@@ -9,14 +9,12 @@ import type {
 import type { EmbedProvider, EventStormingNoteKind } from '@livediagram/document';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { IconButton } from '@/components/palette/palette-controls';
-import type { PaletteTileDef, PaletteTileSection } from './palette-tile-defs';
-import { tilesInSection } from './palette-tile-defs';
+import type { PaletteTileDef } from './palette-tile-defs';
 import { tileDragStart } from './palette-tile-drag';
 
-// Renders palette tiles from the shared catalogue (palette-tile-defs,
-// docs/specs/010-palette/palette-favourites.md): maps each tile's action descriptor to the editor's add-handler
-// bundle and derives the pending-draw highlight, so the category tabs and
-// the Favourites grid share one tile implementation.
+// Renders palette tiles from the shared catalogue (palette-tile-defs): maps each tile's action
+// descriptor to the editor's add-handler bundle and derives the pending-draw highlight, so every
+// category body and the Toolbar strip share one tile implementation.
 
 // The editor add-handlers a tile can invoke, bundled once in CommandPalette
 // (with the mobile-close / draw-armed wrapping already applied) and threaded
@@ -48,8 +46,8 @@ export type PaletteTileActions = {
   addVideo: (provider?: EmbedProvider) => void;
   addSticker: (stickerId: string) => void;
   addComponent: (kind: ComponentKind) => void;
-  // Dynamic icon favourites (docs/specs/010-palette/palette-favourites.md): drop a single line-art / Technology
-  // catalogue icon, same handlers the Icons / Technology tabs use.
+  // Dynamic icon tiles (palette-dynamic-tiles, the Toolbar strip): drop a single line-art /
+  // Technology catalogue icon, same handlers the Icons / Technology tabs use.
   addIcon: (iconId: string) => void;
   addTechIcon: (iconId: string) => void;
   // Whether image uploads are available (the editor supplied onAddImage);
@@ -172,9 +170,7 @@ export function visibleTiles(defs: PaletteTileDef[], hasImage: boolean): Palette
   return defs.filter((d) => !d.needsImage || hasImage);
 }
 
-// One catalogue tile, rendered exactly as its home tab renders it.
-// (Favourites curation happens in the edit-favourites dialog, not by
-// overlaying badges here — see PaletteFavouritesDialog.) `compact` is the
+// One catalogue tile, rendered exactly as its home tab renders it. `compact` is the
 // Toolbar layout's strip (docs/specs/007-editor/toolbar-layout.md): icon only, name in the hover card, and the
 // shortcut letter always showing in the corner rather than only while the
 // modifier is held, the way a tool bar reads.
@@ -218,21 +214,18 @@ export function PaletteTile({
   );
 }
 
-// The standard 3-column tile grid every creation category uses. Pass a
-// section to render its catalogue slice, or explicit `tiles` (the
-// Favourites grid passes its saved list).
+// The standard 3-column tile grid every creation category uses, for the tiles its mode's palette
+// layout hands it (palette-layouts).
 export function PaletteTileGrid({
-  section,
   tiles,
   actions,
   pendingDraw,
 }: {
-  section?: PaletteTileSection;
-  tiles?: PaletteTileDef[];
+  tiles: PaletteTileDef[];
   actions: PaletteTileActions;
   pendingDraw: PendingDraw | null | undefined;
 }) {
-  const defs = visibleTiles(tiles ?? (section ? tilesInSection(section) : []), actions.hasImage);
+  const defs = visibleTiles(tiles, actions.hasImage);
   return (
     // 3-column grid of fixed tiles (matching the Icons catalogue) so tiles
     // pack into even rows; overflow-x-hidden absorbs the few-px slack when

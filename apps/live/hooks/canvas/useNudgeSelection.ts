@@ -24,6 +24,7 @@
 //   - Suppressed in view-role sessions; the consumer also gates on
 //     "is there a typing target focused" upstream.
 
+import type { Selection } from '@/lib/selection-store';
 import { useEffect, useRef, type RefObject } from 'react';
 import {
   isBoxed,
@@ -37,8 +38,8 @@ import { track } from '@/lib/telemetry';
 
 type NudgeDeps = {
   isReadOnly: boolean;
-  multiSelectedIds: Set<string>;
-  selectedId: string | null;
+  // Read on each press (docs/specs/008-canvas/blueprints/selection-store.md).
+  readSelection: () => Selection;
   activeTab: Tab;
   // An event-storming board: up / down move a workshop note a whole lane
   // (docs/specs/021-event-storming/event-storming.md "Always on a lane").
@@ -73,14 +74,15 @@ export function useNudgeSelection(deps: NudgeDeps): (dx: number, dy: number) => 
 
   return (pressDx, pressDy) => {
     if (deps.isReadOnly) return;
+    const { selectedId, multiSelectedIds } = deps.readSelection();
     const ids =
-      deps.multiSelectedIds.size > 0
-        ? deps.multiSelectedIds
-        : deps.selectedId !== null
-          ? new Set([deps.selectedId])
+      multiSelectedIds.size > 0
+        ? multiSelectedIds
+        : selectedId !== null
+          ? new Set([selectedId])
           : null;
     if (!ids || ids.size === 0) return;
-    const { dx, dy } = laneAwareStep(deps, ids, pressDx, pressDy);
+    const { dx, dy } = laneAwareStep({ ...deps, selectedId }, ids, pressDx, pressDy);
     // Open a coalescing burst on the first press: checkpoint so undo
     // returns to the pre-nudge state, then only tick until idle.
     if (!burstActiveRef.current) {
@@ -124,7 +126,7 @@ export function useNudgeSelection(deps: NudgeDeps): (dx: number, dy: number) => 
 // same delta, so the notes stay on their lanes. The anchor is the single
 // selection when it is a workshop note, else the first one in document order.
 function laneAwareStep(
-  deps: Pick<NudgeDeps, 'laneBoard' | 'activeTab' | 'selectedId'>,
+  deps: Pick<NudgeDeps, 'laneBoard' | 'activeTab'> & { selectedId: string | null },
   ids: ReadonlySet<string>,
   dx: number,
   dy: number,

@@ -1,4 +1,5 @@
 import { memo, useRef, useState } from 'react';
+import { useZoneClip, zoneClipPolygon } from '@/lib/article/zone-clip-store';
 import { PhotoDraftRing, PhotoMatchedBadge } from '@/components/canvas/photo-badges';
 import {
   BORDER_DASH_ARRAY,
@@ -40,8 +41,10 @@ import { ReactionBurst } from '@/components/canvas/ReactionBurst';
 import { ChairView } from '@/components/canvas/collab/ChairView';
 import { isCssNativeBorderStyle } from '@/components/canvas/border-css';
 import { describeVariant, editingLook } from '@/components/canvas/element-variant';
-import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { useElementSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { BadgeStrip, RemoteSelectorsStrip } from '@/components/canvas/element-badges';
+import { useMindOutlineBadge } from '@/components/canvas/MindOutlineContext';
+import { badgeCornerInset } from '@/lib/badge-anchor';
 import { AnnotationHoverNote } from '@/components/canvas/AnnotationMarker';
 import { useBoxedElementGestures } from '@/components/canvas/useBoxedElementGestures';
 import { useBoxedElementAnimation } from '@/components/canvas/useBoxedElementAnimation';
@@ -150,7 +153,7 @@ function BoxedElementViewImpl({
   // Which paper this element sits on, for every colour it doesn't carry
   // itself (docs/specs/007-editor/live-app.md): a Default tab stores no element colours at all, so on
   // a dark canvas this is where the greys come from.
-  const surface = useCanvasSurface();
+  const surface = useElementSurface(element.id);
   const isLocked = element.locked === true || tabLocked;
   // Concurrent-selection lock (docs/specs/007-editor/live-app.md): another participant has this
   // element selected (remoteSelectors already excludes our own
@@ -165,6 +168,10 @@ function BoxedElementViewImpl({
   // reset) restores resize.
   const rotation = element.rotation ?? 0;
   const isRotated = rotation % 360 !== 0;
+  // In an article's drawing zone: cut off at the zone's edge (a turned element is left whole).
+  const zoneClip = useZoneClip(element.id);
+  const clipPath =
+    zoneClip && !isRotated ? zoneClipPolygon(zoneClip, element.x, element.y) : undefined;
   // Layer-scoped vote (docs/specs/012-collaboration/vote-layer-scope.md). Only while casting is OPEN: after End
   // vote the canvas goes back to normal so the results walkthrough reads
   // against the full canvas. `votableInVote` already folds in the kind
@@ -188,6 +195,13 @@ function BoxedElementViewImpl({
   // floats its note above everything; clicking it (handled in the drag
   // engine's click-vs-drag test) opens the editable note popover.
   const isAnnotation = element.type === 'annotation';
+  // An article's margin note (docs/specs/007-editor/article-pages.md "Comments and actions"): a
+  // click opens what it carries, its comment thread or its action.
+  const articleNote = element.type === 'annotation' ? element.articleNote : undefined;
+  const noteDown = useRef<{ x: number; y: number } | null>(null);
+  const openArticleNote = articleNote
+    ? () => (articleNote === 'action' ? onOpenAction(element.id) : onOpenComments(element.id))
+    : undefined;
   const [hovering, setHovering] = useState(false);
 
   // Right-click selects the element + asks the page to open a
@@ -274,6 +288,17 @@ function BoxedElementViewImpl({
   // marker is one too many.
   const isCommentPin = element.type === 'shape' && element.shape === 'comment-pin';
   const commentCount = isCommentPin ? 0 : activeCommentCount(element.commentThread);
+  // A mind map root's Edit Outline and Tidy Map badges (MindOutlineContext).
+  const mapBadges = useMindOutlineBadge(element.id);
+  // The element's drawn corner, which its border overlay and its badge chip both follow.
+  const shapeKind = element.type === 'shape' ? element.shape : undefined;
+  const cornerPx = cornerRadiusPx(
+    element.type === 'shape' ? element.borderRadius : undefined,
+    element.width,
+    element.height,
+    // A mind node's default corner (docs/specs/009-elements/mind-node.md "Round nodes").
+    shapeKind === 'mind-node' ? MIND_NODE_RADIUS_PX : DEFAULT_BOX_RADIUS_PX,
+  );
   // Assigned action (docs/specs/012-collaboration/assigned-actions.md): the badge shows only while the action is
   // open; a done action stays on the element but stops shouting. An action
   // panel (docs/specs/012-collaboration/action-panel.md) shows its action on its face, so it is the badge.
@@ -390,6 +415,23 @@ function BoxedElementViewImpl({
       onDoubleClick={handleDoubleClick}
       onContextMenu={handleContextMenu}
       onPointerUp={handlePointerUp}
+      onClick={
+        openArticleNote
+          ? (e) => {
+              // A drag of the marker ends in a click too: only a press that stayed put opens it.
+              const down = noteDown.current;
+              if (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) > 4) return;
+              openArticleNote();
+            }
+          : undefined
+      }
+      onPointerDownCapture={
+        openArticleNote
+          ? (e) => {
+              noteDown.current = { x: e.clientX, y: e.clientY };
+            }
+          : undefined
+      }
       onPointerEnter={isAnnotation ? () => setHovering(true) : undefined}
       onPointerLeave={isAnnotation ? () => setHovering(false) : undefined}
       onDragOver={acceptsIconDrop ? handleIconDragOver : undefined}
@@ -443,6 +485,7 @@ function BoxedElementViewImpl({
         // is typing isn't hidden behind elements painted above it. (The
         // selection handles live in the grips layer, SelectionChromeLayer.)
         ...(editLook.raise ? { zIndex: 10 } : {}),
+        ...(clipPath ? { clipPath } : {}),
         // Only the drawn line picks a pen stroke not yet selected (its hit
         // line, in FreehandSvg); the rest of its box lets pointers through.
         ...(lineHit || shapeHit ? { pointerEvents: 'none' as const } : {}),
@@ -479,13 +522,7 @@ function BoxedElementViewImpl({
           stroke={own.stroke ?? defaultStrokeColor(element, surface)}
           strokeWidth={BORDER_STROKE_PX[element.strokeWidth ?? DEFAULT_BORDER_STROKE]}
           dasharray={BORDER_DASH_ARRAY[element.strokeStyle ?? DEFAULT_BORDER_STYLE] ?? ''}
-          radiusPx={cornerRadiusPx(
-            element.borderRadius,
-            element.width,
-            element.height,
-            // A mind node's default corner (docs/specs/009-elements/mind-node.md "Round nodes").
-            element.shape === 'mind-node' ? MIND_NODE_RADIUS_PX : DEFAULT_BOX_RADIUS_PX,
-          )}
+          radiusPx={cornerPx}
         />
       ) : null}
       {/* A Record's rows (docs/specs/009-elements/entity.md), under its title label. */}
@@ -621,10 +658,13 @@ function BoxedElementViewImpl({
 
       {/* The annotation marker IS the note affordance, so it suppresses
           the generic note badge (it would be redundant). */}
-      {linked ||
-      commentCount > 0 ||
-      hasOpenAction ||
-      (element.note && onOpenNote && !isAnnotation) ? (
+      {/* A margin note shows its count on its own face (ArticleNoteFace). */}
+      {!articleNote &&
+      (linked ||
+        mapBadges ||
+        commentCount > 0 ||
+        hasOpenAction ||
+        (element.note && onOpenNote && !isAnnotation)) ? (
         <BadgeStrip
           linked={linked}
           linkLabel={element.link ? describeLink(element.link, tabSummaries) : undefined}
@@ -642,6 +682,10 @@ function BoxedElementViewImpl({
           }}
           onOpenComments={() => onOpenComments(element.id)}
           onOpenNote={onOpenNote ? () => onOpenNote(element.id) : undefined}
+          onEditOutline={mapBadges?.editOutline}
+          onTidyMap={mapBadges?.tidy}
+          cornerPx={shapeKind === 'circle' || shapeKind === 'stadium' ? Infinity : cornerPx}
+          inset={badgeCornerInset(shapeKind, element.width, element.height, cornerPx)}
           onOpenAction={() => onOpenAction(element.id)}
         />
       ) : null}

@@ -38,8 +38,10 @@ function harness(opts: {
   const nudge = renderHook(() =>
     useNudgeSelection({
       isReadOnly: false,
-      multiSelectedIds: new Set(opts.multi ?? []),
-      selectedId: opts.selected ?? null,
+      readSelection: () => ({
+        selectedId: opts.selected ?? null,
+        multiSelectedIds: new Set(opts.multi ?? []),
+      }),
       get activeTab() {
         return { id: 't', name: 'T', elements } as Tab;
       },

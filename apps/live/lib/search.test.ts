@@ -1,6 +1,7 @@
 import type { Element, ShapeElement, Tab } from '@livediagram/document';
 import { describe, expect, it } from 'vitest';
-import { buildSearchResults, matches } from './search';
+import { matches } from '@livediagram/icons';
+import { buildSearchResults } from './search';
 
 const shape = (id: string, label?: string): ShapeElement => ({
   id,

@@ -31,7 +31,7 @@ function setup(over: Partial<PortalTravelDeps> = {}) {
       activeTabId: 't1',
       onFollowLink,
       mainRef: viewport as unknown as PortalTravelDeps['mainRef'],
-      viewportZoom: 1,
+      readZoom: () => 1,
       setViewportOffset,
       teleportTo,
       ...over,
@@ -129,5 +129,37 @@ describe('usePortalTravel', () => {
     travel.enterPortal(here);
     expect(setViewportOffset).not.toHaveBeenCalled();
     expect(teleportTo).toHaveBeenCalledTimes(1);
+  });
+});
+
+// docs/specs/008-canvas/canvas-performance.md: element views take the resolver as a prop, so it keeps
+// its identity while the board is unchanged, however often the canvas renders (a zoom, a pan).
+describe('usePortalTravel resolver identity', () => {
+  it('keeps the same resolver across renders with fresh handlers, and travels with the newest', () => {
+    const here = portal('a', { portalTarget: 'b' });
+    const there = portal('b');
+    const elements = [here, there];
+    const first = vi.fn();
+    const second = vi.fn();
+    const { result, rerender } = renderHook(
+      ({ teleportTo }) =>
+        usePortalTravel({
+          elements,
+          activeTabId: 't1',
+          onFollowLink: vi.fn(),
+          mainRef: viewport as unknown as PortalTravelDeps['mainRef'],
+          readZoom: () => 1,
+          setViewportOffset: vi.fn(),
+          teleportTo,
+        }),
+      { initialProps: { teleportTo: first } },
+    );
+    const resolver = result.current.resolvePortal;
+    rerender({ teleportTo: second });
+
+    expect(result.current.resolvePortal).toBe(resolver);
+    result.current.resolvePortal(here).travel!();
+    expect(second).toHaveBeenCalledTimes(1);
+    expect(first).not.toHaveBeenCalled();
   });
 });

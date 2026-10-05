@@ -58,7 +58,7 @@ describe('importBoardsAsDocuments', () => {
     });
     expect(apiCreateDocument).toHaveBeenCalledWith(
       'o',
-      expect.objectContaining({ name: 'Retro', folderId: 'f1' }),
+      expect.objectContaining({ name: 'Retro', folderId: 'f1', markUsed: true }),
     );
     expect(onDocumentsCreated).toHaveBeenCalledTimes(1);
     expect(outcome).toMatchObject({ status: 'done', documents: [{ name: 'Retro' }] });
@@ -90,7 +90,7 @@ describe('importBoardsAsDocuments', () => {
     expect(offlineCreateDocument).toHaveBeenCalledWith(
       expect.objectContaining({ name: 'Whiteboard, 14 Aug 2020' }),
       expect.any(Number),
-      { createdAt: Date.UTC(2020, 7, 14, 12), savedAt: undefined, folderId: 'f2' },
+      { createdAt: Date.UTC(2020, 7, 14, 12), savedAt: undefined, folderId: 'f2', markUsed: true },
     );
   });
 
@@ -219,6 +219,28 @@ describe('importDocuments', () => {
       documents: [{ name: 'Plan' }],
       scene: { landed: { text: 2 } },
     });
+  });
+
+  it('marks a single imported document used (docs/specs/013-workspace/explorer-home.md)', async () => {
+    const made: NewBoardDocument[] = [];
+    await importDocuments([source('Plan', [tab('Overview')])], {
+      ownerId: 'o',
+      offline: false,
+      createDocument: async (doc) => void made.push(doc),
+    });
+    expect(made.map((d) => d.markUsed)).toEqual([true]);
+  });
+
+  it('marks none of a bulk import used, counting what it sets out to make, not what lands', async () => {
+    const made: NewBoardDocument[] = [];
+    await importDocuments(
+      [
+        source('Plan', [tab('Overview')]),
+        source('Broken', [], { prepare: async () => ({ error: 'unreadable' }) }),
+      ],
+      { ownerId: 'o', offline: false, createDocument: async (doc) => void made.push(doc) },
+    );
+    expect(made.map((d) => [d.name, d.markUsed])).toEqual([['Plan', false]]);
   });
 
   it("sends the creation intent of each document's first tab (docs/specs/013-workspace/default-folders.md)", async () => {

@@ -1,8 +1,16 @@
 import { readFileSync } from 'node:fs';
+// Loaded with the file, not inside the test: the verb catalogue is a large import.
+import { countedVerbs } from '@livediagram/agent-verbs';
+import { pascalToken } from '@livediagram/api-schema';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { GROUPS as DASHBOARD } from './DashboardView';
-import { EMAIL_KIND_METRICS, NEW_VISITORS, RETURNING_VISITORS } from './metric-catalogue';
+import {
+  CLI_COMMAND_METRICS,
+  EMAIL_KIND_METRICS,
+  NEW_VISITORS,
+  RETURNING_VISITORS,
+} from './metric-catalogue';
 import { groupMetrics, headlineCaption, isStack, type MetricGroup } from './metric-series';
 
 describe('chart stacks', () => {
@@ -93,6 +101,13 @@ describe('the MCP Tool Calls stack', () => {
     );
     expect(names.length).toBeGreaterThan(5);
     expect(MCP_TOOL_METRICS.map((m) => m.type).sort()).toEqual(names.map(pascalToken).sort());
+  });
+});
+
+describe('the CLI Commands stack', () => {
+  it('has one chart per verb the CLI counts', () => {
+    const counted = countedVerbs().map((v) => pascalToken(v.id));
+    expect(CLI_COMMAND_METRICS.map((m) => m.type).sort()).toEqual(counted.sort());
   });
 });
 

@@ -45,13 +45,19 @@ A gesture's cost scales with what it changes and what is on screen, never with t
 - **A pan or zoom moves the canvas, not its elements.** The viewport is one transform on the
   element layer. No element view takes the pan offset as a prop or reads it from a context; zoom
   reaches only what is counter-scaled to stay a constant screen size (grips, handles, badges).
+- **A pan or zoom renders the canvas, not the editor.** The view (pan offset and zoom) is held in
+  one viewport store per editor, not as the editor's render state. A wheel tick, a pinch frame, a
+  pan or a glide renders what shows the view (the canvas and its counter-scaled parts, the zoom
+  controls, the Map's view box) and nothing else: the editor root, the panels and the chrome do not
+  render for it. Handlers read the view from the store when they run.
 - **A gesture frame never reads layout after writing it.** Chrome that follows a selection (the
   floating toolbar, the selection popover) is **hidden while a selection is being moved or
   resized** and placed again when the gesture ends; elsewhere it positions from canvas geometry
   (bounds, offset, zoom) and a measurement taken outside the gesture.
 - **The Map redraws its content when a gesture ends**, not on every frame of it. During a drag,
   pan or stroke it keeps its last drawing and moves only its viewport rectangle; a remote edit
-  redraws it at most once every 250 ms.
+  redraws it at most once every 250 ms. Opening a board draws the board first; the Map's picture
+  follows in a later render.
 - **The Map is one image.** It draws the board as a picture, not as a second copy of the board's
   elements in the page, which every style pass, layout, hit test and collection would otherwise
   walk.
@@ -66,9 +72,26 @@ A gesture's cost scales with what it changes and what is on screen, never with t
   document once, on release ([Drag preview](drag-preview.md)): the moved elements and the arrows
   that depend on them re-render each frame, and nothing derived from the rest of the board is
   recomputed.
+- **The canvas re-renders only for what it shows.** The editor around the canvas re-renders for
+  many reasons (a panel opening, a toast, a collaborator's presence, the selection); none of them
+  re-renders the canvas unless something the canvas shows changed. The canvas's event handlers keep
+  their identity across the editor's renders, and calling one runs the editor's newest version.
+- **A selection change re-renders what it touches.** Which elements are selected is held in one
+  selection store per editor, not passed down as props. Selecting, deselecting, a marquee's result,
+  select-all and a remote change of the local selection re-render, anywhere in the editor, only what
+  shows the selection: the element views whose selected state changed, the selection chrome
+  (toolbars, popover, resize box, handles and anchors), and the panels that describe the selection
+  (Quick Style, the slide deck, an open context menu). The editor root, the canvas, the element
+  layer and the Map do not re-render for it. Handlers read the selection from the store when they
+  run; effects that follow it (presence, scrolling a selection into view, the screen-reader
+  announcement, dropping hidden elements from it) subscribe to the store.
 - **Derived layouts are computed once per change.** Arrow labels, ink projection and theme
   colours are laid out per element change and cached per element identity, as arrow labels are
   today.
+- **A render that changes no element hands on the same board.** A pan, a zoom or a marquee frame
+  re-renders the editor without touching an element; every display projection of the board (stock
+  colours, hidden layers) then returns the same array it returned before, so nothing derived from
+  the board (the Map, the arrow frames, the endpoint spread) recomputes.
 
 ## Later
 
@@ -78,6 +101,10 @@ Taken up only when the rules above leave the budget unmet; each is a change to t
   help at fit zoom, where everything is on screen; it must keep a focused or selected element,
   remote selections, find-and-jump and the canvas live region working, and exports untouched
   (they use the headless renderer, not the DOM).
+  Measured and set aside: unmounting what leaves the screen makes a zoom or pan mount and unmount
+  element views as the view moves, and mounting is what makes long tasks. Culling to snapped canvas
+  cells raised a 100% zoom's longest task from about 60-90 ms to 170-195 ms (research notes). Taken
+  up again only with a way to show an element that costs no React mount (a raster stand-in).
 - **Level of detail at low zoom**: text and icons below a few screen pixels drawn as simpler
   marks.
 - **Containment** (`contain` on element wrappers) so a change inside one element does not
@@ -107,6 +134,9 @@ Taken up only when the rules above leave the budget unmet; each is a change to t
   run with a failing row opens one issue, **Canvas performance budget**, or comments on it if open,
   with the table and the commits since the previous run; the first all-pass run closes it. No
   one has to remember to run or read it.
+- **A branch can be measured on demand**: the same workflow, started by hand on any branch, runs
+  the same probe and writes the same job summary, and leaves the issue alone; only a run on `main`
+  reports to it.
 
 ## Observability
 

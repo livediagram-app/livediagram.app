@@ -288,6 +288,8 @@ export function ExplorerPane() {
             onSeen={timelineUnread.clear}
             allActivityHref={explorerPathFor({ kind: 'timeline' })}
             onSeeAll={() => go({ kind: 'timeline' })}
+            recentHref={explorerPathFor({ kind: 'recent' })}
+            onSeeMore={() => go({ kind: 'recent' })}
           />
         ) : null
       ) : selected.kind === 'timeline' ? (

@@ -26,12 +26,12 @@ import {
   lucideSpade,
   lucideSparkles,
   lucideSquarePlus,
-  lucideStar,
   lucideStarHalf,
   lucideTimer,
   lucideToggleRight,
   lucideUsers,
   lucideVote,
+  lucideZap,
 } from '@livediagram/icons/lucide';
 import { topCategorySlug } from '@livediagram/help-registry';
 import { Prims, Glyph as UiGlyph } from '@livediagram/ui';
@@ -189,6 +189,20 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M8 11l8-4M8 12h8M8 13l8 4" />
     </Glyph>
   ),
+  // The same map as an indented list: a bold root line, then bullets stepping
+  // in a level each. The stepped indent is what makes it an outline rather
+  // than the plain bullet list `checklists` or `markdown-import` would be.
+  'edit-outline': (
+    <Glyph>
+      <path d="M3 5h11" />
+      <circle cx="6" cy="10.5" r="1.2" fill="currentColor" stroke="none" />
+      <path d="M9 10.5h10" />
+      <circle cx="10" cy="15" r="1.2" fill="currentColor" stroke="none" />
+      <path d="M13 15h8" />
+      <circle cx="6" cy="19.5" r="1.2" fill="currentColor" stroke="none" />
+      <path d="M9 19.5h8" />
+    </Glyph>
+  ),
   // Two bubbles rather than two people: the Collaborate tiles are the things
   // a group leaves on the canvas, not the people leaving them (the
   // Collaboration category owns that glyph).
@@ -338,6 +352,40 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <rect x="3" y="3.5" width="18" height="12" rx="1.5" />
       <path d="M6.5 10c1-2.2 2.3-2.2 3 0s2 2.2 3 0 2-2.2 3 0" />
       <path d="M9 15.5 7.5 21M15 15.5l1.5 5.5" />
+    </Glyph>
+  ),
+  // A page with a title and a bar chart: the poster an infographic becomes.
+  illustrate: (
+    <Glyph>
+      <rect x="5" y="2.5" width="14" height="19" rx="1.5" />
+      <path d="M8 6.5h8" />
+      <path d="M9 17.5v-4M12 17.5v-6.5M15 17.5v-2.5" />
+    </Glyph>
+  ),
+  // A page split into ready-made blocks: a layout to start from.
+  'infographic-layouts': (
+    <Glyph>
+      <rect x="5" y="2.5" width="14" height="19" rx="1.5" />
+      <rect x="7.5" y="5" width="9" height="4" rx="0.5" />
+      <rect x="7.5" y="11" width="4" height="4" rx="0.5" />
+      <rect x="12.5" y="11" width="4" height="4" rx="0.5" />
+      <path d="M7.5 18h9" />
+    </Glyph>
+  ),
+  // A page of writing: a title over lines of text, a short last line where a paragraph ends.
+  articles: (
+    <Glyph>
+      <rect x="5" y="2.5" width="14" height="19" rx="1.5" />
+      <path d="M8 6.5h6" />
+      <path d="M8 10h8M8 13h8M8 16h5" />
+    </Glyph>
+  ),
+  // Two pages, the front one heading out: every page as its own sheet.
+  'exporting-pages': (
+    <Glyph>
+      <path d="M8 5.5V3.5a1 1 0 011-1h9.5a1 1 0 011 1v13a1 1 0 01-1 1H16" />
+      <rect x="4.5" y="6" width="11.5" height="15.5" rx="1" />
+      <path d="M10.25 10.5v6.5M7.75 14.5l2.5 2.5 2.5-2.5" />
     </Glyph>
   ),
   'using-tabs': (
@@ -592,9 +640,9 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
     </Glyph>
   ),
   // Palette → Data elements. Charts are the easiest subjects in the whole set —
-  // each has one unmistakable idiom — with one exception: Rating is stars, and
-  // `favourites` in the Palette settings is already a star. So Rating draws the
-  // SCALE (a row, part filled) rather than the symbol.
+  // each has one unmistakable idiom — with one exception: Rating is stars, and a
+  // star reads as a favourite. So Rating draws the SCALE (a row, part filled)
+  // rather than the symbol.
   // Just the bar, filled part-way. Drawing the ring above the bar — to cover both
   // halves of "Bars and Rings" — made a circle sitting on a stem, which reads as
   // a lightbulb and nothing else. One honest half beats two unreadable ones.
@@ -1146,12 +1194,11 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <Prims prims={lucideCpu} />
     </Glyph>
   ),
-  // Palette → Palette Settings.
-  // A filled star, because Favourites is the one tile that marks a choice
-  // rather than describing a feature.
-  favourites: (
+  // Palette → Popular: a bolt, for the tiles one tap away. Not the tab's own sparkles, which the
+  // AI Tools card already wears here.
+  popular: (
     <Glyph>
-      <Prims prims={lucideStar} />
+      <Prims prims={lucideZap} />
     </Glyph>
   ),
   // Two overlapping panels with the back one showing through.

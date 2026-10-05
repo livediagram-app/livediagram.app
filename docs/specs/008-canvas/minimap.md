@@ -38,7 +38,11 @@ lets you jump the viewport anywhere with a tap or drag.
   element and arrow labels are left out of the picture. On a board of any size
   they come out a pixel or two tall, too small to read, while laying them out
   was half of the picture's cost (on a 1,000-element board, about 210 ms of the
-  browser's work at a slowed CPU, against 100 ms without). The
+  browser's work at a slowed CPU, against 100 ms without). An **article page's writing**, which is
+  no element, is drawn as soft bars, one per line of text (headings thicker), read off the
+  writing as laid out ([Article pages](../007-editor/article-pages.md)); the picture redraws when
+  the articles change and once more when a writing is first laid out (and after web fonts land),
+  so a freshly opened article never shows a blank page. The
   area **outside the current view is dimmed**, leaving a lit window (outlined
   in the tab theme's accent, matching the on-canvas selection) that reads at
   a glance as where you are. The window is coloured exactly like the canvas

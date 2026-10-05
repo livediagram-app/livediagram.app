@@ -4,6 +4,7 @@
 // once per change of an auth field, with a delete-account action that always runs Clerk's newest
 // reverified delete.
 
+import { RECENT_DIAGRAMS_KEY } from '@livediagram/api-schema';
 import { render } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { describe, expect, it, vi } from 'vitest';
@@ -55,5 +56,30 @@ describe('ClerkBridge', () => {
     const onState = vi.fn<(s: DeferredAuthState) => void>();
     render(<ClerkBridge onState={onState} />);
     expect(onState.mock.lastCall![0].user?.pictureUrl).toBe('https://img.clerk.com/google-picture');
+  });
+
+  // docs/specs/019-marketing/returning-visitor.md, "Forgotten on sign-out": the landing page sign-out
+  // returns to must not show the account's recent diagrams.
+  it('forgets the recent diagrams before signing out', async () => {
+    localStorage.setItem(RECENT_DIAGRAMS_KEY, '{"v":1,"diagrams":[]}');
+    const seenAtSignOut: (string | null)[] = [];
+    clerk.signOut = async () => void seenAtSignOut.push(localStorage.getItem(RECENT_DIAGRAMS_KEY));
+    const onState = vi.fn<(s: DeferredAuthState) => void>();
+    render(<ClerkBridge onState={onState} />);
+
+    await onState.mock.lastCall![0].signOut({ redirectUrl: '/' });
+
+    expect(seenAtSignOut).toEqual([null]);
+  });
+
+  it('forgets the recent diagrams once the account is deleted', async () => {
+    localStorage.setItem(RECENT_DIAGRAMS_KEY, '{"v":1,"diagrams":[]}');
+    clerk.reverified = async () => {};
+    const onState = vi.fn<(s: DeferredAuthState) => void>();
+    render(<ClerkBridge onState={onState} />);
+
+    await onState.mock.lastCall![0].deleteAccount!();
+
+    expect(localStorage.getItem(RECENT_DIAGRAMS_KEY)).toBeNull();
   });
 });

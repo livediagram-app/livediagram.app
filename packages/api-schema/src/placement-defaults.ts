@@ -11,8 +11,8 @@
 import {
   DEFAULT_TAB_KIND,
   EDITOR_MODES,
-  isEditorMode,
   isEventStormingTab,
+  parseEditorMode,
   type EditorMode,
   type Layer,
   type TabKind,
@@ -79,6 +79,25 @@ export function isPlacementDefaultKey(value: unknown): value is PlacementDefault
   return isMember(PLACEMENT_DEFAULT_KEYS, value);
 }
 
+// Keys stored under a name since retired: Illustrate mode was Infographic mode.
+const LEGACY_PLACEMENT_DEFAULT_KEYS: Readonly<Record<string, PlacementDefaultKey>> = {
+  'mode:infographic': 'mode:illustrate',
+};
+
+/** A stored or requested key as today's key: a current key as it is, a retired one renamed,
+ *  anything else null. */
+export function parsePlacementDefaultKey(value: unknown): PlacementDefaultKey | null {
+  if (isPlacementDefaultKey(value)) return value;
+  return typeof value === 'string' ? (LEGACY_PLACEMENT_DEFAULT_KEYS[value] ?? null) : null;
+}
+
+/** The retired names a key may still be stored under, so clearing it clears them too. */
+export function legacyPlacementDefaultKeys(key: PlacementDefaultKey): string[] {
+  return Object.keys(LEGACY_PLACEMENT_DEFAULT_KEYS).filter(
+    (k) => LEGACY_PLACEMENT_DEFAULT_KEYS[k] === key,
+  );
+}
+
 export function isCreationTabKind(value: unknown): value is CreationTabKind {
   return isMember(CREATION_TAB_KINDS, value);
 }
@@ -109,9 +128,8 @@ export function creationIntentOf(
   tab: { kind?: string; opensIn?: string; layers?: Layer[] } | undefined,
   templateFamily: TemplateFamily | null = null,
 ): CreationIntent {
-  const draw = tab?.kind === 'whiteboard' || tab?.opensIn === 'draw';
   const intent: CreationIntent = {
-    mode: draw ? 'draw' : 'diagram',
+    mode: parseEditorMode(tab?.opensIn) ?? (tab?.kind === 'whiteboard' ? 'draw' : 'diagram'),
     tabKind: isEventStormingTab(tab) ? 'event-storming' : 'diagram',
   };
   return templateFamily ? { ...intent, templateFamily } : intent;
@@ -129,10 +147,12 @@ export function readCreationIntent(
     tabKind?: unknown;
     templateFamily?: unknown;
   };
-  if (!isEditorMode(mode)) return { ok: false };
+  // A create from a client from before Illustrate mode's rename still names it `infographic`.
+  const parsedMode = parseEditorMode(mode);
+  if (!parsedMode) return { ok: false };
   const kind = tabKind ?? DEFAULT_TAB_KIND;
   if (!isCreationTabKind(kind)) return { ok: false };
-  const intent: CreationIntent = { mode, tabKind: kind };
+  const intent: CreationIntent = { mode: parsedMode, tabKind: kind };
   if (templateFamily === undefined || templateFamily === null) return { ok: true, intent };
   if (!isTemplateFamily(templateFamily)) return { ok: false };
   return { ok: true, intent: { ...intent, templateFamily } };

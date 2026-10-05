@@ -5,6 +5,7 @@
 // wiring; the unit test asserts the key -> action mapping against
 // these tables directly.
 
+import type { Selection } from '@/lib/selection-store';
 import type { CanvasTool } from '@/components/palette/CommandPalette';
 import type { WhiteboardPenId } from '@/lib/whiteboard-prefs';
 import type { WhiteboardShapeId } from '@/lib/whiteboard-tool';
@@ -34,8 +35,8 @@ export type EditorKeyboardShortcutsDeps = {
   onCancelDraw: () => void;
   // Selection state. Delete / Backspace acts on whichever is
   // populated (multi wins).
-  selectedId: string | null;
-  multiSelectedIds: Set<string>;
+  // Read when a key is pressed (docs/specs/008-canvas/blueprints/selection-store.md).
+  readSelection: () => Selection;
   editingId: string | null;
   // True for a view-only ('view' share role) session. Suppresses
   // every mutator shortcut (delete, undo, redo, copy, paste) so the

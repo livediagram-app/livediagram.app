@@ -84,12 +84,12 @@ semantic colour:
   the notation earned first-class status. Rows with a blurb (the
   Behaviour / Data treatment): eight identical squares in different
   colours don't explain themselves. Tile ids keep their historical
-  `tools:es-<kind>` prefix — Favourites persist ids, so a rename would
-  silently drop saved favourites ([Palette Favourites](../010-palette/palette-favourites.md)). **On an event-storming board
-  the palette OPENS on this category** instead of Favourites (keyed on
+  `tools:es-<kind>` prefix: tile ids are stable, since palette layouts
+  and the Search panel address tiles by id. **On an event-storming board
+  the palette OPENS on this category** instead of Popular (keyed on
   the board-ness of the active tab), and it is the board's only category. **On any other tab
-  the category picker does not offer it**, nor does the Edit Favourites dialog: the notation
-  belongs to the event-storming mode. Favourites stays the landing view there. Help article: `palette/event-storming` (registered,
+  the category picker does not offer it**: the notation
+  belongs to the event-storming mode. Popular stays the landing view there. Help article: `palette/event-storming` (registered,
   with card art).
 - **The kind is stored.** Every note carries `esKind` on the element: the
   colour says it visually, but the kind is domain data — it names the
@@ -279,7 +279,7 @@ The notes behave like the physical kit:
   change fixed a tapped wide or small note landing off-centre (it was centred
   as a square, then resized).
 - **Drag to the board.** Sticky tiles (the plain note and the whole ES
-  category, rows and Favourites grid alike) drag onto the canvas like
+  category, rows and grid alike) drag onto the canvas like
   shape tiles ([Palette drag ghost + drop preview](../010-palette/palette-drag-ghost.md) ghost included, sized to the silhouette). The
   drop goes through the same builder as a tap, so fill, silhouette,
   tilt, fixed size and stage routing all apply identically.
@@ -767,7 +767,7 @@ that lands notes without a drag is `packages/document/src/event-storming-lane-la
 (`landArrivals`, `settleNotesOnLanes`, rows to lanes) and, for a photograph,
 `event-storming-photo-place.ts`; the editor wires them in `lib/paste-placement.ts`,
 `lib/canvas-pointer.ts`, `hooks/canvas/useLaneSettle.ts`, `useNudgeSelection` and
-`useElementDuplication`, and the MCP worker in `landMcpArrivals`. The
+`useElementDuplication`, and the MCP worker and the edit-operations engine in `landWorkshopArrivals`. The
 overlay's ink is the ALIGNMENT GUIDES' own derivation
 (`elementStroke ?? deriveTextColorForBg(backgroundColor)`) rather than a second
 vocabulary, which is also what keeps it legible on a dark wall.
@@ -1559,7 +1559,7 @@ kind, kept current every session. Each should stay true on its own.
   winning recipe was measured against Miro's renderer and hand-tuned on
   a live board (a 25-variant side-by-side beat isolated mockups).
 - The palette opens ON the notation for this board type: the notation is
-  what the board is for, Favourites is for everywhere else.
+  what the board is for, Popular is for everywhere else.
 - The palette rows say shape + meaning, not just colour: silhouette
   glyphs and one-line blurbs do the explaining, in workshop order.
 - Notes know their workshop stage and file themselves onto its layer —
@@ -1572,8 +1572,8 @@ kind, kept current every session. Each should stay true on its own.
 - Palette drag and palette tap must go through one builder: fill,
   silhouette, tilt, fixed size and routing may never drift between the
   two entry points.
-- Tile ids are forever: Favourites persist them, so promotion between
-  palette homes keeps the historical prefix.
+- Tile ids are forever: palette layouts and search address them by id, so
+  promotion between palette homes keeps the historical prefix.
 - Chrome must earn its keep or be removed: the timeline rail (layer,
   element, view chip) was built, judged, and retired in one session.
 - On this board the palette IS the notation: its category and tool
@@ -1752,7 +1752,7 @@ truth for what the type IS at any moment.
 
 ## Counts
 
-The catalogue is pinned at **63 templates (11 default + 52 extra)** —
+The catalogue is pinned at **81 templates (11 default + 70 extra)**:
 `templates.test.ts`, [Canvas and palette](../008-canvas/canvas-and-palette.md), [Marketing site](../019-marketing/marketing-site.md), [Marketing assets](../019-marketing/marketing-assets.md), the marketing FAQ +
 landing copy, and the help centre's templates article all moved
 together with this addition.

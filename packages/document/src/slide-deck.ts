@@ -16,6 +16,8 @@
 // editor, the api and the MCP worker can all reach for the same answers.
 
 import { contentBounds } from './svg-render';
+import { illustratePagesOf, layOutIllustratePages } from './illustrate-page';
+import { elementIdsOnPage } from './illustrate-page-content';
 import type { Element, ElementId, Tab, TabId } from './index';
 
 export type Slide = {
@@ -25,6 +27,12 @@ export type Slide = {
   /** The one tab this slide draws from: its backdrop, theme and coordinates. */
   tabId: TabId;
   elementIds: ElementId[];
+  /**
+   * A page slide (docs/specs/007-editor/illustrate-pages.md "Slides"): the slide IS this
+   * Illustrate page of the tab, resolved live: whatever is on the page, framed to the page.
+   * `elementIds` is empty and ignored. Added from the slide panel's page picker.
+   */
+  pageId?: string;
   /** What you mean to SAY over this slide. The slide's own, not any element's. */
   notes?: string;
   /**
@@ -79,6 +87,11 @@ export function slideName(slide: Slide, index: number): string {
  */
 export function resolveSlide(slide: Slide, tab: Tab | undefined): Element[] {
   if (!tab) return [];
+  if (slide.pageId) {
+    const pages = layOutIllustratePages(illustratePagesOf(tab));
+    const on = elementIdsOnPage(tab.elements, pages, slide.pageId);
+    return tab.elements.filter((el) => on.has(el.id));
+  }
   const wanted = new Set(slide.elementIds);
   if (wanted.size === 0) return [];
   const chosen = tab.elements.filter((el) => wanted.has(el.id));
@@ -127,6 +140,21 @@ export function slideBounds(
     return { x: only.x, y: only.y, w: only.width, h: only.height };
   }
   return contentBounds(elements);
+}
+
+/**
+ * The rectangle a slide is framed to: a page slide's page, exactly (when the page is still there),
+ * else slideBounds of what it shows.
+ */
+export function slideFrame(
+  slide: Slide,
+  tab: Tab | undefined,
+): { x: number; y: number; w: number; h: number } | null {
+  if (slide.pageId && tab) {
+    const page = layOutIllustratePages(illustratePagesOf(tab)).find((p) => p.id === slide.pageId);
+    if (page) return { x: page.rect.x, y: page.rect.y, w: page.rect.width, h: page.rect.height };
+  }
+  return slideBounds(resolveSlide(slide, tab));
 }
 
 /**
@@ -198,6 +226,9 @@ function isSlide(value: unknown): value is Slide {
   if (s.name !== undefined && typeof s.name !== 'string') return false;
   if (s.notes !== undefined && typeof s.notes !== 'string') return false;
   if (s.hidden !== undefined && typeof s.hidden !== 'boolean') return false;
+  if (s.pageId !== undefined && (typeof s.pageId !== 'string' || s.pageId.length === 0)) {
+    return false;
+  }
   return true;
 }
 

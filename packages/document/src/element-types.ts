@@ -1072,6 +1072,10 @@ export type AnnotationElement = {
   // always === runsPlainText(noteRich). Absent = an unformatted note, which
   // renders exactly as it always did.
   noteRich?: TextRun[];
+  // A margin note of an article (docs/specs/007-editor/article-pages.md "Comments and actions"):
+  // the marker in a page's margin beside the text its comment thread or action is on, kept beside
+  // that text as the writing moves. Its glyph says which: a speech bubble, or a tick for an action.
+  articleNote?: 'comment' | 'action';
   // fillColor tints the circle; strokeColor draws the ring + the note glyph.
   // textColor is unused (no inline label) but declared for the generic
   // colour code paths.

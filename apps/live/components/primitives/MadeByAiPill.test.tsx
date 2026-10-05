@@ -7,9 +7,10 @@ import { MADE_BY_AI_LABEL, MadeByAiPill, isMadeByAi } from './MadeByAiPill';
 afterEach(cleanup);
 
 describe('isMadeByAi', () => {
-  it('reads a set provenance as made by AI, and none as made by a person', () => {
+  it('reads the AI assistant and the MCP as made by AI; the CLI and none as a person', () => {
     expect(isMadeByAi({ source: 'mcp' })).toBe(true);
     expect(isMadeByAi({ source: 'ai' })).toBe(true);
+    expect(isMadeByAi({ source: 'cli' })).toBe(false);
     expect(isMadeByAi({ source: null })).toBe(false);
     expect(isMadeByAi({})).toBe(false);
   });

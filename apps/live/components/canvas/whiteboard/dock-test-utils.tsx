@@ -1,7 +1,7 @@
 // Test helpers for the whiteboard dock's component tests: a dock model of spies, and the dock
 // rendered around it.
 import { render, type RenderResult } from '@testing-library/react';
-import { vi, type Mock } from 'vitest';
+import { vi } from 'vitest';
 import { DEFAULT_WHITEBOARD_PREFS } from '@/lib/whiteboard-prefs';
 import type { WhiteboardTool } from '@/lib/whiteboard-tool';
 import type { WhiteboardDockModel } from '@/hooks/canvas/useWhiteboard';
@@ -49,21 +49,10 @@ export function dockModel(
   };
 }
 
-export function renderDock(
-  m: WhiteboardDockModel = dockModel(),
-  extra: { canUndo?: boolean; canRedo?: boolean } = {},
-): { m: WhiteboardDockModel; onUndo: Mock; onRedo: Mock; view: RenderResult } {
-  const onUndo = vi.fn();
-  const onRedo = vi.fn();
-  const view = render(
-    <WhiteboardDock
-      model={m}
-      ink="#1c1917"
-      canUndo={extra.canUndo ?? true}
-      canRedo={extra.canRedo ?? false}
-      onUndo={onUndo}
-      onRedo={onRedo}
-    />,
-  );
-  return { m, onUndo, onRedo, view };
+export function renderDock(m: WhiteboardDockModel = dockModel()): {
+  m: WhiteboardDockModel;
+  view: RenderResult;
+} {
+  const view = render(<WhiteboardDock model={m} ink="#1c1917" />);
+  return { m, view };
 }

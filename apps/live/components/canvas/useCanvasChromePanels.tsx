@@ -1,7 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { useCallback, useMemo, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, type ReactNode } from 'react';
 import { useStableCallbacks } from '@/hooks/ui/useStableCallbacks';
 import type { useCornerDocking } from '@/hooks/ui/useCornerDocking';
 import type { PanelId } from '@/lib/panel-layout';
@@ -11,10 +11,11 @@ import { CanvasAiPanel } from './CanvasAiPanel';
 import { CommandPalette } from '@/components/palette/CommandPalette';
 import { pickPaletteAddHandlers } from '@/components/palette/palette-add-handlers';
 import { Explorer } from '@/components/panels/Explorer';
-import { Minimap } from '@/components/canvas/Minimap';
+import { ViewMinimap } from '@/components/canvas/view-readers';
 import type { CanvasChromeProps } from './CanvasChrome';
 import { usePaletteChrome } from './usePaletteChrome';
 import { useCanvasToolPanels } from './useCanvasToolPanels';
+import { WhiteboardDock } from './whiteboard/WhiteboardDock';
 
 // Lazy-load CommentsPanel: only mounts when the active tab has at
 // least one element with comments. It stacks below the Palette (the
@@ -78,6 +79,7 @@ export function useCanvasChromePanels({
   // rendered outside the corner layer (then its panelEl is null).
   toolbarClusterEls: ReactNode;
   collaborateEl: ReactNode;
+  slidesPopoverEl: ReactNode;
   // True when Layers opens as a popover over its cluster button
   // (Toolbar, and zen).
   clusterPopovers: boolean;
@@ -179,7 +181,6 @@ export function useCanvasChromePanels({
     teamDocuments,
     teamFolders,
     teams,
-    viewportZoom,
     zenMode,
     onToggleZen,
   } = props;
@@ -260,11 +261,20 @@ export function useCanvasChromePanels({
   // The six tool-config panels (avatar / laser / spotlight / eraser / format /
   // slide deck), see useCanvasToolPanels. They share one contract: on screen
   // only while their own tool is active.
+  // The Slides popover belongs to Illustrate mode's button: leaving the mode (Shift+D, a tab
+  // switch) closes it rather than leaving it floating with no button under it.
+  const slidesOpen = activeDockPanel === 'slides' && !!props.illustratePages;
+  useEffect(() => {
+    if (activeDockPanel === 'slides' && !props.illustratePages) closeDockPanel();
+  }, [activeDockPanel, props.illustratePages, closeDockPanel]);
   const { avatarEl, laserEl, spotlightEl, eraserEl, formatEl, slideDeckEl } = useCanvasToolPanels({
     props,
     chromeHidden,
     stackBelowY,
     panelWiringFor,
+    slidesPopover: slidesOpen
+      ? { anchor: activeDockAnchor ?? undefined, onClose: closeDockPanel }
+      : null,
   });
 
   const explorerEl = zenMode ? null : (
@@ -398,10 +408,20 @@ export function useCanvasChromePanels({
       />
     ) : null;
 
+  // Draw mode keeps the Palette panel and fills it with Draw's tools instead of the catalogue
+  // (docs/specs/023-draw-mode/draw-mode.md "What a whiteboard shows").
+  const drawTools =
+    props.editorMode === 'draw' && props.whiteboardDock ? (
+      <WhiteboardDock
+        variant="panel"
+        model={props.whiteboardDock}
+        ink={props.whiteboardInk ?? '#1c1917'}
+      />
+    ) : undefined;
   const paletteEl =
-    // Draw mode draws from its dock, not the palette (docs/specs/023-draw-mode/draw-mode.md).
-    chromeHidden || readOnly || toolbarActive || props.editorMode === 'draw' ? null : (
+    chromeHidden || readOnly || toolbarActive ? null : (
       <CommandPalette
+        drawTools={drawTools}
         position={paletteWiring.position}
         canvasTool={canvasTool}
         onSetCanvasTool={onSetCanvasTool}
@@ -436,12 +456,15 @@ export function useCanvasChromePanels({
     [elements, props.tabLayers],
   );
   const minimapEl =
-    !chromeHidden && !isMobile && mapEnabled && elements.length >= 4 ? (
-      <Minimap
+    !chromeHidden &&
+    !isMobile &&
+    mapEnabled &&
+    (elements.length >= 4 || (props.illustratePages?.pages.length ?? 0) > 0) ? (
+      <ViewMinimap
         elements={mapElements}
+        pages={props.illustratePages?.pages}
+        writing={props.illustratePages?.articles?.flows}
         tabFont={props.tabFont}
-        viewportOffset={props.viewportOffset}
-        viewportZoom={viewportZoom}
         setViewportOffset={props.setViewportOffset}
         setViewportZoom={props.setViewportZoom}
         mainSize={props.mainSize}
@@ -515,7 +538,8 @@ export function useCanvasChromePanels({
     laser: laserEl,
     spotlight: spotlightEl,
     eraser: eraserEl,
-    'slide-deck': slideDeckEl,
+    // Over its cluster button (Illustrate mode) it renders beside the corner layer, like Collaborate.
+    'slide-deck': slidesOpen ? null : slideDeckEl,
     format: formatEl,
   };
   return {
@@ -524,6 +548,7 @@ export function useCanvasChromePanels({
     // Toolbar's cluster popovers, rendered beside the corner layer rather than
     // in it (see panelEls).
     collaborateEl,
+    slidesPopoverEl: slidesOpen ? slideDeckEl : null,
     toolbarClusterEls: toolbarActive ? layersEl : null,
     clusterPopovers,
     paletteTint,

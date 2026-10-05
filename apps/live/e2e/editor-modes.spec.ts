@@ -1,10 +1,16 @@
 import type { Page } from '@playwright/test';
-import { dismissQuickTour, expect, expectNoPageErrors, test } from './fixtures';
+import {
+  chooseToolbarLayout,
+  dismissQuickTour,
+  expect,
+  expectNoPageErrors,
+  test,
+} from './fixtures';
 
-// Editor modes end to end (docs/specs/007-editor/editor-modes.md), in dark mode: the chip beside
-// the tabs switches a general tab between Diagram and Draw, a stroke drawn in Draw stays in
-// Diagram, Shift+D toggles, the choice survives a reload, a new tab inherits the creator's mode,
-// and Opens in changes the tab's opening mode without switching anyone. Synthesised content only.
+// Editor modes end to end (docs/specs/007-editor/editor-modes.md), in dark mode: the chip in the
+// Palette header switches a general tab between Diagram and Draw, a stroke drawn in Draw stays in
+// Diagram, Shift+D toggles, the choice survives a reload, a new tab opens in Diagram,
+// and Opens in changes the tab's opening mode, switching only the chooser. Synthesised content only.
 
 const CANVAS = '[data-canvas-a11y-root]';
 const apiBase = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
@@ -52,7 +58,7 @@ async function drawWave(page: Page, from: { x: number; y: number }) {
 }
 
 test.describe('editor modes', () => {
-  test('a general tab opens in Diagram, with the chip beside the tabs', async ({
+  test('a general tab opens in Diagram, with the chip in the Palette header', async ({
     page,
     pageErrors,
   }) => {
@@ -82,7 +88,12 @@ test.describe('editor modes', () => {
     expectNoPageErrors(pageErrors);
   });
 
-  test('Shift+D toggles, and the choice survives a reload', async ({ page, pageErrors }) => {
+  // Illustrate is on by default, so there are three modes: Shift+D moves to the next, and wraps
+  // (docs/specs/007-editor/editor-modes.md "The mode switch").
+  test('Shift+D moves to the next mode and wraps, and the choice survives a reload', async ({
+    page,
+    pageErrors,
+  }) => {
     await openBlank(page);
     await page.locator(CANVAS).click({ position: { x: 40, y: 40 } });
     await page.keyboard.press('Shift+D');
@@ -94,31 +105,31 @@ test.describe('editor modes', () => {
     await expect(chip(page)).toHaveAccessibleName('Editor mode: Draw');
 
     await page.keyboard.press('Shift+D');
+    await expect(chip(page)).toHaveAccessibleName('Editor mode: Illustrate');
+    await page.keyboard.press('Shift+D');
     await expect(chip(page)).toHaveAccessibleName('Editor mode: Diagram');
     expectNoPageErrors(pageErrors);
   });
 
-  test('a new tab inherits the mode its creator is in', async ({ page, pageErrors }) => {
+  test('a new tab opens in Diagram, even when made in Draw mode', async ({ page, pageErrors }) => {
     await openBlank(page);
     await chooseMode(page, 'Draw');
     await page.getByRole('button', { name: 'Add tab' }).click();
     await page.keyboard.press('Escape');
     await expect(page.locator('[data-editor-tabbar]').getByText('Tab 2')).toBeVisible();
-    await expect(chip(page)).toHaveAccessibleName('Editor mode: Draw');
+    await expect(chip(page)).toHaveAccessibleName('Editor mode: Diagram');
     expectNoPageErrors(pageErrors);
   });
 
-  test('Opens in sets the opening mode without switching the chooser', async ({
-    page,
-    pageErrors,
-  }) => {
+  test('Opens in sets the opening mode and switches the chooser', async ({ page, pageErrors }) => {
     await openBlank(page);
     await page.getByRole('button', { name: 'Tab menu' }).click();
     await page.getByRole('button', { name: /^Opens in/ }).click();
     const opensIn = page.getByRole('group', { name: 'Opens in' });
-    await opensIn.getByRole('menuitemradio', { name: /^Draw/ }).click();
+    // The Tab menu is a control menu, so each mode is a toggle button (docs/specs/004-interface-design/menus.md).
+    await opensIn.getByRole('button', { name: /^Draw/ }).click();
     await page.keyboard.press('Escape');
-    await expect(chip(page)).toHaveAccessibleName('Editor mode: Diagram');
+    await expect(chip(page)).toHaveAccessibleName('Editor mode: Draw');
     await expect.poll(() => savedOpensIn(page), { timeout: 15_000 }).toBe('draw');
 
     // A fresh page, with no choice remembered for this tab, opens it in its opening mode.
@@ -133,4 +144,27 @@ test.describe('editor modes', () => {
     await other.close();
     expectNoPageErrors(pageErrors);
   });
+
+  // A Draw tool in hand never takes the press meant for the switch, in either layout.
+  for (const layout of ['floating', 'toolbar'] as const) {
+    test(`switches back to Diagram with a marker in hand (${layout} layout)`, async ({
+      page,
+      pageErrors,
+    }) => {
+      if (layout === 'toolbar') await chooseToolbarLayout(page);
+      await openBlank(page);
+      await chooseMode(page, 'Draw');
+      await dock(page)
+        .getByRole('button', { name: /^Marker 2/ })
+        .click();
+      await expect(dock(page).getByRole('button', { name: /^Marker 2/ })).toHaveAttribute(
+        'aria-pressed',
+        'true',
+      );
+      await chooseMode(page, 'Diagram');
+      await expect(chip(page)).toHaveAccessibleName('Editor mode: Diagram');
+      await expect(sketches(page)).toHaveCount(0);
+      expectNoPageErrors(pageErrors);
+    });
+  }
 });

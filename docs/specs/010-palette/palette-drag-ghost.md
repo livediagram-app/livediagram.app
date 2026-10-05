@@ -35,10 +35,11 @@ drag image (a snapshot of the tile) and no on-canvas feedback.
   (`components/palette/palette-tile-drag.ts`): shapes (`kind` or `kind|choice`) and sticky notes on
   the palette mime with the ghost preview, line icons, Technology icons and stickers on their own
   mimes. Every rendering of a tile uses it: the grid tile, the Toolbar strip's tile, and the list
-  row, including the rows a search turns up (the Floating Palette's search and the Toolbar strip's
-  More popover). Tiles that arm a gesture (Text, the pens, Polygon, Arrow) offer no drag.
-- Every drag source clears the preview on `dragend`; the list row and the strip tile also count a
-  drop on the canvas as a use for the Toolbar layout's ordering.
+  row, wherever a category body draws them, in the Floating Palette or the Toolbar strip's More
+  popover, including what a body's own search turns up (Behaviour's rows; the Icons, Stickers and
+  Technology catalogues' tiles drag on their own mimes). Tiles that arm a gesture (Text, the pens,
+  Polygon, Arrow) offer no drag.
+- Every drag source clears the preview on `dragend`.
 - `components/canvas/PaletteDragGhost.tsx` — an overlay rendered by `Canvas`
   that reads the preview + tracks the cursor via a `dragover` listener and
   paints the ghost at the `z-overlay` rung.

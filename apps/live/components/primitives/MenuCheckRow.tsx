@@ -2,6 +2,7 @@
 
 import type { ReactNode } from 'react';
 import { CheckIcon } from '@livediagram/ui';
+import { useMenuItemProps } from './menu-item-props';
 
 // A checkable menu row (`menuitemcheckbox`): a fixed check slot (empty when unchecked, so labels
 // never shift as checks come and go), the entry's own icon, then its label, at the reading size of
@@ -21,12 +22,14 @@ export function MenuCheckRow({
   disabled?: boolean;
   onToggle: () => void;
 }) {
+  const { itemProps } = useMenuItemProps({ disabled, checked });
   return (
     <button
       type="button"
       role="menuitemcheckbox"
       aria-checked={checked}
       aria-disabled={disabled || undefined}
+      {...itemProps}
       onClick={disabled ? undefined : onToggle}
       className={`flex w-full items-center gap-2 px-3 py-2 text-left text-[13px] transition ${
         disabled

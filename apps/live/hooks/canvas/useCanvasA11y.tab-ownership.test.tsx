@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { createSelectionStore } from '@/lib/selection-store';
 import type { Element } from '@livediagram/document';
 import { useCanvasA11y } from './useCanvasA11y';
 
@@ -18,6 +19,12 @@ const NODE = (id: string): Element =>
 
 const ELEMENTS = [NODE('a'), NODE('b'), NODE('c')];
 
+function storeWith(selectedId: string, multi: string[]) {
+  const store = createSelectionStore();
+  store.setSelection({ selectedId, multiSelectedIds: new Set(multi) });
+  return store;
+}
+
 function harness(over: Partial<Parameters<typeof useCanvasA11y>[0]> = {}) {
   const selectElement = vi.fn();
   // Traversal only engages while the canvas surface itself holds focus.
@@ -30,8 +37,7 @@ function harness(over: Partial<Parameters<typeof useCanvasA11y>[0]> = {}) {
     useCanvasA11y({
       enabled: true,
       elements: ELEMENTS,
-      selectedId: 'b',
-      multiSelectedIds: new Set<string>(),
+      selection: storeWith('b', []),
       editingId: null,
       selectElement,
       lockedByOther: () => false,
@@ -80,7 +86,7 @@ describe('useCanvasA11y Tab ownership', () => {
 
   it('still traverses when several elements are selected', () => {
     // Growth needs one node to grow from, so a multi-selection has no claim.
-    const h = harness({ ownsTabKey: () => true, multiSelectedIds: new Set(['a', 'b']) });
+    const h = harness({ ownsTabKey: () => true, selection: storeWith('b', ['a', 'b']) });
     pressTab();
     expect(h.selectElement).toHaveBeenCalledWith('c');
   });

@@ -7,7 +7,8 @@ import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerBu
 import { apiGetTeam, type TeamMember } from '@/lib/api-client';
 import type { TeamDetailResponse } from '@/lib/api/teams';
 import { SignInIcon } from '@/components/chrome/AuthControls';
-import { MenuTile, PortalMenu } from '@/components/primitives/PortalMenu';
+import { PortalMenu } from '@/components/primitives/PortalMenu';
+import { MenuTile } from '@/components/primitives/MenuTiles';
 import { LinkIcon, TeamMemberRow } from './team-pane-parts';
 import { useTeamPaneActions } from './useTeamPaneActions';
 import { TeamFormModal } from '@/components/dialogs/TeamFormModal';

@@ -1,3 +1,4 @@
+import { svgTags } from './svg-test-tags';
 import { describe, expect, it } from 'vitest';
 import { boxedNeedsSvgRaster, renderElementsToSvg, svgBoxed } from './svg-render';
 import { createShape } from './factories';
@@ -129,20 +130,21 @@ describe('a self-painting element gets no box drawn round it', () => {
   // are rects too.
   // The element's box: its border is inset by half the 2px stroke, as the
   // canvas's CSS border sits inside the box (svg-render-border).
-  const elementRect = /<rect[^>]*width="198"[^>]*height="158"/;
+  const hasElementRect = (svg: string) =>
+    svgTags(svg, 'rect').some((r) => r.width === '198' && r.height === '158');
 
   it('leaves a chart unframed, the way the canvas does', () => {
     const svg = renderElementsToSvg(
       tabOf([{ ...createShape('pie-chart', 0, 0), width: 200, height: 160 }]),
     );
-    expect(elementRect.test(svg)).toBe(false);
+    expect(hasElementRect(svg)).toBe(false);
   });
 
   it('still frames a record, which is a real box with rows in it', () => {
     const svg = renderElementsToSvg(
       tabOf([{ ...createShape('entity', 0, 0), width: 200, height: 160 }]),
     );
-    expect(elementRect.test(svg)).toBe(true);
+    expect(hasElementRect(svg)).toBe(true);
   });
 });
 

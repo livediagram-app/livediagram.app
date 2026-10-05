@@ -1,16 +1,15 @@
-import { lucideStar } from '@livediagram/icons/lucide';
+import { lucideSparkles } from '@livediagram/icons/lucide';
 import { Glyph, Prims } from '@livediagram/ui';
 // The palette category-tab glyphs (docs/specs/008-canvas/canvas-and-palette.md), lifted out of
 // CommandPalette's tab definitions so the palette file reads as wiring
 // rather than ~180 lines of inline SVG. Each is the universal symbol
 // for its category, readable at tab size.
 
-export function FavouritesTabIcon() {
+// Popular (Illustrate mode): sparkles, for the picks most reached for.
+export function PopularTabIcon() {
   return (
     <Glyph size={18} units={24}>
-      {/* A star — the universal favourites mark (the Icons tab
-            deliberately uses a smiley instead, so no clash). */}
-      <Prims prims={lucideStar} />
+      <Prims prims={lucideSparkles} />
     </Glyph>
   );
 }

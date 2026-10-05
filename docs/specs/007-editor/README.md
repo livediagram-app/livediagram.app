@@ -4,6 +4,7 @@ Follow the references below only as needed; never upfront.
 
 - ./live-app.md - when working on Live app: The diagram editor app (clean routes, no `/live` prefix)
 - ./new-document-route.md - when working on Dedicated route for new-document creation: The welcome / create-new flow at `/new`, split from the editor
+- ./templates-by-mode.md - when working on which editor mode a template opens in, the template step's mode filter (All, Diagram, Draw, Illustrate), the mode glyph on template cards, the three blanks, or the Draw and Illustrate templates
 - ./user-preferences.md - when working on User preferences: Per-user editor preference flags (footer settings dialog)
 - ./ai-assistance.md - when working on AI Assistance: Optional AI assistant (Build / Clean / Ask / Review) on the canvas
 - ./zen-mode.md - when working on Zen mode: Distraction-free focus mode: hide all chrome, keep canvas + zoom
@@ -14,5 +15,7 @@ Follow the references below only as needed; never upfront.
 - ./toolbar-layout.md - when working on Toolbar layout: The panel layout beside Floating, and the only one on a phone: the Palette as one Excalidraw-style strip at the top of the canvas (selection mode, category picker, the category's first 12 tiles, and a More button whose popover, hung from the button, holds the full category). The top-left menu button opens the Explorer as a popover; Layers and Collaborate are popovers over their bottom-row buttons; every other panel behaves as in Floating. `panelLayout` preference (`'floating' | 'toolbar'`)
 - ./ui-scale.md - when working on UI scale: the Appearance sliders (80% to 120%, 100% in the middle, desktop only) that scale the panels, the toolbar and the bottom-right corner buttons with CSS `zoom`, together or each on its own, and nothing else
 - ./power-user-mode.md - when working on Power user mode: a preset of recommended settings that restores untouched ones when switched off, power-user-only settings such as Minimal chrome (hide captions, titles and hints, keep controls), and the once-ever offer
-- ./editor-modes.md - when working on editor modes: Diagram and Draw on a general tab, the mode switch beside the page switcher, kinds versus modes
-- ./blueprints/README.md - when implementing an editor spec from its blueprint (appearance, power user mode, UI scale)
+- ./editor-modes.md - when working on editor modes: Diagram and Draw on a general tab, the mode switch beside the menu button and in the Palette header, kinds versus modes
+- ./illustrate-pages.md - when working on Illustrate pages (infographic and article kinds): page sizes, backgrounds and patterns, the page panel, layouts and their hover preview, page actions and reordering, snapping, re-fitting content, laying content out into pages, page export, page slides and the Slides button
+- ./article-pages.md - when working on article pages in Illustrate mode: the writing and its blocks, flowing across linked pages, the page toolbar, zones (objects and drawings in the text, wrap), margin notes, article style and looks, leaving Illustrate, export and collaboration of the writing (carets included)
+- ./blueprints/README.md - when implementing an editor spec from its blueprint (appearance, editor modes, Illustrate pages, article pages, power user mode, UI scale)

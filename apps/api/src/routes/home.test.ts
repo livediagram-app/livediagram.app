@@ -1,11 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { nextFrecencyKey, type HomeResponse, type HomeTimelinePage } from '@livediagram/api-schema';
+import type { HomeResponse } from '@livediagram/api-schema';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import { recordDocumentOpen } from '../home/record-open';
 import {
   recordActionAssigned,
   recordCommentAdded,
   recordDocumentCreated,
+  recordDocumentDuplicated,
   recordDocumentEdited,
   recordTeamDocumentAdded,
   backfillUserScope,
@@ -144,7 +145,7 @@ afterEach(() => {
 });
 
 describe('Jump back in', () => {
-  it('ranks by frecency, over documents the person can still open', async () => {
+  it('places documents the person can still open, with where they live', async () => {
     for (const d of [3, 2, 1]) await recordDocumentOpen(db.env, docs.own1!, ME, NOW - d * DAY);
     await recordDocumentOpen(db.env, docs.own2!, ME, NOW - HOUR);
     await recordDocumentOpen(db.env, docs.shared1!, ME, NOW - 2 * HOUR);
@@ -153,20 +154,17 @@ describe('Jump back in', () => {
     }
 
     const { jumpBackIn } = await home();
+    // Most used: by use days, ties to the most recent use.
     expect(jumpBackIn.map((d) => d.documentId)).toEqual(['own1', 'scoped', 'own2', 'shared1']);
     expect(jumpBackIn[0]).toMatchObject({
       name: 'Doc own1',
       via: 'own',
       folderId: 'f1',
       folderName: 'Architecture',
-      openDays: 3,
-      lastOpenedAt: NOW - DAY,
+      useDays: 3,
+      lastUsedAt: NOW - DAY,
       shareCode: null,
     });
-    // The key travels, so the view can rank this browser's local documents among these.
-    const keys = jumpBackIn.map((d) => d.frecencyKey);
-    expect(keys).toEqual([...keys].sort((a, b) => b - a));
-    expect(jumpBackIn[2]!.frecencyKey).toBe(nextFrecencyKey(null, NOW - HOUR));
     expect(jumpBackIn[1]).toMatchObject({ via: 'shared', shareCode: 'SCOPED', tabId: 'tab-x' });
     expect(jumpBackIn[3]).toMatchObject({
       via: 'shared',
@@ -177,107 +175,99 @@ describe('Jump back in', () => {
     });
   });
 
-  it("is seeded on the person's first Home from the days they really edited", async () => {
+  it('is the 4 most used then the 4 most recent, none twice', async () => {
+    for (let i = 0; i < 10; i += 1) addDoc(`m${i}`, ME);
+    // m0..m3 on 5, 4, 3, 2 days; m0 also the newest of all, so it is both, and shows once.
+    for (const [i, days] of [5, 4, 3, 2].entries()) {
+      for (let d = days; d >= 1; d -= 1) {
+        await recordDocumentOpen(db.env, docs[`m${i}`]!, ME, NOW - (d + 1) * DAY);
+      }
+    }
+    await recordDocumentOpen(db.env, docs.m0!, ME, NOW - 60_000);
+    // m4..m9 once each, m9 the newest of them.
+    for (let i = 4; i < 10; i += 1) {
+      await recordDocumentOpen(db.env, docs[`m${i}`]!, ME, NOW - (10 - i) * HOUR);
+    }
+
+    const { jumpBackIn } = await home();
+    expect(jumpBackIn.map((d) => d.documentId)).toEqual([
+      'm0',
+      'm1',
+      'm2',
+      'm3',
+      'm9',
+      'm8',
+      'm7',
+      'm6',
+    ]);
+    expect(jumpBackIn.map((d) => d.useDays)).toEqual([6, 4, 3, 2, 1, 1, 1, 1]);
+    expect(logs).toContain('home: read jump=8 used=4 recent=4 groups=0 actions=0');
+  });
+
+  it('counts only the last 90 days towards most used, but keeps an older open recent', async () => {
+    addDoc('old', ME);
+    for (const d of [120, 110, 100]) await recordDocumentOpen(db.env, docs.old!, ME, NOW - d * DAY);
+    await recordDocumentOpen(db.env, docs.own1!, ME, NOW - 89 * DAY);
+
+    const { jumpBackIn } = await home();
+    expect(jumpBackIn.map((d) => [d.documentId, d.useDays])).toEqual([
+      ['own1', 1],
+      ['old', 0],
+    ]);
+  });
+
+  it('counts a day the person really edited as a use day, once with an open that day', async () => {
+    // Days before opens were recorded still count, through their edits.
     for (const d of [4, 3]) {
       at(NOW - d * DAY);
       await recordDocumentEdited(db.env, docs.own2!, ME);
     }
-    at(NOW);
-    const { jumpBackIn } = await home();
-    expect(jumpBackIn.map((d) => [d.documentId, d.openDays])).toEqual([['own2', 2]]);
-    expect(logs).toContain('home: frecency-seeded docs=1 days=2 conflicts=0 capped=no');
-    await home();
-    expect(logs.filter((l) => l.startsWith('home: frecency-seeded'))).toHaveLength(1);
-  });
-
-  it('logs a failed seed and still answers', async () => {
-    const broken = {
-      ...db.env,
-      DB: {
-        ...db.env.DB,
-        prepare: (query: string) => {
-          if (
-            query.includes('FROM document_opens WHERE owner_id = ?1') &&
-            !query.includes('JOIN')
-          ) {
-            throw new Error('d1 down');
-          }
-          return db.env.DB.prepare(query);
-        },
-      },
-    } as Env;
-    expect((await get('/api/home', { env: broken })).status).toBe(200);
-    expect(logs.some((l) => l.startsWith('home: frecency-seed-failed'))).toBe(true);
-    const stamp = db.sql
-      .prepare('SELECT frecency_seeded_at FROM timeline_scope_state WHERE scope_id = ?')
-      .get(ME) as { frecency_seeded_at: number | null };
-    expect(stamp.frecency_seeded_at).toBeNull();
-  });
-
-  it('holds at most twelve', async () => {
-    for (let i = 0; i < 14; i += 1) {
-      addDoc(`many${i}`, ME);
-      await recordDocumentOpen(db.env, docs[`many${i}`]!, ME, NOW - i * HOUR);
-    }
-    expect((await home()).jumpBackIn).toHaveLength(12);
-  });
-});
-
-describe('Timeline', () => {
-  async function emitOwn() {
-    at(NOW - 3 * HOUR);
-    await recordDocumentCreated(db.env, docs.own2!, ME);
-    at(NOW - 2 * HOUR);
-    await recordDocumentEdited(db.env, docs.own2!, ME);
-    at(NOW - 2 * HOUR + 60_000);
-    await recordDocumentEdited(db.env, docs.shared1!, ME);
-    await recordDocumentEdited(db.env, docs.trashed!, ME);
+    await recordDocumentOpen(db.env, docs.own2!, ME, NOW - 3 * DAY - HOUR);
+    // An edit after the day's open is the later use.
+    await recordDocumentOpen(db.env, docs.own1!, ME, NOW - 5 * HOUR);
+    at(NOW - HOUR);
+    await recordDocumentEdited(db.env, docs.own1!, ME);
+    // Someone else's edit is not the person's use.
     await recordDocumentEdited(db.env, docs.team1!, 'user_priya');
     at(NOW);
-    await recordDocumentOpen(db.env, docs.own1!, ME, NOW - HOUR);
-  }
 
-  it("lists the person's own created, updated and opened, newest first", async () => {
-    await emitOwn();
-    const { timeline } = await home();
-    expect(timeline.items.map((e) => [e.documentId, e.kind])).toEqual([
-      ['own1', 'opened'],
-      ['shared1', 'updated'],
-      ['own2', 'updated'],
-      ['own2', 'created'],
+    const { jumpBackIn } = await home();
+    expect(jumpBackIn.map((d) => [d.documentId, d.useDays, d.lastUsedAt])).toEqual([
+      ['own2', 2, NOW - 3 * DAY],
+      ['own1', 1, NOW - HOUR],
     ]);
-    expect(timeline.nextCursor).toBeNull();
-    expect(timeline.items[1]).toMatchObject({ via: 'shared', shareCode: 'LIVE' });
   });
 
-  it("leaves out the backfill's reconstructed edits: only real actors count", async () => {
+  it('counts a marked making as a use; an unmarked one waits for its first open', async () => {
+    // A bulk import's makings carry no mark, as every making recorded before the mark.
+    await recordDocumentCreated(db.env, docs.own1!, ME, { markUsed: false });
+    await recordDocumentDuplicated(db.env, docs.own2!, 'Doc own1', ME, { markUsed: false });
+    expect((await home()).jumpBackIn).toEqual([]);
+
+    await recordDocumentOpen(db.env, docs.own2!, ME, NOW - HOUR);
+    expect((await home()).jumpBackIn.map((d) => d.documentId)).toEqual(['own2']);
+
+    // A single making counts at once, opened or not; a copy is one.
+    addDoc('made', ME);
+    addDoc('copied', ME);
+    await recordDocumentCreated(db.env, docs.made!, ME, { markUsed: true });
+    at(NOW + 60_000);
+    await recordDocumentDuplicated(db.env, docs.copied!, 'Doc made', ME, { markUsed: true });
+    expect((await home()).jumpBackIn.map((d) => [d.documentId, d.useDays, d.lastUsedAt])).toEqual([
+      ['copied', 1, NOW + 60_000],
+      ['made', 1, NOW],
+      ['own2', 1, NOW - HOUR],
+    ]);
+  });
+
+  it("never counts someone else's making", async () => {
+    await recordDocumentCreated(db.env, docs.team1!, 'user_priya', { markUsed: true });
+    expect((await home()).jumpBackIn).toEqual([]);
+  });
+
+  it("leaves out the backfill's reconstructed edits: only real uses count", async () => {
     await backfillUserScope(db.env, ME);
-    const { timeline } = await home();
-    expect(timeline.items.map((e) => e.kind)).not.toContain('updated');
-    expect(timeline.items.map((e) => `${e.documentId}:${e.kind}`).sort()).toEqual([
-      'own1:created',
-      'own2:created',
-    ]);
-  });
-
-  it('pages by keyset', async () => {
-    await emitOwn();
-    const first = await home('/api/home?limit=2');
-    expect(first.timeline.items).toHaveLength(2);
-    expect(first.timeline.nextCursor).toMatch(/^\d+:/);
-    expect((await get('/api/home/timeline?limit=1')).status).toBe(200);
-    expect(logs).toContain('home: timeline-page items=1 more=yes');
-    const res = await get(
-      `/api/home/timeline?limit=2&cursor=${encodeURIComponent(first.timeline.nextCursor!)}`,
-    );
-    expect(res.status).toBe(200);
-    const next = (await res.json()) as HomeTimelinePage;
-    expect(next.items.map((e) => [e.documentId, e.kind])).toEqual([
-      ['own2', 'updated'],
-      ['own2', 'created'],
-    ]);
-    expect(next.nextCursor).toBeNull();
-    expect(logs).toContain('home: timeline-page items=2 more=no');
+    expect((await home()).jumpBackIn).toEqual([]);
   });
 });
 
@@ -364,7 +354,6 @@ describe('What happened', () => {
     await recordDocumentOpen(db.env, docs.team1!, ME, NOW);
     const priya = await home('/api/home', 'user_priya');
     expect(priya.whatHappened).toEqual([]);
-    expect(priya.timeline.items).toEqual([]);
     expect(priya.jumpBackIn).toEqual([]);
   });
 
@@ -414,43 +403,20 @@ describe('the read', () => {
     const body = await home('/api/home', 'guest-new');
     expect(body).toEqual({
       jumpBackIn: [],
-      timeline: { items: [], nextCursor: null },
       whatHappened: [],
       lastSeenAt: null,
     });
-    expect(logs).toContain('home: read jump=0 timeline=0 groups=0 actions=0');
+    expect(logs).toContain('home: read jump=0 used=0 recent=0 groups=0 actions=0');
   });
 
-  it('seeds the Timeline user scope on first sight, off the response path', async () => {
-    db.sql.exec(`DELETE FROM timeline_scope_state`);
+  it("seeds nothing: the Timeline backfill is the feed's business", async () => {
+    db.sql.exec('DELETE FROM timeline_scope_state');
     await home();
     await Promise.all(pending);
     const created = db.sql
-      .prepare(
-        `SELECT COUNT(*) AS n FROM timeline_events WHERE event_type = 'document_created' AND actor_id = ?`,
-      )
-      .get(ME) as { n: number };
-    expect(created.n).toBeGreaterThan(0);
-    expect(logs).toContain('home: backfill-dispatched');
-  });
-
-  it('logs a failed seed rather than losing it', async () => {
-    db.sql.exec('DELETE FROM timeline_scope_state');
-    const broken = {
-      ...db.env,
-      DB: {
-        ...db.env.DB,
-        prepare: (query: string) => {
-          if (query.includes('SELECT id, name, created_at, saved_at FROM documents')) {
-            throw new Error('d1 down');
-          }
-          return db.env.DB.prepare(query);
-        },
-      },
-    } as Env;
-    expect((await get('/api/home', { env: broken })).status).toBe(200);
-    await Promise.all(pending);
-    expect(logs.some((l) => l.startsWith('home: backfill-failed'))).toBe(true);
+      .prepare(`SELECT COUNT(*) AS n FROM timeline_events WHERE event_type = 'document_created'`)
+      .get() as { n: number };
+    expect(created.n).toBe(0);
   });
 
   it('moves the unread mark once per visit and says where it stood', async () => {
@@ -465,22 +431,9 @@ describe('the read', () => {
     expect(logs.filter((l) => l === 'home: seen-marked')).toHaveLength(1);
   });
 
-  it('leaves the mark alone on a later Timeline page', async () => {
-    await get('/api/home/timeline');
-    await Promise.all(pending);
-    const row = db.sql
-      .prepare('SELECT last_seen_at FROM timeline_scope_state WHERE scope_id = ?')
-      .get(ME) as { last_seen_at: number | null };
-    expect(row.last_seen_at).toBeNull();
-  });
-
   it.each([
     ['/api/home?tz=Mars%2FOlympus', 'tz_invalid'],
-    ['/api/home?limit=0', 'limit_invalid'],
-    ['/api/home?limit=101', 'limit_invalid'],
-    ['/api/home?limit=2.5', 'limit_invalid'],
-    ['/api/home/timeline?cursor=junk', 'cursor_invalid'],
-    ['/api/home/timeline?cursor=12%3A', 'cursor_invalid'],
+    ['/api/home?tz=' + 'A'.repeat(65), 'tz_invalid'],
   ])('refuses %s as %s', async (path, token) => {
     const res = await get(path);
     expect(res.status).toBe(400);
@@ -504,6 +457,8 @@ describe('the read', () => {
     );
     expect(post.status).toBe(404);
     expect((await get('/api/home/elsewhere')).status).toBe(404);
+    // Home has no Timeline of its own any more.
+    expect((await get('/api/home/timeline')).status).toBe(404);
     expect((await get('/api/timeline')).status).toBe(404);
   });
 });

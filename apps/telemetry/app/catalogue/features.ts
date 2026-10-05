@@ -245,8 +245,8 @@ export const EDITOR_MODE_SWITCHES = chart(
   'Editor',
   'Changed',
   'Editor Mode Switches',
-  'A tab switched to Diagram mode or Draw mode by the person working on it.',
-  { types: ['ModeDiagram', 'ModeDraw'] },
+  'A tab switched to Diagram, Draw or Illustrate mode by the person working on it.',
+  { types: ['ModeDiagram', 'ModeDraw', 'ModeIllustrate'] },
 );
 
 // The mode a tab opens in, set from the tab menu's Opens in (docs/specs/007-editor/editor-modes.md).
@@ -254,8 +254,135 @@ export const TAB_OPENS_IN = chart(
   'Tab',
   'Changed',
   'Opening Modes Set',
-  'A tab set to open in Diagram mode or Draw mode for everyone, from the tab menu.',
-  { types: ['OpensInDiagram', 'OpensInDraw'] },
+  'A tab set to open in Diagram, Draw or Illustrate mode for everyone, from the tab menu.',
+  { types: ['OpensInDiagram', 'OpensInDraw', 'OpensInIllustrate'] },
+);
+
+// Illustrate mode's A4 page turned portrait or landscape (docs/specs/007-editor/editor-modes.md "The page").
+export const PAGE_ORIENTATION = chart(
+  'Tab',
+  'Changed',
+  'Page Orientations Set',
+  "An Illustrate tab's A4 page turned to portrait or landscape, from the page's settings.",
+  { types: ['PagePortrait', 'PageLandscape'] },
+);
+
+// Illustrate pages added after the last one, or deleted (docs/specs/007-editor/editor-modes.md "The pages").
+export const ILLUSTRATE_PAGES = chart(
+  'Tab',
+  'Changed',
+  'Illustrate Pages Added and Deleted',
+  'A page added to an Illustrate tab from the plus after its last page (an infographic page, or a new article), or deleted from its settings.',
+  {
+    types: [
+      'PageAdded',
+      'ArticleAdded',
+      'PageRemoved',
+      'ArticlesToPages',
+      'PageKindInfographic',
+      'PageKindArticle',
+    ],
+  },
+);
+
+// An Illustrate page's own settings (docs/specs/007-editor/illustrate-pages.md).
+export const ILLUSTRATE_PAGE_SETUP = chart(
+  'Tab',
+  'Changed',
+  'Illustrate Pages Set Up',
+  "An Illustrate page's size, name, background or pattern changed from its panel.",
+  { types: ['PageSize', 'PageRenamed', 'PageBackground', 'PagePattern'] },
+);
+
+// Building Illustrate pages: a layout placed, a page duplicated or moved.
+export const ILLUSTRATE_PAGE_BUILDING = chart(
+  'Tab',
+  'Changed',
+  'Illustrate Pages Built',
+  'A layout put onto an Illustrate page, a page duplicated or moved, or a tab laid out into pages.',
+  { types: ['PageLayout', 'PageDuplicated', 'PageMoved', 'PagesLaidOut'] },
+);
+
+// Leaving Illustrate past the pages warning (docs/specs/007-editor/editor-modes.md "Leaving
+// Illustrate"): how often people go on to Diagram or Draw once told their pages will not show.
+export const LEAVE_ILLUSTRATE_CONFIRMED = chart(
+  'Editor',
+  'Changed',
+  'Illustrate Left Past the Warning',
+  'Someone switched an Illustrate tab with pages to Diagram or Draw after the warning that its pages do not show there.',
+  { types: ['LeaveIllustrateConfirmed'] },
+);
+
+// An empty infographic page's in-page layout card hidden (docs/specs/007-editor/illustrate-pages.md
+// "Layouts"): set beside Page Layout to see whether the card helps or gets in the way.
+export const EMPTY_PAGE_LAYOUTS_HIDDEN = chart(
+  'UI',
+  'Closed',
+  'Empty Page Layouts Hidden',
+  'Someone hid the Start From a Layout card an empty infographic page shows inside itself.',
+  { types: ['EmptyPageLayouts'] },
+);
+
+// Writing articles (docs/specs/007-editor/article-pages.md "Telemetry").
+export const ARTICLE_INSERTS = chart(
+  'Element',
+  'Added',
+  'Article Inserts',
+  'Something put into the writing of an article: an image, table, chart or drawing at the caret, an object or drawing taken in from the palette, or a divider, page break, quote or code block.',
+  {
+    types: [
+      'ArticleImage',
+      'ArticleTable',
+      'ArticleChart',
+      'ArticleCallout',
+      'ArticleSticky',
+      'ArticleDrawing',
+      'ArticleObject',
+      'ArticleDivider',
+      'ArticlePageBreak',
+      'ArticleQuote',
+      'ArticleCode',
+      'ArticleComment',
+      'ArticleAction',
+    ],
+  },
+);
+
+export const ARTICLE_FORMATTING = chart(
+  'Element',
+  'Changed',
+  'Article Formatting',
+  "The page toolbar used on an article's writing (a format, a text style or list, a link) and a zone in the writing wrapped, placed or deleted.",
+  {
+    types: [
+      'ArticleFormat',
+      'ArticleBlockStyle',
+      'ArticleLink',
+      'ArticlePaste',
+      'ArticleZoneWrap',
+      'ArticleZoneResized',
+      'ArticleZoneMoved',
+      'ArticleZoneFloat',
+      'ArticleZoneRemoved',
+    ],
+  },
+);
+
+export const ARTICLE_LOOKS = chart(
+  'Tab',
+  'Changed',
+  'Article Looks',
+  "An article's look chosen in its Style tab, or one of its style fields changed.",
+  {
+    types: [
+      'ArticleLookClean',
+      'ArticleLookClassic',
+      'ArticleLookReport',
+      'ArticleLookNotebook',
+      'ArticleLookBold',
+      'ArticleStyle',
+    ],
+  },
 );
 
 export const WHITEBOARDS: MetricStack = {
@@ -266,7 +393,16 @@ export const WHITEBOARDS: MetricStack = {
   members: [
     WHITEBOARDS_CREATED,
     EDITOR_MODE_SWITCHES,
+    LEAVE_ILLUSTRATE_CONFIRMED,
     TAB_OPENS_IN,
+    PAGE_ORIENTATION,
+    ILLUSTRATE_PAGES,
+    ILLUSTRATE_PAGE_SETUP,
+    ILLUSTRATE_PAGE_BUILDING,
+    EMPTY_PAGE_LAYOUTS_HIDDEN,
+    ARTICLE_INSERTS,
+    ARTICLE_FORMATTING,
+    ARTICLE_LOOKS,
     WHITEBOARD_PENS,
     WHITEBOARD_SETTINGS,
     WHITEBOARD_RECOGNITION,
@@ -542,17 +678,6 @@ export const EDITOR_SEARCH: MetricStack = {
 };
 
 // The palette beyond adding elements (Palette tab has the rankings).
-export const PALETTE_FAVOURITES = chart(
-  'UI',
-  'Added',
-  'Palette Favourites',
-  'Favourites added, removed, reordered, or the editor opened.',
-  {
-    actionIn: ['Removed', 'Changed', 'Toggled'],
-    typeIn: (type) => (type ?? '').startsWith('PaletteFavourite'),
-  },
-);
-
 export const PALETTE_SEARCHES = chart(
   'UI',
   'Searched',
@@ -582,9 +707,8 @@ export const TOOLBAR_CATEGORY = chart(
 export const PALETTE_USE: MetricStack = {
   stack: true,
   title: 'Palette Use',
-  blurb:
-    'How the palette gets used beyond adding elements: favourites, searches, groups, and the toolbar.',
-  members: [PALETTE_FAVOURITES, PALETTE_SEARCHES, PALETTE_GROUPS_OPENED, TOOLBAR_CATEGORY],
+  blurb: 'How the palette gets used beyond adding elements: searches, groups, and the toolbar.',
+  members: [PALETTE_SEARCHES, PALETTE_GROUPS_OPENED, TOOLBAR_CATEGORY],
   seeAlso: { view: 'palette', label: 'See Each Element on the Palette Tab' },
 };
 
@@ -700,6 +824,13 @@ export const SHORTCUTS_OPENED = opened(
   (t) => t === 'Shortcuts',
 );
 
+// Edit Outline (docs/specs/009-elements/mind-node.md): how often a mind map is opened as text.
+export const MIND_OUTLINE_OPENED = opened(
+  'Mind Map Outline Opened',
+  "A mind map's outline opened to edit it as text.",
+  (t) => t === 'MindOutline',
+);
+
 export const TOUR_OFFERED = opened(
   'Tour Offered',
   'The welcome tour offered.',
@@ -767,6 +898,7 @@ export const PANELS_OPENED: MetricStack = {
     PICKERS_OPENED,
     HELP_FROM_EDITOR,
     SHORTCUTS_OPENED,
+    MIND_OUTLINE_OPENED,
     OTHER_OPENED,
   ],
   seeAlso: { view: 'editing', label: 'See Each Dialog on the Editing Tab' },

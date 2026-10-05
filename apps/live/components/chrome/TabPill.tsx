@@ -5,6 +5,7 @@ import type { Participant } from '@/lib/identity';
 import { legibleTabAccent } from '@/lib/tab-accent';
 import { TabLockIcon } from '@/components/chrome/tab-bar-icons';
 import { TabPresenceStack } from '@/components/chrome/TabPresenceStack';
+import { TabModeIcon } from './editor-mode/TabModeIcon';
 import { EllipsisMenuButton } from './EllipsisMenuButton';
 import { OutOfScopeTabPill } from './OutOfScopeTabPill';
 import type { useTabReorderDrag } from './useTabReorderDrag';
@@ -110,7 +111,7 @@ export function TabPill({ tab, ctx }: { tab: Tab; ctx: TabPillCtx }) {
       // Active tab: a raised card (bar-contrasting surface + accent ring +
       // accent text) so it can't blend into the bar; inactive tabs use
       // neutral slate text — readable on the bar whatever the tab's theme —
-      // with the theme accent kept as the identity dot inside the label.
+      // with the theme accent kept on the opening-mode icon inside the label.
       // color-mix keeps the ring legible for non-hex accents too.
       style={
         isActive && !isEditing
@@ -130,7 +131,7 @@ export function TabPill({ tab, ctx }: { tab: Tab; ctx: TabPillCtx }) {
           ? 'px-0'
           : isActive
             ? // The trailing ellipsis button carries its own padding around the glyph, so the pill's
-              // own trailing padding is trimmed to balance the dot's side (optical-alignment.md).
+              // own trailing padding is trimmed to balance the icon's side (optical-alignment.md).
               readOnly
               ? 'px-2.5'
               : 'pl-2.5 pr-1'
@@ -163,13 +164,10 @@ export function TabPill({ tab, ctx }: { tab: Tab; ctx: TabPillCtx }) {
           aria-current={isActive ? 'page' : undefined}
           className="flex h-7 items-center gap-1.5 rounded-lg text-sm font-medium"
         >
-          {/* The tab theme's accent as a small identity dot — the pill text
-              itself stays neutral so it reads on the bar for ANY theme. */}
-          <span
-            aria-hidden
-            className="h-1.5 w-1.5 shrink-0 rounded-full"
-            style={{ backgroundColor: legibleTabAccent(tab, isDark) }}
-          />
+          {/* The mode you work in on this tab (docs/specs/007-editor/editor-modes.md), tinted with
+              the tab theme's accent; the pill text itself stays neutral so it reads on the bar for
+              ANY theme. */}
+          <TabModeIcon tab={tab} style={{ color: legibleTabAccent(tab, isDark) }} />
           {tab.locked ? <TabLockIcon /> : null}
           {/* Trimmed to its cap band so the name centres on its letters; the button's height is
               pinned because the trimmed name no longer props it open. */}

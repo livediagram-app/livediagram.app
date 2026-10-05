@@ -1,0 +1,649 @@
+// Page layouts (docs/specs/007-editor/illustrate-pages.md "Layouts"): ready-made arrangements put
+// onto ONE Infographic page, to start from and then edit. Pure builders: the page's content box (the
+// page less its margins) in, ordinary elements out, laid out in proportions of the box so a layout
+// fits every size and orientation. Elements carry no colours of their own: the tab's theme paints
+// them, and a dark page inks them light. A "wide" box (landscape, a slide) gets a side-by-side
+// arrangement where a stack would be squashed.
+import type { Element } from '@livediagram/document';
+import { heading, kit, verticalSteps, type Kit, type LayoutBox } from './page-layout-kit';
+import {
+  buildChecklist,
+  buildEvent,
+  buildFactsGrid,
+  buildQuote,
+  buildTeam,
+} from './page-layouts-extra';
+import {
+  buildAgenda,
+  buildPoster,
+  buildProfile,
+  buildProgressReport,
+  buildQuestions,
+  buildRoadmap,
+  buildSectionDivider,
+  buildSurveyResults,
+} from './page-layouts-more';
+
+import { buildBeforeAfter, buildFeatureMatrix, buildProsCons } from './page-layouts-compare';
+import { buildAnnouncement, buildDidYouKnow, buildSaveTheDate } from './page-layouts-social';
+import { buildCycle, buildFunnel, buildPictogram, buildRanking } from './page-layouts-figures';
+
+export type { LayoutBox } from './page-layout-kit';
+
+export type PageLayoutId =
+  | 'title'
+  | 'big-number'
+  | 'key-stats'
+  | 'process'
+  | 'timeline'
+  | 'comparison'
+  | 'chart-story'
+  | 'top-tips'
+  | 'quote'
+  | 'team'
+  | 'facts-grid'
+  | 'checklist'
+  | 'event'
+  | 'section-divider'
+  | 'poster'
+  | 'survey-results'
+  | 'progress-report'
+  | 'roadmap'
+  | 'agenda'
+  | 'questions'
+  | 'profile'
+  | 'pros-cons'
+  | 'before-after'
+  | 'feature-matrix'
+  | 'announcement'
+  | 'did-you-know'
+  | 'save-the-date'
+  | 'pictogram'
+  | 'ranking'
+  | 'cycle'
+  | 'funnel';
+
+// The layout picker's categories (docs/specs/007-editor/illustrate-pages.md "Layouts"), in order.
+export type PageLayoutCategoryId = 'covers' | 'data' | 'steps' | 'compare' | 'people' | 'social';
+
+export const PAGE_LAYOUT_CATEGORIES: readonly { id: PageLayoutCategoryId; label: string }[] = [
+  { id: 'covers', label: 'Covers' },
+  { id: 'data', label: 'Data' },
+  { id: 'steps', label: 'Steps and Time' },
+  { id: 'compare', label: 'Compare' },
+  { id: 'people', label: 'People and Ideas' },
+  { id: 'social', label: 'Social' },
+];
+
+function titlePage(k: Kit): Element[] {
+  const { width: W, height: H } = k.box;
+  const { u } = k;
+  const head = [
+    k.text(0, 0, W * 0.6, u * 5, 'ANNUAL REPORT 2026', { textBold: true }),
+    k.title(0, u * 6, k.wide ? W * 0.5 : W, u * 16, 'Your big headline'),
+    // A short accent rule between the headline and the line under it.
+    k.shape('square', 0, u * 23, u * 14, u * 1.2, { label: '', borderRadius: 'full' }),
+    k.text(
+      0,
+      u * 27,
+      k.wide ? W * 0.45 : W * 0.85,
+      u * 12,
+      'One line on what this page shows, and why it matters.',
+      { textSize: 'lg' },
+    ),
+  ];
+  const footer = k.text(0, H - u * 5, W, u * 5, 'Prepared by your team · October 2026');
+  const image = k.wide
+    ? k.image(W * 0.52, 0, W * 0.48, H - u * 8)
+    : k.image(0, u * 42, W, H - u * 50);
+  return [...head, image, footer];
+}
+
+function bigNumber(k: Kit): Element[] {
+  const { width: W, height: H } = k.box;
+  const { u } = k;
+  const body = 'Show the one figure that matters, then say here what it means and why it moved.';
+  if (k.wide) {
+    return [
+      k.title(0, H * 0.18, W * 0.5, H * 0.42, '73%'),
+      k.text(0, H * 0.64, W * 0.45, u * 10, 'of teams now ship every week', {
+        textSize: 'lg',
+        textBold: true,
+      }),
+      k.text(W * 0.55, H * 0.22, W * 0.45, H * 0.42, body, { textSize: 'lg' }),
+      k.shape('progress-bar', W * 0.55, H * 0.7, W * 0.45, u * 5, { progress: 73 }),
+      source(k),
+    ];
+  }
+  return [
+    k.title(0, H * 0.14, W, H * 0.26, '73%'),
+    k.text(0, H * 0.43, W, u * 10, 'of teams now ship every week', {
+      textSize: 'lg',
+      textBold: true,
+    }),
+    k.text(0, H * 0.53, W * 0.85, H * 0.18, body, { textSize: 'lg' }),
+    k.shape('progress-bar', 0, H * 0.78, W, u * 5, { progress: 73 }),
+    source(k),
+  ];
+}
+
+// The line an infographic owes its numbers: where they came from, at the foot of the page.
+function source(k: Kit, label = 'Source: say where these numbers come from, and when.'): Element {
+  return k.text(0, k.box.height - k.u * 6, k.box.width, k.u * 6, label);
+}
+
+function keyStats(k: Kit): Element[] {
+  const { width: W, height: H } = k.box;
+  const { u } = k;
+  const head = heading(k, 'The year in numbers', 'Twelve months, six numbers.');
+  const rowH = u * 18;
+  const row = (y: number, stats: [string, string][]) =>
+    k.shape('stat-row', 0, y, W, rowH, {
+      borderRadius: 'md',
+      stats: stats.map(([value, caption]) => ({ value, caption })),
+    });
+  const calloutH = u * 20;
+  const rowsEnd = head.top + 2 * rowH + u * 4;
+  const chartRoom = H - calloutH - u * 8 - rowsEnd;
+  const els: Element[] = [
+    ...head.els,
+    row(head.top, [
+      ['12k', 'Customers'],
+      ['94%', 'Would recommend'],
+      ['3.2x', 'Growth'],
+    ]),
+    row(head.top + rowH + u * 4, [
+      ['48', 'Countries'],
+      ['1.4M', 'Orders'],
+      ['24/7', 'Support'],
+    ]),
+  ];
+  // A trend between the figures and the takeaway, where the page has room for one.
+  if (chartRoom > u * 24) {
+    els.push(
+      k.shape('line-chart', 0, rowsEnd + u * 4, W, chartRoom, {
+        lineCategories: ['Jan', 'Mar', 'May', 'Jul', 'Sep', 'Nov'],
+        lineSeries: [{ name: 'Customers', values: [3, 4.2, 5.8, 7.1, 9.6, 12] }],
+        chartLegend: false,
+      }),
+    );
+  }
+  els.push(
+    k.shape('callout', 0, H - calloutH, W, calloutH, {
+      pageTitle: 'Takeaway',
+      label: 'Say what the numbers mean in one or two sentences.',
+      textSize: 'md',
+    }),
+  );
+  return els;
+}
+
+const STEPS = [
+  ['Plan', 'Agree the goal and who it is for.'],
+  ['Build', 'Make the smallest thing that works.'],
+  ['Launch', 'Put it in front of real people.'],
+  ['Learn', 'Measure what happened, then go again.'],
+] as const;
+
+function process(k: Kit): Element[] {
+  const { width: W } = k.box;
+  const { u } = k;
+  const head = heading(k, 'How it works', 'Four steps from idea to impact.');
+  if (!k.wide) return [...head.els, ...verticalSteps(k, head.top, STEPS, (i) => `${i + 1}`)];
+  const procH = u * 22;
+  const colW = W / STEPS.length;
+  return [
+    ...head.els,
+    k.shape('process', 0, head.top, W, procH, { processSteps: STEPS.map(([name]) => name) }),
+    ...STEPS.map(([, note], i) =>
+      k.text(i * colW + u, head.top + procH + u * 4, colW - u * 2, u * 24, note, {
+        textAlignX: 'center',
+      }),
+    ),
+    k.shape('callout', 0, k.box.height - u * 20, W, u * 20, {
+      pageTitle: 'Why it works',
+      label: 'Small steps, real feedback, and a loop that never stops.',
+      textSize: 'md',
+    }),
+  ];
+}
+
+const MILESTONES = [
+  ['2022', 'Founded', 'Two people and a spare room.'],
+  ['2023', 'First customer', 'A local bakery, still with us.'],
+  ['2024', 'Series A', 'Funding to build the team.'],
+  ['2025', 'Went global', 'Customers in 48 countries.'],
+  ['2026', 'What is next', 'Say where you are heading.'],
+] as const;
+
+function timeline(k: Kit): Element[] {
+  const { width: W } = k.box;
+  const { u } = k;
+  const head = heading(k, 'Our journey', 'From a spare room to 48 countries.');
+  if (!k.wide) {
+    return [
+      ...head.els,
+      ...verticalSteps(
+        k,
+        head.top,
+        MILESTONES.map(([, name, note]) => [name, note] as const),
+        (i) => MILESTONES[i]![0],
+        'md',
+      ),
+    ];
+  }
+  const railH = u * 18;
+  const n = MILESTONES.length;
+  // The rail's own point spacing (RailView): inset by min(44, 12% of its width) each side. The rail
+  // is drawn in from the box's sides just enough that the end notes, centred under the end points,
+  // stay inside it: inset + pad = half a note = 0.46 of a step.
+  const railPad = (w: number) => Math.min(44, w * 0.12);
+  let inset = 0;
+  for (let i = 0; i < 3; i += 1) {
+    const pad = railPad(W - 2 * inset);
+    const half = (0.46 * (W - 2 * inset - 2 * pad)) / (n - 1);
+    inset = Math.max(0, half - pad);
+  }
+  const railW = W - 2 * inset;
+  const pad = railPad(railW);
+  const step = (railW - 2 * pad) / (n - 1);
+  const noteW = step * 0.92;
+  return [
+    ...head.els,
+    k.shape('timeline-rail', inset, head.top, railW, railH, {
+      railCount: n,
+      railLabels: MILESTONES.map(([year]) => year),
+    }),
+    ...MILESTONES.flatMap(([, name, note], i) => {
+      const x = Math.max(0, inset + pad + i * step - noteW / 2);
+      const y = head.top + railH + u * 3;
+      return [
+        k.text(x, y, noteW, u * 7, name, { textBold: true, textAlignX: 'center' }),
+        k.text(x, y + u * 8, noteW, u * 16, note, { textAlignX: 'center' }),
+      ];
+    }),
+    k.shape('stat-row', 0, k.box.height - u * 20, W, u * 20, {
+      borderRadius: 'md',
+      stats: [
+        { value: '4', caption: 'Years' },
+        { value: '48', caption: 'Countries' },
+        { value: '120', caption: 'People' },
+      ],
+    }),
+  ];
+}
+
+function comparison(k: Kit): Element[] {
+  const { width: W, height: H } = k.box;
+  const { u } = k;
+  const head = heading(k, 'Before and after', 'What changed when we switched.');
+  const gap = u * 6;
+  const colW = (W - gap) / 2;
+  const verdictH = u * 18;
+  const rowsTop = head.top + u * 18;
+  // The rows share the column down to the verdict, their type growing with the room.
+  const rowH = (H - verdictH - u * 6 - rowsTop) / 3;
+  const icon = Math.min(u * 10, rowH * 0.6);
+  const lineSize = rowH > u * 24 ? 'lg' : 'md';
+  const column = (x: number, title: string, iconId: string, lines: string[]) => [
+    k.shape('square', x, head.top, colW, u * 12, {
+      label: title,
+      textBold: true,
+      textSize: 'lg',
+      borderRadius: 'md',
+    }),
+    ...lines.flatMap((line, i) => {
+      const y = rowsTop + i * rowH;
+      return [
+        k.shape('icon', x, y, icon, icon, { iconId }),
+        k.text(x + icon + u * 4, y, colW - icon - u * 4, rowH - u * 2, line, {
+          textSize: lineSize,
+        }),
+      ];
+    }),
+  ];
+  return [
+    ...head.els,
+    ...column(0, 'Before', 'clock', [
+      'Hours of manual work',
+      'Data in five places',
+      'Answers next week',
+    ]),
+    ...column(colW + gap, 'After', 'check-circle', [
+      'Done in minutes',
+      'One source of truth',
+      'Answers right now',
+    ]),
+    k.shape('callout', 0, H - verdictH, W, verdictH, {
+      pageTitle: 'The verdict',
+      label: 'Sum up the difference in one sentence.',
+      textSize: 'md',
+    }),
+  ];
+}
+
+function chartStory(k: Kit): Element[] {
+  const { width: W, height: H } = k.box;
+  const { u } = k;
+  const head = heading(k, 'What the data says', 'Four quarters of steady growth.');
+  const bars = (w: number, h: number, x: number, y: number) =>
+    k.shape('bar-chart', x, y, w, h, {
+      pieSlices: [
+        { label: 'Q1', value: 32 },
+        { label: 'Q2', value: 45 },
+        { label: 'Q3', value: 51 },
+        { label: 'Q4', value: 68 },
+      ],
+      chartLegend: false,
+    });
+  const ring = (side: number, x: number, y: number) =>
+    k.shape('progress-ring', x, y, side, side, { progress: 68, label: '68%', textSize: 'lg' });
+  const takeaways = [
+    ['trending-up', 'Revenue grew every quarter.'],
+    ['users', 'Most growth came from referrals.'],
+    ['target', 'Next: hit 80% by Q2.'],
+  ] as const;
+  const rows = (x: number, y: number, w: number, h: number) => {
+    const rowH = h / takeaways.length;
+    const icon = Math.min(u * 8, rowH * 0.7);
+    return takeaways.flatMap(([iconId, line], i) => {
+      const ry = y + i * rowH;
+      return [
+        k.shape('icon', x, ry, icon, icon, { iconId }),
+        k.text(x + icon + u * 3, ry, w - icon - u * 3, rowH, line),
+      ];
+    });
+  };
+  // A caption names the chart; the source line sits at the foot.
+  const capH = u * 8;
+  const foot = u * 9;
+  const caption = (x: number, y: number, w: number) =>
+    k.text(x, y, w, capH, 'Revenue by quarter, £k', { textBold: true });
+  const avail = H - head.top - foot;
+  if (k.wide) {
+    const chartW = W * 0.58;
+    const sideW = W - chartW - u * 6;
+    const side = Math.min(sideW, avail * 0.45);
+    const restY = head.top + side + u * 6;
+    return [
+      ...head.els,
+      caption(0, head.top, chartW),
+      bars(chartW, avail - capH, 0, head.top + capH),
+      ring(side, chartW + u * 6, head.top),
+      ...rows(chartW + u * 6, restY, sideW, head.top + avail - restY),
+      source(k),
+    ];
+  }
+  const chartH = (avail - capH) * 0.55;
+  const lowerY = head.top + capH + chartH + u * 6;
+  const side = Math.min(W * 0.38, head.top + avail - lowerY);
+  return [
+    ...head.els,
+    caption(0, head.top, W),
+    bars(W, chartH, 0, head.top + capH),
+    ring(side, 0, lowerY),
+    ...rows(side + u * 6, lowerY, W - side - u * 6, side),
+    source(k),
+  ];
+}
+
+function topTips(k: Kit): Element[] {
+  const { width: W, height: H } = k.box;
+  const { u } = k;
+  const head = heading(k, 'Five tips to get started');
+  const tips = [
+    ['zap', 'Start small: one page, one idea.'],
+    ['target', 'Lead with the number that matters most.'],
+    ['star', 'Use one accent colour, and use it on purpose.'],
+    ['clock', 'Cut every word that does not earn its place.'],
+    ['check-circle', 'Read it at a glance before you share it.'],
+  ] as const;
+  const rowH = Math.min(u * 24, (H - head.top) / tips.length);
+  const icon = Math.min(u * 12, rowH * 0.6);
+  return [
+    ...head.els,
+    ...tips.flatMap(([iconId, line], i) => {
+      const y = head.top + i * rowH;
+      return [
+        k.shape('icon', 0, y, icon, icon, { iconId }),
+        k.text(icon + u * 5, y, W - icon - u * 5, icon, line, {
+          textSize: 'lg',
+          textAlignY: 'middle',
+        }),
+      ];
+    }),
+  ];
+}
+
+export type PageLayout = {
+  id: PageLayoutId;
+  label: string;
+  category: PageLayoutCategoryId;
+  // One line for the picker's tooltip.
+  description: string;
+  build: (box: LayoutBox) => Element[];
+};
+
+export const PAGE_LAYOUTS: readonly PageLayout[] = [
+  {
+    id: 'title',
+    category: 'covers',
+    label: 'Title page',
+    description: 'A big title, a subtitle, an image and a footer line',
+    build: (b) => titlePage(kit(b)),
+  },
+  {
+    id: 'big-number',
+    category: 'data',
+    label: 'Big number',
+    description: 'One huge figure, its caption and a short paragraph',
+    build: (b) => bigNumber(kit(b)),
+  },
+  {
+    id: 'key-stats',
+    category: 'data',
+    label: 'Key stats',
+    description: 'Two rows of three figures and a takeaway',
+    build: (b) => keyStats(kit(b)),
+  },
+  {
+    id: 'process',
+    category: 'steps',
+    label: 'Process',
+    description: 'Four numbered steps, each with a note',
+    build: (b) => process(kit(b)),
+  },
+  {
+    id: 'timeline',
+    category: 'steps',
+    label: 'Timeline',
+    description: 'Five dated milestones, each with a note',
+    build: (b) => timeline(kit(b)),
+  },
+  {
+    id: 'comparison',
+    category: 'compare',
+    label: 'Comparison',
+    description: 'Two columns of three points, side by side',
+    build: (b) => comparison(kit(b)),
+  },
+  {
+    id: 'chart-story',
+    category: 'data',
+    label: 'Chart story',
+    description: 'A bar chart, a progress ring and three takeaways',
+    build: (b) => chartStory(kit(b)),
+  },
+  {
+    id: 'top-tips',
+    category: 'people',
+    label: 'Top tips',
+    description: 'Five tips, each an icon beside a line',
+    build: (b) => topTips(kit(b)),
+  },
+  {
+    id: 'quote',
+    category: 'covers',
+    label: 'Quote',
+    description: 'A big quote and who said it',
+    build: buildQuote,
+  },
+  {
+    id: 'team',
+    category: 'people',
+    label: 'Team',
+    description: 'Six people, a photo, name and role each',
+    build: buildTeam,
+  },
+  {
+    id: 'facts-grid',
+    category: 'data',
+    label: 'Facts grid',
+    description: 'Six cards, each an icon, a figure and a caption',
+    build: buildFactsGrid,
+  },
+  {
+    id: 'checklist',
+    category: 'steps',
+    label: 'Checklist',
+    description: 'A checklist and how much of it is done',
+    build: buildChecklist,
+  },
+  {
+    id: 'event',
+    category: 'covers',
+    label: 'Event',
+    description: 'An invitation: title, image, when and where, and a call to action',
+    build: buildEvent,
+  },
+  {
+    id: 'section-divider',
+    category: 'covers',
+    label: 'Section divider',
+    description: 'A big section number, a title and a line on what follows',
+    build: buildSectionDivider,
+  },
+  {
+    id: 'poster',
+    category: 'covers',
+    label: 'Poster',
+    description: 'A large image, a bold headline and a footer',
+    build: buildPoster,
+  },
+  {
+    id: 'survey-results',
+    category: 'data',
+    label: 'Survey results',
+    description: 'A pie chart of the answers and three headline figures',
+    build: buildSurveyResults,
+  },
+  {
+    id: 'progress-report',
+    category: 'data',
+    label: 'Progress report',
+    description: 'Four goals, each with a progress bar',
+    build: buildProgressReport,
+  },
+  {
+    id: 'roadmap',
+    category: 'steps',
+    label: 'Roadmap',
+    description: 'Now, Next and Later, three items each',
+    build: buildRoadmap,
+  },
+  {
+    id: 'agenda',
+    category: 'steps',
+    label: 'Agenda',
+    description: 'Six timed items, each with a note',
+    build: buildAgenda,
+  },
+  {
+    id: 'questions',
+    category: 'people',
+    label: 'Questions and answers',
+    description: 'Four questions and their answers',
+    build: buildQuestions,
+  },
+  {
+    id: 'profile',
+    category: 'people',
+    label: 'Profile',
+    description: 'A photo, a name, a short bio and three facts',
+    build: buildProfile,
+  },
+  {
+    id: 'pros-cons',
+    category: 'compare',
+    label: 'Pros and cons',
+    description: 'Four pros and four cons side by side, and a verdict',
+    build: buildProsCons,
+  },
+  {
+    id: 'before-after',
+    category: 'compare',
+    label: 'Before and after',
+    description: 'Two panels, an image and three points each, and the change in one figure',
+    build: buildBeforeAfter,
+  },
+  {
+    id: 'feature-matrix',
+    category: 'compare',
+    label: 'Feature matrix',
+    description: 'Three options against five features, ticks and dashes, one recommended',
+    build: buildFeatureMatrix,
+  },
+  {
+    id: 'announcement',
+    category: 'social',
+    label: 'Announcement',
+    description: 'A New badge, a big headline, an image and a call to action',
+    build: buildAnnouncement,
+  },
+  {
+    id: 'did-you-know',
+    category: 'social',
+    label: 'Did you know?',
+    description: 'One surprising fact, set large under an icon, with its source',
+    build: buildDidYouKnow,
+  },
+  {
+    id: 'save-the-date',
+    category: 'social',
+    label: 'Save the date',
+    description: 'The date in a calendar tile, the event and where',
+    build: buildSaveTheDate,
+  },
+  {
+    id: 'pictogram',
+    category: 'data',
+    label: 'Pictogram',
+    description: 'A figure like 7 in 10, shown as ten people, seven filled',
+    build: buildPictogram,
+  },
+  {
+    id: 'ranking',
+    category: 'data',
+    label: 'Ranking',
+    description: 'Five ranked rows, each with a bar sized to its value',
+    build: buildRanking,
+  },
+  {
+    id: 'cycle',
+    category: 'steps',
+    label: 'Cycle',
+    description: 'Four stages round a loop, each with an icon and a note',
+    build: buildCycle,
+  },
+  {
+    id: 'funnel',
+    category: 'steps',
+    label: 'Funnel',
+    description: 'Four narrowing stages and the conversion between them',
+    build: buildFunnel,
+  },
+];
+
+export function pageLayoutById(id: PageLayoutId): PageLayout {
+  return PAGE_LAYOUTS.find((l) => l.id === id)!;
+}

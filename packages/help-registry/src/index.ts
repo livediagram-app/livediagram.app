@@ -197,7 +197,7 @@ export const categories: Category[] = [
     title: 'Canvas',
     description:
       'Master the infinite canvas where diagrams come together: placing, selecting, linking, annotating, noting, layering, rotating, animating, shadowing, locking, undoing, theming, and templating.',
-    articleCount: 24,
+    articleCount: 25,
     kind: 'feature',
   },
   {
@@ -588,7 +588,8 @@ export const articles: Article[] = [
     slug: 'working-with-documents',
     title: 'Working with Documents',
     description: 'Worked examples: list, read, create, and update documents, tabs, and folders.',
-    keywords: 'examples curl crud create update list read api requests diagrams',
+    keywords:
+      'examples curl crud create update list read api requests diagrams outline view text agent',
     category: 'Developers',
     categorySlug: 'developers',
   },
@@ -897,10 +898,10 @@ export const articles: Article[] = [
   },
   // ---- Palette landings: Elements ----
   {
-    slug: 'favourites',
-    title: 'Favourites',
-    description: 'Your go-to tiles from every category in one editable grid.',
-    keywords: 'favourites favorites pinned custom controls edit quick grid',
+    slug: 'popular',
+    title: 'Popular',
+    description: 'The tiles most reached for, in the grid the palette opens on.',
+    keywords: 'popular common default quick grid landing favourites favorites everyday',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Elements',
@@ -989,16 +990,26 @@ export const articles: Article[] = [
     title: 'Mind Maps',
     description: 'Tab adds a child, Enter a sibling — build a branch from the keyboard.',
     keywords:
-      'mind map mindmap node branch child sibling tab enter keyboard tree hierarchy brainstorm outline',
+      'mind map mindmap node branch child sibling tab enter keyboard tree hierarchy brainstorm outline edit outline markdown list indent bullets',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Elements',
   },
   {
+    slug: 'edit-outline',
+    title: 'Edit a Mind Map as an Outline',
+    description: 'Rewrite a whole mind map as an indented list, then save it back in one go.',
+    keywords:
+      'mind map mindmap outline edit outline list bullets indent outdent restructure rearrange reorder text markdown paste bold italic underline rows tree hierarchy bulk',
+    category: 'Palette',
+    categorySlug: 'palette/mind-maps',
+    parentSlug: 'mind-maps',
+  },
+  {
     slug: 'collaborate',
     title: 'Collaborate elements',
     description:
-      'The Behaviours groups that collect what the room thinks: comment panels, action panels, estimates, quizzes, temperature checks, idea boxes, Q&A boards, agendas, decisions and roll calls.',
+      'The Collaborate groups that collect what the room thinks: comment panels, action panels, estimates, quizzes, temperature checks, idea boxes, Q&A boards, agendas, decisions and roll calls.',
     keywords:
       'collaborate collaboration comment panel action panel task assign card pin pinned remark note thread reply discuss feedback annotate sticky question estimate estimation planning poker story points fibonacci tshirt t-shirt temperature check fist of five pulse mood vote idea box anonymous brainstorm brainwriting retro retrospective q&a qa slido upvote questions agenda run of show timebox segments decision record adr architecture decision roll call attendance register present room team workshop facilitate facilitation powers of two',
     category: 'Palette',
@@ -1057,7 +1068,7 @@ export const articles: Article[] = [
   },
   {
     slug: 'behaviour',
-    title: 'Behaviours',
+    title: 'Collaborate',
     description:
       'Every element that comes alive with the room: comment and action panels, estimates, quizzes, temperature checks, idea boxes, Q&A boards, Done checks, pickers, session buttons (timer, stopwatch, vote, poll), agendas, decisions, roll calls, reactions, mode buttons, portals and Bring Focus.',
     keywords:
@@ -1199,7 +1210,7 @@ export const articles: Article[] = [
     title: 'Templates',
     description: 'Start from a themed template instead of a blank canvas.',
     keywords:
-      'starter kanban flowchart swot gantt wireframe prebuilt scaffold quick start retro sailboat postmortem risk stakeholder persona agenda objectives crazy 8s opportunity tree',
+      'starter kanban flowchart swot gantt wireframe prebuilt scaffold quick start retro sailboat postmortem risk stakeholder persona agenda objectives crazy 8s opportunity tree article brief document write writing',
     category: 'Canvas',
     categorySlug: 'canvas',
   },
@@ -1222,6 +1233,48 @@ export const articles: Article[] = [
       'draw mode drawing mode diagram mode editor mode switch modes mode switch toggle shift+d shift d opens in open in default mode per tab whiteboards whiteboard white board chalkboard blackboard sketch draw drawing freehand hand drawn ink pen pens marker stylus apple pencil surface pen touch finger palm rejection pinch zoom dock toolbar eraser rubber partial erase stroke erase sticky text shapes shape recognition recognise recognize snap clean up background plain dots dotted grid graph microsoft whiteboard dark mode chalk colour color width thickness path tool vector pen tool bezier curve curves anchor point points node nodes handle handles edit points corner smooth mirrored aligned illustrator figma undo redo settings cog more shapes shape search find a shape flowchart pin pinned unpin favourite shapes frequent most used simple mode dock mode colour picker color picker custom colour hex eyedropper eye dropper your colours remove colour contrast dock position top bottom move the dock tablet ipad snap colours snap to stock colours stock colors custom colors convert colours adaptive nearest colour',
     category: 'Canvas',
     categorySlug: 'canvas',
+  },
+  {
+    slug: 'illustrate',
+    title: 'Illustrate Mode',
+    description:
+      'Work on a tab as pages: sizes for print and social, backgrounds, layouts, then export or present.',
+    keywords:
+      'illustrate illustrate mode infographic infographics poster one pager one-pager flyer handout report page pages sheet sheets a4 a3 letter us letter square social post instagram linkedin story stories slide portrait landscape orientation size page size background article articles write writing document page kind infographic or article first page choice navigator next page previous page backgrounds colour color gradient pattern dots grid lines theme dark page name rename duplicate move reorder drag delete add page snap margins margin fit resize scale lay out into pages diagram to infographic convert mind map editor mode switch modes opens in experimental',
+    category: 'Canvas',
+    categorySlug: 'canvas',
+  },
+  {
+    slug: 'infographic-layouts',
+    title: 'Infographic Layouts',
+    description:
+      'Twenty-one ready-made pages in four categories, previewed on your page as you hover.',
+    keywords:
+      'layout layouts template templates page template start from a layout ready made starter preview hover replace title page big number key stats statistics process steps timeline milestones comparison before after chart story top tips quote testimonial team people facts grid checklist event invitation poster',
+    category: 'Canvas',
+    categorySlug: 'canvas/illustrate',
+    parentSlug: 'illustrate',
+  },
+  {
+    slug: 'articles',
+    title: 'Writing Articles',
+    description:
+      'Write on pages like a doc: text that flows onto new pages, with pictures, charts and drawings in it.',
+    keywords:
+      'article articles write writing document doc word google docs page pages text paragraph heading headings title subtitle list bullet numbered todo checklist quote code divider page break flow overflow new page toolbar formatting bold italic underline link colour color highlight align markdown shortcut slash menu paste picture image chart table sticky drawing inline wrap float move drag resize comment comments action actions assign margin note style look font fonts margins page numbers line spacing lined paper notebook convert page element leave illustrate',
+    category: 'Canvas',
+    categorySlug: 'canvas/illustrate',
+    parentSlug: 'illustrate',
+  },
+  {
+    slug: 'exporting-pages',
+    title: 'Exporting and Presenting Pages',
+    description: 'Every page or one page as a PDF or images, and pages as slides.',
+    keywords:
+      'export download pdf png svg image zip all pages one page import json print printable pages page illustrate infographic slides slide deck present presentation add as slide page slide deck from pages',
+    category: 'Canvas',
+    categorySlug: 'canvas/illustrate',
+    parentSlug: 'illustrate',
   },
   {
     slug: 'using-tabs',
@@ -1394,9 +1447,9 @@ export const articles: Article[] = [
     slug: 'timeline',
     title: 'Home',
     description:
-      'The Explorer\u2019s landing view: the documents you return to most, what others did, and your Timeline.',
+      'The Explorer\u2019s landing view: the documents you use most and last, and what others did.',
     keywords:
-      'home jump back in frecency most opened return often strip what happened others teammates summary expand see all activity all activity your timeline created updated opened phone switch tabs timeline landing start feed activity history what happened whats new latest events log stream notifications updates recent changes calendar month view upcoming expiring stacked grouped collapse day colour color red amber green deleted preview thumbnail card cards grid menu ellipsis rename move duplicate created updated unread unseen new badge since last visit who did what other people filter local time remove dismiss hide clutter tidy clean up refresh live update revoke token accept decline invite leave team edit theme share',
+      'home jump back in within reach most used last used recent see more grid strip return often what happened others teammates summary expand see all activity all activity landing start feed activity history what happened whats new latest events log stream notifications updates recent changes calendar month view upcoming expiring stacked grouped collapse day colour color red amber green deleted preview thumbnail card cards grid menu ellipsis rename move duplicate created updated unread unseen new badge since last visit who did what other people filter local time remove dismiss hide clutter tidy clean up refresh live update revoke token accept decline invite leave team edit theme share',
     category: 'Explorer',
     categorySlug: 'explorer',
   },
@@ -1440,7 +1493,7 @@ export const articles: Article[] = [
     title: 'Default Folders',
     description: 'Choose the folder new diagrams, whiteboards and boards land in automatically.',
     keywords:
-      'default folder where new documents go save location automatic always save here placement file whiteboards retrospectives kanban event storming diagrams use as default settings documents',
+      'default folder where new documents go save location automatic always save here placement file whiteboards retrospectives kanban event storming diagrams use as default settings documents skip location step wizard',
     category: 'Explorer',
     categorySlug: 'explorer/folders',
     parentSlug: 'folders',

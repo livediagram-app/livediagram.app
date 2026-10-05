@@ -11,13 +11,16 @@ const general: Tab = { id: 'g', name: 'General', elements: [] };
 const drawTab: Tab = { id: 'd', name: 'Draw', opensIn: 'draw', elements: [] };
 const esBoard: Tab = { id: 'e', name: 'Wall', kind: 'event-storming', elements: [] };
 
-function setup(tabs: Tab[], canEdit = true) {
+function setup(tabs: Tab[], canEdit = true, activeId = tabs[0]!.id) {
   let state = tabs;
   const commitTabs = vi.fn((map: (ts: Tab[]) => Tab[]) => {
     state = map(state);
   });
-  const hook = renderHook(() => useTabOpensIn({ tabs: state, canEdit, commitTabs }));
-  return { hook, commitTabs, tabs: () => state };
+  const switchMode = vi.fn();
+  const hook = renderHook(() =>
+    useTabOpensIn({ tabs: state, canEdit, commitTabs, activeId, switchMode }),
+  );
+  return { hook, commitTabs, switchMode, tabs: () => state };
 }
 
 afterEach(() => vi.mocked(track).mockClear());
@@ -59,5 +62,22 @@ describe('useTabOpensIn', () => {
     act(() => hook.result.current.choiceFor(locked)!.onChange('draw'));
     expect(commitTabs).not.toHaveBeenCalled();
     expect(track).not.toHaveBeenCalled();
+  });
+
+  it("switches the chooser's own mode on the active tab, even to the mode already chosen", () => {
+    const { hook, switchMode, commitTabs } = setup([drawTab, general]);
+    act(() => hook.result.current.choiceFor(drawTab)!.onChange('diagram'));
+    expect(switchMode).toHaveBeenCalledWith('diagram');
+    act(() => hook.result.current.choiceFor(drawTab)!.onChange('draw'));
+    expect(switchMode).toHaveBeenLastCalledWith('draw');
+    expect(commitTabs).toHaveBeenCalledTimes(1);
+  });
+
+  it('switches nothing for a tab that is not active, nor on a locked tab', () => {
+    const locked = { ...general, id: 'l', locked: true };
+    const { hook, switchMode } = setup([drawTab, general, locked], true, 'l');
+    act(() => hook.result.current.choiceFor(general)!.onChange('draw'));
+    act(() => hook.result.current.choiceFor(locked)!.onChange('draw'));
+    expect(switchMode).not.toHaveBeenCalled();
   });
 });

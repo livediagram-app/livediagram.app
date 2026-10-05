@@ -1,4 +1,5 @@
 import dynamic from 'next/dynamic';
+import { safeInlinePadding, safeInset } from '@/lib/safe-area';
 import { MenuErrorBoundary } from '@/components/primitives/MenuErrorBoundary';
 import { useState, type ReactNode } from 'react';
 import {
@@ -13,8 +14,6 @@ import type { CleanupKind } from '@/lib/tab-cleanup';
 import type { Participant } from '@/lib/identity';
 import { TabsLabelIcon } from '@livediagram/ui';
 import { TabFolderChip } from '@/components/chrome/TabFolderChip';
-import { EditorModeSwitchSlot } from '@/components/chrome/editor-mode/EditorModeSwitchSlot';
-import type { EditorModeState } from '@/hooks/editor/useEditorMode';
 import { useTabReorderDrag } from './useTabReorderDrag';
 import { ChromeControls } from '@/components/chrome/ChromeControls';
 import { useMinimalChrome } from '@/components/providers/minimal-chrome';
@@ -145,8 +144,6 @@ type TabBarProps = {
   // Who the dot-vote knows us by (docs/specs/012-collaboration/collab-race-hardening.md), for the tab menu's vote controls.
   voteSelfId?: string;
   selfRole: 'edit' | 'view';
-  // The editor's resolved editor mode on the active tab (useEditorMode), shown by the mode switch.
-  editorMode: EditorModeState;
   // Who we follow (docs/specs/012-collaboration/follow-me-viewport.md), for the avatar ring, and the Collaborators
   // modal an avatar click opens (docs/specs/012-collaboration/collaborator-enhancements.md; Follow itself lives there).
   // Optional: a surface with no room behind it leaves the avatars as plain
@@ -202,7 +199,6 @@ export function TabBar({
   selfId,
   voteSelfId,
   selfRole,
-  editorMode,
   followingId,
   onOpenCollaborators,
   onOpenSettings,
@@ -345,10 +341,16 @@ export function TabBar({
     <>
       <div
         data-editor-tabbar
-        className="flex h-12 shrink-0 items-center gap-2 border-t border-slate-200 bg-slate-50 px-3 dark:border-slate-800 dark:bg-slate-900"
+        // Clear of the home indicator and a landscape notch (lib/safe-area): the 48px row sits
+        // above the bottom inset (the height grows by it), its sides past the side insets.
+        style={{
+          height: `calc(3rem + ${safeInset('bottom')})`,
+          paddingBottom: safeInset('bottom'),
+          ...safeInlinePadding('0.75rem'),
+        }}
+        className="flex shrink-0 items-center gap-2 border-t border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900"
       >
         {roleIcon}
-        <EditorModeSwitchSlot editorMode={editorMode} powerUser={powerUser} />
         {/* Minimal chrome drops the label; it was never announced (aria-hidden). */}
         {minimalChrome ? null : (
           <span
@@ -365,7 +367,9 @@ export function TabBar({
             at its padding edge, so with zero padding the ring vanished
             along whichever edges the pill touched (bottom + first pill's
             left). */}
-        <div className="scrollbar-slim -m-1 flex flex-1 items-center gap-1 overflow-x-auto p-1">
+        {/* Sideways only: the tab menu's and Add tab's 44px tap areas (touch-target) reach past
+            the row, and a free y axis drew a vertical scrollbar beside Search for them. */}
+        <div className="scrollbar-slim -m-1 flex flex-1 items-center gap-1 overflow-x-auto overflow-y-hidden p-1">
           {groupTabsIntoRuns(tabs).map((run) =>
             run.kind === 'loose' ? (
               renderTabPill(run.tab)
@@ -393,7 +397,7 @@ export function TabBar({
               onClick={onAdd}
               aria-label="Add tab"
               data-tour-id="add-tab"
-              className="ml-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-lg leading-none text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
+              className="relative ml-1 flex h-7 w-7 shrink-0 touch-target items-center justify-center rounded-md text-lg leading-none text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
             >
               +
             </button>

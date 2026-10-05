@@ -12,15 +12,12 @@ import {
   RotationMenuIcon,
   SquareMenuIcon,
 } from '@/components/palette/context-menu-icons';
-import {
-  MenuAccordionSection,
-  MenuActionButton,
-  MenuTile,
-  MenuTileGrid,
-} from '@/components/primitives/PortalMenu';
+import { MenuAccordionSection, MenuActionButton } from '@/components/primitives/PortalMenu';
+import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
 import { OpacityRow } from '@/components/palette/context-menu-rows';
 import { MoveToLayerRow } from '@/components/palette/MoveToLayerRow';
 import { ShapeIcon } from '@/components/primitives/shape-icon';
+import { shapeKindLabel } from '@/lib/element-names';
 import { COMMON_SHAPES, ROTATION_ANGLES } from './context-menu-constants';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
 import type { useContextMenuScaffold } from './useContextMenuScaffold';
@@ -106,6 +103,7 @@ export function MultiPlacementSections({
             {COMMON_SHAPES.map((kind) => (
               <SizeButton
                 key={kind}
+                label={shapeKindLabel(kind)}
                 active={morphSrc.shape === kind}
                 onClick={() => props.onSetShapeKind(morphIds, kind)}
                 onPointerEnter={onMouseHover(() => props.onPreviewShapeKind(morphIds, kind))}

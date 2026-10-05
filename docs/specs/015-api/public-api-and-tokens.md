@@ -141,7 +141,11 @@ alongside Clerk + the guest header:
 1. A Clerk JWT in `Authorization: Bearer`, when it verifies.
 2. Else `Authorization: Bearer lvd_…` → hash → look up a non-revoked,
    non-expired row → the request's owner id is the row's `owner_id`; stamp
-   `last_used_at`. (A token and a JWT can't both be the bearer.)
+   `last_used_at`. (A token and a JWT can't both be the bearer.) An `lvd_`
+   bearer with no such row (unknown, revoked or expired) is refused there and
+   then with `401 invalid_token` and `WWW-Authenticate: Bearer
+error="invalid_token"`, on every route: it never falls through to the guest
+   path or to no owner, so a script holding a dead token is told so.
 3. Else the guest `X-Owner-Id` path — now requiring a valid HMAC signature on
    the header (see [§4](#4-x-owner-id-trust-change)). Tokens never resolve to a
    guest id, so this path is for the first-party app only; it grants no token.
@@ -153,12 +157,18 @@ source changes.
 
 ### 3.4 Access — full read + write, with an optional read-only flag
 
+> **Specified, not built:** the read-only flag becomes a token level (view, participate or edit), one vocabulary with
+> share links ([Share roles](../013-workspace/share-roles.md#api-tokens)). Read-only tokens become view tokens; the
+> rest become edit tokens.
+
 A token grants its owner's **full** access — read AND write, the same surface
 the app has — **unless** it was minted **read-only** (the one scope that
 exists): a `read_only` column (migration 0039) that, when set, restricts the
 token to `GET`/`HEAD`; the api worker rejects every write it presents at a
 single dispatch choke point with `403 read_only_token`
-([MCP server §4.11](mcp-server.md)). Read-only tokens are minted through the MCP
+([MCP server §4.11](mcp-server.md)). The same choke point refuses it the one read that is a
+credential rather than content: `GET /api/documents/:id/share`, whose links and password would let it
+open an edit link. Read-only tokens are minted through the MCP
 consent screen (a "read-only access" checkbox), giving a cautious user a way to
 let an AI tool VIEW their documents without granting edit. There is still no
 finer-grained scope vocabulary (per-resource, per-verb); that remains deferred
@@ -203,9 +213,9 @@ backstop.
 ### 3.6 Management — the Settings dialog's API Tokens category
 
 Tokens are created, viewed and revoked in the **Settings dialog**
-([User preferences](../007-editor/user-preferences.md)), in its own top-level
-category **API Tokens** (id `tokens`), which sits **between Account and
-Privacy**. It is account-scoped like its neighbours, and the dialog is reachable
+([User preferences](../007-editor/user-preferences.md)), in the **API Tokens**
+sub-category of **Account** (id `tokens`, `parent: 'account'`, shown as
+"Account › API Tokens"). It is account-scoped like its parent, and the dialog is reachable
 from both the Explorer and the editor, so the tokens are too. There is no
 Explorer page for them: the former `/explorer/tokens` route and its sidebar
 entry are gone, with no redirect (few people had used it).
@@ -280,6 +290,18 @@ one expire frees a slot.
 user's data, tokens included: `DELETE /api/account` ([`routes/account.ts`](../../../apps/api/src/routes/account.ts))
 must delete the owner's `api_tokens` rows in the same cascade as their documents
 / folders / themes, so no credential outlives the account.
+
+### 3.6a A token's view of itself
+
+A token may read and revoke **itself**, which escalates nothing, so the [CLI](cli.md) can show who it is and sign
+out cleanly:
+
+- `GET /api/tokens/current`: the account id and display name, the token's name, its role and `expiresAt`.
+- `DELETE /api/tokens/current`: revokes the presenting token (204).
+- A session or guest has no token to describe and is refused `403 not_a_token`; a revoked token is refused at the
+  front door like any dead token (§3.3).
+
+Every other `/api/tokens` route stays session-only.
 
 ### 3.7 Self-hosting
 
@@ -427,6 +449,10 @@ segment, before the signature gate and independent of
 `401 account_id_not_a_guest_credential`). Nothing legitimate is grandfathered
 because nothing legitimate ever had this shape, so there is no window to bound
 and nothing for an operator to arm.
+
+The realtime room's upgrade refuses the same shape on its owner leg (`?o=`, `routes/document-room-routes.ts`):
+a signed-in owner of a personal document joins through the one-time room ticket, as a team owner does, and an
+account id presented as `?o=` admits nobody.
 
 This matters most for **personal** documents, whose ownership legitimately
 resolves through the hybrid header path — that path is safe precisely because a

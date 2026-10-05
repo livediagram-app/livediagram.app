@@ -32,7 +32,7 @@ describe('backOutTarget', () => {
   it('never goes back to the wizard itself', () => {
     expect(
       backOutTarget({
-        referrer: 'https://livediagram.app/new?browse=brainstorm',
+        referrer: 'https://livediagram.app/new?folder=f1',
         origin,
         historyLength: 3,
       }),

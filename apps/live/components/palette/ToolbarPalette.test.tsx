@@ -5,7 +5,10 @@ import { act, cleanup, fireEvent, render, screen, within } from '@testing-librar
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { PALETTE_ADD_HANDLER_KEYS, type PaletteAddHandlers } from './palette-add-handlers';
 import { ToolbarPalette } from './ToolbarPalette';
-import { savePaletteFavourites } from '@/lib/palette-favourites';
+import type { EsBoardControls } from './EventStormingBoardRows';
+import type { EditorMode } from '@livediagram/document';
+import type { ReactNode } from 'react';
+import { EditorModeProvider } from '@/components/chrome/editor-mode/editor-mode-context';
 
 const mobile = vi.hoisted(() => ({ value: false }));
 vi.mock('@/hooks/ui/useIsMobileViewport', () => ({
@@ -34,18 +37,37 @@ function handlers(): PaletteAddHandlers {
   ) as unknown as PaletteAddHandlers;
 }
 
-function show(props: { esBoard?: boolean; hidden?: boolean } = {}) {
+// The palette reads the editor mode from the editor's provider; Diagram outside one.
+const inMode = (mode: EditorMode, node: ReactNode) => (
+  <EditorModeProvider value={{ mode, setMode: vi.fn(), canSwitch: true, canEdit: true }}>
+    {node}
+  </EditorModeProvider>
+);
+
+function show({
+  mode = 'diagram',
+  ...props
+}: {
+  esBoard?: boolean;
+  hidden?: boolean;
+  esBoardControls?: EsBoardControls;
+  mode?: EditorMode;
+  onAddPage?: () => void;
+} = {}) {
   const h = handlers();
   const onSetCanvasTool = vi.fn();
   const view = render(
-    <ToolbarPalette
-      canvasTool="select"
-      onSetCanvasTool={onSetCanvasTool}
-      canvasEmpty={false}
-      pendingDraw={null}
-      {...h}
-      {...props}
-    />,
+    inMode(
+      mode,
+      <ToolbarPalette
+        canvasTool="select"
+        onSetCanvasTool={onSetCanvasTool}
+        canvasEmpty={false}
+        pendingDraw={null}
+        {...h}
+        {...props}
+      />,
+    ),
   );
   return { ...view, h, onSetCanvasTool };
 }
@@ -61,13 +83,13 @@ function pickCategory(id: string) {
 const strip = () => document.querySelector('[data-toolbar-palette] > div') as HTMLElement;
 
 describe('ToolbarPalette', () => {
-  it('opens on Favourites with the selection mode and category pickers', () => {
+  it('opens on Popular with the selection mode and category pickers', () => {
     show();
     expect(screen.getByRole('button', { name: 'Selection mode' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Palette category' }).textContent).toContain(
-      'Favourites',
+      'Popular',
     );
-    // The shipped favourites lead with the square.
+    // Diagram's Popular leads with the square.
     expect(within(strip()).getByRole('button', { name: 'Add square' })).toBeTruthy();
   });
 
@@ -78,7 +100,7 @@ describe('ToolbarPalette', () => {
   });
 
   it('swaps the tiles when the category changes', () => {
-    show();
+    show({ mode: 'illustrate' });
     pickCategory('devices');
     expect(screen.getByRole('button', { name: 'Palette category' }).textContent).toContain(
       'Devices',
@@ -89,20 +111,39 @@ describe('ToolbarPalette', () => {
 
   it('only offers More when the category has more than the strip shows', () => {
     show();
-    // Favourites always has More: its search and Edit live there.
-    expect(screen.getByRole('button', { name: 'More Favourites' })).toBeTruthy();
+    // Collaborate always has More: its group browser lives there.
+    pickCategory('behaviour');
+    expect(screen.getByRole('button', { name: 'More Collaborate' })).toBeTruthy();
+    cleanup();
     // Devices fits in the strip whole.
+    show({ mode: 'illustrate' });
     pickCategory('devices');
     expect(screen.queryByRole('button', { name: /^More/ })).toBeNull();
   });
 
+  // The palette per mode (docs/specs/007-editor/editor-modes.md "The palette per mode").
+  it('offers the mock-up kit and the charts in Illustrate mode only', () => {
+    show();
+    fireEvent.click(screen.getByRole('button', { name: 'Palette category' }));
+    expect(document.querySelector('[data-option-id="devices"]')).toBeNull();
+    expect(document.querySelector('[data-option-id="components"]')).toBeNull();
+    expect(document.querySelector('[data-option-id="data"]')).toBeNull();
+    cleanup();
+    show({ mode: 'illustrate' });
+    fireEvent.click(screen.getByRole('button', { name: 'Palette category' }));
+    expect(document.querySelector('[data-option-id="devices"]')).not.toBeNull();
+    expect(document.querySelector('[data-option-id="data"]')).not.toBeNull();
+    expect(document.querySelector('[data-option-id="behaviour"]')).toBeNull();
+    expect(document.querySelector('[data-option-id="technology"]')).toBeNull();
+    expect(document.querySelector('[data-option-id="stickers"]')).not.toBeNull();
+  });
+
   it("opens the category's full body under More, and closes it when a tile is used", () => {
     const { h } = show();
-    fireEvent.click(screen.getByRole('button', { name: 'More Favourites' }));
+    pickCategory('shapes');
+    fireEvent.click(screen.getByRole('button', { name: 'More Shapes' }));
     const popover = document.querySelector('[data-toolbar-more]') as HTMLElement;
     expect(popover).not.toBeNull();
-    // The Favourites body itself: its cross-category search.
-    expect(within(popover).getByPlaceholderText('Search all elements')).toBeTruthy();
     fireEvent.click(within(popover).getByRole('button', { name: 'Add circle' }));
     expect(h.onAddShape).toHaveBeenCalledWith('circle', expect.anything());
     expect(document.querySelector('[data-toolbar-more]')).toBeNull();
@@ -110,47 +151,38 @@ describe('ToolbarPalette', () => {
 
   it('focuses the search field when More opens (docs/specs/007-editor/toolbar-layout.md)', () => {
     show();
-    fireEvent.click(screen.getByRole('button', { name: 'More Favourites' }));
+    pickCategory('behaviour');
+    fireEvent.click(screen.getByRole('button', { name: 'More Collaborate' }));
     const popover = document.querySelector('[data-toolbar-more]') as HTMLElement;
     expect(document.activeElement).toBe(
-      within(popover).getByPlaceholderText('Search all elements'),
+      within(popover).getByPlaceholderText('Search collaboration'),
     );
   });
 
   it('leaves focus alone on a phone, where it would raise the keyboard', () => {
     mobile.value = true;
     show();
-    fireEvent.click(screen.getByRole('button', { name: 'More Favourites' }));
+    pickCategory('behaviour');
+    fireEvent.click(screen.getByRole('button', { name: 'More Collaborate' }));
     const popover = document.querySelector('[data-toolbar-more]') as HTMLElement;
     expect(document.activeElement).not.toBe(
-      within(popover).getByPlaceholderText('Search all elements'),
+      within(popover).getByPlaceholderText('Search collaboration'),
     );
   });
 
   it('closes More when the category changes, since it showed the old one', () => {
     show();
-    fireEvent.click(screen.getByRole('button', { name: 'More Favourites' }));
+    pickCategory('behaviour');
+    fireEvent.click(screen.getByRole('button', { name: 'More Collaborate' }));
     expect(document.querySelector('[data-toolbar-more]')).not.toBeNull();
     pickCategory('shapes');
     expect(document.querySelector('[data-toolbar-more]')).toBeNull();
   });
 
-  // The Favourites body writes its edits straight to storage; the strip catches up on close
-  // (docs/specs/010-palette/palette-favourites.md).
-  it('shows favourites edited under More once it closes', () => {
-    show();
-    fireEvent.click(screen.getByRole('button', { name: 'More Favourites' }));
-    act(() => savePaletteFavourites(['shapes:diamond']));
-    act(() => {
-      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
-    });
-    expect(within(strip()).getByRole('button', { name: 'Add diamond' })).toBeTruthy();
-    expect(within(strip()).queryByRole('button', { name: 'Add square' })).toBeNull();
-  });
-
   it('closes More on Escape', () => {
     show();
-    fireEvent.click(screen.getByRole('button', { name: 'More Favourites' }));
+    pickCategory('behaviour');
+    fireEvent.click(screen.getByRole('button', { name: 'More Collaborate' }));
     act(() => {
       document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
     });
@@ -166,20 +198,48 @@ describe('ToolbarPalette', () => {
     ).toBeGreaterThan(0);
   });
 
+  // docs/specs/021-event-storming/event-storming.md: the floating palette's board row, in the strip.
+  it('offers Add from photo on an event-storming board, as the floating palette does', () => {
+    const onImportPhoto = vi.fn();
+    show({ esBoard: true, esBoardControls: { onImportPhoto } });
+    fireEvent.click(within(strip()).getByRole('button', { name: 'Add from photo' }));
+    expect(onImportPhoto).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps Add from photo focusable but inert while it is unavailable', () => {
+    const onImportPhoto = vi.fn();
+    show({ esBoard: true, esBoardControls: { onImportPhoto, photoDisabled: true } });
+    const button = within(strip()).getByRole('button', { name: 'Add from photo' });
+    expect(button.getAttribute('aria-disabled')).toBe('true');
+    fireEvent.click(button);
+    expect(onImportPhoto).not.toHaveBeenCalled();
+  });
+
+  it('offers no Add from photo off a board, or where the deployment has no photo import', () => {
+    show({ esBoardControls: { onImportPhoto: vi.fn() } });
+    expect(screen.queryByRole('button', { name: 'Add from photo' })).toBeNull();
+    cleanup();
+    show({ esBoard: true, esBoardControls: {} });
+    expect(screen.queryByRole('button', { name: 'Add from photo' })).toBeNull();
+  });
+
   it('hides rather than unmounts, so the chosen category survives', () => {
-    const view = show();
+    const view = show({ mode: 'illustrate' });
     pickCategory('devices');
     const h = handlers();
     const rerender = (hidden: boolean) =>
       view.rerender(
-        <ToolbarPalette
-          canvasTool="select"
-          onSetCanvasTool={vi.fn()}
-          canvasEmpty={false}
-          pendingDraw={null}
-          hidden={hidden}
-          {...h}
-        />,
+        inMode(
+          'illustrate',
+          <ToolbarPalette
+            canvasTool="select"
+            onSetCanvasTool={vi.fn()}
+            canvasEmpty={false}
+            pendingDraw={null}
+            hidden={hidden}
+            {...h}
+          />,
+        ),
       );
     rerender(true);
     const root = document.querySelector('[data-toolbar-palette]') as HTMLElement;
@@ -189,5 +249,14 @@ describe('ToolbarPalette', () => {
     expect(screen.getByRole('button', { name: 'Palette category' }).textContent).toContain(
       'Devices',
     );
+  });
+
+  it('ends with Add page in Illustrate mode, but not on a phone (docs/specs/007-editor/illustrate-pages.md)', () => {
+    show({ mode: 'illustrate', onAddPage: vi.fn() });
+    expect(screen.getByRole('button', { name: 'Add page' })).toBeTruthy();
+    cleanup();
+    mobile.value = true;
+    show({ mode: 'illustrate', onAddPage: vi.fn() });
+    expect(screen.queryByRole('button', { name: 'Add page' })).toBeNull();
   });
 });

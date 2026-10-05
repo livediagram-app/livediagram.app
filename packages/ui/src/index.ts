@@ -1,6 +1,9 @@
 export { Brand, BrandMark, BRAND_MARK, brandMarkSvg } from './Brand';
 export { ProductNav, type ProductNavKey } from './ProductNav';
 export { SiteHeader } from './SiteHeader';
+export { StartBlankMenu } from './StartBlankMenu';
+export { ModeFilterMenu, type ModeFilterOption } from './ModeFilterMenu';
+export { CountBadge } from './CountBadge';
 export { SiteFooter } from './SiteFooter';
 export {
   Button,
@@ -17,7 +20,6 @@ export { StableLabel } from './StableLabel';
 export { HoverCard, type HoverCardProps } from './HoverCard';
 export { SnapCarousel } from './SnapCarousel';
 export { DiagramBuildAnimation } from './DiagramBuildAnimation';
-export { CanvasLoader } from './CanvasLoader';
 export { EmptyState } from './EmptyState';
 export { BreadcrumbTrail, type BreadcrumbItem } from './Breadcrumb';
 export { JsonLd } from './JsonLd';
@@ -25,6 +27,7 @@ export { PageViewTracker } from './PageViewTracker';
 export { PageViewBoot } from './PageViewBoot';
 export { POPOVER_VIEWPORT_MARGIN, clampIntoRange } from './popover';
 export { useMediaQuery, PREFERS_REDUCED_MOTION } from './useMediaQuery';
+export { formatRelativeTime, formatRelativeTimeShort, relativeSince } from './relative-time';
 export { useCopiedFlash } from './useCopiedFlash';
 export { useClickOutside } from './useClickOutside';
 export { useEscape } from './useEscape';
@@ -42,6 +45,10 @@ export {
   SITE_URL,
   SITE_NAME,
   REPO_URL,
+  SITE_DESCRIPTION,
+  SITE_PITCH,
+  SITE_TITLE,
+  sentencePitch,
   BRAND_ICONS,
   PUBLIC_VIEWPORT,
   DARK_READER_LOCK,
@@ -54,3 +61,4 @@ export {
 } from './seo';
 export * from './appearance';
 export * from './optical';
+export * from './menu';

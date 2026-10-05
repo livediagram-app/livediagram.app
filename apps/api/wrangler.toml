@@ -38,6 +38,11 @@ compatibility_date = "2026-05-29"
 # per IP) remains the only other control.
 AI_ALLOWED_ORIGINS = "https://www.livediagram.app,https://livediagram.app"
 
+# The CLI signs in through the MCP worker's OAuth server (docs/specs/015-api/cli.md "Authentication"); the
+# api names it in /api/capabilities. CLI_MIN_VERSION (unset until a release needs a floor) refuses writes
+# from an older CLI.
+OAUTH_ISSUER = "https://mcp.livediagram.app"
+
 # Google Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md). No binding
 # of its own: it rides the D1 database above (drive_connections, drive_items).
 #   - GOOGLE_CLIENT_ID: plain var, livediagram.app's own OAuth client, so it
@@ -348,6 +353,9 @@ RESEND_FROM = "livediagram staging <hello@livediagram.app>"
 # environment is reproducible from the repo alone — see docs/specs/016-platform/staging-environment.md "Known sharp
 # edge".
 AI_ALLOWED_ORIGINS = "https://staging.livediagram.app"
+
+# The staging MCP worker's OAuth server, for the CLI against staging.
+OAUTH_ISSUER = "https://mcp-staging.livediagram.app"
 # No AI_REQUIRE_CLERK, matching production: the editor offers AI to guests, so
 # requiring sign-in here made staging refuse what production allows (the photo
 # reader stopped with "sign in required"), which is drift, not a staging test.

@@ -19,6 +19,7 @@
 // subgraphs fold into their ancestor.
 
 import type { GraphCluster, GraphEdge, GraphNode } from './graph-authoring';
+import { readFlowchartHeader, readInlineLabel } from './mermaid-scan';
 import { parseErDiagram } from './mermaid-er';
 import {
   cleanLine,
@@ -99,8 +100,6 @@ const AT_SHAPE_NAMES: Record<string, GraphNode['shape']> = {
 };
 
 // --- Parse ---------------------------------------------------------------
-
-const HEADER_RE = /^\s*(?:flowchart|graph)\b\s*([A-Za-z]{2})?\s*$/i;
 
 // Pull a bracketed node definition off the front of `s`. Returns the label +
 // shape and the rest of the string, or null when `s` doesn't open with a
@@ -189,15 +188,6 @@ type EdgeOp = {
   label?: string;
 };
 
-const INLINE_LABEL_RES: { re: RegExp; line: EdgeOp['line'] }[] = [
-  // `-- text -->` / `-- text ---` / `-- text --o` …
-  { re: /^\s*--\s+(.+?)\s+(-{2,})([>ox])?/, line: 'solid' },
-  // `-. text .->` / `-. text .-`
-  { re: /^\s*-\.\s+(.+?)\s+\.+(-)([>ox])?/, line: 'dashed' },
-  // `== text ==>` / `== text ===`
-  { re: /^\s*==\s+(.+?)\s+(={2,})([>ox])?/, line: 'thick' },
-];
-
 const PLAIN_OP_RE = /^\s*(?:(<|o|x)(?=[-=.]))?(-\.+-|-{2,}|={2,}|~{3,})(>|o|x)?/;
 
 function opAttrs(
@@ -224,11 +214,11 @@ function opAttrs(
 // Read one connection operator (with its label, inline or `|piped|`) off the
 // front of `s`, or null when the segment isn't an edge.
 function readEdgeOp(s: string): { op: EdgeOp; rest: string } | null {
-  for (const { re, line } of INLINE_LABEL_RES) {
-    const m = re.exec(s);
+  {
+    const m = readInlineLabel(s);
     if (m) {
-      const label = decodeLabel(m[1]!);
-      const trail = m[3];
+      const label = decodeLabel(m.label);
+      const { trail, line } = m;
       // The inline forms draw the stroke their opener implies; the closing
       // run only decides the head.
       const marker = trail === 'o' || trail === 'x' ? trail : null;
@@ -240,7 +230,7 @@ function readEdgeOp(s: string): { op: EdgeOp; rest: string } | null {
           invisible: false,
           ...(label ? { label } : {}),
         },
-        rest: s.slice(m[0].length),
+        rest: s.slice(m.length),
       };
     }
   }
@@ -267,6 +257,19 @@ const UNSUPPORTED_RE =
 const UNSUPPORTED_ERROR =
   'Only Mermaid flowcharts (graph / flowchart), state diagrams (stateDiagram), and ER diagrams (erDiagram) are supported — not sequence / class / gantt / etc.';
 
+// Whether the first meaningful line is a header the importer reads as a graph: a flowchart, a state diagram or an
+// ER diagram. The CLI tells a Mermaid file from edit operations by it (docs/specs/015-api/blueprints/cli.md CLI71).
+export function startsWithMermaidHeader(text: string): boolean {
+  const first = text
+    .split('\n')
+    .map(cleanLine)
+    .find((line) => line !== '');
+  if (first === undefined) return false;
+  return (
+    readFlowchartHeader(first) !== null || STATE_HEADER_RE.test(first) || ER_HEADER_RE.test(first)
+  );
+}
+
 export function parseMermaid(text: string): ParseMermaidResult {
   const lines = text.split('\n');
 
@@ -277,7 +280,7 @@ export function parseMermaid(text: string): ParseMermaidResult {
   for (const rawLine of lines) {
     const line = cleanLine(rawLine);
     if (!line) continue;
-    if (HEADER_RE.test(line)) break; // flowchart — parse below
+    if (readFlowchartHeader(line) !== null) break; // flowchart — parse below
     if (STATE_HEADER_RE.test(line)) return parseStateDiagram(lines);
     if (ER_HEADER_RE.test(line)) return parseErDiagram(lines);
     if (UNSUPPORTED_RE.test(line)) return { ok: false, error: UNSUPPORTED_ERROR };
@@ -356,10 +359,10 @@ function parseFlowchart(lines: string[]): ParseMermaidResult {
     const line = cleanLine(rawLine);
     if (!line) continue;
 
-    const header = HEADER_RE.exec(line);
-    if (header) {
+    const header = readFlowchartHeader(line);
+    if (header !== null) {
       sawFlow = true;
-      direction = directionOf(header[1]);
+      direction = directionOf(header || undefined);
       continue;
     }
     // Another dialect's header mid-document means this isn't a flowchart

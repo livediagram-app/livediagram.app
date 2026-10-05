@@ -16,6 +16,7 @@ import { SettingsTokensRow } from './SettingsTokensRow';
 import { SettingsTrashRow } from './SettingsTrashRow';
 import { SettingsCloudSyncRow } from './SettingsCloudSyncRow';
 import { SettingsPlacementDefaultRow } from './SettingsPlacementDefaultRow';
+import { SettingsSkipLocationRow } from './SettingsSkipLocationRow';
 import { usePlacementOptions } from '@/hooks/persistence/usePlacementOptions';
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
@@ -216,6 +217,8 @@ export function SettingsCategoryPane({
         return <SettingsCloudSyncRow row={row} />;
       case 'placementDefault':
         return <SettingsPlacementDefaultRow row={row} lists={placementLists} />;
+      case 'skipLocationStep':
+        return <SettingsSkipLocationRow row={row} settings={settings} onChange={onChange} />;
       case 'presetSummary':
         return (
           <SettingsPresetSummaryRow

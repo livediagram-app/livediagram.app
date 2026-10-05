@@ -1,7 +1,7 @@
 // When does a press become a drag?
 //
 // Every draggable control in the editor chrome has to answer this: a slide-deck
-// row, a favourites tile, a dockable panel, the quick-connect ring, the
+// row, a palette tile, a dockable panel, the quick-connect ring, the
 // isometric orbit button, an avatar. Six of them answered it separately, with
 // six constants (`ROW_DRAG_SLOP_PX`, `DRAG_THRESHOLD_PX`,
 // `DOCK_DRAG_THRESHOLD_PX`, `CLICK_SLOP_PX`, and `DRAG_SLOP_PX` twice), and the

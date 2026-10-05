@@ -30,6 +30,8 @@ import { ColourPicker } from './ColourPicker';
 import { SnapColoursSection } from './SnapColoursSection';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { BackgroundGlyph, OffGlyph, RecogniseGlyph } from './whiteboard-icons';
+import { PenWidthIcon } from './PenWidthIcon';
+import type { PenWidthId } from '@/lib/quick-style-pen';
 
 const ERASER_MODES = [
   { id: 'stroke', label: 'Stroke', hint: 'Remove whole strokes' },
@@ -66,7 +68,7 @@ export function PenFlyoutBody({ pen, model }: { pen: WhiteboardPen; model: White
             selected={pen.width === w.px}
             onPick={() => model.updatePen(pen.id, { width: w.px })}
           >
-            <WidthBar px={w.px} />
+            <PenWidthIcon width={w.id as PenWidthId} />
           </FlyoutOption>
         ))}
       </FlyoutRow>
@@ -204,15 +206,5 @@ function FlyoutRow({
       )}
       <div className="flex flex-wrap gap-1">{children}</div>
     </div>
-  );
-}
-
-function WidthBar({ px }: { px: number }) {
-  return (
-    <span
-      aria-hidden
-      className="w-6 rounded-full bg-slate-700 dark:bg-slate-200"
-      style={{ height: Math.max(1.5, px) }}
-    />
   );
 }

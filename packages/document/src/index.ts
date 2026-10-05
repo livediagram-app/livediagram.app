@@ -13,6 +13,8 @@
 import { isSelfDrawingShape } from './data-shapes';
 import type { TabKind } from './tab-kind';
 import type { EditorMode } from './editor-mode';
+import type { IllustratePage, PageOrientation } from './illustrate-page';
+import type { ArticleFlow } from './article-flow';
 import type { TabTimer, TabVote } from './session';
 
 // Layer type used by the `Tab.layers` field below (docs/specs/006-document/layers.md). Type-only
@@ -283,6 +285,17 @@ export type Tab = {
   // lives"): a person who has not switched on this tab sees it in this mode. Absent = 'diagram'
   // (read via `opensInOf`); switching never changes it.
   opensIn?: EditorMode;
+  // Illustrate mode's pages (docs/specs/007-editor/editor-modes.md "The pages"): the A4 sheets,
+  // in row order, each portrait or landscape, that everyone lays the tab out on. Absent = one page
+  // (read via `illustratePagesOf`).
+  pages?: IllustratePage[];
+  // The writing of the tab's article pages, by flow id (docs/specs/007-editor/article-pages.md):
+  // each document's blocks and style, shared by its pages (`IllustratePage.flow`). Read via
+  // `articlesOf`; synced block by block (the `doc` room op), never in a `tab-meta` patch.
+  articles?: Record<string, ArticleFlow>;
+  // Legacy: a single page's orientation, from before multiple pages. Read as one page when `pages`
+  // is absent; dropped the first time the pages change (`withIllustratePages`).
+  pageOrientation?: PageOrientation;
   // An event-storming board whose workshop notes have been settled onto the
   // lanes once (docs/specs/021-event-storming/event-storming.md "Always on a lane"). Set by that settle, by the
   // template, or by a file import; never cleared, and grafted across undo.
@@ -357,6 +370,17 @@ export type Tab = {
 export { takesTypedLabel } from './element-types';
 export { DEFAULT_TAB_KIND, stampTabKind, tabKindOf, type TabKind } from './tab-kind';
 export * from './editor-mode';
+export * from './illustrate-page';
+export * from './illustrate-page-content';
+export * from './illustrate-paginate';
+export * from './article-flow';
+export * from './article-flow-ops';
+export * from './article-pages';
+export * from './article-style';
+export * from './article-zones';
+export * from './article-notes';
+export * from './article-to-page';
+export * from './article-intake';
 export { migrateWhiteboardKind } from './legacy-whiteboard-tab';
 export { downgradeLinks, upgradeLegacyLinks } from './legacy-links';
 
@@ -415,6 +439,9 @@ export * from './mind-flow';
 export * from './mind-map';
 export * from './mind-layout';
 export * from './mind-grow';
+export * from './mind-outline-text';
+export * from './mind-outline-marks';
+export * from './mind-outline';
 export * from './youtube';
 export * from './arrow-path';
 export * from './arrow-label';
@@ -498,11 +525,22 @@ export * from './table';
 // the API uses to vet incoming tabs / documents). See validate.ts.
 export * from './validate';
 
+// Every stored field per element type (docs/specs/024-agents/blueprints/edit-operations.md).
+export * from './element-fields';
+
 // Deterministic auto-layout for AI-generated diagrams (docs/specs/007-editor/ai-assistance.md).
 export * from './auto-layout';
 
 // Cluster-aware graph layout (docs/specs/020-import-export/mermaid.md): Mermaid subgraphs as frames.
 export * from './auto-layout-clusters';
+// The layout engine's gaps, which edit operations place and make room by.
+export { LAYER_GAP, SIBLING_GAP } from './auto-layout-shared';
+
+// Authoring input shared by the MCP, the api and the CLI (docs/specs/015-api/mcp-server.md §4.7,
+// §4.7a): raw elements made safe, graph input capped and laid out, and finished tabs built.
+export * from './element-normalise';
+export * from './graph-input';
+export * from './tab-builders';
 
 // Shared by the editor's text export + import and reusable by the api / MCP.
 
@@ -567,6 +605,7 @@ export * from './layer-operations';
 // Element-level realtime ops (docs/specs/012-collaboration/realtime-conflict-resolution.md): the ElementOp type + the pure
 // diff/apply functions the realtime room uses to merge concurrent edits.
 export * from './element-ops';
+export * from './element-fingerprint';
 
 // Per-element deltas for the fields many participants write at once
 // (docs/specs/012-collaboration/collab-race-hardening.md): answers, ideas, checklist ticks, comments.
@@ -604,3 +643,8 @@ export * from './fonts';
 // because the api and the MCP worker can answer the same questions.
 export * from './slide-deck';
 export * from './lane-seam-snapping';
+// Refs, slug ids, kind words, derived containment and the style keys (docs/specs/024-agents/document-views.md):
+// how views, edit operations and the lint name and place elements alike.
+export * from './element-refs';
+export * from './containment';
+export * from './style-keys';

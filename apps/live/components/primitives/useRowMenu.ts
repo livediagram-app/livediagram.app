@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState, type MouseEvent } from 'react';
+import { useCallback, useRef, useState, type KeyboardEvent, type MouseEvent } from 'react';
 
 // The open / closed state of a row's (or card's) ⋯ actions menu, and the
 // two ways in: the ellipsis trigger toggles it, a right-click anywhere on
@@ -23,6 +23,18 @@ export function useRowMenu({ disabled = false }: { disabled?: boolean } = {}) {
     e.stopPropagation();
     setOpen((o) => !o);
   }, []);
+  // Down or Up Arrow on the trigger opens the menu too (docs/specs/004-interface-design/menus.md);
+  // the menu moves focus to its first item.
+  const onTriggerKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if (open || e.altKey || e.ctrlKey || e.metaKey) return;
+      if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+      e.preventDefault();
+      e.stopPropagation();
+      setOpen(true);
+    },
+    [open],
+  );
   const onContextMenu = disabled
     ? undefined
     : (e: MouseEvent) => {
@@ -34,6 +46,11 @@ export function useRowMenu({ disabled = false }: { disabled?: boolean } = {}) {
     close,
     triggerRef,
     onContextMenu,
-    triggerProps: { ref: triggerRef, onClick: onTriggerClick, expanded: open },
+    triggerProps: {
+      ref: triggerRef,
+      onClick: onTriggerClick,
+      onKeyDown: onTriggerKeyDown,
+      expanded: open,
+    },
   };
 }

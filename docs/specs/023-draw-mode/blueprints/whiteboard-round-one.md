@@ -66,7 +66,7 @@ Scope, by file:
 | Pen intent       | `PendingDraw` freehand `variant: 'whiteboard'`   | The held pen, with its colour, width and recognition          |
 | Dock             | `WhiteboardDock`                                 | Top- or bottom-centre tool groups (whiteboard-dock.md)        |
 | Dock tool        | `WhiteboardTool`                                 | `select/pen/eraser/sticky/text/shape`                         |
-| Flyout           | `WhiteboardFlyout`                               | A dock button's settings, opened on the dock's board side     |
+| Flyout           | `WhiteboardFlyout`                               | A dock button's settings, off the dock or beside the panel    |
 | Eraser mode      | `WhiteboardEraserMode` (`stroke/partial`)        | Whole-stroke or part-of-stroke erase                          |
 | Pen seen         | `markPenSeen()`, `penSeen()`                     | A `pen` pointer has been used in this page session            |
 | Whiteboard prefs | `WhiteboardPrefs`                                | Pens, active pen, recognition, eraser mode; device-local      |
@@ -126,7 +126,6 @@ marker), "rubber", "eraser size" on a whiteboard, "theme" for the whiteboard loo
     The pinned and frequent slots and the Shapes search are [whiteboard-dock](whiteboard-dock.md)'s.
   - **Recognition**: flip `recognise`, re-arm the pen intent when a pen is held, track
     `RecognitionOn` / `RecognitionOff`.
-  - **Undo / Redo**: the History group's `onUndo` / `onRedo`, unavailable by `canUndo` / `canRedo`.
   - **Settings**: toggle the Settings flyout (a press only); picking a background writes the person's
     synced `drawPattern` preference (never the tab) and tracks `Background<Name>`.
 - Changing a pen's colour or width updates `pens[p]`, re-arms the intent when `p` is held, and tracks
@@ -228,12 +227,15 @@ same in Diagram mode and to every collaborator ([One look](../../007-editor/edit
 
 Gated on `drawMode` (the `editorMode` prop on `Canvas`, `useWhiteboard().whiteboard`):
 
-- `panelEls.palette`, `ToolbarPalette`, `QuickStylePanel`, the Theme & canvas brush,
+- `ToolbarPalette`, `QuickStylePanel`, the Theme & canvas brush,
   `ThemeModeBanner`, `EmptyCanvasBanner`, the tool panels (`eraser`, `format`): not
   rendered.
+- `panelEls.palette` (the Floating layout's Palette panel) stays, its body Draw's groups
+  (`drawTools`) in place of the catalogue ([whiteboard-dock](whiteboard-dock.md)).
 - The Explorer menu button leaves the strip for its corner on a phone (`menuInStrip` false).
 - The draw-mode banner does not show for a held pen (`isHeldPenIntent`).
-- The dock renders when `whiteboard && !readOnly && !chromeHidden`.
+- The dock renders when `toolbarActive && whiteboard && !readOnly && !chromeHidden` (the Toolbar
+  layout's only).
 
 ### Quick style panel on a whiteboard
 
@@ -864,7 +866,7 @@ validated saves (`validate.ts` bounds `penWidth`). Colours written by a pen come
   objects on first sight (cache).
 - Eraser: per pointer sample, O(strokes) bbox rejects plus O(points) for the survivors; Partial
   densifies only touched strokes. A 2,000-stroke board stays within a frame on the samples tried.
-- Dock: fixed-size buttons in four groups; see [whiteboard-dock](whiteboard-dock.md).
+- Dock: fixed-size buttons in three groups; see [whiteboard-dock](whiteboard-dock.md).
 - Live stroke, per input event: one rect read, one sample pushed, and the whole outline rebuilt
   (`freehandGeometry`, perfect-freehand, the path string): O(samples), as Excalidraw does. No React
   render of the stroke. Measured with synthetic moves: Chromium p50 0.2 / 0.8 / 2.2 ms per event at
@@ -873,13 +875,17 @@ validated saves (`validate.ts` bounds `penWidth`). Colours written by a pen come
 
 ## Presentation and UX
 
-- Dock: top centre (or bottom, by choice), four groups; placement, separators and copy in
-  [whiteboard-dock](whiteboard-dock.md). Buttons 44 × 44 px on the editor's panel surface tokens.
+- Dock: top centre (or bottom, by choice), three groups; placement, separators and copy in
+  [whiteboard-dock](whiteboard-dock.md); in the Floating layout the groups fill the Palette panel
+  instead, as captioned tiles. Dock buttons 36 × 36 px (the strip's tiles) on the editor's panel
+  surface tokens.
 - Pen buttons: a filled nib in the pen's colour (the main pen shows the ink colour), a thickness bar below
   scaled to its width.
-- Flyouts sit above their button, never move the dock; clamp to the viewport horizontally (12 px
-  margin, measured from layout width before paint, since the pop-in starts at `scale(0)`), placed
-  with the `translate` property because the pop-in animation owns `transform`.
+- Flyouts sit on the board side of their button (beside the Palette panel in the Floating
+  layout), never move the dock, and point at their button with a tip; portalled and `fixed`,
+  placed with `left` / `top` in viewport px, clamped 12 px inside the viewport (measured from the
+  layout size before paint, since the pop-in starts at `scale(0)`): `offDock` / `besidePanel` in
+  [whiteboard-dock](whiteboard-dock.md).
 - Dock buttons and flyout options carry the house `Tooltip` (their accessible name).
 - Copy: buttons "Select", "Marker 1", "Marker 2", "Marker 3" (2 and 3 adding their colour, e.g. "Marker 2, blue, medium"; `PEN_NAMES`), "Eraser", "Sticky note", "Text", "Shapes", "Shape recognition"; pen flyout "Colour" (second and third pens only), "Width" with "Fine", "Medium", "Bold"; eraser flyout
   "Stroke", "Partial" with hints "Remove whole strokes" / "Erase part of a stroke"; Settings flyout
@@ -890,9 +896,10 @@ validated saves (`validate.ts` bounds `penWidth`). Colours written by a pen come
 
 ## Accessibility
 
-- Each group a `role="toolbar"` ("Drawing tools", "Shapes", "History", "Settings"),
-  `aria-orientation="horizontal"`; roving tabindex per group: one tab stop, ArrowLeft / ArrowRight
-  move (wrapping), Home / End jump ([whiteboard-dock](whiteboard-dock.md)).
+- Each group a `role="toolbar"` ("Drawing tools", "Shapes", "Settings"),
+  `aria-orientation="horizontal"` (none on a Palette panel tile grid); roving tabindex per group:
+  one tab stop, ArrowLeft / ArrowRight move (wrapping), Home / End jump, and in a tile grid
+  ArrowUp / ArrowDown a row ([whiteboard-dock](whiteboard-dock.md)).
 - Tool buttons carry `aria-pressed`; a pen's name includes its place, colour (second and third pens) and width ("Marker 3, red, medium");
   flyout openers carry `aria-expanded` and `aria-controls`.
 - A flyout is a `role="group"` labelled by its title; opening moves focus to its selected control;
@@ -906,7 +913,8 @@ validated saves (`validate.ts` bounds `penWidth`). Colours written by a pen come
 ## Web Experience
 
 - Zero layout shift: the dock is `position: absolute` over the canvas, fixed button sizes, flyouts
-  absolutely positioned on its board side; nothing in the page flow changes when a tool or flyout toggles.
+  portalled and `fixed` (off the dock's board side, or beside the Palette panel); nothing in the
+  page flow changes when a tool or flyout toggles.
 - INP: dock handlers set state only; erase work is per sample and bbox-filtered.
 - LCP: no new asset on first paint; the dock renders with the canvas.
 

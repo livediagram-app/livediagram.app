@@ -9,6 +9,7 @@ import { createStockColourProjector } from '@/lib/stock-colour-projector';
 import { drawnArrowAsShown } from '@/lib/drawn-arrow-preview';
 import { useMemo, useState } from 'react';
 import { isVoteHost } from '@livediagram/document';
+import { presentedPages } from '@/lib/presented-pages';
 import { elementMenuAnchor } from '@/lib/context-menu-anchor';
 import { LockedElementMenu, type LockHolder } from '@/components/canvas/LockedElementMenu';
 import { participantKey } from '@/lib/identity';
@@ -23,6 +24,7 @@ import { readDrawPattern } from '@/lib/whiteboard-dock-prefs';
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { Canvas } from '@/components/canvas/Canvas';
+import { useStableObject } from '@/hooks/ui/useStableObject';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useShapeLibraries } from '@/components/primitives/ShapeLibraryProvider';
 import type { LibraryShapeRef } from '@/lib/shape-library-dnd';
@@ -41,6 +43,7 @@ export function EditorCanvasHost() {
     activeTabLoadState,
     activeTabLocked,
     presentingElements,
+    presentingPageId,
     slideDeck,
     slideDeckPanelPosition,
     setSlideDeckPanelPosition,
@@ -231,7 +234,6 @@ export function EditorCanvasHost() {
     mapPosition,
     moveDocumentToFolder,
     moveDocumentTo,
-    multiSelectedIds,
     narrowMultiSelection,
     newDocument,
     openActionPopover,
@@ -260,7 +262,7 @@ export function EditorCanvasHost() {
     doneVoteReview,
     retryActiveTabLoad,
     revealVote,
-    selectedId,
+    readSelection,
     selectElement,
     selectMarquee,
     confirm,
@@ -308,6 +310,8 @@ export function EditorCanvasHost() {
     appendWebRowTo,
     setHeroCaptionLine,
     growMindNode,
+    mindOutline,
+    tidyMindMap,
     abandonMindNode,
     setTextAlignSelected,
     setUserPreferences,
@@ -334,12 +338,12 @@ export function EditorCanvasHost() {
     toggleZenMode,
     undo,
     userPreferences,
-    viewportOffset,
-    viewportZoom,
     zenMode,
     whiteboardDock,
     drag,
     editorMode,
+    illustratePages,
+    presentArticles,
   } = useEditorContext();
   // The viewer's editor mode (docs/specs/007-editor/editor-modes.md): Draw brings the dock and its
   // rules into focus; the board look keys on it through hasBoardLook.
@@ -431,7 +435,7 @@ export function EditorCanvasHost() {
   // can't disagree); consumed here for the overlay.
   const tabLoadState = activeTabLoadState;
   // Quick add + connect Arrow starter (docs/specs/008-canvas/canvas-and-palette.md) — see useQuickConnectStart.
-  const { handleStartArrow } = useQuickConnectStart({ selectedId, beginAnchorDrag });
+  const { handleStartArrow } = useQuickConnectStart({ readSelection, beginAnchorDrag });
 
   // While a label is being edited, ride the element context menu alongside
   // the editor (docs/specs/008-canvas/canvas-and-palette.md) — see useEditModeContextMenu.
@@ -499,6 +503,18 @@ export function EditorCanvasHost() {
     resetQuiz: isReadOnly || runBlocked ? undefined : quiz.resetQuiz,
     saveQuiz: isReadOnly || runBlocked ? undefined : quiz.saveQuiz,
   });
+  // Object props the canvas boundary compares by identity (docs/specs/008-canvas/canvas-performance.md
+  // "The canvas re-renders only for what it shows"): new only when their data changes.
+  const esBoardControls = useStableObject({
+    ...(photoImportAvailable
+      ? {
+          onImportPhoto: openPhotoImport,
+          photoDisabled: photoImportBlocked,
+          photoDisabledReason: photoDraft.draftOpen ? 'Finish the current draft first' : undefined,
+        }
+      : {}),
+  });
+  const stableSlideDeck = useStableObject(slideDeck);
 
   return (
     <>
@@ -520,13 +536,11 @@ export function EditorCanvasHost() {
         tabFont={activeTab.font}
         mainRef={canvasMainRef}
         isPinchingRef={isPinchingRef}
-        viewportZoom={viewportZoom}
         setViewportZoom={setViewportZoom}
         onFitToScreen={() => {
           fitToScreen();
           track('Canvas', 'Zoomed', 'Fit');
         }}
-        viewportOffset={viewportOffset}
         setViewportOffset={setViewportOffset}
         // Presenting (docs/specs/012-collaboration/presentation-mode.md) narrows the canvas to one slide's elements. The
         // real canvas still draws them — a slide has to respond to clicks and
@@ -536,6 +550,12 @@ export function EditorCanvasHost() {
         tabLayers={activeTab.layers}
         tabKind={activeTab.kind}
         editorMode={editorMode.mode}
+        illustratePages={presentedPages(
+          illustratePages,
+          activeTab,
+          presentingPageId,
+          presentArticles,
+        )}
         whiteboardDock={whiteboardDock.whiteboard ? whiteboardDock : undefined}
         whiteboardInk={PEN_INK[surface]}
         previewDrawnArrow={(intent, startX, startY, endX, endY) =>
@@ -552,8 +572,6 @@ export function EditorCanvasHost() {
         snapGuides={snapGuides}
         distGuides={distGuides}
         snapTargets={snapTargets}
-        selectedId={selectedId}
-        multiSelectedIds={multiSelectedIds}
         remoteSelectionsByElement={remoteSelectionsByElement}
         remoteCursors={remoteCursorRows}
         remoteAvatars={remoteAvatarRows}
@@ -695,17 +713,7 @@ export function EditorCanvasHost() {
         onAddText={addText}
         onAddSticky={addSticky}
         esBoard={esBoard}
-        esBoardControls={{
-          ...(photoImportAvailable
-            ? {
-                onImportPhoto: openPhotoImport,
-                photoDisabled: photoImportBlocked,
-                photoDisabledReason: photoDraft.draftOpen
-                  ? 'Finish the current draft first'
-                  : undefined,
-              }
-            : {}),
-        }}
+        esBoardControls={esBoardControls}
         onAddNextNote={createBlocked ? undefined : addNextNote}
         onDropPhoto={readPhotoFile}
         onDropFile={isReadOnly ? undefined : dropBoardFile}
@@ -812,7 +820,7 @@ export function EditorCanvasHost() {
         onMoveFormatPanel={(x, y) => setFormatPanelPosition({ x, y })}
         onResetFormatPanel={() => setFormatPanelPosition(null)}
         // Slide Deck (docs/specs/012-collaboration/presentation-mode.md): the deck itself plus its panel's placement.
-        slideDeck={slideDeck}
+        slideDeck={stableSlideDeck}
         slideDeckPanelPosition={slideDeckPanelPosition}
         onMoveSlideDeckPanel={(x, y) => setSlideDeckPanelPosition({ x, y })}
         onResetSlideDeckPanel={() => setSlideDeckPanelPosition(null)}
@@ -1054,6 +1062,9 @@ export function EditorCanvasHost() {
         onAppendWebRow={isReadOnly ? undefined : appendWebRowTo}
         onSetHeroCaptionLine={isReadOnly ? undefined : setHeroCaptionLine}
         onGrowMindNode={growMindNode}
+        canEditMindOutline={mindOutline.canEdit}
+        onEditMindOutline={mindOutline.open}
+        onTidyMindMap={tidyMindMap}
         onAbandonMindNode={abandonMindNode}
         chartPalette={themeChartPalette(getTheme(activeTab.theme))}
         onCancelEdit={cancelEdit}
@@ -1151,12 +1162,6 @@ export function EditorCanvasHost() {
                 onMove: (x, y) => setAiPanelPosition({ x, y }),
                 onReset: () => setAiPanelPosition(null),
                 contextElements: activeTab.elements,
-                focusIds:
-                  multiSelectedIds.size > 0
-                    ? [...multiSelectedIds]
-                    : selectedId !== null
-                      ? [selectedId]
-                      : [],
                 onApplyElements: applyAiElements,
                 ownerId: selfParticipant.id,
                 tabId: activeTab.id,

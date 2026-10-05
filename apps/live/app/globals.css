@@ -5,6 +5,16 @@
 @import './qa-board.css';
 @import './canvas-motion.css';
 @import './thumbnail-loader.css';
+@import './article-pages.css';
+
+/* A phone: narrower than `sm`, or a touch screen under 500px tall (one held sideways). The JS twin
+ * is PHONE_MEDIA_QUERY (lib/responsive.ts); the two state the same query. Phone-only layout uses
+ * `phone:` rather than `max-sm:`, so a phone in landscape gets it too. */
+@custom-variant phone {
+  @media (max-width: 639px), (pointer: coarse) and (max-height: 499px) {
+    @slot;
+  }
+}
 
 /* Scan the shared UI package so utility classes used only inside its
  * components (e.g. the <Brand> mark's hover-rotate) are generated here too.
@@ -30,11 +40,22 @@
   }
 }
 
+/* Illustrate mode's page clip (components/canvas/IllustratePageClip.tsx): the layer covers the
+   canvas world without taking presses itself, so a press on the empty canvas still reaches the
+   canvas; the element views inside take them as anywhere else. Zero specificity, in the base layer,
+   so an element's own pointer-events utility still wins. */
 @layer base {
-  button:not(:disabled),
-  [role='button']:not([aria-disabled='true']) {
-    cursor: pointer;
+  [data-page-clip] {
+    pointer-events: none;
   }
+  :where([data-page-clip]) > * {
+    pointer-events: auto;
+  }
+}
+
+@layer base {
+  /* The pointer cursor on every enabled button now lives in the shared theme
+   * (@livediagram/tailwind-config), so every app gets it. */
 
   /* The keyboard-focus ring (WCAG 2.4.7) now lives in the shared theme
    * (@livediagram/tailwind-config) so every app gets the same branded ring;
@@ -807,4 +828,36 @@ html[data-presenting][data-hide-pointer][data-pointer-idle] [data-presentation-s
 [data-pen-in-hand] *,
 [data-path-cursor] * {
   cursor: inherit !important;
+}
+
+/*
+ * The outline a relayed changeset draws (docs/specs/024-agents/blueprints/agent-changesets.md,
+ * "Accessibility", CS37): it fades in, holds and fades out over its reveal time (set inline). Under
+ * reduced motion it does not animate at all, so it appears and goes; collapsing it to its last frame,
+ * as the rule above would, would hide it.
+ */
+@keyframes changeset-reveal {
+  0% {
+    opacity: 0;
+  }
+  10%,
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+.changeset-reveal {
+  animation-name: changeset-reveal;
+  animation-timing-function: ease-out;
+  animation-fill-mode: both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .changeset-reveal {
+    animation: none !important;
+  }
+}
+:root.reduce-motion .changeset-reveal {
+  animation: none !important;
 }

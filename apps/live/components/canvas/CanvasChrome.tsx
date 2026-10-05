@@ -1,3 +1,5 @@
+import { useViewportStore } from '@/hooks/canvas/useViewportStore';
+import { ViewZoomControls } from '@/components/canvas/view-readers';
 import { ES_LANES } from '@livediagram/document';
 import { computeDrawGuides } from '@/components/canvas/canvas-draw-guides';
 import { CanvasGuideOverlay } from '@/components/canvas/CanvasGuideOverlay';
@@ -21,15 +23,15 @@ const TemplatePicker = dynamic(
 );
 
 import { ThemeBrushIcon } from '@/components/palette/palette-icons';
-import { ZoomControls } from '@/components/chrome/ZoomControls';
 import { OffscreenContentHint } from '@/components/canvas/OffscreenContentHint';
 import { ToolbarPalette } from '@/components/palette/ToolbarPalette';
 import { pickPaletteAddHandlers } from '@/components/palette/palette-add-handlers';
 import { ToolbarExplorerButton } from '@/components/chrome/ToolbarExplorerButton';
+import { SlidesClusterButton } from '@/components/canvas/SlidesClusterButton';
 import { LayersClusterButton } from '@/components/canvas/LayersClusterButton';
 import { UndoRedoClusterStrip } from '@/components/canvas/UndoRedoClusterStrip';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
-import { Fragment, type Dispatch, type RefObject, type SetStateAction } from 'react';
+import { Fragment, useCallback, type Dispatch, type RefObject, type SetStateAction } from 'react';
 import type { DockAnchor, DockPanel } from '@/hooks/canvas/useDockPopovers';
 import { useCornerDocking } from '@/hooks/ui/useCornerDocking';
 import { PanelSnapSlot } from '@/components/canvas/PanelSnapSlot';
@@ -39,10 +41,10 @@ import { PANEL_CORNERS, PANEL_IDS, cornerBottomInset, type PanelCorner } from '@
 import type { StampGhost } from '@/components/canvas/useStampGhost';
 import { HoverCard } from '@livediagram/ui';
 import { STRIP_SELECTOR, useStripCrowdsCorners } from '@/hooks/ui/useStripCrowdsCorners';
-import {
-  WHITEBOARD_DOCK_SELECTOR,
-  WHITEBOARD_DOCK_TOP_CLEARANCE_PX,
-} from '@/lib/whiteboard-dock-prefs';
+import { PHONE_TOOLBAR_ITEMS } from '@/components/chrome/phone-toolbar-items';
+import { atLeastInset } from '@/lib/safe-area';
+import { useSnapHaptic } from '@/hooks/canvas/useSnapHaptic';
+import { WHITEBOARD_DOCK_SELECTOR } from '@/lib/whiteboard-dock-prefs';
 import { CollaborateClusterButton } from './CollaborateClusterButton';
 import { kindCounts } from '@/components/panels/collaborate/collaborate-model';
 import { panelEnabled } from '@/lib/user-preferences';
@@ -233,15 +235,15 @@ export function CanvasChrome(props: CanvasChromeProps) {
     tabThemeId,
     templatePickerLockedName,
     templatePickerMode,
-    viewportZoom,
     welcomeOpen,
     wrapperRef,
     zenMode,
     onToggleZen,
   } = props;
-  // What moves the canvas wrapper on screen: the overlays that convert canvas points to client
-  // coordinates re-measure its origin only when this changes (useCanvasClientOrigin).
-  const canvasViewKey = `${props.viewportOffset.x},${props.viewportOffset.y},${viewportZoom},${props.mainSize.width},${props.mainSize.height}`;
+  // The view is not a prop here: the parts that show it read it from the viewport store, so a pan or
+  // zoom renders them and not this chrome or its panels (docs/specs/008-canvas/blueprints/viewport-store.md).
+  const viewport = useViewportStore();
+  const readZoom = useCallback(() => viewport.get().zoom, [viewport]);
   // Zen / focus mode (docs/specs/007-editor/zen-mode.md): hide all floating chrome. `chromeHidden`
   // folds it in next to the welcome-flow gate that already suppresses
   // the same panels, so each panel stays hidden in either state.
@@ -250,7 +252,9 @@ export function CanvasChrome(props: CanvasChromeProps) {
   // buttons with them (Undo / Redo stay). Read once here and handed to
   // useCanvasChromePanels, so a button and its panel share one value.
   const panelsOn = {
-    layers: panelEnabled(settings, 'layersPanelEnabled'),
+    // Not in Illustrate mode: a page is laid out by its pages, not layers
+    // (docs/specs/007-editor/illustrate-pages.md).
+    layers: panelEnabled(settings, 'layersPanelEnabled') && !props.illustratePages,
     collaborate: panelEnabled(settings, 'collaboratePanelEnabled'),
   };
 
@@ -269,7 +273,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
   // promise something it can't keep.
   const paletteDrag = usePaletteDragGuides({
     elements,
-    viewportZoom,
+    readZoom,
     wrapperRef,
     insertGate: {
       esBoard: props.esBoard === true,
@@ -282,6 +286,8 @@ export function CanvasChrome(props: CanvasChromeProps) {
     // board itself, so there is nothing to gate beyond "is this that board".
     timeline: props.esBoard === true ? ES_LANES : null,
   });
+  // A tick as a move catches an alignment guide (Android; lib/haptics).
+  useSnapHaptic(snapGuides.length > 0);
   const { alignGuides, allSnapTargets } = computeDrawGuides({
     // A stamp is placed by the lanes, not sized against edges: no box guides.
     drawDrag: stamp ? null : drawDrag,
@@ -304,10 +310,13 @@ export function CanvasChrome(props: CanvasChromeProps) {
   // The whiteboard's dock, absent for a view-role visitor (nothing to draw with) and while the
   // chrome is away; at the top unless the user chose the bottom (docs/specs/023-draw-mode/draw-mode.md
   // "Where the dock sits").
-  const dockShown = whiteboard && !!props.whiteboardDock && !readOnly && !chromeHidden;
+  // The Toolbar layout's only: the Floating layout shows Draw's tools in the Palette panel.
+  const dockShown =
+    toolbarActive && whiteboard && !!props.whiteboardDock && !readOnly && !chromeHidden;
   const dockOnTop = dockShown && props.whiteboardDock?.position === 'top';
-  // The Explorer menu button: top-left on desktop, the far left of the strip
-  // on a phone (no room for both across the top). A read-only visitor has no
+  // The Explorer menu button: top-left on desktop; on a phone, its own card at
+  // the left of the strip's row, the strip beside it (no room for a corner card
+  // above a strip that needs the whole top row). A read-only visitor has no
   // strip, and nor does a whiteboard, so it keeps the corner there.
   const menuInStrip = isMobile && !readOnly && !whiteboard;
   const explorerMenuButton = (
@@ -324,6 +333,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
     toolbarExplorerEl,
     toolbarClusterEls,
     collaborateEl,
+    slidesPopoverEl,
     clusterPopovers,
     paletteTint,
   } = useCanvasChromePanels({
@@ -391,11 +401,10 @@ export function CanvasChrome(props: CanvasChromeProps) {
             style={
               corner === 'bottom-right'
                 ? { bottom: cornerBottomInset(corner, cornerScale) }
-                : stripSpansTop && corner.startsWith('top')
+                : // The Draw dock is the strip's twin (its height, its scale), so the same clearance.
+                  (stripSpansTop || dockSpansTop) && corner.startsWith('top')
                   ? { top: toolbarTopClearancePx(toolbarScale) }
-                  : dockSpansTop && corner.startsWith('top')
-                    ? { top: WHITEBOARD_DOCK_TOP_CLEARANCE_PX }
-                    : undefined
+                  : undefined
             }
             className={`pointer-events-none absolute flex gap-4 ${DOCK_CORNER_CLASS[corner]}`}
           >
@@ -438,9 +447,8 @@ export function CanvasChrome(props: CanvasChromeProps) {
       <TimelineLanesOverlay
         timeline={props.esBoard === true ? ES_LANES : null}
         tabThemeId={tabThemeId}
-        viewportZoom={viewportZoom}
         wrapperRef={wrapperRef}
-        viewKey={canvasViewKey}
+        mainSize={props.mainSize}
       />
 
       <CanvasGuideOverlay
@@ -448,11 +456,10 @@ export function CanvasChrome(props: CanvasChromeProps) {
         allSnapTargets={allSnapTargets}
         distGuides={paletteDrag.distGuides.length > 0 ? paletteDrag.distGuides : distGuides}
         drawHover={drawHover}
-        viewportZoom={viewportZoom}
         marquee={marquee}
         tabThemeId={tabThemeId}
         wrapperRef={wrapperRef}
-        viewKey={canvasViewKey}
+        mainSize={props.mainSize}
       />
 
       <CanvasDrawPreview
@@ -463,9 +470,8 @@ export function CanvasChrome(props: CanvasChromeProps) {
         pendingDraw={pendingDraw}
         stamp={stamp}
         whiteboardInk={whiteboard ? props.whiteboardInk : undefined}
-        viewportZoom={viewportZoom}
         wrapperRef={wrapperRef}
-        viewKey={canvasViewKey}
+        mainSize={props.mainSize}
       />
 
       {/* Top-of-canvas floating chrome (docs/specs/008-canvas/canvas-and-palette.md): owner / role badge, the
@@ -488,6 +494,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
           positions against the canvas, so it renders outside the corner
           layer, as Toolbar's cluster popovers do. */}
       {zenMode ? null : collaborateEl}
+      {zenMode ? null : slidesPopoverEl}
       {toolbarActive && !readOnly && !whiteboard ? (
         <ToolbarPalette
           key={props.esBoard ? 'es-board' : 'standard'}
@@ -505,20 +512,14 @@ export function CanvasChrome(props: CanvasChromeProps) {
           esBoardControls={props.esBoardControls}
           themeTint={paletteTint}
           leading={menuInStrip ? explorerMenuButton : undefined}
+          onAddPage={props.illustratePages?.edit?.addPage}
         />
       ) : null}
 
       {/* The whiteboard's dock (docs/specs/023-draw-mode/draw-mode.md): top or bottom centre, in place
           of the palette. */}
       {dockShown && props.whiteboardDock ? (
-        <WhiteboardDock
-          model={props.whiteboardDock}
-          ink={props.whiteboardInk ?? '#1c1917'}
-          canUndo={canUndo}
-          canRedo={canRedo}
-          onUndo={onUndo}
-          onRedo={onRedo}
-        />
+        <WhiteboardDock model={props.whiteboardDock} ink={props.whiteboardInk ?? '#1c1917'} />
       ) : null}
 
       {/* Floating panels (docs/specs/007-editor/panel-docking.md). In the desktop docking layout they
@@ -559,17 +560,17 @@ export function CanvasChrome(props: CanvasChromeProps) {
         // as its one way back out, and a deck has its own way out plus no
         // zoom to offer.
         data-zoom-cluster=""
-        // Drawn at the UI scale, still 16px from the corner.
+        // Drawn at the UI scale, still 16px from the corner, or clear of a landscape notch.
         style={
           cornerScale === 1
-            ? undefined
+            ? { right: atLeastInset('1rem', 'right') }
             : {
                 ...uiScaleStyle(cornerScale),
-                right: toSurfacePx(16, cornerScale),
+                right: atLeastInset(`${toSurfacePx(16, cornerScale)}px`, 'right'),
                 bottom: toSurfacePx(16, cornerScale),
               }
         }
-        className="pointer-events-none absolute bottom-4 right-4 z-[var(--z-panel)] flex items-center gap-2"
+        className={`pointer-events-none absolute bottom-4 right-4 z-[var(--z-panel)] flex items-center gap-2 ${PHONE_TOOLBAR_ITEMS}`}
       >
         {welcomeOpen ? null : (
           <>
@@ -581,6 +582,15 @@ export function CanvasChrome(props: CanvasChromeProps) {
                 onRedo={onRedo}
                 canUndo={canUndo}
                 canRedo={canRedo}
+              />
+            ) : null}
+            {/* Slides (docs/specs/007-editor/illustrate-pages.md "Slides"): in Illustrate mode, where
+                Layers would be, the deck one press away. */}
+            {/* Desktop only, as the Slide Deck itself is. */}
+            {!zenMode && !isMobile && props.illustratePages && props.slideDeck ? (
+              <SlidesClusterButton
+                popoverOpen={activeDockPanel === 'slides'}
+                onTogglePopover={(button) => handleDockButtonClick('slides', button, true)}
               />
             ) : null}
             {/* Layers (docs/specs/006-document/layers.md): see LayersClusterButton. */}
@@ -638,8 +648,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
                 </HoverCard>
               </div>
             ) : null}
-            <ZoomControls
-              zoom={viewportZoom}
+            <ViewZoomControls
               onZoomIn={handleZoomIn}
               onZoomOut={handleZoomOut}
               onSetZoom={handleSetZoom}

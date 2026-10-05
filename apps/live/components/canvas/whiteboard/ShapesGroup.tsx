@@ -13,6 +13,7 @@ import type { WhiteboardDockModel } from '@/hooks/canvas/useWhiteboard';
 import { whiteboardShapeEntry, type WhiteboardShapeKey } from '@/lib/whiteboard-shape-catalogue';
 import { dropIndicatorX, PINNED_SHAPES_MAX, type SlotSource } from '@/lib/whiteboard-shape-slots';
 import { DockButton, DockDivider, DockToolbar } from './DockToolbar';
+import { useDockVariant } from './dock-variant';
 import { ShapePreview, shapeShortcut } from './ShapePreview';
 import type { DockFlyoutApi } from './useDockFlyout';
 import type { ShapeSlotDragApi } from './useShapeSlotDrag';
@@ -22,20 +23,32 @@ export const PINS_FULL_HINT = 'Seven shapes are pinned. Drag one out to swap.';
 
 export function ShapesGroup({
   model,
+  pinned,
+  canDrag,
   fly,
   slotDrag,
   refusing,
   pickAndClose,
 }: {
   model: WhiteboardDockModel;
+  // The pinned shapes the bar shows: all of them, or a phone's first (the rest are in the flyout).
+  pinned: readonly WhiteboardShapeKey[];
+  // Shapes drag on and off the bar (not on a phone, nor on the Palette panel).
+  canDrag: boolean;
   fly: DockFlyoutApi;
   slotDrag: ShapeSlotDragApi;
   // The drag in progress would be refused (seven pinned, not onto one).
   refusing: boolean;
   pickAndClose: (pick: () => void) => void;
 }) {
-  const pinned = model.pinnedShapes;
   const { drag } = slotDrag;
+  const panel = useDockVariant() === 'panel';
+  // The Shapes menu's items (its Recent and Most used slots), none pinned, none twice: shown on
+  // the Palette panel itself, where there is no menu.
+  const menuShapes = [...new Set([...model.slotShapes.recent, ...model.slotShapes.mostUsed])]
+    .filter((key) => !pinned.includes(key))
+    .map(whiteboardShapeEntry)
+    .filter((e): e is NonNullable<typeof e> => e !== undefined);
   const armed = model.armedShape;
   // Any shape in hand (a catalogue shape, the sticky note included) that is not pinned.
   const shapeInHand =
@@ -51,7 +64,7 @@ export function ShapesGroup({
   const marker = drag && markX !== null ? markX - drag.layout.bar.left - 1 : null;
 
   return (
-    <div className="relative flex shrink-0">
+    <div className={`relative flex ${panel ? 'w-full' : 'shrink-0'}`}>
       <DockToolbar label="Shapes" group="shapes">
         {pinned.map((key) => (
           <PinnedShape
@@ -70,26 +83,42 @@ export function ShapesGroup({
               if (slotDrag.consumeClick()) return;
               pickAndClose(() => model.pickShape(key));
             }}
-            onPointerDown={slotDrag.onSlotPointerDown}
+            // Pinning by drag is the dock's: the panel has no pinned side to drop on.
+            onPointerDown={panel || !canDrag ? () => {} : slotDrag.onSlotPointerDown}
             onMenu={openPinMenu}
           />
         ))}
         <DockDivider data-pinned-separator="" />
-        <DockButton
-          itemKey="shapes"
-          label="Shapes"
-          shortcut={WHITEBOARD_TOOL_KEYS.shapes}
-          icon={<ShapesGlyph />}
-          pressed={shapeInHand}
-          controls={{ id: 'whiteboard-flyout-shapes', expanded: fly.flyout?.kind === 'shapes' }}
-          onHoverEnter={(el) => fly.hoverEnter('shapes', el)}
-          onHoverLeave={fly.hoverLeave}
-          onPress={(el) => fly.toggle('shapes', el)}
-          // A press on the open flyout's button leaves the focus in its field (it took it on hover).
-          extra={{
-            onMouseDown: (e) => (fly.flyout?.kind === 'shapes' ? e.preventDefault() : undefined),
-          }}
-        />
+        {panel ? (
+          // The Palette panel shows the Shapes menu's own items on the panel, no menu.
+          menuShapes.map((entry) => (
+            <DockButton
+              key={entry.key}
+              itemKey={`menu:${entry.key}`}
+              label={entry.label}
+              shortcut={shapeShortcut(entry)}
+              icon={<ShapePreview entry={entry} />}
+              pressed={armed === entry.key}
+              onPress={() => pickAndClose(() => model.pickShape(entry.key))}
+            />
+          ))
+        ) : (
+          <DockButton
+            itemKey="shapes"
+            label="Shapes"
+            shortcut={WHITEBOARD_TOOL_KEYS.shapes}
+            icon={<ShapesGlyph />}
+            pressed={shapeInHand}
+            controls={{ id: 'whiteboard-flyout-shapes', expanded: fly.flyout?.kind === 'shapes' }}
+            onHoverEnter={(el) => fly.hoverEnter('shapes', el)}
+            onHoverLeave={fly.hoverLeave}
+            onPress={(el) => fly.toggle('shapes', el)}
+            // A press on the open flyout's button leaves the focus in its field (it took it on hover).
+            extra={{
+              onMouseDown: (e) => (fly.flyout?.kind === 'shapes' ? e.preventDefault() : undefined),
+            }}
+          />
+        )}
       </DockToolbar>
       {marker !== null ? (
         <span

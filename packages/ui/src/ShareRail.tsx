@@ -1,14 +1,18 @@
 'use client';
 
-import { SITE_URL as SHARE_URL } from './site';
+import { SiteAppearanceToggle } from './appearance/SiteAppearanceToggle';
+import { SITE_PITCH, SITE_URL as SHARE_URL } from './site';
 import { useCopiedFlash } from './useCopiedFlash';
 
 // The URL we want people to pass along is the shared site origin (./site), so
 // this rail is shareable from any app that renders the shared SiteHeader.
 
 /** The line we want people to pass along; the URL is the shared site origin. */
-const SHARE_TEXT =
-  'livediagram: a real-time multiplayer canvas for diagrams and mindmaps. No sign-up needed.';
+const SHARE_TEXT = `livediagram: ${SITE_PITCH}. No sign-up needed.`;
+
+// The card each rail sits on, flush against the right edge of the page.
+const RAIL_CARD =
+  'flex flex-col items-center gap-1 rounded-l-xl border border-r-0 border-slate-200 bg-white/90 pl-2 pr-1.5 shadow-lg backdrop-blur dark:border-slate-800 dark:bg-slate-900/90';
 
 const encodedUrl = encodeURIComponent(SHARE_URL);
 const encodedText = encodeURIComponent(SHARE_TEXT);
@@ -59,7 +63,9 @@ const TARGETS: ShareTarget[] = [
  * real gutter for a fixed right rail to sit in without overlapping; on smaller
  * screens it stays hidden, and the page URL is inherently shareable anyway.
  * Rendered as a sibling of the header (not a descendant) so the header's
- * `backdrop-filter` doesn't trap its `fixed` positioning.
+ * `backdrop-filter` doesn't trap its `fixed` positioning. A second, separate
+ * rail under it holds the Appearance toggle, which leaves the header at the
+ * same breakpoint (docs/specs/004-interface-design/appearance.md).
  */
 export function ShareRail() {
   // One live "copied" reset at a time: a rapid second copy must not have its
@@ -81,8 +87,8 @@ export function ShareRail() {
     'flex h-8 w-8 items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100';
 
   return (
-    <div className="fixed right-0 top-1/2 z-40 hidden -translate-y-1/2 xl:block">
-      <div className="flex flex-col items-center gap-1 rounded-l-xl border border-r-0 border-slate-200 bg-white/90 py-3 pl-2 pr-1.5 shadow-lg backdrop-blur dark:border-slate-800 dark:bg-slate-900/90">
+    <div className="fixed right-0 top-1/2 z-40 hidden -translate-y-1/2 flex-col items-end gap-2 xl:flex">
+      <div className={`${RAIL_CARD} py-3`}>
         <span className="mb-1 rotate-180 text-[10px] font-semibold uppercase tracking-[0.15em] text-slate-500 dark:text-slate-400 [writing-mode:vertical-rl]">
           Share
         </span>
@@ -125,6 +131,9 @@ export function ShareRail() {
             )}
           </svg>
         </button>
+      </div>
+      <div role="toolbar" aria-label="Appearance" className={`${RAIL_CARD} py-1.5`}>
+        <SiteAppearanceToggle look="rail" />
       </div>
     </div>
   );

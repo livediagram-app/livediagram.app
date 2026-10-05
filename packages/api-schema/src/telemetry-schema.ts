@@ -71,6 +71,9 @@ export const TELEMETRY_CATEGORIES = [
   // third app that reports telemetry, so usage shows up distinctly from the
   // in-editor AI panel.
   'Mcp',
+  // CLI commands (apps/cli, docs/specs/015-api/cli.md "Telemetry"): 'Used' with `type` the verb (TabView, ElementSet), sent
+  // to the active profile's api after a command succeeds, never for help; the CLI's counterpart of `Mcp`.
+  'Cli',
   // Transactional + lifecycle email (apps/api, docs/specs/014-identity/transactional-email.md): 'Sent' with `type`
   // the template kind ('Welcome', 'TeamInvite', ...). Written server-side by
   // the api worker, which is the only place that knows a send happened —
@@ -98,9 +101,10 @@ export const TELEMETRY_CATEGORIES = [
   'Timeline',
   // Explorer Home (docs/specs/013-workspace/explorer-home.md): the landing view. 'Opened' with
   // `type` 'Landing' | 'Nav' (the page the Explorer opened on, or a later visit) and 'Group' (a
-  // What happened summary expanded); 'Selected' with 'JumpBackIn' | 'Timeline' | 'WhatHappened'
-  // (which part of Home a document was opened from); 'Loaded' with 'More' (a further Timeline
-  // page) | 'Retry' (a failed read retried). Never a document name or a person.
+  // What happened summary expanded); 'Selected' with 'JumpBackIn.MostUsed' | 'JumpBackIn.Recent'
+  // (a document opened from Jump back in, by the half it belongs to), 'JumpBackIn.SeeMore' (See
+  // more followed to the Recent page) | 'WhatHappened'; 'Loaded' with 'Retry' (a failed read
+  // retried). Never a document name or a person.
   'Home',
   // Activity page (docs/specs/013-workspace/activity-page.md): the Explorer's cross-document inbox of open
   // actions + comment threads. 'Opened' once per visit; 'Selected' with
@@ -137,7 +141,7 @@ export const TELEMETRY_CATEGORIES = [
   // 'BreakShapeKey' | 'BreakShapeChip'). Presets only; never content.
   'Draw',
   // Editor modes (docs/specs/007-editor/editor-modes.md): a person switched a tab's editor mode,
-  // 'Changed' with 'ModeDiagram' | 'ModeDraw', fired before the mode applies.
+  // 'Changed' with 'ModeDiagram' | 'ModeDraw' | 'ModeIllustrate', fired before the mode applies.
   'Editor',
   // Google Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md, "Telemetry"):
   // 'Linked' / 'Unlinked' (connected / disconnected, typed by token path
@@ -153,6 +157,12 @@ export const TELEMETRY_CATEGORIES = [
   // 'Edited' | 'People' | 'Space', LENS_TELEMETRY_TYPES), from a chip, a suggestion or a typed token.
   // Never a value, a word, a team or an id.
   'Explorer',
+  // Agent changesets (docs/specs/024-agents/agent-changesets.md "Observability and telemetry"):
+  // 'Applied', 'Conflicted' and 'Held' for an agent's changeset, 'Reverted' for a revert of one,
+  // typed by the front door ('Mcp' | 'Cli' | 'Api' | 'Editor'); 'Opened'·'Toast' when a person asks to
+  // see what changed; 'Viewed' for a document view the api answered, typed by the view. Never
+  // content, never an id.
+  'Agent',
 ] as const;
 export type TelemetryCategory = (typeof TELEMETRY_CATEGORIES)[number];
 
@@ -230,6 +240,13 @@ export const TELEMETRY_ACTIONS = [
   // Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md): a change made in Google
   // Drive was applied to livediagram. Only ever paired with the 'Drive' category.
   'Applied',
+  // Agent changesets (docs/specs/024-agents/agent-changesets.md): a changeset refused because an
+  // element it targets changed since the agent read it, or because a person holds one.
+  'Conflicted',
+  'Held',
+  // Document views (docs/specs/024-agents/document-views.md): a view the api answered, typed by the
+  // view ('Overview' | 'Outline' | 'Graph' | 'Layout' | 'Comments' | 'Show' | 'Find' | 'Lint').
+  'Viewed',
   // Email (docs/specs/014-identity/transactional-email.md): a transactional / lifecycle email left the worker for
   // the provider. Only ever paired with the 'Email' category.
   'Sent',

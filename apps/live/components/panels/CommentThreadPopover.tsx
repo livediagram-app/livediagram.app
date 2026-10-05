@@ -82,10 +82,16 @@ export function CommentThreadPopover({
   // popover lands, hiding most of the thread + the canvas underneath
   // it. Desktop users want to type immediately; mobile users want to
   // read first, then tap the field deliberately to start typing.
+  // Once, when it is first placed: until then nothing is drawn, so there is no composer to focus
+  // (an anchor that lands in the same commit, a new margin note's, is placed a render later).
+  const placed = pos !== null;
+  const focusedOnce = useRef(false);
   useEffect(() => {
+    if (!placed || focusedOnce.current) return;
+    focusedOnce.current = true;
     if (isMobileViewportSync()) return;
     composerRef.current?.focus();
-  }, []);
+  }, [placed]);
 
   // Resolve the element's on-screen rect (after the canvas transform has
   // been applied), then place the popover just to the right with a small

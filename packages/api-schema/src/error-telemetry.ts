@@ -103,6 +103,9 @@ export function errorPageToken(pagePath: string | null): string | null {
 // dispatches on (apps/api/src/index.ts, whose test keeps the two in step).
 export const API_ROUTE_RESOURCES: ReadonlySet<string> = new Set([
   'capabilities',
+  'templates',
+  'icons',
+  'schema',
   'openapi.json',
   'unfurl',
   'ai',
@@ -164,8 +167,6 @@ const API_ROUTE_WORDS: ReadonlySet<string> = new Set([
   'refresh',
   'invites',
   'restore',
-  // Explorer Home's Timeline pages (docs/specs/013-workspace/explorer-home.md).
-  'timeline',
   // The Google Drive mirror's sub-routes (docs/specs/022-drive-mirror/drive-mirror.md).
   'state',
   'connect',

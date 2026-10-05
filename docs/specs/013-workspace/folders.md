@@ -112,7 +112,7 @@ folders
 diagrams
   ...
   folder_id   TEXT NULL REFERENCES folders(id) ON DELETE SET NULL
-  source      TEXT NULL   -- provenance: NULL = user-made; 'ai' / 'mcp' = made by AI
+  source      TEXT NULL   -- provenance: NULL = user-made; 'ai' / 'mcp' = made by AI; 'cli' = the CLI
 ```
 
 - `folder_id IS NULL` means the document sits at the root of its space
@@ -121,7 +121,9 @@ diagrams
 - `source` records how the document came to exist (migration 0028): NULL
   for one a person made in the editor; `'mcp'` for one an external AI tool
   created through the MCP server ([MCP server](../015-api/mcp-server.md)); `'ai'` reserved for the
-  in-editor AI assistant (no producer today). Set once on create and never
+  in-editor AI assistant (no producer today); `'cli'` for one the [CLI](../015-api/cli.md) created, which
+  is a front door for scripts as much as for agents and so does not count as Made by AI
+  (`isMadeByAiSource`). Set once on create and never
   rewritten by the metadata upsert (rename / autosave / move can't clear
   it). Provenance is a **filter**, not a place: the `made-by:ai` token of
   [Explorer filters](explorer-filters.md) finds AI-made documents wherever

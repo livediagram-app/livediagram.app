@@ -170,9 +170,14 @@ describe('settings catalogue', () => {
     expect(visibleCategories(true, ctx).map((c) => c.id)).toContain('ai');
   });
 
-  it('places API Tokens between Account and Privacy', () => {
-    const ids = SETTINGS_CATEGORIES.filter((c) => !c.parent).map((c) => c.id);
-    expect(ids.slice(-3)).toEqual(['account', 'tokens', 'privacy']);
+  it('nests Notifications and API Tokens under Account, directly after it', () => {
+    const ids = SETTINGS_CATEGORIES.map((c) => c.id);
+    const at = ids.indexOf('account');
+    expect(ids.slice(at, at + 3)).toEqual(['account', 'notifications', 'tokens']);
+    for (const id of ['notifications', 'tokens'])
+      expect(SETTINGS_CATEGORIES.find((c) => c.id === id)!.parent).toBe('account');
+    const topLevel = SETTINGS_CATEGORIES.filter((c) => !c.parent).map((c) => c.id);
+    expect(topLevel.slice(-2)).toEqual(['account', 'privacy']);
   });
 
   it('offers API Tokens, and the AI link to it, only where sign-in exists', () => {

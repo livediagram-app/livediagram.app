@@ -1,3 +1,4 @@
+import type { Dispatch, SetStateAction } from 'react';
 import type { ShapeLibraryItem } from '@livediagram/api-schema';
 import type { LibraryShapeRef } from '@/lib/shape-library-dnd';
 // Prop contract for the Canvas component, split out of Canvas.tsx
@@ -62,10 +63,10 @@ export type CanvasProps = {
   // the inline label editor (CanvasElementsLayer) for font inheritance.
   tabFont?: string;
   mainRef: Ref<HTMLElement>;
-  viewportOffset: { x: number; y: number };
   setViewportOffset: (offset: { x: number; y: number }) => void;
-  viewportZoom: number;
-  setViewportZoom: (zoom: number) => void;
+  // The view itself is not a prop: it lives in the viewport store, read where it shows
+  // (docs/specs/008-canvas/blueprints/viewport-store.md "Inside the canvas").
+  setViewportZoom: Dispatch<SetStateAction<number>>;
   onFitToScreen: () => void;
   isPinchingRef?: React.RefObject<boolean>;
   elements: Element[];
@@ -79,6 +80,9 @@ export type CanvasProps = {
   // The viewer's editor mode on the tab (docs/specs/007-editor/editor-modes.md): Draw trades the
   // palette, the strip and the tool panels for the dock, and keeps the canvas still.
   editorMode?: EditorMode;
+  // Illustrate mode's A4 pages and their edits (docs/specs/007-editor/editor-modes.md "The
+  // pages"), present only in that mode.
+  illustratePages?: import('@/hooks/editor/useIllustratePages').IllustratePagesView | null;
   // The whiteboard dock's model and the board's ink for this appearance
   // (docs/specs/023-draw-mode/draw-mode.md), present on a whiteboard tab.
   whiteboardDock?: import('@/hooks/canvas/useWhiteboard').WhiteboardDockModel;
@@ -104,8 +108,6 @@ export type CanvasProps = {
   // Connection-point markers revealed while dragging an arrow endpoint near
   // a shape, so the user can see exactly where it will snap. Empty otherwise.
   snapTargets: SnapTarget[];
-  selectedId: string | null;
-  multiSelectedIds: Set<string>;
   onSelectMarquee: (ids: Set<string>) => void;
   canvasTool: CanvasTool;
   onSetCanvasTool: (tool: CanvasTool) => void;
@@ -643,6 +645,12 @@ export type CanvasProps = {
   // fields, so they commit through here rather than the label editor.
   // Mind map (docs/specs/009-elements/mind-node.md): grows the next node from the label editor.
   onGrowMindNode: (id: string, kind: 'child' | 'sibling') => void;
+  // Edit Outline (docs/specs/009-elements/mind-node.md): whether `id` is a root whose outline may be
+  // edited, and opening it.
+  canEditMindOutline?: (id: string) => boolean;
+  onEditMindOutline?: (id: string) => void;
+  // Tidy Map on the map `id` belongs to (the badge on a map's root).
+  onTidyMindMap?: (id: string) => void;
   // Escape on the empty node a Tab made one time too many removes it.
   onAbandonMindNode: (id: string) => boolean;
   onSetPageHeading: (elementId: string, field: 'pageTitle' | 'pageSubtitle', value: string) => void;
@@ -780,7 +788,6 @@ export type CanvasProps = {
     onMove: (x: number, y: number) => void;
     onReset: () => void;
     contextElements: Element[];
-    focusIds: string[];
     onApplyElements: (elements: Element[], mode: 'clean') => void;
     ownerId: string;
     // The active tab's ID — the conversation-reset key. The NAME must

@@ -13,7 +13,9 @@
 // parameters are derived from the `{param}` placeholders in `path` by
 // document.ts, so they aren't repeated here.
 
+import { LINT_VIEW_NAME, TAB_VIEW_NAMES } from '@livediagram/api-schema';
 import { NAME_MAX_LENGTH } from '@livediagram/document';
+import { FIND_QUERY_MAX_LENGTH, VIEW_BUDGET_MAX } from '@livediagram/document-views';
 import type { BodySchema } from './types';
 
 /** How a caller authenticates (docs/specs/014-identity/auth-and-guest-access.md):
@@ -50,6 +52,8 @@ export interface RouteSpec {
   /** Media type of the success body. Defaults to `application/json`; the SVG
    *  snapshot endpoints answer `image/svg+xml`. */
   responseMediaType?: string;
+  /** A plain-text form of the success body beside the JSON one (a document view). */
+  textResponse?: { description: string };
   /** Meaningful status codes. The first 2xx is the success response; the rest
    *  are documented with the shared Error schema by document.ts. */
   statuses: number[];
@@ -72,6 +76,69 @@ const nameField = {
     `At most ${NAME_MAX_LENGTH} characters; a longer name is stored shortened at a word boundary ` +
     'with an ellipsis, and whitespace runs collapse to one space.',
 };
+// The document views' query (docs/specs/024-agents/document-views.md): `view` turns the plain read into a
+// view, text by default.
+const VIEW_COMMON_QUERY = [
+  { name: 'view', required: false, description: 'A view instead of the plain read.' },
+  {
+    name: 'json',
+    required: false,
+    description: '`1` answers the view as JSON (`OutlineView`, `GraphView`, …) instead of text.',
+  },
+  {
+    name: 'budget',
+    required: false,
+    description: `Fit the view to this many tokens (characters ÷ 3), 1 to ${VIEW_BUDGET_MAX}; what it leaves out is named on its last line.`,
+  },
+  {
+    name: 'door',
+    required: false,
+    description: '`cli` (default) or `mcp`: the syntax of the command the last line names.',
+  },
+];
+const TAB_VIEW_QUERY = [
+  {
+    ...VIEW_COMMON_QUERY[0]!,
+    description: `A view instead of the plain read: ${[...TAB_VIEW_NAMES, LINT_VIEW_NAME].join(', ')}. \`lint\` (the diagram lint) takes only \`json\`.`,
+  },
+  ...VIEW_COMMON_QUERY.slice(1),
+  {
+    name: 'only',
+    required: false,
+    description:
+      'outline, layout: one element (a ref, unique prefix or id) and what nests under it.',
+  },
+  {
+    name: 'coarse',
+    required: false,
+    description: 'layout: `1` for rows per container instead of geometry.',
+  },
+  {
+    name: 'style',
+    required: false,
+    description: 'outline: `1` adds the non-default style attributes.',
+  },
+  {
+    name: 'ref',
+    required: false,
+    description: 'show (required): the element, by ref, unique prefix or id.',
+  },
+  {
+    name: 'q',
+    required: false,
+    description: `find (required): the text to look for, 1 to ${FIND_QUERY_MAX_LENGTH} characters.`,
+  },
+  { name: 'all', required: false, description: 'comments: `1` adds resolved threads.' },
+];
+const DOCUMENT_VIEW_QUERY = [
+  {
+    ...VIEW_COMMON_QUERY[0]!,
+    description:
+      '`overview`: one line per tab, its counts and revision, instead of the plain read.',
+  },
+  ...VIEW_COMMON_QUERY.slice(1),
+];
+
 const wrap = (key: string, name: string): BodySchema => ({
   type: 'object',
   properties: { [key]: ref(name) },
@@ -99,6 +166,70 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     auth: 'public',
     responseSchema: 'CapabilitiesResponse',
     statuses: [200],
+  },
+
+  // ---- Catalogues (docs/specs/015-api/blueprints/cli.md "Catalogue routes") ----
+  {
+    method: 'GET',
+    path: '/templates',
+    segment: 'templates',
+    tag: 'Catalogues',
+    summary:
+      'The template library: its categories and one entry a template, as list_templates gives them.',
+    auth: 'public',
+    responseSchema: 'TemplateCatalogueResponse',
+    statuses: [200, 405],
+  },
+  {
+    method: 'GET',
+    path: '/templates/{kind}',
+    segment: 'templates',
+    tag: 'Catalogues',
+    summary:
+      'One template, built and read as an outline view; json=1 for the view as JSON. Unknown: 404 unknown_template with the kinds.',
+    auth: 'public',
+    query: [{ name: 'json', required: false, description: '1 for the outline as JSON.' }],
+    responseMediaType: 'text/plain',
+    responseSchema: { type: 'string' },
+    statuses: [200, 404, 405],
+  },
+  {
+    method: 'GET',
+    path: '/icons',
+    segment: 'icons',
+    tag: 'Catalogues',
+    summary:
+      'Icons from the line-art and Technology catalogues for a query, best first, as the palette ranks them.',
+    auth: 'public',
+    query: [
+      { name: 'query', required: true, description: '1 to 60 characters.' },
+      { name: 'limit', required: false, description: '1 to 50; 20 by default.' },
+    ],
+    responseSchema: 'IconSearchResponse',
+    statuses: [200, 400, 405],
+  },
+  {
+    method: 'GET',
+    path: '/schema',
+    segment: 'schema',
+    tag: 'Catalogues',
+    summary: 'The element kinds edit operations make, one line each.',
+    auth: 'public',
+    responseMediaType: 'text/plain',
+    responseSchema: { type: 'string' },
+    statuses: [200, 405],
+  },
+  {
+    method: 'GET',
+    path: '/schema/{kind}',
+    segment: 'schema',
+    tag: 'Catalogues',
+    summary:
+      'One kind: its first size, the aliases set takes with their values, and its stored fields. Unknown: 404 unknown_kind with the kinds.',
+    auth: 'public',
+    responseMediaType: 'text/plain',
+    responseSchema: { type: 'string' },
+    statuses: [200, 404, 405],
   },
 
   // ---- Documents ----
@@ -130,7 +261,33 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
       properties: {
         id: { type: 'string' },
         name: nameField,
-        tabs: { type: 'array', items: ref('Tab') },
+        tabs: {
+          type: 'array',
+          description:
+            'The tabs to seed. A tab may give `graph`, `mermaid` or `template` in place of `elements`, compiled ' +
+            'by the edit-operations engine; a tab it refuses refuses the create (422, with `tabId`).',
+          items: {
+            anyOf: [
+              ref('Tab'),
+              {
+                type: 'object',
+                properties: {
+                  id: { type: 'string' },
+                  name: { type: 'string' },
+                  theme: { type: 'string' },
+                  graph: { type: 'object' },
+                  mermaid: { type: 'string' },
+                  template: { type: 'string' },
+                },
+                required: ['id'],
+              },
+            ],
+          },
+        },
+        source: {
+          anyOf: [ref('DocumentSource'), { type: 'null' }],
+          description: 'The agent front door that made it; `ai` and `mcp` count as Made by AI.',
+        },
         // Placement (docs/specs/013-workspace/folders.md "Placement on create").
         teamId: {
           type: ['string', 'null'],
@@ -162,22 +319,34 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
         // The document's own dates, ms since the epoch (docs/specs/015-api/api.md "Document dates").
         createdAt: { type: 'integer' },
         savedAt: { type: 'integer' },
+        // Making a document is a use (docs/specs/015-api/api.md "Marking a document used").
+        markUsed: {
+          type: 'boolean',
+          description:
+            'Whether making the document counts as a use of it for the caller, so it joins their ' +
+            'Jump back in at once. Default true; send false when making many documents in one go ' +
+            '(the editor does for an import of more than one), so they wait until opened. Not a ' +
+            'boolean: 400 invalid markUsed.',
+        },
       },
       required: ['id', 'name'],
     },
     responseSchema: wrap('document', 'Document'),
-    statuses: [201, 400, 401, 403, 404, 410, 413],
+    statuses: [201, 400, 401, 403, 404, 410, 413, 422],
   },
   {
     method: 'GET',
     path: '/documents/{id}',
     segment: 'documents',
     tag: 'Documents',
-    summary: 'Get a document (metadata + tab summaries; tab contents fetched separately).',
+    summary:
+      'Get a document (metadata + tab summaries; tab contents fetched separately), or with `view=overview` one line per tab.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
+    query: DOCUMENT_VIEW_QUERY,
     responseSchema: wrap('document', 'Document'),
-    statuses: [200, 401, 404, 410],
+    textResponse: { description: 'With `view=overview`: the document and one line per tab.' },
+    statuses: [200, 400, 401, 404, 410],
   },
   {
     method: 'PUT',
@@ -261,23 +430,94 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/documents/{id}/tabs/{tabId}',
     segment: 'documents',
     tag: 'Documents',
-    summary: 'Get the full contents (elements) of one tab.',
+    summary:
+      'Get the full contents (elements) of one tab, with its revision (`rev`, also the weak `ETag`): what a changeset base names.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
-    responseSchema: wrap('tab', 'Tab'),
-    statuses: [200, 401, 403, 404, 410],
+    query: TAB_VIEW_QUERY,
+    responseSchema: wrap('tab', 'TabRecord'),
+    textResponse: {
+      description:
+        'With `view`: the tab as text, its first line the header with `rev`. A ref that names nothing is 404 `target_not_found`, several 400 `target_ambiguous`, each with candidates (`RefErrorBody`).',
+    },
+    statuses: [200, 400, 401, 403, 404, 410],
   },
   {
     method: 'PUT',
     path: '/documents/{id}/tabs/{tabId}',
     segment: 'documents',
     tag: 'Documents',
-    summary: `Create or replace one tab and its elements. A new or changed tab name is stored shortened to ${NAME_MAX_LENGTH} characters.`,
+    summary: `The editor's whole-tab save: create or replace one tab and its elements, merged with every changeset the editor had not seen (\`X-Changeset-Seen\`). An API token is refused with 405 \`use_changesets\`: scripts and agents write tabs with changesets. A new or changed tab name is stored shortened to ${NAME_MAX_LENGTH} characters.`,
+    auth: 'guest-or-clerk',
+    requestSchema: 'Tab',
+    responseSchema: wrap('tab', 'TabRecord'),
+    statuses: [200, 400, 401, 403, 404, 405, 409, 410, 413],
+  },
+  {
+    method: 'POST',
+    path: '/documents/{id}/tabs/{tabId}/changesets',
+    segment: 'documents',
+    tag: 'Changesets',
+    summary:
+      'Change one tab with a changeset: ordered edit operations or one replace, applied atomically, shown live to everyone with the tab open, credited to you and revertable. Pass the base you read (rev and element fingerprints) to refuse a write over a change made since. A whole-tab replace on a tab id the document lacks creates that tab.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
-    requestSchema: 'Tab',
-    responseSchema: wrap('tab', 'Tab'),
-    statuses: [200, 400, 401, 403, 404, 409, 410, 413],
+    query: [
+      { name: 'dryRun', required: false, description: '1: answer the plan without writing.' },
+    ],
+    requestSchema: 'ChangesetRequest',
+    responseSchema: 'ChangesetResponse',
+    statuses: [200, 400, 401, 403, 404, 409, 410, 412, 413, 422],
+  },
+  {
+    method: 'GET',
+    path: '/documents/{id}/changesets',
+    segment: 'documents',
+    tag: 'Changesets',
+    summary: "A document's changesets, newest first.",
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    query: [
+      { name: 'tab', required: false, description: 'Only this tab.' },
+      { name: 'limit', required: false, description: 'At most this many, 1 to 100 (default 20).' },
+    ],
+    responseSchema: listOf('changesets', 'ChangesetSummary'),
+    statuses: [200, 400, 401, 404, 410],
+  },
+  {
+    method: 'GET',
+    path: '/documents/{id}/changesets/{changesetId}',
+    segment: 'documents',
+    tag: 'Changesets',
+    summary: 'One changeset, with the result lines it answered.',
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    responseSchema: 'ChangesetDetail',
+    statuses: [200, 401, 404, 410],
+  },
+  {
+    method: 'POST',
+    path: '/documents/{id}/changesets/{changesetId}/revert',
+    segment: 'documents',
+    tag: 'Changesets',
+    summary:
+      'Revert a changeset: its inverse, applied as a new changeset by you. Elements changed since are kept as they are and listed. Possible for 30 days after it landed, by anyone with edit access to the tab.',
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    responseSchema: 'RevertResponse',
+    statuses: [200, 401, 403, 404, 409, 410, 413],
+  },
+  {
+    method: 'PUT',
+    path: '/documents/{id}/tabs/{tabId}/name',
+    segment: 'documents',
+    tag: 'Documents',
+    summary: `Rename one tab. Advances the tab's revision and reaches everyone with the document open. Stored shortened to ${NAME_MAX_LENGTH} characters.`,
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    requestSchema: { type: 'object', properties: { name: nameField }, required: ['name'] },
+    responseSchema: wrap('tab', 'TabSummary'),
+    statuses: [200, 400, 401, 403, 404, 410],
   },
   {
     method: 'DELETE',
@@ -294,23 +534,75 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/documents/{id}/tabs/{tabId}/comments',
     segment: 'documents',
     tag: 'Documents',
-    summary: 'Add a comment to an element on a tab.',
+    summary:
+      'Add a comment to an element on a tab; an API token is recorded on it for the audit trail.',
     auth: 'guest-or-clerk',
+    tokenUsable: true,
     requestSchema: {
       type: 'object',
       properties: { elementId: { type: 'string' }, text: { type: 'string' } },
       required: ['elementId', 'text'],
     },
-    statuses: [201, 400, 401, 403, 404, 410, 413],
+    statuses: [201, 400, 401, 403, 404, 409, 410, 413],
   },
   {
     method: 'DELETE',
     path: '/documents/{id}/tabs/{tabId}/comments/{commentId}',
     segment: 'documents',
     tag: 'Documents',
-    summary: 'Delete a comment.',
+    summary: 'Delete a comment you wrote.',
     auth: 'guest-or-clerk',
-    statuses: [204, 401, 403, 404, 410, 413],
+    tokenUsable: true,
+    statuses: [204, 401, 403, 404, 409, 410, 413],
+  },
+  {
+    method: 'POST',
+    path: '/documents/{id}/tabs/{tabId}/comments/{commentId}/reply',
+    segment: 'documents',
+    tag: 'Documents',
+    summary: 'Reply on the thread that holds a comment; it reopens a resolved thread.',
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    requestSchema: {
+      type: 'object',
+      properties: { text: { type: 'string' } },
+      required: ['text'],
+    },
+    statuses: [201, 400, 401, 403, 404, 409, 410, 413],
+  },
+  {
+    method: 'POST',
+    path: '/documents/{id}/tabs/{tabId}/comments/{commentId}/resolve',
+    segment: 'documents',
+    tag: 'Documents',
+    summary:
+      'Resolve the thread that holds a comment; resolving a resolved thread changes nothing.',
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    statuses: [204, 401, 403, 404, 405, 409, 410, 413],
+  },
+  {
+    method: 'POST',
+    path: '/documents/{id}/tabs/{tabId}/comments/{commentId}/reopen',
+    segment: 'documents',
+    tag: 'Documents',
+    summary: 'Reopen the thread that holds a comment; reopening an open thread changes nothing.',
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    statuses: [204, 401, 403, 404, 405, 409, 410, 413],
+  },
+  {
+    method: 'GET',
+    path: '/documents/{id}/comments',
+    segment: 'documents',
+    tag: 'Documents',
+    summary:
+      "The comment threads across the document, in tab and outline order, with each element's ref and label. status=open (default), resolved or all.",
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    query: [{ name: 'status', required: false, description: 'open (default), resolved or all.' }],
+    responseSchema: listOf('threads', 'DocumentCommentThread'),
+    statuses: [200, 400, 401, 403, 404, 405, 410],
   },
   {
     method: 'GET',
@@ -786,6 +1078,29 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     statuses: [201, 400, 401, 409],
   },
   {
+    method: 'GET',
+    path: '/tokens/current',
+    segment: 'tokens',
+    tag: 'API tokens',
+    summary:
+      "The token this request presented: its account, name, role and expiry (the CLI's auth status).",
+    auth: 'clerk',
+    tokenUsable: true,
+    responseSchema: ref('CurrentTokenResponse'),
+    statuses: [200, 401, 403, 404],
+  },
+  {
+    method: 'DELETE',
+    path: '/tokens/current',
+    segment: 'tokens',
+    tag: 'API tokens',
+    summary:
+      "Revoke the token this request presented; any token may revoke itself (the CLI's auth logout).",
+    auth: 'clerk',
+    tokenUsable: true,
+    statuses: [204, 401, 403, 404],
+  },
+  {
     method: 'DELETE',
     path: '/tokens/{id}',
     segment: 'tokens',
@@ -1165,20 +1480,9 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'home',
     tag: 'Account',
     summary:
-      "The Explorer's Home in one read: Jump back in (the caller's most-returned-to documents, by frecency, at most 12), the first page of their own Timeline (created, updated and opened), and What happened (other people's actions on documents the caller can open over the last 14 days, one group per document per day in `tz`). Query: `tz` (IANA, default UTC), `limit` (1 to 100, default 30). 400 `tz_invalid` / `limit_invalid` / `cursor_invalid`.",
+      "The Explorer's Home in one read: Jump back in (the caller's Within reach set: the 4 documents they used on the most days over the last 90, then the 4 they used most recently, none twice; most used first) and What happened (other people's actions on documents the caller can open over the last 14 days, one group per document per day in `tz`). Query: `tz` (IANA, default UTC). 400 `tz_invalid`.",
     auth: 'guest-or-clerk',
     responseSchema: { $ref: '#/components/schemas/HomeResponse' },
-    statuses: [200, 400, 401, 429],
-  },
-  {
-    method: 'GET',
-    path: '/home/timeline',
-    segment: 'home',
-    tag: 'Account',
-    summary:
-      "The next page of the caller's own Home Timeline, newest first. Keyset-paginated: pass the previous page's `nextCursor` as `cursor`. 400 `limit_invalid` / `cursor_invalid`.",
-    auth: 'guest-or-clerk',
-    responseSchema: { $ref: '#/components/schemas/HomeTimelinePage' },
     statuses: [200, 400, 401, 429],
   },
 

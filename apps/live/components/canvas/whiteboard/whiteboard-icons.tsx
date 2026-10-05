@@ -8,10 +8,10 @@ import {
   lucideShapes,
   lucideStickyNote,
   lucideType,
-  lucideUndo2,
 } from '@livediagram/icons/lucide';
 
-export const DOCK_ICON_PX = 20;
+// The Toolbar layout strip's tile glyph size, so the dock reads as the strip's twin.
+export const DOCK_ICON_PX = 18;
 
 // A marker seen from the side: the body in the dock's ink, the nib and the
 // band below in the pen's own colour, the band as thick as the pen draws.
@@ -65,25 +65,6 @@ export function OffGlyph() {
   return (
     <Glyph size={DOCK_ICON_PX} units={24}>
       <path d="M5 15 C5 8 13 5 15.5 10.5 S10 20 6 16.5" />
-    </Glyph>
-  );
-}
-
-export function UndoGlyph() {
-  return (
-    <Glyph size={DOCK_ICON_PX} units={24}>
-      <Prims prims={lucideUndo2} />
-    </Glyph>
-  );
-}
-
-// Undo, mirrored.
-export function RedoGlyph() {
-  return (
-    <Glyph size={DOCK_ICON_PX} units={24}>
-      <g transform="matrix(-1 0 0 1 24 0)">
-        <Prims prims={lucideUndo2} />
-      </g>
     </Glyph>
   );
 }

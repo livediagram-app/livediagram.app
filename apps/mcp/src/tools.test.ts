@@ -52,13 +52,17 @@ type Registered = {
 
 type Emitted = { category: string; action: string; type: string };
 
-const TAB = { id: 't_1', name: 'Tab 1', elements: [] };
+const TAB = { id: 't_1', name: 'Tab 1', rev: 1, elements: [] };
 const LIVE_DOC = { id: 'd_1', name: 'A diagram', tabs: [{ id: 't_1', name: 'Tab 1' }] };
 
 // A plausible api: enough of each route's response shape for every tool to
 // run to its success result.
 function okResponse(request: Request): Response {
-  const path = new URL(request.url).pathname.replace(/^\/api/, '');
+  const url = new URL(request.url);
+  const path = url.pathname.replace(/^\/api/, '');
+  if (url.searchParams.has('view')) {
+    return new Response('tab t_1 "Tab 1" · 0 elements · rev 1', { headers: { ETag: 'W/"1"' } });
+  }
   if (request.method === 'DELETE') return new Response(null, { status: 204 });
   const json = (body: unknown) => Response.json(body);
   if (path === '/documents' && request.method === 'GET') return json({ documents: [] });
@@ -68,6 +72,18 @@ function okResponse(request: Request): Response {
   if (path.endsWith('/share')) {
     return json({ link: { code: 'abc', role: 'view', expiresAt: null } });
   }
+  // Tab writes are changesets and the tab name route (docs/specs/024-agents/agent-changesets.md).
+  if (path.endsWith('/changesets')) {
+    return json({
+      dryRun: false,
+      changeset: null,
+      results: [],
+      text: '',
+      warnings: [],
+      lint: null,
+    });
+  }
+  if (path.endsWith('/name')) return json({ tab: { id: 't_1', name: 'A diagram', orderIndex: 0 } });
   if (/\/tabs\/[^/]+$/.test(path)) return json({ tab: TAB });
   if (/^\/documents\/[^/]+$/.test(path)) return json({ document: LIVE_DOC });
   return json({});

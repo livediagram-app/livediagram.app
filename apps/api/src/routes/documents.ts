@@ -16,8 +16,11 @@ import {
 import {
   DOCUMENT_CONVERSION_HEADER,
   INTENT_INVALID,
+  MARK_USED_INVALID,
   readCreationIntent,
   readDocumentConversion,
+  readMarkUsed,
+  type CreationIntent,
 } from '@livediagram/api-schema';
 import {} from '../comments';
 import {
@@ -44,9 +47,10 @@ import {
   payloadTooLarge,
   svgImage,
 } from '../responses';
-import { documentDates } from '@livediagram/api-schema';
+import { documentDates, isDocumentSource } from '@livediagram/api-schema';
 import { getDocumentTabImageSvg, getDocumentThumbnailSvg } from '../thumbnail';
 import { redactDocumentForReader, redactDocumentForScope } from '../redact-document';
+import { answerOverview, parseViewQuery } from './document-views-route';
 import { emailEnabled } from '../email/client';
 import { notifyMilestone } from '../email/notifications';
 import {
@@ -61,6 +65,7 @@ import { handleDocumentSharedTabs } from './document-shared-tabs-route';
 import { forkTakenTabIds } from '../tab-id-fork';
 import { handleDocumentRoomRoutes } from './document-room-routes';
 import { handleDocumentSubresources } from './document-subresource-routes';
+import { compileSeededTabs } from './document-seed';
 import { parsePlacement, resolvePlacement } from '../placement/resolve-placement';
 import { placementLookups } from '../placement/placement-lookups';
 import {
@@ -95,6 +100,7 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
       const body = (await request.json()) as Omit<Partial<DocumentDTO>, 'tabs'> & {
         tabs?: Tab[];
         intent?: unknown;
+        markUsed?: unknown;
       };
       const owner = requireOwner(ctx);
       if (owner instanceof Response) return owner;
@@ -112,12 +118,31 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
         logPlacementRejected('placement_invalid', placementScope(body.teamId));
         return placementRejected('placement_invalid');
       }
+      // Seeded tabs given as a graph, Mermaid or a template are compiled first (docs/specs/015-api/api.md);
+      // with no intent given, the first compiled tab supplies it, as the MCP derives it.
+      let derivedIntent: CreationIntent | null = null;
+      if (Array.isArray(body.tabs)) {
+        const seed = compileSeededTabs(body.tabs, body.id);
+        if ('refusal' in seed) return json(seed.refusal.body, { status: seed.refusal.status });
+        body.tabs = seed.tabs as Tab[];
+        derivedIntent = seed.intent;
+      }
       // The creation intent (docs/specs/013-workspace/default-folders.md): which default folder a
       // create at the root of My documents lands in. Malformed, it refuses the create.
-      const intent = readCreationIntent(body.intent);
+      const intent =
+        body.intent === undefined && derivedIntent
+          ? { ok: true as const, intent: derivedIntent }
+          : readCreationIntent(body.intent);
       if (!intent.ok) {
         logPlacementRejected(INTENT_INVALID, placementScope(body.teamId));
         return intentRejected();
+      }
+      // Whether making it is a use (docs/specs/015-api/api.md "Marking a document used"): absent
+      // counts; anything but a boolean refuses the create before anything is written.
+      const making = readMarkUsed(body.markUsed);
+      if (!making.ok) {
+        console.warn('documents: rejected reason=mark_used_invalid');
+        return badRequest(MARK_USED_INVALID);
       }
       // Validate any seeded tabs up front (structure + per-tab byte cap) so a
       // create can't smuggle a malformed / oversized tab past the tab gate.
@@ -223,7 +248,7 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
           (typeof body.presentation === 'string' ? body.presentation : null),
         // Provenance (docs/specs/013-workspace/folders.md): only the closed set of generated sources
         // is accepted; anything else (or absent) is a user-made document.
-        source: body.source === 'ai' || body.source === 'mcp' ? body.source : null,
+        source: isDocumentSource(body.source) ? body.source : null,
         savedAt,
         createdAt: dates.createdAt,
         // The creation intent, recorded once (docs/specs/013-workspace/default-folders.md
@@ -254,11 +279,16 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
         // undeclared, moving a document from this browser INTO the account was
         // reported as a document being created for the first time.
         const conversion = readDocumentConversion(request.headers.get(DOCUMENT_CONVERSION_HEADER));
-        ctx.waitUntil?.(
-          conversion === 'sync'
-            ? recordDocumentSynced(env, liveDoc, owner)
-            : recordDocumentCreated(env, liveDoc, owner),
-        );
+        if (conversion === 'sync') {
+          ctx.waitUntil?.(recordDocumentSynced(env, liveDoc, owner));
+        } else {
+          // Making it is a use of it for its maker, unless the create said not (a bulk import):
+          // docs/specs/013-workspace/explorer-home.md "Making a document".
+          console.info(`home: making doc=${liveDoc.id} marked=${making.markUsed}`);
+          ctx.waitUntil?.(
+            recordDocumentCreated(env, liveDoc, owner, { markUsed: making.markUsed }),
+          );
+        }
       }
       // docs/specs/014-identity/transactional-email.md (#6): on a genuine create (no prior row), check for a document
       // milestone. Count + send run in the background, off the response path.
@@ -280,6 +310,8 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
       // tab-content read below uses, so a team member can open a team
       // document by raw id (not just via a share link). A miss returns
       // 404 (not 403) so a guessed UUID can't probe existence.
+      const view = parseViewQuery(new URL(request.url), 'document');
+      if (view instanceof Response) return view;
       const d = await getDocument(env, id);
       if (!d) return missingDocument(ctx, id);
       const grant = await gateGrant(ctx, id, d.ownerId, d.teamId);
@@ -294,6 +326,8 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
         redactDocumentForReader(d, ctx.resolveOwner()),
         grant.tabScope,
       );
+      // The overview view (docs/specs/024-agents/document-views.md), after the same gate and scope.
+      if (view) return answerOverview(ctx, view, liveDoc, grant.tabScope);
       return json({ document: liveDoc });
     }
     if (request.method === 'PUT') {
@@ -427,7 +461,9 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
       const newName = requested || capStoredName(`Copy of ${source.name}`, null, 'document');
       const copy = await copyDocument(env, id, newId, owner, newName, scope.tabScope);
       if (!copy) return notFound();
-      ctx.waitUntil?.(recordDocumentDuplicated(env, copy, source.name, owner));
+      // A copy is one document made on purpose: always a use (docs/specs/015-api/api.md "Marking a
+      // document used").
+      ctx.waitUntil?.(recordDocumentDuplicated(env, copy, source.name, owner, { markUsed: true }));
       // A copy taken by someone who came in through a share link is news the
       // owner wants: their shared document was worth forking.
       //

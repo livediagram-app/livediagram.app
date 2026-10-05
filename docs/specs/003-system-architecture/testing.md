@@ -2,7 +2,7 @@
 
 How livediagram is tested below the browser: unit tests, and hook and component tests in jsdom. The goal is a fast, consistent, zero-config-per-file test setup that runs the same locally and in CI.
 
-The whole editor in a real browser, against the production build and the api worker, is the separate Playwright suite in [End-to-end tests](e2e-smoke.md); it runs after merge, not on the per-PR gate.
+The whole editor in a real browser, against the production build and the api worker, is the separate Playwright suite in [End-to-end tests](e2e-smoke.md); it is a per-PR merge gate of its own.
 
 ## Runner
 
@@ -106,8 +106,12 @@ Watch mode while developing: `pnpm --filter @livediagram/<name> exec vitest`.
 
 Coverage uses the built-in **v8** provider. Reports are written to a
 gitignored `coverage/` directory per workspace (`text` summary in the
-terminal, plus `html` + `lcov` for tooling). Only first-party source
-(`src/**`, `lib/**`) is counted; test files and type-only `.d.ts` are
+terminal, plus `html` + `lcov` for tooling). The `lcov` report names each file
+from the repository root (`apps/live/lib/...`), so reports from different
+workspaces never collide. Only first-party TypeScript source under `src/` and
+`lib/` is counted; the editor (`apps/live`) also counts `app/`, `components/`
+and `hooks/`, where most of its source lives. Fixtures beside the code
+(`.drawio`, goldens, model weights) are never parsed as source. Test files and type-only `.d.ts` are
 excluded. `index.ts` is intentionally **not** excluded — in this repo a
 package's `index.ts` is its implementation (e.g. `@livediagram/document`), not
 a barrel of re-exports.
@@ -138,17 +142,85 @@ the "decides who may see this" or "decides what may be deleted" set.
 
 ## CI
 
-CI runs three parallel jobs (`.github/workflows/ci.yml`): **Checks** runs lint →
+CI runs parallel jobs (`.github/workflows/ci.yml`): **Checks** runs lint →
 format → typecheck; **Tests** runs **test** → **coverage thresholds**, each
-suite exactly once (a workspace with `test:coverage` runs only that); **Build**
-runs the build and the staging config check. No CI change is needed to start running
+suite exactly once (a workspace with `test:coverage` runs only that), for every
+workspace but the editor; **Editor unit tests i/3** run the editor's suite
+(`apps/live`, most of the repository's tests) under coverage, a third of its
+files each (`vitest run --shard=i/3`); **Build** runs the build and the staging
+config check. No CI change is needed to start running
 tests; adding a `test` script to a workspace is enough for Turborepo to pick
 it up.
+
+Checks, Tests, every Editor unit tests job and Build are required status checks on `main`, with every E2E Smoke job
+([End-to-end tests](e2e-smoke.md#when-it-runs)). Only runs started by the pull request count: a
+`workflow_dispatch` run on the same commit is not attached to it.
 
 Coverage is a separate step because it enforces the thresholds above — and
 because running it at all keeps the coverage tooling exercised. It previously
 did not run in CI, which is how a v4 coverage provider came to sit against a
 v5 test runner with every check green: nothing invoked the broken path.
+
+### Sizing the shards
+
+A pull request waits for its slowest job, so splitting a suite further than the slowest job that cannot
+be split (Checks, about 4 minutes) buys no time, while each extra job takes one of the account's 20
+concurrent runner slots that every other run waits on. The editor's suite is split into the fewest
+shards that finish inside Checks: three, at about 3 minutes each, of which about 30 seconds is
+setup. The E2E suite sizes its shards the same way ([End-to-end tests](e2e-smoke.md#when-it-runs)).
+
+### Coverage report
+
+Tests and each Editor unit tests job upload their `lcov` reports to
+[Codecov](https://app.codecov.io/gh/livediagram-app/livediagram.app), which merges the four uploads
+of a commit into one report (`codecov.yml`). It informs; it never gates: its statuses are
+informational, and the enforced bar stays the thresholds above. The upload authenticates with
+GitHub's OIDC token (`id-token: write`), so no Codecov secret exists; a pull request from a fork
+uploads tokenless. A failed upload logs its error and leaves the job green, so a Codecov outage never
+holds back a merge.
+
+The pull request's coverage comment is ours, not Codecov's (`comment: false`): the organisation's
+free Developer plan is Codecov's team tier, which writes a fixed, patch-only comment whatever
+`codecov.yml` asks for. After CI succeeds, `coverage-comment.yml` runs
+`scripts/coverage-comment.mjs`, which waits until Codecov has processed all four uploads of the
+head commit (riding out up to three dropped connections; every failure names the URL and the network
+cause), reads its numbers from Codecov's public API and writes one comment, edited in place on
+each later run:
+
+- the patch coverage (the changed lines), and the project coverage with its change;
+- Codecov's impacted file tree graph, linked to the pull request's file tree on Codecov (its
+  public graph token, read from Codecov's API, embeds the image);
+- one row per area (Editor, API, MCP, Help and marketing, Packages), `main` against the pull
+  request, never a list of files, which an editor change would fill with hundreds;
+- Codecov's coverage diff: coverage, files, lines, hits, misses and partials, `+` marking what got
+  better and `-` what got worse.
+
+It runs from `main`'s copy of the workflow and script and never checks out the pull request's code,
+so it comments on a pull request from a fork too. `workflow_dispatch` with a pull request number runs
+it by hand; `COVERAGE_COMMENT_DRY_RUN=1` prints the comment instead of posting it.
+
+## Before a push
+
+A **pre-push hook** runs what CI's Checks and Tests would fail on, for what the push changes, so
+a deterministic failure surfaces in seconds on the machine rather than minutes later on CI.
+
+- `pnpm install` installs it: the root `prepare` script runs `scripts/git-hooks/install.mjs`,
+  which points `core.hooksPath` at the tracked `.githooks/` directory. It skips, saying so, when
+  `CI` is set or outside a git work tree.
+- `.githooks/pre-push` runs `scripts/git-hooks/pre-push.mjs`, which takes the files changed since
+  the merge base with `origin/main` and runs, stopping at the first failure:
+  1. `prettier --check` on the changed files Prettier formats;
+  2. `turbo run lint typecheck test --affected`, against that merge base, for the workspaces the
+     change touches and their dependants;
+  3. the help app's suite whenever a changed file sits outside `apps/` and `packages/`, since
+     its guards (repo paths and spec links in docs and code) read the whole repository and
+     `--affected` assigns a root file to no workspace.
+- Nothing changed since the merge base: it prints that and passes.
+- The hook is a fast shift-left, not the gate: CI still runs everything, and the E2E suite stays
+  in CI.
+
+The help app's `test` and `test:coverage` tasks declare the repository's tracked text as turbo
+inputs (`turbo.json`), so a docs-only change never replays a cached pass of those guards.
 
 ## What's tested now, what's ahead
 

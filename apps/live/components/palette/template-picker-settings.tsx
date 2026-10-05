@@ -30,6 +30,7 @@ export function NewDocumentSettingsStep({
   saveLocation,
   onSaveLocation,
   placementFooter,
+  stepFooter,
 }: {
   documentName: string;
   onDocumentName: (v: string) => void;
@@ -58,6 +59,9 @@ export function NewDocumentSettingsStep({
   // Under the folder browser: the default-folder line (docs/specs/013-workspace/default-folders.md
   // "The New Document wizard"), absent for Local Browser with the browser itself.
   placementFooter?: ReactNode;
+  // The step's last row, whatever the save location: "Always save new documents in <place> and
+  // skip this step" (docs/specs/013-workspace/default-folders.md "Skipping the Location step").
+  stepFooter?: ReactNode;
 }) {
   // Local Browser is Offline Mode (docs/specs/006-document/offline-mode.md): it drives the warning below and
   // removes the folder step (an offline document has no server folder / team).
@@ -138,6 +142,8 @@ export function NewDocumentSettingsStep({
           {placementFooter}
         </div>
       )}
+
+      {stepFooter}
     </div>
   );
 }

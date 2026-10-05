@@ -3,6 +3,7 @@
 import { describe, expect, it } from 'vitest';
 import { PALETTE_CATEGORIES } from './palette-categories';
 import { tilesForCategory } from './palette-tile-defs';
+import { paletteCategoriesFor } from './palette-layouts';
 import {
   STRIP_TILE_LIMIT,
   desktopStripTileLimit,
@@ -12,7 +13,9 @@ import {
   stripTilesFor,
 } from './toolbar-strip-tiles';
 
-const NONE = { favouriteIds: [], hasImage: true };
+const NONE = { hasImage: true };
+// Diagram mode's Popular, as its palette layout fills it.
+const diagramPopular = paletteCategoriesFor('diagram').find((c) => c.id === 'popular')!.tiles!;
 
 describe('stripTilesFor', () => {
   it('never shows more than the limit', () => {
@@ -30,9 +33,9 @@ describe('stripTilesFor', () => {
   });
 
   it('always offers More for the categories whose body is more than tiles', () => {
-    // Favourites (search + edit), the three searchable catalogues, and the
-    // Behaviours group browser can only be fully reached through More.
-    for (const id of ['favourites', 'icons', 'stickers', 'technology', 'behaviour']) {
+    // The three searchable catalogues and the Behaviours group browser can
+    // only be fully reached through More.
+    for (const id of ['icons', 'stickers', 'technology', 'behaviour']) {
       expect(stripTilesFor(id, NONE).hasMore, id).toBe(true);
     }
   });
@@ -45,10 +48,11 @@ describe('stripTilesFor', () => {
     expect(strip.hasMore).toBe(false);
   });
 
-  it('shows the saved favourites in their saved order', () => {
+  it("shows the tiles a mode's layout hands it, in the layout's order", () => {
     const [a, b] = tilesForCategory('shapes');
-    const strip = stripTilesFor('favourites', { favouriteIds: [b!.id, a!.id], hasImage: true });
+    const strip = stripTilesFor('popular', { hasImage: true, tiles: [b!, a!] });
     expect(strip.tiles.map((t) => t.id)).toEqual([b!.id, a!.id]);
+    expect(strip.hasMore).toBe(false);
   });
 
   // docs/specs/007-editor/toolbar-layout.md: using a tile never reorders the strip.
@@ -80,6 +84,17 @@ describe('stripTilesFor', () => {
     expect(shapes.tiles).toHaveLength(STRIP_TILE_LIMIT - 1);
   });
 
+  it('spends part-tile slack on a divider rather than a whole tile', () => {
+    // Diagram's Popular divides after the diamond (the third tile). With room
+    // for 4.26 tiles, four tiles and that divider (4.2) fit.
+    const popular = { ...NONE, tiles: diagramPopular };
+    const roomy = stripTilesFor('popular', { ...popular, limit: 4.26 });
+    expect(roomy.tiles).toHaveLength(4);
+    expect([...roomy.dividersAfter]).toEqual(['shapes:diamond']);
+    // Without the slack the divider costs the fourth tile, as before.
+    expect(stripTilesFor('popular', { ...popular, limit: 4 }).tiles).toHaveLength(3);
+  });
+
   it('drops the dividers before any tile when only the tiles fit', () => {
     const count = tilesForCategory('devices').length;
     const tight = stripTilesFor('devices', { ...NONE, limit: count });
@@ -98,7 +113,7 @@ describe('stripTilesFor', () => {
 
   it('drops image tiles when uploads are unavailable', () => {
     for (const c of PALETTE_CATEGORIES) {
-      const strip = stripTilesFor(c.id, { favouriteIds: [], hasImage: false });
+      const strip = stripTilesFor(c.id, { hasImage: false });
       expect(
         strip.tiles.some((t) => t.needsImage),
         c.id,
@@ -113,8 +128,9 @@ describe('phoneStripTileLimit', () => {
     expect(phoneStripTileLimit(430)).toBe(4);
   });
 
-  it('never drops below three tiles, even on a very narrow screen', () => {
-    expect(phoneStripTileLimit(320)).toBe(3);
+  it('never drops below two tiles, even on a very narrow screen', () => {
+    expect(phoneStripTileLimit(360)).toBe(2);
+    expect(phoneStripTileLimit(320)).toBe(2);
   });
 
   it('caps at the desktop limit however wide it gets', () => {
@@ -122,9 +138,10 @@ describe('phoneStripTileLimit', () => {
   });
 
   it('shows no more tiles than fit', () => {
-    // The strip's measured overhead at 390px (menu button, pickers, More,
-    // dividers, padding) was 220px, tiles ~38px: the count must fit 390 - 24.
-    expect(220 + phoneStripTileLimit(390) * 38).toBeLessThanOrEqual(390 - 24);
+    // The strip's overhead at 390px (the menu card beside it and its gap,
+    // pickers, More, dividers, padding) is 236px, tiles ~38px: the count must
+    // fit 390 - 24.
+    expect(236 + phoneStripTileLimit(390) * 38).toBeLessThanOrEqual(390 - 24);
   });
 });
 
@@ -135,11 +152,11 @@ describe('desktopStripTileLimit', () => {
   });
 
   it('sheds tiles on a narrow window so the centred strip clears the menu button', () => {
-    // Menu button clearance (66px) on both sides, 280px of strip chrome, ~38px tiles.
+    // Menu card clearance (116px) on both sides, 280px of strip chrome, ~38px tiles.
     for (const width of [640, 700, 800]) {
       const tiles = desktopStripTileLimit(width);
       expect(tiles).toBeLessThan(STRIP_TILE_LIMIT);
-      expect(280 + tiles * 38).toBeLessThanOrEqual(width - 2 * 66);
+      expect(280 + tiles * 38).toBeLessThanOrEqual(width - 2 * 116);
     }
   });
 });
@@ -147,7 +164,8 @@ describe('desktopStripTileLimit', () => {
 describe('fitStripTiles (measured)', () => {
   it("fits the room left after the strip's own chrome, capped at twelve", () => {
     expect(fitStripTiles({ available: 1000, chrome: 250, pitch: 40 })).toBe(12);
-    expect(fitStripTiles({ available: 560, chrome: 250, pitch: 40 })).toBe(7);
+    // Fractional: the part-tile left over can still hold a divider.
+    expect(fitStripTiles({ available: 560, chrome: 250, pitch: 40 })).toBe(7.75);
   });
 
   it('follows a wider chrome (a longer category name) instead of assuming one', () => {
@@ -156,9 +174,9 @@ describe('fitStripTiles (measured)', () => {
     expect(wide).toBeLessThan(narrow);
   });
 
-  it('never drops below three, even with no pitch measured', () => {
-    expect(fitStripTiles({ available: 100, chrome: 300, pitch: 38 })).toBe(3);
-    expect(fitStripTiles({ available: 900, chrome: 200, pitch: 0 })).toBe(3);
+  it('never drops below two, even with no pitch measured', () => {
+    expect(fitStripTiles({ available: 100, chrome: 300, pitch: 38 })).toBe(2);
+    expect(fitStripTiles({ available: 900, chrome: 200, pitch: 0 })).toBe(2);
   });
 });
 

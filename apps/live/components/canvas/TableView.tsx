@@ -28,7 +28,7 @@ import { useTableEditing } from '@/components/canvas/useTableEditing';
 import { useTableCellInput } from '@/components/canvas/useTableCellInput';
 import { useTableAxisResize } from '@/components/canvas/useTableAxisResize';
 import { useTableCellSelection } from '@/components/canvas/useTableCellSelection';
-import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { useElementSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { useCanvasZoom } from '@/components/canvas/CanvasZoomContext';
 
 // Build a CSS grid-template track list: an explicit `Npx` for each pinned
@@ -88,7 +88,7 @@ export function TableView({
   const zoom = useCanvasZoom();
   // The paper under the grid, for the rules and text a table doesn't colour
   // itself (docs/specs/007-editor/live-app.md).
-  const surface = useCanvasSurface();
+  const surface = useElementSurface(element.id);
   const rows = element.cells.length;
   const cols = element.cells[0]?.length ?? 0;
   // Counter-scale factor so floating chrome stays a fixed on-screen size

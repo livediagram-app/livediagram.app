@@ -23,7 +23,7 @@ function mount(html: string, bar: [number, number]) {
 }
 
 const STRIP_HTML = '<div data-toolbar-palette><div data-bar data-tour-id="palette"></div></div>';
-const DOCK_HTML = '<div data-whiteboard-dock data-bar></div>';
+const DOCK_HTML = '<div data-whiteboard-dock data-dock-variant="dock" data-bar></div>';
 
 beforeEach(() => {
   vi.stubGlobal(
@@ -52,6 +52,18 @@ describe('useStripCrowdsCorners', () => {
       useStripCrowdsCorners(corners, WHITEBOARD_DOCK_SELECTOR, 'l', '1'),
     );
     expect(result.current).toBe(true);
+  });
+
+  // The Floating layout's Draw tools carry the same attribute but are a corner panel themselves.
+  it('ignores Draw tools in the Palette panel', () => {
+    const corners = mount(
+      '<div data-whiteboard-dock data-dock-variant="panel" data-bar></div>',
+      [200, 900],
+    );
+    const { result } = renderHook(() =>
+      useStripCrowdsCorners(corners, WHITEBOARD_DOCK_SELECTOR, 'l', '1'),
+    );
+    expect(result.current).toBe(false);
   });
 
   it('is clear when the bar stays out of the corners', () => {

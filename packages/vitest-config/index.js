@@ -1,4 +1,8 @@
+import { fileURLToPath } from 'node:url';
 import { defineConfig, mergeConfig } from 'vitest/config';
+
+// The monorepo root: this file sits at packages/vitest-config/index.js.
+const REPO_ROOT = fileURLToPath(new URL('../..', import.meta.url));
 
 /**
  * Shared Vitest defaults for every workspace. Workspaces extend this
@@ -18,13 +22,17 @@ export const baseConfig = defineConfig({
     clearMocks: true,
     coverage: {
       provider: 'v8',
-      reporter: ['text', 'html', 'lcov'],
+      // lcov names each file from the repo root (`apps/live/lib/x.ts`, not `lib/x.ts`), so Codecov
+      // places every workspace's report without guessing between their many `src/index.ts`.
+      reporter: ['text', 'html', ['lcov', { projectRoot: REPO_ROOT }]],
       reportsDirectory: './coverage',
       // Count first-party source only — never tests or type decls. NB we
       // deliberately do NOT exclude index.ts: in this repo a package's
       // index.ts is its implementation (e.g. @livediagram/document), not a
       // barrel of re-exports, so excluding it would hide all of its source.
-      include: ['src/**', 'lib/**'],
+      // Code files only: these folders also hold fixtures (`.drawio`, goldens, model weights) that are not
+      // source, and parsing them as code fails. Workspace includes are added to this list, not replacing it.
+      include: ['{src,lib}/**/*.{ts,tsx}'],
       exclude: ['**/*.{test,spec}.*', '**/*.d.ts'],
     },
   },

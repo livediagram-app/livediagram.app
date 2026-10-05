@@ -30,7 +30,7 @@ Derived from [Iconography](../iconography.md).
 - The canvas icon's stroke is `ICON_WEIGHT_PX[element.iconWeight ?? DEFAULT_ICON_WEIGHT]` in screen pixels (`vector-effect: non-scaling-stroke`, as today).
 - A remote participant's selection keeps its highlight stroke, `ICON_REMOTE_HIGHLIGHT_PX`.
 - An icon drawn inside another shape (`shape-inline-icon-layout`) uses `ICON_WEIGHT_PX.regular`.
-- Palette thumbnails (Icons tab, favourites, search results) render through `Glyph`-equivalent sizing at `ICON_STROKE_PX`.
+- Palette thumbnails (Icons tab, Popular, search results) render through `Glyph`-equivalent sizing at `ICON_STROKE_PX`.
 - Setting the weight on a multi-selection applies to every `shape: 'icon'` line-art element. Technology tiles ignore it.
 
 ## Interfaces and contracts

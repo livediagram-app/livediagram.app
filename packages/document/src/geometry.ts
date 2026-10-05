@@ -115,10 +115,21 @@ export function buildElementIndex(elements: Element[]): Map<ElementId, Element> 
   return index;
 }
 
-// Accepts either the raw element array or a prebuilt index. The array
-// overload stays for one-off resolutions (a single drag handle);
-// per-element loops should pass an index so the whole pass is O(n)
-// rather than O(n^2).
+// Accepts either the raw element array or a prebuilt index; an array is looked up through its
+// cached index (elementIndexFor), so a per-element loop over one board stays O(n).
+// One id index per element list, built on first ask and reused while the list is the same array, as
+// `elementGridFor` keeps one grid (board arrays are never mutated in place): resolving the ends of
+// every arrow on a board then looks ids up instead of scanning the list once per end.
+const indexCache = new WeakMap<readonly Element[], Map<ElementId, Element>>();
+export function elementIndexFor(elements: readonly Element[]): ElementIndex {
+  let index = indexCache.get(elements);
+  if (!index) {
+    index = buildElementIndex(elements as Element[]);
+    indexCache.set(elements, index);
+  }
+  return index;
+}
+
 export function endpointPosition(
   endpoint: Endpoint,
   elements: Element[] | ElementIndex,
@@ -128,8 +139,8 @@ export function endpointPosition(
   depth = 0,
 ): Point {
   if (endpoint.kind === 'free') return { x: endpoint.x, y: endpoint.y };
-  const lookup = (id: ElementId): Element | undefined =>
-    elements instanceof Map ? elements.get(id) : (elements as Element[]).find((el) => el.id === id);
+  const index = elements instanceof Map ? elements : elementIndexFor(elements as Element[]);
+  const lookup = (id: ElementId): Element | undefined => index.get(id);
   if (endpoint.kind === 'on-arrow') {
     if (depth > 4) return { x: 0, y: 0 };
     const target = lookup(endpoint.arrowId);

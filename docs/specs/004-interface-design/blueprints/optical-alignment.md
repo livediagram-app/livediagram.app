@@ -26,7 +26,7 @@ geometry check are [Iconography](../iconography.md)'s; this blueprint builds eve
 | `apps/live/e2e/optical-audit-sites.spec.ts`                  | The help centre, telemetry dashboard and marketing site                                                     |
 | `apps/live/e2e/audit-screens.ts`                             | Screen setup shared with the contrast audit (seeded diagram, dark visitor, share link)                      |
 | `scripts/e2e-stack.mjs`                                      | Also serves `apps/help/out` at `/help/*`, `apps/telemetry/out` at `/telemetry/*`, marketing on its own port |
-| `.github/workflows/e2e.yml`                                  | Builds help, telemetry and marketing beside live                                                            |
+| `.github/workflows/e2e.yml`                                  | Its Sites audit job builds help, telemetry and marketing beside live and runs the `sites` project           |
 
 ## Names
 
@@ -303,6 +303,7 @@ The ink audit is the arbiter: a site that fails it joins the migration.
 | Spec rule                                | Test                                                                                  |
 | ---------------------------------------- | ------------------------------------------------------------------------------------- |
 | Tolerance, cap band, ink, intent, stacks | `optical-audit.spec.ts`, `optical-audit-sites.spec.ts`                                |
+| Truncated label keeps its ink            | `optical-clip.spec.ts`: the label's columns at row height, clipped against released   |
 | Utilities                                | `optical-utilities.test.ts`                                                           |
 | Primitives and their invariants          | `optical.test.tsx`                                                                    |
 | Button labels and edges                  | `Button.test.tsx`                                                                     |

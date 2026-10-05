@@ -18,7 +18,9 @@ export type DockFlyout = {
   // Opened by hover, even if it has since been made to stay: closing gives the focus back to the
   // board, not to the opener (the Shapes flyout's field takes the focus on a hover).
   viaHover: boolean;
-  // Horizontal centre, in px from the dock wrapper's left edge; measured once, on opening.
+  // The opener's horizontal centre, in screen px from the dock wrapper's left edge: measured on
+  // opening and again when the groups scroll, so the flyout (placed from the opener's own screen
+  // rect) knows to re-place itself.
   left: number;
   // The opener's data-dock-item, which gets the focus back on Escape.
   openerKey: string;

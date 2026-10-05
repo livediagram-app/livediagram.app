@@ -121,18 +121,17 @@ export function ColourPicker({
           </Tooltip>
         </div>
         {menu ? (
-          <PortalMenu anchor={menu.anchor} placement="below" onClose={() => setMenu(null)}>
+          <PortalMenu
+            anchor={menu.anchor}
+            placement="below"
+            label={`${colourLabel(menu.hex)} menu`}
+            onClose={() => setMenu(null)}
+          >
             <RemoveMenu
-              label={colourLabel(menu.hex)}
               onRemove={() => {
                 refocus.current = { hex: menu.hex, at: yours.indexOf(menu.hex) };
                 setMenu(null);
                 onRemove(menu.hex);
-              }}
-              onClose={() => {
-                const anchor = menu.anchor;
-                setMenu(null);
-                anchor.focus();
               }}
             />
           </PortalMenu>
@@ -190,33 +189,11 @@ function YourColour({
 }
 
 // The menu's one action. It lives outside the flyout's DOM (a portal), so it is marked as the
-// flyout's own (data-flyout-child) and keeps Escape to itself.
-function RemoveMenu({
-  label,
-  onRemove,
-  onClose,
-}: {
-  label: string;
-  onRemove: () => void;
-  onClose: () => void;
-}) {
-  const ref = useRef<HTMLDivElement>(null);
-  // Focus moves in once, on open.
-  useEffect(() => {
-    ref.current?.querySelector('button')?.focus({ preventScroll: true });
-  }, []);
+// flyout's own (data-flyout-child). The PortalMenu around it moves focus in, keeps Escape to itself
+// and gives focus back to the swatch (docs/specs/004-interface-design/menus.md).
+function RemoveMenu({ onRemove }: { onRemove: () => void }) {
   return (
-    <div
-      ref={ref}
-      data-flyout-child=""
-      aria-label={`${label} menu`}
-      onKeyDown={(e) => {
-        if (e.key !== 'Escape') return;
-        e.preventDefault();
-        e.stopPropagation();
-        onClose();
-      }}
-    >
+    <div data-flyout-child="">
       <MenuActionRow plain danger label="Remove" icon={<TrashIcon />} onClick={onRemove} />
     </div>
   );

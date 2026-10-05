@@ -30,6 +30,7 @@ vi.mock('../auth/document-access', () => gates);
 
 import { makeTestRouteContext } from './test-route-context';
 import { handleDocumentRoomRoutes } from './document-room-routes';
+import { personTagFor } from '../person-tag';
 
 // A DOCUMENT_ROOM binding that records the Request it was handed, so a test can
 // inspect the forwarded headers.
@@ -158,6 +159,24 @@ describe('WebSocket upgrade — trust headers', () => {
     expect(seen).toHaveLength(0);
   });
 
+  it('refuses an account id in ?o= on a personal document', async () => {
+    // An account id is readable by teammates (team member lists), unlike a
+    // guest owner's server-minted UUID, so it is never a room credential:
+    // signed-in owners come in through the ticket, as on REST (§4.1).
+    db.getDocumentMeta.mockResolvedValue({ ownerId: 'user_2abcDEF', teamId: null });
+    db.getShareLink.mockResolvedValue(null);
+    const { env, seen } = roomEnv();
+    const res = await handleDocumentRoomRoutes(
+      makeTestRouteContext('GET', '/api/documents/d1/ws?o=user_2abcDEF', {
+        owner: null,
+        headers: { Upgrade: 'websocket' },
+        env,
+      }),
+    );
+    expect(res?.status).toBe(403);
+    expect(seen).toHaveLength(0);
+  });
+
   it('admits a ticket holder with the role the mint resolved', async () => {
     db.getDocumentMeta.mockResolvedValue({ ownerId: 'someone-else', teamId: 'team-1' });
     db.consumeWsTicket.mockResolvedValue({ role: 'edit', tabScope: null, shareCode: null });
@@ -189,6 +208,7 @@ describe('POST room-ticket', () => {
       tabScope: null,
       shareCode: null,
       account: false,
+      personTag: null,
     });
   });
 
@@ -204,6 +224,7 @@ describe('POST room-ticket', () => {
       tabScope: null,
       shareCode: 'C',
       account: false,
+      personTag: null,
     });
   });
 
@@ -291,6 +312,7 @@ describe('WebSocket upgrade: tab scope', () => {
       tabScope: 't2',
       shareCode: 'CODE1234',
       account: false,
+      personTag: null,
     });
   });
 });
@@ -354,5 +376,64 @@ describe('account sessions', () => {
       }),
     );
     expect(anonymous.seen[0]!.headers.get('X-Verified-Account')).toBe('0');
+  });
+});
+
+// The person tag (docs/specs/024-agents/agent-changesets.md "Held elements", CS39): an account's
+// ticket carries it, and the upgrade stamps it on every path, so a client can never claim one.
+describe('person tag', () => {
+  it("mints a verified account's ticket with its person tag, and nobody else's", async () => {
+    db.getDocumentMeta.mockResolvedValue({ ownerId: 'user_ann', teamId: null });
+    gates.resolveDocumentGrant.mockResolvedValue({ role: 'edit', tabScope: null, shareCode: null });
+    await handleDocumentRoomRoutes(
+      makeTestRouteContext('POST', '/api/documents/d1/room-ticket', {
+        owner: 'user_ann',
+        clerkUserId: 'user_ann',
+      }),
+    );
+    expect(db.createWsTicket).toHaveBeenLastCalledWith(
+      expect.anything(),
+      'd1',
+      expect.objectContaining({ personTag: await personTagFor('d1', 'user_ann') }),
+    );
+    await handleDocumentRoomRoutes(
+      makeTestRouteContext('POST', '/api/documents/d1/room-ticket', { owner: 'guest-uuid' }),
+    );
+    expect(db.createWsTicket).toHaveBeenLastCalledWith(
+      expect.anything(),
+      'd1',
+      expect.objectContaining({ personTag: null }),
+    );
+  });
+
+  it('stamps X-Verified-Person from the ticket, and empty on every other leg', async () => {
+    db.getDocumentMeta.mockResolvedValue({ ownerId: 'owner-uuid', teamId: null });
+    db.consumeWsTicket.mockResolvedValue({
+      role: 'edit',
+      tabScope: null,
+      shareCode: null,
+      account: true,
+      personTag: 'tag1',
+    });
+    const ticketed = roomEnv();
+    await handleDocumentRoomRoutes(
+      makeTestRouteContext('GET', '/api/documents/d1/ws?t=T', {
+        owner: null,
+        headers: { Upgrade: 'websocket' },
+        env: ticketed.env,
+      }),
+    );
+    expect(ticketed.seen[0]!.headers.get('X-Verified-Person')).toBe('tag1');
+
+    db.getShareLink.mockResolvedValue({ documentId: 'd1', role: 'edit' });
+    const spoofed = roomEnv();
+    await handleDocumentRoomRoutes(
+      makeTestRouteContext('GET', '/api/documents/d1/ws?s=CODE1234', {
+        owner: null,
+        headers: { Upgrade: 'websocket', 'X-Verified-Person': 'forged' },
+        env: spoofed.env,
+      }),
+    );
+    expect(spoofed.seen[0]!.headers.get('X-Verified-Person')).toBe('');
   });
 });

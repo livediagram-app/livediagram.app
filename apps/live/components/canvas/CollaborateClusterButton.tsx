@@ -1,7 +1,7 @@
 'use client';
 
 import { HoverCard } from '@livediagram/ui';
-import { CountBadge } from '@/components/primitives/CountBadge';
+import { CountBadge } from '@livediagram/ui';
 import { CollaborateGlyph } from '@/components/panels/collaborate/CollaborateGlyph';
 
 // The Collaborate button in the bottom-right cluster, right after Layers

@@ -19,45 +19,26 @@ import type { Element, ShapeKind, Tab } from './index';
 // Value imports come from the data-shapes LEAF module (types only from
 // './index'), keeping this module out of the index ⇄ factories cycle.
 import { ALL_ANCHORS } from './arrow-types';
-import { EMBED_PROVIDERS } from './youtube';
-import { isPickerSource, isSelectionMode, isSessionTool } from './selection-mode';
-import { RESPONSES_MAX, RESPONSE_VALUE_MAX } from './responses';
-import { QA_MAX_ID, QA_MAX_NAME, QA_MAX_NOTES, QA_MAX_TEXT, QA_MAX_VOTERS } from './qa-board';
-import { COLLAB_ROUND_MAX } from './element-deltas';
-import { QUIZ_MAX_OPTIONS, QUIZ_OPTION_MAX_TEXT } from './quiz';
 import { isPenColourName } from './pen-colours';
-import {
-  AGENDA_MAX_ITEMS,
-  AGENDA_MAX_TEXT,
-  DECISION_MAX_DRIVERS,
-  DECISION_MAX_TEXT,
-  IDEA_MAX_CARDS,
-  IDEA_MAX_TEXT,
-  ROLL_CALL_MAX,
-  ROLL_CALL_MAX_TEXT,
-  isChairFacing,
-  isDecisionDate,
-  isDecisionStatus,
-  isEstimateScale,
-} from './collab-shapes';
-import {
-  CHECKLIST_MAX_ITEMS,
-  PAGE_HEADING_MAX,
-  ENTITY_MAX_FIELDS,
-  ENTITY_MAX_TEXT,
-  CHECKLIST_MAX_TEXT,
-  LEGEND_MAX_ITEMS,
-  LEGEND_MAX_TEXT,
-  CODE_LANGUAGES,
-  CODE_MAX_LENGTH,
-} from './data-shapes';
-import { NAV_LINKS_MAX, PROCESS_MAX_STEPS, STATS_MAX, WEB_TEXT_MAX } from './web-components';
-import { isCodeThemeId } from './code-themes';
-import { isChartPaletteId } from './chart-palettes';
-import { isMindFlow } from './mind-flow';
+import { PAGE_HEADING_MAX } from './data-shapes';
 import { isQuickSwatchSlot } from './quick-swatches';
 import { isImageCredit } from './image-credit';
 import { parseStrokePoints } from './stroke-points';
+import { shapeValidationIssue } from './validate-shape';
+import {
+  type ElementValidationIssue,
+  type FieldCheck,
+  boundedArray,
+  firstFieldIssue,
+  isBool,
+  isNonEmptyStr,
+  isNum,
+  isObj,
+  issue,
+  oneOfRule,
+} from './validate-primitives';
+
+export type { ElementValidationIssue } from './validate-primitives';
 
 // Bounds. Generous vs any real document, tight vs an abuse payload.
 export const MAX_ELEMENTS_PER_TAB = 10_000;
@@ -69,11 +50,11 @@ export const PATH_COORD_MAX = 1e6;
 // a 14 px label reads from 1.4 px to 560 px, past any real board, short of an abuse payload.
 export const TEXT_SCALE_MIN = 0.1;
 export const TEXT_SCALE_MAX = 40;
+const isHeadingStr = (v: unknown) => typeof v === 'string' && v.length <= PAGE_HEADING_MAX;
 const PATH_HANDLE_MODES = new Set(['corner', 'mirrored', 'aligned']);
 const MAX_TABLE_ROWS = 1_000;
 const MAX_TABLE_COLS = 1_000;
 const MAX_TABLE_CELLS = 50_000;
-const MAX_DATA_ARRAY = 5_000; // railLabels / lineCategories / pieSlices / lineSeries
 
 // Exported so the MCP schema resource (docs/specs/015-api/mcp-server.md §4.5) lists the real element
 // types + anchors rather than a hand-maintained copy that can drift.
@@ -189,376 +170,143 @@ export function coerceShapeKind(shape: unknown): ShapeKind {
   return typeof shape === 'string' && SHAPE_KINDS.has(shape) ? (shape as ShapeKind) : 'square';
 }
 
-function isObj(v: unknown): v is Record<string, unknown> {
-  return typeof v === 'object' && v !== null && !Array.isArray(v);
+// Every stored element carries an id and a known type, and any colour bindings it has are named.
+const COMMON_FIELD_CHECKS: readonly FieldCheck[] = [
+  // Quick-swatch bindings (docs/specs/008-canvas/quick-style-panel.md): a slot 1-6 or absent. A junk
+  // slot has no business being written into a document, though the re-derive would ignore it.
+  { field: 'strokeSwatch', valid: isQuickSwatchSlot, rule: 'a quick-swatch slot 1 to 6' },
+  { field: 'fillSwatch', valid: isQuickSwatchSlot, rule: 'a quick-swatch slot 1 to 6' },
+  { field: 'textSwatch', valid: isQuickSwatchSlot, rule: 'a quick-swatch slot 1 to 6' },
+  // A marker's named colour, and a text's or label's stock colour
+  // (docs/specs/023-draw-mode/draw-mode.md "The colour picker", "Imported and pasted content").
+  { field: 'penColour', valid: isPenColourName, rule: 'a pen colour name' },
+  { field: 'penTextColour', valid: isPenColourName, rule: 'a pen colour name' },
+];
+
+// An import's exact end and its own label width (docs/specs/008-canvas/arrow-anchors.md "Exact
+// ends", arrow-labels.md "Width and wrapping").
+const ARROW_FIELD_CHECKS: readonly FieldCheck[] = [
+  { field: 'exactEnd', valid: isBool, rule: 'a boolean' },
+  { field: 'labelMaxWidth', valid: (v) => isNum(v) && v > 0, rule: 'a finite number above 0' },
+];
+
+const PINNED_RULE = `a pinned end: an elementId and an anchor (${ALL_ANCHORS.join(' ')})`;
+
+// The rule an arrow end breaks, or null when it is well formed.
+function endpointRule(ep: unknown): string | null {
+  if (!isObj(ep)) return 'an end: free { x, y }, pinned { elementId, anchor } or on-arrow';
+  switch (ep.kind) {
+    case 'free':
+      return isNum(ep.x) && isNum(ep.y) ? null : 'a free end: finite x and y';
+    case 'pinned':
+      return isNonEmptyStr(ep.elementId) && ANCHORS.has(ep.anchor as string) ? null : PINNED_RULE;
+    case 'on-arrow':
+      return isNonEmptyStr(ep.arrowId) && isNum(ep.t) ? null : 'an on-arrow end: arrowId and t';
+    // LEGACY (docs/specs/009-elements/web-components-and-no-groups.md): groups are gone and no
+    // current code writes this, but a browser still running a pre-removal build can. Accepting it
+    // keeps that save from failing; migrateLegacyGroups freezes it to a free end on the next read
+    // (rowToTab / the offline store), so nothing downstream sees it.
+    case 'pinned-group':
+      return isNonEmptyStr(ep.groupId) && ANCHORS.has(ep.anchor as string)
+        ? null
+        : 'a pinned-group end: groupId and an anchor';
+    default:
+      return 'an end of kind free, pinned or on-arrow';
+  }
 }
-function isNum(v: unknown): v is number {
-  return typeof v === 'number' && Number.isFinite(v);
-}
-function isNonEmptyStr(v: unknown): v is string {
-  return typeof v === 'string' && v.length > 0;
-}
-// A web component's row text (docs/specs/009-elements/web-components-and-no-groups.md).
-function isBoundedStr(v: unknown): v is string {
-  return typeof v === 'string' && v.length <= WEB_TEXT_MAX;
-}
-// A single-line heading (the page masthead's bound, docs/specs/009-elements/page-element.md).
-function isHeadingStr(v: unknown): v is string {
-  return typeof v === 'string' && v.length <= PAGE_HEADING_MAX;
-}
-function boundedArray(v: unknown, max: number): v is unknown[] {
-  return Array.isArray(v) && v.length <= max;
+
+function arrowIssue(el: Record<string, unknown>): ElementValidationIssue | null {
+  const fieldIssue = firstFieldIssue(el, ARROW_FIELD_CHECKS);
+  if (fieldIssue) return fieldIssue;
+  for (const end of ['from', 'to'] as const) {
+    const rule = endpointRule(el[end]);
+    if (rule) return issue(end, rule);
+  }
+  return null;
 }
 
 // A boxed element's geometry: finite x/y, non-negative finite width/height.
-function hasValidBox(o: Record<string, unknown>): boolean {
-  return (
-    isNum(o.x) && isNum(o.y) && isNum(o.width) && o.width >= 0 && isNum(o.height) && o.height >= 0
-  );
+function boxIssue(o: Record<string, unknown>): ElementValidationIssue | null {
+  for (const field of ['x', 'y'] as const)
+    if (!isNum(o[field])) return issue(field, 'a finite number');
+  for (const field of ['width', 'height'] as const) {
+    const v = o[field];
+    if (!isNum(v) || v < 0) return issue(field, 'a finite number, 0 or more');
+  }
+  return null;
 }
 
-function isValidEndpoint(ep: unknown): boolean {
-  if (!isObj(ep)) return false;
-  if (ep.kind === 'free') return isNum(ep.x) && isNum(ep.y);
-  if (ep.kind === 'pinned') return isNonEmptyStr(ep.elementId) && ANCHORS.has(ep.anchor as string);
-  if (ep.kind === 'on-arrow') return isNonEmptyStr(ep.arrowId) && isNum(ep.t);
-  // LEGACY (docs/specs/009-elements/web-components-and-no-groups.md): groups are gone and no current code writes this, but
-  // a browser still running a pre-removal build can. Accepting it keeps that
-  // save from failing; migrateLegacyGroups freezes it to a free end on the
-  // next read (rowToTab / the offline store), so nothing downstream sees it.
-  if (ep.kind === 'pinned-group')
-    return isNonEmptyStr(ep.groupId) && ANCHORS.has(ep.anchor as string);
-  return false;
+const CELLS_RULE =
+  `rows of strings: at most ${MAX_TABLE_ROWS} rows of ${MAX_TABLE_COLS} cells, ` +
+  `${MAX_TABLE_CELLS} cells in all`;
+
+function tableIssue(el: Record<string, unknown>): ElementValidationIssue | null {
+  if (!boundedArray(el.cells, MAX_TABLE_ROWS)) return issue('cells', CELLS_RULE);
+  let total = 0;
+  for (const row of el.cells) {
+    if (!boundedArray(row, MAX_TABLE_COLS)) return issue('cells', CELLS_RULE);
+    total += row.length;
+    if (total > MAX_TABLE_CELLS) return issue('cells', CELLS_RULE);
+    if (!row.every((c) => typeof c === 'string')) return issue('cells', CELLS_RULE);
+  }
+  return null;
 }
 
-// Structural validity of a single element. Returns true for any element the
-// renderer can safely handle; false for a missing/wrong discriminant, a
-// missing required field, a malformed endpoint, or an over-cap array.
-export function isValidElement(el: unknown): el is Element {
-  if (!isObj(el) || !isNonEmptyStr(el.id)) return false;
-  const t = el.type;
-  if (typeof t !== 'string' || !ELEMENT_TYPES.has(t)) return false;
+const IMAGE_FIELD_CHECKS: readonly FieldCheck[] = [
+  // Hero caption card (docs/specs/009-elements/web-components-and-no-groups.md): two bounded
+  // single-line strings.
+  {
+    field: 'heroCaption',
+    valid: (c) => isObj(c) && isHeadingStr(c.title) && isHeadingStr(c.subtitle),
+    rule: `{ title, subtitle } of at most ${PAGE_HEADING_MAX} characters each`,
+  },
+  // Image search credit (docs/specs/009-elements/image-search.md).
+  { field: 'credit', valid: isImageCredit, rule: 'an image credit' },
+];
 
-  // Quick-swatch bindings (docs/specs/008-canvas/quick-style-panel.md): a slot 1-6 or absent. A junk slot is
-  // rejected like any other closed-set field; the re-derive would ignore it,
-  // but it has no business being written into a document.
-  if (el.strokeSwatch !== undefined && !isQuickSwatchSlot(el.strokeSwatch)) return false;
-  if (el.fillSwatch !== undefined && !isQuickSwatchSlot(el.fillSwatch)) return false;
-  if (el.textSwatch !== undefined && !isQuickSwatchSlot(el.textSwatch)) return false;
-  // A marker's named colour (docs/specs/023-draw-mode/draw-mode.md "The colour picker"): one of the 60.
-  if (el.penColour !== undefined && !isPenColourName(el.penColour)) return false;
-  // A text box's or shape label's stock colour (docs/specs/023-draw-mode/draw-mode.md "Imported
-  // and pasted content"): one of the names too.
-  if (el.penTextColour !== undefined && !isPenColourName(el.penTextColour)) return false;
-
-  if (t === 'arrow') {
-    // An import's exact end and its own label width (docs/specs/008-canvas/arrow-anchors.md "Exact
-    // ends", arrow-labels.md "Width and wrapping").
-    if (el.exactEnd !== undefined && typeof el.exactEnd !== 'boolean') return false;
-    if (
-      el.labelMaxWidth !== undefined &&
-      !(
-        typeof el.labelMaxWidth === 'number' &&
-        Number.isFinite(el.labelMaxWidth) &&
-        el.labelMaxWidth > 0
-      )
-    )
-      return false;
-    return isValidEndpoint(el.from) && isValidEndpoint(el.to);
-  }
-
-  // Every non-arrow element is a boxed element: it needs a valid box.
-  if (!hasValidBox(el)) return false;
-
-  if (t === 'shape') {
-    if (!isNonEmptyStr(el.shape)) return false;
-    // A lane title reads across or upright (docs/specs/009-elements/lane.md "Upright titles").
-    if (el.titleOrientation !== undefined && el.titleOrientation !== 'upright') return false;
-    // Bound the optional data arrays (charts / rail) if present.
-    if (el.railLabels !== undefined && !boundedArray(el.railLabels, MAX_DATA_ARRAY)) return false;
-    if (el.lineCategories !== undefined && !boundedArray(el.lineCategories, MAX_DATA_ARRAY))
-      return false;
-    if (el.pieSlices !== undefined && !boundedArray(el.pieSlices, MAX_DATA_ARRAY)) return false;
-    if (el.lineSeries !== undefined && !boundedArray(el.lineSeries, MAX_DATA_ARRAY)) return false;
-    // Portal (docs/specs/009-elements/portal-element.md): the pairing is an element id, so a non-string is a
-    // broken write. An id pointing at something that isn't a portal (or isn't
-    // there any more) is NOT a structural error — the portal renders unpaired
-    // and the editor resolves the target at press time.
-    if (el.portalTarget !== undefined && !isNonEmptyStr(el.portalTarget)) return false;
-    // Mode button (docs/specs/009-elements/mode-button.md): the mode it hands out must be one we know how to
-    // switch to. A junk value is rejected outright rather than coerced — the
-    // element still renders (absent = the Avatar default), so silently
-    // rewriting someone's configured mode would be the worse failure.
-    if (el.mode !== undefined && !isSelectionMode(el.mode)) return false;
-    // Session button (docs/specs/012-collaboration/session-button.md): same rule as the mode above — the tool it
-    // starts must be one we know how to start. Its settings are NOT validated
-    // for range here: an out-of-bounds duration is clamped where it is read
-    // (see sessionButtonPlan), because a tab shouldn't fail to load over a
-    // number someone can fix from the menu.
-    if (el.session !== undefined) {
-      if (typeof el.session !== 'object' || el.session === null) return false;
-      if (!isSessionTool((el.session as { tool?: unknown }).tool)) return false;
-      const options = (el.session as { options?: unknown }).options;
-      if (options !== undefined && !boundedArray(options, MAX_DATA_ARRAY)) return false;
-      // The poll's answer shape (docs/specs/012-collaboration/live-poll.md) is deliberately NOT checked here,
-      // unlike the tool above: sessionButtonPlan falls back to the default
-      // style for anything it doesn't recognise, so a tab written by a newer
-      // client still loads and its button still presses to something.
-    }
-    // Reveal zone (docs/specs/009-elements/reveal-zone.md): shared-uncovered is a plain flag.
-    if (el.revealed !== undefined && typeof el.revealed !== 'boolean') return false;
-    // Picker (docs/specs/012-collaboration/picker.md): a known source, and a bounded list. The RESULT is
-    // free text (a name someone typed), so it is only length-checked with the
-    // rest of the strings.
-    if (el.pickerSource !== undefined && !isPickerSource(el.pickerSource)) return false;
-    if (el.pickerOptions !== undefined && !boundedArray(el.pickerOptions, MAX_DATA_ARRAY))
-      return false;
-    // Code block (docs/specs/009-elements/code-block.md): bounded snippet + closed language set.
-    if (el.code !== undefined && (typeof el.code !== 'string' || el.code.length > CODE_MAX_LENGTH))
-      return false;
-    if (
-      el.codeLanguage !== undefined &&
-      !(CODE_LANGUAGES as readonly string[]).includes(el.codeLanguage as string)
-    )
-      return false;
-    // Colour scheme: a closed set of ids. An unknown one still RENDERS (the
-    // resolver falls back to the default card), but it has no business being
-    // written into a document.
-    if (el.codeTheme !== undefined && !isCodeThemeId(el.codeTheme as string)) return false;
-    // Mind flow (docs/specs/009-elements/mind-node.md): a closed set, and only meaningful on a root.
-    if (el.mindFlow !== undefined && !isMindFlow(el.mindFlow as string)) return false;
-    // Chart palette (docs/specs/009-elements/pie-chart.md): likewise a closed set of ids.
-    if (el.chartPalette !== undefined && !isChartPaletteId(el.chartPalette as string)) return false;
-    // Embed provider (docs/specs/009-elements/embed-providers.md): a creation-time hint, one of a closed set.
-    if (
-      el.embedProvider !== undefined &&
-      !EMBED_PROVIDERS.includes(el.embedProvider as (typeof EMBED_PROVIDERS)[number])
-    )
-      return false;
-    // Mind node (docs/specs/009-elements/mind-node.md): a parent pointer, or absent for a root. Only an
-    // id shape is checked — a pointer at a deleted node is legal and simply
-    // makes the child a root.
-    if (el.mindParentId !== undefined && typeof el.mindParentId !== 'string') return false;
-    // Masthead lines (docs/specs/009-elements/page-element.md, and the banner / callout of docs/specs/009-elements/web-components-and-no-groups.md): two
-    // bounded single-line strings.
-    for (const field of [el.pageTitle, el.pageSubtitle]) {
-      if (field !== undefined && !isHeadingStr(field)) return false;
-    }
-    // Record (docs/specs/009-elements/entity.md): bounded rows of { name, type? }.
-    if (el.entityFields !== undefined) {
-      if (!boundedArray(el.entityFields, ENTITY_MAX_FIELDS)) return false;
-      for (const f of el.entityFields) {
-        if (!isObj(f)) return false;
-        if (typeof f.name !== 'string' || f.name.length > ENTITY_MAX_TEXT) return false;
-        if (f.type !== undefined && (typeof f.type !== 'string' || f.type.length > ENTITY_MAX_TEXT))
-          return false;
-      }
-    }
-    // Web components (docs/specs/009-elements/web-components-and-no-groups.md): bounded rows of short strings.
-    if (el.stats !== undefined) {
-      if (!boundedArray(el.stats, STATS_MAX)) return false;
-      for (const st of el.stats) {
-        if (!isObj(st) || !isBoundedStr(st.value) || !isBoundedStr(st.caption)) return false;
-      }
-    }
-    if (el.processSteps !== undefined) {
-      if (!boundedArray(el.processSteps, PROCESS_MAX_STEPS)) return false;
-      if (!el.processSteps.every(isBoundedStr)) return false;
-    }
-    if (el.navLinks !== undefined) {
-      if (!boundedArray(el.navLinks, NAV_LINKS_MAX)) return false;
-      if (!el.navLinks.every(isBoundedStr)) return false;
-    }
-    // Chair (docs/specs/009-elements/chair.md): a closed facing. Occupancy is presence, never a field,
-    // so there is nothing else on a chair to check.
-    if (el.chairFacing !== undefined && !isChairFacing(el.chairFacing)) return false;
-    // Per-participant responses (docs/specs/012-collaboration/participant-responses.md): bounded list of
-    // { participantId, value, at }. The one-per-participant rule is enforced
-    // by `setResponse` on write, NOT here — a duplicate arriving from an older
-    // client renders as the first entry rather than failing the whole tab to
-    // load, which is the same leniency the rest of this file takes.
-    if (el.responses !== undefined) {
-      if (!boundedArray(el.responses, RESPONSES_MAX)) return false;
-      for (const r of el.responses) {
-        if (!isObj(r)) return false;
-        if (typeof r.participantId !== 'string') return false;
-        if (typeof r.value !== 'string' || r.value.length > RESPONSE_VALUE_MAX) return false;
-        if (typeof r.at !== 'number' || !Number.isFinite(r.at)) return false;
-      }
-    }
-    if (el.responsesRevealed !== undefined && typeof el.responsesRevealed !== 'boolean')
-      return false;
-    // Estimate card (docs/specs/012-collaboration/estimate-card.md): a closed scale.
-    if (el.estimateScale !== undefined && !isEstimateScale(el.estimateScale)) return false;
-    // Idea box (docs/specs/012-collaboration/idea-box.md): bounded anonymous strings. There is deliberately no
-    // author to validate.
-    if (el.ideaCards !== undefined) {
-      if (!boundedArray(el.ideaCards, IDEA_MAX_CARDS)) return false;
-      for (const card of el.ideaCards) {
-        if (typeof card !== 'string' || card.length > IDEA_MAX_TEXT) return false;
-      }
-    }
-    if (el.ideasRevealed !== undefined && typeof el.ideasRevealed !== 'boolean') return false;
-    // Q&A board (docs/specs/012-collaboration/qa-board.md): bounded notes, each with bounded voters. The
-    // one-vote-per-person rule is the reducer's (applyQaAction), not a load
-    // check, for the same leniency `responses` takes above.
-    if (el.qaNotes !== undefined) {
-      if (!boundedArray(el.qaNotes, QA_MAX_NOTES)) return false;
-      for (const n of el.qaNotes) {
-        if (!isObj(n)) return false;
-        if (typeof n.id !== 'string' || n.id.length === 0 || n.id.length > QA_MAX_ID) return false;
-        if (typeof n.text !== 'string' || n.text.length > QA_MAX_TEXT) return false;
-        if (typeof n.at !== 'number' || !Number.isFinite(n.at)) return false;
-        if (!boundedArray(n.voters, QA_MAX_VOTERS)) return false;
-        for (const v of n.voters) if (typeof v !== 'string' || v.length > QA_MAX_ID) return false;
-        if (n.state !== undefined && n.state !== 'discussing' && n.state !== 'done') return false;
-        if (n.doneAt !== undefined && (typeof n.doneAt !== 'number' || !Number.isFinite(n.doneAt)))
-          return false;
-        if (n.author !== undefined) {
-          if (!isObj(n.author)) return false;
-          if (typeof n.author.name !== 'string' || n.author.name.length > QA_MAX_NAME) return false;
-          if (typeof n.author.color !== 'string' || n.author.color.length > 32) return false;
-        }
-      }
-    }
-    if (el.qaRev !== undefined && (typeof el.qaRev !== 'number' || !Number.isFinite(el.qaRev)))
-      return false;
-    // The answers' round (docs/specs/012-collaboration/collab-race-hardening.md): an opaque id.
-    if (
-      el.collabRound !== undefined &&
-      (typeof el.collabRound !== 'string' || el.collabRound.length > COLLAB_ROUND_MAX)
-    )
-      return false;
-    // Agenda (docs/specs/012-collaboration/agenda.md): bounded rows of { label, minutes }. Minutes are
-    // clamped where they're read (clampAgendaMinutes), not rejected here — a
-    // tab shouldn't fail to load over a number someone can fix from the menu,
-    // the same rule the session button's duration takes.
-    if (el.agendaItems !== undefined) {
-      if (!boundedArray(el.agendaItems, AGENDA_MAX_ITEMS)) return false;
-      for (const item of el.agendaItems) {
-        if (!isObj(item)) return false;
-        if (typeof item.label !== 'string' || item.label.length > AGENDA_MAX_TEXT) return false;
-        if (typeof item.minutes !== 'number' || !Number.isFinite(item.minutes)) return false;
-      }
-    }
-    if (
-      el.agendaCurrent !== undefined &&
-      (typeof el.agendaCurrent !== 'number' || !Number.isFinite(el.agendaCurrent))
-    )
-      return false;
-    // Decision record (docs/specs/012-collaboration/decision-record.md): a closed status, a `YYYY-MM-DD` date, and
-    // bounded drivers.
-    if (el.decisionStatus !== undefined && !isDecisionStatus(el.decisionStatus)) return false;
-    if (
-      el.decisionDate !== undefined &&
-      (typeof el.decisionDate !== 'string' || !isDecisionDate(el.decisionDate))
-    )
-      return false;
-    if (el.decisionDrivers !== undefined) {
-      if (!boundedArray(el.decisionDrivers, DECISION_MAX_DRIVERS)) return false;
-      for (const d of el.decisionDrivers) {
-        if (typeof d !== 'string' || d.length > DECISION_MAX_TEXT) return false;
-      }
-    }
-    // Roll call (docs/specs/012-collaboration/roll-call.md): bounded frozen entries of { name, color, at }.
-    if (el.rollCall !== undefined) {
-      if (!boundedArray(el.rollCall, ROLL_CALL_MAX)) return false;
-      for (const entry of el.rollCall) {
-        if (!isObj(entry)) return false;
-        if (typeof entry.name !== 'string' || entry.name.length > ROLL_CALL_MAX_TEXT) return false;
-        if (typeof entry.color !== 'string' || entry.color.length > ROLL_CALL_MAX_TEXT)
-          return false;
-        if (typeof entry.at !== 'number' || !Number.isFinite(entry.at)) return false;
-      }
-    }
-    // Quiz (docs/specs/012-collaboration/quiz.md): bounded answers, an index, and the round's
-    // timestamps. The seconds are clamped where read (clampQuizSeconds), and a
-    // right-answer index past the answers makes the card `setup` rather than
-    // failing the tab, the same leniency the agenda's minutes take.
-    if (el.quizOptions !== undefined) {
-      if (!boundedArray(el.quizOptions, QUIZ_MAX_OPTIONS)) return false;
-      for (const o of el.quizOptions) {
-        if (typeof o !== 'string' || o.length > QUIZ_OPTION_MAX_TEXT) return false;
-      }
-    }
-    for (const n of [el.quizCorrect, el.quizSeconds, el.quizStartedAt, el.quizLockedAt]) {
-      if (n !== undefined && (typeof n !== 'number' || !Number.isFinite(n))) return false;
-    }
-    if (el.quizRevealed !== undefined && typeof el.quizRevealed !== 'boolean') return false;
-    // Checklist (docs/specs/009-elements/checklist.md): bounded rows of { text, done }.
-    if (el.checklistItems !== undefined) {
-      if (!boundedArray(el.checklistItems, CHECKLIST_MAX_ITEMS)) return false;
-      for (const item of el.checklistItems) {
-        if (!isObj(item)) return false;
-        if (typeof item.text !== 'string' || item.text.length > CHECKLIST_MAX_TEXT) return false;
-        if (typeof item.done !== 'boolean') return false;
-      }
-    }
-    // Legend (docs/specs/009-elements/pie-chart.md): bounded rows of { label, color? }.
-    if (el.legendItems !== undefined) {
-      if (!boundedArray(el.legendItems, LEGEND_MAX_ITEMS)) return false;
-      for (const item of el.legendItems) {
-        if (!isObj(item)) return false;
-        if (typeof item.label !== 'string' || item.label.length > LEGEND_MAX_TEXT) return false;
-        if (item.color !== undefined && typeof item.color !== 'string') return false;
-      }
-    }
-    return true;
-  }
-  if (t === 'table') {
-    if (!boundedArray(el.cells, MAX_TABLE_ROWS)) return false;
-    let total = 0;
-    for (const row of el.cells) {
-      if (!boundedArray(row, MAX_TABLE_COLS)) return false;
-      total += row.length;
-      if (total > MAX_TABLE_CELLS) return false;
-      for (const c of row) if (typeof c !== 'string') return false;
-    }
-    return true;
-  }
-  if (t === 'image') {
-    if (el.imageId !== null && typeof el.imageId !== 'string') return false;
-    // Hero caption card (docs/specs/009-elements/web-components-and-no-groups.md): two bounded single-line strings.
-    if (el.heroCaption !== undefined) {
-      const c = el.heroCaption;
-      if (!isObj(c) || !isHeadingStr(c.title) || !isHeadingStr(c.subtitle)) return false;
-    }
-    // Image search credit (docs/specs/009-elements/image-search.md).
-    if (el.credit !== undefined && !isImageCredit(el.credit)) return false;
-    return true;
-  }
-  if (t === 'freehand') {
-    if (typeof el.closed !== 'boolean') return false;
-    // Packed points (docs/specs/006-document/stroke-points.md): the block must decode, and the
-    // former fields never pass (every entry point migrates them first).
-    if (!parseStrokePoints(el.packedPoints).ok) return false;
-    if ('points' in el || 'pressures' in el) return false;
-    // Optional pen recipe (docs/specs/008-canvas/highlighter.md) + straight-edge flag (docs/specs/008-canvas/polygon-tool.md).
-    if (el.pen !== undefined && el.pen !== 'highlighter') return false;
-    if (el.penWidth !== undefined && (!isNum(el.penWidth) || el.penWidth < 1 || el.penWidth > 100))
-      return false;
-    if (el.straightEdges !== undefined && typeof el.straightEdges !== 'boolean') return false;
-    if (
-      el.streamline !== undefined &&
-      (!isNum(el.streamline) || el.streamline < 0 || el.streamline > 1)
-    )
-      return false;
-    return true;
-  }
-  if (t === 'path') return isValidPath(el);
-  // A text box's sizing and Shift scale (docs/specs/007-editor/editor-modes.md "A text box's sizing").
-  if (t === 'text') {
-    if (el.sizing !== undefined && el.sizing !== 'fit' && el.sizing !== 'wrap') return false;
-    if (
-      el.textScale !== undefined &&
-      (!isNum(el.textScale) || el.textScale < TEXT_SCALE_MIN || el.textScale > TEXT_SCALE_MAX)
-    )
-      return false;
-    return true;
-  }
-  // sticky / annotation / link-card carry no extra required fields.
-  return true;
+function imageIssue(el: Record<string, unknown>): ElementValidationIssue | null {
+  if (el.imageId !== null && typeof el.imageId !== 'string')
+    return issue('imageId', 'a string or null');
+  return firstFieldIssue(el, IMAGE_FIELD_CHECKS);
 }
+
+// Optional pen recipe (docs/specs/008-canvas/highlighter.md) and straight-edge flag
+// (docs/specs/008-canvas/polygon-tool.md).
+const FREEHAND_FIELD_CHECKS: readonly FieldCheck[] = [
+  { field: 'pen', valid: (v) => v === 'highlighter', rule: oneOfRule(['highlighter']) },
+  {
+    field: 'penWidth',
+    valid: (v) => isNum(v) && v >= 1 && v <= 100,
+    rule: 'a number from 1 to 100',
+  },
+  { field: 'straightEdges', valid: isBool, rule: 'a boolean' },
+  {
+    field: 'streamline',
+    valid: (v) => isNum(v) && v >= 0 && v <= 1,
+    rule: 'a number from 0 to 1',
+  },
+];
+
+function freehandIssue(el: Record<string, unknown>): ElementValidationIssue | null {
+  if (!isBool(el.closed)) return issue('closed', 'a boolean');
+  // Packed points (docs/specs/006-document/stroke-points.md): the block must decode, and the
+  // former fields never pass (every entry point migrates them first).
+  if (!parseStrokePoints(el.packedPoints).ok)
+    return issue('packedPoints', 'packed stroke points that decode');
+  for (const former of ['points', 'pressures'] as const)
+    if (former in el) return issue(former, 'not stored: strokes keep packedPoints');
+  return firstFieldIssue(el, FREEHAND_FIELD_CHECKS);
+}
+
+// A text box's sizing and Shift scale (docs/specs/007-editor/editor-modes.md "A text box's sizing").
+const TEXT_FIELD_CHECKS: readonly FieldCheck[] = [
+  { field: 'sizing', valid: (v) => v === 'fit' || v === 'wrap', rule: oneOfRule(['fit', 'wrap']) },
+  {
+    field: 'textScale',
+    valid: (v) => isNum(v) && v >= TEXT_SCALE_MIN && v <= TEXT_SCALE_MAX,
+    rule: `a number from ${TEXT_SCALE_MIN} to ${TEXT_SCALE_MAX}`,
+  },
+];
 
 // A path's normalised coordinate pair: finite, and never absurdly far outside its box.
 function isPathPoint(p: unknown): boolean {
@@ -571,21 +319,72 @@ function isPathPoint(p: unknown): boolean {
   );
 }
 
+function isPathNode(n: unknown): boolean {
+  if (!isPathPoint(n)) return false;
+  const { mode, handleIn, handleOut } = n as Record<string, unknown>;
+  return (
+    PATH_HANDLE_MODES.has(mode as string) &&
+    (handleIn === undefined || isPathPoint(handleIn)) &&
+    (handleOut === undefined || isPathPoint(handleOut))
+  );
+}
+
 // A path (docs/specs/023-draw-mode/path-tool.md "The path element"): 2 to MAX_PATH_NODES nodes of
 // known mode with optional handles; a closed pair needs a handle to be more than a line.
-function isValidPath(el: Record<string, unknown>): boolean {
-  if (typeof el.closed !== 'boolean' || !boundedArray(el.nodes, MAX_PATH_NODES)) return false;
-  if (el.nodes.length < 2) return false;
-  let handles = false;
-  for (const n of el.nodes) {
-    if (!isPathPoint(n) || !PATH_HANDLE_MODES.has((n as Record<string, unknown>).mode as string))
-      return false;
-    const { handleIn, handleOut } = n as Record<string, unknown>;
-    if (handleIn !== undefined && !isPathPoint(handleIn)) return false;
-    if (handleOut !== undefined && !isPathPoint(handleOut)) return false;
-    if (handleIn !== undefined || handleOut !== undefined) handles = true;
+function pathIssue(el: Record<string, unknown>): ElementValidationIssue | null {
+  if (!isBool(el.closed)) return issue('closed', 'a boolean');
+  const nodesRule = `2 to ${MAX_PATH_NODES} nodes { nx, ny, mode, handleIn?, handleOut? }`;
+  if (!boundedArray(el.nodes, MAX_PATH_NODES) || el.nodes.length < 2)
+    return issue('nodes', nodesRule);
+  if (!el.nodes.every(isPathNode)) return issue('nodes', nodesRule);
+  const handles = el.nodes.some((n) => {
+    const node = n as Record<string, unknown>;
+    return node.handleIn !== undefined || node.handleOut !== undefined;
+  });
+  if (el.closed && el.nodes.length < 3 && !handles)
+    return issue('nodes', 'a closed path needs 3 nodes, or a handle');
+  return null;
+}
+
+function boxedIssue(el: Record<string, unknown>): ElementValidationIssue | null {
+  const box = boxIssue(el);
+  if (box) return box;
+  switch (el.type) {
+    case 'shape':
+      return shapeValidationIssue(el);
+    case 'table':
+      return tableIssue(el);
+    case 'image':
+      return imageIssue(el);
+    case 'freehand':
+      return freehandIssue(el);
+    case 'path':
+      return pathIssue(el);
+    case 'text':
+      return firstFieldIssue(el, TEXT_FIELD_CHECKS);
+    // sticky / annotation / link-card / video carry no extra required fields.
+    default:
+      return null;
   }
-  return !el.closed || el.nodes.length >= 3 || handles;
+}
+
+// The first structural problem of an element, naming the field and the rule it breaks; null for
+// any element the renderer can safely handle (docs/specs/024-agents/blueprints/edit-operations.md
+// "invalid_result").
+export function elementValidationIssue(el: unknown): ElementValidationIssue | null {
+  if (!isObj(el)) return issue('element', 'an object');
+  if (!isNonEmptyStr(el.id)) return issue('id', 'a non-empty string');
+  if (typeof el.type !== 'string' || !ELEMENT_TYPES.has(el.type))
+    return issue('type', oneOfRule([...ELEMENT_TYPES]));
+  return (
+    firstFieldIssue(el, COMMON_FIELD_CHECKS) ?? (el.type === 'arrow' ? arrowIssue : boxedIssue)(el)
+  );
+}
+
+// Structural validity of a single element: false for a missing or wrong discriminant, a missing
+// required field, a malformed endpoint, or an over-cap array.
+export function isValidElement(el: unknown): el is Element {
+  return elementValidationIssue(el) === null;
 }
 
 // Structural validity of a tab: id + name + a bounded `elements` array of

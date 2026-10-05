@@ -1,5 +1,6 @@
 import { editorModeLabel, nextEditorMode } from '@livediagram/document';
 import type { EditorModeState } from './useEditorMode';
+import { offeredEditorModes } from '@/lib/offered-editor-modes';
 
 // Shift+D (docs/specs/007-editor/editor-modes.md "The mode switch"): move to the next editor mode
 // and say so in the polite live region ("Draw mode"), since a key gives no visual hint of what it
@@ -11,7 +12,7 @@ export function editorModeShortcut(
 ): (() => void) | null {
   if (!canSwitch) return null;
   return () => {
-    const next = nextEditorMode(mode);
+    const next = nextEditorMode(mode, 1, offeredEditorModes());
     setMode(next);
     announce(`${editorModeLabel(next)} mode`);
   };

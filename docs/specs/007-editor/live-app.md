@@ -188,7 +188,7 @@ They ARE used for actions that finish off-surface from the gesture: clicking "Ad
 
 The editor's floating panels (Palette, Explorer, Editor/Context, Activity) were designed for desktop where they overlap a wide canvas comfortably. On a phone-sized viewport they crowd each other and the canvas. The first responsive pass tightens the chrome so a mobile visitor can at least read the canvas and tap through:
 
-- **A phone always uses the Toolbar layout** ([Toolbar layout](toolbar-layout.md)). Below `sm:` the Palette is the strip across the top, the Explorer opens from the strip's menu button, and every other panel behaves as on a desktop in Toolbar: session panels ([Session tools (timer + voting)](../012-collaboration/session-tools.md), [Live poll (ephemeral pulse-check)](../012-collaboration/live-poll.md)) and tool panels dock in their corners, reachable by view-only participants too (a view-only participant answers polls and watches vote results). (Per-element + tab formatting lives in the right-click context menus, so there is no Editor panel. The desktop-only [Quick style panel](../008-canvas/quick-style-panel.md) offers the few most-used choices beside a selection; it is not that panel, and the menus stay the complete home of every setting.) The `/explorer/` page and the AuthControls menu item are alternate routes to the library, open to guests and signed-in users alike. On desktop **Floating** is the default: panels sit at their own corners and collapse to a banner via the header +/- button (see [Canvas and palette](../008-canvas/canvas-and-palette.md) "Collapse to banner").
+- **A phone always uses the Toolbar layout** ([Toolbar layout](toolbar-layout.md)). A phone is below `sm:`, or a touch screen under 500px tall (landscape; `PHONE_MEDIA_QUERY`, the `phone:` variant). There the Palette is the strip across the top, the Explorer opens from the strip's menu button, and every other panel behaves as on a desktop in Toolbar: session panels ([Session tools (timer + voting)](../012-collaboration/session-tools.md), [Live poll (ephemeral pulse-check)](../012-collaboration/live-poll.md)) and tool panels dock in their corners, reachable by view-only participants too (a view-only participant answers polls and watches vote results). (Per-element + tab formatting lives in the right-click context menus, so there is no Editor panel. The desktop-only [Quick style panel](../008-canvas/quick-style-panel.md) offers the few most-used choices beside a selection; it is not that panel, and the menus stay the complete home of every setting.) The `/explorer/` page and the AuthControls menu item are alternate routes to the library, open to guests and signed-in users alike. On desktop **Floating** is the default: panels sit at their own corners and collapse to a banner via the header +/- button (see [Canvas and palette](../008-canvas/canvas-and-palette.md) "Collapse to banner").
 
   **Layers and Collaborate are buttons in the bottom-right cluster**, beside Undo and Redo, in both layouts (Collaborate right after Layers, only while the tab has a comment thread or an action, and a popover in every layout including Floating, [Assigned actions](../012-collaboration/assigned-actions.md) §5). Only desktop **Floating** docks Layers as a corner panel that minimises into its button. In Toolbar (and so on every phone) the button opens its panel as a **popover hanging above it** (`computeDockAnchor(..., 'above')`: from the button's left edge, kept on the canvas, arrow on the popover's bottom edge pointing at the button), and a second press closes it, as does a press anywhere outside it such as the canvas (`dismissOnOutside`; its own portalled menus and confirms count as inside). The popovers share one open-at-a-time slot with the Explorer popover, so opening one closes the others. **A phone's zoom controls drop − and +** (`pinchOnly`): the cluster carries Undo, Redo and Layers, and pinch zooms. Fit stays.
 
@@ -198,6 +198,52 @@ The editor's floating panels (Palette, Explorer, Editor/Context, Activity) were 
 These don't change desktop layout. The Toolbar layout is what resolves the old "panels overlap when all four open" case on a phone: the Palette is one strip and the Explorer, Layers and Collaborate are one-at-a-time popovers. The mobile picker ([Dedicated route for new-document creation](new-document-route.md) responsive section) covers the template / identity surface the same way.
 
 The root layout (`apps/live/app/layout.tsx`) exports a `viewport` config that pins the page at `initialScale: 1` with `maximumScale: 1` + `userScalable: false`, so mobile browsers don't auto-zoom on top of the editor's own canvas zoom. The two paths this blocks: pinch-zoom on the whole page, and iOS Safari's automatic focus-zoom when a focused input's effective font-size is under 16px (every TabBar / Explorer / Palette field is well under). Without this, focusing a text input on iOS zooms the page in and leaves the chrome misaligned with the canvas-transform coordinate space the cursor / selection-ring math expects. The canvas zoom (pinch on the canvas surface, or the bottom-right zoom buttons) is the only zoom the editor wants users to drive.
+
+That lock stays. Lifting it was tested (2026-10-03): with page zoom allowed, a pinch on the canvas
+zoomed the whole page (Chromium, 1.5x) instead of the canvas, which breaks the editor's core
+gesture. Readability on a phone comes from the UI scale ([UI scale](ui-scale.md)) and the canvas
+zoom instead.
+
+**Menus are bottom sheets on a phone.** Every context menu (an element's, a selection's: the
+shared `ContextMenu`; and the tab menu, from a tab's `⋯` or a long-press on the canvas:
+`TabPortalMenu`) opens as a sheet (`BottomSheet`) docked to the bottom edge instead of a
+card hung off the long-press point, which covered the element it was about and ran under the tab
+bar. Full width (up to 32rem), at most 60% of the screen tall with its own scroll, clear of the
+home indicator, rising in (`animate-sheet-up`). A grab handle across its top drags it down:
+released past 80px, or flicked, it closes (`useSwipeDownDismiss`); otherwise it springs back.
+Outside taps and Escape close it as before. A section's flyout opens in place inside it.
+
+**A dialog closes from the backdrop only on a press that starts there.** Clicking the dim
+backdrop closes a dialog, but only when the press began on the backdrop: selecting text and
+releasing the drag past the panel's edge lands the click on the backdrop too, and must never throw
+away what was being edited (`Dialog`).
+
+**Working dialogs rise as sheets on a phone.** A dialog you work in rather than answer, where
+the thing being edited sits behind it (Edit Outline), opens on a phone as a sheet docked to the
+bottom edge instead of filling the screen: full width, rounded at the top, at most 85% of the
+screen tall with its own scroll, clear of the home indicator, rising in (`animate-sheet-up`), with
+the same grab handle that drags it down to close it (`useSwipeDownDismiss`). It stays a modal
+dialog: the dim behind it, the focus trap, Escape and the backdrop tap all behave as on a
+desktop, where it is the usual centred card (`Dialog`'s `phoneSheet`).
+
+**The keyboard never hides the caret.** The on-screen keyboard shrinks the visual viewport, not
+the page, and the canvas never scrolls, so a label edited low on a phone was typed behind the
+keyboard. While a text field inside the canvas has focus, each visual-viewport change re-checks
+the caret: below the visible area (less a 24px margin) the canvas pans up by just the overlap
+(`useKeyboardAvoidance`). Phones only. The pan stays when the keyboard closes.
+
+**Haptics.** On a touch screen with a Vibration API (Android; Safari has none, so iOS stays silent)
+the editor gives a short buzz for what a finger cannot see land (`lib/haptics.ts`): **press** (15ms)
+when a long-press opens its menu or holds a path node, **snap** (8ms) once as a move catches an
+alignment guide (not again while it stays on it), **delete** (a double pulse) when a selection is
+deleted. Never with a mouse.
+
+**Safe areas.** The edge chrome clears the device's safe-area insets (`lib/safe-area.ts`): the
+header below the top inset and past the side insets, the tab bar above the home indicator and past
+the side insets, the strip's row and the bottom-right cluster past a landscape notch. Inline
+`env(safe-area-inset-*)` styles, at least the chrome's own gutters. The editor does not set
+`viewport-fit=cover`, so the insets are 0 today and nothing moves; the rules keep the chrome clear
+the day it goes edge to edge.
 
 ## Out of scope (next iterations)
 

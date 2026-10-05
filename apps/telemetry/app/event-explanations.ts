@@ -14,9 +14,13 @@
 // can send gets a real sentence, free of code names and jargon.
 
 export const EXACT: Readonly<Record<string, string>> = {
+  'Editor|Changed|LeaveIllustrateConfirmed':
+    'Someone confirmed leaving Illustrate on a tab with pages, after the warning that its pages do not show in Diagram or Draw.',
   'Editor|Changed|ModeDiagram':
     'Someone switched a tab to Diagram mode, for shapes, arrows and the palette.',
   'Editor|Changed|ModeDraw': 'Someone switched a tab to Draw mode, to draw freehand with pens.',
+  'Editor|Changed|ModeIllustrate':
+    'Someone switched a tab to Illustrate mode, to lay out a page of icons, stickers, components and media.',
   'Draw|Created|Template':
     'Someone started a new document as a whiteboard, a plain board drawn on with pens, from the New Document wizard.',
   'Draw|Created|NewTab':
@@ -171,6 +175,7 @@ export const EXACT: Readonly<Record<string, string>> = {
     'A document was open with at least one other person live in the room, counted once per document per visit. The one event that counts collaboration happening rather than being offered.',
   'Element|Changed|Agenda':
     'Someone pressed a segment on an Agenda element, starting its timer and marking it as the current item.',
+  'Element|Changed|IconSwapped': 'Someone dropped an icon onto another icon, swapping its glyph.',
   'Element|Changed|Animation':
     'Someone gave a selected element a looping animation, or turned it off.',
   'Element|Changed|AnimationRepeat':
@@ -248,6 +253,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Element|Changed|Marker': "Someone added or removed a status marker next to a shape's label.",
   'Element|Changed|MarkerSize': "Someone changed the size of a shape's status marker.",
   'Element|Changed|MindFlow': "Someone changed a mind map's flow direction.",
+  'Element|Changed|MindOutline':
+    'Someone saved an edited outline onto a mind map, re-shaping the map from its text.',
   'Element|Changed|ModeButton':
     "Someone changed which selection mode a Mode Button element switches everyone into when it's pressed.",
   'Element|Changed|Nudge':
@@ -416,18 +423,18 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone searched the help centre and found no matching article: a direct list of articles worth writing. The search words are never recorded.',
   'Help|Searched|Results':
     'Someone searched the help centre and got at least one matching article. Counted once per finished search; the search words are never recorded.',
-  'Home|Loaded|More': "More of Home's Timeline column loaded as someone scrolled towards its end.",
-  'Home|Loaded|Retry':
-    'Someone pressed "Try again" after Home, or a further page of it, failed to load.',
+  'Home|Loaded|Retry': 'Someone pressed "Try again" after Home failed to load.',
   'Home|Opened|Group':
     "Someone expanded a summary of several people's work on one document in Home's What happened, to see every action.",
   'Home|Opened|Landing':
     'Someone arrived at the Explorer with Home as the very section that loaded.',
   'Home|Opened|Nav': 'Someone went to Home from another section of the Explorer.',
-  'Home|Selected|JumpBackIn':
-    "Someone opened a document from Home's Jump back in, the strip of the documents they return to most.",
-  'Home|Selected|Timeline':
-    "Someone opened a document from Home's Timeline column, the documents they created, updated or opened.",
+  'Home|Selected|JumpBackIn.MostUsed':
+    "Someone opened a document from Home's Jump back in that was among the ones they used on the most days.",
+  'Home|Selected|JumpBackIn.Recent':
+    "Someone opened a document from Home's Jump back in that was among the ones they used most recently.",
+  'Home|Selected|JumpBackIn.SeeMore':
+    "Someone followed See more from Home's Jump back in to the Recent page.",
   'Home|Selected|WhatHappened':
     "Someone opened a document from Home's What happened, which lists what other people did to their documents.",
   'Layer|Added|': 'A new layer was added in the Layers panel.',
@@ -447,6 +454,17 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Layer|Toggled|OthersHidden': 'Someone hid every layer except one.',
   'Layer|Toggled|Shown': 'A hidden layer was shown again.',
   'Layer|Toggled|Unlocked': 'A locked layer was unlocked.',
+  'Agent|Viewed|Overview': 'An agent or a script read a document at a glance: one line per tab.',
+  'Agent|Viewed|Outline': 'An agent or a script read a tab as an outline, one line per element.',
+  'Agent|Viewed|Graph': 'An agent or a script read what connects to what on a tab.',
+  'Agent|Viewed|Layout': 'An agent or a script read where things sit on a tab.',
+  'Agent|Viewed|Comments': 'An agent or a script read the open comment threads on a tab.',
+  'Agent|Viewed|Show': 'An agent or a script read one element in full.',
+  'Agent|Viewed|Find': 'An agent or a script searched a tab for some text.',
+  'Agent|Viewed|Lint':
+    'An agent or a script checked how a tab is drawn: overlaps, crossings, hidden arrows.',
+  'Agent|Opened|Toast':
+    "Somebody pressed Show on the toast an agent's change raised, to see what it touched.",
   'Mcp|Used|AddTab': 'An AI tool connected over MCP added a new tab to a document.',
   'Mcp|Used|CreateDocument': 'An AI tool connected over MCP created a new document.',
   'Mcp|Used|FindDocuments':
@@ -503,6 +521,70 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone set a tab to open in Diagram mode for everyone, from the tab menu.',
   'Tab|Changed|OpensInDraw':
     'Someone set a tab to open in Draw mode for everyone, from the tab menu.',
+  'Tab|Changed|PageAdded': 'Someone added an infographic page to an Illustrate tab.',
+  'Tab|Changed|ArticleAdded': 'Someone added a new article to an Illustrate tab.',
+  'Tab|Changed|PageKindInfographic':
+    "Someone chose Infographic for a new Illustrate tab's first page.",
+  'Tab|Changed|PageKindArticle': "Someone chose Article for a new Illustrate tab's first page.",
+  'Tab|Changed|ArticlesToPages':
+    "Someone left Illustrate mode and turned a tab's articles into Page elements.",
+  'Tab|Changed|ArticleLookClean': 'Someone gave an article the Clean look.',
+  'Tab|Changed|ArticleLookClassic': 'Someone gave an article the Classic look.',
+  'Tab|Changed|ArticleLookReport': 'Someone gave an article the Report look.',
+  'Tab|Changed|ArticleLookNotebook': 'Someone gave an article the Notebook look, on ruled pages.',
+  'Tab|Changed|ArticleLookBold': 'Someone gave an article the Bold look.',
+  'Tab|Changed|ArticleStyle':
+    "Someone changed one part of an article's style: a font, the accent, spacing, rules, margins or page numbers.",
+  'Element|Added|ArticleImage': "Someone inserted an image at the caret in an article's writing.",
+  'Element|Added|ArticleTable': "Someone inserted a table at the caret in an article's writing.",
+  'Element|Added|ArticleChart': "Someone inserted a chart at the caret in an article's writing.",
+  'Element|Added|ArticleCallout':
+    "Someone inserted a callout at the caret in an article's writing.",
+  'Element|Added|ArticleSticky':
+    "Someone inserted a sticky note at the caret in an article's writing.",
+  'Element|Added|ArticleDrawing':
+    "Someone started a drawing in an article's writing: from Insert, or by putting shapes onto the page.",
+  'Element|Added|ArticleObject':
+    'Someone put an object (a chart, an image, a component) onto an article page, and the writing took it in.',
+  'Element|Added|ArticleDivider': "Someone inserted a divider into an article's writing.",
+  'Element|Added|ArticlePageBreak': "Someone inserted a page break into an article's writing.",
+  'Element|Added|ArticleQuote': "Someone inserted a quote into an article's writing.",
+  'Element|Added|ArticleCode': "Someone inserted a code block into an article's writing.",
+  'Element|Added|ArticleComment':
+    "Someone commented on a stretch of an article's writing, a marker in the margin beside it.",
+  'Element|Added|ArticleAction':
+    "Someone assigned an action on a stretch of an article's writing, a marker in the margin beside it.",
+  'Element|Changed|ArticleFormat':
+    'Someone formatted text in an article from the page toolbar: bold, italic, underline, strikethrough, a colour or a highlight.',
+  'Element|Changed|ArticleBlockStyle':
+    "Someone changed a block of an article's writing to another style or a list, from the page toolbar.",
+  'Element|Changed|ArticleLink': 'Someone added a link to text in an article.',
+  'Element|Changed|ArticlePaste':
+    'Someone pasted Markdown into an article, and it became headings, lists and formatting.',
+  'Element|Changed|ArticleZoneWrap':
+    "Someone changed how a picture or drawing sits in an article's writing: in line, or wrapped.",
+  'Element|Changed|ArticleZoneResized':
+    "Someone made a drawing in an article's writing bigger or smaller.",
+  'Element|Changed|ArticleZoneFloat':
+    'Someone set a picture or drawing in an article to float in front of the text.',
+  'Element|Changed|ArticleZoneMoved':
+    "Someone dragged a picture or drawing to a new place in an article's writing.",
+  'Element|Changed|ArticleZoneRemoved':
+    "Someone deleted a picture or drawing from an article's writing.",
+  'Tab|Changed|PageRemoved': 'Someone deleted a page from an Illustrate tab.',
+  'Tab|Changed|PagePortrait': 'Someone turned an Illustrate page to portrait.',
+  'Tab|Changed|PageLandscape': 'Someone turned an Illustrate page to landscape.',
+  'Tab|Changed|PageSize': 'Someone changed an Illustrate page to another size.',
+  'Tab|Changed|PageBackground': "Someone changed an Illustrate page's background colour.",
+  'Tab|Changed|PagePattern': "Someone changed an Illustrate page's background pattern.",
+  'Tab|Changed|PageRenamed': 'Someone renamed an Illustrate page.',
+  'Tab|Changed|PageDuplicated': 'Someone duplicated an Illustrate page with its content.',
+  'Tab|Changed|PageMoved': 'Someone moved an Illustrate page left or right in its row.',
+  'Tab|Changed|PagesLaidOut':
+    "A tab's content was laid out into Illustrate pages as it entered Illustrate mode.",
+  'Tab|Changed|PageLayout': 'Someone put a ready-made layout onto an Illustrate page.',
+  'Tab|Changed|OpensInIllustrate':
+    'Someone set a tab to open in Illustrate mode for everyone, from the tab menu.',
   'Tab|Changed|DefaultTextSize':
     "Someone changed a tab's default text size, used for new elements added to it.",
   'Tab|Changed|Font':
@@ -617,7 +699,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Token|Created|Manual':
     'Someone created a new personal API token by hand, from the API Tokens category in Settings.',
   'Token|Removed|': 'Someone revoked an API token.',
-  'UI|Added|PaletteFavourite': 'Someone added a tile to their Favourites in the shape palette.',
+  'UI|Added|PaletteFavourite':
+    'Someone added a tile to their Favourites in the shape palette. No longer recorded: the palette opens on Popular, a fixed pick.',
   'UI|Added|Slide':
     'Someone added a slide to the Slide Deck: either a fresh slide built from the current selection, or a duplicate of an existing one.',
   'UI|Changed|AvatarClothing':
@@ -651,7 +734,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Changed|MapSizeShort': 'Someone set the minimap to its short size, in Settings > Editor.',
   'UI|Changed|MapSizeTall': 'Someone set the minimap to its tall size, in Settings > Editor.',
   'UI|Changed|PaletteFavourite':
-    'Someone reordered their palette Favourites by dragging, or reset the list back to its default tiles.',
+    'Someone reordered their palette Favourites by dragging, or reset the list back to its default tiles. No longer recorded: Favourites is gone.',
   'UI|Changed|PanelLayout':
     "Someone changed the editor's panel layout, in Settings > Editor. An earlier version of this event, before it recorded which layout was chosen. No longer recorded.",
   'UI|Changed|PanelLayoutFloating':
@@ -688,6 +771,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone put their whiteboard dock at the bottom of the canvas, in Settings > Editor.',
   'UI|Changed|WhiteboardDockPositionTop':
     'Someone put their whiteboard dock at the top of the canvas, in Settings > Editor.',
+  'UI|Closed|EmptyPageLayouts':
+    'Someone hid the Start From a Layout card on an empty infographic page.',
   'UI|Closed|NewDocument':
     'Someone pressed Escape or the X in the New Document wizard and went back to where they came from, creating nothing.',
   'UI|Closed|Presentation': 'Someone exited presentation mode.',
@@ -719,14 +804,15 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Opened|Activity': 'Someone expanded the since-removed Activity panel.',
   'UI|Opened|Collaborate': 'Someone opened the Collaborate panel from its bottom-bar button.',
   'UI|Opened|BehaviourGroup':
-    "Someone opened a category inside the palette's Behaviours tab (session tools like polls, votes, and record-keeping elements).",
+    "Someone opened a category inside the palette's Collaborate tab (formerly Behaviours; session tools like polls, votes, and record-keeping elements).",
   'UI|Opened|CanvasStyle':
     "Someone opened the tab's look-and-feel dialog on its Canvas tab, to change the background.",
   'UI|Opened|CollabGroup':
-    "Someone opened a category inside the palette's old Collaborate tab (session tools like polls and votes). That tab was merged into Behaviours. No longer recorded.",
+    "Someone opened a category inside the palette's old Collaborate tab (session tools like polls and votes). That tab was merged into Behaviours (since renamed Collaborate). No longer recorded.",
   'UI|Opened|Collaborators':
     "Someone opened the Collaborators dialog, either from a tab's presence stack or from a command.",
   'UI|Opened|IconGroup': "Someone opened a category inside the palette's Icons tab.",
+  'UI|Opened|MindOutline': "Someone opened a mind map's outline to edit it as text.",
   'UI|Opened|PresentationSettings':
     "Someone opened the settings popover on the presentation's on-screen controls, while presenting.",
   'UI|Opened|PresenterNotes': 'Someone opened the speaker-notes card while presenting.',
@@ -752,7 +838,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone clicked "Learn more" on the guest sign-in banner shown in the editor, opening the reasons-to-sign-in card.',
   'UI|Opened|SignInReasonsExplorer':
     'Someone clicked "Learn more" on the guest sign-in banner shown in the Explorer, opening the reasons-to-sign-in card.',
-  'UI|Opened|SlideDeck': 'Someone picked the Slide Deck tool, opening the deck-building panel.',
+  'UI|Opened|SlideDeck':
+    "Someone opened the deck-building panel: the Slide Deck tool, or an Illustrate tab's Slides button.",
   'UI|Opened|SlideElementDetail':
     'While presenting, someone clicked an element on the slide to read its detail, such as a note or comment, without leaving presentation mode.',
   'UI|Opened|TechGroup': "Someone opened a category inside the palette's Technology tab.",
@@ -797,11 +884,13 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Opened|your-first-diagram':
     'Someone opened the help article about building their first diagram, from the empty-canvas banner or a search result.',
   'UI|Removed|PaletteFavourite':
-    'Someone removed a tile from their Favourites in the shape palette.',
+    'Someone removed a tile from their Favourites in the shape palette. No longer recorded: Favourites is gone.',
   'UI|Removed|Slide': 'Someone deleted a slide from the Slide Deck.',
-  'UI|Searched|BehaviourSearch': "Someone searched within the palette's Behaviours tab.",
+  'UI|Searched|BehaviourSearch':
+    "Someone searched within the palette's Collaborate tab (formerly Behaviours).",
   'UI|Searched|IconSearch': "Someone searched within the palette's Icons tab.",
-  'UI|Searched|PaletteSearch': 'Someone searched within their Favourites in the palette.',
+  'UI|Searched|PaletteSearch':
+    'Someone searched within their Favourites in the palette. No longer recorded: Favourites is gone.',
   'UI|Selected|LiveImageTab':
     "Someone picked a specific tab from the dropdown in the Share dialog's Live Image menu, pointing the live-updating image at that tab instead of the default.",
   'UI|Selected|SignInBanner':
@@ -896,22 +985,36 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Toggled|NotifyTipsOn':
     'Someone turned on the occasional tips-and-check-in emails, in Settings > Notifications.',
   'UI|Toggled|PaletteFavouritesEdit':
-    'Someone entered reordering or editing mode for their palette Favourites.',
+    'Someone entered reordering or editing mode for their palette Favourites. No longer recorded: Favourites is gone.',
   'UI|Toggled|PatternExport':
     "Someone turned on painting the tab's background pattern into an exported image.",
   'UI|Toggled|QuickAddHoverOff':
     'Someone turned off quick-add on hover in the palette, in Settings > Editor.',
   'UI|Toggled|QuickAddHoverOn':
     'Someone turned on quick-add on hover in the palette, in Settings > Editor.',
+  'UI|Toggled|IllustrateModeOff': 'Someone turned off Illustrate mode, in Settings > Experimental.',
+  'UI|Toggled|IllustrateModeOn': 'Someone turned on Illustrate mode, in Settings > Experimental.',
   'UI|Toggled|ReduceMotionOff': 'Someone turned off reduced motion, in Settings > Accessibility.',
   'UI|Toggled|ReduceMotionOn': 'Someone turned on reduced motion, in Settings > Accessibility.',
   'UI|Toggled|ShortcutsOff': 'Someone turned off keyboard shortcuts, in Settings > Keyboard.',
   'UI|Toggled|ShortcutsOn': 'Someone turned on keyboard shortcuts, in Settings > Keyboard.',
+  'UI|Toggled|SkipLocationStepOff':
+    'Someone turned off skipping the Location step, in Settings > Documents, so the New Document wizard asks where each document goes again.',
+  'UI|Toggled|SkipLocationStepOn':
+    'Someone ticked "Always save new documents in <place> and skip this step" on the New Document wizard\'s Location step.',
   'UI|Toggled|SlideHidden':
     'Someone hid a slide from the presentation run, without deleting it, in the Slide Deck panel.',
   'UI|Toggled|SlideShown':
     'Someone unhid a slide, putting it back into the presentation run, in the Slide Deck panel.',
   'UI|Toggled|System': "Someone set the editor's appearance to follow the system.",
+  'UI|Toggled|TemplateModeAll':
+    'Someone set the New Document template filter back to Everything, showing templates for every mode.',
+  'UI|Toggled|TemplateModeDiagram':
+    'Someone narrowed the New Document templates to the ones that open in Diagram mode.',
+  'UI|Toggled|TemplateModeDraw':
+    'Someone narrowed the New Document templates to the ones that open in Draw mode.',
+  'UI|Toggled|TemplateModeIllustrate':
+    'Someone narrowed the New Document templates to the ones that open in Illustrate mode.',
   'UI|Toggled|TemplateShelfCollapsed':
     'Someone put the New Document template shelf back to a carousel, with the other categories as a grid.',
   'UI|Toggled|TemplateShelfExpanded':
@@ -935,6 +1038,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'The welcome tour reached its "Shape categories" step, pointing out the palette\'s category tabs.',
   'UI|View|TourStepContextMenu':
     'The welcome tour reached its "The element menu" step, showing the right-click menu on an element.',
+  'UI|View|TourStepEditorMode':
+    'The welcome tour reached its "Diagram & Draw" step, pointing out the switch between the two editor modes.',
   'UI|View|TourStepExplorer': 'The welcome tour reached its "The Explorer" step.',
   'UI|View|TourStepOutro': 'The welcome tour reached its closing "You\'re ready to go" card.',
   'UI|View|TourStepPalette': 'The welcome tour reached its "The Palette" step.',
@@ -1025,6 +1130,7 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Element|Unlocked': "An element's lock was turned off (edits resume).",
   'Element|Searched': 'Someone searched for something to put in an element, such as a picture.',
   'Element|Used': 'Someone used an interactive element on the canvas, such as a Reaction Pad.',
+  'Element|Added': 'Someone added an element to a canvas, or put something into a document.',
   'Element|Voted': 'Someone cast a dot in a dot vote.',
   'Email|Sent':
     'An automatic email went out: a welcome message, an onboarding nudge, a team invite, or a notification about activity on a document. The type names which one; it never says who received it.',
@@ -1059,8 +1165,19 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Layer|Reordered': 'Someone dragged a layer to restack it.',
   'Layer|Selected': 'Someone switched which layer is active.',
   'Layer|Toggled': 'Someone switched something on a layer on or off, such as hiding or locking it.',
+  'Agent|Opened': "Somebody opened something an agent's change pointed them to.",
+  'Agent|Viewed': 'An agent or a script read a document as text.',
+  'Agent|Applied':
+    'An agent changed a tab with a changeset: through the MCP server, the CLI or the API.',
+  'Agent|Conflicted':
+    "An agent's changeset was refused because something it touched changed since the agent read it.",
+  'Agent|Held':
+    "An agent's changeset was refused because a person had one of its elements selected.",
+  'Agent|Reverted':
+    "An agent's changeset was undone, from the editor's toast or another front door.",
   'Mcp|Used': 'An AI tool connected to livediagram over MCP used one of its actions on a document.',
   'Note|Added': 'A note was added to an element (first non-empty save).',
+  'Cli|Used': 'Someone ran a livediagram command from the command line, and it succeeded.',
   'Note|Changed': "An existing note's text was edited.",
   'Note|Deleted': 'A note was cleared from an element.',
   'Note|Opened': 'Someone opened the note popover on an element.',
@@ -1155,7 +1272,7 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Token|Created':
     'A new API token was created, either by hand or for an AI tool connected over MCP.',
   'Token|Removed': 'Someone revoked an API token.',
-  'UI|Added': 'Someone added something in the editor, such as a palette favourite or a slide.',
+  'UI|Added': 'Someone added something in the editor, such as a slide.',
   'UI|Changed':
     "Someone changed a setting or a control's value somewhere in the editor: a tool panel's option (Avatar, Eraser, Laser, Spotlight, Format Painter), a Settings dialog row, or a palette/toolbar choice.",
   'UI|Closed':
@@ -1166,9 +1283,9 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'UI|Moved': "Someone dragged something to a new position in the editor's interface.",
   'UI|Opened':
     "Someone opened a dialog, panel, popover, or menu somewhere in the editor. A lowercase, hyphenated type is a help-centre article's address: someone clicked a help link, or a Help result in search, to read it.",
-  'UI|Removed': 'Someone removed something in the editor, such as a palette favourite or a slide.',
+  'UI|Removed': 'Someone removed something in the editor, such as a slide.',
   'UI|Searched':
-    'Someone typed into a search box inside a palette tab (Behaviours, Icons, or Technology), narrowing it to matching tiles. Counted once per tab visit, on the first keystroke.',
+    'Someone typed into a search box inside a palette tab (Collaborate, Icons, or Technology), narrowing it to matching tiles. Counted once per tab visit, on the first keystroke.',
   'UI|Selected':
     'Someone picked an option from a dropdown, or clicked through on a banner, somewhere in the editor.',
   'UI|Started': 'Someone started a presentation or the welcome tour.',

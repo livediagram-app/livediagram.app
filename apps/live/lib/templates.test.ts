@@ -1,12 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { buildTemplate, buildTemplatedTab } from './template-builders';
 import {
+  BLANK_TEMPLATE_FOR_MODE,
+  templateEditorMode,
   TEMPLATES,
-  TEMPLATE_COLLECTIONS,
-  isTemplateCollection,
-  templateBrowseHref,
-  templateShelfLabel,
-  templateShelfTemplates,
   TEMPLATE_CATEGORIES,
   TEMPLATE_CONTENT_LAYER_ID,
   TEMPLATE_SCAFFOLD_LAYER_ID,
@@ -28,7 +25,7 @@ import { getTheme } from './themes';
 
 // The catalogue's shape (count + default/extra split + no kind
 // drift) is load-bearing across both the picker and the marketing
-// site. docs/specs/019-marketing/marketing-site.md pins "63 templates (11 default + 52 extra)" and
+// site. docs/specs/019-marketing/marketing-site.md pins "81 templates (11 default + 70 extra)" and
 // docs/specs/008-canvas/canvas-and-palette.md catalogues the picker UX. These tests pin the array so
 // either the spec or the catalogue can't silently drift away from
 // the other.
@@ -101,24 +98,42 @@ describe('TEMPLATES catalogue', () => {
     'objectives-planner',
     'floor-plan',
     'whiteboard',
+    'article',
+    'blank-illustration',
+    'sketchnote',
+    'rich-picture',
+    'comic-strip',
+    'doodle-warmup',
+    'event-poster',
+    'year-in-review',
+    'resume',
+    'recipe-card',
+    'data-story',
+    'how-it-works',
+    'versus',
+    'social-carousel',
+    'paper-prototype',
+    'journey-doodle',
+    'pre-mortem',
+    'idea-garden',
   ];
 
   // Hidden templates are buildable but never listed, so every user-facing
-  // count (docs/specs/019-marketing/marketing-site.md's "63 templates", the picker grids, the MCP catalogue)
+  // count (docs/specs/019-marketing/marketing-site.md's "81 templates", the picker grids, the MCP catalogue)
   // is over the listed subset. The mechanism is generic; nothing ships
   // hidden today (the docs/specs/007-editor/guided-tour-sample.md guided-tour sample used it until the
   // interactive tour, docs/specs/007-editor/editor-tour.md, superseded it).
   const listed = TEMPLATES.filter((t) => !t.hidden);
 
-  it('lists exactly 63 templates (11 default + 52 extra, matches docs/specs/019-marketing/marketing-site.md and docs/specs/008-canvas/canvas-and-palette.md)', () => {
-    expect(listed).toHaveLength(63);
+  it('lists exactly 81 templates (11 default + 70 extra, matches docs/specs/019-marketing/marketing-site.md and docs/specs/008-canvas/canvas-and-palette.md)', () => {
+    expect(listed).toHaveLength(81);
   });
 
-  it('splits cleanly into 11 default + 52 extra (`extra` is catalogue metadata; the picker browses by category)', () => {
+  it('splits cleanly into 11 default + 70 extra (`extra` is catalogue metadata; the picker browses by category)', () => {
     const defaults = listed.filter((t) => !t.extra);
     const extras = listed.filter((t) => t.extra);
     expect(defaults).toHaveLength(11);
-    expect(extras).toHaveLength(52);
+    expect(extras).toHaveLength(70);
   });
 
   it('ships no hidden templates (the flag is generic; docs/specs/007-editor/guided-tour-sample.md was retired by docs/specs/007-editor/editor-tour.md)', () => {
@@ -151,7 +166,13 @@ describe('TEMPLATES catalogue', () => {
       // 'blank' and 'whiteboard' are intentionally empty (docs/specs/007-editor/new-document-route.md,
       // docs/specs/023-draw-mode/draw-mode.md); every other kind seeds content. Either way the
       // switch must handle the union member.
-      const empty = kind === 'blank' || kind === 'whiteboard';
+      // An article's writing is tab data, not elements (templateCanvasOverrides).
+      // A blank illustration is its one empty page, which asks what it is for.
+      const empty =
+        kind === 'blank' ||
+        kind === 'whiteboard' ||
+        kind === 'article' ||
+        kind === 'blank-illustration';
       expect(tab.elements.length).toBeGreaterThan(empty ? -1 : 0);
     }
   });
@@ -166,6 +187,14 @@ describe('templateCanvasOverrides', () => {
       opensIn: 'draw',
       backgroundPattern: 'graph',
     });
+  });
+
+  it('makes an article that opens in Illustrate on one article page of writing', () => {
+    // docs/specs/007-editor/article-pages.md: the template's page and writing are tab data.
+    const o = templateCanvasOverrides('article');
+    expect(o.opensIn).toBe('illustrate');
+    expect(o.pages).toEqual([expect.objectContaining({ kind: 'article', flow: 'art-brief' })]);
+    expect(o.articles?.['art-brief']?.blocks.length).toBeGreaterThan(5);
   });
 
   it('makes an event-storming board already settled on its lanes', () => {
@@ -219,19 +248,44 @@ describe('templateCanvasOverrides', () => {
     expect(templateCanvasOverrides('flywheel')).toEqual({ backgroundPattern: 'blank' });
   });
 
-  it('gives the slide deck a crosshatch backdrop', () => {
-    expect(templateCanvasOverrides('slide-deck')).toEqual({
-      backgroundPattern: 'crosshatch',
-      backgroundOpacity: 0.5,
+  it('opens the slide deck in Illustrate on six Slide (16:9) pages, keeping its layers', () => {
+    // canvas-and-palette.md "Templates on pages": a plain surround, the pages are the paper.
+    const o = templateCanvasOverrides('slide-deck');
+    expect(o).toMatchObject({
+      backgroundPattern: 'blank',
+      opensIn: 'illustrate',
       layers: templateLayers('slide-deck'),
     });
+    expect(o.pages).toHaveLength(6);
+    expect(
+      o.pages!.every(
+        (p) => p.size === 'wide' && p.orientation === 'landscape' && p.kind === 'infographic',
+      ),
+    ).toBe(true);
+    expect(o.pages!.map((p) => p.id)).toEqual([
+      'page-1',
+      'page-2',
+      'page-3',
+      'page-4',
+      'page-5',
+      'page-6',
+    ]);
   });
 
-  it('gives the logo sheet a checkerboard design board and timelines ruled lines', () => {
-    expect(templateCanvasOverrides('logo-design')).toEqual({
-      backgroundPattern: 'checkerboard',
-      backgroundOpacity: 0.6,
-    });
+  it('opens the logo exploration on Square pages, and timelines get ruled lines', () => {
+    const o = templateCanvasOverrides('logo-design');
+    expect(o).toMatchObject({ backgroundPattern: 'blank', opensIn: 'illustrate' });
+    // Six lockup artboards, then the palette.
+    expect(o.pages?.map((p) => p.name)).toEqual([
+      'Horizontal',
+      'Stacked',
+      'App Icon',
+      'Horizontal + Tagline',
+      'Stacked + Tagline',
+      'One Colour',
+      'Palette',
+    ]);
+    expect(o.pages!.every((p) => p.size === 'square' && p.kind === 'infographic')).toBe(true);
     expect(templateCanvasOverrides('timeline')).toEqual({
       backgroundPattern: 'lines',
       backgroundOpacity: 0.6,
@@ -243,6 +297,15 @@ describe('templateCanvasOverrides', () => {
       backgroundOpacity: 0.6,
       layers: templateLayers('journey'),
     });
+  });
+
+  it('opens the group card on a cover and an inside, both Portrait post (4:5) pages', () => {
+    const o = templateCanvasOverrides('live-card');
+    expect(o).toMatchObject({ backgroundPattern: 'blank', opensIn: 'illustrate' });
+    expect(o.pages?.map((p) => [p.name, p.size, p.orientation, p.kind])).toEqual([
+      ['Cover', 'social', 'portrait', 'infographic'],
+      ['Inside', 'social', 'portrait', 'infographic'],
+    ]);
   });
 
   it('leaves the blank template to inherit the theme backdrop', () => {
@@ -368,8 +431,10 @@ describe('layered templates (docs/specs/006-document/layers.md)', () => {
     'laptop-wireframe': { names: ['Frames', 'UI'], scaffold: 4, content: 22 },
     // Frames: the browser, the how-to and the Notes heading.
     'browser-wireframe': { names: ['Frames', 'UI'], scaffold: 3, content: 55 },
-    // Frames: six slide cards, their page numbers and the how-to.
-    'slide-deck': { names: ['Frames', 'Content'], scaffold: 13, content: 55 },
+    // Frames: the footer (deck name + page number) of the five content slides; the slides
+    // themselves are Illustrate pages. Content: the title slide's nine pieces, each other
+    // slide's kicker + headline, and its body (pains 9, steps 5, traction 3, team 12, ask 5).
+    'slide-deck': { names: ['Frames', 'Content'], scaffold: 10, content: 53 },
     // Frames: six panel cards, their number chips and the how-to.
     storyboard: { names: ['Frames', 'Content'], scaffold: 13, content: 41 },
     // Spine + the three-entry status legend stay put; each of the six
@@ -913,54 +978,27 @@ describe('untitledNameForTemplate', () => {
   });
 });
 
-describe('TEMPLATE_COLLECTIONS', () => {
-  it('holds the brainstorming formats, mind maps first', () => {
-    // docs/specs/007-editor/new-document-route.md "?browse=<collection>".
-    const brainstorm = TEMPLATE_COLLECTIONS.find((c) => c.id === 'brainstorm')!;
-    expect(brainstorm.label).toBe('Brainstorm');
-    expect(brainstorm.kinds).toEqual([
-      'mindmap',
-      'mindmap-tree',
-      'mindmap-bubble',
-      'affinity-map',
-      'fishbone',
-      'event-storming',
-    ]);
+// Templates by mode (docs/specs/007-editor/templates-by-mode.md): the mode a card shows is the mode
+// its tab opens in, and each mode's blank is of that mode.
+describe('templateEditorMode', () => {
+  it('is the mode every template opens in', () => {
+    for (const t of TEMPLATES) {
+      expect(templateEditorMode(t.kind), t.kind).toBe(
+        templateCanvasOverrides(t.kind).opensIn ?? 'diagram',
+      );
+    }
   });
 
-  it('names only listed templates', () => {
-    const listed = new Set(TEMPLATES.filter((t) => !t.hidden).map((t) => t.kind));
-    for (const c of TEMPLATE_COLLECTIONS) for (const k of c.kinds) expect(listed.has(k)).toBe(true);
+  it('gives every mode a blank of its own mode', () => {
+    for (const [mode, kind] of Object.entries(BLANK_TEMPLATE_FOR_MODE)) {
+      expect(templateEditorMode(kind)).toBe(mode);
+    }
   });
 
-  it('never shares an id with a category, so one view id names either', () => {
-    const categories = new Set<string>(TEMPLATE_CATEGORIES.map((c) => c.id));
-    for (const c of TEMPLATE_COLLECTIONS) expect(categories.has(c.id)).toBe(false);
-  });
-
-  it('links a collection into the wizard', () => {
-    expect(templateBrowseHref('brainstorm')).toBe('/new?browse=brainstorm');
-    expect(isTemplateCollection('brainstorm')).toBe(true);
-    expect(isTemplateCollection('mindmaps')).toBe(false);
-  });
-});
-
-describe('templateShelfTemplates', () => {
-  const listed = TEMPLATES.filter((t) => !t.hidden);
-  it('lists a collection in its own order', () => {
-    expect(templateShelfTemplates('brainstorm', listed).map((t) => t.kind)).toEqual(
-      TEMPLATE_COLLECTIONS[0]!.kinds,
-    );
-  });
-
-  it('lists a category in the given order, without the quick-picks', () => {
-    const kinds = templateShelfTemplates('flowcharts', listed).map((t) => t.kind);
-    expect(kinds).toContain('flowchart');
-    expect(kinds).not.toContain('blank');
-  });
-
-  it('names a shelf', () => {
-    expect(templateShelfLabel('brainstorm')).toBe('Brainstorm');
-    expect(templateShelfLabel('planning')).toBe('Agile');
+  it('opens every paged template in Illustrate', () => {
+    for (const t of TEMPLATES) {
+      if (templateCanvasOverrides(t.kind).pages)
+        expect(templateEditorMode(t.kind)).toBe('illustrate');
+    }
   });
 });

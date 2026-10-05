@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { SITE_NAME, SITE_URL } from './site';
+import { SITE_NAME, SITE_PITCH, SITE_URL } from './site';
 
 // Per-page SEO for the public sites: the metadata block (canonical + Open
 // Graph + Twitter card) and the BreadcrumbList structured data. Marketing and
@@ -22,7 +22,7 @@ const OG_IMAGE = {
   url: `${SITE_URL}/opengraph-image`,
   width: 1200,
   height: 630,
-  alt: 'livediagram: a real-time multiplayer canvas for diagrams and mindmaps',
+  alt: `${SITE_NAME}: ${SITE_PITCH}`,
 };
 const TWITTER_IMAGE = `${SITE_URL}/twitter-image`;
 

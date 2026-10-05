@@ -20,10 +20,10 @@ import {
   supportsFillColor,
   defaultStrokeColor,
   defaultTextColor,
+  shownBorderRadius,
   supportsBorderRadius,
   supportsColours,
   supportsShadow,
-  type BorderRadius,
   type BorderStroke,
   type BorderStyle,
   type BoxedElement,
@@ -83,8 +83,6 @@ export function ElementColourBorderSections({
     (target.type === 'table' ? 'thin' : 'medium');
   const borderStyleVal: BorderStyle =
     (target as { strokeStyle?: BorderStyle }).strokeStyle ?? 'solid';
-  const borderRadiusVal: BorderRadius =
-    (target as { borderRadius?: BorderRadius }).borderRadius ?? 'sm';
   return (
     <>
       {/* Arrow Colours: the line colour swatch. Arrows lived in the old
@@ -219,7 +217,7 @@ export function ElementColourBorderSections({
             <BorderControls
               strokeWidth={borderStrokeVal}
               strokeStyle={borderStyleVal}
-              radius={supportsBorderRadius(target) ? borderRadiusVal : null}
+              radius={supportsBorderRadius(target) ? shownBorderRadius(target) : null}
               onCommitBorderStroke={props.onCommitBorderStroke}
               onPreviewBorderStroke={props.onPreviewBorderStroke}
               onCommitBorderStyle={props.onCommitBorderStyle}

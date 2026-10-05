@@ -15,6 +15,7 @@
 
 export type { IconDef, IconPrim, PrimStyle, StyledPrim, TechIconDef, TechProvider } from './types';
 export { xmlEscape } from './xml';
+export { matches, paletteRank } from './search-rank';
 export {
   inkInsets,
   pathBounds,

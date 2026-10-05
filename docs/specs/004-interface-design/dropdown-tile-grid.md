@@ -6,7 +6,7 @@ Status: shipped
 
 The **canvas-tool** picker (Select / Hand / Eraser / Format / Laser /
 Spotlight / Avatar / Isometric / Zen) and the **palette category** picker
-(Favourites / Shapes / Tools / Components / Devices / Icons / Technology) lay
+(Popular / Shapes / Tools / Components / Devices / Icons / Technology) lay
 their options out as an icon-over-label **tile grid** instead of one long
 vertical list.
 

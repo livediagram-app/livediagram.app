@@ -1,6 +1,5 @@
 // The inline-PNG result helper for the MCP tools (docs/specs/015-api/mcp-server.md §5), split from
-// tool-helpers.ts for the same reason tab-builders.ts was: this file reaches
-// the resvg WASM renderer, which cannot load in the plain-node test
+// tool-helpers.ts: this file reaches the resvg WASM renderer, which cannot load in the plain-node test
 // environment, and importing it dragged the auth guard and the plain result
 // shapes down with it. They are render-free and unit-tested now; everything
 // that genuinely needs a rasteriser lives here.
@@ -49,11 +48,13 @@ async function buildImageResolver(
 
 // `auth` (env + the caller's token) enables real image embedding; omit it to
 // render placeholders for image elements (the pre-embedding behaviour).
-export async function imageResult(
-  value: StructuredValue,
+export type ImageBlock = { type: 'image'; data: string; mimeType: string };
+
+// A PNG preview of the tab, its images and icons resolved as the editor draws them.
+export async function tabPreview(
   tab: Tab,
   auth?: { env: Env; token: string },
-): Promise<ToolResult> {
+): Promise<ImageBlock> {
   const resolveImageHref = auth ? await buildImageResolver(auth.env, auth.token, tab) : undefined;
   const png = await svgToPngBase64(
     renderElementsToSvg(tab, {
@@ -62,10 +63,18 @@ export async function imageResult(
       resolveStickerArt,
     }),
   );
-  // The structured result (and its text form) first, then the preview.
+  return { type: 'image', data: png, mimeType: 'image/png' };
+}
+
+// `notes` are short text blocks after the structured result, such as the lint summary line.
+export async function imageResult(
+  value: StructuredValue,
+  tab: Tab,
+  auth?: { env: Env; token: string },
+  notes: readonly string[] = [],
+): Promise<ToolResult> {
+  // The structured result (and its text form) first, then the notes, then the preview.
   const result = textResult(value);
-  return {
-    ...result,
-    content: [...result.content, { type: 'image', data: png, mimeType: 'image/png' }],
-  };
+  const texts = notes.map((text) => ({ type: 'text' as const, text }));
+  return { ...result, content: [...result.content, ...texts, await tabPreview(tab, auth)] };
 }

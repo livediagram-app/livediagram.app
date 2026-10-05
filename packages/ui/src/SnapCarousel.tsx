@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import { useCallback, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { Glyph } from './icons/Glyph';
 
 // A heading row over a horizontal, scroll-snapping track of cards, with prev /
@@ -13,7 +13,7 @@ import { Glyph } from './icons/Glyph';
 // arrows just scroll it by one page; scroll-snap lands a swipe on a card edge.
 // How many cards make a page is pure CSS (the caller's `itemClassName` sizes
 // each `li`), so the arrows never have to know it. Arrows disable at either
-// end and hide (keeping their space) when every card already fits.
+// end and hide (keeping their height) when every card already fits.
 export function SnapCarousel({
   heading,
   label,
@@ -55,7 +55,8 @@ export function SnapCarousel({
     setCanNext(el.scrollLeft + el.clientWidth < el.scrollWidth - 1);
   }, []);
 
-  useEffect(() => {
+  // Measured before paint, so the arrows (and the actions beside them) never shift on load.
+  useLayoutEffect(() => {
     const el = track.current;
     if (!el) return;
     el.scrollTo({ left: 0 });
@@ -85,15 +86,17 @@ export function SnapCarousel({
     <div className={className}>
       <div className="flex items-center justify-between gap-4">
         <div className="flex min-w-0 items-center gap-2">{heading}</div>
-        <div className="flex shrink-0 items-center gap-4">
+        <div className={`flex shrink-0 items-center ${paged ? 'gap-4' : ''}`}>
           {actions}
-          {/* Always rendered, only hidden when every card fits: the track is
-              measured after mount, and arrows that appeared then made the heading
-              row taller and nudged everything below it on load. `invisible`
-              keeps their space and takes them out of the tab order and the
-              accessibility tree. */}
+          {/* Always rendered, only hidden when every card fits: arrows that
+              appeared after the track was measured made the heading row taller
+              and nudged everything below it on load. Hidden, they keep their
+              height but give up their width, so the actions (the picker's expand
+              toggle) take the right edge rather than sitting beside a gap.
+              `invisible` takes them out of the tab order and the accessibility
+              tree. */}
           <div
-            className={`flex items-center gap-1.5 ${paged ? '' : 'invisible'}`}
+            className={`flex items-center gap-1.5 ${paged ? '' : 'invisible w-0 overflow-hidden'}`}
             aria-hidden={paged ? undefined : true}
           >
             <CarouselArrow

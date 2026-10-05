@@ -9,8 +9,9 @@ Follow the references below only as needed; never upfront.
 - ./shape-libraries.md - when implementing or changing shape libraries: the table, api, import landing, My shapes, the Explorer page
 - ./explorer-filters.md - when implementing or changing Explorer filters: the lens grammar, matching, suggestions, view models, `q`
 - ./explorer-structure.md - when implementing or changing the Explorer sidebar: layout rules, rows, ARIA tree keyboard hook
-- ./explorer-home.md - when changing Home's data: recording opens, frecency, the `/api/home` reads and their wire
-- ./explorer-home-view.md - when changing the Home page: its route, columns, strip, entries, Timeline column, local opens
+- ./explorer-home.md - when changing Home's data: recording opens, Jump back in's Within reach set, the `/api/home` read and its wire
+- ./explorer-home-view.md - when changing the Home page: its route, Jump back in (grid, phone strip, See more), What happened entries, local opens
+- ./share-roles.md - when implementing or changing access levels (Viewer, Participant, Editor) or ownership powers: the expand-then-contract releases, migration 0067, the gates and token choke point, the room's op classes, derived collaboration keys, participation writes and the answers route, the Share dialog and role pill
 - ./DEFAULTS.md - when a workspace blueprint applies a default the spec leaves open
 - ./COMPLETENESS.md - when checking which completeness categories a workspace blueprint covers
 - ./empty-document-cleanup.md - when implementing or changing the daily move of empty documents to the Trash: the sweep, the trash reason, the restore restart

@@ -6,14 +6,19 @@ Status: shipped
 
 A flattening of the palette's category structure.
 
+This is the category catalogue and each category's **default** tiles. Which
+categories a palette offers, under what names and holding which tiles, is now
+per editor mode: see [Editor modes, "The palette per
+mode"](../007-editor/editor-modes.md#the-palette-per-mode).
+
 **The Tools tab is gone.** Every group it held became a top-level palette
 category of its own, and a tab with no categories left is not a tab.
 
-The full set, in band order: **Favourites**, then **Shapes / Write / Draw /
+The full set, in band order: **Popular**, then **Shapes / Write / Draw /
 Devices**, then **Icons / Stickers / Technology / Media / Components**, then
-**Data / Behaviours**. (Stickers joined the Decorate band later, in
-[Stickers](stickers.md); Collaborate was merged into Behaviours later
-still — see below.)
+**Data / Collaborate**. (Stickers joined the Decorate band later, in
+[Stickers](stickers.md); a first Collaborate category was merged into Behaviours later
+still, and Behaviours was then renamed Collaborate — see below.)
 
 Where things landed, for anything that moved:
 
@@ -34,11 +39,11 @@ tools plus Frame). The **User / actor** tile was deleted outright — see below.
 
 | Band           | Categories                                                                                                 |
 | -------------- | ---------------------------------------------------------------------------------------------------------- |
-| _(no heading)_ | Favourites, full width                                                                                     |
+| _(no heading)_ | Popular, full width                                                                                        |
 | **Common**     | Shapes, My shapes (only with a [shape library](../013-workspace/shape-libraries.md) to place), Write, Draw |
 | **Structure**  | Build, Components, Devices, Event Storming (on an event-storming board only)                               |
 | **Decorate**   | Icons, Stickers, Technology, Media                                                                         |
-| **Dynamic**    | Data, Behaviours                                                                                           |
+| **Dynamic**    | Data, Collaborate                                                                                          |
 
 ## Why flatten
 
@@ -56,20 +61,20 @@ Data had been standalone before and was folded into Tools when the drill-in
 landed; six charts sitting behind a category tile turned out to be the same
 mistake in a smaller way.
 
-## Why Favourites has no band
+## Why Popular has no band
 
-Favourites is not a _kind_ of thing — it is every category at once, whatever
-the user put in it. Filing it under "Common" would claim a peer relationship
-with Shapes and Write that it does not have.
+Popular is not a _kind_ of thing: it draws from every category at once (it
+replaced Favourites, which had the same shape;
+[Palette Favourites](palette-favourites.md)). Filing it under "Common" would
+claim a peer relationship with Shapes and Write that it does not have.
 
 So it sits **full width above the first heading**, with no band of its own. The
-grid gained a `fullWidth` option for this, and it lays its glyph beside the
-label rather than above it — a one-column card stretched sideways reads as a
-mistake.
+grid has a `fullWidth` option for this, and it lays its glyph beside the
+label rather than above it.
 
 ## Rows, not tiles, for most categories
 
-Write, Draw, Behaviours, Data, Components, Media and Devices render as **rows
+Write, Draw, Collaborate, Data, Components, Media and Devices render as **rows
 with a one-line blurb**, not as the icon-over-caption grid.
 
 The rule is whether the picture explains the thing, and only four categories
@@ -110,24 +115,13 @@ and still animates its height on switch.
 
 Flattening put every element one click away but spread them over ten
 categories, so "where does Checklist live now" needed an answer that isn't
-"open each one".
-
-A **search box sits at the top of Favourites**, the default landing. Typing
-searches the whole fixed tile catalogue by caption, label, blurb and
-description, and replaces the favourites grid with the matches as rows.
-
-The **Icons and Technology catalogues are deliberately not searched here**:
-183 glyphs would bury the twenty-odd element types under near-duplicate icon
-names, and each of those tabs already searches its own catalogue ([Browsing the palette by category](palette-category-browse.md)).
-
-It is keyboard-driven, in the combobox pattern — focus never leaves the input,
-so you can keep typing to refine with a row highlighted:
-
-| Key            | Does                                                       |
-| -------------- | ---------------------------------------------------------- |
-| `ArrowDown/Up` | walks the results, wrapping at each end                    |
-| `Enter`        | adds the walked result, or the first one if none is walked |
-| `Escape`       | clears the query                                           |
+"open each one". That answer used to be a search box at the top of Favourites;
+it went with Favourites ([Palette Favourites](palette-favourites.md)). The
+editor's **Search** panel answers it now: it searches every tile by caption,
+label, blurb and description, and picking a result arms the same placement the
+palette uses ([Canvas and palette](../008-canvas/canvas-and-palette.md)). The
+Icons, Stickers and Technology tabs still search their own catalogues
+([Browsing the palette by category](palette-category-browse.md)).
 
 ## The pickers unfold from their trigger
 
@@ -157,7 +151,15 @@ and only the copy changed — it now says where the elements actually live and
 which two groups they are. A rename that broke seven live links to say
 "Behaviours" in a path would be a cosmetic match bought with real breakage.
 
-## Behaviours: one category, fully grouped
+## Collaborate: one category, fully grouped
+
+**Renamed from Behaviours to Collaborate.** The category is what you open to run a
+session with the room, and "Collaborate" names that job where "Behaviours" named the
+mechanism. The rename is display-only: the id stays `behaviour` (persisted in the
+strip's state, palette layouts and telemetry types such as `BehaviourSearch`), and
+the help article keeps its `/help/palette/behaviour/` URL, for the same reason as the
+merge below. Its groups are unchanged; none of them is called Collaborate, so the name
+is not repeated one level down.
 
 **Collaborate was merged into Behaviour**, and the survivor is named
 **Behaviours** (32 tiles in 6 groups). The two were split on a real

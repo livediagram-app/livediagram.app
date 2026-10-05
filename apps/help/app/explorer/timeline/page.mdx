@@ -5,30 +5,39 @@ import { TimelineFeed, TimelineStacking } from '@/components/illustrations/explo
 export const metadata = helpMetadata({
   title: 'Home',
   description:
-    'The Explorer opens on Home: the documents you return to most, what other people did while you were away, and your own Timeline, with All activity one link away.',
+    'The Explorer opens on Home: the documents you use most and last, and what other people did while you were away, with All activity one link away.',
   path: '/help/explorer/timeline/',
 });
 
 <ArticleLayout
   title="Home"
-  description="The documents you return to most, what other people did while you were away, and your own Timeline, on one page."
+  description="The documents you use most and last, and what other people did while you were away, on one page."
   categoryTitle="Explorer"
   categorySlug="explorer"
 >
 
 **Home** is the page the [Explorer](/explorer) opens on, and the first row of its sidebar. It answers the two questions you bring back with you, on one screen: **what was I working on?** and **what happened while I was away?**
 
-On a computer or a tablet, **Recent** sits on the left and your **Timeline** runs down the right. On a phone, a **Recent** / **Timeline** switch at the top shows one at a time, and Home always opens on Recent.
+Home is one column: **Jump back in** at the top, then **What happened**. Each opens with its heading and a thin line beneath it, with its link at the right.
 
 ## Jump back in
 
-The strip at the top of Recent holds the documents **you return to most**: not simply the last ones you touched, but the ones you open again and again, with recent days counting for more. Opening a document on ten days in a row keeps it near the front for weeks; one glance yesterday does not push it aside.
+**Jump back in** holds eight documents within reach: the **four you used most**, then the **four you used last**.
 
-Each document shows a picture of what is drawn on it, with its name underneath. Scroll the strip sideways (or Tab through it) to see up to twelve, and click one to open it. A document saved only in this browser wears the **Local only** pill and takes its place in the strip like any other, counted in this browser.
+- **Most used** counts the days you opened, edited or made a document over the last 90 days. A document you open most days stays put; one glance does not push it aside.
+- **The last ones** are the documents you opened, edited or made most recently, newest first.
+- **What you make is in at once**, opened or not: a new document, a duplicate, a single imported board, or one an AI tool made for you. An import of several documents at once is the exception, so a big import never pushes your work aside; those join when you first open one.
+- A document is never shown twice: if one of the last ones is also among the most used, it stays with the most used, and the next most recent takes its place.
+
+On a computer or a tablet they sit in a grid of two rows: the most used on top, the last ones below. On a phone they share one strip you scroll sideways, taking turns, and the strip ends in a **See more** tile. The rows have no titles; the order speaks for itself.
+
+Each document shows a picture of what is drawn on it, with its name underneath; click one to open it. A document saved only in this browser wears the **Local only** pill and takes its place like any other, counted in this browser.
+
+**See more** opens [Recent](/help/explorer/recent/), every document you can open, newest first, with the same filters as the rest of the Explorer. Its breadcrumb leads back to Home.
 
 ## What happened
 
-Below the strip, **What happened** lists what **other people** did to documents you can open in the last two weeks, under day headings: comments and replies, threads resolved, a day of edits, [actions](/help/collaboration/assigned-actions/) assigned or completed, and documents shared into one of your teams. Each entry says who did it, what they did, which document, and where it lives, and opens the document when you click it.
+Below Jump back in, **What happened** lists what **other people** did to documents you can open in the last two weeks, under day headings: comments and replies, threads resolved, a day of edits, [actions](/help/collaboration/assigned-actions/) assigned or completed, and documents shared into one of your teams. Each entry says who did it, what they did, which document, and where it lives, and opens the document when you click it.
 
 When several people worked on the same document on the same day, they share **one entry**: their pictures overlap and one sentence says what they did, such as "Priya, Sam and Lee commented, edited and assigned you an action in Payments architecture". Click it to see every action underneath, newest first.
 
@@ -36,11 +45,7 @@ Anything that arrived since you last looked carries a **New** pill, as on All ac
 
 What happened has no filters, on purpose. Whether someone simply looked at a document is theirs to know, so opens never appear here.
 
-**See all activity**, beside the heading, opens **All activity**: everything that has happened, your own doings included, with filters and a calendar (below).
-
-## Your Timeline
-
-The column on the right is **your own** history: the documents you **created**, **updated** or **opened**, newest first, one entry per document per day. Each entry is a picture of the document on alternating sides of a line, with its name underneath, and a small mark on the line says what happened: a plus for created, a pencil for updated, an eye for opened. Scroll down and older days load on their own.
+**See all activity**, at the end of the heading, opens **All activity**: everything that has happened, your own doings included, with filters and a calendar (below).
 
 Visiting Home counts as having caught up: the count on the sidebar's Home row clears, just as reading All activity clears it.
 
