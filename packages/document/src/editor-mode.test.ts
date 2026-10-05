@@ -8,6 +8,7 @@ import {
   editorModeSwitchable,
   hasBoardLook,
   hasPageLook,
+  hasPlanInput,
   isEditorMode,
   nextEditorMode,
   opensInOf,
@@ -16,8 +17,8 @@ import type { Tab } from './index';
 
 // Editor modes (docs/specs/007-editor/editor-modes.md): how a general tab is worked on.
 describe('editor modes', () => {
-  it('are Diagram, Draw and Illustrate, Diagram by default', () => {
-    expect(EDITOR_MODES).toEqual(['diagram', 'draw', 'illustrate']);
+  it('are Diagram, Draw, Illustrate and Plan, Diagram by default', () => {
+    expect(EDITOR_MODES).toEqual(['diagram', 'draw', 'illustrate', 'plan']);
     expect(DEFAULT_EDITOR_MODE).toBe('diagram');
   });
 
@@ -79,7 +80,7 @@ describe('hasBoardLook', () => {
 describe('the editor mode catalogue', () => {
   it('lists every mode once, in order, with the words the interface shows', () => {
     expect(EDITOR_MODE_CATALOGUE.map((m) => m.id)).toEqual(EDITOR_MODES);
-    expect(EDITOR_MODES.map(editorModeLabel)).toEqual(['Diagram', 'Draw', 'Illustrate']);
+    expect(EDITOR_MODES.map(editorModeLabel)).toEqual(['Diagram', 'Draw', 'Illustrate', 'Plan']);
     for (const m of EDITOR_MODE_CATALOGUE) expect(m.description.length).toBeGreaterThan(0);
   });
 });
@@ -111,11 +112,13 @@ describe('nextEditorMode', () => {
   it('moves forward through the catalogue, wrapping at the end', () => {
     expect(nextEditorMode('diagram')).toBe('draw');
     expect(nextEditorMode('draw')).toBe('illustrate');
-    expect(nextEditorMode('illustrate')).toBe('diagram');
+    expect(nextEditorMode('illustrate')).toBe('plan');
+    expect(nextEditorMode('plan')).toBe('diagram');
   });
 
   it('moves backward with a negative step, wrapping at the start', () => {
-    expect(nextEditorMode('diagram', -1)).toBe('illustrate');
+    expect(nextEditorMode('diagram', -1)).toBe('plan');
+    expect(nextEditorMode('plan', -1)).toBe('illustrate');
     expect(nextEditorMode('illustrate', -1)).toBe('draw');
     expect(nextEditorMode('draw', -1)).toBe('diagram');
   });
@@ -132,5 +135,7 @@ describe('nextEditorMode', () => {
 describe('hasPageLook', () => {
   it('draws the page in Illustrate mode only', () => {
     expect(EDITOR_MODES.filter(hasPageLook)).toEqual(['illustrate']);
+    // Plan mode (docs/specs/025-plan/plan-mode.md) takes input the Plan way; nothing else does.
+    expect(EDITOR_MODES.filter(hasPlanInput)).toEqual(['plan']);
   });
 });

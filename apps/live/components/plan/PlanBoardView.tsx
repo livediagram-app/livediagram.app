@@ -26,7 +26,8 @@ import { PlanBoardHeader } from './PlanBoardHeader';
 import { PlanCardFace, myVotes } from './PlanCardFace';
 import { PlanQuickAdd } from './PlanQuickAdd';
 import { planBoardKey } from './plan-board-keys';
-import { initialsOf, planPalette, type PlanPalette } from './plan-palette';
+import { planPalette, type PlanPalette } from './plan-palette';
+import { PersonDisc } from './PersonDisc';
 
 // Each column is at least this wide (blueprint DEFAULTS D7); a narrower board scrolls sideways.
 export const PLAN_COLUMN_MIN_PX = 220;
@@ -454,15 +455,7 @@ function LaneRow({
         onClick={onToggle}
       >
         <span aria-hidden>{shut ? '▸' : '▾'}</span>
-        {lane.person ? (
-          <span
-            className="flex h-5 w-5 items-center justify-center rounded-full text-[9px] font-bold text-white"
-            style={{ backgroundColor: lane.person.color }}
-            aria-hidden
-          >
-            {initialsOf(lane.person.name)}
-          </span>
-        ) : null}
+        {lane.person ? <PersonDisc person={lane.person} /> : null}
         <span style={{ color: palette.text }}>{lane.label}</span>
       </button>
       {children}

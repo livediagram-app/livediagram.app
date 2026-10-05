@@ -7751,6 +7751,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       'Drive',
       'Explorer',
       'Agent',
+      'Plan',
     ],
     type: 'string',
   },

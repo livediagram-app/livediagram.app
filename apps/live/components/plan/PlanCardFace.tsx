@@ -17,7 +17,8 @@ import {
   type Item,
 } from '@livediagram/items';
 import type { PlanCardPresence } from './PlanContext';
-import { initialsOf, PRIORITY_COLOURS, type PlanPalette } from './plan-palette';
+import { PRIORITY_COLOURS, type PlanPalette } from './plan-palette';
+import { PersonDisc, PresenceTag } from './PersonDisc';
 import { PlanTypeGlyph } from './plan-type-glyph';
 
 export type PlanCardFaceProps = {
@@ -117,14 +118,7 @@ export function PlanCardFace({
         style={{ backgroundColor: type.color }}
         aria-hidden
       />
-      {presence ? (
-        <span
-          className="absolute -top-px right-2 rounded-b px-1.5 text-[10px] font-semibold text-white"
-          style={{ backgroundColor: presence.color }}
-        >
-          {presence.name.split(/\s+/)[0]}
-        </span>
-      ) : null}
+      {presence ? <PresenceTag name={presence.name} color={presence.color} /> : null}
       {show('key') || show('type') ? (
         <div
           className="flex items-center gap-1.5 text-[11px] font-medium"
@@ -187,12 +181,8 @@ export function PlanCardFace({
             <span>▲ {votes}</span>
           ) : null}
           {show('assignee') && assignee ? (
-            <span
-              className="ml-auto flex h-5 w-5 items-center justify-center rounded-full text-[9px] font-bold text-white"
-              style={{ backgroundColor: assignee.color }}
-              aria-label={`Assigned to ${assignee.name}`}
-            >
-              {initialsOf(assignee.name)}
+            <span className="ml-auto">
+              <PersonDisc person={assignee} label={`Assigned to ${assignee.name}`} />
             </span>
           ) : null}
         </div>
