@@ -14,6 +14,11 @@ import {
 } from '@/lib/user-preferences';
 import { isPowerUserMode, setPowerUserMode } from '@/lib/power-user-mode';
 import {
+  readElementIndicatorStyle,
+  withElementIndicatorStyle,
+  type ElementIndicatorStyle,
+} from '@/lib/element-indicator-style';
+import {
   UI_SCALE_MAX,
   UI_SCALE_MIN,
   UI_SCALE_STEP,
@@ -338,6 +343,24 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         read: (p) => p.quickAddOnHover === true,
         write: (p, v) => ({ ...p, quickAddOnHover: v }),
         event: { category: 'UI', on: 'QuickAddHoverOn', off: 'QuickAddHoverOff' },
+      },
+      {
+        // docs/specs/008-canvas/element-indicators.md: how an element shows its link, note,
+        // action and comments.
+        kind: 'choice',
+        key: 'elementIndicatorStyle',
+        keywords:
+          'badges icons note action comment link markers indicators corner footer metadata chip',
+        label: 'Element Indicators',
+        description:
+          'How an element shows that it has a link, a note, an action or comments. Corner puts quiet icons inside its top-right corner; Footer puts a labelled row along its bottom edge. On an element too small for either, they sit in a small chip on its edge.',
+        options: [
+          { id: 'corner', label: 'Corner' },
+          { id: 'footer', label: 'Footer' },
+        ],
+        read: readElementIndicatorStyle,
+        write: (p, v) => withElementIndicatorStyle(p, v as ElementIndicatorStyle),
+        event: { category: 'UI', changed: 'ElementIndicators' },
       },
       {
         kind: 'toggle',

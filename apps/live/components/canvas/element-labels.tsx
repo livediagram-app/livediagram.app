@@ -59,6 +59,9 @@ export function renderLabel(
   // its own padding, no placeholder (the caret is the whole box), its size preset drawn at a
   // fixed px rather than fitted, and the editor's live text reported so the box grows with it.
   hug?: TextHugLabel,
+  // How far a scale-to-fit label pulls in from its top and bottom to clear the element's
+  // indicators (docs/specs/008-canvas/element-indicators.md); fixed sizes ignore it.
+  reserveY = 0,
 ) {
   const isSticky = element.type === 'sticky';
   // A Shift-resized whiteboard text box draws its text scaled (docs/specs/023-draw-mode/draw-mode.md).
@@ -191,6 +194,7 @@ export function renderLabel(
         alignX={alignX}
         alignY={alignY}
         padding={padding}
+        reserveY={reserveY}
         style={textStyle}
         // The gradient relies on background-clip:text, which can't paint an SVG
         // <text> fill — withhold it here so the glyphs don't vanish; glow /

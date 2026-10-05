@@ -104,7 +104,7 @@ Derived from [Canvas performance](../canvas-performance.md). The measurements it
   - `chairSitters`: a `useCallback` over the sitters map in `Canvas`.
 - `zoom` leaves `BoxedElementView`'s props. `CanvasZoomProvider` (in `Canvas`, around the element
   layer) carries it; every child that sizes by zoom reads `useCanvasZoom()`: `LaneGutter`, `ShapeHitOutline`,
-  `RemoteSelectorsStrip`, `BadgeStrip`, `LockBadge`, `ElementVoteOverlay`, `SelectionChromeLayer`,
+  `RemoteSelectorsStrip`, `ElementIndicators`, `LockBadge`, `ElementVoteOverlay`, `SelectionChromeLayer`,
   `PhotoDraftRing` and `PhotoMatchedBadge` (`photo-badges.tsx`), `RichTextEditor` (mounted only
   while editing), `HeroCaptionCard`, `TableView`, `PageMasthead` and the web faces. A stroke's
   hit band is `StrokeHitPath`: `FreehandSvg` and `PathSvg` take `hitPenWidth` and only that

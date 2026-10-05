@@ -841,7 +841,7 @@ Every boxed element can carry a **comment thread**. Stored as `commentThread?: {
 Two entry points open the same `CommentThreadPopover`:
 
 - **Selection popover → Comment button** (speech-bubble icon). Available whenever a single element is selected.
-- **Comment badge** on the element itself. Shown only when the thread has unresolved comments (resolved threads hide the badge). The badge sits inside the **BadgeStrip** at the element's top-right: one connected chip that also hosts a mind map root's outline and tidy badges, the link, note and action badges. The chip is a light surface (white, slate-800 in dark) with a hairline ring and a soft shadow, each segment a quiet slate icon that takes the element's accent colour on hover, the comment segment carrying its count as text beside the icon. It suits the element: a fully round chip on a rounded element, a softly squared one (6px corners) on an element with sharp or small corners. It sits on the element's own outline, not its bounding box: centred on the point where a 45° line from the box's top-right corner meets the outline, half in and half out, so the edge runs through its middle on a sharp box (its corner), a rounded box, a circle, a stadium or a diamond alike, instead of floating beside the shape or cutting across its curve (`badgeCornerInset`). Badges scale WITH the canvas zoom (canvas units, no counter-scaling) so they never dwarf a zoomed-out element, and below 40% zoom the on-element adornments (badge pill, lock badge, remote-selector avatars) hide entirely; resize handles keep their constant screen size.
+- **Comment indicator** on the element itself. Shown only when the thread has unresolved comments (resolved threads hide it): a comment glyph with the count beside it, among the element's other indicators (link, note, action), drawn in the style the person picked, inside the element's top-right corner by default or in a footer row. Where they sit on every shape, the fallback pip for elements too small to hold them, and the zoom rules are in [Element indicators](element-indicators.md).
 
 The popover is portal-rendered (it escapes the canvas transform), anchored to the right edge of the element, and flips to the left edge if it would overflow the viewport. It closes on outside click and on Escape.
 
@@ -1277,9 +1277,9 @@ The Link button is brand-tinted when the selected element has a link.
 
 ### Visual indicator
 
-A linked boxed element shows a small brand-coloured **link badge** in its top-right corner with a chain icon. The badge:
+A linked boxed element shows a chain glyph among its [element indicators](element-indicators.md) (inside its top-right corner by default). The glyph:
 
-- Is counter-scaled with `1/zoom` so it stays the same on-screen size at any zoom.
+- Scales with the canvas zoom and hides below 40% zoom, like every indicator.
 - **On click**, follows the link: a tab/element link switches tab (`setActiveId`, clearing selection + edit/mode state), a document link opens that document, a url link opens the address in a new tab.
 - Stops propagation so it doesn't trigger element select / drag.
 

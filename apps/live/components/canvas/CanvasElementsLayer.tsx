@@ -63,7 +63,6 @@ type ElementsExtras = {
   hasArrows: boolean;
   // Every arrow label laid out once per element change (Canvas owns the pass).
   arrowLabels: ArrowLabels;
-  badgeColor: string;
   // What the selection chrome derives the selection from (it reads the selection from the store).
   selectionInput: CanvasSelectionInput;
   isPaintMode: boolean;
@@ -86,7 +85,6 @@ type CanvasElementsLayerProps = CanvasProps & ElementsExtras;
 // viewport-transformed wrapper.
 export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
   const {
-    badgeColor,
     editCursorAtEnd,
     editingId,
     elements,
@@ -564,7 +562,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
               isEditing={element.id === editingId}
               editCursorAtEnd={element.id === editingId && editCursorAtEnd === true}
               isPaintMode={isPaintMode}
-              badgeColor={badgeColor}
               tabLocked={tabLocked}
               tabSummaries={tabSummaries}
               readOnly={readOnly}

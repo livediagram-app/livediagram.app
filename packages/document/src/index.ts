@@ -571,6 +571,7 @@ export * from './anchor-layouts';
 export * from './shape-outline';
 export * from './svg-path-outline';
 export * from './shape-hit';
+export * from './indicator-placement';
 export * from './anchor-choice';
 export * from './geometry';
 export * from './arrow-path-hits';

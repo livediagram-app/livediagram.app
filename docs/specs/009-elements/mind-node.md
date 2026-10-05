@@ -309,11 +309,11 @@ the map in one go. Restructuring a map by dragging node by node is slow; reading
 as a list is how people already think about an outline.
 
 **Where.** A map's **root** (the node `mindRootOf` names, so a node whose parent was deleted
-counts as a root too) with at least one child carries an **Edit Outline** badge at its top-right,
-always shown (not only when selected), in the same chip as its link, note, action and comment
-badges: the first segment, left of the others, so a map announces it can be edited as a list. One click opens
-the dialog. **Edit Outline** is also in a root's Mind Map menu section, under Tidy Map (the way
-in for a root with no children yet). Beside the Edit Outline badge, a **Tidy Map** badge lays the map out tidily again, exactly as the Mind Map
+counts as a root too) with at least one child carries an **Edit Outline** command among its
+[element indicators](../008-canvas/element-indicators.md), shown while the root is hovered or
+selected (a command, not status, so hidden at rest): leading its link, note, action and comment
+indicators. One click opens the dialog. **Edit Outline** is also in a root's Mind Map menu section, under Tidy Map (the way
+in for a root with no children yet). Beside Edit Outline, a **Tidy Map** command lays the map out tidily again, exactly as the Mind Map
 menu's Tidy Map does (one undo step, `Element` · `Changed` · `MindTidy`). Not on other nodes: the
 outline is the whole map, and the root is where a map begins. Not for a viewer, a locked node or a
 node on a hidden or locked layer.
