@@ -13,6 +13,7 @@ export type FakeIo = CliIo & {
   err: () => string;
   fileMap: Map<string, { data: string; mode: number }>;
   requests: Request[];
+  slept: number[];
 };
 
 export const NOW = Date.UTC(2026, 9, 5, 8, 0, 0);
@@ -32,13 +33,19 @@ export function fakeIo(
     Object.entries(options.files ?? {}).map(([k, v]) => [k, { data: v, mode: 0o600 }]),
   );
   const requests: Request[] = [];
+  const slept: number[] = [];
+  let clock = NOW;
   return {
     env: options.env ?? {},
     stdout: (text) => void (out += text),
     stderr: (text) => void (err += text),
     readStdin: async () => options.stdin ?? '',
     stdinIsTTY: options.stdinIsTTY ?? false,
-    now: () => NOW,
+    now: () => clock,
+    sleep: async (ms) => {
+      slept.push(ms);
+      clock += ms;
+    },
     homedir: '/home/agent',
     cwd: '/work',
     runtime: 'node/24.0.0 linux',
@@ -66,6 +73,7 @@ export function fakeIo(
     err: () => err,
     fileMap,
     requests,
+    slept,
   };
 }
 

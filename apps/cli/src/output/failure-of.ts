@@ -1,7 +1,7 @@
 // Any thrown thing as the failure the CLI reports (docs/specs/015-api/cli.md "Exit codes", blueprint CLI14-16):
 // its exit code, a stable code, one line, candidates and a runnable fix. Never a stack trace.
 
-import { AddressError } from '@livediagram/agent-verbs';
+import { AddressError, VerbRefusal } from '@livediagram/agent-verbs';
 import { ApiError } from '@livediagram/api-client';
 import { CliError, type CliFailure } from './cli-error';
 import { EXIT, exitCodeForStatus } from './exit-codes';
@@ -66,6 +66,14 @@ function apiFailure(err: ApiError, host: string): CliFailure {
 export function failureOf(err: unknown, host: string): CliFailure {
   if (err instanceof CliError) return err.failure;
   if (err instanceof AddressError) return addressFailure(err);
+  if (err instanceof VerbRefusal)
+    return {
+      exit: exitCodeForStatus(err.status),
+      code: err.code,
+      message: err.message,
+      lines: err.lines,
+      hint: err.hint,
+    };
   if (err instanceof ApiError) return apiFailure(err, host);
   if (err instanceof Error && ['TypeError', 'TimeoutError', 'AbortError'].includes(err.name))
     return {

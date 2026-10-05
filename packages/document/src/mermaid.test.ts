@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parseMermaid, mermaidFromTab } from './mermaid';
+import { parseMermaid, mermaidFromTab, startsWithMermaidHeader } from './mermaid';
 import { graphToElements } from './graph-authoring';
 import { autoLayoutElements } from './auto-layout';
 import { layoutClusteredGraph } from './auto-layout-clusters';
@@ -594,5 +594,20 @@ describe('mermaidFromTab fallbacks and line forms', () => {
       ],
     });
     expect(text.split('\n').slice(3, -1)).toEqual(['  n1 -.- n2', '  n1 === n2', '  n1 o--o n2']);
+  });
+});
+
+describe('startsWithMermaidHeader', () => {
+  it('reads the first meaningful line as a header the importer accepts', () => {
+    expect(startsWithMermaidHeader('%% comment\n\nflowchart LR\n  a --> b')).toBe(true);
+    expect(startsWithMermaidHeader('graph TD\na-->b')).toBe(true);
+    expect(startsWithMermaidHeader('stateDiagram-v2\n[*] --> A')).toBe(true);
+    expect(startsWithMermaidHeader('erDiagram\nA ||--o{ B : has')).toBe(true);
+  });
+
+  it('is false for edit operations, an unsupported dialect and nothing at all', () => {
+    expect(startsWithMermaidHeader('add square id=web label=Web\nconnect web -> api')).toBe(false);
+    expect(startsWithMermaidHeader('sequenceDiagram\nA->>B: hi')).toBe(false);
+    expect(startsWithMermaidHeader('\n  \n')).toBe(false);
   });
 });

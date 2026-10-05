@@ -75,7 +75,8 @@ export async function revertChangeset(args: RevertArgs): Promise<SubmitResult> {
       rebasedOver: 0,
       prevRev,
       results: [],
-      textFor: (written) => [...formatResultLines([]), writtenFooter(written, lint)].join('\n'),
+      textFor: (written) =>
+        [...formatResultLines([]), writtenFooter(written, document.id, lint)].join('\n'),
       revertOf: record.id,
     });
     if (outcome.kind === 'stale') {

@@ -20,6 +20,7 @@ export type CliIo = {
   stdinIsTTY: boolean;
   fetch: (request: Request) => Promise<Response>;
   now: () => number;
+  sleep: (ms: number) => Promise<void>;
   files: CliFiles;
   homedir: string;
   cwd: string;

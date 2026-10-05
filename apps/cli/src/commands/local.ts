@@ -12,6 +12,7 @@ import type { ApiClient } from '@livediagram/api-client';
 import { isApiTokenFormat, type CurrentTokenResponse } from '@livediagram/api-schema';
 import { forgetCredential, storeCredential, storedCredential } from '../auth/credentials';
 import type { Profile } from '../config/profiles';
+import { inputReader } from '../input';
 import type { CliIo } from '../io';
 import { CliError } from '../output/cli-error';
 import { EXIT } from '../output/exit-codes';
@@ -76,13 +77,7 @@ export async function callApi(
       'the CLI never saves a whole tab; change a tab with a changeset',
       'livediagram guide edit',
     );
-  const body =
-    input.body === undefined
-      ? undefined
-      : input.body === '-'
-        ? await io.readStdin()
-        : await io.files.read(input.body);
-  if (input.body !== undefined && body === null) throw usage(`no file ${input.body}`);
+  const body = input.body === undefined ? undefined : await inputReader(io)(input.body);
   const res = await api.fetch(path, { method, ...(body ? { body } : {}) });
   return { text: await res.text(), status: res.status };
 }

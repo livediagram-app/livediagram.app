@@ -123,7 +123,7 @@ export async function submitChangeset(args: SubmitArgs): Promise<SubmitResult> {
       rebasedOver: base.rebasedOver,
       prevRev,
       results: compiled.results,
-      textFor: (written) => [...lines, writtenFooter(written, lint)].join('\n'),
+      textFor: (written) => [...lines, writtenFooter(written, document.id, lint)].join('\n'),
       revertOf: null,
     });
     if (outcome.kind === 'stale') {
@@ -174,13 +174,18 @@ export async function submitChangeset(args: SubmitArgs): Promise<SubmitResult> {
   return refusal(409, 'tab_busy', 'the tab kept changing; read it again and resubmit');
 }
 
-export function writtenFooter(written: ChangesetWritten, lint: LintReport | null): string {
+export function writtenFooter(
+  written: ChangesetWritten,
+  documentId: string,
+  lint: LintReport | null,
+): string {
   return formatResultFooter({
     dryRun: false,
     previousRev: written.previousRev,
     rev: written.rev,
     rebasedOver: written.rebasedOver,
     changesetId: written.id,
+    documentId,
     lint: lintFooterPart(lint),
   });
 }

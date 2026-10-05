@@ -20,6 +20,7 @@ export function nodeIo(): CliIo {
     stdinIsTTY: Boolean(process.stdin.isTTY),
     fetch: (request) => fetch(request),
     now: () => Date.now(),
+    sleep: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
     homedir: homedir(),
     cwd: process.cwd(),
     runtime: `node/${process.versions.node} ${process.platform}`,

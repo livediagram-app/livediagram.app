@@ -4,6 +4,7 @@
 
 import type { z } from 'zod';
 import type { ApiClient } from '@livediagram/api-client';
+import type { ReadCopies } from './copies';
 
 export type VerbBehaviour = 'read' | 'write' | 'destructive';
 
@@ -15,7 +16,38 @@ export type VerbContext = {
   useShareCode: (code: string) => void;
   // A debug line; the CLI prints it under LIVEDIAGRAM_DEBUG=1.
   log: (line: string) => void;
+  // A line for the person or agent running the command, beside the output (stderr in the CLI).
+  notice: (line: string) => void;
+  now: () => number;
+  sleep: (ms: number) => Promise<void>;
+  // A file's text, or stdin's for `-`.
+  readInput: (path: string) => Promise<string>;
+  // The read copies; null where the front door keeps none.
+  copies: ReadCopies | null;
 };
+
+// A refusal a verb words itself, with the context the api lacks (which tab, what to run next). The front door
+// maps `status` to its exit as it maps the api's.
+export class VerbRefusal extends Error {
+  readonly status: number;
+  readonly code: string;
+  readonly lines: string[];
+  readonly hint: string;
+  constructor(refusal: {
+    status: number;
+    code: string;
+    message: string;
+    lines?: string[];
+    hint: string;
+  }) {
+    super(refusal.message);
+    this.name = 'VerbRefusal';
+    this.status = refusal.status;
+    this.code = refusal.code;
+    this.lines = refusal.lines ?? [];
+    this.hint = refusal.hint;
+  }
+}
 
 export type CliProjection = {
   // Input keys in order; a trailing `...name` takes the rest of the words.

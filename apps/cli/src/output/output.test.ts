@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { AddressError, verbById } from '@livediagram/agent-verbs';
+import { AddressError, verbById, VerbRefusal } from '@livediagram/agent-verbs';
 import { ApiError } from '@livediagram/api-client';
 import { CliError, formatError } from './cli-error';
 import { EXIT, exitCodeForStatus } from './exit-codes';
@@ -209,5 +209,24 @@ describe('render', () => {
     );
     expect(render(view, { json: 3 }, { json: true, fields: ['x'], quiet: false })).toBe('3\n');
     expect(render(view, { text: 'a\n' }, { json: false, quiet: false })).toBe('a\n');
+  });
+});
+
+describe("a verb's own refusal", () => {
+  it('exits by its status with its lines and hint', () => {
+    const refusal = new VerbRefusal({
+      status: 412,
+      code: 'stale_tab',
+      message: '"Main" changed',
+      lines: [],
+      hint: 're-read',
+    });
+    expect(failureOf(refusal, HOST)).toEqual({
+      exit: EXIT.conflict,
+      code: 'stale_tab',
+      message: '"Main" changed',
+      lines: [],
+      hint: 're-read',
+    });
   });
 });

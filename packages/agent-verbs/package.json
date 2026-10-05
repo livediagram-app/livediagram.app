@@ -20,6 +20,8 @@
     "@livediagram/api-client": "workspace:*",
     "@livediagram/api-schema": "workspace:*",
     "@livediagram/diagram-lint": "workspace:*",
+    "@livediagram/document": "workspace:*",
+    "@livediagram/document-views": "workspace:*",
     "zod": "^4.6.5"
   },
   "devDependencies": {

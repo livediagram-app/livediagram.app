@@ -209,3 +209,45 @@ describe('flag problems', () => {
     });
   });
 });
+
+describe('rest positionals and short flags', () => {
+  it('collect the remaining words, read -f, and route the edit alias', () => {
+    expect(
+      parseVerbArgs(verb('element.set'), [
+        'Auth flow',
+        'n3',
+        'label=Sign in',
+        '--tab',
+        'Main',
+        '--dry-run',
+      ]),
+    ).toEqual({
+      doc: 'Auth flow',
+      tab: 'Main',
+      words: ['n3', 'label=Sign in'],
+      dryRun: true,
+    });
+    expect(parseVerbArgs(verb('element.move'), ['d', 'n3', '--', '-20,0'])).toMatchObject({
+      words: ['n3', '-20,0'],
+    });
+    expect(parseVerbArgs(verb('changeset.apply'), ['d', '-f', '-'])).toMatchObject({ file: '-' });
+    expect(route(['edit', 'd', '-f', 'x'])).toMatchObject({
+      kind: 'verb',
+      verb: { id: 'changeset.apply' },
+      rest: ['d', '-f', 'x'],
+    });
+  });
+
+  it('name a missing rest, a short flag without its value, and the alias as a suggestion', () => {
+    expect(failureOf(() => parseVerbArgs(verb('element.rm'), ['d']))).toMatchObject({
+      message: 'missing <words…>',
+    });
+    expect(failureOf(() => parseVerbArgs(verb('changeset.apply'), ['d', '-f']))).toMatchObject({
+      message: '--file needs a value',
+    });
+    expect(failureOf(() => parseVerbArgs(verb('changeset.apply'), ['d']))).toMatchObject({
+      message: 'missing --file',
+    });
+    expect(failureOf(() => route(['edt']))).toMatchObject({ lines: ['did you mean: edit'] });
+  });
+});

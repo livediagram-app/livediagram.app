@@ -2,6 +2,7 @@
 // a resource and a verb, or a top-level verb; aliases resolved; unknown words refused with a suggestion.
 
 import {
+  COMMAND_ALIASES,
   RESOURCE_ALIASES,
   RESOURCES,
   TOP_LEVEL,
@@ -25,9 +26,15 @@ export function route(words: readonly string[]): Routed {
   if (first === undefined) return { kind: 'top' };
   const top = TOP_LEVEL.find((t) => t === first);
   if (top) return { kind: 'verb', verb: verbById(top)!, rest: words.slice(1) };
+  const aliased = COMMAND_ALIASES[first];
+  if (aliased) return { kind: 'verb', verb: verbById(aliased)!, rest: words.slice(1) };
   const resource = RESOURCE_ALIASES[first] ?? first;
   if (!RESOURCE_NAMES.includes(resource)) {
-    const near = didYouMean(first, [...RESOURCE_NAMES, ...TOP_LEVEL]);
+    const near = didYouMean(first, [
+      ...RESOURCE_NAMES,
+      ...TOP_LEVEL,
+      ...Object.keys(COMMAND_ALIASES),
+    ]);
     throw new CliError({
       exit: EXIT.usage,
       code: 'usage',
