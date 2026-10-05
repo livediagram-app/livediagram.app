@@ -40,6 +40,19 @@ export async function getTab(env: Env, documentId: string, tabId: string): Promi
   return row ? rowToTab(row) : null;
 }
 
+// The document's tabs that hold a comment thread, in tab order (agent-presence PR21): the thread listing reads them
+// one at a time rather than every body at once.
+export async function tabIdsWithComments(env: Env, documentId: string): Promise<string[]> {
+  const { results } = await env.DB.prepare(
+    `SELECT dt.tab_id FROM document_tabs dt JOIN tabs t ON t.id = dt.tab_id
+      WHERE dt.document_id = ? AND instr(t.data, '"commentThread"') > 0
+      ORDER BY dt.order_index, dt.tab_id`,
+  )
+    .bind(documentId)
+    .all<{ tab_id: string }>();
+  return results.map((r) => r.tab_id);
+}
+
 // A page of a document's tabs in order, bodies included: `overview` reads a document this way so it
 // never holds more than `limit` bodies at once (docs/specs/024-agents/blueprints/document-views.md, VW47).
 export async function tabBodiesInOrder(

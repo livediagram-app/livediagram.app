@@ -65,6 +65,17 @@ function threadLines(thread: Thread): ViewLine[] {
   ];
 }
 
+// The elements holding a comment thread, in the outline's order, with their ref and label: what the comments view
+// lists, for a reader that needs the element ids too (the api's thread listing, agent-presence blueprint).
+export function commentHosts(
+  model: ViewModel,
+): { el: Element; ref: string; label: string | null }[] {
+  return depthFirst(model.tree.roots)
+    .map((n) => n.el)
+    .filter((el) => threadOf(el) !== null)
+    .map((el) => ({ el, ref: model.refs.refOf(el.id), label: textField(el, 'label') }));
+}
+
 export function commentsView(
   model: ViewModel,
   options: CommentsOptions = {},

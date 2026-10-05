@@ -111,8 +111,8 @@ describe('the view-role comment', () => {
         elements: [shape('a'), shape('b', { commentThread: { comments: [comment('c1')] } })],
       }),
     );
-    expect((await post('a')).status).toBe(200);
-    expect((await post('b')).status).toBe(200);
+    expect((await post('a')).status).toBe(201);
+    expect((await post('b')).status).toBe(201);
     const replies = snapshots('comment_added').map((s) => s.reply);
     expect(replies.sort()).toEqual([false, true]);
   });

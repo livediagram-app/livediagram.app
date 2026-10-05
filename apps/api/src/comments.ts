@@ -1,9 +1,13 @@
+import type { CommentListStatus, DocumentCommentThread } from '@livediagram/api-schema';
 import {
   sanitizeMentions,
   type Comment,
   type CommentMention,
+  type CommentThread,
   type Element,
+  type Tab,
 } from '@livediagram/document';
+import { buildViewModel, commentHosts } from '@livediagram/document-views';
 import type { ParticipantDTO } from './types';
 
 // Rewrite newly-added comments so the author fields come from the
@@ -36,7 +40,13 @@ export function rewriteCommentAuthors(
   // impossible by construction (uuids) so flat indexing is safe.
   const existingComments = new Map<
     string,
-    { authorName: string; authorColor: string; authorId?: string; mentions?: CommentMention[] }
+    {
+      authorName: string;
+      authorColor: string;
+      authorId?: string;
+      tokenId?: string;
+      mentions?: CommentMention[];
+    }
   >();
   for (const el of prevElements) {
     const thread = (el as { commentThread?: { comments?: Comment[] } }).commentThread;
@@ -46,6 +56,7 @@ export function rewriteCommentAuthors(
         authorName: c.authorName,
         authorColor: c.authorColor,
         authorId: c.authorId,
+        tokenId: c.tokenId,
         mentions: c.mentions,
       });
     }
@@ -69,19 +80,22 @@ export function rewriteCommentAuthors(
         // Mentions (docs/specs/012-collaboration/comment-mentions.md) lock the same way: nobody retargets
         // someone else's mention after it was sent.
         const claimed = prior.authorId === undefined && c.authorId === writer.id;
-        const { mentions: _sent, ...body } = c;
+        // The token id locks the same way (agent-presence I7): only the server stamps it.
+        const { mentions: _sent, tokenId: _token, ...body } = c;
         return {
           ...body,
           authorName: prior.authorName,
           authorColor: prior.authorColor,
           authorId: claimed ? writer.id : prior.authorId,
+          ...(prior.tokenId ? { tokenId: prior.tokenId } : {}),
           ...(prior.mentions ? { mentions: prior.mentions } : {}),
         };
       }
       // Somebody else's comment, arriving in this writer's save before
       // their own: credited as the room saw it posted.
       // A new comment's mentions arrive from a client: cleaned, never trusted.
-      const { mentions: raw, ...fresh } = c;
+      // A token id a client sends on a new comment is dropped: only the comment routes stamp one.
+      const { mentions: raw, tokenId: _sentToken, ...fresh } = c;
       const mentions = sanitizeMentions(raw);
       const withMentions = mentions ? { mentions } : {};
       const posted = roomAuthors.get(c.id);
@@ -159,7 +173,7 @@ export function redactCommentAuthorIds(elements: Element[], viewerId: string | n
     const thread = (el as { commentThread?: { comments?: Comment[] } }).commentThread;
     if (!thread?.comments?.length) return el;
     const comments = thread.comments.map((c) =>
-      c.authorId && c.authorId === viewerId ? c : { ...c, authorId: undefined },
+      c.authorId && c.authorId === viewerId ? c : { ...c, authorId: undefined, tokenId: undefined },
     );
     return { ...el, commentThread: { ...thread, comments } } as Element;
   });
@@ -182,4 +196,41 @@ export function hasNewComments(nextElements: Element[], prevElements: Element[])
     }
   }
   return false;
+}
+
+// One tab's threads as the document listing serves them (agent-presence blueprint "REST"): in the outline's order,
+// with each element's ref and label, author ids redacted for everyone but their author, and threads filtered by
+// status. A thread on a hidden layer is left out, as the views leave its element out.
+export function threadsOfTab(
+  tab: Tab & { name: string },
+  status: CommentListStatus,
+  viewerId: string | null,
+): DocumentCommentThread[] {
+  const elements = redactCommentAuthorIds(tab.elements, viewerId);
+  const byId = new Map(elements.map((el) => [el.id, el]));
+  return commentHosts(buildViewModel({ ...tab, elements })).flatMap(({ el, ref, label }) => {
+    const thread = (byId.get(el.id) as { commentThread?: CommentThread }).commentThread!;
+    if (thread.comments.length === 0) return [];
+    if (status !== 'all' && thread.resolved !== (status === 'resolved')) return [];
+    return [
+      {
+        tabId: tab.id,
+        tabName: tab.name,
+        elementId: el.id,
+        ref,
+        label,
+        resolved: thread.resolved,
+        comments: thread.comments.map((c) => ({
+          id: c.id,
+          text: c.text,
+          createdAt: c.createdAt,
+          authorName: c.authorName,
+          authorColor: c.authorColor,
+          ...(c.mentions ? { mentions: c.mentions } : {}),
+          ...(c.authorId ? { authorId: c.authorId } : {}),
+          ...(c.tokenId ? { tokenId: c.tokenId } : {}),
+        })),
+      },
+    ];
+  });
 }

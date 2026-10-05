@@ -179,3 +179,33 @@ describe('opForTheWire on a changeset (docs/specs/024-agents/agent-changesets.md
     expect(wire.elementOps[2]).toBe(op.elementOps[2]);
   });
 });
+
+describe('opForTheWire and a comment token', () => {
+  it('strips the token id with the author id, even on a comment that has only a token id', () => {
+    const tokenOnly = {
+      id: 'c2',
+      text: 'x',
+      createdAt: 1,
+      authorName: 'A',
+      authorColor: '#000',
+      tokenId: 'tok_1',
+    };
+    const both = { ...tokenOnly, id: 'c3', authorId: 'user_a' };
+    const op = {
+      kind: 'changeset',
+      tabId: 't1',
+      elementOps: [
+        {
+          kind: 'add',
+          element: shape('a', { resolved: false, comments: [tokenOnly, both] }),
+          index: 0,
+        },
+      ],
+    };
+    const wire = opForTheWire(op) as { elementOps: { element: ShapeElement }[] };
+    for (const c of wire.elementOps[0]!.element.commentThread!.comments) {
+      expect(c).not.toHaveProperty('tokenId');
+      expect(c).not.toHaveProperty('authorId');
+    }
+  });
+});
