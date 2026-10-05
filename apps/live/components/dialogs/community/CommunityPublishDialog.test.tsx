@@ -101,7 +101,7 @@ describe('CommunityPublishDialog anonymous', () => {
   const toggle = () => screen.getByRole('switch', { name: /Share Anonymously/ });
 
   it('shares anonymously unless the author turns it off', async () => {
-    const onPublish = vi.fn(async () => ({ id: 'p1' }) as never);
+    const onPublish = vi.fn(async (_input: unknown) => ({ id: 'p1' }) as never);
     open(onPublish);
     fill();
     expect(toggle().getAttribute('aria-checked')).toBe('true');
@@ -111,7 +111,7 @@ describe('CommunityPublishDialog anonymous', () => {
   });
 
   it('sends anonymous false once switched off', async () => {
-    const onPublish = vi.fn(async () => ({ id: 'p1' }) as never);
+    const onPublish = vi.fn(async (_input: unknown) => ({ id: 'p1' }) as never);
     open(onPublish);
     fill();
     fireEvent.click(toggle());

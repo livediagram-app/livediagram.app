@@ -1,5 +1,6 @@
 'use client';
 
+import { CommentBadgesContext } from '@/components/canvas/CommentBadgesContext';
 import { EditorModeProvider } from '@/components/chrome/editor-mode/editor-mode-context';
 import { truncateName } from '@livediagram/document';
 import { track } from '@/lib/telemetry';
@@ -358,7 +359,10 @@ export function EditorView() {
                     <ChangesetRevealContext.Provider value={ctx.changesetReveals}>
                       {/* The focus rings of the agents present (docs/specs/024-agents/agent-presence.md). */}
                       <AgentFocusContext.Provider value={ctx.agentFocusByElement}>
-                        <EditorCanvasHost />
+                        {/* No comment badges for a viewer in an embed (docs/specs/013-workspace/embeds.md). */}
+                        <CommentBadgesContext.Provider value={!(embedMode && isReadOnly)}>
+                          <EditorCanvasHost />
+                        </CommentBadgesContext.Provider>
                       </AgentFocusContext.Provider>
                     </ChangesetRevealContext.Provider>
                   </AreaErrorBoundary>
