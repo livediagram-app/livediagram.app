@@ -45,3 +45,4 @@ export { HELD_RETRY_INTERVAL_MS, submitChangeset, WAIT_HELD_MAX_S, type WriteFla
 export { GUIDE_TOPIC_NAMES, GUIDE_TOPICS, isGuideTopic, type GuideTopic } from './guides';
 export { renderSkill, SKILL_DESCRIPTION, SKILL_DIRECTORIES, SKILL_NAME } from './skill';
 export { LIST_DEFAULT_LIMIT, LIST_MAX_LIMIT } from './verbs/shared';
+export { graphLint, graphOfSource } from './verbs/graph';

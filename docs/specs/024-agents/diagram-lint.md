@@ -1,6 +1,6 @@
 # Diagram lint
 
-**Status: built, except the CLI's `tab lint` and `graph lint`, which arrive with the [CLI](../015-api/cli.md).**
+**Status: built**, with the [CLI](../015-api/cli.md)'s `tab lint` and `graph lint` (`--compare`).
 `@livediagram/diagram-lint` checks a tab; the api serves `?view=lint`, every changeset, dry run and revert carries
 the verdict, and the MCP's write tools carry the summary line.
 

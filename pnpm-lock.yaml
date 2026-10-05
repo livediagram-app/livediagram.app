@@ -664,13 +664,13 @@ importers:
       '@livediagram/document-views':
         specifier: workspace:*
         version: link:../document-views
+      '@livediagram/edit-operations':
+        specifier: workspace:*
+        version: link:../edit-operations
       zod:
         specifier: ^4.6.5
         version: 4.6.5
     devDependencies:
-      '@livediagram/edit-operations':
-        specifier: workspace:*
-        version: link:../edit-operations
       '@livediagram/eslint-config':
         specifier: workspace:*
         version: link:../eslint-config
