@@ -5,6 +5,11 @@
 // engines to it and to the fake Google. Not a `.test.ts` file; tests import it.
 
 import {
+  documentToEnvelopeText,
+  type DocumentEnvelope,
+  type EnvelopeTab,
+} from '@livediagram/document';
+import {
   DRIVE_LEASE_MS,
   type DriveConnection,
   type DriveItem,
@@ -13,11 +18,6 @@ import {
 } from '@livediagram/api-schema';
 import { FakeGoogle, fakePngBase64Url } from '@livediagram/fake-google';
 import { ApiError } from '../api/core';
-import {
-  documentToEnvelopeText,
-  type DocumentEnvelope,
-  type EnvelopeTab,
-} from '../export-document-text';
 import { createDriveRestClient } from './drive-rest-client';
 import { DriveMirrorEngine, type DriveMirrorStatus, type Timers } from './engine';
 import {

@@ -1,6 +1,6 @@
+import { parseDocumentEnvelope } from '@livediagram/document';
 import { describe, expect, it } from 'vitest';
 import { DRIVE_FILE_MIME } from '@livediagram/api-schema';
-import { parseDocumentEnvelope } from '../export-document-text';
 import { DRIVE_WRITE_IDLE_MS, DRIVE_WRITE_MIN_INTERVAL_MS } from './cadence';
 import { fileOf, HOST, makeEngine, OWNER, world } from './test-support';
 import { DriveTokenError } from './token-source';

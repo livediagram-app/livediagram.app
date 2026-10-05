@@ -41,6 +41,8 @@ export const CLI_COMMANDS: readonly { type: string; command: string; what: strin
   { type: 'PresenceClear', command: 'presence clear', what: 'taking an agent off a tab' },
   { type: 'Wait', command: 'wait', what: 'waiting for a comment or a change' },
   { type: 'Watch', command: 'watch', what: 'streaming comments and changes' },
+  { type: 'Pull', command: 'pull', what: 'writing a document to a file' },
+  { type: 'Push', command: 'push', what: 'sending a pulled file’s changes back' },
   { type: 'TemplateLs', command: 'template ls', what: 'listing templates' },
   { type: 'TemplateView', command: 'template view', what: 'reading a template as an outline' },
   { type: 'IconSearch', command: 'icon search', what: 'finding an icon' },

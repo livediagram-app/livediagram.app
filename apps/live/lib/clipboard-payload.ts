@@ -13,7 +13,7 @@
 // that works from a keydown handler in every browser we support; the richer
 // `ClipboardItem` API is gated differently per browser and buys nothing here.
 //
-// The envelope mirrors the tab export's (`export-tab-text.ts`): a `kind`
+// The envelope mirrors the tab export's (`export-tab-text.ts` in `@livediagram/document`): a `kind`
 // discriminator so we never try to paste somebody else's JSON, and a numeric
 // `schemaVersion` so a future breaking change can be refused with a clear
 // message instead of pasting nonsense.

@@ -21,6 +21,8 @@ import {
   skillPrint,
   apiCall,
   telemetryOn,
+  pull,
+  push,
   waitFor,
   watch,
 } from './verbs/local';
@@ -162,6 +164,12 @@ describe('the verbs the CLI handles', () => {
       undefined,
       1,
     ]);
+    expect([push.text!(ended), push.json!(ended), push.exitCode!(ended)]).toEqual([
+      ended.lines,
+      { lines: ended.lines },
+      1,
+    ]);
+    expect([pull.text!({ paths: ['a'] }), pull.quiet!({ paths: ['a'] })]).toEqual([['a'], ['a']]);
     expect(
       authStatus.text!({
         host: 'https://h',

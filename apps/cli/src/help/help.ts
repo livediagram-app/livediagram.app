@@ -10,12 +10,16 @@ export const HELP_VERB_MAX_TOKENS = 400;
 
 const verbWord = (v: Verb) => v.id.slice(v.id.indexOf('.') + 1);
 
-// The rows the top level groups (blueprint "Help", final copy, CLI82): the room's two verbs share one line, and the
-// commands a first read needs least are only named, on one line.
-const STREAM_WORDS = ['wait', 'watch'] as const;
-// The resource row the stream row follows.
-const STREAM_AFTER = 'presence';
-const STREAM_SUMMARY = 'block until, or stream, comments and changes';
+// The rows the top level groups (blueprint "Help", final copy, CLI82): top-level verbs that belong together share a
+// line after the resource row they follow, and the commands a first read needs least are only named, on one line.
+const GROUPED_ROWS = [
+  {
+    words: ['wait', 'watch'],
+    after: 'presence',
+    summary: 'block until, or stream, comments and changes',
+  },
+  { words: ['pull', 'push'], after: 'graph', summary: 'one document to a file and back' },
+] as const;
 export const NAMED_ONLY = [
   'template',
   'icon',
@@ -38,8 +42,11 @@ const verbWithAlias = (v: Verb) => {
 export function topHelp(): string {
   const label = (r: (typeof RESOURCES)[number]) => `${r.name}${r.alias ? ` (${r.alias})` : ''}`;
   const rows = RESOURCES.filter((r) => !isNamedOnly(r.name));
-  const stream = STREAM_WORDS.join(', ');
-  const width = Math.max(...rows.map((r) => label(r).length), stream.length);
+  const groupLabel = (g: (typeof GROUPED_ROWS)[number]) => g.words.join(', ');
+  const width = Math.max(
+    ...rows.map((r) => label(r).length),
+    ...GROUPED_ROWS.map((g) => groupLabel(g).length),
+  );
   const pad = (s: string) => s.padEnd(width + 2);
   return [
     'livediagram: read, build, edit and discuss livediagram documents.',
@@ -47,7 +54,9 @@ export function topHelp(): string {
     '',
     ...rows.flatMap((r) => [
       `  ${pad(label(r))}${verbsOf(r.name).map(verbWithAlias).join(', ')}`,
-      ...(r.name === STREAM_AFTER ? [`  ${pad(stream)}${STREAM_SUMMARY}`] : []),
+      ...GROUPED_ROWS.filter((g) => g.after === r.name).map(
+        (g) => `  ${pad(groupLabel(g))}${g.summary}`,
+      ),
     ]),
     `  ${NAMED_ONLY.join(', ')}`,
     '',

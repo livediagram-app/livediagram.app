@@ -3,13 +3,13 @@
 // "Open with"). The copy carries the original's ldDocumentId, but it is another
 // Drive file, so it never opens, re-tags or adopts the original.
 
+import { type DocumentEnvelope } from '@livediagram/document';
 import {
   DRIVE_PROP_DOCUMENT_ID,
   DRIVE_PROP_ORIGIN,
   stripDriveName,
   type DriveItem,
 } from '@livediagram/api-schema';
-import type { DocumentEnvelope } from '../export-document-text';
 import { DriveApiError, type DriveClient, type DriveFile } from './drive-client';
 import type { LivediagramPort } from './livediagram-port';
 import { driveLog, driveWarn } from './log';

@@ -73,6 +73,9 @@ export type Verb<I extends z.ZodObject = z.ZodObject, O extends z.ZodType = z.Zo
   local?: true;
   // Needs no host: no profile, credential or api (guides, the skill); never counted.
   offline?: true;
+  // Reads or writes document files on disk, in the bundled document format: refused against a host that stores a
+  // newer one (blueprint "One command" step 6).
+  files?: true;
   run?: (ctx: VerbContext, input: z.infer<I>) => Promise<z.infer<O>>;
   // Compact lines; absent prints JSON.
   text?: (output: z.infer<O>) => string[];

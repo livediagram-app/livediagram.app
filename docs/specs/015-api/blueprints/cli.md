@@ -47,7 +47,7 @@ Scope, by file:
 | `packages/api-schema/src/api-token-format.ts` (+ test)                                                 | `API_TOKEN_PREFIX`, `isApiTokenFormat`, moved from `apps/api/src/auth/api-token.ts` (CLI63)                                                      |
 | `packages/api-schema/src/telemetry-schema.ts`                                                          | Category `Cli`                                                                                                                                   |
 | `packages/licences/src/apps.ts`                                                                        | `DISTRIBUTED_APPS` names `cli`: its package carries its own notices                                                                              |
-| `packages/document/src/document-envelope.ts` (planned), `export-tab-text.ts` (+ tests)                 | `git mv` of `apps/live/lib/export-document-text.ts` and `export-tab-text.ts` (CLI64)                                                             |
+| `packages/document/src/document-envelope.ts`, `export-tab-text.ts` (+ tests)                           | Moved (`git mv`) from the editor's `lib/` (CLI64)                                                                                                |
 | `packages/edit-operations/src/element-format.ts` (+ test)                                              | `elementKindsText()`, `elementFormatText(kind)`, `addableKinds()`, `SHAPE_COMMON_FIELDS`, `SHAPE_KIND_FIELDS` (CLI73)                            |
 | `packages/icons/src/{search-rank,search}.ts` (+ test)                                                  | `matches`, `paletteRank` moved from `apps/live/lib/search.ts`; `searchIcons(query, limit)` on the `./search` subpath (CLI74)                     |
 | `packages/templates/src/template-catalogue.ts` (+ test)                                                | `templateCatalogue()`, shared by the MCP's `list_templates` and `GET /api/templates`                                                             |
@@ -83,7 +83,7 @@ Scope, by file:
 | `apps/live/app/oauth/oauth-shell.tsx` (planned), `apps/live/app/oauth/consent/page.tsx`                | `OauthShell` and `OauthHelpLink` lifted out of the consent page; `Token·Created·Cli` for the CLI client                                          |
 | `apps/live/lib/mcp-consent-session.ts`                                                                 | `McpConsentSession` gains `clientId`                                                                                                             |
 | `apps/live/app/oauth/device/page.tsx` (planned), `lib/mcp-device-session.ts` (planned) (+ test)        | The `/oauth/device` page and its trust boundary                                                                                                  |
-| `apps/live/lib/export-tab.ts`, `export-document-text.ts` callers, `lib/search.ts`                      | Import the moved modules from `@livediagram/document` and `@livediagram/icons`                                                                   |
+| `apps/live/lib/export-tab.ts`, the envelope's callers, `lib/search.ts`                                 | Import the moved modules from `@livediagram/document` and `@livediagram/icons`                                                                   |
 | `apps/telemetry/app/catalogue/connections.ts`, `computed-emitters.ts`, `event-explanations.ts`         | The `CLI Commands` stack, `CLI Sign-Ins` in API Token Activity, the computed sites, the sentences (CLI56)                                        |
 | `.github/workflows/ci.yml`, `.github/workflows/cli-publish.yml`                                        | Pack dry run on every PR; publish with provenance (CLI3)                                                                                         |
 | `README.md`, `docs/development/{architecture,local-development}.md`, `docs/operations/self-hosting.md` | The app, the packages, the two api vars, the CLI on a self-host, the env token's host; `AGENTS.md`'s layout needs the operator's permission      |
@@ -144,8 +144,8 @@ anything the CLI does.
    as a guest.
 6. **Floor.** `isBelow(CLI_VERSION, caps.minVersion)` in `runOnline`: a verb whose behaviour is `write` or `destructive` and that reaches the
    api, below `cli.minVersion`, exits 1 (CLI13). Reads are never refused. A host `documentFormat` above the
-   bundled `DOCUMENT_FORMAT` refuses the verbs that read or write local files (`pull`, `push`, `export`, `graph`,
-   `tab diff`, reads of a pull file) with exit 1 and the version to install; online commands carry on.
+   bundled `DOCUMENT_FORMAT` refuses the verbs marked `files` (`pull`, `push`, `export`, `tab diff`, reads of a pull
+   file) with exit 1 and the version to install; online commands carry on. `graph` is offline and knows no host.
 7. **Address.** `<doc>` and `--tab` resolve through `resolveDocument` and `resolveTab` (below); elements are left to
    the api, except the comment verbs' ref (below).
 8. **Run.** The handler calls the api through the client and returns the verb's output object.
@@ -281,16 +281,20 @@ summary }`.
 
 ### Pull and push
 
-- `pull <doc> [--to <dir>] [--svg]`: `GET /api/documents/:id`, then each tab with its `ETag`; writes the pull file
-  (CLI27) atomically (temporary file then rename) and records each tab's read copy; `--svg` adds
-  `<slug>.<tab-slug>.svg` per tab from `render.svg`.
-- `push <file>`: parses the pull file, refuses another host than the profile's (exit 2); for each tab whose
-  `canonicalTabHash` differs from the stored one, submits `replace { elements }` with `base { rev: pulledRev }` and
-  `strict: true`; a tab missing from the document is created by the same changeset; a `412 stale_tab` names the tab
-  and moves on; finally rewrites the file's revisions and hashes for the tabs that landed (CLI28).
+- `pull <doc> [--to <dir>] [--svg]`: `documentOf` (a share link's code applies), then each tab with its `ETag`, in
+  order; writes the pull file (CLI27) atomically (temporary file then rename) and records each tab's read copy; a tab
+  answered without a revision exits 7. `--svg` adds `<slug>.<tab-slug>.svg` per tab from
+  `GET .../tabs/:tabId/render.svg` (`apps/api/src/routes/tab-render-route.ts`, `renderTabSvg` in
+  `apps/api/src/thumbnail.ts`), two tabs of one name told apart by `-<id8>`.
+- `push <file>`: parses the pull file (`parsePullFile`), refuses another host than the profile's (exit 2); for each
+  tab whose elements hash (`tabHashes`) differs from the pulled one, submits `replace { elements }` with
+  `base { rev: pulledRev }` and `strict: true`; a tab missing from the document, or from `livediagramSync`, is created
+  by `replace { elements, name }` with no base (`WriteFlags.base: null`); a `412 stale_tab` prints
+  `! stale tab "<name>"` and moves on; finally rewrites the file's revisions and hashes for the tabs that landed, and
+  writes nothing on `--dry-run` (CLI28). An answer of `nothing changed` keeps the pulled revision.
 - Only elements travel. A tab whose other fields (name, theme, background) changed, and a tab the file no longer
   holds, are each named on stderr as `not pushed: <what>`; nothing on the server is deleted.
-- Exit: 0 when every changed tab landed, 5 when any was refused as stale, the worst other code otherwise.
+- Exit: 0 when every changed tab landed, 5 when any was refused as stale, else the highest other code (CLI83).
 
 ### Previews
 
@@ -691,7 +695,8 @@ so the editor's "Import a copy" reads it, plus one key the envelope parser ignor
 type PullSync = {
   host: string; // the profile's host
   pulledAt: number;
-  tabs: Record<string, { rev: number; hash: string }>; // hash: canonicalTabHash, SHA-256 hex
+  // hash: SHA-256 hex of the canonical JSON of the elements; settingsHash: of every other field (CLI28)
+  tabs: Record<string, { rev: number; hash: string; settingsHash: string }>;
 };
 type PullFile = DocumentEnvelope & { livediagramSync: PullSync };
 ```
@@ -978,8 +983,8 @@ WebSocket) with a fixed clock; none waits on a real timer or the network.
 | Profiles, flags, env, default host                                                            | `apps/cli/src/config/config.test.ts`                                                                                                                                  |
 | Capabilities fields; floor refuses writes, names the version; newer format                    | `apps/api/src/routes/capabilities.test.ts`, `apps/cli/src/config/config.test.ts`, `apps/cli/src/main.test.ts`                                                         |
 | A self-host profile never contacts livediagram.app                                            | `apps/cli/src/main.test.ts` (every request across a session of commands; telemetry joins it when built)                                                               |
-| Pull file: document, tabs, revisions; `--svg`                                                 | `apps/cli/src/sync/pull-file.test.ts` (planned), `apps/cli/src/commands/pull.test.ts` (planned)                                                                       |
-| Push: changed tabs as based changesets; conflict names the tab; elements only                 | `apps/cli/src/commands/push.test.ts` (planned)                                                                                                                        |
+| Pull file: document, tabs, revisions; `--svg`                                                 | `apps/cli/src/sync/pull-file.test.ts`, `apps/cli/src/commands/pull-push.test.ts`                                                                                      |
+| Push: changed tabs as based changesets; conflict names the tab; elements only                 | `apps/cli/src/commands/pull-push.test.ts`                                                                                                                             |
 | Export every document, each format                                                            | `apps/cli/src/commands/export.test.ts` (planned)                                                                                                                      |
 | Render prints path and size, never bytes; MCP and CLI draw alike                              | `apps/cli/src/commands/render.test.ts` (planned); `packages/render-png/src/render-png.test.ts` (planned) (golden PNG size and hash from one SVG through both loaders) |
 | `graph lint` and `graph render` write nothing                                                 | `packages/agent-verbs/src/verbs/graph.test.ts`, `apps/cli/src/main.test.ts` (fetch never called)                                                                      |
@@ -1061,4 +1066,4 @@ release needs a floor), in `[vars]` and `[env.staging.vars]` (staging `OAUTH_ISS
 
 ## Defaults ledger
 
-CLI1 to CLI82 in [DEFAULTS.md](DEFAULTS.md).
+CLI1 to CLI83 in [DEFAULTS.md](DEFAULTS.md).

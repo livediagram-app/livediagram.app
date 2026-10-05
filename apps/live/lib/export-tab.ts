@@ -172,17 +172,6 @@ function svgToImage(svg: string): Promise<HTMLImageElement> {
   });
 }
 
-// JSON snapshot + Markdown outline — the non-visual export formats.
-// They share nothing with the rasteriser below beyond the Tab data
-// model, so they live in their own module; re-exported here so the
-// existing `@/lib/export-tab` import paths keep resolving unchanged.
-export {
-  TAB_SCHEMA_VERSION,
-  tabToJsonText,
-  tabToMarkdownText,
-  type ExportedTabEnvelope,
-} from './export-tab-text';
-
 // ---------------------------------------------------------------------
 // PNG / PDF helpers — shared canvas rendering
 // ---------------------------------------------------------------------

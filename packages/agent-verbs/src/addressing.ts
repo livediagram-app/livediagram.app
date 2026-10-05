@@ -152,7 +152,8 @@ export async function resolveDocument(
   });
 }
 
-export type TabSummary = { id: string; name: string; orderIndex: number };
+// A tab as a document lists it; `folder` is its folder in this document, when it is in one.
+export type TabSummary = { id: string; name: string; orderIndex: number; folder?: string };
 
 // A tab by name (ignoring case) or id prefix; the first tab by order when none is named.
 export function resolveTab(

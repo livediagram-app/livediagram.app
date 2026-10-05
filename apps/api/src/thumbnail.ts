@@ -19,6 +19,7 @@ import { migrateStoredTab, renderElementsToSvg, type Tab } from '@livediagram/do
 // the renderer's box-with-label fallback.
 import { resolveIconExportArt, resolveStickerArt } from '@livediagram/icons/resolve';
 import {
+  getTab,
   getTabBody,
   getThumbRenderedAt,
   markThumbRendered,
@@ -126,6 +127,31 @@ export async function getDocumentTabImageSvg(
   // whole live-image feature is uniformly off on a binding-less deploy.
   if (!env.IMAGES) return null;
   return renderTabBodyToSvg(env, liveDoc, await getTabBody(env, liveDoc.id, tabId));
+}
+
+// One tab drawn by the shared renderer, for `GET .../tabs/:tabId/render.svg` (docs/specs/015-api/api.md): the
+// CLI's pull --svg and tab render, and any script. Unlike a snapshot it draws an empty tab too, and with no image
+// store its images keep their placeholders. Null when the tab is not in the document or its body does not parse.
+export async function renderTabSvg(
+  env: Env,
+  documentId: string,
+  tabId: string,
+): Promise<string | null> {
+  let stored: Awaited<ReturnType<typeof getTab>>;
+  try {
+    stored = await getTab(env, documentId, tabId);
+  } catch (err) {
+    console.warn('[render] tab unreadable', { documentId, tabId, error: String(err) });
+    return null;
+  }
+  if (!stored) return null;
+  const tab = migrateStoredTab({ ...stored, elements: stored.elements ?? [] } as Tab);
+  const images = await loadEmbeddedImages(env, tab);
+  return renderElementsToSvg(tab, {
+    resolveImageHref: (id) => images.get(id),
+    resolveIconArt: resolveIconExportArt,
+    resolveStickerArt,
+  });
 }
 
 // The lazy backfill of tabs.element_count (migration 0059): a tab stored before the count existed gets it

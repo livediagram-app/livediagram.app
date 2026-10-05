@@ -152,6 +152,7 @@ export const elementVerbs: readonly Verb[] = (
 
 export const tabDiff = defineVerb({
   id: 'tab.diff',
+  files: true,
   summary: 'What changed in a tab since a revision this CLI read',
   description:
     'Compares the tab now with the read copy at --since: added, removed and changed elements, one line each. The copy is the tab as this CLI last read it at that revision.',

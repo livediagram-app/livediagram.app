@@ -24,7 +24,7 @@ Scope, by file:
 | `apps/api/hosted-vars.json`, `apps/api/scripts/hosted-vars.mjs` | The hosted profile: the client id per environment, and its verifies                     |
 | `apps/api/src/openapi/manifest.ts`                              | The Drive routes, tag `Drive`                                                           |
 | `packages/fake-google/`                                         | The fake Google (Drive REST + OAuth) every test uses                                    |
-| `apps/live/lib/export-document-text.ts`                         | The `livediagram.document` envelope                                                     |
+| `packages/document/src/document-envelope.ts`                    | The `livediagram.document` envelope                                                     |
 | `apps/live/lib/api/drive.ts`                                    | Wire calls to `/api/drive/*`                                                            |
 | `apps/live/lib/drive/config.ts`                                 | Client id, Picker key, `driveUiMode`                                                    |
 | `apps/live/lib/drive/cadence.ts`                                | Every cadence constant                                                                  |
@@ -431,7 +431,7 @@ Reads: `listPersonalDocuments`, `listPersonalFolders`, `listPersonalTrash`, `loa
 `acquireLease`, `releaseLease`. The production implementation is a thin map onto `lib/api/*`; tests use
 `FakeLivediagram`.
 
-### Envelope (`lib/export-document-text.ts`)
+### Envelope (`packages/document/src/document-envelope.ts`)
 
 ```ts
 type DocumentEnvelope = {
@@ -729,7 +729,7 @@ Events: `elected`, `pass-start`, `pass-end`, `token`, `root-created`, `root-foun
 | Clerk-only, 503 when off                    | `routes/drive.test.ts`                                                  |
 | Rows removed with document, folder, account | `db/drive-removal.test.ts`, `account-owner-columns.test.ts`             |
 | OpenAPI parity                              | `openapi/route-parity.test.ts`                                          |
-| Envelope                                    | `apps/live/lib/export-document-text.test.ts`                            |
+| Envelope                                    | `packages/document/src/document-envelope.test.ts`                       |
 | REST client against the fake                | `apps/live/lib/drive/drive-rest-client.test.ts`                         |
 | Every outbound row                          | `apps/live/lib/drive/engine.outbound.test.ts`                           |
 | Every inbound row, echo, conflicts          | `apps/live/lib/drive/engine.inbound.test.ts`, `plan-inbound.test.ts`    |

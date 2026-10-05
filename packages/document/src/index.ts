@@ -463,6 +463,10 @@ export * from './behaviour-skin';
 // stored config below and by @livediagram/api-schema's wire `LivePoll`.
 export * from './poll-style';
 export * from './comments';
+// The whole-document `livediagram.document` envelope and the per-tab JSON and Markdown export (the editor, the
+// Drive mirror and the CLI's pull files).
+export * from './document-envelope';
+export * from './export-tab-text';
 export * from './comment-mentions';
 // Per-element assigned actions (docs/specs/012-collaboration/assigned-actions.md).
 export * from './element-action';

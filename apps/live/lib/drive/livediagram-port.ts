@@ -12,7 +12,14 @@ import {
   type DriveItemKind,
   type DriveLease,
 } from '@livediagram/api-schema';
-import { remapTabLinks, type StoredPresentation, type Tab } from '@livediagram/document';
+import {
+  remapTabLinks,
+  type StoredPresentation,
+  type Tab,
+  documentToEnvelopeText,
+  type DocumentEnvelope,
+  type EnvelopeTab,
+} from '@livediagram/document';
 import {
   ApiError,
   API_BASE,
@@ -39,11 +46,6 @@ import {
 } from '../api-client';
 import { apiFetch, apiHeaders, expectOk } from '../api/core';
 import type { DocumentListResponse } from '@livediagram/api-schema';
-import {
-  documentToEnvelopeText,
-  type DocumentEnvelope,
-  type EnvelopeTab,
-} from '../export-document-text';
 
 export type MirrorDocument = {
   id: string;

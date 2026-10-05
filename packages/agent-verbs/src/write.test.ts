@@ -113,12 +113,15 @@ describe('submitChangeset', () => {
     await submitChangeset(ctx, target, { operations: 'rm n1' }, { dryRun: true, base: 3 });
     await submitChangeset(ctx, target, { operations: 'rm n1' }, { dryRun: true, base: 4 });
     await submitChangeset(contextOf(api), target, { operations: 'rm n1' }, { dryRun: true });
+    // A tab push creates is sent with no base though a copy is kept.
+    await submitChangeset(ctx, target, { operations: 'rm n1' }, { dryRun: true, base: null });
     expect(requests.map((r) => r.base)).toEqual([
       baseFromCopy({ rev: 3, tab: read }),
       { rev: 4 },
       undefined,
+      undefined,
     ]);
-    expect(ctx.notices).toEqual(['warning: no_base', 'warning: no_base']);
+    expect(ctx.notices).toEqual(['warning: no_base', 'warning: no_base', 'warning: no_base']);
   });
 
   it('keeps the older copy after a write that rebased over others', async () => {

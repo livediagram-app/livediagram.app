@@ -1,7 +1,11 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { FreehandElement, Tab } from '@livediagram/document';
+import {
+  type FreehandElement,
+  type Tab,
+  TAB_SCHEMA_VERSION,
+  type ExportedTabEnvelope,
+} from '@livediagram/document';
 import { parseImportedTab } from './import-tab';
-import { TAB_SCHEMA_VERSION, type ExportedTabEnvelope } from './export-tab';
 
 // A minimal but valid tab payload.
 const validTab: Tab = { id: 'tab-1', name: 'Imported', elements: [] };
