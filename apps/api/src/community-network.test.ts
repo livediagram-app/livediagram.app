@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
+import { createHash } from 'node:crypto';
 import { communityNetwork } from './community-network';
+import { communityNetworkHash } from './db';
 
 describe('communityNetwork', () => {
   it('keeps an IPv4 address to its /24', () => {
@@ -24,5 +26,15 @@ describe('communityNetwork', () => {
     expect(communityNetwork('1:2:3')).toBe('1:2:3');
     expect(communityNetwork('1::2::3')).toBe('1::2::3');
     expect(communityNetwork('')).toBe('');
+  });
+});
+
+describe('communityNetworkHash', () => {
+  // Pinned to an independent SHA-256, so the stored hashes stay comparable whatever computes them.
+  it('is the first 16 bytes of SHA-256 over the post id and the network, as hex', async () => {
+    const expected = createHash('sha256').update('post1:203.0.113.0/24').digest('hex').slice(0, 32);
+    expect(await communityNetworkHash('post1', '203.0.113.7')).toBe(expected);
+    expect(await communityNetworkHash('post1', '203.0.113.200')).toBe(expected);
+    expect(await communityNetworkHash('post2', '203.0.113.7')).not.toBe(expected);
   });
 });

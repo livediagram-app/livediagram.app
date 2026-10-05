@@ -6,6 +6,7 @@ import {
   COMMUNITY_AUTO_HIDE_REPORTERS,
   COMMUNITY_COUNTED_PER_NETWORK,
   type CommunityReportReason,
+  sha256Hex,
 } from '@livediagram/api-schema';
 import { communityNetwork } from '../community-network';
 import type { Env } from '../types';
@@ -121,7 +122,7 @@ export async function recordCommunityReport(
 // with the post id (blueprint §7): distinct networks can be counted per post, and nothing can be compared across
 // posts.
 export async function communityNetworkHash(postId: string, ip: string): Promise<string> {
-  const bytes = new TextEncoder().encode(`${postId}:${communityNetwork(ip)}`);
-  const digest = new Uint8Array(await crypto.subtle.digest('SHA-256', bytes));
-  return Array.from(digest.slice(0, 16), (b) => b.toString(16).padStart(2, '0')).join('');
+  // The first 16 bytes of the digest, as hex.
+  const hex = await sha256Hex(new TextEncoder().encode(`${postId}:${communityNetwork(ip)}`));
+  return hex.slice(0, 32);
 }

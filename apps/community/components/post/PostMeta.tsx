@@ -3,10 +3,9 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { communityCategoryLabel, type CommunityPost } from '@livediagram/api-schema';
-import { relativeSince } from '@livediagram/ui';
 import { formatDate, paragraphs } from '@/lib/format';
 import { tagHref } from '@/lib/links';
-import { CommunityAuthorBadge } from '@livediagram/ui';
+import { CommunityAuthorBadge, communitySharedAgo } from '@livediagram/ui';
 
 // What a post says about itself (docs/specs/025-community/community.md "Post"): title, author,
 // publish date, category, tags (each opening the gallery filtered by it) and the full description,
@@ -33,7 +32,7 @@ export function PostMeta({ post }: { post: CommunityPost }) {
             aria-label={`Shared ${formatDate(post.publishedAt)}`}
             className="text-slate-500 dark:text-slate-400"
           >
-            Shared {relativeSince(post.publishedAt, now)}
+            Shared {communitySharedAgo(post.publishedAt, now)}
           </time>
         </div>
       </div>

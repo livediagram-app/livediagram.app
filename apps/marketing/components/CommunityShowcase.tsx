@@ -9,6 +9,8 @@ import {
   type CommunityPost,
 } from '@livediagram/api-schema';
 import {
+  buttonClassName,
+  ButtonContent,
   CommunityCopyCount,
   CommunityHelpLink,
   CommunityLikeCount,
@@ -109,9 +111,9 @@ export function CommunityShowcase() {
         <div className="mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-3">
           <a
             href="/community/"
-            className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 shadow-xs transition hover:border-brand-300 hover:text-brand-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-brand-500/60"
+            className={buttonClassName({ variant: 'secondary', size: 'cta-sm' })}
           >
-            Explore the Community
+            <ButtonContent>Explore the Community</ButtonContent>
           </a>
           <CommunityHelpLink article="finding">How the Community Works</CommunityHelpLink>
         </div>

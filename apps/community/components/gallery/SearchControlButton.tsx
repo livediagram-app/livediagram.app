@@ -1,5 +1,5 @@
 import type { ComponentProps, ReactNode } from 'react';
-import { ChevronDownIcon } from '@livediagram/ui';
+import { ChevronDownIcon, CountBadge } from '@livediagram/ui';
 
 // One of the controls inside the search box (My Shares, Category, Tags, Sort; docs/specs/025-community/
 // community.md "Gallery"): an icon and a label, the label dropped below the lg breakpoint so they fit beside
@@ -36,11 +36,7 @@ export function SearchControlButton({
         {icon}
       </span>
       <span className="max-w-32 truncate max-lg:hidden">{label}</span>
-      {badge ? (
-        <span className="rounded-full bg-brand-500 px-1.5 text-[11px] font-semibold leading-4 text-white">
-          {badge}
-        </span>
-      ) : null}
+      {badge ? <CountBadge count={badge} tone="brand" /> : null}
       {chevron ? (
         <ChevronDownIcon
           aria-hidden
