@@ -1,6 +1,6 @@
 'use client';
 
-import { formatCommunityCount } from '@livediagram/ui';
+import { formatCommunityCount, communityPlural } from '@livediagram/ui';
 import { useState, type MouseEvent } from 'react';
 import type { LikeState } from '@/lib/useLike';
 import { HeartIcon } from './icons';
@@ -18,7 +18,7 @@ export function LikeButton({ like, size = 'sm' }: { like: LikeState; size?: 'sm'
     setPop(!liked);
     toggle();
   };
-  const label = `Like (${likeCount} ${likeCount === 1 ? 'like' : 'likes'})`;
+  const label = `Like (${likeCount} ${communityPlural(likeCount, 'like', 'likes')})`;
   const large = size === 'lg';
   return (
     <button
@@ -43,7 +43,9 @@ export function LikeButton({ like, size = 'sm' }: { like: LikeState; size?: 'sm'
         className={pop && liked ? 'heart-pop' : ''}
       />
       <span>{formatCommunityCount(likeCount)}</span>
-      {large ? <span className="font-medium">{likeCount === 1 ? 'like' : 'likes'}</span> : null}
+      {large ? (
+        <span className="font-medium">{communityPlural(likeCount, 'like', 'likes')}</span>
+      ) : null}
     </button>
   );
 }

@@ -7,7 +7,7 @@ import {
   type CommunityOwnPost,
   communityPostPath,
 } from '@livediagram/api-schema';
-import { Button, buttonClassName, lucideGlyph } from '@livediagram/ui';
+import { Button, buttonClassName, lucideGlyph, communityPlural } from '@livediagram/ui';
 import { lucideExternalLink, lucideGlobe } from '@livediagram/icons/lucide';
 import { communityErrorMessage } from '@/lib/community-errors';
 import { track } from '@/lib/telemetry';
@@ -156,7 +156,7 @@ export function CommunitySection({
               <span className="tabular-nums">
                 <span aria-hidden>♥</span>
                 <span className="sr-only">Likes</span> {post.likeCount} · Copied {post.copyCount}{' '}
-                {post.copyCount === 1 ? 'time' : 'times'}
+                {communityPlural(post.copyCount, 'time', 'times')}
               </span>
             </p>
             {state === 'hidden' ? (

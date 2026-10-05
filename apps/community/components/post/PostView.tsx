@@ -8,7 +8,8 @@ import { BackIcon } from '../shared/icons';
 import { EmbedFrame } from './EmbedFrame';
 import { PostActions } from './PostActions';
 import { PostMeta } from './PostMeta';
-import { PostError, PostNotFound, PostSkeleton } from './PostStates';
+import { LoadError } from '../shared/LoadError';
+import { PostNotFound, PostSkeleton } from './PostStates';
 import { RelatedPosts } from './RelatedPosts';
 import { usePost } from './usePost';
 
@@ -57,7 +58,7 @@ export function PostView() {
       ) : load.status === 'notFound' ? (
         <PostNotFound />
       ) : load.status === 'error' ? (
-        <PostError onRetry={retry} />
+        <LoadError title="We couldn't load this document." onRetry={retry} />
       ) : (
         <>
           <article

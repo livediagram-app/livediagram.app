@@ -8,13 +8,13 @@ import { LazyClerkSession } from '../auth/LazyClerkSession';
 import { PostGrid } from '../shared/PostGrid';
 import {
   GalleryEmpty,
-  GalleryError,
   GalleryMineEmpty,
   GalleryNoMatches,
   GallerySignedOut,
 } from './GalleryStates';
 import { MineSummary } from './MineSummary';
 import { LoadMore } from './LoadMore';
+import { LoadError } from '../shared/LoadError';
 import { SearchBox } from './SearchBox';
 import { useGallery } from './useGallery';
 
@@ -80,11 +80,14 @@ export function GalleryView() {
           <MineSummary totals={gallery.totals} />
         ) : null}
         {waitingForSession && sessionTimedOut ? (
-          <GalleryError onRetry={() => window.location.reload()} />
+          <LoadError
+            title="We couldn't load the Community."
+            onRetry={() => window.location.reload()}
+          />
         ) : status === 'signed-out' || (mine && !signInAvailable) ? (
           <GallerySignedOut available={signInAvailable} />
         ) : status === 'error' ? (
-          <GalleryError onRetry={gallery.retry} />
+          <LoadError title="We couldn't load the Community." onRetry={gallery.retry} />
         ) : status === 'ready' && posts.length === 0 ? (
           ready && hasActiveFilters(filters) ? (
             <GalleryNoMatches onClear={gallery.clearFilters} />

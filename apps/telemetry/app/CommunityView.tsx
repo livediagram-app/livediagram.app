@@ -5,6 +5,7 @@ import {
   COMMUNITY_REPORT_REASONS,
   type TelemetrySummary,
   type TelemetryWindowKey,
+  COMMUNITY_CATEGORY_TYPES,
 } from '@livediagram/api-schema';
 import {
   COMMUNITY_COPIES,
@@ -51,7 +52,7 @@ const categoryLabel = labelFrom(COMMUNITY_CATEGORIES);
 const reasonLabel = labelFrom(COMMUNITY_REPORT_REASONS);
 
 // The edits are `Community·Changed` typed by category.
-const CATEGORY_TYPES: ReadonlySet<string> = new Set(COMMUNITY_CATEGORIES.map((c) => c.type));
+const CATEGORY_TYPES: ReadonlySet<string> = new Set(COMMUNITY_CATEGORY_TYPES);
 
 export function CommunityView({
   summary,

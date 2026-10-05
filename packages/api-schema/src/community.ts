@@ -72,6 +72,9 @@ export const COMMUNITY_CATEGORIES = [
   },
 ] as const;
 
+// Each category's telemetry type (`Community·Shared|Changed·<Type>`), as a list.
+export const COMMUNITY_CATEGORY_TYPES: readonly string[] = COMMUNITY_CATEGORIES.map((c) => c.type);
+
 export type CommunityCategory = (typeof COMMUNITY_CATEGORIES)[number]['id'];
 
 const CATEGORY_IDS: ReadonlySet<string> = new Set(COMMUNITY_CATEGORIES.map((c) => c.id));

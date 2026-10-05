@@ -1,5 +1,10 @@
 import type { CommunityMineTotals } from '@livediagram/api-schema';
-import { CommunityHelpLink, CopyIcon, formatCommunityCount } from '@livediagram/ui';
+import {
+  CommunityHelpLink,
+  CopyIcon,
+  formatCommunityCount,
+  communityPlural,
+} from '@livediagram/ui';
 import { HeartIcon, MineIcon } from '../shared/icons';
 
 // My Shares' header (docs/specs/025-community/community.md "My Shares"): how popular your posts are
@@ -30,7 +35,7 @@ export function MineSummary({ totals }: { totals: CommunityMineTotals }) {
               <span className="font-semibold tabular-nums text-slate-900 dark:text-slate-100">
                 {formatCommunityCount(s.n)}
               </span>{' '}
-              {s.n === 1 ? s.one : s.many}
+              {communityPlural(s.n, s.one, s.many)}
             </dd>
           </div>
         ))}

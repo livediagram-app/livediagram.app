@@ -9,7 +9,9 @@ import { formatCommunityCount } from './format-count';
 const STAT =
   'inline-flex items-center gap-1 px-1.5 py-1 tabular-nums text-slate-500 dark:text-slate-400';
 
-const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
+// The word for a count, one or many ("1 like", "3 likes"): one source for every count the Community shows.
+export const communityPlural = (n: number, one: string, many: string) => (n === 1 ? one : many);
+const plural = (n: number, one: string, many: string) => `${n} ${communityPlural(n, one, many)}`;
 
 export function CommunityCopyCount({ count }: { count: number }) {
   return (

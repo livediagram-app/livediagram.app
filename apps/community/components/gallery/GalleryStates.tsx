@@ -1,9 +1,9 @@
 import { Button, ButtonContent, EmptyState, SearchIcon, buttonClassName } from '@livediagram/ui';
 import { SHARE_YOUR_OWN_HREF } from '@/lib/links';
 import { signInHref } from '@/lib/session';
-import { AlertIcon, MineIcon, PeopleIcon } from '../shared/icons';
+import { MineIcon, PeopleIcon } from '../shared/icons';
 
-// The gallery's empty and error states (docs/specs/025-community/community.md "Gallery"; blueprint
+// The gallery's empty and signed-out states (docs/specs/025-community/community.md "Gallery"; blueprint
 // §9 final copy), one per cause.
 
 // Nothing has been published yet.
@@ -33,22 +33,6 @@ export function GalleryNoMatches({ onClear }: { onClear: () => void }) {
         Clear Filters
       </Button>
     </EmptyState>
-  );
-}
-
-export function GalleryError({ onRetry }: { onRetry: () => void }) {
-  return (
-    <div role="alert">
-      <EmptyState
-        icon={<AlertIcon aria-hidden />}
-        title="We couldn't load the Community."
-        description="Check your connection, then try again."
-      >
-        <Button size="md" onClick={onRetry}>
-          Try Again
-        </Button>
-      </EmptyState>
-    </div>
   );
 }
 

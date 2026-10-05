@@ -1,3 +1,5 @@
+import { documentPath } from '@livediagram/api-schema';
+
 // Where the Community app links out to (docs/specs/025-community/community.md "Post"). The editor
 // routes sit outside this app's `/community` basePath, so they are plain origin-absolute hrefs used
 // with <a>, never next/link. In-app routes go through next/link, which adds the basePath itself.
@@ -15,8 +17,7 @@ export const makeCopyHref = (shareCode: string) =>
 export const embedHref = (shareCode: string) => `/embed?${shareQuery(shareCode)}`;
 
 // Your own document in the editor (My Shares, for a post that is hidden).
-export const editDocumentHref = (documentId: string) =>
-  `/document/${encodeURIComponent(documentId)}`;
+export const editDocumentHref = documentPath;
 
 // In-app (next/link adds `/community`).
 export const postHref = (id: string) => `/post/?id=${encodeURIComponent(id)}`;

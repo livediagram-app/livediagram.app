@@ -44,7 +44,11 @@ export * from './icons';
 export { CommunityPostTile } from './community/CommunityPostTile';
 export { CommunityAuthorBadge } from './community/CommunityAuthorBadge';
 export { communitySharedAgo } from './community/shared-ago';
-export { CommunityCopyCount, CommunityLikeCount } from './community/CommunityCounts';
+export {
+  CommunityCopyCount,
+  CommunityLikeCount,
+  communityPlural,
+} from './community/CommunityCounts';
 export { CommunityPostTileSkeleton } from './community/CommunityPostTileSkeleton';
 export { formatCommunityCount } from './community/format-count';
 export { COMMUNITY_DOT_GRID, COMMUNITY_SKELETON_BAR } from './community/surfaces';

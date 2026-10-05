@@ -643,3 +643,4 @@ export * from './comment-threads';
 export * from './agent-presence';
 export * from './community';
 export * from './community-query';
+export * from './document-paths';

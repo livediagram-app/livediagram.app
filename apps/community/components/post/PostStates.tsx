@@ -1,15 +1,14 @@
 import Link from 'next/link';
 import {
-  Button,
   ButtonContent,
   COMMUNITY_DOT_GRID,
   COMMUNITY_SKELETON_BAR,
   EmptyState,
   buttonClassName,
 } from '@livediagram/ui';
-import { AlertIcon, BackIcon, PeopleIcon } from '../shared/icons';
+import { BackIcon, PeopleIcon } from '../shared/icons';
 
-// The post page's not-found, error and loading states (docs/specs/025-community/community.md "Post";
+// The post page's not-found and loading states (docs/specs/025-community/community.md "Post";
 // blueprint §9 final copy).
 
 export function PostNotFound() {
@@ -26,22 +25,6 @@ export function PostNotFound() {
         </ButtonContent>
       </Link>
     </EmptyState>
-  );
-}
-
-export function PostError({ onRetry }: { onRetry: () => void }) {
-  return (
-    <div role="alert">
-      <EmptyState
-        icon={<AlertIcon aria-hidden />}
-        title="We couldn't load this document."
-        description="Check your connection, then try again."
-      >
-        <Button size="md" onClick={onRetry}>
-          Try Again
-        </Button>
-      </EmptyState>
-    </div>
   );
 }
 

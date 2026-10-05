@@ -1,6 +1,6 @@
 'use client';
 
-import { communityPostPath } from '@livediagram/api-schema';
+import { communityPostPath, documentPath } from '@livediagram/api-schema';
 import { Button, buttonClassName, lucideGlyph, CommunityAuthorBadge } from '@livediagram/ui';
 import { lucideArrowLeft, lucideCopyPlus, lucidePencil } from '@livediagram/icons/lucide';
 import type { CommunitySession } from '@/app/document/[id]/editor-realtime';
@@ -48,7 +48,7 @@ export function CommunityBar({
         </a>
         {community.ownDocumentId ? (
           <a
-            href={`/document/${encodeURIComponent(community.ownDocumentId)}`}
+            href={documentPath(community.ownDocumentId)}
             className={buttonClassName({ size: 'xs' })}
           >
             <EditIcon />
