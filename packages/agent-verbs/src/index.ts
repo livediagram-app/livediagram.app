@@ -9,6 +9,7 @@ export {
 } from './find-documents';
 export {
   defineVerb,
+  VerbRefusal,
   type CliProjection,
   type Verb,
   type VerbBehaviour,
@@ -27,7 +28,19 @@ export {
   type ResolvedDocument,
   type TabSummary,
 } from './addressing';
-export { RESOURCE_ALIASES, RESOURCES, TOP_LEVEL, VERBS, verbById, verbsOf } from './catalogue';
+export {
+  COMMAND_ALIASES,
+  RESOURCE_ALIASES,
+  RESOURCES,
+  TOP_LEVEL,
+  VERBS,
+  verbById,
+  verbsOf,
+} from './catalogue';
+export { argvToOperationLine } from './argv-line';
+export { baseFromCopy, readPlainTab, recordCopy, type ReadCopies, type ReadCopy } from './copies';
+export { classifySource, type ClassifiedSource, type SourceKind } from './source-kind';
+export { HELD_RETRY_INTERVAL_MS, submitChangeset, WAIT_HELD_MAX_S, type WriteFlags } from './write';
 export { GUIDE_TOPIC_NAMES, GUIDE_TOPICS, isGuideTopic, type GuideTopic } from './guides';
 export { renderSkill, SKILL_DESCRIPTION, SKILL_DIRECTORIES, SKILL_NAME } from './skill';
 export { LIST_DEFAULT_LIMIT, LIST_MAX_LIMIT } from './verbs/shared';

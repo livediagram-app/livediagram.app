@@ -6,6 +6,7 @@ import {
   CHANGESET_SUMMARY_MAX,
   isChangesetId,
   parseChangesetSeen,
+  revOfEtag,
   tabEtag,
 } from './changesets';
 import { MAX_TAB_BYTES } from './tab-size';
@@ -47,6 +48,10 @@ describe('X-Changeset-Seen', () => {
 describe('the tab ETag', () => {
   it('is weak and carries the revision', () => {
     expect(tabEtag(41)).toBe('W/"41"');
+    expect(revOfEtag(tabEtag(41))).toBe(41);
+    expect(
+      [null, '"41"', 'W/"x"', 'W/"99999999999999999"', 'W/"9999999999999999"'].map(revOfEtag),
+    ).toEqual([null, null, null, null, null]);
   });
 });
 

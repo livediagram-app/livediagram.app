@@ -652,6 +652,12 @@ importers:
       '@livediagram/diagram-lint':
         specifier: workspace:*
         version: link:../diagram-lint
+      '@livediagram/document':
+        specifier: workspace:*
+        version: link:../document
+      '@livediagram/document-views':
+        specifier: workspace:*
+        version: link:../document-views
       zod:
         specifier: ^4.6.5
         version: 4.6.5

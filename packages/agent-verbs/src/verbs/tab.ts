@@ -2,9 +2,10 @@
 // its lint, as the api serves them.
 
 import { z } from 'zod';
-import { TAB_VIEW_NAMES, type LintReport } from '@livediagram/api-schema';
+import { revOfEtag, TAB_VIEW_NAMES, type LintReport } from '@livediagram/api-schema';
 import { formatLintReport } from '@livediagram/diagram-lint';
-import { defineVerb } from '../define';
+import { readPlainTab, recordCopy, type ReadCopy } from '../copies';
+import { defineVerb, type VerbContext } from '../define';
 import { shortestUniquePrefixes } from '../refs';
 import { columns, documentOf, tabOf, tabPath } from './shared';
 
@@ -54,11 +55,30 @@ const viewQuery = (params: Record<string, string | number | boolean | undefined>
     .map(([key, value]) => `${key}=${encodeURIComponent(value === true ? '1' : String(value))}`)
     .join('&');
 
+// The plain tab read beside a view becomes a read copy when both name the same revision; a read that raced a write
+// is repeated once, and kept only if it then agrees (CLI24).
+async function keepCopyOf(
+  ctx: VerbContext,
+  documentId: string,
+  tabId: string,
+  viewRev: number | null,
+  plain: ReadCopy | null,
+): Promise<void> {
+  if (!ctx.copies || viewRev === null) return;
+  const agreed = plain?.rev === viewRev ? plain : await readPlainTab(ctx, documentId, tabId);
+  if (agreed?.rev !== viewRev) {
+    ctx.log(`copy skipped ${documentId}/${tabId} view rev ${viewRev}`);
+    return;
+  }
+  await ctx.copies.record(documentId, tabId, agreed);
+  ctx.log(`copy recorded ${documentId}/${tabId} rev ${agreed.rev}`);
+}
+
 export const tabView = defineVerb({
   id: 'tab.view',
   summary: 'A view of a tab; the outline by default',
   description:
-    'Prints a view of a tab as the api renders it: outline (default), graph, layout, comments, show (needs --ref) or find (needs --text). --budget fits it to that many tokens.',
+    'Prints a view of a tab as the api renders it: outline (default), graph, layout, comments, show (needs --ref) or find (needs --text). --budget fits it to that many tokens; --raw prints the plain tab instead.',
   behaviour: 'read',
   input: z.object({
     doc: z.string().describe('A name, id prefix or livediagram URL'),
@@ -80,6 +100,7 @@ export const tabView = defineVerb({
     style: z.boolean().optional().describe('outline: add style attributes'),
     all: z.boolean().optional().describe('comments: include resolved threads'),
     json: z.boolean().optional().describe('The view as JSON'),
+    raw: z.boolean().optional().describe('The plain tab as stored, as JSON, instead of a view'),
   }),
   output: viewOutput,
   run: async (ctx, input) => {
@@ -95,12 +116,20 @@ export const tabView = defineVerb({
       all: input.all,
       json: input.json,
     });
+    if (input.raw) {
+      const copy = await recordCopy(ctx, document.id, tab.id);
+      const plain = copy ?? (await readPlainTab(ctx, document.id, tab.id));
+      return { json: plain?.tab ?? null };
+    }
     const path = `${tabPath(document.id, tab.id)}?${query}`;
-    return input.json
-      ? { json: await ctx.api.json<unknown>(path) }
-      : { text: (await ctx.api.text(path)).body };
+    const [view, plain] = await Promise.all([
+      ctx.api.text(path),
+      ctx.copies ? readPlainTab(ctx, document.id, tab.id) : null,
+    ]);
+    await keepCopyOf(ctx, document.id, tab.id, revOfEtag(view.etag), plain);
+    return input.json ? { json: JSON.parse(view.body) as unknown } : { text: view.body };
   },
-  text: ({ text }) => [text ?? ''],
+  text: ({ text, json }) => [text ?? JSON.stringify(json)],
   json: (output) => output.json ?? { text: output.text },
   cli: {
     positionals: ['doc'],

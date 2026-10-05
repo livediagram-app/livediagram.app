@@ -121,7 +121,7 @@ describe('tab view', () => {
       tabView.input.parse({ doc: 'Auth flow', tab: 'details', json: true }),
     );
     expect(tabView.json!(out)).toEqual({ nodes: [] });
-    expect(tabView.text!(out)).toEqual(['']);
+    expect(tabView.text!(out)).toEqual(['{"nodes":[]}']);
     expect(api.calls.at(-1)).toBe(`/documents/${DOC_A}/tabs/tab-two-0000?view=outline&json=1`);
   });
 });

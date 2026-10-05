@@ -1,6 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { parseEditOperations } from '@livediagram/edit-operations';
-import { RESOURCE_ALIASES, RESOURCES, TOP_LEVEL, VERBS, verbById, verbsOf } from './catalogue';
+import {
+  COMMAND_ALIASES,
+  RESOURCE_ALIASES,
+  RESOURCES,
+  TOP_LEVEL,
+  VERBS,
+  verbById,
+  verbsOf,
+} from './catalogue';
 import { GUIDE_TOPIC_NAMES, GUIDE_TOPICS, isGuideTopic } from './guides';
 import { renderSkill, SKILL_NAME } from './skill';
 import {
@@ -20,7 +28,7 @@ function routes(line: string): boolean {
   const [first, second] = words
     .slice(words.indexOf('livediagram') + 1)
     .filter((w, i, all) => !w.startsWith('-') && !['--host', '--profile'].includes(all[i - 1]!));
-  if (TOP_LEVEL.some((t) => t === first)) return true;
+  if (TOP_LEVEL.some((t) => t === first) || first! in COMMAND_ALIASES) return true;
   const resource = RESOURCE_ALIASES[first!] ?? first!;
   return verbById(`${resource}.${second}`) !== undefined;
 }
@@ -50,7 +58,8 @@ describe('the catalogue', () => {
   });
 
   it('groups verbs under their resource and finds them by id', () => {
-    expect(verbsOf('tab').map((v) => v.id)).toEqual(['tab.ls', 'tab.view', 'tab.lint']);
+    expect(verbsOf('tab').map((v) => v.id)).toEqual(['tab.ls', 'tab.view', 'tab.lint', 'tab.diff']);
+    expect(Object.values(COMMAND_ALIASES).every((id) => verbById(id))).toBe(true);
     expect(verbById('nope')).toBeUndefined();
     expect(Object.values(RESOURCE_ALIASES).every((r) => RESOURCES.some((x) => x.name === r))).toBe(
       true,

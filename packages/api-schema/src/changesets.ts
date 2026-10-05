@@ -72,6 +72,14 @@ export function tabEtag(rev: number): string {
   return `W/"${rev}"`;
 }
 
+// The revision a tab read's ETag names; null when it is absent or not one tabEtag wrote.
+export function revOfEtag(etag: string | null): number | null {
+  const digits = etag === null ? null : /^W\/"(\d{1,16})"$/.exec(etag)?.[1];
+  if (!digits) return null;
+  const rev = Number(digits);
+  return Number.isSafeInteger(rev) ? rev : null;
+}
+
 // ---------------------------------------------------------------------
 // Edit-operation results, warnings and rejections (the engine's answer)
 // ---------------------------------------------------------------------
