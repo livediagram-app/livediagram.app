@@ -115,7 +115,7 @@ Five built-in types, each with a glyph, an accent colour and the fields it offer
 
 - **Cards** is a button in Plan mode's bottom-right cluster, before Card Types; it opens a popover of every card
   in the document that is neither archived nor in the Trash, newest change first.
-- A search field (focused on open) matches a card's number (`12` or `#12`), title or description, ignoring case.
+- A search field (focused on open with a mouse, not on a phone) matches a card's number (`12` or `#12`), title or description, ignoring case.
 - **All Cards** and **Not on a Board** switch between every card and the cards whose status no column of this
   tab's boards holds (or that have no status): the strays a renamed or removed column, or another tab, left
   behind. Each carries a count; a stray is marked **Not on a Board** in the list too.

@@ -36,6 +36,10 @@ export function CardFinderPanel({
   const plan = usePlan();
   const [query, setQuery] = useState('');
   const [show, setShow] = useState<CardFinderShow>('all');
+  // Focused on open with a mouse; on a phone the keyboard waits until the field is tapped.
+  const [finePointer] = useState(
+    () => typeof window !== 'undefined' && window.matchMedia?.('(pointer: fine)').matches,
+  );
   const boardStatuses = useMemo(() => new Set(plan?.statusNames.keys() ?? []), [plan?.statusNames]);
   const live = useMemo(
     () => findCards(plan?.items.values() ?? [], { query: '', show: 'all', boardStatuses }),
@@ -69,7 +73,7 @@ export function CardFinderPanel({
           </span>
           <input
             type="search"
-            autoFocus
+            autoFocus={finePointer}
             aria-label="Search cards"
             placeholder="Search by #, title or description"
             value={query}
