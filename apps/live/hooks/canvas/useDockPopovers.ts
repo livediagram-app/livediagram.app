@@ -17,7 +17,8 @@ const POPOVER_WIDTH = 256;
 
 // 'slides': the Slide Deck panel over its cluster button in Illustrate mode. 'card-types': the Card
 // Types panel over its cluster button in Plan mode (docs/specs/025-plan/item-types.md).
-export type DockPanel = 'explorer' | 'layers' | 'collaborate' | 'slides' | 'card-types';
+export type DockPanel =
+  'explorer' | 'layers' | 'collaborate' | 'slides' | 'card-types' | 'plan-trash';
 
 export type { DockAnchor };
 
@@ -33,6 +34,7 @@ function trackDockPanelOpened(id: DockPanel): void {
   else if (id === 'collaborate') track('UI', 'Opened', 'Collaborate');
   else if (id === 'slides') track('UI', 'Opened', 'SlideDeck');
   else if (id === 'card-types') track('Plan', 'Opened', 'CardTypes');
+  else if (id === 'plan-trash') track('Plan', 'Opened', 'Trash');
 }
 
 export function useDockPopovers(mainRef: Ref<HTMLElement>) {

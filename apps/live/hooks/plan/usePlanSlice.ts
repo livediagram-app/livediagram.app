@@ -4,6 +4,10 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { createShape, hasPlanInput, type EditorMode, type Element } from '@livediagram/document';
 import {
+  TRASHED_FROM_FIELD,
+  TRASH_STATUS,
+  isTrashed,
+  itemStatus,
   type Item,
   type ItemMove,
   type ItemPatch,
@@ -127,6 +131,46 @@ export function usePlanSlice(opts: {
     [write, planItems.items],
   );
 
+  // The Trash (docs/specs/025-plan/items.md "Trash"): a status no board shows, the old one kept to restore.
+  const trashItem = useCallback(
+    (itemId: string) => {
+      const item = planItems.items.get(itemId);
+      if (!item || isTrashed(item)) return;
+      const from = itemStatus(item);
+      void write({
+        kind: 'patch',
+        id: itemId,
+        patch: {
+          set: { status: TRASH_STATUS, ...(from ? { [TRASHED_FROM_FIELD]: from } : {}) },
+        },
+      });
+      setOpenItemId((open) => (open === itemId ? null : open));
+      track('Plan', 'Moved', 'Trash');
+    },
+    [write, planItems.items],
+  );
+  const restoreItem = useCallback(
+    (itemId: string) => {
+      const item = planItems.items.get(itemId);
+      if (!item || !isTrashed(item)) return;
+      const from = item.fields[TRASHED_FROM_FIELD];
+      void write({
+        kind: 'patch',
+        id: itemId,
+        patch:
+          typeof from === 'string'
+            ? { set: { status: from }, clear: [TRASHED_FROM_FIELD] }
+            : { clear: ['status', TRASHED_FROM_FIELD] },
+      });
+      track('Plan', 'Restored', 'Card');
+    },
+    [write, planItems.items],
+  );
+  // Every trashed item deleted for good.
+  const emptyTrash = useCallback(() => {
+    for (const it of planItems.items.values()) if (isTrashed(it)) deleteItem(it.id);
+  }, [planItems.items, deleteItem]);
+
   const vote = useCallback(
     (itemId: string, delta: 1 | -1) => {
       void write({ kind: 'vote', id: itemId, delta });
@@ -188,9 +232,14 @@ export function usePlanSlice(opts: {
   );
 
   // Dragging outranks reading; letting go goes back to the open item, if any.
+  // The card being dragged here, so the Trash can make itself a target.
+  const [draggingItemId, setDraggingItemId] = useState<string | null>(null);
   const setDragging = useCallback(
-    (itemId: string | null) =>
-      itemId ? publishPresence?.(itemId, 'drag') : publishPresence?.(openItemId, 'view'),
+    (itemId: string | null) => {
+      setDraggingItemId(itemId);
+      if (itemId) publishPresence?.(itemId, 'drag');
+      else publishPresence?.(openItemId, 'view');
+    },
     [publishPresence, openItemId],
   );
   useEffect(() => {
@@ -223,6 +272,10 @@ export function usePlanSlice(opts: {
       removeCard,
       announce,
       setDragging,
+      draggingItemId,
+      trashItem,
+      restoreItem,
+      emptyTrash,
       statusNames: opts.statusNames,
       ...(hasSlides ? { addItemSlide } : {}),
     }),
@@ -250,6 +303,10 @@ export function usePlanSlice(opts: {
       removeCard,
       announce,
       setDragging,
+      draggingItemId,
+      trashItem,
+      restoreItem,
+      emptyTrash,
       addItemSlide,
       hasSlides,
       opts.statusNames,

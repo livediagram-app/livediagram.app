@@ -19,6 +19,9 @@ import { WhiteboardDock } from './whiteboard/WhiteboardDock';
 
 // Plan's UI loads only when it is drawn (docs/specs/025-plan/plan-mode.md "Cost"), so a document without
 // Plan pays nothing for it.
+const TrashPanel = dynamic(() => import('@/components/plan/TrashPanel').then((m) => m.TrashPanel), {
+  ssr: false,
+});
 const CardTypesPanel = dynamic(
   () => import('@/components/plan/CardTypesPanel').then((m) => m.CardTypesPanel),
   { ssr: false },
@@ -89,6 +92,7 @@ export function useCanvasChromePanels({
   slidesPopoverEl: ReactNode;
   // The Card Types panel over its cluster button, in Plan mode (docs/specs/025-plan/item-types.md).
   cardTypesPopoverEl: ReactNode;
+  trashPopoverEl: ReactNode;
   // True when Layers opens as a popover over its cluster button
   // (Toolbar, and zen).
   clusterPopovers: boolean;
@@ -279,8 +283,10 @@ export function useCanvasChromePanels({
   // The Card Types popover, likewise, belongs to Plan mode's button.
   const planMode = props.editorMode === 'plan';
   const cardTypesOpen = activeDockPanel === 'card-types' && planMode;
+  const trashOpen = activeDockPanel === 'plan-trash' && planMode;
   useEffect(() => {
-    if (activeDockPanel === 'card-types' && !planMode) closeDockPanel();
+    if ((activeDockPanel === 'card-types' || activeDockPanel === 'plan-trash') && !planMode)
+      closeDockPanel();
   }, [activeDockPanel, planMode, closeDockPanel]);
   const { avatarEl, laserEl, spotlightEl, eraserEl, formatEl, slideDeckEl } = useCanvasToolPanels({
     props,
@@ -570,6 +576,9 @@ export function useCanvasChromePanels({
         popoverAnchor={activeDockAnchor ?? undefined}
         onPopoverClose={closeDockPanel}
       />
+    ) : null,
+    trashPopoverEl: trashOpen ? (
+      <TrashPanel popoverAnchor={activeDockAnchor ?? undefined} onPopoverClose={closeDockPanel} />
     ) : null,
     toolbarClusterEls: toolbarActive ? layersEl : null,
     clusterPopovers,

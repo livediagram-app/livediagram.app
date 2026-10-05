@@ -57,6 +57,14 @@ Plan must cost nothing to a document that does not use it:
 - **Server**: a tab-scoped list reads the store once and the revision without a count; a document copy carries
   its items in the same batch as its tabs.
 
+## Starting a board
+
+- A Plan tab with no board shows, in the middle of the canvas, **Start with a Board**: a tile per board type (its
+  picture, name and what it is for), as a new infographic page offers its layouts. Choosing one places that board,
+  empty, in the middle of the view. It is gone once the tab has a board, and never shown to someone who may only
+  view.
+- Plan mode has no empty-canvas Quick Start banner: the board picker is its start.
+
 ## Plan keeps its own tabs
 
 - **A Plan tab with anything on it stays in Plan mode, and a tab in another mode with anything on it does not

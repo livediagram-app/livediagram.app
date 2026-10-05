@@ -15,7 +15,11 @@ import type { PaletteTileDef } from './palette-tile-defs';
 const GLYPH_PX = 18;
 
 // The boards the palette offers, in the order they are reached for, with what each is for.
-const BOARDS: { preset: PlanBoardPresetId; caption: string; description: string }[] = [
+export const PLAN_BOARD_TILES: {
+  preset: PlanBoardPresetId;
+  caption: string;
+  description: string;
+}[] = [
   {
     preset: 'kanban',
     caption: 'Kanban',
@@ -64,7 +68,7 @@ const BOARDS: { preset: PlanBoardPresetId; caption: string; description: string 
 ];
 
 export const PLAN_TILES: PaletteTileDef[] = [
-  ...BOARDS.map((b): PaletteTileDef => ({
+  ...PLAN_BOARD_TILES.map((b): PaletteTileDef => ({
     id: `plan:board-${b.preset}`,
     section: 'plan-boards',
     label: `Add ${PLAN_BOARD_PRESETS[b.preset].label}`,

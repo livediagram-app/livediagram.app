@@ -3355,6 +3355,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     addProcess,
     addAvatar,
     dropPaletteItem,
+    // The empty Plan tab's board picker places its board in the middle of the view.
+    getViewportCenter,
     addTab,
     addText,
     aiCapable,

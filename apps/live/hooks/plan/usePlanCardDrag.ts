@@ -33,7 +33,16 @@ export type PlanDragState = {
   outside: boolean;
   // Another board under the pointer: its element id, and whether it shows this item.
   target: { boardId: string; accepts: boolean } | null;
+  // Over the Trash button (docs/specs/025-plan/items.md "Trash"): letting go trashes the card.
+  overTrash?: boolean;
 };
+
+// Whether a screen point is over the Trash button.
+export function trashAt(clientX: number, clientY: number): boolean {
+  return document
+    .elementsFromPoint(clientX, clientY)
+    .some((el) => el instanceof HTMLElement && el.closest('[data-plan-trash]'));
+}
 
 type Pressed = {
   itemId: string;
@@ -79,6 +88,8 @@ export function usePlanCardDrag(opts: {
   // A drop on a board that does not show the item: nothing moves; the reason is announced.
   onRefused: (message: string) => void;
   onDragging: (itemId: string | null) => void;
+  // A card let go over the Trash.
+  onTrash?: (itemId: string) => void;
 }) {
   const { boardRef, enabled } = opts;
   const optsRef = useRef(opts);
@@ -139,6 +150,7 @@ export function usePlanCardDrag(opts: {
         slot: outside ? otherSlot : dropSlotAt(board, e.clientX, e.clientY, p.itemId),
         outside,
         target: other ? { boardId: other.id, accepts } : null,
+        ...(outside && trashAt(e.clientX, e.clientY) ? { overTrash: true } : {}),
       };
       dragRef.current = next;
       setDrag(next);
@@ -149,6 +161,7 @@ export function usePlanCardDrag(opts: {
       const d = dragRef.current;
       const target = d?.target ? planBoardTarget(d.target.boardId) : undefined;
       if (!d) optsRef.current.onClick(p.itemId);
+      else if (d.overTrash && optsRef.current.onTrash) optsRef.current.onTrash(d.itemId);
       else if (d.target && target) {
         if (!d.target.accepts) optsRef.current.onRefused(target.refusal());
         else if (d.slot) target.drop(d.itemId, d.slot);

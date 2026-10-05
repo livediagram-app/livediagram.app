@@ -61,6 +61,12 @@ export type PlanContextValue = {
   removeCard: (cardElementId: string) => void;
   announce: (message: string) => void;
   setDragging: (itemId: string | null) => void;
+  // The card being dragged by this person, if any (the Trash grows to take it).
+  draggingItemId: string | null;
+  // The Trash (docs/specs/025-plan/items.md "Trash").
+  trashItem: (itemId: string) => void;
+  restoreItem: (itemId: string) => void;
+  emptyTrash: () => void;
   // A card as a slide of the deck (docs/specs/012-collaboration/presentation-mode.md "Item slides");
   // absent where there is no deck to add to.
   addItemSlide?: (itemId: string) => void;

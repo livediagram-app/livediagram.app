@@ -66,6 +66,10 @@ import { panelEnabled, resolvePanelLayout } from '@/lib/user-preferences';
 
 // Plan's UI loads only when it is drawn (docs/specs/025-plan/plan-mode.md "Cost"), so a document without
 // Plan pays nothing for it.
+const PlanBoardPicker = dynamic(
+  () => import('@/components/plan/PlanBoardPicker').then((m) => m.PlanBoardPicker),
+  { ssr: false },
+);
 const PlanSheetsHost = dynamic(
   () => import('@/components/plan/PlanSheetsHost').then((m) => m.PlanSheetsHost),
   { ssr: false },
@@ -242,7 +246,18 @@ export function EditorView() {
     // An empty infographic page invites a layout in its own title bar
     // (docs/specs/007-editor/illustrate-pages.md).
     ctx.editorMode.mode !== 'illustrate' &&
+    // Plan offers its boards in the middle instead (docs/specs/025-plan/plan-mode.md "Starting a board").
+    ctx.editorMode.mode !== 'plan' &&
     activeTab.elements.length === 0;
+  // A Plan tab with no board: the board types, in the middle of the canvas.
+  const showPlanBoardPicker =
+    hydrated &&
+    !zenMode &&
+    !embedMode &&
+    !isReadOnly &&
+    !templateGridOpen &&
+    ctx.editorMode.mode === 'plan' &&
+    !activeTab.elements.some((el) => el.type === 'shape' && el.shape === 'plan-board');
   // The photo draft awaiting a decision, and the session-local view state
   // that goes with it (docs/specs/021-event-storming/event-storming.md Phase 8).
   const draftNotes = draftNotesOf(activeTab.elements);
@@ -577,6 +592,14 @@ export function EditorView() {
                       notice={boardSceneInsert.notice}
                       onClose={boardSceneInsert.dismissNotice}
                     />
+                    {showPlanBoardPicker ? (
+                      <PlanBoardPicker
+                        onPick={(preset) => {
+                          const c = ctx.getViewportCenter();
+                          ctx.dropPaletteItem('plan-board', c.x, c.y, { choice: preset });
+                        }}
+                      />
+                    ) : null}
                     {showEmptyCanvasBanner ? (
                       <EmptyCanvasBanner
                         tabName={activeTab.name}

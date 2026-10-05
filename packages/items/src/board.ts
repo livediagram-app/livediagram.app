@@ -109,6 +109,15 @@ export function isArchived(item: Item): boolean {
   return item.fields['archived'] === true;
 }
 
+// The Trash (docs/specs/025-plan/items.md "Trash"): a status no board shows. A trashed item keeps the status
+// it had under `trashedFrom`, so it can be restored to it.
+export const TRASH_STATUS = 'trash';
+export const TRASHED_FROM_FIELD = 'trashedFrom';
+
+export function isTrashed(item: Item): boolean {
+  return itemStatus(item) === TRASH_STATUS;
+}
+
 export interface LaneHead {
   key: string;
   label: string;
@@ -260,6 +269,7 @@ export function projectBoard(
   // archived, whatever its status, in its one column.
   const allBoard = setup.allCards === true && !archiveBoard;
   for (const it of items.values()) {
+    if (isTrashed(it)) continue;
     if (isArchived(it) !== archiveBoard) continue;
     if (archiveBoard || allBoard) {
       scoped.push(it);

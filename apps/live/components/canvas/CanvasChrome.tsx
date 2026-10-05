@@ -29,6 +29,7 @@ import { pickPaletteAddHandlers } from '@/components/palette/palette-add-handler
 import { ToolbarExplorerButton } from '@/components/chrome/ToolbarExplorerButton';
 import { SlidesClusterButton } from '@/components/canvas/SlidesClusterButton';
 import { CardTypesClusterButton } from '@/components/canvas/CardTypesClusterButton';
+import { TrashClusterButton } from '@/components/canvas/TrashClusterButton';
 import { useCardTypesOpener } from '@/hooks/plan/useCardTypesOpener';
 import { LayersClusterButton } from '@/components/canvas/LayersClusterButton';
 import { UndoRedoClusterStrip } from '@/components/canvas/UndoRedoClusterStrip';
@@ -346,6 +347,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
     collaborateEl,
     slidesPopoverEl,
     cardTypesPopoverEl,
+    trashPopoverEl,
     clusterPopovers,
     paletteTint,
   } = useCanvasChromePanels({
@@ -508,6 +510,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
       {zenMode ? null : collaborateEl}
       {zenMode ? null : slidesPopoverEl}
       {zenMode ? null : cardTypesPopoverEl}
+      {zenMode ? null : trashPopoverEl}
       {toolbarActive && !readOnly && !whiteboard ? (
         <ToolbarPalette
           key={props.esBoard ? 'es-board' : 'standard'}
@@ -588,6 +591,13 @@ export function CanvasChrome(props: CanvasChromeProps) {
         {welcomeOpen ? null : (
           <>
             {offscreenContent ? <OffscreenContentHint onBringBack={onFitToScreen} /> : null}
+            {/* The Trash (docs/specs/025-plan/items.md "Trash"): Plan mode, left of Undo. */}
+            {!zenMode && !readOnly && props.editorMode === 'plan' ? (
+              <TrashClusterButton
+                popoverOpen={activeDockPanel === 'plan-trash'}
+                onTogglePopover={(button) => handleDockButtonClick('plan-trash', button, true)}
+              />
+            ) : null}
             {/* Undo / Redo: see UndoRedoClusterStrip. */}
             {!zenMode && !readOnly ? (
               <UndoRedoClusterStrip

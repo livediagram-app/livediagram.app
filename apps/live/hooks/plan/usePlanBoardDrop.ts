@@ -88,6 +88,11 @@ export function usePlanBoardDrop(opts: {
       plan.announce('Card placed on the canvas');
     },
     onRefused: (message) => plan?.announce(message),
+    onTrash: (id) => {
+      if (!plan?.canEdit) return;
+      plan.trashItem(id);
+      plan.announce('Card moved to the Trash');
+    },
     onDragging: (id) => plan?.setDragging(id),
   });
 

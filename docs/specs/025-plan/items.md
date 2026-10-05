@@ -97,6 +97,18 @@ Five built-in types, each with a glyph, an accent colour and the fields it offer
   **Archived** column, in Compact cards. It takes no new cards (no Add Card, and palette cards are refused).
 - Archive and Restore send `Plan · Moved · Archive` and `Plan · Restored · Card`.
 
+## Trash
+
+- **Trash** is a status, `trash`, that no board shows (not in a column, not counted, not "not on this board", not
+  on All Cards). A trashed item keeps the status it had under `trashedFrom`.
+- In Plan mode a **Trash** button sits in the bottom-right cluster, left of Undo, with a badge of how many cards
+  it holds. While a card is dragged the button grows (animated; still with reduced motion) and takes a red ring;
+  a card let go over it is trashed and the move is announced.
+- Pressed, it opens the **Trash** popover: the trashed cards, newest change first, each with **Restore** (back to
+  `trashedFrom`, or no status) and a delete-for-good button; **Empty Trash** deletes every one after a
+  confirmation ("This can't be undone").
+- Trash and Restore send `Plan · Moved · Trash` and `Plan · Restored · Card`; opening it, `Plan · Opened · Trash`.
+
 ## Who may do what
 
 Items follow the document's access ([Auth and guest access](../014-identity/auth-and-guest-access.md)):

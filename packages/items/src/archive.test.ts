@@ -102,3 +102,17 @@ describe('column widths', () => {
     expect(s?.columns[1]).not.toHaveProperty('width');
   });
 });
+
+describe('trash', () => {
+  it('keeps trashed cards off every board, the unplaced list and All Cards', async () => {
+    const { isTrashed } = await import('./board');
+    const t = item({ title: 't', status: 'trash', trashedFrom: 'todo' });
+    const live = item({ title: 'live', status: 'todo' });
+    expect(isTrashed(t)).toBe(true);
+    expect(
+      projectBoard({ ...presetSetup('kanban'), swimlaneBy: 'none' }, map([t, live])).total,
+    ).toBe(1);
+    expect(projectBoard(presetSetup('kanban'), map([t])).unplaced).toHaveLength(0);
+    expect(projectBoard(presetSetup('all-cards'), map([t, live])).total).toBe(1);
+  });
+});
