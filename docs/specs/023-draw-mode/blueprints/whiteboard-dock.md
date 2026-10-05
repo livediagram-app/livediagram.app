@@ -36,7 +36,7 @@ Scope, by file (all under `apps/live/` unless stated):
 | `components/dialogs/settings/settings-catalogue.ts`  | Editor › Draw sub-category: the Dock Position row                                                       |
 | `hooks/canvas/useWhiteboardDockPrefs.ts`             | Those preferences as state, written like every synced preference                                        |
 | `hooks/canvas/useWhiteboard.ts`                      | `pickShape`, `pickSearchedShape`, `openShapes` and the dock prefs                                       |
-| `lib/palette-search.ts`, `lib/search.ts`             | `SHAPE_TILES`, `shapeTileSearchItem`, `paletteRank`, shared                                             |
+| `lib/palette-search.ts`, `lib/search.ts`             | `SHAPE_TILES`, `shapeTileSearchItem`; `paletteRank` from `@livediagram/icons`, shared                   |
 | `lib/user-preferences.ts`                            | `whiteboardPinnedShapes`, `whiteboardShapePicks`                                                        |
 | `components/primitives/SearchInput.tsx`              | `listboxId`: the box as a combobox over an always-shown listbox                                         |
 | `apps/telemetry/app/event-explanations.ts`           | Sentences for the new tokens                                                                            |

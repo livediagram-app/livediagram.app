@@ -1,4 +1,4 @@
-// How a palette search ranks an item against what was typed (docs/specs/010-palette/palette.md "Search"), shared by
+// How a palette search ranks an item against what was typed (docs/specs/023-draw-mode/blueprints/whiteboard-dock.md), shared by
 // the editor's search, the whiteboard's More shapes, and the api's icon search (docs/specs/015-api/blueprints/cli.md
 // CLI74), so a query finds the same icons first wherever it is typed.
 
