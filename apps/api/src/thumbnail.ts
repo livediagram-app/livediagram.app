@@ -26,6 +26,7 @@ import {
   stampTabElementCount,
   thumbnailKey,
   type StoredTabBody,
+  listItems,
 } from './db';
 import type { DocumentDTO, Env } from './types';
 
@@ -203,10 +204,18 @@ async function renderTabBodyToSvg(
   // Inline referenced image bitmaps (read from R2) so the preview / live
   // image renders the actual photos, matching the in-app PNG/SVG export.
   const images = await loadEmbeddedImages(env, tab);
+  // A Plan board or card draws its document's items (docs/specs/025-plan/plan-board.md).
+  const plan = tab.elements.some(
+    (el) => el.type === 'shape' && (el.shape === 'plan-board' || el.shape === 'plan-card'),
+  );
+  const items = plan
+    ? new Map((await listItems(env, liveDoc.id)).map((i) => [i.id, i]))
+    : undefined;
   return renderElementsToSvg(tab, {
     resolveImageHref: (id) => images.get(id),
     resolveIconArt: resolveIconExportArt,
     resolveStickerArt,
+    items,
   });
 }
 
