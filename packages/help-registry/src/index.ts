@@ -2204,6 +2204,16 @@ export const articles: Article[] = [
 
   // ---- Sub-articles: Sharing ----
   {
+    slug: 'finding-community-boards',
+    title: 'Finding Boards in the Community',
+    description: 'Search the Community by words, #tags and sort, then make a board your own.',
+    keywords:
+      'community gallery browse search find filter hashtag tag tags sort most loved most copied newest category inspiration examples like heart copy duplicate report flag',
+    category: 'Collaboration',
+    categorySlug: 'collaboration/sharing',
+    parentSlug: 'sharing',
+  },
+  {
     slug: 'community',
     title: 'Sharing to the Community',
     description: 'Publish a board to the public gallery for others to view and copy.',

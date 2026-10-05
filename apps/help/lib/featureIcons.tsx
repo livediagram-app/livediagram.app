@@ -568,6 +568,14 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M17.5 20.5l-2.6-2.5a1.6 1.6 0 012.6-1.9 1.6 1.6 0 012.6 1.9z" />
     </Glyph>
   ),
+  // A search glass over a hashtag: finding boards by their tags.
+  'finding-community-boards': (
+    <Glyph>
+      <circle cx="10.5" cy="10.5" r="6.5" />
+      <path d="M15.5 15.5 21 21" />
+      <path d="M9 7.5 8 13.5M12.5 7.5l-1 6M7 9.5h6M6.5 11.5h6" />
+    </Glyph>
+  ),
   // A chain whose far ring is a clock: the link, and the deadline on it.
   'share-link-expiry': (
     <Glyph>
