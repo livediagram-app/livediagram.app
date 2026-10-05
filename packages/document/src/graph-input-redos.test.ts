@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { cpuMsOf } from '@livediagram/vitest-config/cpu-time';
 import { capLabel } from './graph-input';
 import { parseMermaid } from './mermaid';
 import { decodeLabel } from './mermaid-shared';
@@ -29,27 +30,29 @@ function cases(samples: string[], prefix = ''): Case[] {
   });
 }
 
-// Best of `tries`, so one scheduling hiccup does not read as growth.
+// CPU time, best of `tries`: wall-clock time also counts waiting for a core while other suites run, which read
+// as growth under CI coverage (cpu-time.js).
 function timeOf(text: string, run: (text: string) => unknown, tries = 3): number {
   let best = Infinity;
-  for (let i = 0; i < tries; i += 1) {
-    const start = performance.now();
-    run(text);
-    best = Math.min(best, performance.now() - start);
-  }
+  for (let i = 0; i < tries; i += 1)
+    best = Math.min(
+      best,
+      cpuMsOf(() => void run(text)),
+    );
   return best;
 }
 
 // The sweep only picks the three slowest cases, so one timing each will do; the two times compared
-// for growth are each best of three.
+// for growth are each best of three, at four and sixteen times the sweep's length, so the smaller takes
+// milliseconds enough that noise cannot read as growth.
 function expectLinear(all: Case[], run: (text: string) => unknown): void {
   const slowest = all
     .map((c) => ({ c, ms: timeOf(c.build(RUN), run, 1) }))
     .sort((a, b) => b.ms - a.ms)
     .slice(0, 3);
   for (const { c } of slowest) {
-    const ms = timeOf(c.build(RUN), run);
-    const grown = timeOf(c.build(RUN * 4), run);
+    const ms = timeOf(c.build(RUN * 4), run);
+    const grown = timeOf(c.build(RUN * 16), run);
     expect(grown, c.build(8)).toBeLessThan(ms * 8 + 5);
   }
 }

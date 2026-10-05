@@ -466,3 +466,28 @@ describe('auth', () => {
     expect(JSON.parse(broken.fileMap.get(CREDENTIALS)!.data).profiles.default).toBeDefined();
   });
 });
+
+describe('graph lint', () => {
+  it('lints a file or stdin locally, reaching no host, and refuses what is no graph', async () => {
+    const graph = JSON.stringify({
+      nodes: [
+        { id: 'a', label: 'A' },
+        { id: 'b', label: 'B' },
+      ],
+      edges: [{ from: 'a', to: 'b' }],
+    });
+    const io = fakeIo({ files: { '/work/g.json': graph }, stdin: 'flowchart LR\n  a --> b' });
+    expect(await run(['graph', 'lint', 'g.json'], io)).toBe(0);
+    expect(io.out()).toMatch(/^0 crossings · 0 behind · 0 overlaps/);
+    expect(await run(['graph', 'lint', '-', '--compare', 'direction'], io)).toBe(0);
+    expect(io.out()).toContain('variant');
+    expect(io.requests).toEqual([]);
+    const debug = fakeIo({ env: { LIVEDIAGRAM_DEBUG: '1' }, files: { '/work/g.json': graph } });
+    await run(['graph', 'lint', 'g.json'], debug);
+    expect(debug.out()).not.toContain('[lint]');
+    expect(debug.err()).toMatch(/\[cli\] \[lint\] run \{/);
+    const bad = fakeIo({ stdin: 'rm n1' });
+    expect(await run(['graph', 'lint', '-'], bad)).toBe(1);
+    expect(bad.err()).toContain('stdin holds no graph or Mermaid');
+  });
+});

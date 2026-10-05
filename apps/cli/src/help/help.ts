@@ -23,28 +23,24 @@ export function topHelp(): string {
     ...TOP_LEVEL.map((t) => t.length),
   );
   const pad = (s: string) => s.padEnd(width + 2);
+  const summary = (id: string) => {
+    const text = verbById(id)!.summary;
+    return `${text.charAt(0).toLowerCase()}${text.slice(1)}`;
+  };
   return [
     'livediagram: read, build, edit and discuss livediagram documents.',
-    '',
     'Usage: livediagram <resource> <verb> [args] [flags]',
     '',
-    'Resources',
     ...RESOURCES.map(
       (r) =>
         `  ${pad(`${r.name}${r.alias ? ` (${r.alias})` : ''}`)}${verbsOf(r.name).map(verbWord).join(', ')}`,
     ),
-    ...TOP_LEVEL.map((t) => `  ${pad(t)}${verbById(t)!.summary.toLowerCase()}`),
-    ...Object.entries(COMMAND_ALIASES).map(([word, id]) => `  ${pad(word)}${id.replace('.', ' ')}`),
+    ...TOP_LEVEL.map((t) => `  ${pad(t)}${summary(t)}`),
+    ...Object.entries(COMMAND_ALIASES).map(([word, id]) => `  ${pad(word)}${summary(id)}`),
     '',
-    'Addressing',
-    '  <doc>     name, id prefix or livediagram URL     "Auth flow", 3f9c',
-    '  --tab     tab name or id prefix; the first tab when omitted',
-    '',
-    'Output',
-    '  stdout is data, hints stderr. Text by default; --json (--json=a,b picks',
-    '  fields); -q for refs and ids only.',
-    '  Exit: 0 done, 1 rejected, 2 usage, 3 not found, 4 auth,',
-    '  5 conflict, 6 rate limited, 7 network or server.',
+    '<doc> is a name, id prefix or link; --tab a tab name or id prefix (the first by default).',
+    'stdout is data, hints stderr; --json (=a,b picks fields), -q refs only.',
+    'Exit 0 done, 1 refused, 2 usage, 3 not found, 4 auth, 5 conflict, 6 rate limit, 7 network.',
     '',
     'Start',
     '  livediagram document ls auth        find a document',
@@ -52,7 +48,7 @@ export function topHelp(): string {
     '  livediagram tab lint "Auth flow"    what is wrong with how it is drawn',
     '  livediagram guide edit              change a tab with edit operations',
     '',
-    'Sign in: LIVEDIAGRAM_TOKEN, or livediagram auth login --with-token. Never prompts.',
+    'Sign in: LIVEDIAGRAM_TOKEN, or auth login --with-token. Never prompts.',
     'More: livediagram <resource> --help, livediagram guide <topic>',
     '',
   ].join('\n');

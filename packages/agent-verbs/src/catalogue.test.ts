@@ -66,6 +66,7 @@ describe('the catalogue', () => {
     expect(counted).not.toContain('telemetry.off');
     expect(counted).toContain('tab.view');
     expect(VERBS.filter((v) => v.offline).map((v) => v.id)).toEqual([
+      'graph.lint',
       'guide',
       'skill.print',
       'skill.install',

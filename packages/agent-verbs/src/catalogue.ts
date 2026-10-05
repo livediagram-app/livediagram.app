@@ -17,6 +17,7 @@ import {
 } from './verbs/local';
 import { iconSearch, schemaView, templateLs, templateView } from './verbs/catalogues';
 import { changesetApply, elementVerbs, tabDiff } from './verbs/edit';
+import { graphLintVerb } from './verbs/graph';
 import {
   documentCreate,
   documentRename,
@@ -49,6 +50,7 @@ export const VERBS: readonly Verb[] = [
   changesetLs,
   changesetShow,
   changesetRevert,
+  graphLintVerb,
   templateLs,
   templateView,
   iconSearch,
@@ -73,6 +75,7 @@ export const RESOURCES: readonly { name: string; alias?: string; summary: string
   { name: 'tab', summary: 'Tabs: their views, their lint, and what changed' },
   { name: 'element', alias: 'el', summary: 'Elements: one edit operation a call' },
   { name: 'changeset', summary: 'Changesets: what changed, by whom, and undoing one' },
+  { name: 'graph', summary: 'Graph files: lint one before writing it' },
   { name: 'template', summary: 'Templates: the library, and one as an outline' },
   { name: 'icon', summary: 'Icons: find one for iconId=' },
   { name: 'skill', summary: 'The agent skill file' },

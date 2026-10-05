@@ -66,6 +66,8 @@ describe('help for writes', () => {
     expect(verbHelp(VERBS.find((v) => v.id === 'changeset.apply')!)).toContain(
       '  -f, --file <text>  The file to send, or - for stdin',
     );
-    expect(topHelp()).toMatch(/\n {2}edit +changeset apply\n/);
+    expect(topHelp()).toMatch(
+      /\n {2}edit +apply edit operations, a graph, Mermaid or elements from a file\n/,
+    );
   });
 });
