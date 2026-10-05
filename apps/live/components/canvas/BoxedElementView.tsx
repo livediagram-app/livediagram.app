@@ -46,7 +46,8 @@ import { useElementSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { RemoteSelectorsStrip } from '@/components/canvas/element-badges';
 import { ElementIndicators } from '@/components/canvas/ElementIndicators';
 import { buildIndicatorItems, indicatorBacking } from '@/components/canvas/indicator-items';
-import { labelReserveY, useIndicatorLayout } from '@/components/canvas/useIndicatorLayout';
+import { useIndicatorLayout } from '@/components/canvas/useIndicatorLayout';
+import { inlineIconGap, inlineIconMetrics } from '@/components/canvas/shape-inline-icon-layout';
 import { colorForKey, initialsOf } from '@/lib/identity';
 import { useMindOutlineBadge } from '@/components/canvas/MindOutlineContext';
 import { AnnotationHoverNote } from '@/components/canvas/AnnotationMarker';
@@ -393,12 +394,26 @@ function BoxedElementViewImpl({
     ? // A one-line strip has no room for a roomy padding across it.
       Math.min(PADDING_PX.sm, PADDING_PX[element.padding ?? defaultPadding(element)])
     : PADDING_PX[element.padding ?? defaultPadding(element)];
+  const iconMetrics = inlineIcon ? inlineIconMetrics(element, label, textSize) : null;
   const indicatorLayout = useIndicatorLayout(element, indicatorCornerPx, indicatorItems, {
     label,
     textSize,
     padding: labelPadding,
     alignX,
     alignY,
+    ...(iconMetrics && element.type === 'shape'
+      ? {
+          fontPx: iconMetrics.fontSize,
+          icon: {
+            size: iconMetrics.iconSize,
+            position: element.iconPosition ?? 'left',
+            gap: inlineIconGap(
+              iconMetrics.iconSize,
+              (element.iconPosition ?? 'left') === 'left' || element.iconPosition === 'right',
+            ),
+          },
+        }
+      : {}),
   });
 
   // The text label, computed once so the freehand branch, the plain
@@ -424,7 +439,6 @@ function BoxedElementViewImpl({
     !!inlineIcon || !!marker,
     labelAnimClass,
     textHug.label,
-    labelReserveY(indicatorLayout, element.height, labelPadding),
   );
 
   // Palette-icon drop target (docs/specs/008-canvas/canvas-and-palette.md inline icons) — see
@@ -662,6 +676,7 @@ function BoxedElementViewImpl({
         onToggleReveal={onToggleReveal}
         label={label}
         labelNode={labelNode}
+        contentInset={indicatorLayout?.inset}
         textColor={textColor}
         textSize={textSize}
         alignX={alignX}

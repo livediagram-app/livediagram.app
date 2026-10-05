@@ -276,9 +276,9 @@ type UserPreferences = {
   whiteboardDockPosition?: 'top' | 'bottom';
   // How an element shows its link, note, action and comments
   // (../008-canvas/element-indicators.md): glyphs inside its top-right corner
-  // ('corner') or a row along its bottom edge ('footer'). Unset, or anything but
-  // 'footer', is Corner (lib/element-indicator-style).
-  elementIndicatorStyle?: 'corner' | 'footer';
+  // ('top'), a row along its bottom edge ('footer') or none ('off'). Unset, or anything
+  // else, is Top (lib/element-indicator-style).
+  elementIndicatorStyle?: 'top' | 'footer' | 'off';
   // Draw mode's pattern, the person's own (./editor-modes.md "One look"): Plain, Dots
   // or Grid, as last chosen from the dock's Settings; never stored on a tab. Unset, or
   // anything else, is Grid (lib/whiteboard-dock-prefs).
@@ -349,11 +349,12 @@ Missing key === undefined === default behaviour. Concretely:
   `PanelLayoutFloating` or `PanelLayoutToolbar`.
 - `whiteboardDockPosition` undefined → a whiteboard's dock at the top (the
   default). Only `'bottom'` moves it to the bottom.
-- `elementIndicatorStyle` undefined → Corner: an element's link, note, action
-  and comment glyphs sit inside its top-right corner (the default). Only
-  `'footer'` moves them to a labelled row along its bottom edge
+- `elementIndicatorStyle` undefined → Top: an element's link, note, action
+  and comment glyphs sit inside it along its top, top-right on a box and centred
+  on a round or pointed shape (the default). `'footer'` moves them to a labelled
+  row along its bottom edge; `'off'` hides them
   ([Element indicators](../008-canvas/element-indicators.md)). Emits `UI`/`Changed`/
-  `ElementIndicatorsCorner` or `ElementIndicatorsFooter`.
+  `ElementIndicatorsTop`, `ElementIndicatorsFooter` or `ElementIndicatorsOff`.
 - `skipLocationStep` undefined / `null` → the New Document wizard has its
   Location step (the default). Set from that step's "Always save new documents
   in <place> and skip this step" checkbox (`UI`/`Toggled`/`SkipLocationStepOn`),

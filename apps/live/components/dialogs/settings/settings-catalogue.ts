@@ -350,13 +350,14 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         kind: 'choice',
         key: 'elementIndicatorStyle',
         keywords:
-          'badges icons note action comment link markers indicators corner footer metadata chip',
+          'badges icons note action comment link markers indicators top corner footer metadata chip hide off',
         label: 'Element Indicators',
         description:
-          'How an element shows that it has a link, a note, an action or comments. Corner puts quiet icons inside its top-right corner; Footer puts a labelled row along its bottom edge. On an element too small for either, they sit in a small chip on its edge.',
+          'How an element shows that it has a link, a note, an action or comments. Top puts quiet icons near its top (top-right on boxes, centred on round or pointed shapes); Footer puts a labelled row along its bottom edge; Off hides them. On an element too small for either, they sit in a small chip on its edge.',
         options: [
-          { id: 'corner', label: 'Corner' },
+          { id: 'top', label: 'Top' },
           { id: 'footer', label: 'Footer' },
+          { id: 'off', label: 'Off' },
         ],
         read: readElementIndicatorStyle,
         write: (p, v) => withElementIndicatorStyle(p, v as ElementIndicatorStyle),

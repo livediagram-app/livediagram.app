@@ -11,7 +11,7 @@ import { pickedByOutline, roundedRectRing, shapeHitOutline } from './shape-hit';
 import type { ShapeKind } from './shape-kind';
 import { insidePolygon, segmentDistance } from './whiteboard-stroke';
 
-export type IndicatorAnchor = 'top-right' | 'bottom-left' | 'bottom-centre';
+export type IndicatorAnchor = 'top-right' | 'top-centre' | 'bottom-left' | 'bottom-centre';
 export type IndicatorBox = { x: number; y: number; width: number; height: number };
 
 // How far the cluster keeps from the outline on every side.
@@ -24,16 +24,27 @@ export const INDICATOR_STEP_PX = 1;
 
 // A fixed-size label's estimated box: an average advance per character and a line height, both
 // per font px, a little generous so the estimate errs toward avoiding the text.
+// (contentBox)
 const LABEL_CHAR_EM = 0.58;
 const LABEL_LINE_EM = 1.3;
 
-// The outline-traced kinds whose footer still reads as a box: it starts at the bottom-left.
-const BOX_FOOTER_KINDS: ReadonlySet<ShapeKind> = new Set<ShapeKind>([
-  'square',
-  'stadium',
-  'page',
-  'browser',
+// The symmetric, round or pointed kinds whose indicators centre on them (along the top, or along
+// the bottom for the footer) rather than sitting in a corner they do not have.
+const CENTRED_KINDS: ReadonlySet<ShapeKind> = new Set<ShapeKind>([
+  'circle',
+  'diamond',
+  'hexagon',
+  'cloud',
+  'triangle',
+  'trapezoid',
+  'star',
+  'actor',
 ]);
+
+/** Whether the element's indicators centre on it rather than sit in a corner. */
+export function centredIndicators(el: BoxedElement): boolean {
+  return el.type === 'shape' && CENTRED_KINDS.has(el.shape);
+}
 
 /** The element's outline as closed rings in its local, unrotated px. */
 export function indicatorRings(el: BoxedElement, cornerPx: number): Point[][] {
@@ -46,18 +57,31 @@ export function indicatorRings(el: BoxedElement, cornerPx: number): Point[][] {
   return [roundedRectRing(0, 0, el.width, el.height, cornerPx, cornerPx)];
 }
 
-/** Where the footer row starts: bottom-left on a box, centred on every other shape. */
-export function footerAnchor(el: BoxedElement): IndicatorAnchor {
-  if (!pickedByOutline(el)) return 'bottom-left';
-  return BOX_FOOTER_KINDS.has(el.shape) ? 'bottom-left' : 'bottom-centre';
+/** Where Top sits: top-right on a box, centred along the top of a round or pointed shape. */
+export function topAnchor(el: BoxedElement): IndicatorAnchor {
+  return centredIndicators(el) ? 'top-centre' : 'top-right';
 }
 
+/** Where the footer row starts: bottom-left on a box, centred on a round or pointed shape. */
+export function footerAnchor(el: BoxedElement): IndicatorAnchor {
+  return centredIndicators(el) ? 'bottom-centre' : 'bottom-left';
+}
+
+// An inline icon beside or above a label, as the content box needs it.
+export type ContentIcon = {
+  size: number;
+  position: 'left' | 'right' | 'above' | 'below';
+  gap: number;
+};
+
 /**
- * Where a FIXED-size label's text sits, estimated from its length, size, padding and alignment,
- * so a cluster can avoid the text itself rather than the whole middle band. Null for a
- * scale-to-fit label (it grows to fill its element and makes room instead) or no text.
+ * Where an element's FIXED-size content sits: its label's text, estimated from its length, size,
+ * padding and alignment, plus an inline icon beside or above it. So a cluster can avoid (or move)
+ * the content itself rather than the whole middle band. `fontPx` overrides the size preset's px
+ * (an inline-icon layout draws a scale label at a fixed px). Null for a scale-to-fit label with no
+ * icon (it grows to fill its element and makes room instead) or nothing at all.
  */
-export function labelTextBox(input: {
+export function contentBox(input: {
   width: number;
   height: number;
   label: string;
@@ -65,15 +89,30 @@ export function labelTextBox(input: {
   padding: number;
   alignX: TextAlignX;
   alignY: TextAlignY;
+  fontPx?: number;
+  icon?: ContentIcon;
 }): IndicatorBox | null {
-  const { width, height, label, textSize, padding, alignX, alignY } = input;
-  if (textSize === 'scale' || label.trim() === '') return null;
-  const px = LABEL_FONT_PX[textSize];
+  const { width, height, label, textSize, padding, alignX, alignY, icon } = input;
+  const px = input.fontPx ?? (textSize === 'scale' ? null : LABEL_FONT_PX[textSize]);
+  const hasText = label.trim() !== '' && px !== null;
+  if (!hasText && !icon) return null;
   const room = Math.max(1, width - 2 * padding);
-  const paragraphs = label.split('\n').map((line) => line.length * px * LABEL_CHAR_EM);
-  const lines = paragraphs.reduce((n, w) => n + Math.max(1, Math.ceil(w / room)), 0);
-  const w = Math.min(room, Math.max(...paragraphs));
-  const h = Math.min(height - 2 * padding, lines * px * LABEL_LINE_EM);
+  let w = 0;
+  let h = 0;
+  if (hasText) {
+    const paragraphs = label.split('\n').map((line) => line.length * px * LABEL_CHAR_EM);
+    const lines = paragraphs.reduce((n, pw) => n + Math.max(1, Math.ceil(pw / room)), 0);
+    w = Math.min(room, Math.max(...paragraphs));
+    h = lines * px * LABEL_LINE_EM;
+  }
+  if (icon) {
+    const row = icon.position === 'left' || icon.position === 'right';
+    const gap = hasText ? icon.gap : 0;
+    w = row ? w + gap + icon.size : Math.max(w, icon.size);
+    h = row ? Math.max(h, icon.size) : h + gap + icon.size;
+  }
+  w = Math.min(room, w);
+  h = Math.min(height - 2 * padding, h);
   const x =
     alignX === 'left' ? padding : alignX === 'right' ? width - padding - w : (width - w) / 2;
   const y =
@@ -83,9 +122,9 @@ export function labelTextBox(input: {
 
 /**
  * The first box of `size` that fits inside `rings`, sliding in from `anchor`'s corner, or null
- * when none does. It stays in its own half of the element and out of the middle band, where a
- * label sits; with `label` (a fixed-size label's estimated text box) it may enter the band as long
- * as it keeps the outline clearance from that text.
+ * when none does. It stays in its own half of the element. With `label` (the element's estimated
+ * content box) it keeps the outline clearance from that content wherever it is; without it, it
+ * keeps out of the middle band, where a label grows.
  */
 export function placeIndicators(
   rings: readonly (readonly Point[])[],
@@ -96,7 +135,7 @@ export function placeIndicators(
   label: IndicatorBox | null = null,
 ): IndicatorBox | null {
   if (rings.length === 0 || size.width <= 0 || size.height <= 0) return null;
-  const top = anchor === 'top-right';
+  const top = anchor === 'top-right' || anchor === 'top-centre';
   for (let s = INDICATOR_START_INSET_PX; ; s += INDICATOR_STEP_PX) {
     const box: IndicatorBox = {
       x:
@@ -109,35 +148,44 @@ export function placeIndicators(
       width: size.width,
       height: size.height,
     };
-    // Past the centre is always too far; inside the middle band is fine only when the cluster
-    // clears a fixed-size label's estimated text.
+    // Past the centre is always too far. With the content known, the cluster must keep clear of it
+    // wherever it is; without it, out of the middle band, where a label grows.
     const pastCentre = top ? box.y + box.height > height / 2 : box.y < height / 2;
     if (pastCentre || box.x < 0) return null;
-    const inBand = top
-      ? box.y + box.height > height / 2 - INDICATOR_MIDDLE_CLEARANCE_PX
-      : box.y < height / 2 + INDICATOR_MIDDLE_CLEARANCE_PX;
-    const clearOfLabel = inBand
-      ? label !== null && !overlaps(box, label, INDICATOR_OUTLINE_CLEARANCE_PX)
-      : true;
-    if (clearOfLabel && fits(box, rings)) return box;
+    const clear = label
+      ? !overlaps(box, label, INDICATOR_OUTLINE_CLEARANCE_PX)
+      : top
+        ? box.y + box.height <= height / 2 - INDICATOR_MIDDLE_CLEARANCE_PX
+        : box.y >= height / 2 + INDICATOR_MIDDLE_CLEARANCE_PX;
+    if (clear && fits(box, rings)) return box;
   }
 }
 
 /**
- * Where the pip sits: the point where a 45° line in from the box's top-right corner first meets
- * the outline (the rule `badgeCornerInset` applies to the box-drawn shapes), as an inset from the top and right edges. On a hexagon, a triangle or
- * a cloud that is its edge, not the empty box corner beside it. Null when there is no outline.
+ * Where the pip sits, as an inset from the top and right edges: where a 45° line in from the box's
+ * top-right corner first meets the outline (the rule `badgeCornerInset` applies to box-drawn
+ * shapes), or, `centred`, where a line down the middle first meets it (the top of a circle, a
+ * diamond's or triangle's apex). On a hexagon or a cloud that is the shape itself, never the empty
+ * box corner beside it. Null when there is no outline.
  */
-export function pipCornerInset(
+export function pipInset(
   rings: readonly (readonly Point[])[],
   width: number,
   height: number,
+  centred: boolean,
 ): { x: number; y: number } | null {
   if (rings.length === 0) return null;
-  // Half-pixel steps, no further in than half the shorter side.
+  const inside = (p: Point) => rings.some((ring) => insidePolygon(p, ring));
+  // Half-pixel steps, no further in than half the shorter side (half the height, centred).
+  if (centred) {
+    for (let d = 0; d <= height / 2; d += 0.5) {
+      if (inside({ x: width / 2, y: d })) return { x: width / 2, y: d };
+    }
+    return null;
+  }
   const reach = Math.min(width, height) / 2;
   for (let d = 0; d <= reach; d += 0.5) {
-    if (rings.some((ring) => insidePolygon({ x: width - d, y: d }, ring))) return { x: d, y: d };
+    if (inside({ x: width - d, y: d })) return { x: d, y: d };
   }
   return null;
 }
@@ -191,4 +239,30 @@ function fits(box: IndicatorBox, rings: readonly (readonly Point[])[]): boolean 
     }
   }
   return true;
+}
+
+/**
+ * How far the content moves to clear a cluster it would sit under: the inset off the content
+ * area's top (a Top cluster) or bottom (a Footer row) that re-centres or re-anchors it clear by
+ * the outline clearance. Null when it cannot move far enough and still fit, or would have to move
+ * against its alignment (top-aligned content under a footer, bottom-aligned under Top).
+ */
+export function contentShift(
+  cluster: IndicatorBox,
+  content: IndicatorBox,
+  height: number,
+  padding: number,
+  alignY: TextAlignY,
+  footer: boolean,
+): { top: number; bottom: number } | null {
+  const c = INDICATOR_OUTLINE_CLEARANCE_PX;
+  const need = footer
+    ? content.y + content.height + c - cluster.y
+    : cluster.y + cluster.height + c - content.y;
+  if (need <= 0) return { top: 0, bottom: 0 };
+  if (alignY === (footer ? 'top' : 'bottom')) return null;
+  // Middle content moves half of an inset, so it takes twice the need.
+  const inset = alignY === 'middle' ? 2 * need : need;
+  if (content.height + inset + 2 * padding > height) return null;
+  return footer ? { top: 0, bottom: inset } : { top: inset, bottom: 0 };
 }

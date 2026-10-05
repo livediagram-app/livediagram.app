@@ -115,10 +115,10 @@ export type UserPreferences = {
   // twitchy, so it's opt-in).
   quickAddOnHover?: boolean;
   // How an element shows its link, note, action and comments
-  // (docs/specs/008-canvas/element-indicators.md): glyphs inside its top-right corner
-  // ('corner', the default) or a labelled row along its bottom edge ('footer'). Read through
-  // `readElementIndicatorStyle`, which maps anything else to the default.
-  elementIndicatorStyle?: 'corner' | 'footer';
+  // (docs/specs/008-canvas/element-indicators.md): glyphs inside its top, at the top-right of a box
+  // ('top', the default), a labelled row along its bottom edge ('footer'), or none ('off').
+  // Read through `readElementIndicatorStyle`, which maps anything else to the default.
+  elementIndicatorStyle?: 'top' | 'footer' | 'off';
   // Alignment guides (docs/specs/008-canvas/canvas-and-palette.md). When `false`, the editor skips the
   // faint guide lines drawn along the edges / centres a dragged or
   // resized element shares with its neighbours (the snap itself is

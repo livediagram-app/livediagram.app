@@ -2,12 +2,12 @@
 
 // The person's element indicator style (docs/specs/008-canvas/element-indicators.md), for every
 // element's indicators far below the preferences. A context like CanvasZoomContext: a change
-// re-renders only the elements that carry an indicator. Outside a provider it is Corner.
+// re-renders only the elements that carry an indicator. Outside a provider it is Top.
 
 import { createContext, useContext, type ReactNode } from 'react';
 import type { ElementIndicatorStyle } from '@/lib/element-indicator-style';
 
-const ElementIndicatorStyleContext = createContext<ElementIndicatorStyle>('corner');
+const ElementIndicatorStyleContext = createContext<ElementIndicatorStyle>('top');
 
 export function ElementIndicatorStyleProvider({
   style,

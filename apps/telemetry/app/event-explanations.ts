@@ -728,8 +728,10 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Changed|LaserTrail':
     "Someone changed how long the laser pointer's trail lingers, in the Laser panel.",
   'UI|Changed|LaserWidth': "Someone changed the laser pointer's width, in the Laser panel.",
-  'UI|Changed|ElementIndicatorsCorner':
-    'Someone set element indicators (link, note, action, comments) to quiet icons in the top-right corner, in Settings > Editor.',
+  'UI|Changed|ElementIndicatorsTop':
+    'Someone set element indicators (link, note, action, comments) to quiet icons along the top of each element, in Settings > Editor.',
+  'UI|Changed|ElementIndicatorsOff':
+    'Someone turned element indicators (link, note, action, comments) off, in Settings > Editor.',
   'UI|Changed|ElementIndicatorsFooter':
     'Someone set element indicators (link, note, action, comments) to a labelled row along the bottom of each element, in Settings > Editor.',
   'UI|Changed|MapSize':

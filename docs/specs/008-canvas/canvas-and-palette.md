@@ -841,7 +841,7 @@ Every boxed element can carry a **comment thread**. Stored as `commentThread?: {
 Two entry points open the same `CommentThreadPopover`:
 
 - **Selection popover → Comment button** (speech-bubble icon). Available whenever a single element is selected.
-- **Comment indicator** on the element itself. Shown only when the thread has unresolved comments (resolved threads hide it): a comment glyph with the count beside it, among the element's other indicators (link, note, action), drawn in the style the person picked, inside the element's top-right corner by default or in a footer row. Where they sit on every shape, the fallback pip for elements too small to hold them, and the zoom rules are in [Element indicators](element-indicators.md).
+- **Comment indicator** on the element itself. Shown only when the thread has unresolved comments (resolved threads hide it): a comment glyph with the count beside it, among the element's other indicators (link, note, action), drawn in the style the person picked: along the inside of the element's top by default, in a footer row, or not at all. Where they sit on every shape, the fallback pip for elements too small to hold them, and the zoom rules are in [Element indicators](element-indicators.md).
 
 The popover is portal-rendered (it escapes the canvas transform), anchored to the right edge of the element, and flips to the left edge if it would overflow the viewport. It closes on outside click and on Escape.
 

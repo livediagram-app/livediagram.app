@@ -24,11 +24,11 @@ export type IndicatorItem = {
 
 // How a cluster is drawn: the corner glyphs, the footer row with or without its words, or the
 // pip on the outline when neither fits.
-export type IndicatorForm = 'corner' | 'footer' | 'footer-compact' | 'pip';
+export type IndicatorForm = 'top' | 'footer' | 'footer-compact' | 'pip';
 
-// Corner: 20px square buttons (a 14px glyph in 3px padding) on a backing padded 2px.
-export const CORNER_BUTTON_PX = 20;
-export const CORNER_BACKING_PAD_PX = 2;
+// Top: 20px square buttons (a 14px glyph in 3px padding) on a backing padded 2px.
+export const TOP_BUTTON_PX = 20;
+export const TOP_BACKING_PAD_PX = 2;
 // Footer: a 22px row padded 4px, items 10px apart, 12px glyphs, a 16px initials disc, the word
 // 4px after its glyph.
 export const FOOTER_ROW_PX = 22;
@@ -49,18 +49,18 @@ export function clusterSize(
   form: Exclude<IndicatorForm, 'pip'>,
 ): { width: number; height: number } {
   if (items.length === 0) return { width: 0, height: 0 };
-  if (form === 'corner') {
+  if (form === 'top') {
     const buttons = items.reduce(
-      (sum, item) => sum + CORNER_BUTTON_PX + (item.count ? countPx(item.count) : 0),
+      (sum, item) => sum + TOP_BUTTON_PX + (item.count ? countPx(item.count) : 0),
       0,
     );
     return {
-      width: buttons + 2 * CORNER_BACKING_PAD_PX,
-      height: CORNER_BUTTON_PX + 2 * CORNER_BACKING_PAD_PX,
+      width: buttons + 2 * TOP_BACKING_PAD_PX,
+      height: TOP_BUTTON_PX + 2 * TOP_BACKING_PAD_PX,
     };
   }
   const widths = items.map((item) => {
-    if (item.command) return CORNER_BUTTON_PX;
+    if (item.command) return TOP_BUTTON_PX;
     const lead = item.assignee ? FOOTER_DISC_PX : FOOTER_GLYPH_PX;
     if (item.count) return lead + FOOTER_WORD_GAP_PX + countPx(item.count);
     if (form === 'footer' && item.word) {

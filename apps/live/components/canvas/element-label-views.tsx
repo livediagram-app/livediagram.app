@@ -38,7 +38,6 @@ export function ScalingLabel({
   alignX,
   alignY,
   padding,
-  reserveY = 0,
   style,
   animClass,
 }: {
@@ -46,8 +45,6 @@ export function ScalingLabel({
   alignX: TextAlignX;
   alignY: TextAlignY;
   padding: number;
-  // Extra top and bottom inset clearing the element's indicators.
-  reserveY?: number;
   style?: LabelTextStyle;
   // Text-native animation class (docs/specs/008-canvas/canvas-and-palette.md). Only the drop-shadow variants
   // (glow / pulse / trace) reach here — see renderLabel — since drop-shadow
@@ -68,10 +65,7 @@ export function ScalingLabel({
   const viewBox = bbox ? `${bbox.x} ${bbox.y} ${bbox.w} ${bbox.h}` : '0 0 100 24';
 
   return (
-    <div
-      className="pointer-events-none absolute inset-0 flex"
-      style={{ padding, paddingTop: padding + reserveY, paddingBottom: padding + reserveY }}
-    >
+    <div className="pointer-events-none absolute inset-0 flex" style={{ padding }}>
       <svg
         width="100%"
         height="100%"

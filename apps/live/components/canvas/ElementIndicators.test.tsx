@@ -7,7 +7,7 @@ import { CanvasZoomProvider } from '@/components/canvas/CanvasZoomContext';
 import { ElementIndicatorStyleProvider } from '@/components/canvas/ElementIndicatorStyleContext';
 import { ElementIndicators } from '@/components/canvas/ElementIndicators';
 import { buildIndicatorItems, type IndicatorItem } from '@/components/canvas/indicator-items';
-import { labelReserveY, useIndicatorLayout } from '@/components/canvas/useIndicatorLayout';
+import { placeCluster, useIndicatorLayout } from '@/components/canvas/useIndicatorLayout';
 import type { ElementIndicatorStyle } from '@/lib/element-indicator-style';
 
 // docs/specs/008-canvas/element-indicators.md: the element's link / note / action / comments drawn
@@ -35,7 +35,7 @@ function draw(
 ) {
   const wrap = ({ children }: { children: ReactNode }) => (
     <CanvasZoomProvider zoom={opts.zoom ?? 1}>
-      <ElementIndicatorStyleProvider style={opts.style ?? 'corner'}>
+      <ElementIndicatorStyleProvider style={opts.style ?? 'top'}>
         {children}
       </ElementIndicatorStyleProvider>
     </CanvasZoomProvider>
@@ -72,7 +72,7 @@ function Placed({
 describe('ElementIndicators', () => {
   it('prints the glyphs inside a roomy element’s corner, commands hidden at rest', () => {
     const { container } = draw(shape('mind-node', 260, 116));
-    expect(container.querySelector('[data-indicators="corner"]')).not.toBeNull();
+    expect(container.querySelector('[data-indicators="top"]')).not.toBeNull();
     expect(screen.getByRole('button', { name: 'Open 2 comments' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Open note' })).toBeTruthy();
     const outline = screen.getByRole('button', { name: 'Edit Outline', hidden: true });
@@ -98,7 +98,7 @@ describe('ElementIndicators', () => {
 
   it('sits inside a circle too', () => {
     const { container } = draw(shape('circle', 200, 200));
-    expect(container.querySelector('[data-indicators="corner"]')).not.toBeNull();
+    expect(container.querySelector('[data-indicators="top"]')).not.toBeNull();
   });
 
   it('falls back to the pip on an element with no room', () => {
@@ -119,17 +119,65 @@ describe('ElementIndicators', () => {
     expect(screen.queryByText('Note')).toBeNull();
   });
 
+  it('draws nothing when the person turned indicators off', () => {
+    const { container } = draw(shape('mind-node', 260, 116), { style: 'off' });
+    expect(container.innerHTML).toBe('');
+  });
+
   it('draws nothing below the adornment zoom', () => {
     const { container } = draw(shape('mind-node', 260, 116), { zoom: 0.3 });
     expect(container.innerHTML).toBe('');
   });
 
-  it('reserves room for a scaled label, nothing for the pip', () => {
-    const box = { x: 180, y: 9, width: 70, height: 24 };
-    expect(labelReserveY({ form: 'corner', box, pip: null }, 116, 8)).toBe(25);
-    const foot = { x: 9, y: 85, width: 120, height: 22 };
-    expect(labelReserveY({ form: 'footer', box: foot, pip: null }, 116, 8)).toBe(23);
-    expect(labelReserveY({ form: 'pip', box: null, pip: { x: 4, y: 4 } }, 116, 8)).toBe(0);
-    expect(labelReserveY(null, 116, 8)).toBe(0);
+  it('moves an icon and label down out of the way of the icons along the top', () => {
+    const cloud = shape('cloud', 290, 190);
+    const content = {
+      label: 'Cloud',
+      textSize: 'md',
+      padding: 14,
+      alignX: 'center',
+      alignY: 'middle',
+      fontPx: 22,
+      icon: { size: 35, position: 'above', gap: 7 },
+    } as const;
+    const layout = placeCluster(cloud, 0, items(), 'top', content);
+    expect(layout.form).toBe('top');
+    expect(layout.inset.top).toBeGreaterThan(0);
+    expect(layout.inset.bottom).toBe(0);
+  });
+
+  it('leaves content that is already clear where it is', () => {
+    const content = {
+      label: 'HTML',
+      textSize: 'md',
+      padding: 14,
+      alignX: 'center',
+      alignY: 'middle',
+    } as const;
+    const layout = placeCluster(
+      shape('mind-node', 220, 76),
+      12,
+      items({ comments: undefined, action: undefined, outline: undefined, tidy: undefined }),
+      'top',
+      content,
+    );
+    expect(layout.form).toBe('top');
+    expect(layout.inset).toEqual({ top: 0, bottom: 0 });
+  });
+
+  it('shrinks a scale-to-fit label evenly, and moves nothing for the pip', () => {
+    const scaled = {
+      label: 'Big',
+      textSize: 'scale',
+      padding: 8,
+      alignX: 'center',
+      alignY: 'middle',
+    } as const;
+    const layout = placeCluster(shape('mind-node', 260, 116), 14, items(), 'top', scaled);
+    expect(layout.inset.top).toBeGreaterThan(0);
+    expect(layout.inset.top).toBe(layout.inset.bottom);
+    const pip = placeCluster(shape('stadium', 120, 40), 0, items(), 'top', scaled);
+    expect(pip.form).toBe('pip');
+    expect(pip.inset).toEqual({ top: 0, bottom: 0 });
   });
 });

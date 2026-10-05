@@ -14,16 +14,19 @@ can **do** to it (Tidy Map), all at equal weight, all the time. Indicators are s
 read as part of the element, quiet until you look for them, and commands should appear only when
 you are working on that element.
 
-## Two styles
+## Styles
 
 A per-person preference, `elementIndicatorStyle` ([User preferences](../007-editor/user-preferences.md)),
-picks one of two styles. Settings › Editor › **Element Indicators** offers **Corner** (the
-default) and **Footer**.
+picks how they show. Settings › Editor › **Element Indicators** offers **Top** (the default),
+**Footer** and **Off**.
 
-### Corner (default)
+### Top (default)
 
-The indicators are **glyphs printed inside the element**, near its top-right corner, with no chip
-of their own: they read like metadata printed on a card.
+The indicators are **glyphs printed inside the element**, along its top, with no chip of their
+own: they read like metadata printed on a card. On a box-like element (a rectangle, rounded
+rectangle, pill, mind node, card or panel) they sit at the **top-right**; on a round or pointed
+shape (circle, diamond, hexagon, cloud, triangle, trapezoid, star, actor) they are **centred**
+along the top, since that shape has no corner for them to sit in.
 
 - Each is a 14px line glyph in the element's own **text colour** at 50% opacity, so they suit any
   fill, theme or style preset. While the element is hovered or selected they rise to 85%, and the
@@ -42,13 +45,19 @@ shows its metadata, with words beside the glyphs:
 - **Link** (link glyph + "Link"), **Note** (note glyph + "Note"), the action as the assignee's
   initials on a small disc in their colour + "Action", and comments as the comment glyph + the
   count.
-- Same colour rules as Corner: the element's text colour at 50%, 85% on hover or selection.
+- Same colour rules as Top: the element's text colour at 50%, 85% on hover or selection.
 - When the labelled row does not fit, the words drop and the row shows glyphs, the disc and the
   count only (**compact**).
-- On box-like elements (a rectangle, rounded rectangle, pill, mind node, card or panel) the row
-  starts at the bottom-left; on every other shape (circle, diamond, hexagon, triangle, cloud, and
-  so on) it is centred, so it sits in the shape's lower curve or point rather than in an empty
-  corner.
+- On box-like elements the row starts at the bottom-left; on the round or pointed shapes Top
+  centres on, it is centred too, so it sits in the shape's lower curve or point rather than in an
+  empty corner.
+
+### Off
+
+No indicators are drawn on any element, and a mind root's commands do not appear on hover or
+selection. Everything they open stays reachable: links, notes and actions from the element's
+menu, comments from the element's menu and the Collaborate panel, and Edit Outline and Tidy Map
+from the root's Mind Map menu section. A scale-to-fit label keeps its whole box.
 
 ## Placement on any shape
 
@@ -59,33 +68,38 @@ Both styles sit **inside the element's outline**, never across it, on every shap
   hexagon's or triangle's polygon, a cloud's curve, a pill's rounded ends, and for an element
   that paints its own face (a mind node, a card, a panel) its box with its own corner radius.
 - The cluster keeps **at least 6px clear of the outline** on every side.
-- Corner starts tight in the top-right corner and slides **inward along the diagonal** until it
-  fits, so on a rounded rectangle it sits about 9px in, and on a circle inside the curve of its
-  top-right, still reading as "top-right". A diamond's corner only has room on a large diamond.
+- Top on a box starts tight in the top-right corner and slides **inward along the diagonal**
+  until it fits, so on a rounded rectangle it sits about 9px in. Centred, it starts at the top and
+  slides **down** until it fits inside the curve or point: just under a circle's or cloud's top,
+  inside a hexagon's top edge, a little way down a diamond from its apex.
 - Footer starts on the bottom edge and slides **up** until it fits.
-- Neither passes the element's vertical centre, and each keeps out of its **middle band**, where
-  the label is: Corner stays above, and Footer below, a line 14px short of the centre. A
-  **fixed-size label** relaxes that: the cluster may enter the band as long as it keeps 6px clear
-  of the label's text, estimated from its length, size, padding and alignment. So a short node
-  with a short label ("HTML") still gets corner icons, while a long label that runs under the
-  corner sends them to the pip.
-- A **scale-to-fit label** (the default text size, which grows to fill its element) pulls in from
-  its top and bottom by the band the cluster takes, so it shrinks to clear the indicators and
-  stays centred. A fixed-size label never moves; the middle band keeps it clear.
+- Neither passes the element's vertical centre. Each first looks for a spot **clear of the
+  content**: the label's text and an inline icon beside or above it, estimated from the label's
+  length, size, padding and alignment and the icon's size and side. So a short node with a short
+  label ("HTML") keeps its content where it is.
+- When no such spot exists, the cluster takes a spot out of the element's **middle band** (Top
+  above, Footer below, a line 14px short of the centre) and the **content moves out of its way**:
+  down for Top, up for Footer, just far enough to leave 6px between them. Centred content moves by
+  re-centring in the smaller area; top- or bottom-aligned content by the overlap. If the content
+  cannot move that far and still fit, or would have to move against its alignment (bottom-aligned
+  content under Top), the indicators fall back to the pip instead.
+- A **scale-to-fit label** (which grows to fill its element) pulls in from its top and bottom by
+  the band the cluster takes, so it shrinks to clear the indicators and stays centred.
 
 ### When it does not fit
 
 On an element too small, too thin or too spiky for the cluster (a small pill, a progress bar, a
-star, an actor, most diamonds), the indicators fall back to a **pip**: a small chip centred on the
-element's outline where a 45° line in from its box's top-right corner first meets the shape (a
-hexagon's or triangle's edge, never the empty corner beside it), half in and half out, drawn in the element's own fill
-with a hairline ring (no shadow), holding the same glyphs at 11px with no dividers. Footer tries
-its compact row before falling back.
+star, an actor, a small diamond), the indicators fall back to a **pip**: a small chip centred on
+the element's outline, half in and half out, drawn in the element's own fill with a hairline ring
+(no shadow), holding the same glyphs at 11px with no dividers. On a box it sits where a 45° line
+in from the box's top-right corner meets the outline; on a round or pointed shape, at the top of
+the outline down its middle (a circle's top, a diamond's or triangle's apex), never in the empty
+box corner beside it. Footer tries its compact row before falling back.
 
 ## Commands
 
 A mind map root's **Edit Outline** and **Tidy Map** are commands, not status, so they are hidden
-at rest and appear only while that root is **hovered or selected**. In Corner they lead the cluster
+at rest and appear only while that root is **hovered or selected**. In Top they lead the cluster
 (left of the indicators); in Footer they end the row; in the pip they lead it. Their space is
 reserved at rest, so nothing moves when they appear. Both stay in the root's Mind Map menu section
 too, which is the way in on a touch device without selecting first.
@@ -111,5 +125,5 @@ too, which is the way in on a touch device without selecting first.
 
 ## Telemetry
 
-Picking a style in Settings sends `UI` · `Changed` · `ElementIndicatorsCorner` or
-`ElementIndicatorsFooter` ([Telemetry](../017-telemetry/telemetry.md)).
+Picking a style in Settings sends `UI` · `Changed` · `ElementIndicatorsTop`,
+`ElementIndicatorsFooter` or `ElementIndicatorsOff` ([Telemetry](../017-telemetry/telemetry.md)).

@@ -1,6 +1,6 @@
 // An element's indicators (docs/specs/008-canvas/element-indicators.md): its link, note, action and
 // comments, plus a mind root's Edit Outline and Tidy Map commands. Drawn INSIDE the element's
-// outline in the person's style, Corner (quiet glyphs near the top-right) or Footer (a labelled
+// outline in the person's style, Top (quiet glyphs near the top) or Footer (a labelled
 // row along the bottom), or as the pip on the outline when the element has no room for either.
 //
 // Glyphs take the element's own text colour (inherited `currentColor`) at rest opacity, so they
@@ -24,7 +24,7 @@ import { ADORNMENT_MIN_ZOOM } from '@/components/canvas/element-badges';
 import type { IndicatorLayout } from '@/components/canvas/useIndicatorLayout';
 import { IDENTITY_FILL, identityVars } from '@/lib/identity-fill';
 import {
-  CORNER_BACKING_PAD_PX,
+  TOP_BACKING_PAD_PX,
   FOOTER_PAD_PX,
   FOOTER_ROW_PX,
   type IndicatorItem,
@@ -106,16 +106,16 @@ export function ElementIndicators({
   }
 
   const { box } = placed;
-  if (placed.form === 'corner') {
+  if (placed.form === 'top') {
     return (
       <div
-        data-indicators="corner"
+        data-indicators="top"
         onPointerDown={(e) => e.stopPropagation()}
         style={{
           left: box.x,
           top: box.y,
           height: box.height,
-          padding: CORNER_BACKING_PAD_PX,
+          padding: TOP_BACKING_PAD_PX,
           backgroundColor: fill,
         }}
         className="pointer-events-auto absolute flex items-center rounded"
