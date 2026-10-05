@@ -1,6 +1,5 @@
 import { ctaHref, type CtaSurface } from '@livediagram/api-schema';
 import type { ReactNode } from 'react';
-import { SiteAppearanceToggle } from './appearance/SiteAppearanceToggle';
 import { Brand } from './Brand';
 import { ButtonContent, buttonClassName } from './Button';
 import { ProductNav, type ProductNavKey } from './ProductNav';
@@ -14,17 +13,16 @@ import { StartBlankMenu } from './StartBlankMenu';
 // primary "Choose Template", /new, the encouraged wizard path), with the
 // ShareRail pinned to the page edge below. Cross-surface navigation (Help,
 // Explorer, Telemetry, ...) lives in the apps menu, so the header itself
-// carries just those CTAs, plus the quiet Appearance toggle just left of them
-// (docs/specs/004-interface-design/appearance.md). Where the ShareRail shows (xl+) the toggle
-// moves to its own rail under it, so the header holds only the CTAs there; on a phone there is no
-// room for it, so it is left out (the device's own setting applies through System).
+// carries just those CTAs. The Appearance toggle is never here
+// (docs/specs/004-interface-design/appearance.md): it sits on the page-edge rail (xl+), and where there is
+// no gutter for the rail it is left out (the device's own setting applies through System).
 //
 // `productNav` is the current section key for the apps-menu dropdown next to
 // the logo (the landing page passes 'home', which reads as "Welcome").
 // `center` is an optional slot between the two clusters, shown from `sm` up
 // (the help centre's search box). `actions` replaces the default CTA pair
-// (help keeps its single "Start drawing"). `shareRail` (default true) mounts
-// the page-edge ShareRail; help leaves it off. `wide` matches a surface whose
+// (help keeps its single "Start drawing"). `shareRail` (default true) puts the
+// share links on the page-edge rail; help and Community turn them off, keeping the rail's Appearance card. `wide` matches a surface whose
 // pages run max-w-7xl with md:px-8 (help), so the logo lines up with the
 // breadcrumb and content below instead of sitting inside a narrower column.
 //
@@ -75,12 +73,12 @@ export function SiteHeader({
             </div>
           ) : null}
           <div className="flex shrink-0 items-center gap-2">
-            <SiteAppearanceToggle className={`max-sm:hidden ${shareRail ? 'xl:hidden' : ''}`} />
             {actions ?? <DefaultActions ctaSurface={ctaSurface} />}
           </div>
         </div>
       </header>
-      {shareRail ? <ShareRail /> : null}
+      {/* The page-edge rail: sharing (unless `shareRail` is off) and, always, the Appearance toggle. */}
+      <ShareRail share={shareRail} />
     </>
   );
 }
