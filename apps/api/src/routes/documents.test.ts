@@ -739,13 +739,41 @@ describe('a tab-scoped visitor', () => {
   });
 
   it('names the tab it touches, so the gate can confine it', async () => {
-    canReadDocument.mockResolvedValue(true);
+    // Reading: the grant's tab scope opens its own tab and no other.
     db.getTab.mockResolvedValue({ id: 't2', name: 'Roadmap', elements: [] });
-    await handleDocuments(makeCtx('GET', '/api/documents/d1/tabs/t2', visitor));
-    expect(canReadDocument.mock.calls.at(-1)?.at(8)).toBe('t2');
+    const own = await handleDocuments(makeCtx('GET', '/api/documents/d1/tabs/t2', visitor));
+    expect(own.status).toBe(200);
+    const other = await handleDocuments(makeCtx('GET', '/api/documents/d1/tabs/t1', visitor));
+    expect(other.status).toBe(404);
     canEditDocument.mockResolvedValue(true);
     await handleDocuments(makeCtx('PUT', '/api/documents/d1/tabs/t2', { ...visitor, body: {} }));
     expect(canEditDocument.mock.calls.at(-1)?.at(-1)).toBe('t2');
+  });
+
+  it('reads a Community visit without its conversation, from the grant alone', async () => {
+    resolveDocumentGrant.mockResolvedValue({
+      role: 'view',
+      tabScope: null,
+      shareCode: 'COMMUNITY1',
+      community: true,
+    });
+    db.getTab.mockResolvedValue({
+      id: 't2',
+      name: 'Roadmap',
+      elements: [
+        {
+          id: 'e1',
+          type: 'shape',
+          commentThread: { comments: [{ id: 'c1', text: 'secret', authorId: 'user_jane' }] },
+        },
+      ],
+    });
+    const res = await handleDocuments(makeCtx('GET', '/api/documents/d1/tabs/t2', visitor));
+    expect(res.status).toBe(200);
+    const text = await res.text();
+    expect(text).toContain('"e1"');
+    expect(text).not.toContain('secret');
+    expect(text).not.toContain('user_jane');
   });
 
   it('cannot delete the tab its link is scoped to', async () => {

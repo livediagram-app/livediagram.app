@@ -33,14 +33,12 @@ import {
   deniedOnTab,
   gateEdit,
   gateGrant,
-  gateRead,
   missingDocument,
   ownsDocument,
   requireOwner,
   shareCodeOf,
   COMMUNITY_CONTENT,
   type RouteContext,
-  viaCommunityLink,
 } from './context';
 import { answerTabView, parseViewQuery } from './document-views-route';
 
@@ -98,15 +96,12 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
       // Naming the tab confines a tab-scoped link to its own tab
       // (docs/specs/013-workspace/tab-scoped-share-links.md). Every other tab reads as missing: 404, no
       // existence leak.
-      const allowed = await gateRead(
-        ctx,
-        id,
-        existing.ownerId,
-        existing.teamId,
-        tabId,
-        COMMUNITY_CONTENT,
-      );
-      if (!allowed) return deniedOnTab(ctx, existing);
+      // The grant itself, not a yes/no: it already says whether the visitor came through a Community
+      // link, so that is not looked up a second time below.
+      const grant = await gateGrant(ctx, id, existing.ownerId, existing.teamId, COMMUNITY_CONTENT);
+      if (!grant || (grant.tabScope !== null && grant.tabScope !== tabId)) {
+        return deniedOnTab(ctx, existing);
+      }
       const tab = await getTab(env, id, tabId);
       if (!tab) return notFound();
       // Blank other people's comment author ids before handing the tab
@@ -117,7 +112,7 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
       //
       // A Community visitor gets the board without its conversation or its people
       // (docs/specs/025-community/community.md, community-redact.ts).
-      const communityVisit = owner !== existing.ownerId && (await viaCommunityLink(ctx));
+      const communityVisit = owner !== existing.ownerId && grant.community;
       const safe =
         owner === existing.ownerId
           ? tab
