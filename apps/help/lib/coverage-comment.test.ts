@@ -4,6 +4,7 @@ import {
   MARKER,
   coverageDiffBlock,
   coverageOf,
+  failureReason,
   patchLine,
   pctDelta,
   renderComment,
@@ -194,5 +195,24 @@ describe('AREAS', () => {
     ]) {
       expect(paths).toContain(p);
     }
+  });
+});
+
+describe('failureReason', () => {
+  it('names the network cause undici hides behind "fetch failed"', () => {
+    const cause = Object.assign(new Error('getaddrinfo ENOTFOUND api.codecov.io'), {
+      code: 'ENOTFOUND',
+    });
+    expect(failureReason(new TypeError('fetch failed', { cause }))).toBe(
+      'fetch failed (ENOTFOUND: getaddrinfo ENOTFOUND api.codecov.io)',
+    );
+    expect(
+      failureReason(new TypeError('fetch failed', { cause: new Error('socket hang up') })),
+    ).toBe('fetch failed (socket hang up)');
+  });
+
+  it('is the message alone without a cause, and the value itself for a non-error', () => {
+    expect(failureReason(new Error('answered 502'))).toBe('answered 502');
+    expect(failureReason('boom')).toBe('boom');
   });
 });

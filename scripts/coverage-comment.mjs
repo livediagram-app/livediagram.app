@@ -30,6 +30,8 @@ const CODECOV_API = 'https://api.codecov.io/api/v2/github';
 const CODECOV_GRAPHQL = 'https://api.codecov.io/graphql/gh';
 const POLL_INTERVAL_MS = 10_000;
 const POLL_ATTEMPTS = 30;
+/** Network failures the poll rides out before giving up: a dropped connection, not a dead certificate. */
+const NETWORK_RETRIES = 3;
 
 /** @typedef {{ files: number, lines: number, hits: number, misses: number, partials: number }} Totals */
 
@@ -186,8 +188,26 @@ export function renderComment(report) {
   ].join('\n');
 }
 
+/** Why a call failed: the message, with the network cause undici keeps behind "fetch failed". */
+export function failureReason(/** @type {unknown} */ error) {
+  if (!(error instanceof Error)) return String(error);
+  const cause = error.cause instanceof Error ? error.cause : null;
+  if (!cause) return error.message;
+  const code = /** @type {{ code?: unknown }} */ (cause).code;
+  return `${error.message} (${typeof code === 'string' ? `${code}: ` : ''}${cause.message})`;
+}
+
+/** fetch, failing with the method, the URL and the cause, so a log names what could not be reached. */
+async function call(/** @type {string} */ url, /** @type {RequestInit} */ init = {}) {
+  try {
+    return await fetch(url, init);
+  } catch (error) {
+    throw new Error(`${init.method ?? 'GET'} ${url} failed: ${failureReason(error)}`);
+  }
+}
+
 async function json(/** @type {string} */ url, /** @type {RequestInit} */ init = {}) {
-  const res = await fetch(url, init);
+  const res = await call(url, init);
   if (!res.ok)
     throw new Error(`${init.method ?? 'GET'} ${url} answered ${res.status}: ${await res.text()}`);
   return res.json();
@@ -240,11 +260,21 @@ async function main() {
   // Codecov processes the uploads a little after CI ends: wait for this head, with every upload in.
   let pull = null;
   let graphToken = null;
+  // A dropped connection is one more attempt that was not ready, up to NETWORK_RETRIES of them.
+  let networkFailures = 0;
   for (let attempt = 1; attempt <= POLL_ATTEMPTS; attempt += 1) {
-    ({ pull, graphToken } = await codecovPull(owner, repo, pr));
-    const commit = await fetch(`${repoApi}/commits/${headSha}/`).then((r) =>
-      r.ok ? r.json() : null,
-    );
+    let commit = null;
+    try {
+      ({ pull, graphToken } = await codecovPull(owner, repo, pr));
+      commit = await call(`${repoApi}/commits/${headSha}/`).then((r) => (r.ok ? r.json() : null));
+    } catch (error) {
+      networkFailures += 1;
+      if (networkFailures > NETWORK_RETRIES) throw error;
+      console.warn(`[coverage-comment] attempt ${attempt}: ${failureReason(error)}; retrying`);
+      pull = null;
+      await new Promise((r) => setTimeout(r, POLL_INTERVAL_MS));
+      continue;
+    }
     const sessions = commit?.totals?.sessions ?? 0;
     const ready =
       pull?.head?.commitid === headSha &&
@@ -312,7 +342,7 @@ async function main() {
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   main().catch((error) => {
-    console.error(`[coverage-comment] failed: ${error instanceof Error ? error.message : error}`);
+    console.error(`[coverage-comment] failed: ${failureReason(error)}`);
     process.exit(1);
   });
 }

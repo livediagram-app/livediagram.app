@@ -183,7 +183,8 @@ The pull request's coverage comment is ours, not Codecov's (`comment: false`): t
 free Developer plan is Codecov's team tier, which writes a fixed, patch-only comment whatever
 `codecov.yml` asks for. After CI succeeds, `coverage-comment.yml` runs
 `scripts/coverage-comment.mjs`, which waits until Codecov has processed all four uploads of the
-head commit, reads its numbers from Codecov's public API and writes one comment, edited in place on
+head commit (riding out up to three dropped connections; every failure names the URL and the network
+cause), reads its numbers from Codecov's public API and writes one comment, edited in place on
 each later run:
 
 - the patch coverage (the changed lines), and the project coverage with its change;
