@@ -94,7 +94,12 @@ export function ModerationPage() {
         {queue.status === 'ready' && queue.items.length > 0 ? (
           <ul className="flex flex-col gap-3">
             {queue.items.map((item) => (
-              <ModerationItemCard key={item.id} item={item} onModerate={queue.moderate} />
+              <ModerationItemCard
+                key={item.id}
+                item={item}
+                ownerId={signedIn ? (clerkUserId ?? null) : null}
+                onModerate={queue.moderate}
+              />
             ))}
           </ul>
         ) : null}

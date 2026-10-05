@@ -11,6 +11,7 @@ import type {
   CommunityPostInput,
   CommunityPostState,
 } from '@livediagram/api-schema';
+import { communityImagePath } from '@livediagram/api-schema';
 import { API_BASE, apiDelete, apiFetch, apiHeaders, expectOk } from './core';
 
 function documentCommunityUrl(documentId: string): string {
@@ -93,4 +94,16 @@ export async function apiModeratePost(
   );
   const { item } = await expectOk<{ item: CommunityModerationItem }>(res, 'moderate post');
   return item;
+}
+
+// A post's card image for the Moderation page. An <img> sends no session token, and a hidden post's image is
+// served only to an operator, so the page fetches it with one and shows the bytes. Null when there is none.
+export async function apiFetchCommunityImage(
+  ownerId: string,
+  shareCode: string,
+): Promise<Blob | null> {
+  const res = await apiFetch(`${API_BASE}${communityImagePath(shareCode)}`, {
+    headers: await apiHeaders(ownerId),
+  });
+  return res.ok ? res.blob() : null;
 }

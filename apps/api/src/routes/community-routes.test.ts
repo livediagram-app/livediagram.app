@@ -397,10 +397,16 @@ describe('the community link', () => {
           clerkUserId: clerk,
         }),
       );
-    expect((await image()).status).toBe(200);
+    const listed = await image();
+    expect(listed.status).toBe(200);
+    // Briefly cacheable, with no stale window to outlive a hiding.
+    expect(listed.headers.get('Cache-Control')).toBe('public, max-age=30');
     db.sql.prepare("UPDATE community_posts SET state = 'hidden'").run();
     expect((await image()).status).toBe(404);
-    expect((await image('user_op')).status).toBe(200);
+    const review = await image('user_op');
+    expect(review.status).toBe(200);
+    // What an operator sees of a hidden post is never stored for anyone else.
+    expect(review.headers.get('Cache-Control')).toBe('private, no-store');
   });
 
   it('is not listed for the owner, survives revoke-all, and cannot be revoked by code', async () => {

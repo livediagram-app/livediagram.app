@@ -4,16 +4,15 @@ import { useState } from 'react';
 import {
   COMMUNITY_REPORT_REASONS,
   communityCategoryLabel,
-  communityImagePath,
   type CommunityModerationItem,
   type CommunityPostState,
 } from '@livediagram/api-schema';
 import { Button, buttonClassName } from '@livediagram/ui';
 import { CommunityAuthorDisc } from '@/components/primitives/CommunityAuthorDisc';
-import { API_BASE } from '@/lib/api-client';
 import { communityErrorMessage } from '@/lib/community-errors';
 import { communityBoardPath, communityPostPath } from '@/lib/community-links';
 import { track } from '@/lib/telemetry';
+import { useModerationImage } from './useModerationImage';
 
 const REASON_LABELS = new Map<string, string>(COMMUNITY_REPORT_REASONS.map((r) => [r.id, r.label]));
 
@@ -35,14 +34,18 @@ function formatDate(ms: number): string {
 // Restore.
 export function ModerationItemCard({
   item,
+  ownerId,
   onModerate,
 }: {
   item: CommunityModerationItem;
+  // The operator, whose session fetches the image (a hidden post's is served only to them).
+  ownerId: string | null;
   onModerate: (postId: string, state: CommunityPostState) => Promise<void>;
 }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const hidden = item.state === 'hidden';
+  const imageUrl = useModerationImage(ownerId, item.shareCode);
 
   const act = async (state: CommunityPostState) => {
     setBusy(true);
@@ -59,12 +62,19 @@ export function ModerationItemCard({
 
   return (
     <li className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:flex-row dark:border-slate-700 dark:bg-slate-900">
-      <img
-        src={`${API_BASE}${communityImagePath(item.shareCode)}`}
-        alt={item.title}
-        loading="lazy"
-        className="aspect-[4/3] w-full shrink-0 rounded-lg border border-slate-100 bg-slate-50 object-contain sm:w-48 dark:border-slate-800 dark:bg-slate-950"
-      />
+      {imageUrl ? (
+        <img
+          src={imageUrl}
+          alt={item.title}
+          className="aspect-[4/3] w-full shrink-0 rounded-lg border border-slate-100 bg-slate-50 object-contain sm:w-48 dark:border-slate-800 dark:bg-slate-950"
+        />
+      ) : (
+        // The same box while it loads (or when there is no image), so the card does not jump.
+        <div
+          aria-hidden
+          className="aspect-[4/3] w-full shrink-0 rounded-lg border border-slate-100 bg-slate-50 sm:w-48 dark:border-slate-800 dark:bg-slate-950"
+        />
+      )}
       <div className="flex min-w-0 flex-1 flex-col gap-2">
         <div className="flex flex-wrap items-start justify-between gap-2">
           <div className="min-w-0">

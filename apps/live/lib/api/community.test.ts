@@ -3,6 +3,7 @@ import { ApiError } from './core';
 import {
   apiCommunityPopularTags,
   apiGetCommunityPost,
+  apiFetchCommunityImage,
   apiListModeration,
   apiModeratePost,
   apiPublishCommunityPost,
@@ -88,6 +89,17 @@ describe('community api client', () => {
     expect(await apiModeratePost('guest-1', 'p1', 'hidden')).toEqual({ id: 'p1', state: 'hidden' });
     expect(seen[1]!.url).toBe('/api/community/posts/p1/moderation');
     expect(JSON.parse(seen[1]!.body!)).toEqual({ state: 'hidden' });
+  });
+
+  it("fetches a post's image with the caller's identity, and none when it is refused", async () => {
+    const seen = stubFetch((url) =>
+      url.includes('OPEN') ? new Response('<svg/>') : new Response(null, { status: 404 }),
+    );
+    const blob = await apiFetchCommunityImage('guest-1', 'OPEN1');
+    expect(await blob?.text()).toBe('<svg/>');
+    expect(seen[0]!.url).toBe('/api/share/OPEN1/image.svg');
+    expect(seen[0]!.headers.get('X-Owner-Id')).toBe('guest-1');
+    expect(await apiFetchCommunityImage('guest-1', 'GONE1')).toBeNull();
   });
 
   it('asks for popular tags without any identity, and shrugs off a failure', async () => {

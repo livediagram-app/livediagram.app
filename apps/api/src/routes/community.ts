@@ -108,12 +108,13 @@ export async function handleCommunity(ctx: RouteContext): Promise<Response> {
   }
 
   // GET /api/community/featured: the landing page's six (docs/specs/025-community/community.md "Featured on
-  // the home page"). The same for everyone, so cacheable a little longer.
+  // the home page"). The same for everyone, so cacheable a little longer, but only for a minute: a post
+  // hidden after reports must not linger on the home page.
   if (segments.length === 3 && segments[2] === 'featured' && method === 'GET') {
     const rows = await listFeaturedCommunityPosts(env);
     return json(
       { posts: rows.map((row) => rowToCommunityPost(row, false)) },
-      { headers: { 'Cache-Control': 'public, max-age=300' } },
+      { headers: { 'Cache-Control': 'public, max-age=60' } },
     );
   }
 

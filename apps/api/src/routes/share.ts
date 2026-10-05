@@ -130,6 +130,9 @@ export async function handleShare(ctx: RouteContext): Promise<Response> {
 //     supply the password, so serving one would bypass the gate. The
 //     Share dialog hides the live-image option while a password is set,
 //     and this is the matching server-side enforcement.
+const SHARE_IMAGE_CACHE = 'public, max-age=30, stale-while-revalidate=300';
+const COMMUNITY_IMAGE_CACHE = 'public, max-age=30';
+
 // Short, stale-while-revalidate cache so embeds stay close to live
 // without hammering the origin on every view (the bytes themselves come
 // from R2; the worker only re-renders when the document was saved since).
@@ -137,13 +140,16 @@ async function handleShareImage(ctx: RouteContext, code: string): Promise<Respon
   const { env, request } = ctx;
   const link = await getShareLink(env, code);
   if (!link) return notFound();
+  let cacheControl = SHARE_IMAGE_CACHE;
   // A hidden Community post's image is gone with it, except to an operator reviewing it
-  // (docs/specs/025-community/community.md "Reports and moderation").
+  // (docs/specs/025-community/community.md "Reports and moderation"). So a hidden post's image cannot
+  // linger: no stale window on a public one, and an operator's view of a closed one is never stored.
   if (link.purpose === 'community') {
     const access = await communityLinkAccess(env, link.code);
     if (access === null || (access === 'closed' && !isCommunityOperator(env, ctx.clerkUserId))) {
       return notFound();
     }
+    cacheControl = access === 'closed' ? 'private, no-store' : COMMUNITY_IMAGE_CACHE;
   }
   const d = await getDocument(env, link.documentId);
   if (!d) return missingSharedDocument(env, link.documentId);
@@ -161,7 +167,7 @@ async function handleShareImage(ctx: RouteContext, code: string): Promise<Respon
   const svg = tabId
     ? await getDocumentTabImageSvg(env, d, tabId)
     : await getDocumentThumbnailSvg(env, d);
-  return svg == null ? notFound() : svgImage(svg, 'public, max-age=30, stale-while-revalidate=300');
+  return svg == null ? notFound() : svgImage(svg, cacheControl);
 }
 
 // Returns a 401/403 Response when the document is password-protected and

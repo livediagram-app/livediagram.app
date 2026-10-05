@@ -186,6 +186,9 @@ unliking removes it.
 - An author is not told their post was hidden; the Community section in their Share dialog shows it as hidden.
 - With `COMMUNITY_OPERATOR_IDS` unset (a fresh self-host) automatic hiding still works and nobody can moderate by hand.
 
+Hiding takes effect at once at the api. What browsers and caches may still hold is short: a post, a list or a card
+image for at most 30 seconds, the home page's six for a minute. An operator's view of a hidden post is never stored.
+
 ## My Shares
 
 A signed-in author can narrow the gallery to their own posts, to review them and see how they are doing.
@@ -209,8 +212,8 @@ most liked over the last three months, topped up (when fewer than six were liked
 of all time by likes and copies, newest first on a tie. Public posts only, credited as they are in the
 gallery (Anonymous when the author chose it). The page is static, so the six load after it: placeholder cards
 hold their space, and with nothing to show the section says the Community is just getting started. **Explore
-the Community** leads to the gallery. The api answers `GET /api/community/featured`, cacheable for five
-minutes.
+the Community** leads to the gallery. The api answers `GET /api/community/featured`, cacheable for one
+minute.
 
 ## Where Community is linked from
 
