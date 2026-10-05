@@ -6,6 +6,7 @@ import {
   COMMUNITY_PAGE_SIZE,
   COMMUNITY_POPULAR_TAGS,
   COMMUNITY_RELATED_POSTS,
+  communitySearchTags,
   communitySearchTerms,
   type CommunityCategory,
   type CommunityFacetsResponse,
@@ -178,11 +179,13 @@ export async function listCommunityPosts(
     where.push('cp.category = ?');
     binds.push(query.category);
   }
-  if (query.tag) {
+  // Every tag asked for must be on the post: the `tag` parameter and each `#tag` in the search.
+  const tags = [...new Set([...(query.tag ? [query.tag] : []), ...communitySearchTags(query.q)])];
+  for (const tag of tags) {
     where.push(
       'EXISTS (SELECT 1 FROM community_post_tags t WHERE t.post_id = cp.id AND t.tag = ?)',
     );
-    binds.push(query.tag);
+    binds.push(tag);
   }
   for (const term of communitySearchTerms(query.q)) {
     where.push("cp.search_text LIKE ? ESCAPE '\\'");

@@ -11,8 +11,9 @@ import {
   type MenuInitialFocus,
 } from '@livediagram/ui';
 
-// The sort control (docs/specs/025-community/community.md "Gallery": Newest, Most Loved, Most
-// Copied). A menu button over the shared menu keyboard (blueprint §10;
+// The sort control inside the search box's right edge (docs/specs/025-community/community.md
+// "Gallery": Newest, Most Loved, Most Copied). The choice is written into the search as a `sort:` token
+// by the search box. A menu button over the shared menu keyboard (blueprint §10;
 // docs/specs/004-interface-design/menus.md): arrows move, Enter chooses, Escape closes and focus
 // returns to the trigger.
 export function SortMenu({
@@ -32,11 +33,18 @@ export function SortMenu({
         type="button"
         {...menu.triggerProps}
         aria-label={`Sort: ${current.label}`}
-        className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm transition-colors duration-micro hover:border-brand-300 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-brand-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-brand-500/60"
+        className={`inline-flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-sm font-medium transition-colors duration-micro focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-brand-600 ${
+          value === 'new'
+            ? 'text-slate-500 hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200'
+            : 'bg-brand-50 text-brand-700 hover:bg-brand-100 dark:bg-brand-500/15 dark:text-brand-200 dark:hover:bg-brand-500/25'
+        }`}
       >
-        <span className="text-slate-500 dark:text-slate-400">Sort</span>
-        <span>{current.label}</span>
+        <span className="max-sm:sr-only">{current.label}</span>
+        <span className="sm:hidden" aria-hidden>
+          Sort
+        </span>
         <ChevronDownIcon
+          size={12}
           aria-hidden
           className={`text-slate-400 transition-transform duration-micro motion-reduce:transition-none ${menu.open ? 'rotate-180' : ''}`}
         />
@@ -75,7 +83,7 @@ function SortOptions({
     <div
       ref={attach}
       {...surfaceProps}
-      className="absolute right-0 top-full z-(--z-popover) min-w-44 pt-1.5 outline-none"
+      className="absolute right-0 top-full z-(--z-popover) min-w-44 pt-2 outline-none"
     >
       <div className="flex animate-fade-in flex-col gap-px rounded-lg border border-slate-200/80 bg-white p-1 shadow-xl shadow-slate-900/10 motion-reduce:animate-none dark:border-slate-700/80 dark:bg-slate-900 dark:shadow-slate-950/60">
         {COMMUNITY_SORTS.map((sort) => {

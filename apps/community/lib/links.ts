@@ -16,7 +16,8 @@ export const embedHref = (shareCode: string) => `/embed?${shareQuery(shareCode)}
 
 // In-app (next/link adds `/community`).
 export const postHref = (id: string) => `/post/?id=${encodeURIComponent(id)}`;
-export const tagHref = (tag: string) => `/?tag=${encodeURIComponent(tag)}`;
+// A tag link filters the gallery by writing `#tag` into its search.
+export const tagHref = (tag: string) => `/?q=${encodeURIComponent(`#${tag}`)}`;
 
 // Sharing starts from a board the person already has (docs/specs/025-community/community.md "Gallery"),
 // so both invitations open Explorer Home, where their boards are, rather than a new document.

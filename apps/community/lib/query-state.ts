@@ -2,13 +2,17 @@ import {
   communityQueryParams,
   EMPTY_COMMUNITY_QUERY,
   isCommunityCategory,
+  communitySearchSort,
+  communitySearchTags,
+  communitySearchTerms,
   normaliseCommunityTag,
+  setCommunitySearchSort,
   parseCommunityListQuery,
   type CommunityListQuery,
 } from '@livediagram/api-schema';
 
 // The gallery's filters as they live in the URL (docs/specs/025-community/community.md "Gallery":
-// `q`, `category`, `tag`, `sort`), so a filtered view can be shared and survives a reload. Pure, so
+// `q` with its `#tag` tokens, `category`, `sort`; `tag` is read for older links), so a filtered view can be shared and survives a reload. Pure, so
 // the round trip is tested (lib/query-state.test.ts). Offsets never reach the URL: Load More pages in
 // memory and a fresh load starts at the top.
 
@@ -34,17 +38,28 @@ export function readQueryState(params: URLSearchParams): GalleryFilters {
   const parsed = parseCommunityListQuery(clean);
   if (!parsed.ok) return EMPTY_FILTERS;
   const { q, category: c, tag: t, sort } = parsed.value;
-  return { q, category: c, tag: t, sort };
+  // Tags and the sort live in the search (`#tag`, `sort:<id>`: the controls inside the search box); a
+  // `?tag=` or `?sort=` link (an older page) folds into it, so the box shows it and it can be changed
+  // like any other.
+  const withTag = t && !communitySearchTags(q).includes(t) ? `${q} #${t}`.trim() : q;
+  const search = communitySearchSort(withTag) ? withTag : setCommunitySearchSort(withTag, sort);
+  return { q: search, category: c, tag: null, sort };
 }
 
 // The search string for these filters, defaults omitted: '' when nothing is set, else `?q=...`.
 export function writeQueryState(filters: GalleryFilters): string {
-  const search = communityQueryParams(filters).toString();
+  // The sort travels in `q` as a token, never as its own parameter.
+  const search = communityQueryParams({ ...filters, sort: 'new' }).toString();
   return search ? `?${search}` : '';
 }
 
 // Whether any filter narrows the gallery (the sort only orders it), which decides between the two
 // empty states.
 export function hasActiveFilters(filters: GalleryFilters): boolean {
-  return filters.q !== '' || filters.category !== null || filters.tag !== null;
+  return (
+    communitySearchTerms(filters.q).length > 0 ||
+    communitySearchTags(filters.q).length > 0 ||
+    filters.category !== null ||
+    filters.tag !== null
+  );
 }

@@ -287,16 +287,64 @@ export const EMPTY_COMMUNITY_QUERY: CommunityListQuery = {
   offset: 0,
 };
 
-// The search terms a query string matches on (blueprint D5): lowercased, whitespace-split, de-duplicated, each cut
-// to COMMUNITY_SEARCH_TERM_MAX, at most COMMUNITY_SEARCH_TERMS_MAX of them.
+// A search string carries every filter in words (docs/specs/025-community/community.md "Gallery"): `#tag`
+// tokens, each a tag the post must have; one `sort:<id>` token (`sort:loved`, `sort:copied`; Newest
+// needs none); and plain terms matched against the title, description and tags.
+
+const isTagToken = (word: string) => word.startsWith('#');
+const SORT_PREFIX = 'sort:';
+const isSortToken = (word: string) => word.toLowerCase().startsWith(SORT_PREFIX);
+
+// The plain search terms (blueprint C5): lowercased, whitespace-split, `#tag` and `sort:` tokens left out,
+// de-duplicated, each cut to COMMUNITY_SEARCH_TERM_MAX, at most COMMUNITY_SEARCH_TERMS_MAX of them.
 export function communitySearchTerms(q: string): string[] {
   const terms: string[] = [];
   for (const raw of q.toLowerCase().split(/\s+/)) {
+    if (isTagToken(raw) || isSortToken(raw)) continue;
     const term = raw.slice(0, COMMUNITY_SEARCH_TERM_MAX);
     if (term && !terms.includes(term)) terms.push(term);
     if (terms.length === COMMUNITY_SEARCH_TERMS_MAX) break;
   }
   return terms;
+}
+
+// The `#tag` tokens, normalised like stored tags, de-duplicated, at most COMMUNITY_TAGS_MAX (a post has
+// no more, so more could never match). A token that does not normalise (`#`, `#!`) is ignored.
+export function communitySearchTags(q: string): string[] {
+  const tags: string[] = [];
+  for (const raw of q.split(/\s+/)) {
+    if (!isTagToken(raw)) continue;
+    const tag = normaliseCommunityTag(raw.slice(1));
+    if (tag && !tags.includes(tag)) tags.push(tag);
+    if (tags.length === COMMUNITY_TAGS_MAX) break;
+  }
+  return tags;
+}
+
+// Add or remove one `#tag` token in a search string, leaving the rest of what was typed alone.
+export function toggleCommunitySearchTag(q: string, tag: string): string {
+  const words = q.split(/\s+/).filter(Boolean);
+  const isThis = (w: string) => isTagToken(w) && normaliseCommunityTag(w.slice(1)) === tag;
+  const next = words.some(isThis) ? words.filter((w) => !isThis(w)) : [...words, `#${tag}`];
+  return next.join(' ');
+}
+
+// The sort a search string asks for: its last valid `sort:<id>` token, or null when it names none.
+export function communitySearchSort(q: string): CommunitySort | null {
+  let sort: CommunitySort | null = null;
+  for (const raw of q.split(/\s+/)) {
+    if (!isSortToken(raw)) continue;
+    const id = raw.slice(SORT_PREFIX.length).toLowerCase();
+    if (isCommunitySort(id)) sort = id;
+  }
+  return sort;
+}
+
+// The search string with its sort set to `sort`: any `sort:` token removed, and one added at the end
+// unless it is the default (Newest), leaving the rest of what was typed alone.
+export function setCommunitySearchSort(q: string, sort: CommunitySort): string {
+  const words = q.split(/\s+/).filter((w) => w && !isSortToken(w));
+  return (sort === 'new' ? words : [...words, `${SORT_PREFIX}${sort}`]).join(' ');
 }
 
 // Parse a list query from URL parameters. Lenient where a stale or hand-edited link should still show something
@@ -311,7 +359,7 @@ export function parseCommunityListQuery(
   const tag = rawTag ? normaliseCommunityTag(rawTag) : null;
   if (rawTag && !tag) return { ok: false };
   const rawSort = params.get('sort');
-  const sort = isCommunitySort(rawSort) ? rawSort : 'new';
+  const sort = communitySearchSort(q) ?? (isCommunitySort(rawSort) ? rawSort : 'new');
   const rawOffset = Number.parseInt(params.get('offset') ?? '0', 10);
   const offset = Number.isFinite(rawOffset)
     ? Math.min(Math.max(rawOffset, 0), COMMUNITY_MAX_OFFSET)

@@ -1,7 +1,11 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
-import type { CommunityFacetsResponse, CommunityPost } from '@livediagram/api-schema';
+import {
+  setCommunitySearchSort,
+  type CommunityFacetsResponse,
+  type CommunityPost,
+} from '@livediagram/api-schema';
 import { fetchFacets, fetchPosts } from '@/lib/api';
 import { readQueryState, writeQueryState, type GalleryFilters } from '@/lib/query-state';
 import { communityTelemetry, type CommunitySelection } from '@/lib/telemetry';
@@ -105,7 +109,14 @@ export function useGallery(): Gallery {
   const clearFilters = useCallback(() => {
     if (!filters) return;
     setLoadMoreFailed(false);
-    replaceSearch(writeQueryState({ q: '', category: null, tag: null, sort: filters.sort }));
+    replaceSearch(
+      writeQueryState({
+        q: setCommunitySearchSort('', filters.sort),
+        category: null,
+        tag: null,
+        sort: filters.sort,
+      }),
+    );
   }, [filters]);
 
   const loadMore = useCallback(() => {

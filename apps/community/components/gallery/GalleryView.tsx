@@ -2,13 +2,12 @@
 
 import { useCallback } from 'react';
 import { hasActiveFilters } from '@/lib/query-state';
+import { communityTelemetry } from '@/lib/telemetry';
 import { PostGrid } from '../shared/PostGrid';
 import { CategoryChips } from './CategoryChips';
 import { GalleryEmpty, GalleryError, GalleryNoMatches } from './GalleryStates';
 import { LoadMore } from './LoadMore';
 import { SearchBox } from './SearchBox';
-import { SortMenu } from './SortMenu';
-import { TagCloud } from './TagCloud';
 import { useGallery } from './useGallery';
 
 // Placeholder cards that hold the grid's space: two full rows at the widest layout on the first load
@@ -24,26 +23,25 @@ export function GalleryView() {
   const ready = filters !== null;
   // Stable, so a re-render (facets arriving) never restarts the search box's debounce.
   const onSearch = useCallback((q: string) => setFilters({ q }), [setFilters]);
+  const onTagChosen = useCallback(() => communityTelemetry.selected('Tag'), []);
+  const onSortChosen = useCallback(() => communityTelemetry.selected('Sort'), []);
 
   return (
     <div className="flex flex-col gap-8">
       <div className="flex flex-col gap-4">
         <div className="flex items-center gap-3">
-          <SearchBox value={filters?.q ?? ''} onSearch={onSearch} />
-          <SortMenu
-            value={filters?.sort ?? 'new'}
-            onChange={(sort) => setFilters({ sort }, 'Sort')}
+          <SearchBox
+            value={filters?.q ?? ''}
+            onSearch={onSearch}
+            facets={facets}
+            onTagChosen={onTagChosen}
+            onSortChosen={onSortChosen}
           />
         </div>
         <CategoryChips
           value={filters?.category ?? null}
           facets={facets}
           onChange={(category) => setFilters({ category }, 'Category')}
-        />
-        <TagCloud
-          value={filters?.tag ?? null}
-          facets={facets}
-          onChange={(tag) => setFilters({ tag }, tag ? 'Tag' : undefined)}
         />
       </div>
 

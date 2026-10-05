@@ -6,7 +6,11 @@ import {
   COMMUNITY_TAGS_MAX,
   COMMUNITY_TITLE_MAX,
   communityQueryParams,
+  communitySearchSort,
+  communitySearchTags,
   communitySearchTerms,
+  setCommunitySearchSort,
+  toggleCommunitySearchTag,
   isCommunityKey,
   normaliseCommunityTag,
   parseCommunityListQuery,
@@ -158,6 +162,43 @@ describe('communitySearchTerms', () => {
     expect(communitySearchTerms('a b c d e f g')).toEqual(['a', 'b', 'c', 'd', 'e']);
     expect(communitySearchTerms('x'.repeat(50))).toEqual(['x'.repeat(40)]);
     expect(communitySearchTerms('   ')).toEqual([]);
+  });
+});
+
+describe('search tags', () => {
+  it('splits #tags from plain terms', () => {
+    expect(communitySearchTerms('retro #Agile #ux board')).toEqual(['retro', 'board']);
+    expect(communitySearchTags('retro #Agile #ux board #agile # #!')).toEqual(['agile', 'ux']);
+  });
+
+  it('caps the tags at five', () => {
+    expect(communitySearchTags('#a1 #a2 #a3 #a4 #a5 #a6')).toHaveLength(5);
+  });
+
+  it('toggles one tag, keeping what was typed', () => {
+    expect(toggleCommunitySearchTag('retro', 'agile')).toBe('retro #agile');
+    expect(toggleCommunitySearchTag('retro #Agile board', 'agile')).toBe('retro board');
+    expect(toggleCommunitySearchTag('', 'ux')).toBe('#ux');
+  });
+});
+
+describe('search sort', () => {
+  it('reads the last valid sort token, and keeps it out of the terms', () => {
+    expect(communitySearchSort('retro sort:loved')).toBe('loved');
+    expect(communitySearchSort('sort:loved Sort:Copied')).toBe('copied');
+    expect(communitySearchSort('sort:random retro')).toBeNull();
+    expect(communitySearchTerms('retro sort:loved #ux')).toEqual(['retro']);
+  });
+
+  it('sets the sort, leaving Newest unwritten', () => {
+    expect(setCommunitySearchSort('retro #ux', 'loved')).toBe('retro #ux sort:loved');
+    expect(setCommunitySearchSort('retro sort:loved', 'copied')).toBe('retro sort:copied');
+    expect(setCommunitySearchSort('retro sort:loved', 'new')).toBe('retro');
+  });
+
+  it('wins over the sort parameter', () => {
+    const parsed = parseCommunityListQuery(new URLSearchParams('q=retro+sort%3Acopied&sort=loved'));
+    expect(parsed.ok && parsed.value.sort).toBe('copied');
   });
 });
 

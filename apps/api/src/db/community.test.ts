@@ -169,6 +169,10 @@ describe('public reads', () => {
     expect((await list({ q: 'cloud' })).sort()).toEqual(['Cloud costs', 'Cloud map']);
     expect(await list({ q: 'cloud FINOPS' })).toEqual(['Cloud costs']);
     expect(await list({ q: 'went well' })).toEqual(['Sprint retro']);
+    // #tags in the search: every one must match.
+    expect(await list({ q: '#aws' })).toEqual(['Cloud map']);
+    expect(await list({ q: 'cloud #finops' })).toEqual(['Cloud costs']);
+    expect(await list({ q: '#aws #finops' })).toEqual([]);
   });
 
   it('treats LIKE wildcards in a search literally', async () => {

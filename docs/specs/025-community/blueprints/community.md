@@ -216,6 +216,9 @@ Editor (`apps/live`):
   `CommunityCardPreview.tsx`, the consequences list) replaces the Share dialog while open, and a first publish ends on
   `CommunityPublishedConfirmation.tsx`. The share password control is locked while published, and Share to Community
   while a password is set.
+- `resolveDocumentSession` (`apps/live/app/document/[id]/editor-page-helpers.ts`) takes `community`: a community
+  link resolves to a non-owner view session for everyone, the author included, so neither the post page's embed nor
+  Open Board can edit the board; `CommunitySession.ownDocumentId` gives the author Edit Your Board in the bar.
 - Share-view mode: `useIdentityBootstrap` stores `sessionCommunity` (in `editor-realtime.ts`) from the share resolve;
   when set, `useRoomConnection` gets `enabled: false`, the identity prompt is not opened, the visit is not recorded,
   and `apps/live/components/chrome/CommunityBar.tsx` renders under the header with the author
@@ -235,8 +238,11 @@ Community app (`apps/community`):
 - `apps/community/lib/api.ts`: `fetchPosts`, `fetchFacets`, `fetchPost`, `likePost`, `unlikePost`, `reportPost`, with
   `NEXT_PUBLIC_API_BASE ?? '/api'`; `apps/community/lib/useLike.ts` is the optimistic like with rollback.
 - Gallery (`apps/community/components/gallery/`): `GalleryView` over `useGallery`; `CommunityHero`, `SearchBox`
-  (debounced 300 ms, Enter commits), `CategoryChips`, `SortMenu`, `TagCloud`, `PostGrid` of `PostCard`, `LoadMore`,
-  `GalleryStates`.
+  (debounced 300 ms, Enter commits) holding `TagFilter` and `SortMenu` in its right edge, `CategoryChips`, `PostGrid`
+  of `PostCard`, `LoadMore`, `GalleryStates`. Tags and the sort are words in `q`: `communitySearchTags`,
+  `communitySearchSort`, `toggleCommunitySearchTag` and `setCommunitySearchSort` (api-schema) read and write them, the
+  worker's list reads them through `parseCommunityListQuery` and `listCommunityPosts` (each `#tag` an `EXISTS`), and a
+  legacy `?tag=` / `?sort=` folds into `q` in `readQueryState`.
 - Post page (`apps/community/components/post/`): `PostView` over `usePost`, `EmbedFrame` (`/embed?s=<code>`, lazy,
   titled, falling back to the card image after 15 s), `PostMeta`, `PostActions`, `ReportDialog`, `RelatedPosts`. Make
   a Copy → `/document/shared?s=<code>&copy=1`.
