@@ -1,3 +1,4 @@
+import { svgTags, textTagBefore } from './svg-test-tags';
 import { describe, expect, it } from 'vitest';
 import type { ArrowElement, FreehandElement, ImageElement, ShapeElement, Tab } from './index';
 import { freehandPenStroke, penStrokePath } from './pen-stroke';
@@ -505,11 +506,11 @@ describe('renderElementsToSvg', () => {
           }),
         ]),
       );
-      const m = svg.match(/<text[^<>]*y="([0-9.]+)"[^<>]*>(?:<tspan[^<>]*>)?Change Events/);
-      expect(m).not.toBeNull();
+      const y = textTagBefore(svg, 'Change Events')?.y;
+      expect(y).toBeDefined();
       // Top pad + half the font size: well inside the top band (y=0..40),
       // nowhere near the centre (150).
-      expect(parseFloat(m![1]!)).toBeLessThan(40);
+      expect(parseFloat(y!)).toBeLessThan(40);
     });
 
     it('wraps a rich (per-run) label to the element width', () => {
@@ -567,11 +568,11 @@ describe('renderElementsToSvg', () => {
         ]),
         { resolveIconArt: () => ({ markup: '<path d="M1 2"/>', colored: false }) },
       );
-      const m = svg.match(/<text[^<>]*y="([0-9.]+)"[^<>]*>(?:<tspan[^<>]*>)?restaurant/);
-      expect(m).not.toBeNull();
+      const y = textTagBefore(svg, 'restaurant')?.y;
+      expect(y).toBeDefined();
       // Bottom anchor is y=64-12=52; a 3-line block must start well above
       // it and every line must stay inside the 64px box.
-      expect(parseFloat(m![1]!)).toBeLessThan(40);
+      expect(parseFloat(y!)).toBeLessThan(40);
     });
   });
 
@@ -645,9 +646,9 @@ describe('renderElementsToSvg', () => {
     it('strokes a Technology glyph at the chrome weight for its preset size (docs/specs/004-interface-design/iconography.md)', () => {
       const art = () => ({ markup: '<circle/>', colored: true });
       const strokeOf = (el: Parameters<typeof icon>[0]) =>
-        renderElementsToSvg(tab([icon(el)]), { resolveIconArt: art }).match(
-          /viewBox="0 0 24 24"[^>]*stroke-width="([0-9.]+)"/,
-        )?.[1];
+        svgTags(renderElementsToSvg(tab([icon(el)]), { resolveIconArt: art }), 'svg').find(
+          (t) => t.viewBox === '0 0 24 24',
+        )?.['stroke-width'];
       // 1.25px on screen: 1.25 * 24 / preset px, in tile box units.
       expect(strokeOf({ width: 200, height: 200 })).toBe('0.625'); // md, 48px
       expect(strokeOf({ width: 200, height: 200, iconSize: 'sm' })).toBe('0.9375');
