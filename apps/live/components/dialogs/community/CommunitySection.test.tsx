@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { CommunityOwnPost } from '@livediagram/api-schema';
 import { CommunitySection } from './CommunitySection';
@@ -54,5 +54,74 @@ describe('CommunitySection', () => {
     expect(screen.getByText(/can no longer be changed or removed/)).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Edit Listing' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Remove From Community' })).toBeNull();
+  });
+});
+
+describe('CommunitySection, every face', () => {
+  type Over = Partial<Parameters<typeof CommunitySection>[0]>;
+  const base = (over: Over = {}) => ({
+    signedIn: true,
+    signInHref: '/sign-in/?redirect_url=%2Fdocument%2Fd1',
+    teamDocument: false,
+    sharePassword: null,
+    post: null,
+    loading: false,
+    error: null,
+    onPublish: vi.fn(),
+    onEdit: vi.fn(),
+    onRemove: vi.fn(async () => {}),
+    ...over,
+  });
+
+  it('asks a guest to sign in, and tells a team document it cannot be shared', () => {
+    render(<CommunitySection {...base({ signedIn: false })} />);
+    expect(screen.getByRole('link', { name: 'Sign In to Share' }).getAttribute('href')).toBe(
+      '/sign-in/?redirect_url=%2Fdocument%2Fd1',
+    );
+    cleanup();
+    render(<CommunitySection {...base({ teamDocument: true })} />);
+    expect(
+      screen.getByText(/Team library documents can.t be shared to the Community\./),
+    ).toBeTruthy();
+  });
+
+  it('shows loading, then a failed read in words', () => {
+    render(<CommunitySection {...base({ loading: true })} />);
+    expect(screen.getByLabelText('Loading')).toBeTruthy();
+    cleanup();
+    render(
+      <CommunitySection {...base({ error: "We couldn't reach the Community. Try again." })} />,
+    );
+    expect(screen.getByText("We couldn't reach the Community. Try again.")).toBeTruthy();
+  });
+
+  it('says the Community is public, and holds Share to Community while a password is set', () => {
+    const onPublish = vi.fn();
+    render(<CommunitySection {...base({ onPublish })} />);
+    expect(screen.getByText('public')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Share to Community' }));
+    expect(onPublish).toHaveBeenCalledTimes(1);
+    cleanup();
+    render(<CommunitySection {...base({ sharePassword: 'pw' })} />);
+    expect(
+      (screen.getByRole('button', { name: 'Share to Community' }) as HTMLButtonElement).disabled,
+    ).toBe(true);
+    expect(
+      screen.getByText('Remove the share password to share it to the Community.'),
+    ).toBeTruthy();
+  });
+
+  it('asks once before removing a listed post, and Keep It changes nothing', async () => {
+    const onRemove = vi.fn(async () => {});
+    const onEdit = vi.fn();
+    render(<CommunitySection {...base({ post: post('listed'), onRemove, onEdit })} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Edit Listing' }));
+    expect(onEdit).toHaveBeenCalledTimes(1);
+    fireEvent.click(screen.getByRole('button', { name: 'Remove From Community' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Keep It' }));
+    expect(onRemove).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: 'Remove From Community' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Remove' }));
+    await waitFor(() => expect(onRemove).toHaveBeenCalledTimes(1));
   });
 });
