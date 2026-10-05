@@ -82,14 +82,26 @@ export function usePlanSlice(opts: {
   const write = planItems.write;
 
   const addItem = useCallback(
-    (input: { type: string; fields: Item['fields']; status: string; after: string | null }) => {
+    (input: {
+      type: string;
+      fields: Item['fields'];
+      status: string;
+      after: string | null;
+      before?: string | null;
+      id?: string;
+    }) => {
       void write({
         kind: 'create',
         creates: [
           {
+            ...(input.id ? { id: input.id } : {}),
             type: input.type,
             fields: input.fields,
-            place: { status: input.status, ...(input.after ? { after: input.after } : {}) },
+            place: {
+              status: input.status,
+              ...(input.after ? { after: input.after } : {}),
+              ...(input.before ? { before: input.before } : {}),
+            },
           },
         ],
       });

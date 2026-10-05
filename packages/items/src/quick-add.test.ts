@@ -5,9 +5,9 @@ import { ALI, SAM } from './test-items';
 
 describe('parseQuickAdd', () => {
   it('reads every token and leaves the title', () => {
-    const r = parseQuickAdd('bug: Login fails on Safari @sam #auth #web !high ~3', [SAM, ALI]);
+    const r = parseQuickAdd('note: Login fails on Safari @sam #auth #web !high ~3', [SAM, ALI]);
     expect(r.title).toBe('Login fails on Safari');
-    expect(r.type).toBe('bug');
+    expect(r.type).toBe('note');
     expect(r.fields).toEqual({
       assignee: SAM,
       labels: ['auth', 'web'],

@@ -46,6 +46,10 @@ export type PlanContextValue = {
     fields: Item['fields'];
     status: string;
     after: string | null;
+    // Placed before this item instead (a palette card dropped between two cards).
+    before?: string | null;
+    // The new item's id, when the caller opens it next.
+    id?: string;
   }) => void;
   moveItem: (itemId: string, move: ItemMove) => void;
   patchItem: (itemId: string, patch: ItemPatch) => void;

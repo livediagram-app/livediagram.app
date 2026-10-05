@@ -314,7 +314,7 @@ describe('who may do what', () => {
     const bug = (
       await call<ItemResponse>({
         path: '/items',
-        body: { type: 'bug', fields: { title: 'Bug', status: 'new' } },
+        body: { type: 'task', fields: { title: 'Bug', status: 'new', labels: ['bug'] } },
       })
     ).body.item;
     const task = (await add({ title: 'Task' })).body.item;
@@ -394,7 +394,10 @@ describe('documents and items', () => {
 
   it('copies items with a document and cascades them on delete', async () => {
     await add({ title: 'A' });
-    await call({ path: '/items', body: { type: 'bug', fields: { title: 'B', status: 'new' } } });
+    await call({
+      path: '/items',
+      body: { type: 'task', fields: { title: 'B', status: 'new', labels: ['bug'] } },
+    });
     await db.copyDocument(sql.env, 'd1', 'd3', 'owner', 'Copy');
     const copied = await db.listItems(sql.env, 'd3');
     expect(copied.map((i) => i.key).sort()).toEqual([1, 2]);

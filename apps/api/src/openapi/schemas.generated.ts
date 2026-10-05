@@ -5825,7 +5825,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       'task',
       'story',
       'bug',
-      'epic',
+      'project',
       'note',
       'idea',
       'action',

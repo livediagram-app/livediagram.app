@@ -2,9 +2,11 @@
 
 import { usePlanSlice } from '@/hooks/plan/usePlanSlice';
 import { usePlanPresence } from '@/hooks/plan/usePlanPresence';
-import { newCardItemWrite } from '@/hooks/plan/plan-card-item';
+import { boardClientPoint, dropPlanCardAt, PLAN_CARD_MISSED } from '@/hooks/plan/plan-card-drop';
+import { debugLog } from '@/lib/debug-log';
 import { usePlanItems } from '@/hooks/plan/usePlanItems';
 import { useItemTypes } from '@/hooks/plan/useItemTypes';
+import { PLAN_LEFT_OUT_TOOLS, useModeDefaultTool } from '@/hooks/editor/useModeDefaultTool';
 import { useItemUndo } from '@/hooks/plan/useItemUndo';
 import type { View } from '@/lib/viewport-store';
 import { useKeyboardAvoidance } from '@/hooks/canvas/useKeyboardAvoidance';
@@ -413,7 +415,10 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // on exit. Wraps the tracked selectCanvasTool so every entry point (palette
   // dropdown, keyboard) routes through it; internal auto-switches keep using
   // the raw setCanvasTool and are unaffected.
+  // Plan mode leaves Eraser and Format out (useModeDefaultTool); set once the mode is known, below.
+  const planModeRef = useRef(false);
   const pickCanvasTool = (tool: CanvasTool) => {
+    if (planModeRef.current && PLAN_LEFT_OUT_TOOLS.has(tool)) return;
     // Eraser / Format / Laser / Spotlight / Isometric all act on existing
     // content, so they're unavailable on an empty canvas — the palette greys
     // them out, and this guards the keyboard-shortcut path to match. Select +
@@ -1043,10 +1048,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     send: (op) => roomRef.current?.send({ kind: 'op', op }),
   });
 
-  // A palette card tile's Plan card landed: its item is made in the store (docs/specs/025-plan/plan-mode.md).
-  const placePlanCardItem = (itemId: string, itemType: string | undefined) =>
-    void planItems.write(newCardItemWrite(itemId, itemType, itemTypes.types));
-
   useRoomConnection({
     hydrated,
     documentId,
@@ -1174,7 +1175,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     { tab: activeTab, canEdit, commitTabs },
   );
   // A Plan tab with content stays in Plan: a switch away offers a new tab in that mode instead
-  // (docs/specs/025-plan/plan-mode.md "Leaving Plan"). useTabActions, below, supplies the new tab.
+  // (docs/specs/025-plan/plan-mode.md "Plan keeps its own tabs"). useTabActions, below, supplies the new tab.
   const addTabInRef = useRef<(mode: EditorMode) => void>(() => {});
   const { editorMode, leavePlan } = useLeavePlan(illustrateGuarded, {
     tab: activeTab,
@@ -1182,6 +1183,21 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     addTabIn: (mode) => addTabInRef.current(mode),
   });
   const drawMode = editorMode.mode === 'draw';
+  // The tool a mode starts with: Select, or Hand in Plan and on a phone; Plan leaves Eraser and Format
+  // out (docs/specs/007-editor/editor-modes.md).
+  useModeDefaultTool(editorMode.mode, canvasTool, setCanvasTool, embedMode);
+  useAssignRef(planModeRef, editorMode.mode === 'plan');
+  // A palette card goes into the board column at the point, or nowhere (docs/specs/025-plan/plan-mode.md
+  // "The palette"): never a card on the canvas. A miss or a refusal is said.
+  const placePaletteCard = (itemType: string | undefined, canvasX: number, canvasY: number) => {
+    const point = boardClientPoint(activeTab.elements, canvasX, canvasY);
+    const result = point
+      ? dropPlanCardAt(itemType ?? 'task', point.x, point.y)
+      : { outcome: 'missed' as const, message: PLAN_CARD_MISSED };
+    if (result.outcome === 'added') return;
+    debugLog('[plan] palette card not placed', { outcome: result.outcome });
+    toast.info(result.message);
+  };
   // Comment authors' pictures for the open tab (docs/specs/014-identity/profile-picture.md §5).
   useCommentPicturesLoader(documentId, activeTab?.id, activeTab?.elements, sessionShareCode);
 
@@ -2446,7 +2462,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     openImagePickerFor,
     zoomRef,
     styleNewElement: styleMemory.styleNewElement,
-    onPlanCardPlaced: placePlanCardItem,
+    onPlanCardPlace: placePaletteCard,
   });
   // The Path tool (docs/specs/023-draw-mode/path-tool.md): a drawn path, a continued one, an edit.
   const { commitPath, commitPathEdit } = usePathCommits({
@@ -2515,7 +2531,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     addBoxedAt,
     beginDraw,
     styleNewElement: styleMemory.styleNewElement,
-    onPlanCardPlaced: placePlanCardItem,
+    onPlanCardPlace: placePaletteCard,
   });
   useAssignRef(placeIntentAtRef, placeIntentAt);
 

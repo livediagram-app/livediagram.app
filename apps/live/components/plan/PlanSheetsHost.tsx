@@ -35,8 +35,8 @@ export function PlanSheetsHost({
       for (const c of b.setup.columns) if (!seen.has(c.status)) seen.set(c.status, c.name);
     return [...seen].map(([status, name]) => ({ status, name }));
   }, [boards]);
-  const epics = useMemo(
-    () => [...ctx.items.values()].filter((i) => i.type === 'epic').sort((a, b) => a.key - b.key),
+  const projects = useMemo(
+    () => [...ctx.items.values()].filter((i) => i.type === 'project').sort((a, b) => a.key - b.key),
     [ctx.items],
   );
   const item = plan.openItemId ? ctx.items.get(plan.openItemId) : undefined;
@@ -79,7 +79,7 @@ export function PlanSheetsHost({
         item={item}
         types={ctx.types}
         statuses={statuses}
-        epics={epics}
+        projects={projects}
         people={ctx.people}
         canEdit={ctx.canEdit}
         onSave={(field, value) =>

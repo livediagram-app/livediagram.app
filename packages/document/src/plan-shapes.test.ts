@@ -81,7 +81,7 @@ describe('plan shapes in exports', () => {
         { key: 7 },
       ),
     ],
-    ['item0002', item('item0002', { title: 'Ship', status: 'done' }, { key: 8, type: 'bug' })],
+    ['item0002', item('item0002', { title: 'Ship', status: 'done' }, { key: 8, type: 'note' })],
   ]);
 
   it('draws columns and escaped card faces from the items', () => {
@@ -90,7 +90,7 @@ describe('plan shapes in exports', () => {
     expect(svg).toContain('In progress');
     expect(svg).toContain('Fix &lt;login&gt;');
     expect(svg).toContain('#7 · Task');
-    expect(svg).toContain('#8 · Bug');
+    expect(svg).toContain('#8 · Note');
     expect(svg).toContain('AR');
     expect(svg).toContain('▲ 2');
     expect(svg).toContain('2 items');

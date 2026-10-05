@@ -8,12 +8,13 @@ import { useEffect, useState } from 'react';
 import type { ShapeElement } from '@livediagram/document';
 import {
   boardScopeMatches,
+  typeIn,
   type BoardProjection,
   type Item,
   type PlanBoardSetup,
 } from '@livediagram/items';
 import type { PlanContextValue } from '@/components/plan/PlanContext';
-import { boardMoveFor, scopeRefusal } from '@/components/plan/plan-board-moves';
+import { boardMoveFor, laneMove, scopeRefusal } from '@/components/plan/plan-board-moves';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { registerPlanBoardTarget, type PlanIncoming } from './plan-board-targets';
 import { usePlanCardDrag, type PlanDropSlot } from './usePlanCardDrag';
@@ -68,8 +69,28 @@ export function usePlanBoardDrop(opts: {
       const item = items.get(itemId);
       return !!setup && !!item && canEdit && boardScopeMatches(setup.scope, item);
     },
-    refusal: () => (setup ? scopeRefusal(setup.scope) : 'This board can’t take that card'),
+    refusal: () =>
+      setup ? scopeRefusal(setup.scope, plan?.types) : 'This board can’t take that card',
     drop,
+    acceptsType: (type: string) =>
+      !!setup && canEdit && (!setup.scope.types?.length || setup.scope.types.includes(type)),
+    // A palette card: a new item of the type at the slot, its row's field set. Not opened: the card is
+    // there to see, and a click opens it.
+    addCard: (type: string, slot: PlanDropSlot) => {
+      if (!plan || !setup || !projection) return;
+      const def = typeIn(plan.types, type);
+      const lane = projection.lanes.find((l) => l.key === slot.laneKey);
+      const set = setup.swimlaneBy !== 'none' ? laneMove(lane) : {};
+      plan.addItem({
+        type: def.id,
+        fields: { title: def.newTitle, ...(set.set ?? {}) },
+        status: slot.status,
+        after: null,
+        before: slot.beforeId,
+      });
+      const column = setup.columns.find((c) => c.status === slot.status);
+      plan.announce(`${def.label} added to ${column?.name ?? slot.status}`);
+    },
   });
   useEffect(
     () =>
@@ -78,6 +99,8 @@ export function usePlanBoardDrop(opts: {
         refusal: () => target.current.refusal(),
         drop: (id, slot) => target.current.drop(id, slot),
         hover: setIncoming,
+        acceptsType: (type) => target.current.acceptsType(type),
+        addCard: (type, slot) => target.current.addCard(type, slot),
       }),
     [element.id, target],
   );

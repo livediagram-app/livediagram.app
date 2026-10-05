@@ -8,13 +8,7 @@ import {
   itemVoteTotal,
   itemVotes,
 } from './item';
-import {
-  FALLBACK_ITEM_TYPE,
-  isKnownItemType,
-  itemTypeByName,
-  itemTypeOf,
-  ITEM_TYPE_IDS,
-} from './item-types';
+import { FALLBACK_ITEM_TYPE, ITEM_TYPE_IDS } from './item-types';
 import { SAM, item } from './test-items';
 
 describe('item readers', () => {
@@ -44,20 +38,7 @@ describe('item readers', () => {
   });
 
   it('catalogues types with a fallback', () => {
-    expect(ITEM_TYPE_IDS).toEqual([
-      'task',
-      'story',
-      'bug',
-      'epic',
-      'note',
-      'idea',
-      'action',
-      'risk',
-    ]);
-    expect(itemTypeOf('bug').label).toBe('Bug');
-    expect(itemTypeOf('custom')).toBe(FALLBACK_ITEM_TYPE);
-    expect(isKnownItemType('risk')).toBe(true);
-    expect(itemTypeByName('Bugs')?.id).toBe('bug');
-    expect(itemTypeByName('dinner')).toBeUndefined();
+    expect(ITEM_TYPE_IDS).toEqual(['project', 'task', 'note', 'idea', 'action']);
+    expect(FALLBACK_ITEM_TYPE.label).toBe('Item');
   });
 });

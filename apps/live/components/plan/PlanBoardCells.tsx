@@ -1,7 +1,9 @@
 'use client';
 
 // A Plan board's rows and cards (docs/specs/025-plan/plan-board.md "What the board shows"), drawn by
-// PlanBoardView: a row's collapsible band when the board has swimlanes, and one card in a cell.
+// PlanBoardView: a row's collapsible band when the board has swimlanes, one card in a cell, and the
+// card under the pointer while it is dragged.
+import { createPortal } from 'react-dom';
 import { ITEM_TYPES, itemAccessibleName, type Item, type LaneHead } from '@livediagram/items';
 import { usePlan } from './PlanContext';
 import { PersonDisc } from './PersonDisc';
@@ -63,6 +65,7 @@ export function PlanBoardCard({
   onPress,
   onOpen,
   onKey,
+  onMenu,
 }: {
   item: Item;
   palette: PlanPalette;
@@ -77,6 +80,8 @@ export function PlanBoardCard({
   onPress: (id: string, e: React.PointerEvent<HTMLElement>) => void;
   onOpen: () => void;
   onKey: (item: Item, e: React.KeyboardEvent<HTMLElement>) => void;
+  // A right-click (or the context-menu key) on the card, at a screen point.
+  onMenu: (item: Item, at: { x: number; y: number }) => void;
 }) {
   const types = usePlan()?.types ?? ITEM_TYPES;
   return (
@@ -105,6 +110,18 @@ export function PlanBoardCard({
           onOpen();
         }}
         onKeyDown={(e) => onKey(item, e)}
+        onContextMenu={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          if (faceDown) return;
+          const rect = e.currentTarget.getBoundingClientRect();
+          // The keyboard's context-menu key has no point: open at the card instead.
+          const keyboard = e.clientX === 0 && e.clientY === 0;
+          onMenu(
+            item,
+            keyboard ? { x: rect.left + 8, y: rect.bottom } : { x: e.clientX, y: e.clientY },
+          );
+        }}
       >
         <PlanCardFace
           item={item}
@@ -117,5 +134,40 @@ export function PlanBoardCard({
         />
       </div>
     </>
+  );
+}
+
+// The card under the pointer while it is dragged, over everything (portalled to the body).
+export function PlanDragGhost({
+  drag,
+  item,
+  palette,
+  fields,
+}: {
+  drag: {
+    clientX: number;
+    clientY: number;
+    offsetX: number;
+    offsetY: number;
+    width: number;
+    height: number;
+  };
+  item: Item;
+  palette: PlanPalette;
+  fields: Parameters<typeof PlanCardFace>[0]['fields'];
+}) {
+  return createPortal(
+    <div
+      className="pointer-events-none fixed z-[1000] rotate-2 opacity-90 shadow-xl motion-reduce:rotate-0"
+      style={{
+        left: drag.clientX - drag.offsetX,
+        top: drag.clientY - drag.offsetY,
+        width: drag.width,
+        height: drag.height,
+      }}
+    >
+      <PlanCardFace item={item} palette={palette} fields={fields} />
+    </div>,
+    document.body,
   );
 }

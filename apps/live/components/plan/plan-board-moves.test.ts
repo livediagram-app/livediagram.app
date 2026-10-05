@@ -47,8 +47,8 @@ describe('boardMoveFor', () => {
 
   it("gives a card dropped in a row that row's field", () => {
     const sam = { id: 's', name: 'Sam', color: '#0ea5e9' };
-    const mine = item('doing', 'a', { assignee: sam }, 'story');
-    const loose = item('doing', 'b', {}, 'story');
+    const mine = item('doing', 'a', { assignee: sam }, 'task');
+    const loose = item('doing', 'b', {}, 'task');
     const setup = presetSetup('sprint');
     const p = projectBoard(setup, mapOf(mine, loose));
     const slot = { status: 'doing', laneKey: 'a:s', beforeId: null };
@@ -62,9 +62,9 @@ describe('boardMoveFor', () => {
 
 describe('scopeRefusal', () => {
   it('names the types or the label a board shows', () => {
-    expect(scopeRefusal({ types: ['bug'] })).toBe('This board shows Bug items only');
-    expect(scopeRefusal({ types: ['story', 'task', 'bug'] })).toBe(
-      'This board shows Story, Task and Bug items only',
+    expect(scopeRefusal({ types: ['note'] })).toBe('This board shows Note items only');
+    expect(scopeRefusal({ types: ['project', 'task', 'idea'] })).toBe(
+      'This board shows Project, Task and Idea items only',
     );
     expect(scopeRefusal({ label: 'ops' })).toBe('This board shows items labelled “ops” only');
     expect(scopeRefusal({})).toBe('This board can’t take that card');

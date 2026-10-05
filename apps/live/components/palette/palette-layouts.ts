@@ -140,53 +140,11 @@ const ILLUSTRATE: PaletteLayout = {
 // Plan mode (docs/specs/025-plan/plan-mode.md "The palette"): boards and cards first, then the words,
 // shapes, glyphs, stickers and pictures that sit round a board; nothing that organises a diagram.
 const PLAN: PaletteLayout = {
-  landing: 'popular',
-  categories: [
-    {
-      // Twelve tiles a board's canvas is most often built from: two boards, three cards, then the
-      // notes, words, frame, arrow, picture, checklist and link that live round a board.
-      id: 'popular',
-      tiles: [
-        'plan:board-kanban',
-        'plan:board-retro',
-        'plan:card-task',
-        'plan:card-bug',
-        'plan:card-note',
-        'tools:sticky',
-        'tools:text',
-        'tools:frame',
-        'tools:arrow',
-        'tools:image',
-        'tools:checklist',
-        'tools:link-card',
-      ],
-    },
-    { id: 'plan-boards' },
-    { id: 'plan-cards' },
-    // Words round a board, with the checklist and link a board's notes are often made of.
-    {
-      id: 'write',
-      tiles: [
-        ...tilesExcept('write', 'tools:page', 'tools:annotation'),
-        'tools:checklist',
-        'tools:link-card',
-      ],
-    },
-    // Shapes, and the arrow, line and frame that join and group boards and cards.
-    {
-      id: 'shapes',
-      tiles: [
-        ...tilesForCategory('shapes').map((t) => t.id),
-        'tools:arrow',
-        'tools:line',
-        'tools:frame',
-      ],
-    },
-    { id: 'icons' },
-    { id: 'stickers' },
-    // Image and Avatar; no embedded pages.
-    { id: 'media', tiles: tilesExcept('media', ...EMBED_TILES) },
-  ],
+  // Boards and cards only (docs/specs/025-plan/plan-mode.md "The palette"), opening on Cards: a Plan tab
+  // is worked by its boards, so the drawing, writing and decorating categories, and a Popular
+  // drawn from them, stay with the other modes.
+  landing: 'plan-cards',
+  categories: [{ id: 'plan-cards' }, { id: 'plan-boards' }],
 };
 
 export const PALETTE_LAYOUTS = { diagram: DIAGRAM, illustrate: ILLUSTRATE, plan: PLAN } as const;

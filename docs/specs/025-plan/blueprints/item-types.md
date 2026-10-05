@@ -123,12 +123,20 @@ src/type-catalogue.ts  ItemTypeCatalogue, limits, PLAN_TYPE_COLOURS, BUILT_IN_FI
 
 ## Constants and configuration
 
-| Constant                    | Value  | Why                          |
-| --------------------------- | ------ | ---------------------------- |
-| `ITEM_TYPES_MAX`            | 32     | Spec "An item type"          |
-| `ITEM_TYPE_FIELDS_MAX`      | 24     | Spec                         |
-| `ITEM_TYPE_CUSTOM_MAX`      | 12     | Spec                         |
-| `ITEM_TYPE_LABEL_MAX`       | 32     | Spec                         |
-| `CUSTOM_CHOICE_OPTIONS_MAX` | 20     | Spec                         |
-| `CUSTOM_CHOICE_OPTION_MAX`  | 40     | D11                          |
-| `ITEM_TYPES_BYTES`          | 32,768 | Spec "Limits and validation" |
+| Constant                    | Value  | Why                                                                  |
+| --------------------------- | ------ | -------------------------------------------------------------------- |
+| `ITEM_TYPES_MAX`            | 32     | Spec "An item type"                                                  |
+| `ITEM_TYPE_FIELDS_MAX`      | 24     | Spec                                                                 |
+| `ITEM_TYPE_CUSTOM_MAX`      | 12     | Spec                                                                 |
+| `ITEM_TYPE_LABEL_MAX`       | 32     | Spec                                                                 |
+| `CUSTOM_CHOICE_OPTIONS_MAX` | 20     | Spec                                                                 |
+| `CUSTOM_CHOICE_OPTION_MAX`  | 40     | D11                                                                  |
+| `ITEM_TYPES_BYTES`          | 32,768 | Spec "Limits and validation"                                         |
+| `PLAN_TYPE_COLOURS`         | 12     | The built-ins' five (Black, Gray, Blue, Yellow, Red) then seven more |
+
+## Built-in types
+
+`ITEM_TYPES`: `project` (#18181b), `task` (#71717a), `note` (#2563eb), `idea` (#eab308), `action` (#dc2626).
+Presets scope Sprint to `task`, Bug triage to `task` labelled `bug`, Roadmap to `project`; the item panel's
+Parent lists Projects. `CardTypesPanel` rows are cards (stripe, tinted glyph tile, "N fields", count pill,
+pencil; the row opens the editor), with a dashed Add Type tile.

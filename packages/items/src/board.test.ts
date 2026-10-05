@@ -78,16 +78,16 @@ describe('projectBoard', () => {
   });
 
   it('groups by type, priority and parent', () => {
-    const epic = item({ title: 'Epic', status: 'x' }, { type: 'epic' });
+    const epic = item({ title: 'Epic', status: 'x' }, { type: 'project' });
     const items = [
       epic,
-      item({ title: 'a', status: 'todo', priority: 'low', parent: epic.id }, { type: 'bug' }),
+      item({ title: 'a', status: 'todo', priority: 'low', parent: epic.id }, { type: 'note' }),
       item({ title: 'b', status: 'todo', priority: 'urgent' }, { type: 'task' }),
       item({ title: 'c', status: 'todo' }, { type: 'mystery' }),
     ];
     expect(
       projectBoard({ ...setup, swimlaneBy: 'type' }, map(items)).lanes.map((l) => l.label),
-    ).toEqual(['Task', 'Bug', 'mystery']);
+    ).toEqual(['Task', 'Note', 'mystery']);
     expect(
       projectBoard({ ...setup, swimlaneBy: 'priority' }, map(items)).lanes.map((l) => l.label),
     ).toEqual(['Urgent', 'Low', 'No priority']);
@@ -164,7 +164,8 @@ describe('normaliseBoardSetup', () => {
 
 describe('itemIdsShownOnTab', () => {
   it('collects card items and board-scoped items', () => {
-    const bug = item({ title: 'b', status: 'new' }, { type: 'bug' });
+    // Bug triage shows tasks labelled bug (docs/specs/025-plan/items.md "Item types").
+    const bug = item({ title: 'b', status: 'new', labels: ['bug'] }, { type: 'task' });
     const task = item({ title: 't', status: 'todo' }, { type: 'task' });
     const loose = item({ title: 'l' }, { type: 'note' });
     const ids = itemIdsShownOnTab(
@@ -185,10 +186,12 @@ describe('item text', () => {
   it('names and summarises an item', () => {
     const a = item(
       { title: 'Fix login', assignee: SAM, priority: 'high' },
-      { type: 'bug', key: 12 },
+      { type: 'project', key: 12 },
     );
-    expect(itemAccessibleName(a)).toBe('#12 Fix login, Bug, assigned to Sam Lee, high priority');
-    expect(itemSummary(a)).toBe('#12 [bug] Fix login (@Sam Lee, !high)');
+    expect(itemAccessibleName(a)).toBe(
+      '#12 Fix login, Project, assigned to Sam Lee, high priority',
+    );
+    expect(itemSummary(a)).toBe('#12 [project] Fix login (@Sam Lee, !high)');
     expect(itemSummary(item({ title: 'x' }, { key: 3 }))).toBe('#3 [task] x');
   });
 });

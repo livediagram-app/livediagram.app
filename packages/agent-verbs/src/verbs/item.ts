@@ -114,7 +114,7 @@ export const itemLs = defineVerb({
   behaviour: 'read',
   input: z.object({
     doc: docArg,
-    type: z.string().optional().describe('Only items of this type (task, bug, note...)'),
+    type: z.string().optional().describe('Only items of this type (task, note, project...)'),
     status: z.string().optional().describe('Only items with this status (a column)'),
   }),
   output: z.object({ items: z.array(itemOut) }),
@@ -134,7 +134,7 @@ export const itemLs = defineVerb({
     positionals: ['doc'],
     examples: [
       'livediagram item ls "Sprint 14"',
-      'livediagram item ls 3f9c --type bug --status new',
+      'livediagram item ls 3f9c --type task --status new',
     ],
     prints: 'one item a line: #number, type, status, title',
   },
@@ -149,7 +149,10 @@ export const itemAdd = defineVerb({
   input: z.object({
     doc: docArg,
     title: z.string().min(1).describe('The title'),
-    type: z.string().default('task').describe('task, story, bug, epic, note, idea, action or risk'),
+    type: z
+      .string()
+      .default('task')
+      .describe('project, task, note, idea, action, or a type the document adds'),
     status: z.string().optional().describe('The column it starts in'),
     fields: z.array(z.string()).default([]).describe('More fields, as key=value'),
   }),
@@ -174,7 +177,7 @@ export const itemAdd = defineVerb({
   cli: {
     positionals: ['doc', 'title'],
     examples: [
-      'livediagram item add "Sprint 14" "Fix login" --type bug --status todo',
+      'livediagram item add "Sprint 14" "Fix login" --type task --status todo --fields labels=bug',
       'livediagram item add 3f9c "Write the brief" --fields priority=high labels=docs',
     ],
     prints: '+ #<number> [<type>] <title>',
@@ -215,7 +218,7 @@ export const itemSet = defineVerb({
     positionals: ['doc', 'item'],
     examples: [
       'livediagram item set "Sprint 14" "#12" --fields priority=urgent',
-      'livediagram item set 3f9c 12 --clear due --type story',
+      'livediagram item set 3f9c 12 --clear due --type project',
     ],
     prints: '~ #<number> [<type>] <title>',
   },

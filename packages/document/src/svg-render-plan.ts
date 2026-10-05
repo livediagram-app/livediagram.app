@@ -4,6 +4,7 @@
 // columns with their counts and WIP limits, and the card faces, without the
 // interactive controls. Without items the columns draw empty.
 
+import { planPalette, type PlanPalette } from './plan-palette';
 import {
   itemAssignee,
   itemTitle,
@@ -37,34 +38,14 @@ const PRIORITY_COLORS = {
   low: '#64748b',
 } as const;
 
-type Palette = {
-  surface: string;
-  border: string;
-  column: string;
-  card: string;
-  text: string;
-  muted: string;
-};
+type Palette = PlanPalette;
 
-function palette(surface: CanvasSurface): Palette {
-  return surface === 'dark'
-    ? {
-        surface: '#111827',
-        border: '#334155',
-        column: '#1e293b',
-        card: '#0f172a',
-        text: '#e2e8f0',
-        muted: '#94a3b8',
-      }
-    : {
-        surface: '#f8fafc',
-        border: '#e2e8f0',
-        column: '#f1f5f9',
-        card: '#ffffff',
-        text: '#0f172a',
-        muted: '#64748b',
-      };
-}
+// The element's own colours (theme, Quick Style, pickers), for planPalette.
+const ownColours = (el: Shape) => ({
+  fill: el.fillColor,
+  stroke: el.strokeColor,
+  text: el.textColor,
+});
 
 function text(x: number, y: number, size: number, fill: string, body: string, extra = ''): string {
   return `<text x="${r2(x)}" y="${r2(y)}" font-family="${FONT}" font-size="${size}" fill="${xmlEscape(fill)}"${extra}>${xmlEscape(body)}</text>`;
@@ -145,7 +126,7 @@ export function svgPlanBoard(
   surface: CanvasSurface,
   types: readonly ItemTypeDef[] = ITEM_TYPES,
 ): string {
-  const p = palette(surface);
+  const p = planPalette(surface, ownColours(el));
   const setup = normaliseBoardSetup(el.planBoard);
   const parts = [
     `<rect x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}" rx="12" fill="${p.surface}" stroke="${p.border}" stroke-width="1.5"/>`,
@@ -230,11 +211,19 @@ export function svgPlanCard(
   // Without the store in hand, a neutral placeholder rather than "not found".
   const item = items ? items.get(id) : undefined;
   if (!items) {
-    const p = palette(surface);
+    const p = planPalette(surface, ownColours(el));
     return (
       `<rect x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}" rx="8" fill="${p.card}" stroke="${p.border}" stroke-width="1"/>` +
       text(el.x + 12, el.y + el.height / 2 + 4, 12, p.muted, 'Item')
     );
   }
-  return svgCardFace(item, el.x, el.y, el.width, el.height, palette(surface), types);
+  return svgCardFace(
+    item,
+    el.x,
+    el.y,
+    el.width,
+    el.height,
+    planPalette(surface, ownColours(el)),
+    types,
+  );
 }

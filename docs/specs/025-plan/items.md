@@ -51,24 +51,22 @@ The fields the shipped types use. Each has a **field kind** that validates and d
 | `estimate`    | number    | Points or hours, 0 to 999                                                  |
 | `due`         | date      | A calendar date, `YYYY-MM-DD`                                              |
 | `checklist`   | checklist | Up to 50 `{ text, done }` rows                                             |
-| `parent`      | item ref  | Another item's id (an epic), resolved within the same document             |
+| `parent`      | item ref  | Another item's id (a Project), resolved within the same document           |
 | `votes`       | votes     | Per-person counts `{ [personId]: n }`, written only through voting         |
 
 ## Item types
 
-A small built-in catalogue, each with a glyph, a colour and the fields it offers in the item panel:
+Five built-in types, each with a glyph, an accent colour and the fields it offers in the item panel:
 
-| Type   | For                                    | Offers                                                                                   |
-| ------ | -------------------------------------- | ---------------------------------------------------------------------------------------- |
-| Task   | A piece of work                        | title, description, status, assignee, priority, estimate, due, checklist, labels, parent |
-| Story  | Work told from someone's need          | as Task                                                                                  |
-| Bug    | Something broken                       | as Task                                                                                  |
-| Epic   | A larger body of work others belong to | title, description, status, assignee, priority, due, labels                              |
-| Note   | A thought, a retro note                | title, description, status, votes                                                        |
-| Idea   | A proposal to weigh                    | title, description, status, votes, labels                                                |
-| Action | Something agreed to do                 | title, status, assignee, due                                                             |
-| Risk   | Something that could go wrong          | title, description, status, priority, assignee                                           |
+| Type    | Accent | For                                    | Offers                                                                                   |
+| ------- | ------ | -------------------------------------- | ---------------------------------------------------------------------------------------- |
+| Project | Black  | A larger body of work others sit under | title, description, status, assignee, priority, due, labels                              |
+| Task    | Gray   | A piece of work                        | title, description, status, assignee, priority, estimate, due, checklist, labels, parent |
+| Note    | Blue   | A thought, a retro note                | title, description, status, votes                                                        |
+| Idea    | Yellow | A proposal to weigh                    | title, description, status, votes, labels                                                |
+| Action  | Red    | Something agreed to do                 | title, status, assignee, due                                                             |
 
+- A bug is a Task labelled `bug`: the Bug triage board shows Tasks with that label.
 - A document can change these and add its own, with custom fields: see [Item types](item-types.md).
 
 ## Changing items

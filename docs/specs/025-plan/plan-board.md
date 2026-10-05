@@ -73,16 +73,23 @@ In Plan mode:
   card into Sam's row assigns it to Sam).
 - **Drag a card onto another board** to move its item into that board's column (and row, setting the row's
   field) where it lands, with the same placeholder. The item now has that column's status, so a board without
-  that column lists it under "Not on this board". A board whose scope leaves the item out (it shows Bug items
+  that column lists it under "Not on this board". A board whose scope leaves the item out (it shows Task items
   only, or one label) refuses it: no placeholder opens, nothing moves, and the reason is announced ("This board
-  shows Bug items only").
+  shows Task items only").
 - **Drag a card off the board** onto the canvas to leave a Plan card there; the item stays on the board too.
   **Drag a Plan card onto a board** to move its item to the end of the column it lands on; the Plan card goes
   away.
-- **Add an item**: each column ends in "Add item". Typing a title and pressing Enter makes the item and keeps the
-  field open for the next one; Escape closes it. The title may carry **quick tokens**: `@name` assigns,
-  `#label` labels, `!high` (or `!urgent`, `!medium`, `!low`) sets priority, `~3` estimates, and a leading
-  `bug:` (any type name) sets the type. Each token turns into a chip as it is recognised.
+- **Add a card**: each cell ends in a quiet **+ Add card** ("Add your first card" on an empty board). It opens
+  the **Add a Card** popover (a bottom sheet on a phone), as Illustrate's + opens "Add a page": a tile per card
+  type the board shows, each its glyph on a tint of its colour and its name; choosing one adds a card of it
+  ("New task"...) at the end of the cell, in the cell's row (taking the row's field). Arrow keys move between the
+  tiles. Under them, **Or type a title and press Enter** adds a card with that title and keeps the field for the
+  next; the title may carry **quick tokens**: `@name` assigns, `#label` labels, `!high` (or `!urgent`,
+  `!medium`, `!low`) sets priority, `~3` estimates, and a leading `note:` (any type name) sets the type, each
+  shown as a chip as it is recognised. Escape or an outside press closes it.
+- **Right-click a card** for its menu: **Open**, **Duplicate** (a copy right after it, without its votes),
+  **Move to** another column of the board, and **Delete** (undo brings it back). Someone who may only view gets
+  Open alone; a face-down card has no menu.
 - **Open an item**: clicking a card opens the **item panel**, a modal over the canvas (a sheet rising from the
   bottom on a phone). Every field of the item's type
   is edited in place and saved as it changes; the panel shows who made the item and who last changed it. It
@@ -99,7 +106,7 @@ In Plan mode:
 
 With focus on a card: arrow keys move focus between cards; Enter opens the item; **Shift+Left/Right** moves the
 card to the previous or next column; **Shift+Up/Down** moves it within the column; Delete deletes the item
-(undoable); **N** starts a new item in the card's column. Every move is announced ("#12 moved to In progress,
+(undoable); **N** opens the Add a Card popover for the card's cell; the context-menu key opens the card's menu. Every move is announced ("#12 moved to In progress,
 position 2 of 4").
 
 ## The Plan card
@@ -108,6 +115,21 @@ position 2 of 4").
 - Clicking it (in Plan mode) or double-clicking it (other modes) opens the item panel.
 - When its item is not in the document's store (deleted, or the tab came from another document) it draws "Item
   not found" in a dashed outline and offers to remove the card.
+
+## Theme and style
+
+- A board and a Plan card follow the tab's theme and their own style, like any shape: a theme stamps their fill,
+  stroke and text colours when they are made and rewrites them on a theme switch, and Quick Style, the colour
+  pickers and the style presets set them. The board's fill is its surface, its stroke its border and focus
+  colour, its text colour its ink; columns, cards, card borders and muted text are mixed from those. Ink that
+  would not read on the fill is swapped for a readable one. With no colours of their own (the Default theme)
+  they take the canvas surface's neutral set, light or dark.
+- Corners follow Quick Style's Corners (12 px by default), text follows the tab's font (or the element's own),
+  and a shadow sits under the board like any shape's.
+- The same colours draw the board in exports, thumbnails and images.
+- A board keeps its layers to itself: its sticky column heads never draw over another element, even where boards
+  overlap.
+- A selected board or Plan card has no quick-connect pluses: its cards are its content, not nodes to chain from.
 
 ## Both elements everywhere
 

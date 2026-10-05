@@ -59,22 +59,22 @@ export const PALETTE_CATEGORIES: {
     icon: <PopularTabIcon />,
   },
   {
-    // Boards and Cards (docs/specs/025-plan/plan-mode.md "The palette"): Plan mode's own band,
-    // offered in Plan mode only, straight after Popular.
+    // Cards and Boards (docs/specs/025-plan/plan-mode.md "The palette"): Plan mode's own band, offered
+    // in Plan mode only, first in the picker, Cards first.
+    id: 'plan-cards',
+    label: 'Cards',
+    group: 4,
+    description:
+      'A card for one item, by type: project, task, note, idea or action, and any the document adds.',
+    icon: <PlanCardsIcon size={18} />,
+  },
+  {
     id: 'plan-boards',
     label: 'Boards',
     group: 4,
     description:
       'Boards of items to drag through columns: Kanban, sprint, retro, roadmap and more.',
     icon: <PlanIcon size={18} />,
-  },
-  {
-    id: 'plan-cards',
-    label: 'Cards',
-    group: 4,
-    description:
-      'A card for one item, by type: task, story, bug, epic, note, idea, action or risk.',
-    icon: <PlanCardsIcon size={18} />,
   },
   {
     id: 'shapes',

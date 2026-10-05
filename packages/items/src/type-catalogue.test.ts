@@ -34,7 +34,7 @@ describe('the type catalogue', () => {
   it('is the built-ins until a document stores its own', () => {
     expect(typesOf(null)).toBe(ITEM_TYPES);
     expect(typesOf(builtInCatalogue())).toEqual(ITEM_TYPES);
-    expect(typeIn(ITEM_TYPES, 'bug').label).toBe('Bug');
+    expect(typeIn(ITEM_TYPES, 'project').label).toBe('Project');
     expect(typeIn(ITEM_TYPES, 'gone')).toBe(FALLBACK_ITEM_TYPE);
   });
 
@@ -91,12 +91,14 @@ describe('the type catalogue', () => {
   it('reads back a stored value, falling back to the built-ins when it is damaged', () => {
     expect(readItemTypeCatalogue(null)).toBeNull();
     expect(readItemTypeCatalogue('{not json')).toBeNull();
-    expect(readItemTypeCatalogue(JSON.stringify(withCall()))?.types).toHaveLength(9);
+    expect(readItemTypeCatalogue(JSON.stringify(withCall()))?.types).toHaveLength(
+      ITEM_TYPES.length + 1,
+    );
   });
 
   it('makes ids from names that never clash', () => {
     expect(slugOf('  Café  Visit! ')).toBe('cafe-visit');
-    expect(newItemTypeId('Bug', ITEM_TYPES)).toBe('bug-2');
+    expect(newItemTypeId('Task', ITEM_TYPES)).toBe('task-2');
     expect(newItemTypeId('Item', ITEM_TYPES)).toBe('item-2');
     expect(newItemTypeId('42 things', ITEM_TYPES)).toBe('type-42-things');
     expect(newCustomFieldId('Outcome', ['f-outcome'])).toBe('f-outcome-2');
@@ -105,7 +107,7 @@ describe('the type catalogue', () => {
 
   it('matches a quick-add name to a type, plural or not', () => {
     const types = [...ITEM_TYPES, { ...call, newTitle: 'New call', custom: [] } as ItemTypeDef];
-    expect(typeByNameIn(types, 'Bugs')?.id).toBe('bug');
+    expect(typeByNameIn(types, 'Projects')?.id).toBe('project');
     expect(typeByNameIn(types, 'customer calls')?.id).toBe('customer-call');
     expect(typeByNameIn(types, 'nope')).toBeUndefined();
   });

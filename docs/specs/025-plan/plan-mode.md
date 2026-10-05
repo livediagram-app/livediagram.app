@@ -33,44 +33,57 @@ item store.
 - **The item panel** opens as a modal over the canvas when an item is opened (a sheet that rises from the
   bottom on a phone).
 - **The Layers panel is gone**, with its button: a board is worked by its columns and cards, not a stacking
-  order. It returns with any other mode.
+  order. The **Card Types** button stands where it was ([Item types](item-types.md)). Layers returns with any
+  other mode.
 - **Everything else is Diagram mode's**: selection, arrows, text, stickies, frames, snapping, history and
   shortcuts, so notes and arrows around a board work as they always do.
 - **The canvas pattern and colours are the tab's**, as in Diagram mode.
 
-## Leaving Plan
+## Plan keeps its own tabs
 
-- **A Plan tab with anything on it stays in Plan mode.** Its boards and cards are worked the Plan way, and a
-  board in another mode is only a picture of them, so the mode switch and **Shift+D** do not move it.
-- Asking for another mode there opens **This Tab Stays in Plan Mode**, which says why and offers **Create a
-  New Tab**: a new tab, opening in the mode asked for, becomes the active tab (with its template picker, as any
-  new tab). **Cancel** stays. Shift+D announces nothing it did not do; the dialog speaks for itself.
-- An empty Plan tab switches freely, as every tab does. So does every other mode.
+- **A Plan tab with anything on it stays in Plan mode, and a tab in another mode with anything on it does not
+  become a Plan tab.** Boards and cards are worked the Plan way on a tab of their own; a board in another mode is
+  only a picture of them, and a diagram is not a board. The mode switch and **Shift+D** do not cross that line.
+- Asking to leave opens **This Tab Stays in Plan Mode**; asking to enter opens **Plan Mode Needs Its Own Tab**.
+  Each says why and offers **Create a New Tab**: a new tab, opening in the mode asked for, becomes the active
+  tab (with its template picker, as any new tab). **Cancel** stays. Shift+D announces nothing it did not do; the
+  dialog speaks for itself.
+- An empty tab switches freely, into Plan and out of it.
 - A visitor who cannot edit has no switch, so meets none of this.
 - Telemetry: a tab made from the dialog is an ordinary new tab, `Tab` · `Created`.
 
+## Tools
+
+- **Plan starts on the Hand tool**: a board's cards take the pointer themselves, so a drag on the canvas moves
+  it. Select is one pick away, for moving or resizing a board.
+- **Eraser and Format are left out** of the tool picker and their shortcuts: they work on drawn content a Plan
+  tab does not hold.
+- **No Layers panel**, as below.
+
 ## The palette
 
-The Plan layout offers eight categories, landing on Popular. Boards and Cards sit together under their own
-**Plan** heading in the category picker, straight after Popular; the rest keep their usual bands:
+The Plan layout offers two categories, **Cards** then **Boards**, under their **Plan** heading in the category
+picker, and opens on **Cards**. The Cards category ends with **Edit Cards**, which opens the Card Types panel
+([Item types](item-types.md)); the Toolbar layout's strip ends with it while Cards is chosen. A Plan tab is worked by its boards, so there is no Popular and none of the
+drawing, writing or decorating categories (Write, Shapes, Icons, Stickers, Media and the rest stay with the other
+modes):
 
-| Category | Holds                                                                                                              |
-| -------- | ------------------------------------------------------------------------------------------------------------------ |
-| Popular  | Kanban board, Retro board, Task card, Bug card, Note card, Sticky note, Text, Frame, Arrow, Image, Checklist, Link |
-| Boards   | Kanban, Sprint, Retro, Roadmap, Bug triage, Week, Blank                                                            |
-| Cards    | One per [item type](item-types.md) of the document, in its order: Task card, Story card... and any added           |
-| Write    | Diagram's Write, without Page and Annotation, with Checklist and Link                                              |
-| Shapes   | Diagram's Shapes, with Arrow, Line and Frame                                                                       |
-| Icons    | The icon catalogue                                                                                                 |
-| Stickers | The sticker catalogue                                                                                              |
-| Media    | Image and Avatar                                                                                                   |
+| Category | Holds                                                                                                      |
+| -------- | ---------------------------------------------------------------------------------------------------------- |
+| Cards    | One per [item type](item-types.md) of the document, in its order: Project card, Task card... and any added |
+| Boards   | Kanban, Sprint, Retro, Roadmap, Bug triage, Week, Blank, each with its own picture                         |
 
 - A **board tile** places a Plan board with that preset's set-up. The board starts empty unless the tab already
   has items its scope matches.
-- A **card tile** places a Plan card and makes a new item of that type in the store (titled "New task", "New
-  bug"...), opened from the card to write it.
+- A **card tile** never puts anything on the canvas. Dragged and dropped (or pressed, then placed) into a board's
+  column, it makes a new item of that type there (titled "New task", "New bug"...), at the drop point between
+  cards and in the row it lands in (taking the row's field, its type kept); it is not opened, a click opens it.
+  While it is dragged, the column under the pointer opens a dashed gap where it would land (the gap a card from
+  another board opens), and no ghost is drawn on the canvas. Over no
+  column, or over a board that does not show the type, nothing is made and the reason is said ("Drop a card into a
+  column on a board", "This board shows Bug items only"). A Plan card on the canvas comes only from dragging a
+  board's card off it.
 - Draw mode's shape dock leaves Boards and Cards out: they frame items, not ink.
-- Build, Components, Devices, Data, Tech, Behaviours, Draw and My shapes are left out.
 
 ## Templates
 

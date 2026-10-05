@@ -26,23 +26,23 @@ export type DeleteTarget = string | null;
 
 // The swatches' names, for the colour picker's buttons.
 const COLOUR_NAMES: Record<string, string> = {
+  '#18181b': 'Black',
+  '#71717a': 'Gray',
   '#2563eb': 'Blue',
-  '#16a34a': 'Green',
+  '#eab308': 'Yellow',
   '#dc2626': 'Red',
+  '#16a34a': 'Green',
   '#7c3aed': 'Violet',
   '#d97706': 'Amber',
   '#0d9488': 'Teal',
   '#db2777': 'Pink',
   '#ea580c': 'Orange',
   '#0891b2': 'Cyan',
-  '#4f46e5': 'Indigo',
-  '#65a30d': 'Lime',
-  '#64748b': 'Slate',
 };
 
 const NEW_TYPE: Omit<ItemTypeDef, 'id' | 'newTitle'> = {
   label: '',
-  color: PLAN_TYPE_COLOURS[8],
+  color: PLAN_TYPE_COLOURS[11],
   glyph: 'star',
   fields: ['title', 'status', 'description', 'assignee'],
 };

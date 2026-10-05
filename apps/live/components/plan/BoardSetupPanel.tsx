@@ -37,7 +37,7 @@ const SWIMLANE_LABELS: Record<SwimlaneBy, string> = {
   assignee: 'A row per assignee',
   type: 'A row per item type',
   priority: 'A row per priority',
-  parent: 'A row per parent (epic)',
+  parent: 'A row per project',
 };
 
 const CARD_FIELD_LABELS: Record<CardField, string> = {

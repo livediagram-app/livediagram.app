@@ -68,43 +68,27 @@ const WORK: readonly ItemFieldId[] = [
 
 export const ITEM_TYPES = [
   {
+    id: 'project',
+    label: 'Project',
+    newTitle: 'New project',
+    glyph: 'project',
+    color: '#18181b',
+    fields: ['title', 'description', 'status', 'assignee', 'priority', 'due', 'labels'],
+  },
+  {
     id: 'task',
     label: 'Task',
     newTitle: 'New task',
     glyph: 'task',
-    color: '#2563eb',
+    color: '#71717a',
     fields: WORK,
-  },
-  {
-    id: 'story',
-    label: 'Story',
-    newTitle: 'New story',
-    glyph: 'story',
-    color: '#16a34a',
-    fields: WORK,
-  },
-  {
-    id: 'bug',
-    label: 'Bug',
-    newTitle: 'New bug',
-    glyph: 'bug',
-    color: '#dc2626',
-    fields: WORK,
-  },
-  {
-    id: 'epic',
-    label: 'Epic',
-    newTitle: 'New epic',
-    glyph: 'epic',
-    color: '#7c3aed',
-    fields: ['title', 'description', 'status', 'assignee', 'priority', 'due', 'labels'],
   },
   {
     id: 'note',
     label: 'Note',
     newTitle: 'New note',
     glyph: 'note',
-    color: '#d97706',
+    color: '#2563eb',
     fields: ['title', 'description', 'status', 'votes'],
   },
   {
@@ -112,7 +96,7 @@ export const ITEM_TYPES = [
     label: 'Idea',
     newTitle: 'New idea',
     glyph: 'idea',
-    color: '#0d9488',
+    color: '#eab308',
     fields: ['title', 'description', 'status', 'votes', 'labels'],
   },
   {
@@ -120,16 +104,8 @@ export const ITEM_TYPES = [
     label: 'Action',
     newTitle: 'New action',
     glyph: 'action',
-    color: '#db2777',
+    color: '#dc2626',
     fields: ['title', 'status', 'assignee', 'due'],
-  },
-  {
-    id: 'risk',
-    label: 'Risk',
-    newTitle: 'New risk',
-    glyph: 'risk',
-    color: '#ea580c',
-    fields: ['title', 'description', 'status', 'priority', 'assignee'],
   },
 ] as const satisfies readonly ItemTypeDef[];
 
@@ -146,19 +122,3 @@ export const FALLBACK_ITEM_TYPE: ItemTypeDef = {
   color: '#64748b',
   fields: ['title', 'description', 'status', 'assignee', 'labels'],
 };
-
-const BY_ID = new Map<string, ItemTypeDef>(ITEM_TYPES.map((t) => [t.id, t]));
-
-export function itemTypeOf(id: string): ItemTypeDef {
-  return BY_ID.get(id) ?? FALLBACK_ITEM_TYPE;
-}
-
-export function isKnownItemType(id: string): id is ItemTypeId {
-  return BY_ID.has(id);
-}
-
-// Matches "bug", "Bug", "bugs" to a type, for quick add's leading `bug:`.
-export function itemTypeByName(name: string): ItemTypeDef | undefined {
-  const n = name.trim().toLowerCase();
-  return ITEM_TYPES.find((t) => t.id === n || `${t.id}s` === n || t.label.toLowerCase() === n);
-}

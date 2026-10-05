@@ -1,6 +1,6 @@
 'use client';
 
-// Leaving Plan on a tab with content (docs/specs/025-plan/plan-mode.md "Leaving Plan"): the tab stays
+// Leaving Plan on a tab with content (docs/specs/025-plan/plan-mode.md "Plan keeps its own tabs"): the tab stays
 // in Plan mode; the way on is a new tab in the mode asked for.
 import { useEffect, useRef } from 'react';
 import { editorModeLabel } from '@livediagram/document';
@@ -16,6 +16,8 @@ export function LeavePlanDialog({ leave }: { leave: LeavePlan }) {
     if (open) newTabRef.current?.focus();
   }, [open]);
   const mode = leave.blocked ? editorModeLabel(leave.blocked) : '';
+  // Going into Plan from another mode, or out of Plan (docs/specs/025-plan/plan-mode.md).
+  const into = leave.blocked === 'plan';
   return (
     <Dialog open={open} onClose={leave.cancel} titleId="leave-plan-title">
       <div className="border-b border-slate-100 px-6 pt-6 pb-4 dark:border-slate-800">
@@ -23,11 +25,12 @@ export function LeavePlanDialog({ leave }: { leave: LeavePlan }) {
           id="leave-plan-title"
           className="text-lg font-semibold text-slate-900 dark:text-slate-50"
         >
-          This Tab Stays in Plan Mode
+          {into ? 'Plan Mode Needs Its Own Tab' : 'This Tab Stays in Plan Mode'}
         </h2>
         <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
-          A tab with something on it stays in Plan mode, so its boards and cards keep working. Start
-          a new tab to work in {mode} mode.
+          {into
+            ? 'Boards and cards are worked on a tab of their own, so this tab keeps its mode and everything on it. Start a new tab to plan in.'
+            : `A tab with something on it stays in Plan mode, so its boards and cards keep working. Start a new tab to work in ${mode} mode.`}
         </p>
       </div>
       <DialogFooter>

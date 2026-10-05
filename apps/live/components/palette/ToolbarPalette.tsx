@@ -23,6 +23,9 @@ import { PaletteDropdown, TOOLBAR_TRIGGER_TONE } from './PaletteDropdown';
 import { CATEGORY_BANDS } from './PaletteTabBar';
 import { EsPhotoStripButton } from './EsPhotoStripButton';
 import { PaletteTile } from './PaletteTileGrid';
+import { usePlan } from '@/components/plan/PlanContext';
+import { planCardTile } from './palette-plan-tiles';
+import { EditCardsStripButton } from './EditCardsStripButton';
 import { desktopStripTileLimit, phoneStripTileLimit, stripTilesFor } from './toolbar-strip-tiles';
 import { useStripTileLimit } from './useStripTileLimit';
 import { useViewportWidth } from '@/hooks/ui/useViewportWidth';
@@ -163,17 +166,21 @@ export function ToolbarPalette(props: Props) {
   // still decides whether More is needed for what is out of view.
   const swipe = leading != null;
   const tileLimit = swipe ? Infinity : stripLimit;
+  // Plan mode's Cards follow the document's item types (docs/specs/025-plan/item-types.md).
+  const plan = usePlan();
+  const categoryTiles =
+    category?.id === 'plan-cards' && plan ? plan.types.map(planCardTile) : category?.tiles;
   const fitted = stripTilesFor(category?.id ?? defaultId, {
     hasImage: tileActions.hasImage,
     limit: stripLimit,
     // The category's tiles in this mode's layout (palette-layouts).
-    tiles: category?.tiles,
+    tiles: categoryTiles,
   });
   const { tiles, dividersAfter } = swipe
     ? stripTilesFor(category?.id ?? defaultId, {
         hasImage: tileActions.hasImage,
         limit: tileLimit,
-        tiles: category?.tiles,
+        tiles: categoryTiles,
       })
     : fitted;
   const { hasMore } = fitted;
@@ -455,6 +462,12 @@ export function ToolbarPalette(props: Props) {
                 ) : null}
                 {/* Not on a phone: the strip has no room to spare, and the row's own + (after the
                     last page) adds one there. */}
+                {category?.id === 'plan-cards' && plan?.canEdit && !isMobile ? (
+                  <>
+                    <Divider />
+                    <EditCardsStripButton />
+                  </>
+                ) : null}
                 {props.onAddPage && !isMobile ? (
                   <>
                     <Divider />

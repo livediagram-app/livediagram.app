@@ -4,9 +4,8 @@
 // its set-up projected over the document's items into columns, rows and cards. In Plan mode cards
 // take the pointer and the keyboard; in the other modes the board is an element like any other and a
 // double-click opens a card. Everything the board changes goes through PlanContext.
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
-import type { ShapeElement } from '@livediagram/document';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { cornerRadiusPx, type ShapeElement } from '@livediagram/document';
 import {
   ITEM_TYPES,
   cardIsFaceDown,
@@ -21,13 +20,17 @@ import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { track } from '@/lib/telemetry';
 import { usePlanBoardDrop } from '@/hooks/plan/usePlanBoardDrop';
 import { laneMove } from './plan-board-moves';
-import { LaneRow, PlanBoardCard } from './PlanBoardCells';
+import { LaneRow, PlanBoardCard, PlanDragGhost } from './PlanBoardCells';
+import { PlanCardMenuHost } from './PlanCardMenu';
 import { usePlan } from './PlanContext';
 import { PlanBoardHeader } from './PlanBoardHeader';
-import { PlanCardFace, myVotes } from './PlanCardFace';
-import { PlanQuickAdd } from './PlanQuickAdd';
+import { myVotes } from './PlanCardFace';
+import { AddCardButton } from './AddCardButton';
 import { planBoardKey } from './plan-board-keys';
-import { planPalette } from './plan-palette';
+import { planOwnColours, planPalette } from './plan-palette';
+
+// A board's corner radius when it has none of its own (Quick Style's Corners sets one).
+const PLAN_BOARD_RADIUS_PX = 12;
 
 // Each column is at least this wide (blueprint DEFAULTS D7); a narrower board scrolls sideways.
 export const PLAN_COLUMN_MIN_PX = 220;
@@ -35,10 +38,19 @@ export const PLAN_COLUMN_MIN_PX = 220;
 const stop = (e: { stopPropagation: () => void }) => e.stopPropagation();
 const NO_ITEMS: ReadonlyMap<string, Item> = new Map();
 
-export function PlanBoardView({ element }: { element: ShapeElement }) {
+export function PlanBoardView({
+  element,
+  fontFamily,
+}: {
+  element: ShapeElement;
+  // The tab's (or the element's own) font (docs/specs/025-plan/plan-board.md "Theme and style").
+  fontFamily?: string;
+}) {
   const plan = usePlan();
   const surface = useCanvasSurface();
-  const palette = planPalette(surface);
+  // The board's theme and style colours (docs/specs/025-plan/plan-board.md "Theme and style").
+  const palette = planPalette(surface, planOwnColours(element));
+  const radius = `${cornerRadiusPx(element.borderRadius, element.width, element.height, PLAN_BOARD_RADIUS_PX)}px`;
   const types = plan?.types ?? ITEM_TYPES;
   // A scope naming a type the catalogue no longer has drops it (docs/specs/025-plan/item-types.md
   // "Editing a type"); a scope left with none shows every type.
@@ -55,8 +67,11 @@ export function PlanBoardView({ element }: { element: ShapeElement }) {
   }, [element.planBoard, types]);
   const [quick, setQuick] = useState<QuickFilter>({});
   const [adding, setAdding] = useState<{ status: string; laneKey: string } | null>(null);
+  const closeAdding = useCallback(() => setAdding(null), []);
   const [collapsed, setCollapsed] = useState<ReadonlySet<string>>(new Set());
   const boardRef = useRef<HTMLDivElement>(null);
+  // A card's right-click menu (PlanCardMenu): the card and where it was asked for.
+  const [menu, setMenu] = useState<{ itemId: string; at: { x: number; y: number } } | null>(null);
   const bodyRef = useRef<HTMLDivElement>(null);
   const focusNextRef = useRef<string | null>(null);
   const items = plan?.items ?? NO_ITEMS;
@@ -137,6 +152,9 @@ export function PlanBoardView({ element }: { element: ShapeElement }) {
   const loading = plan?.status === 'loading';
   const empty = !loading && projection.total === 0;
   const defaultType = setup.scope.types?.[0] ?? 'task';
+  // The types Add card offers: the ones this board shows (docs/specs/025-plan/plan-board.md).
+  const scopeTypes = setup.scope.types;
+  const addTypes = scopeTypes?.length ? types.filter((t) => scopeTypes.includes(t.id)) : types;
 
   const onCardKey = (item: Item, e: React.KeyboardEvent<HTMLElement>) => {
     if (!plan) return;
@@ -169,8 +187,15 @@ export function PlanBoardView({ element }: { element: ShapeElement }) {
       data-plan-board={element.id}
       role="region"
       aria-label={setup.title}
-      className="absolute inset-0 flex flex-col overflow-hidden rounded-xl border"
-      style={{ backgroundColor: palette.surface, borderColor: palette.border, color: palette.text }}
+      // `isolate`: the sticky column heads stack inside the board, never over another element.
+      className="absolute inset-0 isolate flex flex-col overflow-hidden border"
+      style={{
+        backgroundColor: palette.surface,
+        borderColor: palette.border,
+        color: palette.text,
+        borderRadius: radius,
+        ...(fontFamily ? { fontFamily } : {}),
+      }}
     >
       <PlanBoardHeader
         setup={setup}
@@ -324,6 +349,7 @@ export function PlanBoardView({ element }: { element: ShapeElement }) {
                               onPress={onCardPress}
                               onOpen={() => plan?.openItem(item.id)}
                               onKey={onCardKey}
+                              onMenu={(it, at) => setMenu({ itemId: it.id, at })}
                             />
                           ))}
                           {slotHere && slotHere.beforeId === null ? (
@@ -333,15 +359,15 @@ export function PlanBoardView({ element }: { element: ShapeElement }) {
                               aria-hidden
                             />
                           ) : null}
-                          {isAdding || firstEmpty ? (
-                            <PlanQuickAdd
+                          {canEdit && !loading ? (
+                            <AddCardButton
                               palette={palette}
+                              types={addTypes}
                               people={plan?.people ?? []}
                               defaultType={defaultType}
-                              autoFocus={isAdding}
-                              emptyHint={
-                                firstEmpty && !isAdding ? 'Add your first item' : undefined
-                              }
+                              label={firstEmpty ? 'Add your first card' : 'Add card'}
+                              open={isAdding}
+                              onClosed={closeAdding}
                               onAdd={({ type, fields }) =>
                                 plan?.addItem({
                                   type,
@@ -353,21 +379,7 @@ export function PlanBoardView({ element }: { element: ShapeElement }) {
                                   after: cell[cell.length - 1]?.id ?? null,
                                 })
                               }
-                              onClose={() => setAdding(null)}
                             />
-                          ) : canEdit && !loading ? (
-                            <button
-                              type="button"
-                              className="flex items-center gap-1 rounded-md px-1.5 py-1 text-left text-[12px] font-medium transition enabled:cursor-pointer hover:bg-black/5"
-                              style={{ color: palette.muted }}
-                              onPointerDown={stop}
-                              onClick={(e) => {
-                                stop(e);
-                                setAdding({ status: col.column.status, laneKey: lane.key });
-                              }}
-                            >
-                              + Add item
-                            </button>
                           ) : null}
                         </div>
                       );
@@ -377,28 +389,23 @@ export function PlanBoardView({ element }: { element: ShapeElement }) {
           })}
         </div>
       </div>
-      {dragging && typeof document !== 'undefined'
-        ? createPortal(
-            <div
-              className="pointer-events-none fixed z-[1000] rotate-2 opacity-90 shadow-xl motion-reduce:rotate-0"
-              style={{
-                left: dragging.clientX - dragging.offsetX,
-                top: dragging.clientY - dragging.offsetY,
-                width: dragging.width,
-                height: dragging.height,
-              }}
-            >
-              {items.get(dragging.itemId) ? (
-                <PlanCardFace
-                  item={items.get(dragging.itemId)!}
-                  palette={palette}
-                  fields={setup.cardFields}
-                />
-              ) : null}
-            </div>,
-            document.body,
-          )
-        : null}
+      {menu && plan ? (
+        <PlanCardMenuHost
+          menu={menu}
+          plan={plan}
+          setup={setup}
+          canEdit={canEdit}
+          onClose={() => setMenu(null)}
+        />
+      ) : null}
+      {dragging && items.get(dragging.itemId) ? (
+        <PlanDragGhost
+          drag={dragging}
+          item={items.get(dragging.itemId)!}
+          palette={palette}
+          fields={setup.cardFields}
+        />
+      ) : null}
     </div>
   );
 }

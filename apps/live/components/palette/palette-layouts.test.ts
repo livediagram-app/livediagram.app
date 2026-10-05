@@ -137,40 +137,21 @@ describe('palette layouts', () => {
   });
 
   // docs/specs/025-plan/plan-mode.md "The palette".
-  it('narrows Plan to boards, cards and what sits round a board', () => {
-    expect(ids('plan')).toEqual([
-      'popular',
-      'plan-boards',
-      'plan-cards',
-      'write',
-      'shapes',
-      'icons',
-      'stickers',
-      'media',
-    ]);
+  it('narrows Plan to boards and cards alone', () => {
+    expect(ids('plan')).toEqual(['plan-cards', 'plan-boards']);
+    expect(paletteLandingCategory('plan', false)).toBe('plan-cards');
     for (const mode of ['diagram', 'illustrate'] as const) {
       expect(ids(mode)).not.toContain('plan-boards');
       expect(ids(mode)).not.toContain('plan-cards');
     }
-    expect(tileIds('plan', 'write')).not.toContain('tools:page');
-    expect(tileIds('plan', 'media')).not.toContain('media:embed-youtube');
   });
 
-  it('offers a board per preset and a card per item type, twelve Popular tiles all reachable', () => {
+  it('offers a board per preset and a card per item type', () => {
     const boards = tileIds('plan', 'plan-boards');
     const cards = tileIds('plan', 'plan-cards');
     expect(boards).toHaveLength(7);
     expect(boards.every((id) => id.startsWith('plan:board-'))).toBe(true);
-    expect(cards).toHaveLength(8);
+    expect(cards).toHaveLength(5);
     expect(cards.every((id) => id.startsWith('plan:card-'))).toBe(true);
-    const popular = tileIds('plan', 'popular');
-    expect(popular).toHaveLength(12);
-    const reachable = new Set(
-      paletteCategoriesFor('plan')
-        .filter((c) => c.id !== 'popular')
-        .flatMap((c) => (c.tiles ?? []).map((t) => t.id)),
-    );
-    for (const id of popular) expect(reachable.has(id), id).toBe(true);
-    expect(paletteLandingCategory('plan', false)).toBe('popular');
   });
 });

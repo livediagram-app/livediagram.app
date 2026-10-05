@@ -7,12 +7,21 @@ import type { ShapeElement } from '@livediagram/document';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { usePlan } from './PlanContext';
 import { PlanCardFace } from './PlanCardFace';
-import { planPalette } from './plan-palette';
+import { planOwnColours, planPalette } from './plan-palette';
 import { DEFAULT_CARD_FIELDS, itemAccessibleName } from '@livediagram/items';
 
-export function PlanCardView({ element }: { element: ShapeElement }) {
+export function PlanCardView({
+  element,
+  fontFamily,
+}: {
+  element: ShapeElement;
+  fontFamily?: string;
+}) {
   const plan = usePlan();
-  const palette = planPalette(useCanvasSurface());
+  // Its theme and style colours (docs/specs/025-plan/plan-board.md "Theme and style"): a lone card's
+  // fill is its face.
+  const themed = planPalette(useCanvasSurface(), planOwnColours(element));
+  const palette = element.fillColor ? { ...themed, card: themed.surface } : themed;
   const itemId = element.planCard?.itemId ?? '';
   const item = plan?.items.get(itemId);
   if (!item) {
@@ -50,6 +59,7 @@ export function PlanCardView({ element }: { element: ShapeElement }) {
   return (
     <div
       className="absolute inset-0"
+      style={fontFamily ? { fontFamily } : undefined}
       role="button"
       tabIndex={-1}
       aria-label={itemAccessibleName(item, plan?.types)}

@@ -25,20 +25,21 @@ export const CUSTOM_CHOICE_OPTION_MAX = 40;
 export const ITEM_TYPES_BYTES = 32_768;
 export const ITEM_TYPE_CATALOGUE_VERSION = 1;
 
-// The colours a type is given from: the built-in types' eight, then four more.
+// The colours a type is given from: the built-in types' five (Project, Task, Note, Idea, Action), then
+// seven more.
 export const PLAN_TYPE_COLOURS = [
+  '#18181b',
+  '#71717a',
   '#2563eb',
-  '#16a34a',
+  '#eab308',
   '#dc2626',
+  '#16a34a',
   '#7c3aed',
   '#d97706',
   '#0d9488',
   '#db2777',
   '#ea580c',
   '#0891b2',
-  '#4f46e5',
-  '#65a30d',
-  '#64748b',
 ] as const;
 
 // The built-in fields a type may offer, in the order the type editor offers them.

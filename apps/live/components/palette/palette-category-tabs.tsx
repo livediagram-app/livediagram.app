@@ -34,7 +34,7 @@ import {
 import type { ComponentProps } from 'react';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { PaletteTileGrid, type PaletteTileActions } from '@/components/palette/PaletteTileGrid';
-import { PalettePlanCardsTab, PlanAwareTileGrid } from './PalettePlanCardsTab';
+import { PalettePlanCardsTab } from './PalettePlanCardsTab';
 import type { ResolvedPaletteCategory } from './palette-layouts';
 import type { EsBoardControls } from '@/components/palette/EventStormingBoardRows';
 
@@ -153,12 +153,10 @@ export function paletteCategoryTabs(
         return <PaletteDataTab {...tab} tiles={tiles} />;
       case 'behaviour':
         return <PaletteBehaviourTab {...tab} tiles={tiles} />;
-      // Plan mode's cards and Popular follow the document's item types
+      // Plan mode's cards follow the document's item types
       // (docs/specs/025-plan/item-types.md "Where types show").
       case 'plan-cards':
         return <PalettePlanCardsTab {...tab} />;
-      case 'popular':
-        return <PlanAwareTileGrid {...tab} tiles={tiles} />;
       default:
         return <PaletteTileGrid {...tab} tiles={tiles} />;
     }

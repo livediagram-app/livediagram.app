@@ -150,7 +150,7 @@ const TILES_PER_CATEGORY: Record<string, number> = {
   // Plan mode's Boards and Cards (docs/specs/025-plan/plan-mode.md "The palette"): seven boards, one
   // card per item type.
   'plan-boards': 7,
-  'plan-cards': 8,
+  'plan-cards': 5,
 };
 
 describe('PALETTE_CATEGORIES', () => {

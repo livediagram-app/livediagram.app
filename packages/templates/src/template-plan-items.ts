@@ -15,21 +15,27 @@ function item(type: string, status: string, title: string, extra: ItemFields = {
   return { type, fields: { title, status, ...extra }, place: { status } };
 }
 
+// A bug is a task labelled `bug` (docs/specs/025-plan/items.md "Item types"), which Bug triage shows.
+function bug(status: string, title: string, extra: ItemFields = {}): ItemCreate {
+  const labels = Array.isArray(extra['labels']) ? (extra['labels'] as string[]) : [];
+  return item('task', status, title, { ...extra, labels: ['bug', ...labels] });
+}
+
 const KANBAN: ItemCreate[] = [
-  item('story', 'backlog', 'Save cards for next time', {
+  item('task', 'backlog', 'Save cards for next time', {
     labels: ['payments'],
     priority: 'medium',
   }),
   item('task', 'backlog', 'Pick a fraud-check provider', { labels: ['research'] }),
-  item('bug', 'backlog', 'Coupon field clears on back', { priority: 'low', labels: ['frontend'] }),
-  item('story', 'todo', 'Apple Pay at checkout', {
+  bug('backlog', 'Coupon field clears on back', { priority: 'low', labels: ['frontend'] }),
+  item('task', 'todo', 'Apple Pay at checkout', {
     assignee: SAM,
     priority: 'high',
     labels: ['payments'],
     estimate: 5,
   }),
   item('task', 'todo', 'Write the refunds runbook', { assignee: JO, labels: ['ops'] }),
-  item('story', 'doing', 'One-page checkout', {
+  item('task', 'doing', 'One-page checkout', {
     assignee: PRIYA,
     priority: 'high',
     labels: ['frontend'],
@@ -40,13 +46,13 @@ const KANBAN: ItemCreate[] = [
       { text: 'Order summary pinned on mobile', done: false },
     ],
   }),
-  item('bug', 'doing', 'Tax rounds wrong for Ireland', {
+  bug('doing', 'Tax rounds wrong for Ireland', {
     assignee: ALEX,
     priority: 'urgent',
     labels: ['backend'],
   }),
   item('task', 'doing', 'Load-test the payments API', { assignee: SAM, labels: ['infra'] }),
-  item('story', 'review', 'Show delivery dates in basket', {
+  item('task', 'review', 'Show delivery dates in basket', {
     assignee: JO,
     priority: 'medium',
     labels: ['frontend'],
@@ -55,7 +61,7 @@ const KANBAN: ItemCreate[] = [
     assignee: ALEX,
     labels: ['backend'],
   }),
-  item('bug', 'done', 'Double charge on retry', {
+  bug('done', 'Double charge on retry', {
     assignee: PRIYA,
     priority: 'urgent',
     labels: ['payments'],
@@ -63,7 +69,7 @@ const KANBAN: ItemCreate[] = [
 ];
 
 const SPRINT: ItemCreate[] = [
-  item('story', 'sprint-backlog', 'Remember the last delivery address', {
+  item('task', 'sprint-backlog', 'Remember the last delivery address', {
     assignee: SAM,
     priority: 'medium',
     estimate: 3,
@@ -73,57 +79,57 @@ const SPRINT: ItemCreate[] = [
     estimate: 2,
     labels: ['analytics'],
   }),
-  item('bug', 'sprint-backlog', 'Postcode lookup times out', { priority: 'high', estimate: 2 }),
-  item('story', 'doing', 'One-tap reorder', {
+  bug('sprint-backlog', 'Postcode lookup times out', { priority: 'high', estimate: 2 }),
+  item('task', 'doing', 'One-tap reorder', {
     assignee: PRIYA,
     priority: 'high',
     estimate: 5,
     labels: ['mobile'],
   }),
   item('task', 'doing', 'Cache basket totals', { assignee: SAM, estimate: 3, labels: ['backend'] }),
-  item('story', 'review', 'Gift messages', { assignee: JO, priority: 'low', estimate: 3 }),
-  item('bug', 'review', 'Discount shows twice on receipts', {
+  item('task', 'review', 'Gift messages', { assignee: JO, priority: 'low', estimate: 3 }),
+  bug('review', 'Discount shows twice on receipts', {
     assignee: PRIYA,
     priority: 'medium',
     estimate: 1,
   }),
-  item('story', 'done', 'Pay with saved card', { assignee: SAM, priority: 'high', estimate: 5 }),
+  item('task', 'done', 'Pay with saved card', { assignee: SAM, priority: 'high', estimate: 5 }),
   item('task', 'done', 'Sprint goal agreed with support', { assignee: JO, estimate: 1 }),
 ];
 
 const BUGS: ItemCreate[] = [
-  item('bug', 'new', 'Search returns nothing for accented names', {
+  bug('new', 'Search returns nothing for accented names', {
     priority: 'high',
     labels: ['search'],
   }),
-  item('bug', 'new', 'Dark mode: unreadable error toasts', { priority: 'low', labels: ['ui'] }),
-  item('bug', 'new', 'CSV export misses the last row', { priority: 'medium', labels: ['reports'] }),
-  item('bug', 'confirmed', 'Session ends after 5 minutes on Safari', {
+  bug('new', 'Dark mode: unreadable error toasts', { priority: 'low', labels: ['ui'] }),
+  bug('new', 'CSV export misses the last row', { priority: 'medium', labels: ['reports'] }),
+  bug('confirmed', 'Session ends after 5 minutes on Safari', {
     priority: 'urgent',
     labels: ['auth'],
     assignee: ALEX,
   }),
-  item('bug', 'confirmed', 'Invoice PDF cuts long names', {
+  bug('confirmed', 'Invoice PDF cuts long names', {
     priority: 'medium',
     labels: ['billing'],
   }),
-  item('bug', 'fixing', 'Password reset email arrives twice', {
+  bug('fixing', 'Password reset email arrives twice', {
     priority: 'high',
     assignee: SAM,
     labels: ['auth'],
     due: '2026-10-09',
   }),
-  item('bug', 'fixing', 'Chart tooltips jump on scroll', {
+  bug('fixing', 'Chart tooltips jump on scroll', {
     priority: 'low',
     assignee: PRIYA,
     labels: ['ui'],
   }),
-  item('bug', 'fixed', 'Upload fails over 10 MB', {
+  bug('fixed', 'Upload fails over 10 MB', {
     priority: 'high',
     assignee: JO,
     labels: ['files'],
   }),
-  item('bug', 'wont-fix', 'IE11 layout is broken', { priority: 'low', labels: ['legacy'] }),
+  bug('wont-fix', 'IE11 layout is broken', { priority: 'low', labels: ['legacy'] }),
 ];
 
 // A retro mid-way: notes written and voted on, one action already agreed.
@@ -154,12 +160,12 @@ const RETRO: ItemCreate[] = [
 ];
 
 const ROADMAP: ItemCreate[] = [
-  item('epic', 'now', 'Checkout in one page', { labels: ['conversion'], assignee: PRIYA }),
-  item('epic', 'now', 'Reliable payments', { labels: ['trust'], assignee: SAM }),
-  item('epic', 'next', 'Subscriptions', { labels: ['revenue'], assignee: JO }),
-  item('epic', 'next', 'Gift cards', { labels: ['revenue'] }),
-  item('epic', 'later', 'Marketplace sellers', { labels: ['growth'] }),
-  item('epic', 'later', 'Buy now, pay later', { labels: ['conversion'] }),
+  item('project', 'now', 'Checkout in one page', { labels: ['conversion'], assignee: PRIYA }),
+  item('project', 'now', 'Reliable payments', { labels: ['trust'], assignee: SAM }),
+  item('project', 'next', 'Subscriptions', { labels: ['revenue'], assignee: JO }),
+  item('project', 'next', 'Gift cards', { labels: ['revenue'] }),
+  item('project', 'later', 'Marketplace sellers', { labels: ['growth'] }),
+  item('project', 'later', 'Buy now, pay later', { labels: ['conversion'] }),
 ];
 
 const WEEK: ItemCreate[] = [

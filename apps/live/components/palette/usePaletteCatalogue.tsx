@@ -253,6 +253,7 @@ export function usePaletteCatalogue({
     canvasEmpty,
     isMobile,
     includeZen: !!onToggleZen,
+    planMode: editorMode === 'plan',
   });
   const onCanvasToolChange = (id: string) => {
     if (id === 'zen') onToggleZen?.();

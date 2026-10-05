@@ -17,7 +17,7 @@ export const metadata = helpMetadata({
 
 **Plan mode** is a way of working on a tab, made for running work on boards: a Kanban board, a sprint, a bug triage, a retro or a roadmap. A **Plan board** shows your work as columns of cards. Each card is an **item**, a task, a bug, a note or an idea, stored with the document rather than drawn on the tab, so moving a card changes the item for everyone at once, and the same item can sit on two boards (a sprint board and a roadmap) and move on both. See [Items](/help/canvas/plan-mode/items/).
 
-Like the other modes, Plan mode never changes what the tab is. Boards and cards are on the tab in every mode; Plan mode is how you work them. Notes, arrows, frames and pictures around a board work as they always do.
+Plan mode gives a tab over to boards. Its palette holds only **Cards** and **Boards**, it starts on the **Hand** tool (cards take the pointer themselves; pick **Select** to move or resize a board), and Layers, the Eraser and Format stay with the other modes.
 
 ## Switching modes
 
@@ -25,6 +25,7 @@ Like the other modes, Plan mode never changes what the tab is. Boards and cards 
 - Your mode is yours: someone else on the tab can be in Diagram mode while you are in Plan mode. They see the cards move as you move them.
 - To have a tab open in Plan mode for everyone, open the tab menu, choose **Opens in**, then **Plan**.
 - Plan mode is new, so it has a switch in **Settings**, **Experimental**, **Plan Mode**. It is on unless you turn it off.
+- **A Plan tab keeps to boards.** Once a tab has anything on it, it can't switch out of Plan mode, and a tab in another mode with anything on it can't switch into Plan. Ask anyway and you're offered **Create a New Tab**, which opens a new tab in the mode you asked for. An empty tab switches freely.
 
 ## Starting a board
 
@@ -33,15 +34,17 @@ Like the other modes, Plan mode never changes what the tab is. Boards and cards 
 
 ## Working on a board
 
-- **Add an item:** every column ends in **Add item**. Type a title and press **Enter**; the field stays open for the next one. A few words in the title fill in the rest as you type:
+- **Add a card:** every column ends in **+ Add card**. It opens **Add a Card**: press a type (**Project**, **Task**, **Note**, **Idea**, **Action**, or any your document adds) to add a card of it. Or type a title in the field underneath and press **Enter**; a few words in the title fill in the rest:
   - `@sam` assigns it to Sam,
   - `#design` adds the label design,
   - `!high` sets the priority (`!urgent`, `!high`, `!medium` or `!low`),
   - `~3` sets the estimate,
-  - `bug:` at the start makes it a bug (any item type works: `story:`, `idea:`, `risk:`...).
+  - `note:` at the start makes it a note (any card type works: `idea:`, `action:`...).
+- **From the palette:** drag a card from the **Cards** category into a column. While you drag, the column opens a gap where it will land. Cards from the palette always go onto a board, never loose on the canvas.
+- **Right-click a card** to **Open**, **Duplicate** or **Delete** it, or **Move to** another column.
 - **Move a card:** drag it to another column, or up and down its column. On a board with rows (by assignee, priority, type or parent), dropping it in a row also sets that field: drop it in Sam's row to give it to Sam.
-- **Open an item:** click a card. The item panel opens beside the canvas with every field of its type: title, description, status, assignee, priority, labels, estimate, due date, checklist and parent. Changes save as you make them.
-- **Take a card off the board:** drag it out onto the canvas to leave a **Plan card** there, for example beside the part of a diagram it is about. The item stays on the board as well. Drag a Plan card onto a board to file it in the column you drop it in. To start a new item on its own card, press one in the palette's **Cards** category, under **Plan**.
+- **Open an item:** click a card. The item panel opens over the canvas with every field of its type: title, description, status, assignee, priority, labels, estimate, due date, checklist and parent. Changes save as you make them.
+- **Take a card off the board:** drag it out onto the canvas to leave a **Plan card** there, for example beside the part of a diagram it is about. The item stays on the board as well. Drag a Plan card onto a board to file it in the column you drop it in. Drag a card from one board onto another to move it there.
 - **Undo:** **Ctrl+Z** (**Cmd+Z** on a Mac) undoes your item changes in the same order as your canvas edits: a moved card goes back, a deleted item comes back with its number.
 
 In Diagram and Draw modes a board is an element like any other: pressing it selects and moves the whole board. Double-click a card to open its item.
@@ -53,7 +56,7 @@ Tab to a card, then:
 - **Arrow keys** move between cards.
 - **Enter** opens the item.
 - **Shift+Left** and **Shift+Right** move the card to the previous or next column; **Shift+Up** and **Shift+Down** move it within its column.
-- **N** adds an item to the card's column.
+- **N** opens **Add a Card** for the card's column.
 - **Delete** deletes the item (you can undo it).
 
 Screen readers hear every move ("#12 moved to In progress, position 2 of 4").

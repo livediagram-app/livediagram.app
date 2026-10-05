@@ -40,27 +40,31 @@ editor views.
 ## Editor components (`apps/live/components/plan/`)
 
 ```
-PlanContext.tsx          context: items, status, self, people, planInput, canEdit, canVote, presence, actions
-PlanBoardView.tsx        board body (ShapeContentRouter branch): projection, columns and rows grid, cards, drag
-                         ghost, keyboard, quick add per cell
+PlanContext.tsx          context: items, types, item types slice, status, self, people, planInput, canEdit,
+                         canVote, presence, actions
+PlanBoardView.tsx        board body (ShapeContentRouter branch): projection, themed palette, radius and font,
+                         columns and rows grid, cards, keyboard, Add card per cell, the card menu
+PlanBoardCells.tsx       a row's band, one card in a cell (right-click → onMenu), and the drag ghost
 PlanBoardHeader.tsx      title, count, progress, unplaced chip and its tray, votes left, quick filter, Only
                          mine, Reveal, set-up button
-PlanCardFace.tsx         a card face, and its vote control (board cards and the Plan card element)
-PlanQuickAdd.tsx         add field with token chips
-PlanCardView.tsx         the plan-card element body; "Item not found" with Remove card
+AddCardButton.tsx        a cell's + Add card; opens AddCardPopover (or when the N key asks)
+AddCardPopover.tsx       Add a Card: the board's types as tiles, and a title field with quick tokens
+PlanCardMenu.tsx         a card's right-click menu (Open, Duplicate, Move to, Delete) and PlanCardMenuHost
+PlanCardFace.tsx         a card face, its Show on card lines, and its vote control
+PlanCardView.tsx         the plan-card element body (themed; a lone card's fill is its face); "Item not found"
 PlanSheet.tsx            the panels' shells: PlanSheet (set-up's side sheet, bottom sheet on a phone) and
                          PlanModal (the item panel's modal, through Dialog)
-PlanBoardCells.tsx       a row's band and one card in a cell
 plan-board-moves.ts      the move a drop makes (boardMoveFor), and a refusing board's reason (scopeRefusal)
-PlanSheetsHost.tsx       renders the open item panel or set-up from the slice and the active tab's boards
-ItemPanel.tsx            item panel: type, title, the type's fields, made by / changed by, Delete
+PlanSheetsHost.tsx       renders the open item panel, set-up or type editor
+ItemPanel.tsx            item panel: type, title, the type's fields (custom ones through CustomFieldEditor)
 item-field-editors.tsx   editors for text (debounced), person, priority, labels, number, date, checklist
 BoardSetupPanel.tsx      set-up: title, columns (rename, reorder, WIP, done, colour, remove with a move), rows,
                          scope, card fields, voting and budget, hide writing
 plan-board-keys.ts       the board's keyboard as a pure function of the projection
-plan-palette.ts          the board's colours per canvas surface (the SVG export's values)
-plan-type-glyph.tsx      a glyph per item type, inline
-plan-tile-art.tsx        the Boards and Cards tiles' glyphs
+plan-palette.ts          re-exports planPalette from @livediagram/document (shared with the SVG export) and
+                         planOwnColours(element)
+plan-type-glyph.tsx      a type's glyph from the Plan glyph set
+plan-tile-art.tsx        a picture per board preset, and the card tile glyph
 ```
 
 Hooks (`apps/live/hooks/plan/`): `usePlanItems` (store), `usePlanSlice` (composed into `useEditorState`; provides
@@ -69,7 +73,7 @@ drop, and the board as a target for cards from other boards through `plan-board-
 boards on screen by element id), `usePlanCardDrag` (pointer drag
 within, between and out of boards; the drop slot is read from `data-plan-status` / `data-plan-lane` / `data-plan-card`
 under the pointer), `usePlanPresence` (the `plan-presence` op), `useItemUndo` (the undo journal), and
-`plan-card-item.ts` (the item a card tile makes). `PlanProvider` wraps the editor view, so the export dialog reads
+`plan-card-drop.ts` (a palette card into the column under the pointer). `PlanProvider` wraps the editor view, so the export dialog reads
 the items too.
 
 ## Behaviour and state
@@ -110,7 +114,8 @@ cancelled` (Escape, pointercancel). `pressed → idle` on pointerup without movi
   avatar bottom right. Done column cards draw at 70% opacity.
 - WIP over: count chip uses `--warning` tokens, column head text "Over WIP limit".
 - Empty board: first column shows the open add field with "Add your first item".
-- Copy: "Add item", "Not on this board", "Move to", "Hidden until reveal", "Reveal", "Votes left: 3",
+- Copy: "Add card", "Add your first card", "Add a Card", "Or type a title and press Enter", "Open",
+  "Duplicate", "Delete", "Card duplicated", "Card deleted", "Not on this board", "Move to", "Hidden until reveal", "Reveal", "Votes left: 3",
   "Item not found", "Remove card", "Board set-up", "Only mine".
 - Item panel: a modal through the shared `Dialog` (`size="lg"`, `phoneSheet`: a sheet from the bottom with a grab
   handle below `sm`), max height 44rem, header with type picker + key, title
@@ -158,9 +163,9 @@ cancelled` (Escape, pointercancel). `pressed → idle` on pointerup without movi
 | Keyboard moves and their announcement       | `apps/live/components/plan/plan-board-keys.test.ts`           |
 | Quick add tokens                            | `packages/items/src/quick-add.test.ts`                        |
 | Face-down and votes spent                   | `packages/items/src/board.test.ts`                            |
-| A card tile's item                          | `apps/live/hooks/plan/plan-card-item.test.ts`                 |
+| A palette card lands only in a column       | `apps/live/hooks/plan/plan-card-drop.test.ts`                 |
 | Plan templates' boards and seeds            | `apps/live/lib/template-boards.test.ts`                       |
-| Drag, quick add, item panel in a browser    | checked by hand against the dev stack (screenshots in the PR) |
+| Drag, Add card, card menu, item panel       | checked by hand against the dev stack (screenshots in the PR) |
 
 ## Constants and configuration
 

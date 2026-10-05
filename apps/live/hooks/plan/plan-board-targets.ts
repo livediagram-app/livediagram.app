@@ -15,6 +15,10 @@ export type PlanBoardTarget = {
   refusal: () => string;
   drop: (itemId: string, slot: PlanDropSlot) => void;
   hover: (incoming: PlanIncoming | null) => void;
+  // A card from the palette (docs/specs/025-plan/plan-mode.md "The palette"): whether the board shows
+  // that type, and a new item of it made at the slot (its row's field set).
+  acceptsType: (type: string) => boolean;
+  addCard: (type: string, slot: PlanDropSlot) => void;
 };
 
 const targets = new Map<string, PlanBoardTarget>();
@@ -30,7 +34,7 @@ export function planBoardTarget(boardId: string): PlanBoardTarget | undefined {
   return targets.get(boardId);
 }
 
-// The registered board under a screen point other than `exceptId`, with its root element.
+// The registered board under a screen point other than `exceptId` (none: any board), with its root.
 export function otherPlanBoardAt(
   clientX: number,
   clientY: number,

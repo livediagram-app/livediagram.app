@@ -1,6 +1,7 @@
-// Leaving Plan on a tab with content (docs/specs/025-plan/plan-mode.md "Leaving Plan"): a tab with a
-// board or anything else on it stays in Plan mode, so a switch away does not happen. It opens a
-// question instead, whose answer is a new tab in the mode asked for; the board stays where it is.
+// Plan holds its tabs, both ways (docs/specs/025-plan/plan-mode.md "Plan keeps its own tabs"): a Plan
+// tab with anything on it stays in Plan, and a tab in another mode with anything on it does not
+// become a Plan tab. The switch does not happen; a question opens instead, whose answer is a new tab
+// in the mode asked for, and the tab stays as it is.
 // An empty tab, and a visitor (whose mode is the tab's anyway), switch straight away.
 import { useCallback, useState } from 'react';
 import type { EditorMode, Tab } from '@livediagram/document';
@@ -14,9 +15,10 @@ export type LeavePlan = {
   cancel: () => void;
 };
 
-// Whether a switch from `mode` to `next` stays in Plan: a Plan tab holding anything.
+// Whether a switch from `mode` to `next` crosses Plan's line on a tab holding anything.
 export function planHoldsTab(mode: EditorMode, next: EditorMode, tab: Tab | undefined): boolean {
-  return mode === 'plan' && next !== 'plan' && !!tab && tab.elements.length > 0;
+  const crosses = mode !== next && (mode === 'plan' || next === 'plan');
+  return crosses && !!tab && tab.elements.length > 0;
 }
 
 export function useLeavePlan<M extends { mode: EditorMode; setMode: (m: EditorMode) => void }>(

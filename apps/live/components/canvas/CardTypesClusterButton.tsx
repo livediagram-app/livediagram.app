@@ -8,6 +8,7 @@ import { ClusterPopoverButton } from './ClusterPopoverButton';
 export function CardTypesClusterButton(props: {
   popoverOpen: boolean;
   onTogglePopover: (button: HTMLElement) => void;
+  buttonRef?: React.Ref<HTMLButtonElement>;
 }) {
   return (
     <ClusterPopoverButton

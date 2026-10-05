@@ -2,11 +2,13 @@
 // pure functions of the board: the move a drop makes (its column, its place, and its row's field when
 // the board has rows), and why a board refuses a card from another board.
 import {
-  itemTypeOf,
+  ITEM_TYPES,
+  typeIn,
   type BoardProjection,
   type BoardScope,
   type Item,
   type ItemMove,
+  type ItemTypeDef,
   type LaneHead,
   type PlanBoardSetup,
 } from '@livediagram/items';
@@ -60,9 +62,12 @@ export function boardMoveFor(
 }
 
 // Why a board will not take a card from another board: it shows only some types, or one label.
-export function scopeRefusal(scope: BoardScope): string {
+export function scopeRefusal(
+  scope: BoardScope,
+  types: readonly ItemTypeDef[] = ITEM_TYPES,
+): string {
   if (scope.types && scope.types.length > 0) {
-    const names = scope.types.map((t) => itemTypeOf(t).label);
+    const names = scope.types.map((t) => typeIn(types, t).label);
     const list =
       names.length > 1 ? `${names.slice(0, -1).join(', ')} and ${names.at(-1)}` : names[0];
     return `This board shows ${list} items only`;

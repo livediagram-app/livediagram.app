@@ -562,7 +562,9 @@ export const listItemsShape = {
   type: z
     .string()
     .optional()
-    .describe('Only items of this type: task, story, bug, epic, note, idea, action, risk.'),
+    .describe(
+      'Only items of this type: project, task, note, idea, action, or one the document adds.',
+    ),
   status: z.string().optional().describe("Only items with this status (a board's column)."),
 };
 

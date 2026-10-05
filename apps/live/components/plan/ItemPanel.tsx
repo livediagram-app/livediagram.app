@@ -50,7 +50,7 @@ export function ItemPanel({
   item,
   types,
   statuses,
-  epics,
+  projects,
   people,
   canEdit,
   onSave,
@@ -63,7 +63,8 @@ export function ItemPanel({
   types: readonly ItemTypeDef[];
   // The statuses this tab's boards use, by name, for the status picker.
   statuses: readonly { status: string; name: string }[];
-  epics: readonly Item[];
+  // The projects an item can sit under (its Parent).
+  projects: readonly Item[];
   people: readonly ItemPerson[];
   canEdit: boolean;
   onSave: (field: string, value: ItemFieldValue | undefined) => void;
@@ -166,7 +167,7 @@ export function ItemPanel({
             onChange={(e) => onSave(f, e.target.value || undefined)}
           >
             <option value="">None</option>
-            {epics
+            {projects
               .filter((e) => e.id !== item.id)
               .map((e) => (
                 <option key={e.id} value={e.id}>

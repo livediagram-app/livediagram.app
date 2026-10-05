@@ -1,7 +1,7 @@
 # Item types
 
-A document's **item types** are the kinds of item its Plan boards hold: the built-in eight (Task, Story, Bug,
-Epic, Note, Idea, Action, Risk) and any a person adds. Each is a name, a colour, a glyph and the fields its items
+A document's **item types** are the kinds of item its Plan boards hold: the built-in five (Project, Task, Note,
+Idea, Action) and any a person adds. Each is a name, a colour, a glyph and the fields its items
 offer, including fields a person makes up. People edit them from the **Card Types** panel; every card, board,
 item panel and the palette's Cards category reads them from the document.
 
@@ -34,7 +34,7 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
 | `id`     | A slug, `a-z0-9-`, up to 32 characters, unique in the catalogue. Built-ins keep theirs (`task`, `bug`...); a new type's is made from its name (`customer-call`), with `-2`, `-3` on a clash. Never changes once made: items store it. |
 | `label`  | The name, 1 to 32 characters, unique in the catalogue ignoring case                                                                                                                                                                   |
 | `color`  | A colour from the Plan palette's twelve swatches                                                                                                                                                                                      |
-| `icon`   | A glyph from the Plan glyph set (the eight built-in glyphs and eight more)                                                                                                                                                            |
+| `icon`   | A glyph from the Plan glyph set (the built-in types' glyphs and more)                                                                                                                                                                 |
 | `fields` | The fields its item panel offers, in order: built-in field ids and custom field ids                                                                                                                                                   |
 | `custom` | Its custom fields: `{ id, label, kind, options?, onCard? }`                                                                                                                                                                           |
 
@@ -54,10 +54,13 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
 - In Plan mode, the bottom-right cluster has a **Card Types** button (the Cards glyph) where Diagram has Layers.
   It opens the panel as a popover hanging above the button, as Layers does from its button; it closes on a
   press outside, a second press of the button, or leaving Plan mode.
-- The panel lists the catalogue: each type's glyph and colour, its name, how many items have it, and an edit
-  button. **Add Type** sits at the end, with **Restore Built-In Types** beside it once the catalogue is stored.
-  Rows reorder by drag, or with Alt and the up or down arrow on a focused row (announced); the Cards category
-  follows the order.
+- **Edit Cards** opens it too: a button at the foot of the palette's Cards category (floating layout), and at
+  the end of the Toolbar layout's strip while Cards is chosen.
+- The panel lists the catalogue as small cards: each type's accent stripe, its glyph on a tint of its colour,
+  its name with "N fields" (and "N custom") under it, how many items have it, and a pencil. A press anywhere on
+  a row (or Enter on it) opens the type editor. **Add Type** is a dashed tile at the end, with **Restore
+  built-in types** under it once the catalogue is stored, then the hint "Drag to reorder. The palette's Cards
+  follow this order." Rows reorder by drag, or with Alt and the up or down arrow on a focused row (announced).
 - Someone who may only view the document sees the list without the edit, add and reorder controls.
 
 ## Editing a type
@@ -82,9 +85,10 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
 ## Where types show
 
 - **The palette's Cards category** lists a card per type, in catalogue order, captioned "<Name> card", and
-  drags or places it as the built-in ones do. Popular keeps its built-in card tiles while those types exist.
-- **Cards** draw a type's colour stripe and glyph; the item panel's type picker lists the catalogue; quick add's
-  `name:` prefix matches a type's name (`customer call:` too).
+  lands it in a board's column as the built-in ones do.
+- **Cards** draw a type's colour stripe and glyph; the item panel's type picker lists the catalogue; the Add a
+  Card popover offers the types the board shows, and its title field's `name:` prefix matches a type's name
+  (`customer call:` too).
 - **Board set-up's scope** lists the catalogue's types.
 - **Agents** see the type ids on items, as before; an item made by an agent with a type the catalogue lacks
   draws as "Item".

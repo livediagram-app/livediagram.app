@@ -3,7 +3,7 @@ import { createText } from '@livediagram/document';
 import { createTab } from '@/app/document/[id]/editor-page-helpers';
 import { planHoldsTab } from './useLeavePlan';
 
-// docs/specs/025-plan/plan-mode.md "Leaving Plan".
+// docs/specs/025-plan/plan-mode.md "Plan keeps its own tabs".
 describe('planHoldsTab', () => {
   const empty = createTab('Empty');
   const full = { ...createTab('Board'), elements: [createText(0, 0)] };

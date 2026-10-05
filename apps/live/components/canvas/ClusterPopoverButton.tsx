@@ -16,6 +16,7 @@ export function ClusterPopoverButton({
   icon,
   popoverOpen,
   onTogglePopover,
+  buttonRef,
 }: {
   label: string;
   hoverTitle: string;
@@ -23,9 +24,12 @@ export function ClusterPopoverButton({
   icon: ReactNode;
   popoverOpen: boolean;
   onTogglePopover: (button: HTMLElement) => void;
+  // The button itself, for a caller that opens its popover from elsewhere.
+  buttonRef?: React.Ref<HTMLButtonElement>;
 }) {
   const button = (
     <button
+      ref={buttonRef}
       type="button"
       onPointerDown={(e) => e.stopPropagation()}
       onClick={(e) => onTogglePopover(e.currentTarget)}

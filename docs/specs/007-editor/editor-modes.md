@@ -196,6 +196,16 @@ element in the same colour.
 - **Leaving a mode puts its tool down**, as leaving a whiteboard did: a pen,
   the eraser or an armed shape never carries over into the other mode.
 
+## The tool a mode starts with
+
+- Every mode starts on **Select**, except **Plan**, which starts on **Hand** (a board's cards take the pointer
+  themselves). On a phone every mode starts on **Hand**, so a drag moves the canvas.
+- The tool is picked whenever the mode changes, the first mode a tab opens in included; any tool can be picked
+  after. An embedded viewer always starts on Hand.
+- Plan leaves **Eraser** and **Format** out ([Plan mode](../025-plan/plan-mode.md#tools)).
+- A Plan tab with content, and a tab in another mode with content, do not switch into or out of Plan
+  ([Plan mode](../025-plan/plan-mode.md#plan-keeps-its-own-tabs)).
+
 ## The palette per mode
 
 Each mode has its own **palette layout**
@@ -235,31 +245,31 @@ Docs, Website), keeping Image and Avatar.
 
 | Category       | Diagram | Illustrate | Plan |
 | -------------- | ------- | ---------- | ---- |
-| Popular        | yes     | yes        | yes  |
-| Plan           | no      | no         | yes  |
-| Shapes         | yes     | yes        | yes  |
+| Popular        | yes     | yes        | no   |
+| Boards, Cards  | no      | no         | yes  |
+| Shapes         | yes     | yes        | no   |
 | My shapes      | yes     | yes        | no   |
-| Write          | yes     | yes        | yes  |
+| Write          | yes     | yes        | no   |
 | Draw           | yes     | no         | no   |
 | Build          | yes     | yes        | no   |
 | Components     | no      | yes        | no   |
 | Devices        | no      | yes        | no   |
 | Event Storming | board   | no         | no   |
-| Icons          | yes     | yes        | yes  |
-| Stickers       | yes     | yes        | yes  |
+| Icons          | yes     | yes        | no   |
+| Stickers       | yes     | yes        | no   |
 | Tech           | yes     | no         | no   |
-| Media          | yes     | yes        | yes  |
+| Media          | yes     | yes        | no   |
 | Data           | no      | yes        | no   |
 | Behaviours     | yes     | no         | no   |
 
-Plan's Write leaves out Page and Annotation, its Media is Image and Avatar
-([Plan mode](../025-plan/plan-mode.md#the-palette) lists its Popular).
+Plan offers only Boards and Cards and opens on Cards
+([Plan mode](../025-plan/plan-mode.md#the-palette)).
 
-- **The landing category** is the mode's **Popular**, and the notation on an
+- **The landing category** is the mode's **Popular** (Plan's is **Cards**), and the notation on an
   event-storming board
   (the layout's `landing`). Switching mode re-lands the palette there, so it
   never shows a category the new mode leaves out.
-- **Popular** is every mode's landing category: twelve tiles that mode is most
+- **Popular** is the landing category of every mode but Plan: twelve tiles that mode is most
   often built from, listed in its layout entry, fixed (not edited or
   reordered). It replaced the per-browser **Favourites**
   ([Palette Favourites](../010-palette/palette-favourites.md), removed).

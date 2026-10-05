@@ -654,3 +654,4 @@ export * from './lane-seam-snapping';
 export * from './element-refs';
 export * from './containment';
 export * from './style-keys';
+export * from './plan-palette';

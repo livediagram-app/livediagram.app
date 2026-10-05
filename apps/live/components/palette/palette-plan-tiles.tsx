@@ -59,12 +59,7 @@ export const PLAN_TILES: PaletteTileDef[] = [
     caption: b.caption,
     description: b.description,
     action: { type: 'shape', kind: 'plan-board', plan: b.preset },
-    icon: (
-      <PlanBoardTileArt
-        size={GLYPH_PX}
-        columns={PLAN_BOARD_PRESETS[b.preset].setup.columns.length}
-      />
-    ),
+    icon: <PlanBoardTileArt size={GLYPH_PX} preset={b.preset} />,
   })),
   ...ITEM_TYPES.map(planCardTile),
 ];
@@ -82,17 +77,4 @@ export function planCardTile(t: ItemTypeDef): PaletteTileDef {
     action: { type: 'shape', kind: 'plan-card', plan: t.id },
     icon: <PlanCardTileArt size={GLYPH_PX} color={t.color} />,
   };
-}
-
-// A list of tiles with its card tiles drawn from the document's types: each `plan:card-<id>` tile
-// takes its type's current name and colour, and goes when the type is gone (Popular's card tiles).
-export function withDocumentCardTiles(
-  tiles: readonly PaletteTileDef[],
-  types: readonly ItemTypeDef[],
-): PaletteTileDef[] {
-  return tiles.flatMap((tile) => {
-    if (!tile.id.startsWith('plan:card-')) return [tile];
-    const type = types.find((t) => `plan:card-${t.id}` === tile.id);
-    return type ? [planCardTile(type)] : [];
-  });
 }

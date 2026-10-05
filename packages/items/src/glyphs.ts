@@ -1,12 +1,12 @@
 // The Plan glyph set (docs/specs/025-plan/item-types.md "An item type"): a type's glyph on its cards,
 // drawn inline on a 16-unit grid as one stroked path, so a card never waits for an icon catalogue.
-// The first eight are the built-in types' (keyed by their type id); the rest are for types people add.
+// The first are the built-in types' (keyed by their type id); the rest are for types people add.
 
 export const PLAN_GLYPHS = {
   task: 'M5.2 8.2 7 10l3.8-4M8 14.5a6.5 6.5 0 1 0 0-13 6.5 6.5 0 0 0 0 13Z',
   story: 'M2.5 3.5h4a2 2 0 0 1 2 2v8a1.5 1.5 0 0 0-1.5-1.5h-4.5ZM13.5 3.5h-4a2 2 0 0 0-1 2',
   bug: 'M5.5 6.5h5v5a2.5 2.5 0 0 1-5 0ZM6 6.5a2 2 0 0 1 4 0M3 8.5h2.5M10.5 8.5H13M3.5 12l2-1M12.5 12l-2-1M8 6.5v7',
-  epic: 'M8 2 14 5 8 8 2 5ZM2 8l6 3 6-3M2 11l6 3 6-3',
+  project: 'M8 2 14 5 8 8 2 5ZM2 8l6 3 6-3M2 11l6 3 6-3',
   note: 'M2.5 3.5h11v7h-6l-3 2.5v-2.5h-2Z',
   idea: 'M9 1.5 4 9h4l-1 5.5L12 7H8Z',
   action: 'M8 14a6 6 0 1 0 0-12 6 6 0 0 0 0 12ZM8 10.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z',

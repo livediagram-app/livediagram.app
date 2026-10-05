@@ -29,6 +29,7 @@ import { pickPaletteAddHandlers } from '@/components/palette/palette-add-handler
 import { ToolbarExplorerButton } from '@/components/chrome/ToolbarExplorerButton';
 import { SlidesClusterButton } from '@/components/canvas/SlidesClusterButton';
 import { CardTypesClusterButton } from '@/components/canvas/CardTypesClusterButton';
+import { useCardTypesOpener } from '@/hooks/plan/useCardTypesOpener';
 import { LayersClusterButton } from '@/components/canvas/LayersClusterButton';
 import { UndoRedoClusterStrip } from '@/components/canvas/UndoRedoClusterStrip';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
@@ -309,6 +310,11 @@ export function CanvasChrome(props: CanvasChromeProps) {
   // Draw mode trades the palette, the strip and the theme controls for its
   // dock (docs/specs/023-draw-mode/draw-mode.md "What a whiteboard shows").
   const whiteboard = props.editorMode === 'draw';
+  // The palette's Edit Cards opens the Card Types popover from its button (docs/specs/025-plan/item-types.md).
+  const cardTypesButtonRef = useCardTypesOpener(!zenMode && props.editorMode === 'plan', {
+    activeDockPanel,
+    handleDockButtonClick,
+  });
   // The strip only renders for an editor (not read-only) with the chrome up,
   // and never on a whiteboard.
   const stripShown = toolbarActive && !readOnly && !chromeHidden && !whiteboard;
@@ -603,6 +609,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
             {/* Card Types (docs/specs/025-plan/item-types.md): in Plan mode, where Layers would be. */}
             {!zenMode && props.editorMode === 'plan' ? (
               <CardTypesClusterButton
+                buttonRef={cardTypesButtonRef}
                 popoverOpen={activeDockPanel === 'card-types'}
                 onTogglePopover={(button) => handleDockButtonClick('card-types', button, true)}
               />

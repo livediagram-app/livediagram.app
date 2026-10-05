@@ -148,7 +148,12 @@ export function IconButton({
         // Publish the footprint so the canvas ghost (docs/specs/010-palette/palette-drag-ghost.md) can preview
         // where this shape will land.
         const { width, height } = SHAPE_DEFAULT_SIZE[dragKind];
-        setPaletteDragPreview({ kind: dragKind, width, height });
+        setPaletteDragPreview({
+          kind: dragKind,
+          width,
+          height,
+          ...(dragKind === 'plan-card' && dragChoice ? { planType: dragChoice } : {}),
+        });
       }
     : onDragStart;
   const modHeld = useModKeyHeld();
