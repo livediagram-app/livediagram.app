@@ -67,7 +67,7 @@ describe('help for writes', () => {
       '  -f, --file <text>  The file to send, or - for stdin',
     );
     expect(topHelp()).toMatch(
-      /\n {2}edit +apply edit operations, a graph, Mermaid or elements from a file\n/,
+      /\n {2}edit +apply edit operations, or a graph, from a file\n/,
     );
   });
 });
