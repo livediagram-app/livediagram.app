@@ -42,12 +42,15 @@ Where each is set, so a setting lives with what it changes, never in one central
 
 - **A column's own settings** sit on the column: a cog at the far right of its head (shown on hover and focus,
   always on a touch screen) opens a small popover (a sheet on a phone) with its **name**, **colour** (none or
-  one of eight), **WIP limit**, **Counts as done**, **Move Left** / **Move Right**, **+ Add Column After** and
+  one of eight), **WIP limit**, **Counts as Done**, **Move Left** / **Move Right**, **+ Add Column After** and
   **Remove Column**. Removing a column with cards first asks where they go (**Move and Remove**, or **Keep
   It**); the board's last column cannot be removed. Each change applies as it is made.
 - **The board's own settings** sit in its element menu (right-click the board, or the selection's ⋯), in two
   flyouts: **Board** (**Title**; **Swimlanes**: No Swimlanes, By Assignee, By Card Type, By Priority, By Project) and
-  **Cards** (what each card face shows besides its title, a tile per field pressed on or off). New columns come
+  **Cards**: the **Card Size** (**Minimal**: the title alone; **Compact**: one line, the title between the type
+  and number and the priority, estimate, votes and assignee it shows; **Detailed**, the default: every field it
+  shows) and what each card face shows besides its title, a tile per field pressed on or off (inactive at
+  Minimal). New columns come
   from a column's **+ Add Column After**.
 - **Every board shows every card**: there is no per-board filter by type or label; a board shows every item whose
   status is one of its columns, and counts the rest as not on it.

@@ -1,6 +1,7 @@
 // The Boards and Cards tiles' glyphs (docs/specs/025-plan/plan-mode.md "The palette"): a board drawn
 // as a picture of its kind, and a card drawn with its item type's colour stripe, at the tile size.
 import { Glyph } from '@livediagram/ui';
+import type { CardSize } from '@livediagram/items';
 import { accentVars } from './plan-palette';
 
 // One picture per board preset, so the Boards category reads at a glance (docs/specs/025-plan/
@@ -98,6 +99,38 @@ export function PlanCardTileArt({ size, color }: { size: number; color: string }
         style={accentVars(color)}
       />
       <path d="M9 9H16M9 13H14" />
+    </Glyph>
+  );
+}
+
+// A card at each size, drawn small (the board's Card Size tiles): a title bar alone, one line led by a
+// dot, or a title over a line and two chips.
+const SIZE_ART: Record<CardSize, React.ReactNode> = {
+  minimal: (
+    <>
+      <rect x="2" y="4" width="18" height="14" rx="2.5" />
+      <path d="M6 11h10" />
+    </>
+  ),
+  compact: (
+    <>
+      <rect x="2" y="4" width="18" height="14" rx="2.5" />
+      <circle cx="6.5" cy="11" r="1" />
+      <path d="M10 11h6" />
+    </>
+  ),
+  detailed: (
+    <>
+      <rect x="2" y="4" width="18" height="14" rx="2.5" />
+      <path d="M6 8h10M6 11h6M6 14.5h3M11 14.5h3" />
+    </>
+  ),
+};
+
+export function CardSizeArt({ size }: { size: CardSize }) {
+  return (
+    <Glyph size={18} units={22}>
+      {SIZE_ART[size]}
     </Glyph>
   );
 }

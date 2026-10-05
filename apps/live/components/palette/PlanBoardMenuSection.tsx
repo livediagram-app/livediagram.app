@@ -8,9 +8,11 @@ import { useState, type ComponentProps } from 'react';
 import type { ShapeElement } from '@livediagram/document';
 import {
   CARD_FIELDS,
+  CARD_SIZES,
   SWIMLANE_BY,
   normaliseBoardSetup,
   type CardField,
+  type CardSize,
   type PlanBoardSetup,
   type SwimlaneBy,
 } from '@livediagram/items';
@@ -19,6 +21,7 @@ import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
 import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
 import { usePlan } from '@/components/plan/PlanContext';
 import { PlanTypeGlyph } from '@/components/plan/plan-type-glyph';
+import { CardSizeArt } from '@/components/plan/plan-tile-art';
 import { CARD_FIELD_LABELS, SWIMLANE_LABELS } from '@/components/plan/board-setup-edits';
 import { trackSetup } from '@/components/plan/track-board-setup';
 
@@ -46,6 +49,12 @@ const FIELD_GLYPHS: Record<CardField, string> = {
   due: 'calendar',
   votes: 'star',
   checklist: 'action',
+};
+
+const SIZE_LABELS: Record<CardSize, string> = {
+  minimal: 'Minimal',
+  compact: 'Compact',
+  detailed: 'Detailed',
 };
 
 function useBoard(element: ShapeElement) {
@@ -130,7 +139,28 @@ export function PlanCardsMenuSection({
     );
   return (
     <MenuFlyoutSection title="Cards" icon={<PlanCardsIcon size={16} />} {...flyoutProps}>
-      <p className={captionClass}>What each card shows, besides its title</p>
+      <p className={captionClass}>Card Size</p>
+      <MenuTileGrid cols={3}>
+        {CARD_SIZES.map((z) => (
+          <MenuTile
+            key={z}
+            icon={<CardSizeArt size={z} />}
+            label={SIZE_LABELS[z]}
+            active={(setup.cardSize ?? 'detailed') === z}
+            onClick={() => {
+              const { cardSize: _drop, ...rest } = setup;
+              set(z === 'detailed' ? rest : { ...rest, cardSize: z }, 'CardSize');
+            }}
+          />
+        ))}
+      </MenuTileGrid>
+      <p className={captionClass}>
+        {setup.cardSize === 'minimal'
+          ? 'Minimal cards show their title only'
+          : setup.cardSize === 'compact'
+            ? 'What each card shows, on one line'
+            : 'What each card shows, besides its title'}
+      </p>
       <MenuTileGrid cols={3}>
         {CARD_FIELDS.map((f) => (
           <MenuTile
@@ -144,6 +174,7 @@ export function PlanCardsMenuSection({
             }
             label={CARD_FIELD_LABELS[f]}
             active={setup.cardFields.includes(f)}
+            disabled={setup.cardSize === 'minimal'}
             onClick={() => toggle(f)}
           />
         ))}

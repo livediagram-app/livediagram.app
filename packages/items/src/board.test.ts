@@ -149,6 +149,16 @@ describe('normaliseBoardSetup', () => {
     expect(columnForStatus(s!, 'done')?.id).toBe('c');
   });
 
+  it('keeps a Minimal or Compact card size, and reads anything else as Detailed', () => {
+    const cols = [{ id: 'a', status: 's', name: 'A' }];
+    expect(normaliseBoardSetup({ columns: cols, cardSize: 'compact' })?.cardSize).toBe('compact');
+    expect(normaliseBoardSetup({ columns: cols, cardSize: 'minimal' })?.cardSize).toBe('minimal');
+    expect(normaliseBoardSetup({ columns: cols, cardSize: 'detailed' })).not.toHaveProperty(
+      'cardSize',
+    );
+    expect(normaliseBoardSetup({ columns: cols, cardSize: 'huge' })).not.toHaveProperty('cardSize');
+  });
+
   it('rejects a set-up with no usable column', () => {
     expect(normaliseBoardSetup(null)).toBeNull();
     expect(normaliseBoardSetup({ columns: [] })).toBeNull();

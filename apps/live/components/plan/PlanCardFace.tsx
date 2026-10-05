@@ -15,6 +15,7 @@ import {
   typeIn,
   itemVotes,
   type CardField,
+  type CardSize,
   type Item,
 } from '@livediagram/items';
 import { usePlan, type PlanCardPresence } from './PlanContext';
@@ -27,6 +28,8 @@ export type PlanCardFaceProps = {
   item: Item;
   palette: PlanPalette;
   fields: readonly CardField[];
+  // The board's card size (docs/specs/025-plan/plan-board.md "The board set-up"); a Plan card is Detailed.
+  size?: CardSize;
   faceDown?: boolean;
   muted?: boolean;
   presence?: PlanCardPresence;
@@ -59,6 +62,7 @@ export function PlanCardFace({
   item,
   palette,
   fields,
+  size = 'detailed',
   faceDown,
   muted,
   presence,
@@ -103,6 +107,82 @@ export function PlanCardFace({
   const due = item.fields['due'];
   const progress = checklistProgress(item);
   const votes = itemVoteTotal(item);
+  const frame = {
+    backgroundColor: palette.card,
+    borderColor: palette.cardBorder,
+    boxShadow: ring,
+    opacity: muted ? 0.7 : 1,
+  };
+  const stripe = (
+    <span
+      className="absolute inset-y-0 left-0 w-1"
+      style={{ backgroundColor: accent }}
+      aria-hidden
+    />
+  );
+  const title = itemTitle(item) || 'Untitled';
+  // Minimal: the title alone (and the vote control on a voting board).
+  if (size === 'minimal') {
+    return (
+      <div
+        className="relative flex h-full items-center gap-2 overflow-hidden rounded-md border py-1.5 pl-3 pr-2"
+        style={frame}
+      >
+        {stripe}
+        {presence ? <PresenceTag name={presence.name} color={presence.color} /> : null}
+        <span
+          className="line-clamp-2 min-w-0 flex-1 text-[13px] font-medium leading-snug"
+          style={{ color: palette.text }}
+        >
+          {title}
+        </span>
+        {voting ? <VoteControl palette={palette} total={votes} voting={voting} /> : null}
+      </div>
+    );
+  }
+  // Compact: one line, the title between the type and key and the shown fields that fit a glance.
+  if (size === 'compact') {
+    return (
+      <div
+        className="relative flex h-full items-center gap-1.5 overflow-hidden rounded-md border py-1.5 pl-3 pr-2 text-[11px]"
+        style={{ ...frame, color: palette.muted }}
+      >
+        {stripe}
+        {presence ? <PresenceTag name={presence.name} color={presence.color} /> : null}
+        {show('type') ? <PlanTypeGlyph glyph={type.glyph} color={accent} /> : null}
+        {show('key') ? <span className="shrink-0 font-medium">#{item.key}</span> : null}
+        <span
+          className="min-w-0 flex-1 truncate text-[13px] font-medium"
+          style={{ color: palette.text }}
+        >
+          {title}
+        </span>
+        {show('priority') && isPriority(priority) ? (
+          <span
+            className="h-2 w-2 shrink-0 rounded-full"
+            style={{ backgroundColor: PRIORITY_COLOURS[priority] }}
+            aria-label={`${PRIORITY_LABELS[priority]} priority`}
+          />
+        ) : null}
+        {show('estimate') && typeof estimate === 'number' ? (
+          <span
+            className="shrink-0 rounded-full border px-1.5"
+            style={{ borderColor: palette.cardBorder }}
+          >
+            {estimate}
+          </span>
+        ) : null}
+        {voting ? (
+          <VoteControl palette={palette} total={votes} voting={voting} />
+        ) : show('votes') && votes > 0 ? (
+          <span className="shrink-0">▲ {votes}</span>
+        ) : null}
+        {show('assignee') && assignee ? (
+          <PersonDisc person={assignee} label={`Assigned to ${assignee.name}`} />
+        ) : null}
+      </div>
+    );
+  }
   const chips =
     (show('priority') && isPriority(priority)) ||
     (show('labels') && labels.length > 0) ||
@@ -142,7 +222,7 @@ export function PlanCardFace({
         className="line-clamp-3 text-[14px] font-semibold leading-snug"
         style={{ color: palette.text, textDecoration: muted ? 'none' : undefined }}
       >
-        {itemTitle(item) || 'Untitled'}
+        {title}
       </div>
       {onCard.length > 0 ? (
         <div className="flex flex-col gap-0.5 text-[11px]" style={{ color: palette.muted }}>

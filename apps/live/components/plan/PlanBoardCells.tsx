@@ -58,6 +58,7 @@ export function PlanBoardCard({
   lifted,
   done,
   setupFields,
+  cardSize,
   faceDown,
   voting,
   presence,
@@ -73,6 +74,7 @@ export function PlanBoardCard({
   lifted: boolean;
   done: boolean;
   setupFields: Parameters<typeof PlanCardFace>[0]['fields'];
+  cardSize: Parameters<typeof PlanCardFace>[0]['size'];
   faceDown: boolean;
   voting: Parameters<typeof PlanCardFace>[0]['voting'];
   presence: Parameters<typeof PlanCardFace>[0]['presence'];
@@ -127,6 +129,7 @@ export function PlanBoardCard({
           item={item}
           palette={palette}
           fields={setupFields}
+          size={cardSize}
           faceDown={faceDown}
           muted={done}
           presence={presence}
@@ -143,6 +146,7 @@ export function PlanDragGhost({
   item,
   palette,
   fields,
+  size,
 }: {
   drag: {
     clientX: number;
@@ -155,6 +159,7 @@ export function PlanDragGhost({
   item: Item;
   palette: PlanPalette;
   fields: Parameters<typeof PlanCardFace>[0]['fields'];
+  size: Parameters<typeof PlanCardFace>[0]['size'];
 }) {
   return createPortal(
     <div
@@ -166,7 +171,7 @@ export function PlanDragGhost({
         height: drag.height,
       }}
     >
-      <PlanCardFace item={item} palette={palette} fields={fields} />
+      <PlanCardFace item={item} palette={palette} fields={fields} size={size} />
     </div>,
     document.body,
   );

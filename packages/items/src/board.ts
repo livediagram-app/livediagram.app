@@ -40,12 +40,18 @@ export const CARD_FIELDS = [
 ] as const;
 export type CardField = (typeof CARD_FIELDS)[number];
 
+// How much of each card a board draws (docs/specs/025-plan/plan-board.md "The board set-up"): the title
+// only, one line, or every field it shows. Absent is Detailed.
+export const CARD_SIZES = ['minimal', 'compact', 'detailed'] as const;
+export type CardSize = (typeof CARD_SIZES)[number];
+
 export interface PlanBoardSetup {
   title: string;
   columns: PlanColumn[];
   doneColumnId?: string;
   swimlaneBy: SwimlaneBy;
   cardFields: CardField[];
+  cardSize?: CardSize;
   voting: { on: boolean; budget?: number };
   hideWriting: boolean;
 }
@@ -292,6 +298,9 @@ export function normaliseBoardSetup(input: unknown): PlanBoardSetup | null {
     ...(doneColumnId ? { doneColumnId } : {}),
     swimlaneBy,
     cardFields,
+    ...(input['cardSize'] === 'minimal' || input['cardSize'] === 'compact'
+      ? { cardSize: input['cardSize'] }
+      : {}),
     voting: {
       on: votingIn['on'] === true,
       ...(typeof budget === 'number' &&

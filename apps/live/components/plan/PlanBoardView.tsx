@@ -314,6 +314,7 @@ export function PlanBoardView({
                               lifted={dragging?.itemId === item.id}
                               done={done}
                               setupFields={setup.cardFields}
+                              cardSize={setup.cardSize}
                               faceDown={cardIsFaceDown(item, setup, self?.id ?? '')}
                               voting={
                                 setup.voting.on
@@ -382,6 +383,7 @@ export function PlanBoardView({
       {dragging && items.get(dragging.itemId) ? (
         <PlanDragGhost
           drag={dragging}
+          size={setup.cardSize}
           item={items.get(dragging.itemId)!}
           palette={palette}
           fields={setup.cardFields}

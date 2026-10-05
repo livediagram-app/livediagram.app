@@ -158,6 +158,8 @@ const PLAN_SETUP_PARTS = [
   'Swimlanes',
   'Scope',
   'CardFields',
+  'CardSize',
+  'Widgets',
   'Voting',
   'VoteBudget',
   'HideWriting',

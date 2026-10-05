@@ -26,7 +26,8 @@ editor views.
 - `shape-factory.ts`: `SHAPE_DEFAULT_SIZE` board 1120×640, card 240×120; `createShape('plan-board')` seeds the
   `blank` preset set-up; `createShape('plan-card')` seeds `planCard: { itemId: '' }` (the caller sets it).
 - `validate-shape.ts`: `planBoard` checked by `validateBoardSetup` (items package: 1..12 columns, unique ids and
-  statuses, names ≤ 40, wip 1..99, cardFields known, budget 1..99); `planCard.itemId` by `ITEM_ID_PATTERN` or empty.
+  statuses, names ≤ 40, wip 1..99, cardFields known, `cardSize` minimal or compact (absent is detailed), budget
+  1..99); `planCard.itemId` by `ITEM_ID_PATTERN` or empty.
 - Predicates: `isSelfDrawingShape` (both), `SELF_PAINTING_SHAPES` (both: board paints its own surfaces; card its
   type colour), `isSvgRenderedShape` exclusion (both), `SHAPE_LABELS` ("Plan board", "Plan card"), not markers,
   not containers.
@@ -117,7 +118,7 @@ cancelled` (Escape, pointercancel). `pressed → idle` on pointerup without movi
 - Empty board: first column shows the open add field with "Add your first item".
 - Copy: "Add card", "Add your first card", "Add a Card", "Or type a title and press Enter", "Open",
   "Duplicate", "Delete", "Card duplicated", "Card deleted", "Not on this board", "Move to", "Hidden until reveal", "Reveal", "Votes left: 3",
-  "Item not found", "Remove card", "Only mine", "Column", "WIP Limit", "Counts as done",
+  "Item not found", "Remove card", "Only mine", "Column", "WIP Limit", "Counts as Done",
   "Move Left", "Move Right", "+ Add Column After", "Remove Column", "Move and Remove", "Keep It".
 - Item panel: a modal through the shared `Dialog` (`size="lg"`, `phoneSheet`: a sheet from the bottom with a grab
   handle below `sm`), max height 44rem, header with type picker + key, title
