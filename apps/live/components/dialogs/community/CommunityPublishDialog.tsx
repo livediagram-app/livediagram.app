@@ -12,7 +12,7 @@ import {
   type CommunityOwnPost,
   type CommunityPostInput,
 } from '@livediagram/api-schema';
-import { Button, TextInput, DialogHeader, DialogCloseButton } from '@livediagram/ui';
+import { Button, TextInput, DialogHeader, DialogCloseButton, TextArea } from '@livediagram/ui';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { SwitchRow } from '@/components/primitives/SwitchRow';
 import { DialogFooter } from '@/components/dialogs/DialogFooter';
@@ -39,9 +39,6 @@ const CONSEQUENCES = [
 ];
 
 const LABEL = 'text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400';
-// A field with a problem: a rose border and ring, so it is easy to spot.
-const INVALID =
-  'border-rose-400 ring-2 ring-rose-100 dark:border-rose-400/70 dark:ring-rose-500/20';
 
 // Share to Community and Edit Listing (docs/specs/025-community/community.md "Publishing"): title,
 // description, category, tags, a preview of the card and what publishing means. The input is checked
@@ -176,7 +173,7 @@ export function CommunityPublishDialog({
                 autoFocus
                 aria-invalid={errors.title ? true : undefined}
                 aria-describedby={errors.title ? fieldErrorId('title') : undefined}
-                className={errors.title ? INVALID : undefined}
+                invalid={!!errors.title}
               />
               <FieldError id={fieldErrorId('title')} message={errors.title} />
             </div>
@@ -196,7 +193,7 @@ export function CommunityPublishDialog({
                   {descriptionLength} / {COMMUNITY_DESCRIPTION_MAX}
                 </span>
               </span>
-              <textarea
+              <TextArea
                 id={descriptionFieldId}
                 value={description}
                 onChange={(e) => form.setDescription(e.target.value)}
@@ -209,9 +206,8 @@ export function CommunityPublishDialog({
                     ? `${fieldErrorId('description')} ${descriptionHintId}`
                     : descriptionHintId
                 }
-                className={`w-full resize-y rounded-md border bg-white px-3 py-2 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-brand-400 focus:ring-2 focus:ring-brand-100 dark:bg-slate-900 dark:text-slate-100 ${
-                  errors.description ? INVALID : 'border-slate-200 dark:border-slate-700'
-                }`}
+                invalid={!!errors.description}
+                className="resize-y"
               />
               <FieldError id={fieldErrorId('description')} message={errors.description} />
               <span id={descriptionHintId} className="text-xs text-slate-500 dark:text-slate-400">

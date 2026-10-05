@@ -13,7 +13,13 @@ export {
   type ButtonVariant,
   type ButtonSize,
 } from './Button';
-export { TextInput, type TextInputProps } from './TextInput';
+export {
+  FIELD_INVALID,
+  TextArea,
+  TextInput,
+  type TextAreaProps,
+  type TextInputProps,
+} from './TextInput';
 export { Select, type SelectProps, type SelectVariant, type SelectSize } from './Select';
 export { Tooltip, type TooltipProps } from './Tooltip';
 export { StableLabel } from './StableLabel';

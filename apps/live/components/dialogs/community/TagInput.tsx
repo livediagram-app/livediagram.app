@@ -2,7 +2,7 @@
 
 import { useEffect, useId, useRef, useState } from 'react';
 import { COMMUNITY_TAG_MAX, COMMUNITY_TAG_MIN, COMMUNITY_TAGS_MAX } from '@livediagram/api-schema';
-import { CloseIcon } from '@livediagram/ui';
+import { CloseIcon, FIELD_INVALID } from '@livediagram/ui';
 import { FieldError } from './FieldError';
 import { commitTag, commitTagInput, tagPreview, type TagRejection } from './tag-draft';
 
@@ -77,9 +77,7 @@ export function TagInput({
       <div
         ref={boxRef}
         className={`flex flex-wrap items-center gap-1.5 rounded-md border bg-white px-2 py-1.5 transition focus-within:border-brand-400 focus-within:ring-2 focus-within:ring-brand-100 dark:bg-slate-900 ${
-          rejected || error
-            ? 'border-rose-400 ring-2 ring-rose-100 dark:border-rose-400/70 dark:ring-rose-500/20'
-            : 'border-slate-200 dark:border-slate-700'
+          rejected || error ? FIELD_INVALID : 'border-slate-200 dark:border-slate-700'
         }`}
       >
         {tags.map((tag) => (

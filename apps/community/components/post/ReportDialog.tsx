@@ -13,6 +13,7 @@ import {
   Dialog,
   DialogCloseButton,
   DialogHeader,
+  TextArea,
 } from '@livediagram/ui';
 import { CommunityApiError, reportPost } from '@/lib/api';
 import { communityTelemetry } from '@/lib/telemetry';
@@ -116,14 +117,14 @@ export function ReportDialog({ postId, onClose }: { postId: string; onClose: () 
                 Anything Else?{' '}
                 <span className="font-normal text-slate-500 dark:text-slate-400">(Optional)</span>
               </label>
-              <textarea
+              <TextArea
                 id={noteId}
                 value={note}
                 maxLength={COMMUNITY_REPORT_NOTE_MAX}
                 onChange={(e) => setNote(e.target.value)}
                 rows={3}
                 aria-describedby={`${noteId}-count`}
-                className="w-full resize-none rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                className="resize-none"
               />
               <p
                 id={`${noteId}-count`}
