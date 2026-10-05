@@ -4,9 +4,8 @@
 // name, the way a chat does, so a three-part remark reads as one voice.
 
 import type { Comment } from '@livediagram/document';
-import { Glyph, GlyphDisc } from '@livediagram/ui';
+import { Glyph, GlyphDisc, IDENTITY_FILL, identityVars } from '@livediagram/ui';
 import { AuthorDisc } from '@/components/primitives/AuthorDisc';
-import { IDENTITY_FILL, identityVars } from '@/lib/identity-fill';
 import { relativeSince } from '@/lib/relative-time';
 import { MentionText } from '@/components/primitives/MentionText';
 import { tint } from '../collab-chrome';

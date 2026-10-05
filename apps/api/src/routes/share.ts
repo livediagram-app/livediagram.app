@@ -129,6 +129,13 @@ export async function handleShare(ctx: RouteContext): Promise<Response> {
   return notFound();
 }
 
+// Short, stale-while-revalidate cache so embeds stay close to live
+// without hammering the origin on every view (the bytes themselves come
+// from R2; the worker only re-renders when the document was saved since).
+const SHARE_IMAGE_CACHE = 'public, max-age=30, stale-while-revalidate=300';
+// A Community post's image has no stale window, so it cannot linger once the post is hidden.
+const COMMUNITY_IMAGE_CACHE = 'public, max-age=30';
+
 // Live image (docs/specs/013-workspace/live-image-share.md + docs/specs/006-document/document-snapshots.md): resolve the share code to its document
 // and stream the cached SVG snapshot. Public — the share code in the URL
 // is the only credential, matching a share link's "anyone with the URL"
@@ -139,12 +146,6 @@ export async function handleShare(ctx: RouteContext): Promise<Response> {
 //     supply the password, so serving one would bypass the gate. The
 //     Share dialog hides the live-image option while a password is set,
 //     and this is the matching server-side enforcement.
-const SHARE_IMAGE_CACHE = 'public, max-age=30, stale-while-revalidate=300';
-const COMMUNITY_IMAGE_CACHE = 'public, max-age=30';
-
-// Short, stale-while-revalidate cache so embeds stay close to live
-// without hammering the origin on every view (the bytes themselves come
-// from R2; the worker only re-renders when the document was saved since).
 async function handleShareImage(ctx: RouteContext, code: string): Promise<Response> {
   const { env, request } = ctx;
   const link = await getShareLink(env, code);

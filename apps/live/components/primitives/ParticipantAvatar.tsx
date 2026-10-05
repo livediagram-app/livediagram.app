@@ -6,8 +6,7 @@ import {
   type Participant,
 } from '@/lib/identity';
 import { relativeSince, useRelativeNow } from '@/lib/relative-time';
-import { HoverCard, PictureDisc } from '@livediagram/ui';
-import { IDENTITY_FILL, identityVars } from '@/lib/identity-fill';
+import { HoverCard, PictureDisc, IDENTITY_FILL, identityVars } from '@livediagram/ui';
 
 // How far the presence ring paints BEYOND the avatar's layout box, per side.
 //

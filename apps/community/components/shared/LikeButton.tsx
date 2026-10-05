@@ -1,7 +1,7 @@
 'use client';
 
+import { formatCommunityCount } from '@livediagram/ui';
 import { useState, type MouseEvent } from 'react';
-import { formatCount } from '@/lib/format';
 import type { LikeState } from '@/lib/useLike';
 import { HeartIcon } from './icons';
 
@@ -42,7 +42,7 @@ export function LikeButton({ like, size = 'sm' }: { like: LikeState; size?: 'sm'
         fill={liked ? 'currentColor' : 'none'}
         className={pop && liked ? 'heart-pop' : ''}
       />
-      <span>{formatCount(likeCount)}</span>
+      <span>{formatCommunityCount(likeCount)}</span>
       {large ? <span className="font-medium">{likeCount === 1 ? 'like' : 'likes'}</span> : null}
     </button>
   );

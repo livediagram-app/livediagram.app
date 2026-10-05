@@ -2,8 +2,7 @@
 
 import { useState } from 'react';
 import type { CommunityPost } from '@livediagram/api-schema';
-import { ButtonContent, CopyIcon, buttonClassName } from '@livediagram/ui';
-import { formatCount } from '@/lib/format';
+import { ButtonContent, CopyIcon, buttonClassName, formatCommunityCount } from '@livediagram/ui';
 import { makeCopyHref, openDocumentHref } from '@/lib/links';
 import { communityTelemetry } from '@/lib/telemetry';
 import { useLike } from '@/lib/useLike';
@@ -52,7 +51,7 @@ export function PostActions({ post }: { post: CommunityPost }) {
         <span className={`${POST_CHIP} text-slate-500 dark:text-slate-400`}>
           <CopyIcon size={15} aria-hidden />
           <span>
-            <span className="font-semibold">{formatCount(copies)}</span>{' '}
+            <span className="font-semibold">{formatCommunityCount(copies)}</span>{' '}
             {copies === 1 ? 'copy' : 'copies'}
           </span>
         </span>

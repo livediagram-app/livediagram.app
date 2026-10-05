@@ -24,7 +24,7 @@ function cappedCountSql(
              GROUP BY COALESCE(network_hash, ${who})))`;
 }
 
-export const LIKE_COUNT_SQL = (postIdSql: string) =>
+const LIKE_COUNT_SQL = (postIdSql: string) =>
   cappedCountSql('community_likes', 'liker_key', postIdSql);
 export const COPY_COUNT_SQL = (postIdSql: string) =>
   cappedCountSql('community_copies', 'copier_id', postIdSql);

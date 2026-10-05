@@ -12,6 +12,7 @@
 // because the destinations live in different apps stitched under one host by
 // the router, so client-side nav wouldn't cross them.
 
+import { COMMUNITY_HOME_PATH } from '@livediagram/api-schema';
 import { useRef, type ReactNode } from 'react';
 import { useCommunityEnabled } from './community/useCommunityEnabled';
 import { useClickOutside } from './useClickOutside';
@@ -84,7 +85,7 @@ const ITEMS: { key: ProductNavKey; label: string; href: string; desc: string }[]
   {
     key: 'community',
     label: 'Community',
-    href: '/community/',
+    href: COMMUNITY_HOME_PATH,
     desc: 'Work people are proud of',
   },
   { key: 'help', label: 'Help', href: '/help/', desc: 'Guides, tutorials & answers' },

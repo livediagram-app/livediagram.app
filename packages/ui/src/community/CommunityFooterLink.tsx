@@ -1,5 +1,6 @@
 'use client';
 
+import { COMMUNITY_HOME_PATH } from '@livediagram/api-schema';
 import { useCommunityEnabled } from './useCommunityEnabled';
 
 // The site footer's Community link (docs/specs/025-community/community.md "Where Community is linked from"), gone
@@ -8,7 +9,7 @@ import { useCommunityEnabled } from './useCommunityEnabled';
 export function CommunityFooterLink({ className }: { className?: string }) {
   if (!useCommunityEnabled()) return null;
   return (
-    <a href="/community/" className={className}>
+    <a href={COMMUNITY_HOME_PATH} className={className}>
       Community
     </a>
   );

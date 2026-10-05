@@ -1,5 +1,4 @@
-import { IDENTITY_FILL, identityVars } from '@/lib/identity-fill';
-import { PictureDisc } from '@livediagram/ui';
+import { PictureDisc, IDENTITY_FILL, identityVars } from '@livediagram/ui';
 import { initialsOf } from '@/lib/identity';
 
 // The pill's leading picture (docs/specs/014-identity/profile-picture.md §5), only when there is one.

@@ -3,9 +3,8 @@
 // what people did, not whether they are here). Decorative: every entry names its people in words.
 
 import type { HomePerson } from '@livediagram/api-schema';
-import { PictureDisc } from '@livediagram/ui';
+import { PictureDisc, IDENTITY_FILL, identityVars } from '@livediagram/ui';
 import { initialsOf } from '@/lib/identity';
-import { IDENTITY_FILL, identityVars } from '@/lib/identity-fill';
 import { personName } from '@/app/explorer/home/home-copy';
 import { PAGE_RING } from './home-styles';
 

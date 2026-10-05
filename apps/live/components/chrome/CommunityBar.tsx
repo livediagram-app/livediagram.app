@@ -1,9 +1,9 @@
 'use client';
 
+import { communityPostPath } from '@livediagram/api-schema';
 import { Button, buttonClassName, lucideGlyph, CommunityAuthorBadge } from '@livediagram/ui';
 import { lucideArrowLeft, lucideCopyPlus, lucidePencil } from '@livediagram/icons/lucide';
 import type { CommunitySession } from '@/app/document/[id]/editor-realtime';
-import { communityPostPath } from '@/lib/community-links';
 
 const BackIcon = lucideGlyph(lucideArrowLeft, 14);
 const CopyIcon = lucideGlyph(lucideCopyPlus, 14);

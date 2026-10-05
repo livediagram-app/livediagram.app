@@ -2,11 +2,14 @@
 
 import { useEffect, useId, useRef, useState } from 'react';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
-import { communityCategoryLabel, type CommunityOwnPost } from '@livediagram/api-schema';
+import {
+  communityCategoryLabel,
+  type CommunityOwnPost,
+  communityPostPath,
+} from '@livediagram/api-schema';
 import { Button, buttonClassName, lucideGlyph } from '@livediagram/ui';
 import { lucideExternalLink, lucideGlobe } from '@livediagram/icons/lucide';
 import { communityErrorMessage } from '@/lib/community-errors';
-import { communityPostPath } from '@/lib/community-links';
 import { track } from '@/lib/telemetry';
 import { useToast } from '@/hooks/ui/useToast';
 import { SECTION_LABEL } from '../share-dialog-parts';

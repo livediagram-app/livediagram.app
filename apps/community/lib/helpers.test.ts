@@ -1,5 +1,6 @@
+import { formatCommunityCount } from '@livediagram/ui';
 import { describe, expect, it } from 'vitest';
-import { formatCount, formatDate, paragraphs } from './format';
+import { formatDate, paragraphs } from './format';
 import { isMinePost } from './gallery-post';
 import {
   editDocumentHref,
@@ -33,11 +34,11 @@ describe('links', () => {
 
 describe('format', () => {
   it('shortens big counts and spells out dates', () => {
-    expect(formatCount(0)).toBe('0');
-    expect(formatCount(999)).toBe('999');
+    expect(formatCommunityCount(0)).toBe('0');
+    expect(formatCommunityCount(999)).toBe('999');
     // The compact suffix's case depends on the runtime's locale data (1.2K in browsers, 1.2k in some Node builds).
-    expect(formatCount(1200).toUpperCase()).toBe('1.2K');
-    expect(formatCount(34_000).toUpperCase()).toBe('34K');
+    expect(formatCommunityCount(1200).toUpperCase()).toBe('1.2K');
+    expect(formatCommunityCount(34_000).toUpperCase()).toBe('34K');
     expect(formatDate(Date.UTC(2026, 9, 5, 12))).toBe('5 October 2026');
   });
 

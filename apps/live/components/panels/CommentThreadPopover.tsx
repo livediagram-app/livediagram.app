@@ -1,7 +1,16 @@
 'use client';
 
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { Button, CloseIcon, TrashIcon, useClickOutside, useEscape, Portal } from '@livediagram/ui';
+import {
+  Button,
+  CloseIcon,
+  TrashIcon,
+  useClickOutside,
+  useEscape,
+  Portal,
+  IDENTITY_FILL,
+  identityVars,
+} from '@livediagram/ui';
 import { useReposition } from '@/hooks/canvas/useReposition';
 import type { Comment, CommentMention, CommentThread } from '@livediagram/document';
 import { MentionMenu } from '@/components/primitives/MentionMenu';
@@ -13,7 +22,6 @@ import { AuthorDisc } from '@/components/primitives/AuthorDisc';
 import { isMobileViewportSync } from '@/lib/responsive';
 import { formatRelativeTimeCompact, useRelativeNow } from '@/lib/relative-time';
 import { VIEWPORT_EDGE_MARGIN as EDGE_MARGIN } from '@/lib/clamp-to-viewport';
-import { IDENTITY_FILL, identityVars } from '@/lib/identity-fill';
 
 type CommentThreadPopoverProps = {
   // Element this thread belongs to. The popover anchors itself by querying

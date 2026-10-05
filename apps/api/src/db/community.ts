@@ -34,7 +34,7 @@ import { generateShareCode } from './share';
 // documents cannot be published); one that now belongs to someone other than the post's author (moved out of a team
 // by another member), whose post that person never published; and one with a share password (a public post cannot
 // ask for one, and a password set while the Community was switched off must not come back public).
-export const PUBLIC_POST = `cp.state = 'listed' AND d.trashed_at IS NULL AND d.team_id IS NULL
+const PUBLIC_POST = `cp.state = 'listed' AND d.trashed_at IS NULL AND d.team_id IS NULL
   AND d.owner_id = cp.author_id AND d.share_password IS NULL`;
 
 // The post a document has, in any state, trashed or not: the owner's view of it.

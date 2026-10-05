@@ -59,20 +59,18 @@ export function GalleryView() {
 
   return (
     <div className="flex flex-col gap-8">
-      <div className="flex flex-col gap-4">
-        <div className="flex items-center gap-3">
-          <SearchBox
-            value={filters?.q ?? ''}
-            onSearch={onSearch}
-            facets={facets}
-            onTagChosen={onTagChosen}
-            onSortChosen={onSortChosen}
-            onCategoryChosen={onCategoryChosen}
-            mineAvailable={signInAvailable}
-            onMineChosen={onMineChosen}
-          />
-          {mine && signInAvailable ? <LazyClerkSession onSession={setSession} /> : null}
-        </div>
+      <div>
+        <SearchBox
+          value={filters?.q ?? ''}
+          onSearch={onSearch}
+          facets={facets}
+          onTagChosen={onTagChosen}
+          onSortChosen={onSortChosen}
+          onCategoryChosen={onCategoryChosen}
+          mineAvailable={signInAvailable}
+          onMineChosen={onMineChosen}
+        />
+        {mine && signInAvailable ? <LazyClerkSession onSession={setSession} /> : null}
       </div>
 
       <section aria-label={mine ? 'My Shares' : 'Documents'}>

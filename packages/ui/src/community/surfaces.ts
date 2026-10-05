@@ -5,5 +5,6 @@
 export const COMMUNITY_DOT_GRID =
   'bg-slate-50 bg-[radial-gradient(circle,rgb(148_163_184/0.35)_1px,transparent_1.2px)] bg-[length:14px_14px] dark:bg-slate-950 dark:bg-[radial-gradient(circle,rgb(100_116_139/0.3)_1px,transparent_1.2px)]';
 
+// No corner radius of its own: each placeholder picks the radius of what it stands in for.
 export const COMMUNITY_SKELETON_BAR =
-  'rounded bg-slate-100 animate-pulse motion-reduce:animate-none dark:bg-slate-800';
+  'bg-slate-100 animate-pulse motion-reduce:animate-none dark:bg-slate-800';

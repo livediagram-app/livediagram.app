@@ -99,7 +99,6 @@ export function CommunityPublishDialog({
     const checked = validateCommunityPostInput(form.draft);
     if (!form.check() || !checked.ok) return;
     setBusy(true);
-    setError(null);
     try {
       const saved = await onPublish(checked.value);
       const type = communityCategoryType(saved.category);

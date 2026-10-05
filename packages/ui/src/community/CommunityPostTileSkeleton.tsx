@@ -3,7 +3,7 @@ import { COMMUNITY_DOT_GRID, COMMUNITY_SKELETON_BAR } from './surfaces';
 // A placeholder the exact shape of CommunityPostTile (docs/specs/025-community/community.md "Gallery"): a grid
 // reserves its space while posts load, so nothing shifts when they arrive. Shared by the Community app and the
 // landing page. Still under reduced motion.
-const BAR = COMMUNITY_SKELETON_BAR;
+const BAR = `rounded ${COMMUNITY_SKELETON_BAR}`;
 
 export function CommunityPostTileSkeleton() {
   return (

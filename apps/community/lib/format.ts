@@ -1,7 +1,6 @@
 // Display helpers for counts and dates on cards and the post page. Pure.
 
 // 999, 1.2K, 34K: the shared Community count.
-export { formatCommunityCount as formatCount } from '@livediagram/ui';
 
 const DATE = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
 

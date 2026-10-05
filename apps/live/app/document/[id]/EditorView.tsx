@@ -181,12 +181,12 @@ export function EditorView() {
     userPreferences,
     sessionCommunity,
   } = ctx;
-  // `?copy=1` from the Community's Make a Copy (docs/specs/025-community/community.md).
   // The header badge follows the document's Community post (docs/specs/025-community/community.md).
   const communityState = useCommunityState(documentId);
   // The badge goes too while the Community is switched off (docs/specs/025-community/community.md).
   // Asked only while there is a listed post to badge, and never in an embed, so other opens make no request.
   const communityOn = useCommunityEnabled(API_BASE, communityState === 'listed' && !embedMode);
+  // `?copy=1` from the Community's Make a Copy (docs/specs/025-community/community.md).
   useAutoCopyParam({
     hydrated,
     sessionShareCode,

@@ -50,9 +50,7 @@ export { formatCommunityCount } from './community/format-count';
 export { COMMUNITY_DOT_GRID, COMMUNITY_SKELETON_BAR } from './community/surfaces';
 export { CommunityHelpLink } from './community/CommunityHelpLink';
 export { PictureDisc } from './PictureDisc';
-export { PICTURE_SIZES_PX, pictureHost, pictureSrc, pictureSrcSet } from './profile-picture';
 export {
-  fetchCommunityEnabled,
   resetCommunityEnabledForTests,
   useCommunityEnabled,
 } from './community/useCommunityEnabled';
@@ -79,9 +77,9 @@ export {
 export * from './appearance';
 export * from './optical';
 export * from './menu';
-export { Dialog, type DialogProps, type DialogSize } from './dialog/Dialog';
+export { Dialog, type DialogProps } from './dialog/Dialog';
 export { DialogHeader } from './dialog/DialogHeader';
 export { DialogCloseButton } from './dialog/DialogCloseButton';
 export { Portal } from './Portal';
-export { useSwipeDownDismiss, DISMISS_PX } from './useSwipeDownDismiss';
+export { useSwipeDownDismiss } from './useSwipeDownDismiss';
 export { safeInset, atLeastInset, safeInlinePadding } from './safe-area';

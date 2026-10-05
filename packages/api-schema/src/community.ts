@@ -336,6 +336,9 @@ export const COMMUNITY_UNKNOWN_AUTHOR: CommunityAuthor = {
   picture: null,
 };
 
+// The Community's own address on the site (the router serves the Community app there).
+export const COMMUNITY_HOME_PATH = '/community/';
+
 // A post's own page on the site (the Community app is served at /community).
 export function communityPostPath(postId: string): string {
   return `/community/post/?id=${encodeURIComponent(postId)}`;

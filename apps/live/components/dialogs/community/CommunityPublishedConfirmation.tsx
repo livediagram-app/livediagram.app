@@ -1,9 +1,9 @@
 'use client';
 
+import { communityPostPath } from '@livediagram/api-schema';
 import { buttonClassName, Button, lucideGlyph, useCopiedFlash } from '@livediagram/ui';
 import { lucideExternalLink, lucideLink, lucideSparkles } from '@livediagram/icons/lucide';
 import { DialogFooter } from '@/components/dialogs/DialogFooter';
-import { communityPostPath } from '@/lib/community-links';
 import { useToast } from '@/hooks/ui/useToast';
 
 const SparklesIcon = lucideGlyph(lucideSparkles, 28);

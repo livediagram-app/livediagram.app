@@ -94,7 +94,7 @@ export function sharePasswordOf(request: Request): string | null {
 // so the document, its tabs, images and copy serve it, and comments, history, the timeline and any door
 // added later do not. Fail closed, like the tab scope.
 export const COMMUNITY_CONTENT = { community: true } as const;
-export type GateOptions = { community?: boolean };
+type GateOptions = { community?: boolean };
 
 export function gateRead(
   ctx: RouteContext,

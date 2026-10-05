@@ -7,6 +7,7 @@ import {
   communityPostPath,
   type CommunityFeaturedResponse,
   type CommunityPost,
+  COMMUNITY_HOME_PATH,
 } from '@livediagram/api-schema';
 import {
   buttonClassName,
@@ -110,7 +111,7 @@ export function CommunityShowcase() {
 
         <div className="mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-3">
           <a
-            href="/community/"
+            href={COMMUNITY_HOME_PATH}
             className={buttonClassName({ variant: 'secondary', size: 'cta-sm' })}
           >
             <ButtonContent>Explore the Community</ButtonContent>
