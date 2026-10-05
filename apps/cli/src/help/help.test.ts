@@ -57,3 +57,15 @@ describe('verb help without a CLI projection', () => {
     );
   });
 });
+
+describe('help for writes', () => {
+  it('shows a rest positional, a short flag, and the edit alias', () => {
+    expect(verbHelp(VERBS.find((v) => v.id === 'element.set')!)).toContain(
+      'Usage: livediagram element set <doc> <words…> [flags]',
+    );
+    expect(verbHelp(VERBS.find((v) => v.id === 'changeset.apply')!)).toContain(
+      '  -f, --file <text>  The file to send, or - for stdin',
+    );
+    expect(topHelp()).toMatch(/\n {2}edit +changeset apply\n/);
+  });
+});

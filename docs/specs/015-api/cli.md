@@ -2,8 +2,9 @@
 
 **Status: in progress.** Built and run from source (`apps/cli`): routing, help, exit codes and output rules;
 profiles, `LIVEDIAGRAM_TOKEN` and `auth login --with-token`, `status`, `logout`; the reads `document ls|view`,
-`tab ls|view|lint`, `changeset ls|show`; `changeset revert`; `guide`, `skill` and `api`. Not yet published to npm.
-The writes, browser and device sign-in, the catalogues, pull and push, the room and telemetry are ahead.
+`tab ls|view|lint|diff`, `changeset ls|show`; the edits `edit` (`changeset apply`), `element add|set|rm|move|connect|insert|wrap`
+and `changeset revert`, based on read copies; `guide`, `skill` and `api`. Not yet published to npm. Creating and renaming
+documents and tabs, browser and device sign-in, the catalogues, pull and push, the room and telemetry are ahead.
 
 `livediagram` is a command-line front door to the api, built first for **agents** (a coding agent in a repo, a chat
 agent changing a diagram while a person talks to it) and second for people (scripts, syncing documents to files).

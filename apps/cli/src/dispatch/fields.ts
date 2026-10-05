@@ -51,3 +51,8 @@ export function fieldsOf(input: z.ZodObject): Field[] {
 
 // `--kebab-case` of a camelCase key.
 export const flagOf = (key: string) => `--${key.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`)}`;
+
+// A positional written `...name` takes every remaining word.
+export const restName = (positional: string) =>
+  positional.startsWith('...') ? positional.slice(3) : null;
+export const keyOf = (positional: string) => restName(positional) ?? positional;

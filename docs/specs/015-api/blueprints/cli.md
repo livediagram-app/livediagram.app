@@ -28,7 +28,9 @@ Scope, by file:
 | `packages/agent-verbs/src/verbs/local.ts`                                                              | The CLI-only verbs, declared without `run` (CLI55)                                                                                          |
 | `packages/agent-verbs/src/addressing.ts`                                                               | `parseDocumentUrl`, `resolveDocument`, `resolveTab`, `AddressError`, `AddressLog`                                                           |
 | `packages/agent-verbs/src/refs.ts`                                                                     | `REF_MIN_PREFIX`, `shortestUniquePrefixes`                                                                                                  |
-| `packages/agent-verbs/src/source-kind.ts` (planned)                                                    | `classifySource(text)`: what a `-f` file holds (CLI71)                                                                                      |
+| `packages/agent-verbs/src/source-kind.ts` (+ test)                                                     | `classifySource(text)`: what a `-f` file holds and the body it becomes (CLI71)                                                              |
+| `packages/agent-verbs/src/{argv-line,copies,write}.ts` (+ tests)                                       | `argvToOperationLine` (CLI23); `ReadCopies`, `baseFromCopy`, `readPlainTab`, `recordCopy`; `submitChangeset`, `writeFlags`                  |
+| `packages/agent-verbs/src/verbs/edit.ts` (+ test)                                                      | `changeset.apply`, the seven `element.*` verbs, `tab.diff`                                                                                  |
 | `packages/agent-verbs/src/find-documents.ts` (+ test)                                                  | Moved from `apps/mcp`; gains `listAllDocuments(api)`                                                                                        |
 | `packages/agent-verbs/src/guides/index.ts`                                                             | `GUIDE_TOPICS`, `GUIDE_TOPIC_NAMES`, `isGuideTopic`: build, edit, views, comments, collaborate                                              |
 | `packages/agent-verbs/src/skill.ts`                                                                    | `SKILL_NAME`, `SKILL_DESCRIPTION`, `SKILL_DIRECTORIES`, `renderSkill()`                                                                     |
@@ -330,7 +332,19 @@ type VerbContext = {
   host: string; // the profile's host, for links and messages
   useShareCode: (code: string) => void; // a pasted share link's code rides every later request
   log: (line: string) => void; // a debug line, printed under LIVEDIAGRAM_DEBUG=1
+  notice: (line: string) => void; // a line beside the output: stderr in the CLI
+  now: () => number;
+  sleep: (ms: number) => Promise<void>; // --wait-held
+  readInput: (path: string) => Promise<string>; // -f <file>, or stdin for -
+  copies: ReadCopies | null; // the read copies; null where the front door keeps none
 };
+```
+
+A verb words a refusal the api cannot (which tab to re-read) as `VerbRefusal { status, code, message, lines, hint }`;
+the CLI exits on its `status` as on the api's.
+
+```ts
+
 ```
 
 Verbs and tools: each MCP tool is its own verb in `mcp-tools.ts`, holding today's tool name, input and output
@@ -840,24 +854,24 @@ livediagram@latest`
 - **`wait` timeout** (stdout): `nothing new in <n> s`.
 - **CLI errors**, final copy (each followed by its `hint:`):
 
-| Situation                 | `error:`                                                             | `hint:`                                                                                         |
-| ------------------------- | -------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| No credential             | `not signed in to <host>`                                            | `livediagram auth login, or set LIVEDIAGRAM_TOKEN`                                              |
-| Host without sign-in      | `<host> has no sign-in, so the CLI cannot act there`                 | none                                                                                            |
-| Host without OAuth server | `<host> has no sign-in server for the CLI`                           | `create a token in Settings › API Tokens, then pipe it to: livediagram auth login --with-token` |
-| Below the floor           | `<host> accepts writes from livediagram <min> or later; this is <v>` | `npm install -g livediagram@latest, or npx livediagram@latest`                                  |
-| Newer document format     | `<host> stores documents newer than this livediagram reads (<v>)`    | `npm install -g livediagram@latest, or npx livediagram@latest`                                  |
-| Unknown verb              | `unknown verb "<v>" for "<resource>"`, `  did you mean: <x>`         | `livediagram <resource> --help`                                                                 |
-| Unknown flag              | `unknown flag <flag> for "<command>"`                                | `livediagram <command> --help`                                                                  |
-| Not found                 | `no <document\|tab> matches "<x>"`, nearest lines                    | `livediagram document ls` / `livediagram tab ls <doc>`                                          |
-| Ambiguous                 | `"<x>" matches <n> <documents\|tabs>`, candidates                    | the command with the first candidate's ref                                                      |
-| Unknown `-f` content      | `can't tell what <file> holds`                                       | `expected edit operations, a graph, Mermaid or elements: livediagram guide edit`                |
-| Conflict                  | the api's `text`                                                     | `re-read: livediagram tab view <doc> --tab <t>`                                                 |
-| Held                      | `<n> elements are selected by people:`, `  <ref> (<name>)`           | `retry later, or add --wait-held 30`                                                            |
-| Stale (`--strict`)        | `"<tab>" changed since rev <base> (now <rev>)`                       | `re-read: livediagram tab view <doc> --tab <t>`                                                 |
-| Rate limited              | `<host> is rate limiting this token`                                 | `wait a minute, then retry`                                                                     |
-| Network                   | `could not reach <host> (<code>)`                                    | `check the connection, or choose another host with --host`                                      |
-| Server                    | `<host> failed (HTTP <status>)`                                      | `retry shortly`                                                                                 |
+| Situation                 | `error:`                                                                   | `hint:`                                                                                         |
+| ------------------------- | -------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| No credential             | `not signed in to <host>`                                                  | `livediagram auth login, or set LIVEDIAGRAM_TOKEN`                                              |
+| Host without sign-in      | `<host> has no sign-in, so the CLI cannot act there`                       | none                                                                                            |
+| Host without OAuth server | `<host> has no sign-in server for the CLI`                                 | `create a token in Settings › API Tokens, then pipe it to: livediagram auth login --with-token` |
+| Below the floor           | `<host> accepts writes from livediagram <min> or later; this is <v>`       | `npm install -g livediagram@latest, or npx livediagram@latest`                                  |
+| Newer document format     | `<host> stores documents newer than this livediagram reads (<v>)`          | `npm install -g livediagram@latest, or npx livediagram@latest`                                  |
+| Unknown verb              | `unknown verb "<v>" for "<resource>"`, `  did you mean: <x>`               | `livediagram <resource> --help`                                                                 |
+| Unknown flag              | `unknown flag <flag> for "<command>"`                                      | `livediagram <command> --help`                                                                  |
+| Not found                 | `no <document\|tab> matches "<x>"`, nearest lines                          | `livediagram document ls` / `livediagram tab ls <doc>`                                          |
+| Ambiguous                 | `"<x>" matches <n> <documents\|tabs>`, candidates                          | the command with the first candidate's ref                                                      |
+| Unknown `-f` content      | `can't tell what <file> holds`                                             | `expected edit operations, a graph, Mermaid or elements: livediagram guide edit`                |
+| Conflict                  | `<n> elements changed since rev <base> (now <rev>):`, `  <ref> (<reason>)` | `re-read: livediagram tab view <doc> --tab <t>`                                                 |
+| Held                      | `<n> elements are selected by people:`, `  <ref> (<name>)`                 | `retry later, or add --wait-held 30`                                                            |
+| Stale (`--strict`)        | `"<tab>" changed since rev <base> (now <rev>)`                             | `re-read: livediagram tab view <doc> --tab <t>`                                                 |
+| Rate limited              | `<host> is rate limiting this token`                                       | `wait a minute, then retry`                                                                     |
+| Network                   | `could not reach <host> (<code>)`                                          | `check the connection, or choose another host with --host`                                      |
+| Server                    | `<host> failed (HTTP <status>)`                                            | `retry shortly`                                                                                 |
 
 ## Accessibility
 
@@ -936,13 +950,13 @@ WebSocket) with a fixed clock; none waits on a real timer or the network.
 | Never a whole-tab save                                                                        | `apps/cli/src/main.test.ts` (`api PUT` on a tab refused)                                                                                                              |
 | `document create` compiles on the api with `source: 'cli'`                                    | `apps/cli/src/commands/document.test.ts` (planned)                                                                                                                    |
 | `tab rename` through the name route                                                           | `apps/cli/src/commands/tab.test.ts` (planned)                                                                                                                         |
-| Writes print result lines, revision, changeset, lint, revert                                  | `apps/cli/src/commands/element.test.ts` (planned)                                                                                                                     |
-| `--dry-run`, `--summary`, `--base` from the read copy with fingerprints, `--strict`           | `apps/cli/src/commands/element.test.ts` (planned), `apps/cli/src/sync/read-copies.test.ts` (planned)                                                                  |
-| `--wait-held` retries, then exit 5                                                            | `apps/cli/src/commands/element.test.ts` (planned)                                                                                                                     |
-| `changeset apply` from a file and stdin; source kinds                                         | `apps/cli/src/commands/changeset.test.ts` (planned); `packages/agent-verbs/src/source-kind.test.ts` (planned)                                                         |
+| Writes print result lines, revision, changeset, lint, revert                                  | `apps/cli/src/writes.test.ts`                                                                                                                                         |
+| `--dry-run`, `--summary`, `--base` from the read copy with fingerprints, `--strict`           | `packages/agent-verbs/src/write.test.ts`, `apps/cli/src/writes.test.ts`, `apps/cli/src/sync/read-copies.test.ts`                                                      |
+| `--wait-held` retries, then exit 5                                                            | `packages/agent-verbs/src/write.test.ts`, `apps/cli/src/writes.test.ts`                                                                                               |
+| `changeset apply` from a file and stdin; source kinds                                         | `packages/agent-verbs/src/verbs/edit.test.ts`; `packages/agent-verbs/src/source-kind.test.ts`; `apps/cli/src/input.test.ts`                                           |
 | `changeset ls`, `show` and `revert`                                                           | `packages/agent-verbs/src/verbs/verbs.test.ts`                                                                                                                        |
 | Comments by element ref; reply to the thread                                                  | `apps/cli/src/commands/comment.test.ts` (planned)                                                                                                                     |
-| `tab diff` from the read copy; missing copy exit 3                                            | `apps/cli/src/commands/diff.test.ts` (planned)                                                                                                                        |
+| `tab diff` from the read copy; missing copy exit 3                                            | `packages/agent-verbs/src/verbs/edit.test.ts`, `apps/cli/src/writes.test.ts`                                                                                          |
 | Env token before stored; no flag                                                              | `apps/cli/src/auth/credentials.test.ts`                                                                                                                               |
 | Loopback PKCE login against the OAuth server                                                  | `apps/cli/src/auth/loopback-login.test.ts` (planned) (in-process fake issuer)                                                                                         |
 | Device login, `slow_down`, denial, expiry                                                     | `apps/cli/src/auth/device-login.test.ts` (planned)                                                                                                                    |
@@ -994,6 +1008,7 @@ WebSocket) with a fixed clock; none waits on a real timer or the network.
 | `REQUEST_TIMEOUT_MS`               | 30000                  | CLI46                                       | 10000 to 120000    |
 | `CAPABILITIES_CACHE_TTL_MS`        | 3600000                | CLI8                                        | 600000 to 86400000 |
 | `HELD_RETRY_INTERVAL_MS`           | 2000                   | CLI25                                       | 500 to 10000       |
+| `WAIT_HELD_MAX_S`                  | 3600                   | `WAIT_MAX_TIMEOUT_S`, CLI25                 | 600 to 86400       |
 | `READ_COPY_REVS_PER_TAB`           | 3                      | CLI76                                       | 1 to 10            |
 | `READ_COPY_MAX_BYTES`              | 33554432               | About 16 of the largest tabs, CLI76         | 8 MiB to 256 MiB   |
 | `WAIT_DEFAULT_TIMEOUT_S`           | 600                    | CLI61                                       | 60 to 3600         |

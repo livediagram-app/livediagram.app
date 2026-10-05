@@ -19,6 +19,8 @@ import { CliError, formatError } from './output/cli-error';
 import { EXIT, exitCodeForStatus, type ExitCode } from './output/exit-codes';
 import { failureOf } from './output/failure-of';
 import { render } from './output/print';
+import { inputReader } from './input';
+import { fileReadCopies } from './sync/read-copies';
 import { transport } from './transport';
 
 type Input = Record<string, unknown>;
@@ -68,7 +70,17 @@ async function runOnline(io: CliIo, verb: Verb, input: Input, profile: Profile, 
   if (verb.id === 'auth.logout') return logout(io, profile, api, credential.source);
   if (verb.id === 'api')
     return callApi(io, api, input as { method: string; path: string; body?: string });
-  const ctx: VerbContext = { api, host: profile.host, useShareCode: http.useShareCode, log };
+  const ctx: VerbContext = {
+    api,
+    host: profile.host,
+    useShareCode: http.useShareCode,
+    log,
+    notice: (line) => io.stderr(`${line}\n`),
+    now: io.now,
+    sleep: io.sleep,
+    readInput: inputReader(io),
+    copies: fileReadCopies(io, profile.name, log),
+  };
   return verb.run!(ctx, input);
 }
 

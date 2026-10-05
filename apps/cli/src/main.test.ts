@@ -109,7 +109,7 @@ describe('run', () => {
       { code: 'box-overlap', fix: 'move b right-of:a' },
     ]);
     const view = await cli(['tab', 'view', 'auth flow', '--json']);
-    expect(view.io.requests.at(-1)!.url).toMatch(/view=outline&json=1$/);
+    expect(view.io.requests.some((r) => /view=outline&json=1$/.test(r.url))).toBe(true);
   });
 
   it("sends a share link's code with every request after it resolves", async () => {
@@ -283,7 +283,10 @@ describe('the local verbs', () => {
     const io = signedIn({ routes: [capabilities, echo], stdin: '{"a":1}' });
     expect(await cli(['api', 'post', 'api/echo', '--body', '-'], io)).toMatchObject({ code: 0 });
     expect(io.out()).toBe('{"method":"POST","body":"{\\"a\\":1}"}\n');
-    const conflict = signedIn({ routes: [capabilities, echo], files: { 'b.json': '{"b":2}' } });
+    const conflict = signedIn({
+      routes: [capabilities, echo],
+      files: { '/work/b.json': '{"b":2}' },
+    });
     expect(await cli(['api', 'PATCH', '/echo?s=1', '--body', 'b.json'], conflict)).toMatchObject({
       code: 5,
       out: '{"method":"PATCH","body":"{\\"b\\":2}"}\n',

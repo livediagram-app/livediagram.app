@@ -10,13 +10,17 @@ Create a document with one empty tab through the api escape hatch; you choose it
   printf '{"id":"%s","name":"Shop","tabs":[{"id":"main","name":"Main","elements":[]}]}' \\
     "$(node -p 'crypto.randomUUID()')" | livediagram api POST /documents --body -
 
-Then add to the tab with edit operations (livediagram guide edit):
-boxes by label, placed beside each other, and the arrows between them. Write the structure,
-not the coordinates: add places a box clear of the others.
+Then write the structure, not the coordinates, as one changeset: a graph or Mermaid replaces
+the tab and is laid out for you; edit operations place each box beside the one they name.
 
+  livediagram edit Shop -f arch.json        {"nodes": [...], "edges": [...], "direction": "right"}
+  livediagram edit Shop -f flow.mmd         flowchart LR ...
+
+  livediagram edit Shop -f - <<'OPS'
   add square id=web label="Web app"
   add square id=api label=API right-of:web
   connect web -> api
+  OPS
 
 Check how it is drawn; each finding ends with a fix written as edit operations:
 
@@ -26,21 +30,30 @@ Check how it is drawn; each finding ends with a fix written as edit operations:
     summary: 'change a tab with edit operations',
     text: `Edit a tab
 
-Read it first; the refs in a view (n3, f2) name elements in edits:
+Read it first: the refs in a view (n3, f2) name elements, and the read becomes the base your
+write is checked against, so a change someone made since is caught, not overwritten.
 
   livediagram tab view "Auth flow"
-  livediagram tab ls "Auth flow" --json       the document and tab ids
 
-Send edit operations as one changeset, all or nothing, as the "operations" string:
+Send edit operations, one a line, as one changeset (all or nothing):
 
-  printf %s '{"operations":"set n3 label=\\"Sign in\\"\\nconnect n3 -> n7"}' \\
-    | livediagram api POST /documents/<id>/tabs/<tab-id>/changesets --body -
+  livediagram edit "Auth flow" -f - <<'OPS'
+  set n3 label="Sign in" shape=stadium
+  insert square id=verify label="Verify email" between n3 n4
+  connect verify -> n7 label=retry
+  OPS
+
+Or one operation a command; its words are the operation's, and connect needs no arrow:
+
+  livediagram element set "Auth flow" n3 label="Sign in"
+  livediagram element connect "Auth flow" n3 n7 label=retry
 
 Operations: add set rm move connect rewire insert wrap unwrap order layout test.
 Select by ref (n3), "label", type:sticky, in:f2, n3->n4, downstream:n3.
 Values with spaces are quoted: label="Sign in". key= unsets a field.
-"dryRun": true plans without writing. The answer says what changed, the new revision, the
-lint verdict, and how to revert it.`,
+--dry-run plans without writing; --summary says what it is for. Every write prints what
+changed, the revision, the lint verdict and the revert command; tab diff --since <rev> shows
+what changed since a revision you read.`,
   },
   views: {
     summary: 'read a tab as text, cheaply',
