@@ -189,6 +189,9 @@ export function computeTabSaveDiff(
 //
 //   - isOwner:          the document belongs to this session's id.
 //   - sessionRole:      owners edit; visitors inherit the link's role.
+//   A Community post's link (`community`) is a viewing surface for everyone, its author included
+//   (docs/specs/025-community/community.md "Viewing a post's document"): it never opens the board as its
+//   owner, so the author reads it like any visitor and edits it from their own document instead.
 //   - sessionShareCode: owners send none; visitors carry the code that
 //                       admitted them so write paths can authorise.
 export type DocumentSession = {
@@ -202,7 +205,11 @@ export function resolveDocumentSession(input: {
   selfId: string;
   shareRole: 'edit' | 'view';
   shareCodeParam: string | null;
+  community?: boolean;
 }): DocumentSession {
+  if (input.community) {
+    return { isOwner: false, sessionRole: 'view', sessionShareCode: input.shareCodeParam };
+  }
   const isOwner = input.documentOwnerId === input.selfId;
   return {
     isOwner,

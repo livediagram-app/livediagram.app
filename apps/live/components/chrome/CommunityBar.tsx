@@ -1,23 +1,26 @@
 'use client';
 
-import type { CommunityShareInfo } from '@livediagram/api-schema';
 import { Button, buttonClassName, lucideGlyph } from '@livediagram/ui';
-import { lucideArrowLeft, lucideCopyPlus } from '@livediagram/icons/lucide';
+import { lucideArrowLeft, lucideCopyPlus, lucidePencil } from '@livediagram/icons/lucide';
+import type { CommunitySession } from '@/app/document/[id]/editor-realtime';
 import { CommunityAuthorDisc } from '@/components/primitives/CommunityAuthorDisc';
 import { communityPostPath } from '@/lib/community-links';
 
 const BackIcon = lucideGlyph(lucideArrowLeft, 14);
 const CopyIcon = lucideGlyph(lucideCopyPlus, 14);
+const EditIcon = lucideGlyph(lucidePencil, 14);
 
 // The slim bar under the header when a board was opened from the Community
 // (docs/specs/025-community/community.md "Viewing a post's document"; copy in the blueprint §9): who
 // shared it, the way back to its post, and Make a Copy, the one thing a visitor can do with it here.
+// The board is read-only here for its author too; they get Edit Your Board, which opens their own
+// document, in place of copying it.
 export function CommunityBar({
   community,
   onMakeCopy,
   copying,
 }: {
-  community: CommunityShareInfo;
+  community: CommunitySession;
   onMakeCopy: () => void;
   copying: boolean;
 }) {
@@ -44,10 +47,20 @@ export function CommunityBar({
           <BackIcon />
           Back to Community
         </a>
-        <Button size="xs" onClick={onMakeCopy} disabled={copying}>
-          <CopyIcon />
-          {copying ? 'Copying' : 'Make a Copy'}
-        </Button>
+        {community.ownDocumentId ? (
+          <a
+            href={`/document/${encodeURIComponent(community.ownDocumentId)}`}
+            className={buttonClassName({ size: 'xs' })}
+          >
+            <EditIcon />
+            Edit Your Board
+          </a>
+        ) : (
+          <Button size="xs" onClick={onMakeCopy} disabled={copying}>
+            <CopyIcon />
+            {copying ? 'Copying' : 'Make a Copy'}
+          </Button>
+        )}
       </div>
     </div>
   );
