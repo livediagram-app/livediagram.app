@@ -44,6 +44,16 @@ const PLAN_BOARD_RADIUS_PX = 12;
 export const PLAN_COLUMN_MIN_PX = 220;
 
 const stop = (e: { stopPropagation: () => void }) => e.stopPropagation();
+
+// The board body keeps its presses (cards, cells, buttons) from the canvas, except a finger on empty board,
+// which pans the canvas as it would anywhere else (docs/specs/025-plan/plan-board.md "On a phone").
+export function keepBoardPress(e: React.PointerEvent<HTMLElement>): void {
+  if (e.pointerType === 'touch') {
+    const t = e.target as HTMLElement;
+    if (!t.closest('[data-plan-card], button, input, select, textarea, [role="button"]')) return;
+  }
+  e.stopPropagation();
+}
 const NO_ITEMS: ReadonlyMap<string, Item> = new Map();
 
 export function PlanBoardView({
@@ -239,7 +249,7 @@ export function PlanBoardView({
       <div
         ref={bodyRef}
         className="min-h-0 flex-1 overflow-auto px-3 pb-3"
-        onPointerDown={interactive ? stop : undefined}
+        onPointerDown={interactive ? keepBoardPress : undefined}
       >
         {setup.columns.length === 0 ? (
           <PlanFirstColumn

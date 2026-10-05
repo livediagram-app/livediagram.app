@@ -36,6 +36,7 @@ export function TrashPanel({
   return (
     <MovablePanel
       title="Trash"
+      helpArticle="planCards"
       position={null}
       defaultCorner="bottom-right"
       width="w-[calc(100vw-2rem)] sm:w-96"

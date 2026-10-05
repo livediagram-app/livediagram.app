@@ -3,6 +3,7 @@
 // A board with no columns (docs/specs/025-plan/plan-board.md "The board set-up"): in place of its columns, a
 // field to name the first one. Enter (or Add Column) makes it; the board then grows from its cog's
 // + Add Column After. Someone who may only view reads that the board has no columns yet.
+import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { useState } from 'react';
 import { PlusIcon } from '@livediagram/ui';
 import { COLUMN_NAME_MAX } from './board-setup-edits';
@@ -72,6 +73,9 @@ export function PlanFirstColumn({
         ) : (
           <p className="text-[12px]">Someone who can edit the board names its first column.</p>
         )}
+        <span onPointerDown={stop}>
+          <HelpArticleLink article="planBoards" variant="text" />
+        </span>
       </div>
     </div>
   );

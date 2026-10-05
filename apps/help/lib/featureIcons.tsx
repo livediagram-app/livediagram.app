@@ -372,6 +372,25 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M10 10h6M10 14h4" />
     </Glyph>
   ),
+  // A board header over three columns of differing heights: a board with its widgets.
+  boards: (
+    <Glyph>
+      <rect x="2.5" y="3" width="19" height="18" rx="1.5" />
+      <path d="M2.5 7.5h19" />
+      <path d="M5 4.9h4" />
+      <rect x="4.5" y="10" width="4" height="8.5" rx="0.6" />
+      <rect x="10" y="10" width="4" height="5.5" rx="0.6" />
+      <rect x="15.5" y="10" width="4" height="7" rx="0.6" />
+    </Glyph>
+  ),
+  // A card opened up: its title, a description line and a checklist tick.
+  cards: (
+    <Glyph>
+      <rect x="3.5" y="3" width="17" height="18" rx="1.5" />
+      <path d="M7 7h10M7 10.5h7" />
+      <path d="M7 15l1.5 1.5L11 14M13.5 15.5h3.5" />
+    </Glyph>
+  ),
   // Two cards, one behind the other, each with its type stripe: kinds of card.
   'card-types': (
     <Glyph>

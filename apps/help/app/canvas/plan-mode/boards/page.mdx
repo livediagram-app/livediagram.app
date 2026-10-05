@@ -1,0 +1,71 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Boards',
+  description:
+    'Plan boards in livediagram: Kanban, sprint, bug triage, retro, roadmap, week, All Cards and Archive boards; columns, swimlanes, WIP limits, widgets, card sizes and the card types each board takes.',
+  path: '/help/canvas/plan-mode/boards/',
+});
+
+<ArticleLayout
+  title="Boards"
+  description="Columns of cards you drag through your work, with the widgets that tell you how it is going."
+  categoryTitle="Canvas"
+  categorySlug="canvas/plan-mode"
+>
+
+A **board** is where [Plan mode](/help/canvas/plan-mode/) work happens: columns your cards move through, a header of widgets that tell you how it is going, and the [cards](/help/canvas/plan-mode/cards/) themselves.
+
+## Pick a board
+
+An empty Plan tab shows **Start with a Board** in the middle. Each choice is a small picture of the board; pick one and it is placed, empty, ready to build. More are in the palette's **Boards** category.
+
+| Board          | For                                                                 |
+| -------------- | ------------------------------------------------------------------- |
+| **Blank**      | A board with no columns: name the first one and build from there.   |
+| **Kanban**     | Flow from Backlog to Done, with WIP limits on the busy columns.     |
+| **Sprint**     | A sprint's tasks, a row per person, with estimates.                 |
+| **Retro**      | Notes hidden until you reveal them, then everyone votes.            |
+| **Roadmap**    | Projects on Now, Next and Later.                                    |
+| **Bug Triage** | Bugs from New to Fixed, a row per priority.                         |
+| **Week**       | A column a day, Monday to Friday.                                   |
+| **All Cards**  | Every card in the document, a row per status, so nothing gets lost. |
+| **Archive**    | Every archived card, out of the way, ready to restore.              |
+
+A board placed from the palette or the picker starts **empty**: its columns are its own, so cards from your other boards stay where they are. Boards from a template come with their example cards.
+
+## Columns
+
+Hover a column's head and press its cog (always there on a phone) to:
+
+- **Rename** it and give it a **colour**.
+- Set a **WIP limit**: the count turns amber when the column holds more.
+- Make it **Counts as Done**, so its cards fill the board's Completion.
+- Set its **Width**: one, two or three slots across the board.
+- **Move** it left or right, **add a column after** it, or **remove** it (it asks where its cards go).
+
+A board with no columns asks you to name the first.
+
+## The board's own settings
+
+Right-click the board (or select it and press **⋯**):
+
+- **Board:** its title, and its **Swimlanes**: none, or a row per assignee, card type, priority, project or status.
+- **Cards:** which card types **New Cards Can Be** (a retro takes Notes, Ideas and Actions; a sprint takes Tasks and Actions), the **Card Size** (Minimal, Compact or Detailed), and which fields each card shows.
+
+While a board is selected, the grip beside its title is where to take hold of it to move it.
+
+## Widgets
+
+The header holds **widgets**: Item Count, Completion, Filter, Only Mine, People, Not on Board, Card Types, WIP Alerts, Due Soon, Votes Left, Points, Priorities, Unassigned, Top Voted and Stale Cards. Each board type starts with the ones that suit it.
+
+- **Add one:** drag it from the palette's **Widgets** category into the header, or press the **+** at the end of the header.
+- **Arrange them:** drag left or right, or focus one and press **Alt+←** or **Alt+→**. Take one off with its **×** or **Delete**.
+- **Narrow the board:** press a person in People, a type in Card Types, a priority, Unassigned or the overdue count; press again to see everything. Item Count reads "3 of 14 · Show all" while the board is narrowed.
+
+## Archive and All Cards
+
+**Archive** a card (right-click it) to take it off every board without deleting it; the **Archive** board shows them all, and **Restore** brings one back. The **All Cards** board shows every other card with a row per status: the place to find a card no board shows.
+
+</ArticleLayout>

@@ -6,6 +6,7 @@
 // for, in the tab's own light or dark look. Blank comes first; the Archive board, never a first board, is
 // left to the palette. Choosing one places that board, empty, in the
 // middle of the view. Gone once the tab has a board; never shown to someone who may only view.
+import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import {
   ITEM_TYPES,
   PLAN_BOARD_PRESETS,
@@ -97,13 +98,19 @@ export function PlanBoardPicker({ onPick }: { onPick: (preset: string) => void }
         className="pointer-events-auto my-auto w-full max-w-3xl animate-fade-in rounded-2xl border p-5 shadow-xl sm:p-6"
         style={{ backgroundColor: palette.card, borderColor: palette.border, color: palette.text }}
       >
-        <h2 id="plan-board-picker-title" className="text-[17px] font-semibold">
-          Start with a Board
-        </h2>
+        <div className="flex items-center gap-2">
+          <h2 id="plan-board-picker-title" className="text-[17px] font-semibold">
+            Start with a Board
+          </h2>
+          <HelpArticleLink article="planMode" variant="icon" />
+        </div>
         <p className="mt-1 text-[13px]" style={{ color: palette.muted }}>
           Pick the board that fits the work. More are in the palette&rsquo;s Boards whenever you
           need them.
         </p>
+        <div className="mt-1.5">
+          <HelpArticleLink article="planBoards" variant="text" />
+        </div>
         <div className="mt-5 grid grid-cols-1 gap-3 min-[480px]:grid-cols-2 md:grid-cols-3">
           {PLAN_BOARD_TILES.filter((t) => t.preset !== 'archive').map((t) => (
             <button

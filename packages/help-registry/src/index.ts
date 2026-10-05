@@ -1256,6 +1256,28 @@ export const articles: Article[] = [
     parentSlug: 'plan-mode',
   },
   {
+    slug: 'boards',
+    title: 'Boards',
+    description:
+      'Plan boards: pick one, set up its columns, swimlanes and widgets, and what cards it takes.',
+    keywords:
+      'board boards plan board kanban sprint retro roadmap bug triage week weekly all cards archive blank column columns swimlane swimlanes rows wip limit width done counts as done widget widgets completion filter people points priorities unassigned top voted stale card size minimal compact detailed new cards card types move handle grip start with a board',
+    category: 'Canvas',
+    categorySlug: 'canvas/plan-mode',
+    parentSlug: 'plan-mode',
+  },
+  {
+    slug: 'cards',
+    title: 'Cards',
+    description:
+      'Plan cards: add, open and fill one in, archive or trash it, and present it as a slide.',
+    keywords:
+      'card cards ticket tickets plan card add card open card panel modal details tab tabs description rich text bullet list numbered list labels checklist steps parent open parent assignee team members trash restore empty trash archive duplicate slide slides present presentation card size',
+    category: 'Canvas',
+    categorySlug: 'canvas/plan-mode',
+    parentSlug: 'plan-mode',
+  },
+  {
     slug: 'card-types',
     title: 'Card types',
     description: 'Your own kinds of card on Plan boards: name, colour, glyph and custom fields.',

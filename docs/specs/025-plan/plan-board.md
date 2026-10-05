@@ -176,6 +176,11 @@ position 2 of 4").
 - When its item is not in the document's store (deleted, or the tab came from another document) it draws "Item
   not found" in a dashed outline and offers to remove the card.
 
+## On a phone
+
+- A finger on a board's empty space (between and below cards, column backgrounds) pans the canvas, as it does
+  anywhere else; a finger on a card picks the card up, and buttons and fields work as they do with a mouse.
+
 ## Theme and style
 
 - A board and a Plan card follow the tab's theme and their own style, like any shape: a theme stamps their fill,

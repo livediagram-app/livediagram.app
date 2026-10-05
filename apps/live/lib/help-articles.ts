@@ -69,6 +69,9 @@ export const HELP_ARTICLES = {
   // Links / activity / comments
   // Plan mode's card types (docs/specs/025-plan/item-types.md).
   planCardTypes: 'canvas/plan-mode/card-types',
+  planMode: 'canvas/plan-mode',
+  planBoards: 'canvas/plan-mode/boards',
+  planCards: 'canvas/plan-mode/cards',
   links: 'canvas/links',
   comments: 'collaboration/comments',
   livePresence: 'collaboration/live-presence',
@@ -116,6 +119,18 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   planCardTypes: {
     title: 'Learn about card types',
     description: 'Add your own kinds of card, with the fields each one holds.',
+  },
+  planMode: {
+    title: 'Learn about Plan mode',
+    description: 'Boards of cards your team drags through its work, together.',
+  },
+  planBoards: {
+    title: 'Learn about boards',
+    description: 'Columns, swimlanes, widgets, and the cards each board takes.',
+  },
+  planCards: {
+    title: 'Learn about cards',
+    description: 'Open a card, fill it in, and archive, trash or present it.',
   },
   sharing: {
     title: 'Learn about sharing',

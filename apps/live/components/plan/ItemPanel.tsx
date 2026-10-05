@@ -5,6 +5,7 @@
 // panel beside it holds the fields in no tab, then who made the item and who last changed it. On a phone
 // it is one column and Details becomes the first tab. Every field saves as it changes. It follows the
 // item wherever someone moves it, and closes if someone deletes it.
+import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { useState } from 'react';
 import {
   BUILT_IN_FIELD_IDS,
@@ -134,6 +135,7 @@ export function ItemPanel({
       </Select>
       <span className="text-[13px] text-slate-500 dark:text-slate-400">#{item.key}</span>
       <span className="flex-1" />
+      <HelpArticleLink article="planCards" variant="icon" />
       {canEdit ? (
         <button
           type="button"
