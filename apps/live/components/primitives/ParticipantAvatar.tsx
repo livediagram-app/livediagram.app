@@ -1,4 +1,10 @@
-import { initialsOf, statusLabel, statusRingColor, type Participant } from '@/lib/identity';
+import {
+  initialsOf,
+  participantAccessibleName,
+  statusLabel,
+  statusRingColor,
+  type Participant,
+} from '@/lib/identity';
 import { relativeSince, useRelativeNow } from '@/lib/relative-time';
 import { HoverCard } from '@livediagram/ui';
 import { PictureDisc } from '@/components/primitives/PictureDisc';
@@ -53,7 +59,7 @@ export function ParticipantAvatar({
       pictureUrl={participant.picture}
       size={size}
       role="img"
-      aria-label={`${participant.name} (${statusLabel(participant.status)})`}
+      aria-label={participantAccessibleName(participant)}
       style={{
         ...identityVars(participant.color),
         fontSize: Math.round(size * 0.4),
@@ -75,6 +81,11 @@ export function ParticipantAvatar({
     participant.lastActiveAt !== undefined
       ? ` · Active ${relativeSince(participant.lastActiveAt, now)}`
       : '';
+  // An agent's status line leads (docs/specs/024-agents/blueprints/agent-presence.md "Presentation and UX"): an
+  // agent row says only what it is doing, an owner's row says it before their own status.
+  const description = participant.agent
+    ? (participant.statusLine ?? statusLabel(participant.status))
+    : `${participant.statusLine ? `${participant.statusLine} · ` : ''}${statusLabel(participant.status)}${idleSuffix}`;
   const title =
     badges && badges.length > 0 ? (
       <span className="flex flex-wrap items-center gap-1">
@@ -92,7 +103,7 @@ export function ParticipantAvatar({
       participant.name
     );
   return (
-    <HoverCard title={title} description={`${statusLabel(participant.status)}${idleSuffix}`}>
+    <HoverCard title={title} description={description}>
       {avatar}
     </HoverCard>
   );

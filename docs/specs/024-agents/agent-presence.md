@@ -2,7 +2,8 @@
 
 **Status: in progress.** Built: the comment endpoints (add, delete-own, reply, resolve, reopen; the thread listing),
 comment token ids, and agent presence in the api and the room (`PUT` / `DELETE .../presence`, the refresh on every
-token changeset, the frame's `agents`, expiry). Showing it in the editor is ahead.
+token changeset, the frame's `agents`, expiry), and the editor (status lines, agent rows, focus rings, resolve and
+reopen for a session that may comment but not edit). The CLI's collaboration verbs are ahead.
 
 An agent acts as the person whose token it holds. People see its work, its presence and its comments as that
 person's, and comments are how people and agents talk on the canvas when nobody is chatting.

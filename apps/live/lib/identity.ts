@@ -52,6 +52,11 @@ export type Participant = {
   // relayed it; absent for guests, for anyone who turned it off, and on an anonymous viewer's
   // screen. Our own entry carries our picture whatever the switch says.
   picture?: string;
+  // What their agent is doing on this tab (docs/specs/024-agents/agent-presence.md "In the editor"): the status
+  // line an agent set, shown in the hover card, the Collaborators row and the accessible name.
+  statusLine?: string;
+  // A row standing for an agent whose owner is not on the tab: never counted as a person, never followed.
+  agent?: true;
 };
 
 // How this participant is recorded in the document (docs/specs/012-collaboration/participant-responses.md). Falls back
@@ -60,6 +65,13 @@ export type Participant = {
 // is a great deal better than crashing the join on an undefined.
 export function participantKey(participant: Participant): string {
   return participant.key ?? participant.id;
+}
+
+// What a screen reader hears for an avatar: "Webber (Online)", and their agent's status line after it
+// (docs/specs/024-agents/blueprints/agent-presence.md "Accessibility").
+export function participantAccessibleName(participant: Participant): string {
+  const base = `${participant.name} (${statusLabel(participant.status)})`;
+  return participant.statusLine ? `${base}, ${participant.statusLine}` : base;
 }
 
 // Status from idle duration. Used at render time so the ring + label

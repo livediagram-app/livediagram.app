@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { AvatarPresence } from '@livediagram/api-schema';
+import type { AgentPresence, AvatarPresence } from '@livediagram/api-schema';
 import type { RemoteSelection } from '@/lib/presence-rows';
 import { AWAY_AFTER_MS, type Participant } from '@/lib/identity';
 import { RELATIVE_TICK_MS } from '@/lib/relative-time';
@@ -18,6 +18,9 @@ export function usePresenceState() {
   // Durable Object room right now. Includes ourselves once our `hello`
   // round-trips. Rendered in the editor header avatar stack.
   const [livePresence, setLivePresence] = useState<Participant[]>([]);
+  // Agents present in the room (docs/specs/024-agents/agent-presence.md), apart from the sessions: they are
+  // folded into the tab rows, never counted as people.
+  const [liveAgents, setLiveAgents] = useState<AgentPresence[]>([]);
   // Wall-clock timestamp of each peer's last observed interaction: seeded on presence arrival, bumped on
   // every incoming op (cursor / selection / tab). The bump lands in a ref, because re-rendering the tree
   // on every cursor packet just to move an idle timestamp would be wasteful. Render never reads the ref:
@@ -92,6 +95,8 @@ export function usePresenceState() {
   return {
     livePresence,
     setLivePresence,
+    liveAgents,
+    setLiveAgents,
     lastSeenRef,
     presenceClock,
     markSeen,

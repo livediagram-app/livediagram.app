@@ -13,10 +13,11 @@ import { useAppearance } from '@/hooks/ui/useAppearance';
 import {
   buildCollaboratorRoster,
   participantBadges,
+  collaboratorRowDetail,
   rosterSummary,
 } from '@/lib/collaborator-roster';
-import { statusLabel, type Participant } from '@/lib/identity';
-import { relativeSince, useRelativeNow } from '@/lib/relative-time';
+import type { Participant } from '@/lib/identity';
+import { useRelativeNow } from '@/lib/relative-time';
 import { legibleTabAccent } from '@/lib/tab-accent';
 
 // The Collaborators modal (docs/specs/012-collaboration/collaborator-enhancements.md): everyone in the document, grouped by
@@ -161,10 +162,7 @@ export function CollaboratorsDialog({
                         ))}
                       </div>
                       <p className="text-xs text-slate-500 dark:text-slate-400">
-                        {statusLabel(p.status)}
-                        {p.lastActiveAt !== undefined && !isSelf
-                          ? ` · Active ${relativeSince(p.lastActiveAt, now)}`
-                          : ''}
+                        {collaboratorRowDetail(p, isSelf, now)}
                       </p>
                     </div>
                     {/* Two verbs on a person's row, and on your own the one
@@ -172,36 +170,39 @@ export function CollaboratorsDialog({
                         no button at all before this: taking the baton and
                         stepping down had to live somewhere, and the row for
                         the person doing it is the honest place. */}
-                    <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5">
-                      <FacilitatorButton
-                        isSelf={isSelf}
-                        name={p.name}
-                        canHold={(isSelf ? selfRole : p.role) !== 'view'}
-                        theyHoldIt={isSelf ? isFacilitator : p.id === facilitatorId}
-                        batonFree={facilitatorId === null && !isFacilitator}
-                        iHoldIt={isFacilitator}
-                        isOwner={isOwner}
-                        onPress={() => {
-                          if (isSelf) {
-                            if (isFacilitator) onStepDown();
-                            else onTakeFacilitation();
-                          } else {
-                            onMakeFacilitator(p.id);
-                          }
-                        }}
-                      />
-                      {isSelf ? null : (
-                        <Button
-                          variant={following ? 'primary' : 'secondary'}
-                          size="xs"
-                          aria-pressed={following}
-                          aria-label={following ? `Stop following ${p.name}` : `Follow ${p.name}`}
-                          onClick={() => (following ? onStopFollowing() : onFollow(p.id))}
-                        >
-                          {following ? 'Stop Following' : 'Follow'}
-                        </Button>
-                      )}
-                    </div>
+                    {/* An agent's row has no socket to follow and cannot hold the baton. */}
+                    {p.agent ? null : (
+                      <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5">
+                        <FacilitatorButton
+                          isSelf={isSelf}
+                          name={p.name}
+                          canHold={(isSelf ? selfRole : p.role) !== 'view'}
+                          theyHoldIt={isSelf ? isFacilitator : p.id === facilitatorId}
+                          batonFree={facilitatorId === null && !isFacilitator}
+                          iHoldIt={isFacilitator}
+                          isOwner={isOwner}
+                          onPress={() => {
+                            if (isSelf) {
+                              if (isFacilitator) onStepDown();
+                              else onTakeFacilitation();
+                            } else {
+                              onMakeFacilitator(p.id);
+                            }
+                          }}
+                        />
+                        {isSelf ? null : (
+                          <Button
+                            variant={following ? 'primary' : 'secondary'}
+                            size="xs"
+                            aria-pressed={following}
+                            aria-label={following ? `Stop following ${p.name}` : `Follow ${p.name}`}
+                            onClick={() => (following ? onStopFollowing() : onFollow(p.id))}
+                          >
+                            {following ? 'Stop Following' : 'Follow'}
+                          </Button>
+                        )}
+                      </div>
+                    )}
                   </li>
                 );
               })}

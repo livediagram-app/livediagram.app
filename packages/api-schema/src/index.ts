@@ -402,6 +402,11 @@ export type ParticipantRecord = {
   pictureUrl: string | null;
 };
 
+// Realtime presence identity, broadcast to every connected peer: the room and the participant route clamp to
+// these, and the editor clamps what it reads to them too.
+export const MAX_PARTICIPANT_NAME_LEN = 120;
+export const MAX_COLOR_LEN = 64;
+
 // What the realtime room broadcasts as presence. Identical shape to
 // `ParticipantRecord` minus `createdAt` — presence is concerned with
 // "who is connected right now", not when they first registered.

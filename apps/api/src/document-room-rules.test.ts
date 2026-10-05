@@ -6,7 +6,8 @@ import {
   MAX_TAB_ID_LEN,
   type LoggedOp,
 } from './document-room-rules';
-import { MAX_COLOR_LEN, MAX_PARTICIPANT_KEY_LEN, MAX_PARTICIPANT_NAME_LEN } from './limits';
+import { MAX_COLOR_LEN, MAX_PARTICIPANT_NAME_LEN } from '@livediagram/api-schema';
+import { MAX_PARTICIPANT_KEY_LEN } from './limits';
 
 const SESSION = { presenceId: 'p-server', verifiedRole: 'view' as const };
 

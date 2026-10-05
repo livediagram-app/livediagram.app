@@ -91,6 +91,7 @@ import {
   writeUserPreferences,
 } from '@/lib/user-preferences';
 import type { PollCandidate } from '@/lib/poll-collaborators';
+import { withoutAgentRows } from '@/lib/agent-presence-rows';
 import { track } from '@/lib/telemetry';
 import { pollResultElement } from '@/lib/poll-capture';
 import { useEditorBroadcast } from '@/hooks/collab/useEditorBroadcast';
@@ -603,6 +604,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   const {
     livePresence,
     setLivePresence,
+    liveAgents,
+    setLiveAgents,
     lastSeenRef,
     presenceClock,
     markSeen,
@@ -997,6 +1000,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     roomRef,
     applyRemoteTabs,
     setLivePresence,
+    setLiveAgents,
     setRemoteSelections,
     setRemoteCursors,
     setRemoteTabFocus,
@@ -1472,6 +1476,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     remoteAvatarRows,
     laserTrailRows,
     remoteSelectionsByElement,
+    agentFocusByElement,
     lockedByOther,
   } = usePresenceRows({
     documentShareable,
@@ -1480,6 +1485,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     selfParticipant,
     tabs,
     livePresence,
+    liveAgents,
     presenceClock,
     remoteTabFocus,
     remoteCursors,
@@ -1499,7 +1505,10 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   const pollCollaborators = useMemo<readonly PollCandidate[]>(
     () => [
       { id: selfParticipant.id, name: selfParticipant.name },
-      ...[...participantsByTab.values()].flat().map((p) => ({ id: p.id, name: p.name })),
+      ...withoutAgentRows([...participantsByTab.values()].flat()).map((p) => ({
+        id: p.id,
+        name: p.name,
+      })),
     ],
     [participantsByTab, selfParticipant],
   );
@@ -3075,6 +3084,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   return {
     // The outlines relayed changesets draw (useChangesetFeed), for the canvas overlay.
     changesetReveals: changesetFeed.reveals,
+    // What the agents present name in focus on the active tab, for the focus rings.
+    agentFocusByElement,
     // The person's editor mode on the active tab, for the mode switch and the canvas.
     editorMode,
     leaveIllustrate,

@@ -1,12 +1,15 @@
 // /api/participants/<id> — read / update a participant's display row, and
 // /api/participants/<id>/picture — set or clear their published profile picture.
 
-import { isProfilePictureUrl } from '@livediagram/api-schema';
+import {
+  isProfilePictureUrl,
+  MAX_COLOR_LEN,
+  MAX_PARTICIPANT_NAME_LEN,
+} from '@livediagram/api-schema';
 import { getParticipant, setParticipantPicture, upsertParticipant } from '../db';
 import { badRequest, forbidden, json, notFound, signInRequired } from '../responses';
 import type { ParticipantDTO } from '../types';
 import { requireOwner, type RouteContext } from './context';
-import { MAX_PARTICIPANT_NAME_LEN, MAX_COLOR_LEN } from '../limits';
 
 // GET stays open — participant ids are already broadcast through
 // the WS room and embedded in comment authors, so anyone in a

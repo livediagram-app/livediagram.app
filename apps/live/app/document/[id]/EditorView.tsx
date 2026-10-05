@@ -13,6 +13,7 @@ import { resolveViewBackdrop } from '@/lib/view-backdrop';
 import { readDrawPattern } from '@/lib/whiteboard-dock-prefs';
 import { CanvasSurfaceProvider } from '@/components/canvas/CanvasSurfaceContext';
 import { ChangesetRevealContext } from '@/components/canvas/ChangesetRevealOverlay';
+import { AgentFocusContext } from '@/components/canvas/AgentFocusOverlay';
 import { SelectionStoreProvider } from '@/hooks/canvas/useSelectionStore';
 import { ViewportStoreProvider } from '@/hooks/canvas/useViewportStore';
 import { EditorCanvasHost } from '@/components/canvas/EditorCanvasHost';
@@ -334,7 +335,10 @@ export function EditorView() {
                   <AreaErrorBoundary area="Canvas" fallback="panel" fallbackClassName="flex-1">
                     {/* The outlines relayed changesets draw (docs/specs/024-agents/agent-changesets.md). */}
                     <ChangesetRevealContext.Provider value={ctx.changesetReveals}>
-                      <EditorCanvasHost />
+                      {/* The focus rings of the agents present (docs/specs/024-agents/agent-presence.md). */}
+                      <AgentFocusContext.Provider value={ctx.agentFocusByElement}>
+                        <EditorCanvasHost />
+                      </AgentFocusContext.Provider>
                     </ChangesetRevealContext.Provider>
                   </AreaErrorBoundary>
                   {/* Presenting (docs/specs/012-collaboration/presentation-mode.md) renders over everything and takes the keyboard.

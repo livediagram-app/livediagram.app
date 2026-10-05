@@ -12,8 +12,13 @@
 // or storage. The room stays the owner of everything stateful: minting the
 // seq, trimming the log, serialising the attachment, broadcasting.
 
-import { MAX_COLOR_LEN, MAX_PARTICIPANT_KEY_LEN, MAX_PARTICIPANT_NAME_LEN } from './limits';
-import { isProfilePictureUrl, type ParticipantPresence } from '@livediagram/api-schema';
+import { MAX_PARTICIPANT_KEY_LEN } from './limits';
+import {
+  isProfilePictureUrl,
+  MAX_COLOR_LEN,
+  MAX_PARTICIPANT_NAME_LEN,
+  type ParticipantPresence,
+} from '@livediagram/api-schema';
 
 // A tabId is clamped like the name and colour so a hostile hello can't push an
 // oversize string into the socket attachment.

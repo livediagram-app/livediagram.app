@@ -9,6 +9,7 @@ import {
 import type { QaNote, Tab } from '@livediagram/document';
 import {
   parseArticleCaret,
+  type AgentPresence,
   type AvatarPresence,
   type ChangesetRoomOp,
   type FacilitatorReason,
@@ -80,6 +81,7 @@ export function useRoomConnection(opts: {
   // history on each would wipe undo continuously during a shared session).
   applyRemoteTabs: (updater: (prev: Tab[]) => Tab[]) => void;
   setLivePresence: Dispatch<SetStateAction<Participant[]>>;
+  setLiveAgents: Dispatch<SetStateAction<AgentPresence[]>>;
   setRemoteSelections: Dispatch<SetStateAction<Map<string, RemoteSelection>>>;
   setRemoteCursors: Dispatch<SetStateAction<Map<string, CursorPos>>>;
   setRemoteTabFocus: Dispatch<SetStateAction<Map<string, string>>>;
@@ -161,6 +163,7 @@ export function useRoomConnection(opts: {
     roomRef,
     applyRemoteTabs,
     setLivePresence,
+    setLiveAgents,
     setRemoteSelections,
     setRemoteCursors,
     setRemoteTabFocus,
@@ -222,8 +225,12 @@ export function useRoomConnection(opts: {
   // The room's handlers, as effect events: the socket opens once per document (the effect below), and each
   // message still runs against the current props, which is what a handler must see.
   const roomPresence = useEffectEvent(
-    (participants: Parameters<NonNullable<RoomHandlers['onPresence']>>[0]) => {
+    (
+      participants: Parameters<NonNullable<RoomHandlers['onPresence']>>[0],
+      agents: AgentPresence[],
+    ) => {
       const now = Date.now();
+      setLiveAgents(agents);
       if (!joinedRef.current) {
         joinedRef.current = true;
         roomJoined();
@@ -519,6 +526,7 @@ export function useRoomConnection(opts: {
       // Make sure any state from a previous shared session is cleared
       // when we transition back to private (revoke share / leave team).
       setLivePresence([]);
+      setLiveAgents([]);
       setRemoteSelections(new Map());
       prunePeerDragPreviews(new Set());
       resetArticlePeers();
@@ -535,7 +543,7 @@ export function useRoomConnection(opts: {
     });
 
     const handlers: RoomHandlers = {
-      onPresence: (participants) => roomPresence(participants),
+      onPresence: (participants, agents) => roomPresence(participants, agents),
       // Elements in a former stored shape from a peer loaded before a deploy are migrated
       // before anything applies them (docs/specs/006-document/stroke-points.md).
       onOp: (from, op) => roomOp(from, migrateRoomOp(op), presence),
@@ -598,6 +606,7 @@ export function useRoomConnection(opts: {
     documentTeamId,
     roomRef,
     setLivePresence,
+    setLiveAgents,
     setRemoteSelections,
     setRemoteCursors,
     setRemoteLaserTrails,
