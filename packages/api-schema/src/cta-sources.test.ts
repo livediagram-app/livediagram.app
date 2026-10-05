@@ -57,8 +57,6 @@ describe('CTA_SOURCES', () => {
       'Community.HeaderDraw',
       'Community.HeaderWhiteboard',
       'Community.HeaderIllustration',
-      'Community.Hero',
-      'Community.Empty',
     ]);
   });
 

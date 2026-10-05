@@ -91,8 +91,8 @@ type) and on the worker (authoritative).
 
 ### Gallery (`/community/`)
 
-- A welcoming header: the heading, one line on what Community is, and a **Share Your Own** call to action into the
-  editor (`/new`, landing-funnel source `Community.Hero`).
+- A welcoming header: the heading, one line on what Community is, and a **Share Your Own** call to action into
+  Explorer Home (`/explorer/home`), where the person's boards are: sharing starts from a board they already have.
 - **Search** across titles, descriptions and tags.
 - **Category chips** with a post count each, plus All. A category with no posts hides its chip unless it is the one
   selected. On phones the chips scroll in one row.
@@ -103,7 +103,7 @@ type) and on the worker (authoritative).
   initial in their colour, and name), likes and copies. The card opens the post page; the heart likes it in place.
 - **Load More** pages through results (24 per page).
 - Filters live in the URL query (`q`, `category`, `tag`, `sort`) so a filtered view can be shared and survives a reload.
-- States: a skeleton grid while loading; an empty state per cause (nothing published yet, no match for these filters
+- States: a skeleton grid while loading; an empty state per cause (nothing published yet, inviting the person to share one from Explorer Home; no match for these filters
   with a Clear Filters button); an error state with Try Again.
 
 ### Post (`/community/post/?id=<postId>`)

@@ -116,8 +116,6 @@ describe('ctaSourceLabel', () => {
     expect(ctaSourceLabel('Home.HeroBrainstorm')).toBe('Hero: Brainstorm');
     expect(ctaSourceLabel('Feature.Hero')).toBe('Hero: Start Drawing');
     expect(ctaSourceLabel('Help.Header')).toBe('Header: Start Drawing');
-    expect(ctaSourceLabel('Community.Hero')).toBe('Hero: Share Your Own');
-    expect(ctaSourceLabel('Community.Empty')).toBe('Empty Gallery: Share Yours');
     expect(ctaSourceLabel('Community.HeaderDraw')).toBe('Header: Blank Diagram');
   });
 });

@@ -1,5 +1,3 @@
-import { ctaHref } from '@livediagram/api-schema';
-
 // Where the Community app links out to (docs/specs/025-community/community.md "Post"). The editor
 // routes sit outside this app's `/community` basePath, so they are plain origin-absolute hrefs used
 // with <a>, never next/link. In-app routes go through next/link, which adds the basePath itself.
@@ -20,5 +18,7 @@ export const embedHref = (shareCode: string) => `/embed?${shareQuery(shareCode)}
 export const postHref = (id: string) => `/post/?id=${encodeURIComponent(id)}`;
 export const tagHref = (tag: string) => `/?tag=${encodeURIComponent(tag)}`;
 
-export const SHARE_YOUR_OWN_HREF = ctaHref('/new', 'Community.Hero');
-export const EMPTY_INVITE_HREF = ctaHref('/new', 'Community.Empty');
+// Sharing starts from a board the person already has (docs/specs/025-community/community.md "Gallery"),
+// so both invitations open Explorer Home, where their boards are, rather than a new document.
+export const SHARE_YOUR_OWN_HREF = '/explorer/home';
+export const EMPTY_INVITE_HREF = '/explorer/home';
