@@ -140,7 +140,7 @@ export function ReportDialog({ postId, onClose }: { postId: string; onClose: () 
               </p>
             ) : null}
             <div className="flex flex-wrap items-center justify-end gap-2">
-              <CommunityHelpLink article="finding" className="mr-auto">
+              <CommunityHelpLink article="finding" className="mr-auto max-sm:mb-1 max-sm:w-full">
                 How Reports Work
               </CommunityHelpLink>
               <Button variant="secondary" size="md" onClick={close} disabled={phase === 'sending'}>
