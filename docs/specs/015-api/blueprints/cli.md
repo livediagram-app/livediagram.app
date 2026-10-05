@@ -537,7 +537,8 @@ false, an absent `documentFormat` as equal to its own.
 ### Token self-service (api)
 
 - `GET /api/tokens/current` (token callers only: another method is 405 first; a session or guest gets 403
-  `not_a_token`; a token whose row is gone or revoked gets 404, CLI39) →
+  `not_a_token`; a dead token never arrives, as the front door answers 401 `invalid_token`; a row revoked between
+  resolution and the read gets 404, CLI39) →
   200 `CurrentTokenResponse = { accountId, accountName, tokenId, tokenName, role, expiresAt }`; `role` is
   `ctx.token.role`, printed as the api names it. `accountName` is the owner's participant name, `null` when none.
 - `DELETE /api/tokens/current` → 204 after `revokeApiToken(env, owner, ctx.token.id)` and the

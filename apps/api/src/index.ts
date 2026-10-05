@@ -149,7 +149,18 @@ async function routeApiRequest(
   let tokenAuth: { ownerId: string; tokenId: string; readOnly: boolean } | null = null;
   if (!clerkUserId) {
     const bearer = bearerTokenOf(request.headers.get('Authorization'));
-    if (bearer && isApiTokenFormat(bearer)) tokenAuth = await resolveApiToken(env, bearer);
+    if (bearer && isApiTokenFormat(bearer)) {
+      tokenAuth = await resolveApiToken(env, bearer);
+      // A token-shaped bearer claims to be a token: unknown, revoked or expired, it is refused here, never
+      // read as a guest or as nobody (docs/specs/015-api/public-api-and-tokens.md §3.3).
+      if (!tokenAuth) {
+        console.warn('[tokens] invalid bearer refused', { path: url.pathname });
+        return json(
+          { error: 'invalid_token' },
+          { status: 401, headers: { 'WWW-Authenticate': 'Bearer error="invalid_token"' } },
+        );
+      }
+    }
   }
   const resolveOwner = (): string | null =>
     clerkUserId ?? tokenAuth?.ownerId ?? request.headers.get('X-Owner-Id');
