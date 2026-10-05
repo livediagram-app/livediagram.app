@@ -137,6 +137,19 @@ describe('creating items', () => {
       ).body,
     ).toMatchObject({ error: 'place_invalid' });
     expect((await call({ path: '/items', body: [] })).status).toBe(400);
+    expect(
+      (
+        await call({
+          path: '/items',
+          body: { type: 'task', fields: { title: 'x' }, votes: { a: 0 } },
+        })
+      ).body,
+    ).toMatchObject({ error: 'field_value_invalid' });
+    const restored = await call<ItemResponse>({
+      path: '/items',
+      body: { type: 'note', fields: { title: 'kept' }, votes: { a: 2 } },
+    });
+    expect(restored.body.item.fields['votes']).toEqual({ a: 2 });
   });
 
   it('refuses a taken id and never reuses a key', async () => {

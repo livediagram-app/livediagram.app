@@ -13,3 +13,4 @@ export * from './presets';
 export * from './tab-items';
 export * from './views';
 export * from './person';
+export * from './store';

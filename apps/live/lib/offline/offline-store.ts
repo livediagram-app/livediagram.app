@@ -15,6 +15,7 @@ import type { LiveDoc, DocumentSummary, RecordedIntent, TabSummary } from '@live
 import { utcDay } from '@livediagram/api-schema';
 import { migrateStoredTab, stampTabKind } from '@livediagram/document';
 import type { Tab } from '@livediagram/document';
+import type { Item } from '@livediagram/items';
 import { DocumentTrashedError } from '../document-trashed';
 
 // Sentinel owner id stamped on offline documents. They have no server owner;
@@ -52,6 +53,11 @@ export type OfflineDocumentRecord = {
   // This browser's opens of the document (docs/specs/013-workspace/explorer-home.md "Opens"),
   // for Home's Jump back in; see ./offline-opens.ts. Optional: a record never opened has none.
   opens?: StoredLocalOpens;
+  // The document's item store (docs/specs/025-plan/items.md "Offline documents"): its items, the
+  // store's revision and the next item key. Optional: a record without them has an empty store.
+  items?: Item[];
+  itemsRev?: number;
+  itemsNextKey?: number;
 };
 
 // A local document's opens, counted like the server's (docs/specs/013-workspace/explorer-home.md

@@ -32,6 +32,7 @@
     "@livediagram/explorer-lens": "workspace:*",
     "@livediagram/help-registry": "workspace:*",
     "@livediagram/icons": "workspace:*",
+    "@livediagram/items": "workspace:*",
     "@livediagram/sticky-model": "workspace:*",
     "@livediagram/sticky-vision": "workspace:*",
     "@livediagram/telemetry-client": "workspace:*",

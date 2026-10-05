@@ -6,6 +6,8 @@
 // Images stay references to livediagram's image store; no bytes are embedded.
 
 import type { Tab } from './index';
+import type { Tab } from '@livediagram/document';
+import type { Item } from '@livediagram/items';
 
 export const DOCUMENT_ENVELOPE_KIND = 'livediagram.document';
 export const DOCUMENT_SCHEMA_VERSION = 1;
@@ -21,6 +23,9 @@ export type DocumentEnvelope = {
     name: string;
     presentation: string | null;
     tabs: EnvelopeTab[];
+    // The item store (docs/specs/025-plan/items.md "Copies and exports"). Optional and additive,
+    // so a file written before items, or read by a build before them, stays version 1.
+    items?: Item[];
   };
 };
 
@@ -31,12 +36,19 @@ export function documentToEnvelopeText(
   liveDoc: { id: string; name: string; presentation: string | null },
   tabs: EnvelopeTab[],
   exportedAt: number,
+  items: Item[] = [],
 ): string {
   const envelope: DocumentEnvelope = {
     kind: DOCUMENT_ENVELOPE_KIND,
     schemaVersion: DOCUMENT_SCHEMA_VERSION,
     exportedAt,
-    document: { id: liveDoc.id, name: liveDoc.name, presentation: liveDoc.presentation, tabs },
+    document: {
+      id: liveDoc.id,
+      name: liveDoc.name,
+      presentation: liveDoc.presentation,
+      tabs,
+      ...(items.length ? { items } : {}),
+    },
   };
   return JSON.stringify(envelope, null, 2);
 }
@@ -45,6 +57,19 @@ function isTab(value: unknown): value is EnvelopeTab {
   if (!value || typeof value !== 'object') return false;
   const t = value as Record<string, unknown>;
   return typeof t.id === 'string' && typeof t.name === 'string' && Array.isArray(t.elements);
+}
+
+function isItemLike(value: unknown): value is Item {
+  if (!value || typeof value !== 'object') return false;
+  const i = value as Record<string, unknown>;
+  return (
+    typeof i.id === 'string' &&
+    typeof i.type === 'string' &&
+    typeof i.key === 'number' &&
+    typeof i.rank === 'string' &&
+    !!i.fields &&
+    typeof i.fields === 'object'
+  );
 }
 
 export function parseDocumentEnvelope(
@@ -92,6 +117,8 @@ export function parseDocumentEnvelope(
         name: d.name,
         presentation: (d.presentation as string | null | undefined) ?? null,
         tabs: d.tabs,
+        // Items that do not look like items are left behind; the api validates the rest.
+        ...(Array.isArray(d.items) ? { items: d.items.filter(isItemLike) } : {}),
       },
     },
   };

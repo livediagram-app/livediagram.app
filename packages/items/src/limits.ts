@@ -15,6 +15,8 @@ export const ITEM_UNKNOWN_STRING_MAX = 2000;
 export const ITEM_UNKNOWN_ARRAY_MAX = 50;
 export const ITEM_NUMBER_MAX = 999;
 export const ITEM_BULK_MAX = 200;
+export const ITEM_VOTERS_MAX = 500;
+export const ITEM_VOTES_PER_PERSON_MAX = 99;
 export const ITEM_WRITE_RETRIES = 3;
 
 export const ITEM_ID_PATTERN = /^[A-Za-z0-9_-]{6,32}$/;

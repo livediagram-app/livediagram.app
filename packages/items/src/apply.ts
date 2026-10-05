@@ -65,6 +65,7 @@ export function makeItem(
   ctx: WriteContext & { id: string; key: number; items: Iterable<Item> },
 ): Item {
   const fields: ItemFields = { ...create.fields };
+  if (create.votes && Object.keys(create.votes).length) fields['votes'] = { ...create.votes };
   const status = create.place?.status;
   if (status !== undefined) fields['status'] = status;
   const place: ItemPlace = {

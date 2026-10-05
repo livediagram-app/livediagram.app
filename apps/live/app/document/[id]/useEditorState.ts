@@ -1,5 +1,7 @@
 'use client';
 
+import { usePlanItems } from '@/hooks/plan/usePlanItems';
+import { useItemUndo } from '@/hooks/plan/useItemUndo';
 import type { View } from '@/lib/viewport-store';
 import { useKeyboardAvoidance } from '@/hooks/canvas/useKeyboardAvoidance';
 import {
@@ -196,17 +198,33 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
 
   const {
     tabs,
-    canUndo,
-    canRedo,
+    canUndo: canTabUndo,
+    canRedo: canTabRedo,
     commit: rawCommitTabs,
     tick: tickTabs,
     markCheckpoint: rawMarkCheckpoint,
     cancelToCheckpoint: rawCancelToCheckpoint,
     reset: rawResetTabs,
     applyRemote: applyRemoteTabs,
-    undo: undoHistory,
-    redo: redoHistory,
+    undo: tabUndo,
+    redo: tabRedo,
+    depth: historyDepth,
+    branch: historyBranch,
+    futureLength: historyFutureLength,
+    clearRedo: clearHistoryRedo,
   } = useDocumentHistory(initialTabs);
+  // Item changes take their turn in the same undo timeline (docs/specs/025-plan/items.md "Undo").
+  const itemUndo = useItemUndo({
+    depth: historyDepth,
+    branch: historyBranch,
+    futureLength: historyFutureLength,
+    canUndo: canTabUndo,
+    canRedo: canTabRedo,
+    undo: tabUndo,
+    redo: tabRedo,
+    clearRedo: clearHistoryRedo,
+  });
+  const { canUndo, canRedo, undo: undoHistory, redo: redoHistory } = itemUndo;
 
   // Counts this person's own edits (never a remote op, an undo or a tick): what lets the documents
   // take in what was just added to a page (useArticleIntake) without taking a peer's.
@@ -984,6 +1002,19 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     onError: (message) => toast.error(message),
   });
 
+  // The document's items (docs/specs/025-plan/items.md): what Plan boards and Plan cards draw.
+  const planItems = usePlanItems({
+    documentId,
+    ready: hydrated,
+    ownerId: selfParticipant.id,
+    name: selfParticipant.name,
+    color: selfParticipant.color,
+    shareCode: sessionShareCode,
+    tabScope: sessionTabScope,
+    pushUndo: itemUndo.push,
+    onError: (message) => toast.error(message),
+  });
+
   useRoomConnection({
     hydrated,
     documentId,
@@ -1023,9 +1054,16 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     receivePollEnd: livePoll.receivePollEnd,
     receiveQa: qaBoard.receiveQa,
     receiveDocumentTrashed: () => documentTrashed.setDocumentTrashed(true),
-    resyncFromServer,
+    resyncFromServer: async () => {
+      planItems.refetch();
+      await resyncFromServer();
+    },
     receiveChangeset: changesetFeed.receiveChangeset,
-    onRoomJoined: () => void changesetFeed.checkSinceLoad(),
+    receiveItems: planItems.receive,
+    onRoomJoined: () => {
+      void changesetFeed.checkSinceLoad();
+      planItems.refetch();
+    },
   });
 
   // Broadcast local selection + active-tab focus to peers (presence

@@ -6,6 +6,8 @@
 // destructive on the server (the whole point — it must leave the account and
 // every other device), so the UI gates it behind a confirmation.
 
+import { storeAsCreates } from '@livediagram/items';
+import { fetchItems } from '../api/items';
 import {
   apiCreateDocument,
   apiListFavourites,
@@ -50,6 +52,8 @@ export async function saveOfflineToCloud(offlineId: string, ownerId: string): Pr
         folderId,
         createdAt: rec.createdAt,
         presentation: rec.presentation ?? null,
+        // The item store, in each column's order (docs/specs/025-plan/items.md "Offline documents").
+        items: storeAsCreates(rec.items ?? []),
       },
       { conversion: 'sync' },
     );
@@ -104,6 +108,9 @@ export async function takeCloudOffline(
   // might collect in 30 days, this one protects content that would be gone
   // immediately.
   if (fetchedTabs.length !== liveDoc.tabs.length) throw new Error('tab load incomplete');
+  // The item store too, all or nothing, for the same reason: the server copy is deleted below
+  // (docs/specs/025-plan/items.md "Offline documents"). A failed fetch throws and aborts.
+  const itemStore = await fetchItems({ ownerId, documentId, shareCode, tabId: null });
   // Embed referenced R2 images as data URIs BEFORE the server delete below:
   // once the document row is gone, its images count as unused and the api's
   // 30-day retention reaper would delete the bytes the offline document still
@@ -135,6 +142,9 @@ export async function takeCloudOffline(
     tabs,
     ...(liveDoc.presentation ? { presentation: liveDoc.presentation } : {}),
     ...(starred ? { favourite: true } : {}),
+    ...(itemStore.items.length
+      ? { items: itemStore.items, itemsRev: itemStore.rev, itemsNextKey: itemStore.nextKey }
+      : {}),
   };
   await offlinePutRecord(rec);
   // Raw server delete — the id is now in the offline index, so the dispatching

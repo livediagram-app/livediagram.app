@@ -27,7 +27,14 @@ import type { CreationIntent, DocumentPlacement, RecordedIntent } from '@livedia
 import { remapTabLinks, type Tab } from '@livediagram/document';
 import { apiCreateDocument, apiLoadDocument, apiLoadTab, apiSaveDocumentMeta } from './api-client';
 import { ApiError } from './api/core';
-import { isOfflineId, offlineCreateDocument } from './offline/offline-store';
+import {
+  isOfflineId,
+  offlineCreateDocument,
+  offlineGetRecord,
+  offlinePutRecord,
+} from './offline/offline-store';
+import { fetchItems } from './api/items';
+import { storeAsCreates } from '@livediagram/items';
 
 // The refusals that mean "not beside the source for this person", where the copy is filed at the
 // explicit root of My documents instead (docs/specs/013-workspace/default-folders.md "Duplicate").
@@ -79,6 +86,15 @@ export async function duplicateDocument(
     remappedTabs.push({ ...tab, id: newTabId, elements });
   }
   const newId = crypto.randomUUID();
+  // The item store comes with the copy, ids and keys unchanged, so every Plan card and board on
+  // the copied tabs finds its items (docs/specs/025-plan/items.md "Copies and exports").
+  // Best-effort like the tabs: a copy without its items beats no copy.
+  const itemStore = await fetchItems({
+    ownerId,
+    documentId: sourceId,
+    shareCode: null,
+    tabId: null,
+  }).catch(() => null);
   // Offline Mode (docs/specs/006-document/offline-mode.md): a copy of an offline document is another OFFLINE
   // document. Creating it on the server instead would silently upload content
   // the user explicitly chose to keep in this browser. Tabs are stored whole
@@ -89,6 +105,17 @@ export async function duplicateDocument(
         { id: newId, name: `${src.name} copy`, tabs: remappedTabs },
         Date.now(),
       );
+      if (itemStore?.items.length) {
+        const rec = await offlineGetRecord(newId);
+        if (rec) {
+          await offlinePutRecord({
+            ...rec,
+            items: itemStore.items,
+            itemsRev: itemStore.rev,
+            itemsNextKey: itemStore.nextKey,
+          });
+        }
+      }
       return newId;
     } catch {
       return undefined;
@@ -106,6 +133,7 @@ export async function duplicateDocument(
       teamId: place.teamId,
       folderId: place.folderId,
       ...(intent ? { intent } : {}),
+      ...(itemStore?.items.length ? { items: storeAsCreates(itemStore.items) } : {}),
     });
   try {
     await create(placement ?? { teamId: src.teamId, folderId: src.folderId });

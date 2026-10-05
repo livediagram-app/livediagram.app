@@ -47,6 +47,9 @@ export interface ItemCreate {
   place?: ItemPlace;
   // Only to restore a deleted item (undo); the store decides whether it is free.
   key?: number;
+  // Only to restore an item or carry one across (undo, an offline document's sync): votes are
+  // otherwise written by voting alone.
+  votes?: Record<string, number>;
 }
 
 export interface ItemPatch {

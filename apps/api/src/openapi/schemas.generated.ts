@@ -989,6 +989,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     type: 'string',
   },
+  BoardScope: {
+    additionalProperties: false,
+    properties: {
+      label: {
+        type: 'string',
+      },
+      types: {
+        items: {
+          type: 'string',
+        },
+        type: 'array',
+      },
+    },
+    type: 'object',
+  },
   BorderRadius: {
     enum: ['none', 'sm', 'md', 'lg', 'full'],
     type: 'string',
@@ -1072,6 +1087,20 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     },
     required: ['aiEnabled'],
     type: 'object',
+  },
+  CardField: {
+    enum: [
+      'key',
+      'type',
+      'assignee',
+      'priority',
+      'labels',
+      'estimate',
+      'due',
+      'votes',
+      'checklist',
+    ],
+    type: 'string',
   },
   ChairFacing: {
     enum: ['n', 'e', 's', 'w'],
@@ -2136,6 +2165,36 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             type: 'object',
           },
           'pie-chart': {
+            additionalProperties: false,
+            properties: {
+              fill: {
+                type: 'string',
+              },
+              stroke: {
+                type: 'string',
+              },
+              text: {
+                type: 'string',
+              },
+            },
+            type: 'object',
+          },
+          'plan-board': {
+            additionalProperties: false,
+            properties: {
+              fill: {
+                type: 'string',
+              },
+              stroke: {
+                type: 'string',
+              },
+              text: {
+                type: 'string',
+              },
+            },
+            type: 'object',
+          },
+          'plan-card': {
             additionalProperties: false,
             properties: {
               fill: {
@@ -4299,6 +4358,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       type: {
         type: 'string',
       },
+      votes: {
+        additionalProperties: {
+          type: 'number',
+        },
+        type: 'object',
+      },
     },
     required: ['type', 'fields'],
     type: 'object',
@@ -5546,6 +5611,85 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     required: ['label', 'value'],
     type: 'object',
   },
+  PlanBoardSetup: {
+    additionalProperties: false,
+    properties: {
+      cardFields: {
+        items: {
+          $ref: '#/components/schemas/CardField',
+        },
+        type: 'array',
+      },
+      columns: {
+        items: {
+          $ref: '#/components/schemas/PlanColumn',
+        },
+        type: 'array',
+      },
+      doneColumnId: {
+        type: 'string',
+      },
+      hideWriting: {
+        type: 'boolean',
+      },
+      scope: {
+        $ref: '#/components/schemas/BoardScope',
+      },
+      swimlaneBy: {
+        $ref: '#/components/schemas/SwimlaneBy',
+      },
+      title: {
+        type: 'string',
+      },
+      voting: {
+        additionalProperties: false,
+        properties: {
+          budget: {
+            type: 'number',
+          },
+          on: {
+            type: 'boolean',
+          },
+        },
+        required: ['on'],
+        type: 'object',
+      },
+    },
+    required: ['title', 'columns', 'swimlaneBy', 'scope', 'cardFields', 'voting', 'hideWriting'],
+    type: 'object',
+  },
+  PlanCardRef: {
+    additionalProperties: false,
+    properties: {
+      itemId: {
+        type: 'string',
+      },
+    },
+    required: ['itemId'],
+    type: 'object',
+  },
+  PlanColumn: {
+    additionalProperties: false,
+    properties: {
+      color: {
+        type: 'string',
+      },
+      id: {
+        type: 'string',
+      },
+      name: {
+        type: 'string',
+      },
+      status: {
+        type: 'string',
+      },
+      wipLimit: {
+        type: 'number',
+      },
+    },
+    required: ['id', 'status', 'name'],
+    type: 'object',
+  },
   PollStyle: {
     enum: ['yesNo', 'yesNoAbstain', 'choice', 'collaborators', 'rating', 'text'],
     type: 'string',
@@ -6234,6 +6378,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         },
         type: 'array',
       },
+      planBoard: {
+        $ref: '#/components/schemas/PlanBoardSetup',
+      },
+      planCard: {
+        $ref: '#/components/schemas/PlanCardRef',
+      },
       portalTarget: {
         $ref: '#/components/schemas/ElementId',
       },
@@ -6478,6 +6628,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       'focus-button',
       'icon',
       'sticker',
+      'plan-board',
+      'plan-card',
     ],
     type: 'string',
   },
@@ -6845,6 +6997,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     },
     required: ['id', 'type', 'x', 'y', 'width', 'height'],
     type: 'object',
+  },
+  SwimlaneBy: {
+    enum: ['none', 'assignee', 'type', 'priority', 'parent'],
+    type: 'string',
   },
   Tab: {
     additionalProperties: false,

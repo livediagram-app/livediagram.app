@@ -23,6 +23,7 @@ import {
   newItemId,
   validateClear,
   validateFields,
+  validateVotes,
   type Item,
   type ItemCreate,
   type ItemMove,
@@ -163,10 +164,13 @@ function readCreate(raw: unknown): ItemCreate | ItemRejection {
   if (typeof place === 'string') return place;
   const bound = fieldsWithinBounds(fields.fields);
   if (bound) return bound;
+  const votes = validateVotes(b.votes);
+  if (!votes) return 'field_value_invalid';
   return {
     type: b.type,
     fields: fields.fields,
     place,
+    ...(Object.keys(votes).length ? { votes } : {}),
     ...(typeof b.id === 'string' ? { id: b.id } : {}),
     ...(typeof b.key === 'number' && Number.isInteger(b.key) && b.key > 0 ? { key: b.key } : {}),
   };

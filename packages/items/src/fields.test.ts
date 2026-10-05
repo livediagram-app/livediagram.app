@@ -5,6 +5,7 @@ import {
   isValidItemType,
   validateClear,
   validateFields,
+  validateVotes,
 } from './fields';
 import { ITEM_FIELDS_MAX } from './limits';
 
@@ -113,5 +114,17 @@ describe('validateFields', () => {
     expect(isValidItemId('abc')).toBe(false);
     expect(isValidItemType('bug')).toBe(true);
     expect(isValidItemType('Bug')).toBe(false);
+  });
+});
+
+describe('validateVotes', () => {
+  it('accepts whole counts per person and refuses the rest', () => {
+    expect(validateVotes(undefined)).toEqual({});
+    expect(validateVotes({ a: 2 })).toEqual({ a: 2 });
+    for (const bad of [null, [], { a: 0 }, { a: 1.5 }, { a: 100 }, { '': 1 }, 'x'])
+      expect(validateVotes(bad)).toBeNull();
+    expect(
+      validateVotes(Object.fromEntries(Array.from({ length: 501 }, (_, i) => [`p${i}`, 1]))),
+    ).toBeNull();
   });
 });

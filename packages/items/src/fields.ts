@@ -20,6 +20,8 @@ import {
   ITEM_TYPE_PATTERN,
   ITEM_UNKNOWN_ARRAY_MAX,
   ITEM_UNKNOWN_STRING_MAX,
+  ITEM_VOTERS_MAX,
+  ITEM_VOTES_PER_PERSON_MAX,
 } from './limits';
 
 export type ItemFieldKind =
@@ -229,6 +231,22 @@ export function fieldsWithinBounds(fields: ItemFields): ItemRejection | null {
   if (Object.keys(fields).length > ITEM_FIELDS_MAX) return 'fields_too_many';
   if (fieldsByteSize(fields) > ITEM_FIELDS_BYTES) return 'fields_too_large';
   return null;
+}
+
+// Votes a create carries across (a restore, a sync): person ids to whole counts.
+export function validateVotes(input: unknown): Record<string, number> | null {
+  if (input === undefined) return {};
+  if (!input || typeof input !== 'object' || Array.isArray(input)) return null;
+  const entries = Object.entries(input);
+  if (entries.length > ITEM_VOTERS_MAX) return null;
+  const out: Record<string, number> = {};
+  for (const [k, v] of entries) {
+    if (k.length === 0 || k.length > 64) return null;
+    if (typeof v !== 'number' || !Number.isInteger(v) || v < 1 || v > ITEM_VOTES_PER_PERSON_MAX)
+      return null;
+    out[k] = v;
+  }
+  return out;
 }
 
 // Keys a patch may clear: any valid key but the title (an item keeps a title).

@@ -279,6 +279,9 @@ importers:
       '@livediagram/icons':
         specifier: workspace:*
         version: link:../../packages/icons
+      '@livediagram/items':
+        specifier: workspace:*
+        version: link:../../packages/items
       '@livediagram/sticky-model':
         specifier: workspace:*
         version: link:../../packages/sticky-model

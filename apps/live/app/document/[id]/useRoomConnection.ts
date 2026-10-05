@@ -12,6 +12,7 @@ import {
   type AgentPresence,
   type AvatarPresence,
   type ChangesetRoomOp,
+  type ItemsRoomOp,
   type FacilitatorReason,
   type LivePoll,
 } from '@livediagram/api-schema';
@@ -143,6 +144,8 @@ export function useRoomConnection(opts: {
   // An agent's changeset (docs/specs/024-agents/agent-changesets.md "In the editor"), relayed by the
   // worker; useChangesetFeed decides what to do with it.
   receiveChangeset: (op: ChangesetRoomOp) => void;
+  // Item writes the api made (docs/specs/025-plan/items.md "Live for everyone"). System-only.
+  receiveItems: (op: ItemsRoomOp) => void;
   // The room has greeted this connection (its first presence list): what was relayed before it
   // joined is caught up through the api (useChangesetFeed's checkSinceLoad).
   onRoomJoined: () => void;
@@ -185,6 +188,7 @@ export function useRoomConnection(opts: {
     receiveDocumentTrashed,
     resyncFromServer,
     receiveChangeset,
+    receiveItems,
     onRoomJoined,
   } = opts;
 
@@ -471,6 +475,10 @@ export function useRoomConnection(opts: {
         // An agent's changeset, applied, outlined and toasted by useChangesetFeed. System-only, like
         // the share ops: the room refuses one from a client socket.
         if (from === 'system') receiveChangeset(op);
+      } else if (op.kind === 'items') {
+        // Item writes (docs/specs/025-plan/items.md). System-only: items change only through the api,
+        // and the room refuses this op from a client socket.
+        if (from === 'system') receiveItems(op);
       } else if (op.kind === 'document-trashed') {
         // The document went to the Trash. System-only, like the share ops:
         // the room refuses it from a client socket.
