@@ -6,7 +6,6 @@
 // Images stay references to livediagram's image store; no bytes are embedded.
 
 import type { Tab } from './index';
-import type { Tab } from '@livediagram/document';
 import { readItemTypeCatalogue, type Item, type ItemTypeCatalogue } from '@livediagram/items';
 
 export const DOCUMENT_ENVELOPE_KIND = 'livediagram.document';

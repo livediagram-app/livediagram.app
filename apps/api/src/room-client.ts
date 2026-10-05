@@ -13,7 +13,6 @@ import {
   type RoomOp,
 } from '@livediagram/api-schema';
 import type { AgentPresenceWrite } from './room-agent-presence';
-import type { ItemsRoomOp } from '@livediagram/api-schema';
 import type { ItemsRoomOp, ItemTypesRoomOp } from '@livediagram/api-schema';
 import type { Env } from './types';
 
@@ -413,9 +412,6 @@ export async function refreshAgentPresence(
   }
 }
 
-// Tell a document's room about item writes (docs/specs/025-plan/items.md "Live for everyone"): an
-// ordered system op, so a peer whose socket blipped catches it up. Best-effort like the other
-// broadcasts: the D1 write is the change, and a client that missed it refetches on a rev gap.
 // A stored type catalogue (docs/specs/025-plan/item-types.md "Storage and sync"): ordered like items,
 // to every session, a tab-scoped one too (a catalogue holds no content).
 export async function relayItemTypes(
@@ -434,6 +430,9 @@ export async function relayItemTypes(
   }
 }
 
+// Tell a document's room about item writes (docs/specs/025-plan/items.md "Live for everyone"): an
+// ordered system op, so a peer whose socket blipped catches it up. Best-effort like the other
+// broadcasts: the D1 write is the change, and a client that missed it refetches on a rev gap.
 export async function relayItems(env: Env, documentId: string, op: ItemsRoomOp): Promise<void> {
   try {
     await roomStubFor(env, documentId).fetch('https://room/broadcast', {

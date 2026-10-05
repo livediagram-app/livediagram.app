@@ -339,30 +339,16 @@ export function EditorView() {
                     <AreaErrorBoundary area="TabDialogs">
                       <EditorTabDialogs />
                     </AreaErrorBoundary>
-                  )}
-                  <AreaErrorBoundary area="TabDialogs">
-                    <EditorTabDialogs />
-                  </AreaErrorBoundary>
-                  <AreaErrorBoundary area="Collaborators">
-                    <CollaboratorsHost />
-                  </AreaErrorBoundary>
-                  <AreaErrorBoundary area="Canvas" fallback="panel" fallbackClassName="flex-1">
-                    {/* The outlines relayed changesets draw (docs/specs/024-agents/agent-changesets.md). */}
-                    <ChangesetRevealContext.Provider value={ctx.changesetReveals}>
-                      {/* The focus rings of the agents present (docs/specs/024-agents/agent-presence.md). */}
-                      <AgentFocusContext.Provider value={ctx.agentFocusByElement}>
-                        <EditorCanvasHost />
-                      </AgentFocusContext.Provider>
-                      {/* Plan boards and cards read the items and their actions here
-                          (docs/specs/025-plan/plan-board.md). */}
-                      <PlanProvider value={ctx.plan.context}>
                     <AreaErrorBoundary area="Collaborators">
                       <CollaboratorsHost />
                     </AreaErrorBoundary>
                     <AreaErrorBoundary area="Canvas" fallback="panel" fallbackClassName="flex-1">
                       {/* The outlines relayed changesets draw (docs/specs/024-agents/agent-changesets.md). */}
                       <ChangesetRevealContext.Provider value={ctx.changesetReveals}>
-                        <EditorCanvasHost />
+                        {/* The focus rings of the agents present (docs/specs/024-agents/agent-presence.md). */}
+                        <AgentFocusContext.Provider value={ctx.agentFocusByElement}>
+                          <EditorCanvasHost />
+                        </AgentFocusContext.Provider>
                       </ChangesetRevealContext.Provider>
                       <PlanSheetsHost plan={ctx.plan} elements={activeTab.elements} />
                     </AreaErrorBoundary>

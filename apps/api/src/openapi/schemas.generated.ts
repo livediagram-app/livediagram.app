@@ -204,6 +204,28 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     required: ['label', 'minutes'],
     type: 'object',
   },
+  AgentPresenceResult: {
+    additionalProperties: false,
+    properties: {
+      expiresAt: {
+        type: 'number',
+      },
+      focus: {
+        items: {
+          type: 'string',
+        },
+        type: 'array',
+      },
+      status: {
+        type: ['string', 'null'],
+      },
+      tabId: {
+        type: 'string',
+      },
+    },
+    required: ['tabId', 'status', 'focus', 'expiresAt'],
+    type: 'object',
+  },
   AiConversationTurn: {
     additionalProperties: false,
     properties: {
@@ -7838,6 +7860,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       'Restored',
       'Applied',
       'Conflicted',
+      'Present',
       'Held',
       'Viewed',
       'Sent',
@@ -8324,6 +8347,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     enum: ['countdown', 'stopwatch'],
     type: 'string',
   },
+  TrashReason: {
+    enum: ['deleted', 'empty'],
+    type: 'string',
+  },
   TrashedDocument: {
     additionalProperties: false,
     properties: {
@@ -8336,6 +8363,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       purgeAt: {
         type: 'number',
       },
+      reason: {
+        $ref: '#/components/schemas/TrashReason',
+      },
       teamId: {
         type: ['string', 'null'],
       },
@@ -8346,7 +8376,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         type: 'number',
       },
     },
-    required: ['id', 'name', 'teamId', 'teamName', 'trashedAt', 'purgeAt'],
+    required: ['id', 'name', 'teamId', 'teamName', 'trashedAt', 'purgeAt', 'reason'],
     type: 'object',
   },
   UnfurlResult: {
