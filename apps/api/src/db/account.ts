@@ -128,6 +128,14 @@ export async function deleteAccount(
   // agent_changesets (docs/specs/024-agents/agent-changesets.md, CS27): the ones they wrote on other
   // people's documents; those on their own went with the documents. Parts follow by cascade.
   await env.DB.prepare('DELETE FROM agent_changesets WHERE author_id = ?').bind(ownerId).run();
+  // community_copies (docs/specs/025-community/community.md): the copies this person took of other people's posts
+  // name them; the rows go and those posts' copy counts are recounted. Posts on their own documents went with them.
+  await env.DB.batch([
+    env.DB.prepare(
+      'UPDATE community_posts SET copy_count = copy_count - 1 WHERE id IN (SELECT post_id FROM community_copies WHERE copier_id = ?)',
+    ).bind(ownerId),
+    env.DB.prepare('DELETE FROM community_copies WHERE copier_id = ?').bind(ownerId),
+  ]);
   // timeline (docs/specs/013-workspace/timeline.md §3.5): the feed, the events this owner authored,
   // and the scope-state row. Hard, not soft — soft delete is a
   // user-facing affordance in this product, never a retention strategy.

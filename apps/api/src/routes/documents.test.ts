@@ -25,6 +25,8 @@ const { db, canReadDocument, canEditDocument, resolveDocumentGrant } = vi.hoiste
   db: {
     listDocumentsByOwner: vi.fn(),
     getDocument: vi.fn(),
+    // Community link check on the tab read (docs/specs/025-community/community.md): an ordinary link here.
+    getShareLink: vi.fn(async () => null),
     // The thumbnail route's one-query gate + freshness read.
     getDocumentThumbMeta: vi.fn(),
     upsertDocumentMeta: vi.fn(),

@@ -208,6 +208,15 @@ type = "ratelimit"
 namespace_id = "1008"
 simple = { limit = 60, period = 60 }
 
+# Per-network limiter for Community likes, reports and moderation (docs/specs/025-community/blueprints/community.md
+# §7, D7), keyed community:<ip>. These callers are anonymous, so the owner-keyed write limiter would put them all on
+# one key. 30 / 60s is far above a person liking cards. Separate namespace. Absent binding → allow (self-host).
+[[unsafe.bindings]]
+name = "COMMUNITY_RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "1009"
+simple = { limit = 30, period = 60 }
+
 # The AI features (docs/specs/007-editor/ai-assistance.md) talk to ANY OpenAI-compatible chat-completions
 # endpoint, and WHICH provider is inferred from which key is set — a key is
 # provider-specific, so its name says whose it is (see src/ai-provider.ts):
@@ -426,6 +435,12 @@ name = "HOME_RATE_LIMITER"
 type = "ratelimit"
 namespace_id = "1008"
 simple = { limit = 60, period = 60 }
+
+[[env.staging.unsafe.bindings]]
+name = "COMMUNITY_RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "1009"
+simple = { limit = 30, period = 60 }
 
 # A different script is a different Durable Object namespace, so staging's
 # DOCUMENT_ROOM instances are separate from production's for free. The class

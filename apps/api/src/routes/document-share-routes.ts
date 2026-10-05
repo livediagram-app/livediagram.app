@@ -12,6 +12,7 @@ import {
   deleteShareLink,
   extendShareLink,
   generateShareCode,
+  getCommunityPostForDocument,
   getDocumentSharePassword,
   getShareLinkIncludingExpired,
   listShareLinks,
@@ -22,7 +23,7 @@ import {
 } from '../db';
 import { emailEnabled } from '../email/client';
 import { notifyFirstShare } from '../email/notifications';
-import { badRequest, json, noContent, notFound } from '../responses';
+import { badRequest, conflict, json, noContent, notFound } from '../responses';
 import type { ShareRole } from '../types';
 import { broadcastShareOp } from '../room-client';
 import { recordShareLinkCreated } from '../timeline';
@@ -112,6 +113,11 @@ export async function handleDocumentShareRoutes(ctx: RouteContext): Promise<Resp
       if (password !== null && password.length > MAX_PASSWORD_LEN) {
         return badRequest('password too long');
       }
+      // A share password and a Community post exclude each other (docs/specs/025-community/community.md): a public
+      // post cannot ask its visitors for a password.
+      if (password?.trim() && (await getCommunityPostForDocument(env, id))) {
+        return conflict('community_published');
+      }
       await setDocumentSharePassword(env, id, password);
       // Echo back the stored value (normalised: whitespace-only ->
       // null) so the dialog reflects exactly what gates access.
@@ -131,7 +137,11 @@ export async function handleDocumentShareRoutes(ctx: RouteContext): Promise<Resp
       // code alone. Without this, owning ANY document let you revoke any link
       // whose code you had seen. Same guard as /extend below.
       const existing = await getShareLinkIncludingExpired(env, code);
-      if (!existing || existing.documentId !== id) return notFound();
+      // A Community post's link is not the owner's to revoke here: Remove From Community does that
+      // (docs/specs/025-community/community.md).
+      if (!existing || existing.documentId !== id || existing.purpose === 'community') {
+        return notFound();
+      }
       await deleteShareLink(env, code);
       // Same retraction as the bulk revoke above. Deliberately not conditional
       // on this being the document's LAST expiring link: the warning is per
@@ -149,7 +159,10 @@ export async function handleDocumentShareRoutes(ctx: RouteContext): Promise<Resp
     // the code stays, and its holders reload into the new scope.
     if (request.method === 'PUT') {
       const existing = await getShareLinkIncludingExpired(env, code);
-      if (!existing || existing.documentId !== id) return notFound();
+      // A post covers every tab (docs/specs/025-community/community.md), so its link is never rescoped.
+      if (!existing || existing.documentId !== id || existing.purpose === 'community') {
+        return notFound();
+      }
       const body = (await request.json().catch(() => ({}))) as { tabId?: unknown };
       if (!('tabId' in body)) return badRequest('invalid tab');
       const tabId = parseScope(body.tabId, access.tabs);

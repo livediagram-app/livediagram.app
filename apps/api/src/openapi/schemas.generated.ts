@@ -1827,6 +1827,485 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "CommunityAuthor": {
+    "additionalProperties": false,
+    "properties": {
+      "color": {
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      },
+      "picture": {
+        "type": [
+          "string",
+          "null"
+        ]
+      }
+    },
+    "required": [
+      "name",
+      "color",
+      "picture"
+    ],
+    "type": "object"
+  },
+  "CommunityCategory": {
+    "enum": [
+      "architecture",
+      "flows",
+      "planning",
+      "workshops",
+      "mindmaps",
+      "design",
+      "data",
+      "learning",
+      "infographics",
+      "art",
+      "other"
+    ],
+    "type": "string"
+  },
+  "CommunityFacetsResponse": {
+    "additionalProperties": false,
+    "properties": {
+      "categories": {
+        "additionalProperties": false,
+        "properties": {
+          "architecture": {
+            "type": "number"
+          },
+          "art": {
+            "type": "number"
+          },
+          "data": {
+            "type": "number"
+          },
+          "design": {
+            "type": "number"
+          },
+          "flows": {
+            "type": "number"
+          },
+          "infographics": {
+            "type": "number"
+          },
+          "learning": {
+            "type": "number"
+          },
+          "mindmaps": {
+            "type": "number"
+          },
+          "other": {
+            "type": "number"
+          },
+          "planning": {
+            "type": "number"
+          },
+          "workshops": {
+            "type": "number"
+          }
+        },
+        "type": "object"
+      },
+      "tags": {
+        "items": {
+          "additionalProperties": false,
+          "properties": {
+            "count": {
+              "type": "number"
+            },
+            "tag": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "tag",
+            "count"
+          ],
+          "type": "object"
+        },
+        "type": "array"
+      },
+      "total": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "total",
+      "categories",
+      "tags"
+    ],
+    "type": "object"
+  },
+  "CommunityHiddenBy": {
+    "enum": [
+      "reports",
+      "operator"
+    ],
+    "type": "string"
+  },
+  "CommunityLikeResponse": {
+    "additionalProperties": false,
+    "properties": {
+      "likeCount": {
+        "type": "number"
+      },
+      "liked": {
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "likeCount",
+      "liked"
+    ],
+    "type": "object"
+  },
+  "CommunityListResponse": {
+    "additionalProperties": false,
+    "properties": {
+      "nextOffset": {
+        "type": [
+          "number",
+          "null"
+        ]
+      },
+      "posts": {
+        "items": {
+          "$ref": "#/components/schemas/CommunityPost"
+        },
+        "type": "array"
+      }
+    },
+    "required": [
+      "posts",
+      "nextOffset"
+    ],
+    "type": "object"
+  },
+  "CommunityModerationItem": {
+    "additionalProperties": false,
+    "properties": {
+      "author": {
+        "$ref": "#/components/schemas/CommunityAuthor"
+      },
+      "category": {
+        "$ref": "#/components/schemas/CommunityCategory"
+      },
+      "copyCount": {
+        "type": "number"
+      },
+      "description": {
+        "type": "string"
+      },
+      "hiddenBy": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/CommunityHiddenBy"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "id": {
+        "type": "string"
+      },
+      "likeCount": {
+        "type": "number"
+      },
+      "liked": {
+        "type": "boolean"
+      },
+      "publishedAt": {
+        "type": "number"
+      },
+      "reports": {
+        "items": {
+          "$ref": "#/components/schemas/CommunityReport"
+        },
+        "type": "array"
+      },
+      "shareCode": {
+        "type": "string"
+      },
+      "state": {
+        "$ref": "#/components/schemas/CommunityPostState"
+      },
+      "tags": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "title": {
+        "type": "string"
+      },
+      "updatedAt": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "author",
+      "category",
+      "copyCount",
+      "description",
+      "hiddenBy",
+      "id",
+      "likeCount",
+      "liked",
+      "publishedAt",
+      "reports",
+      "shareCode",
+      "state",
+      "tags",
+      "title",
+      "updatedAt"
+    ],
+    "type": "object"
+  },
+  "CommunityOwnPost": {
+    "additionalProperties": false,
+    "properties": {
+      "author": {
+        "$ref": "#/components/schemas/CommunityAuthor"
+      },
+      "category": {
+        "$ref": "#/components/schemas/CommunityCategory"
+      },
+      "copyCount": {
+        "type": "number"
+      },
+      "description": {
+        "type": "string"
+      },
+      "id": {
+        "type": "string"
+      },
+      "likeCount": {
+        "type": "number"
+      },
+      "liked": {
+        "type": "boolean"
+      },
+      "publishedAt": {
+        "type": "number"
+      },
+      "shareCode": {
+        "type": "string"
+      },
+      "state": {
+        "$ref": "#/components/schemas/CommunityPostState"
+      },
+      "tags": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "title": {
+        "type": "string"
+      },
+      "updatedAt": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "author",
+      "category",
+      "copyCount",
+      "description",
+      "id",
+      "likeCount",
+      "liked",
+      "publishedAt",
+      "shareCode",
+      "state",
+      "tags",
+      "title",
+      "updatedAt"
+    ],
+    "type": "object"
+  },
+  "CommunityPost": {
+    "additionalProperties": false,
+    "properties": {
+      "author": {
+        "$ref": "#/components/schemas/CommunityAuthor"
+      },
+      "category": {
+        "$ref": "#/components/schemas/CommunityCategory"
+      },
+      "copyCount": {
+        "type": "number"
+      },
+      "description": {
+        "type": "string"
+      },
+      "id": {
+        "type": "string"
+      },
+      "likeCount": {
+        "type": "number"
+      },
+      "liked": {
+        "type": "boolean"
+      },
+      "publishedAt": {
+        "type": "number"
+      },
+      "shareCode": {
+        "type": "string"
+      },
+      "tags": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "title": {
+        "type": "string"
+      },
+      "updatedAt": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "id",
+      "title",
+      "description",
+      "category",
+      "tags",
+      "likeCount",
+      "copyCount",
+      "publishedAt",
+      "updatedAt",
+      "shareCode",
+      "author",
+      "liked"
+    ],
+    "type": "object"
+  },
+  "CommunityPostInput": {
+    "additionalProperties": false,
+    "properties": {
+      "category": {
+        "$ref": "#/components/schemas/CommunityCategory"
+      },
+      "description": {
+        "type": "string"
+      },
+      "tags": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "title": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "title",
+      "description",
+      "category",
+      "tags"
+    ],
+    "type": "object"
+  },
+  "CommunityPostResponse": {
+    "additionalProperties": false,
+    "properties": {
+      "post": {
+        "$ref": "#/components/schemas/CommunityPost"
+      },
+      "related": {
+        "items": {
+          "$ref": "#/components/schemas/CommunityPost"
+        },
+        "type": "array"
+      }
+    },
+    "required": [
+      "post",
+      "related"
+    ],
+    "type": "object"
+  },
+  "CommunityPostState": {
+    "enum": [
+      "listed",
+      "hidden"
+    ],
+    "type": "string"
+  },
+  "CommunityReport": {
+    "additionalProperties": false,
+    "properties": {
+      "createdAt": {
+        "type": "number"
+      },
+      "note": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "reason": {
+        "$ref": "#/components/schemas/CommunityReportReason"
+      }
+    },
+    "required": [
+      "reason",
+      "note",
+      "createdAt"
+    ],
+    "type": "object"
+  },
+  "CommunityReportInput": {
+    "additionalProperties": false,
+    "properties": {
+      "note": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "reason": {
+        "$ref": "#/components/schemas/CommunityReportReason"
+      }
+    },
+    "required": [
+      "reason"
+    ],
+    "type": "object"
+  },
+  "CommunityReportReason": {
+    "enum": [
+      "spam",
+      "offensive",
+      "personal-info",
+      "copyright",
+      "other"
+    ],
+    "type": "string"
+  },
+  "CommunityShareInfo": {
+    "additionalProperties": false,
+    "properties": {
+      "author": {
+        "$ref": "#/components/schemas/CommunityAuthor"
+      },
+      "postId": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "postId",
+      "author"
+    ],
+    "type": "object"
+  },
   "CreationTabKind": {
     "enum": [
       "diagram",
@@ -7534,6 +8013,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "expiry": {
         "$ref": "#/components/schemas/ShareLinkExpiry"
       },
+      "purpose": {
+        "$ref": "#/components/schemas/SharePurpose"
+      },
       "role": {
         "$ref": "#/components/schemas/ShareRole"
       },
@@ -7551,7 +8033,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "createdAt",
       "expiry",
       "expiresAt",
-      "tabId"
+      "tabId",
+      "purpose"
     ],
     "type": "object"
   },
@@ -7561,6 +8044,13 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "week",
       "month",
       "sixMonths"
+    ],
+    "type": "string"
+  },
+  "SharePurpose": {
+    "enum": [
+      "share",
+      "community"
     ],
     "type": "string"
   },
@@ -8674,7 +9164,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "Sent",
       "Api",
       "Client",
-      "Warning"
+      "Warning",
+      "Liked",
+      "Unliked",
+      "Reported"
     ],
     "type": "string"
   },
@@ -8714,7 +9207,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "Editor",
       "Drive",
       "Explorer",
-      "Agent"
+      "Agent",
+      "Community"
     ],
     "type": "string"
   },
@@ -9241,13 +9735,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
-  "TrashReason": {
-    "enum": [
-      "deleted",
-      "empty"
-    ],
-    "type": "string"
-  },
   "TrashedDocument": {
     "additionalProperties": false,
     "properties": {
@@ -9259,9 +9746,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "purgeAt": {
         "type": "number"
-      },
-      "reason": {
-        "$ref": "#/components/schemas/TrashReason"
       },
       "teamId": {
         "type": [
@@ -9285,8 +9769,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "teamId",
       "teamName",
       "trashedAt",
-      "purgeAt",
-      "reason"
+      "purgeAt"
     ],
     "type": "object"
   },

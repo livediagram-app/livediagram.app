@@ -25,6 +25,7 @@ import {
 import {} from '../comments';
 import {
   copyDocument,
+  getCommunityPostByShareCode,
   getDocument,
   getDocumentThumbMeta,
   getTrashedDocumentMeta,
@@ -37,6 +38,7 @@ import {
   setDocumentPresentation,
   tabIdsHeldElsewhere,
   upsertDocumentMeta,
+  recordCommunityCopy,
 } from '../db';
 import {
   badRequest,
@@ -62,6 +64,7 @@ import {
 import { handleDocumentDelete } from './document-delete-route';
 import { handleDocumentPlacement } from './document-placement-route';
 import { handleDocumentSharedTabs } from './document-shared-tabs-route';
+import { handleCommunityOwnerRoutes } from './community-owner-routes';
 import { forkTakenTabIds } from '../tab-id-fork';
 import { relayDocumentRename } from '../room-client';
 import { handleDocumentRoomRoutes } from './document-room-routes';
@@ -444,12 +447,11 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
       // Either way a tab-scoped visitor (docs/specs/013-workspace/tab-scoped-share-links.md) copies their tab
       // only: the share-code leg carries the link's scope, the shared_with
       // leg the scope recorded on their last visit.
-      let scope: { tabScope: string | null } | null = await gateGrant(
-        ctx,
-        id,
-        source.ownerId,
-        source.teamId,
-      );
+      let scope: {
+        tabScope: string | null;
+        community?: boolean;
+        shareCode?: string | null;
+      } | null = await gateGrant(ctx, id, source.ownerId, source.teamId);
       if (!scope) {
         const sharedRow = (await listSharedWith(env, owner)).find((s) => s.id === id);
         if (sharedRow) scope = { tabScope: sharedRow.tabId };
@@ -466,6 +468,16 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
       const newName = requested || capStoredName(`Copy of ${source.name}`, null, 'document');
       const copy = await copyDocument(env, id, newId, owner, newName, scope.tabScope);
       if (!copy) return notFound();
+      // A copy through a Community post's link counts toward its copy count, once per person
+      // (docs/specs/025-community/community.md).
+      if (scope.community && scope.shareCode && owner !== source.ownerId) {
+        const code = scope.shareCode;
+        ctx.waitUntil?.(
+          getCommunityPostByShareCode(env, code)
+            .then((post) => (post ? recordCommunityCopy(env, post.id, owner) : undefined))
+            .catch((err) => console.warn('[community] copy count failed', err)),
+        );
+      }
       // A copy is one document made on purpose: always a use (docs/specs/015-api/api.md "Marking a
       // document used").
       ctx.waitUntil?.(recordDocumentDuplicated(env, copy, source.name, owner, { markUsed: true }));
@@ -492,6 +504,13 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
   {
     const placementResp = await handleDocumentPlacement(ctx);
     if (placementResp) return placementResp;
+  }
+
+  // /api/documents/<id>/community — publish to, edit in or remove from Community
+  // (docs/specs/025-community/community.md).
+  {
+    const communityResp = await handleCommunityOwnerRoutes(ctx);
+    if (communityResp) return communityResp;
   }
 
   // /api/documents/<id>/shared-tabs — what a delete leaves behind in other

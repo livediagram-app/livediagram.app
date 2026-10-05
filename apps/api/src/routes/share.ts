@@ -1,6 +1,8 @@
 // /api/share/<code> — resolve a share code to its document + role.
 
+import { rowAuthor } from '../community-row';
 import {
+  getCommunityPostByShareCode,
   getDocument,
   getDocumentSharePassword,
   getParticipant,
@@ -47,6 +49,19 @@ export async function handleShare(ctx: RouteContext): Promise<Response> {
       // gate doesn't seed the "Shared with you" list.
       const gate = await passwordGate(env, d.id, sharePasswordOf(request));
       if (gate) return gate;
+      // A Community post's link (docs/specs/025-community/community.md "Viewing a post's document"): read-only for
+      // everyone, never recorded in "Shared with you", never a join email to the author, and gone while the post is
+      // hidden.
+      if (link.purpose === 'community') {
+        const post = await getCommunityPostByShareCode(env, link.code);
+        if (!post || post.state !== 'listed') return notFound();
+        return json({
+          document: redactDocumentForReader(d, resolveOwner()),
+          role: 'view',
+          tabId: null,
+          community: { postId: post.id, author: rowAuthor(post) },
+        });
+      }
       // Track the visit in shared_with so a "Shared with you"
       // list (#8) can surface this document later. Only record
       // when (a) the visitor identifies (Bearer or

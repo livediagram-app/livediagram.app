@@ -50,7 +50,15 @@ async function isJoinedTeamMember(
 // (docs/specs/013-workspace/tab-scoped-share-links.md), and the share code that granted it. `tabScope` is
 // null for the owner, a joined team member and an All-tabs link; `shareCode`
 // is null for the owner and a team member, who need no code.
-export type DocumentGrant = { role: ShareRole; tabScope: string | null; shareCode: string | null };
+//
+// `community` marks a grant from a Community post's link (docs/specs/025-community/community.md "Viewing a post's
+// document"): read-only like any view link, but no realtime room and no comments.
+export type DocumentGrant = {
+  role: ShareRole;
+  tabScope: string | null;
+  shareCode: string | null;
+  community: boolean;
+};
 
 // `owner` is the hybrid identity (Clerk sub OR unsigned X-Owner-Id guest
 // header); `callerId` is the VERIFIED Clerk user id (null for guests).
@@ -84,10 +92,20 @@ export async function resolveDocumentGrant(
   // short call sites fail CLOSED on a protected document rather than silently
   // bypassing the gate.
   if (!(await sharePasswordOk(env, documentId, sharePassword))) return null;
-  return { role: link.role, tabScope: link.tabId, shareCode: link.code };
+  return {
+    role: link.role,
+    tabScope: link.tabId,
+    shareCode: link.code,
+    community: link.purpose === 'community',
+  };
 }
 
-const FULL_EDIT: DocumentGrant = { role: 'edit', tabScope: null, shareCode: null };
+const FULL_EDIT: DocumentGrant = {
+  role: 'edit',
+  tabScope: null,
+  shareCode: null,
+  community: false,
+};
 
 // The two boolean gates. `targetTabId` names the tab the request touches;
 // omitted, the request is document-level, and a tab-scoped link grants

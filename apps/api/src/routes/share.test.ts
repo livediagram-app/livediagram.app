@@ -91,6 +91,7 @@ function shareLink(documentId: string) {
     createdAt: 0,
     expiry: 'never' as const,
     expiresAt: null,
+    purpose: 'share' as const,
     tabId: null,
   };
 }

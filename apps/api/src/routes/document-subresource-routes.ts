@@ -4,7 +4,7 @@
 // under a document id lives here.
 
 import { broadcastShareOp } from '../room-client';
-import { redactCommentAuthorIds } from '../comments';
+import { redactCommentAuthorIds, stripCommentThreads } from '../comments';
 import {
   deleteShareLinksForTab,
   deleteTabRow,
@@ -38,6 +38,7 @@ import {
   requireOwner,
   shareCodeOf,
   type RouteContext,
+  viaCommunityLink,
 } from './context';
 import { answerTabView, parseViewQuery } from './document-views-route';
 
@@ -104,10 +105,17 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
       // id (so they can delete-own), never another participant's owner
       // id. The document owner sees everything (viewerId === ownerId is a
       // no-op). Same anti-claim posture as redactOwner on the document.
+      //
+      // A Community visitor gets no comments at all (docs/specs/025-community/community.md).
       const safe =
         owner === existing.ownerId
           ? tab
-          : { ...tab, elements: redactCommentAuthorIds(tab.elements, owner) };
+          : {
+              ...tab,
+              elements: (await viaCommunityLink(ctx))
+                ? stripCommentThreads(tab.elements)
+                : redactCommentAuthorIds(tab.elements, owner),
+            };
       if (view) return answerTabView(ctx, view, existing, safe);
       // docs/specs/013-workspace/timeline.md §4.3: somebody arrived through a SHARE LINK and opened this.
       // The tab read is the honest signal for "opened" — the document GET is hit

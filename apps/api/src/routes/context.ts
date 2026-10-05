@@ -12,7 +12,7 @@ import {
   resolveDocumentGrant,
   type DocumentGrant,
 } from '../auth/document-access';
-import { getDocument, getMembership, getTrashedDocumentMeta } from '../db';
+import { getDocument, getMembership, getShareLink, getTrashedDocumentMeta } from '../db';
 import { documentTrashed, forbidden, missingAuth, notFound } from '../responses';
 import type { DocumentDTO, Env } from '../types';
 
@@ -275,4 +275,13 @@ export async function deniedOnTab(
 ): Promise<Response> {
   const grant = await gateGrant(ctx, liveDoc.id, liveDoc.ownerId, liveDoc.teamId);
   return grant ? notFound() : forbidden();
+}
+
+// Does the caller come in through a Community post's link (docs/specs/025-community/community.md "Viewing a post's
+// document")? Such a visitor reads the board but not its comments. Called only on a non-owner read, so an owner
+// presenting a code still sees everything.
+export async function viaCommunityLink(ctx: RouteContext): Promise<boolean> {
+  const code = shareCodeOf(ctx.request);
+  if (!code) return false;
+  return (await getShareLink(ctx.env, code))?.purpose === 'community';
 }
