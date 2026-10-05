@@ -27,6 +27,8 @@ export function render(verb: Verb, output: unknown, mode: PrintMode): string {
   if (mode.quiet && verb.quiet) return lines(verb.quiet(output));
   if (mode.json || !verb.text) {
     const value = verb.json ? verb.json(output) : output;
+    // A verb that streamed its JSON as it ran (`watch`) has nothing left to print.
+    if (value === undefined) return '';
     if (!mode.fields) return `${JSON.stringify(value)}\n`;
     const list = verb.listKey && isRecord(value) ? value[verb.listKey] : undefined;
     const picked = Array.isArray(list)

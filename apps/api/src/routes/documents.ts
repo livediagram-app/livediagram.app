@@ -63,6 +63,7 @@ import { handleDocumentDelete } from './document-delete-route';
 import { handleDocumentPlacement } from './document-placement-route';
 import { handleDocumentSharedTabs } from './document-shared-tabs-route';
 import { forkTakenTabIds } from '../tab-id-fork';
+import { relayDocumentRename } from '../room-client';
 import { handleDocumentRoomRoutes } from './document-room-routes';
 import { handleDocumentSubresources } from './document-subresource-routes';
 import { compileSeededTabs } from './document-seed';
@@ -401,6 +402,10 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
         await reorderTabs(env, id, body.tabIds);
       }
       const liveDoc = await getDocument(env, id);
+      // An agent's rename reaches the open editors (docs/specs/024-agents/agent-changesets.md "Whole-tab saves and tab
+      // renames"); an editor sends its own rename to the room itself.
+      if (ctx.token && liveDoc && name !== existing.name)
+        ctx.waitUntil?.(relayDocumentRename(env, id, liveDoc.name, liveDoc.tabs));
       // A rename is not a timeline moment (docs/specs/013-workspace/timeline.md §4.2): the feed reads
       // every document's CURRENT name instead, so older entries follow it.
       // Redacted like the GET: an edit-role share visitor passes gateEdit, and

@@ -22,6 +22,8 @@ import {
   skillPrint,
   telemetryOff,
   telemetryOn,
+  waitFor,
+  watch,
 } from './verbs/local';
 import { iconSearch, schemaView, templateLs, templateView } from './verbs/catalogues';
 import { changesetApply, elementVerbs, tabDiff } from './verbs/edit';
@@ -79,6 +81,8 @@ export const VERBS: readonly Verb[] = [
   authLogout,
   telemetryOn,
   telemetryOff,
+  waitFor,
+  watch,
 ] as Verb[];
 
 export const RESOURCES: readonly { name: string; alias?: string; summary: string }[] = [
@@ -101,7 +105,7 @@ export const RESOURCES: readonly { name: string; alias?: string; summary: string
 ];
 
 // Top-level commands that are verbs without a resource word.
-export const TOP_LEVEL = ['guide', 'api'] as const;
+export const TOP_LEVEL = ['guide', 'api', 'wait', 'watch'] as const;
 
 export const RESOURCE_ALIASES: Readonly<Record<string, string>> = {
   doc: 'document',

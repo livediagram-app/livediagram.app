@@ -124,13 +124,16 @@ importers:
       '@livediagram/api-schema':
         specifier: workspace:*
         version: link:../../packages/api-schema
+      '@livediagram/document':
+        specifier: workspace:*
+        version: link:../../packages/document
+      '@livediagram/document-views':
+        specifier: workspace:*
+        version: link:../../packages/document-views
       zod:
         specifier: ^4.6.5
         version: 4.6.5
     devDependencies:
-      '@livediagram/document-views':
-        specifier: workspace:*
-        version: link:../../packages/document-views
       '@livediagram/eslint-config':
         specifier: workspace:*
         version: link:../../packages/eslint-config

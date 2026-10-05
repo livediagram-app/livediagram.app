@@ -169,6 +169,47 @@ export async function relayChangeset(
   return false;
 }
 
+// A document an agent renamed, as the document-meta op an editor's own rename sends: open editors show the new name
+// at once, and their next tab reorder carries it instead of writing the old one back. Best-effort and logged, like
+// the tab rename relay.
+export async function relayDocumentRename(
+  env: Env,
+  documentId: string,
+  name: string,
+  tabs: readonly { id: string; name: string; orderIndex: number; folder?: string }[],
+): Promise<boolean> {
+  const op: RoomOp = {
+    kind: 'document-meta',
+    name,
+    tabs: tabs.map((t) => ({
+      id: t.id,
+      name: t.name,
+      orderIndex: t.orderIndex,
+      ...(t.folder ? { folder: t.folder } : {}),
+    })),
+  };
+  try {
+    const res = await roomFetch(
+      env,
+      documentId,
+      '/mutation',
+      mutationInit(op),
+      ROOM_RELAY_TIMEOUT_MS,
+    );
+    if (res.ok) return true;
+    console.warn('[room-mutation] document-meta did not reach the room', {
+      documentId,
+      error: `status ${res.status}`,
+    });
+  } catch (err) {
+    console.warn('[room-mutation] document-meta did not reach the room', {
+      documentId,
+      error: String(err),
+    });
+  }
+  return false;
+}
+
 // A tab the api renamed (CS42), as the same tab-meta op an editor's own rename sends: a
 // document-meta keeps every open editor's names, so a stale tab list can never revert a rename.
 // Best-effort and logged, like the changeset relay.
