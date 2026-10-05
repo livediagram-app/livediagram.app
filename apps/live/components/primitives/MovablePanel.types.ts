@@ -130,6 +130,9 @@ export type MovablePanelProps = {
   // only while `popoverOpen`, hung from `popoverAnchor`, with a slim header
   // band instead of the draggable title row.
   asPopover?: boolean;
+  // The popover's width class (default w-64); a wider one names its width in useDockPopovers too, so it
+  // is placed whole on the canvas.
+  popoverWidth?: string;
   // Whether the button that owns this popover has it open.
   popoverOpen?: boolean;
   // Close the popover on any press outside it, as a menu does. The button

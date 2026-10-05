@@ -16,6 +16,9 @@ export function boardRowTemplate(
     rows.push('auto');
     lastCells = rows.length - 1;
   }
+  // The spare height goes to the last open row of cells; with every row shut, to an empty row after
+  // them, so no head or label is ever stretched.
   if (lastCells > 0) rows[lastCells] = '1fr';
+  else rows.push('1fr');
   return rows.join(' ');
 }

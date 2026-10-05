@@ -54,6 +54,7 @@ export function PortalMenu({
   onToggleLock,
   locked,
   opensIn,
+  planTab = false,
   selfId,
   voteSelfId,
   otherDocuments,
@@ -85,6 +86,8 @@ export function PortalMenu({
   locked: boolean;
   // The Opens in choice (docs/specs/007-editor/editor-modes.md), absent where it is not offered.
   opensIn?: OpensInChoice;
+  // A Plan tab: Add to Document is off, its cards belong to this document's items.
+  planTab?: boolean;
   // Viewer identity for the Add to Document dialog's thumbnail fetches.
   selfId: string;
   // Who the dot-vote knows us by (docs/specs/012-collaboration/collab-race-hardening.md): the collab key, never the owner
@@ -388,7 +391,7 @@ export function PortalMenu({
                 icon={<MoveIcon />}
                 label="Add to Document"
                 onClick={() => setView('copyTo')}
-                disabled={otherDocuments.length === 0}
+                disabled={otherDocuments.length === 0 || planTab}
               />
             </MenuTileGrid>
           </MenuAccordionSection>

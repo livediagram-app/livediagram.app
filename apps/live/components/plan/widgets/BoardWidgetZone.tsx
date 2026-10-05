@@ -7,7 +7,8 @@
 // bar (`dropAt`, from the palette drag); the drop itself is the palette's.
 import { useRef, useState, type ReactNode } from 'react';
 import { placeWidget, removeWidget, nudgeWidget, type BoardWidgetKind } from '@livediagram/items';
-import { CloseIcon } from '@livediagram/ui';
+import { CloseIcon, PlusIcon } from '@livediagram/ui';
+import { requestPaletteCategory } from '@/lib/palette-category-request';
 import type { PlanPalette } from '../plan-palette';
 import { BOARD_WIDGET_INFO } from '../board-widget-catalogue';
 import { InfoArt } from '../plan-tile-art';
@@ -100,6 +101,16 @@ export function BoardWidgetZone({
           <span className="inline-flex items-center gap-1.5">
             <InfoArt />
             Drag Widgets here from the palette
+            <button
+              type="button"
+              aria-label="Add a widget"
+              className="ml-1 flex h-6 w-6 items-center justify-center rounded-md border border-dashed transition hover:bg-black/5 dark:hover:bg-white/10"
+              style={{ borderColor: palette.border }}
+              onPointerDown={(e) => e.stopPropagation()}
+              onClick={() => requestPaletteCategory('plan-widgets')}
+            >
+              <PlusIcon size={12} />
+            </button>
           </span>
         ) : null}
       </div>
@@ -183,6 +194,18 @@ export function BoardWidgetZone({
         ];
       })}
       {barAt === widgets.length ? bar('bar-end') : null}
+      {canEdit ? (
+        <button
+          type="button"
+          aria-label="Add a widget"
+          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-dashed transition hover:bg-black/5 dark:hover:bg-white/10"
+          style={{ borderColor: palette.border, color: palette.muted }}
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={() => requestPaletteCategory('plan-widgets')}
+        >
+          <PlusIcon size={14} />
+        </button>
+      ) : null}
     </div>
   );
 }

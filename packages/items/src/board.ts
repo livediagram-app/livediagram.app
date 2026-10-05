@@ -334,7 +334,12 @@ export function projectBoard(
         });
     }
   }
-  if (laneMap.size === 0) laneMap.set(NO_LANE, laneOf('none', scoped[0]!, items, types));
+  // No rows yet: the board's own empty row ("No status" on a status board), never a nameless one.
+  if (laneMap.size === 0)
+    laneMap.set(
+      NO_LANE,
+      laneOf(setup.swimlaneBy, { fields: {} } as Item, items, types, statusNames),
+    );
   const lanes = [...laneMap.values()].sort(laneSort(setup.swimlaneBy, items, types, statusNames));
 
   let doneCount = 0;

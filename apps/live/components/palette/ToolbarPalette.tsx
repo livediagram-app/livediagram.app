@@ -1,5 +1,6 @@
 'use client';
 
+import { onPaletteCategoryRequest } from '@/lib/palette-category-request';
 import type { PageKind } from '@livediagram/document';
 import { AddPageStripButton } from './AddPageStripButton';
 import {
@@ -140,6 +141,14 @@ export function ToolbarPalette(props: Props) {
   // Crossing an ES / non-ES tab boundary re-lands on the right default: the
   // host keys this component on `esBoard`, as the Palette keys PaletteTabBar.
   const [categoryId, setCategoryId] = useState(defaultId);
+  // Another surface asking for a category (a board's + asks for Widgets).
+  useEffect(
+    () =>
+      onPaletteCategoryRequest((id) => {
+        if (tabs.some((t) => t.id === id)) setCategoryId(id);
+      }),
+    [tabs],
+  );
   const category = tabs.find((t) => t.id === categoryId) ?? tabs[0];
 
   // The strip holds as many tiles as the window fits, up to twelve; the rest

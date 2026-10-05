@@ -14,7 +14,7 @@ describe('boardRowTemplate', () => {
     expect(boardRowTemplate(['a', 'b'], true, new Set(['b']))).toBe('auto auto 1fr auto');
   });
 
-  it('leaves every row to its content when every swimlane is shut', () => {
-    expect(boardRowTemplate(['a'], true, new Set(['a']))).toBe('auto auto');
+  it('gives the spare height to an empty row when every swimlane is shut', () => {
+    expect(boardRowTemplate(['a'], true, new Set(['a']))).toBe('auto auto 1fr');
   });
 });

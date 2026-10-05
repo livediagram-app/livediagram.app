@@ -102,10 +102,12 @@ Five built-in types, each with a glyph, an accent colour and the fields it offer
 - **Trash** is a status, `trash`, that no board shows (not in a column, not counted, not "not on this board", not
   on All Cards). A trashed item keeps the status it had under `trashedFrom`.
 - In Plan mode a **Trash** button sits in the bottom-right cluster, left of Undo, with a badge of how many cards
-  it holds. While a card is dragged the button grows (animated; still with reduced motion) and takes a red ring;
-  a card let go over it is trashed and the move is announced.
-- Pressed, it opens the **Trash** popover: the trashed cards, newest change first, each with **Restore** (back to
-  `trashedFrom`, or no status) and a delete-for-good button; **Empty Trash** deletes every one after a
+  it holds. While a card is dragged the button opens out into a dashed red **Drop to Trash** target, and while the
+  card is over it fills red, tips its lid and reads **Let go to trash it** (no motion with reduced motion; the
+  colours still change); a card let go there is trashed and the move is announced.
+- Pressed, it opens the **Trash** popover (352 px wide): how many cards it holds, then each card, newest change
+  first, with its type's stripe and glyph, its whole title, its type, number, the status it came from and when,
+  and **Delete** and **Restore** (back to `trashedFrom`, or no status) on a row of their own; **Empty Trash** deletes every one after a
   confirmation ("This can't be undone").
 - Trash and Restore send `Plan · Moved · Trash` and `Plan · Restored · Card`; opening it, `Plan · Opened · Trash`.
 

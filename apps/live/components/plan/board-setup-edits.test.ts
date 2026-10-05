@@ -109,3 +109,12 @@ describe('addFirstColumn', () => {
     expect(addFirstColumn(empty, '   ')).toBeNull();
   });
 });
+
+describe('renaming a column', () => {
+  it('keeps its status, so its cards stay in it', async () => {
+    const { renameColumn } = await import('./board-setup-edits');
+    const s = threeColumns();
+    const renamed = renameColumn(s, 'doing', 'Building');
+    expect(renamed.columns[1]).toMatchObject({ name: 'Building', status: 'doing' });
+  });
+});

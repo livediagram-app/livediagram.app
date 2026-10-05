@@ -62,8 +62,7 @@ export function PlanFirstColumn({
                 type="button"
                 disabled={!name.trim()}
                 onClick={add}
-                className="flex h-9 shrink-0 items-center gap-1 rounded-md px-3 text-[13px] font-semibold text-white transition enabled:cursor-pointer disabled:opacity-50"
-                style={{ backgroundColor: palette.focus }}
+                className="flex h-9 shrink-0 items-center gap-1 rounded-md bg-brand-600 px-3 text-[13px] font-semibold text-white transition enabled:cursor-pointer enabled:hover:bg-brand-700 disabled:opacity-50 dark:bg-brand-600"
               >
                 <PlusIcon size={14} />
                 Add Column

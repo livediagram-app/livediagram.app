@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { onPaletteCategoryRequest } from '@/lib/palette-category-request';
 import { readLocalStorageSafe, writeLocalStorageSafe } from '@/lib/local-storage-safe';
 import { PaletteDropdown } from '@/components/palette/PaletteDropdown';
 
@@ -77,6 +78,14 @@ export function PaletteTabBar({
     if (saved && tabs.some((t) => t.id === saved)) return saved; // guard stale id
     return fallbackId;
   });
+  // Another surface asking for a category (a board's + asks for Widgets).
+  useEffect(
+    () =>
+      onPaletteCategoryRequest((id) => {
+        if (tabs.some((t) => t.id === id)) setActiveId(id);
+      }),
+    [tabs],
+  );
   // Persist the choice so the next mount restores it.
   useEffect(() => {
     if (storageKey) writeLocalStorageSafe(storageKey, activeId);

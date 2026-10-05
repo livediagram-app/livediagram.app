@@ -14,6 +14,8 @@ import { useUiScale } from '@/components/providers/ui-scale';
 // (docs/specs/007-editor/ui-scale.md), so the anchor clamps against the
 // scaled width or a scaled popover runs off the right edge.
 const POPOVER_WIDTH = 256;
+// A popover wider than the rest, so its placement keeps all of it on the canvas.
+export const POPOVER_WIDTHS: Partial<Record<string, number>> = { 'plan-trash': 352 };
 
 // 'slides': the Slide Deck panel over its cluster button in Illustrate mode. 'card-types': the Card
 // Types panel over its cluster button in Plan mode (docs/specs/025-plan/item-types.md).
@@ -60,7 +62,7 @@ export function useDockPopovers(mainRef: Ref<HTMLElement>) {
         computeDockAnchor(
           button.getBoundingClientRect(),
           canvas.getBoundingClientRect(),
-          POPOVER_WIDTH * scale,
+          (POPOVER_WIDTHS[id] ?? POPOVER_WIDTH) * scale,
           above ? 'above' : 'button',
         ),
       );

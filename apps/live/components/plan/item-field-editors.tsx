@@ -369,7 +369,7 @@ export function ChecklistEditor({
               onClick={() => save(rows.map((x, j) => (j === i ? { ...x, done: !x.done } : x)))}
               className={`flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-[5px] border-2 transition enabled:cursor-pointer ${
                 r.done
-                  ? 'border-brand-600 bg-brand-600 text-white dark:border-brand-500 dark:bg-brand-500'
+                  ? 'border-brand-600 bg-brand-600 text-white dark:border-brand-600 dark:bg-brand-600'
                   : 'border-slate-300 hover:border-brand-500 dark:border-slate-600'
               }`}
             >
