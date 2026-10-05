@@ -111,10 +111,10 @@ export type BoxedExportOptions = {
   // canvas hands its charts the same list; without it they fall back to the
   // built-in one, which is what a caller with no theme in hand wants.
   chartPalette?: readonly string[];
-  // The document's items, for the Plan board and Plan card (docs/specs/025-plan/plan-board.md). Without
+  // The document's items, for the Plan board and Plan card (docs/specs/026-plan/plan-board.md). Without
   // them a board draws its columns empty and a card a neutral placeholder.
   items?: ReadonlyMap<string, Item>;
-  // The document's item types (docs/specs/025-plan/item-types.md); the built-in ones without them.
+  // The document's item types (docs/specs/026-plan/item-types.md); the built-in ones without them.
   itemTypes?: readonly ItemTypeDef[];
 };
 

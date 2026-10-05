@@ -1,6 +1,6 @@
 'use client';
 
-// A board header's widget zone (docs/specs/025-plan/board-widgets.md "Placing and arranging widgets"):
+// A board header's widget zone (docs/specs/026-plan/board-widgets.md "Placing and arranging widgets"):
 // the board's widgets in order, one row that scrolls sideways when full. Someone who may edit drags a
 // widget left or right to reorder it (a bar shows where it lands), moves a focused one with Alt+← and
 // Alt+→, and takes one off with its × or Delete. A widget dragged in from the palette shows the same

@@ -1,4 +1,4 @@
-// An item store as a value (docs/specs/025-plan/blueprints/item-store.md): the items, the store's
+// An item store as a value (docs/specs/026-plan/blueprints/item-store.md): the items, the store's
 // revision and the next key, with every write applied as a pure transition. The editor applies
 // writes optimistically through it, and an offline document's store is written by it, so a write
 // lands the same way in the browser as in the api.
@@ -122,7 +122,7 @@ export function mergeItemChanges(
 
 // The writes that undo `write`, made against `before` and answered with `made` (a create's items as
 // made, so its redo restores the same ids and keys). Null: not undoable (a vote is taken back by
-// voting minus, docs/specs/025-plan/items.md "Undo").
+// voting minus, docs/specs/026-plan/items.md "Undo").
 export function inverseItemWrites(before: ItemStoreState, write: ItemWrite): ItemWrite[] | null {
   if (write.kind === 'vote') return null;
   if (write.kind === 'create') return write.creates.map((c) => ({ kind: 'delete', id: c.id! }));

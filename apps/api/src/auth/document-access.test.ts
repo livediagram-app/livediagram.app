@@ -26,7 +26,12 @@ vi.mock('../db', () => ({
   getDocumentSharePassword: (env: Env, id: string) => getSharePasswordMock(env, id),
   getMembership: (env: Env, teamId: string, userId: string) =>
     getMembershipMock(env, teamId, userId),
+  communityLinkAccess: (env: Env, code: string) => communityLinkAccessMock(env, code),
 }));
+// Whether a Community post's link is public, for the community-link cases (docs/specs/025-community/community.md).
+const communityLinkAccessMock = vi.fn<
+  (env: Env, code: string) => Promise<'public' | 'closed' | null>
+>(async () => 'public');
 
 // Import AFTER the mock declaration so the helpers pick up the
 // stubbed `getShareLink`. The helpers themselves don't care about
@@ -93,6 +98,7 @@ describe('canEditDocument', () => {
       createdAt: 0,
       expiry: 'never',
       expiresAt: null,
+      purpose: 'share',
       tabId: null,
     });
     const allowed = await canEditDocument(FAKE_ENV, 'diag-1', null, 'ABC23456', 'owner-a');
@@ -111,6 +117,7 @@ describe('canEditDocument', () => {
       createdAt: 0,
       expiry: 'never',
       expiresAt: null,
+      purpose: 'share',
       tabId: null,
     });
     const allowed = await canEditDocument(FAKE_ENV, 'diag-1', null, 'VIEW2345', 'owner-a');
@@ -125,6 +132,7 @@ describe('canEditDocument', () => {
       createdAt: 0,
       expiry: 'never',
       expiresAt: null,
+      purpose: 'share',
       tabId: null,
     });
     const allowed = await canEditDocument(FAKE_ENV, 'diag-1', null, 'EDIT2345', 'owner-a');
@@ -171,6 +179,7 @@ describe('canReadDocument', () => {
       createdAt: 0,
       expiry: 'never',
       expiresAt: null,
+      purpose: 'share',
       tabId: null,
     });
     const allowed = await canReadDocument(FAKE_ENV, 'diag-1', null, 'ABC23456', 'owner-a');
@@ -190,6 +199,7 @@ describe('canReadDocument', () => {
       createdAt: 0,
       expiry: 'never',
       expiresAt: null,
+      purpose: 'share',
       tabId: null,
     });
     const allowed = await canReadDocument(FAKE_ENV, 'diag-1', null, 'VIEW2345', 'owner-a');
@@ -207,6 +217,7 @@ describe('canReadDocument', () => {
       createdAt: 0,
       expiry: 'never',
       expiresAt: null,
+      purpose: 'share',
       tabId: null,
     });
     const allowed = await canReadDocument(FAKE_ENV, 'diag-1', null, 'EDIT2345', 'owner-a');
@@ -224,6 +235,7 @@ describe('share password gate (docs/specs/013-workspace/share-password.md)', () 
     createdAt: 0,
     expiry: 'never',
     expiresAt: null,
+    purpose: 'share',
     tabId: null,
   };
 
@@ -394,6 +406,7 @@ describe('tab-scoped links', () => {
     createdAt: 0,
     expiry: 'never',
     expiresAt: null,
+    purpose: 'share',
     tabId,
   });
   const read = (tab?: string) =>
@@ -453,7 +466,12 @@ describe('resolveDocumentGrant', () => {
     resolveDocumentGrant(FAKE_ENV, 'diag-1', owner, code, 'owner-a', password, null, null);
 
   it('grants the owner edit on every tab', async () => {
-    expect(await grant('owner-a', null)).toEqual({ role: 'edit', tabScope: null, shareCode: null });
+    expect(await grant('owner-a', null)).toEqual({
+      role: 'edit',
+      tabScope: null,
+      shareCode: null,
+      community: false,
+    });
   });
 
   it('grants a joined team member edit on every tab', async () => {
@@ -469,7 +487,7 @@ describe('resolveDocumentGrant', () => {
         'team-1',
         'user-1',
       ),
-    ).toEqual({ role: 'edit', tabScope: null, shareCode: null });
+    ).toEqual({ role: 'edit', tabScope: null, shareCode: null, community: false });
   });
 
   it("hands back a share link's role and scope", async () => {
@@ -480,12 +498,93 @@ describe('resolveDocumentGrant', () => {
       createdAt: 0,
       expiry: 'never',
       expiresAt: null,
+      purpose: 'share',
       tabId: 'tab-2',
     });
     expect(await grant(null, 'SCOPED23')).toEqual({
       role: 'view',
       tabScope: 'tab-2',
       shareCode: 'SCOPED23',
+      community: false,
+    });
+  });
+
+  it("opens a hidden post's link to nobody but an operator", async () => {
+    const community = {
+      code: 'POSTLINK',
+      role: 'view' as const,
+      documentId: 'diag-1',
+      createdAt: 0,
+      expiry: 'never' as const,
+      expiresAt: null,
+      purpose: 'community' as const,
+      tabId: null,
+    };
+    getShareLinkMock.mockResolvedValue(community);
+    communityLinkAccessMock.mockResolvedValueOnce('closed');
+    expect(await grant(null, 'POSTLINK')).toBeNull();
+    // Closed for everyone, signed in or not: nobody reviews a hidden post.
+    communityLinkAccessMock.mockResolvedValueOnce('closed');
+    expect(
+      await resolveDocumentGrant(
+        FAKE_ENV,
+        'diag-1',
+        null,
+        'POSTLINK',
+        'owner-a',
+        null,
+        null,
+        'user_x',
+      ),
+    ).toBeNull();
+    communityLinkAccessMock.mockResolvedValueOnce(null);
+    expect(await grant(null, 'POSTLINK')).toBeNull();
+  });
+
+  it('lets a Community link read only through a door that serves one', async () => {
+    getShareLinkMock.mockResolvedValue({
+      code: 'POSTLINK',
+      role: 'view',
+      documentId: 'diag-1',
+      createdAt: 0,
+      expiry: 'never',
+      expiresAt: null,
+      purpose: 'community',
+      tabId: null,
+    });
+    expect(await canReadDocument(FAKE_ENV, 'diag-1', null, 'POSTLINK', 'owner-a')).toBe(false);
+    expect(
+      await canReadDocument(
+        FAKE_ENV,
+        'diag-1',
+        null,
+        'POSTLINK',
+        'owner-a',
+        null,
+        null,
+        null,
+        undefined,
+        true,
+      ),
+    ).toBe(true);
+  });
+
+  it("marks a Community post's link as a community grant (docs/specs/025-community/community.md)", async () => {
+    getShareLinkMock.mockResolvedValue({
+      code: 'POSTLINK',
+      role: 'view',
+      documentId: 'diag-1',
+      createdAt: 0,
+      expiry: 'never',
+      expiresAt: null,
+      purpose: 'community',
+      tabId: null,
+    });
+    expect(await grant(null, 'POSTLINK')).toEqual({
+      role: 'view',
+      tabScope: null,
+      shareCode: 'POSTLINK',
+      community: true,
     });
   });
 
@@ -498,6 +597,7 @@ describe('resolveDocumentGrant', () => {
       createdAt: 0,
       expiry: 'never',
       expiresAt: null,
+      purpose: 'share',
       tabId: null,
     });
     expect(await grant(null, 'SCOPED23', 'wrong')).toBeNull();

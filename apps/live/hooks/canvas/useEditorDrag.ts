@@ -752,7 +752,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
           }
         }
       }
-      // A Plan card released over a board's column files its item there (docs/specs/025-plan/
+      // A Plan card released over a board's column files its item there (docs/specs/026-plan/
       // plan-board.md): the column is read from the board's own DOM under the pointer.
       if (drag?.kind === 'boxed' && drag.mode === 'move' && d.onPlanCardDroppedOnBoard) {
         const moved = Math.hypot(e.clientX - drag.startClientX, e.clientY - drag.startClientY) > 4;

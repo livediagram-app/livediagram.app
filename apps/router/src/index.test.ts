@@ -28,14 +28,16 @@ function makeEnv() {
   const api = mockFetcher();
   const telemetry = mockFetcher();
   const help = mockFetcher();
+  const community = mockFetcher();
   const env: Env = {
     MARKETING: marketing.fetcher,
     LIVE: live.fetcher,
     API: api.fetcher,
     TELEMETRY: telemetry.fetcher,
     HELP: help.fetcher,
+    COMMUNITY: community.fetcher,
   };
-  return { env, marketing, live, api, telemetry, help };
+  return { env, marketing, live, api, telemetry, help, community };
 }
 
 const dispatch = (path: string, env: Env) =>
@@ -60,6 +62,15 @@ describe('production dispatch (service bindings)', () => {
     expect(telemetry.urls).toEqual(['https://livediagram.app/data?window=30']);
     await dispatch('/help/canvas/themes/', env);
     expect(help.urls).toEqual(['https://livediagram.app/canvas/themes/']);
+  });
+
+  it('strips the basePath for Community (docs/specs/025-community/community.md)', async () => {
+    const { env, community, marketing } = makeEnv();
+    await dispatch('/community/post/?id=ABCDEFGH23', env);
+    expect(community.urls).toEqual(['https://livediagram.app/post/?id=ABCDEFGH23']);
+    await dispatch('/community', env);
+    expect(community.urls[1]).toBe('https://livediagram.app/');
+    expect(marketing.urls).toEqual([]);
   });
 
   it('a bare stripped prefix forwards as the root path', async () => {
@@ -261,8 +272,9 @@ describe('the caching rules', () => {
       LIVE: answering('<html></html>', html),
       HELP: answering('<html></html>', html),
       TELEMETRY: answering('<html></html>', html),
+      COMMUNITY: answering('<html></html>', html),
     };
-    for (const page of ['/', '/explorer/unsorted', '/help/canvas/', '/telemetry']) {
+    for (const page of ['/', '/explorer/unsorted', '/help/canvas/', '/telemetry', '/community']) {
       expect((await dispatch(page, env)).headers.get('Cache-Control'), page).toBe('no-store');
     }
     const assets: Env = {

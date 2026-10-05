@@ -1,6 +1,6 @@
 'use client';
 
-// A column's settings (docs/specs/025-plan/plan-board.md "The board set-up"): the popover a column's cog
+// A column's settings (docs/specs/026-plan/plan-board.md "The board set-up"): the popover a column's cog
 // opens, hanging under the cog. Its name as the header; colour, WIP limit (a stepper) and Counts as
 // Done (a switch); move left or right; add a
 // column after it; remove it, first asking where its cards go when it has any. Each change is one
@@ -19,7 +19,7 @@ import {
   Select,
 } from '@livediagram/ui';
 import { SwitchRow } from '@/components/primitives/SwitchRow';
-import { Portal } from '@/components/primitives/Portal';
+import { Portal } from '@livediagram/ui';
 import { BottomSheet } from '@/components/primitives/BottomSheet';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { VIEWPORT_EDGE_MARGIN as EDGE } from '@/lib/clamp-to-viewport';

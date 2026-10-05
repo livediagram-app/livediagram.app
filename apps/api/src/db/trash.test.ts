@@ -305,7 +305,7 @@ describe('purgeDocuments', () => {
 
     expect(count(db.sql, 'documents', 'id = ?', 'A')).toBe(0);
     expect(count(db.sql, 'tabs', 'id = ?', 't1')).toBe(0);
-    expect(del).toHaveBeenCalledWith(['thumb/A']);
+    expect(del).toHaveBeenCalledWith(['thumb/A', 'thumb-community/A']);
   });
 
   it('keeps a tab another document still holds', async () => {

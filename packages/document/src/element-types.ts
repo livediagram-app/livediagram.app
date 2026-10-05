@@ -390,11 +390,11 @@ export type ShapeElement = {
   // Checklist (docs/specs/009-elements/checklist.md): the checkable rows. Only meaningful on the
   // 'checklist' kind; bounded in validate.ts.
   checklistItems?: ChecklistItem[];
-  // Plan board set-up and Plan card reference (docs/specs/025-plan/plan-board.md). Only meaningful on
+  // Plan board set-up and Plan card reference (docs/specs/026-plan/plan-board.md). Only meaningful on
   // the 'plan-board' and 'plan-card' kinds; the items they show live in the document's item store.
   planBoard?: PlanBoardSetup;
   planCard?: PlanCardRef;
-  // Plan view (docs/specs/025-plan/plan-views.md): which view of the document's cards a 'plan-view' shows.
+  // Plan view (docs/specs/026-plan/plan-views.md): which view of the document's cards a 'plan-view' shows.
   planView?: PlanViewRef;
   // Status marker (docs/specs/009-elements/shape-markers.md): a small glyph (traffic-light dot / checkbox) shown
   // just left of the label, or centred when the shape has no label. `markerSize`
@@ -1334,8 +1334,8 @@ export function takesTypedLabel(el: { type: string; shape?: string }): boolean {
   return !UNTYPED_SHAPES.has(el.shape ?? '');
 }
 
-// What a Plan card points at: one item of the document's item store (docs/specs/025-plan/items.md).
+// What a Plan card points at: one item of the document's item store (docs/specs/026-plan/items.md).
 export type PlanCardRef = { itemId: string };
 
-// What a plan view shows (docs/specs/025-plan/plan-views.md): a metric or a visualisation.
+// What a plan view shows (docs/specs/026-plan/plan-views.md): a metric or a visualisation.
 export type PlanViewRef = { view: PlanViewId };

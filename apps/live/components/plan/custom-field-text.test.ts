@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { CustomFieldDef } from '@livediagram/items';
 import { customFieldText } from './custom-field-text';
 
-// docs/specs/025-plan/item-types.md "An item type": a custom field's value on a card face.
+// docs/specs/026-plan/item-types.md "An item type": a custom field's value on a card face.
 const field = (kind: CustomFieldDef['kind']): CustomFieldDef => ({ id: 'f-x', label: 'X', kind });
 
 describe('customFieldText', () => {

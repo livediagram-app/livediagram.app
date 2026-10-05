@@ -25,7 +25,7 @@ type PaletteDragPreview = {
   // The note is a WORKSHOP note (the tile has an event-storming kind), which
   // always lands on a lane (docs/specs/021-event-storming/event-storming.md "Always on a lane").
   workshop?: boolean;
-  // A Plan card tile's item type (docs/specs/025-plan/plan-mode.md "The palette"): the boards that
+  // A Plan card tile's item type (docs/specs/026-plan/plan-mode.md "The palette"): the boards that
   // show it open a gap where it would land.
   planType?: string;
 };

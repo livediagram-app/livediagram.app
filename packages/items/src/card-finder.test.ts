@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { cardMatches, findCards, isOffBoard } from './card-finder';
 import { item } from './test-items';
 
-// docs/specs/025-plan/items.md "Finding a card".
+// docs/specs/026-plan/items.md "Finding a card".
 describe('card finder', () => {
   const onBoard = {
     ...item({ title: 'Checkout flow', status: 'todo', description: 'Fewer fields' }),

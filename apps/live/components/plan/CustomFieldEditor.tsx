@@ -1,6 +1,6 @@
 'use client';
 
-// A custom field's editor in the item panel (docs/specs/025-plan/item-types.md "An item type"), by
+// A custom field's editor in the item panel (docs/specs/026-plan/item-types.md "An item type"), by
 // its kind. Every value is a plain string, number or true/false under the field's id; clearing a
 // field removes its value. A value of the wrong kind (the field's kind changed) shows empty and is
 // replaced by the next edit.

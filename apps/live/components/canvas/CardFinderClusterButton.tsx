@@ -3,7 +3,7 @@
 import { SearchIcon } from '@livediagram/ui';
 import { ClusterPopoverButton } from './ClusterPopoverButton';
 
-// The Cards button in the bottom-right cluster, in Plan mode (docs/specs/025-plan/items.md "Finding a
+// The Cards button in the bottom-right cluster, in Plan mode (docs/specs/026-plan/items.md "Finding a
 // card"): beside Card Types, it opens the search over every card in the document.
 export function CardFinderClusterButton(props: {
   popoverOpen: boolean;

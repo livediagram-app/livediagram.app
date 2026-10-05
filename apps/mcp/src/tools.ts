@@ -86,7 +86,7 @@ import {
 } from './schema';
 
 export function registerTools(server: McpServer, env: Env): void {
-  // The items Plan boards show (docs/specs/025-plan/plan-mode.md "Agents").
+  // The items Plan boards show (docs/specs/026-plan/plan-mode.md "Agents").
   registerItemTools(server, env);
   registerTool(
     server,

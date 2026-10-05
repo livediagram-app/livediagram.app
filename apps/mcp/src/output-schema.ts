@@ -174,7 +174,7 @@ export const restoreDocumentOutput = {
   url,
 };
 
-// The item tools (docs/specs/025-plan/plan-mode.md "Agents").
+// The item tools (docs/specs/026-plan/plan-mode.md "Agents").
 const itemOut = z.object({
   ref: z.string().describe('The item’s number as people say it, "#12".'),
   id: z.string().describe('The item id.'),

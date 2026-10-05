@@ -15,7 +15,7 @@ import {
 } from './item-undo-journal';
 
 // Wraps the tab history's undo and redo so item changes take their turn in one timeline with
-// canvas edits (docs/specs/025-plan/items.md "Undo"; ./item-undo-journal.ts says how).
+// canvas edits (docs/specs/026-plan/items.md "Undo"; ./item-undo-journal.ts says how).
 export function useItemUndo(history: {
   depth: number;
   branch: number;

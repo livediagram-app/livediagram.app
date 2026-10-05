@@ -1,6 +1,6 @@
 'use client';
 
-// The type editor (docs/specs/025-plan/item-types.md "Editing a type"): a modal, a sheet rising from
+// The type editor (docs/specs/026-plan/item-types.md "Editing a type"): a modal, a sheet rising from
 // the bottom on a phone. Name, colour, glyph and fields are edited as a draft; Save applies the whole
 // edit as one change, Cancel drops it. Delete Type, for a type with items, asks where they go first.
 import { useId, useMemo, useState } from 'react';

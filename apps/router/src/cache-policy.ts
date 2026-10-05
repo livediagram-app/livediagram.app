@@ -13,7 +13,7 @@ export const IMMUTABLE_CACHE_CONTROL = 'public, max-age=31536000, immutable';
 
 export type CacheRule = 'no-store' | 'immutable' | 'missing-asset' | 'unchanged';
 
-/** A hashed build asset of any of the four sites (`/_next/static/…`, under its prefix or not). */
+/** A hashed build asset of any of the five sites (`/_next/static/…`, under its prefix or not). */
 export function isBuildAsset(pathname: string): boolean {
   return /^(\/[a-z-]+)?\/_next\/static\//.test(pathname);
 }

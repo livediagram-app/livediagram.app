@@ -2,7 +2,7 @@
 
 // The wordmark subtitle ("Explorer" / "Help" next to the logo) turned into a
 // quick-navigation dropdown shared by the Explorer (apps/live), Help
-// (apps/help) and Telemetry headers. It reads as a plain label until hovered,
+// (apps/help), Community (apps/community) and Telemetry headers. It reads as a plain label until hovered,
 // when a chevron fades in and a menu drops down to jump between the product's
 // main surfaces. Helps a visitor build a mental model of where things live.
 //
@@ -12,14 +12,16 @@
 // because the destinations live in different apps stitched under one host by
 // the router, so client-side nav wouldn't cross them.
 
-import { useRef, type ReactNode } from 'react';
+import { COMMUNITY_HOME_PATH } from '@livediagram/api-schema';
+import { useRef, type ReactNode, useState } from 'react';
+import { useCommunityEnabled } from './community/useCommunityEnabled';
 import { useClickOutside } from './useClickOutside';
 import { useMenu } from './menu/useMenu';
 import { useMenuButton } from './menu/useMenuButton';
 import { ChevronDownIcon } from './icons';
 import { Glyph } from '@livediagram/ui';
 
-type ProductNavKey = 'home' | 'explorer' | 'editor' | 'help' | 'telemetry';
+type ProductNavKey = 'home' | 'explorer' | 'editor' | 'community' | 'help' | 'telemetry';
 
 // Per-surface glyphs (16px, 1.6 stroke) for the menu rows. The closed
 // trigger deliberately keeps the hamburger instead of the current page's
@@ -52,6 +54,15 @@ const ICONS: Record<ProductNavKey, () => ReactNode> = {
       <path d="M2 4.5A1.5 1.5 0 0 1 3.5 3h2.2l1.3 1.5h5.5A1.5 1.5 0 0 1 14 6v6a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1z" />
     </NavSvg>
   ),
+  // Two overlapping people: documents shared by others (docs/specs/025-community/community.md).
+  community: () => (
+    <NavSvg>
+      <circle cx="6" cy="5.5" r="2.2" />
+      <path d="M2 13c.4-2.3 2-3.6 4-3.6s3.6 1.3 4 3.6" />
+      <circle cx="11" cy="6" r="1.8" />
+      <path d="M10.6 9.5c1.7.1 3 1.2 3.4 3.1" />
+    </NavSvg>
+  ),
   help: () => (
     <NavSvg>
       <circle cx="8" cy="8" r="6" />
@@ -71,6 +82,12 @@ const ITEMS: { key: ProductNavKey; label: string; href: string; desc: string }[]
   { key: 'home', label: 'Welcome', href: '/', desc: 'Learn about our features' },
   { key: 'editor', label: 'Editor', href: '/new', desc: 'Start or edit a document' },
   { key: 'explorer', label: 'Explorer', href: '/explorer', desc: 'Your documents & folders' },
+  {
+    key: 'community',
+    label: 'Community',
+    href: COMMUNITY_HOME_PATH,
+    desc: 'Work people are proud of',
+  },
   { key: 'help', label: 'Help', href: '/help/', desc: 'Guides, tutorials & answers' },
   {
     key: 'telemetry',
@@ -91,12 +108,18 @@ export function ProductNav({
   current: ProductNavKey;
   showOnMobile?: boolean;
 }) {
-  const active = ITEMS.find((i) => i.key === current) ?? ITEMS[0]!;
+  // The Community entry goes while the Community is switched off (docs/specs/025-community/community.md "Turning
+  // the Community off"). Asked once someone reaches for the menu (pointer, focus, or opening it), so a page view
+  // that never touches it costs no request.
+  const [reached, setReached] = useState(false);
   // Explicit open state: a click, Enter, Space or an arrow key opens it with focus inside and the
   // menu keyboard (docs/specs/004-interface-design/menus.md). Desktop hover still shows it through
   // CSS without taking focus; focusing the trigger alone no longer opens it (D56).
   const { open, close, toggle, trigger, setTrigger, initialFocus, onTriggerKeyDown } =
     useMenuButton();
+  const communityOn = useCommunityEnabled(undefined, reached || open);
+  const items = communityOn ? ITEMS : ITEMS.filter((i) => i.key !== 'community');
+  const active = items.find((i) => i.key === current) ?? items[0]!;
   const ref = useRef<HTMLDivElement>(null);
   const { attach, surfaceProps } = useMenu({ open, onClose: close, trigger, initialFocus });
 
@@ -108,6 +131,8 @@ export function ProductNav({
   return (
     <div
       ref={ref}
+      onPointerEnter={() => setReached(true)}
+      onFocus={() => setReached(true)}
       className={`group relative ml-1.5 sm:ml-3 ${showOnMobile ? 'block' : 'hidden sm:block'}`}
     >
       <button
@@ -153,7 +178,7 @@ export function ProductNav({
           {...surfaceProps}
           className="w-60 outline-none rounded-xl border border-slate-200 bg-white p-1.5 shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-800 dark:shadow-black/30"
         >
-          {ITEMS.map((item) => {
+          {items.map((item) => {
             const isCurrent = item.key === current;
             return (
               <a

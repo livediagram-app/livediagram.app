@@ -1,6 +1,6 @@
 'use client';
 
-// An item's description in the item panel (docs/specs/025-plan/plan-board.md "Working on a board"). It reads
+// An item's description in the item panel (docs/specs/026-plan/plan-board.md "Working on a board"). It reads
 // as text until clicked (an empty one is a dashed invitation to add it); then it is the note editor (the
 // same runs, toolbar and shortcuts) on a raised surface, with shortcut hints and a Saving / Saved line,
 // until focus leaves it or Escape. Saved as `descriptionRich` with `description` as its plain-text mirror,

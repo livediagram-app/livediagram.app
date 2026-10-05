@@ -7,7 +7,7 @@ import { usePlan } from '@/components/plan/PlanContext';
 import { CountBadge } from '@/components/plan/CountBadge';
 import { ClusterPopoverButton } from './ClusterPopoverButton';
 
-// The Trash in the bottom-right cluster, in Plan mode (docs/specs/025-plan/items.md "Trash"), left of
+// The Trash in the bottom-right cluster, in Plan mode (docs/specs/026-plan/items.md "Trash"), left of
 // Undo, with a count of the cards in it. While a card is dragged it opens out into a drop target ("Drop to
 // Trash", dashed), and fills red with its lid tipped while the card is over it; a card let go there is
 // trashed. Pressed, it opens the Trash. Motion stops with reduced motion; the colours still change.

@@ -1,5 +1,5 @@
 // Board presets: the set-ups a palette board tile or a template starts from
-// (docs/specs/025-plan/plan-mode.md "The palette", "Templates").
+// (docs/specs/026-plan/plan-mode.md "The palette", "Templates").
 
 import type { CardField, PlanBoardSetup, PlanColumn } from './board';
 
@@ -29,7 +29,7 @@ export const PLAN_BOARD_PRESETS: Readonly<
     label: 'Blank Board',
     setup: {
       title: 'Board',
-      // No columns: the board asks for its first (docs/specs/025-plan/plan-board.md).
+      // No columns: the board asks for its first (docs/specs/026-plan/plan-board.md).
       columns: [],
       swimlaneBy: 'none',
       cardFields: WORK_FIELDS,
@@ -147,7 +147,7 @@ export const PLAN_BOARD_PRESETS: Readonly<
       hideWriting: false,
     },
   },
-  // Every card that is not archived, a row per status (docs/specs/025-plan/plan-board.md "All Cards").
+  // Every card that is not archived, a row per status (docs/specs/026-plan/plan-board.md "All Cards").
   'all-cards': {
     label: 'All Cards',
     setup: {
@@ -162,7 +162,7 @@ export const PLAN_BOARD_PRESETS: Readonly<
       hideWriting: false,
     },
   },
-  // Only archived items (docs/specs/025-plan/items.md "Archive"), in one column.
+  // Only archived items (docs/specs/026-plan/items.md "Archive"), in one column.
   archive: {
     label: 'Archive Board',
     setup: {
@@ -193,7 +193,7 @@ export function presetSetupOrBlank(id: unknown): PlanBoardSetup {
   return presetSetup(isPlanBoardPresetId(id) ? id : 'blank');
 }
 
-// A board placed on the canvas starts empty (docs/specs/025-plan/plan-mode.md "The palette"): its columns
+// A board placed on the canvas starts empty (docs/specs/026-plan/plan-mode.md "The palette"): its columns
 // get statuses of their own (`todo~k3f9`), so no card the document already has lands on it. An Archive
 // or All Cards board shows cards by what they are, not by status, so it keeps its columns as they are.
 export function freshBoardSetup(id: unknown, random: () => number = Math.random): PlanBoardSetup {

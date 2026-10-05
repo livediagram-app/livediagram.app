@@ -23,7 +23,7 @@ const threeColumns = () => ({
   doneColumnId: 'done',
 });
 
-// docs/specs/025-plan/plan-board.md "The board set-up".
+// docs/specs/026-plan/plan-board.md "The board set-up".
 const board = threeColumns();
 const [first, second, last] = board.columns as [
   (typeof board.columns)[number],

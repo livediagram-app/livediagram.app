@@ -1,4 +1,4 @@
-// The boards a card can be dropped on (docs/specs/025-plan/plan-board.md "Moving cards"): each Plan
+// The boards a card can be dropped on (docs/specs/026-plan/plan-board.md "Moving cards"): each Plan
 // board on screen registers itself by its element id, so a card dragged off one board can land on
 // another. The board under the pointer is read from the DOM (`data-plan-board`), as the drop slot
 // is, so the hit test can never disagree with what is drawn. Only the active tab's boards are on
@@ -18,11 +18,11 @@ export type PlanBoardTarget = {
   refusal: () => string;
   drop: (itemId: string, slot: PlanDropSlot) => void;
   hover: (incoming: PlanIncoming | null) => void;
-  // A card from the palette (docs/specs/025-plan/plan-mode.md "The palette"): whether the board shows
+  // A card from the palette (docs/specs/026-plan/plan-mode.md "The palette"): whether the board shows
   // that type, and a new item of it made at the slot (its row's field set).
   acceptsType: (type: string) => boolean;
   addCard: (type: string, slot: PlanDropSlot) => void;
-  // A widget from the palette (docs/specs/025-plan/board-widgets.md): whether this viewer may arrange
+  // A widget from the palette (docs/specs/026-plan/board-widgets.md): whether this viewer may arrange
   // the board's widgets, the place a dragged one would land (null: none), and one placed there.
   canEditWidgets: () => boolean;
   widgetHover: (slot: number | null) => void;

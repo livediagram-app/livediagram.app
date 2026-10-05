@@ -1,6 +1,6 @@
 'use client';
 
-// A board with no columns (docs/specs/025-plan/plan-board.md "The board set-up"): in place of its columns, a
+// A board with no columns (docs/specs/026-plan/plan-board.md "The board set-up"): in place of its columns, a
 // field to name the first one. Enter (or Add Column) makes it; the board then grows from its cog's
 // + Add Column After. Someone who may only view reads that the board has no columns yet.
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';

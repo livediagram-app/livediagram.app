@@ -5,7 +5,7 @@
 // Tab choose (the writing's keys, through article-slash.ts), a press chooses too. It never takes focus
 // from the writing.
 import { useLayoutEffect, useRef, useState } from 'react';
-import { Portal } from '@/components/primitives/Portal';
+import { Portal } from '@livediagram/ui';
 import type { SlashItem } from '@/lib/article/article-slash-items';
 
 // The menu and its options by id, for the writing to point at (aria-controls,

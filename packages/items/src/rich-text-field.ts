@@ -1,4 +1,4 @@
-// An item's description formatting (docs/specs/025-plan/items.md "Fields"): `descriptionRich`, runs of
+// An item's description formatting (docs/specs/026-plan/items.md "Fields"): `descriptionRich`, runs of
 // text with the editor's marks, beside `description`, its plain-text mirror. The run shape matches
 // @livediagram/document's TextRun, checked here because the item store sits below that package.
 import type { ItemFieldValue } from './item';

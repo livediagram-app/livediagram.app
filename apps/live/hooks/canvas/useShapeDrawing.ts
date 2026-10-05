@@ -59,7 +59,7 @@ type ShapeDrawingDeps = {
   // Style memory (docs/specs/008-canvas/quick-style-panel.md): dresses every user-drawn shape and arrow in
   // the remembered style of its kind. Identity for anything memory does not know.
   styleNewElement: <T extends Element>(el: T) => T;
-  // A palette card never lands on the canvas (docs/specs/025-plan/plan-mode.md "The palette"): it goes
+  // A palette card never lands on the canvas (docs/specs/026-plan/plan-mode.md "The palette"): it goes
   // into the board column at the point, or nowhere.
   onPlanCardPlace?: (itemType: string | undefined, canvasX: number, canvasY: number) => void;
 };

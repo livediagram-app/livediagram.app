@@ -98,7 +98,7 @@ export function hasPageLook(mode: EditorMode): boolean {
   return mode === 'illustrate';
 }
 
-// Plan mode works Plan boards as a planning tool (docs/specs/025-plan/plan-mode.md): pressing a card
+// Plan mode works Plan boards as a planning tool (docs/specs/026-plan/plan-mode.md): pressing a card
 // picks the card up, not the board. A rule about input, so it follows the person's mode.
 export function hasPlanInput(mode: EditorMode): boolean {
   return mode === 'plan';

@@ -163,7 +163,7 @@ export function deriveCanvasSelection(input: {
     // exactly as often as you chain from a box.
     selected.type !== 'annotation' &&
     // A Plan board or Plan card is not a node to chain from: its cards are its content
-    // (docs/specs/025-plan/plan-board.md).
+    // (docs/specs/026-plan/plan-board.md).
     !(
       selected.type === 'shape' &&
       (selected.shape === 'plan-board' ||

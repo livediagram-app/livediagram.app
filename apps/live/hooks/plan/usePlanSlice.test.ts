@@ -4,7 +4,7 @@ import { renderHook } from '@testing-library/react';
 import { ITEM_TYPES } from '@livediagram/items';
 import { usePlanSlice } from './usePlanSlice';
 
-// docs/specs/025-plan/plan-mode.md "Cost": the Plan context keeps its identity across editor renders
+// docs/specs/026-plan/plan-mode.md "Cost": the Plan context keeps its identity across editor renders
 // that change nothing Plan holds, so boards and cards are not re-rendered by every canvas change.
 describe('usePlanSlice', () => {
   const planItems = {

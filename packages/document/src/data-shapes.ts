@@ -212,7 +212,7 @@ export function isSelfDrawingShape(kind: ShapeKind): boolean {
   );
 }
 
-// The Plan board, Plan card and plan view (docs/specs/025-plan/plan-board.md, plan-views.md): they draw
+// The Plan board, Plan card and plan view (docs/specs/026-plan/plan-board.md, plan-views.md): they draw
 // items, not a label.
 export function isPlanShape(kind: ShapeKind): boolean {
   return kind === 'plan-board' || kind === 'plan-card' || kind === 'plan-view';

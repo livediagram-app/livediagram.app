@@ -1,6 +1,6 @@
 'use client';
 
-// The Trash (docs/specs/025-plan/items.md "Trash"): the cards moved there, newest change first. Each row
+// The Trash (docs/specs/026-plan/items.md "Trash"): the cards moved there, newest change first. Each row
 // carries its type's stripe and glyph, its number and title (two lines), and where it came from and when;
 // Restore puts it back in that status, the bin deletes it for good. Empty Trash deletes them all after
 // asking. A popover above its button in Plan mode's bottom-right cluster, like Card Types.

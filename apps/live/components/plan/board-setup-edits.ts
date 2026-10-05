@@ -1,4 +1,4 @@
-// A board set-up's edits (docs/specs/025-plan/plan-board.md "The board set-up"), as pure functions of the
+// A board set-up's edits (docs/specs/026-plan/plan-board.md "The board set-up"), as pure functions of the
 // set-up: what a column's cog and the board's element menu change. Each returns the new set-up (the
 // caller writes it as one element edit, undone like any other) and leaves the input untouched.
 import {
@@ -130,7 +130,7 @@ export function addColumnAfter(
 ): { setup: PlanBoardSetup; column: PlanColumn } | null {
   if (setup.columns.length >= PLAN_COLUMNS_MAX) return null;
   // A status of its own (`to-do~k3f9`), so a new column starts empty rather than taking in the cards of a
-  // column of the same name on another board (docs/specs/025-plan/plan-board.md "The board set-up").
+  // column of the same name on another board (docs/specs/026-plan/plan-board.md "The board set-up").
   const suffix = Array.from({ length: 4 }, () => Math.floor(random() * 36).toString(36)).join('');
   const status = `${newColumnStatus(
     name,

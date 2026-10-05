@@ -238,7 +238,7 @@ when a long-press opens its menu or holds a path node, **snap** (8ms) once as a 
 alignment guide (not again while it stays on it), **delete** (a double pulse) when a selection is
 deleted. Never with a mouse.
 
-**Safe areas.** The edge chrome clears the device's safe-area insets (`lib/safe-area.ts`): the
+**Safe areas.** The edge chrome clears the device's safe-area insets (`packages/ui/src/safe-area.ts`): the
 header below the top inset and past the side insets, the tab bar above the home indicator and past
 the side insets, the strip's row and the bottom-right cluster past a landscape notch. Inline
 `env(safe-area-inset-*)` styles, at least the chrome's own gutters. The editor does not set

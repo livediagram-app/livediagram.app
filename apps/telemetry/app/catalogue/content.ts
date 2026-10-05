@@ -684,7 +684,7 @@ export const EXPORT_AND_IMPORT: MetricStack = {
   seeAlso: { view: 'editing', label: 'See Each Export Format on the Editing Tab' },
 };
 
-// Plan mode (docs/specs/025-plan/plan-mode.md "Telemetry"): items made, moved, opened, voted on and
+// Plan mode (docs/specs/026-plan/plan-mode.md "Telemetry"): items made, moved, opened, voted on and
 // deleted, and boards set up and revealed. Whether boards are used for work, not just drawn.
 export const PLAN_ITEMS_ADDED = chart(
   'Plan',

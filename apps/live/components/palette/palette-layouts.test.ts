@@ -137,7 +137,7 @@ describe('palette layouts', () => {
     for (const id of popular) expect(reachable.has(id), id).toBe(true);
   });
 
-  // docs/specs/025-plan/plan-mode.md "The palette".
+  // docs/specs/026-plan/plan-mode.md "The palette".
   it('narrows Plan to its own categories, and borrows the notes and team tools', () => {
     expect(ids('plan')).toEqual([
       'plan-cards',
@@ -180,7 +180,7 @@ describe('palette layouts', () => {
     expect(cards.every((id) => id.startsWith('plan:card-'))).toBe(true);
   });
 
-  // docs/specs/025-plan/plan-views.md: every tile places a plan view naming its view.
+  // docs/specs/026-plan/plan-views.md: every tile places a plan view naming its view.
   it('offers a metric per read-out kind and a tile per visualisation', () => {
     const widgets = paletteCategoriesFor('plan').find((c) => c.id === 'plan-metrics')!;
     const charts = paletteCategoriesFor('plan').find((c) => c.id === 'plan-visualisations')!;

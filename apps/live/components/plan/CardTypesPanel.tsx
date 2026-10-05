@@ -1,6 +1,6 @@
 'use client';
 
-// The Card Types panel (docs/specs/025-plan/item-types.md "The Card Types panel"): the document's item
+// The Card Types panel (docs/specs/026-plan/item-types.md "The Card Types panel"): the document's item
 // types, each with its glyph and colour, its name and how many items have it. A popover hanging above
 // its button in Plan mode's bottom-right cluster. Edit and Add Type open the type editor; rows reorder
 // by drag, or Alt with the arrow keys; Restore built-in types puts the built-ins back. Someone who

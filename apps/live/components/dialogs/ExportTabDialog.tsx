@@ -1,6 +1,6 @@
 import { usePlan } from '@/components/plan/PlanContext';
 import { useCallback, useEffect, useState } from 'react';
-import { DialogCloseButton } from '@/components/dialogs/DialogCloseButton';
+import { DialogCloseButton, DialogHeader } from '@livediagram/ui';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { FormatCard } from './FormatCard';
 import { FormatIcon } from './export-format-icons';
@@ -35,7 +35,6 @@ import { tabToExcalidrawText } from '@/lib/excalidraw-export';
 import { ensureIconCatalogs } from '@/lib/icon-registry';
 import { track } from '@/lib/telemetry';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
-import { DialogHeader } from './DialogHeader';
 
 // Telemetry (docs/specs/017-telemetry/telemetry.md): map the internal format key to the public label
 // the dashboard shows. 'file' is the portable .json export.
@@ -200,7 +199,7 @@ export function ExportTabDialog({
   offerHiddenLayers = true,
   pages,
 }: ExportTabDialogProps) {
-  // Plan boards and cards export with their items (docs/specs/025-plan/plan-board.md).
+  // Plan boards and cards export with their items (docs/specs/026-plan/plan-board.md).
   const plan = usePlan();
   // null = the format grid; otherwise the picked format's sub-panel.
   const [active, setActive] = useState<Format | null>(null);

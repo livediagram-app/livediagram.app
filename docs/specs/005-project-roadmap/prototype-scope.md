@@ -4,15 +4,16 @@ The frontend-only prototype phase ended once the API app landed. This spec captu
 
 ## Where we are now
 
-Seven apps, all deployable to Cloudflare Workers (with Static Assets for the four Next.js apps):
+Eight apps, all deployable to Cloudflare Workers (with Static Assets for the five Next.js apps):
 
 - **marketing**: static landing site at `/`.
 - **live**: the diagram editor (clean routes, no `/live` prefix). Statically exported Next.js.
 - **telemetry**: public anonymous-events dashboard at `/telemetry`. Statically exported Next.js. Reads aggregate counts from the api worker's D1 events table. See [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md).
 - **help**: the help centre at `/help`. Statically exported Next.js with MDX articles.
+- **community**: the public gallery of shared documents at `/community`. Statically exported Next.js. See [Community](../025-community/community.md).
 - **api**: Cloudflare Worker holding the REST endpoints + Durable Object realtime room. D1 is the durable store.
 - **mcp**: Cloudflare Worker at its own host, `mcp.livediagram.app`, that connects the editor to AI tools ([MCP server](../015-api/mcp-server.md)).
-- **router**: Worker that stitches marketing, live, telemetry, help and api under one hostname.
+- **router**: Worker that stitches marketing, live, telemetry, help, community and api under one hostname.
 
 The editor is real:
 
@@ -26,12 +27,12 @@ The editor is real:
 - **Event storming**: a **tab kind** (`Tab.kind` `'event-storming'`, started from the Technical templates) that presents the sticky-note workshop notation over an ordinary tab: fixed paper silhouettes, verbs instead of styling, always-on timeline lanes, next-note buttons, and a note dropped between two others inserting between them. Its **photo import** turns a photographed wall into notes: classical computer vision in the browser (`@livediagram/sticky-vision`) finds the stickies and reads each kind off its paper colour, an optional learned boundary model (`@livediagram/sticky-model`, run in a Web Worker) corrects the boxes, and the handwriting on each crop is read by the api's model (`POST /api/ai/read-notes`) or, on a deployment without one, by an in-browser model. The author reviews the boxes over the photo before anything lands, and the photo itself never leaves the browser. See [Event storming](../021-event-storming/event-storming.md).
 - **Editor modes**: every general tab switches between **Diagram**, **Draw**, **Illustrate** and **Plan** beside the page switcher; whiteboarding is a mode, not a tab kind ([Editor modes](../007-editor/editor-modes.md)).
 - **Whiteboards** (Draw mode): plain freehand whiteboarding on a general tab: three preset pressure markers, text, the Path tool, an eraser and shapes in one dock, on a plain, dotted or grid board, light or dark. See [Draw mode](../023-draw-mode/draw-mode.md).
-- **Plan mode** ([Plan mode](../025-plan/plan-mode.md)): the fourth editor mode, for running work on boards. A
+- **Plan mode** ([Plan mode](../026-plan/plan-mode.md)): the fourth editor mode, for running work on boards. A
   **Plan board** draws a document's **items** (tasks, bugs, notes, ideas, kept in their own D1 table with an open
   field bag, or inside an offline document) as columns of cards: drag between columns and rows, WIP limits, quick add
   with `@name #label !priority ~points`, an item panel, voting and hide-writing for retros, presence on cards, one undo
   timeline with the canvas, ten Plan templates (boards set up for their use, with no cards), and item verbs for the CLI and MCP
-  ([Items](../025-plan/items.md), [Plan board](../025-plan/plan-board.md)).
+  ([Items](../026-plan/items.md), [Plan board](../026-plan/plan-board.md)).
 - **Snap colours**: on a whiteboard, one option converts every custom colour into the board's stock colours, so an imported or hand-coloured board adapts to light and dark like everything drawn in stock colours ([Draw mode](../023-draw-mode/draw-mode.md#snap-colours)).
 - **Packed pen strokes**: every freehand stroke is stored as one compact binary block of points and pressures, so a board of thousands of strokes fits its tab; an editor left open across a format change asks calmly to be reloaded. See [Stroke points](../006-document/stroke-points.md) and [New version prompt](../016-platform/new-version-prompt.md).
 - **Corners that scale down**: a corner preset is drawn at most a quarter of a shape's shorter side, so a small rounded square stays a rounded square ([Corner radius](../008-canvas/corner-radius.md)).
@@ -65,6 +66,11 @@ The editor is real:
   views, lint and diff, `changeset ls`, `show`), the edits (`edit -f`, `element …`, `changeset revert`) based on
   read copies, `document create|rename|share|rm|restore`, `tab add|rename|rm`, the catalogues (`template`,
   `icon search`, `schema`), guides, the agent skill and the `api` escape hatch.
+- **Community** ([Community](../025-community/community.md)): a public gallery at `/community` of documents people
+  are proud of. Signed-in owners publish a document from the Share dialog with a title, description, category and tags;
+  anyone can search and filter it, open a document read-only (no room, no comments), like it and make their own copy in
+  one click. Posts stay live with the document, and moderation is self-serve: enough reports hide a post for
+  good, with nobody reviewing by hand.
 - **AI assistance** (optional): an in-editor panel with two modes: Ask answers questions about the active tab, Clean fixes label typos and normalises sizes, positions, and styles. Hidden entirely unless the api worker has a model key set; per-user opt-in via Settings. This is the in-editor panel only; driving documents from an outside assistant is the MCP server. See [AI Assistance](../007-editor/ai-assistance.md).
 - **Anonymous first-party telemetry** + the public `/telemetry` dashboard. The editor emits a closed-vocabulary `{category, action, type}` event for every meaningful interaction (shapes added, themes changed, comments posted, etc.) via batched POSTs to `/api/events`; the dashboard renders aggregate counts read from the api worker's D1 summary. No third-party analytics; no identifiers crossing the wire. Off by default for self-hosters (the api's `TELEMETRY_ENABLED` flag + the live build's `NEXT_PUBLIC_TELEMETRY_ENABLED` both need to be on for events to flow end-to-end), and a per-user opt-out ([User preferences](../007-editor/user-preferences.md)) overrides both when off. See [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md).
 - **Google Drive mirror** (optional, signed-in): My documents mirrored to the user's own Google Drive as `.livediagram` files in a matching folder tree, names, folders and the bin kept in step both ways while a tab is open, and "Open with" from Drive. Off until a Google OAuth client id is set. See [Google Drive mirror](../022-drive-mirror/drive-mirror.md).

@@ -1,6 +1,6 @@
 'use client';
 
-// Picking a card up on a Plan board (docs/specs/025-plan/blueprints/plan-board.md "Behaviour and
+// Picking a card up on a Plan board (docs/specs/026-plan/blueprints/plan-board.md "Behaviour and
 // state"): idle, pressed, dragging, then dropped or cancelled. A press that never moves is a click
 // (open the item). While dragging, a copy follows the pointer and the slot it would land in is
 // read from the board's own DOM under the pointer: the column (`data-plan-status`), the row
@@ -33,7 +33,7 @@ export type PlanDragState = {
   outside: boolean;
   // Another board under the pointer: its element id, and whether it shows this item.
   target: { boardId: string; accepts: boolean } | null;
-  // Over the Trash button (docs/specs/025-plan/items.md "Trash"): letting go trashes the card.
+  // Over the Trash button (docs/specs/026-plan/items.md "Trash"): letting go trashes the card.
   overTrash?: boolean;
 };
 

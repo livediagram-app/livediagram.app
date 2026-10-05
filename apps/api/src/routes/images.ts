@@ -25,7 +25,7 @@ import {
 } from '../responses';
 import { MAX_IMAGE_BYTES } from '../limits';
 import { recordImageUploaded } from '../timeline';
-import { gateGrant, requireOwner, type RouteContext } from './context';
+import { COMMUNITY_CONTENT, gateGrant, requireOwner, type RouteContext } from './context';
 
 // Parse a positive-integer cap from a wrangler.toml [vars] entry.
 // Returns null when the string is missing, blank, non-numeric, or
@@ -277,7 +277,7 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
           // both routes follow.
           // A tab-scoped visitor (docs/specs/013-workspace/tab-scoped-share-links.md) reads the images their
           // own tab uses, not every image in the document.
-          const grant = await gateGrant(ctx, d, liveDoc.ownerId, liveDoc.teamId);
+          const grant = await gateGrant(ctx, d, liveDoc.ownerId, liveDoc.teamId, COMMUNITY_CONTENT);
           if (grant) {
             allowed = await documentReferencesImage(env, d, imageId, grant.tabScope);
           }

@@ -116,7 +116,7 @@ export function buildTemplate(kind: TemplateKind, cx: number, cy: number): Eleme
       return buildApprovalWorkflow(cx, cy);
     case 'data-flow':
       return buildDataFlow(cx, cy);
-    // Plan templates (docs/specs/025-plan/plan-mode.md "Templates").
+    // Plan templates (docs/specs/026-plan/plan-mode.md "Templates").
     case 'kanban':
     case 'blank-plan':
     case 'sprint-board':

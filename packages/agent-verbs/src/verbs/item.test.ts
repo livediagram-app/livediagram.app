@@ -4,7 +4,7 @@ import { VerbRefusal } from '../define';
 import { contextOf, DOC_A, fakeApi, library, tabsOfA } from '../testing/fake-api';
 import { fieldsFromPairs, itemAdd, itemLs, itemMove, itemRm, itemSet } from './item';
 
-// The item verbs (docs/specs/025-plan/plan-mode.md "Agents"; docs/specs/015-api/cli.md "Commands").
+// The item verbs (docs/specs/026-plan/plan-mode.md "Agents"; docs/specs/015-api/cli.md "Commands").
 const by = { id: 'p', name: 'Priya', color: '#7c3aed' };
 const item = (key: number, id: string, fields: Item['fields'], type = 'task'): Item => ({
   id,

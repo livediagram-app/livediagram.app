@@ -1,6 +1,6 @@
 'use client';
 
-// The palette's Cards category (docs/specs/025-plan/item-types.md "Where types show"): card tiles
+// The palette's Cards category (docs/specs/026-plan/item-types.md "Where types show"): card tiles
 // drawn from the document's item types, so a type someone adds shows here and a renamed or deleted
 // one changes or goes. Outside the editor (no PlanContext) the built-in types stand.
 import { ITEM_TYPES } from '@livediagram/items';
@@ -19,7 +19,7 @@ export function PalettePlanCardsTab(props: GridProps) {
     <>
       <PaletteTileGrid {...props} tiles={types.map(planCardTile)} />
       {/* Edit Cards: the Card Types panel, where types are added and their fields set
-          (docs/specs/025-plan/item-types.md "The Card Types panel"). */}
+          (docs/specs/026-plan/item-types.md "The Card Types panel"). */}
       {plan?.canEdit ? (
         <div className="mt-3 border-t border-slate-100 pt-3 dark:border-slate-800">
           <button

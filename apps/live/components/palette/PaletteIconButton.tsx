@@ -148,7 +148,7 @@ export function IconButton({
         e.dataTransfer.effectAllowed = 'copy';
         // Publish the footprint so the canvas ghost (docs/specs/010-palette/palette-drag-ghost.md) can preview
         // where this shape will land.
-        // A plan view's footprint is its view's (docs/specs/025-plan/plan-views.md).
+        // A plan view's footprint is its view's (docs/specs/026-plan/plan-views.md).
         const { width, height } =
           dragKind === 'plan-view' ? planViewSize(dragChoice) : SHAPE_DEFAULT_SIZE[dragKind];
         setPaletteDragPreview({

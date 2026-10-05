@@ -9,7 +9,7 @@ import {
   validateItemTypeCatalogue,
 } from './type-catalogue';
 
-// docs/specs/025-plan/item-types.md "An item type": tabs.
+// docs/specs/026-plan/item-types.md "An item type": tabs.
 const task = ITEM_TYPES.find((t) => t.id === 'task')!;
 
 describe('item type tabs', () => {

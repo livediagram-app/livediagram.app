@@ -1,10 +1,10 @@
-// The Boards and Cards tiles' glyphs (docs/specs/025-plan/plan-mode.md "The palette"): a board drawn
+// The Boards and Cards tiles' glyphs (docs/specs/026-plan/plan-mode.md "The palette"): a board drawn
 // as a picture of its kind, and a card drawn with its item type's colour stripe, at the tile size.
 import { Glyph } from '@livediagram/ui';
 import type { BoardWidgetKind, CardSize } from '@livediagram/items';
 import { accentVars } from './plan-palette';
 
-// One picture per board preset, so the Boards category reads at a glance (docs/specs/025-plan/
+// One picture per board preset, so the Boards category reads at a glance (docs/specs/026-plan/
 // plan-mode.md "The palette"), on a 22-unit grid like the other palette glyphs.
 const BOARD_ART: Record<string, React.ReactNode> = {
   // A board of rows, each led by a status dot: every card, by status.
@@ -153,7 +153,7 @@ export function CardSizeArt({ size }: { size: CardSize }) {
   );
 }
 
-// A picture per board widget (docs/specs/025-plan/board-widgets.md), for the palette's Widgets tiles.
+// A picture per board widget (docs/specs/026-plan/board-widgets.md), for the palette's Widgets tiles.
 const WIDGET_ART: Record<BoardWidgetKind, React.ReactNode> = {
   count: <path d="M8.5 4.5 7 17.5M15 4.5l-1.5 13M4.5 8.5h14M3.5 13.5h14" />,
   progress: (

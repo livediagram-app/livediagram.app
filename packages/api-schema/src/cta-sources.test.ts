@@ -59,6 +59,10 @@ describe('CTA_SOURCES', () => {
       'Dashboard.HeaderIllustration',
       'Dashboard.HeaderPlan',
       'Help.Header',
+      'Community.Header',
+      'Community.HeaderDraw',
+      'Community.HeaderWhiteboard',
+      'Community.HeaderIllustration',
     ]);
   });
 
@@ -137,6 +141,7 @@ describe('ctaSurfaceOfPath', () => {
     expect(ctaSurfaceOfPath('/faq')).toBe('Faq');
     expect(ctaSurfaceOfPath('/status')).toBe('Status');
     expect(ctaSurfaceOfPath('/telemetry')).toBe('Dashboard');
+    expect(ctaSurfaceOfPath('/community/post')).toBe('Community');
     expect(ctaSurfaceOfPath('/help')).toBe('Help');
     expect(ctaSurfaceOfPath('/help/canvas/the-canvas')).toBe('Help');
   });

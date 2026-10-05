@@ -1,4 +1,4 @@
-// The Plan board's and Plan card's colours (docs/specs/025-plan/plan-board.md "Theme and style"): the
+// The Plan board's and Plan card's colours (docs/specs/026-plan/plan-board.md "Theme and style"): the
 // canvas and the SVG export both draw from here, so a board looks the same in both. With no colours of
 // its own a board takes the surface's neutral set; with them (a tab theme stamps them, Quick Style and
 // the colour pickers set them, a theme switch rewrites them) its fill is the board, its stroke the
@@ -85,7 +85,7 @@ export function planPalette(surface: CanvasSurface, own: PlanOwnColours = {}): P
   };
 }
 
-// A type accent on a dark surface (docs/specs/025-plan/item-types.md "An item type"): one too dark to
+// A type accent on a dark surface (docs/specs/026-plan/item-types.md "An item type"): one too dark to
 // see (Project's black) is lifted toward white until it reaches 3:1 against the dark card; a
 // light surface keeps the accent as chosen.
 const DARK_CARD = DARK.card;

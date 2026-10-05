@@ -4,7 +4,7 @@ import { renderHook } from '@testing-library/react';
 import { createShape, type Element } from '@livediagram/document';
 import { hasPlanContent, usePlanNeeded } from './usePlanNeeded';
 
-// docs/specs/025-plan/plan-mode.md "Cost".
+// docs/specs/026-plan/plan-mode.md "Cost".
 describe('usePlanNeeded', () => {
   const board = createShape('plan-board', 0, 0) as Element;
   const square = createShape('square', 0, 0) as Element;

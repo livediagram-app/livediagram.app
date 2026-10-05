@@ -1,6 +1,6 @@
 'use client';
 
-// The item panel's field editors (docs/specs/025-plan/plan-board.md "Working on a board"), one per field
+// The item panel's field editors (docs/specs/026-plan/plan-board.md "Working on a board"), one per field
 // kind: text that saves on a pause in typing, and pickers that save at once. Each calls `onSave` with
 // the field's new value, or `undefined` to clear it.
 import { CheckIcon, CloseIcon, PlusIcon, Select } from '@livediagram/ui';

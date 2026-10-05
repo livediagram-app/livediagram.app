@@ -38,7 +38,7 @@ import { PaletteTileGrid, type PaletteTileActions } from '@/components/palette/P
 import type { ResolvedPaletteCategory } from './palette-layouts';
 import type { EsBoardControls } from '@/components/palette/EventStormingBoardRows';
 
-// Plan's UI loads only when it is drawn (docs/specs/025-plan/plan-mode.md "Cost"), so a document without
+// Plan's UI loads only when it is drawn (docs/specs/026-plan/plan-mode.md "Cost"), so a document without
 // Plan pays nothing for it.
 const PalettePlanCardsTab = dynamic(
   () => import('./PalettePlanCardsTab').then((m) => m.PalettePlanCardsTab),
@@ -161,7 +161,7 @@ export function paletteCategoryTabs(
       case 'behaviour':
         return <PaletteBehaviourTab {...tab} tiles={tiles} />;
       // Plan mode's cards follow the document's item types
-      // (docs/specs/025-plan/item-types.md "Where types show").
+      // (docs/specs/026-plan/item-types.md "Where types show").
       case 'plan-cards':
         return <PalettePlanCardsTab {...tab} />;
       default:

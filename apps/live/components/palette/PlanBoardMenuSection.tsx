@@ -1,6 +1,6 @@
 'use client';
 
-// A Plan board's settings in its element menu (docs/specs/025-plan/plan-board.md "The board set-up"):
+// A Plan board's settings in its element menu (docs/specs/026-plan/plan-board.md "The board set-up"):
 // two flyouts beside Style. **Board**: its title and its rows. **Cards**: what each card face shows, a
 // tile per field, pressed on or off. A column's own settings sit on the column, behind its cog. Each
 // change is one element edit, through PlanContext.
@@ -134,7 +134,7 @@ export function PlanCardsMenuSection({
   const plan = usePlan();
   if (!board) return null;
   const { setup, set } = board;
-  // The fields this card size can draw; the rest stay set but dimmed (docs/specs/025-plan/plan-board.md).
+  // The fields this card size can draw; the rest stay set but dimmed (docs/specs/026-plan/plan-board.md).
   const sizeFields = CARD_SIZE_FIELDS[setup.cardSize ?? 'detailed'];
   const toggle = (f: CardField) =>
     set(

@@ -1,4 +1,4 @@
-// The Project Gantt Chart's model (docs/specs/025-plan/plan-views.md "Project Gantt Chart"): a row per live
+// The Project Gantt Chart's model (docs/specs/026-plan/plan-views.md "Project Gantt Chart"): a row per live
 // Project card with its dates, its children's progress, and the time axis they sit on. Pure; the editor
 // draws it with the row fractions this gives.
 import type { Item } from './item';

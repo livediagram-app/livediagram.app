@@ -1,4 +1,4 @@
-// The item store's endpoints (docs/specs/025-plan/items.md, blueprint item-store.md "Interfaces and
+// The item store's endpoints (docs/specs/026-plan/items.md, blueprint item-store.md "Interfaces and
 // contracts"): list, create, bulk create, patch (POST), move, vote and delete under
 // /api/documents/:id/items. People and agents use the same doors. Every write applies the pure
 // functions of @livediagram/items, lands guarded by the item's rev (retried on a lost race), and

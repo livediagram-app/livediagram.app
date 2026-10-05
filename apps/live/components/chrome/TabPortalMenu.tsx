@@ -1,7 +1,6 @@
 import { PencilIcon, TrashIcon } from '@/components/primitives/explorer-icons';
 import { useEffect, useLayoutEffect, useRef, useState, useCallback } from 'react';
 import { useReposition } from '@/hooks/canvas/useReposition';
-import { Portal } from '@/components/primitives/Portal';
 import { BottomSheet } from '@/components/primitives/BottomSheet';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
@@ -34,7 +33,7 @@ import {
   AddTabToFolderDialog,
 } from '@/components/dialogs/TabOrganiseDialogs';
 import type { CanvasMenuActions, CanvasMenuTarget } from './TabBar';
-import { DuplicateIcon, MenuTreeContext, useControlMenu } from '@livediagram/ui';
+import { DuplicateIcon, MenuTreeContext, useControlMenu, Portal } from '@livediagram/ui';
 import type { SessionToolsProps } from '@/components/chrome/session-tools-props';
 
 // The unified tab / canvas portal menu (actions, copy-to-document, and

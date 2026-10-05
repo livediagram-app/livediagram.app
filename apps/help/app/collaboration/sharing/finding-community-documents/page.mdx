@@ -1,0 +1,66 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Finding Documents in the Community',
+  description:
+    'Search the Community by words, tags, category and sort, open a document read-only, like it, make your own copy, or report it.',
+  path: '/help/collaboration/sharing/finding-community-documents/',
+});
+
+<ArticleLayout title="Finding Documents in the Community" description="Search by words and tags, sort what you find, then make a document your own." categoryTitle="Collaboration" categorySlug="collaboration" parentArticle={{ title: "Sharing and Embeds", slug: "sharing" }} subArticles={getSubArticles("sharing").filter((a) => a.slug !== "finding-community-documents")}>
+
+The [Community](/community/) is a gallery of documents people have shared: architecture diagrams, retrospectives, roadmaps, wireframes, sketches and more. You don't need an account to browse it, like a document or make your own copy.
+
+## Searching
+
+One search box holds everything you are looking for, written as words:
+
+- **Plain words** search the title, description and tags, for example `checkout flow`.
+- **`#tag`** finds documents with that tag. Add several, like `#aws #event-driven`, and a document has to have all of them.
+- **`category:planning`** keeps to one subject, such as Planning, Workshops or Design & Wireframes.
+- **`sort:loved`** puts the most liked documents first, and **`sort:copied`** the most copied. Without one, the newest come first.
+- **`is:mine`** shows only the documents you have shared (see [Your own shares](#your-own-shares)).
+
+You can type these yourself, or use the buttons inside the right of the search box, which write the same words for you:
+
+<Step n={1}>
+  Choose **Category** to keep to one subject, or **All Categories** to see everything again.
+</Step>
+<Step n={2}>
+  Choose **Tags** to see the most used tags. Pick one to add its `#tag` to your search; pick it
+  again to take it out.
+</Step>
+<Step n={3}>
+  Choose the sort button (it reads **Newest** to start) to order by **Most Loved** or **Most
+  Copied**.
+</Step>
+
+On smaller screens the buttons show just their icons. Your search stays in the page address, so you can bookmark it or send it to someone.
+
+<Tip>On a document's own page, choose any of its tags to search the gallery for that tag.</Tip>
+
+## Your own shares
+
+Choose **My Shares** in the search box to see only the documents you have shared, signed in. Above them, **Your Shares** adds up how many you have shared, and how many likes and copies they have had altogether, so you can see how they are doing. Each card shows its own likes and copies, and you can still search, filter and sort within them.
+
+A document taken out of the Community after reports shows here marked **Hidden**; only you can see it. Choose it to open the document in the editor.
+
+## Looking at a document
+
+Open a card to see the document's page: a live preview you can pan, zoom and page through, the author's description and its tags. **Open Document** shows it full screen. Documents in the Community are always read-only, and their comments are private.
+
+## Liking a document
+
+Choose the heart on a card, or **Like** on a document's page, to show the author you liked it. Choose it again to take your like back. Likes are kept per browser, and **Most Loved** sorts by them.
+
+## Making your own copy
+
+Choose **Make a Copy** on a document's page, or in the bar across the top of an open document. A copy of the whole document opens in the editor as your own document, with every tab. Change anything you like; the original never changes. Each person who copies a document counts once towards its copy count.
+
+## Reporting a document
+
+If a document is spam, offensive, shows someone's personal information or isn't the author's to share, choose **Report** on its page, pick a reason and add a note if it helps. A document reported by several people is hidden automatically, for good. Nobody reviews posts by hand: the reports decide.
+
+</ArticleLayout>

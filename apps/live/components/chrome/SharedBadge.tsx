@@ -15,9 +15,11 @@ import {
 // lie (every joined member can open it); "Local only" (docs/specs/006-document/offline-mode.md)
 // supersedes "Private" for browser-only documents, matching the Explorer's Local only pill. Hovering (or focusing) the pill opens a
 // legend popover explaining every badge, with the current one highlighted, so
-// the four states can be compared in place instead of hunting each hover card.
+// the states can be compared in place instead of hunting each hover card. "Public" (listed in the Community,
+// docs/specs/025-community/community.md) wins over the rest but Local only: a document listed in the public
+// Community is the widest audience there is, so "Private" or "Shared" would understate it.
 
-type ShareState = 'private' | 'shared' | 'team' | 'offline';
+type ShareState = 'private' | 'shared' | 'team' | 'community' | 'offline';
 
 // Per-state pill styling, keyed by the resolved share state so the label /
 // description / badge + dot colours stay in one table rather than four
@@ -47,6 +49,13 @@ const SHARE_STATE_META: Record<
       'bg-brand-50 px-2 text-[10px] font-semibold text-brand-700 ring-1 ring-brand-200 dark:bg-brand-500/10 dark:text-brand-300 dark:ring-brand-500/30',
     dot: 'text-brand-500 dark:text-brand-400',
   },
+  community: {
+    label: 'Public',
+    description: 'In the public Community: anyone can find it, view it and make their own copy.',
+    badge:
+      'bg-pink-50 px-2 text-[10px] font-semibold text-pink-700 ring-1 ring-pink-200 dark:bg-pink-500/10 dark:text-pink-300 dark:ring-pink-500/30',
+    dot: 'text-pink-500',
+  },
   // Offline Mode (docs/specs/006-document/offline-mode.md): saved only in this browser, never on the
   // server. The Local only pill's words, sentence and amber tone (text 4.5:1 on its fill, ring 3:1).
   offline: {
@@ -59,7 +68,7 @@ const SHARE_STATE_META: Record<
 
 // Legend read order: the default first, then the progressively-wider
 // audiences, with Local only last as the deliberate opt-out.
-const LEGEND_ORDER: ShareState[] = ['private', 'shared', 'team', 'offline'];
+const LEGEND_ORDER: ShareState[] = ['private', 'shared', 'team', 'community', 'offline'];
 
 // The pill's rendered height, pinned: its caps label is trimmed to cap height, so padding alone would
 // shrink it (docs/specs/004-interface-design/optical-alignment.md).
@@ -99,12 +108,23 @@ export function SharedBadge({
   shareable,
   team,
   offline,
+  community,
 }: {
   shareable: boolean;
   team?: boolean;
   offline?: boolean;
+  // Listed in the Community (a hidden post is not public, so it reads as the document otherwise is).
+  community?: boolean;
 }) {
-  const state: ShareState = offline ? 'offline' : shareable ? 'shared' : team ? 'team' : 'private';
+  const state: ShareState = offline
+    ? 'offline'
+    : community
+      ? 'community'
+      : shareable
+        ? 'shared'
+        : team
+          ? 'team'
+          : 'private';
   const meta = SHARE_STATE_META[state];
   const [open, setOpen] = useState(false);
   const descriptionId = useId();

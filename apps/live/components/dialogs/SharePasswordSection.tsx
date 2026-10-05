@@ -18,6 +18,9 @@ type SharePasswordSectionProps = {
   onSetPassword: (password: string | null) => Promise<string | null | undefined> | void;
   busy: boolean;
   setBusy: (busy: boolean) => void;
+  // Why a password can't be set (the document is in the Community: docs/specs/025-community/
+  // community.md, a post and a password exclude each other). Disables the switch and says why.
+  lockedReason?: string | null;
 };
 
 export function SharePasswordSection({
@@ -25,6 +28,7 @@ export function SharePasswordSection({
   onSetPassword,
   busy,
   setBusy,
+  lockedReason = null,
 }: SharePasswordSectionProps) {
   // Password field. Kept in the clear (type="text") so the owner can always
   // read it. Seeded from the saved value; `pwSaved` flips the button to
@@ -101,9 +105,15 @@ export function SharePasswordSection({
         }}
         checked={enabled}
         onChange={toggle}
-        disabled={busy}
+        // A password already in force stays removable; only setting a new one is locked.
+        disabled={busy || (lockedReason !== null && !sharePassword)}
       />
-      {enabled ? (
+      {lockedReason !== null && !sharePassword ? (
+        <p className="ml-3.5 border-l-2 border-slate-200 pl-3 text-xs text-slate-500 dark:border-slate-700 dark:text-slate-400">
+          {lockedReason}
+        </p>
+      ) : null}
+      {enabled && (lockedReason === null || sharePassword) ? (
         // Nested under the setting it belongs to: indented to the footnote's
         // edge with a guide rule, so it reads as the switch's detail rather
         // than a stray field.

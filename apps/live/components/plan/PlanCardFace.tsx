@@ -1,6 +1,6 @@
 'use client';
 
-// One item's card face (docs/specs/025-plan/plan-board.md "What the board shows"), shared by the board's
+// One item's card face (docs/specs/026-plan/plan-board.md "What the board shows"), shared by the board's
 // cards and the Plan card element, at the board's card size: Minimal (the title), Compact (the title over
 // one line of number, priority, due, votes and assignee) or Detailed (type and priority, title, project,
 // description, custom fields, labels, checklist progress, then due, estimate, votes and who has it).
@@ -31,7 +31,7 @@ export type PlanCardFaceProps = {
   item: Item;
   palette: PlanPalette;
   fields: readonly CardField[];
-  // The board's card size (docs/specs/025-plan/plan-board.md "The board set-up"); a Plan card is Detailed.
+  // The board's card size (docs/specs/026-plan/plan-board.md "The board set-up"); a Plan card is Detailed.
   size?: CardSize;
   faceDown?: boolean;
   muted?: boolean;
@@ -249,7 +249,7 @@ export function PlanCardFace({
   }
 
   // Detailed: everything the board shows, in reading order.
-  // Custom fields marked Show on card, with a value (docs/specs/025-plan/item-types.md "An item type").
+  // Custom fields marked Show on card, with a value (docs/specs/026-plan/item-types.md "An item type").
   const onCard = (type.custom ?? []).flatMap((f) => {
     const text = f.onCard ? customFieldText(f, item.fields[f.id]) : null;
     return text ? [{ id: f.id, label: f.label, text }] : [];

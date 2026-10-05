@@ -1,4 +1,4 @@
-// The Plan glyph set (docs/specs/025-plan/item-types.md "An item type"): a type's glyph on its cards,
+// The Plan glyph set (docs/specs/026-plan/item-types.md "An item type"): a type's glyph on its cards,
 // drawn inline on a 16-unit grid as one stroked path, so a card never waits for an icon catalogue.
 // The first are the built-in types' (keyed by their type id); the rest are for types people add.
 

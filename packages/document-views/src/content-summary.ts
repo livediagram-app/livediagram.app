@@ -40,7 +40,7 @@ function checklistSummary(el: Element): string {
   return `done=${items.filter((item) => flagField(item, 'done')).length}/${items.length}`;
 }
 
-// A Plan board (docs/specs/025-plan/plan-board.md): its columns by name; its cards are items.
+// A Plan board (docs/specs/026-plan/plan-board.md): its columns by name; its cards are items.
 function planBoardSummary(el: Element): string {
   const setup = (el as { planBoard?: { columns?: unknown } }).planBoard;
   const columns = Array.isArray(setup?.columns) ? setup.columns.filter(isObject) : [];

@@ -34,7 +34,7 @@ export function IllustrateIcon({ size = 16, ...rest }: IconProps) {
   );
 }
 
-// Plan mode's mark (docs/specs/025-plan/plan-mode.md): a board of three columns, the middle one
+// Plan mode's mark (docs/specs/026-plan/plan-mode.md): a board of three columns, the middle one
 // holding a raised card, on the 24-unit grid.
 export function PlanIcon({ size = 16, ...rest }: IconProps) {
   return (
@@ -48,7 +48,7 @@ export function PlanIcon({ size = 16, ...rest }: IconProps) {
   );
 }
 
-// Plan mode's Cards category (docs/specs/025-plan/plan-mode.md "The palette"): two item cards, one
+// Plan mode's Cards category (docs/specs/026-plan/plan-mode.md "The palette"): two item cards, one
 // behind the other, each with its type stripe, on the 24-unit grid.
 export function PlanCardsIcon({ size = 16, ...rest }: IconProps) {
   return (

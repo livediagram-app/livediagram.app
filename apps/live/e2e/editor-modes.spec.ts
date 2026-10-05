@@ -108,7 +108,7 @@ test.describe('editor modes', () => {
     await expect(chip(page)).toHaveAccessibleName('Editor mode: Illustrate');
     await page.keyboard.press('Shift+D');
     await expect(chip(page)).toHaveAccessibleName('Editor mode: Plan');
-    // An empty Plan tab moves on freely (docs/specs/025-plan/plan-mode.md "Plan keeps its own tabs").
+    // An empty Plan tab moves on freely (docs/specs/026-plan/plan-mode.md "Plan keeps its own tabs").
     await page.keyboard.press('Shift+D');
     await expect(chip(page)).toHaveAccessibleName('Editor mode: Diagram');
     expectNoPageErrors(pageErrors);

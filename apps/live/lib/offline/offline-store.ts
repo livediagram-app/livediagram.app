@@ -53,12 +53,12 @@ export type OfflineDocumentRecord = {
   // This browser's opens of the document (docs/specs/013-workspace/explorer-home.md "Opens"),
   // for Home's Jump back in; see ./offline-opens.ts. Optional: a record never opened has none.
   opens?: StoredLocalOpens;
-  // The document's item store (docs/specs/025-plan/items.md "Offline documents"): its items, the
+  // The document's item store (docs/specs/026-plan/items.md "Offline documents"): its items, the
   // store's revision and the next item key. Optional: a record without them has an empty store.
   items?: Item[];
   itemsRev?: number;
   itemsNextKey?: number;
-  // The type catalogue (docs/specs/025-plan/item-types.md), absent or null for the built-in types.
+  // The type catalogue (docs/specs/026-plan/item-types.md), absent or null for the built-in types.
   itemTypes?: ItemTypeCatalogue | null;
 };
 
@@ -403,7 +403,7 @@ export async function offlineSaveDocumentMeta(
   });
 }
 
-// An offline document's type catalogue (docs/specs/025-plan/item-types.md "Storage and sync"), already
+// An offline document's type catalogue (docs/specs/026-plan/item-types.md "Storage and sync"), already
 // validated by the caller; null goes back to the built-in types.
 export async function offlineSaveItemTypes(
   id: string,

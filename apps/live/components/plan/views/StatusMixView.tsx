@@ -1,6 +1,6 @@
 'use client';
 
-// The Status Breakdown (docs/specs/025-plan/plan-views.md "Status Breakdown"): a donut of every live card by
+// The Status Breakdown (docs/specs/026-plan/plan-views.md "Status Breakdown"): a donut of every live card by
 // status, its middle the total, beside a legend of each status's name, colour and count. The donut is a
 // conic gradient, so it needs no SVG.
 import { useMemo } from 'react';

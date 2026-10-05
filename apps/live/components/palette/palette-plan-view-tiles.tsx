@@ -1,4 +1,4 @@
-// The plan view tiles (docs/specs/025-plan/plan-views.md): a metric per read-out widget kind and a
+// The plan view tiles (docs/specs/026-plan/plan-views.md): a metric per read-out widget kind and a
 // tile per visualisation, each placing a 'plan-view' element whose `plan` choice is the view id. Made from
 // the view catalogue, so a new view is a tile with no edit here. Spread into PALETTE_TILES via PLAN_TILES.
 import {

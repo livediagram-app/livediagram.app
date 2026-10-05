@@ -11,14 +11,13 @@
 import { lucideFolderX } from '@livediagram/icons/lucide';
 import { useState } from 'react';
 import { Dialog } from '@/components/dialogs/Dialog';
-import { DialogCloseButton } from '@/components/dialogs/DialogCloseButton';
 import {
   FolderPlaceIcon,
   NewFolderTile,
   PlacementCard,
 } from '@/components/placement/PlacementCard';
 import { DocumentThumbnail } from '@/components/panels/DocumentThumbnail';
-import { lucideGlyph, useEscape } from '@livediagram/ui';
+import { lucideGlyph, useEscape, DialogCloseButton } from '@livediagram/ui';
 import { matches } from '@livediagram/icons';
 
 // Shared modal frame: header (title + sub + close) over a scrollable body.

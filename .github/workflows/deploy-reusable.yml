@@ -8,9 +8,9 @@ name: Deploy (reusable)
 # this workflow's inputs and which secrets the caller hands over.
 #
 # Builds each app, then deploys to Cloudflare Workers in dependency order:
-# marketing + live + telemetry + help + api in parallel → mcp (service
-# binding to api) → router last (service bindings to the five path-routed
-# workers).
+# marketing + live + telemetry + help + community + api in parallel → mcp
+# (service binding to api) → router last (service bindings to the six
+# path-routed workers).
 on:
   workflow_call:
     inputs:
@@ -202,6 +202,13 @@ jobs:
           path: apps/help/out
           retention-days: 1
 
+      - name: Upload community build
+        uses: actions/upload-artifact@v7
+        with:
+          name: community-out
+          path: apps/community/out
+          retention-days: 1
+
   deploy-marketing:
     name: Deploy marketing
     needs: build
@@ -273,6 +280,43 @@ jobs:
 
       - name: Deploy to Cloudflare Workers
         working-directory: apps/telemetry
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+        run: pnpm exec wrangler deploy ${WRANGLER_ENV:+--env "$WRANGLER_ENV"}
+
+  deploy-community:
+    name: Deploy community
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      WRANGLER_ENV: ${{ inputs.wrangler_env }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref }}
+
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 9.15.0
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Download build
+        uses: actions/download-artifact@v8
+        with:
+          name: community-out
+          path: apps/community/out
+
+      - name: Deploy to Cloudflare Workers
+        working-directory: apps/community
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
@@ -579,14 +623,15 @@ jobs:
 
   deploy-router:
     name: Deploy router
-    # Router has service bindings to all five path-routed workers, so they
+    # Router has service bindings to all six path-routed workers, so they
     # must exist before it deploys.
-    needs: [deploy-marketing, deploy-live, deploy-api, deploy-telemetry, deploy-help]
+    needs:
+      [deploy-marketing, deploy-live, deploy-api, deploy-telemetry, deploy-help, deploy-community]
     runs-on: ubuntu-latest
     timeout-minutes: 10
     # The router is what makes the hostname serve the new code, so it is the
-    # one job that records the GitHub deployment. Putting it on all seven
-    # would file seven deployments per run for one release. No protection
+    # one job that records the GitHub deployment. Putting it on all eight
+    # would file eight deployments per run for one release. No protection
     # rules are implied — an environment with none behaves exactly as before;
     # it just gives the run a "View deployment" link, and somewhere to add an
     # approval gate later without touching this file.

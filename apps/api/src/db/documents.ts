@@ -14,7 +14,8 @@ import { rowToTabSummary, type TabRow } from '../tab-row';
 import type { DocumentDTO, DocumentSummary, Env, TabSummaryDTO } from '../types';
 import { getParticipant } from './participants';
 import { imageRefIdsFromData } from '../image-refs/extract';
-import { collabIndexCopyStatements } from './collab-index';
+import { collabIndexCopyStatements, collabIndexStatements } from './collab-index';
+import { redactTabDataForCommunity } from '../community-redact';
 import { imageRefAddStatements } from './image-refs';
 import { documentRemovalStatements } from './document-removal';
 import { firstTabCountSql, isEmptyCount } from './tabs';
@@ -32,7 +33,7 @@ type DocumentRow = {
   source: string | null;
   // Slide deck (docs/specs/012-collaboration/presentation-mode.md): serialised StoredPresentation, or null for no deck.
   presentation: string | null;
-  // The type catalogue (docs/specs/025-plan/item-types.md), JSON, or null for the built-in types.
+  // The type catalogue (docs/specs/026-plan/item-types.md), JSON, or null for the built-in types.
   item_types: string | null;
   saved_at: number;
   created_at: number;
@@ -40,6 +41,9 @@ type DocumentRow = {
   // row for this document, or NULL when no share links exist. Replaces
   // the legacy diagrams.share_code column dropped in migration 0008.
   share_code: string | null;
+  // The document's Community post state (docs/specs/025-community/community.md); only the full
+  // document read selects it.
+  community_state?: string | null;
 } & RecordedIntentRow;
 
 type SummaryRow = DocumentRow & { first_tab_count: number | null };
@@ -81,6 +85,10 @@ async function rowToDocument(env: Env, row: DocumentRow): Promise<DocumentDTO> {
     tabs,
     shareable: row.shareable === 1,
     shareCode: row.share_code,
+    communityState:
+      row.community_state === 'listed' || row.community_state === 'hidden'
+        ? row.community_state
+        : null,
     folderId: row.folder_id,
     teamId: row.team_id ?? null,
     source: (row.source as DocumentDTO['source']) ?? null,
@@ -99,10 +107,13 @@ async function rowToDocument(env: Env, row: DocumentRow): Promise<DocumentDTO> {
 // stable across calls; "primary" is the oldest link the owner has
 // minted for the document.
 const SHARE_CODE_EXPR =
-  '(SELECT code FROM share_links WHERE share_links.document_id = documents.id ORDER BY created_at ASC LIMIT 1) AS share_code';
+  "(SELECT code FROM share_links WHERE share_links.document_id = documents.id AND share_links.purpose = 'share' ORDER BY created_at ASC LIMIT 1) AS share_code";
 // `opens_in`, `tab_kind`, `template_family`: the recorded creation intent (migration 0062).
 const INTENT_COLS = 'opens_in, tab_kind, template_family';
-const DOCUMENT_COLS = `id, owner_id, name, shareable, folder_id, team_id, source, ${INTENT_COLS}, presentation, item_types, saved_at, created_at, ${SHARE_CODE_EXPR}`;
+// The document's Community post state, for the owner's header badge (docs/specs/025-community/community.md).
+const COMMUNITY_STATE_EXPR =
+  '(SELECT state FROM community_posts WHERE community_posts.document_id = documents.id) AS community_state';
+const DOCUMENT_COLS = `id, owner_id, name, shareable, folder_id, team_id, source, ${INTENT_COLS}, presentation, item_types, saved_at, created_at, ${SHARE_CODE_EXPR}, ${COMMUNITY_STATE_EXPR}`;
 // The list projection deliberately omits `presentation`: listing 100 documents
 // has no use for 100 decks, and a deck is the one metadata field whose size
 // grows with the document.
@@ -245,7 +256,7 @@ export async function upsertDocumentMeta(
   // `presentation` likewise: a create carries the deck an Offline Mode sync
   // built (docs/specs/006-document/offline-mode.md); after that only
   // setDocumentPresentation writes it. `item_types` the same: a create carries the catalogue a copy,
-  // a sync or a Drive import brings (docs/specs/025-plan/item-types.md); after that only
+  // a sync or a Drive import brings (docs/specs/026-plan/item-types.md); after that only
   // setDocumentItemTypes writes it.
   // `folder_id` and `team_id` are the placement, written by the INSERT that creates the row
   // (docs/specs/013-workspace/folders.md "Placement on create") and never by the DO UPDATE: a
@@ -294,7 +305,7 @@ export async function setDocumentPresentation(
     .run();
 }
 
-// Type catalogue write (docs/specs/025-plan/item-types.md "Storage and sync"): its own statement, as
+// Type catalogue write (docs/specs/026-plan/item-types.md "Storage and sync"): its own statement, as
 // the deck's, so no meta save can rewrite it. `itemTypes` is already validated; null restores the
 // built-in types.
 export async function setDocumentItemTypes(
@@ -380,7 +391,7 @@ export async function deleteDocument(env: Env, id: string): Promise<void> {
   // deleted document doesn't leave an orphaned R2 object behind. Best
   // effort: a missing binding or a missing object is a no-op, and a
   // failure here must never fail the delete itself.
-  if (env.IMAGES) await env.IMAGES.delete(thumbnailKey(id)).catch(() => {});
+  if (env.IMAGES) await env.IMAGES.delete(snapshotKeys(id)).catch(() => {});
 }
 
 // R2 object key for a document's cached SVG snapshot (docs/specs/006-document/document-snapshots.md). Shared by
@@ -388,6 +399,17 @@ export async function deleteDocument(env: Env, id: string): Promise<void> {
 // so the key shape lives in exactly one place.
 export function thumbnailKey(documentId: string): string {
   return `thumb/${documentId}`;
+}
+
+// The Community's own snapshot (docs/specs/025-community/community.md "Viewing a post's document"): drawn from the
+// redacted tab (no comments, no people), so the public card image never serves the owner's snapshot.
+export function communityThumbnailKey(documentId: string): string {
+  return `thumb-community/${documentId}`;
+}
+
+// Every cached snapshot a document can have, for the paths that delete it.
+export function snapshotKeys(documentId: string): string[] {
+  return [thumbnailKey(documentId), communityThumbnailKey(documentId)];
 }
 
 // When the cached snapshot was last rendered (docs/specs/006-document/document-snapshots.md), or null when it
@@ -428,6 +450,9 @@ export async function copyDocument(
   newName: string,
   // A tab-scoped visitor's copy (docs/specs/013-workspace/tab-scoped-share-links.md) takes their tab only.
   onlyTabId: string | null = null,
+  // A copy through a Community post's link (docs/specs/025-community/community.md) carries the document
+  // without its comments or the people on its actions, and so none of their index rows.
+  redactForCommunity = false,
 ): Promise<DocumentDTO | null> {
   const source = await getDocument(env, sourceId);
   if (!source) return null;
@@ -473,7 +498,11 @@ export async function copyDocument(
   // inserts for every source tab and submit them together.
   const inserts = rows.flatMap((row) => {
     const freshTabId = tabIdMap.get(row.id)!;
-    const data = remapTabDataLinks(row.data, tabIdMap);
+    const remapped = remapTabDataLinks(row.data, tabIdMap);
+    // A Community copy is redacted, and its index rebuilt from the redacted elements (the source's rows
+    // would name the people redaction removed).
+    const redacted = redactForCommunity ? redactTabDataForCommunity(remapped) : null;
+    const data = redacted ? redacted.data : remapped;
     return [
       // Link remapping rewrites ids inside elements, never their number, so the count carries over.
       env.DB.prepare(
@@ -486,7 +515,9 @@ export async function copyDocument(
       // The copy carries the source's actions + threads inside its
       // data, so its index rows are copied the same way, without a
       // parse (docs/specs/013-workspace/activity-page.md §2.1).
-      ...collabIndexCopyStatements(env, row.id, freshTabId),
+      ...(redacted
+        ? collabIndexStatements(env, freshTabId, redacted.elements)
+        : collabIndexCopyStatements(env, row.id, freshTabId)),
       // Image references from the copied body itself, not the source rows, so
       // a copy is indexed even if its source never was.
       ...imageRefAddStatements(env, freshTabId, imageRefIdsFromData(data)),

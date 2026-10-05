@@ -48,7 +48,7 @@ function planBoardPlacement(preset: string | undefined) {
   };
 }
 
-// A plan view placed from the palette (docs/specs/025-plan/plan-views.md): its tile's view, at its size.
+// A plan view placed from the palette (docs/specs/026-plan/plan-views.md): its tile's view, at its size.
 function planViewPlacement(view: string | undefined) {
   return {
     ...(isPlanViewId(view) ? { planView: { view } } : {}),
@@ -85,7 +85,7 @@ export function useElementCreation(opts: {
   // Style memory (docs/specs/008-canvas/quick-style-panel.md) for the user-drawn adds made here: a palette
   // drop and a click-to-connect arrow.
   styleNewElement: <T extends Element>(el: T) => T;
-  // A palette card never lands on the canvas (docs/specs/025-plan/plan-mode.md "The palette"): it goes
+  // A palette card never lands on the canvas (docs/specs/026-plan/plan-mode.md "The palette"): it goes
   // into the board column at the point, or nowhere.
   onPlanCardPlace?: (itemType: string | undefined, canvasX: number, canvasY: number) => void;
 }) {
@@ -422,7 +422,7 @@ export function useElementCreation(opts: {
               ...(art?.choice && kind === 'estimate'
                 ? { estimateScale: art.choice as EstimateScale }
                 : {}),
-              // A board wide enough for its columns (docs/specs/025-plan/plan-board.md).
+              // A board wide enough for its columns (docs/specs/026-plan/plan-board.md).
               ...(kind === 'plan-board' ? planBoardPlacement(art?.choice) : {}),
               ...(kind === 'plan-view' ? planViewPlacement(art?.choice) : {}),
             },

@@ -1,8 +1,7 @@
 'use client';
 
-import { GlyphDisc, HoverCard, RefreshIcon } from '@livediagram/ui';
+import { GlyphDisc, HoverCard, RefreshIcon, IDENTITY_FILL, identityVars } from '@livediagram/ui';
 import { initialsOf, randomName, type Participant } from '@/lib/identity';
-import { IDENTITY_FILL, identityVars } from '@/lib/identity-fill';
 
 // "Sharing as" (guests only, docs/specs/007-editor/live-app.md "Layout, top to bottom"): the
 // name peers see on cursors and comments, in the footer so it is always in

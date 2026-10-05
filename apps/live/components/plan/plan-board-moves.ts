@@ -1,4 +1,4 @@
-// What a card dropped on a Plan board does (docs/specs/025-plan/plan-board.md "Moving cards"), as
+// What a card dropped on a Plan board does (docs/specs/026-plan/plan-board.md "Moving cards"), as
 // pure functions of the board: the move a drop makes (its column, its place, and its row's field when
 // the board has rows).
 import {
@@ -11,7 +11,7 @@ import {
 import type { PlanDropSlot } from '@/hooks/plan/usePlanCardDrag';
 
 // The fields a row stands for, set on a card dropped into it.
-// The status a card in a cell has (docs/specs/025-plan/plan-board.md "All Cards"): its column's, or on an
+// The status a card in a cell has (docs/specs/026-plan/plan-board.md "All Cards"): its column's, or on an
 // All Cards board, its status row's.
 export function cellStatus(
   setup: PlanBoardSetup,

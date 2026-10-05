@@ -1,7 +1,7 @@
-// The built-in item types (docs/specs/025-plan/items.md "Item types"). A type
+// The built-in item types (docs/specs/026-plan/items.md "Item types"). A type
 // names the fields its item panel offers; any item may still carry others.
 // `glyph` is an id from the Plan glyph set (glyphs.ts). A document may replace this
-// catalogue with its own (type-catalogue.ts, docs/specs/025-plan/item-types.md).
+// catalogue with its own (type-catalogue.ts, docs/specs/026-plan/item-types.md).
 import type { PlanGlyphId } from './glyphs';
 
 export type ItemFieldId =
@@ -12,16 +12,16 @@ export type ItemFieldId =
   | 'priority'
   | 'labels'
   | 'estimate'
-  // When the work begins (docs/specs/025-plan/items.md "Fields"): a Project's bar on the Gantt chart.
+  // When the work begins (docs/specs/026-plan/items.md "Fields"): a Project's bar on the Gantt chart.
   | 'start'
   | 'due'
   | 'checklist'
   | 'parent'
   | 'votes'
-  // Archived (docs/specs/025-plan/items.md "Archive"): kept, but off every board but an Archive board.
+  // Archived (docs/specs/026-plan/items.md "Archive"): kept, but off every board but an Archive board.
   | 'archived';
 
-// A field a person adds to a type (docs/specs/025-plan/item-types.md "An item type"): its value is
+// A field a person adds to a type (docs/specs/026-plan/item-types.md "An item type"): its value is
 // an ordinary entry in the item's `fields`, under `id`.
 export const CUSTOM_FIELD_KINDS = [
   'text',
@@ -44,7 +44,7 @@ export interface CustomFieldDef {
   onCard?: boolean;
 }
 
-// A tab of an item type's panel (docs/specs/025-plan/item-types.md "An item type"): the fields it shows.
+// A tab of an item type's panel (docs/specs/026-plan/item-types.md "An item type"): the fields it shows.
 export interface ItemTypeTab {
   id: string;
   label: string;

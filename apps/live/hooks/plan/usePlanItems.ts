@@ -36,7 +36,7 @@ export type PlanItems = {
   refetch: () => void;
 };
 
-// The document's item store in the editor (docs/specs/025-plan/items.md, blueprint item-store.md
+// The document's item store in the editor (docs/specs/026-plan/items.md, blueprint item-store.md
 // "Editor slice"): loaded once the document is, written optimistically through the same pure
 // transitions the api applies, kept live by the room's `items` op, and refetched on a revision gap,
 // a reconnect or a resync. Every write but a vote is undoable through `pushUndo`.

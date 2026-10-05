@@ -1,6 +1,6 @@
 'use client';
 
-// The Plan card element's body (docs/specs/025-plan/plan-board.md "The Plan card"): one item's card
+// The Plan card element's body (docs/specs/026-plan/plan-board.md "The Plan card"): one item's card
 // face at the element's size. A click in Plan mode, or a double-click in any mode, opens the item;
 // a card whose item is not in this document's store says so and offers to go.
 import type { ShapeElement } from '@livediagram/document';
@@ -18,7 +18,7 @@ export function PlanCardView({
   fontFamily?: string;
 }) {
   const plan = usePlan();
-  // Its theme and style colours (docs/specs/025-plan/plan-board.md "Theme and style"): a lone card's
+  // Its theme and style colours (docs/specs/026-plan/plan-board.md "Theme and style"): a lone card's
   // fill is its face.
   const themed = planPalette(useCanvasSurface(), planOwnColours(element));
   const palette = element.fillColor ? { ...themed, card: themed.surface } : themed;

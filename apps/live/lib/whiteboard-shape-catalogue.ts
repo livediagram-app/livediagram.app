@@ -39,7 +39,7 @@ export type WhiteboardShapeEntry = {
 };
 
 // The palette categories that are not shapes on a whiteboard (the spec's "not components").
-// Plan's boards, cards and plan views (docs/specs/025-plan/plan-mode.md, plan-views.md) frame items, not ink,
+// Plan's boards, cards and plan views (docs/specs/026-plan/plan-mode.md, plan-views.md) frame items, not ink,
 // so the dock leaves them out.
 const EXCLUDED_CATEGORIES = new Set([
   'components',

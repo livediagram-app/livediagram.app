@@ -1,6 +1,6 @@
 'use client';
 
-// The type editor's tabs (docs/specs/025-plan/item-types.md "Editing a type"). Each field row of Fields
+// The type editor's tabs (docs/specs/026-plan/item-types.md "Editing a type"). Each field row of Fields
 // carries a TabPicker: Details, one of the tabs, or New Tab… (a name field: Enter makes the tab and files the
 // field on it). TabsList, under Fields, renames, moves (↑ ↓) and removes tabs (their fields go to Details).
 // A tab left with no fields is dropped when the type is saved (withoutEmptyTabs). Edits a draft; the type

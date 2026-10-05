@@ -1,6 +1,6 @@
 'use client';
 
-// "Add a card" (docs/specs/025-plan/plan-board.md "Working on a board"): a cell's Add card button
+// "Add a card" (docs/specs/026-plan/plan-board.md "Working on a board"): a cell's Add card button
 // opens this popover, as Illustrate's + opens "Add a page". It offers the card types the board shows,
 // each a tile with its glyph on its colour; choosing one adds a card of it (titled "New task"...) at
 // the end of the cell, to be titled in place or in its panel. Arrow keys move between tiles; Escape or
@@ -8,7 +8,7 @@
 import { useLayoutEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { type ItemFields, type ItemTypeDef } from '@livediagram/items';
 import { useClickOutside, useEscape } from '@livediagram/ui';
-import { Portal } from '@/components/primitives/Portal';
+import { Portal } from '@livediagram/ui';
 import { BottomSheet } from '@/components/primitives/BottomSheet';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { VIEWPORT_EDGE_MARGIN as EDGE } from '@/lib/clamp-to-viewport';

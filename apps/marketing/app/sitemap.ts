@@ -74,6 +74,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
     // alone. Build-time `now`: /telemetry reflects live event data and
     // /status reflects the latest deployed state, so both are "fresh as
     // of this build" rather than carrying a tracked revision constant.
+    // Community (docs/specs/025-community/community.md): the public gallery of shared boards, new posts daily.
+    {
+      url: `${base}/community/`,
+      lastModified: now,
+      changeFrequency: 'daily',
+      priority: 0.6,
+    },
     {
       url: `${base}/telemetry`,
       lastModified: now,

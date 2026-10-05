@@ -83,14 +83,14 @@ export function usePaletteDrop({
       return;
     }
     // A board widget from the palette lands only in a board's header
-    // (docs/specs/025-plan/board-widgets.md "Placing and arranging widgets").
+    // (docs/specs/026-plan/board-widgets.md "Placing and arranging widgets").
     if (e.dataTransfer.types.includes(PLAN_WIDGET_MIME)) {
       e.preventDefault();
       e.dataTransfer.dropEffect = planWidgetDragOver(e.clientX, e.clientY) ? 'copy' : 'none';
       return;
     }
     // A Plan card from the palette opens a gap in the board column under the pointer
-    // (docs/specs/025-plan/plan-mode.md "The palette").
+    // (docs/specs/026-plan/plan-mode.md "The palette").
     planCardDragOver(e.clientX, e.clientY);
     // A file (a photo on an event-storming board, an Excalidraw file) is accepted the same way a tile is,
     // so the cursor says it will land rather than showing the no-drop sign.

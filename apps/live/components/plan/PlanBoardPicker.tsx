@@ -1,6 +1,6 @@
 'use client';
 
-// A Plan tab with no board (docs/specs/025-plan/plan-mode.md "Starting a board"): the middle of the canvas
+// A Plan tab with no board (docs/specs/026-plan/plan-mode.md "Starting a board"): the middle of the canvas
 // offers the board types, as a new infographic page offers its layouts. Each is a picture of the board
 // itself (its columns, its rows, cards in the colours of the types it takes) over its name and what it is
 // for, in the tab's own light or dark look. Blank comes first; the Archive board, never a first board, is

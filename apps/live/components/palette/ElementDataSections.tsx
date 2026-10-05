@@ -102,14 +102,14 @@ import {
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
 import { useContextMenuScaffold } from './useContextMenuScaffold';
 
-// Plan's UI loads only when it is drawn (docs/specs/025-plan/plan-mode.md "Cost"), so a document without
+// Plan's UI loads only when it is drawn (docs/specs/026-plan/plan-mode.md "Cost"), so a document without
 // Plan pays nothing for it.
 const PlanCardsMenuSection = dynamic(
   () => import('./PlanBoardMenuSection').then((m) => m.PlanCardsMenuSection),
   { ssr: false },
 );
 
-// Plan's UI loads only when it is drawn (docs/specs/025-plan/plan-mode.md "Cost"), so a document without
+// Plan's UI loads only when it is drawn (docs/specs/026-plan/plan-mode.md "Cost"), so a document without
 // Plan pays nothing for it.
 const PlanBoardMenuSection = dynamic(
   () => import('./PlanBoardMenuSection').then((m) => m.PlanBoardMenuSection),
@@ -236,7 +236,7 @@ export function ElementDataSections({
     isChair;
   return (
     <>
-      {/* A Plan board's own settings (docs/specs/025-plan/plan-board.md "The board set-up"): its own
+      {/* A Plan board's own settings (docs/specs/026-plan/plan-board.md "The board set-up"): its own
           flyout, ahead of Tools, as every board-wide choice lives here. */}
       {shapeTarget?.shape === 'plan-board' ? (
         <>

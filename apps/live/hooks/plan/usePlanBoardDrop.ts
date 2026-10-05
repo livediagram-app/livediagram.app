@@ -1,6 +1,6 @@
 'use client';
 
-// A Plan board's cards on the move (docs/specs/025-plan/plan-board.md "Moving cards"): the drag that
+// A Plan board's cards on the move (docs/specs/026-plan/plan-board.md "Moving cards"): the drag that
 // picks its own cards up, the drop that files a card in one of its cells, and the board as a target
 // for cards dragged over from another board (plan-board-targets.ts). A card dropped on the canvas
 // leaves a Plan card there.
@@ -57,7 +57,7 @@ export function usePlanBoardDrop(opts: {
   const drop = (itemId: string, slot: PlanDropSlot) => {
     if (!plan || !setup || !projection) return;
     const item = items.get(itemId);
-    // An Archive board (docs/specs/025-plan/items.md "Archive"): a card dropped on it is archived, its
+    // An Archive board (docs/specs/026-plan/items.md "Archive"): a card dropped on it is archived, its
     // status kept for when it comes back; its own cards stay in their order.
     if (setup.archive) {
       if (!item || isArchived(item)) return;
@@ -121,9 +121,9 @@ export function usePlanBoardDrop(opts: {
       return 'This board can’t be changed';
     },
     drop,
-    // Every board shows every card type (docs/specs/025-plan/plan-board.md).
+    // Every board shows every card type (docs/specs/026-plan/plan-board.md).
     // An Archive board takes cards moved to it, never a new one.
-    // The types it takes new cards of (docs/specs/025-plan/plan-board.md "The board set-up").
+    // The types it takes new cards of (docs/specs/026-plan/plan-board.md "The board set-up").
     acceptsType: (type: string) =>
       !!setup && canEdit && !setup.archive && (!setup.addTypes || setup.addTypes.includes(type)),
     // A palette card: a new item of the type at the slot, its row's field set. Not opened: the card is
@@ -144,7 +144,7 @@ export function usePlanBoardDrop(opts: {
       plan.announce(`${def.label} added to ${column?.name ?? slot.status}`);
     },
     canEditWidgets: () => !!setup && canEdit,
-    // A palette widget placed in the header (docs/specs/025-plan/board-widgets.md): one board edit.
+    // A palette widget placed in the header (docs/specs/026-plan/board-widgets.md): one board edit.
     placeWidget: (kind: BoardWidgetKind, slot: number, opts?: { tap?: boolean }): WidgetPlaced => {
       if (!plan || !setup || !canEdit) return 'refused';
       const label = BOARD_WIDGET_INFO[kind].label;

@@ -152,6 +152,21 @@ const wrap = (key: string, name: string): BodySchema => ({
   required: [key],
 });
 
+// The gallery's search parameters, shared by the public list and My Shares (docs/specs/025-community/community.md
+// "Gallery"): every filter can also be a word in `q` (`#tag`, `category:`, `sort:`, `is:mine`).
+const COMMUNITY_QUERY = [
+  {
+    name: 'q',
+    required: false,
+    description:
+      'Search words: plain terms (title, description, tags), `#tag`, `category:<id>`, `sort:loved|copied`.',
+  },
+  { name: 'category', required: false, description: 'One category id.' },
+  { name: 'tag', required: false, description: 'One tag.' },
+  { name: 'sort', required: false, description: '`new` (default), `loved` or `copied`.' },
+  { name: 'offset', required: false, description: 'From `nextOffset`.' },
+] as const;
+
 export const ROUTE_MANIFEST: RouteSpec[] = [
   // ---- Meta ----
   {
@@ -654,7 +669,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     responseSchema: listOf('threads', 'DocumentCommentThread'),
     statuses: [200, 400, 401, 403, 404, 405, 410],
   },
-  // The document's type catalogue (docs/specs/025-plan/item-types.md).
+  // The document's type catalogue (docs/specs/026-plan/item-types.md).
   {
     method: 'PUT',
     path: '/documents/{id}/item-types',
@@ -668,7 +683,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     responseSchema: 'ItemTypesResponse',
     statuses: [200, 400, 401, 403, 404, 405, 410],
   },
-  // The item store (docs/specs/025-plan/items.md). A caller on a tab-scoped link adds ?tabId=.
+  // The item store (docs/specs/026-plan/items.md). A caller on a tab-scoped link adds ?tabId=.
   {
     method: 'GET',
     path: '/documents/{id}/items',
@@ -918,6 +933,41 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     tokenUsable: true,
     responseSchema: wrap('link', 'ShareLink'),
     statuses: [200, 400, 401, 403, 404, 410],
+  },
+  {
+    method: 'GET',
+    path: '/documents/{id}/community',
+    segment: 'documents',
+    tag: 'Community',
+    summary: "The document's Community post, in any state, or null (owner only).",
+    auth: 'guest-or-clerk',
+    responseSchema: {
+      type: 'object',
+      properties: { post: { anyOf: [ref('CommunityOwnPost'), { type: 'null' }] } },
+      required: ['post'],
+    },
+    statuses: [200, 400, 401, 403, 404, 410],
+  },
+  {
+    method: 'PUT',
+    path: '/documents/{id}/community',
+    segment: 'documents',
+    tag: 'Community',
+    summary:
+      'Publish the document to Community, or save its listing (signed-in owner; not a team document, not password protected).',
+    auth: 'clerk',
+    requestSchema: ref('CommunityPostInput'),
+    responseSchema: wrap('post', 'CommunityOwnPost'),
+    statuses: [200, 201, 400, 401, 403, 404, 409, 410],
+  },
+  {
+    method: 'DELETE',
+    path: '/documents/{id}/community',
+    segment: 'documents',
+    tag: 'Community',
+    summary: 'Remove the document from Community (owner only).',
+    auth: 'guest-or-clerk',
+    statuses: [204, 400, 401, 403, 404, 409, 410],
   },
   {
     method: 'GET',
@@ -1271,6 +1321,90 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   // ---- Shared with you ----
   {
     method: 'GET',
+    path: '/community/posts',
+    segment: 'community',
+    tag: 'Community',
+    summary: 'List Community posts. Send X-Community-Key to learn which you like.',
+    auth: 'public',
+    query: [...COMMUNITY_QUERY],
+    responseSchema: ref('CommunityListResponse'),
+    statuses: [200, 400, 404],
+  },
+  {
+    method: 'GET',
+    path: '/community/mine',
+    segment: 'community',
+    tag: 'Community',
+    summary:
+      "My Shares: the signed-in author's own posts (hidden ones included) under the same search words, with their totals.",
+    auth: 'clerk',
+    query: [...COMMUNITY_QUERY],
+    responseSchema: ref('CommunityMineResponse'),
+    statuses: [200, 400, 401, 404],
+  },
+  {
+    method: 'GET',
+    path: '/community/featured',
+    segment: 'community',
+    tag: 'Community',
+    summary:
+      'The six posts the home page features: most liked in the last 3 months, topped up with the best of all time.',
+    auth: 'public',
+    responseSchema: ref('CommunityFeaturedResponse'),
+    statuses: [200, 404],
+  },
+  {
+    method: 'GET',
+    path: '/community/facets',
+    segment: 'community',
+    tag: 'Community',
+    summary: 'Post counts per category and the most used tags.',
+    auth: 'public',
+    responseSchema: ref('CommunityFacetsResponse'),
+    statuses: [200, 404],
+  },
+  {
+    method: 'GET',
+    path: '/community/posts/{id}',
+    segment: 'community',
+    tag: 'Community',
+    summary: 'One Community post with More Like This.',
+    auth: 'public',
+    responseSchema: ref('CommunityPostResponse'),
+    statuses: [200, 404],
+  },
+  {
+    method: 'PUT',
+    path: '/community/posts/{id}/like',
+    segment: 'community',
+    tag: 'Community',
+    summary: 'Like a post (needs X-Community-Key).',
+    auth: 'public',
+    responseSchema: ref('CommunityLikeResponse'),
+    statuses: [200, 400, 404, 429],
+  },
+  {
+    method: 'DELETE',
+    path: '/community/posts/{id}/like',
+    segment: 'community',
+    tag: 'Community',
+    summary: 'Unlike a post (needs X-Community-Key).',
+    auth: 'public',
+    responseSchema: ref('CommunityLikeResponse'),
+    statuses: [200, 400, 404, 429],
+  },
+  {
+    method: 'POST',
+    path: '/community/posts/{id}/report',
+    segment: 'community',
+    tag: 'Community',
+    summary: 'Report a post (needs X-Community-Key).',
+    auth: 'public',
+    requestSchema: ref('CommunityReportInput'),
+    statuses: [204, 400, 404, 429],
+  },
+  {
+    method: 'GET',
     path: '/shared',
     segment: 'shared',
     tag: 'Sharing',
@@ -1304,6 +1438,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
         document: ref('Document'),
         role: ref('ShareRole'),
         tabId: { type: ['string', 'null'] },
+        community: ref('CommunityShareInfo'),
       },
       required: ['document', 'role', 'tabId'],
     },

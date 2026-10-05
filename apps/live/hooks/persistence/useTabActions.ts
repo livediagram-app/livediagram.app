@@ -102,7 +102,7 @@ export function useTabActions(deps: TabActionsDeps) {
   } = deps;
 
   // `opensIn` is set only by "Create a new tab" when a Plan tab with content will not change mode
-  // (docs/specs/025-plan/plan-mode.md "Plan keeps its own tabs"): the new tab opens in the mode asked for.
+  // (docs/specs/026-plan/plan-mode.md "Plan keeps its own tabs"): the new tab opens in the mode asked for.
   const addTabIn = (opensIn?: EditorMode) => {
     // The new tab takes the active tab's look (newTabSeed), never its creator's mode: it opens in
     // Diagram.

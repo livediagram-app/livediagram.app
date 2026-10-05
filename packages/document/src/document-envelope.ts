@@ -22,10 +22,10 @@ export type DocumentEnvelope = {
     name: string;
     presentation: string | null;
     tabs: EnvelopeTab[];
-    // The item store (docs/specs/025-plan/items.md "Copies and exports"). Optional and additive,
+    // The item store (docs/specs/026-plan/items.md "Copies and exports"). Optional and additive,
     // so a file written before items, or read by a build before them, stays version 1.
     items?: Item[];
-    // The type catalogue (docs/specs/025-plan/item-types.md), the same way: optional and additive.
+    // The type catalogue (docs/specs/026-plan/item-types.md), the same way: optional and additive.
     itemTypes?: ItemTypeCatalogue;
   };
 };

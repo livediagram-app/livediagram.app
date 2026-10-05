@@ -2,7 +2,7 @@ import type { ReactElement, ReactNode } from 'react';
 import type { TemplateKind } from '@livediagram/templates';
 import { pv } from './motion';
 
-// Group 15: the Plan templates (docs/specs/025-plan/plan-mode.md "Templates"), drawn as the Plan
+// Group 15: the Plan templates (docs/specs/026-plan/plan-mode.md "Templates"), drawn as the Plan
 // board the editor draws: a pale board, columns with their header bars, and white cards with a type
 // stripe. Each preview's hover story moves work the way that board is used. The Kanban board keeps
 // its own preview in group 2. Static SVG preview tiles; TemplatePreview chains the groups with ??.

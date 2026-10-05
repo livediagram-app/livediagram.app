@@ -9,7 +9,7 @@ import {
   widgetSlotAt,
 } from './plan-widget-drop';
 
-// docs/specs/025-plan/board-widgets.md "Placing and arranging widgets".
+// docs/specs/026-plan/board-widgets.md "Placing and arranging widgets".
 function rect(left: number, top: number, width: number, height: number): () => DOMRect {
   return () => ({ left, top, width, height, right: left + width, bottom: top + height }) as DOMRect;
 }

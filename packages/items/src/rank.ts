@@ -1,4 +1,4 @@
-// Fractional ranks (docs/specs/025-plan/blueprints/item-store.md "Rank").
+// Fractional ranks (docs/specs/026-plan/blueprints/item-store.md "Rank").
 // Base-36 keys compared as plain strings: a key strictly between any two
 // always exists, so moving one item writes one item and nothing renumbers.
 // Keys never end in '0' (the smallest digit), which keeps room below them.

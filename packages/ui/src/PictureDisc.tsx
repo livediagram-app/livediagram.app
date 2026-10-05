@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { GlyphDisc, type GlyphDiscProps } from '@livediagram/ui';
-import { pictureHost, pictureSrc, pictureSrcSet, PICTURE_SIZES_PX } from '@/lib/account-avatar';
+import { GlyphDisc, type GlyphDiscProps } from './optical';
+import { pictureHost, pictureSrc, pictureSrcSet, PICTURE_SIZES_PX } from './profile-picture';
 
 // A disc that may carry a profile picture (docs/specs/014-identity/profile-picture.md): the
 // initials disc exactly as before, with the picture laid over it once the picture has loaded. The

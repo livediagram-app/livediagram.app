@@ -32,7 +32,7 @@ const threeColumns = () => ({
   doneColumnId: 'done',
 });
 
-// docs/specs/025-plan/plan-board.md "Moving cards".
+// docs/specs/026-plan/plan-board.md "Moving cards".
 describe('boardMoveFor', () => {
   it('moves within a board, and does nothing for a drop where the card already is', () => {
     const a = item('todo', 'a');

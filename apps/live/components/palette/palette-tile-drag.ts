@@ -44,7 +44,7 @@ export function tileDragStart(
       return (e) => copy(e, TECH_ICON_DND_MIME, action.iconId);
     case 'sticker':
       return (e) => copy(e, STICKER_DND_MIME, action.stickerId);
-    // A widget lands only in a board's header: no canvas ghost (docs/specs/025-plan/board-widgets.md).
+    // A widget lands only in a board's header: no canvas ghost (docs/specs/026-plan/board-widgets.md).
     case 'plan-widget':
       return (e) => copy(e, PLAN_WIDGET_MIME, action.widget);
     default:

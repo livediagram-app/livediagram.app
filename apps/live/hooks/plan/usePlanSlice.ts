@@ -22,7 +22,7 @@ import { titleCaseType, track } from '@/lib/telemetry';
 import type { PlanItems } from './usePlanItems';
 import type { ItemTypesSlice } from './useItemTypes';
 
-// The editor's Plan slice (docs/specs/025-plan/blueprints/plan-board.md "Editor components"): the
+// The editor's Plan slice (docs/specs/026-plan/blueprints/plan-board.md "Editor components"): the
 // open item panel and board set-up, and the actions boards and cards take, composed into the value
 // PlanContext hands every board. Items change through `planItems`; boards and cards are elements,
 // changed through `commit` on the active tab.
@@ -31,7 +31,7 @@ const EMPTY_TRASH_BATCH = 8;
 
 export function usePlanSlice(opts: {
   planItems: PlanItems;
-  // The document's item types (docs/specs/025-plan/item-types.md).
+  // The document's item types (docs/specs/026-plan/item-types.md).
   itemTypes: ItemTypesSlice;
   editorMode: EditorMode;
   canEdit: boolean;
@@ -71,7 +71,7 @@ export function usePlanSlice(opts: {
   const hasSlides = !!opts.addItemSlide;
   const addItemSlide = useCallback((itemId: string) => slideRef.current?.(itemId), [slideRef]);
   const [openItemId, setOpenItemId] = useState<string | null>(null);
-  // The type the type editor is open on, or 'new' (docs/specs/025-plan/item-types.md "Editing a type").
+  // The type the type editor is open on, or 'new' (docs/specs/026-plan/item-types.md "Editing a type").
   const [editingTypeId, setEditingTypeId] = useState<string | 'new' | null>(null);
   const editType = useCallback((typeId: string | 'new') => setEditingTypeId(typeId), []);
 
@@ -79,7 +79,7 @@ export function usePlanSlice(opts: {
     const byId = new Map<string, ItemPerson>();
     const self = planItems.self;
     if (self) byId.set(self.id, self);
-    // Your teams' members only (docs/specs/025-plan/items.md "Who may do what"); a card's current assignee
+    // Your teams' members only (docs/specs/026-plan/items.md "Who may do what"); a card's current assignee
     // who is not among them still shows in its own picker.
     for (const p of opts.teamPeople) if (!byId.has(p.id)) byId.set(p.id, p);
     return [...byId.values()].sort((a, b) => a.name.localeCompare(b.name));
@@ -139,7 +139,7 @@ export function usePlanSlice(opts: {
     [write, planItems.items],
   );
 
-  // The Trash (docs/specs/025-plan/items.md "Trash"): a status no board shows, the old one kept to restore.
+  // The Trash (docs/specs/026-plan/items.md "Trash"): a status no board shows, the old one kept to restore.
   const trashItem = useCallback(
     (itemId: string) => {
       const item = planItems.items.get(itemId);
@@ -236,7 +236,7 @@ export function usePlanSlice(opts: {
   }, []);
 
   // A Plan card dropped on a board: its item moves into the column under the drop, and the card,
-  // now on the board, leaves the canvas (docs/specs/025-plan/plan-board.md "Working on a board").
+  // now on the board, leaves the canvas (docs/specs/026-plan/plan-board.md "Working on a board").
   const dropPlanCardOnBoard = useCallback(
     (card: Element, status: string) => {
       const itemId = card.type === 'shape' ? card.planCard?.itemId : undefined;

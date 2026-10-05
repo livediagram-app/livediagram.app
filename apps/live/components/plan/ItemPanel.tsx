@@ -1,7 +1,7 @@
 'use client';
 
-// The item panel (docs/specs/025-plan/plan-board.md "Working on a board"): a wide modal in two columns.
-// The main column holds the title and the type's tabs (docs/specs/025-plan/item-types.md); the Details
+// The item panel (docs/specs/026-plan/plan-board.md "Working on a board"): a wide modal in two columns.
+// The main column holds the title and the type's tabs (docs/specs/026-plan/item-types.md); the Details
 // panel beside it holds the fields in no tab, then who made the item and who last changed it. On a phone
 // it is one column and Details becomes the first tab. Every field saves as it changes. It follows the
 // item wherever someone moves it, and closes if someone deletes it.
@@ -58,7 +58,7 @@ export function ItemPanel({
   onClose,
 }: {
   item: Item;
-  // The document's item types (docs/specs/025-plan/item-types.md).
+  // The document's item types (docs/specs/026-plan/item-types.md).
   types: readonly ItemTypeDef[];
   // The statuses this tab's boards use, by name, for the status picker.
   statuses: readonly { status: string; name: string }[];
@@ -75,7 +75,7 @@ export function ItemPanel({
   // Switches the panel to another item (a card's parent).
   onOpenItem: (itemId: string) => void;
   onDelete: () => void;
-  // Archive the item, or restore an archived one (docs/specs/025-plan/items.md "Archive").
+  // Archive the item, or restore an archived one (docs/specs/026-plan/items.md "Archive").
   onArchive: () => void;
   onClose: () => void;
 }) {

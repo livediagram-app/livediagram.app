@@ -21,7 +21,7 @@ import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { slideDurationMs } from '@/lib/presentation-config';
 import { useLatest } from '@/hooks/ui/useLatest';
 
-// Plan's UI loads only when it is drawn (docs/specs/025-plan/plan-mode.md "Cost"), so a document without
+// Plan's UI loads only when it is drawn (docs/specs/026-plan/plan-mode.md "Cost"), so a document without
 // Plan pays nothing for it.
 const ItemSlideView = dynamic(
   () => import('@/components/plan/ItemSlideView').then((m) => m.ItemSlideView),

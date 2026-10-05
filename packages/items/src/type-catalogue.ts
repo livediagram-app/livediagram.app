@@ -1,4 +1,4 @@
-// A document's type catalogue (docs/specs/025-plan/item-types.md): its item types, in order. Absent
+// A document's type catalogue (docs/specs/026-plan/item-types.md): its item types, in order. Absent
 // (null) means the built-in catalogue, read from code; once changed, the whole catalogue is stored
 // with the document. Validation here is the api's and the editor's both, so a catalogue the editor
 // saves is one the api keeps.
@@ -150,7 +150,7 @@ function overviewField(type: ItemTypeDef, f: string): boolean {
   return f === 'description' || f === 'checklist' || customFieldOf(type, f)?.kind === 'longtext';
 }
 
-// A type's panel tabs (docs/specs/025-plan/item-types.md "An item type"): its own, or one Overview tab
+// A type's panel tabs (docs/specs/026-plan/item-types.md "An item type"): its own, or one Overview tab
 // of its long-form fields. Each tab lists only fields the type offers.
 export function tabsOf(type: ItemTypeDef): readonly ItemTypeTab[] {
   const offered = new Set(type.fields);

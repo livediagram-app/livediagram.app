@@ -25,6 +25,8 @@ const { db, canReadDocument, canEditDocument, resolveDocumentGrant } = vi.hoiste
   db: {
     listDocumentsByOwner: vi.fn(),
     getDocument: vi.fn(),
+    // Community link check on the tab read (docs/specs/025-community/community.md): an ordinary link here.
+    getShareLink: vi.fn(async () => null),
     // The thumbnail route's one-query gate + freshness read.
     getDocumentThumbMeta: vi.fn(),
     upsertDocumentMeta: vi.fn(),
@@ -40,6 +42,7 @@ const { db, canReadDocument, canEditDocument, resolveDocumentGrant } = vi.hoiste
     // event: it reads the outgoing team's name for the bubble.
     getTeam: vi.fn(async () => ({ id: 'team-1', name: 'Design' })),
     getTab: vi.fn(),
+    tabBelongsElsewhere: vi.fn(async () => false),
     upsertTab: vi.fn(),
     // The tab PUT writes at the revision it read and merges unseen changesets
     // (docs/specs/024-agents/agent-changesets.md); none are recorded here.
@@ -718,7 +721,7 @@ describe('a tab-scoped visitor', () => {
   beforeEach(() => {
     db.getDocument.mockResolvedValue(scopedDocument());
     db.getDocumentThumbMeta.mockResolvedValue(scopedDocument());
-    resolveDocumentGrant.mockResolvedValue({ role: 'edit', tabScope: 't2' });
+    resolveDocumentGrant.mockResolvedValue({ role: 'edit', tabScope: 't2', community: false });
   });
 
   it('gets the document with every other tab locked and no deck', async () => {
@@ -732,18 +735,51 @@ describe('a tab-scoped visitor', () => {
     getDocumentTabImageSvg.mockResolvedValue('<svg>t2</svg>');
     const res = await handleDocuments(makeCtx('GET', '/api/documents/d1/thumbnail', visitor));
     expect(await res.text()).toBe('<svg>t2</svg>');
-    expect(getDocumentTabImageSvg).toHaveBeenCalledWith(expect.anything(), expect.anything(), 't2');
+    expect(getDocumentTabImageSvg).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.anything(),
+      't2',
+      false,
+    );
     expect(getDocumentThumbnailSvg).not.toHaveBeenCalled();
   });
 
   it('names the tab it touches, so the gate can confine it', async () => {
-    canReadDocument.mockResolvedValue(true);
+    // Reading: the grant's tab scope opens its own tab and no other.
     db.getTab.mockResolvedValue({ id: 't2', name: 'Roadmap', elements: [] });
-    await handleDocuments(makeCtx('GET', '/api/documents/d1/tabs/t2', visitor));
-    expect(canReadDocument.mock.calls.at(-1)?.at(-1)).toBe('t2');
+    const own = await handleDocuments(makeCtx('GET', '/api/documents/d1/tabs/t2', visitor));
+    expect(own.status).toBe(200);
+    const other = await handleDocuments(makeCtx('GET', '/api/documents/d1/tabs/t1', visitor));
+    expect(other.status).toBe(404);
     canEditDocument.mockResolvedValue(true);
     await handleDocuments(makeCtx('PUT', '/api/documents/d1/tabs/t2', { ...visitor, body: {} }));
     expect(canEditDocument.mock.calls.at(-1)?.at(-1)).toBe('t2');
+  });
+
+  it('reads a Community visit without its conversation, from the grant alone', async () => {
+    resolveDocumentGrant.mockResolvedValue({
+      role: 'view',
+      tabScope: null,
+      shareCode: 'COMMUNITY1',
+      community: true,
+    });
+    db.getTab.mockResolvedValue({
+      id: 't2',
+      name: 'Roadmap',
+      elements: [
+        {
+          id: 'e1',
+          type: 'shape',
+          commentThread: { comments: [{ id: 'c1', text: 'secret', authorId: 'user_jane' }] },
+        },
+      ],
+    });
+    const res = await handleDocuments(makeCtx('GET', '/api/documents/d1/tabs/t2', visitor));
+    expect(res.status).toBe(200);
+    const text = await res.text();
+    expect(text).toContain('"e1"');
+    expect(text).not.toContain('secret');
+    expect(text).not.toContain('user_jane');
   });
 
   it('cannot delete the tab its link is scoped to', async () => {
@@ -759,7 +795,7 @@ describe('a tab-scoped visitor', () => {
       makeCtx('POST', '/api/documents/d1/copy', { ...visitor, body: {} }),
     );
     expect(res.status).toBe(201);
-    expect(db.copyDocument.mock.calls[0]?.at(-1)).toBe('t2');
+    expect(db.copyDocument.mock.calls[0]?.at(5)).toBe('t2');
   });
 
   it('copies its tab only through its Shared-with-you row too', async () => {
@@ -770,7 +806,7 @@ describe('a tab-scoped visitor', () => {
       makeCtx('POST', '/api/documents/d1/copy', { owner: 'visitor-1', body: {} }),
     );
     expect(res.status).toBe(201);
-    expect(db.copyDocument.mock.calls[0]?.at(-1)).toBe('t2');
+    expect(db.copyDocument.mock.calls[0]?.at(5)).toBe('t2');
   });
 });
 

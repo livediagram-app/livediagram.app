@@ -1,6 +1,6 @@
 'use client';
 
-// Priority by Status (docs/specs/025-plan/plan-views.md "Priority by Status"): a grid of priority by status
+// Priority by Status (docs/specs/026-plan/plan-views.md "Priority by Status"): a grid of priority by status
 // phase, each cell the cards in both, shaded by how many against the fullest cell.
 import { useMemo } from 'react';
 import {

@@ -135,7 +135,7 @@ describe('nextEditorMode', () => {
 describe('hasPageLook', () => {
   it('draws the page in Illustrate mode only', () => {
     expect(EDITOR_MODES.filter(hasPageLook)).toEqual(['illustrate']);
-    // Plan mode (docs/specs/025-plan/plan-mode.md) takes input the Plan way; nothing else does.
+    // Plan mode (docs/specs/026-plan/plan-mode.md) takes input the Plan way; nothing else does.
     expect(EDITOR_MODES.filter(hasPlanInput)).toEqual(['plan']);
   });
 });

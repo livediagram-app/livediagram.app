@@ -35,7 +35,7 @@ export function setIllustrateModeEnabled(enabled: boolean): void {
   setExperimentalModeEnabled('illustrate', enabled);
 }
 
-// Plan mode (docs/specs/025-plan/plan-mode.md "Offering the mode"): its own switch, apart from Illustrate's.
+// Plan mode (docs/specs/026-plan/plan-mode.md "Offering the mode"): its own switch, apart from Illustrate's.
 export function setPlanModeEnabled(enabled: boolean): void {
   setExperimentalModeEnabled('plan', enabled);
 }

@@ -412,7 +412,7 @@ export async function refreshAgentPresence(
   }
 }
 
-// A stored type catalogue (docs/specs/025-plan/item-types.md "Storage and sync"): ordered like items,
+// A stored type catalogue (docs/specs/026-plan/item-types.md "Storage and sync"): ordered like items,
 // to every session, a tab-scoped one too (a catalogue holds no content).
 export async function relayItemTypes(
   env: Env,
@@ -430,7 +430,7 @@ export async function relayItemTypes(
   }
 }
 
-// Tell a document's room about item writes (docs/specs/025-plan/items.md "Live for everyone"): an
+// Tell a document's room about item writes (docs/specs/026-plan/items.md "Live for everyone"): an
 // ordered system op, so a peer whose socket blipped catches it up. Best-effort like the other
 // broadcasts: the D1 write is the change, and a client that missed it refetches on a rev gap.
 export async function relayItems(env: Env, documentId: string, op: ItemsRoomOp): Promise<void> {

@@ -6,10 +6,17 @@
 // element; the check is its own button beside it (buttons don't nest).
 
 import { useState, type CSSProperties, type ReactNode } from 'react';
-import { CheckIcon, CommentIcon, HoverCard, SOLID_BRAND_DARK, GlyphDisc } from '@livediagram/ui';
+import {
+  CheckIcon,
+  CommentIcon,
+  HoverCard,
+  SOLID_BRAND_DARK,
+  GlyphDisc,
+  IDENTITY_FILL,
+  identityVars,
+} from '@livediagram/ui';
 import { formatRelativeTimeCompact, useRelativeNow } from '@/lib/relative-time';
 import { initialsOf } from '@/lib/identity';
-import { IDENTITY_FILL, identityVars } from '@/lib/identity-fill';
 import type { ActionRow, CommentRow } from '@/components/panels/CollaboratePanel';
 import { firstName } from './collaborate-model';
 

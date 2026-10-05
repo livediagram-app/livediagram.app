@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { ItemTypeDef } from '@livediagram/items';
 import { planCardTile } from './palette-plan-tiles';
 
-// docs/specs/025-plan/item-types.md "Where types show".
+// docs/specs/026-plan/item-types.md "Where types show".
 describe('card tiles from the document', () => {
   it('makes a tile per type that places a card of it', () => {
     const call: ItemTypeDef = {

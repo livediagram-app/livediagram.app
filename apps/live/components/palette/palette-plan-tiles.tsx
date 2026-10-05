@@ -1,4 +1,4 @@
-// The Plan category's tiles (docs/specs/025-plan/plan-mode.md "The palette"): a board per preset, a
+// The Plan category's tiles (docs/specs/026-plan/plan-mode.md "The palette"): a board per preset, a
 // card per item type, and a widget per board widget kind. Made from the presets and the item-type catalogue, so a new preset or type is a
 // tile with no edit here. Spread into PALETTE_TILES.
 import {
@@ -79,7 +79,7 @@ export const PLAN_TILES: PaletteTileDef[] = [
     icon: <PlanBoardTileArt size={GLYPH_PX} preset={b.preset} />,
   })),
   ...ITEM_TYPES.map(planCardTile),
-  // The header widgets (docs/specs/025-plan/board-widgets.md): dragged into a board's header, or tapped
+  // The header widgets (docs/specs/026-plan/board-widgets.md): dragged into a board's header, or tapped
   // to add to the selected board.
   ...BOARD_WIDGET_KINDS.map((w): PaletteTileDef => ({
     id: `plan:widget-${w}`,
@@ -91,11 +91,11 @@ export const PLAN_TILES: PaletteTileDef[] = [
     action: { type: 'plan-widget', widget: w },
     icon: <BoardWidgetArt kind={w} size={GLYPH_PX} />,
   })),
-  // Metrics and visualisations (docs/specs/025-plan/plan-views.md): plan views placed on the canvas.
+  // Metrics and visualisations (docs/specs/026-plan/plan-views.md): plan views placed on the canvas.
   ...PLAN_VIEW_TILES,
 ];
 
-// A card tile for an item type (docs/specs/025-plan/item-types.md "Where types show"): the built-in
+// A card tile for an item type (docs/specs/026-plan/item-types.md "Where types show"): the built-in
 // ones above, and the Cards category's tiles for a document's own catalogue.
 export function planCardTile(t: ItemTypeDef): PaletteTileDef {
   return {

@@ -1,11 +1,9 @@
 import { useState } from 'react';
-import { Button, TextInput, Glyph } from '@livediagram/ui';
+import { Button, TextInput, Glyph, DialogCloseButton, DialogHeader } from '@livediagram/ui';
 import { Dialog } from '@/components/dialogs/Dialog';
-import { DialogCloseButton } from '@/components/dialogs/DialogCloseButton';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { normaliseUrl } from '@/lib/url-safety';
 import type { ElementLink } from '@livediagram/document';
-import { DialogHeader } from './DialogHeader';
 import { DialogFooter } from '@/components/dialogs/DialogFooter';
 
 // Shared link picker, styled like the import / export dialogs (centred

@@ -15,7 +15,7 @@ where it is and changes only how the next mark is made.
 | **Diagram mode**    | Structured drawing: the palette, shapes, arrows, icons, templates, snapping and guides.                                               |
 | **Draw mode**       | Freehand whiteboarding: the dock, preset pens, eraser, shape recognition ([Draw mode](../023-draw-mode/draw-mode.md)).                |
 | **Illustrate mode** | Pages on the canvas, of two kinds: infographic pages to lay out and article pages to write ([Illustrate pages](illustrate-pages.md)). |
-| **Plan mode**       | Boards of items: Plan boards, cards, the item panel ([Plan mode](../025-plan/plan-mode.md)).                                          |
+| **Plan mode**       | Boards of items: Plan boards, cards, the item panel ([Plan mode](../026-plan/plan-mode.md)).                                          |
 | **mode switch**     | The control beside the page switcher that changes the editor mode.                                                                    |
 
 - "Whiteboard" names the activity and Draw mode's look, never a tab kind and
@@ -187,7 +187,7 @@ element in the same colour.
   narrowed (both below); every other rule, tool and shortcut is Diagram mode's.
 - **Plan mode** is Diagram mode with the palette narrowed to boards and
   cards, and Plan boards taking input as a planning tool
-  ([Plan mode](../025-plan/plan-mode.md)).
+  ([Plan mode](../026-plan/plan-mode.md)).
 - **Each mode's mark**: Diagram a flowchart (two steps joined), Draw a marker,
   Illustrate a page with a little chart above two lines of writing (its two
   page kinds), Plan a board of three columns with a raised card; the same glyph on the switch, Opens in and the tab pill.
@@ -202,9 +202,9 @@ element in the same colour.
   themselves). On a phone every mode starts on **Hand**, so a drag moves the canvas.
 - The tool is picked whenever the mode changes, the first mode a tab opens in included; any tool can be picked
   after. An embedded viewer always starts on Hand.
-- Plan leaves **Eraser** and **Format** out ([Plan mode](../025-plan/plan-mode.md#tools)).
+- Plan leaves **Eraser** and **Format** out ([Plan mode](../026-plan/plan-mode.md#tools)).
 - A Plan tab with content, and a tab in another mode with content, do not switch into or out of Plan
-  ([Plan mode](../025-plan/plan-mode.md#plan-keeps-its-own-tabs)).
+  ([Plan mode](../026-plan/plan-mode.md#plan-keeps-its-own-tabs)).
 
 ## The palette per mode
 
@@ -263,7 +263,7 @@ Docs, Website), keeping Image and Avatar.
 | Behaviours     | yes     | no         | no   |
 
 Plan offers only Boards and Cards and opens on Cards
-([Plan mode](../025-plan/plan-mode.md#the-palette)).
+([Plan mode](../026-plan/plan-mode.md#the-palette)).
 
 - **The landing category** is the mode's **Popular** (Plan's is **Cards**), and the notation on an
   event-storming board

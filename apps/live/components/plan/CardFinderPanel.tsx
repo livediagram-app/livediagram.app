@@ -1,6 +1,6 @@
 'use client';
 
-// The Cards panel (docs/specs/025-plan/items.md "Finding a card"): every live card in the document, newest
+// The Cards panel (docs/specs/026-plan/items.md "Finding a card"): every live card in the document, newest
 // change first, searched by number, title or description; **Not on a Board** narrows it to the cards no
 // column on this tab's boards holds, so strays can be found and put somewhere. Choosing one opens it. A
 // popover above its button in Plan mode's bottom-right cluster, like Card Types and the Trash.

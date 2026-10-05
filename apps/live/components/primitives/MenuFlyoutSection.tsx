@@ -9,9 +9,8 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { ChevronRightIcon, MENU_SURFACE_ATTR, useMenuKind } from '@livediagram/ui';
+import { ChevronRightIcon, MENU_SURFACE_ATTR, useMenuKind, Portal } from '@livediagram/ui';
 import { useMenuItemProps } from './menu-item-props';
-import { Portal } from '@/components/primitives/Portal';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { useReposition } from '@/hooks/canvas/useReposition';
 import { VIEWPORT_EDGE_MARGIN } from '@/lib/clamp-to-viewport';

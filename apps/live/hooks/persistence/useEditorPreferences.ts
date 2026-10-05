@@ -94,7 +94,7 @@ export function useEditorPreferences(deps: EditorPreferencesDeps) {
   useEffect(() => {
     setIllustrateModeEnabled(userPreferences.illustrateModeEnabled !== false);
   }, [userPreferences.illustrateModeEnabled]);
-  // ...and so is Plan mode, by its own switch (docs/specs/025-plan/plan-mode.md).
+  // ...and so is Plan mode, by its own switch (docs/specs/026-plan/plan-mode.md).
   useEffect(() => {
     setPlanModeEnabled(userPreferences.planModeEnabled !== false);
   }, [userPreferences.planModeEnabled]);

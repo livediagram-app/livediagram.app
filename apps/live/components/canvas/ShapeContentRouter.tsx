@@ -36,7 +36,7 @@ import { LineChartView } from '@/components/canvas/LineChartView';
 import type { BoxedElementViewProps } from '@/components/canvas/BoxedElementView.types';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 
-// Plan's UI loads only when it is drawn (docs/specs/025-plan/plan-mode.md "Cost"), so a document without
+// Plan's UI loads only when it is drawn (docs/specs/026-plan/plan-mode.md "Cost"), so a document without
 // Plan pays nothing for it.
 const PlanCardView = dynamic(
   () => import('@/components/plan/PlanCardView').then((m) => m.PlanCardView),
@@ -47,7 +47,7 @@ const PlanViewView = dynamic(
   { ssr: false },
 );
 
-// Plan's UI loads only when it is drawn (docs/specs/025-plan/plan-mode.md "Cost"), so a document without
+// Plan's UI loads only when it is drawn (docs/specs/026-plan/plan-mode.md "Cost"), so a document without
 // Plan pays nothing for it.
 const PlanBoardView = dynamic(
   () => import('@/components/plan/PlanBoardView').then((m) => m.PlanBoardView),
@@ -190,14 +190,14 @@ export function ShapeContentRouter({
       fontFamily={fontFamily}
     />
   ) : element.type === 'shape' && element.shape === 'plan-board' ? (
-    // Plan board (docs/specs/025-plan/plan-board.md): columns of cards drawn from the document's
+    // Plan board (docs/specs/026-plan/plan-board.md): columns of cards drawn from the document's
     // items, through PlanContext.
     <PlanBoardView element={element} fontFamily={fontFamily} />
   ) : element.type === 'shape' && element.shape === 'plan-card' ? (
-    // Plan card (docs/specs/025-plan/plan-board.md "The Plan card"): one item's card face.
+    // Plan card (docs/specs/026-plan/plan-board.md "The Plan card"): one item's card face.
     <PlanCardView element={element} fontFamily={fontFamily} />
   ) : element.type === 'shape' && element.shape === 'plan-view' ? (
-    // Plan view (docs/specs/025-plan/plan-views.md): a metric or a visualisation of every card.
+    // Plan view (docs/specs/026-plan/plan-views.md): a metric or a visualisation of every card.
     <PlanViewView element={element} fontFamily={fontFamily} />
   ) : element.type === 'shape' && isChecklistShape(element.shape) ? (
     // Checklist (docs/specs/009-elements/checklist.md): themed card of checkbox rows; boxes toggle

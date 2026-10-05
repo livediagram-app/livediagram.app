@@ -43,10 +43,9 @@ import { useCanvasChromePanels } from './useCanvasChromePanels';
 import { usePaletteDragGuides } from '@/hooks/canvas/usePaletteDragGuides';
 import { PANEL_CORNERS, PANEL_IDS, cornerBottomInset, type PanelCorner } from '@/lib/panel-layout';
 import type { StampGhost } from '@/components/canvas/useStampGhost';
-import { HoverCard } from '@livediagram/ui';
+import { HoverCard, atLeastInset } from '@livediagram/ui';
 import { STRIP_SELECTOR, useStripCrowdsCorners } from '@/hooks/ui/useStripCrowdsCorners';
 import { PHONE_TOOLBAR_ITEMS } from '@/components/chrome/phone-toolbar-items';
-import { atLeastInset } from '@/lib/safe-area';
 import { useSnapHaptic } from '@/hooks/canvas/useSnapHaptic';
 import { WHITEBOARD_DOCK_SELECTOR } from '@/lib/whiteboard-dock-prefs';
 import { CollaborateClusterButton } from './CollaborateClusterButton';
@@ -258,7 +257,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
   const panelsOn = {
     // Not in Illustrate mode: a page is laid out by its pages, not layers
     // (docs/specs/007-editor/illustrate-pages.md). Not in Plan mode either: a board is worked by its
-    // columns and cards, not a stacking order (docs/specs/025-plan/plan-mode.md).
+    // columns and cards, not a stacking order (docs/specs/026-plan/plan-mode.md).
     layers:
       panelEnabled(settings, 'layersPanelEnabled') &&
       !props.illustratePages &&
@@ -312,7 +311,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
   // Draw mode trades the palette, the strip and the theme controls for its
   // dock (docs/specs/023-draw-mode/draw-mode.md "What a whiteboard shows").
   const whiteboard = props.editorMode === 'draw';
-  // The palette's Edit Cards opens the Card Types popover from its button (docs/specs/025-plan/item-types.md).
+  // The palette's Edit Cards opens the Card Types popover from its button (docs/specs/026-plan/item-types.md).
   const cardTypesButtonRef = useCardTypesOpener(!zenMode && props.editorMode === 'plan', {
     activeDockPanel,
     handleDockButtonClick,
@@ -594,7 +593,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
         {welcomeOpen ? null : (
           <>
             {offscreenContent ? <OffscreenContentHint onBringBack={onFitToScreen} /> : null}
-            {/* The Trash (docs/specs/025-plan/items.md "Trash"): Plan mode, left of Undo. */}
+            {/* The Trash (docs/specs/026-plan/items.md "Trash"): Plan mode, left of Undo. */}
             {!zenMode && !readOnly && props.editorMode === 'plan' ? (
               <TrashClusterButton
                 popoverOpen={activeDockPanel === 'plan-trash'}
@@ -619,14 +618,14 @@ export function CanvasChrome(props: CanvasChromeProps) {
                 onTogglePopover={(button) => handleDockButtonClick('slides', button, true)}
               />
             ) : null}
-            {/* Cards (docs/specs/025-plan/items.md "Finding a card"): in Plan mode, before Card Types. */}
+            {/* Cards (docs/specs/026-plan/items.md "Finding a card"): in Plan mode, before Card Types. */}
             {!zenMode && props.editorMode === 'plan' ? (
               <CardFinderClusterButton
                 popoverOpen={activeDockPanel === 'plan-cards'}
                 onTogglePopover={(button) => handleDockButtonClick('plan-cards', button, true)}
               />
             ) : null}
-            {/* Card Types (docs/specs/025-plan/item-types.md): in Plan mode, where Layers would be. */}
+            {/* Card Types (docs/specs/026-plan/item-types.md): in Plan mode, where Layers would be. */}
             {!zenMode && props.editorMode === 'plan' ? (
               <CardTypesClusterButton
                 buttonRef={cardTypesButtonRef}

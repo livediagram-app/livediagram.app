@@ -4,8 +4,8 @@ Status: shipped
 
 ## What
 
-Every scrollbar in every app (editor, help centre, telemetry dashboard, marketing site) is **in the
-theme**: a thin track-less bar whose thumb is a slate tone of the current appearance. Light mode
+Every scrollbar in every app (editor, help centre, telemetry dashboard, Community, marketing
+site) is **in the theme**: a thin track-less bar whose thumb is a slate tone of the current appearance. Light mode
 uses a light slate thumb; dark mode uses a dark one from the dark palette
 ([Theme](color-scheme.md)). No surface shows the operating system's default scrollbar.
 

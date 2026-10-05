@@ -3,7 +3,7 @@ import { act, cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { TrashClusterButton } from './TrashClusterButton';
 
-// docs/specs/025-plan/items.md "Trash": the target lights from the pointer's place, so a captured touch
+// docs/specs/026-plan/items.md "Trash": the target lights from the pointer's place, so a captured touch
 // pointer (which never fires pointerenter on it) still sees "Let go to trash it".
 const plan = { draggingItemId: 'item0001' as string | null, items: new Map() };
 vi.mock('@/components/plan/PlanContext', () => ({ usePlan: () => plan }));

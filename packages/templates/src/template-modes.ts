@@ -28,7 +28,7 @@ const TEMPLATE_MODES: Partial<Record<TemplateKind, EditorMode>> = {
   'how-it-works': 'illustrate',
   versus: 'illustrate',
   'social-carousel': 'illustrate',
-  // Plan templates (docs/specs/025-plan/plan-mode.md "Templates").
+  // Plan templates (docs/specs/026-plan/plan-mode.md "Templates").
   'blank-plan': 'plan',
   kanban: 'plan',
   'sprint-board': 'plan',

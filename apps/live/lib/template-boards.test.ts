@@ -30,7 +30,7 @@ const inside = (inner: Element, outer: Element) => {
   );
 };
 
-// The Plan templates (docs/specs/025-plan/plan-mode.md "Templates"): one Plan board each, the set-up
+// The Plan templates (docs/specs/026-plan/plan-mode.md "Templates"): one Plan board each, the set-up
 // its use wants, and seed items that land in the board's columns.
 describe('plan templates', () => {
   const kinds = [...PLAN_TEMPLATE_KINDS];

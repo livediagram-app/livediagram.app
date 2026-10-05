@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { contrastRatio } from './colors';
 import { accentOn, liftAccent, planPalette } from './plan-palette';
 
-// docs/specs/025-plan/plan-board.md "Theme and style".
+// docs/specs/026-plan/plan-board.md "Theme and style".
 describe('planPalette', () => {
   it('is the surface neutral set for a board with no colours of its own', () => {
     expect(planPalette('light').surface).toBe('#f8fafc');

@@ -1,4 +1,4 @@
-// The Visualisations tiles' glyphs (docs/specs/025-plan/plan-views.md "Visualisations"): each a small
+// The Visualisations tiles' glyphs (docs/specs/026-plan/plan-views.md "Visualisations"): each a small
 // picture of its chart, on the 22-unit grid the other Plan glyphs use.
 import { Glyph } from '@livediagram/ui';
 import type { PlanVisualisation } from '@livediagram/items';

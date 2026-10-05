@@ -20,7 +20,7 @@ const item = (status: string, title: string, rank: string): Item => {
   };
 };
 
-// docs/specs/025-plan/plan-board.md "Keyboard".
+// docs/specs/026-plan/plan-board.md "Keyboard".
 // A board of To do, In progress and Done (the Blank board itself starts with none).
 const threeColumns = () => ({
   ...presetSetup('blank'),

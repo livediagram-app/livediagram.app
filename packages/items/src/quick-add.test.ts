@@ -47,7 +47,7 @@ describe('parseQuickAdd', () => {
   });
 });
 
-// docs/specs/025-plan/item-types.md "Where types show".
+// docs/specs/026-plan/item-types.md "Where types show".
 describe('quick add with a document type', () => {
   it('reads a leading name with spaces as a type, and leaves other colons alone', () => {
     const types = [

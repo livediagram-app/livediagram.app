@@ -22,8 +22,12 @@ const ImportTabDialog = dynamic(
   () => import('@/components/dialogs/ImportTabDialog').then((m) => m.ImportTabDialog),
   { ssr: false },
 );
+// The Share dialog with its Community band (docs/specs/025-community/community.md "Publishing").
 const ShareDialog = dynamic(
-  () => import('@/components/dialogs/ShareDialog').then((m) => m.ShareDialog),
+  () =>
+    import('@/components/dialogs/community/ShareDialogWithCommunity').then(
+      (m) => m.ShareDialogWithCommunity,
+    ),
   { ssr: false },
 );
 
@@ -55,6 +59,7 @@ export function EditorTabDialogs() {
     clerkUserId,
     clerkDisplayName,
     documentId,
+    documentTeamId,
     updateParticipantName,
     createShareLink,
     revokeShareLink,
@@ -144,6 +149,10 @@ export function EditorTabDialogs() {
           onSetPassword={setDocumentSharePassword}
           offline={isOffline}
           onSyncToCloud={syncToCloud}
+          documentId={documentId}
+          documentName={documentName}
+          signedIn={!!clerkUserId}
+          teamDocument={!!documentTeamId}
           onClose={() => setShareDialogOpen(false)}
         />
       ) : null}

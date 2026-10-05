@@ -1,4 +1,4 @@
-// The numbers the board widgets read (docs/specs/025-plan/board-widgets.md "Widget kinds"), from the
+// The numbers the board widgets read (docs/specs/026-plan/board-widgets.md "Widget kinds"), from the
 // items the board shows (their status is one of its columns). Pure, so each rule is tested on its own.
 import {
   PRIORITIES,

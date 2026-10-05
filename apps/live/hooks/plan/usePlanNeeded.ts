@@ -1,6 +1,6 @@
 'use client';
 
-// Whether a document needs its items (docs/specs/025-plan/plan-mode.md "Cost"): a document with no Plan
+// Whether a document needs its items (docs/specs/026-plan/plan-mode.md "Cost"): a document with no Plan
 // board, card or view on the open tab, no card slide in its deck, and no tab opening in Plan, never fetches them, so a plain diagram
 // pays nothing for Plan. Once needed it stays needed for the session (latched), so moving to a tab
 // without Plan content keeps the items it already holds.

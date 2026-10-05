@@ -228,7 +228,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     futureLength: historyFutureLength,
     clearRedo: clearHistoryRedo,
   } = useDocumentHistory(initialTabs);
-  // Item changes take their turn in the same undo timeline (docs/specs/025-plan/items.md "Undo").
+  // Item changes take their turn in the same undo timeline (docs/specs/026-plan/items.md "Undo").
   const itemUndo = useItemUndo({
     depth: historyDepth,
     branch: historyBranch,
@@ -549,6 +549,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   } = useEditorComments({
     applyElementDelta,
     selfParticipant,
+    // A Community visitor reads the board, never its conversation (docs/specs/025-community/community.md).
+    commentsOff: realtime.sessionCommunity !== null,
     // Bound below, once the teams the mention list comes from have loaded.
     onMentioned: (text, mentions) => mentionNotifyRef.current(text, mentions),
   });
@@ -882,6 +884,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
       setSelfParticipant,
       setSessionRole,
       setSessionShareCode,
+      setSessionCommunity: realtime.setSessionCommunity,
       setSessionTabScope,
       setSharedDocuments,
       setShareLinks,
@@ -1023,8 +1026,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     onError: (message) => toast.error(message),
   });
 
-  // The document's items (docs/specs/025-plan/items.md): what Plan boards and Plan cards draw.
-  // Items load only for a document with Plan content (docs/specs/025-plan/plan-mode.md "Cost").
+  // The document's items (docs/specs/026-plan/items.md): what Plan boards and Plan cards draw.
+  // Items load only for a document with Plan content (docs/specs/026-plan/plan-mode.md "Cost").
   const planOpenTab = tabs.find((t) => t.id === activeId) ?? tabs[0];
   const planNeeded = usePlanNeeded(
     planOpenTab?.elements ?? NO_ELEMENTS,
@@ -1043,7 +1046,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     onError: (message) => toast.error(message),
   });
 
-  // The document's item types (docs/specs/025-plan/item-types.md): what cards, panels and the palette's
+  // The document's item types (docs/specs/026-plan/item-types.md): what cards, panels and the palette's
   // Cards category draw from, and the Card Types panel changes.
   const itemTypes = useItemTypes({
     documentId,
@@ -1055,7 +1058,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     onError: (message) => toast.error(message),
   });
 
-  // Whose hands are on which Plan card (docs/specs/025-plan/plan-board.md): sent and heard through the room.
+  // Whose hands are on which Plan card (docs/specs/026-plan/plan-board.md): sent and heard through the room.
   const planPresence = usePlanPresence({
     activeTabId: activeId,
     peers: livePresence,
@@ -1066,6 +1069,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     hydrated,
     documentId,
     documentServerStored: realtime.documentServerStored,
+    enabled: realtime.sessionCommunity === null,
     documentTeamId,
     selfParticipant,
     sessionShareCode,
@@ -1189,7 +1193,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     { tab: activeTab, canEdit, commitTabs },
   );
   // A Plan tab with content stays in Plan: a switch away offers a new tab in that mode instead
-  // (docs/specs/025-plan/plan-mode.md "Plan keeps its own tabs"). useTabActions, below, supplies the new tab.
+  // (docs/specs/026-plan/plan-mode.md "Plan keeps its own tabs"). useTabActions, below, supplies the new tab.
   const addTabInRef = useRef<(mode: EditorMode) => void>(() => {});
   const { editorMode, leavePlan } = useLeavePlan(illustrateGuarded, {
     tab: activeTab,
@@ -1201,7 +1205,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // out (docs/specs/007-editor/editor-modes.md).
   useModeDefaultTool(editorMode.mode, canvasTool, setCanvasTool, embedMode);
   useAssignRef(planModeRef, editorMode.mode === 'plan');
-  // A palette card goes into the board column at the point, or nowhere (docs/specs/025-plan/plan-mode.md
+  // A palette card goes into the board column at the point, or nowhere (docs/specs/026-plan/plan-mode.md
   // "The palette"): never a card on the canvas. A miss or a refusal is said.
   const placePaletteCard = (itemType: string | undefined, canvasX: number, canvasY: number) => {
     const point = boardClientPoint(activeTab.elements, canvasX, canvasY);
@@ -1213,7 +1217,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     toast.info(result.message);
   };
   // A widget tile dropped off a board's header says so, and a tapped one finds the selected board
-  // (docs/specs/025-plan/board-widgets.md).
+  // (docs/specs/026-plan/board-widgets.md).
   useEffect(
     () =>
       setPlanWidgetEditor({
@@ -1966,12 +1970,12 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     commit((existingEls) => mergeAiElements(existingEls, elements, mode));
   };
 
-  // Plan boards and cards (docs/specs/025-plan/): the item panel, board set-up and every action a board
+  // Plan boards and cards (docs/specs/026-plan/): the item panel, board set-up and every action a board
   // takes, handed to the canvas through PlanContext. See usePlanSlice.
-  // The tab's status names, read only where Plan is in play (docs/specs/025-plan/plan-mode.md "Cost").
+  // The tab's status names, read only where Plan is in play (docs/specs/026-plan/plan-mode.md "Cost").
   const planStatusNames = usePlanStatusNames(activeTab.elements, planNeeded);
   const planStatusPhases = usePlanStatusPhases(activeTab.elements, planNeeded);
-  // Assignees: the members of your teams (docs/specs/025-plan/items.md "Who may do what").
+  // Assignees: the members of your teams (docs/specs/026-plan/items.md "Who may do what").
   const teamPeople = useTeamPeople(selfParticipant.id, planNeeded);
   const plan = usePlanSlice({
     planItems,

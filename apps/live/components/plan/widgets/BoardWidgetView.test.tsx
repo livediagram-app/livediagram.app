@@ -12,7 +12,7 @@ import {
 import { planPalette } from '../plan-palette';
 import { BoardWidgetView, type WidgetContext } from './BoardWidgetView';
 
-// docs/specs/025-plan/board-widgets.md "Widget kinds".
+// docs/specs/026-plan/board-widgets.md "Widget kinds".
 const SAM = { id: 'sam', name: 'Sam', color: '#2563eb' };
 let n = 0;
 const item = (fields: Item['fields'], type = 'task'): Item => {

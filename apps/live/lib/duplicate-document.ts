@@ -87,7 +87,7 @@ export async function duplicateDocument(
   }
   const newId = crypto.randomUUID();
   // The item store comes with the copy, ids and keys unchanged, so every Plan card and board on
-  // the copied tabs finds its items (docs/specs/025-plan/items.md "Copies and exports").
+  // the copied tabs finds its items (docs/specs/026-plan/items.md "Copies and exports").
   // Best-effort like the tabs: a copy without its items beats no copy.
   const itemStore = await fetchItems({
     ownerId,
@@ -117,7 +117,7 @@ export async function duplicateDocument(
                   itemsNextKey: itemStore.nextKey,
                 }
               : {}),
-            // The type catalogue comes with it (docs/specs/025-plan/item-types.md).
+            // The type catalogue comes with it (docs/specs/026-plan/item-types.md).
             ...(src.itemTypes ? { itemTypes: src.itemTypes } : {}),
           });
         }

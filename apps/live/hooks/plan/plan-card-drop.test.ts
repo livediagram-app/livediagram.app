@@ -4,7 +4,7 @@ import { createShape } from '@livediagram/document';
 import { registerPlanBoardTarget, type PlanBoardTarget } from './plan-board-targets';
 import { boardClientPoint, dropPlanCardAt, PLAN_CARD_MISSED } from './plan-card-drop';
 
-// docs/specs/025-plan/plan-mode.md "The palette": a palette card lands only in a board's column.
+// docs/specs/026-plan/plan-mode.md "The palette": a palette card lands only in a board's column.
 function boardDom(id: string) {
   const root = document.createElement('div');
   root.dataset.planBoard = id;

@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+import { useCommentBadges } from './CommentBadgesContext';
 import { useViewportOf } from '@/hooks/canvas/useViewportStore';
 import type { View } from '@/lib/viewport-store';
 import {
@@ -63,6 +64,7 @@ export function CanvasSelectionToolbars({
   // canvas. They fade out the same way they do for a quick-connect ring, and
   // come back the moment the drag ends.
   const insertionOpen = useInsertionSlot() !== null;
+  const commentsShown = useCommentBadges();
   // While a selection is moved, resized or reshaped the toolbars stand down and stop measuring
   // (docs/specs/008-canvas/canvas-performance.md); they come back at the new place when it ends.
   const moving = selectionMoving(useCanvasGesture());
@@ -164,7 +166,10 @@ export function CanvasSelectionToolbars({
             // is gated !isReadOnly), so the toolbar button was a
             // duplicate for them. View-role visitors get no context menu,
             // so the toolbar stays their only way into a thread.
-            onOpenComments={readOnly && selected ? () => onOpenComments(selected.id) : undefined}
+            // Not where the reader has no comments to open (an embed's viewer, a Community visitor).
+            onOpenComments={
+              readOnly && selected && commentsShown ? () => onOpenComments(selected.id) : undefined
+            }
             onOpenContextMenu={
               readOnly
                 ? undefined

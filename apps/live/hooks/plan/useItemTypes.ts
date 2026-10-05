@@ -1,6 +1,6 @@
 'use client';
 
-// The document's item types in the editor (docs/specs/025-plan/item-types.md): the catalogue the
+// The document's item types in the editor (docs/specs/026-plan/item-types.md): the catalogue the
 // cards, panels and palette read, and the changes the Card Types panel makes. A change shows at
 // once, is saved whole (the api answers with the stored, normalised catalogue, which is kept), and
 // is one undo step in the editor's timeline; a failed save puts the last catalogue back. Another

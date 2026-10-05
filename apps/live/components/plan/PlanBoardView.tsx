@@ -1,6 +1,6 @@
 'use client';
 
-// The Plan board's body on the canvas (docs/specs/025-plan/plan-board.md, blueprint plan-board.md):
+// The Plan board's body on the canvas (docs/specs/026-plan/plan-board.md, blueprint plan-board.md):
 // its set-up projected over the document's items into columns, rows and cards. In Plan mode cards
 // take the pointer and the keyboard; in the other modes the board is an element like any other and a
 // double-click opens a card. Everything the board changes goes through PlanContext.
@@ -47,7 +47,7 @@ import { PLAN_COLUMN_MIN_PX } from '@livediagram/items';
 const stop = (e: { stopPropagation: () => void }) => e.stopPropagation();
 
 // The board body keeps its presses (cards, cells, buttons) from the canvas, except a finger on empty board,
-// which pans the canvas as it would anywhere else (docs/specs/025-plan/plan-board.md "On a phone").
+// which pans the canvas as it would anywhere else (docs/specs/026-plan/plan-board.md "On a phone").
 export function keepBoardPress(e: React.PointerEvent<HTMLElement>): void {
   if (e.pointerType === 'touch') {
     const t = e.target as HTMLElement;
@@ -62,12 +62,12 @@ export function PlanBoardView({
   fontFamily,
 }: {
   element: ShapeElement;
-  // The tab's (or the element's own) font (docs/specs/025-plan/plan-board.md "Theme and style").
+  // The tab's (or the element's own) font (docs/specs/026-plan/plan-board.md "Theme and style").
   fontFamily?: string;
 }) {
   const plan = usePlan();
   const surface = useCanvasSurface();
-  // The board's theme and style colours (docs/specs/025-plan/plan-board.md "Theme and style").
+  // The board's theme and style colours (docs/specs/026-plan/plan-board.md "Theme and style").
   const palette = planPalette(surface, planOwnColours(element));
   const radius = `${cornerRadiusPx(element.borderRadius, element.width, element.height, PLAN_BOARD_RADIUS_PX)}px`;
   const types = plan?.types ?? ITEM_TYPES;
@@ -168,7 +168,7 @@ export function PlanBoardView({
       : null;
   const loading = plan?.status === 'loading';
   const empty = !loading && projection.total === 0;
-  // Every board shows, and Add card offers, every card type (docs/specs/025-plan/plan-board.md).
+  // Every board shows, and Add card offers, every card type (docs/specs/026-plan/plan-board.md).
   const addTypes = boardAddTypes(setup, types);
 
   const onCardKey = (item: Item, e: React.KeyboardEvent<HTMLElement>) => {
@@ -194,7 +194,7 @@ export function PlanBoardView({
   };
 
   const dragging = drag.drag;
-  // A slot per column, two or three for a wider one (docs/specs/025-plan/plan-board.md "The board set-up").
+  // A slot per column, two or three for a wider one (docs/specs/026-plan/plan-board.md "The board set-up").
   const columnTemplate = setup.columns
     .map((c) => `minmax(${PLAN_COLUMN_MIN_PX * (c.width ?? 1)}px, ${c.width ?? 1}fr)`)
     .join(' ');

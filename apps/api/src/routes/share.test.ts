@@ -30,6 +30,8 @@ vi.mock('../db', () => ({
   getShareLink: vi.fn(),
   getParticipant: vi.fn(),
   recordSharedAccess: vi.fn(),
+  getCommunityPostByShareCode: vi.fn(),
+  communityLinkAccess: vi.fn(),
 }));
 
 // The live-image endpoint (docs/specs/013-workspace/live-image-share.md + docs/specs/006-document/document-snapshots.md) delegates the actual
@@ -55,7 +57,14 @@ vi.mock('../thumbnail', () => ({
 // db helpers. passwordGate is module-private to share.ts, exported
 // only for this suite (see the comment on the export).
 import { handleShare, passwordGate } from './share';
-import { getDocument, getParticipant, getShareLink, recordSharedAccess } from '../db';
+import {
+  communityLinkAccess,
+  getCommunityPostByShareCode,
+  getDocument,
+  getParticipant,
+  getShareLink,
+  recordSharedAccess,
+} from '../db';
 import { notifyDocumentJoin } from '../email/notifications';
 import { reportServerEvent } from '../server-telemetry';
 import { getDocumentTabImageSvg, getDocumentThumbnailSvg } from '../thumbnail';
@@ -91,6 +100,7 @@ function shareLink(documentId: string) {
     createdAt: 0,
     expiry: 'never' as const,
     expiresAt: null,
+    purpose: 'share' as const,
     tabId: null,
   };
 }
@@ -264,7 +274,12 @@ describe('GET /api/share/<code>/image.svg (docs/specs/013-workspace/live-image-s
     expect(await res.text()).toBe('<svg>tab2</svg>');
     // The per-tab path renders on read; the cached first-tab snapshot is
     // never touched for a ?tab= request.
-    expect(getTabImageMock).toHaveBeenCalledWith(expect.anything(), expect.anything(), 'tab-2');
+    expect(getTabImageMock).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.anything(),
+      'tab-2',
+      false,
+    );
     expect(getThumbnailMock).not.toHaveBeenCalled();
   });
 
@@ -294,7 +309,12 @@ describe('GET /api/share/<code>/image.svg (docs/specs/013-workspace/live-image-s
     it('renders its tab, not the first-tab snapshot, when no tab is asked for', async () => {
       const res = await handleShare(imageCtx('C'));
       expect(await res.text()).toBe('<svg>tab2</svg>');
-      expect(getTabImageMock).toHaveBeenCalledWith(expect.anything(), expect.anything(), 'tab-2');
+      expect(getTabImageMock).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.anything(),
+        'tab-2',
+        false,
+      );
       expect(getThumbnailMock).not.toHaveBeenCalled();
     });
 
@@ -370,6 +390,19 @@ describe('GET /api/share/<code> (docs/specs/013-workspace/share-password.md + do
     getSharePasswordMock.mockResolvedValue(null);
     recordSharedAccessMock.mockResolvedValue(false);
     getParticipantMock.mockResolvedValue(null);
+  });
+
+  it('answers 404 when a public post’s document is gone by the time it is read', async () => {
+    // A Community link (docs/specs/025-community/community.md): the post checks out, then the document is deleted
+    // before the read. Nothing about it leaks; the link simply answers like any closed one.
+    getShareLinkMock.mockResolvedValue({ ...shareLink('d1'), purpose: 'community' });
+    vi.mocked(getCommunityPostByShareCode).mockResolvedValue({ id: 'post1' } as never);
+    vi.mocked(communityLinkAccess).mockResolvedValue('public');
+    getDocumentMock.mockResolvedValue(null);
+    const { ctx } = resolveCtx({ visitor: 'someone-else' });
+    const res = await handleShare(ctx);
+    expect(res.status).toBe(404);
+    expect(recordSharedAccessMock).not.toHaveBeenCalled();
   });
 
   it('resolves a live code to the document and the link’s own role', async () => {

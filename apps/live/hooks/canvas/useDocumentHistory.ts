@@ -25,7 +25,7 @@ export type History = {
   // How many steps lie behind the present, uncapped (the cap drops the oldest snapshots, never
   // this count), and which branch of edits the present is on (raised by every new step, which
   // clears redo). Item undo steps sit between snapshots by these two counters
-  // (docs/specs/025-plan/items.md "Undo"; useItemUndo). Absent = 0.
+  // (docs/specs/026-plan/items.md "Undo"; useItemUndo). Absent = 0.
   depth?: number;
   branch?: number;
 };

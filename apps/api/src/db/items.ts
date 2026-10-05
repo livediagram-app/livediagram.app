@@ -1,4 +1,4 @@
-// items (migration 0068): a document's item store (docs/specs/025-plan/items.md, blueprint item-store.md
+// items (migration 0068): a document's item store (docs/specs/026-plan/items.md, blueprint item-store.md
 // "Data and persistence"). Every write raises the document's `items_rev` in the same batch, so the
 // room op carries one store revision per write; an update is guarded by the item's own `rev`.
 
@@ -198,7 +198,7 @@ export async function deleteItemRow(
 }
 
 // A document copy takes the items with it, ids and keys unchanged, so every card on the copied
-// tabs still finds its item (docs/specs/025-plan/items.md "Copies and exports"). `onlyIds` limits
+// tabs still finds its item (docs/specs/026-plan/items.md "Copies and exports"). `onlyIds` limits
 // a tab-scoped visitor's copy to the items their tab shows.
 export function copyItemsStatements(
   env: Env,

@@ -5,8 +5,8 @@
 // Timeline's theme-card menu, so "Edit theme" and "Delete" mean exactly
 // the same thing from both places.
 
-import { DialogCloseButton } from '@/components/dialogs/DialogCloseButton';
 import { Dialog } from '@/components/dialogs/Dialog';
+import { DialogCloseButton } from '@livediagram/ui';
 import { CustomThemeBuilder, type CustomThemeDraft } from '@/components/palette/CustomThemeBuilder';
 
 export type { CustomThemeDraft };

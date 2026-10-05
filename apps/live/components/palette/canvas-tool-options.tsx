@@ -30,7 +30,7 @@ export function buildCanvasToolOptions({
   canvasEmpty?: boolean;
   isMobile: boolean;
   includeZen?: boolean;
-  // Plan mode leaves Eraser and Format out (docs/specs/025-plan/plan-mode.md).
+  // Plan mode leaves Eraser and Format out (docs/specs/026-plan/plan-mode.md).
   planMode?: boolean;
 }): PaletteDropdownOption[] {
   const options = buildAll(canvasEmpty, isMobile, includeZen);

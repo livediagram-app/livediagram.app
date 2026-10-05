@@ -1,11 +1,10 @@
 import { Dialog } from '@/components/dialogs/Dialog';
-import { DialogCloseButton } from '@/components/dialogs/DialogCloseButton';
+import { DialogCloseButton, DialogHeader } from '@livediagram/ui';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import type {
   ImportDrawioDocuments,
   ImportDrawioLibraries,
 } from '@/hooks/persistence/useDrawioFileImport';
-import { DialogHeader } from './DialogHeader';
 import { DrawioImportPanel } from './DrawioImportPanel';
 
 export const DRAWIO_IMPORT_TITLE = 'Import from draw.io';

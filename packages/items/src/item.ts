@@ -1,4 +1,4 @@
-// An item: one record in a document's item store (docs/specs/025-plan/items.md).
+// An item: one record in a document's item store (docs/specs/026-plan/items.md).
 // The canvas only frames items; a Plan board draws many, a Plan card one.
 
 // A field value is any JSON value. Known fields narrow it (fields.ts);

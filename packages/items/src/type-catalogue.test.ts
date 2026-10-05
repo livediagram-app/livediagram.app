@@ -16,7 +16,7 @@ import {
   validateItemTypeCatalogue,
 } from './type-catalogue';
 
-// docs/specs/025-plan/item-types.md.
+// docs/specs/026-plan/item-types.md.
 const call = {
   id: 'customer-call',
   label: 'Customer call',

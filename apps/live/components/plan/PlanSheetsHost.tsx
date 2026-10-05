@@ -1,6 +1,6 @@
 'use client';
 
-// Renders the open item panel or board set-up (docs/specs/025-plan/plan-board.md) beside the canvas,
+// Renders the open item panel or board set-up (docs/specs/026-plan/plan-board.md) beside the canvas,
 // from the editor's Plan slice and the active tab: the tab's boards give the status picker its names
 // and the set-up its board.
 import { useMemo } from 'react';
@@ -44,7 +44,7 @@ export function PlanSheetsHost({
     [ctx.items],
   );
   const item = plan.openItemId ? ctx.items.get(plan.openItemId) : undefined;
-  // The type editor (docs/specs/025-plan/item-types.md "Editing a type").
+  // The type editor (docs/specs/026-plan/item-types.md "Editing a type").
   if (plan.editingTypeId && ctx.canEdit) {
     const editing =
       plan.editingTypeId === 'new' ? null : ctx.types.find((t) => t.id === plan.editingTypeId);

@@ -50,8 +50,14 @@ import {
   svgImage,
 } from '../responses';
 import { documentDates, isDocumentSource } from '@livediagram/api-schema';
-import { getDocumentTabImageSvg, getDocumentThumbnailSvg } from '../thumbnail';
-import { redactDocumentForReader, redactDocumentForScope } from '../redact-document';
+import { clientIp } from '../client-ip';
+import { documentImageSvg } from '../document-image';
+import { countCommunityCopy } from '../community-copy';
+import {
+  redactDocumentForCommunity,
+  redactDocumentForReader,
+  redactDocumentForScope,
+} from '../redact-document';
 import { answerOverview, parseViewQuery } from './document-views-route';
 import { emailEnabled } from '../email/client';
 import { notifyMilestone } from '../email/notifications';
@@ -64,6 +70,7 @@ import {
 import { handleDocumentDelete } from './document-delete-route';
 import { handleDocumentPlacement } from './document-placement-route';
 import { handleDocumentSharedTabs } from './document-shared-tabs-route';
+import { handleCommunityOwnerRoutes } from './community-owner-routes';
 import { forkTakenTabIds } from '../tab-id-fork';
 import { relayDocumentRename } from '../room-client';
 import { handleDocumentRoomRoutes } from './document-room-routes';
@@ -82,6 +89,7 @@ import { intentRejected, placementRejected } from '../placement/placement-respon
 import type { DocumentDTO } from '../types';
 import {
   gateEdit,
+  COMMUNITY_CONTENT,
   gateGrant,
   missingDocument,
   requireOwner,
@@ -165,7 +173,7 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
           }
         }
       }
-      // Seed items (docs/specs/025-plan/items.md): an offline document's, on sync. Validated whole
+      // Seed items (docs/specs/026-plan/items.md): an offline document's, on sync. Validated whole
       // before anything is written.
       const seedItemCreates = readSeedItems(body.items);
       if (seedItemCreates instanceof Response) return seedItemCreates;
@@ -200,7 +208,7 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
       if (typeof body.presentation === 'string' && body.presentation.length > MAX_DECK_LEN) {
         return badRequest('presentation too large');
       }
-      // A type catalogue a copy, a sync or a Drive import carries (docs/specs/025-plan/item-types.md
+      // A type catalogue a copy, a sync or a Drive import carries (docs/specs/026-plan/item-types.md
       // "Storage and sync"), validated as the item-types route does; a bad one refuses the create.
       let itemTypes: ItemTypeCatalogue | null = null;
       if (body.itemTypes !== undefined && body.itemTypes !== null) {
@@ -337,7 +345,7 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
       if (view instanceof Response) return view;
       const d = await getDocument(env, id);
       if (!d) return missingDocument(ctx, id);
-      const grant = await gateGrant(ctx, id, d.ownerId, d.teamId);
+      const grant = await gateGrant(ctx, id, d.ownerId, d.teamId, COMMUNITY_CONTENT);
       // Redacted for every non-owner, exactly as the share-code resolver
       // does (docs/specs/014-identity/auth-and-guest-access.md): the gate above admits any valid share code, view
       // or edit, so this is the same audience — and a guest owner's id IS
@@ -345,12 +353,13 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
       // share door blanked it. See redact-document.ts.
       // A tab-scoped visitor (docs/specs/013-workspace/tab-scoped-share-links.md) sees the other tabs locked.
       if (!grant) return notFound();
+      const reader = redactDocumentForReader(d, ctx.resolveOwner());
       const liveDoc = redactDocumentForScope(
-        redactDocumentForReader(d, ctx.resolveOwner()),
+        grant.community ? redactDocumentForCommunity(reader) : reader,
         grant.tabScope,
       );
       // The overview view (docs/specs/024-agents/document-views.md), after the same gate and scope.
-      if (view) return answerOverview(ctx, view, liveDoc, grant.tabScope);
+      if (view) return answerOverview(ctx, view, liveDoc, grant.tabScope, grant.community);
       return json({ document: liveDoc });
     }
     if (request.method === 'PUT') {
@@ -466,12 +475,11 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
       // Either way a tab-scoped visitor (docs/specs/013-workspace/tab-scoped-share-links.md) copies their tab
       // only: the share-code leg carries the link's scope, the shared_with
       // leg the scope recorded on their last visit.
-      let scope: { tabScope: string | null } | null = await gateGrant(
-        ctx,
-        id,
-        source.ownerId,
-        source.teamId,
-      );
+      let scope: {
+        tabScope: string | null;
+        community?: boolean;
+        shareCode?: string | null;
+      } | null = await gateGrant(ctx, id, source.ownerId, source.teamId, COMMUNITY_CONTENT);
       if (!scope) {
         const sharedRow = (await listSharedWith(env, owner)).find((s) => s.id === id);
         if (sharedRow) scope = { tabScope: sharedRow.tabId };
@@ -486,8 +494,21 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
       const requested =
         typeof body.name === 'string' ? capStoredName(body.name, null, 'document') : '';
       const newName = requested || capStoredName(`Copy of ${source.name}`, null, 'document');
-      const copy = await copyDocument(env, id, newId, owner, newName, scope.tabScope);
+      const copy = await copyDocument(
+        env,
+        id,
+        newId,
+        owner,
+        newName,
+        scope.tabScope,
+        scope.community === true,
+      );
       if (!copy) return notFound();
+      // A copy through a Community post's link counts toward its copy count, once per person
+      // (docs/specs/025-community/community.md).
+      if (scope.community && scope.shareCode && owner !== source.ownerId) {
+        ctx.waitUntil?.(countCommunityCopy(env, scope.shareCode, owner, clientIp(request)));
+      }
       // A copy is one document made on purpose: always a use (docs/specs/015-api/api.md "Marking a
       // document used").
       ctx.waitUntil?.(recordDocumentDuplicated(env, copy, source.name, owner, { markUsed: true }));
@@ -498,7 +519,8 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
       // route's read check admits joined team members, who present no share
       // code, and telling an owner that a teammate duplicating a team-library
       // document was "copied by a visitor" is simply untrue.
-      if (owner !== source.ownerId && shareCodeOf(request) !== null) {
+      // Not for a Community copy: the copier is a stranger to the author (their copy is counted instead).
+      if (owner !== source.ownerId && shareCodeOf(request) !== null && !scope.community) {
         ctx.waitUntil?.(
           getParticipant(env, owner).then((p) =>
             recordVisitorCopied(env, source, owner, p?.name ?? null),
@@ -514,6 +536,13 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
   {
     const placementResp = await handleDocumentPlacement(ctx);
     if (placementResp) return placementResp;
+  }
+
+  // /api/documents/<id>/community: publish to, edit in or remove from Community
+  // (docs/specs/025-community/community.md).
+  {
+    const communityResp = await handleCommunityOwnerRoutes(ctx);
+    if (communityResp) return communityResp;
   }
 
   // /api/documents/<id>/shared-tabs — what a delete leaves behind in other
@@ -537,13 +566,17 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
       // floor on how fast a card can paint.
       const d = await getDocumentThumbMeta(env, id);
       if (!d) return notFound();
-      const grant = await gateGrant(ctx, id, d.ownerId, d.teamId);
+      const grant = await gateGrant(ctx, id, d.ownerId, d.teamId, COMMUNITY_CONTENT);
       if (!grant) return notFound();
       // A tab-scoped visitor (docs/specs/013-workspace/tab-scoped-share-links.md) gets their tab, never the
       // first-tab snapshot.
-      const svg = grant.tabScope
-        ? await getDocumentTabImageSvg(env, d, grant.tabScope)
-        : await getDocumentThumbnailSvg(env, d, { defer: ctx.waitUntil });
+      // A Community visitor's thumbnail is drawn from the redacted tab, never the owner's snapshot.
+      const svg = await documentImageSvg(
+        env,
+        d,
+        { tabId: grant.tabScope, community: grant.community === true },
+        { defer: ctx.waitUntil },
+      );
       // Nothing drawn (or no snapshot store). Past the gate, so this says
       // nothing about access, and the URL carries `?v=<savedAt>`: the answer
       // cannot change until the document does, so let the browser keep it

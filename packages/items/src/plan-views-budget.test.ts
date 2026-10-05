@@ -8,7 +8,7 @@ import {
 import { ganttModel } from './plan-view-gantt';
 import { SAM, item } from './test-items';
 
-// docs/specs/025-plan/plan-views.md: every view reads the whole store (ITEMS_MAX cards), once per change.
+// docs/specs/026-plan/plan-views.md: every view reads the whole store (ITEMS_MAX cards), once per change.
 describe('plan view budgets', () => {
   it('builds every view over a full store well within a frame budget each', () => {
     const phases = new Map([

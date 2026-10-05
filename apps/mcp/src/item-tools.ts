@@ -1,4 +1,4 @@
-// The item tools (docs/specs/025-plan/plan-mode.md "Agents", docs/specs/015-api/mcp-server.md): read and
+// The item tools (docs/specs/026-plan/plan-mode.md "Agents", docs/specs/015-api/mcp-server.md): read and
 // change the items a document's Plan boards show, through the item store's routes. An item is named by its
 // number ("#12") or an id prefix (resolveItemRef), the way the CLI's item verbs name it. Every change
 // reaches people's boards at once, through the room.

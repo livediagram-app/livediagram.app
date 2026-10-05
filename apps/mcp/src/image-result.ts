@@ -58,7 +58,7 @@ async function buildImageResolver(
 // render placeholders for image elements (the pre-embedding behaviour).
 export type ImageBlock = { type: 'image'; data: string; mimeType: string };
 
-// A Plan board's or card's items (docs/specs/025-plan/plan-board.md), so a preview draws their cards;
+// A Plan board's or card's items (docs/specs/026-plan/plan-board.md), so a preview draws their cards;
 // none when the tab has no Plan shape, or the document is not named.
 async function planContentFor(
   tab: Tab,
@@ -70,7 +70,7 @@ async function planContentFor(
   if (!plan || !auth?.documentId) return {};
   const path = `/documents/${encodeURIComponent(auth.documentId)}`;
   // The items, and the document's item types so custom types keep their colours
-  // (docs/specs/025-plan/item-types.md). Each is best-effort: a preview without them still draws.
+  // (docs/specs/026-plan/item-types.md). Each is best-effort: a preview without them still draws.
   const [items, doc] = await Promise.all([
     apiJson<ItemsResponse>(auth.env, auth.token, `${path}/items`).catch(() => null),
     apiJson<{ document?: { itemTypes?: ItemTypeCatalogue | null } }>(

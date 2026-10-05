@@ -1,6 +1,6 @@
 'use client';
 
-// A count as a badge (docs/specs/025-plan/board-widgets.md "The header"): the figure in a small pill,
+// A count as a badge (docs/specs/026-plan/board-widgets.md "The header"): the figure in a small pill,
 // centred on its cap band, in a tint that sets it off from what it sits on. Column heads and board
 // widgets share it, so every lone number on a board reads the same way.
 import type { ReactNode } from 'react';

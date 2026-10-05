@@ -8,7 +8,7 @@ import {
   planTemplateSetup,
 } from './template-builders-plan';
 
-// The Plan templates (docs/specs/025-plan/plan-mode.md "Templates"): boards set up for their use, no cards.
+// The Plan templates (docs/specs/026-plan/plan-mode.md "Templates"): boards set up for their use, no cards.
 
 // apps/live PlanBoardView: PLAN_COLUMN_MIN_PX, the grid's gap-3 and the body's px-3.
 const COLUMN_MIN_PX = 220;

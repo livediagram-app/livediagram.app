@@ -525,7 +525,7 @@ export const SELF_PAINTING_SHAPES = new Set<string>([
   'line-chart',
   'code-block',
   'checklist',
-  // Plan board and card (docs/specs/025-plan/plan-board.md) paint their own surfaces and stripes.
+  // Plan board and card (docs/specs/026-plan/plan-board.md) paint their own surfaces and stripes.
   'plan-board',
   'plan-card',
   'plan-view',

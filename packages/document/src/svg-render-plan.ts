@@ -1,5 +1,5 @@
 // The Plan board and Plan card in exports, thumbnails and api or MCP images
-// (docs/specs/025-plan/plan-board.md "Both elements everywhere"). The board is
+// (docs/specs/026-plan/plan-board.md "Both elements everywhere"). The board is
 // drawn from the document's items when the caller has them: its header,
 // columns with their counts and WIP limits, and the card faces, without the
 // interactive controls. Without items the columns draw empty.
@@ -231,7 +231,7 @@ export function svgPlanCard(
   );
 }
 
-// A plan view (docs/specs/025-plan/plan-views.md "On the canvas") in an export: a labelled box, its view's
+// A plan view (docs/specs/026-plan/plan-views.md "On the canvas") in an export: a labelled box, its view's
 // name, not the live chart.
 export function svgPlanView(el: Shape, surface: CanvasSurface): string {
   const p = planPalette(surface, ownColours(el));

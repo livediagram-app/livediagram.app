@@ -37,7 +37,7 @@ describe('templateFamilyOf', () => {
         'retrospective',
         'sailboat',
         'start-stop-continue',
-        // The Plan templates in a family (docs/specs/025-plan/plan-mode.md "Templates").
+        // The Plan templates in a family (docs/specs/026-plan/plan-mode.md "Templates").
         'sprint-board',
         'team-retro',
       ].sort(),

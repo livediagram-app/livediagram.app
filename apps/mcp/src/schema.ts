@@ -547,7 +547,7 @@ export const renameDocumentShape = {
     .describe('Rename this tab within the document instead of the document itself.'),
 };
 
-// The item tools (docs/specs/025-plan/plan-mode.md "Agents"): list_items and change_items.
+// The item tools (docs/specs/026-plan/plan-mode.md "Agents"): list_items and change_items.
 const itemDocumentId = z.string().describe('The document (from find_documents).');
 const itemRef = z.string().describe('The item, by its number ("#12") or an id prefix.');
 const fieldsArg = z

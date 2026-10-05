@@ -3,9 +3,10 @@ import { expect, expectNoPageErrors, test } from './fixtures';
 import { auditOptical, OPTICAL_TOLERANCE_PX } from './optical';
 
 // Optical alignment audit on the other sites (docs/specs/004-interface-design/optical-alignment.md): the
-// help centre, the telemetry dashboard and the marketing site. The e2e stack serves their static builds
-// (help and telemetry under their basePath on this origin, marketing on its own port); against a dev
-// stack, point E2E_HELP_URL / E2E_TELEMETRY_URL / E2E_MARKETING_URL at the dev servers.
+// help centre, the telemetry dashboard, the Community and the marketing site. The e2e stack serves their
+// static builds (help, telemetry and the Community under their basePath on this origin, marketing on its
+// own port); against a dev stack, point E2E_HELP_URL / E2E_TELEMETRY_URL / E2E_COMMUNITY_URL /
+// E2E_MARKETING_URL at the dev servers.
 
 test.use({
   colorScheme: 'dark',
@@ -15,10 +16,11 @@ test.use({
 });
 
 const marketingPort = process.env.E2E_MARKETING_PORT ?? '3013';
-const site = (name: 'help' | 'telemetry' | 'marketing', baseURL: string) =>
+const site = (name: 'help' | 'telemetry' | 'community' | 'marketing', baseURL: string) =>
   ({
     help: process.env.E2E_HELP_URL ?? `${baseURL}/help`,
     telemetry: process.env.E2E_TELEMETRY_URL ?? `${baseURL}/telemetry`,
+    community: process.env.E2E_COMMUNITY_URL ?? `${baseURL}/community`,
     marketing: process.env.E2E_MARKETING_URL ?? `http://localhost:${marketingPort}`,
   })[name];
 
@@ -60,6 +62,16 @@ test.describe('Optical alignment audit, other sites', () => {
   test('the telemetry dashboard', async ({ page, pageErrors, baseURL }) => {
     await open(page, `${site('telemetry', baseURL!)}/`, 'telemetry');
     await expectCentred(page, 'telemetry dashboard');
+    expectNoPageErrors(pageErrors);
+  });
+
+  test('the Community', async ({ page, pageErrors, baseURL }) => {
+    // The gallery (docs/specs/025-community/community.md), as a visitor with nothing shared yet sees it on a fresh
+    // stack: its header, search box and controls, and the empty state.
+    await open(page, `${site('community', baseURL!)}/`, 'community');
+    await expect(page.getByRole('searchbox')).toBeVisible();
+    await page.waitForLoadState('networkidle');
+    await expectCentred(page, 'community gallery');
     expectNoPageErrors(pageErrors);
   });
 

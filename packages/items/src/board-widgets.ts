@@ -1,4 +1,4 @@
-// A Plan board's header widgets (docs/specs/025-plan/board-widgets.md): the kinds, the set a board
+// A Plan board's header widgets (docs/specs/026-plan/board-widgets.md): the kinds, the set a board
 // shows when it names none, and the edits that place, move and remove one. A board holds each kind at
 // most once, in order. Pure; the editor makes each edit one board edit.
 import type { PlanBoardSetup } from './board';

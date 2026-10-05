@@ -1,5 +1,5 @@
 // Text for an item: card accessible names, move announcements and the agents'
-// board view (docs/specs/025-plan/plan-mode.md "Agents").
+// board view (docs/specs/026-plan/plan-mode.md "Agents").
 
 import type { Item } from './item';
 import { itemAssignee, itemTitle } from './item';

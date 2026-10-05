@@ -3,7 +3,7 @@ import { itemPersonId } from '@livediagram/items';
 import type { TeamMember } from '@livediagram/api-schema';
 import { teamMemberPerson } from './useTeamPeople';
 
-// docs/specs/025-plan/items.md "Who may do what": assignees are your teams' joined members.
+// docs/specs/026-plan/items.md "Who may do what": assignees are your teams' joined members.
 const member = (over: Partial<TeamMember>): TeamMember => ({
   id: 'm',
   teamId: 't',

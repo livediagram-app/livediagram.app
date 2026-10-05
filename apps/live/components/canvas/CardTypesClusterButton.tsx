@@ -3,7 +3,7 @@
 import { PlanCardsIcon } from '@livediagram/ui';
 import { ClusterPopoverButton } from './ClusterPopoverButton';
 
-// The Card Types button in the bottom-right cluster, in Plan mode (docs/specs/025-plan/item-types.md
+// The Card Types button in the bottom-right cluster, in Plan mode (docs/specs/026-plan/item-types.md
 // "The Card Types panel"): where Layers sits in the other modes.
 export function CardTypesClusterButton(props: {
   popoverOpen: boolean;

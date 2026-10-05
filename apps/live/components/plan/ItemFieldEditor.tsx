@@ -1,6 +1,6 @@
 'use client';
 
-// One field of an item, as the item panel edits it (docs/specs/025-plan/plan-board.md "Working on a
+// One field of an item, as the item panel edits it (docs/specs/026-plan/plan-board.md "Working on a
 // board"): a built-in field by its kind, a custom field by its kind, and the description as rich text.
 // Each saves as it changes.
 import { ChevronRightIcon, Select } from '@livediagram/ui';
@@ -135,7 +135,7 @@ export function ItemFieldEditor({ f, ctx }: { f: string; ctx: ItemFieldContext }
     case 'estimate':
       return <NumberField id={id} value={value} disabled={disabled} onSave={(v) => onSave(f, v)} />;
     case 'start': {
-      // A start after its due date is kept, and said gently (docs/specs/025-plan/items.md "Fields").
+      // A start after its due date is kept, and said gently (docs/specs/026-plan/items.md "Fields").
       const due = item.fields['due'];
       const late = typeof value === 'string' && typeof due === 'string' && value > due;
       return (

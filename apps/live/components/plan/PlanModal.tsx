@@ -1,6 +1,6 @@
 'use client';
 
-// The item panel's shell (docs/specs/025-plan/blueprints/plan-board.md "Presentation and UX"):
+// The item panel's shell (docs/specs/026-plan/blueprints/plan-board.md "Presentation and UX"):
 // PlanModal, a centred modal over the editor with a header, a scrolling body and a footer, rising
 // from the bottom with a grab handle on a phone, through the shared Dialog. With the row and field
 // styles the Plan forms share.

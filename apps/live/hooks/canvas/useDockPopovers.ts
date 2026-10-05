@@ -21,7 +21,7 @@ export const POPOVER_WIDTHS: Partial<Record<string, number>> = {
 };
 
 // 'slides': the Slide Deck panel over its cluster button in Illustrate mode. 'card-types': the Card
-// Types panel over its cluster button in Plan mode (docs/specs/025-plan/item-types.md).
+// Types panel over its cluster button in Plan mode (docs/specs/026-plan/item-types.md).
 export type DockPanel =
   'explorer' | 'layers' | 'collaborate' | 'slides' | 'card-types' | 'plan-trash' | 'plan-cards';
 

@@ -60,6 +60,9 @@ export function useRoomConnection(opts: {
   // Saved on the server, so it has a room: every such document, personal ones included, since an
   // agent writing through the api is a second writer even where nobody else can open it.
   documentServerStored: boolean;
+  // False keeps the room closed whatever else holds: a Community viewer never joins the author's room
+  // (docs/specs/025-community/community.md "Viewing a post's document"). Defaults to true.
+  enabled?: boolean;
   // The document's team (docs/specs/013-workspace/team-shared-documents.md), null for a personal document. A team
   // document is a live room for its members even without a share link,
   // so presence opens for it the same way a shared document does.
@@ -145,11 +148,11 @@ export function useRoomConnection(opts: {
   // An agent's changeset (docs/specs/024-agents/agent-changesets.md "In the editor"), relayed by the
   // worker; useChangesetFeed decides what to do with it.
   receiveChangeset: (op: ChangesetRoomOp) => void;
-  // Item writes the api made (docs/specs/025-plan/items.md "Live for everyone"). System-only.
+  // Item writes the api made (docs/specs/026-plan/items.md "Live for everyone"). System-only.
   receiveItems: (op: ItemsRoomOp) => void;
-  // A stored type catalogue (docs/specs/025-plan/item-types.md "Storage and sync"). System-only.
+  // A stored type catalogue (docs/specs/026-plan/item-types.md "Storage and sync"). System-only.
   receiveItemTypes: (op: ItemTypesRoomOp) => void;
-  // A peer's hands on a Plan card (docs/specs/025-plan/plan-board.md). Presence.
+  // A peer's hands on a Plan card (docs/specs/026-plan/plan-board.md). Presence.
   receivePlanPresence: (
     from: string,
     op: { tabId: string; itemId: string | null; state?: 'drag' | 'view' },
@@ -162,6 +165,7 @@ export function useRoomConnection(opts: {
     hydrated,
     documentId,
     documentServerStored,
+    enabled = true,
     documentTeamId,
     selfParticipant,
     sessionShareCode,
@@ -488,11 +492,11 @@ export function useRoomConnection(opts: {
       } else if (op.kind === 'plan-presence') {
         receivePlanPresence(from, op);
       } else if (op.kind === 'items') {
-        // Item writes (docs/specs/025-plan/items.md). System-only: items change only through the api,
+        // Item writes (docs/specs/026-plan/items.md). System-only: items change only through the api,
         // and the room refuses this op from a client socket.
         if (from === 'system') receiveItems(op);
       } else if (op.kind === 'item-types') {
-        // The type catalogue (docs/specs/025-plan/item-types.md). System-only: it changes only through
+        // The type catalogue (docs/specs/026-plan/item-types.md). System-only: it changes only through
         // the api.
         if (from === 'system') receiveItemTypes(op);
       } else if (op.kind === 'document-trashed') {
@@ -546,7 +550,7 @@ export function useRoomConnection(opts: {
     // Open the realtime room for every server-stored document: shared and team documents for their
     // people (docs/specs/013-workspace/team-shared-documents.md), and personal ones too, so an agent's
     // changeset reaches the person working on it (docs/specs/024-agents/agent-changesets.md).
-    if (!hydrated || !documentId || !documentServerStored) {
+    if (!enabled || !hydrated || !documentId || !documentServerStored) {
       // Make sure any state from a previous shared session is cleared
       // when we transition back to private (revoke share / leave team).
       setLivePresence([]);
@@ -624,6 +628,7 @@ export function useRoomConnection(opts: {
       roomRef.current = null;
     };
   }, [
+    enabled,
     hydrated,
     documentId,
     documentServerStored,

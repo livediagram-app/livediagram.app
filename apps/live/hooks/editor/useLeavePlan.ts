@@ -1,4 +1,4 @@
-// Plan holds its tabs, both ways (docs/specs/025-plan/plan-mode.md "Plan keeps its own tabs"): a Plan
+// Plan holds its tabs, both ways (docs/specs/026-plan/plan-mode.md "Plan keeps its own tabs"): a Plan
 // tab with anything on it stays in Plan, and a tab in another mode with anything on it does not
 // become a Plan tab. The switch does not happen; a question opens instead, whose answer is a new tab
 // in the mode asked for, and the tab stays as it is.

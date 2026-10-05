@@ -542,7 +542,7 @@ and every team Trash they have joined.
 
 ### 4.9b `list_items` and `change_items`
 
-The items Plan boards show ([Items](../025-plan/items.md), [Plan mode](../025-plan/plan-mode.md#agents)):
+The items Plan boards show ([Items](../026-plan/items.md), [Plan mode](../026-plan/plan-mode.md#agents)):
 
 - **`list_items`** (read): a document's items, by number, narrowed by `type` and `status`. Titles and fields are
   people's writing, read as data.

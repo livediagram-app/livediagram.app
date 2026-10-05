@@ -1,6 +1,6 @@
 'use client';
 
-// What every Plan board and Plan card on the canvas reads (docs/specs/025-plan/blueprints/plan-board.md
+// What every Plan board and Plan card on the canvas reads (docs/specs/026-plan/blueprints/plan-board.md
 // "Editor components"): the document's items, who is looking, whether input works the Plan way, and
 // the actions a board takes. A context, like MindOutlineContext, because the consumers are element
 // bodies far below the editor state. Undefined outside the editor (share view, exports): a board
@@ -23,7 +23,7 @@ export type PlanCardPresence = { name: string; color: string; state: 'drag' | 'v
 
 export type PlanContextValue = {
   items: ReadonlyMap<string, Item>;
-  // The document's item types, in order (docs/specs/025-plan/item-types.md).
+  // The document's item types, in order (docs/specs/026-plan/item-types.md).
   types: readonly ItemTypeDef[];
   // Their changes (the Card Types panel and the type editor).
   itemTypes: ItemTypesSlice;
@@ -36,7 +36,7 @@ export type PlanContextValue = {
   // Plan mode is on for this person: cards take the pointer.
   planInput: boolean;
   canEdit: boolean;
-  // Votes need only participate access (docs/specs/025-plan/items.md "Who may do what").
+  // Votes need only participate access (docs/specs/026-plan/items.md "Who may do what").
   canVote: boolean;
   presence: ReadonlyMap<string, PlanCardPresence>;
   retry: () => void;
@@ -64,7 +64,7 @@ export type PlanContextValue = {
   setDragging: (itemId: string | null) => void;
   // The card being dragged by this person, if any (the Trash grows to take it).
   draggingItemId: string | null;
-  // The Trash (docs/specs/025-plan/items.md "Trash").
+  // The Trash (docs/specs/026-plan/items.md "Trash").
   trashItem: (itemId: string) => void;
   restoreItem: (itemId: string) => void;
   emptyTrash: () => void;
@@ -74,7 +74,7 @@ export type PlanContextValue = {
   // The names the tab's boards give their statuses, in order (an All Cards board's rows).
   statusNames: ReadonlyMap<string, string>;
   // The phase the tab's boards give each status: what the plan views count as done
-  // (docs/specs/025-plan/plan-views.md "What a plan view reads").
+  // (docs/specs/026-plan/plan-views.md "What a plan view reads").
   statusPhases: ReadonlyMap<string, StatusPhase>;
 };
 

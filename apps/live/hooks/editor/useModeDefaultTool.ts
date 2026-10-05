@@ -4,7 +4,7 @@
 // with"): Select in every mode, Hand in Plan (a board's cards take the pointer themselves), and Hand
 // on a phone, where a drag should move the canvas. Picked whenever the mode changes, the first
 // mode included; any tool can be picked after. Plan also leaves Eraser and Format out
-// (docs/specs/025-plan/plan-mode.md): either falls back to Hand if it is ever the tool there.
+// (docs/specs/026-plan/plan-mode.md): either falls back to Hand if it is ever the tool there.
 import { useEffect, useRef } from 'react';
 import type { EditorMode } from '@livediagram/document';
 import type { CanvasTool } from '@/components/palette/CommandPalette';

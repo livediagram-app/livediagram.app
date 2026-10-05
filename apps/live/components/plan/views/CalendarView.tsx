@@ -1,6 +1,6 @@
 'use client';
 
-// The Due Calendar (docs/specs/025-plan/plan-views.md "Due Calendar"): a month in Monday weeks, each day
+// The Due Calendar (docs/specs/026-plan/plan-views.md "Due Calendar"): a month in Monday weeks, each day
 // listing the cards due then as a type dot and title, as many as fit and then "+N more". The month steps
 // are each viewer's own.
 import { useMemo, useState } from 'react';

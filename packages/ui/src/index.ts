@@ -13,7 +13,13 @@ export {
   type ButtonVariant,
   type ButtonSize,
 } from './Button';
-export { TextInput, type TextInputProps } from './TextInput';
+export {
+  FIELD_INVALID,
+  TextArea,
+  TextInput,
+  type TextAreaProps,
+  type TextInputProps,
+} from './TextInput';
 export { Select, type SelectProps, type SelectVariant, type SelectSize } from './Select';
 export { Tooltip, type TooltipProps } from './Tooltip';
 export { StableLabel } from './StableLabel';
@@ -41,6 +47,26 @@ export {
 } from './brand-classes';
 export * from './timeline';
 export * from './icons';
+export { CommunityPostTile } from './community/CommunityPostTile';
+export { CommunityAuthorBadge } from './community/CommunityAuthorBadge';
+export { communitySharedAgo } from './community/shared-ago';
+export {
+  CommunityCopyCount,
+  CommunityLikeCount,
+  communityPlural,
+} from './community/CommunityCounts';
+export { CommunityPostTileSkeleton } from './community/CommunityPostTileSkeleton';
+export { formatCommunityCount } from './community/format-count';
+export { COMMUNITY_DOT_GRID, COMMUNITY_SKELETON_BAR } from './community/surfaces';
+export { CommunityHelpLink } from './community/CommunityHelpLink';
+export { useNearViewport } from './useNearViewport';
+export { PictureDisc } from './PictureDisc';
+export {
+  resetCommunityEnabledForTests,
+  useCommunityEnabled,
+} from './community/useCommunityEnabled';
+export { clerkPublishableKeyOrNull } from './clerk-key';
+export { IDENTITY_FILL, identityDeep, identityVars } from './identity-fill';
 export {
   SITE_URL,
   SITE_NAME,
@@ -62,3 +88,9 @@ export {
 export * from './appearance';
 export * from './optical';
 export * from './menu';
+export { Dialog, type DialogProps } from './dialog/Dialog';
+export { DialogHeader } from './dialog/DialogHeader';
+export { DialogCloseButton } from './dialog/DialogCloseButton';
+export { Portal } from './Portal';
+export { useSwipeDownDismiss } from './useSwipeDownDismiss';
+export { safeInset, atLeastInset, safeInlinePadding } from './safe-area';

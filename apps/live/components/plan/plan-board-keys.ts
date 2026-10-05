@@ -1,4 +1,4 @@
-// A Plan board's keyboard (docs/specs/025-plan/plan-board.md "Keyboard"), as a pure function of the
+// A Plan board's keyboard (docs/specs/026-plan/plan-board.md "Keyboard"), as a pure function of the
 // board as drawn: arrow keys move focus between cards, Shift+Left/Right moves the card a column,
 // Shift+Up/Down moves it within its column, Enter opens, Delete deletes, N adds to the column.
 import { itemTitle, type BoardProjection, type ItemMove } from '@livediagram/items';

@@ -24,7 +24,7 @@ A finished canvas shows everything at once, which is great for reference and bad
 
 ### Item slides
 
-A Plan card can be a slide of its own ([Plan board](../025-plan/plan-board.md)): **Add to Slides** in a card's
+A Plan card can be a slide of its own ([Plan board](../026-plan/plan-board.md)): **Add to Slides** in a card's
 right-click menu adds an **item slide**, the slide being that item rather than elements of the canvas.
 
 - It belongs to the tab the card was on (`tabId`), names the item (`itemId`), and holds no elements.

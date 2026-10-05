@@ -66,7 +66,7 @@ describe('deriveCanvasSelection', () => {
     expect(s.showUnionResize).toBe(false);
   });
 
-  // docs/specs/025-plan/plan-board.md: a board's cards are its content, not nodes to chain from.
+  // docs/specs/026-plan/plan-board.md: a board's cards are its content, not nodes to chain from.
   it('shows no quick-connect pluses on a Plan board or Plan card', () => {
     for (const shape of ['plan-board', 'plan-card'] as const) {
       const s = derive({ elements: [box('p', { shape })], selectedId: 'p' });

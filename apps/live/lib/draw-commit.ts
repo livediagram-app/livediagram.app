@@ -393,7 +393,7 @@ export function buildDrawnBoxed(
       ? { estimateScale: intent.estimateScale }
       : {}),
     // A Plan board takes its tile's preset; a Plan card names a new item, which the editor makes in
-    // the item store as the card lands (docs/specs/025-plan/plan-mode.md "The palette").
+    // the item store as the card lands (docs/specs/026-plan/plan-mode.md "The palette").
     ...(intent.type === 'shape' && intent.kind === 'plan-board'
       ? { planBoard: freshBoardSetup(intent.plan) }
       : {}),
@@ -404,7 +404,7 @@ export function buildDrawnBoxed(
     ...(intent.type === 'shape' && intent.kind === 'plan-card'
       ? { planCard: { itemId: newItemId() } }
       : {}),
-    // A plan view takes its tile's view (docs/specs/025-plan/plan-views.md), tapped in at that view's size.
+    // A plan view takes its tile's view (docs/specs/026-plan/plan-views.md), tapped in at that view's size.
     ...(intent.type === 'shape' && intent.kind === 'plan-view' && isPlanViewId(intent.plan)
       ? { planView: { view: intent.plan } }
       : {}),

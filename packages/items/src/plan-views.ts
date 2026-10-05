@@ -1,4 +1,4 @@
-// Plan views (docs/specs/025-plan/plan-views.md): the view kinds a 'plan-view' element shows, the size each
+// Plan views (docs/specs/026-plan/plan-views.md): the view kinds a 'plan-view' element shows, the size each
 // starts at, and what every view reads: the document's live cards and the phase each status sits in. Pure;
 // the charts' own models are plan-view-gantt.ts and plan-view-charts.ts.
 import type { Item } from './item';
@@ -15,7 +15,7 @@ import {
 import { ITEM_TYPES, type ItemTypeDef } from './item-types';
 
 // The board widget kinds that read out rather than narrow a board or need its set-up
-// (docs/specs/025-plan/plan-views.md "Metrics"), in the palette's order.
+// (docs/specs/026-plan/plan-views.md "Metrics"), in the palette's order.
 export const METRIC_KINDS = [
   'count',
   'progress',
@@ -55,7 +55,7 @@ export function planViewMetric(view: PlanViewId): MetricKind | null {
   return view.startsWith('metric:') ? (view.slice(7) as MetricKind) : null;
 }
 
-// The size a view starts at (docs/specs/025-plan/blueprints/DEFAULTS.md D25).
+// The size a view starts at (docs/specs/026-plan/blueprints/DEFAULTS.md D25).
 export const PLAN_METRIC_SIZE = { width: 260, height: 64 } as const;
 export const PLAN_CHART_SIZE = { width: 720, height: 400 } as const;
 export const PLAN_GANTT_SIZE = { width: 880, height: 420 } as const;
@@ -82,7 +82,7 @@ export function liveCards(items: Iterable<Item>): Item[] {
   return out;
 }
 
-// Where a status sits in the work (docs/specs/025-plan/plan-views.md "What a plan view reads").
+// Where a status sits in the work (docs/specs/026-plan/plan-views.md "What a plan view reads").
 export const STATUS_PHASES = ['todo', 'doing', 'done'] as const;
 export type StatusPhase = (typeof STATUS_PHASES)[number];
 export const STATUS_PHASE_LABELS: Readonly<Record<StatusPhase, string>> = {
@@ -114,7 +114,7 @@ export function phaseOf(item: Item, phases: ReadonlyMap<string, StatusPhase>): S
   return (s !== undefined && phases.get(s)) || 'todo';
 }
 
-// The board a metric reads (docs/specs/025-plan/plan-views.md "Metrics"): every live card on
+// The board a metric reads (docs/specs/026-plan/plan-views.md "Metrics"): every live card on
 // one of three columns by its phase, the Done one the board's done column when any status is Done, so the
 // header widgets' own rules read the whole document.
 const PHASE_STATUS = (p: StatusPhase) => `phase-${p}`;

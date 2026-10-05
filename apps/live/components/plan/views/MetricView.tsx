@@ -1,6 +1,6 @@
 'use client';
 
-// A metric (docs/specs/025-plan/plan-views.md "Metrics"): a board widget free on the canvas,
+// A metric (docs/specs/026-plan/plan-views.md "Metrics"): a board widget free on the canvas,
 // drawn as in a header, over every live card. It narrows nothing and offers no set-up.
 import { useMemo } from 'react';
 import { ITEM_TYPES, metricBoard, type MetricKind } from '@livediagram/items';

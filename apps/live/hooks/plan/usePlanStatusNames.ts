@@ -1,6 +1,6 @@
 'use client';
 
-// The names the tab's boards give their statuses (docs/specs/025-plan/plan-board.md "All Cards"), in
+// The names the tab's boards give their statuses (docs/specs/026-plan/plan-board.md "All Cards"), in
 // board and column order: an All Cards board's status rows and the item panel's status picker. Keyed by
 // a signature of the columns, so the map (and the Plan context) changes only when a column does.
 import { useMemo } from 'react';
@@ -31,7 +31,7 @@ export function usePlanStatusNames(
   return useMemo(() => new Map(JSON.parse(signature) as [string, string][]), [signature]);
 }
 
-// The phase the tab's boards give each status (docs/specs/025-plan/plan-views.md "What a plan view reads"):
+// The phase the tab's boards give each status (docs/specs/026-plan/plan-views.md "What a plan view reads"):
 // what the plan views count as Not Started, In Progress and Done. Keyed by a signature, like the names.
 export function usePlanStatusPhases(
   elements: readonly Element[],

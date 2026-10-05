@@ -1,4 +1,4 @@
-// The item writes as pure functions (docs/specs/025-plan/items.md "Changing
+// The item writes as pure functions (docs/specs/026-plan/items.md "Changing
 // items"). The api, the offline store and the editor's optimistic updates all
 // apply the same functions, so a write lands identically wherever it runs.
 

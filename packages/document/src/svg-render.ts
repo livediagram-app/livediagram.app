@@ -207,7 +207,7 @@ export function svgBoxed(source: BoxedElement, opts: BoxedExportOptions = {}): s
     el.type === 'shape' &&
     (el.shape === 'plan-board' || el.shape === 'plan-card' || el.shape === 'plan-view')
   ) {
-    // Columns of cards, or one card, drawn from the document's items (docs/specs/025-plan/plan-board.md);
+    // Columns of cards, or one card, drawn from the document's items (docs/specs/026-plan/plan-board.md);
     // a plan view as its labelled box (plan-views.md).
     const body =
       el.shape === 'plan-board'
@@ -457,9 +457,9 @@ export function renderElementsToSvg(
     resolveImageHref?: ResolveImageHref;
     resolveIconArt?: ResolveIconArt;
     resolveStickerArt?: ResolveStickerArt;
-    // The document's items, so Plan boards and cards draw their cards (docs/specs/025-plan/plan-board.md).
+    // The document's items, so Plan boards and cards draw their cards (docs/specs/026-plan/plan-board.md).
     items?: ReadonlyMap<string, Item>;
-    // The document's item types (docs/specs/025-plan/item-types.md).
+    // The document's item types (docs/specs/026-plan/item-types.md).
     itemTypes?: readonly ItemTypeDef[];
   } = {},
 ): string {

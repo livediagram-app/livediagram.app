@@ -22,7 +22,7 @@ import {
   lucideType,
   lucideUnderline,
 } from '@livediagram/icons/lucide';
-import { ChevronDownIcon, lucideGlyph, Tooltip } from '@livediagram/ui';
+import { ChevronDownIcon, lucideGlyph, Tooltip, Portal } from '@livediagram/ui';
 import { TOOLBAR_TRIGGER_TONE } from '@/components/palette/PaletteDropdown';
 import {
   TOOLBAR_CARD,
@@ -30,7 +30,6 @@ import {
   TOOLBAR_CONTROL_REST,
   TOOLBAR_DIVIDER,
 } from '@/components/chrome/toolbar-surface';
-import { Portal } from '@/components/primitives/Portal';
 import { useCanvasGesture } from '@/lib/canvas-gesture';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import {

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { validateFields } from './fields';
 import { ITEM_RICH_RUNS_MAX, normaliseRichRuns } from './rich-text-field';
 
-// docs/specs/025-plan/items.md "Fields": descriptionRich.
+// docs/specs/026-plan/items.md "Fields": descriptionRich.
 describe('descriptionRich', () => {
   it('keeps runs with known marks, dropping unknown keys and false flags', () => {
     expect(

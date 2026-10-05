@@ -123,7 +123,8 @@
  * Durations are the motion tokens of the shared theme
  * (docs/specs/004-interface-design/motion.md): micro (150ms) for small
  * surfaces and cascade items, short (200ms) for step swaps and drawers, long
- * (250ms) for dialogs and sheets. `fade-in` lives in the shared theme.
+ * (250ms) for dialogs and sheets. `fade-in`, and the dialog shell's `fly-up-in` and `sheet-up`, live in the shared
+ * theme.
  * Transform-based animations (pop-in, fly-up-in) must only be used on
  * elements that don't carry their own inline `transform` style, otherwise
  * the animation overrides positioning. Use the opacity-only `fade-in`
@@ -137,7 +138,6 @@
   --animate-sync-spin: sync-spin 2s linear infinite;
   --animate-sync-rise: sync-rise 1.6s ease-in-out infinite;
   --animate-pop-out: pop-out var(--transition-duration-micro) cubic-bezier(0.4, 0, 1, 1) forwards;
-  --animate-fly-up-in: fly-up-in var(--transition-duration-long) cubic-bezier(0.16, 1, 0.3, 1);
   /* The template picker's open shelf arriving (docs/specs/008-canvas/canvas-and-palette.md
      "Templates section"): a longer rise than fly-up-in, so opening a tile below
      draws the eye back up to what just opened. */
@@ -146,10 +146,6 @@
      reveals rise in as a cascade (with .stagger-enter), so the layout change
      reads as cards arriving rather than a jump. One cascade item, so micro. */
   --animate-card-rise: card-rise var(--transition-duration-micro) cubic-bezier(0.16, 1, 0.3, 1);
-  /* A sheet rising from the bottom edge of the screen. Distinct from
-     fly-up-in's 16px lift: this one travels its own full height, so it reads
-     as arriving from off-screen rather than settling into place. */
-  --animate-sheet-up: sheet-up var(--transition-duration-long) cubic-bezier(0.16, 1, 0.3, 1);
   --animate-slide-row-in: slide-row-in var(--transition-duration-micro)
     cubic-bezier(0.16, 1, 0.3, 1);
   --animate-slide-row-out: slide-row-out var(--transition-duration-micro) cubic-bezier(0.4, 0, 1, 1)
@@ -290,17 +286,6 @@
   }
 }
 
-@keyframes sheet-up {
-  from {
-    transform: translateY(100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
 @keyframes shelf-open {
   from {
     transform: translateY(28px) scale(0.97);
@@ -313,17 +298,6 @@
 }
 
 @keyframes card-rise {
-  from {
-    transform: translateY(16px) scale(0.96);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0) scale(1);
-    opacity: 1;
-  }
-}
-
-@keyframes fly-up-in {
   from {
     transform: translateY(16px) scale(0.96);
     opacity: 0;

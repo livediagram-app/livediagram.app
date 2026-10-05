@@ -1,5 +1,5 @@
 // The models behind the Due Calendar, Workload by Person, Status Breakdown and Priority by Status
-// (docs/specs/025-plan/plan-views.md "Visualisations"), each over the document's live cards. Pure.
+// (docs/specs/026-plan/plan-views.md "Visualisations"), each over the document's live cards. Pure.
 import { itemAssignee, itemStatus, type Item, type ItemPerson } from './item';
 import { PRIORITIES, isPriority, type Priority } from './fields';
 import { statusLabel } from './board';

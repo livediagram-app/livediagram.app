@@ -194,7 +194,7 @@ export type TemplateKind =
   | 'how-it-works'
   | 'versus'
   | 'social-carousel'
-  // Plan templates (docs/specs/025-plan/plan-mode.md "Templates"): a Plan board with the set-up its
+  // Plan templates (docs/specs/026-plan/plan-mode.md "Templates"): a Plan board with the set-up its
   // use wants, opening in Plan mode, with no cards. The Kanban board
   // ('kanban', above) is one of them; Blank Plan is the mode's blank.
   | 'blank-plan'
@@ -919,7 +919,7 @@ const TEMPLATE_CATEGORY: Record<TemplateKind, TemplateCategory> = {
   sitemap: 'hierarchies',
   // Planning: agile boards, retrospectives, prioritisation, story maps.
   kanban: 'planning',
-  // Plan templates (docs/specs/025-plan/plan-mode.md). Blank Plan is a quick-pick; its category is nominal.
+  // Plan templates (docs/specs/026-plan/plan-mode.md). Blank Plan is a quick-pick; its category is nominal.
   'blank-plan': 'planning',
   'sprint-board': 'planning',
   'bug-triage': 'planning',
@@ -1084,7 +1084,7 @@ const TEMPLATE_PATTERNS: Partial<Record<TemplateKind, BackgroundPattern>> = {
   orgchart: 'graph',
   swot: 'graph',
   gantt: 'graph',
-  // Plan boards (docs/specs/025-plan/plan-mode.md) sit on the quiet dot grid: the board is the structure.
+  // Plan boards (docs/specs/026-plan/plan-mode.md) sit on the quiet dot grid: the board is the structure.
   kanban: 'grid',
   'blank-plan': 'grid',
   'sprint-board': 'grid',

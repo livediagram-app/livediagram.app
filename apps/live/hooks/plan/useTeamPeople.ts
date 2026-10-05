@@ -1,9 +1,9 @@
 'use client';
 
-// Who a card can be assigned to (docs/specs/025-plan/items.md "Who may do what"): the joined members of the
-// teams you are part of. Named as items name people (hashed ids, docs/specs/025-plan/blueprints/
+// Who a card can be assigned to (docs/specs/026-plan/items.md "Who may do what"): the joined members of the
+// teams you are part of. Named as items name people (hashed ids, docs/specs/026-plan/blueprints/
 // item-store.md "Security and trust"), so the person picked is the one the api signs their writes as.
-// Fetched once a document has Plan content (docs/specs/025-plan/plan-mode.md "Cost"); a guest, who has
+// Fetched once a document has Plan content (docs/specs/026-plan/plan-mode.md "Cost"); a guest, who has
 // no teams, gets nobody but themselves.
 import { useEffect, useState } from 'react';
 import { itemPersonId, type ItemPerson } from '@livediagram/items';

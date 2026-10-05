@@ -50,6 +50,7 @@ export const SURFACE_LABELS: Record<CtaSurface, string> = {
   Status: 'Status Page',
   Dashboard: 'Telemetry Dashboard',
   Help: 'Help Centre',
+  Community: 'Community',
 };
 
 // What each slot's button says, so a row reads as the thing on the page.

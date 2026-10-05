@@ -3,7 +3,7 @@ import { createShape, type Element } from '@livediagram/document';
 import { presetSetup } from '@livediagram/items';
 import { statusColumnsOf } from './usePlanStatusNames';
 
-// docs/specs/025-plan/plan-board.md "All Cards".
+// docs/specs/026-plan/plan-board.md "All Cards".
 describe('statusColumnsOf', () => {
   it('names each status once, in board and column order, skipping All Cards and Archive boards', () => {
     const board = (preset: Parameters<typeof presetSetup>[0]) =>

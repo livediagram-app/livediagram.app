@@ -5,7 +5,7 @@ import { presetSetup } from './presets';
 import { ALI, SAM, item } from './test-items';
 import type { Item } from './item';
 
-// docs/specs/025-plan/items.md "Archive"; docs/specs/025-plan/board-widgets.md quick filters.
+// docs/specs/026-plan/items.md "Archive"; docs/specs/026-plan/board-widgets.md quick filters.
 const map = (items: Item[]) => new Map(items.map((i) => [i.id, i]));
 
 describe('archive', () => {

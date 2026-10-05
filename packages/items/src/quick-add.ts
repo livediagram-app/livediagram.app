@@ -1,4 +1,4 @@
-// Quick add (docs/specs/025-plan/plan-board.md "Working on a board"): one line
+// Quick add (docs/specs/026-plan/plan-board.md "Working on a board"): one line
 // of text becomes an item. `@sam` assigns, `#ux` labels, `!high` sets priority,
 // `~3` estimates and a leading `bug:` sets the type. A token that does not
 // resolve (an unknown person) stays in the title as typed.
@@ -35,7 +35,7 @@ function findPerson(name: string, people: readonly ItemPerson[]): ItemPerson | u
 export function parseQuickAdd(
   text: string,
   people: readonly ItemPerson[] = [],
-  // The document's item types (docs/specs/025-plan/item-types.md), for a leading `name:`.
+  // The document's item types (docs/specs/026-plan/item-types.md), for a leading `name:`.
   types: readonly ItemTypeDef[] = ITEM_TYPES,
 ): QuickAdd {
   const tokens: QuickToken[] = [];

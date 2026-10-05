@@ -137,8 +137,8 @@ const ILLUSTRATE: PaletteLayout = {
   ],
 };
 
-// Plan mode (docs/specs/025-plan/plan-mode.md "The palette"): cards, boards and their widgets first, then the
-// plan views that read every card (docs/specs/025-plan/plan-views.md), then the few other elements a team
+// Plan mode (docs/specs/026-plan/plan-mode.md "The palette"): cards, boards and their widgets first, then the
+// plan views that read every card (docs/specs/026-plan/plan-views.md), then the few other elements a team
 // plans beside its boards, borrowed from Write, Media and Behaviours; nothing that organises a diagram.
 const PLAN: PaletteLayout = {
   // Opening on Cards: a Plan tab is worked by its boards, so the drawing and decorating categories, and a

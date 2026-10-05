@@ -35,7 +35,7 @@ export function useEditorPersistence({ toast }: { toast: ReturnType<typeof useTo
   // rather than a parsed Deck so hydration has one obvious moment, and a deck
   // the parser cannot read costs the deck rather than the document.
   const [documentPresentation, setDocumentPresentation] = useState<string | null>(null);
-  // The document's type catalogue (docs/specs/025-plan/item-types.md), null for the built-in types:
+  // The document's type catalogue (docs/specs/026-plan/item-types.md), null for the built-in types:
   // seeded on load, then set by a save here or the room's `item-types` op. See useItemTypes.
   const [documentItemTypes, setDocumentItemTypes] = useState<ItemTypeCatalogue | null>(null);
   // Reflect the document name in the browser tab so users with many

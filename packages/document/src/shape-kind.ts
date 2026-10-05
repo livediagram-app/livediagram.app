@@ -173,12 +173,12 @@ export type ShapeKind =
   // is never tinted by the theme, carries no caption, and never folds into
   // another shape as an inline glyph.
   | 'sticker'
-  // Plan board (docs/specs/025-plan/plan-board.md): columns of cards drawn from the document's item
+  // Plan board (docs/specs/026-plan/plan-board.md): columns of cards drawn from the document's item
   // store. Carries its set-up in `planBoard` (below); the cards are items, not elements.
   | 'plan-board'
-  // Plan card (docs/specs/025-plan/plan-board.md "The Plan card"): one item placed on the canvas,
+  // Plan card (docs/specs/026-plan/plan-board.md "The Plan card"): one item placed on the canvas,
   // named by `planCard.itemId`.
   | 'plan-card'
-  // Plan view (docs/specs/025-plan/plan-views.md): a metric or a visualisation of every card,
+  // Plan view (docs/specs/026-plan/plan-views.md): a metric or a visualisation of every card,
   // named by `planView.view`.
   | 'plan-view';

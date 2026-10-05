@@ -1,4 +1,4 @@
-// A document's type catalogue on the wire (docs/specs/025-plan/item-types.md "Storage and sync"):
+// A document's type catalogue on the wire (docs/specs/026-plan/item-types.md "Storage and sync"):
 // PUT /documents/:id/item-types for a cloud document, the record for an offline one. The answer is
 // the catalogue as stored (normalised), which the editor keeps.
 

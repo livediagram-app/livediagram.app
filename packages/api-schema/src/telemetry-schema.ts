@@ -163,10 +163,14 @@ export const TELEMETRY_CATEGORIES = [
   // see what changed; 'Viewed' for a document view the api answered, typed by the view. Never
   // content, never an id.
   'Agent',
-  // Plan mode (docs/specs/025-plan/plan-mode.md "Telemetry"): items made, moved, opened, voted on and
+  // Plan mode (docs/specs/026-plan/plan-mode.md "Telemetry"): items made, moved, opened, voted on and
   // deleted, and board set-up changed or revealed. `type` is the item type, the set-up part or the
   // gesture ('Board', 'Keyboard', 'Card'), never item content.
   'Plan',
+  // Community (docs/specs/025-community/community.md): publishing, Edit Listing and removal from the editor
+  // ('Shared'/'Changed' typed by category, 'Removed'·'Post'); opens, likes, copies, reports, search and filters in
+  // the Community app. Never a title, tag or id.
+  'Community',
 ] as const;
 export type TelemetryCategory = (typeof TELEMETRY_CATEGORIES)[number];
 
@@ -263,6 +267,10 @@ export const TELEMETRY_ACTIONS = [
   'Api',
   'Client',
   'Warning',
+  // Community (docs/specs/025-community/community.md): a post liked or unliked, and a post reported (typed by reason).
+  'Liked',
+  'Unliked',
+  'Reported',
 ] as const;
 export type TelemetryAction = (typeof TELEMETRY_ACTIONS)[number];
 
@@ -418,7 +426,7 @@ export const PALETTE_TELEMETRY_TYPES = {
     // Entity (docs/specs/009-elements/entity.md).
     'Entity',
     'Checklist',
-    // Plan board and Plan card (docs/specs/025-plan/plan-mode.md "Telemetry").
+    // Plan board and Plan card (docs/specs/026-plan/plan-mode.md "Telemetry").
     'PlanBoard',
     'PlanCard',
     'PlanView',

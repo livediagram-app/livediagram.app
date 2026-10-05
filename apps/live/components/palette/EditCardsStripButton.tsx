@@ -1,6 +1,6 @@
 'use client';
 
-// Edit Cards in the Toolbar layout's strip (docs/specs/025-plan/item-types.md "The Card Types panel"):
+// Edit Cards in the Toolbar layout's strip (docs/specs/026-plan/item-types.md "The Card Types panel"):
 // with the Cards category chosen, the strip ends, after a divider, with a button that opens the
 // Card Types panel, as the floating Palette's Cards body ends with Edit Cards.
 import { HoverCard, PencilIcon } from '@livediagram/ui';

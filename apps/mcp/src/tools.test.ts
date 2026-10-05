@@ -277,7 +277,7 @@ describe('tool annotations', () => {
     restore_document: 'write',
     update_document: 'destructive',
     delete_document: 'destructive',
-    // Items (docs/specs/025-plan/plan-mode.md "Agents"): change_items may delete.
+    // Items (docs/specs/026-plan/plan-mode.md "Agents"): change_items may delete.
     list_items: 'read',
     change_items: 'destructive',
   };

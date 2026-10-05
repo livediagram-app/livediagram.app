@@ -1,6 +1,6 @@
 'use client';
 
-// Presence on Plan cards (docs/specs/025-plan/plan-board.md "What the board shows"): the card each peer
+// Presence on Plan cards (docs/specs/026-plan/plan-board.md "What the board shows"): the card each peer
 // is dragging or reading, sent as an ephemeral `plan-presence` room op and drawn as a ring in their
 // colour. Peers who leave take their ring with them.
 import { useCallback, useMemo, useRef, useState } from 'react';

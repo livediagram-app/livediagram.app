@@ -126,7 +126,7 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   // creation path widens it for a word badge off STICKER_ASPECT, since the
   // default table is per-kind and a badge and an emoji are one kind.
   sticker: { width: 104, height: 104 },
-  // Plan board (docs/specs/025-plan/blueprints/DEFAULTS.md D5): room for five 220px columns and a
+  // Plan board (docs/specs/026-plan/blueprints/DEFAULTS.md D5): room for five 220px columns and a
   // header; a Plan card is one card face at a board column's width.
   'plan-board': { width: 1120, height: 640 },
   'plan-card': { width: 240, height: 120 },
@@ -560,7 +560,7 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
     return { ...base, checklistItems: CHECKLIST_DEFAULT_ITEMS.map((i) => ({ ...i })) };
   }
   // Plan board: the blank preset's set-up; a palette tile or template swaps in its own
-  // (docs/specs/025-plan/plan-mode.md). Plan card: its caller names the item.
+  // (docs/specs/026-plan/plan-mode.md). Plan card: its caller names the item.
   if (kind === 'plan-board') return { ...base, planBoard: presetSetup('blank') };
   if (kind === 'plan-card') return { ...base, planCard: { itemId: '' } };
   // Plan view: Status Breakdown unless its caller names the view.

@@ -1,4 +1,4 @@
-// The Plan board set-up and its projection (docs/specs/025-plan/plan-board.md).
+// The Plan board set-up and its projection (docs/specs/026-plan/plan-board.md).
 // The board stores only its set-up; what it shows is computed here from the
 // item store, so every board (and the api's tab scoping) reads items the same way.
 
@@ -24,7 +24,7 @@ export interface PlanColumn {
   name: string;
   wipLimit?: number;
   color?: string;
-  // How many slots wide it is (docs/specs/025-plan/plan-board.md "The board set-up"); absent is 1.
+  // How many slots wide it is (docs/specs/026-plan/plan-board.md "The board set-up"); absent is 1.
   width?: ColumnWidth;
 }
 
@@ -41,7 +41,7 @@ export const CARD_FIELDS = [
   'priority',
   'labels',
   'estimate',
-  // When the work begins (docs/specs/025-plan/items.md "Fields").
+  // When the work begins (docs/specs/026-plan/items.md "Fields").
   'start',
   'due',
   'votes',
@@ -52,12 +52,12 @@ export const CARD_FIELDS = [
 ] as const;
 export type CardField = (typeof CARD_FIELDS)[number];
 
-// How much of each card a board draws (docs/specs/025-plan/plan-board.md "The board set-up"): the title
+// How much of each card a board draws (docs/specs/026-plan/plan-board.md "The board set-up"): the title
 // only, one line, or every field it shows. Absent is Detailed.
 export const CARD_SIZES = ['minimal', 'compact', 'detailed'] as const;
 export type CardSize = (typeof CARD_SIZES)[number];
 
-// The fields each card size can draw (docs/specs/025-plan/plan-board.md "The board set-up"): a field the
+// The fields each card size can draw (docs/specs/026-plan/plan-board.md "The board set-up"): a field the
 // board shows outside its size's set is kept but not drawn, and its tile in the Cards menu says so.
 export const CARD_SIZE_FIELDS: Readonly<Record<CardSize, readonly CardField[]>> = {
   minimal: [],
@@ -81,14 +81,14 @@ export interface PlanBoardSetup {
   swimlaneBy: SwimlaneBy;
   cardFields: CardField[];
   cardSize?: CardSize;
-  // An Archive board (docs/specs/025-plan/items.md "Archive"): it shows only archived items.
+  // An Archive board (docs/specs/026-plan/items.md "Archive"): it shows only archived items.
   archive?: boolean;
-  // An All Cards board (docs/specs/025-plan/plan-board.md "All Cards"): every card, whatever its status.
+  // An All Cards board (docs/specs/026-plan/plan-board.md "All Cards"): every card, whatever its status.
   allCards?: boolean;
-  // The card types Add Card and the palette add to it (docs/specs/025-plan/plan-board.md "The board set-up");
+  // The card types Add Card and the palette add to it (docs/specs/026-plan/plan-board.md "The board set-up");
   // absent is every type. It shows any card that reaches it.
   addTypes?: string[];
-  // The header's widgets in order (docs/specs/025-plan/board-widgets.md); absent is the default set.
+  // The header's widgets in order (docs/specs/026-plan/board-widgets.md); absent is the default set.
   widgets?: BoardWidgetKind[];
   voting: { on: boolean; budget?: number };
   hideWriting: boolean;
@@ -105,7 +105,7 @@ export interface QuickFilter {
   text?: string;
   // Only items assigned to this person id.
   mine?: string;
-  // From the board's widgets (docs/specs/025-plan/board-widgets.md): only items assigned to this person
+  // From the board's widgets (docs/specs/026-plan/board-widgets.md): only items assigned to this person
   // id, only items of this type, only items due within a window of days (YYYY-MM-DD, both ends
   // included) and not in the board's done status.
   person?: string;
@@ -118,12 +118,12 @@ export interface QuickFilter {
 // `QuickFilter.person` for the cards nobody is assigned.
 export const UNASSIGNED = '-';
 
-// An archived item (docs/specs/025-plan/items.md "Archive"): off every board but an Archive board.
+// An archived item (docs/specs/026-plan/items.md "Archive"): off every board but an Archive board.
 export function isArchived(item: Item): boolean {
   return item.fields['archived'] === true;
 }
 
-// The Trash (docs/specs/025-plan/items.md "Trash"): a status no board shows. A trashed item keeps the status
+// The Trash (docs/specs/026-plan/items.md "Trash"): a status no board shows. A trashed item keeps the status
 // it had under `trashedFrom`, so it can be restored to it.
 export const TRASH_STATUS = 'trash';
 export const TRASHED_FROM_FIELD = 'trashedFrom';
@@ -166,7 +166,7 @@ const PLAN_BOARD_SIDE_PAD_PX = 12;
 // The default board width, for a board with few or no columns.
 const PLAN_BOARD_MIN_WIDTH_PX = 760;
 
-// How wide a board has to be for its columns to sit side by side without scrolling (docs/specs/025-plan/
+// How wide a board has to be for its columns to sit side by side without scrolling (docs/specs/026-plan/
 // plan-board.md "The board set-up"): what a board placed from the palette starts at, at least.
 export function planBoardWidthFor(setup: Pick<PlanBoardSetup, 'columns'>): number {
   const slots = setup.columns.reduce((n, c) => n + (c.width ?? 1), 0);
@@ -215,7 +215,7 @@ export function quickFilterMatches(quick: QuickFilter | undefined, item: Item): 
   return true;
 }
 
-// A status as people read it (docs/specs/025-plan/plan-board.md "All Cards"): the name a column gives it,
+// A status as people read it (docs/specs/026-plan/plan-board.md "All Cards"): the name a column gives it,
 // else the status itself without a new board's suffix, words capitalised.
 export function statusLabel(status: string, names?: ReadonlyMap<string, string>): string {
   const named = names?.get(status);
@@ -306,7 +306,7 @@ export function projectBoard(
   setup: PlanBoardSetup,
   items: ReadonlyMap<string, Item>,
   quick?: QuickFilter,
-  // The document's type catalogue (docs/specs/025-plan/item-types.md): the order and names of type rows.
+  // The document's type catalogue (docs/specs/026-plan/item-types.md): the order and names of type rows.
   types: readonly ItemTypeDef[] = ITEM_TYPES,
   // Status names from the tab's boards' columns, in order: an All Cards board's status rows.
   statusNames?: ReadonlyMap<string, string>,
@@ -317,7 +317,7 @@ export function projectBoard(
   // An Archive board shows the archived items, every one in its first column; any other board leaves
   // them out altogether.
   const archiveBoard = setup.archive === true;
-  // An All Cards board (docs/specs/025-plan/plan-board.md "All Cards") shows every card that is not
+  // An All Cards board (docs/specs/026-plan/plan-board.md "All Cards") shows every card that is not
   // archived, whatever its status, in its one column.
   const allBoard = setup.allCards === true && !archiveBoard;
   for (const it of items.values()) {
@@ -462,8 +462,8 @@ export function normaliseBoardSetup(input: unknown): PlanBoardSetup | null {
     if (width === 2 || width === 3) col.width = width;
     columns.push(col);
   }
-  // No columns is a board waiting for its first (docs/specs/025-plan/plan-board.md "The board set-up").
-  // Every board shows every card (docs/specs/025-plan/plan-board.md): a `scope` an older board stored is
+  // No columns is a board waiting for its first (docs/specs/026-plan/plan-board.md "The board set-up").
+  // Every board shows every card (docs/specs/026-plan/plan-board.md): a `scope` an older board stored is
   // read past.
   const votingIn = isObj(input['voting']) ? input['voting'] : {};
   const budget = votingIn['budget'];

@@ -1,6 +1,6 @@
 'use client';
 
-// A board card's right-click menu (docs/specs/025-plan/plan-board.md "Working on a board"): Open,
+// A board card's right-click menu (docs/specs/026-plan/plan-board.md "Working on a board"): Open,
 // Duplicate, Add to Slides, Move to another column, Archive (or Restore), and Delete, at the click and clamped to the window. Someone who
 // may only view gets Open alone. Built on the shared command menu, so the keyboard, focus and Escape
 // behave as every other menu does.
@@ -11,7 +11,7 @@ import { SlideDeckIcon } from '@/components/palette/palette-icons';
 import { isArchived, itemTitle, type PlanBoardSetup } from '@livediagram/items';
 import { PlanBoardTileArt } from './plan-tile-art';
 import { track } from '@/lib/telemetry';
-import { Portal } from '@/components/primitives/Portal';
+import { Portal } from '@livediagram/ui';
 import type { PlanContextValue } from './PlanContext';
 import { VIEWPORT_EDGE_MARGIN as EDGE } from '@/lib/clamp-to-viewport';
 

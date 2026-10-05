@@ -191,7 +191,15 @@ function repoFilenames(): Set<string> {
     for (const entry of readdirSync(dir)) {
       if (skip.has(entry)) continue;
       const full = `${dir}/${entry}`;
-      if (statSync(full).isDirectory()) walk(full);
+      // A file can vanish between the listing and the stat while other tasks run (a bundler's timestamped
+      // config, a test's temp file); it was never part of the repo, so skip it rather than fail the walk.
+      let isDir: boolean;
+      try {
+        isDir = statSync(full).isDirectory();
+      } catch {
+        continue;
+      }
+      if (isDir) walk(full);
       else names.add(entry);
     }
   };

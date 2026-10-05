@@ -1,4 +1,4 @@
-// A widget from the palette lands only in a board's header (docs/specs/025-plan/board-widgets.md
+// A widget from the palette lands only in a board's header (docs/specs/026-plan/board-widgets.md
 // "Placing and arranging widgets"): dragged over a header, that board's widget zone shows where it
 // would go; dropped there, it is placed; dropped anywhere else, nothing happens and the reason is said.
 // The board under the pointer comes from the same registry and DOM read as a palette card's.

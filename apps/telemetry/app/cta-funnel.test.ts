@@ -42,7 +42,7 @@ describe('landingFunnel', () => {
 
   it('orders surfaces busiest first and lists the quiet ones apart', () => {
     expect(funnel.surfaces.map((s) => s.surface)).toEqual(['Home', 'Feature', 'Compare']);
-    expect(funnel.quiet).toEqual(['Faq', 'Status', 'Dashboard', 'Help']);
+    expect(funnel.quiet).toEqual(['Faq', 'Status', 'Dashboard', 'Help', 'Community']);
   });
 
   it('keeps every slot, most arrivals first, unused ones in table order', () => {
@@ -69,7 +69,7 @@ describe('landingFunnel', () => {
     const empty = landingFunnel([]);
     expect(empty.surfaces).toEqual([]);
     expect(empty.total).toEqual({ views: 0, arrived: 0, created: 0 });
-    expect(empty.quiet).toHaveLength(7);
+    expect(empty.quiet).toHaveLength(8);
   });
 });
 
@@ -117,5 +117,6 @@ describe('ctaSourceLabel', () => {
     expect(ctaSourceLabel('Home.HeroBrainstorm')).toBe('Hero: Brainstorm');
     expect(ctaSourceLabel('Feature.Hero')).toBe('Hero: Start Drawing');
     expect(ctaSourceLabel('Help.Header')).toBe('Header: Start Drawing');
+    expect(ctaSourceLabel('Community.HeaderDraw')).toBe('Header: Blank Diagram');
   });
 });

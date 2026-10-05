@@ -1,4 +1,4 @@
-// What each board widget is called and is for (docs/specs/025-plan/board-widgets.md "Widget kinds"):
+// What each board widget is called and is for (docs/specs/026-plan/board-widgets.md "Widget kinds"):
 // the palette tile's caption and hover card, and the widget's accessible name on the board.
 import type { BoardWidgetKind } from '@livediagram/items';
 

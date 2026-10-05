@@ -20,8 +20,8 @@ a **pre-boot guard** in the page's head for whatever stale HTML still slips thro
 
 ## Caching rules
 
-One policy, applied by the router to every response it passes on, so all four sites (marketing,
-editor, help, telemetry) follow it from one place; the api's own responses are left as the api
+One policy, applied by the router to every response it passes on, so all five sites (marketing,
+editor, help, telemetry, community) follow it from one place; the api's own responses are left as the api
 sets them.
 
 | Response                                                       | `Cache-Control`                       |

@@ -5,7 +5,7 @@ import { fetchItems, writeItem } from '../api/items';
 import { memBackend, testRecord } from './offline-test-utils';
 import { ApiError } from '../api/core';
 
-// An offline document's item store (docs/specs/025-plan/items.md "Offline documents"): kept in the
+// An offline document's item store (docs/specs/026-plan/items.md "Offline documents"): kept in the
 // record, written by the same transitions the api applies, refused by the same rules.
 
 const ME = { id: 'me', name: 'Me', color: '#2563eb' };

@@ -1,6 +1,6 @@
 'use client';
 
-// The plan view element's body (docs/specs/025-plan/plan-views.md): a metric or a visualisation of
+// The plan view element's body (docs/specs/026-plan/plan-views.md): a metric or a visualisation of
 // every live card, in the canvas theme's board colours. Each view is its own component; this picks one.
 import type { ShapeElement } from '@livediagram/document';
 import { planViewMetric, type Item, type PlanViewId } from '@livediagram/items';

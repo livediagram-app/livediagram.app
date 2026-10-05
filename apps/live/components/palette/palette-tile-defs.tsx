@@ -95,12 +95,12 @@ export type PaletteTileSection =
   // eight workshop note kinds, each an ordinary sticky in its semantic
   // colour.
   | 'event-storming'
-  // Plan mode's Boards and Cards (docs/specs/025-plan/plan-mode.md "The palette"): boards by preset,
+  // Plan mode's Boards and Cards (docs/specs/026-plan/plan-mode.md "The palette"): boards by preset,
   // cards by item type.
   | 'plan-boards'
   | 'plan-cards'
   | 'plan-widgets'
-  // Plan views (docs/specs/025-plan/plan-views.md): metrics and visualisations.
+  // Plan views (docs/specs/026-plan/plan-views.md): metrics and visualisations.
   | 'plan-metrics'
   | 'plan-visualisations'
   | 'tools'
@@ -135,7 +135,7 @@ type PaletteTileAction =
       reaction?: Reaction;
       mode?: SelectionMode;
       estimateScale?: EstimateScale;
-      // Plan board preset, or a Plan card's item type (docs/specs/025-plan/plan-mode.md "The palette").
+      // Plan board preset, or a Plan card's item type (docs/specs/026-plan/plan-mode.md "The palette").
       plan?: string;
     }
   | { type: 'text' }
@@ -166,7 +166,7 @@ type PaletteTileAction =
   // Technology catalogue entry as a tile.
   | { type: 'icon'; iconId: string }
   | { type: 'tech-icon'; iconId: string }
-  // A Plan board's header widget (docs/specs/025-plan/board-widgets.md): placed in a board's header,
+  // A Plan board's header widget (docs/specs/026-plan/board-widgets.md): placed in a board's header,
   // never on the canvas.
   | { type: 'plan-widget'; widget: BoardWidgetKind };
 
@@ -1817,7 +1817,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     // the actor — so the row's picture says the shape before the blurb does.
     icon: <NoteTileArt size={note.size} fill={note.fill} />,
   })),
-  // Plan (docs/specs/025-plan/plan-mode.md): boards by preset, cards by item type.
+  // Plan (docs/specs/026-plan/plan-mode.md): boards by preset, cards by item type.
   ...PLAN_TILES,
 ];
 

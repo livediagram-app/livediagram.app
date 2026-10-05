@@ -1,5 +1,5 @@
-// The item verbs (docs/specs/025-plan/plan-mode.md "Agents"): list, add, set, move and remove the items a
-// document's Plan boards show, through the item store's routes (docs/specs/025-plan/items.md). An item is
+// The item verbs (docs/specs/026-plan/plan-mode.md "Agents"): list, add, set, move and remove the items a
+// document's Plan boards show, through the item store's routes (docs/specs/026-plan/items.md). An item is
 // named by its key ("#12") or an id prefix (resolveItemRef), as people say it.
 
 import { z } from 'zod';

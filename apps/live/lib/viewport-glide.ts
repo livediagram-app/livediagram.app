@@ -3,15 +3,14 @@
 // where it went (docs/specs/007-editor/illustrate-pages.md "The page navigator"). Under reduced
 // motion (the OS setting or the app's Reduce Motion, the `.reduce-motion` class) it lands at once.
 
+import { prefersReducedMotion } from './motion-preference';
+
 // The glide's length (ms): the scroll-into-view's long-standing duration.
 export const VIEW_GLIDE_MS = 280;
 
 export type ViewPose = { zoom: number; offset: { x: number; y: number } };
 
-const reducedMotion = () =>
-  typeof window !== 'undefined' &&
-  (document.documentElement.classList.contains('reduce-motion') ||
-    window.matchMedia?.('(prefers-reduced-motion: reduce)').matches === true);
+const reducedMotion = prefersReducedMotion;
 
 /**
  * Moves the view from `from` to `to`, a frame at a time; returns a cancel, for a later move that

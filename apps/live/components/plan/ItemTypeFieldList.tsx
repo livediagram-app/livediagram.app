@@ -1,6 +1,6 @@
 'use client';
 
-// The type editor's fields (docs/specs/025-plan/item-types.md "Editing a type"): the type's fields in
+// The type editor's fields (docs/specs/026-plan/item-types.md "Editing a type"): the type's fields in
 // order, Title and Status first and fixed; each other field moves up or down and comes off; a custom
 // field also edits its name, its options (Choice) and Show on card. Add Field offers the built-in
 // fields the type lacks and a new custom field.

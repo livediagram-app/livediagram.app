@@ -1,4 +1,4 @@
-// Calendar days for the plan views (docs/specs/025-plan/plan-views.md): a `YYYY-MM-DD` date field as a
+// Calendar days for the plan views (docs/specs/026-plan/plan-views.md): a `YYYY-MM-DD` date field as a
 // whole day number, so a time axis or a month grid is integer arithmetic with no time zone in it.
 const DAY_MS = 86_400_000;
 const ISO_DAY = /^(\d{4})-(\d{2})-(\d{2})$/;

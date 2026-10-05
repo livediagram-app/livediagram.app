@@ -1,4 +1,4 @@
-// The board grid's row heights (docs/specs/025-plan/plan-board.md "What the board shows"): the column
+// The board grid's row heights (docs/specs/026-plan/plan-board.md "What the board shows"): the column
 // heads, then per swimlane its label (when the board has swimlanes) and its cells. Every row sizes to
 // its content, except the last open row of cells, which takes the board's spare height, so the
 // columns run to the bottom of a board resized taller.

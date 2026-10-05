@@ -8,7 +8,7 @@ import { elementValidationIssue } from './validate';
 import { svgBoxed, renderElementsToSvg } from './svg-render';
 import type { BoxedElement, Tab } from './index';
 
-// The Plan board and Plan card kinds (docs/specs/025-plan/blueprints/plan-board.md "Element model").
+// The Plan board and Plan card kinds (docs/specs/026-plan/blueprints/plan-board.md "Element model").
 
 const item = (id: string, fields: Item['fields'], extra: Partial<Item> = {}): Item => ({
   id,
@@ -133,7 +133,7 @@ describe('plan shapes in exports', () => {
   });
 });
 
-// The plan view (docs/specs/025-plan/blueprints/plan-views.md "Element model").
+// The plan view (docs/specs/026-plan/blueprints/plan-views.md "Element model").
 describe('plan view shape', () => {
   it('is made with a view, named, self-drawing and self-painting', () => {
     const view = createShape('plan-view', 0, 0);

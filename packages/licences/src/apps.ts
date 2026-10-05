@@ -9,6 +9,7 @@ export const LICENCE_APPS: readonly LicenceApp[] = [
   { id: 'marketing', label: 'Website', side: 'browser', bundler: 'next' },
   { id: 'help', label: 'Help centre', side: 'browser', bundler: 'next' },
   { id: 'telemetry', label: 'Telemetry', side: 'browser', bundler: 'next' },
+  { id: 'community', label: 'Community', side: 'browser', bundler: 'next' },
   { id: 'api', label: 'API', side: 'server', bundler: 'worker' },
   { id: 'mcp', label: 'MCP server', side: 'server', bundler: 'worker' },
   { id: 'router', label: 'Router', side: 'server', bundler: 'worker' },

@@ -76,7 +76,7 @@ export type EditorDragDeps = {
     targetShapeId: string,
     position: IconPosition,
   ) => void;
-  // A Plan card was dragged and released over a Plan board's column (docs/specs/025-plan/plan-board.md
+  // A Plan card was dragged and released over a Plan board's column (docs/specs/026-plan/plan-board.md
   // "Working on a board"): its item files there and the card leaves the canvas. Omitted when edits
   // are blocked.
   onPlanCardDroppedOnBoard?: (card: Element, status: string) => void;

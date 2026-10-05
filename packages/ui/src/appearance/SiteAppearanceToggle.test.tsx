@@ -58,18 +58,20 @@ describe('SiteAppearanceToggle', () => {
 });
 
 describe('SiteHeader', () => {
-  it('carries the Appearance toggle beside its own actions', () => {
-    render(<SiteHeader actions={<a href="/new">Start drawing</a>} shareRail={false} />);
-    expect(toggle()).toBeTruthy();
-    expect(screen.getByRole('link', { name: 'Start drawing' })).toBeTruthy();
+  // docs/specs/004-interface-design/appearance.md: the toggle is never in the header; it lives on the page-edge
+  // rail, which shows only where there is a gutter for it (xl up).
+  it('keeps the Appearance toggle out of the header, on the rail', () => {
+    render(<SiteHeader ctaSurface="Home" />);
+    const toggles = screen.getAllByRole('button', { name: /^Appearance: / });
+    expect(toggles).toHaveLength(1);
+    expect(toggles[0]!.closest('header')).toBeNull();
+    expect(toggles[0]!.closest('[role="toolbar"]')?.getAttribute('aria-label')).toBe('Appearance');
   });
 
-  it('hands the toggle to the share rail from xl up, keeping it in the header below', () => {
-    render(<SiteHeader ctaSurface="Home" />);
-    const [inHeader, onRail] = screen.getAllByRole('button', { name: /^Appearance: / });
-    expect(inHeader!.className).toContain('xl:hidden');
-    // A phone's header has no room for it.
-    expect(inHeader!.className).toContain('max-sm:hidden');
-    expect(onRail!.closest('[role="toolbar"]')?.getAttribute('aria-label')).toBe('Appearance');
+  it("keeps the rail's Appearance card when sharing is off", () => {
+    render(<SiteHeader actions={<a href="/new">Start drawing</a>} shareRail={false} />);
+    expect(screen.getByRole('link', { name: 'Start drawing' })).toBeTruthy();
+    expect(toggle().closest('header')).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Copy link' })).toBeNull();
   });
 });

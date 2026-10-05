@@ -1,4 +1,4 @@
-// The Plan templates (docs/specs/025-plan/plan-mode.md "Templates"): each is a Plan board with the
+// The Plan templates (docs/specs/026-plan/plan-mode.md "Templates"): each is a Plan board with the
 // set-up its use wants, opening in Plan mode. A template holds only the set-up: it comes with no cards.
 //
 // Pure: takes a centre (cx, cy), returns a fresh Element[].

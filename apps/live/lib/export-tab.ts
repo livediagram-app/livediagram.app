@@ -89,9 +89,9 @@ export type ImageExportOpts = {
   // backdrop do not apply.
   page?: LaidOutPage;
   // The document's items, so Plan boards and cards export with their cards
-  // (docs/specs/025-plan/plan-board.md "Both elements everywhere").
+  // (docs/specs/026-plan/plan-board.md "Both elements everywhere").
   items?: ReadonlyMap<string, Item>;
-  // And its item types (docs/specs/025-plan/item-types.md), so custom types keep their colour.
+  // And its item types (docs/specs/026-plan/item-types.md), so custom types keep their colour.
   itemTypes?: readonly ItemTypeDef[];
 };
 

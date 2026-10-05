@@ -1,4 +1,4 @@
--- Items: a document's item store (docs/specs/025-plan/items.md, blueprint item-store.md
+-- Items: a document's item store (docs/specs/026-plan/items.md, blueprint item-store.md
 -- "Data and persistence"). Items are framed by Plan boards and Plan cards on the canvas
 -- but stored apart from tabs. `fields` is an open JSON bag, never a column per field, so
 -- the table holds any kind of item, not only tickets.

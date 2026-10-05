@@ -1,4 +1,4 @@
-// An offline document's item store (docs/specs/025-plan/items.md "Offline documents"): the items
+// An offline document's item store (docs/specs/026-plan/items.md "Offline documents"): the items
 // live in the document's own record, and every write is the same pure transition the api applies
 // (@livediagram/items applyItemWrite), serialised with the record's other writes.
 

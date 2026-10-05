@@ -1,4 +1,4 @@
-// The Cards panel's search (docs/specs/025-plan/items.md "Finding a card"): the document's cards that are
+// The Cards panel's search (docs/specs/026-plan/items.md "Finding a card"): the document's cards that are
 // neither archived nor trashed, matched on number, title and description, newest change first. "Not on a
 // board" narrows them to the cards whose status no column of the tab's boards holds.
 import { isArchived, isTrashed } from './board';

@@ -1,4 +1,4 @@
-// A card from the palette lands only in a board's column (docs/specs/025-plan/plan-mode.md "The
+// A card from the palette lands only in a board's column (docs/specs/026-plan/plan-mode.md "The
 // palette"): dragged or placed, it becomes a new item in the column and row under the pointer, never a
 // card on the canvas. Over no board, or over a board that does not show the type, nothing is made and
 // the reason is said.

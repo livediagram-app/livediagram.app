@@ -11,17 +11,19 @@ export function StackOverview() {
   return (
     <Scene w={420} h={250}>
       {/* The static frontend apps, in a row */}
-      <Shape x={20} y={24} w={84} h={36} kind="rect" label="marketing" labelTone="strong" />
-      <Shape x={114} y={24} w={84} h={36} kind="rect" label="live" labelTone="strong" />
-      <Shape x={208} y={24} w={84} h={36} kind="rect" label="telemetry" labelTone="strong" />
-      <Shape x={302} y={24} w={84} h={36} kind="rect" label="help" labelTone="strong" />
+      <Shape x={18} y={24} w={72} h={36} kind="rect" label="marketing" labelTone="strong" />
+      <Shape x={96} y={24} w={72} h={36} kind="rect" label="live" labelTone="strong" />
+      <Shape x={174} y={24} w={72} h={36} kind="rect" label="telemetry" labelTone="strong" />
+      <Shape x={252} y={24} w={72} h={36} kind="rect" label="help" labelTone="strong" />
+      <Shape x={330} y={24} w={72} h={36} kind="rect" label="community" labelTone="strong" />
 
       {/* Router stitches them under one hostname */}
       <Shape x={114} y={100} w={192} h={40} kind="rect" accent label="router" />
-      <Arrow from={[62, 60]} to={[150, 100]} tone="muted" head={false} />
-      <Arrow from={[156, 60]} to={[180, 100]} tone="muted" head={false} />
-      <Arrow from={[250, 60]} to={[240, 100]} tone="muted" head={false} />
-      <Arrow from={[344, 60]} to={[272, 100]} tone="muted" head={false} />
+      <Arrow from={[54, 60]} to={[140, 100]} tone="muted" head={false} />
+      <Arrow from={[132, 60]} to={[175, 100]} tone="muted" head={false} />
+      <Arrow from={[210, 60]} to={[210, 100]} tone="muted" head={false} />
+      <Arrow from={[288, 60]} to={[245, 100]} tone="muted" head={false} />
+      <Arrow from={[366, 60]} to={[280, 100]} tone="muted" head={false} />
 
       {/* The api Worker */}
       <Shape x={134} y={176} w={152} h={40} kind="rect" label="api Worker" labelTone="strong" />
@@ -48,17 +50,19 @@ export function RequestRouting() {
   const routes: [string, string][] = [
     ['/api/*', 'api'],
     ['/telemetry', 'telemetry'],
+    ['/help', 'help'],
+    ['/community', 'community'],
     ['/new, /explorer', 'live'],
     ['everything else', 'marketing'],
   ];
   return (
-    <Scene w={420} h={220}>
-      <Shape x={24} y={88} w={96} h={44} kind="rect" accent label="router" />
+    <Scene w={420} h={308}>
+      <Shape x={24} y={138} w={96} h={44} kind="rect" accent label="router" />
       {routes.map(([path, app], i) => {
         const y = 32 + i * 44;
         return (
           <g key={i}>
-            <Arrow from={[120, 110]} to={[268, y + 18]} kind="elbow" tone="muted" />
+            <Arrow from={[120, 160]} to={[268, y + 18]} kind="elbow" tone="muted" />
             <rect
               x={268}
               y={y}
@@ -81,7 +85,7 @@ export function RequestRouting() {
   );
 }
 
-/** The deploy flow: GitHub Actions builds, then deploys the four apps in
+/** The deploy flow: GitHub Actions builds, then deploys the six apps in
  *  parallel, with the router last because its bindings depend on them. */
 export function DeployFlow() {
   return (
@@ -93,27 +97,33 @@ export function DeployFlow() {
       </Label>
 
       {/* Parallel app deploys */}
-      <Shape x={172} y={20} w={92} h={32} kind="rect" accent label="marketing" />
-      <Shape x={172} y={64} w={92} h={32} kind="rect" accent label="live" />
-      <Shape x={172} y={108} w={92} h={32} kind="rect" accent label="telemetry" />
-      <Shape x={172} y={152} w={92} h={32} kind="rect" accent label="api" />
+      <Shape x={172} y={16} w={92} h={28} kind="rect" accent label="marketing" />
+      <Shape x={172} y={50} w={92} h={28} kind="rect" accent label="live" />
+      <Shape x={172} y={84} w={92} h={28} kind="rect" accent label="telemetry" />
+      <Shape x={172} y={118} w={92} h={28} kind="rect" accent label="help" />
+      <Shape x={172} y={152} w={92} h={28} kind="rect" accent label="community" />
+      <Shape x={172} y={186} w={92} h={28} kind="rect" accent label="api" />
 
-      <Arrow from={[112, 118]} to={[172, 36]} kind="curved" />
-      <Arrow from={[112, 120]} to={[172, 80]} kind="curved" />
-      <Arrow from={[112, 124]} to={[172, 124]} />
-      <Arrow from={[112, 128]} to={[172, 168]} kind="elbow" />
+      <Arrow from={[112, 116]} to={[172, 30]} kind="curved" />
+      <Arrow from={[112, 118]} to={[172, 64]} kind="curved" />
+      <Arrow from={[112, 120]} to={[172, 98]} />
+      <Arrow from={[112, 126]} to={[172, 132]} />
+      <Arrow from={[112, 128]} to={[172, 166]} kind="curved" />
+      <Arrow from={[112, 130]} to={[172, 200]} kind="curved" />
 
-      <Label x={218} y={206} anchor="middle" size={9} tone="muted">
+      <Label x={218} y={232} anchor="middle" size={9} tone="muted">
         deploy in parallel
       </Label>
 
       {/* Router last */}
-      <Shape x={312} y={86} w={92} h={48} kind="rect" label="router" labelTone="strong" />
-      <Arrow from={[264, 36]} to={[312, 100]} kind="curved" tone="muted" />
-      <Arrow from={[264, 80]} to={[312, 104]} tone="muted" />
-      <Arrow from={[264, 124]} to={[312, 112]} tone="muted" />
-      <Arrow from={[264, 168]} to={[312, 122]} kind="curved" tone="muted" />
-      <Label x={358} y={148} anchor="middle" size={9} tone="muted">
+      <Shape x={312} y={91} w={92} h={48} kind="rect" label="router" labelTone="strong" />
+      <Arrow from={[264, 30]} to={[312, 100]} kind="curved" tone="muted" />
+      <Arrow from={[264, 64]} to={[312, 106]} tone="muted" />
+      <Arrow from={[264, 98]} to={[312, 112]} tone="muted" />
+      <Arrow from={[264, 132]} to={[312, 118]} tone="muted" />
+      <Arrow from={[264, 166]} to={[312, 124]} tone="muted" />
+      <Arrow from={[264, 200]} to={[312, 130]} kind="curved" tone="muted" />
+      <Label x={358} y={154} anchor="middle" size={9} tone="muted">
         last
       </Label>
     </Scene>

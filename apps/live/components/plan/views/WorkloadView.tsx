@@ -1,6 +1,6 @@
 'use client';
 
-// Workload by Person (docs/specs/025-plan/plan-views.md "Workload by Person"): a bar per assignee, and
+// Workload by Person (docs/specs/026-plan/plan-views.md "Workload by Person"): a bar per assignee, and
 // Unassigned, as long as their cards against the busiest, split Not Started, In Progress and Done.
 import { useMemo } from 'react';
 import { STATUS_PHASES, STATUS_PHASE_LABELS, workloadModel } from '@livediagram/items';

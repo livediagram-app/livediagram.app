@@ -12,12 +12,11 @@ import {
   type ReactNode,
   type RefObject,
 } from 'react';
-import { ChevronDownIcon, EllipsisIcon, HoverCard } from '@livediagram/ui';
+import { ChevronDownIcon, EllipsisIcon, HoverCard, safeInlinePadding } from '@livediagram/ui';
 import { track } from '@/lib/telemetry';
 import { SnapWidth } from '@/components/primitives/SnapWidth';
 import { PHONE_TOOLBAR_ITEMS } from '@/components/chrome/phone-toolbar-items';
 import { TOOLBAR_CARD } from '@/components/chrome/toolbar-surface';
-import { safeInlinePadding } from '@/lib/safe-area';
 import { PaletteTintProvider } from './palette-controls';
 import { PaletteGroupProvider } from './palette-group-state';
 import { PaletteDropdown, TOOLBAR_TRIGGER_TONE } from './PaletteDropdown';
@@ -175,7 +174,7 @@ export function ToolbarPalette(props: Props) {
   // still decides whether More is needed for what is out of view.
   const swipe = leading != null;
   const tileLimit = swipe ? Infinity : stripLimit;
-  // Plan mode's Cards follow the document's item types (docs/specs/025-plan/item-types.md).
+  // Plan mode's Cards follow the document's item types (docs/specs/026-plan/item-types.md).
   const plan = usePlan();
   const categoryTiles =
     category?.id === 'plan-cards' && plan ? plan.types.map(planCardTile) : category?.tiles;

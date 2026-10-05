@@ -1,6 +1,5 @@
 import { initialsOf, randomName, type Participant } from '@/lib/identity';
-import { RefreshIcon, HoverCard, GlyphDisc } from '@livediagram/ui';
-import { IDENTITY_FILL, identityVars } from '@/lib/identity-fill';
+import { RefreshIcon, HoverCard, GlyphDisc, IDENTITY_FILL, identityVars } from '@livediagram/ui';
 
 // The picker's identity row (docs/specs/007-editor/new-document-route.md welcome + join flows): the avatar
 // bubble, the display-name input (read-only when the name is dictated

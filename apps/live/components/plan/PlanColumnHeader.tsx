@@ -1,6 +1,6 @@
 'use client';
 
-// A column's head on a Plan board (docs/specs/025-plan/plan-board.md "What the board shows"): its colour
+// A column's head on a Plan board (docs/specs/026-plan/plan-board.md "What the board shows"): its colour
 // bar, name, count (against its WIP limit), and, for someone who may edit, a cog at the far right that
 // opens the column's settings (PlanColumnPopover). The cog shows on hover and focus, and always on a
 // touch screen.

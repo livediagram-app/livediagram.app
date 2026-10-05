@@ -61,7 +61,7 @@ export const PALETTE_CATEGORIES: {
     icon: <PopularTabIcon />,
   },
   {
-    // Cards and Boards (docs/specs/025-plan/plan-mode.md "The palette"): Plan mode's own band, offered
+    // Cards and Boards (docs/specs/026-plan/plan-mode.md "The palette"): Plan mode's own band, offered
     // in Plan mode only, first in the picker, Cards first.
     id: 'plan-cards',
     label: 'Cards',
@@ -79,7 +79,7 @@ export const PALETTE_CATEGORIES: {
     icon: <PlanIcon size={18} />,
   },
   {
-    // A board header's widgets (docs/specs/025-plan/board-widgets.md), after Boards.
+    // A board header's widgets (docs/specs/026-plan/board-widgets.md), after Boards.
     id: 'plan-widgets',
     label: 'Widgets',
     group: 4,
@@ -88,7 +88,7 @@ export const PALETTE_CATEGORIES: {
     icon: <BoardWidgetArt kind="progress" size={18} />,
   },
   {
-    // Plan views (docs/specs/025-plan/plan-views.md): the read-out widgets free on the canvas, then charts
+    // Plan views (docs/specs/026-plan/plan-views.md): the read-out widgets free on the canvas, then charts
     // of every card.
     id: 'plan-metrics',
     label: 'Metrics',
@@ -106,7 +106,7 @@ export const PALETTE_CATEGORIES: {
     icon: <PlanViewArt view="gantt" size={18} />,
   },
   {
-    // The other elements a team plans beside its boards (docs/specs/025-plan/plan-mode.md "The palette"),
+    // The other elements a team plans beside its boards (docs/specs/026-plan/plan-mode.md "The palette"),
     // the same tiles as their home categories. Offered in Plan mode only, and not card-backed, so they sit
     // under the Common and Dynamic headings rather than Plan's.
     id: 'plan-content',

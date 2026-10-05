@@ -44,7 +44,7 @@ the account.
 Each app's `wrangler.toml` grows an `[env.staging]` block naming its worker
 explicitly — `name = "livediagram-api-staging"` and so on. Wrangler would append the
 suffix on its own, but nothing in `wrangler deploy --dry-run` prints the name it
-resolved, and the router's five service bindings depend on those strings being exactly
+resolved, and the router's six service bindings depend on those strings being exactly
 right. A name you can read beats a name you have to infer.
 
 The catch that shapes every block below: **wrangler does not inherit bindings into a
@@ -63,7 +63,7 @@ drifting apart unnoticed.
 
 ### Service bindings point at staging
 
-The router binds five workers and mcp binds one. In `[env.staging]` every `service =`
+The router binds six workers and mcp binds one. In `[env.staging]` every `service =`
 value gains the `-staging` suffix, so the staging router forwards to the staging api and
 never to production's. A missed suffix here is the single worst failure mode available —
 staging frontend, production database — so `apps/router/wrangler.toml` keeps its staging
@@ -105,7 +105,7 @@ ships.
 Being public, it must not compete with production in search results. The router worker
 sets **`X-Robots-Tag: noindex, nofollow` on every response** when its `DEPLOY_ENV` var
 is `staging` — one line at the only point every app on the host passes through, rather
-than a build flag threaded into four static apps.
+than a build flag threaded into five static apps.
 
 Two deliberate non-changes:
 
@@ -182,7 +182,7 @@ workflow and not the other is how the environments start to differ.
 
 ## One workflow body, two callers
 
-`.github/workflows/deploy-reusable.yml` holds the entire deploy — build, the five parallel
+`.github/workflows/deploy-reusable.yml` holds the entire deploy — build, the six parallel
 app deploys, mcp, router — as a `workflow_call` reusable workflow taking the target
 environment as inputs. `deploy.yml` (manual, production) and `deploy-staging.yml`
 (automatic, staging) are thin callers.
@@ -220,10 +220,10 @@ It is not `OAUTH_KV` — that is the binding name inside `wrangler.toml`, a diff
 thing, and `wrangler kv namespace create OAUTH_KV --env staging` would have produced
 `livediagram-mcp-staging-OAUTH_KV` instead.
 
-The **workers** are not on this list: a worker is its uploaded script, so all seven
+The **workers** are not on this list: a worker is its uploaded script, so all eight
 `livediagram-*-staging` workers come into existence on the first staging deploy. The
-job graph bootstraps them in the right order — the five path-routed workers first,
-then mcp (service binding to api), then router (service bindings to the five) — exactly
+job graph bootstraps them in the right order — the six path-routed workers first,
+then mcp (service binding to api), then router (service bindings to the six) — exactly
 as production's first deploy did ([Deployment](deployment.md) "First deploy").
 
 Still outstanding:
@@ -245,7 +245,7 @@ automated from the workflow — same as production, [Deployment](deployment.md))
 - `staging.livediagram.app` → `livediagram-router-staging`
 - `mcp-staging.livediagram.app` → `livediagram-mcp-staging`
 
-Only those two workers get hostnames. The other five are reached exclusively over the
+Only those two workers get hostnames. The other six are reached exclusively over the
 router's service bindings and never touch DNS, exactly as in production.
 
 **Clerk needs nothing**, contrary to what this spec first said. A development instance

@@ -52,9 +52,9 @@ export async function saveOfflineToCloud(offlineId: string, ownerId: string): Pr
         folderId,
         createdAt: rec.createdAt,
         presentation: rec.presentation ?? null,
-        // The item store, in each column's order (docs/specs/025-plan/items.md "Offline documents").
+        // The item store, in each column's order (docs/specs/026-plan/items.md "Offline documents").
         items: storeAsCreates(rec.items ?? []),
-        // And its type catalogue (docs/specs/025-plan/item-types.md "Storage and sync").
+        // And its type catalogue (docs/specs/026-plan/item-types.md "Storage and sync").
         itemTypes: rec.itemTypes ?? null,
       },
       { conversion: 'sync' },
@@ -111,7 +111,7 @@ export async function takeCloudOffline(
   // immediately.
   if (fetchedTabs.length !== liveDoc.tabs.length) throw new Error('tab load incomplete');
   // The item store too, all or nothing, for the same reason: the server copy is deleted below
-  // (docs/specs/025-plan/items.md "Offline documents"). A failed fetch throws and aborts.
+  // (docs/specs/026-plan/items.md "Offline documents"). A failed fetch throws and aborts.
   const itemStore = await fetchItems({ ownerId, documentId, shareCode, tabId: null });
   // Embed referenced R2 images as data URIs BEFORE the server delete below:
   // once the document row is gone, its images count as unused and the api's

@@ -4,9 +4,9 @@
 // its address with Open, Edit and Remove under it; ⌘-press (Ctrl on Windows and Linux) opens it in
 // a new tab. Listens on the writing's own element, so the editor's keyboard handling is untouched.
 import { useEffect, useRef, useState, type RefObject } from 'react';
+import { Portal } from '@livediagram/ui';
 import type { EditorView } from 'prosemirror-view';
 import { TextSelection } from 'prosemirror-state';
-import { Portal } from '@/components/primitives/Portal';
 import { markRange } from '@/lib/article/article-commands';
 import { articleSchema } from '@/lib/article/article-schema';
 import { requestArticleLink } from '@/lib/article/article-editor-store';

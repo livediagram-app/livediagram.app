@@ -6,7 +6,7 @@ import { ITEM_TYPES, type Item, type PlanViewId } from '@livediagram/items';
 import { PlanProvider, type PlanContextValue } from '../PlanContext';
 import { PlanViewView } from './PlanViewView';
 
-// docs/specs/025-plan/plan-views.md.
+// docs/specs/026-plan/plan-views.md.
 const SAM = { id: 'sam', name: 'Sam', color: '#2563eb' };
 let n = 0;
 const item = (fields: Item['fields'], type = 'task'): Item => {

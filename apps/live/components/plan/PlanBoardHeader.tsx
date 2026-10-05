@@ -1,6 +1,6 @@
 'use client';
 
-// A Plan board's header (docs/specs/025-plan/board-widgets.md "The header"): the title, the board's
+// A Plan board's header (docs/specs/026-plan/board-widgets.md "The header"): the title, the board's
 // widgets, then Reveal and Retry when they apply, and the list of items not on the board. The header's
 // own background is the board's handle: a press there moves the board, its controls do not.
 import { useState } from 'react';

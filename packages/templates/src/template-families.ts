@@ -20,7 +20,7 @@ const TEMPLATE_FAMILY: Record<TemplateKind, TemplateFamily | null> = {
   'approval-workflow': null,
   'data-flow': null,
   kanban: 'kanban',
-  // Plan templates (docs/specs/025-plan/plan-mode.md "Templates"): the sprint board is a Kanban board
+  // Plan templates (docs/specs/026-plan/plan-mode.md "Templates"): the sprint board is a Kanban board
   // by another name, the Team Retro a retrospective; the rest belong to no family.
   'blank-plan': null,
   'sprint-board': 'kanban',

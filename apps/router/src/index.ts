@@ -14,12 +14,14 @@ export interface Env {
   API?: Fetcher;
   TELEMETRY?: Fetcher;
   HELP?: Fetcher;
+  COMMUNITY?: Fetcher;
   // Local-dev origins (absent in production).
   MARKETING_ORIGIN?: string;
   LIVE_ORIGIN?: string;
   API_ORIGIN?: string;
   TELEMETRY_ORIGIN?: string;
   HELP_ORIGIN?: string;
+  COMMUNITY_ORIGIN?: string;
   // Set to "staging" on the staging router only (docs/specs/016-platform/staging-environment.md). Marks every
   // response noindex so the public staging mirror can't compete with
   // production in search results. Absent in production and in local dev.
@@ -30,6 +32,7 @@ const LIVE_PATH = '/live';
 const API_PATH = '/api';
 const TELEMETRY_PATH = '/telemetry';
 const HELP_PATH = '/help';
+const COMMUNITY_PATH = '/community';
 
 // The live app's top-level page route segments. These serve at CLEAN
 // URLs (no `/live` prefix) — the live worker's `out/` files are already
@@ -94,7 +97,7 @@ function hasPrefix(pathname: string, prefix: string): boolean {
 // files and the router presents `/<prefix>/foo` to them as `/foo`.
 //
 // Local dev (origin): swap the origin and keep the path UNstripped — the
-// Next dev servers serve their own prefixes (basePath for telemetry/help,
+// Next dev servers serve their own prefixes (basePath for telemetry/help/community,
 // the live app's `/live` assetPrefix, which applies in dev too).
 function forward(
   request: Request,
@@ -128,7 +131,7 @@ function forward(
 // Staging is deliberately public — no auth wall, so a change can be shared
 // with someone before it ships — which makes keeping it out of search results
 // this header's job. Done once here rather than as a build flag threaded into
-// four static apps: every app on the hostname passes through the router, the
+// five static apps: every app on the hostname passes through the router, the
 // api's JSON included.
 //
 // A 101 is returned UNTOUCHED. The realtime room answers
@@ -183,6 +186,11 @@ async function route(request: Request, env: Env): Promise<Response> {
     // The public transparency dashboard (docs/specs/017-telemetry/telemetry.md), a basePath:'/telemetry'
     // static app — same prefix-strip as the live app's assets.
     return forward(request, url, env.TELEMETRY, env.TELEMETRY_ORIGIN, TELEMETRY_PATH);
+  }
+  if (hasPrefix(url.pathname, COMMUNITY_PATH)) {
+    // Community (docs/specs/025-community/community.md), a basePath:'/community' static app: the same prefix-strip
+    // as telemetry and help.
+    return forward(request, url, env.COMMUNITY, env.COMMUNITY_ORIGIN, COMMUNITY_PATH);
   }
   const legacyHelp = legacyHelpRedirect(url);
   if (legacyHelp) return legacyHelp;

@@ -1,4 +1,4 @@
-// How agents name an item (docs/specs/025-plan/plan-mode.md "Agents"): its key as people say it
+// How agents name an item (docs/specs/026-plan/plan-mode.md "Agents"): its key as people say it
 // ("#12" or "12"), or its id, or an id prefix that names one item. Shared by the CLI's item verbs and
 // the MCP's item tools, so both read a ref the same way.
 import type { Item } from './item';

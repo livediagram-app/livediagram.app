@@ -1,6 +1,6 @@
 'use client';
 
-// A Plan board's rows and cards (docs/specs/025-plan/plan-board.md "What the board shows"), drawn by
+// A Plan board's rows and cards (docs/specs/026-plan/plan-board.md "What the board shows"), drawn by
 // PlanBoardView: a row's collapsible band when the board has swimlanes, one card in a cell, and the
 // card under the pointer while it is dragged.
 import { usePlanDragPointer, type PlanDragPointerStore } from '@/hooks/plan/usePlanCardDrag';

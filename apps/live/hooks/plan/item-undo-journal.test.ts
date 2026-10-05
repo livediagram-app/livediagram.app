@@ -12,7 +12,7 @@ import {
   type ItemUndoJournal,
 } from './item-undo-journal';
 
-// Item steps interleave with canvas steps in true order (docs/specs/025-plan/items.md "Undo").
+// Item steps interleave with canvas steps in true order (docs/specs/026-plan/items.md "Undo").
 const step = (name: string) => ({ name, undo: vi.fn(), redo: vi.fn() });
 
 describe('the item undo journal', () => {

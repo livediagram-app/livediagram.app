@@ -1,4 +1,5 @@
 import { readItemTypeCatalogue, type ItemTypeCatalogue } from '@livediagram/items';
+import { setCommunityState } from '@/lib/community-state-store';
 import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
 import type { Tab } from '@livediagram/document';
 import type { LiveDoc } from '@livediagram/api-schema';
@@ -31,7 +32,7 @@ export function makeSeedFetchedDocument(deps: {
   setDocumentName: SetState<string>;
   // The stored slide deck (docs/specs/012-collaboration/presentation-mode.md), handed on for useSlideDeck to parse.
   setDocumentPresentation: SetState<string | null>;
-  // The type catalogue (docs/specs/025-plan/item-types.md), null for the built-in types.
+  // The type catalogue (docs/specs/026-plan/item-types.md), null for the built-in types.
   setDocumentItemTypes: SetState<ItemTypeCatalogue | null>;
   setDocumentOwnerColor: SetState<string | null>;
   setDocumentOwnerId: SetState<string | null>;
@@ -131,6 +132,7 @@ export function makeSeedFetchedDocument(deps: {
     }
     setLoadedExistingDocument(true);
     setDocumentShareable(fetched.shareable);
+    setCommunityState(fetched.id, fetched.communityState ?? null);
     setDocumentTeamId(fetched.teamId ?? null);
     setDocumentShareCode(fetched.shareCode);
     setDocumentOwnerId(fetched.ownerId);

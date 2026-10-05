@@ -15,8 +15,8 @@ import {
   useClickOutside,
   useEscape,
   EDITOR_MODE_ICONS,
+  Portal,
 } from '@livediagram/ui';
-import { Portal } from '@/components/primitives/Portal';
 import { VIEWPORT_EDGE_MARGIN as EDGE } from '@/lib/clamp-to-viewport';
 import type { LeaveIllustrate } from '@/hooks/editor/useLeaveIllustrate';
 

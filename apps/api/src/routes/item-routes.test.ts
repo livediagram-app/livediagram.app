@@ -6,7 +6,7 @@ import * as db from '../db';
 import { makeTestRouteContext } from './test-route-context';
 import { handleDocuments } from './documents';
 
-// The item store's endpoints (docs/specs/025-plan/items.md, blueprint item-store.md): gates incl.
+// The item store's endpoints (docs/specs/026-plan/items.md, blueprint item-store.md): gates incl.
 // tab-scoped links, every rejection, keys never reused, rev guards, votes, the relay, copies.
 
 let sql: SqliteD1;
@@ -430,7 +430,7 @@ describe('documents and items', () => {
   });
 });
 
-// docs/specs/025-plan/item-types.md "Storage and sync".
+// docs/specs/026-plan/item-types.md "Storage and sync".
 describe('the type catalogue', () => {
   const catalogue = {
     version: 1,

@@ -1,4 +1,4 @@
-// The item store's client (docs/specs/025-plan/items.md, blueprint item-store.md "Editor slice").
+// The item store's client (docs/specs/026-plan/items.md, blueprint item-store.md "Editor slice").
 // Each call dispatches an offline document to its local store (../offline/offline-items) and a
 // cloud document to the api. A session on a tab-scoped link names its tab on every call.
 

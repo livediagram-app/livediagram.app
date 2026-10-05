@@ -6,7 +6,7 @@
 // the section order, and each piece here is one cohesive slice.
 
 import { ActivityIcon, TeamIcon } from '@/components/primitives/explorer-icons';
-import { CountBadge } from '@livediagram/ui';
+import { CountBadge, IDENTITY_FILL, identityVars } from '@livediagram/ui';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 import type { ActivityAction, ActivityPlace, ActivityThread } from '@livediagram/api-schema';
@@ -17,7 +17,6 @@ import {
   SOLID_BRAND_DARK_CONTROL,
   GlyphDisc,
 } from '@livediagram/ui';
-import { IDENTITY_FILL, identityVars } from '@/lib/identity-fill';
 import { ActionMenuIcon, CommentMenuIcon } from '@/components/palette/context-menu-icons';
 import { collabDeepLinkHref, type CollabPopover } from '@/lib/collab-deep-link';
 import { helpArticleHref } from '@/lib/help-articles';

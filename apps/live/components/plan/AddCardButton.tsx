@@ -1,6 +1,6 @@
 'use client';
 
-// A cell's Add card (docs/specs/025-plan/plan-board.md "Working on a board"): a quiet button at the
+// A cell's Add card (docs/specs/026-plan/plan-board.md "Working on a board"): a quiet button at the
 // foot of the column that opens the Add a Card popover. The board's N key opens it for the focused
 // card's cell (`open`).
 import { useCallback, useRef, useState } from 'react';

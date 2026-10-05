@@ -1,6 +1,6 @@
 'use client';
 
-// One board widget as drawn in the header (docs/specs/025-plan/board-widgets.md "Widget kinds"): every
+// One board widget as drawn in the header (docs/specs/026-plan/board-widgets.md "Widget kinds"): every
 // kind is a 28px pill in the board's own colours, so a row of them reads as one strip, each led by a
 // picture of what it measures (a ring for completion, a bar split by type, a bar per column against its
 // WIP limit, pips for votes). Filter, Only Mine and Not on Board are controls. The pictures are CSS, so

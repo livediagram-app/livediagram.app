@@ -85,7 +85,7 @@ export const SHAPE_KEYWORDS: Partial<Record<ShapeKind, string>> = {
   'line-chart': 'trend series graph chart plot',
   'code-block': 'code snippet syntax monospace program',
   checklist: 'todo tasks tick checkbox list',
-  // Plan (docs/specs/025-plan/plan-mode.md): the words people bring from Jira, Trello and retros.
+  // Plan (docs/specs/026-plan/plan-mode.md): the words people bring from Jira, Trello and retros.
   'plan-board':
     'board kanban scrum sprint retro retrospective roadmap backlog columns swimlanes wip jira trello triage week planner',
   'plan-card': 'card ticket task story bug epic issue item todo note idea action risk jira trello',

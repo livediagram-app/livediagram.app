@@ -1,4 +1,4 @@
-// The item store on the wire (docs/specs/025-plan/items.md, blueprint item-store.md "Interfaces and
+// The item store on the wire (docs/specs/026-plan/items.md, blueprint item-store.md "Interfaces and
 // contracts"). Item shapes come from @livediagram/items; these are the request and response bodies.
 
 import type { Item, ItemCreate, ItemTypeCatalogue } from '@livediagram/items';
@@ -35,7 +35,7 @@ export type ItemVoteRequest = { delta: 1 | -1 };
 // session scoped to one tab: it refetches the items its tab shows.
 export type ItemsRoomOp = { kind: 'items'; upserts: Item[]; removed: string[]; rev: number };
 
-// PUT /api/documents/:id/item-types (docs/specs/025-plan/item-types.md "Storage and sync"): the
+// PUT /api/documents/:id/item-types (docs/specs/026-plan/item-types.md "Storage and sync"): the
 // document's type catalogue, whole, or null to go back to the built-in types. The answer is the
 // catalogue as stored.
 export type ItemTypesRequest = { itemTypes: ItemTypeCatalogue | null };

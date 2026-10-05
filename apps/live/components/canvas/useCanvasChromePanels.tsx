@@ -17,7 +17,7 @@ import { usePaletteChrome } from './usePaletteChrome';
 import { useCanvasToolPanels } from './useCanvasToolPanels';
 import { WhiteboardDock } from './whiteboard/WhiteboardDock';
 
-// Plan's UI loads only when it is drawn (docs/specs/025-plan/plan-mode.md "Cost"), so a document without
+// Plan's UI loads only when it is drawn (docs/specs/026-plan/plan-mode.md "Cost"), so a document without
 // Plan pays nothing for it.
 const CardFinderPanel = dynamic(
   () => import('@/components/plan/CardFinderPanel').then((m) => m.CardFinderPanel),
@@ -94,7 +94,7 @@ export function useCanvasChromePanels({
   toolbarClusterEls: ReactNode;
   collaborateEl: ReactNode;
   slidesPopoverEl: ReactNode;
-  // The Card Types panel over its cluster button, in Plan mode (docs/specs/025-plan/item-types.md).
+  // The Card Types panel over its cluster button, in Plan mode (docs/specs/026-plan/item-types.md).
   cardTypesPopoverEl: ReactNode;
   trashPopoverEl: ReactNode;
   cardFinderPopoverEl: ReactNode;

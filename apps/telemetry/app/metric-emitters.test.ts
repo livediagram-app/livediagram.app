@@ -7,6 +7,7 @@ import { COMPUTED_EMITTERS, TOUR_STEP_SOURCE } from './computed-emitters';
 import { COMPUTED, scanEmitters, type Emit } from './emitter-scan';
 import { GROUPS as EXCEPTIONS, RECOVERY_TYPES } from './ExceptionsView';
 import { GROUPS as HELP } from './HelpView';
+import { GROUPS as COMMUNITY } from './CommunityView';
 import { GROUPS as DASHBOARD } from './DashboardView';
 import {
   CUSTOM_THEME_METRICS,
@@ -83,7 +84,14 @@ function sendable(category: string, action: string, type: string | null): boolea
   return SENDS.some((e) => e.category === category && e.action === action && e.type === type);
 }
 
-const ALL: MetricGroup[] = [...DASHBOARD, ...EDITING, ...SETTINGS, ...EXCEPTIONS, ...HELP];
+const ALL: MetricGroup[] = [
+  ...DASHBOARD,
+  ...EDITING,
+  ...SETTINGS,
+  ...EXCEPTIONS,
+  ...HELP,
+  ...COMMUNITY,
+];
 // Plus every catalogue chart, including ones parked off every tab, so a chart
 // waiting to be added back can't rot while it is out of view.
 const METRICS = [
@@ -113,6 +121,9 @@ describe('the emitter scan', () => {
     expect(has('Help', 'Unhelpful', COMPUTED as never)).toBe(true);
     expect(has('Session', 'SignedUp', null)).toBe(true); // reportServerEvent(env, ...), const action
     expect(has('Email', 'Sent', COMPUTED as never)).toBe(true);
+    // siteTrack called by name, through the Community app's wrapper object.
+    expect(has('Community', 'Liked', 'Post')).toBe(true);
+    expect(has('Community', 'Reported', COMPUTED as never)).toBe(true);
     expect(KNOWN.some((e) => e.category === 'Error' && e.path.startsWith('apps/mcp/'))).toBe(true);
     expect(KNOWN.some((e) => e.category === 'Error' && e.path === 'apps/api/src/index.ts')).toBe(
       true,

@@ -169,9 +169,9 @@ export async function apiCreateDocument(
     // (docs/specs/015-api/api.md "Marking a document used"). Only `false` travels: absent is the
     // server's own default, a making that counts.
     markUsed?: boolean;
-    // Seed items (docs/specs/025-plan/items.md): an offline document's, on sync.
+    // Seed items (docs/specs/026-plan/items.md): an offline document's, on sync.
     items?: ItemCreate[];
-    // The type catalogue (docs/specs/025-plan/item-types.md): a copy's, a sync's or a Drive file's.
+    // The type catalogue (docs/specs/026-plan/item-types.md): a copy's, a sync's or a Drive file's.
     itemTypes?: ItemTypeCatalogue | null;
   },
   // Set by the Offline Mode sync path (docs/specs/006-document/offline-mode.md). A sync is a plain POST, so

@@ -1,6 +1,6 @@
 'use client';
 
-// The Project Gantt Chart (docs/specs/025-plan/plan-views.md "Project Gantt Chart"): a row per Project card
+// The Project Gantt Chart (docs/specs/026-plan/plan-views.md "Project Gantt Chart"): a row per Project card
 // on a time axis, its bar from start to due date filled to the share of its children done, a diamond for a
 // lone date, and a line for today. Divs and CSS, so it stays crisp at any zoom.
 import { useMemo } from 'react';

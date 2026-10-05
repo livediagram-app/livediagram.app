@@ -4,7 +4,7 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import type { Item } from '@livediagram/items';
 import { ItemDescription, descriptionPatch, descriptionRuns } from './ItemDescription';
 
-// docs/specs/025-plan/plan-board.md "Working on a board": the description reads until clicked.
+// docs/specs/026-plan/plan-board.md "Working on a board": the description reads until clicked.
 afterEach(cleanup);
 
 const item = (fields: Item['fields']) =>
