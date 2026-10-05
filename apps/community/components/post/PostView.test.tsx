@@ -95,6 +95,9 @@ describe('the post page', () => {
     expect(screen.getByText('copy')).toBeTruthy();
     expect(screen.getByText('Related One')).toBeTruthy();
     expect(document.title).toBe('Payments Platform | livediagram Community');
+    expect(document.querySelector('link[rel="canonical"]')?.getAttribute('href')).toBe(
+      'http://localhost:3000/community/post/?id=post1',
+    );
     expect(h.telemetry.openedPost).toHaveBeenCalledTimes(1);
 
     fireEvent.click(screen.getByRole('link', { name: /Make a Copy/ }));

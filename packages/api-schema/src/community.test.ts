@@ -21,7 +21,7 @@ import {
   validateCommunityPostInput,
   communityInputErrorField,
   communityPostInputErrors,
-} from './community';
+} from './index';
 
 const valid = {
   title: 'Payments platform',

@@ -76,7 +76,7 @@ export const COMMUNITY_FILTERS = chart(
   'Community',
   'Selected',
   'Gallery Filters Picked',
-  'Someone narrowed or reordered the gallery: picked a category, a tag or a sort order.',
+  'Someone narrowed or reordered the gallery: picked a category, a tag, a sort order or My Shares.',
 );
 
 // Moderation is reports alone: enough of them hide a post (docs/specs/025-community/community.md).
@@ -87,8 +87,6 @@ export const COMMUNITY_REPORTS = chart(
   'Someone reported a post, for spam, offensive content, personal information, copyright or something else.',
   { rising: 'bad' },
 );
-
-
 
 export const COMMUNITY_PUBLISHING: MetricStack = {
   stack: true,

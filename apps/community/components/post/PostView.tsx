@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
+import { communityPostPath } from '@livediagram/api-schema';
 import { BackIcon } from '../shared/icons';
 import { EmbedFrame } from './EmbedFrame';
 import { PostActions } from './PostActions';
@@ -19,10 +20,21 @@ export function PostView() {
   const { load, retry } = usePost(id);
   const title = load.status === 'ready' ? load.data.post.title : null;
 
-  // The tab names the document once it is known (the static shell carries a generic title).
+  // The tab names the document once it is known (the static shell carries a generic title), and the page names its
+  // own address as canonical (the shell carries none, since one shell serves every post).
   useEffect(() => {
     if (title) document.title = `${title} | livediagram Community`;
   }, [title]);
+  useEffect(() => {
+    if (load.status !== 'ready' || !id) return;
+    let link = document.querySelector<HTMLLinkElement>('link[rel="canonical"]');
+    if (!link) {
+      link = document.createElement('link');
+      link.rel = 'canonical';
+      document.head.appendChild(link);
+    }
+    link.href = new URL(communityPostPath(id), window.location.origin).href;
+  }, [load.status, id]);
 
   return (
     <div className="flex flex-col gap-8">

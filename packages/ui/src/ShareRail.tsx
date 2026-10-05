@@ -69,7 +69,7 @@ const TARGETS: ShareTarget[] = [
  * and not at all below xl, where there is no gutter for it. A surface that
  * turns sharing off (`share={false}`) still gets the Appearance card.
  */
-export function ShareRail({ share = true }: { share?: boolean }) {
+export function ShareRail({ share = true, wide = false }: { share?: boolean; wide?: boolean }) {
   // One live "copied" reset at a time: a rapid second copy must not have its
   // confirmation cancelled by the first copy's stale timer, and the timer must
   // not fire (setState) after unmount. Both are useCopiedFlash's job now — this
@@ -89,7 +89,11 @@ export function ShareRail({ share = true }: { share?: boolean }) {
     'flex h-8 w-8 items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100';
 
   return (
-    <div className="fixed right-0 top-1/2 z-40 hidden -translate-y-1/2 flex-col items-end gap-2 xl:flex">
+    // A wide surface (max-w-7xl, the help centre and the Community) has no gutter for the rail until 2xl: at xl it
+    // would cover the content's right edge, so there the rail (and with it the Appearance toggle) waits.
+    <div
+      className={`fixed right-0 top-1/2 z-40 hidden -translate-y-1/2 flex-col items-end gap-2 ${wide ? '2xl:flex' : 'xl:flex'}`}
+    >
       {share ? (
         <div className={`${RAIL_CARD} py-3`}>
           <span className="mb-1 rotate-180 text-[10px] font-semibold uppercase tracking-[0.15em] text-slate-500 dark:text-slate-400 [writing-mode:vertical-rl]">

@@ -642,3 +642,4 @@ export * from './catalogues';
 export * from './comment-threads';
 export * from './agent-presence';
 export * from './community';
+export * from './community-query';

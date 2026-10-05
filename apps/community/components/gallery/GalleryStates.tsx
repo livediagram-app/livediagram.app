@@ -1,5 +1,5 @@
 import { Button, ButtonContent, EmptyState, SearchIcon, buttonClassName } from '@livediagram/ui';
-import { EMPTY_INVITE_HREF } from '@/lib/links';
+import { SHARE_YOUR_OWN_HREF } from '@/lib/links';
 import { signInHref } from '@/lib/session';
 import { AlertIcon, MineIcon, PeopleIcon } from '../shared/icons';
 
@@ -14,7 +14,7 @@ export function GalleryEmpty() {
       title="Nothing here yet."
       description="Be the first to share a document."
     >
-      <a href={EMPTY_INVITE_HREF} className={buttonClassName({ size: 'md' })}>
+      <a href={SHARE_YOUR_OWN_HREF} className={buttonClassName({ size: 'md' })}>
         <ButtonContent>Share Your Own</ButtonContent>
       </a>
     </EmptyState>
@@ -87,7 +87,7 @@ export function GalleryMineEmpty() {
       title="You haven't shared anything yet."
       description="Share a document you are proud of, and see how it does here."
     >
-      <a href={EMPTY_INVITE_HREF} className={buttonClassName({ size: 'md' })}>
+      <a href={SHARE_YOUR_OWN_HREF} className={buttonClassName({ size: 'md' })}>
         <ButtonContent>Share Your Own</ButtonContent>
       </a>
     </EmptyState>

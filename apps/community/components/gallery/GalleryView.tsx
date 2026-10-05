@@ -69,6 +69,8 @@ export function GalleryView() {
       </div>
 
       <section aria-label={mine ? 'My Shares' : 'Documents'}>
+        {/* The cards are h3s under the page's h1: this names their level for screen readers. */}
+        <h2 className="sr-only">{mine ? 'My Shares' : 'Documents'}</h2>
         {mine && gallery.totals && gallery.totals.posts > 0 ? (
           <MineSummary totals={gallery.totals} />
         ) : null}

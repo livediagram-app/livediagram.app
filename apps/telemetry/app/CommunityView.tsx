@@ -122,7 +122,7 @@ export function CommunityView({
           <RankCard
             trend={trend}
             title="Gallery Filters"
-            subtitle="Which filters people reach for in the gallery: a category, a tag or a sort order"
+            subtitle="Which filters people reach for in the gallery: a category, a tag, a sort order or My Shares"
             category="Community"
             action="Selected"
             items={filters}

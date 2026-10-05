@@ -24,6 +24,5 @@ export const postHref = (id: string) => `/post/?id=${encodeURIComponent(id)}`;
 export const tagHref = (tag: string) => `/?q=${encodeURIComponent(`#${tag}`)}`;
 
 // Sharing starts from a document the person already has (docs/specs/025-community/community.md "Gallery"),
-// so both invitations open Explorer Home, where their documents are, rather than a new document.
+// so every invitation opens Explorer Home, where their documents are, rather than a new document.
 export const SHARE_YOUR_OWN_HREF = '/explorer/home';
-export const EMPTY_INVITE_HREF = '/explorer/home';

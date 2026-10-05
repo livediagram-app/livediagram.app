@@ -4,7 +4,7 @@ import { PostCard } from './PostCard';
 import { PostCardSkeleton } from './PostCardSkeleton';
 
 // The responsive card grid (blueprint §9): 1 / 2 / 3 / 4 columns at <640 / 640 / 1024 / 1280 px.
-export const POST_GRID = 'grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4';
+const POST_GRID = 'grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4';
 
 export function PostGrid({
   posts,

@@ -75,7 +75,7 @@ export function ReportDialog({ postId, onClose }: { postId: string; onClose: () 
             aria-label="Close"
             onClick={onClose}
             disabled={phase === 'sending'}
-            className="-mr-2 -mt-1 rounded-md p-1.5 text-slate-400 transition-colors duration-micro hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+            className="-mr-2 -mt-1 rounded-md p-1.5 text-slate-500 transition-colors duration-micro hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200"
           >
             <CloseIcon size={16} aria-hidden />
           </button>
@@ -126,7 +126,8 @@ export function ReportDialog({ postId, onClose }: { postId: string; onClose: () 
                 htmlFor={noteId}
                 className="text-sm font-medium text-slate-700 dark:text-slate-200"
               >
-                Anything Else? <span className="font-normal text-slate-400">(Optional)</span>
+                Anything Else?{' '}
+                <span className="font-normal text-slate-500 dark:text-slate-400">(Optional)</span>
               </label>
               <textarea
                 id={noteId}
@@ -139,7 +140,7 @@ export function ReportDialog({ postId, onClose }: { postId: string; onClose: () 
               />
               <p
                 id={`${noteId}-count`}
-                className="self-end text-xs tabular-nums text-slate-400 dark:text-slate-500"
+                className="self-end text-xs tabular-nums text-slate-500 dark:text-slate-400"
               >
                 {note.length} / {COMMUNITY_REPORT_NOTE_MAX}
               </p>

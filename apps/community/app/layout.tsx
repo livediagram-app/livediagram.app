@@ -13,7 +13,7 @@ import {
 } from '@livediagram/ui';
 
 // The livediagram Community (docs/specs/025-community/community.md): an indexable static site served
-// under /community by the router. No third-party scripts and no sign-in; it stays self-host-clean
+// under /community by the router. No third-party scripts, and sign-in (Clerk) loads only for My Shares; it stays self-host-clean
 // (docs/specs/002-project-scope/open-source-and-business-model.md).
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

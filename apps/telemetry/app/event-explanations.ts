@@ -502,6 +502,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Community|Selected|Tag': 'Someone filtered the Community gallery to one tag. Never which tag.',
   'Community|Selected|Sort':
     'Someone changed how the Community gallery is sorted: newest, most loved or most copied.',
+  'Community|Selected|Mine':
+    'Someone turned on My Shares, to see the documents they shared to the Community and how they are doing.',
   'Mcp|Used|AddTab': 'An AI tool connected over MCP added a new tab to a document.',
   'Mcp|Used|CreateDocument': 'An AI tool connected over MCP created a new document.',
   'Mcp|Used|FindDocuments':
@@ -1222,8 +1224,7 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
     "An agent's changeset was undone, from the editor's toast or another front door.",
   'Community|Shared':
     'Someone shared a document to the Community, the public gallery of documents.',
-  'Community|Changed':
-    'A Community post changed: its owner edited the listing.',
+  'Community|Changed': 'A Community post changed: its owner edited the listing.',
   'Community|Removed': 'Someone took their own post down from the Community.',
   'Community|Opened': "Someone opened a post's own page in the Community.",
   'Community|Liked': 'Someone liked a post in the Community.',
@@ -1232,7 +1233,7 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Community|Reported': 'Someone reported a post in the Community.',
   'Community|Searched': 'Someone searched the Community gallery. Never what they typed.',
   'Community|Selected':
-    'Someone picked a filter in the Community gallery: a category, a tag or a sort order.',
+    'Someone picked a filter in the Community gallery: a category, a tag, a sort order or My Shares.',
   'Mcp|Used': 'An AI tool connected to livediagram over MCP used one of its actions on a document.',
   'Note|Added': 'A note was added to an element (first non-empty save).',
   'Cli|Used': 'Someone ran a livediagram command from the command line, and it succeeded.',

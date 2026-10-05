@@ -107,7 +107,9 @@ function TagOptions({
             >
               <span className="flex-1 truncate">#{tag}</span>
               {count !== null ? (
-                <span className="text-xs tabular-nums text-slate-400">{count}</span>
+                <span className="text-xs tabular-nums text-slate-500 dark:text-slate-400">
+                  {count}
+                </span>
               ) : null}
               <span className="flex w-4 shrink-0 justify-end">
                 {checked ? <CheckIcon aria-hidden /> : null}

@@ -109,7 +109,9 @@ function CategoryOptions({
             >
               <span className="flex-1 truncate">{row.label}</span>
               {row.count !== undefined ? (
-                <span className="text-xs tabular-nums text-slate-400">{row.count}</span>
+                <span className="text-xs tabular-nums text-slate-500 dark:text-slate-400">
+                  {row.count}
+                </span>
               ) : null}
               <span className="flex w-4 shrink-0 justify-end">
                 {checked ? <CheckIcon aria-hidden /> : null}

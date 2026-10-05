@@ -78,7 +78,7 @@ export function SiteHeader({
         </div>
       </header>
       {/* The page-edge rail: sharing (unless `shareRail` is off) and, always, the Appearance toggle. */}
-      <ShareRail share={shareRail} />
+      <ShareRail share={shareRail} wide={wide} />
     </>
   );
 }

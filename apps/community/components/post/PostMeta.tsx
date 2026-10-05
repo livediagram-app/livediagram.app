@@ -6,7 +6,7 @@ import { communityCategoryLabel, type CommunityPost } from '@livediagram/api-sch
 import { relativeSince } from '@livediagram/ui';
 import { formatDate, paragraphs } from '@/lib/format';
 import { tagHref } from '@/lib/links';
-import { AuthorBadge } from '../shared/AuthorBadge';
+import { CommunityAuthorBadge } from '@livediagram/ui';
 
 // What a post says about itself (docs/specs/025-community/community.md "Post"): title, author,
 // publish date, category, tags (each opening the gallery filtered by it) and the full description,
@@ -24,7 +24,7 @@ export function PostMeta({ post }: { post: CommunityPost }) {
           {post.title}
         </h1>
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-slate-600 dark:text-slate-300">
-          <AuthorBadge author={post.author} size={28} className="font-medium" />
+          <CommunityAuthorBadge author={post.author} size={28} className="font-medium" />
           <span aria-hidden className="text-slate-300 dark:text-slate-600">
             &middot;
           </span>

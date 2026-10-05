@@ -142,7 +142,7 @@ export function SearchBox({
               setDraft('');
               onSearch('');
             }}
-            className="rounded-md p-1.5 text-slate-400 transition-colors duration-micro hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+            className="rounded-md p-1.5 text-slate-500 transition-colors duration-micro hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200"
           >
             <CloseIcon size={14} aria-hidden />
           </button>
