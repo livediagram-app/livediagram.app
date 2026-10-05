@@ -1,18 +1,20 @@
 import { describe, expect, it } from 'vitest';
 import {
   AREAS,
-  MARKER,
+  REPORT_END,
+  REPORT_START,
   coverageDiffBlock,
   coverageOf,
   failureReason,
   patchLine,
   pctDelta,
-  renderComment,
+  renderReport,
   sumTotals,
   treeGraph,
-} from '../../../scripts/coverage-comment.mjs';
+  withReport,
+} from '../../../scripts/coverage-report.mjs';
 
-// scripts/coverage-comment.mjs writes the pull request's coverage comment from Codecov's public API
+// scripts/coverage-report.mjs writes the pull request's coverage report into its description from Codecov's public API
 // (docs/specs/003-system-architecture/testing.md "Coverage report"). It lives here with the other
 // repo-wide guards because scripts/ belongs to no workspace.
 
@@ -112,8 +114,8 @@ describe('coverageDiffBlock', () => {
   });
 });
 
-describe('renderComment', () => {
-  const comment = renderComment({
+describe('renderReport', () => {
+  const report = renderReport({
     pr: 9,
     baseSha: 'abcdef1234',
     headSha: '1234567890',
@@ -124,19 +126,21 @@ describe('renderComment', () => {
     codecovUrl: 'https://app.codecov.io/gh/o/r/pull/9',
   });
 
-  it('opens with the marker, so a later run edits it', () => {
-    expect(comment.startsWith(`${MARKER}\n`)).toBe(true);
+  it('opens with its heading, linked to Codecov', () => {
+    expect(report.startsWith('## [Coverage](https://app.codecov.io/gh/o/r/pull/9) report\n')).toBe(
+      true,
+    );
   });
 
   it('states project coverage and the two commits compared', () => {
-    expect(comment).toContain('Project coverage is 61.00% (+1.00%)');
-    expect(comment).toContain('`main` at `abcdef1`');
-    expect(comment).toContain('with `1234567`');
+    expect(report).toContain('Project coverage is 61.00% (+1.00%)');
+    expect(report).toContain('`main` at `abcdef1`');
+    expect(report).toContain('with `1234567`');
   });
 
   it('has a row per area and the coverage diff', () => {
-    expect(comment).toContain('| Editor | 50.00% | 52.00% | +2.00% |');
-    expect(comment).toContain('```diff');
+    expect(report).toContain('| Editor | 50.00% | 52.00% | +2.00% |');
+    expect(report).toContain('```diff');
   });
 });
 
@@ -151,7 +155,7 @@ describe('treeGraph', () => {
 
   it('is left out without a graph token', () => {
     expect(treeGraph(url, null)).toBeNull();
-    const comment = renderComment({
+    const report = renderReport({
       pr: 9,
       baseSha: 'a',
       headSha: 'b',
@@ -161,11 +165,11 @@ describe('treeGraph', () => {
       areas: [],
       codecovUrl: url,
     });
-    expect(comment).not.toContain('tree.svg');
+    expect(report).not.toContain('tree.svg');
   });
 
   it('sits between the summary and the area table', () => {
-    const comment = renderComment({
+    const report = renderReport({
       pr: 9,
       baseSha: 'a',
       headSha: 'b',
@@ -176,8 +180,35 @@ describe('treeGraph', () => {
       codecovUrl: url,
       graphToken: 'T',
     });
-    expect(comment.indexOf('Project coverage')).toBeLessThan(comment.indexOf('tree.svg'));
-    expect(comment.indexOf('tree.svg')).toBeLessThan(comment.indexOf('| Area |'));
+    expect(report.indexOf('Project coverage')).toBeLessThan(report.indexOf('tree.svg'));
+    expect(report.indexOf('tree.svg')).toBeLessThan(report.indexOf('| Area |'));
+  });
+});
+
+describe('withReport', () => {
+  const block = (report: string) => `${REPORT_START}\n\n---\n\n${report}\n\n${REPORT_END}`;
+
+  it('appends the report below a separator, leaving the description intact', () => {
+    expect(withReport('Fixes the thing.\n\n', 'R1')).toBe(`Fixes the thing.\n\n${block('R1')}`);
+  });
+
+  it('is the report alone for an empty description', () => {
+    expect(withReport(null, 'R1')).toBe(block('R1'));
+    expect(withReport('  \n', 'R1')).toBe(block('R1'));
+  });
+
+  it('replaces an earlier report in place, keeping text around it', () => {
+    const body = `Intro\r\n\r\n${block('R1')}\r\n\r\nAfterword`;
+    expect(withReport(body, 'R2')).toBe(`Intro\r\n\r\n${block('R2')}\r\n\r\nAfterword`);
+  });
+
+  it('is unchanged when the report is the same, so nothing is written', () => {
+    const body = withReport('Intro', 'R1');
+    expect(withReport(body, 'R1')).toBe(body);
+  });
+
+  it('replaces to the end when the closing marker was edited away', () => {
+    expect(withReport(`Intro\n\n${REPORT_START}\nstale`, 'R2')).toBe(`Intro\n\n${block('R2')}`);
   });
 });
 

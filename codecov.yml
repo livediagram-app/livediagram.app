@@ -16,6 +16,6 @@ coverage:
         informational: true
 
 # Off: on this organisation's free plan Codecov writes a fixed, patch-only comment whatever this file
-# asks for. The pull request's coverage comment comes from coverage-comment.yml instead, built from
-# Codecov's numbers.
+# asks for. The pull request's coverage report comes from coverage-report.yml instead, built from
+# Codecov's numbers and written into the pull request's description.
 comment: false

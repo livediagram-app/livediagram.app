@@ -1,13 +1,14 @@
-// Posts the pull request's coverage report as one comment: the coverage diff against its base and a
-// row per area of the repo (docs/specs/003-system-architecture/testing.md "Coverage report"). The numbers are
-// Codecov's, read from its public API; Codecov's own comment is off, because the free plan this
-// organisation is on writes a fixed patch-only one whatever codecov.yml asks for.
+// Writes the pull request's coverage report into its description, below a separator: the coverage
+// diff against its base and a row per area of the repo (docs/specs/003-system-architecture/testing.md
+// "Coverage report"). A description edit notifies no one, where a comment emails every watcher. The
+// numbers are Codecov's, read from its public API; Codecov's own comment is off, because the free plan
+// this organisation is on writes a fixed patch-only one whatever codecov.yml asks for.
 //
-//   node scripts/coverage-comment.mjs <pr-number> <head-sha>
+//   node scripts/coverage-report.mjs <pr-number> <head-sha>
 //
-// Needs GITHUB_TOKEN (pull-requests: write) and GITHUB_REPOSITORY; COVERAGE_COMMENT_DRY_RUN=1 prints
-// the comment instead of posting it, and needs no token. Run by coverage-comment.yml after
-// CI succeeds; it never checks out or runs the pull request's code.
+// Needs GITHUB_TOKEN (pull-requests: write) and GITHUB_REPOSITORY; COVERAGE_REPORT_DRY_RUN=1 prints
+// the report instead of writing it, and needs no token. Run by coverage-report.yml after CI
+// succeeds; it never checks out or runs the pull request's code.
 
 import { fileURLToPath } from 'node:url';
 
@@ -23,8 +24,9 @@ export const AREAS = [
 /** Uploads CI makes per commit (codecov.yml `after_n_builds`): Tests and three editor shards. */
 export const EXPECTED_SESSIONS = 4;
 
-/** Marks the comment this script owns, so a later run edits it rather than adding another. */
-export const MARKER = '<!-- livediagram:coverage-report -->';
+/** Bound the section of the description this script owns, so a later run replaces only that. */
+export const REPORT_START = '<!-- livediagram:coverage-report:start -->';
+export const REPORT_END = '<!-- livediagram:coverage-report:end -->';
 
 const CODECOV_API = 'https://api.codecov.io/api/v2/github';
 const CODECOV_GRAPHQL = 'https://api.codecov.io/graphql/gh';
@@ -156,13 +158,13 @@ export function treeGraph(
 }
 
 /**
- * The whole comment.
+ * The report, as it appears below the separator.
  * @param {{ pr: number, baseSha: string, headSha: string, base: Totals, head: Totals,
  *   patch: { hits: number, misses: number, partials: number } | null,
  *   areas: { name: string, base: Totals, head: Totals }[], codecovUrl: string,
  *   graphToken?: string | null }} report
  */
-export function renderComment(report) {
+export function renderReport(report) {
   const { pr, baseSha, headSha, base, head, patch, areas, codecovUrl, graphToken = null } = report;
   const tree = treeGraph(codecovUrl, graphToken);
   const baseCov = coverageOf(base);
@@ -174,7 +176,6 @@ export function renderComment(report) {
     return `| ${a.name} | ${pct(b)} | ${pct(h)} | ${pctDelta(b, h)} |`;
   });
   return [
-    MARKER,
     `## [Coverage](${codecovUrl}) report`,
     patchLine(patch),
     `:bar_chart: Project coverage is ${pct(headCov)}${delta ? ` (${delta})` : ''}, comparing \`main\` at \`${baseSha.slice(0, 7)}\` with \`${headSha.slice(0, 7)}\`.`,
@@ -186,6 +187,23 @@ export function renderComment(report) {
     '',
     coverageDiffBlock(base, head, 'main', `#${pr}`),
   ].join('\n');
+}
+
+/**
+ * The description with the report in its section: replaced in place when present (to the end of the
+ * description when the closing marker was edited away), appended below the rest otherwise.
+ */
+export function withReport(/** @type {string | null} */ body, /** @type {string} */ report) {
+  const section = `${REPORT_START}\n\n---\n\n${report}\n\n${REPORT_END}`;
+  const text = body ?? '';
+  const start = text.indexOf(REPORT_START);
+  if (start === -1) {
+    const kept = text.trimEnd();
+    return kept ? `${kept}\n\n${section}` : section;
+  }
+  const end = text.indexOf(REPORT_END, start);
+  const after = end === -1 ? '' : text.slice(end + REPORT_END.length);
+  return `${text.slice(0, start)}${section}${after}`;
 }
 
 /** Why a call failed: the message, with the network cause undici keeps behind "fetch failed". */
@@ -241,8 +259,8 @@ async function totalsAt(
 async function main() {
   const [prArg, headSha] = process.argv.slice(2);
   const pr = Number(prArg);
-  const { GITHUB_TOKEN, GITHUB_REPOSITORY, COVERAGE_COMMENT_DRY_RUN } = process.env;
-  const dryRun = COVERAGE_COMMENT_DRY_RUN === '1';
+  const { GITHUB_TOKEN, GITHUB_REPOSITORY, COVERAGE_REPORT_DRY_RUN } = process.env;
+  const dryRun = COVERAGE_REPORT_DRY_RUN === '1';
   if (
     !Number.isInteger(pr) ||
     pr <= 0 ||
@@ -251,7 +269,7 @@ async function main() {
     (!dryRun && !GITHUB_TOKEN)
   ) {
     throw new Error(
-      'usage: GITHUB_TOKEN=… GITHUB_REPOSITORY=owner/repo coverage-comment.mjs <pr> <head-sha>',
+      'usage: GITHUB_TOKEN=… GITHUB_REPOSITORY=owner/repo coverage-report.mjs <pr> <head-sha>',
     );
   }
   const [owner, repo] = GITHUB_REPOSITORY.split('/');
@@ -270,7 +288,7 @@ async function main() {
     } catch (error) {
       networkFailures += 1;
       if (networkFailures > NETWORK_RETRIES) throw error;
-      console.warn(`[coverage-comment] attempt ${attempt}: ${failureReason(error)}; retrying`);
+      console.warn(`[coverage-report] attempt ${attempt}: ${failureReason(error)}; retrying`);
       pull = null;
       await new Promise((r) => setTimeout(r, POLL_INTERVAL_MS));
       continue;
@@ -282,7 +300,7 @@ async function main() {
       sessions >= EXPECTED_SESSIONS &&
       pull.comparedTo?.state === 'complete';
     console.log(
-      `[coverage-comment] attempt ${attempt}: head ${pull?.head?.commitid?.slice(0, 7) ?? 'none'} ${commit?.state ?? '-'} sessions ${sessions}/${EXPECTED_SESSIONS}, base ${pull?.comparedTo?.commitid?.slice(0, 7) ?? 'none'} ${pull?.comparedTo?.state ?? '-'}`,
+      `[coverage-report] attempt ${attempt}: head ${pull?.head?.commitid?.slice(0, 7) ?? 'none'} ${commit?.state ?? '-'} sessions ${sessions}/${EXPECTED_SESSIONS}, base ${pull?.comparedTo?.commitid?.slice(0, 7) ?? 'none'} ${pull?.comparedTo?.state ?? '-'}`,
     );
     if (ready) break;
     pull = null;
@@ -300,7 +318,7 @@ async function main() {
     ]);
     areas.push({ name: area.name, base: sumTotals(b), head: sumTotals(h) });
   }
-  const body = renderComment({
+  const report = renderReport({
     pr,
     baseSha,
     headSha,
@@ -313,7 +331,7 @@ async function main() {
   });
 
   if (dryRun) {
-    console.log(`[coverage-comment] dry run for #${pr}, nothing posted:\n${body}`);
+    console.log(`[coverage-report] dry run for #${pr}, nothing written:\n${report}`);
     return;
   }
 
@@ -326,23 +344,23 @@ async function main() {
         'Content-Type': 'application/json',
       },
     });
-  const comments = await gh(`/issues/${pr}/comments?per_page=100`);
-  const mine = comments.find((/** @type {{ body?: string }} */ c) => c.body?.startsWith(MARKER));
-  if (mine) {
-    await gh(`/issues/comments/${mine.id}`, { method: 'PATCH', body: JSON.stringify({ body }) });
-    console.log(`[coverage-comment] updated comment ${mine.id} on #${pr}`);
-  } else {
-    const made = await gh(`/issues/${pr}/comments`, {
-      method: 'POST',
-      body: JSON.stringify({ body }),
-    });
-    console.log(`[coverage-comment] created comment ${made.id} on #${pr}`);
+  // Editing a description notifies no one, unlike a new comment. Read just before writing, so an
+  // edit the author made while Codecov processed is kept.
+  const { body } = await gh(`/pulls/${pr}`);
+  const next = withReport(body, report);
+  if (next === body) {
+    console.log(`[coverage-report] #${pr} already shows this report; nothing to write`);
+    return;
   }
+  await gh(`/pulls/${pr}`, { method: 'PATCH', body: JSON.stringify({ body: next }) });
+  console.log(
+    `[coverage-report] ${body?.includes(REPORT_START) ? 'updated' : 'added'} the report in the description of #${pr}`,
+  );
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   main().catch((error) => {
-    console.error(`[coverage-comment] failed: ${failureReason(error)}`);
+    console.error(`[coverage-report] failed: ${failureReason(error)}`);
     process.exit(1);
   });
 }
