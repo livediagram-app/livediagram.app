@@ -36,10 +36,10 @@ import {
   type TrashedDocument,
 } from '@livediagram/api-schema';
 import { createdFolderLabel } from './created-folder';
-import { ApiError, apiFetch, apiJson, reportApiFailure } from './api';
+import { ApiError, apiFetch, apiJson, clientFor, reportApiFailure } from './api';
 import { readDocument } from './read-document';
 import type { Env } from './env';
-import { fetchTeamLibraries, matchDocuments } from './find-documents';
+import { fetchTeamLibraries, matchDocuments } from '@livediagram/agent-verbs';
 import {
   deepLink,
   errorResult,
@@ -108,7 +108,7 @@ export function registerTools(server: McpServer, env: Env): void {
       // team leaves the personal list, so both must be swept.
       const [{ documents: liveDocs }, teamLibraries] = await Promise.all([
         apiJson<DocumentListResponse>(env, token, '/documents'),
-        fetchTeamLibraries(env, token),
+        fetchTeamLibraries(clientFor(env, token)),
       ]);
       const matched = matchDocuments(liveDocs, teamLibraries, args.query, args.limit ?? 20).map(
         (d) => ({ ...d, url: deepLink(d.id) }),
