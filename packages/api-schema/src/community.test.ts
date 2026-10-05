@@ -54,7 +54,7 @@ describe('validateCommunityPostInput', () => {
     const result = validateCommunityPostInput({ ...valid, tags: ['AWS', 'aws', 'Event  driven'] });
     expect(result).toEqual({
       ok: true,
-      value: { ...valid, tags: ['aws', 'event-driven'] },
+      value: { ...valid, tags: ['aws', 'event-driven'], anonymous: true },
     });
   });
 
@@ -90,6 +90,17 @@ describe('validateCommunityPostInput', () => {
 
   it('rejects a missing body', () => {
     expect(validateCommunityPostInput(null)).toEqual({ ok: false, error: 'invalid_title' });
+  });
+});
+
+describe('anonymous', () => {
+  it('is on unless the author turns it off', () => {
+    const on = validateCommunityPostInput(valid);
+    expect(on.ok && on.value.anonymous).toBe(true);
+    const off = validateCommunityPostInput({ ...valid, anonymous: false });
+    expect(off.ok && off.value.anonymous).toBe(false);
+    const junk = validateCommunityPostInput({ ...valid, anonymous: 'no' });
+    expect(junk.ok && junk.value.anonymous).toBe(true);
   });
 });
 

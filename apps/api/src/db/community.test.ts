@@ -31,6 +31,7 @@ import {
 } from './community-engagement';
 import { listShareLinks, getShareLink } from './share';
 import { copyDocument } from './documents';
+import { rowToCommunityPost } from '../community-row';
 
 let db: SqliteD1;
 
@@ -47,6 +48,7 @@ const input = (patch: Partial<Parameters<typeof createCommunityPost>[3]> = {}) =
   description: 'How our payment services talk to each other.',
   category: 'architecture' as const,
   tags: ['aws', 'event-driven'],
+  anonymous: false,
   ...patch,
 });
 
@@ -134,6 +136,21 @@ describe('publishing', () => {
     await publish('d1');
     db.sql.prepare("DELETE FROM documents WHERE id = 'd1'").run();
     expect(db.sql.prepare('SELECT COUNT(*) AS n FROM community_posts').get()).toEqual({ n: 0 });
+  });
+});
+
+describe('anonymous posts', () => {
+  it('show Anonymous instead of the author, and can be switched on an edit', async () => {
+    const postId = await publish('d1', { anonymous: true });
+    const row = (await getCommunityPostForDocument(db.env, 'd1'))!;
+    expect(rowToCommunityPost(row, false)).toMatchObject({
+      anonymous: true,
+      author: { name: 'Anonymous', picture: null },
+    });
+    expect(JSON.stringify(rowToCommunityPost(row, false))).not.toContain('Ada');
+    await updateCommunityPost(db.env, postId, input({ anonymous: false }));
+    const named = (await getCommunityPostForDocument(db.env, 'd1'))!;
+    expect(rowToCommunityPost(named, false).author.name).toBe('Ada');
   });
 });
 

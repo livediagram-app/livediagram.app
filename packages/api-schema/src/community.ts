@@ -170,6 +170,9 @@ export type CommunityPostInput = {
   description: string;
   category: CommunityCategory;
   tags: string[];
+  // Shown as "Anonymous" rather than the author's name and picture (docs/specs/025-community/community.md
+  // "Publishing"). On unless the author turns it off; an input without it publishes anonymously.
+  anonymous: boolean;
 };
 
 export type CommunityInputError =
@@ -252,7 +255,8 @@ export function communityPostInputErrors(input: unknown): CommunityInputError[] 
 export function validateCommunityPostInput(input: unknown): CommunityInputResult {
   const { title, description, category, tags, errors } = checkCommunityPostInput(input);
   if (errors.length > 0 || !category) return { ok: false, error: errors[0] ?? 'invalid_category' };
-  return { ok: true, value: { title, description, category, tags } };
+  const anonymous = (input as { anonymous?: unknown } | null)?.anonymous !== false;
+  return { ok: true, value: { title, description, category, tags, anonymous } };
 }
 
 // ---------------------------------------------------------------------
@@ -433,7 +437,9 @@ export type CommunityPost = {
   // The community link's code: the card image (`/api/share/<code>/image.svg`), the read-only viewer and the embed
   // all open through it.
   shareCode: string;
+  // "Anonymous" (COMMUNITY_ANONYMOUS_AUTHOR) when the author chose to share anonymously.
   author: CommunityAuthor;
+  anonymous: boolean;
   // Whether the caller's community key likes this post; false without a key.
   liked: boolean;
 };
@@ -466,6 +472,13 @@ export type CommunityReportInput = { reason: CommunityReportReason; note?: strin
 
 // What the share resolve adds for a community link (spec "Viewing a post's document").
 export type CommunityShareInfo = { postId: string; author: CommunityAuthor };
+
+// The author shown on an anonymous post.
+export const COMMUNITY_ANONYMOUS_AUTHOR: CommunityAuthor = {
+  name: 'Anonymous',
+  color: '#64748b',
+  picture: null,
+};
 
 // The author shown when a post's author has no participant row (blueprint §6).
 export const COMMUNITY_UNKNOWN_AUTHOR: CommunityAuthor = {

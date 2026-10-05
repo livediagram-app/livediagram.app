@@ -43,6 +43,7 @@ const INPUT = {
   description: 'How our services talk to each other.',
   category: 'architecture' as const,
   tags: ['aws'],
+  anonymous: true,
 };
 
 describe('community api client', () => {
@@ -90,7 +91,9 @@ describe('community api client', () => {
   });
 
   it('asks for popular tags without any identity, and shrugs off a failure', async () => {
-    const seen = stubFetch(() => Response.json({ tags: [{ tag: 'aws', count: 3 }] }));
+    const seen = stubFetch(() =>
+      Response.json({ tags: [{ tag: 'aws', count: 3 }], anonymous: true }),
+    );
     expect(await apiCommunityPopularTags()).toEqual(['aws']);
     expect(seen[0]!.headers.get('X-Owner-Id')).toBeNull();
     stubFetch(() => new Response('nope', { status: 500 }));

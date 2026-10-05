@@ -102,8 +102,8 @@ export async function createCommunityPost(
       ).bind(shareCode, documentId, now),
       env.DB.prepare(
         `INSERT INTO community_posts (id, document_id, share_code, author_id, title, description, category, tags,
-           search_text, published_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+           search_text, anonymous, published_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       ).bind(
         postId,
         documentId,
@@ -114,6 +114,7 @@ export async function createCommunityPost(
         input.category,
         JSON.stringify(input.tags),
         communitySearchText(input.title, input.description, input.tags),
+        input.anonymous ? 1 : 0,
         now,
         now,
       ),
@@ -140,14 +141,15 @@ export async function updateCommunityPost(
 ): Promise<void> {
   await env.DB.batch([
     env.DB.prepare(
-      `UPDATE community_posts SET title = ?, description = ?, category = ?, tags = ?, search_text = ?, updated_at = ?
-        WHERE id = ?`,
+      `UPDATE community_posts SET title = ?, description = ?, category = ?, tags = ?, search_text = ?, anonymous = ?,
+        updated_at = ? WHERE id = ?`,
     ).bind(
       input.title,
       input.description,
       input.category,
       JSON.stringify(input.tags),
       communitySearchText(input.title, input.description, input.tags),
+      input.anonymous ? 1 : 0,
       now,
       postId,
     ),

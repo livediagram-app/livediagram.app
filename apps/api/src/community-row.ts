@@ -2,6 +2,7 @@
 // the wire shapes. Pure, so the defensive parsing has a test surface without D1, like share-link-row.ts.
 
 import {
+  COMMUNITY_ANONYMOUS_AUTHOR,
   COMMUNITY_UNKNOWN_AUTHOR,
   isCommunityCategory,
   type CommunityAuthor,
@@ -26,6 +27,7 @@ export type CommunityPostRow = {
   hidden_by: string | null;
   published_at: number;
   updated_at: number;
+  anonymous: number;
   author_name: string | null;
   author_color: string | null;
   author_picture: string | null;
@@ -34,6 +36,7 @@ export type CommunityPostRow = {
 // The SELECT list every post read uses; `cp` is community_posts, `pa` the author's participants row.
 export const COMMUNITY_POST_COLS = `cp.id, cp.document_id, cp.share_code, cp.author_id, cp.title, cp.description,
   cp.category, cp.tags, cp.like_count, cp.copy_count, cp.state, cp.hidden_by, cp.published_at, cp.updated_at,
+  cp.anonymous,
   pa.name AS author_name, pa.color AS author_color, pa.picture_url AS author_picture`;
 
 export const COMMUNITY_POST_FROM = `community_posts cp
@@ -50,7 +53,9 @@ export function parseTags(raw: string): string[] {
   }
 }
 
+// Who a post shows: "Anonymous" when the author chose it, else their display identity.
 export function rowAuthor(row: CommunityPostRow): CommunityAuthor {
+  if (row.anonymous) return COMMUNITY_ANONYMOUS_AUTHOR;
   if (!row.author_name) return COMMUNITY_UNKNOWN_AUTHOR;
   return {
     name: row.author_name,
@@ -73,6 +78,7 @@ export function rowToCommunityPost(row: CommunityPostRow, liked: boolean): Commu
     updatedAt: row.updated_at,
     shareCode: row.share_code,
     author: rowAuthor(row),
+    anonymous: row.anonymous === 1,
     liked,
   };
 }

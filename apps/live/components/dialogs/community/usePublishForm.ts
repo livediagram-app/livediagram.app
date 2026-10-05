@@ -26,6 +26,8 @@ export function usePublishForm(post: CommunityOwnPost | null, documentName: stri
   const [description, setDescription] = useState(post?.description ?? '');
   const [category, setCategory] = useState<CommunityCategory | null>(post?.category ?? null);
   const [tags, setTags] = useState<string[]>(post?.tags ?? []);
+  // Share anonymously: on by default for a new post (docs/specs/025-community/community.md "Publishing").
+  const [anonymous, setAnonymous] = useState(post?.anonymous ?? true);
   const [attempted, setAttempted] = useState(false);
   // A worker refusal about one field, shown on that field until it changes.
   const [serverError, setServerError] = useState<{
@@ -34,7 +36,7 @@ export function usePublishForm(post: CommunityOwnPost | null, documentName: stri
   } | null>(null);
   const fieldRefs = useRef<Partial<Record<CommunityInputField, HTMLElement | null>>>({});
 
-  const draft = { title, description, category, tags };
+  const draft = { title, description, category, tags, anonymous };
   const errors: PublishFieldErrors = attempted ? publishFieldErrors(draft) : {};
   if (serverError && !errors[serverError.field]) errors[serverError.field] = serverError.message;
 
@@ -102,5 +104,6 @@ export function usePublishForm(post: CommunityOwnPost | null, documentName: stri
       setTags(v);
       clearServer('tags');
     },
+    setAnonymous,
   };
 }

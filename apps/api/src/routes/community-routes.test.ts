@@ -33,6 +33,7 @@ const body = {
   description: 'How our payment services talk to each other.',
   category: 'architecture',
   tags: ['AWS'],
+  anonymous: false,
 };
 
 function owner(method: string, path: string, opts: { body?: unknown; clerk?: string | null } = {}) {

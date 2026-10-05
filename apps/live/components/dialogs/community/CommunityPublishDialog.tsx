@@ -7,12 +7,14 @@ import {
   COMMUNITY_TITLE_MAX,
   communityCategoryType,
   validateCommunityPostInput,
+  COMMUNITY_ANONYMOUS_AUTHOR,
   type CommunityAuthor,
   type CommunityOwnPost,
   type CommunityPostInput,
 } from '@livediagram/api-schema';
 import { Button, TextInput } from '@livediagram/ui';
 import { Dialog } from '@/components/dialogs/Dialog';
+import { SwitchRow } from '@/components/primitives/SwitchRow';
 import { DialogCloseButton } from '@/components/dialogs/DialogCloseButton';
 import { DialogFooter } from '@/components/dialogs/DialogFooter';
 import { DialogHeader } from '@/components/dialogs/DialogHeader';
@@ -73,7 +75,7 @@ export function CommunityPublishDialog({
   const descriptionHintId = useId();
   const errorId = useId();
   const form = usePublishForm(post, documentName);
-  const { title, description, category, tags } = form.draft;
+  const { title, description, category, tags, anonymous } = form.draft;
   const { errors } = form;
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -229,6 +231,21 @@ export function CommunityPublishDialog({
               />
             </div>
 
+            <SwitchRow
+              checked={anonymous}
+              onChange={form.setAnonymous}
+              className="rounded-lg border border-slate-200 px-3 py-2.5 dark:border-slate-700"
+            >
+              <span className="block text-sm font-medium text-slate-800 dark:text-slate-100">
+                Share Anonymously
+              </span>
+              <span className="block text-xs text-slate-500 dark:text-slate-400">
+                {anonymous
+                  ? 'Shown as Anonymous. Your name and picture stay private.'
+                  : `Shown with your name, ${author.name}.`}
+              </span>
+            </SwitchRow>
+
             <div className="grid gap-4 border-t border-slate-100 pt-4 sm:grid-cols-[13rem_1fr] dark:border-slate-800">
               <div className="flex flex-col gap-1.5">
                 <span className={LABEL}>Preview</span>
@@ -238,7 +255,7 @@ export function CommunityPublishDialog({
                   title={title}
                   category={category}
                   tags={tags}
-                  author={author}
+                  author={anonymous ? COMMUNITY_ANONYMOUS_AUTHOR : author}
                   likeCount={post?.likeCount}
                   copyCount={post?.copyCount}
                 />

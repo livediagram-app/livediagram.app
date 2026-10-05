@@ -19,6 +19,7 @@ better start than a blank canvas).
 - **Post** (`CommunityPost`): one document published to Community. A document has at most one post.
 - **Author**: the signed-in owner who published the post. Shown by their participant name, colour and picture
   ([Profile picture](../014-identity/profile-picture.md)); their owner id is never exposed.
+  An author may share anonymously, and is then shown as "Anonymous".
 - **Category**: exactly one per post, from a closed set (below). The coarse filter.
 - **Tag**: zero to five per post, free-form but normalised (below). The fine filter.
 - **Like**: one per browser per post. **Copy count**: distinct people who copied the post's document.
@@ -51,6 +52,9 @@ A post shows every tab of the document. A document that is empty (no snapshot re
     ("what it shows, how you made it, how someone could reuse it").
   - **Category**: one, chosen from compact chips that wrap; the chosen category's description shows once beneath them.
   - **Tags**: up to five, typed as chips, with suggestions from the most used tags.
+  - **Share Anonymously**: on by default. The post then shows "Anonymous" (no name, no picture) wherever its
+    author would appear: cards, the post page, the Community bar. The author still owns and manages it. Edit Listing
+    can switch it either way. Posts published before this option existed stay named.
   - A preview of the card as it will appear, and the consequences in plain words: anyone can view and copy it, it
     stays in step with your edits, comments are not shown, you can remove it at any time.
 - Publishing again on a published document (**Edit Listing**) updates the title, description, category and tags; the

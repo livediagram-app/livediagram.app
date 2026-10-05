@@ -90,3 +90,33 @@ describe('CommunityPublishDialog validation', () => {
     );
   });
 });
+
+describe('CommunityPublishDialog anonymous', () => {
+  const fill = () => {
+    fireEvent.change(description(), {
+      target: { value: 'Long enough to describe the document well.' },
+    });
+    fireEvent.click(screen.getByRole('radio', { name: /Infographics/ }));
+  };
+  const toggle = () => screen.getByRole('switch', { name: /Share Anonymously/ });
+
+  it('shares anonymously unless the author turns it off', async () => {
+    const onPublish = vi.fn(async () => ({ id: 'p1' }) as never);
+    open(onPublish);
+    fill();
+    expect(toggle().getAttribute('aria-checked')).toBe('true');
+    submit();
+    await waitFor(() => expect(onPublish).toHaveBeenCalled());
+    expect(onPublish.mock.calls[0]![0]).toMatchObject({ anonymous: true });
+  });
+
+  it('sends anonymous false once switched off', async () => {
+    const onPublish = vi.fn(async () => ({ id: 'p1' }) as never);
+    open(onPublish);
+    fill();
+    fireEvent.click(toggle());
+    submit();
+    await waitFor(() => expect(onPublish).toHaveBeenCalled());
+    expect(onPublish.mock.calls[0]![0]).toMatchObject({ anonymous: false });
+  });
+});
