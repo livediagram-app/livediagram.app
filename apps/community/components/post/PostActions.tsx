@@ -49,12 +49,9 @@ export function PostActions({ post }: { post: CommunityPost }) {
       </div>
       <div className="flex items-center gap-1 border-t border-slate-100 pt-2 dark:border-slate-800">
         <LikeButton like={like} size="lg" />
-        <span
-          className={`${POST_CHIP} text-slate-500 dark:text-slate-400`}
-          aria-label={`Copied ${copies} ${copies === 1 ? 'time' : 'times'}`}
-        >
+        <span className={`${POST_CHIP} text-slate-500 dark:text-slate-400`}>
           <CopyIcon size={15} aria-hidden />
-          <span aria-hidden>
+          <span>
             <span className="font-semibold">{formatCount(copies)}</span>{' '}
             {copies === 1 ? 'copy' : 'copies'}
           </span>

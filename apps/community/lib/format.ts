@@ -1,11 +1,7 @@
 // Display helpers for counts and dates on cards and the post page. Pure.
 
-const COMPACT = new Intl.NumberFormat('en-GB', { notation: 'compact', maximumFractionDigits: 1 });
-
-// 999, 1.2K, 34K: short enough for a card footer.
-export function formatCount(n: number): string {
-  return n < 1000 ? String(n) : COMPACT.format(n);
-}
+// 999, 1.2K, 34K: the shared Community count.
+export { formatCommunityCount as formatCount } from '@livediagram/ui';
 
 const DATE = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
 

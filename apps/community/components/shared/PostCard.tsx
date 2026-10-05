@@ -1,9 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { CommunityPostTile, CopyIcon } from '@livediagram/ui';
+import { CommunityCopyCount, CommunityPostTile } from '@livediagram/ui';
 import { postImageUrl } from '@/lib/api';
-import { formatCount } from '@/lib/format';
 import { isMinePost, type GalleryPost } from '@/lib/gallery-post';
 import { editDocumentHref, postHref } from '@/lib/links';
 import { useLike } from '@/lib/useLike';
@@ -35,13 +34,7 @@ export function PostCard({ post, now }: { post: GalleryPost; now: number }) {
       stats={
         <>
           <LikeButton like={like} />
-          <span
-            className="inline-flex items-center gap-1 px-1.5 py-1 tabular-nums text-slate-500 dark:text-slate-400"
-            aria-label={`Copied ${post.copyCount} ${post.copyCount === 1 ? 'time' : 'times'}`}
-          >
-            <CopyIcon size={13} aria-hidden />
-            <span aria-hidden>{formatCount(post.copyCount)}</span>
-          </span>
+          <CommunityCopyCount count={post.copyCount} />
         </>
       }
     />

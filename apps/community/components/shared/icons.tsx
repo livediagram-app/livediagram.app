@@ -13,15 +13,8 @@ import {
 import { lucideGlyph } from '@livediagram/ui';
 
 // The Community app's own chrome glyphs, all through lucideGlyph (docs/specs/004-interface-design/
-// iconography.md). Heart, flag, hash and arrow-up-down are not in the vendored set yet, so their Lucide
+// iconography.md). Flag, hash and arrow-up-down are not in the vendored set yet, so their Lucide
 // geometry (ISC) is written here as prims.
-
-const HEART: readonly IconPrim[] = [
-  {
-    t: 'path',
-    d: 'M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z',
-  },
-];
 
 const HASH: readonly IconPrim[] = [
   { t: 'line', x1: 4, y1: 9, x2: 20, y2: 9 },
@@ -42,7 +35,8 @@ const FLAG: readonly IconPrim[] = [
   { t: 'line', x1: 4, y1: 22, x2: 4, y2: 15 },
 ];
 
-export const HeartIcon = lucideGlyph(HEART, 16);
+// The heart is shared with the landing page.
+export { HeartIcon } from '@livediagram/ui';
 export const HashIcon = lucideGlyph(HASH, 15);
 export const SortIcon = lucideGlyph(ARROW_UP_DOWN, 15);
 export const CategoryIcon = lucideGlyph(lucideLayoutGrid, 15);

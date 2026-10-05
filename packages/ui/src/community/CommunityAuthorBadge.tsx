@@ -1,3 +1,6 @@
+'use client';
+
+import { useState } from 'react';
 import type { CommunityAuthor } from '@livediagram/api-schema';
 import { IDENTITY_FILL, identityVars } from '../identity-fill';
 import { GlyphDisc } from '../optical/GlyphDisc';
@@ -10,7 +13,8 @@ export function communityAuthorInitial(name: string): string {
 
 // Who shared a Community post: their picture, or their initial on a disc in their own colour, and their
 // display name ("Anonymous" for an anonymous post). Never an id. Shared by the Community app, the editor
-// and the landing page so an author looks the same everywhere.
+// and the landing page so an author looks the same everywhere. A picture that fails to load (an expired or
+// blocked link) falls back to the initial, as profile pictures do everywhere (docs/specs/014-identity/profile-picture.md).
 export function CommunityAuthorBadge({
   author,
   size = 22,
@@ -22,12 +26,16 @@ export function CommunityAuthorBadge({
   showName?: boolean;
   className?: string;
 }) {
+  // The picture that failed, so a new picture (another author) gets its own try.
+  const [failed, setFailed] = useState<string | null>(null);
+  const picture = author.picture && author.picture !== failed ? author.picture : null;
   return (
     <span className={`flex min-w-0 items-center gap-2 ${className}`}>
-      {author.picture ? (
+      {picture ? (
         // A plain img: the static exports have no image loader.
         <img
-          src={author.picture}
+          src={picture}
+          onError={() => setFailed(picture)}
           alt=""
           width={size}
           height={size}

@@ -92,7 +92,7 @@ describe('the post page', () => {
       '/document/shared?s=CODE1',
     );
     expect(screen.getByRole('button', { name: 'Like (3 likes)' })).toBeTruthy();
-    expect(screen.getByLabelText('Copied 1 time')).toBeTruthy();
+    expect(screen.getByText('copy')).toBeTruthy();
     expect(screen.getByText('Related One')).toBeTruthy();
     expect(document.title).toBe('Payments Platform | livediagram Community');
     expect(h.telemetry.openedPost).toHaveBeenCalledTimes(1);
