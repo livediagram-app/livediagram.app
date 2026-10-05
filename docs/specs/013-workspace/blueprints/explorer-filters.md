@@ -116,7 +116,7 @@ except the cut tail, which is always reported; repeating a dimension and listing
 
 `documentSubject(summary, viewerId)`: `space` is `team:<teamId>` when the summary has a team, else `mine` (a document in
 this browser included, as the spec decides); `people` is `me` when `ownerId === viewerId`; `madeByAi` is
-`source !== null`; `opensIn`, `kind` (from `tabKind`) and `template` (from `templateFamily`) are the summary's values
+`isMadeByAiSource(source)` (`ai` or `mcp`, never `cli`); `opensIn`, `kind` (from `tabKind`) and `template` (from `templateFamily`) are the summary's values
 when in their lists, else `null`, so the general diagram tab reads as no kind. `sharedSubject(item)`:
 `space: 'shared'`, `people: 'others'`, `madeByAi`, `opensIn`, `kind` and `template` all `null`.
 
