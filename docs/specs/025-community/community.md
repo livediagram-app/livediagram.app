@@ -94,9 +94,11 @@ type) and on the worker (authoritative).
 - A welcoming header: the heading, one line on what Community is, and a **Share Your Own** call to action into the
   editor (`/new`, landing-funnel source `Community.Hero`).
 - **Search** across titles, descriptions and tags.
-- **Category chips** with a post count each, plus All.
+- **Category chips** with a post count each, plus All. A category with no posts hides its chip unless it is the one
+  selected. On phones the chips scroll in one row.
 - **Sort**: Newest (default), Most Loved (likes), Most Copied.
-- **Popular tags**: the most used tags as chips; choosing one filters to it, and it shows as a removable chip.
+- **Popular tags**: the most used tags as chips; choosing one filters to it, and it shows as a removable chip. On
+  phones they scroll in one row, like the categories, so the boards stay near the top.
 - A responsive grid of **cards**: the post's live image, title, category, up to three tags, the author (picture or
   initial in their colour, and name), likes and copies. The card opens the post page; the heart likes it in place.
 - **Load More** pages through results (24 per page).
@@ -107,7 +109,7 @@ type) and on the worker (authoritative).
 ### Post (`/community/post/?id=<postId>`)
 
 - An **interactive preview** of the document (the read-only [embed](../013-workspace/embeds.md) in a frame, so it pans,
-  zooms and switches tabs).
+  zooms and switches tabs). If the frame has not loaded after 15 seconds, the card image shows instead.
 - Title, author, publish date, category, tags (each links to the gallery filtered by it), and the full description.
 - **Like** (toggles), **Make a Copy** (opens the document in the editor and copies it into the visitor's own documents in
   one step), **Open Board** (the read-only viewer, full screen) and **Report**.
@@ -139,6 +141,9 @@ password cannot be published, and a published document cannot be given a passwor
 - **Trash**: a post whose document is in the Trash is not listed, and its post page shows not-found. Restoring the
   document lists it again.
 - **Permanent delete**: deletes the post with it.
+- **Moving into a team library**: the post stops being listed, since team documents cannot be published.
+- **Deleting an account**: deletes the account's posts with its documents, and the record of copies it took of other
+  people's posts (their copy counts drop by one).
 - **Copying** a published document does not publish the copy.
 
 ## Likes
@@ -160,6 +165,13 @@ unliking removes it.
 - An author is not told their post was hidden; the Community section in their Share dialog shows it as hidden.
 - With `COMMUNITY_OPERATOR_IDS` unset (a fresh self-host) automatic hiding still works and nobody can moderate by hand.
 
+## Where Community is linked from
+
+- The shared apps menu in every header (Welcome, Editor, Explorer, **Community**, Help, Telemetry).
+- The shared site footer, and the marketing sitemap (`/community/`).
+- The Share dialog's **Community** section, and the [help article](../018-help/help-app.md) Sharing to the Community
+  under Collaboration, Sharing and Embeds.
+
 ## Abuse limits
 
 Publishing, liking and reporting are rate limited per network by the worker's existing limit bindings. Bodies are capped
@@ -176,6 +188,8 @@ only `Liked`, `Unliked` and `Reported`. Types are preset values, never post cont
   `Community·Reported·<Reason>`, `Community·Searched·Query`, `Community·Selected·<Category|Tag|Sort>`.
 - Operators: `Community·Changed·<Hidden|Listed>`.
 - Page views for the Community app as for any other app, under app `Community`.
+- The [telemetry dashboard](../017-telemetry/telemetry.md) has a **Community** tab and a Community group of cards
+  (publishing, engagement, discovery, moderation).
 
 `<Category>` is the category id in PascalCase (`Architecture`, `Flows`, ...); `<Reason>` is `Spam`, `Offensive`,
 `PersonalInfo`, `Copyright` or `Other`.

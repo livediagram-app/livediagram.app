@@ -97,6 +97,8 @@ wire); everything else is public post content.
 - Permanent delete: `documents` row deletion cascades to `share_links` and `community_posts` (and its children).
 - Unpublish: `DELETE FROM share_links WHERE code = ? AND purpose = 'community'` cascades the post and its children.
 - Restoring a post (operator) deletes its reports in the same batch.
+- Account deletion (`apps/api/src/db/account.ts`): the account's posts go with its documents; its
+  `community_copies` rows are deleted and those posts' `copy_count` decremented in one batch.
 - Snapshot/restore and the Drive mirror carry no Community state; a copy is never published (copyDocument skips
   share links already).
 
@@ -181,15 +183,18 @@ Guards:
 - G1 publish: `ctx.clerkUserId` non-null and `ownsDocument` and `teamId === null`.
 - G2 publish: `getDocumentSharePassword` empty.
 - G3 publish (new post only): `getDocumentThumbnailSvg` non-null; author has fewer than `COMMUNITY_POSTS_PER_AUTHOR`.
-- G4 public reads: `state = 'listed' AND trashed_at IS NULL`.
+- G4 public reads: `state = 'listed' AND trashed_at IS NULL AND team_id IS NULL` (`PUBLIC_POST`,
+  `apps/api/src/db/community.ts`).
 - G5 like/report: valid community key, post passes G4.
-- G6 operator: `clerkUserId` in `COMMUNITY_OPERATOR_IDS` (trimmed, empty entries dropped).
+- G6 operator: `clerkUserId` in `COMMUNITY_OPERATOR_IDS` (trimmed, empty entries dropped),
+  `isCommunityOperator` in `apps/api/src/auth/community-operators.ts`.
 - Auto-hide (after each new report row): if `state = 'listed'` and `COUNT(DISTINCT reporter_key) >= 3` and
   `COUNT(DISTINCT network_hash) >= 3` then `state = 'hidden', hidden_by = 'reports'`.
 
 Community link behaviour (keyed off `link.purpose === 'community'`):
 
-- `routes/share.ts`: skip `recordSharedAccess`, `Document·Joined` and `notifyDocumentJoin`; add `community`.
+- `apps/api/src/routes/share.ts`: skip `recordSharedAccess`, `Document·Joined` and `notifyDocumentJoin`; add
+  `community`. A hidden post's link answers 404 except to an operator (G6), who may open it to review.
 - `routes/document-room-routes.ts`: ticket mint and WebSocket upgrade refuse with 403 `community_link`.
 - `DocumentGrant` gains `community: boolean` (the room's ticket mint reads it). The tab GET and the comment thread
   listing ask `viaCommunityLink(ctx)` (`apps/api/src/routes/context.ts`) on a non-owner read: the tab GET drops every
@@ -316,6 +321,10 @@ client-side. Card images are `loading="lazy"` with fixed aspect boxes (CLS 0). L
 (chip toggles, likes) update optimistically (INP).
 
 ## 12. Observability
+
+The telemetry dashboard reads these through a Community tab (`apps/telemetry/app/CommunityView.tsx`) and the
+Community cards (`apps/telemetry/app/catalogue/community.ts`); its emitter scan recognises `siteTrack`, so the
+Community app's events are covered by the completeness tests.
 
 Worker logs with fingerprints: `[community] published`, `[community] updated`, `[community] removed`,
 `[community] auto-hidden`, `[community] moderated`, `[community] rejected <code>`. Telemetry per the spec.
