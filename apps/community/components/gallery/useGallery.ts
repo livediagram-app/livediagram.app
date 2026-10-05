@@ -88,7 +88,7 @@ export function useGallery(session: CommunitySession | null): Gallery {
   const [reload, setReload] = useState(0);
   const key =
     filters && sessionReady && !signedOut
-      ? `${writeQueryState(filters)}#${reload}${mine ? '#mine' : ''}`
+      ? `${writeQueryState(filters)}#${reload}${mine ? `#mine:${session?.userId ?? ''}` : ''}`
       : null;
 
   const loadPage = useCallback(

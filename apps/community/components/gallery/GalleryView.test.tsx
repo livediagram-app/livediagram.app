@@ -15,6 +15,7 @@ import type { CommunitySession } from '@/lib/session';
 
 const h = vi.hoisted(() => ({
   session: null as CommunitySession | null,
+  emit: null as ((s: CommunitySession) => void) | null,
   telemetry: { selected: vi.fn(), searched: vi.fn() },
 }));
 
@@ -34,6 +35,7 @@ vi.mock('@/lib/session', async (importOriginal) => ({
 vi.mock('../auth/LazyClerkSession', () => ({
   LazyClerkSession: ({ onSession }: { onSession: (s: CommunitySession) => void }) => {
     useEffect(() => {
+      h.emit = onSession;
       if (h.session) onSession(h.session);
     }, [onSession]);
     return null;
@@ -283,7 +285,7 @@ describe('My Shares', () => {
   const totals: CommunityMineTotals = { posts: 2, likes: 7, copies: 3 };
 
   it("lists the author's own posts with their totals, marking a hidden one and opening it in the editor", async () => {
-    h.session = { loaded: true, signedIn: true, getToken: async () => 'token-1' };
+    h.session = { loaded: true, signedIn: true, userId: 'user_a', getToken: async () => 'token-1' };
     window.history.replaceState(null, '', '/?q=is%3Amine');
     route(isMine, () =>
       Response.json({
@@ -318,8 +320,45 @@ describe('My Shares', () => {
     );
   });
 
+  it("never shows one account's shares to another", async () => {
+    h.session = { loaded: true, signedIn: true, userId: 'user_a', getToken: async () => 'token-a' };
+    window.history.replaceState(null, '', '/?q=is%3Amine');
+    route(isMine, (_url, init) =>
+      Response.json({
+        posts: [
+          minePost({
+            title:
+              new Headers(init?.headers).get('Authorization') === 'Bearer token-b'
+                ? 'B post'
+                : 'A post',
+          }),
+        ],
+        nextOffset: null,
+        totals,
+      }),
+    );
+    render(<GalleryView />);
+    expect(await screen.findByText('A post')).toBeTruthy();
+    act(() =>
+      h.emit!({ loaded: true, signedIn: true, userId: 'user_b', getToken: async () => 'token-b' }),
+    );
+    expect(await screen.findByText('B post')).toBeTruthy();
+    expect(screen.queryByText('A post')).toBeNull();
+  });
+
+  it('gives up, with Try Again, when sign-in never loads', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    h.session = null;
+    window.history.replaceState(null, '', '/?q=is%3Amine');
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    render(<GalleryView />);
+    await act(async () => vi.advanceTimersByTime(10_000));
+    expect(screen.getByText("We couldn't load the Community.")).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Try Again' })).toBeTruthy();
+  });
+
   it('asks a signed-out visitor to sign in, coming back to the same view', async () => {
-    h.session = { loaded: true, signedIn: false, getToken: async () => null };
+    h.session = { loaded: true, signedIn: false, userId: null, getToken: async () => null };
     window.history.replaceState(null, '', '/?q=is%3Amine');
     render(<GalleryView />);
     expect(await screen.findByText('Sign in to see your shares.')).toBeTruthy();
@@ -330,7 +369,7 @@ describe('My Shares', () => {
   });
 
   it('says so when you have shared nothing yet', async () => {
-    h.session = { loaded: true, signedIn: true, getToken: async () => 'token-1' };
+    h.session = { loaded: true, signedIn: true, userId: 'user_a', getToken: async () => 'token-1' };
     window.history.replaceState(null, '', '/?q=is%3Amine');
     route(isMine, () =>
       Response.json({ posts: [], nextOffset: null, totals: { posts: 0, likes: 0, copies: 0 } }),
@@ -341,7 +380,7 @@ describe('My Shares', () => {
   });
 
   it('turns on from the search box, counted as a choice', async () => {
-    h.session = { loaded: true, signedIn: true, getToken: async () => 'token-1' };
+    h.session = { loaded: true, signedIn: true, userId: 'user_a', getToken: async () => 'token-1' };
     route(isPosts, () => Response.json({ posts: [post()], nextOffset: null }));
     route(isMine, () =>
       Response.json({ posts: [], nextOffset: null, totals: { posts: 0, likes: 0, copies: 0 } }),

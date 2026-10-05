@@ -1,8 +1,8 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { hasActiveFilters } from '@/lib/query-state';
-import { signInAvailable, type CommunitySession } from '@/lib/session';
+import { SESSION_LOAD_TIMEOUT_MS, signInAvailable, type CommunitySession } from '@/lib/session';
 import { communityTelemetry } from '@/lib/telemetry';
 import { LazyClerkSession } from '../auth/LazyClerkSession';
 import { PostGrid } from '../shared/PostGrid';
@@ -30,6 +30,18 @@ export function GalleryView() {
   const [session, setSession] = useState<CommunitySession | null>(null);
   const gallery = useGallery(session);
   const { filters, facets, status, posts, setFilters, mine } = gallery;
+  // My Shares waiting on a Clerk that never answers (a blocked script, a network failure) says so rather than
+  // showing placeholders forever; Try Again reloads the page, which loads Clerk afresh.
+  const waitingForSession = mine && signInAvailable && session?.loaded !== true;
+  const [sessionTimedOut, setSessionTimedOut] = useState(false);
+  useEffect(() => {
+    if (!waitingForSession) return;
+    const timer = window.setTimeout(() => {
+      console.warn('[community] sign-in did not load; My Shares gives up');
+      setSessionTimedOut(true);
+    }, SESSION_LOAD_TIMEOUT_MS);
+    return () => window.clearTimeout(timer);
+  }, [waitingForSession]);
   const ready = filters !== null;
   // Stable, so a re-render (facets arriving) never restarts the search box's debounce.
   const onSearch = useCallback((q: string) => setFilters({ q }), [setFilters]);
@@ -60,7 +72,9 @@ export function GalleryView() {
         {mine && gallery.totals && gallery.totals.posts > 0 ? (
           <MineSummary totals={gallery.totals} />
         ) : null}
-        {status === 'signed-out' || (mine && !signInAvailable) ? (
+        {waitingForSession && sessionTimedOut ? (
+          <GalleryError onRetry={() => window.location.reload()} />
+        ) : status === 'signed-out' || (mine && !signInAvailable) ? (
           <GallerySignedOut available={signInAvailable} />
         ) : status === 'error' ? (
           <GalleryError onRetry={gallery.retry} />

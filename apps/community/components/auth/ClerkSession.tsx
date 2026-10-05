@@ -28,11 +28,12 @@ export default function ClerkSession({
 }
 
 function Publisher({ onSession }: { onSession: (session: CommunitySession) => void }) {
-  const { isLoaded, isSignedIn, getToken } = useAuth();
+  const { isLoaded, isSignedIn, getToken, userId } = useAuth();
   useEffect(() => {
     onSession({
       loaded: isLoaded,
       signedIn: isSignedIn === true,
+      userId: userId ?? null,
       getToken: async () => {
         const token = await getToken();
         if (token || !isSignedIn) return token ?? null;
@@ -40,6 +41,6 @@ function Publisher({ onSession }: { onSession: (session: CommunitySession) => vo
         return (await getToken()) ?? null;
       },
     });
-  }, [getToken, isLoaded, isSignedIn, onSession]);
+  }, [getToken, isLoaded, isSignedIn, onSession, userId]);
   return null;
 }
