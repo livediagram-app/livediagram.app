@@ -1402,6 +1402,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     enum: ['midnight', 'graphite', 'ocean', 'forest', 'plum', 'contrast', 'paper', 'parchment'],
     type: 'string',
   },
+  ColumnWidth: {
+    enum: [1, 2, 3],
+    type: 'number',
+  },
   Comment: {
     additionalProperties: false,
     properties: {
@@ -5802,6 +5806,15 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   PlanBoardSetup: {
     additionalProperties: false,
     properties: {
+      addTypes: {
+        items: {
+          type: 'string',
+        },
+        type: 'array',
+      },
+      allCards: {
+        type: 'boolean',
+      },
       archive: {
         type: 'boolean',
       },
@@ -5879,6 +5892,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       status: {
         type: 'string',
+      },
+      width: {
+        $ref: '#/components/schemas/ColumnWidth',
       },
       wipLimit: {
         type: 'number',
@@ -7217,7 +7233,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     type: 'object',
   },
   SwimlaneBy: {
-    enum: ['none', 'assignee', 'type', 'priority', 'parent'],
+    enum: ['none', 'assignee', 'type', 'priority', 'parent', 'status'],
     type: 'string',
   },
   Tab: {

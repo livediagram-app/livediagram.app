@@ -62,6 +62,7 @@ export function NoteRichTextEditor({
         onApplyList={applyList}
         onApplyHeading={applyHeading}
         onApplyLink={applyLink}
+        listButtons={!note}
       />
       <div
         ref={editorRef}

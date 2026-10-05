@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { PLAN_COLUMNS_MAX, presetSetup } from '@livediagram/items';
 import {
   addColumnAfter,
+  addFirstColumn,
   moveColumn,
   newColumnStatus,
   recolourColumn,
@@ -11,8 +12,19 @@ import {
   setWipLimit,
 } from './board-setup-edits';
 
+// A board of To do, In progress and Done (the Blank board itself starts with none).
+const threeColumns = () => ({
+  ...presetSetup('blank'),
+  columns: [
+    { id: 'todo', status: 'todo', name: 'To do' },
+    { id: 'doing', status: 'doing', name: 'In progress' },
+    { id: 'done', status: 'done', name: 'Done' },
+  ],
+  doneColumnId: 'done',
+});
+
 // docs/specs/025-plan/plan-board.md "The board set-up".
-const board = presetSetup('blank');
+const board = threeColumns();
 const [first, second, last] = board.columns as [
   (typeof board.columns)[number],
   (typeof board.columns)[number],
@@ -52,8 +64,8 @@ describe('board set-up edits', () => {
   it('adds a column after another with a unique status, until the board is full', () => {
     const added = addColumnAfter(board, first.id)!;
     expect(added.setup.columns[1]).toBe(added.column);
-    expect(added.column.status).toBe('new-column');
-    expect(addColumnAfter(added.setup, null)!.column.status).toBe('new-column-2');
+    expect(added.column.status).toMatch(/^new-column~[a-z0-9]{4}$/);
+    expect(addColumnAfter(added.setup, null)!.column.status).toMatch(/^new-column-2~[a-z0-9]{4}$/);
     const full = {
       ...board,
       columns: Array.from({ length: PLAN_COLUMNS_MAX }, (_, i) => ({
@@ -79,11 +91,21 @@ describe('board set-up edits', () => {
 describe('setColumnWidth', () => {
   it('sets two or three slots, and stores one as absent', async () => {
     const { setColumnWidth } = await import('./board-setup-edits');
-    const { presetSetup } = await import('@livediagram/items');
-    const s = presetSetup('blank');
+    const s = threeColumns();
     const id = s.columns[0]!.id;
     const wide = setColumnWidth(s, id, 3);
     expect(wide.columns[0]!.width).toBe(3);
     expect(setColumnWidth(wide, id, 1).columns[0]).not.toHaveProperty('width');
+  });
+});
+
+describe('addFirstColumn', () => {
+  it('names a board’s first column as typed, and refuses a blank name', () => {
+    const empty = { ...threeColumns(), columns: [] };
+    const s = addFirstColumn(empty, '  Ideas ')!;
+    expect(s.columns).toHaveLength(1);
+    expect(s.columns[0]!.name).toBe('Ideas');
+    expect(s.columns[0]!.status).toMatch(/^ideas~[a-z0-9]{4}$/);
+    expect(addFirstColumn(empty, '   ')).toBeNull();
   });
 });

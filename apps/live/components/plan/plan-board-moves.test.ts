@@ -21,12 +21,23 @@ const item = (status: string, rank: string, extra: Item['fields'] = {}, type = '
 };
 const mapOf = (...items: Item[]) => new Map(items.map((i) => [i.id, i]));
 
+// A board of To do, In progress and Done (the Blank board itself starts with none).
+const threeColumns = () => ({
+  ...presetSetup('blank'),
+  columns: [
+    { id: 'todo', status: 'todo', name: 'To do' },
+    { id: 'doing', status: 'doing', name: 'In progress' },
+    { id: 'done', status: 'done', name: 'Done' },
+  ],
+  doneColumnId: 'done',
+});
+
 // docs/specs/025-plan/plan-board.md "Moving cards".
 describe('boardMoveFor', () => {
   it('moves within a board, and does nothing for a drop where the card already is', () => {
     const a = item('todo', 'a');
     const b = item('todo', 'b');
-    const setup = presetSetup('blank');
+    const setup = threeColumns();
     const p = projectBoard(setup, mapOf(a, b));
     expect(boardMoveFor(setup, p, a, a.id, { status: 'todo', laneKey: '', beforeId: b.id })).toBe(
       null,
@@ -38,7 +49,7 @@ describe('boardMoveFor', () => {
 
   it('moves a card from another board, whose status this board has no column for', () => {
     const away = item('sprint-backlog', 'a', {}, 'note');
-    const setup = presetSetup('blank');
+    const setup = threeColumns();
     const p = projectBoard(setup, mapOf(away));
     expect(
       boardMoveFor(setup, p, away, away.id, { status: 'todo', laneKey: '', beforeId: null }),

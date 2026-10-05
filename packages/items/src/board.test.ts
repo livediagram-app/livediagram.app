@@ -159,10 +159,11 @@ describe('normaliseBoardSetup', () => {
     expect(normaliseBoardSetup({ columns: cols, cardSize: 'huge' })).not.toHaveProperty('cardSize');
   });
 
-  it('rejects a set-up with no usable column', () => {
+  it('reads a set-up with no usable column as a board waiting for its first', () => {
     expect(normaliseBoardSetup(null)).toBeNull();
-    expect(normaliseBoardSetup({ columns: [] })).toBeNull();
-    expect(normaliseBoardSetup({ columns: [{ id: 'a' }] })).toBeNull();
+    expect(normaliseBoardSetup({})).toBeNull();
+    expect(normaliseBoardSetup({ columns: [] })?.columns).toEqual([]);
+    expect(normaliseBoardSetup({ columns: [{ id: 'a' }] })?.columns).toEqual([]);
     expect(normaliseBoardSetup({ columns: [{ id: 'a', status: 's' }] })?.cardFields).toContain(
       'key',
     );

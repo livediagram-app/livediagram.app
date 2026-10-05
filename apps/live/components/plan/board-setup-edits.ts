@@ -125,12 +125,16 @@ export function addColumnAfter(
   setup: PlanBoardSetup,
   afterId: string | null,
   name = 'New Column',
+  random: () => number = Math.random,
 ): { setup: PlanBoardSetup; column: PlanColumn } | null {
   if (setup.columns.length >= PLAN_COLUMNS_MAX) return null;
-  const status = newColumnStatus(
+  // A status of its own (`to-do~k3f9`), so a new column starts empty rather than taking in the cards of a
+  // column of the same name on another board (docs/specs/025-plan/plan-board.md "The board set-up").
+  const suffix = Array.from({ length: 4 }, () => Math.floor(random() * 36).toString(36)).join('');
+  const status = `${newColumnStatus(
     name,
-    setup.columns.map((c) => c.status),
-  );
+    setup.columns.map((c) => c.status.split('~')[0]!),
+  )}~${suffix}`;
   const column: PlanColumn = { id: status, status, name };
   const at = afterId ? setup.columns.findIndex((c) => c.id === afterId) + 1 : setup.columns.length;
   const columns = [...setup.columns];
@@ -159,4 +163,11 @@ export function setColumnWidth(
       return width === 1 ? rest : { ...rest, width };
     }),
   };
+}
+
+// A board's first column, named as typed (a board with no columns asks for one).
+export function addFirstColumn(setup: PlanBoardSetup, name: string): PlanBoardSetup | null {
+  const trimmed = name.trim().slice(0, COLUMN_NAME_MAX);
+  if (!trimmed) return null;
+  return addColumnAfter(setup, null, trimmed)?.setup ?? null;
 }

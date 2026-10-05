@@ -8,6 +8,7 @@
 // Presentation + the link field only; every command is dispatched by the
 // editor, which owns the runs and the selection.
 
+import { lucideList, lucideListOrdered } from '@livediagram/icons/lucide';
 import { useEffect, useRef, useState } from 'react';
 import type { ListStyle, RunBoolKey, RunHeading } from '@livediagram/document';
 import { LinkMenuIcon } from '@/components/palette/context-menu-icons';
@@ -20,7 +21,29 @@ import {
 import { BlockTypePicker } from '@/components/rich-text/BlockTypePicker';
 import type { ActiveFormat } from '@/components/rich-text/rich-text-format';
 import { normaliseUrl } from '@/lib/url-safety';
-import { HoverCard, SOLID_BRAND_DARK_CONTROL } from '@livediagram/ui';
+import { HoverCard, SOLID_BRAND_DARK_CONTROL, lucideGlyph } from '@livediagram/ui';
+
+const BulletGlyph = lucideGlyph(lucideList, 16);
+const NumberedGlyph = lucideGlyph(lucideListOrdered, 16);
+const LIST_BUTTONS: {
+  style: ListStyle;
+  label: string;
+  description: string;
+  icon: React.ReactNode;
+}[] = [
+  {
+    style: 'bullet',
+    label: 'Bullet List',
+    description: 'Turn the line into a bullet point.',
+    icon: <BulletGlyph />,
+  },
+  {
+    style: 'numbered',
+    label: 'Numbered List',
+    description: 'Turn the line into a numbered step.',
+    icon: <NumberedGlyph />,
+  },
+];
 
 // preventDefault on mousedown keeps focus + the live selection in the
 // contentEditable when a control is clicked (the classic rich-text-toolbar
@@ -32,6 +55,7 @@ export function NoteFormatToolbar({
   onApplyList,
   onApplyHeading,
   onApplyLink,
+  listButtons = false,
 }: {
   active: ActiveFormat;
   // The list style of the line the caret sits on, read from the note's plain
@@ -42,6 +66,9 @@ export function NoteFormatToolbar({
   onApplyList: (style: ListStyle) => void;
   onApplyHeading: (level: RunHeading | null) => void;
   onApplyLink: (url: string | null) => void;
+  // Bullet and numbered list buttons beside the block picker, for text where lists are the point (a Plan
+  // item's description); a toggle, so pressing the current one takes the list off.
+  listButtons?: boolean;
 }) {
   const [linkOpen, setLinkOpen] = useState(false);
 
@@ -76,6 +103,22 @@ export function NoteFormatToolbar({
           onApplyHeading={onApplyHeading}
           onApplyList={onApplyList}
         />
+        {listButtons
+          ? LIST_BUTTONS.map((b) => (
+              <HoverCard key={b.style} title={b.label} description={b.description}>
+                <button
+                  type="button"
+                  aria-label={b.label}
+                  aria-pressed={listStyle === b.style}
+                  onMouseDown={noFocusSteal}
+                  onClick={() => onApplyList(listStyle === b.style ? 'none' : b.style)}
+                  className={toolbarButtonClass(listStyle === b.style, 'shrink-0')}
+                >
+                  {b.icon}
+                </button>
+              </HoverCard>
+            ))
+          : null}
         {TOOLBAR_DIVIDER}
         <HoverCard title="Link" description="Point the selected text at a web address.">
           <button

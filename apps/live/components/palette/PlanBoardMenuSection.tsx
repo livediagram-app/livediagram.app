@@ -22,6 +22,7 @@ import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
 import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
 import { usePlan } from '@/components/plan/PlanContext';
 import { PlanTypeGlyph } from '@/components/plan/plan-type-glyph';
+import { ACCENT_TEXT, accentVars } from '@/components/plan/plan-palette';
 import { CardSizeArt } from '@/components/plan/plan-tile-art';
 import { CARD_FIELD_LABELS, SWIMLANE_LABELS } from '@/components/plan/board-setup-edits';
 import { trackSetup } from '@/components/plan/track-board-setup';
@@ -129,6 +130,7 @@ export function PlanCardsMenuSection({
   flyoutProps: FlyoutProps;
 }) {
   const board = useBoard(element);
+  const plan = usePlan();
   if (!board) return null;
   const { setup, set } = board;
   // The fields this card size can draw; the rest stay set but dimmed (docs/specs/025-plan/plan-board.md).
@@ -145,6 +147,37 @@ export function PlanCardsMenuSection({
     );
   return (
     <MenuFlyoutSection title="Cards" icon={<PlanCardsIcon size={16} />} {...flyoutProps}>
+      {setup.archive || !plan ? null : (
+        <>
+          <p className={captionClass}>New Cards Can Be</p>
+          <MenuTileGrid cols={3}>
+            {plan.types.map((t) => {
+              const on = !setup.addTypes || setup.addTypes.includes(t.id);
+              const allowed = setup.addTypes ?? plan.types.map((x) => x.id);
+              return (
+                <MenuTile
+                  key={t.id}
+                  icon={
+                    <span className={ACCENT_TEXT} style={accentVars(t.color)}>
+                      <PlanTypeGlyph glyph={t.glyph} size={16} />
+                    </span>
+                  }
+                  label={t.label}
+                  active={on}
+                  // A board takes at least one type of new card.
+                  disabled={on && allowed.length <= 1}
+                  onClick={() => {
+                    const next = on ? allowed.filter((x) => x !== t.id) : [...allowed, t.id];
+                    const every = plan.types.every((x) => next.includes(x.id));
+                    const { addTypes: _drop, ...rest } = setup;
+                    set(every ? rest : { ...rest, addTypes: next }, 'AddTypes');
+                  }}
+                />
+              );
+            })}
+          </MenuTileGrid>
+        </>
+      )}
       <p className={captionClass}>Card Size</p>
       <MenuTileGrid cols={3}>
         {CARD_SIZES.map((z) => (

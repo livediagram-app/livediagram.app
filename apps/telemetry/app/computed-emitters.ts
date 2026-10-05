@@ -160,6 +160,7 @@ const PLAN_SETUP_PARTS = [
   'Scope',
   'CardFields',
   'CardSize',
+  'AddTypes',
   'Widgets',
   'Voting',
   'VoteBudget',

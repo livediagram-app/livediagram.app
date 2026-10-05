@@ -116,3 +116,20 @@ describe('trash', () => {
     expect(projectBoard(presetSetup('all-cards'), map([t, live])).total).toBe(1);
   });
 });
+
+describe('add types', () => {
+  it('limit what a board takes new cards of, in the catalogue order', async () => {
+    const { boardAddTypes } = await import('./board');
+    const types = [{ id: 'project' }, { id: 'task' }, { id: 'note' }];
+    expect(boardAddTypes({}, types).map((t) => t.id)).toEqual(['project', 'task', 'note']);
+    expect(boardAddTypes({ addTypes: ['note', 'task'] }, types).map((t) => t.id)).toEqual([
+      'task',
+      'note',
+    ]);
+    expect(presetSetup('retro').addTypes).toEqual(['note', 'idea', 'action']);
+    expect(
+      normaliseBoardSetup({ ...presetSetup('blank'), addTypes: ['task', 'task', 'Bad', 3] })
+        ?.addTypes,
+    ).toEqual(['task']);
+  });
+});

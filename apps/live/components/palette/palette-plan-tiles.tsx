@@ -21,6 +21,11 @@ export const PLAN_BOARD_TILES: {
   description: string;
 }[] = [
   {
+    preset: 'blank',
+    caption: 'Board',
+    description: 'A board of To do, In progress and Done, to make your own.',
+  },
+  {
     preset: 'kanban',
     caption: 'Kanban',
     description: 'A Kanban Board: Backlog to Done, with WIP limits on the busy columns.',
@@ -59,11 +64,6 @@ export const PLAN_BOARD_TILES: {
     preset: 'archive',
     caption: 'Archive',
     description: 'Every archived card, out of the way of the other boards, ready to restore.',
-  },
-  {
-    preset: 'blank',
-    caption: 'Board',
-    description: 'A board of To do, In progress and Done, to make your own.',
   },
 ];
 

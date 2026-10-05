@@ -82,6 +82,9 @@ export interface PlanBoardSetup {
   archive?: boolean;
   // An All Cards board (docs/specs/025-plan/plan-board.md "All Cards"): every card, whatever its status.
   allCards?: boolean;
+  // The card types Add Card and the palette add to it (docs/specs/025-plan/plan-board.md "The board set-up");
+  // absent is every type. It shows any card that reaches it.
+  addTypes?: string[];
   // The header's widgets in order (docs/specs/025-plan/board-widgets.md); absent is the default set.
   widgets?: BoardWidgetKind[];
   voting: { on: boolean; budget?: number };
@@ -144,6 +147,24 @@ export interface BoardProjection {
 }
 
 export const NO_LANE = '';
+
+// The add types a board names: type ids, each once, at most 32.
+function readAddTypes(input: unknown): string[] | undefined {
+  if (!Array.isArray(input)) return undefined;
+  const out: string[] = [];
+  for (const t of input)
+    if (typeof t === 'string' && /^[a-z][a-z0-9-]{0,31}$/.test(t) && !out.includes(t)) out.push(t);
+  return out.slice(0, 32);
+}
+
+// The types a board takes new cards of, in the catalogue's order: its own, or every one.
+export function boardAddTypes<T extends { id: string }>(
+  setup: Pick<PlanBoardSetup, 'addTypes'>,
+  types: readonly T[],
+): T[] {
+  if (!setup.addTypes) return [...types];
+  return types.filter((t) => setup.addTypes!.includes(t.id));
+}
 
 export function quickFilterMatches(quick: QuickFilter | undefined, item: Item): boolean {
   if (!quick) return true;
@@ -405,7 +426,7 @@ export function normaliseBoardSetup(input: unknown): PlanBoardSetup | null {
     if (width === 2 || width === 3) col.width = width;
     columns.push(col);
   }
-  if (columns.length === 0) return null;
+  // No columns is a board waiting for its first (docs/specs/025-plan/plan-board.md "The board set-up").
   // Every board shows every card (docs/specs/025-plan/plan-board.md): a `scope` an older board stored is
   // read past.
   const votingIn = isObj(input['voting']) ? input['voting'] : {};
@@ -429,6 +450,7 @@ export function normaliseBoardSetup(input: unknown): PlanBoardSetup | null {
     ...(readBoardWidgets(input['widgets']) ? { widgets: readBoardWidgets(input['widgets']) } : {}),
     ...(input['archive'] === true ? { archive: true } : {}),
     ...(input['allCards'] === true ? { allCards: true } : {}),
+    ...(readAddTypes(input['addTypes']) ? { addTypes: readAddTypes(input['addTypes']) } : {}),
     ...(input['cardSize'] === 'minimal' || input['cardSize'] === 'compact'
       ? { cardSize: input['cardSize'] }
       : {}),

@@ -147,7 +147,7 @@ describe('BoardWidgetView', () => {
   });
 
   it('sets the last column as done from a board without one', () => {
-    const setup = { ...presetSetup('blank'), voting: { on: false } };
+    const setup = { ...presetSetup('kanban'), voting: { on: false } };
     delete (setup as { doneColumnId?: string }).doneColumnId;
     const c = ctx({ setup });
     draw('progress', c);

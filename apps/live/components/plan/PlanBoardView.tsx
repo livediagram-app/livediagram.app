@@ -16,6 +16,7 @@ import {
   votesSpent,
   type Item,
   type QuickFilter,
+  boardAddTypes,
 } from '@livediagram/items';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { track } from '@/lib/telemetry';
@@ -24,6 +25,8 @@ import { cellStatus, laneMove } from './plan-board-moves';
 import { LaneRow, PlanBoardCard, PlanDragGhost } from './PlanBoardCells';
 import { PlanColumnHeader } from './PlanColumnHeader';
 import { boardRowTemplate } from './plan-board-rows';
+import { PlanFirstColumn } from './PlanFirstColumn';
+import { addFirstColumn } from './board-setup-edits';
 import { boardItems } from './widgets/widget-stats';
 import { trackSetup } from './track-board-setup';
 import { PlanCardMenuHost } from './PlanCardMenu';
@@ -155,7 +158,7 @@ export function PlanBoardView({
   const loading = plan?.status === 'loading';
   const empty = !loading && projection.total === 0;
   // Every board shows, and Add card offers, every card type (docs/specs/025-plan/plan-board.md).
-  const addTypes = types;
+  const addTypes = boardAddTypes(setup, types);
 
   const onCardKey = (item: Item, e: React.KeyboardEvent<HTMLElement>) => {
     if (!plan) return;
@@ -238,164 +241,178 @@ export function PlanBoardView({
         className="min-h-0 flex-1 overflow-auto px-3 pb-3"
         onPointerDown={interactive ? stop : undefined}
       >
-        <div
-          className="grid min-h-full gap-3"
-          style={{
-            gridTemplateColumns: columnTemplate,
-            gridTemplateRows: boardRowTemplate(
-              lanes.map((l) => l.key),
-              withLanes,
-              collapsed,
-            ),
-          }}
-        >
-          {projection.columns.map((col) => (
-            <PlanColumnHeader
-              key={col.column.id}
-              col={col}
-              setup={setup}
-              palette={palette}
-              canEdit={canEdit}
-              onChange={(next, part) => {
-                plan?.updateBoard(element.id, next);
-                trackSetup(part);
-              }}
-              onMoveCards={(from, to) => {
-                for (const it of items.values())
-                  if (itemStatus(it) === from) plan?.moveItem(it.id, { status: to, before: null });
-              }}
-            />
-          ))}
-          {lanes.map((lane, laneIndex) => {
-            const shut = collapsed.has(lane.key);
-            return (
-              <LaneRow
-                key={lane.key || `none-${laneIndex}`}
-                lane={lane}
-                withLanes={withLanes}
-                span={setup.columns.length}
+        {setup.columns.length === 0 ? (
+          <PlanFirstColumn
+            palette={palette}
+            canEdit={canEdit}
+            onAdd={(name) => {
+              const next = addFirstColumn(setup, name);
+              if (!next) return;
+              plan?.updateBoard(element.id, next);
+              trackSetup('ColumnAdded');
+            }}
+          />
+        ) : (
+          <div
+            className="grid min-h-full gap-3"
+            style={{
+              gridTemplateColumns: columnTemplate,
+              gridTemplateRows: boardRowTemplate(
+                lanes.map((l) => l.key),
+                withLanes,
+                collapsed,
+              ),
+            }}
+          >
+            {projection.columns.map((col) => (
+              <PlanColumnHeader
+                key={col.column.id}
+                col={col}
+                setup={setup}
                 palette={palette}
-                shut={shut}
-                onToggle={() =>
-                  setCollapsed((prev) => {
-                    const next = new Set(prev);
-                    if (next.has(lane.key)) next.delete(lane.key);
-                    else next.add(lane.key);
-                    return next;
-                  })
-                }
-              >
-                {shut
-                  ? null
-                  : projection.columns.map((col) => {
-                      const cell = col.lanes.find((l) => l.laneKey === lane.key)?.items ?? [];
-                      // The gap a card would land in: one dragged on this board, or one held
-                      // over it from another board.
-                      const held =
-                        dragging && !dragging.outside && dragging.slot
-                          ? {
-                              slot: dragging.slot,
-                              height: dragging.height,
-                              itemId: dragging.itemId,
-                            }
-                          : incoming;
-                      const slotHere =
-                        held &&
-                        held.slot.status === col.column.status &&
-                        held.slot.laneKey === lane.key
-                          ? held.slot
-                          : null;
-                      const isAdding =
-                        adding?.status === col.column.status && adding.laneKey === lane.key;
-                      const firstEmpty =
-                        empty && canEdit && laneIndex === 0 && col === projection.columns[0];
-                      const done = setup.doneColumnId === col.column.id;
-                      return (
-                        <div
-                          key={col.column.id}
-                          data-plan-status={col.column.status}
-                          data-plan-lane={lane.key}
-                          role="list"
-                          aria-label={`${col.column.name}${withLanes && lane.label ? `, ${lane.label}` : ''}, ${cell.length} ${cell.length === 1 ? 'item' : 'items'}`}
-                          className="flex min-h-16 flex-col gap-2 rounded-b-lg px-2 pb-2 pt-1"
-                          style={{ backgroundColor: palette.column }}
-                        >
-                          {loading
-                            ? [0, 1].map((k) => (
-                                <div
-                                  key={k}
-                                  className="h-16 animate-pulse rounded-lg motion-reduce:animate-none"
-                                  style={{ backgroundColor: palette.card, opacity: 0.6 }}
-                                />
-                              ))
-                            : null}
-                          {cell.map((item) => (
-                            <PlanBoardCard
-                              key={item.id}
-                              item={item}
-                              palette={palette}
-                              placeholderBefore={
-                                slotHere?.beforeId === item.id && held?.itemId !== item.id
-                                  ? held?.height
-                                  : undefined
+                canEdit={canEdit}
+                onChange={(next, part) => {
+                  plan?.updateBoard(element.id, next);
+                  trackSetup(part);
+                }}
+                onMoveCards={(from, to) => {
+                  for (const it of items.values())
+                    if (itemStatus(it) === from)
+                      plan?.moveItem(it.id, { status: to, before: null });
+                }}
+              />
+            ))}
+            {lanes.map((lane, laneIndex) => {
+              const shut = collapsed.has(lane.key);
+              return (
+                <LaneRow
+                  key={lane.key || `none-${laneIndex}`}
+                  lane={lane}
+                  withLanes={withLanes}
+                  span={setup.columns.length}
+                  palette={palette}
+                  shut={shut}
+                  onToggle={() =>
+                    setCollapsed((prev) => {
+                      const next = new Set(prev);
+                      if (next.has(lane.key)) next.delete(lane.key);
+                      else next.add(lane.key);
+                      return next;
+                    })
+                  }
+                >
+                  {shut
+                    ? null
+                    : projection.columns.map((col) => {
+                        const cell = col.lanes.find((l) => l.laneKey === lane.key)?.items ?? [];
+                        // The gap a card would land in: one dragged on this board, or one held
+                        // over it from another board.
+                        const held =
+                          dragging && !dragging.outside && dragging.slot
+                            ? {
+                                slot: dragging.slot,
+                                height: dragging.height,
+                                itemId: dragging.itemId,
                               }
-                              lifted={dragging?.itemId === item.id}
-                              done={done}
-                              setupFields={setup.cardFields}
-                              cardSize={setup.cardSize}
-                              faceDown={cardIsFaceDown(item, setup, self?.id ?? '')}
-                              voting={
-                                setup.voting.on
-                                  ? {
-                                      mine: myVotes(item, self?.id),
-                                      canVote: !!plan?.canVote && !!self,
-                                      budgetLeft: votesLeft,
-                                      onVote: (d) => plan?.vote(item.id, d),
-                                    }
-                                  : undefined
-                              }
-                              presence={plan?.presence.get(item.id)}
-                              interactive={interactive}
-                              onPress={onCardPress}
-                              onOpen={() => plan?.openItem(item.id)}
-                              onKey={onCardKey}
-                              onMenu={(it, at) => setMenu({ itemId: it.id, at })}
-                            />
-                          ))}
-                          {slotHere && slotHere.beforeId === null ? (
-                            <div
-                              className="rounded-lg border-2 border-dashed"
-                              style={{ height: held!.height, borderColor: palette.focus }}
-                              aria-hidden
-                            />
-                          ) : null}
-                          {canEdit && !loading && !setup.archive ? (
-                            <AddCardButton
-                              palette={palette}
-                              types={addTypes}
-                              label={firstEmpty ? 'Add your first card' : 'Add card'}
-                              open={isAdding}
-                              onClosed={closeAdding}
-                              onAdd={({ type, fields }) =>
-                                plan?.addItem({
-                                  type,
-                                  fields: {
-                                    ...fields,
-                                    ...(withLanes ? laneMove(lane).set : {}),
-                                  } as Item['fields'],
-                                  status: cellStatus(setup, col.column.status, lane),
-                                  after: cell[cell.length - 1]?.id ?? null,
-                                })
-                              }
-                            />
-                          ) : null}
-                        </div>
-                      );
-                    })}
-              </LaneRow>
-            );
-          })}
-        </div>
+                            : incoming;
+                        const slotHere =
+                          held &&
+                          held.slot.status === col.column.status &&
+                          held.slot.laneKey === lane.key
+                            ? held.slot
+                            : null;
+                        const isAdding =
+                          adding?.status === col.column.status && adding.laneKey === lane.key;
+                        const firstEmpty =
+                          empty && canEdit && laneIndex === 0 && col === projection.columns[0];
+                        const done = setup.doneColumnId === col.column.id;
+                        return (
+                          <div
+                            key={col.column.id}
+                            data-plan-status={col.column.status}
+                            data-plan-lane={lane.key}
+                            role="list"
+                            aria-label={`${col.column.name}${withLanes && lane.label ? `, ${lane.label}` : ''}, ${cell.length} ${cell.length === 1 ? 'item' : 'items'}`}
+                            className="flex min-h-16 flex-col gap-2 rounded-b-lg px-2 pb-2 pt-1"
+                            style={{ backgroundColor: palette.column }}
+                          >
+                            {loading
+                              ? [0, 1].map((k) => (
+                                  <div
+                                    key={k}
+                                    className="h-16 animate-pulse rounded-lg motion-reduce:animate-none"
+                                    style={{ backgroundColor: palette.card, opacity: 0.6 }}
+                                  />
+                                ))
+                              : null}
+                            {cell.map((item) => (
+                              <PlanBoardCard
+                                key={item.id}
+                                item={item}
+                                palette={palette}
+                                placeholderBefore={
+                                  slotHere?.beforeId === item.id && held?.itemId !== item.id
+                                    ? held?.height
+                                    : undefined
+                                }
+                                lifted={dragging?.itemId === item.id}
+                                done={done}
+                                setupFields={setup.cardFields}
+                                cardSize={setup.cardSize}
+                                faceDown={cardIsFaceDown(item, setup, self?.id ?? '')}
+                                voting={
+                                  setup.voting.on
+                                    ? {
+                                        mine: myVotes(item, self?.id),
+                                        canVote: !!plan?.canVote && !!self,
+                                        budgetLeft: votesLeft,
+                                        onVote: (d) => plan?.vote(item.id, d),
+                                      }
+                                    : undefined
+                                }
+                                presence={plan?.presence.get(item.id)}
+                                interactive={interactive}
+                                onPress={onCardPress}
+                                onOpen={() => plan?.openItem(item.id)}
+                                onKey={onCardKey}
+                                onMenu={(it, at) => setMenu({ itemId: it.id, at })}
+                              />
+                            ))}
+                            {slotHere && slotHere.beforeId === null ? (
+                              <div
+                                className="rounded-lg border-2 border-dashed"
+                                style={{ height: held!.height, borderColor: palette.focus }}
+                                aria-hidden
+                              />
+                            ) : null}
+                            {canEdit && !loading && !setup.archive ? (
+                              <AddCardButton
+                                palette={palette}
+                                types={addTypes}
+                                label={firstEmpty ? 'Add your first card' : 'Add card'}
+                                open={isAdding}
+                                onClosed={closeAdding}
+                                onAdd={({ type, fields }) =>
+                                  plan?.addItem({
+                                    type,
+                                    fields: {
+                                      ...fields,
+                                      ...(withLanes ? laneMove(lane).set : {}),
+                                    } as Item['fields'],
+                                    status: cellStatus(setup, col.column.status, lane),
+                                    after: cell[cell.length - 1]?.id ?? null,
+                                  })
+                                }
+                              />
+                            ) : null}
+                          </div>
+                        );
+                      })}
+                </LaneRow>
+              );
+            })}
+          </div>
+        )}
       </div>
       {menu && plan ? (
         <PlanCardMenuHost

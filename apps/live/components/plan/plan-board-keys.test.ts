@@ -21,11 +21,22 @@ const item = (status: string, title: string, rank: string): Item => {
 };
 
 // docs/specs/025-plan/plan-board.md "Keyboard".
+// A board of To do, In progress and Done (the Blank board itself starts with none).
+const threeColumns = () => ({
+  ...presetSetup('blank'),
+  columns: [
+    { id: 'todo', status: 'todo', name: 'To do' },
+    { id: 'doing', status: 'doing', name: 'In progress' },
+    { id: 'done', status: 'done', name: 'Done' },
+  ],
+  doneColumnId: 'done',
+});
+
 describe('planBoardKey', () => {
   const a = item('todo', 'A', 'a');
   const b = item('todo', 'B', 'b');
   const c = item('done', 'C', 'a');
-  const p = projectBoard(presetSetup('blank'), new Map([a, b, c].map((i) => [i.id, i])));
+  const p = projectBoard(threeColumns(), new Map([a, b, c].map((i) => [i.id, i])));
 
   it('moves focus with the arrows, skipping empty columns', () => {
     expect(planBoardKey(p, a.id, 'ArrowDown', false, true)).toEqual({

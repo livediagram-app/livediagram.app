@@ -47,7 +47,7 @@ describe('plan shapes', () => {
   it('validate their set-up and reference', () => {
     const board = createShape('plan-board', 0, 0);
     expect(elementValidationIssue(board)).toBeNull();
-    expect(elementValidationIssue({ ...board, planBoard: { columns: [] } })).toMatchObject({
+    expect(elementValidationIssue({ ...board, planBoard: { columns: 'none' } })).toMatchObject({
       field: 'planBoard',
     });
     const card = createShape('plan-card', 0, 0);
@@ -60,7 +60,11 @@ describe('plan shapes', () => {
 });
 
 describe('plan shapes in exports', () => {
-  const board = { ...createShape('plan-board', 0, 0), id: 'b' } as BoxedElement;
+  const board = {
+    ...createShape('plan-board', 0, 0),
+    id: 'b',
+    planBoard: presetSetup('kanban'),
+  } as BoxedElement;
   const card = {
     ...createShape('plan-card', 1200, 0),
     id: 'c',

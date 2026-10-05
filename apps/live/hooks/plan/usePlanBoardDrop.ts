@@ -7,6 +7,7 @@
 import { useEffect, useState } from 'react';
 import type { ShapeElement } from '@livediagram/document';
 import {
+  boardAddTypes,
   isArchived,
   placeWidget,
   typeIn,
@@ -31,6 +32,13 @@ import { BOARD_WIDGET_INFO } from '@/components/plan/board-widget-catalogue';
 import { trackSetup } from '@/components/plan/track-board-setup';
 import { track } from '@/lib/telemetry';
 import { usePlanCardDrag, type PlanDropSlot } from './usePlanCardDrag';
+
+// "A, B and C".
+function listOf(names: readonly string[]): string {
+  return names.length <= 1
+    ? (names[0] ?? '')
+    : `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
+}
 
 export function usePlanBoardDrop(opts: {
   element: ShapeElement;
@@ -102,12 +110,22 @@ export function usePlanBoardDrop(opts: {
       const item = items.get(itemId);
       return !!setup && !!item && canEdit;
     },
-    refusal: () =>
-      setup?.archive ? 'An Archive board takes cards moved to it' : 'This board can’t be changed',
+    refusal: () => {
+      if (setup?.archive) return 'An Archive board takes cards moved to it';
+      if (setup?.addTypes && plan) {
+        const names = boardAddTypes(setup, plan.types).map((t) => t.label);
+        return names.length
+          ? `This board takes ${listOf(names)} cards`
+          : 'This board takes no new cards';
+      }
+      return 'This board can’t be changed';
+    },
     drop,
     // Every board shows every card type (docs/specs/025-plan/plan-board.md).
     // An Archive board takes cards moved to it, never a new one.
-    acceptsType: (_type: string) => !!setup && canEdit && !setup.archive,
+    // The types it takes new cards of (docs/specs/025-plan/plan-board.md "The board set-up").
+    acceptsType: (type: string) =>
+      !!setup && canEdit && !setup.archive && (!setup.addTypes || setup.addTypes.includes(type)),
     // A palette card: a new item of the type at the slot, its row's field set. Not opened: the card is
     // there to see, and a click opens it.
     addCard: (type: string, slot: PlanDropSlot) => {

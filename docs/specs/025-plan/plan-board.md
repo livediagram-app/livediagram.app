@@ -50,6 +50,14 @@ Where each is set, so a setting lives with what it changes, never in one central
   **Cards**: the **Card Size** (Minimal, Compact or Detailed, below) and what each card face shows besides its
   title, a tile per field pressed on or off. A field the chosen size cannot draw keeps its setting but its tile is
   dimmed, so the tiles always say what the cards show. New columns come from a column's **+ Add Column After**.
+- **New cards a board takes**: the Cards menu's **New Cards Can Be** row, a tile per card type pressed on or off
+  (at least one stays on). Add Card offers only those types, and the palette refuses another ("This board takes
+  Note, Idea and Action cards"). A card of another type that reaches the board (dragged, or by status) still shows.
+  Defaults: Retro, Note, Idea and Action; Sprint, Task and Action; Bug Triage, Task; Roadmap, Project; Kanban and
+  Week, Task, Action and Note; Blank and All Cards, every type.
+- **A board with no columns** (the Blank board starts so) shows, in place of its columns, "No columns yet" and a
+  field to name the first; Enter or **Add Column** makes it. Every new column gets a status of its own (its name
+  and a short suffix), so it starts empty.
 - **Every board shows every card**: there is no per-board filter by type or label; a board shows every item whose
   status is one of its columns, and counts the rest as not on it.
 - **A board placed from the palette starts empty**: its columns get statuses of their own (the column's status
@@ -140,7 +148,8 @@ In Plan mode:
     a rounded box, and taken off with ×; **Add a step** keeps its place for the next.
   - **Main column**: the title, large, then the type's tabs (see [Item types](item-types.md)) and the fields
     of the chosen tab. The **Description** is rich text: bold, italic, underline, strikethrough, size, colour,
-    lists, headings and links, from a toolbar over it or the usual shortcuts.
+    headings and links, and **bullet** and **numbered lists** from their own toolbar buttons, from a toolbar over
+    it or the usual shortcuts.
   - **Details panel** on the right: the fields in no tab, as label and value rows (Status first, as a coloured
     picker), then who made the item and who last changed it.
   - **On a phone** it is a sheet of one column, as tall as a sheet goes (85% of the screen): the title, then a tab bar whose first tab is
