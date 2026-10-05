@@ -133,6 +133,8 @@ export const ELEMENT_FIELD_NAMES = {
     'processSteps',
     'navLinks',
     'checklistItems',
+    'planBoard',
+    'planCard',
     'marker',
     'markerSize',
     'aspectLocked',

@@ -74,6 +74,9 @@ const SHAPE_TOKENS: Record<string, string> = {
   'stat-row': 'StatRow',
   process: 'ProcessSteps',
   'site-header': 'Header',
+  // Plan board and Plan card (docs/specs/025-plan/plan-mode.md "Telemetry").
+  'plan-board': 'PlanBoard',
+  'plan-card': 'PlanCard',
 };
 
 // The Element token for a shape kind. Every path that reports a shape (the

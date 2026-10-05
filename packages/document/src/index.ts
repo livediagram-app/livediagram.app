@@ -69,6 +69,7 @@ export type {
   LinkCardMeta,
   LinkCardElement,
   VideoElement,
+  PlanCardRef,
 } from './element-types';
 
 // Arrow appearance preset types used by ArrowElement's fields below. The

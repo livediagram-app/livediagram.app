@@ -800,6 +800,9 @@ importers:
       '@livediagram/icons':
         specifier: workspace:*
         version: link:../icons
+      '@livediagram/items':
+        specifier: workspace:*
+        version: link:../items
       perfect-freehand:
         specifier: ^1.2.3
         version: 1.2.3
@@ -1259,6 +1262,9 @@ importers:
       '@livediagram/icons':
         specifier: workspace:*
         version: link:../icons
+      '@livediagram/items':
+        specifier: workspace:*
+        version: link:../items
     devDependencies:
       '@livediagram/eslint-config':
         specifier: workspace:*

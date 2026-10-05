@@ -525,6 +525,9 @@ export const SELF_PAINTING_SHAPES = new Set<string>([
   'line-chart',
   'code-block',
   'checklist',
+  // Plan board and card (docs/specs/025-plan/plan-board.md) paint their own surfaces and stripes.
+  'plan-board',
+  'plan-card',
   // Legend (docs/specs/009-elements/pie-chart.md): LegendView paints its own card and rows.
   'legend',
   // Behaviour elements (docs/specs/009-elements/portal-element.md, /106): the ring / cover IS the element.

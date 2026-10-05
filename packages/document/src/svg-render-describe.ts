@@ -4,6 +4,7 @@
 // element -> shape + label descriptor both the per-element emitters and
 // the in-app canvas drawer consume. The emitters stay in svg-render.ts.
 
+import type { Item } from '@livediagram/items';
 import { IMAGE_DEFAULT_RADIUS_PX, cornerRadiusPx } from './border-style';
 import { ownColours } from './behaviour-skin';
 import {
@@ -110,6 +111,9 @@ export type BoxedExportOptions = {
   // canvas hands its charts the same list; without it they fall back to the
   // built-in one, which is what a caller with no theme in hand wants.
   chartPalette?: readonly string[];
+  // The document's items, for the Plan board and Plan card (docs/specs/025-plan/plan-board.md). Without
+  // them a board draws its columns empty and a card a neutral placeholder.
+  items?: ReadonlyMap<string, Item>;
 };
 
 // The face a label paints in: the author's own choice, else the notation's
@@ -369,7 +373,11 @@ export function drawsStandardLabel(el: BoxedElement): boolean {
   if (el.type === 'table' || el.type === 'freehand' || el.type === 'path') return false;
   if (
     el.type === 'shape' &&
-    (el.shape === 'code-block' || el.shape === 'legend' || el.shape === 'checklist')
+    (el.shape === 'code-block' ||
+      el.shape === 'legend' ||
+      el.shape === 'checklist' ||
+      el.shape === 'plan-board' ||
+      el.shape === 'plan-card')
   )
     return false;
   return !selfLabelled(el);

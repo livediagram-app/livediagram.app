@@ -207,8 +207,14 @@ export function isSelfDrawingShape(kind: ShapeKind): boolean {
     isCodeBlockShape(kind) ||
     isChecklistShape(kind) ||
     isLegendShape(kind) ||
+    isPlanShape(kind) ||
     kind === 'sticker'
   );
+}
+
+// The Plan board and Plan card (docs/specs/025-plan/plan-board.md): they draw items, not a label.
+export function isPlanShape(kind: ShapeKind): boolean {
+  return kind === 'plan-board' || kind === 'plan-card';
 }
 
 // Round to a whole number and clamp into [0, max]. The fiddly half of the

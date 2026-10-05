@@ -129,6 +129,10 @@ export const SHAPE_KIND_FIELDS: Readonly<Record<string, readonly string[]>> = {
   estimate: ['estimateScale'],
   chair: ['chairFacing'],
   portal: ['portalTarget'],
+  // docs/specs/025-plan/plan-board.md: the board's set-up and the card's item; items change through
+  // the item verbs, never through element fields.
+  'plan-board': ['planBoard'],
+  'plan-card': ['planCard'],
 };
 
 function storedFieldsOf(kind: string, el: Element): readonly string[] {

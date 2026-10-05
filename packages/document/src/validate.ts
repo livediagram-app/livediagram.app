@@ -161,6 +161,9 @@ export const SHAPE_KINDS = new Set<string>([
   'focus-button',
   'icon',
   'sticker',
+  // Plan board and Plan card (docs/specs/025-plan/plan-board.md).
+  'plan-board',
+  'plan-card',
 ]);
 
 // Map an arbitrary shape value to a real ShapeKind, defaulting an unknown /

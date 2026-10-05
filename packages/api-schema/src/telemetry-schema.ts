@@ -414,6 +414,9 @@ export const PALETTE_TELEMETRY_TYPES = {
     // Entity (docs/specs/009-elements/entity.md).
     'Entity',
     'Checklist',
+    // Plan board and Plan card (docs/specs/025-plan/plan-mode.md "Telemetry").
+    'PlanBoard',
+    'PlanCard',
     'ModeButton',
     'Portal',
     'SessionButton',
