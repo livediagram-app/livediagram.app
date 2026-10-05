@@ -22,6 +22,7 @@
     "@livediagram/templates": "workspace:*"
   },
   "devDependencies": {
+    "@livediagram/document-views": "workspace:*",
     "@livediagram/eslint-config": "workspace:*",
     "@livediagram/vitest-config": "workspace:*",
     "@typescript/native": "npm:typescript@^7.0.2",

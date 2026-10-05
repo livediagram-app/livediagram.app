@@ -13,6 +13,7 @@ import {
   skillInstall,
   skillPrint,
 } from './verbs/local';
+import { iconSearch, schemaView, templateLs, templateView } from './verbs/catalogues';
 import { changesetApply, elementVerbs, tabDiff } from './verbs/edit';
 import {
   documentCreate,
@@ -46,6 +47,10 @@ export const VERBS: readonly Verb[] = [
   changesetLs,
   changesetShow,
   changesetRevert,
+  templateLs,
+  templateView,
+  iconSearch,
+  schemaView,
   guide,
   skillPrint,
   skillInstall,
@@ -64,6 +69,8 @@ export const RESOURCES: readonly { name: string; alias?: string; summary: string
   { name: 'tab', summary: 'Tabs: their views, their lint, and what changed' },
   { name: 'element', alias: 'el', summary: 'Elements: one edit operation a call' },
   { name: 'changeset', summary: 'Changesets: what changed, by whom, and undoing one' },
+  { name: 'template', summary: 'Templates: the library, and one as an outline' },
+  { name: 'icon', summary: 'Icons: find one for iconId=' },
   { name: 'skill', summary: 'The agent skill file' },
   { name: 'auth', summary: 'Credentials' },
 ];
@@ -79,6 +86,7 @@ export const RESOURCE_ALIASES: Readonly<Record<string, string>> = {
 // Command words that name one verb directly.
 export const COMMAND_ALIASES: Readonly<Record<string, string>> = {
   edit: 'changeset.apply',
+  schema: 'schema.view',
 };
 
 export function verbById(id: string): Verb | undefined {

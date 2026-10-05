@@ -3917,6 +3917,36 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     enum: ['left', 'right', 'above', 'below'],
     type: 'string',
   },
+  IconSearchResponse: {
+    additionalProperties: false,
+    properties: {
+      icons: {
+        items: {
+          additionalProperties: false,
+          properties: {
+            id: {
+              type: 'string',
+            },
+            label: {
+              type: 'string',
+            },
+            set: {
+              enum: ['line', 'technology'],
+              type: 'string',
+            },
+          },
+          required: ['id', 'label', 'set'],
+          type: 'object',
+        },
+        type: 'array',
+      },
+      more: {
+        type: 'number',
+      },
+    },
+    required: ['icons', 'more'],
+    type: 'object',
+  },
   IconSize: {
     enum: ['sm', 'md', 'lg', 'xl'],
     type: 'string',
@@ -7403,6 +7433,54 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
     },
     required: ['total', 'rows'],
+    type: 'object',
+  },
+  TemplateCatalogueResponse: {
+    additionalProperties: false,
+    properties: {
+      categories: {
+        items: {
+          additionalProperties: false,
+          properties: {
+            description: {
+              type: 'string',
+            },
+            id: {
+              type: 'string',
+            },
+            label: {
+              type: 'string',
+            },
+          },
+          required: ['id', 'label', 'description'],
+          type: 'object',
+        },
+        type: 'array',
+      },
+      templates: {
+        items: {
+          additionalProperties: false,
+          properties: {
+            category: {
+              type: 'string',
+            },
+            description: {
+              type: 'string',
+            },
+            kind: {
+              type: 'string',
+            },
+            title: {
+              type: 'string',
+            },
+          },
+          required: ['kind', 'title', 'description', 'category'],
+          type: 'object',
+        },
+        type: 'array',
+      },
+    },
+    required: ['categories', 'templates'],
     type: 'object',
   },
   TemplateFamily: {

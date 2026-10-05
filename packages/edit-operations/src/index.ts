@@ -5,6 +5,12 @@
 export { validateEditOperation, validateEditOperations } from './parse-json';
 export { parseEditOperations } from './parse';
 export { formatOperation } from './format-operation';
+export {
+  addableKinds,
+  elementFormatText,
+  elementKindsText,
+  SCHEMA_KIND_MAX_TOKENS,
+} from './element-format';
 export { applyEditOperations } from './apply';
 export { applyReplace } from './replace';
 export { formatResultFooter, formatResultLines } from './format-results';

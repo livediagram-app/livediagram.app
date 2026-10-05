@@ -30,7 +30,7 @@ import { type EditState, putElement, refuseLocked, touch, writeFields } from '..
 import type { AddKindOperation, Fields } from '../types';
 
 // Kinds an edit operation cannot make, and what to use instead.
-const NOT_ADDED: Readonly<Record<string, string>> = {
+export const NOT_ADDED: Readonly<Record<string, string>> = {
   arrow: 'use connect',
   image: 'images are uploaded in the editor',
   video: 'videos are added in the editor',
@@ -45,6 +45,9 @@ const FACTORIES: Readonly<Record<string, () => BoxedElement>> = {
   annotation: () => createAnnotation(0, 0),
   'link-card': () => createLinkCard(0, 0),
 };
+
+// The kinds besides the shape kinds that `add` makes.
+export const OTHER_KINDS: readonly string[] = Object.keys(FACTORIES);
 
 export type Built = { el: BoxedElement; coerced: string | null };
 

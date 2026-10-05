@@ -103,6 +103,9 @@ export function errorPageToken(pagePath: string | null): string | null {
 // dispatches on (apps/api/src/index.ts, whose test keeps the two in step).
 export const API_ROUTE_RESOURCES: ReadonlySet<string> = new Set([
   'capabilities',
+  'templates',
+  'icons',
+  'schema',
   'openapi.json',
   'unfurl',
   'ai',

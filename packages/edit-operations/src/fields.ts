@@ -37,9 +37,9 @@ export const FIELD_ALIASES = [
 ] as const;
 type Alias = (typeof FIELD_ALIASES)[number];
 
-const TEXT_SIZES = ['sm', 'md', 'lg', 'scale'] as const;
-const ARROW_STYLES = ['straight', 'angled', 'curved'] as const;
-const BORDER_STYLES = Object.keys(BORDER_DASH_ARRAY);
+export const TEXT_SIZES = ['sm', 'md', 'lg', 'scale'] as const;
+export const ARROW_STYLES = ['straight', 'angled', 'curved'] as const;
+export const BORDER_STYLES = Object.keys(BORDER_DASH_ARRAY);
 const LIVE_FIELDS: ReadonlySet<string> = new Set(LIVE_ELEMENT_FIELDS);
 const IDENTITY_FIELDS: ReadonlySet<string> = new Set(['id', 'type']);
 const RAW_COLOURS: ReadonlySet<string> = new Set(['fillColor', 'strokeColor', 'textColor']);

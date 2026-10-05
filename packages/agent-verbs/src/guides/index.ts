@@ -19,6 +19,12 @@ Or start empty and add with edit operations, each box placed beside the one it n
   connect web -> api
   OPS
 
+Look things up as you need them:
+
+  livediagram schema code-block           a kind's fields and values
+  livediagram template ls                 starting points for --template
+  livediagram icon search database        an id for iconId=
+
 Check how it is drawn; each finding ends with a fix written as edit operations:
 
   livediagram tab lint Shop`,

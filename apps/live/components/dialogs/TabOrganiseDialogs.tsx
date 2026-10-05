@@ -19,7 +19,7 @@ import {
 } from '@/components/placement/PlacementCard';
 import { DocumentThumbnail } from '@/components/panels/DocumentThumbnail';
 import { lucideGlyph, useEscape } from '@livediagram/ui';
-import { matches } from '@/lib/search';
+import { matches } from '@livediagram/icons';
 
 // Shared modal frame: header (title + sub + close) over a scrollable body.
 function OrganiseDialogFrame({

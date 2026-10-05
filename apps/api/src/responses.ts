@@ -57,7 +57,7 @@ export function json(body: unknown, init: ResponseInit = {}): Response {
 export function textPlain(body: string, init: ResponseInit = {}): Response {
   const headers = new Headers(init.headers);
   headers.set('Content-Type', 'text/plain; charset=utf-8');
-  headers.set('Cache-Control', 'no-cache');
+  if (!headers.has('Cache-Control')) headers.set('Cache-Control', 'no-cache');
   for (const [k, v] of Object.entries(CORS_HEADERS)) headers.set(k, v);
   return new Response(body, { ...init, headers });
 }
