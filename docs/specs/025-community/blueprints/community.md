@@ -45,7 +45,18 @@ All in `packages/api-schema/src/community.ts`.
 | `COMMUNITY_KEY_PATTERN`            | UUID v4 regex | C6                    | fixed      |
 
 Worker binding `COMMUNITY_RATE_LIMITER` (ratelimit, 30 per 60 s, keyed `community:<ip>`), production and staging.
-No worker var: moderation is reports alone, so there is nothing to configure.
+Worker var `COMMUNITY_ENABLED` (optional; `false`, `0` or `off` switches the Community off, anything else or unset
+leaves it on), read per request by `communityEnabled(env)` (`apps/api/src/community-enabled.ts`) and reported as
+`communityEnabled` by `GET /api/capabilities`. Moderation needs no var: it is reports alone.
+
+Switched off: `handleCommunity` and the owner routes answer 404 before anything else, and `communityLinkAccess`
+answers `'closed'`, which closes the grant, the share resolve and the card image in one place; the share-password
+guard skips the post check. The apps ask through `useCommunityEnabled(apiBase)` / `fetchCommunityEnabled`
+(`packages/ui/src/community/useCommunityEnabled.ts`; one request per api base per page, on unless an explicit
+`false`): `ProductNav` filters its Community item, `CommunityFooterLink` renders nothing,
+`ShareDialogWithCommunity` falls back to the plain `ShareDialog`, `EditorView` drops the Community badge,
+`CommunityShowcase` renders nothing (also on a 404 from `featured`), and the Community app's `CommunityGate`
+replaces the location with `/`.
 
 ## 3. Data and persistence
 
@@ -342,23 +353,26 @@ Worker logs with fingerprints: `[community] published`, `[community] updated`, `
 
 ## 13. Testing
 
-| Spec rule                                  | Test                                                                                |
-| ------------------------------------------ | ----------------------------------------------------------------------------------- |
-| Tag normalisation, input validation, query | `packages/api-schema/src/community.test.ts`                                         |
-| Publish guards, update, unpublish          | `apps/api/src/routes/community-routes.test.ts` (sqlite D1)                          |
-| List filters, sorts, search, paging, trash | `apps/api/src/db/community.test.ts` (sqlite D1)                                     |
-| Likes, reports, auto-hide, hidden is final | `apps/api/src/db/community.test.ts`, `apps/api/src/routes/community-routes.test.ts` |
-| Community link: unlisted, no join, no pw   | `apps/api/src/routes/community-routes.test.ts`                                      |
-| Community link: no room                    | `apps/api/src/routes/document-room-routes.test.ts`                                  |
-| Community grant                            | `apps/api/src/auth/document-access.test.ts`                                         |
-| Copy counting                              | `apps/api/src/db/community.test.ts`                                                 |
-| Query state round trip                     | `apps/community/lib/query-state.test.ts`                                            |
-| Community key fallback                     | `apps/community/lib/community-key.test.ts`                                          |
-| Router forwards `/community`               | `apps/router/src/index.test.ts`                                                     |
-| Optimistic like and rollback               | `apps/community/components/shared/LikeButton.test.tsx`                              |
-| Copy once from `?copy=1`                   | `apps/live/hooks/canvas/useAutoCopyParam.test.tsx`                                  |
-| Community section state, tag input         | `apps/live/components/dialogs/community/*.test.ts(x)`                               |
-| Editor api client and error copy           | `apps/live/lib/api/community.test.ts`                                               |
+| Spec rule                                  | Test                                                                                     |
+| ------------------------------------------ | ---------------------------------------------------------------------------------------- |
+| Tag normalisation, input validation, query | `packages/api-schema/src/community.test.ts`                                              |
+| Publish guards, update, unpublish          | `apps/api/src/routes/community-routes.test.ts` (sqlite D1)                               |
+| List filters, sorts, search, paging, trash | `apps/api/src/db/community.test.ts` (sqlite D1)                                          |
+| Likes, reports, auto-hide, hidden is final | `apps/api/src/db/community.test.ts`, `apps/api/src/routes/community-routes.test.ts`      |
+| Community link: unlisted, no join, no pw   | `apps/api/src/routes/community-routes.test.ts`                                           |
+| Community link: no room                    | `apps/api/src/routes/document-room-routes.test.ts`                                       |
+| Community grant                            | `apps/api/src/auth/document-access.test.ts`                                              |
+| Switched off: routes, links, capabilities  | `apps/api/src/community-enabled.test.ts`, `apps/api/src/routes/community-routes.test.ts` |
+| Switched off: apps menu, footer, fetch     | `packages/ui/src/community/useCommunityEnabled.test.tsx`                                 |
+| Hidden is final (Share dialog)             | `apps/live/components/dialogs/community/CommunitySection.test.tsx`                       |
+| Copy counting                              | `apps/api/src/db/community.test.ts`                                                      |
+| Query state round trip                     | `apps/community/lib/query-state.test.ts`                                                 |
+| Community key fallback                     | `apps/community/lib/community-key.test.ts`                                               |
+| Router forwards `/community`               | `apps/router/src/index.test.ts`                                                          |
+| Optimistic like and rollback               | `apps/community/components/shared/LikeButton.test.tsx`                                   |
+| Copy once from `?copy=1`                   | `apps/live/hooks/canvas/useAutoCopyParam.test.tsx`                                       |
+| Community section state, tag input         | `apps/live/components/dialogs/community/*.test.ts(x)`                                    |
+| Editor api client and error copy           | `apps/live/lib/api/community.test.ts`                                                    |
 
 ## 14. Defaults ledger
 

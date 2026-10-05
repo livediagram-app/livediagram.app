@@ -98,6 +98,9 @@ export type Env = {
   // Per-network limiter for Community likes and reports (docs/specs/025-community/blueprints/community.md §7),
   // keyed `community:<ip>`. These callers are anonymous, so the owner-keyed write limiter would lump them all onto
   // its 'anonymous' key. Optional: absent (self-host) → "allow".
+  // The Community's off switch (docs/specs/025-community/community.md "Turning the Community off"): false, 0 or off
+  // turns it off; unset leaves it on. See community-enabled.ts.
+  COMMUNITY_ENABLED?: string;
   COMMUNITY_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
   // Telemetry on/off switch (docs/specs/017-telemetry/telemetry.md). Authoritative: gates both
   // POST /api/events and GET /api/telemetry/summary. A plain

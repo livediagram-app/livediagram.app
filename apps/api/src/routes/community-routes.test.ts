@@ -19,6 +19,7 @@ import { handleCommunityOwnerRoutes } from './community-owner-routes';
 import { handleCommunity } from './community';
 import { handleShare } from './share';
 import { handleDocumentShareRoutes } from './document-share-routes';
+import { handleCapabilities } from './capabilities';
 
 const KEY = '3f2b8c1e-9a4d-4e7f-8b21-0c5d6e7f8a9b';
 const KEY2 = '4a2b8c1e-9a4d-4e7f-8b21-0c5d6e7f8a9b';
@@ -427,5 +428,48 @@ describe('the community link', () => {
       owner('PUT', '/api/documents/d1/share-password', { body: { password: 'secret' } }),
     ))!;
     expect(res.status).toBe(200);
+  });
+});
+
+// docs/specs/025-community/community.md "Turning the Community off".
+describe('switched off', () => {
+  it('closes every route and link, reports it, and deletes nothing', async () => {
+    const post = await publish();
+    env.COMMUNITY_ENABLED = 'false';
+
+    const capabilities = handleCapabilities(
+      makeTestRouteContext('GET', '/api/capabilities', { env }),
+    );
+    expect(await capabilities.json()).toMatchObject({ communityEnabled: false });
+    for (const path of [
+      '/api/community/posts',
+      `/api/community/posts/${post.id}`,
+      '/api/community/featured',
+      '/api/community/facets',
+    ]) {
+      expect((await handleCommunity(publicCtx('GET', path))).status, path).toBe(404);
+    }
+    expect(
+      (await handleCommunity(publicCtx('PUT', `/api/community/posts/${post.id}/like`))).status,
+    ).toBe(404);
+    expect(
+      (await handleCommunityOwnerRoutes(owner('GET', '/api/documents/d1/community')))!.status,
+    ).toBe(404);
+    const share = (path: string) => handleShare(makeTestRouteContext('GET', path, { env }));
+    expect((await share(`/api/share/${post.shareCode}`)).status).toBe(404);
+    expect((await share(`/api/share/${post.shareCode}/image.svg`)).status).toBe(404);
+    // A listed post no longer blocks a share password.
+    const password = (await handleDocumentShareRoutes(
+      owner('PUT', '/api/documents/d1/share-password', { body: { password: 'secret' } }),
+    ))!;
+    expect(password.status).toBe(200);
+    expect(db.sql.prepare('SELECT COUNT(*) AS n FROM community_posts').get()).toEqual({ n: 1 });
+
+    // Back on, the post is as it was (once the password it allowed is cleared again).
+    env.COMMUNITY_ENABLED = undefined;
+    db.sql.prepare("UPDATE documents SET share_password = NULL WHERE id = 'd1'").run();
+    expect(
+      (await handleCommunity(publicCtx('GET', `/api/community/posts/${post.id}`))).status,
+    ).toBe(200);
   });
 });

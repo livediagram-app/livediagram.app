@@ -1,6 +1,8 @@
 'use client';
 
 import { useState } from 'react';
+import { useCommunityEnabled } from '@livediagram/ui';
+import { API_BASE } from '@/lib/api-client';
 import { ShareDialog } from '@/components/dialogs/ShareDialog';
 import type { ShareDialogProps } from '@/components/dialogs/ShareDialog.types';
 import { authHrefWithReturn } from '@/components/chrome/auth-shared';
@@ -27,11 +29,16 @@ export function ShareDialogWithCommunity({
   teamDocument: boolean;
 }) {
   const ownerId = share.participant.id;
+  // Switched off, the Community is not offered at all (docs/specs/025-community/community.md "Turning the Community
+  // off"): the plain Share dialog, with nothing read.
+  const communityOn = useCommunityEnabled(API_BASE);
   // Only a signed-in owner's personal, cloud document can have a post, so only then is it read.
-  const eligible = signedIn && !teamDocument && !share.offline;
+  const eligible = communityOn && signedIn && !teamDocument && !share.offline;
   const community = useCommunityPost({ ownerId, documentId, open: eligible });
   const picture = usePublishedPicture();
   const [publishing, setPublishing] = useState(false);
+
+  if (!communityOn) return <ShareDialog {...share} />;
 
   if (publishing && documentId) {
     return (

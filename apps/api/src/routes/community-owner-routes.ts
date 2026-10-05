@@ -7,6 +7,7 @@ import {
   validateCommunityPostInput,
   type CommunityOwnPost,
 } from '@livediagram/api-schema';
+import { communityEnabled } from '../community-enabled';
 import { rowState, rowToCommunityPost, type CommunityPostRow } from '../community-row';
 import {
   countCommunityPostsByAuthor,
@@ -31,6 +32,8 @@ export async function handleCommunityOwnerRoutes(ctx: RouteContext): Promise<Res
   const method = request.method;
   if (method !== 'GET' && method !== 'PUT' && method !== 'DELETE') return null;
   const id = segments[2]!;
+  // Switched off, a document has no Community post to read, publish or remove.
+  if (!communityEnabled(env)) return notFound();
 
   const doc = await requireOwnedDocument(ctx, id);
   if (doc instanceof Response) return doc;

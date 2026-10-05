@@ -13,6 +13,7 @@
 // the router, so client-side nav wouldn't cross them.
 
 import { useRef, type ReactNode } from 'react';
+import { useCommunityEnabled } from './community/useCommunityEnabled';
 import { useClickOutside } from './useClickOutside';
 import { useMenu } from './menu/useMenu';
 import { useMenuButton } from './menu/useMenuButton';
@@ -106,7 +107,11 @@ export function ProductNav({
   current: ProductNavKey;
   showOnMobile?: boolean;
 }) {
-  const active = ITEMS.find((i) => i.key === current) ?? ITEMS[0]!;
+  // The Community entry goes while the Community is switched off (docs/specs/025-community/community.md "Turning
+  // the Community off").
+  const communityOn = useCommunityEnabled();
+  const items = communityOn ? ITEMS : ITEMS.filter((i) => i.key !== 'community');
+  const active = items.find((i) => i.key === current) ?? items[0]!;
   // Explicit open state: a click, Enter, Space or an arrow key opens it with focus inside and the
   // menu keyboard (docs/specs/004-interface-design/menus.md). Desktop hover still shows it through
   // CSS without taking focus; focusing the trigger alone no longer opens it (D56).
@@ -168,7 +173,7 @@ export function ProductNav({
           {...surfaceProps}
           className="w-60 outline-none rounded-xl border border-slate-200 bg-white p-1.5 shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-800 dark:shadow-black/30"
         >
-          {ITEMS.map((item) => {
+          {items.map((item) => {
             const isCurrent = item.key === current;
             return (
               <a

@@ -554,6 +554,9 @@ export type CapabilitiesResponse = {
   // Google Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md): how the deployment
   // gets Google access tokens. Optional so an older worker parses as 'off'.
   driveMode?: DriveMode;
+  // The Community's off switch (docs/specs/025-community/community.md "Turning the Community off"). Only an explicit
+  // false hides it, so an older worker that omits it leaves the Community showing.
+  communityEnabled?: boolean;
 };
 
 // Per-day buckets for the trend charts on the dashboard. `days` is

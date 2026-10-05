@@ -245,6 +245,25 @@ only `Liked`, `Unliked` and `Reported`. Types are preset values, never post cont
 `<Category>` is the category id in PascalCase (`Architecture`, `Flows`, ...); `<Reason>` is `Spam`, `Offensive`,
 `PersonalInfo`, `Copyright` or `Other`.
 
+## Turning the Community off
+
+The Community can be switched off remotely, with no redeploy of the apps: set the api worker's `COMMUNITY_ENABLED` to
+`false` (a plain variable or a secret; `0` and `off` count too). Unset, or anything else, leaves it on, so a self-host
+needs nothing. `GET /api/capabilities` reports it as `communityEnabled`.
+
+While it is off:
+
+- Every Community route answers 404 (the gallery, posts, likes, reports, featured, My Shares, an owner's post), and
+  every community link is closed: its document, card image and copy all answer as missing. Nothing is deleted;
+  turning it back on restores everything as it was.
+- It disappears from every interface: the **Community** entry in the apps menu and the site footer, the landing page's
+  section, the Community section of the Share dialog and the editor's Community badge. Visiting `/community` sends
+  you to the home page. A listed post no longer stands in the way of a share password.
+- The apps learn it from the capabilities endpoint after they load, so a Community link can show for a moment before
+  it goes. Until the endpoint answers (or if it cannot be reached) they assume the Community is on: only an explicit
+  `false` hides it.
+- The help centre's Community articles and the marketing sitemap are static and stay.
+
 ## Self-hosting
 
 Community works with zero external services: D1 holds posts, the snapshot cache renders images, the app is static. A

@@ -16,6 +16,7 @@ import {
   type CommunityListQuery,
   type CommunityPostInput,
 } from '@livediagram/api-schema';
+import { communityEnabled } from '../community-enabled';
 import {
   COMMUNITY_POST_COLS,
   COMMUNITY_POST_FROM,
@@ -61,6 +62,9 @@ export async function communityLinkAccess(
   env: Env,
   shareCode: string,
 ): Promise<'public' | 'closed' | null> {
+  // Switched off, every community link is closed (docs/specs/025-community/community.md "Turning the Community off").
+  // This is the one gate the grant, the share resolve and the card image all pass through.
+  if (!communityEnabled(env)) return 'closed';
   const row = await env.DB.prepare(
     `SELECT (${PUBLIC_POST}) AS open FROM community_posts cp JOIN documents d ON d.id = cp.document_id
       WHERE cp.share_code = ?`,

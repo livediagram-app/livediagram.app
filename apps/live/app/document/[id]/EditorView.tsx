@@ -23,6 +23,8 @@ import { EditorHeader } from '@/components/chrome/EditorHeader';
 import { CommunityBar } from '@/components/chrome/CommunityBar';
 import { useAutoCopyParam } from '@/hooks/canvas/useAutoCopyParam';
 import { useCommunityState } from '@/lib/community-state-store';
+import { useCommunityEnabled } from '@livediagram/ui';
+import { API_BASE } from '@/lib/api-client';
 import { EmbedChrome } from '@/components/chrome/EmbedChrome';
 import { TabBar } from '@/components/chrome/TabBar';
 import { SignInBanner, SIGNIN_BANNER_DISMISS_KEY } from '@/components/chrome/SignInBanner';
@@ -181,6 +183,8 @@ export function EditorView() {
   // `?copy=1` from the Community's Make a Copy (docs/specs/025-community/community.md).
   // The header badge follows the document's Community post (docs/specs/025-community/community.md).
   const communityState = useCommunityState(documentId);
+  // The badge goes too while the Community is switched off (docs/specs/025-community/community.md).
+  const communityOn = useCommunityEnabled(API_BASE);
   useAutoCopyParam({
     hydrated,
     sessionShareCode,
@@ -299,7 +303,7 @@ export function EditorView() {
                         hideTitle={anyWelcomeOpen}
                         showShare={isOwner && hydrated && !anyWelcomeOpen}
                         shareable={documentShareable}
-                        community={communityState === 'listed'}
+                        community={communityOn && communityState === 'listed'}
                         teamDocument={!!documentTeamId}
                         offline={isOffline}
                         // Visitors see "Make a copy" instead of "Share": same slot,

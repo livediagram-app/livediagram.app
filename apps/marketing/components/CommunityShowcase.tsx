@@ -7,25 +7,33 @@ import {
   type CommunityFeaturedResponse,
   type CommunityPost,
 } from '@livediagram/api-schema';
-import { CommunityPostTile, CopyIcon } from '@livediagram/ui';
+import { CommunityPostTile, CopyIcon, useCommunityEnabled } from '@livediagram/ui';
 import { BAND_EYEBROW, BAND_LEAD, BAND_TITLE } from '@/components/band-classes';
 
 // The landing page's Community section (docs/specs/025-community/community.md "Featured on the home page";
 // docs/specs/019-marketing/marketing-site.md): six documents people are proud of, the most liked over the
 // last three months topped up with the best of all time, picked by the api. The page is a static export,
 // so the six arrive after it loads: placeholder cards hold their space meanwhile (no layout shift), and
-// with nothing to show (an empty Community, the api unreachable) the section invites the first share.
+// with nothing to show (an empty Community, the api unreachable) the section invites the first share. While
+// the Community is switched off the section is not shown at all.
 
 const API_BASE = '/api';
-type State = { status: 'loading' } | { status: 'ready'; posts: CommunityPost[] };
+type State =
+  | { status: 'loading' }
+  | { status: 'ready'; posts: CommunityPost[] }
+  // The api answered 404: the Community is switched off, so the section is not shown at all.
+  | { status: 'off' };
 
 function useFeatured(): State {
   const [state, setState] = useState<State>({ status: 'loading' });
   useEffect(() => {
     const controller = new AbortController();
     fetch(`${API_BASE}/community/featured`, { signal: controller.signal })
-      .then((res) => (res.ok ? (res.json() as Promise<CommunityFeaturedResponse>) : { posts: [] }))
-      .then((body) => setState({ status: 'ready', posts: body.posts ?? [] }))
+      .then(async (res) => {
+        if (res.status === 404) return setState({ status: 'off' });
+        const body: Partial<CommunityFeaturedResponse> = res.ok ? await res.json() : {};
+        setState({ status: 'ready', posts: body.posts ?? [] });
+      })
       .catch((err: unknown) => {
         if (err instanceof DOMException && err.name === 'AbortError') return;
         console.warn('[community] featured load failed', err);
@@ -85,6 +93,9 @@ export function CommunityShowcase() {
   const featured = useFeatured();
   // One clock reading for the six, so their "2 days ago" agree.
   const [now] = useState(Date.now);
+  // Switched off (docs/specs/025-community/community.md "Turning the Community off"), the section is not there.
+  const communityOn = useCommunityEnabled(API_BASE);
+  if (!communityOn || featured.status === 'off') return null;
   const posts = featured.status === 'ready' ? featured.posts : [];
   const empty = featured.status === 'ready' && posts.length === 0;
   return (

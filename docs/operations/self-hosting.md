@@ -290,8 +290,12 @@ Add a custom-domain route to the router worker (`apps/router/wrangler.toml`) and
 - `/document/*`, `/explorer/*`, `/new`, `/join`, `/sign-in`, `/get-started`, `/embed`, `/sso-callback` → live editor (clean routes; `/live/*` carries only its `_next` assets)
 - `/telemetry` → telemetry dashboard
 - `/help` → help centre
-- `/community` → Community, the public gallery of shared boards
+- `/community` → Community, the public gallery of shared documents
 - `/api/*` → api worker
+
+The Community is on by default and needs nothing. To switch it off, set the api worker's `COMMUNITY_ENABLED` to
+`false` (a `[vars]` entry or `wrangler secret put COMMUNITY_ENABLED`): every Community route and link closes and it
+disappears from every app, with nothing deleted ([Community](../specs/025-community/community.md#turning-the-community-off)).
 
 The six downstream workers don't need their own domain; the router fans out via service bindings.
 

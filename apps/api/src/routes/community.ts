@@ -11,6 +11,7 @@ import {
   type CommunityMinePost,
   type CommunityPost,
 } from '@livediagram/api-schema';
+import { communityEnabled } from '../community-enabled';
 import { clientIp } from '../client-ip';
 import { rowState, rowToCommunityPost, type CommunityPostRow } from '../community-row';
 import {
@@ -55,6 +56,8 @@ function listCacheHeaders(key: string | null): HeadersInit {
 
 export async function handleCommunity(ctx: RouteContext): Promise<Response> {
   const { request, env, segments, url } = ctx;
+  // Switched off, there is no Community to answer for.
+  if (!communityEnabled(env)) return notFound();
   const method = request.method;
   const key = communityKeyOf(request);
 

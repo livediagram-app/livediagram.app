@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import type { ReactNode } from 'react';
+import { CommunityGate } from '@/components/CommunityGate';
 import { Header } from '@/components/Header';
 import './globals.css';
 import {
@@ -48,7 +49,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <script dangerouslySetInnerHTML={{ __html: APPEARANCE_BOOT_SCRIPT }} />
         <PageViewBoot />
         <Header />
-        <main className="flex-1 pb-20">{children}</main>
+        <main className="flex-1 pb-20">
+          <CommunityGate>{children}</CommunityGate>
+        </main>
         <SiteFooter />
       </body>
     </html>

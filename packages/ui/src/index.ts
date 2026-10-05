@@ -44,6 +44,11 @@ export * from './icons';
 export { CommunityPostTile } from './community/CommunityPostTile';
 export { CommunityAuthorBadge, communityAuthorInitial } from './community/CommunityAuthorBadge';
 export { communitySharedAgo } from './community/shared-ago';
+export {
+  fetchCommunityEnabled,
+  resetCommunityEnabledForTests,
+  useCommunityEnabled,
+} from './community/useCommunityEnabled';
 export { clerkPublishableKeyOrNull } from './clerk-key';
 export { IDENTITY_FILL, identityDeep, identityVars } from './identity-fill';
 export {

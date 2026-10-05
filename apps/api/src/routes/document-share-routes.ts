@@ -6,6 +6,7 @@
 // expiring link.
 
 import type { ShareLinkExpiry } from '@livediagram/api-schema';
+import { communityEnabled } from '../community-enabled';
 import { MAX_PASSWORD_LEN } from '../limits';
 import {
   createShareLink,
@@ -116,7 +117,11 @@ export async function handleDocumentShareRoutes(ctx: RouteContext): Promise<Resp
       // A share password and a listed Community post exclude each other (docs/specs/025-community/community.md): a
       // public post cannot ask its visitors for a password. A post hidden by reports is closed for good, so it
       // does not stand in the way.
-      const post = password?.trim() ? await getCommunityPostForDocument(env, id) : null;
+      // Switched off, no post is public, so none stands in the way either.
+      const post =
+        password?.trim() && communityEnabled(env)
+          ? await getCommunityPostForDocument(env, id)
+          : null;
       if (post && post.state !== 'hidden') return conflict('community_published');
       await setDocumentSharePassword(env, id, password);
       // Echo back the stored value (normalised: whitespace-only ->
