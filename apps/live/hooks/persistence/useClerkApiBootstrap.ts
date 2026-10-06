@@ -1,10 +1,14 @@
 'use client';
 
 import { useDeferredAuth } from '@/components/providers/deferred-auth';
-import { useEffect, useLayoutEffect, useMemo, useReducer, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import { registerTokenProvider } from '@/lib/api-client';
 import { sessionsEnabled } from '@/lib/clerk-config';
-import { guestMigrationPending, settleGuestMigration } from '@/lib/guest-migration';
+import {
+  guestMigrationPending,
+  settleGuestMigration,
+  subscribeGuestMigration,
+} from '@/lib/guest-migration';
 
 // Two things every page that talks to the api needs to do once Clerk
 // is in the tree:
@@ -79,19 +83,18 @@ function useClerkApiBootstrapEnabled(): BootstrapResult {
     const id = window.setTimeout(() => setTimedOut(true), 5000);
     return () => window.clearTimeout(id);
   }, [clerkLoaded]);
-  // 2. Guest → authed migration. Read on render so the very first
-  // signed-in render already holds `authLoaded`.
-  const migrating = !!isSignedIn && !!clerkUserId && guestMigrationPending(clerkUserId);
-  const [, rerender] = useReducer((n: number) => n + 1, 0);
+  // 2. Guest → authed migration. Read as an external store, so the very
+  // first signed-in render already holds `authLoaded` and settling
+  // releases it (see subscribeGuestMigration for why a re-render alone
+  // is not enough under the React Compiler).
+  const migrating = useSyncExternalStore(
+    subscribeGuestMigration,
+    () => !!isSignedIn && !!clerkUserId && guestMigrationPending(clerkUserId),
+    () => false,
+  );
   useEffect(() => {
     if (!isSignedIn || !clerkUserId) return;
-    let live = true;
-    void settleGuestMigration(clerkUserId).then(() => {
-      if (live) rerender();
-    });
-    return () => {
-      live = false;
-    };
+    void settleGuestMigration(clerkUserId);
   }, [isSignedIn, clerkUserId]);
   const authLoaded = (clerkLoaded || timedOut) && !migrating;
 
