@@ -77,12 +77,18 @@ export function PlanCardMenu({
     >
       <ContextMenu position={at} label="Card menu" onClose={onClose}>
         <MenuHeader title={title} />
-        <MenuActionRow label="Open" icon={<PencilIcon />} onClick={act(onOpen)} />
+        <MenuActionRow plain label="Open" icon={<PencilIcon />} onClick={act(onOpen)} />
         {canEdit ? (
           <>
-            <MenuActionRow label="Duplicate" icon={<DuplicateIcon />} onClick={act(onDuplicate)} />
+            <MenuActionRow
+              plain
+              label="Duplicate"
+              icon={<DuplicateIcon />}
+              onClick={act(onDuplicate)}
+            />
             {onAddSlide ? (
               <MenuActionRow
+                plain
                 label="Add to Slides"
                 icon={<SlideDeckIcon />}
                 onClick={act(onAddSlide)}
@@ -93,6 +99,7 @@ export function PlanCardMenu({
                 <MenuGroupSeparator />
                 {columns.map((c) => (
                   <MenuActionRow
+                    plain
                     key={c.status}
                     label={`Move to ${c.name}`}
                     icon={
@@ -110,16 +117,18 @@ export function PlanCardMenu({
             ) : null}
             <MenuGroupSeparator />
             <MenuActionRow
+              plain
               label={flagged ? 'Remove Flag' : 'Flag'}
               icon={<PlanTypeGlyph glyph="flag" size={16} />}
               onClick={act(onFlag)}
             />
             <MenuActionRow
+              plain
               label={archived ? 'Restore' : 'Archive'}
               icon={<PlanBoardTileArt preset="archive" size={16} />}
               onClick={act(onArchive)}
             />
-            <MenuActionRow label="Trash" icon={<TrashIcon />} danger onClick={act(onTrash)} />
+            <MenuActionRow plain label="Trash" icon={<TrashIcon />} danger onClick={act(onTrash)} />
           </>
         ) : null}
       </ContextMenu>

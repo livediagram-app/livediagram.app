@@ -174,7 +174,7 @@ In Plan mode:
   (taking the row's field). Arrow keys move between the tiles as in every menu; Escape or an outside press
   closes it and focus goes back to the button. There is no typed title: the card is titled in place or in its
   panel.
-- **Right-click a card** for its menu: **Open**, **Duplicate** (a copy right after it, without its votes),
+- **Right-click a card** for its menu (icon-left rows in sentence case, **Trash** in red, as the item panel's ⋯ menu): **Open**, **Duplicate** (a copy right after it, without its votes),
   **Archive** (or **Restore**; [Items](items.md#archive)),
   **Add to Slides** (an item slide, [Presentation mode](../012-collaboration/presentation-mode.md#item-slides)),
   **Move to** another column of the board, and **Trash** (to the [Trash](items.md#trash), restorable there). Someone who may only view gets
