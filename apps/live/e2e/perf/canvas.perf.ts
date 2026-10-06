@@ -96,15 +96,25 @@ async function openBoard(browser: Browser, owner: string, id: string, throttle: 
       localStorage.setItem('livediagram:v2:self-id', o);
       if (sig) localStorage.setItem('livediagram:v2:self-sig', sig);
       localStorage.setItem('livediagram:v2:name-confirmed', '1');
-      // Every long task and long animation frame from the very start, for the open row: long tasks
-      // alone miss a frame that only renders.
-      const w = window as unknown as { __busy: { start: number; end: number }[] };
+      // The gesture rows read long tasks (`timed`); the open row reads long tasks and long animation
+      // frames together, from the very start, since long tasks alone miss a frame that only renders.
+      const w = window as unknown as {
+        __longTasks: { start: number; end: number }[];
+        __busy: { start: number; end: number }[];
+      };
+      w.__longTasks = [];
       w.__busy = [];
-      for (const type of ['longtask', 'long-animation-frame'])
-        new PerformanceObserver((list) => {
-          for (const e of list.getEntries())
-            w.__busy.push({ start: e.startTime, end: e.startTime + e.duration });
-        }).observe({ type, buffered: true });
+      new PerformanceObserver((list) => {
+        for (const e of list.getEntries()) {
+          const span = { start: e.startTime, end: e.startTime + e.duration };
+          w.__longTasks.push(span);
+          w.__busy.push(span);
+        }
+      }).observe({ type: 'longtask', buffered: true });
+      new PerformanceObserver((list) => {
+        for (const e of list.getEntries())
+          w.__busy.push({ start: e.startTime, end: e.startTime + e.duration });
+      }).observe({ type: 'long-animation-frame', buffered: true });
     },
     { o: owner, sig: guestSigFor(owner) },
   );
