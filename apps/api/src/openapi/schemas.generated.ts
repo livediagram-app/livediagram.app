@@ -6083,6 +6083,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         },
         "type": "array"
       },
+      "detailsLabel": {
+        "type": "string"
+      },
       "fields": {
         "items": {
           "type": "string"
