@@ -20,7 +20,15 @@ function col(status: string, name: string, extra: Partial<PlanColumn> = {}): Pla
   return { id: status, status, name, ...extra };
 }
 
-const WORK_FIELDS: CardField[] = ['key', 'type', 'assignee', 'priority', 'labels', 'checklist'];
+const WORK_FIELDS: CardField[] = [
+  'key',
+  'type',
+  'assignee',
+  'priority',
+  'labels',
+  'checklist',
+  'comments',
+];
 
 export const PLAN_BOARD_PRESETS: Readonly<
   Record<PlanBoardPresetId, { label: string; setup: PlanBoardSetup }>

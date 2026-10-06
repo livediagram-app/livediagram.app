@@ -54,13 +54,14 @@ export const BUILT_IN_FIELD_IDS: readonly ItemFieldId[] = [
   'description',
   'status',
   'assignee',
+  'parent',
   'priority',
   'labels',
   'estimate',
   'start',
   'due',
   'checklist',
-  'parent',
+  'comments',
   'votes',
 ];
 
@@ -145,9 +146,14 @@ export function newCustomFieldId(label: string, taken: Iterable<string>): string
 // The fields a panel never files under a tab: the title heads it, and votes live on the card.
 const NEVER_IN_A_TAB = new Set(['title', 'votes']);
 
-// A field the default Overview tab holds: the long-form ones.
+// A field the default Overview tab holds: the long-form ones, and the comment thread.
 function overviewField(type: ItemTypeDef, f: string): boolean {
-  return f === 'description' || f === 'checklist' || customFieldOf(type, f)?.kind === 'longtext';
+  return (
+    f === 'description' ||
+    f === 'checklist' ||
+    f === 'comments' ||
+    customFieldOf(type, f)?.kind === 'longtext'
+  );
 }
 
 // A type's panel tabs (docs/specs/026-plan/item-types.md "An item type"): its own, or one Overview tab
@@ -160,9 +166,18 @@ export function tabsOf(type: ItemTypeDef): readonly ItemTypeTab[] {
     {
       id: OVERVIEW_TAB_ID,
       label: 'Overview',
-      fields: type.fields.filter((f) => overviewField(type, f)),
+      // The conversation ends the tab, after every long-form field (docs/specs/026-plan/items.md "Comments").
+      fields: type.fields
+        .filter((f) => overviewField(type, f))
+        .sort((a, b) => Number(a === 'comments') - Number(b === 'comments')),
     },
   ];
+}
+
+// What a type calls Details (docs/specs/026-plan/item-types.md "Tabs"): renamable, never removed.
+export const DETAILS_LABEL_DEFAULT = 'Details';
+export function detailsLabelOf(type: Pick<ItemTypeDef, 'detailsLabel'>): string {
+  return type.detailsLabel || DETAILS_LABEL_DEFAULT;
 }
 
 // The fields the panel's Details shows: the type's fields in no tab (never the title or votes).
@@ -282,6 +297,12 @@ function readType(input: unknown, at: string): ItemTypeDef | string {
     if (typeof read === 'string') return read;
     tabs = read;
   }
+  let detailsLabel: string | undefined;
+  if (input['detailsLabel'] !== undefined) {
+    const d = typeof input['detailsLabel'] === 'string' ? input['detailsLabel'].trim() : '';
+    if (!d || d.length > ITEM_TYPE_TAB_LABEL_MAX) return `${at}.detailsLabel`;
+    if (d !== DETAILS_LABEL_DEFAULT) detailsLabel = d;
+  }
   const newTitle =
     typeof input['newTitle'] === 'string' && input['newTitle'].trim()
       ? input['newTitle'].trim().slice(0, ITEM_TYPE_LABEL_MAX + 4)
@@ -295,6 +316,7 @@ function readType(input: unknown, at: string): ItemTypeDef | string {
     fields,
     ...(custom.length ? { custom } : {}),
     ...(tabs ? { tabs } : {}),
+    ...(detailsLabel ? { detailsLabel } : {}),
   };
 }
 

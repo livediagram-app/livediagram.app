@@ -18,8 +18,13 @@ export type ItemFieldId =
   | 'checklist'
   | 'parent'
   | 'votes'
+  // A comment thread (docs/specs/026-plan/items.md "Comments"): the canvas's CommentThread, written only by the
+  // comment writes.
+  | 'comments'
   // Archived (docs/specs/026-plan/items.md "Archive"): kept, but off every board but an Archive board.
-  | 'archived';
+  | 'archived'
+  // Flagged (docs/specs/026-plan/items.md "Flags"): marked for attention, on every board it is on.
+  | 'flagged';
 
 // A field a person adds to a type (docs/specs/026-plan/item-types.md "An item type"): its value is
 // an ordinary entry in the item's `fields`, under `id`.
@@ -62,25 +67,28 @@ export interface ItemTypeDef {
   // The fields its item panel offers, in order: built-in field ids and its custom fields' ids.
   fields: readonly string[];
   custom?: readonly CustomFieldDef[];
+  // The name the panel gives Details (its side column, and the phone's first tab); absent is "Details".
+  detailsLabel?: string;
   // The panel's tabs; absent is one Overview tab (tabsOf).
   tabs?: readonly ItemTypeTab[];
 }
 
+// Parent right under Status and Assignee: what a piece of work belongs to is read with who has it.
+// No Start: only a Project, a bar on the Gantt chart, starts by default.
 const WORK: readonly ItemFieldId[] = [
   'title',
   'description',
   'status',
   'assignee',
+  'parent',
   'priority',
   'estimate',
-  'start',
   'due',
   'checklist',
   'labels',
-  'parent',
 ];
 
-export const ITEM_TYPES = [
+const BUILT_IN_TYPES = [
   {
     id: 'project',
     label: 'Project',
@@ -123,6 +131,16 @@ export const ITEM_TYPES = [
   },
 ] as const satisfies readonly ItemTypeDef[];
 
+// Every built-in type offers comments, last (docs/specs/026-plan/items.md "Comments"). The mapped type keeps
+// the tuple, so each type stays addressable by position and its id literal.
+type WithComments<T extends readonly ItemTypeDef[]> = {
+  readonly [K in keyof T]: Omit<T[K], 'fields'> & { fields: readonly ItemFieldId[] };
+};
+export const ITEM_TYPES = BUILT_IN_TYPES.map((t) => ({
+  ...t,
+  fields: [...t.fields, 'comments'],
+})) as unknown as WithComments<typeof BUILT_IN_TYPES>;
+
 export type ItemTypeId = (typeof ITEM_TYPES)[number]['id'];
 
 export const ITEM_TYPE_IDS: readonly ItemTypeId[] = ITEM_TYPES.map((t) => t.id);
@@ -134,5 +152,5 @@ export const FALLBACK_ITEM_TYPE: ItemTypeDef = {
   newTitle: 'New item',
   glyph: 'item',
   color: '#64748b',
-  fields: ['title', 'description', 'status', 'assignee', 'labels'],
+  fields: ['title', 'description', 'status', 'assignee', 'labels', 'comments'],
 };

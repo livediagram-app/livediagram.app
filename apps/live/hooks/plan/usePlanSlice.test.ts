@@ -95,4 +95,27 @@ describe('usePlanSlice', () => {
     const bare = renderHook(() => usePlanSlice(base));
     expect(bare.result.current.context.addBoardSlide).toBeUndefined();
   });
+
+  // docs/specs/026-plan/items.md "Comments": a card's comment change goes to the item store.
+  it('hands a comment change and the owner id to the item store', () => {
+    const comment = vi.fn(async () => true);
+    const { result } = renderHook(() =>
+      usePlanSlice({
+        planItems: { ...(planItems as object), comment, ownerId: 'owner-me' } as never,
+        itemTypes,
+        editorMode: 'plan',
+        canEdit: true,
+        canVote: true,
+        teamPeople: participants,
+        presence,
+        statusNames,
+        commit: () => {},
+        select: () => {},
+        announce: () => {},
+      }),
+    );
+    result.current.context.commentItem('item-one', { kind: 'add', text: 'Hi' });
+    expect(comment).toHaveBeenCalledWith('item-one', { kind: 'add', text: 'Hi' });
+    expect(result.current.context.ownerId).toBe('owner-me');
+  });
 });

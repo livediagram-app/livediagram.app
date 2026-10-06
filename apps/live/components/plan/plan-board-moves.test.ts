@@ -70,3 +70,30 @@ describe('boardMoveFor', () => {
     });
   });
 });
+
+// docs/specs/026-plan/plan-board.md "Swimlanes by a field".
+describe('boardMoveFor on a board laned by a field', () => {
+  it('puts the row label first, keeping the card’s others', () => {
+    const a = item('todo', 'a', { labels: ['ui', 'auth'] });
+    const b = item('todo', 'b', { labels: ['auth'] });
+    const setup = { ...threeColumns(), swimlaneBy: 'field' as const, swimlaneField: 'labels' };
+    const projection = projectBoard(setup, mapOf(a, b));
+    const auth = projection.lanes.find((l) => l.label === 'auth')!;
+    expect(
+      boardMoveFor(setup, projection, a, a.id, {
+        status: 'todo',
+        laneKey: auth.key,
+        beforeId: null,
+      }),
+    ).toEqual({ status: 'todo', before: null, set: { labels: ['auth', 'ui'] } });
+  });
+
+  it('moves by column alone when the field has gone', () => {
+    const a = item('todo', 'a');
+    const setup = { ...threeColumns(), swimlaneBy: 'field' as const, swimlaneField: 'f-gone' };
+    const projection = projectBoard(setup, mapOf(a));
+    expect(
+      boardMoveFor(setup, projection, a, a.id, { status: 'done', laneKey: '', beforeId: null }),
+    ).toEqual({ status: 'done', before: null });
+  });
+});

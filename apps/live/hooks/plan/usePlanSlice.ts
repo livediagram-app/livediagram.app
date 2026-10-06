@@ -20,6 +20,7 @@ const NO_PHASES: ReadonlyMap<string, StatusPhase> = new Map();
 import type { PlanCardPresence, PlanContextValue } from '@/components/plan/PlanContext';
 import { titleCaseType, track } from '@/lib/telemetry';
 import type { PlanItems } from './usePlanItems';
+import type { ItemCommentAction } from '@/lib/api/items';
 import type { ItemTypesSlice } from './useItemTypes';
 
 // The editor's Plan slice (docs/specs/026-plan/blueprints/plan-board.md "Editor components"): the
@@ -202,6 +203,12 @@ export function usePlanSlice(opts: {
     [write],
   );
 
+  const commentFn = planItems.comment;
+  const commentItem = useCallback(
+    (itemId: string, action: ItemCommentAction) => void commentFn(itemId, action),
+    [commentFn],
+  );
+
   const updateBoard = useCallback(
     (boardId: string, setup: PlanBoardSetup) => {
       commit((els) =>
@@ -290,6 +297,8 @@ export function usePlanSlice(opts: {
       patchItem,
       deleteItem,
       vote,
+      commentItem,
+      ownerId: planItems.ownerId,
       updateBoard,
       placeCardOut,
       removeCard,
@@ -322,6 +331,8 @@ export function usePlanSlice(opts: {
       patchItem,
       deleteItem,
       vote,
+      commentItem,
+      planItems.ownerId,
       updateBoard,
       placeCardOut,
       removeCard,

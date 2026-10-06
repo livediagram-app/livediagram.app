@@ -11,6 +11,7 @@ import {
   ITEM_TYPES,
   typeIn,
   itemVoteTotal,
+  isFlagged,
   isPriority,
   normaliseBoardSetup,
   projectBoard,
@@ -69,6 +70,9 @@ function initials(name: string): string {
     .join('');
 }
 
+// The flag's colour, as the editor's card face draws it.
+const FLAG_COLOR = '#e11d48';
+
 // One card face at (x, y), `w` wide and `h` tall.
 export function svgCardFace(
   item: Item | undefined,
@@ -91,6 +95,10 @@ export function svgCardFace(
     `<rect x="${r2(x)}" y="${r2(y)}" width="4" height="${r2(h)}" rx="2" fill="${type.color}"/>`,
   );
   parts.push(text(x + 12, y + 18, 11, p.muted, `#${item.key} · ${type.label}`));
+  // A flagged card (docs/specs/026-plan/items.md "Flags"): its flag at the top right.
+  if (isFlagged(item)) {
+    parts.push(text(x + w - 12, y + 18, 12, FLAG_COLOR, '⚑', ' text-anchor="end"'));
+  }
   parts.push(
     text(x + 12, y + 36, 13, p.text, fit(itemTitle(item), w - 24, 13), ' font-weight="600"'),
   );

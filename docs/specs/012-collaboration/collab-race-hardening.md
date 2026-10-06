@@ -238,3 +238,41 @@ Residual, stated plainly: comment names are the sender's own choice, as they
 are on the participant record the api used before; what changed is that a
 comment now carries the name of the session that posted it rather than of
 whoever saved first.
+
+## Phase 6 (shipped): a Plan board's set-up travels as deltas
+
+A [Plan board](../026-plan/plan-board.md) keeps its whole set-up (title, columns, rows, card fields,
+widgets, voting) in one element field, `planBoard`, and its column cogs and Board flyout edit it
+WITHOUT selecting the board, so the selection lock never heads off a collision. Two people setting
+up one board at once, say one renaming To do while the other renames Review, each sent a
+whole-element `update`, each receiver took the other's copy, and the two screens ended up holding
+different boards (each with only the other's rename), while D1 kept whichever save landed last. A
+whole-element update is not last-writer-wins in room order on the sender's own screen, because the
+room never sends a sender its own op back: it is last-writer-wins on every OTHER screen.
+
+The set-up now moves the way the other multi-writer fields do:
+
+- **A `board` delta carries the change, not the set-up.** `planBoardPatch(before, after)`
+  (`packages/document/src/plan-board-patch.ts`) names only what changed: the top-level fields set
+  or cleared, each column's changed fields (by column id), columns added (whole) and removed (by
+  id), and the new column order when it moved. Applied through `applyPlanBoardPatch`, so edits to
+  different fields, or to different columns, or a field and a column, commute: every peer lands on
+  one board. A malformed patch, or one whose result is not a readable set-up
+  (`normaliseBoardSetup`), is dropped.
+- **Derived in the autosave, so every path sends it.** `tabBroadcastOps` emits one `el-delta` per
+  board whose `planBoard` changed, beside the element ops, in the granular path and the bulk
+  (whole-tab) path alike. A column cog, the Board and Cards flyouts, a widget added from the
+  palette, and undo or redo all reach peers the same way.
+- **A column move keeps a concurrent add.** The order names the columns the sender had; a column
+  only the receiver has (added meanwhile by someone else) stays beside the column it followed.
+- **Receivers keep their own set-up through a peer's whole-element copy** (`mergeIncomingElement`),
+  as they keep answers and ticks, and the sender drops an element update whose only change was
+  the set-up (`elementChangeIsDeltaOnly`). An agent's changeset is the exception: it is a writer
+  with no deltas, so its copy of the set-up is taken.
+- **The ledger records it.** For each board, the latest value of every top-level field and every
+  column field, each column added or removed, and the latest order, each with the seq that set it.
+  A save merges in only the entries the saver had not seen (phase 3), so D1 keeps both renames.
+
+Residual, stated plainly: two people changing the SAME field of the same column (both renaming To
+do) in the same moment still each see the other's value, exactly as a same-element collision on
+any shape does; the next change to that field from either side settles it.

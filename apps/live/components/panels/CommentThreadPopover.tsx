@@ -1,27 +1,12 @@
 'use client';
 
 import { useEffect, useRef, useState, useCallback } from 'react';
-import {
-  Button,
-  CloseIcon,
-  TrashIcon,
-  useClickOutside,
-  useEscape,
-  Portal,
-  IDENTITY_FILL,
-  identityVars,
-} from '@livediagram/ui';
+import { CloseIcon, useClickOutside, useEscape, Portal } from '@livediagram/ui';
 import { useReposition } from '@/hooks/canvas/useReposition';
-import type { Comment, CommentMention, CommentThread } from '@livediagram/document';
-import { MentionMenu } from '@/components/primitives/MentionMenu';
-import { MentionText } from '@/components/primitives/MentionText';
-import { useMentionAutocomplete } from '@/hooks/ui/useMentionAutocomplete';
-import { useMentionScope } from '@/components/canvas/collab/comment/MentionContext';
-import { initialsOf } from '@/lib/identity';
-import { AuthorDisc } from '@/components/primitives/AuthorDisc';
+import type { CommentMention, CommentThread } from '@livediagram/document';
 import { isMobileViewportSync } from '@/lib/responsive';
-import { formatRelativeTimeCompact, useRelativeNow } from '@/lib/relative-time';
 import { VIEWPORT_EDGE_MARGIN as EDGE_MARGIN } from '@/lib/clamp-to-viewport';
+import { CommentComposer, CommentResolveToggle, CommentThreadList } from './comment-thread-parts';
 
 type CommentThreadPopoverProps = {
   // Element this thread belongs to. The popover anchors itself by querying
@@ -73,16 +58,7 @@ export function CommentThreadPopover({
 }: CommentThreadPopoverProps) {
   const ref = useRef<HTMLDivElement>(null);
   const [pos, setPos] = useState<{ left: number; top: number } | null>(null);
-  const [draft, setDraft] = useState('');
   const composerRef = useRef<HTMLTextAreaElement>(null);
-  // @-mentions (docs/specs/012-collaboration/comment-mentions.md): who can be tagged, from the editor.
-  const mentionScope = useMentionScope();
-  const mention = useMentionAutocomplete({
-    value: draft,
-    setValue: setDraft,
-    scope: mentionScope,
-    fieldRef: composerRef,
-  });
 
   // Focus the composer when the popover opens, but only on desktop.
   // On mobile, autofocus would pop the soft keyboard the instant the
@@ -130,13 +106,6 @@ export function CommentThreadPopover({
   const resolved = thread?.resolved ?? false;
   const comments = thread?.comments ?? [];
 
-  const submit = () => {
-    const text = draft.trim();
-    if (!text) return;
-    onAddComment(text, mention.take(text));
-    setDraft('');
-  };
-
   return (
     <Portal>
       <div
@@ -157,20 +126,11 @@ export function CommentThreadPopover({
           </h3>
           <div className="flex items-center gap-1">
             {comments.length > 0 ? (
-              // Anyone who may comment may resolve and reopen (docs/specs/024-agents/agent-presence.md "Comments"):
-              // a read-only session through the comment endpoints, an editor through the room.
-              <button
-                type="button"
-                onClick={resolved ? onUnresolve : onResolve}
-                className={
-                  resolved
-                    ? 'rounded bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-800 transition hover:bg-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-300 dark:hover:bg-emerald-500/25'
-                    : 'rounded px-2 py-0.5 text-[10px] font-semibold text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'
-                }
-                aria-pressed={resolved}
-              >
-                {resolved ? 'Resolved' : 'Resolve'}
-              </button>
+              <CommentResolveToggle
+                resolved={resolved}
+                onResolve={onResolve}
+                onUnresolve={onUnresolve}
+              />
             ) : null}
             <button
               type="button"
@@ -183,31 +143,12 @@ export function CommentThreadPopover({
           </div>
         </header>
 
-        <ul className="max-h-72 overflow-y-auto px-3 py-1">
-          {comments.length === 0 ? (
-            <li className="py-4 text-center text-xs text-slate-500 dark:text-slate-400">
-              No comments yet.
-            </li>
-          ) : (
-            comments.map((c) => (
-              <CommentRow
-                key={c.id}
-                comment={c}
-                resolved={resolved}
-                // Editors can delete any comment; view-role visitors can
-                // delete only their own (server-enforced too — the
-                // delete endpoint checks authorId === caller). Other
-                // comments' authorId is redacted to undefined for a
-                // visitor, so the match naturally fails for them.
-                onDelete={
-                  !readOnly || (c.authorId !== undefined && c.authorId === selfId)
-                    ? () => onDeleteComment(c.id)
-                    : undefined
-                }
-              />
-            ))
-          )}
-        </ul>
+        <CommentThreadList
+          thread={thread}
+          readOnly={readOnly}
+          selfId={selfId}
+          onDeleteComment={onDeleteComment}
+        />
 
         {/* Add-comment textarea is available even in view-role: viewers
           can chime in (POSTs go through a dedicated comments endpoint
@@ -216,112 +157,8 @@ export function CommentThreadPopover({
           textarea — adding a comment would functionally reopen the
           thread and that's a deliberate intent best surfaced as the
           reopen button up top, not a sneaky side effect of typing. */}
-        {!resolved ? (
-          <footer className="relative border-t border-slate-100 p-2 dark:border-slate-800">
-            {mention.open ? (
-              <MentionMenu
-                items={mention.items}
-                highlight={mention.highlight}
-                hint={mention.hint}
-                onPick={mention.pick}
-              />
-            ) : null}
-            <textarea
-              ref={composerRef}
-              value={draft}
-              onChange={(e) => {
-                setDraft(e.target.value);
-                mention.onType(e);
-              }}
-              {...mention.bind}
-              onKeyDown={(e) => {
-                // The @-mention list, while open, owns Enter / Tab / arrows / Esc
-                // (docs/specs/012-collaboration/comment-mentions.md).
-                if (mention.onKeyDown(e)) return;
-                // Cmd/Ctrl+Enter submits — Enter alone keeps newline support.
-                if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
-                  e.preventDefault();
-                  submit();
-                }
-              }}
-              placeholder="Add a comment…"
-              rows={2}
-              className="w-full resize-none rounded border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-800 outline-none transition focus:border-brand-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-400"
-            />
-            <div className="mt-1 flex items-center justify-between">
-              <p className="text-[10px] text-slate-400 dark:text-slate-400">⌘↵ to send</p>
-              <Button
-                size="xs"
-                onClick={submit}
-                disabled={!draft.trim()}
-                // Keeps the popover footer's compact density: overrides
-                // append after the size scale, so they win.
-                className="px-3 py-1 text-[11px]"
-              >
-                Comment
-              </Button>
-            </div>
-          </footer>
-        ) : null}
+        {!resolved ? <CommentComposer onAddComment={onAddComment} fieldRef={composerRef} /> : null}
       </div>
     </Portal>
-  );
-}
-
-function CommentRow({
-  comment,
-  resolved,
-  onDelete,
-}: {
-  comment: Comment;
-  resolved: boolean;
-  // Undefined in view-only mode so the row never renders a delete
-  // affordance. Editable rows pass the bound delete handler.
-  onDelete?: () => void;
-}) {
-  const now = useRelativeNow();
-  return (
-    <li className={`group flex gap-2 py-2 ${resolved ? 'opacity-60' : ''}`}>
-      <span className="mt-0.5 inline-flex">
-        <AuthorDisc
-          commentId={comment.id}
-          authorId={comment.authorId}
-          size={24}
-          as="div"
-          aria-hidden
-          style={identityVars(comment.authorColor)}
-          className={`text-[10px] font-semibold text-white ${IDENTITY_FILL}`}
-        >
-          {initialsOf(comment.authorName)}
-        </AuthorDisc>
-      </span>
-      <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-1.5 text-[11px]">
-          <span className="truncate font-semibold text-slate-800 dark:text-slate-100">
-            {comment.authorName}
-          </span>
-          <span className="text-slate-400 dark:text-slate-400">
-            {formatRelativeTimeCompact(now - comment.createdAt)}
-          </span>
-        </div>
-        <p className="mt-0.5 whitespace-pre-wrap text-xs text-slate-700 dark:text-slate-200">
-          <MentionText
-            text={comment.text}
-            mentions={comment.mentions}
-            chipClassName="bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-300"
-          />
-        </p>
-      </div>
-      {!resolved && onDelete ? (
-        <button
-          type="button"
-          aria-label="Delete comment"
-          onClick={onDelete}
-          className="self-start rounded p-0.5 text-slate-400 opacity-0 transition hover:bg-rose-50 hover:text-rose-700 group-hover:opacity-100 dark:text-slate-400 dark:hover:bg-rose-500/15 dark:hover:text-rose-300"
-        >
-          <TrashIcon size={12} />
-        </button>
-      ) : null}
-    </li>
   );
 }

@@ -12,6 +12,8 @@ import {
   defaultNewTitle,
   newItemTypeId,
   tabsOf,
+  detailsLabelOf,
+  DETAILS_LABEL_DEFAULT,
   validateItemTypeCatalogue,
   type ItemTypeDef,
   type ItemTypeTab,
@@ -86,6 +88,7 @@ export function ItemTypeEditor({
       fields: [...t.fields],
     })),
   );
+  const [detailsLabel, setDetailsLabel] = useState(detailsLabelOf(start));
   const [deleting, setDeleting] = useState(false);
   const others = types.filter((t) => t.id !== type?.id);
   const [moveTo, setMoveTo] = useState<DeleteTarget>(others[0]?.id ?? null);
@@ -103,8 +106,11 @@ export function ItemTypeEditor({
       fields: fields.fields,
       ...(fields.custom.length ? { custom: fields.custom } : {}),
       tabs: withoutEmptyTabs(tabs).map((t) => ({ ...t, label: t.label.trim() })),
+      ...(detailsLabel.trim() && detailsLabel.trim() !== DETAILS_LABEL_DEFAULT
+        ? { detailsLabel: detailsLabel.trim() }
+        : {}),
     };
-  }, [type, types, label, color, glyph, fields, tabs]);
+  }, [type, types, label, color, glyph, fields, tabs, detailsLabel]);
   const tabNames = withoutEmptyTabs(tabs).map((t) => t.label.trim().toLowerCase());
   const tabProblem = tabNames.some((n) => !n)
     ? 'Give every tab a name.'
@@ -216,17 +222,29 @@ export function ItemTypeEditor({
                 removedSome={removedSome}
                 tabSlot={(f, label) =>
                   NOT_TABBABLE.has(f) ? null : (
-                    <TabPicker field={f} label={label} tabs={tabs} onChange={setTabs} />
+                    <TabPicker
+                      field={f}
+                      label={label}
+                      tabs={tabs}
+                      detailsLabel={detailsLabel.trim()}
+                      onChange={setTabs}
+                    />
                   )
                 }
               />
             </SheetRow>
             <SheetRow label="Tabs">
               <p className="mb-2 text-[12px] text-slate-500 dark:text-slate-400">
-                Choose where each field shows beside it above: Details, a tab, or New Tab…. A tab
-                with no fields is dropped when you save.
+                Choose where each field shows beside it above: Details, a tab, or New Tab…. Rename
+                Details and Overview as you like; they stay. Any other tab with no fields is dropped
+                when you save.
               </p>
-              <TabsList tabs={tabs} onChange={setTabs} />
+              <TabsList
+                tabs={tabs}
+                detailsLabel={detailsLabel}
+                onDetailsLabel={setDetailsLabel}
+                onChange={setTabs}
+              />
             </SheetRow>
           </>
         )}

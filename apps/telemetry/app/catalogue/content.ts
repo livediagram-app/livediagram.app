@@ -730,6 +730,13 @@ export const PLAN_ITEMS_DELETED = chart(
   { rising: 'neutral' },
 );
 
+export const PLAN_FLAGS = chart(
+  'Plan',
+  'Toggled',
+  'Cards Flagged',
+  'A card flagged for attention, or its flag taken off, from its menu or the item panel.',
+);
+
 export const PLAN_SETUP_CHANGED = chart(
   'Plan',
   'Changed',
@@ -755,6 +762,7 @@ export const PLAN_BOARDS: MetricStack = {
     PLAN_VOTES,
     PLAN_ITEMS_DELETED,
     PLAN_ITEMS_RESTORED,
+    PLAN_FLAGS,
     PLAN_SETUP_CHANGED,
     PLAN_REVEALED,
   ],

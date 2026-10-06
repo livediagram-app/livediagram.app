@@ -3,16 +3,18 @@
 // One item's card face (docs/specs/026-plan/plan-board.md "What the board shows"), shared by the board's
 // cards and the Plan card element, at the board's card size: Minimal (the title), Compact (the title over
 // one line of number, priority, due, votes and assignee) or Detailed (type and priority, title, project,
-// description, custom fields, labels, checklist progress, then due, estimate, votes and who has it).
+// description, custom fields, labels, checklist progress, then due, estimate, votes, comments and who has it).
 // Face-down while its board hides writing; ringed in someone's colour while they drag or read it.
 import {
   PRIORITY_LABELS,
+  isFlagged,
   isPriority,
   itemAssignee,
   itemLabels,
   itemTitle,
   ITEM_TYPES,
   itemVoteTotal,
+  itemCommentCount,
   typeIn,
   itemVotes,
   cardFieldsAt,
@@ -21,11 +23,13 @@ import {
   type Priority,
   type Item,
 } from '@livediagram/items';
+import { CommentIcon } from '@livediagram/ui';
 import { usePlan, type PlanCardPresence } from './PlanContext';
 import { customFieldText } from './custom-field-text';
 import { PRIORITY_COLOURS, accentOn, type PlanPalette } from './plan-palette';
 import { PersonDisc, PresenceTag } from './PersonDisc';
 import { PlanTypeGlyph } from './plan-type-glyph';
+import { FLAG_COLOUR } from './item-flag';
 
 export type PlanCardFaceProps = {
   item: Item;
@@ -86,6 +90,15 @@ function StartTag({ start, palette }: { start: string; palette: PlanPalette }) {
   return (
     <span className="inline-flex items-center gap-1" style={{ color: palette.muted }}>
       From {dueLabel(start)}
+    </span>
+  );
+}
+
+// A flagged card's mark (docs/specs/026-plan/items.md "Flags"), at the end of its title on every size.
+function FlagMark() {
+  return (
+    <span className="mt-0.5 shrink-0" role="img" aria-label="Flagged">
+      <PlanTypeGlyph glyph="flag" size={13} color={FLAG_COLOUR} />
     </span>
   );
 }
@@ -155,6 +168,7 @@ export function PlanCardFace({
   const progress = checklistProgress(item);
   const votes = itemVoteTotal(item);
   const title = itemTitle(item) || 'Untitled';
+  const flag = isFlagged(item) ? <FlagMark /> : null;
   const frame = {
     backgroundColor: palette.card,
     borderColor: palette.cardBorder,
@@ -168,6 +182,18 @@ export function PlanCardFace({
       aria-hidden
     />
   );
+  // How many comments an open thread holds (docs/specs/026-plan/items.md "Comments"); nothing at none.
+  const commentCount = itemCommentCount(item);
+  const commentsBit =
+    show('comments') && commentCount > 0 ? (
+      <span
+        className="inline-flex shrink-0 items-center gap-0.5 tabular-nums"
+        aria-label={commentCount === 1 ? '1 comment' : `${commentCount} comments`}
+      >
+        <CommentIcon size={11} />
+        {commentCount}
+      </span>
+    ) : null;
   const votesBit = voting ? (
     <VoteControl palette={palette} total={votes} voting={voting} />
   ) : show('votes') && votes > 0 ? (
@@ -189,6 +215,7 @@ export function PlanCardFace({
         >
           {title}
         </span>
+        {flag}
         {voting ? <VoteControl palette={palette} total={votes} voting={voting} /> : null}
       </div>
     );
@@ -202,6 +229,7 @@ export function PlanCardFace({
       (show('due') && typeof due === 'string') ||
       (show('start') && typeof start === 'string') ||
       votesBit ||
+      commentsBit ||
       (show('assignee') && assignee);
     return (
       <div
@@ -222,6 +250,7 @@ export function PlanCardFace({
           >
             {title}
           </span>
+          {flag}
         </div>
         {meta ? (
           <div
@@ -237,6 +266,7 @@ export function PlanCardFace({
               <DueTag due={due} done={!!muted} palette={palette} />
             ) : null}
             {votesBit}
+            {commentsBit}
             {show('assignee') && assignee ? (
               <span className="ml-auto">
                 <PersonDisc person={assignee} label={`Assigned to ${assignee.name}`} />
@@ -259,6 +289,7 @@ export function PlanCardFace({
     (show('start') && typeof start === 'string') ||
     (show('estimate') && typeof estimate === 'number') ||
     votesBit ||
+    commentsBit ||
     (show('assignee') && assignee);
   return (
     <div
@@ -285,11 +316,14 @@ export function PlanCardFace({
           ) : null}
         </div>
       ) : null}
-      <div
-        className="line-clamp-3 text-[14px] font-semibold leading-snug"
-        style={{ color: palette.text }}
-      >
-        {title}
+      <div className="flex items-start gap-1.5">
+        <div
+          className="line-clamp-3 min-w-0 flex-1 text-[14px] font-semibold leading-snug"
+          style={{ color: palette.text }}
+        >
+          {title}
+        </div>
+        {flag}
       </div>
       {show('parent') && parent ? (
         <div
@@ -369,6 +403,7 @@ export function PlanCardFace({
             </span>
           ) : null}
           {votesBit}
+          {commentsBit}
           {show('assignee') && assignee ? (
             <span className="ml-auto inline-flex min-w-0 items-center gap-1.5">
               <span className="truncate" style={{ color: palette.text }}>

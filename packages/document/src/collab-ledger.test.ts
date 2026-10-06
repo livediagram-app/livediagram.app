@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { presetSetup } from '@livediagram/items';
 import type { ElementLedger, ShapeElement, Tab, TabLedger, VoteLedger } from './index';
 import {
   ledgerCommentAuthors,
@@ -207,5 +208,62 @@ describe('comments in the ledger (docs/specs/012-collaboration/collab-race-harde
     };
     expect(stamped.delta.comment).toMatchObject({ authorName: 'Bea', authorColor: '#0f0' });
     expect('authorId' in stamped.delta.comment).toBe(false);
+  });
+});
+
+// A Plan board's set-up (phase 6): two people set the board up at once, and a save snapshotted before
+// the other's change reached the saver still writes both to D1.
+describe('board set-up in the ledger', () => {
+  const setup = presetSetup('kanban');
+  const [backlog, todo, , review] = setup.columns;
+  const boardTab = (planBoard = setup) => tab([card({ id: 'b', shape: 'plan-board', planBoard })]);
+  const board = (patch: Record<string, unknown>) => delta({ kind: 'board', patch }, 'b');
+  const names = (t: Tab) =>
+    ((t.elements[0] as ShapeElement).planBoard?.columns ?? []).map((c) => c.name);
+
+  it('merges a peer rename the saver had not seen, and leaves what it had', () => {
+    const ledger = ledgerOf([
+      board({ columns: { [todo!.id]: { set: { name: 'Ready' } } } }),
+      board({ columns: { [review!.id]: { set: { name: 'Checking' } } } }),
+    ]);
+    // The saver had seen seq 1 (its own Ready) but not seq 2.
+    const saved = boardTab({
+      ...setup,
+      columns: setup.columns.map((c) => (c.id === todo!.id ? { ...c, name: 'Ready' } : c)),
+    });
+    expect(names(mergeLedgerIntoTab(saved, ledger, 1))).toEqual([
+      'Backlog',
+      'Ready',
+      'In progress',
+      'Checking',
+      'Done',
+    ]);
+    // A saver that had seen everything keeps its own snapshot.
+    expect(mergeLedgerIntoTab(saved, ledger, 2)).toBe(saved);
+  });
+
+  it('adds a column the save lacks with its later changes, removes, reorders and sets fields', () => {
+    const added = { id: 'new', status: 'new~x', name: 'New' };
+    const ledger = ledgerOf([
+      board({ add: [added], order: [...setup.columns.map((c) => c.id), 'new'] }),
+      board({ columns: { new: { set: { name: 'Newer' } } } }),
+      board({ remove: [backlog!.id] }),
+      board({ set: { title: 'Sprint' }, clear: ['widgets'] }),
+    ]);
+    const merged = mergeLedgerIntoTab(boardTab(), ledger, 0);
+    const pb = (merged.elements[0] as ShapeElement).planBoard!;
+    expect(pb.columns.map((c) => c.name)).toEqual([
+      'To do',
+      'In progress',
+      'Review',
+      'Done',
+      'Newer',
+    ]);
+    expect(pb.title).toBe('Sprint');
+    expect(pb.widgets).toBeUndefined();
+  });
+
+  it('refuses a malformed board frame', () => {
+    expect(recordInLedger(undefined, board({ set: { columns: [] } }), 1)).toBeNull();
   });
 });

@@ -1,15 +1,18 @@
 'use client';
 
 // A board card's right-click menu (docs/specs/026-plan/plan-board.md "Working on a board"): Open,
-// Duplicate, Add to Slides, Move to another column, Archive (or Restore), and Delete, at the click and clamped to the window. Someone who
+// Duplicate, Add to Slides, Move to another column, Flag (or Remove Flag), Archive (or Restore), and Delete, at the click and clamped to the window. Someone who
 // may only view gets Open alone. Built on the shared command menu, so the keyboard, focus and Escape
 // behave as every other menu does.
 import { useCallback, useEffect, useRef } from 'react';
 import { DuplicateIcon, MenuTreeContext, PencilIcon, TrashIcon, useMenu } from '@livediagram/ui';
 import { MenuActionRow, MenuGroupSeparator, MenuHeader } from '@/components/primitives/PortalMenu';
 import { SlideDeckIcon } from '@/components/palette/palette-icons';
-import { isArchived, itemTitle, type PlanBoardSetup } from '@livediagram/items';
+import { isArchived, isFlagged, itemTitle, type PlanBoardSetup } from '@livediagram/items';
 import { PlanBoardTileArt } from './plan-tile-art';
+import { duplicateItem } from './duplicate-item';
+import { toggleFlag } from './item-flag';
+import { PlanTypeGlyph } from './plan-type-glyph';
 import { track } from '@/lib/telemetry';
 import { Portal } from '@livediagram/ui';
 import type { PlanContextValue } from './PlanContext';
@@ -30,6 +33,8 @@ export function PlanCardMenu({
   onAddSlide,
   archived = false,
   onArchive,
+  flagged = false,
+  onFlag,
   onClose,
 }: {
   // Viewport coordinates of the right-click.
@@ -48,6 +53,9 @@ export function PlanCardMenu({
   // Archive (or, for an archived card, Restore): kept, but off every board but an Archive board.
   archived?: boolean;
   onArchive: () => void;
+  // Flag (or Remove Flag) (docs/specs/026-plan/items.md "Flags").
+  flagged?: boolean;
+  onFlag: () => void;
   onClose: () => void;
 }) {
   const ref = useRef<HTMLDivElement | null>(null);
@@ -69,7 +77,7 @@ export function PlanCardMenu({
     return () => window.removeEventListener('pointerdown', onDown, true);
   }, [onClose]);
 
-  const rows = canEdit ? 7 + columns.length : 2;
+  const rows = canEdit ? 8 + columns.length : 2;
   const left = Math.max(EDGE, Math.min(at.x, window.innerWidth - WIDTH - EDGE));
   const top = Math.max(EDGE, Math.min(at.y, window.innerHeight - rows * ROW_PX - EDGE));
   const act = (fn: () => void) => () => {
@@ -133,6 +141,11 @@ export function PlanCardMenu({
               ) : null}
               <MenuGroupSeparator />
               <MenuActionRow
+                label={flagged ? 'Remove Flag' : 'Flag'}
+                icon={<PlanTypeGlyph glyph="flag" size={16} />}
+                onClick={act(onFlag)}
+              />
+              <MenuActionRow
                 label={archived ? 'Restore' : 'Archive'}
                 icon={<PlanBoardTileArt preset="archive" size={16} />}
                 onClick={act(onArchive)}
@@ -180,13 +193,7 @@ export function PlanCardMenuHost({
             },
           }
         : {})}
-      onDuplicate={() => {
-        // A copy right after the card, without its votes: they were for the original.
-        const { votes: _votes, ...fields } = item.fields;
-        void _votes;
-        plan.addItem({ type: item.type, fields, status, after: item.id });
-        plan.announce('Card duplicated');
-      }}
+      onDuplicate={() => duplicateItem(plan, item)}
       onMove={(to) => {
         plan.moveItem(item.id, { status: to, before: null });
         plan.announce(`Moved to ${setup.columns.find((c) => c.status === to)?.name ?? to}`);
@@ -195,6 +202,8 @@ export function PlanCardMenuHost({
         plan.deleteItem(item.id);
         plan.announce('Card deleted');
       }}
+      flagged={isFlagged(item)}
+      onFlag={() => toggleFlag(plan, item)}
       archived={isArchived(item)}
       onArchive={() => {
         const was = isArchived(item);

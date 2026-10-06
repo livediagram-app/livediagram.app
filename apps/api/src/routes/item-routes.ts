@@ -1,16 +1,19 @@
 // The item store's endpoints (docs/specs/026-plan/items.md, blueprint item-store.md "Interfaces and
 // contracts"): list, create, bulk create, patch (POST), move, vote and delete under
-// /api/documents/:id/items. People and agents use the same doors. Every write applies the pure
-// functions of @livediagram/items, lands guarded by the item's rev (retried on a lost race), and
-// reaches the room as an ordered `items` op.
+// /api/documents/:id/items, and a card's comment writes (item-comment-routes.ts). People and agents use the
+// same doors. Every write applies the pure functions of @livediagram/items, lands guarded by the item's rev
+// (retried on a lost race), and reaches the room as an ordered `items` op. Comment author ids reach only their
+// author: every answer is redacted for the caller, and the room hears none (docs/specs/026-plan/items.md
+// "Comments").
 
 import type { ItemResponse, ItemsResponse } from '@livediagram/api-schema';
+import { itemForRoom, itemForViewer, readRestoredThread } from '@livediagram/document';
 import {
   ITEMS_MAX,
   ITEM_BULK_MAX,
   ITEM_STATUS_MAX,
   ITEM_WRITE_RETRIES,
-  SWIMLANE_FIELDS,
+  isSwimlaneSettable,
   applyMove,
   applyPatch,
   applyVote,
@@ -48,6 +51,7 @@ import {
 } from '../db';
 import { badRequest, forbidden, json, methodNotAllowed, noContent, notFound } from '../responses';
 import { relayItems } from '../room-client';
+import { handleItemCommentRoutes } from './item-comment-routes';
 import {
   deniedOnTab,
   gateEdit,
@@ -61,9 +65,12 @@ import {
 
 type Level = 'read' | 'participate' | 'edit';
 
-type Caller = {
+export type ItemCaller = {
   documentId: string;
   owner: string;
+  // The document, for the gates a comment delete checks (item-comment-routes.ts); absent on a new document's
+  // seed, which writes no comments.
+  doc?: NonNullable<Awaited<ReturnType<typeof getDocument>>>;
   // The item ids the caller may touch, when their grant is confined to one tab.
   scope: Set<string> | null;
   // The store as read to work out that scope, so a list does not read it twice.
@@ -87,18 +94,18 @@ const itemBusy = () => {
 };
 
 // The caller and their reach: the whole document, or (a tab-scoped grant) the items one tab shows.
-async function itemCaller(
+export async function itemCaller(
   ctx: RouteContext,
   documentId: string,
   level: Level,
-): Promise<Caller | Response> {
+): Promise<ItemCaller | Response> {
   const owner = requireOwner(ctx);
   if (owner instanceof Response) return owner;
   const doc = await getDocument(ctx.env, documentId);
   if (!doc) return missingDocument(ctx, documentId);
   const gate = GATES[level];
   if (await gate(ctx, documentId, doc.ownerId, doc.teamId))
-    return { documentId, owner, scope: null };
+    return { documentId, owner, doc, scope: null };
   const tabId = ctx.url.searchParams.get('tabId');
   if (!tabId) {
     // A whole-document grant that falls short of the level (a view link writing) is refused
@@ -113,6 +120,7 @@ async function itemCaller(
   return {
     documentId,
     owner,
+    doc,
     scope: itemIdsShownOnTab(tab.elements as unknown as TabItemElement[], items),
     items,
   };
@@ -157,7 +165,8 @@ function readPlace(raw: unknown): ItemPlace | ItemRejection {
   return place;
 }
 
-function readCreate(raw: unknown): ItemCreate | ItemRejection {
+// `owner` is the caller: a restored comment thread keeps author ids on their own comments only.
+function readCreate(raw: unknown, owner: string): ItemCreate | ItemRejection {
   if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) return 'field_value_invalid';
   const b = raw as Record<string, unknown>;
   if (!isValidItemType(b.type)) return 'type_invalid';
@@ -170,11 +179,14 @@ function readCreate(raw: unknown): ItemCreate | ItemRejection {
   if (bound) return bound;
   const votes = validateVotes(b.votes);
   if (!votes) return 'field_value_invalid';
+  const comments = b.comments === undefined ? undefined : readRestoredThread(b.comments, owner);
+  if (comments === null) return 'field_value_invalid';
   return {
     type: b.type,
     fields: fields.fields,
     place,
     ...(Object.keys(votes).length ? { votes } : {}),
+    ...(comments ? { comments: comments as unknown as ItemCreate['comments'] } : {}),
     ...(typeof b.id === 'string' ? { id: b.id } : {}),
     ...(typeof b.key === 'number' && Number.isInteger(b.key) && b.key > 0 ? { key: b.key } : {}),
   };
@@ -187,8 +199,19 @@ function relay(
   removed: string[],
   rev: number,
 ) {
-  ctx.waitUntil?.(relayItems(ctx.env, documentId, { kind: 'items', upserts, removed, rev }));
+  ctx.waitUntil?.(
+    relayItems(ctx.env, documentId, {
+      kind: 'items',
+      upserts: upserts.map(itemForRoom),
+      removed,
+      rev,
+    }),
+  );
 }
+
+// What a caller is answered with: their own comment author ids, nobody else's.
+const forCaller = (caller: ItemCaller, items: Item[]) =>
+  items.map((i) => itemForViewer(i, caller.owner));
 
 // GET /items: the store, or the items a tab-scoped caller's tab shows.
 async function list(ctx: RouteContext, documentId: string): Promise<Response> {
@@ -199,14 +222,14 @@ async function list(ctx: RouteContext, documentId: string): Promise<Response> {
     getItemsRev(ctx.env, documentId),
   ]);
   const shown = caller.scope ? items.filter((i) => caller.scope!.has(i.id)) : items;
-  const body: ItemsResponse = { items: shown, rev };
+  const body: ItemsResponse = { items: forCaller(caller, shown), rev };
   return json(body);
 }
 
 // Creates `creates` in one batch; keys from the store's next key (or a free restored key).
 async function createMany(
   ctx: RouteContext,
-  caller: Caller,
+  caller: ItemCaller,
   creates: ItemCreate[],
 ): Promise<{ items: Item[]; rev: number } | Response> {
   const by = await writer(ctx, caller.owner);
@@ -265,13 +288,13 @@ async function create(ctx: RouteContext, documentId: string): Promise<Response> 
   if (caller instanceof Response) return caller;
   const body = await readBody(ctx);
   if (body instanceof Response) return body;
-  const input = readCreate(body);
+  const input = readCreate(body, caller.owner);
   if (typeof input === 'string') return rejected(input);
   const made = await createMany(ctx, caller, [input]);
   if (made instanceof Response) return made;
   relay(ctx, documentId, made.items, [], made.rev);
   console.info('[items] created', { documentId, agent: ctx.token !== null });
-  const answer: ItemResponse = { item: made.items[0]!, rev: made.rev };
+  const answer: ItemResponse = { item: forCaller(caller, made.items)[0]!, rev: made.rev };
   return json(answer, { status: 201 });
 }
 
@@ -286,7 +309,7 @@ async function bulk(ctx: RouteContext, documentId: string): Promise<Response> {
     return badRequest(`items must be 1 to ${ITEM_BULK_MAX} items`);
   const creates: ItemCreate[] = [];
   for (const raw of body.items) {
-    const input = readCreate(raw);
+    const input = readCreate(raw, caller.owner);
     if (typeof input === 'string') return rejected(input);
     creates.push(input);
   }
@@ -294,14 +317,15 @@ async function bulk(ctx: RouteContext, documentId: string): Promise<Response> {
   if (made instanceof Response) return made;
   relay(ctx, documentId, made.items, [], made.rev);
   console.info('[items] bulk created', { documentId, count: made.items.length });
-  const answer: ItemsResponse = { items: made.items, rev: made.rev };
+  const answer: ItemsResponse = { items: forCaller(caller, made.items), rev: made.rev };
   return json(answer, { status: 201 });
 }
 
-// Reads the item, applies `change` and writes at the rev read; a lost race reads again.
-async function writeItem(
+// Reads the item, applies `change` and writes at the rev read; a lost race reads again. A change may answer
+// with a Response instead (a refusal, or nothing to write).
+export async function writeItem(
   ctx: RouteContext,
-  caller: Caller,
+  caller: ItemCaller,
   itemId: string,
   change: (item: Item, by: ItemPerson) => Item | Response,
 ): Promise<Response> {
@@ -317,7 +341,7 @@ async function writeItem(
     const rev = await updateItemAtRev(ctx.env, caller.documentId, next, item.rev);
     if (rev !== null) {
       relay(ctx, caller.documentId, [next], [], rev);
-      const answer: ItemResponse = { item: next, rev };
+      const answer: ItemResponse = { item: itemForViewer(next, caller.owner), rev };
       return json(answer);
     }
     console.info('[items] items.write.retry', { documentId: caller.documentId, attempt });
@@ -361,8 +385,8 @@ function readMove(body: Record<string, unknown>): ItemMove | ItemRejection {
   const lane = readPatch(body);
   if (typeof lane === 'string') return lane;
   const touched = [...Object.keys(lane.set ?? {}), ...(lane.clear ?? [])];
-  if (touched.some((k) => !(SWIMLANE_FIELDS as readonly string[]).includes(k)))
-    return 'place_invalid';
+  // A move sets only what a swimlane stands for (docs/specs/026-plan/plan-board.md "Swimlanes by a field").
+  if (touched.some((k) => !isSwimlaneSettable(k))) return 'place_invalid';
   if (lane.set) move.set = lane.set;
   if (lane.clear) move.clear = lane.clear;
   if (lane.type) move.type = lane.type;
@@ -426,6 +450,7 @@ export async function handleItemRoutes(ctx: RouteContext): Promise<Response | nu
     if (method === 'DELETE') return remove(ctx, documentId, itemId);
     return methodNotAllowed();
   }
+  if (segments[5] === 'comments') return handleItemCommentRoutes(ctx, documentId, itemId);
   if (segments.length === 6 && (segments[5] === 'move' || segments[5] === 'vote')) {
     if (method !== 'POST') return methodNotAllowed();
     return segments[5] === 'move' ? move(ctx, documentId, itemId) : vote(ctx, documentId, itemId);
@@ -435,13 +460,13 @@ export async function handleItemRoutes(ctx: RouteContext): Promise<Response | nu
 
 // A document create's seed items (an offline document's, on sync), validated
 // before anything is written: the items, or the refusal.
-export function readSeedItems(raw: unknown): ItemCreate[] | Response {
+export function readSeedItems(raw: unknown, owner: string): ItemCreate[] | Response {
   if (raw === undefined) return [];
   if (!Array.isArray(raw) || raw.length > ITEMS_MAX)
     return badRequest(`items must be at most ${ITEMS_MAX}`);
   const creates: ItemCreate[] = [];
   for (const entry of raw) {
-    const input = readCreate(entry);
+    const input = readCreate(entry, owner);
     if (typeof input === 'string') return rejected(input);
     creates.push(input);
   }
@@ -456,7 +481,7 @@ export async function seedItems(
   owner: string,
   creates: ItemCreate[],
 ): Promise<Response | null> {
-  const caller: Caller = { documentId, owner, scope: null };
+  const caller: ItemCaller = { documentId, owner, scope: null };
   for (let i = 0; i < creates.length; i += ITEM_BULK_MAX) {
     const made = await createMany(ctx, caller, creates.slice(i, i + ITEM_BULK_MAX));
     if (made instanceof Response) return made;

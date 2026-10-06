@@ -42,6 +42,8 @@ type TopCenterChromeProps = Pick<
   // A whiteboard's dock at the top (docs/specs/023-draw-mode/draw-mode.md "Where the dock sits"):
   // the stack starts beneath it.
   dockOnTop?: boolean;
+  // The tab has a Plan board: an armed Plan card's hint says to pick a column, not to add a board first.
+  hasPlanBoard?: boolean;
   // Follow-me (docs/specs/012-collaboration/follow-me-viewport.md): who we are following, so the pill can say so and
   // offer the way out. Any canvas gesture also ends it silently — this is the
   // explicit door, not the only one.
@@ -54,6 +56,7 @@ export function TopCenterChrome({
   selfParticipant,
   readOnly,
   pendingDraw,
+  hasPlanBoard = false,
   onCancelDraw,
   onCancelFormatPainter,
   onExitFormatTool,
@@ -144,7 +147,7 @@ export function TopCenterChrome({
         {pendingDraw && !isHeldPenIntent(pendingDraw) ? (
           <ModeBanner
             icon={<DrawIcon />}
-            message={drawBannerMessage(pendingDraw, isMobileViewportSync())}
+            message={drawBannerMessage(pendingDraw, isMobileViewportSync(), { hasPlanBoard })}
             onAction={onCancelDraw}
           />
         ) : null}
