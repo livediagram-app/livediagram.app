@@ -5,9 +5,9 @@ import type { Participant } from '@/lib/identity';
 export type ShareDialogProps = {
   participant: Participant;
   links: ShareLink[];
-  // The document's current share password (docs/specs/013-workspace/share-password.md), or null when unset.
-  // Shown in the clear so the owner can always see + change it.
-  sharePassword: string | null;
+  // Whether the document has a share password (docs/specs/013-workspace/share-password.md). The
+  // password itself is never shown: the api keeps only its hash.
+  sharePasswordSet: boolean;
   shareUrlFor: (code: string) => string;
   // The document's tabs, in bar order, for the Live image control's
   // per-tab picker (docs/specs/013-workspace/live-image-share.md) and the link scope pickers
@@ -36,9 +36,9 @@ export type ShareDialogProps = {
   // duration (docs/specs/013-workspace/share-link-expiry.md). Only rendered on inactive (expired) rows.
   onExtendLink: (code: string) => Promise<void> | void;
   // Set (or clear, with null) the document's share password. Resolves to
-  // the stored value on success (`null` = cleared) and `undefined` on
-  // FAILURE, so the field never reflects a write that didn't land.
-  onSetPassword: (password: string | null) => Promise<string | null | undefined> | void;
+  // whether a password is now set on success (`false` = cleared) and
+  // `undefined` on FAILURE, so the dialog never reflects a write that didn't land.
+  onSetPassword: (password: string | null) => Promise<boolean | undefined> | void;
   // Offline Mode (docs/specs/006-document/offline-mode.md): an offline document lives only in this browser, so
   // it has nothing to share yet. When true the dialog shows a gate asking the
   // owner to sync it to their account first; `onSyncToCloud` performs that

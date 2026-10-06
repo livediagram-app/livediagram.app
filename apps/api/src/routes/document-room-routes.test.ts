@@ -17,7 +17,7 @@ const { db } = vi.hoisted(() => ({
     consumeWsTicket: vi.fn(),
     createWsTicket: vi.fn(async () => 'TICKET-1'),
     getDocumentMeta: vi.fn(),
-    getDocumentSharePassword: vi.fn(async () => null),
+    getDocumentSharePassword: vi.fn(async (): Promise<string | null> => null),
     getShareLink: vi.fn(),
   },
 }));
@@ -144,6 +144,26 @@ describe('WebSocket upgrade — trust headers', () => {
       expect(res?.status).toBe(REACHED_ROOM);
       expect(seen[0]!.headers.get('X-Verified-Owner')).toBe('1');
     });
+  });
+
+  // The room's `p` spends the caller network's guessing budget like every
+  // other share-code door (docs/specs/013-workspace/share-password.md).
+  it('spends the network guessing budget on a room password, refusing once it is spent', async () => {
+    db.getDocumentMeta.mockResolvedValue({ ownerId: 'owner-uuid', teamId: null });
+    db.getShareLink.mockResolvedValue({ documentId: 'd1', role: 'view' });
+    db.getDocumentSharePassword.mockResolvedValue('pbkdf2-sha256$1000$c2FsdA$aGFzaA');
+    const limit = vi.fn(async () => ({ success: false }));
+    const { env, seen } = roomEnv();
+    const res = await handleDocumentRoomRoutes(
+      makeTestRouteContext('GET', '/api/documents/d1/ws?s=CODE1234&p=guess', {
+        owner: null,
+        headers: { Upgrade: 'websocket', 'CF-Connecting-IP': '203.0.113.9' },
+        env: Object.assign(env, { SHARE_RATE_LIMITER: { limit } }),
+      }),
+    );
+    expect(res?.status).toBe(403);
+    expect(seen).toHaveLength(0);
+    expect(limit).toHaveBeenCalledWith({ key: 'share-pw:203.0.113.9' });
   });
 
   it('overwrites a client-supplied X-Verified-Role with the resolved one', async () => {

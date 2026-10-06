@@ -15,7 +15,7 @@ import {
 import { notifyDocumentJoin } from '../email/notifications';
 import { documentTrashed, forbidden, json, notFound, svgImage } from '../responses';
 import { reportServerEvent } from '../server-telemetry';
-import { sharePasswordStatus } from '../auth/share-access';
+import { sharePasswordStatus, type SharePasswordAttempt } from '../auth/share-access';
 import {
   redactDocumentForCommunity,
   redactDocumentForReader,
@@ -190,7 +190,7 @@ async function handleShareImage(ctx: RouteContext, code: string): Promise<Respon
 export async function passwordGate(
   env: RouteContext['env'],
   documentId: string,
-  provided: string | null,
+  provided: SharePasswordAttempt | null,
 ): Promise<Response | null> {
   const status = await sharePasswordStatus(env, documentId, provided);
   if (status === 'missing') return json({ error: 'password_required' }, { status: 401 });

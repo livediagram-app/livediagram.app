@@ -28,7 +28,12 @@
 
 import { communityLinkAccess, getMembership } from '../db';
 import type { Env, ShareRole } from '../types';
-import { isPersonalOwner, shareLinkForDocument, sharePasswordOk } from './share-access';
+import {
+  isPersonalOwner,
+  shareLinkForDocument,
+  sharePasswordOk,
+  type SharePasswordAttempt,
+} from './share-access';
 
 // Joined-member check for team documents (docs/specs/013-workspace/team-shared-documents.md). `caller` MUST be the
 // VERIFIED Clerk user id (never the unsigned X-Owner-Id header): a team
@@ -76,7 +81,7 @@ export async function resolveDocumentGrant(
   owner: string | null,
   shareCode: string | null,
   ownerId: string,
-  sharePassword: string | null = null,
+  sharePassword: SharePasswordAttempt | null = null,
   teamId: string | null = null,
   callerId: string | null = null,
 ): Promise<DocumentGrant | null> {
@@ -124,7 +129,7 @@ async function canAccessDocument(
   owner: string | null,
   shareCode: string | null,
   ownerId: string,
-  sharePassword: string | null,
+  sharePassword: SharePasswordAttempt | null,
   teamId: string | null,
   callerId: string | null,
   targetTabId: string | undefined,
@@ -154,7 +159,7 @@ export async function canEditDocument(
   owner: string | null,
   shareCode: string | null,
   ownerId: string,
-  sharePassword: string | null = null,
+  sharePassword: SharePasswordAttempt | null = null,
   teamId: string | null = null,
   callerId: string | null = null,
   targetTabId?: string,
@@ -179,7 +184,7 @@ export async function canReadDocument(
   owner: string | null,
   shareCode: string | null,
   ownerId: string,
-  sharePassword: string | null = null,
+  sharePassword: SharePasswordAttempt | null = null,
   teamId: string | null = null,
   callerId: string | null = null,
   targetTabId?: string,

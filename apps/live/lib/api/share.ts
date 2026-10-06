@@ -87,17 +87,17 @@ export const apiLoadShared = dedupeInFlight(
 // Deduped on `${ownerId}|${id}`: editor mount fires this for the
 // share-dialog state alongside the other read endpoints. Strict
 // Mode doubling collapses to one fetch.
-// Returns the document's share links AND its current share password
-// (docs/specs/013-workspace/share-password.md) in one owner-only round-trip — the Share dialog needs both.
+// Returns the document's share links AND whether a share password is set
+// (docs/specs/013-workspace/share-password.md) in one owner-only round-trip: the Share dialog needs both.
 async function _apiListShareLinks(
   ownerId: string,
   id: string,
-): Promise<{ links: ShareLink[]; password: string | null }> {
+): Promise<{ links: ShareLink[]; passwordSet: boolean }> {
   const res = await apiFetch(`${API_BASE}/documents/${id}/share`, {
     headers: await apiHeaders(ownerId),
   });
-  const { links, password } = await expectOk<ShareLinksResponse>(res, 'list share links');
-  return { links, password: password ?? null };
+  const { links, passwordSet } = await expectOk<ShareLinksResponse>(res, 'list share links');
+  return { links, passwordSet: passwordSet === true };
 }
 export const apiListShareLinks = dedupeInFlight(
   _apiListShareLinks,
@@ -105,19 +105,20 @@ export const apiListShareLinks = dedupeInFlight(
 );
 
 // Set (or clear, with null / empty) the document's share password.
-// Owner-only on the api side. Returns the stored value (normalised).
+// Owner-only on the api side. Resolves to whether a password is now set
+// (a whitespace-only value clears it).
 export async function apiSetSharePassword(
   ownerId: string,
   id: string,
   password: string | null,
-): Promise<string | null> {
+): Promise<boolean> {
   const res = await apiFetch(`${API_BASE}/documents/${id}/share-password`, {
     method: 'PUT',
     headers: await apiHeaders(ownerId, { body: true }),
     body: JSON.stringify({ password }),
   });
-  const { password: stored } = await expectOk<SharePasswordResponse>(res, 'set share password');
-  return stored ?? null;
+  const { passwordSet } = await expectOk<SharePasswordResponse>(res, 'set share password');
+  return passwordSet === true;
 }
 
 export async function apiCreateShareLink(

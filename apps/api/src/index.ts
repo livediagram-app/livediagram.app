@@ -247,8 +247,8 @@ async function routeApiRequest(
     return forbidden('read_only_token');
   }
   // One read is a credential, not content: the share-link list carries every
-  // code (edit links included) and the share password, so a read-only token
-  // that could list it could promote itself to edit by opening a link.
+  // code (edit links included), so a read-only token that could list it could
+  // promote itself to edit by opening a link.
   const isShareLinkList =
     segments[1] === 'documents' && segments.length === 4 && segments[3] === 'share';
   if (tokenAuth?.readOnly && isShareLinkList) {

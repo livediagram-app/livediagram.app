@@ -75,7 +75,7 @@ export function useEditorRealtime() {
   const [shareLinks, setShareLinks] = useState<ShareLink[]>([]);
   // The document's optional share password (docs/specs/013-workspace/share-password.md), owner-only. Null
   // when unset. The ShareDialog shows + edits this in the clear.
-  const [sharePassword, setSharePassword] = useState<string | null>(null);
+  const [sharePasswordSet, setSharePasswordSet] = useState(false);
   // `passwordRetry` bumps to re-run the bootstrap once the visitor
   // submits a password (see the bootstrap effect deps).
   const [passwordRetry, setPasswordRetry] = useState(0);
@@ -133,8 +133,8 @@ export function useEditorRealtime() {
     setCopying,
     shareLinks,
     setShareLinks,
-    sharePassword,
-    setSharePassword,
+    sharePasswordSet,
+    setSharePasswordSet,
     passwordRetry,
     setPasswordRetry,
     sharePasswordGate,
