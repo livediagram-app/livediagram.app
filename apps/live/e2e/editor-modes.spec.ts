@@ -40,6 +40,18 @@ const sketches = (page: Page) => page.locator(CANVAS).getByRole('img', { name: /
 async function openBlank(page: Page) {
   await page.setViewportSize({ width: 1600, height: 900 });
   await page.emulateMedia({ colorScheme: 'dark' });
+  // The Plan tour offers itself 800 ms into Plan mode (PlanTourHost OFFER_DELAY_MS), and its overlay
+  // takes the presses these specs make there on a slow runner; it has its own unit tests.
+  await page.addInitScript(() => {
+    const key = 'livediagram:user-preferences:v1';
+    try {
+      const prefs = JSON.parse(localStorage.getItem(key) ?? '{}') as Record<string, unknown>;
+      if (prefs.planTourSeen !== true)
+        localStorage.setItem(key, JSON.stringify({ ...prefs, planTourSeen: true }));
+    } catch {
+      // No storage: nothing to mark.
+    }
+  });
   await page.goto('/new?blank=1');
   await page.locator(CANVAS).waitFor({ timeout: 30_000 });
   await dismissQuickTour(page);

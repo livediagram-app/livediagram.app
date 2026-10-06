@@ -32,12 +32,9 @@ import { markTourPending } from '@/lib/tour-pending';
 import { randomColor, randomName, type Participant } from '@/lib/identity';
 import { titleCaseType, track } from '@/lib/telemetry';
 import { trackDailyReturn } from '@/lib/daily-return';
-import {
-  ensureGuestSelfId,
-  getGuestSelfId,
-  subscribeGuestSelfId,
-  markNameConfirmed,
-} from '@/lib/local-identity';
+import { markNameConfirmed } from '@/lib/local-identity';
+import { ensureSignedGuestIdentity } from '@/lib/guest-identity';
+import { useSignedGuestId } from '@/hooks/persistence/useSignedGuestId';
 import { buildTemplatedTabs } from '@/lib/template-builders';
 import {
   templateFamilyOf,
@@ -93,11 +90,10 @@ const PENDING_SELF: Participant = {
   color: '#0ea5e9',
   status: 'online',
 };
-const noGuestId = () => null;
 
 export default function NewDocumentPage() {
   // Stable placeholder so the first paint matches the SSG render; the
-  // real participant lands once `useLayoutEffect` runs.
+  // real participant lands once the identity has resolved.
   // Clerk wiring (token provider + guest to authed migration), the same
   // hook as the editor route; see hooks/useClerkApiBootstrap.ts.
   const { authLoaded, clerkUserId } = useClerkApiBootstrap();
@@ -106,7 +102,10 @@ export default function NewDocumentPage() {
   // The base is the Clerk id once auth has settled, else the guest id read from its store, with a name and
   // colour seeded once per visit. `selfOverride` holds what replaces it: the stored profile, the name
   // chosen in the wizard, or the commit's fallback. Until auth settles it is the 'pending' placeholder.
-  const guestId = useSyncExternalStore(subscribeGuestSelfId, getGuestSelfId, noGuestId);
+  // A guest's id is the SIGNED one, resolved before any owner-scoped call
+  // (docs/specs/014-identity/auth-and-guest-access.md "Signed guest ids"): until then `self` stays
+  // 'pending', which gates every owner-scoped read below.
+  const guestId = useSignedGuestId(authLoaded, clerkUserId);
   const [seed] = useState(() => ({ name: randomName(), color: randomColor() }));
   const [selfOverride, setSelf] = useState<Participant | null>(null);
   const baseId = authLoaded ? (clerkUserId ?? guestId) : null;
@@ -269,15 +268,16 @@ export default function NewDocumentPage() {
   }, [bypassKind]);
 
   useLayoutEffect(() => {
-    // Wait for Clerk to settle so a signed-in user gets the Clerk
-    // userId, not a freshly-minted guest UUID.
+    // Wait for Clerk to settle so guest vs signed-in is known.
     if (!authLoaded) return;
     // Daily-active-returns signal (docs/specs/017-telemetry/telemetry.md): once-per-browser-per-UTC-day,
-    // gated inside the helper. Auth has settled, so guest vs signed-in is known.
+    // gated inside the helper.
     trackDailyReturn(!!clerkUserId);
-    // A guest's id is minted here if this browser has none; the store re-renders the page with it before
-    // paint.
-    const selfId = clerkUserId ?? ensureGuestSelfId();
+  }, [authLoaded, clerkUserId]);
+  // The stored profile, once the id is known: the Clerk one, or a guest's signed one.
+  const selfId = authLoaded ? (clerkUserId ?? guestId) : null;
+  useEffect(() => {
+    if (!selfId) return;
     const local: Participant = { id: selfId, name: seed.name, color: seed.color, status: 'online' };
     let cancelled = false;
     void (async () => {
@@ -292,7 +292,7 @@ export default function NewDocumentPage() {
     return () => {
       cancelled = true;
     };
-  }, [authLoaded, clerkUserId, seed]);
+  }, [selfId, seed]);
   // Identity for the commit path. Clerk's chunk loads deferred, so a fast
   // click-through (or an e2e robot) can reach Create while `self` is still
   // the 'pending' placeholder — the identity bootstrap above hasn't run.
@@ -308,7 +308,8 @@ export default function NewDocumentPage() {
       await new Promise((r) => setTimeout(r, 100));
     }
     if (selfRef.current.id !== 'pending') return selfRef.current;
-    const fallback = { ...selfRef.current, id: ensureGuestSelfId() };
+    // Still pending (auth never settled): resolve the guest's signed id here.
+    const fallback = { ...selfRef.current, id: (await ensureSignedGuestIdentity()).id };
     setSelf(fallback);
     return fallback;
   };

@@ -126,18 +126,25 @@ jobs:
 
       - name: Run sites audit
         run: pnpm --filter @livediagram/live test:e2e:sites
+      # The armed guest-signature specs (docs/specs/003-system-architecture/e2e-smoke.md "Armed guest
+      # signatures") reuse this job's guest-mode build, on their own stack with enforcement on.
+      - name: Run armed guest-signature specs
+        if: always()
+        run: pnpm --filter @livediagram/live test:e2e:armed
 
       - name: Save build cache
         uses: ./.github/actions/next-cache-save
 
       - name: Upload report with traces
-        if: always() && hashFiles('apps/live/test-results/**/trace.zip', 'apps/live/playwright-report/data/*.zip') != ''
+        if: always() && hashFiles('apps/live/test-results*/**/trace.zip', 'apps/live/playwright-report*/data/*.zip') != ''
         uses: actions/upload-artifact@v7
         with:
           name: playwright-report-sites
           path: |
             apps/live/playwright-report
             apps/live/test-results
+            apps/live/playwright-report-armed
+            apps/live/test-results-armed
           retention-days: 7
 
   signed-in:

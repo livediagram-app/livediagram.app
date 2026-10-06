@@ -115,7 +115,8 @@ describe('the post page', () => {
   it('takes its canonical link away again when the page goes', async () => {
     const view = render(<PostView />);
     await screen.findByRole('heading', { name: 'Payments Platform' });
-    expect(document.querySelector('link[rel="canonical"]')).not.toBeNull();
+    // The link is added in an effect after the commit that shows the heading, so it is awaited.
+    await waitFor(() => expect(document.querySelector('link[rel="canonical"]')).not.toBeNull());
     view.unmount();
     expect(document.querySelector('link[rel="canonical"]')).toBeNull();
   });

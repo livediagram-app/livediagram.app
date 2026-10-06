@@ -100,7 +100,7 @@ The hosted version uses Clerk for sign-in. To enable on your self-host:
    - `GUEST_SIGNING_LIVE_AT`: epoch ms when your deployment first had `GUEST_ID_HMAC_SECRET`. A guest id created before it can still make its one-time upgrade onto a signed id after enforcement starts, so returning pre-signing guests keep their documents.
    - `GUEST_SIG_ENFORCE_AFTER`: epoch ms from which owner-scoped routes, the realtime room's owner leg and the upgrade itself require a valid signature.
 
-   Leave `GUEST_SIG_ENFORCE_AFTER` unset for now: `/new` still mints a local unsigned id, so with enforcement armed a first-time visitor who opens it cannot create a document ([Public API and API tokens](../specs/015-api/public-api-and-tokens.md) §6).
+   Arm it only on a build where every entry path signs first: before that, `/new` minted a local unsigned id, and with enforcement armed a first-time visitor who opened it could not create a document ([Public API and API tokens](../specs/015-api/public-api-and-tokens.md) §6).
 
    Set them in the file rather than the Cloudflare dashboard: every `wrangler deploy` replaces plain vars with the ones the file declares. Both are no-ops without `GUEST_ID_HMAC_SECRET`. `pnpm dev` and the e2e stack blank `GUEST_SIG_ENFORCE_AFTER`.
 

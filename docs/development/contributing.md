@@ -116,6 +116,12 @@ pnpm --filter @livediagram/live build:clerk-stub
 pnpm --filter @livediagram/live test:e2e:clerk-stub
 ```
 
+The armed guest-signature specs (`apps/live/e2e/armed/`) run against the usual build, on their own stack with guest signature enforcement on (`:3017`):
+
+```sh
+pnpm --filter @livediagram/live test:e2e:armed
+```
+
 Those ports are defaults, not fixtures. Three environment variables move them, which is what you want when `:3002` is already taken (a second checkout, a worktree):
 
 | Variable             | Default                 | What it moves                                                         |

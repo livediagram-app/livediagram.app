@@ -499,9 +499,13 @@ hardening landed first:
    production on 2026-10-06 and un-armed the same day: `/new` mints a local
    unsigned id, so a first-time visitor arriving there from the landing page was
    refused (`401 signature_required`) and could not create a document, against
-   the rule that the canvas always works without signing in. It is armed again
-   once every entry path (`/new`, the team invite join) mints a signed id before
-   its first api call. What follows holds from then. Production only
+   the rule that the canvas always works without signing in. Every entry path
+   now resolves a signed id before its first owner-scoped call
+   ([Auth and guest access](../014-identity/auth-and-guest-access.md) "Signed
+   guest ids"), and the e2e suite proves it with enforcement armed. **Re-arming
+   production is Tom's or Webber's call**, made by setting
+   `GUEST_SIG_ENFORCE_AFTER` in `apps/api/wrangler.toml` again. What follows
+   holds from then. Production only
    started signing on 2026-09-25 (`GUEST_SIGNING_LIVE_AT`), so most guest ids
    were still unsigned when it was armed: about 219, holding 274 documents. An
    id whose participant row predates `GUEST_SIGNING_LIVE_AT` keeps the legacy

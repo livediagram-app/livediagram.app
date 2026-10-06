@@ -12,7 +12,7 @@ import {
   type Folder,
   type SharedWithItem,
 } from '@/lib/api-client';
-import { ensureSignedGuestIdentity } from '@/lib/guest-identity';
+import { useSignedGuestId } from '@/hooks/persistence/useSignedGuestId';
 import {
   fetchUserPreferences,
   readUserPreferences,
@@ -91,25 +91,10 @@ export function useExplorerState() {
   // signed-in user is keyed by Clerk userId, a guest is keyed by the
   // localStorage UUID (minted on first visit). Null until Clerk has
   // settled so a signed-in user never momentarily reads a guest id.
-  // For a guest, resolve a SIGNED id (ensureSignedGuestIdentity, like the
-  // editor's useIdentityBootstrap) rather than a bare ensureGuestSelfId, so the
-  // `X-Owner-Sig` the §4 REST gate may require (docs/specs/015-api/public-api-and-tokens.md) is minted even for a
-  // guest who opens the Explorer before ever touching the editor — otherwise
-  // their document / folder list calls would 401 once enforcement is on. Async,
-  // so ownerId stays null until it resolves (the lists are autoLoad:false off
-  // ownerId, and the common case — an existing signed id — resolves with no
-  // network).
-  const [guestId, setGuestId] = useState<string | null>(null);
-  useEffect(() => {
-    if (!authLoaded || clerkUserId) return;
-    let cancelled = false;
-    void ensureSignedGuestIdentity().then((r) => {
-      if (!cancelled) setGuestId(r.id);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [authLoaded, clerkUserId]);
+  // For a guest, the SIGNED id (useSignedGuestId; docs/specs/014-identity/auth-and-guest-access.md
+  // "Signed guest ids"), so the lists' first calls carry the `X-Owner-Sig` the api may require. Null
+  // until it resolves (the lists are autoLoad:false off ownerId).
+  const guestId = useSignedGuestId(authLoaded, clerkUserId);
   const ownerId: string | null = !authLoaded ? null : (clerkUserId ?? guestId);
   // Daily-active-returns signal (docs/specs/017-telemetry/telemetry.md): the Explorer is an app-open
   // surface too, so count a returning visitor here. Gated once per
