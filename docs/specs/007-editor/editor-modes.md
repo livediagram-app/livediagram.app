@@ -41,8 +41,10 @@ where it is and changes only how the next mark is made.
 
 - **Placement:**
   - **Toolbar layout:** directly beside the menu (hamburger) button, in its
-    card at the top left, or inline at the strip's left end where a phone
-    puts the button ([Toolbar layout](toolbar-layout.md)).
+    card at the top left ([Toolbar layout](toolbar-layout.md)).
+  - **Not on a phone.** A phone's top row belongs to the strip, so its menu card holds the menu
+    button alone. A phone switches mode from the tab menu's **Opens in** (below), which switches
+    the chooser too; Shift+D needs a keyboard. The tour's Diagram & Draw step is skipped there.
   - **Floating layout:** in the **Palette** panel's title row, beside its help
     and minimise buttons, **labelled** (the mode's name beside its icon,
     the header has the room). The Palette stays in Draw mode, showing Draw's

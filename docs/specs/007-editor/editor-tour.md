@@ -86,7 +86,7 @@ live in `apps/live/components/tour/tour-steps.ts`):
    title row, or beside the Toolbar layout's menu button). The copy says
    what each mode is for and that Shift+D flips between them; the step
    switches nobody's mode. Skipped on an event-storming board, which offers
-   no switch.
+   no switch, and on a phone, which shows none (it switches from the tab menu's Opens in).
 5. **The Explorer**: the in-editor document/folder browser.
 6. **Element context menu**: selects an element (adding a theme-coloured
    square at the viewport centre first if the tab is empty) and opens its

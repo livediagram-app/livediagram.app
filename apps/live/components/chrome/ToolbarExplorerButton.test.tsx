@@ -6,7 +6,13 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { EditorModeProvider } from './editor-mode/editor-mode-context';
 import { ToolbarExplorerButton } from './ToolbarExplorerButton';
 
-afterEach(cleanup);
+const mobile = vi.hoisted(() => ({ value: false }));
+vi.mock('@/hooks/ui/useIsMobileViewport', () => ({ useIsMobileViewport: () => mobile.value }));
+
+afterEach(() => {
+  cleanup();
+  mobile.value = false;
+});
 
 describe('ToolbarExplorerButton', () => {
   it('passes its own element to the toggle, to anchor the popover under it', () => {
@@ -57,5 +63,20 @@ describe('ToolbarExplorerButton', () => {
     );
     const card = screen.getByRole('button', { name: 'Explorer' }).closest('[data-dock-button]')!;
     expect(card.contains(screen.getByRole('button', { name: 'Editor mode: Diagram' }))).toBe(true);
+  });
+
+  // docs/specs/007-editor/editor-modes.md "The mode switch": not on a phone, whose tab menu's
+  // Opens in switches mode.
+  it.each([false, true])('carries no mode switch on a phone (inline %s)', (inline) => {
+    mobile.value = true;
+    render(
+      <EditorModeProvider
+        value={{ mode: 'diagram', setMode: vi.fn(), canSwitch: true, canEdit: true }}
+      >
+        <ToolbarExplorerButton open={false} onToggle={vi.fn()} inline={inline} />
+      </EditorModeProvider>,
+    );
+    expect(screen.getByRole('button', { name: 'Explorer' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: /Editor mode/ })).toBeNull();
   });
 });
