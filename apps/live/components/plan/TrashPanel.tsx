@@ -155,7 +155,12 @@ export function TrashPanel({
                 }}
               >
                 <TrashIcon size={14} />
-                {`Empty Trash (${trashed.length})`}
+                Empty Trash
+                <CountBadge
+                  count={trashed.length}
+                  background="rgba(255, 255, 255, 0.25)"
+                  color="#ffffff"
+                />
               </Button>
             ) : null}
           </>
