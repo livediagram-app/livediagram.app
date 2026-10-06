@@ -9,7 +9,8 @@ import { useEffect, type RefObject } from 'react';
 //   useFocusTrap(ref);
 //   <div ref={ref} role="dialog" tabIndex={-1}> ... </div>
 //
-// On mount it focuses the first focusable control (or the container), wraps
+// On mount it focuses the first focusable control (or the container; always
+// the container on a touch screen), wraps
 // Tab / Shift+Tab at the ends so focus can't escape behind the modal, and on
 // unmount restores focus to whatever was focused before it opened (the
 // trigger button). Escape / click-outside close are left to the caller.
@@ -28,6 +29,11 @@ const FOCUSABLE = [
   '[tabindex]:not([tabindex="-1"])',
 ].join(',');
 
+// Whether the primary pointer is a finger (phones, tablets). Read once per open, not subscribed: an open dialog
+// never re-places its initial focus.
+const coarsePointer = () =>
+  typeof window !== 'undefined' && !!window.matchMedia?.('(pointer: coarse)').matches;
+
 export function useFocusTrap(ref: RefObject<HTMLElement | null>, active = true): void {
   useEffect(() => {
     if (!active) return;
@@ -43,8 +49,10 @@ export function useFocusTrap(ref: RefObject<HTMLElement | null>, active = true):
       );
 
     // A control that already took focus as the modal opened (an `autoFocus` field) keeps it; otherwise the first.
+    // On a touch screen the container takes it instead: focusing the first control there highlights it and can
+    // raise the on-screen keyboard for a field nobody tapped (docs/specs/007-editor/live-app.md).
     if (!node.contains(document.activeElement)) {
-      (focusables()[0] ?? node).focus({ preventScroll: true });
+      (coarsePointer() ? node : (focusables()[0] ?? node)).focus({ preventScroll: true });
     }
 
     const onKey = (e: KeyboardEvent) => {
