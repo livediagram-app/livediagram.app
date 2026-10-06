@@ -41,7 +41,7 @@ import { CollaboratorsHost } from '@/components/dialogs/CollaboratorsHost';
 import { EditorElementDialogs } from '@/components/dialogs/EditorElementDialogs';
 import { EditorContextMenuHost } from '@/components/palette/EditorContextMenuHost';
 import { TourHost } from '@/components/tour/TourHost';
-import { PlanTourHost } from '@/components/tour/PlanTourHost';
+import { useEverTrue } from '@/hooks/ui/useEverTrue';
 import { EditorAnchoredPopovers } from '@/components/panels/EditorAnchoredPopovers';
 import { EditorSearchPanel } from '@/components/panels/EditorSearchPanel';
 import { ThemeModeBanner } from '@/components/chrome/ThemeModeBanner';
@@ -80,6 +80,12 @@ const PlanBoardPicker = dynamic(
 );
 const PlanSheetsHost = dynamic(
   () => import('@/components/plan/PlanSheetsHost').then((m) => m.PlanSheetsHost),
+  { ssr: false },
+);
+// The Plan tour (docs/specs/026-plan/plan-tour.md) loads the first time the person enters Plan, and stays
+// mounted after, so leaving Plan mid-tour still runs its clean-up.
+const PlanTourHost = dynamic(
+  () => import('@/components/tour/PlanTourHost').then((m) => m.PlanTourHost),
   { ssr: false },
 );
 
@@ -237,6 +243,7 @@ export function EditorView() {
   // One look in both editor modes (docs/specs/007-editor/editor-modes.md "One look"), so the accent
   // follows the tab's theme in Draw mode too.
   const drawMode = ctx.editorMode.mode === 'draw';
+  const mountPlanTour = useEverTrue(ctx.editorMode.mode === 'plan');
   useEditorAccent(activeTab.theme);
   // The viewer's own light / dark chrome (docs/specs/007-editor/live-app.md). Read here because the
   // Default theme resolves through it — see the canvas surface below.
@@ -617,7 +624,7 @@ export function EditorView() {
                     <AreaErrorBoundary area="Tour">
                       <TourHost />
                       {/* The Plan tour (docs/specs/026-plan/plan-tour.md): the first time a person works in Plan. */}
-                      <PlanTourHost />
+                      {mountPlanTour ? <PlanTourHost /> : null}
                     </AreaErrorBoundary>
 
                     {/* Guest sign-in nudge (docs/specs/014-identity/sign-in-encouragement.md), delayed ~5 min. Lifted above

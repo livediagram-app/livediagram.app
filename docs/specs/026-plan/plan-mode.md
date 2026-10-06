@@ -50,7 +50,9 @@ Plan must cost nothing to a document that does not use it:
   deck has a card slide; from then on it keeps them for the session. A room join or resync
   refetches only items already loaded.
 - **Plan's UI loads when drawn**: boards, cards, the item panel, the type editor, the Card Types panel, the board
-  menu, the Cards category and card slides are separate chunks, fetched the first time one appears.
+  menu, the Cards category and card slides are separate chunks, fetched the first time one appears. The
+  [Plan tour](plan-tour.md) loads the first time the person enters Plan and stays loaded for the session, so
+  leaving Plan mid-tour still tidies its example board away.
 - **No re-render churn**: the Plan context keeps its identity across editor renders that change nothing Plan
   holds, so boards and cards re-render only when items, types, presence or the board change.
 - **No presence chatter**: a card held (opened or dragged) is said to the room, and its release; nothing is sent
