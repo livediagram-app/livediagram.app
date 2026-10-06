@@ -80,7 +80,9 @@ One thing that happened. Carries:
   emit time so rendering the feed never fans out into other tables.
 - `actorId` — who did it, as an owner id (Clerk `sub` or guest
   participant id). `NULL` for system events like a token expiry
-  warning.
+  warning. An owner id is a credential, so a `document:` scope (which a
+  share-link visitor can read) returns only the reader's own id; every
+  other actor goes out as `NULL` and renders by its snapshot name.
 
 ### Scope
 

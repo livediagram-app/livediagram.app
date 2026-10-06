@@ -39,6 +39,7 @@
     "@livediagram/document": "workspace:*",
     "@livediagram/help-registry": "workspace:*",
     "@livediagram/icons": "workspace:^",
+    "@livediagram/items": "workspace:*",
     "@livediagram/tailwind-config": "workspace:*",
     "@livediagram/telemetry-client": "workspace:*"
   }

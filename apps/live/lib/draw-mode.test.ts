@@ -53,6 +53,15 @@ const INTENT_SAMPLES: Record<PendingDraw['type'], PendingDraw[]> = {
 const ALL_INTENTS: PendingDraw[] = Object.values(INTENT_SAMPLES).flat();
 
 describe('drawBannerMessage', () => {
+  it('tells a pressed Plan card where it goes, or that a board comes first', () => {
+    const card = { type: 'shape', kind: 'plan-card' } as const;
+    expect(drawBannerMessage(card, false, { hasPlanBoard: true })).toBe(
+      'Select the board column you want this card to appear in',
+    );
+    expect(drawBannerMessage(card, false)).toBe('Add a board first in order to use cards');
+    expect(drawBannerMessage({ type: 'shape', kind: 'square' }, false)).toContain('Tap to drop');
+  });
+
   it('says a workshop note is placed, not drawn (docs/specs/021-event-storming/event-storming.md)', () => {
     expect(drawBannerMessage({ type: 'sticky', esKind: 'command' }, false)).toBe(
       'Click to place a command note',

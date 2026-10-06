@@ -18,6 +18,7 @@ import {
 import { opForTheWire } from '@livediagram/document';
 import { splitPresenceFrame } from '../agent-presence-rows';
 import { noteServerBuild, noteServerDocumentFormat } from '../server-release';
+import { getGuestSelfSig } from '../local-identity';
 import { getSessionSharePassword, wsUrl } from './core';
 
 export type RoomHandlers = {
@@ -55,6 +56,9 @@ export type RoomHandlers = {
 type RoomAuthOptions = {
   shareCode?: string | null;
   ownerId?: string | null;
+  // The guest signature for `ownerId` (X-Owner-Sig over REST); filled in by
+  // connectRoom from the stored self signature, never by callers.
+  ownerSig?: string | null;
   // One-time room ticket (docs/specs/015-api/api.md), minted over authenticated REST via
   // apiCreateRoomTicket. The only leg that can admit a team member —
   // the worker doesn't trust a bare `o` for team membership.
@@ -80,7 +84,13 @@ export function roomQueryString(options: RoomAuthOptions, sharePassword: string 
   const params = new URLSearchParams();
   if (options.ticket) params.set('t', options.ticket);
   if (options.shareCode) params.set('s', options.shareCode);
-  if (options.ownerId) params.set('o', options.ownerId);
+  if (options.ownerId) {
+    params.set('o', options.ownerId);
+    // Proof of possession for `o`, the same signature REST sends as
+    // X-Owner-Sig: once the guest signature gate is armed the worker refuses
+    // a bare owner id here. Absent for legacy unsigned guests and self-hosts.
+    if (options.ownerSig) params.set('os', options.ownerSig);
+  }
   if (sharePassword) params.set('p', sharePassword);
   return params.toString();
 }
@@ -137,7 +147,10 @@ export function connectRoom(
   // Auth identifiers ride on the query string (see roomQueryString). The
   // share password is read from the same session state apiHeaders uses, so
   // the editor doesn't have to thread it through; owners never have it set.
-  const qs = roomQueryString(options, getSessionSharePassword());
+  const qs = roomQueryString(
+    { ...options, ownerSig: options.ownerId ? getGuestSelfSig() : null },
+    getSessionSharePassword(),
+  );
   const url = wsUrl(`/documents/${documentId}/ws${qs ? `?${qs}` : ''}`);
 
   let ws: WebSocket;

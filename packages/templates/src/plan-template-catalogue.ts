@@ -3,13 +3,14 @@
 // rail beside it; plan-template-layout.ts places them. A status two boards share is a hand-off: the
 // column ids and statuses below are the contract between a template's tabs, so keep them in step.
 
-import type {
-  CardField,
-  MetricKind,
-  PlanBoardPresetId,
-  PlanBoardSetup,
-  PlanColumn,
-  PlanVisualisation,
+import {
+  statusColumn,
+  type CardField,
+  type MetricKind,
+  type PlanBoardPresetId,
+  type PlanBoardSetup,
+  type PlanColumn,
+  type PlanVisualisation,
 } from '@livediagram/items';
 
 export const PLAN_TEMPLATE_KINDS = [
@@ -51,10 +52,8 @@ export type PlanTabSpec = {
   rail?: readonly RailItem[];
 };
 
-// A column whose id is its status (the presets' `col()` style).
-function col(status: string, name: string, extra: Partial<PlanColumn> = {}): PlanColumn {
-  return { id: status, status, name, ...extra };
-}
+// A column whose id is its status, as every preset builds them.
+const col = statusColumn;
 
 const GREEN = '#16a34a';
 const AMBER = '#d97706';

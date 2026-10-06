@@ -23,7 +23,8 @@ You can put a single password on a document. Once it is set, anyone opening any 
 
 - **One password covers every link** on the document, not one password per link.
 - **You always bypass it.** The owner is identified directly, so you never get prompted on your own document.
-- **The owner can read it back.** The password is shown in the clear in the Share dialog so you can hand it to people and change it later.
+- **Nobody can read it back.** livediagram stores only a scrambled form of the password, so even you see just that one is set. Note it down when you choose it; you can replace or remove it any time.
+- **Guessing is limited.** After too many wrong passwords from one network, further attempts are refused for a while, wherever they are tried.
 
 The goal is to stop people guessing or stumbling onto a share URL, not to provide cryptographic protection. Set, change, or remove it any time from the Share dialog's Password row. See [share passwords](/help/collaboration/sharing/share-passwords/) for the full walkthrough.
 

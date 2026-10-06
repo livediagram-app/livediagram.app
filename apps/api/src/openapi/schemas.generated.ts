@@ -1460,6 +1460,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "due",
       "votes",
       "checklist",
+      "comments",
       "description",
       "parent"
     ],
@@ -5882,6 +5883,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "ItemCreate": {
     "additionalProperties": false,
     "properties": {
+      "comments": {
+        "$ref": "#/components/schemas/ItemFieldValue"
+      },
       "fields": {
         "$ref": "#/components/schemas/ItemFields"
       },
@@ -6082,6 +6086,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "$ref": "#/components/schemas/CustomFieldDef"
         },
         "type": "array"
+      },
+      "detailsLabel": {
+        "type": "string"
       },
       "fields": {
         "items": {
@@ -7558,6 +7565,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "swimlaneBy": {
         "$ref": "#/components/schemas/SwimlaneBy"
+      },
+      "swimlaneField": {
+        "type": "string"
       },
       "title": {
         "type": "string"
@@ -9286,7 +9296,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "type",
       "priority",
       "parent",
-      "status"
+      "status",
+      "field"
     ],
     "type": "string"
   },

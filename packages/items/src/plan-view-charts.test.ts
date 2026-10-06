@@ -2,10 +2,10 @@ import { describe, expect, it } from 'vitest';
 import {
   calendarModel,
   priorityMatrixModel,
-  shiftMonth,
   statusMixModel,
   workloadModel,
 } from './plan-view-charts';
+import { shiftMonth } from './plan-view-dates';
 import { ALI, SAM, item } from './test-items';
 
 const phases = new Map([

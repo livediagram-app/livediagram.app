@@ -29,15 +29,16 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
 
 ## An item type
 
-| Part     | Holds                                                                                                                                                                                                                                           |
-| -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `id`     | A slug, `a-z0-9-`, up to 32 characters, unique in the catalogue. Built-ins keep theirs (`task`, `bug`...); a new type's is made from its name (`customer-call`), with `-2`, `-3` on a clash. Never changes once made: items store it.           |
-| `label`  | The name, 1 to 32 characters, unique in the catalogue ignoring case                                                                                                                                                                             |
-| `color`  | A colour from the Plan palette's twelve swatches; on a dark surface an accent too dark to see (Project's black) is drawn lifted toward white to 3:1                                                                                             |
-| `icon`   | A glyph from the Plan glyph set (the built-in types' glyphs and more)                                                                                                                                                                           |
-| `fields` | The fields its item panel offers, in order: built-in field ids and custom field ids                                                                                                                                                             |
-| `custom` | Its custom fields: `{ id, label, kind, options?, onCard? }`                                                                                                                                                                                     |
-| `tabs`   | Its item panel's tabs, in order: `{ id, label, fields }`. A field in a tab shows on that tab; a field in no tab shows in the panel's **Details**. Absent: one tab, **Overview**, holding Description, Checklist and any Long text custom fields |
+| Part           | Holds                                                                                                                                                                                                                                           |
+| -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `id`           | A slug, `a-z0-9-`, up to 32 characters, unique in the catalogue. Built-ins keep theirs (`task`, `bug`...); a new type's is made from its name (`customer-call`), with `-2`, `-3` on a clash. Never changes once made: items store it.           |
+| `label`        | The name, 1 to 32 characters, unique in the catalogue ignoring case                                                                                                                                                                             |
+| `color`        | A colour from the Plan palette's twelve swatches; on a dark surface an accent too dark to see (Project's black) is drawn lifted toward white to 3:1                                                                                             |
+| `icon`         | A glyph from the Plan glyph set (the built-in types' glyphs and more)                                                                                                                                                                           |
+| `fields`       | The fields its item panel offers, in order: built-in field ids and custom field ids                                                                                                                                                             |
+| `custom`       | Its custom fields: `{ id, label, kind, options?, onCard? }`                                                                                                                                                                                     |
+| `tabs`         | Its item panel's tabs, in order: `{ id, label, fields }`. A field in a tab shows on that tab; a field in no tab shows in the panel's **Details**. Absent: one tab, **Overview**, holding Description, Checklist and any Long text custom fields |
+| `detailsLabel` | What the panel calls **Details** (its side column, and the phone's first tab): 1 to 24 characters. Absent: "Details"                                                                                                                            |
 
 - **`title` and `status` are always offered** and cannot be removed: every item has a title, and a board files
   items by status.
@@ -79,8 +80,10 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
   - **Where each field shows** is set on its own row in Fields: a picker of **Details**, the type's tabs, and
     **New Tab…**, which becomes a name field (Enter makes the tab and puts the field on it; a name a tab already
     has puts it there).
-  - **Tabs**, under Fields: the type's tabs in order, each renamed in place, moved with ↑ and ↓, and taken off
-    with × (its fields go to Details). A tab with no fields is dropped when the type is saved.
+  - **Tabs**, under Fields: first **Details**, renamed in place and never moved or removed (it is the panel's
+    side column), then the type's tabs in order, each renamed in place, moved with ↑ and ↓, and taken off with
+    × (its fields go to Details). **Overview** is renamed and moved like any tab but has no ×: it stays, even
+    empty. Any other tab with no fields is dropped when the type is saved.
   - A problem is named beside Save, which waits for it: no name, a name another type has, or a custom field
     without a name or a Choice without options, a tab without a name, or two tabs with one name.
   - **Delete Type**, at the foot, for a type that is not the catalogue's last.

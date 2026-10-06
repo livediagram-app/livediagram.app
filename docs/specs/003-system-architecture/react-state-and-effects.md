@@ -36,7 +36,8 @@ editor carried 247 findings and 73 suppressions; at zero they are errors, so no 
   (`apps/live/hooks/ui/useFollowingDraft.ts`).
 - **Effects synchronise with the outside world** (subscriptions, timers, the DOM, storage, the network)
   and set state only from their callbacks. External stores are read with `useSyncExternalStore`: the
-  guest id (`subscribeGuestSelfId`), the URL, the help article's headings.
+  guest id (`subscribeGuestSelfId`), the guest-data migration (`subscribeGuestMigration`), the URL,
+  the help article's headings.
 - **An element a popover anchors to** is held in state through a callback ref, so the first render that
   has the element has it. A floating element re-positions through `useReposition(measure)`, with
   `measure` memoised, so its dependencies are checked.
@@ -64,6 +65,10 @@ that keeps them and leaves the rest as plain React.
 - **Functions it cannot compile** (unsupported syntax, such as `try`/`finally`) are skipped, not
   broken: they run as uncompiled React.
 - Hand-written `memo`, `useMemo` and `useCallback` stay valid; the compiler works alongside them.
+- **A forced re-render does not re-read module state.** A render-time call such as
+  `isPending(userId)` is memoised on its arguments, so bumping an unused reducer to "refresh" it
+  returns the cached value. Module state a render depends on is an external store that notifies
+  its subscribers.
 
 ## Out of scope
 

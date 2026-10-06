@@ -47,10 +47,16 @@ beforeEach(() => {
 });
 
 describe('sharePasswordOf', () => {
-  it('reads the X-Share-Password header, else null', () => {
-    expect(sharePasswordOf(makeCtx({ headers: { 'X-Share-Password': 'hunter2' } }).request)).toBe(
-      'hunter2',
-    );
+  // The attempt carries the caller's network, whose guessing budget a check
+  // spends (docs/specs/013-workspace/share-password.md).
+  it('reads the X-Share-Password header with the caller network, else null', () => {
+    const request = makeCtx({
+      headers: { 'X-Share-Password': 'hunter2', 'CF-Connecting-IP': '2001:db8:0:1::5' },
+    }).request;
+    expect(sharePasswordOf(request)).toEqual({
+      value: 'hunter2',
+      rateKey: '2001:0db8:0000:0001::/64',
+    });
     expect(sharePasswordOf(makeCtx().request)).toBeNull();
   });
 });

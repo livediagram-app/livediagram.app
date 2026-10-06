@@ -175,7 +175,7 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
       }
       // Seed items (docs/specs/026-plan/items.md): an offline document's, on sync. Validated whole
       // before anything is written.
-      const seedItemCreates = readSeedItems(body.items);
+      const seedItemCreates = readSeedItems(body.items, owner);
       if (seedItemCreates instanceof Response) return seedItemCreates;
       // Ownership guard (security): upsertDocumentMeta is INSERT ... ON
       // CONFLICT(id) DO UPDATE owner_id = excluded.owner_id, so a POST with an

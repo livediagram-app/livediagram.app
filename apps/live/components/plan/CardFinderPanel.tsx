@@ -13,13 +13,13 @@ import {
   itemTitle,
   type CardFinderShow,
 } from '@livediagram/items';
-import { SearchIcon, Tooltip, TrashIcon } from '@livediagram/ui';
+import { CountBadge, Tooltip, TrashIcon } from '@livediagram/ui';
 import type { DockAnchor } from '@/lib/canvas-chrome';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
+import { SearchInput } from '@/components/primitives/SearchInput';
 import { usePlan } from './PlanContext';
 import { PlanTypeGlyph } from './plan-type-glyph';
 import { ACCENT_TEXT, ACCENT_TINT, accentVars } from './plan-palette';
-import { CountBadge } from './CountBadge';
 
 // The most rows drawn at once; a search narrows the rest.
 const CARD_FINDER_ROWS_MAX = 200;
@@ -70,21 +70,18 @@ export function CardFinderPanel({
       onPopoverClose={onPopoverClose}
     >
       <div className="flex flex-col gap-2.5 px-3 pb-3">
-        <label className="relative block">
-          <span className="pointer-events-none absolute inset-y-0 left-2.5 flex items-center text-slate-400">
-            <SearchIcon size={14} />
-          </span>
-          <input
-            type="search"
+        <div className="flex">
+          <SearchInput
             autoFocus={finePointer}
-            aria-label="Search cards"
+            ariaLabel="Search cards"
             placeholder="Search by #, title or description"
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={setQuery}
             onKeyDown={(e) => e.stopPropagation()}
-            className="h-9 w-full rounded-lg border border-slate-200 bg-white pl-8 pr-2.5 text-[13px] text-slate-800 placeholder:text-slate-400 focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-400 dark:focus:ring-brand-500/30"
+            clearAriaLabel="Clear the card search"
+            clearDescription="Clear the card search query."
           />
-        </label>
+        </div>
         <div
           role="radiogroup"
           aria-label="Which cards"
@@ -105,6 +102,7 @@ export function CardFinderPanel({
             >
               {s.label}
               <CountBadge
+                size="md"
                 background={s.id === 'off-board' && counts[s.id] ? '#d9770626' : '#64748b26'}
                 color={s.id === 'off-board' && counts[s.id] ? '#b45309' : '#64748b'}
               >
@@ -127,14 +125,18 @@ export function CardFinderPanel({
               const type = typeIn(plan.types, it.type);
               const status = typeof it.fields['status'] === 'string' ? it.fields['status'] : null;
               return (
-                <li key={it.id} className="group/row flex items-center gap-1">
+                <li
+                  key={it.id}
+                  // The whole row is the card: its hover and focus wash takes in the trash button too.
+                  className="group/row flex items-center gap-1 rounded-lg pr-1 transition hover:bg-slate-100 focus-within:bg-slate-100 dark:hover:bg-slate-800 dark:focus-within:bg-slate-800"
+                >
                   <button
                     type="button"
                     onClick={() => {
                       onPopoverClose();
                       plan.openItem(it.id);
                     }}
-                    className="flex min-w-0 flex-1 items-center gap-2.5 rounded-lg px-2 py-1.5 text-left transition hover:bg-slate-100 focus-visible:bg-slate-100 focus-visible:outline-none dark:hover:bg-slate-800 dark:focus-visible:bg-slate-800"
+                    className="flex min-w-0 flex-1 items-center gap-2.5 rounded-lg px-2 py-1.5 text-left focus-visible:outline-none"
                   >
                     <span
                       aria-hidden
@@ -162,7 +164,7 @@ export function CardFinderPanel({
                           plan.trashItem(it.id);
                           plan.announce(`#${it.key} moved to the Trash`);
                         }}
-                        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-slate-400 transition hover:bg-rose-50 hover:text-rose-600 focus-visible:text-rose-600 dark:text-slate-400 dark:hover:bg-rose-500/15 dark:hover:text-rose-300 sm:opacity-0 sm:focus-visible:opacity-100 sm:group-hover/row:opacity-100"
+                        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-slate-400 transition hover:bg-rose-50 hover:text-rose-600 focus-visible:text-rose-600 dark:text-slate-400 dark:hover:bg-rose-500/15 dark:hover:text-rose-300 sm:opacity-0 sm:focus-visible:opacity-100 sm:group-hover/row:opacity-100"
                       >
                         <TrashIcon size={14} />
                       </button>

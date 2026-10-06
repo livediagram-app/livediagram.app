@@ -11,13 +11,15 @@ import {
   CARD_SIZE_FIELDS,
   CARD_SIZES,
   SWIMLANE_BY,
+  laneFieldsOf,
   normaliseBoardSetup,
+  type LaneFieldKind,
   type CardField,
   type CardSize,
   type PlanBoardSetup,
   type SwimlaneBy,
 } from '@livediagram/items';
-import { PlanCardsIcon, PlanIcon } from '@livediagram/ui';
+import { PlanCardsIcon, PlanIcon, TextInput } from '@livediagram/ui';
 import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
 import { SlideDeckIcon } from '@/components/palette/palette-icons';
 import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
@@ -30,8 +32,6 @@ import { trackSetup } from '@/components/plan/track-board-setup';
 
 type FlyoutProps = Omit<ComponentProps<typeof MenuFlyoutSection>, 'title' | 'icon' | 'children'>;
 
-const fieldClass =
-  'w-full rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] text-slate-700 outline-none placeholder:text-slate-400 focus:border-brand-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200';
 const captionClass = 'px-3 pt-2 text-[10px] font-medium text-slate-500 dark:text-slate-400';
 
 // A glyph per row grouping and per card field, from the Plan glyph set.
@@ -42,6 +42,16 @@ const ROW_GLYPHS: Record<SwimlaneBy, string> = {
   priority: 'flag',
   parent: 'project',
   status: 'action',
+  field: 'note',
+};
+// A field lane's tile glyph, by how the field groups.
+const LANE_KIND_GLYPHS: Record<LaneFieldKind, string> = {
+  labels: 'bookmark',
+  number: 'cube',
+  date: 'calendar',
+  choice: 'star',
+  checkbox: 'task',
+  text: 'note',
 };
 const FIELD_GLYPHS: Record<CardField, string> = {
   key: 'bookmark',
@@ -54,6 +64,7 @@ const FIELD_GLYPHS: Record<CardField, string> = {
   due: 'calendar',
   votes: 'star',
   checklist: 'action',
+  comments: 'chat',
   description: 'note',
   parent: 'project',
 };
@@ -93,8 +104,9 @@ export function PlanBoardMenuSection({
       <div className="px-3 pt-1">
         <label className="text-[10px] font-medium text-slate-500 dark:text-slate-400">
           Title
-          <input
-            className={`${fieldClass} mt-1`}
+          <TextInput
+            compact
+            className="mt-1"
             value={title}
             maxLength={80}
             onChange={(e) => setTitle(e.target.value)}
@@ -112,13 +124,29 @@ export function PlanBoardMenuSection({
       </div>
       <p className={captionClass}>Swimlanes</p>
       <MenuTileGrid cols={3}>
-        {SWIMLANE_BY.map((s) => (
+        {SWIMLANE_BY.filter((s) => s !== 'field').map((s) => (
           <MenuTile
             key={s}
             icon={<PlanTypeGlyph glyph={ROW_GLYPHS[s]} size={16} />}
             label={SWIMLANE_LABELS[s]}
             active={setup.swimlaneBy === s}
-            onClick={() => set({ ...setup, swimlaneBy: s }, 'Swimlanes')}
+            onClick={() => {
+              const { swimlaneField: _drop, ...rest } = setup;
+              set({ ...rest, swimlaneBy: s }, 'Swimlanes');
+            }}
+          />
+        ))}
+      </MenuTileGrid>
+      {/* Any field the document's types offer (docs/specs/026-plan/plan-board.md "Swimlanes by a field"). */}
+      <p className={captionClass}>By a Field</p>
+      <MenuTileGrid cols={3}>
+        {laneFieldsOf(plan?.types ?? []).map((f) => (
+          <MenuTile
+            key={f.id}
+            icon={<PlanTypeGlyph glyph={LANE_KIND_GLYPHS[f.kind]} size={16} />}
+            label={f.label}
+            active={setup.swimlaneBy === 'field' && setup.swimlaneField === f.id}
+            onClick={() => set({ ...setup, swimlaneBy: 'field', swimlaneField: f.id }, 'Swimlanes')}
           />
         ))}
       </MenuTileGrid>

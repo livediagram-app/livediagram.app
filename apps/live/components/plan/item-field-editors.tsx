@@ -3,7 +3,8 @@
 // The item panel's field editors (docs/specs/026-plan/plan-board.md "Working on a board"), one per field
 // kind: text that saves on a pause in typing, and pickers that save at once. Each calls `onSave` with
 // the field's new value, or `undefined` to clear it.
-import { CheckIcon, CloseIcon, PlusIcon, Select } from '@livediagram/ui';
+import { ChipField } from '@/components/primitives/ChipField';
+import { CheckIcon, CloseIcon, PlusIcon, Select, TextInput, TextArea } from '@livediagram/ui';
 import { useEffect, useRef, useState } from 'react';
 import {
   PRIORITIES,
@@ -12,7 +13,6 @@ import {
   type ItemFieldValue,
   type ItemPerson,
 } from '@livediagram/items';
-import { FIELD_CLASS } from './PlanModal';
 
 // One undo step per pause in typing (blueprint DEFAULTS D8).
 export const ITEM_EDIT_DEBOUNCE_MS = 400;
@@ -72,7 +72,6 @@ export function DebouncedText({
     value: draft,
     placeholder,
     disabled,
-    className: className ?? `${FIELD_CLASS} ${multiline ? 'min-h-28 resize-y' : ''}`,
     'aria-label': label,
     onChange: (e: { target: { value: string } }) => {
       const text = e.target.value;
@@ -82,7 +81,19 @@ export function DebouncedText({
     },
     onBlur: () => flush(draft),
   };
-  return multiline ? <textarea {...common} /> : <input {...common} />;
+  // A caller's own look replaces the shared field (the item panel's large title).
+  if (className) {
+    return multiline ? (
+      <textarea {...common} className={className} />
+    ) : (
+      <input {...common} className={className} />
+    );
+  }
+  return multiline ? (
+    <TextArea {...common} compact className="min-h-28 resize-y" />
+  ) : (
+    <TextInput {...common} compact />
+  );
 }
 
 export function PersonPicker({
@@ -188,11 +199,13 @@ export function LabelsEditor({
     ? value.filter((l): l is string => typeof l === 'string')
     : [];
   const [draft, setDraft] = useState('');
-  const add = () => {
-    const l = draft.trim().replace(/^#/, '');
-    if (!l || labels.includes(l)) return setDraft('');
-    onSave([...labels, l]);
-    setDraft('');
+  const addLabels = (texts: readonly string[]) => {
+    const next = [...labels];
+    for (const t of texts) {
+      const l = t.trim().replace(/^#/, '');
+      if (l && !next.includes(l)) next.push(l);
+    }
+    if (next.length !== labels.length) onSave(next);
   };
   const remove = (l: string) => {
     const next = labels.filter((x) => x !== l);
@@ -200,63 +213,45 @@ export function LabelsEditor({
   };
   const offered = suggestions.filter((s) => !labels.includes(s));
   return (
-    <div className="flex min-h-[34px] flex-wrap items-center gap-1.5 rounded-md border border-slate-200 bg-white px-1.5 py-1 transition focus-within:border-brand-400 focus-within:ring-2 focus-within:ring-brand-100 dark:border-slate-700 dark:bg-slate-800">
-      {labels.map((l) => {
+    <ChipField
+      compact
+      id={id}
+      chips={labels}
+      chipStyle={(l) => {
         const c = labelColour(l);
-        return (
-          <span
-            key={l}
-            className="inline-flex items-center gap-1 rounded-full py-0.5 pl-2 pr-1 text-[12px] font-medium"
-            style={{ backgroundColor: `${c}1f`, color: c }}
-          >
-            {l}
-            {disabled ? null : (
-              <button
-                type="button"
-                aria-label={`Remove label ${l}`}
-                className="flex h-4 w-4 items-center justify-center rounded-full transition hover:bg-black/10 dark:hover:bg-white/15"
-                onClick={() => remove(l)}
-              >
-                <CloseIcon size={9} />
-              </button>
-            )}
-          </span>
-        );
-      })}
-      {disabled ? (
-        labels.length === 0 ? (
-          <span className="px-1 text-[13px] text-slate-500 dark:text-slate-400">None</span>
-        ) : null
-      ) : (
-        <>
-          <input
-            id={id}
-            value={draft}
-            list={offered.length ? `${id}-labels` : undefined}
-            placeholder={labels.length ? 'Add…' : 'Add a label'}
-            className="min-w-20 flex-1 bg-transparent px-1 text-[13px] text-slate-800 outline-none placeholder:text-slate-400 dark:text-slate-100"
-            onChange={(e) => setDraft(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ',') {
-                e.preventDefault();
-                add();
-              } else if (e.key === 'Backspace' && !draft && labels.length) {
-                // Backspace on an empty field takes the last label off.
-                remove(labels[labels.length - 1]!);
-              }
-            }}
-            onBlur={add}
-          />
-          {offered.length ? (
-            <datalist id={`${id}-labels`}>
-              {offered.map((s) => (
-                <option key={s} value={s} />
-              ))}
-            </datalist>
-          ) : null}
-        </>
-      )}
-    </div>
+        return { backgroundColor: `${c}1f`, color: c };
+      }}
+      removeLabel={(l) => `Remove label ${l}`}
+      draft={draft}
+      onDraftChange={(value) => {
+        // A comma (typed or pasted) adds what comes before it.
+        if (!value.includes(',')) return setDraft(value);
+        const parts = value.split(',');
+        addLabels(parts.slice(0, -1));
+        setDraft(parts[parts.length - 1]!);
+      }}
+      onCommit={() => {
+        addLabels([draft]);
+        setDraft('');
+      }}
+      onBlur={() => {
+        addLabels([draft]);
+        setDraft('');
+      }}
+      onRemove={remove}
+      readOnly={disabled}
+      emptyText="None"
+      placeholder={labels.length ? 'Add…' : 'Add a label'}
+      list={offered.length ? `${id}-labels` : undefined}
+    >
+      {!disabled && offered.length ? (
+        <datalist id={`${id}-labels`}>
+          {offered.map((s) => (
+            <option key={s} value={s} />
+          ))}
+        </datalist>
+      ) : null}
+    </ChipField>
   );
 }
 
@@ -272,14 +267,14 @@ export function NumberField({
   onSave: Save;
 }) {
   return (
-    <input
+    <TextInput
       id={id}
       type="number"
       min={0}
       max={999}
       step="any"
       disabled={disabled}
-      className={FIELD_CLASS}
+      compact
       defaultValue={typeof value === 'number' ? value : ''}
       key={typeof value === 'number' ? value : 'none'}
       onBlur={(e) => {
@@ -304,11 +299,11 @@ export function DateField({
   onSave: Save;
 }) {
   return (
-    <input
+    <TextInput
       id={id}
       type="date"
       disabled={disabled}
-      className={FIELD_CLASS}
+      compact
       value={typeof value === 'string' ? value : ''}
       onChange={(e) => onSave(e.target.value || undefined)}
     />

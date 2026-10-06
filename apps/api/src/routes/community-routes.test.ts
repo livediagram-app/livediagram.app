@@ -297,6 +297,8 @@ describe('public routes', () => {
         publicCtx('POST', `/api/community/posts/${post.id}/report`, { key, ip, body: b }),
       );
     expect((await report(KEY, '1.1.1.1', { reason: 'nope' })).status).toBe(400);
+    // A JSON null body is a missing reason (400), never a 500.
+    expect((await report(KEY, '1.1.1.1', null)).status).toBe(400);
     expect((await report(KEY, '1.1.1.1', { reason: 'spam', note: 'x'.repeat(301) })).status).toBe(
       400,
     );

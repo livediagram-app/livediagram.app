@@ -11,7 +11,8 @@ editor views.
 | Plan card    | `ShapeKind` `'plan-card'`; field `ShapeElement.planCard: { itemId: string }`      |
 | board set-up | `PlanBoardSetup` (`@livediagram/items` `board.ts`)                                |
 | column       | `PlanColumn`                                                                      |
-| swimlane     | `SwimlaneBy` + projected `lanes`                                                  |
+| swimlane     | `SwimlaneBy` (+ `swimlaneField` for `'field'`) + projected `lanes`, `swimlanes`   |
+| lane field   | `LaneField` (`laneFieldsOf`, `laneFieldOf`); a drop's patch is `laneDropPatch`    |
 | WIP limit    | `PlanColumn.wipLimit`                                                             |
 | unplaced     | projection `unplaced`                                                             |
 | quick filter | `QuickFilter` (per person, React state, never stored)                             |
@@ -52,15 +53,15 @@ PlanBoardCells.tsx       a row's band, one card in a cell (right-click → onMen
 PlanBoardHeader.tsx      title, count, progress, unplaced chip and its tray, votes left, quick filter, Only
                          mine, Reveal
 AddCardButton.tsx        a cell's + Add card; opens AddCardPopover (or when the N key asks)
-AddCardPopover.tsx       Add a Card: the board's types as tiles, and a title field with quick tokens
-PlanCardMenu.tsx         a card's right-click menu (Open, Duplicate, Move to, Delete) and PlanCardMenuHost
+AddCardPopover.tsx       Add a Card: the board's types as MenuTiles in the shared PortalMenu (BottomSheet on a phone)
+PlanCardMenu.tsx         a card's right-click menu on the shared ContextMenu (Open, Duplicate, Move to, Delete) and PlanCardMenuHost
 PlanCardFace.tsx         a card face, its Show on card lines, and its vote control
 PlanCardView.tsx         the plan-card element body (themed; a lone card's fill is its face); "Item not found"
-PlanModal.tsx            the Plan forms' modal (through Dialog), SheetRow and FIELD_CLASS
+PlanModal.tsx            the Plan forms' modal (through Dialog) and SheetRow; fields are the shared TextInput/TextArea `compact`
 plan-board-moves.ts      the move a drop makes (boardMoveFor)
 PlanSheetsHost.tsx       renders the open item panel or type editor
 ../palette/PlanBoardMenuSection.tsx  the board's element-menu Board (title, swimlanes) and Cards (fields) flyouts
-ItemPanel.tsx            item panel: Dialog size 3xl (60rem), header (type, key, Delete, close), main column
+ItemPanel.tsx            item panel: Dialog size 3xl (60rem), header (type, key, labelled Help, ItemPanelMenu ⋯ of Duplicate / Archive / Delete, close), main column
                          (title, tabs from tabsOf, the tab's fields), Details aside (w-80: detailFieldsOf rows,
                          then made/changed); phone: one column, a Details tab first, sheet 85dvh
 ItemFieldEditor.tsx      one field's editor by kind (FIELD_LABELS, fieldLabel, labelsItsControl)
@@ -98,7 +99,7 @@ the items too.
 - **Input routing**: `PlanBoardView` receives `interactive = editorMode === 'plan' && !readOnly`. Interactive:
   card pointerdown stops propagation and starts `usePlanCardDrag`; header/border do not stop propagation (the
   generic box drag moves the board). Not interactive: nothing stops propagation; double-click on a card opens it.
-- **Card drag states**: `idle → pressed` (pointerdown) `→ dragging` (moved ≥ `PLAN_DRAG_SLOP_PX`) `→ dropped |
+- **Card drag states**: `idle → pressed` (pointerdown) `→ dragging` (`isDragTravel`, moved ≥ `PRESS_DRAG_SLOP_PX`) `→ dropped |
 cancelled` (Escape, pointercancel). `pressed → idle` on pointerup without moving = open the item.
   - While dragging: a floating copy follows the pointer (screen space, transform only), a placeholder of the
     card's height marks the drop slot: column under the pointer, lane under the pointer, slot by the midpoint of
@@ -195,7 +196,7 @@ cancelled` (Escape, pointercancel). `pressed → idle` on pointerup without movi
 
 | Constant                | Value | Provenance / safe range                  |
 | ----------------------- | ----- | ---------------------------------------- |
-| `PLAN_DRAG_SLOP_PX`     | 4     | Matches the canvas drag threshold        |
+| `PRESS_DRAG_SLOP_PX`    | 4     | Shared, apps/live/lib/press-gestures.ts  |
 | `PLAN_COLUMN_MIN_PX`    | 220   | A card's title reads in 3 lines; 180–320 |
 | `PLAN_COLUMNS_MAX`      | 12    | Spec                                     |
 | `ITEM_EDIT_DEBOUNCE_MS` | 400   | One undo step per pause in typing        |

@@ -4,6 +4,7 @@
 // token is stored, so the user normally consents once.
 
 import { DRIVE_SCOPES } from '@livediagram/api-schema';
+import { sameOriginPath } from '../same-origin-path';
 
 const AUTH_ENDPOINT = 'https://accounts.google.com/o/oauth2/v2/auth';
 const RETURN_KEY = 'livediagram:v2:drive-return';
@@ -35,38 +36,12 @@ export function googleConsentUrl(input: {
   return `${AUTH_ENDPOINT}?${params.toString()}`;
 }
 
-// Control characters and whitespace (U+0000 to U+0020, U+007F).
-function hasControlOrSpace(path: string): boolean {
-  for (let i = 0; i < path.length; i++) {
-    const code = path.charCodeAt(i);
-    if (code <= 0x20 || code === 0x7f) return true;
-  }
-  return false;
-}
-
 // A same-origin path to come back to, or the Explorer (D12). Never another
 // origin, never a protocol-relative path.
 export function safeReturnPath(path: string | null | undefined): string {
-  if (
-    !path ||
-    !path.startsWith('/') ||
-    path.startsWith('//') ||
-    path.includes('\\') ||
-    // Control characters and whitespace: browsers strip some of them, which
-    // can turn a path into "//host".
-    hasControlOrSpace(path)
-  ) {
-    return DEFAULT_RETURN;
-  }
-  const base = 'https://return.invalid';
-  let url: URL;
-  try {
-    url = new URL(path, base);
-  } catch {
-    return DEFAULT_RETURN;
-  }
-  if (url.origin !== base || url.pathname.startsWith('/drive/connected')) return DEFAULT_RETURN;
-  return `${url.pathname}${url.search}${url.hash}`;
+  const safe = sameOriginPath(path);
+  if (!safe || safe.startsWith('/drive/connected')) return DEFAULT_RETURN;
+  return safe;
 }
 
 // The same path with Settings named on it (`?settings=<category>&section=<id>`),

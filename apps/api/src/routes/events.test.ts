@@ -148,3 +148,15 @@ describe('handleEvents server-emitted pairs (docs/specs/017-telemetry/telemetry.
     );
   });
 });
+
+describe('handleEvents with an odd body', () => {
+  // The endpoint promises 204 whatever arrives; a JSON null used to 500.
+  it('answers 204 to a JSON null body', async () => {
+    const ctx = makeTestRouteContext('POST', '/api/events', {
+      body: null,
+      env: { TELEMETRY_ENABLED: 'true' } as Env,
+    });
+    expect((await handleEvents(ctx)).status).toBe(204);
+    expect(db.insertTelemetryEvents).not.toHaveBeenCalled();
+  });
+});

@@ -10,6 +10,11 @@ const MAX_ELEMENTS = 200;
 const MAX_TOKENS_MUTATE = 8000;
 const MAX_TOKENS_REVIEW = 400;
 const MAX_HISTORY_TURNS = 6;
+// The serialised elements are the bulk of the upstream prompt. Counting them
+// only bounded the number, not the size: one 3 MB label filled the model's
+// context on every call (operator-cost amplification). 200 elements of
+// ordinary labels serialise to tens of KB, so this only refuses abuse.
+const MAX_ELEMENTS_JSON_CHARS = 200_000;
 
 // ---------------------------------------------------------------------------
 // Sanitise elements — strip anything that shouldn't leave the browser.
@@ -110,6 +115,8 @@ export async function handleAi(ctx: RouteContext): Promise<Response> {
   const model = provider.model;
   const isTextMode = mode === 'ask';
   const safe = sanitiseElements(elements);
+  const elementsJson = JSON.stringify(safe);
+  if (elementsJson.length > MAX_ELEMENTS_JSON_CHARS) return badRequest('elements too large');
   const systemPrompt = buildSystemPrompt(
     mode,
     typeof tabName === 'string' ? tabName : '',
@@ -121,9 +128,9 @@ export async function handleAi(ctx: RouteContext): Promise<Response> {
   const existingStyle = !isTextMode ? extractExistingStyle(safe) : '';
 
   const userContent = isTextMode
-    ? `Diagram elements:\n${JSON.stringify(safe)}\n\n${prompt.trim() || 'Answer any questions about this diagram.'}`
+    ? `Diagram elements:\n${elementsJson}\n\n${prompt.trim() || 'Answer any questions about this diagram.'}`
     : [
-        `Existing diagram elements:\n${JSON.stringify(safe)}`,
+        `Existing diagram elements:\n${elementsJson}`,
         existingStyle && `Style to match: ${existingStyle}`,
         typeHint && `Layout guidance: ${typeHint}`,
         `Request: ${prompt.trim() || 'Clean up this diagram.'}`,

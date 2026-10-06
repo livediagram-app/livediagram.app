@@ -52,7 +52,8 @@ between the two tiles.
 
 `S` is still the legacy Select alias (pre-`V`), and taking it would break
 muscle memory for a shortcut people already have. `6` is the one gap in the
-numeric tool row and sits beside the pencil's `7`.
+numeric tool row and sits beside the pencil's `7`. (`S` later went to the Toolbar strip's Search
+where that is shown, at the user's request; it stays Select everywhere else.)
 
 ## Removed
 

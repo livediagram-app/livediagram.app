@@ -45,7 +45,7 @@ export function ActiveSharePass({
   fresh,
   highlight,
   busy,
-  sharePassword,
+  sharePasswordSet,
   tabs,
   liveImageTabId,
   firstTabId,
@@ -68,7 +68,7 @@ export function ActiveSharePass({
   busy: boolean;
   // Non-null while the share is password-gated — the Live image offer
   // hides then (an <img> can't supply a password).
-  sharePassword: string | null;
+  sharePasswordSet: boolean;
   // The document's tabs, in bar order, for the Live image tab picker.
   tabs: { id: string; name: string }[];
   liveImageTabId: string | null;
@@ -167,7 +167,7 @@ export function ActiveSharePass({
             <span className="font-medium">{FOREVER_LABEL}</span>
           )}
         </span>
-        {sharePassword ? (
+        {sharePasswordSet ? (
           <span className="inline-flex items-center gap-1 font-medium text-emerald-700 dark:text-emerald-300">
             <LockIcon size={11} />
             Password
@@ -208,7 +208,7 @@ export function ActiveSharePass({
             an <img>-able SVG URL. Hidden while a password is set: an <img>
             can't supply one, so the server refuses an image for gated shares
             and offering it here would mislead. */}
-        {sharePassword ? null : (
+        {sharePasswordSet ? null : (
           <ShareCopyMenu
             label="Live image"
             hoverCardTitle="Live image"

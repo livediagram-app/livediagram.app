@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { OVERVIEW_TAB_ID } from '@livediagram/items';
 import { fileField, fileOnNamedTab, moveTab, withoutEmptyTabs } from './ItemTypeTabsEditor';
 
 const tabs = [
@@ -36,5 +37,15 @@ describe('tab edits', () => {
     expect(withoutEmptyTabs(fileField(tabs, 'description', null)).map((t) => t.id)).toEqual([
       't-b',
     ]);
+  });
+});
+
+describe('kept tabs', () => {
+  it('keeps an empty Overview when saving, and drops any other empty tab', () => {
+    const kept = withoutEmptyTabs([
+      { id: OVERVIEW_TAB_ID, label: 'Summary', fields: [] },
+      { id: 't-x', label: 'X', fields: [] },
+    ]);
+    expect(kept.map((t) => t.id)).toEqual([OVERVIEW_TAB_ID]);
   });
 });

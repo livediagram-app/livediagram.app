@@ -243,7 +243,7 @@ export function registerTools(server: McpServer, env: Env): void {
     const { tab } = await apiJson<TabResponse>(
       env,
       token,
-      `/documents/${args.documentId}/tabs/${tabId}`,
+      `/documents/${encodeURIComponent(args.documentId)}/tabs/${encodeURIComponent(tabId)}`,
     );
     return imageResult(
       {
@@ -301,7 +301,7 @@ export function registerTools(server: McpServer, env: Env): void {
     const { tab: next } = await apiJson<TabResponse>(
       env,
       token,
-      `/documents/${args.documentId}/tabs/${tabId}`,
+      `/documents/${encodeURIComponent(args.documentId)}/tabs/${encodeURIComponent(tabId)}`,
     );
     return imageResult(
       {
@@ -328,7 +328,7 @@ export function registerTools(server: McpServer, env: Env): void {
     const { link } = await apiJson<ShareLinkResponse>(
       env,
       token,
-      `/documents/${args.documentId}/share`,
+      `/documents/${encodeURIComponent(args.documentId)}/share`,
       { method: 'POST', body: JSON.stringify({ role, expiry: args.expiry ?? 'never' }) },
     );
     return textResult({
@@ -347,7 +347,7 @@ export function registerTools(server: McpServer, env: Env): void {
       const { tab } = await apiJson<{ tab: { name: string } }>(
         env,
         token,
-        `/documents/${args.documentId}/tabs/${args.tabId}/name`,
+        `/documents/${encodeURIComponent(args.documentId)}/tabs/${encodeURIComponent(args.tabId)}/name`,
         { method: 'PUT', body: JSON.stringify({ name: args.name }) },
       );
       return textResult({ renamed: 'tab', tabId: args.tabId, name: tab.name });
@@ -355,7 +355,7 @@ export function registerTools(server: McpServer, env: Env): void {
     const { document: liveDoc } = await apiJson<DocumentResponse>(
       env,
       token,
-      `/documents/${args.documentId}`,
+      `/documents/${encodeURIComponent(args.documentId)}`,
       { method: 'PUT', body: JSON.stringify({ name: args.name }) },
     );
     return textResult({
@@ -371,8 +371,8 @@ export function registerTools(server: McpServer, env: Env): void {
     // A whole document only ever goes to the Trash (docs/specs/013-workspace/trash.md):
     // a permanent delete is the REST API's, never an AI tool's. A tab has no Trash.
     const path = args.tabId
-      ? `/documents/${args.documentId}/tabs/${args.tabId}`
-      : `/documents/${args.documentId}`;
+      ? `/documents/${encodeURIComponent(args.documentId)}/tabs/${encodeURIComponent(args.tabId)}`
+      : `/documents/${encodeURIComponent(args.documentId)}`;
     // DELETE returns 204 with no body, so use apiFetch (apiJson would choke
     // parsing an empty response) and surface a clear message on failure.
     const res = await apiFetch(env, token, path, { method: 'DELETE' });

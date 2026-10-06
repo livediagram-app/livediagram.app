@@ -282,7 +282,7 @@ Editor (`apps/live`):
   `{ post, loading, error, publish(input), remove() }`.
 - `apps/live/components/dialogs/community/`: `ShareDialogWithCommunity.tsx` composes the Share dialog with
   `CommunitySection.tsx` (its state chosen by the pure `community-section-state.ts`); `CommunityPublishDialog.tsx`
-  (title, description with counter, `CategoryPicker.tsx`, `TagInput.tsx` over the pure `tag-draft.ts`,
+  (title, description with counter, `CategoryPicker.tsx`, `TagInput.tsx` (the shared `apps/live/components/primitives/ChipField.tsx` with Community's rules) over the pure `tag-draft.ts`,
   `CommunityCardPreview.tsx`, the consequences list) replaces the Share dialog while open, its draft and submit in
   `usePublishForm.ts`, per-field error copy in the pure `publish-field-errors.ts` drawn by `FieldError.tsx`; a first
   publish ends on `CommunityPublishedConfirmation.tsx`. `CommunityCardPreview` is the shared `CommunityPostTile` as a

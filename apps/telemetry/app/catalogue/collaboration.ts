@@ -244,7 +244,8 @@ export const VIEWERS_JOINED: Metric = {
 export const COMMENTS_ADDED: Metric = {
   category: 'Comment',
   action: 'Added',
-  type: null,
+  // Canvas comments send no type; a Plan card's comments send Item. Both count.
+  allTypes: true,
   title: 'Comments Added',
 };
 
@@ -260,7 +261,8 @@ export const COMMENT_POPOVERS_OPENED: Metric = {
 export const COMMENTS_RESOLVED: Metric = {
   category: 'Comment',
   action: 'Resolved',
-  type: null,
+  // On the canvas and on Plan cards (Item) alike.
+  allTypes: true,
   title: 'Comments Resolved',
 };
 

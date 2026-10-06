@@ -9,7 +9,9 @@ import {
   ITEM_TYPES,
   PRIORITY_LABELS,
   UNASSIGNED,
+  dayKey,
   itemTitle,
+  todayNumber,
   typeIn,
   type BoardProjection,
   type BoardWidgetKind,
@@ -21,7 +23,6 @@ import {
 } from '@livediagram/items';
 import { PRIORITY_COLOURS, accentOn, type PlanPalette } from '../plan-palette';
 import { BoardWidgetArt } from '../plan-tile-art';
-import { CountBadge } from '../CountBadge';
 import { PersonDisc } from '../PersonDisc';
 import {
   DUE_SOON_DAYS,
@@ -36,13 +37,14 @@ import {
   dueCounts,
   overWipColumns,
 } from './widget-stats';
+import { OVERDUE_RED, PHASE_COLOURS } from '../views/view-frame';
+import { CountBadge } from '@livediagram/ui';
 
 const PEOPLE_SHOWN = 5;
 const TYPES_SHOWN = 3;
 // The most votes drawn as pips; a bigger budget is a number.
 const VOTE_PIPS_MAX = 10;
-const DONE_GREEN = '#16a34a';
-const OVERDUE_RED = '#dc2626';
+const DONE_GREEN = PHASE_COLOURS.done;
 const SOON_AMBER = '#d97706';
 
 export const WIDGET_PILL =
@@ -78,11 +80,6 @@ function narrowed(quick: QuickFilter): boolean {
   );
 }
 
-function isoDay(d: Date): string {
-  const p = (n: number) => String(n).padStart(2, '0');
-  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
-}
-
 // The quick filter with one widget narrowing set, or cleared when it is already the one set.
 function toggle<K extends (typeof WIDGET_KEYS)[number]>(
   quick: QuickFilter,
@@ -113,7 +110,7 @@ function Lead({ kind, color }: { kind: BoardWidgetKind; color: string }) {
 // A lone count in a widget: a badge, like a column's count.
 function Figure({ children, palette }: { children: React.ReactNode; palette: PlanPalette }) {
   return (
-    <CountBadge background={palette.column} color={palette.text}>
+    <CountBadge size="md" background={palette.column} color={palette.text}>
       {children}
     </CountBadge>
   );
@@ -436,7 +433,7 @@ export function BoardWidgetView({ kind, ctx }: { kind: BoardWidgetKind; ctx: Wid
           </span>
           {over > 0 ? (
             <>
-              <CountBadge background={palette.surface} color={palette.warning}>
+              <CountBadge size="md" background={palette.surface} color={palette.warning}>
                 {over}
               </CountBadge>
               over WIP
@@ -456,10 +453,7 @@ export function BoardWidgetView({ kind, ctx }: { kind: BoardWidgetKind; ctx: Wid
             Nothing due
           </span>
         );
-      const yesterday = new Date(ctx.now);
-      yesterday.setDate(yesterday.getDate() - 1);
-      const horizon = new Date(ctx.now);
-      horizon.setDate(horizon.getDate() + DUE_SOON_DAYS);
+      const today = todayNumber(ctx.now);
       // Each count narrows the board to exactly the cards it counts, not done: overdue (due by
       // yesterday), or due from today to a week out.
       const doneStatus = setup.columns.find((c) => c.id === setup.doneColumnId)?.status;
@@ -474,7 +468,7 @@ export function BoardWidgetView({ kind, ctx }: { kind: BoardWidgetKind; ctx: Wid
             style={{ backgroundColor: on ? `${color}1f` : undefined }}
             onClick={() => ctx.onQuick(toggle(ctx.quick, 'due', value))}
           >
-            <CountBadge background={`${color}26`} color={color}>
+            <CountBadge size="md" background={`${color}26`} color={color}>
               {n}
             </CountBadge>
             {label}
@@ -484,9 +478,12 @@ export function BoardWidgetView({ kind, ctx }: { kind: BoardWidgetKind; ctx: Wid
       return (
         <span className={`${WIDGET_PILL} gap-2`} style={pill}>
           <Lead kind="due" color={overdue > 0 ? OVERDUE_RED : SOON_AMBER} />
-          {overdue > 0 ? tag(overdue, OVERDUE_RED, 'overdue', { to: isoDay(yesterday) }) : null}
+          {overdue > 0 ? tag(overdue, OVERDUE_RED, 'overdue', { to: dayKey(today - 1) }) : null}
           {soon > 0
-            ? tag(soon, SOON_AMBER, 'due soon', { from: isoDay(ctx.now), to: isoDay(horizon) })
+            ? tag(soon, SOON_AMBER, 'due soon', {
+                from: dayKey(today),
+                to: dayKey(today + DUE_SOON_DAYS),
+              })
             : null}
         </span>
       );
@@ -595,7 +592,7 @@ export function BoardWidgetView({ kind, ctx }: { kind: BoardWidgetKind; ctx: Wid
                   className="h-2 w-2 rounded-full"
                   style={{ backgroundColor: PRIORITY_COLOURS[priority] }}
                 />
-                <CountBadge background={palette.column} color={palette.text}>
+                <CountBadge size="md" background={palette.column} color={palette.text}>
                   {count}
                 </CountBadge>
               </button>
@@ -654,7 +651,7 @@ export function BoardWidgetView({ kind, ctx }: { kind: BoardWidgetKind; ctx: Wid
           onClick={() => ctx.onOpenItem(top.item.id)}
         >
           <Lead kind="top-voted" color={SOON_AMBER} />
-          <CountBadge background={`${SOON_AMBER}26`} color={SOON_AMBER}>
+          <CountBadge size="md" background={`${SOON_AMBER}26`} color={SOON_AMBER}>
             ▲ {top.votes}
           </CountBadge>
           <span className="truncate" style={{ color: palette.text }}>

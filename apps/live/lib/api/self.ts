@@ -152,21 +152,24 @@ export async function apiMintGuestId(): Promise<{
 // minted signed id (docs/specs/014-identity/auth-and-guest-access.md migrate flow 2). Authenticated by the OLD id
 // as X-Owner-Id (the guest bearer credential, present because no Clerk
 // token is registered for a guest); the NEW id is proven by its
-// signature. Returns true on success.
+// signature. 'moved' on success; 'refused' when the worker says no for good (403: under enforcement
+// only a pre-signing id may upgrade unsigned); 'failed' for anything worth trying again (network, 5xx).
+export type GuestUpgradeResult = 'moved' | 'refused' | 'failed';
 export async function apiUpgradeGuestId(
   fromOwnerId: string,
   toOwnerId: string,
   toSignature: string,
-): Promise<boolean> {
+): Promise<GuestUpgradeResult> {
   try {
     const res = await apiFetch(`${API_BASE}/migrate`, {
       method: 'POST',
       headers: await apiHeaders(fromOwnerId, { body: true }),
       body: JSON.stringify({ toOwnerId, toSignature }),
     });
-    return res.ok;
+    if (res.ok) return 'moved';
+    return res.status === 403 ? 'refused' : 'failed';
   } catch {
-    return false;
+    return 'failed';
   }
 }
 

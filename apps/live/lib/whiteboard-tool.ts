@@ -32,7 +32,10 @@ export function activeWhiteboardTool(
   }
 }
 
-export function whiteboardPenIntent(pen: WhiteboardPen, recognise: boolean): PendingDraw {
+export function whiteboardPenIntent(
+  pen: WhiteboardPen,
+  recognise: boolean,
+): Extract<PendingDraw, { variant: 'whiteboard' }> {
   return {
     type: 'freehand',
     variant: 'whiteboard',

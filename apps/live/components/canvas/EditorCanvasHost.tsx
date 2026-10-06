@@ -147,6 +147,7 @@ export function EditorCanvasHost() {
     beginFormatPainter,
     beginFreehand,
     beginHighlighter,
+    beginMarker,
     beginShapePen,
     beginPolygon,
     broadcastAvatar,
@@ -724,6 +725,7 @@ export function EditorCanvasHost() {
         reshapingArrowId={reshapingArrowId}
         onBeginFreehand={beginFreehand}
         onBeginHighlighter={beginHighlighter}
+        onBeginMarker={beginMarker}
         onBeginShapePen={beginShapePen}
         onBeginPolygon={beginPolygon}
         pendingDraw={pendingDraw}

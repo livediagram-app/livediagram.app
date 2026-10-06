@@ -26,6 +26,7 @@ import { emailEnabled } from '../email/client';
 import { notifyFirstShare } from '../email/notifications';
 import { badRequest, conflict, json, noContent, notFound } from '../responses';
 import type { ShareRole } from '../types';
+import { hashSharePassword } from '../auth/share-password-hash';
 import { broadcastShareOp } from '../room-client';
 import { recordShareLinkCreated } from '../timeline';
 import { requireOwnedDocument, type RouteContext } from './context';
@@ -44,11 +45,11 @@ export async function handleDocumentShareRoutes(ctx: RouteContext): Promise<Resp
     if (access instanceof Response) return access;
 
     if (request.method === 'GET') {
-      // Owner-only response, so it's safe to return the share password
-      // in the clear — this is how the Share dialog shows it (docs/specs/013-workspace/share-password.md).
+      // Whether a password is in force, never the password: the column holds
+      // only its hash (docs/specs/013-workspace/share-password.md).
       const links = await listShareLinks(env, id);
-      const password = await getDocumentSharePassword(env, id);
-      return json({ links, password });
+      const passwordSet = (await getDocumentSharePassword(env, id)) !== null;
+      return json({ links, passwordSet });
     }
     if (request.method === 'POST') {
       const body = (await request.json().catch(() => ({}))) as {
@@ -95,6 +96,10 @@ export async function handleDocumentShareRoutes(ctx: RouteContext): Promise<Resp
       // nothing left to warn about. It's keyed on the DOCUMENT (one warning
       // per document, not per link), so retracting it here is exact.
       await retractTimelineWarning(env, 'document', id, 'share_link_expiring');
+      // Same as the single revoke below: connected holders of each code are
+      // sent out of the room, or they would keep reading and editing live.
+      for (const link of links)
+        await broadcastShareOp(env, id, { kind: 'share-revoked', code: link.code });
 
       return json({ shareable: false, shareCode: null });
     }
@@ -123,10 +128,11 @@ export async function handleDocumentShareRoutes(ctx: RouteContext): Promise<Resp
           ? await getCommunityPostForDocument(env, id)
           : null;
       if (post && post.state !== 'hidden') return conflict('community_published');
-      await setDocumentSharePassword(env, id, password);
-      // Echo back the stored value (normalised: whitespace-only ->
-      // null) so the dialog reflects exactly what gates access.
-      return json({ password: await getDocumentSharePassword(env, id) });
+      // Whitespace-only clears, so a stray space can't lock a document in a way
+      // the owner can't see. Anything else is stored as its hash.
+      const stored = password?.trim() ? await hashSharePassword(password) : null;
+      await setDocumentSharePassword(env, id, stored);
+      return json({ passwordSet: stored !== null });
     }
   }
 

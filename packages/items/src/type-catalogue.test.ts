@@ -14,6 +14,8 @@ import {
   typeIn,
   typesOf,
   validateItemTypeCatalogue,
+  detailsLabelOf,
+  DETAILS_LABEL_DEFAULT,
 } from './type-catalogue';
 
 // docs/specs/026-plan/item-types.md.
@@ -52,6 +54,19 @@ describe('the type catalogue', () => {
       options: ['Won', 'Lost'],
       onCard: true,
     });
+  });
+
+  it('keeps a renamed Details, drops the default name, and refuses a blank or long one', () => {
+    const one = (detailsLabel: unknown) =>
+      validateItemTypeCatalogue(withCall([{ ...call, detailsLabel }]));
+    const named = one('  Facts ');
+    expect(named.ok && named.catalogue.types[0]!.detailsLabel).toBe('Facts');
+    expect(detailsLabelOf(named.ok ? named.catalogue.types[0]! : {})).toBe('Facts');
+    const plain = one('Details');
+    expect(plain.ok && plain.catalogue.types[0]!.detailsLabel).toBeUndefined();
+    expect(detailsLabelOf({})).toBe(DETAILS_LABEL_DEFAULT);
+    expect(one(' ')).toMatchObject({ reason: 'types[0].detailsLabel' });
+    expect(one('x'.repeat(25))).toMatchObject({ reason: 'types[0].detailsLabel' });
   });
 
   it('refuses a catalogue by the part that fails', () => {

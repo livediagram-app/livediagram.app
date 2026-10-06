@@ -1,10 +1,9 @@
 # CLI
 
-**Status: in progress.** Built and run from source (`apps/cli`): routing, help, exit codes and output rules;
-profiles, `LIVEDIAGRAM_TOKEN`, `auth login` through the browser, `--device` and `--with-token`, `status`, `logout`; the reads `document ls|view`,
-`tab ls|view|lint|diff`, `changeset ls|show`; the edits `edit` (`changeset apply`), `element add|set|rm|move|connect|insert|wrap`
-and `changeset revert`, based on read copies; `document create|rename|share|rm|restore`, `tab add|rename|rm`; the catalogues `template ls|view`, `icon search`,
-`schema`; `graph lint` (`--compare`), offline; `comment ls|add|reply|resolve|reopen` and `presence set|clear`; `wait` and `watch` on the room; `pull`, `push`, `export --all` and a pull file's views offline; `tab render`, `graph render` and PNG export; `guide`, `skill` and `api`; the usage count and `telemetry on|off`. Not yet published to npm. The OS keychain store and the update check are ahead.
+**Status: built, not yet published.** Every command below runs from source (`apps/cli`), signs in through the browser,
+a device code or a token kept in the system's keychain, and is counted on the dashboard. Ahead: publishing the
+`livediagram` package to npm (prepared, waiting for its owner to set up trusted publishing), then the update check
+and the help centre article.
 
 `livediagram` is a command-line front door to the api, built first for **agents** (a coding agent in a repo, a chat
 agent changing a diagram while a person talks to it) and second for people (scripts, syncing documents to files).

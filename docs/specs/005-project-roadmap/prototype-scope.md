@@ -61,11 +61,15 @@ The editor is real:
 - **Agent changesets** ([Agent changesets](../024-agents/agent-changesets.md)): the MCP server and API-token scripts change tabs with changesets that reach anyone with the tab open, live, outlined in their author's colour with a toast offering Show and Undo, survive a person's next save, refuse an element a person has selected, and revert as one unit for 30 days; every server-stored document, personal ones included, has a room. Closed livediagram-app/livediagram.app#343.
 - **Document views and edit operations** ([Document views](../024-agents/document-views.md), [Edit operations](../024-agents/edit-operations.md)): agents read a tab as compact text (outline, graph, layout, comments, show, find) addressed by refs, and change it with twelve intent-level operations (`add set rm move connect rewire insert wrap unwrap order layout test`) in the line form or JSON, by ref or selector, placed beside what they name, making room on insert, and answered with one result line per element. The [diagram lint](../024-agents/diagram-lint.md) checks every
   changeset's result (overlaps, crossings, arrows behind boxes, overflowing labels) and names a fix for each finding.
-- **The CLI, first part** ([CLI](../015-api/cli.md)): `livediagram` runs from source with a token: help within token
-  budgets, eight exit codes, profiles, `auth login --with-token`, `status` and `logout`, the reads (`document`, `tab`
-  views, lint and diff, `changeset ls`, `show`), the edits (`edit -f`, `element …`, `changeset revert`) based on
-  read copies, `document create|rename|share|rm|restore`, `tab add|rename|rm`, the catalogues (`template`,
-  `icon search`, `schema`), guides, the agent skill and the `api` escape hatch.
+- **The CLI** ([CLI](../015-api/cli.md)): `livediagram` signs in through the browser, with a code on another device
+  (`--device`) or with a token, keeping it in the system's own keychain; reads every view, lint and diff; edits with
+  edit operations based on read copies; creates, renames, shares and removes documents and tabs; comments, shows its
+  presence, and waits on or watches a document's room; pulls a document to a file and pushes it back, exports every
+  document, and draws tabs and graph files as SVG or PNG. It counts its commands like the MCP's tools, and the MCP's
+  tools are verbs of the same catalogue. Built and run from source; publishing to npm is ahead.
+- **Agent presence** ([Agent presence](../024-agents/agent-presence.md)): an agent shows the people on a tab what it is
+  doing and looking at, under its owner's name, and comments, replies, resolves and reopens through the same endpoints
+  people use.
 - **Community** ([Community](../025-community/community.md)): a public gallery at `/community` of documents people
   are proud of. Signed-in owners publish a document from the Share dialog with a title, description, category and tags;
   anyone can search and filter it, open a document read-only (no room, no comments), like it and make their own copy in
@@ -90,8 +94,8 @@ The editor is real:
 
 ## Next
 
-- **Agents as collaborators** ([Agents](../024-agents/README.md)): with changesets, views, edit operations, the [lint](../024-agents/diagram-lint.md) and the CLI's reads, edits, lifecycle and catalogues built, the [CLI](../015-api/cli.md)'s sign-in, sync and
-  distribution next.
+- **Agents as collaborators** ([Agents](../024-agents/README.md)): with changesets, views, edit operations, the [lint](../024-agents/diagram-lint.md), presence and the [CLI](../015-api/cli.md) built, the CLI's publishing to npm,
+  its update check and its help centre article next.
 - **Access levels** ([Share roles](../013-workspace/share-roles.md)): Viewer, Participant and Editor for share links and API tokens, with ownership as separate powers, replacing view/edit and the read-only flag.
 
 ## Later

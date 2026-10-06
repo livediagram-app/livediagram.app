@@ -82,12 +82,16 @@ export async function readDocument(
     budget,
   });
 
-  const { document } = await apiJson<DocumentResponse>(env, token, `/documents/${args.documentId}`);
+  const { document } = await apiJson<DocumentResponse>(
+    env,
+    token,
+    `/documents/${encodeURIComponent(args.documentId)}`,
+  );
   const summary =
     args.tabId === undefined ? document.tabs[0] : document.tabs.find((t) => t.id === args.tabId);
   const tabId = args.tabId ?? summary?.id;
   if (tabId === undefined) return errorResult('That document has no tabs.');
-  const tabPath = `/documents/${document.id}/tabs/${tabId}`;
+  const tabPath = `/documents/${encodeURIComponent(document.id)}/tabs/${encodeURIComponent(tabId)}`;
   const auth = { env, token, documentId: document.id };
 
   if (asJson) {

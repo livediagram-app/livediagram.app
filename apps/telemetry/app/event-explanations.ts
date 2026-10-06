@@ -904,6 +904,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     'In the Toolbar panel layout, someone clicked the top-left menu button to open the Explorer as a popover.',
   'UI|Opened|ToolbarMore':
     'In the Toolbar panel layout, someone clicked "More" to see every tile in the current palette category.',
+  'UI|Opened|ToolbarSearch':
+    'In the Toolbar panel layout, someone opened the Search at the far right of the palette strip to find an element by name.',
+  'UI|Opened|ToolbarSearchOtherModes':
+    "In the Toolbar strip's Search, someone expanded the elements that other editor modes offer.",
   'UI|Opened|PowerUserOffer':
     'The one-time offer of power user mode appeared, after 20 editing days or 50 keyboard shortcuts on one device.',
   'UI|Used|PowerUserOffer': 'Someone accepted the power user mode offer, switching the mode on.',
@@ -1365,6 +1369,8 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Plan|Moved':
     'Someone moved a card on a Plan board to another column, row or place, or archived it (Archive).',
   'Plan|Restored': 'Someone brought an archived card back onto the boards.',
+  'Plan|Toggled':
+    'Someone flagged a card for attention, or took its flag off (the value says which).',
   'Plan|Opened':
     'Someone opened an item in the item panel, or a Plan panel (Card Types, the Trash, Cards).',
   'Plan|Voted': 'Someone voted for a card on a voting Plan board (Up), or took a vote back (Down).',

@@ -4,13 +4,14 @@
 // columns with their counts and WIP limits, and the card faces, without the
 // interactive controls. Without items the columns draw empty.
 
-import { planPalette, type PlanPalette } from './plan-palette';
+import { FLAG_COLOUR, PRIORITY_COLOURS, planPalette, type PlanPalette } from './plan-palette';
 import {
   itemAssignee,
   itemTitle,
   ITEM_TYPES,
   typeIn,
   itemVoteTotal,
+  isFlagged,
   isPriority,
   normaliseBoardSetup,
   projectBoard,
@@ -23,6 +24,8 @@ import {
 import type { BoxedElement } from './index';
 import type { CanvasSurface } from './colors';
 import { r2, xmlEscape } from './svg-render-primitives';
+import { personDisc, text as faceText, wrapLines } from './svg-render-face-kit';
+import { initialsOf } from './names';
 
 type Shape = BoxedElement & { type: 'shape' };
 
@@ -34,13 +37,6 @@ const COL_HEAD_H = 34;
 const CARD_H = 64;
 const CARD_GAP = 8;
 
-const PRIORITY_COLORS = {
-  urgent: '#dc2626',
-  high: '#ea580c',
-  medium: '#ca8a04',
-  low: '#64748b',
-} as const;
-
 type Palette = PlanPalette;
 
 // The element's own colours (theme, Quick Style, pickers), for planPalette.
@@ -50,24 +46,22 @@ const ownColours = (el: Shape) => ({
   text: el.textColor,
 });
 
-function text(x: number, y: number, size: number, fill: string, body: string, extra = ''): string {
-  return `<text x="${r2(x)}" y="${r2(y)}" font-family="${FONT}" font-size="${size}" fill="${xmlEscape(fill)}"${extra}>${xmlEscape(body)}</text>`;
+// The face kit's text marks leave the typeface to their group; every Plan drawing sets it once here.
+const inFont = (body: string) => `<g font-family="${FONT}">${body}</g>`;
+
+function text(
+  x: number,
+  y: number,
+  size: number,
+  color: string,
+  body: string,
+  o: { weight?: number; anchor?: 'end' | 'middle' } = {},
+): string {
+  return faceText(x, y, body, { size, color, ...o });
 }
 
-// Cuts `s` to what fits `width` at roughly 0.55em per character.
-function fit(s: string, width: number, size: number): string {
-  const max = Math.max(1, Math.floor(width / (size * 0.55)));
-  return s.length <= max ? s : `${s.slice(0, Math.max(1, max - 1))}…`;
-}
-
-function initials(name: string): string {
-  return name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((w) => w[0]!.toUpperCase())
-    .join('');
-}
+// `s` on one line that fits `width`, ending in an ellipsis when it runs on.
+const fit = (s: string, width: number, size: number) => wrapLines(s, width, size, 1)[0] ?? '';
 
 // One card face at (x, y), `w` wide and `h` tall.
 export function svgCardFace(
@@ -91,14 +85,16 @@ export function svgCardFace(
     `<rect x="${r2(x)}" y="${r2(y)}" width="4" height="${r2(h)}" rx="2" fill="${type.color}"/>`,
   );
   parts.push(text(x + 12, y + 18, 11, p.muted, `#${item.key} · ${type.label}`));
-  parts.push(
-    text(x + 12, y + 36, 13, p.text, fit(itemTitle(item), w - 24, 13), ' font-weight="600"'),
-  );
+  // A flagged card (docs/specs/026-plan/items.md "Flags"): its flag at the top right.
+  if (isFlagged(item)) {
+    parts.push(text(x + w - 12, y + 18, 12, FLAG_COLOUR, '⚑', { anchor: 'end' }));
+  }
+  parts.push(text(x + 12, y + 36, 13, p.text, fit(itemTitle(item), w - 24, 13), { weight: 600 }));
   let cx = x + 12;
   const p0 = item.fields['priority'];
   if (isPriority(p0) && h >= 56) {
     parts.push(
-      `<circle cx="${r2(cx + 4)}" cy="${r2(y + h - 12)}" r="4" fill="${PRIORITY_COLORS[p0]}"/>`,
+      `<circle cx="${r2(cx + 4)}" cy="${r2(y + h - 12)}" r="4" fill="${PRIORITY_COLOURS[p0]}"/>`,
     );
     cx += 14;
   }
@@ -107,17 +103,10 @@ export function svgCardFace(
   const who = itemAssignee(item);
   if (who && h >= 56) {
     parts.push(
-      `<circle cx="${r2(x + w - 16)}" cy="${r2(y + h - 14)}" r="10" fill="${xmlEscape(who.color)}"/>`,
-    );
-    parts.push(
-      text(
-        x + w - 16,
-        y + h - 10,
-        9,
-        '#ffffff',
-        initials(who.name),
-        ' text-anchor="middle" font-weight="700"',
-      ),
+      personDisc(x + w - 16, y + h - 14, 10, who.color, {
+        initials: initialsOf(who.name),
+        fill: who.color,
+      }),
     );
   }
   return parts.join('');
@@ -134,28 +123,18 @@ export function svgPlanBoard(
   const parts = [
     `<rect x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}" rx="12" fill="${p.surface}" stroke="${p.border}" stroke-width="1.5"/>`,
   ];
-  if (!setup) return parts.join('');
+  if (!setup) return inFont(parts.join(''));
   const projection = projectBoard(setup, items ?? new Map(), undefined, types);
   parts.push(
-    text(
-      el.x + PAD + 4,
-      el.y + 32,
-      18,
-      p.text,
-      fit(setup.title, el.width / 2, 18),
-      ' font-weight="700"',
-    ),
+    text(el.x + PAD + 4, el.y + 32, 18, p.text, fit(setup.title, el.width / 2, 18), {
+      weight: 700,
+    }),
   );
   if (items) {
     parts.push(
-      text(
-        el.x + el.width - PAD - 4,
-        el.y + 32,
-        12,
-        p.muted,
-        `${projection.total} items`,
-        ' text-anchor="end"',
-      ),
+      text(el.x + el.width - PAD - 4, el.y + 32, 12, p.muted, `${projection.total} items`, {
+        anchor: 'end',
+      }),
     );
   }
   const n = projection.columns.length;
@@ -174,24 +153,12 @@ export function svgPlanBoard(
     }
     const count = col.column.wipLimit ? `${col.count} / ${col.column.wipLimit}` : `${col.count}`;
     parts.push(
-      text(
-        cx + 10,
-        top + 22,
-        13,
-        p.text,
-        fit(col.column.name, colW - 60, 13),
-        ' font-weight="600"',
-      ),
+      text(cx + 10, top + 22, 13, p.text, fit(col.column.name, colW - 60, 13), { weight: 600 }),
     );
     parts.push(
-      text(
-        cx + colW - 10,
-        top + 22,
-        12,
-        col.overLimit ? '#b45309' : p.muted,
-        count,
-        ' text-anchor="end"',
-      ),
+      text(cx + colW - 10, top + 22, 12, col.overLimit ? '#b45309' : p.muted, count, {
+        anchor: 'end',
+      }),
     );
     let y = top + COL_HEAD_H;
     const cards = col.lanes.flatMap((l) => l.items);
@@ -201,7 +168,7 @@ export function svgPlanBoard(
       y += CARD_H + CARD_GAP;
     }
   });
-  return parts.join('');
+  return inFont(parts.join(''));
 }
 
 export function svgPlanCard(
@@ -215,19 +182,13 @@ export function svgPlanCard(
   const item = items ? items.get(id) : undefined;
   if (!items) {
     const p = planPalette(surface, ownColours(el));
-    return (
+    return inFont(
       `<rect x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}" rx="8" fill="${p.card}" stroke="${p.border}" stroke-width="1"/>` +
-      text(el.x + 12, el.y + el.height / 2 + 4, 12, p.muted, 'Item')
+        text(el.x + 12, el.y + el.height / 2 + 4, 12, p.muted, 'Item'),
     );
   }
-  return svgCardFace(
-    item,
-    el.x,
-    el.y,
-    el.width,
-    el.height,
-    planPalette(surface, ownColours(el)),
-    types,
+  return inFont(
+    svgCardFace(item, el.x, el.y, el.width, el.height, planPalette(surface, ownColours(el)), types),
   );
 }
 
@@ -239,15 +200,15 @@ export function svgPlanView(el: Shape, surface: CanvasSurface): string {
   const label =
     view && !planViewMetric(view) ? PLAN_VISUALISATION_LABELS[view as PlanVisualisation] : 'Metric';
   const size = Math.min(14, Math.max(10, el.height / 4));
-  return (
+  return inFont(
     `<rect x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}" rx="10" fill="${p.surface}" stroke="${p.border}" stroke-width="1"/>` +
-    text(
-      el.x + PAD,
-      el.y + Math.min(el.height / 2 + 4, PAD + size),
-      size,
-      p.text,
-      fit(label, el.width - PAD * 2, size),
-      ' font-weight="600"',
-    )
+      text(
+        el.x + PAD,
+        el.y + Math.min(el.height / 2 + 4, PAD + size),
+        size,
+        p.text,
+        fit(label, el.width - PAD * 2, size),
+        { weight: 600 },
+      ),
   );
 }

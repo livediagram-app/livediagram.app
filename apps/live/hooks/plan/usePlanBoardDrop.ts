@@ -132,7 +132,7 @@ export function usePlanBoardDrop(opts: {
       if (!plan || !setup || !projection) return;
       const def = typeIn(plan.types, type);
       const lane = projection.lanes.find((l) => l.key === slot.laneKey);
-      const set = setup.swimlaneBy !== 'none' ? laneMove(lane) : {};
+      const set = projection.swimlanes ? laneMove(lane) : {};
       plan.addItem({
         type: def.id,
         fields: { title: def.newTitle, ...(set.set ?? {}) },

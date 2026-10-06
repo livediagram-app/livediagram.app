@@ -47,12 +47,31 @@ async function roomFetch(
   }
 }
 
-function mutationInit(op: unknown): RequestInit {
+// `ordered` asks the room to sequence the op into its catch-up log, so a peer whose socket blipped
+// still receives it (the item store's ops).
+function mutationInit(op: unknown, ordered = false): RequestInit {
   return {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ op }),
+    body: JSON.stringify(ordered ? { op, ordered: true } : { op }),
   };
+}
+
+// Send one op to every socket in a document's room. Best-effort: the D1 write before it is the
+// authoritative change, so a room that can't be reached is logged as `[room-broadcast] <label> did
+// not reach the room` rather than failing the request.
+async function broadcastOp(
+  env: Env,
+  documentId: string,
+  op: unknown,
+  label: string,
+  ordered = false,
+): Promise<void> {
+  try {
+    await roomStubFor(env, documentId).fetch('https://room/broadcast', mutationInit(op, ordered));
+  } catch (err) {
+    console.warn(`[room-broadcast] ${label} did not reach the room`, documentId, err);
+  }
 }
 
 // Merge the room's collaboration ledger into a tab a client is saving
@@ -299,11 +318,7 @@ export async function broadcastShareOp(
   documentId: string,
   op: { kind: 'share-revoked' | 'share-rescoped'; code: string },
 ): Promise<void> {
-  try {
-    await roomStubFor(env, documentId).fetch('https://room/broadcast', mutationInit(op));
-  } catch (err) {
-    console.warn(`[room-broadcast] ${op.kind} did not reach the room`, documentId, err);
-  }
+  await broadcastOp(env, documentId, op, op.kind);
 }
 
 // Tell a document's realtime room that the document was moved to the Trash
@@ -312,14 +327,7 @@ export async function broadcastShareOp(
 // broadcast: the D1 write is the change, and a session the room misses still
 // has every save refused with document_trashed.
 export async function broadcastDocumentTrashed(env: Env, documentId: string): Promise<void> {
-  try {
-    await roomStubFor(env, documentId).fetch(
-      'https://room/broadcast',
-      mutationInit({ kind: 'document-trashed' }),
-    );
-  } catch (err) {
-    console.warn('[room-broadcast] document-trashed did not reach the room', documentId, err);
-  }
+  await broadcastOp(env, documentId, { kind: 'document-trashed' }, 'document-trashed');
 }
 
 // Agent presence in the room (docs/specs/024-agents/blueprints/agent-presence.md "Room"). The room is its only store,
@@ -419,28 +427,12 @@ export async function relayItemTypes(
   documentId: string,
   op: ItemTypesRoomOp,
 ): Promise<void> {
-  try {
-    await roomStubFor(env, documentId).fetch('https://room/broadcast', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ op, ordered: true }),
-    });
-  } catch (err) {
-    console.warn('[room-broadcast] item types did not reach the room', documentId, err);
-  }
+  await broadcastOp(env, documentId, op, 'item types', true);
 }
 
 // Tell a document's room about item writes (docs/specs/026-plan/items.md "Live for everyone"): an
 // ordered system op, so a peer whose socket blipped catches it up. Best-effort like the other
 // broadcasts: the D1 write is the change, and a client that missed it refetches on a rev gap.
 export async function relayItems(env: Env, documentId: string, op: ItemsRoomOp): Promise<void> {
-  try {
-    await roomStubFor(env, documentId).fetch('https://room/broadcast', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ op, ordered: true }),
-    });
-  } catch (err) {
-    console.warn('[room-broadcast] items did not reach the room', documentId, err);
-  }
+  await broadcastOp(env, documentId, op, 'items', true);
 }

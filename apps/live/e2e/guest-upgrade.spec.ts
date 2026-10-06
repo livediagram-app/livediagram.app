@@ -1,13 +1,38 @@
 import { test, expect, expectNoPageErrors } from './fixtures';
 
-// A fresh guest's documents move to a signed id moments after the first one is created. A reload
-// can land after the worker moved them but before the browser kept the new id; the next load must
-// resume that upgrade, never mint another id and lock the guest out of their own document
-// (docs/specs/014-identity/auth-and-guest-access.md, "An interrupted upgrade resumes").
+// A legacy guest (an unsigned id from before signing, docs/specs/014-identity/auth-and-guest-access.md
+// "Legacy upgrade") moves its documents to a signed id on its next editor load. A reload can land
+// after the worker moved them but before the browser kept the new id; the next load must resume that
+// upgrade, never mint another id and lock the guest out of their own document ("An interrupted
+// upgrade resumes"). A first-time guest is signed from the start and never upgrades, so the legacy
+// guest is set up here: an unsigned id in this browser that already owns a document.
 test('a reload in the middle of the signed-id upgrade keeps the document', async ({
   page,
   pageErrors,
 }) => {
+  const legacyId = crypto.randomUUID();
+  const id = crypto.randomUUID();
+  const apiBase = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
+  // The stack leaves enforcement off, so an unsigned guest can still create, as before signing.
+  const created = await page.request.post(`${apiBase}/documents`, {
+    headers: { 'X-Owner-Id': legacyId },
+    data: {
+      id,
+      name: 'Legacy board',
+      tabs: [{ id: crypto.randomUUID(), name: 'Tab 1', elements: [] }],
+    },
+  });
+  expect(created.ok(), 'seeding the legacy guest’s document').toBe(true);
+  // The legacy id in this browser, set before the first load only: the guard lives in
+  // sessionStorage, which a reload keeps, so the reload below sees whatever the upgrade left.
+  await page.addInitScript((owner) => {
+    if (sessionStorage.getItem('e2e:legacy-seeded')) return;
+    sessionStorage.setItem('e2e:legacy-seeded', '1');
+    localStorage.setItem('livediagram:v2:self-id', owner);
+    localStorage.removeItem('livediagram:v2:self-sig');
+    localStorage.setItem('livediagram:v2:name-confirmed', '1');
+  }, legacyId);
+
   let moved!: () => void;
   const movedOnServer = new Promise<void>((resolve) => (moved = resolve));
   // Let the worker do the move, then never hand the answer to the page.
@@ -15,10 +40,7 @@ test('a reload in the middle of the signed-id upgrade keeps the document', async
     await route.fetch();
     moved();
   });
-  // Straight to a blank canvas (the Start Blank link).
-  await page.goto('/new?blank=1');
-  await page.waitForURL(/\/document\//);
-  const id = /\/document\/([^/?#]+)/.exec(page.url())![1];
+  await page.goto(`/document/${id}`);
   await movedOnServer;
   await page.unroute('**/api/migrate');
 
@@ -26,10 +48,12 @@ test('a reload in the middle of the signed-id upgrade keeps the document', async
   page.on('response', (r) => {
     if (r.url().includes(`/api/documents/${id}`) && r.status() === 403) refused.push(r.url());
   });
-  await page.reload();
-  const load = await page.waitForResponse(
+  // Armed before the reload, so the document's fetch cannot land before anyone listens.
+  const loaded = page.waitForResponse(
     (r) => r.url().endsWith(`/api/documents/${id}`) && r.request().method() === 'GET',
   );
+  await page.reload();
+  const load = await loaded;
   expect(load.status()).toBe(200);
   await page.waitForLoadState('networkidle');
   expect(refused).toEqual([]);

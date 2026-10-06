@@ -45,7 +45,7 @@ async function buildImageResolver(
   const byId = await embedTabImages(
     tab,
     async (id) => {
-      const res = await apiFetch(env, token, `/images/${id}`);
+      const res = await apiFetch(env, token, `/images/${encodeURIComponent(id)}`);
       if (!res.ok) return null;
       return { bytes: await res.arrayBuffer(), contentType: res.headers.get('Content-Type') };
     },

@@ -65,7 +65,7 @@ function renderDialog(
   const props = {
     participant: { id: 'user_a', name: 'Ada', color: '#f97316' },
     offline: over.offline ?? false,
-    sharePassword: null,
+    sharePasswordSet: false,
     lockedName: null,
   } as unknown as Parameters<typeof ShareDialogWithCommunity>[0];
   render(

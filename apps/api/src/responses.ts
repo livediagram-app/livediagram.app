@@ -71,10 +71,20 @@ export function notFound(): Response {
 // `json` so the live app's blob-URL fetch works cross-origin in dev; the
 // caller picks the `Cache-Control` (private + long for the owner
 // thumbnail, public + short for the live share image).
+export const SVG_CSP =
+  "default-src 'none'; style-src 'unsafe-inline' https://fonts.googleapis.com; " +
+  'font-src https://fonts.gstatic.com; img-src data:; sandbox';
+
 export function svgImage(body: string, cacheControl: string): Response {
   const headers = new Headers(CORS_HEADERS);
   headers.set('Content-Type', 'image/svg+xml; charset=utf-8');
   headers.set('Cache-Control', cacheControl);
+  // Served on the app's own origin, so opened directly an SVG is a document
+  // that could run script. The renderer escapes everything it writes; this
+  // keeps a future slip there from becoming stored XSS. Fonts and inline
+  // data images (what a snapshot actually uses) still load.
+  headers.set('Content-Security-Policy', SVG_CSP);
+  headers.set('X-Content-Type-Options', 'nosniff');
   return new Response(body, { headers });
 }
 

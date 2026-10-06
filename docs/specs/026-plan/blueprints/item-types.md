@@ -22,6 +22,8 @@ src/type-catalogue.ts  ItemTypeCatalogue, limits, PLAN_TYPE_COLOURS, BUILT_IN_FI
                        typesOf, typeIn, typeByNameIn, customFieldOf, isBuiltInFieldId, slugOf,
                        newItemTypeId, newCustomFieldId, defaultNewTitle, validateItemTypeCatalogue,
                        readItemTypeCatalogue, builtInCatalogue
+src/slug.ts            slugText, cutSlug, uniqueSlug (accents folded, `-2`, `-3` on a clash; shared with
+                       @livediagram/document's agent element ids)
 ```
 
 - `validateItemTypeCatalogue(input)`: version 1; 1 to `ITEM_TYPES_MAX` types; each `id` matches

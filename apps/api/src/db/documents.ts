@@ -354,12 +354,12 @@ export async function setDocumentShare(env: Env, id: string, shareable: boolean)
     .run();
 }
 
-// Share password (docs/specs/013-workspace/share-password.md). Stored in plain text — deliberately
-// readable by the owner (the Share dialog shows it) and the threat
-// model is anti-URL-guessing, not cryptographic. NULL / empty means
-// the document has no password. Kept OUT of the document DTO columns
-// (DOCUMENT_COLS) so it never leaks to a viewer; only these owner-only
-// paths touch it.
+// Share password (docs/specs/013-workspace/share-password.md). The column holds a PBKDF2 hash
+// (auth/share-password-hash.ts), or a plain-text value saved before hashing
+// shipped, which the first correct entry rewrites. NULL / empty means the
+// document has no password. Kept OUT of the document DTO columns
+// (DOCUMENT_COLS) and never returned by any route; only the share-access
+// check reads it.
 export async function getDocumentSharePassword(env: Env, id: string): Promise<string | null> {
   const row = await env.DB.prepare('SELECT share_password FROM documents WHERE id = ?')
     .bind(id)
@@ -370,14 +370,30 @@ export async function getDocumentSharePassword(env: Env, id: string): Promise<st
   return value && value.trim() ? value : null;
 }
 
+// `stored` is what the column should hold: a hash from hashSharePassword, or
+// null to clear. The route hashes; this layer never sees a plain password.
 export async function setDocumentSharePassword(
   env: Env,
   id: string,
-  password: string | null,
+  stored: string | null,
 ): Promise<void> {
-  const normalised = password && password.trim() ? password : null;
   await env.DB.prepare('UPDATE documents SET share_password = ? WHERE id = ?')
-    .bind(normalised, id)
+    .bind(stored, id)
+    .run();
+}
+
+// Rewrite a legacy plain-text value as its hash, only if the column still
+// holds that exact value: an owner who changed the password meanwhile wins.
+export async function upgradeDocumentSharePassword(
+  env: Env,
+  id: string,
+  from: string,
+  to: string,
+): Promise<void> {
+  await env.DB.prepare(
+    'UPDATE documents SET share_password = ? WHERE id = ? AND share_password = ?',
+  )
+    .bind(to, id, from)
     .run();
 }
 
@@ -530,6 +546,7 @@ export async function copyDocument(
     sourceId,
     newId,
     await copiedItemIds(env, sourceId, rows, onlyTabId),
+    redactForCommunity,
   );
   await env.DB.batch([...inserts, ...itemCopies]);
   return await getDocument(env, newId);

@@ -7,7 +7,7 @@
 
 import type { UnfurlResult } from '@livediagram/api-schema';
 import { badRequest, json, notFound, rateLimited } from '../responses';
-import { clientIp } from '../client-ip';
+import { clientRateKey } from '../client-ip';
 import type { RouteContext } from './context';
 
 const FETCH_TIMEOUT_MS = 8000;
@@ -164,7 +164,7 @@ export async function handleUnfurl(ctx: RouteContext): Promise<Response> {
 
   // Per-IP throttle: it's an unauthenticated outbound fetch, so bound abuse.
   if (env.UNFURL_RATE_LIMITER) {
-    const ip = clientIp(request);
+    const ip = clientRateKey(request);
     if (!(await env.UNFURL_RATE_LIMITER.limit({ key: ip })).success) return rateLimited();
   }
 

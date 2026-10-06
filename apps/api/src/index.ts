@@ -36,7 +36,7 @@ import { DocumentRoom } from './document-room';
 import { CORS_HEADERS, forbidden, json, notFound, payloadTooLarge, rateLimited } from './responses';
 import { insertTelemetryEvents } from './db/telemetry';
 import { deleteOldDocumentOpens } from './db/document-opens';
-import { clientIp } from './client-ip';
+import { clientIp, clientRateKey } from './client-ip';
 import { communityNetwork } from './community-network';
 import { MAX_BODY_BYTES, MAX_IMAGE_BYTES } from './limits';
 import { handleAccount } from './routes/account';
@@ -166,8 +166,10 @@ async function routeApiRequest(
       }
     }
   }
+  // An empty guest header is no identity at all: as '' it would be one shared,
+  // writable owner namespace (and one shared rate-limit bucket) for everyone.
   const resolveOwner = (): string | null =>
-    clerkUserId ?? tokenAuth?.ownerId ?? request.headers.get('X-Owner-Id');
+    clerkUserId ?? tokenAuth?.ownerId ?? (request.headers.get('X-Owner-Id') || null);
   // Server-verified Clerk account id from either credential (session JWT
   // or API token). Feeds the team-membership content gates + teams-surface
   // reads (see RouteContext.verifiedUserId); administration surfaces keep
@@ -180,7 +182,13 @@ async function routeApiRequest(
   // `Authorization` instead. Refused unconditionally, BEFORE the signature
   // gate below, because that gate is off until an operator arms it — and
   // this shape needs no grace window, having never been legitimate.
-  if (!clerkUserId && !tokenAuth && OWNER_SCOPED_SEGMENTS.has(segments[1] ?? '')) {
+  // `share` is included even though it is not owner-scoped: its resolver
+  // compares the header with the document's owner to decide redaction.
+  if (
+    !clerkUserId &&
+    !tokenAuth &&
+    (OWNER_SCOPED_SEGMENTS.has(segments[1] ?? '') || segments[1] === 'share')
+  ) {
     const headerOwner = request.headers.get('X-Owner-Id');
     if (headerOwner && isClerkIdShape(headerOwner)) {
       return json({ error: 'account_id_not_a_guest_credential' }, { status: 401 });
@@ -239,8 +247,8 @@ async function routeApiRequest(
     return forbidden('read_only_token');
   }
   // One read is a credential, not content: the share-link list carries every
-  // code (edit links included) and the share password, so a read-only token
-  // that could list it could promote itself to edit by opening a link.
+  // code (edit links included), so a read-only token that could list it could
+  // promote itself to edit by opening a link.
   const isShareLinkList =
     segments[1] === 'documents' && segments.length === 4 && segments[3] === 'share';
   if (tokenAuth?.readOnly && isShareLinkList) {
@@ -267,6 +275,13 @@ async function routeApiRequest(
   // Mint volume is one row per room join and the route does no
   // unbounded work, so it isn't a quota-exhaustion vector.
   const isRoomTicketMint = segments[1] === 'documents' && segments[3] === 'room-ticket';
+  // ...but not unthrottled: each mint is a D1 write. Its own bucket per
+  // caller network (the owner id is caller-chosen for a guest), so a flood is
+  // bounded without touching anyone's autosave budget.
+  if (isRoomTicketMint && isWrite && env.WRITE_RATE_LIMITER) {
+    if (await isWriteRateLimited(env, `room-ticket:${clientRateKey(request)}`))
+      return rateLimited();
+  }
   // Community likes and reports (docs/specs/025-community/blueprints/community.md §7) are limited per
   // network instead: their callers are anonymous, so the owner key would be 'anonymous' for everyone.
   const isCommunityWrite = isWrite && segments[1] === 'community';
@@ -281,7 +296,11 @@ async function routeApiRequest(
     // A token request rate-limits on the TOKEN id (docs/specs/015-api/public-api-and-tokens.md §3.5), so a
     // runaway integration is throttled independently of the owner's
     // interactive app use; everything else keys on the resolved owner.
-    const key = tokenAuth ? `token:${tokenAuth.tokenId}` : (resolveOwner() ?? 'anonymous');
+    // A caller with no identity yet (minting a guest id) is keyed on its
+    // network, not one global 'anonymous' bucket every new visitor shares.
+    const key = tokenAuth
+      ? `token:${tokenAuth.tokenId}`
+      : (resolveOwner() ?? `anonymous:${clientRateKey(request)}`);
     if (await isWriteRateLimited(env, key)) return rateLimited();
   }
   // Token-authed READS (docs/specs/015-api/public-api-and-tokens.md §3.5): GETs under a token aren't covered by
@@ -297,7 +316,7 @@ async function routeApiRequest(
   // password and is otherwise an unauthenticated read exempt from the
   // write limiter above. Per-IP. Absent binding → allow (self-host).
   if (request.method === 'GET' && segments[1] === 'share' && env.SHARE_RATE_LIMITER) {
-    const ip = clientIp(request);
+    const ip = clientRateKey(request);
     if (!(await env.SHARE_RATE_LIMITER.limit({ key: ip })).success) return rateLimited();
   }
 

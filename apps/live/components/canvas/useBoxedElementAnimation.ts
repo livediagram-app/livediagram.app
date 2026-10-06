@@ -8,6 +8,7 @@ import {
 import { isSvgRenderedShape } from '@/components/canvas/shape-svg-overlay';
 import { useElementSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { useCanvasStill } from '@/components/canvas/CanvasStillContext';
+import { useArrivesWithBoard } from '@/components/canvas/CanvasArrivalContext';
 
 // The looping-animation slice (docs/specs/008-canvas/canvas-and-palette.md), lifted out of BoxedElementView:
 // which surface each animation kind rides (the wrapper box, the rendered
@@ -81,13 +82,19 @@ export function useBoxedElementAnimation(element: BoxedElement, textColor: strin
   // CSS animations RESTART when a node is moved in the DOM, and layer
   // reorders (bring to front / send to back) move every keyed sibling — so
   // a lingering pop-in class made unrelated elements visibly re-enter.
-  const [entered, setEntered] = useState(false);
+  // An element that never pops starts entered and arms nothing: one the board arrives with
+  // (docs/specs/008-canvas/canvas-and-palette.md "Motion and animations"), and one mounted on a still
+  // canvas, which stays settled if the tab later switches to Diagram mode.
+  const arrivesWithBoard = useArrivesWithBoard();
+  const [entered, setEntered] = useState(() => still || arrivesWithBoard);
+  const [pops] = useState(!entered);
   useEffect(() => {
+    if (!pops) return;
     // Comfortably past the pop-in duration; a plain timeout (not
     // animationend) so reduced-motion sessions converge too.
     const t = setTimeout(() => setEntered(true), 400);
     return () => clearTimeout(t);
-  }, []);
+  }, [pops]);
   const wrapperAnimClass = element.animation
     ? svgHandlesAnim || isTextNativeAnim
       ? ''

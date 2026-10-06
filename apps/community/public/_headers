@@ -1,0 +1,18 @@
+# Defense-in-depth response headers for every Community page. Mirrors
+# marketing's public/_headers: the community app is static assets only (no
+# worker), so the headers go through Cloudflare Workers Static Assets'
+# `_headers` file, which Next.js copies from public/ into out/ at build time.
+# Paths are as the assets worker sees them, after the router strips
+# `/community`.
+#
+# X-Frame-Options DENY matters most here: signed-in visitors can Like, Report
+# and Copy, so a framed page could be clickjacked into doing those.
+# `fullscreen` is left out of Permissions-Policy because a post page embeds
+# the live editor, which may go fullscreen.
+
+/*
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()
+  Strict-Transport-Security: max-age=31536000; includeSubDomains

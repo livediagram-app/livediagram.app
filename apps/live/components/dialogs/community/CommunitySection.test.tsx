@@ -18,7 +18,7 @@ function renderSection(state: CommunityOwnPost['state']) {
       signedIn
       signInHref="/sign-in/"
       teamDocument={false}
-      sharePassword={null}
+      sharePasswordSet={false}
       post={post(state)}
       loading={false}
       error={null}
@@ -52,7 +52,7 @@ describe('CommunitySection, every face', () => {
     signedIn: true,
     signInHref: '/sign-in/?redirect_url=%2Fdocument%2Fd1',
     teamDocument: false,
-    sharePassword: null,
+    sharePasswordSet: false,
     post: null,
     loading: false,
     error: null,
@@ -93,7 +93,7 @@ describe('CommunitySection, every face', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Share to Community' }));
     expect(onPublish).toHaveBeenCalledTimes(1);
     cleanup();
-    render(<CommunitySection {...base({ sharePassword: 'pw' })} />);
+    render(<CommunitySection {...base({ sharePasswordSet: true })} />);
     expect(
       (screen.getByRole('button', { name: 'Share to Community' }) as HTMLButtonElement).disabled,
     ).toBe(true);

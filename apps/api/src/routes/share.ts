@@ -15,7 +15,7 @@ import {
 import { notifyDocumentJoin } from '../email/notifications';
 import { documentTrashed, forbidden, json, notFound, svgImage } from '../responses';
 import { reportServerEvent } from '../server-telemetry';
-import { sharePasswordStatus } from '../auth/share-access';
+import { sharePasswordStatus, type SharePasswordAttempt } from '../auth/share-access';
 import {
   redactDocumentForCommunity,
   redactDocumentForReader,
@@ -110,7 +110,15 @@ export async function handleShare(ctx: RouteContext): Promise<Response> {
         }
       }
       // A tab-scoped link (docs/specs/013-workspace/tab-scoped-share-links.md) sees its tab; the rest are locked.
-      const liveDoc = redactDocumentForScope(redactDocumentForReader(d, visitor), link.tabId);
+      // `shareCode` (the document's OLDEST link, of any role and scope) is
+      // never handed out here, not even when the visitor claims to be the
+      // owner: the guest header is unproven on this route, so a harvested
+      // owner id would otherwise turn a view link into that edit link. The
+      // visitor already holds the code they arrived with.
+      const liveDoc = redactDocumentForScope(
+        { ...redactDocumentForReader(d, visitor), shareCode: null },
+        link.tabId,
+      );
       return json({ document: liveDoc, role: link.role, tabId: link.tabId });
     }
     // No active link resolves this code: expired, revoked, or never
@@ -182,7 +190,7 @@ async function handleShareImage(ctx: RouteContext, code: string): Promise<Respon
 export async function passwordGate(
   env: RouteContext['env'],
   documentId: string,
-  provided: string | null,
+  provided: SharePasswordAttempt | null,
 ): Promise<Response | null> {
   const status = await sharePasswordStatus(env, documentId, provided);
   if (status === 'missing') return json({ error: 'password_required' }, { status: 401 });

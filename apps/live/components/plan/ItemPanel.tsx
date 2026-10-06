@@ -10,7 +10,9 @@ import { useState } from 'react';
 import {
   BUILT_IN_FIELD_IDS,
   detailFieldsOf,
+  detailsLabelOf,
   isArchived,
+  isFlagged,
   itemTitle,
   tabsOf,
   typeIn,
@@ -20,13 +22,15 @@ import {
   type ItemPerson,
   type ItemTypeDef,
 } from '@livediagram/items';
-import { CloseIcon, TrashIcon, relativeSince, Select } from '@livediagram/ui';
+import { DialogCloseButton, relativeSince, Select } from '@livediagram/ui';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { DebouncedText } from './item-field-editors';
 import { PlanTypeGlyph } from './plan-type-glyph';
-import { PlanBoardTileArt } from './plan-tile-art';
+import { ItemPanelMenu } from './ItemPanelMenu';
+import { FLAG_COLOUR } from './item-flag';
 import { ACCENT_TEXT, accentVars } from './plan-palette';
+import type { ItemCommentsContext } from './ItemComments';
 import {
   ItemFieldEditor,
   fieldId,
@@ -54,8 +58,11 @@ export function ItemPanel({
   onType,
   onOpenItem,
   onDelete,
+  onDuplicate,
+  onFlag,
   onArchive,
   onClose,
+  comments,
 }: {
   item: Item;
   // The document's item types (docs/specs/026-plan/item-types.md).
@@ -75,9 +82,13 @@ export function ItemPanel({
   // Switches the panel to another item (a card's parent).
   onOpenItem: (itemId: string) => void;
   onDelete: () => void;
+  onDuplicate: () => void;
+  onFlag: () => void;
   // Archive the item, or restore an archived one (docs/specs/026-plan/items.md "Archive").
   onArchive: () => void;
   onClose: () => void;
+  // The card's comments (docs/specs/026-plan/items.md "Comments").
+  comments?: ItemCommentsContext;
 }) {
   const mobile = useIsMobileViewport();
   // When the panel opened: the meta line says how long ago the last change was from here.
@@ -90,11 +101,17 @@ export function ItemPanel({
   const details = [
     ...detailFieldsOf(type),
     ...BUILT_IN_FIELD_IDS.filter(
-      (f) => f !== 'title' && f !== 'votes' && !offered.has(f) && item.fields[f] !== undefined,
+      // Comments a type no longer offers stay on the card, out of the panel, like votes.
+      (f) =>
+        f !== 'title' &&
+        f !== 'votes' &&
+        f !== 'comments' &&
+        !offered.has(f) &&
+        item.fields[f] !== undefined,
     ),
   ];
   const shownTabs = mobile
-    ? [{ id: DETAILS_TAB, label: 'Details', fields: details }, ...tabs]
+    ? [{ id: DETAILS_TAB, label: detailsLabelOf(type), fields: details }, ...tabs]
     : tabs;
   const [picked, setPicked] = useState<string>(shownTabs[0]?.id ?? DETAILS_TAB);
   const current = shownTabs.find((t) => t.id === picked) ?? shownTabs[0];
@@ -109,6 +126,7 @@ export function ItemPanel({
     onSave,
     onPatch,
     onOpenItem,
+    ...(comments ? { comments } : {}),
   };
 
   const header = (
@@ -134,36 +152,29 @@ export function ItemPanel({
         ))}
       </Select>
       <span className="text-[13px] text-slate-500 dark:text-slate-400">#{item.key}</span>
+      {isFlagged(item) ? (
+        <span
+          className="flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold"
+          style={{ color: FLAG_COLOUR, backgroundColor: `${FLAG_COLOUR}14` }}
+        >
+          <PlanTypeGlyph glyph="flag" size={12} color={FLAG_COLOUR} />
+          Flagged
+        </span>
+      ) : null}
       <span className="flex-1" />
-      <HelpArticleLink article="planCards" variant="icon" />
+      <HelpArticleLink article="planCards" variant="labelled" />
       {canEdit ? (
-        <button
-          type="button"
-          onClick={onArchive}
-          className="flex h-8 items-center gap-1.5 rounded-md px-2 text-[12px] font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
-        >
-          <PlanBoardTileArt preset="archive" size={14} />
-          {isArchived(item) ? 'Restore' : 'Archive'}
-        </button>
+        <ItemPanelMenu
+          itemKey={item.key}
+          archived={isArchived(item)}
+          flagged={isFlagged(item)}
+          onDuplicate={onDuplicate}
+          onFlag={onFlag}
+          onArchive={onArchive}
+          onDelete={onDelete}
+        />
       ) : null}
-      {canEdit ? (
-        <button
-          type="button"
-          onClick={onDelete}
-          className="flex h-8 items-center gap-1.5 rounded-md px-2 text-[12px] font-medium text-slate-500 transition hover:bg-rose-50 hover:text-rose-600 dark:text-slate-400 dark:hover:bg-rose-500/15 dark:hover:text-rose-300"
-        >
-          <TrashIcon size={14} />
-          Delete
-        </button>
-      ) : null}
-      <button
-        type="button"
-        onClick={onClose}
-        aria-label="Close"
-        className="flex h-8 w-8 items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
-      >
-        <CloseIcon size={14} />
-      </button>
+      <DialogCloseButton compact onClick={onClose} />
     </div>
   );
 
@@ -254,7 +265,7 @@ export function ItemPanel({
             <div
               role="tablist"
               aria-label="Item sections"
-              className="mb-4 flex gap-4 overflow-x-auto border-b border-slate-200 dark:border-slate-700"
+              className="mb-4 flex gap-4 overflow-x-auto overflow-y-hidden border-b border-slate-200 dark:border-slate-700"
               onKeyDown={(e) => {
                 if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
                 e.preventDefault();
@@ -297,11 +308,11 @@ export function ItemPanel({
         </div>
         {mobile ? null : (
           <aside
-            aria-label="Details"
+            aria-label={detailsLabelOf(type)}
             className="w-80 shrink-0 overflow-y-auto border-l border-slate-200 bg-slate-50/70 px-4 py-4 dark:border-slate-700 dark:bg-slate-950/40"
           >
             <h3 className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-              Details
+              {detailsLabelOf(type)}
             </h3>
             {details.map(detailRow)}
             {meta}

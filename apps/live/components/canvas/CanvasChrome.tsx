@@ -35,7 +35,14 @@ import { useCardTypesOpener } from '@/hooks/plan/useCardTypesOpener';
 import { LayersClusterButton } from '@/components/canvas/LayersClusterButton';
 import { UndoRedoClusterStrip } from '@/components/canvas/UndoRedoClusterStrip';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
-import { Fragment, useCallback, type Dispatch, type RefObject, type SetStateAction } from 'react';
+import {
+  Fragment,
+  useCallback,
+  useMemo,
+  type Dispatch,
+  type RefObject,
+  type SetStateAction,
+} from 'react';
 import type { DockAnchor, DockPanel } from '@/hooks/canvas/useDockPopovers';
 import { useCornerDocking } from '@/hooks/ui/useCornerDocking';
 import { PanelSnapSlot } from '@/components/canvas/PanelSnapSlot';
@@ -339,6 +346,11 @@ export function CanvasChrome(props: CanvasChromeProps) {
     />
   );
 
+  // Whether the tab has a Plan board, for an armed Plan card's hint (docs/specs/026-plan/plan-mode.md).
+  const hasPlanBoard = useMemo(
+    () => elements.some((e) => e.type === 'shape' && e.shape === 'plan-board'),
+    [elements],
+  );
   // Floating panel elements + their wiring live in useCanvasChromePanels.
   const {
     panelEls,
@@ -492,7 +504,12 @@ export function CanvasChrome(props: CanvasChromeProps) {
       {/* Top-of-canvas floating chrome (docs/specs/008-canvas/canvas-and-palette.md): owner / role badge, the
           active editor-mode banner, multi-selection toolbar, session timer
           and vote banner — laid out as one non-overlapping stack. */}
-      <TopCenterChrome {...props} toolbarLayout={toolbarActive} dockOnTop={dockOnTop} />
+      <TopCenterChrome
+        {...props}
+        toolbarLayout={toolbarActive}
+        dockOnTop={dockOnTop}
+        hasPlanBoard={hasPlanBoard}
+      />
 
       {/* Toolbar layout (docs/specs/007-editor/toolbar-layout.md): the menu button stands where the
           Explorer would float and opens it as a popover (zen hides it, the
@@ -531,6 +548,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
           themeTint={paletteTint}
           leading={menuInStrip ? explorerMenuButton : undefined}
           onAddPage={props.illustratePages?.edit?.addPage}
+          tabElements={elements}
         />
       ) : null}
 

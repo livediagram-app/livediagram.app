@@ -122,8 +122,10 @@ export type CreateTokenResponse = {
 // The share-links list doubles as the owner's read of the document's
 // share password (docs/specs/013-workspace/share-password.md): owner-only endpoint, so it's safe in the
 // clear. `password` is null when the document has no password.
-export type ShareLinksResponse = { links: ShareLink[]; password: string | null };
-export type SharePasswordResponse = { password: string | null };
+// The share password itself is never returned, only whether one is set: the
+// api keeps a hash (docs/specs/013-workspace/share-password.md).
+export type ShareLinksResponse = { links: ShareLink[]; passwordSet: boolean };
+export type SharePasswordResponse = { passwordSet: boolean };
 // GET /api/participants/<id>. `null` when you ask for your own id before you have saved a profile
 // (docs/specs/015-api/api.md); another absent id is a 404.
 export type ParticipantResponse = {

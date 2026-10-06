@@ -6,7 +6,7 @@
 // styles the Plan forms share.
 import type { ReactNode } from 'react';
 import { Dialog } from '@/components/dialogs/Dialog';
-import { CloseIcon } from '@livediagram/ui';
+import { DialogCloseButton } from '@livediagram/ui';
 
 type ShellProps = {
   label: string;
@@ -21,14 +21,7 @@ function ShellParts({ onClose, header, children, footer }: ShellProps) {
     <>
       <div className="flex items-center gap-2 border-b border-slate-200 px-4 py-3 dark:border-slate-700">
         <div className="min-w-0 flex-1">{header}</div>
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label="Close"
-          className="flex h-8 w-8 items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
-        >
-          <CloseIcon size={14} />
-        </button>
+        <DialogCloseButton compact onClick={onClose} />
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto px-4 py-3">{children}</div>
       {footer ? (
@@ -77,6 +70,3 @@ export function SheetRow({
     </div>
   );
 }
-
-export const FIELD_CLASS =
-  'w-full rounded-md border border-slate-200 bg-white px-2 py-1.5 text-[13px] text-slate-800 outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100';

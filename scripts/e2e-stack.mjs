@@ -129,6 +129,9 @@ const DRIVE_E2E_VARS = {
 //                    worker to verify against, and /e2e/token?sub=<id> minting a session token
 //                    for any test account. Test-only: nothing outside this stack trusts the key.
 const CLERK_JWKS = process.env.E2E_CLERK_JWKS === '1';
+//   E2E_GUEST_SIG_ENFORCE=1  arm guest signature enforcement, as production does once armed
+//                    (docs/specs/003-system-architecture/e2e-smoke.md "Armed guest signatures").
+const GUEST_SIG_ENFORCE = process.env.E2E_GUEST_SIG_ENFORCE === '1';
 const clerkKey = CLERK_JWKS ? generateKeyPairSync('rsa', { modulusLength: 2048 }) : null;
 const CLERK_KID = 'e2e-clerk-stub';
 
@@ -549,6 +552,10 @@ async function main() {
       // the signed-id upgrade a fresh guest goes through runs here too. A test-only secret.
       '--var',
       'GUEST_ID_HMAC_SECRET:e2e-guest-signing-secret',
+      // Off (blank = unset): many specs still seed through the api with unsigned X-Owner-Id. The
+      // armed specs turn it on (E2E_GUEST_SIG_ENFORCE=1) with a cutoff long past.
+      '--var',
+      `GUEST_SIG_ENFORCE_AFTER:${GUEST_SIG_ENFORCE ? '1' : ''}`,
       // Verify session tokens against the stack's own key (E2E_CLERK_JWKS above), never a real
       // Clerk instance a developer's .dev.vars may name.
       ...(CLERK_JWKS

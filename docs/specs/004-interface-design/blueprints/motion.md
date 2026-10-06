@@ -124,8 +124,11 @@ Timers of every other kind are not touched. That covers `GRACE_MS`, `CLOSE_DELAY
 moves to `canvas-motion.css` with the canvas gesture it belongs to.
 
 `element-pop-in` is new, in `canvas-motion.css`. It's `pop-in 360ms cubic-bezier(0.34, 1.56, 0.64, 1)`,
-and `useBoxedElementAnimation` uses it in place of `animate-pop-in`. So canvas elements keep
-exactly today's entry.
+and `useBoxedElementAnimation` uses it in place of `animate-pop-in`, on elements added after the
+board arrived only ([Canvas performance blueprint](../../008-canvas/blueprints/canvas-performance.md)
+"Opening animates nothing across the board"). The editor fade-in rule in `globals.css` covers the
+chrome markers and never the canvas world: the board appears at once (spec, "Editor
+arrival").
 
 ### Shared theme (`packages/tailwind-config/theme.css`)
 

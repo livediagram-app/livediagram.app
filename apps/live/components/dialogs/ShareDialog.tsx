@@ -33,7 +33,7 @@ const PASS_HIGHLIGHT_MS = 1400;
 export function ShareDialog({
   participant,
   links,
-  sharePassword,
+  sharePasswordSet,
   shareUrlFor,
   tabs,
   lockedName,
@@ -161,7 +161,7 @@ export function ShareDialog({
         subtitle={
           <ShareStatus
             passes={activeLinks.length}
-            password={sharePassword !== null}
+            password={sharePasswordSet}
             community={communityListed}
           />
         }
@@ -199,7 +199,7 @@ export function ShareDialog({
                   fresh={freshCode === link.code}
                   highlight={highlightCode === link.code}
                   busy={busy}
-                  sharePassword={sharePassword}
+                  sharePasswordSet={sharePasswordSet}
                   tabs={tabs}
                   liveImageTabId={liveImageTabId}
                   firstTabId={firstTabId}
@@ -241,7 +241,7 @@ export function ShareDialog({
         ) : null}
 
         <SharePasswordSection
-          sharePassword={sharePassword}
+          sharePasswordSet={sharePasswordSet}
           onSetPassword={onSetPassword}
           busy={busy}
           setBusy={setBusy}

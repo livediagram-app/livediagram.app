@@ -12,8 +12,10 @@ import {
   resolveDocumentGrant,
   type DocumentGrant,
 } from '../auth/document-access';
+import type { SharePasswordAttempt } from '../auth/share-access';
+import { clientRateKey } from '../client-ip';
 import { getDocument, getMembership, getTrashedDocumentMeta } from '../db';
-import { documentTrashed, forbidden, missingAuth, notFound } from '../responses';
+import { badRequest, documentTrashed, forbidden, missingAuth, notFound } from '../responses';
 import type { DocumentDTO, Env } from '../types';
 
 export type RouteContext = {
@@ -72,8 +74,9 @@ export function shareCodeOf(request: Request): string | null {
 // document the visitor is accessing is password-protected. Owners never
 // send it (their identity short-circuits the check); a non-owner with a
 // share code must, or the access gate denies password-protected documents.
-export function sharePasswordOf(request: Request): string | null {
-  return request.headers.get('X-Share-Password');
+export function sharePasswordOf(request: Request): SharePasswordAttempt | null {
+  const value = request.headers.get('X-Share-Password');
+  return value === null ? null : { value, rateKey: clientRateKey(request) };
 }
 
 // Route-side wrappers around canReadDocument / canEditDocument. Most
@@ -295,4 +298,17 @@ export async function deniedOnTab(
 ): Promise<Response> {
   const grant = await gateGrant(ctx, liveDoc.id, liveDoc.ownerId, liveDoc.teamId);
   return grant ? notFound() : forbidden();
+}
+
+// The request's JSON body as an object, or the 400 to return: `invalid json` when it doesn't
+// parse, `expected a JSON object` when it parses to anything but a plain object.
+export async function readBody(ctx: RouteContext): Promise<Record<string, unknown> | Response> {
+  try {
+    const body: unknown = await ctx.request.json();
+    return typeof body === 'object' && body !== null && !Array.isArray(body)
+      ? (body as Record<string, unknown>)
+      : badRequest('expected a JSON object');
+  } catch {
+    return badRequest('invalid json');
+  }
 }

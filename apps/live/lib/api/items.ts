@@ -10,9 +10,14 @@ import {
   type ItemStoreState,
   type ItemWrite,
 } from '@livediagram/items';
+import { createComment, type CommentMention } from '@livediagram/document';
 import { isOfflineId } from '../offline/offline-store';
-import { offlineFetchItems, offlineWriteItem } from '../offline/offline-items';
-import { API_BASE, apiFetch, apiHeaders, expectOk, expectOkVoid } from './core';
+import {
+  offlineFetchItems,
+  offlineWriteItem,
+  offlineWriteItemComment,
+} from '../offline/offline-items';
+import { API_BASE, apiDelete, apiFetch, apiHeaders, expectOk } from './core';
 
 export type ItemsScope = {
   ownerId: string;
@@ -84,12 +89,70 @@ export async function writeItem(
     case 'vote':
       return one(await post(scope, `${id}/vote`, { delta: write.delta }, 'item vote'));
     case 'delete': {
-      const res = await apiFetch(itemsUrl(scope, id), {
-        method: 'DELETE',
-        headers: await apiHeaders(scope.ownerId, { share: scope.shareCode }),
+      await apiDelete(itemsUrl(scope, id), scope.ownerId, {
+        action: 'item delete',
+        share: scope.shareCode,
+        allow404: false,
       });
-      await expectOkVoid(res, 'item delete');
       return { upserts: [], removed: [write.id], rev: -1 };
     }
   }
+}
+
+// A card's comment change, as the editor asks for it (docs/specs/026-plan/items.md "Comments").
+export type ItemCommentAction =
+  | { kind: 'add'; text: string; mentions?: CommentMention[] }
+  | { kind: 'delete'; commentId: string }
+  | { kind: 'resolve'; resolved: boolean };
+
+// Who is commenting: their owner id (the author id the api stamps) and how items name them.
+export type ItemCommenter = { ownerId: string; by: ItemPerson };
+
+// Sends one comment change: the item as stored, or null when it changed nothing. An offline document applies it
+// to its record; a cloud one sends it to the api, which stamps the author itself.
+export async function writeItemComment(
+  scope: ItemsScope,
+  itemId: string,
+  action: ItemCommentAction,
+  who: ItemCommenter,
+): Promise<ItemWriteAnswer | null> {
+  if (await isOfflineId(scope.documentId)) {
+    const change =
+      action.kind === 'add'
+        ? {
+            kind: 'add' as const,
+            comment: createComment(
+              action.text,
+              { id: who.ownerId, name: who.by.name, color: who.by.color },
+              action.mentions,
+            ),
+          }
+        : action.kind === 'delete'
+          ? { kind: 'remove' as const, commentId: action.commentId }
+          : action;
+    return offlineWriteItemComment(scope.documentId, itemId, change, who.by);
+  }
+  const base = `/${encodeURIComponent(itemId)}/comments`;
+  if (action.kind === 'add') {
+    const body = {
+      text: action.text,
+      ...(action.mentions?.length ? { mentions: action.mentions } : {}),
+    };
+    return one(await post(scope, base, body, 'item comment'));
+  }
+  const res = await apiFetch(
+    itemsUrl(
+      scope,
+      action.kind === 'delete'
+        ? `${base}/${encodeURIComponent(action.commentId)}`
+        : `${base}/${action.resolved ? 'resolve' : 'reopen'}`,
+    ),
+    {
+      method: action.kind === 'delete' ? 'DELETE' : 'POST',
+      headers: await apiHeaders(scope.ownerId, { share: scope.shareCode }),
+    },
+  );
+  // A resolve that changed nothing answers 204.
+  if (res.status === 204) return null;
+  return one(await expectOk<ItemResponse>(res, 'item comment'));
 }

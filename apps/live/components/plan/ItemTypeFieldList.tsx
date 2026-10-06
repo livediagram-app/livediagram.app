@@ -19,8 +19,7 @@ import {
   type CustomFieldKind,
   type ItemFieldId,
 } from '@livediagram/items';
-import { Button, CloseIcon, Select } from '@livediagram/ui';
-import { FIELD_CLASS } from './PlanModal';
+import { Button, CloseIcon, Select, TextInput, TextArea } from '@livediagram/ui';
 
 export const BUILT_IN_FIELD_LABELS: Record<ItemFieldId, string> = {
   title: 'Title',
@@ -35,7 +34,9 @@ export const BUILT_IN_FIELD_LABELS: Record<ItemFieldId, string> = {
   checklist: 'Checklist',
   parent: 'Parent',
   votes: 'Votes',
+  comments: 'Comments',
   archived: 'Archived',
+  flagged: 'Flagged',
 };
 
 export const CUSTOM_KIND_LABELS: Record<CustomFieldKind, string> = {
@@ -230,18 +231,19 @@ function CustomFieldForm({
   const [optionsText, setOptionsText] = useState((field.options ?? []).join('\n'));
   return (
     <div className={`flex flex-col gap-2 ${className}`}>
-      <input
+      <TextInput
         aria-label="Field name"
-        className={FIELD_CLASS}
+        compact
         value={field.label}
         maxLength={CUSTOM_FIELD_LABEL_MAX}
         onChange={(e) => onChange({ label: e.target.value })}
       />
       {field.kind === 'choice' ? (
-        <textarea
+        <TextArea
           aria-label="Options, one a line"
           placeholder="Options, one a line"
-          className={`${FIELD_CLASS} min-h-20`}
+          compact
+          className="min-h-20"
           value={optionsText}
           onChange={(e) => {
             setOptionsText(e.target.value);
@@ -307,10 +309,10 @@ function NewFieldForm({
             New Custom Field
           </p>
           <div className="flex gap-2">
-            <input
+            <TextInput
               aria-label="New field's name"
               placeholder="Name"
-              className={FIELD_CLASS}
+              compact
               value={custom.label}
               maxLength={CUSTOM_FIELD_LABEL_MAX}
               onChange={(e) => setCustom({ ...custom, label: e.target.value })}
@@ -330,10 +332,11 @@ function NewFieldForm({
             </Select>
           </div>
           {custom.kind === 'choice' ? (
-            <textarea
+            <TextArea
               aria-label="Options, one a line"
               placeholder="Options, one a line"
-              className={`${FIELD_CLASS} min-h-20`}
+              compact
+              className="min-h-20"
               onChange={(e) => setCustom({ ...custom, options: optionsFrom(e.target.value) })}
             />
           ) : null}

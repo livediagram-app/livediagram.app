@@ -10,7 +10,7 @@ import type { DockAnchor } from '@/lib/canvas-chrome';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
 import { useConfirm } from '@/hooks/ui/useConfirm';
 import { usePlan } from './PlanContext';
-import { PencilIcon, PlusIcon } from '@livediagram/ui';
+import { Button, PencilIcon, PlusIcon } from '@livediagram/ui';
 import { PlanTypeGlyph } from './plan-type-glyph';
 import { ACCENT_BG, ACCENT_TEXT, ACCENT_TINT, accentVars } from './plan-palette';
 
@@ -150,9 +150,10 @@ export function CardTypesPanel({
               Add Type
             </button>
             {itemTypes.catalogue ? (
-              <button
-                type="button"
-                className="self-center rounded-md px-2 py-0.5 text-[11px] text-slate-500 transition hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100"
+              <Button
+                variant="ghost"
+                size="xs"
+                className="self-center px-2 py-0.5 text-[11px] font-normal"
                 onClick={async () => {
                   const ok = await confirm({
                     title: 'Restore Built-In Types?',
@@ -164,7 +165,7 @@ export function CardTypesPanel({
                 }}
               >
                 Restore built-in types
-              </button>
+              </Button>
             ) : null}
             <p className="text-center text-[11px] text-slate-500 dark:text-slate-400">
               Drag to reorder. The palette's Cards follow this order.

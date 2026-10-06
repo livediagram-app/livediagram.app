@@ -2,18 +2,18 @@
 
 // The Trash (docs/specs/026-plan/items.md "Trash"): the cards moved there, newest change first. Each row
 // carries its type's stripe and glyph, its number and title (two lines), and where it came from and when;
-// Restore puts it back in that status, the bin deletes it for good. Empty Trash deletes them all after
-// asking. A popover above its button in Plan mode's bottom-right cluster, like Card Types.
+// Restore puts it back in that status, Delete deletes it for good after asking (the workspace Trash's
+// ConfirmPopover). Empty Trash deletes them all after asking. A popover above its button in Plan mode's bottom-right cluster, like Card Types.
 import { useMemo, useState } from 'react';
 import { TRASHED_FROM_FIELD, isTrashed, itemTitle, statusLabel, typeIn } from '@livediagram/items';
-import { TrashIcon, relativeSince } from '@livediagram/ui';
+import { Button, CountBadge, EmptyState, relativeSince, TrashIcon } from '@livediagram/ui';
 import type { DockAnchor } from '@/lib/canvas-chrome';
+import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
 import { useConfirm } from '@/hooks/ui/useConfirm';
 import { usePlan } from './PlanContext';
 import { PlanTypeGlyph } from './plan-type-glyph';
 import { ACCENT_BG, ACCENT_TEXT, ACCENT_TINT, accentVars } from './plan-palette';
-import { CountBadge } from './CountBadge';
 
 export function TrashPanel({
   popoverAnchor,
@@ -26,6 +26,10 @@ export function TrashPanel({
   const confirm = useConfirm();
   // When the panel opened: each row says how long ago its card was trashed from here.
   const [now] = useState(() => Date.now());
+  // The card whose Delete is asking "for good?", and the button it points at.
+  const [purging, setPurging] = useState<{ id: string; key: number; anchor: HTMLElement } | null>(
+    null,
+  );
   const trashed = useMemo(
     () =>
       [...(plan?.items.values() ?? [])].filter(isTrashed).sort((a, b) => b.updatedAt - a.updatedAt),
@@ -50,23 +54,16 @@ export function TrashPanel({
     >
       <div className="flex flex-col gap-3 px-3 pb-3">
         {trashed.length === 0 ? (
-          <div className="flex flex-col items-center gap-2 px-4 py-6 text-center">
-            <span className="flex h-11 w-11 items-center justify-center rounded-full bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-400">
-              <TrashIcon size={20} />
-            </span>
-            <p className="text-[13px] font-semibold text-slate-700 dark:text-slate-200">
-              The Trash is empty
-            </p>
-            <p className="text-[12px] leading-snug text-slate-500 dark:text-slate-400">
-              Drag a card onto the Trash button to put it out of the way. You can restore it from
-              here.
-            </p>
-          </div>
+          <EmptyState
+            icon={<TrashIcon size={18} />}
+            title="The Trash is empty"
+            description="Drag a card onto the Trash button to put it out of the way. You can restore it from here."
+          />
         ) : (
           <>
             <div className="flex items-center justify-between px-0.5 text-[12px] text-slate-500 dark:text-slate-400">
               <span className="inline-flex items-center gap-1.5">
-                <CountBadge background="#e11d4826" color="#e11d48">
+                <CountBadge size="md" background="#e11d4826" color="#e11d48">
                   {trashed.length}
                 </CountBadge>
                 {trashed.length === 1 ? 'card' : 'cards'} in the Trash
@@ -116,22 +113,25 @@ export function TrashPanel({
                           type="button"
                           aria-label={`Delete #${it.key} for good`}
                           className="flex h-7 items-center gap-1 rounded-md px-2 text-[12px] font-medium text-slate-500 transition hover:bg-rose-50 hover:text-rose-600 dark:text-slate-400 dark:hover:bg-rose-500/15 dark:hover:text-rose-300"
-                          onClick={() => plan.deleteItem(it.id)}
+                          onClick={(e) =>
+                            setPurging({ id: it.id, key: it.key, anchor: e.currentTarget })
+                          }
                         >
                           <TrashIcon size={13} />
                           Delete
                         </button>
-                        <button
-                          type="button"
+                        <Button
+                          variant="secondary"
+                          size="xs"
                           aria-label={`Restore #${it.key}`}
-                          className="flex h-7 items-center rounded-md border border-slate-200 px-2.5 text-[12px] font-semibold text-slate-700 transition hover:border-brand-300 hover:bg-brand-50 hover:text-brand-700 dark:border-slate-600 dark:text-slate-100 dark:hover:border-brand-500/50 dark:hover:bg-brand-500/10 dark:hover:text-brand-300"
+                          className="h-7 px-2.5 font-semibold"
                           onClick={() => {
                             plan.restoreItem(it.id);
                             plan.announce(`#${it.key} restored`);
                           }}
                         >
                           Restore
-                        </button>
+                        </Button>
                       </div>
                     ) : null}
                   </li>
@@ -139,9 +139,9 @@ export function TrashPanel({
               })}
             </ul>
             {canEdit ? (
-              <button
-                type="button"
-                className="flex items-center justify-center gap-1.5 rounded-lg bg-rose-600 py-2 text-[13px] font-semibold text-white transition hover:bg-rose-700"
+              <Button
+                variant="danger"
+                className="gap-1.5 rounded-lg py-2 text-[13px] font-semibold"
                 onClick={async () => {
                   const ok = await confirm({
                     title: 'Empty the Trash?',
@@ -155,12 +155,29 @@ export function TrashPanel({
                 }}
               >
                 <TrashIcon size={14} />
-                Empty Trash ({trashed.length})
-              </button>
+                Empty Trash
+                <CountBadge
+                  count={trashed.length}
+                  background="rgba(255, 255, 255, 0.25)"
+                  color="#ffffff"
+                />
+              </Button>
             ) : null}
           </>
         )}
       </div>
+      {purging ? (
+        <ConfirmPopover
+          anchor={purging.anchor}
+          message={`Delete #${purging.key} for good? This cannot be undone.`}
+          confirmLabel="Delete"
+          onConfirm={() => {
+            plan.deleteItem(purging.id);
+            setPurging(null);
+          }}
+          onCancel={() => setPurging(null)}
+        />
+      ) : null}
     </MovablePanel>
   );
 }

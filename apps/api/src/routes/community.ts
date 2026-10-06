@@ -143,7 +143,11 @@ export async function handleCommunity(ctx: RouteContext): Promise<Response> {
     }
 
     if (isReport) {
-      const body = (await request.json().catch(() => ({}))) as { reason?: unknown; note?: unknown };
+      // `?? {}`: a JSON `null` body parses fine and must answer 400, not 500.
+      const body = ((await request.json().catch(() => null)) ?? {}) as {
+        reason?: unknown;
+        note?: unknown;
+      };
       if (!isCommunityReportReason(body.reason)) {
         return json({ error: 'invalid_reason' }, { status: 400 });
       }

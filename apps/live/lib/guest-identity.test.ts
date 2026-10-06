@@ -55,18 +55,30 @@ describe('ensureSignedGuestIdentity', () => {
   it('upgrades a legacy unsigned id by migrating its data onto the signed id', async () => {
     window.localStorage.setItem(ID, 'legacy');
     mockMint.mockResolvedValue({ ownerId: 'signed', ownerSig: 'sig' });
-    mockUpgrade.mockResolvedValue(true);
+    mockUpgrade.mockResolvedValue('moved');
     expect(await ensureSignedGuestIdentity()).toEqual({ id: 'signed', sig: 'sig' });
     expect(mockUpgrade).toHaveBeenCalledWith('legacy', 'signed', 'sig');
     expect(window.localStorage.getItem(ID)).toBe('signed');
   });
 
-  it('keeps the legacy id (no data loss) when the upgrade migration fails', async () => {
+  it('keeps the legacy id (no data loss) when the upgrade cannot reach the worker', async () => {
     window.localStorage.setItem(ID, 'legacy');
     mockMint.mockResolvedValue({ ownerId: 'signed', ownerSig: 'sig' });
-    mockUpgrade.mockResolvedValue(false);
+    mockUpgrade.mockResolvedValue('failed');
     expect(await ensureSignedGuestIdentity()).toEqual({ id: 'legacy', sig: null });
     expect(window.localStorage.getItem(ID)).toBe('legacy');
+  });
+
+  // A refusal is definitive: under enforcement only a pre-signing id may upgrade unsigned, and any
+  // other unsigned id's server data is unreachable already. Keeping it would lock the browser out.
+  it('adopts the signed id when the worker refuses the upgrade', async () => {
+    window.localStorage.setItem(ID, 'unsigned-after-signing');
+    mockMint.mockResolvedValue({ ownerId: 'signed', ownerSig: 'sig' });
+    mockUpgrade.mockResolvedValue('refused');
+    expect(await ensureSignedGuestIdentity()).toEqual({ id: 'signed', sig: 'sig' });
+    expect(window.localStorage.getItem(ID)).toBe('signed');
+    expect(window.localStorage.getItem(SIG)).toBe('sig');
+    expect(window.localStorage.getItem('livediagram:v2:pending-signed-id')).toBeNull();
   });
 
   it('falls back to the existing unsigned id when minting fails (offline)', async () => {
@@ -152,7 +164,7 @@ describe('an interrupted guest id upgrade', () => {
     let seenDuringMove: string | null = null;
     mockUpgrade.mockImplementation(async () => {
       seenDuringMove = window.localStorage.getItem(PENDING);
-      return true;
+      return 'moved';
     });
     await ensureSignedGuestIdentity();
     expect(JSON.parse(seenDuringMove!)).toEqual({ from: 'legacy', to: 'signed', sig: 'sig' });
@@ -165,7 +177,7 @@ describe('an interrupted guest id upgrade', () => {
       PENDING,
       JSON.stringify({ from: 'legacy', to: 'signed', sig: 'sig' }),
     );
-    mockUpgrade.mockResolvedValue(true);
+    mockUpgrade.mockResolvedValue('moved');
     expect(await ensureSignedGuestIdentity()).toEqual({ id: 'signed', sig: 'sig' });
     expect(mockMint).not.toHaveBeenCalled();
     expect(mockUpgrade).toHaveBeenCalledWith('legacy', 'signed', 'sig');
@@ -180,10 +192,23 @@ describe('an interrupted guest id upgrade', () => {
       PENDING,
       JSON.stringify({ from: 'legacy', to: 'signed', sig: 'sig' }),
     );
-    mockUpgrade.mockResolvedValue(false);
+    mockUpgrade.mockResolvedValue('failed');
     expect(await ensureSignedGuestIdentity()).toEqual({ id: 'legacy', sig: null });
     expect(mockMint).not.toHaveBeenCalled();
     expect(window.localStorage.getItem(PENDING)).not.toBeNull();
+  });
+
+  it('adopts the recorded signed id when the resumed move is refused', async () => {
+    window.localStorage.setItem(ID, 'legacy');
+    window.localStorage.setItem(
+      PENDING,
+      JSON.stringify({ from: 'legacy', to: 'signed', sig: 'sig' }),
+    );
+    mockUpgrade.mockResolvedValue('refused');
+    expect(await ensureSignedGuestIdentity()).toEqual({ id: 'signed', sig: 'sig' });
+    expect(mockMint).not.toHaveBeenCalled();
+    expect(window.localStorage.getItem(ID)).toBe('signed');
+    expect(window.localStorage.getItem(PENDING)).toBeNull();
   });
 
   it('ignores a record that does not start from the id this browser holds', async () => {
@@ -193,7 +218,7 @@ describe('an interrupted guest id upgrade', () => {
       JSON.stringify({ from: 'legacy', to: 'signed', sig: 'sig' }),
     );
     mockMint.mockResolvedValue({ ownerId: 'fresh', ownerSig: 'fsig' });
-    mockUpgrade.mockResolvedValue(true);
+    mockUpgrade.mockResolvedValue('moved');
     expect(await ensureSignedGuestIdentity()).toEqual({ id: 'fresh', sig: 'fsig' });
     expect(mockUpgrade).toHaveBeenCalledWith('other', 'fresh', 'fsig');
     expect(window.localStorage.getItem(PENDING)).toBeNull();

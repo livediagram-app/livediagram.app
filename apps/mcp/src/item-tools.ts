@@ -3,6 +3,7 @@
 // number ("#12") or an id prefix (resolveItemRef), the way the CLI's item verbs name it. Every change
 // reaches people's boards at once, through the room.
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { itemsPath } from '@livediagram/agent-verbs';
 import type { ItemResponse, ItemsResponse } from '@livediagram/api-schema';
 import {
   itemStatus,
@@ -26,8 +27,6 @@ const outOf = (item: Item) => ({
   title: itemTitle(item),
   fields: item.fields as Record<string, unknown>,
 });
-
-const itemsPath = (id: string) => `/documents/${encodeURIComponent(id)}/items`;
 
 class Unnamed extends Error {}
 

@@ -10,13 +10,14 @@ import { SOLID_BRAND_DARK_CONTROL } from './brand-classes';
 //
 // `variant` is the intent (brand primary / destructive / neutral
 // outline / caution: a soft yellow for an action with a way back, such as a
-// delete that goes to the Trash); `size` is the padding+type scale (sm is the dialog-action
+// delete that goes to the Trash / ghost: no fill or border until hovered, for a
+// quiet action in a header row); `size` is the padding+type scale (sm is the dialog-action
 // rhythm, lg the large CTA, cta / cta-sm the public sites' call-to-action
 // pill). Everything else (onClick, type, disabled, aria-*, ref) passes
 // straight through, so this is a drop-in for a raw <button>. Extra `className` is appended last so a caller
 // can still add layout (w-full, mt-…) without re-stating the look.
 
-export type ButtonVariant = 'primary' | 'danger' | 'secondary' | 'caution';
+export type ButtonVariant = 'primary' | 'danger' | 'secondary' | 'caution' | 'ghost';
 export type ButtonSize = 'xs' | 'sm' | 'md' | 'lg' | 'cta-sm' | 'cta';
 
 const BASE =
@@ -32,6 +33,8 @@ const VARIANTS: Record<ButtonVariant, string> = {
 
   secondary:
     'border border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50 focus-visible:outline-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-slate-600 dark:hover:bg-slate-800',
+  ghost:
+    'text-slate-500 hover:bg-slate-100 hover:text-slate-800 focus-visible:outline-slate-400 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100',
 };
 
 const SIZES: Record<ButtonSize, string> = {

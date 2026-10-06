@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { isArchived, normaliseBoardSetup, projectBoard, quickFilterMatches } from './board';
+import {
+  isArchived,
+  isFlagged,
+  normaliseBoardSetup,
+  projectBoard,
+  quickFilterMatches,
+} from './board';
 import { validateFields } from './fields';
 import { presetSetup } from './presets';
 import { ALI, SAM, item } from './test-items';
@@ -151,5 +157,15 @@ describe('board widths', () => {
     expect(planBoardWidthFor({ columns: [] })).toBe(760);
     const six = presetSetup('kanban').columns.concat({ id: 'x', status: 'x', name: 'X', width: 2 });
     expect(planBoardWidthFor({ columns: six })).toBeGreaterThanOrEqual(7 * PLAN_COLUMN_MIN_PX);
+  });
+});
+
+// docs/specs/026-plan/items.md "Flags": only `true` flags an item.
+describe('flags', () => {
+  it('reads only true as flagged', () => {
+    const base = { fields: { title: 'x' } } as never;
+    expect(isFlagged({ ...(base as object), fields: { flagged: true } } as never)).toBe(true);
+    expect(isFlagged({ ...(base as object), fields: { flagged: 'yes' } } as never)).toBe(false);
+    expect(isFlagged(base)).toBe(false);
   });
 });

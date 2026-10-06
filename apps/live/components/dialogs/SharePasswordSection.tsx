@@ -10,12 +10,16 @@ import { SettingsRow } from '@/components/dialogs/settings/SettingsRow';
 // Fronted by a switch (docs/specs/007-editor/live-app.md "Layout, top to bottom"): off hides the
 // field, on reveals it. With a password saved, switching off removes it, so
 // the switch never disagrees with what the server enforces.
+//
+// The api keeps only a hash, so a saved password cannot be shown again: once
+// one is set the field gives way to a "Password Set" line with Replace and
+// Remove, and Replace brings back an empty field.
 type SharePasswordSectionProps = {
-  sharePassword: string | null;
-  // Resolves to the stored value on success (`null` = cleared) and
-  // `undefined` on FAILURE — the two must stay distinct or a failed
-  // write renders the success UI (see useShareLinks).
-  onSetPassword: (password: string | null) => Promise<string | null | undefined> | void;
+  sharePasswordSet: boolean;
+  // Resolves to whether a password is now set on success (`false` = cleared)
+  // and `undefined` on FAILURE: the two must stay distinct or a failed write
+  // renders the success UI (see useShareLinks).
+  onSetPassword: (password: string | null) => Promise<boolean | undefined> | void;
   busy: boolean;
   setBusy: (busy: boolean) => void;
   // Why a password can't be set (the document is in the Community: docs/specs/025-community/
@@ -23,38 +27,48 @@ type SharePasswordSectionProps = {
   lockedReason?: string | null;
 };
 
+// The nested detail under the switch: indented to the footnote's edge with a
+// guide rule, so it reads as the switch's detail rather than a stray row.
+const DETAIL_ROW =
+  'ml-3.5 flex animate-fade-in items-center gap-2 border-l-2 border-slate-200 py-0.5 pl-3 dark:border-slate-700';
+
 export function SharePasswordSection({
-  sharePassword,
+  sharePasswordSet,
   onSetPassword,
   busy,
   setBusy,
   lockedReason = null,
 }: SharePasswordSectionProps) {
-  // Password field. Kept in the clear (type="text") so the owner can always
-  // read it. Seeded from the saved value; `pwSaved` flips the button to
-  // "Saved" for a beat after a successful write.
-  const [pw, setPw] = useState(sharePassword ?? '');
+  // The new password being typed. Never seeded: the saved one is unknowable.
+  const [pw, setPw] = useState('');
   const [pwSaved, setPwSaved] = useState(false);
-  // The switch. Seeded on when a password is already saved.
-  const [enabled, setEnabled] = useState(sharePassword !== null);
+  // The owner switched on with no password saved yet (the field is open). The
+  // switch itself is on whenever a password is in force: deriving it, rather
+  // than seeding state at mount, keeps it right when the dialog opens before
+  // the share list has loaded.
+  const [enabled, setEnabled] = useState(false);
+  const switchOn = sharePasswordSet || enabled;
+  // Replacing a saved password: the field is showing in place of "Password Set".
+  const [replacing, setReplacing] = useState(false);
   const fieldRef = useRef<HTMLInputElement>(null);
+
+  const focusField = () => requestAnimationFrame(() => fieldRef.current?.focus());
 
   const savePassword = async () => {
     setBusy(true);
     try {
       const next = pw.trim() ? pw : null;
       const result = onSetPassword(next);
-      // Sync (void) handlers — tests — count as success; a promise
-      // resolving to `undefined` is a FAILED write (the hook already
-      // toasted), so leave the field + button untouched rather than
-      // flashing "Saved" over a password that isn't stored.
-      const stored = result instanceof Promise ? await result : (next ?? null);
-      if (stored === undefined) return;
-      // Reflect the server-normalised value so a whitespace-only entry
-      // visibly clears.
-      setPw(stored ?? '');
+      // Sync (void) handlers (tests) count as success; a promise resolving to
+      // `undefined` is a FAILED write (the hook already toasted), so leave the
+      // field + button untouched rather than flashing "Saved" over a password
+      // that isn't stored.
+      const nowSet = result instanceof Promise ? await result : next !== null;
+      if (nowSet === undefined) return;
+      setPw('');
+      setReplacing(false);
       // Saving an empty field clears the password, which is the switch off.
-      if (stored === null) setEnabled(false);
+      if (!nowSet) setEnabled(false);
       setPwSaved(true);
       window.setTimeout(() => setPwSaved(false), 1500);
     } finally {
@@ -66,11 +80,11 @@ export function SharePasswordSection({
     setBusy(true);
     try {
       const result = onSetPassword(null);
-      const stored = result instanceof Promise ? await result : null;
-      // Failed remove: the password still gates every link, so the
-      // field must keep showing it.
-      if (stored === undefined) return;
+      const nowSet = result instanceof Promise ? await result : false;
+      // Failed remove: the password still gates every link, so keep showing it as set.
+      if (nowSet === undefined) return;
       setPw('');
+      setReplacing(false);
       setEnabled(false);
     } finally {
       setBusy(false);
@@ -78,19 +92,32 @@ export function SharePasswordSection({
   };
 
   const toggle = () => {
-    if (!enabled) {
+    if (!switchOn) {
       setEnabled(true);
       // The field mounts on this render; focus it on the next frame.
-      requestAnimationFrame(() => fieldRef.current?.focus());
+      focusField();
       return;
     }
-    if (sharePassword) {
+    if (sharePasswordSet) {
       void removePassword();
       return;
     }
     setEnabled(false);
     setPw('');
   };
+
+  const startReplace = () => {
+    setReplacing(true);
+    focusField();
+  };
+
+  const cancelReplace = () => {
+    setReplacing(false);
+    setPw('');
+  };
+
+  const showSetLine = sharePasswordSet && !replacing;
+  const canSave = !busy && pw.trim().length > 0;
 
   return (
     <div className="flex flex-col gap-2 border-t border-slate-100 pt-4 dark:border-slate-800">
@@ -103,21 +130,32 @@ export function SharePasswordSection({
           description: 'Everyone opening a pass must enter it first, embeds included.',
           helpArticle: 'sharePasswords',
         }}
-        checked={enabled}
+        checked={switchOn}
         onChange={toggle}
         // A password already in force stays removable; only setting a new one is locked.
-        disabled={busy || (lockedReason !== null && !sharePassword)}
+        disabled={busy || (lockedReason !== null && !sharePasswordSet)}
       />
-      {lockedReason !== null && !sharePassword ? (
+      {lockedReason !== null && !sharePasswordSet ? (
         <p className="ml-3.5 border-l-2 border-slate-200 pl-3 text-xs text-slate-500 dark:border-slate-700 dark:text-slate-400">
           {lockedReason}
         </p>
       ) : null}
-      {enabled && (lockedReason === null || sharePassword) ? (
-        // Nested under the setting it belongs to: indented to the footnote's
-        // edge with a guide rule, so it reads as the switch's detail rather
-        // than a stray field.
-        <div className="ml-3.5 flex animate-fade-in items-center gap-2 border-l-2 border-slate-200 py-0.5 pl-3 dark:border-slate-700">
+      {switchOn && showSetLine ? (
+        <div className={DETAIL_ROW}>
+          <p className="flex min-w-0 flex-1 items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-200">
+            <LockIcon size={13} className="shrink-0 text-slate-400" />
+            {pwSaved ? 'Password Saved' : 'Password Set'}
+          </p>
+          <Button variant="secondary" size="xs" onClick={startReplace} disabled={busy}>
+            Replace
+          </Button>
+          <Button variant="secondary" size="xs" onClick={removePassword} disabled={busy}>
+            Remove
+          </Button>
+        </div>
+      ) : null}
+      {switchOn && !showSetLine && (lockedReason === null || sharePasswordSet) ? (
+        <div className={DETAIL_ROW}>
           <div className="relative min-w-0 flex-1">
             <LockIcon
               size={13}
@@ -129,26 +167,26 @@ export function SharePasswordSection({
               value={pw}
               onChange={(e) => setPw(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === 'Enter' && !busy && pw !== (sharePassword ?? '')) void savePassword();
+                if (e.key === 'Enter' && canSave) void savePassword();
+                if (e.key === 'Escape' && replacing) {
+                  // Leave the dialog open: Escape here only backs out of Replace.
+                  e.stopPropagation();
+                  cancelReplace();
+                }
               }}
-              placeholder="Choose a password"
+              placeholder={replacing ? 'Choose a new password' : 'Choose a password'}
               aria-label="Share password"
               autoComplete="off"
               spellCheck={false}
               className="w-full rounded-lg border border-slate-200 bg-white py-1.5 pr-2 pl-8 font-mono text-sm text-slate-800 outline-none transition placeholder:font-sans placeholder:text-slate-400 focus:border-brand-400 focus:ring-2 focus:ring-brand-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
             />
           </div>
-          <Button
-            size="xs"
-            onClick={savePassword}
-            disabled={busy || pw === (sharePassword ?? '')}
-            className="shadow-sm"
-          >
-            {pwSaved ? 'Saved' : 'Save'}
+          <Button size="xs" onClick={savePassword} disabled={!canSave} className="shadow-sm">
+            Save
           </Button>
-          {sharePassword ? (
-            <Button variant="secondary" size="xs" onClick={removePassword} disabled={busy}>
-              Remove
+          {replacing ? (
+            <Button variant="secondary" size="xs" onClick={cancelReplace} disabled={busy}>
+              Cancel
             </Button>
           ) : null}
         </div>

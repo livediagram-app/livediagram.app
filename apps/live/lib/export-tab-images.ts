@@ -20,6 +20,9 @@ type ExportImageEntry = {
 // image picked) makes that element fall back to the placeholder.
 export type ExportImageMap = Map<string, ExportImageEntry>;
 
+// The raster types an upload can hold (the api sniffs to these four).
+const SAFE_INLINE_IMAGE = /^data:image\/(png|jpeg|gif|webp);base64,[A-Za-z0-9+/=]+$/;
+
 // Identify + de-duplicate the image ids on a tab, fetch + decode each once,
 // and return them keyed by id. Failures are swallowed per-image so one broken
 // bitmap never aborts the export — that element just renders its placeholder.
@@ -35,6 +38,9 @@ export async function loadTabImages(
     ids.map(async (id) => {
       try {
         // Offline Mode (docs/specs/006-document/offline-mode.md): an embedded image already IS a data URL.
+        // Only a base64 raster data URL is taken as inline bytes: the id is
+        // document data another editor chose, and it becomes markup below.
+        if (id.startsWith('data:') && !SAFE_INLINE_IMAGE.test(id)) return;
         const href = id.startsWith('data:')
           ? id
           : await apiFetchImageDataUrl(ctx.ownerId, id, {

@@ -13,9 +13,7 @@ import {
 } from '@/components/chrome/LandingCard';
 import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
 import { clerkEnabled } from '@/lib/clerk-config';
-import { ensureGuestSelfId, getGuestSelfId, subscribeGuestSelfId } from '@/lib/local-identity';
-
-const noGuestId = () => null;
+import { useSignedGuestId } from '@/hooks/persistence/useSignedGuestId';
 import { track } from '@/lib/telemetry';
 import { apiJoinTeamByInviteLink, apiResolveTeamInviteLink } from '@/lib/api-client';
 
@@ -40,13 +38,10 @@ export function TeamInviteJoin() {
   // export and the first client render agree — no hydration mismatch — and read from the URL after.
   const token = useSyncExternalStore(noSubscription, readUrlToken, beforeHydration);
 
-  // The guest id is read from its store; a browser without one mints it once auth has settled (below),
-  // and the store re-renders this with it. Render never writes storage.
-  const guestId = useSyncExternalStore(subscribeGuestSelfId, getGuestSelfId, noGuestId);
+  // A guest's id is the SIGNED one, resolved before the invite is looked up
+  // (docs/specs/014-identity/auth-and-guest-access.md "Signed guest ids").
+  const guestId = useSignedGuestId(authLoaded, clerkUserId);
   const ownerId = clerkUserId ?? guestId;
-  useEffect(() => {
-    if (authLoaded && !clerkUserId) ensureGuestSelfId();
-  }, [authLoaded, clerkUserId]);
   // What the api said about the token; a link without one is invalid without asking.
   const [lookup, setLookup] = useState<Resolved>('loading');
   const resolved: Resolved = authLoaded && token !== undefined && !token ? 'invalid' : lookup;

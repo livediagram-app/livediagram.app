@@ -310,6 +310,33 @@ Measured 2026-10-05, reference board, calibrated 4x, interleaved builds.
   the selection toolbar in the next frame instead of its layout effect: a diagram stroke's longest
   task 118 to 183 ms (it lays out twice).
 
+## What the opening train was
+
+Measured 2026-10-06 on the reference board, local, calibrated 3.1-3.9x, interleaved builds.
+
+- **The whiteboard's open row stepped at #378** (a pan or zoom renders the canvas, not the editor):
+  1.1-1.7 s on the build before it, 3.7-3.9 s median from it on, over 8 rounds. It added no work.
+  Opening is a mount, then a second train of work about a second later; the row reads about 1.2 s
+  when the lull between them reaches 500 ms and about 3 s when it does not, and #378 moved a
+  requestAnimationFrame callback into the train's largest frame, closing the lull.
+- **Long tasks miss a frame that only renders.** The page's `longtask` entries come only from tasks
+  that run script; a 533 ms frame of Layerize and Paint with no script in it was invisible to the
+  open row. Long animation frames see it, so the row now counts both.
+- **The train**: the editor fade-in on the canvas world started and ended (a full-page Layerize of
+  270-370 ms each time: opacity animated over a thousand elements' paint), a `pop-in` started on
+  every diagram element, and 400 ms after the mount a thousand timers re-rendered every element
+  view (on the whiteboard too, where nothing pops). After those: the Map's picture (about 140 ms of
+  script) and two SVG images parsed on the main thread (the Map and the Explorer thumbnail; each
+  shows in a trace as `ParseHTML` and `readystatechange`, 100-150 ms).
+- **What it took**, median (worst) of 7 opens: whiteboard 2,917 (4,998) to 2,154 (2,341) ms, diagram
+  3,022 (4,187) to 1,670 (2,244) ms, with the world's fade gone and only later additions popping
+  in. Removing the chrome's fades as well changed nothing measurable. A veil fading out over the
+  board instead of the board fading in cost far less than the fade (2,401 and 2,276 ms medians) but
+  its worst runs sat near the budget.
+- **The probe's own work** landed in the open window: `dismissQuickTour` queries the page by role,
+  an accessibility walk over the board (`getTextAlternativeInternal` in a profile), and the keys it
+  pressed ran the editor's handlers. It now reads the number first.
+
 ## Not tried
 
 - `contain` on element wrappers, a raster snapshot of still elements during a gesture, and fewer

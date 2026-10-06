@@ -10,6 +10,7 @@
 
 import { act, render } from '@testing-library/react';
 import { useEffect, type ReactNode } from 'react';
+import { renderToString } from 'react-dom/server';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { apiHeaders, setTokenProvider } from '@/lib/api/core';
 import { resetGuestMigrationForTests } from '@/lib/guest-migration';
@@ -106,6 +107,17 @@ describe('useClerkApiBootstrap guest migration', () => {
     await act(async () => finish(MIGRATED));
     expect(seen.at(-1)).toBe(true);
     expect(seen.indexOf(true)).toBeGreaterThan(0);
+  });
+
+  // The static export prerenders without storage: the server snapshot reads
+  // "not migrating", and the client's first render takes over from there.
+  it('prerenders without a pending migration', () => {
+    resetGuestMigrationForTests();
+    setGuestIdentity('guest-1', 'sig-1');
+    function Probe() {
+      return <>{String(useClerkApiBootstrap().authLoaded)}</>;
+    }
+    expect(renderToString(<Probe />)).toBe('true');
   });
 
   it('migrates once however many components mount the hook', async () => {

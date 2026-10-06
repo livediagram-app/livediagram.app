@@ -174,7 +174,8 @@ export function isWhiteboardPenIntent(
 
 // A tool that exists on a whiteboard only (docs/specs/023-draw-mode/draw-mode.md "Shapes"): a pen,
 // the Path tool, or a shape, line or arrow armed from the dock. Leaving the board puts it down, so
-// the board's tools and their look never reach a diagram tab.
+// the board's tools and their look never carry over a mode switch (a marker can still be picked
+// up in another mode on purpose, from the Toolbar strip's Search).
 export function isWhiteboardOnlyIntent(intent: PendingDraw | null | undefined): boolean {
   if (!intent) return false;
   if (isWhiteboardPenIntent(intent) || isPathIntent(intent)) return true;
@@ -201,9 +202,22 @@ export function isPathIntent(intent: PendingDraw | null | undefined): boolean {
   return intent?.type === 'path';
 }
 
-export function drawBannerMessage(intent: PendingDraw, isMobile: boolean): string {
+// What the tab holds that changes a hint: a Plan card goes into a board's column, so its hint says where, or
+// that a board comes first (docs/specs/026-plan/plan-mode.md "The palette").
+export type DrawBannerContext = { hasPlanBoard?: boolean };
+
+export function drawBannerMessage(
+  intent: PendingDraw,
+  isMobile: boolean,
+  context: DrawBannerContext = {},
+): string {
   switch (intent.type) {
     case 'shape':
+      if (intent.kind === 'plan-card') {
+        return context.hasPlanBoard
+          ? 'Select the board column you want this card to appear in'
+          : 'Add a board first in order to use cards';
+      }
       return `Tap to drop or drag to draw ${prettyShapeLabel(intent.kind)}`;
     case 'text':
       return 'Tap to drop or drag to place text';

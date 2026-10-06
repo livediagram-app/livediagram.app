@@ -243,6 +243,12 @@ describe('changing items', () => {
     expect(
       (await call({ path: `/items/${item.id}/move`, body: { set: { title: 'no' } } })).body,
     ).toMatchObject({ error: 'place_invalid' });
+    // A row of a board laned by a field sets that field (docs/specs/026-plan/plan-board.md).
+    const laned = await call<ItemResponse>({
+      path: `/items/${item.id}/move`,
+      body: { set: { 'f-stage': 'Won', labels: ['auth'] } },
+    });
+    expect(laned.body.item.fields).toMatchObject({ 'f-stage': 'Won', labels: ['auth'] });
   });
 
   it('votes per person, never below zero, from a view link too', async () => {

@@ -9,6 +9,7 @@
 // it.
 
 import { useMemo, useRef, useState } from 'react';
+import { WEEKDAY_SHORT } from '@livediagram/items';
 import { Tooltip } from '../Tooltip';
 import { dateKey } from './useTimelineGrouping';
 import { buildMonthCells, formatMonth, monthKeyOf, shiftMonth } from './monthCells';
@@ -25,8 +26,6 @@ import type {
   TimelineRendererRegistry,
 } from './types';
 import { Glyph } from '@livediagram/ui';
-
-const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 export function TimelineCalendarView({
   events,
@@ -132,7 +131,7 @@ export function TimelineCalendarView({
       </div>
 
       <div className="grid grid-cols-7 gap-px text-center">
-        {WEEKDAYS.map((day) => (
+        {WEEKDAY_SHORT.map((day) => (
           <div
             key={day}
             className="pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400"

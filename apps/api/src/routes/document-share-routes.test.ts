@@ -7,6 +7,7 @@
 // The retraction of the "expires soon" warning at each site has its own suite
 // (expiry-retraction.test.ts); this one covers the routes' own behaviour.
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { verifySharePassword } from '../auth/share-password-hash';
 import type { Env } from '../types';
 
 const { db } = vi.hoisted(() => ({
@@ -17,6 +18,8 @@ const { db } = vi.hoisted(() => ({
     generateShareCode: vi.fn(() => 'CODE1234'),
     getDocument: vi.fn(),
     getTrashedDocumentMeta: vi.fn(async () => null),
+    // No Community post stands in the way of a password here.
+    getCommunityPostForDocument: vi.fn(async () => null),
     getDocumentSharePassword: vi.fn(),
     getShareLinkIncludingExpired: vi.fn(),
     listShareLinks: vi.fn(),
@@ -163,14 +166,24 @@ describe('handleDocumentShareRoutes — the owner gate', () => {
 });
 
 describe('GET /api/documents/:id/share', () => {
-  it('returns the links with the password in the clear — owner-only (docs/specs/013-workspace/share-password.md)', async () => {
+  // The column holds only a hash, and even the owner gets just whether one is
+  // set (docs/specs/013-workspace/share-password.md).
+  it('returns the links and whether a password is set, never the password', async () => {
     db.listShareLinks.mockResolvedValue([{ code: 'c1', role: 'view' }]);
-    db.getDocumentSharePassword.mockResolvedValue('hunter2');
+    db.getDocumentSharePassword.mockResolvedValue('pbkdf2-sha256$100000$c2FsdA$aGFzaA');
     const { ctx } = ctxFor('GET', '/api/documents/d_1/share');
-    const res = await handleDocumentShareRoutes(ctx);
-    expect(await res!.json()).toEqual({
-      links: [{ code: 'c1', role: 'view' }],
-      password: 'hunter2',
+    const body = await (await handleDocumentShareRoutes(ctx))!.json();
+    expect(body).toEqual({ links: [{ code: 'c1', role: 'view' }], passwordSet: true });
+    expect(JSON.stringify(body)).not.toContain('pbkdf2');
+  });
+
+  it('says no password is set when the column is empty', async () => {
+    db.listShareLinks.mockResolvedValue([]);
+    db.getDocumentSharePassword.mockResolvedValue(null);
+    const { ctx } = ctxFor('GET', '/api/documents/d_1/share');
+    expect(await (await handleDocumentShareRoutes(ctx))!.json()).toEqual({
+      links: [],
+      passwordSet: false,
     });
   });
 });
@@ -264,10 +277,16 @@ describe('POST /api/documents/:id/share — minting a link', () => {
 describe('DELETE /api/documents/:id/share — revoking every link', () => {
   it('drops each link and closes sharing', async () => {
     db.listShareLinks.mockResolvedValue([{ code: 'c1' }, { code: 'c2' }]);
-    const { ctx } = ctxFor('DELETE', '/api/documents/d_1/share');
+    const { env, broadcasts } = roomEnv();
+    const { ctx } = ctxFor('DELETE', '/api/documents/d_1/share', { env });
     const res = await handleDocumentShareRoutes(ctx);
     expect(db.deleteShareLink.mock.calls.map((c) => c[1])).toEqual(['c1', 'c2']);
-    expect(db.setDocumentShare).toHaveBeenCalledWith({}, 'd_1', false);
+    // Connected holders of each code are sent out of the room.
+    expect(broadcasts).toEqual([
+      { op: { kind: 'share-revoked', code: 'c1' } },
+      { op: { kind: 'share-revoked', code: 'c2' } },
+    ]);
+    expect(db.setDocumentShare).toHaveBeenCalledWith(env, 'd_1', false);
     expect(await res!.json()).toEqual({ shareable: false, shareCode: null });
   });
 
@@ -279,16 +298,26 @@ describe('DELETE /api/documents/:id/share — revoking every link', () => {
 });
 
 describe('PUT /api/documents/:id/share-password (docs/specs/013-workspace/share-password.md)', () => {
-  it('stores the password and echoes back what actually gates access', async () => {
-    // The echo is the normalised stored value, not the request's — a
-    // whitespace-only password clears the gate, and the dialog must show that.
-    db.getDocumentSharePassword.mockResolvedValue(null);
+  it('stores a hash of the password, never the password, and says one is set', async () => {
+    const { ctx } = ctxFor('PUT', '/api/documents/d_1/share-password', {
+      body: { password: 'hunter2' },
+    });
+    const res = await handleDocumentShareRoutes(ctx);
+    const stored = db.setDocumentSharePassword.mock.calls[0]![2] as string;
+    expect(stored).toMatch(/^pbkdf2-sha256\$100000\$/);
+    expect(stored).not.toContain('hunter2');
+    expect((await verifySharePassword(stored, 'hunter2')).ok).toBe(true);
+    expect(await res!.json()).toEqual({ passwordSet: true });
+  });
+
+  it('clears the password for a whitespace-only value', async () => {
+    // A stray space must not lock a document in a way the owner can't see.
     const { ctx } = ctxFor('PUT', '/api/documents/d_1/share-password', {
       body: { password: '  ' },
     });
     const res = await handleDocumentShareRoutes(ctx);
-    expect(db.setDocumentSharePassword).toHaveBeenCalledWith({}, 'd_1', '  ');
-    expect(await res!.json()).toEqual({ password: null });
+    expect(db.setDocumentSharePassword).toHaveBeenCalledWith({}, 'd_1', null);
+    expect(await res!.json()).toEqual({ passwordSet: false });
   });
 
   it('clears the password for a null, and for a non-string', async () => {

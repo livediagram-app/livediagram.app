@@ -31,9 +31,9 @@ type ShareLinksDeps = {
   selfParticipant: Participant;
   setSelfParticipant: Dispatch<SetStateAction<Participant>>;
   setShareLinks: Dispatch<SetStateAction<ShareLink[]>>;
-  // The document's share password (docs/specs/013-workspace/share-password.md). setSharePassword reconciles
-  // page state after a save / clear.
-  setSharePassword: Dispatch<SetStateAction<string | null>>;
+  // Whether the document has a share password (docs/specs/013-workspace/share-password.md); the
+  // password itself never comes back from the api. Reconciled after a save / clear.
+  setSharePasswordSet: Dispatch<SetStateAction<boolean>>;
   setDocumentShareable: Dispatch<SetStateAction<boolean>>;
   setDocumentShareCode: Dispatch<SetStateAction<string | null>>;
   // The document's primary share code; revoke promotes the next link to
@@ -50,7 +50,7 @@ export function useShareLinks(deps: ShareLinksDeps) {
     selfParticipant,
     setSelfParticipant,
     setShareLinks,
-    setSharePassword,
+    setSharePasswordSet,
     setDocumentShareable,
     setDocumentShareCode,
     documentShareCode,
@@ -162,23 +162,21 @@ export function useShareLinks(deps: ShareLinksDeps) {
   };
 
   // Set or clear the document's share password (docs/specs/013-workspace/share-password.md). A null / empty
-  // value removes it. Persists through the api, reconciles page state
-  // with the server-normalised value, and emits telemetry. Returns the
-  // stored value so the dialog can reflect exactly what now gates
-  // access — `null` means "no password stored" (a successful clear);
-  // FAILURE returns `undefined`, distinct from `null`, so the dialog
-  // never renders "Saved" / "No password" over a write that didn't land.
+  // value removes it. Persists through the api, reconciles page state, and
+  // emits telemetry. Resolves to whether a password is now set (`false` is a
+  // successful clear); FAILURE resolves to `undefined`, distinct from both, so
+  // the dialog never renders "Saved" / "No password" over a write that didn't land.
   const setDocumentSharePassword = async (
     password: string | null,
-  ): Promise<string | null | undefined> => {
+  ): Promise<boolean | undefined> => {
     if (!documentId) return undefined;
     const trimmed = password && password.trim() ? password : null;
     try {
-      const stored = await apiSetSharePassword(selfParticipant.id, documentId, trimmed);
-      setSharePassword(stored);
+      const passwordSet = await apiSetSharePassword(selfParticipant.id, documentId, trimmed);
+      setSharePasswordSet(passwordSet);
       // Telemetry (docs/specs/017-telemetry/telemetry.md): the `type` is a preset, never the password.
-      track('Document', 'Shared', stored ? 'PasswordSet' : 'PasswordCleared');
-      return stored;
+      track('Document', 'Shared', passwordSet ? 'PasswordSet' : 'PasswordCleared');
+      return passwordSet;
     } catch (err) {
       // A document in the public Community cannot ask for a password (docs/specs/025-community/community.md):
       // say so, since trying again can never work.

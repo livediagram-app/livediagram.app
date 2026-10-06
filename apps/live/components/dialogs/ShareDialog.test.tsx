@@ -33,7 +33,7 @@ function renderDialog(over: Partial<ShareDialogProps> = {}) {
   const props: ShareDialogProps = {
     participant: { id: 'me', name: 'Ada', color: '#0ea5e9', status: 'online' },
     links: [],
-    sharePassword: null,
+    sharePasswordSet: false,
     shareUrlFor: (code) => `https://x.test/document/shared?s=${code}`,
     tabs: TABS,
     lockedName: 'Ada',
@@ -184,7 +184,7 @@ describe('ShareDialog passes', () => {
     renderDialog();
     expect(screen.getByRole('status').textContent).toMatch(/Private: only you can open it/);
     cleanup();
-    renderDialog({ links: [link()], sharePassword: 'pw' });
+    renderDialog({ links: [link()], sharePasswordSet: true });
     expect(screen.getByRole('status').textContent).toMatch(
       /anyone holding the pass can get in, with the password/,
     );
@@ -204,7 +204,7 @@ describe('ShareDialog passes', () => {
     fireEvent.click(screen.getByRole('switch', { name: /Password Protection/ }));
     expect(screen.getByLabelText('Share password')).toBeTruthy();
     cleanup();
-    renderDialog({ onSetPassword, sharePassword: 'pw' });
+    renderDialog({ onSetPassword, sharePasswordSet: true });
     fireEvent.click(screen.getByRole('switch', { name: /Password Protection/ }));
     await vi.waitFor(() => expect(onSetPassword).toHaveBeenCalledWith(null));
   });

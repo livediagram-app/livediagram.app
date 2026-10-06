@@ -452,7 +452,12 @@ and nothing for an operator to arm.
 
 The realtime room's upgrade refuses the same shape on its owner leg (`?o=`, `routes/document-room-routes.ts`):
 a signed-in owner of a personal document joins through the one-time room ticket, as a team owner does, and an
-account id presented as `?o=` admits nobody.
+account id presented as `?o=` admits nobody. Once the guest signature gate is armed, a guest owner id on `?o=`
+needs its signature on `?os=` (the same value REST carries as `X-Owner-Sig`); without it the leg admits nobody.
+
+`GET /api/share/<code>` also refuses an account id as `X-Owner-Id`, because its resolver compares that header with
+the document's owner. It never returns the document's primary `shareCode`, to anyone: the visitor already holds the
+code they arrived with. An empty `X-Owner-Id` is no identity at all, never a shared owner.
 
 This matters most for **personal** documents, whose ownership legitimately
 resolves through the hybrid header path — that path is safe precisely because a
@@ -489,6 +494,25 @@ hardening landed first:
 2. ✅ **The `X-Owner-Id` HMAC requirement ([§4](#4-x-owner-id-trust-change)).**
    Shipped behind the grace switch; the operator arms it by setting
    `GUEST_SIG_ENFORCE_AFTER` ([Self-hosting](../../operations/self-hosting.md)).
+   **Not armed.** It is stated in `apps/api/wrangler.toml` `[vars]` (a
+   dashboard-only value is wiped by every deploy), blank. It was armed in
+   production on 2026-10-06 and un-armed the same day: `/new` mints a local
+   unsigned id, so a first-time visitor arriving there from the landing page was
+   refused (`401 signature_required`) and could not create a document, against
+   the rule that the canvas always works without signing in. Every entry path
+   now resolves a signed id before its first owner-scoped call
+   ([Auth and guest access](../014-identity/auth-and-guest-access.md) "Signed
+   guest ids"), and the e2e suite proves it with enforcement armed. **Re-arming
+   production is Tom's or Webber's call**, made by setting
+   `GUEST_SIG_ENFORCE_AFTER` in `apps/api/wrangler.toml` again. What follows
+   holds from then. Production only
+   started signing on 2026-09-25 (`GUEST_SIGNING_LIVE_AT`), so most guest ids
+   were still unsigned when it was armed: about 219, holding 274 documents. An
+   id whose participant row predates `GUEST_SIGNING_LIVE_AT` keeps the legacy
+   upgrade (migrate flow 2) without a signature, so those guests self-heal
+   whenever they return. Every id minted signed must prove possession. Retire
+   the exception (unset `GUEST_SIGNING_LIVE_AT`) once the remaining legacy ids
+   are judged gone.
    Pulled to the FRONT: it closed the cross-object escalation in
    [§2](#2-why-the-api-wasnt-safe-to-expose-as-is-history) and
    is independent of the token work, so it ships first (with the legacy-guest
