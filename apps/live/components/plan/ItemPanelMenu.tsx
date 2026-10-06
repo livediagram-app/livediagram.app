@@ -1,7 +1,7 @@
 'use client';
 
 // The item panel's `⋯` menu (docs/specs/026-plan/plan-board.md "Open an item"): Duplicate, Flag (or Remove
-// Flag), Archive (or Restore) and Delete, as icon-left rows beside the panel's Close, so the header keeps only the item's
+// Flag), Archive (or Restore) and Trash, as icon-left rows beside the panel's Close, so the header keeps only the item's
 // type, its key, Help and the two buttons.
 import { useState } from 'react';
 import { DuplicateIcon, TrashIcon } from '@livediagram/ui';
@@ -17,7 +17,7 @@ export function ItemPanelMenu({
   onDuplicate,
   onFlag,
   onArchive,
-  onDelete,
+  onTrash,
 }: {
   itemKey: number;
   archived: boolean;
@@ -25,7 +25,7 @@ export function ItemPanelMenu({
   onDuplicate: () => void;
   onFlag: () => void;
   onArchive: () => void;
-  onDelete: () => void;
+  onTrash: () => void;
 }) {
   const [open, setOpen] = useState(false);
   // Held in state so the menu anchors on its first render.
@@ -64,7 +64,7 @@ export function ItemPanelMenu({
             onClick={run(onArchive)}
           />
           <MenuGroupSeparator />
-          <MenuActionRow plain danger label="Delete" icon={<TrashIcon />} onClick={run(onDelete)} />
+          <MenuActionRow plain danger label="Trash" icon={<TrashIcon />} onClick={run(onTrash)} />
         </PortalMenu>
       ) : null}
     </>

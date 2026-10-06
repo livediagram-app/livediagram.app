@@ -130,6 +130,10 @@ Five built-in types, each with a glyph, an accent colour and the fields it offer
   it holds. While a card is dragged the button opens out into a dashed red **Drop to Trash** target, and while the
   card is over it fills red, tips its lid and reads **Let go to trash it** (no motion with reduced motion; the
   colours still change); a card let go there is trashed and the move is announced.
+- **Every way of deleting a card trashes it**: **Trash** in its menu and in the item panel's ⋯ menu (named
+  **Trash**, not Delete), the Delete key on a focused card, and the drop on the Trash button. Each closes an open
+  panel and is announced ("Card moved to the Trash"). A card leaves the store for good only from the Trash popover
+  (below) or Empty Trash.
 - Pressed, it opens the **Trash** popover (352 px wide): how many cards it holds, then each card, newest change
   first, with its type's stripe and glyph, its whole title, its type, number, the status it came from and when,
   and **Delete** and **Restore** (back to `trashedFrom`, or no status) on a row of their own. **Delete** asks first
@@ -167,7 +171,7 @@ author redaction, and the same thread list, composer and resolve control the com
 - **Live**: every comment change is an item write, so it reaches the room like any other, and an open item panel
   shows it at once.
 - **Trash, Archive, Delete**: trashing or archiving a card keeps its thread; restoring brings it back as it was.
-  Deleting a card deletes its thread with it; undoing that delete restores the thread, keeping the author id only
+  Deleting a card for good (from the Trash) deletes its thread with it; undoing that delete restores the thread, keeping the author id only
   on the restorer's own comments.
 - **Not undoable**: comments, deletes and resolves are outside Undo, as on the canvas.
 - **Mentions** show as chips and are kept on the comment, and reach people the way a canvas mention does

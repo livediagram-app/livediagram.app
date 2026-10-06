@@ -1,13 +1,13 @@
 // A Plan board's keyboard (docs/specs/026-plan/plan-board.md "Keyboard"), as a pure function of the
 // board as drawn: arrow keys move focus between cards, Shift+Left/Right moves the card a column,
-// Shift+Up/Down moves it within its column, Enter opens, Delete deletes, N adds to the column.
+// Shift+Up/Down moves it within its column, Enter opens, Delete moves it to the Trash, N adds to the column.
 import { itemTitle, type BoardProjection, type ItemMove } from '@livediagram/items';
 
 export type PlanKeyAction =
   | { kind: 'focus'; itemId: string }
   | { kind: 'move'; move: ItemMove; announce: string }
   | { kind: 'open' }
-  | { kind: 'delete' }
+  | { kind: 'trash' }
   | { kind: 'add'; status: string; laneKey: string };
 
 type Cell = { col: number; lane: number; index: number };
@@ -37,7 +37,7 @@ export function planBoardKey(
   const item = items[at.index]!;
   const title = `#${item.key} ${itemTitle(item)}`;
   if (key === 'Enter' || key === ' ') return { kind: 'open' };
-  if ((key === 'Delete' || key === 'Backspace') && canEdit) return { kind: 'delete' };
+  if ((key === 'Delete' || key === 'Backspace') && canEdit) return { kind: 'trash' };
   if ((key === 'n' || key === 'N') && !shift && canEdit) {
     const column = p.columns[at.col]!;
     return { kind: 'add', status: column.column.status, laneKey: column.lanes[at.lane]!.laneKey };

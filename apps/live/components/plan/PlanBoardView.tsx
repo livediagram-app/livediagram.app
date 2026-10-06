@@ -182,9 +182,9 @@ export function PlanBoardView({
         ?.querySelector<HTMLElement>(`[data-plan-card="${CSS.escape(action.itemId)}"]`)
         ?.focus();
     } else if (action.kind === 'open') plan.openItem(item.id);
-    else if (action.kind === 'delete') {
-      plan.deleteItem(item.id);
-      plan.announce(`#${item.key} deleted`);
+    else if (action.kind === 'trash') {
+      plan.trashItem(item.id);
+      plan.announce(`#${item.key} moved to the Trash`);
     } else if (action.kind === 'add') setAdding({ status: action.status, laneKey: action.laneKey });
     else {
       focusNextRef.current = item.id;

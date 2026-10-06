@@ -76,9 +76,9 @@ describe('planBoardKey', () => {
     expect(planBoardKey(p, a.id, 'x', true, true)).toBeNull();
   });
 
-  it('opens, deletes and adds', () => {
+  it('opens, trashes and adds', () => {
     expect(planBoardKey(p, a.id, 'Enter', false, false)).toEqual({ kind: 'open' });
-    expect(planBoardKey(p, a.id, 'Delete', false, true)).toEqual({ kind: 'delete' });
+    expect(planBoardKey(p, a.id, 'Delete', false, true)).toEqual({ kind: 'trash' });
     expect(planBoardKey(p, a.id, 'Delete', false, false)).toBeNull();
     expect(planBoardKey(p, a.id, 'n', false, true)).toEqual({
       kind: 'add',
