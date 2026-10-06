@@ -94,6 +94,9 @@ export type DocumentSummary = {
   name: string;
   shareable: boolean;
   shareCode: string | null;
+  // Listed in the public Community (docs/specs/025-community/community.md "In the Explorer"). Only the listed
+  // state: a listed post is public anyway, while a hidden post's state stays owner-only (LiveDoc.communityState).
+  communityListed: boolean;
   folderId: string | null;
   // Team library placement (docs/specs/013-workspace/team-shared-documents.md) — see LiveDoc.teamId.
   teamId: string | null;

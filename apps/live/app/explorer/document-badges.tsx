@@ -9,7 +9,8 @@ import { SharedDotIcon } from '@/components/chrome/share-state-icons';
 import { FolderOutlineIcon, StarIcon } from '@/components/primitives/explorer-icons';
 import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
 import type { PaneDocument } from './views';
-import { HoverCard, Glyph } from '@livediagram/ui';
+import { HoverCard, Glyph, useCommunityEnabled } from '@livediagram/ui';
+import { API_BASE } from '@/lib/api/base';
 import { isMinimalChrome } from '@/lib/power-user-mode';
 import { useOptionalExplorer } from './ExplorerContext';
 
@@ -81,9 +82,12 @@ export function FolderChip({ label, onOpen }: { label: string; onOpen: () => voi
   );
 }
 
-// The visibility badge: Shared (a shared-with-me row / a share-link owned
-// row), Team, or Private, each with a concise hover card explaining what the
-// state means. An offline document has none: its Local only pill says it
+// The visibility badge: Public (listed in the Community), Shared (a
+// shared-with-me row / a share-link owned row), Team, or Private, each with a
+// concise hover card explaining what the state means. Public wins, as in the
+// editor header (docs/specs/025-community/community.md "In the Explorer"): a
+// listed document is the widest audience there is. An offline document has
+// none: its Local only pill says it
 // (docs/specs/006-document/offline-mode.md#local-only-pill).
 // Whether a row's document is one the Google Drive mirror copies
 // (docs/specs/022-drive-mirror/drive-mirror.md, "Who and what"): the user's
@@ -100,6 +104,9 @@ export function VisibilityBadge({
   document: PaneDocument;
   iconOnly?: boolean;
 }) {
+  // Only a listed row asks, and every row shares one capabilities request: a switched-off
+  // Community hides the Public badge everywhere (community.md "Turning the Community off").
+  const communityOn = useCommunityEnabled(API_BASE, !!liveDoc.communityListed);
   // Icon only (optical-alignment.md): the badge becomes a circle of the full
   // badge's own height. An empty strut on the same text line gives it exactly
   // that height, and the icon is centred by ink; the word stays for assistive
@@ -124,6 +131,22 @@ export function VisibilityBadge({
   // A document saved only in this browser carries the Local only pill beside its name
   // instead (docs/specs/006-document/offline-mode.md#local-only-pill).
   if (liveDoc.ownerId === OFFLINE_OWNER_ID) return null;
+  if (liveDoc.communityListed && communityOn) {
+    return (
+      <HoverCard
+        title="Public"
+        description="In the public Community: anyone can find it, view it and make their own copy."
+      >
+        <span
+          tabIndex={iconOnly ? 0 : undefined}
+          className={`${base} bg-pink-50 text-pink-700 ring-pink-200 dark:bg-pink-500/10 dark:text-pink-300 dark:ring-pink-500/30`}
+        >
+          <SharedDotIcon />
+          {word('Public')}
+        </span>
+      </HoverCard>
+    );
+  }
   if (liveDoc.shared || liveDoc.shareCode) {
     return (
       <HoverCard title="Shared" description="Anyone with the link can open it.">
