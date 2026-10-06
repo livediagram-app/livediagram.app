@@ -1,6 +1,6 @@
 import type { Page } from '@playwright/test';
 import { apiBase, darkVisitor } from './audit-screens';
-import { expect, expectNoPageErrors, test } from './fixtures';
+import { expect, expectNoPageErrors, mintSignedGuest, ownerHeaders, test } from './fixtures';
 
 // The Explorer sidebar for a guest (docs/specs/013-workspace/explorer-structure.md), in dark
 // mode: the three groups as ARIA trees, the keyboard model, Minimal chrome's separators, and the
@@ -16,7 +16,7 @@ const rowNames = (page: Page, group: string) =>
 
 async function seedFolder(page: Page, owner: string, origin: string, name: string) {
   const res = await page.request.post(`${apiBase}/folders`, {
-    headers: { 'X-Owner-Id': owner, Origin: origin, 'Content-Type': 'application/json' },
+    headers: ownerHeaders(owner, { Origin: origin, 'Content-Type': 'application/json' }),
     data: { id: crypto.randomUUID(), name },
   });
   expect(res.ok(), `seeding a folder failed: ${res.status()}`).toBe(true);
@@ -34,7 +34,7 @@ test.describe('explorer sidebar', () => {
   });
 
   test('shows Overview, Spaces and More with their rows', async ({ page, pageErrors, baseURL }) => {
-    const owner = crypto.randomUUID();
+    const owner = await mintSignedGuest(page.request);
     await darkVisitor(page, owner);
     await seedFolder(page, owner, new URL(baseURL!).origin, 'Projects');
     await openExplorer(page);
@@ -62,7 +62,7 @@ test.describe('explorer sidebar', () => {
   });
 
   test('lines every top-level icon up on one column', async ({ page, pageErrors }) => {
-    await darkVisitor(page, crypto.randomUUID());
+    await darkVisitor(page, await mintSignedGuest(page.request));
     await openExplorer(page);
     const lefts = await nav(page)
       .locator(
@@ -75,7 +75,7 @@ test.describe('explorer sidebar', () => {
   });
 
   test('is one tab stop, walked with the arrow keys', async ({ page, pageErrors }) => {
-    await darkVisitor(page, crypto.randomUUID());
+    await darkVisitor(page, await mintSignedGuest(page.request));
     await openExplorer(page);
     await row(page, /^Home/).focus();
     await page.keyboard.press('ArrowDown');
@@ -97,7 +97,7 @@ test.describe('explorer sidebar', () => {
   });
 
   test('opens a folder menu from the keyboard', async ({ page, pageErrors, baseURL }) => {
-    const owner = crypto.randomUUID();
+    const owner = await mintSignedGuest(page.request);
     await darkVisitor(page, owner);
     await seedFolder(page, owner, new URL(baseURL!).origin, 'Projects');
     await openExplorer(page);
@@ -112,7 +112,7 @@ test.describe('explorer sidebar', () => {
   });
 
   test('shows This browser while it holds a document', async ({ page, pageErrors }) => {
-    await darkVisitor(page, crypto.randomUUID());
+    await darkVisitor(page, await mintSignedGuest(page.request));
     // Seeded through the store the app upgrades on load (e2e/legacy-offline-store.spec.ts).
     await page.goto('/icon.svg');
     await page.evaluate(
@@ -150,7 +150,7 @@ test.describe('explorer sidebar', () => {
   });
 
   test('swaps titles for hairlines under Minimal chrome', async ({ page, pageErrors }) => {
-    await darkVisitor(page, crypto.randomUUID());
+    await darkVisitor(page, await mintSignedGuest(page.request));
     await page.addInitScript(() =>
       localStorage.setItem(
         'livediagram:user-preferences:v1',
@@ -168,7 +168,7 @@ test.describe('explorer sidebar', () => {
   });
 
   test('opens as a drawer on a phone and closes on a pick', async ({ page, pageErrors }) => {
-    await darkVisitor(page, crypto.randomUUID());
+    await darkVisitor(page, await mintSignedGuest(page.request));
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('/explorer/home');
     await page.getByRole('button', { name: 'Browse sections' }).click();
@@ -195,14 +195,14 @@ test.describe('editor Explorer panel', () => {
     pageErrors,
     baseURL,
   }) => {
-    const owner = crypto.randomUUID();
+    const owner = await mintSignedGuest(page.request);
     const origin = new URL(baseURL!).origin;
     await darkVisitor(page, owner);
     await page.addInitScript(() => localStorage.setItem('livediagram:v2:tour-seen', '1'));
     const id = crypto.randomUUID();
     const make = async (docId: string, name: string) => {
       const res = await page.request.post(`${apiBase}/documents`, {
-        headers: { 'X-Owner-Id': owner, Origin: origin },
+        headers: ownerHeaders(owner, { Origin: origin }),
         data: { id: docId, name, tabs: [{ id: crypto.randomUUID(), name: 'Tab 1', elements: [] }] },
       });
       expect(res.ok()).toBe(true);

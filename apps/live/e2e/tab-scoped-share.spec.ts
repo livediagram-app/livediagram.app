@@ -1,4 +1,11 @@
-import { test, expect, expectNoPageErrors } from './fixtures';
+import {
+  test,
+  expect,
+  expectNoPageErrors,
+  guestSigFor,
+  mintSignedGuest,
+  ownerHeaders,
+} from './fixtures';
 
 // Tab-scoped share links (docs/specs/013-workspace/tab-scoped-share-links.md), end to end: the owner scopes a
 // link to one tab in the Share dialog; a visitor on it sees that tab, the rest
@@ -9,7 +16,7 @@ const SECRET = 'TOP SECRET PRICING';
 const apiBase = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
 
 test('a tab-scoped link opens its tab and nothing else', async ({ page, browser, baseURL }) => {
-  const owner = crypto.randomUUID();
+  const owner = await mintSignedGuest(page.request);
   const liveDoc = crypto.randomUUID();
   const [pricing, roadmap, hiring] = [
     crypto.randomUUID(),
@@ -27,7 +34,7 @@ test('a tab-scoped link opens its tab and nothing else', async ({ page, browser,
     label,
   });
   const seeded = await page.request.post(`${apiBase}/documents`, {
-    headers: { 'X-Owner-Id': owner, Origin: new URL(baseURL!).origin },
+    headers: ownerHeaders(owner, { Origin: new URL(baseURL!).origin }),
     data: {
       id: liveDoc,
       name: 'Launch plan',
@@ -41,10 +48,14 @@ test('a tab-scoped link opens its tab and nothing else', async ({ page, browser,
   expect(seeded.ok()).toBe(true);
 
   // The owner scopes a new link to Roadmap.
-  await page.addInitScript((id) => {
-    localStorage.setItem('livediagram:v2:self-id', id);
-    localStorage.setItem('livediagram:v2:name-confirmed', '1');
-  }, owner);
+  await page.addInitScript(
+    ({ id, sig }) => {
+      localStorage.setItem('livediagram:v2:self-id', id);
+      if (sig) localStorage.setItem('livediagram:v2:self-sig', sig);
+      localStorage.setItem('livediagram:v2:name-confirmed', '1');
+    },
+    { id: owner, sig: guestSigFor(owner) },
+  );
   await page.goto(`/document/${liveDoc}`);
   await page.getByRole('button', { name: /^Share$/ }).click();
   const dialog = page.getByRole('dialog', { name: 'Share this document' });

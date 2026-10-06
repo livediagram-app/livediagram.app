@@ -436,6 +436,21 @@ describe('migrateOwnerId moves every guest-holdable row (docs/specs/015-api/api.
     expect(people.map((p) => ({ ...p }))).toEqual([{ id: ACCOUNT, name: 'Ada', color: '#123456' }]);
   });
 
+  // A row older than GUEST_SIGNING_LIVE_AT marks a legacy id that may upgrade unsigned, so the new
+  // id must never inherit the old date (docs/specs/015-api/public-api-and-tokens.md §6).
+  it('stamps the moved participant row with the time of the move, never the old date', async () => {
+    const { env, sql } = arrange();
+    const before = Date.now();
+
+    await migrateOwnerId(env, GUEST, ACCOUNT);
+
+    const row = sql.prepare('SELECT created_at FROM participants WHERE id = ?').get(ACCOUNT) as {
+      created_at: number;
+    };
+    expect(row.created_at).toBeGreaterThanOrEqual(before);
+    expect(row.created_at).not.toBe(T0);
+  });
+
   it('renames a guest library whose name the account already uses', async () => {
     const { env, sql } = arrange();
     insert(sql, 'shape_libraries', {

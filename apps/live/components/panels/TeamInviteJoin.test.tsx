@@ -6,7 +6,12 @@
 import { act, cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { TeamInviteJoin } from './TeamInviteJoin';
-import { clearGuestSelfId, getGuestSelfId, setGuestIdentity } from '@/lib/local-identity';
+import {
+  clearGuestSelfId,
+  getGuestSelfId,
+  getGuestSelfSig,
+  setGuestIdentity,
+} from '@/lib/local-identity';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 vi.mock('@/lib/clerk-config', () => ({ clerkEnabled: true, sessionsEnabled: true }));
@@ -19,11 +24,16 @@ vi.mock('@/lib/api-client', () => ({
   apiJoinTeamByInviteLink: vi.fn(),
 }));
 
+// The worker's signed mint (lib/guest-identity.ts), as production answers it.
+const mint = vi.hoisted(() => vi.fn());
+vi.mock('@/lib/api/self', () => ({ apiMintGuestId: mint, apiUpgradeGuestId: vi.fn() }));
+
 const visit = (search: string) => window.history.replaceState(null, '', `/join${search}`);
 
 afterEach(() => {
   cleanup();
   resolve.mockReset();
+  mint.mockReset();
   clearGuestSelfId();
 });
 
@@ -42,16 +52,18 @@ describe('TeamInviteJoin', () => {
     expect(screen.getByText('Platform')).toBeTruthy();
   });
 
-  it('mints a guest id for a first-time browser and resolves with it', async () => {
+  // Signed, like every entry path: once guest signatures are enforced an unsigned id is refused.
+  it('mints a signed guest id for a first-time browser and resolves with it', async () => {
     visit('?token=abc');
     resolve.mockResolvedValue(null);
+    mint.mockResolvedValue({ ownerId: 'signed-guest', ownerSig: 'sig' });
     expect(getGuestSelfId()).toBeNull();
     render(<TeamInviteJoin />);
     await act(async () => {});
-    const minted = getGuestSelfId();
-    expect(minted).toBeTruthy();
+    expect(getGuestSelfId()).toBe('signed-guest');
+    expect(getGuestSelfSig()).toBe('sig');
     expect(resolve).toHaveBeenCalledTimes(1);
-    expect(resolve).toHaveBeenCalledWith(minted, 'abc');
+    expect(resolve).toHaveBeenCalledWith('signed-guest', 'abc');
   });
 
   it('calls a link without a token invalid, without asking', async () => {

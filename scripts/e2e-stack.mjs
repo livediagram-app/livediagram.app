@@ -17,7 +17,7 @@
 // live port. SIGINT/SIGTERM tears the whole tree down.
 
 import { spawn } from 'node:child_process';
-import { generateKeyPairSync, sign } from 'node:crypto';
+import { generateKeyPairSync, randomUUID, sign } from 'node:crypto';
 import http from 'node:http';
 import net from 'node:net';
 import {
@@ -129,9 +129,11 @@ const DRIVE_E2E_VARS = {
 //                    worker to verify against, and /e2e/token?sub=<id> minting a session token
 //                    for any test account. Test-only: nothing outside this stack trusts the key.
 const CLERK_JWKS = process.env.E2E_CLERK_JWKS === '1';
-//   E2E_GUEST_SIG_ENFORCE=1  arm guest signature enforcement, as production does once armed
+//   E2E_GUEST_SIG_ENFORCE  guest signature enforcement, as production runs once armed
 //                    (docs/specs/003-system-architecture/e2e-smoke.md "Armed guest signatures").
-const GUEST_SIG_ENFORCE = process.env.E2E_GUEST_SIG_ENFORCE === '1';
+//                    On unless set to 0: every spec seeds through signed guests. `=1` also selects
+//                    the armed project and its own ports (playwright.config.ts).
+const GUEST_SIG_ENFORCE = process.env.E2E_GUEST_SIG_ENFORCE !== '0';
 const clerkKey = CLERK_JWKS ? generateKeyPairSync('rsa', { modulusLength: 2048 }) : null;
 const CLERK_KID = 'e2e-clerk-stub';
 
@@ -196,6 +198,58 @@ function waitForExit(child) {
     child.on('exit', (code) => (code === 0 ? resolve() : reject(new Error(`exit ${code}`))));
     child.on('error', reject);
   });
+}
+
+// A legacy guest (docs/specs/015-api/public-api-and-tokens.md §6): an unsigned id whose participant
+// row predates GUEST_SIGNING_LIVE_AT, owning one folder, written straight into the stack's local
+// D1. With signatures enforced the api cannot make one (an unsigned id writes nothing), and only
+// such a guest still runs the one-time upgrade onto a signed id, which e2e/guest-upgrade.spec.ts
+// exercises. Ids are server-made UUIDs, so the statement carries no outside input.
+async function seedLegacyGuest() {
+  const ownerId = randomUUID();
+  const folderId = randomUUID();
+  const sql =
+    `INSERT INTO participants (id, name, color, created_at) VALUES ('${ownerId}', 'Legacy guest', '#336699', 1);` +
+    `INSERT INTO folders (id, owner_id, name, created_at, updated_at) VALUES ('${folderId}', '${ownerId}', 'Legacy folder', 1, 1);`;
+  await waitForExit(
+    spawn(
+      'pnpm',
+      [
+        '--filter',
+        '@livediagram/api',
+        'exec',
+        'wrangler',
+        'd1',
+        'execute',
+        'livediagram',
+        '--local',
+        '--command',
+        sql,
+      ],
+      { cwd: ROOT, stdio: 'ignore' },
+    ),
+  );
+  return { ownerId, folderId, folderName: 'Legacy folder' };
+}
+
+// One seed at a time, each retried briefly: parallel workers asking at once would run several
+// `wrangler d1 execute` processes against the one local database file, and SQLite refuses the
+// writers that lose the lock.
+let legacySeedQueue = Promise.resolve();
+function queueLegacyGuestSeed() {
+  const attempt = async () => {
+    for (let tries = 1; ; tries += 1) {
+      try {
+        return await seedLegacyGuest();
+      } catch (err) {
+        if (tries >= 3) throw err;
+        await new Promise((r) => setTimeout(r, 250 * tries));
+      }
+    }
+  };
+  const next = legacySeedQueue.then(attempt, attempt);
+  legacySeedQueue = next.catch(() => {});
+  return next;
 }
 
 async function waitForPort(port, label, timeoutMs = 60_000) {
@@ -446,6 +500,20 @@ function startLiveServer() {
       res.end();
       return;
     }
+    if (pathname === '/__e2e/legacy-guest' && req.method === 'POST') {
+      queueLegacyGuestSeed().then(
+        (body) => {
+          res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' });
+          res.end(JSON.stringify(body));
+        },
+        (err) => {
+          console.error('[e2e] seeding a legacy guest failed', err);
+          res.writeHead(500, { 'Content-Type': 'text/plain; charset=utf-8' });
+          res.end('seeding a legacy guest failed');
+        },
+      );
+      return;
+    }
     if (pathname === '/__e2e/deploy' && req.method === 'POST') {
       const deploy = simulateDeploy(liveOut);
       res.writeHead(200, {
@@ -552,10 +620,17 @@ async function main() {
       // the signed-id upgrade a fresh guest goes through runs here too. A test-only secret.
       '--var',
       'GUEST_ID_HMAC_SECRET:e2e-guest-signing-secret',
-      // Off (blank = unset): many specs still seed through the api with unsigned X-Owner-Id. The
-      // armed specs turn it on (E2E_GUEST_SIG_ENFORCE=1) with a cutoff long past.
+      // Enforced by default (E2E_GUEST_SIG_ENFORCE above), as production runs once armed
+      // (docs/specs/015-api/public-api-and-tokens.md §4): every entry path must mint a signed id
+      // before its first api call, and the specs seed through signed ids (fixtures.ts
+      // mintSignedGuest / ownerHeaders / pageOwnerHeaders). Explicit, because production's
+      // [vars] value can be blank while it is not armed.
       '--var',
       `GUEST_SIG_ENFORCE_AFTER:${GUEST_SIG_ENFORCE ? '1' : ''}`,
+      // Only a participant row older than this counts as a legacy guest: the one
+      // /__e2e/legacy-guest writes (created_at 1), never one the app makes during a run.
+      '--var',
+      'GUEST_SIGNING_LIVE_AT:1000',
       // Verify session tokens against the stack's own key (E2E_CLERK_JWKS above), never a real
       // Clerk instance a developer's .dev.vars may name.
       ...(CLERK_JWKS

@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { expect, test } from './fixtures';
+import { expect, test, pageOwnerHeaders } from './fixtures';
 
 // Stale HTML after a deploy (docs/specs/016-platform/stale-builds.md), the way people meet it: open
 // the Explorer, open a document (a full page load), a deploy lands, press back. Back is a history
@@ -19,25 +19,24 @@ async function seedDocument(page: Page, name: string): Promise<string> {
   await expect
     .poll(() => page.evaluate(() => localStorage.getItem('livediagram:v2:self-sig')))
     .toBeTruthy();
-  return page.evaluate(async (docName) => {
-    const headers = {
-      'X-Owner-Id': localStorage.getItem('livediagram:v2:self-id') ?? '',
-      'X-Owner-Sig': localStorage.getItem('livediagram:v2:self-sig') ?? '',
-      'Content-Type': 'application/json',
-    };
-    const id = crypto.randomUUID();
-    const res = await fetch('/api/documents', {
-      method: 'POST',
-      headers,
-      body: JSON.stringify({
-        id,
-        name: docName,
-        tabs: [{ id: crypto.randomUUID(), name: 'Tab 1', elements: [] }],
-      }),
-    });
-    if (!res.ok) throw new Error(`seeding failed: ${res.status}`);
-    return id;
-  }, name);
+  const headers = await pageOwnerHeaders(page, { 'Content-Type': 'application/json' });
+  return page.evaluate(
+    async ({ docName, headers }) => {
+      const id = crypto.randomUUID();
+      const res = await fetch('/api/documents', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          id,
+          name: docName,
+          tabs: [{ id: crypto.randomUUID(), name: 'Tab 1', elements: [] }],
+        }),
+      });
+      if (!res.ok) throw new Error(`seeding failed: ${res.status}`);
+      return id;
+    },
+    { docName: name, headers },
+  );
 }
 
 // The suite runs in parallel: a simulated deploy is this context's alone, never the stack's.

@@ -1,7 +1,14 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import type { Page } from '@playwright/test';
-import { test, expect, dismissQuickTour, expectNoPageErrors, startBlankDocument } from './fixtures';
+import {
+  test,
+  expect,
+  dismissQuickTour,
+  expectNoPageErrors,
+  startBlankDocument,
+  pageOwnerHeaders,
+} from './fixtures';
 
 // Excalidraw import brings its images through the import image pipeline
 // (docs/specs/020-import-export/import-image-pipeline.md): resized in the browser, stored in the
@@ -74,11 +81,11 @@ test('an Excalidraw scene brings its images into the gallery and reports them', 
   await report.getByRole('button', { name: 'Done' }).click();
 
   // The gallery holds two images: the PNG (used twice) and the rasterised SVG.
-  const images = await page.evaluate(async () => {
-    const owner = localStorage.getItem('livediagram:v2:self-id') ?? '';
-    const res = await fetch('/api/images', { headers: { 'X-Owner-Id': owner } });
+  const headers = await pageOwnerHeaders(page);
+  const images = await page.evaluate(async (headers) => {
+    const res = await fetch('/api/images', { headers });
     return ((await res.json()) as { images: { contentType: string }[] }).images;
-  });
+  }, headers);
   expect(images.map((i) => i.contentType).sort()).toEqual(['image/webp', 'image/webp']);
   expectNoPageErrors(pageErrors);
 });
@@ -162,11 +169,11 @@ test('without canvas WebP, images are still stored as WebP via the WASM encoder'
   await importExcalidrawFile(page, 'board.excalidraw', boardWithImages());
   await expect(page.getByTestId('import-image-report')).toContainText('3 images imported');
 
-  const images = await page.evaluate(async () => {
-    const owner = localStorage.getItem('livediagram:v2:self-id') ?? '';
-    const res = await fetch('/api/images', { headers: { 'X-Owner-Id': owner } });
+  const headers = await pageOwnerHeaders(page);
+  const images = await page.evaluate(async (headers) => {
+    const res = await fetch('/api/images', { headers });
     return ((await res.json()) as { images: { contentType: string }[] }).images;
-  });
+  }, headers);
   expect(images.map((i) => i.contentType).sort()).toEqual(['image/webp', 'image/webp']);
   expect(wasmRequests).toHaveLength(1);
   expectNoPageErrors(pageErrors);

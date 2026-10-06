@@ -1,4 +1,12 @@
-import { dismissQuickTour, expect, expectNoPageErrors, test } from './fixtures';
+import {
+  dismissQuickTour,
+  expect,
+  expectNoPageErrors,
+  guestSigFor,
+  mintSignedGuest,
+  ownerHeaders,
+  test,
+} from './fixtures';
 
 // Presentation mode (docs/specs/012-collaboration/presentation-mode.md): Present frames the first slide,
 // the arrow keys move the camera between slides, and leaving puts the editor's view back exactly where it
@@ -13,7 +21,7 @@ test('a deck presents slide by slide and leaves the view as it was', async ({
   pageErrors,
   baseURL,
 }) => {
-  const owner = crypto.randomUUID();
+  const owner = await mintSignedGuest(page.request);
   const id = crypto.randomUUID();
   const tabId = crypto.randomUUID();
   const box = (bid: string, x: number, y: number) => ({
@@ -37,7 +45,7 @@ test('a deck presents slide by slide and leaves the view as it was', async ({
     ],
   };
   const seeded = await page.request.post(`${apiBase}/documents`, {
-    headers: { 'X-Owner-Id': owner, Origin: new URL(baseURL!).origin },
+    headers: ownerHeaders(owner, { Origin: new URL(baseURL!).origin }),
     data: {
       id,
       name: 'Deck',
@@ -46,14 +54,18 @@ test('a deck presents slide by slide and leaves the view as it was', async ({
     },
   });
   expect(seeded.ok()).toBe(true);
-  await page.addInitScript((o) => {
-    localStorage.setItem('livediagram:v2:self-id', o);
-    localStorage.setItem('livediagram:v2:name-confirmed', '1');
-    localStorage.setItem(
-      'livediagram:user-preferences:v1',
-      JSON.stringify({ panelLayout: 'toolbar' }),
-    );
-  }, owner);
+  await page.addInitScript(
+    ({ o, sig }) => {
+      localStorage.setItem('livediagram:v2:self-id', o);
+      if (sig) localStorage.setItem('livediagram:v2:self-sig', sig);
+      localStorage.setItem('livediagram:v2:name-confirmed', '1');
+      localStorage.setItem(
+        'livediagram:user-preferences:v1',
+        JSON.stringify({ panelLayout: 'toolbar' }),
+      );
+    },
+    { o: owner, sig: guestSigFor(owner) },
+  );
   await page.goto(`/document/${id}`);
   await page.locator(CANVAS).waitFor();
   await dismissQuickTour(page);

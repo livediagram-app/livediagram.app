@@ -51,11 +51,13 @@ AI_ALLOWED_ORIGINS = "https://www.livediagram.app,https://livediagram.app"
 #
 # GUEST_SIG_ENFORCE_AFTER: from this instant, owner-scoped routes, the room's
 # owner leg and the legacy upgrade require a valid guest signature. Blank: not
-# armed. Every entry path now resolves a signed id before its first api call
-# (the armed e2e specs prove it); re-arming production is Tom's or Webber's call
+# armed. Every entry path now resolves a signed id before its first api call,
+# and every e2e stack runs with enforcement on (scripts/e2e-stack.mjs), so a
+# regression fails the suite; re-arming production is Tom's or Webber's call
 # (docs/specs/015-api/public-api-and-tokens.md §6).
-# `pnpm dev` and the e2e stack blank it too (see apps/api/package.json and
-# scripts/e2e-stack.mjs), as they do AI_ALLOWED_ORIGINS.
+# `pnpm dev` keeps it blank (apps/api/package.json): a developer's local guests
+# can predate their local signing secret and would be locked out of their own
+# test data.
 GUEST_SIGNING_LIVE_AT = "1790337600000"
 GUEST_SIG_ENFORCE_AFTER = ""
 

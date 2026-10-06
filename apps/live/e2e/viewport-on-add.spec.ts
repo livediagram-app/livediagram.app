@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { expect, test, expectNoPageErrors, openStartBlank } from './fixtures';
+import { expect, test, expectNoPageErrors, openStartBlank, pageOwnerHeaders } from './fixtures';
 
 // The viewport on tab entry (docs/specs/008-canvas/canvas-and-palette.md "Fit-to-screen"): a tab is framed
 // once, when its content has loaded; what the user then adds, the first element on an empty tab
@@ -57,15 +57,15 @@ test.describe('Viewport on add', () => {
     await page.keyboard.press('Escape');
     // Let the autosave land before reloading.
     await expect
-      .poll(() =>
-        page.evaluate(async () => {
-          const headers = { 'X-Owner-Id': localStorage.getItem('livediagram:v2:self-id') ?? '' };
+      .poll(async () => {
+        const headers = await pageOwnerHeaders(page);
+        return page.evaluate(async (headers) => {
           const id = location.pathname.split('/').filter(Boolean).pop();
           const tabId = new URLSearchParams(location.hash.slice(1)).get('t');
           const res = await fetch(`/api/documents/${id}/tabs/${tabId}`, { headers });
           return res.ok ? ((await res.json()).tab?.elements?.length ?? 0) : 0;
-        }),
-      )
+        }, headers);
+      })
       .toBe(1);
     await page.reload();
     const square = page.locator(CANVAS).getByRole('img', { name: 'Square', exact: true });

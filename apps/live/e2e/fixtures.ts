@@ -154,43 +154,45 @@ export async function startEventStormingRow(page: Page): Promise<void> {
   const notes = page.locator('[data-canvas-a11y-root]').getByRole('img', { name: /^Sticky note/ });
   await notes.first().waitFor();
   const apiBase = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
-  await page.evaluate(async (base: string) => {
-    const owner = localStorage.getItem('livediagram:v2:self-id') ?? '';
-    const id = location.pathname.split('/').filter(Boolean).pop()!;
-    const headers = { 'X-Owner-Id': owner, 'Content-Type': 'application/json' };
-    // Wait for the new board's first save to land (its seeded note on the
-    // server), so the row is not written over by it.
-    let tab: { elements: { width: number; x: number }[] } | null = null;
-    let tabId = '';
-    for (let i = 0; i < 50 && !tab; i += 1) {
-      const liveDoc = await (await fetch(`${base}/documents/${id}`, { headers })).json();
-      tabId = liveDoc.document?.tabs?.[0]?.id ?? '';
-      if (tabId) {
-        const got = await (
-          await fetch(`${base}/documents/${id}/tabs/${tabId}`, { headers })
-        ).json();
-        if (got.tab?.elements?.length === 1) tab = got.tab;
+  const headers = await pageOwnerHeaders(page, { 'Content-Type': 'application/json' });
+  await page.evaluate(
+    async ({ base, headers }) => {
+      const id = location.pathname.split('/').filter(Boolean).pop()!;
+      // Wait for the new board's first save to land (its seeded note on the
+      // server), so the row is not written over by it.
+      let tab: { elements: { width: number; x: number }[] } | null = null;
+      let tabId = '';
+      for (let i = 0; i < 50 && !tab; i += 1) {
+        const liveDoc = await (await fetch(`${base}/documents/${id}`, { headers })).json();
+        tabId = liveDoc.document?.tabs?.[0]?.id ?? '';
+        if (tabId) {
+          const got = await (
+            await fetch(`${base}/documents/${id}/tabs/${tabId}`, { headers })
+          ).json();
+          if (got.tab?.elements?.length === 1) tab = got.tab;
+        }
+        if (!tab) await new Promise((r) => setTimeout(r, 100));
       }
-      if (!tab) await new Promise((r) => setTimeout(r, 100));
-    }
-    if (!tab) throw new Error('the new board never saved its seed note');
-    const seed = tab.elements[0]!;
-    const step = seed.width + 16;
-    const labels = ['Order placed', 'Payment received', 'Order shipped'];
-    const elements = labels.map((label, i) => ({
-      ...seed,
-      id: crypto.randomUUID(),
-      label,
-      x: seed.x + (i - 1) * step,
-      rotation: i % 2 === 0 ? -1.1 : 1.1,
-    }));
-    const res = await fetch(`${base}/documents/${id}/tabs/${tabId}`, {
-      method: 'PUT',
-      headers,
-      body: JSON.stringify({ ...tab, elements }),
-    });
-    if (!res.ok) throw new Error(`seeding the row failed: ${res.status}`);
-  }, apiBase);
+      if (!tab) throw new Error('the new board never saved its seed note');
+      const seed = tab.elements[0]!;
+      const step = seed.width + 16;
+      const labels = ['Order placed', 'Payment received', 'Order shipped'];
+      const elements = labels.map((label, i) => ({
+        ...seed,
+        id: crypto.randomUUID(),
+        label,
+        x: seed.x + (i - 1) * step,
+        rotation: i % 2 === 0 ? -1.1 : 1.1,
+      }));
+      const res = await fetch(`${base}/documents/${id}/tabs/${tabId}`, {
+        method: 'PUT',
+        headers,
+        body: JSON.stringify({ ...tab, elements }),
+      });
+      if (!res.ok) throw new Error(`seeding the row failed: ${res.status}`);
+    },
+    { base: apiBase, headers },
+  );
   await page.reload();
   await notes.nth(2).waitFor();
 }
@@ -249,11 +251,10 @@ export type Seed = Record<string, unknown>[];
 // Write the seed into the new document's first tab through the api, reload.
 export async function seedTab(page: Page, elements: Seed): Promise<void> {
   const apiBase = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
+  const headers = await pageOwnerHeaders(page, { 'Content-Type': 'application/json' });
   await page.evaluate(
-    async ({ base, elements }) => {
-      const owner = localStorage.getItem('livediagram:v2:self-id') ?? '';
+    async ({ base, elements, headers }) => {
       const id = location.pathname.split('/').filter(Boolean).pop()!;
-      const headers = { 'X-Owner-Id': owner, 'Content-Type': 'application/json' };
       let tab: Record<string, unknown> | null = null;
       let tabId = '';
       for (let i = 0; i < 50 && !tab; i += 1) {
@@ -275,7 +276,7 @@ export async function seedTab(page: Page, elements: Seed): Promise<void> {
       });
       if (!res.ok) throw new Error(`seeding failed: ${res.status}`);
     },
-    { base: apiBase, elements },
+    { base: apiBase, elements, headers },
   );
   await page.reload();
   await page.locator('[data-canvas-a11y-root]').waitFor();
@@ -313,6 +314,21 @@ export function ownerHeaders(
 ): Record<string, string> {
   const sig = guestSigs.get(owner);
   return { 'X-Owner-Id': owner, ...(sig ? { 'X-Owner-Sig': sig } : {}), ...extra };
+}
+
+// The page's OWN guest identity as request headers, for api calls a spec makes from inside the page
+// (`page.evaluate`, which cannot import this module). The stack enforces guest signatures as
+// production does, so the id travels with the signature the app stored beside it. Read once, before
+// the evaluate, and passed in as an argument.
+export async function pageOwnerHeaders(
+  page: Page,
+  extra: Record<string, string> = {},
+): Promise<Record<string, string>> {
+  const { id, sig } = await page.evaluate(() => ({
+    id: localStorage.getItem('livediagram:v2:self-id') ?? '',
+    sig: localStorage.getItem('livediagram:v2:self-sig'),
+  }));
+  return { 'X-Owner-Id': id, ...(sig ? { 'X-Owner-Sig': sig } : {}), ...extra };
 }
 
 // A box once it has stopped moving: a surface that pops in (the `pop-in` scale animation) reports a

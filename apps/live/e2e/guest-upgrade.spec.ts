@@ -1,37 +1,28 @@
-import { test, expect, expectNoPageErrors } from './fixtures';
+import { test, expect, expectNoPageErrors, pageOwnerHeaders } from './fixtures';
 
-// A legacy guest (an unsigned id from before signing, docs/specs/014-identity/auth-and-guest-access.md
-// "Legacy upgrade") moves its documents to a signed id on its next editor load. A reload can land
-// after the worker moved them but before the browser kept the new id; the next load must resume that
-// upgrade, never mint another id and lock the guest out of their own document ("An interrupted
-// upgrade resumes"). A first-time guest is signed from the start and never upgrades, so the legacy
-// guest is set up here: an unsigned id in this browser that already owns a document.
-test('a reload in the middle of the signed-id upgrade keeps the document', async ({
+// A legacy guest (an unsigned id from before this deployment signed anything) moves onto a signed id
+// the first time it opens the app. A reload can land after the worker moved its data but before the
+// browser kept the new id; the next load must resume that upgrade, never mint another id and lock
+// the guest out of their own data (docs/specs/014-identity/auth-and-guest-access.md, "An interrupted
+// upgrade resumes"). The stack enforces guest signatures, so this is also the legacy exception at
+// work: only such an id may still upgrade unsigned (docs/specs/015-api/public-api-and-tokens.md §6).
+test('a reload in the middle of the signed-id upgrade keeps the legacy guest’s data', async ({
   page,
   pageErrors,
 }) => {
-  const legacyId = crypto.randomUUID();
-  const id = crypto.randomUUID();
-  const apiBase = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
-  // The stack leaves enforcement off, so an unsigned guest can still create, as before signing.
-  const created = await page.request.post(`${apiBase}/documents`, {
-    headers: { 'X-Owner-Id': legacyId },
-    data: {
-      id,
-      name: 'Legacy board',
-      tabs: [{ id: crypto.randomUUID(), name: 'Tab 1', elements: [] }],
-    },
-  });
-  expect(created.ok(), 'seeding the legacy guest’s document').toBe(true);
+  // The api cannot make a legacy guest under enforcement, so the stack writes one.
+  const seeded = await page.request.post('/__e2e/legacy-guest');
+  expect(seeded.ok()).toBe(true);
+  const legacy = (await seeded.json()) as { ownerId: string; folderName: string };
   // The legacy id in this browser, set before the first load only: the guard lives in
-  // sessionStorage, which a reload keeps, so the reload below sees whatever the upgrade left.
-  await page.addInitScript((owner) => {
+  // sessionStorage, which later loads keep, so they see whatever the upgrade left.
+  await page.addInitScript((id) => {
     if (sessionStorage.getItem('e2e:legacy-seeded')) return;
     sessionStorage.setItem('e2e:legacy-seeded', '1');
-    localStorage.setItem('livediagram:v2:self-id', owner);
+    localStorage.setItem('livediagram:v2:self-id', id);
     localStorage.removeItem('livediagram:v2:self-sig');
     localStorage.setItem('livediagram:v2:name-confirmed', '1');
-  }, legacyId);
+  }, legacy.ownerId);
 
   let moved!: () => void;
   const movedOnServer = new Promise<void>((resolve) => (moved = resolve));
@@ -40,22 +31,38 @@ test('a reload in the middle of the signed-id upgrade keeps the document', async
     await route.fetch();
     moved();
   });
-  await page.goto(`/document/${id}`);
+  await page.goto('/explorer');
   await movedOnServer;
   await page.unroute('**/api/migrate');
 
+  // The resumed move is refused (403): the legacy id's participant row went with the first move, so
+  // it no longer counts as legacy. The browser then adopts the signed id it recorded, which already
+  // holds the data ("A refused upgrade adopts the signed id"). Any other refusal is a failure.
   const refused: string[] = [];
   page.on('response', (r) => {
-    if (r.url().includes(`/api/documents/${id}`) && r.status() === 403) refused.push(r.url());
+    const path = new URL(r.url()).pathname;
+    if (path.startsWith('/api/') && path !== '/api/migrate' && [401, 403].includes(r.status())) {
+      refused.push(path);
+    }
   });
-  // Armed before the reload, so the document's fetch cannot land before anyone listens.
-  const loaded = page.waitForResponse(
-    (r) => r.url().endsWith(`/api/documents/${id}`) && r.request().method() === 'GET',
-  );
   await page.reload();
-  const load = await loaded;
-  expect(load.status()).toBe(200);
+  // The resumed upgrade adopts the signed id it recorded before the move.
+  await expect
+    .poll(() =>
+      page.evaluate(() => ({
+        id: localStorage.getItem('livediagram:v2:self-id'),
+        signed: Boolean(localStorage.getItem('livediagram:v2:self-sig')),
+      })),
+    )
+    .toEqual({ id: expect.not.stringMatching(legacy.ownerId), signed: true });
   await page.waitForLoadState('networkidle');
+
+  const headers = await pageOwnerHeaders(page);
+  const folders = await page.evaluate(async (headers) => {
+    const res = await fetch('/api/folders', { headers });
+    return ((await res.json()) as { folders: { name: string }[] }).folders.map((f) => f.name);
+  }, headers);
+  expect(folders).toEqual([legacy.folderName]);
   expect(refused).toEqual([]);
   expectNoPageErrors(pageErrors);
 });

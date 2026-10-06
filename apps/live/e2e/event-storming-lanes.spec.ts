@@ -5,6 +5,7 @@ import {
   expectNoPageErrors,
   startEventStormingRow,
   test,
+  pageOwnerHeaders,
 } from './fixtures';
 
 // Workshop notes always land on a lane (docs/specs/021-event-storming/event-storming.md "Always on a lane"), in a
@@ -40,14 +41,16 @@ const stickies = (tab: BoardTab) => tab.elements.filter((el) => el.type === 'sti
 
 async function boardTab(page: Page, settle = 1500): Promise<BoardTab> {
   await page.waitForTimeout(settle);
-  return page.evaluate(async (base: string) => {
-    const owner = localStorage.getItem('livediagram:v2:self-id') ?? '';
-    const id = location.pathname.split('/').filter(Boolean).pop()!;
-    const headers = { 'X-Owner-Id': owner };
-    const liveDoc = await (await fetch(`${base}/documents/${id}`, { headers })).json();
-    const tabId = liveDoc.document.tabs[0].id;
-    return (await (await fetch(`${base}/documents/${id}/tabs/${tabId}`, { headers })).json()).tab;
-  }, API);
+  const headers = await pageOwnerHeaders(page);
+  return page.evaluate(
+    async ({ base, headers }) => {
+      const id = location.pathname.split('/').filter(Boolean).pop()!;
+      const liveDoc = await (await fetch(`${base}/documents/${id}`, { headers })).json();
+      const tabId = liveDoc.document.tabs[0].id;
+      return (await (await fetch(`${base}/documents/${id}/tabs/${tabId}`, { headers })).json()).tab;
+    },
+    { base: API, headers },
+  );
 }
 
 // Canvas to screen, measured from two notes of the row whose canvas centres
@@ -170,11 +173,10 @@ test('paste lands at the pointer over the canvas, and staggers when it is elsewh
   // already there rather than landing on top of it.
   const last = row[2]!;
   const below = { ...last, id: 'below', y: last.y + 2 * LANE_PITCH };
+  const writeHeaders = await pageOwnerHeaders(page, { 'Content-Type': 'application/json' });
   await page.evaluate(
-    async ({ base, note }) => {
-      const owner = localStorage.getItem('livediagram:v2:self-id') ?? '';
+    async ({ base, note, headers }) => {
       const id = location.pathname.split('/').filter(Boolean).pop()!;
-      const headers = { 'X-Owner-Id': owner, 'Content-Type': 'application/json' };
       const liveDoc = await (await fetch(`${base}/documents/${id}`, { headers })).json();
       const tabId = liveDoc.document.tabs[0].id;
       const tab = (await (await fetch(`${base}/documents/${id}/tabs/${tabId}`, { headers })).json())
@@ -188,7 +190,7 @@ test('paste lands at the pointer over the canvas, and staggers when it is elsewh
         }),
       });
     },
-    { base: API, note: below },
+    { base: API, note: below, headers: writeHeaders },
   );
   await page.reload();
   await expect(notes).toHaveCount(4);
@@ -260,25 +262,27 @@ test('an older board is lined up on the lanes once, and undo keeps the choice', 
   test.slow();
   const notes = await openRow(page);
   // Make it an OLDER board: two notes parked between lanes, and no mark.
-  await page.evaluate(async (base: string) => {
-    const owner = localStorage.getItem('livediagram:v2:self-id') ?? '';
-    const id = location.pathname.split('/').filter(Boolean).pop()!;
-    const headers = { 'X-Owner-Id': owner, 'Content-Type': 'application/json' };
-    const liveDoc = await (await fetch(`${base}/documents/${id}`, { headers })).json();
-    const tabId = liveDoc.document.tabs[0].id;
-    const tab = (await (await fetch(`${base}/documents/${id}/tabs/${tabId}`, { headers })).json())
-      .tab;
-    const { esLanesSettled: _gone, ...older } = tab;
-    void _gone;
-    const elements = tab.elements.map((el: { y: number }, i: number) =>
-      i === 0 ? { ...el, y: el.y + 130 } : i === 1 ? { ...el, y: el.y - 70 } : el,
-    );
-    await fetch(`${base}/documents/${id}/tabs/${tabId}`, {
-      method: 'PUT',
-      headers,
-      body: JSON.stringify({ ...older, elements }),
-    });
-  }, API);
+  const writeHeaders = await pageOwnerHeaders(page, { 'Content-Type': 'application/json' });
+  await page.evaluate(
+    async ({ base, headers }) => {
+      const id = location.pathname.split('/').filter(Boolean).pop()!;
+      const liveDoc = await (await fetch(`${base}/documents/${id}`, { headers })).json();
+      const tabId = liveDoc.document.tabs[0].id;
+      const tab = (await (await fetch(`${base}/documents/${id}/tabs/${tabId}`, { headers })).json())
+        .tab;
+      const { esLanesSettled: _gone, ...older } = tab;
+      void _gone;
+      const elements = tab.elements.map((el: { y: number }, i: number) =>
+        i === 0 ? { ...el, y: el.y + 130 } : i === 1 ? { ...el, y: el.y - 70 } : el,
+      );
+      await fetch(`${base}/documents/${id}/tabs/${tabId}`, {
+        method: 'PUT',
+        headers,
+        body: JSON.stringify({ ...older, elements }),
+      });
+    },
+    { base: API, headers: writeHeaders },
+  );
   await page.reload();
   await notes.nth(2).waitFor();
   await expect(page.getByText('Lined up 2 notes on the lanes.')).toBeVisible();

@@ -502,7 +502,8 @@ hardening landed first:
    the rule that the canvas always works without signing in. Every entry path
    now resolves a signed id before its first owner-scoped call
    ([Auth and guest access](../014-identity/auth-and-guest-access.md) "Signed
-   guest ids"), and the e2e suite proves it with enforcement armed. **Re-arming
+   guest ids"), and every e2e stack runs with enforcement armed
+   (`scripts/e2e-stack.mjs`), so a regression of that kind fails the suite. **Re-arming
    production is Tom's or Webber's call**, made by setting
    `GUEST_SIG_ENFORCE_AFTER` in `apps/api/wrangler.toml` again. What follows
    holds from then. Production only
@@ -510,7 +511,10 @@ hardening landed first:
    were still unsigned when it was armed: about 219, holding 274 documents. An
    id whose participant row predates `GUEST_SIGNING_LIVE_AT` keeps the legacy
    upgrade (migrate flow 2) without a signature, so those guests self-heal
-   whenever they return. Every id minted signed must prove possession. Retire
+   whenever they return. Every id minted signed must prove possession, which
+   includes the id a legacy guest moves onto: its participant row is stamped
+   with the time of the move, never the legacy date (`migrateOwnerId`,
+   `apps/api/src/db/account.ts`). Retire
    the exception (unset `GUEST_SIGNING_LIVE_AT`) once the remaining legacy ids
    are judged gone.
    Pulled to the FRONT: it closed the cross-object escalation in

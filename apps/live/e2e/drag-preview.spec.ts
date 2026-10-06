@@ -1,5 +1,12 @@
 import type { Page } from '@playwright/test';
-import { dismissQuickTour, expect, expectNoPageErrors, seedTab, test } from './fixtures';
+import {
+  dismissQuickTour,
+  expect,
+  expectNoPageErrors,
+  seedTab,
+  test,
+  pageOwnerHeaders,
+} from './fixtures';
 
 // docs/specs/008-canvas/drag-preview.md: while a drag lasts, the moved box and the arrow pinned to it
 // move on screen while nothing is written; the document changes once, on release; Escape puts the box
@@ -38,12 +45,9 @@ const BOARD = [
 ];
 
 async function savedX(page: Page, id: string): Promise<number | undefined> {
+  const headers = await pageOwnerHeaders(page);
   return page.evaluate(
-    async ({ base, id }) => {
-      const owner = localStorage.getItem('livediagram:v2:self-id') ?? '';
-      const sig = localStorage.getItem('livediagram:v2:self-sig');
-      const headers: Record<string, string> = { 'X-Owner-Id': owner };
-      if (sig) headers['X-Owner-Sig'] = sig;
+    async ({ base, id, headers }) => {
       const docId = location.pathname.split('/').filter(Boolean).pop()!;
       const doc = await (await fetch(`${base}/documents/${docId}`, { headers })).json();
       const tabId = doc.document?.tabs?.[0]?.id;
@@ -52,7 +56,7 @@ async function savedX(page: Page, id: string): Promise<number | undefined> {
       ).json();
       return (got.tab?.elements ?? []).find((el: { id: string }) => el.id === id)?.x;
     },
-    { base: apiBase, id },
+    { base: apiBase, id, headers },
   );
 }
 

@@ -1,7 +1,14 @@
 import { deflateRawSync } from 'node:zlib';
 import { join } from 'node:path';
 import type { Page } from '@playwright/test';
-import { dismissQuickTour, expect, expectNoPageErrors, startBlankDocument, test } from './fixtures';
+import {
+  dismissQuickTour,
+  expect,
+  expectNoPageErrors,
+  startBlankDocument,
+  test,
+  pageOwnerHeaders,
+} from './fixtures';
 
 // Shape libraries end to end (docs/specs/013-workspace/shape-libraries.md): a synthesised draw.io
 // library imported from the Explorer becomes a named library, its shapes are placed from the
@@ -52,16 +59,15 @@ type Stored = {
 
 // The elements the active tab stores, read back through the api.
 async function stored(page: Page): Promise<Stored[]> {
-  return page.evaluate(async () => {
-    const owner = localStorage.getItem('livediagram:v2:self-id') ?? '';
+  const headers = await pageOwnerHeaders(page);
+  return page.evaluate(async (headers) => {
     const id = location.pathname.split('/').filter(Boolean).pop()!;
-    const headers = { 'X-Owner-Id': owner };
     const doc = await (await fetch(`/api/documents/${id}`, { headers })).json();
     const tabId = doc.document?.tabs?.[0]?.id;
     if (!tabId) return [];
     const tab = await (await fetch(`/api/documents/${id}/tabs/${tabId}`, { headers })).json();
     return (tab.tab?.elements ?? []) as Stored[];
-  });
+  }, headers);
 }
 const storedElements = async (page: Page) => (await stored(page)).length;
 const overlaps = (a: Stored, b: Stored) =>
