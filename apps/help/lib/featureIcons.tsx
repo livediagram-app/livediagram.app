@@ -399,6 +399,16 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M6 8v12M9 12h6M9 15.5h4" />
     </Glyph>
   ),
+  // A board with one card ringed by the tour's spotlight: Plan shown one part at a time.
+  'plan-tour': (
+    <Glyph>
+      <rect x="2.5" y="4" width="19" height="16" rx="1.5" />
+      <path d="M8.8 4v16M15.2 4v16" />
+      <rect x="10.4" y="8" width="3.2" height="4" rx="0.6" />
+      <rect x="9" y="6.5" width="6" height="7" rx="1.5" strokeDasharray="1.6 1.4" />
+      <path d="M4.5 16h2.5M17 16h2.5" />
+    </Glyph>
+  ),
   // A page with a title and a bar chart: the poster an infographic becomes.
   illustrate: (
     <Glyph>

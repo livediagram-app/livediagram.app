@@ -9,6 +9,7 @@ export const POWER_USER_PRESET = {
   alignmentGuides: { alignmentGuides: true },
   autoRebindArrows: { autoRebindArrows: true },
   tourSeen: { tourSeen: true },
+  planTourSeen: { planTourSeen: true },
   aiSuggestedPrompts: { aiSuggestedPrompts: false },
   minimalChrome: { minimalChrome: true },
 } as const satisfies Record<string, Partial<UserPreferences>>;

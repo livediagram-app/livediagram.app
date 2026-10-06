@@ -343,6 +343,8 @@ export function usePlanSlice(opts: {
     context,
     openItemId,
     closeItem: () => setOpenItemId(null),
+    // Opens an item without counting it as the person's (the Plan tour's card panel step).
+    showItem: setOpenItemId,
     editingTypeId,
     closeTypeEditor: () => setEditingTypeId(null),
     dropPlanCardOnBoard,

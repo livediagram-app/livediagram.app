@@ -98,6 +98,20 @@ describe('settings catalogue', () => {
     expect(row.event.off).toBe('TourSeenOn');
   });
 
+  it('inverts the Plan tour row the same way, beside the welcome tour in Accessibility', () => {
+    // docs/specs/026-plan/plan-tour.md "Where it appears".
+    const row = TOGGLES.find((r) => r.key === 'planTourSeen')!;
+    expect(row.read({ planTourSeen: true })).toBe(false);
+    expect(row.read({})).toBe(true);
+    expect(row.write({}, true).planTourSeen).toBe(false);
+    expect(row.write({}, false).planTourSeen).toBe(true);
+    expect(row.event.on).toBe('PlanTourSeenOff');
+    expect(row.event.off).toBe('PlanTourSeenOn');
+    const accessibility = SETTINGS_CATEGORIES.find((c) => c.id === 'accessibility')!;
+    const keys = accessibility.rows.map((r) => ('key' in r ? r.key : null));
+    expect(keys.indexOf('planTourSeen')).toBe(keys.indexOf('tourSeen') + 1);
+  });
+
   it('defaults every slider and choice to a value it actually offers', () => {
     for (const row of CHOICES) {
       const fallback = row.read({} as UserPreferences);

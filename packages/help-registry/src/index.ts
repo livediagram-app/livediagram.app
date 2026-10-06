@@ -1288,6 +1288,17 @@ export const articles: Article[] = [
     parentSlug: 'plan-mode',
   },
   {
+    slug: 'plan-tour',
+    title: 'The Plan Tour',
+    description:
+      'A guided walkthrough of Plan mode on an example board, offered once and replayable from Settings.',
+    keywords:
+      'plan tour tour walkthrough onboarding intro introduction show me around getting started guide tutorial example board example cards first time learn plan mode kanban board cards replay rerun settings accessibility',
+    category: 'Canvas',
+    categorySlug: 'canvas/plan-mode',
+    parentSlug: 'plan-mode',
+  },
+  {
     slug: 'illustrate',
     title: 'Illustrate Mode',
     description:

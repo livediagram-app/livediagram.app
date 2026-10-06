@@ -41,6 +41,7 @@ import { CollaboratorsHost } from '@/components/dialogs/CollaboratorsHost';
 import { EditorElementDialogs } from '@/components/dialogs/EditorElementDialogs';
 import { EditorContextMenuHost } from '@/components/palette/EditorContextMenuHost';
 import { TourHost } from '@/components/tour/TourHost';
+import { PlanTourHost } from '@/components/tour/PlanTourHost';
 import { EditorAnchoredPopovers } from '@/components/panels/EditorAnchoredPopovers';
 import { EditorSearchPanel } from '@/components/panels/EditorSearchPanel';
 import { ThemeModeBanner } from '@/components/chrome/ThemeModeBanner';
@@ -615,6 +616,8 @@ export function EditorView() {
           wizard's "Show me around" handoff flag is pending. */}
                     <AreaErrorBoundary area="Tour">
                       <TourHost />
+                      {/* The Plan tour (docs/specs/026-plan/plan-tour.md): the first time a person works in Plan. */}
+                      <PlanTourHost />
                     </AreaErrorBoundary>
 
                     {/* Guest sign-in nudge (docs/specs/014-identity/sign-in-encouragement.md), delayed ~5 min. Lifted above

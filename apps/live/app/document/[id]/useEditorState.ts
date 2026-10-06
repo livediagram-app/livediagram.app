@@ -1,6 +1,7 @@
 'use client';
 
 import { usePlanSlice } from '@/hooks/plan/usePlanSlice';
+import { usePlanTourContent } from '@/hooks/plan/usePlanTourContent';
 import { usePlanPresence } from '@/hooks/plan/usePlanPresence';
 import { boardClientPoint, dropPlanCardAt, PLAN_CARD_MISSED } from '@/hooks/plan/plan-card-drop';
 import { setPlanWidgetEditor } from '@/hooks/plan/plan-widget-drop';
@@ -1992,6 +1993,15 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     statusNames: planStatusNames,
     statusPhases: planStatusPhases,
   });
+  // The Plan tour's example board and cards (docs/specs/026-plan/plan-tour.md "Tour content").
+  const planTour = usePlanTourContent({
+    documentId,
+    hydrated,
+    editsBlocked,
+    activeId,
+    tickTabs,
+    planItems,
+  });
 
   // Undo / redo handlers. See useEditorHistory.
   const { tick, undo, redo } = useEditorHistory({
@@ -3236,6 +3246,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     // What the agents present name in focus on the active tab, for the focus rings.
     agentFocusByElement,
     plan,
+    planTour,
     // The person's editor mode on the active tab, for the mode switch and the canvas.
     editorMode,
     leaveIllustrate,

@@ -178,7 +178,12 @@ swimlanes, card fields, card types and widgets are ready, and the team adds its 
   content. A board placed from the palette counts as `Element` · `Added` · `PlanBoard`, a plan view as `PlanView`.
 - The header's Start Blank menu offers Blank Plan, with its own funnel slot (`HeaderPlan`).
 
+## The Plan tour
+
+- The first time a person works in Plan, a guided tour offers itself, on an example board it takes away again:
+  [Plan tour](plan-tour.md).
+
 ## Help
 
 - A help article for Plan mode (the mode, boards, set-up and keyboard) and one for items, registered with the help
-  centre.
+  centre; one for the [Plan tour](plan-tour.md).

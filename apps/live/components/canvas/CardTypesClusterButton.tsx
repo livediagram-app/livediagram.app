@@ -16,6 +16,7 @@ export function CardTypesClusterButton(props: {
       hoverTitle="Card Types"
       hoverDescription="The kinds of card this document's boards hold, and the fields each one has."
       icon={<PlanCardsIcon size={18} />}
+      dataTourId="card-types"
       {...props}
     />
   );

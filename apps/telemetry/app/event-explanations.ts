@@ -831,6 +831,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Closed|SignInBannerExplorer':
     'Someone dismissed the guest sign-in banner shown in the Explorer.',
   'UI|Closed|TourOffer': "Someone dismissed the welcome tour's offer card without starting it.",
+  'UI|Closed|PlanTourOffer': "Someone dismissed the Plan tour's offer card without starting it.",
   'UI|Closed|Welcome': 'Someone dismissed the first-run welcome modal.',
   'UI|Copied|EmbedCode':
     "Someone copied an embed URL or an iframe snippet from the Share dialog's Embed menu.",
@@ -844,6 +845,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     'This exact combination is never actually sent: declining the welcome tour on its very first card is recorded as the tour offer closing, not as an ended tour.',
   'UI|Ended|TourSkipped':
     'Someone skipped out of the welcome tour after it had already started (not on the very first card).',
+  'UI|Ended|PlanTourCompleted':
+    "Someone reached the end of the Plan tour, or a step's target never appeared and the tour finished early.",
+  'UI|Ended|PlanTourSkipped':
+    'Someone left the Plan tour after it had started, or it ended because they left Plan mode, the tab or their edit rights.',
   'UI|Moved|PanelDock':
     'Someone dragged a floating panel, such as the Palette or the Explorer, to a different corner of the screen, or let it go free.',
   'UI|Moved|Slide':
@@ -908,6 +913,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone pressed Reload on the new version prompt; the editor reloads once their changes are saved.',
   'UI|Opened|TourOffer':
     'The welcome tour\'s offer card was shown, either automatically on a first visit or replayed from Settings\' "Show Welcome Tour".',
+  'UI|Opened|PlanTourOffer':
+    'The Plan tour\'s offer card was shown, the first time someone worked in Plan mode or replayed from Settings\' "Show Plan Tour".',
   'UI|Opened|activity':
     "Someone opened the help article about the Explorer's Activity section, from a help link or a search result.",
   'UI|Opened|api-tokens':
@@ -951,6 +958,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Started|Presentation': 'Someone started presenting: entering full-screen slideshow mode.',
   'UI|Started|Tour':
     "Someone clicked past the welcome tour's first card, beginning the step-by-step walkthrough.",
+  'UI|Started|PlanTour':
+    "Someone clicked past the Plan tour's first card, beginning its walkthrough on an example board.",
   'UI|Toggled|ActivityRevertPreviewOff':
     'Someone turned off the hover preview that showed what a change would look like before reverting it, in the since-removed Activity panel settings.',
   'UI|Toggled|ActivityRevertPreviewOn':
@@ -1080,6 +1089,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone switched on "Show Welcome Tour" in Settings, marking the tour as not yet seen and relaunching it immediately.',
   'UI|Toggled|TourSeenOn':
     'Someone switched off "Show Welcome Tour" in Settings, or the tour resolved on its own, marking it as seen so it won\'t be offered again.',
+  'UI|Toggled|PlanTourSeenOff':
+    'Someone switched on "Show Plan Tour" in Settings, marking the Plan tour as not yet seen.',
+  'UI|Toggled|PlanTourSeenOn':
+    'Someone switched off "Show Plan Tour" in Settings, marking the Plan tour as seen so it won\'t be offered again.',
   'UI|Toggled|ZenModeOff': "Someone turned off zen mode, restoring the editor's chrome.",
   'UI|Toggled|ZenModeOn':
     "Someone turned on zen mode, hiding the editor's chrome for a distraction-free canvas.",
@@ -1087,6 +1100,20 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone landed on the New Document page through a link that skips the wizard and goes straight into a blank document.',
   'UI|Used|TemplateLink':
     'Someone landed on the New Document page through a link that skips the wizard and goes straight into a specific template.',
+  'UI|View|PlanTourStepBoard':
+    'The Plan tour reached its "Your board" step, placing its example board.',
+  'UI|View|PlanTourStepAddCards':
+    'The Plan tour reached its "Add cards" step, adding its example cards.',
+  'UI|View|PlanTourStepMoveCard':
+    'The Plan tour reached its "Move work along" step, moving a card to the next column.',
+  'UI|View|PlanTourStepCardPanel':
+    'The Plan tour reached its "The card panel" step, opening a card.',
+  'UI|View|PlanTourStepBoardHeader': 'The Plan tour reached its "The board header" step.',
+  'UI|View|PlanTourStepCardTypes': 'The Plan tour reached its "Card types" step.',
+  'UI|View|PlanTourStepPalette':
+    'The Plan tour reached its "The Plan palette" step, opening the palette\'s categories.',
+  'UI|View|PlanTourStepOutro':
+    'The Plan tour reached its closing "You\'re ready to plan" card, with its example board taken away.',
   'UI|View|TourStepCategories':
     'The welcome tour reached its "Shape categories" step, pointing out the palette\'s category tabs.',
   'UI|View|TourStepContextMenu':
