@@ -255,3 +255,16 @@ describe('listEnter', () => {
     expect(listEnter('Plain')).toEqual({ insert: '\n', drop: 0 });
   });
 });
+
+describe('applyListStyle on an empty line', () => {
+  it('starts a list on the lone empty line the caret is on, and leaves blank lines in a selection blank', async () => {
+    const { applyListStyle, runsPlainText } = await import('./rich-text');
+    expect(runsPlainText(applyListStyle([], 'bullet', { start: 0, end: 0 }))).toBe('• ');
+    expect(runsPlainText(applyListStyle([{ text: 'a\n' }], 'numbered', { start: 2, end: 2 }))).toBe(
+      'a\n1. ',
+    );
+    expect(
+      runsPlainText(applyListStyle([{ text: 'a\n\nb' }], 'bullet', { start: 0, end: 4 })),
+    ).toBe('• a\n\n• b');
+  });
+});

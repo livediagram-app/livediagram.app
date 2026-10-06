@@ -24,7 +24,7 @@ export const PLAN_BOARD_TILES: {
   {
     preset: 'blank',
     caption: 'Board',
-    description: 'A board of To do, In progress and Done, to make your own.',
+    description: 'An empty board: name its first column and build it your way.',
   },
   {
     preset: 'kanban',

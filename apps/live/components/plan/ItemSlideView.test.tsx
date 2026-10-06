@@ -57,6 +57,18 @@ describe('ItemSlideView', () => {
     expect(screen.getByText(/1 of 2 done/)).toBeTruthy();
   });
 
+  it("names the status as its board's column does", () => {
+    render(
+      <ItemSlideView
+        types={ITEM_TYPES}
+        palette={palette}
+        statusNames={new Map([['doing~k3f9', 'In progress']])}
+        item={item({ title: 'Named', status: 'doing~k3f9' })}
+      />,
+    );
+    expect(screen.getByText('In progress')).toBeTruthy();
+  });
+
   it('leaves out the facts an item has no value in', () => {
     render(<ItemSlideView types={[]} palette={palette} item={item({ title: 'Bare' })} />);
     expect(screen.queryByText(/priority/)).toBeNull();

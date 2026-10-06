@@ -65,7 +65,8 @@ Plan must cost nothing to a document that does not use it:
   colours of the types it takes) over its name and its full description, in the tab's light or dark look, as a new
   infographic page offers its layouts. Choosing one places that board,
   empty, in the middle of the view. It is gone once the tab has a board, and never shown to someone who may only
-  view.
+  view. It keeps clear of the toolbar above and the bottom-right buttons below, scrolling inside itself when the
+  tiles run taller than the room; on a phone it shows two tiles a row with shorter pictures.
 - Plan mode has no empty-canvas Quick Start banner: the board picker is its start.
 
 ## Plan keeps its own tabs

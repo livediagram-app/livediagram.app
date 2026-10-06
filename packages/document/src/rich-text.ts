@@ -351,9 +351,15 @@ export function applyListStyle(
   const inSel = (i: number) => sel === null || sel.has(i);
   const base = mapLines(runs, (lineChars, i) => (inSel(i) ? stripLine(lineChars) : lineChars));
   if (style === 'none') return base;
+  // A list on the one empty line the caret is on starts there (so Bullet List, then typing, works);
+  // blank lines inside a longer selection stay blank.
+  const lone = sel !== null && sel.size === 1;
+  if (lone && runsPlainText(runs) === '') {
+    return [{ text: style === 'bullet' ? BULLET_PREFIX : '1. ' }];
+  }
   let n = 0;
   return mapLines(base, (lineChars, i) => {
-    if (!inSel(i) || lineChars.length === 0) return lineChars;
+    if (!inSel(i) || (lineChars.length === 0 && !lone)) return lineChars;
     const prefix = style === 'bullet' ? BULLET_PREFIX : `${++n}. `;
     const prefixChars: RunChar[] = [...prefix].map((ch) => ({ ch, attrs: {} }));
     return [...prefixChars, ...lineChars];

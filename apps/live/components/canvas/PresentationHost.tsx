@@ -121,6 +121,7 @@ export function PresentationHost() {
         <ItemSlideView
           item={plan?.items.get(itemId)}
           types={plan?.types ?? ITEM_TYPES}
+          statusNames={plan?.statusNames}
           palette={planPalette(surface, {})}
         />
       ) : null}

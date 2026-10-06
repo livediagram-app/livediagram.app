@@ -31,7 +31,7 @@ function BoardPreview({ preset, palette }: { preset: PlanBoardPresetId; palette:
   return (
     <div
       aria-hidden
-      className="flex h-24 w-full flex-col gap-1 overflow-hidden rounded-lg border p-1.5"
+      className="flex h-16 w-full flex-col gap-1 overflow-hidden rounded-lg border p-1.5 sm:h-24"
       style={{ backgroundColor: palette.surface, borderColor: palette.border }}
     >
       <span
@@ -92,10 +92,10 @@ function BoardPreview({ preset, palette }: { preset: PlanBoardPresetId; palette:
 export function PlanBoardPicker({ onPick }: { onPick: (preset: string) => void }) {
   const palette = planPalette(useCanvasSurface(), {});
   return (
-    <div className="pointer-events-none absolute inset-0 z-[var(--z-panel)] flex items-center justify-center overflow-y-auto p-4">
+    <div className="pointer-events-none absolute inset-0 z-[var(--z-panel)] flex items-center justify-center p-4 pb-40 pt-24 max-sm:px-3 max-sm:pb-28 max-sm:pt-32">
       <section
         aria-labelledby="plan-board-picker-title"
-        className="pointer-events-auto my-auto w-full max-w-3xl animate-fade-in rounded-2xl border p-5 shadow-xl sm:p-6"
+        className="pointer-events-auto max-h-full w-full max-w-3xl animate-fade-in overflow-y-auto overscroll-contain rounded-2xl border p-4 shadow-xl sm:p-6"
         style={{ backgroundColor: palette.card, borderColor: palette.border, color: palette.text }}
       >
         <div className="flex items-center gap-2">
@@ -109,7 +109,7 @@ export function PlanBoardPicker({ onPick }: { onPick: (preset: string) => void }
           need them.
         </p>
 
-        <div className="mt-5 grid grid-cols-1 gap-3 min-[480px]:grid-cols-2 md:grid-cols-3">
+        <div className="mt-4 grid grid-cols-2 gap-2 sm:mt-5 sm:gap-3 md:grid-cols-3">
           {PLAN_BOARD_TILES.filter((t) => t.preset !== 'archive').map((t) => (
             <button
               key={t.preset}

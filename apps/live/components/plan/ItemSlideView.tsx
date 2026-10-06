@@ -12,6 +12,7 @@ import {
   itemLabels,
   itemStatus,
   itemTitle,
+  statusLabel,
   typeIn,
   type Item,
   type ItemTypeDef,
@@ -24,11 +25,6 @@ import { PRIORITY_COLOURS, accentOn, type PlanPalette } from './plan-palette';
 
 // How much larger than the panel the description reads on a slide.
 const DESCRIPTION_ZOOM = 1.55;
-
-function statusLabel(status: string): string {
-  const words = status.replace(/[-_]+/g, ' ').trim();
-  return words ? `${words[0]!.toUpperCase()}${words.slice(1)}` : status;
-}
 
 function dueLabel(due: string): string {
   const d = new Date(`${due}T00:00:00`);
@@ -50,11 +46,14 @@ function checklistRows(item: Item): { text: string; done: boolean }[] {
 export function ItemSlideView({
   item,
   types,
+  statusNames,
   palette,
 }: {
   // Undefined: the item was deleted.
   item: Item | undefined;
   types: readonly ItemTypeDef[];
+  // The names the boards give statuses, so a status reads as its column ("In progress", not "doing").
+  statusNames?: ReadonlyMap<string, string>;
   palette: PlanPalette;
 }) {
   const frame = (children: React.ReactNode) => (
@@ -115,7 +114,7 @@ export function ItemSlideView({
               style={{ backgroundColor: accent }}
               aria-hidden
             />
-            {statusLabel(status)}
+            {statusLabel(status, statusNames)}
           </span>
         ) : null}
         {assignee ? (
