@@ -241,6 +241,15 @@ export const SUPPORT_ARTICLE_ICONS: Record<string, ReactNode> = {
       <path d="M10 11V9.5a2 2 0 0 1 4 0V11" />
     </Glyph>
   ),
+  // A bug caught under a magnifying glass: a flaw found and handed in.
+  'report-a-vulnerability': (
+    <Glyph>
+      <circle cx="10" cy="10" r="6.5" />
+      <path d="M15 15l5.5 5.5" />
+      <rect x="8" y="8" width="4" height="5" rx="2" />
+      <path d="M8 9.5H6.5M12 9.5h1.5M8 12H6.5M12 12h1.5M10 8V7" />
+    </Glyph>
+  ),
 
   // ---- Privacy and Security ----
   'data-privacy': (

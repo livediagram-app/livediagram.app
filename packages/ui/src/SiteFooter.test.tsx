@@ -7,9 +7,9 @@ const html = renderToStaticMarkup(<SiteFooter />);
 const footerNav = html.slice(html.indexOf('aria-label="Footer"'), html.indexOf('</nav>'));
 
 describe('SiteFooter', () => {
-  it('links the third-party licences page among the legal links', () => {
+  it('links the security policy and third-party licences among the legal links', () => {
     expect(footerNav).toMatch(
-      /href="\/help\/policies\/privacy-policy\/"[^>]*>Privacy<\/a><a href="\/licences"[^>]*>Licences<\/a>/,
+      /href="\/help\/policies\/privacy-policy\/"[^>]*>Privacy<\/a><a href="\/help\/policies\/report-a-vulnerability\/"[^>]*>Security<\/a><a href="\/licences"[^>]*>Licences<\/a>/,
     );
   });
 });

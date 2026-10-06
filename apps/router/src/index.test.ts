@@ -174,7 +174,16 @@ describe('bare help-article paths', () => {
   });
 
   it('leaves marketing and live routes alone', async () => {
-    for (const path of ['/', '/faq', '/alternatives', '/privacy', '/terms', '/features']) {
+    for (const path of [
+      '/',
+      '/faq',
+      '/alternatives',
+      '/privacy',
+      '/terms',
+      '/security',
+      '/.well-known/security.txt',
+      '/features',
+    ]) {
       const { env, marketing } = makeEnv();
       const res = await dispatch(path, env);
       expect(res.status, path).toBe(200);

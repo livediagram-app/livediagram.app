@@ -40,6 +40,13 @@ export function SiteFooter() {
           >
             Privacy
           </a>
+          {/* Vulnerability disclosure (docs/specs/002-project-scope/vulnerability-disclosure.md). */}
+          <a
+            href="/help/policies/report-a-vulnerability/"
+            className="hover:text-slate-900 dark:hover:text-slate-100"
+          >
+            Security
+          </a>
           {/* Third-party licences (docs/specs/002-project-scope/third-party-licences.md). */}
           <a href="/licences" className="hover:text-slate-900 dark:hover:text-slate-100">
             Licences
