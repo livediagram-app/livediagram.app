@@ -54,6 +54,12 @@ A gesture's cost scales with what it changes and what is on screen, never with t
   floating toolbar, the selection popover) is **hidden while a selection is being moved or
   resized** and placed again when the gesture ends; elsewhere it positions from canvas geometry
   (bounds, offset, zoom) and a measurement taken outside the gesture.
+- **Opening a board animates nothing across the board.** The board appears at once, with no fade
+  on the canvas world ([Motion](../004-interface-design/motion.md) "Editor arrival") and no
+  pop-in on the elements it opens with ([Canvas and palette](canvas-and-palette.md) "Motion and
+  animations"): an animation over the whole board makes the browser lay out the page's
+  compositing again as it starts and as it ends, and a per-element entry re-renders every element
+  view once more. Chrome may still fade in; it is small.
 - **The Map redraws its content when a gesture ends**, not on every frame of it. During a drag,
   pan or stroke it keeps its last drawing and moves only its viewport rectangle; a remote edit
   redraws it at most once every 250 ms. Opening a board draws the board first; the Map's picture
@@ -121,7 +127,17 @@ Taken up only when the rules above leave the budget unmet; each is a change to t
   reference speed and prints the budget table with pass or fail per row. It also runs by hand,
   against any build.
 - **Each gesture runs five times and a row reads the median**, since one run of the same gesture
-  can read two to five times another. The timings come from the page itself (its long-task entries
+  can read two to five times another. Opening the board is no exception: it is opened five times,
+  each in a fresh browser context, and the row reads the median.
+- **Opening counts every long frame.** "Interactive" ends at the first 500 ms in which the page
+  reports neither a long task nor a long animation frame. Long tasks alone miss a frame that only
+  renders (style, layout, compositing, paint, with no script in it), which is how a 500 ms
+  compositing pass once went uncounted. Counting both reads the same or longer than counting long
+  tasks alone, so open rows from before the change are a lower bound on today's.
+- **Nothing the probe does lands in the opening window.** It opens the board by URL (so no tour
+  is offered), waits for the board and then for 500 quiet ms, reads the number, and only then
+  dismisses anything or presses a key; its own queries of the page are work the page would
+  otherwise count. The timings come from the page itself (its long-task entries
   and an animation-frame recorder), so they count the board's own work and nothing else, never
   from inside a profiler start: starting the CPU profiler costs a one-off task of about a second on
   a large page. A still board's work, which must stay under a task's length, is read from a trace.

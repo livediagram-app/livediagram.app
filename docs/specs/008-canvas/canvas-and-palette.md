@@ -867,12 +867,14 @@ A Plan card's item carries the same `CommentThread` in its `comments` field ([It
 
 The editor uses subtle, purposeful motion to feel fluid and modern. Chrome motion (menus, panels, dialogs, the entrances below) follows [Motion](../004-interface-design/motion.md): it settles within 250ms, and hovers within 150ms. Canvas motion is content and lives in `apps/live/app/canvas-motion.css`. The keyframes are exposed as Tailwind utility classes via `@theme`:
 
-- **`element-pop-in`**: `scale(0) → scale(1.06) → scale(1)` over 360 ms with a spring-easing curve. It's canvas motion, applied to `BoxedElementView` so newly added shapes, text and stickies pop into existence. It carries the element's own rotation through every frame.
+- **`element-pop-in`**: `scale(0) → scale(1.06) → scale(1)` over 360 ms with a spring-easing curve. It's canvas motion, applied to `BoxedElementView` so shapes, text and stickies **added while the tab is showing** pop into existence (yours, a collaborator's, an undo bringing one back). It carries the element's own rotation through every frame.
 - **`pop-in`**: the same keyframe at the chrome `micro` token (150 ms), for small chrome surfaces entering (cluster bars, the zoom menu, toolbar-strip tiles). It's transform-based, so it must only be used on elements that don't carry their own inline `transform` style.
 - **`fade-in`**: pure `opacity` 0 → 1 at `micro` (150 ms). It's used wherever the element already has an inline `transform` (the selection popover, plus buttons, mode banner, portal menus, tab-link picker, tooltips and hover cards), so the animation doesn't fight positioning.
 - **`fly-up-in`**: combined `translateY(16px) scale(0.96) → 0 / 1` at `long` (250 ms). It's applied to modal-style surfaces (dialogs, template picker, empty-state card).
 
-Animations only fire on mount, so they naturally trigger once per element. Switching tabs unmounts the old tab's elements and mounts the new ones, so the destination tab's elements animate in too — a side-effect that makes tab switches feel lively.
+Animations only fire on mount, so they trigger once per element. **The board a tab opens with appears at once**: the elements that are there when a document opens or a tab is switched to arrive with the board and do not pop in; only an element added after that does. A still canvas (a whiteboard) pops nothing in at all (Draw mode, "Nothing animates in"), and an element that mounts there stays settled if the tab later switches to Diagram mode.
+
+Opening and tab switches used to pop every element in. On the 1,000-element reference board that was a thousand animations starting at once and a thousand timers re-rendering every element view 400 ms later, on the whiteboard too, where nothing popped. Together with the board's fade ([Motion](../004-interface-design/motion.md) "Editor arrival"), it kept opening the board over its 3 s time-to-interactive budget ([Canvas performance](canvas-performance.md)). With both gone, the median open on the reference board is 2.2 s (whiteboard) and 1.7 s (diagram), where it was 2.9 s and 3.0 s.
 
 ## Selection
 
