@@ -44,6 +44,7 @@ export function usePlanSlice(opts: {
   select: (elementId: string | null) => void;
   announce: (message: string) => void;
   addItemSlide?: (itemId: string) => void;
+  addBoardSlide?: (boardId: string) => void;
   statusNames: ReadonlyMap<string, string>;
   // The phase the tab's boards give each status (the plan views).
   statusPhases?: ReadonlyMap<string, StatusPhase>;
@@ -58,6 +59,7 @@ export function usePlanSlice(opts: {
   const announceRef = useLatest(opts.announce);
   const publishRef = useLatest(opts.publishPresence);
   const slideRef = useLatest(opts.addItemSlide);
+  const boardSlideRef = useLatest(opts.addBoardSlide);
   const commit = useCallback(
     (mapElements: (els: Element[]) => Element[]) => commitRef.current(mapElements),
     [commitRef],
@@ -70,6 +72,10 @@ export function usePlanSlice(opts: {
   );
   const hasSlides = !!opts.addItemSlide;
   const addItemSlide = useCallback((itemId: string) => slideRef.current?.(itemId), [slideRef]);
+  const addBoardSlide = useCallback(
+    (boardId: string) => boardSlideRef.current?.(boardId),
+    [boardSlideRef],
+  );
   const [openItemId, setOpenItemId] = useState<string | null>(null);
   // The type the type editor is open on, or 'new' (docs/specs/026-plan/item-types.md "Editing a type").
   const [editingTypeId, setEditingTypeId] = useState<string | 'new' | null>(null);
@@ -295,7 +301,7 @@ export function usePlanSlice(opts: {
       emptyTrash,
       statusNames: opts.statusNames,
       statusPhases: opts.statusPhases ?? NO_PHASES,
-      ...(hasSlides ? { addItemSlide } : {}),
+      ...(hasSlides ? { addItemSlide, addBoardSlide } : {}),
     }),
     [
       planItems.items,
@@ -326,6 +332,7 @@ export function usePlanSlice(opts: {
       restoreItem,
       emptyTrash,
       addItemSlide,
+      addBoardSlide,
       hasSlides,
       opts.statusNames,
       opts.statusPhases,

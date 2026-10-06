@@ -1360,8 +1360,13 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // Slide deck (docs/specs/012-collaboration/presentation-mode.md). Owns the deck, the panel's editing verbs, and the
   // presentation Start runs. Placed after the viewport because presenting
   // frames each slide through it.
+  const slideThumbnailPlan = useMemo(
+    () => ({ items: planItems.items, types: itemTypes.types }),
+    [planItems.items, itemTypes.types],
+  );
   const slideDeck = useSlideDeck({
     tabs,
+    plan: slideThumbnailPlan,
     activeTabId: activeId,
     setActiveId,
     readSelection,
@@ -1983,6 +1988,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     select: setSelectedId,
     announce,
     addItemSlide: slideDeck.newItemSlide,
+    addBoardSlide: slideDeck.newBoardSlide,
     statusNames: planStatusNames,
     statusPhases: planStatusPhases,
   });

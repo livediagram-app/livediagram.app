@@ -17,6 +17,7 @@ import {
   type Deck,
   type Tab,
 } from '@livediagram/document';
+import type { Item, ItemTypeDef } from '@livediagram/items';
 import { resolveIconArtLoaded, resolveStickerArtLoaded } from '@/lib/icon-registry';
 import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
 import { pageExportFrame } from '@/lib/export-page';
@@ -38,11 +39,35 @@ import { pageExportFrame } from '@/lib/export-page';
 
 export type SlideThumb = { markup: string; viewBox: string };
 
-export function useSlideThumbnails(deck: Deck, tabs: Tab[]): Map<string, SlideThumb> {
+// The document's items and types, so a Plan board on a slide draws its cards (docs/specs/012-collaboration/
+// presentation-mode.md "Board slides").
+export type ThumbnailPlan = { items: ReadonlyMap<string, Item>; types: readonly ItemTypeDef[] };
+
+// Whether any slide names a Plan board, so item edits redraw the thumbnails only for a deck that shows one.
+function deckShowsBoard(deck: Deck, tabs: Tab[]): boolean {
+  const byId = new Map(tabs.map((t) => [t.id, t]));
+  return deck.slides.some((s) => {
+    const tab = byId.get(s.tabId);
+    if (!tab || s.elementIds.length === 0) return false;
+    const ids = new Set(s.elementIds);
+    return tab.elements.some(
+      (e) => ids.has(e.id) && e.type === 'shape' && e.shape === 'plan-board',
+    );
+  });
+}
+
+export function useSlideThumbnails(
+  deck: Deck,
+  tabs: Tab[],
+  plan?: ThumbnailPlan,
+): Map<string, SlideThumb> {
   // Re-render once the async icon catalogues land so icon glyphs pop in.
   const iconsLoaded = useIconCatalogs();
   // An article's writing laid out for the first time: its lines of text can be drawn now.
   const laidOut = useArticleLaidOutSeq();
+  const showsBoard = useMemo(() => deckShowsBoard(deck, tabs), [deck, tabs]);
+  const items = showsBoard ? plan?.items : undefined;
+  const itemTypes = showsBoard ? plan?.types : undefined;
   return useMemo(() => {
     // Read so the pictures redraw once the writing they draw has been laid out.
     void laidOut;
@@ -84,6 +109,8 @@ export function useSlideThumbnails(deck: Deck, tabs: Tab[]): Map<string, SlideTh
             svgBoxed(el, {
               ...art,
               tabFont: tab.font,
+              ...(items ? { items } : {}),
+              ...(itemTypes ? { itemTypes } : {}),
             }),
           );
         }
@@ -119,5 +146,5 @@ export function useSlideThumbnails(deck: Deck, tabs: Tab[]): Map<string, SlideTh
       });
     }
     return out;
-  }, [deck, tabs, iconsLoaded, laidOut]);
+  }, [deck, tabs, iconsLoaded, laidOut, items, itemTypes]);
 }

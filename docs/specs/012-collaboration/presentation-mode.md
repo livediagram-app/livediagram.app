@@ -37,6 +37,21 @@ right-click menu adds an **item slide**, the slide being that item rather than e
   elements are gone.
 - Adding one sends `UI · Added · ItemSlide`.
 
+### Board slides
+
+A whole Plan board can be a slide too: **Add to Slides** in the board's **Board** flyout (its element menu,
+[Plan board](../026-plan/plan-board.md)) adds a slide holding that board.
+
+- A board is an element, so a board slide is an ordinary slide: it belongs to the board's tab and names the board
+  in `elementIds`. Nothing new is stored, and it can be edited like any slide (add more elements to it, rename it).
+- Presenting it frames the board on the canvas like any slide, so it is the live board: its cards as they stand
+  now, in the tab's theme.
+- Its thumbnail draws the board's cards from the document's items, as an export does. The thumbnails redraw on an
+  item change only while a slide holds a board, so a deck without one costs nothing more.
+- The tile shows only where an item slide could be added (someone who may edit, with a deck), and adding one says
+  "Board added to the slides" to a screen reader, as a card does.
+- Adding one sends `UI · Added · BoardSlide`.
+
 ### Why not layers
 
 Layers ([Layers](../006-document/layers.md)) were the obvious candidate and were considered in detail: they are already an ordered list of element groups with a management panel, drag-reorder, per-band preview thumbnails, and a local render override (hover-solo) that is exactly the "show these bands only, without touching persisted state" mechanism a presentation needs. Reusing them would have been cheap.
@@ -67,6 +82,9 @@ type Slide = {
   // the canvas shows that page's sheet alone. See
   // docs/specs/007-editor/illustrate-pages.md "Slides".
   pageId?: string;
+  // An item slide: a Plan card, presented full screen and resolved live
+  // (elementIds empty). See Item slides above.
+  itemId?: string;
   // What you mean to SAY over this slide. The slide's own, not any
   // element's. See Presenter notes below.
   notes?: string;

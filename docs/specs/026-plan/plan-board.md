@@ -46,7 +46,8 @@ Where each is set, so a setting lives with what it changes, never in one central
   **Remove Column**. Removing a column with cards first asks where they go (**Move and Remove**, or **Keep
   It**); the board's last column cannot be removed. Each change applies as it is made.
 - **The board's own settings** sit in its element menu (right-click the board, or the selection's ⋯), in two
-  flyouts: **Board** (**Title**; **Swimlanes**: No Swimlanes, By Assignee, By Card Type, By Priority, By Project, By Status) and
+  flyouts: **Board** (**Title**; **Swimlanes**: No Swimlanes, By Assignee, By Card Type, By Priority, By Project, By Status;
+  **Add to Slides**, the whole board as a slide, [Presentation mode](../012-collaboration/presentation-mode.md#board-slides)) and
   **Cards**: the **Card Size** (Minimal, Compact or Detailed, below) and what each card face shows besides its
   title, a tile per field pressed on or off. A field the chosen size cannot draw keeps its setting but its tile is
   dimmed, so the tiles always say what the cards show. New columns come from a column's **+ Add Column After**.

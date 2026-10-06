@@ -31,7 +31,7 @@ import {
 } from '@livediagram/document';
 
 import { track } from '@/lib/telemetry';
-import { useSlideThumbnails } from '@/hooks/ui/useSlideThumbnails';
+import { useSlideThumbnails, type ThumbnailPlan } from '@/hooks/ui/useSlideThumbnails';
 import {
   loadPresentationConfig,
   savePresentationConfig,
@@ -56,6 +56,7 @@ export function useSlideDeck({
   isReadOnly,
   saveDeck,
   loadAllTabs,
+  plan,
 }: {
   tabs: Tab[];
   activeTabId: string;
@@ -69,6 +70,8 @@ export function useSlideDeck({
   saveDeck?: (serialised: string | null) => void;
   /** Pulls every not-yet-loaded tab, so a deck can reach a tab nobody visited. */
   loadAllTabs?: () => Promise<void>;
+  /** The document's items and types, for a Plan board's thumbnail. */
+  plan?: ThumbnailPlan;
 }) {
   const [deck, setDeck] = useState<Deck>(EMPTY_DECK);
   // Which slide the PANEL has open. Separate from the presentation's own
@@ -144,7 +147,7 @@ export function useSlideDeck({
   // Present will run.
   const runnable = useMemo(() => presentableSlides(deck, tabs), [deck, tabs]);
   // Row previews, from the same headless renderer the Layers panel uses.
-  const thumbs = useSlideThumbnails(deck, tabs);
+  const thumbs = useSlideThumbnails(deck, tabs, plan);
 
   // --- Editing verbs --------------------------------------------------------
 
@@ -182,6 +185,18 @@ export function useSlideDeck({
       const slide: Slide = { id: crypto.randomUUID(), tabId: activeTabId, elementIds: [], itemId };
       commitDeck((prev) => ({ slides: [...prev.slides, slide] }));
       track('UI', 'Added', 'ItemSlide');
+    },
+    [activeTabId, commitDeck, isReadOnly],
+  );
+
+  // A whole Plan board as a slide (docs/specs/012-collaboration/presentation-mode.md "Board slides"): an
+  // ordinary slide naming the board element, so presenting frames the live board on the canvas.
+  const newBoardSlide = useCallback(
+    (boardId: string) => {
+      if (isReadOnly) return;
+      const slide: Slide = { id: crypto.randomUUID(), tabId: activeTabId, elementIds: [boardId] };
+      commitDeck((prev) => ({ slides: [...prev.slides, slide] }));
+      track('UI', 'Added', 'BoardSlide');
     },
     [activeTabId, commitDeck, isReadOnly],
   );
@@ -411,6 +426,7 @@ export function useSlideDeck({
     newSlideFromSelection,
     newPageSlide,
     newItemSlide,
+    newBoardSlide,
     addSelectionToSlide,
     removeFromSlide,
     renameSlide,
