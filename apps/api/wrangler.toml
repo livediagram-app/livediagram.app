@@ -38,6 +38,24 @@ compatibility_date = "2026-05-29"
 # per IP) remains the only other control.
 AI_ALLOWED_ORIGINS = "https://www.livediagram.app,https://livediagram.app"
 
+# Guest signature enforcement (docs/specs/015-api/public-api-and-tokens.md §4). Stated here,
+# never only in the dashboard: every `wrangler deploy` replaces the worker's
+# plain vars with the ones this file declares, so a dashboard-only value is
+# silently wiped by the next deploy.
+#
+# GUEST_SIGNING_LIVE_AT: when production started signing guest ids. The
+# GUEST_ID_HMAC_SECRET sync shipped with the deploy that started
+# 2026-09-25T12:00:41Z, and the first signed upgrade landed at 12:03:44Z, so
+# 12:00:00Z is the latest instant at which every existing id was unsigned. An id
+# whose participant row is older may still run its one-time upgrade unsigned.
+#
+# GUEST_SIG_ENFORCE_AFTER: from this instant, owner-scoped routes, the room's
+# owner leg and the legacy upgrade require a valid guest signature (2026-10-06).
+# `pnpm dev` and the e2e stack blank it (see apps/api/package.json and
+# scripts/e2e-stack.mjs), as they do AI_ALLOWED_ORIGINS.
+GUEST_SIGNING_LIVE_AT = "1790337600000"
+GUEST_SIG_ENFORCE_AFTER = "1791244800000"
+
 # The CLI signs in through the MCP worker's OAuth server (docs/specs/015-api/cli.md "Authentication"); the
 # api names it in /api/capabilities. CLI_MIN_VERSION (unset until a release needs a floor) refuses writes
 # from an older CLI.
@@ -362,6 +380,12 @@ RESEND_FROM = "livediagram staging <hello@livediagram.app>"
 # environment is reproducible from the repo alone — see docs/specs/016-platform/staging-environment.md "Known sharp
 # edge".
 AI_ALLOWED_ORIGINS = "https://staging.livediagram.app"
+
+# Guest signature enforcement, matching production (see the top-level [vars]).
+# Staging's own database dates from 2026-09-17 and signs with its own secret;
+# its test guests take the same dates rather than drift from production.
+GUEST_SIGNING_LIVE_AT = "1790337600000"
+GUEST_SIG_ENFORCE_AFTER = "1791244800000"
 
 # The staging MCP worker's OAuth server, for the CLI against staging.
 OAUTH_ISSUER = "https://mcp-staging.livediagram.app"

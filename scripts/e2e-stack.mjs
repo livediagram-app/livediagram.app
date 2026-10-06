@@ -549,6 +549,10 @@ async function main() {
       // the signed-id upgrade a fresh guest goes through runs here too. A test-only secret.
       '--var',
       'GUEST_ID_HMAC_SECRET:e2e-guest-signing-secret',
+      // Enforcement is on in production's [vars]; the specs' api seeding still
+      // sends unsigned X-Owner-Id, so the stack keeps it off (blank = unset).
+      '--var',
+      'GUEST_SIG_ENFORCE_AFTER:',
       // Verify session tokens against the stack's own key (E2E_CLERK_JWKS above), never a real
       // Clerk instance a developer's .dev.vars may name.
       ...(CLERK_JWKS

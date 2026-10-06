@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { presetSetup } from '@livediagram/items';
 import type { Comment, ElementDelta, ShapeElement } from './index';
 import {
   IDEA_MAX_CARDS,
@@ -230,5 +231,44 @@ describe('comment-rekey when the server copy arrived first (docs/specs/012-colla
       { kind: 'comment-rekey', from: 'local', to: 'server' },
     );
     expect(el.commentThread?.comments).toEqual([{ ...serverCopy, authorId: 'me' }]);
+  });
+});
+
+// A Plan board's set-up (docs/specs/012-collaboration/collab-race-hardening.md, phase 6).
+describe('board deltas', () => {
+  const setup = presetSetup('kanban');
+  const boardEl = (over: Partial<ShapeElement> = {}): ShapeElement =>
+    card({ id: 'b', shape: 'plan-board', planBoard: setup, ...over });
+  const todo = setup.columns[1]!.id;
+  const renamed = {
+    ...setup,
+    columns: setup.columns.map((c) => (c.id === todo ? { ...c, name: 'Ready' } : c)),
+  };
+
+  it('applies a set-up patch, and ignores one for an element with no board', () => {
+    const delta: ElementDelta = {
+      kind: 'board',
+      patch: { columns: { [todo]: { set: { name: 'Ready' } } } },
+    };
+    expect((applyElementDelta(boardEl(), delta) as ShapeElement).planBoard).toEqual(renamed);
+    const plain = card();
+    expect(applyElementDelta(plain, delta)).toBe(plain);
+  });
+
+  it('keeps our set-up through a peer whole-element copy, but takes an agent copy', () => {
+    const ours = boardEl({ planBoard: renamed });
+    const theirs = boardEl({ x: 50 });
+    const merged = mergeIncomingElement(ours, theirs) as ShapeElement;
+    expect(merged.x).toBe(50);
+    expect(merged.planBoard).toBe(renamed);
+    expect(
+      (mergeIncomingElement(ours, theirs, { keepBoard: false }) as ShapeElement).planBoard,
+    ).toBe(setup);
+  });
+
+  it('counts a set-up-only change as delta-carried, but not a set-up appearing', () => {
+    expect(elementChangeIsDeltaOnly(boardEl(), boardEl({ planBoard: renamed }))).toBe(true);
+    expect(elementChangeIsDeltaOnly(boardEl(), boardEl({ planBoard: renamed, x: 9 }))).toBe(false);
+    expect(elementChangeIsDeltaOnly(card({ shape: 'plan-board' }), boardEl())).toBe(false);
   });
 });

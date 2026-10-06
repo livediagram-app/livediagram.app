@@ -4,6 +4,12 @@ import { debugLog } from '@/lib/debug-log';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ItemsRoomOp } from '@livediagram/api-schema';
 import {
+  applyItemComment,
+  createComment,
+  keepOwnCommentAuthors,
+  type ItemCommentChange,
+} from '@livediagram/document';
+import {
   EMPTY_ITEM_STORE,
   applyItemWrite,
   inverseItemWrites,
@@ -15,7 +21,14 @@ import {
   type ItemStoreState,
   type ItemWrite,
 } from '@livediagram/items';
-import { fetchItems, writeItem, type ItemsScope } from '@/lib/api/items';
+import {
+  fetchItems,
+  writeItem,
+  writeItemComment,
+  type ItemCommentAction,
+  type ItemsScope,
+} from '@/lib/api/items';
+import { track } from '@/lib/telemetry';
 import { useAssignRef, useLatest } from '@/hooks/ui/useLatest';
 import type { ItemUndoStep } from './item-undo-journal';
 
@@ -37,6 +50,11 @@ export type PlanItems = {
   writeQuiet: (write: ItemWrite) => Promise<boolean>;
   receive: (op: ItemsRoomOp) => void;
   refetch: () => void;
+  // A card's comment change (docs/specs/026-plan/items.md "Comments"): applied now, sent, settled on the
+  // answer. Outside Undo, as the canvas's comments are.
+  comment: (itemId: string, action: ItemCommentAction) => Promise<boolean>;
+  // This person's owner id: the author id their own comments carry (the delete-own check).
+  ownerId: string;
 };
 
 // The document's item store in the editor (docs/specs/026-plan/items.md, blueprint item-store.md
@@ -141,7 +159,12 @@ export function usePlanItems(opts: {
     (op: ItemsRoomOp) => {
       const gap = op.rev > serverRevRef.current + 1;
       serverRevRef.current = Math.max(serverRevRef.current, op.rev);
-      setStore((prev) => mergeItemChanges(prev, op.upserts, op.removed, op.rev));
+      setStore((prev) => {
+        // The room's copy carries no comment author ids; ours keep the ones the api answered us with.
+        const byId = new Map(prev.items.map((i) => [i.id, i]));
+        const upserts = op.upserts.map((u) => keepOwnCommentAuthors(byId.get(u.id), u));
+        return mergeItemChanges(prev, upserts, op.removed, op.rev);
+      });
       // A tab-scoped session hears the rev without the items; anyone may have missed one.
       if (gap || (op.upserts.length === 0 && op.removed.length === 0)) {
         debugLog('[items] items.refetch.gap', { rev: op.rev });
@@ -217,7 +240,58 @@ export function usePlanItems(opts: {
     [send],
   );
 
+  const comment = useCallback(
+    async (itemId: string, action: ItemCommentAction): Promise<boolean> => {
+      const s = scopeRef.current;
+      const by = selfRef.current;
+      if (!s || !by) return false;
+      // Literal pairs, so the telemetry manifest test sees each one.
+      if (action.kind === 'add') track('Comment', 'Added', 'Item');
+      else if (action.kind === 'delete') track('Comment', 'Deleted', 'Item');
+      else if (action.resolved) track('Comment', 'Resolved', 'Item');
+      else track('Comment', 'Unresolved', 'Item');
+      // Shown at once; the api's answer (its own comment id, its stamp) replaces it.
+      const item = storeRef.current.items.find((i) => i.id === itemId);
+      const change: ItemCommentChange =
+        action.kind === 'add'
+          ? {
+              kind: 'add',
+              comment: createComment(action.text, { id: ownerId, name, color }, action.mentions),
+            }
+          : action.kind === 'delete'
+            ? { kind: 'remove', commentId: action.commentId }
+            : action;
+      const local = item ? applyItemComment(item, change, { now: Date.now(), by }) : null;
+      if (local?.ok) {
+        const next = {
+          ...storeRef.current,
+          items: storeRef.current.items.map((i) => (i.id === itemId ? local.item : i)),
+        };
+        storeRef.current = next;
+        setStore(next);
+      }
+      try {
+        const answer = await writeItemComment(s, itemId, action, { ownerId, by });
+        if (answer) {
+          if (answer.rev >= 0) serverRevRef.current = Math.max(serverRevRef.current, answer.rev);
+          setStore((prev) => mergeItemChanges(prev, answer.upserts, answer.removed, answer.rev));
+        }
+        return true;
+      } catch (err) {
+        console.warn('[items] items.comment.failed', { kind: action.kind, error: String(err) });
+        callbacks.current.onError(
+          (err as { code?: string }).code === 'comments_full'
+            ? 'This card holds the most comments it can'
+            : "Couldn't save that comment",
+        );
+        void load();
+        return false;
+      }
+    },
+    [load, callbacks, scopeRef, selfRef, ownerId, name, color],
+  );
+
   const items = useMemo(() => new Map(store.items.map((i) => [i.id, i])), [store.items]);
 
-  return { store, items, status, self, write, writeQuiet, receive, refetch };
+  return { store, items, status, self, write, writeQuiet, receive, refetch, comment, ownerId };
 }

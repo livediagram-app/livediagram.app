@@ -28,8 +28,10 @@ type HelpArticleLinkProps = {
    * `button`: a full button (help glyph + "Help" label) that matches a
    *   neighbouring primary button's shape but stays neutral, not brand —
    *   for header action rows (e.g. beside the explorer "+ Create" button).
+   * `labelled`: the `icon` look with a small "Help" after the `?`, for a header row of labelled
+   *   ghost controls where a lone `?` reads as a stray mark (the Plan item panel).
    */
-  variant?: 'icon' | 'text' | 'button';
+  variant?: 'icon' | 'text' | 'button' | 'labelled';
   /**
    * Hit-box for the `icon` variant, mirroring DialogCloseButton's own two
    * blessed shapes so the `?` and the `×` beside it are the same target:
@@ -132,6 +134,25 @@ export function HelpArticleLink({
   // visual mass than an X at the same type size. `shrink-0` so an inline
   // placement beside a long control label never squashes it.
   // A 44px tap area on a touch screen either way (`touch-target`).
+  if (variant === 'labelled') {
+    return (
+      <HoverCard title={title} description={description}>
+        <a
+          {...common}
+          aria-label={title}
+          className={`relative touch-target inline-flex h-8 shrink-0 items-center gap-1 rounded-md px-2 text-[12px] font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100${
+            className ? ` ${className}` : ''
+          }`}
+        >
+          <span aria-hidden className="text-[14px] font-semibold leading-none">
+            ?
+          </span>
+          Help
+        </a>
+      </HoverCard>
+    );
+  }
+
   const box = `relative touch-target ${size === 'md' ? 'h-7 w-7 text-[15px]' : 'h-5 w-5 text-[13px]'}`;
   return (
     <HoverCard title={title} description={description}>

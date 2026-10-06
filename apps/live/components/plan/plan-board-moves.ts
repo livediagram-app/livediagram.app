@@ -2,6 +2,7 @@
 // pure functions of the board: the move a drop makes (its column, its place, and its row's field when
 // the board has rows).
 import {
+  laneDropPatch,
   type BoardProjection,
   type Item,
   type ItemMove,
@@ -23,11 +24,13 @@ export function cellStatus(
     : columnStatus;
 }
 
-export function laneMove(lane: LaneHead | undefined): Pick<ItemMove, 'set' | 'clear' | 'type'> {
-  // A status row moves the card by its status, which the move itself carries.
-  if (!lane || !lane.field || lane.field === 'status') return {};
-  if (lane.field === 'type') return typeof lane.value === 'string' ? { type: lane.value } : {};
-  return lane.value === null ? { clear: [lane.field] } : { set: { [lane.field]: lane.value } };
+// What a drop into a row sets on the card (or on a new card, `item` absent): the shared rule in
+// @livediagram/items. A status row moves the card by its status, which the move itself carries.
+export function laneMove(
+  lane: LaneHead | undefined,
+  item?: Pick<Item, 'fields'>,
+): Pick<ItemMove, 'set' | 'clear' | 'type'> {
+  return laneDropPatch(lane, item);
 }
 
 // The row the board shows an item in, or undefined when the board does not show it.
@@ -56,7 +59,7 @@ export function boardMoveFor(
   itemId: string,
   slot: PlanDropSlot,
 ): ItemMove | null {
-  const withLanes = setup.swimlaneBy !== 'none';
+  const withLanes = projection.swimlanes;
   const lane = projection.lanes.find((l) => l.key === slot.laneKey);
   const currentLane = laneOfItem(projection, itemId);
   const shown = currentLane !== undefined;
@@ -71,6 +74,6 @@ export function boardMoveFor(
   return {
     status,
     before: slot.beforeId,
-    ...(withLanes && currentLane !== slot.laneKey ? laneMove(lane) : {}),
+    ...(withLanes && currentLane !== slot.laneKey ? laneMove(lane, item) : {}),
   };
 }

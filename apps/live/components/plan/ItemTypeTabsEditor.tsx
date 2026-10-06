@@ -2,13 +2,16 @@
 
 // The type editor's tabs (docs/specs/026-plan/item-types.md "Editing a type"). Each field row of Fields
 // carries a TabPicker: Details, one of the tabs, or New Tab… (a name field: Enter makes the tab and files the
-// field on it). TabsList, under Fields, renames, moves (↑ ↓) and removes tabs (their fields go to Details).
-// A tab left with no fields is dropped when the type is saved (withoutEmptyTabs). Edits a draft; the type
+// field on it). TabsList, under Fields, renames Details, and renames, moves (↑ ↓) and removes tabs (their fields
+// go to Details); Overview is renamed but never removed. A tab left with no fields is dropped when the type is
+// saved (withoutEmptyTabs), Overview aside. Edits a draft; the type
 // editor saves it.
 import { useState } from 'react';
 import {
+  DETAILS_LABEL_DEFAULT,
   ITEM_TYPE_TAB_LABEL_MAX,
   ITEM_TYPE_TABS_MAX,
+  OVERVIEW_TAB_ID,
   newTabId,
   type ItemTypeTab,
 } from '@livediagram/items';
@@ -57,20 +60,25 @@ export function fileOnNamedTab(
   return [...fileField(tabs, field, null), { id, label, fields: [field] }];
 }
 
-// What is saved: the tabs that hold a field.
+// Overview is kept, like Details: renamed, never removed (docs/specs/026-plan/item-types.md "Tabs").
+export const isKeptTab = (t: ItemTypeTab) => t.id === OVERVIEW_TAB_ID;
+
+// What is saved: the tabs that hold a field, and Overview.
 export function withoutEmptyTabs(tabs: readonly ItemTypeTab[]): ItemTypeTab[] {
-  return tabs.filter((t) => t.fields.length > 0);
+  return tabs.filter((t) => t.fields.length > 0 || isKeptTab(t));
 }
 
 export function TabPicker({
   field,
   label,
   tabs,
+  detailsLabel = DETAILS_LABEL_DEFAULT,
   onChange,
 }: {
   field: string;
   label: string;
   tabs: readonly ItemTypeTab[];
+  detailsLabel?: string;
   onChange: (tabs: ItemTypeTab[]) => void;
 }) {
   const [naming, setNaming] = useState(false);
@@ -90,7 +98,8 @@ export function TabPicker({
         placeholder="Tab name, then Enter"
         maxLength={ITEM_TYPE_TAB_LABEL_MAX}
         value={name}
-        className={`${FIELD_CLASS} w-32 shrink-0 py-1 text-[12px]`}
+        // FIELD_CLASS is full width; this sits in the row where the picker was, at the picker's width.
+        className={`${FIELD_CLASS.replace('w-full', '')} w-32 shrink-0 py-1 text-[12px]`}
         onChange={(e) => setName(e.target.value)}
         onKeyDown={(e) => {
           e.stopPropagation();
@@ -117,7 +126,7 @@ export function TabPicker({
         else onChange(fileField(tabs, field, e.target.value || null));
       }}
     >
-      <option value="">Details</option>
+      <option value="">{detailsLabel || DETAILS_LABEL_DEFAULT}</option>
       {tabs.map((t) => (
         <option key={t.id} value={t.id}>
           {t.label || 'Untitled tab'}
@@ -130,19 +139,31 @@ export function TabPicker({
 
 export function TabsList({
   tabs,
+  detailsLabel,
+  onDetailsLabel,
   onChange,
 }: {
   tabs: readonly ItemTypeTab[];
+  // What this type calls Details: renamed here, never moved or removed.
+  detailsLabel: string;
+  onDetailsLabel: (label: string) => void;
   onChange: (tabs: ItemTypeTab[]) => void;
 }) {
-  if (tabs.length === 0)
-    return (
-      <p className="text-[12px] text-slate-500 dark:text-slate-400">
-        No tabs: every field shows in Details. Choose New Tab… beside a field to make one.
-      </p>
-    );
   return (
     <ul className="flex flex-col gap-1.5" aria-label="Tabs">
+      <li className="flex items-center gap-1.5">
+        <input
+          aria-label="Details name"
+          className={FIELD_CLASS}
+          value={detailsLabel}
+          maxLength={ITEM_TYPE_TAB_LABEL_MAX}
+          placeholder={DETAILS_LABEL_DEFAULT}
+          onChange={(e) => onDetailsLabel(e.target.value)}
+        />
+        <span className="w-[10.375rem] shrink-0 pr-2 text-right text-[11px] text-slate-500 dark:text-slate-400">
+          Side column
+        </span>
+      </li>
       {tabs.map((t, i) => (
         <li key={t.id} className="flex items-center gap-1.5">
           <input
@@ -178,14 +199,19 @@ export function TabsList({
           >
             <ArrowDownIcon size={14} />
           </button>
-          <button
-            type="button"
-            className={ICON_BUTTON}
-            aria-label={`Remove ${t.label || 'tab'}`}
-            onClick={() => onChange(tabs.filter((x) => x.id !== t.id))}
-          >
-            <CloseIcon size={12} />
-          </button>
+          {isKeptTab(t) ? (
+            // Overview stays: the slot keeps the rows' controls lined up.
+            <span aria-hidden className="h-7 w-7 shrink-0" />
+          ) : (
+            <button
+              type="button"
+              className={ICON_BUTTON}
+              aria-label={`Remove ${t.label || 'tab'}`}
+              onClick={() => onChange(tabs.filter((x) => x.id !== t.id))}
+            >
+              <CloseIcon size={12} />
+            </button>
+          )}
         </li>
       ))}
     </ul>

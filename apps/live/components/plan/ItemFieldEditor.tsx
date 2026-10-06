@@ -25,6 +25,7 @@ import {
 } from './item-field-editors';
 import { CustomFieldEditor } from './CustomFieldEditor';
 import { ItemDescription } from './ItemDescription';
+import { ItemComments, type ItemCommentsContext } from './ItemComments';
 
 export const FIELD_LABELS: Partial<Record<ItemFieldId, string>> = {
   status: 'Status',
@@ -37,6 +38,7 @@ export const FIELD_LABELS: Partial<Record<ItemFieldId, string>> = {
   checklist: 'Checklist',
   parent: 'Parent',
   description: 'Description',
+  comments: 'Comments',
 };
 
 export function fieldLabel(type: ItemTypeDef, f: string): string {
@@ -45,7 +47,12 @@ export function fieldLabel(type: ItemTypeDef, f: string): string {
 
 // Fields whose editor is not one labelled control (a label `for` would point nowhere).
 export function labelsItsControl(type: ItemTypeDef, f: string): boolean {
-  return f !== 'checklist' && f !== 'description' && customFieldOf(type, f)?.kind !== 'checkbox';
+  return (
+    f !== 'checklist' &&
+    f !== 'description' &&
+    f !== 'comments' &&
+    customFieldOf(type, f)?.kind !== 'checkbox'
+  );
 }
 
 export type ItemFieldContext = {
@@ -61,6 +68,8 @@ export type ItemFieldContext = {
   onPatch: (patch: ItemPatch) => void;
   // Opens another item in the panel (the parent).
   onOpenItem: (itemId: string) => void;
+  // The card's comments (docs/specs/026-plan/items.md "Comments"); absent, the field draws nothing.
+  comments?: ItemCommentsContext;
 };
 
 export const fieldId = (item: Item, f: string) => `item-${item.id}-${f}`;
@@ -192,6 +201,10 @@ export function ItemFieldEditor({ f, ctx }: { f: string; ctx: ItemFieldContext }
     }
     case 'description':
       return <ItemDescription item={item} canEdit={canEdit} onPatch={ctx.onPatch} />;
+    case 'comments':
+      return ctx.comments ? (
+        <ItemComments item={item} canEdit={canEdit} comments={ctx.comments} />
+      ) : null;
     default:
       return null;
   }

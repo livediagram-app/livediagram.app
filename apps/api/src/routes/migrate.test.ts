@@ -5,8 +5,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 // header can't name an account (a harvestable Clerk id) and that, once
 // signature enforcement is armed, the source must prove possession too.
 
-const { migrateOwnerId } = vi.hoisted(() => ({ migrateOwnerId: vi.fn() }));
-vi.mock('../db', () => ({ migrateOwnerId }));
+const { migrateOwnerId, getParticipant } = vi.hoisted(() => ({
+  migrateOwnerId: vi.fn(),
+  getParticipant: vi.fn(),
+}));
+vi.mock('../db', () => ({ migrateOwnerId, getParticipant }));
 
 import { signOwnerId } from '../auth/owner-signature';
 import type { Env } from '../types';
@@ -33,6 +36,8 @@ async function flow2(
 }
 
 beforeEach(() => {
+  getParticipant.mockReset();
+  getParticipant.mockResolvedValue(null);
   migrateOwnerId.mockReset();
   migrateOwnerId.mockResolvedValue({ documents: 1, folders: 0, shared: 0, images: 0 });
 });
@@ -54,6 +59,42 @@ describe('POST /api/migrate flow 2 (legacy guest upgrade)', () => {
     const res = await flow2(LEGACY, { GUEST_SIG_ENFORCE_AFTER: '0' });
     expect(res.status).toBe(403);
     expect(migrateOwnerId).not.toHaveBeenCalled();
+  });
+
+  // Enforcement armed with a stated signing date: an id that existed before the
+  // deployment signed anything can still make its one-time upgrade unsigned.
+  describe('the legacy exception', () => {
+    const LIVE_AT = 1_000_000;
+    const armed = { GUEST_SIG_ENFORCE_AFTER: '0', GUEST_SIGNING_LIVE_AT: String(LIVE_AT) };
+
+    it('lets a pre-signing guest upgrade unsigned', async () => {
+      getParticipant.mockResolvedValue({ id: LEGACY, createdAt: LIVE_AT - 1 });
+      const res = await flow2(LEGACY, armed);
+      expect(res.status).toBe(200);
+      expect(migrateOwnerId).toHaveBeenCalledWith(expect.anything(), LEGACY, TARGET);
+    });
+
+    it('refuses an unsigned id minted after signing went live', async () => {
+      getParticipant.mockResolvedValue({ id: LEGACY, createdAt: LIVE_AT });
+      expect((await flow2(LEGACY, armed)).status).toBe(403);
+      expect(migrateOwnerId).not.toHaveBeenCalled();
+    });
+
+    it('refuses an unsigned id with no participant row', async () => {
+      expect((await flow2(LEGACY, armed)).status).toBe(403);
+      expect(migrateOwnerId).not.toHaveBeenCalled();
+    });
+
+    it('grants no exception when the signing date is not stated', async () => {
+      getParticipant.mockResolvedValue({ id: LEGACY, createdAt: 1 });
+      expect((await flow2(LEGACY, { GUEST_SIG_ENFORCE_AFTER: '0' })).status).toBe(403);
+    });
+
+    it('still refuses an account id, whatever its age', async () => {
+      getParticipant.mockResolvedValue({ id: 'user_victim', createdAt: 1 });
+      expect((await flow2('user_victim', armed)).status).toBe(403);
+      expect(migrateOwnerId).not.toHaveBeenCalled();
+    });
   });
 
   it('accepts a signed source once enforcement is armed', async () => {

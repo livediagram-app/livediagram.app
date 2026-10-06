@@ -20,17 +20,20 @@ describe('item type tabs', () => {
       custom: [{ id: 'f-notes', label: 'Notes', kind: 'longtext' }],
     };
     expect(tabsOf(withLong)).toEqual([
-      { id: OVERVIEW_TAB_ID, label: 'Overview', fields: ['description', 'checklist', 'f-notes'] },
+      {
+        id: OVERVIEW_TAB_ID,
+        label: 'Overview',
+        fields: ['description', 'checklist', 'f-notes', 'comments'],
+      },
     ]);
     expect(detailFieldsOf(withLong)).toEqual([
       'status',
       'assignee',
+      'parent',
       'priority',
       'estimate',
-      'start',
       'due',
       'labels',
-      'parent',
     ]);
   });
 

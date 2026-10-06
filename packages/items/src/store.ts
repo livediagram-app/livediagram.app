@@ -153,9 +153,9 @@ export function withCreateIds(write: ItemWrite, newId: () => string = newItemId)
   return { kind: 'create', creates: write.creates.map((c) => (c.id ? c : { ...c, id: newId() })) };
 }
 
-// An item as the create that makes it again: id, type, key, fields and votes (an undo of a delete).
+// An item as the create that makes it again: id, type, key, fields, votes and comments (an undo of a delete).
 export function itemAsCreate(item: Item): ItemCreate {
-  const { votes: _votes, ...fields } = item.fields;
+  const { votes: _votes, comments, ...fields } = item.fields;
   const votes = itemVotes(item);
   return {
     id: item.id,
@@ -163,6 +163,7 @@ export function itemAsCreate(item: Item): ItemCreate {
     key: item.key,
     fields,
     ...(Object.keys(votes).length ? { votes } : {}),
+    ...(comments !== undefined ? { comments } : {}),
   };
 }
 

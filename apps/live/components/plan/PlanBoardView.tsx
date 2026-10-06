@@ -159,7 +159,7 @@ export function PlanBoardView({
   }
 
   const lanes = projection.lanes;
-  const withLanes = setup.swimlaneBy !== 'none';
+  const withLanes = projection.swimlanes;
   const self = plan?.self ?? null;
   const spent = self ? votesSpent(projection, self.id) : 0;
   const votesLeft =

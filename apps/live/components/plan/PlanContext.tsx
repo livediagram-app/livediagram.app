@@ -6,6 +6,7 @@
 // bodies far below the editor state. Undefined outside the editor (share view, exports): a board
 // then draws read-only from nothing.
 import { createContext, useContext } from 'react';
+import type { ItemCommentAction } from '@/lib/api/items';
 import type {
   Item,
   ItemMove,
@@ -56,6 +57,10 @@ export type PlanContextValue = {
   patchItem: (itemId: string, patch: ItemPatch) => void;
   deleteItem: (itemId: string) => void;
   vote: (itemId: string, delta: 1 | -1) => void;
+  // A card's comment change (docs/specs/026-plan/items.md "Comments"); comments need participate access, as votes.
+  commentItem: (itemId: string, action: ItemCommentAction) => void;
+  // This person's owner id: the author id on their own comments, for the delete-own control.
+  ownerId: string;
   updateBoard: (boardId: string, setup: PlanBoardSetup) => void;
   // A card dragged off a board onto the canvas, at a canvas point: a Plan card is left there.
   placeCardOut: (itemId: string, x: number, y: number) => void;

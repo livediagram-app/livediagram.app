@@ -93,7 +93,7 @@ interface ItemMove extends ItemPlace {
 
 Returns `{ ok: true, fields }` or `{ ok: false, error: ItemRejection, field }`. Rejections are a closed union:
 `title_required`, `title_too_long`, `field_key_invalid`, `field_value_invalid`, `fields_too_many`,
-`fields_too_large`, `votes_read_only`, `type_invalid`, `id_invalid`, `place_invalid`.
+`fields_too_large`, `votes_read_only`, `comments_read_only`, `type_invalid`, `id_invalid`, `place_invalid`.
 
 | Kind      | Accepts                                                            |
 | --------- | ------------------------------------------------------------------ |
@@ -108,9 +108,11 @@ Returns `{ ok: true, fields }` or `{ ok: false, error: ItemRejection, field }`. 
 | checklist | ≤ `ITEM_CHECKLIST_MAX` rows `{ text ≤ 200, done boolean }`         |
 | item ref  | id string matching `ITEM_ID_PATTERN`                               |
 | votes     | rejected in create/patch (`votes_read_only`)                       |
+| comments  | rejected in create/patch and clear (`comments_read_only`)          |
 | unknown   | scalar, or array of ≤ 50 scalars; strings ≤ 2,000                  |
 
-- Keys match `ITEM_FIELD_KEY_PATTERN`; at most `ITEM_FIELDS_MAX` keys; serialised fields ≤ `ITEM_FIELDS_BYTES`.
+- Keys match `ITEM_FIELD_KEY_PATTERN`; at most `ITEM_FIELDS_MAX` keys; serialised fields ≤ `ITEM_FIELDS_BYTES`,
+  measured without `comments` (`fieldsByteSize`); the thread is measured on its own (`commentsByteSize`).
 - A type id matches `/^[a-z][a-z0-9-]{0,31}$/`.
 
 ### Rank
@@ -209,6 +211,8 @@ All under `/documents/:id/items`, auth `guest-or-clerk`, token-usable, registere
 | POST   | `/items/:itemId/vote` | participate | `{ delta: 1 \| -1 }`                        | `ItemResponse`      |
 | DELETE | `/items/:itemId`      | edit        |                                             | 204                 |
 
+Comment writes (below, "Comments") add four more under `/items/:itemId/comments`.
+
 - Tab-scoped grants: GET requires `tabId` matching the grant and filters to `itemIdsShownOnTab` of that tab's
   stored elements; writes require `tabId` (query) and the target id in that set (create: always allowed into the
   tab's scope).
@@ -219,6 +223,58 @@ All under `/documents/:id/items`, auth `guest-or-clerk`, token-usable, registere
   same request after the tabs.
 - The patch is a POST: the api's CORS admits GET, POST, PUT and DELETE only.
 - Routes live in `apps/api/src/routes/item-routes.ts`, dispatched from `document-subresource-routes.ts`.
+
+## Comments
+
+A card's thread (spec items.md "Comments") is the canvas's `CommentThread` in `fields.comments`.
+
+- **Ops** (`packages/document/src/comment-thread.ts`, pure, type-only imports): `threadWithComment(thread,
+comment, max)` (append unless present or full, `resolved: false`), `threadWithoutComment(thread, id)` (the last
+  takes the thread: `undefined`), `threadResolved(thread, resolved)`. Each returns the same thread when nothing
+  changes. `applyElementDelta`'s comment cases call them.
+- **Item writes** (`packages/document/src/item-comments.ts`; `@livediagram/document` already reads items, the
+  reverse would cycle): `ItemCommentChange = add { comment } | remove { commentId } | resolve { resolved }`;
+  `applyItemComment(item, change, ctx)` returns `{ ok, item }` (rev + 1, `updatedAt/By`) or a refusal:
+  `comments_full` (count ≥ `ITEM_COMMENTS_MAX`, or the thread past `ITEM_COMMENTS_BYTES`), `comment_not_found`,
+  `unchanged`. `itemThread(item)` reads a valid thread or `undefined`.
+- **Redaction**: `itemForViewer(item, owner)` keeps `authorId`/`tokenId` on the viewer's own comments only;
+  `itemForRoom(item)` strips all; `keepOwnCommentAuthors(local, incoming)` carries our author ids onto a room copy.
+  `readRestoredThread(raw, owner)` validates a restore's thread: author id kept only when it is the caller's,
+  token ids dropped, mentions `sanitizeMentions`; `null` when not a thread.
+- **Items package**: `ItemFieldId` `comments`, kind `comments`; `validateFields` / `validateClear` refuse it;
+  `ItemCreate.comments` (restore) set by `makeItem`; `itemAsCreate` moves it out of `fields`; `itemCommentCount`;
+  `BUILT_IN_FIELD_IDS` (before votes); `tabsOf`'s default Overview ends with it; every built-in type offers it
+  last (`ITEM_TYPES` maps `BUILT_IN_TYPES`); card field `comments` (after checklist; Compact and Detailed; in
+  `DEFAULT_CARD_FIELDS` and the work presets).
+- **REST** (`apps/api/src/routes/item-comment-routes.ts`, dispatched by `handleItemRoutes` on
+  `segments[5] === 'comments'`; each is a `writeItem`, so rev-guarded and relayed):
+
+  | Method | Path                                 | Gate                      | Body                  | Answers                        |
+  | ------ | ------------------------------------ | ------------------------- | --------------------- | ------------------------------ |
+  | POST   | `/items/:itemId/comments`            | participate               | `{ text, mentions? }` | `ItemResponse`                 |
+  | DELETE | `/items/:itemId/comments/:commentId` | participate; own, or edit | none                  | `ItemResponse`                 |
+  | POST   | `/items/:itemId/comments/resolve`    | participate               | none                  | `ItemResponse`, 204 if already |
+  | POST   | `/items/:itemId/comments/reopen`     | participate               | none                  | `ItemResponse`, 204 if already |
+
+  The comment is made by `newComment` (comment-routes.ts: text trimmed, ≤ `COMMENT_TEXT_MAX`, author name,
+  colour and id from the caller, token id for an agent); a post runs `afterCommentPosted` (timeline, owner email);
+  a resolve records `recordCommentResolved` keyed `<doc>:item:<itemId>`. Refusals: 400 text, 403 another's
+  comment, `404 comment_not_found`, `404 item_not_found`, `413 comments_full`, 409 `item_busy`.
+
+- **Every item answer** (list, create, bulk, patch, move, vote, comment) is `itemForViewer(item, caller.owner)`;
+  **every relay** is `itemForRoom`. A create's `comments` passes `readRestoredThread(raw, caller.owner)` (bad:
+  `field_value_invalid`). A Community copy writes items with `json_remove(fields, '$.comments')`.
+- **Editor**: `writeItemComment(scope, itemId, action, { ownerId, by })` in `lib/api/items.ts`
+  (`ItemCommentAction = add { text, mentions? } | delete { commentId } | resolve { resolved }`; 204 → `null`);
+  offline, `offlineWriteItemComment` applies `applyItemComment` to the record. `usePlanItems.comment(itemId,
+action)` tracks `Comment · Added|Deleted|Resolved|Unresolved · Item`, applies locally, sends, merges the answer;
+  a refusal toasts ("This card holds the most comments it can", else "Couldn't save that comment") and refetches.
+  `receive` runs `keepOwnCommentAuthors` before `mergeItemChanges`. `PlanContext.commentItem` and `ownerId`;
+  `PlanSheetsHost` hands `ItemPanel` `comments: { canComment: canVote, selfId: ownerId, onComment }`;
+  `ItemFieldEditor` draws `ItemComments` for `comments`, from the shared `comment-thread-parts.tsx`
+  (`CommentThreadList`, `CommentComposer`, `CommentResolveToggle`, also used by `CommentThreadPopover`).
+  `PlanCardFace` draws the count (`CommentIcon` and the number, label "n comments") when the field is shown and
+  the count is above 0.
 
 ## Live: room op
 
@@ -261,15 +317,20 @@ replays the write with the keys the first write was given. Votes push nothing.
 
 ## Errors and edge cases
 
-| Case                                            | Handling                                                      |
-| ----------------------------------------------- | ------------------------------------------------------------- |
-| Unknown type                                    | Kept; drawn with the fallback type (grey, generic glyph)      |
-| Card points at a missing item                   | "Item not found" face                                         |
-| Move relative to a neighbour that was deleted   | Falls back to the column end                                  |
-| Undo patch after someone else changed the field | Writes the old value anyway (last write wins), as canvas undo |
-| Create at the cap                               | `413 items_full`; toast "This document holds 2,000 items"     |
-| Room op arrives before the GET answer           | Kept; GET merges by higher rev                                |
-| Offline record without `items`                  | Empty store                                                   |
+| Case                                            | Handling                                                              |
+| ----------------------------------------------- | --------------------------------------------------------------------- |
+| Unknown type                                    | Kept; drawn with the fallback type (grey, generic glyph)              |
+| Card points at a missing item                   | "Item not found" face                                                 |
+| Move relative to a neighbour that was deleted   | Falls back to the column end                                          |
+| Undo patch after someone else changed the field | Writes the old value anyway (last write wins), as canvas undo         |
+| Create at the cap                               | `413 items_full`; toast "This document holds 2,000 items"             |
+| Comment on a full thread                        | `413 comments_full`; toast "This card holds the most comments it can" |
+| Delete a comment already gone                   | `404 comment_not_found`; the store refetches                          |
+| Resolve a resolved thread                       | 204, nothing written or relayed                                       |
+| Room copy lands after our answer                | Our own comments keep their author id (`keepOwnCommentAuthors`)       |
+| A type stops offering comments                  | The thread stays stored, unshown (like votes)                         |
+| Room op arrives before the GET answer           | Kept; GET merges by higher rev                                        |
+| Offline record without `items`                  | Empty store                                                           |
 
 ## Security and trust
 
@@ -280,35 +341,46 @@ replays the write with the keys the first write was given. Votes push nothing.
 - People on items (authors, voters) are keyed by `itemPersonId`, a one-way hash: a guest's owner id is their
   credential and never reaches an item.
 - Hide writing hides faces only; the api returns full items to anyone who may read.
+- Comment author ids are owner ids (a guest's credential): they reach only their author (`itemForViewer`), never
+  the room (`itemForRoom`), and a restore cannot claim someone else's (`readRestoredThread`). Author name and
+  colour are stamped server-side from the caller.
 
 ## Performance and limits
 
 - Worst case 2,000 items × 16 KB = 32 MB is refused by the GET's practical size: `ITEMS_MAX` × typical 0.5 KB
   = 1 MB; the GET streams one JSON array. The per-item cap bounds the row; D1's 1 MB row limit is never reached.
 - Projection is O(n log n) per board render, memoised on `(setup, items map identity)`.
-- Room op carries only the changed items.
+- Room op carries only the changed items. A card with a long thread (up to `ITEM_COMMENTS_BYTES`, 128 KB) sends
+  its whole thread with every write to it: typical threads are a few KB; the cap bounds the worst case.
 
 ## Observability
 
 Log fingerprints (console, `[items]`): `items.write.retry`, `items.write.busy`, `items.rejected <error>`,
-`items.refetch.gap`, `items.offline.write`. Api logs never include `fields`.
+`items.refetch.gap`, `items.offline.write`, `items.offline.comment`, `items.comment.failed` (editor),
+`comment added`, `comment deleted`, `comments resolved|reopened|unchanged`, `comments.full` (api). Api logs never
+include `fields` or comment text.
 
 ## Testing
 
-| Rule                                           | Test                                                                       |
-| ---------------------------------------------- | -------------------------------------------------------------------------- |
-| Validation per kind, every rejection           | `packages/items/src/fields.test.ts`                                        |
-| Rank always between, stable under repeats      | `rank.test.ts` (property: 1,000 random inserts)                            |
-| apply functions                                | `apply.test.ts`                                                            |
-| Quick add tokens                               | `quick-add.test.ts`                                                        |
-| Projection: columns, lanes, unplaced, quick    | `board.test.ts`                                                            |
-| Tab-scoped set                                 | `tab-items.test.ts`                                                        |
-| Routes: gates, rejections, keys, cascade, copy | `apps/api/src/routes/item-routes.test.ts`                                  |
-| Room op redacted for a tab-scoped session      | `apps/api/src/room-scope.test.ts`                                          |
-| Store transitions, inverses, sync order        | `packages/items/src/store.test.ts`                                         |
-| Undo interleaving                              | `apps/live/hooks/plan/item-undo-journal.test.ts`                           |
-| Agent verbs and tools                          | `agent-verbs/src/verbs/item.test.ts`, `apps/mcp/src/output-schema.test.ts` |
-| Offline store                                  | `apps/live/lib/offline/offline-items.test.ts`                              |
+| Rule                                           | Test                                                                                             |
+| ---------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| Validation per kind, every rejection           | `packages/items/src/fields.test.ts`                                                              |
+| Rank always between, stable under repeats      | `rank.test.ts` (property: 1,000 random inserts)                                                  |
+| apply functions                                | `apply.test.ts`                                                                                  |
+| Quick add tokens                               | `quick-add.test.ts`                                                                              |
+| Projection: columns, lanes, unplaced, quick    | `board.test.ts`                                                                                  |
+| Tab-scoped set                                 | `tab-items.test.ts`                                                                              |
+| Routes: gates, rejections, keys, cascade, copy | `apps/api/src/routes/item-routes.test.ts`                                                        |
+| Room op redacted for a tab-scoped session      | `apps/api/src/room-scope.test.ts`                                                                |
+| Store transitions, inverses, sync order        | `packages/items/src/store.test.ts`                                                               |
+| Undo interleaving                              | `apps/live/hooks/plan/item-undo-journal.test.ts`                                                 |
+| Agent verbs and tools                          | `agent-verbs/src/verbs/item.test.ts`, `apps/mcp/src/output-schema.test.ts`                       |
+| Offline store                                  | `apps/live/lib/offline/offline-items.test.ts`                                                    |
+| Comments field: read-only, budget, restore     | `packages/items/src/comments-field.test.ts`                                                      |
+| Thread ops, item writes, redaction, restore    | `packages/document/src/item-comments.test.ts`                                                    |
+| Comment routes: gates, own/edit delete, relay  | `apps/api/src/routes/item-comment-routes.test.ts`                                                |
+| Editor comment writes, room merge, refusals    | `apps/live/hooks/plan/usePlanItems.comments.test.ts`, `apps/live/lib/api/items-comments.test.ts` |
+| Panel thread and card count                    | `apps/live/components/plan/ItemComments.test.tsx`                                                |
 
 ## Constants and configuration
 
@@ -323,6 +395,8 @@ Log fingerprints (console, `[items]`): `items.write.retry`, `items.write.busy`, 
 | `ITEM_CHECKLIST_MAX`       | 50                        | Spec                                                    |
 | `ITEM_BULK_MAX`            | 200                       | A sync of a big offline doc batches                     |
 | `ITEM_WRITE_RETRIES`       | 3                         | As changesets' retry                                    |
+| `ITEM_COMMENTS_MAX`        | 200                       | Spec; a card's conversation, well past a real one       |
+| `ITEM_COMMENTS_BYTES`      | 131072                    | Spec; 200 × typical 0.5 KB; 32 KB–512 KB                |
 | `ITEM_REFETCH_DEBOUNCE_MS` | 400                       | Coalesces a burst of gaps                               |
 | `ITEM_ID_PATTERN`          | `/^[A-Za-z0-9_-]{6,32}$/` | Client ids are 12-char nanoid-style                     |
 | `ITEM_FIELD_KEY_PATTERN`   | `/^[A-Za-z0-9_-]{1,40}$/` | Spec                                                    |

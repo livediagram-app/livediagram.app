@@ -18,6 +18,9 @@ export const ITEM_BULK_MAX = 200;
 export const ITEM_VOTERS_MAX = 500;
 export const ITEM_VOTES_PER_PERSON_MAX = 99;
 export const ITEM_WRITE_RETRIES = 3;
+// A card's comment thread (docs/specs/026-plan/items.md "Comments"), outside ITEM_FIELDS_BYTES.
+export const ITEM_COMMENTS_MAX = 200;
+export const ITEM_COMMENTS_BYTES = 131_072;
 
 export const ITEM_ID_PATTERN = /^[A-Za-z0-9_-]{6,32}$/;
 export const ITEM_FIELD_KEY_PATTERN = /^[A-Za-z0-9_-]{1,40}$/;

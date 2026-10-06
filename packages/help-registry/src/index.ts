@@ -1270,9 +1270,9 @@ export const articles: Article[] = [
     slug: 'cards',
     title: 'Cards',
     description:
-      'Plan cards: add, open and fill one in, archive or trash it, and present it as a slide.',
+      'Plan cards: add, open and fill one in, comment on it, archive or trash it, and present it as a slide.',
     keywords:
-      'card cards ticket tickets plan card add card open card panel modal details tab tabs description rich text bullet list numbered list labels checklist steps parent open parent assignee team members trash restore empty trash archive duplicate slide slides present presentation card size',
+      'card cards ticket tickets plan card add card open card panel modal details tab tabs description rich text bullet list numbered list labels checklist steps parent open parent assignee team members comments comment thread resolve mention trash restore empty trash archive duplicate slide slides present presentation card size',
     category: 'Canvas',
     categorySlug: 'canvas/plan-mode',
     parentSlug: 'plan-mode',

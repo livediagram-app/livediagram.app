@@ -54,7 +54,8 @@ import {
 type ThreadVerb = 'reply' | 'resolve' | 'reopen';
 
 type Doc = NonNullable<Awaited<ReturnType<typeof getDocument>>>;
-type Caller = { doc: Doc; owner: string };
+export type CommentCaller = { doc: Doc; owner: string };
+type Caller = CommentCaller;
 
 const threadOf = (el: Element) => (el as { commentThread?: CommentThread }).commentThread;
 
@@ -117,8 +118,9 @@ async function readBody(ctx: RouteContext): Promise<Record<string, unknown> | Re
   }
 }
 
-// A new comment from the caller, its author fields server-stamped (and the token id, for an agent: PR23).
-async function newComment(
+// A new comment from the caller, its author fields server-stamped (and the token id, for an agent: PR23). A
+// Plan card's comment writes (item-routes.ts) post through it too (docs/specs/026-plan/items.md "Comments").
+export async function newComment(
   ctx: RouteContext,
   owner: string,
   body: Record<string, unknown>,
@@ -157,8 +159,13 @@ function appended(tab: TabDTO, elementId: string, comment: Comment): Mutation {
   };
 }
 
-// The timeline and the owner's email for a posted comment (add and reply alike).
-function afterPosted(ctx: RouteContext, caller: Caller, comment: Comment, reply: boolean): void {
+// The timeline and the owner's email for a posted comment (add and reply alike, on the canvas or on a card).
+export function afterCommentPosted(
+  ctx: RouteContext,
+  caller: Caller,
+  comment: Comment,
+  reply: boolean,
+): void {
   const { doc, owner } = caller;
   ctx.waitUntil?.(
     recordCommentAdded(
@@ -200,7 +207,7 @@ async function addComment(ctx: RouteContext, id: string, tabId: string): Promise
     return appended(tab, elementId, comment);
   });
   if (written instanceof Response) return written;
-  afterPosted(ctx, caller, comment, reply);
+  afterCommentPosted(ctx, caller, comment, reply);
   console.info('[comments] added', { documentId: id, tabId, agent: ctx.token !== null });
   return json({ comment }, { status: 201 });
 }
@@ -248,7 +255,7 @@ async function threadVerb(
       return host ? appended(tab, host.elementId, comment) : notFound();
     });
     if (written instanceof Response) return written;
-    afterPosted(ctx, caller, comment, true);
+    afterCommentPosted(ctx, caller, comment, true);
     console.info('[comments] replied', { documentId: id, tabId, agent: ctx.token !== null });
     return json({ comment }, { status: 201 });
   }

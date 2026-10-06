@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { guestSignatureEnforced, OWNER_SCOPED_SEGMENTS } from './guest-rest';
+import { guestSignatureEnforced, isLegacyGuestEra, OWNER_SCOPED_SEGMENTS } from './guest-rest';
 
 describe('guestSignatureEnforced', () => {
   const NOW = 1_000_000;
@@ -55,5 +55,19 @@ describe('OWNER_SCOPED_SEGMENTS', () => {
       'account',
     ])
       expect(OWNER_SCOPED_SEGMENTS.has(s)).toBe(false);
+  });
+});
+
+describe('isLegacyGuestEra', () => {
+  const env = { GUEST_SIGNING_LIVE_AT: '1000' };
+  it('is true only for a participant created before signing went live', () => {
+    expect(isLegacyGuestEra(env, 999)).toBe(true);
+    expect(isLegacyGuestEra(env, 1000)).toBe(false);
+    expect(isLegacyGuestEra(env, null)).toBe(false);
+  });
+  it('grants nothing when the date is unset or unreadable', () => {
+    expect(isLegacyGuestEra({}, 1)).toBe(false);
+    expect(isLegacyGuestEra({ GUEST_SIGNING_LIVE_AT: '' }, 1)).toBe(false);
+    expect(isLegacyGuestEra({ GUEST_SIGNING_LIVE_AT: 'soon' }, 1)).toBe(false);
   });
 });

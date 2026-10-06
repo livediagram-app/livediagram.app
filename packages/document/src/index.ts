@@ -465,6 +465,8 @@ export * from './behaviour-skin';
 // stored config below and by @livediagram/api-schema's wire `LivePoll`.
 export * from './poll-style';
 export * from './comments';
+export * from './comment-thread';
+export * from './item-comments';
 // The whole-document `livediagram.document` envelope and the per-tab JSON and Markdown export (the editor, the
 // Drive mirror and the CLI's pull files).
 export * from './document-envelope';
@@ -617,6 +619,7 @@ export * from './element-fingerprint';
 // Per-element deltas for the fields many participants write at once
 // (docs/specs/012-collaboration/collab-race-hardening.md): answers, ideas, checklist ticks, comments.
 export * from './element-deltas';
+export * from './plan-board-patch';
 
 // The room's record of those deltas, merged into each save so D1 keeps what
 // the room saw (docs/specs/012-collaboration/collab-race-hardening.md phase 3).
