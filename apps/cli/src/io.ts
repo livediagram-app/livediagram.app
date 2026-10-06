@@ -44,6 +44,17 @@ export type CliIo = {
   onInterrupt: (handler: () => void) => () => void;
   // A file shipped beside the CLI (the PNG renderer's wasm and font), read only when a render needs it.
   readAsset: (name: CliAsset) => Promise<Uint8Array>;
+  listenLoopback: () => Promise<LoopbackServer>;
+  // Opens a URL in the person's browser; false when no opener ran.
+  openUrl: (url: string) => Promise<boolean>;
 };
+
+// A one-shot HTTP listener on 127.0.0.1 for the browser sign-in's callback (blueprint "The CLI's OAuth client").
+export type LoopbackRequest = {
+  path: string;
+  query: URLSearchParams;
+  respond(status: number, html: string): void;
+};
+export type LoopbackServer = { port: number; next(): Promise<LoopbackRequest>; close(): void };
 
 export type CliAsset = 'resvg.wasm' | 'Inter-Regular.ttf';

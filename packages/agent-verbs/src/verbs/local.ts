@@ -89,20 +89,20 @@ export const apiCall = defineVerb({
 
 export const authLogin = defineVerb({
   id: 'auth.login',
-  summary: 'Sign in: a token from stdin',
+  summary: 'Sign in: the browser, --device, or a token from stdin',
   description:
-    'Stores an lvd_ API token for this profile, read from stdin with --with-token, after checking it with the api.',
+    'Signs in through the browser and stores the API token it gets for this profile; --device signs in with a code entered on another device; --with-token reads a token from stdin. The token is checked with the api, and the one it replaces is revoked.',
   behaviour: 'write',
   local: true,
-  input: z.object({ withToken: z.boolean().optional().describe('Read the token from stdin') }),
+  input: z.object({
+    withToken: z.boolean().optional().describe('Read the token from stdin'),
+    device: z.boolean().optional().describe('Sign in with a code entered on another device'),
+  }),
   output: z.object({ host: z.string(), account: z.string() }),
   text: ({ host, account }) => [`signed in to ${host} as ${account}`],
   cli: {
     positionals: [],
-    examples: [
-      'printf %s "$TOKEN" | livediagram auth login --with-token',
-      'livediagram auth login --with-token < token.txt',
-    ],
+    examples: ['livediagram auth login', 'livediagram auth login --device'],
     prints: 'the host and account signed in to',
   },
 });

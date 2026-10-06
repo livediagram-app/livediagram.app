@@ -3,7 +3,7 @@
 
 import { readFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
-import type { CliAsset, CliIo, RoomSocket } from '../io';
+import type { CliAsset, CliIo, LoopbackRequest, RoomSocket } from '../io';
 
 // The real assets, from the packages that ship them, so a suite renders real PNGs.
 const requireHere = createRequire(import.meta.url);
@@ -62,6 +62,10 @@ export type FakeIo = CliIo & {
   requests: Request[];
   slept: number[];
   sockets: FakeSocket[];
+  // URLs the CLI asked to open in a browser.
+  opened: string[];
+  // A browser visiting the loopback: the answer the CLI gave, once it gave one.
+  visit(url: string): Promise<{ status: number; html: string }>;
   // Moves the clock on, running each timer that falls due, in order.
   advance(ms: number): Promise<void>;
   interrupt(): void;
@@ -91,6 +95,9 @@ export function fakeIo(
   let timers: { at: number; seq: number; run: () => void }[] = [];
   let seq = 0;
   const interrupts = new Set<() => void>();
+  const opened: string[] = [];
+  const loopbackWaiting: ((r: LoopbackRequest) => void)[] = [];
+  const loopbackQueued: LoopbackRequest[] = [];
   return {
     // Quiet by default: a suite about the usage count turns it on with LIVEDIAGRAM_TELEMETRY: '1'.
     env: { LIVEDIAGRAM_TELEMETRY: '0', ...options.env },
@@ -127,6 +134,30 @@ export function fakeIo(
       },
       remove: async (path) => void fileMap.delete(path),
     },
+    listenLoopback: async () => ({
+      port: 4321,
+      next: () => {
+        const ready = loopbackQueued.shift();
+        return ready ? Promise.resolve(ready) : new Promise((r) => loopbackWaiting.push(r));
+      },
+      close: () => {},
+    }),
+    openUrl: async (url) => {
+      opened.push(url);
+      return true;
+    },
+    visit: (url) =>
+      new Promise((resolve) => {
+        const parsed = new URL(url);
+        const request: LoopbackRequest = {
+          path: parsed.pathname,
+          query: parsed.searchParams,
+          respond: (status, html) => resolve({ status, html }),
+        };
+        const take = loopbackWaiting.shift();
+        if (take) take(request);
+        else loopbackQueued.push(request);
+      }),
     readAsset: async (name) => new Uint8Array(await readFile(ASSET_PATHS[name])),
     openSocket: (url) => {
       const socket = fakeSocket(url);
@@ -165,6 +196,7 @@ export function fakeIo(
     requests,
     slept,
     sockets,
+    opened,
   };
 }
 

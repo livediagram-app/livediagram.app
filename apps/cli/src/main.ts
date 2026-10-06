@@ -5,7 +5,15 @@
 import { graphLint, renderSkill, type Verb, type VerbContext } from '@livediagram/agent-verbs';
 import { DOCUMENT_FORMAT } from '@livediagram/api-schema';
 import { resolveCredential } from './auth/credentials';
-import { callApi, guideOf, installSkill, login, logout, status } from './commands/local';
+import {
+  callApi,
+  guideOf,
+  installSkill,
+  login,
+  logout,
+  status,
+  type LoginInput,
+} from './commands/local';
 import { exportAll, type ExportInput } from './commands/export';
 import { pullDocument, type PullInput } from './commands/pull';
 import { pullFileOf, pullFileView, type ViewInput } from './commands/pull-file-views';
@@ -98,7 +106,7 @@ async function runOnline(
   }
   const http = transport(io, caps.apiBase, log);
   if (verb.id === 'auth.login')
-    return login(io, profile, http.forToken, input.withToken as boolean | undefined);
+    return login(io, profile, http.forToken, input as LoginInput, caps.oauthIssuer, log);
   const credential = await resolveCredential(io, profile.name);
   log(`credential ${credential?.source ?? 'none'}`);
   if (!credential)
