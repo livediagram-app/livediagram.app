@@ -203,8 +203,8 @@ element in the same colour.
 - The tool is picked whenever the mode changes, the first mode a tab opens in included; any tool can be picked
   after. An embedded viewer always starts on Hand.
 - Plan leaves **Eraser** and **Format** out ([Plan mode](../026-plan/plan-mode.md#tools)).
-- A Plan tab with content, and a tab in another mode with content, do not switch into or out of Plan
-  ([Plan mode](../026-plan/plan-mode.md#plan-keeps-its-own-tabs)).
+- Any tab switches into and out of Plan with everything on it kept: a board outside Plan is an element like any
+  other ([Plan mode](../026-plan/plan-mode.md#switching-modes-keeps-the-tab)).
 
 ## The palette per mode
 

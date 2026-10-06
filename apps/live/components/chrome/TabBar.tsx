@@ -245,7 +245,7 @@ export function TabBar({
     locked: tab.locked === true,
     opensIn: opensInFor?.(tab),
     // A Plan tab's cards are its document's items: it is not added to another document
-    // (docs/specs/026-plan/plan-mode.md "Plan keeps its own tabs").
+    // (docs/specs/026-plan/plan-mode.md "Switching modes keeps the tab").
     planTab: hasPlanContent(tab.elements, null),
     selfId,
     voteSelfId,

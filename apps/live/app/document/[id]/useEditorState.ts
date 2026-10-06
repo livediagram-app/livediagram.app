@@ -41,7 +41,6 @@ import {
   type Element,
   type ShapeElement,
   type Tab,
-  type EditorMode,
 } from '@livediagram/document';
 
 import { useWhiteboard } from '@/hooks/canvas/useWhiteboard';
@@ -68,7 +67,6 @@ import { editorModeShortcut } from '@/hooks/editor/editor-mode-shortcut';
 import { announce } from '@/lib/announcer';
 import { useSwitchSetsOpensIn, useTabOpensIn } from '@/hooks/editor/useTabOpensIn';
 import { useLeaveIllustrate } from '@/hooks/editor/useLeaveIllustrate';
-import { planHoldsTab, useLeavePlan } from '@/hooks/editor/useLeavePlan';
 import { usePortalSetters } from '@/hooks/canvas/usePortalSetters';
 import { useBehaviourElements } from '@/hooks/canvas/useBehaviourElements';
 import { useCollabElements } from '@/hooks/canvas/useCollabElements';
@@ -1188,17 +1186,12 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // An editor's switch also moves the tab's Opens in, so the two never disagree.
   const switchedMode = useSwitchSetsOpensIn(rawEditorMode, { tab: activeTab, canEdit, tickTabs });
   // Leaving Illustrate on a tab with articles asks first (turn them into Page elements, or keep).
-  const { editorMode: illustrateGuarded, leave: leaveIllustrate } = useLeaveIllustrate(
-    switchedMode,
-    { tab: activeTab, canEdit, commitTabs },
-  );
-  // A Plan tab with content stays in Plan: a switch away offers a new tab in that mode instead
-  // (docs/specs/026-plan/plan-mode.md "Plan keeps its own tabs"). useTabActions, below, supplies the new tab.
-  const addTabInRef = useRef<(mode: EditorMode) => void>(() => {});
-  const { editorMode, leavePlan } = useLeavePlan(illustrateGuarded, {
+  // Plan asks nothing: a board outside Plan is an element like any other
+  // (docs/specs/026-plan/plan-mode.md "Switching modes keeps the tab").
+  const { editorMode, leave: leaveIllustrate } = useLeaveIllustrate(switchedMode, {
     tab: activeTab,
     canEdit,
-    addTabIn: (mode) => addTabInRef.current(mode),
+    commitTabs,
   });
   const drawMode = editorMode.mode === 'draw';
   // The tool a mode starts with: Select, or Hand in Plan and on a phone; Plan leaves Eraser and Format
@@ -2148,7 +2141,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // the page below.
   const {
     addTab,
-    addTabIn,
     importIntoActiveTab,
     importTextIntoActiveTab,
     importSceneIntoActiveTab,
@@ -2183,7 +2175,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     confirm,
     toast,
   });
-  useAssignRef(addTabInRef, addTabIn);
 
   // Tab-folder membership (docs/specs/006-document/tab-folders.md), kept separate from the busy
   // useTabActions. Menu-only: drag-reorder lives above.
@@ -3205,9 +3196,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     onBringToFront: bringSelectedToFront,
     onSendToBack: sendSelectedToBack,
     onFitToScreen: fitToScreen,
-    onCycleEditorMode: editorModeShortcut(editorMode, announce, (next) =>
-      planHoldsTab(editorMode.mode, next, activeTab),
-    ),
+    onCycleEditorMode: editorModeShortcut(editorMode, announce),
     onDeselect: () => {
       setSelectedId(null);
       setMultiSelectedIds(new Set());
@@ -3244,7 +3233,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     // The person's editor mode on the active tab, for the mode switch and the canvas.
     editorMode,
     leaveIllustrate,
-    leavePlan,
     illustratePages: illustrateView,
     // A page slide presenting outside Illustrate draws its article's writing from these.
     presentArticles: articles,

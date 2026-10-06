@@ -69,21 +69,21 @@ Plan must cost nothing to a document that does not use it:
   tiles run taller than the room; on a phone it shows two tiles a row with shorter pictures.
 - Plan mode has no empty-canvas Quick Start banner: the board picker is its start.
 
-## Plan keeps its own tabs
+## Switching modes keeps the tab
 
+- **A tab switches into and out of Plan freely, whatever it holds, and nothing on it is lost.** Plan mode is how
+  a person works on the tab, never what the tab is: its boards, cards and views are elements every mode keeps,
+  and their work is items in the document, which no mode touches.
+- **In another mode a board is an element like any other**: it is drawn with its columns and cards, live as
+  items change, and is selected, moved, resized, copied, styled and deleted as any element is. Its cards do not
+  take the pointer or the keyboard there; switching back to Plan makes them work again.
+- **A diagram is welcome in Plan**: a tab's shapes, ink, arrows and pages stay on it in Plan mode, worked the Diagram
+  way (Plan's palette offers fewer of them, nothing more).
+- The mode switch and **Shift+D** switch at once, with no question, as between any two modes; Shift+D announces
+  the mode it reached.
 - A tab with Plan content is never added to another document: the tab menu's **Add to Document** is off for it,
   as its cards are this document's items.
-
-- **A Plan tab with anything on it stays in Plan mode, and a tab in another mode with anything on it does not
-  become a Plan tab.** Boards and cards are worked the Plan way on a tab of their own; a board in another mode is
-  only a picture of them, and a diagram is not a board. The mode switch and **Shift+D** do not cross that line.
-- Asking to leave opens **This Tab Stays in Plan Mode**; asking to enter opens **Plan Mode Needs Its Own Tab**.
-  Each says why and offers **Create a New Tab**: a new tab, opening in the mode asked for, becomes the active
-  tab (with its template picker, as any new tab). **Cancel** stays. Shift+D announces nothing it did not do; the
-  dialog speaks for itself.
-- An empty tab switches freely, into Plan and out of it.
-- A visitor who cannot edit has no switch, so meets none of this.
-- Telemetry: a tab made from the dialog is an ordinary new tab, `Tab` · `Created`.
+- Telemetry: a switch is the existing mode event (`Editor` · `Changed` · `ModePlan`, ...), nothing more.
 
 ## Tools
 

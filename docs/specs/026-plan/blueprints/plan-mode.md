@@ -77,13 +77,14 @@ boolean }`; `setExperimentalModeEnabled(mode, on)`. `EXPERIMENTAL_EDITOR_MODES =
 | Templates open in Plan         | `template-modes.test.ts`, `template-tab.test.ts` |
 | Template set-ups validate, fit | `template-builders-plan.test.ts`                 |
 | Shift+D wraps over four        | `e2e/editor-modes.spec.ts`                       |
+| A board survives a mode switch | `e2e/editor-modes.spec.ts`                       |
 
 ## Tabs and tools
 
-- `useLeavePlan` (`hooks/editor/useLeavePlan.ts`): `planHoldsTab(mode, next, tab)` is a switch across Plan's
-  line (into or out of `plan`) on a tab with elements; `setMode` then opens `LeavePlanDialog` (title by
-  direction) whose Create a New Tab calls `useTabActions.addTabIn(next)`. Shift+D (`editorModeShortcut`) stays
-  quiet when it is held.
+- No mode lock ([Switching modes keeps the tab](../plan-mode.md#switching-modes-keeps-the-tab)): the mode switch
+  and Shift+D (`editorModeShortcut`) call `setMode` straight, whatever the tab holds. Outside Plan,
+  `usePlanSlice` sets `planInput: false`, so `PlanBoardView`, `PlanCardView` and the views draw read-only and the
+  board is selected and moved as an element; items keep loading by content (`hasPlanContent`), not by mode.
 - `useModeDefaultTool` (`hooks/editor/useModeDefaultTool.ts`): `modeDefaultTool(mode, mobile)` is `pan` for Plan
   or a phone, else `select`, picked when the mode changes (embeds keep `pan`); `PLAN_LEFT_OUT_TOOLS` (Eraser,
   Format) fall back to `pan` in Plan, are refused by `pickCanvasTool`, and `buildCanvasToolOptions({ planMode })`
