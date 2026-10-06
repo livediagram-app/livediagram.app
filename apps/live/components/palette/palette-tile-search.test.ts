@@ -6,6 +6,7 @@ import type { Element } from '@livediagram/document';
 import {
   elementSignature,
   elementTileSections,
+  mergeByName,
   modeElementTiles,
   rankTiles,
   searchElementTiles,
@@ -184,6 +185,24 @@ describe('tile and element signatures', () => {
         t.action.type === 'icon' || t.action.type === 'tech-icon' || t.action.type === 'sticker',
     );
     for (const t of catalogue) expect(tileSignature(t), t.id).toBeNull();
+  });
+});
+
+describe('mergeByName', () => {
+  const t = (id: string) => tileById(id)!;
+
+  it('puts a name match from a later list above a keyword-only match from an earlier one', () => {
+    // "flowchart" is a keyword of the diamond; "Gantt Chart" is the Gantt view's name.
+    expect(ids(mergeByName('chart', [t('shapes:diamond')], [t('plan:view-gantt')]))).toEqual([
+      'plan:view-gantt',
+      'shapes:diamond',
+    ]);
+  });
+
+  it('keeps list order among equals, and on an empty query', () => {
+    const lists = [[t('shapes:square')], [t('shapes:circle')]];
+    expect(ids(mergeByName('', ...lists))).toEqual(['shapes:square', 'shapes:circle']);
+    expect(ids(mergeByName('zz', ...lists))).toEqual(['shapes:square', 'shapes:circle']);
   });
 });
 

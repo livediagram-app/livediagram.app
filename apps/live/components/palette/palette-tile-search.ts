@@ -161,6 +161,26 @@ export function rankTiles(query: string, tiles: readonly PaletteTileDef[]): Pale
     .map((r) => r.tile);
 }
 
+/** Lists already ranked on their own (element tiles, then each catalogue's), merged into one by
+ *  how well the NAME matches: exact, prefix, substring, then keyword only. Without it a name match
+ *  in a later list ("Bar chart", an icon) sat below a keyword-only match in an earlier one (the
+ *  diamond, a "flowchart" shape). Ties keep list order, so element tiles lead among equals. An
+ *  empty query keeps the lists in order. */
+export function mergeByName(
+  query: string,
+  ...lists: readonly PaletteTileDef[][]
+): PaletteTileDef[] {
+  const all = lists.flat();
+  const q = query.trim();
+  if (!q) return all;
+  const rank = (t: PaletteTileDef) =>
+    Math.min(3, paletteRank(q, { name: tileDisplayName(t), keywords: '' }));
+  return all
+    .map((tile, i) => ({ tile, i, rank: rank(tile) }))
+    .sort((a, b) => a.rank - b.rank || a.i - b.i)
+    .map((r) => r.tile);
+}
+
 /** Every element tile, split: the ones the mode's palette offers (layout order) and the ones only
  *  another mode's does. Image-upload tiles are left out without image support, as in every grid. */
 export function elementTileSections({

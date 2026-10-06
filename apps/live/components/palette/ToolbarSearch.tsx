@@ -10,7 +10,7 @@ import { SearchInput } from '@/components/primitives/SearchInput';
 import { TOOLBAR_TRIGGER_TONE } from './PaletteDropdown';
 import { PaletteTileGrid, tileHandler, type PaletteTileActions } from './PaletteTileGrid';
 import type { PaletteTileDef } from './palette-tile-defs';
-import { searchElementTiles } from './palette-tile-search';
+import { mergeByName, searchElementTiles } from './palette-tile-search';
 import { searchCatalogueTiles } from './palette-catalogue-search';
 import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
 import { markerTiles } from './palette-marker-tiles';
@@ -95,9 +95,9 @@ export function ToolbarSearchPanel({
     drawTiles: markerTiles(pens, surface),
   });
   const catalogues = searchCatalogueTiles({ query, mode, tabElements });
-  // Element types first, then the catalogue entries, in each section.
-  const here = [...elements.here, ...catalogues.here];
-  const elsewhere = [...elements.elsewhere, ...catalogues.elsewhere];
+  // One ranking per section across element types and catalogue entries: name matches first.
+  const here = mergeByName(query, elements.here, catalogues.here);
+  const elsewhere = mergeByName(query, elements.elsewhere, catalogues.elsewhere);
   const browsing = !query.trim();
   const modeName = editorModeLabel(mode);
 

@@ -56,7 +56,7 @@ A strip shows one category at a time, so finding an element means knowing which 
   each once however many categories hold it. **Icons, Stickers and Technology** are searched too,
   entry by entry, as their categories' own tiles (`palette-dynamic-tiles`, `palette-catalogue-search`):
   each catalogue at most **15** best matches (five rows; its category has the rest, with its browse),
-  listed after the element tiles of the same section. A catalogue is this mode's when the mode's
+  merged with the element tiles of the same section by how well the name matches (exact, prefix, substring, then keyword only; element tiles first among equals), so "chart" leads with the charts, not the flowchart shapes that only carry the word. A catalogue is this mode's when the mode's
   palette offers its category (Icons and Stickers in Diagram and Illustrate, Technology in Diagram)
   and another mode's otherwise. Before anything is typed, the entries already on the tab list with
   the element types (an icon or a technology mark is an icon shape carrying its id, a sticker a shape
