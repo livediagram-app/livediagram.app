@@ -24,6 +24,7 @@ import {
   UI_SCALE_STEP,
   resolveUiScale,
   resolveUiScalePart,
+  uiScaleMax,
   uiScalePartPatch,
   uiScalePatch,
   withUiScalePatch,
@@ -295,6 +296,7 @@ function uiScalePartRow(
 ): SettingsSliderRowSpec {
   return {
     ...UI_SCALE_SLIDER,
+    max: uiScaleMax(part),
     key: `uiScale-${part}`,
     parent: 'uiScale',
     label: copy.label,
