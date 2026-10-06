@@ -40,6 +40,11 @@ function runOffline(io: CliIo, verb: Verb, input: Input, log: DebugLog): Promise
   if (verb.id === 'guide') return Promise.resolve(guideOf(input.topic as string | undefined));
   if (verb.id === 'skill.print') return Promise.resolve({ text: renderSkill() });
   if (verb.id === 'skill.install') return installSkill(io, input.to as string | undefined);
+  // The render handlers load the icon catalogues and the PNG renderer: only when a render runs.
+  if (verb.id === 'graph.render')
+    return import('./commands/render').then(({ renderGraph }) =>
+      renderGraph(io, inputReader(io), input as { file: string; png?: string; svg?: string }, log),
+    );
   if (verb.id === 'graph.lint') {
     const file = input.file as string;
     return inputReader(io)(file).then((text) =>
@@ -132,6 +137,10 @@ async function runOnline(
     readInput: inputReader(io),
     copies: fileReadCopies(io, profile.name, log),
   };
+  if (verb.id === 'tab.render') {
+    const { renderTab } = await import('./commands/render');
+    return renderTab(io, ctx, input as { doc: string; tab?: string; png?: string; svg?: string });
+  }
   if (verb.id === 'export') return exportAll(io, ctx, profile.host, input as ExportInput);
   if (verb.id === 'pull') return pullDocument(io, ctx, input as PullInput);
   if (verb.id === 'push') return pushFile(io, ctx, profile.host, input as PushInput);

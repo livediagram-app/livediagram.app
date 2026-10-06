@@ -90,6 +90,7 @@ const joinPath = (dir: string, name: string) => `${dir.replace(/\/+$/, '')}/${na
 
 const TAB_FILES: Record<Exclude<ExportFormat, 'json'>, string> = {
   svg: 'svg',
+  png: 'png',
   mermaid: 'mmd',
   md: 'md',
 };
@@ -131,11 +132,15 @@ async function exportDocument(
     const base = joinPath(tabDir, tabSlugs.get(tab.id)!);
     for (const format of perTab) {
       const path = `${base}.${TAB_FILES[format]}`;
-      if (format === 'svg') {
+      if (format === 'svg' || format === 'png') {
         const { body } = await patiently(ctx, () =>
           ctx.api.text(`${tabPath(document.id, tab.id)}/render.svg`),
         );
-        await write(path, body);
+        if (format === 'svg') await write(path, body);
+        else {
+          const { writePicture } = await import('../render/png');
+          written.push((await writePicture(io, path, body, 'png')).path);
+        }
       } else if (format === 'mermaid') await write(path, mermaidFromTab(tab));
       else await write(path, tabToMarkdownText(tab));
     }
