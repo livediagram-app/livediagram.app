@@ -531,6 +531,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
           themeTint={paletteTint}
           leading={menuInStrip ? explorerMenuButton : undefined}
           onAddPage={props.illustratePages?.edit?.addPage}
+          tabElements={elements}
         />
       ) : null}
 

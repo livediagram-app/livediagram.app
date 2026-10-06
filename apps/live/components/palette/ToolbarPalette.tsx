@@ -1,17 +1,9 @@
 'use client';
 
 import { onPaletteCategoryRequest } from '@/lib/palette-category-request';
-import type { PageKind } from '@livediagram/document';
+import type { Element, PageKind } from '@livediagram/document';
 import { AddPageStripButton } from './AddPageStripButton';
-import {
-  Fragment,
-  useEffect,
-  useEffectEvent,
-  useRef,
-  useState,
-  type ReactNode,
-  type RefObject,
-} from 'react';
+import { Fragment, useEffect, useRef, useState, type ReactNode, type RefObject } from 'react';
 import { ChevronDownIcon, EllipsisIcon, HoverCard, safeInlinePadding } from '@livediagram/ui';
 import { track } from '@/lib/telemetry';
 import { SnapWidth } from '@/components/primitives/SnapWidth';
@@ -31,19 +23,21 @@ import { useStripTileLimit } from './useStripTileLimit';
 import { useViewportWidth } from '@/hooks/ui/useViewportWidth';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { useUiScale } from '@/components/providers/ui-scale';
-import { toSurfacePx, uiScaleStyle, uiUnscaleStyle } from '@/lib/ui-scale';
+import { toSurfacePx, uiScaleStyle } from '@/lib/ui-scale';
 import { RAIL_LEAVE_MS, ToolbarStripRail } from './ToolbarStripRail';
 import { usePaletteCatalogue } from './usePaletteCatalogue';
 import { paletteLandingCategory } from './palette-layouts';
 import type { CommandPaletteProps } from './CommandPalette.types';
 import type { PaletteAddHandlers } from './palette-add-handlers';
 import { STRIP_DIVIDER_ATTR } from './useEdgeDividers';
+import { StripPopover, useStripPopover } from './ToolbarStripPopover';
+import { TOOLBAR_SEARCH_SELECTOR, ToolbarSearchButton, ToolbarSearchPanel } from './ToolbarSearch';
 
 // The Toolbar layout's Palette (docs/specs/007-editor/toolbar-layout.md): one horizontal strip pinned to the
 // top centre of the canvas, the way Excalidraw's tool bar works. Selection
 // mode on the left, then the category picker, then that category's first
 // tiles, and a More popover holding the category's full Palette body for
-// everything that doesn't fit.
+// everything that doesn't fit; Search, at the far right, finds any element.
 //
 // Same tiles, same handlers, same category bodies as the floating Palette:
 // usePaletteCatalogue builds them for both, so this file is only layout.
@@ -70,12 +64,9 @@ type Props = Pick<
     leading?: ReactNode;
     // Illustrate mode: a + at the strip's end adds a page (AddPageStripButton).
     onAddPage?: (kind: PageKind) => void;
+    // The active tab's elements: Search lists their element types before anything is typed.
+    tabElements?: readonly Element[];
   };
-// Clicks inside these don't count as "outside" the More popover: the icon
-// filter's portalled dropdown menus, and any dialog a category body opens
-// (closing the popover would unmount it mid-edit).
-const INSIDE_SELECTOR = '[data-palette-dropdown-menu], [role="dialog"], [data-tour-popover]';
-
 // The strip's card, and the leading card beside it on a phone.
 const CARD_CLASS = `${TOOLBAR_CARD} ${PHONE_TOOLBAR_ITEMS}`;
 
@@ -127,12 +118,21 @@ function Divider() {
 
 export function ToolbarPalette(props: Props) {
   const { canvasTool, esBoard, themeTint, pendingDraw, hidden, leading } = props;
-  const [moreOpen, setMoreOpen] = useState(false);
+  // The strip's two popovers (ToolbarStripPopover): only the popover and its own button count as
+  // inside, so pressing anything else on the strip closes it.
+  const rootRef = useRef<HTMLDivElement>(null);
+  const more = useStripPopover(rootRef, '[data-toolbar-more], [data-toolbar-more-button]');
+  const search = useStripPopover(rootRef, TOOLBAR_SEARCH_SELECTOR);
+  const moreOpen = more.open;
+  const setMoreOpen = more.setOpen;
   const { tabs, tileActions, canvasToolOptions, onCanvasToolChange, editorMode } =
     usePaletteCatalogue({
       ...props,
-      // A tile used from the More popover closes it, so the canvas is clear to
-      onTileUsed: () => setMoreOpen(false),
+      // A tile used from the More or Search popover closes it, so the canvas is clear to draw on.
+      onTileUsed: () => {
+        more.setOpen(false);
+        search.setOpen(false);
+      },
     });
   // Same landing rule as the floating Palette (palette-layouts, docs/specs/021-event-storming/event-storming.md): the
   // mode's Popular, or the notation on an event-storming board.
@@ -176,8 +176,9 @@ export function ToolbarPalette(props: Props) {
   const tileLimit = swipe ? Infinity : stripLimit;
   // Plan mode's Cards follow the document's item types (docs/specs/026-plan/item-types.md).
   const plan = usePlan();
+  const planCardTiles = plan?.types.map(planCardTile);
   const categoryTiles =
-    category?.id === 'plan-cards' && plan ? plan.types.map(planCardTile) : category?.tiles;
+    category?.id === 'plan-cards' && planCardTiles ? planCardTiles : category?.tiles;
   const fitted = stripTilesFor(category?.id ?? defaultId, {
     hasImage: tileActions.hasImage,
     limit: stripLimit,
@@ -223,67 +224,14 @@ export function ToolbarPalette(props: Props) {
       })
     : null;
 
-  // Outside pointer-down closes the More popover.
-  const rootRef = useRef<HTMLDivElement>(null);
-  const closeMore = useEffectEvent(() => setMoreOpen(false));
-  useEffect(() => {
-    if (!moreOpen) return;
-    const onDown = (e: PointerEvent) => {
-      const t = e.target;
-      if (!(t instanceof Element)) return;
-      // Only the popover and its own button count as inside: pressing the
-      // selection mode, the category picker or a tile elsewhere on the strip
-      // closes it, so two strip menus are never open at once.
-      if (t.closest('[data-toolbar-more], [data-toolbar-more-button]')) return;
-      if (t.closest(INSIDE_SELECTOR)) return;
-      closeMore();
-    };
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') closeMore();
-    };
-    document.addEventListener('pointerdown', onDown, true);
-    document.addEventListener('keydown', onKey);
-    return () => {
-      document.removeEventListener('pointerdown', onDown, true);
-      document.removeEventListener('keydown', onKey);
-    };
-  }, [moreOpen]);
-
-  // Opening More focuses the body's search field, so typing filters straight
-  // away (docs/specs/007-editor/toolbar-layout.md). A body that loads its catalogue lazily
-  // (Icons, Technology) mounts the field a beat later, so watch for it. Not
-  // on a phone: focusing would raise the keyboard over the popover.
-  const moreRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const popover = moreRef.current;
-    if (!moreOpen || isMobile || !popover) return;
-    const focusSearch = () => {
-      const field = popover.querySelector<HTMLInputElement>(
-        'input[type="search"], input[type="text"], input:not([type])',
-      );
-      if (!field) return false;
-      field.focus();
-      return true;
-    };
-    if (focusSearch()) return;
-    const observer = new MutationObserver(() => {
-      if (focusSearch()) observer.disconnect();
-    });
-    observer.observe(popover, { childList: true, subtree: true });
-    return () => observer.disconnect();
-  }, [moreOpen, isMobile]);
-
-  // Where the More popover hangs: its right edge under the More button's
-  // right edge, as an offset into the strip. Measured on the click that opens
-  // it; the strip is centred, so a window resize moves both together and the
-  // offset stays right.
-  const [moreRight, setMoreRight] = useState(0);
   const openMore = (button: HTMLElement) => {
-    const root = rootRef.current?.getBoundingClientRect();
-    const btn = button.getBoundingClientRect();
-    if (root) setMoreRight(root.right - btn.right);
     track('UI', 'Opened', 'ToolbarMore');
-    setMoreOpen(true);
+    more.openFrom(button);
+  };
+  const toggleSearch = (button: HTMLElement) => {
+    if (search.open) return search.setOpen(false);
+    track('UI', 'Opened', 'ToolbarSearch');
+    search.openFrom(button);
   };
   const moreButton = (
     <button
@@ -482,32 +430,46 @@ export function ToolbarPalette(props: Props) {
                     <AddPageStripButton onAdd={props.onAddPage} />
                   </>
                 ) : null}
+                {/* Search, last: any element type, this mode's and the others' (docs/specs/007-editor/toolbar-layout.md
+                    "Search: every element type"). Not on an event-storming board, whose notation is
+                    its palette. */}
+                {esBoard ? null : (
+                  <>
+                    <Divider />
+                    <ToolbarSearchButton open={search.open} onToggle={toggleSearch} />
+                  </>
+                )}
               </div>
             </CardWidth>
           </StripRow>
           {moreOpen && category ? (
-            // The category's full Palette body, the exact node the floating
-            // Palette renders. Capped to the window so a long category
-            // (Components, Collaborate) scrolls rather than running off it.
-            <div
-              ref={moreRef}
-              data-toolbar-more=""
-              // Hangs from the More button, not the middle of the strip. Wide
-              // rather than tall, so a category body rarely has to scroll.
-              // A phone has no room to hang it from the button: it spans the
-              // screen between the side gutters instead.
-              // A menu, so it stays at design size while the strip is scaled
-              // (docs/specs/007-editor/ui-scale.md): the counter-zoom brings it
-              // back to 1, so moreRight (screen px) and the classes' width and
-              // height cap apply as written.
-              style={isMobile ? undefined : { ...uiUnscaleStyle(scale), right: moreRight }}
-              className={`absolute top-full mt-2 max-h-[calc(100dvh-14rem)] ${isMobile ? 'inset-x-3' : 'w-[26rem]'} origin-top-right animate-dropdown-down overflow-y-auto overflow-x-hidden rounded-xl border border-slate-200 bg-white px-2 py-2.5 shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40`}
+            // The category's full Palette body, the exact node the floating Palette renders.
+            <StripPopover
+              right={more.right}
+              isMobile={isMobile}
+              scale={scale}
+              label={category.label}
+              dataAttr="data-toolbar-more"
             >
-              <div className="mb-2 px-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
-                {category.label}
-              </div>
               {category.content}
-            </div>
+            </StripPopover>
+          ) : null}
+          {search.open && !esBoard ? (
+            <StripPopover
+              right={search.right}
+              isMobile={isMobile}
+              scale={scale}
+              label="Search Elements"
+              dataAttr="data-toolbar-search"
+            >
+              <ToolbarSearchPanel
+                mode={editorMode}
+                actions={tileActions}
+                pendingDraw={pendingDraw}
+                planCardTiles={editorMode === 'plan' && plan ? planCardTiles : undefined}
+                tabElements={props.tabElements ?? []}
+              />
+            </StripPopover>
           ) : null}
         </PaletteTintProvider>
       </PaletteGroupProvider>

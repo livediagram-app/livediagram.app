@@ -30,6 +30,68 @@ to the top centre of the canvas, the way Excalidraw's tool bar works:
   are the same tiles as the Palette's (`palette-tile-defs`, arranged by the mode's palette layout, [Editor modes](editor-modes.md#the-palette-per-mode)),
   rendered by the same `PaletteTile`, so one change reaches both layouts.
 - **Right: More (⋯ ▾)**, when the category has more than the strip shows.
+- **Far right: Search** (a magnifier), in every mode's strip but an event-storming board's (see
+  "Search: every element type"). Draw mode shows its dock instead of the strip, so it has none.
+
+## Search: every element type
+
+A strip shows one category at a time, so finding an element means knowing which category holds it.
+**Search** finds it by name instead, across every category, and across the other modes too.
+
+- **Where:** the last control on the strip, after More (and after Plan's Edit Cards and
+  Illustrate's add-page +), behind a divider, with a hover card ("Search Elements"). On a phone it
+  stays put beside More while the tiles swipe.
+- **Not on an event-storming board:** the notation is the palette there, as the board hides the
+  pickers. Draw mode has no strip, so no Search.
+- **The popover** hangs from the button's right edge like More's, 26rem wide (spanning the
+  screen between the gutters on a phone), and is capped to the window, scrolling when long. It is a
+  strip menu: opening it closes any other (More, the pickers), and a press outside or Escape closes
+  it. Opening it focuses its search field (not on a phone, where focusing raises the keyboard over
+  it).
+- **What it searches:** the element **tiles** (`PALETTE_TILES`) of every mode's palette layout,
+  each once however many categories hold it. The open-ended catalogues (My shapes, Icons,
+  Stickers, Technology) are not element types and keep their own searches in their categories. A
+  tile matches on its name, label, blurb, description and the same synonym line the global Search
+  panel uses ("database" finds the cylinder, [Canvas and palette](../008-canvas/canvas-and-palette.md#search-panel)),
+  ranked exact name, then name prefix, then name substring, then keyword only; ties keep palette
+  order. The image-upload tiles are left out where the editor has none, as everywhere else.
+- **Two sections:**
+  - **This mode's elements** first, as the palette's tile grid, drawn from every tile the current
+    mode's layout offers (Plan's Cards follow the document's item types, as on the strip).
+  - **Other modes**, below, as an accordion titled **"Not in Diagram Mode"** (the current mode's
+    name), with a count: the matching tiles no category of this mode offers, from the other modes'
+    layouts and the event-storming notation. **Closed by default** each time the popover opens:
+    modes are tailored on purpose, so the rest is one deliberate click away, never hidden. Opened,
+    it stays open while typing. It is absent when nothing outside the mode matches.
+- **Before anything is typed** it lists only the element types **already on the tab**, under a
+  small "On This Tab" label, each once, in layout order (other modes' ones in the accordion, as
+  ever): the popover stays short, and the tools a tab is actually built from are one click away.
+  Listing the whole mode made a popover taller than the window. A tile and an element meet on a
+  **signature**: the element type plus the creation-time choice the element records (a shape's
+  kind and its session tool, reaction, selection mode, estimate scale or plan view; a sticky's
+  workshop kind; a pen; an embed's provider; a line's missing ends). Where the element does not
+  record the choice (a board's preset, a card's type) the first tile in layout order stands for
+  them all. Tiles that place no one element type (the icon, sticker and tech catalogue tiles, the
+  shape pen, a board's header widget, the hero and avatar composites) never list here. An empty
+  tab says "Nothing on this tab yet. Type to find any element."; one holding only other modes'
+  types says "Only elements from other modes are on this tab so far. Type to find any element."
+- **Nothing matches:** the mode's section says so in one line, pointing at the accordion when that
+  has matches ("No Diagram elements match. Other modes have 3 below."); with neither, "No elements
+  match".
+- **Its heading** is "Search Elements", as More's is the category's name; the field reads "Search
+  elements". The accordion's line under its title: "Elements other modes offer. Any of them works
+  here too."
+- **Using a tile** from either section runs the tile's own handler (the same `PaletteTile`, so
+  drag-to-place, the pressed state and tinting are the palette's), and closes the popover so the
+  canvas is clear. **Enter** in the field uses the first result of this mode's section (the
+  accordion's first, when that section is empty and the accordion is open).
+- **Nothing is stored:** the query and the accordion reset each time it opens.
+- **Telemetry:** `UI`/`Opened`/`ToolbarSearch` when it opens and `UI`/`Opened`/`ToolbarSearchOtherModes`
+  when the accordion opens. Placing an element reports as any palette add does.
+- **Cost:** the candidate tiles are a few hundred static entries; the match is a linear filter and
+  sort over them per keystroke, only while the popover is open, and the popover mounts only while
+  open. The on-tab list is one pass over the tab's elements into a set of signatures, then one
+  lookup per tile.
 
 ## More: the rest of the category
 
@@ -104,7 +166,7 @@ canvas and a corner stack would move it.
 
 ## One menu at a time
 
-The strip's menus (selection mode, category, More) and the Explorer popover
+The strip's menus (selection mode, category, More, Search) and the Explorer popover
 are menus: opening one closes whichever other is open, and a press anywhere
 outside closes it. The strip stops `pointerdown` from reaching the canvas, so
 their outside-press listeners run in the capture phase, before that. The

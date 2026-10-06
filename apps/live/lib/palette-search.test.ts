@@ -3,7 +3,8 @@ import { describe, expect, it } from 'vitest';
 import { SHAPE_KINDS } from '@livediagram/document';
 
 import { PALETTE_TILES } from '@/components/palette/palette-tile-defs';
-import { buildPaletteSearchItems, SHAPE_KEYWORDS } from '@/lib/palette-search';
+import { buildPaletteSearchItems } from '@/lib/palette-search';
+import { SHAPE_KEYWORDS } from '@/lib/palette-tile-keywords';
 
 // Drift guard. The "Add to canvas" catalogue used to be a hand-written list of
 // shapes, and it had fallen 22 kinds behind the palette without anything

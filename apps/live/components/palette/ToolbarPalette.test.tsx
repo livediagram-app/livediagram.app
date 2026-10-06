@@ -6,7 +6,7 @@ import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { PALETTE_ADD_HANDLER_KEYS, type PaletteAddHandlers } from './palette-add-handlers';
 import { ToolbarPalette } from './ToolbarPalette';
 import type { EsBoardControls } from './EventStormingBoardRows';
-import type { EditorMode } from '@livediagram/document';
+import type { EditorMode, Element } from '@livediagram/document';
 import type { ReactNode } from 'react';
 import { EditorModeProvider } from '@/components/chrome/editor-mode/editor-mode-context';
 
@@ -53,6 +53,7 @@ function show({
   esBoardControls?: EsBoardControls;
   mode?: EditorMode;
   onAddPage?: () => void;
+  tabElements?: Element[];
 } = {}) {
   const h = handlers();
   const onSetCanvasTool = vi.fn();
@@ -258,5 +259,118 @@ describe('ToolbarPalette', () => {
     mobile.value = true;
     show({ mode: 'illustrate', onAddPage: vi.fn() });
     expect(screen.queryByRole('button', { name: 'Add page' })).toBeNull();
+  });
+
+  describe('Search (docs/specs/007-editor/toolbar-layout.md "Search: every element type")', () => {
+    const openSearch = () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Search elements' }));
+      return document.querySelector('[data-toolbar-search]') as HTMLElement;
+    };
+    const type = (popover: HTMLElement, q: string) =>
+      fireEvent.change(within(popover).getByRole('textbox', { name: 'Search elements' }), {
+        target: { value: q },
+      });
+
+    it("ends the strip in every mode's palette, and not on an event-storming board", () => {
+      for (const mode of ['diagram', 'illustrate', 'plan'] as const) {
+        show({ mode });
+        const buttons = within(strip()).getAllByRole('button');
+        expect(buttons.at(-1)?.getAttribute('aria-label'), mode).toBe('Search elements');
+        cleanup();
+      }
+      show({ esBoard: true });
+      expect(screen.queryByRole('button', { name: 'Search elements' })).toBeNull();
+    });
+
+    it('opens focused, and finds a tile from any category of the mode', () => {
+      const { h } = show();
+      const popover = openSearch();
+      expect(document.activeElement).toBe(
+        within(popover).getByRole('textbox', { name: 'Search elements' }),
+      );
+      type(popover, 'database');
+      fireEvent.click(within(popover).getByRole('button', { name: 'Add cylinder' }));
+      expect(h.onAddShape).toHaveBeenCalledWith('cylinder', expect.anything());
+      // Used, so closed: the canvas is clear to draw on.
+      expect(document.querySelector('[data-toolbar-search]')).toBeNull();
+    });
+
+    it("keeps other modes' elements in a closed accordion until asked", () => {
+      const { h } = show();
+      const popover = openSearch();
+      type(popover, 'pie chart');
+      expect(within(popover).queryByRole('button', { name: 'Add pie chart' })).toBeNull();
+      expect(popover.textContent).toContain('No Diagram elements match');
+      const accordion = within(popover).getByRole('button', { name: /Not in Diagram Mode/ });
+      expect(accordion.getAttribute('aria-expanded')).toBe('false');
+      fireEvent.click(accordion);
+      fireEvent.click(within(popover).getByRole('button', { name: 'Add pie chart' }));
+      expect(h.onAddShape).toHaveBeenCalledWith('pie-chart', expect.anything());
+    });
+
+    it('lists only the element types on the tab before anything is typed', () => {
+      show({
+        tabElements: [
+          { id: 'a', type: 'shape', shape: 'diamond', x: 0, y: 0, width: 1, height: 1 },
+        ] as unknown as Element[],
+      });
+      const popover = openSearch();
+      expect(popover.textContent).toContain('On This Tab');
+      expect(
+        within(popover)
+          .getAllByRole('button')
+          .map((b) => b.getAttribute('aria-label'))
+          .filter((l) => l?.startsWith('Add ')),
+      ).toEqual(['Add diamond']);
+      cleanup();
+      show();
+      expect(openSearch().textContent).toContain('Nothing on this tab yet');
+    });
+
+    it('uses the best match on Enter', () => {
+      const { h } = show();
+      const popover = openSearch();
+      type(popover, 'circle');
+      fireEvent.keyDown(within(popover).getByRole('textbox', { name: 'Search elements' }), {
+        key: 'Enter',
+      });
+      expect(h.onAddShape).toHaveBeenCalledWith('circle', expect.anything());
+    });
+
+    it('says so when nothing matches anywhere', () => {
+      show();
+      const popover = openSearch();
+      type(popover, 'zzqqxx');
+      expect(popover.textContent).toContain('No elements match');
+      expect(within(popover).queryByRole('button', { name: /Not in/ })).toBeNull();
+    });
+
+    it('is one strip menu at a time with More, and closes on Escape', () => {
+      show();
+      pickCategory('behaviour');
+      fireEvent.click(screen.getByRole('button', { name: 'More Collaborate' }));
+      const searchButton = screen.getByRole('button', { name: 'Search elements' });
+      fireEvent.pointerDown(searchButton);
+      fireEvent.click(searchButton);
+      expect(document.querySelector('[data-toolbar-more]')).toBeNull();
+      expect(document.querySelector('[data-toolbar-search]')).not.toBeNull();
+      act(() => {
+        document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+      });
+      expect(document.querySelector('[data-toolbar-search]')).toBeNull();
+    });
+
+    it('starts afresh each time it opens', () => {
+      show();
+      let popover = openSearch();
+      type(popover, 'pie chart');
+      fireEvent.click(within(popover).getByRole('button', { name: /Not in Diagram Mode/ }));
+      fireEvent.click(screen.getByRole('button', { name: 'Search elements' }));
+      popover = openSearch();
+      expect(
+        (within(popover).getByRole('textbox', { name: 'Search elements' }) as HTMLInputElement)
+          .value,
+      ).toBe('');
+    });
   });
 });
