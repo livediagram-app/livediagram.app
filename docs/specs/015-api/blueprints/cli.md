@@ -61,7 +61,7 @@ Scope, by file:
 | `apps/cli/src/output/{exit-codes,cli-error,failure-of,print}.ts`                                       | `EXIT`, `exitCodeForStatus`, `CliError`, `formatError`, `failureOf`, `render` with `--json` fields                                               |
 | `apps/cli/src/config/{paths,config-file,profiles,capabilities,version}.ts`                             | Directories, `config.toml`, profile choice, the capabilities cache, `CLI_VERSION`, the version floor                                             |
 | `apps/cli/src/auth/credentials.ts`                                                                     | The 0600 file store; env before stored (`resolveCredential`, `storedCredential`)                                                                 |
-| `apps/cli/src/auth/keychain.ts` (planned)                                                              | The OS keychain store, tried before the file (CLI32)                                                                                             |
+| `apps/cli/src/auth/keychain.ts` (+ test)                                                               | The platform's store through its own tool: `security`, `secret-tool`, PowerShell DPAPI (CLI4)                                                    |
 | `apps/cli/src/auth/{oauth-client,loopback-login,device-login,token-login}.ts`                          | The three ways in                                                                                                                                |
 | `apps/cli/src/auth/{open-browser,callback-page}.ts`                                                    | Browser opener; the loopback page's HTML                                                                                                         |
 | `apps/cli/src/commands/local.ts`                                                                       | Handlers of the local verbs `guide`, `skill`, `api` and `auth`                                                                                   |
@@ -735,17 +735,17 @@ whatever the answer; a newer `version` prints the notice (CLI43).
 
 No D1 table, no migration. Local files (CLI5):
 
-| File                                   | Class   | Notes                                                                                       |
-| -------------------------------------- | ------- | ------------------------------------------------------------------------------------------- |
-| `<config>/config.toml`                 | config  | `default_profile`, `telemetry`, `[profiles.<name>] host`; written only by `telemetry`       |
-| OS keychain, service `livediagram`     | secret  | Account = profile name; value = `StoredCredential` JSON (CLI4)                              |
-| `<config>/credentials.json`            | secret  | `{ version: 1, profiles: { <name>: StoredCredential } }`; file 0600, directory 0700 (CLI40) |
-| `<cache>/capabilities/<profile>.json`  | derived | `{ fetchedAt, host, capabilities }`; discarded when older than `CAPABILITIES_CACHE_TTL_MS`  |
-| `<cache>/copies/index.json`            | derived | `{ version: 1, entries: { key, rev, bytes, at }[] }`, most recent first                     |
-| `<cache>/copies/<key hash>/<rev>.json` | content | One read copy, the plain tab as served; files 0600 in 0700 directories (CLI76)              |
-| `<cache>/update.json`                  | derived | `{ checkedAt, latest }`                                                                     |
-| `<cache>/state.json`                   | state   | `{ telemetryNoticeAt }`                                                                     |
-| `<slug>.livediagram.json`              | content | The pull file; the person's to keep                                                         |
+| File                                                  | Class   | Notes                                                                                                                                                                             |
+| ----------------------------------------------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `<config>/config.toml`                                | config  | `default_profile`, `telemetry`, `[profiles.<name>] host`; written only by `telemetry`                                                                                             |
+| macOS Keychain, Secret Service: service `livediagram` | secret  | Account = profile name; value = the token alone (CLI4)                                                                                                                            |
+| `<config>/credentials.json`                           | secret  | `{ version: 1, profiles: { <name>: StoredCredential } }`; the token itself only when the file is its store, a DPAPI blob (`sealed`) on Windows; file 0600, directory 0700 (CLI40) |
+| `<cache>/capabilities/<profile>.json`                 | derived | `{ fetchedAt, host, capabilities }`; discarded when older than `CAPABILITIES_CACHE_TTL_MS`                                                                                        |
+| `<cache>/copies/index.json`                           | derived | `{ version: 1, entries: { key, rev, bytes, at }[] }`, most recent first                                                                                                           |
+| `<cache>/copies/<key hash>/<rev>.json`                | content | One read copy, the plain tab as served; files 0600 in 0700 directories (CLI76)                                                                                                    |
+| `<cache>/update.json`                                 | derived | `{ checkedAt, latest }`                                                                                                                                                           |
+| `<cache>/state.json`                                  | state   | `{ telemetryNoticeAt }`                                                                                                                                                           |
+| `<slug>.livediagram.json`                             | content | The pull file; the person's to keep                                                                                                                                               |
 
 `StoredCredential = { host, token, tokenId, accountName, role, expiresAt }`. `<key hash>` is the first 16 hex of
 SHA-256 over `<profile>|<documentId>|<tabId>`. Every write is a temporary file in the same directory then
@@ -774,7 +774,7 @@ nothing in D1.
   server; a wrong `state` answers 400 and keeps waiting.
 - **E12** Device page and poll in different regions: a KV read can miss a fresh write for up to a minute; the page
   says "We couldn't find that code yet" with Try again, and the CLI keeps polling until expiry.
-- **E13** The keychain module fails to load or its probe throws: the file store, with one stderr notice per process.
+- **E13** The platform's tool is missing, or refuses a store: the file store, with the one-line notice. A stored keychain token the tool cannot read back: exit 4, hint `livediagram auth login`.
 - **E14** `credentials.json` readable by group or others: stderr warning, mode set to 0600, read continues.
 - **E15** `LIVEDIAGRAM_TOKEN` is set but not `lvd_`-shaped: exit 4 "LIVEDIAGRAM_TOKEN is not an API token".
 - **E16** `--host` and `--profile` together: exit 2 (CLI7).
@@ -803,7 +803,8 @@ LIVEDIAGRAM_DEBUG=1 and report it at https://github.com/livediagram-app/livediag
 
 - **No token in argv.** No `--token` flag; the env variable or stdin only. `auth status` never prints the secret;
   debug lines redact `Authorization`.
-- **Credentials at rest.** Keychain first; the file at 0600 in a 0700 directory, written by temporary file and
+- **Credentials at rest.** The platform's store first, the token on the tool's stdin and never in its argv (`ps`
+  shows only the profile name); the file at 0600 in a 0700 directory, written by temporary file and
   rename so no partial file is ever readable. Read copies hold document content and get the same modes.
 - **The loopback.** Bound to `127.0.0.1` only; `state` checked; one use; closed after the code; PKCE S256 with a
   32-byte verifier. The port-agnostic match applies to `http` loopback URIs only, and the hostname must equal the
@@ -823,7 +824,7 @@ LIVEDIAGRAM_DEBUG=1 and report it at https://github.com/livediagram-app/livediag
 - **Catalogue routes** expose only public catalogue data, need no identity, and are cacheable.
 - **Supply chain.** Published by CI with provenance through npm trusted publishing (no npm token stored); the
   package's `files` allowlist is the bundle, the wasm, the font, the licences and the README; no install scripts;
-  the keychain addon is optional.
+  no native addon: the keychain is the platform's own tool.
 - **Roles.** The CLI enforces nothing the api does not; every refusal is the api's gate (`gateComment`,
   `gateParticipate`, `gateEdit`), mapped to exit 4.
 
@@ -983,7 +984,7 @@ WebSocket) with a fixed clock; none waits on a real timer or the network.
 | Device login, `slow_down`, denial, expiry                                                     | `apps/cli/src/auth/oauth.test.ts`                                                                                                                           |
 | `--with-token` from stdin; a terminal refused                                                 | `apps/cli/src/main.test.ts`                                                                                                                                 |
 | A new login revokes the replaced token                                                        | `apps/cli/src/main.test.ts`                                                                                                                                 |
-| Keychain when available, else the 0600 file                                                   | `apps/cli/src/auth/credentials.test.ts` (the file); `apps/cli/src/auth/keychain.test.ts` (planned)                                                          |
+| Keychain when available, else the 0600 file                                                   | `apps/cli/src/auth/credentials.test.ts` (the file); `apps/cli/src/auth/keychain.test.ts` (each platform, fallback, no token in argv)                        |
 | Status: host, account, name, role, expiry; never the secret; 14 days                          | `apps/cli/src/main.test.ts`                                                                                                                                 |
 | Logout revokes and forgets                                                                    | `apps/cli/src/main.test.ts`                                                                                                                                 |
 | A host without sign-in says so in one line                                                    | `apps/cli/src/main.test.ts`                                                                                                                                 |
