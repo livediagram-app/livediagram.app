@@ -327,6 +327,16 @@ describe('ToolbarPalette', () => {
       expect(openSearch().textContent).toContain('Nothing on this tab yet');
     });
 
+    it("picks up Draw mode's markers from the other modes' section", () => {
+      const { h } = show();
+      const popover = openSearch();
+      type(popover, 'marker');
+      fireEvent.click(within(popover).getByRole('button', { name: /Not in Diagram Mode/ }));
+      fireEvent.click(within(popover).getByRole('button', { name: 'Marker 2' }));
+      expect(h.onBeginMarker).toHaveBeenCalledWith('second');
+      expect(document.querySelector('[data-toolbar-search]')).toBeNull();
+    });
+
     it('uses the best match on Enter', () => {
       const { h } = show();
       const popover = openSearch();

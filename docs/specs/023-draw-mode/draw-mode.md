@@ -351,6 +351,11 @@ Explorer Home's Jump back in.
   - **Each width is pictured the same wherever it is chosen** (the marker's popover and the quick
     style panel's Marker width row, `PenWidthIcon`): as the thin, medium and thick border-width
     previews, not to scale. Drawn to scale, 1 and 1.5 px looked identical in the popover.
+- **The markers outside Draw mode:** the Toolbar strip's Search offers Marker 1, 2 and 3 in the
+  other modes ([Toolbar layout](../007-editor/toolbar-layout.md#search-every-element-type)), each
+  as this browser last set it. Picking one picks the pen up exactly as the dock does (the same pen
+  intent, colour, width and recognition), held until another tool, Escape or a mode switch puts it
+  down. Its colour and width are changed here, in Draw mode, not from the search.
 - **Right-clicking a pen resets it** to how it started (its starting colour
   and Medium), without picking it up; a pen already as it started is left
   alone. The context-menu key and Shift+F10 on the focused button do the same.

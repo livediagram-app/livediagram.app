@@ -25,7 +25,8 @@ import { track, titleCaseType } from '@/lib/telemetry';
 import { isTechIconId } from '@/lib/tech-icons';
 import { opensForTyping, type PendingDraw } from '@/lib/draw-mode';
 import { HIGHLIGHTER_COLOR, HIGHLIGHTER_WIDTH } from '@/lib/highlighter-config';
-import { boardShape } from '@/lib/whiteboard-tool';
+import { boardShape, whiteboardPenIntent } from '@/lib/whiteboard-tool';
+import { loadWhiteboardPrefs, type WhiteboardPenId } from '@/lib/whiteboard-prefs';
 import { buildDressedDrawnArrow, buildDrawnBoxed, buildDrawnComponent } from '@/lib/draw-commit';
 import type { CanvasTool } from '@/components/palette/CommandPalette';
 import { componentTelemetryType, shapeTelemetryToken } from '@/lib/element-telemetry';
@@ -285,6 +286,14 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
       colour: highlighterColour,
       width: highlighterWidth,
     });
+  // One of Draw mode's markers, picked up in another mode from the Toolbar strip's Search
+  // (docs/specs/007-editor/toolbar-layout.md "Search: every element type"): the dock's own pen
+  // intent, in the pen's colour and width as this browser last set them, held until put down.
+  const beginMarker = (penId: WhiteboardPenId) => {
+    const prefs = loadWhiteboardPrefs();
+    const pen = prefs.pens.find((p) => p.id === penId);
+    if (pen) armFreehand(whiteboardPenIntent(pen, prefs.recognise));
+  };
   // A setting chosen while the tile is armed reaches the armed stroke too, so the very next drag
   // (and its preview) lands in it.
   const rearmHighlighter = (patch: { colour?: string; width?: number }) =>
@@ -357,6 +366,7 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
     cancelDrawShape,
     beginFreehand,
     beginHighlighter,
+    beginMarker,
     beginShapePen,
     beginPolygon,
     commitFreehand,

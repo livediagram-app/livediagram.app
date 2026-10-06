@@ -11,6 +11,9 @@ import { TOOLBAR_TRIGGER_TONE } from './PaletteDropdown';
 import { PaletteTileGrid, tileHandler, type PaletteTileActions } from './PaletteTileGrid';
 import type { PaletteTileDef } from './palette-tile-defs';
 import { searchElementTiles } from './palette-tile-search';
+import { markerTiles } from './palette-marker-tiles';
+import { loadWhiteboardPrefs } from '@/lib/whiteboard-prefs';
+import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 
 // The Toolbar strip's Search (docs/specs/007-editor/toolbar-layout.md "Search: every element type"):
 // a button at the strip's far right, and the body of the popover it opens. The popover's card,
@@ -73,12 +76,16 @@ export function ToolbarSearchPanel({
   const [query, setQuery] = useState('');
   const [othersOpen, setOthersOpen] = useState(false);
   const othersId = useId();
+  // Draw mode's markers as this browser last set them, read once per opening.
+  const [pens] = useState(loadWhiteboardPrefs);
+  const surface = useCanvasSurface();
   const { here, elsewhere } = searchElementTiles({
     query,
     mode,
     hasImage: actions.hasImage,
     planCardTiles,
     tabElements,
+    drawTiles: markerTiles(pens, surface),
   });
   const browsing = !query.trim();
   const modeName = editorModeLabel(mode);

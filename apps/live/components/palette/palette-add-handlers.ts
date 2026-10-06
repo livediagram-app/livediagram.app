@@ -28,6 +28,7 @@ export const PALETTE_ADD_HANDLER_KEYS = [
   'onAddArrow',
   'onBeginFreehand',
   'onBeginHighlighter',
+  'onBeginMarker',
   'onBeginShapePen',
   'onBeginPolygon',
 ] as const satisfies readonly (keyof CommandPaletteProps)[];

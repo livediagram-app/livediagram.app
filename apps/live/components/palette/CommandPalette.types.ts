@@ -125,6 +125,9 @@ export type CommandPaletteProps = {
   // Highlighter (docs/specs/008-canvas/highlighter.md): the pencil gesture with the marker
   // variant. Same one-shot arm semantics as onBeginFreehand.
   onBeginHighlighter: () => void;
+  // Picks up one of Draw mode's markers outside Draw mode (the Toolbar strip's Search,
+  // docs/specs/007-editor/toolbar-layout.md "Search: every element type").
+  onBeginMarker: (penId: import('@/lib/whiteboard-prefs').WhiteboardPenId) => void;
   onBeginShapePen: () => void;
   // Polygon tool (docs/specs/008-canvas/polygon-tool.md): arms the click-to-place-vertices mode.
   onBeginPolygon: () => void;

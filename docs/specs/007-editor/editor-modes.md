@@ -194,7 +194,10 @@ element in the same colour.
 - **No further cue:** the dock (in place of the palette) and the switch's
   own label say which mode is on; no tint, accent or notice is added.
 - **Leaving a mode puts its tool down**, as leaving a whiteboard did: a pen,
-  the eraser or an armed shape never carries over into the other mode.
+  the eraser or an armed shape never carries over into the other mode. A mode's tool can still
+  be **picked up** in another on purpose: the Toolbar strip's Search offers Draw mode's markers
+  in Diagram, Illustrate and Plan ([Toolbar layout](toolbar-layout.md#search-every-element-type)),
+  and one picked there is put down by a switch like any other.
 
 ## The tool a mode starts with
 

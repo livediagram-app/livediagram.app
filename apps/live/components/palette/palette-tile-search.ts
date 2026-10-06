@@ -52,6 +52,10 @@ export function tileSignature(tile: PaletteTileDef): string | null {
       return 'freehand:';
     case 'highlighter':
       return 'freehand:highlighter';
+    // A marker's stroke is a freehand element like the pencil's: where both are offered, the
+    // pencil, first in layout order, stands for it.
+    case 'marker':
+      return 'freehand:';
     case 'polygon':
       return 'path';
     case 'arrow':
@@ -163,10 +167,14 @@ export function elementTileSections({
   mode,
   hasImage,
   planCardTiles,
+  drawTiles = [],
 }: {
   mode: EditorMode;
   hasImage: boolean;
   planCardTiles?: readonly PaletteTileDef[];
+  // Draw mode's markers (palette-marker-tiles): Draw has no palette layout, and the strip that
+  // searches is never shown in Draw, so they are always another mode's.
+  drawTiles?: readonly PaletteTileDef[];
 }): ElementTileSearch {
   const visible = (t: PaletteTileDef) => hasImage || !t.needsImage;
   const here = modeElementTiles(mode, planCardTiles).filter(visible);
@@ -179,7 +187,7 @@ export function elementTileSections({
       // dropped is not "elsewhere", it is gone.
       !(planCardTiles && t.section === 'plan-cards'),
   );
-  return { here, elsewhere };
+  return { here, elsewhere: [...elsewhere, ...drawTiles] };
 }
 
 /** What the Search lists: the query's matches, best first, or before anything is typed, the
@@ -195,6 +203,7 @@ export function searchElementTiles({
   mode: EditorMode;
   hasImage: boolean;
   planCardTiles?: readonly PaletteTileDef[];
+  drawTiles?: readonly PaletteTileDef[];
 }): ElementTileSearch {
   const { here, elsewhere } = elementTileSections(sections);
   if (!query.trim()) {

@@ -174,7 +174,8 @@ export function isWhiteboardPenIntent(
 
 // A tool that exists on a whiteboard only (docs/specs/023-draw-mode/draw-mode.md "Shapes"): a pen,
 // the Path tool, or a shape, line or arrow armed from the dock. Leaving the board puts it down, so
-// the board's tools and their look never reach a diagram tab.
+// the board's tools and their look never carry over a mode switch (a marker can still be picked
+// up in another mode on purpose, from the Toolbar strip's Search).
 export function isWhiteboardOnlyIntent(intent: PendingDraw | null | undefined): boolean {
   if (!intent) return false;
   if (isWhiteboardPenIntent(intent) || isPathIntent(intent)) return true;

@@ -50,7 +50,14 @@ A strip shows one category at a time, so finding an element means knowing which 
   it).
 - **What it searches:** the element **tiles** (`PALETTE_TILES`) of every mode's palette layout,
   each once however many categories hold it. The open-ended catalogues (My shapes, Icons,
-  Stickers, Technology) are not element types and keep their own searches in their categories. A
+  Stickers, Technology) are not element types and keep their own searches in their categories.
+  **Draw mode's markers** join them: Draw has no palette layout (its pens are the dock's), so its
+  Marker 1, 2 and 3 are built as tiles when the popover opens, from this browser's pens, each in
+  its colour and width (`palette-marker-tiles`). They are always another mode's, since the strip is
+  never shown in Draw. Picking one picks the pen up as the dock does, held until another tool,
+  Escape or a mode switch ([Draw mode](../023-draw-mode/draw-mode.md#pens)). The dock's other
+  tools are the palette's own already (Text, the shapes, the eraser), all but the Path tool, which
+  the search does not offer. A
   tile matches on its name, label, blurb, description and the same synonym line the global Search
   panel uses ("database" finds the cylinder, [Canvas and palette](../008-canvas/canvas-and-palette.md#search-panel)),
   ranked exact name, then name prefix, then name substring, then keyword only; ties keep palette
