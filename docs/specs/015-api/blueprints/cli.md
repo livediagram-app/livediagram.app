@@ -986,7 +986,7 @@ WebSocket) with a fixed clock; none waits on a real timer or the network.
 | A self-host profile never contacts livediagram.app                                            | `apps/cli/src/main.test.ts` (every request across a session of commands; telemetry joins it when built)                                                               |
 | Pull file: document, tabs, revisions; `--svg`                                                 | `apps/cli/src/sync/pull-file.test.ts`, `apps/cli/src/commands/pull-push.test.ts`                                                                                      |
 | Push: changed tabs as based changesets; conflict names the tab; elements only                 | `apps/cli/src/commands/pull-push.test.ts`                                                                                                                             |
-| Export every document, each format                                                            | `apps/cli/src/commands/export.test.ts` (planned)                                                                                                                      |
+| Export every document, each format                                                            | `apps/cli/src/commands/export-views.test.ts`                                                                                                                          |
 | Render prints path and size, never bytes; MCP and CLI draw alike                              | `apps/cli/src/commands/render.test.ts` (planned); `packages/render-png/src/render-png.test.ts` (planned) (golden PNG size and hash from one SVG through both loaders) |
 | `graph lint` and `graph render` write nothing                                                 | `packages/agent-verbs/src/verbs/graph.test.ts`, `apps/cli/src/main.test.ts` (fetch never called)                                                                      |
 | `wait` blocks, prints, exits, settles a burst, times out; `watch` streams                     | `apps/cli/src/room/room-stream.test.ts`, `room-events.test.ts`, `apps/cli/src/commands/stream-commands.test.ts`                                                       |
@@ -1067,4 +1067,4 @@ release needs a floor), in `[vars]` and `[env.staging.vars]` (staging `OAUTH_ISS
 
 ## Defaults ledger
 
-CLI1 to CLI83 in [DEFAULTS.md](DEFAULTS.md).
+CLI1 to CLI85 in [DEFAULTS.md](DEFAULTS.md).

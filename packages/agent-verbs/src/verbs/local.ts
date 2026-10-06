@@ -285,3 +285,39 @@ export const push = defineVerb({
     prints: 'each changed tab\u2019s result lines, or ! stale <tab>',
   },
 });
+
+// Every document to files, read-only, for backups and docs (blueprint "Pull and push", CLI29).
+export const EXPORT_FORMATS = ['json', 'svg', 'mermaid', 'md'] as const;
+
+export const exportAll = defineVerb({
+  id: 'export',
+  files: true,
+  summary: 'Every document to files, for backups and docs',
+  description:
+    'Writes every document the token can read: <slug>.livediagram.json (json, the default), and per tab <slug>/<tab-slug>.svg, .mmd or .md. Prints the paths written, then the totals.',
+  behaviour: 'read',
+  local: true,
+  input: z.object({
+    all: z.boolean().optional().describe('Every document; required'),
+    to: z.string().describe('The directory to write to'),
+    format: z
+      .string()
+      .default('json')
+      .describe(`A comma-separated list of ${EXPORT_FORMATS.join(', ')}`),
+  }),
+  output: z.object({ paths: z.array(z.string()), documents: z.number(), exit: z.number() }),
+  text: ({ paths, documents }) => [
+    ...paths,
+    `${documents} document${documents === 1 ? '' : 's'} · ${paths.length} file${paths.length === 1 ? '' : 's'}`,
+  ],
+  quiet: ({ paths }) => paths,
+  exitCode: ({ exit }) => exit,
+  cli: {
+    positionals: [],
+    examples: [
+      'livediagram export --all --to backup',
+      'livediagram export --all --to docs --format svg,md',
+    ],
+    prints: 'the paths written, then <n> documents · <m> files',
+  },
+});

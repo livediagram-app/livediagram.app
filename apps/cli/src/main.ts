@@ -6,7 +6,9 @@ import { graphLint, renderSkill, type Verb, type VerbContext } from '@livediagra
 import { DOCUMENT_FORMAT } from '@livediagram/api-schema';
 import { resolveCredential } from './auth/credentials';
 import { callApi, guideOf, installSkill, login, logout, status } from './commands/local';
+import { exportAll, type ExportInput } from './commands/export';
 import { pullDocument, type PullInput } from './commands/pull';
+import { pullFileOf, pullFileView, type ViewInput } from './commands/pull-file-views';
 import { pushFile, type PushInput } from './commands/push';
 import { waitFor, type WaitInput } from './commands/wait';
 import { watch, type WatchInput } from './commands/watch';
@@ -130,6 +132,7 @@ async function runOnline(
     readInput: inputReader(io),
     copies: fileReadCopies(io, profile.name, log),
   };
+  if (verb.id === 'export') return exportAll(io, ctx, profile.host, input as ExportInput);
   if (verb.id === 'pull') return pullDocument(io, ctx, input as PullInput);
   if (verb.id === 'push') return pushFile(io, ctx, profile.host, input as PushInput);
   if (verb.id === 'wait') return waitFor(io, ctx, caps.apiBase, input as WaitInput);
@@ -182,7 +185,11 @@ export async function run(argv: readonly string[], io: CliIo): Promise<ExitCode>
     verbId = verb.id;
     log(`command ${verb.id}`);
     const input = inputOf(verb, routed.rest, globals);
-    let pending = runOffline(io, verb, input, log);
+    // A pull file named as <doc> is read here, offline (CLI70).
+    const pulled = await pullFileOf(io, input);
+    let pending = pulled
+      ? Promise.resolve(pullFileView(verb, input as ViewInput, pulled, io.now(), log))
+      : runOffline(io, verb, input, log);
     if (!pending) {
       const config = await readConfig(io);
       const profile = resolveProfile(globals, io, config);

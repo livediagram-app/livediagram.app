@@ -21,6 +21,7 @@ import {
   skillPrint,
   apiCall,
   telemetryOn,
+  exportAll,
   pull,
   push,
   waitFor,
@@ -170,6 +171,19 @@ describe('the verbs the CLI handles', () => {
       1,
     ]);
     expect([pull.text!({ paths: ['a'] }), pull.quiet!({ paths: ['a'] })]).toEqual([['a'], ['a']]);
+    expect(exportAll.text!({ paths: ['a'], documents: 1, exit: 0 })).toEqual([
+      'a',
+      '1 document · 1 file',
+    ]);
+    expect(exportAll.text!({ paths: ['a', 'b'], documents: 2, exit: 0 })).toEqual([
+      'a',
+      'b',
+      '2 documents · 2 files',
+    ]);
+    expect([
+      exportAll.quiet!({ paths: ['a'], documents: 1, exit: 0 }),
+      exportAll.exitCode!({ paths: [], documents: 0, exit: 6 }),
+    ]).toEqual([['a'], 6]);
     expect(
       authStatus.text!({
         host: 'https://h',
