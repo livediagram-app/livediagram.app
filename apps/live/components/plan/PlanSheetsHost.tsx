@@ -5,6 +5,7 @@
 import { useMemo } from 'react';
 import { isArchived, itemLabels } from '@livediagram/items';
 import { duplicateItem } from './duplicate-item';
+import { childrenOf, liveTrail } from './item-trail';
 import { toggleFlag } from './item-flag';
 import type { PlanSlice } from '@/hooks/plan/usePlanSlice';
 import { ItemPanel } from './ItemPanel';
@@ -23,6 +24,17 @@ export function PlanSheetsHost({ plan }: { plan: PlanSlice }) {
     [ctx.items],
   );
   const item = plan.openItemId ? ctx.items.get(plan.openItemId) : undefined;
+  // The open card's trail and children (docs/specs/026-plan/plan-board.md "Open an item"): one pass over the
+  // items, only while a card is open, and only again when the items or the open card change.
+  const openId = item?.id;
+  const trail = useMemo(
+    () => (openId ? liveTrail(plan.itemTrail, openId, ctx.items) : []),
+    [plan.itemTrail, openId, ctx.items],
+  );
+  const childCards = useMemo(
+    () => (openId ? childrenOf(ctx.items, openId) : []),
+    [openId, ctx.items],
+  );
   // The type editor (docs/specs/026-plan/item-types.md "Editing a type").
   if (plan.editingTypeId && ctx.canEdit) {
     const editing =
@@ -59,7 +71,6 @@ export function PlanSheetsHost({ plan }: { plan: PlanSlice }) {
   if (item) {
     return (
       <ItemPanel
-        key={item.id}
         item={item}
         types={ctx.types}
         statuses={statuses}
@@ -75,7 +86,10 @@ export function PlanSheetsHost({ plan }: { plan: PlanSlice }) {
         }
         onPatch={(patch) => ctx.patchItem(item.id, patch)}
         onType={(type) => ctx.patchItem(item.id, { type })}
-        onOpenItem={(id) => ctx.openItem(id)}
+        onOpenItem={(id, via) => ctx.openItem(id, via)}
+        trail={trail}
+        childCards={childCards}
+        statusNames={ctx.statusNames}
         onTrash={() => {
           ctx.trashItem(item.id);
           ctx.announce('Card moved to the Trash');

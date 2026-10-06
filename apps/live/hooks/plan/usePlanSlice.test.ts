@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, expect, it, vi } from 'vitest';
-import { renderHook } from '@testing-library/react';
+import { act, renderHook } from '@testing-library/react';
 import { ITEM_TYPES } from '@livediagram/items';
 import { usePlanSlice } from './usePlanSlice';
 
@@ -117,5 +117,35 @@ describe('usePlanSlice', () => {
     result.current.context.commentItem('item-one', { kind: 'add', text: 'Hi' });
     expect(comment).toHaveBeenCalledWith('item-one', { kind: 'add', text: 'Hi' });
     expect(result.current.context.ownerId).toBe('owner-me');
+  });
+
+  // docs/specs/026-plan/plan-board.md "Breadcrumb": a card opened from inside the panel steps the trail; one
+  // opened any other way starts it afresh.
+  it('steps the card trail from inside the panel and restarts it from a board', () => {
+    const { result } = renderHook(() =>
+      usePlanSlice({
+        planItems,
+        itemTypes,
+        editorMode: 'plan',
+        canEdit: true,
+        canVote: true,
+        teamPeople: participants,
+        presence,
+        statusNames,
+        commit: () => {},
+        select: () => {},
+        announce: () => {},
+      }),
+    );
+    act(() => result.current.context.openItem('task'));
+    act(() => result.current.context.openItem('project', 'Parent'));
+    act(() => result.current.context.openItem('sibling', 'ChildCard'));
+    expect(result.current.itemTrail).toEqual(['task', 'project', 'sibling']);
+    act(() => result.current.context.openItem('task', 'Breadcrumb'));
+    expect(result.current.itemTrail).toEqual(['task']);
+    act(() => result.current.context.openItem('project', 'Parent'));
+    act(() => result.current.context.openItem('elsewhere'));
+    expect(result.current.itemTrail).toEqual(['elsewhere']);
+    expect(result.current.openItemId).toBe('elsewhere');
   });
 });

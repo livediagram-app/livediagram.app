@@ -6,7 +6,7 @@
 // it is one column and Details becomes the first tab. Every field saves as it changes. It follows the
 // item wherever someone moves it, and closes if someone deletes it.
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import {
   BUILT_IN_FIELD_IDS,
   detailFieldsOf,
@@ -28,6 +28,9 @@ import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { DebouncedText } from './item-field-editors';
 import { PlanTypeGlyph } from './plan-type-glyph';
 import { ItemPanelMenu } from './ItemPanelMenu';
+import { ItemChildCards } from './ItemChildCards';
+import { ItemTrailCrumbs } from './ItemTrailCrumbs';
+import type { ItemOpenVia } from './item-trail';
 import { FLAG_COLOUR } from './item-flag';
 import { ACCENT_TEXT, accentVars } from './plan-palette';
 import type { ItemCommentsContext } from './ItemComments';
@@ -45,7 +48,61 @@ const DETAILS_TAB = 'details';
 const TAB_CLASS =
   'relative shrink-0 whitespace-nowrap px-1 pb-2 pt-1 text-[13px] font-medium transition aria-selected:text-brand-700 dark:aria-selected:text-brand-300';
 
-export function ItemPanel({
+type ItemPanelProps = {
+  item: Item;
+  // The document's item types (docs/specs/026-plan/item-types.md).
+  types: readonly ItemTypeDef[];
+  // The statuses this tab's boards use, by name, for the status picker.
+  statuses: readonly { status: string; name: string }[];
+  // The projects an item can sit under (its Parent).
+  projects: readonly Item[];
+  people: readonly ItemPerson[];
+  // Every label the document's items carry (the labels field's suggestions).
+  labels: readonly string[];
+  canEdit: boolean;
+  onSave: (field: string, value: ItemFieldValue | undefined) => void;
+  // Several fields in one write (the description and its formatting).
+  onPatch: (patch: ItemPatch) => void;
+  onType: (type: string) => void;
+  // Switches the panel to another item (a card's parent, a child, a crumb), stepping the card trail.
+  onOpenItem: (itemId: string, via: ItemOpenVia) => void;
+  onTrash: () => void;
+  onDuplicate: () => void;
+  onFlag: () => void;
+  // Archive the item, or restore an archived one (docs/specs/026-plan/items.md "Archive").
+  onArchive: () => void;
+  onClose: () => void;
+  // The card's comments (docs/specs/026-plan/items.md "Comments").
+  comments?: ItemCommentsContext;
+  // The cards opened before this one from inside the panel, ending on it (docs/specs/026-plan/plan-board.md
+  // "Breadcrumb").
+  trail: readonly Item[];
+  // The cards that name this one as their Parent ("Child Cards").
+  childCards: readonly Item[];
+  // Each status's column name, for a child row's status.
+  statusNames: ReadonlyMap<string, string>;
+};
+
+// The panel: the Dialog stays mounted while the panel moves from card to card (a parent, a child, a crumb), so
+// it opens once rather than sliding in again; the content is keyed by the card, so each starts on its first
+// tab with its own clock.
+export function ItemPanel(props: ItemPanelProps) {
+  const { item, onClose } = props;
+  return (
+    <Dialog
+      open
+      onClose={onClose}
+      ariaLabel={`Item #${item.key}`}
+      size="3xl"
+      phoneSheet
+      className="h-[min(46rem,calc(100dvh-2rem))] max-h-[calc(100dvh-2rem)] overflow-hidden max-sm:h-[85dvh]"
+    >
+      <ItemPanelContent key={item.id} {...props} />
+    </Dialog>
+  );
+}
+
+function ItemPanelContent({
   item,
   types,
   statuses,
@@ -63,33 +120,10 @@ export function ItemPanel({
   onArchive,
   onClose,
   comments,
-}: {
-  item: Item;
-  // The document's item types (docs/specs/026-plan/item-types.md).
-  types: readonly ItemTypeDef[];
-  // The statuses this tab's boards use, by name, for the status picker.
-  statuses: readonly { status: string; name: string }[];
-  // The projects an item can sit under (its Parent).
-  projects: readonly Item[];
-  people: readonly ItemPerson[];
-  // Every label the document's items carry (the labels field's suggestions).
-  labels: readonly string[];
-  canEdit: boolean;
-  onSave: (field: string, value: ItemFieldValue | undefined) => void;
-  // Several fields in one write (the description and its formatting).
-  onPatch: (patch: ItemPatch) => void;
-  onType: (type: string) => void;
-  // Switches the panel to another item (a card's parent).
-  onOpenItem: (itemId: string) => void;
-  onTrash: () => void;
-  onDuplicate: () => void;
-  onFlag: () => void;
-  // Archive the item, or restore an archived one (docs/specs/026-plan/items.md "Archive").
-  onArchive: () => void;
-  onClose: () => void;
-  // The card's comments (docs/specs/026-plan/items.md "Comments").
-  comments?: ItemCommentsContext;
-}) {
+  trail,
+  childCards,
+  statusNames,
+}: ItemPanelProps) {
   const mobile = useIsMobileViewport();
   // When the panel opened: the meta line says how long ago the last change was from here.
   const [now] = useState(() => Date.now());
@@ -129,9 +163,41 @@ export function ItemPanel({
     ...(comments ? { comments } : {}),
   };
 
+  // Child Cards sit on the type's first tab, before Comments; a Project shows them even with none.
+  const firstTabId = tabs[0]?.id;
+  const showsChildren = childCards.length > 0 || item.type === 'project';
+  const childSection = (
+    <ItemChildCards
+      key="child-cards"
+      item={item}
+      childCards={childCards}
+      types={types}
+      statusNames={statusNames}
+      onOpen={(id) => onOpenItem(id, 'ChildCard')}
+    />
+  );
+
+  // The breadcrumb leads the header on a wide screen; on a phone it takes a row of its own above it, so neither
+  // it nor the type picker is squeezed.
+  const crumbs = (
+    <ItemTrailCrumbs
+      trail={trail}
+      types={types}
+      mobile={mobile}
+      onBack={(id) => onOpenItem(id, 'Breadcrumb')}
+    />
+  );
+  const trailRow =
+    trail.length > 1 ? (
+      <div className="flex min-w-0 items-center border-b border-slate-200 px-3 py-1.5 dark:border-slate-700">
+        {crumbs}
+      </div>
+    ) : null;
+
   const header = (
     <div className="flex items-center gap-2 border-b border-slate-200 px-4 py-2.5 dark:border-slate-700 sm:px-5">
-      <span className={ACCENT_TEXT} style={accentVars(type.color)}>
+      {mobile ? null : crumbs}
+      <span className={`shrink-0 ${ACCENT_TEXT}`} style={accentVars(type.color)}>
         <PlanTypeGlyph glyph={type.glyph} size={16} />
       </span>
       <Select
@@ -229,6 +295,8 @@ export function ItemPanel({
           {details.map(detailRow)}
           {meta}
         </>
+      ) : current.id === firstTabId && showsChildren ? (
+        tabFieldsWithChildren(current.fields, mainField, childSection)
       ) : current.fields.length > 0 ? (
         current.fields.map(mainField)
       ) : (
@@ -240,14 +308,8 @@ export function ItemPanel({
   ) : null;
 
   return (
-    <Dialog
-      open
-      onClose={onClose}
-      ariaLabel={`Item #${item.key}`}
-      size="3xl"
-      phoneSheet
-      className="h-[min(46rem,calc(100dvh-2rem))] max-h-[calc(100dvh-2rem)] overflow-hidden max-sm:h-[85dvh]"
-    >
+    <>
+      {mobile ? trailRow : null}
       {header}
       <div className="flex min-h-0 flex-1">
         <div className="min-w-0 flex-1 overflow-y-auto px-4 pb-6 pt-4 sm:px-6">
@@ -319,6 +381,21 @@ export function ItemPanel({
           </aside>
         )}
       </div>
-    </Dialog>
+    </>
   );
+}
+
+// A first tab's fields with the Child Cards section placed before Comments (or last when it has none).
+function tabFieldsWithChildren(
+  fields: readonly string[],
+  mainField: (f: string) => ReactNode,
+  childSection: ReactNode,
+): ReactNode[] {
+  const at = fields.indexOf('comments');
+  const cut = at < 0 ? fields.length : at;
+  return [
+    ...fields.slice(0, cut).map(mainField),
+    childSection,
+    ...fields.slice(cut).map(mainField),
+  ];
 }

@@ -167,7 +167,7 @@ hand cards to each other. Blank Plan is the mode's blank, as Blank Diagram is Di
 
 - Switching to Plan, Opens in Plan and the template filter fire the existing mode events with `ModePlan`,
   `OpensInPlan` and `TemplateModePlan`.
-- The `Plan` category: `Added` (the item type, or `Card` for a Plan card), `Moved` (`Board`), `Opened` (`Item`),
+- The `Plan` category: `Added` (the item type, or `Card` for a Plan card), `Moved` (`Board`), `Opened` (`Item` from a board or a list; `Parent`, `ChildCard` or `Breadcrumb` from inside the item panel),
   `Voted` (`Up` / `Down`), `Deleted` (the item type), `Changed` (the set-up part), `Toggled` (`FlagOn` / `FlagOff`)
   and `Revealed` (`Board`), never content. A board placed from the palette counts as `Element` · `Added` · `PlanBoard`, a plan view as `PlanView`.
 - The header's Start Blank menu offers Blank Plan, with its own funnel slot (`HeaderPlan`).

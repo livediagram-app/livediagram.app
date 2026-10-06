@@ -65,6 +65,10 @@ ItemPanel.tsx            item panel: Dialog size 3xl (60rem), header (type, key,
                          (title, tabs from tabsOf, the tab's fields), Details aside (w-80: detailFieldsOf rows,
                          then made/changed); phone: one column, a Details tab first, sheet 85dvh
 ItemFieldEditor.tsx      one field's editor by kind (FIELD_LABELS, fieldLabel, labelsItsControl)
+ItemChildCards.tsx       a parent's Child Cards section: childrenOf rows (glyph, #key, title, status, Archived chip)
+ItemTrailCrumbs.tsx      the breadcrumb of earlier cards (visibleTrail, folded "…"): in the header on a wide screen,
+                         a row above it on a phone (a back chevron, no trailing separator)
+item-trail.ts            pure: stepTrail / liveTrail / visibleTrail / childrenOf, ItemOpenVia, ITEM_TRAIL_MAX, ITEM_TRAIL_SHOWN*
 ItemDescription.tsx      the description: NoteRichTextEditor (note=false), saved DESCRIPTION_SAVE_MS (800 ms) after
                          typing, on blur and on close as one patch of description + descriptionRich
 item-field-editors.tsx   editors for text (debounced), person, priority, labels, number, date, checklist
@@ -114,6 +118,16 @@ cancelled` (Escape, pointercancel). `pressed → idle` on pointerup without movi
   the field stays open and empties. Escape closes. Type defaults to `task`.
 - **Item panel**: `openItemId` in `usePlanSlice`; opening broadcasts presence `viewing`; edits debounce 400 ms
   per field (`ITEM_EDIT_DEBOUNCE_MS`), flushed on close; each flush is one undo step.
+- **Card trail**: `itemTrail: string[]` in `usePlanSlice`, beside `openItemId`. `openItem(id)` resets it to
+  `[id]`; `openItem(id, via)` with `via: ItemOpenVia` (`'Parent' | 'ChildCard' | 'Breadcrumb'`) applies
+  `stepTrail(trail, id)`: an id already in the trail cuts the trail back to it, otherwise it is appended and the
+  oldest dropped past `ITEM_TRAIL_MAX`. The host filters the trail to ids still in `items` and not trashed before
+  drawing it (`liveTrail`), and a trail not ending on the open card (`showItem`, the tour) draws as that card
+  alone; closing the panel leaves the trail stale until the next `openItem` resets it.
+- **Panel identity**: `ItemPanel` holds the `Dialog` and renders `ItemPanelContent key={item.id}`, so moving
+  between cards keeps the Dialog mounted (no entrance animation again) while each card's tab and clock reset.
+- **Child cards**: `childrenOf(items, parentId)` = items whose `fields.parent === parentId`, status not `trash`,
+  sorted by `key`; computed in `PlanSheetsHost` for the open item only (one pass over the document's items).
 - **Reveal**: sets `planBoard.hideWriting = false` (element commit).
 - **Set-up edits**: element commits via `updateElement`; removing a column with items opens a choice "Move
   N items to …" (another column) before the commit, the moves pushed with it.
@@ -135,7 +149,8 @@ cancelled` (Escape, pointercancel). `pressed → idle` on pointerup without movi
 - Copy: "Add card", "Add your first card", "Add a Card", "Or type a title and press Enter", "Open",
   "Duplicate", "Delete", "Card duplicated", "Card deleted", "Not on this board", "Move to", "Hidden until reveal", "Reveal", "Votes left: 3",
   "Item not found", "Remove card", "Only mine", "Column", "WIP Limit", "Counts as Done",
-  "Move Left", "Move Right", "+ Add Column After", "Remove Column", "Move and Remove", "Keep It".
+  "Move Left", "Move Right", "+ Add Column After", "Remove Column", "Move and Remove", "Keep It",
+  "Child Cards", "No cards sit under this project yet.", "Archived", "Card trail".
 - Item panel: a modal through the shared `Dialog` (`size="lg"`, `phoneSheet`: a sheet from the bottom with a grab
   handle below `sm`), max height 44rem, header with type picker + key, title
   input, field rows in the type's order, description textarea, checklist, footer "Made by X · Changed by Y, 2m".
@@ -148,6 +163,9 @@ cancelled` (Escape, pointercancel). `pressed → idle` on pointerup without movi
 - Drag has the keyboard equivalent (Shift+arrows). Focus ring 2 px, contrast ≥ 3:1; text ≥ 4.5:1 on every
   type colour stripe (stripe is decorative).
 - Reduced motion: no placeholder animation, no card lift shadow transition.
+- Breadcrumb: `nav aria-label="Card trail"` holding an `ol`; each crumb a `button` named "Back to #12 Website
+  relaunch"; separators and the fold are `aria-hidden` except the fold's sr-only "3 earlier cards". Child Cards: a
+  `section` labelled by its heading, an `ul` of `button` rows named "Open #14 Write tests, In Progress".
 
 ## Web Experience
 
@@ -174,7 +192,7 @@ cancelled` (Escape, pointercancel). `pressed → idle` on pointerup without movi
 ## Observability
 
 `[plan]` log fingerprints: `plan.drop.board`, `plan.drop.out`, `plan.card.onto-board`, `plan.setup.column-removed`,
-`plan.items.load-failed`.
+`plan.items.load-failed`. Panel navigation sends `Plan · Opened · Parent | ChildCard | Breadcrumb`.
 
 ## Testing
 
@@ -190,13 +208,19 @@ cancelled` (Escape, pointercancel). `pressed → idle` on pointerup without movi
 | Face-down and votes spent                   | `packages/items/src/board.test.ts`                            |
 | A palette card lands only in a column       | `apps/live/hooks/plan/plan-card-drop.test.ts`                 |
 | Plan templates' boards                      | `apps/live/lib/template-boards.test.ts`                       |
+| Card trail steps, cut-back, cap; children   | `apps/live/components/plan/item-trail.test.ts`                |
+| Child Cards rows, empty state, open         | `apps/live/components/plan/ItemChildCards.test.tsx`           |
+| Breadcrumb crumbs, fold, step back          | `apps/live/components/plan/ItemTrailCrumbs.test.tsx`          |
 | Drag, Add card, card menu, item panel       | checked by hand against the dev stack (screenshots in the PR) |
 
 ## Constants and configuration
 
-| Constant                | Value | Provenance / safe range                  |
-| ----------------------- | ----- | ---------------------------------------- |
-| `PRESS_DRAG_SLOP_PX`    | 4     | Shared, apps/live/lib/press-gestures.ts  |
-| `PLAN_COLUMN_MIN_PX`    | 220   | A card's title reads in 3 lines; 180–320 |
-| `PLAN_COLUMNS_MAX`      | 12    | Spec                                     |
-| `ITEM_EDIT_DEBOUNCE_MS` | 400   | One undo step per pause in typing        |
+| Constant                 | Value | Provenance / safe range                  |
+| ------------------------ | ----- | ---------------------------------------- |
+| `PRESS_DRAG_SLOP_PX`     | 4     | Shared, apps/live/lib/press-gestures.ts  |
+| `PLAN_COLUMN_MIN_PX`     | 220   | A card's title reads in 3 lines; 180–320 |
+| `PLAN_COLUMNS_MAX`       | 12    | Spec                                     |
+| `ITEM_EDIT_DEBOUNCE_MS`  | 400   | One undo step per pause in typing        |
+| `ITEM_TRAIL_MAX`         | 8     | Spec; bounds the trail's memory; 2–20    |
+| `ITEM_TRAIL_SHOWN`       | 3     | Earlier crumbs that fit a 60rem header   |
+| `ITEM_TRAIL_SHOWN_PHONE` | 1     | Spec                                     |
