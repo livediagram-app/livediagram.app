@@ -23,9 +23,11 @@ test('a reload in the middle of the signed-id upgrade keeps the document', async
     },
   });
   expect(created.ok(), 'seeding the legacy guest’s document').toBe(true);
-  // The legacy id in this browser, set once (not an init script, which a reload would replay).
-  await page.goto('/robots.txt').catch(() => undefined);
-  await page.evaluate((owner) => {
+  // The legacy id in this browser, set before the first load only: the guard lives in
+  // sessionStorage, which a reload keeps, so the reload below sees whatever the upgrade left.
+  await page.addInitScript((owner) => {
+    if (sessionStorage.getItem('e2e:legacy-seeded')) return;
+    sessionStorage.setItem('e2e:legacy-seeded', '1');
     localStorage.setItem('livediagram:v2:self-id', owner);
     localStorage.removeItem('livediagram:v2:self-sig');
     localStorage.setItem('livediagram:v2:name-confirmed', '1');
@@ -46,10 +48,12 @@ test('a reload in the middle of the signed-id upgrade keeps the document', async
   page.on('response', (r) => {
     if (r.url().includes(`/api/documents/${id}`) && r.status() === 403) refused.push(r.url());
   });
-  await page.reload();
-  const load = await page.waitForResponse(
+  // Armed before the reload, so the document's fetch cannot land before anyone listens.
+  const loaded = page.waitForResponse(
     (r) => r.url().endsWith(`/api/documents/${id}`) && r.request().method() === 'GET',
   );
+  await page.reload();
+  const load = await loaded;
   expect(load.status()).toBe(200);
   await page.waitForLoadState('networkidle');
   expect(refused).toEqual([]);
