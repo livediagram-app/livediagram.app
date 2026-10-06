@@ -23,7 +23,9 @@ function fakeEnv(results: unknown[][] = []) {
   const env = {
     DB: {
       prepare: (sql: string) => ({
-        bind: (...args: unknown[]) => ({ sql, args }) as unknown as D1PreparedStatement,
+        // `all` answers the cards read's alias lookup (no aliases), the one read outside the batch.
+        bind: (...args: unknown[]) =>
+          ({ sql, args, all: async () => ({ results: [] }) }) as unknown as D1PreparedStatement,
       }),
       batch: vi.fn(async (stmts: Bound[]) => {
         batches.push(stmts);
@@ -55,6 +57,7 @@ describe('collabIndexStatements', () => {
     expect(stmts.map((s) => s.sql)).toEqual([
       'DELETE FROM collab_actions WHERE tab_id = ?',
       'DELETE FROM collab_threads WHERE tab_id = ?',
+      'DELETE FROM plan_board_statuses WHERE tab_id = ?',
     ]);
     expect(stmts.every((s) => s.args[0] === 'tab-1')).toBe(true);
   });
@@ -90,9 +93,9 @@ describe('collabIndexStatements', () => {
         },
       }),
     ]) as unknown as Bound[];
-    expect(stmts).toHaveLength(4);
-    expect(stmts[2]!.sql).toMatch(/INSERT INTO collab_actions/);
-    expect(stmts[2]!.args).toEqual([
+    expect(stmts).toHaveLength(5);
+    expect(stmts[3]!.sql).toMatch(/INSERT INTO collab_actions/);
+    expect(stmts[3]!.args).toEqual([
       'tab-1',
       's1',
       'a1',
@@ -109,8 +112,8 @@ describe('collabIndexStatements', () => {
       1,
       2,
     ]);
-    expect(stmts[3]!.sql).toMatch(/INSERT INTO collab_threads/);
-    expect(stmts[3]!.args).toEqual([
+    expect(stmts[4]!.sql).toMatch(/INSERT INTO collab_threads/);
+    expect(stmts[4]!.args).toEqual([
       'tab-1',
       's1',
       's1',
@@ -128,12 +131,14 @@ describe('collabIndexStatements', () => {
 });
 
 describe('collabIndexCopyStatements', () => {
-  it('copies both tables from the source tab under the new id', () => {
+  it('copies every table from the source tab under the new id', () => {
     const { env } = fakeEnv();
     const stmts = collabIndexCopyStatements(env, 'old', 'new') as unknown as Bound[];
-    expect(stmts).toHaveLength(2);
+    expect(stmts).toHaveLength(3);
     for (const s of stmts) {
-      expect(s.sql).toMatch(/INSERT INTO collab_\w+[\s\S]*SELECT \?1[\s\S]*WHERE tab_id = \?2/);
+      expect(s.sql).toMatch(
+        /INSERT INTO (collab_\w+|plan_board_statuses)[\s\S]*SELECT \?1[\s\S]*WHERE tab_id = \?2/,
+      );
       expect(s.args).toEqual(['new', 'old']);
     }
   });
@@ -167,11 +172,11 @@ describe('readActivity', () => {
     ...over,
   });
 
-  it('binds the owner, the clock and the cap to both reads in one batch', async () => {
+  it('binds the owner, the clock and the cap to every read in one batch', async () => {
     const { env, batches } = fakeEnv();
     await readActivity(env, 'me', { limit: 7 });
     expect(batches).toHaveLength(1);
-    expect(batches[0]).toHaveLength(2);
+    expect(batches[0]).toHaveLength(3);
     for (const s of batches[0]!) {
       expect(s.args[0]).toBe('me');
       expect(typeof s.args[1]).toBe('number');
@@ -179,6 +184,11 @@ describe('readActivity', () => {
     }
     expect(batches[0]![0]!.sql).toMatch(/FROM collab_actions/);
     expect(batches[0]![1]!.sql).toMatch(/FROM collab_threads/);
+    // Cards also bind the reader's hashed person ids (docs/specs/013-workspace/activity-page.md §2.4).
+    expect(batches[0]![2]!.sql).toMatch(/FROM items i/);
+    expect(JSON.parse(batches[0]![2]!.args[3] as string)).toEqual([
+      expect.stringMatching(/^[0-9a-f]{24}$/),
+    ]);
   });
 
   // docs/specs/013-workspace/tab-scoped-share-links.md: a visitor shown one tab gets a code of exactly that
@@ -186,7 +196,7 @@ describe('readActivity', () => {
   it('confines a tab-scoped visitor to their tab, with a code of that scope', async () => {
     const { env, batches } = fakeEnv();
     await readActivity(env, 'me', { limit: 7 });
-    for (const s of batches[0]!) {
+    for (const s of batches[0]!.slice(0, 2)) {
       expect(s.sql).toContain('sl.tab_id IS s.tab_id');
       expect(s.sql).toMatch(/v\.scope_tab_id IS NULL OR v\.scope_tab_id = c[at]\.tab_id/);
     }

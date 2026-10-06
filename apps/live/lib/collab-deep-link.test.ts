@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { ActivityPlace } from '@livediagram/api-schema';
-import { collabDeepLinkHref, parseCollabDeepLink } from './collab-deep-link';
+import type { ActivityCard, ActivityPlace } from '@livediagram/api-schema';
+import { cardDeepLinkHref, collabDeepLinkHref, parseCollabDeepLink } from './collab-deep-link';
 
 // Both halves of the element deep link (docs/specs/013-workspace/activity-page.md §1): the Explorer
 // builds it, the editor reads it, and they share this module so the
@@ -41,9 +41,46 @@ describe('collabDeepLinkHref', () => {
     const href = collabDeepLinkHref(place, 'comments');
     const hash = href.slice(href.indexOf('#'));
     expect(parseCollabDeepLink(hash)).toEqual({
-      tabId: 'tab/1',
-      elementId: 'el&1',
+      at: { tabId: 'tab/1', elementId: 'el&1' },
       open: 'comments',
+      itemId: null,
+    });
+  });
+});
+
+describe('cardDeepLinkHref', () => {
+  const card: ActivityCard = {
+    documentId: 'd1',
+    documentName: 'Roadmap',
+    teamId: null,
+    via: 'own',
+    shareCode: null,
+    board: { tabId: 'tab/1', tabName: 'Plan', elementId: 'b1', title: 'Sprint' },
+    id: 'it&1',
+    key: 4,
+    type: 'task',
+    title: 'Write it',
+    status: 'todo',
+    updatedAt: 1,
+  };
+
+  it('lands on the card’s board and names the card, round-tripping', () => {
+    const href = cardDeepLinkHref(card);
+    expect(href).toBe('/document/d1#t=tab%2F1&el=b1&item=it%261');
+    expect(parseCollabDeepLink(href.slice(href.indexOf('#')))).toEqual({
+      at: { tabId: 'tab/1', elementId: 'b1' },
+      open: null,
+      itemId: 'it&1',
+    });
+  });
+
+  it('names only the card when no board shows it, through the visitor URL when shared', () => {
+    const href = cardDeepLinkHref({ ...card, board: null, via: 'shared', shareCode: 'c1' });
+    expect(href).toBe('/document/d1?s=c1#item=it%261');
+    expect(parseCollabDeepLink(href.slice(href.indexOf('#')))).toEqual({
+      at: null,
+      open: null,
+      itemId: 'it&1',
     });
   });
 });
@@ -55,22 +92,27 @@ describe('parseCollabDeepLink', () => {
     expect(parseCollabDeepLink('#')).toBeNull();
     expect(parseCollabDeepLink('#el=only')).toBeNull();
     expect(parseCollabDeepLink('#garbage')).toBeNull();
+    expect(parseCollabDeepLink('#t=a&item=')).toBeNull();
   });
 
   it('accepts the fragment with or without the leading hash', () => {
     expect(parseCollabDeepLink('t=a&el=b&open=action')).toEqual({
-      tabId: 'a',
-      elementId: 'b',
+      at: { tabId: 'a', elementId: 'b' },
       open: 'action',
+      itemId: null,
     });
   });
 
   it('keeps the element but opens nothing for an unknown popover', () => {
     expect(parseCollabDeepLink('#t=a&el=b&open=sideways')).toEqual({
-      tabId: 'a',
-      elementId: 'b',
+      at: { tabId: 'a', elementId: 'b' },
       open: null,
+      itemId: null,
     });
-    expect(parseCollabDeepLink('#t=a&el=b')).toEqual({ tabId: 'a', elementId: 'b', open: null });
+    expect(parseCollabDeepLink('#t=a&el=b')).toEqual({
+      at: { tabId: 'a', elementId: 'b' },
+      open: null,
+      itemId: null,
+    });
   });
 });

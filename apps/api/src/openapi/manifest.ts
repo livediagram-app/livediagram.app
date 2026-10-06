@@ -1753,15 +1753,16 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'activity',
     tag: 'Account',
     summary:
-      'What is outstanding for the caller across every document they can open: open actions assigned to them or by them, and unresolved comment threads they are in. Capped at 100 per kind, newest first.',
+      'What is outstanding for the caller across every document they can open: open actions assigned to them or by them, open Plan cards assigned to them, and unresolved comment threads they are in. Capped at 100 per kind, newest first.',
     auth: 'guest-or-clerk',
     responseSchema: {
       type: 'object',
       properties: {
         actions: { type: 'array', items: { $ref: '#/components/schemas/ActivityAction' } },
         threads: { type: 'array', items: { $ref: '#/components/schemas/ActivityThread' } },
+        cards: { type: 'array', items: { $ref: '#/components/schemas/ActivityCard' } },
       },
-      required: ['actions', 'threads'],
+      required: ['actions', 'threads', 'cards'],
     },
     statuses: [200, 400, 401],
   },

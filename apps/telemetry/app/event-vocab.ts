@@ -48,7 +48,7 @@ export const CATEGORY_DESCRIPTIONS: Record<TelemetryCategory, string> = {
   Timeline:
     "The Explorer's activity feed, All activity: opening it (split by whether the page load started on it or it was reached from Home), switching between the list and calendar views, toggling a filter chip, expanding a collapsed run of same-day events, and paging further back.",
   Activity:
-    "The Explorer's Activity page (open actions and comment threads across every document): opening it, clicking a row through to the document (split by action vs thread), and retrying a failed read.",
+    "The Explorer's Activity page (open actions, Plan cards and comment threads across every document): opening it, clicking a row through to the document (split by action, card and thread), and retrying a failed read.",
   Token: 'API tokens: created by hand or by an AI tool connecting over MCP, and revoked.',
   Trash:
     'The Trash deleted documents wait in for 30 days: opened, restored from, deleted from for good, and emptied.',

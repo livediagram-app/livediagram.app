@@ -2,7 +2,7 @@
 
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { ActivityAction, ActivityThread } from '@livediagram/api-schema';
+import type { ActivityAction, ActivityCard, ActivityThread } from '@livediagram/api-schema';
 
 // The Activity page's one read, split three ways (docs/specs/013-workspace/activity-page.md §1), and the
 // error-vs-empty distinction the inbox depends on.
@@ -54,6 +54,23 @@ const thread: ActivityThread = {
   mentionsYou: false,
 };
 
+function card(id: string, updatedAt: number): ActivityCard {
+  return {
+    documentId: 'd2',
+    documentName: 'Roadmap',
+    teamId: 'tm',
+    via: 'team',
+    shareCode: null,
+    board: { tabId: 't2', tabName: 'Plan', elementId: 'b1', title: 'Sprint' },
+    id,
+    key: 1,
+    type: 'task',
+    title: id,
+    status: 'todo',
+    updatedAt,
+  };
+}
+
 beforeEach(() => {
   apiListActivity.mockReset();
 });
@@ -67,6 +84,7 @@ describe('useActivityFeed', () => {
         action('theirs', { assignedToMe: false, createdByMe: true }),
       ],
       threads: [thread],
+      cards: [],
     });
     const { result } = renderHook(() => useActivityFeed('me'));
     await waitFor(() => expect(result.current.loading).toBe(false));
@@ -74,6 +92,27 @@ describe('useActivityFeed', () => {
     expect(result.current.youAssigned.map((a) => a.id)).toEqual(['theirs']);
     expect(result.current.threads).toHaveLength(1);
     expect(result.current.error).toBe(false);
+  });
+
+  // docs/specs/013-workspace/activity-page.md §1, §2.4: Plan cards on the reader share Assigned to You
+  // with actions, newest change first, and count toward the sidebar badge through the same list.
+  it('merges Plan cards into assigned-to-you, newest first', async () => {
+    apiListActivity.mockResolvedValue({
+      actions: [
+        { ...action('older-action', { assignedToMe: true, createdByMe: false }), updatedAt: 2 },
+        { ...action('theirs', { assignedToMe: false, createdByMe: true }), updatedAt: 9 },
+      ],
+      threads: [],
+      cards: [card('new-card', 5), card('old-card', 1)],
+    });
+    const { result } = renderHook(() => useActivityFeed('me'));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.assignedToMe.map((r) => [r.kind, r.id])).toEqual([
+      ['card', 'new-card'],
+      ['action', 'older-action'],
+      ['card', 'old-card'],
+    ]);
+    expect(result.current.youAssigned.map((a) => a.id)).toEqual(['theirs']);
   });
 
   it('reports a failed read as an error, not as an empty inbox', async () => {
@@ -88,6 +127,7 @@ describe('useActivityFeed', () => {
     apiListActivity.mockResolvedValueOnce(null).mockResolvedValueOnce({
       actions: [action('a', { assignedToMe: true, createdByMe: false })],
       threads: [],
+      cards: [],
     });
     const { result } = renderHook(() => useActivityFeed('me'));
     await waitFor(() => expect(result.current.error).toBe(true));
@@ -109,6 +149,7 @@ describe('useActivityFeed', () => {
       .mockResolvedValueOnce({
         actions: [action('b1', { assignedToMe: true, createdByMe: false })],
         threads: [],
+        cards: [],
       });
     const { result, rerender } = renderHook(({ owner }) => useActivityFeed(owner), {
       initialProps: { owner: 'guest' as string | null },
@@ -116,7 +157,7 @@ describe('useActivityFeed', () => {
     rerender({ owner: 'user_1' });
     expect(result.current.loading).toBe(true);
     await waitFor(() => expect(result.current.loading).toBe(false));
-    await act(async () => answerFirst({ actions: [], threads: [thread] }));
+    await act(async () => answerFirst({ actions: [], threads: [thread], cards: [] }));
     expect(result.current.assignedToMe.map((a) => a.id)).toEqual(['b1']);
     expect(result.current.threads).toEqual([]);
   });
