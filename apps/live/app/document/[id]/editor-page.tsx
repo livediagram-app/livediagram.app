@@ -9,7 +9,6 @@ import { requestDriveFlush } from '@/lib/drive/tab-election';
 import { EditorHeader } from '@/components/chrome/EditorHeader';
 import { Explorer } from '@/components/panels/Explorer';
 import { OpeningScreen } from '@/components/chrome/OpeningScreen';
-import { LoadRecoveryCard } from '@/components/chrome/LoadRecoveryCard';
 import { CustomThemeProvider } from '@/components/primitives/CustomThemeProvider';
 import { ShapeLibraryProvider } from '@/components/primitives/ShapeLibraryProvider';
 import { EditorContext } from './EditorContext';
@@ -22,6 +21,12 @@ const NotFound = dynamic(() => import('@/components/chrome/NotFound').then((m) =
 });
 const ApiErrorPage = dynamic(
   () => import('@/components/chrome/ApiErrorPage').then((m) => m.ApiErrorPage),
+  { ssr: false },
+);
+// Only shown under a failed load (docs/specs/007-editor/load-recovery.md), so it is a chunk of its
+// own like the other status cards, not weight on every editor load.
+const LoadRecoveryCard = dynamic(
+  () => import('@/components/chrome/LoadRecoveryCard').then((m) => m.LoadRecoveryCard),
   { ssr: false },
 );
 const DocumentTrashedCard = dynamic(
