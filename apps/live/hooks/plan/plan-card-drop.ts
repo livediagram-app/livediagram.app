@@ -2,7 +2,7 @@
 // palette"): dragged or placed, it becomes a new item in the column and row under the pointer, never a
 // card on the canvas. Over no board, or over a board that does not show the type, nothing is made and
 // the reason is said.
-import type { Element } from '@livediagram/document';
+import { pointInRect, type Element } from '@livediagram/document';
 import { otherPlanBoardAt, planBoardTarget } from './plan-board-targets';
 import { getPaletteDragPreview, subscribePaletteDragPreview } from '@/lib/palette-drag-preview';
 import { dropSlotAt } from './usePlanCardDrag';
@@ -36,8 +36,7 @@ export function boardClientPoint(
   for (let i = elements.length - 1; i >= 0; i -= 1) {
     const el = elements[i]!;
     if (el.type !== 'shape' || el.shape !== 'plan-board') continue;
-    if (canvasX < el.x || canvasY < el.y || canvasX > el.x + el.width || canvasY > el.y + el.height)
-      continue;
+    if (!pointInRect(el, { x: canvasX, y: canvasY })) continue;
     const node = document.querySelector<HTMLElement>(`[data-plan-board="${CSS.escape(el.id)}"]`);
     const rect = node?.getBoundingClientRect();
     if (!rect || el.width <= 0 || el.height <= 0) return null;

@@ -52,6 +52,7 @@ export { GUIDE_TOPIC_NAMES, GUIDE_TOPICS, isGuideTopic, type GuideTopic } from '
 export { renderSkill, SKILL_DESCRIPTION, SKILL_DIRECTORIES, SKILL_NAME } from './skill';
 export {
   documentOf,
+  itemsPath,
   LIST_DEFAULT_LIMIT,
   LIST_MAX_LIMIT,
   tabOf,

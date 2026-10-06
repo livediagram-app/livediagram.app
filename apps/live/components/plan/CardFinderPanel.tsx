@@ -13,13 +13,13 @@ import {
   itemTitle,
   type CardFinderShow,
 } from '@livediagram/items';
-import { SearchIcon, Tooltip, TrashIcon } from '@livediagram/ui';
+import { CountBadge, Tooltip, TrashIcon } from '@livediagram/ui';
 import type { DockAnchor } from '@/lib/canvas-chrome';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
+import { SearchInput } from '@/components/primitives/SearchInput';
 import { usePlan } from './PlanContext';
 import { PlanTypeGlyph } from './plan-type-glyph';
 import { ACCENT_TEXT, ACCENT_TINT, accentVars } from './plan-palette';
-import { CountBadge } from './CountBadge';
 
 // The most rows drawn at once; a search narrows the rest.
 const CARD_FINDER_ROWS_MAX = 200;
@@ -70,21 +70,18 @@ export function CardFinderPanel({
       onPopoverClose={onPopoverClose}
     >
       <div className="flex flex-col gap-2.5 px-3 pb-3">
-        <label className="relative block">
-          <span className="pointer-events-none absolute inset-y-0 left-2.5 flex items-center text-slate-400">
-            <SearchIcon size={14} />
-          </span>
-          <input
-            type="search"
+        <div className="flex">
+          <SearchInput
             autoFocus={finePointer}
-            aria-label="Search cards"
+            ariaLabel="Search cards"
             placeholder="Search by #, title or description"
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={setQuery}
             onKeyDown={(e) => e.stopPropagation()}
-            className="h-9 w-full rounded-lg border border-slate-200 bg-white pl-8 pr-2.5 text-[13px] text-slate-800 placeholder:text-slate-400 focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-400 dark:focus:ring-brand-500/30"
+            clearAriaLabel="Clear the card search"
+            clearDescription="Clear the card search query."
           />
-        </label>
+        </div>
         <div
           role="radiogroup"
           aria-label="Which cards"
@@ -105,6 +102,7 @@ export function CardFinderPanel({
             >
               {s.label}
               <CountBadge
+                size="md"
                 background={s.id === 'off-board' && counts[s.id] ? '#d9770626' : '#64748b26'}
                 color={s.id === 'off-board' && counts[s.id] ? '#b45309' : '#64748b'}
               >

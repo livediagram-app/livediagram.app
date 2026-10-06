@@ -47,6 +47,7 @@ import {
   gateParticipate,
   gateRead,
   missingDocument,
+  readBody,
   requireOwner,
   type RouteContext,
 } from './context';
@@ -105,17 +106,6 @@ async function writeTab(
     return { tab, change };
   }
   return json({ error: 'tab_busy', message: 'the tab kept changing; try again' }, { status: 409 });
-}
-
-async function readBody(ctx: RouteContext): Promise<Record<string, unknown> | Response> {
-  try {
-    const body: unknown = await ctx.request.json();
-    return typeof body === 'object' && body !== null && !Array.isArray(body)
-      ? (body as Record<string, unknown>)
-      : badRequest('expected a JSON object');
-  } catch {
-    return badRequest('invalid json');
-  }
 }
 
 // A new comment from the caller, its author fields server-stamped (and the token id, for an agent: PR23). A

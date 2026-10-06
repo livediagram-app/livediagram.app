@@ -6,6 +6,7 @@
 import { useMemo, useState } from 'react';
 import {
   ITEM_TYPES,
+  WEEKDAY_SHORT,
   calendarModel,
   itemTitle,
   shiftMonth,
@@ -17,7 +18,6 @@ import { accentOn, type PlanPalette } from '../plan-palette';
 import { ViewFrame, openProps, viewState } from './view-frame';
 import type { PlanViewProps } from './PlanViewView';
 
-const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const NO_PHASES = new Map();
 // A day's entry height, and the room its date takes.
 const ENTRY_H = 16;
@@ -105,7 +105,7 @@ export function CalendarView({ plan, items, palette, fontFamily, height }: PlanV
     >
       <div className="absolute inset-0 flex flex-col">
         <div className="grid shrink-0 grid-cols-7" style={{ color: palette.muted }}>
-          {WEEKDAYS.map((d) => (
+          {WEEKDAY_SHORT.map((d) => (
             <span key={d} className="truncate px-1.5 py-1 text-[10px] font-semibold uppercase">
               {d}
             </span>

@@ -1,6 +1,7 @@
 // Calendar days for the plan views (docs/specs/026-plan/plan-views.md): a `YYYY-MM-DD` date field as a
-// whole day number, so a time axis or a month grid is integer arithmetic with no time zone in it.
-const DAY_MS = 86_400_000;
+// whole day number, so a time axis or a month grid is integer arithmetic with no time zone in it. The
+// timeline's month grid (packages/ui/src/timeline/monthCells.ts) shares the same arithmetic.
+export const DAY_MS = 86_400_000;
 const ISO_DAY = /^(\d{4})-(\d{2})-(\d{2})$/;
 
 export const MONTH_SHORT = [
@@ -17,6 +18,8 @@ export const MONTH_SHORT = [
   'Nov',
   'Dec',
 ] as const;
+// Monday first, matching `dayParts`'s weekday.
+export const WEEKDAY_SHORT = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const;
 export const MONTH_LONG = [
   'January',
   'February',
@@ -65,4 +68,26 @@ export function dayParts(day: number): {
 
 export function monthStart(year: number, month: number): number {
   return Math.round(Date.UTC(year, month, 1) / DAY_MS);
+}
+
+// The month `offset` months from `year`/`month` (0-based), normalised.
+export function shiftMonth(
+  year: number,
+  month: number,
+  offset: number,
+): { year: number; month: number } {
+  const n = year * 12 + month + offset;
+  return { year: Math.floor(n / 12), month: ((n % 12) + 12) % 12 };
+}
+
+// The number of days in `year`/`month` (0-based).
+export function daysInMonth(year: number, month: number): number {
+  const next = shiftMonth(year, month, 1);
+  return monthStart(next.year, next.month) - monthStart(year, month);
+}
+
+// A day number back to `YYYY-MM-DD`.
+export function dayKey(day: number): string {
+  const p = dayParts(day);
+  return `${p.year}-${String(p.month + 1).padStart(2, '0')}-${String(p.date).padStart(2, '0')}`;
 }

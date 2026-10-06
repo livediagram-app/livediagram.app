@@ -59,6 +59,7 @@ import {
   gateParticipate,
   gateRead,
   missingDocument,
+  readBody,
   requireOwner,
   type RouteContext,
 } from './context';
@@ -133,17 +134,6 @@ async function writer(ctx: RouteContext, owner: string): Promise<ItemPerson> {
     name: p?.name ?? 'Someone',
     color: p?.color ?? '#94a3b8',
   };
-}
-
-async function readBody(ctx: RouteContext): Promise<Record<string, unknown> | Response> {
-  try {
-    const body: unknown = await ctx.request.json();
-    return typeof body === 'object' && body !== null && !Array.isArray(body)
-      ? (body as Record<string, unknown>)
-      : badRequest('expected a JSON object');
-  } catch {
-    return badRequest('invalid json');
-  }
 }
 
 function readPlace(raw: unknown): ItemPlace | ItemRejection {

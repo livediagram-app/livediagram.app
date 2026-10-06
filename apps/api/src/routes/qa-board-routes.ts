@@ -25,7 +25,14 @@ import {
 import { getDocument, getParticipant } from '../db';
 import type { QaWriteRequest } from '../qa-board-write';
 import { badRequest, conflict, forbidden, json, notFound } from '../responses';
-import { gateEdit, gateRead, missingDocument, requireOwner, type RouteContext } from './context';
+import {
+  gateEdit,
+  gateRead,
+  missingDocument,
+  readBody,
+  requireOwner,
+  type RouteContext,
+} from './context';
 
 export async function handleQaBoardRoute(ctx: RouteContext): Promise<Response | null> {
   const { request, env, segments } = ctx;
@@ -44,12 +51,8 @@ export async function handleQaBoardRoute(ctx: RouteContext): Promise<Response | 
   const existing = await getDocument(env, id);
   if (!existing) return missingDocument(ctx, id);
 
-  let body: { elementId?: unknown; action?: unknown };
-  try {
-    body = (await request.json()) as typeof body;
-  } catch {
-    return badRequest('invalid json');
-  }
+  const body = await readBody(ctx);
+  if (body instanceof Response) return body;
   const elementId = typeof body.elementId === 'string' ? body.elementId : null;
   if (!elementId) return badRequest('missing elementId');
   const action = parseQaAction(body.action);

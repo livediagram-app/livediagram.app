@@ -19,7 +19,7 @@ import {
   type PlanBoardSetup,
   type SwimlaneBy,
 } from '@livediagram/items';
-import { PlanCardsIcon, PlanIcon } from '@livediagram/ui';
+import { PlanCardsIcon, PlanIcon, TextInput } from '@livediagram/ui';
 import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
 import { SlideDeckIcon } from '@/components/palette/palette-icons';
 import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
@@ -32,8 +32,6 @@ import { trackSetup } from '@/components/plan/track-board-setup';
 
 type FlyoutProps = Omit<ComponentProps<typeof MenuFlyoutSection>, 'title' | 'icon' | 'children'>;
 
-const fieldClass =
-  'w-full rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] text-slate-700 outline-none placeholder:text-slate-400 focus:border-brand-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200';
 const captionClass = 'px-3 pt-2 text-[10px] font-medium text-slate-500 dark:text-slate-400';
 
 // A glyph per row grouping and per card field, from the Plan glyph set.
@@ -106,8 +104,9 @@ export function PlanBoardMenuSection({
       <div className="px-3 pt-1">
         <label className="text-[10px] font-medium text-slate-500 dark:text-slate-400">
           Title
-          <input
-            className={`${fieldClass} mt-1`}
+          <TextInput
+            compact
+            className="mt-1"
             value={title}
             maxLength={80}
             onChange={(e) => setTitle(e.target.value)}

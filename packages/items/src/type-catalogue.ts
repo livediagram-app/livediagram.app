@@ -14,6 +14,8 @@ import {
   type ItemTypeTab,
 } from './item-types';
 import { ITEM_TYPE_PATTERN } from './limits';
+import { cutSlug, slugText, uniqueSlug } from './slug';
+import { HEX_COLOUR, isObj } from './validate';
 
 export const ITEM_TYPES_MAX = 32;
 export const ITEM_TYPE_FIELDS_MAX = 24;
@@ -110,23 +112,7 @@ export function isBuiltInFieldId(id: string): id is ItemFieldId {
 
 // A lowercase slug of a name: letters and digits joined by single hyphens.
 export function slugOf(label: string, max = 32): string {
-  const slug = label
-    .toLowerCase()
-    .normalize('NFKD')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .slice(0, max)
-    .replace(/-+$/, '');
-  return slug;
-}
-
-function unique(base: string, taken: ReadonlySet<string>, max: number): string {
-  if (!taken.has(base)) return base;
-  for (let n = 2; ; n += 1) {
-    const suffix = `-${n}`;
-    const id = `${base.slice(0, max - suffix.length)}${suffix}`;
-    if (!taken.has(id)) return id;
-  }
+  return cutSlug(slugText(label), max);
 }
 
 // A new type's id, made from its name and never changed (items store it).
@@ -134,13 +120,13 @@ export function newItemTypeId(label: string, types: readonly ItemTypeDef[]): str
   let base = slugOf(label, 32);
   if (!/^[a-z]/.test(base)) base = `type-${base}`.replace(/-+$/, '').slice(0, 32);
   const taken = new Set<string>([...types.map((t) => t.id), FALLBACK_ITEM_TYPE.id]);
-  return unique(base || 'type', taken, 32);
+  return uniqueSlug(base || 'type', taken, 32);
 }
 
 // A new custom field's id: `f-` and a slug of its name, unique among the type's fields.
 export function newCustomFieldId(label: string, taken: Iterable<string>): string {
   const base = `f-${slugOf(label, 30) || 'field'}`;
-  return unique(base, new Set(taken), 32);
+  return uniqueSlug(base, new Set(taken), 32);
 }
 
 // The fields a panel never files under a tab: the title heads it, and votes live on the card.
@@ -187,7 +173,7 @@ export function detailFieldsOf(type: ItemTypeDef): string[] {
 }
 
 export function newTabId(label: string, taken: Iterable<string>): string {
-  return unique(`t-${slugOf(label, 30) || 'tab'}`, new Set(taken), 32);
+  return uniqueSlug(`t-${slugOf(label, 30) || 'tab'}`, new Set(taken), 32);
 }
 
 function readTabs(input: unknown, fields: readonly string[], at: string): ItemTypeTab[] | string {
@@ -229,9 +215,6 @@ export const defaultNewTitle = (label: string) => `New ${label.toLowerCase()}`;
 
 type Result = { ok: true; catalogue: ItemTypeCatalogue } | { ok: false; reason: string };
 
-const isObj = (v: unknown): v is Record<string, unknown> =>
-  !!v && typeof v === 'object' && !Array.isArray(v);
-
 function readCustom(input: unknown, at: string): CustomFieldDef | string {
   if (!isObj(input)) return `${at}: not an object`;
   const id = input['id'];
@@ -270,7 +253,7 @@ function readType(input: unknown, at: string): ItemTypeDef | string {
   const label = typeof input['label'] === 'string' ? input['label'].trim() : '';
   if (!label || label.length > ITEM_TYPE_LABEL_MAX) return `${at}.label`;
   const color = input['color'];
-  if (typeof color !== 'string' || !/^#[0-9a-f]{6}$/i.test(color)) return `${at}.color`;
+  if (typeof color !== 'string' || !HEX_COLOUR.test(color)) return `${at}.color`;
   const glyph = input['glyph'];
   if (!isPlanGlyphId(glyph)) return `${at}.glyph`;
   const customIn = input['custom'] ?? [];

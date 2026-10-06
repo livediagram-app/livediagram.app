@@ -167,16 +167,18 @@ In Plan mode:
   **Drag a Plan card onto a board** to move its item to the end of the column it lands on; the Plan card goes
   away.
 - **Add a card**: each cell ends in a quiet **+ Add card** ("Add your first card" on an empty board). It opens
-  the **Add a Card** popover (a bottom sheet on a phone), as Illustrate's + opens "Add a page": a tile per card
-  type the board shows, each its glyph on a tint of its colour and its name; choosing one adds a card of it
-  ("New task"...) at the end of the cell, in the cell's row (taking the row's field). Arrow keys move between the
-  tiles; Escape or an outside press closes it. There is no typed title: the card is titled in place or in its
+  the **Add a Card** menu (the shared anchored menu with a tile grid; a bottom sheet on a phone), as
+  Illustrate's + opens "Add a page": a tile per card type the board shows, each its glyph on a tint of its
+  colour and its name; choosing one adds a card of it ("New task"...) at the end of the cell, in the cell's row
+  (taking the row's field). Arrow keys move between the tiles as in every menu; Escape or an outside press
+  closes it and focus goes back to the button. There is no typed title: the card is titled in place or in its
   panel.
 - **Right-click a card** for its menu: **Open**, **Duplicate** (a copy right after it, without its votes),
   **Archive** (or **Restore**; [Items](items.md#archive)),
   **Add to Slides** (an item slide, [Presentation mode](../012-collaboration/presentation-mode.md#item-slides)),
   **Move to** another column of the board, and **Delete** (undo brings it back). Someone who may only view gets
-  Open alone; a face-down card has no menu.
+  Open alone; a face-down card has no menu. It is the shared context menu, so it opens at the pointer, stays
+  inside the window as it grows and is a bottom sheet on a phone, as the element menu is.
 - **Open an item**: clicking a card opens the **item panel**, a wide modal over the canvas. Every field of the
   item's type is edited in place and saved as it changes, except votes, which live on the card face only. It
   closes with Escape or the close button, and follows the item if someone else moves it.
@@ -213,7 +215,7 @@ In Plan mode:
 
 With focus on a card: arrow keys move focus between cards; Enter opens the item; **Shift+Left/Right** moves the
 card to the previous or next column; **Shift+Up/Down** moves it within the column; Delete deletes the item
-(undoable); **N** opens the Add a Card popover for the card's cell; the context-menu key opens the card's menu. Every move is announced ("#12 moved to In progress,
+(undoable); **N** opens the Add a Card menu for the card's cell; the context-menu key opens the card's menu. Every move is announced ("#12 moved to In progress,
 position 2 of 4").
 
 ## The Plan card

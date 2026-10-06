@@ -51,3 +51,13 @@ describe('Button aria-disabled', () => {
     expect(container.querySelector('button')!.className).toContain('aria-disabled:opacity-50');
   });
 });
+
+// The quiet header-row actions (Plan's Card Types panel): no fill or border until hovered.
+describe('Button ghost variant', () => {
+  it('has no border or fill at rest', () => {
+    const { container } = render(<Button variant="ghost">Archive</Button>);
+    const cls = container.querySelector('button')!.className;
+    expect(cls).not.toContain('border');
+    expect(cls).toContain('hover:bg-slate-100');
+  });
+});

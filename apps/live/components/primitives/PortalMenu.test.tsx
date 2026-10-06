@@ -75,6 +75,30 @@ describe('PortalMenu', () => {
     );
     expect(screen.getByRole('menu').style.top).toBe('140px');
   });
+
+  it('hangs from the anchor left edge when placed at the start', () => {
+    vi.mocked(HTMLElement.prototype.getBoundingClientRect).mockImplementation(function (
+      this: HTMLElement,
+    ) {
+      if (this.hasAttribute('data-menu-surface')) {
+        return rect(parseFloat(this.style.left), parseFloat(this.style.top), MENU_W, MENU_H);
+      }
+      return rect(40, 100, 600, 30);
+    });
+    render(
+      <PortalMenu
+        anchor={document.createElement('button')}
+        placement="below-start"
+        onClose={() => {}}
+      >
+        <span>Item</span>
+      </PortalMenu>,
+    );
+    const menu = screen.getByRole('menu');
+    expect(menu.style.left).toBe('40px');
+    expect(menu.style.top).toBe('130px');
+    expect(menu.style.transform).toBe('translate(0, 4px)');
+  });
 });
 
 // docs/specs/004-interface-design/menus.md: a row takes the role of the menu it sits in.

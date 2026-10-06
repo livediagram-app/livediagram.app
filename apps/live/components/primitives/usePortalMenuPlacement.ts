@@ -4,13 +4,16 @@ import { useCallback, useEffect, useLayoutEffect, useState } from 'react';
 import { clampToViewport } from '@/lib/clamp-to-viewport';
 import { useReposition } from '@/hooks/canvas/useReposition';
 
-export type PortalMenuPlacement = 'above' | 'below';
+export type PortalMenuPlacement = 'above' | 'below' | 'above-start' | 'below-start';
 
-// Right-align the menu's right edge with the anchor's right edge and place
+// Right-align the menu's right edge with the anchor's right edge (or, `-start`, its left edge
+// with the anchor's left edge, for a wide trigger such as a board's Add Card row) and place
 // it above or below, with a small gap.
 export const PLACEMENT_TRANSFORM: Record<PortalMenuPlacement, string> = {
   above: 'translate(-100%, calc(-100% - 4px))',
   below: 'translate(-100%, 4px)',
+  'above-start': 'translate(0, calc(-100% - 4px))',
+  'below-start': 'translate(0, 4px)',
 };
 
 /**
@@ -31,7 +34,9 @@ export function usePortalMenuPlacement(
   const reposition = useCallback(() => {
     if (!anchor) return;
     const r = anchor.getBoundingClientRect();
-    setPos({ left: r.right, top: placement === 'below' ? r.bottom : r.top });
+    const start = placement.endsWith('-start');
+    const below = placement.startsWith('below');
+    setPos({ left: start ? r.left : r.right, top: below ? r.bottom : r.top });
   }, [anchor, placement]);
   useReposition(reposition);
 

@@ -14,11 +14,10 @@ import {
   type ItemFields,
 } from '@livediagram/items';
 import { defineVerb, VerbRefusal, type VerbContext } from '../define';
-import { columns, documentOf } from './shared';
+import { columns, documentOf, itemsPath } from './shared';
 
 const docArg = z.string().describe('A name, id prefix or livediagram URL');
 const itemArg = z.string().describe('The item, by its number (#12) or an id prefix');
-const itemsPath = (id: string) => `/documents/${encodeURIComponent(id)}/items`;
 
 const itemOut = z.object({
   id: z.string(),

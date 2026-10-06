@@ -8,10 +8,8 @@
 // with what is drawn. A drop on another board moves the item there (its column, and its row when
 // that board has rows); a drop on the canvas leaves a Plan card there.
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { isDragTravel } from '@/lib/press-gestures';
 import { otherPlanBoardAt, planBoardTarget } from './plan-board-targets';
-
-// A press that moves this far (screen px) is a drag, not a click: the canvas's own threshold.
-export const PLAN_DRAG_SLOP_PX = 4;
 
 export type PlanDropSlot = {
   status: string;
@@ -171,8 +169,8 @@ export function usePlanCardDrag(opts: {
       const p = pressedRef.current;
       const board = boardRef.current;
       if (!p || e.pointerId !== p.pointerId || !board) return;
-      const moved = Math.hypot(e.clientX - p.startX, e.clientY - p.startY);
-      if (!dragRef.current && moved < PLAN_DRAG_SLOP_PX) return;
+      // A press that has not travelled the shared slop is still a click.
+      if (!dragRef.current && !isDragTravel(e.clientX - p.startX, e.clientY - p.startY)) return;
       if (!dragRef.current) optsRef.current.onDragging(p.itemId);
       const b = board.getBoundingClientRect();
       const outside =

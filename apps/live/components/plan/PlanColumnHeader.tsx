@@ -6,9 +6,8 @@
 // touch screen.
 import { useCallback, useRef, useState } from 'react';
 import type { PlanBoardSetup, ProjectedColumn } from '@livediagram/items';
-import { SettingsIcon } from '@livediagram/ui';
+import { CountBadge, SettingsIcon } from '@livediagram/ui';
 import { PlanColumnPopover } from './PlanColumnPopover';
-import { CountBadge } from './CountBadge';
 import type { PlanPalette } from './plan-palette';
 
 export function PlanColumnHeader({
@@ -44,6 +43,7 @@ export function PlanColumnHeader({
         <span className="truncate text-[13px] font-semibold">{column.name}</span>
         <span className="ml-auto flex">
           <CountBadge
+            size="md"
             background={col.overLimit ? palette.warningBg : palette.surface}
             color={col.overLimit ? palette.warning : palette.muted}
             label={

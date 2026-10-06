@@ -14,10 +14,14 @@ import {
   type PlanBoardSetup,
   type QuickFilter,
 } from '@livediagram/items';
+import { lucideGripVertical } from '@livediagram/icons/lucide';
+import { lucideGlyph } from '@livediagram/ui';
 import { BoardWidgetView, type WidgetContext } from './widgets/BoardWidgetView';
 import { BoardWidgetZone } from './widgets/BoardWidgetZone';
-import { GripArt } from './plan-tile-art';
 import type { PlanPalette } from './plan-palette';
+
+// The shared six-dot grip (the article zone bar's), a board's move handle.
+const GripIcon = lucideGlyph(lucideGripVertical, 16);
 
 const stop = (e: { stopPropagation: () => void }) => e.stopPropagation();
 
@@ -105,7 +109,7 @@ export function PlanBoardHeader({
           style={{ color: palette.muted }}
           aria-hidden
         >
-          <GripArt size={16} />
+          <GripIcon />
         </span>
       ) : null}
       <div

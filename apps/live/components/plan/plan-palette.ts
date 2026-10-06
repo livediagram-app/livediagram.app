@@ -3,7 +3,7 @@
 import type { CSSProperties } from 'react';
 import { liftAccent, type ShapeElement } from '@livediagram/document';
 
-export { accentOn, planPalette, type PlanPalette } from '@livediagram/document';
+export { PRIORITY_COLOURS, accentOn, planPalette, type PlanPalette } from '@livediagram/document';
 
 // A board's or card's own colours, as planPalette reads them.
 export const planOwnColours = (el: ShapeElement) => ({
@@ -11,22 +11,6 @@ export const planOwnColours = (el: ShapeElement) => ({
   stroke: el.strokeColor,
   text: el.textColor,
 });
-
-export const PRIORITY_COLOURS = {
-  urgent: '#dc2626',
-  high: '#ea580c',
-  medium: '#ca8a04',
-  low: '#64748b',
-} as const;
-
-export function initialsOf(name: string): string {
-  return name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((w) => w[0]!.toUpperCase())
-    .join('');
-}
 
 // A type accent in the app's own chrome (panels, popovers, the palette): the colour as chosen, and in
 // dark mode the lifted one, so Project's black still shows (docs/specs/026-plan/item-types.md). The

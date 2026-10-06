@@ -17,7 +17,7 @@ import {
   offlineWriteItem,
   offlineWriteItemComment,
 } from '../offline/offline-items';
-import { API_BASE, apiFetch, apiHeaders, expectOk, expectOkVoid } from './core';
+import { API_BASE, apiDelete, apiFetch, apiHeaders, expectOk } from './core';
 
 export type ItemsScope = {
   ownerId: string;
@@ -89,11 +89,11 @@ export async function writeItem(
     case 'vote':
       return one(await post(scope, `${id}/vote`, { delta: write.delta }, 'item vote'));
     case 'delete': {
-      const res = await apiFetch(itemsUrl(scope, id), {
-        method: 'DELETE',
-        headers: await apiHeaders(scope.ownerId, { share: scope.shareCode }),
+      await apiDelete(itemsUrl(scope, id), scope.ownerId, {
+        action: 'item delete',
+        share: scope.shareCode,
+        allow404: false,
       });
-      await expectOkVoid(res, 'item delete');
       return { upserts: [], removed: [write.id], rev: -1 };
     }
   }

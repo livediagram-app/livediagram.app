@@ -8,7 +8,7 @@ import { validateItemTypeCatalogue, type ItemTypeCatalogue } from '@livediagram/
 import { getDocument, setDocumentItemTypes } from '../db';
 import { badRequest, forbidden, json, methodNotAllowed } from '../responses';
 import { relayItemTypes } from '../room-client';
-import { gateEdit, missingDocument, requireOwner, type RouteContext } from './context';
+import { gateEdit, missingDocument, readBody, requireOwner, type RouteContext } from './context';
 
 async function put(ctx: RouteContext, documentId: string): Promise<Response> {
   const owner = requireOwner(ctx);
@@ -17,15 +17,10 @@ async function put(ctx: RouteContext, documentId: string): Promise<Response> {
   if (!doc) return missingDocument(ctx, documentId);
   // The catalogue is the whole document's: a grant confined to one tab may not change it.
   if (!(await gateEdit(ctx, documentId, doc.ownerId, doc.teamId))) return forbidden();
-  let body: unknown;
-  try {
-    body = await ctx.request.json();
-  } catch {
-    return badRequest('invalid json');
-  }
-  if (!body || typeof body !== 'object' || !('itemTypes' in body))
-    return badRequest('expected { itemTypes }');
-  const raw = (body as { itemTypes: unknown }).itemTypes;
+  const body = await readBody(ctx);
+  if (body instanceof Response) return body;
+  if (!('itemTypes' in body)) return badRequest('expected { itemTypes }');
+  const raw = body.itemTypes;
   let itemTypes: ItemTypeCatalogue | null = null;
   if (raw !== null) {
     const result = validateItemTypeCatalogue(raw);

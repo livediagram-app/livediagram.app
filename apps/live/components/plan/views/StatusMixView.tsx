@@ -8,28 +8,25 @@ import { statusMixModel } from '@livediagram/items';
 import { ViewFrame, viewState } from './view-frame';
 import type { PlanViewProps } from './PlanViewView';
 
-// Status colours in turn, distinct from each other on either surface; No status is the muted ink.
-export const STATUS_COLOURS = [
-  '#3b82f6',
-  '#f59e0b',
-  '#8b5cf6',
-  '#16a34a',
-  '#ec4899',
-  '#14b8a6',
-  '#f97316',
-  '#0ea5e9',
-  '#a855f7',
-  '#84cc16',
-] as const;
 const NO_NAMES = new Map<string, string>();
 
-export function StatusMixView({ plan, items, palette, fontFamily, width, height }: PlanViewProps) {
+export function StatusMixView({
+  plan,
+  items,
+  palette,
+  chartPalette,
+  fontFamily,
+  width,
+  height,
+}: PlanViewProps) {
   const model = useMemo(
     () => statusMixModel(items.values(), plan?.statusNames ?? NO_NAMES),
     [items, plan?.statusNames],
   );
+  // Status colours in turn from the tab theme's chart palette, as a pie chart's slices take them; No
+  // status is the muted ink.
   const colours = model.slices.map((s, i) =>
-    s.status === null ? palette.muted : STATUS_COLOURS[i % STATUS_COLOURS.length]!,
+    s.status === null ? palette.muted : chartPalette[i % chartPalette.length]!,
   );
   // Each slice from where the ones before it end.
   const ends = model.slices.map((_, i) =>

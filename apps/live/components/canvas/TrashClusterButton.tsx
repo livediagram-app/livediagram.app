@@ -2,9 +2,8 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { isTrashed } from '@livediagram/items';
-import { TrashIcon } from '@livediagram/ui';
+import { CountBadge, TrashIcon } from '@livediagram/ui';
 import { usePlan } from '@/components/plan/PlanContext';
-import { CountBadge } from '@/components/plan/CountBadge';
 import { ClusterPopoverButton } from './ClusterPopoverButton';
 
 // The Trash in the bottom-right cluster, in Plan mode (docs/specs/026-plan/items.md "Trash"), left of
@@ -79,7 +78,7 @@ export function TrashClusterButton(props: {
       />
       {count > 0 ? (
         <span aria-hidden className="pointer-events-none absolute -right-1.5 -top-1.5">
-          <CountBadge background="#e11d48" color="#ffffff">
+          <CountBadge size="md" background="#e11d48" color="#ffffff">
             {count}
           </CountBadge>
         </span>

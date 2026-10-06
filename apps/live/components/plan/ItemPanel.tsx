@@ -22,7 +22,7 @@ import {
   type ItemPerson,
   type ItemTypeDef,
 } from '@livediagram/items';
-import { CloseIcon, relativeSince, Select } from '@livediagram/ui';
+import { DialogCloseButton, relativeSince, Select } from '@livediagram/ui';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { DebouncedText } from './item-field-editors';
@@ -174,14 +174,7 @@ export function ItemPanel({
           onDelete={onDelete}
         />
       ) : null}
-      <button
-        type="button"
-        onClick={onClose}
-        aria-label="Close"
-        className="flex h-8 w-8 items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
-      >
-        <CloseIcon size={14} />
-      </button>
+      <DialogCloseButton compact onClick={onClose} />
     </div>
   );
 

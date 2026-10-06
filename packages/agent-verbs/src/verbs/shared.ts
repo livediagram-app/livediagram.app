@@ -44,4 +44,8 @@ export async function tabOf(ctx: VerbContext, doc: string, tab: string | undefin
 export const tabPath = (documentId: string, tabId: string) =>
   `/documents/${encodeURIComponent(documentId)}/tabs/${encodeURIComponent(tabId)}`;
 
+// A document's item store (docs/specs/026-plan/items.md), for the CLI's item verbs and the MCP item tools.
+export const itemsPath = (documentId: string) =>
+  `/documents/${encodeURIComponent(documentId)}/items`;
+
 export type { ApiClient };

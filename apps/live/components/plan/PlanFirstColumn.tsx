@@ -5,7 +5,7 @@
 // + Add Column After. Someone who may only view reads that the board has no columns yet.
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { useState } from 'react';
-import { PlusIcon } from '@livediagram/ui';
+import { Button, PlusIcon } from '@livediagram/ui';
 import { COLUMN_NAME_MAX } from './board-setup-edits';
 import type { PlanPalette } from './plan-palette';
 
@@ -62,15 +62,14 @@ export function PlanFirstColumn({
                   }
                 }}
               />
-              <button
-                type="button"
+              <Button
                 disabled={!name.trim()}
                 onClick={add}
-                className="flex h-9 shrink-0 items-center gap-1 rounded-md bg-brand-600 px-3 text-[13px] font-semibold text-white transition enabled:cursor-pointer enabled:hover:bg-brand-700 disabled:opacity-50 dark:bg-brand-600"
+                className="h-9 shrink-0 gap-1 px-3 text-[13px] font-semibold"
               >
                 <PlusIcon size={14} />
                 Add Column
-              </button>
+              </Button>
             </div>
           </>
         ) : (

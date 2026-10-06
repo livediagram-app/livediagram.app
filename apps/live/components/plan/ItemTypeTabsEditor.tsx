@@ -15,8 +15,7 @@ import {
   newTabId,
   type ItemTypeTab,
 } from '@livediagram/items';
-import { ArrowDownIcon, ArrowUpIcon, CloseIcon, Select } from '@livediagram/ui';
-import { FIELD_CLASS } from './PlanModal';
+import { ArrowDownIcon, ArrowUpIcon, CloseIcon, Select, TextInput } from '@livediagram/ui';
 
 // The fields a tab can hold: never the title (it heads the panel) or votes (they live on the card).
 export const NOT_TABBABLE = new Set(['title', 'votes']);
@@ -92,14 +91,14 @@ export function TabPicker({
       setName('');
     };
     return (
-      <input
+      <TextInput
         autoFocus
         aria-label={`New tab for ${label}`}
         placeholder="Tab name, then Enter"
         maxLength={ITEM_TYPE_TAB_LABEL_MAX}
         value={name}
-        // FIELD_CLASS is full width; this sits in the row where the picker was, at the picker's width.
-        className={`${FIELD_CLASS.replace('w-full', '')} w-32 shrink-0 py-1 text-[12px]`}
+        compact
+        className="w-32 shrink-0 py-1 text-[12px]"
         onChange={(e) => setName(e.target.value)}
         onKeyDown={(e) => {
           e.stopPropagation();
@@ -152,9 +151,9 @@ export function TabsList({
   return (
     <ul className="flex flex-col gap-1.5" aria-label="Tabs">
       <li className="flex items-center gap-1.5">
-        <input
+        <TextInput
           aria-label="Details name"
-          className={FIELD_CLASS}
+          compact
           value={detailsLabel}
           maxLength={ITEM_TYPE_TAB_LABEL_MAX}
           placeholder={DETAILS_LABEL_DEFAULT}
@@ -166,9 +165,9 @@ export function TabsList({
       </li>
       {tabs.map((t, i) => (
         <li key={t.id} className="flex items-center gap-1.5">
-          <input
+          <TextInput
             aria-label={`Tab ${i + 1} name`}
-            className={FIELD_CLASS}
+            compact
             value={t.label}
             maxLength={ITEM_TYPE_TAB_LABEL_MAX}
             placeholder="Tab name"
