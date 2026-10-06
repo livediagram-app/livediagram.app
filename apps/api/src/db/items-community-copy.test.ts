@@ -23,6 +23,7 @@ describe('copyItemsStatements', () => {
         status: 'todo',
         assignee: JSON.parse(ALI),
         votes: { 'p-ali': 2 },
+        comments: { comments: [{ id: 'c1', author: 'Ali', text: 'Hi', createdAt: 1 }] },
       }),
       rev: 1,
       created_at: 1,
@@ -42,7 +43,7 @@ describe('copyItemsStatements', () => {
       updated_by: string;
     };
 
-  it('drops the assignee and votes and neutralises the authors on a Community copy', async () => {
+  it('drops the assignee, votes and comments and neutralises the authors on a Community copy', async () => {
     const db = seeded();
     await db.env.DB.batch(copyItemsStatements(db.env, 'src', 'dst', null, true));
     const row = copied(db);
@@ -56,6 +57,7 @@ describe('copyItemsStatements', () => {
     await db.env.DB.batch(copyItemsStatements(db.env, 'src', 'dst', ['i1']));
     const row = copied(db);
     expect(JSON.parse(row.fields).assignee.name).toBe('Ali');
+    expect(JSON.parse(row.fields).comments.comments).toHaveLength(1);
     expect(row.created_by).toBe(ALI);
   });
 });
