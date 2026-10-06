@@ -32,6 +32,9 @@ export type PlanItems = {
   self: ItemPerson | null;
   // Applies a write now, sends it, and settles on the answer; every write but a vote is undoable.
   write: (write: ItemWrite) => Promise<boolean>;
+  // The same, with no undo step: for content the editor makes and takes away itself (the Plan tour's
+  // example cards, docs/specs/026-plan/plan-tour.md "Tour content"), which Undo must never bring back.
+  writeQuiet: (write: ItemWrite) => Promise<boolean>;
   receive: (op: ItemsRoomOp) => void;
   refetch: () => void;
 };
@@ -209,7 +212,12 @@ export function usePlanItems(opts: {
     [send, callbacks],
   );
 
+  const writeQuiet = useCallback(
+    async (input: ItemWrite): Promise<boolean> => (await send(withCreateIds(input))).ok,
+    [send],
+  );
+
   const items = useMemo(() => new Map(store.items.map((i) => [i.id, i])), [store.items]);
 
-  return { store, items, status, self, write, receive, refetch };
+  return { store, items, status, self, write, writeQuiet, receive, refetch };
 }

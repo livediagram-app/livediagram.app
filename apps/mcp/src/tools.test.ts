@@ -11,7 +11,7 @@ vi.mock('./image-result', () => ({
 }));
 
 import { registerTools } from './tools';
-import { deleteDocumentShape } from './schema';
+import { deleteDocumentShape } from '@livediagram/agent-verbs/mcp';
 import { TOOL_ANNOTATIONS, type ToolBehaviour } from './tool-annotations';
 import type { ToolAnnotations } from '@modelcontextprotocol/sdk/types.js';
 

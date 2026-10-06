@@ -96,7 +96,7 @@ apps/live/components/palette/palette-plan-tiles.tsx   a tile per kind, section `
   figures `palette.text`; WIP over: `palette.warning` on `palette.warningBg`.
 - Drop / reorder bar: 2 × 24 px, `palette.focus`. A zone under a palette drag: 1.5 px dashed `palette.focus`.
 - Empty zone copy for an editor: "Drag Widgets here from the palette".
-- × : 16 px disc at the wrapper's top right, shown on hover and focus-within, always on a coarse pointer.
+- × : 16 px disc at the wrapper's top right, shown only while the board is selected (`selected`, from `PlanBoardHeader`), on any pointer; otherwise `display: none`, so it is out of the tab order too (Delete still removes a focused widget).
 
 ## Accessibility
 

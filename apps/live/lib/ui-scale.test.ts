@@ -3,11 +3,15 @@ import {
   UI_SCALE_DEFAULT,
   UI_SCALE_MAX,
   UI_SCALE_MIN,
+  UI_SCALE_TOOLBAR_BASE,
+  UI_SCALE_TOOLBAR_MAX,
   resolveUiScale,
+  resolveUiScalePart,
   resolveUiScales,
   toSurfacePx,
   uiScalePartPatch,
   uiScalePatch,
+  uiScaleMax,
   uiScaleStyle,
   uiUnscaleStyle,
   withUiScalePatch,
@@ -56,13 +60,31 @@ describe('resolveUiScale', () => {
 
 describe('resolveUiScales', () => {
   it('gives every part the master scale', () => {
-    expect(desktop({ uiScale: 0.9 })).toEqual({ panels: 0.9, toolbar: 0.9, cornerButtons: 0.9 });
+    expect(desktop({ uiScale: 0.9 })).toEqual({ panels: 0.9, toolbar: 1.03, cornerButtons: 0.9 });
+  });
+
+  it("draws the toolbar's 100% at what was 115%", () => {
+    expect(UI_SCALE_TOOLBAR_BASE).toBe(1.15);
+    expect(desktop({}).toolbar).toBe(1.15);
+    // The slider still reads 100%.
+    expect(resolveUiScalePart({}, 'toolbar')).toBe(1);
+  });
+
+  it('runs the toolbar up to 140%, the master and the other parts to 120%', () => {
+    expect(UI_SCALE_TOOLBAR_MAX).toBe(1.4);
+    expect(uiScaleMax('toolbar')).toBe(1.4);
+    expect(uiScaleMax()).toBe(UI_SCALE_MAX);
+    expect(uiScaleMax('panels')).toBe(UI_SCALE_MAX);
+    expect(resolveUiScalePart({ uiScaleToolbar: 1.4 }, 'toolbar')).toBe(1.4);
+    expect(resolveUiScalePart({ uiScaleToolbar: 3 }, 'toolbar')).toBe(1.4);
+    expect(resolveUiScalePart({ uiScalePanels: 1.4 }, 'panels')).toBe(1.2);
+    expect(desktop({ uiScaleToolbar: 1.4 }).toolbar).toBe(1.61);
   });
 
   it("lets a part's own value override the master for that part alone", () => {
     expect(desktop({ uiScale: 0.9, uiScaleToolbar: 1.2 })).toEqual({
       panels: 0.9,
-      toolbar: 1.2,
+      toolbar: 1.38,
       cornerButtons: 0.9,
     });
   });
@@ -85,7 +107,7 @@ describe('writing', () => {
     const prefs: UserPreferences = { uiScale: 1, uiScaleToolbar: 1.2, uiScalePanels: 0.8 };
     const next = withUiScalePatch(prefs, uiScalePatch(0.9));
     expect(next).toEqual({ uiScale: 0.9 });
-    expect(desktop(next)).toEqual({ panels: 0.9, toolbar: 0.9, cornerButtons: 0.9 });
+    expect(desktop(next)).toEqual({ panels: 0.9, toolbar: 1.03, cornerButtons: 0.9 });
   });
 
   it('a part writes only its own value', () => {

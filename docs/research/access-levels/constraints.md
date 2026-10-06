@@ -183,7 +183,7 @@ or opens a hole; "should" is a strong preference.
   dimension too. Administration (teams, tokens, account) stays session-only whatever the level.
 - **C18. MCP vocabulary leaks to agents.** `share_document.role` is `z.enum(['view', 'edit'])`,
   default `view`, described as "recipients can open and read but not change it"
-  ([schema.ts](../../../apps/mcp/src/schema.ts)). If "view" becomes look-only, agents' default links
+  ([schema.ts](../../../packages/agent-verbs/src/mcp/schema.ts)). If "view" becomes look-only, agents' default links
   silently lose commenting; the default must be chosen deliberately, and MCP clients cache tool
   schemas, so an old schema may send `view` meaning the old thing.
 

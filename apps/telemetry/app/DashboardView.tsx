@@ -52,6 +52,7 @@ import {
   UNDO_AND_REDO,
   VOTING,
   WELCOME_TOUR,
+  PLAN_TOUR,
   POWER_USER_OFFER,
   NEW_VERSION_PROMPT,
 } from './metric-catalogue';
@@ -85,6 +86,7 @@ export const GROUPS: MetricGroup[] = [
       CALLS_TO_ACTION,
       SIGN_IN_PROMPTS,
       WELCOME_TOUR,
+      PLAN_TOUR,
       POWER_USER_OFFER,
       NEW_VERSION_PROMPT,
     ],

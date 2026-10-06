@@ -10,6 +10,7 @@ const ALL = new Set([
   'alignmentGuides',
   'autoRebindArrows',
   'tourSeen',
+  'planTourSeen',
   'aiSuggestedPrompts',
 ]);
 
@@ -22,6 +23,7 @@ describe('presetSummaryLines', () => {
       ['Alignment Guides', 'On', 'Editor'],
       ['Auto-Attach Arrows', 'On', 'Editor'],
       ['Show Welcome Tour', 'Off', 'Accessibility'],
+      ['Show Plan Tour', 'Off', 'Accessibility'],
       ['Suggested Prompts', 'Off', 'AI Tools'],
     ]);
     expect(lines.every((l) => !l.changed && l.reachable)).toBe(true);

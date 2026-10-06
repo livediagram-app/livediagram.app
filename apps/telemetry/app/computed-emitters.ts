@@ -24,6 +24,7 @@ import {
   placementDefaultTelemetryType,
 } from '@livediagram/api-schema';
 import { countedVerbs } from '@livediagram/agent-verbs';
+import { MCP_TOOL_VERBS } from '@livediagram/agent-verbs/mcp';
 import { CANVAS_CONTROLS } from './event-vocab';
 
 export type ComputedValues = {
@@ -58,13 +59,11 @@ const DRIVE_OPEN_WITH_TYPES = tokensAfter(
 // The api's email templates: `export type EmailKind = 'Welcome' | ...;`.
 const EMAIL_KINDS = tokensAfter(read('api/src/email/templates.ts'), 'export type EmailKind', ';');
 
-// Each tool the MCP server registers, as pascalToken(name).
 // The verbs the CLI counts (packages/agent-verbs), as their `Cli·Used` types.
 const CLI_VERBS = countedVerbs().map((v) => pascalToken(v.id));
 
-const MCP_TOOLS = [
-  ...read('mcp/src/tools.ts').matchAll(/registerTool\(\s*server,\s*env,\s*'([a-z_]+)'/g),
-].map((m) => pascalToken(m[1]!));
+// Each tool the MCP server registers, from its verb (packages/agent-verbs mcp-tools.ts), as pascalToken(name).
+const MCP_TOOLS = MCP_TOOL_VERBS.map((v) => pascalToken(v.mcp.tool));
 
 // The Appearance settings' labels (packages/ui appearance-cycle.ts), the
 // editor's `UI·Toggled` type on an explicit pick.
@@ -140,6 +139,21 @@ export const TOUR_STEP_SOURCE: string[] = [
   .map(
     (id) =>
       `TourStep${id
+        .split('-')
+        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+        .join('')}`,
+  );
+
+// The Plan tour's steps, as planTourStepTelemetryType makes them (apps/live plan-tour-steps.ts,
+// docs/specs/026-plan/plan-tour.md). The welcome card sends no step view.
+export const PLAN_TOUR_STEP_SOURCE: string[] = [
+  ...read('live/components/tour/plan-tour-steps.ts').matchAll(/^ {4}id: '([a-z-]+)',/gm),
+]
+  .map((m) => m[1]!)
+  .filter((id) => id !== 'welcome')
+  .map(
+    (id) =>
+      `PlanTourStep${id
         .split('-')
         .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
         .join('')}`,
@@ -372,6 +386,7 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     values: API_ERRORS,
     open: API_ERROR_WHY,
   },
+  'apps/live/components/tour/PlanTourHost.tsx UI·View': { values: PLAN_TOUR_STEP_SOURCE },
   'apps/live/components/tour/TourHost.tsx UI·View': { values: TOUR_STEP_SOURCE },
   'apps/live/hooks/canvas/commit-freehand.ts Element·Added': {
     values: ['Square', 'Circle', 'Diamond', 'Triangle'],

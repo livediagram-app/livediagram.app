@@ -34,13 +34,20 @@ function show(settings: UserPreferences = {}) {
 }
 
 describe('UI Scale rows', () => {
-  it('start in the middle, at 100%, when unset', () => {
+  it('start at 100% when unset, in the middle of the slider but for the toolbar', () => {
     const { slider } = show();
-    for (const name of ['UI Scale', 'Panel Scale', 'Toolbar Scale', 'Corner Buttons Scale']) {
+    for (const name of ['UI Scale', 'Panel Scale', 'Corner Buttons Scale']) {
       const s = slider(name);
       expect(s.value).toBe('1');
       expect((Number(s.min) + Number(s.max)) / 2).toBe(1);
     }
+    expect(slider('Toolbar Scale').value).toBe('1');
+  });
+
+  it('run the toolbar up to 140%', () => {
+    const { slider } = show();
+    expect(slider('Toolbar Scale').max).toBe('1.4');
+    expect(slider('UI Scale').max).toBe('1.2');
   });
 
   it('show a part following the master until it has its own value', () => {

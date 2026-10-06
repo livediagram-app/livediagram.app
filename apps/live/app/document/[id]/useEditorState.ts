@@ -1,6 +1,7 @@
 'use client';
 
 import { usePlanSlice } from '@/hooks/plan/usePlanSlice';
+import { usePlanTourContent } from '@/hooks/plan/usePlanTourContent';
 import { usePlanPresence } from '@/hooks/plan/usePlanPresence';
 import { boardClientPoint, dropPlanCardAt, PLAN_CARD_MISSED } from '@/hooks/plan/plan-card-drop';
 import { setPlanWidgetEditor } from '@/hooks/plan/plan-widget-drop';
@@ -1363,8 +1364,13 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // Slide deck (docs/specs/012-collaboration/presentation-mode.md). Owns the deck, the panel's editing verbs, and the
   // presentation Start runs. Placed after the viewport because presenting
   // frames each slide through it.
+  const slideThumbnailPlan = useMemo(
+    () => ({ items: planItems.items, types: itemTypes.types }),
+    [planItems.items, itemTypes.types],
+  );
   const slideDeck = useSlideDeck({
     tabs,
+    plan: slideThumbnailPlan,
     activeTabId: activeId,
     setActiveId,
     readSelection,
@@ -1991,8 +1997,18 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     select: setSelectedId,
     announce,
     addItemSlide: slideDeck.newItemSlide,
+    addBoardSlide: slideDeck.newBoardSlide,
     statusNames: planStatusNames,
     statusPhases: planStatusPhases,
+  });
+  // The Plan tour's example board and cards (docs/specs/026-plan/plan-tour.md "Tour content").
+  const planTour = usePlanTourContent({
+    documentId,
+    hydrated,
+    editsBlocked,
+    activeId,
+    tickTabs,
+    planItems,
   });
 
   // Undo / redo handlers. See useEditorHistory.
@@ -3239,6 +3255,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     // What the agents present name in focus on the active tab, for the focus rings.
     agentFocusByElement,
     plan,
+    planTour,
     // The person's editor mode on the active tab, for the mode switch and the canvas.
     editorMode,
     leaveIllustrate,

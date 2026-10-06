@@ -67,4 +67,32 @@ describe('usePlanSlice', () => {
     result.current.context.removeCard('x');
     expect(commits).toEqual(['b']);
   });
+
+  it('hands a board to the latest slide callback, and offers none without a deck', () => {
+    const added: string[] = [];
+    const base = {
+      planItems,
+      itemTypes,
+      editorMode: 'plan' as const,
+      canEdit: true,
+      canVote: true,
+      teamPeople: participants,
+      presence,
+      statusNames,
+      commit: () => {},
+      select: () => {},
+      announce: () => {},
+    };
+    const { result } = renderHook(() =>
+      usePlanSlice({
+        ...base,
+        addItemSlide: () => {},
+        addBoardSlide: (id) => added.push(id),
+      }),
+    );
+    result.current.context.addBoardSlide?.('board');
+    expect(added).toEqual(['board']);
+    const bare = renderHook(() => usePlanSlice(base));
+    expect(bare.result.current.context.addBoardSlide).toBeUndefined();
+  });
 });

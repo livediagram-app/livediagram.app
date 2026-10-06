@@ -6,6 +6,7 @@
 // path (Next, Back, Skip, finish) so the tour never strands an open menu.
 
 import { clickTour, expandPanelIfCollapsed, findTour, waitForSelector } from './tour-dom';
+import { stepTelemetryType, type TourStepOf } from './tour-step';
 
 // What a step gets to work with. Built fresh by TourHost so editor-context
 // handlers are never stale.
@@ -20,38 +21,8 @@ export type TourApi = {
   closeContextMenu: () => void;
 };
 
-export type TourStep = {
-  id: string;
-  title: string;
-  body: string;
-  // data-tour-id of the element the popover anchors to + highlights.
-  // Absent = no anchor: the card centres itself (the welcome / outro).
-  target?: string;
-  // Optional second anchor folded into the highlight rect (union of the
-  // two). The dropdown steps use it so the ring wraps the trigger button
-  // AND its portalled menu as one region, not the floating menu alone;
-  // the tabs step wraps the active pill + the add button the same way.
-  alsoHighlight?: string;
-  // Centred bookend cards, outside the step count, each with its own
-  // illustration and button set: 'welcome' offers the tour ("Show me
-  // around" / "No thanks", declining is permanent via the done-guard);
-  // 'outro' wraps it up ("Start creating" + a help-centre link).
-  card?: 'welcome' | 'outro';
-  // Skip this step entirely on mobile viewports (desktop-only chrome, like
-  // the paintbrush dock button).
-  mobileSkip?: boolean;
-  // Skip this step on an event-storming board (docs/specs/021-event-storming/event-storming.md): the board hides
-  // the palette's header band, so its two dropdowns aren't there to point
-  // at. Without this the step anchors to a display:none trigger — a ring
-  // measuring 0x0 in the top-left corner and a menu opened off-screen.
-  boardSkip?: boolean;
-  prepare?: (api: TourApi) => void | Promise<void>;
-  cleanup?: (api: TourApi) => void;
-  // Overrides for the Toolbar panel layout (docs/specs/007-editor/toolbar-layout.md), merged in by
-  // tourStepsFor: a step whose chrome moves there (the Explorer behind its
-  // menu button) retells its copy and widens its highlight to match.
-  toolbar?: Partial<Pick<TourStep, 'body' | 'alsoHighlight'>>;
-};
+// A welcome-tour step: the shared step shape (tour-step.ts) over this tour's api.
+export type TourStep = TourStepOf<TourApi>;
 
 // The steps this surface actually has chrome for. Filtering up front (not
 // letting a missing target time out mid-tour) keeps the "N of M" count
@@ -70,26 +41,20 @@ export function tourStepsFor({
   ).map((step) => (toolbar && step.toolbar ? { ...step, ...step.toolbar } : step));
 }
 
-// Telemetry `type` token for a step-viewed event (docs/specs/017-telemetry/telemetry.md: preset tokens
-// only, never content — step ids are a fixed catalogue, so deriving is
-// safe): 'selection-modes' → 'TourStepSelectionModes'.
+// Telemetry `type` token for a step-viewed event: 'selection-modes' → 'TourStepSelectionModes'.
 export function tourStepTelemetryType(stepId: string): string {
-  const camel = stepId
-    .split('-')
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join('');
-  return `TourStep${camel}`;
+  return stepTelemetryType('TourStep', stepId);
 }
 
 // Bring the palette on screen: expand the floating Palette if it is
 // collapsed (the Toolbar strip is always open). Waits for the node so
 // callers can chain.
-async function ensurePaletteOpen() {
+export async function ensurePaletteOpen() {
   expandPanelIfCollapsed('palette', 'Palette');
   await waitForSelector('[data-tour-id="palette"]');
 }
 
-const closeDropdown = (menuId: string, triggerId: string) => {
+export const closeDropdown = (menuId: string, triggerId: string) => {
   if (findTour(menuId)) clickTour(triggerId);
 };
 

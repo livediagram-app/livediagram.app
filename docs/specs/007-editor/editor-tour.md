@@ -36,11 +36,14 @@ card were removed once this tour proved the better introduction.
   offer must never read as nagging, and answering it once covers every
   device the user signs in from (guests get the same via their
   owner-keyed preference row + the localStorage warm cache).
-- **Replayable from Settings.** The Settings dialog's Editor group has a
-  "Welcome Tour Completed" row surfacing `tourSeen`. Unchecking a
-  previously-checked row and closing Settings relaunches the tour from
-  the top — the welcome card is always step 1, on a rerun too. Finishing
-  the rerun re-checks it.
+- **Replayable from Settings.** The Settings dialog's Accessibility category
+  has a "Show Welcome Tour" row surfacing `tourSeen` (inverted: on means not
+  seen). Turning a previously-off row on and closing Settings relaunches the
+  tour from the top: the welcome card is always step 1, on a rerun too.
+  Finishing the rerun turns it off again.
+- **One tour at a time.** The [Plan tour](../026-plan/plan-tour.md) is this
+  tour's sibling; while either is on screen the other waits, and the Plan
+  tour also waits while this tour's offer is still owed.
 
 ## Handoff
 
@@ -116,6 +119,14 @@ alone.
 
 ## Mechanics
 
+- **One engine, two tours.** The step runner (`useTourEngine`: prepare,
+  await, heal, glide, Back / Next / Skip) and what it draws (`TourStage`:
+  the card backdrop, the ring, `TourPopover`) are shared with the
+  [Plan tour](../026-plan/plan-tour.md); each tour's host owns its offer, its
+  steps and what ending means. A step anchors by `data-tour-id`, or by a
+  `selector` resolved when it runs (the Plan tour's board and cards), and an
+  anchorless card's `prepare` runs too. The bookend cards' words
+  (`TourCardCopy`) and the welcome art are props, defaulting to this tour's.
 - The engine drives the **real UI**, not screenshots: steps have a `prepare`
   phase that opens the actual panel / dropdown / menu (clicking the same
   triggers a user would, or calling editor-context handlers like

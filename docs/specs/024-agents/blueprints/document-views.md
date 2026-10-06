@@ -862,7 +862,7 @@ out of Prettier (`.prettierignore`).
 | `NOTE_CUT_CHARS`               | 48                            | Spec                                                                       | fixed           |
 | `ENTITY_FIELDS_SHOWN`          | 8                             | Spec                                                                       | fixed           |
 | `CHARS_PER_TOKEN`              | 3                             | Spec (measured 3.07 for the outline)                                       | fixed           |
-| `READ_DOCUMENT_DEFAULT_BUDGET` | 8,000                         | Spec, "Budgets" (in `apps/mcp/src/schema.ts`)                              | 2,000 to 32,000 |
+| `READ_DOCUMENT_DEFAULT_BUDGET` | 8,000                         | Spec, "Budgets" (in `packages/agent-verbs/src/mcp/schema.ts`)              | 2,000 to 32,000 |
 | `ALT_CUT_CHARS`                | 48                            | As notes (`VW53`)                                                          | 24 to 120       |
 | `ACTION_CUT_CHARS`             | 48                            | As notes (`VW53`)                                                          | 24 to 120       |
 | `ATTR_BARE_PATTERN`            | `^[A-Za-z0-9._:/#?&=%+@~-]+$` | URL-safe without quotes or spaces (`VW15`)                                 | narrower only   |

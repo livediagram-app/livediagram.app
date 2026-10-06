@@ -121,6 +121,7 @@ export function PlanBoardHeader({
         <BoardWidgetZone
           widgets={widgets}
           canEdit={canEdit}
+          selected={selected}
           palette={palette}
           dropAt={widgetDropAt}
           flash={flashWidget}

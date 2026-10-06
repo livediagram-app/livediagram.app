@@ -63,7 +63,7 @@ describe('Power User Mode children', () => {
     expect(
       minimal.compareDocumentPosition(readout) & Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
-    expect(within(readout).getAllByRole('listitem')).toHaveLength(5);
+    expect(within(readout).getAllByRole('listitem')).toHaveLength(6);
     expect(within(readout).getByText('Toolbar')).toBeTruthy();
   });
 

@@ -88,6 +88,7 @@ const POWER_USER_PRESET = {
   alignmentGuides: { alignmentGuides: true },
   autoRebindArrows: { autoRebindArrows: true },
   tourSeen: { tourSeen: true },
+  planTourSeen: { planTourSeen: true },
   aiSuggestedPrompts: { aiSuggestedPrompts: false },
   minimalChrome: { minimalChrome: true },
 } as const satisfies Record<string, Partial<UserPreferences>>;
@@ -319,7 +320,7 @@ export function AppearanceToggle(props: { labelled?: boolean; quick?: boolean })
   user mode" (primary) and "No thanks".
 - Settings copy:
   - **Power User Mode**: "Applies a set of recommended settings for people who know their way around: the Toolbar
-    layout, alignment guides and auto-attach arrows on, the welcome tour marked as seen, and AI suggested prompts off.
+    layout, alignment guides and auto-attach arrows on, the welcome and Plan tours marked as seen, and AI suggested prompts off.
     Change any of them afterwards and the mode stays on. Switching it off puts back the settings you did not change."
   - **Minimal Chrome**: "Hides labels and hints you no longer need: palette captions, panel titles, the selection
     caption, status bar text and onboarding notices. Every control stays; its name shows when you hover or focus it."
