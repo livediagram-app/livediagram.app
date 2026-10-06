@@ -2,8 +2,10 @@
 
 // Presence on Plan cards (docs/specs/026-plan/plan-board.md "What the board shows"): the card each peer
 // is dragging or reading, sent as an ephemeral `plan-presence` room op and drawn as a ring in their
-// colour. Peers who leave take their ring with them.
-import { useCallback, useMemo, useRef, useState } from 'react';
+// colour. Peers who leave take their ring with them. The room keeps no holds, so a holder says its card
+// again when someone new joins and when its own connection rejoins (docs/specs/026-plan/plan-mode.md
+// "Collaboration"): a late joiner sees cards already held, and a person holding nothing stays silent.
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { RoomOp } from '@livediagram/api-schema';
 import type { PlanCardPresence } from '@/components/plan/PlanContext';
 import { useLatest } from '@/hooks/ui/useLatest';
@@ -24,6 +26,10 @@ export function usePlanPresence(opts: {
   const holding = useRef(false);
   const [holds, setHolds] = useState<ReadonlyMap<string, Hold>>(new Map());
   const lastSent = useRef<string>('');
+  // What this person holds now, to say again to a late joiner; null while holding nothing.
+  const held = useRef<{ op: RoomOp } | null>(null);
+  // The peers already told, by presence id: a new id is someone who joined (or rejoined) since.
+  const told = useRef<ReadonlySet<string>>(new Set());
 
   const receive = useCallback(
     (from: string, op: { tabId: string; itemId: string | null; state?: 'drag' | 'view' }) => {
@@ -45,15 +51,31 @@ export function usePlanPresence(opts: {
       if (key === lastSent.current) return;
       lastSent.current = key;
       holding.current = !!itemId;
-      send.current({
+      const op: RoomOp = {
         kind: 'plan-presence',
         tabId: activeTabId,
         itemId,
         ...(itemId ? { state } : {}),
-      });
+      };
+      held.current = itemId ? { op } : null;
+      send.current(op);
     },
     [activeTabId, send],
   );
+
+  // Say the held card again: to a peer who just joined, or after this connection rejoined. Nothing while
+  // holding nothing.
+  const reannounce = useCallback(() => {
+    if (held.current) send.current(held.current.op);
+  }, [send]);
+
+  // Someone new in the presence list hears what is held: one op per join, from holders only.
+  useEffect(() => {
+    const ids = new Set(peers.map((p) => p.id));
+    const joined = [...ids].some((id) => !told.current.has(id));
+    told.current = ids;
+    if (joined) reannounce();
+  }, [peers, reannounce]);
 
   const presence = useMemo(() => {
     const byItem = new Map<string, PlanCardPresence>();
@@ -69,5 +91,5 @@ export function usePlanPresence(opts: {
     return byItem;
   }, [holds, peers, activeTabId]);
 
-  return { presence, receive, publish };
+  return { presence, receive, publish, reannounce };
 }

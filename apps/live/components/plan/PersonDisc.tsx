@@ -23,6 +23,7 @@ export function PersonDisc({ person, label }: { person: ItemPerson; label?: stri
 export function PresenceTag({ name, color }: { name: string; color: string }) {
   return (
     <span
+      data-presence-tag=""
       className={`absolute -top-px right-2 rounded-b px-1.5 text-[10px] font-semibold text-white ${IDENTITY_FILL}`}
       style={identityVars(color)}
     >

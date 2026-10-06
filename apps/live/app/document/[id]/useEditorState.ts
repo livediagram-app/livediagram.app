@@ -1116,6 +1116,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     onRoomJoined: () => {
       void changesetFeed.checkSinceLoad();
       planItems.refetch();
+      // A rejoined connection has a new presence id, which carries no hold until it is said again.
+      planPresence.reannounce();
     },
   });
 
