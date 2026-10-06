@@ -12,14 +12,24 @@ const CI_WORKERS = 4;
 // mistaken for it.
 const clerkStub = process.env.E2E_CLERK_STUB === '1';
 const STUB_PORTS = { live: '3015', api: '8788', marketing: '3016' };
+// The armed specs (e2e/armed/, docs/specs/003-system-architecture/e2e-smoke.md "Armed guest
+// signatures") need guest signature enforcement on, so they run as their own invocation
+// (`pnpm test:e2e:armed`) on their own ports, against the guest-mode export.
+const armed = process.env.E2E_GUEST_SIG_ENFORCE === '1';
+const ARMED_PORTS = { live: '3017', api: '8789', marketing: '3018' };
 const BASE_URL =
   process.env.E2E_BASE_URL ??
-  (clerkStub ? `http://localhost:${STUB_PORTS.live}` : 'http://localhost:3002');
+  (clerkStub
+    ? `http://localhost:${STUB_PORTS.live}`
+    : armed
+      ? `http://localhost:${ARMED_PORTS.live}`
+      : 'http://localhost:3002');
+const runName = clerkStub ? '-clerk-stub' : armed ? '-armed' : '';
 
 export default defineConfig({
   testDir: './e2e',
   // Each invocation keeps its own artefacts: a run clears its output folder when it starts.
-  outputDir: clerkStub ? 'test-results-clerk-stub' : 'test-results',
+  outputDir: `test-results${runName}`,
   // The whole point is the smoke alarm, not a slow exhaustive suite:
   // fail fast rather than burn CI minutes on a hung run.
   timeout: 30_000,
@@ -40,7 +50,7 @@ export default defineConfig({
           'html',
           {
             open: 'never',
-            outputFolder: clerkStub ? 'playwright-report-clerk-stub' : 'playwright-report',
+            outputFolder: `playwright-report${runName}`,
           },
         ],
       ]
@@ -57,6 +67,7 @@ export default defineConfig({
       testIgnore: [
         /drive-(mirror|shots)\.spec\.ts/,
         /clerk-stub\//,
+        /armed\//,
         /perf\//,
         /optical-audit-sites\.spec\.ts/,
       ],
@@ -94,6 +105,15 @@ export default defineConfig({
             name: 'clerk-stub',
             use: { ...devices['Desktop Chrome'] },
             testMatch: /clerk-stub\/.*\.spec\.ts/,
+          },
+        ]
+      : []),
+    ...(armed
+      ? [
+          {
+            name: 'armed',
+            use: { ...devices['Desktop Chrome'] },
+            testMatch: /armed\/.*\.spec\.ts/,
           },
         ]
       : []),
@@ -144,6 +164,13 @@ export default defineConfig({
           // The stack stands in for Clerk: it mints the stub's session tokens and the api verifies them.
           E2E_CLERK_JWKS: '1',
         }
-      : {},
+      : armed
+        ? {
+            E2E_LIVE_PORT: ARMED_PORTS.live,
+            E2E_API_PORT: ARMED_PORTS.api,
+            E2E_MARKETING_PORT: ARMED_PORTS.marketing,
+            E2E_GUEST_SIG_ENFORCE: '1',
+          }
+        : {},
   },
 });
