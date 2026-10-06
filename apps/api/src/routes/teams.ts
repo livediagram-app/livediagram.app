@@ -69,6 +69,7 @@ import {
   recordTeamRenamed,
 } from '../timeline';
 import { markTimelineEventsDeletedBySource } from '../db/timeline';
+import { closeMemberTeamSessions } from '../room-access-client';
 import { handleTeamActionRoutes } from './team-action-routes';
 import { handleTeamMentionRoutes } from './team-mention-routes';
 import type { RouteContext } from './context';
@@ -426,6 +427,11 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
         await handTeamWorkToHeir(env, teamId, member.userId);
       }
       await removeTeamMember(env, member.id);
+      // Their open sessions on the team's documents end too, or a removed member would keep
+      // reading (and editing) live until they disconnect (docs/specs/013-workspace/team-shared-documents.md).
+      if (member.status === 'joined' && member.userId) {
+        ctx.waitUntil?.(closeMemberTeamSessions(env, teamId, member.userId).catch(() => {}));
+      }
       const who = { userId: member.userId, name: memberDisplayName(member) };
       if (member.status === 'invited' && isSelf) {
         ctx.waitUntil?.(recordInviteDeclined(env, team, userId, who.name));

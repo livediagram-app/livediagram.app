@@ -330,6 +330,26 @@ describe('connectRoom when the document is trashed', () => {
     expect(onRefused).not.toHaveBeenCalled();
   });
 
+  // An access change (docs/specs/015-api/api.md "Access changes end the sessions they affect"):
+  // close 4005. The connector stops and hands over, so the editor reloads into the access path
+  // instead of reconnecting into a join the gates may refuse.
+  it('reports an access change once and never reconnects', () => {
+    const onAccessChanged = vi.fn();
+    const onDocumentTrashed = vi.fn();
+    connectRoom(
+      'd1',
+      { id: 'me', name: 'Me', color: '#000' },
+      { onPresence() {}, onOp() {}, onAccessChanged, onDocumentTrashed },
+    );
+    ClosingSocket.all[0]!.fire('open');
+    ClosingSocket.all[0]!.fire('close', { code: 4005 });
+    vi.runAllTimers();
+
+    expect(onAccessChanged).toHaveBeenCalledTimes(1);
+    expect(onDocumentTrashed).not.toHaveBeenCalled();
+    expect(ClosingSocket.all).toHaveLength(1);
+  });
+
   it('still reconnects after an ordinary drop', () => {
     const onDocumentTrashed = vi.fn();
     connectRoom(

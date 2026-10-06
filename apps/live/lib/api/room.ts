@@ -6,6 +6,7 @@
 // below is the client-side callback shape only — not on the wire —
 // so it stays here next to the connect helper.
 import {
+  ACCESS_CHANGED_CLOSE,
   DOCUMENT_TRASHED_CLOSE,
   isMutationOpKind,
   type AgentPresence,
@@ -42,6 +43,11 @@ export type RoomHandlers = {
   // closed this socket with DOCUMENT_TRASHED_CLOSE and will refuse every
   // reconnect, so the connector stops and says so, once.
   onDocumentTrashed?: () => void;
+  // An access change ended this session (docs/specs/015-api/api.md "Access changes end the sessions
+  // they affect"): a share password was set, or the member left the document's team. The room
+  // closed it with ACCESS_CHANGED_CLOSE; the connector stops, and the caller reloads into the
+  // ordinary access path (a password prompt, a refusal page, or the editor again).
+  onAccessChanged?: () => void;
   // The room refused to open this connection (it closed before ever opening): the join was turned away
   // at the upgrade, which the browser reports only as an abnormal close. The caller finds out why over
   // REST, which names a trashed document (docs/specs/013-workspace/trash.md). Retrying carries on as usual.
@@ -245,6 +251,11 @@ export function connectRoom(
       if (event?.code === DOCUMENT_TRASHED_CLOSE) {
         closed = true;
         handlers.onDocumentTrashed?.();
+        return;
+      }
+      if (event?.code === ACCESS_CHANGED_CLOSE) {
+        closed = true;
+        handlers.onAccessChanged?.();
         return;
       }
       if (!socketOpened) handlers.onRefused?.();
