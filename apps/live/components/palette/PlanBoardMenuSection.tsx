@@ -66,6 +66,7 @@ const FIELD_GLYPHS: Record<CardField, string> = {
   due: 'calendar',
   votes: 'star',
   checklist: 'action',
+  comments: 'chat',
   description: 'note',
   parent: 'project',
 };

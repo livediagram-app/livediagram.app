@@ -10,6 +10,7 @@ import {
   type ItemStoreState,
   type ItemWrite,
 } from '@livediagram/items';
+import { applyItemComment, type ItemCommentChange } from '@livediagram/document';
 import { ApiError } from '../api/core';
 import {
   offlineGetRecord,
@@ -44,5 +45,34 @@ export async function offlineWriteItem(
     await offlinePutRecord({ ...rec, items, itemsRev: rev, itemsNextKey: nextKey });
     debugLog('[items] items.offline.write', { kind: write.kind });
     return { upserts: result.upserts, removed: result.removed, rev };
+  });
+}
+
+const COMMENT_STATUS = { comments_full: 413, comment_not_found: 404 } as const;
+
+// A card's comment change on an offline document (docs/specs/026-plan/items.md "Comments"): the same pure
+// transition the api applies, on the record's item. Null when it changed nothing (a resolve already so).
+export async function offlineWriteItemComment(
+  documentId: string,
+  itemId: string,
+  change: ItemCommentChange,
+  by: ItemPerson,
+): Promise<ItemWriteAnswer | null> {
+  return serializeOfflineWrite(async () => {
+    const rec = await offlineGetRecord(documentId);
+    if (!rec || rec.trashedAt !== undefined) throw new ApiError('item comment', 404, 'not_found');
+    const store = recordItemStore(rec);
+    const item = store.items.find((i) => i.id === itemId);
+    if (!item) throw new ApiError('item comment', 404, 'item_not_found');
+    const result = applyItemComment(item, change, { now: Date.now(), by });
+    if (!result.ok) {
+      if (result.reason === 'unchanged') return null;
+      throw new ApiError('item comment', COMMENT_STATUS[result.reason], result.reason);
+    }
+    const rev = store.rev + 1;
+    const items = store.items.map((i) => (i.id === itemId ? result.item : i));
+    await offlinePutRecord({ ...rec, items, itemsRev: rev, itemsNextKey: store.nextKey });
+    debugLog('[items] items.offline.comment', { kind: change.kind });
+    return { upserts: [result.item], removed: [], rev };
   });
 }

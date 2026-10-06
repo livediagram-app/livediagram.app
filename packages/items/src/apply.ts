@@ -66,6 +66,7 @@ export function makeItem(
 ): Item {
   const fields: ItemFields = { ...create.fields };
   if (create.votes && Object.keys(create.votes).length) fields['votes'] = { ...create.votes };
+  if (create.comments !== undefined) fields['comments'] = create.comments;
   const status = create.place?.status;
   if (status !== undefined) fields['status'] = status;
   const place: ItemPlace = {

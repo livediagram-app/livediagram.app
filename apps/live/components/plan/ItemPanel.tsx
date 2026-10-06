@@ -30,6 +30,7 @@ import { PlanTypeGlyph } from './plan-type-glyph';
 import { ItemPanelMenu } from './ItemPanelMenu';
 import { FLAG_COLOUR } from './item-flag';
 import { ACCENT_TEXT, accentVars } from './plan-palette';
+import type { ItemCommentsContext } from './ItemComments';
 import {
   ItemFieldEditor,
   fieldId,
@@ -61,6 +62,7 @@ export function ItemPanel({
   onFlag,
   onArchive,
   onClose,
+  comments,
 }: {
   item: Item;
   // The document's item types (docs/specs/026-plan/item-types.md).
@@ -85,6 +87,8 @@ export function ItemPanel({
   // Archive the item, or restore an archived one (docs/specs/026-plan/items.md "Archive").
   onArchive: () => void;
   onClose: () => void;
+  // The card's comments (docs/specs/026-plan/items.md "Comments").
+  comments?: ItemCommentsContext;
 }) {
   const mobile = useIsMobileViewport();
   // When the panel opened: the meta line says how long ago the last change was from here.
@@ -97,7 +101,13 @@ export function ItemPanel({
   const details = [
     ...detailFieldsOf(type),
     ...BUILT_IN_FIELD_IDS.filter(
-      (f) => f !== 'title' && f !== 'votes' && !offered.has(f) && item.fields[f] !== undefined,
+      // Comments a type no longer offers stay on the card, out of the panel, like votes.
+      (f) =>
+        f !== 'title' &&
+        f !== 'votes' &&
+        f !== 'comments' &&
+        !offered.has(f) &&
+        item.fields[f] !== undefined,
     ),
   ];
   const shownTabs = mobile
@@ -116,6 +126,7 @@ export function ItemPanel({
     onSave,
     onPatch,
     onOpenItem,
+    ...(comments ? { comments } : {}),
   };
 
   const header = (

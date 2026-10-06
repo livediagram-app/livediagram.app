@@ -37,6 +37,7 @@ export type ItemFieldKind =
   | 'checklist'
   | 'item-ref'
   | 'votes'
+  | 'comments'
   | 'flag';
 
 export const KNOWN_FIELDS: Readonly<Record<ItemFieldId, ItemFieldKind>> = {
@@ -52,6 +53,7 @@ export const KNOWN_FIELDS: Readonly<Record<ItemFieldId, ItemFieldKind>> = {
   checklist: 'checklist',
   parent: 'item-ref',
   votes: 'votes',
+  comments: 'comments',
   archived: 'flag',
   flagged: 'flag',
 };
@@ -78,6 +80,7 @@ export type ItemRejection =
   | 'fields_too_many'
   | 'fields_too_large'
   | 'votes_read_only'
+  | 'comments_read_only'
   | 'type_invalid'
   | 'id_invalid'
   | 'place_invalid';
@@ -136,6 +139,7 @@ function normaliseKnown(kind: ItemFieldKind, v: unknown): ItemFieldValue | undef
     case 'text':
     case 'long-text':
     case 'votes':
+    case 'comments':
       return undefined; // handled by the caller
     case 'status':
       return typeof v === 'string' && v.trim().length > 0 && v.length <= ITEM_STATUS_MAX
@@ -195,7 +199,7 @@ function normaliseUnknown(v: unknown): ItemFieldValue | undefined {
 }
 
 // `create` requires a title; `patch` validates only the keys it is given.
-// Votes are never accepted here: they change only through voting.
+// Votes and comments are never accepted here: they change only through voting and the comment writes.
 export function validateFields(input: unknown, mode: 'create' | 'patch'): FieldsResult {
   if (!isPlainObject(input)) return { ok: false, error: 'field_value_invalid' };
   const keys = Object.keys(input);
@@ -206,6 +210,7 @@ export function validateFields(input: unknown, mode: 'create' | 'patch'): Fields
     const v = input[key];
     const kind = knownFieldKind(key);
     if (kind === 'votes') return { ok: false, error: 'votes_read_only', field: key };
+    if (kind === 'comments') return { ok: false, error: 'comments_read_only', field: key };
     if (kind === 'text') {
       if (typeof v !== 'string') return { ok: false, error: 'field_value_invalid', field: key };
       const t = v.trim();
@@ -237,8 +242,17 @@ export function validateFields(input: unknown, mode: 'create' | 'patch'): Fields
   return { ok: true, fields };
 }
 
+// The fields' size against ITEM_FIELDS_BYTES. A comment thread has its own budget (commentsByteSize), so a busy
+// conversation never stops someone editing the card's fields.
 export function fieldsByteSize(fields: ItemFields): number {
-  return new TextEncoder().encode(JSON.stringify(fields)).length;
+  const { comments: _comments, ...rest } = fields;
+  return new TextEncoder().encode(JSON.stringify(rest)).length;
+}
+
+// A comment thread's size against ITEM_COMMENTS_BYTES (docs/specs/026-plan/items.md "Limits").
+export function commentsByteSize(fields: ItemFields): number {
+  const thread = fields['comments'];
+  return thread === undefined ? 0 : new TextEncoder().encode(JSON.stringify(thread)).length;
 }
 
 export function fieldsWithinBounds(fields: ItemFields): ItemRejection | null {
@@ -275,6 +289,7 @@ export function validateClear(
       return { ok: false, error: 'field_key_invalid' };
     if (k === 'title') return { ok: false, error: 'title_required' };
     if (k === 'votes') return { ok: false, error: 'votes_read_only' };
+    if (k === 'comments') return { ok: false, error: 'comments_read_only' };
   }
   return { ok: true, keys: keys as string[] };
 }

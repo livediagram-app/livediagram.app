@@ -1460,6 +1460,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "due",
       "votes",
       "checklist",
+      "comments",
       "description",
       "parent"
     ],
@@ -5882,6 +5883,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "ItemCreate": {
     "additionalProperties": false,
     "properties": {
+      "comments": {
+        "$ref": "#/components/schemas/ItemFieldValue"
+      },
       "fields": {
         "$ref": "#/components/schemas/ItemFields"
       },

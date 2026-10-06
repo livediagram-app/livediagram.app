@@ -18,6 +18,9 @@ export type ItemFieldId =
   | 'checklist'
   | 'parent'
   | 'votes'
+  // A comment thread (docs/specs/026-plan/items.md "Comments"): the canvas's CommentThread, written only by the
+  // comment writes.
+  | 'comments'
   // Archived (docs/specs/026-plan/items.md "Archive"): kept, but off every board but an Archive board.
   | 'archived'
   // Flagged (docs/specs/026-plan/items.md "Flags"): marked for attention, on every board it is on.
@@ -85,7 +88,7 @@ const WORK: readonly ItemFieldId[] = [
   'labels',
 ];
 
-export const ITEM_TYPES = [
+const BUILT_IN_TYPES = [
   {
     id: 'project',
     label: 'Project',
@@ -128,6 +131,16 @@ export const ITEM_TYPES = [
   },
 ] as const satisfies readonly ItemTypeDef[];
 
+// Every built-in type offers comments, last (docs/specs/026-plan/items.md "Comments"). The mapped type keeps
+// the tuple, so each type stays addressable by position and its id literal.
+type WithComments<T extends readonly ItemTypeDef[]> = {
+  readonly [K in keyof T]: Omit<T[K], 'fields'> & { fields: readonly ItemFieldId[] };
+};
+export const ITEM_TYPES = BUILT_IN_TYPES.map((t) => ({
+  ...t,
+  fields: [...t.fields, 'comments'],
+})) as unknown as WithComments<typeof BUILT_IN_TYPES>;
+
 export type ItemTypeId = (typeof ITEM_TYPES)[number]['id'];
 
 export const ITEM_TYPE_IDS: readonly ItemTypeId[] = ITEM_TYPES.map((t) => t.id);
@@ -139,5 +152,5 @@ export const FALLBACK_ITEM_TYPE: ItemTypeDef = {
   newTitle: 'New item',
   glyph: 'item',
   color: '#64748b',
-  fields: ['title', 'description', 'status', 'assignee', 'labels'],
+  fields: ['title', 'description', 'status', 'assignee', 'labels', 'comments'],
 };

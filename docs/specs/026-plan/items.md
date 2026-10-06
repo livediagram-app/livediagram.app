@@ -40,21 +40,22 @@ fields people usually want, and any item may carry other fields. The store never
 
 The fields the shipped types use. Each has a **field kind** that validates and draws it.
 
-| Field             | Kind      | Holds                                                                                                                                                             |
-| ----------------- | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `title`           | text      | One line, required, up to 200 characters                                                                                                                          |
-| `description`     | long text | Plain text with line breaks, up to 10,000 characters                                                                                                              |
-| `descriptionRich` | rich text | The description's formatting: runs of text with bold, italic, underline, strikethrough, size, colour, link and heading; `description` stays its plain-text mirror |
-| `status`          | status    | A status value, matched against a board's columns                                                                                                                 |
-| `assignee`        | person    | `{ id, name, color }`: the person it is on, picked like an assigned action                                                                                        |
-| `priority`        | priority  | `urgent`, `high`, `medium` or `low`                                                                                                                               |
-| `labels`          | labels    | Up to 12 short strings                                                                                                                                            |
-| `estimate`        | number    | Points or hours, 0 to 999                                                                                                                                         |
-| `start`           | date      | A calendar date, `YYYY-MM-DD`: when the work begins (a Project's bar on the [Gantt chart](plan-views.md#project-gantt-chart))                                     |
-| `due`             | date      | A calendar date, `YYYY-MM-DD`                                                                                                                                     |
-| `checklist`       | checklist | Up to 50 `{ text, done }` rows                                                                                                                                    |
-| `parent`          | item ref  | Another item's id (a Project), resolved within the same document                                                                                                  |
-| `votes`           | votes     | Per-person counts `{ [personId]: n }`, written only through voting                                                                                                |
+| Field             | Kind      | Holds                                                                                                                                                                 |
+| ----------------- | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `title`           | text      | One line, required, up to 200 characters                                                                                                                              |
+| `description`     | long text | Plain text with line breaks, up to 10,000 characters                                                                                                                  |
+| `descriptionRich` | rich text | The description's formatting: runs of text with bold, italic, underline, strikethrough, size, colour, link and heading; `description` stays its plain-text mirror     |
+| `status`          | status    | A status value, matched against a board's columns                                                                                                                     |
+| `assignee`        | person    | `{ id, name, color }`: the person it is on, picked like an assigned action                                                                                            |
+| `priority`        | priority  | `urgent`, `high`, `medium` or `low`                                                                                                                                   |
+| `labels`          | labels    | Up to 12 short strings                                                                                                                                                |
+| `estimate`        | number    | Points or hours, 0 to 999                                                                                                                                             |
+| `start`           | date      | A calendar date, `YYYY-MM-DD`: when the work begins (a Project's bar on the [Gantt chart](plan-views.md#project-gantt-chart))                                         |
+| `due`             | date      | A calendar date, `YYYY-MM-DD`                                                                                                                                         |
+| `checklist`       | checklist | Up to 50 `{ text, done }` rows                                                                                                                                        |
+| `parent`          | item ref  | Another item's id (a Project), resolved within the same document                                                                                                      |
+| `votes`           | votes     | Per-person counts `{ [personId]: n }`, written only through voting                                                                                                    |
+| `comments`        | comments  | The card's conversation: the same comment thread a canvas element carries (`{ comments, resolved }`), written only through the comment writes ([Comments](#comments)) |
 
 ## Item types
 
@@ -75,6 +76,8 @@ Five built-in types, each with a glyph, an accent colour and the fields it offer
   Project Planner's Roadmap tab show it on their cards.
 - **Parent** sits right under Status and Assignee on a Task, and in that place in the type editor's list of
   built-in fields: what a piece of work belongs to is read alongside who has it.
+- Every built-in type also offers **comments**, last, in its Overview tab ([Comments](#comments)). A document whose
+  own catalogue predates it adds it in the type editor, like any built-in field.
 - A bug is a Task labelled `bug`.
 - A document can change these and add its own, with custom fields: see [Item types](item-types.md).
 
@@ -89,7 +92,9 @@ Five built-in types, each with a glyph, an accent colour and the fields it offer
   way, so two people voting at once never lose a vote.
 - **Delete**: removes the item. Its key is not reused.
 - **Restore** (an undo of a delete, or an offline document's sync): a create may name the item's old id and key
-  and carry its votes; the key is honoured while it is free.
+  and carry its votes and its comment thread; the key is honoured while it is free.
+- **Comment**: add a comment, delete one, resolve or reopen the thread ([Comments](#comments)). Comments are
+  written only this way, so two people commenting at once never lose a comment.
 - Every write answers with the item as stored.
 
 ## Archive
@@ -131,6 +136,45 @@ Five built-in types, each with a glyph, an accent colour and the fields it offer
   confirmation ("This can't be undone").
 - Trash and Restore send `Plan · Moved · Trash` and `Plan · Restored · Card`; opening it, `Plan · Opened · Trash`.
 
+## Comments
+
+A card carries a comment thread through the canvas's own comment model ([Canvas and
+palette](../008-canvas/canvas-and-palette.md), [Comment mentions](../012-collaboration/comment-mentions.md)): the
+same `Comment` and `CommentThread` values, the same rules for who may write, delete, resolve and reopen, the same
+author redaction, and the same thread list, composer and resolve control the comment popover draws.
+
+- **Where it shows**: `comments` is a built-in field. In the item panel it is the last field of the Overview tab,
+  under its label **Comments**: the thread (author disc, name, relative time, text with @-mention chips), then the
+  composer (**Add a comment…**, ⌘↵ or **Comment** sends), all in one bordered box. Once there is a comment, a row
+  above the thread says how many (**1 comment**, **3 comments**) beside a **Resolve** chip (**Resolved** while
+  resolved, which hides the composer; pressing it reopens). Empty, it reads **No comments yet.** Someone who may
+  not comment reads the thread with no composer and no chip. A type that stops offering comments keeps the
+  card's thread stored, unshown, like votes.
+- **On the card**: a `comments` card field (a speech-bubble glyph and the count of comments in an open thread,
+  drawn only when there is one), on Compact and Detailed cards, beside the votes. New boards show it.
+- **Writes**: add (text up to 2,000 characters, optional mentions), delete, resolve, reopen. Each is applied by the
+  api to the item as stored, so concurrent comments, deletes and resolves all land. A comment's author name,
+  colour and id are stamped by the server from the caller, never taken from the request. Adding to a resolved
+  thread reopens it, as on the canvas. A comment change counts as a change to the item (its `rev`, **Changed by**).
+- **Who may**: anyone who may comment on the document (participate access) may add a comment and resolve or
+  reopen the thread; they may delete their own comments, and someone with edit access may delete any.
+- **Author ids**: a comment's author id never leaves the api except to its own author (as on the canvas): every
+  read and every write's answer leaves it out of other people's comments, and the room's `items` op leaves it out
+  of all of them.
+- **Live**: every comment change is an item write, so it reaches the room like any other, and an open item panel
+  shows it at once.
+- **Trash, Archive, Delete**: trashing or archiving a card keeps its thread; restoring brings it back as it was.
+  Deleting a card deletes its thread with it; undoing that delete restores the thread, keeping the author id only
+  on the restorer's own comments.
+- **Not undoable**: comments, deletes and resolves are outside Undo, as on the canvas.
+- **Mentions** show as chips and are kept on the comment. They do not yet reach the Activity page or send email,
+  which the canvas's comments do through the tab's collaboration index.
+- **Timeline and email**: a new comment records on the document's timeline and emails the owner (when email is
+  on and the commenter is not the owner), exactly as a canvas comment does; resolving records too.
+- **Offline documents** comment locally, the same rules minus the room; the thread syncs with the item.
+- Telemetry: the canvas's own comment events with the type `Item`: `Comment · Added · Item`,
+  `Comment · Deleted · Item`, `Comment · Resolved · Item` and `Comment · Unresolved · Item` (existing pairs).
+
 ## Finding a card
 
 - **Cards** is a button in Plan mode's bottom-right cluster, before Card Types; it opens a popover of every card
@@ -162,6 +206,7 @@ Items follow the document's access ([Auth and guest access](../014-identity/auth
 - **Finding your cards**: an open card assigned to you lists under **Assigned to You** on the Explorer's
   [Activity page](../013-workspace/activity-page.md) (§2.4 there), in every document you can open; a row opens the card on its board.
 - **Vote** with participate access, as comments.
+- **Comment** with participate access; delete your own comments, or any with edit access ([Comments](#comments)).
 - An agent token acts as its person, and a read-only token reads only.
 
 ## Live for everyone
@@ -176,7 +221,8 @@ Items follow the document's access ([Auth and guest access](../014-identity/auth
 - A person can undo their own item changes with the canvas's Undo, in the order they made them, mixed with their
   canvas edits: undoing a card's move puts it back; undoing a delete brings the item back with its id, key and
   votes.
-- Votes are not undoable (a vote is taken back by voting minus), matching comments and assigned actions.
+- Votes are not undoable (a vote is taken back by voting minus), matching comments and assigned actions. A card's
+  comments are not undoable either; undoing a card's delete brings its thread back with it.
 - An undo writes the old value back, even over a later change someone else made to that field, as canvas undo
   does.
 
@@ -193,11 +239,14 @@ Items follow the document's access ([Auth and guest access](../014-identity/auth
 - **The `.livediagram` file** (the Google Drive mirror's document file) carries the items, and a copy imported
   from it gets them back. The field is additive, so the file stays version 1.
 - Images, thumbnails and api or MCP renders draw boards and cards from the document's items.
+- A **Community** copy leaves every card's comments out, as it leaves out the canvas's comment threads.
 
 ## Limits
 
 - Up to 2,000 items per document; a create past it is refused with `items_full`.
-- Up to 16 KB of fields per item, 64 field keys, keys of letters, digits, `_` and `-`, up to 40 characters.
+- Up to 16 KB of fields per item, 64 field keys, keys of letters, digits, `_` and `-`, up to 40 characters. A
+  card's comment thread sits outside that budget: up to 200 comments and 128 KB per card; a comment past either is
+  refused with `comments_full`.
 - Item writes count against the write rate limit.
 
 ## Deleting a document

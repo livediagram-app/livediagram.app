@@ -203,7 +203,8 @@ export async function deleteItemRow(
 //
 // `redactPeople` is a Community copy (docs/specs/025-community/community.md): the copier gets the
 // work, never the people on it, so the assignee and the per-person votes are dropped and every
-// author becomes the neutral "Someone".
+// author becomes the neutral "Someone". It leaves every card's comment thread out too, as it leaves
+// the canvas's comment threads out (docs/specs/026-plan/items.md "Copies and exports").
 export function copyItemsStatements(
   env: Env,
   sourceId: string,
@@ -214,7 +215,7 @@ export function copyItemsStatements(
   const filter = onlyIds === null ? '' : ` AND id IN (SELECT value FROM json_each(?))`;
   const someone = JSON.stringify(UNKNOWN_PERSON);
   const selected = redactPeople
-    ? `id, type, item_key, rank, json_remove(fields, '$.assignee', '$.votes'), rev, created_at,
+    ? `id, type, item_key, rank, json_remove(fields, '$.assignee', '$.votes', '$.comments'), rev, created_at,
        updated_at, ?, ?`
     : COLUMNS;
   const binds: unknown[] = [

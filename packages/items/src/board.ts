@@ -58,6 +58,8 @@ export const CARD_FIELDS = [
   'due',
   'votes',
   'checklist',
+  // How many comments an open thread holds (docs/specs/026-plan/items.md "Comments").
+  'comments',
   // A Detailed card's extras: two lines of its description, and the project it sits under.
   'description',
   'parent',
@@ -73,7 +75,7 @@ export type CardSize = (typeof CARD_SIZES)[number];
 // board shows outside its size's set is kept but not drawn, and its tile in the Cards menu says so.
 export const CARD_SIZE_FIELDS: Readonly<Record<CardSize, readonly CardField[]>> = {
   minimal: [],
-  compact: ['key', 'type', 'assignee', 'priority', 'start', 'due', 'votes'],
+  compact: ['key', 'type', 'assignee', 'priority', 'start', 'due', 'votes', 'comments'],
   detailed: CARD_FIELDS,
 };
 
@@ -662,6 +664,7 @@ export const DEFAULT_CARD_FIELDS: readonly CardField[] = [
   'priority',
   'labels',
   'checklist',
+  'comments',
 ];
 
 export function columnForStatus(

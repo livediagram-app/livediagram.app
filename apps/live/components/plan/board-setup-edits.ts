@@ -43,6 +43,7 @@ export const CARD_FIELD_LABELS: Record<CardField, string> = {
   due: 'Due Date',
   votes: 'Votes',
   checklist: 'Checklist',
+  comments: 'Comments',
   description: 'Description',
   parent: 'Project',
 };

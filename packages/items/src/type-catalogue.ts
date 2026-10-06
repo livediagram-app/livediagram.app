@@ -61,6 +61,7 @@ export const BUILT_IN_FIELD_IDS: readonly ItemFieldId[] = [
   'start',
   'due',
   'checklist',
+  'comments',
   'votes',
 ];
 
@@ -145,9 +146,14 @@ export function newCustomFieldId(label: string, taken: Iterable<string>): string
 // The fields a panel never files under a tab: the title heads it, and votes live on the card.
 const NEVER_IN_A_TAB = new Set(['title', 'votes']);
 
-// A field the default Overview tab holds: the long-form ones.
+// A field the default Overview tab holds: the long-form ones, and the comment thread.
 function overviewField(type: ItemTypeDef, f: string): boolean {
-  return f === 'description' || f === 'checklist' || customFieldOf(type, f)?.kind === 'longtext';
+  return (
+    f === 'description' ||
+    f === 'checklist' ||
+    f === 'comments' ||
+    customFieldOf(type, f)?.kind === 'longtext'
+  );
 }
 
 // A type's panel tabs (docs/specs/026-plan/item-types.md "An item type"): its own, or one Overview tab
@@ -160,7 +166,10 @@ export function tabsOf(type: ItemTypeDef): readonly ItemTypeTab[] {
     {
       id: OVERVIEW_TAB_ID,
       label: 'Overview',
-      fields: type.fields.filter((f) => overviewField(type, f)),
+      // The conversation ends the tab, after every long-form field (docs/specs/026-plan/items.md "Comments").
+      fields: type.fields
+        .filter((f) => overviewField(type, f))
+        .sort((a, b) => Number(a === 'comments') - Number(b === 'comments')),
     },
   ];
 }

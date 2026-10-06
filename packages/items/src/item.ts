@@ -52,6 +52,9 @@ export interface ItemCreate {
   // Only to restore an item or carry one across (undo, an offline document's sync): votes are
   // otherwise written by voting alone.
   votes?: Record<string, number>;
+  // The same for its comment thread (a CommentThread, docs/specs/026-plan/items.md "Comments"), which is
+  // otherwise written by the comment writes alone. The api checks it before it is kept.
+  comments?: ItemFieldValue;
 }
 
 export interface ItemPatch {
@@ -117,6 +120,14 @@ export function itemVotes(item: Pick<Item, 'fields'>): Record<string, number> {
 
 export function itemVoteTotal(item: Pick<Item, 'fields'>): number {
   return Object.values(itemVotes(item)).reduce((a, b) => a + b, 0);
+}
+
+// How many comments an open thread holds (0 when there is none, or it is resolved): the card's comment count.
+export function itemCommentCount(item: Pick<Item, 'fields'>): number {
+  const t = item.fields['comments'];
+  if (!t || typeof t !== 'object' || Array.isArray(t) || t['resolved'] === true) return 0;
+  const comments = t['comments'];
+  return Array.isArray(comments) ? comments.length : 0;
 }
 
 export function itemLabels(item: Pick<Item, 'fields'>): string[] {

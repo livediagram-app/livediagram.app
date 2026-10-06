@@ -87,6 +87,11 @@ export function PlanSheetsHost({ plan }: { plan: PlanSlice }) {
           else track('Plan', 'Moved', 'Archive');
         }}
         onClose={plan.closeItem}
+        comments={{
+          canComment: ctx.canVote,
+          selfId: ctx.ownerId,
+          onComment: (action) => ctx.commentItem(item.id, action),
+        }}
       />
     );
   }

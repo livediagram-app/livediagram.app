@@ -859,6 +859,10 @@ The popover is portal-rendered (it escapes the canvas transform), anchored to th
 
 Comment mutations bypass the [undo/redo history](#undo--redo) (so typing a comment then Ctrl+Z doesn't unexpectedly wipe it). They update the present tab list directly via the history hook's `tick` setter. Deleting the last comment removes the `commentThread` field entirely so the element type stays slim.
 
+### On Plan cards
+
+A Plan card's item carries the same `CommentThread` in its `comments` field ([Items](../026-plan/items.md#comments)): the same comment values, the same who-may rules and author redaction, and the same thread list, composer and resolve toggle, which the popover and the item panel share (`CommentThreadList`, `CommentComposer`, `CommentResolveToggle`). The thread ops themselves (append, remove, resolve) are one set of pure functions in `@livediagram/document` that element deltas and item comment writes both apply.
+
 ## Motion and animations
 
 The editor uses subtle, purposeful motion to feel fluid and modern. Chrome motion (menus, panels, dialogs, the entrances below) follows [Motion](../004-interface-design/motion.md): it settles within 250ms, and hovers within 150ms. Canvas motion is content and lives in `apps/live/app/canvas-motion.css`. The keyframes are exposed as Tailwind utility classes via `@theme`:
