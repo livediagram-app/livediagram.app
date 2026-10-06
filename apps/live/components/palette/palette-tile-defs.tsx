@@ -33,6 +33,7 @@ import {
   RevealIcon,
   RollCallIcon,
   TemperatureIcon,
+  StopwatchIcon,
   TimerIcon,
 } from '@/components/palette/palette-icons';
 import {
@@ -827,7 +828,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
       'A button that starts a stopwatch for everyone in the room, counting up from zero. Pressing it again pauses, and again continues. Nothing to set — a stopwatch has no length.',
     filled: true,
     action: { type: 'shape', kind: 'session-button', session: 'stopwatch' },
-    icon: <TimerIcon size={TILE_GLYPH_PX} />,
+    icon: <StopwatchIcon size={TILE_GLYPH_PX} />,
   },
   {
     id: 'tools:session-vote',

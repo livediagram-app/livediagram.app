@@ -289,3 +289,13 @@ describe('palette tile glyph size', () => {
     expect(Number(/width="([\d.]+)"/.exec(svg)![1])).toBe(TILE_GLYPH_PX);
   });
 });
+
+// docs/specs/012-collaboration/session-button.md: the Timer and Stopwatch tiles sit side by side and must not
+// wear the same glyph.
+describe('session clock tiles', () => {
+  it('draw the timer and the stopwatch differently', () => {
+    const glyph = (id: string) =>
+      renderToStaticMarkup(<>{PALETTE_TILES.find((t) => t.id === id)!.icon}</>);
+    expect(glyph('tools:session-timer')).not.toBe(glyph('tools:session-stopwatch'));
+  });
+});
