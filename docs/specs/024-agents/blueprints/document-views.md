@@ -55,7 +55,7 @@ Scope, by file:
 | `apps/api/src/db/tabs.ts`                                               | `tabBodiesInOrder(env, documentId, offset, limit)`                                                                          |
 | `apps/api/src/openapi/{manifest,document,types}.ts`                     | The view query parameters; `textResponse` on the two GETs                                                                   |
 | `apps/api/scripts/gen-openapi-schemas.mjs`                              | The view wire types join `ROOT_TYPES`                                                                                       |
-| `apps/mcp/src/api.ts`                                                   | `apiText` → `{ text, etag }`, sharing `apiJson`'s failure path (`apiOk`)                                                    |
+| `apps/mcp/src/api.ts`                                                   | `apiText` → `{ text, etag }`, through the shared api client as `apiJson`                                                    |
 | `apps/mcp/src/tool-helpers.ts`                                          | `viewResult`: the view text first, then its one-line JSON                                                                   |
 | `apps/mcp/src/read-document.ts`                                         | `readDocument`: the view (the outline by default), `format: "json"`, `image: true`, ref refusals as results                 |
 | `apps/mcp/src/{tools,schema,output-schema}.ts`                          | `read_document` registered on `readDocument`; its input and output schemas; `READ_DOCUMENT_DEFAULT_BUDGET`                  |
@@ -685,7 +685,8 @@ types join `ROOT_TYPES`.
 - The description: "Read one tab as text: by default its outline, one line per element with its ref, label and
   arrows, about a tenth of the element JSON. view picks another (graph, layout, comments, show, find, lint), budget
   fits it to a token count, format "json" returns the elements, image adds a PNG preview."
-- `apiText(env, token, path) → Promise<{ text, etag }>` shares `apiJson`'s path (`apiOk`): Bearer token, `ApiError` on
+- `apiText(env, token, path) → Promise<{ text, etag }>` goes through the same `@livediagram/api-client` client as
+  `apiJson` (`clientFor(env, token).text`): Bearer token, `ApiError` on
   non-2xx, a 5xx reported to `Error` telemetry. The revision in the result is the view's `ETag`; a view without one
   is an error, never a revision of 0. An `ApiError` carrying `target_not_found` or `target_ambiguous` becomes an
   `isError` result naming the candidates; any other 400 or 404 with a `message` becomes an `isError` result with it.

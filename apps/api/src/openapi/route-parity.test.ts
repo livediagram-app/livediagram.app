@@ -52,7 +52,9 @@ beforeAll(async () => {
     candidates.push(...candidatePaths(segment, byPosition, maxLength));
   }
   results = await probeDispatch(candidates);
-});
+  // Over a thousand dispatches: about a second alone, past the 10 s hook default on a runner shared by two
+  // packages under coverage.
+}, 60_000);
 
 afterAll(() => {
   vi.restoreAllMocks();
