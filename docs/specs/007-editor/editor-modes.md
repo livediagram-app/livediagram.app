@@ -65,7 +65,7 @@ where it is and changes only how the next mark is made.
     "Editor mode: Diagram", over a `menu` of `menuitemradio` rows; arrow keys
     open it and move within it, wrapping, Home and End jump.
   - The same for everyone, power user mode or not.
-- **One mode chosen:** Diagram, Draw, Illustrate or Plan (the last two while offered, "Experimental modes").
+- **One mode chosen:** Diagram, Draw, Illustrate or Plan (Plan while offered, "Experimental modes").
   Exactly one is active.
 - **Switching is instant and lossless:** no dialog, no reload, no change to the
   document; the selection is kept, an in-progress gesture or text edit is
@@ -375,21 +375,23 @@ something on it asks first:
 
 ## Experimental modes
 
-Illustrate mode is still new, so it keeps a switch in **Settings ›
-Experimental › Illustrate Mode**: **on by default** (the
-`illustrateModeEnabled` preference; only an explicit `false` turns it off).
-The **Experimental** category is listed after **AI Tools**.
+A mode still being tried out keeps a switch of its own in **Settings ›
+Experimental**, **on by default**; only an explicit `false` turns it off. The
+**Experimental** category is listed after **AI Tools**. Plan is the one
+experimental mode today: **Settings › Experimental › Plan Mode**
+(`planModeEnabled`).
 
-- While it is off, Illustrate is offered nowhere: not on the mode switch, not
+- While it is off, the mode is offered nowhere: not on the mode switch, not
   in Opens in, and Shift+D skips it (`apps/live/lib/offered-editor-modes.ts`).
-- A tab stored as opening in Illustrate, or remembered in it, opens in Diagram
-  for a person who has it off. Nothing stored changes.
-- Turning it on fires `UI` · `Toggled` · `IllustrateModeOn` (and `…Off`).
+- A tab stored as opening in it, or remembered in it, opens in Diagram for a
+  person who has it off. Nothing stored changes.
+- Turning it on fires `UI` · `Toggled` · `PlanModeOn` (and `…Off`). Each
+  experimental mode is gated by its own preference.
 
-Plan mode has a switch of its own, **Settings › Experimental › Plan Mode**,
-on by default (`planModeEnabled`), with the same rules: off, Plan is offered
-nowhere and a tab opening in Plan opens in Diagram. It fires `PlanModeOn` /
-`PlanModeOff`. Each experimental mode is gated by its own preference.
+Diagram, Draw and Illustrate are always offered. Illustrate had a switch here
+until it graduated (2026-10-06); its `illustrateModeEnabled` preference is a
+retired key ([User preferences](user-preferences.md) "Retired keys"), so a
+person who had switched it off sees Illustrate again.
 
 ## Existing whiteboards
 
@@ -435,8 +437,8 @@ nowhere and a tab opening in Plan opens in Diagram. It fires `PlanModeOn` /
   `opensIn: 'infographic'`, a remembered mode, a recorded creation intent and
   a create's intent (`parseEditorMode`), a default-folder key
   `mode:infographic` (`parsePlacementDefaultKey`; clearing the default clears
-  both names) and the `infographicModeEnabled` preference
-  (`upgradeLegacyPreferences`). Nothing stored is rewritten. "Infographic" now
+  both names). Nothing stored is rewritten. The `infographicModeEnabled`
+  preference went with Illustrate's Settings switch (a retired key). "Infographic" now
   names a kind of page ([Illustrate pages](illustrate-pages.md) "Page kinds").
   The help articles moved to `/help/canvas/illustrate/`, the old addresses
   redirecting.

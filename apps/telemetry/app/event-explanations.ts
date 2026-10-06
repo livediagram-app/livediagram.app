@@ -1056,8 +1056,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone turned off quick-add on hover in the palette, in Settings > Editor.',
   'UI|Toggled|QuickAddHoverOn':
     'Someone turned on quick-add on hover in the palette, in Settings > Editor.',
-  'UI|Toggled|IllustrateModeOff': 'Someone turned off Illustrate mode, in Settings > Experimental.',
-  'UI|Toggled|IllustrateModeOn': 'Someone turned on Illustrate mode, in Settings > Experimental.',
+  'UI|Toggled|IllustrateModeOff':
+    'Someone turned off Illustrate mode, in Settings > Experimental. No longer recorded: Illustrate mode is always offered.',
+  'UI|Toggled|IllustrateModeOn':
+    'Someone turned on Illustrate mode, in Settings > Experimental. No longer recorded: Illustrate mode is always offered.',
   'UI|Toggled|PlanModeOff': 'Someone turned off Plan mode, in Settings > Experimental.',
   'UI|Toggled|PlanModeOn': 'Someone turned on Plan mode, in Settings > Experimental.',
   'UI|Toggled|ReduceMotionOff': 'Someone turned off reduced motion, in Settings > Accessibility.',

@@ -820,23 +820,11 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
     ],
   },
   {
-    // Experimental (docs/specs/007-editor/editor-modes.md "Experimental modes"): ideas being
-    // tried out, each off until switched on here. Listed after AI Tools.
+    // Experimental (docs/specs/007-editor/editor-modes.md "Experimental modes"): ideas still being
+    // tried out, each with a switch of its own here. Listed after AI Tools.
     id: 'experimental',
     label: 'Experimental',
     rows: [
-      {
-        kind: 'toggle',
-        key: 'illustrateModeEnabled',
-        keywords:
-          'illustrate infographic article page pages a4 poster writing word document editor mode experiment labs beta',
-        label: 'Illustrate Mode',
-        description:
-          'Illustrate mode in the editor mode switch: pages to lay out as infographics or write as articles, then export and present. Still new, so it may change. On by default.',
-        read: (p) => p.illustrateModeEnabled !== false,
-        write: (p, v) => ({ ...p, illustrateModeEnabled: v }),
-        event: { category: 'UI', on: 'IllustrateModeOn', off: 'IllustrateModeOff' },
-      },
       {
         kind: 'toggle',
         key: 'planModeEnabled',

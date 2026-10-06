@@ -16,13 +16,12 @@ import {
 import { useEditorMode, type EditorModeState } from '@/hooks/editor/useEditorMode';
 import { EditorModeProvider } from './editor-mode-context';
 import { EditorModeSwitch } from './EditorModeSwitch';
-import { setIllustrateModeEnabled, setPlanModeEnabled } from '@/lib/offered-editor-modes';
+import { setPlanModeEnabled } from '@/lib/offered-editor-modes';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
 beforeEach(() => {
-  // Every mode offered, the experimental ones included (Settings › Experimental).
-  setIllustrateModeEnabled(true);
+  // Every mode offered, the experimental one included (Settings › Experimental).
   setPlanModeEnabled(true);
   localStorage.clear();
   vi.spyOn(console, 'info').mockImplementation(() => {});
@@ -30,20 +29,19 @@ beforeEach(() => {
 afterEach(() => {
   cleanup();
   vi.restoreAllMocks();
-  setIllustrateModeEnabled(false);
   setPlanModeEnabled(false);
 });
 
 // Settings › Experimental (docs/specs/007-editor/editor-modes.md "Experimental modes").
-describe('EditorModeSwitch with the experimental modes switched off', () => {
-  it('offers only Diagram and Draw', () => {
-    setIllustrateModeEnabled(false);
+describe('EditorModeSwitch with Plan mode switched off', () => {
+  it('offers Diagram, Draw and Illustrate', () => {
     setPlanModeEnabled(false);
     renderSwitch('diagram');
     fireEvent.click(chip());
     expect(screen.getAllByRole('menuitemradio').map((row) => row.textContent)).toEqual([
       'Diagram',
       'Draw⇧D',
+      'Illustrate',
     ]);
   });
 });

@@ -11,7 +11,7 @@ import {
   type TemplateCategory,
   type TemplateKind,
 } from '@livediagram/templates';
-import { setIllustrateModeEnabled } from '@/lib/offered-editor-modes';
+import { setPlanModeEnabled } from '@/lib/offered-editor-modes';
 import { TemplatePickerBrowse, type ShelfCategory } from './TemplatePickerBrowse';
 import { useTemplateModeFilter } from './useTemplateModeFilter';
 
@@ -79,7 +79,7 @@ const cardModes = () =>
   );
 
 afterEach(() => {
-  act(() => setIllustrateModeEnabled(true));
+  act(() => setPlanModeEnabled(true));
   trackMock.mockClear();
 });
 
@@ -187,14 +187,14 @@ describe('the mode filter', () => {
     }
   });
 
-  it('offers no Illustrate option, and shows no Illustrate template, when Illustrate is off', () => {
-    act(() => setIllustrateModeEnabled(false));
+  it('offers no Plan option, and shows no Plan template, when Plan is off', () => {
+    act(() => setPlanModeEnabled(false));
     render(<Step />);
     fireEvent.click(chip());
-    expect(screen.queryByRole('menuitemradio', { name: /^Illustrate/ })).toBeNull();
+    expect(screen.queryByRole('menuitemradio', { name: /^Plan/ })).toBeNull();
     fireEvent.click(chip());
-    expect(cardModes()).not.toContain('Opens in Illustrate');
-    expect(screen.queryByText('Blank Illustration')).toBeNull();
+    expect(cardModes()).not.toContain('Opens in Plan');
+    expect(screen.queryByText('Blank Plan')).toBeNull();
   });
 });
 

@@ -20,11 +20,11 @@ const esBoard = { id: 't3', kind: 'event-storming' as const };
 describe('resolveEditorMode', () => {
   // Settings › Experimental (docs/specs/007-editor/editor-modes.md "Experimental modes").
   it('opens a mode that is not offered in Diagram', () => {
-    const illustrateTab = { id: 't4', kind: 'diagram' as const, opensIn: 'illustrate' as const };
+    const planTab = { id: 't4', kind: 'diagram' as const, opensIn: 'plan' as const };
     const offered = ['diagram', 'draw'] as const;
     expect(
       resolveEditorMode({
-        tab: illustrateTab,
+        tab: planTab,
         remembered: null,
         opened: null,
         canEdit: true,
@@ -34,15 +34,15 @@ describe('resolveEditorMode', () => {
     expect(
       resolveEditorMode({
         tab: general,
-        remembered: 'illustrate',
+        remembered: 'plan',
         opened: null,
         canEdit: true,
         offered,
       }).mode,
     ).toBe('diagram');
     expect(
-      resolveEditorMode({ tab: illustrateTab, remembered: null, opened: null, canEdit: true }).mode,
-    ).toBe('illustrate');
+      resolveEditorMode({ tab: planTab, remembered: null, opened: null, canEdit: true }).mode,
+    ).toBe('plan');
   });
 
   it('opens a tab in its opening mode when nothing is remembered', () => {

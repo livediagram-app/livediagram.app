@@ -1,10 +1,9 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { EditorMode } from '@livediagram/document';
 import { editorModeShortcut } from './editor-mode-shortcut';
-import { setIllustrateModeEnabled, setPlanModeEnabled } from '@/lib/offered-editor-modes';
+import { setPlanModeEnabled } from '@/lib/offered-editor-modes';
 
 afterEach(() => {
-  setIllustrateModeEnabled(false);
   setPlanModeEnabled(false);
 });
 
@@ -27,7 +26,6 @@ describe('editorModeShortcut', () => {
     ['illustrate', 'plan', 'Plan mode'],
     ['plan', 'diagram', 'Diagram mode'],
   ] as const)('from %s switches to %s and announces "%s"', (from, to, message) => {
-    setIllustrateModeEnabled(true);
     setPlanModeEnabled(true);
     const s = state(from);
     const announce = vi.fn();
@@ -36,14 +34,7 @@ describe('editorModeShortcut', () => {
     expect(announce).toHaveBeenCalledWith(message);
   });
 
-  it('skips Illustrate and Plan while they are switched off in Settings', () => {
-    const s = state('draw');
-    editorModeShortcut(s, vi.fn())!();
-    expect(s.setMode).toHaveBeenCalledWith('diagram');
-  });
-
-  it('skips Plan alone when only Plan is switched off', () => {
-    setIllustrateModeEnabled(true);
+  it('skips Plan while it is switched off in Settings', () => {
     const s = state('illustrate');
     editorModeShortcut(s, vi.fn())!();
     expect(s.setMode).toHaveBeenCalledWith('diagram');

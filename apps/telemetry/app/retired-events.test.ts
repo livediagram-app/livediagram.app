@@ -30,6 +30,12 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('Help', 'View', 'popular')).toBe(false);
   });
 
+  it("retires Illustrate mode's Settings switch, not the mode", () => {
+    expect(isRetiredEvent('UI', 'Toggled', 'IllustrateModeOn')).toBe(true);
+    expect(isRetiredEvent('UI', 'Toggled', 'IllustrateModeOff')).toBe(true);
+    expect(isRetiredEvent('UI', 'Toggled', 'PlanModeOn')).toBe(false);
+  });
+
   it('keeps everything that still exists', () => {
     expect(isRetiredEvent('Document', 'Undone', null)).toBe(false);
     expect(isRetiredEvent('Help', 'View', 'undo')).toBe(false);

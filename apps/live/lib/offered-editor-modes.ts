@@ -7,10 +7,7 @@ import { useSyncExternalStore } from 'react';
 import { EDITOR_MODES, type EditorMode } from '@livediagram/document';
 
 // The modes behind a Settings switch each (on by default; switching one off hides that mode).
-export const EXPERIMENTAL_EDITOR_MODES = [
-  'illustrate',
-  'plan',
-] as const satisfies readonly EditorMode[];
+export const EXPERIMENTAL_EDITOR_MODES = ['plan'] as const satisfies readonly EditorMode[];
 export type ExperimentalEditorMode = (typeof EXPERIMENTAL_EDITOR_MODES)[number];
 
 // Which experimental modes are switched on; a mode not named is on.
@@ -31,11 +28,7 @@ export function setExperimentalModeEnabled(mode: ExperimentalEditorMode, enabled
   for (const l of listeners) l();
 }
 
-export function setIllustrateModeEnabled(enabled: boolean): void {
-  setExperimentalModeEnabled('illustrate', enabled);
-}
-
-// Plan mode (docs/specs/026-plan/plan-mode.md "Offering the mode"): its own switch, apart from Illustrate's.
+// Plan mode (docs/specs/026-plan/plan-mode.md "Offering the mode").
 export function setPlanModeEnabled(enabled: boolean): void {
   setExperimentalModeEnabled('plan', enabled);
 }

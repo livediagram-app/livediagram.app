@@ -294,15 +294,8 @@ export const AI_SETTINGS = settingsStack(
 
 export const EXPERIMENTAL_SETTINGS = settingsStack(
   'Experimental Settings',
-  'Ideas being tried out, each off until switched on.',
+  'Ideas still being tried out, each with a switch of its own.',
   [
-    toggle(
-      'UI',
-      'IllustrateModeOn',
-      'IllustrateModeOff',
-      'Illustrate Mode',
-      'The Illustrate editor mode, switched on or off.',
-    ),
     toggle(
       'UI',
       'PlanModeOn',

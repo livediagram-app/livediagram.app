@@ -36,9 +36,9 @@ sees only what starts there.
   it stays until a choice, Escape or an outside press. A press on a menu the hover opened keeps it.
 - On a phone (below `sm`) the control takes its own full-width row above the search box, so the
   search keeps its width.
-- Only the modes offered on this device are options: with Illustrate switched off in Settings ›
-  Experimental ([Experimental modes](editor-modes.md)), there is no Illustrate option and no
-  Illustrate template is shown in any view.
+- Only the modes offered on this device are options: with Plan switched off in Settings ›
+  Experimental ([Experimental modes](editor-modes.md)), there is no Plan option and no
+  Plan template is shown in any view.
 - Choosing a mode narrows **everything the step shows** to templates of that mode:
   - **Popular** shows its templates of that mode, the mode's blank first, topped up from the mode's best
     (`MODE_BEST` in `packages/templates`: Plan adds Project Planner, Kanban Board, Team Retro, Bug Tracker)

@@ -133,11 +133,8 @@ export type UserPreferences = {
   // syncs across their devices. Missing / undefined / false === full
   // motion (subject to the OS setting), the default.
   reduceMotion?: boolean;
-  // Illustrate mode (Settings › Experimental, docs/specs/007-editor/editor-modes.md "Experimental
-  // modes"). Missing / undefined / true === offered, the default; `false` hides Illustrate mode.
-  illustrateModeEnabled?: boolean;
-  // Plan mode (Settings › Experimental, docs/specs/026-plan/plan-mode.md "Offering the mode"), gated
-  // apart from Illustrate. Missing / undefined / true === offered, the default; `false` hides it.
+  // Plan mode (Settings › Experimental, docs/specs/026-plan/plan-mode.md "Offering the mode").
+  // Missing / undefined / true === offered, the default; `false` hides it.
   planModeEnabled?: boolean;
   // Toast notifications (docs/specs/007-editor/user-preferences.md). When `false`, the editor suppresses
   // the confirmation / status toasts (success + info tones) it shows

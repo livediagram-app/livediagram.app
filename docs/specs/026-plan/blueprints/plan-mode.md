@@ -25,8 +25,8 @@ items: columns, cards and the work moving through them' }`; `hasPlanLook(mode)`.
 
 ## Gate
 
-- `offeredModesFor(enabled: ExperimentalModeFlags)` with `ExperimentalModeFlags = { illustrate: boolean; plan:
-boolean }`; `setExperimentalModeEnabled(mode, on)`. `EXPERIMENTAL_EDITOR_MODES = ['illustrate', 'plan']`.
+- `offeredModesFor(enabled: ExperimentalModeFlags)` with `ExperimentalModeFlags = { plan?: boolean }`;
+  `setExperimentalModeEnabled(mode, on)`. `EXPERIMENTAL_EDITOR_MODES = ['plan']`.
 - `planModeEnabled` preference read as `!== false`; Settings › Experimental row "Plan Mode", telemetry
   `PlanModeOn` / `PlanModeOff` fired before persisting.
 
