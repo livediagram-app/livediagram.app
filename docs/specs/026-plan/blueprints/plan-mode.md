@@ -55,29 +55,54 @@ boolean }`; `setExperimentalModeEnabled(mode, on)`. `EXPERIMENTAL_EDITOR_MODES =
 
 ## Templates
 
-- Builders are element-only (`template-builders-plan.ts`) and make no items: a template comes with no cards.
-- `BOARDS: Record<PlanTemplateKind, BoardSpec>`; `BoardSpec = { preset, setup?, width, height, title }`.
-  `planTemplateSetup(kind)` is `presetSetup(preset)` with `setup` laid over it and the title set, so a template
-  made for one use (Project Overview, Daily Standup, Content Calendar, Hiring Pipeline) carries its columns
-  here over the `blank` preset rather than as a palette preset.
-- Board width fits every column at `PLAN_COLUMN_MIN_PX` (220) plus the 12px gaps and 12px side padding.
-- `HOW_WE_RUN_IT` holds the "How we run it" sticky for `team-retro` and `daily-standup`, placed 40px right of
-  the board.
-- Kinds: `blank-plan`, `kanban` (rebuilt), `sprint-board`, `bug-triage`, `team-retro`, `roadmap-board`,
-  `weekly-planner`, `project-overview`, `daily-standup`, `content-calendar`, `hiring-pipeline`;
-  `TEMPLATE_MODES` maps each to `'plan'`; previews in `packages/template-previews` (group 15).
+Derived from [Plan templates](../plan-templates.md).
+
+- Builders are element-only and make no items: a template comes with no cards.
+- `plan-template-catalogue.ts` (pure data): `PLAN_TEMPLATE_KINDS`; `PLAN_TEMPLATE_TABS:
+Record<PlanTemplateKind, PlanTabSpec[]>`; `PlanTabSpec = { name, board?, metrics?, charts?, rail? }`;
+  `BoardSpec = { preset, setup?, width, height, title }`; `RailItem` is a `sticky` (text), `timer` (minutes, a
+  `session-button`), `picker` (label) or `temperature` (label). Hand-off columns name the same status and name
+  on each board that shares them.
+- `template-builders-plan.ts`: `boardSetup(spec)` is `presetSetup(preset)` with `setup` over it, the title set,
+  card fields in `CARD_FIELDS` order and an explicit `doneColumnId: undefined` dropped. `buildPlanTab(spec, cx,
+cy)` lays the board at the origin, then metrics (`PLAN_METRIC_SIZE`, 20px gaps, wrapping at the board width)
+  40px under it, then charts two to a row (`PLAN_CHART_SIZE` height, 24px gaps; the Gantt, 440 high, and a
+  last odd chart take the full width), and the rail (280 wide, 24px gaps) 40px right of the board; a tab with
+  no board is 1464 wide (two charts). The whole is centred on (cx, cy). `planTemplateTabs(kind)` names each
+  tab (null for a one-tab template); `buildPlanTemplate` is the first tab's elements.
+- `templateTabs(kind)` (`build-template.ts`) is the generic list: Plan kinds give theirs, every other kind one
+  unnamed tab of `buildTemplate`. `buildTemplateTabs(first, kind, newId, themeId?)` (`template-tab.ts`) makes
+  them as `buildTemplateTab` makes one.
+- Consumers: `/new` (`buildTemplatedTabs` in `apps/live/lib/template-builders.ts`), Quick Start
+  (`useTemplateFlow` with `template-tab-set.ts`: the followers take `newTabSeed(landed)` and the canvas
+  overrides, inserted after the active tab, each `markTabLoaded`), the MCP's `create_document` and the api's
+  `compileSeededTabs` (the followers after the compiled tab, fresh ids). A replace fills its one tab with the
+  first.
+- Statuses: `usePlanStatuses(tabs, activeId, enabled)` returns the `names` and `phases` maps from
+  `documentStatusSignatures(tabs, activeId)`: each tab's board set-ups are cached in a `WeakMap` by its
+  elements array, each set-up list gets a numeric id, and the two JSON signatures are cached by the joined ids
+  (the open tab's first), at most `STATUS_SIGNATURE_CACHE_MAX` (8) entries. Measured on 20 tabs of 2,001
+  elements: 87 ms the first read, 0.11 ms a render after. `PlanSheetsHost`'s status picker reads
+  `statusNames`. `usePlanTabSweep` calls `loadAllTabs` once a session when Plan is in play and the document
+  has 2 to `PLAN_SWEEP_MAX_TABS` (12) tabs.
+- `TEMPLATE_MODES` maps each kind to `'plan'`; previews in `packages/template-previews` (group 15), a tab strip
+  for a template of several tabs and a Gantt panel under a board of projects.
 
 ## Testing
 
-| Rule                           | Test                                             |
-| ------------------------------ | ------------------------------------------------ |
-| Mode catalogue order, cycle    | `editor-mode.test.ts`                            |
-| Gate per mode                  | `offered-editor-modes.test.ts`                   |
-| Plan palette layout            | `palette-layouts.test.ts`                        |
-| Templates open in Plan         | `template-modes.test.ts`, `template-tab.test.ts` |
-| Template set-ups validate, fit | `template-builders-plan.test.ts`                 |
-| Shift+D wraps over four        | `e2e/editor-modes.spec.ts`                       |
-| A board survives a mode switch | `e2e/editor-modes.spec.ts`                       |
+| Rule                           | Test                                                                                          |
+| ------------------------------ | --------------------------------------------------------------------------------------------- |
+| Mode catalogue order, cycle    | `editor-mode.test.ts`                                                                         |
+| Gate per mode                  | `offered-editor-modes.test.ts`                                                                |
+| Plan palette layout            | `palette-layouts.test.ts`                                                                     |
+| Templates open in Plan         | `template-modes.test.ts`, `template-tab.test.ts`                                              |
+| Template set-ups validate, fit | `template-builders-plan.test.ts`                                                              |
+| Hand-offs, tab layout          | `template-builders-plan.test.ts`                                                              |
+| Template tabs on create        | `document-create-seeded.test.ts`, `create-document-placement.test.ts`, `template-tab.test.ts` |
+| Quick Start adds the tabs      | `template-tab-set.test.ts`                                                                    |
+| Document-wide statuses, sweep  | `usePlanStatusNames.test.ts`, `usePlanTabSweep.test.ts`                                       |
+| Shift+D wraps over four        | `e2e/editor-modes.spec.ts`                                                                    |
+| A board survives a mode switch | `e2e/editor-modes.spec.ts`                                                                    |
 
 ## Tabs and tools
 

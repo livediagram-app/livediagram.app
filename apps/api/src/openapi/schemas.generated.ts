@@ -131,6 +131,104 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "ActivityCard": {
+    "additionalProperties": false,
+    "properties": {
+      "board": {
+        "anyOf": [
+          {
+            "additionalProperties": false,
+            "properties": {
+              "elementId": {
+                "type": "string"
+              },
+              "tabId": {
+                "type": "string"
+              },
+              "tabName": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "tabId",
+              "tabName",
+              "elementId",
+              "title"
+            ],
+            "type": "object"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "documentId": {
+        "type": "string"
+      },
+      "documentName": {
+        "type": "string"
+      },
+      "id": {
+        "type": "string"
+      },
+      "key": {
+        "type": "number"
+      },
+      "shareCode": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "status": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "teamId": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "title": {
+        "type": "string"
+      },
+      "type": {
+        "type": "string"
+      },
+      "updatedAt": {
+        "type": "number"
+      },
+      "via": {
+        "enum": [
+          "own",
+          "team",
+          "shared"
+        ],
+        "type": "string"
+      }
+    },
+    "required": [
+      "documentId",
+      "documentName",
+      "teamId",
+      "via",
+      "shareCode",
+      "board",
+      "id",
+      "key",
+      "type",
+      "title",
+      "status",
+      "updatedAt"
+    ],
+    "type": "object"
+  },
   "ActivityThread": {
     "additionalProperties": false,
     "properties": {

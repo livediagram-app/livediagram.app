@@ -59,7 +59,7 @@ apps/live/components/palette/palette-plan-view-tiles.tsx PLAN_VIEW_TILES, spread
 
 ## Interfaces and contracts
 
-- `PlanContextValue.statusPhases: ReadonlyMap<string, StatusPhase>` (from `usePlanStatusPhases`, signature-keyed).
+- `PlanContextValue.statusPhases: ReadonlyMap<string, StatusPhase>` (from `usePlanStatuses`, signature-keyed, read from every tab's boards, the open tab's first).
 - `PlanViewProps = { plan, items, palette, fontFamily, width, height }`.
 
 ## Errors and edge cases

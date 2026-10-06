@@ -20,7 +20,7 @@ import {
   type Tab,
 } from '@livediagram/document';
 import {
-  buildTemplateTab,
+  buildTemplateTabs,
   resolveTemplate,
   templateCatalogue,
   templateFamilyOf,
@@ -122,7 +122,16 @@ export function registerTools(server: McpServer, env: Env): void {
           );
         }
         if (tabs.length === 0) firstTemplate = kind;
-        tabs.push(buildTemplateTab(tabId, t.name, kind, args.theme));
+        // A template of several tabs adds them all, the first named as given
+        // (docs/specs/026-plan/plan-templates.md "How a template with tabs is made").
+        tabs.push(
+          ...buildTemplateTabs(
+            { id: tabId, name: t.name },
+            kind,
+            () => crypto.randomUUID(),
+            args.theme,
+          ),
+        );
         continue;
       }
       // Graph-first (docs/specs/015-api/mcp-server.md §4.7): the server builds + lays out the boxes

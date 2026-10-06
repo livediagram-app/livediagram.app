@@ -71,7 +71,7 @@ Five built-in types, each with a glyph, an accent colour and the fields it offer
 - **Start** sits right before Due, on Projects (so they map onto the [Gantt chart](plan-views.md#project-gantt-chart))
   and Tasks, edited with the same date picker as Due. A start after the due date is kept, and the item panel
   says **Starts after it is due** under it, gently. Start is a card field like Due; the Roadmap board and the
-  Project Overview template show it on their cards.
+  Project Planner's Roadmap tab show it on their cards.
 - A bug is a Task labelled `bug`.
 - A document can change these and add its own, with custom fields: see [Item types](item-types.md).
 
@@ -121,8 +121,8 @@ Five built-in types, each with a glyph, an accent colour and the fields it offer
 - **Cards** is a button in Plan mode's bottom-right cluster, before Card Types; it opens a popover of every card
   in the document that is neither archived nor in the Trash, newest change first.
 - A search field (focused on open with a mouse, not on a phone) matches a card's number (`12` or `#12`), title or description, ignoring case.
-- **All Cards** and **Not on a Board** switch between every card and the cards whose status no column of this
-  tab's boards holds (or that have no status): the strays a renamed or removed column, or another tab, left
+- **All Cards** and **Not on a Board** switch between every card and the cards whose status no column of the
+  document's boards holds, on any tab (or that have no status): the strays a renamed or removed column left
   behind. Each carries a count.
 - At most 200 rows are drawn, with "Showing 200 of N. Search to narrow them down." beneath.
 - Each row shows the type's glyph, the title, and the type, number and status. Choosing one closes the popover and
@@ -144,6 +144,8 @@ Items follow the document's access ([Auth and guest access](../014-identity/auth
   name, else their invite address's local part), fetched once a document has Plan content. A guest, who has no
   teams, can assign only themselves. A card already assigned to someone outside that list keeps them, shown in its
   picker.
+- **Finding your cards**: an open card assigned to you lists under **Assigned to You** on the Explorer's
+  [Activity page](../013-workspace/activity-page.md) (§2.4 there), in every document you can open; a row opens the card on its board.
 - **Vote** with participate access, as comments.
 - An agent token acts as its person, and a read-only token reads only.
 

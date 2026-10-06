@@ -92,6 +92,15 @@ describe('create_document intent', () => {
     expect(posted[0]!.intent).toEqual(intent);
   });
 
+  it('adds every tab of a Plan template with several, the first named as given', async () => {
+    const { run, posted } = harness(undefined);
+    await run([{ name: 'Plan', template: 'project-planner' }]);
+    const tabs = posted[0]!.tabs as { id: string; name: string; opensIn?: string }[];
+    expect(tabs.map((t) => t.name)).toEqual(['Plan', 'Backlog', 'Sprint', 'Daily Standup']);
+    expect(new Set(tabs.map((t) => t.id)).size).toBe(4);
+    expect(tabs.every((t) => t.opensIn === 'plan')).toBe(true);
+  });
+
   it('reads the intent from the first tab only', async () => {
     const { run, posted } = harness(undefined);
     await run([elements, { name: 'Board', template: 'kanban' }]);

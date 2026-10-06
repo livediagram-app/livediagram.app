@@ -22,6 +22,14 @@ export const AI_TOOLS_CONNECTED: Metric = {
   blurb: 'AI assistants that connected through the MCP OAuth consent screen.',
 };
 
+export const CLI_SIGN_INS: Metric = {
+  category: 'Token',
+  action: 'Created',
+  type: 'Cli',
+  title: 'CLI Sign-ins',
+  blurb: 'The livediagram CLI signed in, through the browser or with a code on another device.',
+};
+
 export const TOKENS_REVOKED: Metric = {
   rising: 'neutral',
   category: 'Token',
@@ -36,8 +44,8 @@ export const API_TOKEN_ACTIVITY: MetricStack = {
   stack: true,
   title: 'API Token Activity',
   blurb:
-    'Every token event: created by hand, created by an AI tool connecting over MCP, and revoked.',
-  members: [TOKENS_CREATED, AI_TOOLS_CONNECTED, TOKENS_REVOKED],
+    'Every token event: created by hand, by an AI tool connecting over MCP, by the CLI signing in, and revoked.',
+  members: [TOKENS_CREATED, AI_TOOLS_CONNECTED, CLI_SIGN_INS, TOKENS_REVOKED],
 };
 
 // MCP tool calls, one chart per tool the MCP server registers (apps/mcp

@@ -1,7 +1,7 @@
 'use client';
 
 // The Explorer's Activity section (docs/specs/013-workspace/activity-page.md): three card-lists of what
-// is outstanding for the reader — actions assigned to them, actions
+// is outstanding for the reader — actions and Plan cards assigned to them, actions
 // they assigned, and the comment threads they are in — each hidden
 // when empty, one empty state when all three are.
 //
@@ -15,6 +15,7 @@ import type { ActivityFeed } from '@/app/explorer/useActivityFeed';
 import { SkeletonRows } from '@/app/explorer/views';
 import {
   ActivityActionRow,
+  ActivityCardRow,
   ActivityEmptyState,
   ActivityFailedState,
   ActivitySection,
@@ -37,13 +38,21 @@ export function ActivityPane({ feed }: { feed: ActivityFeed }) {
     <div>
       {feed.assignedToMe.length > 0 ? (
         <ActivitySection title="Assigned to You" count={feed.assignedToMe.length}>
-          {feed.assignedToMe.map((a) => (
-            <ActivityActionRow
-              key={`${a.tabId}:${a.elementId}`}
-              action={a}
-              onOpen={() => track('Activity', 'Selected', 'Action')}
-            />
-          ))}
+          {feed.assignedToMe.map((row) =>
+            row.kind === 'card' ? (
+              <ActivityCardRow
+                key={`card:${row.documentId}:${row.id}`}
+                card={row}
+                onOpen={() => track('Activity', 'Selected', 'Card')}
+              />
+            ) : (
+              <ActivityActionRow
+                key={`${row.tabId}:${row.elementId}:${row.id}`}
+                action={row}
+                onOpen={() => track('Activity', 'Selected', 'Action')}
+              />
+            ),
+          )}
         </ActivitySection>
       ) : null}
       {feed.youAssigned.length > 0 ? (

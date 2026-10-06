@@ -76,6 +76,25 @@ describe('seeded tabs compiled on create', () => {
     expect(summary).toMatchObject({ opensIn: 'plan', templateFamily: 'kanban' });
   });
 
+  it('adds every tab of a Plan template with several after the one named, each opening in Plan', async () => {
+    expect(
+      (
+        await create([
+          { id: 't1', name: 'Retro', template: 'team-retro' },
+          { id: 't2', name: 'Notes', elements: [] },
+        ])
+      ).status,
+    ).toBe(201);
+    const doc = await getDocument(db.env, 'd1');
+    expect(doc?.tabs.map((t) => t.name)).toEqual(['Retro', 'Actions', 'Archive', 'Notes']);
+    const actions = await getTab(db.env, 'd1', doc!.tabs[1]!.id);
+    expect(actions?.opensIn).toBe('plan');
+    expect(actions?.elements.some((e) => e.type === 'shape' && e.shape === 'plan-board')).toBe(
+      true,
+    );
+    expect(await listItems(db.env, 'd1')).toEqual([]);
+  });
+
   it('keeps an intent the create gives', async () => {
     await create([{ id: 't1', name: 'Retro', template: 'start-stop-continue' }], {
       intent: { mode: 'draw' },
