@@ -13,6 +13,7 @@ const {
   guestMigrationPending,
   resetGuestMigrationForTests,
   settleGuestMigration,
+  subscribeGuestMigration,
 } = await import('./guest-migration');
 
 const MIGRATED = { documents: 1, folders: 0, shared: 0, images: 0 };
@@ -103,5 +104,53 @@ describe('settleGuestMigration', () => {
   it('resolves straight away when nothing needs migrating', async () => {
     await settleGuestMigration('user_abc');
     expect(apiMigrateGuestData).not.toHaveBeenCalled();
+  });
+});
+
+// The React Compiler memoises a render-time `guestMigrationPending(userId)` on its
+// argument, so the hook can only see the pending state change through a store
+// notification: signing in with a guest document open otherwise held the editor
+// on "Opening your document" until a refresh.
+describe('subscribeGuestMigration', () => {
+  it('notifies once the migration settles', async () => {
+    setGuestIdentity('guest-1', 'sig-1');
+    apiMigrateGuestData.mockResolvedValue(MIGRATED);
+    const onChange = vi.fn(() => guestMigrationPending('user_abc'));
+    const unsubscribe = subscribeGuestMigration(onChange);
+
+    await settleGuestMigration('user_abc');
+    expect(onChange).toHaveBeenCalled();
+    expect(onChange.mock.results.at(-1)?.value).toBe(false);
+    unsubscribe();
+  });
+
+  it('notifies when a refused migration settles too', async () => {
+    setGuestIdentity('guest-1', 'sig-1');
+    apiMigrateGuestData.mockResolvedValue(null);
+    const onChange = vi.fn();
+    const unsubscribe = subscribeGuestMigration(onChange);
+
+    await settleGuestMigration('user_abc');
+    expect(onChange).toHaveBeenCalled();
+    expect(guestMigrationPending('user_abc')).toBe(false);
+    unsubscribe();
+  });
+
+  it('notifies when the guest id changes', () => {
+    const onChange = vi.fn();
+    const unsubscribe = subscribeGuestMigration(onChange);
+    setGuestIdentity('guest-2', null);
+    expect(onChange).toHaveBeenCalledTimes(1);
+    unsubscribe();
+  });
+
+  it('stops notifying once unsubscribed', async () => {
+    setGuestIdentity('guest-1', 'sig-1');
+    apiMigrateGuestData.mockResolvedValue(MIGRATED);
+    const onChange = vi.fn();
+    subscribeGuestMigration(onChange)();
+
+    await settleGuestMigration('user_abc');
+    expect(onChange).not.toHaveBeenCalled();
   });
 });

@@ -1,5 +1,10 @@
 import { apiMigrateGuestData } from './api-client';
-import { clearGuestSelfId, getGuestSelfId, getGuestSelfSig } from './local-identity';
+import {
+  clearGuestSelfId,
+  getGuestSelfId,
+  getGuestSelfSig,
+  subscribeGuestSelfId,
+} from './local-identity';
 import { debugLog } from '@/lib/debug-log';
 
 // Guest → account migration (docs/specs/014-identity/auth-and-guest-access.md).
@@ -13,6 +18,21 @@ export const GUEST_MIGRATION_WAIT_MS = 10_000;
 
 let inFlight: { clerkUserId: string; settled: Promise<void> } | null = null;
 const settledFor = new Set<string>();
+
+// The pending state as an external store (docs/specs/003-system-architecture/react-state-and-effects.md):
+// components read it with useSyncExternalStore, and settling notifies them. A forced re-render
+// is not enough: the React Compiler memoises `guestMigrationPending(clerkUserId)` on its
+// argument, so a re-render with the same user kept the stale "pending" and the editor never
+// loaded the document. The guest id is part of the state, so its changes notify too.
+const listeners = new Set<() => void>();
+export function subscribeGuestMigration(onChange: () => void): () => void {
+  listeners.add(onChange);
+  const unsubscribeGuestId = subscribeGuestSelfId(onChange);
+  return () => {
+    listeners.delete(onChange);
+    unsubscribeGuestId();
+  };
+}
 
 function needsMigration(clerkUserId: string): boolean {
   const guestId = getGuestSelfId();
@@ -54,6 +74,7 @@ export function settleGuestMigration(clerkUserId: string): Promise<void> {
     clearTimeout(timer);
     settledFor.add(clerkUserId);
     inFlight = null;
+    listeners.forEach((fn) => fn());
   });
   inFlight = { clerkUserId, settled };
   return settled;
