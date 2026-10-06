@@ -153,7 +153,8 @@ author redaction, and the same thread list, composer and resolve control the com
   not comment reads the thread with no composer and no chip. A type that stops offering comments keeps the
   card's thread stored, unshown, like votes.
 - **On the card**: a `comments` card field (a speech-bubble glyph and the count of comments in an open thread,
-  drawn only when there is one), on Compact and Detailed cards, beside the votes. New boards show it.
+  drawn only when there is one), on Compact and Detailed cards, beside the votes. New boards show it. Exports and
+  thumbnails draw it too, after the votes, by the same rule (a board's card fields; a Plan card always).
 - **Writes**: add (text up to 2,000 characters, optional mentions), delete, resolve, reopen. Each is applied by the
   api to the item as stored, so concurrent comments, deletes and resolves all land. A comment's author name,
   colour and id are stamped by the server from the caller, never taken from the request. Adding to a resolved

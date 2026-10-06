@@ -115,6 +115,32 @@ describe('plan shapes in exports', () => {
     expect(svgBoxed(card, { items })).not.toContain('⚑');
   });
 
+  it('counts an open comment thread on a card (docs/specs/026-plan/items.md "Comments")', () => {
+    const thread = { comments: [{ id: 'c1' }, { id: 'c2' }] };
+    const talked = new Map([['item0001', item('item0001', { title: 'Hot', comments: thread })]]);
+    const tall = { ...card, height: 80 } as BoxedElement;
+    expect(svgBoxed(tall, { items: talked })).toContain('>2</text>');
+    const resolved = new Map([
+      ['item0001', item('item0001', { title: 'Hot', comments: { ...thread, resolved: true } })],
+    ]);
+    expect(svgBoxed(tall, { items: resolved })).not.toContain('>2</text>');
+  });
+
+  it("follows a board's card fields for the comment count", () => {
+    const thread = { comments: [{ id: 'c1' }, { id: 'c2' }, { id: 'c3' }] };
+    const talked = new Map([
+      ['item0001', item('item0001', { title: 'Hot', status: 'todo', comments: thread })],
+    ]);
+    const setup = presetSetup('kanban');
+    const on = { ...board, planBoard: { ...setup, cardFields: [...setup.cardFields, 'comments'] } };
+    const off = {
+      ...board,
+      planBoard: { ...setup, cardFields: setup.cardFields.filter((f) => f !== 'comments') },
+    };
+    expect(svgBoxed(on as BoxedElement, { items: talked })).toContain('>3</text>');
+    expect(svgBoxed(off as BoxedElement, { items: talked })).not.toContain('>3</text>');
+  });
+
   it('draws empty columns without items, and a card placeholder', () => {
     const svg = svgBoxed(board);
     expect(svg).toContain('Done');
