@@ -4140,6 +4140,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "DocumentSummary": {
     "additionalProperties": false,
     "properties": {
+      "communityListed": {
+        "type": "boolean"
+      },
       "createdAt": {
         "type": "number"
       },
@@ -4221,6 +4224,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       }
     },
     "required": [
+      "communityListed",
       "createdAt",
       "empty",
       "folderId",

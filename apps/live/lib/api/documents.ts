@@ -59,6 +59,9 @@ export type DocumentListItem = Pick<
   opensIn?: DocumentSummary['opensIn'];
   tabKind?: DocumentSummary['tabKind'];
   templateFamily?: DocumentSummary['templateFamily'];
+  // Listed in the public Community (docs/specs/025-community/community.md "In the Explorer"): the Public badge.
+  // Absent on a synthetic or offline row, which is never listed.
+  communityListed?: DocumentSummary['communityListed'];
 };
 
 // Deduped on `${ownerId}|${id}`: the editor mounts and React Strict

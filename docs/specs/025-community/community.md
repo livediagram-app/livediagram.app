@@ -49,6 +49,10 @@ A post shows every tab of the document. A document that is empty (its first tab 
   Private, Shared and Team; only Local only beats it), and the Share dialog's status line says the document is public.
   A visitor who opens the document through the post's link sees **Public** too: that link only resolves while the post
   is public.
+- **In the Explorer**: while the post is listed, the document's visibility badge on every list row and card (Recent,
+  Home, folders, a team library) reads **Public** with the same precedence and the same hover card as the editor's. The
+  document lists carry only whether the post is listed, never a hidden post's state, so a team member learns nothing
+  the public gallery does not already say.
 - **Something to show**: the document's first tab must have at least one element (counted, so a deploy without image
   storage can still publish).
 - **Where**: the Share dialog carries a **Community** section beneath the share links. Unpublished, it invites the owner

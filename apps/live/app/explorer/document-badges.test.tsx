@@ -4,7 +4,8 @@
 // in minimal chrome (power user mode), its name kept for assistive technology.
 
 import { cleanup, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { resetCommunityEnabledForTests } from '@livediagram/ui';
 import { VisibilityBadge } from './document-badges';
 import type { PaneDocument } from './views';
 
@@ -32,5 +33,40 @@ describe('VisibilityBadge on a document in this browser', () => {
     const local = { ...PRIVATE, ownerId: 'offline' } as PaneDocument;
     const { container } = render(<VisibilityBadge document={local} />);
     expect(container.textContent).toBe('');
+  });
+});
+
+// A document listed in the public Community (docs/specs/025-community/community.md "In the Explorer").
+describe('VisibilityBadge on a Community-listed document', () => {
+  afterEach(() => {
+    resetCommunityEnabledForTests();
+    vi.unstubAllGlobals();
+  });
+
+  const capabilities = (communityEnabled: boolean) =>
+    vi.fn(async () => new Response(JSON.stringify({ communityEnabled }), { status: 200 }));
+
+  it('reads Public, winning over Shared', () => {
+    vi.stubGlobal('fetch', capabilities(true));
+    const listed = { ...PRIVATE, shareCode: 'abc', communityListed: true } as PaneDocument;
+    render(<VisibilityBadge document={listed} />);
+    expect(screen.getByText('Public')).toBeTruthy();
+    expect(screen.queryByText('Shared')).toBeNull();
+  });
+
+  it('falls back to the document otherwise reads while the Community is off', async () => {
+    vi.stubGlobal('fetch', capabilities(false));
+    const listed = { ...PRIVATE, shareCode: 'abc', communityListed: true } as PaneDocument;
+    render(<VisibilityBadge document={listed} />);
+    expect(await screen.findByText('Shared')).toBeTruthy();
+    expect(screen.queryByText('Public')).toBeNull();
+  });
+
+  it('asks nothing for an unlisted row', () => {
+    const fetchSpy = capabilities(true);
+    vi.stubGlobal('fetch', fetchSpy);
+    render(<VisibilityBadge document={PRIVATE} />);
+    expect(screen.getByText('Private')).toBeTruthy();
+    expect(fetchSpy).not.toHaveBeenCalled();
   });
 });

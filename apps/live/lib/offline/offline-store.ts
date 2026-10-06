@@ -129,6 +129,8 @@ export function recordToSummary(rec: OfflineDocumentRecord): DocumentSummary {
     name: rec.name,
     shareable: false,
     shareCode: null,
+    // Saved only in this browser: never in the Community.
+    communityListed: false,
     folderId: rec.folderId,
     teamId: null,
     source: null,
