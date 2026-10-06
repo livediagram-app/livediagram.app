@@ -39,15 +39,21 @@ const SIZES: Record<SelectSize, string> = {
 export type SelectProps = Omit<SelectHTMLAttributes<HTMLSelectElement>, 'size'> & {
   variant?: SelectVariant;
   size?: SelectSize;
+  // Type classes for the field itself (a form whose fields read at 13px); layout stays on `className`.
+  selectClassName?: string;
 };
 
 export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select(
-  { variant = 'outline', size = 'md', className, children, ...rest },
+  { variant = 'outline', size = 'md', className, selectClassName, children, ...rest },
   ref,
 ) {
   return (
     <span className={`relative inline-flex${className ? ` ${className}` : ''}`}>
-      <select ref={ref} className={`${BASE} ${VARIANTS[variant]} ${SIZES[size]}`} {...rest}>
+      <select
+        ref={ref}
+        className={`${BASE} ${VARIANTS[variant]} ${SIZES[size]}${selectClassName ? ` ${selectClassName}` : ''}`}
+        {...rest}
+      >
         {children}
       </select>
       <ChevronDownIcon className="pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2 text-slate-400" />

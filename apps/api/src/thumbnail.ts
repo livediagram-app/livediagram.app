@@ -14,6 +14,7 @@
 
 import { embedTabImages } from '@livediagram/api-schema';
 import { migrateStoredTab, renderElementsToSvg, type Tab } from '@livediagram/document';
+import { typesOf } from '@livediagram/items';
 // Static-import icon resolver (bundle size is fine in a Worker) so icon
 // elements render their real glyph in the snapshot / live image instead of
 // the renderer's box-with-label fallback.
@@ -27,6 +28,7 @@ import {
   communityThumbnailKey,
   thumbnailKey,
   type StoredTabBody,
+  listItems,
 } from './db';
 import { redactTabForCommunity } from './community-redact';
 import type { DocumentDTO, Env } from './types';
@@ -49,7 +51,7 @@ const IMAGE_EMBED_BUDGET_BYTES = 3 * 1024 * 1024;
 // caller that already read it alongside the document row (the Explorer
 // thumbnail route, via getDocumentThumbMeta) passes it and saves a query;
 // one that didn't leaves it out and it is read here.
-export type ThumbnailSubject = Pick<DocumentDTO, 'id' | 'name' | 'savedAt'> & {
+export type ThumbnailSubject = Pick<DocumentDTO, 'id' | 'name' | 'savedAt' | 'itemTypes'> & {
   thumbRenderedAt?: number | null;
 };
 
@@ -241,10 +243,20 @@ async function renderTabBodyToSvg(
   // Inline referenced image bitmaps (read from R2) so the preview / live
   // image renders the actual photos, matching the in-app PNG/SVG export.
   const images = await loadEmbeddedImages(env, tab);
+  // A Plan board or card draws its document's items (docs/specs/026-plan/plan-board.md).
+  const plan = tab.elements.some(
+    (el) => el.type === 'shape' && (el.shape === 'plan-board' || el.shape === 'plan-card'),
+  );
+  const items = plan
+    ? new Map((await listItems(env, liveDoc.id)).map((i) => [i.id, i]))
+    : undefined;
   return renderElementsToSvg(tab, {
     resolveImageHref: (id) => images.get(id),
     resolveIconArt: resolveIconExportArt,
     resolveStickerArt,
+    items,
+    // Custom types keep their colours (docs/specs/026-plan/item-types.md).
+    itemTypes: plan ? typesOf(liveDoc.itemTypes) : undefined,
   });
 }
 

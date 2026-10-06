@@ -28,6 +28,10 @@ import { ToolbarPalette } from '@/components/palette/ToolbarPalette';
 import { pickPaletteAddHandlers } from '@/components/palette/palette-add-handlers';
 import { ToolbarExplorerButton } from '@/components/chrome/ToolbarExplorerButton';
 import { SlidesClusterButton } from '@/components/canvas/SlidesClusterButton';
+import { CardTypesClusterButton } from '@/components/canvas/CardTypesClusterButton';
+import { TrashClusterButton } from '@/components/canvas/TrashClusterButton';
+import { CardFinderClusterButton } from '@/components/canvas/CardFinderClusterButton';
+import { useCardTypesOpener } from '@/hooks/plan/useCardTypesOpener';
 import { LayersClusterButton } from '@/components/canvas/LayersClusterButton';
 import { UndoRedoClusterStrip } from '@/components/canvas/UndoRedoClusterStrip';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
@@ -252,8 +256,12 @@ export function CanvasChrome(props: CanvasChromeProps) {
   // useCanvasChromePanels, so a button and its panel share one value.
   const panelsOn = {
     // Not in Illustrate mode: a page is laid out by its pages, not layers
-    // (docs/specs/007-editor/illustrate-pages.md).
-    layers: panelEnabled(settings, 'layersPanelEnabled') && !props.illustratePages,
+    // (docs/specs/007-editor/illustrate-pages.md). Not in Plan mode either: a board is worked by its
+    // columns and cards, not a stacking order (docs/specs/026-plan/plan-mode.md).
+    layers:
+      panelEnabled(settings, 'layersPanelEnabled') &&
+      !props.illustratePages &&
+      props.editorMode !== 'plan',
     collaborate: panelEnabled(settings, 'collaboratePanelEnabled'),
   };
 
@@ -303,6 +311,11 @@ export function CanvasChrome(props: CanvasChromeProps) {
   // Draw mode trades the palette, the strip and the theme controls for its
   // dock (docs/specs/023-draw-mode/draw-mode.md "What a whiteboard shows").
   const whiteboard = props.editorMode === 'draw';
+  // The palette's Edit Cards opens the Card Types popover from its button (docs/specs/026-plan/item-types.md).
+  const cardTypesButtonRef = useCardTypesOpener(!zenMode && props.editorMode === 'plan', {
+    activeDockPanel,
+    handleDockButtonClick,
+  });
   // The strip only renders for an editor (not read-only) with the chrome up,
   // and never on a whiteboard.
   const stripShown = toolbarActive && !readOnly && !chromeHidden && !whiteboard;
@@ -333,6 +346,9 @@ export function CanvasChrome(props: CanvasChromeProps) {
     toolbarClusterEls,
     collaborateEl,
     slidesPopoverEl,
+    cardTypesPopoverEl,
+    trashPopoverEl,
+    cardFinderPopoverEl,
     clusterPopovers,
     paletteTint,
   } = useCanvasChromePanels({
@@ -494,6 +510,9 @@ export function CanvasChrome(props: CanvasChromeProps) {
           layer, as Toolbar's cluster popovers do. */}
       {zenMode ? null : collaborateEl}
       {zenMode ? null : slidesPopoverEl}
+      {zenMode ? null : cardTypesPopoverEl}
+      {zenMode ? null : trashPopoverEl}
+      {zenMode ? null : cardFinderPopoverEl}
       {toolbarActive && !readOnly && !whiteboard ? (
         <ToolbarPalette
           key={props.esBoard ? 'es-board' : 'standard'}
@@ -574,6 +593,13 @@ export function CanvasChrome(props: CanvasChromeProps) {
         {welcomeOpen ? null : (
           <>
             {offscreenContent ? <OffscreenContentHint onBringBack={onFitToScreen} /> : null}
+            {/* The Trash (docs/specs/026-plan/items.md "Trash"): Plan mode, left of Undo. */}
+            {!zenMode && !readOnly && props.editorMode === 'plan' ? (
+              <TrashClusterButton
+                popoverOpen={activeDockPanel === 'plan-trash'}
+                onTogglePopover={(button) => handleDockButtonClick('plan-trash', button, true)}
+              />
+            ) : null}
             {/* Undo / Redo: see UndoRedoClusterStrip. */}
             {!zenMode && !readOnly ? (
               <UndoRedoClusterStrip
@@ -590,6 +616,21 @@ export function CanvasChrome(props: CanvasChromeProps) {
               <SlidesClusterButton
                 popoverOpen={activeDockPanel === 'slides'}
                 onTogglePopover={(button) => handleDockButtonClick('slides', button, true)}
+              />
+            ) : null}
+            {/* Cards (docs/specs/026-plan/items.md "Finding a card"): in Plan mode, before Card Types. */}
+            {!zenMode && props.editorMode === 'plan' ? (
+              <CardFinderClusterButton
+                popoverOpen={activeDockPanel === 'plan-cards'}
+                onTogglePopover={(button) => handleDockButtonClick('plan-cards', button, true)}
+              />
+            ) : null}
+            {/* Card Types (docs/specs/026-plan/item-types.md): in Plan mode, where Layers would be. */}
+            {!zenMode && props.editorMode === 'plan' ? (
+              <CardTypesClusterButton
+                buttonRef={cardTypesButtonRef}
+                popoverOpen={activeDockPanel === 'card-types'}
+                onTogglePopover={(button) => handleDockButtonClick('card-types', button, true)}
               />
             ) : null}
             {/* Layers (docs/specs/006-document/layers.md): see LayersClusterButton. */}

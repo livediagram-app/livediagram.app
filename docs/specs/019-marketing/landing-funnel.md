@@ -68,20 +68,20 @@ serves the link builders, the editor's reader, the ingest validator and the
 dashboard, so a CTA can't be linked with a source the editor ignores or the
 ingest drops.
 
-| Surface     | Pages it covers                    | Slots                                                                                                                                                                  |
-| ----------- | ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `Home`      | `/`                                | `Header`, `HeaderDraw`, `HeaderWhiteboard`, `HeaderIllustration`, `Hero`, `HeroDraw`, `HeroBrainstorm`, `HeroCanvas`, `HeroBuild`, `Gallery`, `GalleryDraw`, `Closing` |
-| `Feature`   | `/features/<id>`                   | `Header`, `HeaderDraw`, `HeaderWhiteboard`, `HeaderIllustration`, `Hero`, `Closing`                                                                                    |
-| `Compare`   | `/alternatives`, `/alternatives/*` | `Header`, `HeaderDraw`, `HeaderWhiteboard`, `HeaderIllustration`, `Card`                                                                                               |
-| `Faq`       | `/faq`                             | `Header`, `HeaderDraw`, `HeaderWhiteboard`, `HeaderIllustration`, `Card`                                                                                               |
-| `Status`    | `/status`                          | `Header`, `HeaderDraw`, `HeaderWhiteboard`, `HeaderIllustration`                                                                                                       |
-| `Dashboard` | `/telemetry`                       | `Header`, `HeaderDraw`, `HeaderWhiteboard`, `HeaderIllustration`                                                                                                       |
-| `Help`      | `/help`, `/help/*`                 | `Header`                                                                                                                                                               |
-| `Community` | `/community`, `/community/*`       | `Header`, `HeaderDraw`, `HeaderWhiteboard`, `HeaderIllustration`                                                                                                       |
+| Surface     | Pages it covers                    | Slots                                                                                                                                                                                |
+| ----------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `Home`      | `/`                                | `Header`, `HeaderDraw`, `HeaderWhiteboard`, `HeaderIllustration`, `HeaderPlan`, `Hero`, `HeroDraw`, `HeroBrainstorm`, `HeroCanvas`, `HeroBuild`, `Gallery`, `GalleryDraw`, `Closing` |
+| `Feature`   | `/features/<id>`                   | `Header`, `HeaderDraw`, `HeaderWhiteboard`, `HeaderIllustration`, `HeaderPlan`, `Hero`, `Closing`                                                                                    |
+| `Compare`   | `/alternatives`, `/alternatives/*` | `Header`, `HeaderDraw`, `HeaderWhiteboard`, `HeaderIllustration`, `HeaderPlan`, `Card`                                                                                               |
+| `Faq`       | `/faq`                             | `Header`, `HeaderDraw`, `HeaderWhiteboard`, `HeaderIllustration`, `HeaderPlan`, `Card`                                                                                               |
+| `Status`    | `/status`                          | `Header`, `HeaderDraw`, `HeaderWhiteboard`, `HeaderIllustration`, `HeaderPlan`                                                                                                       |
+| `Dashboard` | `/telemetry`                       | `Header`, `HeaderDraw`, `HeaderWhiteboard`, `HeaderIllustration`, `HeaderPlan`                                                                                                       |
+| `Help`      | `/help`, `/help/*`                 | `Header`                                                                                                                                                                             |
+| `Community` | `/community`, `/community/*`       | `Header`, `HeaderDraw`, `HeaderWhiteboard`, `HeaderIllustration`, `HeaderPlan`                                                                                                       |
 
 The slots:
 
-- `Header` / `HeaderDraw` / `HeaderWhiteboard` / `HeaderIllustration`: the shared `SiteHeader`
+- `Header` / `HeaderDraw` / `HeaderWhiteboard` / `HeaderIllustration` / `HeaderPlan`: the shared `SiteHeader`
   pair, Choose Template (`/new`) and the Start Blank menu's three rows: Blank Diagram
   (`/new?blank=1`, keeping `HeaderDraw` so the old Start Blank series carries on), Blank
   Whiteboard (`/new?template=whiteboard`) and Blank Illustration

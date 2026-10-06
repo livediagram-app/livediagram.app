@@ -1220,6 +1220,26 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
+  "BoardWidgetKind": {
+    "enum": [
+      "count",
+      "progress",
+      "filter",
+      "mine",
+      "people",
+      "unplaced",
+      "types",
+      "wip",
+      "due",
+      "votes",
+      "points",
+      "priorities",
+      "unassigned",
+      "top-voted",
+      "stale"
+    ],
+    "type": "string"
+  },
   "BorderRadius": {
     "enum": [
       "none",
@@ -1329,6 +1349,31 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "aiEnabled"
     ],
     "type": "object"
+  },
+  "CardField": {
+    "enum": [
+      "key",
+      "type",
+      "assignee",
+      "priority",
+      "labels",
+      "estimate",
+      "start",
+      "due",
+      "votes",
+      "checklist",
+      "description",
+      "parent"
+    ],
+    "type": "string"
+  },
+  "CardSize": {
+    "enum": [
+      "minimal",
+      "compact",
+      "detailed"
+    ],
+    "type": "string"
   },
   "ChairFacing": {
     "enum": [
@@ -1673,6 +1718,14 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "parchment"
     ],
     "type": "string"
+  },
+  "ColumnWidth": {
+    "enum": [
+      1,
+      2,
+      3
+    ],
+    "type": "number"
   },
   "Comment": {
     "additionalProperties": false,
@@ -2394,6 +2447,47 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "CustomFieldDef": {
+    "additionalProperties": false,
+    "properties": {
+      "id": {
+        "type": "string"
+      },
+      "kind": {
+        "$ref": "#/components/schemas/CustomFieldKind"
+      },
+      "label": {
+        "type": "string"
+      },
+      "onCard": {
+        "type": "boolean"
+      },
+      "options": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      }
+    },
+    "required": [
+      "id",
+      "label",
+      "kind"
+    ],
+    "type": "object"
+  },
+  "CustomFieldKind": {
+    "enum": [
+      "text",
+      "longtext",
+      "number",
+      "date",
+      "checkbox",
+      "link",
+      "choice"
+    ],
+    "type": "string"
+  },
   "CustomTheme": {
     "additionalProperties": false,
     "properties": {
@@ -3075,6 +3169,51 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             },
             "type": "object"
           },
+          "plan-board": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "plan-card": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "plan-view": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
           "portal": {
             "additionalProperties": false,
             "properties": {
@@ -3559,6 +3698,16 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "id": {
         "type": "string"
+      },
+      "itemTypes": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/ItemTypeCatalogue"
+          },
+          {
+            "type": "null"
+          }
+        ]
       },
       "name": {
         "type": "string"
@@ -4079,7 +4228,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "enum": [
       "diagram",
       "draw",
-      "illustrate"
+      "illustrate",
+      "plan"
     ],
     "type": "string"
   },
@@ -5583,6 +5733,411 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "Item": {
+    "additionalProperties": false,
+    "properties": {
+      "createdAt": {
+        "type": "number"
+      },
+      "createdBy": {
+        "$ref": "#/components/schemas/ItemPerson"
+      },
+      "fields": {
+        "$ref": "#/components/schemas/ItemFields"
+      },
+      "id": {
+        "type": "string"
+      },
+      "key": {
+        "type": "number"
+      },
+      "rank": {
+        "type": "string"
+      },
+      "rev": {
+        "type": "number"
+      },
+      "type": {
+        "type": "string"
+      },
+      "updatedAt": {
+        "type": "number"
+      },
+      "updatedBy": {
+        "$ref": "#/components/schemas/ItemPerson"
+      }
+    },
+    "required": [
+      "id",
+      "type",
+      "key",
+      "rank",
+      "fields",
+      "rev",
+      "createdAt",
+      "updatedAt",
+      "createdBy",
+      "updatedBy"
+    ],
+    "type": "object"
+  },
+  "ItemCreate": {
+    "additionalProperties": false,
+    "properties": {
+      "fields": {
+        "$ref": "#/components/schemas/ItemFields"
+      },
+      "id": {
+        "type": "string"
+      },
+      "key": {
+        "type": "number"
+      },
+      "place": {
+        "$ref": "#/components/schemas/ItemPlace"
+      },
+      "type": {
+        "type": "string"
+      },
+      "votes": {
+        "additionalProperties": {
+          "type": "number"
+        },
+        "type": "object"
+      }
+    },
+    "required": [
+      "type",
+      "fields"
+    ],
+    "type": "object"
+  },
+  "ItemFieldValue": {
+    "anyOf": [
+      {
+        "type": "string"
+      },
+      {
+        "type": "number"
+      },
+      {
+        "type": "boolean"
+      },
+      {
+        "type": "null"
+      },
+      {
+        "items": {
+          "$ref": "#/components/schemas/ItemFieldValue"
+        },
+        "type": "array"
+      },
+      {
+        "additionalProperties": {
+          "$ref": "#/components/schemas/ItemFieldValue"
+        },
+        "type": "object"
+      }
+    ]
+  },
+  "ItemFields": {
+    "additionalProperties": {
+      "$ref": "#/components/schemas/ItemFieldValue"
+    },
+    "type": "object"
+  },
+  "ItemMove": {
+    "additionalProperties": false,
+    "properties": {
+      "after": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "before": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "clear": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "set": {
+        "$ref": "#/components/schemas/ItemFields"
+      },
+      "status": {
+        "type": "string"
+      },
+      "type": {
+        "type": "string"
+      }
+    },
+    "type": "object"
+  },
+  "ItemPatch": {
+    "additionalProperties": false,
+    "properties": {
+      "clear": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "set": {
+        "$ref": "#/components/schemas/ItemFields"
+      },
+      "type": {
+        "type": "string"
+      }
+    },
+    "type": "object"
+  },
+  "ItemPerson": {
+    "additionalProperties": false,
+    "properties": {
+      "color": {
+        "type": "string"
+      },
+      "id": {
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "id",
+      "name",
+      "color"
+    ],
+    "type": "object"
+  },
+  "ItemPlace": {
+    "additionalProperties": false,
+    "properties": {
+      "after": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "before": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "status": {
+        "type": "string"
+      }
+    },
+    "type": "object"
+  },
+  "ItemResponse": {
+    "additionalProperties": false,
+    "properties": {
+      "item": {
+        "$ref": "#/components/schemas/Item"
+      },
+      "rev": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "item",
+      "rev"
+    ],
+    "type": "object"
+  },
+  "ItemTypeCatalogue": {
+    "additionalProperties": false,
+    "properties": {
+      "types": {
+        "items": {
+          "$ref": "#/components/schemas/ItemTypeDef"
+        },
+        "type": "array"
+      },
+      "version": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "version",
+      "types"
+    ],
+    "type": "object"
+  },
+  "ItemTypeDef": {
+    "additionalProperties": false,
+    "properties": {
+      "color": {
+        "type": "string"
+      },
+      "custom": {
+        "items": {
+          "$ref": "#/components/schemas/CustomFieldDef"
+        },
+        "type": "array"
+      },
+      "fields": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "glyph": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/PlanGlyphId"
+          },
+          {
+            "type": "string"
+          }
+        ]
+      },
+      "id": {
+        "type": "string"
+      },
+      "label": {
+        "type": "string"
+      },
+      "newTitle": {
+        "type": "string"
+      },
+      "tabs": {
+        "items": {
+          "$ref": "#/components/schemas/ItemTypeTab"
+        },
+        "type": "array"
+      }
+    },
+    "required": [
+      "id",
+      "label",
+      "newTitle",
+      "glyph",
+      "color",
+      "fields"
+    ],
+    "type": "object"
+  },
+  "ItemTypeTab": {
+    "additionalProperties": false,
+    "properties": {
+      "fields": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "id": {
+        "type": "string"
+      },
+      "label": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "id",
+      "label",
+      "fields"
+    ],
+    "type": "object"
+  },
+  "ItemTypesRequest": {
+    "additionalProperties": false,
+    "properties": {
+      "itemTypes": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/ItemTypeCatalogue"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      }
+    },
+    "required": [
+      "itemTypes"
+    ],
+    "type": "object"
+  },
+  "ItemTypesResponse": {
+    "additionalProperties": false,
+    "properties": {
+      "itemTypes": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/ItemTypeCatalogue"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      }
+    },
+    "required": [
+      "itemTypes"
+    ],
+    "type": "object"
+  },
+  "ItemVoteRequest": {
+    "additionalProperties": false,
+    "properties": {
+      "delta": {
+        "enum": [
+          1,
+          -1
+        ],
+        "type": "number"
+      }
+    },
+    "required": [
+      "delta"
+    ],
+    "type": "object"
+  },
+  "ItemsBulkRequest": {
+    "additionalProperties": false,
+    "properties": {
+      "items": {
+        "items": {
+          "$ref": "#/components/schemas/ItemCreate"
+        },
+        "type": "array"
+      }
+    },
+    "required": [
+      "items"
+    ],
+    "type": "object"
+  },
+  "ItemsResponse": {
+    "additionalProperties": false,
+    "properties": {
+      "items": {
+        "items": {
+          "$ref": "#/components/schemas/Item"
+        },
+        "type": "array"
+      },
+      "rev": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "items",
+      "rev"
+    ],
+    "type": "object"
+  },
   "JsonValue": {
     "anyOf": [
       {
@@ -6867,6 +7422,211 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "PlanBoardSetup": {
+    "additionalProperties": false,
+    "properties": {
+      "addTypes": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "allCards": {
+        "type": "boolean"
+      },
+      "archive": {
+        "type": "boolean"
+      },
+      "cardFields": {
+        "items": {
+          "$ref": "#/components/schemas/CardField"
+        },
+        "type": "array"
+      },
+      "cardSize": {
+        "$ref": "#/components/schemas/CardSize"
+      },
+      "columns": {
+        "items": {
+          "$ref": "#/components/schemas/PlanColumn"
+        },
+        "type": "array"
+      },
+      "doneColumnId": {
+        "type": "string"
+      },
+      "hideWriting": {
+        "type": "boolean"
+      },
+      "swimlaneBy": {
+        "$ref": "#/components/schemas/SwimlaneBy"
+      },
+      "title": {
+        "type": "string"
+      },
+      "voting": {
+        "additionalProperties": false,
+        "properties": {
+          "budget": {
+            "type": "number"
+          },
+          "on": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "on"
+        ],
+        "type": "object"
+      },
+      "widgets": {
+        "items": {
+          "$ref": "#/components/schemas/BoardWidgetKind"
+        },
+        "type": "array"
+      }
+    },
+    "required": [
+      "title",
+      "columns",
+      "swimlaneBy",
+      "cardFields",
+      "voting",
+      "hideWriting"
+    ],
+    "type": "object"
+  },
+  "PlanCardRef": {
+    "additionalProperties": false,
+    "properties": {
+      "itemId": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "itemId"
+    ],
+    "type": "object"
+  },
+  "PlanColumn": {
+    "additionalProperties": false,
+    "properties": {
+      "color": {
+        "type": "string"
+      },
+      "id": {
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      },
+      "status": {
+        "type": "string"
+      },
+      "width": {
+        "$ref": "#/components/schemas/ColumnWidth"
+      },
+      "wipLimit": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "id",
+      "status",
+      "name"
+    ],
+    "type": "object"
+  },
+  "PlanGlyphId": {
+    "enum": [
+      "task",
+      "story",
+      "bug",
+      "project",
+      "note",
+      "idea",
+      "action",
+      "risk",
+      "star",
+      "flag",
+      "heart",
+      "bookmark",
+      "person",
+      "calendar",
+      "chat",
+      "cube"
+    ],
+    "type": "string"
+  },
+  "PlanViewId": {
+    "anyOf": [
+      {
+        "const": "metric:count",
+        "type": "string"
+      },
+      {
+        "const": "metric:progress",
+        "type": "string"
+      },
+      {
+        "const": "metric:people",
+        "type": "string"
+      },
+      {
+        "const": "metric:types",
+        "type": "string"
+      },
+      {
+        "const": "metric:priorities",
+        "type": "string"
+      },
+      {
+        "const": "metric:due",
+        "type": "string"
+      },
+      {
+        "const": "metric:unassigned",
+        "type": "string"
+      },
+      {
+        "const": "metric:points",
+        "type": "string"
+      },
+      {
+        "const": "metric:top-voted",
+        "type": "string"
+      },
+      {
+        "const": "metric:stale",
+        "type": "string"
+      },
+      {
+        "$ref": "#/components/schemas/PlanVisualisation"
+      }
+    ]
+  },
+  "PlanViewRef": {
+    "additionalProperties": false,
+    "properties": {
+      "view": {
+        "$ref": "#/components/schemas/PlanViewId"
+      }
+    },
+    "required": [
+      "view"
+    ],
+    "type": "object"
+  },
+  "PlanVisualisation": {
+    "enum": [
+      "gantt",
+      "calendar",
+      "workload",
+      "status-mix",
+      "priority-matrix"
+    ],
+    "type": "string"
+  },
   "PollStyle": {
     "enum": [
       "yesNo",
@@ -7698,6 +8458,15 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         },
         "type": "array"
       },
+      "planBoard": {
+        "$ref": "#/components/schemas/PlanBoardSetup"
+      },
+      "planCard": {
+        "$ref": "#/components/schemas/PlanCardRef"
+      },
+      "planView": {
+        "$ref": "#/components/schemas/PlanViewRef"
+      },
       "portalTarget": {
         "$ref": "#/components/schemas/ElementId"
       },
@@ -7949,7 +8718,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "legend",
       "focus-button",
       "icon",
-      "sticker"
+      "sticker",
+      "plan-board",
+      "plan-card",
+      "plan-view"
     ],
     "type": "string"
   },
@@ -8408,6 +9180,17 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "height"
     ],
     "type": "object"
+  },
+  "SwimlaneBy": {
+    "enum": [
+      "none",
+      "assignee",
+      "type",
+      "priority",
+      "parent",
+      "status"
+    ],
+    "type": "string"
   },
   "Tab": {
     "additionalProperties": false,
@@ -9255,6 +10038,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "Drive",
       "Explorer",
       "Agent",
+      "Plan",
       "Community"
     ],
     "type": "string"

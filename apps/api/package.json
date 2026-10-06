@@ -24,6 +24,7 @@
     "@livediagram/document-views": "workspace:*",
     "@livediagram/edit-operations": "workspace:*",
     "@livediagram/icons": "workspace:*",
+    "@livediagram/items": "workspace:*",
     "@livediagram/templates": "workspace:*",
     "jose": "^6.2.12"
   },

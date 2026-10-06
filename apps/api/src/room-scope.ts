@@ -14,6 +14,9 @@ const TAB_LESS_DELIVERED = new Set([
   'share-revoked',
   'share-rescoped',
   'document-trashed',
+  // The type catalogue holds no content and every tab's cards need it
+  // (docs/specs/026-plan/item-types.md "Storage and sync").
+  'item-types',
 ]);
 
 // The tab-less ops a scoped session may itself send.
@@ -41,6 +44,10 @@ export function opForScope(op: unknown, tabScope: string | null): unknown {
   const o = asOp(op);
   if (!o) return null;
   if (o.kind === 'document-meta') return redactDocumentMeta(o, tabScope);
+  // Item writes may touch items another tab shows: a scoped session hears that the store
+  // moved on, without the items, and refetches the ones its tab shows
+  // (docs/specs/026-plan/items.md "Who may do what").
+  if (o.kind === 'items') return { ...o, upserts: [], removed: [] };
   const mine = onScope(o, tabScope);
   if (mine !== undefined) return mine ? op : null;
   return typeof o.kind === 'string' && TAB_LESS_DELIVERED.has(o.kind) ? op : null;

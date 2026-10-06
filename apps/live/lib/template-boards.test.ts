@@ -1,11 +1,13 @@
+import { normaliseBoardSetup, type PlanBoardSetup } from '@livediagram/items';
+import { PLAN_TEMPLATE_KINDS, templateEditorMode } from '@livediagram/templates';
 import { describe, expect, it } from 'vitest';
-import { runsPlainText, type Element } from '@livediagram/document';
+import type { Element } from '@livediagram/document';
 import { buildTemplate } from './template-builders';
 
 // Structure pins for the board, session and workshop starters redesigned
 // together (docs/specs/008-canvas/canvas-and-palette.md "Templates", and
 // docs/specs/012-collaboration/qa-board.md "Templates" for the two session
-// boards): Kanban, SWOT, prioritization matrix, Lean Coffee, Town Hall Q&A,
+// boards): the Plan templates, SWOT, prioritization matrix, Lean Coffee, Town Hall Q&A,
 // affinity map and user story map. Each test maps to a sentence of those specs.
 
 type Shape = Extract<Element, { type: 'shape' }>;
@@ -28,80 +30,30 @@ const inside = (inner: Element, outer: Element) => {
   );
 };
 
-describe('kanban template', () => {
-  const els = buildTemplate('kanban', 0, 0);
-  const lanes = shapesOf(els, 'square').filter((s) => s.height > 400);
-  const tickets = els.filter((el) => Array.isArray((el as { richText?: unknown }).richText));
+// The Plan templates (docs/specs/026-plan/plan-mode.md "Templates"): one Plan board each, the set-up
+// its use wants, and seed items that land in the board's columns.
+describe('plan templates', () => {
+  const kinds = [...PLAN_TEMPLATE_KINDS];
 
-  it('titles the sprint and shows its goal with a progress bar', () => {
-    expect(texts(els)).toContain('Sprint 12 · Checkout revamp');
-    expect(texts(els).some((t) => t.startsWith('Goal:'))).toBe(true);
-    expect(shapesOf(els, 'progress-bar')).toHaveLength(1);
-  });
-
-  it('runs five tinted lanes from Backlog to Done, each with a glyph', () => {
-    const headers = ['Backlog', 'To do', 'In progress', 'Review', 'Done'];
-    for (const h of headers) expect(texts(els)).toContain(h);
-    expect(lanes).toHaveLength(5);
-    expect(new Set(lanes.map((l) => l.fillColor)).size).toBe(5);
-    expect(shapesOf(els, 'icon')).toHaveLength(5);
-  });
-
-  it('states the WIP limit on the two capped lanes', () => {
-    const chips = shapesOf(els, 'stadium').map((s) => s.label);
-    expect(chips).toContain('3 / 3');
-    expect(chips).toContain('1 / 2');
-    expect(texts(els).filter((t) => t.startsWith('WIP limit'))).toHaveLength(2);
-  });
-
-  it('bolds each ticket id ahead of a plain summary', () => {
-    expect(tickets).toHaveLength(15);
-    for (const t of tickets) {
-      const runs = (t as { richText: { text: string; bold?: boolean }[] }).richText;
-      expect(labelOf(t)).toBe(runsPlainText(runs));
-      expect(runs[0]?.bold).toBe(true);
-      expect(runs[0]?.text).toMatch(/^CHK-\d+:$/);
-      expect(runs[1]?.bold).toBeUndefined();
+  it('each make one Plan board with a valid set-up, opening in Plan', () => {
+    for (const kind of kinds) {
+      const board = buildTemplate(kind, 0, 0).find(
+        (el) => el.type === 'shape' && el.shape === 'plan-board',
+      ) as { planBoard?: unknown } | undefined;
+      expect(board, kind).toBeDefined();
+      expect(normaliseBoardSetup(board!.planBoard), kind).not.toBeNull();
+      expect(templateEditorMode(kind), kind).toBe('plan');
     }
   });
 
-  it('tags every ticket with a preset-bound chip and marks priority with a traffic light', () => {
-    const tags = shapesOf(els, 'stadium').filter((s) =>
-      ['Frontend', 'Backend', 'Design', 'Bug', 'Infra'].includes(s.label ?? ''),
-    );
-    expect(tags).toHaveLength(15);
-    expect(tags.map((t) => t.colorPreset)).toContain('info');
-    expect(tags.every((t) => t.colorPreset && !t.themeLockFill)).toBe(true);
-    const priorities = shapesOf(els, 'stadium').filter((s) => s.marker);
-    // Every ticket but the four Done ones carries a priority.
-    expect(priorities).toHaveLength(11);
-    for (const p of priorities) {
-      expect(
-        { High: 'red-circle', Medium: 'orange-circle', Low: 'green-circle' }[p.label ?? ''],
-      ).toBe(p.marker);
-    }
-  });
-
-  it('puts owners on theme-locked initials discs, leaving the backlog unassigned', () => {
-    const owners = shapesOf(els, 'circle');
-    // 15 tickets, the four in Backlog unassigned.
-    expect(owners).toHaveLength(11);
-    expect(owners.every((o) => o.themeLockFill && /^[A-Z]{2}$/.test(o.label ?? ''))).toBe(true);
-    const backlog = lanes[0]!;
-    expect(owners.some((o) => inside(o, backlog))).toBe(false);
-  });
-
-  it('flags one blocked ticket with a thick red border and a BLOCKED badge', () => {
-    expect(shapesOf(els, 'sticker').filter((s) => s.stickerId === 'badge-blocked')).toHaveLength(1);
-    const blocked = shapesOf(els, 'square').filter((s) => s.strokeWidth === 'thick');
-    expect(blocked).toHaveLength(1);
-    expect(inside(blocked[0]!, lanes[2]!)).toBe(true);
-  });
-
-  it('ends the Done lane on a trophy', () => {
-    const trophy = shapesOf(els, 'sticker').find((s) => s.stickerId === 'emoji-trophy');
-    expect(trophy && inside(trophy, lanes[4]!)).toBe(true);
-    expect(texts(els)).toContain('4 tickets shipped');
+  it('starts the retro face-down with votes', () => {
+    const retro = buildTemplate('team-retro', 0, 0);
+    const board = retro.find((el) => el.type === 'shape' && el.shape === 'plan-board') as {
+      planBoard: PlanBoardSetup;
+    };
+    expect(board.planBoard.hideWriting).toBe(true);
+    expect(board.planBoard.voting).toEqual({ on: true, budget: 5 });
+    expect(retro.some((el) => el.type === 'sticky')).toBe(true);
   });
 });
 

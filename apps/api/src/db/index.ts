@@ -28,6 +28,7 @@ export * from './images';
 export * from './telemetry';
 export * from './timeline';
 export * from './collab-index';
+export * from './items';
 export * from './ws-tickets';
 export * from './trash';
 export * from './empty-document-sweep';

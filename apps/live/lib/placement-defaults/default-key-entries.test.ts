@@ -20,6 +20,7 @@ describe('DEFAULT_KEY_ENTRIES', () => {
       'Diagrams',
       'Whiteboards',
       'Illustrate pages',
+      'Plan boards',
       'Event Storming boards',
       'Retrospectives',
       'Kanban boards',

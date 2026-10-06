@@ -1,0 +1,53 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Cards',
+  description:
+    'Plan cards in livediagram: adding cards, the card panel with its tabs and Details, rich-text descriptions, labels, checklists and parents, card sizes, the Trash, Archive, and presenting a card as a slide.',
+  path: '/help/canvas/plan-mode/cards/',
+});
+
+<ArticleLayout
+  title="Cards"
+  description="Every card is a piece of work you can open, fill in, move, archive or present."
+  categoryTitle="Canvas"
+  categorySlug="canvas/plan-mode"
+>
+
+A **card** shows one [item](/help/canvas/plan-mode/items/) on a [board](/help/canvas/plan-mode/boards/). The same item can sit on more than one board, and a change to it shows everywhere at once.
+
+## Add a card
+
+- **+ Add card** at the foot of a column: pick a type (Project, Task, Note, Idea, Action or [your own](/help/canvas/plan-mode/card-types/)), then give it a title.
+- **From the palette:** drag a card from the **Cards** category into a column; the column opens a gap where it will land.
+
+A board offers only the types it takes, set in its menu's **New Cards Can Be**.
+
+## Open a card
+
+Click a card to open its panel:
+
+- **On the left:** the title, and the card type's **tabs** (Overview by default). The **description** is rich text: bold, italic, headings, links, and bullet or numbered lists from their own buttons.
+- **On the right, in Details:** status, assignee, priority, labels, estimate, start date, due date and parent (a start after the due date says **Starts after it is due**). Labels are coloured chips, with the document's labels offered as you type. **Open** beside a parent takes you to it.
+- **A checklist** shows its progress; tick steps, edit them in place, and **Add a step**.
+
+On a phone the panel rises from the bottom, with **Details** as its first tab. Who a card can be assigned to is you and the members of your teams.
+
+## Card sizes
+
+A board draws its cards **Minimal** (the title), **Compact** (the title over a line of number, priority, due date and assignee) or **Detailed** (everything, with a description excerpt and checklist progress). Choose it in the board's menu under **Cards**.
+
+## Right-click a card
+
+**Open**, **Duplicate**, **Add to Slides**, **Move to** another column, **Archive**, or **Delete**.
+
+## The Trash
+
+Drag a card onto the **Trash** button beside Undo: it opens out into a drop target as you drag. Open the Trash to **Restore** a card to where it was, delete one for good, or **Empty Trash**.
+
+## Present a card
+
+**Add to Slides** adds the card to the [Slide Deck](/help/selection-modes/slide-deck/); presenting it shows the card full screen, kept up to date as it changes.
+
+</ArticleLayout>

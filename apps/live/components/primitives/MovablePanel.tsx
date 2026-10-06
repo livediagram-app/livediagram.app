@@ -47,6 +47,7 @@ export function MovablePanel({
   defaultCollapsed = false,
   popoverOpen,
   asPopover = false,
+  popoverWidth = 'w-64',
   dismissOnOutside = false,
   onPopoverClose,
   popoverAnchor,
@@ -245,7 +246,7 @@ export function MovablePanel({
                 }
               : { top: px(56), right: px(12) }),
         }}
-        className="pointer-events-auto absolute z-[var(--z-toolbar)] flex w-64 max-w-[calc(100vw-2rem)] cursor-default flex-col rounded-lg border border-slate-200 bg-white shadow-lg shadow-slate-900/5 transition-opacity duration-micro dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:shadow-slate-950/40"
+        className={`pointer-events-auto absolute z-[var(--z-toolbar)] flex ${popoverWidth} max-w-[calc(100vw-2rem)] cursor-default flex-col rounded-lg border border-slate-200 bg-white shadow-lg shadow-slate-900/5 transition-opacity duration-micro dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:shadow-slate-950/40`}
       >
         {anchor ? (
           <div

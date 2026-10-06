@@ -5,6 +5,7 @@ import type { AvatarConfig } from './avatar';
 import type { LivePoll } from './poll';
 import type { DragPreviewPatch } from './drag-preview';
 import type { ChangesetRoomOp } from './changesets';
+import type { ItemsRoomOp, ItemTypesRoomOp } from './items';
 
 // ---------------------------------------------------------------------
 // Realtime room messages
@@ -120,6 +121,10 @@ export const PRESENCE_OP_KINDS = [
   // their caret, as a block id and a character offset, at cursor rates, writing nothing. From any
   // session, like the cursor: a viewer's writing takes no caret, so a viewer never sends one.
   'article-caret',
+  // Whose hands are on a Plan board's card (docs/specs/026-plan/plan-board.md "What the board shows"):
+  // the card someone is dragging or reading, so peers ring it in their colour. Ephemeral, never
+  // logged, from any session (a viewer reads items too).
+  'plan-presence',
 ] as const;
 
 // Room op kinds that DO change the document: they get a monotonic `seq` within
@@ -169,12 +174,18 @@ export const MUTATION_OP_KINDS = [
 //
 // `changeset` (docs/specs/024-agents/agent-changesets.md): one write the api applied and recorded,
 // sequenced through /mutation. A forged one would show people a change nobody made (CS24).
+//
+// `items` (docs/specs/026-plan/items.md "Live for everyone"): item writes the api made. Items change
+// only through the api, so a forged one would show people items nobody wrote. `item-types` likewise
+// (docs/specs/026-plan/item-types.md): the catalogue changes only through the api.
 export const SYSTEM_OP_KINDS = [
   'share-revoked',
   'share-rescoped',
   'qa',
   'document-trashed',
   'changeset',
+  'items',
+  'item-types',
 ] as const;
 
 // The whole vocabulary. Every op the editor sends or handles is one of these
@@ -504,6 +515,9 @@ export type RoomOp =
   // element; `end` says the preview is over, `landed` that it was written (the real change follows as
   // element ops, after the autosave's wait), so receivers keep drawing it until then.
   | { kind: 'drag-preview'; tabId: string; patches?: DragPreviewPatch[]; end?: true; landed?: true }
+  // The card the sender is dragging or reading on a Plan board (docs/specs/026-plan/plan-board.md), or
+  // none (itemId null). Presence: relayed as is, never stored.
+  | { kind: 'plan-presence'; tabId: string; itemId: string | null; state?: 'drag' | 'view' }
   // The sender's VIEWPORT (docs/specs/012-collaboration/follow-me-viewport.md): where they are looking, so anyone who
   // has chosen to follow them can mirror it. Ephemeral presence exactly like
   // cursor / laser / avatar: throttled, never logged, never ordered (no
@@ -570,6 +584,11 @@ export type RoomOp =
   // One changeset the api applied (docs/specs/024-agents/agent-changesets.md "What the room does").
   // Worker-originated through /mutation.
   | ChangesetRoomOp
+  // Item writes the api made (docs/specs/026-plan/items.md "Live for everyone"). Worker-originated
+  // through an ordered /broadcast; a session scoped to one tab hears it without its items.
+  | ItemsRoomOp
+  // A document's type catalogue the api stored (docs/specs/026-plan/item-types.md "Storage and sync").
+  | ItemTypesRoomOp
   // The document went to the Trash (docs/specs/013-workspace/trash.md). Every
   // session shows the deleted state; the room then closes every socket (4004).
   // Worker-originated, like share-revoked.

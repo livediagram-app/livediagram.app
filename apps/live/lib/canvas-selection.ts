@@ -162,6 +162,14 @@ export function deriveCanvasSelection(input: {
     // arbitrary rather than considered: both are containers you chain from
     // exactly as often as you chain from a box.
     selected.type !== 'annotation' &&
+    // A Plan board or Plan card is not a node to chain from: its cards are its content
+    // (docs/specs/026-plan/plan-board.md).
+    !(
+      selected.type === 'shape' &&
+      (selected.shape === 'plan-board' ||
+        selected.shape === 'plan-card' ||
+        selected.shape === 'plan-view')
+    ) &&
     editingId !== selected.id &&
     !isPaintMode &&
     !selectedLocked &&

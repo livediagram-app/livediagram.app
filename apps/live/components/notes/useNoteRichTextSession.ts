@@ -22,12 +22,18 @@ import { noteRunStyle } from './note-run-style';
 export function useNoteRichTextSession({
   initialRuns,
   onChange,
+  trackFormats = true,
+  autoFocus = true,
 }: {
   initialRuns: TextRun[];
   // Fired after every edit and every format apply with the note's current
   // plain-text mirror + runs, so the popover can commit without reaching
   // into the editor's DOM.
   onChange: (plain: string, runs: TextRun[]) => void;
+  // Formatting is counted as note use; a Plan item's description (the same editor) is not a note.
+  trackFormats?: boolean;
+  // A note opens to be written in; a description in the item panel waits to be clicked.
+  autoFocus?: boolean;
 }) {
   const doc = useRichTextDocument({
     initialRuns,
@@ -38,7 +44,9 @@ export function useNoteRichTextSession({
     // acts on the word (inline) or the line (block) under the caret, never on
     // the whole note.
     collapsedScope: 'word',
-    trackFormat: (command) => track('Note', 'Used', command),
+    trackFormat: (command) => {
+      if (trackFormats) track('Note', 'Used', command);
+    },
   });
   const { editorRef, runsRef, paintRuns, placeCaretAtEnd, refreshActive, syncFromDom } = doc;
 
@@ -81,6 +89,7 @@ export function useNoteRichTextSession({
     const el = editorRef.current;
     if (!el) return;
     paintRuns();
+    if (!autoFocus) return;
     el.focus();
     placeCaretAtEnd(el);
     refreshActive();

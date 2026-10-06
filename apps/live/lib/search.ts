@@ -101,6 +101,7 @@ export type PaletteAdd =
       reaction?: import('@livediagram/document').Reaction;
       mode?: import('@livediagram/document').SelectionMode;
       estimateScale?: import('@livediagram/document').EstimateScale;
+      plan?: string;
     }
   | { type: 'icon'; iconId: string }
   | { type: 'tech'; iconId: string }

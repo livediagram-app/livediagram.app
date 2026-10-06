@@ -32,6 +32,13 @@ interface QueryParam {
   description: string;
 }
 
+const ITEM_TAB_QUERY: QueryParam = {
+  name: 'tabId',
+  required: false,
+  description:
+    'The tab a tab-scoped share link is confined to; the call then reaches only the items that tab shows.',
+};
+
 export interface RouteSpec {
   method: 'GET' | 'POST' | 'PUT' | 'DELETE';
   /** Path template under the server base, e.g. `/documents/{id}/tabs/{tabId}`. */
@@ -661,6 +668,114 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     query: [{ name: 'status', required: false, description: 'open (default), resolved or all.' }],
     responseSchema: listOf('threads', 'DocumentCommentThread'),
     statuses: [200, 400, 401, 403, 404, 405, 410],
+  },
+  // The document's type catalogue (docs/specs/026-plan/item-types.md).
+  {
+    method: 'PUT',
+    path: '/documents/{id}/item-types',
+    segment: 'documents',
+    tag: 'Items',
+    summary:
+      "Store the document's item types, whole: up to 32 types, each with its fields and custom fields. null goes back to the built-in types. Needs edit access to the whole document.",
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    requestSchema: 'ItemTypesRequest',
+    responseSchema: 'ItemTypesResponse',
+    statuses: [200, 400, 401, 403, 404, 405, 410],
+  },
+  // The item store (docs/specs/026-plan/items.md). A caller on a tab-scoped link adds ?tabId=.
+  {
+    method: 'GET',
+    path: '/documents/{id}/items',
+    segment: 'documents',
+    tag: 'Items',
+    summary:
+      "The document's items and the store's revision. A tab-scoped link passes tabId and gets the items that tab shows.",
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    query: [ITEM_TAB_QUERY],
+    responseSchema: 'ItemsResponse',
+    statuses: [200, 400, 401, 403, 404, 410],
+  },
+  {
+    method: 'POST',
+    path: '/documents/{id}/items',
+    segment: 'documents',
+    tag: 'Items',
+    summary:
+      'Make an item: a type, its fields (a title at least) and an optional place (a status, and the item to sit after or before). Needs edit access.',
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    query: [ITEM_TAB_QUERY],
+    requestSchema: 'ItemCreate',
+    responseSchema: 'ItemResponse',
+    statuses: [201, 400, 401, 403, 404, 409, 410, 413],
+  },
+  {
+    method: 'POST',
+    path: '/documents/{id}/items/bulk',
+    segment: 'documents',
+    tag: 'Items',
+    summary:
+      'Make up to 200 items in one write, in order. Needs edit access to the whole document.',
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    requestSchema: 'ItemsBulkRequest',
+    responseSchema: 'ItemsResponse',
+    statuses: [201, 400, 401, 403, 404, 409, 410, 413],
+  },
+  {
+    method: 'POST',
+    path: '/documents/{id}/items/{itemId}',
+    segment: 'documents',
+    tag: 'Items',
+    summary:
+      'Change an item: fields to set, fields to clear (never the title or votes) and optionally a new type. Other fields are untouched.',
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    query: [ITEM_TAB_QUERY],
+    requestSchema: 'ItemPatch',
+    responseSchema: 'ItemResponse',
+    statuses: [200, 400, 401, 403, 404, 409, 410],
+  },
+  {
+    method: 'DELETE',
+    path: '/documents/{id}/items/{itemId}',
+    segment: 'documents',
+    tag: 'Items',
+    summary: 'Delete an item. Its key is never reused.',
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    query: [ITEM_TAB_QUERY],
+    statuses: [204, 400, 401, 403, 404, 410],
+  },
+  {
+    method: 'POST',
+    path: '/documents/{id}/items/{itemId}/move',
+    segment: 'documents',
+    tag: 'Items',
+    summary:
+      "Move an item to a status and a place in that status's column (after or before another item), optionally setting or clearing a swimlane field (assignee, priority, parent) or its type.",
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    query: [ITEM_TAB_QUERY],
+    requestSchema: 'ItemMove',
+    responseSchema: 'ItemResponse',
+    statuses: [200, 400, 401, 403, 404, 409, 410],
+  },
+  {
+    method: 'POST',
+    path: '/documents/{id}/items/{itemId}/vote',
+    segment: 'documents',
+    tag: 'Items',
+    summary:
+      "Add (1) or take back (-1) one of the caller's votes on an item. Needs participate access.",
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    query: [ITEM_TAB_QUERY],
+    requestSchema: 'ItemVoteRequest',
+    responseSchema: 'ItemResponse',
+    statuses: [200, 400, 401, 403, 404, 409, 410],
   },
   {
     method: 'GET',

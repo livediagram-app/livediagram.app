@@ -72,6 +72,9 @@ importers:
       '@livediagram/icons':
         specifier: workspace:*
         version: link:../../packages/icons
+      '@livediagram/items':
+        specifier: workspace:*
+        version: link:../../packages/items
       '@livediagram/templates':
         specifier: workspace:*
         version: link:../../packages/templates
@@ -352,6 +355,9 @@ importers:
       '@livediagram/icons':
         specifier: workspace:*
         version: link:../../packages/icons
+      '@livediagram/items':
+        specifier: workspace:*
+        version: link:../../packages/items
       '@livediagram/sticky-model':
         specifier: workspace:*
         version: link:../../packages/sticky-model
@@ -582,6 +588,9 @@ importers:
       '@livediagram/icons':
         specifier: workspace:*
         version: link:../../packages/icons
+      '@livediagram/items':
+        specifier: workspace:*
+        version: link:../../packages/items
       '@livediagram/templates':
         specifier: workspace:*
         version: link:../../packages/templates
@@ -749,6 +758,9 @@ importers:
       '@livediagram/edit-operations':
         specifier: workspace:*
         version: link:../edit-operations
+      '@livediagram/items':
+        specifier: workspace:*
+        version: link:../items
       zod:
         specifier: ^4.6.5
         version: 4.6.5
@@ -808,6 +820,9 @@ importers:
       '@livediagram/document':
         specifier: workspace:*
         version: link:../document
+      '@livediagram/items':
+        specifier: workspace:*
+        version: link:../items
     devDependencies:
       '@livediagram/eslint-config':
         specifier: workspace:*
@@ -873,6 +888,9 @@ importers:
       '@livediagram/icons':
         specifier: workspace:*
         version: link:../icons
+      '@livediagram/items':
+        specifier: workspace:*
+        version: link:../items
       perfect-freehand:
         specifier: ^1.2.3
         version: 1.2.3
@@ -1108,6 +1126,30 @@ importers:
         specifier: ^5.0.1
         version: 5.0.3(@types/node@26.6.3)(@vitest/coverage-v8@5.0.3)(jsdom@30.1.1)(vite@7.3.5(@types/node@26.6.3)(jiti@2.7.0)(lightningcss@1.32.0))
 
+  packages/items:
+    devDependencies:
+      '@livediagram/eslint-config':
+        specifier: workspace:*
+        version: link:../eslint-config
+      '@livediagram/vitest-config':
+        specifier: workspace:*
+        version: link:../vitest-config
+      '@typescript/native':
+        specifier: npm:typescript@^7.0.2
+        version: typescript@7.0.2
+      '@vitest/coverage-v8':
+        specifier: ^5.0.3
+        version: 5.0.3(vitest@5.0.3)
+      eslint:
+        specifier: ^10.11.0
+        version: 10.11.0(jiti@2.7.0)
+      typescript:
+        specifier: npm:@typescript/typescript6@^6.0.2
+        version: '@typescript/typescript6@6.0.2'
+      vitest:
+        specifier: ^5.0.1
+        version: 5.0.3(@types/node@26.6.3)(@vitest/coverage-v8@5.0.3)(jsdom@30.1.1)(vite@7.3.5(@types/node@26.6.3)(jiti@2.7.0)(lightningcss@1.32.0))
+
   packages/licences:
     devDependencies:
       '@livediagram/eslint-config':
@@ -1308,6 +1350,9 @@ importers:
       '@livediagram/icons':
         specifier: workspace:*
         version: link:../icons
+      '@livediagram/items':
+        specifier: workspace:*
+        version: link:../items
     devDependencies:
       '@livediagram/eslint-config':
         specifier: workspace:*

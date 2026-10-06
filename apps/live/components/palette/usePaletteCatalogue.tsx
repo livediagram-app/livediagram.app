@@ -112,6 +112,7 @@ export function usePaletteCatalogue({
       reaction?: import('@livediagram/document').Reaction;
       mode?: import('@livediagram/document').SelectionMode;
       estimateScale?: import('@livediagram/document').EstimateScale;
+      plan?: string;
     },
   ) => armed(() => onAddShape(kind, opts))();
   // Icons, stickers and tech icons arm the draw gesture too (they ride the
@@ -252,6 +253,7 @@ export function usePaletteCatalogue({
     canvasEmpty,
     isMobile,
     includeZen: !!onToggleZen,
+    planMode: editorMode === 'plan',
   });
   const onCanvasToolChange = (id: string) => {
     if (id === 'zen') onToggleZen?.();

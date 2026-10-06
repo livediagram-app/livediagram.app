@@ -8,6 +8,7 @@
 // SHAPE_DEFAULT_SIZE reads RAIL_* at module-init time, and a runtime read
 // through the index cycle TDZ-crashes plain-Node ESM consumers. Only TYPES
 // come from './index', and those are erased at build.
+import { presetSetup } from '@livediagram/items';
 import {
   DEFAULT_BUTTON_MODE,
   DEFAULT_PICKER_SOURCE,
@@ -125,6 +126,12 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   // creation path widens it for a word badge off STICKER_ASPECT, since the
   // default table is per-kind and a badge and an emoji are one kind.
   sticker: { width: 104, height: 104 },
+  // Plan board (docs/specs/026-plan/blueprints/DEFAULTS.md D5): room for five 220px columns and a
+  // header; a Plan card is one card face at a board column's width.
+  'plan-board': { width: 1120, height: 640 },
+  'plan-card': { width: 240, height: 120 },
+  // A plan view's own size comes from its view (planViewSize); this is a visualisation's.
+  'plan-view': { width: 720, height: 400 },
   // Progress bar: a wide, short pill. Progress ring: a square donut
   // (aspect-locked on create so it stays circular).
   'progress-bar': { width: 220, height: 44 },
@@ -552,6 +559,12 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
   if (kind === 'checklist') {
     return { ...base, checklistItems: CHECKLIST_DEFAULT_ITEMS.map((i) => ({ ...i })) };
   }
+  // Plan board: the blank preset's set-up; a palette tile or template swaps in its own
+  // (docs/specs/026-plan/plan-mode.md). Plan card: its caller names the item.
+  if (kind === 'plan-board') return { ...base, planBoard: presetSetup('blank') };
+  if (kind === 'plan-card') return { ...base, planCard: { itemId: '' } };
+  // Plan view: Status Breakdown unless its caller names the view.
+  if (kind === 'plan-view') return { ...base, planView: { view: 'status-mix' } };
   // Web components (docs/specs/009-elements/web-components-and-no-groups.md): the starting content each one shows on drop,
   // so a new one reads as what it is. Colours come from the caller
   // (createComponent maps the theme); without one the renderer's fallbacks

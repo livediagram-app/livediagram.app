@@ -6,6 +6,7 @@
 // Images stay references to livediagram's image store; no bytes are embedded.
 
 import type { Tab } from './index';
+import { readItemTypeCatalogue, type Item, type ItemTypeCatalogue } from '@livediagram/items';
 
 export const DOCUMENT_ENVELOPE_KIND = 'livediagram.document';
 export const DOCUMENT_SCHEMA_VERSION = 1;
@@ -21,6 +22,11 @@ export type DocumentEnvelope = {
     name: string;
     presentation: string | null;
     tabs: EnvelopeTab[];
+    // The item store (docs/specs/026-plan/items.md "Copies and exports"). Optional and additive,
+    // so a file written before items, or read by a build before them, stays version 1.
+    items?: Item[];
+    // The type catalogue (docs/specs/026-plan/item-types.md), the same way: optional and additive.
+    itemTypes?: ItemTypeCatalogue;
   };
 };
 
@@ -31,12 +37,21 @@ export function documentToEnvelopeText(
   liveDoc: { id: string; name: string; presentation: string | null },
   tabs: EnvelopeTab[],
   exportedAt: number,
+  items: Item[] = [],
+  itemTypes: ItemTypeCatalogue | null = null,
 ): string {
   const envelope: DocumentEnvelope = {
     kind: DOCUMENT_ENVELOPE_KIND,
     schemaVersion: DOCUMENT_SCHEMA_VERSION,
     exportedAt,
-    document: { id: liveDoc.id, name: liveDoc.name, presentation: liveDoc.presentation, tabs },
+    document: {
+      id: liveDoc.id,
+      name: liveDoc.name,
+      presentation: liveDoc.presentation,
+      tabs,
+      ...(items.length ? { items } : {}),
+      ...(itemTypes ? { itemTypes } : {}),
+    },
   };
   return JSON.stringify(envelope, null, 2);
 }
@@ -45,6 +60,19 @@ function isTab(value: unknown): value is EnvelopeTab {
   if (!value || typeof value !== 'object') return false;
   const t = value as Record<string, unknown>;
   return typeof t.id === 'string' && typeof t.name === 'string' && Array.isArray(t.elements);
+}
+
+function isItemLike(value: unknown): value is Item {
+  if (!value || typeof value !== 'object') return false;
+  const i = value as Record<string, unknown>;
+  return (
+    typeof i.id === 'string' &&
+    typeof i.type === 'string' &&
+    typeof i.key === 'number' &&
+    typeof i.rank === 'string' &&
+    !!i.fields &&
+    typeof i.fields === 'object'
+  );
 }
 
 export function parseDocumentEnvelope(
@@ -81,6 +109,7 @@ export function parseDocumentEnvelope(
   ) {
     return { ok: false, failure: 'malformed' };
   }
+  const itemTypes = readItemTypeCatalogue(d.itemTypes);
   return {
     ok: true,
     envelope: {
@@ -92,6 +121,10 @@ export function parseDocumentEnvelope(
         name: d.name,
         presentation: (d.presentation as string | null | undefined) ?? null,
         tabs: d.tabs,
+        // Items that do not look like items are left behind; the api validates the rest.
+        ...(Array.isArray(d.items) ? { items: d.items.filter(isItemLike) } : {}),
+        // A catalogue that does not read back is left behind: the built-in types stand.
+        ...(itemTypes ? { itemTypes } : {}),
       },
     },
   };

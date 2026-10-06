@@ -2,11 +2,12 @@
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { OpensInMenuSection } from './OpensInMenuSection';
-import { setIllustrateModeEnabled } from '@/lib/offered-editor-modes';
+import { setIllustrateModeEnabled, setPlanModeEnabled } from '@/lib/offered-editor-modes';
 
 afterEach(() => {
   cleanup();
   setIllustrateModeEnabled(false);
+  setPlanModeEnabled(false);
 });
 
 function setup(over: Partial<Parameters<typeof OpensInMenuSection>[0]['choice']> = {}) {
@@ -33,6 +34,7 @@ const choices = () =>
 describe('OpensInMenuSection', () => {
   it('lists every offered editor mode from the catalogue, the opening one checked', () => {
     setIllustrateModeEnabled(true);
+    setPlanModeEnabled(true);
     setup();
     const group = screen.getByRole('group', { name: 'Opens in' });
     expect(group).toBeTruthy();
@@ -41,11 +43,17 @@ describe('OpensInMenuSection', () => {
       expect.stringContaining('Diagram'),
       expect.stringContaining('Draw'),
       expect.stringContaining('Illustrate'),
+      expect.stringContaining('Plan'),
     ]);
-    expect(items.map((i) => i.getAttribute('aria-pressed'))).toEqual(['false', 'true', 'false']);
+    expect(items.map((i) => i.getAttribute('aria-pressed'))).toEqual([
+      'false',
+      'true',
+      'false',
+      'false',
+    ]);
   });
 
-  it('leaves out Illustrate while it is switched off in Settings', () => {
+  it('leaves out Illustrate and Plan while they are switched off in Settings', () => {
     setup();
     expect(choices().map((i) => i.textContent)).toEqual([
       expect.stringContaining('Diagram'),

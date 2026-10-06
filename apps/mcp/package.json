@@ -20,6 +20,7 @@
     "@livediagram/api-schema": "workspace:*",
     "@livediagram/diagram-lint": "workspace:*",
     "@livediagram/document": "workspace:*",
+    "@livediagram/items": "workspace:*",
     "@livediagram/icons": "workspace:*",
     "@livediagram/templates": "workspace:*",
     "@modelcontextprotocol/sdk": "^1.31.0",

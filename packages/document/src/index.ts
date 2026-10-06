@@ -69,6 +69,8 @@ export type {
   LinkCardMeta,
   LinkCardElement,
   VideoElement,
+  PlanCardRef,
+  PlanViewRef,
 } from './element-types';
 
 // Arrow appearance preset types used by ArrowElement's fields below. The
@@ -653,3 +655,4 @@ export * from './lane-seam-snapping';
 export * from './element-refs';
 export * from './containment';
 export * from './style-keys';
+export * from './plan-palette';

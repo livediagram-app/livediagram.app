@@ -1,5 +1,6 @@
 // Document-level calls: load / create / save-meta / delete / list, the
 // copy-into-my-files flow, and the "Shared with you" list.
+import type { ItemCreate, ItemTypeCatalogue } from '@livediagram/items';
 import {
   DOCUMENT_CONVERSION_HEADER,
   scalableSnapshotSvg,
@@ -168,6 +169,10 @@ export async function apiCreateDocument(
     // (docs/specs/015-api/api.md "Marking a document used"). Only `false` travels: absent is the
     // server's own default, a making that counts.
     markUsed?: boolean;
+    // Seed items (docs/specs/026-plan/items.md): an offline document's, on sync.
+    items?: ItemCreate[];
+    // The type catalogue (docs/specs/026-plan/item-types.md): a copy's, a sync's or a Drive file's.
+    itemTypes?: ItemTypeCatalogue | null;
   },
   // Set by the Offline Mode sync path (docs/specs/006-document/offline-mode.md). A sync is a plain POST, so
   // without this the worker records it as a brand-new document being created.
@@ -192,6 +197,7 @@ export async function apiCreateDocument(
       ...(d.savedAt !== undefined ? { savedAt: d.savedAt } : {}),
       ...(d.presentation ? { presentation: d.presentation } : {}),
       ...(d.markUsed === false ? { markUsed: false } : {}),
+      ...(d.items && d.items.length ? { items: d.items } : {}),
     }),
   });
   const { document: liveDoc } = await expectOk<DocumentResponse>(res, 'create document');

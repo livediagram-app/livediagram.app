@@ -173,3 +173,26 @@ export const restoreDocumentOutput = {
   name: z.string().nullable().describe('The restored document name, or null if unknown.'),
   url,
 };
+
+// The item tools (docs/specs/026-plan/plan-mode.md "Agents").
+const itemOut = z.object({
+  ref: z.string().describe('The item’s number as people say it, "#12".'),
+  id: z.string().describe('The item id.'),
+  type: z.string().describe('task, story, bug, epic, note, idea, action, risk, or a later type.'),
+  status: z.string().nullable().describe('Its status: the column it sits in, or null.'),
+  title: z.string().describe('The title.'),
+  fields: z.record(z.string(), z.unknown()).describe('Every field, title and status included.'),
+});
+
+export const listItemsOutput = {
+  count: z.number().describe('How many items are listed.'),
+  items: z.array(itemOut).describe('The items, by number.'),
+  url,
+};
+
+export const changeItemsOutput = {
+  applied: z
+    .array(z.string())
+    .describe('One line per change: + added, ~ changed, → moved, - deleted.'),
+  url,
+};

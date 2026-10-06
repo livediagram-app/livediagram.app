@@ -145,6 +145,29 @@ export const TOUR_STEP_SOURCE: string[] = [
         .join('')}`,
   );
 
+// Plan items name their type (titleCaseType of an item type id); set-up changes name the part.
+const PLAN_ITEM_TYPES = ['Task', 'Story', 'Bug', 'Epic', 'Note', 'Idea', 'Action', 'Risk'];
+const PLAN_TYPE_WHY = "titleCaseType(type): an item type's id, or a later type an agent made";
+const PLAN_SETUP_PARTS = [
+  'Title',
+  'ColumnAdded',
+  'ColumnRenamed',
+  'ColumnReordered',
+  'ColumnRemoved',
+  'ColumnColour',
+  'WipLimit',
+  'ColumnWidth',
+  'DoneColumn',
+  'Swimlanes',
+  'Scope',
+  'CardFields',
+  'CardSize',
+  'AddTypes',
+  'Widgets',
+  'Voting',
+  'VoteBudget',
+  'HideWriting',
+];
 const SLUGS = ['your-first-diagram', 'tips-format-painter', 'connect-ai-mcp'];
 const SLUG_WHY = "a help article's telemetry id, one per registered article";
 const THEMES = ['Default', 'Plum', 'Custom'];
@@ -276,6 +299,16 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   'apps/live/hooks/persistence/useTrash.ts Trash·Cleared': { values: TRASH_TYPES },
   'apps/live/app/document/[id]/useDocumentTrashed.ts Trash·Restored': { values: TRASH_TYPES },
   'apps/live/app/explorer/sidebar/sidebar-telemetry.ts UI·Selected': { values: SIDEBAR_ROWS },
+  // Plan mode (docs/specs/026-plan/plan-mode.md "Telemetry"): an item type, or a set-up part.
+  'apps/live/hooks/plan/usePlanSlice.ts Plan·Added': {
+    values: PLAN_ITEM_TYPES,
+    open: PLAN_TYPE_WHY,
+  },
+  'apps/live/hooks/plan/usePlanSlice.ts Plan·Deleted': {
+    values: PLAN_ITEM_TYPES,
+    open: PLAN_TYPE_WHY,
+  },
+  'apps/live/components/plan/track-board-setup.ts Plan·Changed': { values: PLAN_SETUP_PARTS },
   // Default folders (docs/specs/013-workspace/default-folders.md "Telemetry"): one value per key.
   'apps/live/lib/placement-defaults/placement-defaults-store.ts Folder·Changed': {
     values: DEFAULT_FOLDER_TYPES,

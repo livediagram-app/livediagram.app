@@ -136,6 +136,9 @@ export type UserPreferences = {
   // Illustrate mode (Settings › Experimental, docs/specs/007-editor/editor-modes.md "Experimental
   // modes"). Missing / undefined / true === offered, the default; `false` hides Illustrate mode.
   illustrateModeEnabled?: boolean;
+  // Plan mode (Settings › Experimental, docs/specs/026-plan/plan-mode.md "Offering the mode"), gated
+  // apart from Illustrate. Missing / undefined / true === offered, the default; `false` hides it.
+  planModeEnabled?: boolean;
   // Toast notifications (docs/specs/007-editor/user-preferences.md). When `false`, the editor suppresses
   // the confirmation / status toasts (success + info tones) it shows
   // for consequential, otherwise-silent actions (a document moved to a

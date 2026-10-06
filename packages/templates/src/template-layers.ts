@@ -36,8 +36,6 @@ export function templateLayers(kind: TemplateKind): Layer[] | undefined {
   switch (kind) {
     // Boards: the stationary lanes / quadrants / axes under the cards,
     // stickies and items users drag around.
-    case 'kanban':
-      return layered('Board', 'Cards');
     case 'retrospective':
     case 'start-stop-continue':
     case 'mad-sad-glad':

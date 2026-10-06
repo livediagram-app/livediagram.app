@@ -18,6 +18,8 @@
 // An empty deck stays empty. No seeded slides, no "one per tab" starter: a
 // generated deck is one you have to read and prune before you can trust it.
 
+import { ITEM_TYPES, itemTitle, typeIn } from '@livediagram/items';
+import { usePlan } from '@/components/plan/PlanContext';
 import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
 import { sameMembers, selectionIds, type Selection } from '@/lib/selection-store';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -59,6 +61,7 @@ function SlideRow({
   isDragging,
   renaming,
   thumb,
+  card,
   onOpen,
   onRename,
   onRenameDone,
@@ -78,6 +81,9 @@ function SlideRow({
   renaming: boolean;
   /** Preview markup + viewBox, absent for an empty slide or a missing tab. */
   thumb: { markup: string; viewBox: string } | undefined;
+  // An item slide's card (docs/specs/012-collaboration/presentation-mode.md "Item slides"): its title and
+  // type colour, for the row's name and picture. Absent for every other slide, or a deleted item.
+  card?: { title: string; color: string };
   onOpen: () => void;
   onRename: (name: string) => void;
   onRenameDone: () => void;
@@ -165,6 +171,18 @@ function SlideRow({
             aria-hidden
             dangerouslySetInnerHTML={{ __html: thumb.markup }}
           />
+        ) : slide.itemId ? (
+          <span
+            aria-hidden
+            className="relative flex h-5 w-8 flex-col justify-center gap-0.5 overflow-hidden rounded-sm border border-slate-200 bg-white pl-1.5 dark:border-slate-600 dark:bg-slate-800"
+          >
+            <span
+              className="absolute inset-y-0 left-0 w-0.5"
+              style={{ backgroundColor: card?.color ?? '#94a3b8' }}
+            />
+            <span className="h-0.5 w-4 rounded-full bg-slate-400" />
+            <span className="h-0.5 w-2.5 rounded-full bg-slate-300 dark:bg-slate-600" />
+          </span>
         ) : null}
       </span>
       {renaming ? (
@@ -198,18 +216,22 @@ function SlideRow({
                 : 'text-slate-700 dark:text-slate-200'
             }`}
           >
-            {slideName(slide, index)}
+            {slide.name ?? card?.title ?? slideName(slide, index)}
           </span>
           <span className="truncate text-[9px] text-slate-400">
             {/* The tab is named because a deck spans tabs: "3 elements" on its
                 own does not say which tab they are on. A slide whose tab has
                 been deleted says so rather than showing a blank. */}
             {tabName ?? 'Tab deleted'} ·{' '}
-            {slide.pageId
-              ? (pageName ?? 'Page')
-              : slide.elementIds.length === 1
-                ? '1 element'
-                : `${slide.elementIds.length} elements`}
+            {slide.itemId
+              ? card
+                ? 'Card'
+                : 'Card deleted'
+              : slide.pageId
+                ? (pageName ?? 'Page')
+                : slide.elementIds.length === 1
+                  ? '1 element'
+                  : `${slide.elementIds.length} elements`}
             {slide.notes ? ' · notes' : ''}
             {slide.hidden ? ' · hidden' : ''}
           </span>
@@ -240,6 +262,14 @@ export function SlideDeckPanel({
   // a time (PageSlidePicker) rather than from a selection.
   pages?: readonly { id: string; label: string }[];
 } & ModePanelProps) {
+  // An item slide's card, read live from the items (docs/specs/012-collaboration/presentation-mode.md
+  // "Item slides").
+  const plan = usePlan();
+  const slideCard = (slide: Slide) => {
+    const item = slide.itemId ? plan?.items.get(slide.itemId) : undefined;
+    if (!item) return undefined;
+    return { title: itemTitle(item), color: typeIn(plan?.types ?? ITEM_TYPES, item.type).color };
+  };
   const {
     deck,
     openSlideId,
@@ -410,6 +440,7 @@ export function SlideDeckPanel({
                   isDragging={draggingId === slide.id && moving}
                   renaming={renamingId === slide.id}
                   thumb={thumbs.get(slide.id)}
+                  card={slideCard(slide)}
                   onOpen={() => openSlideInEditor(slide.id)}
                   onRename={(name) => renameSlide(slide.id, name)}
                   onRenameDone={() => setRenamingId(null)}

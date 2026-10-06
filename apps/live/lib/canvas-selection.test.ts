@@ -66,6 +66,15 @@ describe('deriveCanvasSelection', () => {
     expect(s.showUnionResize).toBe(false);
   });
 
+  // docs/specs/026-plan/plan-board.md: a board's cards are its content, not nodes to chain from.
+  it('shows no quick-connect pluses on a Plan board or Plan card', () => {
+    for (const shape of ['plan-board', 'plan-card'] as const) {
+      const s = derive({ elements: [box('p', { shape })], selectedId: 'p' });
+      expect(s.showPlus).toBe(false);
+      expect(s.showPopover).toBe(true);
+    }
+  });
+
   it('hides handles + plus while editing the selected element (popover hides too)', () => {
     const s = derive({ elements: [box('a')], selectedId: 'a', editingId: 'a' });
     expect(s.showPopover).toBe(false);

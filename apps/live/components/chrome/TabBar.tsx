@@ -1,4 +1,5 @@
 import dynamic from 'next/dynamic';
+import { hasPlanContent } from '@/hooks/plan/usePlanNeeded';
 import { MenuErrorBoundary } from '@/components/primitives/MenuErrorBoundary';
 import { useState, type ReactNode } from 'react';
 import {
@@ -243,6 +244,9 @@ export function TabBar({
     canClearContent: activeTabHasContent && !tab.locked,
     locked: tab.locked === true,
     opensIn: opensInFor?.(tab),
+    // A Plan tab's cards are its document's items: it is not added to another document
+    // (docs/specs/026-plan/plan-mode.md "Plan keeps its own tabs").
+    planTab: hasPlanContent(tab.elements, null),
     selfId,
     voteSelfId,
     otherDocuments,

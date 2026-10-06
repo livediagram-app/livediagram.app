@@ -15,6 +15,7 @@ import {
   COUNTDOWNS,
   DOCUMENT_ACTIONS,
   TRASH,
+  PLAN_BOARDS,
   DISCUSSION,
   EDITOR_CHROME,
   EDITOR_SEARCH,
@@ -93,6 +94,7 @@ export const GROUPS: MetricGroup[] = [
     metrics: [
       DOCUMENT_ACTIONS,
       TRASH,
+      PLAN_BOARDS,
       TAB_ACTIONS,
       ELEMENTS_ADDED,
       ELEMENT_EDITING,

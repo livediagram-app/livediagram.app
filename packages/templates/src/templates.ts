@@ -170,7 +170,7 @@ export type TemplateKind =
   // Article (docs/specs/007-editor/article-pages.md): a tab that opens in Illustrate mode on one
   // article page, written as a short project brief.
   | 'article'
-  // Blank Illustration (docs/specs/007-editor/templates-by-mode.md "Three blanks"): a tab that opens
+  // Blank Illustration (docs/specs/007-editor/templates-by-mode.md "Four blanks"): a tab that opens
   // in Illustrate on one empty page, which asks what it is for. A quick-pick beside the other two
   // blanks, never inside a category grid.
   | 'blank-illustration'
@@ -193,7 +193,20 @@ export type TemplateKind =
   | 'data-story'
   | 'how-it-works'
   | 'versus'
-  | 'social-carousel';
+  | 'social-carousel'
+  // Plan templates (docs/specs/026-plan/plan-mode.md "Templates"): a Plan board with the set-up its
+  // use wants, opening in Plan mode, with no cards. The Kanban board
+  // ('kanban', above) is one of them; Blank Plan is the mode's blank.
+  | 'blank-plan'
+  | 'sprint-board'
+  | 'bug-triage'
+  | 'team-retro'
+  | 'roadmap-board'
+  | 'weekly-planner'
+  | 'project-overview'
+  | 'daily-standup'
+  | 'content-calendar'
+  | 'hiring-pipeline';
 
 export type TemplateDescriptor = {
   kind: TemplateKind;
@@ -231,6 +244,12 @@ export const TEMPLATES: TemplateDescriptor[] = [
     kind: 'blank-illustration',
     title: 'Blank Illustration',
     description: 'An empty page for an infographic or an article, sized for print or social.',
+    extra: true,
+  },
+  {
+    kind: 'blank-plan',
+    title: 'Blank Plan',
+    description: 'One board of To do, In progress and Done, ready for your first items.',
     extra: true,
   },
   {
@@ -293,8 +312,64 @@ export const TEMPLATES: TemplateDescriptor[] = [
   },
   {
     kind: 'kanban',
-    title: 'Kanban',
-    description: 'Five lanes with WIP limits, tagged and owned tickets, and a blocked card.',
+    title: 'Kanban Board',
+    description:
+      'A team mid-week: five columns with WIP limits and real cards you drag from Backlog to Done.',
+  },
+  {
+    kind: 'sprint-board',
+    title: 'Sprint Board',
+    description: 'A two-week sprint with a row per person, estimates and a progress bar to Done.',
+    extra: true,
+  },
+  {
+    kind: 'bug-triage',
+    title: 'Bug Triage',
+    description: 'New bugs sorted by priority, from first report to fixed or won’t fix.',
+    extra: true,
+  },
+  {
+    kind: 'team-retro',
+    title: 'Team Retro',
+    description: 'Write notes in private, reveal them together, vote, and agree actions.',
+    extra: true,
+  },
+  {
+    kind: 'roadmap-board',
+    title: 'Roadmap Board',
+    description: 'Epics on Now, Next and Later, each a card you can open and plan in.',
+    extra: true,
+  },
+  {
+    kind: 'weekly-planner',
+    title: 'Weekly Planner',
+    description: 'A column a day, Monday to Friday, for the things you mean to get done.',
+    extra: true,
+  },
+  {
+    kind: 'project-overview',
+    title: 'Project Overview',
+    description:
+      'A row per project, its tasks from Not Started to Done, with what is at risk in amber.',
+    extra: true,
+  },
+  {
+    kind: 'daily-standup',
+    title: 'Daily Standup',
+    description: 'A row per person: yesterday, today and what is blocked, two minutes each.',
+    extra: true,
+  },
+  {
+    kind: 'content-calendar',
+    title: 'Content Calendar',
+    description: 'Ideas through drafting and review to scheduled and published, with due dates.',
+    extra: true,
+  },
+  {
+    kind: 'hiring-pipeline',
+    title: 'Hiring Pipeline',
+    description: 'Candidates from applied through screen, interview and offer to hired.',
+    extra: true,
   },
   {
     kind: 'swot',
@@ -844,6 +919,17 @@ const TEMPLATE_CATEGORY: Record<TemplateKind, TemplateCategory> = {
   sitemap: 'hierarchies',
   // Planning: agile boards, retrospectives, prioritisation, story maps.
   kanban: 'planning',
+  // Plan templates (docs/specs/026-plan/plan-mode.md). Blank Plan is a quick-pick; its category is nominal.
+  'blank-plan': 'planning',
+  'sprint-board': 'planning',
+  'bug-triage': 'planning',
+  'team-retro': 'planning',
+  'roadmap-board': 'project-management',
+  'weekly-planner': 'project-management',
+  'project-overview': 'project-management',
+  'daily-standup': 'planning',
+  'content-calendar': 'project-management',
+  'hiring-pipeline': 'project-management',
   retrospective: 'planning',
   'start-stop-continue': 'planning',
   'mad-sad-glad': 'planning',
@@ -925,13 +1011,14 @@ const TEMPLATE_CATEGORY: Record<TemplateKind, TemplateCategory> = {
 
 // The picker's "Popular" shelf (docs/specs/008-canvas/canvas-and-palette.md "Templates section"): where
 // most people start, open by default above the categories. Not a category of
-// its own (every kind here still lives in its real one); the three blanks lead it, one per editor
-// mode (docs/specs/007-editor/templates-by-mode.md "Three blanks"), so the picker needs no separate
+// its own (every kind here still lives in its real one); the four blanks lead it, one per editor
+// mode (docs/specs/007-editor/templates-by-mode.md "Four blanks"), so the picker needs no separate
 // blank card.
 export const POPULAR_TEMPLATE_KINDS: readonly TemplateKind[] = [
   'blank',
   'whiteboard',
   'blank-illustration',
+  'blank-plan',
   'mindmap',
   'sketchnote',
   'sailboat',
@@ -997,7 +1084,18 @@ const TEMPLATE_PATTERNS: Partial<Record<TemplateKind, BackgroundPattern>> = {
   orgchart: 'graph',
   swot: 'graph',
   gantt: 'graph',
-  kanban: 'graph',
+  // Plan boards (docs/specs/026-plan/plan-mode.md) sit on the quiet dot grid: the board is the structure.
+  kanban: 'grid',
+  'blank-plan': 'grid',
+  'sprint-board': 'grid',
+  'bug-triage': 'grid',
+  'team-retro': 'grid',
+  'roadmap-board': 'grid',
+  'weekly-planner': 'grid',
+  'project-overview': 'grid',
+  'daily-standup': 'grid',
+  'content-calendar': 'grid',
+  'hiring-pipeline': 'grid',
   'mobile-wireframe': 'graph',
   'laptop-wireframe': 'graph',
   venn: 'blank',

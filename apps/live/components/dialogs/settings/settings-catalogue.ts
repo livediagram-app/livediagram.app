@@ -820,6 +820,18 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         write: (p, v) => ({ ...p, illustrateModeEnabled: v }),
         event: { category: 'UI', on: 'IllustrateModeOn', off: 'IllustrateModeOff' },
       },
+      {
+        kind: 'toggle',
+        key: 'planModeEnabled',
+        keywords:
+          'plan board boards kanban scrum sprint retro retrospective roadmap tickets items cards columns backlog jira editor mode experiment labs beta',
+        label: 'Plan Mode',
+        description:
+          'Plan mode in the editor mode switch: boards of items to drag through columns, for Kanban, sprints, retros and roadmaps. Still new, so it may change. On by default.',
+        read: (p) => p.planModeEnabled !== false,
+        write: (p, v) => ({ ...p, planModeEnabled: v }),
+        event: { category: 'UI', on: 'PlanModeOn', off: 'PlanModeOff' },
+      },
     ],
   },
   {

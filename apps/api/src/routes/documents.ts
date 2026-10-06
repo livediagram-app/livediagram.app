@@ -3,6 +3,8 @@
 // upgrade. The largest resource: every sub-path
 // under a document id lives here.
 
+import { readSeedItems, seedItems } from './item-routes';
+import { validateItemTypeCatalogue, type ItemTypeCatalogue } from '@livediagram/items';
 import type { Tab } from '@livediagram/document';
 import { isValidTab, migrateIncomingTab } from '@livediagram/document';
 import { capStoredName } from '../names';
@@ -110,6 +112,7 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
         tabs?: Tab[];
         intent?: unknown;
         markUsed?: unknown;
+        items?: unknown;
       };
       const owner = requireOwner(ctx);
       if (owner instanceof Response) return owner;
@@ -170,6 +173,10 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
           }
         }
       }
+      // Seed items (docs/specs/026-plan/items.md): an offline document's, on sync. Validated whole
+      // before anything is written.
+      const seedItemCreates = readSeedItems(body.items);
+      if (seedItemCreates instanceof Response) return seedItemCreates;
       // Ownership guard (security): upsertDocumentMeta is INSERT ... ON
       // CONFLICT(id) DO UPDATE owner_id = excluded.owner_id, so a POST with an
       // id that already exists under a DIFFERENT owner would silently transfer
@@ -200,6 +207,15 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
       if (binned) return binned.ownerId === owner ? documentTrashed() : forbidden();
       if (typeof body.presentation === 'string' && body.presentation.length > MAX_DECK_LEN) {
         return badRequest('presentation too large');
+      }
+      // A type catalogue a copy, a sync or a Drive import carries (docs/specs/026-plan/item-types.md
+      // "Storage and sync"), validated as the item-types route does; a bad one refuses the create.
+      let itemTypes: ItemTypeCatalogue | null = null;
+      if (body.itemTypes !== undefined && body.itemTypes !== null) {
+        const checked = validateItemTypeCatalogue(body.itemTypes);
+        if (!checked.ok)
+          return json({ error: 'item_types_invalid', reason: checked.reason }, { status: 400 });
+        itemTypes = checked.catalogue;
       }
       // Where the document is filed, decided before the write and written by it
       // (docs/specs/013-workspace/folders.md "Placement on create"). An invalid placement refuses
@@ -255,6 +271,7 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
         presentation:
           seeded?.presentation ??
           (typeof body.presentation === 'string' ? body.presentation : null),
+        itemTypes,
         // Provenance (docs/specs/013-workspace/folders.md): only the closed set of generated sources
         // is accepted; anything else (or absent) is a user-made document.
         source: isDocumentSource(body.source) ? body.source : null,
@@ -277,6 +294,11 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
           if (error instanceof TabTooLargeError) return payloadTooLarge();
           throw error;
         }
+      }
+      // Items only on a genuine create: a re-commit of an id never re-seeds its store.
+      if (!clash && seedItemCreates.length > 0) {
+        const refused = await seedItems(ctx, body.id, owner, seedItemCreates);
+        if (refused) return refused;
       }
       const liveDoc = await getDocument(env, body.id);
       // docs/specs/013-workspace/timeline.md §4.2: only a GENUINE create earns a timeline event. A

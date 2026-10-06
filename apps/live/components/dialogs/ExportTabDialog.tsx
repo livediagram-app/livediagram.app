@@ -1,3 +1,4 @@
+import { usePlan } from '@/components/plan/PlanContext';
 import { useCallback, useEffect, useState } from 'react';
 import { DialogCloseButton, DialogHeader } from '@livediagram/ui';
 import { Dialog } from '@/components/dialogs/Dialog';
@@ -198,6 +199,8 @@ export function ExportTabDialog({
   offerHiddenLayers = true,
   pages,
 }: ExportTabDialogProps) {
+  // Plan boards and cards export with their items (docs/specs/026-plan/plan-board.md).
+  const plan = usePlan();
   // null = the format grid; otherwise the picked format's sub-panel.
   const [active, setActive] = useState<Format | null>(null);
   const [busy, setBusy] = useState(false);
@@ -284,7 +287,12 @@ export function ExportTabDialog({
         : imageContext
           ? await loadTabImages(tab, imageContext)
           : undefined;
-      const renderOpts = { ...opts, images, page };
+      const renderOpts = {
+        ...opts,
+        images,
+        page,
+        ...(plan ? { items: plan.items, itemTypes: plan.types } : {}),
+      };
       if (pages && page) {
         const pageScope = scopeOf(format);
         const { blob, ext } = await exportPages({

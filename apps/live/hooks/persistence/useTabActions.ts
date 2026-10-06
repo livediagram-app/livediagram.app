@@ -101,13 +101,19 @@ export function useTabActions(deps: TabActionsDeps) {
     toast,
   } = deps;
 
-  const addTab = () => {
+  // `opensIn` is set only by "Create a new tab" when a Plan tab with content will not change mode
+  // (docs/specs/026-plan/plan-mode.md "Plan keeps its own tabs"): the new tab opens in the mode asked for.
+  const addTabIn = (opensIn?: EditorMode) => {
     // The new tab takes the active tab's look (newTabSeed), never its creator's mode: it opens in
     // Diagram.
     // Skips the look when the active tab can't be resolved (mid-mount, or removed in another
     // window), falling back to brand defaults the same way Tab 1 does.
     const seed = newTabSeed(tabs.find((t) => t.id === activeId));
-    const tab: Tab = { ...createTab(`Tab ${tabs.length + 1}`), ...seed };
+    const tab: Tab = {
+      ...createTab(`Tab ${tabs.length + 1}`),
+      ...seed,
+      ...(opensIn && opensIn !== 'diagram' ? { opensIn } : {}),
+    };
     commitTabs((ts) => [...ts, tab]);
     markTabLoaded(tab.id);
     track('Tab', 'Created');
@@ -120,6 +126,7 @@ export function useTabActions(deps: TabActionsDeps) {
     // already has an identity + theme by this point.
     setTemplatePickerMode('templates');
   };
+  const addTab = () => addTabIn();
 
   // Import (id re-mint, content replace, JSON / Markdown / Mermaid parsing)
   // lives in useTabImport; remintElementIds is shared with the
@@ -344,6 +351,7 @@ export function useTabActions(deps: TabActionsDeps) {
 
   return {
     addTab,
+    addTabIn,
     importIntoActiveTab,
     importTextIntoActiveTab,
     importSceneIntoActiveTab,

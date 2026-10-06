@@ -271,7 +271,7 @@ export function TemplatePicker({
     templateFilter && filteredTemplates.length === 0 && modeFilter.choice !== 'all'
       ? LISTED_TEMPLATES.filter((t) => modeFilter.offered(t) && matchesQuery(t)).length
       : 0;
-  // The Popular shelf, in its curated order (the three blanks first, so a blank
+  // The Popular shelf, in its curated order (the four blanks first, so a blank
   // needs no card of its own); `categoryTemplates` returns a category's
   // templates with Blank excluded (it keeps the shuffled order so the
   // preview fans rotate on each open).

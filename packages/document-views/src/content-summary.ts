@@ -40,6 +40,13 @@ function checklistSummary(el: Element): string {
   return `done=${items.filter((item) => flagField(item, 'done')).length}/${items.length}`;
 }
 
+// A Plan board (docs/specs/026-plan/plan-board.md): its columns by name; its cards are items.
+function planBoardSummary(el: Element): string {
+  const setup = (el as { planBoard?: { columns?: unknown } }).planBoard;
+  const columns = Array.isArray(setup?.columns) ? setup.columns.filter(isObject) : [];
+  return `columns=${columns.map((c) => stringField(c, 'name') ?? '?').join('|')}`;
+}
+
 export function contentSummaryOf(el: Element): string | null {
   switch (shapeKindOf(el)) {
     case 'entity':
@@ -55,6 +62,16 @@ export function contentSummaryOf(el: Element): string | null {
       return `series=${arrayField(el, 'lineSeries').length} x=${arrayField(el, 'lineCategories').length}`;
     case 'checklist':
       return checklistSummary(el);
+    case 'plan-board':
+      return planBoardSummary(el);
+    case 'plan-card': {
+      const card = (el as { planCard?: { itemId?: unknown } }).planCard;
+      return `item=${typeof card?.itemId === 'string' && card.itemId ? card.itemId : 'none'}`;
+    }
+    case 'plan-view': {
+      const view = (el as { planView?: { view?: unknown } }).planView?.view;
+      return `view=${typeof view === 'string' ? view : 'none'}`;
+    }
     default:
       return null;
   }

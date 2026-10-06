@@ -728,8 +728,8 @@ export const SLIDES_ADDED = chart(
   'UI',
   'Added',
   'Slides Added',
-  'A slide added to a deck: from a selection, or an Illustrate page as a slide.',
-  { types: ['Slide', 'PageSlide'] },
+  'A slide added to a deck: from a selection, an Illustrate page, or a Plan card as a slide.',
+  { types: ['Slide', 'PageSlide', 'ItemSlide'] },
 );
 
 export const SLIDES_REMOVED = chart(

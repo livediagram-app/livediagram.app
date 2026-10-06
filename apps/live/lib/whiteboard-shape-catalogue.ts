@@ -39,7 +39,16 @@ export type WhiteboardShapeEntry = {
 };
 
 // The palette categories that are not shapes on a whiteboard (the spec's "not components").
-const EXCLUDED_CATEGORIES = new Set(['components']);
+// Plan's boards, cards and plan views (docs/specs/026-plan/plan-mode.md, plan-views.md) frame items, not ink,
+// so the dock leaves them out.
+const EXCLUDED_CATEGORIES = new Set([
+  'components',
+  'plan-boards',
+  'plan-cards',
+  'plan-widgets',
+  'plan-metrics',
+  'plan-visualisations',
+]);
 
 // The palette tile behind each flyout shape that has one; Line and Arrow have none.
 const DOCK_TILE_KIND: Partial<Record<WhiteboardShapeId, ShapeKind>> = {

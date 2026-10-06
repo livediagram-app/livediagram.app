@@ -36,6 +36,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Editor|Changed|ModeDraw': 'Someone switched a tab to Draw mode, to draw freehand with pens.',
   'Editor|Changed|ModeIllustrate':
     'Someone switched a tab to Illustrate mode, to lay out a page of icons, stickers, components and media.',
+  'Editor|Changed|ModePlan':
+    'Someone switched a tab to Plan mode, to work on boards of items: drag cards through columns, add and open items.',
   'Draw|Created|Template':
     'Someone started a new document as a whiteboard, a plain board drawn on with pens, from the New Document wizard.',
   'Draw|Created|NewTab':
@@ -624,6 +626,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Tab|Changed|PageLayout': 'Someone put a ready-made layout onto an Illustrate page.',
   'Tab|Changed|OpensInIllustrate':
     'Someone set a tab to open in Illustrate mode for everyone, from the tab menu.',
+  'Tab|Changed|OpensInPlan':
+    'Someone set a tab to open in Plan mode for everyone, from the tab menu.',
   'Tab|Changed|DefaultTextSize':
     "Someone changed a tab's default text size, used for new elements added to it.",
   'Tab|Changed|Font':
@@ -1039,6 +1043,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone turned on quick-add on hover in the palette, in Settings > Editor.',
   'UI|Toggled|IllustrateModeOff': 'Someone turned off Illustrate mode, in Settings > Experimental.',
   'UI|Toggled|IllustrateModeOn': 'Someone turned on Illustrate mode, in Settings > Experimental.',
+  'UI|Toggled|PlanModeOff': 'Someone turned off Plan mode, in Settings > Experimental.',
+  'UI|Toggled|PlanModeOn': 'Someone turned on Plan mode, in Settings > Experimental.',
   'UI|Toggled|ReduceMotionOff': 'Someone turned off reduced motion, in Settings > Accessibility.',
   'UI|Toggled|ReduceMotionOn': 'Someone turned on reduced motion, in Settings > Accessibility.',
   'UI|Toggled|ShortcutsOff': 'Someone turned off keyboard shortcuts, in Settings > Keyboard.',
@@ -1060,6 +1066,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone narrowed the New Document templates to the ones that open in Draw mode.',
   'UI|Toggled|TemplateModeIllustrate':
     'Someone narrowed the New Document templates to the ones that open in Illustrate mode.',
+  'UI|Toggled|TemplateModePlan':
+    'Someone narrowed the New Document templates to the ones that open in Plan mode.',
   'UI|Toggled|TemplateShelfCollapsed':
     'Someone put the New Document template shelf back to a carousel, with the other categories as a grid.',
   'UI|Toggled|TemplateShelfExpanded':
@@ -1323,6 +1331,18 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Trash|Opened': 'Someone opened the Trash, where deleted documents wait for 30 days.',
   'Explorer|Selected':
     'Someone narrowed an Explorer list with a filter: a chip, a suggestion or a typed token. The type names which kind of filter, never what was picked.',
+  'Plan|Added':
+    'Someone made an item on a Plan board (its type is the value), or placed a Plan card (Card).',
+  'Plan|Moved':
+    'Someone moved a card on a Plan board to another column, row or place, or archived it (Archive).',
+  'Plan|Restored': 'Someone brought an archived card back onto the boards.',
+  'Plan|Opened':
+    'Someone opened an item in the item panel, or a Plan panel (Card Types, the Trash, Cards).',
+  'Plan|Voted': 'Someone voted for a card on a voting Plan board (Up), or took a vote back (Down).',
+  'Plan|Deleted': 'Someone deleted an item (its type is the value).',
+  'Plan|Changed':
+    "Someone changed a Plan board's set-up: the value names the part (columns, WIP limits, rows, scope, card fields, voting or hide writing).",
+  'Plan|Revealed': 'Someone pressed Reveal on a board hiding writing, turning every card face up.',
   'Trash|Cleared':
     'Someone emptied one group of their Trash (their own documents, a team, or this browser), deleting everything in it for good.',
   'Trash|Deleted': 'Someone deleted a document in the Trash for good, before its 30 days were up.',

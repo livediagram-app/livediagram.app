@@ -21,7 +21,8 @@ describe('SiteHeader', () => {
     const rows = [...html.matchAll(/role="menuitem"[^>]*>.*?font-semibold[^>]*>([^<]+)</g)].map(
       (m) => m[1],
     );
-    expect(rows).toEqual(['Blank Diagram', 'Blank Whiteboard', 'Blank Illustration']);
+    expect(html).toContain('href="/new?template=blank-plan&amp;via=Home.HeaderPlan"');
+    expect(rows).toEqual(['Blank Diagram', 'Blank Whiteboard', 'Blank Illustration', 'Blank Plan']);
   });
 
   it('keeps Choose Template the primary beside it', () => {

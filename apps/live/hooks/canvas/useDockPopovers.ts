@@ -14,9 +14,16 @@ import { useUiScale } from '@/components/providers/ui-scale';
 // (docs/specs/007-editor/ui-scale.md), so the anchor clamps against the
 // scaled width or a scaled popover runs off the right edge.
 const POPOVER_WIDTH = 256;
+// A popover wider than the rest, so its placement keeps all of it on the canvas.
+export const POPOVER_WIDTHS: Partial<Record<string, number>> = {
+  'plan-trash': 352,
+  'plan-cards': 352,
+};
 
-// 'slides': the Slide Deck panel over its cluster button in Illustrate mode.
-export type DockPanel = 'explorer' | 'layers' | 'collaborate' | 'slides';
+// 'slides': the Slide Deck panel over its cluster button in Illustrate mode. 'card-types': the Card
+// Types panel over its cluster button in Plan mode (docs/specs/026-plan/item-types.md).
+export type DockPanel =
+  'explorer' | 'layers' | 'collaborate' | 'slides' | 'card-types' | 'plan-trash' | 'plan-cards';
 
 export type { DockAnchor };
 
@@ -31,6 +38,9 @@ function trackDockPanelOpened(id: DockPanel): void {
   if (id === 'layers') track('Layer', 'Opened', 'Panel');
   else if (id === 'collaborate') track('UI', 'Opened', 'Collaborate');
   else if (id === 'slides') track('UI', 'Opened', 'SlideDeck');
+  else if (id === 'card-types') track('Plan', 'Opened', 'CardTypes');
+  else if (id === 'plan-trash') track('Plan', 'Opened', 'Trash');
+  else if (id === 'plan-cards') track('Plan', 'Opened', 'CardFinder');
 }
 
 export function useDockPopovers(mainRef: Ref<HTMLElement>) {
@@ -56,7 +66,7 @@ export function useDockPopovers(mainRef: Ref<HTMLElement>) {
         computeDockAnchor(
           button.getBoundingClientRect(),
           canvas.getBoundingClientRect(),
-          POPOVER_WIDTH * scale,
+          (POPOVER_WIDTHS[id] ?? POPOVER_WIDTH) * scale,
           above ? 'above' : 'button',
         ),
       );

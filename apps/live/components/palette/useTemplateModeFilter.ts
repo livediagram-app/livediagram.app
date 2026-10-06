@@ -25,6 +25,7 @@ const MODE_EVENT: Record<TemplateModeChoice, string> = {
   diagram: 'TemplateModeDiagram',
   draw: 'TemplateModeDraw',
   illustrate: 'TemplateModeIllustrate',
+  plan: 'TemplateModePlan',
 };
 
 export type TemplateModeFilter = {
@@ -68,7 +69,13 @@ export function useTemplateModeFilter({
     [offered],
   );
   const counts = useMemo(() => {
-    const out: Record<TemplateModeChoice, number> = { all: 0, diagram: 0, draw: 0, illustrate: 0 };
+    const out: Record<TemplateModeChoice, number> = {
+      all: 0,
+      diagram: 0,
+      draw: 0,
+      illustrate: 0,
+      plan: 0,
+    };
     for (const t of TEMPLATES) {
       const mode = templateEditorMode(t.kind);
       if (t.hidden || !offered.includes(mode)) continue;

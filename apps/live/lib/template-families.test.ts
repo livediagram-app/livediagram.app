@@ -27,7 +27,7 @@ describe('templateFamilyOf', () => {
     expect(templateFamilyOf(null)).toBeNull();
   });
 
-  it('gives a family to the retro formats and Kanban only', () => {
+  it('gives a family to the retro formats and the Kanban boards only', () => {
     const members = TEMPLATES.filter((t) => templateFamilyOf(t.kind) !== null).map((t) => t.kind);
     expect(members.sort()).toEqual(
       [
@@ -37,6 +37,9 @@ describe('templateFamilyOf', () => {
         'retrospective',
         'sailboat',
         'start-stop-continue',
+        // The Plan templates in a family (docs/specs/026-plan/plan-mode.md "Templates").
+        'sprint-board',
+        'team-retro',
       ].sort(),
     );
   });

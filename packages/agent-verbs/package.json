@@ -23,6 +23,7 @@
     "@livediagram/document": "workspace:*",
     "@livediagram/document-views": "workspace:*",
     "@livediagram/edit-operations": "workspace:*",
+    "@livediagram/items": "workspace:*",
     "zod": "^4.6.5"
   },
   "devDependencies": {

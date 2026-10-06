@@ -17,6 +17,20 @@ import { usePaletteChrome } from './usePaletteChrome';
 import { useCanvasToolPanels } from './useCanvasToolPanels';
 import { WhiteboardDock } from './whiteboard/WhiteboardDock';
 
+// Plan's UI loads only when it is drawn (docs/specs/026-plan/plan-mode.md "Cost"), so a document without
+// Plan pays nothing for it.
+const CardFinderPanel = dynamic(
+  () => import('@/components/plan/CardFinderPanel').then((m) => m.CardFinderPanel),
+  { ssr: false },
+);
+const TrashPanel = dynamic(() => import('@/components/plan/TrashPanel').then((m) => m.TrashPanel), {
+  ssr: false,
+});
+const CardTypesPanel = dynamic(
+  () => import('@/components/plan/CardTypesPanel').then((m) => m.CardTypesPanel),
+  { ssr: false },
+);
+
 // Lazy-load CommentsPanel: only mounts when the active tab has at
 // least one element with comments. It stacks below the Palette (the
 // top-right panel). Most documents never accumulate comments, so deferring
@@ -80,6 +94,10 @@ export function useCanvasChromePanels({
   toolbarClusterEls: ReactNode;
   collaborateEl: ReactNode;
   slidesPopoverEl: ReactNode;
+  // The Card Types panel over its cluster button, in Plan mode (docs/specs/026-plan/item-types.md).
+  cardTypesPopoverEl: ReactNode;
+  trashPopoverEl: ReactNode;
+  cardFinderPopoverEl: ReactNode;
   // True when Layers opens as a popover over its cluster button
   // (Toolbar, and zen).
   clusterPopovers: boolean;
@@ -267,6 +285,20 @@ export function useCanvasChromePanels({
   useEffect(() => {
     if (activeDockPanel === 'slides' && !props.illustratePages) closeDockPanel();
   }, [activeDockPanel, props.illustratePages, closeDockPanel]);
+  // The Card Types popover, likewise, belongs to Plan mode's button.
+  const planMode = props.editorMode === 'plan';
+  const cardTypesOpen = activeDockPanel === 'card-types' && planMode;
+  const trashOpen = activeDockPanel === 'plan-trash' && planMode;
+  const cardFinderOpen = activeDockPanel === 'plan-cards' && planMode;
+  useEffect(() => {
+    if (
+      (activeDockPanel === 'card-types' ||
+        activeDockPanel === 'plan-trash' ||
+        activeDockPanel === 'plan-cards') &&
+      !planMode
+    )
+      closeDockPanel();
+  }, [activeDockPanel, planMode, closeDockPanel]);
   const { avatarEl, laserEl, spotlightEl, eraserEl, formatEl, slideDeckEl } = useCanvasToolPanels({
     props,
     chromeHidden,
@@ -549,6 +581,22 @@ export function useCanvasChromePanels({
     // in it (see panelEls).
     collaborateEl,
     slidesPopoverEl: slidesOpen ? slideDeckEl : null,
+    cardTypesPopoverEl: cardTypesOpen ? (
+      <CardTypesPanel
+        popoverOpen
+        popoverAnchor={activeDockAnchor ?? undefined}
+        onPopoverClose={closeDockPanel}
+      />
+    ) : null,
+    cardFinderPopoverEl: cardFinderOpen ? (
+      <CardFinderPanel
+        popoverAnchor={activeDockAnchor ?? undefined}
+        onPopoverClose={closeDockPanel}
+      />
+    ) : null,
+    trashPopoverEl: trashOpen ? (
+      <TrashPanel popoverAnchor={activeDockAnchor ?? undefined} onPopoverClose={closeDockPanel} />
+    ) : null,
     toolbarClusterEls: toolbarActive ? layersEl : null,
     clusterPopovers,
     paletteTint,

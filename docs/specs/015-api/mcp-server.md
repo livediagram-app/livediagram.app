@@ -540,6 +540,17 @@ and every team Trash they have joined.
   A 404 (not in the Trash, or not the user's) becomes a model-correctable error
   pointing at `list_trash`.
 
+### 4.9b `list_items` and `change_items`
+
+The items Plan boards show ([Items](../026-plan/items.md), [Plan mode](../026-plan/plan-mode.md#agents)):
+
+- **`list_items`** (read): a document's items, by number, narrowed by `type` and `status`. Titles and fields are
+  people's writing, read as data.
+- **`change_items`** (destructive, as it may delete): up to 50 changes in order, each `add` `{ title, type,
+status, fields }`, `set` `{ item, fields, clear, type }`, `move` `{ item, status, before }` or `delete`
+  `{ item }`. Items are named by number (`#12`) or id prefix, as the CLI's `item` verbs name them
+  (`resolveItemRef`). A refusal answers what was applied before it. Each change reaches open boards at once.
+
 ### 4.10 Prompts (discoverability)
 
 Registered MCP **prompts** — pre-canned templates a client surfaces as slash
@@ -627,9 +638,9 @@ Three behaviours cover the eleven tools, and each is a preset in
 
 | Behaviour       | `readOnlyHint` | `destructiveHint` | Tools                                                                                 |
 | --------------- | -------------- | ----------------- | ------------------------------------------------------------------------------------- |
-| **read**        | `true`         | (not applicable)  | `find_documents`, `read_document`, `list_templates`, `list_trash`                     |
+| **read**        | `true`         | (not applicable)  | `find_documents`, `read_document`, `list_templates`, `list_trash`, `list_items`       |
 | **write**       | `false`        | `false`           | `create_document`, `add_tab`, `share_document`, `rename_document`, `restore_document` |
-| **destructive** | `false`        | `true`            | `update_document`, `delete_document`                                                  |
+| **destructive** | `false`        | `true`            | `update_document`, `delete_document`, `change_items`                                  |
 
 The split mirrors §4.11's read-only-token boundary exactly (what a
 `read_only = 1` token can still reach is what `read` annotates), so the hint a
@@ -724,6 +735,8 @@ and no `structuredContent`; MCP exempts errors from the output schema.
 | `delete_document`  | `deleted` (`document` or `tab`), `documentId`, then `trashed` + `restorableForDays` or `tabId`            |
 | `list_trash`       | `trash[]` of `{ id, name, library, reason, deletedAt, purgeAt }` (ISO timestamps)                         |
 | `restore_document` | `restored`, `id`, `name` (null when the api omits it), `url`                                              |
+| `list_items`       | `count`, `items[]` of `{ ref, id, type, status, title, fields }`, `url`                                   |
+| `change_items`     | `applied[]` (one line per change), `url`                                                                  |
 
 **The schema and the result can't drift.** The schemas live in
 `apps/mcp/src/output-schema.ts`, one per tool, and the `registerTool` wrapper

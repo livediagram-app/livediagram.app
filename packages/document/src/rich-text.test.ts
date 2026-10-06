@@ -244,3 +244,27 @@ describe('applyHeadingToLines', () => {
     expect(runs).toEqual([{ text: 'a\n\nb' }]);
   });
 });
+
+describe('listEnter', () => {
+  it('carries a list on, ends it on an empty item, and breaks any other line', async () => {
+    const { listEnter } = await import('./rich-text');
+    expect(listEnter('• Fewer fields')).toEqual({ insert: '\n• ', drop: 0 });
+    expect(listEnter('9. Ship')).toEqual({ insert: '\n10. ', drop: 0 });
+    expect(listEnter('• ')).toEqual({ insert: '', drop: 2 });
+    expect(listEnter('12. ')).toEqual({ insert: '', drop: 4 });
+    expect(listEnter('Plain')).toEqual({ insert: '\n', drop: 0 });
+  });
+});
+
+describe('applyListStyle on an empty line', () => {
+  it('starts a list on the lone empty line the caret is on, and leaves blank lines in a selection blank', async () => {
+    const { applyListStyle, runsPlainText } = await import('./rich-text');
+    expect(runsPlainText(applyListStyle([], 'bullet', { start: 0, end: 0 }))).toBe('• ');
+    expect(runsPlainText(applyListStyle([{ text: 'a\n' }], 'numbered', { start: 2, end: 2 }))).toBe(
+      'a\n1. ',
+    );
+    expect(
+      runsPlainText(applyListStyle([{ text: 'a\n\nb' }], 'bullet', { start: 0, end: 4 })),
+    ).toBe('• a\n\n• b');
+  });
+});

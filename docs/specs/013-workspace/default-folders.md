@@ -401,7 +401,8 @@ new <these>", opened by Settings' Change and the wizard's Change default.
 
 ## Telemetry ([Telemetry](../017-telemetry/telemetry.md))
 
-- `Folder` · `Changed` · `DefaultModeDiagram` / `DefaultModeDraw` / `DefaultKindEventStorming` /
+- `Folder` · `Changed` · `DefaultModeDiagram` / `DefaultModeDraw` / `DefaultModeIllustrate` /
+  `DefaultModePlan` / `DefaultKindEventStorming` /
   `DefaultTemplateRetrospective` / `DefaultTemplateKanban`, fired by the surface that sets a
   default, before the write.
 - `Folder` · `Cleared` · the same values, fired by the surface that clears one, before the write.
