@@ -107,6 +107,9 @@ export function ElementIndicators({
     shapeClass = 'gap-2.5 rounded text-[11px] font-medium leading-none';
     glyphPx = 12;
   }
+  // A cluster of commands alone (a mind root with nothing else to show) hides with them: its chip
+  // and backing would otherwise sit there empty until hover.
+  const onlyCommands = items.every((i) => i.command);
   const words =
     placed.form === 'footer'
       ? 'labelled'
@@ -120,7 +123,9 @@ export function ElementIndicators({
       onPointerDown={(e) => e.stopPropagation()}
       style={{ ...position, backgroundColor: fill }}
       inert={selected}
-      className={`absolute flex items-center ${shapeClass} ${selected ? SELECTED_HIDDEN : SHOWN}`}
+      className={`absolute flex items-center ${shapeClass} ${selected ? SELECTED_HIDDEN : SHOWN}${
+        onlyCommands ? ` ${COMMAND_HIDDEN}` : ''
+      }`}
     >
       {/* Glyph buttons only: the comment count inside one is already optically centred. */}
       {ordered.map((item) => (

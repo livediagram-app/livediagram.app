@@ -66,7 +66,7 @@ Five built-in types, each with a glyph, an accent colour and the fields it offer
 | Task    | Gray   | A piece of work                        | title, description, status, assignee, priority, estimate, start, due, checklist, labels, parent |
 | Note    | Blue   | A thought, a retro note                | title, description, status, votes                                                               |
 | Idea    | Yellow | A proposal to weigh                    | title, description, status, votes, labels                                                       |
-| Action  | Red    | Something agreed to do                 | title, status, assignee, due                                                                    |
+| Action  | Red    | Something agreed to do                 | title, description, status, assignee, due, checklist                                            |
 
 - **Start** sits right before Due, on Projects (so they map onto the [Gantt chart](plan-views.md#project-gantt-chart))
   and Tasks, edited with the same date picker as Due. A start after the due date is kept, and the item panel

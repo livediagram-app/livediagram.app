@@ -241,6 +241,10 @@ type UserPreferences = {
   // in Settings as "Welcome Tour Completed"; unchecking it and closing
   // Settings replays the tour. Missing / undefined === not seen.
   tourSeen?: boolean;
+  // The Plan tour's seen-guard (docs/specs/026-plan/plan-tour.md), as `tourSeen` is the welcome
+  // tour's. Surfaced in Settings as "Show Plan Tour" (inverted); turning it on from off and closing
+  // Settings reruns the tour in Plan. Missing / undefined === not seen.
+  planTourSeen?: boolean;
   // Colours you have used that the active theme did not already offer
   // (docs/specs/008-canvas/canvas-and-palette.md Colours). Picking one off the OS picker or the pipette adds it;
   // right-clicking a swatch removes it. Newest first, capped at 12, synced
@@ -699,7 +703,10 @@ and the dialog stays as the one complete, browsable index of them.
   dialog with the row on **marks that flag**, so the row's promise is true
   for a reader who had simply never taken the tour. Turning it on from off
   additionally relaunches in place. Its telemetry tokens still describe the
-  PREFERENCE, so the dashboard series keeps its meaning.
+  PREFERENCE, so the dashboard series keeps its meaning. **Show Plan Tour**, beneath it, is inverted
+  against `planTourSeen` the same way; it needs no handoff flag (the Plan tour offers itself on
+  entering Plan), so closing the dialog only reruns it, when it was turned on from off
+  ([Plan tour](../026-plan/plan-tour.md)).
 
   The dialog is **data-driven**: `settings-catalogue.ts` declares the
   categories and, per row, its label, description, help article, section,

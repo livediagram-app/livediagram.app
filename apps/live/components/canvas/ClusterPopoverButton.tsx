@@ -17,6 +17,7 @@ export function ClusterPopoverButton({
   popoverOpen,
   onTogglePopover,
   buttonRef,
+  dataTourId,
 }: {
   label: string;
   hoverTitle: string;
@@ -26,6 +27,8 @@ export function ClusterPopoverButton({
   onTogglePopover: (button: HTMLElement) => void;
   // The button itself, for a caller that opens its popover from elsewhere.
   buttonRef?: React.Ref<HTMLButtonElement>;
+  // A guided tour's anchor (docs/specs/026-plan/plan-tour.md), on the card so the ring frames it.
+  dataTourId?: string;
 }) {
   const button = (
     <button
@@ -47,6 +50,7 @@ export function ClusterPopoverButton({
   return (
     <div
       data-dock-button=""
+      data-tour-id={dataTourId}
       onContextMenu={(e) => {
         e.preventDefault();
         e.stopPropagation();

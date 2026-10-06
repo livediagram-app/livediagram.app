@@ -6,7 +6,8 @@
 
 import { act, cleanup, render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { hasTourPending, markTourPending } from '@/lib/tour-pending';
+import { hasTourPending, markTourPending, requestTourRelaunch } from '@/lib/tour-pending';
+import { setActiveTour } from '@/lib/tour-active';
 import { TourHost } from './TourHost';
 
 const track = vi.hoisted(() => vi.fn());
@@ -43,6 +44,7 @@ beforeEach(() => {
 afterEach(() => {
   cleanup();
   vi.useRealTimers();
+  setActiveTour('plan', false);
 });
 
 describe('TourHost offer', () => {
@@ -84,5 +86,39 @@ describe('TourHost offer', () => {
     rerender(<TourHost />);
     act(() => vi.advanceTimersByTime(2000));
     expect(offered()).toBe(false);
+  });
+});
+
+describe('TourHost alongside the Plan tour', () => {
+  it('waits while the Plan tour is on screen, then offers', () => {
+    // docs/specs/026-plan/plan-tour.md "Where it appears": one tour at a time.
+    setActiveTour('plan', true);
+    markTourPending();
+    editor();
+    render(<TourHost />);
+    act(() => vi.advanceTimersByTime(2000));
+    expect(offered()).toBe(false);
+    act(() => setActiveTour('plan', false));
+    act(() => vi.advanceTimersByTime(800));
+    expect(offered()).toBe(true);
+  });
+
+  it('holds a Settings rerun until the Plan tour ends', () => {
+    setActiveTour('plan', true);
+    editor();
+    render(<TourHost />);
+    act(() => requestTourRelaunch());
+    expect(offered()).toBe(false);
+    act(() => setActiveTour('plan', false));
+    act(() => vi.advanceTimersByTime(800));
+    expect(offered()).toBe(true);
+  });
+
+  it('reruns from Settings at once when nothing else is on screen', () => {
+    editor();
+    render(<TourHost />);
+    act(() => requestTourRelaunch());
+    expect(offered()).toBe(true);
+    expect(hasTourPending()).toBe(true);
   });
 });

@@ -24,6 +24,7 @@ import {
   UI_SCALE_STEP,
   resolveUiScale,
   resolveUiScalePart,
+  uiScaleMax,
   uiScalePartPatch,
   uiScalePatch,
   withUiScalePatch,
@@ -295,6 +296,7 @@ function uiScalePartRow(
 ): SettingsSliderRowSpec {
   return {
     ...UI_SCALE_SLIDER,
+    max: uiScaleMax(part),
     key: `uiScale-${part}`,
     parent: 'uiScale',
     label: copy.label,
@@ -410,7 +412,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         section: 'Power User',
         label: 'Power User Mode',
         description:
-          'Applies a set of recommended settings for people who know their way around: the Toolbar layout, alignment guides and auto-attach arrows on, the welcome tour marked as seen, and AI suggested prompts off. Change any of them afterwards and the mode stays on. Switching it off puts back the settings you did not change.',
+          'Applies a set of recommended settings for people who know their way around: the Toolbar layout, alignment guides and auto-attach arrows on, the welcome and Plan tours marked as seen, and AI suggested prompts off. Change any of them afterwards and the mode stays on. Switching it off puts back the settings you did not change.',
         helpArticle: 'powerUserMode',
         read: isPowerUserMode,
         write: (p, v) => setPowerUserMode(p, v).prefs,
@@ -755,6 +757,21 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         // dashboard series keeps meaning what it has always meant: turning
         // the row ON sets tourSeen=false, which is 'TourSeenOff'.
         event: { category: 'UI', on: 'TourSeenOff', off: 'TourSeenOn' },
+      },
+      {
+        kind: 'toggle',
+        key: 'planTourSeen',
+        keywords:
+          'walkthrough onboarding intro show me around plan board kanban cards getting started',
+        label: 'Show Plan Tour',
+        description:
+          'Offers a short tour of Plan mode the next time you work in Plan. It switches itself off once you have taken or dismissed the tour. Turn it back on and close Settings to run it again: straight away if you are in Plan, otherwise the next time you are.',
+        helpArticle: 'planTour',
+        // Inverted like Show Welcome Tour: the row asks "show me the tour?", `planTourSeen` records
+        // "already seen" (docs/specs/026-plan/plan-tour.md).
+        read: (p) => p.planTourSeen !== true,
+        write: (p, v) => ({ ...p, planTourSeen: !v }),
+        event: { category: 'UI', on: 'PlanTourSeenOff', off: 'PlanTourSeenOn' },
       },
     ],
   },

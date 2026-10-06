@@ -1,7 +1,7 @@
 'use client';
 
 // A Plan board's settings in its element menu (docs/specs/026-plan/plan-board.md "The board set-up"):
-// two flyouts beside Style. **Board**: its title and its rows. **Cards**: what each card face shows, a
+// two flyouts beside Style. **Board**: its title, its rows, and Add to Slides. **Cards**: what each card face shows, a
 // tile per field, pressed on or off. A column's own settings sit on the column, behind its cog. Each
 // change is one element edit, through PlanContext.
 import { useState, type ComponentProps } from 'react';
@@ -19,6 +19,7 @@ import {
 } from '@livediagram/items';
 import { PlanCardsIcon, PlanIcon } from '@livediagram/ui';
 import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
+import { SlideDeckIcon } from '@/components/palette/palette-icons';
 import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
 import { usePlan } from '@/components/plan/PlanContext';
 import { PlanTypeGlyph } from '@/components/plan/plan-type-glyph';
@@ -82,9 +83,11 @@ export function PlanBoardMenuSection({
   flyoutProps: FlyoutProps;
 }) {
   const board = useBoard(element);
+  const plan = usePlan();
   const [title, setTitle] = useState(board?.setup.title ?? '');
   if (!board) return null;
   const { setup, set } = board;
+  const addSlide = plan?.addBoardSlide;
   return (
     <MenuFlyoutSection title="Board" icon={<PlanIcon size={16} />} {...flyoutProps}>
       <div className="px-3 pt-1">
@@ -119,6 +122,21 @@ export function PlanBoardMenuSection({
           />
         ))}
       </MenuTileGrid>
+      {addSlide ? (
+        <>
+          <p className={captionClass}>Present</p>
+          <MenuTileGrid cols={3}>
+            <MenuTile
+              icon={<SlideDeckIcon />}
+              label="Add to Slides"
+              onClick={() => {
+                addSlide(element.id);
+                plan?.announce('Board added to the slides');
+              }}
+            />
+          </MenuTileGrid>
+        </>
+      ) : null}
     </MenuFlyoutSection>
   );
 }

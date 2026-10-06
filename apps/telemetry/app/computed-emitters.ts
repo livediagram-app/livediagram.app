@@ -145,6 +145,21 @@ export const TOUR_STEP_SOURCE: string[] = [
         .join('')}`,
   );
 
+// The Plan tour's steps, as planTourStepTelemetryType makes them (apps/live plan-tour-steps.ts,
+// docs/specs/026-plan/plan-tour.md). The welcome card sends no step view.
+export const PLAN_TOUR_STEP_SOURCE: string[] = [
+  ...read('live/components/tour/plan-tour-steps.ts').matchAll(/^ {4}id: '([a-z-]+)',/gm),
+]
+  .map((m) => m[1]!)
+  .filter((id) => id !== 'welcome')
+  .map(
+    (id) =>
+      `PlanTourStep${id
+        .split('-')
+        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+        .join('')}`,
+  );
+
 // Plan items name their type (titleCaseType of an item type id); set-up changes name the part.
 const PLAN_ITEM_TYPES = ['Task', 'Story', 'Bug', 'Epic', 'Note', 'Idea', 'Action', 'Risk'];
 const PLAN_TYPE_WHY = "titleCaseType(type): an item type's id, or a later type an agent made";
@@ -372,6 +387,7 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     values: API_ERRORS,
     open: API_ERROR_WHY,
   },
+  'apps/live/components/tour/PlanTourHost.tsx UI·View': { values: PLAN_TOUR_STEP_SOURCE },
   'apps/live/components/tour/TourHost.tsx UI·View': { values: TOUR_STEP_SOURCE },
   'apps/live/hooks/canvas/commit-freehand.ts Element·Added': {
     values: ['Square', 'Circle', 'Diamond', 'Triangle'],

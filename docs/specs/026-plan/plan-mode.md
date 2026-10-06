@@ -50,7 +50,9 @@ Plan must cost nothing to a document that does not use it:
   deck has a card slide; from then on it keeps them for the session. A room join or resync
   refetches only items already loaded.
 - **Plan's UI loads when drawn**: boards, cards, the item panel, the type editor, the Card Types panel, the board
-  menu, the Cards category and card slides are separate chunks, fetched the first time one appears.
+  menu, the Cards category and card slides are separate chunks, fetched the first time one appears. The
+  [Plan tour](plan-tour.md) loads the first time the person enters Plan and stays loaded for the session, so
+  leaving Plan mid-tour still tidies its example board away.
 - **No re-render churn**: the Plan context keeps its identity across editor renders that change nothing Plan
   holds, so boards and cards re-render only when items, types, presence or the board change.
 - **Other tabs load once**: statuses are the document's ([Plan templates](plan-templates.md#hand-offs)), so a
@@ -162,7 +164,12 @@ hand cards to each other. Blank Plan is the mode's blank, as Blank Diagram is Di
   content. A board placed from the palette counts as `Element` · `Added` · `PlanBoard`, a plan view as `PlanView`.
 - The header's Start Blank menu offers Blank Plan, with its own funnel slot (`HeaderPlan`).
 
+## The Plan tour
+
+- The first time a person works in Plan, a guided tour offers itself, on an example board it takes away again:
+  [Plan tour](plan-tour.md).
+
 ## Help
 
 - A help article for Plan mode (the mode, boards, set-up and keyboard) and one for items, registered with the help
-  centre.
+  centre; one for the [Plan tour](plan-tour.md).

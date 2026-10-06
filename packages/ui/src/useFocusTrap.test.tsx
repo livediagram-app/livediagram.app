@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { useRef, useState } from 'react';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { useFocusTrap } from './useFocusTrap';
 
 // A modal keeps focus inside while open and gives it back to what opened it when it closes, including when it
@@ -33,7 +33,14 @@ function Page() {
   );
 }
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  vi.unstubAllGlobals();
+});
+
+// A touch screen: the primary pointer reports coarse.
+const stubCoarsePointer = () =>
+  vi.stubGlobal('matchMedia', (query: string) => ({ matches: query === '(pointer: coarse)' }));
 
 // jsdom has no layout, so every element reads offsetParent null; give buttons one so they count as visible.
 Object.defineProperty(HTMLElement.prototype, 'offsetParent', {
@@ -89,6 +96,29 @@ describe('useFocusTrap', () => {
   });
 
   it('keeps a field that took focus as the modal opened (autoFocus)', () => {
+    function AutoModal() {
+      const ref = useRef<HTMLDivElement>(null);
+      useFocusTrap(ref);
+      return (
+        <div ref={ref} role="dialog" tabIndex={-1}>
+          <button type="button">Close</button>
+          <input aria-label="Title" autoFocus />
+        </div>
+      );
+    }
+    render(<AutoModal />);
+    expect(document.activeElement).toBe(screen.getByRole('textbox', { name: 'Title' }));
+  });
+
+  it('focuses the dialog itself on a touch screen, not its first control', () => {
+    stubCoarsePointer();
+    render(<Page />);
+    fireEvent.click(screen.getByRole('button', { name: 'Report' }));
+    expect(document.activeElement).toBe(screen.getByRole('dialog'));
+  });
+
+  it('keeps an autoFocus field on a touch screen too', () => {
+    stubCoarsePointer();
     function AutoModal() {
       const ref = useRef<HTMLDivElement>(null);
       useFocusTrap(ref);

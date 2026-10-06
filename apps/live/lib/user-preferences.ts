@@ -192,6 +192,10 @@ export type UserPreferences = {
   // Settings as "I've seen the editor tour"; unchecking it there and
   // closing Settings replays the tour. Missing / undefined === not seen.
   tourSeen?: boolean;
+  // The Plan tour's seen-guard (docs/specs/026-plan/plan-tour.md), as `tourSeen` is the welcome tour's:
+  // true once its offer has been answered, so it never offers itself again on any device. Surfaced in
+  // Settings as "Show Plan Tour" (inverted). Missing / undefined === not seen.
+  planTourSeen?: boolean;
   // Documents this user has hidden from the Explorer's Recent list
   // (docs/specs/013-workspace/hide-from-recent.md). PER-USER rather than a field on the document: your Recent
   // is your view of your own work, and on a shared document one

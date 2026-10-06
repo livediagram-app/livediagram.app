@@ -74,6 +74,7 @@ export const HELP_ARTICLES = {
   planCardTypes: 'canvas/plan-mode/card-types',
   planBoards: 'canvas/plan-mode/boards',
   planCards: 'canvas/plan-mode/cards',
+  planTour: 'canvas/plan-mode/plan-tour',
   links: 'canvas/links',
   comments: 'collaboration/comments',
   livePresence: 'collaboration/live-presence',
@@ -129,6 +130,10 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   planCards: {
     title: 'Learn about cards',
     description: 'Open a card, fill it in, and archive, trash or present it.',
+  },
+  planTour: {
+    title: 'Learn about the Plan Tour',
+    description: 'What the tour shows you and how replaying works.',
   },
   sharing: {
     title: 'Learn about sharing',

@@ -46,7 +46,7 @@ and are placed by dragging them into a board's header.
   widget the board already has flashes, and the editor says **Completion is already on this board**.
 - **Reorder**: drag a widget left or right along the zone; the others make way at the bar, and it lands there.
   From the keyboard, a focused widget moves with Alt+← and Alt+→.
-- **Remove**: a widget's × (shown on hover and focus, always on a touch screen), or Delete or Backspace while it
+- **Remove**: a widget's × (shown only while the board is selected, on every device: a × on every widget all the time read as clutter, most of all on a tablet, where hover never hid it), or Delete or Backspace while it
   is focused.
 - Each placement, move and removal is one board edit: undoable, live for everyone, and saved with the board.
 - Only someone who may edit the board places, moves or removes widgets; everyone sees and uses them.

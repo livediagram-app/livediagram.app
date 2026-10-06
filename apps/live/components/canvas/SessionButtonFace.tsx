@@ -16,14 +16,12 @@ import {
 } from '@livediagram/document';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import { SessionSettingsMenu } from '@/components/canvas/SessionSettingsMenu';
-import { PollIcon, TimerIcon, VoteIcon } from '@/components/palette/palette-icons';
+import { PollIcon, StopwatchIcon, TimerIcon, VoteIcon } from '@/components/palette/palette-icons';
 
 const TOOL_ICON: Record<SessionPlan['tool'], React.ReactNode> = {
+  // The palette tile's glyph, so a placed button looks like the tile it came from.
   timer: <TimerIcon />,
-  // The same clock face: a stopwatch is the other thing that clock does, and a
-  // second timepiece glyph would be a distinction without a difference at
-  // 22px. The label is what separates them.
-  stopwatch: <TimerIcon />,
+  stopwatch: <StopwatchIcon />,
   vote: <VoteIcon />,
   poll: <PollIcon />,
 };

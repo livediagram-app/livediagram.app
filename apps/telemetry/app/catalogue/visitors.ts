@@ -8,6 +8,7 @@ import {
   EDITOR_REASONS_OPENED,
   EXPLORER_REASONS_OPENED,
   TOUR_OFFERED,
+  PLAN_TOUR_OFFERED,
   POWER_USER_OFFERED,
   NEW_VERSION_OFFERED,
 } from './features';
@@ -181,6 +182,65 @@ export const WELCOME_TOUR: MetricStack = {
     TOURS_SKIPPED,
   ],
   headline: TOURS_STARTED,
+};
+
+// The Plan tour (docs/specs/026-plan/plan-tour.md): its own funnel, beside the welcome tour's.
+export const PLAN_TOUR_DECLINED = chart(
+  'UI',
+  'Closed',
+  'Plan Tours Declined',
+  'The Plan tour turned down on its welcome card, before it started.',
+  { types: ['PlanTourOffer'], rising: 'neutral' },
+);
+
+export const PLAN_TOURS_STARTED = chart(
+  'UI',
+  'Started',
+  'Plan Tours Started',
+  'The Plan tour started.',
+  {
+    types: ['PlanTour'],
+  },
+);
+
+export const PLAN_TOUR_STEPS_VIEWED = chart(
+  'UI',
+  'View',
+  'Plan Tour Steps Viewed',
+  'A step of the Plan tour shown.',
+  { typeIn: (t) => (t ?? '').startsWith('PlanTourStep') },
+);
+
+export const PLAN_TOURS_COMPLETED = chart(
+  'UI',
+  'Ended',
+  'Plan Tours Completed',
+  'The Plan tour run to its last step.',
+  { types: ['PlanTourCompleted'] },
+);
+
+export const PLAN_TOURS_SKIPPED = chart(
+  'UI',
+  'Ended',
+  'Plan Tours Skipped',
+  'The Plan tour closed before its end.',
+  { types: ['PlanTourSkipped'], rising: 'neutral' },
+);
+
+export const PLAN_TOUR: MetricStack = {
+  stack: true,
+  title: 'Plan Tour',
+  blurb:
+    'The first time in Plan mode: the Plan tour offered, started, stepped through, finished or skipped.',
+  members: [
+    PLAN_TOUR_OFFERED,
+    PLAN_TOUR_DECLINED,
+    PLAN_TOURS_STARTED,
+    PLAN_TOUR_STEPS_VIEWED,
+    PLAN_TOURS_COMPLETED,
+    PLAN_TOURS_SKIPPED,
+  ],
+  headline: PLAN_TOURS_STARTED,
 };
 
 // The once-ever power user mode offer (docs/specs/007-editor/power-user-mode.md), as a funnel.

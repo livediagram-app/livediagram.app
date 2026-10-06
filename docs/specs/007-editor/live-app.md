@@ -226,6 +226,14 @@ the same grab handle that drags it down to close it (`useSwipeDownDismiss`). It 
 dialog: the dim behind it, the focus trap, Escape and the backdrop tap all behave as on a
 desktop, where it is the usual centred card (`Dialog`'s `phoneSheet`).
 
+**A dialog opened by touch takes focus on itself, not its first control.** With a keyboard or
+mouse, an opening dialog focuses its first control so typing and Tab work at once. On a touch
+screen (a coarse primary pointer: phones and tablets) that same focus highlighted the first control
+(the card panel's type picker) and could raise the keyboard for a text field nobody tapped, so the
+dialog panel itself takes focus instead: screen readers still land inside the dialog, and Tab still
+moves into it. A field a dialog deliberately focuses (`autoFocus`, a rename box) keeps its focus on
+every device (`useFocusTrap`).
+
 **The keyboard never hides the caret.** The on-screen keyboard shrinks the visual viewport, not
 the page, and the canvas never scrolls, so a label edited low on a phone was typed behind the
 keyboard. While a text field inside the canvas has focus, each visual-viewport change re-checks
