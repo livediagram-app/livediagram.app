@@ -530,6 +530,7 @@ export async function copyDocument(
     sourceId,
     newId,
     await copiedItemIds(env, sourceId, rows, onlyTabId),
+    redactForCommunity,
   );
   await env.DB.batch([...inserts, ...itemCopies]);
   return await getDocument(env, newId);

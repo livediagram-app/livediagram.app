@@ -83,10 +83,14 @@ export async function loadTab(
   const { document: liveDoc } = await apiJson<DocumentResponse>(
     env,
     token,
-    `/documents/${documentId}`,
+    `/documents/${encodeURIComponent(documentId)}`,
   );
   const id = tabId ?? liveDoc.tabs[0]?.id;
   if (!id) return null;
-  const { tab } = await apiJson<TabResponse>(env, token, `/documents/${documentId}/tabs/${id}`);
+  const { tab } = await apiJson<TabResponse>(
+    env,
+    token,
+    `/documents/${encodeURIComponent(documentId)}/tabs/${encodeURIComponent(id)}`,
+  );
   return { document: liveDoc, tab };
 }

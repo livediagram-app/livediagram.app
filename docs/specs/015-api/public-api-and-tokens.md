@@ -452,7 +452,12 @@ and nothing for an operator to arm.
 
 The realtime room's upgrade refuses the same shape on its owner leg (`?o=`, `routes/document-room-routes.ts`):
 a signed-in owner of a personal document joins through the one-time room ticket, as a team owner does, and an
-account id presented as `?o=` admits nobody.
+account id presented as `?o=` admits nobody. Once the guest signature gate is armed, a guest owner id on `?o=`
+needs its signature on `?os=` (the same value REST carries as `X-Owner-Sig`); without it the leg admits nobody.
+
+`GET /api/share/<code>` also refuses an account id as `X-Owner-Id`, because its resolver compares that header with
+the document's owner. It never returns the document's primary `shareCode`, to anyone: the visitor already holds the
+code they arrived with. An empty `X-Owner-Id` is no identity at all, never a shared owner.
 
 This matters most for **personal** documents, whose ownership legitimately
 resolves through the hybrid header path — that path is safe precisely because a

@@ -180,7 +180,8 @@ ordinary view link in exactly these ways:
   for editing. The author's Community bar offers **Edit Your Document** (their own document) in place of Make a Copy.
 
 Making a copy works as for any view link ([Auth + guest access](../014-identity/auth-and-guest-access.md)), signed in or
-not, and the copy carries exactly what the viewer shows: no comments, no people on its actions. Each distinct person
+not, and the copy carries exactly what the viewer shows: no comments, no people on its actions, and items without
+their assignee or votes, authored by the neutral "Someone". Each distinct person
 who copies a post's document counts once toward its copy count. The post page's Make a Copy opens the viewer with
 `?copy=1`; that parameter copies only through a Community link, never through any other share link.
 

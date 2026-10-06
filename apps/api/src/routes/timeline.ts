@@ -44,6 +44,9 @@ import { gateRead, type RouteContext } from './context';
 // common path and they only touch two indexes.
 const REFRESH_THROTTLE_MS = 5_000;
 
+// More source-type filters than any real feed has (one per source type).
+const MAX_SOURCE_TYPES = 20;
+
 // The visit window lives in ../timeline/seen.ts, shared with Explorer Home.
 
 export async function handleTimeline(ctx: RouteContext): Promise<Response> {
@@ -65,7 +68,8 @@ export async function handleTimeline(ctx: RouteContext): Promise<Response> {
       cursor: url.searchParams.get('cursor'),
       from: numberParam(url.searchParams.get('from')),
       to: numberParam(url.searchParams.get('to')),
-      sourceTypes: url.searchParams.getAll('sourceType').filter(Boolean),
+      // Bounded: each one is a bound parameter, and D1 refuses past 100.
+      sourceTypes: url.searchParams.getAll('sourceType').filter(Boolean).slice(0, MAX_SOURCE_TYPES),
     });
 
     const state = await getScopeState(env, scope);
@@ -97,8 +101,18 @@ export async function handleTimeline(ctx: RouteContext): Promise<Response> {
       ctx.waitUntil?.(markScopeSeen(env, scope).catch(() => {}));
     }
 
+    // An owner id is a credential (a guest's X-Owner-Id is their whole
+    // workspace), and a document feed is readable by anyone holding a share
+    // code. So a document scope only names the reader themself; every other
+    // actor goes out as null, and the renderers fall back to the snapshot's
+    // display name. The client only ever compares actorId with its own id.
+    const items =
+      scope.scopeType === 'document'
+        ? page.items.map((e) => (e.actorId === ownerId ? e : { ...e, actorId: null }))
+        : page.items;
+
     return json({
-      items: page.items,
+      items,
       nextCursor: page.nextCursor,
       lastSeenAt: state?.lastSeenAt ?? undefined,
     });

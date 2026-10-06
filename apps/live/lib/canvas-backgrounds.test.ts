@@ -4,7 +4,12 @@ import {
   type AnimatedBackgroundPattern,
   type BackgroundPattern,
 } from '@livediagram/document';
-import { tabBackgroundStyle, worldPatternOrigin } from './canvas-backgrounds';
+import {
+  backgroundPatternTile,
+  safeCssColor,
+  tabBackgroundStyle,
+  worldPatternOrigin,
+} from './canvas-backgrounds';
 
 // `tabBackgroundStyle` is the single entry point Canvas stamps onto
 // its `<main>` element on every tab change. The catalogue of
@@ -201,5 +206,34 @@ describe('worldPatternOrigin', () => {
     const after = worldPatternOrigin({ x: 100, y: 50 }, z, size);
     expect(after.x - before.x).toBeCloseTo(z * 100);
     expect(after.y - before.y).toBeCloseTo(z * 50);
+  });
+});
+
+// A pattern colour is document data another editor chooses, and it lands in
+// SVG markup that the export preview renders as HTML.
+describe('pattern colour sanitising', () => {
+  it('keeps plain colours', () => {
+    for (const c of [
+      '#abc',
+      '#a1b2c3',
+      '#a1b2c3d4',
+      'rgb(1, 2, 3)',
+      'hsla(10, 20%, 30%, 0.5)',
+      'red',
+    ]) {
+      expect(safeCssColor(c), c).toBe(c);
+    }
+  });
+
+  it('replaces anything that could leave its attribute', () => {
+    for (const c of ["x'/><img src=x onerror=alert(1)>", 'red")', 'url(x)', 'rgb(1,2,3)"', '']) {
+      expect(safeCssColor(c), c).toBe('transparent');
+    }
+  });
+
+  it('never splices a hostile colour into a pattern tile', () => {
+    const tile = backgroundPatternTile('grid', "x'/><img src=x onerror=alert(1)>");
+    expect(tile!.content).not.toContain('<img');
+    expect(tile!.content).toContain("fill='transparent'");
   });
 });

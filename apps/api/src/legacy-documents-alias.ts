@@ -56,10 +56,9 @@ export async function fromLegacyRequest(
   let body: BodyInit | null = null;
   if (request.body !== null) {
     const text = await request.text();
-    body =
-      isJson(request.headers) && text
-        ? JSON.stringify(renameWireKeys(upgradeLegacyLinks(JSON.parse(text)), 'toCurrent'))
-        : text;
+    // A chunked body declares no length, so the cap is re-checked on what arrived.
+    if (text.length > maxBytes) return null;
+    body = isJson(request.headers) && text ? upgradeLegacyBody(text) : text;
   }
   const headers = new Headers(request.headers);
   headers.delete('content-length');
@@ -104,4 +103,16 @@ function legacyErrorCode(body: unknown): unknown {
   return typeof error === 'string' && LEGACY_ERROR_CODES[error]
     ? { ...body, error: LEGACY_ERROR_CODES[error] }
     : body;
+}
+
+// The body in the current shape. Malformed JSON is passed on untouched so the
+// route answers its own 400; throwing here escaped the worker's error handling.
+function upgradeLegacyBody(text: string): string {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(text);
+  } catch {
+    return text;
+  }
+  return JSON.stringify(renameWireKeys(upgradeLegacyLinks(parsed), 'toCurrent'));
 }

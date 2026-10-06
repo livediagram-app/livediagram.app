@@ -17,7 +17,7 @@ export function communityNetwork(ip: string): string {
 }
 
 // The eight four-digit hextets of an IPv6 address (an embedded IPv4 tail counts as two), or null when it is not one.
-function expandIpv6(ip: string): string[] | null {
+export function expandIpv6(ip: string): string[] | null {
   if (!ip.includes(':')) return null;
   let address = ip.toLowerCase().split('%')[0]!;
   const tail = /(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/.exec(address);

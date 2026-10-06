@@ -28,7 +28,7 @@ import { handleTimeline } from './timeline';
 
 beforeEach(() => {
   store.readTimeline.mockReset();
-  store.readTimeline.mockResolvedValue({ events: [], nextCursor: null });
+  store.readTimeline.mockResolvedValue({ items: [], nextCursor: null });
   store.getScopeState.mockResolvedValue(null);
   db.getDocument.mockResolvedValue({ id: 'd-1', ownerId: 'owner-1', teamId: null });
   gate.gateRead.mockResolvedValue(true);

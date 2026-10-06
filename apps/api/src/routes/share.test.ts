@@ -424,6 +424,18 @@ describe('GET /api/share/<code> (docs/specs/013-workspace/share-password.md + do
     expect(body.document.ownerId).toBe('');
   });
 
+  // The guest header is unproven on this route, so a visitor who presents the
+  // owner's id must still not receive the document's oldest (often edit) code.
+  it('never returns the primary share code, even to a caller claiming to be the owner', async () => {
+    for (const visitor of ['someone-else', 'o1']) {
+      const { ctx } = resolveCtx({ visitor });
+      const body = (await (await handleShare(ctx)).json()) as {
+        document: { shareCode: string | null };
+      };
+      expect(body.document.shareCode, visitor).toBeNull();
+    }
+  });
+
   it('shows the owner their own id when they open their own link', async () => {
     const { ctx } = resolveCtx({ visitor: 'o1' });
     const body = (await (await handleShare(ctx)).json()) as { document: { ownerId: string } };

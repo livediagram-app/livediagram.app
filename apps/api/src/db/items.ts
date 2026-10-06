@@ -200,22 +200,33 @@ export async function deleteItemRow(
 // A document copy takes the items with it, ids and keys unchanged, so every card on the copied
 // tabs still finds its item (docs/specs/026-plan/items.md "Copies and exports"). `onlyIds` limits
 // a tab-scoped visitor's copy to the items their tab shows.
+//
+// `redactPeople` is a Community copy (docs/specs/025-community/community.md): the copier gets the
+// work, never the people on it, so the assignee and the per-person votes are dropped and every
+// author becomes the neutral "Someone".
 export function copyItemsStatements(
   env: Env,
   sourceId: string,
   targetId: string,
   onlyIds: readonly string[] | null,
+  redactPeople = false,
 ): D1PreparedStatement[] {
   const filter = onlyIds === null ? '' : ` AND id IN (SELECT value FROM json_each(?))`;
+  const someone = JSON.stringify(UNKNOWN_PERSON);
+  const selected = redactPeople
+    ? `id, type, item_key, rank, json_remove(fields, '$.assignee', '$.votes'), rev, created_at,
+       updated_at, ?, ?`
+    : COLUMNS;
   const binds: unknown[] = [
     targetId,
+    ...(redactPeople ? [someone, someone] : []),
     sourceId,
     ...(onlyIds === null ? [] : [JSON.stringify(onlyIds)]),
   ];
   return [
     env.DB.prepare(
       `INSERT INTO items (document_id, ${COLUMNS})
-       SELECT ?, ${COLUMNS} FROM items WHERE document_id = ?${filter}`,
+       SELECT ?, ${selected} FROM items WHERE document_id = ?${filter}`,
     ).bind(...binds),
     env.DB.prepare(
       `UPDATE documents SET

@@ -166,6 +166,15 @@ describe('renderElementsToSvg', () => {
       expect(svg).not.toContain('<image');
     });
 
+    // The href is resolved from document data, and the export preview renders
+    // this SVG as HTML, so a quote must never close the attribute.
+    it('escapes the resolved href so it cannot break out of the attribute', () => {
+      const href = 'data:image/png;base64,"/><img src=x onerror=alert(1)>';
+      const svg = renderElementsToSvg(tab([image('i')]), { resolveImageHref: () => href });
+      expect(svg).not.toContain('<img');
+      expect(svg).toContain('href="data:image/png;base64,&quot;/&gt;&lt;img');
+    });
+
     it('embeds the bitmap as an <image> when a data URL is resolved', () => {
       const href = 'data:image/png;base64,AAAA';
       const svg = renderElementsToSvg(tab([image('i', { alt: 'A photo' })]), {

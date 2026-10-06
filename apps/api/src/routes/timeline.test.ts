@@ -108,6 +108,29 @@ describe('handleTimeline read', () => {
     expect(gate.gateRead).toHaveBeenCalledWith(expect.anything(), 'd-1', 'owner-1', null);
   });
 
+  // An owner id is a credential, and a share-link visitor can read a
+  // document's feed, so only the reader's own id survives the response.
+  it('nulls every actor id except the readers own in a document scope', async () => {
+    gate.gateRead.mockResolvedValue(true);
+    store.readTimeline.mockResolvedValue({
+      items: [
+        { id: 'e1', actorId: 'owner-of-doc' },
+        { id: 'e2', actorId: 'owner-1' },
+        { id: 'e3', actorId: null },
+      ],
+    });
+    const res = await handleTimeline(makeCtx('GET', '/api/timeline?scope=document:d-1'));
+    const body = (await res.json()) as { items: { id: string; actorId: string | null }[] };
+    expect(body.items.map((e) => e.actorId)).toEqual([null, 'owner-1', null]);
+  });
+
+  it('keeps actor ids in the readers own user scope', async () => {
+    store.readTimeline.mockResolvedValue({ items: [{ id: 'e1', actorId: 'someone' }] });
+    const res = await handleTimeline(makeCtx('GET', '/api/timeline'));
+    const body = (await res.json()) as { items: { actorId: string | null }[] };
+    expect(body.items[0]!.actorId).toBe('someone');
+  });
+
   it('403s a document scope the gate refuses', async () => {
     const res = await handleTimeline(makeCtx('GET', '/api/timeline?scope=document:d-1'));
     expect(res.status).toBe(403);
@@ -200,6 +223,14 @@ describe('handleTimeline read', () => {
         sourceTypes: ['document', 'team'],
       }),
     );
+  });
+
+  // Each filter is a bound parameter, and D1 refuses past 100 of them.
+  it('caps the number of source-type filters', async () => {
+    const qs = Array.from({ length: 150 }, (_, i) => `sourceType=t${i}`).join('&');
+    await handleTimeline(makeCtx('GET', `/api/timeline?${qs}`));
+    const opts = store.readTimeline.mock.calls[0]![1] as { sourceTypes: string[] };
+    expect(opts.sourceTypes).toHaveLength(20);
   });
 
   it('caps an oversized limit rather than trusting the client', async () => {

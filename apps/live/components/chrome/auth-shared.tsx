@@ -16,6 +16,7 @@ import { Brand, Button, buttonClassName, TextInput, ButtonContent } from '@lived
 import { usePathname } from 'next/navigation';
 import { useEffect, useState, type MutableRefObject, type ReactNode } from 'react';
 import { AnimatedLinesBackdrop } from '@/components/canvas/AnimatedLinesBackdrop';
+import { sameOriginPath } from '@/lib/same-origin-path';
 
 // ---------------------------------------------------------------------
 // Outer card layout
@@ -419,17 +420,16 @@ export const POST_AUTH_DEFAULT = '/new';
 // welcome flow that suits a fresh sign-up. See docs/specs/014-identity/auth-and-guest-access.md.
 export const POST_AUTH_SIGNIN_DEFAULT = '/explorer';
 
-// A redirect_url is safe iff it's a same-origin absolute path that
-// isn't an auth page. The `//` / `/\` rejection is the open-redirect
-// guard the old `/live`-prefix check used to provide implicitly.
+// A redirect_url is safe iff it's a same-origin absolute path that isn't an
+// auth page. sameOriginPath is the open-redirect guard: it also refuses the
+// `\` and control-character tricks browsers normalise into `//host`.
 function isSafeInternalPath(p: string | null | undefined): p is string {
+  const safe = sameOriginPath(p);
   return (
-    !!p &&
-    p.startsWith('/') &&
-    !p.startsWith('//') &&
-    !p.startsWith('/\\') &&
-    !p.toLowerCase().startsWith('/sign-in') &&
-    !p.toLowerCase().startsWith('/get-started')
+    safe !== null &&
+    safe === p &&
+    !safe.toLowerCase().startsWith('/sign-in') &&
+    !safe.toLowerCase().startsWith('/get-started')
   );
 }
 
