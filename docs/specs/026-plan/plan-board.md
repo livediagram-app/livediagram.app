@@ -187,6 +187,22 @@ In Plan mode:
     of **Duplicate** (a copy right after it, without its votes, as the card menu's), **Archive** (or **Restore**)
     and **Trash** (to the Trash), as icon-left rows, then the close button. Someone who may only view gets no ⋯.
   - **Parent**: once set, an **Open** button beside it opens the parent in the panel.
+  - **Child Cards**: a card that other cards name as their Parent lists them on its first tab, after that tab's
+    fields and before Comments, under **Child Cards** with their count. Each row shows the child's type glyph, key,
+    title and status (its column's name), in key order, and opens that child in the panel. Trashed children are
+    left out; an archived one stays, with an **Archived** chip. A Project with none says **No cards sit under this
+    project yet.**; any other type with none shows no section.
+  - **Breadcrumb**: the panel remembers the cards opened from inside it (a Parent's Open, a child row, a crumb).
+    Once it holds more than one, the header starts with a breadcrumb of the earlier ones, each its type glyph,
+    key and title, before the current card's type picker. A crumb opens its card and drops the crumbs after it,
+    and opening a card already in the trail goes back to it rather than repeating it. Opening a card any other
+    way (from a board, the Cards finder, a link) starts a new trail. It holds at most 8 cards, dropping the oldest;
+    a card trashed or deleted meanwhile leaves it. The header shows the 3 crumbs nearest the current card (1 on a
+    phone), earlier ones folded into a **…** that names how many; stepping back brings them into view. A crumb's
+    title is cut to fit, whole on hover and to assistive technology. On a phone the breadcrumb takes a row of its
+    own above the header, its crumb pointing back, so the type picker keeps its room.
+  - **Moving between cards** keeps the panel open: it changes card in place, without opening again, and each card
+    starts on its own first tab.
   - **Labels** are coloured chips in one field (each label keeps its colour everywhere), with the document's
     other labels offered as it is typed in; Backspace in an empty field takes the last one off.
   - **Checklist**: a progress bar and "2 of 5" over its steps; each step's text is edited in place, ticked with

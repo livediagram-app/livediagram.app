@@ -57,6 +57,9 @@ function panel(item: Item, types: readonly ItemTypeDef[] = ITEM_TYPES, withComme
       onFlag={noop}
       onArchive={noop}
       onClose={noop}
+      trail={[item]}
+      childCards={[]}
+      statusNames={new Map()}
       {...(withComments
         ? { comments: { canComment: true, selfId: 'owner-me', onComment: noop } }
         : {})}

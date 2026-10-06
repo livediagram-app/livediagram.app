@@ -17,6 +17,7 @@ import type {
   StatusPhase,
 } from '@livediagram/items';
 import type { PlanItemsStatus } from '@/hooks/plan/usePlanItems';
+import type { ItemOpenVia } from './item-trail';
 import type { ItemTypesSlice } from '@/hooks/plan/useItemTypes';
 
 // Someone else's hands on a card: dragging it or reading it.
@@ -41,7 +42,8 @@ export type PlanContextValue = {
   canVote: boolean;
   presence: ReadonlyMap<string, PlanCardPresence>;
   retry: () => void;
-  openItem: (itemId: string) => void;
+  // `via`: opened from inside the item panel, which steps its card trail (item-trail.ts) instead of starting one.
+  openItem: (itemId: string, via?: ItemOpenVia) => void;
   openItemId: string | null;
   addItem: (input: {
     type: string;

@@ -26,6 +26,7 @@ import {
 import { CustomFieldEditor } from './CustomFieldEditor';
 import { ItemDescription } from './ItemDescription';
 import { ItemComments, type ItemCommentsContext } from './ItemComments';
+import type { ItemOpenVia } from './item-trail';
 
 export const FIELD_LABELS: Partial<Record<ItemFieldId, string>> = {
   status: 'Status',
@@ -66,8 +67,8 @@ export type ItemFieldContext = {
   labels: readonly string[];
   onSave: (field: string, value: ItemFieldValue | undefined) => void;
   onPatch: (patch: ItemPatch) => void;
-  // Opens another item in the panel (the parent).
-  onOpenItem: (itemId: string) => void;
+  // Opens another item in the panel (the parent), stepping the panel's card trail.
+  onOpenItem: (itemId: string, via: ItemOpenVia) => void;
   // The card's comments (docs/specs/026-plan/items.md "Comments"); absent, the field draws nothing.
   comments?: ItemCommentsContext;
 };
@@ -190,7 +191,7 @@ export function ItemFieldEditor({ f, ctx }: { f: string; ctx: ItemFieldContext }
               type="button"
               aria-label={`Open #${parent.key} ${itemTitle(parent)}`}
               className="flex h-[34px] shrink-0 items-center gap-1 rounded-md border border-slate-200 px-2 text-[12px] font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
-              onClick={() => ctx.onOpenItem(parent.id)}
+              onClick={() => ctx.onOpenItem(parent.id, 'Parent')}
             >
               Open
               <ChevronRightIcon size={12} />

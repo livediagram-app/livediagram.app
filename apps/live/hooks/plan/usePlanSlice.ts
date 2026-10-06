@@ -17,6 +17,7 @@ import {
 } from '@livediagram/items';
 
 const NO_PHASES: ReadonlyMap<string, StatusPhase> = new Map();
+import { stepTrail, type ItemOpenVia } from '@/components/plan/item-trail';
 import type { PlanCardPresence, PlanContextValue } from '@/components/plan/PlanContext';
 import { titleCaseType, track } from '@/lib/telemetry';
 import type { PlanItems } from './usePlanItems';
@@ -78,6 +79,9 @@ export function usePlanSlice(opts: {
     [boardSlideRef],
   );
   const [openItemId, setOpenItemId] = useState<string | null>(null);
+  // The cards opened from inside the item panel, ending on the open one (docs/specs/026-plan/plan-board.md
+  // "Breadcrumb"): a card opened any other way starts it afresh.
+  const [itemTrail, setItemTrail] = useState<readonly string[]>([]);
   // The type the type editor is open on, or 'new' (docs/specs/026-plan/item-types.md "Editing a type").
   const [editingTypeId, setEditingTypeId] = useState<string | 'new' | null>(null);
   const editType = useCallback((typeId: string | 'new') => setEditingTypeId(typeId), []);
@@ -243,9 +247,10 @@ export function usePlanSlice(opts: {
     [commit],
   );
 
-  const openItem = useCallback((itemId: string) => {
+  const openItem = useCallback((itemId: string, via?: ItemOpenVia) => {
     setOpenItemId(itemId);
-    track('Plan', 'Opened', 'Item');
+    setItemTrail((trail) => (via ? stepTrail(trail, itemId) : [itemId]));
+    track('Plan', 'Opened', via ?? 'Item');
   }, []);
 
   // A Plan card dropped on a board: its item moves into the column under the drop, and the card,
@@ -353,6 +358,7 @@ export function usePlanSlice(opts: {
   return {
     context,
     openItemId,
+    itemTrail,
     closeItem: () => setOpenItemId(null),
     // Opens an item without counting it as the person's (the Plan tour's card panel step).
     showItem: setOpenItemId,

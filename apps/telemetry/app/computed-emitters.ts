@@ -323,6 +323,10 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     open: PLAN_TYPE_WHY,
   },
   'apps/live/components/plan/track-board-setup.ts Plan·Changed': { values: PLAN_SETUP_PARTS },
+  // An item opened: `Item` from a board or a list, or how the item panel moved to it (item-trail.ts ItemOpenVia).
+  'apps/live/hooks/plan/usePlanSlice.ts Plan·Opened': {
+    values: ['Item', 'Parent', 'ChildCard', 'Breadcrumb'],
+  },
   // Default folders (docs/specs/013-workspace/default-folders.md "Telemetry"): one value per key.
   'apps/live/lib/placement-defaults/placement-defaults-store.ts Folder·Changed': {
     values: DEFAULT_FOLDER_TYPES,
