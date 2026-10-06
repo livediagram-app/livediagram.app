@@ -264,10 +264,16 @@ describe('POST /api/documents/:id/share — minting a link', () => {
 describe('DELETE /api/documents/:id/share — revoking every link', () => {
   it('drops each link and closes sharing', async () => {
     db.listShareLinks.mockResolvedValue([{ code: 'c1' }, { code: 'c2' }]);
-    const { ctx } = ctxFor('DELETE', '/api/documents/d_1/share');
+    const { env, broadcasts } = roomEnv();
+    const { ctx } = ctxFor('DELETE', '/api/documents/d_1/share', { env });
     const res = await handleDocumentShareRoutes(ctx);
     expect(db.deleteShareLink.mock.calls.map((c) => c[1])).toEqual(['c1', 'c2']);
-    expect(db.setDocumentShare).toHaveBeenCalledWith({}, 'd_1', false);
+    // Connected holders of each code are sent out of the room.
+    expect(broadcasts).toEqual([
+      { op: { kind: 'share-revoked', code: 'c1' } },
+      { op: { kind: 'share-revoked', code: 'c2' } },
+    ]);
+    expect(db.setDocumentShare).toHaveBeenCalledWith(env, 'd_1', false);
     expect(await res!.json()).toEqual({ shareable: false, shareCode: null });
   });
 

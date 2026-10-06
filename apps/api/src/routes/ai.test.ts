@@ -170,3 +170,27 @@ describe('handleAi provider (docs/specs/007-editor/ai-assistance.md, "Each featu
     expect(JSON.parse((init as RequestInit).body as string).model).toBe('gpt-4o');
   });
 });
+
+// Counting elements bounded their number, not their size; one huge label
+// filled the model's context on every call.
+describe('handleAi element payload size', () => {
+  const call = (label: string) =>
+    handleAi(
+      makeCtx({
+        env: {},
+        body: JSON.stringify({ mode: 'ask', prompt: 'p', elements: [{ id: 'a', label }] }),
+      }),
+    );
+
+  it('refuses elements whose serialised size is past the cap, before calling the model', async () => {
+    const res = await call('x'.repeat(300_000));
+    expect(res.status).toBe(400);
+    expect(globalThis.fetch).not.toHaveBeenCalled();
+  });
+
+  it('serves an ordinary diagram', async () => {
+    const res = await call('A normal label');
+    expect(res.status).toBe(200);
+    expect(globalThis.fetch).toHaveBeenCalledTimes(1);
+  });
+});

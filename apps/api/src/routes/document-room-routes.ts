@@ -5,6 +5,8 @@
 // boundary.
 
 import { isClerkIdShape } from '@livediagram/api-schema';
+import { guestSignatureEnforced } from '../auth/guest-rest';
+import { verifyOwnerId } from '../auth/owner-signature';
 import { isPersonalOwner, shareLinkForDocument, sharePasswordOk } from '../auth/share-access';
 import { consumeWsTicket, createWsTicket, getDocumentMeta } from '../db';
 import { forbidden, json, notFound } from '../responses';
@@ -107,8 +109,22 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
     const accountIdClaimed = !!claimedOwnerId && isClerkIdShape(claimedOwnerId);
     if (accountIdClaimed)
       console.warn('[room-upgrade] account id refused as ?o=', { documentId: id });
+    // The guest owner id is the same bearer value REST carries as X-Owner-Id,
+    // so once the guest signature gate is armed (auth/guest-rest.ts) this leg
+    // needs the same proof, on `os`; otherwise a harvested guest id would
+    // still seat its holder as the owner, password gate bypassed.
+    const ownerSigOk =
+      !guestSignatureEnforced(env, Date.now()) ||
+      (!!claimedOwnerId &&
+        (await verifyOwnerId(
+          env.GUEST_ID_HMAC_SECRET!,
+          claimedOwnerId,
+          url.searchParams.get('os'),
+        )));
     const isOwnerUpgrade =
-      !accountIdClaimed && isPersonalOwner(claimedOwnerId, liveDoc.ownerId, liveDoc.teamId);
+      !accountIdClaimed &&
+      ownerSigOk &&
+      isPersonalOwner(claimedOwnerId, liveDoc.ownerId, liveDoc.teamId);
     if (admission) {
       ({ role, tabScope, shareCode, account, personTag } = admission);
     } else if (isOwnerUpgrade) {

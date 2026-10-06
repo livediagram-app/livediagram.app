@@ -4,7 +4,7 @@ import { isServerEmittedEvent, isValidTelemetryEvent } from '@livediagram/api-sc
 import { insertTelemetryEvents } from '../db';
 import { isLocalhostPair } from '../origin-check';
 import { noContent, notFound } from '../responses';
-import { clientIp } from '../client-ip';
+import { clientRateKey } from '../client-ip';
 import { timingSafeEqual } from '../auth/timing-safe';
 import type { Env } from '../types';
 import type { RouteContext } from './context';
@@ -49,7 +49,7 @@ export async function handleEvents(ctx: RouteContext): Promise<Response> {
   // so self-hosting needs no configuration.
   if (!(await isInternalCaller(request, env))) {
     if (env.EVENTS_RATE_LIMITER) {
-      const ip = clientIp(request);
+      const ip = clientRateKey(request);
       const { success } = await env.EVENTS_RATE_LIMITER.limit({ key: ip });
       if (!success) return noop;
     }
@@ -60,7 +60,8 @@ export async function handleEvents(ctx: RouteContext): Promise<Response> {
   } catch {
     return noop;
   }
-  const raw = (body as { events?: unknown }).events;
+  // `?.`: a JSON `null` (or any non-object) body is still a no-op, never a 500.
+  const raw = (body as { events?: unknown } | null)?.events;
   if (!Array.isArray(raw)) return noop;
   // Validate against the shared schema and cap the batch so one
   // request can't bulk-insert. Unknown categories/actions/types

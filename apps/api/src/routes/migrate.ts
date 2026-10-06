@@ -50,6 +50,11 @@ export async function handleMigrate(ctx: RouteContext): Promise<Response> {
     const fromOwnerId = body?.guestOwnerId?.trim();
     if (!fromOwnerId) return badRequest('guestOwnerId is required');
     if (fromOwnerId === clerkUserId) return json({ migrated: ZERO });
+    // A guest id is a server-minted UUID, never an account id. Without this,
+    // a deployment with no GUEST_ID_HMAC_SECRET (the signature check below is
+    // skipped) would let any signed-in user take over another account's whole
+    // workspace by naming its (harvestable) Clerk id.
+    if (isClerkIdShape(fromOwnerId)) return forbidden();
     // Possession proof: the caller must hold the source id's signature.
     if (secret && !(await verifyOwnerId(secret, fromOwnerId, body?.guestSignature))) {
       return forbidden();

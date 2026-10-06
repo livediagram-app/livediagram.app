@@ -13,6 +13,7 @@ import {
   payloadTooLarge,
   rateLimited,
   signInRequired,
+  svgImage,
 } from './responses';
 
 // Every endpoint in the worker funnels its non-streaming responses
@@ -214,5 +215,18 @@ describe('CORS_HEADERS', () => {
     expect(methods).toContain('PUT');
     expect(methods).toContain('DELETE');
     expect(methods).toContain('OPTIONS');
+  });
+});
+
+// A same-origin SVG opened directly is a document; it must not run script.
+describe('svgImage', () => {
+  it('sandboxes the SVG and forbids sniffing', () => {
+    const res = svgImage('<svg/>', 'no-store');
+    expect(res.headers.get('Content-Type')).toBe('image/svg+xml; charset=utf-8');
+    expect(res.headers.get('X-Content-Type-Options')).toBe('nosniff');
+    const csp = res.headers.get('Content-Security-Policy')!;
+    expect(csp).toContain("default-src 'none'");
+    expect(csp).toContain('sandbox');
+    expect(csp).not.toContain('script-src');
   });
 });

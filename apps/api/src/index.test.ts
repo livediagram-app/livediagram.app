@@ -89,6 +89,30 @@ describe('worker refusal of a Clerk account id in X-Owner-Id', () => {
     }
   });
 
+  // The share resolver compares the header with the document owner, so a
+  // harvested Clerk sub must not reach it either.
+  it('refuses a Clerk sub as the guest header on the share resolver', async () => {
+    const res = await worker.fetch(
+      get('/api/share/abc', { 'X-Owner-Id': 'user_2abcDEF' }),
+      noEnforcement(),
+    );
+    expect(res.status).toBe(401);
+  });
+
+  // An empty header must not be a shared owner everyone can write as.
+  it('treats an empty guest header as no owner at all', async () => {
+    const res = await worker.fetch(
+      new Request('https://x.test/api/folders', {
+        method: 'POST',
+        headers: { 'X-Owner-Id': '', 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: 'f' }),
+      }),
+      noEnforcement(),
+    );
+    expect(res.status).toBe(400);
+    expect(JSON.stringify(await res.json())).toContain('authentication required');
+  });
+
   it('lets a real guest UUID through (the shape the server actually mints)', async () => {
     const res = await worker.fetch(
       get('/api/documents', { 'X-Owner-Id': crypto.randomUUID() }),
@@ -225,5 +249,24 @@ describe('worker refusal of an unknown API token', () => {
       noEnforcement(),
     );
     expect(res.status).not.toBe(401);
+  });
+});
+
+// Room-ticket mints skip the per-owner write budget (autosave shares it), but
+// each is a D1 write, so they have their own bucket keyed on the network.
+describe('worker room-ticket throttle', () => {
+  beforeEach(() => resolveApiTokenMock.mockResolvedValue(null));
+
+  it('429s a mint once the per-network bucket is spent, keyed on the /64', async () => {
+    const limit = vi.fn(async () => ({ success: false }));
+    const res = await worker.fetch(
+      new Request('https://api.test/api/documents/d1/room-ticket', {
+        method: 'POST',
+        headers: { 'X-Owner-Id': crypto.randomUUID(), 'CF-Connecting-IP': '2001:db8:0:1::9' },
+      }),
+      { WRITE_RATE_LIMITER: { limit } } as unknown as Env,
+    );
+    expect(res.status).toBe(429);
+    expect(limit).toHaveBeenCalledWith({ key: 'room-ticket:2001:0db8:0000:0001::/64' });
   });
 });

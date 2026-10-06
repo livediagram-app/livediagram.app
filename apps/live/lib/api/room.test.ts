@@ -25,6 +25,11 @@ describe('roomQueryString (realtime auth params, docs/specs/014-identity/auth-an
     expect(roomQueryString({}, 'secret')).toBe('p=secret');
   });
 
+  it('carries the owner signature beside the owner id, and never on its own', () => {
+    expect(roomQueryString({ ownerId: 'O', ownerSig: 'G' }, null)).toBe('o=O&os=G');
+    expect(roomQueryString({ ownerSig: 'G' }, null)).toBe('');
+  });
+
   it('url-encodes values', () => {
     expect(roomQueryString({ ownerId: 'a b&c' }, null)).toBe('o=a+b%26c');
   });

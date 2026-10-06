@@ -50,6 +50,24 @@ describe('fromLegacyRequest', () => {
     expect(next.headers.get('x-owner-id')).toBe('o');
     expect(await next.json()).toEqual({ documentId: 'd1', name: 'n' });
   });
+  it('passes malformed JSON on for the route to refuse, rather than throwing', async () => {
+    const req = new Request('https://x.test/api/diagrams/d1', {
+      method: 'PUT',
+      headers: { 'content-type': 'application/json' },
+      body: '{not json',
+    });
+    const next = (await fromLegacyRequest(req))!;
+    expect(await next.text()).toBe('{not json');
+  });
+  it('refuses a body over the cap even when no length is declared', async () => {
+    const req = new Request('https://x.test/api/diagrams/d1', {
+      method: 'PUT',
+      body: new Blob(['x'.repeat(50)]).stream(),
+      // @ts-expect-error: undici needs this for a stream body
+      duplex: 'half',
+    });
+    expect(await fromLegacyRequest(req, 10)).toBeNull();
+  });
   it('passes a non-JSON body through untouched', async () => {
     const req = new Request('https://x.test/api/diagrams/d1/thumbnail', { method: 'GET' });
     const next = (await fromLegacyRequest(req))!;

@@ -294,6 +294,8 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
     // addressed so cached bytes stay valid for the lifetime
     // of the row.
     headers.set('Cache-Control', 'private, max-age=86400');
+    // The stored type is the sniffed one; never let a browser re-guess it.
+    headers.set('X-Content-Type-Options', 'nosniff');
     return new Response(object.body, { headers });
   }
 

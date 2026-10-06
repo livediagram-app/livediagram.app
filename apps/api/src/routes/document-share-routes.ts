@@ -95,6 +95,10 @@ export async function handleDocumentShareRoutes(ctx: RouteContext): Promise<Resp
       // nothing left to warn about. It's keyed on the DOCUMENT (one warning
       // per document, not per link), so retracting it here is exact.
       await retractTimelineWarning(env, 'document', id, 'share_link_expiring');
+      // Same as the single revoke below: connected holders of each code are
+      // sent out of the room, or they would keep reading and editing live.
+      for (const link of links)
+        await broadcastShareOp(env, id, { kind: 'share-revoked', code: link.code });
 
       return json({ shareable: false, shareCode: null });
     }

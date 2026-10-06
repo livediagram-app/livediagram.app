@@ -31,6 +31,7 @@ vi.mock('../auth/document-access', () => gates);
 import { makeTestRouteContext } from './test-route-context';
 import { handleDocumentRoomRoutes } from './document-room-routes';
 import { personTagFor } from '../person-tag';
+import { signOwnerId } from '../auth/owner-signature';
 
 // A DOCUMENT_ROOM binding that records the Request it was handed, so a test can
 // inspect the forwarded headers.
@@ -106,6 +107,43 @@ describe('WebSocket upgrade — trust headers', () => {
     expect(res?.status).toBe(REACHED_ROOM);
     expect(seen[0]!.headers.get('X-Verified-Owner')).toBe('1');
     expect(seen[0]!.headers.get('X-Verified-Role')).toBe('edit');
+  });
+
+  // Once the guest signature gate is armed, `o` is the same bearer value as
+  // REST's X-Owner-Id and needs the same proof, on `os`.
+  describe('with the guest signature gate armed', () => {
+    const armed = (env: Env) =>
+      Object.assign(env, { GUEST_ID_HMAC_SECRET: 'sek', GUEST_SIG_ENFORCE_AFTER: '0' });
+
+    it('refuses an unsigned owner id', async () => {
+      db.getDocumentMeta.mockResolvedValue({ ownerId: 'owner-uuid', teamId: null });
+      db.getShareLink.mockResolvedValue(null);
+      const { env, seen } = roomEnv();
+      const res = await handleDocumentRoomRoutes(
+        makeTestRouteContext('GET', '/api/documents/d1/ws?o=owner-uuid', {
+          owner: null,
+          headers: { Upgrade: 'websocket' },
+          env: armed(env),
+        }),
+      );
+      expect(res?.status).toBe(403);
+      expect(seen).toHaveLength(0);
+    });
+
+    it('seats a correctly signed owner id', async () => {
+      db.getDocumentMeta.mockResolvedValue({ ownerId: 'owner-uuid', teamId: null });
+      const sig = encodeURIComponent((await signOwnerId('sek', 'owner-uuid'))!);
+      const { env, seen } = roomEnv();
+      const res = await handleDocumentRoomRoutes(
+        makeTestRouteContext('GET', `/api/documents/d1/ws?o=owner-uuid&os=${sig}`, {
+          owner: null,
+          headers: { Upgrade: 'websocket' },
+          env: armed(env),
+        }),
+      );
+      expect(res?.status).toBe(REACHED_ROOM);
+      expect(seen[0]!.headers.get('X-Verified-Owner')).toBe('1');
+    });
   });
 
   it('overwrites a client-supplied X-Verified-Role with the resolved one', async () => {

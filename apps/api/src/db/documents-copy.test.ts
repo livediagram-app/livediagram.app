@@ -50,3 +50,20 @@ describe('copyDocument tab filter', () => {
     expect(query.bindings).toEqual(['d1', 't2']);
   });
 });
+
+// A Community copy hands the redaction on to the item store (docs/specs/025-community/community.md).
+describe('copyDocument items', () => {
+  const source = { id: 'd1', owner_id: 'o', name: 'Doc', shareable: 0, saved_at: 1, created_at: 1 };
+  const answer = ({ sql }: { sql: string }) =>
+    sql.includes('FROM document_tabs dt') ? { all: [] } : { first: source, all: [] };
+
+  it('copies items without their people only for a Community copy', async () => {
+    const community = fakeD1(answer);
+    await copyDocument(community.env, 'd1', 'd2', 'me', 'Copy', null, true);
+    expect(community.one('INSERT INTO items').sql).toContain('json_remove');
+
+    const plain = fakeD1(answer);
+    await copyDocument(plain.env, 'd1', 'd2', 'me', 'Copy');
+    expect(plain.one('INSERT INTO items').sql).not.toContain('json_remove');
+  });
+});

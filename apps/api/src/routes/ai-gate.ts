@@ -6,7 +6,7 @@ import {
   rateLimited,
   signInRequired,
 } from '../responses';
-import { clientIp } from '../client-ip';
+import { clientRateKey } from '../client-ip';
 import { resolveAiProvider, type AiFeature } from '../ai-provider';
 import type { RouteContext } from './context';
 
@@ -57,7 +57,7 @@ export async function aiGate(ctx: RouteContext, feature: AiFeature): Promise<Res
   if (request.method !== 'POST') return methodNotAllowed();
 
   if (env.AI_RATE_LIMITER) {
-    const ip = clientIp(request, 'unknown');
+    const ip = clientRateKey(request, 'unknown');
     const { success } = await env.AI_RATE_LIMITER.limit({ key: ip });
     if (!success) return rateLimited();
   }
