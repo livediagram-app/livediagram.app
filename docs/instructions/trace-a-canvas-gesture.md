@@ -27,6 +27,8 @@ browser. The budget it is held to is in [Canvas performance](../specs/008-canvas
 
 10. Take the numbers that count from the page itself first: a `PerformanceObserver` on `longtask`
     and on `event` (`durationThreshold: 16`), registered before the gesture and read after it.
+    Add `long-animation-frame` too: `longtask` reports only tasks that run script, so a frame that
+    only renders (Layerize, Paint) is missing from it. A LoAF entry's `scripts` name each callback.
 11. For a breakdown, trace the gesture with `devtools.timeline` and
     `disabled-by-default-devtools.timeline`; add `v8.execute` and
     `disabled-by-default-v8.compile` when compilation is suspected.
@@ -43,7 +45,8 @@ browser. The budget it is held to is in [Canvas performance](../specs/008-canvas
     trace as a task of `(program)`.
 15. Profile the following gestures; their timings carry the sampler's overhead, so read budgets from
     step 10, and the profile only for where the time goes.
-16. Map the `.cpuprofile` back through the build's source maps and read self and inclusive time
+16. Map the `.cpuprofile` back through the build's source maps (a chunk's map is named by its
+    own hash: follow the chunk's `sourceMappingURL` comment, not the chunk's file name) and read self and inclusive time
     for app code.
 
 ## Report
