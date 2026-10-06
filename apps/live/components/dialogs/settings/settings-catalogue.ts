@@ -820,26 +820,6 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
     ],
   },
   {
-    // Experimental (docs/specs/007-editor/editor-modes.md "Experimental modes"): ideas still being
-    // tried out, each with a switch of its own here. Listed after AI Tools.
-    id: 'experimental',
-    label: 'Experimental',
-    rows: [
-      {
-        kind: 'toggle',
-        key: 'planModeEnabled',
-        keywords:
-          'plan board boards kanban scrum sprint retro retrospective roadmap tickets items cards columns backlog jira editor mode experiment labs beta',
-        label: 'Plan Mode',
-        description:
-          'Plan mode in the editor mode switch: boards of items to drag through columns, for Kanban, sprints, retros and roadmaps. Still new, so it may change. On by default.',
-        read: (p) => p.planModeEnabled !== false,
-        write: (p, v) => ({ ...p, planModeEnabled: v }),
-        event: { category: 'UI', on: 'PlanModeOn', off: 'PlanModeOff' },
-      },
-    ],
-  },
-  {
     id: 'documents',
     label: 'Documents',
     rows: [

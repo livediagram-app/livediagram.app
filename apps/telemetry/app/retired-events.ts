@@ -37,14 +37,21 @@ const PALETTE_FAVOURITES_UI = new Set([
 ]);
 const PALETTE_FAVOURITES_HELP_ID = 'favourites';
 
-// Illustrate mode's Settings › Experimental switch (removed 2026-10-06, docs/specs/007-editor/editor-modes.md
-// "Experimental modes"): the mode is always offered now. The mode itself, and its own events, carry on.
-const ILLUSTRATE_SWITCH_UI = new Set(['Toggled|IllustrateModeOn', 'Toggled|IllustrateModeOff']);
+// Settings › Experimental (removed 2026-10-06, docs/specs/007-editor/editor-modes.md "Every mode,
+// always offered"): the category opening and its Illustrate Mode and Plan Mode switches. Every mode
+// is always offered now; the modes themselves, and their own events, carry on.
+const EXPERIMENTAL_SETTINGS_UI = new Set([
+  'Opened|SettingsExperimental',
+  'Toggled|IllustrateModeOn',
+  'Toggled|IllustrateModeOff',
+  'Toggled|PlanModeOn',
+  'Toggled|PlanModeOff',
+]);
 
 export function isRetiredEvent(category: string, action: string, type: string | null): boolean {
   if (category === 'Document' && action === 'Reverted') return true;
   if (category === 'UI' && PALETTE_FAVOURITES_UI.has(`${action}|${type ?? ''}`)) return true;
-  if (category === 'UI' && ILLUSTRATE_SWITCH_UI.has(`${action}|${type ?? ''}`)) return true;
+  if (category === 'UI' && EXPERIMENTAL_SETTINGS_UI.has(`${action}|${type ?? ''}`)) return true;
   if (category === 'Help') {
     return ACTIVITY_PANEL_HELP_IDS.has(type ?? '') || type === PALETTE_FAVOURITES_HELP_ID;
   }

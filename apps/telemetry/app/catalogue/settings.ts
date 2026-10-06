@@ -292,20 +292,6 @@ export const AI_SETTINGS = settingsStack(
   ],
 );
 
-export const EXPERIMENTAL_SETTINGS = settingsStack(
-  'Experimental Settings',
-  'Ideas still being tried out, each with a switch of its own.',
-  [
-    toggle(
-      'UI',
-      'PlanModeOn',
-      'PlanModeOff',
-      'Plan Mode',
-      'The Plan editor mode, switched on or off.',
-    ),
-  ],
-);
-
 export const DOCUMENTS_SETTINGS = settingsStack('Documents Settings', 'Where new documents go.', [
   toggle(
     'UI',
@@ -339,7 +325,6 @@ export const SETTINGS_STACKS: readonly MetricStack[] = [
   NOTIFICATION_SETTINGS,
   ACCESSIBILITY_SETTINGS,
   AI_SETTINGS,
-  EXPERIMENTAL_SETTINGS,
   DOCUMENTS_SETTINGS,
   PRIVACY_SETTINGS,
 ];

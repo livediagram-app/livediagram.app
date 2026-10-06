@@ -16,34 +16,16 @@ import {
 import { useEditorMode, type EditorModeState } from '@/hooks/editor/useEditorMode';
 import { EditorModeProvider } from './editor-mode-context';
 import { EditorModeSwitch } from './EditorModeSwitch';
-import { setPlanModeEnabled } from '@/lib/offered-editor-modes';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
 beforeEach(() => {
-  // Every mode offered, the experimental one included (Settings › Experimental).
-  setPlanModeEnabled(true);
   localStorage.clear();
   vi.spyOn(console, 'info').mockImplementation(() => {});
 });
 afterEach(() => {
   cleanup();
   vi.restoreAllMocks();
-  setPlanModeEnabled(false);
-});
-
-// Settings › Experimental (docs/specs/007-editor/editor-modes.md "Experimental modes").
-describe('EditorModeSwitch with Plan mode switched off', () => {
-  it('offers Diagram, Draw and Illustrate', () => {
-    setPlanModeEnabled(false);
-    renderSwitch('diagram');
-    fireEvent.click(chip());
-    expect(screen.getAllByRole('menuitemradio').map((row) => row.textContent)).toEqual([
-      'Diagram',
-      'Draw⇧D',
-      'Illustrate',
-    ]);
-  });
 });
 
 function renderSwitch(mode: EditorMode, over: Partial<EditorModeState> = {}) {

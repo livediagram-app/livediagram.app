@@ -25,7 +25,6 @@ export type SettingsIconId =
   | 'panels'
   | 'accessibility'
   | 'ai'
-  | 'experimental'
   | 'privacy';
 
 // The sub-categories, nested under a top-level category (Editor, Panels, Account).
@@ -48,7 +47,6 @@ const TILE: Record<SettingsIconId, string> = {
   panels: 'bg-amber-500',
   accessibility: 'bg-indigo-500',
   ai: 'bg-violet-500',
-  experimental: 'bg-fuchsia-600',
   privacy: 'bg-emerald-600',
 };
 
@@ -94,14 +92,6 @@ const KeyboardGlyph = (
 const DocumentsGlyph = (
   <Svg>
     <path d="M3 6.5a1.5 1.5 0 0 1 1.5-1.5h3.2l1.6 1.8h6.2A1.5 1.5 0 0 1 17 8.3v6.2a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 3 14.5Z" />
-  </Svg>
-);
-
-// Experimental: a flask, for ideas still being tried out.
-const ExperimentalGlyph = (
-  <Svg>
-    <path d="M8 2.5h4M8.5 2.5v5L3.8 15a1.5 1.5 0 0 0 1.3 2.3h9.8a1.5 1.5 0 0 0 1.3-2.3L11.5 7.5v-5" />
-    <path d="M6 12.5h8" />
   </Svg>
 );
 
@@ -182,7 +172,6 @@ export const CATEGORY_GLYPHS: Record<SettingsIconId, ReactNode> = {
   panels: PanelsGlyph,
   accessibility: AccessibilityGlyph,
   ai: AiGlyph,
-  experimental: ExperimentalGlyph,
   privacy: PrivacyGlyph,
 };
 

@@ -32,7 +32,6 @@ import { useTemplateModeFilter } from '@/components/palette/useTemplateModeFilte
 import { placeNameOf, skipLocationStepFor, CONTEXT_PLACE_FALLBACK } from '@/lib/skip-location-step';
 import { useWizardSkipLocation } from './useWizardSkipLocation';
 import { WizardSavingIn, WizardSkipLocationCheckbox } from './WizardSkipLocation';
-import { useOfferedEditorModes } from '@/lib/offered-editor-modes';
 
 // Whether this render is past hydration, as a store with nothing to subscribe to: prerender and
 // hydration read the server snapshot, every later render the client one.
@@ -109,14 +108,9 @@ export function TemplatePicker({
   // Undefined until the author picks a card: until then a `?mode=` preset's blank is the selection
   // (docs/specs/007-editor/new-document-route.md), so Create never starts something filtered away.
   // Read at render, not as a useState seed, because the URL only arrives after hydration.
-  // A preset whose mode is not offered (switched off) falls back as the mode filter does, to
-  // Everything and the plain blank.
   const [chosenKind, setTemplateKind] = useState<TemplateKind | undefined>(undefined);
-  const offeredModes = useOfferedEditorModes();
-  const presetMode =
-    initialModeChoice && offeredModes.includes(initialModeChoice) ? initialModeChoice : null;
   const templateKind: TemplateKind =
-    chosenKind ?? (presetMode ? BLANK_TEMPLATE_FOR_MODE[presetMode] : 'blank');
+    chosenKind ?? (initialModeChoice ? BLANK_TEMPLATE_FOR_MODE[initialModeChoice] : 'blank');
   // Free-text filter for the template grid (title / description / kind /
   // category label). Empty = show the whole catalogue. The input updates
   // `templateQuery` instantly (responsive caret), but filtering reads a
@@ -269,7 +263,7 @@ export function TemplatePicker({
   // state can offer Everything (docs/specs/007-editor/templates-by-mode.md).
   const matchesInEveryMode =
     templateFilter && filteredTemplates.length === 0 && modeFilter.choice !== 'all'
-      ? LISTED_TEMPLATES.filter((t) => modeFilter.offered(t) && matchesQuery(t)).length
+      ? LISTED_TEMPLATES.filter(matchesQuery).length
       : 0;
   // The Popular shelf, in its curated order (the four blanks first, so a blank
   // needs no card of its own); `categoryTemplates` returns a category's

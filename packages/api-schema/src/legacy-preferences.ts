@@ -12,10 +12,12 @@ const RETIRED: ReadonlySet<string> = new Set([
   // The Activity panel (docs/specs/012-collaboration/README.md "Removed: the Activity panel").
   'activityPanelEnabled',
   'activityRevertHoverPreview',
-  // Illustrate mode's Settings › Experimental switch: the mode is always offered now
-  // (docs/specs/007-editor/editor-modes.md). `infographicModeEnabled` is its older name.
+  // The Settings › Experimental switches for Illustrate and Plan modes: every mode is always
+  // offered now (docs/specs/007-editor/editor-modes.md). `infographicModeEnabled` is Illustrate's
+  // older name.
   'illustrateModeEnabled',
   'infographicModeEnabled',
+  'planModeEnabled',
 ]);
 
 export function upgradeLegacyPreferences<T extends Record<string, unknown>>(prefs: T): T {

@@ -6,7 +6,6 @@
 // every pointer move, and the side effects that apply preference flags
 // (reduce motion, AI panel auto-open).
 
-import { setPlanModeEnabled } from '@/lib/offered-editor-modes';
 import { useCallback, useEffect, useEffectEvent, useState, useSyncExternalStore } from 'react';
 import { useReduceMotion } from '@/hooks/ui/useReduceMotion';
 import { usePanelOpacity } from '@/hooks/ui/usePanelOpacity';
@@ -90,11 +89,6 @@ export function useEditorPreferences(deps: EditorPreferencesDeps) {
   // prefers-reduced-motion media query is honoured by globals.css
   // regardless; this lets the user force it on independent of the OS.
   useReduceMotion(userPreferences.reduceMotion === true);
-  // Settings › Experimental: Plan mode is offered unless switched off (offered-editor-modes,
-  // docs/specs/026-plan/plan-mode.md).
-  useEffect(() => {
-    setPlanModeEnabled(userPreferences.planModeEnabled !== false);
-  }, [userPreferences.planModeEnabled]);
   // Apply the "Panel opacity" preference (docs/specs/007-editor/user-preferences.md) to the floating panels
   // via the --lvd-panel-opacity custom property.
   usePanelOpacity(userPreferences.panelOpacity);

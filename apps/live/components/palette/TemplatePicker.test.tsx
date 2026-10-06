@@ -5,7 +5,6 @@ import { beforeAll, describe, expect, it, vi } from 'vitest';
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
 import type { Participant } from '@/lib/identity';
-import { setPlanModeEnabled } from '@/lib/offered-editor-modes';
 import { TemplatePicker } from './TemplatePicker';
 
 // jsdom has no ResizeObserver; the height-animated boxes only need one to exist.
@@ -296,17 +295,5 @@ describe('TemplatePicker, the /new presets', () => {
       (screen.getByRole('searchbox', { name: 'Search templates' }) as HTMLInputElement).value,
     ).toBe('town hall');
     expect(screen.queryByRole('heading', { name: /^Popular/ })).toBeNull();
-  });
-
-  it('ignores a mode that is switched off, selecting the plain blank', () => {
-    setPlanModeEnabled(false);
-    try {
-      const onPick = renderPreset({ initialModeChoice: 'plan' });
-      fireEvent.click(screen.getByRole('button', { name: /^Next/ }));
-      fireEvent.click(screen.getByRole('button', { name: 'Create' }));
-      expect(onPick.mock.calls[0]![0]).toBe('blank');
-    } finally {
-      setPlanModeEnabled(true);
-    }
   });
 });
